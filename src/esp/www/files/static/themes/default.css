@@ -364,13 +364,8 @@ table.-esp-table th {
     padding: 6px 4px 6px 10px;
 }
 
-<<<<<<< HEAD
-table.-ejs-table tbody { 
-    cursor: pointer;
-=======
 table.-esp-table tbody { 
     _cursor: pointer;
->>>>>>> master
 }
 
 table.-esp-table tbody td { 
