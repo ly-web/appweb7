@@ -1,13 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!-- BeginDsi "dsi/head.html" -->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>Embedthis Appweb 4.0.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
-    <meta name="description" content="Embedthis Sofware provides open source embedded web servers for devices 
-        and applications." />
+    <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
+        devices and applications." />
 	<meta name="robots" content="index,follow" />
 	<link href="../../../doc.css" rel="stylesheet" type="text/css" />
 	<link href="../../../print.css" rel="stylesheet" type="text/css" media="print"/>
@@ -18,16 +17,16 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://www.appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
              <div class="search">
-                 <form method="get" action="http://www.google.com/search" title="Search www.ejscript.org">
+                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
                      <p>
-                        <label title="Search">Search</label> 
+                        <label for="q" title="Search">Search</label> 
                         <input type="text" id="q" name="q" size="15" maxlength="255" />
                         <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="ejscript.org" /> 
-                        <input type="hidden" name="sitesearch" value="ejscript.org" />
+                        <input type="hidden" name="domains" value="appwebserver.org" /> 
+                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
                     </p>
                  </form>
               </div>
@@ -41,8 +40,8 @@
     </div>
     <div class="content">
         <div class="contentRight">
-            <h2>Quick Nav</h2>
-            <ul>
+            <h1>Quick Nav</h1>
+            <ul class="nav">
                 <li><a href="#cryptographicTechniques">Cryptographic Techniques</a></li>
                 <li><a href="#symmetricCryptography">Symmetric Cryptography</a></li>
                 <li><a href="#publicKeyCryptography">Public Key Cryptography</a></li>
@@ -53,11 +52,12 @@
                 <li><a href="#sslOverview">SSL Overview</a></li>
             </ul>
 <!-- BeginDsi "dsi/usersGuideSeeAlso.html" -->
-            <h2>See Also</h2>
-            <ul>
+            <h1>See Also</h1>
+            <ul class="nav">
                 <li><a href="../../../guide/appweb/users/index.html">User Guide Overview</a></li>
                 <li><a href="../../../guide/appweb/users/configuration.html">Configuring Appweb</a></li>
                 <li><a href="../../../guide/appweb/users/ports.html">Ports and Binding</a></li>
+                <li><a href="../../../guide/appweb/users/lang.html">Multi-Language Support</a></li>
                 <li><a href="../../../guide/appweb/users/authorization.html">User Authorization</a></li>
                 <li><a href="../../../guide/appweb/users/logFiles.html">Log Files</a></li>
                 <li><a href="../../../guide/appweb/users/vhosts.html">Virtual Hosts</a></li>
@@ -67,9 +67,6 @@
                 <li><a href="../../../guide/appweb/users/stages.html">Pipeline Stages</a></li>
                 <li><a href="../../../guide/appweb/users/client.html">HTTP Client</a></li>
                 <li><a href="../../../guide/appweb/users/frameworks.html">Web Frameworks</a></li>
-                <li><a href="../../../guide/appweb/users/ejs.html">Ejscript</a></li>
-                <li><a href="../../../guide/appweb/users/php.html">PHP</a></li>
-                <li><a href="../../../guide/appweb/users/cgi.html">CGI</a></li>
                 <li><a href="../../../ref/appweb/architecture.html">Appweb Architecture</a></li>
             </ul>
 <!-- EndDsi -->
@@ -163,7 +160,7 @@
             the certificate is valid. It may have additional information (or extensions) as well as administrative
             information for the Certificate Authority's use, such as a serial number.</p>
             <h4><a name="table1" id="table1"></a>Table 1: Certificate Information</h4>
-            <table summary="" width="100%">
+            <table title="cert">
                 <tbody>
                     <tr>
                         <td class="pivot">Subject</td>
@@ -178,7 +175,7 @@
                         <td>Not Before Date, Not After Date</td>
                     </tr>
                     <tr>
-                        <td nowrap="nowrap" class="pivot">Administrative Information</td>
+                        <td class="nowrap" class="pivot">Administrative Information</td>
                         <td>Version, Serial Number</td>
                     </tr>
                     <tr>
@@ -192,7 +189,7 @@
             Distinguished names are defined by the X.509 standard, which defines the fields, field names, and
             abbreviations used to refer to the fields (see <a href="#table2">Table 2</a>).</p>
             <h4><a name="table2" id="table2"></a>Table 2: Distinguished Name Information</h4>
-            <table summary="">
+            <table title="info">
                 <thead>
                     <tr>
                         <th>DN Field</th>
@@ -324,8 +321,9 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
         cryptography, digests, and signatures. This allows algorithm selection for specific servers to be made based on
         legal, export or other concerns, and also enables the protocol to take advantage of new algorithms. Choices are
         negotiated between client and server at the start of establishing a protocol session.</p>
-        <h3>Table 4: Versions of the SSL protocol<a name="table4" id="table4"></a></h3>
-        <table summary="" width="100%">
+        <h3>Table 4: Versions of the SSL protocol</h3>
+        <a name="table4" id="table4"></a>
+        <table title="protocols">
             <thead>
                 <tr>
                     <th>Version</th>
@@ -467,7 +465,7 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
-            All rights reserved. Embedthis, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
 <!-- EndDsi -->

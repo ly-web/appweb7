@@ -9,12 +9,12 @@ HTTP(1)                          User Commands                         HTTP(1)
 
        [<I>--benchmark  </I>]  [<I>--chunk  size  </I>] [<I>--continue</I>] [<I>--cookie cookieString</I>]
        [<I>--data</I>]  [<I>--debugger</I>]  [<I>--delete</I>]  [<I>--form  string</I>]  [<I>--header   'key:</I>
-       <I>value'</I>]  [<I>--host hostName</I>] [<I>--http version</I>] [<I>--iterations count</I>] [<I>--log</I>
-       <I>logSpec</I>]  [<I>--method  HTTP_METHOD</I>]  [<I>--nofollow</I>]  [<I>--noout</I>]  [<I>--password</I>
-       <I>pass</I>]  [<I>--post</I>]  [<I>--printable</I>]  [<I>--put</I>] [<I>--range byteRanges</I>] [<I>--retries</I>
-       <I>count</I>] [<I>--sequence</I>] [<I>--showCode</I>] [<I>--showHeaders</I>] [<I>--single</I>]  [<I>--timeout</I>
-       <I>seconds</I>]   [<I>--threads   count</I>]  [<I>--upload</I>]  [<I>--user  name</I>]  [<I>--verbose</I>]
-       [<I>--workers count</I>]
+       <I>value'</I>]   [<I>--host   hostName</I>]   [<I>--iterations  count</I>]  [<I>--log  logSpec</I>]
+       [<I>--method HTTP_METHOD</I>] [<I>--nofollow</I>] [<I>--noout</I>] [<I>--out file</I>]  [<I>--password</I>
+       <I>pass</I>]  [<I>--post</I>]  [<I>--printable</I>]  [<I>--protocol  version</I>]  [<I>--put</I>] [<I>--range</I>
+       <I>byteRanges</I>] [<I>--retries count</I>] [<I>--sequence</I>] [<I>--showHeaders</I>]  [<I>--showSta-</I>
+       <I>tus</I>]   [<I>--single</I>]  [<I>--threads  count</I>]  [<I>--timeout  seconds</I>]  [<I>--upload</I>]
+       [<I>--user name</I>] [<I>--verbose</I>] [<I>--workers count</I>]
 
 <B>DESCRIPTION</B>
        The http command issues HTTP commands to  retrieve  files  from  a  web
@@ -62,41 +62,44 @@ HTTP(1)                          User Commands                         HTTP(1)
               www.myHost.com:8888" were used with the URL "/index.html",  then
               http will retrieve http://www.myHost.com:8888.
 
-       <B>--http HTTP_VERSION</B>
-              Use  the  specified  HTTP protocol. httpVersion should be either
-              '0' for HTTP/1.0 or 1 for HTTP/1.1.
-
        <B>--iterations count</B>
-              Retrieve the URLs iterations times.  Useful  for  load  testing.
+              Retrieve  the  URLs  iterations  times. Useful for load testing.
               This switch can also be abbreviated as <B>-i</B>.
 
        <B>--log logSpec</B>
-              Specify  a  file  to  log  messages.  The syntax is: <B>"--log log-</B>
-              <B>Name[,moduleName][:logLevel]"</B>.  Level 3 will trace  the  request
-              and response headers.
+              Specify a file to log messages.   The  syntax  is:  <B>"--log  log-</B>
+              <B>File[:logLevel]"</B>.   Level  3 will trace the request and response
+              headers.
 
        <B>--method method</B>
-              Set  the  HTTP  method.  Values  may be "GET", "PUT", "OPTIONS",
+              Set the HTTP method. Values  may  be  "GET",  "PUT",  "OPTIONS",
               "TRACE".
 
        <B>--nofollow</B>
-              Don't automatically follow redirects.  Normal  behaviour  is  to
-              follow  redirects and reissue the request if the server responds
+              Don't  automatically  follow  redirects.  Normal behaviour is to
+              follow redirects and reissue the request if the server  responds
               with a redirection response (30X response).
 
        <B>--noout</B>
-              Run in quiet mode and do no output. Suppress  tracing  requests.
+              Run  in  quiet mode and do no output. Suppress tracing requests.
               This switch can also be abbreviated as <B>-n </B>or as <B>--quiet </B>or <B>-q</B>.
 
+       <B>--out file</B>
+              Save response output to the given file.
+
        <B>--password passPhrase</B>
-              Specify  a  password  to  send with the request. Requires a user
+              Specify a password to send with the  request.  Requires  a  user
               name to be also specified via --user.
 
        <B>--post </B>Issue a POST request. This is an alias for --method POST.
 
        <B>--printable</B>
-              Make binary output printable by printing  hex  digits  for  each
+              Make  binary  output  printable  by printing hex digits for each
               character.
+
+       <B>--protocol HTTP_VERSION</B>
+              Use the specified HTTP protocol. httpVersion  should  be  either
+              '0' for HTTP/1.0 or 1 for HTTP/1.1.
 
        <B>--put  </B>Issue a PUT request. This is an alias for --method PUT.
 
@@ -115,12 +118,12 @@ HTTP(1)                          User Commands                         HTTP(1)
        <B>--retries retryCount</B>
               Retry failed requests this number of times.
 
-       <B>--showCode</B>
-              Output  the HTTP response code. If this switch is used, the com-
-              mand will always exit with zero status.
-
        <B>--showHeaders</B>
               Output HTTP headers. Useful for debugging.
+
+       <B>--showStatus</B>
+              Output  the HTTP response code. If this switch is used, the com-
+              mand will always exit with zero status.
 
        <B>--single</B>
               Single step between requests by pausing for  user  input  before

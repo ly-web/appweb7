@@ -10,7 +10,7 @@ PRODUCT=appweb
 EXE=
 INC="${ROOT_DIR}/usr/include"
 MAN="${ROOT_DIR}/usr/share/man"
-PROGRAMS="ejs ejsc ejsmod ejssql ejspage appweb http auth"
+PROGRAMS="appman appweb http auth esp"
 
 if [ -x "${ROOT_DIR}/usr/local/bin" ] ; then
     BIN="${ROOT_DIR}/usr/local/bin"
@@ -32,10 +32,11 @@ done
 version=
 
 if [ "$TASK" = "Remove" ] ; then
-    for name in $PROGRAMS
-    do
+    for name in $PROGRAMS ; do
+        # echo rm -f "${BIN}/$name"
         rm -f "${BIN}/$name"
     done
+    # echo rm -fr "${INC}/${PRODUCT}"
     rm -fr "${INC}/${PRODUCT}"
 else
     if [ "$version" = "" ] ; then

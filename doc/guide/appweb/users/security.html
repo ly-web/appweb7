@@ -1,13 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!-- BeginDsi "dsi/head.html" -->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>Embedthis Appweb 4.0.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
-    <meta name="description" content="Embedthis Sofware provides open source embedded web servers for devices 
-        and applications." />
+    <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
+        devices and applications." />
 	<meta name="robots" content="index,follow" />
 	<link href="../../../doc.css" rel="stylesheet" type="text/css" />
 	<link href="../../../print.css" rel="stylesheet" type="text/css" media="print"/>
@@ -18,16 +17,16 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://www.appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
              <div class="search">
-                 <form method="get" action="http://www.google.com/search" title="Search www.ejscript.org">
+                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
                      <p>
-                        <label title="Search">Search</label> 
+                        <label for="q" title="Search">Search</label> 
                         <input type="text" id="q" name="q" size="15" maxlength="255" />
                         <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="ejscript.org" /> 
-                        <input type="hidden" name="sitesearch" value="ejscript.org" />
+                        <input type="hidden" name="domains" value="appwebserver.org" /> 
+                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
                     </p>
                  </form>
               </div>
@@ -41,8 +40,8 @@
     </div>
     <div class="content">
         <div class="contentRight">
-            <h2>Quick Nav</h2>
-            <ul>
+            <h1>Quick Nav</h1>
+            <ul class="nav">
                 <li><a href="#updates">Updates</a></li>
                 <li><a href="#account">Appweb User Account</a></li>
                 <li><a href="#directoryPermissions">Directory Permissions</a></li>
@@ -52,11 +51,12 @@
                 <li><a href="#sandBoxing">Sandboxing</a></li>
             </ul>
 <!-- BeginDsi "dsi/usersGuideSeeAlso.html" -->
-            <h2>See Also</h2>
-            <ul>
+            <h1>See Also</h1>
+            <ul class="nav">
                 <li><a href="../../../guide/appweb/users/index.html">User Guide Overview</a></li>
                 <li><a href="../../../guide/appweb/users/configuration.html">Configuring Appweb</a></li>
                 <li><a href="../../../guide/appweb/users/ports.html">Ports and Binding</a></li>
+                <li><a href="../../../guide/appweb/users/lang.html">Multi-Language Support</a></li>
                 <li><a href="../../../guide/appweb/users/authorization.html">User Authorization</a></li>
                 <li><a href="../../../guide/appweb/users/logFiles.html">Log Files</a></li>
                 <li><a href="../../../guide/appweb/users/vhosts.html">Virtual Hosts</a></li>
@@ -66,9 +66,6 @@
                 <li><a href="../../../guide/appweb/users/stages.html">Pipeline Stages</a></li>
                 <li><a href="../../../guide/appweb/users/client.html">HTTP Client</a></li>
                 <li><a href="../../../guide/appweb/users/frameworks.html">Web Frameworks</a></li>
-                <li><a href="../../../guide/appweb/users/ejs.html">Ejscript</a></li>
-                <li><a href="../../../guide/appweb/users/php.html">PHP</a></li>
-                <li><a href="../../../guide/appweb/users/cgi.html">CGI</a></li>
                 <li><a href="../../../ref/appweb/architecture.html">Appweb Architecture</a></li>
             </ul>
 <!-- EndDsi -->
@@ -76,7 +73,7 @@
         <div class="contentLeft">
             <h1>Security Considerations</h1>
             <p>Securing applications that are accessible to the Internet is not a trivial task. This page outlines some
-            of the issues and offers tips to help you secure your application using the Embedthis Appweb
+            of the issues, and offers tips to help you secure your application using the Embedthis Appweb
             product.</p><a name="updates" id="updates"></a>
             <h2 class="section">Updates</h2>
             <p>Even the best application or HTTP server can experience some security vulnerabilities that are
@@ -95,10 +92,10 @@
             Appweb will be configured to run in the <b>nobody</b> account on Unix. You may modify the user and group
             account for Appweb by changing the Appweb <a href="configuration.html">configuration file</a>.</p>
             <h3>Windows Account</h3>
-            <p>On Windows when running as a system service, Appweb will run using the LocalSystem account. This account
+            <p>On Windows, when running as a system service, Appweb will run using the LocalSystem account. This account
             has no privileges to access the network using network drives, named pipes, RPC or DCOM. However, it has
             considerable privileges locally. It is suggested that you create a dedicated account for Appweb to minimize
-            the priviliges available should Appweb be compromised.</p>
+            the privileges available should Appweb be compromised.</p>
             <p>When creating an account for Appweb, ensure you do the following:</p>
             <ul>
                 <li>Using the Group Policy manager, grant the account the privilege of "Act as part of the operating
@@ -109,9 +106,9 @@
                 <li>Give the account read and execute rights to the appweb.exe and the DLLs in the libs directory.</li>
             </ul><a name="directoryPermissions" id="directoryPermissions"></a>
             <h2 class="section">Directory and File Permissions</h2>
-            <p>When Appweb is installed, it is configured for maximum security. This section explains the policy used,
+            <p>When Appweb is installed, it is configured for maximum security. This section explains the policy 
             should you need to move or modify files and directories.</p>
-            <p>To enhance security, you need to consider the directory and file permissions for three classes of
+            <p>To enhance security you need to consider the directory and file permissions for three classes of
             content:</p>
             <ul>
                 <li>Pages served by the HTTP server</li>
@@ -128,8 +125,8 @@
             user account.</p>
             <h3>ServerRoot Permissions</h3>
             <p>The root directory for Appweb is called the ServerRoot directory and is defined by the ServerRoot
-            directive in the configuration file. The ServerRoot directory and the logs and lib directory below it
-            should be owned by <b>root</b> (or admin), and should be in the group <b>root</b> (or administrators), and
+            directive in the configuration file. The ServerRoot directory, and the logs and lib directory below it,
+            should be owned by <b>root</b> (or admin), and should be in the group <b>root</b> (or administrators). They
             should only be writable by this specific user and group.</p>
             <p>For Linux, these commands will ensure the privileges are correctly set up:</p>
             <pre>
@@ -153,11 +150,11 @@ chmod 755  . lib logs
             <h3>PHP</h3>
             <p>The php.ini file controls the setup and execution of the PHP web framework. The following table lists
             several parameters that should be set for enhanced security:</p>
-            <table summary="" width="100%">
+            <table title="parameters">
                 <thead>
                     <tr>
-                        <td>Parameter</td>
-                        <td>Description</td>
+                        <th>Parameter</th>
+                        <th>Description</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -177,7 +174,7 @@ chmod 755  . lib logs
                         access.</td>
                     </tr>
                     <tr>
-                        <td nowrap="nowrap">safe_mode_exec_dir = directory[:...]</td>
+                        <td class="nowrap">safe_mode_exec_dir = directory[:...]</td>
                         <td>Define a set of directories that will be the only directories from which PHP can execute
                         programs.</td>
                     </tr>
@@ -203,13 +200,12 @@ chmod 755  . lib logs
             <pre>
 AddType application/x-httpd-php .web
 </pre>
-            <h2 class="section">Embedded Gateway Interface</h2>
-            <p>EGI forms are secure from file-based permission flaws because they run in-process and access no
-            files.</p><a name="ssl" id="ssl"></a>
-            <p>However, this does not mean that EGI forms are immune to security flaws. It is highly recommended that
-            you use the <a href="../../../api/mpr.html">MPR</a> services for all your EGI code. This portable runtime
+            <h2 class="section">Embedded Server Pages</h2>
+            <p>ESP applications are not immune to security flaws. It is highly recommended that
+            you use the <a href="../../../api/mpr.html">MPR</a> services for all your ESP code. This portable runtime
             has been extensively tested and includes routines to guard against common buffer overflows and other such
             exploits.</p>
+            <a name="ssl" id="ssl"></a>
             <h2 class="section">SSL Servers</h2>
             <p>If you configure a SSL virtual server, remember to define a separate DocumentRoot if you want to only
             serve private content to SSL users. Otherwise those pages will also be visible via the default
@@ -229,10 +225,10 @@ AddType application/x-httpd-php .web
             relaxed set of defaults that will permit a wide range of requests.</p>
             <h3>Sandbox Directives</h3>
             <p>The sandbox directives are:</p>
-            <table summary="">
+            <table title="sandbox">
                 <tbody>
                     <tr>
-                        <td class="pivot">LimitChunkSize</td>
+                        <td class="pivot">LimitChunk</td>
                         <td>Maximum size of chunks when using Transfer Chunk Encoding</td>
                     </tr>
                     <tr>
@@ -244,11 +240,11 @@ AddType application/x-httpd-php .web
                         <td>Maximum size of the incoming request body</td>
                     </tr>
                     <tr>
-                        <td class="pivot">LimitRequestFields</td>
-                        <td>Maximum number of headers in the request</td>
+                        <td class="pivot">LimitRequestHeaderLines</td>
+                        <td>Maximum number of header lines in the request</td>
                     </tr>
                     <tr>
-                        <td class="pivot">LimitRequestFieldSize</td>
+                        <td class="pivot">LimitRequestHeader</td>
                         <td>Maximum size of the request header</td>
                     </tr>
                     <tr>
@@ -256,23 +252,19 @@ AddType application/x-httpd-php .web
                         <td>Pipeline stage buffer size</td>
                     </tr>
                     <tr>
-                        <td class="pivot">LimitUrl</td>
-                        <td>Maximum size of a URL</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">SendBufferSize</td>
-                        <td>Size of the TCP/IP buffer to use for requests</td>
+                        <td class="pivot">LimitUri</td>
+                        <td>Maximum size of a URI</td>
                     </tr>
                     <tr>
                         <td class="pivot">StartThreads</td>
-                        <td>Number of threads to preallocate in the thread pool</td>
+                        <td>Number of threads to pre-allocate in the thread pool</td>
                     </tr>
                     <tr>
-                        <td class="pivot">ThreadLimit</td>
+                        <td class="pivot">TThreads</td>
                         <td>Maximum number of threads to allocate on demand for the thread pool</td>
                     </tr>
                     <tr>
-                        <td class="pivot">ThreadStackSize</td>
+                        <td class="pivot">ThreadStack</td>
                         <td>Size of the per-thread stack</td>
                     </tr>
                 </tbody>
@@ -290,7 +282,7 @@ AddType application/x-httpd-php .web
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
-            All rights reserved. Embedthis, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
 <!-- EndDsi -->

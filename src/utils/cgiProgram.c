@@ -24,6 +24,7 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 
 #include <errno.h>
+#include <ctype.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -58,8 +59,11 @@
 	#define rmdir(a)    _rmdir(a)
 #else
 #include <unistd.h>
+
+#if VXWORKS
 /* Just for VxWorks */
 extern char *strdup(const char *);
+#endif
 #endif
 
 /*********************************** Locals ***********************************/
@@ -220,7 +224,6 @@ int main(int argc, char *argv[], char *envp[])
         fprintf(stderr, "Error at cgiProgram:%d\n", __LINE__);
         exit(255);
     }
-
     method = getenv("REQUEST_METHOD") ;
     if (method == 0) {
         method = "GET";
@@ -324,6 +327,8 @@ int main(int argc, char *argv[], char *envp[])
     write(1, MPR_CMD_VXWORKS_EOF, MPR_CMD_VXWORKS_EOF_LEN);
     write(2, MPR_CMD_VXWORKS_EOF, MPR_CMD_VXWORKS_EOF_LEN);
 #endif
+    fflush(stderr);
+    fflush(stdout);
     return 0;
 }
 
@@ -447,7 +452,7 @@ static void printPost(char *buf, size_t len)
 
     } else if (buf) {
         if (len < (50 * 1000)) {
-            write(1, buf, len);
+            if (write(1, buf, (int) len) != len) {}
         } else {
             printf("<H2>Post Data %d bytes found</H2>\r\n", (int) len);
         }
@@ -502,7 +507,7 @@ static int getPostData(char **bufp, size_t *lenp)
             }
             bufsize = len + size + 1;
         }
-        bytes = read(0, &buf[len], size);
+        bytes = read(0, &buf[len], (int) size);
         if (bytes < 0) {
             error("Couldn't read CGI input %d", errno);
             return -1;
@@ -524,9 +529,18 @@ static int getPostData(char **bufp, size_t *lenp)
 
 static int getVars(char ***cgiKeys, char *buf, size_t buflen)
 {
-    char    **keyList;
-    char    *eq, *cp, *pp;
+    char    **keyList, *eq, *cp, *pp, *newbuf;
     int     i, keyCount;
+
+    if (buflen > 0) {
+        if ((newbuf = malloc(buflen + 1)) == 0) {
+            error("Can't allocate memory");
+            return 0;
+        }
+        strncpy(newbuf, buf, buflen);
+        newbuf[buflen] = '\0';
+        buf = newbuf;
+    }
 
     /*
         Change all plus signs back to spaces
@@ -539,7 +553,6 @@ static int getVars(char ***cgiKeys, char *buf, size_t buflen)
             keyCount++;
         }
     }
-
     if (keyCount == 0) {
         return 0;
     }
@@ -573,18 +586,17 @@ static char hex2Char(char *s)
     char    c;
 
     if (*s >= 'A') {
-        c = (*s & 0xDF) - 'A';
+        c = toupper(*s & 0xFF) - 'A' + 10;
     } else {
         c = *s - '0';
     }
     s++;
 
     if (*s >= 'A') {
-        c = c * 16 + ((*s & 0xDF) - 'A');
+        c = (c * 16) + (toupper(*s & 0xFF) - 'A') + 10;
     } else {
-        c = c * 16 + (*s - '0');
+        c = (c * 16) + (toupper(*s & 0xFF) - '0');
     }
-
     return c;
 }
 
@@ -662,7 +674,7 @@ int _exit() {
     under the terms of the GNU General Public License as published by the
     Free Software Foundation; either version 2 of the License, or (at your
     option) any later version. See the GNU General Public License for more
-    details at: http://www.embedthis.com/downloads/gplLicense.html
+    details at: http://embedthis.com/downloads/gplLicense.html
   
     This program is distributed WITHOUT ANY WARRANTY; without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -671,7 +683,7 @@ int _exit() {
     proprietary programs. If you are unable to comply with the GPL, you must
     acquire a commercial license to use this software. Commercial licenses
     for this software and support services are available from Embedthis
-    Software at http://www.embedthis.com
+    Software at http://embedthis.com
   
     Local variables:
     tab-width: 4

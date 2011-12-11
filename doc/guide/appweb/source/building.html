@@ -1,13 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!-- BeginDsi "dsi/head.html" -->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>Embedthis Appweb 4.0.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
-    <meta name="description" content="Embedthis Sofware provides open source embedded web servers for devices 
-        and applications." />
+    <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
+        devices and applications." />
 	<meta name="robots" content="index,follow" />
 	<link href="../../../doc.css" rel="stylesheet" type="text/css" />
 	<link href="../../../print.css" rel="stylesheet" type="text/css" media="print"/>
@@ -18,16 +17,16 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://www.appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
              <div class="search">
-                 <form method="get" action="http://www.google.com/search" title="Search www.ejscript.org">
+                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
                      <p>
-                        <label title="Search">Search</label> 
+                        <label for="q" title="Search">Search</label> 
                         <input type="text" id="q" name="q" size="15" maxlength="255" />
                         <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="ejscript.org" /> 
-                        <input type="hidden" name="sitesearch" value="ejscript.org" />
+                        <input type="hidden" name="domains" value="appwebserver.org" /> 
+                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
                     </p>
                  </form>
               </div>
@@ -41,7 +40,7 @@
     </div>
     <div class="content">
         <div class="contentRight">
-            <h2>Quick Nav</h2>
+            <h1>Quick Nav</h1>
             <ul>
                 <li><a href="#platforms">Supported Platforms</a></li>
                 <li><a href="#overview">Build Overview</a></li>
@@ -49,19 +48,17 @@
                 <li><a href="#solutions">Build Solutions</a></li>
             </ul>
 <!-- BeginDsi "dsi/sourceSeeAlso.html" -->
-            <h2>See Also</h2>
-            <ul>
+            <h1>See Also</h1>
+            <ul class="nav">
                 <li><a href="../../../guide/appweb/source/index.html">Working with Source</a></li>
                 <li><a href="../../../guide/appweb/source/building.html">Building From Source</a></li>
                 <li><a href="../../../guide/appweb/source/steps.html">Build Steps</a></li>
                 <li><a href="../../../guide/appweb/source/configure.html">Configure Program</a></li>
                 <li><a href="../../../guide/appweb/source/make.html">Make Scheme</a></li>
                 <li><a href="../../../guide/appweb/source/porting.html">Porting Guide</a></li>
-                <li><a href="../../../guide/appweb/source/testing.html">Testing Appweb</a></li>
 
                 <li><a href="../../../ref/appweb/index.html">Programmers Reference</a></li>
                 <li><a href="../../../ref/appweb/architecture.html">Appweb Architecture</a></li>
-                <li><a href="../../../ejs/ref/ejs/webArchitecture.html">Ejscript Web Framework</a></li>
                 <li><a href="../../../api/native.html">Native APIs</a></li>
 
                 <li><a href="../../../guide/appweb/programmers/embedding.html">Embedding Appweb</a></li>
@@ -96,7 +93,7 @@
             the <a href="porting.html">Porting Guide</a> for more details. <a name="overview" id="overview"></a></p>
             <h2 class="section">Build Overview</h2>
             <p>The build procedure is substantially the same for all supported platforms. A <b>configure</b> program is
-            used to select features, options and modules, and the GNU <b>make</b> program is used to build the
+            used to select features, options, and modules, and the GNU <b>make</b> program is used to build the
             software.</p>
             <p>Building utilizes the Embedthis Build Scheme which is a cross-platform and cross-targeting build system
             that offers:</p>
@@ -105,8 +102,17 @@
                 <li>Cross-compilation and cross-targeting</li>
                 <li>Building using standard tools</li>
                 <li>Reduced complexity of building</li>
-            </ul><a name="steps" id="steps"></a>
-            <h2 class="section">Steps to Build</h2>
+            </ul>
+            <h3>IDE Builds</h3>
+            <p>On MAC OS X and Windows, you can also build Appweb using the Xcode and Visual Studio IDEs. The Appweb
+            source code contains Xcode and Visual Studio projects under the projects/MACOSX and projects/WIN directories.</p>
+            <p>However, when building Appweb with an IDE, you do not have the flexibility provided by the configure/make 
+            build process. The IDEs will build a default, basic configuration. If you require customizing the Appweb 
+            build, we recommend that you use the configure/make approach.</p>
+            
+            
+            <a name="steps" id="steps"></a>
+            <h2 class="section">Steps to build with configure/make</h2>
             <p>Read the <a href="steps.html">Build Steps</a> for detailed build instructions and
             background.</p><a name="solutions" id="solutions"></a>
             <h2 class="section">Build Solutions</h2>
@@ -114,6 +120,14 @@
             <ul>
                 <li><a href="openwrt.html">OpenWrt</a>: Linux firmware for embedded devices</li>
             </ul>
+            <h2>Testing Appweb</h2>
+            <p>The Appweb source distribution has an extensive suite of unit tests to verify Appweb's execution. You
+            can run the unit tests from the command line via:</p>
+            <pre>
+make test
+</pre>
+            <p>You are welcome to write more unit tests and submit them to <a href=
+            "mailto:dev@embedthis.com">dev@embedthis.com</a>.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
@@ -121,7 +135,7 @@
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
-            All rights reserved. Embedthis, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
 <!-- EndDsi -->

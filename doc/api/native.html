@@ -1,13 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!-- BeginDsi "dsi/head.html" -->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>Embedthis Appweb 4.0.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
-    <meta name="description" content="Embedthis Sofware provides open source embedded web servers for devices 
-        and applications." />
+    <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
+        devices and applications." />
 	<meta name="robots" content="index,follow" />
 	<link href="../doc.css" rel="stylesheet" type="text/css" />
 	<link href="../print.css" rel="stylesheet" type="text/css" media="print"/>
@@ -18,16 +17,16 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://www.appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
              <div class="search">
-                 <form method="get" action="http://www.google.com/search" title="Search www.ejscript.org">
+                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
                      <p>
-                        <label title="Search">Search</label> 
+                        <label for="q" title="Search">Search</label> 
                         <input type="text" id="q" name="q" size="15" maxlength="255" />
                         <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="ejscript.org" /> 
-                        <input type="hidden" name="sitesearch" value="ejscript.org" />
+                        <input type="hidden" name="domains" value="appwebserver.org" /> 
+                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
                     </p>
                  </form>
               </div>
@@ -43,15 +42,14 @@
         <div class="contentRight">
             
 <!-- BeginDsi "dsi/progRefSeeAlso.html" -->
-            <h2>See Also</h2>
-            <ul>
+            <h1>See Also</h1>
+            <ul class="nav">
                 <li><a href="../ref/appweb/index.html">Programmers Reference</a></li>
                 <li><a href="../ref/appweb/architecture.html">Appweb Architecture</a></li>
-                <li><a href="../ejs/ref/ejs/webArchitecture.html">Ejscript Web Framework</a></li>
                 <li><a href="../api/native.html">Native APIs</a></li>
                 <li><a href="../api/appweb.html">Appweb Native API</a></li>
-                <li><a href="../api/ejs.html">Ejscript Native API</a></li>
-                <li><a href="../ejs/api/ejscript/index.html">Ejscript Library</a></li>
+                <li><a href="../api/esp.html">ESP Native API</a></li>
+                <li><a href="../api/http.html">Http Native API</a></li>
                 <li><a href="../api/mpr.html">MPR Native API</a></li>
 
                 <li><a href="../guide/appweb/programmers/embedding.html">Embedding Appweb</a></li>
@@ -65,33 +63,38 @@
 <!-- EndDsi -->
 
             <ul>
-                <li><a href="../api/ejscript/index.html" target="new">Script Library</a></li>
                 <li><a href="../api/native.html">Native APIs</a></li>
             </ul>
         </div>
         <div class="contentLeft">
             <h1>Native APIs</h1>
-            <p>The Ejscript Native APIs consist of C language headers, function prototypes, structure definitions and
-            defines. They are divided into one of these groups.</p>
-            <table summary="" width="100%">
+            <p>The Appweb Native APIs consist of C language headers, function prototypes, structure definitions and
+            defines. They are divided into one of these areas.</p>
+            <table title="APIs" class="full">
                 <thead>
                     <tr>
-                        <td>Area</td>
-                        <td>Description</td>
+                        <th>Area</th>
+                        <th>Description</th>
                     </tr>
                 </thead>
+                <tbody>
                 <tr>
                     <td><a href="appweb.html">Appweb</a></td>
                     <td>Appweb Http API</td>
                 </tr>
                 <tr>
-                    <td><a href="ejs.html">Ejscript Interpreter</a></td>
-                    <td>Ejscript Language (Javascript) Interpreter API</td>
+                    <td><a href="esp.html">ESP</a></td>
+                    <td>Embedded Server Pages API</td>
                 </tr>
                 <tr>
-                    <td nowrap="nowrap"><a href="mpr.html">Portable Runtime</a></td>
-                    <td>Foundation Platform Runtime API</td>
+                    <td><a href="http.html">Http</a></td>
+                    <td>Http Client and Server Library API</td>
                 </tr>
+                <tr>
+                    <td class="nowrap"><a href="mpr.html">MPR</a></td>
+                    <td>Multithreaded Platform Runtime API</td>
+                </tr>
+                </tbody>
             </table>
         </div>
     </div>
@@ -100,7 +103,7 @@
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
-            All rights reserved. Embedthis, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
 <!-- EndDsi -->

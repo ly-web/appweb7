@@ -3,10 +3,9 @@
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
 
-    usage: %s [options] [IpAddr][:port] [documentRoot]
+    usage: appweb [options] [IpAddr][:port] [documents]
             --config configFile     # Use given config file instead 
             --debugger              # Disable timeouts to make debugging easier
-            --ejs name:path         # Create an ejs application at the path
             --home path             # Set the home working directory
             --log logFile:level     # Log to file file at verbosity level
             --name uniqueName       # Name for this instance
@@ -26,10 +25,10 @@
 typedef struct App {
     Mpr         *mpr;
     MaAppweb    *appweb;
-    MaMeta      *meta;
-    char        *script;
-    char        *documentRoot;
-    char        *serverRoot;
+    MaServer    *server;
+    MprSignal   *traceToggle;
+    char        *documents;
+    char        *home;
     char        *configFile;
     char        *pathVar;
     int         workers;
@@ -39,18 +38,18 @@ static App *app;
 
 /***************************** Forward Declarations ***************************/
 
-extern void appwebOsTerm();
-static int  changeRoot(cchar *jail);
-extern int  checkEnvironment(cchar *program);
-static int  findConfigFile();
+static int changeRoot(cchar *jail);
+static int checkEnvironment(cchar *program);
+static int findConfigFile();
 static void manageApp(App *app, int flags);
-static int  initialize(cchar *ip, int port);
+static int initialize(cchar *ip, int port);
+static void traceHandler(void *ignored, MprSignal *sp);
 static void usageError();
 
 #if BLD_UNIX_LIKE
 static int  unixSecurityChecks(cchar *program, cchar *home);
 #elif BLD_WIN_LIKE
-static int writePort(HttpHost *host);
+static int writePort(MaServer *server);
 static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
 #endif
 
@@ -68,29 +67,32 @@ MAIN(appweb, int argc, char **argv)
     Mpr     *mpr;
     cchar   *ipAddrPort, *argp, *jail;
     char    *ip;
-    int     argind, port;
+    int     argind, port, status;
 
     ipAddrPort = 0;
     ip = 0;
     jail = 0;
     port = -1;
+    argv[0] = "appweb";
 
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
     }
+    mprSetAppName(BLD_PRODUCT, BLD_NAME, BLD_VERSION);
+
     if ((app = mprAllocObj(App, manageApp)) == NULL) {
         exit(2);
     }
     mprAddRoot(app);
     mprAddStandardSignals();
-    
+
     argc = mpr->argc;
     argv = mpr->argv;
     app->mpr = mpr;
     app->workers = -1;
     app->configFile = BLD_CONFIG_FILE;
-    app->serverRoot = BLD_SERVER_ROOT;
-    app->documentRoot = app->serverRoot;
+    app->home = BLD_SERVER_ROOT;
+    app->documents = app->home;
 
 #if BLD_FEATURE_ROMFS
     extern MprRomInode romFiles[];
@@ -102,7 +104,7 @@ MAIN(appweb, int argc, char **argv)
         if (*argp != '-') {
             break;
         }
-        if (strcmp(argp, "--config") == 0) {
+        if (strcmp(argp, "--config") == 0 || strcmp(argp, "--conf") == 0) {
             if (argind >= argc) {
                 usageError();
             }
@@ -119,19 +121,13 @@ MAIN(appweb, int argc, char **argv)
         } else if (strcmp(argp, "--debugger") == 0 || strcmp(argp, "-D") == 0) {
             mprSetDebugMode(1);
 
-        } else if (strcmp(argp, "--ejs") == 0) {
-            if (argind >= argc) {
-                usageError();
-            }
-            app->script = sclone(argv[++argind]);
-
         } else if (strcmp(argp, "--home") == 0) {
             if (argind >= argc) {
                 usageError();
             }
-            app->serverRoot = mprGetAbsPath(argv[++argind]);
-            if (chdir(app->serverRoot) < 0) {
-                mprError("%s: Can't change directory to %s", mprGetAppName(), app->serverRoot);
+            app->home = mprGetAbsPath(argv[++argind]);
+            if (chdir(app->home) < 0) {
+                mprError("%s: Can't change directory to %s", mprGetAppName(), app->home);
                 exit(4);
             }
 
@@ -139,7 +135,7 @@ MAIN(appweb, int argc, char **argv)
             if (argind >= argc) {
                 usageError();
             }
-            maStartLogging(NULL, argv[++argind]);
+            mprStartLogging(argv[++argind], 1);
             mprSetCmdlineLogging(1);
 
         } else if (strcmp(argp, "--name") == 0 || strcmp(argp, "-n") == 0) {
@@ -155,7 +151,7 @@ MAIN(appweb, int argc, char **argv)
             app->workers = atoi(argv[++argind]);
 
         } else if (strcmp(argp, "--verbose") == 0 || strcmp(argp, "-v") == 0) {
-            maStartLogging(NULL, "stderr:2");
+            mprStartLogging("stderr:2", 1);
             mprSetCmdlineLogging(1);
 
         } else if (strcmp(argp, "--version") == 0 || strcmp(argp, "-V") == 0) {
@@ -168,6 +164,7 @@ MAIN(appweb, int argc, char **argv)
             exit(5);
         }
     }
+
     if (mprStart() < 0) {
         mprUserError("Can't start MPR for %s", mprGetAppName());
         mprDestroy(MPR_EXIT_DEFAULT);
@@ -182,9 +179,9 @@ MAIN(appweb, int argc, char **argv)
         }
         ipAddrPort = argv[argind++];
         if (argc > argind) {
-            app->documentRoot = sclone(argv[argind++]);
+            app->documents = sclone(argv[argind++]);
         }
-        mprParseIp(ipAddrPort, &ip, &port, HTTP_DEFAULT_PORT);
+        mprParseSocketAddress(ipAddrPort, &ip, &port, HTTP_DEFAULT_PORT);
         
     } else if (findConfigFile() < 0) {
         exit(7);
@@ -202,25 +199,27 @@ MAIN(appweb, int argc, char **argv)
     /*
         Service I/O events until instructed to exit
      */
-    mprServiceEvents(-1, 0);
-
-    mprLog(1, "Exiting ...");
+    while (!mprIsStopping()) {
+        mprServiceEvents(-1, 0);
+    }
+    status = mprGetExitStatus();
+    mprLog(1, "Stopping Appweb ...");
     maStopAppweb(app->appweb);
-    mprLog(1, "Exit complete");
     mprDestroy(MPR_EXIT_DEFAULT);
-    return 0;
+    return status;
 }
 
 
 static void manageApp(App *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(app->appweb);
+        mprMark(app->server);
+        mprMark(app->traceToggle);
+        mprMark(app->documents);
         mprMark(app->configFile);
-        mprMark(app->documentRoot);
         mprMark(app->pathVar);
-        mprMark(app->script);
-        mprMark(app->meta);
-        mprMark(app->serverRoot);
+        mprMark(app->home);
     }
 }
 
@@ -231,8 +230,8 @@ static void manageApp(App *app, int flags)
 static int changeRoot(cchar *jail)
 {
 #if BLD_UNIX_LIKE
-    if (chdir(app->serverRoot) < 0) {
-        mprError("%s: Can't change directory to %s", mprGetAppName(), app->serverRoot);
+    if (chdir(app->home) < 0) {
+        mprError("%s: Can't change directory to %s", mprGetAppName(), app->home);
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (chroot(jail) < 0) {
@@ -254,22 +253,23 @@ static int initialize(cchar *ip, int port)
         mprUserError("Can't create HTTP service for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
-    if ((app->meta = maCreateMeta(app->appweb, "default", NULL, NULL, -1)) == 0) {
+    MPR->appwebService = app->appweb;
+
+    if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
         mprUserError("Can't create HTTP server for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
-    if (maConfigureMeta(app->meta, app->configFile, app->serverRoot, app->documentRoot, ip, port) < 0) {
+    if (maConfigureServer(app->server, app->configFile, app->home, app->documents, ip, port) < 0) {
         /* mprUserError("Can't configure the server, exiting."); */
         return MPR_ERR_CANT_CREATE;
-    }
-    if (app->script) {
-        app->meta->defaultHost->loc->script = app->script;
     }
     if (app->workers >= 0) {
         mprSetMaxWorkers(app->workers);
     }
 #if BLD_WIN_LIKE
-    writePort(app->meta->defaultHost);
+    writePort(app->server);
+#else
+    app->traceToggle = mprAddSignalHandler(SIGUSR2, traceHandler, 0, 0, MPR_SIGNAL_AFTER);
 #endif
     return 0;
 }
@@ -285,11 +285,7 @@ static int findConfigFile()
     }
     if (!mprPathExists(app->configFile, R_OK)) {
         if (!userPath) {
-#if UNUSED
-            app->configFile = mprAsprintf("%s/../%s/%s.conf", mprGetAppDir(), BLD_LIB_NAME, mprGetAppName());
-#else
-            app->configFile = mprJoinPath(mprGetAppDir(), mprAsprintf("../%s/%s.conf", BLD_LIB_NAME, mprGetAppName()));
-#endif
+            app->configFile = mprJoinPath(mprGetAppDir(), sfmt("../%s/%s.conf", BLD_LIB_NAME, mprGetAppName()));
         }
         if (!mprPathExists(app->configFile, R_OK)) {
             mprError("Can't open config file %s", app->configFile);
@@ -307,16 +303,16 @@ static void usageError(Mpr *mpr)
     name = mprGetAppName();
 
     mprPrintfError("\n%s Usage:\n\n"
-    "  %s [options] [IPaddress][:port] [documentRoot]\n\n"
+    "  %s [options] [IPaddress][:port] [documents]\n\n"
     "  Options:\n"
     "    --config configFile    # Use named config file instead appweb.conf\n"
     "    --chroot directory     # Change root directory to run more securely (Unix)\n"
     "    --debugger             # Disable timeouts to make debugging easier\n"
-    "    --ejs script           # Ejscript startup script\n"
     "    --home directory       # Change to directory to run\n"
-    "    --name uniqueName      # Unique name for this instance\n"
     "    --log logFile:level    # Log to file file at verbosity level\n"
+    "    --name uniqueName      # Unique name for this instance\n"
     "    --threads maxThreads   # Set maximum worker threads\n"
+    "    --verbose              # Same as --log stderr:2\n\n"
     "    --version              # Output version information\n\n"
     "  Without IPaddress, %s will read the appweb.conf configuration file.\n\n",
         mprGetAppTitle(), name, name, name, name);
@@ -327,7 +323,7 @@ static void usageError(Mpr *mpr)
 /*
     Security checks. Make sure we are staring with a safe environment
  */
-int checkEnvironment(cchar *program)
+static int checkEnvironment(cchar *program)
 {
 #if BLD_UNIX_LIKE
     char   *home;
@@ -335,13 +331,23 @@ int checkEnvironment(cchar *program)
     if (unixSecurityChecks(program, home) < 0) {
         return -1;
     }
-    /*
-        Ensure the binaries directory is in the path. Used by ejs to run ejsweb from /usr/local/bin
-     */
     app->pathVar = sjoin("PATH=", getenv("PATH"), ":", mprGetAppDir(), NULL);
     putenv(app->pathVar);
 #endif
     return 0;
+}
+
+
+/*
+    SIGUSR2 will toggle trace from level 2 to 6
+ */
+static void traceHandler(void *ignored, MprSignal *sp)
+{
+    int     level;
+
+    level = mprGetLogLevel() > 2 ? 2 : 6;
+    mprLog(0, "Change log level to %d", level);
+    mprSetLogLevel(level);
 }
 
 
@@ -388,11 +394,13 @@ static int unixSecurityChecks(cchar *program, cchar *home)
 /*
     Write the port so the monitor can manage
  */ 
-static int writePort(HttpHost *host)
+static int writePort(MaServer *server)
 {
-    char    numBuf[16], *path;
-    int     fd, len;
+    HttpHost    *host;
+    char        numBuf[16], *path;
+    int         fd, len;
 
+    host = mprGetFirstItem(server->http->hosts);
     //  TODO - should really go to a BLD_LOG_DIR
     path = mprJoinPath(mprGetAppDir(), "../.port.log");
     if ((fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0666)) < 0) {
@@ -461,7 +469,7 @@ double  __dummy_appweb_floating_point_resolution(double a, double b, int64 c, in
     under the terms of the GNU General Public License as published by the
     Free Software Foundation; either version 2 of the License, or (at your
     option) any later version. See the GNU General Public License for more
-    details at: http://www.embedthis.com/downloads/gplLicense.html
+    details at: http://embedthis.com/downloads/gplLicense.html
 
     This program is distributed WITHOUT ANY WARRANTY; without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -470,7 +478,7 @@ double  __dummy_appweb_floating_point_resolution(double a, double b, int64 c, in
     proprietary programs. If you are unable to comply with the GPL, you must
     acquire a commercial license to use this software. Commercial licenses
     for this software and support services are available from Embedthis
-    Software at http://www.embedthis.com
+    Software at http://embedthis.com
 
     Local variables:
     tab-width: 4

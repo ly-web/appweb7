@@ -7,10 +7,10 @@
 include		.makedep
 
 compileExtra: \
-	appweb.txt  angel.txt  appwebMonitor.txt  http.txt  makerom.txt  auth.txt \
-	appweb.html angel.html appwebMonitor.html http.html makerom.html auth.html \
-	ejsc.txt  ejsweb.txt  ejs.txt  ejsmod.txt  \
-	ejsc.html ejsweb.html ejs.html ejsmod.html \
+	appweb.txt  appman.txt  appwebMonitor.txt  http.txt  makerom.txt  auth.txt \
+	appweb.html appman.html appwebMonitor.html http.html makerom.html auth.html \
+	esp.txt  \
+	esp.html \
 	regexp.txt \
 	regexp.html
 

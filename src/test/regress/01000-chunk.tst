@@ -4,20 +4,20 @@
  */
 
 let nc
-try { nc = sh("which nc"); } catch {}
+try { nc = Cmd.sh("which nc"); } catch {}
 
-if (test.depth > 0 && nc && Config.OS != "WIN") {
+if (!global.test || (test.depth > 0 && nc && Config.OS != "WIN" && test.config["ejscript"] == 1)) {
     const HTTP = (global.tsession && tsession["http"]) || ":4100"
     const PORT = (global.tsession && tsession["port"]) || "4100"
-    testCmd("cat 01000-chunk.dat | nc 127.0.0.1 " + PORT);
+    Cmd.sh("cat 01000-chunk.dat | nc 127.0.0.1 " + PORT);
 
-    sh("cc -o tcp tcp.c")
+    Cmd.sh("cc -o tcp tcp.c")
     if (Config.OS == "WIN") {
-        testCmd("./tcp.exe 127.0.0.1 " + PORT + " 01000-chunk.dat")
+        Cmd.sh("./tcp.exe 127.0.0.1 " + PORT + " 01000-chunk.dat")
     } else {
-        testCmd("./tcp 127.0.0.1 " + PORT + " 01000-chunk.dat")
+        Cmd.sh("./tcp 127.0.0.1 " + PORT + " 01000-chunk.dat")
     }
 
 } else {
-    test.skip("Test requires nc and depth >= 1")
+    test.skip("Test requires ejscript, nc and depth >= 1")
 }

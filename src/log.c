@@ -9,209 +9,13 @@
 #include    "appweb.h"
 
 /************************************ Code *************************************/
-/*
-    Turn on logging. If no logSpec is specified, default to stdout:2. If the user specifies --log "none" then 
-    the log is disabled. This is useful when specifying the log via the appweb.conf.
- */
-static void logHandler(int flags, int level, cchar *msg)
-{
-    Mpr         *mpr;
-    MprFile     *file;
-    char        *prefix, buf[MPR_MAX_STRING];
 
-    mpr = mprGetMpr();
-    if ((file = mpr->logFile) == 0) {
-        return;
-    }
-    prefix = mpr->name;
-
-    while (*msg == '\n') {
-        mprFprintf(file, "\n");
-        msg++;
-    }
-    if (flags & MPR_LOG_SRC) {
-        mprFprintf(file, "%s: %d: %s\n", prefix, level, msg);
-
-    } else if (flags & (MPR_WARN_SRC | MPR_ERROR_SRC)) {
-        if (flags & MPR_WARN_SRC) {
-            mprSprintf(buf, sizeof(buf), "%s: Warning: %s\n", prefix, msg);
-        } else {
-            mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
-        }
-        mprWriteToOsLog(buf, flags, level);
-
-        /*
-            Use static printing to avoid malloc when the messages are small.
-            This is important for memory allocation errors.
-         */
-        if (strlen(msg) < (MPR_MAX_STRING - 32)) {
-            mprWriteFileString(file, buf);
-        } else {
-            mprFprintf(file, "%s: Error: %s\n", prefix, msg);
-        }
-
-    } else if (flags & MPR_FATAL_SRC) {
-        mprSprintf(buf, sizeof(buf), "%s: Fatal: %s\n", prefix, msg);
-        mprWriteFileString(file, buf);
-        mprWriteToOsLog(buf, flags, level);
-        
-    } else if (flags & MPR_RAW) {
-        mprFprintf(file, "%s", msg);
-    }
-}
-
-
-/*
-    Start error and information logging. Note: this is not per-request access logging.
- */
-int maStartLogging(HttpHost *host, cchar *logSpec)
-{
-    Mpr         *mpr;
-    MprFile     *file;
-    MprPath     info;
-    char        *levelSpec, *spec;
-    int         level, mode;
-    static int  once = 0;
-
-    level = 0;
-    mpr = mprGetMpr();
-
-    if (logSpec == 0) {
-        logSpec = "stderr:0";
-    }
-    if (*logSpec && strcmp(logSpec, "none") != 0) {
-        spec = sclone(logSpec);
-        if ((levelSpec = strrchr(spec, ':')) != 0 && isdigit((int) levelSpec[1])) {
-            *levelSpec++ = '\0';
-            level = atoi(levelSpec);
-        }
-        if (strcmp(spec, "stdout") == 0) {
-            file = mpr->fileSystem->stdOutput;
-        } else if (strcmp(spec, "stderr") == 0) {
-            file = mpr->fileSystem->stdError;
-        } else {
-            mode = O_CREAT | O_WRONLY | O_TEXT;
-            if (host && host->logCount) {
-                mode |= O_APPEND;
-                mprGetPathInfo(spec, &info);
-                if (host->logSize <= 0 || (info.valid && info.size > host->logSize)) {
-                    maRotateLog(spec, host->logCount, host->logSize);
-                }
-            } else {
-                mode |= O_TRUNC;
-            }
-            if ((file = mprOpenFile(spec, mode, 0664)) == 0) {
-                mprError("Can't open log file %s", spec);
-                return -1;
-            }
-            once = 0;
-        }
-        mprSetLogLevel(level);
-        mprSetLogHandler(logHandler);
-        mprSetLogFile(file);
-
-        if (once++ == 0) {
-            mprLog(MPR_CONFIG, "Configuration for %s", mprGetAppTitle(mpr));
-            mprLog(MPR_CONFIG, "---------------------------------------------");
-            mprLog(MPR_CONFIG, "Host:               %s", mprGetHostName(mpr));
-            mprLog(MPR_CONFIG, "CPU:                %s", BLD_CPU);
-            mprLog(MPR_CONFIG, "OS:                 %s", BLD_OS);
-            if (strcmp(BLD_DIST, "Unknown") != 0) {
-                mprLog(MPR_CONFIG, "Distribution:       %s %s", BLD_DIST, BLD_DIST_VER);
-            }
-            mprLog(MPR_CONFIG, "Version:            %s-%s", BLD_VERSION, BLD_NUMBER);
-            mprLog(MPR_CONFIG, "BuildType:          %s", BLD_TYPE);
-            mprLog(MPR_CONFIG, "---------------------------------------------");
-        }
-    }
-    return 0;
-}
-
-
-/*
-    Stop the error and information logging. Note: this is not per-request access logging
- */
-int maStopLogging()
-{
-    MprFile     *file;
-    Mpr         *mpr;
-
-    mpr = mprGetMpr();
-    file = mpr->logFile;
-    if (file) {
-        mprCloseFile(file);
-        mprSetLogHandler(0);
-        mprSetLogFile(0);
-    }
-    return 0;
-}
-
-
-int maStartAccessLogging(HttpHost *host)
-{
-#if !BLD_FEATURE_ROMFS
-    if (host->logPath) {
-        host->log = mprOpenFile(host->logPath, O_CREAT | O_APPEND | O_WRONLY | O_TEXT, 0664);
-        if (host->log == 0) {
-            mprError("Can't open log file %s", host->logPath);
-        }
-    }
-#endif
-    return 0;
-}
-
-
-int maStopAccessLogging(HttpHost *host)
-{
-    host->log = 0;
-    return 0;
-}
-
-
-void maSetAccessLog(HttpHost *host, cchar *path, cchar *format)
-{
-    char    *src, *dest;
-
-    mprAssert(host);
-    mprAssert(path && *path);
-    mprAssert(format);
-    
-    if (format == NULL || *format == '\0') {
-        format = "%h %l %u %t \"%r\" %>s %b";
-    }
-    host->logPath = sclone(path);
-    host->logFormat = sclone(format);
-
-    for (src = dest = host->logFormat; *src; src++) {
-        if (*src == '\\' && src[1] != '\\') {
-            continue;
-        }
-        *dest++ = *src;
-    }
-    *dest = '\0';
-}
-
-
-void maWriteAccessLogEntry(HttpHost *host, cchar *buf, int len)
+void maWriteAccessLogEntry(HttpRoute *route, cchar *buf, int len)
 {
     static int once = 0;
 
-    if (mprWriteFile(host->log, (char*) buf, len) != len && once++ == 0) {
-        mprError("Can't write to access log %s", host->logPath);
-    }
-}
-
-
-void maRotateLog(cchar *path, int count, int maxSize)
-{
-    char    *from, *to;
-    int     i;
-
-    for (i = count - 1; i > 0; i--) {
-        from = mprAsprintf("%s.%d", path, i);
-        to = mprAsprintf("%s.%d", path, i - 1);
-        unlink(to);
-        rename(from, to);
+    if (mprWriteFile(route->log, (char*) buf, len) != len && once++ == 0) {
+        mprError("Can't write to access log %s", route->logPath);
     }
 }
 
@@ -221,17 +25,19 @@ void maLogRequest(HttpConn *conn)
     HttpHost    *host;
     HttpRx      *rx;
     HttpTx      *tx;
+    HttpRoute   *route;
     MprBuf      *buf;
     char        keyBuf[80], *timeText, *fmt, *cp, *qualifier, *value, c;
     int         len;
 
     rx = conn->rx;
     tx = conn->tx;
+    route = rx->route;
     host = httpGetConnContext(conn);
     if (host == 0) {
         return;
     }
-    fmt = host->logFormat;
+    fmt = route->logFormat;
     if (fmt == 0) {
         return;
     }
@@ -276,10 +82,6 @@ void maLogRequest(HttpConn *conn)
             mprPutStringToBuf(buf, rx->parsedUri->host);
             break;
 
-        case 'l':                           /* Supplied in authorization */
-            mprPutStringToBuf(buf, conn->authUser ? conn->authUser : "-");
-            break;
-
         case 'O':                           /* Bytes written (including headers) */
             mprPutIntToBuf(buf, tx->bytesWritten);
             break;
@@ -294,7 +96,7 @@ void maLogRequest(HttpConn *conn)
 
         case 't':                           /* Time */
             mprPutCharToBuf(buf, '[');
-            timeText = mprFormatLocalTime(mprGetTime());
+            timeText = mprFormatLocalTime(MPR_DEFAULT_DATE, mprGetTime());
             mprPutStringToBuf(buf, timeText);
             mprPutCharToBuf(buf, ']');
             break;
@@ -340,7 +142,7 @@ void maLogRequest(HttpConn *conn)
     }
     mprPutCharToBuf(buf, '\n');
     mprAddNullToBuf(buf);
-    mprWriteFile(host->log, mprGetBufStart(buf), mprGetBufLength(buf));
+    mprWriteFile(route->log, mprGetBufStart(buf), mprGetBufLength(buf));
 }
 
 
@@ -360,7 +162,7 @@ void maLogRequest(HttpConn *conn)
     under the terms of the GNU General Public License as published by the 
     Free Software Foundation; either version 2 of the License, or (at your 
     option) any later version. See the GNU General Public License for more 
-    details at: http://www.embedthis.com/downloads/gplLicense.html
+    details at: http://embedthis.com/downloads/gplLicense.html
     
     This program is distributed WITHOUT ANY WARRANTY; without even the 
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
@@ -369,7 +171,7 @@ void maLogRequest(HttpConn *conn)
     proprietary programs. If you are unable to comply with the GPL, you must
     acquire a commercial license to use this software. Commercial licenses 
     for this software and support services are available from Embedthis 
-    Software at http://www.embedthis.com 
+    Software at http://embedthis.com 
     
     Local variables:
     tab-width: 4

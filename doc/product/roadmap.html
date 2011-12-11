@@ -1,13 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!-- BeginDsi "dsi/head.html" -->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>Embedthis Appweb 4.0.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
-    <meta name="description" content="Embedthis Sofware provides open source embedded web servers for devices 
-        and applications." />
+    <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
+        devices and applications." />
 	<meta name="robots" content="index,follow" />
 	<link href="../doc.css" rel="stylesheet" type="text/css" />
 	<link href="../print.css" rel="stylesheet" type="text/css" media="print"/>
@@ -18,16 +17,16 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://www.appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
              <div class="search">
-                 <form method="get" action="http://www.google.com/search" title="Search www.ejscript.org">
+                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
                      <p>
-                        <label title="Search">Search</label> 
+                        <label for="q" title="Search">Search</label> 
                         <input type="text" id="q" name="q" size="15" maxlength="255" />
                         <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="ejscript.org" /> 
-                        <input type="hidden" name="sitesearch" value="ejscript.org" />
+                        <input type="hidden" name="domains" value="appwebserver.org" /> 
+                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
                     </p>
                  </form>
               </div>
@@ -41,15 +40,14 @@
     </div>
     <div class="content">
         <div class="contentRight">
-            <h2>Quick Nav</h2>
+            <h1>Quick Nav</h1>
             <ul>
-                <li><a href="#tasks">Current Roadmap Tasks</a></li>
                 <li><a href="#whatsIn">Next Release</a></li>
                 <li><a href="#schedule">Release Schedule</a></li>
             </ul>
 <!-- BeginDsi "dsi/genSeeAlso.html" -->
-            <h2>See Also</h2>
-            <ul>
+            <h1>See Also</h1>
+            <ul class="nav">
                 <li><a href="../guide/appweb/overview.html">Appweb Overview</a></li>
                 <li><a href="../guide/appweb/features.html">Appweb Features</a></li>
                 <li><a href="../product/releaseNotes.html">Release Notes</a></li>
@@ -67,71 +65,76 @@
         <div class="contentLeft">
             <h1>Appweb Roadmap</h1>
             <p>The Appweb roadmap is created by listening to user input. As such, it is subject to change. This roadmap
-            is not a commitment to product, but the current thinking about future directions.</p>
-            <p>Those who shout loudest -- often get what they ask for. To request a feature, please send email to:</p>
+            is not a commitment to product, but reflects our current thinking about future directions.
+            Those who shout the loudest &mdash; often get what they ask for. To request a feature, please send email to:</p>
             <blockquote>
                 <p><a href="mailto:dev@embedthis.com">dev@embedthis.com</a></p>
             </blockquote>
             <a name="whatsIn" id="whatsIn"></a>
             <h2>What's in the Next Release</h2>
-            <p>The next release in the stable branch will be the Embedthis Appweb 4.0.1. Patches to the stable branch are
-            typically released as issues require.</p>
-            <p>The next release will be Appweb 4.0 and it brings some exciting new functionality.</p>
+            <p>The next release in the stable branch will be the Embedthis Appweb 3.2.3. Patches to the stable branch are
+            typically released incrementally as issues emerge.</p>
+            <p>The next development release will be Appweb 4.0 and it brings some exciting new functionality.</p>
             <ul>
-                <li>Modular Ejscript supporting CommonJS specifications</li>
+                <li>Embedded Server Pages &mdash; C based web framework</li>
+                <li>Request Routing and rewriting</li>
+                <li>Multi-language support</li>
+                <li>Integrated response caching</li>
                 <li>Improved documentation and samples</li>
-                <li>Small footprint Ejscript</li>
+                <li>Improved PHP support</li>
                 <li>Async I/O and enhanced streaming support</li>
+                <li>Modular Ejscript 2</li>
             </ul>
             
-            <p>For Appweb 3, is now regarded as legacy code. Customers should upgrade to Appweb 3. </p>
-            <p>Please tell us what you would like to see at&nbsp;<a href=
-            "mailto:dev@embedthis.com">dev@embedthis.com</a>.</p><a name="schedule" id="schedule"></a>
+            <p>Appweb 2 is now regarded as legacy code. Customers should therefore upgrade to Appweb 4 as soon as
+            possible. </p>
+            
+            <a name="schedule" id="schedule"></a>
             <h2>Release Schedule</h2>
-            <p>Like all good open source, the release schedule is driven mostly by when the software is ready rather
-            than by commercial needs. But here is an outline of our current best guess.</p>
-            <table summary="schedule" width="100%">
+            <p>As with all good open source, our release schedule is driven by software readiness rather
+            than by commercial needs. Nevertheless, here is an outline of our current best estimate.</p>
+            <table title="schedule" class="width">
                 <thead>
                     <tr>
-                        <td>Release</td>
-                        <td>Date</td>
+                        <th>Release</th>
+                        <th>Date</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td nowrap="nowrap">Embedthis Appweb 4.0.0 (dev)</td>
-                        <td>Est Q2 2011</td>
+                        <td class="nowrap">Embedthis Appweb 4.0.0 Beta (dev)</td>
+                        <td>Nov 2011</td>
                     </tr>
                     <tr>
-                        <td nowrap="nowrap">Embedthis Appweb 3.3.2 (stable)</td>
-                        <td>May 2011</td>
+                        <td class="nowrap">Embedthis Appweb 3.3.2 (stable)</td>
+                        <td>Nov 2011</td>
                     </tr>
                     <tr>
-                        <td nowrap="nowrap">Embedthis Appweb 3.3.1 (stable)</td>
+                        <td class="nowrap">Embedthis Appweb 3.3.1 (stable)</td>
                         <td>April 2011</td>
                     </tr>
                     <tr>
-                        <td nowrap="nowrap">Embedthis Appweb 3.3.0 (stable)</td>
+                        <td class="nowrap">Embedthis Appweb 3.3.0 (stable)</td>
                         <td>February 2011</td>
                     </tr>
                     <tr>
-                        <td nowrap="nowrap">Embedthis Appweb 3.2.2 (stable)</td>
+                        <td class="nowrap">Embedthis Appweb 3.2.2 (stable)</td>
                         <td>June 2010</td>
                     </tr>
                     <tr>
-                        <td nowrap="nowrap">Embedthis Appweb 3.2.1 (stable)</td>
+                        <td class="nowrap">Embedthis Appweb 3.2.1 (stable)</td>
                         <td>April 2010</td>
                     </tr>
                     <tr>
-                        <td nowrap="nowrap">Embedthis Appweb 3.2.0 (stable)</td>
+                        <td class="nowrap">Embedthis Appweb 3.2.0 (stable)</td>
                         <td>March 2010</td>
                     </tr>
                     <tr>
-                        <td nowrap="nowrap">Embedthis Appweb 3.1.2 (stable)</td>
+                        <td class="nowrap">Embedthis Appweb 3.1.2 (stable)</td>
                         <td>December 2009</td>
                     </tr>
                     <tr>
-                        <td nowrap="nowrap">Embedthis Appweb 3.1.1 (stable)</td>
+                        <td class="nowrap">Embedthis Appweb 3.1.1 (stable)</td>
                         <td>November 2009</td>
                     </tr>
                     <tr>
@@ -204,7 +207,7 @@
                     </tr>
                     <tr>
                         <td>Embedthis Appweb 1.3.3 (development)</td>
-                        <td>Feb 2005</td>
+                        <td>February 2005</td>
                     </tr>
                     <tr>
                         <td>Embedthis Appweb 1.3.2 (development)</td>
@@ -259,7 +262,7 @@
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
-            All rights reserved. Embedthis, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
 <!-- EndDsi -->

@@ -9,7 +9,6 @@ POST_DIRS			:= package
 include 			.makedep 
 
 PRE_DIRS			+= $(BLD_OS) test
-MAKE_IFLAGS			+= $(BLD_MPR_IFLAGS)
 
 #
 #	Extra libraries
@@ -29,12 +28,6 @@ ifeq	($(BLD_FEATURE_SSL),1)
 endif
 
 TARGETS				+= $(BLD_BIN_DIR)/$(BLD_PRODUCT)$(BLD_EXE)
-ifeq	($(BLD_FEATURE_CGI),1)
-	EXTRA_TARGETS 	+= cgi-bin/cgiProgram$(BLD_EXE)
-endif
-
-TARGETS				+= appweb.conf
-MAKE_IFLAGS			+= $(BLD_MPR_IFLAGS) $(BLD_HTTP_IFLAGS)
 
 compileExtra: $(TARGETS) $(EXTRA_TARGETS)
 
@@ -60,29 +53,14 @@ $(BLD_BIN_DIR)/$(BLD_PRODUCT)$(BLD_EXE): $(OBJECTS) $(call lib, $(LIBDEP)) $(cal
 	bld --exe $(BLD_BIN_DIR)/$(BLD_PRODUCT)$(BLD_EXE) --search "$(BLD_APPWEB_LIBPATHS)" \
 		--libs "$(BLD_APPWEB_LIBS) $(LIBS)" --syslibs "$(SYSLIBS)" $(RES) $(OBJECTS) $(EXTRA_OBJECTS)
 
-#
-#	Patch the appweb.conf configuration file based on the configure --config=dir setting
-#
-appweb.conf: $(BLD_INC_DIR)/buildConfig.h Makefile
-	$(call log) "[Patch]" "appweb.conf"
-	(dir=`pwd` ; cd $(BLD_FEATURE_CONFIG) ; find . -type f | \
-		egrep -v 'CVS/|RCS/|SCCS/|.svn/' | cpio -pdum $$dir >/dev/null 2>&1)
-	BLD_CFG_PREFIX=. BLD_WEB_PREFIX=./web BLD_MOD_PREFIX=$(BLD_MOD_DIR) BLD_DOC_PREFIX=../../doc \
-	BLD_SERVER=`hostname` BLD_LOG_PREFIX=./logs BLD_HTTP_PORT=$(BLD_HTTP_PORT) BLD_SSL_PORT=$(BLD_SSL_PORT) \
-	patchAppwebConf appweb.conf conf/hosts/ssl-default.conf conf/log.conf conf/doc.conf
-
-cgi-bin/cgiProgram$(BLD_EXE): $(BLD_BIN_DIR)/cgiProgram$(BLD_EXE)
-	cp $(BLD_BIN_DIR)/cgiProgram$(BLD_EXE) cgi-bin
-	chmod +x cgi-bin/*
-
 run:
-	$(call setlibpath) ; $(BLD_BIN_DIR)/$(BLD_PRODUCT) --log stdout:2 --config appweb.conf
+	$(call setlibpath) ; sudo $(BLD_BIN_DIR)/$(BLD_PRODUCT) -v
 
 cleanExtra:
 	rm -f $(TARGETS) $(BLD_PRODUCT)$(BLD_EXE) $(EXTRA_TARGETS)
 	rm -f trace.txt access.log error.log leak.log
 	rm -f *.obj *.pdb
-	rm -f logs/*.log logs/*.old
+	rm -f error.log* access.log*
 	rm -fr target
 	rm -f web/*.mod web/*.es
 
@@ -99,7 +77,7 @@ curl:
 
 val:
 	(valgrind -v --tool=memcheck --suppressions=d.supp --leak-check=yes --num-callers=12 --leak-resolution=high \
-		--show-reachable=yes --track-fds=yes ../bin/appweb -r . -f appweb.conf -l stdout:1  2>&1) | tee val.out
+		--show-reachable=yes --track-fds=yes ../out/bin/appweb -v 2>&1) | tee val.out
 
 mem:
 	echo -e "\nImage and code sizes:"
@@ -111,6 +89,7 @@ mem:
 
 dependExtra:
 	mkdir -p logs
+	find web -name .DS_Store | xargs rm -f
 
 #
 #   Local variables:

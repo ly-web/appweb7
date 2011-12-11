@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 #
 # 	preinst -- Pre install script for appweb
 #
@@ -17,6 +17,10 @@ configureService() {
 
 	case $action in
 	stop)
+        if [ -x /usr/local/bin/appman ] ; then
+            appman stop >/dev/null 2>&1 ; true
+        fi
+        #   Keep this for earlier versions without appman
 		if [ -f /etc/rc.d/init.d/$BLD_PRODUCT ] ; then
 			if which service >/dev/null 2>&1 ; then
 				service $BLD_PRODUCT $action
@@ -24,16 +28,19 @@ configureService() {
 				invoke-rc.d $BLD_PRODUCT $action || true
 			fi
         elif [ -f /etc/init.d/$BLD_PRODUCT ] ; then
-            /etc/init.d/$BLD_PRODUCT stop
+            /etc/init.d/$BLD_PRODUCT stop >/dev/null 2>&1
 		fi
-		pid=`/bin/pidof !!ORIG_BLD_BIN_PREFIX!!/$BLD_PRODUCT; true`
-		[ "$pid" != "" ] && kill -9 $pid
-		rm -f /var/lock/subsys/$BLD_PRODUCT /var/lock/$BLD_PRODUCT
-		rm -fr /var/log/$BLD_PRODUCT
-		rm -rf /var/run/$BLD_PRODUCT
+		if [ "`/bin/pidof !!ORIG_BLD_BIN_PREFIX!!/$BLD_PRODUCT`" != "" ] ; then
+            kill -9 `/bin/pidof !!ORIG_BLD_BIN_PREFIX!!/$BLD_PRODUCT`
+        fi
+		rm -rf /var/lock/subsys/$BLD_PRODUCT /var/lock/$BLD_PRODUCT /var/log/$BLD_PRODUCT /var/run/$BLD_PRODUCT
 		;;
 
 	remove)
+        if [ -x /usr/local/bin/appman ] ; then
+            appman uninstall
+        fi
+        #   Keep this for earlier versions without appman
 		if which chkconfig >/dev/null 2>&1 ; then
 			chkconfig --del $BLD_PRODUCT
 			rm /etc/rc.d/init.d/$BLD_PRODUCT
@@ -53,6 +60,7 @@ configureService() {
 #
 cd /
 action=$1
+
 case $action in
 	remove|install)					# when new
 		# or conflictor's prerm remove in-favor package new-version

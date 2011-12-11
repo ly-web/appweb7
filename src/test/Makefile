@@ -6,17 +6,16 @@
 
 BUILD_DEPTH		?= 2
 TEST_SYSTEM		:= 127.0.0.1:4100
+SKIP_STND_TEST	= 1
 
 include 		.makedep
 
 TARGETS			+= $(BLD_BIN_DIR)/testAppweb$(BLD_EXE) 
-MODULES			+= $(BLD_MOD_DIR)/egiTest$(BLD_SHOBJ)
 
 ifeq ($(BLD_FEATURE_CGI),1)
 	CGIP		:= $(BLD_BIN_DIR)/cgiProgram$(BLD_EXE)
-	TARGETS		+= cgi-bin/testScript web/cgiProgram.cgi
+	TARGETS		+= cgi-bin/testScript web/cgiProgram.cgi web/caching/cache.cgi
 endif
-MAKE_IFLAGS		+= $(BLD_MPR_IFLAGS) $(BLD_HTTP_IFLAGS)
 
 compileExtra: 	$(TARGETS) $(MODULES)
 
@@ -28,32 +27,23 @@ $(BLD_BIN_DIR)/testAppweb$(BLD_EXE): $(OBJECTS) $(call lib, appweb)
 		testHttp$(BLD_OBJ) testAppweb$(BLD_OBJ)
 
 #
-#	EGI test module
-#
-$(BLD_MOD_DIR)/egiTest$(BLD_SHOBJ): $(call lib, appweb) $(BLD_OBJ_DIR)/testEgi$(BLD_OBJ)
-	bld --shared --library $(BLD_MOD_DIR)/egiTest --libs "$(LIBS) $(BLD_APPWEB_LIBS)" testEgi$(BLD_OBJ)
-
-ifeq	($(BLD_CROSS),0)
-testExtra:
-	mkdir -p web/tmp
-	find . -name '*.mod' | xargs rm -f >/dev/null 2>&1 ; true
-	if [ ! -f $(BLD_BIN_DIR)/ejs ] ; then \
-		if ! which ejs >/dev/null ; then \
-			$(call log) "[Test]" "Skip unit tests. Required \"ejs\" is installed." ; \
-		else \
-			ejs $(BLD_TOOLS_DIR)/utest -v -d $(BUILD_DEPTH); \
-		fi ; \
-	else \
-		$(BLD_BIN_DIR)/ejs $(BLD_TOOLS_DIR)/utest -v -d $(BUILD_DEPTH); \
-	fi
-endif
-
-#
 #	Update the shbang path in testScript. Must be an absolute path on some systems and for valgrind.
 #
 cgi-bin/testScript: $(CGIP) Makefile $(BLD_INC_DIR)/buildConfig.h
-	echo "#!$(BLD_ABS_BIN_DIR)/cgiProgram$(BLD_EXE)" >cgi-bin/testScript
+	dir=`getpath -a "$(BLD_BIN_DIR)"` ; \
+	echo "#!$$dir/cgiProgram$(BLD_EXE)" >cgi-bin/testScript
 	chmod +x cgi-bin/testScript
+
+web/caching/cache.cgi: $(CGIP) Makefile $(BLD_INC_DIR)/buildConfig.h
+ifeq ($(BLD_WIN_LIKE),1)
+	path=`type -p sh` ; path=`cygpath -m "$$path"` ; \
+	echo -e "#!$${path}\n" >web/caching/cache.cgi
+else
+	echo -e "#!`type -p sh`\n" >web/caching/cache.cgi
+endif
+	echo -e "echo 'HTTP/1.0 200 OK'\necho 'Content-Type: text/plain'\necho ''\necho '{ number: ' $$$$ ' }'" \
+		>>web/caching/cache.cgi
+	chmod +x web/caching/cache.cgi
 
 #
 #	cgiProgram
@@ -118,22 +108,32 @@ scanUpdate:
 	perl ~/src/nikto/nikto.pl -update
 
 apacheBench:
-	ab -k -c 10 -n 1000 http://127.0.0.1:4010/bench.html 
+	ab -k -c 10 -n 1000 http://127.0.0.1:4100/numbers.html 
 
-cleanExtra:
+testPrep:
+	mkdir -p cache app/cache
+	rm -f cache/* app/cache/*
+	mkdir -p web/tmp
+	rm -f web/tmp/*
+	find . -name '*.mod' | xargs rm -f >/dev/null 2>&1 ; true
+
+cleanExtra: testPrep
 	rm -f *.obj *.pdb
 	rm -f access.log error.log leak.log
 	rm -f $(MODULES) $(BLD_BIN_DIR)/testAppweb$(BLD_EXE) testAppweb$(BLD_EXE)
 	rm -f *.o *.lo *.obj *.out */*.mod */*/*.mod
-	rm -f ../cgi-bin/*cgi* ../cgi-bin/testScript
+	rm -f cgi-bin/*cgi* ../cgi-bin/testScript
 	rm -f web/cgiProgram.cgi
+	rm -f cache/* app/cache/*
+	rm -f error.log* access.log*
 
 #
 #	Don't copy this. Ensure you set minimal permissions on upload and temp directories
 #
 dependExtra:
-	mkdir -p web/upload web/tmp
-	chmod 777 web/upload web/tmp
+	rm -f cache/* app/cache/*
+	mkdir -p web/tmp cache app/cache
+	chmod 777 web/tmp cache app/cache
 
 #
 #   Local variables:

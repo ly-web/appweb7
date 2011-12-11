@@ -10,10 +10,7 @@
 #
 #   The configFile is of the format:
 #       FMT=[rpm|deb|tar]               # Package format to use
-#       srcDir=sourcePath               # Where to install the doc
-#       devDir=documentationPath        # Where to install the doc
 #       installbin=[YN]                 # Install binary package
-#       installdev=[YN]                 # Install dev headers package
 #       runDaemon=[YN]                  # Run the program as a daemon
 #       httpPort=portNumber             # Http port to listen on
 #       sslPort=portNumber              # SSL port to listen on
@@ -24,7 +21,7 @@
 
 HOME=`pwd`
 FMT=
-SITE=127.0.0.1
+SITE=localhost
 PAGE=/index.html
 
 HOSTNAME=`hostname`
@@ -45,29 +42,28 @@ BLD_INC_PREFIX="!!ORIG_BLD_INC_PREFIX!!"
 BLD_LIB_PREFIX="!!ORIG_BLD_LIB_PREFIX!!"
 BLD_LOG_PREFIX="!!ORIG_BLD_LOG_PREFIX!!"
 BLD_MAN_PREFIX="!!ORIG_BLD_MAN_PREFIX!!"
-BLD_MOD_PREFIX="!!ORIG_BLD_MOD_PREFIX!!"
+BLD_PRD_PREFIX="!!ORIG_BLD_PRD_PREFIX!!"
+BLD_SPL_PREFIX="!!ORIG_BLD_SPL_PREFIX!!"
 BLD_SRC_PREFIX="!!ORIG_BLD_SRC_PREFIX!!"
 BLD_WEB_PREFIX="!!ORIG_BLD_WEB_PREFIX!!"
 
 installbin=Y
-installdev=Y
 runDaemon=Y
-HTTP_PORT=7777
-SSL_PORT=4443
+headless=${!!BLD_PRODUCT!!_HEADLESS:-0}
+HTTP_PORT=80
+SSL_PORT=443
 
-PATH=$PATH:/sbin:/usr/sbin
+PATH="$PATH:/sbin:/usr/sbin"
+export CYGWIN=nodosfilewarning
 
 ###############################################################################
 
 setup() {
-
     umask 022
-
     if [ $BLD_HOST_OS != WIN -a `id -u` != "0" ] ; then
         echo "You must be root to install this product."
         exit 255
     fi
-
     #
     #   Headless install
     #
@@ -80,20 +76,20 @@ setup() {
             installFiles $FMT
             
             if [ "$installbin" = "Y" ] ; then
+                appman stop disable uninstall >/dev/null 2>&1
                 patchConfiguration
+                appman install
                 if [ "$runDaemon" = "Y" ] ; then
-                    startService
-                    startBrowser
+                    appman enable start
                 fi
             fi
 
         fi
         exit 0
     fi
-
     sleuthPackageFormat
     getAccountDetails
-    echo -e "\n$BLD_NAME !!BLD_VERSION!!-!!BLD_NUMBER!! Installation\n"
+    [ "$headless" != 1 ] && echo -e "\n$BLD_NAME !!BLD_VERSION!!-!!BLD_NUMBER!! Installation\n"
 
 }
 
@@ -104,7 +100,7 @@ getAccountDetails() {
     #
     #   Select default username
     #
-    for u in nobody www-data Administrator 
+    for u in www-data _www nobody Administrator 
     do
         grep "$u" /etc/passwd >/dev/null
         if [ $? = 0 ] ; then
@@ -121,7 +117,7 @@ getAccountDetails() {
     #
     #   Select default group name
     #
-    for g in nobody nogroup www-data Administrators
+    for g in www-data _www nogroup nobody Administrators
     do
         grep "$g" /etc/group >/dev/null
         if [ $? = 0 ] ; then
@@ -144,7 +140,7 @@ sleuthPackageFormat() {
 
     name=`createPackageName ${BLD_PRODUCT}-bin`
     FMT=
-    for f in deb rpm tar.gz ; do
+    for f in deb rpm tgz ; do
         if [ -f ${name}.${f} ] ; then
             FMT=${f%.gz}
             break
@@ -160,52 +156,47 @@ sleuthPackageFormat() {
 askUser() {
     local finished
 
-    echo "Enter requested information or press <ENTER> to accept the default. "
-    
+    [ "$headless" != 1 ] && echo "Enter requested information or press <ENTER> to accept the default. "
+
     #
     #   Confirm the configuration
     #
     finished=N
     while [ "$finished" = "N" ]
     do
-        echo
+        [ "$headless" != 1 ] && echo
         installbin=`yesno "Install binary package" "$installbin"`
-        installdev=`yesno "Install development headers, samples and documentation package" "$installdev"`
-    
         if [ "$installbin" = "Y" ] ; then
             runDaemon=`yesno "Start $BLD_PRODUCT automatically at system boot" $runDaemon`
             HTTP_PORT=`ask "Enter the HTTP port number" "$HTTP_PORT"`
-            SSL_PORT=`ask "Enter the SSL port number" "$SSL_PORT"`
+            # SSL_PORT=`ask "Enter the SSL port number" "$SSL_PORT"`
             username=`ask "Enter the user account for $BLD_PRODUCT" "$username"`
             groupname=`ask "Enter the user group for $BLD_PRODUCT" "$groupname"`
         else
             runDaemon=N
         fi
     
-        echo -e "\nInstalling with this configuration:" 
-        echo -e "    Install binary package: $installbin"
-        echo -e "    Install development headers and samples package: $installdev"
-    
-        if [ "$installbin" = "Y" ] ; then
-            echo -e "    Start automatically at system boot: $runDaemon"
-            echo -e "    HTTP port number: $HTTP_PORT"
-            echo -e "    SSL port number: $SSL_PORT"
-            echo -e "    Username: $username"
-            echo -e "    Groupname: $groupname"
+        if [ "$headless" != 1 ] ; then
+            echo -e "\nInstalling with this configuration:" 
+            echo -e "    Install binary package: $installbin"
+        
+            if [ "$installbin" = "Y" ] ; then
+                echo -e "    Start automatically at system boot: $runDaemon"
+                echo -e "    HTTP port number: $HTTP_PORT"
+                # echo -e "    SSL port number: $SSL_PORT"
+                echo -e "    Username: $username"
+                echo -e "    Groupname: $groupname"
+            fi
+            echo
         fi
-        echo
         finished=`yesno "Accept this configuration" "Y"`
     done
+    [ "$headless" != 1 ] && echo
     
-    if [ "$installbin" = "N" -a "$installdev" = "N" ] ; then
-        echo -e "\nNothing to install, exiting. "
+    if [ "$installbin" = "N" ] ; then
+        echo -e "Nothing to install, exiting. "
         exit 0
     fi
-    
-    #
-    #   Save the install settings. Remove.sh will need this
-    #
-    saveSetup
 }
 
 createPackageName() {
@@ -219,7 +210,7 @@ createPackageName() {
 yesno() {
     local ans
 
-    if [ "$!!BLD_PRODUCT!!_HEADLESS" = 1 ] ; then
+    if [ "$headless" = 1 ] ; then
         echo "Y"
         return
     fi
@@ -246,12 +237,10 @@ ask() {
     local ans
 
     default=$2
-
-    if [ "$!!BLD_PRODUCT!!_HEADLESS" = 1 ] ; then
+    if [ "$headless" = 1 ] ; then
         echo "$default"
         return
     fi
-
     echo -n "$1 [$default] : " 1>&2
     read ans
     if [ "$ans" = "" ] ; then
@@ -263,152 +252,22 @@ ask() {
 saveSetup() {
     local firstChar
 
-    mkdir -p "$BLD_CFG_PREFIX"
-    echo -e "FMT=$FMT\nbinDir=\"${BLD_PRD_PREFIX}\"\ninstallbin=$installbin\ninstalldev=$installdev\nrunDaemon=$runDaemon\nhttpPort=$HTTP_PORT\nsslPort=$SSL_PORT\nusername=$username\ngroupname=$groupname\nhostname=$HOSTNAME" \
-        >"$BLD_PRD_PREFIX/install.conf"
+    mkdir -p "$BLD_PRD_PREFIX"
+    echo -e "FMT=$FMT\nbinDir=\"${BLD_PRD_PREFIX}\"\ninstallbin=$installbin\nrunDaemon=$runDaemon\nhttpPort=$HTTP_PORT\nsslPort=$SSL_PORT\nusername=$username\ngroupname=$groupname\nhostname=$HOSTNAME" >"$BLD_PRD_PREFIX/install.conf"
 }
 
-#
-#   Copy of the script in build/bin/patchAppwebConf
-#
-patchAppwebConf()
-{
-    conf="$1"
-    ssl="$2"
-    log="$3"
-    doc="$4"
-    docPrefix="${BLD_DOC_PREFIX}"
-    
-    if [ -f "$conf" ] ; then
-        sed -e "
-            s!^ServerRoot.*\".*!ServerRoot \"${BLD_CFG_PREFIX}\"!
-            s!^DocumentRoot.*\".*!DocumentRoot \"${BLD_WEB_PREFIX}\"!
-            s!^LoadModulePath.*\".*!LoadModulePath \"${BLD_MOD_PREFIX}\"!
-            s!^Listen.*!Listen ${BLD_HTTP_PORT}!
-            s!^User .*!User ${username}!
-            s!^Group .*!Group ${groupname}!" <"$conf" >"$conf.new"
-        [ $? = 0 ] && mv "$conf.new" "$conf"
+removeOld() {
+    if [ -x /usr/lib/appweb/bin/uninstall ] ; then
+        appweb_HEADLESS=1 /usr/lib/appweb/bin/uninstall </dev/null 2>&1 >/dev/null
     fi
-
-    if [ -f "$ssl" ] ; then
-        sed -e "
-            s![     ][  ]*Listen.*!    Listen ${BLD_SSL_PORT}!
-            s!DocumentRoot.*!DocumentRoot \"${BLD_WEB_PREFIX}\"!
-            s!<VirtualHost .*!<VirtualHost *:${BLD_SSL_PORT}>!" <"$ssl" >"$ssl.new"
-        [ $? = 0 ] && mv "$ssl.new" "$ssl"
-    fi
-    
-    if [ -f "$log" ] ; then
-        sed -e "
-            s!ErrorLog.*error.log\"!ErrorLog \"${BLD_LOG_PREFIX}/error.log\"!
-            s!CustomLog.*access.log\"!CustomLog \"${BLD_LOG_PREFIX}/access.log\"!" "$log" >"$log.new"
-        [ $? = 0 ] && mv "$log.new" "$log"
-    fi
-
-    if [ -f "$doc" ] ; then
-        sed -e "
-            s![     ][  ]*Alias /doc/.*!    Alias /doc/ \"${docPrefix}\/\"!" <"$doc" >"$doc.new"
-        [ $? = 0 ] && mv "$doc.new" "$doc"
-    fi
-
-    if [ `uname | sed 's/CYGWIN.*/CYGWIN/'` = CYGWIN ] ; then
-        if which unix2dos >/dev/null 2>&1 ; then
-            unix2dos "$conf" >/dev/null 2>&1
-            unix2dos "$ssl" >/dev/null 2>&1
-            unix2dos "$log" >/dev/null 2>&1
-            unix2dos "$doc" >/dev/null 2>&1
-        fi
-    else
-        for f in "$conf" "$ssl" "$log" "$doc" ; do
-            if [ -f "$f" ] ; then
-                sed -e "s/$//" <"$f" >"$f".new
-                [ $? = 0 ] && mv "$f.new" "$f"
-            fi
-        done
-    fi
-}
-
-#
-#   Modify service. Usage: configureService [start|stop|install|remove]
-#
-configureService() {
-    local action=$1
-
-    case $action in
-    start|stop)
-        if [ $BLD_HOST_OS = WIN ] ; then
-            if [ $action = start ] ; then
-                if [ -x "$BLD_BIN_PREFIX/angel.exe" ] ; then
-                    "$BLD_BIN_PREFIX/angel" --start $BLD_BIN_PREFIX/$BLD_PRODUCT
-                fi
-                if [ -x "$BLD_BIN_PREFIX/${BLD_PRODUCT}Monitor.exe" ] ; then
-                    sleep 5
-                    "$BLD_BIN_PREFIX/${BLD_PRODUCT}Monitor" &
-                fi
-            else
-                if [ -x "$BLD_BIN_PREFIX/angel.exe" ] ; then
-                    "$BLD_BIN_PREFIX/angel" --stop $BLD_BIN_PREFIX/$BLD_PRODUCT
-                fi
-                if [ -x "$BLD_BIN_PREFIX/${BLD_PRODUCT}Monitor.exe" ] ; then
-                    "$BLD_BIN_PREFIX/${BLD_PRODUCT}Monitor" --stop
-                fi
-            fi
-        elif which launchctl >/dev/null 2>&1 ; then
-            local company=`echo $BLD_COMPANY | tr '[:upper:]' '[:lower:']`
-            if [ $action = start ] ; then
-                launchctl start com.${company}.${BLD_PRODUCT}
-            else
-                launchctl stop com.${company}.${BLD_PRODUCT} 2>/dev/null
-            fi
-        elif which service >/dev/null 2>&1 ; then
-            service $BLD_PRODUCT $action >/dev/null 2>&1
-        elif which invoke-rc.d >/dev/null 2>&1 ; then
-            invoke-rc.d $BLD_PRODUCT $action
-        fi
-        ;;
-
-    install)
-        if [ $BLD_HOST_OS = WIN ] ; then
-            if [ -x "$BLD_BIN_PREFIX/angel.exe" ] ; then
-                "$BLD_BIN_PREFIX/angel" --install $BLD_BIN_PREFIX/$BLD_PRODUCT
-            fi
-        elif which launchctl >/dev/null 2>&1 ; then
-            local company=`echo $BLD_COMPANY | tr '[:upper:]' '[:lower:']`
-            launchctl unload /Library/LaunchDaemons/com.${company}.${BLD_PRODUCT}.plist 2>/dev/null
-            launchctl load -w /Library/LaunchDaemons/com.${company}.${BLD_PRODUCT}.plist
-        elif which chkconfig >/dev/null 2>&1 ; then
-            chkconfig --add $BLD_PRODUCT >/dev/null
-            chkconfig --level 5 $BLD_PRODUCT on >/dev/null
-
-        elif which update-rc.d >/dev/null 2>&1 ; then
-            update-rc.d $BLD_PRODUCT defaults 90 10 >/dev/null
-        fi
-        ;;
-
-    remove)
-        if [ $BLD_HOST_OS = WIN ] ; then
-            if [ -x "$BLD_BIN_PREFIX/angel.exe" ] ; then
-                "$BLD_BIN_PREFIX/angel" --uninstall $BLD_BIN_PREFIX/$BLD_PRODUCT
-            fi
-        elif which launchctl >/dev/null 2>&1 ; then
-            local company=`echo $BLD_COMPANY | tr '[:upper:]' '[:lower:']`
-            launchctl unload -w /Library/LaunchDaemons/com.${company}.${BLD_PRODUCT}.plist 2>/dev/null
-        elif which chkconfig >/dev/null 2>&1 ; then
-            chkconfig --del $BLD_PRODUCT >/dev/null
-        elif which update-rc.d >/dev/null 2>&1 ; then
-            update-rc.d -f $BLD_PRODUCT remove >/dev/null
-        fi
-        ;;
-    esac
 }
 
 installFiles() {
-    local dir pkg doins NAME upper
+    local dir pkg doins NAME upper target
 
-    echo -e "\nExtracting files ...\n"
+    [ "$headless" != 1 ] && echo -e "\nExtracting files ...\n"
 
-    for pkg in bin dev src ; do
-        
+    for pkg in bin ; do
         doins=`eval echo \\$install${pkg}`
         if [ "$doins" = Y ] ; then
             upper=`echo $pkg | tr '[:lower:]' '[:upper:]'`
@@ -418,22 +277,27 @@ installFiles() {
             #   keep going. 
             #
             NAME=`createPackageName ${BLD_PRODUCT}${suffix}`.$FMT
+            if [ "$runDaemon" != "Y" ] ; then
+                export APPWEB_DONT_START=1
+            fi
             if [ "$FMT" = "rpm" ] ; then
-                echo -e "rpm -Uhv $NAME"
+                [ "$headless" != 1 ] && echo -e "rpm -Uhv $NAME"
                 rpm -Uhv $HOME/$NAME
             elif [ "$FMT" = "deb" ] ; then
-                echo -e "dpkg -i $NAME"
+                [ "$headless" != 1 ] && echo -e "dpkg -i $NAME"
                 dpkg -i $HOME/$NAME >/dev/null
             else
-                echo tar xfz "$HOME/${NAME}.gz" --strip-components 1 -P -C /
-                tar xfz "$HOME/${NAME}.gz" --strip-components 1 -P -C /
+                target=/
+                [ $BLD_HOST_OS = WIN ] && target=`cygpath ${HOMEDRIVE}/`
+                [ "$headless" != 1 ] && echo tar xzf "$HOME/${NAME}" --strip-components 1 -P -C ${target}
+                tar xzf "$HOME/${NAME}" --strip-components 1 -P -C ${target}
             fi
         fi
     done
 
     if [ -f /etc/redhat-release -a -x /usr/bin/chcon ] ; then 
         if sestatus | grep enabled >/dev/nulll ; then
-            for f in $BLD_LIB_PREFIX/*.so $BLD_MOD_PREFIX/*.so ; do
+            for f in $BLD_LIB_PREFIX/*.so ; do
                 chcon /usr/bin/chcon -t texrel_shlib_t $f 2>&1 >/dev/null
             done
         fi
@@ -452,51 +316,50 @@ installFiles() {
     "$BLD_BIN_PREFIX/linkup" Install /
 
     if [ $BLD_HOST_OS = WIN ] ; then
-        echo -e "\nSetting file permissions ..."
+        [ "$headless" != 1 ] && echo -e "\nSetting file permissions ..."
         find "$BLD_CFG_PREFIX" -type d -exec chmod 755 "{}" \;
         find "$BLD_CFG_PREFIX" -type f -exec chmod g+r,o+r "{}" \; 
         find "$BLD_WEB_PREFIX" -type d -exec chmod 755 "{}" \;
         find "$BLD_WEB_PREFIX" -type f -exec chmod g+r,o+r "{}" \;
         mkdir -p "$BLD_CFG_PREFIX/logs"
         chmod 777 "$BLD_CFG_PREFIX/logs"
+        mkdir -p "$BLD_SPL_PREFIX"
+        chmod 777 "$BLD_SPL_PREFIX"
         chmod 755 "$BLD_WEB_PREFIX"
         find "$BLD_BIN_PREFIX" -name '*.dll' -exec chmod 755 "{}" \;
         find "$BLD_BIN_PREFIX" -name '*.exe' -exec chmod 755 "{}" \;
     fi
-    #
-    #   TODO - Temp for Ejscript
-    #
-    chmod 777 "$BLD_WEB_PREFIX/test"
-    echo
+    mkdir -p "$BLD_SPL_PREFIX" "$BLD_SPL_PREFIX/cache" "$BLD_LOG_PREFIX"
+    chown $username "$BLD_SPL_PREFIX" "$BLD_SPL_PREFIX/cache" "$BLD_LOG_PREFIX"
+    chgrp $groupname "$BLD_SPL_PREFIX" "$BLD_SPL_PREFIX/cache" "$BLD_LOG_PREFIX"
+    chmod 755 "$BLD_SPL_PREFIX" "$BLD_SPL_PREFIX/cache" "$BLD_LOG_PREFIX"
+    [ "$headless" != 1 ] && echo
 }
 
 patchConfiguration() {
-    configureService stop >/dev/null 2>&1
     if [ ! -f $BLD_PRODUCT.conf -a -f "$BLD_CFG_PREFIX/new.conf" ] ; then
         cp "$BLD_CFG_PREFIX/new.conf" "$BLD_CFG_PREFIX/$BLD_PRODUCT.conf"
     fi
-    BLD_CFG_PREFIX="$BLD_CFG_PREFIX" BLD_WEB_PREFIX="$BLD_WEB_PREFIX" BLD_DOC_PREFIX="$BLD_DOC_PREFIX" \
-        BLD_LIB_PREFIX="$BLD_LIB_PREFIX" BLD_MOD_PREFIX="$BLD_MOD_PREFIX" BLD_LOG_PREFIX="$BLD_LOG_PREFIX" \
-        BLD_SERVER=$HOSTNAME BLD_HTTP_PORT=$HTTP_PORT BLD_SSL_PORT=$SSL_PORT \
-        patchAppwebConf "${BLD_CFG_PREFIX}/appweb.conf" "${BLD_CFG_PREFIX}/conf/hosts/ssl-default.conf" \
-        "${BLD_CFG_PREFIX}/conf/log.conf" "${BLD_CFG_PREFIX}/conf/doc.conf"
-}
-
-startService() {
-    configureService install
-    configureService start
+    if [ $BLD_HOST_OS = WIN ] ; then
+        "$BLD_BIN_PREFIX/setConfig" --port ${HTTP_PORT} --ssl ${SSL_PORT} --home "." --logs "logs" \
+            --documents "web" --modules "bin" --cache "cache" \
+            --user $username --group $groupname "${BLD_CFG_PREFIX}/appweb.conf"
+    else
+        "$BLD_BIN_PREFIX/setConfig" --port ${HTTP_PORT} --ssl ${SSL_PORT} --home "${BLD_CFG_PREFIX}" \
+            --logs "${BLD_LOG_PREFIX}" --documents "${BLD_WEB_PREFIX}" --modules "${BLD_LIB_PREFIX}" \
+            --cache "${BLD_SPL_PREFIX}/cache" --user $username --group $groupname "${BLD_CFG_PREFIX}/appweb.conf"
+    fi
 }
 
 startBrowser() {
-
-    if [ "$!!BLD_PRODUCT!!_HEADLESS" = 1 ] ; then
+    if [ "$headless" = 1 ] ; then
         return
     fi
     #
     #   Conservative delay to allow appweb to start and initialize
     #
     sleep 5
-    echo -e "\nStarting browser to view the $BLD_NAME Home Page."
+    [ "$headless" != 1 ] && echo -e "Starting browser to view the $BLD_NAME Home Page."
     if [ $BLD_HOST_OS = WIN ] ; then
         cygstart --shownormal http://$SITE:$HTTP_PORT$PAGE 
     elif [ $BLD_HOST_OS = MACOSX ] ; then
@@ -515,20 +378,30 @@ startBrowser() {
 #
 #   Main program for install script
 #
-
 setup $*
 askUser
 
 if [ "$installbin" = "Y" ] ; then
-    configureService stop >/dev/null 2>&1
-    configureService remove >/dev/null 2>&1
+    [ "$headless" != 1 ] && echo "Disable existing service"
+    appman stop disable uninstall >/dev/null 2>&1
 fi
+removeOld
+saveSetup
 installFiles $FMT
 if [ "$installbin" = "Y" ] ; then
+    "$BLD_BIN_PREFIX/appman" stop disable uninstall >/dev/null 2>&1
     patchConfiguration
+    "$BLD_BIN_PREFIX/appman" install
     if [ "$runDaemon" = "Y" ] ; then
-        startService
-        startBrowser
+        "$BLD_BIN_PREFIX/appman" enable
+        "$BLD_BIN_PREFIX/appman" start
+        #
+        #   Don't start browser anymore. Many systems can't determine the logged in user's keychain when run privileged
+        # startBrowser
     fi
 fi
-echo -e "\n$BLD_NAME installation successful.\n"
+if [ "$headless" != 1 ] ; then
+    echo
+    echo -e "$BLD_NAME installation successful."
+fi
+exit 0

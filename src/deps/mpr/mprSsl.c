@@ -3,7 +3,7 @@
 /******************************************************************************/
 /* 
     This file is an amalgamation of all the individual source code files for the
-    .
+    MPR SSL.
   
     Catenating all the source into a single file makes embedding simpler and
     the resulting application faster, as many compilers can do whole file
@@ -16,7 +16,7 @@
 
 /************************************************************************/
 /*
- *  Start of file "../src/include/mprSsl.h"
+ *  Start of file "./out/inc/mprSsl.h"
  */
 /************************************************************************/
 
@@ -64,16 +64,14 @@ typedef struct MprSsl {
     char            *caFile;            /* Client verification cert file or bundle */
     char            *caPath;            /* Client verification cert directory */
     char            *ciphers;
+    int             configured;
 
     /*
         Client configuration
      */
     int             verifyClient;
     int             verifyDepth;
-
     int             protocols;
-    bool            initialized;
-    bool            connTraced;
 
     /*
         Per-SSL provider context information
@@ -140,7 +138,7 @@ extern int mprCreateMatrixSslModule(bool lazy);
     under the terms of the GNU General Public License as published by the 
     Free Software Foundation; either version 2 of the License, or (at your 
     option) any later version. See the GNU General Public License for more 
-    details at: http://www.embedthis.com/downloads/gplLicense.html
+    details at: http://embedthis.com/downloads/gplLicense.html
     
     This program is distributed WITHOUT ANY WARRANTY; without even the 
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
@@ -149,7 +147,7 @@ extern int mprCreateMatrixSslModule(bool lazy);
     proprietary programs. If you are unable to comply with the GPL, you must
     acquire a commercial license to use this software. Commercial licenses 
     for this software and support services are available from Embedthis 
-    Software at http://www.embedthis.com 
+    Software at http://embedthis.com 
     
     Local variables:
     tab-width: 4
@@ -161,7 +159,7 @@ extern int mprCreateMatrixSslModule(bool lazy);
  */
 /************************************************************************/
 /*
- *  End of file "../src/include/mprSsl.h"
+ *  End of file "./out/inc/mprSsl.h"
  */
 /************************************************************************/
 
@@ -169,7 +167,7 @@ extern int mprCreateMatrixSslModule(bool lazy);
 
 /************************************************************************/
 /*
- *  Start of file "../src/ssl/mprMatrixssl.c"
+ *  Start of file "./src/ssl/mprMatrixssl.c"
  */
 /************************************************************************/
 
@@ -191,23 +189,20 @@ static MprSocketProvider *createMatrixSslProvider();
 static MprSocket *createMss(MprSsl *ssl);
 static void     disconnectMss(MprSocket *sp);
 static int      doHandshake(MprSocket *sp, short cipherSuite);
-static int      flushMss(MprSocket *sp);
+static ssize    flushMss(MprSocket *sp);
 static MprSsl   *getDefaultMatrixSsl();
-static int      innerRead(MprSocket *sp, char *userBuf, int len);
+static ssize    innerRead(MprSocket *sp, char *userBuf, ssize len);
 static int      listenMss(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageMatrixSocket(MprSslSocket *msp, int flags);
 static void     manageMatrixSsl(MprSsl *ssl, int flags);
 static void     manageMatrixProvider(MprSocketProvider *provider, int flags);
 static ssize    readMss(MprSocket *sp, void *buf, ssize len);
-static ssize    writeMss(MprSocket *sp, void *buf, ssize len);
+static ssize    writeMss(MprSocket *sp, cvoid *buf, ssize len);
 
 
 int mprCreateMatrixSslModule(bool lazy)
 {
-    MprSocketService    *ss;
     MprSocketProvider   *provider;
-
-    ss = MPR->socketService;
 
     /*
         Install this module as the SSL provider (can only have 1)
@@ -279,10 +274,8 @@ static void manageMatrixProvider(MprSocketProvider *provider, int flags)
 
 static int configureMss(MprSsl *ssl)
 {
-    MprSocketService    *ss;
-    char                *password;
+    char    *password;
 
-    ss = MPR->socketService;
     mprSetManager(ssl, (MprManager) manageMatrixSsl);
 
     /*
@@ -562,7 +555,7 @@ static int blockingWrite(MprSocket *sp, sslBuf_t *out)
 {
     MprSocketProvider   *standard;
     uchar               *s;
-    int                 bytes;
+    ssize               bytes;
 
     standard = sp->service->standardProvider;
     
@@ -573,7 +566,7 @@ static int blockingWrite(MprSocket *sp, sslBuf_t *out)
             return -1;
             
         } else if (bytes == 0) {
-            mprSleep(10);
+            mprNap(10);
         }
         out->start += bytes;
     }
@@ -589,7 +582,7 @@ static int doHandshake(MprSocket *sp, short cipherSuite)
 {
     MprSslSocket    *msp;
     char            buf[MPR_SSL_BUFSIZE];
-    int             bytes, rc;
+    ssize           bytes, rc;
 
     msp = sp->sslSocket;
 
@@ -679,14 +672,15 @@ static bool isBufferedData(MprSslSocket *msp)
 /*
     Return number of bytes read. Return -1 on errors and EOF
  */
-static int innerRead(MprSocket *sp, char *userBuf, int len)
+static ssize innerRead(MprSocket *sp, char *userBuf, ssize len)
 {
-    MprSslSocket  *msp;
+    MprSslSocket        *msp;
     MprSocketProvider   *standard;
     sslBuf_t            *inbuf;     /* Cached decoded plain text */
     sslBuf_t            *insock;    /* Cached ciphertext to socket */
     uchar               *buf, error, alertLevel, alertDescription;
-    int                 bytes, rc, space, performRead, remaining;
+    ssize               bytes, space, remaining;
+    int                 rc, performRead;
 
     msp = (MprSslSocket*) sp->sslSocket;
     buf = (uchar*) userBuf;
@@ -747,7 +741,7 @@ readMore:
         Define a temporary sslBuf
      */
     inbuf->start = inbuf->end = inbuf->buf = mprAlloc(len);
-    inbuf->size = len;
+    inbuf->size = (int) len;
 decodeMore:
     /*
         Decode the data we just read from the socket
@@ -897,7 +891,7 @@ static ssize readMss(MprSocket *sp, void *buf, ssize len)
      */
     if (isBufferedData(msp)) {
         sp->flags |= MPR_SOCKET_PENDING;
-        mprRecallWaitHandler(sp->fd);
+        mprRecallWaitHandlerByFd(sp->fd);
     }
     unlock(sp);
     return bytes;
@@ -923,11 +917,11 @@ static ssize readMss(MprSocket *sp, void *buf, ssize len)
     been encoded.  When it is completely flushed, we return the originally requested length, and resume normal 
     processing.
  */
-static ssize writeMss(MprSocket *sp, void *buf, ssize len)
+static ssize writeMss(MprSocket *sp, cvoid *buf, ssize len)
 {
     MprSslSocket    *msp;
     sslBuf_t        *outsock;
-    int             rc;
+    ssize           rc;
 
     lock(sp);
 
@@ -966,7 +960,7 @@ static ssize writeMss(MprSocket *sp, void *buf, ssize len)
      */
     if (msp->outBufferCount == 0) {
 retryEncode:
-        rc = matrixSslEncode(msp->mssl, (uchar*) buf, len, outsock);
+        rc = matrixSslEncode(msp->mssl, (uchar*) buf, (int) len, outsock);
         switch (rc) {
         case SSL_ERROR:
             unlock(sp);
@@ -1004,13 +998,13 @@ retryEncode:
         unlock(sp);
         return len;
     }
-    msp->outBufferCount = len;
+    msp->outBufferCount = (int) len;
     unlock(sp);
     return 0;
 }
 
 
-static int flushMss(MprSocket *sp)
+static ssize flushMss(MprSocket *sp)
 {
     MprSslSocket  *msp;
 
@@ -1042,7 +1036,7 @@ int mprCreateMatrixSslModule(bool lazy) { return -1; }
     under the terms of the GNU General Public License as published by the 
     Free Software Foundation; either version 2 of the License, or (at your 
     option) any later version. See the GNU General Public License for more 
-    details at: http://www.embedthis.com/downloads/gplLicense.html
+    details at: http://embedthis.com/downloads/gplLicense.html
     
     This program is distributed WITHOUT ANY WARRANTY; without even the 
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
@@ -1051,7 +1045,7 @@ int mprCreateMatrixSslModule(bool lazy) { return -1; }
     proprietary programs. If you are unable to comply with the GPL, you must
     acquire a commercial license to use this software. Commercial licenses 
     for this software and support services are available from Embedthis 
-    Software at http://www.embedthis.com 
+    Software at http://embedthis.com 
     
     Local variables:
     tab-width: 4
@@ -1063,7 +1057,7 @@ int mprCreateMatrixSslModule(bool lazy) { return -1; }
  */
 /************************************************************************/
 /*
- *  End of file "../src/ssl/mprMatrixssl.c"
+ *  End of file "./src/ssl/mprMatrixssl.c"
  */
 /************************************************************************/
 
@@ -1071,7 +1065,7 @@ int mprCreateMatrixSslModule(bool lazy) { return -1; }
 
 /************************************************************************/
 /*
- *  Start of file "../src/ssl/mprOpenssl.c"
+ *  Start of file "./src/ssl/mprOpenssl.c"
  */
 /************************************************************************/
 
@@ -1117,7 +1111,7 @@ static MprSocketProvider *createOpenSslProvider();
 static MprSocket *createOss(MprSsl *ssl);
 static DH       *dhCallback(SSL *ssl, int isExport, int keyLength);
 static void     disconnectOss(MprSocket *sp);
-static int      flushOss(MprSocket *sp);
+static ssize    flushOss(MprSocket *sp);
 static int      listenOss(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageOpenssl(MprOpenssl *osl, int flags);
 static void     manageOpenProvider(MprSocketProvider *provider, int flags);
@@ -1126,7 +1120,7 @@ static void     manageSslStruct(MprSsl *ssl, int flags);
 static ssize    readOss(MprSocket *sp, void *buf, ssize len);
 static RSA      *rsaCallback(SSL *ssl, int isExport, int keyLength);
 static int      verifyX509Certificate(int ok, X509_STORE_CTX *ctx);
-static ssize    writeOss(MprSocket *sp, void *buf, ssize len);
+static ssize    writeOss(MprSocket *sp, cvoid *buf, ssize len);
 
 static DynLock  *sslCreateDynLock(const char *file, int line);
 static void     sslDynLock(int mode, DynLock *dl, const char *file, int line);
@@ -1142,12 +1136,10 @@ static DH       *get_dh1024();
  */
 int mprCreateOpenSslModule(bool lazy)
 {
-    MprSocketService    *ss;
     MprSocketProvider   *provider;
     RandBuf             randBuf;
     int                 i;
 
-    ss = MPR->socketService;
     if ((osl = mprAllocObj(MprOpenssl, manageOpenssl)) == 0) {
         return MPR_ERR_MEMORY;
     }
@@ -1279,14 +1271,11 @@ static void manageOpenProvider(MprSocketProvider *provider, int flags)
  */
 static int configureOss(MprSsl *ssl)
 {
-    MprSocketService    *ss;
     MprSsl              *defaultSsl;
     SSL_CTX             *context;
     uchar               resume[16];
 
-    ss = MPR->socketService;
     mprSetManager(ssl, manageSslStruct);
-
     context = SSL_CTX_new(SSLv23_method());
     if (context == 0) {
         mprError("OpenSSL: Unable to create SSL context"); 
@@ -1338,7 +1327,7 @@ static int configureOss(MprSsl *ssl)
                 return MPR_ERR_CANT_ACCESS;
             }
             if (ssl->caFile) {
-                STACK_OF(X509_NAME)     *certNames;
+                STACK_OF(X509_NAME) *certNames;
                 certNames = SSL_load_client_CA_file(ssl->caFile);
                 if (certNames == 0) {
                     ;
@@ -1381,18 +1370,9 @@ static int configureOss(MprSsl *ssl)
 
     /*
         Select the required protocols
-     */
-#if UNUSED && KEEP
-    if (!(ssl->protocols & MPR_PROTO_SSLV2)) {
-        SSL_CTX_set_options(context, SSL_OP_NO_SSLv2);
-        mprLog(4, "OpenSSL: Disabling SSLv2");
-    }
-#else
-    /*
         Disable SSLv2 by default -- it is insecure.
      */
     SSL_CTX_set_options(context, SSL_OP_NO_SSLv2);
-#endif
     if (!(ssl->protocols & MPR_PROTO_SSLV3)) {
         SSL_CTX_set_options(context, SSL_OP_NO_SSLv3);
         mprLog(4, "OpenSSL: Disabling SSLv3");
@@ -1509,7 +1489,6 @@ static MprSocket *createOss(MprSsl *ssl)
     if (ssl == MPR_SECURE_CLIENT) {
         ssl = 0;
     }
-
     /*
         First get a standard socket
      */
@@ -1593,7 +1572,6 @@ static MprSocket *acceptOss(MprSocket *listen)
     if (sp == 0) {
         return 0;
     }
-
     lock(sp);
     osp = sp->sslSocket;
     mprAssert(osp);
@@ -1641,7 +1619,6 @@ static int connectOss(MprSocket *sp, cchar *host, int port, int flags)
         unlock(sp);
         return MPR_ERR_CANT_CONNECT;
     }
-    
     osp = sp->sslSocket;
     mprAssert(osp);
 
@@ -1733,12 +1710,15 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
      */
     retries = 5;
     for (i = 0; i < retries; i++) {
-        rc = SSL_read(osp->osslStruct, buf, len);
+        rc = SSL_read(osp->osslStruct, buf, (int) len);
         if (rc < 0) {
+            char    ebuf[MPR_MAX_STRING];
             error = SSL_get_error(osp->osslStruct, rc);
             if (error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_CONNECT || error == SSL_ERROR_WANT_ACCEPT) {
                 continue;
             }
+            ERR_error_string_n(error, ebuf, sizeof(ebuf) - 1);
+            mprLog(4, "SSL_read error %d, %s", error, ebuf);
         }
         break;
     }
@@ -1774,7 +1754,7 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
         if (error == SSL_ERROR_WANT_READ) {
             rc = 0;
         } else if (error == SSL_ERROR_WANT_WRITE) {
-            mprSleep(10);
+            mprNap(10);
             rc = 0;
         } else if (error == SSL_ERROR_ZERO_RETURN) {
             sp->flags |= MPR_SOCKET_EOF;
@@ -1788,7 +1768,7 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
         }
     } else if (SSL_pending(osp->osslStruct) > 0) {
         sp->flags |= MPR_SOCKET_PENDING;
-        mprRecallWaitHandler(sp->fd);
+        mprRecallWaitHandlerByFd(sp->fd);
     }
     unlock(sp);
     return rc;
@@ -1798,10 +1778,10 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
 /*
     Write data. Return the number of bytes written or -1 on errors.
  */
-static ssize writeOss(MprSocket *sp, void *buf, ssize len)
+static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
 {
     MprSslSocket    *osp;
-    ssize          totalWritten;
+    ssize           totalWritten;
     int             rc;
 
     lock(sp);
@@ -1816,14 +1796,12 @@ static ssize writeOss(MprSocket *sp, void *buf, ssize len)
     ERR_clear_error();
 
     do {
-        rc = SSL_write(osp->osslStruct, buf, len);
-        
+        rc = SSL_write(osp->osslStruct, buf, (int) len);
         mprLog(7, "OpenSSL: written %d, requested len %d", rc, len);
-
         if (rc <= 0) {
             rc = SSL_get_error(osp->osslStruct, rc);
             if (rc == SSL_ERROR_WANT_WRITE) {
-                mprSleep(10);
+                mprNap(10);
                 continue;
                 
             } else if (rc == SSL_ERROR_WANT_READ) {
@@ -1861,13 +1839,15 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
     char            subject[260], issuer[260], peer[260];
     int             error, depth;
     
-    return 1;
     subject[0] = issuer[0] = '\0';
 
     osslStruct = (SSL*) X509_STORE_CTX_get_app_data(xContext);
     osp = (MprSslSocket*) SSL_get_app_data(osslStruct);
     ssl = (MprSsl*) osp->ssl;
 
+    if (!ssl->verifyClient) {
+        return ok;
+    }
     cert = X509_STORE_CTX_get_current_cert(xContext);
     depth = X509_STORE_CTX_get_error_depth(xContext);
     error = X509_STORE_CTX_get_error(xContext);
@@ -1898,6 +1878,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
     }
     if (error != 0) {
         mprAssert(!ok);
+        /* X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY */
     }
 
 #if KEEP
@@ -1933,7 +1914,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
 }
 
 
-static int flushOss(MprSocket *sp)
+static ssize flushOss(MprSocket *sp)
 {
 #if KEEP
     MprSslSocket    *osp;
@@ -2135,7 +2116,7 @@ int mprCreateOpenSslModule(bool lazy) { return -1; }
     under the terms of the GNU General Public License as published by the 
     Free Software Foundation; either version 2 of the License, or (at your 
     option) any later version. See the GNU General Public License for more 
-    details at: http://www.embedthis.com/downloads/gplLicense.html
+    details at: http://embedthis.com/downloads/gplLicense.html
     
     This program is distributed WITHOUT ANY WARRANTY; without even the 
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
@@ -2144,7 +2125,7 @@ int mprCreateOpenSslModule(bool lazy) { return -1; }
     proprietary programs. If you are unable to comply with the GPL, you must
     acquire a commercial license to use this software. Commercial licenses 
     for this software and support services are available from Embedthis 
-    Software at http://www.embedthis.com 
+    Software at http://embedthis.com 
     
     Local variables:
     tab-width: 4
@@ -2156,7 +2137,7 @@ int mprCreateOpenSslModule(bool lazy) { return -1; }
  */
 /************************************************************************/
 /*
- *  End of file "../src/ssl/mprOpenssl.c"
+ *  End of file "./src/ssl/mprOpenssl.c"
  */
 /************************************************************************/
 
@@ -2164,7 +2145,7 @@ int mprCreateOpenSslModule(bool lazy) { return -1; }
 
 /************************************************************************/
 /*
- *  Start of file "../src/ssl/mprSsl.c"
+ *  Start of file "./src/ssl/mprSsl.c"
  */
 /************************************************************************/
 
@@ -2187,18 +2168,19 @@ static MprModule *loadSsl(bool lazy)
     if (MPR->flags & MPR_SSL_PROVIDER_LOADED) {
         return mprLookupModule("sslModule");
     }
-
+#if UNUSED
     mprLog(MPR_CONFIG, "Activating the SSL provider");
+#endif
 #if BLD_FEATURE_OPENSSL
     /*
         NOTE: preference given to open ssl if both are enabled
      */
-    mprLog(2, "Loading OpenSSL module");
+    mprLog(4, "Loading OpenSSL module");
     if (mprCreateOpenSslModule(lazy) < 0) {
         return 0;
     }
 #elif BLD_FEATURE_MATRIXSSL
-    mprLog(2, "Loading MatrixSSL module");
+    mprLog(4, "Loading MatrixSSL module");
     if (mprCreateMatrixSslModule(lazy) < 0) {
         return 0;
     }
@@ -2261,9 +2243,13 @@ void mprConfigureSsl(MprSsl *ssl)
 {
     MprSocketProvider   *provider;
 
+    if (ssl == 0 || ssl->configured) {
+        return;
+    }
     provider = MPR->socketService->secureProvider;
     if (provider) {
         provider->configureSsl(ssl);
+        ssl->configured = 1;
     } else {
         mprError("Secure socket provider not loaded");
     }
@@ -2416,7 +2402,7 @@ void mprVerifySslClients(MprSsl *ssl, bool on)
     under the terms of the GNU General Public License as published by the 
     Free Software Foundation; either version 2 of the License, or (at your 
     option) any later version. See the GNU General Public License for more 
-    details at: http://www.embedthis.com/downloads/gplLicense.html
+    details at: http://embedthis.com/downloads/gplLicense.html
     
     This program is distributed WITHOUT ANY WARRANTY; without even the 
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
@@ -2425,7 +2411,7 @@ void mprVerifySslClients(MprSsl *ssl, bool on)
     proprietary programs. If you are unable to comply with the GPL, you must
     acquire a commercial license to use this software. Commercial licenses 
     for this software and support services are available from Embedthis 
-    Software at http://www.embedthis.com 
+    Software at http://embedthis.com 
     
     Local variables:
     tab-width: 4
@@ -2437,7 +2423,7 @@ void mprVerifySslClients(MprSsl *ssl, bool on)
  */
 /************************************************************************/
 /*
- *  End of file "../src/ssl/mprSsl.c"
+ *  End of file "./src/ssl/mprSsl.c"
  */
 /************************************************************************/
 

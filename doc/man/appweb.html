@@ -8,9 +8,8 @@ APPWEB(1)                        User Commands                       APPWEB(1)
        <B>appweb [options]</B>
        <B>appweb [options] [IP][:port] [documentRoot]</B>
 
-       <B>appweb  </B>[<I>--config  configFile</I>] [<I>--chroot directory</I>] [<I>--debugger</I>] [<I>--ejs</I>
-       <I>appSpec</I>] [<I>--log logSpec</I>] [<I>--home directory</I>] [<I>--threads threads</I>] [<I>--ver-</I>
-       <I>sion</I>] [<I>--verbose</I>]
+       <B>appweb  </B>[<I>--config  configFile</I>] [<I>--chroot directory</I>] [<I>--debugger</I>] [<I>--log</I>
+       <I>logSpec</I>] [<I>--home directory</I>] [<I>--threads threads</I>] [<I>--version</I>] [<I>--verbose</I>]
 
 <B>DESCRIPTION</B>
        Appweb  is  a  compact  embedded HTTP web server.  It is a fast, small-
@@ -46,19 +45,11 @@ APPWEB(1)                        User Commands                       APPWEB(1)
               request and session timeouts.  The <B>-d </B>option  is  an  alias  for
               --debug.
 
-       <B>--ejs name:directory</B>
-              Define  an  Ejscript application by name at the specified direc-
-              tory. The <B>name </B>is the application name and is used as a URL pre-
-              fix. When a request arrives which matches this URL prefix, it is
-              routed to the application to service. For example:
-
-              appweb --ejs /carmen/:/var/www/apps/carmen/
-
        <B>--log logSpec</B>
               Name the Appweb log file. This will override the ErrorLog direc-
-              tive  in  the  configuration  file.   When  the  maximum size is
-              exceeded, the log file will be rotated to logName.old and a  new
-              log  file  will be started. The <B>-l </B>option is an alias for --log.
+              tive in the  configuration  file.   When  the  maximum  size  is
+              exceeded,  the log file will be rotated to logName.old and a new
+              log file will be started. The <B>-l </B>option is an alias  for  --log.
               The syntax is:
 
               --log logName[:logLevel][.maxSize]
@@ -67,12 +58,12 @@ APPWEB(1)                        User Commands                       APPWEB(1)
               Define the server home directory for Appweb.
 
        <B>--threads numThreads</B>
-              Specify the maximum number of threads  to  use  for  the  appweb
-              thread  pool.  This overrides the ThreadLimit configuration file
+              Specify  the  maximum  number  of  threads to use for the appweb
+              thread pool. This overrides the ThreadLimit  configuration  file
               directive.
 
        <B>--verbose</B>
-              Shorthand for --log stdout:4. The <B>-v  </B>option  is  an  alias  for
+              Shorthand  for  --log  stdout:4.  The  <B>-v </B>option is an alias for
               --verbose.
 
        <B>--version</B>

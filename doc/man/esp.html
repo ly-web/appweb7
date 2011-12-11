@@ -1,0 +1,220 @@
+<BODY><PRE>
+ESP(1)                           User Commands                          ESP(1)
+
+<B>NAME</B>
+       esp - ESP Application Generator for Server-Side Web Applications.
+
+<B>SYNOPSIS</B>
+       <B>esp  </B>[<I>--chdir  dir]</I>]  [<I>--config  configFile]</I>] [<I>--database DB]</I>] [<I>--flat</I>]
+       [<I>--listen  [ip:]port</I>]  [<I>--log  logFile:level</I>]  [<I>--overwrite</I>]  [<I>--quiet</I>]
+       [<I>--routeName name</I>] [<I>--routePrefix prefix</I>] [<I>--verbose</I>] commands ...
+
+       <B>Commands:</B>
+        esp clean
+        esp compile
+        esp compile controller name
+        esp compile path/*.esp
+        esp generate app name
+        esp generate controller name [action [, action] ...]
+        esp generate scaffold model [field:type [, field:type] ...]
+        esp generate table name model [field:type [, field:type] ...]
+        esp run
+
+<B>DESCRIPTION</B>
+       The  <B>esp  </B>command generates, manages and runs ESP web applications.  It
+       can generate ESP web applications, controllers,  database  tables,  and
+       scaffolds.
+
+       The  esp command will create directories and generate configuration and
+       source code files that can then be manually edited as required.  Esp is
+       intelligent  and  will  not overwrite existing files, so you can safely
+       edit and regenerate without losing your changes. You can overwrite your
+       changes if you wish to by using the <B>--overwrite </B>switch.
+
+       Esp can run your application by invoking a configured web server.
+
+<B>GENERATING APPLICATIONS</B>
+       To  start  a  new  web  application,  run <B>esp </B>to create the application
+       directory and generate  the  application  configuration  and  essential
+       script files. For example:
+
+             <B>esp generate app blog</B>
+
+       This  will  will  create  a set of directories which have the following
+       meaning:
+
+             controllers    - Controller source
+             cache          - Cache directory for compiled content
+             db             - Databases and scripts
+             layouts        - Web page layout files
+             views          - View source files
+             static         - Static web directory
+             static/images  - Public images
+             static/js      - Client side JavaScripts
+             static/themes  - Application HTML themes
+
+       Most of these directories are initially empty, but  may  be  used  over
+       time.  ESP  follows  conventions  where specific files are stored. This
+       greatly simplifies configuring a web application.
+
+       Esp will also create some files which have the following meaning:
+
+             appweb.config             - Appweb configuration file
+             app.config                - Appweb configuration file
+             esp-app.h                 - Application header file
+             layouts/default.esp       - Default layout web page
+             static/layout.css         - Default layout CSS file
+             static/themes/default.css - Default theme CSS file
+             static/js/jquery.js       - jQuery client side script
+
+<B>GENERATING CONTROLLERS</B>
+       Controllers  are  the  primary  mechanism  for  responding  to   client
+       requests. To generate a controller, run:
+
+             <B>esp generate controller NAME [actions...]</B>
+
+       This  will  create a controller of the requested name. It will create a
+       controller source file in the <B>controllers </B>directory.  If  action  names
+       are  requested,  the controller source will define an action method for
+       each name. If not action names are requested, esp will define a default
+       action  named  <B>index</B>.   You can edit the controller source to meet your
+       needs.
+
+<B>GENERATING TABLES</B>
+       To generate a database table:
+
+             <B>esp generate table NAME [field:type ...]</B>
+
+       If field:type values are supplied, the database migration will  include
+       code to create a column for each specified field of the requested type.
+       The valid database types are:  blob,  boolean,  date,  float,  integer,
+       string, and text.
+
+<B>GENERATING SCAFFOLDS</B>
+       A  scaffold is a generated controller, database table, and set of views
+       that provides add, edit and list functionality for the database  table.
+       Scaffolds  are useful to quickly generate chunks of the application and
+       prototype web pages and actions for managing a database table.  To gen-
+       erate a scaffold:
+
+             <B>esp generate scaffold MODEL [field:type ...]</B>
+
+       This  will  create a scaffold for the specified database table and will
+       generate a controller of the same name.  If field:type values are  sup-
+       plied,  the database migration will include code to create a column for
+       each specified field of the requested type. The  valid  database  types
+       are:  blob, boolean, date, float, integer, string, and text.  The scaf-
+       fold will include an edit action and view that provides  add  and  edit
+       capability.  The list action and view, provides the ability to list the
+       database table rows and select an entry to edit.
+
+<B>COMPILING</B>
+       Esp compiles controllers and ESP pages native  code  shared  libraries.
+       These  are  then  loaded  and run by ESP in response to incoming client
+       requests. Code is compiled only once but can be run many times to  ser-
+       vice incoming requests.
+
+       In  development  mode, ESP will automatically compile the relevant por-
+       tions of the application if the source code is modified. It can  intel-
+       ligently  recompile  controllers  and  ESP pages. However, you can also
+       explicilty recompile portions or the complete appliction.
+
+       Esp can recompile everything via:
+             <B>esp compile ...</B>.
+       This will re-compile each controller and ESP page.
+
+       Esp also provides options for you to individually  compile  controllers
+       and ESP pages. To recompile named pages or controllers:
+
+             <B>esp compile path/*.esp...</B>.
+
+             <B>esp compile controller NAMES...</B>.
+
+       To  compile  the entire application and produce a single shared library
+       file:
+
+             <B>esp --flat compile </B>.
+
+<B>RUNNING</B>
+       To run your application:
+
+             <B>esp run</B>
+
+<B>CLEANING</B>
+       To clean all generated module files:
+
+             <B>esp clean</B>
+
+<B>COMMANDS</B>
+       esp has the following command usage patterns:
+
+             esp clean
+             esp compile
+             esp compile controller name
+             esp compile path/*.esp
+             esp generate app name
+             esp generate controller name [action [, action] ...]
+             esp generate scaffold model [field:type [, field:type] ...]
+             esp generate table name model [field:type [, field:type] ...]
+             esp run
+
+<B>OPTIONS</B>
+       <B>--chdir dir</B>
+             Change the current working directory before beginning processing.
+
+       <B>--config configFile</B>
+             Use the specified config file instead of appweb.conf
+
+       <B>--database Database provider</B>
+             Use the specified database provider. Set to "mdb" or "sqlite".
+
+       <B>--flat</B>
+             Compile the application flat into a single shared library file.
+
+       <B>--listen [ip:]port</B>
+             Define  the  listening  endpoint  address. This will be used when
+             generating an application. The value will  be  patched  into  the
+             generated appweb.conf configuration file.
+
+       <B>--log logFile:level</B>
+             Specify  a  file  to  log  messages.   The syntax is: <B>"--log log-</B>
+             <B>Name[,moduleName][:logLevel]"</B>.  Level 3 will  trace  the  request
+             and response headers.
+
+       <B>--overwrite</B>
+             Overwrite  existing  files.  Ejsweb  normally  will not overwrite
+             existing files. This is to preserve user  changes  to  previously
+             generated files.
+
+       <B>--quiet</B>
+             Suppress diagnostic trace to the console.
+
+       <B>--routeName name</B>
+             This  selects  the Appweb route by name that will be used for the
+             ESP configuration. The ESP directory names, and compilation  com-
+             mands  are  determined  by  the  ESP configuration drawn from the
+             specified route. The default is the first route with the ESP han-
+             dler defined in appweb.conf.
+
+       <B>--routePrefix prefix</B>
+             This selects the Appweb route by prefix that will be used for the
+             ESP configuration. The ESP directory names, and compilation  com-
+             mands  are  determined  by  the  ESP configuration drawn from the
+             specified route. The default is the first route with the ESP han-
+             dler defined in appweb.conf.
+
+       <B>--verbose </B>or <B>-v</B>
+             Run in verbose mode and trace actions to the console.
+
+<B>REPORTING BUGS</B>
+       Report bugs to dev@embedthis.com.
+
+<B>COPYRIGHT</B>
+       Copyright  (C)  2004-2011  Embedthis  Software.   ESP is a trademark of
+       Embedthis Software.
+
+<B>SEE ALSO</B>
+       appweb
+
+esp                              November 2011                          ESP(1)
+</PRE></BODY>

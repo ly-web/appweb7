@@ -5,7 +5,7 @@ if (test.depth > 1) {
 
     const HTTP = (global.tsession && tsession["http"]) || ":4100"
 
-    let command = locate("http") + " --host " + HTTP + " "
+    let command = Cmd.locate("http").portable + " --host " + HTTP + " "
     if (test.verbosity > 2) {
         command += "-v "
     }
@@ -13,12 +13,14 @@ if (test.depth > 1) {
     function run(args): String {
         App.log.debug(5, "[TestRun]", command + args)
         try {
-            result = System.run(command + args)
+            let cmd = Cmd(command + args)
+            assert(cmd.status == 0) 
+            return cmd.response
             assert(true)
         } catch (e) {
             assert(false, e)
         }
-        return result
+        return null
     }
 
     //  Empty get
@@ -59,10 +61,12 @@ if (test.depth > 1) {
     run("--user 'joshua:pass1' /basic/basic.html")
     run("--user 'joshua' --password 'pass1' /basic/basic.html")
 
-    //  Form data
-    data = run("--form 'name=John+Smith&address=300+Park+Avenue' /form.ejs")
-    assert(data.contains('"address": "300 Park Avenue"'))
-    assert(data.contains('"name": "John Smith"'))
+    if (!test || test.config["ejscript"] == 1) {
+        //  Form data
+        data = run("--form 'name=John+Smith&address=300+Park+Avenue' /form.ejs")
+        assert(data.contains('"address": "300 Park Avenue"'))
+        assert(data.contains('"name": "John Smith"'))
+    }
 
     //  PUT file
     run("test.dat /tmp/day.tmp")
@@ -84,31 +88,33 @@ if (test.depth > 1) {
 
     //  Options with show status
     run("--method OPTIONS /index.html")
-    data = run("--showStatus -q --method TRACE /index.html")
+    data = run("--zero --showStatus -q --method TRACE /index.html")
     assert(data.trim() == "406")
 
     //  Show headers
     data = run("--showHeaders /index.html")
-    assert(data.contains('content-type'))
+    assert(data.contains('Content-Type'))
 
     //  Upload
-    let files = Path(".").files().join(" ")
-    data = run("--upload " + files + " /upload.ejs")
-    assert(data.contains('"clientFilename": "http.tst"'))
-    if (test.threads == 1) {
-        assert(Path("../web/tmp/http.tst").exists)
+    if (!test || test.config["ejscript"] == 1) {
+        let files = Path(".").files().join(" ")
+        data = run("--upload " + files + " /upload.ejs")
+        assert(data.contains('"clientFilename": "http.tst"'))
+        if (test.threads == 1) {
+            assert(Path("../web/tmp/http.tst").exists)
+        }
+
+        let files = Path(".").files().join(" ")
+        data = run("--upload --form 'name=John+Smith&address=300+Park+Avenue' " + files + " /upload.ejs")
+        assert(data.contains('"address": "300 Park Avenue"'))
+        assert(data.contains('"clientFilename": "http.tst"'))
+
+        data = run("--cookie 'test-id=12341234; $domain=site.com; $path=/dir/' /form.ejs")
+
+        assert(data.contains('"test-id": '))
+        assert(data.contains('"domain": "site.com"'))
+        assert(data.contains('"path": "/dir/"'))
     }
-
-    let files = Path(".").files().join(" ")
-    data = run("--upload --form 'name=John+Smith&address=300+Park+Avenue' " + files + " /upload.ejs")
-    assert(data.contains('"address": "300 Park Avenue"'))
-    assert(data.contains('"clientFilename": "http.tst"'))
-
-    data = run("--cookie 'test-id=12341234; $domain=site.com; $path=/dir/' /form.ejs")
-
-    assert(data.contains('"test-id": '))
-    assert(data.contains('"domain": "site.com"'))
-    assert(data.contains('"path": "/dir/"'))
 
     //  Ranges
     assert(run("--range 0-4 /numbers.html").trim() == "01234")

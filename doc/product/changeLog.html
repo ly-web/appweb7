@@ -1,13 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!-- BeginDsi "dsi/head.html" -->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>Embedthis Appweb 4.0.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
-    <meta name="description" content="Embedthis Sofware provides open source embedded web servers for devices 
-        and applications." />
+    <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
+        devices and applications." />
 	<meta name="robots" content="index,follow" />
 	<link href="../doc.css" rel="stylesheet" type="text/css" />
 	<link href="../print.css" rel="stylesheet" type="text/css" media="print"/>
@@ -18,16 +17,16 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://www.appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
              <div class="search">
-                 <form method="get" action="http://www.google.com/search" title="Search www.ejscript.org">
+                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
                      <p>
-                        <label title="Search">Search</label> 
+                        <label for="q" title="Search">Search</label> 
                         <input type="text" id="q" name="q" size="15" maxlength="255" />
                         <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="ejscript.org" /> 
-                        <input type="hidden" name="sitesearch" value="ejscript.org" />
+                        <input type="hidden" name="domains" value="appwebserver.org" /> 
+                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
                     </p>
                  </form>
               </div>
@@ -41,13 +40,12 @@
     </div>
     <div class="content">
         <div class="contentRight">
-            <h2>Quick Nav</h2>
+            <h1>Quick Nav</h1>
             <ul>
                 <li><a href="#r4.0.0">Release 4.0.0</a></li>
                 <li><a href="#r3.3.2">Release 3.3.2</a></li>
                 <li><a href="#r3.3.1">Release 3.3.1</a></li>
                 <li><a href="#r3.3.0">Release 3.3.0</a></li>
-                <li><a href="#r3.2.2">Release 3.2.2</a></li>
                 <li><a href="#r3.2.2">Release 3.2.2</a></li>
                 <li><a href="#r3.2.1">Release 3.2.1</a></li>
                 <li><a href="#r3.2.0">Release 3.2.0</a></li>
@@ -57,8 +55,8 @@
                 <li><a href="#r2.4.2">Release 2.4.2</a></li>
             </ul>
 <!-- BeginDsi "dsi/genSeeAlso.html" -->
-            <h2>See Also</h2>
-            <ul>
+            <h1>See Also</h1>
+            <ul class="nav">
                 <li><a href="../guide/appweb/overview.html">Appweb Overview</a></li>
                 <li><a href="../guide/appweb/features.html">Appweb Features</a></li>
                 <li><a href="../product/releaseNotes.html">Release Notes</a></li>
@@ -76,25 +74,24 @@
         <div class="contentLeft">
             <h1>Appweb Change Log</h1>
             <p>The Appweb change log details the major features and changes for each release.</p>
-            <p>See the Appweb <a href="http://github.com/embedthis/appweb-3/issues">issue database</a> for full 
-                details of fixes. See also the
-                Ejscript <a href="http://github.com/embedthis/ejs-1/issues">issue database</a>.</p>
+            <p>See the Appweb <a href="http://github.com/embedthis/appweb-4/issues">issue database</a> for full 
+            details of fixes. </p>
             <a name="r4.0.0" id="r4.0.0"></a>
             <h2 class="section">Changes in 4.0.0</h2>
             <h3>Major Features</h3>
             <ul>
-                <pre>TODO</pre>
+                <li>New Embedded Server Pages (ESP) web framework</li>
+                <li>Request routing with multi-stage, regular expression routes</li>
+                <li>Integrated response caching</li>
+                <li>Multi-language support</li>
+                <li>Support Ejscript 2.0 web framework</li>
+                <li>Extended unit tests</li>
+                <li>Improved documentation and samples</li>
             </ul>
             <h3><strong>API Changes</strong></h3>
             <ul>
-                <li>Enhanced Ejscript 2.0 with new web framework</li>
-                <li>Smaller footprint Ejscript</li>
-                <li>Async I/O and enhanced streaming support</li>
-                <li>C Server Pages (CSP) web framework</li>
-                <li>Faster performance. Ejscript 2-5x faster, CSP for C-level web serving</li>
-                <li>Improved documentation and samples</li>
+                <li>Appweb 4 is a major release and most APIs have been modified based on the updated MPR.</li>
             </ul>
-
             <a name="r3.3.2" id="r3.3.2"></a>
             <h2 class="section">Changes in 3.3.2</h2>
             <!--
@@ -105,8 +102,26 @@
             -->
             <h3>Key Fixes</h3>
             <ul>
-                <li>Fix parsing XML documents with zero length attributes</li>
+                <li>CGI content-length headers</li>
+                <li>parsing XML documents with zero length attributes</li>
                 <li>Initialize blank areas of ejs byte code</li>
+                <li>ejs Array.sort order</li>
+                <li>ejs doc for Date.year</li>
+                <li>warnings in Xcode about OpenSSL</li>
+                <li>multiply defined target rules when building with latest GNU make</li>
+                <li>Remove -G 0 compilation switch for Mips</li>
+                <li>MVC apps with caselessmatch for URI extensions</li>
+                <li>setCookie()</li>
+                <li>PHP with basic/digest authentication requests</li>
+                <li>Session memory leaks</li>
+                <li>X509 certificate verification with SSL</li>
+                <li>BLAST attackSSL</li>
+                <li>Ejscript property scope searching</li>
+                <li>Ejscript setCookie</li>
+                <li>Optimize output of large static files</li>
+                <li>Samples not compiling</li>
+                <li>Windows 64-bit file stat</li>
+                <li>Add huge file support (&gt; 2GB)</li>
             </ul>
             <!--
             <h3><strong>API Changes</strong></h3>
@@ -145,7 +160,7 @@
                 <li>Ensure handlers match() routine is always invoked if required</li>
                 <li>FreeBSD linking fixes</li>
                 <li>CGI for long running requests and requests with large post data</li>
-                <li>Bad reference for req->pathInfo</li>
+                <li>Bad reference for req-&gt;pathInfo</li>
                 <li>ActionProgram directive for CGI</li>
                 <li>REDIRECT_STATIC compat env var for PHP</li>
                 <li>Inheriting AuthName, Require and CustomLog directives</li>
@@ -153,20 +168,20 @@
                 <li>Ejscript: Windows 7 support and VS 10.0</li>
                 <li>Add missing msvcrt version 10 DLL</li>
                 <li>Update Ejscript documentation</li>
-                <li>Premature exit with large forwad time changes</li>
+                <li>Premature exit with large forward time changes</li>
                 <li>CGI with file upload</li>
                 <li>Return status of 401 instead of 404 when missing file and authentication</li>
                 <li>Rewriting the request URI. Now updates filename, alias, location, extension etc.</li>
                 <li>Configure for vxworks on Linux</li>
                 <li>Fix redirections using SSL</li>
                 <li>Fix running CGI/PHP startup for form and upload requests</li>
-                <li>Ejscript: Array.slice with negative indicies</li>
+                <li>Ejscript: Array.slice with negative indices</li>
                 <li>Ejscript: Date/Time calculations for pre 1970 dates</li>
                 <li>Ejscript: Cygwin Math.pow Infinity results</li>
                 <li>Ejscript: Allow JSON encoded arrays in Http form data</li>
                 <li>Ejscript: memory fragmentation</li>
                 <li>Ejscript: exception stack handling</li>
-                <li>Ejscript: parsing XML characters > 127</li>
+                <li>Ejscript: parsing XML characters &gt; 127</li>
                 <li>Ejscript: GC issue with new Function()</li>
                 <li>Ejscript: XSS issue with embedded script in URLs - thanks Gjoko Krstic at Zero Science Lab</li>
                 <li>Ejscript: Compiler spin with }; construct</li>
@@ -201,8 +216,7 @@
             <h3>Key Fixes</h3>
             <ul>
                 <li>Missing linkup script for packaging</li>
-                <li>Timedout requests</li>
-                <li>Update Ejscript to fix some ejscript issues</li>
+                <li>Timed out requests</li>
                 <li>Building with va_list on some systems</li>
                 <li>Parsing IPv6 addresses in the config file</li>
                 <li>Ejscript loading modules fix for ARM</li>
@@ -293,7 +307,6 @@
             <ul>
                 <li>None</li>
             </ul>
-
             <a name="r3.0.2" id="r3.0.2"></a>
             <h2 class="section">Changes in 3.0.2</h2>
             <h3>Major Features</h3>
@@ -381,14 +394,14 @@
                 <li>Integrated Model / View / Controller web framework</li>
                 <li>Smaller and more modular</li>
                 <li>More flexible build configuration</li>
-                <li>Angel process to monitor Appweb and restart if required</li>
+                <li>Manager process to monitor Appweb and restart if required</li>
                 <li>Updates for PHP, OpenSSL and MatrixSSL</li>
                 <li>Enhanced and faster CGI using pipes for I/O transfer</li>
                 <li>XML parser for SOAP and RESTful web services</li>
                 <li>Windows CE support</li>
                 <li>FreeBSD support</li>
                 <li>MAC OSX support</li>
-                <li>Windows 7 and Vista suport</li>
+                <li>Windows 7 and Vista support</li>
                 <li>OpenWrt platform support</li>
                 <li>IPv6 network support</li>
                 <li>Project files for MAC OS Xcode and Microsoft Visual Studio</li>
@@ -449,7 +462,7 @@
                 <li>Fix for CGI on MAC OS X. Would not complete requests</li>
                 <li>Fix for digest authentication on IE 7 / vista</li>
                 <li>Fix for Ejscript @@variables when used inside []</li>
-                <li>Fix for Ejscript hexadecimal comparisions. Was comparing with null incorrectly</li>
+                <li>Fix for Ejscript hexadecimal comparisons. Was comparing with null incorrectly</li>
                 <li>Replace fork with vfork for uclinux and to enhance CGI performance</li>
                 <li>Fix compiling when using ROMFS</li>
             </ul>
@@ -466,7 +479,7 @@
             <h3>Minor</h3>
             <ul>
                 <li>Enhanced MAC OS X support. Builds and runs from svn tree. No installation, source only.</li>
-                <li>Cross development configuration simpilified. Simplified tools.config configuration.</li>
+                <li>Cross development configuration simplified. Simplified tools.config configuration.</li>
                 <li>Improved tool searching algorithms in configure.</li>
                 <li>Update to use latest doxygen for documentation generation.</li>
                 <li>Fix C++ compiler warnings for a cleaner build.</li>
@@ -480,7 +493,7 @@
                 <li>SuSE linux support. Packaged releases provided, make install/uninstall operational.</li>
                 <li>Update uclibc support.</li>
                 <li>Remove requirement to have doxygen during the installation.</li>
-                <li>Increase default input buffer alloction to 1K to include most request headers without having to
+                <li>Increase default input buffer allocation to 1K to include most request headers without having to
                 reallocate memory.</li>
                 <li>Improved documentation on building from source.</li>
             </ul>
@@ -555,7 +568,7 @@
                 <li>SuSE linux support. Packaged releases provided, make install/uninstall operational.</li>
                 <li>Update uclibc support.</li>
                 <li>Remove requirement to have doxygen during the installation.</li>
-                <li>Increase default input buffer alloction to 1K to include most request headers without having to
+                <li>Increase default input buffer allocation to 1K to include most request headers without having to
                 reallocate memory.</li>
                 <li>Improved documentation on building from source.</li>
             </ul>
@@ -577,7 +590,7 @@
             <h3>Minor</h3>
             <ul>
                 <li>Enhanced MAC OS X support. Builds and runs from svn tree. No installation, source only.</li>
-                <li>Cross development configuration simpilified. Simplified tools.config configuration.</li>
+                <li>Cross development configuration simplified. Simplified tools.config configuration.</li>
                 <li>Improved tool searching algorithms in configure.</li>
                 <li>Update to use latest doxygen for documentation generation.</li>
                 <li>Fix C++ compiler warnings for a cleaner build.</li>
@@ -807,7 +820,6 @@
             <h3>Fixes</h3>
             <ul>
                 <li>Fix for VxWorks truncating large files</li>
-                <li>Fix for doubling of EGI variable values</li>
                 <li>Fix PHP flushing</li>
             </ul>
             <h2 class="section">Changes in 2.0.0</h2>
@@ -844,7 +856,7 @@
                 <li>Merged appweb and winAppweb. Windows application intelligently runs as a command line program,
                 windows program or system service depending on the command line switches. Easier invocation by
                 supporting configuration via command line. Can now just run "appweb".</li>
-                <li>File upload module completed and now supported. File upload usable from ESP, EGI and CGI.</li>
+                <li>File upload module completed and now supported. File upload usable from ESP, EJS and CGI.</li>
                 <li>PHP 5.0 support</li>
                 <li>Save configuration routines to save the run-time configuration back to a standard Appweb
                 configuration file.</li>
@@ -890,13 +902,12 @@
                 <li>Fix for browser not refreshing content correctly. Change to copyHandler. Thanks Axialdev,
                 Mediatrix</li>
                 <li>Fix for single threaded compilation. Thanks Pauli.</li>
-                <li>Fix for copmiling samples when using --disable-static</li>
+                <li>Fix for compiling samples when using --disable-static</li>
                 <li>Fix for running configure on linux. Changes to bin/bld. Thanks Vinvagh.</li>
                 <li>Fix for uClinux building. Changes to bin/bld to use BLD_CFLAGS instead of BLD_LDFLAGS. Thanks
                 Ben.</li>
-                <li>Fix for building on Linux. Was not testing for existance of cygpath correctly. Thanks Barry Stone,
-                et al.</li>
-                <li>Fixed bugs in EJS for comparisions with non-boolean operands. Thanks Martin Brochu.</li>
+                <li>Fix for building on Linux. Was not testing for existence of cygpath correctly. Thanks Barry Stone.</li>
+                <li>Fixed bugs in EJS for comparisons with non-boolean operands. Thanks Martin Brochu.</li>
                 <li>Fix EJS issue with unary minus calculations.</li>
             </ul>
             <h2 class="section">Changes in 1.3.4-5</h2>
@@ -926,21 +937,21 @@
                 default.</li>
                 <li>Updated WinTools to use latest Cygwin tools.</li>
                 <li>Added file upload limit. Directive is LimitUploadSize.</li>
-                <li>Convert windows make package to use cygwin zip utilities and not wzzip.</li>
+                <li>Convert windows make package to use cygwin zip utilities and not winzip.</li>
             </ul>
             <h3>Fixes</h3>
             <ul>
                 <li>Fix including of ESP include files to look for the included file in the same directory as the base
                 ESP page.</li>
                 <li>Fix for "make uninstall" to not to change permissions of any standard directories</li>
-                <li>Fix seg fault on large ESP pages. This occurred when the page exceeded the maximum configured via
+                <li>Fix segfault on large ESP pages. This occurred when the page exceeded the maximum configured via
                 the LimitResponseBody directive. (Thanks Mediatrix). Use LimitScriptSize in future to specify or modify
                 the default maximum size (128K) of a script.</li>
                 <li>Added clearer error messages when the maximum script size is exceeded.</li>
                 <li>Fixed missing API documentation.</li>
                 <li>Fix permissions on the bin directory for installed appweb (make install).</li>
                 <li>Fix errors in make install for missing users.dist, groups.dist and libsslModule.so</li>
-                <li>Fix obsecure hang in httpClient if server dies.</li>
+                <li>Fix obscure hang in httpClient if server dies.</li>
                 <li>Add cpio, id and awk to WinTools. Also added curl for those using the test framework via an Appweb
                 subversion checkout.</li>
                 <li>Fix assert in ESP when assigning to non-existent object arrays</li>
@@ -987,8 +998,6 @@
                     <ul>
                         <li>Fix in validating URLs with consecutive "/" characters. (Thanks Tom Gerardy)</li>
                         <li>Fix for upload handler with ":" characters in the upload URL. ((Thanks Pauli Saksa)</li>
-                        <li>Fix for EGI and the Compat module for GoAhead WebServer compatibility (Thanks Hew
-                        Wolff).</li>
                         <li>Add new directive ListenIF that allows listening on an interface. (Thanks Pauli Saksa)</li>
                         <li>Fix corruption bug for long ESP/EJS tokens. (Thanks Axialdev)</li>
                     </ul>
@@ -1048,7 +1057,6 @@
                 <li>Easier invocation by supporting configuration via command line. Can now just run "appweb".</li>
                 <li>Merged appweb and winAppweb. Windows application intelligently runs as a command line program,
                 windows program or system service depending on the command line switches.</li>
-                <li>File upload module completed and now supported. File upload usable from ESP, EGI and CGI.</li>
                 <li>PHP 5.0 support</li>
                 <li>Save configuration routines to save the run-time configuration back to a standard Appweb
                 configuration file.</li>
@@ -1057,8 +1065,8 @@
             <ul>
                 <li>Simplify the build system by removing the need for template files.</li>
                 <li>Aliases are now per host instead of being per server.</li>
-                <li>Allow Aliases to preceed or follow directory blocks that describe the alias destination.</li>
-                <li>Build system improvements for building external packges</li>
+                <li>Allow Aliases to come before or after directory blocks that describe the alias destination.</li>
+                <li>Build system improvements for building external packages</li>
                 <li>Improved 64-bit and Solaris support.</li>
             </ul>
             <h3>Fixes</h3>
@@ -1304,7 +1312,7 @@
                 operate according to the standards (Thanks Barry Drake).</li>
                 <li>Fix for launching Firefox / Firebird by double-clicking on the Windows tray icon. (Thanks Kenny
                 M.).</li>
-                <li>Fix for bad DocumentIndex directive if occuring after the ScriptAlias directive for CGI files.
+                <li>Fix for bad DocumentIndex directive if occurring after the ScriptAlias directive for CGI files.
                 (Thanks again Kenny).</li>
                 <li>Several fixes for memory leaks when compiling Multithreaded. (Thanks Nicolas Ferre).</li>
             </ul>
@@ -1365,8 +1373,8 @@
                 <li>Add support for TRACE and OPTIONS HTTP methods</li>
                 <li>Tighten handler checking to only respond to supported HTTP methods</li>
                 <li>Allow ESP pages to post back forms to themselves. Test on REQUEST_METHOD == "POST" to determine if
-                the page is being displayed for the first time or whether the form is being submitted. This eliminates
-                the need for EGI forms in many cases. One ESP page can be used to display and process the data.</li>
+                the page is being displayed for the first time or whether the form is being submitted. 
+                One ESP page can be used to display and process the data.</li>
                 <li>Improved debug trace for httpClient and the appweb servers.</li>
                 <li>Improved unit test for CGI and</li>
             </ul>
@@ -1436,7 +1444,7 @@
                 <li>Fixed bug handling empty password and group authorization files.</li>
                 <li>Fix windows link errors 4217, 4049</li>
                 <li>Fix windows bug where aliases without drive specs were not handled correctly.</li>
-                <li>Fix bug escaping and descaping URLs.</li>
+                <li>Fix bug escaping URLs.</li>
                 <li>Fix bug with windows event processing under heavy load where an event could get lost.</li>
                 <li>Lots of minor fixes.</li>
             </ul>
@@ -1493,7 +1501,7 @@
                 <li>Multithreaded with high performance thread pool</li>
                 <li>Request throughput (&gt; 4,500 requests per second)</li>
                 <li>Scales on multi-cpu systems</li>
-                <li>Small memory footprint even under heavy load (from 800K)</li>
+                <li>Small memory footprint even under heavy load (from 1MB)</li>
             </ul>
             <h3>Developer Features</h3>
             <ul>
@@ -1515,7 +1523,7 @@
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
-            All rights reserved. Embedthis, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
 <!-- EndDsi -->

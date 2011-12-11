@@ -11,125 +11,136 @@
 #if BLD_FEATURE_SSL
 /*********************************** Code *************************************/
 
-static int parseSsl(Http *http, cchar *key, char *value, MaConfigState *state)
+static bool checkSsl(MaState *state)
 {
-    HttpLoc     *loc;
-    HttpHost    *host;
-    char        *path, *tok, *word, *enable, *provider;
-    char        prefix[MPR_MAX_FNAME];
-    int         protoMask, mask;
     static int  hasBeenWarned = 0;
 
-    host = state->host;
-    loc = state->loc;
-
-    scopy(prefix, sizeof(prefix), key);
-    prefix[3] = '\0';
-
-    if (scasecmp(prefix, "SSL") != 0) {
-        return 0;
-    }
-    if (!mprHasSecureSockets(http)) {
+    if (!mprHasSecureSockets()) {
         if (!hasBeenWarned++) {
             mprError("Missing an SSL Provider");
         }
         return 0;
-        /* return MPR_ERR_BAD_SYNTAX; */
     }
-    if (loc->ssl == 0) {
-        loc->ssl = mprCreateSsl(loc);
+    if (state->route->ssl == 0) {
+        state->route->ssl = mprCreateSsl(state->route);
     }
-#if UNUSED || 1
-    if (scasecmp(key, "SSLEngine") == 0 || scasecmp(key, "SSL") == 0) {
-        enable = stok(value, " \t", &tok);
-        provider = stok(0, " \t", &tok);
-        if (scasecmp(value, "on") == 0 || *value == '\0') {
-            if (httpSecureServerByName(host->name, loc->ssl) < 0) {
-                mprError("No HttpServer at %s to secure", host->name);
-            }
-        } else if (scasecmp(value, "off") == 0) {
-            if (httpSecureServerByName(host->name, 0) < 0) {
-                mprError("No HttpServer at %s to disable SSL", host->name);
-            }
-        } else {
-            /*  MOB - should doc this option:  SSLEngine IP:PORT */
-            if (httpSecureServerByName(value, loc->ssl) < 0) {
-                mprError("No HttpServer at %s to secure", value);
-            }
-        }
-        return 1;
-    }
-#else
-    if (scasecmp(key, "SSLEngine") == 0) {
-        mprError("SSLEngine is deprecated. Please use ListenSecure");
-    }
+    return 1;
+}
+
+
+#if FUTURE
+static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
 #endif
-    path = httpMakePath(host, strim(value, "\"", MPR_TRIM_BOTH));
 
-    if (scasecmp(key, "SSLCACertificatePath") == 0) {
-        mprSetSslCaPath(loc->ssl, path);
-        return 1;
+static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *value)
+{
+    checkSsl(state);
+    mprSetSslCaPath(state->route->ssl, mprJoinPath(state->host->home, value));
+    return 0;
+}
 
-    } else if (scasecmp(key, "SSLCACertificateFile") == 0) {
-        mprSetSslCaFile(loc->ssl, path);
-        return 1;
 
-    } else if (scasecmp(key, "SSLCertificateFile") == 0) {
-        mprSetSslCertFile(loc->ssl, path);
-        return 1;
+static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *value)
+{
+    checkSsl(state);
+    mprSetSslCaFile(state->route->ssl, mprJoinPath(state->host->home, value));
+    return 0;
+}
 
-    } else if (scasecmp(key, "SSLCertificateKeyFile") == 0) {
-        mprSetSslKeyFile(loc->ssl, path);
-        return 1;
 
-    } else if (scasecmp(key, "SSLCipherSuite") == 0) {
-        mprSetSslCiphers(loc->ssl, value);
-        return 1;
+static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
+{
+    checkSsl(state);
+    mprSetSslCertFile(state->route->ssl, mprJoinPath(state->host->home, value));
+    return 0;
+}
 
-    } else if (scasecmp(key, "SSLVerifyClient") == 0) {
-        if (scasecmp(value, "require") == 0) {
-            mprVerifySslClients(loc->ssl, 1);
 
-        } else if (scasecmp(value, "none") == 0) {
-            mprVerifySslClients(loc->ssl, 0);
+static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *value)
+{
+    checkSsl(state);
+    mprSetSslKeyFile(state->route->ssl, mprJoinPath(state->host->home, value));
+    return 0;
+}
 
-        } else {
-            return -1;
-        }
-        return 1;
 
-    } else if (scasecmp(key, "SSLProtocol") == 0) {
-        protoMask = 0;
-        word = stok(value, " \t", &tok);
-        while (word) {
-            mask = -1;
-            if (*word == '-') {
-                word++;
-                mask = 0;
-            } else if (*word == '+') {
-                word++;
-            }
-            if (scasecmp(word, "SSLv2") == 0) {
-                protoMask &= ~(MPR_PROTO_SSLV2 & ~mask);
-                protoMask |= (MPR_PROTO_SSLV2 & mask);
+static int sslCipherSuiteDirective(MaState *state, cchar *key, cchar *value)
+{
+    checkSsl(state);
+    mprSetSslCiphers(state->route->ssl, value);
+    return 0;
+}
 
-            } else if (scasecmp(word, "SSLv3") == 0) {
-                protoMask &= ~(MPR_PROTO_SSLV3 & ~mask);
-                protoMask |= (MPR_PROTO_SSLV3 & mask);
 
-            } else if (scasecmp(word, "TLSv1") == 0) {
-                protoMask &= ~(MPR_PROTO_TLSV1 & ~mask);
-                protoMask |= (MPR_PROTO_TLSV1 & mask);
+static int sslDirective(MaState *state, cchar *key, cchar *value)
+{
+    char    *provider;
+    bool    on;
 
-            } else if (scasecmp(word, "ALL") == 0) {
-                protoMask &= ~(MPR_PROTO_ALL & ~mask);
-                protoMask |= (MPR_PROTO_ALL & mask);
-            }
-            word = stok(0, " \t", &tok);
-        }
-        mprSetSslProtocols(loc->ssl, protoMask);
-        return 1;
+    if (!maTokenize(state, value, "%B ?S", &on, &provider)) {
+        return MPR_ERR_BAD_SYNTAX;
     }
+    if (on) {
+        if (httpSecureEndpointByName(state->host->name, state->route->ssl) < 0) {
+            mprError("No HttpEndpoint at %s to secure", state->host->name);
+            return MPR_ERR_BAD_STATE;
+        }
+    }
+    return 0;
+}
+
+
+static int sslVerifyClientDirective(MaState *state, cchar *key, cchar *value)
+{
+    checkSsl(state);
+    if (scasecmp(value, "require") == 0) {
+        mprVerifySslClients(state->route->ssl, 1);
+
+    } else if (scasecmp(value, "none") == 0) {
+        mprVerifySslClients(state->route->ssl, 0);
+
+    } else {
+        mprError("Unknown verify client option");
+        return MPR_ERR_BAD_STATE;
+    }
+    return 0;
+}
+
+static int sslProtocolDirective(MaState *state, cchar *key, cchar *value)
+{
+    char    *word, *tok;
+    int     mask, protoMask;
+
+    checkSsl(state);
+    protoMask = 0;
+    word = stok(sclone(value), " \t", &tok);
+    while (word) {
+        mask = -1;
+        if (*word == '-') {
+            word++;
+            mask = 0;
+        } else if (*word == '+') {
+            word++;
+        }
+        if (scasecmp(word, "SSLv2") == 0) {
+            protoMask &= ~(MPR_PROTO_SSLV2 & ~mask);
+            protoMask |= (MPR_PROTO_SSLV2 & mask);
+
+        } else if (scasecmp(word, "SSLv3") == 0) {
+            protoMask &= ~(MPR_PROTO_SSLV3 & ~mask);
+            protoMask |= (MPR_PROTO_SSLV3 & mask);
+
+        } else if (scasecmp(word, "TLSv1") == 0) {
+            protoMask &= ~(MPR_PROTO_TLSV1 & ~mask);
+            protoMask |= (MPR_PROTO_TLSV1 & mask);
+
+        } else if (scasecmp(word, "ALL") == 0) {
+            protoMask &= ~(MPR_PROTO_ALL & ~mask);
+            protoMask |= (MPR_PROTO_ALL & mask);
+        }
+        word = stok(0, " \t", &tok);
+    }
+    mprSetSslProtocols(state->route->ssl, protoMask);
     return 0;
 }
 
@@ -139,7 +150,8 @@ static int parseSsl(Http *http, cchar *key, char *value, MaConfigState *state)
  */
 int maSslModuleInit(Http *http, MprModule *module)
 {
-    HttpStage     *stage;
+    HttpStage   *stage;
+    MaAppweb    *appweb;
 
     if (mprLoadSsl(1) == 0) {
         return MPR_ERR_CANT_CREATE;
@@ -147,7 +159,19 @@ int maSslModuleInit(Http *http, MprModule *module)
     if ((stage = httpCreateStage(http, "sslModule", HTTP_STAGE_MODULE, module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
-    stage->parse = (HttpParse) parseSsl; 
+    appweb = httpGetContext(http);
+    maAddDirective(appweb, "SSL", sslDirective);
+    maAddDirective(appweb, "SSLEngine", sslDirective);
+#if FUTURE && MOB
+    maAddDirective(appweb, "ListenSecure", listenSecureDirective);
+#endif
+    maAddDirective(appweb, "SSLCACertificateFile", sslCaCertificateFileDirective);
+    maAddDirective(appweb, "SSLCACertificatePath", sslCaCertificatePathDirective);
+    maAddDirective(appweb, "SSLCertificateFile", sslCertificateFileDirective);
+    maAddDirective(appweb, "SSLCertificateKeyFile", sslCertificateKeyFileDirective);
+    maAddDirective(appweb, "SSLCipherSuite", sslCipherSuiteDirective);
+    maAddDirective(appweb, "SSLProtocol", sslProtocolDirective);
+    maAddDirective(appweb, "SSLVerifyClient", sslVerifyClientDirective);
     return 0;
 }
 #else
@@ -174,7 +198,7 @@ int maSslModuleInit(Http *http, MprModule *mp)
     under the terms of the GNU General Public License as published by the 
     Free Software Foundation; either version 2 of the License, or (at your 
     option) any later version. See the GNU General Public License for more 
-    details at: http://www.embedthis.com/downloads/gplLicense.html
+    details at: http://embedthis.com/downloads/gplLicense.html
     
     This program is distributed WITHOUT ANY WARRANTY; without even the 
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
@@ -183,7 +207,7 @@ int maSslModuleInit(Http *http, MprModule *mp)
     proprietary programs. If you are unable to comply with the GPL, you must
     acquire a commercial license to use this software. Commercial licenses 
     for this software and support services are available from Embedthis 
-    Software at http://www.embedthis.com 
+    Software at http://embedthis.com 
     
     Local variables:
     tab-width: 4

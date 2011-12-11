@@ -12,115 +12,133 @@
 /*  
     Create a web server described by a config file. 
  */
-MaMeta *maCreateWebServer(cchar *configFile)
+int maRunWebServer(cchar *configFile)
 {
     Mpr         *mpr;
     MaAppweb    *appweb;
-    MaMeta      *meta;
+    MaServer    *server;
+    int         rc;
 
-    meta = NULL;
+    rc = MPR_ERR_CANT_CREATE;
     if ((mpr = mprCreate(0, NULL, 0)) == 0) {
         mprError("Can't create the web server runtime");
-        return 0;
-    }
-    if (mprStart() < 0) {
-        mprError("Can't start the web server runtime");
     } else {
-        if ((appweb = maCreateAppweb(mpr)) == 0) {
-            mprError("Can't create appweb object");
+        if (mprStart() < 0) {
+            mprError("Can't start the web server runtime");
         } else {
-            if ((meta = maCreateMeta(appweb, "default", ".", NULL, 0)) == 0) {
-                mprError("Can't create the web server");
+            if ((appweb = maCreateAppweb(mpr)) == 0) {
+                mprError("Can't create appweb object");
             } else {
-                if (maParseConfig(meta, configFile) < 0) {
-                    mprError("Can't parse the config file %s", configFile);
-                    meta = 0;
+                mprAddRoot(appweb);
+                if ((server = maCreateServer(appweb, 0)) == 0) {
+                    mprError("Can't create the web server");
+                } else {
+                    if (maParseConfig(server, configFile, 0) < 0) {
+                        mprError("Can't parse the config file %s", configFile);
+                    } else {
+                        if (maStartServer(server) < 0) {
+                            mprError("Can't start the web server");
+                        } else {
+                            mprServiceEvents(-1, 0);
+                            rc = 0;
+                        }
+                        maStopServer(server);
+                    }
                 }
+                mprRemoveRoot(appweb);
             }
         }
     }
-    if (mpr) {
-        mprDestroy(0);
-    }
-    return meta;
-}
-
-
-/*  
-    Service requests for a web server.
- */
-int maServiceWebServer(MaMeta *meta)
-{
-    if (maStartMeta(meta) < 0) {
-        mprError("Can't start the web server");
-        return MPR_ERR_CANT_CREATE;
-    }
-    mprServiceEvents(-1, 0);
-    maStopMeta(meta);
-    return 0;
-}
-
-
-/*  
-    Run a web server using a config file. 
- */
-int maRunWebServer(cchar *configFile)
-{
-    MaMeta      *meta;
-    int         rc;
-
-    if ((meta = maCreateWebServer(configFile)) == 0) {
-        return MPR_ERR_CANT_CREATE;
-    }
-    mprAddRoot(meta);
-    rc = maServiceWebServer(meta);
-    mprRemoveRoot(meta);
+    mprDestroy(MPR_EXIT_DEFAULT);
     return rc;
 }
 
 
-int maRunSimpleWebServer(cchar *ip, int port, cchar *docRoot)
+/*
+    Run a web server not based on a config file.
+ */
+int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents)
 {
     Mpr         *mpr;
-    MaMeta      *meta;
+    MaServer    *server;
     MaAppweb    *appweb;
+    int         rc;
 
     /*  
         Initialize and start the portable runtime services.
      */
+    rc = MPR_ERR_CANT_CREATE;
     if ((mpr = mprCreate(0, NULL, 0)) == 0) {
         mprError("Can't create the web server runtime");
-        return MPR_ERR_CANT_CREATE;
+    } else {
+        if (mprStart(mpr) < 0) {
+            mprError("Can't start the web server runtime");
+        } else {
+            if ((appweb = maCreateAppweb(mpr)) == 0) {
+                mprError("Can't create the web server http services");
+            } else {
+                mprAddRoot(appweb);
+                if ((server = maCreateServer(appweb, 0)) == 0) {
+                    mprError("Can't create the web server");
+                } else {
+                    if (maConfigureServer(server, 0, home, documents, ip, port) < 0) {
+                        mprError("Can't create the web server");
+                    } else {
+                        if (maStartServer(server) < 0) {
+                            mprError("Can't start the web server");
+                        } else {
+                            mprServiceEvents(-1, 0);
+                            rc = 0;
+                        }
+                        maStopServer(server);
+                    }
+                }
+                mprRemoveRoot(appweb);
+            }
+        }
+        mprDestroy(MPR_EXIT_DEFAULT);
     }
-    if (mprStart(mpr) < 0) {
-        mprError("Can't start the web server runtime");
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-    if ((appweb = maCreateAppweb(mpr)) == 0) {
-        mprError("Can't create the web server http services");
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-
-    /*  
-        Create and start the HTTP server. Give the server a name of "default" and define "." as the default serverRoot, 
-        ie. the directory with the server configuration files.
-     */
-    if ((meta = maCreateMeta(appweb, ip, ".", ip, port)) == 0) {
-        mprError("Can't create the web server");
-        return MPR_ERR_CANT_CREATE;
-    }
-    httpSetHostDocumentRoot(meta->defaultHost, docRoot);
-    
-    if (maStartMeta(meta) < 0) {
-        mprError("Can't start the web server");
-        return MPR_ERR_CANT_CREATE;
-    }
-    mprServiceEvents(-1, 0);
-    maStopMeta(meta);
-    mprDestroy(MPR_EXIT_DEFAULT);
-    return 0;
+    return rc;
 }
 
+
+//  BLOG
+/*
+    This will restart the default server on a new IP:PORT. It will stop listening on the default endpoint on the default
+    server, optionally modify the IP:PORT and resume listening. NOTE: running requests will be unaffected.
+    WARNING: this is demonstration code and has no error checking.
+ */
+void maRestartServer(cchar *ip, int port)
+{
+    MaAppweb        *appweb;
+    MaServer        *server;
+    HttpEndpoint    *endpoint;
+
+    appweb = MPR->appwebService;
+    server = mprGetFirstItem(appweb->servers);
+    lock(appweb->servers);
+    endpoint = mprGetFirstItem(server->endpoints);
+    httpStopEndpoint(endpoint);
+
+    /* 
+        Alternatively, iterate over all endpoints by
+
+        Http *http = MPR->httpService;
+        int  next;
+        for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
+            ...
+        }
+     */
+
+    if (port) {
+        endpoint->port = port;
+    }
+    if (ip) {
+        endpoint->ip = sclone(ip);
+    }
+    httpStartEndpoint(endpoint);
+    unlock(appweb->servers);
+}
 
 /*
     @copy   default
@@ -138,7 +156,7 @@ int maRunSimpleWebServer(cchar *ip, int port, cchar *docRoot)
     under the terms of the GNU General Public License as published by the
     Free Software Foundation; either version 2 of the License, or (at your
     option) any later version. See the GNU General Public License for more
-    details at: http://www.embedthis.com/downloads/gplLicense.html
+    details at: http://embedthis.com/downloads/gplLicense.html
 
     This program is distributed WITHOUT ANY WARRANTY; without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -147,7 +165,7 @@ int maRunSimpleWebServer(cchar *ip, int port, cchar *docRoot)
     proprietary programs. If you are unable to comply with the GPL, you must
     acquire a commercial license to use this software. Commercial licenses
     for this software and support services are available from Embedthis
-    Software at http://www.embedthis.com
+    Software at http://embedthis.com
 
     Local variables:
     tab-width: 4

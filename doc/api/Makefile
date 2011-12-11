@@ -6,10 +6,9 @@
 
 include		.makedep
 
-gen: prep mpr.html ejs.html appweb.html
+PRE_DIRS	= appweb esp
 
-prep:
-	rm -f prep mpr.html ejs.html appweb.html
+gen: mpr.html http.html appweb.html esp.html
 
 mpr.html: Makefile mprBare.html *.tem
 	rm -f mpr.html
@@ -17,11 +16,11 @@ mpr.html: Makefile mprBare.html *.tem
 	cat mprHeader.tem >mpr.html
 	cat mprBare.html apiFooter.tem >>mpr.html
 
-ejs.html: Makefile ejsBare.html *.tem
-	rm -f ejs.html
-	$(call log) "[Generate]" "ejs.html"
-	cat ejsHeader.tem >ejs.html
-	cat ejsBare.html apiFooter.tem >>ejs.html
+http.html: Makefile httpBare.html *.tem
+	rm -f http.html
+	$(call log) "[Generate]" "http.html"
+	cat httpHeader.tem >http.html
+	cat httpBare.html apiFooter.tem >>http.html
 
 appweb.html: Makefile appwebBare.html *.tem
 	make -C appweb gen
@@ -29,6 +28,13 @@ appweb.html: Makefile appwebBare.html *.tem
 	$(call log) "[Generate]" "appweb.html"
 	cat appwebHeader.tem >appweb.html
 	cat appwebBare.html apiFooter.tem >>appweb.html
+
+esp.html: Makefile espBare.html *.tem
+	make -C esp gen
+	rm -f esp.html
+	$(call log) "[Generate]" "esp.html"
+	cat espHeader.tem >esp.html
+	cat espBare.html apiFooter.tem >>esp.html
 
 tidy:
 	$(call log) "[Tidy]" "*.html"

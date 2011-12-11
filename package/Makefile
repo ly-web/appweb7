@@ -11,8 +11,15 @@ PRE_DIRS	= $(BLD_HOST_OS) all
 dependExtra:
 	[ "$(shell echo *.sh)" != "*.sh" ] && chmod +x *.sh ; true
 
-dist:
-	echo make dist not yet implemented
+packageFinal:
+	$(MAKE) -C .. packageRelease
+	if [ `id -u` = 0 ] ; then \
+		if logname >/dev/null 2>&1 ; then \
+			priv chown -R `logname` $(BLD_OUT_DIR) ; \
+		fi ; \
+	fi
+	$(MAKE) -C .. packageCombo
+	$(MAKE) -C .. packageFlat
 
 #
 #   Local variables:

@@ -20,13 +20,22 @@ configureProduct() {
 	cleanup)
 		rm -f "${BLD_CFG_PREFIX}/".${BLD_PRODUCT}_pid.log
 		rm -f "${BLD_CFG_PREFIX}/${BLD_PRODUCT}Install.conf"
+		rm -f "${BLD_CFG_PREFIX}/${BLD_PRODUCT}.conf.bak"
+		rm -rf "${BLD_CFG_PREFIX}/ssl"
+		rm -rf "${BLD_CFG_PREFIX}/config"
+		rm -rf "${BLD_CFG_PREFIX}/apps"
 		rm -f "${BLD_PRD_PREFIX}/install.conf"
 		rm -f "${BLD_PRD_PREFIX}/fileList.txt"
 		rm -fr "/var/${BLD_PRODUCT}"
+		rm -fr "/var/spool/${BLD_PRODUCT}"
 		rm -f "${BLD_LIB_PREFIX}/libcrypto"*
 		rm -f "${BLD_LIB_PREFIX}/libssl"*
+		rm -f "${BLD_LIB_PREFIX}/*.mod"
+		rm -f "${BLD_LIB_PREFIX}/*.so"
 		rm -f "${BLD_LOG_PREFIX}"/access.log*
 		rm -f "${BLD_LOG_PREFIX}"/error.log*
+		rm -rf "${BLD_SPL_PREFIX}"
+		rm -rf "${BLD_INC_PREFIX}"
 		;;
 
     complete)
@@ -37,9 +46,9 @@ configureProduct() {
 		[ $QUIET = 0 ] && log Configure ${BLD_PRODUCT} ; true
 		if [ $TASK = Install -a "${DO_BINARY}" = "1" ] ; then
 			BLD_CFG_PREFIX="$ORIG_BLD_CFG_PREFIX" BLD_WEB_PREFIX="$ORIG_BLD_WEB_PREFIX" \
-			BLD_DOC_PREFIX="$ORIG_BLD_DOC_PREFIX" BLD_MOD_PREFIX="$ORIG_BLD_MOD_PREFIX" \
+			BLD_DOC_PREFIX="$ORIG_BLD_DOC_PREFIX" BLD_LIB_PREFIX="$ORIG_BLD_LIB_PREFIX" \
 			BLD_MAN_PREFIX="$ORIG_BLD_MAN_PREFIX" BLD_SAM_PREFIX="$ORIG_BLD_SAM_PREFIX" \
-            BLD_LOG_PREFIX="$ORIGBLD_LOG_PREFIX" \
+            BLD_LOG_PREFIX="$ORIG_BLD_LOG_PREFIX" BLD_SPL_PREFIX="$ORIG_BLD_SPL_PREFIX" \
             BLD_HTTP_PORT=$BLD_HTTP_PORT BLD_SSL_PORT=$BLD_SSL_PORT BLD_SERVER=`hostname` \
                 patchAppwebConf "${BLD_CFG_PREFIX}/appweb.conf" \
                     "${BLD_CFG_PREFIX}/conf/hosts/ssl-default.conf" \
@@ -50,14 +59,12 @@ configureProduct() {
 
 	copy)
 		if [ -x "${BLD_WEB_PREFIX}" -a "$TASK" = Package ] ; then
-			find "${BLD_WEB_PREFIX}" -type d | while read f
-            do
+			find "${BLD_WEB_PREFIX}" -type d | while read f ; do
                 chmod 755 "$f"
             done
-			find "${BLD_WEB_PREFIX}" -type f | while read f
-			do
-				chmod 644 "$f"
-			done
+#		find "${BLD_WEB_PREFIX}" -type f | while read f ; do
+#			chmod 644 "$f"
+#		done
 		fi
 		;;
 
@@ -65,92 +72,22 @@ configureProduct() {
 		;;
 	
 	install)
-		[ $QUIET = 0 ] && 
-		log Installing "${BLD_PRODUCT} service"
-		if [ $BLD_HOST_OS = WIN ] ; then
-			if [ -x "$BLD_BIN_PREFIX/angel.exe" ] ; then
-				"$BLD_BIN_PREFIX/angel" --install $BLD_BIN_PREFIX/$BLD_PRODUCT
-			fi
-
-		elif which launchctl >/dev/null 2>&1 ; then
-            local company=`echo $BLD_COMPANY | tr '[:upper:]' '[:lower:']`
-            launchctl unload /Library/LaunchDaemons/com.${company}.${BLD_PRODUCT}.plist 2>/dev/null
-            launchctl load -w /Library/LaunchDaemons/com.${company}.${BLD_PRODUCT}.plist
-
-		elif type chkconfig >/dev/null 2>&1 ; then
-			chkconfig --del $BLD_PRODUCT  >/dev/null
-			chkconfig --add $BLD_PRODUCT >/dev/null
-			chkconfig --level 5 $BLD_PRODUCT on >/dev/null
-
-		elif type update-rc.d >/dev/null 2>&1 ; then
-			update-rc.d $BLD_PRODUCT defaults 90 10 >/dev/null
-
-		else
-			echo "Can't find tools to install $BLD_NAME service"
-		fi
+		[ $QUIET = 0 ] && log Installing "${BLD_PRODUCT} service"
+        appman install
 		;;
 
 	uninstall)
 		[ $TASK = Remove -a $QUIET = 0 ] && log Uninstall "${BLD_PRODUCT} service"
-		if [ $BLD_HOST_OS = WIN ] ; then
-			if [ -x "$BLD_BIN_DIR/angel.exe" ] ; then
-				"$BLD_BIN_DIR/angel" --uninstall $BLD_BIN_PREFIX/$BLD_PRODUCT
-			fi
-		elif which launchctl >/dev/null 2>&1 ; then
-            local company=`echo $BLD_COMPANY | tr '[:upper:]' '[:lower:']`
-            launchctl unload -w /Library/LaunchDaemons/com.${company}.${BLD_PRODUCT}.plist 2>/dev/null
-		elif type chkconfig >/dev/null 2>&1 ; then
-			chkconfig --del $BLD_PRODUCT >/dev/null 2>&1
-			rm -f "${BLD_ROOT_PREFIX}/etc/rc.d/init.d/${BLD_PRODUCT}"
-			rm -f "${BLD_ROOT_PREFIX}/etc/rc.d/rc*.d/"???${BLD_PRODUCT}
-		elif type update-rc.d >/dev/null 2>&1 ; then
-			update-rc.d -f $BLD_PRODUCT remove >/dev/null
-		else
-			echo "Can't find tools to uninstall $BLD_NAME service"
-		fi
+        appman uninstall 2>/dev/null
 		;;
 
 	start|stop)
 		if [ $action = start ] ; then
-			verb=Starting
-            [ $QUIET = 0 ] && log $verb $BLD_PRODUCT
+            [ $QUIET = 0 ] && log Starting $BLD_PRODUCT
+            appman enable start
 		else
-			verb=Stopping
-            [ $TASK = Remove -a $QUIET = 0 ] && log Stop $BLD_PRODUCT
-		fi
-
-		if [ $BLD_HOST_OS = WIN ] ; then
-			if [ $action = start ] ; then
-				if [ -x "$BLD_BIN_PREFIX/angel.exe" ] ; then
-					"$BLD_BIN_PREFIX/angel" --start $BLD_BIN_PREFIX/$BLD_PRODUCT
-				fi
-				if [ -x "$BLD_BIN_PREFIX/${BLD_PRODUCT}Monitor.exe" ] ; then
-					sleep 5
-					"$BLD_BIN_PREFIX/${BLD_PRODUCT}Monitor" &
-				fi
-			else 
-				if [ -x "$BLD_BIN_DIR/angel.exe" ] ; then
-					"$BLD_BIN_DIR/angel" --stop $BLD_BIN_PREFIX/$BLD_PRODUCT
-				fi
-				if [ -x "$BLD_BIN_DIR/${BLD_PRODUCT}Monitor.exe" ] ; then
-					"$BLD_BIN_DIR/${BLD_PRODUCT}Monitor" --stop
-				fi
-			fi
-		elif which launchctl >/dev/null 2>&1 ; then
-            local company=`echo $BLD_COMPANY | tr '[:upper:]' '[:lower:']`
-            if [ $action = start ] ; then
-                launchctl start com.${company}.${BLD_PRODUCT}
-            else
-                launchctl stop com.${company}.${BLD_PRODUCT} 2>/dev/null
-            fi
-		elif type service >/dev/null 2>&1 ; then
-			service $BLD_PRODUCT $action >/dev/null 2>&1
-
-		elif type invoke-rc.d >/dev/null 2>&1 ; then
-			invoke-rc.d --quiet $BLD_PRODUCT $action >/dev/null 2>&1
-
-		else
-			echo "Can't find tools to start/stop $BLD_NAME service"
+            [ $TASK = Remove -a $QUIET = 0 ] && log Stopping $BLD_PRODUCT
+            appman stop disable 2>/dev/null
 		fi
 		;;
 	esac

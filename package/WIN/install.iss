@@ -32,10 +32,10 @@ begin
 	PortPage.Add('HTTP Port:', False);
 	PortPage.values[0] := '80';
 
-	SSLPortPage := CreateInputQueryPage(PortPage.ID, 'SSL Port', 'TCP/IP Port for SSL Connections',
-		'Please specify the TCP/IP port on which Appweb should listen for SSL requests.');
-	SSLPortPage.Add('SSL Port:', False);
-	SSLPortPage.values[0] := '443';
+//	SSLPortPage := CreateInputQueryPage(PortPage.ID, 'SSL Port', 'TCP/IP Port for SSL Connections',
+//		'Please specify the TCP/IP port on which Appweb should listen for SSL requests.');
+//	SSLPortPage.Add('SSL Port:', False);
+//	SSLPortPage.values[0] := '443';
 
 end;
 
@@ -60,7 +60,6 @@ begin
   end;
 
 	i := 0;
-
 	if RegValueExists(regHive, key, keyName) then begin
 		RegQueryStringValue(regHive, key, keyName, oldPath);
 		oldPath := oldPath + ';';
@@ -109,15 +108,15 @@ begin
    if FileExists(path) then
      Exec(path, '--stop', app, 0, ewWaitUntilTerminated, rc);
 
-   path := app + '/bin/angel.exe';
+   path := app + '/bin/appman.exe';
    if FileExists(path) then
-     Exec(path, '--stop appweb', app, 0, ewWaitUntilTerminated, rc);
-  end;
-  if CurStep = ssPostInstall then
-    if IsTaskSelected('addpath') then begin
-      bin := ExpandConstant('{app}\bin');      
-      // AddPath('EJSPATH', bin);
-      AddPath('Path', bin);
+     Exec(path, 'stop', app, 0, ewWaitUntilTerminated, rc);
+   end;
+   if CurStep = ssPostInstall then
+     if IsTaskSelected('addpath') then begin
+       bin := ExpandConstant('{app}\bin');      
+       // AddPath('EJSPATH', bin);
+       AddPath('Path', bin);
     end;
 end;
 
@@ -146,43 +145,6 @@ begin
   Result := true;
 end;
 
-function SaveSettings(junk: String): Boolean;
-var
-  app: String;
-  path: String;
-  settings: String;
-begin
-  app := ExpandConstant('{app}');
-  CreateDir(app);
-  path := app + '/install.log';
-  settings := '{ port: ' + PortPage.Values[0] + ', ssl: ' + SSLPortPage.Values[0] + 
-	', web: "' + WebDirPage.Values[0] + '", root: "' + ExpandConstant('{app}') + '", }' + #13#10;
-  StringChangeEx(settings, '\', '/', True);
-  Result := SaveStringToFile(path, settings, False);
-end;
-
-
-function UpdateReadyMemo(Space, NewLine, MemoUserInfoInfo, MemoDirInfo, MemoTypeInfo,
-  MemoComponentsInfo, MemoGroupInfo, MemoTasksInfo: String): String;
-var
-  S: String;
-begin
-
-  S := '';
-  S := S + MemoDirInfo + NewLine;
-  S := S + 'Web Documents Directory:' + NewLine + Space + WebDirPage.Values[0] + NewLine;
-  S := S + MemoComponentsInfo + NewLine;
-  S := S + MemoGroupInfo + NewLine;
-  S := S + 'HTTP Port:' + NewLine + Space + PortPage.Values[0] + NewLine;
-  S := S + 'SSL  Port:' + NewLine + Space + SSLPortPage.Values[0] + NewLine;
-  S := S + NewLine + NewLine;
-
-  SaveSettings('');
-
-  Result := S;
-end;
-
-
 function GetWebDir(Param: String): String;
 begin
   Result := WebDirPage.Values[0];
@@ -192,6 +154,12 @@ end;
 function GetPort(Param: String): String;
 begin
   Result := PortPage.Values[0];
+end;
+
+function GetSSL(Param: String): String;
+begin
+  // Result := SSLPortPage.Values[0];
+  Result := '443';
 end;
 
 
@@ -208,8 +176,8 @@ end;
 
 [Icons]
 Name: "{group}\!!BLD_NAME!!Monitor"; Filename: "{app}/bin/!!BLD_PRODUCT!!Monitor.exe"; Components: bin
-Name: "{group}\Documentation"; Filename: "http://127.0.0.1:{code:GetPort}/doc/index.html"; Components: dev
 Name: "{group}\ReadMe"; Filename: "{app}/README.TXT"
+; Name: "{group}\Documentation"; Filename: "http://appwebserver.org/products/appweb/doc/appweb-4/product/index.html"; Components: dev
 ;Name: "{group}\Manage"; Filename: "http://127.0.0.1:{code:GetPort}/index.html"; Components: bin
 
 [Registry]
@@ -218,7 +186,7 @@ Root: HKLM; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 [Types]
 Name: "full"; Description: "Complete Installation"; 
 Name: "binary"; Description: "Binary Installation"; 
-Name: "development"; Description: "Development Documentation, Headers and Libraries"; 
+Name: "development"; Description: "Development Headers and Libraries"; 
 
 [Components]
 Name: "bin"; Description: "Binary Files"; Types: binary full;
@@ -232,8 +200,11 @@ Name: "{app}/bin"
 Type: files; Name: "{app}/appweb.conf";
 Type: files; Name: "{app}/logs/access.log";
 Type: files; Name: "{app}/logs/access.log.old";
+Type: files; Name: "{app}/logs/access.log.*";
 Type: files; Name: "{app}/logs/error.log";
 Type: files; Name: "{app}/logs/error.log.old";
+Type: files; Name: "{app}/logs/error.log.*";
+Type: files; Name: "{app}/cache/*.*";
 Type: filesandordirs; Name: "{app}/*.obj";
 
 [Tasks]
@@ -242,21 +213,21 @@ Name: addpath; Description: Add !!BLD_NAME!! to the system PATH variable;
 [Run]
 Filename: "{app}/bin/!!BLD_PRODUCT!!Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}/bin"; Check: IsPresent('{app}/bin/!!BLD_PRODUCT!!Monitor.exe'); StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated;
 
-Filename: "{app}/bin/angel.exe"; Parameters: "--uninstall appweb"; WorkingDir: "{app}"; Check: IsPresent('{app}/bin/angel.exe'); StatusMsg: "Stopping Appweb"; Flags: waituntilterminated; Components: bin
+Filename: "{app}/bin/appman.exe"; Parameters: "uninstall"; WorkingDir: "{app}"; Check: IsPresent('{app}/bin/appman.exe'); StatusMsg: "Stopping Appweb"; Flags: waituntilterminated; Components: bin
 
-Filename: "{app}/bin/ajs.exe"; Parameters: "bin/patchConfig.es install.log"; WorkingDir: "{app}"; StatusMsg: "Updating Appweb configuration"; Flags: runhidden waituntilterminated; 
+Filename: "{app}/bin/setConfig.exe"; Parameters: "--home . --documents ""{code:GetWebDir}"" --logs logs --port {code:GetPort} --ssl {code:GetSSL} --cache cache --modules bin appweb.conf"; WorkingDir: "{app}"; StatusMsg: "Updating Appweb configuration"; Flags: runhidden waituntilterminated; 
 
-Filename: "{app}/bin/angel.exe"; Parameters: "--install appweb"; WorkingDir: "{app}"; StatusMsg: "Installing Appweb as a Windows Service"; Flags: waituntilterminated;
+Filename: "{app}/bin/appman.exe"; Parameters: "install enable"; WorkingDir: "{app}"; StatusMsg: "Installing Appweb as a Windows Service"; Flags: waituntilterminated;
 
-Filename: "{app}/bin/angel.exe"; Parameters: "--start appweb"; WorkingDir: "{app}"; StatusMsg: "Starting the Appweb Server"; Flags: waituntilterminated;
+Filename: "{app}/bin/appman.exe"; Parameters: "start"; WorkingDir: "{app}"; StatusMsg: "Starting the Appweb Server"; Flags: waituntilterminated;
 
 Filename: "{app}/bin/!!BLD_PRODUCT!!Monitor.exe"; Parameters: ""; WorkingDir: "{app}/bin"; StatusMsg: "Starting the Appweb Monitor"; Flags: waituntilidle;
 
-Filename: "http://127.0.0.1:{code:GetPort}/index.html"; Description: "View the Documentation"; Flags: skipifsilent waituntilidle shellexec postinstall; Components: bin
+Filename: "http://appwebserver.org/product/appweb/doc-4/product/index.html"; Description: "View the Documentation"; Flags: skipifsilent waituntilidle shellexec postinstall; Components: bin
 
 [UninstallRun]
 Filename: "{app}/bin/!!BLD_PRODUCT!!Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}"; StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated;
-Filename: "{app}/bin/angel.exe"; Parameters: "--uninstall appweb"; WorkingDir: "{app}"; Check: IsPresent('{app}/bin/angel.exe'); Components: bin
+Filename: "{app}/bin/appman.exe"; Parameters: "uninstall"; WorkingDir: "{app}"; Check: IsPresent('{app}/bin/appman.exe'); Components: bin
 Filename: "{app}/bin/removeFiles.exe"; Parameters: "-r -s 5"; WorkingDir: "{app}"; Flags:
 
 [Files]

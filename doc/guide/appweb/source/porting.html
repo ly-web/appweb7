@@ -1,13 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!-- BeginDsi "dsi/head.html" -->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>Embedthis Appweb 4.0.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
-    <meta name="description" content="Embedthis Sofware provides open source embedded web servers for devices 
-        and applications." />
+    <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
+        devices and applications." />
 	<meta name="robots" content="index,follow" />
 	<link href="../../../doc.css" rel="stylesheet" type="text/css" />
 	<link href="../../../print.css" rel="stylesheet" type="text/css" media="print"/>
@@ -18,16 +17,16 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://www.appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
              <div class="search">
-                 <form method="get" action="http://www.google.com/search" title="Search www.ejscript.org">
+                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
                      <p>
-                        <label title="Search">Search</label> 
+                        <label for="q" title="Search">Search</label> 
                         <input type="text" id="q" name="q" size="15" maxlength="255" />
                         <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="ejscript.org" /> 
-                        <input type="hidden" name="sitesearch" value="ejscript.org" />
+                        <input type="hidden" name="domains" value="appwebserver.org" /> 
+                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
                     </p>
                  </form>
               </div>
@@ -42,26 +41,24 @@
     <div class="content">
         <div class="contentRight">
             <div class="linkSection">
-                <h2>Quick Nav</h2>
+                <h1>Quick Nav</h1>
                 <ul>
                     <li><a href="#newOs">Porting to a new O/S</a></li>
                     <li><a href="#workingWithTheTeam">Working with the Team</a></li>
                     <li><a href="#newOs"></a></li>
                 </ul>
 <!-- BeginDsi "dsi/sourceSeeAlso.html" -->
-            <h2>See Also</h2>
-            <ul>
+            <h1>See Also</h1>
+            <ul class="nav">
                 <li><a href="../../../guide/appweb/source/index.html">Working with Source</a></li>
                 <li><a href="../../../guide/appweb/source/building.html">Building From Source</a></li>
                 <li><a href="../../../guide/appweb/source/steps.html">Build Steps</a></li>
                 <li><a href="../../../guide/appweb/source/configure.html">Configure Program</a></li>
                 <li><a href="../../../guide/appweb/source/make.html">Make Scheme</a></li>
                 <li><a href="../../../guide/appweb/source/porting.html">Porting Guide</a></li>
-                <li><a href="../../../guide/appweb/source/testing.html">Testing Appweb</a></li>
 
                 <li><a href="../../../ref/appweb/index.html">Programmers Reference</a></li>
                 <li><a href="../../../ref/appweb/architecture.html">Appweb Architecture</a></li>
-                <li><a href="../../../ejs/ref/ejs/webArchitecture.html">Ejscript Web Framework</a></li>
                 <li><a href="../../../api/native.html">Native APIs</a></li>
 
                 <li><a href="../../../guide/appweb/programmers/embedding.html">Embedding Appweb</a></li>
@@ -81,11 +78,11 @@
             port Appweb to a new operating system or processor architecture.</p>
             <p>Appweb has been written to maximize the ease of porting to a new environment. The O/S and
             processor-dependent code have been contained while the bulk of the code is cross-platform. Most of this
-            dependent code is under the <b>src/mpr</b> sub-directory which represents the Embedthis Portable Runtime
+            dependent code is under the <b>src/deps/mpr</b> sub-directory which represents the Embedthis Portable Runtime
             (MPR).</p>
             <p><b>NOTE:</b> When attempting a port, you should get the latest copy of the development source branch
             rather than using the download source package. You can get the latest development source by checking out a
-            copy from the <a href="http://hg.embedthis.com/ejs/">repository</a>.</p>
+            copy from the <a href="https://github.com/embedthis/appweb-4">repository</a>.</p>
             <p><b>NOTE:</b> Please read <a href="building.html">Building from Source</a> before your read this
             document. It provides valuable background about the Appweb build system.</p><a name="newOs" id="newOs"></a>
             <h2>Steps in Porting to a new Operating System</h2>
@@ -95,10 +92,9 @@
                     <p>Edit the build/standard.defaults configuration file. This file contains the factory defaults for
                     the configure program. Select the features you wish to support. But start with the smallest set
                     possible.</p>
-                    <p>You should turn BLD_FEATURE_MULTITHREAD off (use configure --disable-multi-thread) for your
-                    first porting effort as it will make debugging much easier. Disable all the features that your O/S
-                    does not support. See the <a href="building.html">Building from Source</a> document for definitions
-                    of all the build variables used in these files.</p>
+                    <p>Use <em>./configure --disable-all</em> to select the minimal feature set.</p>
+                    <p>See also the <a href="building.html">Building from Source</a> document for definitions
+                    of the various build variables used in the out/inc/buildConfig.h file.</p>
                 </li>
                 <li>
                     <h3>Define your O/S configuration string</h3>
@@ -106,7 +102,7 @@
                     build/bin/config.guess and build/bin/config.sub. Most probably, your O/S and CPU architecture are
                     already in this file, but if you are porting to a new operating system, these script programs may
                     not recognize your --host settings.</p>
-                    <p>The --host and --build switches take a system architecture specifications in the form:
+                    <p>The --host and --build switches take a system architecture specification in the form:
                     CPU-VENDOR-OS. For example: i386-pc-linux, or, powerpc-wrs-vxworks. The host system is the target
                     system that will eventually run Appweb. The build system is the system being used to compile and
                     build Appweb. The config.sub program takes an abbreviated system string and emits a fully qualified
@@ -133,15 +129,15 @@
                     <pre>
 ./configure --disable-all --host=powerpc-wrs-vxworks
 </pre>
-                    <p>After running configure, check the output in build/buildConfig.make. If your system is UNIX like
-                    or windows like, you may need to edit the parseSystemConfiguration function in the configure script
+                    <p>After running configure, check the output in build/buildConfig.make. If your system is UNIX-like
+                    or windows-like, you may need to edit the parseSystemConfiguration function in the configure script
                     and add a new definition for your O/S. This function controls the UNIX_LIKE and WIN_LIKE
                     defines.</p>
                 </li>
                 <li>
                     <h3>Pick a Name for the Operating System Port</h3>
                     <p>If you are doing a port for a new operating system, you need to pick a symbolic name that will
-                    be used in Makefiles, build scripts and for operating system specific directories. Use all CAPS for
+                    be used in Makefiles, build scripts, and operating system specific directories. Use all CAPS for
                     your OS name without any "_" or "-" characters. For example: "LINUX" is the Appweb name for the
                     Linux specific portions. For the rest of this document, we will use the name <b>NEWOS</b> for the
                     O/S symbolic name.</p>
@@ -162,7 +158,7 @@
                 <li>
                     <h3>Tailor the cross-platform O/S header.</h3>
                     <p>To insulate most of the Appweb source code from the differences of various operating systems,
-                    the <b>include/</b><b>mpr.h</b> header file wraps all the required O/S headers and publishes a
+                    the <em>src/deps/mpr/mpr.h</em> header file wraps all the required O/S headers and publishes a
                     consistent set of types and prototypes. None of the source files include normal O/S headers like
                     &lt;string.h&gt;. While this does slow the build by including more headers than are required
                     &mdash; it is barely noticeable on modern CPUs.</p>
@@ -174,7 +170,7 @@
                     <p><b>NOTE:</b> the mpr.h and mprLib.c files are an all-in-one amalgamation of lots of smaller mpr
                     files. When you have finished your port, the changes to mpr.h and mprLib.c will need to be
                     back-ported to the Mpr release at <a href=
-                    "http://hg.embedthis.com/mpr">http://hg.embedthis.com/mpr</a>.</p>
+                    "https://github.com/embedthis/mpr-4">https://github.com/embedthis/mpr-4</a>.</p>
                 </li>
                 <li>
                     <h3>Test the Headers with a Hello World Program.</h3>
@@ -189,9 +185,6 @@
                     The main sections to modify will be mprOs.c, mprSocket.c, mprThread.c mprTime.c and mprWait.c. The
                     mprThread.c file contains the multiprocessing thread, lock and condition variable code. If you only
                     intend to support single-threading, you can largely skip these code sections.</p>
-                    <p>When you have finished your port, the changes to mprLib.c and mprLib.c will need to be
-                    back-ported to the Mpr release at <a href=
-                    "http://hg.embedthis.com/mpr">http://hg.embedthis.com/mpr</a>.</p>
                 </li>
                 <li>
                     <h3>Test the Make Subsystem</h3>
@@ -203,7 +196,15 @@
                     <p>The make subsystem requires GNU make and a fairly compliant bash shell implementation. If you
                     are using windows, the CYGWIN package will provide the GNU environment. If you are porting to an
                     O/S that uses the GNU development tools, you probably have little to do in this step. If not, you
-                    may require more modifications required to your make.rules file.</p>
+                    may require more modifications to your make.rules file.</p>
+                </li>
+                <li>
+                    <h3>Compile the Tools</h3>
+                    <p>Before you can build, various build tools must be made. 
+                    <pre>
+cd build
+make
+</pre>
                 </li>
                 <li>
                     <h3>Test Compile the Mpr</h3>
@@ -213,7 +214,7 @@
                     libraries. So to compile a single object, you need to specify the target object which will usually
                     not be in the current directory.</p>
                     <pre>
-cd src/mpr
+cd src/deps/mpr
 make 
 </pre>
                     <p>At this stage of the porting effort, the <b>make</b> command will undoubtedly provoke a stream
@@ -239,7 +240,7 @@ make test
             <p>Once you have a basic port running, you should send it back for the team to look over. They can provide
             advice and suggestions. At the first opportunity, your changes may be merged back into the development tree
             so others can benefit from your work.</p>
-            <p>Good luck and all the best. Please give feedback to the development team at <a href=
+            <p>Good luck and have fun. Please give feedback to the development team at <a href=
             "mailto:dev@embedthis.com">dev@embedthis.com</a>.</p>
         </div>
     </div>
@@ -248,7 +249,7 @@ make test
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
-            All rights reserved. Embedthis, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
 <!-- EndDsi -->

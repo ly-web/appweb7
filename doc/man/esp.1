@@ -1,0 +1,224 @@
+.TH ESP "1" "November 2011" "esp" "User Commands"
+.SH NAME
+esp \- ESP Application Generator for Server-Side Web Applications.
+.SH SYNOPSIS
+.B esp
+[\fI--chdir dir]\fR] 
+[\fI--config configFile]\fR] 
+[\fI--database DB]\fR] 
+[\fI--flat\fR]
+[\fI--listen [ip:]port\fR]
+[\fI--log logFile:level\fR]
+[\fI--overwrite\fR]
+[\fI--quiet\fR]
+[\fI--routeName name\fR]
+[\fI--routePrefix prefix\fR]
+[\fI--verbose\fR]
+commands ...
+.SH ""
+.B Commands:
+ esp clean
+ esp compile
+ esp compile controller name
+ esp compile path/*.esp
+ esp generate app name
+ esp generate controller name [action [, action] ...]
+ esp generate scaffold model [field:type [, field:type] ...]
+ esp generate table name model [field:type [, field:type] ...]
+ esp run
+.SH DESCRIPTION
+The \fBesp\fR command generates, manages and runs ESP web applications.
+It can generate ESP web applications, controllers, database tables, and scaffolds.
+.PP
+The esp command will create directories and generate configuration and source code files that can then be manually 
+edited as required.  Esp is intelligent and will not overwrite existing files, so you can safely edit 
+and regenerate without losing your changes. You can overwrite your changes if you wish to by using 
+the \fB--overwrite\fR switch.
+.PP
+Esp can run your application by invoking a configured web server.
+.SH GENERATING APPLICATIONS
+To start a new web application, run \fBesp\fR to create the application directory and generate the application
+configuration and essential script files. For example:
+
+.RS 5
+ \fBesp generate app blog\fR
+.RE
+.PP
+This will will create a set of directories which have the following meaning: 
+
+.RS 5
+ controllers    - Controller source
+ cache          - Cache directory for compiled content
+ db             - Databases and scripts
+ layouts        - Web page layout files
+ views          - View source files
+ static         - Static web directory
+ static/images  - Public images
+ static/js      - Client side JavaScripts
+ static/themes  - Application HTML themes
+.RE
+.PP
+Most of these directories are initially empty, but may be used over time. ESP follows conventions
+where specific files are stored. This greatly simplifies configuring a web application.
+.PP
+Esp will also create some files which have the following meaning:
+.RS 5
+
+ appweb.config             - Appweb configuration file
+ app.config                - Appweb configuration file
+ esp-app.h                 - Application header file
+ layouts/default.esp       - Default layout web page
+ static/layout.css         - Default layout CSS file
+ static/themes/default.css - Default theme CSS file
+ static/js/jquery.js       - jQuery client side script
+.RE
+.SH GENERATING CONTROLLERS
+Controllers are the primary mechanism for responding to client requests. To generate a controller, 
+run:
+.RS 5
+
+ \fBesp generate controller NAME [actions...]\fR
+.RE
+.PP
+This will create a controller of the requested name. It will create a controller source file in the \fBcontrollers\fR
+directory. If action names are requested, the controller source will define an action method for each
+name. If not action names are requested, esp will define a default action named \fBindex\fR.
+You can edit the controller source to meet your needs.
+.SH GENERATING TABLES
+To generate a database table:
+.RS 5
+
+ \fBesp generate table NAME [field:type ...]\fR
+.RE
+
+If field:type values are supplied, the database migration will include code to create a column for each 
+specified field of the requested type. The valid database types are: blob, boolean, date, float, integer, string, 
+and text.
+
+.SH GENERATING SCAFFOLDS
+.PP
+A scaffold is a generated controller, database table, and set of views that provides add, edit 
+and list functionality for the database table.
+Scaffolds are useful to quickly generate chunks of the application and prototype web pages and actions for 
+managing a database table.
+To generate a scaffold:
+.RS 5
+
+ \fBesp generate scaffold MODEL [field:type ...]\fR
+.RE
+.PP
+This will create a scaffold for the specified database table and will generate a controller of the same name.
+If field:type values are supplied, the database migration will include code to create a column for each 
+specified field of the requested type. The valid database types are: blob, boolean, date, float, integer, string,
+and text.
+The scaffold will include an edit action and view that provides add and edit capability. The list action and view, 
+provides the ability to list the database table rows and select an entry to edit.
+.PP
+.SH COMPILING
+Esp compiles controllers and ESP pages native code shared libraries. These are then loaded and
+run by ESP in response to incoming client requests. Code is compiled only once but can be run many times to
+service incoming requests.
+.PP
+In development mode, ESP will automatically compile the relevant portions of the application if the source code
+is modified. It can intelligently recompile controllers and ESP pages. However, you can also explicilty recompile 
+portions or the complete appliction.
+.PP
+Esp can recompile everything via:
+.RS 5
+ \fBesp compile ...\fR.
+.RE
+This will re-compile each controller and ESP page.
+.PP
+Esp also provides options for you to individually compile controllers and ESP pages. To recompile named pages or controllers:
+.RS 5
+
+ \fBesp compile path/*.esp...\fR.
+
+ \fBesp compile controller NAMES...\fR.
+
+.RE
+.PP
+To compile the entire application and produce a single shared library file:
+.RS 5
+
+ \fBesp --flat compile \fR.
+.SH RUNNING
+.PP
+To run your application:
+.RS 5
+
+ \fBesp run\fR
+.SH CLEANING
+To clean all generated module files:
+.RS 5
+
+ \fBesp clean\fR
+.RE
+.SH COMMANDS
+.PP 
+esp has the following command usage patterns:
+
+.RS 5
+ esp clean
+ esp compile
+ esp compile controller name
+ esp compile path/*.esp
+ esp generate app name
+ esp generate controller name [action [, action] ...]
+ esp generate scaffold model [field:type [, field:type] ...]
+ esp generate table name model [field:type [, field:type] ...]
+ esp run
+.RE
+
+.SH OPTIONS
+.PP
+.TP 6
+\fB\--chdir dir\fR
+Change the current working directory before beginning processing.
+.TP 6
+\fB\--config configFile\fR
+Use the specified config file instead of appweb.conf
+.TP 6
+\fB\--database Database provider\fR
+Use the specified database provider. Set to "mdb" or "sqlite".
+.TP 6
+\fB\--flat\fR
+Compile the application flat into a single shared library file.
+.TP 6
+\fB\--listen [ip:]port\fR
+Define the listening endpoint address. This will be used when generating an application. The value
+will be patched into the generated appweb.conf configuration file.
+.TP 6
+\fB\--log logFile:level\fR
+Specify a file to log messages.  The syntax is: \fB"--log logName[,moduleName][:logLevel]"\fR.             
+Level 3 will trace the request and response headers. 
+.TP 6
+\fB\--overwrite\fR
+Overwrite existing files. Ejsweb normally will not overwrite existing files. This is to preserve user changes to 
+previously generated files.
+.TP 6
+\fB\--quiet\fR
+Suppress diagnostic trace to the console.
+.TP 6
+\fB\--routeName name\fR
+This selects the Appweb route by name that will be used for the ESP configuration. The ESP directory names, 
+and compilation commands are determined by the ESP configuration drawn from the specified route. The default is the
+first route with the ESP handler defined in appweb.conf.
+.TP 6
+\fB\--routePrefix prefix\fR
+This selects the Appweb route by prefix that will be used for the ESP configuration. The ESP directory names, 
+and compilation commands are determined by the ESP configuration drawn from the specified route. The default is the
+first route with the ESP handler defined in appweb.conf.
+.TP 6
+\fB\--verbose\fR or \fB\-v\fR
+Run in verbose mode and trace actions to the console.
+.PP
+.SH "REPORTING BUGS"
+Report bugs to dev@embedthis.com.
+
+.SH COPYRIGHT
+Copyright \(co 2004-2011 Embedthis Software.  ESP is a trademark of Embedthis Software.
+
+.br
+.SH "SEE ALSO"
+appweb

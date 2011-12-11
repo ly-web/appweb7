@@ -78,7 +78,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     args.program = "AppwebMonitor";
     args.args = (char*) command;
 
-    if (mprCreate(0, (char**) &args, MPR_USER_EVENTS_THREAD) == NULL) {
+    if (mprCreate(0, (char**) &args, MPR_USER_EVENTS_THREAD | MPR_NO_WINDOW) == NULL) {
         exit(1);
     }
     if ((app = mprAllocObj(App, manageApp)) == NULL) {
@@ -102,7 +102,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     /*
         Parse command line arguments
      */
-    if (mprMakeArgv(command, &argc, &argv, 0) < 0) {
+    if ((argc = mprMakeArgv(command, &argv, MPR_ARGV_ARGS_ONLY)) < 0) {
         return FALSE;
     }
     for (nextArg = 1; nextArg < argc; nextArg++) {
@@ -112,14 +112,11 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         }
         if (strcmp(argp, "--manage") == 0) {
             manage++;
-
         } else if (strcmp(argp, "--stop") == 0) {
             stop++;
-
         } else {
             err++;
         }
-
         if (err) {
             mprUserError("Bad command line: %s\n"
                 "  Usage: %s [options]\n"
@@ -130,23 +127,23 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
             return -1;
         }
     }
-
     if (stop) {
         stopMonitor();
         return 0;
     }
-
     if (findInstance()) {
         mprUserError("Application %s is already active.", mprGetAppTitle());
         return MPR_ERR_BUSY;
     }
-
-    /*
-        Create the window
-     */ 
-    if (initWindow() < 0) {
+    if (mprInitWindow() < 0) {
         mprUserError("Can't initialize application Window");
         return MPR_ERR_CANT_INITIALIZE;
+    }
+    app->appHwnd = mprGetHwnd();
+    mprSetWinMsgCallback(msgProc);
+    if (app->taskBarIcon > 0) {
+        ShowWindow(app->appHwnd, SW_MINIMIZE);
+        UpdateWindow(app->appHwnd);
     }
     if (manage) {
         /*
@@ -155,10 +152,8 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         runBrowser("/index.html");
 
     } else {
-
         if (openMonitorIcon() < 0) {
             mprUserError("Can't open %s tray", mprGetAppName());
-
         } else {
             eventLoop();
             closeMonitorIcon();
@@ -192,8 +187,7 @@ void eventLoop()
         If single threaded or if you desire control over the event loop, you 
         should code an event loop similar to that below:
      */
-    while (!mprIsStopping()) {
-        // SetTimer(app->appHwnd, 0, till, NULL);
+    while (!mprIsStopping()) {		
         /*
             Socket events will be serviced in the msgProc
          */
@@ -215,7 +209,6 @@ static int findInstance()
     HWND    hwnd;
 
     hwnd = FindWindow(mprGetAppName(), mprGetAppTitle());
-
     if (hwnd) {
         if (IsIconic(hwnd)) {
             ShowWindow(hwnd, SW_RESTORE);
@@ -227,6 +220,7 @@ static int findInstance()
 }
 
 
+#if UNUSED
 /*
     Initialize the applications's window
  */ 
@@ -247,11 +241,11 @@ static int initWindow()
 
     rc = RegisterClass(&wc);
     if (rc == 0) {
-        mprError("Can't register windows class");
+        mprError("Can't register windows class: %d", GetLastError());
         return -1;
     }
     app->appHwnd = CreateWindow(mprGetAppName(), mprGetAppTitle(), 
-        WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, 0, NULL);
+        WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, app->appInst, NULL);
     if (! app->appHwnd) {
         mprError("Can't create window");
         return -1;
@@ -262,6 +256,7 @@ static int initWindow()
     }
     return 0;
 }
+#endif
 
 
 static void stopMonitor()
@@ -277,7 +272,8 @@ static void stopMonitor()
 
 /*
     Windows message processing loop
- */ BOOL CALLBACK dialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+ */ 
+BOOL CALLBACK dialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
     switch(Message) {
     default:
@@ -289,7 +285,8 @@ static void stopMonitor()
 
 static long msgProc(HWND hwnd, uint msg, uint wp, long lp)
 {
-    char    buf[MPR_MAX_FNAME];
+    MprThread   *tp;
+    char        buf[MPR_MAX_FNAME];
 
     switch (msg) {
     case WM_DESTROY:
@@ -314,11 +311,13 @@ static long msgProc(HWND hwnd, uint msg, uint wp, long lp)
             break;
 
         case MA_MENU_START:
-            startService();
+            tp = mprCreateThread("startService", startService, 0, 0);
+            mprStartThread(tp);
             break;
 
         case MA_MENU_STOP:
-            stopService();
+            tp = mprCreateThread("stopService", stopService, 0, 0);
+            mprStartThread(tp);
             break;
 
         case MA_MENU_ABOUT:
@@ -326,16 +325,10 @@ static long msgProc(HWND hwnd, uint msg, uint wp, long lp)
                 Single-threaded users beware. This blocks !!
              */
             mprSprintf(buf, sizeof(buf), "%s %s-%s", BLD_NAME, BLD_VERSION, BLD_NUMBER);
-            MessageBoxEx(NULL, buf, mprGetAppTitle(), MB_OK, 0);
+            MessageBoxEx(hwnd, buf, mprGetAppTitle(), MB_OK, 0);
             break;
 
         case MA_MENU_EXIT:
-            /* 
-                FUTURE
-             *
-                h = CreateDialog(app->appInst, MAKEINTRESOURCE(IDD_EXIT), app->appHwnd, dialogProc);
-                ShowWindow(h, SW_SHOW);
-             */
             PostMessage(hwnd, WM_QUIT, 0, 0L);
             break;
 
@@ -376,13 +369,11 @@ static int openMonitorIcon()
         stop = LoadBitmap(app->appInst, MAKEINTRESOURCE(IDB_STOP));
         SetMenuItemBitmaps(app->subMenu, MA_MENU_STATUS, MF_BYCOMMAND, stop, go);
     }
-
     iconHandle = (HICON) LoadImage(app->appInst, APPWEB_ICON, IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
     if (iconHandle == 0) {
         mprError("Can't load icon %s", APPWEB_ICON);
         return MPR_ERR_CANT_INITIALIZE;
     }
-
     data.uID = APPWEB_MONITOR_ID;
     data.hWnd = app->appHwnd;
     data.hIcon = iconHandle;
@@ -400,7 +391,7 @@ static int openMonitorIcon()
 
 
 /*
-    Can be caleld multiple times
+    Can be called multiple times
  */
 static void closeMonitorIcon()
 {
@@ -536,7 +527,6 @@ static void shutdownAppweb()
     hwnd = FindWindow(app->serviceWindowName, app->serviceWindowTitle);
     if (hwnd) {
         PostMessage(hwnd, WM_QUIT, 0, 0L);
-
         /*
             Wait for up to ten seconds while the service exits
          */
@@ -592,18 +582,15 @@ static int runBrowser(char *page)
         mprError("Can't get Appweb listening port");
         return -1;
     }
-
     path = getBrowserPath(MPR_MAX_STRING);
     if (path == 0) {
         mprError("Can't get browser startup command");
         return -1;
     }
-
     pathArg = strstr(path, "\"%1\"");
     if (*page == '/') {
         page++;
     }
-
     if (pathArg == 0) {
         mprSprintf(cmdBuf, MPR_MAX_STRING, "%s http://localhost:%d/%s", path, port, page);
 
@@ -616,7 +603,6 @@ static int runBrowser(char *page)
     }
 
     mprLog(4, "Running %s\n", cmdBuf);
-
     memset(&startInfo, 0, sizeof(startInfo));
     startInfo.cb = sizeof(startInfo);
 
@@ -637,11 +623,11 @@ static char *getBrowserPath(int size)
     char    cmd[MPR_MAX_STRING];
     char    *type, *cp, *path;
 
-    if (mprReadRegistry(&type, MPR_MAX_STRING, "HKEY_CLASSES_ROOT\\.htm", "") < 0) {
+    if ((type = mprReadRegistry("HKEY_CLASSES_ROOT\\.htm", "")) == 0) {
         return 0;
     }
     mprSprintf(cmd, MPR_MAX_STRING, "HKEY_CLASSES_ROOT\\%s\\shell\\open\\command", type);
-    if (mprReadRegistry(&path, size, cmd, "") < 0) {
+    if ((path = mprReadRegistry(cmd, "")) == 0) {
         return 0;
     }
     for (cp = path; *cp; cp++) {
@@ -772,7 +758,7 @@ static uint queryService()
     under the terms of the GNU General Public License as published by the
     Free Software Foundation; either version 2 of the License, or (at your
     option) any later version. See the GNU General Public License for more
-    details at: http://www.embedthis.com/downloads/gplLicense.html
+    details at: http://embedthis.com/downloads/gplLicense.html
   
     This program is distributed WITHOUT ANY WARRANTY; without even the
     implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -781,7 +767,7 @@ static uint queryService()
     proprietary programs. If you are unable to comply with the GPL, you must
     acquire a commercial license to use this software. Commercial licenses
     for this software and support services are available from Embedthis
-    Software at http://www.embedthis.com
+    Software at http://embedthis.com
   
     Local variables:
     tab-width: 4

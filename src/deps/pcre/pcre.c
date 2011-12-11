@@ -17,7 +17,7 @@
 
 /************************************************************************/
 /*
- *  Start of file "../src/config.h"
+ *  Start of file "./src/config.h"
  */
 /************************************************************************/
 
@@ -266,7 +266,7 @@ them both to 0; an emulation function will be used. */
 /* #undef size_t */
 /************************************************************************/
 /*
- *  End of file "../src/config.h"
+ *  End of file "./src/config.h"
  */
 /************************************************************************/
 
@@ -274,7 +274,7 @@ them both to 0; an emulation function will be used. */
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_internal.h"
+ *  Start of file "./src/pcre_internal.h"
  */
 /************************************************************************/
 
@@ -1505,7 +1505,7 @@ extern BOOL         _pcre_xclass(int, const uschar *);
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_internal.h"
+ *  End of file "./src/pcre_internal.h"
  */
 /************************************************************************/
 
@@ -1513,7 +1513,7 @@ extern BOOL         _pcre_xclass(int, const uschar *);
 
 /************************************************************************/
 /*
- *  Start of file "../src/ucp.h"
+ *  Start of file "./src/ucp.h"
  */
 /************************************************************************/
 
@@ -1657,7 +1657,7 @@ enum {
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/ucp.h"
+ *  End of file "./src/ucp.h"
  */
 /************************************************************************/
 
@@ -1665,7 +1665,7 @@ enum {
 
 /************************************************************************/
 /*
- *  Start of file "../src/ucpinternal.h"
+ *  Start of file "./src/ucpinternal.h"
  */
 /************************************************************************/
 
@@ -1768,7 +1768,7 @@ When searching the data, proceed as follows:
 /* End of ucpinternal.h */
 /************************************************************************/
 /*
- *  End of file "../src/ucpinternal.h"
+ *  End of file "./src/ucpinternal.h"
  */
 /************************************************************************/
 
@@ -1776,7 +1776,7 @@ When searching the data, proceed as follows:
 
 /************************************************************************/
 /*
- *  Start of file "../src/ucptable.h"
+ *  Start of file "./src/ucptable.h"
  */
 /************************************************************************/
 
@@ -4877,7 +4877,7 @@ static const cnode ucp_table[] = {
 
 /************************************************************************/
 /*
- *  End of file "../src/ucptable.h"
+ *  End of file "./src/ucptable.h"
  */
 /************************************************************************/
 
@@ -4885,7 +4885,7 @@ static const cnode ucp_table[] = {
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_chartables.c"
+ *  Start of file "./src/pcre_chartables.c"
  */
 /************************************************************************/
 
@@ -5089,7 +5089,7 @@ graph, print, punct, and cntrl. Other classes are built from combinations. */
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_chartables.c"
+ *  End of file "./src/pcre_chartables.c"
  */
 /************************************************************************/
 
@@ -5097,7 +5097,7 @@ graph, print, punct, and cntrl. Other classes are built from combinations. */
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_compile.c"
+ *  Start of file "./src/pcre_compile.c"
  */
 /************************************************************************/
 
@@ -7116,7 +7116,7 @@ auto_callout(uschar *code, const uschar *ptr, compile_data *cd)
 {
 *code++ = OP_CALLOUT;
 *code++ = 255;
-PUT(code, 0, ptr - cd->start_pattern);  /* Pattern offset */
+PUT(code, 0, (int) (ptr - cd->start_pattern));  /* Pattern offset */
 PUT(code, LINK_SIZE, 0);                /* Default length */
 return code + 2*LINK_SIZE;
 }
@@ -8642,7 +8642,7 @@ we set the flag only if there is a literal "\r" or "\n" in the class. */
 
       /* Now fill in the complete length of the item */
 
-      PUT(previous, 1, code - previous);
+      PUT(previous, 1, (int) (code - previous));
       break;   /* End of class handling */
       }
 #endif
@@ -9707,7 +9707,7 @@ we set the flag only if there is a literal "\r" or "\n" in the class. */
             goto FAILED;
             }
           *code++ = n;
-          PUT(code, 0, ptr - cd->start_pattern + 1);  /* Pattern offset */
+          PUT(code, 0, (int) (ptr - cd->start_pattern + 1));  /* Pattern offset */
           PUT(code, LINK_SIZE, 0);                    /* Default length */
           code += 2 * LINK_SIZE;
           }
@@ -9986,7 +9986,7 @@ we set the flag only if there is a literal "\r" or "\n" in the class. */
                 goto FAILED;
                 }
               called = cd->start_code + recno;
-              PUTINC(cd->hwm, 0, code + 2 + LINK_SIZE - cd->start_code);
+              PUTINC(cd->hwm, 0, (int) (code + 2 + LINK_SIZE - cd->start_code));
               }
 
             /* If not a forward reference, and the subpattern is still open,
@@ -10010,7 +10010,7 @@ we set the flag only if there is a literal "\r" or "\n" in the class. */
           code += 1 + LINK_SIZE;
 
           *code = OP_RECURSE;
-          PUT(code, 1, called - cd->start_code);
+          PUT(code, 1, (int) (called - cd->start_code));
           code += 1 + LINK_SIZE;
 
           *code = OP_KET;
@@ -10780,7 +10780,7 @@ for (;;)
     /* Fill in the ket */
 
     *code = OP_KET;
-    PUT(code, 1, code - start_bracket);
+    PUT(code, 1, (int) (code - start_bracket));
     code += 1 + LINK_SIZE;
 
     /* Resetting option if needed */
@@ -10831,7 +10831,7 @@ for (;;)
   else
     {
     *code = OP_ALT;
-    PUT(code, 1, code - last_branch);
+    PUT(code, 1, (int) (code - last_branch));
     bc.current = last_branch = code;
     code += 1 + LINK_SIZE;
     }
@@ -11424,7 +11424,7 @@ while (errorcode == 0 && cd->hwm > cworkspace)
   recno = GET(codestart, offset);
   groupptr = find_bracket(codestart, (re->options & PCRE_UTF8) != 0, recno);
   if (groupptr == NULL) errorcode = ERR53;
-    else PUT(((uschar *)codestart), offset, groupptr - codestart);
+    else PUT(((uschar *)codestart), offset, (int) (groupptr - codestart));
   }
 
 /* Give an error if there's back reference to a non-existent capturing
@@ -11539,7 +11539,7 @@ return (pcre *)re;
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_compile.c"
+ *  End of file "./src/pcre_compile.c"
  */
 /************************************************************************/
 
@@ -11547,7 +11547,7 @@ return (pcre *)re;
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_exec.c"
+ *  Start of file "./src/pcre_exec.c"
  */
 /************************************************************************/
 
@@ -16536,7 +16536,7 @@ else
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_exec.c"
+ *  End of file "./src/pcre_exec.c"
  */
 /************************************************************************/
 
@@ -16544,7 +16544,7 @@ else
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_globals.c"
+ *  Start of file "./src/pcre_globals.c"
  */
 /************************************************************************/
 
@@ -16612,7 +16612,7 @@ PCRE_EXP_DATA_DEFN int   (*pcre_callout)(pcre_callout_block *) = NULL;
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_globals.c"
+ *  End of file "./src/pcre_globals.c"
  */
 /************************************************************************/
 
@@ -16620,7 +16620,7 @@ PCRE_EXP_DATA_DEFN int   (*pcre_callout)(pcre_callout_block *) = NULL;
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_newline.c"
+ *  Start of file "./src/pcre_newline.c"
  */
 /************************************************************************/
 
@@ -16789,7 +16789,7 @@ else switch(c)
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_newline.c"
+ *  End of file "./src/pcre_newline.c"
  */
 /************************************************************************/
 
@@ -16797,7 +16797,7 @@ else switch(c)
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_ord2utf8.c"
+ *  Start of file "./src/pcre_ord2utf8.c"
  */
 /************************************************************************/
 
@@ -16887,7 +16887,7 @@ return 0;   /* Keep compiler happy; this function won't ever be */
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_ord2utf8.c"
+ *  End of file "./src/pcre_ord2utf8.c"
  */
 /************************************************************************/
 
@@ -16895,7 +16895,7 @@ return 0;   /* Keep compiler happy; this function won't ever be */
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_tables.c"
+ *  Start of file "./src/pcre_tables.c"
  */
 /************************************************************************/
 
@@ -17217,7 +17217,7 @@ const int _pcre_utt_size = sizeof(_pcre_utt)/sizeof(ucp_type_table);
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_tables.c"
+ *  End of file "./src/pcre_tables.c"
  */
 /************************************************************************/
 
@@ -17225,7 +17225,7 @@ const int _pcre_utt_size = sizeof(_pcre_utt)/sizeof(ucp_type_table);
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_try_flipped.c"
+ *  Start of file "./src/pcre_try_flipped.c"
  */
 /************************************************************************/
 
@@ -17367,7 +17367,7 @@ return internal_re;
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_try_flipped.c"
+ *  End of file "./src/pcre_try_flipped.c"
  */
 /************************************************************************/
 
@@ -17375,7 +17375,7 @@ return internal_re;
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_ucp_searchfuncs.c"
+ *  Start of file "./src/pcre_ucp_searchfuncs.c"
  */
 /************************************************************************/
 
@@ -17556,7 +17556,7 @@ return (offset == 0)? NOTACHAR : c + offset;
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_ucp_searchfuncs.c"
+ *  End of file "./src/pcre_ucp_searchfuncs.c"
  */
 /************************************************************************/
 
@@ -17564,7 +17564,7 @@ return (offset == 0)? NOTACHAR : c + offset;
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_valid_utf8.c"
+ *  Start of file "./src/pcre_valid_utf8.c"
  */
 /************************************************************************/
 
@@ -17731,7 +17731,7 @@ return -1;
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_valid_utf8.c"
+ *  End of file "./src/pcre_valid_utf8.c"
  */
 /************************************************************************/
 
@@ -17739,7 +17739,7 @@ return -1;
 
 /************************************************************************/
 /*
- *  Start of file "../src/pcre_xclass.c"
+ *  Start of file "./src/pcre_xclass.c"
  */
 /************************************************************************/
 
@@ -17892,7 +17892,7 @@ return negated;   /* char did not match */
 #endif /* BLD_FEATURE_PCRE */
 /************************************************************************/
 /*
- *  End of file "../src/pcre_xclass.c"
+ *  End of file "./src/pcre_xclass.c"
  */
 /************************************************************************/
 

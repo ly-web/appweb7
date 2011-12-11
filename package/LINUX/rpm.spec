@@ -14,15 +14,18 @@ BuildRoot: !!ROOT_DIR!!/RPM/BUILDROOT/!!BLD_PRODUCT!!-!!BLD_VERSION!!-!!BLD_NUMB
 AutoReqProv: no
 
 %description
-Embedthis Appweb is an embeddable HTTP Web Server
+Embedthis Appweb is the fast, little web server.
 
 %prep
 
 %build
 
 %install
+    if [ -x /usr/lib/appweb/bin/uninstall ] ; then
+        appweb_HEADLESS=1 /usr/lib/appweb/bin/uninstall </dev/null 2>&1 >/dev/null
+    fi
     mkdir -p !!ROOT_DIR!!/RPM/BUILDROOT/!!BLD_PRODUCT!!-!!BLD_VERSION!!-!!BLD_NUMBER_ONLY!!.!!BLD_CPU!!
-    for dir in BIN DEV SRC ; do
+    for dir in BIN SRC ; do
         cp -r !!ROOT_DIR!!/${dir}/*  !!ROOT_DIR!!/RPM/BUILDROOT/!!BLD_PRODUCT!!-!!BLD_VERSION!!-!!BLD_NUMBER_ONLY!!.!!BLD_CPU!!
     done
 
@@ -34,7 +37,7 @@ Embedthis Appweb is an embeddable HTTP Web Server
 if [ -x /usr/bin/chcon ] ; then 
 	sestatus | grep enabled >/dev/null 2>&1
 	if [ $? = 0 ] ; then
-		for f in !!ORIG_BLD_LIB_PREFIX!!/*.so !!ORIG_BLD_MOD_PREFIX!!/*.so ; do
+		for f in !!ORIG_BLD_LIB_PREFIX!!/*.so ; do
 			chcon /usr/bin/chcon -t texrel_shlib_t $f
 		done
 	fi
@@ -49,15 +52,15 @@ ldconfig -n !!ORIG_BLD_LIB_PREFIX!!
 #
 #	Dev package
 #
-%package dev
-Summary: Embedthis Appweb -- Development headers for !!BLD_NAME!!
-Group: Applications/Internet
-Prefix: !!ORIG_BLD_INC_PREFIX!!
-
-%description dev
-Development headers for !!BLD_NAME!!
-
-%files dev -f devFiles.txt
+##	%package dev
+##	Summary: Embedthis Appweb -- Development headers for !!BLD_NAME!!
+##	Group: Applications/Internet
+##	Prefix: !!ORIG_BLD_INC_PREFIX!!
+##	
+##	%description dev
+##	Development headers for !!BLD_NAME!!
+##	
+##	%files dev -f devFiles.txt
 
 #
 #	Source package

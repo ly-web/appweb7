@@ -31,6 +31,14 @@ tidy:
 		tidy -q -config tidy.conf "$$f" ; \
 	done
 
+validate:
+	rm -rf ../dtmp ; cp -r . ../dtmp ; cd ../dtmp ; \
+	find . -type f -name '*.html' | while read f ; do \
+		echo ejs $(BLD_TOOLS_DIR)/depre $$f ; \
+		chmod +w $$f ; \
+		ejs $(BLD_TOOLS_DIR)/depre $$f ; \
+	done
+
 #
 #   Local variables:
 #   tab-width: 4

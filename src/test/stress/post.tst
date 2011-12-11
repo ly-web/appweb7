@@ -24,6 +24,7 @@ count = sizes[test.depth] * 1024
 function postTest(url: String) {
     // print("@@@@ Writing " + count * buf.available + " to " + url)
     http.post(HTTP + url)
+    // print("Count " + count + " buf " + buf.available + " total " + count * buf.available)
     for (i in count) {
         let n = http.write(buf)
     }
@@ -37,27 +38,20 @@ function postTest(url: String) {
     http.close()
 }
 
-// print("HTML")
 postTest("/index.html")
 
-// print("EJS")
-if (test.config["ejs"] == 1) {
+if (test.config["ejscript"] == 1) {
     postTest("/form.ejs")
 }
 
-// print("PHP")
 if (test.config["php"] == 1) {
     postTest("/form.php")
 }
 
-// print("CGI")
 if (test.config["cgi"] == 1) {
     postTest("/cgi-bin/cgiProgram")
 }
 
-/*  
-    The testEgi modules doesn't currently handle post data
-    if (test.config["debug"] == 1) {
-        postTest("/egiProgram.egi")
-    }
-*/
+if (test.config["esp"] == 1) {
+    postTest("/test.esp")
+}

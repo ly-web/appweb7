@@ -1,13 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!-- BeginDsi "dsi/head.html" -->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>Embedthis Appweb 4.0.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
-    <meta name="description" content="Embedthis Sofware provides open source embedded web servers for devices 
-        and applications." />
+    <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
+        devices and applications." />
 	<meta name="robots" content="index,follow" />
 	<link href="../../../doc.css" rel="stylesheet" type="text/css" />
 	<link href="../../../print.css" rel="stylesheet" type="text/css" media="print"/>
@@ -18,16 +17,16 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://www.appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
              <div class="search">
-                 <form method="get" action="http://www.google.com/search" title="Search www.ejscript.org">
+                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
                      <p>
-                        <label title="Search">Search</label> 
+                        <label for="q" title="Search">Search</label> 
                         <input type="text" id="q" name="q" size="15" maxlength="255" />
                         <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="ejscript.org" /> 
-                        <input type="hidden" name="sitesearch" value="ejscript.org" />
+                        <input type="hidden" name="domains" value="appwebserver.org" /> 
+                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
                     </p>
                  </form>
               </div>
@@ -41,18 +40,19 @@
     </div>
     <div class="content">
         <div class="contentRight">
-            <h2>Quick Nav</h2>
-            <ul>
+            <h1>Quick Nav</h1>
+            <ul class="nav">
                 <li><a href="#appwebModules">Appweb Modules</a></li>
                 <li><a href="#dynamicAndStaticLoading">Dynamic and Static Loading</a></li>
                 <li><a href="#loadModuleDirective">LoadModule Directive</a></li>
             </ul>
 <!-- BeginDsi "dsi/usersGuideSeeAlso.html" -->
-            <h2>See Also</h2>
-            <ul>
+            <h1>See Also</h1>
+            <ul class="nav">
                 <li><a href="../../../guide/appweb/users/index.html">User Guide Overview</a></li>
                 <li><a href="../../../guide/appweb/users/configuration.html">Configuring Appweb</a></li>
                 <li><a href="../../../guide/appweb/users/ports.html">Ports and Binding</a></li>
+                <li><a href="../../../guide/appweb/users/lang.html">Multi-Language Support</a></li>
                 <li><a href="../../../guide/appweb/users/authorization.html">User Authorization</a></li>
                 <li><a href="../../../guide/appweb/users/logFiles.html">Log Files</a></li>
                 <li><a href="../../../guide/appweb/users/vhosts.html">Virtual Hosts</a></li>
@@ -62,9 +62,6 @@
                 <li><a href="../../../guide/appweb/users/stages.html">Pipeline Stages</a></li>
                 <li><a href="../../../guide/appweb/users/client.html">HTTP Client</a></li>
                 <li><a href="../../../guide/appweb/users/frameworks.html">Web Frameworks</a></li>
-                <li><a href="../../../guide/appweb/users/ejs.html">Ejscript</a></li>
-                <li><a href="../../../guide/appweb/users/php.html">PHP</a></li>
-                <li><a href="../../../guide/appweb/users/cgi.html">CGI</a></li>
                 <li><a href="../../../ref/appweb/architecture.html">Appweb Architecture</a></li>
             </ul>
 <!-- EndDsi -->
@@ -72,50 +69,40 @@
         </div>
         <div class="contentLeft">
             <h1>Using Loadable Modules</h1>
-            <p>Embeddable web servers have several competing goals:</p>
+            <p>Embeddable web servers have several competing goals. They endeavor to:</p>
             <ul>
                 <li>Minimize memory footprint</li>
                 <li>Minimize CPU consumption</li>
                 <li>Maximize security</li>
                 <li>Provide a strong and standard feature set</li>
             </ul>
-            <p>To meet all these goals in one server is difficult. Appweb uses loadable modules so that the core HTTP
-            server may be compact, secure and fast while still having the ability to grow functionality as
-            required.</p><a name="appwebModules" id="appwebModules"></a>
-            <h3>Appweb Modules</h3>
-            <p>Appweb uses loadable modules to componentize its functionality. The following modules are delivered with
-            Appweb:</p>
-            <table summary="">
+            <p>It is difficult to meet all these goals in one server. Appweb, however, uses loadable modules to 
+            segment functionality and make it possible to meet these goals effectively. The loadable modules ensure that
+            the core HTTP server is compact, secure, and fast, and still has the ability to grow functionality as
+            required.</p>
+            
+            <a name="appwebModules" id="appwebModules"></a>
+            <h2>Appweb Modules</h2>
+            <p>Appweb delivers the following modules:</p>
+            <table title="modules">
                 <thead>
                     <tr>
-                        <td>Name</td>
-                        <td>Purpose</td>
+                        <th>Name</th>
+                        <th>Purpose</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>mod_auth</td>
-                        <td>Authorization handler</td>
-                    </tr>
-                    <tr>
                         <td>mod_cgi</td>
                         <td>Common Gateway Interface (CGI) handler</td>
-                    </tr>
-                    <tr>
-                        <td>mod_chunk</td>
-                        <td>Transfer Chunk Encoding filter</td>
                     </tr>
                     <tr>
                         <td>mod_dir</td>
                         <td>Directory listing handler</td>
                     </tr>
                     <tr>
-                        <td>mod_file</td>
-                        <td>Static file handler</td>
-                    </tr>
-                    <tr>
-                        <td>mod_egi</td>
-                        <td>Embedded Gateway Interface (EGI) handler</td>
+                        <td>mod_esp</td>
+                        <td>Embedded Server Pages (ESP) handler</td>
                     </tr>
                     <tr>
                         <td>mod_ejs</td>
@@ -126,29 +113,19 @@
                         <td>PHP handler</td>
                     </tr>
                     <tr>
-                        <td>mod_range</td>
-                        <td>Ranged requests filter</td>
-                    </tr>
-                    <tr>
                         <td>mod_ssl</td>
                         <td>Secure Sockets Layer (SSL) module</td>
                     </tr>
-                    <tr>
-                        <td>mod_upload</td>
-                        <td>File upload handler</td>
-                    </tr>
                 </tbody>
             </table><a name="dynamicAndStaticLoading" id="dynamicAndStaticLoading"></a>
-            <h3>Dynamic and Static Loading</h3>
+            <h2>Dynamic Loading</h2>
             <p>An Appweb loadable module is a discrete unit of functionality that may be linked into Appweb to enhance
-            the core HTTP server. Loadable Modules may be delivered in two forms:</p>
-            <ul>
-                <li>Dynamically loadable library / Shared Library</li>
-                <li>Statically linkable libraries</li>
-            </ul>
-            <p>The same programming interface applies to both forms and you can create a single image which can be both
-            dynamically and statically loaded.</p><a name="loadModuleDirective" id="loadModuleDirective"></a>
-            <h3>LoadModule Directive</h3>
+            the core HTTP server. Loadable Modules may be dynamically loaded via shared libraries or DLLs</p>
+            <p>If building Appweb from source, modules can also be statically linked when the library initialization
+                entry point is explicitly invoked from the web server main program.</p>
+            
+            <a name="loadModuleDirective" id="loadModuleDirective"></a>
+            <h2>LoadModule Directive</h2>
             <p>The Appweb configuration file specifies which modules to load and in what order. As some modules may
             depend on the functionality provided by other modules -- order does matter.</p>
             <p>The <a href="dir/module.html#loadModule">LoadModule</a> directive will load a module and activate it for
@@ -158,7 +135,7 @@
 LoadModule myModule lib/libmyModule
 </pre>
             <p>On Windows, this directive will load libmyModule.dll. On Linux, it will load libmyModule.so. If the
-            module is statically linked into Appweb, the LoadModule directive will not need to load it.</p>
+            module is statically linked into Appweb, the Load Module directive will not need to load it.</p>
             <p>Appweb will look for the module in the directory specified relative to the directory defined by the
             ServerRoot. Appweb will search other directories if a <a href=
             "dir/module.html#loadModulePath">LoadModulePath</a> directive is specified. This will nominate a set of
@@ -175,7 +152,7 @@ LoadModulePath "../../bin:../../bin/Debug:../../bin/Release"
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
-            All rights reserved. Embedthis, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
 <!-- EndDsi -->

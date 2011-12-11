@@ -22,30 +22,31 @@ manageFeatures()
     local file status
 
     BLD_FEATURE_MPR=1
-
     if [ "$BLD_FEATURE_ROMFS" = 1 -a "$BLD_CROSS" = 0 ] ; then
         echo
         echo "ROM-based storage is only supported if doing cross-compilation"
         echo
         exit 255
     fi
-    if [ "$BLD_FEATURE_EJS" = 1 ] ; then
+    if [ "$BLD_FEATURE_EJSCRIPT" = 1 ] ; then
         if [ "$BLD_FEATURE_FLOAT" != 1 ] ; then
             echo " "
             echo "Floating point support is required for Ejscript."
             echo "Enabling the floating point support."
             BLD_FEATURE_FLOAT=1
         fi
+        BLD_FEATURE_SQLITE=1
+        BLD_SQLITE_BUILTIN=1
     fi
-    if [ "$BLD_FEATURE_SEND" = 1 ] ; then
-        if [ "$BLD_FEATURE_ROMFS" = 1 ] ; then
-            BLD_FEATURE_SEND=0
-        fi
-        if [ "$BLD_HOST_OS" != LINUX -a "$BLD_HOST_OS" != MACOSX -a "$BLD_HOST_OS" != FREEBSD ] ; then
-            BLD_FEATURE_SEND=0
+    if [ "$BLD_FEATURE_ESP" = 1 ] ; then
+        if [ "$BLD_FEATURE_PCRE" != 1 ] ; then
+            echo " "
+            echo "PCRE (Regular expression support is required for ESP."
+            echo "Enabling the PCRE support."
+            CFG_HOST_PCRE=1
+            BLD_FEATURE_PCRE=1
         fi
     fi
-
     if [ "$BLD_FEATURE_AUTH_PAM" = 1 ] ; then
         if [ "$BLD_HOST_OS" = WIN  -o "$BLD_HOST_OS" = VXWORKS ] ; then
             echo " "
@@ -59,6 +60,16 @@ manageFeatures()
         echo "Must have one auth backend enabled (PAM or FILE)."
         echo "Enabling the auth-file authorization backend"
         BLD_FEATURE_AUTH_FILE=1
+    fi
+    if [ "$BLD_FEATURE_SQLITE" = 0 -a "$BLD_FEATURE_SDB" = 1 ] ; then
+        echo " "
+        echo "Must have configure with SQLite to use SDB."
+        echo "Disabling SDB"
+        BLD_FEATURE_SDB=0
+    fi
+    if [ "$BLD_FEATURE_ESP" = 0 ] ; then
+        BLD_FEATURE_MDB=0
+        BLD_FEATURE_SDB=0
     fi
 }
 
@@ -74,9 +85,6 @@ createFeatureConfig()
 BLD_APPWEB_PRODUCT=1
 BLD_FEATURE_AUTH_FILE=$BLD_FEATURE_AUTH_FILE
 BLD_FEATURE_AUTH_PAM=$BLD_FEATURE_AUTH_PAM
-BLD_FEATURE_CGI=$BLD_FEATURE_CGI
-BLD_FEATURE_CONFIG=$BLD_FEATURE_CONFIG
-BLD_FEATURE_EJS_ALL_IN_ONE=$BLD_FEATURE_EJS_ALL_IN_ONE
 
 #
 #   Default port configuration
@@ -84,7 +92,44 @@ BLD_FEATURE_EJS_ALL_IN_ONE=$BLD_FEATURE_EJS_ALL_IN_ONE
 BLD_HTTP_PORT=$BLD_HTTP_PORT
 BLD_SSL_PORT=$BLD_SSL_PORT
 
+#
+#   Embedded Server Pages (ESP) options
+#
+BLD_FEATURE_MDB=$BLD_FEATURE_MDB
+BLD_FEATURE_SDB=$BLD_FEATURE_SDB
+
+#
+#   Manager name
+#
+BLD_MANAGER="appman"
+
+#
+#   Http program name
+#
+BLD_HTTP="http"
+
 !EOF_FEATURE_CONFIG1
+
+    if [ "$BLD_FEATURE_EJSCRIPT" = 1 ] ; then
+        cat >>$NAME <<!EOF_FEATURE_CONFIG2
+#
+#   Ejscript configuration
+#
+BLD_FEATURE_SQLITE=$BLD_FEATURE_SQLITE
+BLD_SQLITE_BUILTIN=$BLD_SQLITE_BUILTIN
+BLD_SQLITE_PRODUCT=0
+BLD_FEATURE_EJSCRIPT_ALL_IN_ONE=$BLD_FEATURE_EJSCRIPT_ALL_IN_ONE
+
+!EOF_FEATURE_CONFIG2
+    fi
+}
+
+
+emitExtraComponents()
+{
+    local kind
+
+    kind=$1
 }
 
 
@@ -92,14 +137,21 @@ help()
 {
     cat <<!EOF_HELP
 
+Additional ESP Features:
+  --enable-edi             Enable the embedded database interface
+  --disable-ed             Disable the embedded database interface
+  --enable-mdb             Enable the memory database support
+  --disable-mdb            Disable the memory database support
+  --enable-sdb             Enable the SQLite database support
+  --disable-sdb            Disable the SQLite database support
+
 Additional Appweb Features:
   --auth=[pam|file]        Build with file or PAM-based authorization support.
-  --conf=FILE              File to use for the appweb.conf configuration file.
   --port=PORT              Set the default HTTP port to use for the product.
   --sslPort=PORT           Set the default SSL port to use for the product.
   --webDir=PATH            Set the directory for web documents (DocumentRoot).
 
-Optional Components: cgi, ejs, matrixssl, openssl, php, sqlite
+Optional Components: cgi, dir, ejscript, esp, matrixssl, openssl, php, sqlite
 
   --with-NAME=[DIR]        Support the NAME component. DIR is the base 
                            directory to find the component.  The 
@@ -136,30 +188,30 @@ parseArg()
             exit 255
         fi
         ;;
-    conf=*|config=*)
-        if [ "${ARG}" = "${ARG/\/}" ] ; then
-            BLD_FEATURE_CONFIG="template/${ARG}"
-        else
-            BLD_FEATURE_CONFIG="${ARG}"
-        fi
-        ;;
     disable-all)
         BLD_DISABLE_ALL=1
         BLD_FEATURE_ASSERT=0
         BLD_FEATURE_AUTH_FILE=1
         BLD_FEATURE_AUTH_PAM=0
-        BLD_FEATURE_CGI=0
         BLD_FEATURE_LEGACY_API=0
+        BLD_FEATURE_MDB=0
         BLD_FEATURE_ROMFS=0
+        BLD_FEATURE_SDB=0
         ;;
-    disable-cgi)
-        BLD_FEATURE_CGI=0
+    disable-edi)
+        BLD_FEATURE_MDB=0
+        BLD_FEATURE_SDB=0
+        ;;
+    disable-mdb)
+        BLD_FEATURE_MDB=0
+        ;;
+    disable-sdb)
+        BLD_FEATURE_SDB=0
         ;;
     enable-all)
         BLD_FEATURE_ASSERT=1
         BLD_FEATURE_AUTH_FILE=1
         BLD_FEATURE_AUTH_PAM=1
-        BLD_FEATURE_CGI=1
         BLD_FEATURE_LEGACY_API=1
         BLD_FEATURE_ROMFS=0
         if [ "$BLD_HOST_OS" != WIN -a "$BLD_HOST_OS" != VXWORKS ] ; then
@@ -168,8 +220,15 @@ parseArg()
             BLD_FEATURE_AUTH_PAM=0
         fi
         ;;
-    enable-cgi)
-        BLD_FEATURE_CGI=1
+    enable-edi)
+        BLD_FEATURE_MDB=1
+        BLD_FEATURE_SDB=1
+        ;;
+    enable-mdb)
+        BLD_FEATURE_MDB=1
+        ;;
+    enable-sdb)
+        BLD_FEATURE_SDB=1
         ;;
     port=*)
         BLD_HTTP_PORT=${ARG}
