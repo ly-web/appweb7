@@ -1,8 +1,6 @@
 /**
-    appwebMonitor.c  -- Windows Appweb Monitor program
+    setConfig.c  -- Appweb set configuration program
   
-    The Appweb Monitor is a windows monitor program that interacts with the Appweb angel program.
-
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
 
@@ -15,7 +13,7 @@
 static char *replace(cchar *str, cchar *pattern, cchar *fmt, ...);
 
 /*********************************** Code *************************************/
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
 int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2) {
     char    **argv;
     cchar   *documents, *home, *logs, *port, *ssl, *argp, *path, *contents, *revised;
@@ -71,7 +69,7 @@ int main(int argc, char **argv) {
         err++;
     }
     if (err) {
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
         mprUserError("Bad command line:");
 #else
         mprUserError("Bad command line:\n"
@@ -157,11 +155,11 @@ static char *replace(cchar *str, cchar *pattern, cchar *fmt, ...)
     for (s = str; *s; s++) {
         if (*s == *pattern && sncmp(s, pattern, plen) == 0) {
             mprPutStringToBuf(buf, replacement);
-            for (s += plen; *s && isspace((int) *s) && *s != '\n'; s++) ;
-            for (; *s && !isspace((int) *s) && *s != '\n' && *s != '>'; s++) ;
+            for (s += plen; *s && isspace((uchar) *s) && *s != '\n'; s++) ;
+            for (; *s && !isspace((uchar) *s) && *s != '\n' && *s != '>'; s++) ;
          
         }
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
         if (*s == '\n' && s[-1] != '\r') {
             mprPutCharToBuf(buf, '\r');
         }
@@ -175,7 +173,7 @@ static char *replace(cchar *str, cchar *pattern, cchar *fmt, ...)
 
 
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
 /*
     Default log output is just to the console
  */
@@ -193,8 +191,8 @@ static void logHandler(int flags, int level, cchar *msg)
 /*
     @copy   default
   
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
   
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

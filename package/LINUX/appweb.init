@@ -21,16 +21,15 @@
 #
 ###############################################################################
 
-NAME=!!BLD_PRODUCT!!
-
-APPWEB_NAME="!!BLD_NAME!!"
-APPWEB_CMD=!!ORIG_BLD_BIN_PREFIX!!/$NAME
-APPWEB_DIR=!!ORIG_BLD_CFG_PREFIX!!
+NAME=${settings.product}
+APPWEB_NAME="${settings.title}"
+APPWEB_CMD=${prefixes.bin}/$NAME
+APPWEB_DIR=${prefixes.config}
 
 PIDFILE=${PIDFILE-/var/run/$NAME.pid}
 LOCKFILE=${LOCKFILE-/var/lock/$NAME}
 
-MANAGER_CMD=!!ORIG_BLD_BIN_PREFIX!!/appman
+MANAGER_CMD=${prefixes.bin}/appman
 MANAGER_SWITCHES="--daemon --program $APPWEB_CMD --home $APPWEB_DIR --pidfile $PIDFILE run"
 MANAGER_TIMEOUT=10
 
@@ -126,7 +125,7 @@ exit $?
 
 ################################################################################
 #
-#   Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
+#   Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
 #   The latest version of this code is available at http://embedthis.com
 #
 #   This software is open source; you can redistribute it and/or modify it 

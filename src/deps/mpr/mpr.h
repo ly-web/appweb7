@@ -1,24 +1,3 @@
-
-/******************************************************************************/
-/* 
-    This file is an amalgamation of all the individual source code files for the
-    Multithreaded Portable Runtime Header.
-  
-    Catenating all the source into a single file makes embedding simpler and
-    the resulting application faster, as many compilers can do whole file
-    optimization.
-  
-    If you want to modify the product, you can still get the whole source as 
-    individual files if you need.
- */
-
-
-/************************************************************************/
-/*
- *  Start of file "./out/inc/mpr.h"
- */
-/************************************************************************/
-
 /*
     mpr.h -- Header for the Multithreaded Portable Runtime (MPR).
 
@@ -48,40 +27,148 @@
 #ifndef _h_MPR
 #define _h_MPR 1
 
+/********************************** Includes **********************************/
 
-#include "buildConfig.h"
+#include "bit.h"
 
+/******************************* Default Features *****************************/
+
+#ifndef BIT_DEBUG
+    #define BIT_DEBUG 0
+#endif
+#ifndef BIT_FEATURE_ASSERT
+    #if BIT_DEBUG
+        #define BIT_FEATURE_ASSERT 1
+    #else
+        #define BIT_FEATURE_ASSERT 0
+    #endif
+#endif
+#ifndef BIT_FEATURE_FLOAT
+    #define BIT_FEATURE_FLOAT 1
+#endif
+#ifndef BIT_FEATURE_ROMFS
+    #define BIT_FEATURE_ROMFS 0
+#endif
+#ifndef BIT_TUNE
+    #define BIT_TUNE MPR_TUNE_SIZE
+#endif
+
+/********************************* CPU Families *******************************/
 /*
-    CPU families
+    CPU Architectures
  */
 #define MPR_CPU_UNKNOWN     0
-#define MPR_CPU_IX86        1           /* X86 */
-#define MPR_CPU_PPC         2           /* Power PC */
-#define MPR_CPU_SPARC       3           /* Sparc */
-#define MPR_CPU_XSCALE      4           /* XScale */
-#define MPR_CPU_ARM         5           /* Arm */
-#define MPR_CPU_MIPS        6           /* Mips */
-#define MPR_CPU_68K         7           /* Motorola 68000 */
-#define MPR_CPU_SIMNT       8           /* VxWorks NT simulator */
-#define MPR_CPU_SIMSPARC    9           /* VxWorks sparc simulator */
-#define MPR_CPU_IX64        10          /* AMD64 or EMT64 */
-#define MPR_CPU_UNIVERSAL   11          /* MAC OS X universal binaries */
-#define MPR_CPU_SH4         12
+#define MPR_CPU_ARM         1           /* Arm */
+#define MPR_CPU_ITANIUM     2           /* Intel Itanium */
+#define MPR_CPU_X86         3           /* X86 */
+#define MPR_CPU_X64         4           /* AMD64 or EMT64 */
+#define MPR_CPU_MIPS        5           /* Mips */
+#define MPR_CPU_PPC         6           /* Power PC */
+#define MPR_CPU_SPARC       7           /* Sparc */
 
+/*
+    Use compiler definitions to determine the CPU
+ */
+#if defined(__alpha__)
+    #define BIT_CPU "ALPHA"
+    #define BIT_CPU_ARCH MPR_CPU_ALPHA
+#elif defined(__arm__)
+    #define BIT_CPU "ARM"
+    #define BIT_CPU_ARCH MPR_CPU_ARM
+#elif defined(__x86_64__) || defined(_M_AMD64)
+    #define BIT_CPU "x64"
+    #define BIT_CPU_ARCH MPR_CPU_X64
+#elif defined(__i386__) || defined(__i486__) || defined(__i585__) || defined(__i686__) || defined(_M_IX86)
+    #define BIT_CPU "x86"
+    #define BIT_CPU_ARCH MPR_CPU_X86
+#elif defined(_M_IA64)
+    #define BIT_CPU "IA64"
+    #define BIT_CPU_ARCH MPR_CPU_ITANIUM
+#elif defined(__mips__)
+    #define BIT_CPU "MIPS"
+    #define BIT_CPU_ARCH MPR_CPU_SPARC
+#elif defined(__ppc__) || defined(__powerpc__) || defined(__ppc64__)
+    #define BIT_CPU "PPC"
+    #define BIT_CPU_ARCH MPR_CPU_PPC
+#elif defined(__sparc__)
+    #define BIT_CPU "SPARC"
+    #define BIT_CPU_ARCH MPR_CPU_SPARC
+#endif
 
-#if LINUX
-    #if __WORDSIZE == 64 || __amd64 || __x86_64 || __x86_64__ || _WIN64
-    #else
-        /* Linux-32 */
-        #define _LARGEFILE64_SOURCE 1
-        #define _FILE_OFFSET_BITS 64
-    #endif
+/*
+    Operating system defines. Use compiler standard defintions to sleuth. 
+    Works for all except VxWorks which does not define any special symbol.
+ */
+#if defined(__APPLE__)
+    #define BIT_OS "macosx"
+    #define MACOSX 1
+    #define BIT_UNIX_LIKE 1
+    #define BIT_WIN_LIKE 0
+#elif defined(__linux__)
+    #define BIT_OS "linux"
+    #define LINUX 1
+    #define BIT_UNIX_LIKE 1
+    #define BIT_WIN_LIKE 0
+#elif defined(__FreeBSD__)
+    #define BIT_OS "freebsd"
+    #define FREEBSD 1
+    #define BIT_UNIX_LIKE 1
+    #define BIT_WIN_LIKE 0
+#elif defined(_WIN32)
+    #define BIT_OS "windows"
+    #define WINDOWS 1
+    #define BIT_UNIX_LIKE 0
+    #define BIT_WIN_LIKE 1
+#elif defined(__bsdi__)
+    #define BIT_OS "bsdi"
+    #define BSDI 1
+    #define BIT_UNIX_LIKE 1
+    #define BIT_WIN_LIKE 0
+#elif defined(__NetBSD__)
+    #define BIT_OS "netbsd"
+    #define NETBSD 1
+    #define BIT_UNIX_LIKE 1
+    #define BIT_WIN_LIKE 0
+#elif defined(__hpux)
+    #define BIT_OS "hpux"
+    #define HPUX 1
+    #define BIT_UNIX_LIKE 1
+    #define BIT_WIN_LIKE 0
+#elif defined(_AIX)
+    #define BIT_OS "aix"
+    #define AIX 1
+    #define BIT_UNIX_LIKE 1
+    #define BIT_WIN_LIKE 0
+#elif defined(__CYGWIN__)
+    #define BIT_OS "cygwin"
+    #define CYGWIN 1
+    #define BIT_UNIX_LIKE 1
+    #define BIT_WIN_LIKE 0
+#elif defined(__VMS)
+    #define BIT_OS "vms"
+    #define VMS 1
+    #define BIT_UNIX_LIKE 0
+    #define BIT_WIN_LIKE 0
+#elif defined(VXWORKS)
+    /* VxWorks does not have a pre-defined symbol */
+    #define BIT_OS "vxworks"
+    #define BIT_UNIX_LIKE 0
+    #define BIT_WIN_LIKE 0
+#endif
+
+/********************************* O/S Includes *******************************/
+
+#if __WORDSIZE == 64 || __amd64 || __x86_64 || __x86_64__ || _WIN64
+    #define MPR_64_BIT 1
+    #define MPR_BITS 64
+#else
+    #define MPR_BITS 32
 #endif
 
 /*
     Out-of-order definitions and includes. Order really matters in this section
  */
-#if WIN
+#if WINDOWS
     #undef      _CRT_SECURE_NO_DEPRECATE
     #define     _CRT_SECURE_NO_DEPRECATE 1
     #undef      _CRT_SECURE_NO_WARNINGS
@@ -91,12 +178,32 @@
     #endif
 #endif
 
+/*
+    Use GNU extensions for:
+        RTLD_DEFAULT for dlsym()
+ */
+#if LINUX
+    #define _GNU_SOURCE 1
+    #if !MPR_64_BIT
+        #define _LARGEFILE64_SOURCE 1
+        #define _FILE_OFFSET_BITS 64
+    #endif
+#endif
+
 #if VXWORKS
+    #ifndef _VSB_CONFIG_FILE
+        #define _VSB_CONFIG_FILE "vsbConfig.h"
+    #endif
     #include    <vxWorks.h>
     #define     HAS_USHORT 1
 #endif
 
-#if BLD_WIN_LIKE
+#if MACSOX
+    #define     HAS_USHORT 1
+    #define     HAS_UINT 1
+#endif
+
+#if BIT_WIN_LIKE
     #include    <winsock2.h>
     #include    <windows.h>
     #include    <winbase.h>
@@ -106,13 +213,13 @@
     #include    <wincrypt.h>
 #endif
 
-#if WIN
+#if WINDOWS
     #include    <ws2tcpip.h>
     #include    <conio.h>
     #include    <process.h>
     #include    <windows.h>
     #include    <shlobj.h>
-    #if BLD_DEBUG
+    #if BIT_DEBUG
         #include <crtdbg.h>
     #endif
 #endif
@@ -127,7 +234,7 @@
 
     #include    <ctype.h>
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     #include    <direct.h>
 #else
     #include    <dirent.h>
@@ -139,17 +246,17 @@
     #include    <fcntl.h>
     #include    <errno.h>
 
-#if BLD_FEATURE_FLOAT
+#if BIT_FEATURE_FLOAT
     #include    <float.h>
     #define __USE_ISOC99 1
     #include    <math.h>
 #endif
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     #include    <grp.h> 
 #endif
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     #include    <io.h>
 #endif
 
@@ -159,7 +266,7 @@
 
     #include    <limits.h>
 
-#if BLD_UNIX_LIKE || VXWORKS
+#if BIT_UNIX_LIKE || VXWORKS
     #include    <netdb.h>
     #include    <net/if.h>
     #include    <netinet/in.h>
@@ -167,7 +274,7 @@
     #include    <netinet/ip.h>
 #endif
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     #include    <pthread.h> 
     #include    <pwd.h> 
 #if !CYGWIN
@@ -179,7 +286,7 @@
     #include    <signal.h>
     #include    <stdarg.h>
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     #include    <stdint.h>
 #endif
 
@@ -187,7 +294,7 @@
     #include    <stdlib.h>
     #include    <string.h>
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     #include    <syslog.h>
 #endif
 
@@ -195,7 +302,7 @@
     #include    <sys/epoll.h>
 #endif
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     #include    <sys/ioctl.h>
     #include    <sys/mman.h>
     #include    <sys/poll.h>
@@ -209,7 +316,7 @@
 
     #include    <sys/types.h>
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     #include    <sys/resource.h>
     #include    <sys/sem.h>
     #include    <sys/socket.h>
@@ -223,7 +330,7 @@
 
     #include    <time.h>
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     #include    <unistd.h>
 #endif
 
@@ -263,7 +370,6 @@
     #include    <ioLib.h>
     #include    <pipeDrv.h>
     #include    <hostLib.h>
-    #include    <symSyncLib.h>
     #include    <sysSymTbl.h>
     #include    <sys/fcntlcom.h>
     #include    <tickLib.h>
@@ -272,8 +378,19 @@
 #if _WRS_VXWORKS_MAJOR >= 6
     #include    <wait.h>
 #endif
+#if _WRS_VXWORKS_MAJOR > 6 || (_WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR >= 8)
+    #include    <symSync.h>
+    #include    <vxAtomicLib.h>
+#endif
 #endif
 
+/************************************** Defaults ******************************/
+
+#ifndef BIT_FEATURE_ROMFS
+    #define BIT_FEATURE_ROMFS 0
+#endif
+
+/************************************** Defines *******************************/
 /*
     Standard types
  */
@@ -284,7 +401,7 @@
             /**
                 Boolean data type.
              */
-            typedef int bool;
+            typedef char bool;
         #endif
     #endif
 #endif
@@ -379,7 +496,7 @@
 
 #ifndef HAS_SSIZE
     #define HAS_SSIZE 1
-    #if BLD_UNIX_LIKE || VXWORKS || DOXYGEN
+    #if BIT_UNIX_LIKE || VXWORKS || DOXYGEN
         /**
             Signed integer size field large enough to hold a pointer offset.
          */
@@ -398,21 +515,21 @@
 /*
     Windows uses uint for write/read counts (Ugh!)
  */
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     typedef uint wsize;
 #else
     typedef ssize wsize;
 #endif
 
 #ifndef HAS_INT64
-    #if BLD_UNIX_LIKE
+    #if BIT_UNIX_LIKE
         __extension__ typedef long long int int64;
     #elif VXWORKS || DOXYGEN
         /**
             Integer 64 bit data type.
          */
         typedef long long int int64;
-    #elif BLD_WIN_LIKE
+    #elif BIT_WIN_LIKE
         typedef __int64 int64;
     #else
         typedef long long int int64;
@@ -420,14 +537,14 @@
 #endif
 
 #ifndef HAS_UINT64
-    #if BLD_UNIX_LIKE
+    #if BIT_UNIX_LIKE
         __extension__ typedef unsigned long long int uint64;
     #elif VXWORKS || DOXYGEN
         /**
             Unsigned integer 64 bit data type.
          */
         typedef unsigned long long int uint64;
-    #elif BLD_WIN_LIKE
+    #elif BIT_WIN_LIKE
         typedef unsigned __int64 uint64;
     #else
         typedef unsigned long long int uint64;
@@ -439,6 +556,17 @@
  */
 typedef int64 MprOff;
 
+/*
+    Socklen_t
+ */
+#if DOXYGEN
+    typedef int MprSocklen;
+#elif VXWORKS
+    typedef int MprSocklen;
+#else
+    typedef socklen_t MprSocklen;
+#endif
+
 /**
     Date and Time Service
     @stability Evolving
@@ -449,13 +577,6 @@ typedef int64 MprOff;
  */
 typedef int64 MprTime;
 
-#if __WORDSIZE == 64 || __amd64 || __x86_64 || __x86_64__ || _WIN64
-    #define MPR_64_BIT 1
-    #define MPR_BITS 64
-#else
-    #define MPR_BITS 32
-#endif
-
 #ifndef BITSPERBYTE
     #define BITSPERBYTE     (8 * sizeof(char))
 #endif
@@ -464,15 +585,21 @@ typedef int64 MprTime;
     #define BITS(type)      (BITSPERBYTE * (int) sizeof(type))
 #endif
 
-#if BLD_FEATURE_FLOAT
+#if BIT_FEATURE_FLOAT
     #ifndef MAXFLOAT
-        #if BLD_WIN_LIKE
+        #if BIT_WIN_LIKE
             #define MAXFLOAT        DBL_MAX
         #else
             #define MAXFLOAT        FLT_MAX
         #endif
     #endif
-    #if BLD_WIN_LIKE
+    #if VXWORKS
+        #define isnan(n)  ((n) != (n))
+        #define isnanf(n) ((n) != (n))
+        #define isinf(n)  ((n) == (1.0 / 0.0) || (n) == (-1.0 / 0.0))
+        #define isinff(n) ((n) == (1.0 / 0.0) || (n) == (-1.0 / 0.0))
+    #endif
+    #if BIT_WIN_LIKE
         #define isNan(f) (_isnan(f))
     #elif VXWORKS || MACOSX || LINUX
         #define isNan(f) (isnan(f))
@@ -531,12 +658,14 @@ typedef int64 MprTime;
     #define PTOL(i)     ((int64) (int) i)
 #endif
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     #define INT64(x)    (x##i64)
     #define UINT64(x)   (x##Ui64)
+    #define MPR_EXPORT  __declspec(dllexport)
 #else
     #define INT64(x)    (x##LL)
     #define UINT64(x)   (x##ULL)
+    #define MPR_EXPORT 
 #endif
 
 #ifndef max
@@ -547,7 +676,7 @@ typedef int64 MprTime;
 #endif
 
 #ifndef PRINTF_ATTRIBUTE
-    #if (__GNUC__ >= 3) && !DOXYGEN && BLD_DEBUG && UNUSED && KEEP
+    #if (__GNUC__ >= 3) && !DOXYGEN && BIT_DEBUG && UNUSED && KEEP
         /** 
             Use gcc attribute to check printf fns.  a1 is the 1-based index of the parameter containing the format, 
             and a2 the index of the first argument. Note that some gcc 2.x versions don't handle this properly 
@@ -572,10 +701,10 @@ typedef int64 MprTime;
 #endif
 
 #if !__UCLIBC__ && !CYGWIN && __USE_XOPEN2K
-    #define BLD_HAS_SPINLOCK    1
+    #define BIT_HAS_SPINLOCK    1
 #endif
 
-#if BLD_CC_DOUBLE_BRACES
+#if BIT_CC_DOUBLE_BRACES
     #define  NULL_INIT    {{0}}
 #else
     #define  NULL_INIT    {0}
@@ -584,7 +713,7 @@ typedef int64 MprTime;
 #ifndef R_OK
     #define R_OK    4
     #define W_OK    2
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     #define X_OK    R_OK
 #else
     #define X_OK    1
@@ -607,13 +736,14 @@ typedef int64 MprTime;
 #define MPR_FLEX
 #endif
 
+/*********************************** Fixups ***********************************/
 
-#if BLD_UNIX_LIKE || VXWORKS
+#if BIT_UNIX_LIKE || VXWORKS
     #define MPR_TEXT        ""
     #define MPR_BINARY      ""
 #endif
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     #define closesocket(x)  close(x)
     #define SOCKET_ERROR    -1
     #ifndef PTHREAD_MUTEX_RECURSIVE_NP
@@ -624,9 +754,13 @@ typedef int64 MprTime;
     #endif
 #endif
 
-#if !BLD_WIN_LIKE && !CYGWIN
-    #define O_BINARY        0
-    #define O_TEXT          0
+#if !BIT_WIN_LIKE && !CYGWIN
+    #ifndef O_BINARY
+        #define O_BINARY    0
+    #endif
+    #ifndef O_TEXT
+        #define O_TEXT      0
+    #endif
 #endif
 
 #if !LINUX
@@ -665,13 +799,21 @@ typedef int64 MprTime;
     #if _DIAB_TOOL
         #define inline __inline__
     #endif
-    #define closesocket(x)  close(x)
-    #define va_copy(d, s) ((d) = (s))
-    #define strcasecmp scasecmp
-    #define strncasecmp sncasecmp
+    #ifndef closesocket
+        #define closesocket(x)  close(x)
+    #endif
+    #ifndef va_copy
+        #define va_copy(d, s) ((d) = (s))
+    #endif
+    #ifndef strcasecmp
+        #define strcasecmp scasecmp
+    #endif
+    #ifndef strncasecmp
+        #define strncasecmp sncasecmp
+    #endif
 #endif
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     typedef int     uid_t;
     typedef void    *handle;
     typedef char    *caddr_t;
@@ -816,6 +958,7 @@ typedef int64 MprTime;
     #define gethostbyname2(a,b) gethostbyname(a)
 #endif /* WINCE */
 
+/*********************************** Externs **********************************/
 
 #ifdef __cplusplus
 extern "C" {
@@ -853,8 +996,7 @@ extern "C" {
             This may or may not be necessary - let us know dev@embedthis.com if your system needs this (and why).
          */
         #if _DIAB_TOOL
-            #if BLD_HOST_CPU_ARCH == MPR_CPU_PPC
-                /* #define __va_copy(dest, src) *(dest) = *(src) */
+            #if BIT_CPU_ARCH == MPR_CPU_PPC
                 #define __va_copy(dest, src) memcpy((dest), (src), sizeof(va_list))
             #endif
         #endif
@@ -862,7 +1004,7 @@ extern "C" {
     #endif
 #endif  /* VXWORKS */
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     struct timezone {
       int  tz_minuteswest;      /* minutes W of Greenwich */
       int  tz_dsttime;          /* type of dst correction */
@@ -967,6 +1109,7 @@ extern "C" {
 }
 #endif
 
+/*********************************** Forwards *********************************/
 
 #ifdef __cplusplus
 extern "C" {
@@ -985,6 +1128,7 @@ struct  MprFile;
 struct  MprFileSystem;
 struct  MprHash;
 struct  MprHeap;
+struct  MprList;
 struct  MprKey;
 struct  MprModule;
 struct  MprMutex;
@@ -1002,6 +1146,7 @@ struct  MprWorker;
 struct  MprWorkerService;
 struct  MprXml;
 
+/******************************* Tunable Constants ****************************/
 /*
     Build tuning
  */
@@ -1009,11 +1154,7 @@ struct  MprXml;
 #define MPR_TUNE_BALANCED   2       /**< Tune balancing speed and size */
 #define MPR_TUNE_SPEED      3       /**< Tune for speed, program will use memory more aggressively */
 
-#ifndef BLD_TUNE
-#define BLD_TUNE MPR_TUNE_BALANCED
-#endif
-
-#if BLD_CC_MMU
+#if BIT_CC_MMU
     /* 
         If the system supports virtual memory, then stack size should use system default. Only used pages will
         actually consume memory 
@@ -1024,10 +1165,10 @@ struct  MprXml;
         No MMU, so the stack size actually consumes memory. Set this as low as possible. 
         NOTE: php and ejs use stack heavily.
      */
-    #define MPR_DEFAULT_STACK       (64 * 1024)   /**< Default thread stack size (0 means use system default) */
+    #define MPR_DEFAULT_STACK       (128 * 1024)   /**< Default thread stack size (0 means use system default) */
 #endif
 
-#if BLD_TUNE == MPR_TUNE_SIZE || DOXYGEN
+#if BIT_TUNE == MPR_TUNE_SIZE || DOXYGEN
     /*
         Squeeze mode optimizes to reduce memory usage
      */
@@ -1036,9 +1177,8 @@ struct  MprXml;
     #define MPR_MAX_URL             512           /**< Max URL size. Also request URL size. */
     #define MPR_MAX_STRING          1024          /**< Maximum (stack) string size */
     #define MPR_MAX_LOG             (8 * 1024)    /**< Maximum log message size (impacts stack) */
-    #define MPR_DEFAULT_ALLOC       64            /**< Default small alloc size */
+    #define MPR_SMALL_ALLOC         256           /**< Default small. Used in printf. */
     #define MPR_DEFAULT_HASH_SIZE   23            /**< Default size of hash table */ 
-    #define MPR_MAX_ARGC            128           /**< Reasonable max of args */
     #define MPR_BUFSIZE             4096          /**< Reasonable size for buffers */
     #define MPR_BUF_INCR            4096          /**< Default buffer growth inc */
     #define MPR_EPOLL_SIZE          32            /**< Epoll backlog */
@@ -1053,7 +1193,7 @@ struct  MprXml;
     #define MPR_NEW_QUOTA           (4 * 1024)    /**< Number of new allocations before a GC is worthwhile */
     #define MPR_GC_WORKERS          0             /**< Run garbage collection non-concurrently */
     
-#elif BLD_TUNE == MPR_TUNE_BALANCED
+#elif BIT_TUNE == MPR_TUNE_BALANCED
     
     /*
         Tune balancing speed and size
@@ -1063,9 +1203,8 @@ struct  MprXml;
     #define MPR_MAX_URL             2048
     #define MPR_MAX_STRING          2048
     #define MPR_MAX_LOG             (32 * 1024)
-    #define MPR_DEFAULT_ALLOC       256
+    #define MPR_SMALL_ALLOC         512
     #define MPR_DEFAULT_HASH_SIZE   43
-    #define MPR_MAX_ARGC            256
     #define MPR_BUFSIZE             4096
     #define MPR_BUF_INCR            4096
     #define MPR_MAX_BUF             -1
@@ -1089,9 +1228,8 @@ struct  MprXml;
     #define MPR_MAX_URL             4096
     #define MPR_MAX_LOG             (64 * 1024)
     #define MPR_MAX_STRING          4096
-    #define MPR_DEFAULT_ALLOC       512
+    #define MPR_SMALL_ALLOC         1024
     #define MPR_DEFAULT_HASH_SIZE   97
-    #define MPR_MAX_ARGC            512
     #define MPR_BUFSIZE             8192
     #define MPR_MAX_BUF             -1
     #define MPR_EPOLL_SIZE          128
@@ -1147,18 +1285,22 @@ struct  MprXml;
 /* 
     Timeouts
  */
+#if UNUSED
 #define MPR_TIMEOUT_CMD         60000       /**< Command Request timeout (60 sec) */
-#define MPR_TIMEOUT_SOCKETS     10000       /**< General sockets timeout */
+#define MPR_TIMEOUT_SOCKETS     10000       /**< Socket connection socket timeout */
 #define MPR_TIMEOUT_LOG_STAMP   3600000     /**< Time between log time stamps (1 hr) */
+#define MPR_TIMEOUT_STOP_THREAD 10000       /**< Time to stop running threads */
+#define MPR_TIMEOUT_HANDLER     10000       /**< Wait period when removing a wait handler */
+#endif
+
 #define MPR_TIMEOUT_PRUNER      600000      /**< Time between worker thread pruner runs (10 min) */
 #define MPR_TIMEOUT_WORKER      300000      /**< Prune worker that has been idle for 5 minutes */
 #define MPR_TIMEOUT_START_TASK  10000       /**< Time to start tasks running */
-#define MPR_TIMEOUT_STOP        30000       /**< Wait when stopping resources (30 sec) */
-#define MPR_TIMEOUT_STOP_TASK   10000       /**< Time to stop or reap tasks */
-#define MPR_TIMEOUT_STOP_THREAD 10000       /**< Time to stop running threads */
+#define MPR_TIMEOUT_STOP        30000       /**< Default wait when stopping resources (30 sec) */
+#define MPR_TIMEOUT_STOP_TASK   10000       /**< Time to stop or reap tasks (vxworks) */
 #define MPR_TIMEOUT_LINGER      2000        /**< Close socket linger timeout */
-#define MPR_TIMEOUT_HANDLER     10000       /**< Wait period when removing a wait handler */
 #define MPR_TIMEOUT_GC_SYNC     10000       /**< Wait period for threads to synchronize */
+#define MPR_TIMEOUT_NO_BUSY     1000        /**< Wait period to minimize CPU drain */
 #define MPR_TIMEOUT_NAP         20          /**< Short pause */
 
 #define MPR_TICKS_PER_SEC       1000        /**< Time ticks per second */
@@ -1183,12 +1325,12 @@ struct  MprXml;
 #define MPR_CMD_TIMER_PERIOD    5000        /* Check for expired commands */
 
 /*
-    Tunable constants
+    Other tunable constants
  */
+#define MPR_MAX_ARGC            32           /**< Reasonable max of args for MAIN */
 #define MPR_TEST_POLL_NAP       25
 #define MPR_TEST_SLEEP          (60 * 1000)
-#define MPR_TEST_MAX_STACK      (16)
-
+#define MPR_TEST_MAX_STACK      16
 #define MPR_TEST_TIMEOUT        10000       /* Ten seconds */
 #define MPR_TEST_LONG_TIMEOUT   300000      /* 5 minutes */
 #define MPR_TEST_SHORT_TIMEOUT  200         /* 1/5 sec */
@@ -1213,7 +1355,7 @@ struct  MprXml;
     #define MPR_EVENT_KQUEUE    1
 #elif VXWORKS || WINCE || CYGWIN
     #define MPR_EVENT_SELECT    1
-#elif WIN
+#elif WINDOWS
     #define MPR_EVENT_ASYNC     1
 #else
     #define MPR_EVENT_POLL      1
@@ -1224,6 +1366,7 @@ struct  MprXml;
  */
 #define MPR_MIN_TIME_FOR_GC     2       /**< Wait till 2 milliseconds of idle time possible */
     
+/************************************ Error Codes *****************************/
 
 /* Prevent collisions with 3rd party software */
 #undef UNUSED
@@ -1318,10 +1461,13 @@ struct  MprXml;
 /*
     Foundational types
  */
-#if BLD_CHAR_LEN == 4
+#ifndef BIT_CHAR_LEN
+    #define BIT_CHAR_LEN 1
+#endif
+#if BIT_CHAR_LEN == 4
     typedef int MprChar;
     #define T(s) L ## s
-#elif BLD_CHAR_LEN == 2
+#elif BIT_CHAR_LEN == 2
     typedef short MprChar;
     #define T(s) L ## s
 #else
@@ -1329,47 +1475,64 @@ struct  MprXml;
     #define T(s) s
 #endif
 
-typedef struct MprArgs {
-    cchar   *program;
-    cchar   *args;
-} MprArgs;
-
 /*
-    Convenience define to declare a main program entry point that works for Windows, VxWorks and Posix
+    Convenience define to declare a main program entry point that works for Windows, VxWorks and Unix
  */
 #if VXWORKS
-    #define MAIN(name, _argc, _argv)  \
-        int name() { \
-            extern int main(); \
-            MprArgs args; \
-            args.program = #name; \
-            args.args = 0; \
-            return main(0, (char**) &args); \
+    #define MAIN(name, _argc, _argv, _envp)  \
+        static int innerMain(int argc, char **argv, char **envp); \
+        int name(char *arg0, ...) { \
+            va_list args; \
+            char *argp, *largv[MPR_MAX_ARGC]; \
+            int largc = 0; \
+            va_start(args, arg0); \
+            largv[largc++] = #name; \
+            if (arg0) { \
+                largv[largc++] = arg0; \
+            } \
+            for (argp = va_arg(args, char*); argp && largc < MPR_MAX_ARGC; argp = va_arg(args, char*)) { \
+                largv[largc++] = argp; \
+            } \
+            return innerMain(largc, largv, NULL); \
         } \
-        int main(_argc, _argv)
-#elif WINCE
-    #define MAIN(name, argc, argv)  \
+        static int innerMain(_argc, _argv, _envp)
+#elif BIT_WIN_LIKE && BIT_CHAR_LEN > 1
+    #define MAIN(name, _argc, _argv, _envp)  \
         APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, LPWSTR command, int junk2) { \
-            MprArgs args; \
-            args.program = #name; \
-            args.args = (char*) command; \
+            char *largv[MPR_MAX_ARGC]; \
             extern int main(); \
-            main(0, (char**) &args); \
+            char *mcommand[MPR_MAX_STRING]; \
+            int largc; \
+            wtom(mcommand, sizeof(dest), command, -1);
+            largc = mprParseArgs(mcommand, &largv[1], MPR_MAX_ARGC - 1); \
+            largv[0] = #name; \
+            main(largc, largv, NULL); \
         } \
-        int main(argc, argv)
+        int main(argc, argv, _envp)
+#elif BIT_WIN_LIKE
+    #define MAIN(name, _argc, _argv, _envp)  \
+        APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2) { \
+            extern int main(); \
+            char *largv[MPR_MAX_ARGC]; \
+            int largc; \
+            largc = mprParseArgs(command, &largv[1], MPR_MAX_ARGC - 1); \
+            largv[0] = #name; \
+            main(largc, largv, NULL); \
+        } \
+        int main(_argc, _argv, _envp)
 #else
-    #define MAIN(name, argc, argv) int main(argc, argv)
+    #define MAIN(name, _argc, _argv, _envp) int main(_argc, _argv, _envp)
 #endif
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     typedef pthread_t   MprOsThread;
-#elif BLD_CPU_ARCH == MPR_CPU_IX64
+#elif MPR_64_BIT
     typedef int64       MprOsThread;
 #else
     typedef int         MprOsThread;
 #endif
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     #define MPR_INLINE __inline
 #else
     #define MPR_INLINE inline
@@ -1380,8 +1543,9 @@ typedef struct MprArgs {
  */
 #define MPR_LITTLE_ENDIAN   1
 #define MPR_BIG_ENDIAN      2
-#define MPR_ENDIAN          BLD_ENDIAN
+#define MPR_ENDIAN          BIT_ENDIAN
 
+/************************************** Debug *********************************/
 /**
     Trigger a breakpoint.
     @description Triggers a breakpoint and traps to the debugger. 
@@ -1389,12 +1553,13 @@ typedef struct MprArgs {
  */
 extern void mprBreakpoint();
 
-#if BLD_FEATURE_ASSERT
+#if BIT_FEATURE_ASSERT
     #define mprAssert(C)    if (C) ; else mprAssertError(MPR_LOC, #C)
 #else
     #define mprAssert(C)    if (1) ; else
 #endif
 
+/*********************************** Thread Sync ******************************/
 /**
     Multithreaded Synchronization Services
     @see MprCond MprMutex MprSpin mprAtomicAdd mprAtomicAdd64 mprAtomicBarrier mprAtomicCas mprAtomicExchange 
@@ -1414,14 +1579,14 @@ typedef struct MprSynch { int dummy; } MprSynch;
     @ingroup MprSynch
  */
 typedef struct MprCond {
-    #if BLD_UNIX_LIKE
+    #if BIT_UNIX_LIKE
         pthread_cond_t cv;          /**< Unix pthreads condition variable */
-    #elif BLD_WIN_LIKE
+    #elif BIT_WIN_LIKE
         HANDLE cv;                  /* Windows event handle */
     #elif VXWORKS
         SEM_ID cv;                  /* Condition variable */
     #else
-        error("Unsupported OS");
+        #warning "Unsupported OS in MprCond definition in mpr.h"
     #endif
     struct MprMutex *mutex;         /**< Thread synchronization mutex */
     volatile int triggered;         /**< Value of the condition */
@@ -1491,16 +1656,16 @@ extern int mprWaitForMultiCond(MprCond *cond, MprTime timeout);
     @ingroup MprSynch
  */
 typedef struct MprMutex {
-    #if BLD_WIN_LIKE
+    #if BIT_WIN_LIKE
         CRITICAL_SECTION cs;            /**< Internal mutex critical section */
     #elif VXWORKS
         SEM_ID      cs;
-    #elif BLD_UNIX_LIKE
+    #elif BIT_UNIX_LIKE
         pthread_mutex_t  cs;
     #else
-        error("Unsupported OS");
+        #warning "Unsupported OS in MprMutex definition in mpr.h"
     #endif
-#if BLD_DEBUG
+#if BIT_DEBUG
         MprOsThread owner;
 #endif
 } MprMutex;
@@ -1513,21 +1678,27 @@ typedef struct MprMutex {
  */
 typedef struct MprSpin {
     #if USE_MPR_LOCK
-        MprMutex            cs;
-    #elif BLD_WIN_LIKE
-        CRITICAL_SECTION    cs;            /**< Internal mutex critical section */
+        MprMutex                cs;
+    #elif BIT_WIN_LIKE
+        CRITICAL_SECTION        cs;            /**< Internal mutex critical section */
     #elif VXWORKS
-        SEM_ID              cs;
+        #if FUTURE && SPIN_LOCK_TASK_INIT
+            spinlockTask_t      cs;
+        #else
+            SEM_ID              cs;
+        #endif
     #elif MACOSX
-        OSSpinLock          cs;
-    #elif BLD_UNIX_LIKE && BLD_HAS_SPINLOCK
-        pthread_spinlock_t  cs;
-    #elif BLD_UNIX_LIKE
-        pthread_mutex_t     cs;
+        OSSpinLock              cs;
+    #elif BIT_UNIX_LIKE
+        #if BIT_HAS_SPINLOCK
+            pthread_spinlock_t  cs;
+        #else
+            pthread_mutex_t     cs;
+        #endif
     #else
-        error("Unsupported OS");
+        #warning "Unsupported OS in MprSpin definition in mpr.h"
     #endif
-    #if BLD_DEBUG
+    #if BIT_DEBUG
         MprOsThread         owner;
     #endif
 } MprSpin;
@@ -1596,25 +1767,30 @@ extern MprSpin *mprInitSpinLock(MprSpin *lock);
 extern bool mprTrySpinLock(MprSpin *lock);
 
 /*
+    Internal
+ */
+void mprManageSpinLock(MprSpin *lock, int flags);
+
+/*
     For maximum performance, use the spin lock/unlock routines macros
  */
-#if !BLD_DEBUG
-#define BLD_USE_LOCK_MACROS 1
+#if !BIT_DEBUG
+#define BIT_USE_LOCK_MACROS 1
 #endif
-#if BLD_USE_LOCK_MACROS && !DOXYGEN
+#if BIT_USE_LOCK_MACROS && !DOXYGEN
     /*
         Spin lock macros
      */
     #if MACOSX
         #define mprSpinLock(lock)   if (lock) OSSpinLockLock(&((lock)->cs))
         #define mprSpinUnlock(lock) if (lock) OSSpinLockUnlock(&((lock)->cs))
-    #elif BLD_UNIX_LIKE && BLD_HAS_SPINLOCK
+    #elif BIT_UNIX_LIKE && BIT_HAS_SPINLOCK
         #define mprSpinLock(lock)   if (lock) pthread_spin_lock(&((lock)->cs))
         #define mprSpinUnlock(lock) if (lock) pthread_spin_unlock(&((lock)->cs))
-    #elif BLD_UNIX_LIKE
+    #elif BIT_UNIX_LIKE
         #define mprSpinLock(lock)   if (lock) pthread_mutex_lock(&((lock)->cs))
         #define mprSpinUnlock(lock) if (lock) pthread_mutex_unlock(&((lock)->cs))
-    #elif BLD_WIN_LIKE
+    #elif BIT_WIN_LIKE
         #define mprSpinLock(lock)   if (lock && (((MprSpin*)(lock))->cs.SpinCount)) EnterCriticalSection(&((lock)->cs))
         #define mprSpinUnlock(lock) if (lock) LeaveCriticalSection(&((lock)->cs))
     #elif VXWORKS
@@ -1625,10 +1801,10 @@ extern bool mprTrySpinLock(MprSpin *lock);
     /*
         Lock macros
      */
-    #if BLD_UNIX_LIKE
+    #if BIT_UNIX_LIKE
         #define mprLock(lock)       if (lock) pthread_mutex_lock(&((lock)->cs))
         #define mprUnlock(lock)     if (lock) pthread_mutex_unlock(&((lock)->cs))
-    #elif BLD_WIN_LIKE
+    #elif BIT_WIN_LIKE
         #define mprLock(lock)       if (lock && (((MprSpin*)(lock))->cs.SpinCount)) EnterCriticalSection(&((lock)->cs))
         #define mprUnlock(lock)     if (lock) LeaveCriticalSection(&((lock)->cs))
     #elif VXWORKS
@@ -1737,15 +1913,18 @@ extern void mprAtomicAdd64(volatile int64 *target, int value);
  */
 extern void *mprAtomicExchange(void * volatile *target, cvoid *value);
 
+/********************************* Memory Allocator ***************************/
 /*
     Allocator debug and stats selection
  */
-#if BLD_DEBUG
-    #define BLD_MEMORY_DEBUG        1                   /**< Fill blocks, verifies block integrity. */
-    #define BLD_MEMORY_STATS        1                   /**< Include memory stats routines */
+#if BIT_DEBUG
+    #define BIT_MEMORY_DEBUG        1                   /**< Fill blocks, verifies block integrity. */
+    #define BIT_MEMORY_STATS        1                   /**< Include memory stats routines */
+    #define BIT_MEMORY_STACK        1                   /**< Monitor stack usage */
 #else
-    #define BLD_MEMORY_DEBUG        0
-    #define BLD_MEMORY_STATS        0
+    #define BIT_MEMORY_DEBUG        0
+    #define BIT_MEMORY_STATS        0
+    #define BIT_MEMORY_STACK        0
 #endif
 
 /*
@@ -1835,14 +2014,10 @@ typedef struct MprMem {
     size_t      field1;             /**< Pointer to adjacent, prior block in memory with last, manager fields */
     size_t      field2;             /**< Internal block length including header with gen and mark fields */
 
-#if BLD_MEMORY_DEBUG
+#if BIT_MEMORY_DEBUG
     uint            magic;          /* Unique signature */
     uint            seqno;          /* Allocation sequence number */
     cchar           *name;          /* Debug name */
-#endif
-#if !BLD_FEATURE_VALLOC
-    struct MprMem   *next;          /* Pointer to next logical block */
-    struct MprMem   *prev;          /* Pointer to prev logical block */
 #endif
 } MprMem;
 
@@ -1855,11 +2030,11 @@ typedef struct MprMem {
 
 /*
     The allocator free map is a two dimensional array of free queues. The first dimension is indexed by
-    the most significant bit (MSB) set in the requested block size. The second dimension is the next 
+    the most significant bits (group) set in the requested block size. The second dimension is the next 
     MPR_ALLOC_BUCKET_SHIFT (4) bits below the MSB.
 
     +-------------------------------+
-    |       |MSB|  Bucket   | rest  |
+    |   Group   |  Bucket   | rest  |
     +-------------------------------+
     | 0 | 0 | 1 | 1 | 1 | 1 | X | X |
     +-------------------------------+
@@ -1888,7 +2063,7 @@ typedef struct MprMem {
 /*
     VirtAloc flags
  */
-#if BLD_WIN_LIKE || VXWORKS
+#if BIT_WIN_LIKE || VXWORKS
     #define MPR_MAP_READ            0x1
     #define MPR_MAP_WRITE           0x2
     #define MPR_MAP_EXECUTE         0x4
@@ -1898,9 +2073,9 @@ typedef struct MprMem {
     #define MPR_MAP_EXECUTE         PROT_EXEC
 #endif
 
-#if BLD_MEMORY_DEBUG
+#if BIT_MEMORY_DEBUG
     #define MPR_CHECK_BLOCK(bp)     mprCheckBlock(bp)
-    #define MPR_VERIFY_MEM()        if (MPR->heap.verify) { mprVerifyMem(); } else
+    #define MPR_VERIFY_MEM()        if (MPR->heap->verify) { mprVerifyMem(); } else
 #else
     #define MPR_CHECK_BLOCK(bp) 
     #define MPR_VERIFY_MEM()        
@@ -1921,10 +2096,6 @@ typedef struct MprMem {
 #define MPR_MEM_LIMIT               0x2         /**< Memory use exceeds memory limit - invoking policy */
 #define MPR_MEM_FAIL                0x4         /**< Memory allocation failed - immediate exit */
 #define MPR_MEM_TOO_BIG             0x4         /**< Memory allocation request is too big - immediate exit */
-
-#if UNUSED && KEEP
-#define MPR_MEM_ATTENTION           0x8         /**< GC needs attention, threads should yield */
-#endif
 
 /**
     Memory allocation error callback. Notifiers are called if a low memory condition exists.
@@ -1952,6 +2123,7 @@ typedef void (*MprManager)(void *ptr, int flags);
  */
 typedef struct MprFreeMem {
     union {
+        //  8
         MprMem          blk;
         struct {
             int         minSize;            /**< Min size of block in queue */
@@ -1963,7 +2135,7 @@ typedef struct MprFreeMem {
 } MprFreeMem;
 
 
-#if BLD_MEMORY_STATS
+#if BIT_MEMORY_STATS
 #define MPR_TRACK_HASH        2053          /* Size of location name hash */
 #define MPR_TRACK_NAMES       8             /* Length of collision chain */
 
@@ -1996,7 +2168,7 @@ typedef struct MprMemStats {
     int             sweepVisited;
     int             swept;
 
-#if BLD_MEMORY_STATS
+#if BIT_MEMORY_STATS
     /*
         Optional memory stats
      */
@@ -2031,15 +2203,13 @@ typedef struct MprRegion {
  */
 typedef struct MprHeap {
     MprFreeMem       freeq[MPR_ALLOC_NUM_GROUPS * MPR_ALLOC_NUM_BUCKETS];
+    ulong            bucketMap[MPR_ALLOC_NUM_GROUPS];
     MprFreeMem       *freeEnd;
     ssize            groupMap;
-    ulong            bucketMap[MPR_ALLOC_NUM_GROUPS];
     struct MprList   *roots;                 /**< List of GC root objects */
     MprMemStats      stats;
     MprMemNotifier   notifier;               /**< Memory allocation failure callback */
-    MprCond          *markerCond;            /**< Marker sleep cond var */
     MprSpin          heapLock;               /**< Heap allocation lock */
-    MprSpin          heapLock2;              /**< Heap allocation lock */
     MprSpin          rootLock;               /**< Root locking */
     MprRegion        *regions;               /**< List of memory regions */
     struct MprThread *marker;                /**< Marker thread */
@@ -2294,7 +2464,7 @@ extern void mprSetMemPolicy(int policy);
     @return Returns the original object
     @ingroup MprMem
  */
-extern void *mprSetManager(void *ptr, void *manager);
+extern void *mprSetManager(void *ptr, MprManager manager);
 
 /**
     Validate a memory block and issue asserts if the memory block is not valid.
@@ -2325,7 +2495,7 @@ extern void mprVirtFree(void *ptr, ssize size);
 /*
     In debug mode, all memory blocks can have a debug name
  */
-#if BLD_MEMORY_DEBUG
+#if BIT_MEMORY_DEBUG
     extern void *mprSetName(void *ptr, cchar *name);
     extern void *mprCopyName(void *dest, void *src);
     #define mprGetName(ptr) (MPR_GET_MEM(ptr)->name)
@@ -2345,8 +2515,7 @@ extern void mprVirtFree(void *ptr, ssize size);
 #define mprAllocObj(type, manage) \
     ((type*) mprSetManager( \
         mprSetAllocName(mprAllocMem(sizeof(type), MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO), #type "@" MPR_LOC), (MprManager) manage))
-#define mprAllocStruct(type) \
-        ((type*) mprSetAllocName(mprAllocMem(sizeof(type), MPR_ALLOC_ZERO), #type "@" MPR_LOC))
+#define mprAllocStruct(type) ((type*) mprSetAllocName(mprAllocMem(sizeof(type), MPR_ALLOC_ZERO), #type "@" MPR_LOC))
 
 #if DOXYGEN
 typedef void *Type;
@@ -2364,7 +2533,7 @@ extern void *mprAlloc(ssize size);
 /**
     Allocate an object of a given type.
     @description Allocates a zeroed block of memory large enough to hold an instance of the specified type with a 
-        manager callback.  this call associates a manager function with an object that will be invoked when the 
+        manager callback. This call associates a manager function with an object that will be invoked when the 
         object is freed or the garbage collector needs the object to mark internal properties as being used.  
         This call is implemented as a macro.
     @param type Type of the object to allocate
@@ -2401,6 +2570,7 @@ extern void mprCheckBlock(MprMem *bp);
 extern void mprStartGCService();
 extern void mprStopGCService();
 
+/******************************** Garbage Coolector ***************************/
 /**
     Add a memory block as a root for garbage collection
     @param ptr Any memory pointer
@@ -2453,7 +2623,7 @@ extern void mprMarkBlock(cvoid *ptr);
 
 /**
     Release a memory block
-    @description This call is used to allow a memory block to be freed freed by the garbage collector after calling
+    @description This call is used to allow a memory block to be freed by the garbage collector after calling
         mprHold.
     @param ptr Any memory block
     @ingroup MprMem
@@ -2500,6 +2670,7 @@ extern void mprWakeGCService();
 extern void mprResumeThreads();
 extern int  mprSyncThreads(MprTime timeout);
 
+/********************************** Safe Strings ******************************/
 /**
     Safe String Module
     @description The MPR provides a suite of safe ascii string manipulation routines to help prevent buffer overflows
@@ -2944,6 +3115,7 @@ extern char *strim(cchar *str, cchar *set, int where);
  */
 extern char *supper(cchar *str);
 
+/************************************ Unicode *********************************/
 /*
     Low-level unicode wide string support. Unicode characters are build-time configurable to be 1, 2 or 4 bytes
 
@@ -2954,7 +3126,7 @@ extern MprChar *amtow(cchar *src, ssize *len);
 extern char    *awtom(MprChar *src, ssize *len);
 extern MprChar *wfmt(MprChar *fmt, ...);
 
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
 extern ssize   wtom(char *dest, ssize count, MprChar *src, ssize len);
 extern ssize   mtow(MprChar *dest, ssize count, cchar *src, ssize len);
 
@@ -3026,14 +3198,15 @@ extern MprChar  *wupper(MprChar *s);
 #define wtrim(str, set, where)              strim(str, set, where)
 #define wupper(str)                         supper(str)
 
-#endif /* BLD_CHAR_LEN > 1 */
+#endif /* BIT_CHAR_LEN > 1 */
 
+/********************************* Mixed Strings ******************************/
 /*
     These routines operate on wide strings mixed with a multibyte/ascii operand
     This API is not yet public
     TODO - document these routines
  */
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
 extern int      mcasecmp(MprChar *s1, cchar *s2);
 extern int      mcmp(MprChar *s1, cchar *s2);
 extern MprChar *mcontains(MprChar *str, cchar *pattern, ssize limit);
@@ -3074,8 +3247,9 @@ extern MprChar *mtrim(MprChar *str, cchar *set, int where);
 #define mstarts(str, prefix)            sstarts(str, prefix)
 #define mtok(str, delim, last)          stok(str, delim, last)
 #define mtrim(str, set, where)          strim(str, set, where)
-#endif /* BLD_CHAR_LEN > 1 */
+#endif /* BIT_CHAR_LEN > 1 */
 
+/************************************ Formatting ******************************/
 /**
     Print a formatted message to the standard error channel
     @description This is a secure replacement for fprintf(stderr). 
@@ -3162,7 +3336,8 @@ extern char *mprAsprintf(cchar *fmt, ...);
  */
 extern char *mprAsprintfv(cchar *fmt, va_list arg);
 
-#if BLD_FEATURE_FLOAT
+/********************************* Floating Point *****************************/
+#if BIT_FEATURE_FLOAT
 /**
     Floating Point Services
     @stability Evolving
@@ -3218,7 +3393,8 @@ extern int mprIsZero(double value);
  */
 extern int mprIsNan(double value);
 
-#endif /* BLD_FEATURE_FLOAT */
+#endif /* BIT_FEATURE_FLOAT */
+/********************************* Buffering **********************************/
 /**
     Buffer refill callback function
     @description Function to call when the buffer is depleted and needs more data.
@@ -3582,7 +3758,7 @@ extern void mprSetBufRefillProc(MprBuf *buf, MprBufProc fn, void *arg);
  */
 extern int mprSetBufSize(MprBuf *buf, ssize size, ssize maxSize);
 
-#if DOXYGEN || BLD_CHAR_LEN > 1
+#if DOXYGEN || BIT_CHAR_LEN > 1
 /**
     Add a wide null character to the buffer contents.
     @description Add a null character but do not change the buffer content lengths. The null is added outside the
@@ -3623,7 +3799,7 @@ extern int mprPutStringToWideBuf(MprBuf *buf, cchar *str);
  */
 extern int mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
 
-#else /* BLD_CHAR_LEN == 1 */
+#else /* BIT_CHAR_LEN == 1 */
 #define mprAddNullToWideBuf     mprAddNullToBuf
 #define mprPutCharToWideBuf     mprPutCharToBuf
 #define mprPutStringToWideBuf   mprPutStringToBuf
@@ -3639,6 +3815,7 @@ extern int mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
 #define mprGetBufEnd(bp) ((bp)->end)
 #endif
 
+/******************************** Date and Time *******************************/
 /**
     Format a date according to RFC822: (Fri, 07 Jan 2003 12:12:21 PDT)
  */
@@ -3653,10 +3830,6 @@ extern int mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
     Date format for use in HTTP (headers)
  */
 #define MPR_HTTP_DATE       "%a, %d %b %Y %T GMT"
-
-#if UNUSED && KEEP
-#define MPR_LEGACY_DATE     "%a %b %d %Y %T GMT%z (%Z)"
-#endif
 
 /**
     Mpr time structure.
@@ -3752,13 +3925,13 @@ extern char *mprGetDate(char *fmt);
  */
 extern uint64 mprGetTicks();
 
-#if (LINUX || MACOSX || WIN) && (BLD_HOST_CPU_ARCH == MPR_CPU_IX86 || BLD_HOST_CPU_ARCH == MPR_CPU_IX64)
+#if (LINUX || MACOSX || WINDOWS) && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
     #define MPR_HIGH_RES_TIMER 1
 #else
     #define MPR_HIGH_RES_TIMER 0
 #endif
 
-#if BLD_DEBUG
+#if BIT_DEBUG
     #if MPR_HIGH_RES_TIMER
         #define MPR_MEASURE(level, tag1, tag2, op) \
             if (1) { \
@@ -3839,6 +4012,7 @@ extern int mprParseTime(MprTime *time, cchar *dateString, int timezone, struct t
  */
 extern int mprGetTimeZoneOffset(MprTime when);
 
+/*********************************** Lists ************************************/
 /**
     List data structure.
     @description The MprList is a dynamic, growable list suitable for storing pointers to arbitrary objects.
@@ -3899,8 +4073,7 @@ extern MprList *mprAppendList(MprList *list, MprList *add);
 
 /**
     Clears the list of all items.
-    @description Resets the list length to zero and clears all items. Existing items are not freed, they 
-        are only removed from the list.
+    @description Resets the list length to zero and clears all items.
     @param list List pointer returned from mprCreateList.
     @ingroup MprList
  */
@@ -4042,7 +4215,6 @@ extern int mprLookupItem(MprList *list, cvoid *item);
 /**
     Remove an item from the list
     @description Search for a specified item and then remove it from the list.
-        Existing items are not freed, they are only removed from the list.
     @param list List pointer returned from mprCreateList.
     @param item Item pointer to remove. 
     @return Returns the positive index of the removed item, otherwise a negative MPR error code.
@@ -4062,7 +4234,6 @@ extern int mprRemoveItemAtPos(MprList *list, int index);
 /**
     Remove the last item from the list
     @description Remove the item at the highest index position.
-        Existing items are not freed, they are only removed from the list.
     @param list List pointer returned from mprCreateList.
     @return Returns the positive index of the removed item, otherwise a negative MPR error code.
     @ingroup MprList
@@ -4149,12 +4320,11 @@ extern void *mprPopItem(MprList *list);
   */
 extern int mprPushItem(MprList *list, cvoid *item);
 
-#if MPR_LIST_MACROS || 1
 #define MPR_GET_ITEM(list, index) list->items[index]
 #define ITERATE_ITEMS(list, item, next) next = 0; list && (item = mprGetNextItem(list, &next)) != 0; 
 #define mprGetListLength(lp) ((lp) ? (lp)->length : 0)
-#endif
 
+/********************************** Logging ***********************************/
 /**
     Logging Services
     @stability Evolving
@@ -4198,13 +4368,21 @@ extern void mprCreateLogService();
     </ul>
     @param showConfig Set to true to log an initial system configuration.
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
+    @ingroup MprLog
 */
 extern int mprStartLogging(cchar *logSpec, int showConfig);
+
+/**
+    Emit a descriptive log header
+    @ingroup MprLog
+ */
+extern void mprLogHeader();
 
 /**
     Backup a log
     @param path Base log filename
     @param count Count of archived logs to keep
+    @ingroup MprLog
  */
 extern int mprBackupLog(cchar *path, int count);
 
@@ -4215,6 +4393,7 @@ extern int mprBackupLog(cchar *path, int count);
     @param backupCount Count of the number of log files to keep
     @param flags Set to MPR_LOG_APPEND to append to existing log files. Set to MPR_LOG_TRUNCATE to truncate log files
         on application restart.
+    @ingroup MprLog
  */
 extern void mprSetLogBackup(ssize logSize, int backupCount, int flags);
 
@@ -4361,7 +4540,7 @@ extern void mprWarn(cchar *fmt, ...);
 /*
     Optimized logging calling sequence. This compiles out for release mode.
  */
-#if BLD_DEBUG
+#if BIT_DEBUG
 #define LOG mprLog
 #else
 #define LOG if (0) mprLog
@@ -4373,6 +4552,7 @@ extern void mprWarn(cchar *fmt, ...);
  */
 extern int print(cchar *fmt, ...);
 
+/************************************ Hash ************************************/
 /**
     Hash table entry structure.
     @description The hash structure supports growable hash tables with high performance, collision resistant hashes.
@@ -4563,6 +4743,7 @@ extern int mprRemoveKey(MprHash *table, cvoid *key);
  */
 extern MprHash *mprBlendHash(MprHash *target, MprHash *other);
 
+/*********************************** Files ************************************/
 /*
     Prototypes for file system switch methods
  */
@@ -4613,14 +4794,14 @@ typedef struct MprFileSystem {
     char                *separators;    /**< Filename path separators. First separator is the preferred separator. */
     char                *newline;       /**< Newline for text files */
     cchar               *root;          /**< Root file path */
-#if BLD_WIN_LIKE || CYGWIN
+#if BIT_WIN_LIKE || CYGWIN
     char                *cygwin;        /**< Cygwin install directory */
     char                *cygdrive;      /**< Cygwin drive root */
 #endif
 } MprFileSystem;
 
 
-#if BLD_FEATURE_ROMFS
+#if BIT_FEATURE_ROMFS
 /**
     A RomInode is created for each file in the Rom file system.
     @ingroup FileSystem
@@ -4638,7 +4819,7 @@ typedef struct MprRomFileSystem {
     MprRomInode     *romInodes;
     int             rootLen;
 } MprRomFileSystem;
-#else /* !BLD_FEATURE_ROMFS */
+#else /* !BIT_FEATURE_ROMFS */
 
 typedef MprFileSystem MprDiskFileSystem;
 #endif
@@ -4656,7 +4837,7 @@ typedef MprFileSystem MprDiskFileSystem;
 extern MprFileSystem *mprCreateFileSystem(cchar *path);
 
 
-#if BLD_FEATURE_ROMFS
+#if BIT_FEATURE_ROMFS
 /**
     Create and initialize the ROM FileSystem. 
     @description This is an internal routine called by the MPR during initialization.
@@ -4742,7 +4923,7 @@ typedef struct MprFile {
     int             perms;              /**< File permissions */
     int             fd;                 /**< File handle */
     int             attached;           /**< Attached to existing descriptor */
-#if BLD_FEATURE_ROMFS
+#if BIT_FEATURE_ROMFS
     MprRomInode     *inode;             /**< Reference to ROM file */
 #endif
 } MprFile;
@@ -4994,11 +5175,12 @@ extern ssize mprWriteFileFmt(MprFile *file, cchar *fmt, ...);
  */
 extern ssize mprWriteFileString(MprFile *file, cchar *str);
 
+/*********************************** Paths ************************************/
 /**
     Path (filename) Information
     @description MprPath is the cross platform Path (filename) information structure.
     @stability Evolving.
-    @see MprDirEntry MprFile MprPath mprCopyPath mprDeletePath mprFindFiles mprGetAbsPath mprGetCurrentPath 
+    @see MprDirEntry MprFile MprPath mprCopyPath mprDeletePath mprGetAbsPath mprGetCurrentPath 
         mprGetFirstPathSeparator mprGetLastPathSeparator mprGetNativePath mprGetPathBase 
         mprGetPathDir mprGetPathExt mprGetPathFiles mprGetPathLink mprGetPathNewline mprGetPathParent 
         mprGetPathSeparators mprGetPortablePath mprGetRelPath mprGetTempPath mprGetWinPath mprIsAbsPath 
@@ -5031,6 +5213,7 @@ typedef struct MprPath {
  */
 typedef struct MprDirEntry {
     char            *name;              /**< Name of the file */
+    //  MOB - rename modified
     MprTime         lastModified;       /**< Time the file was last modified */
     MprOff          size;               /**< Size of the file */
     bool            isDir;              /**< True if the file is a directory */
@@ -5040,7 +5223,7 @@ typedef struct MprDirEntry {
 /*
     Search path separator
  */
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     #define MPR_SEARCH_SEP      ";"
     #define MPR_SEARCH_SEP_CHAR ';'
 #else
@@ -5067,9 +5250,6 @@ extern int mprCopyPath(cchar *from, cchar *to, int omode);
     @ingroup MprPath
  */
 extern int mprDeletePath(cchar *path);
-
-#define MPR_PATH_ENUM_DIRS  0x1             /**< Flag for mprFindFiles to traverse directories */
-#define MPR_PATH_INC_DIRS   0x2             /**< Flag for mprFindFiles to include directories in results */
 
 /**
     Convert a path to an absolute path
@@ -5118,11 +5298,20 @@ extern char *mprGetNativePath(cchar *path);
     Get the base portion of a path
     @description Get the base portion of a path by stripping off all directory components
     @param path Path name to examine
-    @returns A path without any directory portion. The path is a reference into the original file string and 
-        should not be freed. 
+    @returns A path without any directory portion.
     @ingroup MprPath
  */
 extern char *mprGetPathBase(cchar *path);
+
+/**
+    Get a reference to the base portion of a path
+    @description Get the base portion of a path by stripping off all directory components. This returns a reference
+        into the original path.
+    @param path Path name to examine
+    @returns A path without any directory portion. The path is a reference into the original file string.
+    @ingroup MprPath
+ */
+extern cchar *mprGetPathBaseRef(cchar *path);
 
 /**
     Get the directory portion of a path
@@ -5143,15 +5332,35 @@ extern char *mprGetPathDir(cchar *path);
  */
 extern char *mprGetPathExt(cchar *path);
 
+/*
+    Flags for mprGetPathFiles
+ */
+#define MPR_PATH_DESCEND        0x1             /**< Flag for mprGetPathFiles to traverse subdirectories */
+#define MPR_PATH_DEPTH_FIRST    0x2             /**< Flag for mprGetPathFiles to do a depth-first traversal */
+#define MPR_PATH_INC_HIDDEN     0x4             /**< Flag for mprGetPathFiles to include hidden files */
+#define MPR_PATH_NODIRS         0x8             /**< Flag for mprGetPathFiles to exclude subdirectories */
+#define MPR_PATH_RELATIVE       0x10            /**< Flag for mprGetPathFiles to return paths relative to the directory */
+
 /**
-    Create a directory list of files.
+    Create a list of files in a directory or subdirectories. This call returns a list of MprDirEntry objects.
     @description Get the list of files in a directory and return a list.
     @param dir Directory to list.
-    @param enumDirs Set to true to enumerate directory entries as well as regular paths. 
-    @returns A list (MprList) of directory paths. Each path is a regular string owned by the list object.
+    @param flags The flags may be set to #MPR_PATH_DESCEND to traverse subdirectories. Set $MPR_PATH_NO_DIRS 
+        to exclude directories from the results. Set to MPR_PATH_HIDDEN to include hidden files that start with ".".
+        Set to MPR_PATH_DEPTH_FIRST to do a depth-first traversal, i.e. traverse subdirectories before considering 
+        adding the directory to the list.
+    @returns A list (MprList) of MprDirEntry objects.
     @ingroup MprPath
  */
-extern MprList *mprGetPathFiles(cchar *dir, bool enumDirs);
+extern MprList *mprGetPathFiles(cchar *dir, int flags);
+
+/**
+    Get the first directory portion of a path
+    @param path Path name to examine
+    @returns A new string containing the directory name.
+    @ingroup MprPath
+ */
+extern char *mprGetPathFirstDir(cchar *path);
 
 /**
     Return information about a file represented by a path.
@@ -5200,15 +5409,6 @@ extern char *mprGetPathParent(cchar *path);
 extern cchar *mprGetPathSeparators(cchar *path);
 
 /**
-    Find files below a path directory
-    @param path Directory path name to examine
-    @param flags The flags may be set to #MPR_PATH_INC_DIRS to include directories in the results or #MPR_PATH_ENUM_DIRS 
-    to enumerate directories but not include them in the results.
-    @return A list of filename character strings (char*)
- */
-extern MprList *mprGetPathTree(cchar *path, int flags);
-
-/**
     Get a portable path 
     @description Get an equivalent absolute path that is somewhat portable. 
         This means it will use forward slashes ("/") as the directory separator. This call will not remove drive specifiers.
@@ -5220,12 +5420,14 @@ extern char *mprGetPortablePath(cchar *path);
 
 /**
     Get a relative path
-    @description Get an equivalent path that is relative to the application's current working directory.
-    @param path Path name to examine
+    @description Get a relative path path from an origin path to a destination. 
+    @param dest Destination file 
+    @param origin Starting location from which to compute a relative path to the destination
+        If the origin is null, use the application's current working directory as the origin.
     @returns An allocated string containing the relative directory.
     @ingroup MprPath
  */
-extern char *mprGetRelPath(cchar *path);
+extern char *mprGetRelPath(cchar *dest, cchar *origin);
 
 /**
     Make a temporary file.
@@ -5254,6 +5456,14 @@ extern char *mprGetWinPath(cchar *path);
     @ingroup MprPath
  */ 
 extern bool mprIsPathAbs(cchar *path);
+
+/**
+    Determine if a path is a directory
+    @param path Path name to examine
+    @returns True if the path is a directory
+    @ingroup MprPath
+ */ 
+extern bool mprIsPathDir(cchar *path);
 
 /**
     Determine if a path is relative
@@ -5418,6 +5628,8 @@ extern int mprSamePathCount(cchar *path1, cchar *path2, ssize len);
     Flags for mprSearchPath
  */
 #define MPR_SEARCH_EXE      0x1         /* Search for an executable */
+#define MPR_SEARCH_DIR      0x2         /* Search for a directory */
+#define MPR_SEARCH_FILE     0x4         /* Search for regular file */
 
 /**
     Search for a path
@@ -5451,11 +5663,20 @@ extern char *mprTransformPath(cchar *path, int flags);
 /**
     Trim an extension from a path
     @description Trim a file extension (".ext") from a path name.
-    @param path First path to compare
+    @param path Path to examine
     @returns An allocated string with the trimmed path.
     @ingroup MprPath
  */
 extern char *mprTrimPathExt(cchar *path);
+
+/**
+    Trim the drive from a path
+    @description Trim a drive specifier ("c:") from the start of a path.
+    @param path Path to examine
+    @returns An allocated string with the trimmed drive.
+    @ingroup MprPath
+ */
+extern char *mprTrimPathDrive(cchar *path);
 
 /**
     Create a file and write contents
@@ -5468,6 +5689,7 @@ extern char *mprTrimPathExt(cchar *path);
  */
 extern ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode);
 
+/********************************** O/S Dep ***********************************/
 /**
     Create and initialze the O/S dependent subsystem
     @ingroup Mpr
@@ -5486,6 +5708,7 @@ extern int mprStartOsService();
  */
 extern void mprStopOsService();
 
+/********************************* Modules ************************************/
 /**
     Loadable module service
     @see mprCreateModuleService mprStartModuleService mprStopModuleService
@@ -5604,7 +5827,7 @@ extern cchar *mprGetModuleSearchPath();
  */
 extern int mprLoadModule(MprModule *mp);
 
-#if BLD_CC_DYN_LOAD || DOXYGEN
+#if BIT_CC_DYN_LOAD || DOXYGEN
 /**
     Load a native module
     @param mp Module object created via $mprCreateModule.
@@ -5697,6 +5920,7 @@ extern int mprStopModule(MprModule *mp);
  */
 extern int mprUnloadModule(MprModule *mp);
 
+/********************************* Events *************************************/
 /*
     Flags for mprCreateEvent
  */
@@ -5848,9 +6072,11 @@ extern void mprSignalDispatcher(MprDispatcher *dispatcher);
     @param name Debug name of the event
     @param period Time in milliseconds used by continuous events between firing of the event.
     @param proc Function to invoke when the event is run
-    @param data Data to associate with the event and stored in event->data.
+    @param data Data to associate with the event and stored in event->data. The data must be either an allocated memory
+        object or MPR_EVENT_STATIC_DATA must be specified in flags.
     @param flags Flags to modify the behavior of the event. Valid values are: MPR_EVENT_CONTINUOUS to create an 
         event which will be automatically rescheduled accoring to the specified period.
+        Use MPR_EVENT_STATIC_DATA if the data argument does not point to an allocated memory object.
     @return Returns the event object if successful.
     @ingroup MprEvent
  */
@@ -5875,8 +6101,7 @@ extern void mprRemoveEvent(MprEvent *event);
 
 /**
     Stop an event
-    @description Stop a continuous event and remove from the queue. The event object is not freed, but simply removed
-        from the event queue.
+    @description Stop a continuous event and remove from the queue.
     @param event Event object returned from #mprCreateEvent
     @ingroup MprEvent
  */
@@ -5952,6 +6177,7 @@ extern void mprReleaseWorkerFromDispatcher(MprDispatcher *dispatcher, struct Mpr
 extern bool mprDispatcherHasEvents(MprDispatcher *dispatcher);
 extern void mprWakePendingDispatchers();
 
+/*********************************** XML **************************************/
 /*
     XML parser states. The states that are passed to the user handler have "U" appended to the comment.
     The error states (ERR and EOF) must be negative.
@@ -6097,6 +6323,7 @@ extern void mprXmlSetParseArg(MprXml *xp, void *parseArg);
  */
 extern void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h);
 
+/******************************** JSON ****************************************/
 /*
     Flags for mprSerialize
  */
@@ -6205,6 +6432,7 @@ extern MprObj *mprDeserialize(cchar *str);
  */
 extern void mprJsonParseError(MprJson *jp, cchar *fmt, ...);
 
+/********************************* Threads ************************************/
 /**
     Thread service
     @ingroup MprThread
@@ -6245,7 +6473,7 @@ extern void mprStopThreadService();
  */
 typedef struct MprThread {
     MprOsThread     osThread;           /**< O/S thread id */
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     handle          threadHandle;       /**< Threads OS handle for WIN */
 #endif
     MprThreadProc   entry;              /**< Users thread entry point */
@@ -6257,6 +6485,10 @@ typedef struct MprThread {
     int             isMain;             /**< Is the main thread */
     int             priority;           /**< Current priority */
     ssize           stackSize;          /**< Only VxWorks implements */
+#if BIT_MEMORY_STACK
+    void            *stackBase;         /**< Base of stack (approx) */
+    int             peakStack;          /**< Peak stack usage */
+#endif
     int             stickyYield;        /**< Yielded does not auto-clear after GC */
     int             yielded;            /**< Thread has yielded to GC */
 } MprThread;
@@ -6267,9 +6499,9 @@ typedef struct MprThread {
     @internal
  */
 typedef struct MprThreadLocal {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     pthread_key_t   key;                /**< Data key */
-#elif BLD_WIN_LIKE
+#elif BIT_WIN_LIKE
     DWORD           key;
 #else
     MprHash         *store;
@@ -6400,6 +6632,7 @@ extern int mprSetThreadData(MprThreadLocal *tls, void *value);
 extern void *mprGetThreadData(MprThreadLocal *tls);
 extern MprThreadLocal *mprCreateThreadLocal();
 
+/******************************** I/O Wait ************************************/
 
 #define MPR_READABLE           0x2          /**< Read event mask */
 #define MPR_WRITABLE           0x4          /**< Write event mask */
@@ -6407,7 +6640,7 @@ extern MprThreadLocal *mprCreateThreadLocal();
 #define MPR_READ_PIPE          0            /* Read side of breakPipe */
 #define MPR_WRITE_PIPE         1            /* Write side of breakPipe */
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
 typedef long (*MprMsgCallback)(HWND hwnd, uint msg, uint wp, long lp);
 #endif
 
@@ -6492,7 +6725,7 @@ extern int  mprInitWindow();
 #if MPR_EVENT_SELECT
     extern void mprManageSelect(MprWaitService *ws, int flags);
 #endif
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     extern void mprSetWinMsgCallback(MprMsgCallback callback);
     extern void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask);
 #endif
@@ -6618,6 +6851,7 @@ extern void mprWaitOn(MprWaitHandler *wp, int desiredMask);
  */
 extern void mprDoWaitRecall(MprWaitService *ws);
 
+/******************************* Notification *********************************/
 /*
     Internal
  */
@@ -6631,6 +6865,7 @@ extern int mprCreateNotifierService(MprWaitService *ws);
  */
 extern int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask);
 
+/********************************** Sockets ***********************************/
 /**
     Socket I/O callback procedure. Proc returns non-zero if the socket has been deleted.
     @ingroup MprSocket
@@ -6674,6 +6909,9 @@ typedef struct MprSocketService {
     MprSocketProvider *standardProvider;        /**< Socket provider for non-SSL connections */
     MprSocketProvider *secureProvider;          /**< Socket provider for SSL connections */
     MprSocketPrebind  prebind;                  /**< Prebind callback */
+#if BIT_FEATURE_SSL
+    MprList         *secureSockets;             /**< List of secured (matrixssl) sockets */
+#endif
     MprMutex        *mutex;                     /**< Multithread locking */
 } MprSocketService;
 
@@ -6763,7 +7001,7 @@ typedef struct MprSocket {
     int             flags;              /**< Current state flags */
     MprSocketProvider *provider;        /**< Socket implementation provider */
     struct MprSocket *listenSock;       /**< Listening socket */
-    struct MprSslSocket *sslSocket;     /**< Extended ssl socket state. If set, then using ssl */
+    void            *sslSocket;         /**< Extended SSL socket state */
     struct MprSsl   *ssl;               /**< SSL configuration */
     MprMutex        *mutex;             /**< Multi-thread sync */
 } MprSocket;
@@ -6909,7 +7147,7 @@ extern int mprGetSocketFd(MprSocket *sp);
     @return Zero if the call is successful. Otherwise return a negative MPR error code.
     @ingroup MprSocket
   */
-extern int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, socklen_t *addrlen);
+extern int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, MprSocklen *addrlen);
 
 /**
     Get the port used by a socket
@@ -6921,6 +7159,14 @@ extern int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
 extern int mprGetSocketPort(MprSocket *sp);
 
 /**
+    Determine if the IP address is an IPv6 address
+    @param ip IP address
+    @return True if the address is an IPv6 address, otherwise zero.
+    @internal
+ */
+extern bool mprIsIPv6(cchar *ip);
+
+/**
     Determine if the socket is secure
     @description Determine if the socket is using SSL to provide enhanced security.
     @param sp Socket object returned from #mprCreateSocket
@@ -6928,6 +7174,15 @@ extern int mprGetSocketPort(MprSocket *sp);
     @ingroup MprSocket
  */
 extern bool mprIsSocketSecure(MprSocket *sp);
+
+/**
+    Determine if the socket is using IPv6
+    Currently only works for server side addresses.
+    @param sp Socket object returned from #mprCreateSocket
+    @return True if the socket is using IPv6, otherwise zero.
+    @internal
+ */
+extern bool mprIsSocketV6(MprSocket *sp);
 
 /**
     Test if the other end of the socket has been closed.
@@ -6991,7 +7246,7 @@ extern ssize mprReadSocket(MprSocket *sp, void *buf, ssize size);
  */
 extern void mprRemoveSocketHandler(MprSocket *sp);
 
-#if !BLD_FEATURE_ROMFS
+#if !BIT_FEATURE_ROMFS
 /**
     Send a file to a socket
     @description Write the contents of a file to a socket. If the socket is in non-blocking mode (the default), the write
@@ -7044,6 +7299,15 @@ extern void mprSetSocketEof(MprSocket *sp, bool eof);
 extern int mprSetSocketNoDelay(MprSocket *sp, bool on);
 
 /**
+    Set the SSL configuration for a client socket.
+    @description The SSL configuration defines the eligible ciphers and if certificate verification should be used.
+    This call must be made before calling mprConnectSocket
+    @param sp Socket object returned from #mprCreateSocket
+    @param ssl SSL configuration object created via #mprCreateSsl
+ */
+extern void mprSetSocketSslConfig(MprSocket *sp, struct MprSsl *ssl);
+
+/**
     Test if the socket has buffered read data.
     @description Use this function to avoid waiting for incoming I/O if data is already buffered.
     @param sp Socket object returned from #mprCreateSocket
@@ -7087,13 +7351,45 @@ extern ssize mprWriteSocketString(MprSocket *sp, cchar *str);
  */
 extern ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count);
 
+/************************************ SSL *************************************/
+
+#define MPR_DEFAULT_SERVER_CERT_FILE    "server.crt"
+#define MPR_DEFAULT_SERVER_KEY_FILE     "server.key.pem"
+#define MPR_DEFAULT_CLIENT_CERT_FILE    "client.crt"
+#define MPR_DEFAULT_CLIENT_CERT_PATH    "certs"
+
+typedef struct MprSsl {
+    /*
+        Server key and certificate configuration
+     */
+    char            *key;               /* Key string */
+    char            *cert;              /* Cert string */
+    char            *keyFile;           /* Alternatively, locate the key in a file */
+    char            *certFile;          /* Alternatively, locate the cert in a file */
+    char            *caFile;            /* Client verification cert file or bundle */
+    char            *caPath;            /* Client verification cert directory */
+    char            *ciphers;           /* Candidate ciphers to use */
+    int             configured;         /* Set if this SSL configuration has been processed */
+
+    /*
+        Client configuration
+     */
+    int             verifyServer;       /* Set if the server cert should be verified */
+    int             verifyClient;       /* Set if the client cert should be verified */
+    int             verifyDepth;        /* Set if the server cert should be verified */
+    int             protocols;          /* MOB */
+    void            *extendedSsl;       /* Extended provider SSL configuration */
+} MprSsl;
+
+
 /*
     SSL protocols
  */
 #define MPR_PROTO_SSLV2    0x1              /**< SSL V2 protocol */
 #define MPR_PROTO_SSLV3    0x2              /**< SSL V3 protocol */
 #define MPR_PROTO_TLSV1    0x4              /**< TLS V1 protocol */
-#define MPR_PROTO_ALL      0x7              /**< All SSL protocols */
+#define MPR_PROTO_TLSV11   0x8              /**< TLS V1.1 protocol */
+#define MPR_PROTO_ALL      0xf              /**< All SSL protocols */
 
 /*
     Default SSL configuration
@@ -7181,6 +7477,22 @@ extern void mprSetSslProtocols(struct MprSsl *ssl, int protocols);
  */
 extern void mprVerifySslClients(struct MprSsl *ssl, bool on);
 
+/**
+    Control the verification of SSL servers
+    @param ssl SSL instance returned from #mprCreateSsl
+    @param on Set to true to enable server SSL verification.
+    @ingroup MprSocket
+ */
+extern void mprVerifySslServers(struct MprSsl *ssl, bool on);
+
+#if BIT_FEATURE_MATRIXSSL
+    extern int mprCreateMatrixSslModule(bool lazy);
+#endif
+#if BIT_FEATURE_OPENSSL
+    extern int mprCreateOpenSslModule(bool lazy);
+#endif
+
+/******************************* Worker Threads *******************************/
 /**
     Worker thread callback signature
     @param data worker callback data. Set via mprStartWorker or mprActivateWorker
@@ -7285,13 +7597,6 @@ extern void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats
 #define MPR_WORKER_PRUNED      0x2          /**< Worker has been pruned and will be terminated */
 #define MPR_WORKER_IDLE        0x4          /**< Worker is sleeping (idle) on idleCond */
 
-#if UNUSED && KEEP && FUTURE
-/*
-    Flags
- */
-#define MPR_WORKER_DEDICATED   0x1          /**< Worker reserved and not part of the worker pool */
-#endif
-
 /**
     Worker thread structure. Worker threads are allocated and dedicated to tasks. When idle, they are stored in
     an idle worker pool. An idle worker pruner runs regularly and terminates idle workers to save memory.
@@ -7347,6 +7652,7 @@ extern int mprStartWorker(MprWorkerProc proc, void *data);
 /* Internal */
 extern int mprAvailableWorkers();
 
+/********************************** Crypto ************************************/
 /**
     Return a random number
     @returns A random integer
@@ -7355,20 +7661,45 @@ extern int mprAvailableWorkers();
 extern int mprRandom();
 
 /**
-    Deocde buffer using base-46 encoding.
+    Decode a null terminated string using base-46 encoding.
+    Decoding will terminate at the first null or '='.
     @param str String to decode
-    @returns Buffer containing the decoded string.
+    @returns Buffer containing the encoded data
     @ingroup Mpr
  */
 extern char *mprDecode64(cchar *str);
 
 /**
-    Encode buffer using base-46 encoding.
+    Decode base 64 blocks up to a NULL or equals
+ */
+#define MPR_DECODE_TOKEQ 1
+
+/**
+    Decode a null terminated string  using base-46 encoding.
+    @param buf String to decode
+    @param len Return parameter with the Length of the decoded data
+    @param flags Set to MPR_DECODE_TOKEQ to stop at the first '='
+    @returns Buffer containing the encoded data and returns length in len.
+    @ingroup Mpr
+  */
+extern char *mprDecode64Block(cchar *buf, ssize *len, int flags);
+
+/**
+    Encode a string using base-46 encoding.
     @param str String to encode
     @returns Buffer containing the encoded string.
     @ingroup Mpr
  */
 extern char *mprEncode64(cchar *str);
+
+/**
+    Encode buffer using base-46 encoding.
+    @param buf Buffer to encode
+    @param len Length of the buffer to encode
+    @returns Buffer containing the encoded string.
+    @ingroup Mpr
+ */
+extern char *mprEncode64Block(cchar *buf, ssize len);
 
 /**
     Get an MD5 checksum
@@ -7388,6 +7719,7 @@ extern char *mprGetMD5(cchar *s);
  */
 extern char *mprGetMD5WithPrefix(cchar *buf, ssize len, cchar *prefix);
 
+/********************************* Encoding ***********************************/
 /*  
     Character encoding masks
  */
@@ -7436,6 +7768,7 @@ extern char *mprUriEncode(cchar *uri, int map);
  */
 extern char *mprUriDecode(cchar *uri);
 
+/********************************* Signals ************************************/
 
 #if MACOSX
     #define MPR_MAX_SIGNALS 40              /**< Max signals that can be managed */
@@ -7487,7 +7820,7 @@ typedef struct MprSignalService {
     MprMutex        *mutex;                 /**< Multithread sync */
     MprSignalInfo   info[MPR_MAX_SIGNALS];  /**< Actual signal info and arg */
     int             hasSignals;             /**< Signal sent to process */
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     struct sigaction prior[MPR_MAX_SIGNALS];/**< Prior sigaction handler before hooking */
 #endif
 } MprSignalService;
@@ -7525,6 +7858,7 @@ extern void mprAddStandardSignals();
  */
 extern MprSignal *mprAddSignalHandler(int signo, void *handler, void *arg, MprDispatcher *dispatcher, int flags);
 
+/******************************** Commands ************************************/
 /**
     Callback function before doing a fork()
     @ingroup MprCmd
@@ -7577,6 +7911,7 @@ typedef ssize (*MprCmdProc)(struct MprCmd *cmd, int channel, void *data);
 #define MPR_CMD_NEW_SESSION     0x1     /**< mprRunCmd flag to create a new session on unix */
 #define MPR_CMD_SHOW            0x2     /**< mprRunCmd flag to show the window of the created process on windows */
 #define MPR_CMD_DETACH          0x4     /**< mprRunCmd flag to detach the child process and don't wait */
+#define MPR_CMD_EXACT_ENV       0x8     /**< mprRunCmd flag to use the exact environment (no inherit from parent) */
 #define MPR_CMD_IN              0x1000  /**< mprRunCmd flag to connect to stdin */
 #define MPR_CMD_OUT             0x2000  /**< mprRunCmd flag to capture stdout */
 #define MPR_CMD_ERR             0x4000  /**< mprRunCmd flag to capture stdout */
@@ -7585,7 +7920,7 @@ typedef struct MprCmdFile {
     char            *name;
     int             fd;
     int             clientFd;
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     HANDLE          handle;
 #endif
 } MprCmdFile;
@@ -7604,7 +7939,7 @@ typedef struct MprCmdFile {
 typedef struct MprCmd {
     /*  Ordered for debugging */
 
-    char            *program;           /**< Program path name */
+    cchar           *program;           /**< Program path name */
     int             pid;                /**< Process ID of the created process */
     int             status;             /**< Command exit status */
     int             flags;              /**< Control flags (userFlags not here) */
@@ -7612,15 +7947,17 @@ typedef struct MprCmd {
     int             requiredEof;        /**< Number of EOFs required for an exit */
     int             complete;           /**< All channels EOF and status gathered */
     int             stopped;            /**< Command stopped */
-    char            **makeArgv;         /**< Allocated argv */ 
-    char            **argv;             /**< List of args. Null terminated */
-    char            **env;              /**< List of environment variables. Null terminated */
+    cchar           **makeArgv;         /**< Allocated argv */ 
+    cchar           **argv;             /**< List of args. Null terminated */
+    MprList         *env;               /**< List of environment variables. Null terminated. */
     char            *dir;               /**< Current working dir for the process */
     cchar           **defaultEnv;       /**< Environment to use if no env passed to mprStartCmd */
     char            *searchPath;        /**< Search path to use to locate the command */
     int             argc;               /**< Count of args in argv */
+#if UNUSED
     MprTime         timestamp;          /**< Timeout timestamp for last I/O  */
     MprTime         timeoutPeriod;      /**< Timeout value */
+#endif
     int             timedout;           /**< Request has timedout */
     MprCmdFile      files[MPR_CMD_MAX_PIPE]; /**< Stdin, stdout for the command */
     MprWaitHandler  *handlers[MPR_CMD_MAX_PIPE];
@@ -7634,7 +7971,7 @@ typedef struct MprCmd {
     MprBuf          *stderrBuf;         /**< Standard error output from the client */
     void            *userData;          /**< User data storage */
     int             userFlags;          /**< User flags storage */
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     HANDLE          thread;             /**< Handle of the primary thread for the created process */
     HANDLE          process;            /**< Process handle for the created process */
     char            *command;           /**< Windows command line */          
@@ -7779,6 +8116,8 @@ extern int mprReapCmd(MprCmd *cmd, MprTime timeout);
     Run a command using a string command line. This starts the command via mprStartCmd() and waits for its completion.
     @param cmd MprCmd object created via mprCreateCmd
     @param command Command line to run
+    @param envp Array of environment strings. Each environment string should be of the form: "KEY=VALUE". The array
+        must be null terminated.
     @param out Reference to a string to receive the stdout from the command.
     @param err Reference to a string to receive the stderr from the command.
     @param timeout Time in milliseconds to wait for the command to complete and exit.
@@ -7786,16 +8125,19 @@ extern int mprReapCmd(MprCmd *cmd, MprTime timeout);
         MPR_CMD_NEW_SESSION     Create a new session on Unix
         MPR_CMD_SHOW            Show the commands window on Windows
         MPR_CMD_IN              Connect to stdin
+        MPR_CMD_EXACT_ENV       Use the exact environment supplied. Don't inherit and blend with existing environment.
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup MprCmd
  */
-extern int mprRunCmd(MprCmd *cmd, cchar *command, char **out, char **err, MprTime timeout, int flags);
+extern int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTime timeout, int flags);
 
 /**
     Run a command using an argv[] array of arguments. This invokes mprStartCmd() and waits for its completion.
     @param cmd MprCmd object created via mprCreateCmd
     @param argc Count of arguments in argv
     @param argv Command arguments array
+    @param envp Array of environment strings. Each environment string should be of the form: "KEY=VALUE". The array
+        must be null terminated.
     @param out Reference to a string to receive the stdout from the command.
     @param err Reference to a string to receive the stderr from the command.
     @param timeout Time in milliseconds to wait for the command to complete and exit.
@@ -7806,7 +8148,7 @@ extern int mprRunCmd(MprCmd *cmd, cchar *command, char **out, char **err, MprTim
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup MprCmd
  */
-extern int mprRunCmdV(MprCmd *cmd, int argc, char **argv, char **out, char **err, MprTime timeout, int flags);
+extern int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTime timeout, int flags);
 
 /**
     Define a callback to be invoked to receive response data from the command.
@@ -7868,7 +8210,7 @@ extern void mprSetCmdSearchPath(MprCmd *cmd, cchar *search);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup MprCmd
  */
-extern int mprStartCmd(MprCmd *cmd, int argc, char **argv, char **envp, int flags);
+extern int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int flags);
 
 /**
     Stop the command. The command is immediately killed.
@@ -7897,6 +8239,7 @@ extern int mprWaitForCmd(MprCmd *cmd, MprTime timeout);
  */
 extern ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize);
 
+/********************************** Cache *************************************/
 
 #define MPR_CACHE_SHARED        0x1     /**< Use shared cache */
 #define MPR_CACHE_ADD           0x2     /**< Add key if not already existing */
@@ -8028,6 +8371,7 @@ extern void mprSetCacheLimits(MprCache *cache, int64 keys, int64 lifespan, int64
 extern ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTime lifespan, 
         int64 version, int options);
 
+/******************************** Mime Types **********************************/
 /**
     Mime Type hash table entry (the URL extension is the key)
     @stability Evolving
@@ -8087,6 +8431,7 @@ extern cchar *mprLookupMime(MprHash *table, cchar *ext);
  */
 extern int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program);
 
+/************************************ MPR *************************************/
 /*
     Mpr state
  */
@@ -8122,7 +8467,7 @@ typedef void (*MprTerminator)(int how, int status);
     @defgroup Mpr Mpr
  */
 typedef struct Mpr {
-    MprHeap         heap;                   /**< Memory heap control */
+    MprHeap         *heap;                  /**< Memory heap control */
     bool            debugMode;              /**< Run in debug mode (no timers) */
     int             logLevel;               /**< Log trace level */
     int             logBackup;              /**< Number of log files preserved when backing up */
@@ -8135,12 +8480,14 @@ typedef struct Mpr {
     MprFile         *stdError;              /**< Standard error file */
     MprFile         *stdInput;              /**< Standard input file */
     MprFile         *stdOutput;             /**< Standard output file */
+    MprTime         exitTimeout;            /**< Request timeout when exiting */
     char            *pathEnv;               /**< Cached PATH env var. Used by MprCmd */
     char            *name;                  /**< Product name */
     char            *title;                 /**< Product title */
     char            *version;               /**< Product version */
     int             argc;                   /**< Count of command line args */
-    char            **argv;                 /**< Application command line args (not alloced) */
+    cchar           **argv;                 /**< Application command line args (not alloced) */
+    char            **argBuf;               /**< Space for allocated argv */
     char            *domainName;            /**< Domain portion */
     char            *hostName;              /**< Host name (fully qualified name) */
     char            *ip;                    /**< Public IP Address */
@@ -8193,16 +8540,17 @@ typedef struct Mpr {
     MprSpin         *spin;                  /**< Quick thread synchronization */
     MprSpin         *dtoaSpin[2];           /**< Dtoa thread synchronization */
     MprCond         *cond;                  /**< Sync after starting events thread */
+    MprCond         *markerCond;            /**< Marker sleep cond var */
 
     char            *emptyString;           /**< Empty string */
-#if BLD_WIN_LIKE
-    long            appInstance;            /**< Application instance (windows) */
+#if BIT_WIN_LIKE
+    HINSTANCE       appInstance;            /**< Application instance (windows) */
 #endif
 } Mpr;
 
 extern void mprNop(void *ptr);
 
-#if DOXYGEN || BLD_WIN_LIKE
+#if DOXYGEN || BIT_WIN_LIKE
 /**
     Return the MPR control instance.
     @description Return the MPR singleton control object. 
@@ -8223,7 +8571,7 @@ extern Mpr *mprGetMpr();
 #define MPR_USER_EVENTS_THREAD  0x10        /**< User will explicitly manage own mprServiceEvents calls */
 #define MPR_NO_WINDOW           0x20        /**< Don't create a windows Window */
 
-#if BLD_TUNE == MPR_TUNE_SPEED
+#if BIT_TUNE == MPR_TUNE_SPEED
     // #define MPR_THREAD_PATTERN (MPR_MARK_THREAD | MPR_SWEEP_THREAD)
     //  Sweep thread not fully debugged
     #define MPR_THREAD_PATTERN (MPR_MARK_THREAD)
@@ -8453,8 +8801,9 @@ extern bool mprIsStoppingCore();
     @param flags Set to MPR_ARGV_ARGS_ONLY if the command string does not contain a program name. In this case, argv[0] 
         will be set to "".
     @return The count of arguments in argv
+    @ingroup Mpr
  */
-extern int mprMakeArgv(cchar *command, char ***argv, int flags);
+extern int mprMakeArgv(cchar *command, cchar ***argv, int flags);
 
 /**
     Nap for a while
@@ -8463,6 +8812,20 @@ extern int mprMakeArgv(cchar *command, char ***argv, int flags);
     @ingroup Mpr
 */
 extern void mprNap(MprTime msec);
+
+/**
+    Make a argv style array of command arguments
+    @description The given command is parsed and broken into separate arguments and returned in a null-terminated, argv
+        array. Arguments in the command may be quoted with single or double quotes to group words into one argument. 
+        Use back-quote "\\" to escape quotes. This routine modifies command and does not allocate any memory and may be
+        used before mprCreate is invoked.
+    @param command Command string to parse.
+    @param argv Array for the arguments.
+    @param maxArgs Size of the argv array.
+    @return The count of arguments in argv
+    @ingroup Mpr
+ */
+extern int mprParseArgs(char *command, char **argv, int maxArgs);
 
 /**
     Restart the application
@@ -8489,6 +8852,13 @@ extern bool mprServicesAreIdle();
     @ingroup Mpr
  */
 extern int mprSetAppName(cchar *name, cchar *title, cchar *version);
+
+/**
+    Set the application executable path
+    @param path A string containing the application executable path.
+    @ingroup Mpr
+ */
+extern void mprSetAppPath(cchar *path);
 
 /**
     Set if command line logging was requested.
@@ -8527,12 +8897,29 @@ extern void mprSetLogLevel(int level);
 extern void mprSetDomainName(cchar *s);
 
 /**
+    Set an environment variable value
+    @param key Variable name
+    @param value Variable value
+    @ingroup Mpr
+ */
+extern void mprSetEnv(cchar *key, cchar *value);
+
+/**
     Set the exit strategy for when the application terminates
     @param strategy Set strategy to MPR_EXIT_IMMEDIATE for the application to exit immediately when terminated.
         Set to MPR_EXIT_GRACEFUL for the application to exit gracefully after allowing all current requests to complete
         before terminating.
+    @ingroup Mpr
   */
 extern void mprSetExitStrategy(int strategy);
+
+/**
+    Set the exit timeout for a graceful shutdown or restart. A graceful shutdown waits for existing requests to 
+    complete before exiting.
+    @param timeout Time in milliseconds to wait when terminating the MPR
+    @ingroup Mpr
+ */
+void mprSetExitTimeout(MprTime timeout);
 
 /**
     Set the application host name string. This is internal to the application and does not affect the O/S host name.
@@ -8629,7 +9016,7 @@ extern void mprTerminate(int flags, int status);
  */
 extern int mprWaitTillIdle(MprTime timeout);
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
 /**
     Get the Windows window handle
     @return the windows HWND reference
@@ -8652,7 +9039,7 @@ extern void mprSetHwnd(HWND handle);
     Set the windows application instance
     @param inst The new windows application instance to set
  */
-extern void mprSetInst(long inst);
+extern void mprSetInst(HINSTANCE inst);
 
 /**
     Set the socket message number.
@@ -8662,7 +9049,7 @@ extern void mprSetInst(long inst);
 extern void mprSetSocketMessage(int message);
 #endif
 
-#if (BLD_WIN_LIKE && !WINCE) || CYGWIN
+#if (BIT_WIN_LIKE && !WINCE) || CYGWIN
 /**
     Read a key from the Windows registry
     @param key Windows registry key to read
@@ -8679,7 +9066,7 @@ extern char *mprReadRegistry(cchar *key, cchar *name);
     @return Zero if successful. Otherwise return a negative MPR error code.
   */
 extern int mprWriteRegistry(cchar *key, cchar *name, cchar *value);
-#endif /* (BLD_WIN_LIKE && !WINCE) || CYGWIN */
+#endif /* (BIT_WIN_LIKE && !WINCE) || CYGWIN */
 
 /*
     Internal
@@ -8688,12 +9075,14 @@ extern void mprWriteToOsLog(cchar *msg, int flags, int level);
 extern void mprUnlockDtoa(int n);
 extern void mprLockDtoa(int n);
 
+/*********************************** External *********************************/
 /*
    Double conversions
  */
 extern char *dtoa(double d, int mode, int ndigits, int* decpt, int* sign, char** rve);
 extern void freedtoa(char* ptr);
 
+/************************************* Test ***********************************/
 
 struct MprTestGroup;
 
@@ -8931,8 +9320,8 @@ typedef struct MprTestFailure {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire
@@ -8963,9 +9352,3 @@ typedef struct MprTestFailure {
 
     @end
  */
-/************************************************************************/
-/*
- *  End of file "./out/inc/mpr.h"
- */
-/************************************************************************/
-

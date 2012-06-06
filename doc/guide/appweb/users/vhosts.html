@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../../../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../../../product/index.html">Home</a>
+            <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
              &gt; <a href="index.html">Users Guide</a> &gt; <b>Virtual Hosts</b>
         </div>
@@ -58,7 +51,7 @@
                 <li><a href="../../../guide/appweb/users/vhosts.html">Virtual Hosts</a></li>
                 <li><a href="../../../guide/appweb/users/security.html">Security Considerations</a></li>
                 <li><a href="../../../guide/appweb/users/ssl.html">SSL</a></li>
-                <li><a href="../../../guide/appweb/users/modules.html">Loadable Modules</a></li>
+                <li><a href="../../../guide/appweb/users/modules.html">Appweb Modules</a></li>
                 <li><a href="../../../guide/appweb/users/stages.html">Pipeline Stages</a></li>
                 <li><a href="../../../guide/appweb/users/client.html">HTTP Client</a></li>
                 <li><a href="../../../guide/appweb/users/frameworks.html">Web Frameworks</a></li>
@@ -72,7 +65,7 @@
             a single server could respond to requests for www.acme.com and www.coyote.com. This is clearly useful for
             public web sites, but virtual hosting is also an excellent technique to manage separate content within a
             single domain. For example, the administration interface and the user interfaces can be implemented as
-            separate virtual hosts.</p><a name="configurationDirectives" id="configurationDirectives"></a>
+            separate virtual hosts.</p><a id="configurationDirectives"></a>
             <h2 class="section">Configuration Directives</h2>
             <p>Virtual hosts are created by grouping configuration directives within a VirtualHost directive block.
             Directives within the block apply only to the virtual host.</p>
@@ -85,7 +78,7 @@
 </pre>
             <p>Before declaring a VirtualHost directive for name-based virtual hosting, you must use a <a href=
             "dir/vhost.html#namedVirtualHost">NameVirtualHost</a> directive. This specifies that the given IP address
-            will use name-base hosting.</p><a name="nameBasedVirtualHosts" id="nameBasedVirtualHosts"></a>
+            will use name-base hosting.</p><a id="nameBasedVirtualHosts"></a>
             <h2 class="section">Name-base Virtual Hosts</h2>
             <p>Name-based virtual hosts allow multiple virtual hosts to share an IP address by using the HTTP Host
             header to distinguish which virtual host should service the request.</p>
@@ -109,7 +102,7 @@ NameVirtualHost 206.148.97.56
             address specified by the NameVirtualHost directive must match the IP address in the VirtualHost directive.
             You may specify port numbers with the IP addresses if you require a port other than port 80.</p>
             <p>WARNING: Some very old clients may not include the Host header in their HTTP request and so may not be
-            able to use Name-based virtual hosting.</p><a name="ipBasedVirtualHosts" id="ipBasedVirtualHosts"></a>
+            able to use Name-based virtual hosting.</p><a id="ipBasedVirtualHosts"></a>
             <h2 class="section">IP-based Virtual Hosts</h2>
             <p>IP-based virtual hosts allow multiple virtual hosts to be supported on a single server. Each IP-based
             virtual host consumes a separate IP address. The SSL protocol is supported with IP-based virtual
@@ -130,13 +123,23 @@ NameVirtualHost 206.148.97.56
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

@@ -1,0 +1,7 @@
+/*
+    cgi.pak - CGI package for Bit
+ */
+
+pack('cgi', 'Common Gateway Interface Module')
+let cgi = probe('cgiHandler.c', {fullpath: true, search: [bit.dir.src.join('src/modules')]})
+Bit.load({packs: { cgi: { path: cgi }}})

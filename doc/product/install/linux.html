@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../../product/index.html">Home</a>
+            <a href="../../index.html">Home</a>
 <!-- EndDsi -->
              &gt; <a href="index.html">Installation</a> &gt; <b>Installing on Linux</b>
         </div>
@@ -43,7 +36,6 @@
             <h1>Quick Nav</h1>
             <ul>
                 <li><a href="#native">Installing the Native Image</a></li>
-                <li><a href="#self">Installing the Self-Install Image</a></li>
                 <li><a href="#removing">Removing Appweb</a></li>
                 <li><a href="#running">Running Appweb</a></li>
             </ul>
@@ -51,7 +43,6 @@
             <h1>See Also</h1>
             <ul class="nav">
                 <li><a href="../../product/install/index.html">Installation Overview</a></li>
-                <li><a href="../../product/install/linux.html">Installing on Linux</a></li>
                 <li><a href="../../product/install/mac.html">Installing on Mac</a></li>
                 <li><a href="../../product/install/windows.html">Installing on Windows</a></li>
                 <li><a href="../../product/install/packages.html">Installing Packages</a></li>
@@ -84,12 +75,12 @@
             tar archives that you can manually extract for maximum control over the placement of the product files.</p>
             <p>All formats contain a binary distribution, documentation and development headers and libraries in the
             one package. During installation you will have the option of installing the full distribution or just
-            portions.</p><a name="native" id="native"></a>
+            portions.</p><a id="native"></a>
             <h2 class="section">Installing the RPM or Debian Images</h2>
             <ol>
                 <li>Uncompress and extract the image:
                     <pre>
-tar xvfz appweb-VERSION-DIST-LINUX-i686.FMT.tar.gz
+tar xvfz appweb-VERSION-DIST-LINUX-CPU.FMT.tgz
 </pre>
                     <p>Where VERSION is the current version (e.g. 1.2.3-1), and DIST is the name of the Linux
                     distribution (e.g. fedora), and FMT is either <b>rpm</b> or <b>deb</b>.</p>
@@ -99,12 +90,12 @@ tar xvfz appweb-VERSION-DIST-LINUX-i686.FMT.tar.gz
 sudo ./install
 </pre>
                 </li>
-            </ol><a name="self" id="self"></a>
+            </ol><a id="self"></a>
             <h2 class="section">Installing the Self-Install Image</h2>
             <ol>
                 <li>Uncompress and extract the image:
                     <pre>
-tar xvfz appweb-VERSION-DIST-LINUX-i686.tar.tar.gz
+tar xvfz appweb-VERSION-DIST-LINUX-CPU.tgz
 </pre>
                 </li>
                 <li>Then start the installation with administrator privilege:
@@ -112,7 +103,7 @@ tar xvfz appweb-VERSION-DIST-LINUX-i686.tar.tar.gz
 sudo ./install
 </pre>
                 </li>
-            </ol><a name="removing" id="removing"></a>
+            </ol><a id="removing"></a>
             <h2 class="section">Removing Appweb</h2>
             <ol>
                 <li>Change directory to the installation directory for Appweb. This is usually
@@ -122,18 +113,18 @@ sudo ./install
 sudo ./uninstall
 </pre>
                 </li>
-            </ol><a name="running" id="running"></a>
+            </ol><a id="running"></a>
             <h2 class="section">Running Appweb</h2>
             <p>Appweb will start when the Appweb installation procedure completes and on some systems, will launch your
             browser directed at the Appweb local home page.Thereafter, Appweb will automatically start if the system is
             rebooted.</p>
             <p>If you wish to manually stop Appweb, type:</p>
             <pre>
-/etc/init.d/appweb stop
+appman start
 </pre>
             <p>To restart Appweb:</p>
             <pre>
-/etc/init.d/appweb start
+appman stop
 </pre>
             <p>Alternatively, you can run appweb manually:</p>
             <pre>
@@ -153,13 +144,23 @@ appweb --help
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

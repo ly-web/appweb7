@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../../../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../../../product/index.html">Home</a>
+            <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
              &gt; <b>Source Code</b>
         </div>
@@ -45,7 +38,6 @@
                 <li><a href="#get">Getting the Source</a></li>
                 <li><a href="#repository">Repository</a></li>
                 <li><a href="#building">Building</a></li>
-                <li><a href="#testing">Testing</a></li>
                 <li><a href="#porting">Porting</a></li>
             </ul>
 <!-- BeginDsi "dsi/sourceSeeAlso.html" -->
@@ -53,9 +45,6 @@
             <ul class="nav">
                 <li><a href="../../../guide/appweb/source/index.html">Working with Source</a></li>
                 <li><a href="../../../guide/appweb/source/building.html">Building From Source</a></li>
-                <li><a href="../../../guide/appweb/source/steps.html">Build Steps</a></li>
-                <li><a href="../../../guide/appweb/source/configure.html">Configure Program</a></li>
-                <li><a href="../../../guide/appweb/source/make.html">Make Scheme</a></li>
                 <li><a href="../../../guide/appweb/source/porting.html">Porting Guide</a></li>
 
                 <li><a href="../../../ref/appweb/index.html">Programmers Reference</a></li>
@@ -64,8 +53,9 @@
 
                 <li><a href="../../../guide/appweb/programmers/embedding.html">Embedding Appweb</a></li>
                 <li><a href="../../../guide/appweb/programmers/modules.html">Appweb Modules</a></li>
+                <li><a href="../../../guide/appweb/programmers/handlers.html">Appweb Handlers</a></li>
                 <li><a href="../../../guide/appweb/programmers/stages.html">Pipeline Stages</a></li>
-                <li><a href="../../../guide/appweb/programmers/migrating.html">Migrating to Appweb 3</a></li>
+                <li><a href="../../../guide/appweb/programmers/migrating.html">Migrating to Appweb 4</a></li>
                 <li><a href="../../../guide/appweb/users/index.html">Users Guide</a></li>
                 <li><a href="../../../product/changeLog.html">Change Log</a></li>
             </ul>
@@ -77,15 +67,15 @@
             distribution you choose, but the source code distribution has several advantages:</p>
             <ul>
                 <li>You can recompile Appweb to optimize it for your specific system environment.</li>
-                <li>You can reconfigure Appweb using a wide variety of configuration options to select the specific
-                features that you require.</li>
+                <li>You can reconfigure Appweb via configuration options to select the specific
+                feature set you require.</li>
                 <li>You can minimize the memory footprint and decrease the securable surface area.</li>
-            </ul><a name="get" id="get"></a>
+            </ul><a id="get"></a>
             <h2>Getting the Source Code</h2>
             <p>With each Appweb release, a complete source code snapshot is provided. You can get the latest source
             code from the <a href="http://appwebserver.org/downloads/appweb/download.ejs">download</a> site or you can
             access the <a href="https://github.com/embedthis/appweb-4">source code repository</a>.</p>
-            <a name="repository" id="repository"></a>
+            <a id="repository"></a>
             <h3>Source Repository</h3>
             <p>The Appweb source code is hosted in a Git repository. We provide open read-only access. Write
             access is available to regular contributing developers. To check out the source use this command:</p>
@@ -107,16 +97,13 @@ $ git clone http://github.com/embedthis/appweb-4
             of the features in the master branch.</p>
             <h4>Stable Branch</h4>
             <p>The stable branch is for ongoing maintenance of the current stable release.</p>
-            <a name="building" id="building"></a>
+            <a id="building"></a>
             <h2>Building Appweb from Source</h2>
             <p>The Appweb source distribution contains all the required source files, headers, tools, and test framework
             to reconfigure, build, and verify Appweb. For details, see the <a href="building.html">building from
-            source</a> instructions.</p><a name="testing" id="testing"></a>
-            <h2>Running Unit Tests</h2>
-            <p>The Appweb source code uses a large test suite to verify correct operation and trap regression errors.
-            Run <em>make test</em> to exercise the unit tests.</p>
+                source</a> instructions.</p>
             
-            <a name="porting" id="porting"></a>
+            <a id="porting"></a>
             <h2>Porting the Source to a New Platform</h2>
             <p>Appweb currently runs on a wide variety of operating platforms including: FreeBSD, Linux, MAC OS X and
             Windows. If your system is not one of these, you may like to try porting Appweb to your system. See the
@@ -124,13 +111,23 @@ $ git clone http://github.com/embedthis/appweb-4
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

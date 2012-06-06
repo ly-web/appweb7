@@ -1,0 +1,15 @@
+/*
+    libappweb.bit -- Bit File for the Appweb library
+ */
+
+Bit.load({
+
+    targets: {
+        libappweb: {
+            type: 'lib',
+            sources: [ '*.c' ],
+            headers: [ '*.h' ],
+            depends: [ 'libhttp' ],
+        },
+	},
+})

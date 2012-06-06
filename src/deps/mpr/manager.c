@@ -14,7 +14,7 @@
     Idempotent. "appweb start" returns 0 if already started.
 
     Typical use:
-        manager --program /usr/lib/bin/ejs --args /usr/src/farm/farm-client --home /usr/src/farm/client \
+        manager --program /usr/lib/bin/ejs --args "/usr/src/farm/farm-client" --home /usr/src/farm/client \
             --pidfile /var/run/farm-client.pid run
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
@@ -24,16 +24,16 @@
 #include    "mpr.h"
 
 #ifndef SERVICE_PROGRAM
-    #define SERVICE_PROGRAM BLD_BIN_PREFIX "/" BLD_PRODUCT
+    #define SERVICE_PROGRAM BIT_BIN_PREFIX "/" BIT_PRODUCT
 #endif
 #ifndef SERVICE_NAME
-    #define SERVICE_NAME BLD_PRODUCT
+    #define SERVICE_NAME BIT_PRODUCT
 #endif
 #ifndef SERVICE_HOME
-    #define SERVICE_HOME BLD_PREFIX
+    #define SERVICE_HOME "/"
 #endif
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
 /*********************************** Locals ***********************************/
 
 #define RESTART_DELAY (0 * 1000)        /* Default heart beat period (30 sec) */
@@ -42,6 +42,7 @@
 
 typedef struct App {
     cchar   *appName;                   /* Manager name */
+    int     continueOnErrors;           /* Keep going through errors */
     int     exiting;                    /* Program should exit */
     int     retries;                    /* Number of times to retry staring app */
     int     signal;                     /* Signal to use to terminate service */
@@ -109,6 +110,9 @@ int main(int argc, char *argv[])
 
         } else if (strcmp(argp, "--console") == 0) {
             /* Does nothing. Here for compatibility with windows watcher */
+
+        } else if (strcmp(argp, "--continue") == 0) {
+            app->continueOnErrors = 1;
 
         } else if (strcmp(argp, "--daemon") == 0) {
             app->runAsDaemon++;
@@ -215,6 +219,7 @@ int main(int argc, char *argv[])
             "  Usage: %s [commands]\n"
             "  Switches:\n"
             "    --args               # Args to pass to service\n"
+            "    --continue           # Continue on errors\n"
             "    --daemon             # Run manager as a daemon\n"
             "    --home path          # Home directory for service\n"
             "    --log logFile:level  # Log directive for service\n"
@@ -258,7 +263,7 @@ int main(int argc, char *argv[])
     } else {
         mprStartEventsThread();
         for (; nextArg < argc; nextArg++) {
-            if (!process(argv[nextArg], 0)) {
+            if (!process(argv[nextArg], 0) && !app->continueOnErrors) {
                 status = 3;                                                                    
                 break;
             }
@@ -340,7 +345,7 @@ static bool run(cchar *fmt, ...)
     mprLog(1, "Run: %s", app->command);
 
     cmd = mprCreateCmd(NULL);
-    rc = mprRunCmd(cmd, app->command, &out, &err, MANAGE_TIMEOUT, 0);
+    rc = mprRunCmd(cmd, app->command, NULL, &out, &err, MANAGE_TIMEOUT, 0);
     app->error = sclone(err);
     app->output = sclone(out);
     mprDestroyCmd(cmd);
@@ -361,7 +366,7 @@ static bool process(cchar *operation, bool quiet)
     name = app->serviceName;
     launch = upstart = update = service = 0;
 
-    if (exists("/bin/launchctl") && exists("/Library/LaunchDaemons/com.%s.%s.plist", slower(BLD_COMPANY), name)) {
+    if (exists("/bin/launchctl") && exists("/Library/LaunchDaemons/com.%s.%s.plist", slower(BIT_COMPANY), name)) {
         launch++;
 
     } else if (exists("/sbin/start") && exists("/etc/init/rc.conf") &&
@@ -423,7 +428,7 @@ static bool process(cchar *operation, bool quiet)
             Enable service (will start on reboot)
          */
         if (launch) {
-            path = sfmt("/Library/LaunchDaemons/com.%s.%s.plist", slower(BLD_COMPANY), name);
+            path = sfmt("/Library/LaunchDaemons/com.%s.%s.plist", slower(BIT_COMPANY), name);
             /* 
                 Unfortunately, there is no launchctl command to do an enable without starting. So must do a stop below.
              */
@@ -453,7 +458,7 @@ static bool process(cchar *operation, bool quiet)
     } else if (smatch(operation, "disable")) {
         process("stop", 1);
         if (launch) {
-            rc = run("/bin/launchctl unload -w /Library/LaunchDaemons/com.%s.%s.plist", slower(BLD_COMPANY), name);
+            rc = run("/bin/launchctl unload -w /Library/LaunchDaemons/com.%s.%s.plist", slower(BIT_COMPANY), name);
 
         } else if (update) {
             /*  
@@ -473,7 +478,7 @@ static bool process(cchar *operation, bool quiet)
 
     } else if (smatch(operation, "start")) {
         if (launch) {
-            rc = run("/bin/launchctl load /Library/LaunchDaemons/com.%s.%s.plist", slower(BLD_COMPANY), name);
+            rc = run("/bin/launchctl load /Library/LaunchDaemons/com.%s.%s.plist", slower(BIT_COMPANY), name);
 
         } else if (service) {
             rc = run("/sbin/service %s start", name);
@@ -492,7 +497,7 @@ static bool process(cchar *operation, bool quiet)
 
     } else if (smatch(operation, "stop")) {
         if (launch) {
-            rc = run("/bin/launchctl unload /Library/LaunchDaemons/com.%s.%s.plist", slower(BLD_COMPANY), name);
+            rc = run("/bin/launchctl unload /Library/LaunchDaemons/com.%s.%s.plist", slower(BIT_COMPANY), name);
 
         } else if (service) {
             if (!run("/sbin/service %s stop", name)) {
@@ -540,7 +545,8 @@ static bool process(cchar *operation, bool quiet)
 static void runService()
 {
     MprTime     mark;
-    char        **av, *env[3], **argv;
+    cchar       **av, **argv;
+    char        *env[3];
     int         err, i, status, ac, next;
 
     app->servicePid = 0;
@@ -620,7 +626,7 @@ static void runService()
                 for (i = 1; argv[i]; i++) {
                     mprLog(1, "%s: argv[%d] = %s", app->appName, i, argv[i]);
                 }
-                execve(app->serviceProgram, argv, (char**) &env);
+                execve(app->serviceProgram, (char**) argv, (char**) &env);
 
                 /* Should not get here */
                 err = errno;
@@ -785,18 +791,19 @@ static int makeDaemon()
 }
 
 
-#elif BLD_WIN_LIKE
+#elif BIT_WIN_LIKE
 /*********************************** Locals ***********************************/
 
 #define HEART_BEAT_PERIOD   (10 * 1000) /* Default heart beat period (10 sec) */
 #define RESTART_MAX         (15)        /* Max restarts per hour */
-#define SERVICE_DESCRIPTION ("Manages " BLD_NAME)
+#define SERVICE_DESCRIPTION ("Manages " BIT_NAME)
 
 typedef struct App {
     HWND         hwnd;               /* Application window handle */
     HINSTANCE    appInst;            /* Current application instance */
     cchar        *appName;           /* Manager name */
     cchar        *appTitle;          /* Manager title */
+    int          continueOnErrors;   /* Keep going through errors */
     int          createConsole;      /* Display service console */
     int          exiting;            /* Program should exit */
     char         *logSpec;           /* Log directive for service */
@@ -832,7 +839,7 @@ static void     setAppDefaults();
 static bool     installService();
 static void     logHandler(int flags, int level, cchar *msg);
 static int      registerService();
-static int      removeService(int removeFromScmDb);
+static bool     removeService(int removeFromScmDb);
 static void     gracefulShutdown(MprTime timeout);
 static bool     process(cchar *operation);
 static void     run();
@@ -870,14 +877,14 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
 
     setAppDefaults();
 
-    mprSetAppName(BLD_PRODUCT "Manager", BLD_NAME "Manager", BLD_VERSION);
+    mprSetAppName(BIT_PRODUCT "Manager", BIT_NAME "Manager", BIT_VERSION);
     app->appName = mprGetAppName();
     app->appTitle = mprGetAppTitle(mpr);
     mprSetLogHandler(logHandler);
     mprSetWinMsgCallback((MprMsgCallback) msgProc);
 
     if ((argc = mprMakeArgv(args, &argv, MPR_ARGV_ARGS_ONLY)) < 0) {
-        return FALSE;
+        return MPR_ERR_BAD_ARGS;
     }
     for (nextArg = 1; nextArg < argc; nextArg++) {
         argp = argv[nextArg];
@@ -899,6 +906,9 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
                 Allow the service to interact with the console
              */
             app->createConsole++;
+ 
+        } else if (strcmp(argp, "--continue") == 0) {
+            app->continueOnErrors = 1;
 
         } else if (strcmp(argp, "--daemon") == 0) {
             /* Ignored on windows */
@@ -960,6 +970,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
                 "  Usage: %s [options] [program args]\n"
                 "  Switches:\n"
                 "    --args               # Args to pass to service\n"
+                "    --continue           # Continue on errors\n"
                 "    --console            # Display the service console\n"
                 "    --heartBeat interval # Heart beat interval period (secs)\n"
                 "    --home path          # Home directory for service\n"
@@ -974,7 +985,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
                 "    stop                 # Start the service\n"
                 "    run                  # Run and watch over the service\n",
                 args, app->appName);
-            return -1;
+            return MPR_ERR_BAD_ARGS;
         }
     }
     if (mprStart() < 0) {
@@ -982,15 +993,17 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
     } else {
         mprStartEventsThread();
         if (nextArg >= argc) {
-            return process("run");
+            if (!process("run")) {
+                return MPR_ERR_CANT_COMPLETE;
+            }
 
         } else for (; nextArg < argc; nextArg++) {
-            if (!process(argv[nextArg])) {
-                return FALSE;
+            if (!process(argv[nextArg]) && !app->continueOnErrors) {
+                return MPR_ERR_CANT_COMPLETE;
             }
         }
     }
-    return TRUE;
+    return 0;
 }
 
 
@@ -1118,7 +1131,8 @@ static void run()
 
 #if USEFUL_FOR_DEBUG
     /* 
-        This is useful to debug manager as a windows service.
+        This is useful to debug manager as a windows service. Enable this and then Watson will prompt to attach
+        when the service is run. Must have run prior "manager install enable"
      */
     DebugBreak();
 #endif
@@ -1133,7 +1147,7 @@ static void run()
         Expect to find the service executable in the same directory as this manager program.
      */
     if (app->serviceProgram == 0) {
-        path = sfmt("\"%s\\%s.exe\"", mprGetAppDir(), BLD_PRODUCT);
+        path = sfmt("\"%s\\%s.exe\"", mprGetAppDir(), BIT_PRODUCT);
     } else {
         path = sfmt("\"%s\"", app->serviceProgram);
     }
@@ -1330,9 +1344,14 @@ static bool installService()
     /*
         Write a service description
      */
-    mprSprintf(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\" "Services\\%s", app->serviceName);
-
+    mprSprintf(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services");
+    if (mprWriteRegistry(key, NULL, app->serviceName) < 0) {
+        mprError("Can't write %s key to registry");
+        return 0;
+    }
+    mprSprintf(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\%s", app->serviceName);
     if (mprWriteRegistry(key, "Description", SERVICE_DESCRIPTION) < 0) {
+        mprError("Can't write service Description key to registry");
         return 0;
     }
 
@@ -1343,6 +1362,7 @@ static bool installService()
         app->serviceHome = mprGetPathParent(mprGetAppDir());
     }
     if (mprWriteRegistry(key, "HomeDir", app->serviceHome) < 0) {
+        mprError("Can't write HomeDir key to registry");
         return 0;
     }
 
@@ -1351,6 +1371,7 @@ static bool installService()
      */
     if (app->serviceArgs && *app->serviceArgs) {
         if (mprWriteRegistry(key, "Args", app->serviceArgs) < 0) {
+            mprError("Can't write Args key to registry");
             return 0;
         }
     }
@@ -1532,10 +1553,10 @@ static int tellSCM(long state, long exitCode, long wait)
 static void setAppDefaults()
 {
     app->appName = mprGetAppName();
-    app->serviceProgram = sjoin(mprGetAppDir(), "/", BLD_PRODUCT, ".exe", NULL);
-    app->serviceName = sclone(BLD_COMPANY "-" BLD_PRODUCT);
-    app->serviceHome = mprGetNativePath(SERVICE_HOME);
-    app->serviceTitle = sclone(BLD_NAME);
+    app->serviceProgram = sjoin(mprGetAppDir(), "\\", BIT_PRODUCT, ".exe", NULL);
+    app->serviceName = sclone(BIT_COMPANY "-" BIT_PRODUCT);
+    app->serviceHome = NULL;
+    app->serviceTitle = sclone(BIT_NAME);
     app->serviceStopped = 0;
 }
 
@@ -1580,7 +1601,7 @@ static void gracefulShutdown(MprTime timeout)
 {
     HWND    hwnd;
 
-    hwnd = FindWindow(BLD_PRODUCT, BLD_NAME);
+    hwnd = FindWindow(BIT_PRODUCT, BIT_NAME);
     if (hwnd) {
         PostMessage(hwnd, WM_QUIT, 0, 0L);
 
@@ -1590,7 +1611,7 @@ static void gracefulShutdown(MprTime timeout)
         while (timeout > 0 && hwnd) {
             mprSleep(100);
             timeout -= 100;
-            hwnd = FindWindow(BLD_PRODUCT, BLD_NAME);
+            hwnd = FindWindow(BIT_PRODUCT, BIT_NAME);
             if (hwnd == 0) {
                 return;
             }
@@ -1607,13 +1628,13 @@ static void gracefulShutdown(MprTime timeout)
 void stubManager() {
     fprintf(stderr, "Manager not supported on this architecture");
 }
-#endif /* BLD_WIN_LIKE */
+#endif /* BIT_WIN_LIKE */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

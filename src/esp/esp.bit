@@ -1,0 +1,55 @@
+/*
+    esp.bit -- Bit File for Embedded Server Pages
+ */
+
+Bit.load({
+    targets: {
+        mod_esp: {
+            type: 'lib',
+            depends: [ 'libappweb' ],
+            sources: [ '*.c' ],
+            headers: [ '*.h' ],
+            exclude: [ 'esp.c' ],
+        },
+
+        esp: {
+            type: 'exe',
+            depends: [ 'libappweb' ],
+            sources: [ '*.c' ]
+            platforms: [ 'local' ],
+        },
+
+        'esp.conf': {
+            type: 'file',
+            files: [ 'esp.conf' ],
+        },
+
+        'esp.www': {
+            type: 'file',
+            path: '${LIB}/esp-www',
+            files: [ 'www' ],
+            platforms: [ 'local' ],
+        },
+
+        'esp-appweb.conf': {
+            type: 'file',
+            path: '${LIB}/esp-appweb.conf',
+            files: [ 'esp-appweb.conf' ],
+            platforms: [ 'local' ],
+        },
+
+        'esp-configure': {
+            scripts: {
+                postconfig: "
+                    if (bit.platform.os == 'vxworks') {
+                        let evars = []
+                        for (let [key,value] in bit.env) {
+                            evars.push('EspEnv ' + key + ' \"' + value + '\"\n')
+                        }
+                        bit.dir.lib.join('esp-' + bit.platform.os + '.conf').write(evars.join())
+                    }
+                ",
+            },
+        },
+    },
+})

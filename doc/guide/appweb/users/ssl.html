@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../../../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../../../product/index.html">Home</a>
+            <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
              &gt; <a href="index.html">Users Guide</a> &gt; <b>SSL</b>
         </div>
@@ -60,24 +53,20 @@
                 <li><a href="../../../guide/appweb/users/vhosts.html">Virtual Hosts</a></li>
                 <li><a href="../../../guide/appweb/users/security.html">Security Considerations</a></li>
                 <li><a href="../../../guide/appweb/users/ssl.html">SSL</a></li>
-                <li><a href="../../../guide/appweb/users/modules.html">Loadable Modules</a></li>
+                <li><a href="../../../guide/appweb/users/modules.html">Appweb Modules</a></li>
                 <li><a href="../../../guide/appweb/users/stages.html">Pipeline Stages</a></li>
                 <li><a href="../../../guide/appweb/users/client.html">HTTP Client</a></li>
                 <li><a href="../../../guide/appweb/users/frameworks.html">Web Frameworks</a></li>
                 <li><a href="../../../ref/appweb/architecture.html">Appweb Architecture</a></li>
             </ul>
 <!-- EndDsi -->
-            <!-- EndDsi -->
-            <!-- EndDsi -->
-            <!-- EndDsi -->
         </div>
         <div class="contentLeft">
             <h1>Configuring SSL</h1>
             <p>Appweb supports the Secure Sockets Layer (SSL) protocol for authenticating systems and encrypting data.
             Use of this protocol enables secure data transmission to and from clients in a standards-based manner.</p>
             <p>This document provides step-by-step instructions for configuring SSL in Appweb. If you are unfamiliar
-            with SSL, please read the <a href="sslOverview.html">SSL Overview</a> first.</p><a name="sslQuickStart" id=
-            "sslQuickStart"></a>
+            with SSL, please read the <a href="sslOverview.html">SSL Overview</a> first.</p><a id="sslQuickStart"></a>
             <h2 class="section">SSL Quick Start</h2>
             <p>The default binary installation of Appweb will support SSL on port 4443 for all network interfaces. You
             can immediately test SSL access to documents by using the <b>https://</b> scheme and <b>4443</b> as the
@@ -89,8 +78,7 @@ https://127.0.0.1:4443/index.html
             <p>Appweb is shipped with a self-signed certificate to identify the web server. This certificate is
             suitable for testing purposes only and your browser will issue a warning when you access the server. For
             production use, you should obtain your own service certificate from signing authorities such as <a href=
-            "http://www.verisign.com">Verisign</a>.</p><a name="sslConfigurationDirectives" id=
-            "sslConfigurationDirectives"></a>
+            "http://www.verisign.com">Verisign</a>.</p><a id="sslConfigurationDirectives"></a>
             <h2 class="section">SSL Configuration Directives</h2>
             <p>Appweb uses several configuration file directives to control SSL and manage secure access to the server.
             These directives can be specified in the Default Server section or in a Virtual Host section. When included
@@ -109,7 +97,7 @@ https://127.0.0.1:4443/index.html
                 <li><a href="dir/ssl.html#sslVerifyClient">SSLVerifyClient</a></li>
                 <li><a href="dir/ssl.html#sslCaCertificateFile">SSLCACertificateFile</a></li>
                 <li><a href="dir/ssl.html#sslCaCertificatePath">SSLCACertificatePath</a></li>
-            </ul><a name="sslConfigurationExample" id="sslConfigurationExample"></a>
+            </ul><a id="sslConfigurationExample"></a>
             <h2 class="section">SSL Configuration Example</h2>
             <p>Consider the default Appweb SSL configuration in the appweb.conf configuration file:</p>
             <pre>
@@ -143,7 +131,7 @@ https://127.0.0.1:4443/index.html
             example in a production environment.</p>
             <p>The server key file is a PEM encoded private key. You may supply either an encrypted private key or a
             decrypted private key. If you use an encrypted private key, the server will prompt you for a pass-phrase to
-            decrypt the key when the server boots.</p><a name="generatingKeys" id="generatingKeys"></a>
+            decrypt the key when the server boots.</p><a id="generatingKeys"></a>
             <h2 class="section">Generating Keys and Certificates</h2>
             <p>To generate a request file that you can send to a certificate issuing authority such as <a href=
             "http://www.verisign.com">Verisign</a>, use the following openssl command or equivalent command from your
@@ -159,8 +147,7 @@ openssl req -new -key server.key -out server.csr
             identity of your server when negotiating a SSL session. When running these commands, you will be prompted
             to enter a pass-phrase password to decrypt the server private key. REMEMBER this password.</p>
             <p><b>SECURITY WARNING</b>: Safeguard the "server.key" private key jealously. If this falls into malicious
-            hands, then your server identity may be hijacked by another site.</p><a name="sslProviders" id=
-            "sslProviders"></a>
+            hands, then your server identity may be hijacked by another site.</p><a id="sslProviders"></a>
             <h2 class="section">SSL Providers</h2>
             <p>Appweb employs an open architecture SSL Provider interface so that customers can select the ideal SSL
             provider for their needs. Different SSL implementations excel in various ways. Some are compact, others are
@@ -176,13 +163,23 @@ openssl req -new -key server.key -out server.csr
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

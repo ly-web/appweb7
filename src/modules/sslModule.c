@@ -6,9 +6,8 @@
 /********************************* Includes ***********************************/
 
 #include    "appweb.h"
-#include    "mprSsl.h"
 
-#if BLD_FEATURE_SSL
+#if BIT_FEATURE_SSL
 /*********************************** Code *************************************/
 
 static bool checkSsl(MaState *state)
@@ -27,10 +26,6 @@ static bool checkSsl(MaState *state)
     return 1;
 }
 
-
-#if FUTURE
-static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
-#endif
 
 static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -162,9 +157,6 @@ int maSslModuleInit(Http *http, MprModule *module)
     appweb = httpGetContext(http);
     maAddDirective(appweb, "SSL", sslDirective);
     maAddDirective(appweb, "SSLEngine", sslDirective);
-#if FUTURE && MOB
-    maAddDirective(appweb, "ListenSecure", listenSecureDirective);
-#endif
     maAddDirective(appweb, "SSLCACertificateFile", sslCaCertificateFileDirective);
     maAddDirective(appweb, "SSLCACertificatePath", sslCaCertificatePathDirective);
     maAddDirective(appweb, "SSLCertificateFile", sslCertificateFileDirective);
@@ -180,13 +172,13 @@ int maSslModuleInit(Http *http, MprModule *mp)
 {
     return 0;
 }
-#endif /* BLD_FEATURE_SSL */
+#endif /* BIT_FEATURE_SSL */
 
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

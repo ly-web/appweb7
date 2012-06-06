@@ -1,41 +1,29 @@
-# 
-#	Makefile -- Top level Makefile for Appweb
 #
-#	Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-#
-#
-#	Standard Make targets supported are:
+#	Makefile - Top level Makefile when using "make" to build.
+#			   Alternatively, use bit directly.
 #	
-#		make 						# Does a "make compile"
-#		make clean					# Removes generated objects
-#		make compile				# Compiles the source
-#		make depend					# Generates the make dependencies
-#		make test 					# Runs unit tests
-#		make package				# Creates an installable package
-#
-#	Installation targets. Use "make ROOT_DIR=myDir" to do a custom local install:
-#
-#		make install				# Call install-binary + install-dev
-#		make install-binary			# Install binary files
-#		make install-dev			# Install development libraries and headers
-#		make deploy					# Deploy binary files to a directory
-#
-#	To remove, use make uninstall-ITEM, where ITEM is a component above.
-#
 
-DEPS		= tools mpr pcre http sqlite
+OS      := $(shell uname | sed 's/CYGWIN.*/windows/;s/Darwin/macosx/' | tr '[A-Z]' '[a-z]')
+MAKE	:= make
+EXT		:= mk
 
-include		build/make/Makefile.top
-include		build/make/Makefile.appweb
-include		out/inc/Makefile.import
+ifeq ($(OS),windows)
+ifeq ($(ARCH),)
+ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
+	ARCH:=x64
+else
+	ARCH:=x86
+endif
+endif
+	MAKE:= projects/windows.bat $(ARCH)
+	EXT := nmake
+endif
 
-testCleanup:
-	killall testAppweb >/dev/null 2>&1 ; true
+all clean clobber compile:
+	$(MAKE) -f projects/*-$(OS).$(EXT) $@
 
-#
-#   Local variables:
-#   tab-width: 4
-#   c-basic-offset: 4
-#   End:
-#   vim: sw=4 ts=4 noexpandtab
-#
+build configure generate test package:
+	bit $@
+
+version:
+	@bit -q version

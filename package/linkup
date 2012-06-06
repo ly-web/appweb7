@@ -1,77 +1,84 @@
+#!/bin/bash
 #
 #   Create or modify symlinks for the most recent installed versions of Appweb
 #
-#   Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
+#   Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
 #
 
 TASK=$1
-ROOT_DIR="${2%/}"
 PRODUCT=appweb
+ROOT_DIR="${2%/}"
 EXE=
-INC="${ROOT_DIR}/usr/include"
-MAN="${ROOT_DIR}/usr/share/man"
+INC_DIR="${ROOT_DIR}/usr/include"
+MAN_DIR="${ROOT_DIR}/usr/share/man"
 PROGRAMS="appman appweb http auth esp"
+LIBRARIES="libmpr libappweb"
 
 if [ -x "${ROOT_DIR}/usr/local/bin" ] ; then
-    BIN="${ROOT_DIR}/usr/local/bin"
+    BIN_DIR="${ROOT_DIR}/usr/local/bin"
 else 
-    BIN="${ROOT_DIR}/usr/bin"
+    BIN_DIR="${ROOT_DIR}/usr/bin"
 fi
+LIB_DIR="${ROOT_DIR}/usr/lib"
 
 prefix="${ROOT_DIR}/usr/lib/${PRODUCT}"
-version=
-for v in `ls $prefix 2>/dev/null | egrep -v '[a-zA-Z@!_\-]' | sort -n -r`
-do
-    if [ -x "$prefix/$v/bin/ejs" ] ; then
-        version=$v
-        break
-    fi
-done
-
-# Appweb is not yet fully versioned
 version=
 
 if [ "$TASK" = "Remove" ] ; then
     for name in $PROGRAMS ; do
-        # echo rm -f "${BIN}/$name"
-        rm -f "${BIN}/$name"
+        rm -f "${BIN_DIR}/$name"
     done
-    # echo rm -fr "${INC}/${PRODUCT}"
-    rm -fr "${INC}/${PRODUCT}"
+    rm -rf  "${INC_DIR}/${PRODUCT}"
 else
+    for v in `ls $prefix 2>/dev/null | egrep -v '[a-zA-Z@!_\-]' | sort -n -r`
+    do
+        if [ -x "$prefix/$v/bin/appweb" ] ; then
+            version=$v
+            break
+        fi
+    done
+
     if [ "$version" = "" ] ; then
         latest=${prefix}
     else
         latest=${prefix}/$version
     fi
-    bin=${latest}/bin
-    inc=${latest}/inc
-    man=${latest}/doc/man
+    rm -f "${prefix}/latest"
+    ln -s "${latest}" "${prefix}/latest"
+    bin="${latest}/bin"
+    inc="${latest}/inc"
+    man="${latest}/doc/man/man1"
+    lib="${latest}/lib"
 
-    [ ! -x "${BIN}" ] && mkdir -p "${BIN}"
+    [ ! -x "${BIN_DIR}" ] && mkdir -p "${BIN_DIR}"
 
     home=`pwd`
-    for name in $PROGRAMS
-    do
+    for name in $PROGRAMS ; do
         name=${name}${EXE}
-        rm -f "${BIN}/${name}"
+        rm -f "${BIN_DIR}/${name}"
         if [ -f "${bin}/${name}" ] ; then
-            ln -s "${bin}/${name}" "${BIN}/${name}"
+            ln -s "${bin}/${name}" "${BIN_DIR}/${name}"
         fi
     done
-
+    for name in $LIBRARIES ; do
+        name=${name}
+        rm -f "${LIB_DIR}/${name}*"
+        if [ -f "${lib}/${name}*" ] ; then
+            ln -s "${lib}/${name}*" "${LIB_DIR}/${name}"
+        fi  
+    done
     if [ -d "${inc}" ] ; then
-        [ ! -x "${INC}" ] && mkdir -p "${INC}"
-        rm -rf  "${INC}/${PRODUCT}"
-        ln -s "${inc}" "${INC}/${PRODUCT}"
+        [ ! -x "${INC_DIR}" ] && mkdir -p "${INC_DIR}"
+        rm -rf  "${INC_DIR}/${PRODUCT}"
+        ln -s "${inc}" "${INC_DIR}/${PRODUCT}"
     fi
     if [ -d "${man}" ] ; then
-        [ ! -x "${MAN}" ] && mkdir -p "${MAN}/man1"
+        [ ! -x "${MAN_DIR}" ] && mkdir -p "${MAN_DIR}/man1"
         for f in ${man}/*.1.gz
         do
             name=`basename "$f"`
-            rm -f "${MAN}/man1/${name}"
-            ln -s "${f}" "${MAN}/man1/${name}"
+            rm -f "${MAN_DIR}/man1/${name}"
+            ln -s "${f}" "${MAN_DIR}/man1/${name}"
         done
     fi
 fi

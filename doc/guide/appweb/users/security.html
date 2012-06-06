@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../../../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../../../product/index.html">Home</a>
+            <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
              &gt; <a href="index.html">User Guide</a> &gt; <b>Security</b>
         </div>
@@ -62,7 +55,7 @@
                 <li><a href="../../../guide/appweb/users/vhosts.html">Virtual Hosts</a></li>
                 <li><a href="../../../guide/appweb/users/security.html">Security Considerations</a></li>
                 <li><a href="../../../guide/appweb/users/ssl.html">SSL</a></li>
-                <li><a href="../../../guide/appweb/users/modules.html">Loadable Modules</a></li>
+                <li><a href="../../../guide/appweb/users/modules.html">Appweb Modules</a></li>
                 <li><a href="../../../guide/appweb/users/stages.html">Pipeline Stages</a></li>
                 <li><a href="../../../guide/appweb/users/client.html">HTTP Client</a></li>
                 <li><a href="../../../guide/appweb/users/frameworks.html">Web Frameworks</a></li>
@@ -74,14 +67,14 @@
             <h1>Security Considerations</h1>
             <p>Securing applications that are accessible to the Internet is not a trivial task. This page outlines some
             of the issues, and offers tips to help you secure your application using the Embedthis Appweb
-            product.</p><a name="updates" id="updates"></a>
+            product.</p><a id="updates"></a>
             <h2 class="section">Updates</h2>
             <p>Even the best application or HTTP server can experience some security vulnerabilities that are
             discovered after being deployed in the field. It is highly recommended that you stay up to date with the
             latest version of Appweb.</p>
             <p><a href="http://www.embedthis.com/">Embedthis</a> offers a Security Enhancement Service as part of an
             Appweb commercial license that will proactively notify you of any security flaws and will expedite fixes or
-            workarounds to minimize the vulnerability.</p><a name="account" id="account"></a>
+            workarounds to minimize the vulnerability.</p><a id="account"></a>
             <h2 class="section">Appweb User Account</h2>
             <p>It is important that you run Appweb with the lowest system privilege that will get the job done. If any
             application is compromised, including Appweb, then the system will be safest if the compromised application
@@ -104,7 +97,7 @@
                 <li>Give the account read and execute rights to all HTML documents.</li>
                 <li>Give the account read, write, execute and delete rights to the logs directory.</li>
                 <li>Give the account read and execute rights to the appweb.exe and the DLLs in the libs directory.</li>
-            </ul><a name="directoryPermissions" id="directoryPermissions"></a>
+            </ul><a id="directoryPermissions"></a>
             <h2 class="section">Directory and File Permissions</h2>
             <p>When Appweb is installed, it is configured for maximum security. This section explains the policy 
             should you need to move or modify files and directories.</p>
@@ -134,7 +127,7 @@ cd    /etc/appweb
 chown root . lib logs
 chgrp root . lib logs
 chmod 755  . lib logs
-</pre><a name="dynamicContent" id="dynamicContent"></a>
+</pre><a id="dynamicContent"></a>
             <h2 class="section">Dynamic Content</h2>
             <p>Appweb supports several Web Frameworks for creating dynamic content. These frameworks sometimes require
             special security considerations because they are executing code or scripts to render the content.</p>
@@ -205,16 +198,16 @@ AddType application/x-httpd-php .web
             you use the <a href="../../../api/mpr.html">MPR</a> services for all your ESP code. This portable runtime
             has been extensively tested and includes routines to guard against common buffer overflows and other such
             exploits.</p>
-            <a name="ssl" id="ssl"></a>
+            <a id="ssl"></a>
             <h2 class="section">SSL Servers</h2>
             <p>If you configure a SSL virtual server, remember to define a separate DocumentRoot if you want to only
             serve private content to SSL users. Otherwise those pages will also be visible via the default
-            server.</p><a name="authentication" id="authentication"></a>
+            server.</p><a id="authentication"></a>
             <h2 class="section">Authentication</h2>
             <p>It is highly recommended that you use only <a href="authorization.html#digestAuthentication">Digest</a>
             authentication and not Basic authentication. As implemented in Appweb, digest authentication provides many
             safeguards against known exploits including; man-in-the-middle attacks, client spoofing, and replay
-            attacks.</p><a name="sandBoxing" id="sandBoxing"></a>
+            attacks.</p><a id="sandBoxing"></a>
             <h2 class="section">Sandboxing</h2>
             <p>Sandboxing is the term applied to running Appweb in a confined environment. When embedding a HTTP server
             in an application, the profile of client access is often well known. This profile includes the rate of
@@ -228,6 +221,14 @@ AddType application/x-httpd-php .web
             <table title="sandbox">
                 <tbody>
                     <tr>
+                        <td class="pivot">LimitCache</td>
+                        <td>Maximum size of the response cache</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitCacheItem</td>
+                        <td>Maximum size of a single item in the response cache</td>
+                    </tr>
+                    <tr>
                         <td class="pivot">LimitChunk</td>
                         <td>Maximum size of chunks when using Transfer Chunk Encoding</td>
                     </tr>
@@ -236,20 +237,44 @@ AddType application/x-httpd-php .web
                         <td>Maximum size of simultaneous clients</td>
                     </tr>
                     <tr>
+                        <td class="pivot">LimitKeepAlive</td>
+                        <td>Maximum number of requests to serve using a single TCP/IP connection</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitMemory</td>
+                        <td>Maximum memory the server can allocate</td>
+                    </tr>
+                    <tr>
                         <td class="pivot">LimitRequestBody</td>
                         <td>Maximum size of the incoming request body</td>
                     </tr>
                     <tr>
-                        <td class="pivot">LimitRequestHeaderLines</td>
-                        <td>Maximum number of header lines in the request</td>
+                        <td class="pivot">LimitRequestForm</td>
+                        <td>Maximum size of request form data (POST data)</td>
                     </tr>
                     <tr>
                         <td class="pivot">LimitRequestHeader</td>
                         <td>Maximum size of the request header</td>
                     </tr>
                     <tr>
+                        <td class="pivot">LimitRequestHeaderLines</td>
+                        <td>Maximum number of header lines in the request</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitRequests</td>
+                        <td>Maximum number of simultaneous requests</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitResponseBody</td>
+                        <td>Maximum size of a response</td>
+                    </tr>
+                    <tr>
                         <td class="pivot">LimitStageBuffer</td>
                         <td>Pipeline stage buffer size</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitUpload</td>
+                        <td>Maximum size of a file upload request</td>
                     </tr>
                     <tr>
                         <td class="pivot">LimitUri</td>
@@ -260,17 +285,13 @@ AddType application/x-httpd-php .web
                         <td>Number of threads to pre-allocate in the thread pool</td>
                     </tr>
                     <tr>
-                        <td class="pivot">TThreads</td>
-                        <td>Maximum number of threads to allocate on demand for the thread pool</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">ThreadStack</td>
-                        <td>Size of the per-thread stack</td>
+                        <td class="pivot">LimitWorkers</td>
+                        <td>Maximum number of worker threads to service requests</td>
                     </tr>
                 </tbody>
             </table>
             <p>See the <a href="dir/sandbox.html">Sandbox Directives</a> and <a href="dir/perf.html">Performance
-            Directives</a> for further details.</p><a name="logFiles" id="logFiles"></a>
+            Directives</a> for further details.</p><a id="logFiles"></a>
             <h2 class="section">Log Files</h2>
             <p>Appweb will log satisfied requests to the access log (usually logs/access.log) and errors to the error
             log (usually logs/error.log). It is recommended that you regularly review these logs for suspicious
@@ -278,13 +299,23 @@ AddType application/x-httpd-php .web
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

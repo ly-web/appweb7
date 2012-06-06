@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../../../../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../../../../product/index.html">Home</a>
+            <a href="../../../../index.html">Home</a>
 <!-- EndDsi -->
              &gt; <a href="../index.html">Users Guide</a> &gt; <a href="../configuration.html#directives">Configuration
             Directives</a> &gt; <b>Authorization Directives</b>
@@ -41,7 +34,7 @@
     </div>
     <div class="content">
         <div class="contentRight">
-            <h2>Quick Nav</h2>
+            <h1>Quick Nav</h1>
             <ul>
                 <li><a href="#allow">Allow</a></li>
                 <li><a href="#authDigestQop">AuthDigestQop</a></li>
@@ -54,24 +47,26 @@
                 <li><a href="#order">Order</a></li>
                 <li><a href="#require">Require</a></li>
             </ul>
-            <h2>See Also</h2>
+            <h1>See Also</h1>
             <ul>
-                <li><a href="../../../../guide/appweb/users/authorization.html">Authoriation Guide</a></li>
+                <li><a href="../../../../guide/appweb/users/authorization.html">Authorization Guide</a></li>
                 <li><a href="../../../../guide/appweb/users/configuration.html">Configuration</a></li>
                 <li><a href="../configuration.html#directives">Configuration Directives</a></li>
             </ul>
         </div>
         <div class="contentLeft">
-            <a name="allow" id="allow"></a>
+            <a id="allow"></a>
             <h1>Authorization Directives</h1>
             <p>Authorization directives manage user authentication and server access control.</p>
             <h2>Allow</h2>
-            <table class="directive" summary="" width="100%">
-                <tbody>
+            <table class="directive" title="directive">
+                <thead>
                     <tr>
-                        <td class="pivot">Description</td>
-                        <td>Define which servers can access a section of the published content.</td>
+                        <th class="pivot">Description</th>
+                        <th>Define which servers can access a section of the published content.</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Allow from [all | host]</td>
@@ -95,14 +90,18 @@
                         <td>The Allow directive is currently not implemented.</td>
                     </tr>
                 </tbody>
-            </table><a name="authDigestQop" id="authDigestQop"></a>
+            </table>
+            
+            <a id="authDigestQop"></a>
             <h2>AuthDigestQop</h2>
-            <table class="directive" summary="" width="100%">
-                <tbody>
+            <table class="directive" title="directive">
+                <thead>
                     <tr>
-                        <td class="pivot">Description</td>
-                        <td>Defines the quality of protection for Digest authentication</td>
+                        <th class="pivot">Description</th>
+                        <th>Defines the quality of protection for Digest authentication</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthDigestQop [none | auth | auth-int]</td>
@@ -130,14 +129,18 @@
                         </td>
                     </tr>
                 </tbody>
-            </table><a name="authGroupFile" id="authGroupFile"></a>
+            </table>
+            
+            <a id="authGroupFile"></a>
             <h2>AuthGroupFile</h2>
-            <table class="directive" summary="" width="100%">
-                <tbody>
+            <table class="directive" title="directive">
+                <thead>
                     <tr>
-                        <td class="pivot">Description</td>
-                        <td>Defines the name of the user group file for authentication.</td>
+                        <th class="pivot">Description</th>
+                        <th>Defines the name of the user group file for authentication.</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthGroupFile path</td>
@@ -169,14 +172,18 @@ acmeUsers: coyote roadRunner
                         DocumentRoot or any directory serving content.</td>
                     </tr>
                 </tbody>
-            </table><a name="authMethod" id="authMethod"></a>
+            </table>
+            
+            <a id="authMethod"></a>
             <h2>AuthMethod</h2>
-            <table class="directive" summary="" width="100%">
-                <tbody>
+            <table class="directive" title="directive">
+                <thead>
                     <tr>
-                        <td class="pivot">Description</td>
-                        <td>Defines the method to lookup user and password credentials.</td>
+                        <th class="pivot">Description</th>
+                        <th>Defines the method to lookup user and password credentials.</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthMethod [file | pam]</td>
@@ -193,19 +200,23 @@ acmeUsers: coyote roadRunner
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The File based authentication method utilizes files created via the <b>httpPassword</b>
-                            utility. The Pluggable Authentication Modules (PAM) method is available on Linux and Mac OS
+                            utility. The Plugable Authentication Modules (PAM) method is available on Linux and Mac OS
                             X only. The PAM method integrates with the operating systems authentication mechanisms.</p>
                         </td>
                     </tr>
                 </tbody>
-            </table><a name="authName" id="authName"></a>
+            </table>
+            
+            <a id="authName"></a>
             <h2>AuthName</h2>
-            <table class="directive" summary="" width="100%">
-                <tbody>
+            <table class="directive" title="directive">
+                <thead>
                     <tr>
-                        <td class="pivot">Description</td>
-                        <td>Defines the "Realm" of users to be permitted access to this set of documents.</td>
+                        <th class="pivot">Description</th>
+                        <th>Defines the "Realm" of users to be permitted access to this set of documents.</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthName realm</td>
@@ -231,14 +242,18 @@ acmeUsers: coyote roadRunner
                         </td>
                     </tr>
                 </tbody>
-            </table><a name="authType" id="authType"></a>
+            </table>
+            
+            <a id="authType"></a>
             <h2>AuthType</h2>
-            <table class="directive" summary="" width="100%">
-                <tbody>
+            <table class="directive" title="directive">
+                <thead>
                     <tr>
-                        <td class="pivot">Description</td>
-                        <td>Defines the type of authentication to use.</td>
+                        <th class="pivot">Description</th>
+                        <th>Defines the type of authentication to use.</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthType [Basic | Digest | None]</td>
@@ -270,14 +285,18 @@ acmeUsers: coyote roadRunner
                         </td>
                     </tr>
                 </tbody>
-            </table><a name="authUserFile" id="authUserFile"></a>
+            </table>
+            
+            <a id="authUserFile"></a>
             <h2>AuthUserFile</h2>
-            <table class="directive" summary="" width="100%">
-                <tbody>
+            <table class="directive" title="directive">
+                <thead>
                     <tr>
-                        <td class="pivot">Description</td>
-                        <td>Defines the file of users to use when validating user names.</td>
+                        <th class="pivot">Description</th>
+                        <th>Defines the file of users to use when validating user names.</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthUserFile path</td>
@@ -315,14 +334,18 @@ coyote:Realm:EncryptedPassword
                         </td>
                     </tr>
                 </tbody>
-            </table><a name="deny" id="deny"></a>
+            </table>
+            
+            <a id="deny"></a>
             <h2>Deny</h2>
-            <table class="directive" summary="" width="100%">
-                <tbody>
+            <table class="directive" title="directive">
+                <thead>
                     <tr>
-                        <td class="pivot">Description</td>
-                        <td>Defines which servers cannot access a section of the published content.</td>
+                        <th class="pivot">Description</th>
+                        <th>Defines which servers cannot access a section of the published content.</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Deny [all | host]</td>
@@ -340,14 +363,18 @@ coyote:Realm:EncryptedPassword
                         <td>The Deny directive is currently not implemented.</td>
                     </tr>
                 </tbody>
-            </table><a name="order" id="order"></a>
+            </table>
+            
+            <a id="order"></a>
             <h2>Order</h2>
-            <table class="directive" summary="" width="100%">
-                <tbody>
+            <table class="directive" title="directive">
+                <thead>
                     <tr>
-                        <td class="pivot">Description</td>
-                        <td>Specifies the order in which the allow and deny directives apply.</td>
+                        <th class="pivot">Description</th>
+                        <th>Specifies the order in which the allow and deny directives apply.</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Order allowSpec</td>
@@ -371,11 +398,11 @@ coyote:Realm:EncryptedPassword
                             <h3>Deny,Allow</h3>
                             <p>The deny directive is applied first then the allow directive. Requests that do not match
                             the deny directive and do match the allow directive will be permitted access. Access is
-                            allowed by default if either the deny or allow directive is ommitted.</p>
+                            allowed by default if either the deny or allow directive is omitted.</p>
                             <h3>Allow,Deny</h3>
                             <p>The allow directive is applied first then the deny directive. Requests that do not match
                             the allow directive or requests that match the deny directive will be denied. Access is
-                            denied by default if either the deny or allow directive is ommitted.</p>
+                            denied by default if either the deny or allow directive is omitted.</p>
                             <h3>Examples</h3>
                             <p>To only allow access for a specified domain, www.acme.com:</p>
                             <pre>
@@ -392,15 +419,19 @@ Deny from www.myCompetitor.com
                         </td>
                     </tr>
                 </tbody>
-            </table><a name="require" id="require"></a>
+            </table>
+            
+            <a id="require"></a>
             <h2>Require</h2>
-            <table class="directive" summary="" width="100%">
-                <tbody>
+            <table class="directive" title="directive">
+                <thead>
                     <tr>
-                        <td class="pivot">Description</td>
-                        <td>Defines which authenticated users will be permitted access to a set of published
-                        content.</td>
+                        <th class="pivot">Description</th>
+                        <th>Defines which authenticated users will be permitted access to a set of published
+                        content.</th>
                     </tr>
+                </thead>
+                <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Require user userName [userName]...<br />
@@ -429,8 +460,8 @@ Deny from www.myCompetitor.com
                             "#authGroupFile">AuthGroupFile</a> directives.</p>
                             <p>The Require acl directive specifies an Access Control Mask which defines a set of
                             capabilities that must be satisfied to grant access. ACLs are used to associated
-                            capabilities with users and groups of users and to specifiy via the Require directive what
-                            capabilities the user must posess to gain access. Typically each bit in the ACL mask
+                            capabilities with users and groups of users and to specify via the Require directive what
+                            capabilities the user must posses to gain access. Typically each bit in the ACL mask
                             corresponds to a set of tasks or roles which must be performed. For example: backup tasks
                             could be associated with the bit 0x10 in the ACLs.</p>
                             <p>ACLs are defined in the group authorization file where each group has a specified ACL
@@ -458,13 +489,23 @@ Require acl 0x10
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

@@ -13,7 +13,6 @@
 
 /***************************** Forward Declarations ***************************/
 
-static char *getSearchPath(cchar *dir);
 static void manageAppweb(MaAppweb *appweb, int flags);
 static void openHandlers(Http *http);
 
@@ -29,9 +28,12 @@ MaAppweb *maCreateAppweb()
     if ((appweb = mprAllocObj(MaAppweb, manageAppweb)) == NULL) {
         return 0;
     }
+    MPR->appwebService = appweb;
     appweb->http = http = httpCreate(appweb);
     httpSetContext(http, appweb);
     appweb->servers = mprCreateList(-1, 0);
+    appweb->localPlatform = slower(sfmt("%s-%s-%s", BIT_OS, BIT_CPU, BIT_PROFILE));
+    maSetPlatform(appweb->localPlatform);
     maGetUserGroup(appweb);
     maParseInit(appweb);
     openHandlers(http);
@@ -48,6 +50,9 @@ static void manageAppweb(MaAppweb *appweb, int flags)
         mprMark(appweb->http);
         mprMark(appweb->user);
         mprMark(appweb->group);
+        mprMark(appweb->localPlatform);
+        mprMark(appweb->platform);
+        mprMark(appweb->platformDir);
 
     } else if (flags & MPR_MANAGE_FREE) {
         maStopAppweb(appweb);
@@ -57,7 +62,7 @@ static void manageAppweb(MaAppweb *appweb, int flags)
 
 static void openHandlers(Http *http)
 {
-#if BLD_FEATURE_DIR
+#if BIT_FEATURE_DIR
     maOpenDirHandler(http);
 #endif
     maOpenFileHandler(http);
@@ -75,7 +80,6 @@ void maSetDefaultServer(MaAppweb *appweb, MaServer *server)
     appweb->defaultServer = server;
 }
 
-//  MOB - sort this file
 
 MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
 {
@@ -176,11 +180,10 @@ int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *d
     HttpEndpoint    *endpoint;
     HttpHost        *host;
     HttpRoute       *route;
-    char            *path, *searchPath, *dir;
+    char            *path;
 
     appweb = server->appweb;
     http = appweb->http;
-    dir = mprGetAppDir();
 
     if (configFile) {
         path = mprGetAbsPath(configFile);
@@ -201,10 +204,7 @@ int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *d
         route = mprGetFirstItem(host->routes);
         mprAssert(route);
 
-        searchPath = getSearchPath(dir);
-        mprSetModuleSearchPath(searchPath);
-
-#if BLD_FEATURE_CGI
+#if BIT_FEATURE_CGI
         maLoadModule(appweb, "cgiHandler", "mod_cgi");
         if (httpLookupStage(http, "cgiHandler")) {
             httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
@@ -221,19 +221,19 @@ int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *d
             }
         }
 #endif
-#if BLD_FEATURE_ESP
+#if BIT_FEATURE_ESP
         maLoadModule(appweb, "espHandler", "mod_esp");
         if (httpLookupStage(http, "espHandler")) {
             httpAddRouteHandler(route, "espHandler", "esp");
         }
 #endif
-#if BLD_FEATURE_EJSCRIPT
+#if BIT_FEATURE_EJSCRIPT
         maLoadModule(appweb, "ejsHandler", "mod_ejs");
         if (httpLookupStage(http, "ejsHandler")) {
             httpAddRouteHandler(route, "ejsHandler", "ejs");
         }
 #endif
-#if BLD_FEATURE_PHP
+#if BIT_FEATURE_PHP
         maLoadModule(appweb, "phpHandler", "mod_php");
         if (httpLookupStage(http, "phpHandler")) {
             httpAddRouteHandler(route, "phpHandler", "php");
@@ -273,7 +273,7 @@ int maStartServer(MaServer *server)
         }
         return MPR_ERR_CANT_OPEN;
     }
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     MaAppweb    *appweb = server->appweb;
     if (appweb->userChanged || appweb->groupChanged) {
         if (!smatch(MPR->logPath, "stdout") && !smatch(MPR->logPath, "stderr")) {
@@ -313,12 +313,51 @@ void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
 }
 
 
+int maSetPlatform(cchar *platform)
+{
+    MprDirEntry *dp;
+    MaAppweb    *appweb;
+    cchar       *base, *dir, *junk;
+    int         next;
+
+    appweb = MPR->appwebService;
+    if (mprSamePath(mprGetAppDir(), BIT_BIN_PREFIX)) {
+        /* Installed */
+        base = mprGetPathParent(mprGetAppDir());
+        dir = smatch(platform, appweb->localPlatform) ? base : mprJoinPath(base, platform);
+    } else {
+        /* Local Dev */
+        base = mprGetPathParent(mprGetPathParent(mprGetAppDir()));
+        dir = mprJoinPath(base, platform);
+    }
+    if (!mprIsPathDir(dir)) {
+        for (ITERATE_ITEMS(mprGetPathFiles(base, 0), dp, next)) {
+            if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
+                platform = mprGetPathBase(dp->name);
+                dir = dp->name;
+                if (maParsePlatform(platform, &junk, &junk, &junk) == 0) {
+                    break;
+                }
+            }
+        }
+        if (!dp) {
+            return MPR_ERR_BAD_ARGS;
+        }
+    }
+    if (maParsePlatform(platform, &junk, &junk, &junk) < 0) {
+        return MPR_ERR_BAD_ARGS;
+    }
+    appweb->platformDir = dir;
+    appweb->platform = platform;
+    return 0;
+}
+
 /*  
     Set the home directory (Server Root). We convert path into an absolute path.
  */
 void maSetServerHome(MaServer *server, cchar *path)
 {
-    if (path == 0 || BLD_FEATURE_ROMFS) {
+    if (path == 0 || BIT_FEATURE_ROMFS) {
         path = ".";
     }
 #if !VXWORKS
@@ -349,11 +388,9 @@ void maSetServerAddress(MaServer *server, cchar *ip, int port)
 }
 
 
-//  MOB - rename maSetGroup
-
 void maGetUserGroup(MaAppweb *appweb)
 {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     struct passwd   *pp;
     struct group    *gp;
 
@@ -375,10 +412,9 @@ void maGetUserGroup(MaAppweb *appweb)
 }
 
 
-//  MOB - rename maSetUser
 int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     struct passwd   *pp;
 
     if (snumber(newUser)) {
@@ -405,7 +441,7 @@ int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 
 int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     struct group    *gp;
 
     if (snumber(newGroup)) {
@@ -432,7 +468,7 @@ int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 
 int maApplyChangedUser(MaAppweb *appweb)
 {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     if (appweb->userChanged && appweb->uid >= 0) {
         if ((setuid(appweb->uid)) != 0) {
             mprError("Can't change user to: %s: %d\n"
@@ -452,7 +488,7 @@ int maApplyChangedUser(MaAppweb *appweb)
 
 int maApplyChangedGroup(MaAppweb *appweb)
 {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     if (appweb->groupChanged && appweb->gid >= 0) {
         if (setgid(appweb->gid) != 0) {
             mprError("Can't change group to %s: %d\n"
@@ -485,7 +521,7 @@ int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
         return 0;
     }
     if (libname == 0) {
-        path = sjoin("mod_", name, BLD_SHOBJ, NULL);
+        path = sjoin("mod_", name, BIT_SHOBJ, NULL);
     } else {
         path = sclone(libname);
     }
@@ -494,34 +530,22 @@ int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
         return 0;
     }
     mprSprintf(entryPoint, sizeof(entryPoint), "ma%sInit", name);
-    entryPoint[2] = toupper((int) entryPoint[2]);
+    entryPoint[2] = toupper((uchar) entryPoint[2]);
     if ((module = mprCreateModule(name, path, entryPoint, MPR->httpService)) == 0) {
         return 0;
     }
     if (mprLoadModule(module) < 0) {
         return MPR_ERR_CANT_CREATE;
     }
-    mprLog(MPR_CONFIG, "Activating module (Loadable) %s", name);
     return 0;
 }
 
 
-static char *getSearchPath(cchar *dir)
-{
-#if WIN
-        return sfmt("%s" MPR_SEARCH_SEP ".", dir);
-#else
-        char *libDir = mprJoinPath(mprGetPathParent(dir), BLD_LIB_NAME);
-        return sfmt("%s" MPR_SEARCH_SEP "%s" MPR_SEARCH_SEP ".", dir,
-            mprSamePath(BLD_BIN_PREFIX, dir) ? BLD_LIB_PREFIX: libDir);
-#endif
-}
-
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

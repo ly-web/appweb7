@@ -1,0 +1,3 @@
+if (!App.config.bld_ejscript) {
+    test.skip("Ejscript not enabled")
+}

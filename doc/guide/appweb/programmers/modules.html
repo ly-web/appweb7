@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../../../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../../../product/index.html">Home</a>
+            <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
              &gt; <a href="index.html">Programming Guide</a> &gt; <b>Creating Appweb Modules</b>
         </div>
@@ -47,8 +40,9 @@
                 <li><a href="../../../guide/appweb/programmers/index.html">Programmers Guide</a></li>
                 <li><a href="../../../guide/appweb/programmers/embedding.html">Embedding Appweb</a></li>
                 <li><a href="../../../guide/appweb/programmers/modules.html">Custom Modules</a></li>
+                <li><a href="../../../guide/appweb/programmers/handlers.html">Custom Handlers</a></li>
                 <li><a href="../../../guide/appweb/programmers/stages.html">Pipeline Stages</a></li>
-                <li><a href="../../../guide/appweb/programmers/migrating.html">Migrating to Appweb 3</a></li>
+                <li><a href="../../../guide/appweb/programmers/migrating.html">Migrating to Appweb 4</a></li>
                 <li><a href="../../../guide/appweb/programmers/rom.html">ROM Content</a></li>
                 <li><a href="../../../guide/appweb/programmers/man.html">Manual Pages</a></li>
                 <li><a href="../../../ref/appweb/index.html">Programmers Reference</a></li>
@@ -62,12 +56,12 @@
             <h1>Creating Appweb Modules</h1>
             <p>Appweb supports extension modules that can augment the capability of Appweb by adding new features,
             handlers, protocols or any arbitrary code.</p>
-            <p>Appweb is itself comprised of thirteen different modules. The core appweb HTTP server cannot serve any
-            pages or documents by itself. It relies on request handlers packaged as modules to actually serve HTTP
-            requests. Other Appweb modules provide SSL, authorization and file upload.</p>
+            <p>Appweb includes four loadable modules: CGI, ESP, PHP and SSL. The core appweb HTTP server includes
+            some basic document serving functionality, but modules are used to extend the core with loadable web 
+            frameworks and custom handlers.</p>
             <p>This document describes the Appweb Module Interface and how to create Appweb modules. The Appweb Module
             interface supports both dynamically loaded and statically linked modules from a single C code
-            base.</p><a name="overview" id="overview"></a>
+            base.</p><a id="overview"></a>
             <h2>Overview</h2>
             <p>To create an Appweb module, you must create an initialization function that is called when Appweb loads
             your module. This must be named according to the form:</p>
@@ -80,16 +74,15 @@ ma<b>Name</b>Init(Http *http, MprModule *module)
             called immediately after loading the module code.</p>
             <p>The init function is passed a reference to the Http service object and a module object for this module.</p>
 <pre>
-int maSimpleModuleInit(Http *http, MprModule *module)
+int maSimpleModuleInit(Http *http, MprModule *mp)
 {
     HttpStage   *handler;
-    handler = httpCreateHandler(http, "testHandler", 0, module);
-    if (handler == 0) {
+    if ((handler = httpCreateHandler(http, "simpleHandler", 0, mp)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
-    handler->open = openTest; 
-    handler->close = closeTest; 
-    handler->start = startTest; 
+    handler-&gt;open = openSimple; 
+    handler-&gt;close = closeSimple; 
+    handler-&gt;start = startSimple; 
     return 0;
 }
 </pre>
@@ -102,16 +95,29 @@ int maSimpleModuleInit(Http *http, MprModule *module)
             <p>To package your module, you must create a DLL / shared library containing your module. On Windows,
             you also must export the initialization function. If you want to statically link your module, you need to ensure
             the main program explicitly calls your initialization function during its initialization.</p>
+            <h2>More Info</h2>
+            <p>See the <a
+                href="https://github.com/embedthis/appweb-4/tree/master/src/samples/c/simpleModule">samples/c/simpleModule</a> source code sample for a working module example.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

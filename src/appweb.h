@@ -16,21 +16,24 @@ extern "C" {
 
 /********************************* Tunables ***********************************/
 
-#define MA_SERVER_NAME          "Embedthis-Appweb/" BLD_VERSION
+#define MA_SERVER_NAME          "Embedthis-Appweb/" BIT_VERSION
 
-#define MA_UNLOAD_TIMEOUT       "5mins"         /**< Default module inactivity unload timeout */
-#define MA_MAX_CONFIG_DEPTH     16              /**< Max nest of directives in config file */
-#define MA_MAX_ACCESS_LOG       20971520        /**< Access file size (20 MB) */
-#define MA_MAX_REWRITE          10              /**< Maximum recursive URI rewrites */
+#define MA_UNLOAD_TIMEOUT       "5mins"             /**< Default module inactivity unload timeout */
+#define MA_MAX_CONFIG_DEPTH     16                  /**< Max nest of directives in config file */
+#define MA_MAX_ACCESS_LOG       20971520            /**< Access file size (20 MB) */
+#define MA_MAX_REWRITE          10                  /**< Maximum recursive URI rewrites */
+#define MA_SDB_MEMORY           (20 * 1024 * 1024)  /**< SDB heap memory */
+#define MA_SDB_TIMEOUT          (20 * 1000)         /**< SDB busy timeout */
 
 #undef HTTP_NAME
-#define HTTP_NAME               MA_SERVER_NAME  /**< Default web server software identification */
+#define HTTP_NAME               MA_SERVER_NAME      /**< Default web server software identification */
 
 /********************************** Defines ***********************************/
 
 #if !DOXYGEN
 struct MaSsl;
 struct MaServer;
+struct MaAppweb;
 #endif
 
 /**
@@ -38,21 +41,26 @@ struct MaServer;
     @description There is one instance of MaAppweb per application. It manages a list of HTTP servers running in
         the application.
     @stability Evolving
-    @defgroup Appweb Appweb
+    @defgroup MaAppweb MaAppweb
     @see Http maAddServer maApplyChangedGroup maApplyChangedUser maCreateAppweb maGetUserGroup maLoadModule 
-        maLookupServer maMatchDir maParseInit maSetDefaultServer maSetHttpGroup maSetHttpUser maStartAppweb maStopAppweb 
+        maLookupServer maParseInit maParsePlatform maRenderDirListing maSetDefaultServer maSetHttpGroup maSetHttpUser 
+        maStartAppweb maStopAppweb 
  */
 typedef struct MaAppweb {
-    struct MaServer     *defaultServer;     /**< Default server object */
-    MprList             *servers;           /**< List of server objects */
-    MprHash             *directives;        /**< Config file directives */
-    Http                *http;              /**< Http service object */
-    char                *user;              /**< O/S application user name */
-    char                *group;             /**< O/S application group name */
-    int                 uid;                /**< User Id */
-    int                 gid;                /**< Group Id */
-    int                 userChanged;        /**< User name changed */
-    int                 groupChanged;       /**< Group name changed */
+    struct MaServer     *defaultServer;         /**< Default server object */
+    MprList             *servers;               /**< List of server objects */
+    MprHash             *directives;            /**< Config file directives */
+    Http                *http;                  /**< Http service object */
+    cchar               *group;                 /**< O/S application group name */
+    cchar               *localPlatform;         /**< Local (dev) platform os-arch-profile (lower case) */
+    cchar               *platform;              /**< Target platform os-arch-profile (lower case) */
+    cchar               *platformDir;           /**< Path to platform */
+    cchar               *user;                  /**< O/S application user name */
+    int                 uid;                    /**< User Id */
+    int                 gid;                    /**< Group Id */
+    int                 userChanged;            /**< User name changed */
+    int                 groupChanged;           /**< Group name changed */
+    int                 skipModules;            /**< Don't load modules */
 } MaAppweb;
 
 /**
@@ -120,15 +128,14 @@ extern int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname);
 extern struct MaServer *maLookupServer(MaAppweb *appweb, cchar *name);
 
 /**
-    Match routine for the dirHandler
+    Test if a directory listing should be rendered for the request.
     @param conn Connection object
     @param route Matching route object
-    @param direction Set to HTTP_STAGE_TX or HTTP_STAGE_RX
-    @return HTTP_ROUTE_OK if the request matches.
+    @return True if a directory listing is configured to be rendered for this request.
     @ingroup Appweb
     @internal
  */
-extern int maMatchDir(HttpConn *conn, HttpRoute *route, int direction);
+extern bool maRenderDirListing(HttpConn *conn);
 
 /**
     Initialize the config file parser.
@@ -138,6 +145,16 @@ extern int maMatchDir(HttpConn *conn, HttpRoute *route, int direction);
     @internal
  */
 extern int maParseInit(MaAppweb *appweb);
+
+/**
+    Parse a platform string
+    @param platform The platform string. Must be of the form: os-arch-profile
+    @param os Parsed O/S portion
+    @param arch Parsed architecture portion
+    @param profile Parsed profile portion
+    @return Zero if successful, otherwise a negative Mpr error code.
+ */
+extern int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile);
 
 /**
     Set the default server
@@ -196,6 +213,7 @@ extern int maPhpHandlerInit(Http *http, MprModule *mp);
 extern int maSslModuleInit(Http *http, MprModule *mp);
 extern int maOpenDirHandler(Http *http);
 extern int maOpenFileHandler(Http *http);
+extern int maSetPlatform(cchar *platform);
 
 /********************************** MaServer **********************************/
 /**
@@ -490,7 +508,7 @@ extern bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

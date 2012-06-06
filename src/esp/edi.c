@@ -9,7 +9,7 @@
 #include    "edi.h"
 #include    "pcre.h"
 
-#if BLD_FEATURE_ESP
+#if BIT_FEATURE_ESP
 /************************************* Local **********************************/
 
 static void addValidations();
@@ -402,7 +402,7 @@ EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows)
     if ((grid = mprAllocMem(sizeof(EdiGrid) + sizeof(EdiRec*) * nrows, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
         return 0;
     }
-    mprSetManager(grid, manageEdiGrid);
+    mprSetManager(grid, (MprManager) manageEdiGrid);
     grid->nrecords = nrows;
     grid->edi = edi;
     grid->tableName = sclone(tableName);
@@ -421,7 +421,7 @@ EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields)
     if ((rec = mprAllocMem(sizeof(EdiRec) + sizeof(EdiField) * nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
         return 0;
     }
-    mprSetManager(rec, ediManageEdiRec);
+    mprSetManager(rec, (MprManager) ediManageEdiRec);
     rec->edi = edi;
     rec->tableName = sclone(tableName);
     rec->nfields = nfields;
@@ -713,7 +713,7 @@ static cchar *checkUnique(EdiValidation *vp, EdiRec *rec, cchar *fieldName, ccha
 {
     EdiRec  *other;
 
-    //  MOB - optimize. Could require an index to enforce this.
+    //  OPT Could require an index to enforce this.
     if ((other = ediReadOneWhere(rec->edi, rec->tableName, fieldName, "==", value)) == 0) {
         return 0;
     }
@@ -749,12 +749,12 @@ static void addValidations()
 }
 
 
-#endif /* BLD_FEATURE_ESP */
+#endif /* BIT_FEATURE_ESP */
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

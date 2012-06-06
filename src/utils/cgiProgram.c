@@ -22,6 +22,9 @@
 /********************************** Includes **********************************/
 
 #define _CRT_SECURE_NO_WARNINGS 1
+#ifndef _VSB_CONFIG_FILE
+    #define _VSB_CONFIG_FILE "vsbConfig.h"
+#endif
 
 #include <errno.h>
 #include <ctype.h>
@@ -57,20 +60,17 @@
 	
 	#define mkdir(a,b)  _mkdir(a)
 	#define rmdir(a)    _rmdir(a)
+    typedef int ssize_t;
 #else
 #include <unistd.h>
 
-#if VXWORKS
-/* Just for VxWorks */
-extern char *strdup(const char *);
-#endif
 #endif
 
 /*********************************** Locals ***********************************/
 
-#define MAX_ARGV                64
 #define MPR_CMD_VXWORKS_EOF     "_ _EOF_ _"
 #define MPR_CMD_VXWORKS_EOF_LEN 9
+#define MAX_ARGV                64
 
 static char     *argvList[MAX_ARGV];
 static int      getArgv(int *argc, char ***argv, int originalArgc, char **originalArgv);
@@ -109,7 +109,11 @@ static char     *safeGetenv(char *key);
 /*
     Test program entry point
  */
-int main(int argc, char *argv[], char *envp[])
+#if VXWORKS
+int cgiProgram(int argc, char **argv, char **envp)
+#else
+int main(int argc, char **argv, char **envp)
+#endif
 {
     char    *cp, *method;
     int     i, j, err;
@@ -224,17 +228,12 @@ int main(int argc, char *argv[], char *envp[])
         fprintf(stderr, "Error at cgiProgram:%d\n", __LINE__);
         exit(255);
     }
-    method = getenv("REQUEST_METHOD") ;
-    if (method == 0) {
-        method = "GET";
-    } else {
-        if (strcmp(method, "POST") == 0) {
-            if (getPostData(&postBuf, &postBufLen) < 0) {
-                error("Can't read CGI input");
-            }
-            if (strcmp(safeGetenv("CONTENT_TYPE"), "application/x-www-form-urlencoded") == 0) {
-                numPostKeys = getVars(&postKeys, postBuf, postBufLen);
-            }
+    if ((method = getenv("REQUEST_METHOD")) != 0 && strcmp(method, "POST") == 0) {
+        if (getPostData(&postBuf, &postBufLen) < 0) {
+            error("Can't read CGI input");
+        }
+        if (strcmp(safeGetenv("CONTENT_TYPE"), "application/x-www-form-urlencoded") == 0) {
+            numPostKeys = getVars(&postKeys, postBuf, postBufLen);
         }
     }
 
@@ -260,12 +259,10 @@ int main(int argc, char *argv[], char *envp[])
     printf("Content-type: %s\r\n", "text/html");
 
     if (outputHeaderLines) {
-        j = 0;
         for (i = 0; i < outputHeaderLines; i++) {
             printf("X-CGI-%d: A loooooooooooooooooooooooong string\r\n", i);
         }
     }
-
     if (outputLocation) {
         printf("Location: %s\r\n", outputLocation);
     }
@@ -308,9 +305,7 @@ int main(int argc, char *argv[], char *envp[])
             printf("<P>ARG[%d]=%s</P>\r\n", i, argv[i]);
         }
     }
-    if (outputEnv) {
-        printEnv(envp);
-    }
+    printEnv(envp);
     if (outputQuery) {
         printQuery();
     }
@@ -381,7 +376,6 @@ static int getArgv(int *pargc, char ***pargv, int originalArgc, char **originalA
 
 static void printEnv(char **envp)
 {
-#if !VXWORKS && !WINCE
     printf("<H2>Environment Variables</H2>\r\n");
     printf("<P>AUTH_TYPE=%s</P>\r\n", safeGetenv("AUTH_TYPE"));
     printf("<P>CONTENT_LENGTH=%s</P>\r\n", safeGetenv("CONTENT_LENGTH"));
@@ -400,12 +394,17 @@ static void printEnv(char **envp)
     printf("<P>REQUEST_URI=%s</P>\r\n", safeGetenv("REQUEST_URI"));
     printf("<P>REMOTE_USER=%s</P>\r\n", safeGetenv("REMOTE_USER"));
     printf("<P>SCRIPT_NAME=%s</P>\r\n", safeGetenv("SCRIPT_NAME"));
+    printf("<P>SCRIPT_FILENAME=%s</P>\r\n", safeGetenv("SCRIPT_FILENAME"));
     printf("<P>SERVER_ADDR=%s</P>\r\n", safeGetenv("SERVER_ADDR"));
     printf("<P>SERVER_NAME=%s</P>\r\n", safeGetenv("SERVER_NAME"));
     printf("<P>SERVER_PORT=%s</P>\r\n", safeGetenv("SERVER_PORT"));
     printf("<P>SERVER_PROTOCOL=%s</P>\r\n", safeGetenv("SERVER_PROTOCOL"));
     printf("<P>SERVER_SOFTWARE=%s</P>\r\n", safeGetenv("SERVER_SOFTWARE"));
 
+#if !VXWORKS
+    /*
+        This is not supported on VxWorks as you can't get "envp" in main()
+     */
     printf("\r\n<H2>All Defined Environment Variables</H2>\r\n"); 
     if (envp) {
         char    *p;
@@ -415,8 +414,8 @@ static void printEnv(char **envp)
             printf("<P>%s</P>\r\n", p);
         }
     }
-    printf("\r\n");
 #endif
+    printf("\r\n");
 }
 
 
@@ -483,7 +482,7 @@ static int getQueryString(char **buf, size_t *buflen)
 static int getPostData(char **bufp, size_t *lenp)
 {
     char    *contentLength, *buf;
-    size_t  bufsize, bytes, size, limit, len;
+    ssize_t bufsize, bytes, size, limit, len;
 
     if ((contentLength = getenv("CONTENT_LENGTH")) != 0) {
         size = atoi(contentLength);
@@ -661,8 +660,8 @@ int _exit() {
 /*
     @copy   default
   
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
   
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

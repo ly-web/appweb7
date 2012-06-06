@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../../../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../../../product/index.html">Home</a>
+            <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
              &gt; <a href="index.html">Programming Guide</a> &gt; <b>Pipeline Stages</b>
         </div>
@@ -50,8 +43,9 @@
                 <li><a href="../../../guide/appweb/programmers/index.html">Programmers Guide</a></li>
                 <li><a href="../../../guide/appweb/programmers/embedding.html">Embedding Appweb</a></li>
                 <li><a href="../../../guide/appweb/programmers/modules.html">Custom Modules</a></li>
+                <li><a href="../../../guide/appweb/programmers/handlers.html">Custom Handlers</a></li>
                 <li><a href="../../../guide/appweb/programmers/stages.html">Pipeline Stages</a></li>
-                <li><a href="../../../guide/appweb/programmers/migrating.html">Migrating to Appweb 3</a></li>
+                <li><a href="../../../guide/appweb/programmers/migrating.html">Migrating to Appweb 4</a></li>
                 <li><a href="../../../guide/appweb/programmers/rom.html">ROM Content</a></li>
                 <li><a href="../../../guide/appweb/programmers/man.html">Manual Pages</a></li>
                 <li><a href="../../../ref/appweb/index.html">Programmers Reference</a></li>
@@ -69,12 +63,12 @@
             the client.
             <p>This document describes the pipeline stage interface and how to create Appweb handlers, filters and
             connectors. See the <a href="../users/stages.html">Configuring Pipeline Stages</a> document for
-            background.</p><img src="../../../images/pipeline.jpg" alt="" />
+            background.</p><img src="../../../images/pipeline.jpg" alt="pipeline" />
             <h2 class="section">Handlers</h2>
             <p>The core Appweb HTTP server cannot serve any requests or generate responses by itself. It relies on
             request handlers to generate response content for HTTP requests. The standard distribution of Appweb is
             itself comprised of seven different handlers which serve all the content provided by an Appweb
-            server.</p><a name="createHandler" id="createHandler"></a>
+            server.</p><a id="createHandler"></a>
             <h2 class="section">Creating a Handler</h2>
             <p>To create an Appweb handler, you need to call <b>maCreateHandler</b> and supply a unique handler name
             and flags that modify the behavior of the handler.</p>
@@ -92,16 +86,16 @@ int maSimpleHandlerInit(Http *http, MprModule *module)
     handler-&gt;open = openSimple;
     handler-&gt;close = closeSimple;
     handler-&gt;start = startSimple;
-    handler-&gt;process = processSimple;
-    handler-&gt;incomingData = incomingDataSimple;
-    handler-&gt;outgoingData = outgoingDataSimple;
+    handler-&gt;writable = writableSimple;
+    handler-&gt;incoming = incomingSimple;
+    handler-&gt;outgoing = outgoingSimple;
     handler-&gt;incomingService = incomingServiceSimple;
     handler-&gt;outgoingService = outgoingServiceSimple;
     /* Set handler private data */
     handler-&gt;stageData = mprAllocObj(SimpleData, 0);
     return 0;
 }
-</pre><a name="createFilter" id="createFilter"></a>
+</pre><a id="createFilter"></a>
             <h2 class="section">Creating a Filter</h2>
             <p>Creating a filter is very similar to creating a handler. An MaStage object is created and
             initialized.</p>
@@ -117,11 +111,11 @@ int maCompressFilterInit(Http *http, MprModule *module)
         return MPR_ERR_CANT_CREATE;
     }
     /* Define function callbacks */
-    filter-&gt;outgoingData = outgoingData;
-    filter-&gt;incomingData = incomingData;
+    filter-&gt;outgoing = outgoing;
+    filter-&gt;incoming = incoming;
     return 0;
 }
-</pre><a name="createConnector" id="createConnector"></a>
+</pre><a id="createConnector"></a>
             <h2 class="section">Creating a Connector</h2>
             <p>Creating a connector is similar to creating a handler. An MaStage object is created and initialized.</p>
             <p>To create an Appweb connector, you need to call <b>maCreateConnector</b> and supply a unique connector
@@ -136,8 +130,8 @@ int maTurboConnectorInit(Http *http, MprModule *module)
         return MPR_ERR_CANT_CREATE;
     }
     /* Define function callbacks */
-    connector-&gt;outgoingData = outgoingData;
-    connector-&gt;incomingData = incomingData;
+    connector-&gt;outgoing = outgoing;
+    connector-&gt;incoming = incoming;
     return 0;
 }
 </pre>
@@ -151,29 +145,33 @@ int maTurboConnectorInit(Http *http, MprModule *module)
             <h3>open</h3>
             <p>This callback is invoked to give the stage a chance to initialize for a given request and potentially
             allocate any request specific data or state. It is called at the start of request processing after the
-            "match" callback.</p>
+            <em>match</em> callback.</p>
             <h3>close</h3>
-            <p>The "close" callback is invoked to give stages an opportunity to release any request specific data. It
+            <p>The <em>close</em> callback is invoked to give stages an opportunity to release any request specific data. It
             is invoked just prior to dismantling the request pipeline.</p>
             <h3>start</h3>
-            <p>The run callback is invoked to start processing the response for the client. 
+            <p>The <em>start</em> callback is invoked to start processing the response for the client. 
             If the request is a form with Content-Type of "application/x-www-form-urlencoded",
             the start callback is called after processing all input client data. Otherwise, it is called before 
             any input data.</p>
-            <h3>process</h3>
-            <p>The run callback is invoked periodically after I/O events to allow the stage to pump data through the
-                request pipeline.</p>
-            <h3>incomingData</h3>
-            <p>This callback is invoked to receive any incoming client data (typically POST or PUT data). It is 
-            called after the "open" callback and before the "run" callback.</p>
-            <h3>outgoingData</h3>
-            <p>The outgoingData callback is never called for handlers. Handlers generate data and send it downstream.
-            Filters and connectors will have their outgoingData callback invoked to receive data from upstream. The
-            outgoingData callback will be invoked after the "run" callback has been called for the handler.</p>
+            <h3>ready</h3>
+            <p>The <em>ready</em> callback is invoked once all the request body data has bee received.</p>
+            <h3>writable</h3>
+            <p>The <em>writable</em> callback is invoked after receiving all body data and whenever the output pipeline
+            can absorb more data.</p>
+            <h3>incoming</h3>
+            <p>The <em>incoming</em> callback is invoked to receive any incoming client data (typically POST or PUT
+            data). It is called after the <em>open</em> callback and before the <em>start</em> callback.</p>
+            <h3>outgoing</h3>
+            <p>The <em>outgoing</em> callback is never called for handlers. Handlers generate data and send it downstream.
+            Filters and connectors will have their outgoing callback invoked to receive data from upstream. The
+            outgoing callback will be invoked after the <em>start</em> callback has been called for the handler.</p>
             <h3>Stage Data</h3>
-            <p>Stages can allocate stage data and store it in the <b>stage-&gt;data</b> field. If the stage needs to
-            store per-request data, it can store it in the stage's <b>queue-&gt;data</b> field which is unique for each
-            request.</p><a name="flags" id="flags"></a>
+            <p>Stages can allocate stage data and store it in the <em>stage-&gt;data</em> field. If the stage needs to
+            store per-request data, it can store it in the stage's <em>queue-&gt;data</em> field which is unique for each
+            request.</p>
+            
+            <a id="flags"></a>
             <h3>Stage flags</h3>
             <p>The create handler, filter and connector APIs take a flags word which modified the behavior of the
             stage. The flags can take the following values OR'd together</p>
@@ -230,13 +228,23 @@ int maTurboConnectorInit(Http *http, MprModule *module)
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

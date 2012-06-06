@@ -1,0 +1,119 @@
+/*
+    test.bit
+ */
+
+Bit.load({
+    targets: {
+        testAppweb: {
+            type: 'exe',
+            headers:   [ '*.h' ],
+            sources:   [ '*.c' ],
+            depends:   [ 'libappweb' ],
+            platforms: [ 'local' ],
+        },
+
+        'test-testScript': {
+            path: 'cgi-bin/testScript',
+            build: "
+                let path = Path('cgi-bin/testScript')
+                path.write('#!' + bit.dir.bin.join('cgiProgram${EXE}' + '\n'))
+                path.setAttributes({permissions: 0755})
+            ",
+            'generate-sh': "echo '#!${BIN}/cgiProgram${EXE}' >cgi-bin/testScript ; chmod +x cgi-bin/testScript",
+            depends: ['cgiProgram'],
+        },
+
+        'test-cache.cgi': {
+            path: 'web/caching/cache.cgi',
+            build: "
+                let path = Path('web/caching/cache.cgi')
+                path.write('#!' + App.exeDir.join('ejs') + '\n' + 
+                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n{number: \" + App.pid + \"}\n\")')
+                path.setAttributes({permissions: 0755})
+            ",
+            'generate-sh': "\
+                echo \"#!`type -p sh`\" >web/caching/cache.cgi
+                echo '' >>web/caching/cache.cgi
+                echo 'echo HTTP/1.0 200 OK' >>web/caching/cache.cgi
+                echo 'echo Content-Type: text/plain' >>web/caching/cache.cgi
+                echo 'date' >>web/caching/cache.cgi
+                chmod +x web/caching/cache.cgi
+            ",
+        },
+
+        'test-basic.cgi': {
+            path: 'web/basic/basic.cgi',
+            build: "
+                let path = Path('web/basic/basic.cgi')
+                path.write('#!' + App.exeDir.join('ejs') + '\n' + 
+                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + serialize(App.env, {pretty: true}) + \"\n\")')
+                path.setAttributes({permissions: 0755})
+            ",
+            'generate-sh': "\
+                echo \"#!`type -p sh`\" >web/basic/basic.cgi
+                echo '' >>web/basic/basic.cgi
+                echo 'echo Content-Type: text/plain' >>web/basic/basic.cgi
+                echo '/usr/bin/env' >>web/basic/basic.cgi
+                chmod +x web/basic/basic.cgi
+            ",
+        },
+
+        'test-cgiProgram': {
+            path: 'cgi-bin/cgiProgram${EXE}',
+            build: "
+                let perms = { permissions: 0755 }
+                let cgiProgram = bit.dir.bin.join('cgiProgram${EXE}')
+                cp(cgiProgram, Path('cgi-bin/cgiProgram${EXE}'), perms)
+                cp(cgiProgram, Path('cgi-bin/nph-cgiProgram${EXE}'), perms)
+                cp(cgiProgram, Path('cgi-bin/cgi Program${EXE}'), perms)
+                cp(cgiProgram, Path('web/cgiProgram.cgi'), perms)
+            ",
+            'generate-sh': "\
+                cp ${BIN}/cgiProgram cgi-bin/cgiProgram${EXE}
+                cp ${BIN}/cgiProgram cgi-bin/nph-cgiProgram${EXE}
+                cp ${BIN}/cgiProgram 'cgi-bin/cgi Program${EXE}'
+                cp ${BIN}/cgiProgram web/cgiProgram.cgi
+                chmod +x cgi-bin/* web/cgiProgram.cgi
+            ",
+            depends: ['cgiProgram'],
+        },
+
+        test: {
+            action: "
+                let ro = {noio: true}
+                let depth = bit.settings.depth
+                run('utest -v -i 2 --depth ' + depth, ro)
+                if (depth >= 3) {
+                    trace('Test', 'Light load tests')
+                    run('utest -v -i 20 --depth ' + depth, ro)
+                    for each (t in [2, 4]) {
+                        trace('Test', 'Light thread tests')
+                        run('utest -v -i 20 --depth ' + depth + ' --threads ' + t, ro)
+                    }
+                }
+                if (depth >= 4) {
+                    trace('Test', 'Longevity load tests')
+                    run('utest -v -i 100 --depth ' + depth, ro)
+                    for each (t in [8, 16]) {
+                        trace('Test', 'Light thread tests')
+                        run('utest -v -i 100 --depth ' + depth + ' --threads ' + t, ro)
+                    }
+                }
+                trace('Test', 'Unit tests complete')
+            ",
+        },
+
+        'clean-test': {
+            type: 'clean',                                                                                 
+            action: "                                                                                      
+                rm('cache/*')
+                rm('app/cache/*')
+                rm('junk/**')
+                Path('cache/.keep').write()
+                Path('app/cache/.keep').write()
+                Path('web/caching/cache.cgi').remove()
+                Path('web/basic/basic.cgi').remove()
+            "                                                                                              
+        },  
+    },
+})

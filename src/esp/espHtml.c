@@ -9,7 +9,7 @@
 #include    "esp.h"
 #include    "edi.h"
 
-#if BLD_FEATURE_ESP
+#if BIT_FEATURE_ESP
 /************************************* Local **********************************/
 
 static char *defaultScripts[] = {
@@ -17,7 +17,7 @@ static char *defaultScripts[] = {
     "/js/jquery.tablesorter",
     "/js/jquery.simplemodal",
 #if UNUSED && KEEP
-    "/js/jquery.treeview",              //  MOB - treeview not yet supported
+    "/js/jquery.treeview",
 #endif
     "/js/jquery.esp",
     0,
@@ -1135,12 +1135,12 @@ void espInitHtmlOptions(Esp *esp)
 }
 
 
-#endif /* BLD_FEATURE_ESP */
+#endif /* BIT_FEATURE_ESP */
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

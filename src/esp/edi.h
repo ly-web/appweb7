@@ -11,7 +11,7 @@
 
 #include    "appweb.h"
 
-#if BLD_FEATURE_ESP
+#if BIT_FEATURE_ESP
 
 #ifdef __cplusplus
 extern "C" {
@@ -355,6 +355,7 @@ extern int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
 extern MprList *ediGetTables(Edi *edi);
 
 /**
+    MOB - remove this API
     Load the database file.
     @param edi Database handle
     @param path Database path name
@@ -391,7 +392,7 @@ extern int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
  */
 extern Edi *ediOpen(cchar *source, cchar *provider, int flags);
 
-//  MOB - how do you get query errors back?  Should have an cchar *err argument.
+//  MOB - Should have an cchar *err argument.
 /**
     Run a query.
     @description This runs a provider dependant query. For the SQLite provider, this runs an SQL statement.
@@ -613,7 +614,6 @@ extern int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldNa
 extern int ediUpdateFields(Edi *edi, cchar *tableName, MprHash *data);
 #endif
 
-//  MOB - change Write to Update
 /**
     Write a record to the database.
     @description If the record is a new record and the "id" column is EDI_AUTO_INC, then the "id" will be assigned
@@ -787,11 +787,11 @@ extern int ediParseTypeString(cchar *type);
  */
 extern void ediManageEdiRec(EdiRec *rec, int flags);
 
-#if BLD_FEATURE_MDB
+#if BIT_FEATURE_MDB
 extern void mdbInit();
 #endif
 
-#if BLD_FEATURE_SDB
+#if BIT_FEATURE_SDB
 extern void sdbInit();
 #endif
 
@@ -799,13 +799,13 @@ extern void sdbInit();
 } /* extern C */
 #endif
 
-#endif /* BLD_FEATURE_ESP */
+#endif /* BIT_FEATURE_ESP */
 #endif /* _h_EDI */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below, or you may acquire

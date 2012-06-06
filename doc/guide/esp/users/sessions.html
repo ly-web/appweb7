@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../../../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../../../product/index.html">Home</a>
+            <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
              &gt;<a href="index.html">ESP Guide</a> &gt;
             <b>Embedded Server Pages</b>
@@ -65,7 +58,7 @@
                 <li><a href="../../../guide/appweb/users/vhosts.html">Virtual Hosts</a></li>
                 <li><a href="../../../guide/appweb/users/security.html">Security Considerations</a></li>
                 <li><a href="../../../guide/appweb/users/ssl.html">SSL</a></li>
-                <li><a href="../../../guide/appweb/users/modules.html">Loadable Modules</a></li>
+                <li><a href="../../../guide/appweb/users/modules.html">Appweb Modules</a></li>
                 <li><a href="../../../guide/appweb/users/stages.html">Pipeline Stages</a></li>
                 <li><a href="../../../guide/appweb/users/client.html">HTTP Client</a></li>
                 <li><a href="../../../ref/appweb/architecture.html">Appweb Architecture</a></li>
@@ -81,7 +74,7 @@
             imposes a session timeout on information and will automatically prune stale information. It uses the Appweb
             memory limit configured by the <a href="../../appweb/users/dir/sandbox.html#limitMemory">LimitMemory</a>
             directive to restrict the amount of memory that is devoted to session state.</p>
-            <a name="sample"></a>
+            <a id="sample"></a>
             <h2>Sample Code</h2>
             <pre>
 if (!(id = getSessionVar("user-id")) != 0) {
@@ -99,7 +92,7 @@ createSession();
 setSessionVar("Name", "John");
 </pre>
             <p>This defines the "<em>Name</em>" variable to the value "<em>John</em>".</p>
-            <a name="apis"></a>
+            <a id="apis"></a>
             <h2 class="section">ESP APIs</h2>
             <p>The ESP session state API is comprised of four key APIs:
             <ul>
@@ -108,7 +101,7 @@ setSessionVar("Name", "John");
                 <li><a href="../../../api/esp.html#group___esp_abbrev_1ga241f0cd4f5d49f8a137f1024415b2674">getSessionVar</a></li>
                 <li><a href="../../../api/esp.html#group___esp_abbrev_1gadb4f7bc3020ab9c481f1ebcaf1ed3f2a">setSessionVar</a></li>
             </ul>
-            <a name="flash"></a>
+            <a id="flash"></a>
             <h2 class="section">Flash Storage</h2>
             <p>ESP provides a traditional get/set key/value store. But it also provides a "flash" storage for passing
             information to the next web request (only). Thereafter, the flash information is automatically removed.
@@ -143,10 +136,10 @@ setFlash("custom", "Could not save document %s", myDocument);
             <p>To display flash messages in a web page, use the 
             <a href="../../../api/esp.html#group___esp_abbrev_1ga8fd13fd70582fa020ad0dd5c00af5579">flash()</a> API.
 <pre>
-&lt;% flash("all", NULL); %>
+&lt;% flash("all", NULL); %&gt;
 </pre>
             <p>This will display all flash messages and then erase them from the flash store.</p>
-            <a name="configuring"></a>
+            <a id="configuring"></a>
             <h2 class="section">Configuring Session</h2>
             <p>Session data has a lifespan defined by the <a
                 href="../../appweb/users/dir/route.html#sessionTimeout">SessionTimeout</a> configuration file
@@ -154,7 +147,7 @@ setFlash("custom", "Could not save document %s", myDocument);
             <p>If there is a low memory condition, Appweb may prune session data prematurely to free up memory. 
             The maximum memory limit may be configured by the 
             <a href="../../appweb/users/dir/sandbox.html#limitMemory">LimitMemory</a> configuration directive.</p>
-            <a name="performance"></a>
+            <a id="performance"></a>
             <h2 class="section">Performance Considerations</h2>
             <h3>Minimize Session Data Size</h3>
             <p>To maximize the performance of your application, try to minimize the size of data stored in the session
@@ -166,13 +159,23 @@ setFlash("custom", "Could not save document %s", myDocument);
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

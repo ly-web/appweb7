@@ -8,9 +8,9 @@
 
 #include    "appweb.h"
 
-#if BLD_FEATURE_PHP
+#if BIT_FEATURE_PHP
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     /*
         Workaround for VS 2005 and PHP headers. Need to include before PHP headers include it.
      */
@@ -31,10 +31,10 @@
     #define ZEND_WIN32 1
 
     /*
-        WARNING: If you compile PHP with --debug, then you MUST re-run appweb configure which will set BLD_PHP_DEBUG
+        WARNING: If you compile PHP with --debug, then you MUST re-run appweb configure which will set BIT_PHP_DEBUG
         Unfortunately, PHP does not set ZEND_DEBUG in any of their headers (Ugh!)
      */
-    #if BLD_PHP_DEBUG
+    #if BIT_PHP_DEBUG
     #define ZEND_DEBUG 1
     #endif
 #endif
@@ -102,8 +102,8 @@ static int  writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sap
     PHP Module Interface
  */
 static sapi_module_struct phpSapiBlock = {
-    BLD_PRODUCT,                    /* Sapi name */
-    BLD_NAME,                       /* Full name */
+    BIT_PRODUCT,                    /* Sapi name */
+    BIT_NAME,                       /* Full name */
     startup,                        /* Start routine */
     php_module_shutdown_wrapper,    /* Stop routine  */
     0,                              /* Activate */
@@ -127,7 +127,9 @@ static sapi_module_struct phpSapiBlock = {
 };
 
 /********************************** Code ***************************/
-
+/*
+    Open handler for a new request
+ */
 static void openPhp(HttpQueue *q)
 {
     HttpRx      *rx;
@@ -160,9 +162,10 @@ static void openPhp(HttpQueue *q)
 
 
 /*
-    Process the request. Run once all the input data has been received and buffered.
+    Run the request. This is invoked when all the input data has been received and buffered.
+    This routine completely services the request.
  */
-static void processPhp(HttpQueue *q)
+static void readyPhp(HttpQueue *q)
 {
     HttpConn            *conn;
     HttpRx              *rx;
@@ -175,7 +178,6 @@ static void processPhp(HttpQueue *q)
 
     TSRMLS_FETCH();
 
-    mprLog(5, "processPhp");
     conn = q->conn;
     rx = conn->rx;
     tx = conn->tx;
@@ -250,7 +252,6 @@ static void processPhp(HttpQueue *q)
         fseek(fp, 0L, SEEK_SET);
     }
 #endif
-    // mprYield(0);
     zend_try {
         php_execute_script(&file_handle TSRMLS_CC);
         if (!SG(headers_sent)) {
@@ -404,7 +405,7 @@ static int writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sapi
         return -1;
     }
     *value++ = '\0';
-    while (!isalnum(*value) && *value) {
+    while (!isalnum((uchar) *value) && *value) {
         value++;
     }
 #if PHP_MAJOR_VERSION >=5 && PHP_MINOR_VERSION >= 3
@@ -456,13 +457,12 @@ static int readBodyData(char *buffer, uint bufsize TSRMLS_DC)
     if ((content = q->first->content) == 0) {
         return 0;
     }
-    len = (ssize) min(mprGetBufLength(content), (ssize) bufsize - 1);
+    len = (ssize) min(mprGetBufLength(content), (ssize) bufsize);
     if (len > 0) {
         mprMemcpy(buffer, len, mprGetBufStart(content), len);
         mprAdjustBufStart(content, len);
-        buffer[len] = '\0';
     }
-    mprLog(5, "php: read post data %d remaining %d, data %s", len, mprGetBufLength(content), buffer);
+    mprLog(5, "php: read post data len %d remaining %d", len, mprGetBufLength(content));
     return (int) len;
 }
 
@@ -486,8 +486,8 @@ static int initializePhp(Http *http)
 
     mprLog(2, "php: initialize php library");
     appweb = httpGetContext(http);
-#ifdef BLD_FEATURE_PHP_INI
-    phpSapiBlock.php_ini_path_override = BLD_FEATURE_PHP_INI;
+#ifdef BIT_FEATURE_PHP_INI
+    phpSapiBlock.php_ini_path_override = BIT_FEATURE_PHP_INI;
 #else
     phpSapiBlock.php_ini_path_override = appweb->defaultServer->home;
 #endif
@@ -501,12 +501,6 @@ static int initializePhp(Http *http)
     }
     zend_llist_init(&global_vars, sizeof(char *), 0, 0);
 
-#if UNUSED
-    /*
-        Must remove this for include files to work
-     */
-    SG(options) |= SAPI_OPTION_NO_CHDIR;
-#endif
     zend_alter_ini_entry("register_argc_argv", 19, "0", 1, PHP_INI_SYSTEM, PHP_INI_STAGE_ACTIVATE);
     zend_alter_ini_entry("html_errors", 12, "0", 1, PHP_INI_SYSTEM, PHP_INI_STAGE_ACTIVATE);
     zend_alter_ini_entry("implicit_flush", 15, "0", 1, PHP_INI_SYSTEM, PHP_INI_STAGE_ACTIVATE);
@@ -549,7 +543,7 @@ static char *mapHyphen(char *str)
 
 
 /*
-    Module initialization
+    loadable Module initialization
  */
 int maPhpHandlerInit(Http *http, MprModule *module)
 {
@@ -560,25 +554,25 @@ int maPhpHandlerInit(Http *http, MprModule *module)
         return MPR_ERR_CANT_CREATE;
     }
     handler->open = openPhp;
-    handler->process = processPhp;
+    handler->ready = readyPhp;
     http->phpHandler = handler;
     return 0;
 }
 
-#else /* BLD_FEATURE_PHP */
+#else /* BIT_FEATURE_PHP */
 
 int maPhpHandlerInit(Http *http, MprModule *module)
 {
     mprNop(0);
     return 0;
 }
-#endif /* BLD_FEATURE_PHP */
+#endif /* BIT_FEATURE_PHP */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

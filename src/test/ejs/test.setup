@@ -1,3 +1,0 @@
-if (!test || test.config["ejscript"] == 0) {
-    test.skip("Ejscript not enabled")
-}

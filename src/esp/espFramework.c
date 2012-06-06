@@ -8,7 +8,7 @@
 
 #include    "esp.h"
 
-#if BLD_FEATURE_ESP
+#if BIT_FEATURE_ESP
 
 /************************************* Code ***********************************/
 /*  
@@ -340,14 +340,12 @@ Edi *espGetRouteDatabase(HttpRoute *route)
 }
 
 
-//  MOB - is this only for clients?
 int espGetStatus(HttpConn *conn)
 {
     return httpGetStatus(conn);
 }
 
 
-//  MOB - is this only for clients?
 char *espGetStatusMessage(HttpConn *conn)
 {
     return httpGetStatusMessage(conn);
@@ -920,12 +918,32 @@ cchar *espUri(HttpConn *conn, cchar *target)
 }
 
 
-#endif /* BLD_FEATURE_ESP */
+void espManageEspRoute(EspRoute *eroute, int flags)
+{
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(eroute->appModuleName);
+        mprMark(eroute->appModulePath);
+        mprMark(eroute->cacheDir);
+        mprMark(eroute->compile);
+        mprMark(eroute->controllersDir);
+        mprMark(eroute->dbDir);
+        mprMark(eroute->edi);
+        mprMark(eroute->env);
+        mprMark(eroute->layoutsDir);
+        mprMark(eroute->link);
+        mprMark(eroute->searchPath);
+        mprMark(eroute->staticDir);
+        mprMark(eroute->viewsDir);
+    }
+}
+
+
+#endif /* BIT_FEATURE_ESP */
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

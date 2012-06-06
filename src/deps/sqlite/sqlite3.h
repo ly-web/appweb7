@@ -7,7 +7,7 @@
 /********************************** Includes **********************************/
 
 /* Work-around for MAC OSX Xcode bug */
-#undef BLD_FEATURE_LEGACY_API
+#undef BIT_FEATURE_LEGACY_API
 
 /* Suppress windows posix errors */
 #undef      _CRT_SECURE_NO_WARNINGS
@@ -15,7 +15,7 @@
 #undef      _CRT_SECURE_NO_DEPRECATE
 #define     _CRT_SECURE_NO_DEPRECATE 1
 
-#include "buildConfig.h"
+#include "bit.h"
 
 #ifndef _h_SQLITE3_
 #define _h_SQLITE3_ 1
@@ -81,6 +81,10 @@
 #endif
 
 #if VXWORKS
+    #ifndef _VSB_CONFIG_FILE
+        #define _VSB_CONFIG_FILE "vsbConfig.h"
+    #endif
+
     #include    <vxWorks.h>
     #include    <envLib.h>
     #include    <sys/types.h>
@@ -143,7 +147,7 @@
     #define F_OK    0
 
     /*
-     *  No locking on VxWorks
+        No locking on VxWorks
      */
     #define fcntl(A,B,C) 0
     #define getpid mprGetpid
@@ -152,9 +156,9 @@
 
 #endif /* VXWORKS */
 
-#if WIN
+#if WINDOWS
 /*
- *  Force winsock2 rather than winsock
+    Force winsock2 rather than winsock
  */
 #include    <winsock2.h>
 #endif

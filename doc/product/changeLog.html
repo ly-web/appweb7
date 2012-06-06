@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../product/index.html">Home</a>
+            <a href="../index.html">Home</a>
 <!-- EndDsi -->
              &gt; <b>Change Log</b>
         </div>
@@ -76,7 +69,7 @@
             <p>The Appweb change log details the major features and changes for each release.</p>
             <p>See the Appweb <a href="http://github.com/embedthis/appweb-4/issues">issue database</a> for full 
             details of fixes. </p>
-            <a name="r4.0.0" id="r4.0.0"></a>
+            <a id="r4.0.0"></a>
             <h2 class="section">Changes in 4.0.0</h2>
             <h3>Major Features</h3>
             <ul>
@@ -92,14 +85,17 @@
             <ul>
                 <li>Appweb 4 is a major release and most APIs have been modified based on the updated MPR.</li>
             </ul>
-            <a name="r3.3.2" id="r3.3.2"></a>
-            <h2 class="section">Changes in 3.3.2</h2>
-            <!--
-            <h3>Minor Features</h3>
+            <a id="r3.3.3"></a>
+            <h2 class="section">Changes in 3.3.3</h2>
+            <h3>Key Fixes</h3>
             <ul>
-                <li>None</li>
+                <li>Fixes for building for VxWorks on linux</li>
+                <li>Fix httpPassword parsing corrupt files</li>
+                <li>Add SSL_OP_NO_TICKET and SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION</li>
+                <li>Enable no free threads message to continually be emitted</li>
             </ul>
-            -->
+            <a id="r3.3.2"></a>
+            <h2 class="section">Changes in 3.3.2</h2>
             <h3>Key Fixes</h3>
             <ul>
                 <li>CGI content-length headers</li>
@@ -123,20 +119,14 @@
                 <li>Windows 64-bit file stat</li>
                 <li>Add huge file support (&gt; 2GB)</li>
             </ul>
-            <!--
-            <h3><strong>API Changes</strong></h3>
-            <ul>
-                <li>None</li>
-            </ul>
-            -->
-            <a name="r3.3.1" id="r3.3.1"></a>
+            <a id="r3.3.1"></a>
             <h2 class="section">Changes in 3.3.1</h2>
             <h3>Key Fixes</h3>
             <ul>
                 <li>Fix HEAD requests</li>
                 <li>Fix responses larger than 2GB</li>
             </ul>
-            <a name="r3.3.0" id="r3.3.0"></a>
+            <a id="r3.3.0"></a>
             <h2 class="section">Changes in 3.3.0</h2>
             <h3>Minor Features</h3>
             <ul>
@@ -187,13 +177,8 @@
                 <li>Ejscript: Compiler spin with }; construct</li>
                 <li>Ejscript: escape(quote)</li>
             </ul>
-            <!--
-            <h3><strong>API Changes</strong></h3>
-            <ul>
-                <li>None</li>
-            </ul>
-            -->
-            <a name="r3.2.2" id="r3.2.2"></a>
+            
+            <a id="r3.2.2"></a>
             <h2 class="section">Changes in 3.2.2</h2>
             <h3>Minor Features</h3>
             <ul>
@@ -211,7 +196,7 @@
             <ul>
                 <li>None</li>
             </ul>
-            <a name="r3.2.1" id="r3.2.1"></a>
+            <a id="r3.2.1"></a>
             <h2 class="section">Changes in 3.2.1</h2>
             <h3>Key Fixes</h3>
             <ul>
@@ -226,7 +211,7 @@
             <ul>
                 <li>None</li>
             </ul>
-            <a name="r3.2.0" id="r3.2.0"></a>
+            <a id="r3.2.0"></a>
             <h2 class="section">Changes in 3.2.0</h2>
             <h3>Minor Features</h3>
             <ul>
@@ -256,7 +241,7 @@
                 <li>Enhanced Ejscript Number, Date and Math APIs</li>
                 <li>API documentation corrections</li>
             </ul>
-            <a name="r3.1.2" id="r3.1.2"></a>
+            <a id="r3.1.2"></a>
             <h2 class="section">Changes in 3.1.2</h2>
             <h3>Fixes</h3>
             <ul>
@@ -268,7 +253,7 @@
             <ul>
                 <li>None</li>
             </ul>
-            <a name="r3.1.1" id="r3.1.1"></a>
+            <a id="r3.1.1"></a>
             <h2 class="section">Changes in 3.1.1</h2>
             <h3>Fixes</h3>
             <ul>
@@ -280,7 +265,7 @@
             <ul>
                 <li>None</li>
             </ul>
-            <a name="r3.1.0" id="r3.1.0"></a>
+            <a id="r3.1.0"></a>
             <h2 class="section">Changes in 3.1.0</h2>
             <h3>Minor Features</h3>
             <ul>
@@ -307,7 +292,7 @@
             <ul>
                 <li>None</li>
             </ul>
-            <a name="r3.0.2" id="r3.0.2"></a>
+            <a id="r3.0.2"></a>
             <h2 class="section">Changes in 3.0.2</h2>
             <h3>Major Features</h3>
             <ul>
@@ -330,7 +315,7 @@
                 <li>Modified MPR mprServiceEvents</li>
                 <li>Renamed MPR mprAwaken* to mprWakeDispatcher</li>
             </ul>
-            <a name="r3.0.1" id="r3.0.1"></a>
+            <a id="r3.0.1"></a>
             <h2 class="section">Changes in 3.0.1</h2>
             <h3>Major Features</h3>
             <ul>
@@ -346,7 +331,7 @@
                 <li>Updated Ejscript to support fully relative URLs. Required when running behind a reverse proxy</li>
                 <li>Updated Ejscript for enhanced MVC and SQLite database support</li>
                 <li>Added prototype unit test program "utest"</li>
-                <li>Support Visual Studio 2011"</li>
+                <li>Support Visual Studio 2012"</li>
                 <li>Enhanced Ejscript module search path controls</li>
                 <li>Optimize memory footprint</li>
                 <li>Partial support for PHP 5.3.0</li>
@@ -384,7 +369,7 @@
                 <li>Modified MprHttp APIs</li>
                 <li>Ejscript Http, Socket and Record classes</li>
             </ul>
-            <a name="r3.0.0" id="r3.0.0"></a>
+            <a id="r3.0.0"></a>
             <h2 class="section">Changes in 3.0.0</h2>
             <h3>Major Features vs Appweb 2</h3>
             <ul>
@@ -407,44 +392,7 @@
                 <li>Project files for MAC OS Xcode and Microsoft Visual Studio</li>
                 <li>Enhanced http command supporting SSL, chunking, ranged requests and file upload</li>
             </ul>
-            <!--
-            <a name="r2.5.0"></a>
-            <h2 class="section">Changes in 2.5.0</h2>
-            <h3>Major Features</h3>
-            <ul>
-                <li>Modified syntaxt for ==with. No need to provide =loadable or =builtin. These are set via the
-                ==shared or ==static setting.</li>
-                <li>Simplified package configuration for PHP, OpenSSL and MatrixSSL. Instead of specifying libraries
-                and library paths via configure ==with-libpath commands, now package configuration comes from simple
-                text files under build/packages.</li>
-            </ul>
-            <h3>Minor Features</h3>
-            <ul>
-                <li>Support for Microsoft Visual Studio 2008 including express editions. Removed support for Visual
-                Studio 6.</li>
-                <li>Included Microsoft Visual Studio project for building without requiring cygwin tools on
-                windows.</li>
-                <li>Added support for static linking on windows.</li>
-                <li>Simplified configuration for static building. If ==static, then all modules are static. NOTE: can't
-                have both ==static and ==shared due to different building requirements on windows. Removed build
-                switches ==preferStatic and ==preferShared. Removed BLD_FEATURE_DLL define.</li>
-                <li>Added "const" to most declarations to improve C++ compatibility and remove compile warnings when
-                using gcc 4.2.</li>
-                <li>Removed ==enable-shared-libc option for configure. Now driven from ==shared and ==static.</li>
-                <li>Added patch for Pharlap support</li>
-                <li>Added patch for PAM support</li>
-                <li>Added expect header support</li>
-                <li>Remove bldout utility to format output. Speeds up builds.</li>
-                <li>Strengthened session validation</li>
-                <li>Moved modules from lib/modules to lib directory.</li>
-            </ul>
-            <h3>Fixes</h3>
-            <ul>
-                <li>Ensure only one SSL provider can be configured at a time.</li>
-                <li>Fixed embedding manifests in Windows builds.</li>
-            </ul>
-            -->
-            <a name="r2.4.2" id="r2.4.2"></a>
+            <a id="r2.4.2"></a>
             <h2 class="section">Changes in 2.4.2</h2>
             <h3>Fixes</h3>
             <ul>
@@ -736,7 +684,7 @@
                 <li>Improve calculation of random bytes for VxWorks</li>
                 <li>Remove VxWorks SEM_INVERSION_SAFE flag to preserve defined priorities</li>
                 <li>Fix Nan and Infinity calculations for VxWorks</li>
-                <li>Fix compilation errors if BLD_FEATURE_RANGES is not defined.</li>
+                <li>Fix compilation errors if BIT_FEATURE_RANGES is not defined.</li>
                 <li>Cleanup PHP shutdown</li>
                 <li>Fix PUT handler processing when the file exists and also some ranged upload behavior.</li>
                 <li>Fixed mprGetDirName API to handle file names with trailing "/"</li>
@@ -814,7 +762,7 @@
             <ul>
                 <li>Fix for form.php to post back to itself</li>
                 <li>Various code cleanup</li>
-                <li>Compiler fixes for when BLD_FEATURE_LOG is disabled</li>
+                <li>Compiler fixes for when BIT_FEATURE_LOG is disabled</li>
             </ul>
             <h2 class="section">Changes in 2.0.1</h2>
             <h3>Fixes</h3>
@@ -904,7 +852,7 @@
                 <li>Fix for single threaded compilation. Thanks Pauli.</li>
                 <li>Fix for compiling samples when using --disable-static</li>
                 <li>Fix for running configure on linux. Changes to bin/bld. Thanks Vinvagh.</li>
-                <li>Fix for uClinux building. Changes to bin/bld to use BLD_CFLAGS instead of BLD_LDFLAGS. Thanks
+                <li>Fix for uClinux building. Changes to bin/bld to use BIT_CFLAGS instead of BIT_LDFLAGS. Thanks
                 Ben.</li>
                 <li>Fix for building on Linux. Was not testing for existence of cygpath correctly. Thanks Barry Stone.</li>
                 <li>Fixed bugs in EJS for comparisons with non-boolean operands. Thanks Martin Brochu.</li>
@@ -1078,7 +1026,7 @@
                 <li>Fix some build issues with various configuration options.</li>
                 <li>Fix the inheriting of directory authorization information.</li>
             </ul>
-            <h3><a name="compat" id="compat"></a>Compatibility Changes</h3>
+            <h3><a id="compat"></a>Compatibility Changes</h3>
             <ul>
                 <li>The MaServer::configure command has reduced its parameter count from 2 to 1.</li>
                 <li>maGetVar and maSetVar now require an object array argument to specify the variable array to
@@ -1189,7 +1137,7 @@
                 <li>Security fix for user message disclosing too much information when denying access. (Ziv)</li>
                 <li>Fix for VirtualHosts (including SSL virtual hosts) incorrectly parsing authorization configuration
                 directives. (Ziv)</li>
-                <li>Fix when using BLD_FEATURE_ROMFS on Windows. Was still accessing file system routines.
+                <li>Fix when using BIT_FEATURE_ROMFS on Windows. Was still accessing file system routines.
                 (Black&amp;White)</li>
             </ul>
             <h2 class="section">Changes in 1.1.2</h2>
@@ -1247,7 +1195,7 @@
                 <li>Fix mprStrCmpAnyCase routine.</li>
                 <li>Fix Content-Length handling when the length is zero.</li>
                 <li>Fix MaRequest:getCrackedCookie. Could corrupt memory.</li>
-                <li>Fix when using ROMed web pages (BLD_FEATURE_ROMFS)</li>
+                <li>Fix when using ROMed web pages (BIT_FEATURE_ROMFS)</li>
                 <li>Fix some visual studio project files that referenced libraries of the wrong build type.</li>
             </ul>
             <h3>Compatibility Changes</h3>
@@ -1519,13 +1467,23 @@
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

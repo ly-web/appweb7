@@ -6,10 +6,9 @@
 
 /********************************** Includes **********************************/
 
-#include "buildConfig.h"
+#include "bit.h"
 
-
-#if BLD_FEATURE_SQLITE
+#if BIT_FEATURE_SQLITE || BIT_SQLITE_PRODUCT
 
 #if EMBEDTHIS_MODIFICATION 
 
@@ -25522,7 +25521,7 @@ static int proxyGetHostID(char *pHostID, int *pError){
       return SQLITE_PERM;
     }
     len = pread(fd, pHostID, HOSTIDLEN, 0);
-    if( len<0 ){
+    if( len<=0 ){
       *pError = errno;
       rc = SQLITE_IOERR_READ;
     }else if( len<HOSTIDLEN ){
@@ -25536,7 +25535,7 @@ static int proxyGetHostID(char *pHostID, int *pError){
     /* we're creating the host ID file (use a random string of bytes) */
     proxyGenerateHostID(pHostID);
     len = pwrite(fd, pHostID, HOSTIDLEN, 0);
-    if( len<0 ){
+    if( len<=0 ){
       *pError = errno;
       rc = SQLITE_IOERR_WRITE;
     }else if( len<HOSTIDLEN ){
@@ -107095,4 +107094,4 @@ SQLITE_PRIVATE void sqlite3Fts3IcuTokenizerModule(
 #endif /* !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS3) */
 
 /************** End of fts3_icu.c ********************************************/
-#endif /* BLD_FEATURE_SQLITE */
+#endif /* BIT_FEATURE_SQLITE */

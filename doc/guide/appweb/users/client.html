@@ -13,27 +13,20 @@
     <!--[if IE]>
     <link href="../../../iehacks.css" rel="stylesheet" type="text/css" />
     <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body>
     <div class="top">
         <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
         <div class="topRight">
-             <div class="search">
-                 <form id="search" method="get" action="http://www.google.com/search" title="Search appwebserver.org">
-                     <p>
-                        <label for="q" title="Search">Search</label> 
-                        <input type="text" id="q" name="q" size="15" maxlength="255" />
-                        <input type="submit" id="submit" value="Go" /> 
-                        <input type="hidden" name="domains" value="appwebserver.org" /> 
-                        <input type="hidden" name="sitesearch" value="appwebserver.org" />
-                    </p>
-                 </form>
-              </div>
-            <!--TITLE-->Embedthis Appweb 4.0.0
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.0.0</div>
+            </div>
         </div>
         <div class="crumbs">
-            <a href="../../../product/index.html">Home</a>
+            <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
              &gt; <a href="index.html">Users Guide</a> &gt; <b>Http client</b>
         </div>
@@ -58,7 +51,7 @@
                 <li><a href="../../../guide/appweb/users/vhosts.html">Virtual Hosts</a></li>
                 <li><a href="../../../guide/appweb/users/security.html">Security Considerations</a></li>
                 <li><a href="../../../guide/appweb/users/ssl.html">SSL</a></li>
-                <li><a href="../../../guide/appweb/users/modules.html">Loadable Modules</a></li>
+                <li><a href="../../../guide/appweb/users/modules.html">Appweb Modules</a></li>
                 <li><a href="../../../guide/appweb/users/stages.html">Pipeline Stages</a></li>
                 <li><a href="../../../guide/appweb/users/client.html">HTTP Client</a></li>
                 <li><a href="../../../guide/appweb/users/frameworks.html">Web Frameworks</a></li>
@@ -68,14 +61,13 @@
         </div>
         <div class="contentLeft">
             <h1>Appweb HTTP Client</h1>
-            <p>http &mdash; HTTP client program.</p><a name="synopsis" id="synopsis"></a>
+            <p>http &mdash; HTTP client program.</p><a id="synopsis"></a>
             <h2>Synopsis</h2>
-            <p>http [options] urls ...</p><a name="description" id="description"></a>
+            <p>http [options] URIs ...</p><a id="description"></a>
             <h2>Description</h2>
             <p>The <b>http</b> utility uses the Appweb HTTP client library to retrieve documents from HTTP servers. It
             supports HTTP, SSL, authentication and form data and the GET, POST, PUT, DELETE, OPTIONS and TRACE HTTP
-            methods. The <b>http</b> client was primarily designed to test the Appweb server.</p><a name="options" id=
-            "options"></a>
+            methods. The <b>http</b> client was primarily designed to test the Appweb server.</p><a id="options"></a>
             <h2>Options</h2>
             <table class="full" title="options">
                 <thead>
@@ -88,6 +80,10 @@
                     <tr>
                         <td>--benchmark</td>
                         <td>Output timing results after retrieving URLs.</td>
+                    </tr>
+                    <tr>
+                        <td>--cert file</td>
+                        <td>Certificate CA file to validate server certificates.</td>
                     </tr>
                     <tr>
                         <td>--chunk size</td>
@@ -131,6 +127,10 @@
                         <td>--host name</td>
                         <td>Prepend all URLs with the specified host. For example if '-h www.myHost.com:8888" were used
                         with the URL "/index.html", then http will retrieve http://www.myHost.com:8888.</td>
+                    </tr>
+                    <tr>
+                        <td>--insecure</td>
+                        <td>Don't validate server certificates when using SSL</td>
                     </tr>
                     <tr>
                         <td>--iterations count</td>
@@ -238,13 +238,23 @@
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
-
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2011. 
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
             All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
-<!-- EndDsi -->
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
 </body>
 </html>

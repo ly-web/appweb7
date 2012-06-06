@@ -11,7 +11,7 @@
 
 #include    "appweb.h"
 
-#if BLD_FEATURE_ESP
+#if BIT_FEATURE_ESP
 
 #include    "edi.h"
 
@@ -31,35 +31,37 @@ extern "C" {
 #define ESP_UNLOAD_TIMEOUT  (10)                        /**< Very short timeout for reloading */
 #define ESP_LIFESPAN        (3600 * MPR_TICKS_PER_SEC)  /**< Default generated content cache lifespan */
 
+#if UNUSED
 /*
     Default compiler settings for ${DEBUG} and ${LIBS} tokens in EspCompile and EspLink
  */
-#if BLD_DEBUG
-    #if WIN
+#if BIT_DEBUG
+    #if WINDOWS
         #define ESP_DEBUG "-Zi -Od"
     #else
         #define ESP_DEBUG "-g"
     #endif
 #else
-    #if WIN
+    #if WINDOWS
         #define ESP_DEBUG "-O"
     #else
         #define ESP_DEBUG "-O2"
     #endif
 #endif
-#if WIN
-    #define ESP_CORE_LIBS "\"${LIB}\\mod_esp${SHLIB}\" \"${LIB}\\libappweb.lib\" \
-        \"${LIB}\\libhttp.lib\" \"${LIB}\\libmpr.lib\""
+
+#if WINDOWS
+    #define ESP_CORE_LIBS "\"${LIBPATH}\\mod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \
+        \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\""
 #else
-    #define ESP_CORE_LIBS "${LIB}/mod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lpthread -lm"
+    #define ESP_CORE_LIBS "${LIBPATH}/mod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lpthread -lm"
 #endif
 
 /*
     Default SSL library switches
  */
-#if BLD_FEATURE_SSL
-    #if WIN
-        #define ESP_SSL_LIBS " \"${LIB}\\libmprssl.lib\""
+#if BIT_FEATURE_SSL
+    #if WINDOWS
+        #define ESP_SSL_LIBS " \"${LIBPATH}\\libmprssl.lib\""
     #else
         #define ESP_SSL_LIBS " -lmprssl"
     #endif
@@ -67,6 +69,16 @@ extern "C" {
     #define ESP_SSL_LIBS
 #endif
 #define ESP_LIBS ESP_CORE_LIBS ESP_SSL_LIBS
+
+#if MACOSX
+    #define ESP_CCNAME "clang"
+#else
+    #define ESP_CCNAME "gcc"
+#endif
+#endif /* UNUSED */
+
+//  MOB - move to bit.h
+#define BIT_VISUAL_STUDIO_VERSION "10.0"
 
 /********************************** Defines ***********************************/
 /**
@@ -78,7 +90,7 @@ typedef void (*EspProc)(HttpConn *conn);
 #define CONTENT_MARKER  "${_ESP_CONTENT_MARKER_}"       /* Layout content marker */
 #define ESP_SESSION     "-esp-session-"                 /* ESP session cookie name */
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     #define ESP_EXPORT __declspec(dllexport)
 #else
     #define ESP_EXPORT
@@ -87,6 +99,25 @@ typedef void (*EspProc)(HttpConn *conn);
 
 #define ESP_SECURITY_TOKEN_NAME "__esp_security_token__"
 #define ESP_FLASH_VAR           "__flash__"
+
+/*
+    Default VxWorks environment
+ */
+#ifndef WIND_BASE
+#define WIND_BASE "WIND_BASE-Not-Configured"
+#endif
+#ifndef WIND_HOME
+#define WIND_HOME "WIND_HOME-Not-Configured"
+#endif
+#ifndef WIND_HOST_TYPE
+#define WIND_HOST_TYPE "WIND_HOST_TYPE-Not-Configured"
+#endif
+#ifndef WIND_PLATFORM
+#define WIND_PLATFORM "WIND_PLATFORM-Not-Configured"
+#endif
+#ifndef WIND_GNU_PATH
+#define WIND_GNU_PATH "WIND_GNU_PATH-Not-Configured"
+#endif
 
 /********************************** Parsing ***********************************/
 /**
@@ -128,7 +159,7 @@ extern void espInitHtmlOptions(Esp *esp);
  */
 typedef struct EspRoute {
     HttpRoute       *route;                 /**< Back link to the owning route */
-    MprList         *env;                   /**< Environment for compiler */
+    MprHash         *env;                   /**< Environment variables for route */
     char            *compile;               /**< Compile template */
     char            *link;                  /**< Link template */
     char            *searchPath;            /**< Search path to use when locating compiler/linker */
@@ -296,13 +327,14 @@ extern void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
             <li>WINSDK - Path to the Windows SDK</li>
             <li>VS - Path to Visual Studio</li>
         </ul>
+    @param eroute Esp route object
     @param command Http connection object
     @param source ESP web page source pathname
     @param module Output module pathname
     @return An expanded command line
     @ingroup EspRoute
  */
-extern char *espExpandCommand(cchar *command, cchar *source, cchar *module);
+extern char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module);
 
 /*
     Internal
@@ -1539,7 +1571,6 @@ extern void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *option
  */
 extern void espChart(HttpConn *conn, EdiGrid *grid, cchar *options);
 
-//  MOB DB
 /**
     Render an input checkbox. 
     @description This creates a checkbox suitable for use within an input form. 
@@ -1650,7 +1681,6 @@ extern void espInput(HttpConn *conn, cchar *field, cchar *options);
  */
 extern void espLabel(HttpConn *conn, cchar *text, cchar *options);
 
-//  MOB DB
 //  MOB - how to get a choices list from a database
 /**
     Render a dropdown selection list.
@@ -1685,7 +1715,6 @@ extern void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *options)
  */
 extern void espProgress(HttpConn *conn, cchar *progress, cchar *options);
 
-//  MOB DB
 /**
     Render a radio button. This creates a radio button suitable for use within an input form. 
     @param conn Http connection object
@@ -1806,7 +1835,6 @@ extern void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
  */
 extern void espTabs(HttpConn *conn, EdiRec *rec, cchar *options);
 
-//MOB DB
 /**
     Render a text input field as part of a form.
     @param conn Http connection object
@@ -2953,13 +2981,13 @@ extern void warn(cchar *fmt, ...);
 #ifdef __cplusplus
 } /* extern C */
 #endif
-#endif /* BLD_FEATURE_ESP */
+#endif /* BIT_FEATURE_ESP */
 #endif /* _h_ESP */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

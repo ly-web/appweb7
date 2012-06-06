@@ -22,7 +22,7 @@
 /*
     Global application object. Provides the top level roots of all data objects for the GC.
  */
-typedef struct App {
+typedef struct AppwebApp {
     Mpr         *mpr;
     MaAppweb    *appweb;
     MaServer    *server;
@@ -32,130 +32,147 @@ typedef struct App {
     char        *configFile;
     char        *pathVar;
     int         workers;
-} App;
+} AppwebApp;
 
-static App *app;
+static AppwebApp *app;
 
 /***************************** Forward Declarations ***************************/
 
 static int changeRoot(cchar *jail);
 static int checkEnvironment(cchar *program);
-static int findConfigFile();
-static void manageApp(App *app, int flags);
-static int initialize(cchar *ip, int port);
-static void traceHandler(void *ignored, MprSignal *sp);
+static int findAppwebConf();
+static void manageApp(AppwebApp *app, int flags);
+static int initializeAppweb(cchar *ip, int port);
 static void usageError();
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
+static void traceHandler(void *ignored, MprSignal *sp);
 static int  unixSecurityChecks(cchar *program, cchar *home);
-#elif BLD_WIN_LIKE
+#elif BIT_WIN_LIKE
 static int writePort(MaServer *server);
 static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
 #endif
 
-#ifndef BLD_SERVER_ROOT
-    #define BLD_SERVER_ROOT mprGetCurrentPath()
+/*
+    If customize.h does not define, set reasonable defaults.
+ */
+#ifndef BIT_SERVER_ROOT
+    #define BIT_SERVER_ROOT mprGetCurrentPath()
 #endif
-#ifndef BLD_CONFIG_FILE
-    #define BLD_CONFIG_FILE NULL
+#ifndef BIT_CONFIG_FILE
+    #define BIT_CONFIG_FILE NULL
+#endif
+
+#ifndef BIT_APPWEB_PATH
+    #define BIT_APPWEB_PATH "appweb"
 #endif
 
 /*********************************** Code *************************************/
 
-MAIN(appweb, int argc, char **argv)
+MAIN(appweb, int argc, char **argv, char **envp)
 {
     Mpr     *mpr;
     cchar   *ipAddrPort, *argp, *jail;
-    char    *ip;
-    int     argind, port, status;
+    char    *ip, *logSpec;
+    int     argind, port, status, verbose;
 
     ipAddrPort = 0;
     ip = 0;
     jail = 0;
     port = -1;
-    argv[0] = "appweb";
+    verbose = 0;
+    logSpec = 0;
+    argv[0] = BIT_APPWEB_PATH;
 
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
     }
-    mprSetAppName(BLD_PRODUCT, BLD_NAME, BLD_VERSION);
+    mprSetAppName(BIT_PRODUCT, BIT_NAME, BIT_VERSION);
 
-    if ((app = mprAllocObj(App, manageApp)) == NULL) {
+    if ((app = mprAllocObj(AppwebApp, manageApp)) == NULL) {
         exit(2);
     }
     mprAddRoot(app);
     mprAddStandardSignals();
 
-    argc = mpr->argc;
-    argv = mpr->argv;
-    app->mpr = mpr;
-    app->workers = -1;
-    app->configFile = BLD_CONFIG_FILE;
-    app->home = BLD_SERVER_ROOT;
-    app->documents = app->home;
-
-#if BLD_FEATURE_ROMFS
+#if BIT_FEATURE_ROMFS
     extern MprRomInode romFiles[];
     mprSetRomFileSystem(romFiles);
 #endif
+
+    app->mpr = mpr;
+    app->workers = -1;
+    app->configFile = BIT_CONFIG_FILE;
+    app->home = BIT_SERVER_ROOT;
+    app->documents = app->home;
+    argc = mpr->argc;
+    argv = (char**) mpr->argv;
 
     for (argind = 1; argind < argc; argind++) {
         argp = argv[argind];
         if (*argp != '-') {
             break;
         }
-        if (strcmp(argp, "--config") == 0 || strcmp(argp, "--conf") == 0) {
+        if (smatch(argp, "--config") || smatch(argp, "--conf")) {
             if (argind >= argc) {
                 usageError();
             }
             app->configFile = sclone(argv[++argind]);
 
-#if BLD_UNIX_LIKE
-        } else if (strcmp(argp, "--chroot") == 0) {
+#if BIT_UNIX_LIKE
+        } else if (smatch(argp, "--chroot")) {
             if (argind >= argc) {
                 usageError();
             }
             jail = mprGetAbsPath(argv[++argind]);
 #endif
 
-        } else if (strcmp(argp, "--debugger") == 0 || strcmp(argp, "-D") == 0) {
+        } else if (smatch(argp, "--debugger") || smatch(argp, "-D")) {
             mprSetDebugMode(1);
 
-        } else if (strcmp(argp, "--home") == 0) {
+        } else if (smatch(argp, "--exe")) {
+            if (argind >= argc) {
+                usageError();
+            }
+            mpr->argv[0] = mprGetAbsPath(argv[++argind]);
+            mprSetAppPath(mpr->argv[0]);
+            mprSetModuleSearchPath(NULL);
+
+        } else if (smatch(argp, "--home")) {
             if (argind >= argc) {
                 usageError();
             }
             app->home = mprGetAbsPath(argv[++argind]);
+#if UNUSED && KEEP
             if (chdir(app->home) < 0) {
                 mprError("%s: Can't change directory to %s", mprGetAppName(), app->home);
                 exit(4);
             }
+#endif
 
-        } else if (strcmp(argp, "--log") == 0 || strcmp(argp, "-l") == 0) {
+        } else if (smatch(argp, "--log") || smatch(argp, "-l")) {
             if (argind >= argc) {
                 usageError();
             }
-            mprStartLogging(argv[++argind], 1);
-            mprSetCmdlineLogging(1);
+            logSpec = argv[++argind];
 
-        } else if (strcmp(argp, "--name") == 0 || strcmp(argp, "-n") == 0) {
+        } else if (smatch(argp, "--name") || smatch(argp, "-n")) {
             if (argind >= argc) {
                 usageError();
             }
             mprSetAppName(argv[++argind], 0, 0);
 
-        } else if (strcmp(argp, "--threads") == 0) {
+        } else if (smatch(argp, "--threads")) {
             if (argind >= argc) {
                 usageError();
             }
             app->workers = atoi(argv[++argind]);
 
-        } else if (strcmp(argp, "--verbose") == 0 || strcmp(argp, "-v") == 0) {
-            mprStartLogging("stderr:2", 1);
-            mprSetCmdlineLogging(1);
+        } else if (smatch(argp, "--verbose") || smatch(argp, "-v")) {
+            verbose++;
 
-        } else if (strcmp(argp, "--version") == 0 || strcmp(argp, "-V") == 0) {
-            mprPrintf("%s %s-%s\n", mprGetAppTitle(), BLD_VERSION, BLD_NUMBER);
+        } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
+            mprPrintf("%s %s-%s\n", mprGetAppTitle(), BIT_VERSION, BIT_NUMBER);
             exit(0);
 
         } else {
@@ -164,7 +181,13 @@ MAIN(appweb, int argc, char **argv)
             exit(5);
         }
     }
-
+    if (logSpec) {
+        mprStartLogging(logSpec, 1);
+        mprSetCmdlineLogging(1);
+    } else if (verbose) {
+        mprStartLogging(sfmt("stderr:%d", verbose + 1), 1);
+        mprSetCmdlineLogging(1);
+    }
     if (mprStart() < 0) {
         mprUserError("Can't start MPR for %s", mprGetAppName());
         mprDestroy(MPR_EXIT_DEFAULT);
@@ -183,13 +206,13 @@ MAIN(appweb, int argc, char **argv)
         }
         mprParseSocketAddress(ipAddrPort, &ip, &port, HTTP_DEFAULT_PORT);
         
-    } else if (findConfigFile() < 0) {
+    } else if (findAppwebConf() < 0) {
         exit(7);
     }
     if (jail && changeRoot(jail) < 0) {
         exit(8);
     }
-    if (initialize(ip, port) < 0) {
+    if (initializeAppweb(ip, port) < 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (maStartAppweb(app->appweb) < 0) {
@@ -210,7 +233,7 @@ MAIN(appweb, int argc, char **argv)
 }
 
 
-static void manageApp(App *app, int flags)
+static void manageApp(AppwebApp *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(app->appweb);
@@ -229,7 +252,7 @@ static void manageApp(App *app, int flags)
  */
 static int changeRoot(cchar *jail)
 {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     if (chdir(app->home) < 0) {
         mprError("%s: Can't change directory to %s", mprGetAppName(), app->home);
         return MPR_ERR_CANT_INITIALIZE;
@@ -247,14 +270,12 @@ static int changeRoot(cchar *jail)
 }
 
 
-static int initialize(cchar *ip, int port)
+static int initializeAppweb(cchar *ip, int port)
 {
     if ((app->appweb = maCreateAppweb()) == 0) {
         mprUserError("Can't create HTTP service for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
-    MPR->appwebService = app->appweb;
-
     if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
         mprUserError("Can't create HTTP server for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
@@ -266,16 +287,16 @@ static int initialize(cchar *ip, int port)
     if (app->workers >= 0) {
         mprSetMaxWorkers(app->workers);
     }
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     writePort(app->server);
-#else
+#elif BIT_UNIX_LIKE
     app->traceToggle = mprAddSignalHandler(SIGUSR2, traceHandler, 0, 0, MPR_SIGNAL_AFTER);
 #endif
     return 0;
 }
 
 
-static int findConfigFile()
+static int findAppwebConf()
 {
     cchar   *userPath;
 
@@ -285,7 +306,10 @@ static int findConfigFile()
     }
     if (!mprPathExists(app->configFile, R_OK)) {
         if (!userPath) {
-            app->configFile = mprJoinPath(mprGetAppDir(), sfmt("../%s/%s.conf", BLD_LIB_NAME, mprGetAppName()));
+            app->configFile = mprJoinPath(app->home, "appweb.conf");
+            if (!mprPathExists(app->configFile, R_OK)) {
+                app->configFile = mprJoinPath(mprGetAppDir(), sfmt("%s.conf", mprGetAppName()));
+            }
         }
         if (!mprPathExists(app->configFile, R_OK)) {
             mprError("Can't open config file %s", app->configFile);
@@ -308,11 +332,12 @@ static void usageError(Mpr *mpr)
     "    --config configFile    # Use named config file instead appweb.conf\n"
     "    --chroot directory     # Change root directory to run more securely (Unix)\n"
     "    --debugger             # Disable timeouts to make debugging easier\n"
+    "    --exe path             # Set path to Appweb executable on Vxworks\n"
     "    --home directory       # Change to directory to run\n"
     "    --log logFile:level    # Log to file file at verbosity level\n"
     "    --name uniqueName      # Unique name for this instance\n"
     "    --threads maxThreads   # Set maximum worker threads\n"
-    "    --verbose              # Same as --log stderr:2\n\n"
+    "    --verbose              # Same as --log stderr:2\n"
     "    --version              # Output version information\n\n"
     "  Without IPaddress, %s will read the appweb.conf configuration file.\n\n",
         mprGetAppTitle(), name, name, name, name);
@@ -325,7 +350,7 @@ static void usageError(Mpr *mpr)
  */
 static int checkEnvironment(cchar *program)
 {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     char   *home;
     home = mprGetCurrentPath();
     if (unixSecurityChecks(program, home) < 0) {
@@ -338,6 +363,7 @@ static int checkEnvironment(cchar *program)
 }
 
 
+#if BIT_UNIX_LIKE
 /*
     SIGUSR2 will toggle trace from level 2 to 6
  */
@@ -351,7 +377,6 @@ static void traceHandler(void *ignored, MprSignal *sp)
 }
 
 
-#if BLD_UNIX_LIKE
 /*
     Security checks. Make sure we are staring with a safe environment
  */
@@ -387,10 +412,10 @@ static int unixSecurityChecks(cchar *program, cchar *home)
     }
     return 0;
 }
-#endif /* BLD_HOST_UNIX */
+#endif /* BIT_HOST_UNIX */
 
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
 /*
     Write the port so the monitor can manage
  */ 
@@ -401,7 +426,7 @@ static int writePort(MaServer *server)
     int         fd, len;
 
     host = mprGetFirstItem(server->http->hosts);
-    //  TODO - should really go to a BLD_LOG_DIR
+    //  TODO - should really go to a BIT_LOG_DIR (then fix uninstall.sh)
     path = mprJoinPath(mprGetAppDir(), "../.port.log");
     if ((fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0666)) < 0) {
         mprError("Could not create port file %s", path);
@@ -418,7 +443,7 @@ static int writePort(MaServer *server)
     close(fd);
     return 0;
 }
-#endif /* BLD_WIN_LIKE */
+#endif /* BIT_WIN_LIKE */
 
 
 #if VXWORKS
@@ -456,8 +481,8 @@ double  __dummy_appweb_floating_point_resolution(double a, double b, int64 c, in
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

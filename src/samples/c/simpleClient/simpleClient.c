@@ -22,7 +22,7 @@ static void manageApp(App *app, int flags);
 
 /********************************* Code *******************************/
 
-MAIN(simpleClient, int argc, char** argv)
+MAIN(simpleClient, int argc, char **argv, char **envp)
 {
     Mpr     *mpr;
     App     *app;
@@ -57,7 +57,7 @@ MAIN(simpleClient, int argc, char** argv)
     /* 
        Get a URL
      */
-    if (httpConnect(app->conn, "GET", "http://www.embedthis.com/index.html") < 0) {
+    if (httpConnect(app->conn, "GET", "http://www.embedthis.com/index.html", NULL) < 0) {
         mprError("Can't get URL");
         exit(2);
     }
@@ -97,8 +97,8 @@ static void manageApp(App *app, int flags)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

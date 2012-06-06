@@ -8,7 +8,7 @@
 
 #include    "esp.h"
 
-#if BLD_FEATURE_ESP
+#if BIT_FEATURE_ESP
 /********************************** Forwards  *********************************/
 
 static char *makeKey(EspSession *sp, cchar *key);
@@ -40,7 +40,6 @@ EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
 }
 
 
-//  MOB - need to be able to hook session creation / destruction
 void espDestroySession(EspSession *sp)
 {
     mprAssert(sp);
@@ -132,29 +131,11 @@ int espSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
     if ((sp = espGetSession(conn, 1)) == 0) {
         return 0;
     }
-//  MOB - should not the session expire all at once?
     if (mprWriteCache(sp->cache, makeKey(sp, key), value, 0, sp->lifespan, 0, MPR_CACHE_SET) == 0) {
         return MPR_ERR_CANT_WRITE;
     }
     return 0;
 }
-
-
-#if UNUSED
-//  MOB - sessions should expire in their entirity
-void espExpireSessionVar(HttpConn *conn, cchar *key, MprTime lifespan)
-{
-    EspReq      *req;
-    EspSession  *sp;
-
-    mprAssert(conn);
-    mprAssert(key && *key);
-
-    req = conn->data;
-    sp = req->session;
-    mprExpireCache(sp->cache, makeKey(sp, key), mprGetTime() + lifespan);
-}
-#endif
 
 
 char *espGetSessionID(HttpConn *conn)
@@ -178,7 +159,7 @@ char *espGetSessionID(HttpConn *conn)
     cookies = httpGetCookies(conn);
     for (cookie = cookies; cookie && (value = strstr(cookie, ESP_SESSION)) != 0; cookie = value) {
         value += strlen(ESP_SESSION);
-        while (isspace((int) *value) || *value == '=') {
+        while (isspace((uchar) *value) || *value == '=') {
             value++;
         }
         quoted = 0;
@@ -221,12 +202,12 @@ static char *makeKey(EspSession *sp, cchar *key)
     return sfmt("session-%s-%s", sp->id, key);
 }
 
-#endif /* BLD_FEATURE_ESP */
+#endif /* BIT_FEATURE_ESP */
 /*
     @copy   default
  
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

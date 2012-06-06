@@ -8,7 +8,7 @@
 
 /********************************* Includes ***********************************/
 
-#include    "http.h"
+#include    "mpr.h"
 
 /********************************** Locals ************************************/
 
@@ -42,7 +42,7 @@ static void maMD5Update(MD5_CONTEXT *, uchar *, uint );
 static void maMD5Final(uchar [16], MD5_CONTEXT *);
 static char *maMD5binary(uchar *buf, int length);
 
-#if BLD_WIN_LIKE || VXWORKS
+#if BIT_WIN_LIKE || VXWORKS
 static char *getpass(char *prompt);
 #endif
 
@@ -159,7 +159,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
- 
 
 static int readPassFile(char *passFile)
 {
@@ -303,7 +302,7 @@ static char *getpass(char *prompt)
     return "NOT-SUPPORTED";
 }
 
-#elif BLD_WIN_LIKE || VXWORKS
+#elif BIT_WIN_LIKE || VXWORKS
 static char *getpass(char *prompt)
 {
     static char password[MAX_PASS];
@@ -345,7 +344,7 @@ static char *getpass(char *prompt)
     return password;
 }
 
-#endif /* BLD_WIN_LIKE */
+#endif /* BIT_WIN_LIKE */
  
 /*
     Display the usage
@@ -370,11 +369,11 @@ static char* trimWhiteSpace(char *str)
     if (str == 0) {
         return str;
     }
-    while (isspace((int) *str)) {
+    while (isspace((uchar) *str)) {
         str++;
     }
     len = strlen(str) - 1;
-    while (isspace((int) str[len])) {
+    while (isspace((uchar) str[len])) {
         str[len--] = '\0';
     }
     return str;
@@ -756,8 +755,8 @@ int _exit() {
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

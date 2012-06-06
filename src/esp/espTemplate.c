@@ -8,7 +8,7 @@
 
 #include    "esp.h"
 
-#if BLD_FEATURE_ESP
+#if BIT_FEATURE_ESP
 
 /************************************ Defines *********************************/
 /*
@@ -26,136 +26,145 @@
 /************************************ Forwards ********************************/
 
 static int getEspToken(EspParse *parse);
+static cchar *getDebug();
+static cchar *getEnvString(EspRoute *eroute, cchar *key, cchar *defaultValue);
+static cchar *getShlibExt(cchar *os);
+static cchar *getShobjExt(cchar *os);
+static cchar *getCompilerName(cchar *os, cchar *arch);
+static cchar *getCompilerPath(cchar *os, cchar *arch);
+static cchar *getLibs(cchar *os);
+static cchar *getMappedArch(cchar *arch);
+static cchar *getObjExt(cchar *os);
+static cchar *getVisualStudio();
+static cchar *getWinSDK();
+static cchar *getVxCPU(cchar *arch);
+static bool matchToken(cchar **str, cchar *token);
 
 /************************************* Code ***********************************/
-
-static char *getOutDir(cchar *name)
-{
-#if DEBUG_IDE
-    return mprGetAppDir();
-#else
-    return mprNormalizePath(sfmt("%s/../%s", mprGetAppDir(), name)); 
-#endif
-}
-
-
-static bool matchToken(cchar **str, cchar *token)
-{
-    ssize   len;
-
-    len = slen(token);
-    if (sncmp(*str, token, len) == 0) {
-        *str += len;
-        return 1;
-    }
-    return 0;
-}
-
 /*
     Tokens:
-    ARCH        Build architecture (x86_64)
+    ARCH        Build architecture (64)
+    GCC_ARCH    ARCH mapped to gcc -arch switches (x86_64)
     CC          Compiler (cc)
     DEBUG       Debug compilation options (-g, -Zi -Od)
     INC         Include directory out/inc
     LIB         Library directory (out/lib, xcode/VS: out/bin)
     LIBS        Libraries required to link with ESP
     OBJ         Name of compiled source (out/lib/view-MD5.o)
-    OUT         Output module (view_MD5.dylib)
-    SHLIB       Shared library (.lib, .so)
-    SHOBJ       Shared Object (.dll, .so)
+    MOD         Output module (view_MD5.dylib)
+    SHLIB       Host Shared library (.lib, .so)
+    SHOBJ       Host Shared Object (.dll, .so)
     SRC         Source code for view or controller (already templated)
     TMP         Temp directory
     VS          Visual Studio directory
     WINSDK      Windows SDK directory
  */
-char *espExpandCommand(cchar *command, cchar *source, cchar *module)
+char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module)
 {
-    MprBuf  *buf;
-    cchar   *cp, *out;
-    char    *tmp;
+    MprBuf      *buf;
+    MaAppweb    *appweb;
+    cchar       *cp, *outputModule, *os, *arch, *profile;
+    char        *tmp;
     
-#if BLD_WIN_LIKE
-    cchar   *path;
-    path = 0;
-#endif
-
     if (command == 0) {
         return 0;
     }
-    out = mprTrimPathExt(module);
+    appweb = MPR->appwebService;
+    outputModule = mprTrimPathExt(module);
+    maParsePlatform(appweb->platform, &os, &arch, &profile);
     buf = mprCreateBuf(-1, -1);
 
     for (cp = command; *cp; ) {
 		if (*cp == '$') {
             if (matchToken(&cp, "${ARCH}")) {
-                /* Build architecture */
-                mprPutStringToBuf(buf, BLD_HOST_CPU);
+                /* Target architecture (x86|mips|arm|x64) */
+                mprPutStringToBuf(buf, arch);
 
-#if BLD_WIN_LIKE
-            } else if (matchToken(&cp, "${WINSDK}")) {
-                path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows", "CurrentInstallFolder");
-				path = strim(path, "\\", MPR_TRIM_END);
-                mprPutStringToBuf(buf, path);
-
-            } else if (matchToken(&cp, "${VS}")) {
-                path = mprGetPathParent(mprGetPathParent(getenv("VS100COMNTOOLS")));
-                mprPutStringToBuf(buf, mprGetPortablePath(path));
-#endif
-                
-            } else if (matchToken(&cp, "${CC}")) {
-                /* Compiler */
-                //  MOB - what about cross compilation
-#if BLD_WIN_LIKE
-                path = mprJoinPath(mprGetPathParent(mprGetPathParent(getenv("VS100COMNTOOLS"))), "VC/bin/cl.exe");
-                mprPutStringToBuf(buf, mprGetPortablePath(path));
-#else
-                mprPutStringToBuf(buf, BLD_CC);
-#endif
-            } else if (matchToken(&cp, "${DEBUG}")) {
-                mprPutStringToBuf(buf, ESP_DEBUG);
+            } else if (matchToken(&cp, "${GCC_ARCH}")) {
+                /* Target architecture mapped to GCC mtune|mcpu values */
+                mprPutStringToBuf(buf, getMappedArch(arch));
 
             } else if (matchToken(&cp, "${INC}")) {
-                /* Include directory (out/inc) */
-                mprPutStringToBuf(buf, mprResolvePath(mprGetAppDir(), BLD_INC_NAME));
+                /* Include directory for the configuration */
+                mprPutStringToBuf(buf, mprJoinPath(appweb->platformDir, "inc")); 
 
-            } else if (matchToken(&cp, "${LIB}")) {
-                /* Library directory. IDE's use bin dir */
-                mprPutStringToBuf(buf, getOutDir(BLD_LIB_NAME));
+            } else if (matchToken(&cp, "${LIBPATH}")) {
+                /* Library directory for Appweb libraries for the target */
+                mprPutStringToBuf(buf, mprJoinPath(appweb->platformDir, "bin")); 
 
             } else if (matchToken(&cp, "${LIBS}")) {
                 /* Required libraries to link. These may have nested ${TOKENS} */
-                mprPutStringToBuf(buf, espExpandCommand(ESP_LIBS, source, module));
+                mprPutStringToBuf(buf, espExpandCommand(eroute, getLibs(os), source, module));
+
+            } else if (matchToken(&cp, "${MOD}")) {
+                /* Output module path in the cache without extension */
+                mprPutStringToBuf(buf, outputModule);
 
             } else if (matchToken(&cp, "${OBJ}")) {
-                /* Output object with extension (.o) */
-                mprPutStringToBuf(buf, mprJoinPathExt(out, BLD_OBJ));
+                /* Output object with extension (.o) in the cache directory */
+                mprPutStringToBuf(buf, mprJoinPathExt(outputModule, getObjExt(os)));
 
-            } else if (matchToken(&cp, "${OUT}")) {
-                /* Output modules */
-                mprPutStringToBuf(buf, out);
+            } else if (matchToken(&cp, "${OS}")) {
+                /* Target architecture (freebsd|linux|macosx|windows|vxworks) */
+                mprPutStringToBuf(buf, os);
 
             } else if (matchToken(&cp, "${SHLIB}")) {
-                /* .lib */
-                mprPutStringToBuf(buf, BLD_SHLIB);
+                /* .dll, .so, .dylib */
+                mprPutStringToBuf(buf, getShlibExt(os));
 
             } else if (matchToken(&cp, "${SHOBJ}")) {
-                /* .dll */
-                mprPutStringToBuf(buf, BLD_SHOBJ);
+                /* .dll, .so, .dylib */
+                mprPutStringToBuf(buf, getShobjExt(os));
 
             } else if (matchToken(&cp, "${SRC}")) {
                 /* View (already parsed into C code) or controller source */
                 mprPutStringToBuf(buf, source);
 
             } else if (matchToken(&cp, "${TMP}")) {
-#if BLD_WIN_LIKE
-                if ((tmp = getenv("TMP")) == 0) {
-                    tmp = getenv("TEMP");
+                if ((tmp = getenv("TMPDIR")) == 0) {
+                    if ((tmp = getenv("TMP")) == 0) {
+                        tmp = getenv("TEMP");
+                    }
                 }
-#else
-                tmp = getenv("TMPDIR");
-#endif
                 mprPutStringToBuf(buf, tmp ? tmp : ".");
 
+            } else if (matchToken(&cp, "${VS}")) {
+                mprPutStringToBuf(buf, getVisualStudio());
+
+            } else if (matchToken(&cp, "${VXCPU}")) {
+                mprPutStringToBuf(buf, getVxCPU(arch));
+
+            } else if (matchToken(&cp, "${WINSDK}")) {
+                mprPutStringToBuf(buf, getWinSDK());
+
+            /*
+                These vars can be configured from environment variables.
+                NOTE: the default esp.conf includes "esp->vxworks.conf" which has EspEnv definitions for the configured 
+                VxWorks toolchain
+             */
+            } else if (matchToken(&cp, "${CC}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "CC", getCompilerPath(os, arch)));
+            } else if (matchToken(&cp, "${LINK}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "LINK", ""));
+            } else if (matchToken(&cp, "${CFLAGS}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "CFLAGS", ""));
+            } else if (matchToken(&cp, "${DEBUG}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "DEBUG", getDebug()));
+            } else if (matchToken(&cp, "${LDFLAGS}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "LDFLAGS", ""));
+
+            } else if (matchToken(&cp, "${WIND_BASE}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_BASE", WIND_BASE));
+            } else if (matchToken(&cp, "${WIND_HOME}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_HOME", WIND_HOME));
+            } else if (matchToken(&cp, "${WIND_HOST_TYPE}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_HOST_TYPE", WIND_HOST_TYPE));
+            } else if (matchToken(&cp, "${WIND_PLATFORM}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_PLATFORM", WIND_PLATFORM));
+            } else if (matchToken(&cp, "${WIND_GNU_PATH}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_GNU_PATH", WIND_GNU_PATH));
+            } else if (matchToken(&cp, "${WIND_CCNAME}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_CCNAME", getCompilerName(os, arch)));
             } else {
                 mprPutCharToBuf(buf, *cp++);
             }
@@ -173,26 +182,35 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
     EspReq      *req;
     EspRoute    *eroute;
     MprCmd      *cmd;
+    MprKey      *var;
+    MprList     *elist;
+    cchar       **env;
     char        *err, *out;
 
     req = conn->data;
     eroute = req->route->eroute;
 
     cmd = mprCreateCmd(conn->dispatcher);
-    if ((req->commandLine = espExpandCommand(command, csource, module)) == 0) {
+    if ((req->commandLine = espExpandCommand(eroute, command, csource, module)) == 0) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
     mprLog(4, "ESP command: %s\n", req->commandLine);
     if (eroute->env) {
-        mprAddNullItem(eroute->env);
-        mprSetCmdDefaultEnv(cmd, (cchar**) &eroute->env->items[0]);
+        elist = mprCreateList(0, 0);
+        for (ITERATE_KEYS(eroute->env, var)) {
+            mprAddItem(elist, sfmt("%s=%s", var->key, var->data));
+        }
+        mprAddNullItem(elist);
+        env = (cchar**) &elist->items[0];
+    } else {
+        env = 0;
     }
     if (eroute->searchPath) {
         mprSetCmdSearchPath(cmd, eroute->searchPath);
     }
     //  WARNING: GC will run here
-	if (mprRunCmd(cmd, req->commandLine, &out, &err, -1, 0) != 0) {
+	if (mprRunCmd(cmd, req->commandLine, env, &out, &err, -1, 0) != 0) {
 		if (err == 0 || *err == '\0') {
 			/* Windows puts errors to stdout Ugh! */
 			err = out;
@@ -229,6 +247,7 @@ bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, 
     rx = conn->rx;
     route = rx->route;
     eroute = route->eroute;
+    layout = 0;
 
     if (isView) {
         if ((page = mprReadPathContents(source, &len)) == 0) {
@@ -238,7 +257,13 @@ bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, 
         /*
             Use layouts iff there is a source defined on the route. Only MVC/controllers based apps do this.
          */
+        if (eroute->layoutsDir) {
+#if UNUSED
         layout = mprSamePath(eroute->layoutsDir, route->dir) ? 0 : mprJoinPath(eroute->layoutsDir, "default.esp");
+#else
+        layout = mprJoinPath(eroute->layoutsDir, "default.esp");
+#endif
+        }
         if ((script = espBuildScript(route, page, source, cacheName, layout, &err)) == 0) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't build %s, error %s", source, err);
             return 0;
@@ -259,33 +284,30 @@ bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, 
         csource = source;
     }
     mprMakeDir(eroute->cacheDir, 0775, -1, -1, 1);
-    /*
-        WARNING: GC yield here
-     */
+
+    /* WARNING: GC yield here */
     if (runCommand(conn, eroute->compile, csource, module) < 0) {
         return 0;
     }
     if (eroute->link) {
-        /*
-            WARNING: GC yield here
-         */
+        /* WARNING: GC yield here */
         if (runCommand(conn, eroute->link, csource, module) < 0) {
             return 0;
         }
-#if !(BLD_DEBUG && MACOSX)
+#if !(BIT_DEBUG && MACOSX)
         /*
             MAC needs the object for debug information
          */
-        mprDeletePath(mprJoinPathExt(mprTrimPathExt(module), BLD_OBJ));
+        mprDeletePath(mprJoinPathExt(mprTrimPathExt(module), &BIT_OBJ[1]));
 #endif
     }
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     {
         /*
             Windows leaves intermediate object in the current directory
          */
         cchar   *obj;
-        obj = mprReplacePathExt(mprGetPathBase(csource), BLD_OBJ);
+        obj = mprReplacePathExt(mprGetPathBase(csource), "obj");
         if (mprPathExists(obj, F_OK)) {
             mprDeletePath(obj);
         }
@@ -357,6 +379,7 @@ static char *joinLine(cchar *str, ssize *lenp)
 char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, char **err)
 {
     EspParse    parse;
+    EspRoute    *eroute;
     char        *control, *incBuf, *incText, *global, *token, *body, *where;
     char        *rest, *start, *end, *include, *line, *fmt, *layoutPage, *layoutBuf;
     ssize       len;
@@ -364,6 +387,7 @@ char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheNam
 
     mprAssert(page);
 
+    eroute = route->eroute;
     body = start = end = global = "";
     *err = 0;
 
@@ -385,7 +409,7 @@ char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheNam
         switch (tid) {
         case ESP_TOK_CODE:
             if (*token == '^') {
-                for (token++; *token && isspace((int) *token); token++) ;
+                for (token++; *token && isspace((uchar) *token); token++) ;
                 where = stok(token, " \t\r\n", &rest);
                 if (rest == 0) {
                     ;
@@ -446,7 +470,7 @@ char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheNam
                     if (token[0] == '/') {
                         layout = sclone(token);
                     } else {
-                        layout = mprJoinPath(mprGetPathDir(path), token);
+                        layout = mprJoinPath(eroute->layoutsDir ? eroute->layoutsDir : mprGetPathDir(path), token);
                     }
                     if (!mprPathExists(layout, F_OK)) {
                         *err = sfmt("Can't access layout page %s", layout);
@@ -513,6 +537,12 @@ char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheNam
             if ((layoutBuf = espBuildScript(route, layoutPage, layout, NULL, NULL, err)) == 0) {
                 return 0;
             }
+#if BIT_DEBUG
+            if (!scontains(layoutBuf, CONTENT_MARKER, -1)) {
+                *err = sfmt("Layout page is missing content marker: %s", layout);
+                return 0;
+            }
+#endif
             body = sreplace(layoutBuf, CONTENT_MARKER, body);
         }
         if (start && start[slen(start) - 1] != '\n') {
@@ -556,7 +586,7 @@ static bool addChar(EspParse *parse, int c)
 
 static char *eatSpace(EspParse *parse, char *next)
 {
-    for (; *next && isspace((int) *next); next++) {
+    for (; *next && isspace((uchar) *next); next++) {
         if (*next == '\n') {
             parse->lineNumber++;
         }
@@ -567,7 +597,7 @@ static char *eatSpace(EspParse *parse, char *next)
 
 static char *eatNewLine(EspParse *parse, char *next)
 {
-    for (; *next && isspace((int) *next); next++) {
+    for (; *next && isspace((uchar) *next); next++) {
         if (*next == '\n') {
             parse->lineNumber++;
             next++;
@@ -660,7 +690,7 @@ static int getEspToken(EspParse *parse)
                     } else {
                         tid = next[-1] == '@' ? ESP_TOK_VAR : ESP_TOK_FIELD;
                         next = eatSpace(parse, next);
-                        while (isalnum((int) *next) || *next == '_') {
+                        while (isalnum((uchar) *next) || *next == '_') {
                             if (*next == '\n') parse->lineNumber++;
                             if (!addChar(parse, *next++)) {
                                 return ESP_TOK_ERR;
@@ -698,12 +728,238 @@ static int getEspToken(EspParse *parse)
 }
 
 
-#endif /* BLD_FEATURE_ESP */
+static cchar *getEnvString(EspRoute *eroute, cchar *key, cchar *defaultValue)
+{
+    cchar   *value;
+
+    if (!eroute || !eroute->env || (value = mprLookupKey(eroute->env, key)) == 0) {
+        if ((value = getenv(key)) == 0) {
+            if (defaultValue) {
+                value = defaultValue;
+            } else {
+                value = sfmt("${%s}", key);
+            }
+        }
+    }
+    return value;
+}
+
+
+static cchar *getShobjExt(cchar *os)
+{
+    if (smatch(os, "macosx")) {
+        return ".dylib";
+    } else if (smatch(os, "windows")) {
+        return ".dll";
+    } else if (smatch(os, "vxworks")) {
+        return ".out";
+    } else {
+        return ".so";
+    }
+}
+
+
+static cchar *getShlibExt(cchar *os)
+{
+    if (smatch(os, "macosx")) {
+        return ".dylib";
+    } else if (smatch(os, "windows")) {
+        return ".lib";
+    } else if (smatch(os, "vxworks")) {
+        return ".a";
+    } else {
+        return ".so";
+    }
+}
+
+
+static cchar *getObjExt(cchar *os)
+{
+    if (smatch(os, "windows")) {
+        return ".obj";
+    }
+    return ".o";
+}
+
+
+static cchar *getCompilerName(cchar *os, cchar *arch)
+{
+    cchar       *name;
+
+    name = "gcc";
+    if (smatch(os, "vxworks")) {
+        if (smatch(arch, "x86") || smatch(arch, "i586") || smatch(arch, "i686") || smatch(arch, "pentium")) {
+            name = "ccpentium";
+        } else if (scontains(arch, "86", -1)) {
+            name = "cc386";
+        } else if (scontains(arch, "ppc", -1)) {
+            name = "ccppc";
+        } else if (scontains(arch, "xscale", -1) || scontains(arch, "arm", -1)) {
+            name = "ccarm";
+        } else if (scontains(arch, "68", -1)) {
+            name = "cc68k";
+        } else if (scontains(arch, "sh", -1)) {
+            name = "ccsh";
+        } else if (scontains(arch, "mips", -1)) {
+            name = "ccmips";
+        }
+    } else if (smatch(os, "macosx")) {
+        name = "clang";
+    }
+    return name;
+}
+
+
+static cchar *getVxCPU(cchar *arch)
+{
+    if (smatch(arch, "i386")) {
+        return "I80386";
+    } else if (smatch(arch, "i486")) {
+        return "I80486";
+    } else if (smatch(arch, "x86") | sends(arch, "86")) {
+        return "PENTIUM";
+    } 
+    return supper(arch);
+}
+
+
+static cchar *getDebug()
+{
+    MaAppweb    *appweb;
+    int         debug;
+
+    appweb = MPR->appwebService;
+    debug = sends(appweb->platform, "-debug");
+    if (scontains(appweb->platform, "windows-", -1)) {
+        return (debug) ? "-DBIT_DEBUG -Zi -Od" : "-O";
+    }
+    return (debug) ? "-DBIT_DEBUG -g" : "-O2";
+}
+
+
+static cchar *getLibs(cchar *os)
+{
+    cchar       *libs;
+
+    if (smatch(os, "windows")) {
+        libs = "\"${LIBPATH}\\mod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\" \"${LIBPATH}\\libmprssl.lib\"";
+    } else {
+        libs = "${LIBPATH}/mod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lmprssl -lpthread -lm";
+    }
+    return libs;
+}
+
+
+#if UNUSED
+static char *getLibpath(cchar *name)
+{
+    return mprNormalizePath(sfmt("%s/../%s", mprGetAppDir(), name)); 
+    eroute->
+         mprNormalizePath(mprJoinPath(mprGetAppDir(), "../inc")
+    return mprJoin
+#if DEBUG_IDE
+    //  MOB - not right for cross dev
+    return mprGetAppDir();
+#else
+    //  MOB - not right for cross dev
+    return mprNormalizePath(sfmt("%s/../%s", mprGetAppDir(), name)); 
+#endif
+}
+#endif
+
+
+static bool matchToken(cchar **str, cchar *token)
+{
+    ssize   len;
+
+    len = slen(token);
+    if (sncmp(*str, token, len) == 0) {
+        *str += len;
+        return 1;
+    }
+    return 0;
+}
+
+
+//  MOB order
+static cchar *getMappedArch(cchar *arch)
+{
+    if (smatch(arch, "x64")) {
+        arch = "x86_64";
+    } else if (smatch(arch, "x86")) {
+        arch = "i686";
+    }
+    return arch;
+}
+
+static cchar *getWinSDK()
+{
+#if WINDOWS
+    cchar   *path;
+
+    path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows", "CurrentInstallFolder");
+    if (!path) {
+        path = "${WINSDK}";
+    }
+    return strim(path, "\\", MPR_TRIM_END);
+#else
+    return "";
+#endif
+}
+
+
+static cchar *getVisualStudio()
+{
+#if WINDOWS
+    cchar   *path;
+
+    //  MOB - check this key. Does 'Visual Studio' have a space?
+    path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\" BIT_VISUAL_STUDIO_VERSION, "ShellFolder");
+    if (!path) {
+        path = mprReadRegistry("HKCU\\SOFTWARE\\Microsoft\\VisualStudio\\" BIT_VISUAL_STUDIO_VERSION "_Config", 
+            "ShellFolder");
+        if (!path) {
+            path = "${VS}";
+        }
+    }
+    return strim(path, "\\", MPR_TRIM_END);
+#else
+    return "";
+#endif
+}
+
+
+static cchar *getCompilerPath(cchar *os, cchar *arch)
+{
+#if WINDOWS
+    /* 
+        Get the real system architecture (32 or 64 bit)
+     */
+    MaAppweb *appweb = MPR->appwebService;
+    cchar *path = getVisualStudio();
+    if (scontains(appweb->platform, "-x64-", -1)) {
+        int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
+        if (is64BitSystem) {
+            path = mprJoinPath(path, "VC/bin/amd64/cl.exe");
+        } else {
+            /* Cross building on a 32-bit system */
+            path = mprJoinPath(path, "VC/bin/x86_amd64/cl.exe");
+        }
+    } else {
+        path = mprJoinPath(path, "VC/bin/cl.exe");
+    }
+    return path;
+#else
+    return getCompilerName(os, arch);
+#endif
+}
+
+#endif /* BIT_FEATURE_ESP */
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

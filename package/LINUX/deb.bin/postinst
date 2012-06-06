@@ -2,14 +2,15 @@
 #
 # 	postinst -- Post installation script for appweb
 #
-#	Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
+#	Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
 #
 
-BLD_PRODUCT=!!BLD_PRODUCT!!
-BLD_NAME="!!BLD_NAME!!"
-BLD_LIB_PREFIX="!!ORIG_BLD_LIB_PREFIX!!"
-BLD_LOG_PREFIX="!!ORIG_BLD_LOG_PREFIX!!"
-BLD_SPL_PREFIX="!!ORIG_BLD_SPL_PREFIX!!"
+BIT_PRODUCT=${settings.product}
+BIT_NAME="${settings.title}"
+BIT_BIN_PREFIX="${prefixes.bin}"
+BIT_LIB_PREFIX="${prefixes.lib}"
+BIT_LOG_PREFIX="${prefixes.log}"
+BIT_SPL_PREFIX="${prefixes.spool}"
 
 ###############################################################################
 
@@ -31,13 +32,13 @@ setPerms() {
 		fi
 	done
 	if [ "$username" = "" -o "$groupname" = "" ] ; then
-		echo "Can't find a suitable user/group for $BLD_PRODUCT" 1>&2
+		echo "Can't find a suitable user/group for $BIT_PRODUCT" 1>&2
 		exit 255
 	fi
-    mkdir -p "$BLD_SPL_PREFIX" "$BLD_SPL_PREFIX/cache" "$BLD_LOG_PREFIX"
-    chown $username "$BLD_SPL_PREFIX" "$BLD_SPL_PREFIX/cache" "$BLD_LOG_PREFIX"
-    chgrp $groupname "$BLD_SPL_PREFIX" "$BLD_SPL_PREFIX/cache" "$BLD_LOG_PREFIX"
-    chmod 755 "$BLD_SPL_PREFIX" "$BLD_SPL_PREFIX/cache" "$BLD_LOG_PREFIX"
+    mkdir -p "$BIT_SPL_PREFIX" "$BIT_SPL_PREFIX/cache" "$BIT_LOG_PREFIX"
+    chown $username "$BIT_SPL_PREFIX" "$BIT_SPL_PREFIX/cache" "$BIT_LOG_PREFIX"
+    chgrp $groupname "$BIT_SPL_PREFIX" "$BIT_SPL_PREFIX/cache" "$BIT_LOG_PREFIX"
+    chmod 755 "$BIT_SPL_PREFIX" "$BIT_SPL_PREFIX/cache" "$BIT_LOG_PREFIX"
 }
 
 ###############################################################################
@@ -52,13 +53,14 @@ case $action in
 	configure)							# when new
         setPerms
 		oldVersion=$2
+        "$BIT_BIN_PREFIX/linkup" Install /
         appman -v install
         if [ "$APPWEB_DONT_START" != 1 ] ; then
             appman enable
             appman start
         fi
         echo
-		echo "$BLD_NAME installation successful."
+		echo "$BIT_NAME installation successful."
 		;;
 	abort-upgrade)						# when old
 		;;
