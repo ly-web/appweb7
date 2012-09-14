@@ -1584,7 +1584,7 @@ typedef struct MprSynch { int dummy; } MprSynch;
 /**
     Condition variable for single and multi-thread synchronization. Condition variables can be used to coordinate 
     activities. These variables are level triggered in that a condition can be signalled prior to another thread 
-    waiting. Condition variables can be used when single threaded but mprServiceEvents should be called to  pump events
+    waiting. Condition variables can be used when single threaded but mprServiceEvents should be called to pump events
     until another callback invokes mprWaitForCond.
     @ingroup MprSynch
  */
