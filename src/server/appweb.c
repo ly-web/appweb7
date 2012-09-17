@@ -216,15 +216,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (initializeAppweb(ip, port) < 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
-    
-#if UNUSED
-    void testProc(HttpConn *conn);
-    void testESP();
-    HttpRoute *parent = httpLookupRoute(0, "/mob/");
-    espBindProc(parent, "/mob/aaa", testESP);
-    httpBindRoute(0, "/abc", testProc);
-    httpDefineProc("/proc/logout", testProc);
-#endif
     if (maStartAppweb(app->appweb) < 0) {
         mprUserError("Can't start HTTP service, exiting.");
         exit(9);
@@ -241,20 +232,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     mprDestroy(MPR_EXIT_DEFAULT);
     return status;
 }
-
-
-#if UNUSED
-void testProc(HttpConn *conn)
-{
-    httpError(conn, 200, "DONE");
-}
-
-void testESP()
-{
-    HttpConn *conn = getConn();
-    httpError(conn, 200, "DONE");
-}
-#endif
 
 
 static void manageApp(AppwebApp *app, int flags)
