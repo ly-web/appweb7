@@ -19606,10 +19606,12 @@ static MprList *findFiles(MprList *list, cchar *dir, cchar *base, int flags)
 }
 
 
+#if LINUX
 static int sortFiles(MprDirEntry **dp1, MprDirEntry **dp2)
 {
     return strcmp((*dp1)->name, (*dp2)->name);
 }
+#endif
 
 
 /*
