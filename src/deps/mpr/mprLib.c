@@ -16775,7 +16775,7 @@ static int defaultSort(char **q1, char **q2, void *ctx)
 }
 
 
-void mprSortList(MprList *lp, MprSortProc compare, void *ctx)
+MprList *mprSortList(MprList *lp, MprSortProc compare, void *ctx)
 {
     lock(lp);
     if (!compare) {
@@ -16783,6 +16783,7 @@ void mprSortList(MprList *lp, MprSortProc compare, void *ctx)
     }
     mprSort(lp->items, lp->length, sizeof(void*), compare, ctx);
     unlock(lp);
+    return lp;
 }
 
 
@@ -19605,6 +19606,12 @@ static MprList *findFiles(MprList *list, cchar *dir, cchar *base, int flags)
 }
 
 
+static int sortFiles(MprDirEntry **dp1, MprDirEntry **dp2)
+{
+    return strcmp((*dp1)->name, (*dp2)->name);
+}
+
+
 /*
     Get the files in a directory. Returns a list of MprDirEntry objects.
 
@@ -19616,13 +19623,21 @@ static MprList *findFiles(MprList *list, cchar *dir, cchar *base, int flags)
  */
 MprList *mprGetPathFiles(cchar *dir, int flags)
 {
+    MprList *list;
     cchar   *base;
 
     if (dir == 0 || *dir == '\0') {
         dir = ".";
     }
     base = (flags & MPR_PATH_RELATIVE) ? 0 : dir;
-    return findFiles(mprCreateList(-1, 0), dir, base, flags);
+    if ((list = findFiles(mprCreateList(-1, 0), dir, base, flags)) == 0) {
+        return 0;
+    }
+#if LINUX
+    /* Linux returns directories not sorted */
+    mprSortList(list, (MprSortProc) sortFiles, 0);
+#endif
+    return list;
 }
 
 

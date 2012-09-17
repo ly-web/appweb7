@@ -4056,8 +4056,9 @@ extern int mprGetTimeZoneOffset(MprTime when);
     @stability Evolving.
     @see MprList MprListCompareProc mprAddItem mprAddNullItem mprAppendList mprClearList mprCloneList mprCopyList 
         mprCreateKeyPair mprCreateList mprGetFirstItem mprGetItem mprGetLastItem mprGetListCapacity mprGetListLength 
-        mprGetNextItem mprGetPrevItem mprInitList mprInsertItemAtPos mprLookupItem mprLookupStringItem mprPopItem mprPushItem 
-        mprRemoveItem mprRemoveItemAtPos mprRemoveRangeOfItems mprRemoveStringItem mprSetItem mprSetListLimits mprSortList 
+        mprGetNextItem mprGetPrevItem mprInitList mprInsertItemAtPos mprLookupItem mprLookupStringItem mprPopItem
+        mprPushItem mprRemoveItem mprRemoveItemAtPos mprRemoveRangeOfItems mprRemoveStringItem mprSetItem
+        mprSetListLimits mprSortList 
     @defgroup MprList MprList
  */
 typedef struct MprList {
@@ -4338,9 +4339,10 @@ extern void mprSort(void *base, ssize num, ssize width, MprSortProc compare, voi
     @param list List pointer returned from mprCreateList.
     @param compare Comparison function. If null, then a default string comparison is used.
     @param ctx Context to provide to comparison function
+    @return The sorted list
     @ingroup MprList
  */
-extern void mprSortList(MprList *list, MprSortProc compare, void *ctx);
+extern MprList *mprSortList(MprList *list, MprSortProc compare, void *ctx);
 
 /**
     Key value pairs for use with MprList or MprKey
