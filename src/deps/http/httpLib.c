@@ -3,6 +3,8 @@
 
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
+
+    Prepared by: magnetar.local
  */
 
 #include "http.h"
@@ -6139,6 +6141,9 @@ bool httpPamVerifyUser(HttpConn *conn)
             }
             mprAddNullToBuf(abilities);
             mprLog(5, "Create temp user \"%s\" with abilities: %s", conn->username, mprGetBufStart(abilities));
+            /*
+                Create a user and map groups to roles and expand to abilities
+             */
             conn->user = httpCreateUser(conn->rx->route->auth, conn->username, 0, mprGetBufStart(abilities));
         }
     }
@@ -13511,7 +13516,7 @@ static void traceBuf(HttpConn *conn, int dir, int level, cchar *msg, cchar *buf,
         digits = "0123456789ABCDEF";
         for (i = 0, cp = start, dp = data; cp < &start[len]; cp++) {
             *dp++ = digits[(*cp >> 4) & 0x0f];
-            *dp++ = digits[*cp++ & 0x0f];
+            *dp++ = digits[*cp & 0x0f];
             *dp++ = ' ';
             if ((++i % 16) == 0) {
                 *dp++ = '\n';
