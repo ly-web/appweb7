@@ -29661,9 +29661,9 @@ int mprStartOsService()
         Open a syslog connection
      */
 #if SOLARIS
-    openlog(mprGetAppName(), LOG_CONS, LOG_LOCAL0);
+    openlog(mprGetAppName(), LOG_LOCAL0);
 #else
-    openlog(mprGetAppName(), LOG_CONS | LOG_PERROR, LOG_LOCAL0);
+    openlog(mprGetAppName(), 0, LOG_LOCAL0);
 #endif
     return 0;
 }
