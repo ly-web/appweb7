@@ -141,7 +141,7 @@ static void     manageMatrixSsl(MprMatrixSsl *mssl, int flags);
 static ssize    processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, int *readMore);
 static ssize    readMss(MprSocket *sp, void *buf, ssize len);
 static int      upgradeMss(MprSocket *sp, MprSsl *ssl, int server);
-static int      verifyServer(ssl_t *ssl, psX509Cert_t *cert, int32 alert);
+static int      verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert);
 static ssize    writeMss(MprSocket *sp, cvoid *buf, ssize len);
 
 /************************************ Code ************************************/
@@ -227,6 +227,7 @@ static void manageMatrixSsl(MprMatrixSsl *mssl, int flags)
             matrixSslDeleteKeys(mssl->keys);
             mssl->keys = 0;
         }
+        matrixSslClose();
     }
 }
 
@@ -253,9 +254,9 @@ static void manageMatrixSocket(MprMatrixSocket *msp, int flags)
  */
 static void closeMss(MprSocket *sp, bool gracefully)
 {
-    MprMatrixSocket    *msp;
-    uchar           *obuf;
-    int             nbytes;
+    MprMatrixSocket     *msp;
+    uchar               *obuf;
+    int                 nbytes;
 
     mprAssert(sp);
 
@@ -328,7 +329,7 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, int server)
             return MPR_ERR_CANT_INITIALIZE;
         }
         cipherSuite = 0;
-        if (matrixSslNewClientSession(&msp->handle, mssl->keys, NULL, cipherSuite, verifyServer, NULL, NULL) < 0) {
+        if (matrixSslNewClientSession(&msp->handle, mssl->keys, NULL, cipherSuite, verifyCert, NULL, NULL) < 0) {
             unlock(sp);
             return MPR_ERR_CANT_CONNECT;
         }
@@ -343,10 +344,10 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, int server)
 
 
 /*
-    Validate the server certificate
+    Validate certificates
     UGLY: really need a MprMatrixSsl handle here
  */
-static int verifyServer(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
+static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
 {
     MprSocketService    *ss;
     MprSocket           *sp;
@@ -446,27 +447,24 @@ static void disconnectMss(MprSocket *sp)
 }
 
 
-/*
-    Low level blocking write
- */
-static ssize blockingWrite(MprSocket *sp, cchar *buf, ssize len)
+static ssize blockingWrite(MprSocket *sp, cvoid *buf, ssize len)
 {
     MprSocketProvider   *standard;
     ssize               written, bytes;
-    int                 mode;
+    int                 prior;
 
     standard = sp->service->standardProvider;
-    mode = mprSetSocketBlockingMode(sp, 1);
+    prior = mprSetSocketBlockingMode(sp, 1);
     for (written = 0; len > 0; ) {
         if ((bytes = standard->writeSocket(sp, buf, len)) < 0) {
-            mprSetSocketBlockingMode(sp, mode);
+            mprSetSocketBlockingMode(sp, prior);
             return bytes;
         }
-        buf += bytes;
+        buf = (char*) buf + bytes;
         len -= bytes;
         written += bytes;
     }
-    mprSetSocketBlockingMode(sp, mode);
+    mprSetSocketBlockingMode(sp, prior);
     return written;
 }
 
@@ -543,7 +541,7 @@ static ssize processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, 
 
         case MATRIXSSL_REQUEST_SEND:
             toWrite = matrixSslGetOutdata(msp->handle, &obuf);
-            if ((written = blockingWrite(sp, (cchar*) obuf, (int) toWrite)) < 0) {
+            if ((written = blockingWrite(sp, obuf, toWrite)) < 0) {
                 mprError("MatrixSSL: Error in process");
                 return MPR_ERR_CANT_INITIALIZE;
             }
@@ -640,10 +638,6 @@ static ssize readMss(MprSocket *sp, void *buf, ssize len)
         return -1;
     }
     lock(sp);
-    /*
-        If there is more data buffered by MatrixSSL, then ensure the select handler will recall us again even 
-        if there is no more IO events
-     */
     bytes = innerRead(sp, buf, len);
     msp = (MprMatrixSocket*) sp->sslSocket;
     if (msp->more) {
@@ -714,26 +708,30 @@ static ssize writeMss(MprSocket *sp, cvoid *buf, ssize len)
 
 
 /*
-    Flush write data. This is blocking.
+    Blocking flush
  */
 static ssize flushMss(MprSocket *sp)
 {
+#if UNUSED
     MprMatrixSocket     *msp;
     ssize               written, bytes;
-    int                 mode;
+    int                 prior;
 
     msp = (MprMatrixSocket*) sp->sslSocket;
     written = 0;
-    mode = mprSetSocketBlockingMode(sp, 1);
+    prior = mprSetSocketBlockingMode(sp, 1);
     while (msp->outlen > 0) {
         if ((bytes = writeMss(sp, NULL, 0)) < 0) {
-            mprSetSocketBlockingMode(sp, mode);
+            mprSetSocketBlockingMode(sp, prior);
             return bytes;
         }
         written += bytes;
     }
-    mprSetSocketBlockingMode(sp, mode);
+    mprSetSocketBlockingMode(sp, prior);
     return written;
+#else
+    return blockingWrite(sp, 0, 0);
+#endif
 }
 
 #else

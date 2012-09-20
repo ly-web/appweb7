@@ -4359,7 +4359,7 @@ HttpStatusCode HttpStatusCodes[] = {
     { 406, "406", "Not Acceptable" },
     { 408, "408", "Request Timeout" },
     { 409, "409", "Conflict" },
-    { 410, "410", "Length Required" },
+    { 410, "410", "Gone" },
     { 411, "411", "Length Required" },
     { 412, "412", "Precondition Failed" },
     { 413, "413", "Request Entity Too Large" },
@@ -10372,7 +10372,7 @@ static char *expandPatternTokens(cchar *str, cchar *replacement, int *matches, i
             default:
                 /* Insert the nth submatch */
                 if (isdigit((uchar) *cp)) {
-                    submatch = (int) wtoi(cp);
+                    submatch = (int) atoi(cp);
                     while (isdigit((uchar) *++cp))
                         ;
                     cp--;
@@ -14101,7 +14101,7 @@ void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar
     httponly = (flags & HTTP_COOKIE_HTTP) ?  "; httponly" : "";
     httpAppendHeader(conn, "Set-Cookie", 
         sjoin(name, "=", value, "; path=", path, domainAtt, domain, expiresAtt, expires, secure, httponly, NULL));
-    httpAppendHeader(conn, "Cache-control", "no-cache=\"set-cookie\"");
+    httpAppendHeader(conn, "Cache-Control", "no-cache=\"set-cookie\"");
 }
 
 
@@ -14743,7 +14743,7 @@ static int processContentHeader(HttpQueue *q, char *line)
             up->currentFile->contentType = sclone(rest);
         }
     }
-    return 1;
+    return 0;
 }
 
 
@@ -14921,7 +14921,7 @@ static int processContentData(HttpQueue *q)
         httpPutPacketToNext(q, packet);
     }
     up->contentState = HTTP_UPLOAD_BOUNDARY;
-    return 1;
+    return 0;
 }
 
 

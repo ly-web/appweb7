@@ -829,7 +829,7 @@ static Mpr *mpr;
 static SERVICE_STATUS           svcStatus;
 static SERVICE_STATUS_HANDLE    svcHandle;
 static SERVICE_TABLE_ENTRY      svcTable[] = {
-    { "default",    0   },
+    { T("default"), 0   },
     { 0,            0   }
 };
 
@@ -857,7 +857,7 @@ static void     manageApp(void *unused, int flags);
 static LRESULT  msgProc(HWND hwnd, uint msg, uint wp, long lp);
 
 static void     serviceThread(void *data);
-static void WINAPI serviceMain(ulong argc, char **argv);
+static void WINAPI serviceMain(ulong argc, wchar **argv);
 
 /*********************************** Code *************************************/
 
