@@ -318,7 +318,7 @@ static long msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp)
             /*
                 Single-threaded users beware. This blocks !!
              */
-            mprSprintf(buf, sizeof(buf), "%s %s-%s", BIT_TITLE, BIT_VERSION, BIT_BUILD_NUMBER);
+            fmt(buf, sizeof(buf), "%s %s-%s", BIT_TITLE, BIT_VERSION, BIT_BUILD_NUMBER);
             MessageBoxEx(hwnd, buf, mprGetAppTitle(), MB_OK, 0);
             break;
 
@@ -427,12 +427,12 @@ static int monitorEvent(HWND hwnd, WPARAM wp, LPARAM lp)
         state = queryService();
 
         if (state < 0 || state & SERVICE_STOPPED) {
-            mprSprintf(textBuf, sizeof(textBuf), "%s Stopped", BIT_TITLE);
+            fmt(textBuf, sizeof(textBuf), "%s Stopped", BIT_TITLE);
             updateMenu(MA_MENU_STATUS, textBuf, 0, -1);
             updateMenu(MA_MENU_START, 0, 1, 0);
             updateMenu(MA_MENU_STOP, 0, -1, 0);
         } else {
-            mprSprintf(textBuf, sizeof(textBuf), "%s Running", BIT_TITLE);
+            fmt(textBuf, sizeof(textBuf), "%s Running", BIT_TITLE);
             updateMenu(MA_MENU_STATUS, textBuf, 0, 1);
             updateMenu(MA_MENU_START, 0, -1, 0);
             updateMenu(MA_MENU_STOP, 0, 1, 0);
@@ -586,14 +586,14 @@ static int runBrowser(char *page)
         page++;
     }
     if (pathArg == 0) {
-        mprSprintf(cmdBuf, MPR_MAX_STRING, "%s http://localhost:%d/%s", path, port, page);
+        fmt(cmdBuf, MPR_MAX_STRING, "%s http://localhost:%d/%s", path, port, page);
 
     } else {
         /*
             Patch out the "%1"
          */
         *pathArg = '\0';
-        mprSprintf(cmdBuf, MPR_MAX_STRING, "%s \"http://localhost:%d/%s\"", path, port, page);
+        fmt(cmdBuf, MPR_MAX_STRING, "%s \"http://localhost:%d/%s\"", path, port, page);
     }
 
     mprLog(4, "Running %s\n", cmdBuf);
@@ -620,7 +620,7 @@ static char *getBrowserPath(int size)
     if ((type = mprReadRegistry("HKEY_CLASSES_ROOT\\.htm", "")) == 0) {
         return 0;
     }
-    mprSprintf(cmd, MPR_MAX_STRING, "HKEY_CLASSES_ROOT\\%s\\shell\\open\\command", type);
+    fmt(cmd, MPR_MAX_STRING, "HKEY_CLASSES_ROOT\\%s\\shell\\open\\command", type);
     if ((path = mprReadRegistry(cmd, "")) == 0) {
         return 0;
     }
