@@ -584,7 +584,7 @@ static void processing()
         }
         mprAddItem(app->threadData, data);
 
-        mprSprintf(name, sizeof(name), "http.%d", j);
+        fmt(name, sizeof(name), "http.%d", j);
         tp = mprCreateThread(name, threadMain, NULL, 0); 
         tp->data = data;
         mprStartThread(tp);

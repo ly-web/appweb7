@@ -1955,6 +1955,7 @@ static int blockingFileCopy(HttpConn *conn, cchar *path)
 ssize httpWriteUploadData(HttpConn *conn, MprList *fileData, MprList *formData)
 {
     char    *path, *pair, *key, *value, *name;
+    cchar   *type;
     ssize   rc;
     int     next;
 
@@ -1971,7 +1972,10 @@ ssize httpWriteUploadData(HttpConn *conn, MprList *fileData, MprList *formData)
             name = mprGetPathBase(path);
             rc += httpWrite(conn->writeq, "%s\r\nContent-Disposition: form-data; name=\"file%d\"; filename=\"%s\"\r\n", 
                 conn->boundary, next - 1, name);
-            rc += httpWrite(conn->writeq, "Content-Type: %s\r\n\r\n", mprLookupMime(MPR->mimeTypes, path));
+            if ((type = mprLookupMime(MPR->mimeTypes, path)) != 0) {
+                rc += httpWrite(conn->writeq, "Content-Type: %s\r\n", mprLookupMime(MPR->mimeTypes, path));
+            }
+            httpWrite(conn->writeq, "\r\n");
             rc += blockingFileCopy(conn, path);
             rc += httpWrite(conn->writeq, "\r\n");
         }
@@ -3051,23 +3055,23 @@ void httpDigestSetHeaders(HttpConn *conn)
     dp = conn->authData;
 
     cnonce = sfmt("%s:%s:%x", http->secret, dp->realm, (int) http->now);
-    mprSprintf(a1Buf, sizeof(a1Buf), "%s:%s:%s", conn->username, dp->realm, conn->password);
+    fmt(a1Buf, sizeof(a1Buf), "%s:%s:%s", conn->username, dp->realm, conn->password);
     ha1 = mprGetMD5(a1Buf);
-    mprSprintf(a2Buf, sizeof(a2Buf), "%s:%s", tx->method, tx->parsedUri->path);
+    fmt(a2Buf, sizeof(a2Buf), "%s:%s", tx->method, tx->parsedUri->path);
     ha2 = mprGetMD5(a2Buf);
 #if UNUSED
     //  MOB - why incremented?
     dp->nc++;
 #endif
     if (smatch(dp->qop, "auth")) {
-        mprSprintf(digestBuf, sizeof(digestBuf), "%s:%s:%08x:%s:%s:%s", ha1, dp->nonce, dp->nc, cnonce, dp->qop, ha2);
+        fmt(digestBuf, sizeof(digestBuf), "%s:%s:%08x:%s:%s:%s", ha1, dp->nonce, dp->nc, cnonce, dp->qop, ha2);
         digest = mprGetMD5(digestBuf);
         httpAddHeader(conn, "Authorization", "Digest username=\"%s\", realm=\"%s\", domain=\"%s\", "
             "algorithm=\"MD5\", qop=\"%s\", cnonce=\"%s\", nc=\"%08x\", nonce=\"%s\", opaque=\"%s\", "
             "stale=\"FALSE\", uri=\"%s\", response=\"%s\"", conn->username, dp->realm, dp->domain, dp->qop, 
             cnonce, dp->nc, dp->nonce, dp->opaque, tx->parsedUri->path, digest);
     } else {
-        mprSprintf(digestBuf, sizeof(digestBuf), "%s:%s:%s", ha1, dp->nonce, ha2);
+        fmt(digestBuf, sizeof(digestBuf), "%s:%s:%s", ha1, dp->nonce, ha2);
         digest = mprGetMD5(digestBuf);
         httpAddHeader(conn, "Authorization", "Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", "
             "uri=\"%s\", response=\"%s\"", conn->username, dp->realm, dp->nonce, tx->parsedUri->path, digest);
@@ -3087,7 +3091,7 @@ static char *createDigestNonce(HttpConn *conn, cchar *secret, cchar *realm)
     mprAssert(realm && *realm);
 
     now = conn->http->now;
-    mprSprintf(nonce, sizeof(nonce), "%s:%s:%Lx:%Lx", secret, realm, now, next++);
+    fmt(nonce, sizeof(nonce), "%s:%s:%Lx:%Lx", secret, realm, now, next++);
     return mprEncode64(nonce);
 }
 
@@ -3132,16 +3136,16 @@ static char *calcDigest(HttpConn *conn, DigestData *dp)
     /*
         HA2
      */ 
-    mprSprintf(abuf, sizeof(abuf), "%s:%s", conn->rx->method, dp->uri);
+    fmt(abuf, sizeof(abuf), "%s:%s", conn->rx->method, dp->uri);
     ha2 = mprGetMD5(abuf);
 
     /*
         H(HA1:nonce:HA2)
      */
     if (scmp(dp->qop, "auth") == 0) {
-        mprSprintf(digestBuf, sizeof(digestBuf), "%s:%s:%s:%s:%s:%s", ha1, dp->nonce, dp->nc, dp->cnonce, dp->qop, ha2);
+        fmt(digestBuf, sizeof(digestBuf), "%s:%s:%s:%s:%s:%s", ha1, dp->nonce, dp->nc, dp->cnonce, dp->qop, ha2);
     } else {
-        mprSprintf(digestBuf, sizeof(digestBuf), "%s:%s:%s", ha1, dp->nonce, ha2);
+        fmt(digestBuf, sizeof(digestBuf), "%s:%s:%s", ha1, dp->nonce, ha2);
     }
     return mprGetMD5(digestBuf);
 }
@@ -11623,9 +11627,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             Step over "\r\n" after headers. 
             Don't do this if chunked so chunking can parse a single chunk delimiter of "\r\nSIZE ...\r\n"
          */
-        if (httpGetPacketLength(packet) >= 2) {
-            mprAdjustBufStart(content, 2);
-        }
+        mprAdjustBufStart(content, 2);
     }
     return 1;
 }
@@ -11737,7 +11739,8 @@ static bool analyseContent(HttpConn *conn, HttpPacket *packet)
             httpPutPacketToNext(q, packet);
         }
     }
-    if (rx->remainingContent == 0 && !(rx->flags & HTTP_CHUNKED)) {
+    mprAssert(rx->remainingContent >= 0);
+    if (rx->remainingContent <= 0 && !(rx->flags & HTTP_CHUNKED)) {
         rx->eof = 1;
     }
     return 1;
@@ -13135,7 +13138,7 @@ static char *makeSessionID(HttpConn *conn)
     mprAssert(conn);
 
     /* Thread race here on nextSession++ not critical */
-    mprSprintf(idBuf, sizeof(idBuf), "%08x%08x%d", PTOI(conn->data) + PTOI(conn), (int) mprGetTime(), nextSession++);
+    fmt(idBuf, sizeof(idBuf), "%08x%08x%d", PTOI(conn->data) + PTOI(conn), (int) mprGetTime(), nextSession++);
     return mprGetMD5WithPrefix(idBuf, sizeof(idBuf), "::http.session::");
 }
 

@@ -338,9 +338,9 @@ static void fmtNum(char *buf, int bufsize, int num, int divisor, char *suffix)
     point = (num % divisor) / (divisor / 10);
 
     if (point == 0) {
-        mprSprintf(buf, bufsize, "%6d%s", whole, suffix);
+        fmt(buf, bufsize, "%6d%s", whole, suffix);
     } else {
-        mprSprintf(buf, bufsize, "%4d.%d%s", whole, point, suffix);
+        fmt(buf, bufsize, "%4d.%d%s", whole, point, suffix);
     }
 }
 
@@ -369,7 +369,7 @@ static void outputLine(HttpQueue *q, MprDirEntry *ep, cchar *path, int nameSize)
         fmtNum(sizeBuf, sizeof(sizeBuf), (int) ep->size, 1024, "K");
 
     } else {
-        mprSprintf(sizeBuf, sizeof(sizeBuf), "%6d", (int) ep->size);
+        fmt(sizeBuf, sizeof(sizeBuf), "%6d", (int) ep->size);
     }
     newPath = mprJoinPath(path, ep->name);
 
@@ -400,8 +400,8 @@ static void outputLine(HttpQueue *q, MprDirEntry *ep, cchar *path, int nameSize)
     }
     mprDecodeLocalTime(&tm, when);
 
-    mprSprintf(timeBuf, sizeof(timeBuf), "%02d-%3s-%4d %02d:%02d",
-        tm.tm_mday, months[tm.tm_mon], tm.tm_year + 1900, tm.tm_hour,  tm.tm_min);
+    fmt(timeBuf, sizeof(timeBuf), "%02d-%3s-%4d %02d:%02d", tm.tm_mday, months[tm.tm_mon], tm.tm_year + 1900, 
+        tm.tm_hour,  tm.tm_min);
     len = (int) strlen(ep->name) + (int) strlen(dirSuffix);
 
     if (dir->fancyIndexing == 2) {

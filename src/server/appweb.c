@@ -433,7 +433,7 @@ static int writePort(MaServer *server)
         mprError("Could not create port file %s", path);
         return MPR_ERR_CANT_CREATE;
     }
-    mprSprintf(numBuf, sizeof(numBuf), "%d", host->port);
+    fmt(numBuf, sizeof(numBuf), "%d", host->port);
 
     len = (int) strlen(numBuf);
     numBuf[len++] = '\n';

@@ -155,20 +155,7 @@ Third Party Licenses
     COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
     OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-4) DTOA License:
-
-    The author of this software is David M. Gay.
-    Copyright (c) 1991, 2000, 2001 by Lucent Technologies.
-
-    Permission to use, copy, modify, and distribute this software for any purpose without fee is hereby granted, 
-    provided that this entire notice is included in all copies of any software which is or includes a copy or 
-    modification of this software and in all copies of the supporting documentation for such software.
-
-    THIS SOFTWARE IS BEING PROVIDED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED WARRANTY.  IN PARTICULAR, NEITHER THE 
-    AUTHOR NOR LUCENT MAKES ANY REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY OF THIS 
-    SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
-
-5) JQuery and plugins: MIT license.
+4) JQuery and plugins: MIT license.
 
     Copyright (c) 2012 John Resig, http://jquery.com/
 
@@ -187,11 +174,11 @@ Third Party Licenses
     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-6) Hashing algorithm. Licensed from Paul Hsieh at http://www.azillionmonkeys.com/qed/hash.html licensed under LGPL 2.1 1999.
+5) Hashing algorithm. Licensed from Paul Hsieh at http://www.azillionmonkeys.com/qed/hash.html licensed under LGPL 2.1 1999.
 
-7) Qsort routine - (c) Michael Ringgaard. BSD license.
+6) Qsort routine - (c) Michael Ringgaard. BSD license.
 
-8) MD5 routine
+7) MD5 routine
     Copyright (C) 1991-2, RSA Data Security, Inc. All rights reserved.  Redistribution and use in source and binary
     forms, with or without modification, are permitted provided that the following conditions are met:
     
@@ -224,7 +211,7 @@ Third Party Licenses
     
     These notices must be retained in any copies of any part of this documentation and/or software.
     
-9) Other contributors have provided portions of the software that are covered by the Embedthis Contributor license that 
+8) Other contributors have provided portions of the software that are covered by the Embedthis Contributor license that 
     grants Embedthis sufficient rights to execute this license Agreement.
 
 

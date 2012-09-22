@@ -1344,12 +1344,12 @@ static bool installService()
     /*
         Write a service description
      */
-    mprSprintf(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services");
+    fmt(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services");
     if (mprWriteRegistry(key, NULL, app->serviceName) < 0) {
         mprError("Can't write %s key to registry");
         return 0;
     }
-    mprSprintf(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\%s", app->serviceName);
+    fmt(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\%s", app->serviceName);
     if (mprWriteRegistry(key, "Description", SERVICE_DESCRIPTION) < 0) {
         mprError("Can't write service Description key to registry");
         return 0;

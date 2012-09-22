@@ -202,7 +202,6 @@
 #else
     typedef char wchar;
     #define T(s) s
-    #define UNICODE 0
 #endif
     #define TSZ(b) (sizeof(b) / sizeof(wchar))
 
@@ -2680,12 +2679,38 @@ extern int  mprSyncThreads(MprTime timeout);
     @description The MPR provides a suite of safe ascii string manipulation routines to help prevent buffer overflows
         and other potential security traps.
     @defgroup MprString MprString
-    @see MprString itos itosradix itosbuf mprPrintf mprPrintfError mprSprintf scamel scaselesscmp scaselessmatch schr 
+    @see MprString itos itosradix itosbuf mprPrintf mprPrintfError scamel scaselesscmp scaselessmatch schr 
         sclone scmp scontains scopy sends sfmt sfmtv shash shashlower sjoin sjoinv slen slower smatch sncaselesscmp snclone
         sncmp sncopy snumber spascal spbrk srchr srejoin srejoinv sreplace sspn sstarts ssub stemplate stoi stoiradix
-        stok strim supper sncontains mprFprintf mprSprintfv
+        stok strim supper sncontains mprFprintf fmtv fmt
  */
 typedef struct MprString { void *dummy; } MprString;
+
+/**
+    Format a string into a statically allocated buffer.
+    @description This call format a string using printf style formatting arguments. A trailing null will 
+        always be appended. The call returns the size of the allocated string excluding the null.
+    @param buf Pointer to the buffer.
+    @param maxSize Size of the buffer.
+    @param fmt Printf style format string
+    @param ... Variable arguments to format
+    @return Returns the buffer.
+    @ingroup MprString
+ */
+extern char *fmt(char *buf, ssize maxSize, cchar *fmt, ...);
+
+/**
+    Format a string into a statically allocated buffer.
+    @description This call format a string using printf style formatting arguments. A trailing null will 
+        always be appended. The call returns the size of the allocated string excluding the null.
+    @param buf Pointer to the buffer.
+    @param maxSize Size of the buffer.
+    @param fmt Printf style format string
+    @param args Varargs argument obtained from va_start.
+    @return Returns the buffer;
+    @ingroup MprString
+ */
+extern char *fmtv(char *buf, ssize maxSize, cchar *fmt, va_list args);
 
 /**
     Convert an integer to a string.
@@ -3314,6 +3339,7 @@ extern ssize mprPrintf(cchar *fmt, ...);
  */
 extern ssize mprFprintf(struct MprFile *file, cchar *fmt, ...);
 
+#if UNUSED
 //  MOB - need a short name: fmt()?
 /**
     Format a string into a statically allocated buffer.
@@ -3340,7 +3366,8 @@ extern char *mprSprintf(char *buf, ssize maxSize, cchar *fmt, ...);
     @return Returns the buffer;
     @ingroup MprString
  */
-extern char *mprSprintfv(char *buf, ssize maxSize, cchar *fmt, va_list args);
+extern char *fmtv(char *buf, ssize maxSize, cchar *fmt, va_list args);
+#endif
 
 //  DEPRECATED
 /**
@@ -3382,6 +3409,7 @@ extern char *mprAsprintfv(cchar *fmt, va_list arg);
   */
 typedef struct MprFloat { int dummy; } MprFloat;
 
+#if UNUSED
 /*
    Mode values for mprDtoa
  */
@@ -3407,6 +3435,7 @@ typedef struct MprFloat { int dummy; } MprFloat;
     @param flags Format flags
  */
 extern char *mprDtoa(double value, int ndigits, int mode, int flags);
+#endif
 
 /**
     Test if a double value is infinte
@@ -8619,7 +8648,9 @@ typedef struct Mpr {
     MprOsThread     mainOsThread;           /**< Main OS thread ID */
     MprMutex        *mutex;                 /**< Thread synchronization */
     MprSpin         *spin;                  /**< Quick thread synchronization */
+#if UNUSED
     MprSpin         *dtoaSpin[2];           /**< Dtoa thread synchronization */
+#endif
     MprCond         *cond;                  /**< Sync after starting events thread */
 
     char            *emptyString;           /**< Empty string */
@@ -9150,8 +9181,10 @@ extern int mprWriteRegistry(cchar *key, cchar *name, cchar *value);
     Internal
  */
 extern void mprWriteToOsLog(cchar *msg, int flags, int level);
+#if UNUSED
 extern void mprUnlockDtoa(int n);
 extern void mprLockDtoa(int n);
+#endif
 
 /*********************************** External *********************************/
 /*
