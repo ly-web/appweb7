@@ -4,11 +4,10 @@ EXPORTS
   assertTrue
   awtom
   classMap
-  dtoa
   dummyWide
   floorDiv
-  freedtoa
-  gethex
+  fmt
+  fmtv
   gettimeofday
   itos
   itosbuf
@@ -53,6 +52,7 @@ EXPORTS
   mprCloneBuf
   mprCloneHash
   mprCloneList
+  mprCloneSsl
   mprCloseCmdFd
   mprCloseFile
   mprCloseSocket
@@ -121,7 +121,6 @@ EXPORTS
   mprDispatcherHasEvents
   mprDispatchersAreIdle
   mprDoWaitRecall
-  mprDtoa
   mprEmptyString
   mprEnableCmdEvents
   mprEnableContinuousEvent
@@ -282,7 +281,6 @@ EXPORTS
   mprLoadNativeModule
   mprLoadSsl
   mprLock
-  mprLockDtoa
   mprLog
   mprLogHeader
   mprLookAtLastCharInBuf
@@ -470,8 +468,6 @@ EXPORTS
   mprSortList
   mprSpinLock
   mprSpinUnlock
-  mprSprintf
-  mprSprintfv
   mprStart
   mprStartCmd
   mprStartEventsThread
@@ -504,7 +500,6 @@ EXPORTS
   mprUnloadModule
   mprUnloadNativeModule
   mprUnlock
-  mprUnlockDtoa
   mprUpgradeSocket
   mprUriDecode
   mprUriEncode
@@ -603,4 +598,3 @@ EXPORTS
   stubRomfs
   supper
   universalTime
-  unused_strtod
