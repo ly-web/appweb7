@@ -45,7 +45,7 @@ Bit.load({
         packs: [ 'bits/packs' ]
         /* Must build locally to build tools */
         platforms: [ 'local' ],
-        sync: ['http', 'mpr', 'pcre', 'sqlite'],
+        sync: ['http', 'mpr', 'pcre', 'sqlite', 'zlib'],
         _minimal: ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ssl', 'ejscript', 'php', 'matrixssl', 'openssl' ],
         minimal: ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker' ],
         '+required': [ 'pcre'],

@@ -8,6 +8,14 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
+#include "bit.h"
+
+#if VXWORKS
+    #ifndef _VSB_CONFIG_FILE
+        #define _VSB_CONFIG_FILE "vsbConfig.h"
+    #endif
+#endif
+
 /*
  * If you *really* need a unique prefix for all types and library functions,
  * compile with -DZ_PREFIX. The "standard" zlib should be compiled without it.
