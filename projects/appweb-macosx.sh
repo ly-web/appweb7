@@ -136,38 +136,9 @@ cp -r src/esp/www ${CONFIG}/bin/esp-www
 rm -rf ${CONFIG}/bin/esp-appweb.conf
 cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
-rm -rf ${CONFIG}/inc/ejs.h
-cp -r src/deps/ejs/ejs.h ${CONFIG}/inc/ejs.h
-
-rm -rf ${CONFIG}/inc/ejs.slots.h
-cp -r src/deps/ejs/ejs.slots.h ${CONFIG}/inc/ejs.slots.h
-
-rm -rf ${CONFIG}/inc/ejsByteGoto.h
-cp -r src/deps/ejs/ejsByteGoto.h ${CONFIG}/inc/ejsByteGoto.h
-
-${CC} -c -o ${CONFIG}/obj/ejsLib.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc -I../packages-macosx-x64/zlib/zlib-1.2.6 src/deps/ejs/ejsLib.c
-
-${CC} -dynamiclib -o ${CONFIG}/bin/libejs.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -L../packages-macosx-x64/zlib/zlib-1.2.6 -install_name @rpath/libejs.dylib ${CONFIG}/obj/ejsLib.o ${LIBS} -lhttp -lpam -lmpr -lpcre -lsqlite3 -lpcre -lz
-
-${CC} -c -o ${CONFIG}/obj/ejs.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejs.c
-
-${CC} -o ${CONFIG}/bin/ejs -arch x86_64 ${LDFLAGS} ${LIBPATHS} -L../packages-macosx-x64/zlib/zlib-1.2.6 ${CONFIG}/obj/ejs.o ${LIBS} -lejs -lhttp -lpam -lmpr -lpcre -lsqlite3 -lz -ledit
-
-${CC} -c -o ${CONFIG}/obj/ejsc.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejsc.c
-
-${CC} -o ${CONFIG}/bin/ejsc -arch x86_64 ${LDFLAGS} ${LIBPATHS} -L../packages-macosx-x64/zlib/zlib-1.2.6 ${CONFIG}/obj/ejsc.o ${LIBS} -lejs -lhttp -lpam -lmpr -lpcre -lsqlite3 -lz
-
-cd src/deps/ejs >/dev/null ;\
-../../../${CONFIG}/bin/ejsc --out ../../../${CONFIG}/bin/ejs.mod --optimize 9 --bind --require null ejs.es ;\
-cd - >/dev/null 
-
 ${CC} -c -o ${CONFIG}/obj/cgiHandler.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
 
 ${CC} -dynamiclib -o ${CONFIG}/bin/mod_cgi.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/mod_cgi.dylib ${CONFIG}/obj/cgiHandler.o ${LIBS} -lappweb -lhttp -lpam -lmpr -lpcre
-
-${CC} -c -o ${CONFIG}/obj/ejsHandler.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/ejsHandler.c
-
-${CC} -dynamiclib -o ${CONFIG}/bin/mod_ejs.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -L../packages-macosx-x64/zlib/zlib-1.2.6 -install_name @rpath/mod_ejs.dylib ${CONFIG}/obj/ejsHandler.o ${LIBS} -lejs -lhttp -lpam -lmpr -lpcre -lsqlite3 -lz -lappweb
 
 ${CC} -c -o ${CONFIG}/obj/phpHandler.o -arch x86_64 -Wno-deprecated-declarations -g -Wno-unused-result ${DFLAGS} -I${CONFIG}/inc -I../packages-macosx-x64/php/php-5.3.8 -I../packages-macosx-x64/php/php-5.3.8/main -I../packages-macosx-x64/php/php-5.3.8/Zend -I../packages-macosx-x64/php/php-5.3.8/TSRM src/modules/phpHandler.c
 
