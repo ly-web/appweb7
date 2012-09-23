@@ -1,0 +1,15 @@
+/*
+    zlib-appweb.bit -- Bit File for the zlib library
+ */
+
+Bit.load({
+
+    targets: {
+        libzlib: {
+            enable: "bit.packs.ejscript.enable == true",
+            type: 'lib',
+            sources: [ '*.c' ],
+            headers: [ 'zlib.h', 'zconf.h' ],
+        },
+	},
+})

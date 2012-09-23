@@ -1,0 +1,14 @@
+/*
+    zlib.bit -- Bit File for the zlib library
+ */
+
+Bit.load({
+
+    targets: {
+        libzlib: {
+            type: 'lib',
+            sources: [ '*.c' ],
+            headers: [ 'zlib.h', 'zconf.h' ],
+        },
+	},
+})

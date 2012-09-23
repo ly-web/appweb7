@@ -9,6 +9,7 @@ Bit.load({
         "src/deps/pcre/pcre.bit",
         "src/deps/http/http.bit",
         "src/deps/sqlite/sqlite.bit",
+        "src/deps/zlib/zlib-appweb.bit",
         "src/libappweb.bit",
         "src/esp/esp.bit",
         "?src/deps/ejs/ejs.bit",
