@@ -14029,7 +14029,7 @@ void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
 {
     HttpTx          *tx;
     HttpRx          *rx;
-    HttpUri         *target;
+    HttpUri         *target, *base;
     HttpEndpoint    *endpoint;
     cchar           *msg;
     char            *dir, *cp;
@@ -14053,8 +14053,17 @@ void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
         if (targetUri == 0) {
             targetUri = "/";
         }
-        target = httpCompleteUri(httpCreateUri(targetUri, 0), rx->parsedUri, 0);
-        if (!target->port && !smatch(target->scheme, rx->parsedUri->scheme)) {
+        target = httpCreateUri(targetUri, 0);
+        base = rx->parsedUri;
+#if UNUSED
+        if (!target->host) {
+            target->host = base->host;
+        }
+        if (!target->host) {
+            target->scheme = base->scheme;
+        }
+#endif
+        if (!target->port && target->scheme) {
             endpoint = smatch(target->scheme, "https") ? conn->host->secureEndpoint : conn->host->defaultEndpoint;
             if (endpoint) {
                 target->port = endpoint->port;
@@ -14071,6 +14080,7 @@ void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
             }
             target->path = sjoin(dir, "/", target->path, NULL);
         }
+        target = httpCompleteUri(target, base, 0);
         targetUri = httpUriToString(target, 0);
 
 #if UNUSED
@@ -15373,7 +15383,31 @@ HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base, int flags)
         if (!uri->host) {
             uri->host = sclone("localhost");
         }
+#if 1 || MOB
+        if (!uri->path) {
+            uri->path = sclone("/");
+        }
+#endif
     } else {
+        if (!uri->host) {
+            uri->host = base->host;
+            if (!uri->port) {
+                uri->port = base->port;
+            }
+        }
+        if (!uri->scheme) {
+            uri->scheme = base->scheme;
+#if UNUSED /*ZZ*/
+            uri->port = base->port;
+#endif
+        }
+#if UNUSED
+        /*
+            Use cases:
+
+            /path        <= https
+
+         */
         if (!uri->port && smatch(uri->scheme, base->scheme)) {
             uri->port = base->port;
         }
@@ -15386,8 +15420,11 @@ HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base, int flags)
         }
         if (!uri->host) {
            uri->host = base->host;
-           uri->port = base->port;
+           if (smatch(uri->scheme, base->scheme)) {
+               uri->port = base->port;
+           }
         }
+#endif
         if (!uri->path) {
             uri->path = base->path;
             //  MOB UNUSED TEST
