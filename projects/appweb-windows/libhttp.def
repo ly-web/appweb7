@@ -40,13 +40,13 @@ EXPORTS
   httpAppendHeaderString
   httpAppendQueue
   httpAssignQueue
+  httpAuthenticate
   httpBackupRouteLog
   httpBasicLogin
   httpBasicParse
   httpBasicSetHeaders
   httpCallEvent
   httpCanUser
-  httpCheckAuth
   httpClearRouteStages
   httpCloneHost
   httpClonePacket
@@ -291,13 +291,12 @@ EXPORTS
   httpSetAuthAnyValidUser
   httpSetAuthAutoLogin
   httpSetAuthDeny
+  httpSetAuthForm
   httpSetAuthOrder
   httpSetAuthPermittedUsers
-  httpSetAuthPost
   httpSetAuthQop
   httpSetAuthRealm
   httpSetAuthRequiredAbilities
-  httpSetAuthSecure
   httpSetAuthStore
   httpSetAuthType
   httpSetChunkSize
@@ -322,11 +321,13 @@ EXPORTS
   httpSetHeader
   httpSetHeaderString
   httpSetHeadersCallback
+  httpSetHostDefaultEndpoint
   httpSetHostDefaultRoute
   httpSetHostHome
   httpSetHostIpAddr
   httpSetHostName
   httpSetHostProtocol
+  httpSetHostSecureEndpoint
   httpSetIOCallback
   httpSetIntParam
   httpSetKeepAliveCount
