@@ -240,13 +240,15 @@ bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, 
     HttpRx      *rx;
     HttpRoute   *route;
     EspRoute    *eroute;
+    EspReq      *req;
     cchar       *csource;
     char        *layout, *script, *page, *err;
     ssize       len;
 
     rx = conn->rx;
     route = rx->route;
-    eroute = route->eroute;
+    req = conn->data;
+    eroute = req->eroute;
     layout = 0;
 
     if (isView) {

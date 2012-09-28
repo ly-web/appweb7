@@ -291,7 +291,23 @@ ol {
     margin-bottom: 6px;
 }
 
-pre,code { 
+code {
+    white-space: pre;
+    display: block;
+	font-size: 110%;
+    __width: 600px;
+	line-height: 140%; 
+	font-family: Consolas, Monaco, Courier, Courier New, Courier, monospace; 
+	padding: 10px 15px 10px 15px;
+	margin: 16px 0 20px 0;
+	background-color: #20344D;
+	color: #FFFFFF;
+	-moz-border-radius: 7px;
+	-moz-box-shadow: 5px 5px 9px #888;
+	-webkit-border-radius: 7px;
+	-webkit-box-shadow: 5px 5px 9px #888;
+}
+pre {
     white-space: pre;
     display: block;
 	font-size: 110%;

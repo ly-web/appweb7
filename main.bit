@@ -51,7 +51,7 @@ Bit.load({
             'matrixssl', 'pmaker', 'php', 'sqlite', 'ssl', 'utest', 'zip', 'zlib' ],
         'without-all': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ssl', 'ejscript', 'php', 
             'matrixssl', 'openssl' ],
-        'without-own': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ssl', 'ejscript', 'php', 'matrixssl' ],
+        'without-own': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ejscript', 'php', 'matrixssl' ],
     },
 
     usage: {
@@ -78,6 +78,10 @@ Bit.load({
         },
     },
 
+    /*
+        See src/server/server.bit for the appweb targets
+        See src/libappweb.bit for the appweb library target
+     */
     targets: {
         install: {
             depends: ['build'],

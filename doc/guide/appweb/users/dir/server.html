@@ -210,7 +210,9 @@ application/x-appweb-php php
                         <td>It is extremely dangerous to run Appweb as Group "root" or "administrators".</td>
                     </tr>
                 </tbody>
-            </table><a id="listen"></a>
+            </table>
+            
+            <a id="listen"></a>
             <h2>Listen</h2>
             <table class="directive" title="directive">
                 <tbody>
@@ -240,16 +242,16 @@ application/x-appweb-php php
                             HTTP requests. If you specify only the portNumber and omit the IP address, Appweb will
                             listen on all network interfaces including the loop-back adaptor. Multiple Listen
                             directives may be given and Appweb will listen on all the specified endpoints.</p>
-                            <p>If you are using virtual hosts, you must still specify a Listen directive for the
-                            endpoint that the virtual host will serve. It makes no difference where you specify a
-                            Listen directive. in the configuration file. For compatibility with Apache, you should
-                            specify your listen directives outside any VirtualHost blocks.</p>
                             <p>For IPv6 endpoints, enclose the IP address in square brackets. For example:
-                                Listen [2001:05c0:9168:0000:0000:0000:0000:0001]
+                            Listen [2001:05c0:9168:0000:0000:0000:0000:0001]</p>
+                            <p>To listen for TLS/SSL requests, use the <a href="ssl.html#listenSecure">ListenSecure</a>
+                            directive.</p>
                         </td>
                     </tr>
                 </tbody>
-            </table><a id="protocol"></a>
+            </table>
+            
+            <a id="protocol"></a>
             <h2>Protocol</h2>
             <table class="directive" title="directive">
                 <tbody>

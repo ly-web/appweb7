@@ -3516,8 +3516,8 @@ int mprInitWindow()
     if (ws->hwnd) {
         return 0;
     }
-	name = wide(mprGetAppName());
-	title = wide(mprGetAppTitle());
+	name = (wchar*) wide(mprGetAppName());
+	title = (wchar*) wide(mprGetAppTitle());
     wc.style            = CS_HREDRAW | CS_VREDRAW;
     wc.hbrBackground    = (HBRUSH) (COLOR_WINDOW+1);
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
@@ -20440,7 +20440,7 @@ int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
         }
         ssl->providerName = providerName;
     }
-    mprLog(5, "Using %s SSL provider", ssl->providerName);
+    mprLog(4, "Using %s SSL provider", ssl->providerName);
     sp->provider = ssl->provider;
 #if FUTURE
     //  MOB - session resumption can cause problems with Nagle. 

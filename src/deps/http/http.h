@@ -294,9 +294,6 @@ typedef struct Http {
     void            *context;               /**< Embedding context */
     MprTime         currentTime;            /**< When currentDate was last calculated */
     char            *currentDate;           /**< Date string for HTTP response headers */
-#if UNUSED
-    char            *expiresDate;           /**< Convenient expiry date (1 day in advance) */
-#endif
     char            *secret;                /**< Random bytes for authentication */
 
     char            *defaultClientHost;     /**< Default ip address */
@@ -538,8 +535,11 @@ typedef struct HttpUri {
     char        *uri;                   /**< Original URI (not decoded) */
 } HttpUri;
 
-#define HTTP_COMPLETE_URI       0x1     /**< Complete all missing URI fields */
-#define HTTP_COMPLETE_URI_PATH  0x2     /**< Complete missing URI path */
+#define HTTP_COMPLETE_URI       0x1     /**< Complete all missing URI fields. Set from "http://localhost/" */
+#define HTTP_COMPLETE_URI_PATH  0x2     /**< Complete missing URI path. Set to "/" */
+
+//  MOB - UNUSED
+#define HTTP_COMPLETE_URI_QUERY 0x4     /**< Copy base query and reference if path is copied */
 
 /**
     Clone a URI
@@ -557,10 +557,11 @@ extern HttpUri *httpCloneUri(HttpUri *base, int flags);
         does not allocate or create a new URI.
     @param uri URI to complete
     @param other Other URI to supply the missing components
+    @param flags Set to HTTP_COMPLETE_URI_QUERY to add missing query and reference. MOB - UNUSED.
     @return The supplied URI.
     @ingroup HttpUri
   */
-extern HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *other);
+extern HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *other, int flags);
 
 /** 
     Create and initialize a URI.
@@ -1794,7 +1795,7 @@ typedef struct HttpConn {
     /*  
         Authentication
      */
-    int             authenticated;          /**< Request has been authenticated */
+    //  MOB - move some into Tx/Rx
     int             setCredentials;         /**< Authorization headers set from credentials */
     char            *authType;              /**< Type of authentication: set to basic, digest, post or a custom name */
     void            *authData;              /**< Authorization state data */
@@ -2274,8 +2275,7 @@ extern void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *e
  */
 #define HTTP_ALLOW_DENY     0x1           /**< Run allow checks before deny checks */
 #define HTTP_DENY_ALLOW     0x2           /**< Run deny checks before allow checks */
-#define HTTP_SECURE         0x4           /**< Must be over a SSL connection */
-#define HTTP_AUTO_LOGIN     0x8           /**< Auto login for debug */
+#define HTTP_AUTO_LOGIN     0x4           /**< Auto login for debug */
 
 /**
     AuthType callback to generate a response requesting the user login
@@ -2360,11 +2360,11 @@ typedef struct  HttpRole {
     @stability Evolving
     @defgroup HttpAuth HttpAuth
     @see HttpAskLogin HttpAuth HttpAuthStore HttpAuthType HttpParseAuth HttpRole HttpSetAuth HttpVerifyUser HttpUser
-        HttpVerifyUser httpAddAuthType httpAddAuthStore httpAddRole httpAddUser httpCanUser httpCheckAuth
+        HttpVerifyUser httpAddAuthType httpAddAuthStore httpAddRole httpAddUser httpCanUser httpAuthenticate
         httpComputeAllUserAbilities httpComputeUserAbilities httpCreateRole httpCreateAuth httpCreateRole httpCreateUser
         httpIsAuthenticated httpLogin httpRemoveRole httpRemoveUser httpSetAuthAllow httpSetAuthAnyValidUser
-        httpSetAuthAutoLogin httpSetAuthDeny httpSetAuthOrder httpSetAuthPermittedUsers httpSetAuthPost httpSetAuthQop
-        httpSetAuthRealm httpSetAuthRequiredAbilities httpSetAuthSecure httpSetAuthStore httpSetAuthType
+        httpSetAuthAutoLogin httpSetAuthDeny httpSetAuthOrder httpSetAuthPermittedUsers httpSetAuthForm httpSetAuthQop
+        httpSetAuthRealm httpSetAuthRequiredAbilities httpSetAuthStore httpSetAuthType
 
  */
 typedef struct HttpAuth {
@@ -2436,12 +2436,12 @@ extern int httpAddUser(HttpAuth *auth, cchar *user, cchar *password, cchar *abil
 /**
     Test if a user has the required abilities
     @param conn HttpConn connection object created via $httpCreateConn object.
-    @param requiredAbilities Hash of the required abilities 
     @return True if the user has all the required abilities
     @ingroup HttpAuth
  */
-extern bool httpCanUser(HttpConn *conn, MprHash *requiredAbilities);
+extern bool httpCanUser(HttpConn *conn);
 
+//MOB
 extern void httpComputeAllUserAbilities(HttpAuth *auth);
 extern void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
 
@@ -2580,7 +2580,7 @@ extern void httpSetAuthPermittedUsers(HttpAuth *auth, cchar *users);
         URI is utilized.
     @ingroup HttpAuth
  */
-extern void httpSetAuthPost(struct HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, 
+extern void httpSetAuthForm(struct HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, 
     cchar *loggedIn);
 
 /**
@@ -2610,6 +2610,7 @@ extern void httpSetAuthRealm(HttpAuth *auth, cchar *realm);
  */
 extern void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities);
 
+#if UNUSED
 /**
     Control if SSL communications is required
     @param auth Auth object allocated by #httpCreateAuth.
@@ -2617,6 +2618,7 @@ extern void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities);
     @ingroup HttpAuth
  */
 extern void httpSetAuthSecure(HttpAuth *auth, int enable);
+#endif
 
 /**
     Set the authentication password store to use
@@ -2629,12 +2631,11 @@ extern int httpSetAuthStore(HttpAuth *auth, cchar *store);
 /**
     Set the authentication protocol to use
     @param auth Auth object allocated by #httpCreateAuth.
-    @param proto Protocol name to use. Select from: 'basic', 'digest', 'post'
+    @param proto Protocol name to use. Select from: 'basic', 'digest', 'form'
     @param details Extra protocol details.
     @ingroup HttpAuth
  */
 extern int httpSetAuthType(HttpAuth *auth, cchar *proto, cchar *details);
-
 
 /*
     Internal
@@ -2647,7 +2648,7 @@ extern int httpDigestParse(HttpConn *conn);
 extern void httpDigestSetHeaders(HttpConn *conn);
 extern bool httpPamVerifyUser(HttpConn *conn);
 extern bool httpInternalVerifyUser(HttpConn *conn);
-extern int httpCheckAuth(HttpConn *conn);
+extern int httpAuthenticate(HttpConn *conn);
 extern void httpComputeAllUserAbilities(HttpAuth *auth);
 extern void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
 extern void httpInitAuth(Http *http);
@@ -4035,6 +4036,7 @@ extern void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 #define HTTP_ADDED_FORM_PARAMS  0x1000      /**< Form body data added to params */
 #define HTTP_LIMITS_OPENED      0x2000      /**< Request limits opened */
 #define HTTP_EXPECT_CONTINUE    0x4000      /**< Client expects an HTTP 100 Continue response */
+#define HTTP_AUTH_CHECKED       0x8000      /**< User authentication has been checked */
 
 /*  
     Incoming chunk encoding states
@@ -4081,6 +4083,7 @@ typedef struct HttpRx {
     MprHash         *requestData;           /**< General request data storage. Users must create hash table if required */
     MprTime         since;                  /**< If-Modified date */
 
+    int             authenticated;          /**< Request has been authenticated */
     int             chunkState;             /**< Chunk encoding state */
     int             flags;                  /**< Rx modifiers */
     int             form;                   /**< Using mime-type application/x-www-form-urlencoded */
@@ -4393,12 +4396,10 @@ extern void httpSetMethod(HttpConn *conn, cchar *method);
         current URI. For example: if the current request URI was http://example.com:7777/index.html, then
         a call to httpSetUri(conn, "/new.html", 0)  will set the request URI to http://example.com:7777/new.html.
         The request script name will be reset and the pathInfo will be set to the path portion of the URI.
-    @param query Optional query string to define with the new URI. If query is null, any query string defined
-        with the previous URI will be used. If query is set to the empty string, a previous query will be discarded.
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRx
  */
-extern int httpSetUri(HttpConn *conn, cchar *uri, cchar *query);
+extern int httpSetUri(HttpConn *conn, cchar *uri);
 
 /**
     Test if a request param is defined
@@ -5127,6 +5128,8 @@ typedef struct HttpHost {
     MprCache        *responseCache;         /**< Response content caching store */
     MprList         *routes;                /**< List of Route defintions */
     HttpRoute       *defaultRoute;          /**< Default route for the host */
+    HttpEndpoint    *defaultEndpoint;       /**< Default endpoint for host */
+    HttpEndpoint    *secureEndpoint;        /**< Secure endpoint for host */
     char            *home;                  /**< Directory for configuration files */
     char            *protocol;              /**< Defaults to "HTTP/1.1" */
     int             flags;                  /**< Host flags */
@@ -5221,6 +5224,7 @@ extern HttpRoute *httpLookupRoute(HttpHost *host, cchar *name);
  */
 extern void httpResetRoutes(HttpHost *host);
 
+//  MOB SORT
 /**
     Set the default route for a host
     @description The host has a default route which holds default configuration. Typically the default route
@@ -5231,6 +5235,22 @@ extern void httpResetRoutes(HttpHost *host);
     @ingroup HttpHost
  */
 extern void httpSetHostDefaultRoute(HttpHost *host, HttpRoute *route);
+
+/**
+    Set the default secure endpoint for a host
+    @description The host may have a default secure endpoint that is used when doing redirections to https.
+    @param host Host to examine.
+    @param endpoint Secure endpoint to use as the default
+ */
+extern void httpSetHostSecureEndpoint(HttpHost *host, HttpEndpoint *endpoint);
+
+/**
+    Set the default endpoint for a host
+    @description The host may have a default endpoint that is used when doing redirections to http.
+    @param host Host to examine.
+    @param endpoint Secure endpoint to use as the default
+ */
+extern void httpSetHostDefaultEndpoint(HttpHost *host, HttpEndpoint *endpoint);
 
 /**
     Set the default host for all servers.

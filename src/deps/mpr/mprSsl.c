@@ -328,6 +328,7 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, int server)
             unlock(sp);
             return MPR_ERR_CANT_INITIALIZE;
         }
+        /* This means negotiate ciphers with the server */
         cipherSuite = 0;
         if (matrixSslNewClientSession(&msp->handle, mssl->keys, NULL, cipherSuite, verifyCert, NULL, NULL) < 0) {
             unlock(sp);

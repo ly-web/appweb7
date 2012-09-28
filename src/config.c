@@ -54,22 +54,6 @@ int maParseConfig(MaServer *server, cchar *path, int flags)
 
     mprLog(2, "Config File %s", path);
 
-#if UNUSED
-    /*
-        Create top level host and route
-        NOTE: the route is not added to the host until the finalization below
-     */
-    host = httpCreateHost(mprGetPathDir(path));
-#if UNUSED
-    httpSetHostName(host, "default-server");
-#endif
-    server->defaultHost = host;
-    httpSetDefaultHost(host);
-
-    route = httpCreateRoute(host);
-    httpSetHostDefaultRoute(host, route);
-    route->limits = server->limits;
-#endif
     host = server->defaultHost;
     route = host->defaultRoute;
 
@@ -434,24 +418,30 @@ static int authRealmDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    AuthType basic|digest|custom
-    AuthType post login-form [login-service logout-service logged-in]
+    AuthType basic|digest [realm]
+    AuthType form realm login-form [login-service logout-service logged-in]
  */
 static int authTypeDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *type, *details, *loginPage, *loginService, *logoutService, *loggedIn;
+    char    *type, *details, *loginPage, *loginService, *logoutService, *loggedIn, *realm;
 
-    if (!maTokenize(state, value, "%S ?*", &type, &details)) {
+    if (!maTokenize(state, value, "%S ?S ?*", &type, &realm, &details)) {
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpSetAuthType(state->auth, type, details) < 0) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (smatch(type, "post")) {
+    if (realm) {
+        httpSetAuthRealm(state->auth, strim(realm, "\"'", MPR_TRIM_BOTH));
+    } else if (!state->auth->realm) {
+        /* Try to detect users forgetting to define a realm */
+        mprError("Must define an AuthRealm before defining the AuthType");
+    }
+    if (smatch(type, "form")) {
         if (!maTokenize(state, details, "%S ?S ?S ?S", &loginPage, &loginService, &logoutService, &loggedIn)) {
             return MPR_ERR_BAD_SYNTAX;
         }
-        httpSetAuthPost(state->route, loginPage, loginService, logoutService, loggedIn);
+        httpSetAuthForm(state->route, loginPage, loginService, logoutService, loggedIn);
     }
     return addCondition(state, "auth", 0, 0);
 }
@@ -652,11 +642,13 @@ static int compressDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    Condition [!] auth
     Condition [!] condition
-
     Condition [!] exists string
     Condition [!] directory string
     Condition [!] match string valuePattern
+    Condition [!] secure
+    Condition [!] unauthorized
 
     Strings can contain route->pattern and request ${tokens}
  */
@@ -665,10 +657,10 @@ static int conditionDirective(MaState *state, cchar *key, cchar *value)
     char    *name, *details;
     int     not;
 
-    if (!maTokenize(state, value, "%! %S %*", &not, &name, &details)) {
+    if (!maTokenize(state, value, "%! ?S ?*", &not, &name, &details)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    return addCondition(state, name, details, not);
+    return addCondition(state, name, details, not ? HTTP_ROUTE_NOT : 0);
 }
 
 
@@ -874,7 +866,7 @@ static int headerDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "?! %S %*", &not, &header, &value)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpAddRouteHeader(state->route, header, value, not);
+    httpAddRouteHeader(state->route, header, value, not ? HTTP_ROUTE_NOT : 0);
     return 0;
 }
 
@@ -1151,6 +1143,9 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     }
     endpoint = httpCreateEndpoint(ip, port, NULL);
     mprAddItem(state->server->endpoints, endpoint);
+    if (!state->host->defaultEndpoint) {
+        httpSetHostDefaultEndpoint(state->host, endpoint);
+    }
     return 0;
 }
 
@@ -1421,7 +1416,7 @@ static int paramDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "?! %S %*", &not, &field, &value)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpAddRouteParam(state->route, field, value, not);
+    httpAddRouteParam(state->route, field, value, not ? HTTP_ROUTE_NOT : 0);
     return 0;
 }
 
@@ -1482,7 +1477,12 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
     char        *code, *uri, *path, *target;
     int         status;
 
-    if (value[0] == '/' || sncmp(value, "http://", 6) == 0) {
+    status = 0;
+    if (smatch(value, "secure")) {
+        uri = "/";
+        path = "https://";
+
+    } else if (value[0] == '/' || sncmp(value, "http://", 6) == 0) {
         if (!maTokenize(state, value, "%S %S", &uri, &path)) {
             return MPR_ERR_BAD_SYNTAX;
         }
@@ -1499,6 +1499,8 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
             status = 303;
         } else if (scaselessmatch(code, "gone")) {
             status = 410;
+        } else if (scaselessmatch(code, "all")) {
+            status = 0;
         } else if (snumber(code)) {
             status = atoi(code);
         } else {
@@ -1508,12 +1510,15 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
     if (300 <= status && status <= 399 && (!path || *path == '\0')) {
         return configError(state, key);
     }
-    if (status <= 0 || uri == 0) {
+    if (status < 0 || uri == 0) {
         return configError(state, key);
     }
     alias = httpCreateAliasRoute(state->route, uri, 0, status);
     target = (path) ? sfmt("%d %s", status, path) : code;
     httpSetRouteTarget(alias, "redirect", target);
+    if (smatch(value, "secure")) {
+        httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
+    }
     httpFinalizeRoute(alias);
     return 0;
 }
@@ -1530,7 +1535,7 @@ static int requestTimeoutDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Require ability|role|user|valid-user names...
+    Require ability|role|secure|user|valid-user names...
  */
 static int requireDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1547,7 +1552,10 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
         httpSetAuthRequiredAbilities(state->auth, rest);
 
     } else if (scaselesscmp(type, "secure") == 0) {
+        addCondition(state, "secure", 0, 0);
+#if UNUSED
         httpSetAuthSecure(state->auth, 1);
+#endif
 
     } else if (scaselesscmp(type, "user") == 0) {
         httpSetAuthPermittedUsers(state->auth, rest);
@@ -1642,7 +1650,7 @@ static int routeDirective(MaState *state, cchar *key, cchar *value)
             state->route = route;
         } else {
             state->route = httpCreateInheritedRoute(state->route);
-            httpSetRoutePattern(state->route, pattern, not);
+            httpSetRoutePattern(state->route, pattern, not ? HTTP_ROUTE_NOT : 0);
             httpSetRouteHost(state->route, state->host);
         }
         /* Routes are added when the route block is closed (see closeDirective) */
@@ -1758,7 +1766,7 @@ static int sourceDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     Target close [immediate]
-    Target redirect [status] URI            # Redirect to a new URI and re-route
+    Target redirect status URI
     Target run ${DOCUMENT_ROOT}/${request:uri}
     Target run ${controller}-${name} 
     Target write [-r] status "Hello World\r\n"
@@ -1971,16 +1979,20 @@ bool maValidateServer(MaServer *server)
     mprAssert(defaultHost);
 
     /*
-        Add hosts to relevant listen endpoints
+        Add the default host to the endpoints
      */
     for (nextEndpoint = 0; (endpoint = mprGetNextItem(http->endpoints, &nextEndpoint)) != 0; ) {
         if (mprGetListLength(endpoint->hosts) == 0) {
+            /* Add the defaultHost */
             httpAddHostToEndpoint(endpoint, defaultHost);
             if (!defaultHost->ip) {
                 httpSetHostIpAddr(defaultHost, endpoint->ip, endpoint->port);
             }
         }
     }
+    /*
+        Ensure the host home directory is set and the file handler is defined
+     */
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
         if (host->home == 0) {
             httpSetHostHome(host, defaultHost->home);
@@ -1988,7 +2000,7 @@ bool maValidateServer(MaServer *server)
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(route->extensions, "")) {
                 mprError("Route %s in host %s is missing a catch-all handler\n"
-                        "Adding: AddHandler fileHandler \"\"", route->name, host->name);
+                    "Adding: AddHandler fileHandler \"\"", route->name, host->name);
                 httpAddRouteHandler(route, "fileHandler", "");
             }
         }
@@ -2103,7 +2115,7 @@ static int addCondition(MaState *state, cchar *name, cchar *condition, int flags
 {
     if (httpAddRouteCondition(state->route, name, condition, flags) < 0) {
         mprError("Bad \"%s\" directive at line %d in %s\nLine: %s %s\n", 
-                state->key, state->lineNumber, state->filename, state->key, condition);
+            state->key, state->lineNumber, state->filename, state->key, condition);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;

@@ -23,6 +23,46 @@ static bool checkSsl(MaState *state)
 }
 
 
+/*
+    ListenSecure ip:port
+    ListenSecure ip
+    ListenSecure port
+
+    Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[]" if appending a port.
+ */
+static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
+{
+#if BIT_PACK_SSL
+    HttpEndpoint    *endpoint;
+    char            *ip;
+    int             port;
+
+    mprParseSocketAddress(value, &ip, &port, HTTP_DEFAULT_PORT);
+    if (port == 0) {
+        mprError("Bad or missing port %d in ListenSecure directive", port);
+        return -1;
+    }
+    endpoint = httpCreateEndpoint(ip, port, NULL);
+    mprAddItem(state->server->endpoints, endpoint);
+    if (state->route->ssl == 0) {
+        if (state->route->parent && state->route->parent->ssl) {
+            state->route->ssl = mprCloneSsl(state->route->parent->ssl);
+        } else {
+            state->route->ssl = mprCreateSsl(state->route);
+        }
+    }
+    httpSecureEndpoint(endpoint, state->route->ssl);
+    if (!state->host->secureEndpoint) {
+        httpSetHostSecureEndpoint(state->host, endpoint);
+    }
+    return 0;
+#else
+    mprError("Configuration lacks SSL support");
+    return -1;
+#endif
+}
+
+
 static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
@@ -83,7 +123,26 @@ static int sslCipherSuiteDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-static int sslDirective(MaState *state, cchar *key, cchar *value)
+/*
+    SSLProvider [provider]
+ */
+static int sslProviderDirective(MaState *state, cchar *key, cchar *value)
+{
+    char    *provider;
+
+    if (!maTokenize(state, value, "?S", &provider)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    checkSsl(state);
+    mprSetSslProvider(state->route->ssl, provider);
+    return 0;
+}
+
+
+/*
+    SSLEngine on [provider]
+ */
+static int sslEngineDirective(MaState *state, cchar *key, cchar *value)
 {
     char    *provider;
     bool    on;
@@ -94,9 +153,11 @@ static int sslDirective(MaState *state, cchar *key, cchar *value)
     if (on) {
         checkSsl(state);
         mprSetSslProvider(state->route->ssl, provider);
-        if (httpSecureEndpointByName(state->host->name, state->route->ssl) < 0) {
-            mprError("No HttpEndpoint at %s to secure", state->host->name);
-            return MPR_ERR_BAD_STATE;
+        if (!state->host->secureEndpoint) {
+            if (httpSecureEndpointByName(state->host->name, state->route->ssl) < 0) {
+                mprError("No HttpEndpoint at %s to secure. Must use inside a VirtualHost block", state->host->name);
+                return MPR_ERR_BAD_STATE;
+            }
         }
     }
     return 0;
@@ -192,17 +253,19 @@ int maSslModuleInit(Http *http, MprModule *module)
         return MPR_ERR_CANT_CREATE;
     }
     appweb = httpGetContext(http);
-    maAddDirective(appweb, "SSL", sslDirective);
-    maAddDirective(appweb, "SSLEngine", sslDirective);
+    maAddDirective(appweb, "ListenSecure", listenSecureDirective);
+    maAddDirective(appweb, "SSLEngine", sslEngineDirective);
     maAddDirective(appweb, "SSLCACertificateFile", sslCaCertificateFileDirective);
     maAddDirective(appweb, "SSLCACertificatePath", sslCaCertificatePathDirective);
     maAddDirective(appweb, "SSLCertificateFile", sslCertificateFileDirective);
     maAddDirective(appweb, "SSLCertificateKeyFile", sslCertificateKeyFileDirective);
     maAddDirective(appweb, "SSLCipherSuite", sslCipherSuiteDirective);
     maAddDirective(appweb, "SSLProtocol", sslProtocolDirective);
+    maAddDirective(appweb, "SSLProvider", sslProviderDirective);
     maAddDirective(appweb, "SSLVerifyClient", sslVerifyClientDirective);
     maAddDirective(appweb, "SSLVerifyDepth", sslVerifyDepthDirective);
     maAddDirective(appweb, "SSLVerifyIssuer", sslVerifyIssuerDirective);
+
     return 0;
 }
 #else

@@ -31,7 +31,7 @@ static void computeAbilities(HttpAuth *auth, MprHash *abilities, cchar *role);
 static void manageAuth(HttpAuth *auth, int flags);
 static void manageRole(HttpRole *role, int flags);
 static void manageUser(HttpUser *user, int flags);
-static void postLogin(HttpConn *conn);
+static void formLogin(HttpConn *conn);
 static bool verifyUser(HttpConn *conn);
 
 /*********************************** Code *************************************/
@@ -40,11 +40,11 @@ void httpInitAuth(Http *http)
 {
     httpAddAuthType(http, "basic", httpBasicLogin, httpBasicParse, httpBasicSetHeaders);
     httpAddAuthType(http, "digest", httpDigestLogin, httpDigestParse, httpDigestSetHeaders);
-    httpAddAuthType(http, "post", postLogin, NULL, NULL);
+    httpAddAuthType(http, "form", formLogin, NULL, NULL);
 
 #if BIT_HAS_PAM && BIT_PAM
     /*
-        Pam must be actively selected duringin configuration
+        Pam must be actively selected during configuration
      */
     httpAddAuthStore(http, "pam", httpPamVerifyUser);
 #endif
@@ -52,7 +52,7 @@ void httpInitAuth(Http *http)
 }
 
 
-int httpCheckAuth(HttpConn *conn)
+int httpAuthenticate(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpAuth    *auth;
@@ -62,27 +62,24 @@ int httpCheckAuth(HttpConn *conn)
     bool        cached;
 
     rx = conn->rx;
+    if (rx->flags & HTTP_AUTH_CHECKED) {
+        return rx->authenticated;
+    }
+    rx->flags |= HTTP_AUTH_CHECKED;
+
     route = rx->route;
     auth = route->auth;
-
     mprAssert(auth);
     mprLog(5, "Checking user authentication user %s on route %s", conn->username, route->name);
 
-    if ((auth->flags & HTTP_SECURE) && !conn->secure) {
-        httpError(conn, HTTP_CODE_BAD_REQUEST, "Access denied. Secure access required.");
-        return 0;
-    }
+#if UNUSED
     if (!auth->type || (auth->flags & HTTP_AUTO_LOGIN)) {
         /* Authentication not required */
         return 1;
     }
-    mprAssert(!conn->user);
-
+#endif
     cached = 0;
     if (rx->cookie && (session = httpGetSession(conn, 0)) != 0) {
-        /*
-            Retrieve authentication state from the session storage. Faster than re-authenticating.
-         */
         if ((conn->username = (char*) httpGetSessionVar(conn, HTTP_SESSION_USERNAME, 0)) != 0) {
             version = httpGetSessionVar(conn, HTTP_SESSION_AUTHVER, 0);
             if (stoi(version) == auth->version) {
@@ -101,11 +98,9 @@ int httpCheckAuth(HttpConn *conn)
             return 0;
         }
         if (!conn->username) {
-            (auth->type->askLogin)(conn);
             return 0;
         }
         if (!(auth->store->verifyUser)(conn)) {
-            (auth->type->askLogin)(conn);
             return 0;
         }
         /*
@@ -116,26 +111,21 @@ int httpCheckAuth(HttpConn *conn)
             httpSetSessionVar(conn, HTTP_SESSION_USERNAME, conn->username);
         }
     }
-    if (auth->permittedUsers && !mprLookupKey(auth->permittedUsers, conn->username)) {
-        mprLog(2, "User \"%s\" is not specified as a permitted user to access %s", conn->username, conn->rx->pathInfo);
-        httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied. User is not authorized for access.");
-        return 0;
-    }
-    if (!httpCanUser(conn, auth->requiredAbilities)) {
-        httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied. User does not have required capabilities.");
-        return 0;
-    }
-    conn->authenticated = 1;
+    rx->authenticated = 1;
     return 1;
 }
 
 
-bool httpCanUser(HttpConn *conn, MprHash *requiredAbilities)
+bool httpCanUser(HttpConn *conn)
 {
     HttpAuth    *auth;
     MprKey      *kp;
 
     auth = conn->rx->route->auth;
+    if (auth->permittedUsers && !mprLookupKey(auth->permittedUsers, conn->username)) {
+        mprLog(2, "User \"%s\" is not specified as a permitted user to access %s", conn->username, conn->rx->pathInfo);
+        return 0;
+    }
     if (!auth->requiredAbilities) {
         /* No abilities are required */
         return 1;
@@ -150,7 +140,7 @@ bool httpCanUser(HttpConn *conn, MprHash *requiredAbilities)
             return 0;
         }
     }
-    for (ITERATE_KEYS(requiredAbilities, kp)) {
+    for (ITERATE_KEYS(auth->requiredAbilities, kp)) {
         if (!mprLookupKey(conn->user->abilities, kp->key)) {
             mprLog(2, "User \"%s\" does not possess the required ability: \"%s\" to access %s", 
                 conn->username, kp->key, conn->rx->pathInfo);
@@ -187,7 +177,7 @@ bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
 
 bool httpIsAuthenticated(HttpConn *conn)
 {
-    return conn->authenticated;
+    return conn->rx->authenticated;
 }
 
 
@@ -358,7 +348,7 @@ void httpSetAuthOrder(HttpAuth *auth, int order)
 
 
 /*
-    Internal login service routine. Called in response to a post request.
+    Internal login service routine. Called in response to a form-based login request.
  */
 static void loginServiceProc(HttpConn *conn)
 {
@@ -375,7 +365,7 @@ static void loginServiceProc(HttpConn *conn)
                 Preserve protocol scheme from existing connection
              */
             HttpUri *where = httpCreateUri(referrer, 0);
-            httpCompleteUri(where, conn->rx->parsedUri);
+            httpCompleteUri(where, conn->rx->parsedUri, 0);
             referrer = httpUriToString(where, 0);
             httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, referrer);
         } else {
@@ -401,31 +391,58 @@ static void logoutServiceProc(HttpConn *conn)
 }
 
 
-void httpSetAuthPost(HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, cchar *loggedIn)
+void httpSetAuthForm(HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, cchar *loggedIn)
 {
     HttpAuth    *auth;
     HttpRoute   *route;
+    bool        secure;
 
+    secure = 0;
     auth = parent->auth;
     auth->loginPage = sclone(loginPage);
     if (loggedIn) {
         auth->loggedIn = sclone(loggedIn);
     }
     /*
-        Create a route without auth for the loginPage
+        Create routes without auth for the loginPage, loginService and logoutService
      */
     if ((route = httpCreateInheritedRoute(parent)) != 0) {
+        if (sstarts(loginPage, "https:///")) {
+            loginPage = &loginPage[8];
+            secure = 1;
+        }
         httpSetRoutePattern(route, loginPage, 0);
         route->auth->type = 0;
+        if (secure) {
+            httpAddRouteCondition(route, "secure", 0, 0);
+
+        }
         httpFinalizeRoute(route);
     }
     if (loginService && *loginService) {
+        if (sstarts(loginService, "https:///")) {
+            loginService = &loginService[8];
+            secure = 1;
+        }
         route = httpCreateProcRoute(parent, loginService, loginServiceProc);
+        httpSetRouteMethods(route, "POST");
         route->auth->type = 0;
+        if (secure) {
+            httpAddRouteCondition(route, "secure", 0, 0);
+        }
     }
     if (logoutService && *logoutService) {
+        if (sstarts(logoutService, "https://")) {
+            logoutService = &logoutService[8];
+            secure = 1;
+        }
+        //  MOB - should be only POST
+        httpSetRouteMethods(route, "GET, POST");
         route = httpCreateProcRoute(parent, logoutService, logoutServiceProc);
         route->auth->type = 0;
+        if (secure) {
+            httpAddRouteCondition(route, "secure", 0, 0);
+        }
     }
 }
 
@@ -450,16 +467,6 @@ void httpSetAuthPermittedUsers(HttpAuth *auth, cchar *users)
     auth->permittedUsers = mprCreateHash(0, 0);
     for (user = stok(sclone(users), " \t,", &tok); users; users = stok(NULL, " \t,", &tok)) {
         mprAddKey(auth->permittedUsers, user, user);
-    }
-}
-
-
-void httpSetAuthSecure(HttpAuth *auth, int enable)
-{
-
-    auth->flags &= ~HTTP_SECURE;
-    if (enable) {
-        auth->flags |= HTTP_SECURE;
     }
 }
 
@@ -732,9 +739,9 @@ static bool verifyUser(HttpConn *conn)
 
 
 /*
-    Post authentication callback to ask the user to login via a web form
+    Web form-based authentication callback to ask the user to login via a web page
  */
-static void postLogin(HttpConn *conn)
+static void formLogin(HttpConn *conn)
 {
     httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, conn->rx->route->auth->loginPage);
 }
@@ -796,9 +803,6 @@ int httpBasicParse(HttpConn *conn)
         conn->username = sclone(decoded);
         conn->password = sclone(cp);
         conn->encoded = 0;
-#if UNUSED
-        conn->password = mprGetMD5(sfmt("%s:%s:%s", conn->username, conn->rx->route->auth->realm, cp));
-#endif
     }
     return 0;
 }
@@ -2239,8 +2243,7 @@ static void commonPrep(HttpConn *conn)
     conn->refinalize = 0;
     conn->connectorComplete = 0;
 
-    //  MOB - better if these were in HttpRx
-    conn->authenticated = 0;
+    //  MOB - better if these were in HttpTx
     conn->setCredentials = 0;
 
     if (conn->endpoint) {
@@ -3583,7 +3586,7 @@ void httpMatchHost(HttpConn *conn)
         return;
     }
     if (conn->rx->traceLevel >= 0) {
-        mprLog(conn->rx->traceLevel, "Select host: \"%s\"", host->name);
+        mprLog(conn->rx->traceLevel, "Use endpoint: %s:%d", endpoint->ip, endpoint->port);
     }
     conn->host = host;
 }
@@ -3705,6 +3708,9 @@ void httpSetHasNamedVirtualHosts(HttpEndpoint *endpoint, bool on)
 }
 
 
+/*
+    Only used for named virtual hosts
+ */
 HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *name)
 {
     HttpHost    *host;
@@ -4051,6 +4057,8 @@ static void manageHost(HttpHost *host, int flags)
         mprMark(host->protocol);
         mprMark(host->mutex);
         mprMark(host->home);
+        mprMark(host->defaultEndpoint);
+        mprMark(host->secureEndpoint);
 
     } else if (flags & MPR_MANAGE_FREE) {
         /* The http->hosts list is static. ie. The hosts won't be marked via http->hosts */
@@ -4278,6 +4286,18 @@ void httpSetDefaultHost(HttpHost *host)
 }
 
 
+void httpSetHostSecureEndpoint(HttpHost *host, HttpEndpoint *endpoint)
+{
+    host->secureEndpoint = endpoint;
+}
+
+
+void httpSetHostDefaultEndpoint(HttpHost *host, HttpEndpoint *endpoint)
+{
+    host->defaultEndpoint = endpoint;
+}
+
+
 HttpHost *httpGetDefaultHost()
 {
     return defaultHost;
@@ -4484,9 +4504,6 @@ static void manageHttp(Http *http, int flags)
         mprMark(http->forkData);
         mprMark(http->context);
         mprMark(http->currentDate);
-#if UNUSED
-        mprMark(http->expiresDate);
-#endif
         mprMark(http->secret);
         mprMark(http->defaultClientHost);
         mprMark(http->protocol);
@@ -8099,6 +8116,7 @@ void httpRouteRequest(HttpConn *conn)
             next = 0;
             route = 0;
             rewrites++;
+            rx->flags &= ~HTTP_AUTH_CHECKED;
 
         } else if (match == HTTP_ROUTE_OK) {
             break;
@@ -8389,7 +8407,7 @@ int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, int fla
     if ((op = createRouteOp(name, flags)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    if (scaselessmatch(name, "auth")) {
+    if (scaselessmatch(name, "auth") || scaselessmatch(name, "unauthorized")) {
         /* Nothing to do. Route->auth has it all */
 
     } else if (scaselessmatch(name, "missing")) {
@@ -8415,6 +8433,9 @@ int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, int fla
         }
         op->details = finalizeReplacement(route, value);
         op->flags |= HTTP_ROUTE_FREE;
+
+    } else if (scaselessmatch(name, "secure")) {
+        op->details = finalizeReplacement(route, details);
     }
     addUniqueItem(route->conditions, op);
     return 0;
@@ -9652,19 +9673,47 @@ static int allowDenyCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 }
 
 
+/*
+    This condition is used to implement all user authentication for routes
+ */
 static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 {
+    HttpAuth    *auth;
+
     mprAssert(conn);
     mprAssert(route);
 
-    if (!route->auth) {
+    auth = route->auth;
+    if (!auth || !auth->type || auth->flags & HTTP_AUTO_LOGIN) {
+        /* Authentication not required */
         return HTTP_ROUTE_OK;
     }
-    if (!httpCheckAuth(conn)) {
+    if (!httpAuthenticate(conn)) {
+        if (!conn->finalized && route->auth && route->auth->type) {
+            (route->auth->type->askLogin)(conn);
+        }
         /* Request has been denied and fully handled */
         return HTTP_ROUTE_OK;
     }
+    if (!httpCanUser(conn)) {
+        httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied. User is not authorized for access.");
+    }
     return HTTP_ROUTE_OK;
+}
+
+
+/*
+    This condition is used for "Condition unauthorized"
+ */
+static int unauthorizedCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
+{
+    HttpAuth    *auth;
+
+    auth = route->auth;
+    if (!auth || !auth->type || auth->flags & HTTP_AUTO_LOGIN) {
+        return HTTP_ROUTE_REJECT;
+    }
+    return httpAuthenticate(conn) ? HTTP_ROUTE_REJECT : HTTP_ROUTE_OK;
 }
 
 
@@ -9705,18 +9754,17 @@ static int existsCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
     mprAssert(route);
     mprAssert(op);
 
-    tx = conn->tx;
-
     /* 
         Must have tx->filename set when expanding op->details, so map target now 
      */
+    tx = conn->tx;
     httpMapFile(conn, route);
     path = mprJoinPath(route->dir, expandTokens(conn, op->details));
     tx->ext = tx->filename = 0;
     if (mprPathExists(path, R_OK)) {
         return HTTP_ROUTE_OK;
     }
-    return 0;
+    return HTTP_ROUTE_REJECT;
 }
 
 
@@ -9737,6 +9785,15 @@ static int matchCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
     return HTTP_ROUTE_REJECT;
 }
 
+
+/*
+    Test if the connection is secure
+ */
+static int secureCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
+{
+    mprAssert(conn);
+    return conn->secure ? HTTP_ROUTE_OK : HTTP_ROUTE_REJECT;
+}
 
 /********************************* Updates ******************************/
 
@@ -9820,7 +9877,7 @@ static int langUpdate(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
             }
             if (pathInfo) {
                 uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, prior->query, 0);
-                httpSetUri(conn, uri, 0);
+                httpSetUri(conn, uri);
             }
         }
     }
@@ -9843,34 +9900,15 @@ static int closeTarget(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 
 static int redirectTarget(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 {
-    HttpRx      *rx;
-    HttpUri     *dest, *prior;
-    cchar       *scheme, *host, *query, *reference, *uri, *target;
-    int         port;
+    cchar       *target;
 
     mprAssert(conn);
     mprAssert(route);
     mprAssert(route->target);
 
-    rx = conn->rx;
-
-    /* Note: target may be empty */
     target = expandTokens(conn, route->target);
-    if (route->responseStatus) {
-        httpRedirect(conn, route->responseStatus, target);
-        return HTTP_ROUTE_OK;
-    }
-    //  MOB - OPT Use httpCompleteUri?
-    prior = rx->parsedUri;
-    dest = httpCreateUri(route->target, 0);
-    scheme = dest->scheme ? dest->scheme : prior->scheme;
-    host = dest->host ? dest->host : prior->host;
-    port = dest->port ? dest->port : prior->port;
-    query = dest->query ? dest->query : prior->query;
-    reference = dest->reference ? dest->reference : prior->reference;
-    uri = httpFormatUri(scheme, host, port, target, reference, query, 0);
-    httpSetUri(conn, uri, 0);
-    return HTTP_ROUTE_REROUTE;
+    httpRedirect(conn, route->responseStatus ? route->responseStatus : HTTP_CODE_MOVED_TEMPORARILY, target);
+    return HTTP_ROUTE_OK;
 }
 
 
@@ -10235,7 +10273,11 @@ static char *expandRequestTokens(HttpConn *conn, char *str)
         } else if (smatch(key, "request")) {
             value = stok(value, "=", &defaultValue);
             //  OPT with switch on first char
-            if (smatch(value, "clientAddress")) {
+
+            if (smatch(value, "authenticated")) {
+                mprPutStringToBuf(buf, rx->authenticated ? "true" : "false");
+
+            } else if (smatch(value, "clientAddress")) {
                 mprPutStringToBuf(buf, conn->ip);
 
             } else if (smatch(value, "clientPort")) {
@@ -10409,9 +10451,11 @@ void httpDefineRouteBuiltins()
      */
     httpDefineRouteCondition("allowDeny", allowDenyCondition);
     httpDefineRouteCondition("auth", authCondition);
-    httpDefineRouteCondition("match", matchCondition);
-    httpDefineRouteCondition("exists", existsCondition);
     httpDefineRouteCondition("directory", directoryCondition);
+    httpDefineRouteCondition("exists", existsCondition);
+    httpDefineRouteCondition("match", matchCondition);
+    httpDefineRouteCondition("secure", secureCondition);
+    httpDefineRouteCondition("unauthorized", unauthorizedCondition);
 
     httpDefineRouteUpdate("param", paramUpdate);
     httpDefineRouteUpdate("cmd", cmdUpdate);
@@ -10799,6 +10843,7 @@ static bool processParsed(HttpConn *conn);
 static bool processReady(HttpConn *conn);
 static bool processRunning(HttpConn *conn);
 static void routeRequest(HttpConn *conn);
+static int setParsedUri(HttpConn *conn);
 
 /*********************************** Code *************************************/
 
@@ -11008,19 +11053,7 @@ static bool parseIncoming(HttpConn *conn, HttpPacket *packet)
     }
     if (conn->endpoint) {
         httpMatchHost(conn);
-        if (httpSetUri(conn, rx->uri, "") < 0 || rx->pathInfo[0] != '/') {
-            httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad URL format");
-        }
-        if (conn->secure) {
-            rx->parsedUri->scheme = sclone("https");
-        }
-        rx->parsedUri->port = conn->sock->listenSock->port;
-
-        //  MOB - refactor what conn->host is set to
-        rx->parsedUri->host = rx->hostHeader ? rx->hostHeader : conn->host->name;
-        if (!rx->parsedUri->host) {
-           rx->parsedUri->host = (conn->host->name[0] == '*') ? conn->sock->acceptIp : conn->host->name;
-        }
+        setParsedUri(conn);
 
     } else if (!(100 <= rx->status && rx->status <= 199)) {
         /* 
@@ -12063,40 +12096,55 @@ void httpSetMethod(HttpConn *conn, cchar *method)
 }
 
 
-int httpSetUri(HttpConn *conn, cchar *uri, cchar *query)
+static int setParsedUri(HttpConn *conn)
 {
     HttpRx      *rx;
-    HttpTx      *tx;
-    HttpUri     *prior;
+    char        *cp;
+    cchar       *hostname;
 
     rx = conn->rx;
-    tx = conn->tx;
-    prior = rx->parsedUri;
+    if (httpSetUri(conn, rx->uri) < 0 || rx->pathInfo[0] != '/') {
+        httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad URL");
+        return MPR_ERR_BAD_ARGS;
+    }
+    /*
+        Complete the URI based on the connection state.
+        Must have a complete scheme, host, port and path.
+     */
+    rx->parsedUri->scheme = sclone(conn->secure ? "https" : "http");
+    hostname = rx->hostHeader ? rx->hostHeader : conn->host->name;
+    if (!hostname) {
+        hostname = conn->sock->acceptIp;
+    }
+    rx->parsedUri->host = sclone(hostname);
+    if ((cp = strchr(rx->parsedUri->host, ':')) != 0) {
+        *cp = '\0';
+    }
+    rx->parsedUri->port = conn->sock->listenSock->port;
+    return 0;
+}
 
+
+int httpSetUri(HttpConn *conn, cchar *uri)
+{
+    HttpRx      *rx;
+    char        *pathInfo;
+
+    rx = conn->rx;
     if ((rx->parsedUri = httpCreateUri(uri, 0)) == 0) {
         return MPR_ERR_BAD_ARGS;
     }
-    if (prior) {
-        if (rx->parsedUri->scheme == 0) {
-            rx->parsedUri->scheme = prior->scheme;
-        }
-        if (rx->parsedUri->port == 0) {
-            rx->parsedUri->port = prior->port;
-        }
+    pathInfo = httpNormalizeUriPath(mprUriDecode(rx->parsedUri->path));
+    if (pathInfo[0] != '/') {
+        return MPR_ERR_BAD_ARGS;
     }
-    if (query == 0 && prior) {
-        rx->parsedUri->query = prior->query;
-        rx->parsedUri->host = prior->host;
-    } else if (*query) {
-        rx->parsedUri->query = sclone(query);
-    }
+    rx->pathInfo = pathInfo;
+    rx->uri = rx->parsedUri->path;
+    conn->tx->ext = httpGetExt(conn);
     /*
         Start out with no scriptName and the entire URI in the pathInfo. Stages may rewrite.
      */
-    rx->uri = rx->parsedUri->path;
-    rx->pathInfo = httpNormalizeUriPath(mprUriDecode(rx->parsedUri->path));
     rx->scriptName = mprEmptyString();
-    tx->ext = httpGetExt(conn);
     return 0;
 }
 
@@ -13495,7 +13543,7 @@ static void traceBuf(HttpConn *conn, int dir, int level, cchar *msg, cchar *buf,
         start += 3;
     }
     for (printable = 1, i = 0; i < len; i++) {
-        if (!isascii(start[i])) {
+        if (!isascii((uchar) start[i])) {
             printable = 0;
         }
     }
@@ -13979,14 +14027,18 @@ void httpOmitBody(HttpConn *conn)
  */
 void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
 {
-    HttpTx      *tx;
-    HttpRx      *rx;
-    HttpUri     *target, *prev;
-    cchar       *msg;
-    char        *path, *uri, *dir, *cp;
-    int         port;
+    HttpTx          *tx;
+    HttpRx          *rx;
+    HttpUri         *target;
+    HttpEndpoint    *endpoint;
+    cchar           *msg;
+    char            *dir, *cp;
 
     mprAssert(targetUri);
+    if (conn->finalized) {
+        /* A response has already been formulated */
+        return;
+    }
     rx = conn->rx;
     tx = conn->tx;
     tx->status = status;
@@ -14001,6 +14053,27 @@ void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
         if (targetUri == 0) {
             targetUri = "/";
         }
+        target = httpCompleteUri(httpCreateUri(targetUri, 0), rx->parsedUri, 0);
+        if (!target->port && !smatch(target->scheme, rx->parsedUri->scheme)) {
+            endpoint = smatch(target->scheme, "https") ? conn->host->secureEndpoint : conn->host->defaultEndpoint;
+            if (endpoint) {
+                target->port = endpoint->port;
+            }
+        }
+        if (target->path && target->path[0] != '/') {
+            /*
+                Relative file redirection to a file in the same directory as the previous request.
+             */
+            dir = sclone(rx->pathInfo);
+            if ((cp = strrchr(dir, '/')) != 0) {
+                /* Remove basename */
+                *cp = '\0';
+            }
+            target->path = sjoin(dir, "/", target->path, NULL);
+        }
+        targetUri = httpUriToString(target, 0);
+
+#if UNUSED
         target = httpCreateUri(targetUri, 0);
         if (!target->host) {
             target->host = rx->parsedUri->host;
@@ -14038,6 +14111,7 @@ void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
             }
             targetUri = uri;
         }
+#endif
         httpSetHeader(conn, "Location", "%s", targetUri);
         httpFormatResponse(conn, 
             "<!DOCTYPE html>\r\n"
@@ -15018,6 +15092,8 @@ static void trimPathToDirname(HttpUri *uri);
 
         NOTE: the following is not supported and requires a scheme prefix. This is because it is ambiguous with URI.
         HOST/URI
+
+    Missing fields are null or zero.
  */
 HttpUri *httpCreateUri(cchar *uri, int flags)
 {
@@ -15051,7 +15127,7 @@ HttpUri *httpCreateUri(cchar *uri, int flags)
         tok = up->uri;
     }
     if (schr(tok, ':')) {
-        /* Must be a host portion */
+        /* Has port specifier */
         if (*tok == '[' && ((next = strchr(tok, ']')) != 0)) {
             /* IPv6  [::]:port/uri */
             up->host = snclone(&tok[1], (next - tok) - 1);
@@ -15062,30 +15138,78 @@ HttpUri *httpCreateUri(cchar *uri, int flags)
 
         } else if ((next = spbrk(tok, ":/")) == NULL) {
             /* hostname */
-            up->host = sclone(tok);
+            if (*tok) {
+                up->host = sclone(tok);
+            }
             tok = 0;
 
         } else if (*next == ':') {
             /* hostname:port */
-            up->host = snclone(tok, next - tok);
+            if (next > tok) {
+                up->host = snclone(tok, next - tok);
+            }
             up->port = atoi(++next);
             tok = schr(next, '/');
 
         } else if (*next == '/') {
             /* hostname/uri */
-            up->host = snclone(tok, next - tok);
+            if (next > tok) {
+                up->host = snclone(tok, next - tok);
+            }
             tok = next;
         }
 
     } else if (up->scheme && *tok != '/') {
         /* hostname/uri */
         if ((next = schr(tok, '/')) != 0) {
-            up->host = snclone(tok, next - tok);
+            if (next > tok) {
+                up->host = snclone(tok, next - tok);
+            }
             tok = next;
         } else {
             /* hostname */
-            up->host = sclone(tok);
+            if (*tok) {
+                up->host = sclone(tok);
+            }
             tok = 0;
+        }
+    }
+    if (tok) {
+        if ((next = spbrk(tok, "#?")) == NULL) {
+            if (*tok) {
+                up->path = sclone(tok);
+            }
+        } else {
+            if (next > tok) {
+                up->path = snclone(tok, next - tok);
+            }
+            tok = next + 1;
+            if (*next == '#') {
+                if ((next = schr(tok, '?')) != NULL) {
+                    up->reference = snclone(tok, next - tok);
+                    up->query = sclone(++next);
+                } else {
+                    up->reference = sclone(tok);
+                }
+            } else {
+                up->query = sclone(tok);
+            }
+        }
+        if (up->path && (tok = srchr(up->path, '.')) != NULL) {
+            if (tok[1]) {
+                if ((next = srchr(up->path, '/')) != NULL) {
+                    if (next <= tok) {
+                        up->ext = sclone(++tok);
+                    }
+                } else {
+                    up->ext = sclone(++tok);
+                }
+            }
+        }
+    }
+    if (flags & (HTTP_COMPLETE_URI | HTTP_COMPLETE_URI_PATH)) {
+        if (up->path == 0 || *up->path == '\0') {
+            up->path = sclone("/");
         }
     }
     if (flags & HTTP_COMPLETE_URI) {
@@ -15097,36 +15221,6 @@ HttpUri *httpCreateUri(cchar *uri, int flags)
         }
         if (!up->port) {
             up->port = 80;
-        }
-    }
-    if ((next = spbrk(tok, "#?")) == NULL) {
-        up->path = sclone(tok);
-    } else {
-        up->path = snclone(tok, next - tok);
-        tok = next + 1;
-        if (*next == '#') {
-            if ((next = schr(tok, '?')) != NULL) {
-                up->reference = snclone(tok, next - tok);
-                up->query = sclone(++next);
-            } else {
-                up->reference = sclone(tok);
-            }
-        } else {
-            up->query = sclone(tok);
-        }
-    }
-    if (up->path && (tok = srchr(up->path, '.')) != NULL) {
-        if ((next = srchr(up->path, '/')) != NULL) {
-            if (next <= tok) {
-                up->ext = sclone(++tok);
-            }
-        } else {
-            up->ext = sclone(++tok);
-        }
-    }
-    if (flags & (HTTP_COMPLETE_URI | HTTP_COMPLETE_URI_PATH)) {
-        if (up->path == 0 || *up->path == '\0') {
-            up->path = sclone("/");
         }
     }
     return up;
@@ -15188,8 +15282,10 @@ HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cchar *pat
         }
         up->path = sclone(path);
     }
-    if (up->path == 0) {
-        up->path = sclone("/");
+    if (flags & (HTTP_COMPLETE_URI | HTTP_COMPLETE_URI_PATH)) {
+        if (up->path == 0 || *up->path == '\0') {
+            up->path = sclone("/");
+        }
     }
     if (reference) {
         up->reference = sclone(reference);
@@ -15218,14 +15314,13 @@ HttpUri *httpCloneUri(HttpUri *base, int flags)
     if ((up = mprAllocObj(HttpUri, manageUri)) == 0) {
         return 0;
     }
-    path = base->path;
 
-    if (base->scheme && *base->scheme) {
+    if (base->scheme) {
         up->scheme = sclone(base->scheme);
     } else if (flags & HTTP_COMPLETE_URI) {
         up->scheme = sclone("http");
     }
-    if (base->host && *base->host) {
+    if (base->host) {
         up->host = sclone(base->host);
     } else if (flags & HTTP_COMPLETE_URI) {
         up->host = sclone("localhost");
@@ -15235,14 +15330,17 @@ HttpUri *httpCloneUri(HttpUri *base, int flags)
     } else if (flags & HTTP_COMPLETE_URI) {
         up->port = smatch(up->scheme, "https") ? 443 : 80;
     }
+    path = base->path;
     if (path) {
         while (path[0] == '/' && path[1] == '/') {
             path++;
         }
         up->path = sclone(path);
     }
-    if (up->path == 0) {
-        up->path = sclone("/");
+    if (flags & (HTTP_COMPLETE_URI | HTTP_COMPLETE_URI_PATH)) {
+        if (up->path == 0 || *up->path == '\0') {
+            up->path = sclone("/");
+        }
     }
     if (base->reference) {
         up->reference = sclone(base->reference);
@@ -15250,7 +15348,7 @@ HttpUri *httpCloneUri(HttpUri *base, int flags)
     if (base->query) {
         up->query = sclone(base->query);
     }
-    if ((tok = srchr(up->path, '.')) != NULL) {
+    if (up->path && (tok = srchr(up->path, '.')) != NULL) {
         if ((cp = srchr(up->path, '/')) != NULL) {
             if (cp <= tok) {
                 up->ext = sclone(&tok[1]);
@@ -15263,26 +15361,45 @@ HttpUri *httpCloneUri(HttpUri *base, int flags)
 }
 
 
-HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *missing)
+/*
+    Complete the "uri" using missing parts from base
+ */
+HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base, int flags)
 {
-    char        *scheme, *host;
-    int         port;
-
-    scheme = (missing) ? missing->scheme : "http";
-    host = (missing) ? missing->host : "localhost";
-    port = (missing) ? missing->port : 0;
-
-    if (uri->scheme == 0) {
-        uri->scheme = sclone(scheme);
-    }
-    if (uri->port == 0 && port) {
-        /* Don't complete port if there is a host */
-        if (uri->host == 0) {
-            uri->port = port;
+    if (!base) {
+        if (!uri->scheme) {
+            uri->scheme = sclone("http");
         }
-    }
-    if (uri->host == 0) {
-        uri->host = sclone(host);
+        if (!uri->host) {
+            uri->host = sclone("localhost");
+        }
+    } else {
+        if (!uri->port && smatch(uri->scheme, base->scheme)) {
+            uri->port = base->port;
+        }
+        if (!uri->scheme) {
+            uri->scheme = base->scheme;
+            if (base->scheme && !smatch(base->scheme, "http")) {
+                /* Copy port too if the scheme is changes */
+                uri->port = base->port;
+            }
+        }
+        if (!uri->host) {
+           uri->host = base->host;
+           uri->port = base->port;
+        }
+        if (!uri->path) {
+            uri->path = base->path;
+            //  MOB UNUSED TEST
+            if (1 || flags & HTTP_COMPLETE_URI_QUERY) {
+                if (!uri->query) {
+                    uri->query = base->query;
+                }
+                if (!uri->reference) {
+                    uri->reference = base->reference;
+                }
+            }
+        }
     }
     return uri;
 }

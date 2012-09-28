@@ -5,7 +5,7 @@
         cchar *referrer = getReferrer();
         redirect(referrer ? referrer : "/index.html");
     } else {
-        redirect("/auth/post/login.esp");
+        redirect("/auth/form/login.esp");
     }
 %>
 </body>

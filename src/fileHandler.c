@@ -86,7 +86,7 @@ static int findFile(HttpConn *conn)
                     pathInfo = sjoin(rx->scriptName, rx->pathInfo, index, NULL);
                     uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, 
                         prior->query, 0);
-                    httpSetUri(conn, uri, 0);
+                    httpSetUri(conn, uri);
                     tx->filename = path;
                     tx->ext = httpGetExt(conn);
                     mprGetPathInfo(tx->filename, info);
@@ -116,10 +116,11 @@ static int findFile(HttpConn *conn)
         }
     }
     if (!(info->valid || info->isDir) && !(conn->rx->flags & HTTP_PUT)) {
+        mprError("Can't open document %s", tx->filename);
         if (rx->referrer) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", tx->filename, rx->referrer);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s from %s", rx->uri, rx->referrer);
         } else {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s", tx->filename);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s", rx->uri);
         }
     } else if (info->valid) {
         /*

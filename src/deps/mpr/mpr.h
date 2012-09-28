@@ -301,7 +301,7 @@
     #include    <io.h>
 #endif
 
-#if MACOSX
+#if MACOSX || LINUX
     #include    <libgen.h>
 #endif
 
@@ -7497,7 +7497,7 @@ typedef struct MprSsl {
 /*
     Default SSL configuration
  */
-#define MPR_DEFAULT_CIPHER_SUITE "HIGH:MEDIUM"  /**< Default cipher suite */
+#define MPR_DEFAULT_CIPHER_SUITE "HIGH:RC4+SHA"  /**< Default cipher suite */
 
 /**
     Load the SSL module.
