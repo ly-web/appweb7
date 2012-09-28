@@ -97,7 +97,7 @@
     #define BIT_WITHOUT_ALL "doxygen,dsi,ejs,man,man2html,pmaker,ssl,ejscript,php,matrixssl,openssl"
 #endif
 #ifndef BIT_WITHOUT_OWN
-    #define BIT_WITHOUT_OWN "doxygen,dsi,ejs,man,man2html,pmaker,ssl,ejscript,php,matrixssl"
+    #define BIT_WITHOUT_OWN "doxygen,dsi,ejs,man,man2html,pmaker,ejscript,php,matrixssl"
 #endif
 
 /* Prefixes */
