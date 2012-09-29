@@ -15,6 +15,9 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
+#ifndef BIT_EJS_ONE_MODULE
+    #define BIT_EJS_ONE_MODULE 1
+#endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 1
 #endif
@@ -55,7 +58,7 @@
     #define BIT_MDB 1
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,matrixssl,pmaker,php,sqlite,ssl,utest,zip,zlib"
+    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,matrixssl,pmaker,php,sqlite,ssl,utest,zip"
 #endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
@@ -79,7 +82,7 @@
     #define BIT_SSL_PORT 443
 #endif
 #ifndef BIT_SYNC
-    #define BIT_SYNC "http,mpr,pcre,sqlite,zlib"
+    #define BIT_SYNC "http,mpr,pcre,sqlite"
 #endif
 #ifndef BIT_TITLE
     #define BIT_TITLE "Embedthis Appweb"
@@ -148,7 +151,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64 -without own -profile xcode -configure . -gen xcode"
+    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64 -without all -profile xcode -configure . -gen xcode"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -212,7 +215,7 @@
     #define BIT_PACK_MATRIXSSL 0
 #endif
 #ifndef BIT_PACK_OPENSSL
-    #define BIT_PACK_OPENSSL 1
+    #define BIT_PACK_OPENSSL 0
 #endif
 #ifndef BIT_PACK_PCRE
     #define BIT_PACK_PCRE 1
@@ -227,14 +230,11 @@
     #define BIT_PACK_SQLITE 1
 #endif
 #ifndef BIT_PACK_SSL
-    #define BIT_PACK_SSL 1
+    #define BIT_PACK_SSL 0
 #endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1
 #endif
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1
-#endif
-#ifndef BIT_PACK_ZLIB
-    #define BIT_PACK_ZLIB 1
 #endif

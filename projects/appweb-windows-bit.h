@@ -15,6 +15,9 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
+#ifndef BIT_EJS_ONE_MODULE
+    #define BIT_EJS_ONE_MODULE 1
+#endif
 #ifndef BIT_HAS_DYN_LOAD
     #define BIT_HAS_DYN_LOAD 1
 #endif
@@ -37,7 +40,7 @@
     #define BIT_MDB 1
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,matrixssl,pmaker,php,sqlite,ssl,utest,zip,zlib"
+    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,matrixssl,pmaker,php,sqlite,ssl,utest,zip"
 #endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
@@ -61,7 +64,7 @@
     #define BIT_SSL_PORT 443
 #endif
 #ifndef BIT_SYNC
-    #define BIT_SYNC "http,mpr,pcre,sqlite,zlib"
+    #define BIT_SYNC "http,mpr,pcre,sqlite"
 #endif
 #ifndef BIT_TITLE
     #define BIT_TITLE "Embedthis Appweb"
@@ -219,7 +222,4 @@
 #endif
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1
-#endif
-#ifndef BIT_PACK_ZLIB
-    #define BIT_PACK_ZLIB 1
 #endif
