@@ -9,7 +9,6 @@ Bit.load({
         "src/deps/pcre/pcre.bit",
         "src/deps/http/http.bit",
         "src/deps/sqlite/sqlite.bit",
-        "src/deps/zlib/zlib-appweb.bit",
         "src/libappweb.bit",
         "src/esp/esp.bit",
         "?src/deps/ejs/ejs.bit",
@@ -45,10 +44,10 @@ Bit.load({
         packs: [ 'bits/packs' ]
         /* Must build locally to build tools */
         platforms: [ 'local' ],
-        sync: ['http', 'mpr', 'pcre', 'sqlite', 'zlib'],
+        sync: ['http', 'mpr', 'pcre', 'sqlite'],
         '+required': [ 'pcre'],
         '+optional': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'ejscript', 'esp', 'man', 'man2html', 'openssl', 
-            'matrixssl', 'pmaker', 'php', 'sqlite', 'ssl', 'utest', 'zip', 'zlib' ],
+            'matrixssl', 'pmaker', 'php', 'sqlite', 'ssl', 'utest', 'zip' ],
         'without-all': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ssl', 'ejscript', 'php', 
             'matrixssl', 'openssl' ],
         'without-own': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ejscript', 'php', 'matrixssl' ],
