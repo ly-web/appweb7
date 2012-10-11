@@ -4,6 +4,8 @@
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
 
+#define BIT_WEB_SOCKETS 1
+
 #ifndef _h_HTTP
 #define _h_HTTP 1
 
@@ -61,6 +63,14 @@ struct HttpUser;
     #define HTTP_MAX_STAGE_BUFFER      (32 * 1024)          /**< Maximum buffer for any stage */
     #define HTTP_CLIENTS_HASH          (131)                /**< Hash table for client IP addresses */
     #define HTTP_MAX_ROUTE_MATCHES     32                   /**< Maximum number of submatches in routes */
+
+#if BIT_WEB_SOCKETS
+    #define HTTP_MAX_WSS_SOCKETS       20                   /**< Support up to 5 simultaneous sockets */
+    #define HTTP_MAX_WSS_MESSAGE       (64 * 1024)          /**< Maximum message size */
+    #define HTTP_MAX_WSS_FRAME         (1024)               /**< Maximum message frame size */
+    #define HTTP_MAX_WSS_PACKET        (8 * 1024)           /**< Maximum size provided to application code in one packet */
+    #define HTTP_WSS_PING_PERIOD       20                   /**< Send ping message every 30sec to defeat Keep-Alive timeouts*/
+#endif
 
 #elif BIT_TUNE == MPR_TUNE_BALANCED
     /*  
@@ -136,6 +146,7 @@ struct HttpUser;
     Standard HTTP/1.1 status codes
  */
 #define HTTP_CODE_CONTINUE                  100     /**< Continue with request, only partial content transmitted */
+#define HTTP_CODE_SWITCHING                 101     /**< Switching protocols */
 #define HTTP_CODE_OK                        200     /**< The request completed successfully */
 #define HTTP_CODE_CREATED                   201     /**< The request has completed and a new resource was created */
 #define HTTP_CODE_ACCEPTED                  202     /**< The request has been accepted and processing is continuing */
@@ -180,6 +191,7 @@ struct HttpUser;
  */
 #define HTTP_CODE_START_LOCAL_ERRORS        550
 #define HTTP_CODE_COMMS_ERROR               550     /**< The server had a communicationss error responding to the client */
+#define HTTP_CODE_BAD_HANDSHAKE             551     /**< The server handsake response is unacceptable */
 
 /*
     Flags that can be ored into the status code
@@ -196,17 +208,8 @@ struct HttpUser;
     @ingroup HttpConn
  */
 typedef void (*HttpNotifier)(struct HttpConn *conn, int state, int flags);
-
-/** 
-    Define an callback for IO events on this connection.
-    @description The event callback will be invoked in response to I/O events.
-    @param conn HttpConn connection object created via $httpCreateConn
-    @param fn Callback function. 
-    @param arg Data argument to provide to the callback function.
-    @return The redirected URI string to use.
-    @ingroup HttpConn
- */
-typedef cchar *(*HttpRedirectCallback)(struct HttpConn *conn, int *code, struct HttpUri *uri);
+//  MOB
+typedef void (*HttpWebSocketNotifier)(struct HttpConn *conn, int status, int flags);
 
 /**
     Set environment vars callback. Invoked per request to permit custom form var definition
@@ -220,6 +223,20 @@ typedef void (*HttpEnvCallback)(struct HttpConn *conn);
     @ingroup HttpConn
  */
 typedef int (*HttpListenCallback)(struct HttpEndpoint *endpoint);
+
+/** 
+    Define an callback for IO events on this connection.
+    @description The event callback will be invoked in response to I/O events.
+    @param conn HttpConn connection object created via $httpCreateConn
+    @param fn Callback function. 
+    @param arg Data argument to provide to the callback function.
+    @return The redirected URI string to use.
+    @ingroup HttpConn
+ */
+typedef cchar *(*HttpRedirectCallback)(struct HttpConn *conn, int *code, struct HttpUri *uri);
+
+//MOB
+typedef void (*HttpTimeoutCallback)(struct HttpConn *conn);
 
 /**
     Set the fork callback.
@@ -274,6 +291,7 @@ typedef struct Http {
     struct HttpStage *procHandler;          /**< Proc handler */
     struct HttpStage *phpHandler;           /**< PHP through handler */
     struct HttpStage *uploadFilter;         /**< Upload filter */
+    struct HttpStage *webSocketFilter;      /**< WebSocket filter */
 
     struct HttpLimits *clientLimits;        /**< Client resource limits */
     struct HttpLimits *serverLimits;        /**< Server resource limits */
@@ -468,12 +486,19 @@ typedef struct HttpLimits {
     int     requestMax;             /**< Maximum number of simultaneous concurrent requests */
     int     processMax;             /**< Maximum number of processes (CGI) */
     int     sessionMax;             /**< Maximum number of sessions */
+    int     enableTraceMethod;      /**< Trace method enabled */
 
     MprTime inactivityTimeout;      /**< Default timeout for keep-alive and idle requests (msec) */
     MprTime requestTimeout;         /**< Default time a request can take (msec) */
     MprTime sessionTimeout;         /**< Default time a session can persist (msec) */
 
-    int     enableTraceMethod;      /**< Trace method enabled */
+#if BIT_WEB_SOCKETS
+    MprTime webSocketsPing;         /**< Time between pings */
+    int     webSocketsMax;          /**< Maximum number of WebSockets */
+    ssize   webSocketsMessageSize;  /**< Maximum total size of a WebSocket message including all frames */
+    ssize   webSocketsFrameSize;    /**< Maximum size of a WebSocket frame on the wire */
+    ssize   webSocketsPacketSize;   /**< Maximum size of a WebSocket packet exchanged with the user */
+#endif
 } HttpLimits;
 
 /**
@@ -530,16 +555,15 @@ typedef struct HttpUri {
     char        *reference;             /**< Reference fragment within the specified resource */
     char        *query;                 /**< Query string */
     int         port;                   /**< Port number */
-    int         flags;                  /**< Flags */
     int         secure;                 /**< Using https */
+    //MOB - confusing is this SSL or not? Rename webSockets
+    int         wss;                    /**< Using web sockets */
+    //  MOB - rename url
     char        *uri;                   /**< Original URI (not decoded) */
 } HttpUri;
 
 #define HTTP_COMPLETE_URI       0x1     /**< Complete all missing URI fields. Set from "http://localhost/" */
 #define HTTP_COMPLETE_URI_PATH  0x2     /**< Complete missing URI path. Set to "/" */
-
-//  MOB - UNUSED
-#define HTTP_COMPLETE_URI_QUERY 0x4     /**< Copy base query and reference if path is copied */
 
 /**
     Clone a URI
@@ -557,7 +581,7 @@ extern HttpUri *httpCloneUri(HttpUri *base, int flags);
         does not allocate or create a new URI.
     @param uri URI to complete
     @param other Other URI to supply the missing components
-    @param flags Set to HTTP_COMPLETE_URI_QUERY to add missing query and reference. MOB - UNUSED.
+    @param flags Reserved.
     @return The supplied URI.
     @ingroup HttpUri
   */
@@ -719,6 +743,7 @@ typedef struct HttpRange {
 #define HTTP_PACKET_RANGE     0x2               /**< Packet is a range boundary packet */
 #define HTTP_PACKET_DATA      0x4               /**< Packet contains actual content data */
 #define HTTP_PACKET_END       0x8               /**< End of stream packet */
+#define HTTP_PACKET_SOLO      0x10              /**< Don't join this packet */
 
 /**
     Callback procedure to fill a packet with data
@@ -753,7 +778,8 @@ typedef struct HttpPacket {
     MprOff          esize;                  /**< Data size in entity (file) */
     MprOff          epos;                   /**< Data position in entity (file) */
     HttpFillProc    fill;                   /**< Callback to fill packet with data */
-    int             flags;                  /**< Packet flags */
+    int             flags:8;                /**< Packet flags */
+    int             type:24;                /**< Packet type extension */
     struct HttpPacket *next;                /**< Next packet in chain */
 } HttpPacket;
 
@@ -858,7 +884,7 @@ extern HttpPacket *httpGetPacket(struct HttpQueue *q);
  */
 extern ssize httpGetPacketLength(HttpPacket *packet);
 #else
-#define httpGetPacketLength(p) (p->content ? mprGetBufLength(p->content) : 0)
+#define httpGetPacketLength(p) ((p && p->content) ? mprGetBufLength(p->content) : 0)
 #endif
 
 /** 
@@ -1591,6 +1617,7 @@ extern void httpSetStageData(struct HttpConn *conn, cchar *key, cvoid *data);
 
 /* Internal APIs */
 extern void httpAddStage(Http *http, HttpStage *stage);
+extern ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet);
 extern int httpOpenNetConnector(Http *http);
 extern int httpOpenSendConnector(Http *http);
 extern int httpOpenChunkFilter(Http *http);
@@ -1600,9 +1627,8 @@ extern int httpOpenProcHandler(Http *http);
 extern int httpOpenRangeFilter(Http *http);
 extern int httpOpenUploadFilter(Http *http);
 extern void httpSendOpen(HttpQueue *q);
-extern void httpSendClose(HttpQueue *q);
 extern void httpSendOutgoingService(HttpQueue *q);
-extern ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet);
+extern int httpOpenWebSockFilter(Http *http);
 
 /********************************** HttpConn *********************************/
 /** 
@@ -1725,7 +1751,7 @@ extern void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
         httpServiceQueues httpSetAsync httpSetChunkSize httpSetConnContext httpSetConnHost httpSetConnNotifier
         httpSetCredentials httpSetKeepAliveCount httpSetPipelineHandler httpSetProtocol httpSetRetries
         httpSetSendConnector httpSetState httpSetTimeout httpSetTimestamp httpShouldTrace httpStartPipeline
-        httpNotifyWritable 
+        httpNotifyReadable httpNotifyWritable  
  */
 typedef struct HttpConn {
     /*  Ordered for debugability */
@@ -1752,6 +1778,7 @@ typedef struct HttpConn {
     MprDispatcher   *newDispatcher;         /**< New dispatcher if using a worker thread */
     MprDispatcher   *oldDispatcher;         /**< Original dispatcher if using a worker thread */
     HttpNotifier    notifier;               /**< Connection Http state change notification callback */
+    HttpWebSocketNotifier webSocketNotifier;/**< Notifier for web sockets */
     MprWaitHandler  *waitHandler;           /**< I/O wait handler */
     MprSocket       *sock;                  /**< Underlying socket handle */
 
@@ -1787,6 +1814,7 @@ typedef struct HttpConn {
     int             retries;                /**< Client request retries */
     int             secure;                 /**< Using https */
     int             seqno;                  /**< Unique connection sequence number */
+    int             upgraded;               /**< Request protocol upgraded */
     int             writeBlocked;           /**< Transmission writing is blocked */
     int             worker;                 /**< Use worker */
 
@@ -1804,10 +1832,14 @@ typedef struct HttpConn {
     int             encoded;                /**< True if the password is MD5(username:realm:password) */
     struct HttpUser *user;                  /**< Authorized User record for access checking */
 
+    HttpTimeoutCallback timeoutCallback;    /**< Request and inactivity timeout callback */
     HttpIOCallback  ioCallback;             /**< I/O event callback */
     HttpHeadersCallback headersCallback;    /**< Callback to fill headers */
     void            *headersCallbackArg;    /**< Arg to fillHeaders */
 
+#if BIT_WEB_SOCKETS
+    char            *protocols;             /**< Supported web socket protocols (clients) */
+#endif
 #if BIT_DEBUG
     MprTime         startTime;              /**< Start time of request */
     uint64          startTicks;             /**< Start tick time of request */
@@ -1857,6 +1889,7 @@ extern void httpConnTimeout(HttpConn *conn);
  */
 extern void httpConsumeLastRequest(HttpConn *conn);
 
+//  MOB - should not require http service object
 /** 
     Create a connection object.
     @description Most interactions with the Http library are via a connection object. It is used for server-side 
@@ -2034,6 +2067,13 @@ extern void httpMatchHost(HttpConn *conn);
     @ingroup HttpConn
  */
 extern void httpMemoryError(HttpConn *conn);
+
+/**
+    Inform notifiers that the connection is now readable
+    @param conn HttpConn object created via $httpCreateConn
+    @ingroup HttpConn
+ */ 
+extern void httpNotifyReadable(HttpConn *conn);
 
 /**
     Inform notifiers that the connection is now writable
@@ -2818,13 +2858,13 @@ extern void httpDefineProc(cchar *uri, HttpProc fun);
 /*
     Misc route API flags
  */
-#define HTTP_ROUTE_NOT            0x1       /**< Negate the route pattern test result */
-#define HTTP_ROUTE_FREE           0x2       /**< Free Route.mdata back to malloc when route is freed */
-#define HTTP_ROUTE_FREE_PATTERN   0x4       /**< Free Route.patternCompiled back to malloc when route is freed */
-#define HTTP_ROUTE_RAW            0x8       /**< Don't html encode the write data */
-#define HTTP_ROUTE_PUT_DELETE     0x1000    /**< Support PUT|DELETE on this route */
-#define HTTP_ROUTE_GZIP           0x2000    /**< Support gzipped content on this route */
-#define HTTP_ROUTE_STARTED        0x4000    /**< Route initialized */
+#define HTTP_ROUTE_NOT              0x1         /**< Negate the route pattern test result */
+#define HTTP_ROUTE_FREE             0x2         /**< Free Route.mdata back to malloc when route is freed */
+#define HTTP_ROUTE_FREE_PATTERN     0x4         /**< Free Route.patternCompiled back to malloc when route is freed */
+#define HTTP_ROUTE_RAW              0x8         /**< Don't html encode the write data */
+#define HTTP_ROUTE_PUT_DELETE       0x1000      /**< Support PUT|DELETE on this route */
+#define HTTP_ROUTE_GZIP             0x2000      /**< Support gzipped content on this route */
+#define HTTP_ROUTE_STARTED          0x4000      /**< Route initialized */
 
 /**
     Route Control
@@ -2920,6 +2960,12 @@ typedef struct HttpRoute {
 
     struct MprSsl   *ssl;                   /**< SSL configuration */
     MprMutex        *mutex;                 /**< Multithread sync */
+
+#if BIT_WEB_SOCKETS
+    char            *webSocketsProtocol;    /**< WebSockets sub-protocol */
+    MprTime         webSocketsPingPeriod;   /**< Time between pings (msec) */
+    int             ignoreEncodingErrors;   /**< Ignore UTF8 encoding errors */
+#endif
 } HttpRoute;
 
 
@@ -4085,6 +4131,7 @@ typedef struct HttpRx {
 
     int             authenticated;          /**< Request has been authenticated */
     int             chunkState;             /**< Chunk encoding state */
+    int             state;                  /**< Packet framing state */
     int             flags;                  /**< Rx modifiers */
     int             form;                   /**< Using mime-type application/x-www-form-urlencoded */
     int             streamInput;            /**< Streaming read data. Means !form */
@@ -4117,16 +4164,20 @@ typedef struct HttpRx {
     char            *pragma;                /**< Pragma header */
     char            *mimeType;              /**< Mime type of the request payload (ENV: CONTENT_TYPE) */
     char            *originalMethod;        /**< Original method from the client */
+    char            *origin;                /**< Origin header (not used) */
     char            *originalUri;           /**< Original URI passed by the client */
     char            *redirect;              /**< Redirect route header */
     char            *referrer;              /**< Refering URL */
     char            *securityToken;         /**< Security form token */
+    char            *upgrade;               /**< Protocol upgrade header */
     char            *userAgent;             /**< User-Agent header */
 
+    HttpLang        *lang;                  /**< Selected language */
     MprHash         *params;                /**< Request params (Query and post data variables) */
     MprHash         *svars;                 /**< Server variables */
     HttpRange       *inputRange;            /**< Specified range for rx (post) data */
     char            *passDigest;            /**< User password digest for authentication */
+    char            *paramString;           /**< Cached param data as a string */
 
     /*  
         Upload details
@@ -4135,15 +4186,26 @@ typedef struct HttpRx {
     char            *uploadDir;             /**< Upload directory */
     int             autoDelete;             /**< Automatically delete uploaded files */
 
-    char            *paramString;           /**< Cached param data as a string */
-    HttpLang        *lang;                  /**< Selected language */
-
-#if WSS
-    char            *upgrade;               /**< Protocol upgrade header */
-    char            *sockKey;
-    char            *sockProtocol;
-    char            *sockVersion;
-    char            *origin;
+#if BIT_WEB_SOCKETS
+    /*
+        WebSockets fields
+     */
+    HttpPacket      *currentPacket;         /**< Pending message packet */
+    char            *extensions;            /**< WebSocket extensions */
+    int             finalFrame;             /**< Frame is final frame in a packet */
+    ssize           frameLength;            /**< Length of the current frame */
+    uchar           dataMask[4];            /**< Mask for data */
+    int             maskOffset;             /**< Offset in dataMask */
+    int             messageCode;            /**< Current non-control frame code */
+    int             opcode;                 /**< Frame opcode */
+    int             closing;                /**< Started closing sequnce */
+    int             closeStatus;            /**< Close status provided by peer */
+    char            *closeReason;           /**< Reason for closure */
+    MprEvent        *pingEvent;             /**< Ping timer event */
+    char            *subProtocol;           /**< Application level sub-protocol */
+    char            *webSockKey;            /**< Sec-WebSocket-Key header */
+    char            *webSockProtocols;      /**< Sec-WebSocket-Protocol header */
+    int             webSockVersion;         /**< Sec-WebSocket-Version header */
 #endif
     /*
         Routing info
@@ -4505,6 +4567,10 @@ typedef struct HttpTx {
     MprFile         *file;                  /**< File to be served */
     MprPath         fileInfo;               /**< File information if there is a real file to serve */
     ssize           headerSize;             /**< Size of the header written */
+
+#if BIT_WEB_SOCKETS
+    char            *webSockKey;            /**< Sec-WebSocket-Key header */
+#endif
 } HttpTx;
 
 /** 
@@ -5320,6 +5386,58 @@ extern void httpSetHostProtocol(HttpHost *host, cchar *protocol);
  */
 extern int httpStartHost(HttpHost *host);
 extern void httpStopHost(HttpHost *host);
+
+/********************************* Web Sockets *************************************/
+#if BIT_WEB_SOCKETS
+
+#define WEB_SOCKETS_VERSION     13
+#define WEB_SOCKETS_MAGIC       "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+
+/*
+    httpWebSockSend message types
+ */
+#define WS_MSG_CLOSE    0
+#define WS_MSG_TEXT     1
+#define WS_MSG_BINARY   2
+#define WS_MSG_PING     3
+#define WS_MSG_PONG     4
+
+/*
+    Close message status codes
+    0-999       Unused
+    1000-1999   Reserved for spec
+    2000-2999   Reserved for extensions
+    3000-3999   Library use
+    4000-4999   Application use
+ */
+#define WS_STATUS_OK                   1000
+#define WS_STATUS_GOING_AWAY           1001
+#define WS_STATUS_PROTOCOL_ERROR       1002
+#define WS_STATUS_UNSUPPORTED_TYPE     1003
+#define WS_STATUS_FRAME_TOO_LARGE      1004
+#define WS_STATUS_NO_STATUS            1005
+#define WS_STATUS_COMMS_ERROR          1006
+#define WS_STATUS_INVALID_UTF8         1007
+#define WS_STATUS_POLICY_VIOLATION     1008
+#define WS_STATUS_MESSAGE_TOO_LARGE    1009
+#define WS_STATUS_MISSING_EXTENSION    1010
+#define WS_STATUS_INTERNAL_ERROR       1011
+#define WS_STATUS_TLS_ERROR            1015
+
+extern int httpWebSockUpgrade(HttpConn *conn);
+
+//  MOB - name too long
+//  MOB - doc
+extern ssize httpSend(HttpConn *conn, cchar *fmt, ...);
+extern ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len);
+extern void httpSendClose(HttpConn *conn, int status, cchar *reason);
+extern char *httpGetWebSockProtocol(HttpConn *conn);
+extern HttpWebSocketNotifier httpSetWebSocketNotifier(HttpConn *conn, HttpWebSocketNotifier fn);
+extern void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols);
+extern ssize httpGetReadCount(HttpConn *conn);
+extern char *httpGetCloseReason(HttpConn *conn);
+extern bool httpWasOrderlyClose(HttpConn *conn);
+#endif
 
 /************************************ Misc *****************************************/
 /**

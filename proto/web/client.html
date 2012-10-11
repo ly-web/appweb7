@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset=utf-8>
+</head>
+
+<body>
+    <div id="log">PENDING</div>
+    <script>
+
+    log = document.getElementById('log'),
+
+    // var ws = new WebSocket('ws://html5rocks.websocket.org/echo', ['soap', 'xmpp']);
+    // ws = new WebSocket('ws://echo.websocket.org/', "");
+    // ws = new WebSocket('ws://node.remysharp.com:8001');
+    ws = new WebSocket('ws://localhost:4100/websock/proto/msg', ['amazing', 'not-so-amazing']);
+
+    //  MOB - can't send here until handshake received
+    // ws.send(JSON.stringify('Hello WebSockets World'));
+
+    ws.onopen = function (event) {
+        ws.send("Thanks for opening");
+
+        /*
+            var blob = new Uint8Array(4);
+            for (var i = 0; i < 4; i++) {
+                blob[i] = i;
+            }
+            ws.send(blob.buffer);
+        */
+
+        //  To receive data as arraybuffers
+        //  ws.binaryType = 'arraybuffer';
+        log.innerHTML = "OPEN protocol: " + ws.protocol + '<br/>';
+    };
+    ws.onmessage = function (event) {
+        if (event.data instanceof Blob) {
+            log.innerHTML += 'MSG blob ' + event.data + '<br/>';
+        } else if (event.data instanceof ArrayBuffer) {
+            log.innerHTML += 'MSG arraybuffer ' + event.data + '<br/>';
+        } else if (typeof event.data === "string") {
+            log.innerHTML += 'MSG string ' + event.data + '<br/>';
+        } else {
+            log.innerHTML += 'MSG UNKNOWN TYPE ' + event.data + '<br/>';
+        }
+    };
+    ws.onclose = function (event) {
+        log.innerHTML += "CLOSE EVENT " + event + "<br/>";
+        if (event.wasClean) {
+            log.innerHTML += "CLOSE WAS CLEAN <br/>";
+        } else {
+            log.innerHTML += "CLOSE WAS NOT CLEAN <br/>";
+        }
+        log.innerHTML += "CLOSE CODE " + event.code + "<br/>";
+        log.innerHTML += "CLOSE REASON " + event.reason + "<br/>";
+    };
+    ws.onerror = function (event) {
+        log.innerHTML += "ERROR DATA: " + event.data + '<br/>';
+    };
+    function closeTimer(event) {
+        log.innerHTML += "SEND CLOSE FROM CLIENT" + '<br/>';
+        ws.close();
+    };
+    function timer(event) {
+        ws.send("Timer ran");
+        // setTimeout(timer, 10 * 1000);
+    };
+    setTimeout(timer, 15 * 1000);
+    </script>
+
+    <button onclick="ws.close();">Close</button>
+</body>
+</html>

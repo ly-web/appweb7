@@ -726,13 +726,6 @@ static int prepRequest(HttpConn *conn, MprList *files, int retry)
 
 static int sendRequest(HttpConn *conn, cchar *method, cchar *url, MprList *files)
 {
-#if UNUSED
-    if (scontains(url, "https") && !app->ssl) {
-        app->ssl = mprCreateSsl();
-        mprVerifySslPeer(app->ssl, app->validate);
-        mprVerifySslIssuer(app->ssl, app->validate);
-    }
-#endif
     if (httpConnect(conn, method, url, app->ssl) < 0) {
         mprError("Can't process request for \"%s\"\n%s", url, httpGetError(conn));
         return MPR_ERR_CANT_OPEN;

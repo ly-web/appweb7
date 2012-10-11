@@ -155,7 +155,7 @@ $(CONFIG)/obj/mprSsl.o: \
 $(CONFIG)/bin/libmprssl.dylib:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/mprSsl.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o $(LIBS) -lmpr
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/manager.o: \
         src/deps/mpr/manager.c \
@@ -166,7 +166,7 @@ $(CONFIG)/obj/manager.o: \
 $(CONFIG)/bin/appman:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/manager.o
-	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS) -lmpr
+	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/makerom.o: \
         src/deps/mpr/makerom.c \
@@ -177,7 +177,7 @@ $(CONFIG)/obj/makerom.o: \
 $(CONFIG)/bin/makerom:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/makerom.o
-	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS) -lmpr
+	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS)
 
 $(CONFIG)/inc/pcre.h: 
 	rm -fr $(CONFIG)/inc/pcre.h
@@ -210,7 +210,7 @@ $(CONFIG)/bin/libhttp.dylib:  \
         $(CONFIG)/bin/libpcre.dylib \
         $(CONFIG)/inc/http.h \
         $(CONFIG)/obj/httpLib.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libhttp.dylib $(CONFIG)/obj/httpLib.o $(LIBS) -lpam -lmpr -lpcre
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libhttp.dylib $(CONFIG)/obj/httpLib.o -lpcre -lmpr $(LIBS) -lpam
 
 $(CONFIG)/obj/http.o: \
         src/deps/http/http.c \
@@ -221,7 +221,7 @@ $(CONFIG)/obj/http.o: \
 $(CONFIG)/bin/http:  \
         $(CONFIG)/bin/libhttp.dylib \
         $(CONFIG)/obj/http.o
-	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBS) -lhttp -lpam -lmpr -lpcre
+	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr -lpam
 
 $(CONFIG)/inc/sqlite3.h: 
 	rm -fr $(CONFIG)/inc/sqlite3.h
@@ -247,7 +247,7 @@ $(CONFIG)/obj/sqlite.o: \
 $(CONFIG)/bin/sqlite:  \
         $(CONFIG)/bin/libsqlite3.dylib \
         $(CONFIG)/obj/sqlite.o
-	$(CC) -o $(CONFIG)/bin/sqlite -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LIBS) -lsqlite3
+	$(CC) -o $(CONFIG)/bin/sqlite -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o -lsqlite3 $(LIBS)
 
 $(CONFIG)/inc/appweb.h: 
 	rm -fr $(CONFIG)/inc/appweb.h
@@ -304,7 +304,7 @@ $(CONFIG)/bin/libappweb.dylib:  \
         $(CONFIG)/obj/fileHandler.o \
         $(CONFIG)/obj/log.o \
         $(CONFIG)/obj/server.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libappweb.dylib $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o $(LIBS) -lhttp -lpam -lmpr -lpcre
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libappweb.dylib $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr -lpam
 
 $(CONFIG)/inc/edi.h: 
 	rm -fr $(CONFIG)/inc/edi.h
@@ -399,7 +399,7 @@ $(CONFIG)/bin/mod_esp.dylib:  \
         $(CONFIG)/obj/espTemplate.o \
         $(CONFIG)/obj/mdb.o \
         $(CONFIG)/obj/sdb.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/mod_esp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/mod_esp.dylib $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS) -lappweb -lhttp -lpam -lmpr -lpcre
+	$(CC) -dynamiclib -o $(CONFIG)/bin/mod_esp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/mod_esp.dylib $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/esp.o: \
         src/esp/esp.c \
@@ -419,7 +419,7 @@ $(CONFIG)/bin/esp:  \
         $(CONFIG)/obj/espTemplate.o \
         $(CONFIG)/obj/mdb.o \
         $(CONFIG)/obj/sdb.o
-	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS) -lappweb -lhttp -lpam -lmpr -lpcre
+	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/bin/esp.conf: 
 	rm -fr $(CONFIG)/bin/esp.conf
@@ -442,7 +442,7 @@ $(CONFIG)/obj/cgiHandler.o: \
 $(CONFIG)/bin/mod_cgi.dylib:  \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/obj/cgiHandler.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/mod_cgi.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/mod_cgi.dylib $(CONFIG)/obj/cgiHandler.o $(LIBS) -lappweb -lhttp -lpam -lmpr -lpcre
+	$(CC) -dynamiclib -o $(CONFIG)/bin/mod_cgi.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/mod_cgi.dylib $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/authpass.o: \
         src/utils/authpass.c \
@@ -453,7 +453,7 @@ $(CONFIG)/obj/authpass.o: \
 $(CONFIG)/bin/authpass:  \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/obj/authpass.o
-	$(CC) -o $(CONFIG)/bin/authpass -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LIBS) -lappweb -lhttp -lpam -lmpr -lpcre
+	$(CC) -o $(CONFIG)/bin/authpass -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/cgiProgram.o: \
         src/utils/cgiProgram.c \
@@ -473,7 +473,7 @@ $(CONFIG)/obj/setConfig.o: \
 $(CONFIG)/bin/setConfig:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/setConfig.o
-	$(CC) -o $(CONFIG)/bin/setConfig -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o $(LIBS) -lmpr
+	$(CC) -o $(CONFIG)/bin/setConfig -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o -lmpr $(LIBS)
 
 $(CONFIG)/inc/appwebMonitor.h: 
 	rm -fr $(CONFIG)/inc/appwebMonitor.h
@@ -490,7 +490,7 @@ $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/inc/appwebMonitor.h \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBS) -lappweb -lhttp -lpam -lmpr -lpcre
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/inc/testAppweb.h: 
 	rm -fr $(CONFIG)/inc/testAppweb.h
@@ -513,7 +513,7 @@ $(CONFIG)/bin/testAppweb:  \
         $(CONFIG)/inc/testAppweb.h \
         $(CONFIG)/obj/testAppweb.o \
         $(CONFIG)/obj/testHttp.o
-	$(CC) -o $(CONFIG)/bin/testAppweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBS) -lappweb -lhttp -lpam -lmpr -lpcre
+	$(CC) -o $(CONFIG)/bin/testAppweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 test/cgi-bin/testScript:  \
         $(CONFIG)/bin/cgiProgram

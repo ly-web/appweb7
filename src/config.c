@@ -1963,6 +1963,65 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
     return 0;
 }
 
+#if BIT_WEB_SOCKETS
+static int ignoreEncodingErrors(MaState *state, cchar *key, cchar *value)
+{
+    bool    on;
+
+    if (!maTokenize(state, value, "%B", &on)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    state->route->ignoreEncodingErrors = on;
+    return 0;
+}
+
+
+static int limitWebSocketsDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->webSocketsMax = getint(value);
+    return 0;
+}
+
+
+static int limitWebSocketsMessageDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->webSocketsMessageSize = getint(value);
+    return 0;
+}
+
+
+static int limitWebSocketsFrameDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->webSocketsFrameSize = getint(value);
+    return 0;
+}
+
+
+static int limitWebSocketsPacketDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->webSocketsPacketSize = getint(value);
+    return 0;
+}
+
+
+static int webSocketsProtocolDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->route->webSocketsProtocol = sclone(value);
+    return 0;
+}
+
+
+static int webSocketsPingDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->route->webSocketsPingPeriod = gettime(value);
+    return 0;
+}
+#endif
+
 
 bool maValidateServer(MaServer *server)
 {
@@ -2503,6 +2562,16 @@ int maParseInit(MaAppweb *appweb)
 
     maAddDirective(appweb, "<VirtualHost", virtualHostDirective);
     maAddDirective(appweb, "</VirtualHost", closeDirective);
+
+#if BIT_WEB_SOCKETS
+    maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrors);
+    maAddDirective(appweb, "LimitWebSockets", limitWebSocketsDirective);
+    maAddDirective(appweb, "LimitWebSocketsMessage", limitWebSocketsMessageDirective);
+    maAddDirective(appweb, "LimitWebSocketsFrame", limitWebSocketsFrameDirective);
+    maAddDirective(appweb, "LimitWebSocketsPacket", limitWebSocketsPacketDirective);
+    maAddDirective(appweb, "WebSocketsProtocol", webSocketsProtocolDirective);
+    maAddDirective(appweb, "WebSocketsPing", webSocketsPingDirective);
+#endif
 
 #if !BIT_ROM
     maAddDirective(appweb, "AccessLog", accessLogDirective);

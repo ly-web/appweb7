@@ -59,29 +59,13 @@
             </ul>
 <!-- EndDsi -->
         </div>
-<!--
-    AuthType: basic, digest, post
-    AuthStore: pam, internal
-    Auth Directives
-        AuthRealm, User, Role, AuthType, AuthStore
-    Sessions
-    Custom stores, auth types
-    Internal store
-    Abilities, and Roles
-    Using basic
-    Using digest
-    Using psot
-        - login form page
-        - login service
-        ....
--->
         <div class="contentLeft">
             <h1>Authentication</h1>
             <p>Authentication is the process by which a client's identity and abilities are verified before granting
             access to server resources. Authentication is essential when you have content that you wish to protect and
             provide only to specific, approved clients.</p>
             <p>Appweb implements a powerful and flexible authorization mechanism that supports Basic, Digest and
-            Post (web-form) authentication schemes. Appweb employs a unified flexible authentication front and back ends
+            Form authentication schemes. Appweb employs a unified flexible authentication front and back ends
             that can be mixed and matched to meet most authentication needs.</p>
             
             <a id="basicAuthentication"></a>
@@ -90,7 +74,7 @@
             <ul>
                 <li>Basic Authentication</li>
                 <li>Digest Authentication</li>
-                <li>Post Web Form </li>
+                <li>Form Authentication</li>
                 <li>Custom via API</li>
             </ul>
             <p>Basic and Digest authentication are HTTP protocol mechanisms defined by the <a href=
@@ -100,8 +84,8 @@
             credentials. When submitted, the Appweb server consults the appropriate user password store to authenticate the
             user. While this scheme works, applications increasingly need to utilize an application-level user login
             mechanism that is more integrated into the overall look-and-feel of the application. Such login facilities
-            are defined using HTTP Post requests from standard web page forms. Appweb supports this scheme via the
-            Post Web Form authentication scheme.</p>
+            are defined using web forms and HTTP POST requests from standard web page forms. Appweb calls this scheme the
+            the Form-based authentication scheme.</p>
 
             <h2 class="section">Basic Authentication</h2>
             <p>Basic authentication was the original HTTP/1.0 authentication scheme. It transmits user names and
@@ -172,28 +156,27 @@
             <p>This example restricts access to the "/private" directory and all sub-directories to users whose username
             and password are validated against the designated user.db password file. The essential differences between
             this example and the Basic Authentication example is the AuthType directive.</p><a id="auth"></a>
-            <a id="postAuthentication"></a>
+            <a id="formAuthentication"></a>
 
-            <h2 class="section">Post Authentication</h2>
-            <p>The Post authentication scheme uses a standard web page form that prompts for the user to enter their
+            <h2 class="section">Form Authentication</h2>
+            <p>The Form-based authentication scheme uses a standard web page form that prompts for the user to enter their
             name and password. These values are then submitted to Appweb via a standard Http POST request. Appweb
-            analyzes the
-            user and password, and if authenticated, a login session is created and a cookie is returned 
+            analyzes the user and password, and if authenticated, a login session is created and a cookie is returned 
             to the users's browser. Subsequent requests that include the cookie will be automatically authenticated and
             served.</p>
 
-            <p>The <a href="dir/auth.html#authType">AuthType post</a> directive controls how Post authentication
-            operates. The post variant of AuthType specifies the login web page, the login service URI, the logout 
+            <p>The <a href="dir/auth.html#authType">AuthType form</a> directive controls how Form authentication
+            operates. The form variant of AuthType specifies the login web page, the login service URI, the logout 
             service URI and the destination web page once authenticated. The format is:
-    <pre>AuthType post Login-Page Login-Service Logout-Service Logged-In-Destination</pre>
+    <pre>AuthType form Login-Page Login-Service Logout-Service Logged-In-Destination</pre>
             <p>For example:</p>
             <pre>
 &lt;Route ^/&gt;
-    <b>AuthType post /auth/login.html /auth/login /auth/logout /</b>
+    <b>AuthType form /auth/login.html /auth/login /auth/logout /</b>
 &lt;/Route&gt; 
 </pre>
-            <p>This directive enables Post authentication for all requests and will redirect the client browser to
-            <tt>/auth/login.esp</tt> to prompt for the username and password. This example uses a plain HTML web page, but 
+            <p>This directive enables Form authentication for all requests and will redirect the client browser to
+            <tt>/auth/login.html</tt> to prompt for the username and password. This example uses a plain HTML web page, but 
             the web page can be created in ESP, PHP, CGI or any other web framework. The web page should submit the username
             and password to the <tt>/auth/login</tt> login service. When logout is required, the client should submit
             a HTTP POST request to the logout service URI <tt>/auth/logout</tt>. The last field in the AuthType
@@ -210,7 +193,7 @@
             <h3>Web Form</h3>
             <p>Here is a minimal example login form:</p>
             <pre>
-&lt;html&gt;&lt;head&gt;&lt;title&gt;login.esp&lt;/title&gt;&lt;/head&gt;
+&lt;html&gt;&lt;head&gt;&lt;title&gt;login.html&lt;/title&gt;&lt;/head&gt;
 &lt;body&gt;
     &lt;p&gt;Please log in&lt;/p&gt;
     &lt;form name="details" method="post" <b>action="/auth/login"</b>&gt;
@@ -227,8 +210,8 @@
             the login form request contatained a referrer URI in the HTTP header, then that referrer URI will be used
             as the destination instead of the hard-wired destination.</p>
             <h3>Securing the Password</h3>
-            <p><b>SECURITY WARNING:</b> The Post authentication scheme submits the user password as plain text. To secure
-            communications, the Post authentication schem should be used over a secure connection using TLS/SSL.
+            <p><b>SECURITY WARNING:</b> The Form authentication scheme submits the user password as plain text. To secure
+            communications, the Form authentication schem should be used over a secure connection using TLS/SSL.
             To achieve this, you should create a route which redirects the client to the secure login form.  For
             example: </p>
             <pre>
@@ -236,10 +219,10 @@ Listen 443
 &lt;VirtualHost *:443&gt;
     SSLEngine on openssl
     # More SSL directives if required
-    AuthType post /login.esp /login /logout referrer:/index.html
+    AuthType form /login.html /login /logout referrer:/index.html
 &lt;/VirtualHost&gt;
 &lt;Route ^/&gt;
-    AuthType post https://example.com/login.esp
+    AuthType form https://example.com/login.html
 &lt;/Route&gt;
 </pre>
             <a id="authStores"></a>
@@ -270,7 +253,7 @@ include auth.conf
             <h2 class="section">Password Program</h2>
             <p>The <tt>authpass</tt> program supports the <tt>internal</tt> AuthStore and is used to create user
             passwords in an authentication file. Appweb uses the same authorization file and format for Basic, Digest
-            and Post authentication types. This simplifies administration. The file simply contains User and Role
+            and Form authentication types. This simplifies administration. The file simply contains User and Role
             directives and may be edited by hand if desired.</p> 
 <pre>
 #

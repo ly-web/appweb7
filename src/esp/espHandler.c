@@ -170,7 +170,9 @@ static void startEsp(HttpQueue *q)
             if (!conn->responded) {
                 espRenderView(conn, 0);
             }
-            espFinalize(conn);
+            if (req->autoFinalize) {
+                espFinalize(conn);
+            }
         }
         if (espIsFinalized(conn)) {
             finalizeFlash(conn);

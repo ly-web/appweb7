@@ -1485,20 +1485,24 @@ int httpOpenChunkFilter(Http *http)
  */
 static int matchChunk(HttpConn *conn, HttpRoute *route, int dir)
 {
+    HttpTx  *tx;
+
+    tx = conn->tx;
+
+    if (conn->upgraded || (!conn->endpoint && tx->parsedUri && tx->parsedUri->wss)) {
+        /* Web sockets */
+        return HTTP_ROUTE_REJECT;
+    }
     if (dir & HTTP_STAGE_TX) {
         /* 
             If content length is defined, don't need chunking. Also disable chunking if explicitly turned off vi 
             the X_APPWEB_CHUNK_SIZE header which may set the chunk size to zero.
          */
-        if (conn->tx->length >= 0 || conn->tx->chunkSize == 0) {
+        if (tx->length >= 0 || tx->chunkSize == 0) {
             return HTTP_ROUTE_REJECT;
         }
         return HTTP_ROUTE_OK;
     } else {
-        /* 
-            Must always be ready to handle chunked response data. Clients create their incoming pipeline before it is
-            know what the response data looks like (chunked or not).
-         */
         return HTTP_ROUTE_OK;
     }
 }
@@ -1509,7 +1513,7 @@ static void openChunk(HttpQueue *q)
     HttpConn    *conn;
 
     conn = q->conn;
-    q->packetSize = min(conn->limits->chunkSize, q->max);
+    q->packetSize = min(conn->limits->stageBufferSize, q->max);
 }
 
 
@@ -1532,7 +1536,7 @@ ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
     HttpConn    *conn;
     HttpRx      *rx;
     MprBuf      *buf;
-    ssize       chunkSize, nbytes;
+    ssize       chunkSize;
     char        *start, *cp;
     int         bad;
 
@@ -1544,11 +1548,8 @@ ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
 
     switch (rx->chunkState) {
     case HTTP_CHUNK_UNCHUNKED:
-        nbytes = mprGetBufLength(buf);
-        if (conn->http10 && nbytes == 0 && mprIsSocketEof(conn->sock)) {
-            rx->eof = 1;
-        }
-        return (ssize) min(rx->remainingContent, nbytes);
+        mprAssert(0);
+        return -1;
 
     case HTTP_CHUNK_DATA:
         mprLog(7, "chunkFilter: data %d bytes, rx->remainingContent %d", httpGetPacketLength(packet), rx->remainingContent);
@@ -1600,12 +1601,7 @@ ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
         mprAdjustBufStart(buf, (cp - start + 1));
         /* Remaining content is set to the next chunk size */
         rx->remainingContent = chunkSize;
-        if (chunkSize == 0) {
-            rx->chunkState = HTTP_CHUNK_EOF;
-            rx->eof = 1;
-        } else {
-            rx->chunkState = HTTP_CHUNK_DATA;
-        }
+        rx->chunkState = (chunkSize == 0) ? HTTP_CHUNK_EOF : HTTP_CHUNK_DATA;
         mprLog(7, "chunkFilter: start incoming chunk of %d bytes", chunkSize);
         return min(chunkSize, mprGetBufLength(buf));
 
@@ -1647,7 +1643,7 @@ static void outgoingChunkService(HttpQueue *q)
             tx->chunkSize = -1;
         }
     }
-    if (tx->chunkSize <= 0) {
+    if (tx->chunkSize <= 0 || conn->upgraded) {
         httpDefaultOutgoingServiceStage(q);
     } else {
         for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
@@ -1725,9 +1721,13 @@ static void setChunkPrefix(HttpQueue *q, HttpPacket *packet)
 
 
 
+/********************************* Forwards ***********************************/
+
+static void setDefaultHeaders(HttpConn *conn);
+
 /*********************************** Code *************************************/
 
-static HttpConn *openConnection(HttpConn *conn, cchar *url, struct MprSsl *ssl)
+static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
 {
     Http        *http;
     HttpUri     *uri;
@@ -1738,10 +1738,9 @@ static HttpConn *openConnection(HttpConn *conn, cchar *url, struct MprSsl *ssl)
     mprAssert(conn);
 
     http = conn->http;
-    uri = httpCreateUri(url, HTTP_COMPLETE_URI);
-    conn->tx->parsedUri = uri;
+    uri = conn->tx->parsedUri;
 
-    if (*url == '/') {
+    if (!uri->host) {
         ip = (http->proxyHost) ? http->proxyHost : http->defaultClientHost;
         port = (http->proxyHost) ? http->proxyPort : http->defaultClientPort;
     } else {
@@ -1763,13 +1762,20 @@ static HttpConn *openConnection(HttpConn *conn, cchar *url, struct MprSsl *ssl)
         return conn;
     }
     if ((sp = mprCreateSocket()) == 0) {
-        httpError(conn, HTTP_CODE_COMMS_ERROR, "Can't create socket for %s", url);
+        httpError(conn, HTTP_CODE_COMMS_ERROR, "Can't create socket for %s", uri->uri);
         return 0;
     }
     if ((rc = mprConnectSocket(sp, ip, port, 0)) < 0) {
         httpError(conn, HTTP_CODE_COMMS_ERROR, "Can't open socket on %s:%d", ip, port);
         return 0;
     }
+    conn->sock = sp;
+    conn->ip = sclone(ip);
+    conn->port = port;
+    conn->secure = uri->secure;
+    conn->keepAliveCount = (conn->limits->keepAliveMax) ? conn->limits->keepAliveMax : -1;
+    setDefaultHeaders(conn);
+
 #if BIT_PACK_SSL
     /* Must be done even if using keep alive for repeat SSL requests */
     if (uri->secure) {
@@ -1782,12 +1788,16 @@ static HttpConn *openConnection(HttpConn *conn, cchar *url, struct MprSsl *ssl)
         }
     }
 #endif
-    conn->sock = sp;
-    conn->ip = sclone(ip);
-    conn->port = port;
-    conn->secure = uri->secure;
-    conn->keepAliveCount = (conn->limits->keepAliveMax) ? conn->limits->keepAliveMax : -1;
-
+#if BIT_WEB_SOCKETS
+    if (uri->wss) {
+        //  MOB - must set errorMsg
+        if (httpWebSockUpgrade(conn) < 0) {
+            conn->errorMsg = sp->errorMsg;
+            return 0;
+        }
+        httpServiceQueues(conn);
+    }
+#endif
     if ((level = httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_CONN, NULL)) >= 0) {
         mprLog(level, "### Outgoing connection from %s:%d to %s:%d", 
             conn->ip, conn->port, conn->sock->ip, conn->sock->port);
@@ -1796,10 +1806,7 @@ static HttpConn *openConnection(HttpConn *conn, cchar *url, struct MprSsl *ssl)
 }
 
 
-/*  
-    Define headers and create an empty header packet that will be filled later by the pipeline.
- */
-static int setClientHeaders(HttpConn *conn)
+static void setDefaultHeaders(HttpConn *conn)
 {
     HttpAuthType    *authType;
 
@@ -1817,17 +1824,11 @@ static int setClientHeaders(HttpConn *conn)
     } else {
         httpAddHeaderString(conn, "Host", conn->ip);
     }
-#if UNUSED
-    if (conn->http10 && !smatch(conn->tx->method, "GET")) {
-        conn->keepAliveCount = 0;
-    }
-#endif
     if (conn->keepAliveCount > 0) {
         httpSetHeaderString(conn, "Connection", "Keep-Alive");
     } else {
         httpSetHeaderString(conn, "Connection", "close");
     }
-    return 0;
 }
 
 
@@ -1851,17 +1852,15 @@ int httpConnect(HttpConn *conn, cchar *method, cchar *url, struct MprSsl *ssl)
     httpSetState(conn, HTTP_STATE_CONNECTED);
     conn->setCredentials = 0;
     conn->tx->method = supper(method);
+    conn->tx->parsedUri = httpCreateUri(url, HTTP_COMPLETE_URI);
 
 #if BIT_DEBUG
     conn->startTime = conn->http->now;
     conn->startTicks = mprGetTicks();
 #endif
-    if (openConnection(conn, url, ssl) == 0) {
-        return MPR_ERR_CANT_OPEN;
-    }
     httpCreateTxPipeline(conn, conn->http->clientRoute);
-    if (setClientHeaders(conn) < 0) {
-        return MPR_ERR_CANT_INITIALIZE;
+    if (openConnection(conn, ssl) == 0) {
+        return MPR_ERR_CANT_OPEN;
     }
     return 0;
 }
@@ -2165,6 +2164,9 @@ static void manageConn(HttpConn *conn, int flags)
         mprMark(conn->authData);
         mprMark(conn->username);
         mprMark(conn->password);
+#if BIT_WEB_SOCKETS
+        mprMark(conn->protocols);
+#endif
 
     } else if (flags & MPR_MANAGE_FREE) {
         httpDestroyConn(conn);
@@ -2205,6 +2207,9 @@ void httpConnTimeout(HttpConn *conn)
 
     mprLog(6, "Inactive connection timed out");
     if (conn->state >= HTTP_STATE_PARSED) {
+        if (conn->timeoutCallback) {
+            (conn->timeoutCallback)(conn);
+        }
         if ((conn->lastActivity + limits->inactivityTimeout) < now) {
             httpError(conn, HTTP_CODE_REQUEST_TIMEOUT,
                 "Exceeded inactivity timeout of %Ld sec", limits->inactivityTimeout / 1000);
@@ -2268,7 +2273,6 @@ void httpPrepServerConn(HttpConn *conn)
     mprAssert(conn);
     mprAssert(conn->rx == 0);
     mprAssert(conn->tx == 0);
-    mprAssert(conn->endpoint);
 
     conn->readq = 0;
     conn->writeq = 0;
@@ -2757,6 +2761,12 @@ void httpNotifyWritable(HttpConn *conn)
     HTTP_NOTIFY(conn, HTTP_EVENT_IO, HTTP_NOTIFY_WRITABLE);
 }
 
+
+void httpNotifyReadable(HttpConn *conn)
+{
+    HTTP_NOTIFY(conn, HTTP_EVENT_IO, HTTP_NOTIFY_READABLE);
+}
+
 /*
     @copy   default
 
@@ -3062,10 +3072,6 @@ void httpDigestSetHeaders(HttpConn *conn)
     ha1 = mprGetMD5(a1Buf);
     fmt(a2Buf, sizeof(a2Buf), "%s:%s", tx->method, tx->parsedUri->path);
     ha2 = mprGetMD5(a2Buf);
-#if UNUSED
-    //  MOB - why incremented?
-    dp->nc++;
-#endif
     if (smatch(dp->qop, "auth")) {
         fmt(digestBuf, sizeof(digestBuf), "%s:%s:%08x:%s:%s:%s", ha1, dp->nonce, dp->nc, cnonce, dp->qop, ha2);
         digest = mprGetMD5(digestBuf);
@@ -3808,6 +3814,7 @@ void httpDisconnect(HttpConn *conn)
     conn->error = 1;
     conn->keepAliveCount = -1;
     if (conn->rx) {
+        //  MOB - what value is this? 
         conn->rx->eof = 1;
     }
 }
@@ -3852,6 +3859,7 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
     if (flags & HTTP_ABORT) {
         conn->connError = 1;
         if (rx) {
+            //  MOB - what value is this?
             rx->eof = 1;
         }
     }
@@ -3863,6 +3871,7 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
         httpDisconnect(conn);
         formatErrorv(conn, status, fmt, args);
         conn->error = 1;
+        HTTP_NOTIFY(conn, HTTP_EVENT_IO, HTTP_NOTIFY_ERROR);
         return;
     }
     if (conn->error) {
@@ -3870,6 +3879,7 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
     }
     conn->error = 1;
     formatErrorv(conn, status, fmt, args);
+    HTTP_NOTIFY(conn, HTTP_EVENT_IO, HTTP_NOTIFY_ERROR);
 
     if (conn->endpoint && tx && rx) {
         if (!(tx->flags & HTTP_TX_HEADERS_CREATED)) {
@@ -4363,6 +4373,7 @@ typedef struct HttpStatusCode {
 
 HttpStatusCode HttpStatusCodes[] = {
     { 100, "100", "Continue" },
+    { 101, "101", "Switching Protocols" },
     { 200, "200", "OK" },
     { 201, "201", "Created" },
     { 202, "202", "Accepted" },
@@ -4461,6 +4472,7 @@ Http *httpCreate()
     httpOpenRangeFilter(http);
     httpOpenChunkFilter(http);
     httpOpenUploadFilter(http);
+    httpOpenWebSockFilter(http);
     httpOpenCacheHandler(http);
     httpOpenPassHandler(http);
     httpOpenProcHandler(http);
@@ -4632,6 +4644,14 @@ void httpInitLimits(HttpLimits *limits, bool serverSide)
     limits->requestTimeout = MAXINT;
     limits->sessionTimeout = HTTP_SESSION_TIMEOUT;
 
+#if BIT_WEB_SOCKETS
+    limits->webSocketsMax = HTTP_MAX_WSS_SOCKETS;
+    limits->webSocketsMessageSize = HTTP_MAX_WSS_MESSAGE;
+    limits->webSocketsFrameSize  =HTTP_MAX_WSS_FRAME;
+    limits->webSocketsPacketSize = HTTP_MAX_WSS_PACKET;
+    limits->webSocketsPing = HTTP_WSS_PING_PERIOD;
+#endif
+
 #if FUTURE
     mprSetMaxSocketClients(endpoint, atoi(value));
 
@@ -4749,8 +4769,8 @@ static void httpTimer(Http *http, MprEvent *event)
         rx = conn->rx;
         limits = conn->limits;
         if (!conn->timeoutEvent && (
-            (conn->lastActivity + limits->inactivityTimeout) < http->now || 
-            (conn->started + limits->requestTimeout) < http->now)) {
+                (conn->lastActivity + limits->inactivityTimeout) < http->now || 
+                (conn->started + limits->requestTimeout) < http->now)) {
             if (rx) {
                 /*
                     Don't call APIs on the conn directly (thread-race). Schedule a timer on the connection's dispatcher
@@ -4759,7 +4779,7 @@ static void httpTimer(Http *http, MprEvent *event)
                     conn->timeoutEvent = mprCreateEvent(conn->dispatcher, "connTimeout", 0, httpConnTimeout, conn, 0);
                 }
             } else {
-                mprLog(6, "Idle connection timed out");
+                mprLog(6, "Idle connection without active request timed out");
                 httpDisconnect(conn);
                 httpDiscardQueueData(conn->writeq, 1);
                 httpEnableConnEvents(conn);
@@ -5011,13 +5031,6 @@ static void updateCurrentDate(Http *http)
     if (http->now > (http->currentTime + MPR_TICKS_PER_SEC - 1)) {
         http->currentTime = http->now;
         http->currentDate = httpGetDateString(NULL);
-#if UNUSED
-    static MprTime  recalcExpires = 0;
-        if (http->expiresDate == 0 || recalcExpires < (http->now / (60 * 1000))) {
-            http->expiresDate = mprFormatUniversalTime(HTTP_DATE_FORMAT, http->now + (86400 * 1000));
-            recalcExpires = http->now / (60 * 1000);
-        }
-#endif
     }
 }
 
@@ -5468,7 +5481,7 @@ static MprOff buildNetVec(HttpQueue *q)
             httpWriteHeaders(conn, packet);
             q->count += httpGetPacketLength(packet);
 
-        } else if (httpGetPacketLength(packet) == 0) {
+        } else if (packet->flags & HTTP_PACKET_END) {
             q->flags |= HTTP_QUEUE_EOF;
             if (packet->prefix == NULL) {
                 break;
@@ -5854,6 +5867,8 @@ int httpJoinPacket(HttpPacket *packet, HttpPacket *p)
 
     mprAssert(packet->esize == 0);
     mprAssert(p->esize == 0);
+    mprAssert(!(packet->flags & HTTP_PACKET_SOLO));
+    mprAssert(!(p->flags & HTTP_PACKET_SOLO));
 
     len = httpGetPacketLength(p);
     if (mprPutBlockToBuf(packet->content, mprGetBufStart(p->content), (ssize) len) != len) {
@@ -6306,7 +6321,9 @@ static void startPass(HttpQueue *q)
 
 static void readyPass(HttpQueue *q)
 {
-    httpFinalize(q->conn);
+    if (!q->conn->upgraded) {
+        httpFinalize(q->conn);
+    }
 }
 
 
@@ -6629,6 +6646,7 @@ void httpReadyHandler(HttpConn *conn)
 }
 
 
+//  MOB - rename. Conveys initial processing
 int httpProcessHandler(HttpConn *conn)
 {
     HttpQueue   *q;
@@ -6914,7 +6932,7 @@ void httpInitQueue(HttpConn *conn, HttpQueue *q, cchar *name)
 }
 
 
-#if UNUSED &&KEEP
+#if UNUSED && KEEP
 /*  
     Insert a queue after the previous element
  */
@@ -7162,7 +7180,16 @@ ssize httpRead(HttpConn *conn, char *buf, ssize size)
     }
     mprAssert(q->count >= 0);
     mprAssert(httpVerifyQueue(q));
+    if (nbytes < size) {
+        buf[nbytes] = '\0';
+    }
     return nbytes;
+}
+
+
+ssize httpGetReadCount(HttpConn *conn)
+{
+    return conn->readq->count;
 }
 
 
@@ -7173,7 +7200,7 @@ bool httpIsEof(HttpConn *conn)
 
 
 /*
-    Read all the content buffered so far
+    Read data as a string
  */
 char *httpReadString(HttpConn *conn)
 {
@@ -7185,7 +7212,9 @@ char *httpReadString(HttpConn *conn)
     remaining = (ssize) min(MAXSSIZE, rx->length);
 
     if (remaining > 0) {
-        content = mprAlloc(remaining + 1);
+        if ((content = mprAlloc(remaining + 1)) == 0) {
+            return 0;
+        }
         sofar = 0;
         while (remaining > 0) {
             nbytes = httpRead(conn, &content[sofar], remaining);
@@ -7970,6 +7999,9 @@ static void manageRoute(HttpRoute *route, int flags)
         mprMark(route->logFormat);
         mprMark(route->logPath);
         mprMark(route->mutex);
+#if BIT_WEB_SOCKETS
+        mprMark(route->webSocketsProtocol);
+#endif
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (route->patternCompiled && (route->flags & HTTP_ROUTE_FREE_PATTERN)) {
@@ -8010,6 +8042,7 @@ HttpRoute *httpCreateConfiguredRoute(HttpHost *host, int serverSide)
     http = route->http;
     httpAddRouteFilter(route, http->rangeFilter->name, NULL, HTTP_STAGE_TX);
     httpAddRouteFilter(route, http->chunkFilter->name, NULL, HTTP_STAGE_RX | HTTP_STAGE_TX);
+    httpAddRouteFilter(route, http->webSocketFilter->name, NULL, HTTP_STAGE_RX | HTTP_STAGE_TX);
     if (serverSide) {
         httpAddRouteFilter(route, http->uploadFilter->name, NULL, HTTP_STAGE_RX);
     }
@@ -10912,12 +10945,16 @@ static void manageRx(HttpRx *rx, int flags)
         mprMark(rx->lang);
         mprMark(rx->target);
 
-#if WSS
+#if BIT_WEB_SOCKETS
         mprMark(rx->upgrade);
-        mprMark(rx->sockKey);
-        mprMark(rx->sockProtocol);
-        mprMark(rx->sockVersion);
         mprMark(rx->origin);
+        mprMark(rx->webSockKey);
+        mprMark(rx->webSockProtocols);
+        mprMark(rx->currentPacket);
+        mprMark(rx->extensions);
+        mprMark(rx->pingEvent);
+        mprMark(rx->subProtocol);
+        mprMark(rx->closeReason);
 #endif
 
     } else if (flags & MPR_MANAGE_FREE) {
@@ -11055,7 +11092,7 @@ static bool parseIncoming(HttpConn *conn, HttpPacket *packet)
         httpMatchHost(conn);
         setParsedUri(conn);
 
-    } else if (!(100 <= rx->status && rx->status <= 199)) {
+    } else if (rx->status != HTTP_CODE_CONTINUE) {
         /* 
             Ignore Expect status responses. NOTE: Clients have already created their Tx pipeline.
          */
@@ -11382,8 +11419,9 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
                 } else if (scaselesscmp(value, "CLOSE") == 0) {
                     /*  Not really required, but set to 0 to be sure */
                     conn->keepAliveCount = 0;
-#if WSS
+#if BIT_WEB_SOCKETS && UNUSED && CLASHES
                 } else if (scaselesscmp(value, "upgrade") == 0) {
+                    rx->upgrade = sclone(value);
 #endif
                 }
 
@@ -11557,7 +11595,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             }
             break;
 
-#if WSS
+#if BIT_WEB_SOCKETS
         case 'o':
             if (strcasecmp(key, "origin") == 0) {
                 rx->origin = sclone(value);
@@ -11579,17 +11617,31 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             } else if (strcasecmp(key, "referer") == 0) {
                 /* NOTE: yes the header is misspelt in the spec */
                 rx->referrer = sclone(value);
+#if UNUSED
+            /*
+                There is a draft spec for these, but it has bad DOS security implications.
+             */
+            } else if (strcasecmp(key, "request-timeout") == 0) {
+                conn->limits->requestTimeout = stoi(value) * MPR_TICKS_PER_SEC;
+                conn->limits->inactivityTimeout = stoi(value) * MPR_TICKS_PER_SEC;
+#endif
             }
             break;
 
-#if WSS
+#if BIT_WEB_SOCKETS
         case 's':
             if (strcasecmp(key, "sec-websocket-key") == 0) {
-                rx->sockKey = sclone(value);
+                rx->webSockKey = sclone(value);
+            } else if (strcasecmp(key, "sec-websocket-extensions") == 0) {
+                if (rx->extensions) {
+                    rx->extensions = sjoin(rx->extensions, ", ", value, NULL);
+                } else {
+                    rx->extensions = sclone(value);
+                }
             } else if (strcasecmp(key, "sec-websocket-protocol") == 0) {
-                rx->sockProtocol = sclone(value);
+                rx->webSockProtocols = sclone(value);
             } else if (strcasecmp(key, "sec-websocket-version") == 0) {
-                rx->sockVersion = sclone(value);
+                rx->webSockVersion = (int) stoi(value);
             }
             break;
 #endif
@@ -11624,7 +11676,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             break;
 
         case 'u':
-#if WSS
+#if BIT_WEB_SOCKETS
             if (scaselesscmp(key, "upgrade") == 0) {
                 rx->upgrade = sclone(value);
             } else
@@ -11647,11 +11699,6 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             break;
         }
     }
-    /*
-        Don't stream input if a form or upload. NOTE: Upload needs the Files[] collection.
-     */
-    rx->streamInput = !(rx->form || rx->upload);
-    rx->eof = (rx->remainingContent == 0);
     if (!keepAlive) {
         conn->keepAliveCount = 0;
     }
@@ -11698,6 +11745,12 @@ static bool processParsed(HttpConn *conn)
          */
         routeRequest(conn);
     }
+    /*
+        Don't stream input if a form or upload. NOTE: Upload needs the Files[] collection.
+     */
+    rx->streamInput = !(rx->form || rx->upload);
+    httpServiceQueues(conn);
+
     if (rx->streamInput) {
         httpStartPipeline(conn);
     }
@@ -11710,16 +11763,18 @@ static bool processParsed(HttpConn *conn)
         sendContinue(conn);
         rx->flags &= ~HTTP_EXPECT_CONTINUE;
     }
-    httpSetState(conn, HTTP_STATE_CONTENT);
-    if (conn->workerEvent && conn->tx->started && rx->eof) {
+    if (rx->remainingContent == 0 && !conn->upgraded) {
+        /* Go to ready state if not request body to read */
+        rx->eof = 1;
         httpSetState(conn, HTTP_STATE_READY);
-        return 0;
+    } else {
+        httpSetState(conn, HTTP_STATE_CONTENT);
     }
     return 1;
 }
 
 
-static bool analyseContent(HttpConn *conn, HttpPacket *packet)
+static bool processContent(HttpConn *conn, HttpPacket *packet)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -11727,77 +11782,76 @@ static bool analyseContent(HttpConn *conn, HttpPacket *packet)
     MprBuf      *content;
     ssize       nbytes;
 
-    rx = conn->rx;
-    if (rx->eof) {
-        return 1;
-    }
-    tx = conn->tx;
-    content = packet->content;
-    q = tx->queue[HTTP_QUEUE_RX];
-    LOG(7, "processContent: packet of %d bytes, remaining %d", mprGetBufLength(content), rx->remainingContent);
-    
-    if ((nbytes = httpFilterChunkData(q, packet)) <= 0) {
-        return rx->eof ? 1 : 0;
-    }
-    rx->remainingContent -= nbytes;
-    rx->bytesRead += nbytes;
-    if (httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, tx->ext) >= 0) {
-        httpTraceContent(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, packet, nbytes, rx->bytesRead);
-    }
-    if (rx->bytesRead >= conn->limits->receiveBodySize) {
-        httpError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Request body of %,Ld bytes is too big. Limit %,Ld", rx->bytesRead, conn->limits->receiveBodySize);
-        return 1;
-    }
-    if (rx->form && rx->length >= conn->limits->receiveFormSize) {
-        httpError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Request form of %,Ld bytes is too big. Limit %,Ld", rx->bytesRead, conn->limits->receiveFormSize);
-        return 1;
-    }
-    if (packet == rx->headerPacket && nbytes > 0) {
-        packet = httpSplitPacket(packet, 0);
-    }
-    if (httpGetPacketLength(packet) > nbytes) {
-        /*  Split excess data belonging to the next chunk or pipelined request */
-        LOG(7, "processContent: Split packet of %d at %d", httpGetPacketLength(packet), nbytes);
-        conn->input = httpSplitPacket(packet, nbytes);
-    } else {
-        conn->input = 0;
-    }
-    if (!(conn->finalized && conn->endpoint)) {
-        /* If conn->error, then finalized will also be true */
-        if (rx->form) {
-            httpPutForService(q, packet, HTTP_DELAY_SERVICE);
-        } else {
-            httpPutPacketToNext(q, packet);
-        }
-    }
-    mprAssert(rx->remainingContent >= 0);
-    if (rx->remainingContent <= 0 && !(rx->flags & HTTP_CHUNKED)) {
-        rx->eof = 1;
-    }
-    return 1;
-}
-
-
-/*  
-    Process request body data (typically post or put content)
- */
-static bool processContent(HttpConn *conn, HttpPacket *packet)
-{
-    HttpRx      *rx;
-    HttpQueue   *q;
-
-    rx = conn->rx;
-
+    mprAssert(conn);
+    mprAssert(packet);
+    mprAssert(!conn->rx->eof);
     if (!packet) {
         return 0;
     }
-    if (!analyseContent(conn, packet)) {
-        return 0;
+    rx = conn->rx;
+    tx = conn->tx;
+    content = packet->content;
+
+    q = tx->queue[HTTP_QUEUE_RX];
+    LOG(6, "processContent: packet of %d bytes, remaining %d", mprGetBufLength(content), rx->remainingContent);
+    
+    /*
+        Determine if end of input (end-of-file)
+     */
+    if (rx->chunkState) {
+        nbytes = httpFilterChunkData(q, packet);
+        if (rx->chunkState == HTTP_CHUNK_EOF) {
+            rx->eof = 1;
+        }
+    } else {
+        nbytes = (ssize) min(rx->remainingContent, mprGetBufLength(content));
+        if (mprIsSocketEof(conn->sock) || (!conn->upgraded && (rx->remainingContent - nbytes) <= 0)) {
+            rx->eof = 1;
+        }
+    }
+    if (nbytes > 0) {
+        rx->remainingContent -= nbytes;
+        mprAssert(rx->remainingContent >= 0);
+        rx->bytesRead += nbytes;
+        if (httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, tx->ext) >= 0) {
+            httpTraceContent(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, packet, nbytes, rx->bytesRead);
+        }
+        /*
+            Enforce sandbox limits
+         */
+        if (rx->bytesRead >= conn->limits->receiveBodySize) {
+            httpError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
+                "Request body of %,Ld bytes is too big. Limit %,Ld", rx->bytesRead, conn->limits->receiveBodySize);
+
+        } else if (rx->form && rx->length >= conn->limits->receiveFormSize) {
+            httpError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
+                "Request form of %,Ld bytes is too big. Limit %,Ld", rx->bytesRead, conn->limits->receiveFormSize);
+
+        } else {
+            /*
+                Send packet upstream toward the handler
+             */
+            if (packet == rx->headerPacket && nbytes > 0) {
+                packet = httpSplitPacket(packet, 0);
+            }
+            if (httpGetPacketLength(packet) > nbytes) {
+                /*  Split excess data belonging to the next chunk or pipelined request */
+                LOG(7, "processContent: Split packet of %d at %d", httpGetPacketLength(packet), nbytes);
+                conn->input = httpSplitPacket(packet, nbytes);
+            } else {
+                conn->input = 0;
+            }
+            if (!(conn->finalized && conn->endpoint)) {
+                /* If conn->error, then finalized will also be true */
+                if (rx->form) {
+                    httpPutForService(q, packet, HTTP_DELAY_SERVICE);
+                } else {
+                    httpPutPacketToNext(q, packet);
+                }
+            }
+        }
     }
     if (rx->eof) {
-        q = conn->tx->queue[HTTP_QUEUE_RX];
         if (!conn->finalized) {
             if (rx->form && conn->endpoint) {
                 /* Forms wait for all data before routing */
@@ -11806,6 +11860,9 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
                     httpPutPacketToNext(q, packet);
                 }
             }
+            /*
+                Send "end" pack to signify eof to the handler
+             */
             httpPutPacketToNext(q, httpCreateEndPacket());
             if (!rx->streamInput) {
                 httpStartPipeline(conn);
@@ -11871,8 +11928,12 @@ static bool processRunning(HttpConn *conn)
     } else {
         /* Client side */
         httpServiceQueues(conn);
-        httpFinalize(conn);
-        httpSetState(conn, HTTP_STATE_COMPLETE);
+        if (conn->upgraded) {
+            canProceed = 0;
+        } else {
+            httpFinalize(conn);
+            httpSetState(conn, HTTP_STATE_COMPLETE);
+        }
     }
     return canProceed;
 }
@@ -11916,8 +11977,10 @@ static bool processCompletion(HttpConn *conn)
     rx = conn->rx;
     mprAssert(conn->state == HTTP_STATE_COMPLETE);
 
+    HTTP_NOTIFY(conn, HTTP_EVENT_IO, HTTP_NOTIFY_CLOSED);
     httpDestroyPipeline(conn);
     measure(conn);
+
     if (conn->endpoint && rx) {
         if (rx->route && rx->route->log) {
             httpLogRequest(conn);
@@ -11929,6 +11992,9 @@ static bool processCompletion(HttpConn *conn)
         conn->tx = 0;
         packet = conn->input;
         more = packet && !conn->connError && (httpGetPacketLength(packet) > 0);
+        if (conn->keepAliveCount < 0) {
+            conn->endpoint = 0;
+        }
         if (conn->sock) {
             httpPrepServerConn(conn);
         }
@@ -11938,9 +12004,13 @@ static bool processCompletion(HttpConn *conn)
 }
 
 
+/*
+    Used by ejscript Request.close
+ */
 void httpCloseRx(HttpConn *conn)
 {
-    if (!conn->rx->eof) {
+    if (conn->rx && !conn->rx->remainingContent) {
+        //  MOB - better to use remaining?
         /* May not have consumed all read data, so can't be assured the next request will be okay */
         conn->keepAliveCount = -1;
     }
@@ -12608,6 +12678,7 @@ static void addPacketForSend(HttpQueue *q, HttpPacket *packet);
 static void adjustSendVec(HttpQueue *q, MprOff written);
 static MprOff buildSendVec(HttpQueue *q);
 static void adjustPacketData(HttpQueue *q, MprOff written);
+static void sendClose(HttpQueue *q);
 
 /*********************************** Code *************************************/
 
@@ -12620,7 +12691,7 @@ int httpOpenSendConnector(Http *http)
         return MPR_ERR_CANT_CREATE;
     }
     stage->open = httpSendOpen;
-    stage->close = httpSendClose;
+    stage->close = sendClose;
     stage->outgoingService = httpSendOutgoingService; 
     http->sendConnector = stage;
     return 0;
@@ -12658,7 +12729,7 @@ void httpSendOpen(HttpQueue *q)
 }
 
 
-void httpSendClose(HttpQueue *q)
+static void sendClose(HttpQueue *q)
 {
     HttpTx  *tx;
 
@@ -13058,7 +13129,7 @@ HttpSession *httpGetSession(HttpConn *conn, int create)
     if (id || create) {
         rx->session = httpAllocSession(conn, id, conn->limits->sessionTimeout);
         if (rx->session && !id) {
-            httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, 0, conn->secure);
+            httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, 0, 0);
         }
     }
     return rx->session;
@@ -13293,12 +13364,16 @@ static void incoming(HttpQueue *q, HttpPacket *packet)
         /* This queue is the last queue in the pipeline */
         //  MOB - should this call WillAccept?
         if (httpGetPacketLength(packet) > 0) {
-            httpJoinPacketForService(q, packet, 0);
-            HTTP_NOTIFY(q->conn, 0, HTTP_NOTIFY_READABLE);
+            if (packet->flags & HTTP_PACKET_SOLO) {
+                httpPutForService(q, packet, HTTP_DELAY_SERVICE);
+            } else {
+                httpJoinPacketForService(q, packet, 0);
+            }
+            HTTP_NOTIFY(q->conn, HTTP_EVENT_IO, HTTP_NOTIFY_READABLE);
         } else {
             /* Zero length packet means eof */
             httpPutForService(q, packet, HTTP_DELAY_SERVICE);
-            HTTP_NOTIFY(q->conn, 0, HTTP_NOTIFY_READABLE);
+            HTTP_NOTIFY(q->conn, HTTP_EVENT_IO, HTTP_NOTIFY_READABLE);
         }
     }
     mprAssert(httpVerifyQueue(q));
@@ -13717,6 +13792,9 @@ static void manageTx(HttpTx *tx, int flags)
         mprMark(tx->rangeBoundary);
         mprMark(tx->altBody);
         mprMark(tx->file);
+#if BIT_WEB_SOCKETS
+        mprMark(tx->webSockKey);
+#endif
 
     } else if (flags & MPR_MANAGE_FREE) {
         httpDestroyTx(tx);
@@ -14055,14 +14133,6 @@ void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
         }
         target = httpCreateUri(targetUri, 0);
         base = rx->parsedUri;
-#if UNUSED
-        if (!target->host) {
-            target->host = base->host;
-        }
-        if (!target->host) {
-            target->scheme = base->scheme;
-        }
-#endif
         if (!target->port && target->scheme) {
             endpoint = smatch(target->scheme, "https") ? conn->host->secureEndpoint : conn->host->defaultEndpoint;
             if (endpoint) {
@@ -14082,46 +14152,6 @@ void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
         }
         target = httpCompleteUri(target, base, 0);
         targetUri = httpUriToString(target, 0);
-
-#if UNUSED
-        target = httpCreateUri(targetUri, 0);
-        if (!target->host) {
-            target->host = rx->parsedUri->host;
-        }
-        if (!target->scheme) {
-            target->scheme = rx->parsedUri->scheme;
-        }
-        if (conn->http->redirectCallback) {
-            targetUri = (conn->http->redirectCallback)(conn, &status, target);
-        } else {
-            targetUri = httpUriToString(target, 0);
-        }
-        if (strstr(targetUri, "://") == 0) {
-            prev = rx->parsedUri;
-            port = strchr(targetUri, ':') ? prev->port : conn->endpoint->port;
-            uri = 0;
-            if (target->path[0] == '/') {
-                /*
-                    Absolute URL. If hostName has a port specifier, it overrides prev->port.
-                 */
-                uri = httpFormatUri(prev->scheme, rx->hostHeader, port, target->path, target->reference, target->query, 
-                    HTTP_COMPLETE_URI);
-            } else {
-                /*
-                    Relative file redirection to a file in the same directory as the previous request.
-                 */
-                dir = sclone(rx->pathInfo);
-                if ((cp = strrchr(dir, '/')) != 0) {
-                    /* Remove basename */
-                    *cp = '\0';
-                }
-                path = sjoin(dir, "/", target->path, NULL);
-                uri = httpFormatUri(prev->scheme, rx->hostHeader, port, path, target->reference, target->query, 
-                    HTTP_COMPLETE_URI);
-            }
-            targetUri = uri;
-        }
-#endif
         httpSetHeader(conn, "Location", "%s", targetUri);
         httpFormatResponse(conn, 
             "<!DOCTYPE html>\r\n"
@@ -15124,6 +15154,14 @@ HttpUri *httpCreateUri(cchar *uri, int flags)
         }
         tok = &up->uri[7];
 
+    } else if (sncmp(up->uri, "ws://", 5) == 0) {
+        up->scheme = sclone("ws");
+        if (flags & HTTP_COMPLETE_URI) {
+            up->port = 80;
+        }
+        tok = &up->uri[5];
+        up->wss = 1;
+
     } else if (sncmp(up->uri, "https://", 8) == 0) {
         up->scheme = sclone("https");
         up->secure = 1;
@@ -15131,6 +15169,15 @@ HttpUri *httpCreateUri(cchar *uri, int flags)
             up->port = 443;
         }
         tok = &up->uri[8];
+
+    } else if (sncmp(up->uri, "wss://", 6) == 0) {
+        up->scheme = sclone("https");
+        up->secure = 1;
+        if (flags & HTTP_COMPLETE_URI) {
+            up->port = 443;
+        }
+        tok = &up->uri[6];
+        up->wss = 1;
 
     } else {
         up->scheme = 0;
@@ -15265,6 +15312,8 @@ HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cchar *pat
     }
     if (scheme) {
         up->scheme = sclone(scheme);
+        up->secure = (smatch(up->scheme, "https") || smatch(up->scheme, "wss"));
+        up->wss = (smatch(up->scheme, "ws") || smatch(up->scheme, "wss"));
     } else if (flags & HTTP_COMPLETE_URI) {
         up->scheme = "http";
     }
@@ -15324,12 +15373,13 @@ HttpUri *httpCloneUri(HttpUri *base, int flags)
     if ((up = mprAllocObj(HttpUri, manageUri)) == 0) {
         return 0;
     }
-
     if (base->scheme) {
         up->scheme = sclone(base->scheme);
     } else if (flags & HTTP_COMPLETE_URI) {
         up->scheme = sclone("http");
     }
+    up->secure = (smatch(up->scheme, "https") || smatch(up->scheme, "wss"));
+    up->wss = (smatch(up->scheme, "ws") || smatch(up->scheme, "wss"));
     if (base->host) {
         up->host = sclone(base->host);
     } else if (flags & HTTP_COMPLETE_URI) {
@@ -15338,7 +15388,7 @@ HttpUri *httpCloneUri(HttpUri *base, int flags)
     if (base->port) {
         up->port = base->port;
     } else if (flags & HTTP_COMPLETE_URI) {
-        up->port = smatch(up->scheme, "https") ? 443 : 80;
+        up->port = (smatch(up->scheme, "https") || smatch(up->scheme, "wss"))? 443 : 80;
     }
     path = base->path;
     if (path) {
@@ -15373,6 +15423,7 @@ HttpUri *httpCloneUri(HttpUri *base, int flags)
 
 /*
     Complete the "uri" using missing parts from base
+    MOB - flags unused
  */
 HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base, int flags)
 {
@@ -15383,11 +15434,9 @@ HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base, int flags)
         if (!uri->host) {
             uri->host = sclone("localhost");
         }
-#if 1 || MOB
         if (!uri->path) {
             uri->path = sclone("/");
         }
-#endif
     } else {
         if (!uri->host) {
             uri->host = base->host;
@@ -15397,47 +15446,19 @@ HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base, int flags)
         }
         if (!uri->scheme) {
             uri->scheme = base->scheme;
-#if UNUSED /*ZZ*/
-            uri->port = base->port;
-#endif
         }
-#if UNUSED
-        /*
-            Use cases:
-
-            /path        <= https
-
-         */
-        if (!uri->port && smatch(uri->scheme, base->scheme)) {
-            uri->port = base->port;
-        }
-        if (!uri->scheme) {
-            uri->scheme = base->scheme;
-            if (base->scheme && !smatch(base->scheme, "http")) {
-                /* Copy port too if the scheme is changes */
-                uri->port = base->port;
-            }
-        }
-        if (!uri->host) {
-           uri->host = base->host;
-           if (smatch(uri->scheme, base->scheme)) {
-               uri->port = base->port;
-           }
-        }
-#endif
         if (!uri->path) {
             uri->path = base->path;
-            //  MOB UNUSED TEST
-            if (1 || flags & HTTP_COMPLETE_URI_QUERY) {
-                if (!uri->query) {
-                    uri->query = base->query;
-                }
-                if (!uri->reference) {
-                    uri->reference = base->reference;
-                }
+            if (!uri->query) {
+                uri->query = base->query;
+            }
+            if (!uri->reference) {
+                uri->reference = base->reference;
             }
         }
     }
+    uri->secure = (smatch(uri->scheme, "https") || smatch(uri->scheme, "wss"));
+    uri->wss = (smatch(uri->scheme, "ws") || smatch(uri->scheme, "wss"));
     return uri;
 }
 
@@ -15796,13 +15817,13 @@ static int getPort(HttpUri *uri)
     if (uri->port) {
         return uri->port;
     }
-    return (uri->scheme && scmp(uri->scheme, "https") == 0) ? 443 : 80;
+    return (uri->scheme && (smatch(uri->scheme, "https") || smatch(uri->scheme, "wss"))) ? 443 : 80;
 }
 
 
 static int getDefaultPort(cchar *scheme)
 {
-    return (scheme && scmp(scheme, "https") == 0) ? 443 : 80;
+    return (scheme && (smatch(scheme, "https") || smatch(scheme, "wss"))) ? 443 : 80;
 }
 
 
@@ -16213,6 +16234,779 @@ void httpRemoveAllUploadedFiles(HttpConn *conn)
     }
 }
 
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
+
+/************************************************************************/
+/*
+    Start of file "src/webSock.c"
+ */
+/************************************************************************/
+
+/*
+    webSock.c - WebSockets support
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
+ */
+
+/********************************* Includes ***********************************/
+
+
+
+#if BIT_WEB_SOCKETS
+/********************************** Locals ************************************/
+/*
+    Input states
+ */
+#define WS_BEGIN       0
+#define WS_EXT_DATA    1                /* Unused */
+#define WS_MSG         2
+#define WS_CLOSED      3
+
+/*
+    Web Sockets message codes
+ */
+#define OP_CONT     0x0         /* Continuation */
+#define OP_TEXT     0x1         /* Text data */
+#define OP_BINARY   0x2         /* Binary data */
+#define OP_CONTROL  0x8         /* Start of control codes */
+#define OP_CLOSE    0x8         /* Close connection */
+#define OP_PING     0x9         /* Ping request */
+#define OP_PONG     0xA
+
+static int opcodes[8] = {
+    OP_CLOSE, OP_TEXT, OP_BINARY, OP_PING, OP_PONG, OP_CLOSE, OP_CLOSE, OP_CLOSE,
+};
+static char *codetxt[16] = {
+    "continuation", "text", "binary", "reserved", "reserved", "reserved", "reserved", "reserved",
+    "close", "ping", "pong", "reserved", "reserved", "reserved", "reserved", "reserved",
+};
+
+/*
+    Frame format
+
+     Byte 0          Byte 1          Byte 2          Byte 3
+     0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
+    +-+-+-+-+-------+-+-------------+-------------------------------+
+    |F|R|R|R| opcode|M| Payload len |    Extended payload length    |
+    |I|S|S|S|  (4)  |A|     (7)     |             (16/63)           |
+    |N|V|V|V|       |S|             |   (if payload len==126/127)   |
+    | |1|2|3|       |K|             |                               |
+    +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
+    |     Extended payload length continued, if payload len == 127  |
+    + - - - - - - - - - - - - - - - +-------------------------------+
+    |                               |Masking-key, if MASK set to 1  |
+    +-------------------------------+-------------------------------+
+    | Masking-key (continued)       |          Payload Data         |
+    +-------------------------------- - - - - - - - - - - - - - - - +
+    :                     Payload Data continued ...                :
+    + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+    |                     Payload Data continued ...                |
+    +---------------------------------------------------------------+
+
+    Single message has 
+        fin == 1
+    Fragmented message has
+        fin == 0, opcode != 0
+        fin == 0, opcode == 0
+        fin == 1, opcode == 0
+
+    Common first byte codes:
+        0x9B    Fin | /SET
+
+    NOTE: control frames (opcode >= 8) can be sent between fragmented frames
+ */
+#define GET_FIN(v)              (((v) >> 7) & 0x1)          /* Final fragment */
+#define GET_RSV(v)              (((v) >> 4) & 0x7)          /* Reserved (used for extensions) */
+#define GET_CODE(v)             ((v) & 0xf)                 /* Packet opcode */
+#define GET_MASK(v)             (((v) >> 7) & 0x1)          /* True if dataMask in frame (client send) */
+#define GET_LEN(v)              ((v) & 0x7f)                /* Low order 7 bits of length */
+
+#define SET_FIN(v)              (((v) & 0x1) << 7)
+#define SET_MASK(v)             (((v) & 0x1) << 7)
+#define SET_CODE(v)             ((v) & 0xf)                                                       
+#define SET_LEN(len, n)         ((uchar)(((len) >> ((n) * 8)) & 0xff))
+
+/********************************** Forwards **********************************/
+
+static void closeWebSock(HttpQueue *q);
+static void incomingWebSockData(HttpQueue *q, HttpPacket *packet);
+static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir);
+static void openWebSock(HttpQueue *q);
+static void outgoingWebSockService(HttpQueue *q);
+static void notifyWebSock(HttpConn *conn, int event, int status);
+static bool validUTF8(cchar *str, ssize len);
+static void webSockPing(HttpConn *conn);
+
+/*********************************** Code *************************************/
+/* 
+   Loadable module initialization
+ */
+int httpOpenWebSockFilter(Http *http)
+{
+    HttpStage     *filter;
+
+    mprAssert(http);
+
+    mprLog(5, "Open WebSock filter");
+    if ((filter = httpCreateFilter(http, "webSocketFilter", HTTP_STAGE_ALL, NULL)) == 0) {
+        return MPR_ERR_CANT_CREATE;
+    }
+    http->webSocketFilter = filter;
+    filter->match = matchWebSock; 
+    filter->open = openWebSock; 
+    filter->close = closeWebSock; 
+    filter->outgoingService = outgoingWebSockService; 
+    filter->incoming = incomingWebSockData; 
+    return 0;
+}
+
+
+/*
+    Match if the filter is required for this request. This is called twice: once for TX and once for RX.
+ */
+static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir)
+{
+    HttpRx      *rx;
+    HttpTx      *tx;
+    char        *kind, *tok;
+
+    mprAssert(conn);
+    mprAssert(route);
+
+    rx = conn->rx;
+    tx = conn->tx;
+    mprAssert(rx);
+    mprAssert(tx);
+
+    if (!conn->endpoint && tx->parsedUri && tx->parsedUri->wss) {
+        /* ws:// URI. Client web sockets */
+        return HTTP_ROUTE_OK;
+    }
+    /*
+        Deliberately not checking Origin as it offers illusory security
+     */
+    if (!smatch(rx->method, "GET") || !rx->hostHeader || !rx->upgrade || !rx->webSockKey || !rx->webSockVersion) {
+        return HTTP_ROUTE_REJECT;
+    }
+    if (dir & HTTP_STAGE_RX) {
+        if (rx->upgrade && scaselessmatch(rx->upgrade, "websocket")) {
+            if (!rx->webSockKey) {
+                httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad Sec-WebSocket-Key");
+                return HTTP_ROUTE_REJECT;
+            }
+            if (rx->webSockVersion < WEB_SOCKETS_VERSION) {
+                httpSetHeader(conn, "Sec-WebSocket-Version", "%d", WEB_SOCKETS_VERSION);
+                httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Unsupported Sec-WebSocket-Version");
+                return HTTP_ROUTE_REJECT;
+            }
+#if FUTURE && MOB
+            if (route->callback) {
+                return (route->callback)(conn);
+            }
+#endif
+            /* Just select the first protocol */
+            if (route->webSocketsProtocol) {
+                for (kind = stok(sclone(rx->webSockProtocols), " \t,", &tok); kind; kind = stok(NULL, " \t,", &tok)) {
+                    if (smatch(route->webSocketsProtocol, kind)) {
+                        break;
+                    }
+                }
+                if (!kind) {
+                    httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Unsupported Sec-WebSocket-Protocol");
+                    return HTTP_ROUTE_REJECT;
+                }
+                conn->rx->subProtocol = sclone(kind);
+            } else {
+                /* Just pick the first protocol */
+                conn->rx->subProtocol = stok(sclone(rx->webSockProtocols), " ,", NULL);
+            }
+            httpSetStatus(conn, HTTP_CODE_SWITCHING);
+            httpSetHeader(conn, "Connection", "Upgrade");
+            httpSetHeader(conn, "Upgrade", "WebSocket");
+            httpSetHeader(conn, "Sec-WebSocket-Accept", mprGetSHABase64(sjoin(rx->webSockKey, WEB_SOCKETS_MAGIC, NULL)));
+            httpSetHeader(conn, "Sec-WebSocket-Protocol", conn->rx->subProtocol);
+            httpSetHeader(conn, "X-Request-Timeout", "%Ld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
+            httpSetHeader(conn, "X-Inactivity-Timeout", "%Ld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
+
+            if (route->webSocketsPingPeriod) {
+                rx->pingEvent = mprCreateEvent(conn->dispatcher, "webSocket", route->webSocketsPingPeriod, 
+                    webSockPing, conn, MPR_EVENT_CONTINUOUS);
+            }
+            conn->keepAliveCount = -1;
+            conn->upgraded = 1;
+            rx->eof = 0;
+            rx->remainingContent = MAXINT;
+            return HTTP_ROUTE_OK;
+        }
+    } else if (conn->upgraded) {
+        return HTTP_ROUTE_OK;
+    }
+    return HTTP_ROUTE_REJECT;
+}
+
+
+static void webSockPing(HttpConn *conn)
+{
+    mprAssert(conn->rx);
+    httpSendBlock(conn, WS_MSG_PING, NULL, 0);
+}
+
+
+static void webSockTimeout(HttpConn *conn)
+{
+    httpSendClose(conn, WS_STATUS_POLICY_VIOLATION, "Request timeout");
+}
+
+
+static void openWebSock(HttpQueue *q)
+{
+    HttpConn    *conn;
+    HttpPacket  *packet;
+
+    mprAssert(q);
+    mprLog(5, "websock: Open WebSocket filter");
+
+    conn = q->conn;
+    q->packetSize = min(conn->limits->stageBufferSize, q->max);
+    conn->rx->closeStatus = WS_STATUS_NO_STATUS;
+    conn->timeoutCallback = webSockTimeout;
+
+//  ZZ MOB - Check count of web sockets
+    if ((packet = httpGetPacket(conn->writeq)) != 0) {
+        mprAssert(packet->flags & HTTP_PACKET_HEADER);
+        //  MOB - or should this be httpPutPacketToNext
+        httpPutForService(q, packet, HTTP_SCHEDULE_QUEUE);
+    }
+    conn->responded = 0;
+}
+
+
+static void closeWebSock(HttpQueue *q)
+{
+    HttpRx  *rx;
+
+    rx = q->conn->rx;
+    if (rx && rx->pingEvent) {
+        mprRemoveEvent(rx->pingEvent);
+        rx->pingEvent = 0;
+    }
+}
+
+
+static int processPacket(HttpQueue *q, HttpPacket *packet)
+{
+    HttpRx      *rx;
+    HttpConn    *conn;
+    MprBuf      *content;
+    char        *cp;
+
+    conn = q->conn;
+    rx = conn->rx;
+    content = packet->content;
+    mprAssert(content);
+    mprLog(2, "websock: Process packet \"%s\", data length %d", codetxt[rx->opcode & 0xf], mprGetBufLength(content));
+
+    switch (rx->opcode) {
+    case OP_BINARY:
+    case OP_TEXT:
+        if (rx->maskOffset >= 0) {
+            if (rx->opcode == OP_TEXT) {
+                //  MOB - validate UTF8?
+                for (cp = content->start; cp < content->end; cp++) {
+                    *cp = *cp ^ rx->dataMask[rx->maskOffset++ & 0x3];
+                }
+            } else {
+                for (cp = content->start; cp < content->end; cp++) {
+                    *cp = *cp ^ rx->dataMask[rx->maskOffset++ & 0x3];
+                }
+            }
+        } 
+        if (rx->opcode == OP_TEXT && !validUTF8(content->start, mprGetBufLength(content))) {
+            if (!rx->route->ignoreEncodingErrors) {
+                mprError("websock: Text packet has invalid UTF8");
+                return WS_STATUS_INVALID_UTF8;
+            }
+        }
+        packet->type = (rx->opcode == OP_TEXT) ? WS_MSG_TEXT : WS_MSG_BINARY;
+        if (rx->opcode == OP_TEXT) {
+            mprLog(2, "websock: Text packet \"%s\"", content->start);
+        }
+        if (rx->finalFrame) {
+            /* Preserve packet boundaries */
+            packet->flags |= HTTP_PACKET_SOLO;
+            httpPutPacketToNext(q, packet);
+            httpServiceQueues(q->conn);
+            rx->currentPacket = 0;
+            notifyWebSock(conn, HTTP_NOTIFY_READABLE, packet->type);
+        }
+        rx->state = WS_BEGIN;
+        return 0;
+
+    case OP_CLOSE:
+        cp = content->start;
+        if (httpGetPacketLength(packet) >= 2) {
+            rx->closeStatus = ((uchar) cp[0]) << 8 | (uchar) cp[1];
+            if (httpGetPacketLength(packet) >= 4) {
+                mprAddNullToBuf(content);
+                rx->closeReason = sclone(&content->start[2]);
+            }
+        }
+        mprLog(2, "websock: close status %d, reason %s, already closing %d", rx->closeStatus, rx->closeReason, rx->closing);
+        if (rx->closing) {
+            httpDisconnect(conn);
+        } else {
+            /* Acknowledge the close. Echo the received status */
+            //  MOB - echo close doesn't seem to work on Chrome
+            httpSendClose(conn, WS_STATUS_OK, NULL);
+            rx->eof = 1;
+        }
+        /* Advance from the content state */
+        httpSetState(conn, HTTP_STATE_READY);
+        rx->state = WS_CLOSED;
+        return 0;
+
+    case OP_PING:
+        httpSendBlock(conn, WS_MSG_PONG, mprGetBufStart(content), mprGetBufLength(content));
+        rx->state = WS_BEGIN;
+        return 0;
+
+    case OP_PONG:
+        /* Do nothing */
+        rx->state = WS_BEGIN;
+        return 0;
+
+    default:
+        mprError("websock: Bad frame type %d", rx->opcode);
+        break;
+    }
+    /* Should not get here */
+    rx->state = WS_CLOSED;
+    return WS_STATUS_PROTOCOL_ERROR;
+}
+
+
+static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
+{
+    HttpConn    *conn;
+    HttpRx      *rx;
+    HttpPacket  *tail;
+    HttpLimits  *limits;
+    char        *fp;
+    ssize       len;
+    int         i, error, mask, lenBytes;
+
+    conn = q->conn;
+    rx = conn->rx;
+    limits = conn->limits;
+    mprAssert(packet);
+    mprLog(5, "websock: incoming data. Packet type: %d", packet->type);
+
+    if (packet->flags & HTTP_PACKET_END) {
+        /* EOF packet means the socket has been abortively closed */
+#if UNUSED
+        httpSendClose(conn, WS_STATUS_OK, NULL);
+#endif
+        rx->closing = 1;
+        rx->state = WS_CLOSED;
+        rx->closeStatus = WS_STATUS_COMMS_ERROR;
+    }
+    while (1) {
+        mprLog(5, "websock: incoming state %d", rx->state);
+        error = 0;
+        switch (rx->state) {
+        case WS_CLOSED:
+            mprLog(5, "websock: incoming closed. Finalizing");
+            notifyWebSock(conn, HTTP_NOTIFY_CLOSED, rx->closeStatus);
+            /* Finalize for safety. The handler/callback should have done this above */
+            httpFinalize(conn);
+            return;
+
+        case WS_BEGIN:
+            if (httpGetPacketLength(packet) < 2) {
+                /* Need more data */
+                return;
+            }
+            fp = packet->content->start;
+            if (GET_RSV(*fp) != 0) {
+                error = WS_STATUS_PROTOCOL_ERROR;
+                break;
+            }
+            rx->finalFrame = GET_FIN(*fp);
+            rx->opcode = GET_CODE(*fp);
+            fp++;
+            len = GET_LEN(*fp);
+            mask = GET_MASK(*fp);
+            lenBytes = 1;
+            if (len == 126) {
+                lenBytes += 2;
+            } else if (len == 127) {
+                lenBytes += 8;
+            }
+            if (httpGetPacketLength(packet) < (lenBytes + (mask * 4))) {
+                /* Return if we don't have the required packet control fields */
+                return;
+            }
+            fp++;
+            if (rx->opcode) {
+                if (rx->opcode < OP_CONTROL) {
+                    rx->messageCode = rx->opcode;
+                } else {
+                    /* Control frame, must not be fragmented */
+                    if (!rx->finalFrame) {
+                        error = WS_STATUS_PROTOCOL_ERROR;
+                        break;
+                    }
+                }
+            }
+            while (--lenBytes > 0) {
+                len <<= 8;
+                len += (uchar) *fp++;
+            }
+            rx->frameLength = len;
+            rx->state = WS_MSG;
+            rx->maskOffset = mask ? 0 : -1;
+            if (mask) {
+                for (i = 0; i < 4; i++) {
+                    rx->dataMask[i] = *fp++;
+                }
+            }
+            mprAssert(packet->content);
+            mprAdjustBufStart(packet->content, fp - packet->content->start);
+            rx->state = WS_MSG;
+            mprLog(2, "websock: Begin new packet \"%s\", fin %d, mask %d, length %d", codetxt[rx->opcode & 0xf],
+                rx->finalFrame, mask, len);
+            break;
+
+#if UNUSED && KEEP
+        case WS_EXT_DATA:
+            mprAssert(packet);
+            mprLog(2, "websock: EXT DATA - RESERVED");
+            rx->state = WS_MSG;
+            break;
+#endif
+
+        case WS_MSG:
+            mprAssert(packet);
+            len = min(httpGetPacketLength(packet), rx->frameLength);
+            if (len >= conn->limits->webSocketsFrameSize) {
+                mprError("WebSocket frame is too large %d/%d", len, limits->webSocketsFrameSize);
+                packet = rx->currentPacket = 0;
+                error = WS_STATUS_FRAME_TOO_LARGE;
+
+            } else if ((len + httpGetPacketLength(rx->currentPacket)) > conn->limits->webSocketsMessageSize) {
+                error = WS_STATUS_MESSAGE_TOO_LARGE;
+                mprError("WebSocket message is too large %d/%d", len, limits->webSocketsMessageSize);
+                packet = rx->currentPacket = 0;
+                error = WS_STATUS_MESSAGE_TOO_LARGE;
+
+            } else {
+                if (rx->currentPacket) {
+                    mprLog(2, "websock: Joining data packet %d/%d", httpGetPacketLength(rx->currentPacket),
+                        httpGetPacketLength(packet));
+                    if (rx->currentPacket->type != packet->type) {
+                        mprError("WebSocket has frames of different types: %d and %d", 
+                            rx->currentPacket->type, packet->type);
+                        rx->currentPacket = packet = 0;
+                        packet = rx->currentPacket = 0;
+                        error = WS_STATUS_UNSUPPORTED_TYPE;
+                    } else {
+                        httpJoinPacket(rx->currentPacket, packet);
+                        packet = rx->currentPacket;
+                    }
+                } else {
+                    rx->currentPacket = packet;
+                }
+            }
+            /*
+                Split packet if it contains data for the next frame. Do this even if discarding a frame.
+             */
+            tail = 0;
+            if (httpGetPacketLength(packet) > rx->frameLength) {
+                if ((tail = httpSplitPacket(packet, rx->frameLength)) != 0) {
+                    httpPutBackPacket(q, tail);
+                    mprLog(2, "websock: Split data packet, %d/%d", rx->frameLength, httpGetPacketLength(tail));
+                }
+            }
+            /*
+                Must discard message if closing.       
+                The WS spec is broken in that packet boundaries cannot be guaranteed.
+                We try to preserve message boundaries, but if the packet is too large, we sent it to the user regardless.
+             */
+            if (!error && !rx->closing) {
+                len = httpGetPacketLength(packet);
+                if ((rx->finalFrame && len == rx->frameLength) || len >= limits->webSocketsPacketSize) {
+                    if (len >= limits->webSocketsPacketSize) {
+                        mprLog(4, "websock: Message packet size exceeds limit %d/%d", len, limits->webSocketsPacketSize); 
+                    }
+                    error = processPacket(q, packet);
+                }
+            }
+            packet = tail;
+        }
+        if (error) {
+            mprLog(0, "websock: WebSockets error Status %d", error);
+            httpSendClose(conn, error, NULL);
+            rx->state = WS_CLOSED;
+            notifyWebSock(conn, HTTP_NOTIFY_ERROR, error);
+        }
+    }
+}
+
+
+/*
+    Send a text message. Caller must submit valid UTF8.
+ */
+ssize httpSend(HttpConn *conn, cchar *fmt, ...)
+{
+    va_list     args;
+    char        *buf;
+
+    va_start(args, fmt);
+    buf = sfmtv(fmt, args);
+    va_end(args);
+    return httpSendBlock(conn, WS_MSG_TEXT, buf, slen(buf));
+}
+
+
+ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len)
+{
+    HttpPacket  *packet;
+
+    mprLog(2, "websock: Send message \"%s\", len %d", codetxt[type & 0xf], len);
+    if ((packet = httpCreateDataPacket(len)) == 0) {
+        return MPR_ERR_MEMORY;
+    }
+    packet->type = type;
+    if (len < 0) {
+        len = slen(buf);
+    }
+    if (len > 0) {
+        if (mprPutBlockToBuf(packet->content, buf, len) != len) {
+            return MPR_ERR_MEMORY;
+        }
+    }
+    httpPutForService(conn->writeq, packet, HTTP_SCHEDULE_QUEUE);
+    httpServiceQueues(conn);
+    return len;
+}
+
+
+void httpSendClose(HttpConn *conn, int status, cchar *reason)
+{
+    HttpPacket  *packet;
+    HttpRx      *rx;
+    char        *msg;
+    ssize       len;
+
+    rx = conn->rx;
+    if (rx->closing) {
+        return;
+    }
+    /* 
+        NOTE: this sets an expectation that the close message will be acknowledged by the peer, but we don't change state 
+     */
+    rx->closing = 1;
+    if ((packet = httpCreateDataPacket(2)) == 0) {
+        return;
+    }
+    packet->type = WS_MSG_CLOSE;
+    len = 2 + (reason ? (slen(reason) + 1) : 0);
+    if ((msg = mprAlloc(len)) == 0) {
+        return;
+    }
+    msg[0] = (status >> 8) & 0xff;
+    msg[1] = status & 0xff;
+    if (reason) {
+        scopy(&msg[2], len - 2, reason);
+    }
+    mprLog(5, "websock: sendClose");
+    httpSendBlock(conn, WS_MSG_CLOSE, msg, len);
+}
+
+
+static void outgoingWebSockService(HttpQueue *q)
+{
+    HttpConn    *conn;
+    HttpPacket  *packet;
+    HttpTx      *tx;
+    char        *ep, *fp, *prefix, dataMask[4];
+    ssize       len;
+    int         i, mask, code;
+
+    conn = q->conn;
+    tx = conn->tx;
+    mprLog(5, "websock: outgoing service");
+
+    for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
+        if (!(packet->flags & (HTTP_PACKET_END | HTTP_PACKET_HEADER))) {
+            httpResizePacket(q, packet, conn->limits->stageBufferSize);
+            if (!httpWillNextQueueAcceptPacket(q, packet)) {
+                httpPutBackPacket(q, packet);
+                return;
+            }
+            len = httpGetPacketLength(packet);
+            packet->prefix = mprCreateBuf(16, 16);
+            code = opcodes[packet->type & 0x7];
+            prefix = packet->prefix->start;
+            mask = conn->endpoint ? 0 : 1;
+            *prefix++ = SET_FIN(1) | SET_CODE(code);
+            if (len <= 125) {
+                *prefix++ = SET_MASK(mask) | SET_LEN(len, 0);
+            } else if (len <= 65535) {
+                *prefix++ = SET_MASK(mask) | 126;
+                *prefix++ = SET_LEN(len, 1);
+                *prefix++ = SET_LEN(len, 0);
+            } else {
+                *prefix++ = SET_MASK(mask) | 127;
+                for (i = 7; i >= 0; i--) {
+                    *prefix++ = SET_LEN(len, i);
+                }
+            }
+            if (!conn->endpoint) {
+                mprGetRandomBytes(dataMask, sizeof(dataMask), 0);
+                for (i = 0; i < 4; i++) {
+                    *prefix++ = dataMask[i];
+                }
+                fp = packet->content->start;
+                ep = packet->content->end;
+                for (i = 0; fp < ep; fp++) {
+                    *fp = *fp ^ dataMask[i++ & 0x3];
+                }
+            }
+            *prefix = '\0';
+            mprAdjustBufEnd(packet->prefix, prefix - packet->prefix->start);
+            mprLog(5, "websock: outgoing service, data packet len %d", httpGetPacketLength(packet));
+        }
+        httpPutPacketToNext(q, packet);
+    }
+}
+
+
+//  MOB - naming
+char *httpGetWebSockProtocol(HttpConn *conn)
+{
+    return conn->rx->subProtocol;
+}
+
+
+char *httpGetCloseReason(HttpConn *conn)
+{
+    return conn->rx->closeReason;
+}
+
+
+bool httpWasOrderlyClose(HttpConn *conn)
+{
+    return conn->rx->closeStatus != WS_STATUS_COMMS_ERROR;
+}
+
+
+void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols)
+{
+    conn->protocols = sclone(protocols);
+}
+
+
+HttpWebSocketNotifier httpSetWebSocketNotifier(HttpConn *conn, HttpWebSocketNotifier notifier)
+{
+    HttpWebSocketNotifier prior;
+
+    prior = conn->webSocketNotifier;
+    conn->webSocketNotifier = notifier;
+    return prior;
+}
+
+
+static void notifyWebSock(HttpConn *conn, int event, int status)
+{
+    if (conn->webSocketNotifier) {
+        (conn->webSocketNotifier)(conn, event, status);
+    }
+}
+
+
+static bool validUTF8(cchar *str, ssize len)
+{
+    cuchar      *cp, *end;
+    int         nbytes, i;
+  
+    cp = (cuchar*) str;
+    end = (cuchar*) &str[len];
+    for (; cp < end && *cp; cp += nbytes) {
+        if (!(*cp & 0x80)) {
+            nbytes = 1;
+        } else if ((*cp & 0xc0) == 0x80) {
+            return 0;
+        } else if ((*cp & 0xe0) == 0xc0) {
+            nbytes = 2;
+        } else if ((*cp & 0xf0) == 0xe0) {
+            nbytes = 3;
+        } else if ((*cp & 0xf8) == 0xf0) {
+            nbytes = 4;
+        } else if ((*cp & 0xfc) == 0xf8) {
+            nbytes = 5;
+        } else if ((*cp & 0xfe) == 0xfc) {
+            nbytes = 6;
+        }
+        for (i = 1; i < nbytes; i++) {
+            if ((cp[i] & 0xc0) != 0x80) {
+                return 0;
+            }
+        }
+        mprAssert(nbytes >= 1);
+    } 
+    return 1;
+}
+
+
+/*
+    Upgrade a client socket to use Web Sockets
+ */
+int httpWebSockUpgrade(HttpConn *conn)
+{
+    char    num[16];
+
+    mprLog(2, "websock: Upgrade socket");
+    httpSetStatus(conn, HTTP_CODE_SWITCHING);
+    httpSetHeader(conn, "Upgrade", "websocket");
+    httpSetHeader(conn, "Connection", "Upgrade");
+    mprGetRandomBytes(num, sizeof(num), 0);
+    conn->tx->webSockKey = mprEncode64Block(num, sizeof(num));
+    httpSetHeader(conn, "Sec-WebSocket-Key", conn->tx->webSockKey);
+    httpSetHeader(conn, "Sec-WebSocket-Protocol", conn->protocols ? conn->protocols : "chat");
+    httpSetHeader(conn, "Sec-WebSocket-Version", "13");
+#if UNUSED
+    //  MOB what does origin really mean
+    httpSetHeader(conn, "Origin", conn->host->name);
+    httpSetHeader(conn, "X-Request-Timeout", "%Ld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
+    httpSetHeader(conn, "X-Inactivity-Timeout", "%Ld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
+#endif
+    conn->upgraded = 1;
+    conn->keepAliveCount = -1;
+    conn->rx->remainingContent = MAXINT;
+    return 0;
+}
+
+
+#endif /* BIT_WEB_SOCKETS */
 /*
     @copy   default
 

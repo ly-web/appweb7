@@ -6904,7 +6904,7 @@ void mprSignalMultiCond(MprCond *cp)
 
 /*********************************** Locals ***********************************/
 /*
-    Constants for transform routine.
+    MD5 Constants for transform routine.
  */
 #define S11 7
 #define S12 12
@@ -6930,7 +6930,7 @@ static uchar PADDING[64] = {
 };
 
 /*
-   F, G, H and I are basic MD5 functions.
+   MD5 F, G, H and I are basic MD5 functions.
  */
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
@@ -6938,35 +6938,34 @@ static uchar PADDING[64] = {
 #define I(x, y, z) ((y) ^ ((x) | (~z)))
 
 /*
-   ROTATE_LEFT rotates x left n bits.
+   MD5 ROTATE_LEFT rotates x left n bits.
  */
 #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32-(n))))
 
 /*
-     FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
+     MD5 - FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
      Rotation is separate from addition to prevent recomputation.
  */
- 
 #define FF(a, b, c, d, x, s, ac) { \
- (a) += F ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += F ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 #define GG(a, b, c, d, x, s, ac) { \
- (a) += G ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += G ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 #define HH(a, b, c, d, x, s, ac) { \
- (a) += H ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += H ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 #define II(a, b, c, d, x, s, ac) { \
- (a) += I ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += I ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 
 typedef struct {
     uint state[4];
@@ -7019,6 +7018,19 @@ static signed char decodeMap[] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
+
+#define SHA_SIZE   20
+
+typedef struct MprSha {
+    uint    hash[SHA_SIZE / 4];     /* Message Digest */
+    uint    lowLength;              /* Message length in bits */
+    uint    highLength;             /* Message length in bits */
+    int     index;                  /* Index into message block array   */
+    uchar   block[64];              /* 512-bit message blocks */
+} MprSha;
+
+#define shaShift(bits,word) (((word) << (bits)) | ((word) >> (32-(bits))))
+
 /*************************** Forward Declarations *****************************/
 
 static void decode(uint *output, uchar *input, uint len);
@@ -7027,6 +7039,12 @@ static void finalizeMD5(uchar digest[16], MD5CONTEXT *context);
 static void initMD5(MD5CONTEXT *context);
 static void transform(uint state[4], uchar block[64]);
 static void update(MD5CONTEXT *context, uchar *input, uint inputLen);
+
+static void shaInit(MprSha *sha);
+static void shaUpdate(MprSha *sha, cuchar *msg, ssize len);
+static void shaFinalize(uchar *digest, MprSha *sha);
+static void shaPad(MprSha *sha);
+static void shaProcess(MprSha *sha);
 
 /*********************************** Code *************************************/
 
@@ -7125,7 +7143,7 @@ char *mprEncode64Block(cchar *s, ssize len)
     end = &s[len];
     while (s < end) {
         shiftbuf = 0;
-        for (j = 2; j >= 0 && *s; j--, s++) {
+        for (j = 2; j >= 0; j--, s++) {
             shiftbuf |= ((*s & 0xff) << (j * 8));
         }
         shift = 18;
@@ -7373,6 +7391,194 @@ static void decode(uint *output, uchar *input, uint len)
             (((uint) input[j+3]) << 24);
 }
 
+
+/************************************* Sha1 **********************************/
+
+char *mprGetSHA(cchar *s)
+{
+    return mprGetSHAWithPrefix(s, slen(s), NULL);
+}
+
+
+char *mprGetSHABase64(cchar *s)
+{
+    MprSha  sha;
+    uchar   hash[SHA_SIZE + 1];
+
+    shaInit(&sha);
+    shaUpdate(&sha, (cuchar*) s, slen(s));
+    shaFinalize(hash, &sha);
+    hash[SHA_SIZE] = '\0';
+    return mprEncode64Block((char*) hash, SHA_SIZE);
+}
+
+
+char *mprGetSHAWithPrefix(cchar *buf, ssize length, cchar *prefix)
+{
+    MprSha  sha;
+    uchar   hash[SHA_SIZE];
+    cchar   *hex = "0123456789abcdef";
+    char    *r, *str;
+    char    result[(SHA_SIZE * 2) + 1];
+    ssize   len;
+    int     i;
+
+    if (length < 0) {
+        length = slen(buf);
+    }
+    shaInit(&sha);
+    shaUpdate(&sha, (cuchar*) buf, length);
+    shaFinalize(hash, &sha);
+
+    for (i = 0, r = result; i < SHA_SIZE; i++) {
+        *r++ = hex[hash[i] >> 4];
+        *r++ = hex[hash[i] & 0xF];
+    }
+    *r = '\0';
+    len = (prefix) ? slen(prefix) : 0;
+    str = mprAlloc(sizeof(result) + len);
+    if (str) {
+        if (prefix) {
+            strcpy(str, prefix);
+        }
+        strcpy(str + len, result);
+    }
+    return str;
+}
+
+
+void shaInit(MprSha *sha)
+{
+    sha->lowLength = 0;
+    sha->highLength = 0;
+    sha->index = 0;
+    sha->hash[0] = 0x67452301;
+    sha->hash[1] = 0xEFCDAB89;
+    sha->hash[2] = 0x98BADCFE;
+    sha->hash[3] = 0x10325476;
+    sha->hash[4] = 0xC3D2E1F0;
+}
+
+
+void shaUpdate(MprSha *sha, cuchar *msg, ssize len)
+{
+    while (len--) {
+        sha->block[sha->index++] = (*msg & 0xFF);
+        sha->lowLength += 8;
+        if (sha->lowLength == 0) {
+            sha->highLength++;
+        }
+        if (sha->index == 64) {
+            shaProcess(sha);
+        }
+        msg++;
+    }
+}
+
+
+void shaFinalize(uchar *digest, MprSha *sha)
+{
+    int i;
+
+    shaPad(sha);
+    memset(sha->block, 0, 64);
+    sha->lowLength = 0;
+    sha->highLength = 0;
+    for  (i = 0; i < SHA_SIZE; i++) {
+        digest[i] = sha->hash[i >> 2] >> 8 * (3 - (i & 0x03));
+    }
+}
+
+
+static void shaProcess(MprSha *sha)
+{
+    uint    K[] = { 0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6 };
+    uint    temp, W[80], A, B, C, D, E;
+    int     t;
+
+    for  (t = 0; t < 16; t++) {
+        W[t] = sha->block[t * 4] << 24;
+        W[t] |= sha->block[t * 4 + 1] << 16;
+        W[t] |= sha->block[t * 4 + 2] << 8;
+        W[t] |= sha->block[t * 4 + 3];
+    }
+    for (t = 16; t < 80; t++) {
+       W[t] = shaShift(1, W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16]);
+    }
+    A = sha->hash[0];
+    B = sha->hash[1];
+    C = sha->hash[2];
+    D = sha->hash[3];
+    E = sha->hash[4];
+
+    for (t = 0; t < 20; t++) {
+        temp =  shaShift(5, A) + ((B & C) | ((~B) & D)) + E + W[t] + K[0];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    for (t = 20; t < 40; t++) {
+        temp = shaShift(5, A) + (B ^ C ^ D) + E + W[t] + K[1];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    for (t = 40; t < 60; t++) {
+        temp = shaShift(5, A) + ((B & C) | (B & D) | (C & D)) + E + W[t] + K[2];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    for (t = 60; t < 80; t++) {
+        temp = shaShift(5, A) + (B ^ C ^ D) + E + W[t] + K[3];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    sha->hash[0] += A;
+    sha->hash[1] += B;
+    sha->hash[2] += C;
+    sha->hash[3] += D;
+    sha->hash[4] += E;
+    sha->index = 0;
+}
+
+
+static void shaPad(MprSha *sha)
+{
+    if (sha->index > 55) {
+        sha->block[sha->index++] = 0x80;
+        while(sha->index < 64) {
+            sha->block[sha->index++] = 0;
+        }
+        shaProcess(sha);
+        while (sha->index < 56) {
+            sha->block[sha->index++] = 0;
+        }
+    } else {
+        sha->block[sha->index++] = 0x80;
+        while(sha->index < 56) {
+            sha->block[sha->index++] = 0;
+        }
+    }
+    sha->block[56] = sha->highLength >> 24;
+    sha->block[57] = sha->highLength >> 16;
+    sha->block[58] = sha->highLength >> 8;
+    sha->block[59] = sha->highLength;
+    sha->block[60] = sha->lowLength >> 24;
+    sha->block[61] = sha->lowLength >> 16;
+    sha->block[62] = sha->lowLength >> 8;
+    sha->block[63] = sha->lowLength;
+    shaProcess(sha);
+}
 
 /*
     @copy   default
@@ -19282,12 +19488,17 @@ static void disconnectSocket(MprSocket *sp)
          */
         mprLog(6, "Disconnect socket %d", sp->fd);
         mprSetSocketBlockingMode(sp, 0);
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < 16; i++) {
             if (recv(sp->fd, buf, sizeof(buf), 0) <= 0) {
                 break;
             }
         }
         shutdown(sp->fd, SHUT_RDWR);
+        for (i = 0; i < 16; i++) {
+            if (recv(sp->fd, buf, sizeof(buf), 0) <= 0) {
+                break;
+            }
+        }
         fd = sp->fd;
         sp->flags |= MPR_SOCKET_EOF;
         mprRecallWaitHandlerByFd(fd);
@@ -19336,9 +19547,7 @@ static void closeSocket(MprSocket *sp, bool gracefully)
         mprLog(6, "Close socket %d, graceful %d", sp->fd, gracefully);
         if (gracefully) {
             mprSetSocketBlockingMode(sp, 0);
-            while (recv(sp->fd, buf, sizeof(buf), 0) > 0) {
-                ;
-            }
+            while (recv(sp->fd, buf, sizeof(buf), 0) > 0) { }
         }
         if (shutdown(sp->fd, SHUT_RDWR) == 0) {
             if (gracefully) {

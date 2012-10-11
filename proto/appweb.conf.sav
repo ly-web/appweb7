@@ -1,0 +1,474 @@
+#
+#   appweb.conf -- Appweb unit testing configuration
+#
+#   WARNING: Do not use this appweb.conf as a sample for your application. It configures everything
+#   possible: all handlers, filters, caching, limits, hosts and many applications. The result is a large 
+#   single web server to test everything. Have a look at src/server/appweb.conf and use that as the base 
+#   for your applications.
+#   
+
+ErrorLog                error.log level=2
+Log                     rx conn=5 first=2 headers=3 body=5 limits=5 size=10K exclude="jpg,gif,png,ico,css,js"
+Log                     tx first=3 headers=3 body=5 limits=5 time=6 size=10K exclude="jpg,gif,png,ico,css,js"
+
+Listen                  4100         # MAIN - dont remove comment. Used by make test.
+<if !VXWORKS>
+Listen                  [::]:4113    # IPV6
+</if>
+
+DocumentRoot            web
+DirectoryIndex          index.html
+TraceMethod             off
+
+include                 auth.conf
+
+Cache                   1hour
+ExitTimeout             10secs
+RequestTimeout          10mins
+InactivityTimeout       1min
+SessionTimeout          30mins
+
+MemoryPolicy            restart
+LimitCache              2MB
+LimitCacheItem          512K
+LimitChunk              32K
+LimitClients            40
+LimitKeepAlive          100
+LimitMemory             100MB
+LimitProcesses          2
+LimitRequests           80
+LimitRequestBody        100MB
+LimitRequestForm        32K
+LimitRequestHeader      128K
+LimitRequestHeaderLines 128 
+LimitResponseBody       6GB
+LimitStageBuffer        64K
+LimitUpload             2GB
+LimitUri                64K
+LimitWorkers            32
+
+UploadDir               .
+UploadAutoDelete        on
+
+SetConnector            netConnector
+AddOutputFilter         rangeFilter
+AddOutputFilter         chunkFilter
+AddInputFilter          uploadFilter
+#AddFilter               webSocketFilter
+AddHandler              fileHandler html gif jpeg jpg png pdf ico css js ""
+
+<if DIR_MODULE>
+    Options Indexes
+    IndexOrder ascending name
+    IndexOptions FancyIndexing FoldersFirst
+</if>
+
+<if EJS_MODULE>
+    LoadModule ejsHandler mod_ejs
+    # UnloadModule ejsHandler 60
+    AddHandler ejsHandler ejs es
+<else>
+    AddHandler errorHandler ejs es
+</if>
+
+#MOB - uncomment
+##<Route ^/proc/>
+##    SetHandler procHandler
+##</Route>
+
+<if PHP_MODULE>
+    LoadModule phpHandler mod_php
+    AddHandler phpHandler php
+<else>
+    AddHandler errorHandler php
+</if>
+
+<if ESP_MODULE>
+    LoadModule espHandler mod_esp
+    # UnloadModule espHandler 60
+    AddHandler espHandler esp
+    AddHandler espHandler xesp
+    EspDir cache cache
+    EspUpdate on
+    EspShowErrors on
+    EspKeepSource on
+    include ${LIBDIR}/esp.conf
+
+##  MOB move
+#
+#   WebSockets
+#
+<Route ^/websock/{controller}/{action}$>
+    Prefix /websock
+    RequestTimeout      10mins
+    InactivityTimeout   10mins
+    AddFilter           webSocketFilter
+    AddHandler          espHandler
+    Source              test.c
+    Target              run $1-$2
+</Route>
+
+    #
+    #   Stand-alone controller (not used in unit tests)
+    #
+    <Route ^/cont/{controller}(/)*$>
+        Name /cont/*/list
+        DocumentRoot tmp
+        AddHandler espHandler
+        EspDir controllers ./conductor
+        Source test.c
+        Target run $1-list
+    </Route>
+
+    # EspApp /app app restful mdb://app/test.mdb
+    <Route ^/app$>
+        Prefix /app
+        DocumentRoot app
+        AddHandler espHandler
+        EspDir mvc
+        EspRouteSet restful
+        EspDb mdb://test.mdb
+    </Route>
+
+    #
+    #   Equivalent definition to EspApp
+    #
+    <Route ^/app2$>
+        Prefix /app2
+        DocumentRoot app
+        AddHandler espHandler
+        EspDir mvc
+        EspRouteSet restful
+    </Route>
+
+    # EspLoad app app/cache/app
+    # <Route ${inherit}/sub>
+        # EspRoute name methods pattern target source
+        # EspRoute /app/sub/default GET ^/sub/{controller}/{action} ${controller}-${action} ${controller}.c
+        # EspRouteSet restful
+        # EspResource sys mid
+        # EspResource user, system
+        # EspResourceGroup post
+    # </Route>
+    # EspRoute default GET ^/{controller}/{action}  ${controller}-${action} ${controller}.c
+    # EspRouteSet mvc /prefix controller
+    # EspRouteSet restful /prefix controller
+<else>
+    AddHandler errorHandler esp
+</if>
+
+<if CGI_MODULE>
+    LoadModule cgiHandler mod_cgi
+    #
+    #   To serve PHP via CGI, add "php" to this AddHandler directive and comment out loading the phpHandler
+    #
+    AddHandler cgiHandler exe cgi cgi-nph bat cmd pl py
+    ScriptAlias /cgi-bin/ "${SERVER_ROOT}/cgi-bin/"
+    Action application/x-perl /usr/bin/perl
+    Action application/x-python /usr/bin/python
+    Action application/x-lua /usr/bin/lua
+    Action application/x-ruby /usr/bin/ruby
+    Action application/x-php /usr/local/bin/php-cgi
+<else>
+    AddHandler errorHandler exe cgi cgi-nph bat cmd pl py
+</if>
+
+#
+#   Test route pattern matching
+#   The {2} means match exactly 2 of the previous character
+<Route ^/route/(user|admin)/{cmd}/[^a-z]\{2}(\.[hH][tT][mM][lL])$>
+    Name route/fullpat.tst
+    Target write 200 "${cmd}"
+</Route>
+
+<Route ^/route/tokens/{cmd}$>
+    Name token.tst
+    Target write 200 "${cmd}-${request:query}"
+</Route>
+
+<Route ^/route/optional/{controller}(~/{action}~) >
+    Name route/optional.tst
+    Target write 200 "${controller}-${action}"
+</Route>
+
+<if PHP_MODULE>
+    <Route ^/route/missing-ext/((?!\.php).*)$>
+        Name route/missing.tst
+        Prefix /route/missing-ext
+        SetHandler phpHandler
+        Condition exists ${request:filename}
+        Target run $1.php
+    </Route>
+</if>
+
+<Route ^/route/auth>
+    Name route/auth.tst
+    Prefix /route/auth
+    DocumentRoot "${DOCUMENT_ROOT}/basic"
+    AuthType basic example.com
+</Route>
+
+#
+#   Language tests
+#
+<Route ^/lang/root>
+    Prefix /lang/root
+    Name lang/root.tst
+    AddLanguageDir en english
+</Route>
+
+<Route ^/lang/suffix>
+    Name lang/suffix.tst
+    Prefix /lang/suffix
+    AddLanguageSuffix en en before
+</Route>
+
+<Route ^/lang/target/(.*)(\.html)$>
+    Name lang/target.tst
+    Prefix /lang/target
+    AddLanguageSuffix en en 
+    Target run $1.${request:Language=ge}$2
+</Route>
+
+<Route ^/lang/default/(.*)(\.html)$>
+    Name lang/default.tst
+    Prefix /lang/default
+    AddLanguageSuffix fr fr 
+    DefaultLanguage fr
+    Target run $1.${request:Language}$2
+    # Target run ${DOCUMENT_ROOT}/$1.${request:Language}$2
+</Route>
+
+<Route ^/lang/catchall>
+    Name lang/catchall.tst
+    Prefix /lang/catchall
+    AddLanguageSuffix "" en before
+</Route>
+
+#
+#   Header and Param tests
+#
+<Route ^/route/header>
+    Name route/header.tst
+    Header User-Agent custom
+    Target write 200 "${header:User-Agent}"
+</Route>
+
+<Route ^/route/param>
+    Name route/param.tst
+    Param name peter
+    Target write 200 "${param:name}"
+</Route>
+
+#
+#   Condition tests
+#
+<Route ^/route/cond>
+    Name route/cond.tst
+    Condition ! match ${request:scheme} "(https|custom)" 
+    Target write 200 "${request:scheme}"
+</Route>
+
+#
+#   Updates
+#
+<Route ^/route/update/cmd>
+    Name route/cmd.tst
+    Update cmd "touch route-update-cmd.tmp"
+    Target write 200 "${request:error}UPDATED"
+</Route>
+
+<Route ^/route/update/var>
+    Name route/var.tst
+    Update param from ${header:from}
+    Target write 200 "${param:from}"
+</Route>
+
+#
+#   Misc
+#
+<Route ^/compress/>
+    Name compress/gzip.tst
+    Compress gzip
+</Route>
+<Route ^/tmp/>
+    DocumentRoot web/tmp
+    Prefix /tmp
+    PutMethod on
+    SetHandler fileHandler
+</Route>
+
+#
+#   Test caching modes: all, unique, only
+#
+<Route ^/only/>
+    Prefix /only
+    DocumentRoot web/caching 
+    # Cache only these exact URIs with request params
+    Cache client=1800 server=86400 only /cache.esp?esp=1&prefix=/only /cache.php?php=1&prefix=/only /cache.ejs?ejs=1&prefix=/only
+</Route>
+<Route ^/combined/>
+    Prefix /combined
+    DocumentRoot web/caching 
+    # Cache these URIs with any request params combined into one item per URI
+    Cache server=86400 all /cache.esp /cache.php /cache.ejs /cache.cgi
+</Route>
+<Route ^/unique/>
+    Prefix /unique
+    DocumentRoot web/caching 
+    # Cache each URI+params uniquely
+    Cache server=86400 unique /cache.esp /cache.php /cache.ejs /cache.cgi
+</Route>
+<Route ^/ext/>
+    Prefix /ext
+    DocumentRoot web/caching 
+    Cache server extensions="esp"
+</Route>
+<Route ^/types/>
+    Prefix /types
+    DocumentRoot web/caching 
+    Cache server types="application/x-php"
+</Route>
+<Route ^/methods/>
+    Prefix /methods
+    DocumentRoot web/caching 
+    Cache server methods="POST"
+</Route>
+
+# Re-open the existing default route and add caching
+<Route ^/app/*/default>
+    # Note: /cache is the controller name
+    Cache 86400
+    Cache server manual /cache/manual
+    Cache server all /cache/small /cache/big /cache/huge
+    Cache client=3600 /cache/client
+    # Limit to prevent huge being cached
+    LimitCacheItem 100000
+    # AccessLog app.log size=1MB append anew
+</Route>
+
+
+Alias /SimpleAlias "${DOCUMENT_ROOT}"
+Alias /aliasDir/ ${DOCUMENT_ROOT}/alias/
+Alias /aliasFile ${DOCUMENT_ROOT}/alias/atest.html
+Alias /AliasDocs/ "${DOCUMENT_ROOT}/My Documents/"
+
+<if CGI_MODULE>
+    ScriptAlias /MyScripts/ "${SERVER_ROOT}/cgi-bin/"
+    ScriptAlias /YourScripts/ "${DOCUMENT_ROOT}/"
+</if>
+
+#
+#   Routes with basic, digest and form-based  authentication
+#
+<Route ^/auth/basic/>
+    AuthType basic example.com
+    <Route ^/auth/basic/executive/>
+        Require role executive
+    </Route>
+    <Route ^/auth/basic/joshua/>
+        Require user joshua
+    </Route>
+</Route>
+
+<Route ^/auth/digest/>
+    AuthType digest example.com
+    <Route ^/auth/digest/executive/>
+        Require role executive
+    </Route>
+    <Route ^/auth/digest/joshua/>
+        Require user joshua
+    </Route>
+</Route>
+
+<Route ^/auth/form/>
+    AuthType form example.com https:///auth/form/login.esp https:///auth/form/login /auth/form/logout /auth/form/index.html
+</Route>
+
+#
+#   Test error documents
+#
+<Route ^/error/>
+    ErrorDocument 404 /notFound.html
+</Route>
+
+#
+#   Test simple redirections
+#
+Redirect temp /old.html /index.html
+Redirect 410 /membersOnly
+
+# MOB - unit test
+# Redirect temp /plain-old.html https://${request:serverName}:4110/ssl-only.html
+
+#
+#   Appweb documentation
+#
+<Route ^/doc/>
+    DocumentRoot /Users/mob/git/appweb/doc
+    Prefix /doc
+</Route>
+
+#
+#   Benchmarking
+#
+<Route ^/bench/>
+</Route>
+
+<if SSL_MODULE>
+    LoadModule sslModule mod_ssl
+    SSLCertificateFile "sslconf/server.crt"
+    SSLCertificateKeyFile "sslconf/server.key.pem"
+    SSLCipherSuite AES128-SHA
+
+    #
+    #   Add TLS endpoint without requiring a virtual host
+    #
+    ListenSecure 4110   # SSL - dont remove comment
+    SSLProvider openssl
+
+    ListenSecure 4210     # MATRIX - dont remove comment
+    <VirtualHost *:4210>
+        DocumentRoot "web"
+        SSLProvider matrixssl
+        # SSLVerifyClient require
+        # SSLVerifyIssuer off
+        # SSLCACertificateFile "sslconf/ca.crt"
+        # SSLCACertificatePath "sslconf/certs"
+    </VirtualHost>                                  
+</if>
+
+Listen 4111             # NAMED - dont remove comment
+NameVirtualHost *:4111
+<VirtualHost *:4111>
+    ServerName      localhost:4111
+    DocumentRoot    "${SERVER_ROOT}/web/vhost/namehost1"
+</VirtualHost>
+<VirtualHost *:4111>
+    ServerName 127.0.0.1:4111
+    DocumentRoot "${SERVER_ROOT}/web/vhost/namehost2"
+    ResetPipeline
+    AddHandler fileHandler html gif jpeg jpg png pdf ico css js ""
+    <if EJS_MODULE>
+        AddHandler ejsHandler ejs
+        DirectoryIndex index.ejs
+    <else>
+        AddHandler errorHandler ejs
+    </if>
+</VirtualHost>
+
+#
+#   IP virtual host
+#
+Listen 4112             # IPHOST
+<VirtualHost *:4112>
+    DocumentRoot "${SERVER_ROOT}/web/vhost/iphost"
+    AuthType basic example.com
+    Require user mary
+</VirtualHost>
+
+include conf/*.conf
+include apps/*.conf
+
+# LogRoutes full
+# LogRoutes 
