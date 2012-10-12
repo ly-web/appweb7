@@ -1774,7 +1774,6 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
     conn->port = port;
     conn->secure = uri->secure;
     conn->keepAliveCount = (conn->limits->keepAliveMax) ? conn->limits->keepAliveMax : -1;
-    setDefaultHeaders(conn);
 
 #if BIT_PACK_SSL
     /* Must be done even if using keep alive for repeat SSL requests */
@@ -1795,7 +1794,6 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
             conn->errorMsg = sp->errorMsg;
             return 0;
         }
-        httpServiceQueues(conn);
     }
 #endif
     if ((level = httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_CONN, NULL)) >= 0) {
@@ -1832,17 +1830,17 @@ static void setDefaultHeaders(HttpConn *conn)
 }
 
 
-int httpConnect(HttpConn *conn, cchar *method, cchar *url, struct MprSsl *ssl)
+int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl *ssl)
 {
     mprAssert(conn);
     mprAssert(method && *method);
-    mprAssert(url && *url);
+    mprAssert(uri && *uri);
 
     if (conn->endpoint) {
         httpError(conn, HTTP_CODE_BAD_GATEWAY, "Can't call connect in a server");
         return MPR_ERR_BAD_STATE;
     }
-    mprLog(4, "Http: client request: %s %s", method, url);
+    mprLog(4, "Http: client request: %s %s", method, uri);
 
     if (conn->tx == 0 || conn->state != HTTP_STATE_BEGIN) {
         /* WARNING: this will erase headers */
@@ -1852,8 +1850,7 @@ int httpConnect(HttpConn *conn, cchar *method, cchar *url, struct MprSsl *ssl)
     httpSetState(conn, HTTP_STATE_CONNECTED);
     conn->setCredentials = 0;
     conn->tx->method = supper(method);
-    conn->tx->parsedUri = httpCreateUri(url, HTTP_COMPLETE_URI);
-
+    conn->tx->parsedUri = httpCreateUri(uri, /* MOB HTTP_COMPLETE_URI */ 0);
 #if BIT_DEBUG
     conn->startTime = conn->http->now;
     conn->startTicks = mprGetTicks();
@@ -1861,6 +1858,11 @@ int httpConnect(HttpConn *conn, cchar *method, cchar *url, struct MprSsl *ssl)
     httpCreateTxPipeline(conn, conn->http->clientRoute);
     if (openConnection(conn, ssl) == 0) {
         return MPR_ERR_CANT_OPEN;
+    }
+    setDefaultHeaders(conn);
+    if (conn->upgraded) {
+        /* Push out headers */
+        httpServiceQueues(conn);
     }
     return 0;
 }
@@ -3600,18 +3602,28 @@ void httpMatchHost(HttpConn *conn)
 
 void *httpGetEndpointContext(HttpEndpoint *endpoint)
 {
-    return endpoint->context;
+    assure(endpoint);
+    if (endpoint) {
+        return endpoint->context;
+    }
+    return 0;
 }
 
 
 int httpIsEndpointAsync(HttpEndpoint *endpoint) 
 {
-    return endpoint->async;
+    assure(endpoint);
+    if (endpoint) {
+        return endpoint->async;
+    }
+    return 0;
 }
 
 
 void httpSetEndpointAddress(HttpEndpoint *endpoint, cchar *ip, int port)
 {
+    assure(endpoint);
+
     if (ip) {
         endpoint->ip = sclone(ip);
     }
@@ -11810,8 +11822,10 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
         }
     }
     if (nbytes > 0) {
-        rx->remainingContent -= nbytes;
-        mprAssert(rx->remainingContent >= 0);
+        if (!conn->upgraded) {
+            rx->remainingContent -= nbytes;
+            mprAssert(rx->remainingContent >= 0);
+        }
         rx->bytesRead += nbytes;
         if (httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, tx->ext) >= 0) {
             httpTraceContent(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, packet, nbytes, rx->bytesRead);
@@ -11992,9 +12006,12 @@ static bool processCompletion(HttpConn *conn)
         conn->tx = 0;
         packet = conn->input;
         more = packet && !conn->connError && (httpGetPacketLength(packet) > 0);
+#if UNUSED
+        //  MOB -cant do as PrepServerConn below calls setupConnTrace
         if (conn->keepAliveCount < 0) {
             conn->endpoint = 0;
         }
+#endif
         if (conn->sock) {
             httpPrepServerConn(conn);
         }

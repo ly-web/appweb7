@@ -886,7 +886,8 @@ void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
     filterCols(grid, options, colOptions);
 
     if (httpOption(options, "pivot", "true", 0) != 0) {
-        return pivotTable(conn, ediPivotGrid(grid, 1), options);
+        pivotTable(conn, ediPivotGrid(grid, 1), options);
+        return;
     }
     cols = ediGetGridColumns(grid);
     ncols = mprGetListLength(cols);
