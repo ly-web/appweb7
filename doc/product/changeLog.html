@@ -107,7 +107,7 @@
                 <li>Http command --show displaying headers when no body in response</li>
                 <li>Fix SSL inheritance in appweb.conf for virtual hosts</li>
                 <li>If-Match header handling for case sensitivity</li>
-                <li>Cookie handling for SSL</li>
+                <li>Cookie handling over SSL</li>
                 <li>Chunk parsing for trailing \r\n</li>
                 <li>Option request handling</li>
                 <li>Directory listings path names to be relative paths</li>
@@ -146,7 +146,8 @@
             <ul>
                 <li>Fixes for building for VxWorks on linux</li>
                 <li>Fix httpPassword parsing corrupt files</li>
-                <li>Add SSL_OP_NO_TICKET and SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION</li>
+                <li>Add SSL_OP_NO_TICKET and SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION to force
+                    renegotiaion of sessions.</li>
                 <li>Enable no free threads message to continually be emitted</li>
             </ul>
             <a id="r3.3.2"></a>
@@ -165,8 +166,7 @@
                 <li>setCookie()</li>
                 <li>PHP with basic/digest authentication requests</li>
                 <li>Session memory leaks</li>
-                <li>X509 certificate verification with SSL</li>
-                <li>BLAST attackSSL</li>
+                <li>Improve X509 certificate verification with SSL</li>
                 <li>Ejscript property scope searching</li>
                 <li>Ejscript setCookie</li>
                 <li>Optimize output of large static files</li>
@@ -504,7 +504,6 @@
             <ul>
                 <li>Cross-compilation fixes for make install and make package.</li>
                 <li>Fix for ranged GETs when fetching a large chunk of data. Was sending incorrect data.</li>
-                <li>Fixed SSL requests hanging when using large posted data.</li>
                 <li>Fix Keep-Alive header timeout. Was in milliseconds, changed to be in seconds.</li>
                 <li>Fix for for large chunked requests hanging in some clients.</li>
                 <li>Fix for requests with large (incoming) headers.&nbsp;</li>
@@ -629,8 +628,7 @@
             <h3>Minor</h3>
             <ul>
                 <li>Added directive to enable / disable the TRACE method. Use TraceMethod on|off in the appweb.conf
-                configuration file. The trace method is now disabled by default as it can represent a security
-                risk.</li>
+                configuration file. The trace method is now disabled by default.</li>
                 <li>The use of winTools.zip is now officially deprecated. Please use the cygwin tools from
                 www.cygwin.com to build from source on windows instead.</li>
             </ul>
@@ -809,7 +807,7 @@
                 <li>Fix httpPassword overwriting existing password entries (Thanks lhearin)</li>
                 <li>Fixed bad build output formatting. (Thanks Matt McNeill)</li>
                 <li>Improved error messages in Appweb</li>
-                <li>Fix windows SSL crash due when missing a TypesConfig directive and using SSL (Thanks)</li>
+                <li>Fix windows SSL crash due when missing a TypesConfig directive and using SSL</li>
                 <li>Fix wrong license agreement display when installing.</li>
             </ul>
             <h2 class="section">Changes in 2.0.2</h2>
@@ -1105,7 +1103,7 @@
             <ul>
                 <li>Fix for ESP includes. On windows, was including files with text processing which resulted in bad
                 content lengths. Now reading RAW.</li>
-                <li>Added MatrixSSL handler (Thanks to J, Brian and Steve @ peersec)</li>
+                <li>Added MatrixSSL handler</li>
                 <li>Re-added some missing documentation pages</li>
                 <li>Changed default MPR number of threads to 10. Can be overridden in the appweb.conf file. Thanks
                 XDM.</li>
@@ -1157,7 +1155,6 @@
             <h3>Major Features</h3>
             <ul>
                 <li>Include PHP support</li>
-                <li>Some important security fixes</li>
                 <li>Enhanced uClibc support -- no patch required.</li>
                 <li>Enhanced uClinux support.</li>
             </ul>
