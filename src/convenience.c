@@ -20,7 +20,7 @@ int maRunWebServer(cchar *configFile)
     int         rc;
 
     rc = MPR_ERR_CANT_CREATE;
-    if ((mpr = mprCreate(0, NULL, 0)) == 0) {
+    if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
         mprError("Can't create the web server runtime");
     } else {
         if (mprStart() < 0) {

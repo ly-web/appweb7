@@ -16863,13 +16863,11 @@ static void outgoingWebSockService(HttpQueue *q)
 {
     HttpConn    *conn;
     HttpPacket  *packet;
-    HttpTx      *tx;
     char        *ep, *fp, *prefix, dataMask[4];
     ssize       len;
     int         i, mask, code;
 
     conn = q->conn;
-    tx = conn->tx;
     mprLog(5, "websock: outgoing service");
 
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
@@ -16982,6 +16980,8 @@ static bool validUTF8(cchar *str, ssize len)
             nbytes = 5;
         } else if ((*cp & 0xfe) == 0xfc) {
             nbytes = 6;
+        } else {
+            nbytes = 1;
         }
         for (i = 1; i < nbytes; i++) {
             if ((cp[i] & 0xc0) != 0x80) {

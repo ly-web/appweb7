@@ -5,7 +5,7 @@
 ARCH     ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/')
 OS       ?= solaris
 CC       ?= gcc
-LD       ?= C:/cygwin/bin/ld.exe
+LD       ?= /usr/bin/ld
 PROFILE  ?= debug
 CONFIG   ?= $(OS)-$(ARCH)-$(PROFILE)
 
@@ -13,7 +13,7 @@ CFLAGS   += -fPIC -mtune=generic -w
 DFLAGS   += -D_REENTRANT -DPIC 
 IFLAGS   += -I$(CONFIG)/inc
 LDFLAGS  += '-g'
-LIBPATHS += -L$(CONFIG)\bin
+LIBPATHS += -L$(CONFIG)/bin
 LIBS     += -llxnet -lrt -lsocket -lpthread -lm -ldl
 
 CFLAGS-debug    := -DBIT_DEBUG -g
@@ -138,42 +138,42 @@ $(CONFIG)/inc/mpr.h:
 $(CONFIG)/obj/mprLib.o: \
         src/deps/mpr/mprLib.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\mprLib.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/deps/mpr/mprLib.c
+	$(CC) -c -o $(CONFIG)/obj/mprLib.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
 
 $(CONFIG)/bin/libmpr.so:  \
         $(CONFIG)/inc/mpr.h \
         $(CONFIG)/obj/mprLib.o
-	$(CC) -shared -o $(CONFIG)\bin\libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprLib.o $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprLib.o $(LIBS)
 
 $(CONFIG)/obj/mprSsl.o: \
         src/deps/mpr/mprSsl.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\mprSsl.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/deps/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.so:  \
         $(CONFIG)/bin/libmpr.so \
         $(CONFIG)/obj/mprSsl.o
-	$(CC) -shared -o $(CONFIG)\bin\libmprssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.o -lmpr $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/manager.o: \
         src/deps/mpr/manager.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\manager.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/deps/mpr/manager.c
+	$(CC) -c -o $(CONFIG)/obj/manager.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/manager.c
 
 $(CONFIG)/bin/appman:  \
         $(CONFIG)/bin/libmpr.so \
         $(CONFIG)/obj/manager.o
-	$(CC) -o $(CONFIG)/bin/appman $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.o -lmpr $(LIBS) $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/appman $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o -lmpr $(LIBS) $(LDFLAGS)
 
 $(CONFIG)/obj/makerom.o: \
         src/deps/mpr/makerom.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\makerom.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/deps/mpr/makerom.c
+	$(CC) -c -o $(CONFIG)/obj/makerom.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
 
 $(CONFIG)/bin/makerom:  \
         $(CONFIG)/bin/libmpr.so \
         $(CONFIG)/obj/makerom.o
-	$(CC) -o $(CONFIG)\bin\makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.o -lmpr $(LIBS) $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS) $(LDFLAGS)
 
 $(CONFIG)/inc/pcre.h: 
 	rm -fr $(CONFIG)/inc/pcre.h
@@ -182,12 +182,12 @@ $(CONFIG)/inc/pcre.h:
 $(CONFIG)/obj/pcre.o: \
         src/deps/pcre/pcre.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\pcre.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/deps/pcre/pcre.c
+	$(CC) -c -o $(CONFIG)/obj/pcre.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/deps/pcre/pcre.c
 
 $(CONFIG)/bin/libpcre.so:  \
         $(CONFIG)/inc/pcre.h \
         $(CONFIG)/obj/pcre.o
-	$(CC) -shared -o $(CONFIG)\bin\libpcre.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\pcre.o $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o $(LIBS)
 
 $(CONFIG)/inc/http.h: 
 	rm -fr $(CONFIG)/inc/http.h
@@ -196,24 +196,24 @@ $(CONFIG)/inc/http.h:
 $(CONFIG)/obj/httpLib.o: \
         src/deps/http/httpLib.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\httpLib.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/deps/http/httpLib.c
+	$(CC) -c -o $(CONFIG)/obj/httpLib.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
 
 $(CONFIG)/bin/libhttp.so:  \
         $(CONFIG)/bin/libmpr.so \
         $(CONFIG)/bin/libpcre.so \
         $(CONFIG)/inc/http.h \
         $(CONFIG)/obj/httpLib.o
-	$(CC) -shared -o $(CONFIG)\bin\libhttp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\httpLib.o -lpcre -lmpr $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libhttp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/httpLib.o -lpcre -lmpr $(LIBS)
 
 $(CONFIG)/obj/http.o: \
         src/deps/http/http.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\http.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/deps/http/http.c
+	$(CC) -c -o $(CONFIG)/obj/http.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/deps/http/http.c
 
 $(CONFIG)/bin/http:  \
         $(CONFIG)/bin/libhttp.so \
         $(CONFIG)/obj/http.o
-	$(CC) -o $(CONFIG)\bin\http $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.o -lhttp $(LIBS) -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr $(LDFLAGS)
 
 $(CONFIG)/inc/sqlite3.h: 
 	rm -fr $(CONFIG)/inc/sqlite3.h
@@ -222,22 +222,22 @@ $(CONFIG)/inc/sqlite3.h:
 $(CONFIG)/obj/sqlite3.o: \
         src/deps/sqlite/sqlite3.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\sqlite3.o -fPIC $(LDFLAGS) -mtune=generic -w -w $(DFLAGS) -I$(CONFIG)\inc src/deps/sqlite/sqlite3.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -fPIC $(LDFLAGS) -mtune=generic -w -w $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
 
 $(CONFIG)/bin/libsqlite3.so:  \
         $(CONFIG)/inc/sqlite3.h \
         $(CONFIG)/obj/sqlite3.o
-	$(CC) -shared -o $(CONFIG)\bin\libsqlite3.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite3.o $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libsqlite3.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite3.o $(LIBS)
 
 $(CONFIG)/obj/sqlite.o: \
         src/deps/sqlite/sqlite.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\sqlite.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/deps/sqlite/sqlite.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
 
 $(CONFIG)/bin/sqlite:  \
         $(CONFIG)/bin/libsqlite3.so \
         $(CONFIG)/obj/sqlite.o
-	$(CC) -o $(CONFIG)\bin\sqlite $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.o -lsqlite3 $(LIBS) $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/sqlite $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o -lsqlite3 $(LIBS) $(LDFLAGS)
 
 $(CONFIG)/inc/appweb.h: 
 	rm -fr $(CONFIG)/inc/appweb.h
@@ -250,32 +250,32 @@ $(CONFIG)/inc/customize.h:
 $(CONFIG)/obj/config.o: \
         src/config.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\config.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/config.c
+	$(CC) -c -o $(CONFIG)/obj/config.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/config.c
 
 $(CONFIG)/obj/convenience.o: \
         src/convenience.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\convenience.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/convenience.c
+	$(CC) -c -o $(CONFIG)/obj/convenience.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/convenience.c
 
 $(CONFIG)/obj/dirHandler.o: \
         src/dirHandler.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\dirHandler.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/dirHandler.c
+	$(CC) -c -o $(CONFIG)/obj/dirHandler.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/dirHandler.c
 
 $(CONFIG)/obj/fileHandler.o: \
         src/fileHandler.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\fileHandler.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/fileHandler.c
+	$(CC) -c -o $(CONFIG)/obj/fileHandler.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/fileHandler.c
 
 $(CONFIG)/obj/log.o: \
         src/log.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\log.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/log.c
+	$(CC) -c -o $(CONFIG)/obj/log.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/log.c
 
 $(CONFIG)/obj/server.o: \
         src/server.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\server.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/server.c
+	$(CC) -c -o $(CONFIG)/obj/server.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/server.c
 
 $(CONFIG)/bin/libappweb.so:  \
         $(CONFIG)/bin/libhttp.so \
@@ -287,7 +287,7 @@ $(CONFIG)/bin/libappweb.so:  \
         $(CONFIG)/obj/fileHandler.o \
         $(CONFIG)/obj/log.o \
         $(CONFIG)/obj/server.o
-	$(CC) -shared -o $(CONFIG)\bin\libappweb.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.o $(CONFIG)\obj\convenience.o $(CONFIG)\obj\dirHandler.o $(CONFIG)\obj\fileHandler.o $(CONFIG)\obj\log.o $(CONFIG)\obj\server.o -lhttp $(LIBS) -lpcre -lmpr
+	$(CC) -shared -o $(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr
 
 $(CONFIG)/inc/edi.h: 
 	rm -fr $(CONFIG)/inc/edi.h
@@ -308,47 +308,47 @@ $(CONFIG)/inc/mdb.h:
 $(CONFIG)/obj/edi.o: \
         src/esp/edi.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\edi.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/esp/edi.c
+	$(CC) -c -o $(CONFIG)/obj/edi.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/esp/edi.c
 
 $(CONFIG)/obj/espAbbrev.o: \
         src/esp/espAbbrev.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\espAbbrev.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/esp/espAbbrev.c
+	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/esp/espAbbrev.c
 
 $(CONFIG)/obj/espFramework.o: \
         src/esp/espFramework.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\espFramework.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/esp/espFramework.c
+	$(CC) -c -o $(CONFIG)/obj/espFramework.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/esp/espFramework.c
 
 $(CONFIG)/obj/espHandler.o: \
         src/esp/espHandler.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\espHandler.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/esp/espHandler.c
+	$(CC) -c -o $(CONFIG)/obj/espHandler.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/esp/espHandler.c
 
 $(CONFIG)/obj/espHtml.o: \
         src/esp/espHtml.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\espHtml.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/esp/espHtml.c
+	$(CC) -c -o $(CONFIG)/obj/espHtml.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
 
 $(CONFIG)/obj/espSession.o: \
         src/esp/espSession.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\espSession.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/esp/espSession.c
+	$(CC) -c -o $(CONFIG)/obj/espSession.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/esp/espSession.c
 
 $(CONFIG)/obj/espTemplate.o: \
         src/esp/espTemplate.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\espTemplate.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/esp/espTemplate.c
+	$(CC) -c -o $(CONFIG)/obj/espTemplate.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/esp/espTemplate.c
 
 $(CONFIG)/obj/mdb.o: \
         src/esp/mdb.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\mdb.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/esp/mdb.c
+	$(CC) -c -o $(CONFIG)/obj/mdb.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/esp/mdb.c
 
 $(CONFIG)/obj/sdb.o: \
         src/esp/sdb.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\sdb.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/esp/sdb.c
+	$(CC) -c -o $(CONFIG)/obj/sdb.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
 
 $(CONFIG)/bin/mod_esp.so:  \
         $(CONFIG)/bin/libappweb.so \
@@ -365,12 +365,12 @@ $(CONFIG)/bin/mod_esp.so:  \
         $(CONFIG)/obj/espTemplate.o \
         $(CONFIG)/obj/mdb.o \
         $(CONFIG)/obj/sdb.o
-	$(CC) -shared -o $(CONFIG)\bin\mod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.o $(CONFIG)\obj\espAbbrev.o $(CONFIG)\obj\espFramework.o $(CONFIG)\obj\espHandler.o $(CONFIG)\obj\espHtml.o $(CONFIG)\obj\espSession.o $(CONFIG)\obj\espTemplate.o $(CONFIG)\obj\mdb.o $(CONFIG)\obj\sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
+	$(CC) -shared -o $(CONFIG)/bin/mod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
 
 $(CONFIG)/obj/esp.o: \
         src/esp/esp.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\esp.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/esp/esp.c
+	$(CC) -c -o $(CONFIG)/obj/esp.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/esp/esp.c
 
 $(CONFIG)/bin/esp:  \
         $(CONFIG)/bin/libappweb.so \
@@ -384,7 +384,7 @@ $(CONFIG)/bin/esp:  \
         $(CONFIG)/obj/espTemplate.o \
         $(CONFIG)/obj/mdb.o \
         $(CONFIG)/obj/sdb.o
-	$(CC) -o $(CONFIG)\bin\esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.o $(CONFIG)\obj\esp.o $(CONFIG)\obj\espAbbrev.o $(CONFIG)\obj\espFramework.o $(CONFIG)\obj\espHandler.o $(CONFIG)\obj\espHtml.o $(CONFIG)\obj\espSession.o $(CONFIG)\obj\espTemplate.o $(CONFIG)\obj\mdb.o $(CONFIG)\obj\sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
 
 $(CONFIG)/bin/esp.conf: 
 	rm -fr $(CONFIG)/bin/esp.conf
@@ -401,41 +401,41 @@ $(CONFIG)/bin/esp-appweb.conf:
 $(CONFIG)/obj/cgiHandler.o: \
         src/modules/cgiHandler.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\cgiHandler.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/modules/cgiHandler.c
+	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
 
 $(CONFIG)/bin/mod_cgi.so:  \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/obj/cgiHandler.o
-	$(CC) -shared -o $(CONFIG)\bin\mod_cgi.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
+	$(CC) -shared -o $(CONFIG)/bin/mod_cgi.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
 
 $(CONFIG)/obj/authpass.o: \
         src/utils/authpass.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\authpass.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/utils/authpass.c
+	$(CC) -c -o $(CONFIG)/obj/authpass.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/utils/authpass.c
 
 $(CONFIG)/bin/authpass:  \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/obj/authpass.o
-	$(CC) -o $(CONFIG)\bin\authpass $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\authpass.o -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/authpass $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
 
 $(CONFIG)/obj/cgiProgram.o: \
         src/utils/cgiProgram.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\cgiProgram.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/utils/cgiProgram.c
+	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/utils/cgiProgram.c
 
 $(CONFIG)/bin/cgiProgram:  \
         $(CONFIG)/obj/cgiProgram.o
-	$(CC) -o $(CONFIG)\bin\cgiProgram $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiProgram.o $(LIBS) $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/cgiProgram $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiProgram.o $(LIBS) $(LDFLAGS)
 
 $(CONFIG)/obj/setConfig.o: \
         src/utils/setConfig.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\setConfig.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/utils/setConfig.c
+	$(CC) -c -o $(CONFIG)/obj/setConfig.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/utils/setConfig.c
 
 $(CONFIG)/bin/setConfig:  \
         $(CONFIG)/bin/libmpr.so \
         $(CONFIG)/obj/setConfig.o
-	$(CC) -o $(CONFIG)\bin\setConfig $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\setConfig.o -lmpr $(LIBS) $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/setConfig $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o -lmpr $(LIBS) $(LDFLAGS)
 
 $(CONFIG)/inc/appwebMonitor.h: 
 	rm -fr $(CONFIG)/inc/appwebMonitor.h
@@ -444,13 +444,13 @@ $(CONFIG)/inc/appwebMonitor.h:
 $(CONFIG)/obj/appweb.o: \
         src/server/appweb.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\appweb.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc src/server/appweb.c
+	$(CC) -c -o $(CONFIG)/obj/appweb.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc src/server/appweb.c
 
 $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/inc/appwebMonitor.h \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)\bin\appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
 
 $(CONFIG)/inc/testAppweb.h: 
 	rm -fr $(CONFIG)/inc/testAppweb.h
@@ -459,19 +459,19 @@ $(CONFIG)/inc/testAppweb.h:
 $(CONFIG)/obj/testAppweb.o: \
         test/testAppweb.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\testAppweb.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc test/testAppweb.c
+	$(CC) -c -o $(CONFIG)/obj/testAppweb.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
 
 $(CONFIG)/obj/testHttp.o: \
         test/testHttp.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)\obj\testHttp.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)\inc test/testHttp.c
+	$(CC) -c -o $(CONFIG)/obj/testHttp.o -Wall -fPIC $(LDFLAGS) -mtune=generic $(DFLAGS) -I$(CONFIG)/inc test/testHttp.c
 
 $(CONFIG)/bin/testAppweb:  \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/inc/testAppweb.h \
         $(CONFIG)/obj/testAppweb.o \
         $(CONFIG)/obj/testHttp.o
-	$(CC) -o $(CONFIG)\bin\testAppweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.o $(CONFIG)\obj\testHttp.o -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/testAppweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
 
 test/cgi-bin/testScript:  \
         $(CONFIG)/bin/cgiProgram
