@@ -1554,10 +1554,17 @@ struct  MprXml;
  */
 extern void mprBreakpoint();
 
-#if BIT_ASSERT
-    #define mprAssert(C)    if (C) ; else mprAssertError(MPR_LOC, #C)
-    #define assure(C)       if (C) ; else mprAssertError(MPR_LOC, #C)
+#if DOXYGEN
+/**
+    Assure that an assert condition is true
+    @param cond Boolean result of a conditional test
+ */
+extern void assure(bool cond);
+#elif BIT_ASSERT
+    #define mprAssert(C)    if (C) ; else mprAssureError(MPR_LOC, #C)
+    #define assure(C)       if (C) ; else mprAssureError(MPR_LOC, #C)
 #else
+    #define mprAssert(C)    if (C) ; else
     #define assure(C)       if (1) ; else
 #endif
 
@@ -4433,7 +4440,7 @@ extern int mprPushItem(MprList *list, cvoid *item);
     Logging Services
     @stability Evolving
     @defgroup MprLog MprLog
-    @see MprLogHandler mprAssertError mprError mprFatalError mprGetLogFile mprGetLogHandler mprLog mprMemoryError 
+    @see MprLogHandler mprAssureError mprError mprFatalError mprGetLogFile mprGetLogHandler mprLog mprMemoryError 
         mprRawLog mprSetLogFile mprSetLogHandler mprSetLogLevel mprStaticError mprUserError mprUsingDefaultLogHandler 
         mprWarn 
  */
@@ -4502,15 +4509,15 @@ extern int mprBackupLog(cchar *path, int count);
 extern void mprSetLogBackup(ssize logSize, int backupCount, int flags);
 
 /**
-    Output an assertion failed message.
-    @description This will emit an assertion failed message to the standard error output. It will bypass the logging
-        system.
+    Output an assure assertion failed message.
+    @description This will emit an assure assertion failed message to the standard error output. 
+        It may bypass the logging system.
     @param loc Source code location string. Use MPR_LOC to define a file name and line number string suitable for this
         parameter.
     @param msg Simple string message to output
     @ingroup MprLog
  */
-extern void mprAssertError(cchar *loc, cchar *msg);
+extern void mprAssureError(cchar *loc, cchar *msg);
 
 /**
     Log an error message.

@@ -13456,7 +13456,7 @@ void mprStaticError(cchar *fmt, ...)
 }
 
 
-void mprAssertError(cchar *loc, cchar *msg)
+void mprAssureError(cchar *loc, cchar *msg)
 {
 #if BIT_ASSERT
     char    buf[MPR_MAX_LOG];
