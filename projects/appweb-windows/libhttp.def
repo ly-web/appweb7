@@ -143,6 +143,7 @@ EXPORTS
   httpFormatUri
   httpGetAsync
   httpGetChunkSize
+  httpGetCloseReason
   httpGetConnContext
   httpGetConnHost
   httpGetContentLength
@@ -176,6 +177,7 @@ EXPORTS
   httpGetQueryString
   httpGetQueueData
   httpGetQueueRoom
+  httpGetReadCount
   httpGetRelativeUri
   httpGetRouteData
   httpGetRouteDir
@@ -187,6 +189,7 @@ EXPORTS
   httpGetStageData
   httpGetStatus
   httpGetStatusMessage
+  httpGetWebSockProtocol
   httpGraduateLimits
   httpHandleOptionsTrace
   httpHasNamedVirtualHosts
@@ -233,6 +236,7 @@ EXPORTS
   httpNeedRetry
   httpNormalizeUri
   httpNormalizeUriPath
+  httpNotifyReadable
   httpNotifyWritable
   httpOmitBody
   httpOpenCacheHandler
@@ -245,6 +249,7 @@ EXPORTS
   httpOpenRouteLog
   httpOpenSendConnector
   httpOpenUploadFilter
+  httpOpenWebSockFilter
   httpOption
   httpPrepClientConn
   httpPrepServerConn
@@ -281,6 +286,8 @@ EXPORTS
   httpScheduleQueue
   httpSecureEndpoint
   httpSecureEndpointByName
+  httpSend
+  httpSendBlock
   httpSendClose
   httpSendOpen
   httpSendOutgoingService
@@ -373,6 +380,8 @@ EXPORTS
   httpSetTimestamp
   httpSetUniqueConnLimits
   httpSetUri
+  httpSetWebSocketNotifier
+  httpSetWebSocketProtocols
   httpShouldTrace
   httpSocketBlocked
   httpSplitPacket
@@ -398,6 +407,8 @@ EXPORTS
   httpValidateLimits
   httpVerifyQueue
   httpWait
+  httpWasOrderlyClose
+  httpWebSockUpgrade
   httpWillNextQueueAcceptPacket
   httpWillNextQueueAcceptSize
   httpWrite

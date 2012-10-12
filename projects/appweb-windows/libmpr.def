@@ -34,7 +34,7 @@ EXPORTS
   mprAppendList
   mprAsprintf
   mprAsprintfv
-  mprAssertError
+  mprAssureError
   mprAtomicAdd
   mprAtomicAdd64
   mprAtomicBarrier
@@ -224,6 +224,9 @@ EXPORTS
   mprGetRandomBytes
   mprGetRelPath
   mprGetRemainingTime
+  mprGetSHA
+  mprGetSHABase64
+  mprGetSHAWithPrefix
   mprGetServerName
   mprGetSocketBlockingMode
   mprGetSocketError
