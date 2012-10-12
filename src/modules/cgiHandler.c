@@ -705,7 +705,6 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
          */
         mprAddKey(rx->headers, "REDIRECT_STATUS", itos(HTTP_CODE_MOVED_TEMPORARILY));
     }
-
     /*
         Count the args for ISINDEX queries. Only valid if there is not a "=" in the query. 
         If this is so, then we must not have these args in the query env also?
@@ -807,7 +806,6 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
      */
     if (indexQuery) {
         indexQuery = sclone(indexQuery);
-
         cp = stok(indexQuery, "+", &tok);
         while (cp) {
             argv[argind++] = mprEscapeCmd(mprUriDecode(cp), 0);

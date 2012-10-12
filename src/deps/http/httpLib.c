@@ -11886,7 +11886,14 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
         return conn->workerEvent ? 0 : 1;
     }
     httpServiceQueues(conn);
-    return conn->error || (conn->input ? httpGetPacketLength(conn->input) : 0);
+
+    if (conn->error) {
+        return 1;
+    }
+    if (rx->chunkState && nbytes <= 0) {
+        return 0;
+    }
+    return conn->input ? httpGetPacketLength(conn->input) : 0;
 }
 
 
