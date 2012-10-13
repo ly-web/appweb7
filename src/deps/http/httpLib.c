@@ -11775,8 +11775,11 @@ static bool processParsed(HttpConn *conn)
         sendContinue(conn);
         rx->flags &= ~HTTP_EXPECT_CONTINUE;
     }
-    if (rx->remainingContent == 0 && !conn->upgraded) {
-        /* Go to ready state if not request body to read */
+    if (rx->remainingContent == 0 && !conn->upgraded && !rx->form) {
+        /* 
+            Go directly to ready state if there is no request body to read. Unless a form, in which case we still
+            need to route the request.
+         */
         rx->eof = 1;
         httpSetState(conn, HTTP_STATE_READY);
     } else {
@@ -11888,12 +11891,19 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
     httpServiceQueues(conn);
 
     if (conn->error) {
+        /* Can proceed to handle the error */
         return 1;
     }
     if (rx->chunkState && nbytes <= 0) {
+        /* Insufficient data */
         return 0;
     }
-    return conn->input ? httpGetPacketLength(conn->input) : 0;
+    if (conn->input && httpGetPacketLength(conn->input) > 0) {
+        /* More data to process */
+        return 1;
+    }
+    /* Must wait */
+    return 0;
 }
 
 
