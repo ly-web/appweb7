@@ -1,0 +1,3 @@
+Hashing Algorithm License
+
+Licensed from Paul Hsieh at http://www.azillionmonkeys.com/qed/hash.html licensed under LGPL 2.1 1999.

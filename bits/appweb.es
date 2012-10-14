@@ -37,7 +37,12 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
         if (bit.platform.os == 'windows') {
             install('package/windows/LICENSE.TXT', bin, {fold: true, expand: true})
         }
-        install('LICENSE.md', p.product, {fold: true, expand: true})
+        install(['doc/licenses/*.txt'], p.product.join('LICENSE.TXT'), {
+            cat: true,
+            textfile: true,
+            fold: true,
+            title: bit.settings.title + ' Licenses',
+        })
         install('doc/product/README.TXT', p.product, {fold: true, expand: true})
         install('package/uninstall.sh', p.bin.join('uninstall'), {permissions: 0755, expand: true})
         install('package/linkup', p.bin, {permissions: 0755})

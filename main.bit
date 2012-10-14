@@ -11,6 +11,7 @@ Bit.load({
         "src/deps/sqlite/sqlite.bit",
         "src/libappweb.bit",
         "src/esp/esp.bit",
+        /* The ejs.bit file is optional */
         "?src/deps/ejs/ejs.bit",
         "src/modules/modules.bit",
         "src/utils/utils.bit",
@@ -37,20 +38,43 @@ Bit.load({
         buildNumber: '0',
         http_port: 80,
         ssl_port: 443,
+        /*
+            Support the MDB database for ESP
+         */ 
         mdb: true,
+        /*
+            Support the SQLite database for ESP
+         */ 
         sdb: false,
         manager: 'appman',
+
+        /*
+            Use PAM (Plugable Authentication Module) to store passwords
+         */
         pam: true,
         packs: [ 'bits/packs' ]
         /* Must build locally to build tools */
         platforms: [ 'local' ],
         sync: ['http', 'mpr', 'pcre', 'sqlite'],
         '+required': [ 'pcre'],
+
+        /*
+            Optional packs to search for when configuring
+         */
         '+optional': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'ejscript', 'esp', 'man', 'man2html', 'openssl', 
             'matrixssl', 'pmaker', 'php', 'sqlite', 'ssl', 'utest', 'zip' ],
+
+        /*
+            Packs to disable when using --without all
+         */
         'without-all': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ssl', 'ejscript', 'php', 
             'matrixssl', 'openssl' ],
         'without-own': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ejscript', 'php', 'matrixssl' ],
+
+        /*
+            Enable stealth options. Disable OPTIONS and TRACE methods.
+         */
+        stealth: true,
     },
 
     usage: {
