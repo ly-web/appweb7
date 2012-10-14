@@ -1785,6 +1785,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
             conn->errorMsg = sp->errorMsg;
             return 0;
         }
+        mprLog(4, "Http: upgrade socket to TLS");
     }
 #endif
 #if BIT_WEB_SOCKETS
@@ -3559,6 +3560,9 @@ HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     if ((level = httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_CONN, NULL)) >= 0) {
         mprLog(level, "### Incoming connection from %s:%d to %s:%d %s", 
             conn->ip, conn->port, sock->acceptIp, sock->acceptPort, conn->secure ? "(secure)" : "");
+        if (endpoint->ssl) {
+            mprLog(level, "Upgrade to TLS");
+        }
     }
     e.mask = MPR_READABLE;
     e.timestamp = conn->http->now;
@@ -7524,6 +7528,7 @@ static int matchRange(HttpConn *conn, HttpRoute *route, int dir)
 {
     mprAssert(conn->rx);
 
+    httpSetHeader(conn, "Accept-Ranges", "bytes");
     if ((dir & HTTP_STAGE_TX) && conn->tx->outputRanges) {
         return HTTP_ROUTE_OK;
     }
@@ -14323,7 +14328,7 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
     if (conn->endpoint) {
         httpAddHeaderString(conn, "Server", conn->http->software);
         if (--conn->keepAliveCount > 0) {
-            httpAddHeaderString(conn, "Connection", "keep-alive");
+            httpAddHeaderString(conn, "Connection", "Keep-Alive");
             httpAddHeader(conn, "Keep-Alive", "timeout=%Ld, max=%d", conn->limits->inactivityTimeout / 1000,
                 conn->keepAliveCount);
         } else {
