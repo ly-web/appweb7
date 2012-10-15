@@ -8,7 +8,7 @@ let http: Http = new Http
 
 http.get(HTTP + "/index.html")
 connection = http.header("Connection")
-assert(connection == "keep-alive")
+assert(connection == "Keep-Alive")
 
 http.get(HTTP + "/index.html")
 assert(http.statusMessage == "OK")
