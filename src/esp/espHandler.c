@@ -167,7 +167,7 @@ static void startEsp(HttpQueue *q)
             return;
         }
         if (req->autoFinalize) {
-            if (!conn->responded) {
+            if (!conn->tx->responded) {
                 espRenderView(conn, 0);
             }
             if (req->autoFinalize) {

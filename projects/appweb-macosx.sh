@@ -30,9 +30,9 @@ ${CC} -c -o ${CONFIG}/obj/mprLib.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/
 
 ${CC} -dynamiclib -o ${CONFIG}/bin/libmpr.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/libmpr.dylib ${CONFIG}/obj/mprLib.o ${LIBS}
 
-${CC} -c -o ${CONFIG}/obj/mprSsl.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprSsl.c
+${CC} -c -o ${CONFIG}/obj/mprSsl.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc -I../packages-macosx-x64/openssl/openssl-1.0.1c/include src/deps/mpr/mprSsl.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libmprssl.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/libmprssl.dylib ${CONFIG}/obj/mprSsl.o -lmpr ${LIBS}
+${CC} -dynamiclib -o ${CONFIG}/bin/libmprssl.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -L../packages-macosx-x64/openssl/openssl-1.0.1c -install_name @rpath/libmprssl.dylib ${CONFIG}/obj/mprSsl.o -lmpr ${LIBS} -lssl -lcrypto
 
 ${CC} -c -o ${CONFIG}/obj/manager.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/manager.c
 
@@ -139,6 +139,10 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 ${CC} -c -o ${CONFIG}/obj/cgiHandler.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
 
 ${CC} -dynamiclib -o ${CONFIG}/bin/mod_cgi.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/mod_cgi.dylib ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
+
+${CC} -c -o ${CONFIG}/obj/sslModule.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/sslModule.c
+
+${CC} -dynamiclib -o ${CONFIG}/bin/mod_ssl.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/mod_ssl.dylib ${CONFIG}/obj/sslModule.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 ${CC} -c -o ${CONFIG}/obj/authpass.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/authpass.c
 

@@ -1963,7 +1963,6 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
     return 0;
 }
 
-#if BIT_WEB_SOCKETS
 static int ignoreEncodingErrors(MaState *state, cchar *key, cchar *value)
 {
     bool    on;
@@ -2020,7 +2019,6 @@ static int webSocketsPingDirective(MaState *state, cchar *key, cchar *value)
     state->route->webSocketsPingPeriod = gettime(value);
     return 0;
 }
-#endif
 
 
 bool maValidateServer(MaServer *server)
@@ -2563,7 +2561,6 @@ int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "<VirtualHost", virtualHostDirective);
     maAddDirective(appweb, "</VirtualHost", closeDirective);
 
-#if BIT_WEB_SOCKETS
     maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrors);
     maAddDirective(appweb, "LimitWebSockets", limitWebSocketsDirective);
     maAddDirective(appweb, "LimitWebSocketsMessage", limitWebSocketsMessageDirective);
@@ -2571,7 +2568,6 @@ int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitWebSocketsPacket", limitWebSocketsPacketDirective);
     maAddDirective(appweb, "WebSocketsProtocol", webSocketsProtocolDirective);
     maAddDirective(appweb, "WebSocketsPing", webSocketsPingDirective);
-#endif
 
 #if !BIT_ROM
     maAddDirective(appweb, "AccessLog", accessLogDirective);

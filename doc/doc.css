@@ -528,10 +528,10 @@ div.note {
 	-webkit-box-shadow: 5px 5px 9px #888;
 }
 
-tt,em {
+tt,em,i {
     font-weight: bold;
     font-style: normal;
-    font-size: 110%;
+    font-size: 100%;
     color: #AA0000;
 	font-family: Consolas, Monaco, Courier, Monaco, Courier, Courier New, Courier, monospace; 
 }

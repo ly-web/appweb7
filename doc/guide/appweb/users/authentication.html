@@ -54,6 +54,7 @@
                 <li><a href="../../../guide/appweb/users/modules.html">Appweb Modules</a></li>
                 <li><a href="../../../guide/appweb/users/stages.html">Pipeline Stages</a></li>
                 <li><a href="../../../guide/appweb/users/client.html">HTTP Client</a></li>
+                <li><a href="../../../guide/appweb/users/webSockets.html">WebSockets</a></li>
                 <li><a href="../../../guide/appweb/users/frameworks.html">Web Frameworks</a></li>
                 <li><a href="../../../ref/appweb/architecture.html">Appweb Architecture</a></li>
             </ul>
@@ -86,7 +87,6 @@
             mechanism that is more integrated into the overall look-and-feel of the application. Such login facilities
             are defined using web forms and HTTP POST requests from standard web page forms. Appweb calls this scheme the
             the Form-based authentication scheme.</p>
-
             <h2 class="section">Basic Authentication</h2>
             <p>Basic authentication was the original HTTP/1.0 authentication scheme. It transmits user names and
             passwords using a trivial encoding that is no better than using plain text.</p>
@@ -157,14 +157,12 @@
             and password are validated against the designated user.db password file. The essential differences between
             this example and the Basic Authentication example is the AuthType directive.</p><a id="auth"></a>
             <a id="formAuthentication"></a>
-
             <h2 class="section">Form Authentication</h2>
             <p>The Form-based authentication scheme uses a standard web page form that prompts for the user to enter their
             name and password. These values are then submitted to Appweb via a standard Http POST request. Appweb
             analyzes the user and password, and if authenticated, a login session is created and a cookie is returned 
             to the users's browser. Subsequent requests that include the cookie will be automatically authenticated and
             served.</p>
-
             <p>The <a href="dir/auth.html#authType">AuthType form</a> directive controls how Form authentication
             operates. The form variant of AuthType specifies the login web page, the login service URI, the logout 
             service URI and the destination web page once authenticated. The format is:
@@ -181,7 +179,6 @@
             and password to the <tt>/auth/login</tt> login service. When logout is required, the client should submit
             a HTTP POST request to the logout service URI <tt>/auth/logout</tt>. The last field in the AuthType
             directive is the destination URI to which the client's browser will be redirected once logged in. </p>
-
             <h3>Login Service</h3>
             <p>The Login-Service is URI that is bound to an internal service to receive the <tt>username</tt> and 
             <tt>password</tt> and authenticate the user. This service expects the username/password to be submitted 
@@ -233,7 +230,6 @@ Listen 443
 <pre>
 AuthStore pam
 </pre>
-
 or 
 <pre>
 AuthStore internal
@@ -249,7 +245,6 @@ User julie 9d8873a123eb506e7f8e84d1f2a26916 view
 <pre>
 include auth.conf
 </pre>
-
             <h2 class="section">Password Program</h2>
             <p>The <tt>authpass</tt> program supports the <tt>internal</tt> AuthStore and is used to create user
             passwords in an authentication file. Appweb uses the same authorization file and format for Basic, Digest
@@ -285,7 +280,7 @@ authpass [-c] [-p passWord] authFile realm username roles...
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
-            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
     <script src="http://www.google.com/jsapi" type="text/javascript"></script>

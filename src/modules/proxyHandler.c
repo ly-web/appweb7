@@ -6,8 +6,11 @@
     LoadModule proxyHandler mod_proxy
     AddHandler proxyHandler 
 
-    ProxyPass /prefix http://ipaddr:port/uri timeout=NN keepalive=NN min=NN max=NN buffer=NN rewrite=headers,body
-        /prefix creates a location block
+    <Route /proxy>
+        ProxyPass http://ipaddr:port/uri timeout=NN keepalive=NN min=NN max=NN buffer=NN rewrite=headers,body
+    </Route>
+
+    Notes:
         rewrite rewrites Header and body URIs to appear to come from the proxy. Default == headers
 
     Headers:

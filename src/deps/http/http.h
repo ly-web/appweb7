@@ -4,8 +4,6 @@
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
 
-#define BIT_WEB_SOCKETS 1
-
 #ifndef _h_HTTP
 #define _h_HTTP 1
 
@@ -64,13 +62,11 @@ struct HttpUser;
     #define HTTP_CLIENTS_HASH          (131)                /**< Hash table for client IP addresses */
     #define HTTP_MAX_ROUTE_MATCHES     32                   /**< Maximum number of submatches in routes */
 
-#if BIT_WEB_SOCKETS
     #define HTTP_MAX_WSS_SOCKETS       20                   /**< Support up to 5 simultaneous sockets */
     #define HTTP_MAX_WSS_MESSAGE       (64 * 1024)          /**< Maximum message size */
     #define HTTP_MAX_WSS_FRAME         (1024)               /**< Maximum message frame size */
     #define HTTP_MAX_WSS_PACKET        (8 * 1024)           /**< Maximum size provided to application code in one packet */
-    #define HTTP_WSS_PING_PERIOD       20                   /**< Send ping message every 30sec to defeat Keep-Alive timeouts*/
-#endif
+    #define HTTP_WSS_PING_PERIOD       20                   /**< Send ping every 30sec to defeat Keep-Alive timeouts */
 
 #elif BIT_TUNE == MPR_TUNE_BALANCED
     /*  
@@ -207,9 +203,7 @@ struct HttpUser;
     @param flags Additional http state information
     @ingroup HttpConn
  */
-typedef void (*HttpNotifier)(struct HttpConn *conn, int state, int flags);
-//  MOB
-typedef void (*HttpWebSocketNotifier)(struct HttpConn *conn, int status, int flags);
+typedef void (*HttpNotifier)(struct HttpConn *conn, int event, int arg);
 
 /**
     Set environment vars callback. Invoked per request to permit custom form var definition
@@ -235,7 +229,12 @@ typedef int (*HttpListenCallback)(struct HttpEndpoint *endpoint);
  */
 typedef cchar *(*HttpRedirectCallback)(struct HttpConn *conn, int *code, struct HttpUri *uri);
 
-//MOB
+/**
+    Timeout callback
+    @description The timeout callback for the request inactivity and duration timeouts
+    @param conn HttpConn connection object created via $httpCreateConn
+    @ingroup HttpConn
+  */
 typedef void (*HttpTimeoutCallback)(struct HttpConn *conn);
 
 /**
@@ -492,13 +491,11 @@ typedef struct HttpLimits {
     MprTime requestTimeout;         /**< Default time a request can take (msec) */
     MprTime sessionTimeout;         /**< Default time a session can persist (msec) */
 
-#if BIT_WEB_SOCKETS
     MprTime webSocketsPing;         /**< Time between pings */
     int     webSocketsMax;          /**< Maximum number of WebSockets */
     ssize   webSocketsMessageSize;  /**< Maximum total size of a WebSocket message including all frames */
     ssize   webSocketsFrameSize;    /**< Maximum size of a WebSocket frame on the wire */
     ssize   webSocketsPacketSize;   /**< Maximum size of a WebSocket packet exchanged with the user */
-#endif
 } HttpLimits;
 
 /**
@@ -556,9 +553,7 @@ typedef struct HttpUri {
     char        *query;                 /**< Query string */
     int         port;                   /**< Port number */
     int         secure;                 /**< Using https */
-    //MOB - confusing is this SSL or not? Rename webSockets
-    int         wss;                    /**< Using web sockets */
-    //  MOB - rename url
+    int         webSockets;             /**< Using web sockets */
     char        *uri;                   /**< Original URI (not decoded) */
 } HttpUri;
 
@@ -581,11 +576,10 @@ extern HttpUri *httpCloneUri(HttpUri *base, int flags);
         does not allocate or create a new URI.
     @param uri URI to complete
     @param other Other URI to supply the missing components
-    @param flags Reserved.
     @return The supplied URI.
     @ingroup HttpUri
   */
-extern HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *other, int flags);
+extern HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *other);
 
 /** 
     Create and initialize a URI.
@@ -1632,12 +1626,20 @@ extern int httpOpenWebSockFilter(Http *http);
 
 /********************************** HttpConn *********************************/
 /** 
-    Notification flags
+    Notifier events
  */
-#define HTTP_NOTIFY_READABLE        0x1     /**< The request has data available for reading */
-#define HTTP_NOTIFY_WRITABLE        0x2     /**< The request is now writable (post / put data) */
-#define HTTP_NOTIFY_CLOSED          0x4     /**< The request is now closed */
-#define HTTP_NOTIFY_ERROR           0x8     /**< The request has an error */
+#define HTTP_EVENT_STATE            1       /**< The request is changing state */
+#define HTTP_EVENT_READABLE         2       /**< The request has data available for reading */
+#define HTTP_EVENT_WRITABLE         3       /**< The request is now writable (post / put data) */
+#define HTTP_EVENT_ERROR            4       /**< The request has an error */
+#define HTTP_EVENT_DESTROY          5       /**< The request is being destroyed */
+
+/*
+    Application level events 
+ */
+#define HTTP_EVENT_APP_OPEN         6       /**< The request is now open */
+#define HTTP_EVENT_APP_CLOSE        7       /**< The request is now closed */
+#define HTTP_EVENT_MAX              8
 
 /*  
     Connection / Request states
@@ -1650,12 +1652,6 @@ extern int httpOpenWebSockFilter(Http *http);
 #define HTTP_STATE_READY            6       /**< Handler ready - all body data received  */
 #define HTTP_STATE_RUNNING          7       /**< Handler running */
 #define HTTP_STATE_COMPLETE         8       /**< Request complete */
-
-/*
-    I/O Events
-*/
-#define HTTP_EVENT_CLOSE           -1       /**< Connection being closed */
-#define HTTP_EVENT_IO               0       /**< I/O event on connection */
 
 /*
     Limit validation events
@@ -1747,11 +1743,10 @@ extern void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
         httpCreateTxPipeline httpDestroyConn httpDestroyPipeline httpDiscardData httpDisconnect 
         httpEnableUpload httpError httpEvent httpGetAsync httpGetChunkSize httpGetConnContext httpGetConnHost 
         httpGetError httpGetExt httpGetKeepAliveCount httpMatchHost httpMemoryError httpPrepClientConn 
-        httpPrepServerConn httpResetCredentials httpRouteRequest httpProcessHandler httpRunHandlerReady
+        httpPrepServerConn httpPumpHandler httpResetCredentials httpRouteRequest httpRunHandlerReady
         httpServiceQueues httpSetAsync httpSetChunkSize httpSetConnContext httpSetConnHost httpSetConnNotifier
         httpSetCredentials httpSetKeepAliveCount httpSetPipelineHandler httpSetProtocol httpSetRetries
         httpSetSendConnector httpSetState httpSetTimeout httpSetTimestamp httpShouldTrace httpStartPipeline
-        httpNotifyReadable httpNotifyWritable  
  */
 typedef struct HttpConn {
     /*  Ordered for debugability */
@@ -1765,11 +1760,13 @@ typedef struct HttpConn {
     int             error;                  /**< A request error has occurred */
     int             connError;              /**< A connection error has occurred */
 
+#if UNUSED
     int             responded;              /**< The request has started to respond. Some output has been initiated. */
     int             finalized;              /**< End of response has been signified (set at handler level) */
     int             connectorComplete;      /**< Connector has finished sending the response */
-    int             inHttpProcess;          /**< Rre-entrancy prevention for httpProcess() */
     int             refinalize;             /**< Finalize required once the Tx pipeline is created */
+#endif
+    int             inHttpProcess;          /**< Rre-entrancy prevention for httpProcess() */
 
     HttpLimits      *limits;                /**< Service limits */
     Http            *http;                  /**< Http service object  */
@@ -1778,7 +1775,6 @@ typedef struct HttpConn {
     MprDispatcher   *newDispatcher;         /**< New dispatcher if using a worker thread */
     MprDispatcher   *oldDispatcher;         /**< Original dispatcher if using a worker thread */
     HttpNotifier    notifier;               /**< Connection Http state change notification callback */
-    HttpWebSocketNotifier webSocketNotifier;/**< Notifier for web sockets */
     MprWaitHandler  *waitHandler;           /**< I/O wait handler */
     MprSocket       *sock;                  /**< Underlying socket handle */
 
@@ -1804,6 +1800,7 @@ typedef struct HttpConn {
     char            *errorMsg;              /**< Error message for the last request (if any) */
     char            *ip;                    /**< Remote client IP address */
     char            *protocol;              /**< HTTP protocol */
+    char            *protocols;             /**< Supported web socket protocols (clients) */
     int             async;                  /**< Connection is in async mode (non-blocking) */
     int             canProceed;             /**< State machine should continue to process the request */
     int             followRedirects;        /**< Follow redirects for client requests */
@@ -1823,7 +1820,6 @@ typedef struct HttpConn {
     /*  
         Authentication
      */
-    //  MOB - move some into Tx/Rx
     int             setCredentials;         /**< Authorization headers set from credentials */
     char            *authType;              /**< Type of authentication: set to basic, digest, post or a custom name */
     void            *authData;              /**< Authorization state data */
@@ -1837,9 +1833,6 @@ typedef struct HttpConn {
     HttpHeadersCallback headersCallback;    /**< Callback to fill headers */
     void            *headersCallbackArg;    /**< Arg to fillHeaders */
 
-#if BIT_WEB_SOCKETS
-    char            *protocols;             /**< Supported web socket protocols (clients) */
-#endif
 #if BIT_DEBUG
     MprTime         startTime;              /**< Start time of request */
     uint64          startTicks;             /**< Start tick time of request */
@@ -1889,7 +1882,6 @@ extern void httpConnTimeout(HttpConn *conn);
  */
 extern void httpConsumeLastRequest(HttpConn *conn);
 
-//  MOB - should not require http service object
 /** 
     Create a connection object.
     @description Most interactions with the Http library are via a connection object. It is used for server-side 
@@ -2069,18 +2061,21 @@ extern void httpMatchHost(HttpConn *conn);
 extern void httpMemoryError(HttpConn *conn);
 
 /**
-    Inform notifiers that the connection is now readable
+    Inform notifiers of a connection event or state chagne
     @param conn HttpConn object created via $httpCreateConn
+    @param event Event to issue
+    @param arg Argument to event
     @ingroup HttpConn
  */ 
-extern void httpNotifyReadable(HttpConn *conn);
+extern void httpNotify(HttpConn *conn, int event, int arg);
 
-/**
-    Inform notifiers that the connection is now writable
-    @param conn HttpConn object created via $httpCreateConn
-    @ingroup HttpConn
- */ 
-extern void httpNotifyWritable(HttpConn *conn);
+#define HTTP_NOTIFY(conn, event, arg) \
+    if (1) { \
+        if (conn->notifier) { \
+            httpNotify(conn, event, arg); \
+        } \
+    } else \
+
 
 /**
     Prepare a connection for a new request. This is used internally when using Keep-Alive.
@@ -2090,13 +2085,13 @@ extern void httpNotifyWritable(HttpConn *conn);
 extern void httpPrepServerConn(HttpConn *conn);
 
 /**
-    Run the handler process callback.
+    Pump the handler by invoking the writable callback.
     @description This optional handler callback is invoked when the service queue has room for more data.
     @param conn HttpConn object created via $httpCreateConn
-    @return True if the handler output callback exists and can be invoked.
+    @return True if the handler writable callback exists and can be invoked.
     @ingroup HttpConn
  */
-extern int httpProcessHandler(HttpConn *conn);
+extern bool httpPumpHandler(HttpConn *conn);
 
 /**
     Prepare a client connection for a new request. 
@@ -2171,12 +2166,24 @@ extern void httpSetConnHost(HttpConn *conn, void *host);
 
 /** 
     Define a notifier callback for this connection.
-    @description The notifier callback will be invoked as Http requests are processed.
+    @description The notifier callback will be invoked for state changes and I/O events as Http requests are processed.
+    The supported events are:
+    <ul>
+    <li>HTTP_EVENT_STATE &mdash; The request is changing state. Valid states are:
+        HTTP_STATE_BEGIN, HTTP_STATE_CONNECTED, HTTP_STATE_FIRST, HTTP_STATE_CONTENT, HTTP_STATE_READY,
+        HTTP_STATE_RUNNING, HTTP_STATE_COMPLETE</li>
+    <li>HTTP_EVENT_READABLE &mdash; There is data available to read</li>
+    <li>HTTP_EVENT_WRITABLE &mdash; The outgoing pipeline can absorb more data</li>
+    <li>HTTP_EVENT_ERROR &mdash; The request has encountered an error</li>
+    <li>HTTP_EVENT_DESTROY &mdash; The request structure is about to be destoyed</li>
+    <li>HTTP_EVENT_OPEN &mdash; The application layer is now open</li>
+    <li>HTTP_EVENT_CLOSE &mdash; The application layer is now closed</li>
+    </ul>
     @param conn HttpConn connection object created via $httpCreateConn
-    @param fn Notifier function. 
+    @param notifier Notifier function. 
     @ingroup HttpConn
  */
-extern void httpSetConnNotifier(HttpConn *conn, HttpNotifier fn);
+void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier);
 
 /** 
     Set the Http credentials
@@ -2297,6 +2304,13 @@ extern void httpStartPipeline(HttpConn *conn);
     @return The connection socket object.
  */
 extern MprSocket *httpStealConn(HttpConn *conn);
+
+/**
+    Verify the server handshake
+    @param conn HttpConn connection object created via $httpCreateConn
+    @return True if the handshake is valid
+ */
+extern bool httpVerifyWebSocketsHandshake(HttpConn *conn);
 
 /** Internal APIs */
 extern struct HttpConn *httpAccept(struct HttpEndpoint *endpoint);
@@ -2481,8 +2495,19 @@ extern int httpAddUser(HttpAuth *auth, cchar *user, cchar *password, cchar *abil
  */
 extern bool httpCanUser(HttpConn *conn);
 
-//MOB
+/**
+    Compute all the user abilities for a route using the given auth
+    @param auth Auth object allocated by #httpCreateAuth
+    @ingroup HttpAuth
+ */
 extern void httpComputeAllUserAbilities(HttpAuth *auth);
+
+/**
+    Compute the user abilities for a given user in a route using the given auth
+    @param auth Auth object allocated by #httpCreateAuth
+    @param user User object
+    @ingroup HttpAuth
+ */
 extern void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
 
 /**
@@ -2649,16 +2674,6 @@ extern void httpSetAuthRealm(HttpAuth *auth, cchar *realm);
     @ingroup HttpAuth
  */
 extern void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities);
-
-#if UNUSED
-/**
-    Control if SSL communications is required
-    @param auth Auth object allocated by #httpCreateAuth.
-    @param enable Set to TRUE to enable SSL communications.
-    @ingroup HttpAuth
- */
-extern void httpSetAuthSecure(HttpAuth *auth, int enable);
-#endif
 
 /**
     Set the authentication password store to use
@@ -2961,11 +2976,9 @@ typedef struct HttpRoute {
     struct MprSsl   *ssl;                   /**< SSL configuration */
     MprMutex        *mutex;                 /**< Multithread sync */
 
-#if BIT_WEB_SOCKETS
     char            *webSocketsProtocol;    /**< WebSockets sub-protocol */
     MprTime         webSocketsPingPeriod;   /**< Time between pings (msec) */
     int             ignoreEncodingErrors;   /**< Ignore UTF8 encoding errors */
-#endif
 } HttpRoute;
 
 
@@ -3974,7 +3987,6 @@ extern MprHash *httpGetSessionObj(HttpConn *conn, cchar *key);
 
 /**
     Get a session state variable.
-    @description
     @param conn Http connection object
     @param name Variable name to get
     @param defaultValue If the variable does not exist, return the defaultValue.
@@ -3983,8 +3995,14 @@ extern MprHash *httpGetSessionObj(HttpConn *conn, cchar *key);
  */
 extern cchar *httpGetSessionVar(HttpConn *conn, cchar *name, cchar *defaultValue);
 
-//  MOB
-extern int httpRemoveSessionVar(HttpConn *conn, cchar *key);
+/**
+    Remove a session state variable
+    @param conn Http connection object
+    @param name Variable name to remove
+    @return Zero if successful, otherwise a negative MPR error code.
+    @ingroup HttpSession
+ */
+extern int httpRemoveSessionVar(HttpConn *conn, cchar *name);
 
 /**
     Set a session variable.
@@ -4030,7 +4048,6 @@ typedef struct HttpUploadFile {
     cchar           *contentType;           /**< Content type */
     ssize           size;                   /**< Uploaded file size */
 } HttpUploadFile;
-
 
 /**
     Add an Uploaded file
@@ -4100,7 +4117,7 @@ extern void httpRemoveUploadFile(HttpConn *conn, cchar *id);
     @defgroup HttpRx HttpRx
     @see HttpConn HttpRx HttpTx httpAddBodyVars httpAddParamsFromBuf httpAddParamsFromQueue httpContentNotModified 
         httpCreateCGIParams httpGetContentLength httpGetCookies httpGetParam httpGetParams httpGetHeader 
-        httpGetHeaderHash httpGetHeaders httpGetIntParam httpGetLanguage httpGetQueryString httpGetStatus 
+        httpGetHeaderHash httpGetHeaders httpGetIntParam httpGetLanguage httpGetQueryString httpGetReadCount httpGetStatus 
         httpGetStatusMessage httpMatchParam httpRead httpReadString httpSetParam httpSetIntParam httpSetUri 
         httpTestParam httpTrimExtraPath 
  */
@@ -4131,7 +4148,8 @@ typedef struct HttpRx {
 
     int             authenticated;          /**< Request has been authenticated */
     int             chunkState;             /**< Chunk encoding state */
-    int             state;                  /**< Packet framing state */
+    int             frameState;             /**< WebSockets message frame state */
+    int             webSockState;           /**< WebSockets state */
     int             flags;                  /**< Rx modifiers */
     int             form;                   /**< Using mime-type application/x-www-form-urlencoded */
     int             streamInput;            /**< Streaming read data. Means !form */
@@ -4186,7 +4204,6 @@ typedef struct HttpRx {
     char            *uploadDir;             /**< Upload directory */
     int             autoDelete;             /**< Automatically delete uploaded files */
 
-#if BIT_WEB_SOCKETS
     /*
         WebSockets fields
      */
@@ -4206,7 +4223,7 @@ typedef struct HttpRx {
     char            *webSockKey;            /**< Sec-WebSocket-Key header */
     char            *webSockProtocols;      /**< Sec-WebSocket-Protocol header */
     int             webSockVersion;         /**< Sec-WebSocket-Version header */
-#endif
+
     /*
         Routing info
      */
@@ -4369,6 +4386,13 @@ extern HttpLang *httpGetLanguage(HttpConn *conn, MprHash *spoken, cchar *default
  */
 extern cchar *httpGetQueryString(HttpConn *conn);
 
+/**
+    Get the number of bytes that can be read from the connection
+    @param conn HttpConn connection object
+    @return The number of bytes available in the read queue for the connection
+ */
+extern ssize httpGetReadCount(HttpConn *conn);
+
 /** 
     Get the response status 
     @param conn HttpConn connection object created via $httpCreateConn
@@ -4528,16 +4552,20 @@ extern void httpProcessWriteEvent(HttpConn *conn);
  */
 typedef struct HttpTx {
     /* Ordered for debugging */
-    //  OPT ordering
     MprOff          bytesWritten;           /**< Bytes written including headers */
     MprOff          entityLength;           /**< Original content length before range subsetting */
     ssize           chunkSize;              /**< Chunk size to use when using transfer encoding. Zero for unchunked. */
     cchar           *ext;                   /**< Filename extension */
     char            *etag;                  /**< Unique identifier tag */
     char            *filename;              /**< Name of a real file being served (typically pathInfo mapped) */
-    int             flags;                  /**< Response flags */
     HttpStage       *handler;               /**< Server-side request handler stage */
     MprOff          length;                 /**< Transmission content length */
+
+    int             flags;                  /**< Response flags */
+    int             connectorComplete;      /**< Connector has finished sending the response */
+    int             finalized;              /**< End of response has been signified (set at handler level) */
+    int             refinalize;             /**< Finalize required once the Tx pipeline is created */
+    int             responded;              /**< The request has started to respond. Some output has been initiated. */
     int             started;                /**< Handler has started */
     int             status;                 /**< HTTP response status */
 
@@ -4568,9 +4596,7 @@ typedef struct HttpTx {
     MprPath         fileInfo;               /**< File information if there is a real file to serve */
     ssize           headerSize;             /**< Size of the header written */
 
-#if BIT_WEB_SOCKETS
     char            *webSockKey;            /**< Sec-WebSocket-Key header */
-#endif
 } HttpTx;
 
 /** 
@@ -4979,13 +5005,6 @@ typedef struct HttpEndpoint {
     struct MprSsl   *ssl;                   /**< Endpoint SSL configuration */
 } HttpEndpoint;
 
-#define HTTP_NOTIFY(conn, state, flags) \
-    if (1) { \
-        if (conn->notifier) { \
-            (conn->notifier)(conn, state, flags); \
-        } \
-    } else \
-
 /**
     Accept a new connection.
     Accept a new client connection on a new socket. If multithreaded, this will come in on a worker thread 
@@ -5248,6 +5267,21 @@ extern HttpHost *httpCreateHost(cchar *home);
 HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, cchar *target, cchar *source);
 
 /**
+    Get the default host defined via httpSetDefaultHost
+    @return The defaul thost object
+    @ingroup HttpHost
+ */
+extern HttpHost *httpGetDefaultHost();
+
+/**
+    Get the default route for a host
+    @param host Host object
+    @return The default route for the host
+    @ingroup HttpRoute
+ */
+extern HttpRoute *httpGetDefaultRoute(HttpHost *host);
+
+/**
     Return the default route for a host
     @description The host has a default route which holds default configuration. Typically the default route
         is not directly used when routing URIs. Rather other routes inherit from the default route and are used to 
@@ -5290,7 +5324,21 @@ extern HttpRoute *httpLookupRoute(HttpHost *host, cchar *name);
  */
 extern void httpResetRoutes(HttpHost *host);
 
-//  MOB SORT
+/**
+    Set the default host for all servers.
+    @param host Host to define as the default host
+    @ingroup HttpHost
+ */
+extern void httpSetDefaultHost(HttpHost *host);
+
+/**
+    Set the default endpoint for a host
+    @description The host may have a default endpoint that is used when doing redirections to http.
+    @param host Host to examine.
+    @param endpoint Secure endpoint to use as the default
+ */
+extern void httpSetHostDefaultEndpoint(HttpHost *host, HttpEndpoint *endpoint);
+
 /**
     Set the default route for a host
     @description The host has a default route which holds default configuration. Typically the default route
@@ -5309,36 +5357,6 @@ extern void httpSetHostDefaultRoute(HttpHost *host, HttpRoute *route);
     @param endpoint Secure endpoint to use as the default
  */
 extern void httpSetHostSecureEndpoint(HttpHost *host, HttpEndpoint *endpoint);
-
-/**
-    Set the default endpoint for a host
-    @description The host may have a default endpoint that is used when doing redirections to http.
-    @param host Host to examine.
-    @param endpoint Secure endpoint to use as the default
- */
-extern void httpSetHostDefaultEndpoint(HttpHost *host, HttpEndpoint *endpoint);
-
-/**
-    Set the default host for all servers.
-    @param host Host to define as the default host
-    @ingroup HttpHost
- */
-extern void httpSetDefaultHost(HttpHost *host);
-
-/**
-    Get the default host defined via httpSetDefaultHost
-    @return The defaul thost object
-    @ingroup HttpHost
- */
-extern HttpHost *httpGetDefaultHost();
-
-/**
-    Get the default route for a host
-    @param host Host object
-    @return The default route for the host
-    @ingroup HttpRoute
- */
-extern HttpRoute *httpGetDefaultRoute(HttpHost *host);
 
 /**
     Set the home directory for a host
@@ -5388,19 +5406,28 @@ extern int httpStartHost(HttpHost *host);
 extern void httpStopHost(HttpHost *host);
 
 /********************************* Web Sockets *************************************/
-#if BIT_WEB_SOCKETS
+/** 
+    WebSockets Service
+    @stability Prototype
+    @defgroup HttpWebSockets HttpWebSockets
+    @see httpGetWebSocketCloseReason httpGetWebSocketProtocol httpSend httpSendBlock httpSendClose
+        httpSetWebSocketProtocols httpWebSocketOrderlyClosed
+ */
+typedef struct WebSocket {
+    int     reserved;
+} WebSocket;
 
-#define WEB_SOCKETS_VERSION     13
-#define WEB_SOCKETS_MAGIC       "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+#define WS_VERSION     13
+#define WS_MAGIC       "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 /*
-    httpWebSockSend message types
+    httpSendBlock message types
  */
-#define WS_MSG_CLOSE    0
-#define WS_MSG_TEXT     1
-#define WS_MSG_BINARY   2
-#define WS_MSG_PING     3
-#define WS_MSG_PONG     4
+#define WS_MSG_CLOSE    0       /**< httpSendBlock type for close message */
+#define WS_MSG_TEXT     1       /**< httpSendBlock type for text messages */
+#define WS_MSG_BINARY   2       /**< httpSendBlock type for binary messages */
+#define WS_MSG_PING     3       /**< httpSendBlock type for ping messages */
+#define WS_MSG_PONG     4       /**< httpSendBlock type for pong messages */
 
 /*
     Close message status codes
@@ -5410,34 +5437,113 @@ extern void httpStopHost(HttpHost *host);
     3000-3999   Library use
     4000-4999   Application use
  */
-#define WS_STATUS_OK                   1000
-#define WS_STATUS_GOING_AWAY           1001
-#define WS_STATUS_PROTOCOL_ERROR       1002
-#define WS_STATUS_UNSUPPORTED_TYPE     1003
-#define WS_STATUS_FRAME_TOO_LARGE      1004
-#define WS_STATUS_NO_STATUS            1005
-#define WS_STATUS_COMMS_ERROR          1006
-#define WS_STATUS_INVALID_UTF8         1007
-#define WS_STATUS_POLICY_VIOLATION     1008
-#define WS_STATUS_MESSAGE_TOO_LARGE    1009
-#define WS_STATUS_MISSING_EXTENSION    1010
-#define WS_STATUS_INTERNAL_ERROR       1011
-#define WS_STATUS_TLS_ERROR            1015
+#define WS_STATUS_OK                   1000     /**< Normal closure */
+#define WS_STATUS_GOING_AWAY           1001     /**< Endpoint is going away. Server down or browser navigating away */
+#define WS_STATUS_PROTOCOL_ERROR       1002     /**< WebSockets protocol error */
+#define WS_STATUS_UNSUPPORTED_TYPE     1003     /**< Unsupported message data type */
+#define WS_STATUS_FRAME_TOO_LARGE      1004     /**< Message frame is too large */
+#define WS_STATUS_NO_STATUS            1005     /**< No status was received from the peer in closing */
+#define WS_STATUS_COMMS_ERROR          1006     /**< TCP/IP communications error  */
+#define WS_STATUS_INVALID_UTF8         1007     /**< Text message has invalid UTF-8 */
+#define WS_STATUS_POLICY_VIOLATION     1008     /**< Application level policy violation */
+#define WS_STATUS_MESSAGE_TOO_LARGE    1009     /**< Message is too large */
+#define WS_STATUS_MISSING_EXTENSION    1010     /**< Unsupported WebSockets extension */
+#define WS_STATUS_INTERNAL_ERROR       1011     /**< Server terminating due to an internal error */
+#define WS_STATUS_TLS_ERROR            1015     /**< TLS handshake error */
 
-extern int httpWebSockUpgrade(HttpConn *conn);
+/*
+    WebSocket states (rx->webSockState)
+ */
+#define WS_STATE_CONNECTING     0               /**< WebSocket connection is being established */
+#define WS_STATE_OPEN           1               /**< WebSocket handsake is complete and ready for communications */
+#define WS_STATE_CLOSING        2               /**< WebSocket is closing */
+#define WS_STATE_CLOSED         3               /**< WebSocket is closed */
 
-//  MOB - name too long
-//  MOB - doc
+/**
+    Get the close reason supplied by the peer.
+    @param conn HttpConn connection object created via $httpCreateConn
+    @return The reason string supplied by the peer when closing the web socket.
+    @ingroup WebSocket
+    @stability Prototype
+ */
+extern char *httpGetWebSocketCloseReason(HttpConn *conn);
+
+/**
+    Get the selected web socket protocol selected by the server
+    @param conn HttpConn connection object created via $httpCreateConn
+    @return The web socket protocol string
+    @ingroup WebSocket
+    @stability Prototype
+ */
+extern char *httpGetWebSocketProtocol(HttpConn *conn);
+
+/**
+    Send a UTF-8 text message to the web socket peer
+    @param conn HttpConn connection object created via $httpCreateConn
+    @param fmt Printf style formatted string
+    @param ... Arguments for the format
+    @return Number of bytes written
+    @ingroup WebSocket
+    @stability Prototype
+ */
 extern ssize httpSend(HttpConn *conn, cchar *fmt, ...);
+
+/**
+    Send a message of a given type to the web socket peer
+    @param conn HttpConn connection object created via $httpCreateConn
+    @param type Web socket message type. Choose from WS_MSG_TEXT, WS_MSG_BINARY or WS_MSG_PING. 
+        Use httpSendClose to send a close message. Do not send a WS_MSG_PONG message as it is generated internally
+        by the Web Sockets module.
+    @param buf Data buffer to send
+    @param len Length of buf
+    @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
+        MPR error code.
+    @ingroup WebSocket
+    @stability Prototype
+ */
 extern ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len);
+
+/**
+    Send a close message to the web socket peer
+    @param conn HttpConn connection object created via $httpCreateConn
+    @param status Web socket status
+    @param reason Optional reason text message. The reason must be less than 124 bytes in length.
+    @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
+        MPR error code.
+    @ingroup WebSocket
+    @stability Prototype
+ */
 extern void httpSendClose(HttpConn *conn, int status, cchar *reason);
-extern char *httpGetWebSockProtocol(HttpConn *conn);
-extern HttpWebSocketNotifier httpSetWebSocketNotifier(HttpConn *conn, HttpWebSocketNotifier fn);
+
+/**
+    Set a list of application-level protocols supported by the client
+    @param conn HttpConn connection object created via $httpCreateConn
+    @param protocols Comma separated list of application-level protocols
+    @ingroup WebSocket
+    @stability Prototype
+ */
 extern void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols);
-extern ssize httpGetReadCount(HttpConn *conn);
-extern char *httpGetCloseReason(HttpConn *conn);
-extern bool httpWasOrderlyClose(HttpConn *conn);
-#endif
+
+/**
+    Upgrade a client HTTP connection connection to use WebSockets
+    @description This requests an upgrade to use WebSockets. Note this is the upgrade request and the
+        confirmation handshake response must still be received and validated. The connection must be upgraded
+        before sending any data to the server.
+    @param conn HttpConn connection object created via $httpCreateConn
+    @return Return Zero if the connection upgrade can be requested.
+    @stability Prototype
+    @internal
+ */
+extern int httpUpgradeWebSocket(HttpConn *conn);
+
+/**
+    Test if web socket connection was orderly closed by sending an acknowledged close message
+    @param conn HttpConn connection object created via $httpCreateConn
+    @return True if the web socket was orderly closed.
+    @ingroup WebSocket
+    @stability Prototype
+ */
+extern bool httpWebSocketOrderlyClosed(HttpConn *conn);
 
 /************************************ Misc *****************************************/
 /**

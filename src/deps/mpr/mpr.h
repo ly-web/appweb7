@@ -604,7 +604,7 @@ typedef int64 MprOff;
 
 /**
     Date and Time Service
-    @stability Evolving
+    @stability Stable
     @see MprTime mprCompareTime mprCreateTimeService mprDecodeLocalTime mprDecodeUniversalTime mprFormatLocalTime 
         mprFormatTm mprGetDate mprGetElapsedTime mprGetRemainingTime mprGetTicks mprGetTimeZoneOffset mprMakeTime 
         mprMakeUniversalTime mprParseTime 
@@ -1579,7 +1579,7 @@ extern void assure(bool cond);
         mprAtomicListInsert mprCreateCond mprCreateLock mprCreateSpinLock mprGlobalLock mprGlobalUnlock mprInitLock 
         mprInitSpinLock mprLock mprResetCond mprSignalCond mprSignalMultiCond mprSpinLock mprSpinUnlock mprTryLock 
         mprTrySpinLock mprUnlock mprWaitForCond mprWaitForMultiCond 
-    @stability Evolving.
+    @stability Stable.
     @defgroup MprSynch MprSynch
  */
 typedef struct MprSynch { int dummy; } MprSynch;
@@ -2006,7 +2006,7 @@ extern void *mprAtomicExchange(void * volatile *target, cvoid *value);
     their manager routines to run and so on, until all active blocks have been marked. Non-marked blocks can then safely
     be reclaimed as garbage. A block may alternatively be permanently marked as active by calling #mprHold.
 
-    @stability Evolving
+    @stability Stable
     @defgroup MprMem MprMem
     @see MprFreeMem MprHeap MprManager MprMemNotifier MprRegion mprAddRoot mprAlloc mprAllocMem mprAllocObj 
         mprAllocZeroed mprCreateMemService mprDestroyMemService mprEnableGC mprGetBlockSize mprGetMem 
@@ -2558,7 +2558,7 @@ extern void *mprAlloc(ssize size);
     @return Returns a pointer to the allocated block. If memory is not available the memory exhaustion handler 
         specified via mprCreate will be called to allow global recovery.
     @remarks Do not mix calls to malloc and mprAlloc.
-    @stability Evolving. This function names are highly likely to be refactored.
+    @stability Stable.
     @ingroup MprMem
  */
 extern void *mprAllocObj(Type type, MprManager manager) { return 0;}
@@ -3417,7 +3417,7 @@ extern char *mprAsprintfv(cchar *fmt, va_list arg);
 #if BIT_FLOAT
 /**
     Floating Point Services
-    @stability Evolving
+    @stability Stable
     @see mprDota mprIsInfinite mprIsNan mprIsZero 
     @defgroup MprFloat MprFloat
   */
@@ -3494,7 +3494,7 @@ typedef int (*MprBufProc)(struct MprBuf* bp, void *arg);
     \n\n
     For performance, the specification of MprBuf is deliberately exposed. All members of MprBuf are implicitly public.
     However, it is still recommended that wherever possible, you use the accessor routines provided.
-    @stability Evolving.
+    @stability Stable.
     @see MprBuf MprBufProc mprAddNullToBuf mprAddNullToWideBuf mprAdjustBufEnd mprAdjustBufStart mprCloneBuf 
         mprCompactBuf mprCreateBuf mprFlushBuf mprGetBlockFromBuf mprGetBufEnd mprGetBufLength mprGetBufOrigin 
         mprGetBufRefillProc mprGetBufSize mprGetBufSpace mprGetBufStart mprGetCharFromBuf mprGrowBuf 
@@ -4107,7 +4107,7 @@ extern int mprGetTimeZoneOffset(MprTime when);
 /**
     List data structure.
     @description The MprList is a dynamic, growable list suitable for storing pointers to arbitrary objects.
-    @stability Evolving.
+    @stability Stable.
     @see MprList MprListCompareProc mprAddItem mprAddNullItem mprAppendList mprClearList mprCloneList mprCopyList 
         mprCreateKeyPair mprCreateList mprGetFirstItem mprGetItem mprGetLastItem mprGetListCapacity mprGetListLength 
         mprGetNextItem mprGetPrevItem mprInitList mprInsertItemAtPos mprLookupItem mprLookupStringItem mprPopItem
@@ -4675,7 +4675,7 @@ extern int print(cchar *fmt, ...);
     @see MprKey MprHashProc MprHash mprAddDuplicateHash mprAddKey mprAddKeyFmt mprCloneHash mprCreateHash 
         mprGetFirstKey mprGetHashLength mprGetKeyBits mprGetNextKey mprLookupKey mprLookupKeyEntry mprRemoveKey 
         mprSetKeyBits mprBlendHash
-    @stability Evolving.
+    @stability Stable.
     @defgroup MprHash MprHash
  */
 typedef struct MprKey {
@@ -5025,7 +5025,7 @@ extern void mprSetPathNewline(cchar *path, cchar *newline);
     File I/O Module
     @description MprFile is the cross platform File I/O abstraction control structure. An instance will be
          created when a file is created or opened via #mprOpenFile.
-    @stability Evolving.
+    @stability Stable.
     @see MprFile mprAttachFileFd mprCloseFile mprDisableFileBuffering mprEnableFileBuffering mprFlushFile mprGetFileChar 
         mprGetFilePosition mprGetFileSize mprGetStderr mprGetStdin mprGetStdout mprOpenFile 
         mprPeekFileChar mprPutFileChar mprPutFileString mprReadFile mprReadLine mprSeekFile mprTruncateFile mprWriteFile 
@@ -5300,7 +5300,7 @@ extern ssize mprWriteFileString(MprFile *file, cchar *str);
 /**
     Path (filename) Information
     @description MprPath is the cross platform Path (filename) information structure.
-    @stability Evolving.
+    @stability Stable.
     @see MprDirEntry MprFile MprPath mprCopyPath mprDeletePath mprGetAbsPath mprGetCurrentPath 
         mprGetFirstPathSeparator mprGetLastPathSeparator mprGetNativePath mprGetPathBase 
         mprGetPathDir mprGetPathExt mprGetPathFiles mprGetPathLink mprGetPathNewline mprGetPathParent 
@@ -5884,7 +5884,7 @@ typedef int (*MprModuleProc)(struct MprModule *mp);
     @see MprModule MprModuleEntry MprModuleProc mprCreateModule mprGetModuleSearchPath mprLoadModule mprLoadNativeModule 
         mprLookupModule mprLookupModuleData mprSearchForModule mprSetModuleFinalizer mprSetModuleSearchPath 
         mprSetModuleTimeout mprStartModule mprStopModule mprUnloadModule mprUnloadNativeModule 
-    @stability Evolving.
+    @stability Stable.
     @defgroup MprModule MprModule
  */
 typedef struct MprModule {
@@ -6595,7 +6595,7 @@ extern void mprStopThreadService();
         arbitrary thread creation, thread priorities, thread management and thread local storage. By using these
         thread primitives with the locking and synchronization primitives offered by #MprMutex, #MprSpin and 
         #MprCond - you can create cross platform multi-threaded applications.
-    @stability Evolving
+    @stability Stable
     @see MprThread MprThreadProc MprThreadService mprCreateThread mprGetCurrentOsThread mprGetCurrentThread 
         mprGetCurrentThreadName mprGetThreadName mprGetThreadPriority mprResetYield mprSetCurrentThreadPriority 
         mprSetThreadPriority mprStartThread mprYield 
@@ -7103,7 +7103,7 @@ extern void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
     \n\n
     The socket service integrates with the MPR worker thread pool and eventing services. Socket connections can be handled
     by threads from the worker thread pool for scalable, multithreaded applications.
-    @stability Evolving
+    @stability Stable
     @see MprSocket MprSocketPrebind MprSocketProc MprSocketProvider MprSocketService mprAddSocketHandler 
         mprCloseSocket mprConnectSocket mprCreateSocket mprCreateSocketService mprCreateSsl mprCloneSsl
         mprDisconnectSocket mprEnableSocketEvents mprFlushSocket mprGetSocketBlockingMode mprGetSocketError 
@@ -8077,7 +8077,7 @@ typedef struct MprCmdFile {
     Command execution Service
     @description The MprCmd service enables execution of local commands. It uses three full-duplex pipes to communicate
         read, write and error data with the command. 
-    @stability Evolving.
+    @stability Stable.
     @see mprCloseCmdFd mprCreateCmd mprDestroyCmd mprDisableCmdEvents mprDisconnectCmd mprEnableCmdEvents 
         mprFinalizeCmd mprGetCmdBuf mprGetCmdExitStatus mprGetCmdFd mprIsCmdComplete mprIsCmdRunning mprPollCmd 
         mprReadCmd mprReapCmd mprRunCmd mprRunCmdV mprSetCmdCallback mprSetCmdDir mprSetCmdEnv mprSetCmdSearchPath 
@@ -8522,7 +8522,7 @@ extern ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime mo
 /******************************** Mime Types **********************************/
 /**
     Mime Type hash table entry (the URL extension is the key)
-    @stability Evolving
+    @stability Stable
     @defgroup MprMime MprMime
     @see MprMime mprAddMime mprCreateMimeTypes mprGetMimeProgram mprLookupMime mprSetMimeProgram
  */
@@ -8600,7 +8600,7 @@ typedef void (*MprTerminator)(int how, int status);
 /**
     Primary MPR application control structure
     @description The Mpr structure stores critical application state information.
-    @stability Evolving.
+    @stability Stable.
     @see mprAddTerminator mprBreakpoint mprCreate mprCreateOsService mprDecode64 mprDestroy mprEmptyString mprEncode64
     mprEscapeCmd mprEscapseHtml mprGetApp mprGetAppDir mprGetAppName mprGetAppPath mprGetAppTitle mprGetAppVersion
     mprGetCmdlineLogging mprGetDebugMode mprGetDomainName mprGetEndian mprGetError mprGetErrorMsg mprGetHostName
@@ -8701,7 +8701,7 @@ extern void mprNop(void *ptr);
     Return the MPR control instance.
     @description Return the MPR singleton control object. 
     @return Returns the MPR control object.
-    @stability Evolving.
+    @stability Stable.
     @ingroup Mpr
  */
 extern Mpr *mprGetMpr();

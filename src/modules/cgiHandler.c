@@ -315,16 +315,18 @@ static void writeToCGI(HttpQueue *q)
 static int writeToClient(HttpQueue *q, MprCmd *cmd, MprBuf *buf, int channel)
 {
     HttpConn    *conn;
+    HttpTx      *tx;
     ssize       len, rc;
 
     conn = q->conn;
-    mprAssert(conn->tx);
+    tx = conn->tx;
+    mprAssert(tx);
 
     /*
         Write to the browser. Write as much as we can. Service queues to get the filters and connectors pumping.
      */
-    while (conn->tx && (len = mprGetBufLength(buf)) > 0) {
-        if (conn->tx && !conn->finalized && conn->state < HTTP_STATE_COMPLETE) {
+    while (tx && (len = mprGetBufLength(buf)) > 0) {
+        if (tx && !tx->finalized && conn->state < HTTP_STATE_COMPLETE) {
             if ((q->count + len) > q->max) {
                 cmd->userFlags |= MA_CGI_FLOW_CONTROL;
                 mprLog(7, "CGI: @@@ client write queue full. Suspend queue, enable conn events");
