@@ -1,6 +1,7 @@
 LIBRARY libhttp.dll
 EXPORTS
   HttpStatusCodes
+  events
   httpAcceptConn
   httpAddAuthStore
   httpAddAuthType
@@ -143,7 +144,6 @@ EXPORTS
   httpFormatUri
   httpGetAsync
   httpGetChunkSize
-  httpGetCloseReason
   httpGetConnContext
   httpGetConnHost
   httpGetContentLength
@@ -189,7 +189,8 @@ EXPORTS
   httpGetStageData
   httpGetStatus
   httpGetStatusMessage
-  httpGetWebSockProtocol
+  httpGetWebSocketCloseReason
+  httpGetWebSocketProtocol
   httpGraduateLimits
   httpHandleOptionsTrace
   httpHasNamedVirtualHosts
@@ -236,8 +237,7 @@ EXPORTS
   httpNeedRetry
   httpNormalizeUri
   httpNormalizeUriPath
-  httpNotifyReadable
-  httpNotifyWritable
+  httpNotify
   httpOmitBody
   httpOpenCacheHandler
   httpOpenChunkFilter
@@ -253,8 +253,8 @@ EXPORTS
   httpOption
   httpPrepClientConn
   httpPrepServerConn
-  httpProcessHandler
   httpPump
+  httpPumpHandler
   httpPutBackPacket
   httpPutForService
   httpPutPacket
@@ -380,7 +380,6 @@ EXPORTS
   httpSetTimestamp
   httpSetUniqueConnLimits
   httpSetUri
-  httpSetWebSocketNotifier
   httpSetWebSocketProtocols
   httpShouldTrace
   httpSocketBlocked
@@ -401,14 +400,15 @@ EXPORTS
   httpTraceContent
   httpTrimExtraPath
   httpUpdateCache
+  httpUpgradeWebSocket
   httpUriToString
   httpUsePrimary
   httpUseWorker
   httpValidateLimits
   httpVerifyQueue
+  httpVerifyWebSocketsHandshake
   httpWait
-  httpWasOrderlyClose
-  httpWebSockUpgrade
+  httpWebSocketOrderlyClosed
   httpWillNextQueueAcceptPacket
   httpWillNextQueueAcceptSize
   httpWrite
@@ -419,3 +419,4 @@ EXPORTS
   httpWriteSafeString
   httpWriteString
   httpWriteUploadData
+  states
