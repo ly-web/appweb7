@@ -60,6 +60,9 @@
 #ifndef BIT_SSL_PORT
     #define BIT_SSL_PORT 443
 #endif
+#ifndef BIT_STATIC
+    #define BIT_STATIC 0
+#endif
 #ifndef BIT_STEALTH
     #define BIT_STEALTH 1
 #endif

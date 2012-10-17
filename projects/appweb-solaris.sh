@@ -157,7 +157,7 @@ cp -r src/server/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h
 
 ${CC} -c -o ${CONFIG}/obj/appweb.o -Wall -fPIC ${LDFLAGS} -mtune=generic ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o ${CONFIG}/bin/mod_cgi.so ${CONFIG}/bin/mod_esp.so -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
 
 rm -rf ${CONFIG}/inc/testAppweb.h
 cp -r test/testAppweb.h ${CONFIG}/inc/testAppweb.h

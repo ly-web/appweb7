@@ -448,9 +448,11 @@ $(CONFIG)/obj/appweb.o: \
 
 $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.so \
+        $(CONFIG)/bin/mod_esp.so \
+        $(CONFIG)/bin/mod_cgi.so \
         $(CONFIG)/inc/appwebMonitor.h \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(CONFIG)/bin/mod_cgi.so $(CONFIG)/bin/mod_esp.so -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
 
 $(CONFIG)/inc/testAppweb.h: 
 	rm -fr $(CONFIG)/inc/testAppweb.h

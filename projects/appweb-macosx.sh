@@ -157,7 +157,7 @@ cp -r src/server/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h
 
 ${CC} -c -o ${CONFIG}/obj/appweb.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-${CC} -o ${CONFIG}/bin/appweb -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
+${CC} -o ${CONFIG}/bin/appweb -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o ${CONFIG}/bin/mod_cgi.dylib ${CONFIG}/bin/mod_esp.dylib -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 rm -rf ${CONFIG}/inc/testAppweb.h
 cp -r test/testAppweb.h ${CONFIG}/inc/testAppweb.h

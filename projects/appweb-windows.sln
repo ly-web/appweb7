@@ -143,6 +143,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appweb", "appweb-windows\ap
 	ProjectSection(ProjectDependencies) = postProject
 		{66002183-4B43-4751-B3F4-36AD8E08BE3C} = {66002183-4B43-4751-B3F4-36AD8E08BE3C}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{9EB51D9E-5B85-410D-9913-4912EA2928BF} = {9EB51D9E-5B85-410D-9913-4912EA2928BF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{80DC892B-C6A8-4A69-8BD3-B400E555FA9D} = {80DC892B-C6A8-4A69-8BD3-B400E555FA9D}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appwebMonitor", "appweb-windows\appwebMonitor.vcxproj", "{F4F949B0-6457-41CB-9EA7-A1BF1CC8EE5C}"
 	ProjectSection(ProjectDependencies) = postProject

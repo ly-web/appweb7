@@ -488,9 +488,11 @@ $(CONFIG)/obj/appweb.o: \
 
 $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.dylib \
+        $(CONFIG)/bin/mod_esp.dylib \
+        $(CONFIG)/bin/mod_cgi.dylib \
         $(CONFIG)/inc/appwebMonitor.h \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(CONFIG)/bin/mod_cgi.dylib $(CONFIG)/bin/mod_esp.dylib -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/inc/testAppweb.h: 
 	rm -fr $(CONFIG)/inc/testAppweb.h
