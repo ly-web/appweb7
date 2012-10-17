@@ -696,15 +696,28 @@ typedef int64 MprTime;
 #if BIT_WIN_LIKE
     #define INT64(x)    (x##i64)
     #define UINT64(x)   (x##Ui64)
-    #define MPR_EXPORT  __declspec(dllexport)
-    #define PUBLIC      __declspec(dllexport)
-    #define PRIVATE     static
 #else
     #define INT64(x)    (x##LL)
     #define UINT64(x)   (x##ULL)
-    #define MPR_EXPORT 
-    #define PUBLIC
-    #define PRIVATE     static
+#endif
+
+
+#if BIT_WIN_LIKE
+    #if BIT_STATIC
+        #define PUBLIC 
+        #define PRIVATE     static
+    #else
+        #define PUBLIC      __declspec(dllexport)
+        #define PRIVATE     static
+    #endif
+#else
+    #if BIT_STATIC
+        #define PUBLIC
+        #define PRIVATE     static
+    #else
+        #define PUBLIC
+        #define PRIVATE     static
+    #endif
 #endif
 
 #ifndef max
