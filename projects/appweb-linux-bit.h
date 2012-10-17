@@ -78,6 +78,9 @@
 #ifndef BIT_SSL_PORT
     #define BIT_SSL_PORT 443
 #endif
+#ifndef BIT_STEALTH
+    #define BIT_STEALTH 1
+#endif
 #ifndef BIT_SYNC
     #define BIT_SYNC "http,mpr,pcre,sqlite"
 #endif

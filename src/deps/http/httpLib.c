@@ -36,7 +36,7 @@ static bool verifyUser(HttpConn *conn);
 
 /*********************************** Code *************************************/
 
-void httpInitAuth(Http *http)
+PUBLIC void httpInitAuth(Http *http)
 {
     httpAddAuthType(http, "basic", httpBasicLogin, httpBasicParse, httpBasicSetHeaders);
     httpAddAuthType(http, "digest", httpDigestLogin, httpDigestParse, httpDigestSetHeaders);
@@ -52,7 +52,7 @@ void httpInitAuth(Http *http)
 }
 
 
-int httpAuthenticate(HttpConn *conn)
+PUBLIC int httpAuthenticate(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpAuth    *auth;
@@ -116,7 +116,7 @@ int httpAuthenticate(HttpConn *conn)
 }
 
 
-bool httpCanUser(HttpConn *conn)
+PUBLIC bool httpCanUser(HttpConn *conn)
 {
     HttpAuth    *auth;
     MprKey      *kp;
@@ -151,7 +151,7 @@ bool httpCanUser(HttpConn *conn)
 }
 
 
-bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
+PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
 {
     HttpAuth    *auth;
     HttpSession *session;
@@ -175,13 +175,13 @@ bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
 }
 
 
-bool httpIsAuthenticated(HttpConn *conn)
+PUBLIC bool httpIsAuthenticated(HttpConn *conn)
 {
     return conn->rx->authenticated;
 }
 
 
-HttpAuth *httpCreateAuth()
+PUBLIC HttpAuth *httpCreateAuth()
 {
     HttpAuth    *auth;
     
@@ -193,7 +193,7 @@ HttpAuth *httpCreateAuth()
 }
 
 
-HttpAuth *httpCreateInheritedAuth(HttpAuth *parent)
+PUBLIC HttpAuth *httpCreateInheritedAuth(HttpAuth *parent)
 {
     HttpAuth      *auth;
 
@@ -249,7 +249,7 @@ static void manageAuthType(HttpAuthType *type, int flags)
 }
 
 
-int httpAddAuthType(Http *http, cchar *name, HttpAskLogin askLogin, HttpParseAuth parseAuth, HttpSetAuth setAuth)
+PUBLIC int httpAddAuthType(Http *http, cchar *name, HttpAskLogin askLogin, HttpParseAuth parseAuth, HttpSetAuth setAuth)
 {
     HttpAuthType    *type;
 
@@ -279,7 +279,7 @@ static void manageAuthStore(HttpAuthStore *store, int flags)
 /*
     Add a password store backend
  */
-int httpAddAuthStore(Http *http, cchar *name, HttpVerifyUser verifyUser)
+PUBLIC int httpAddAuthStore(Http *http, cchar *name, HttpVerifyUser verifyUser)
 {
     HttpAuthStore    *store;
 
@@ -295,7 +295,7 @@ int httpAddAuthStore(Http *http, cchar *name, HttpVerifyUser verifyUser)
 }
 
 
-void httpSetAuthAllow(HttpAuth *auth, cchar *allow)
+PUBLIC void httpSetAuthAllow(HttpAuth *auth, cchar *allow)
 {
     if (auth->allow == 0 || (auth->parent && auth->parent->allow == auth->allow)) {
         auth->allow = mprCreateHash(-1, MPR_HASH_STATIC_VALUES);
@@ -304,13 +304,13 @@ void httpSetAuthAllow(HttpAuth *auth, cchar *allow)
 }
 
 
-void httpSetAuthAnyValidUser(HttpAuth *auth)
+PUBLIC void httpSetAuthAnyValidUser(HttpAuth *auth)
 {
     auth->permittedUsers = 0;
 }
 
 
-void httpSetAuthAutoLogin(HttpAuth *auth, bool on)
+PUBLIC void httpSetAuthAutoLogin(HttpAuth *auth, bool on)
 {
     auth->flags &= ~HTTP_AUTO_LOGIN;
     auth->flags |= on ? HTTP_AUTO_LOGIN : 0;
@@ -320,7 +320,7 @@ void httpSetAuthAutoLogin(HttpAuth *auth, bool on)
 /*
     Can supply a roles or abilities in the "abilities" parameter 
  */
-void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities)
+PUBLIC void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities)
 {
     char    *ability, *tok;
 
@@ -331,7 +331,7 @@ void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities)
 }
 
 
-void httpSetAuthDeny(HttpAuth *auth, cchar *client)
+PUBLIC void httpSetAuthDeny(HttpAuth *auth, cchar *client)
 {
     if (auth->deny == 0 || (auth->parent && auth->parent->deny == auth->deny)) {
         auth->deny = mprCreateHash(-1, MPR_HASH_STATIC_VALUES);
@@ -340,7 +340,7 @@ void httpSetAuthDeny(HttpAuth *auth, cchar *client)
 }
 
 
-void httpSetAuthOrder(HttpAuth *auth, int order)
+PUBLIC void httpSetAuthOrder(HttpAuth *auth, int order)
 {
     auth->flags &= (HTTP_ALLOW_DENY | HTTP_DENY_ALLOW);
     auth->flags |= (order & (HTTP_ALLOW_DENY | HTTP_DENY_ALLOW));
@@ -391,7 +391,7 @@ static void logoutServiceProc(HttpConn *conn)
 }
 
 
-void httpSetAuthForm(HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, cchar *loggedIn)
+PUBLIC void httpSetAuthForm(HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, cchar *loggedIn)
 {
     HttpAuth    *auth;
     HttpRoute   *route;
@@ -447,20 +447,20 @@ void httpSetAuthForm(HttpRoute *parent, cchar *loginPage, cchar *loginService, c
 }
 
 
-void httpSetAuthQop(HttpAuth *auth, cchar *qop)
+PUBLIC void httpSetAuthQop(HttpAuth *auth, cchar *qop)
 {
     auth->qop = sclone(qop);
 }
 
 
-void httpSetAuthRealm(HttpAuth *auth, cchar *realm)
+PUBLIC void httpSetAuthRealm(HttpAuth *auth, cchar *realm)
 {
     auth->realm = sclone(realm);
     auth->version = ((Http*) MPR->httpService)->nextAuth++;
 }
 
 
-void httpSetAuthPermittedUsers(HttpAuth *auth, cchar *users)
+PUBLIC void httpSetAuthPermittedUsers(HttpAuth *auth, cchar *users)
 {
     char    *user, *tok;
 
@@ -471,7 +471,7 @@ void httpSetAuthPermittedUsers(HttpAuth *auth, cchar *users)
 }
 
 
-int httpSetAuthStore(HttpAuth *auth, cchar *store)
+PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store)
 {
     Http    *http;
 
@@ -495,7 +495,7 @@ int httpSetAuthStore(HttpAuth *auth, cchar *store)
 }
 
 
-int httpSetAuthType(HttpAuth *auth, cchar *type, cchar *details)
+PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *type, cchar *details)
 {
     Http    *http;
 
@@ -509,7 +509,7 @@ int httpSetAuthType(HttpAuth *auth, cchar *type, cchar *details)
 }
 
 
-HttpAuthType *httpLookupAuthType(cchar *type)
+PUBLIC HttpAuthType *httpLookupAuthType(cchar *type)
 {
     Http    *http;
 
@@ -518,7 +518,7 @@ HttpAuthType *httpLookupAuthType(cchar *type)
 }
 
 
-HttpRole *httpCreateRole(HttpAuth *auth, cchar *name, cchar *abilities)
+PUBLIC HttpRole *httpCreateRole(HttpAuth *auth, cchar *name, cchar *abilities)
 {
     HttpRole    *role;
     char        *ability, *tok;
@@ -544,7 +544,7 @@ static void manageRole(HttpRole *role, int flags)
 }
 
 
-int httpAddRole(HttpAuth *auth, cchar *name, cchar *abilities)
+PUBLIC int httpAddRole(HttpAuth *auth, cchar *name, cchar *abilities)
 {
     HttpRole    *role;
 
@@ -571,7 +571,7 @@ int httpAddRole(HttpAuth *auth, cchar *name, cchar *abilities)
 }
 
 
-int httpRemoveRole(HttpAuth *auth, cchar *role)
+PUBLIC int httpRemoveRole(HttpAuth *auth, cchar *role)
 {
     if (auth->roles == 0 || !mprLookupKey(auth->roles, role)) {
         return MPR_ERR_CANT_ACCESS;
@@ -581,7 +581,7 @@ int httpRemoveRole(HttpAuth *auth, cchar *role)
 }
 
 
-HttpUser *httpCreateUser(HttpAuth *auth, cchar *name, cchar *password, cchar *roles)
+PUBLIC HttpUser *httpCreateUser(HttpAuth *auth, cchar *name, cchar *password, cchar *roles)
 {
     HttpUser    *user;
 
@@ -609,7 +609,7 @@ static void manageUser(HttpUser *user, int flags)
 }
 
 
-int httpAddUser(HttpAuth *auth, cchar *name, cchar *password, cchar *roles)
+PUBLIC int httpAddUser(HttpAuth *auth, cchar *name, cchar *password, cchar *roles)
 {
     HttpUser    *user;
 
@@ -634,7 +634,7 @@ int httpAddUser(HttpAuth *auth, cchar *name, cchar *password, cchar *roles)
 }
 
 
-int httpRemoveUser(HttpAuth *auth, cchar *user)
+PUBLIC int httpRemoveUser(HttpAuth *auth, cchar *user)
 {
     if (auth->users == 0 || !mprLookupKey(auth->users, user)) {
         return MPR_ERR_CANT_ACCESS;
@@ -671,7 +671,7 @@ static void computeAbilities(HttpAuth *auth, MprHash *abilities, cchar *role)
     Compute the set of user abilities from the user roles. User ability strings can be either roles or abilities. Expand
     roles into the equivalent set of abilities.
  */
-void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user)
+PUBLIC void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user)
 {
     char        *ability, *tok;
 
@@ -693,7 +693,7 @@ void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user)
 }
 
 
-void httpComputeAllUserAbilities(HttpAuth *auth)
+PUBLIC void httpComputeAllUserAbilities(HttpAuth *auth)
 {
     MprKey      *kp;
     HttpUser    *user;
@@ -787,7 +787,7 @@ static void formLogin(HttpConn *conn)
 /*
     Parse the client 'Authorization' header and the server 'Www-Authenticate' header
  */
-int httpBasicParse(HttpConn *conn)
+PUBLIC int httpBasicParse(HttpConn *conn)
 {
     HttpRx  *rx;
     char    *decoded, *cp;
@@ -811,7 +811,7 @@ int httpBasicParse(HttpConn *conn)
 /*
     Respond to the request by asking for a client login
  */
-void httpBasicLogin(HttpConn *conn)
+PUBLIC void httpBasicLogin(HttpConn *conn)
 {
     HttpAuth    *auth;
 
@@ -824,7 +824,7 @@ void httpBasicLogin(HttpConn *conn)
 /*
     Add the client 'Authorization' header for authenticated requests
  */
-void httpBasicSetHeaders(HttpConn *conn)
+PUBLIC void httpBasicSetHeaders(HttpConn *conn)
 {
     httpAddHeader(conn, "Authorization", "basic %s", mprEncode64(sfmt("%s:%s", conn->username, conn->password)));
 }
@@ -886,7 +886,7 @@ static cchar *setHeadersFromCache(HttpConn *conn, cchar *content);
 
 /************************************ Code ************************************/
 
-int httpOpenCacheHandler(Http *http)
+PUBLIC int httpOpenCacheHandler(Http *http)
 {
     HttpStage     *handler, *filter;
 
@@ -1225,7 +1225,7 @@ static void saveCachedResponse(HttpConn *conn)
 }
 
 
-ssize httpWriteCached(HttpConn *conn)
+PUBLIC ssize httpWriteCached(HttpConn *conn)
 {
     MprTime     modified;
     cchar       *cacheKey, *data, *content;
@@ -1249,7 +1249,7 @@ ssize httpWriteCached(HttpConn *conn)
 }
 
 
-ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime lifespan)
+PUBLIC ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime lifespan)
 {
     cchar   *key;
     ssize   len;
@@ -1278,7 +1278,7 @@ ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime lifespan)
     Note: the URI should not include the route prefix (scriptName)
     The extensions should not contain ".". The methods may contain "*" for all methods.
  */
-void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types, MprTime clientLifespan, 
+PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types, MprTime clientLifespan, 
         MprTime serverLifespan, int flags)
 {
     HttpCache   *cache;
@@ -1464,7 +1464,7 @@ static void setChunkPrefix(HttpQueue *q, HttpPacket *packet);
 /* 
    Loadable module initialization
  */
-int httpOpenChunkFilter(Http *http)
+PUBLIC int httpOpenChunkFilter(Http *http)
 {
     HttpStage     *filter;
 
@@ -1530,7 +1530,7 @@ static void openChunk(HttpQueue *q)
     Return number of bytes available to read.
     NOTE: may set rx->eof and return 0 bytes on EOF.
  */
-ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
+PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
 {
     HttpConn    *conn;
     HttpRx      *rx;
@@ -1825,7 +1825,7 @@ static void setDefaultHeaders(HttpConn *conn)
 }
 
 
-int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl *ssl)
+PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl *ssl)
 {
     mprAssert(conn);
     mprAssert(method && *method);
@@ -1866,7 +1866,7 @@ int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl *ssl)
 /*  
     Check the response for authentication failures and redirections. Return true if a retry is requried.
  */
-bool httpNeedRetry(HttpConn *conn, char **url)
+PUBLIC bool httpNeedRetry(HttpConn *conn, char **url)
 {
     HttpAuthType    *authType;
     HttpRx          *rx;
@@ -1906,7 +1906,7 @@ bool httpNeedRetry(HttpConn *conn, char **url)
 /*  
     Set the request as being a multipart mime upload. This defines the content type and defines a multipart mime boundary
  */
-void httpEnableUpload(HttpConn *conn)
+PUBLIC void httpEnableUpload(HttpConn *conn)
 {
     conn->boundary = sfmt("--BOUNDARY--%Ld", conn->http->now);
     httpSetHeader(conn, "Content-Type", "multipart/form-data; boundary=%s", &conn->boundary[2]);
@@ -1952,7 +1952,7 @@ static int blockingFileCopy(HttpConn *conn, cchar *path)
 /*  
     Write upload data. This routine blocks. If you need non-blocking ... cut and paste.
  */
-ssize httpWriteUploadData(HttpConn *conn, MprList *fileData, MprList *formData)
+PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *fileData, MprList *formData)
 {
     char    *path, *pair, *key, *value, *name;
     cchar   *type;
@@ -2032,7 +2032,7 @@ static void writeEvent(HttpConn *conn);
 /*
     Create a new connection object
  */
-HttpConn *httpCreateConn(Http *http, HttpEndpoint *endpoint, MprDispatcher *dispatcher)
+PUBLIC HttpConn *httpCreateConn(Http *http, HttpEndpoint *endpoint, MprDispatcher *dispatcher)
 {
     HttpConn    *conn;
     HttpHost    *host;
@@ -2085,7 +2085,7 @@ HttpConn *httpCreateConn(Http *http, HttpEndpoint *endpoint, MprDispatcher *disp
 /*
     Destroy a connection. This removes the connection from the list of connections. Should GC after that.
  */
-void httpDestroyConn(HttpConn *conn)
+PUBLIC void httpDestroyConn(HttpConn *conn)
 {
     if (conn->http) {
         mprAssert(conn->http);
@@ -2168,7 +2168,7 @@ static void manageConn(HttpConn *conn, int flags)
 /*  
     Close the connection but don't destroy the conn object.
  */
-void httpCloseConn(HttpConn *conn)
+PUBLIC void httpCloseConn(HttpConn *conn)
 {
     mprAssert(conn);
 
@@ -2184,7 +2184,7 @@ void httpCloseConn(HttpConn *conn)
 }
 
 
-void httpConnTimeout(HttpConn *conn)
+PUBLIC void httpConnTimeout(HttpConn *conn)
 {
     HttpLimits  *limits;
     MprTime     now;
@@ -2257,7 +2257,7 @@ static void commonPrep(HttpConn *conn)
 /*  
     Prepare a connection for a new request after completing a prior request.
  */
-void httpPrepServerConn(HttpConn *conn)
+PUBLIC void httpPrepServerConn(HttpConn *conn)
 {
     mprAssert(conn);
     mprAssert(conn->rx == 0);
@@ -2269,7 +2269,7 @@ void httpPrepServerConn(HttpConn *conn)
 }
 
 
-void httpPrepClientConn(HttpConn *conn, bool keepHeaders)
+PUBLIC void httpPrepClientConn(HttpConn *conn, bool keepHeaders)
 {
     MprHash     *headers;
 
@@ -2294,7 +2294,7 @@ void httpPrepClientConn(HttpConn *conn, bool keepHeaders)
 }
 
 
-void httpConsumeLastRequest(HttpConn *conn)
+PUBLIC void httpConsumeLastRequest(HttpConn *conn)
 {
     MprTime     mark;
     char        junk[4096];
@@ -2316,7 +2316,7 @@ void httpConsumeLastRequest(HttpConn *conn)
 }
 
 
-void httpCallEvent(HttpConn *conn, int mask)
+PUBLIC void httpCallEvent(HttpConn *conn, int mask)
 {
     MprEvent    e;
 
@@ -2334,7 +2334,7 @@ void httpCallEvent(HttpConn *conn, int mask)
     server->dispatcher and the first I/O event will be handled on the server thread (or main thread). A request handler
     may create a new conn->dispatcher and transfer execution to a worker thread if required.
  */
-void httpEvent(HttpConn *conn, MprEvent *event)
+PUBLIC void httpEvent(HttpConn *conn, MprEvent *event)
 {
     LOG(6, "httpEvent for fd %d, mask %d", conn->sock->fd, event->mask);
     conn->lastActivity = conn->http->now;
@@ -2428,7 +2428,7 @@ static void writeEvent(HttpConn *conn)
 }
 
 
-void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *event)
+PUBLIC void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *event)
 {
     lock(conn->http);
     conn->oldDispatcher = conn->dispatcher;
@@ -2440,7 +2440,7 @@ void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *event)
 }
 
 
-void httpUsePrimary(HttpConn *conn)
+PUBLIC void httpUsePrimary(HttpConn *conn)
 {
     lock(conn->http);
     mprAssert(conn->worker);
@@ -2457,7 +2457,7 @@ void httpUsePrimary(HttpConn *conn)
     Steal a connection with open socket from Http and disconnect it from management by Http.
     It is the callers responsibility to call mprCloseSocket when required.
  */
-MprSocket *httpStealConn(HttpConn *conn)
+PUBLIC MprSocket *httpStealConn(HttpConn *conn)
 {
     MprSocket   *sock;
 
@@ -2480,7 +2480,7 @@ MprSocket *httpStealConn(HttpConn *conn)
 }
 
 
-void httpEnableConnEvents(HttpConn *conn)
+PUBLIC void httpEnableConnEvents(HttpConn *conn)
 {
     HttpTx      *tx;
     HttpRx      *rx;
@@ -2542,7 +2542,7 @@ void httpEnableConnEvents(HttpConn *conn)
 }
 
 
-void httpFollowRedirects(HttpConn *conn, bool follow)
+PUBLIC void httpFollowRedirects(HttpConn *conn, bool follow)
 {
     conn->followRedirects = follow;
 }
@@ -2572,13 +2572,13 @@ static HttpPacket *getPacket(HttpConn *conn, ssize *size)
 }
 
 
-int httpGetAsync(HttpConn *conn)
+PUBLIC int httpGetAsync(HttpConn *conn)
 {
     return conn->async;
 }
 
 
-ssize httpGetChunkSize(HttpConn *conn)
+PUBLIC ssize httpGetChunkSize(HttpConn *conn)
 {
     if (conn->tx) {
         return conn->tx->chunkSize;
@@ -2587,19 +2587,19 @@ ssize httpGetChunkSize(HttpConn *conn)
 }
 
 
-void *httpGetConnContext(HttpConn *conn)
+PUBLIC void *httpGetConnContext(HttpConn *conn)
 {
     return conn->context;
 }
 
 
-void *httpGetConnHost(HttpConn *conn)
+PUBLIC void *httpGetConnHost(HttpConn *conn)
 {
     return conn->host;
 }
 
 
-void httpResetCredentials(HttpConn *conn)
+PUBLIC void httpResetCredentials(HttpConn *conn)
 {
     conn->authType = 0;
     conn->username = 0;
@@ -2608,19 +2608,19 @@ void httpResetCredentials(HttpConn *conn)
 }
 
 
-void httpSetAsync(HttpConn *conn, int enable)
+PUBLIC void httpSetAsync(HttpConn *conn, int enable)
 {
     conn->async = (enable) ? 1 : 0;
 }
 
 
-void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier)
+PUBLIC void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier)
 {
     conn->notifier = notifier;
 }
 
 
-void httpSetCredentials(HttpConn *conn, cchar *username, cchar *password)
+PUBLIC void httpSetCredentials(HttpConn *conn, cchar *username, cchar *password)
 {
     httpResetCredentials(conn);
     conn->username = sclone(username);
@@ -2633,13 +2633,13 @@ void httpSetCredentials(HttpConn *conn, cchar *username, cchar *password)
 }
 
 
-void httpSetKeepAliveCount(HttpConn *conn, int count)
+PUBLIC void httpSetKeepAliveCount(HttpConn *conn, int count)
 {
     conn->keepAliveCount = count;
 }
 
 
-void httpSetChunkSize(HttpConn *conn, ssize size)
+PUBLIC void httpSetChunkSize(HttpConn *conn, ssize size)
 {
     if (conn->tx) {
         conn->tx->chunkSize = size;
@@ -2647,26 +2647,26 @@ void httpSetChunkSize(HttpConn *conn, ssize size)
 }
 
 
-void httpSetHeadersCallback(HttpConn *conn, HttpHeadersCallback fn, void *arg)
+PUBLIC void httpSetHeadersCallback(HttpConn *conn, HttpHeadersCallback fn, void *arg)
 {
     conn->headersCallback = fn;
     conn->headersCallbackArg = arg;
 }
 
 
-void httpSetIOCallback(HttpConn *conn, HttpIOCallback fn)
+PUBLIC void httpSetIOCallback(HttpConn *conn, HttpIOCallback fn)
 {
     conn->ioCallback = fn;
 }
 
 
-void httpSetConnContext(HttpConn *conn, void *context)
+PUBLIC void httpSetConnContext(HttpConn *conn, void *context)
 {
     conn->context = context;
 }
 
 
-void httpSetConnHost(HttpConn *conn, void *host)
+PUBLIC void httpSetConnHost(HttpConn *conn, void *host)
 {
     conn->host = host;
 }
@@ -2675,7 +2675,7 @@ void httpSetConnHost(HttpConn *conn, void *host)
 /*  
     Set the protocol to use for outbound requests
  */
-void httpSetProtocol(HttpConn *conn, cchar *protocol)
+PUBLIC void httpSetProtocol(HttpConn *conn, cchar *protocol)
 {
     if (conn->state < HTTP_STATE_CONNECTED) {
         conn->protocol = sclone(protocol);
@@ -2683,7 +2683,7 @@ void httpSetProtocol(HttpConn *conn, cchar *protocol)
 }
 
 
-void httpSetRetries(HttpConn *conn, int count)
+PUBLIC void httpSetRetries(HttpConn *conn, int count)
 {
     conn->retries = count;
 }
@@ -2694,7 +2694,7 @@ static char *notifyState[] = {
 };
 
 
-void httpSetState(HttpConn *conn, int state)
+PUBLIC void httpSetState(HttpConn *conn, int state)
 {
     if (state == conn->state) {
         return;
@@ -2712,7 +2712,7 @@ void httpSetState(HttpConn *conn, int state)
 /*
     Set each timeout arg to -1 to skip. Set to zero for no timeout. Otherwise set to number of msecs
  */
-void httpSetTimeout(HttpConn *conn, int requestTimeout, int inactivityTimeout)
+PUBLIC void httpSetTimeout(HttpConn *conn, int requestTimeout, int inactivityTimeout)
 {
     if (requestTimeout >= 0) {
         if (requestTimeout == 0) {
@@ -2731,7 +2731,7 @@ void httpSetTimeout(HttpConn *conn, int requestTimeout, int inactivityTimeout)
 }
 
 
-HttpLimits *httpSetUniqueConnLimits(HttpConn *conn)
+PUBLIC HttpLimits *httpSetUniqueConnLimits(HttpConn *conn)
 {
     HttpLimits      *limits;
 
@@ -2744,16 +2744,16 @@ HttpLimits *httpSetUniqueConnLimits(HttpConn *conn)
 
 
 #if BIT_DEBUG
-char *events[] = {
+PUBLIC char *events[] = {
     "undefined", "state-change", "readable", "writable", "error", "destroy", "app-open", "app-close",
 };
-char *states[] = {
+PUBLIC char *states[] = {
     "undefined", "begin", "connected", "first", "parsed", "content", "ready", "running", "complete",
 };
 #endif
 
 
-void httpNotify(HttpConn *conn, int event, int arg)
+PUBLIC void httpNotify(HttpConn *conn, int event, int arg)
 {
     if (conn->notifier) {
 #if BIT_DEBUG
@@ -2834,7 +2834,7 @@ static int parseDigestNonce(char *nonce, cchar **secret, cchar **realm, MprTime 
 /*
     Parse the client 'Authorization' header and the server 'Www-Authenticate' header
  */
-int httpDigestParse(HttpConn *conn)
+PUBLIC int httpDigestParse(HttpConn *conn)
 {
     HttpRx      *rx;
     DigestData  *dp;
@@ -3031,7 +3031,7 @@ static void manageDigestData(DigestData *dp, int flags)
 /*
     Respond to the request by asking for a client login
  */
-void httpDigestLogin(HttpConn *conn)
+PUBLIC void httpDigestLogin(HttpConn *conn)
 {
     HttpAuth    *auth;
     char        *nonce, *opaque;
@@ -3057,7 +3057,7 @@ void httpDigestLogin(HttpConn *conn)
 /*
     Add the client 'Authorization' header for authenticated requests
  */
-void httpDigestSetHeaders(HttpConn *conn)
+PUBLIC void httpDigestSetHeaders(HttpConn *conn)
 { 
     Http        *http;
     HttpTx      *tx;
@@ -3205,7 +3205,7 @@ static int destroyEndpointConnections(HttpEndpoint *endpoint);
 /*
     Create a listening endpoint on ip:port. NOTE: ip may be empty which means bind to all addresses.
  */
-HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *dispatcher)
+PUBLIC HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *dispatcher)
 {
     HttpEndpoint    *endpoint;
     Http            *http;
@@ -3227,7 +3227,7 @@ HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *dispatcher)
 }
 
 
-void httpDestroyEndpoint(HttpEndpoint *endpoint)
+PUBLIC void httpDestroyEndpoint(HttpEndpoint *endpoint)
 {
     destroyEndpointConnections(endpoint);
     if (endpoint->sock) {
@@ -3261,7 +3261,7 @@ static int manageEndpoint(HttpEndpoint *endpoint, int flags)
 /*  
     Convenience function to create and configure a new endpoint without using a config file.
  */
-HttpEndpoint *httpCreateConfiguredEndpoint(cchar *home, cchar *documents, cchar *ip, int port)
+PUBLIC HttpEndpoint *httpCreateConfiguredEndpoint(cchar *home, cchar *documents, cchar *ip, int port)
 {
     Http            *http;
     HttpHost        *host;
@@ -3339,7 +3339,7 @@ static bool validateEndpoint(HttpEndpoint *endpoint)
 }
 
 
-int httpStartEndpoint(HttpEndpoint *endpoint)
+PUBLIC int httpStartEndpoint(HttpEndpoint *endpoint)
 {
     HttpHost    *host;
     cchar       *proto, *ip;
@@ -3378,7 +3378,7 @@ int httpStartEndpoint(HttpEndpoint *endpoint)
 }
 
 
-void httpStopEndpoint(HttpEndpoint *endpoint)
+PUBLIC void httpStopEndpoint(HttpEndpoint *endpoint)
 {
     HttpHost    *host;
     int         next;
@@ -3396,7 +3396,7 @@ void httpStopEndpoint(HttpEndpoint *endpoint)
 /*
     OPT
  */
-bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn)
+PUBLIC bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn)
 {
     HttpLimits      *limits;
     Http            *http;
@@ -3500,7 +3500,7 @@ bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn)
     Accept a new client connection on a new socket. If multithreaded, this will come in on a worker thread 
     dedicated to this connection. This is called from the listen wait handler.
  */
-HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
+PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
 {
     HttpConn        *conn;
     MprSocket       *sock;
@@ -3570,7 +3570,7 @@ HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
 }
 
 
-void httpMatchHost(HttpConn *conn)
+PUBLIC void httpMatchHost(HttpConn *conn)
 { 
     MprSocket       *listenSock;
     HttpEndpoint    *endpoint;
@@ -3603,7 +3603,7 @@ void httpMatchHost(HttpConn *conn)
 }
 
 
-void *httpGetEndpointContext(HttpEndpoint *endpoint)
+PUBLIC void *httpGetEndpointContext(HttpEndpoint *endpoint)
 {
     assure(endpoint);
     if (endpoint) {
@@ -3613,7 +3613,7 @@ void *httpGetEndpointContext(HttpEndpoint *endpoint)
 }
 
 
-int httpIsEndpointAsync(HttpEndpoint *endpoint) 
+PUBLIC int httpIsEndpointAsync(HttpEndpoint *endpoint) 
 {
     assure(endpoint);
     if (endpoint) {
@@ -3623,7 +3623,7 @@ int httpIsEndpointAsync(HttpEndpoint *endpoint)
 }
 
 
-void httpSetEndpointAddress(HttpEndpoint *endpoint, cchar *ip, int port)
+PUBLIC void httpSetEndpointAddress(HttpEndpoint *endpoint, cchar *ip, int port)
 {
     assure(endpoint);
 
@@ -3640,7 +3640,7 @@ void httpSetEndpointAddress(HttpEndpoint *endpoint, cchar *ip, int port)
 }
 
 
-void httpSetEndpointAsync(HttpEndpoint *endpoint, int async)
+PUBLIC void httpSetEndpointAsync(HttpEndpoint *endpoint, int async)
 {
     if (endpoint->sock) {
         if (endpoint->async && !async) {
@@ -3654,21 +3654,21 @@ void httpSetEndpointAsync(HttpEndpoint *endpoint, int async)
 }
 
 
-void httpSetEndpointContext(HttpEndpoint *endpoint, void *context)
+PUBLIC void httpSetEndpointContext(HttpEndpoint *endpoint, void *context)
 {
     mprAssert(endpoint);
     endpoint->context = context;
 }
 
 
-void httpSetEndpointNotifier(HttpEndpoint *endpoint, HttpNotifier notifier)
+PUBLIC void httpSetEndpointNotifier(HttpEndpoint *endpoint, HttpNotifier notifier)
 {
     mprAssert(endpoint);
     endpoint->notifier = notifier;
 }
 
 
-int httpSecureEndpoint(HttpEndpoint *endpoint, struct MprSsl *ssl)
+PUBLIC int httpSecureEndpoint(HttpEndpoint *endpoint, struct MprSsl *ssl)
 {
 #if BIT_PACK_SSL
     endpoint->ssl = ssl;
@@ -3679,7 +3679,7 @@ int httpSecureEndpoint(HttpEndpoint *endpoint, struct MprSsl *ssl)
 }
 
 
-int httpSecureEndpointByName(cchar *name, struct MprSsl *ssl)
+PUBLIC int httpSecureEndpointByName(cchar *name, struct MprSsl *ssl)
 {
     HttpEndpoint    *endpoint;
     Http            *http;
@@ -3704,7 +3704,7 @@ int httpSecureEndpointByName(cchar *name, struct MprSsl *ssl)
 }
 
 
-void httpAddHostToEndpoint(HttpEndpoint *endpoint, HttpHost *host)
+PUBLIC void httpAddHostToEndpoint(HttpEndpoint *endpoint, HttpHost *host)
 {
     mprAddItem(endpoint->hosts, host);
     if (endpoint->limits == 0) {
@@ -3713,13 +3713,13 @@ void httpAddHostToEndpoint(HttpEndpoint *endpoint, HttpHost *host)
 }
 
 
-bool httpHasNamedVirtualHosts(HttpEndpoint *endpoint)
+PUBLIC bool httpHasNamedVirtualHosts(HttpEndpoint *endpoint)
 {
     return endpoint->flags & HTTP_NAMED_VHOST;
 }
 
 
-void httpSetHasNamedVirtualHosts(HttpEndpoint *endpoint, bool on)
+PUBLIC void httpSetHasNamedVirtualHosts(HttpEndpoint *endpoint, bool on)
 {
     if (on) {
         endpoint->flags |= HTTP_NAMED_VHOST;
@@ -3732,7 +3732,7 @@ void httpSetHasNamedVirtualHosts(HttpEndpoint *endpoint, bool on)
 /*
     Only used for named virtual hosts
  */
-HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *name)
+PUBLIC HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *name)
 {
     HttpHost    *host;
     int         next;
@@ -3757,7 +3757,7 @@ HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *name)
 }
 
 
-int httpConfigureNamedVirtualEndpoints(Http *http, cchar *ip, int port)
+PUBLIC int httpConfigureNamedVirtualEndpoints(Http *http, cchar *ip, int port)
 {
     HttpEndpoint    *endpoint;
     int             next, count;
@@ -3820,7 +3820,7 @@ static void formatErrorv(HttpConn *conn, int status, cchar *fmt, va_list args);
 
 /*********************************** Code *************************************/
 
-void httpDisconnect(HttpConn *conn)
+PUBLIC void httpDisconnect(HttpConn *conn)
 {
     if (conn->sock) {
         mprDisconnectSocket(conn->sock);
@@ -3834,7 +3834,7 @@ void httpDisconnect(HttpConn *conn)
 }
 
 
-void httpError(HttpConn *conn, int flags, cchar *fmt, ...)
+PUBLIC void httpError(HttpConn *conn, int flags, cchar *fmt, ...)
 {
     va_list     args;
 
@@ -3935,7 +3935,7 @@ static void formatErrorv(HttpConn *conn, int status, cchar *fmt, va_list args)
     Just format conn->errorMsg and set status - nothing more
     NOTE: this is an internal API. Users should use httpError()
  */
-void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...)
+PUBLIC void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...)
 {
     va_list     args;
 
@@ -3945,7 +3945,7 @@ void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...)
 }
 
 
-cchar *httpGetError(HttpConn *conn)
+PUBLIC cchar *httpGetError(HttpConn *conn)
 {
     if (conn->errorMsg) {
         return conn->errorMsg;
@@ -3957,7 +3957,7 @@ cchar *httpGetError(HttpConn *conn)
 }
 
 
-void httpMemoryError(HttpConn *conn)
+PUBLIC void httpMemoryError(HttpConn *conn)
 {
     httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Memory allocation error");
 }
@@ -4012,7 +4012,7 @@ static void manageHost(HttpHost *host, int flags);
 
 /*********************************** Code *************************************/
 
-HttpHost *httpCreateHost(cchar *home)
+PUBLIC HttpHost *httpCreateHost(cchar *home)
 {
     HttpHost    *host;
     Http        *http;
@@ -4036,7 +4036,7 @@ HttpHost *httpCreateHost(cchar *home)
 }
 
 
-HttpHost *httpCloneHost(HttpHost *parent)
+PUBLIC HttpHost *httpCloneHost(HttpHost *parent)
 {
     HttpHost    *host;
     Http        *http;
@@ -4085,7 +4085,7 @@ static void manageHost(HttpHost *host, int flags)
 }
 
 
-int httpStartHost(HttpHost *host)
+PUBLIC int httpStartHost(HttpHost *host)
 {
     HttpRoute   *route;
     int         next;
@@ -4102,7 +4102,7 @@ int httpStartHost(HttpHost *host)
 }
 
 
-void httpStopHost(HttpHost *host)
+PUBLIC void httpStopHost(HttpHost *host)
 {
     HttpRoute   *route;
     int         next;
@@ -4113,7 +4113,7 @@ void httpStopHost(HttpHost *host)
 }
 
 
-HttpRoute *httpGetHostDefaultRoute(HttpHost *host)
+PUBLIC HttpRoute *httpGetHostDefaultRoute(HttpHost *host)
 {
     return host->defaultRoute;
 }
@@ -4155,7 +4155,7 @@ static void printRoute(HttpRoute *route, int next, bool full)
 }
 
 
-void httpLogRoutes(HttpHost *host, bool full)
+PUBLIC void httpLogRoutes(HttpHost *host, bool full)
 {
     HttpRoute   *route;
     int         next, foundDefault;
@@ -4179,7 +4179,7 @@ void httpLogRoutes(HttpHost *host, bool full)
 }
 
 
-void httpSetHostHome(HttpHost *host, cchar *home)
+PUBLIC void httpSetHostHome(HttpHost *host, cchar *home)
 {
     host->home = mprGetAbsPath(home);
 }
@@ -4189,7 +4189,7 @@ void httpSetHostHome(HttpHost *host, cchar *home)
     IP may be null in which case the host is listening on all interfaces. Port may be set to -1 and ip may contain a port
     specifier, ie. "address:port".
  */
-void httpSetHostIpAddr(HttpHost *host, cchar *ip, int port)
+PUBLIC void httpSetHostIpAddr(HttpHost *host, cchar *ip, int port)
 {
     char    *pip;
 
@@ -4214,19 +4214,19 @@ void httpSetHostIpAddr(HttpHost *host, cchar *ip, int port)
 }
 
 
-void httpSetHostName(HttpHost *host, cchar *name)
+PUBLIC void httpSetHostName(HttpHost *host, cchar *name)
 {
     host->name = sclone(name);
 }
 
 
-void httpSetHostProtocol(HttpHost *host, cchar *protocol)
+PUBLIC void httpSetHostProtocol(HttpHost *host, cchar *protocol)
 {
     host->protocol = sclone(protocol);
 }
 
 
-int httpAddRoute(HttpHost *host, HttpRoute *route)
+PUBLIC int httpAddRoute(HttpHost *host, HttpRoute *route)
 {
     HttpRoute   *prev, *item, *lastRoute;
     int         i, thisRoute;
@@ -4263,7 +4263,7 @@ int httpAddRoute(HttpHost *host, HttpRoute *route)
 }
 
 
-HttpRoute *httpLookupRoute(HttpHost *host, cchar *name)
+PUBLIC HttpRoute *httpLookupRoute(HttpHost *host, cchar *name)
 {
     HttpRoute   *route;
     int         next;
@@ -4284,43 +4284,43 @@ HttpRoute *httpLookupRoute(HttpHost *host, cchar *name)
 }
 
 
-void httpResetRoutes(HttpHost *host)
+PUBLIC void httpResetRoutes(HttpHost *host)
 {
     host->routes = mprCreateList(-1, 0);
 }
 
 
-void httpSetHostDefaultRoute(HttpHost *host, HttpRoute *route)
+PUBLIC void httpSetHostDefaultRoute(HttpHost *host, HttpRoute *route)
 {
     host->defaultRoute = route;
 }
 
 
-void httpSetDefaultHost(HttpHost *host)
+PUBLIC void httpSetDefaultHost(HttpHost *host)
 {
     defaultHost = host;
 }
 
 
-void httpSetHostSecureEndpoint(HttpHost *host, HttpEndpoint *endpoint)
+PUBLIC void httpSetHostSecureEndpoint(HttpHost *host, HttpEndpoint *endpoint)
 {
     host->secureEndpoint = endpoint;
 }
 
 
-void httpSetHostDefaultEndpoint(HttpHost *host, HttpEndpoint *endpoint)
+PUBLIC void httpSetHostDefaultEndpoint(HttpHost *host, HttpEndpoint *endpoint)
 {
     host->defaultEndpoint = endpoint;
 }
 
 
-HttpHost *httpGetDefaultHost()
+PUBLIC HttpHost *httpGetDefaultHost()
 {
     return defaultHost;
 }
 
 
-HttpRoute *httpGetDefaultRoute(HttpHost *host)
+PUBLIC HttpRoute *httpGetDefaultRoute(HttpHost *host)
 {
     if (host) {
         return host->defaultRoute;
@@ -4377,7 +4377,7 @@ typedef struct HttpStatusCode {
 } HttpStatusCode;
 
 
-HttpStatusCode HttpStatusCodes[] = {
+PUBLIC HttpStatusCode HttpStatusCodes[] = {
     { 100, "100", "Continue" },
     { 101, "101", "Switching Protocols" },
     { 200, "200", "OK" },
@@ -4434,7 +4434,7 @@ static void updateCurrentDate(Http *http);
 
 /*********************************** Code *************************************/
 
-Http *httpCreate()
+PUBLIC Http *httpCreate()
 {
     Http            *http;
     HttpStatusCode  *code;
@@ -4543,7 +4543,7 @@ static void manageHttp(Http *http, int flags)
 }
 
 
-void httpDestroy(Http *http)
+PUBLIC void httpDestroy(Http *http)
 {
     if (http->timer) {
         mprRemoveEvent(http->timer);
@@ -4557,13 +4557,13 @@ void httpDestroy(Http *http)
 }
 
 
-void httpAddEndpoint(Http *http, HttpEndpoint *endpoint)
+PUBLIC void httpAddEndpoint(Http *http, HttpEndpoint *endpoint)
 {
     mprAddItem(http->endpoints, endpoint);
 }
 
 
-void httpRemoveEndpoint(Http *http, HttpEndpoint *endpoint)
+PUBLIC void httpRemoveEndpoint(Http *http, HttpEndpoint *endpoint)
 {
     mprRemoveItem(http->endpoints, endpoint);
 }
@@ -4572,7 +4572,7 @@ void httpRemoveEndpoint(Http *http, HttpEndpoint *endpoint)
 /*  
     Lookup a host address. If ipAddr is null or port is -1, then those elements are wild.
  */
-HttpEndpoint *httpLookupEndpoint(Http *http, cchar *ip, int port)
+PUBLIC HttpEndpoint *httpLookupEndpoint(Http *http, cchar *ip, int port)
 {
     HttpEndpoint    *endpoint;
     int             next;
@@ -4592,7 +4592,7 @@ HttpEndpoint *httpLookupEndpoint(Http *http, cchar *ip, int port)
 }
 
 
-HttpEndpoint *httpGetFirstEndpoint(Http *http)
+PUBLIC HttpEndpoint *httpGetFirstEndpoint(Http *http)
 {
     return mprGetFirstItem(http->endpoints);
 }
@@ -4601,19 +4601,19 @@ HttpEndpoint *httpGetFirstEndpoint(Http *http)
 /*
     WARNING: this should not be called by users as httpCreateHost will automatically call this.
  */
-void httpAddHost(Http *http, HttpHost *host)
+PUBLIC void httpAddHost(Http *http, HttpHost *host)
 {
     mprAddItem(http->hosts, host);
 }
 
 
-void httpRemoveHost(Http *http, HttpHost *host)
+PUBLIC void httpRemoveHost(Http *http, HttpHost *host)
 {
     mprRemoveItem(http->hosts, host);
 }
 
 
-HttpHost *httpLookupHost(Http *http, cchar *name)
+PUBLIC HttpHost *httpLookupHost(Http *http, cchar *name)
 {
     HttpHost    *host;
     int         next;
@@ -4627,7 +4627,7 @@ HttpHost *httpLookupHost(Http *http, cchar *name)
 }
 
 
-void httpInitLimits(HttpLimits *limits, bool serverSide)
+PUBLIC void httpInitLimits(HttpLimits *limits, bool serverSide)
 {
     memset(limits, 0, sizeof(HttpLimits));
     limits->cacheItemSize = HTTP_MAX_CACHE_ITEM;
@@ -4675,7 +4675,7 @@ void httpInitLimits(HttpLimits *limits, bool serverSide)
 }
 
 
-HttpLimits *httpCreateLimits(int serverSide)
+PUBLIC HttpLimits *httpCreateLimits(int serverSide)
 {
     HttpLimits  *limits;
 
@@ -4686,7 +4686,7 @@ HttpLimits *httpCreateLimits(int serverSide)
 }
 
 
-void httpEaseLimits(HttpLimits *limits)
+PUBLIC void httpEaseLimits(HttpLimits *limits)
 {
     limits->receiveFormSize = MAXOFF;
     limits->receiveBodySize = MAXOFF;
@@ -4695,19 +4695,19 @@ void httpEaseLimits(HttpLimits *limits)
 }
 
 
-void httpAddStage(Http *http, HttpStage *stage)
+PUBLIC void httpAddStage(Http *http, HttpStage *stage)
 {
     mprAddKey(http->stages, stage->name, stage);
 }
 
 
-HttpStage *httpLookupStage(Http *http, cchar *name)
+PUBLIC HttpStage *httpLookupStage(Http *http, cchar *name)
 {
     return mprLookupKey(http->stages, name);
 }
 
 
-void *httpLookupStageData(Http *http, cchar *name)
+PUBLIC void *httpLookupStageData(Http *http, cchar *name)
 {
     HttpStage   *stage;
     if ((stage = mprLookupKey(http->stages, name)) != 0) {
@@ -4717,7 +4717,7 @@ void *httpLookupStageData(Http *http, cchar *name)
 }
 
 
-cchar *httpLookupStatus(Http *http, int status)
+PUBLIC cchar *httpLookupStatus(Http *http, int status)
 {
     HttpStatusCode  *ep;
     char            *key;
@@ -4731,14 +4731,14 @@ cchar *httpLookupStatus(Http *http, int status)
 }
 
 
-void httpSetForkCallback(Http *http, MprForkCallback callback, void *data)
+PUBLIC void httpSetForkCallback(Http *http, MprForkCallback callback, void *data)
 {
     http->forkCallback = callback;
     http->forkData = data;
 }
 
 
-void httpSetListenCallback(Http *http, HttpListenCallback fn)
+PUBLIC void httpSetListenCallback(Http *http, HttpListenCallback fn)
 {
     http->listenCallback = fn;
 }
@@ -4830,7 +4830,7 @@ static void timestamp()
 }
 
 
-void httpSetTimestamp(MprTime period)
+PUBLIC void httpSetTimestamp(MprTime period)
 {
     Http    *http;
 
@@ -4900,7 +4900,7 @@ static bool isIdle()
 }
 
 
-void httpAddConn(Http *http, HttpConn *conn)
+PUBLIC void httpAddConn(Http *http, HttpConn *conn)
 {
     conn->started = http->now;
     mprAddItem(http->connections, conn);
@@ -4916,7 +4916,7 @@ void httpAddConn(Http *http, HttpConn *conn)
 }
 
 
-void httpRemoveConn(Http *http, HttpConn *conn)
+PUBLIC void httpRemoveConn(Http *http, HttpConn *conn)
 {
     mprRemoveItem(http->connections, conn);
 }
@@ -4926,7 +4926,7 @@ void httpRemoveConn(Http *http, HttpConn *conn)
     Create a random secret for use in authentication. Create once for the entire http service. Created on demand.
     Users can recall as required to update.
  */
-int httpCreateSecret(Http *http)
+PUBLIC int httpCreateSecret(Http *http)
 {
     MprTime     now;
     char        *hex = "0123456789abcdef";
@@ -4961,13 +4961,13 @@ int httpCreateSecret(Http *http)
 }
 
 
-void httpEnableTraceMethod(HttpLimits *limits, bool on)
+PUBLIC void httpEnableTraceMethod(HttpLimits *limits, bool on)
 {
     limits->enableTraceMethod = on;
 }
 
 
-char *httpGetDateString(MprPath *sbuf)
+PUBLIC char *httpGetDateString(MprPath *sbuf)
 {
     MprTime     when;
 
@@ -4980,49 +4980,49 @@ char *httpGetDateString(MprPath *sbuf)
 }
 
 
-void *httpGetContext(Http *http)
+PUBLIC void *httpGetContext(Http *http)
 {
     return http->context;
 }
 
 
-void httpSetContext(Http *http, void *context)
+PUBLIC void httpSetContext(Http *http, void *context)
 {
     http->context = context;
 }
 
 
-int httpGetDefaultClientPort(Http *http)
+PUBLIC int httpGetDefaultClientPort(Http *http)
 {
     return http->defaultClientPort;
 }
 
 
-cchar *httpGetDefaultClientHost(Http *http)
+PUBLIC cchar *httpGetDefaultClientHost(Http *http)
 {
     return http->defaultClientHost;
 }
 
 
-void httpSetDefaultClientPort(Http *http, int port)
+PUBLIC void httpSetDefaultClientPort(Http *http, int port)
 {
     http->defaultClientPort = port;
 }
 
 
-void httpSetDefaultClientHost(Http *http, cchar *host)
+PUBLIC void httpSetDefaultClientHost(Http *http, cchar *host)
 {
     http->defaultClientHost = sclone(host);
 }
 
 
-void httpSetSoftware(Http *http, cchar *software)
+PUBLIC void httpSetSoftware(Http *http, cchar *software)
 {
     http->software = sclone(software);
 }
 
 
-void httpSetProxy(Http *http, cchar *host, int port)
+PUBLIC void httpSetProxy(Http *http, cchar *host, int port)
 {
     http->proxyHost = sclone(host);
     http->proxyPort = port;
@@ -5077,7 +5077,7 @@ static void updateCurrentDate(Http *http)
 
 /************************************ Code ************************************/
 
-int httpSetRouteLog(HttpRoute *route, cchar *path, ssize size, int backup, cchar *format, int flags)
+PUBLIC int httpSetRouteLog(HttpRoute *route, cchar *path, ssize size, int backup, cchar *format, int flags)
 {
     char    *src, *dest;
 
@@ -5112,7 +5112,7 @@ int httpSetRouteLog(HttpRoute *route, cchar *path, ssize size, int backup, cchar
 }
 
 
-void httpBackupRouteLog(HttpRoute *route)
+PUBLIC void httpBackupRouteLog(HttpRoute *route)
 {
     MprPath     info;
 
@@ -5137,7 +5137,7 @@ void httpBackupRouteLog(HttpRoute *route)
 }
 
 
-MprFile *httpOpenRouteLog(HttpRoute *route)
+PUBLIC MprFile *httpOpenRouteLog(HttpRoute *route)
 {
     MprFile     *file;
     int         mode;
@@ -5153,7 +5153,7 @@ MprFile *httpOpenRouteLog(HttpRoute *route)
 }
 
 
-void httpWriteRouteLog(HttpRoute *route, cchar *buf, ssize len)
+PUBLIC void httpWriteRouteLog(HttpRoute *route, cchar *buf, ssize len)
 {
     lock(MPR);
     if (route->logBackup > 0) {
@@ -5173,7 +5173,7 @@ void httpWriteRouteLog(HttpRoute *route, cchar *buf, ssize len)
 }
 
 
-void httpLogRequest(HttpConn *conn)
+PUBLIC void httpLogRequest(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -5347,7 +5347,7 @@ static void netOutgoingService(HttpQueue *q);
 /*  
     Initialize the net connector
  */
-int httpOpenNetConnector(Http *http)
+PUBLIC int httpOpenNetConnector(Http *http)
 {
     HttpStage     *stage;
 
@@ -5672,7 +5672,7 @@ static void managePacket(HttpPacket *packet, int flags);
     used for incoming body content. If size > 0, then create a non-growable buffer 
     of the requested size.
  */
-HttpPacket *httpCreatePacket(ssize size)
+PUBLIC HttpPacket *httpCreatePacket(ssize size)
 {
     HttpPacket  *packet;
 
@@ -5698,7 +5698,7 @@ static void managePacket(HttpPacket *packet, int flags)
 }
 
 
-HttpPacket *httpCreateDataPacket(ssize size)
+PUBLIC HttpPacket *httpCreateDataPacket(ssize size)
 {
     HttpPacket    *packet;
 
@@ -5710,7 +5710,7 @@ HttpPacket *httpCreateDataPacket(ssize size)
 }
 
 
-HttpPacket *httpCreateEntityPacket(MprOff pos, MprOff size, HttpFillProc fill)
+PUBLIC HttpPacket *httpCreateEntityPacket(MprOff pos, MprOff size, HttpFillProc fill)
 {
     HttpPacket    *packet;
 
@@ -5725,7 +5725,7 @@ HttpPacket *httpCreateEntityPacket(MprOff pos, MprOff size, HttpFillProc fill)
 }
 
 
-HttpPacket *httpCreateEndPacket()
+PUBLIC HttpPacket *httpCreateEndPacket()
 {
     HttpPacket    *packet;
 
@@ -5737,7 +5737,7 @@ HttpPacket *httpCreateEndPacket()
 }
 
 
-HttpPacket *httpCreateHeaderPacket()
+PUBLIC HttpPacket *httpCreateHeaderPacket()
 {
     HttpPacket    *packet;
 
@@ -5749,7 +5749,7 @@ HttpPacket *httpCreateHeaderPacket()
 }
 
 
-HttpPacket *httpClonePacket(HttpPacket *orig)
+PUBLIC HttpPacket *httpClonePacket(HttpPacket *orig)
 {
     HttpPacket  *packet;
 
@@ -5770,7 +5770,7 @@ HttpPacket *httpClonePacket(HttpPacket *orig)
 }
 
 
-void httpAdjustPacketStart(HttpPacket *packet, MprOff size)
+PUBLIC void httpAdjustPacketStart(HttpPacket *packet, MprOff size)
 {
     if (packet->esize) {
         packet->epos += size;
@@ -5781,7 +5781,7 @@ void httpAdjustPacketStart(HttpPacket *packet, MprOff size)
 }
 
 
-void httpAdjustPacketEnd(HttpPacket *packet, MprOff size)
+PUBLIC void httpAdjustPacketEnd(HttpPacket *packet, MprOff size)
 {
     if (packet->esize) {
         packet->esize += size;
@@ -5791,7 +5791,7 @@ void httpAdjustPacketEnd(HttpPacket *packet, MprOff size)
 }
 
 
-HttpPacket *httpGetPacket(HttpQueue *q)
+PUBLIC HttpPacket *httpGetPacket(HttpQueue *q)
 {
     HttpQueue     *prev;
     HttpPacket    *packet;
@@ -5825,7 +5825,7 @@ HttpPacket *httpGetPacket(HttpQueue *q)
 /*  
     Test if the packet is too too large to be accepted by the downstream queue.
  */
-bool httpIsPacketTooBig(HttpQueue *q, HttpPacket *packet)
+PUBLIC bool httpIsPacketTooBig(HttpQueue *q, HttpPacket *packet)
 {
     ssize   size;
     
@@ -5837,7 +5837,7 @@ bool httpIsPacketTooBig(HttpQueue *q, HttpPacket *packet)
 /*  
     Join a packet onto the service queue. This joins packet content data.
  */
-void httpJoinPacketForService(HttpQueue *q, HttpPacket *packet, bool serviceQ)
+PUBLIC void httpJoinPacketForService(HttpQueue *q, HttpPacket *packet, bool serviceQ)
 {
     if (q->first == 0) {
         /*  Just use the service queue as a holding queue while we aggregate the post data.  */
@@ -5865,7 +5865,7 @@ void httpJoinPacketForService(HttpQueue *q, HttpPacket *packet, bool serviceQ)
     Join two packets by pulling the content from the second into the first.
     WARNING: this will not update the queue count. Assumes the either both are on the queue or neither. 
  */
-int httpJoinPacket(HttpPacket *packet, HttpPacket *p)
+PUBLIC int httpJoinPacket(HttpPacket *packet, HttpPacket *p)
 {
     ssize   len;
 
@@ -5887,7 +5887,7 @@ int httpJoinPacket(HttpPacket *packet, HttpPacket *p)
     Join queue packets up to the maximum of the given size and the downstream queue packet size.
     WARNING: this will not update the queue count.
  */
-void httpJoinPackets(HttpQueue *q, ssize size)
+PUBLIC void httpJoinPackets(HttpQueue *q, ssize size)
 {
     HttpPacket  *packet, *first;
     ssize       len;
@@ -5913,7 +5913,7 @@ void httpJoinPackets(HttpQueue *q, ssize size)
 }
 
 
-void httpPutPacket(HttpQueue *q, HttpPacket *packet)
+PUBLIC void httpPutPacket(HttpQueue *q, HttpPacket *packet)
 {
     mprAssert(packet);
     mprAssert(q->put);
@@ -5925,7 +5925,7 @@ void httpPutPacket(HttpQueue *q, HttpPacket *packet)
 /*  
     Pass to the next stage in the pipeline
  */
-void httpPutPacketToNext(HttpQueue *q, HttpPacket *packet)
+PUBLIC void httpPutPacketToNext(HttpQueue *q, HttpPacket *packet)
 {
     mprAssert(packet);
     mprAssert(q->nextQ->put);
@@ -5934,7 +5934,7 @@ void httpPutPacketToNext(HttpQueue *q, HttpPacket *packet)
 }
 
 
-void httpPutPackets(HttpQueue *q)
+PUBLIC void httpPutPackets(HttpQueue *q)
 {
     HttpPacket    *packet;
 
@@ -5947,7 +5947,7 @@ void httpPutPackets(HttpQueue *q)
 /*  
     Put the packet back at the front of the queue
  */
-void httpPutBackPacket(HttpQueue *q, HttpPacket *packet)
+PUBLIC void httpPutBackPacket(HttpQueue *q, HttpPacket *packet)
 {
     mprAssert(packet);
     mprAssert(packet->next == 0);
@@ -5967,7 +5967,7 @@ void httpPutBackPacket(HttpQueue *q, HttpPacket *packet)
 /*  
     Put a packet on the service queue.
  */
-void httpPutForService(HttpQueue *q, HttpPacket *packet, bool serviceQ)
+PUBLIC void httpPutForService(HttpQueue *q, HttpPacket *packet, bool serviceQ)
 {
     mprAssert(packet);
    
@@ -5992,7 +5992,7 @@ void httpPutForService(HttpQueue *q, HttpPacket *packet, bool serviceQ)
     on the queue. Ensure that the packet is not larger than "size" if it is greater than zero. If size < 0, then
     use the default packet size. 
  */
-int httpResizePacket(HttpQueue *q, HttpPacket *packet, ssize size)
+PUBLIC int httpResizePacket(HttpQueue *q, HttpPacket *packet, ssize size)
 {
     HttpPacket  *tail;
     ssize       len;
@@ -6028,7 +6028,7 @@ int httpResizePacket(HttpQueue *q, HttpPacket *packet, ssize size)
     Split a packet at a given offset and return a new packet containing the data after the offset.
     The prefix data remains with the original packet. 
  */
-HttpPacket *httpSplitPacket(HttpPacket *orig, ssize offset)
+PUBLIC HttpPacket *httpSplitPacket(HttpPacket *orig, ssize offset)
 {
     HttpPacket  *packet;
     ssize       count, size;
@@ -6135,7 +6135,7 @@ static int pamChat(int msgCount, const struct pam_message **msg, struct pam_resp
 
 /*********************************** Code *************************************/
 
-bool httpPamVerifyUser(HttpConn *conn)
+PUBLIC bool httpPamVerifyUser(HttpConn *conn)
 {
     MprBuf              *abilities;
     pam_handle_t        *pamh;
@@ -6278,7 +6278,7 @@ static int pamChat(int msgCount, const struct pam_message **msg, struct pam_resp
     Handle Trace and Options requests. Handlers can do this themselves if they desire, but typically
     all Trace/Options requests come here.
  */
-void httpHandleOptionsTrace(HttpConn *conn)
+PUBLIC void httpHandleOptionsTrace(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -6340,7 +6340,7 @@ static void readyError(HttpQueue *q)
 }
 
 
-int httpOpenPassHandler(Http *http)
+PUBLIC int httpOpenPassHandler(Http *http)
 {
     HttpStage     *stage;
 
@@ -6406,7 +6406,7 @@ static void pairQueues(HttpConn *conn);
 
 /*********************************** Code *************************************/
 
-void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
+PUBLIC void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
 {
     Http        *http;
     HttpTx      *tx;
@@ -6477,7 +6477,7 @@ void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
 }
 
 
-void httpCreateRxPipeline(HttpConn *conn, HttpRoute *route)
+PUBLIC void httpCreateRxPipeline(HttpConn *conn, HttpRoute *route)
 {
     HttpTx      *tx;
     HttpRx      *rx;
@@ -6555,13 +6555,13 @@ static void openQueues(HttpConn *conn)
 }
 
 
-void httpSetPipelineHandler(HttpConn *conn, HttpStage *handler)
+PUBLIC void httpSetPipelineHandler(HttpConn *conn, HttpStage *handler)
 {
     conn->tx->handler = (handler) ? handler : conn->http->passHandler;
 }
 
 
-void httpSetSendConnector(HttpConn *conn, cchar *path)
+PUBLIC void httpSetSendConnector(HttpConn *conn, cchar *path)
 {
 #if !BIT_ROM
     HttpTx      *tx;
@@ -6575,7 +6575,7 @@ void httpSetSendConnector(HttpConn *conn, cchar *path)
 }
 
 
-void httpDestroyPipeline(HttpConn *conn)
+PUBLIC void httpDestroyPipeline(HttpConn *conn)
 {
     HttpTx      *tx;
     HttpQueue   *q, *qhead;
@@ -6596,7 +6596,7 @@ void httpDestroyPipeline(HttpConn *conn)
 }
 
 
-void httpStartPipeline(HttpConn *conn)
+PUBLIC void httpStartPipeline(HttpConn *conn)
 {
     HttpQueue   *qhead, *q, *prevQ, *nextQ;
     HttpTx      *tx;
@@ -6639,7 +6639,7 @@ void httpStartPipeline(HttpConn *conn)
 }
 
 
-void httpReadyHandler(HttpConn *conn)
+PUBLIC void httpReadyHandler(HttpConn *conn)
 {
     HttpQueue   *q;
     
@@ -6650,7 +6650,7 @@ void httpReadyHandler(HttpConn *conn)
 }
 
 
-bool httpPumpHandler(HttpConn *conn)
+PUBLIC bool httpPumpHandler(HttpConn *conn)
 {
     HttpQueue   *q;
     
@@ -6672,7 +6672,7 @@ bool httpPumpHandler(HttpConn *conn)
 /*  
     Run the queue service routines until there is no more work to be done. NOTE: all I/O is non-blocking.
  */
-bool httpServiceQueues(HttpConn *conn)
+PUBLIC bool httpServiceQueues(HttpConn *conn)
 {
     HttpQueue   *q;
     int         workDone;
@@ -6691,7 +6691,7 @@ bool httpServiceQueues(HttpConn *conn)
 }
 
 
-void httpDiscardData(HttpConn *conn, int dir)
+PUBLIC void httpDiscardData(HttpConn *conn, int dir)
 {
     HttpTx      *tx;
     HttpQueue   *q, *qhead;
@@ -6779,7 +6779,7 @@ static void startProc(HttpQueue *q)
 }
 
 
-void httpDefineProc(cchar *name, HttpProc proc)
+PUBLIC void httpDefineProc(cchar *name, HttpProc proc)
 {
     HttpStage   *stage;
 
@@ -6791,7 +6791,7 @@ void httpDefineProc(cchar *name, HttpProc proc)
 }
 
 
-int httpOpenProcHandler(Http *http)
+PUBLIC int httpOpenProcHandler(Http *http)
 {
     HttpStage     *stage;
 
@@ -6848,7 +6848,7 @@ static void manageQueue(HttpQueue *q, int flags);
 
 /************************************ Code ************************************/
 
-HttpQueue *httpCreateQueueHead(HttpConn *conn, cchar *name)
+PUBLIC HttpQueue *httpCreateQueueHead(HttpConn *conn, cchar *name)
 {
     HttpQueue   *q;
 
@@ -6861,7 +6861,7 @@ HttpQueue *httpCreateQueueHead(HttpConn *conn, cchar *name)
 }
 
 
-HttpQueue *httpCreateQueue(HttpConn *conn, HttpStage *stage, int dir, HttpQueue *prev)
+PUBLIC HttpQueue *httpCreateQueue(HttpConn *conn, HttpStage *stage, int dir, HttpQueue *prev)
 {
     HttpQueue   *q;
 
@@ -6906,7 +6906,7 @@ static void manageQueue(HttpQueue *q, int flags)
 }
 
 
-void httpAssignQueue(HttpQueue *q, HttpStage *stage, int dir)
+PUBLIC void httpAssignQueue(HttpQueue *q, HttpStage *stage, int dir)
 {
     q->stage = stage;
     q->close = stage->close;
@@ -6923,7 +6923,7 @@ void httpAssignQueue(HttpQueue *q, HttpStage *stage, int dir)
 }
 
 
-void httpInitQueue(HttpConn *conn, HttpQueue *q, cchar *name)
+PUBLIC void httpInitQueue(HttpConn *conn, HttpQueue *q, cchar *name)
 {
     q->conn = conn;
     q->nextQ = q;
@@ -6939,7 +6939,7 @@ void httpInitQueue(HttpConn *conn, HttpQueue *q, cchar *name)
 /*  
     Insert a queue after the previous element
  */
-void httpAppendQueueToHead(HttpQueue *head, HttpQueue *q)
+PUBLIC void httpAppendQueueToHead(HttpQueue *head, HttpQueue *q)
 {
     q->nextQ = head;
     q->prevQ = head->prevQ;
@@ -6949,7 +6949,7 @@ void httpAppendQueueToHead(HttpQueue *head, HttpQueue *q)
 #endif
 
 
-void httpSuspendQueue(HttpQueue *q)
+PUBLIC void httpSuspendQueue(HttpQueue *q)
 {
     mprLog(7, "Suspend q %s", q->owner);
     q->flags |= HTTP_QUEUE_SUSPENDED;
@@ -6960,7 +6960,7 @@ void httpSuspendQueue(HttpQueue *q)
     Remove all data in the queue. If removePackets is true, actually remove the packet too.
     This preserves the header and EOT packets.
  */
-void httpDiscardQueueData(HttpQueue *q, bool removePackets)
+PUBLIC void httpDiscardQueueData(HttpQueue *q, bool removePackets)
 {
     HttpPacket  *packet, *prev, *next;
     ssize       len;
@@ -7003,7 +7003,7 @@ void httpDiscardQueueData(HttpQueue *q, bool removePackets)
     If blocking is requested, the call will block until the queue count falls below the queue max.
     WARNING: Be very careful when using blocking == true. Should only be used by end applications and not by middleware.
  */
-bool httpFlushQueue(HttpQueue *q, bool blocking)
+PUBLIC bool httpFlushQueue(HttpQueue *q, bool blocking)
 {
     HttpConn    *conn;
     HttpQueue   *next;
@@ -7025,7 +7025,7 @@ bool httpFlushQueue(HttpQueue *q, bool blocking)
 }
 
 
-void httpResumeQueue(HttpQueue *q)
+PUBLIC void httpResumeQueue(HttpQueue *q)
 {
     mprLog(7, "Enable q %s", q->owner);
     q->flags &= ~HTTP_QUEUE_SUSPENDED;
@@ -7033,7 +7033,7 @@ void httpResumeQueue(HttpQueue *q)
 }
 
 
-HttpQueue *httpFindPreviousQueue(HttpQueue *q)
+PUBLIC HttpQueue *httpFindPreviousQueue(HttpQueue *q)
 {
     while (q->prevQ) {
         q = q->prevQ;
@@ -7045,7 +7045,7 @@ HttpQueue *httpFindPreviousQueue(HttpQueue *q)
 }
 
 
-HttpQueue *httpGetNextQueueForService(HttpQueue *q)
+PUBLIC HttpQueue *httpGetNextQueueForService(HttpQueue *q)
 {
     HttpQueue     *next;
     
@@ -7063,7 +7063,7 @@ HttpQueue *httpGetNextQueueForService(HttpQueue *q)
 /*  
     Return the number of bytes the queue will accept. Always positive.
  */
-ssize httpGetQueueRoom(HttpQueue *q)
+PUBLIC ssize httpGetQueueRoom(HttpQueue *q)
 {
     mprAssert(q->max > 0);
     mprAssert(q->count >= 0);
@@ -7075,7 +7075,7 @@ ssize httpGetQueueRoom(HttpQueue *q)
 }
 
 
-void httpInitSchedulerQueue(HttpQueue *q)
+PUBLIC void httpInitSchedulerQueue(HttpQueue *q)
 {
     q->scheduleNext = q;
     q->schedulePrev = q;
@@ -7085,7 +7085,7 @@ void httpInitSchedulerQueue(HttpQueue *q)
 /*  
     Append a queue after the previous element
  */
-void httpAppendQueue(HttpQueue *prev, HttpQueue *q)
+PUBLIC void httpAppendQueue(HttpQueue *prev, HttpQueue *q)
 {
     q->nextQ = prev->nextQ;
     q->prevQ = prev;
@@ -7094,13 +7094,13 @@ void httpAppendQueue(HttpQueue *prev, HttpQueue *q)
 }
 
 
-bool httpIsQueueEmpty(HttpQueue *q)
+PUBLIC bool httpIsQueueEmpty(HttpQueue *q)
 {
     return q->first == 0;
 }
 
 
-int httpOpenQueue(HttpQueue *q, ssize chunkSize)
+PUBLIC int httpOpenQueue(HttpQueue *q, ssize chunkSize)
 {
     Http        *http;
     HttpConn    *conn;
@@ -7138,7 +7138,7 @@ int httpOpenQueue(HttpQueue *q, ssize chunkSize)
     Read data. If sync mode, this will block. If async, will never block.
     Will return what data is available up to the requested size. Returns a byte count.
  */
-ssize httpRead(HttpConn *conn, char *buf, ssize size)
+PUBLIC ssize httpRead(HttpConn *conn, char *buf, ssize size)
 {
     HttpPacket  *packet;
     HttpQueue   *q;
@@ -7189,13 +7189,13 @@ ssize httpRead(HttpConn *conn, char *buf, ssize size)
 }
 
 
-ssize httpGetReadCount(HttpConn *conn)
+PUBLIC ssize httpGetReadCount(HttpConn *conn)
 {
     return conn->readq->count;
 }
 
 
-bool httpIsEof(HttpConn *conn) 
+PUBLIC bool httpIsEof(HttpConn *conn) 
 {
     return conn->rx == 0 || conn->rx->eof;
 }
@@ -7204,7 +7204,7 @@ bool httpIsEof(HttpConn *conn)
 /*
     Read data as a string
  */
-char *httpReadString(HttpConn *conn)
+PUBLIC char *httpReadString(HttpConn *conn)
 {
     HttpRx      *rx;
     ssize       sofar, nbytes, remaining;
@@ -7245,7 +7245,7 @@ char *httpReadString(HttpConn *conn)
 }
 
 
-void httpRemoveQueue(HttpQueue *q)
+PUBLIC void httpRemoveQueue(HttpQueue *q)
 {
     q->prevQ->nextQ = q->nextQ;
     q->nextQ->prevQ = q->prevQ;
@@ -7253,7 +7253,7 @@ void httpRemoveQueue(HttpQueue *q)
 }
 
 
-void httpScheduleQueue(HttpQueue *q)
+PUBLIC void httpScheduleQueue(HttpQueue *q)
 {
     HttpQueue     *head;
     
@@ -7269,7 +7269,7 @@ void httpScheduleQueue(HttpQueue *q)
 }
 
 
-void httpServiceQueue(HttpQueue *q)
+PUBLIC void httpServiceQueue(HttpQueue *q)
 {
     q->conn->currentq = q;
 
@@ -7300,7 +7300,7 @@ void httpServiceQueue(HttpQueue *q)
     Return true if the next queue will accept this packet. If not, then disable the queue's service procedure.
     This may split the packet if it exceeds the downstreams maximum packet size.
  */
-bool httpWillNextQueueAcceptPacket(HttpQueue *q, HttpPacket *packet)
+PUBLIC bool httpWillNextQueueAcceptPacket(HttpQueue *q, HttpPacket *packet)
 {
     HttpQueue   *nextQ;
     ssize       size;
@@ -7332,7 +7332,7 @@ bool httpWillNextQueueAcceptPacket(HttpQueue *q, HttpPacket *packet)
 /*  
     Return true if the next queue will accept a certain amount of data.
  */
-bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size)
+PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size)
 {
     HttpQueue   *nextQ;
 
@@ -7354,7 +7354,7 @@ bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size)
     may call the queue outgoing service routine and disable downstream queues if they are overfull.
     This routine will always accept the data and never return "short". 
  */
-ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size)
+PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size)
 {
     HttpPacket  *packet;
     HttpConn    *conn;
@@ -7406,19 +7406,19 @@ ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size)
 }
 
 
-ssize httpWriteString(HttpQueue *q, cchar *s)
+PUBLIC ssize httpWriteString(HttpQueue *q, cchar *s)
 {
     return httpWriteBlock(q, s, strlen(s));
 }
 
 
-ssize httpWriteSafeString(HttpQueue *q, cchar *s)
+PUBLIC ssize httpWriteSafeString(HttpQueue *q, cchar *s)
 {
     return httpWriteString(q, mprEscapeHtml(s));
 }
 
 
-ssize httpWrite(HttpQueue *q, cchar *fmt, ...)
+PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...)
 {
     va_list     vargs;
     char        *buf;
@@ -7430,7 +7430,7 @@ ssize httpWrite(HttpQueue *q, cchar *fmt, ...)
 }
 
 
-bool httpVerifyQueue(HttpQueue *q)
+PUBLIC bool httpVerifyQueue(HttpQueue *q)
 {
     HttpPacket  *packet;
     ssize       count;
@@ -7491,7 +7491,7 @@ static void startRange(HttpQueue *q);
 
 /*********************************** Code *************************************/
 
-int httpOpenRangeFilter(Http *http)
+PUBLIC int httpOpenRangeFilter(Http *http)
 {
     HttpStage     *filter;
 
@@ -7832,7 +7832,7 @@ static int updateRequest(HttpConn *conn, HttpRoute *route, HttpRouteOp *update);
 /*
     Host may be null
  */
-HttpRoute *httpCreateRoute(HttpHost *host)
+PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
 {
     HttpRoute  *route;
 
@@ -7877,7 +7877,7 @@ HttpRoute *httpCreateRoute(HttpHost *host)
 /*  
     Create a new location block. Inherit from the parent. We use a copy-on-write scheme if these are modified later.
  */
-HttpRoute *httpCreateInheritedRoute(HttpRoute *parent)
+PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *parent)
 {
     HttpRoute  *route;
 
@@ -8013,7 +8013,7 @@ static void manageRoute(HttpRoute *route, int flags)
 }
 
 
-HttpRoute *httpCreateDefaultRoute(HttpHost *host)
+PUBLIC HttpRoute *httpCreateDefaultRoute(HttpHost *host)
 {
     HttpRoute   *route;
 
@@ -8031,7 +8031,7 @@ HttpRoute *httpCreateDefaultRoute(HttpHost *host)
     Create and configure a basic route. This is mainly used for client side piplines.
     Host may be null.
  */
-HttpRoute *httpCreateConfiguredRoute(HttpHost *host, int serverSide)
+PUBLIC HttpRoute *httpCreateConfiguredRoute(HttpHost *host, int serverSide)
 {
     HttpRoute   *route;
     Http        *http;
@@ -8051,7 +8051,7 @@ HttpRoute *httpCreateConfiguredRoute(HttpHost *host, int serverSide)
 }
 
 
-HttpRoute *httpCreateAliasRoute(HttpRoute *parent, cchar *pattern, cchar *path, int status)
+PUBLIC HttpRoute *httpCreateAliasRoute(HttpRoute *parent, cchar *pattern, cchar *path, int status)
 {
     HttpRoute   *route;
 
@@ -8073,7 +8073,7 @@ HttpRoute *httpCreateAliasRoute(HttpRoute *parent, cchar *pattern, cchar *path, 
 /*
     This routine binds a new route to a URI. It creates a handler, route and binds a callback to that route. 
  */
-HttpRoute *httpCreateProcRoute(HttpRoute *parent, cchar *pattern, HttpProc proc)
+PUBLIC HttpRoute *httpCreateProcRoute(HttpRoute *parent, cchar *pattern, HttpProc proc)
 {
     HttpRoute   *route;
 
@@ -8090,7 +8090,7 @@ HttpRoute *httpCreateProcRoute(HttpRoute *parent, cchar *pattern, HttpProc proc)
 }
 
 
-int httpStartRoute(HttpRoute *route)
+PUBLIC int httpStartRoute(HttpRoute *route)
 {
 #if !BIT_ROM
     if (!(route->flags & HTTP_ROUTE_STARTED)) {
@@ -8112,7 +8112,7 @@ int httpStartRoute(HttpRoute *route)
 }
 
 
-void httpStopRoute(HttpRoute *route)
+PUBLIC void httpStopRoute(HttpRoute *route)
 {
     route->log = 0;
 }
@@ -8123,7 +8123,7 @@ void httpStopRoute(HttpRoute *route)
     pass errors via the net/sendfile connectors onto the client. This process may rewrite the request 
     URI and may redirect the request.
  */
-void httpRouteRequest(HttpConn *conn)
+PUBLIC void httpRouteRequest(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -8188,7 +8188,7 @@ void httpRouteRequest(HttpConn *conn)
 
 
 
-int httpMatchRoute(HttpConn *conn, HttpRoute *route)
+PUBLIC int httpMatchRoute(HttpConn *conn, HttpRoute *route)
 {
     HttpRx      *rx;
     char        *savePathInfo, *pathInfo;
@@ -8396,7 +8396,7 @@ static int selectHandler(HttpConn *conn, HttpRoute *route)
 /*
     Map the target to physical storage. Sets tx->filename and tx->ext.
  */
-void httpMapFile(HttpConn *conn, HttpRoute *route)
+PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -8428,7 +8428,7 @@ void httpMapFile(HttpConn *conn, HttpRoute *route)
 
 /************************************ API *************************************/
 
-int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, int flags)
+PUBLIC int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, int flags)
 {
     HttpRouteOp *op;
     cchar       *errMsg;
@@ -8476,7 +8476,7 @@ int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, int fla
 }
 
 
-int httpAddRouteFilter(HttpRoute *route, cchar *name, cchar *extensions, int direction)
+PUBLIC int httpAddRouteFilter(HttpRoute *route, cchar *name, cchar *extensions, int direction)
 {
     HttpStage   *stage;
     HttpStage   *filter;
@@ -8529,7 +8529,7 @@ int httpAddRouteFilter(HttpRoute *route, cchar *name, cchar *extensions, int dir
 }
 
 
-int httpAddRouteHandler(HttpRoute *route, cchar *name, cchar *extensions)
+PUBLIC int httpAddRouteHandler(HttpRoute *route, cchar *name, cchar *extensions)
 {
     Http            *http;
     HttpStage       *handler;
@@ -8586,7 +8586,7 @@ int httpAddRouteHandler(HttpRoute *route, cchar *name, cchar *extensions)
 /*
     Header field valuePattern
  */
-void httpAddRouteHeader(HttpRoute *route, cchar *header, cchar *value, int flags)
+PUBLIC void httpAddRouteHeader(HttpRoute *route, cchar *header, cchar *value, int flags)
 {
     HttpRouteOp     *op;
     cchar           *errMsg;
@@ -8609,7 +8609,7 @@ void httpAddRouteHeader(HttpRoute *route, cchar *header, cchar *value, int flags
 
 
 #if FUTURE && KEEP
-void httpAddRouteLoad(HttpRoute *route, cchar *module, cchar *path)
+PUBLIC void httpAddRouteLoad(HttpRoute *route, cchar *module, cchar *path)
 {
     HttpRouteOp     *op;
 
@@ -8627,7 +8627,7 @@ void httpAddRouteLoad(HttpRoute *route, cchar *module, cchar *path)
 /*
     Param field valuePattern
  */
-void httpAddRouteParam(HttpRoute *route, cchar *field, cchar *value, int flags)
+PUBLIC void httpAddRouteParam(HttpRoute *route, cchar *field, cchar *value, int flags)
 {
     HttpRouteOp     *op;
     cchar           *errMsg;
@@ -8656,7 +8656,7 @@ void httpAddRouteParam(HttpRoute *route, cchar *field, cchar *value, int flags)
         details == "var value"
     Value can contain pattern and request tokens.
  */
-int httpAddRouteUpdate(HttpRoute *route, cchar *rule, cchar *details, int flags)
+PUBLIC int httpAddRouteUpdate(HttpRoute *route, cchar *rule, cchar *details, int flags)
 {
     HttpRouteOp *op;
     char        *value;
@@ -8688,7 +8688,7 @@ int httpAddRouteUpdate(HttpRoute *route, cchar *rule, cchar *details, int flags)
 }
 
 
-void httpClearRouteStages(HttpRoute *route, int direction)
+PUBLIC void httpClearRouteStages(HttpRoute *route, int direction)
 {
     mprAssert(route);
 
@@ -8701,7 +8701,7 @@ void httpClearRouteStages(HttpRoute *route, int direction)
 }
 
 
-void httpDefineRouteTarget(cchar *key, HttpRouteProc *proc)
+PUBLIC void httpDefineRouteTarget(cchar *key, HttpRouteProc *proc)
 {
     mprAssert(key && *key);
     mprAssert(proc);
@@ -8710,7 +8710,7 @@ void httpDefineRouteTarget(cchar *key, HttpRouteProc *proc)
 }
 
 
-void httpDefineRouteCondition(cchar *key, HttpRouteProc *proc)
+PUBLIC void httpDefineRouteCondition(cchar *key, HttpRouteProc *proc)
 {
     mprAssert(key && *key);
     mprAssert(proc);
@@ -8719,7 +8719,7 @@ void httpDefineRouteCondition(cchar *key, HttpRouteProc *proc)
 }
 
 
-void httpDefineRouteUpdate(cchar *key, HttpRouteProc *proc)
+PUBLIC void httpDefineRouteUpdate(cchar *key, HttpRouteProc *proc)
 {
     mprAssert(key && *key);
     mprAssert(proc);
@@ -8728,7 +8728,7 @@ void httpDefineRouteUpdate(cchar *key, HttpRouteProc *proc)
 }
 
 
-void *httpGetRouteData(HttpRoute *route, cchar *key)
+PUBLIC void *httpGetRouteData(HttpRoute *route, cchar *key)
 {
     mprAssert(route);
     mprAssert(key && *key);
@@ -8740,21 +8740,21 @@ void *httpGetRouteData(HttpRoute *route, cchar *key)
 }
 
 
-cchar *httpGetRouteDir(HttpRoute *route)
+PUBLIC cchar *httpGetRouteDir(HttpRoute *route)
 {
     mprAssert(route);
     return route->dir;
 }
 
 
-cchar *httpGetRouteMethods(HttpRoute *route)
+PUBLIC cchar *httpGetRouteMethods(HttpRoute *route)
 {
     mprAssert(route);
     return route->methodSpec;
 }
 
 
-void httpResetRoutePipeline(HttpRoute *route)
+PUBLIC void httpResetRoutePipeline(HttpRoute *route)
 {
     mprAssert(route);
 
@@ -8771,7 +8771,7 @@ void httpResetRoutePipeline(HttpRoute *route)
 }
 
 
-void httpResetHandlers(HttpRoute *route)
+PUBLIC void httpResetHandlers(HttpRoute *route)
 {
     mprAssert(route);
     route->handlers = mprCreateList(-1, 0);
@@ -8779,21 +8779,21 @@ void httpResetHandlers(HttpRoute *route)
 }
 
 
-void httpSetRouteAuth(HttpRoute *route, HttpAuth *auth)
+PUBLIC void httpSetRouteAuth(HttpRoute *route, HttpAuth *auth)
 {
     mprAssert(route);
     route->auth = auth;
 }
 
 
-void httpSetRouteAutoDelete(HttpRoute *route, bool enable)
+PUBLIC void httpSetRouteAutoDelete(HttpRoute *route, bool enable)
 {
     mprAssert(route);
     route->autoDelete = enable;
 }
 
 
-void httpSetRouteCompression(HttpRoute *route, int flags)
+PUBLIC void httpSetRouteCompression(HttpRoute *route, int flags)
 {
     mprAssert(route);
     route->flags &= (HTTP_ROUTE_GZIP);
@@ -8801,7 +8801,7 @@ void httpSetRouteCompression(HttpRoute *route, int flags)
 }
 
 
-int httpSetRouteConnector(HttpRoute *route, cchar *name)
+PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name)
 {
     HttpStage     *stage;
 
@@ -8817,7 +8817,7 @@ int httpSetRouteConnector(HttpRoute *route, cchar *name)
 }
 
 
-void httpSetRouteData(HttpRoute *route, cchar *key, void *data)
+PUBLIC void httpSetRouteData(HttpRoute *route, cchar *key, void *data)
 {
     mprAssert(route);
     mprAssert(key && *key);
@@ -8832,14 +8832,14 @@ void httpSetRouteData(HttpRoute *route, cchar *key, void *data)
 }
 
 
-void httpSetRouteFlags(HttpRoute *route, int flags)
+PUBLIC void httpSetRouteFlags(HttpRoute *route, int flags)
 {
     mprAssert(route);
     route->flags = flags;
 }
 
 
-int httpSetRouteHandler(HttpRoute *route, cchar *name)
+PUBLIC int httpSetRouteHandler(HttpRoute *route, cchar *name)
 {
     HttpStage     *handler;
 
@@ -8855,7 +8855,7 @@ int httpSetRouteHandler(HttpRoute *route, cchar *name)
 }
 
 
-void httpSetRouteDir(HttpRoute *route, cchar *path)
+PUBLIC void httpSetRouteDir(HttpRoute *route, cchar *path)
 {
     mprAssert(route);
     mprAssert(path && *path);
@@ -8868,7 +8868,7 @@ void httpSetRouteDir(HttpRoute *route, cchar *path)
 /*
     WARNING: internal API only. 
  */
-void httpSetRouteHost(HttpRoute *route, HttpHost *host)
+PUBLIC void httpSetRouteHost(HttpRoute *route, HttpHost *host)
 {
     mprAssert(route);
     mprAssert(host);
@@ -8878,7 +8878,7 @@ void httpSetRouteHost(HttpRoute *route, HttpHost *host)
 }
 
 
-void httpAddRouteIndex(HttpRoute *route, cchar *index)
+PUBLIC void httpAddRouteIndex(HttpRoute *route, cchar *index)
 {
     cchar   *item;
     int     next;
@@ -8896,7 +8896,7 @@ void httpAddRouteIndex(HttpRoute *route, cchar *index)
 }
 
 
-void httpSetRouteMethods(HttpRoute *route, cchar *methods)
+PUBLIC void httpSetRouteMethods(HttpRoute *route, cchar *methods)
 {
     mprAssert(route);
     mprAssert(methods && methods);
@@ -8906,7 +8906,7 @@ void httpSetRouteMethods(HttpRoute *route, cchar *methods)
 }
 
 
-void httpSetRouteName(HttpRoute *route, cchar *name)
+PUBLIC void httpSetRouteName(HttpRoute *route, cchar *name)
 {
     mprAssert(route);
     mprAssert(name && *name);
@@ -8915,7 +8915,7 @@ void httpSetRouteName(HttpRoute *route, cchar *name)
 }
 
 
-void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags)
+PUBLIC void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags)
 {
     mprAssert(route);
     mprAssert(pattern && *pattern);
@@ -8926,7 +8926,7 @@ void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags)
 }
 
 
-void httpSetRoutePrefix(HttpRoute *route, cchar *prefix)
+PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix)
 {
     mprAssert(route);
     mprAssert(prefix && *prefix);
@@ -8939,7 +8939,7 @@ void httpSetRoutePrefix(HttpRoute *route, cchar *prefix)
 }
 
 
-void httpSetRouteSource(HttpRoute *route, cchar *source)
+PUBLIC void httpSetRouteSource(HttpRoute *route, cchar *source)
 {
     mprAssert(route);
     mprAssert(source);
@@ -8949,7 +8949,7 @@ void httpSetRouteSource(HttpRoute *route, cchar *source)
 }
 
 
-void httpSetRouteScript(HttpRoute *route, cchar *script, cchar *scriptPath)
+PUBLIC void httpSetRouteScript(HttpRoute *route, cchar *script, cchar *scriptPath)
 {
     mprAssert(route);
     
@@ -8973,7 +8973,7 @@ void httpSetRouteScript(HttpRoute *route, cchar *script, cchar *scriptPath)
         Target run ${controller}-${name} 
         Target write [-r] status "Hello World\r\n"
  */
-int httpSetRouteTarget(HttpRoute *route, cchar *rule, cchar *details)
+PUBLIC int httpSetRouteTarget(HttpRoute *route, cchar *rule, cchar *details)
 {
     char    *redirect, *msg;
 
@@ -9016,7 +9016,7 @@ int httpSetRouteTarget(HttpRoute *route, cchar *rule, cchar *details)
 }
 
 
-void httpSetRouteTemplate(HttpRoute *route, cchar *tplate)
+PUBLIC void httpSetRouteTemplate(HttpRoute *route, cchar *tplate)
 {
     mprAssert(route);
     mprAssert(tplate && *tplate);
@@ -9025,14 +9025,14 @@ void httpSetRouteTemplate(HttpRoute *route, cchar *tplate)
 }
 
 
-void httpSetRouteWorkers(HttpRoute *route, int workers)
+PUBLIC void httpSetRouteWorkers(HttpRoute *route, int workers)
 {
     mprAssert(route);
     route->workers = workers;
 }
 
 
-void httpAddRouteErrorDocument(HttpRoute *route, int status, cchar *url)
+PUBLIC void httpAddRouteErrorDocument(HttpRoute *route, int status, cchar *url)
 {
     char    *code;
 
@@ -9043,7 +9043,7 @@ void httpAddRouteErrorDocument(HttpRoute *route, int status, cchar *url)
 }
 
 
-cchar *httpLookupRouteErrorDocument(HttpRoute *route, int code)
+PUBLIC cchar *httpLookupRouteErrorDocument(HttpRoute *route, int code)
 {
     char   *num;
 
@@ -9363,7 +9363,7 @@ static char *finalizeTemplate(HttpRoute *route)
 }
 
 
-void httpFinalizeRoute(HttpRoute *route)
+PUBLIC void httpFinalizeRoute(HttpRoute *route)
 {
     /*
         Add the route to the owning host. When using an Appweb configuration file, the order of route finalization 
@@ -9383,7 +9383,7 @@ void httpFinalizeRoute(HttpRoute *route)
     What does this return. Does it return an absolute URI?
     MOB - consider rename httpUri() and move to uri.c
  */
-char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
+PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
 {
     HttpRoute       *route, *lroute;
     HttpRx          *rx;
@@ -9503,7 +9503,7 @@ static cchar *expandRouteName(HttpConn *conn, cchar *routeName)
     Expect a route->tplate with embedded tokens of the form: "/${controller}/${action}/${other}"
     The options is a hash of token values.
  */
-char *httpTemplate(HttpConn *conn, cchar *tplate, MprHash *options)
+PUBLIC char *httpTemplate(HttpConn *conn, cchar *tplate, MprHash *options)
 {
     MprBuf      *buf;
     HttpRoute   *route;
@@ -9545,7 +9545,7 @@ char *httpTemplate(HttpConn *conn, cchar *tplate, MprHash *options)
 }
 
 
-void httpSetRouteVar(HttpRoute *route, cchar *key, cchar *value)
+PUBLIC void httpSetRouteVar(HttpRoute *route, cchar *key, cchar *value)
 {
     mprAssert(route);
     mprAssert(key);
@@ -9563,7 +9563,7 @@ void httpSetRouteVar(HttpRoute *route, cchar *key, cchar *value)
     Make a path name. This replaces $references, converts to an absolute path name, cleans the path and maps delimiters.
     Paths are resolved relative to host->home (ServerRoot).
  */
-char *httpMakePath(HttpRoute *route, cchar *file)
+PUBLIC char *httpMakePath(HttpRoute *route, cchar *file)
 {
     char    *path;
 
@@ -9583,7 +9583,7 @@ char *httpMakePath(HttpRoute *route, cchar *file)
 /*
     Language can be an empty string
  */
-int httpAddRouteLanguageSuffix(HttpRoute *route, cchar *language, cchar *suffix, int flags)
+PUBLIC int httpAddRouteLanguageSuffix(HttpRoute *route, cchar *language, cchar *suffix, int flags)
 {
     HttpLang    *lp;
 
@@ -9606,7 +9606,7 @@ int httpAddRouteLanguageSuffix(HttpRoute *route, cchar *language, cchar *suffix,
 }
 
 
-int httpAddRouteLanguageDir(HttpRoute *route, cchar *language, cchar *path)
+PUBLIC int httpAddRouteLanguageDir(HttpRoute *route, cchar *language, cchar *path)
 {
     HttpLang    *lp;
 
@@ -9628,7 +9628,7 @@ int httpAddRouteLanguageDir(HttpRoute *route, cchar *language, cchar *path)
 }
 
 
-void httpSetRouteDefaultLanguage(HttpRoute *route, cchar *language)
+PUBLIC void httpSetRouteDefaultLanguage(HttpRoute *route, cchar *language)
 {
     mprAssert(route);
     mprAssert(language && *language);
@@ -9979,7 +9979,7 @@ static int writeTarget(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 
 /************************************************** Route Convenience ****************************************************/
 
-HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, cchar *target, cchar *source)
+PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, cchar *target, cchar *source)
 {
     HttpRoute   *route;
 
@@ -10049,7 +10049,7 @@ static void addRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *
 /*
     httpAddResourceGroup(parent, "{controller}")
  */
-void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
 {
     addRestful(parent, "list",      "GET",    "(/)*$",                   "list",          resource);
     addRestful(parent, "init",      "GET",    "/init$",                  "init",          resource);
@@ -10066,7 +10066,7 @@ void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
 /*
     httpAddResource(parent, "{controller}")
  */
-void httpAddResource(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource)
 {
     addRestful(parent, "init",      "GET",    "/init$",       "init",          resource);
     addRestful(parent, "create",    "POST",   "(/)*$",        "create",        resource);
@@ -10078,7 +10078,7 @@ void httpAddResource(HttpRoute *parent, cchar *resource)
 }
 
 
-void httpAddStaticRoute(HttpRoute *parent)
+PUBLIC void httpAddStaticRoute(HttpRoute *parent)
 {
     cchar   *source, *name, *path, *pattern, *prefix;
 
@@ -10091,7 +10091,7 @@ void httpAddStaticRoute(HttpRoute *parent)
 }
 
 
-void httpAddHomeRoute(HttpRoute *parent)
+PUBLIC void httpAddHomeRoute(HttpRoute *parent)
 {
     cchar   *source, *name, *path, *pattern, *prefix;
 
@@ -10105,7 +10105,7 @@ void httpAddHomeRoute(HttpRoute *parent)
 }
 
 
-void httpAddRouteSet(HttpRoute *parent, cchar *set)
+PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set)
 {
     if (scaselessmatch(set, "simple")) {
         httpAddHomeRoute(parent);
@@ -10401,7 +10401,7 @@ static char *expandRequestTokens(HttpConn *conn, char *str)
 }
 
 
-char *httpExpandRouteVars(HttpConn *conn, cchar *str)
+PUBLIC char *httpExpandRouteVars(HttpConn *conn, cchar *str)
 {
     return expandRequestTokens(conn, stemplate(str, conn->rx->route->vars));
 }
@@ -10476,7 +10476,7 @@ static char *expandPatternTokens(cchar *str, cchar *replacement, int *matches, i
 }
 
 
-void httpDefineRouteBuiltins()
+PUBLIC void httpDefineRouteBuiltins()
 {
     /*
         These are the conditions that can be selected. Use httpAddRouteCondition to add to a route.
@@ -10513,7 +10513,7 @@ void httpDefineRouteBuiltins()
         %! - Optional negate. Set value to HTTP_ROUTE_NOT present, otherwise zero.
     Values wrapped in quotes will have the outermost quotes trimmed.
  */
-bool httpTokenize(HttpRoute *route, cchar *line, cchar *fmt, ...)
+PUBLIC bool httpTokenize(HttpRoute *route, cchar *line, cchar *fmt, ...)
 {
     va_list     args;
     bool        rc;
@@ -10529,7 +10529,7 @@ bool httpTokenize(HttpRoute *route, cchar *line, cchar *fmt, ...)
 }
 
 
-bool httpTokenizev(HttpRoute *route, cchar *line, cchar *fmt, va_list args)
+PUBLIC bool httpTokenizev(HttpRoute *route, cchar *line, cchar *fmt, va_list args)
 {
     MprList     *list;
     cchar       *f;
@@ -10692,7 +10692,7 @@ static char *trimQuotes(char *str)
 }
 
 
-MprHash *httpGetOptions(cchar *options)
+PUBLIC MprHash *httpGetOptions(cchar *options)
 {
     if (options == 0) {
         return mprCreateHash(-1, 0);
@@ -10709,7 +10709,7 @@ MprHash *httpGetOptions(cchar *options)
 }
 
 
-void *httpGetOption(MprHash *options, cchar *field, cchar *defaultValue)
+PUBLIC void *httpGetOption(MprHash *options, cchar *field, cchar *defaultValue)
 {
     MprKey      *kp;
     cchar       *value;
@@ -10725,7 +10725,7 @@ void *httpGetOption(MprHash *options, cchar *field, cchar *defaultValue)
 }
 
 
-MprHash *httpGetOptionHash(MprHash *options, cchar *field)
+PUBLIC MprHash *httpGetOptionHash(MprHash *options, cchar *field)
 {
     MprKey      *kp;
 
@@ -10745,7 +10745,7 @@ MprHash *httpGetOptionHash(MprHash *options, cchar *field)
 /* 
     Prepend an option
  */
-void httpInsertOption(MprHash *options, cchar *field, cchar *value)
+PUBLIC void httpInsertOption(MprHash *options, cchar *field, cchar *value)
 {
     MprKey      *kp;
 
@@ -10762,7 +10762,7 @@ void httpInsertOption(MprHash *options, cchar *field, cchar *value)
 }
 
 
-void httpAddOption(MprHash *options, cchar *field, cchar *value)
+PUBLIC void httpAddOption(MprHash *options, cchar *field, cchar *value)
 {
     MprKey      *kp;
 
@@ -10779,7 +10779,7 @@ void httpAddOption(MprHash *options, cchar *field, cchar *value)
 }
 
 
-void httpRemoveOption(MprHash *options, cchar *field)
+PUBLIC void httpRemoveOption(MprHash *options, cchar *field)
 {
     if (options == 0) {
         mprAssert(options);
@@ -10789,13 +10789,13 @@ void httpRemoveOption(MprHash *options, cchar *field)
 }
 
 
-bool httpOption(MprHash *hash, cchar *field, cchar *value, int useDefault)
+PUBLIC bool httpOption(MprHash *hash, cchar *field, cchar *value, int useDefault)
 {
     return smatch(value, httpGetOption(hash, field, useDefault ? value : 0));
 }
 
 
-void httpSetOption(MprHash *options, cchar *field, cchar *value)
+PUBLIC void httpSetOption(MprHash *options, cchar *field, cchar *value)
 {
     MprKey  *kp;
 
@@ -10812,7 +10812,7 @@ void httpSetOption(MprHash *options, cchar *field, cchar *value)
 }
 
 
-HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits)
+PUBLIC HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits)
 {
     if (route->parent && route->limits == route->parent->limits) {
         if (limits == 0) {
@@ -10880,7 +10880,7 @@ static int setParsedUri(HttpConn *conn);
 
 /*********************************** Code *************************************/
 
-HttpRx *httpCreateRx(HttpConn *conn)
+PUBLIC HttpRx *httpCreateRx(HttpConn *conn)
 {
     HttpRx      *rx;
 
@@ -10964,7 +10964,7 @@ static void manageRx(HttpRx *rx, int flags)
 }
 
 
-void httpDestroyRx(HttpRx *rx)
+PUBLIC void httpDestroyRx(HttpRx *rx)
 {
     if (rx->conn) {
         rx->conn->rx = 0;
@@ -10978,7 +10978,7 @@ void httpDestroyRx(HttpRx *rx)
     Process incoming requests and drive the state machine. This will process as many requests as possible before returning. 
     All socket I/O is non-blocking, and this routine must not block. Note: packet may be null.
  */
-void httpPump(HttpConn *conn, HttpPacket *packet)
+PUBLIC void httpPump(HttpConn *conn, HttpPacket *packet)
 {
     mprAssert(conn);
 
@@ -12019,7 +12019,7 @@ static bool processCompletion(HttpConn *conn)
 /*
     Used by ejscript Request.close
  */
-void httpCloseRx(HttpConn *conn)
+PUBLIC void httpCloseRx(HttpConn *conn)
 {
     if (conn->rx && !conn->rx->remainingContent) {
         /* May not have consumed all read data, so can't be assured the next request will be okay */
@@ -12031,7 +12031,7 @@ void httpCloseRx(HttpConn *conn)
 }
 
 
-bool httpContentNotModified(HttpConn *conn)
+PUBLIC bool httpContentNotModified(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -12058,7 +12058,7 @@ bool httpContentNotModified(HttpConn *conn)
 }
 
 
-HttpRange *httpCreateRange(HttpConn *conn, MprOff start, MprOff end)
+PUBLIC HttpRange *httpCreateRange(HttpConn *conn, MprOff start, MprOff end)
 {
     HttpRange     *range;
 
@@ -12080,7 +12080,7 @@ static void manageRange(HttpRange *range, int flags)
 }
 
 
-MprOff httpGetContentLength(HttpConn *conn)
+PUBLIC MprOff httpGetContentLength(HttpConn *conn)
 {
     if (conn->rx == 0) {
         mprAssert(conn->rx);
@@ -12090,7 +12090,7 @@ MprOff httpGetContentLength(HttpConn *conn)
 }
 
 
-cchar *httpGetCookies(HttpConn *conn)
+PUBLIC cchar *httpGetCookies(HttpConn *conn)
 {
     if (conn->rx == 0) {
         mprAssert(conn->rx);
@@ -12100,7 +12100,7 @@ cchar *httpGetCookies(HttpConn *conn)
 }
 
 
-cchar *httpGetHeader(HttpConn *conn, cchar *key)
+PUBLIC cchar *httpGetHeader(HttpConn *conn, cchar *key)
 {
     if (conn->rx == 0) {
         mprAssert(conn->rx);
@@ -12110,7 +12110,7 @@ cchar *httpGetHeader(HttpConn *conn, cchar *key)
 }
 
 
-char *httpGetHeadersFromHash(MprHash *hash)
+PUBLIC char *httpGetHeadersFromHash(MprHash *hash)
 {
     MprKey      *kp;
     char        *headers, *cp;
@@ -12136,13 +12136,13 @@ char *httpGetHeadersFromHash(MprHash *hash)
 }
 
 
-char *httpGetHeaders(HttpConn *conn)
+PUBLIC char *httpGetHeaders(HttpConn *conn)
 {
     return httpGetHeadersFromHash(conn->rx->headers);
 }
 
 
-MprHash *httpGetHeaderHash(HttpConn *conn)
+PUBLIC MprHash *httpGetHeaderHash(HttpConn *conn)
 {
     if (conn->rx == 0) {
         mprAssert(conn->rx);
@@ -12152,25 +12152,25 @@ MprHash *httpGetHeaderHash(HttpConn *conn)
 }
 
 
-cchar *httpGetQueryString(HttpConn *conn)
+PUBLIC cchar *httpGetQueryString(HttpConn *conn)
 {
     return (conn->rx && conn->rx->parsedUri) ? conn->rx->parsedUri->query : 0;
 }
 
 
-int httpGetStatus(HttpConn *conn)
+PUBLIC int httpGetStatus(HttpConn *conn)
 {
     return (conn->rx) ? conn->rx->status : 0;
 }
 
 
-char *httpGetStatusMessage(HttpConn *conn)
+PUBLIC char *httpGetStatusMessage(HttpConn *conn)
 {
     return (conn->rx) ? conn->rx->statusMessage : 0;
 }
 
 
-void httpSetMethod(HttpConn *conn, cchar *method)
+PUBLIC void httpSetMethod(HttpConn *conn, cchar *method)
 {
     conn->rx->method = sclone(method);
     parseMethod(conn);
@@ -12206,7 +12206,7 @@ static int setParsedUri(HttpConn *conn)
 }
 
 
-int httpSetUri(HttpConn *conn, cchar *uri)
+PUBLIC int httpSetUri(HttpConn *conn, cchar *uri)
 {
     HttpRx      *rx;
     char        *pathInfo;
@@ -12242,7 +12242,7 @@ static void waitHandler(HttpConn *conn, struct MprEvent *event)
     @param timeout Timeout in msec. If timeout is zer, wait forever. If timeout is < 0, use default inactivity 
         and duration timeouts.
  */
-int httpWait(HttpConn *conn, int state, MprTime timeout)
+PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout)
 {
     MprTime     mark, remaining, inactivityTimeout;
     int         eventMask, saveAsync, justOne, workDone;
@@ -12313,7 +12313,7 @@ int httpWait(HttpConn *conn, int state, MprTime timeout)
 /*  
     Set the connector as write blocked and can't proceed.
  */
-void httpSocketBlocked(HttpConn *conn)
+PUBLIC void httpSocketBlocked(HttpConn *conn)
 {
     mprLog(6, "Socket Blocked");
     conn->writeBlocked = 1;
@@ -12368,7 +12368,7 @@ static char *getToken(HttpConn *conn, cchar *delim)
 /*  
     Match the entity's etag with the client's provided etag.
  */
-bool httpMatchEtag(HttpConn *conn, char *requestedEtag)
+PUBLIC bool httpMatchEtag(HttpConn *conn, char *requestedEtag)
 {
     HttpRx  *rx;
     char    *tag;
@@ -12394,7 +12394,7 @@ bool httpMatchEtag(HttpConn *conn, char *requestedEtag)
     If an IF-MODIFIED-SINCE was specified, then return true if the resource has not been modified. If using
     IF-UNMODIFIED, then return true if the resource was modified.
  */
-bool httpMatchModified(HttpConn *conn, MprTime time)
+PUBLIC bool httpMatchModified(HttpConn *conn, MprTime time)
 {
     HttpRx   *rx;
 
@@ -12505,7 +12505,7 @@ static bool parseRange(HttpConn *conn, char *value)
 }
 
 
-void httpSetStageData(HttpConn *conn, cchar *key, cvoid *data)
+PUBLIC void httpSetStageData(HttpConn *conn, cchar *key, cvoid *data)
 {
     HttpRx      *rx;
 
@@ -12517,7 +12517,7 @@ void httpSetStageData(HttpConn *conn, cchar *key, cvoid *data)
 }
 
 
-cvoid *httpGetStageData(HttpConn *conn, cchar *key)
+PUBLIC cvoid *httpGetStageData(HttpConn *conn, cchar *key)
 {
     HttpRx      *rx;
 
@@ -12529,7 +12529,7 @@ cvoid *httpGetStageData(HttpConn *conn, cchar *key)
 }
 
 
-char *httpGetPathExt(cchar *path)
+PUBLIC char *httpGetPathExt(cchar *path)
 {
     char    *ep, *ext;
 
@@ -12548,7 +12548,7 @@ char *httpGetPathExt(cchar *path)
     Get the request extension. Look first at the URI pathInfo. If no extension, look at the filename if defined.
     Return NULL if no extension.
  */
-char *httpGetExt(HttpConn *conn)
+PUBLIC char *httpGetExt(HttpConn *conn)
 {
     HttpRx  *rx;
     char    *ext;
@@ -12570,7 +12570,7 @@ static int compareLang(char **s1, char **s2)
 }
 
 
-HttpLang *httpGetLanguage(HttpConn *conn, MprHash *spoken, cchar *defaultLang)
+PUBLIC HttpLang *httpGetLanguage(HttpConn *conn, MprHash *spoken, cchar *defaultLang)
 {
     HttpRx      *rx;
     HttpLang    *lang;
@@ -12617,7 +12617,7 @@ HttpLang *httpGetLanguage(HttpConn *conn, MprHash *spoken, cchar *defaultLang)
     first path component containing a "." Any path information after that is regarded as extra path.
     WARNING: Extra path is an old, unreliable, CGI specific technique. Do not use directories with embedded periods.
  */
-void httpTrimExtraPath(HttpConn *conn)
+PUBLIC void httpTrimExtraPath(HttpConn *conn)
 {
     HttpRx      *rx;
     char        *cp, *extra;
@@ -12693,7 +12693,7 @@ static void sendClose(HttpQueue *q);
 
 /*********************************** Code *************************************/
 
-int httpOpenSendConnector(Http *http)
+PUBLIC int httpOpenSendConnector(Http *http)
 {
     HttpStage     *stage;
 
@@ -12712,7 +12712,7 @@ int httpOpenSendConnector(Http *http)
 /*  
     Initialize the send connector for a request
  */
-void httpSendOpen(HttpQueue *q)
+PUBLIC void httpSendOpen(HttpQueue *q)
 {
     HttpConn    *conn;
     HttpTx      *tx;
@@ -12752,7 +12752,7 @@ static void sendClose(HttpQueue *q)
 }
 
 
-void httpSendOutgoingService(HttpQueue *q)
+PUBLIC void httpSendOutgoingService(HttpQueue *q)
 {
     HttpConn    *conn;
     HttpTx      *tx;
@@ -13013,9 +13013,9 @@ static void adjustSendVec(HttpQueue *q, MprOff written)
 
 
 #else
-int httpOpenSendConnector(Http *http) { return 0; }
-void httpSendOpen(HttpQueue *q) {}
-void httpSendOutgoingService(HttpQueue *q) {}
+PUBLIC int httpOpenSendConnector(Http *http) { return 0; }
+PUBLIC void httpSendOpen(HttpQueue *q) {}
+PUBLIC void httpSendOutgoingService(HttpQueue *q) {}
 #endif /* !BIT_ROM */
 
 /*
@@ -13062,7 +13062,7 @@ static void manageSession(HttpSession *sp, int flags);
 
 /************************************* Code ***********************************/
 
-HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
+PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
 {
     Http        *http;
     HttpSession *sp;
@@ -13095,7 +13095,7 @@ HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
 }
 
 
-void httpDestroySession(HttpSession *sp)
+PUBLIC void httpDestroySession(HttpSession *sp)
 {
     Http    *http;
 
@@ -13119,13 +13119,13 @@ static void manageSession(HttpSession *sp, int flags)
 }
 
 
-HttpSession *httpCreateSession(HttpConn *conn)
+PUBLIC HttpSession *httpCreateSession(HttpConn *conn)
 {
     return httpGetSession(conn, 1);
 }
 
 
-HttpSession *httpGetSession(HttpConn *conn, int create)
+PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
 {
     HttpRx      *rx;
     char        *id;
@@ -13147,7 +13147,7 @@ HttpSession *httpGetSession(HttpConn *conn, int create)
 }
 
 
-MprHash *httpGetSessionObj(HttpConn *conn, cchar *key)
+PUBLIC MprHash *httpGetSessionObj(HttpConn *conn, cchar *key)
 {
     cchar   *str;
 
@@ -13159,7 +13159,7 @@ MprHash *httpGetSessionObj(HttpConn *conn, cchar *key)
 }
 
 
-cchar *httpGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
+PUBLIC cchar *httpGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
 {
     HttpSession  *sp;
     cchar       *result;
@@ -13175,14 +13175,14 @@ cchar *httpGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
 }
 
 
-int httpSetSessionObj(HttpConn *conn, cchar *key, MprHash *obj)
+PUBLIC int httpSetSessionObj(HttpConn *conn, cchar *key, MprHash *obj)
 {
     httpSetSessionVar(conn, key, mprSerialize(obj, 0));
     return 0;
 }
 
 
-int httpSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
+PUBLIC int httpSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
 {
     HttpSession  *sp;
 
@@ -13200,7 +13200,7 @@ int httpSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
 }
 
 
-int httpRemoveSessionVar(HttpConn *conn, cchar *key)
+PUBLIC int httpRemoveSessionVar(HttpConn *conn, cchar *key)
 {
     HttpSession  *sp;
 
@@ -13214,7 +13214,7 @@ int httpRemoveSessionVar(HttpConn *conn, cchar *key)
 }
 
 
-char *httpGetSessionID(HttpConn *conn)
+PUBLIC char *httpGetSessionID(HttpConn *conn)
 {
     HttpRx  *rx;
     cchar   *cookies, *cookie;
@@ -13390,7 +13390,7 @@ static void incoming(HttpQueue *q, HttpPacket *packet)
 }
 
 
-void httpDefaultOutgoingServiceStage(HttpQueue *q)
+PUBLIC void httpDefaultOutgoingServiceStage(HttpQueue *q)
 {
     HttpPacket    *packet;
 
@@ -13409,7 +13409,7 @@ static void incomingService(HttpQueue *q)
 }
 
 
-HttpStage *httpCreateStage(Http *http, cchar *name, int flags, MprModule *module)
+PUBLIC HttpStage *httpCreateStage(Http *http, cchar *name, int flags, MprModule *module)
 {
     HttpStage     *stage;
 
@@ -13453,7 +13453,7 @@ static void manageStage(HttpStage *stage, int flags)
 }
 
 
-HttpStage *httpCloneStage(Http *http, HttpStage *stage)
+PUBLIC HttpStage *httpCloneStage(Http *http, HttpStage *stage)
 {
     HttpStage   *clone;
 
@@ -13465,19 +13465,19 @@ HttpStage *httpCloneStage(Http *http, HttpStage *stage)
 }
 
 
-HttpStage *httpCreateHandler(Http *http, cchar *name, int flags, MprModule *module)
+PUBLIC HttpStage *httpCreateHandler(Http *http, cchar *name, int flags, MprModule *module)
 {
     return httpCreateStage(http, name, flags | HTTP_STAGE_HANDLER, module);
 }
 
 
-HttpStage *httpCreateFilter(Http *http, cchar *name, int flags, MprModule *module)
+PUBLIC HttpStage *httpCreateFilter(Http *http, cchar *name, int flags, MprModule *module)
 {
     return httpCreateStage(http, name, flags | HTTP_STAGE_FILTER, module);
 }
 
 
-HttpStage *httpCreateConnector(Http *http, cchar *name, int flags, MprModule *module)
+PUBLIC HttpStage *httpCreateConnector(Http *http, cchar *name, int flags, MprModule *module)
 {
     return httpCreateStage(http, name, flags | HTTP_STAGE_CONNECTOR, module);
 }
@@ -13520,7 +13520,7 @@ HttpStage *httpCreateConnector(Http *http, cchar *name, int flags, MprModule *mo
 
 /*********************************** Code *************************************/
 
-void httpSetRouteTraceFilter(HttpRoute *route, int dir, int levels[HTTP_TRACE_MAX_ITEM], ssize len, 
+PUBLIC void httpSetRouteTraceFilter(HttpRoute *route, int dir, int levels[HTTP_TRACE_MAX_ITEM], ssize len, 
     cchar *include, cchar *exclude)
 {
     HttpTrace   *trace;
@@ -13559,7 +13559,7 @@ void httpSetRouteTraceFilter(HttpRoute *route, int dir, int levels[HTTP_TRACE_MA
 }
 
 
-void httpManageTrace(HttpTrace *trace, int flags)
+PUBLIC void httpManageTrace(HttpTrace *trace, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(trace->include);
@@ -13568,7 +13568,7 @@ void httpManageTrace(HttpTrace *trace, int flags)
 }
 
 
-void httpInitTrace(HttpTrace *trace)
+PUBLIC void httpInitTrace(HttpTrace *trace)
 {
     int     dir;
 
@@ -13589,7 +13589,7 @@ void httpInitTrace(HttpTrace *trace)
 /*
     If tracing should occur, return the level
  */
-int httpShouldTrace(HttpConn *conn, int dir, int item, cchar *ext)
+PUBLIC int httpShouldTrace(HttpConn *conn, int dir, int item, cchar *ext)
 {
     HttpTrace   *trace;
 
@@ -13666,7 +13666,7 @@ static void traceBuf(HttpConn *conn, int dir, int level, cchar *msg, cchar *buf,
 }
 
 
-void httpTraceContent(HttpConn *conn, int dir, int item, HttpPacket *packet, ssize len, MprOff total)
+PUBLIC void httpTraceContent(HttpConn *conn, int dir, int item, HttpPacket *packet, ssize len, MprOff total)
 {
     HttpTrace   *trace;
     ssize       size;
@@ -13737,7 +13737,7 @@ static void manageTx(HttpTx *tx, int flags);
 
 /*********************************** Code *************************************/
 
-HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers)
+PUBLIC HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers)
 {
     HttpTx      *tx;
 
@@ -13766,7 +13766,7 @@ HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers)
 }
 
 
-void httpDestroyTx(HttpTx *tx)
+PUBLIC void httpDestroyTx(HttpTx *tx)
 {
     if (tx->file) {
         mprCloseFile(tx->file);
@@ -13822,7 +13822,7 @@ static void addHdr(HttpConn *conn, cchar *key, cchar *value)
 }
 
 
-int httpRemoveHeader(HttpConn *conn, cchar *key)
+PUBLIC int httpRemoveHeader(HttpConn *conn, cchar *key)
 {
     mprAssert(key && *key);
     if (conn->tx == 0) {
@@ -13835,7 +13835,7 @@ int httpRemoveHeader(HttpConn *conn, cchar *key)
 /*  
     Add a http header if not already defined
  */
-void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
+PUBLIC void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     char        *value;
     va_list     vargs;
@@ -13856,7 +13856,7 @@ void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 /*
     Add a header string if not already defined
  */
-void httpAddHeaderString(HttpConn *conn, cchar *key, cchar *value)
+PUBLIC void httpAddHeaderString(HttpConn *conn, cchar *key, cchar *value)
 {
     mprAssert(key && *key);
     mprAssert(value);
@@ -13871,7 +13871,7 @@ void httpAddHeaderString(HttpConn *conn, cchar *key, cchar *value)
    Append a header. If already defined, the value is catenated to the pre-existing value after a ", " separator.
    As per the HTTP/1.1 spec.
  */
-void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
+PUBLIC void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
     char        *value;
@@ -13904,7 +13904,7 @@ void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
    Append a header string. If already defined, the value is catenated to the pre-existing value after a ", " separator.
    As per the HTTP/1.1 spec.
  */
-void httpAppendHeaderString(HttpConn *conn, cchar *key, cchar *value)
+PUBLIC void httpAppendHeaderString(HttpConn *conn, cchar *key, cchar *value)
 {
     cchar   *oldValue;
 
@@ -13927,7 +13927,7 @@ void httpAppendHeaderString(HttpConn *conn, cchar *key, cchar *value)
 /*  
     Set a http header. Overwrite if present.
  */
-void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
+PUBLIC void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     char        *value;
     va_list     vargs;
@@ -13942,7 +13942,7 @@ void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 }
 
 
-void httpSetHeaderString(HttpConn *conn, cchar *key, cchar *value)
+PUBLIC void httpSetHeaderString(HttpConn *conn, cchar *key, cchar *value)
 {
     mprAssert(key && *key);
     mprAssert(value);
@@ -13954,14 +13954,14 @@ void httpSetHeaderString(HttpConn *conn, cchar *key, cchar *value)
 /*
     Called by connectors (ONLY) when writing the transmission is complete
  */
-void httpConnectorComplete(HttpConn *conn)
+PUBLIC void httpConnectorComplete(HttpConn *conn)
 {
     conn->tx->connectorComplete = 1;
     conn->tx->finalized = 1;
 }
 
 
-void httpFinalize(HttpConn *conn)
+PUBLIC void httpFinalize(HttpConn *conn)
 {
     HttpTx      *tx;
 
@@ -13986,7 +13986,7 @@ void httpFinalize(HttpConn *conn)
 }
 
 
-int httpIsFinalized(HttpConn *conn)
+PUBLIC int httpIsFinalized(HttpConn *conn)
 {
     return conn->tx->finalized;
 }
@@ -13995,7 +13995,7 @@ int httpIsFinalized(HttpConn *conn)
 /*
     Flush the write queue
  */
-void httpFlush(HttpConn *conn)
+PUBLIC void httpFlush(HttpConn *conn)
 {
     httpFlushQueue(conn->writeq, !conn->async);
 }
@@ -14005,7 +14005,7 @@ void httpFlush(HttpConn *conn)
     This formats a response and sets the altBody. The response is not HTML escaped.
     This is the lowest level for formatResponse.
  */
-ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args)
+PUBLIC ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args)
 {
     HttpTx      *tx;
     char        *body;
@@ -14024,7 +14024,7 @@ ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args)
 /*
     This formats a response and sets the altBody. The response is not HTML escaped.
  */
-ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...)
+PUBLIC ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...)
 {
     va_list     args;
     ssize       rc;
@@ -14040,7 +14040,7 @@ ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...)
     This formats a complete response. Depending on the Accept header, the response will be either HTML or plain text.
     The response is not HTML escaped.  This calls httpFormatResponse.
  */
-ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ...)
+PUBLIC ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ...)
 {
     va_list     args;
     char        *msg, *body;
@@ -14065,7 +14065,7 @@ ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ...)
     Create an alternate body response. Typically used for error responses. The message is HTML escaped.
     NOTE: this is an internal API. Users should use httpFormatError
  */
-void httpFormatResponseError(HttpConn *conn, int status, cchar *fmt, ...)
+PUBLIC void httpFormatResponseError(HttpConn *conn, int status, cchar *fmt, ...)
 {
     va_list     args;
     cchar       *statusMsg;
@@ -14087,7 +14087,7 @@ void httpFormatResponseError(HttpConn *conn, int status, cchar *fmt, ...)
 }
 
 
-void *httpGetQueueData(HttpConn *conn)
+PUBLIC void *httpGetQueueData(HttpConn *conn)
 {
     HttpQueue     *q;
 
@@ -14096,7 +14096,7 @@ void *httpGetQueueData(HttpConn *conn)
 }
 
 
-void httpOmitBody(HttpConn *conn)
+PUBLIC void httpOmitBody(HttpConn *conn)
 {
     if (conn->tx) {
         conn->tx->flags |= HTTP_TX_NO_BODY;
@@ -14114,7 +14114,7 @@ void httpOmitBody(HttpConn *conn)
 /*  
     Redirect the user to another web page. The targetUri may or may not have a scheme.
  */
-void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
+PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
 {
     HttpTx          *tx;
     HttpRx          *rx;
@@ -14181,7 +14181,7 @@ void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
 }
 
 
-void httpSetContentLength(HttpConn *conn, MprOff length)
+PUBLIC void httpSetContentLength(HttpConn *conn, MprOff length)
 {
     HttpTx      *tx;
 
@@ -14193,7 +14193,7 @@ void httpSetContentLength(HttpConn *conn, MprOff length)
     httpSetHeader(conn, "Content-Length", "%Ld", tx->length);
 }
 
-void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTime lifespan, int flags)
+PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTime lifespan, int flags)
 {
     HttpRx      *rx;
     char        *cp, *expiresAtt, *expires, *domainAtt, *domain, *secure, *httponly;
@@ -14311,7 +14311,7 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
 }
 
 
-void httpSetEntityLength(HttpConn *conn, int64 len)
+PUBLIC void httpSetEntityLength(HttpConn *conn, int64 len)
 {
     HttpTx      *tx;
 
@@ -14323,26 +14323,26 @@ void httpSetEntityLength(HttpConn *conn, int64 len)
 }
 
 
-void httpSetResponded(HttpConn *conn)
+PUBLIC void httpSetResponded(HttpConn *conn)
 {
     conn->tx->responded = 1;
 }
 
 
-void httpSetStatus(HttpConn *conn, int status)
+PUBLIC void httpSetStatus(HttpConn *conn, int status)
 {
     conn->tx->status = status;
     conn->tx->responded = 1;
 }
 
 
-void httpSetContentType(HttpConn *conn, cchar *mimeType)
+PUBLIC void httpSetContentType(HttpConn *conn, cchar *mimeType)
 {
     httpSetHeaderString(conn, "Content-Type", sclone(mimeType));
 }
 
 
-void httpWriteHeaders(HttpConn *conn, HttpPacket *packet)
+PUBLIC void httpWriteHeaders(HttpConn *conn, HttpPacket *packet)
 {
     Http        *http;
     HttpTx      *tx;
@@ -14436,7 +14436,7 @@ void httpWriteHeaders(HttpConn *conn, HttpPacket *packet)
 }
 
 
-bool httpFileExists(HttpConn *conn)
+PUBLIC bool httpFileExists(HttpConn *conn)
 {
     HttpTx      *tx;
 
@@ -14525,7 +14525,7 @@ static int  processContentData(HttpQueue *q);
 
 /************************************* Code ***********************************/
 
-int httpOpenUploadFilter(Http *http)
+PUBLIC int httpOpenUploadFilter(Http *http)
 {
     HttpStage     *filter;
 
@@ -15147,7 +15147,7 @@ static void trimPathToDirname(HttpUri *uri);
 
     Missing fields are null or zero.
  */
-HttpUri *httpCreateUri(cchar *uri, int flags)
+PUBLIC HttpUri *httpCreateUri(cchar *uri, int flags)
 {
     HttpUri     *up;
     char        *tok, *next;
@@ -15313,7 +15313,7 @@ static void manageUri(HttpUri *uri, int flags)
 /*  
     Create and initialize a URI. This accepts full URIs with schemes (http:) and partial URLs
  */
-HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cchar *path, cchar *reference, cchar *query, 
+PUBLIC HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cchar *path, cchar *reference, cchar *query, 
         int flags)
 {
     HttpUri     *up;
@@ -15377,7 +15377,7 @@ HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cchar *pat
 }
 
 
-HttpUri *httpCloneUri(HttpUri *base, int flags)
+PUBLIC HttpUri *httpCloneUri(HttpUri *base, int flags)
 {
     HttpUri     *up;
     char        *path, *cp, *tok;
@@ -15436,7 +15436,7 @@ HttpUri *httpCloneUri(HttpUri *base, int flags)
 /*
     Complete the "uri" using missing parts from base
  */
-HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base)
+PUBLIC HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base)
 {
     if (!base) {
         if (!uri->scheme) {
@@ -15477,7 +15477,7 @@ HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base)
 /*  
     Format a string URI from parts
  */
-char *httpFormatUri(cchar *scheme, cchar *host, int port, cchar *path, cchar *reference, cchar *query, int flags)
+PUBLIC char *httpFormatUri(cchar *scheme, cchar *host, int port, cchar *path, cchar *reference, cchar *query, int flags)
 {
     char    *uri;
     cchar   *portStr, *hostDelim, *portDelim, *pathDelim, *queryDelim, *referenceDelim, *cp;
@@ -15548,7 +15548,7 @@ char *httpFormatUri(cchar *scheme, cchar *host, int port, cchar *path, cchar *re
 
     uri = target.relative(base)
  */
-HttpUri *httpGetRelativeUri(HttpUri *base, HttpUri *target, int clone)
+PUBLIC HttpUri *httpGetRelativeUri(HttpUri *base, HttpUri *target, int clone)
 {
     HttpUri     *uri;
     char        *basePath, *bp, *cp, *tp, *startDiff;
@@ -15629,7 +15629,7 @@ HttpUri *httpGetRelativeUri(HttpUri *base, HttpUri *target, int clone)
 /*
     result = base.join(other)
  */
-HttpUri *httpJoinUriPath(HttpUri *result, HttpUri *base, HttpUri *other)
+PUBLIC HttpUri *httpJoinUriPath(HttpUri *result, HttpUri *base, HttpUri *other)
 {
     char    *sep;
 
@@ -15644,7 +15644,7 @@ HttpUri *httpJoinUriPath(HttpUri *result, HttpUri *base, HttpUri *other)
 }
 
 
-HttpUri *httpJoinUri(HttpUri *uri, int argc, HttpUri **others)
+PUBLIC HttpUri *httpJoinUri(HttpUri *uri, int argc, HttpUri **others)
 {
     HttpUri     *other;
     int         i;
@@ -15677,7 +15677,7 @@ HttpUri *httpJoinUri(HttpUri *uri, int argc, HttpUri **others)
 }
 
 
-HttpUri *httpMakeUriLocal(HttpUri *uri)
+PUBLIC HttpUri *httpMakeUriLocal(HttpUri *uri)
 {
     if (uri) {
         uri->host = 0;
@@ -15688,7 +15688,7 @@ HttpUri *httpMakeUriLocal(HttpUri *uri)
 }
 
 
-void httpNormalizeUri(HttpUri *uri)
+PUBLIC void httpNormalizeUri(HttpUri *uri)
 {
     uri->path = httpNormalizeUriPath(uri->path);
 }
@@ -15698,7 +15698,7 @@ void httpNormalizeUri(HttpUri *uri)
     Normalize a URI path to remove redundant "./" and cleanup "../" and make separator uniform. Does not make an abs path.
     It does not map separators nor change case. 
  */
-char *httpNormalizeUriPath(cchar *pathArg)
+PUBLIC char *httpNormalizeUriPath(cchar *pathArg)
 {
     char    *dupPath, *path, *sp, *dp, *mark, **segments;
     int     firstc, j, i, nseg, len;
@@ -15771,7 +15771,7 @@ char *httpNormalizeUriPath(cchar *pathArg)
 }
 
 
-HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool local)
+PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool local)
 {
     HttpUri     *current, *other;
     int         i;
@@ -15817,7 +15817,7 @@ HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool local)
 }
 
 
-char *httpUriToString(HttpUri *uri, int flags)
+PUBLIC char *httpUriToString(HttpUri *uri, int flags)
 {
     return httpFormatUri(uri->scheme, uri->host, uri->port, uri->path, uri->reference, uri->query, flags);
 }
@@ -15902,7 +15902,7 @@ static void trimPathToDirname(HttpUri *uri)
 /*
     Define standard CGI variables
  */
-void httpCreateCGIParams(HttpConn *conn)
+PUBLIC void httpCreateCGIParams(HttpConn *conn)
 {
     HttpRx          *rx;
     HttpTx          *tx;
@@ -16076,14 +16076,14 @@ static void addBodyParams(HttpConn *conn)
 }
 
 
-void httpAddParams(HttpConn *conn)
+PUBLIC void httpAddParams(HttpConn *conn)
 {
     addQueryParams(conn);
     addBodyParams(conn);
 }
 
 
-MprHash *httpGetParams(HttpConn *conn)
+PUBLIC MprHash *httpGetParams(HttpConn *conn)
 { 
     if (conn->rx->params == 0) {
         conn->rx->params = mprCreateHash(HTTP_MED_HASH_SIZE, 0);
@@ -16092,7 +16092,7 @@ MprHash *httpGetParams(HttpConn *conn)
 }
 
 
-int httpTestParam(HttpConn *conn, cchar *var)
+PUBLIC int httpTestParam(HttpConn *conn, cchar *var)
 {
     MprHash    *vars;
     
@@ -16101,7 +16101,7 @@ int httpTestParam(HttpConn *conn, cchar *var)
 }
 
 
-cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
+PUBLIC cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
 {
     MprHash     *vars;
     cchar       *value;
@@ -16112,7 +16112,7 @@ cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
 }
 
 
-int httpGetIntParam(HttpConn *conn, cchar *var, int defaultValue)
+PUBLIC int httpGetIntParam(HttpConn *conn, cchar *var, int defaultValue)
 {
     MprHash     *vars;
     cchar       *value;
@@ -16133,7 +16133,7 @@ static int sortParam(MprKey **h1, MprKey **h2)
     Return the request parameters as a string. 
     This will return the exact same string regardless of the order of form parameters.
  */
-char *httpGetParamsString(HttpConn *conn)
+PUBLIC char *httpGetParamsString(HttpConn *conn)
 {
     HttpRx      *rx;
     MprHash     *params;
@@ -16174,7 +16174,7 @@ char *httpGetParamsString(HttpConn *conn)
 }
 
 
-void httpSetParam(HttpConn *conn, cchar *var, cchar *value) 
+PUBLIC void httpSetParam(HttpConn *conn, cchar *var, cchar *value) 
 {
     MprHash     *vars;
 
@@ -16183,7 +16183,7 @@ void httpSetParam(HttpConn *conn, cchar *var, cchar *value)
 }
 
 
-void httpSetIntParam(HttpConn *conn, cchar *var, int value) 
+PUBLIC void httpSetIntParam(HttpConn *conn, cchar *var, int value) 
 {
     MprHash     *vars;
     
@@ -16192,7 +16192,7 @@ void httpSetIntParam(HttpConn *conn, cchar *var, int value)
 }
 
 
-bool httpMatchParam(HttpConn *conn, cchar *var, cchar *value)
+PUBLIC bool httpMatchParam(HttpConn *conn, cchar *var, cchar *value)
 {
     if (strcmp(value, httpGetParam(conn, var, " __UNDEF__ ")) == 0) {
         return 1;
@@ -16201,7 +16201,7 @@ bool httpMatchParam(HttpConn *conn, cchar *var, cchar *value)
 }
 
 
-void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *upfile)
+PUBLIC void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *upfile)
 {
     HttpRx   *rx;
 
@@ -16213,7 +16213,7 @@ void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *upfile)
 }
 
 
-void httpRemoveUploadFile(HttpConn *conn, cchar *id)
+PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id)
 {
     HttpRx    *rx;
     HttpUploadFile  *upfile;
@@ -16228,7 +16228,7 @@ void httpRemoveUploadFile(HttpConn *conn, cchar *id)
 }
 
 
-void httpRemoveAllUploadedFiles(HttpConn *conn)
+PUBLIC void httpRemoveAllUploadedFiles(HttpConn *conn)
 {
     HttpRx          *rx;
     HttpUploadFile  *upfile;
@@ -16369,7 +16369,7 @@ static void webSockPing(HttpConn *conn);
 /* 
    Loadable module initialization
  */
-int httpOpenWebSockFilter(Http *http)
+PUBLIC int httpOpenWebSockFilter(Http *http)
 {
     HttpStage     *filter;
 
@@ -16790,7 +16790,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
     Send a text message. Caller must submit valid UTF8.
     Returns the number of data message bytes written. Should equal the length.
  */
-ssize httpSend(HttpConn *conn, cchar *fmt, ...)
+PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...)
 {
     va_list     args;
     char        *buf;
@@ -16805,7 +16805,7 @@ ssize httpSend(HttpConn *conn, cchar *fmt, ...)
 /*
     Returns the number of data message bytes written. Should equal the length.
  */
-ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len)
+PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len)
 {
     HttpPacket  *packet;
 
@@ -16831,7 +16831,7 @@ ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len)
 /*
     The reason string is optional
  */
-void httpSendClose(HttpConn *conn, int status, cchar *reason)
+PUBLIC void httpSendClose(HttpConn *conn, int status, cchar *reason)
 {
     HttpPacket  *packet;
     HttpRx      *rx;
@@ -16925,25 +16925,25 @@ static void outgoingWebSockService(HttpQueue *q)
 }
 
 
-char *httpGetWebSocketProtocol(HttpConn *conn)
+PUBLIC char *httpGetWebSocketProtocol(HttpConn *conn)
 {
     return conn->rx->subProtocol;
 }
 
 
-char *httpGetWebSocketCloseReason(HttpConn *conn)
+PUBLIC char *httpGetWebSocketCloseReason(HttpConn *conn)
 {
     return conn->rx->closeReason;
 }
 
 
-bool httpWebSocketOrderlyClosed(HttpConn *conn)
+PUBLIC bool httpWebSocketOrderlyClosed(HttpConn *conn)
 {
     return conn->rx->closeStatus != WS_STATUS_COMMS_ERROR;
 }
 
 
-void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols)
+PUBLIC void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols)
 {
     conn->protocols = sclone(protocols);
 }
@@ -16988,7 +16988,7 @@ static bool validUTF8(cchar *str, ssize len)
 /*
     Upgrade a client socket to use Web Sockets
  */
-int httpUpgradeWebSocket(HttpConn *conn)
+PUBLIC int httpUpgradeWebSocket(HttpConn *conn)
 {
     char    num[16];
 
@@ -17012,7 +17012,7 @@ int httpUpgradeWebSocket(HttpConn *conn)
 }
 
 
-bool httpVerifyWebSocketsHandshake(HttpConn *conn)
+PUBLIC bool httpVerifyWebSocketsHandshake(HttpConn *conn)
 {
     HttpRx          *rx;
     HttpTx          *tx;

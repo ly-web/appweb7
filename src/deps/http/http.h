@@ -14,7 +14,7 @@
 /****************************** Forward Declarations **************************/
 
 #ifdef __cplusplus
-extern "C" {
+PUBLIC "C" {
 #endif
 
 #if !DOXYGEN
@@ -244,7 +244,7 @@ typedef void (*HttpTimeoutCallback)(struct HttpConn *conn);
     @param arg Argument to supply when the callback is invoked.
     @ingroup HttpConn
  */
-extern void httpSetForkCallback(struct Http *http, MprForkCallback proc, void *arg);
+PUBLIC void httpSetForkCallback(struct Http *http, MprForkCallback proc, void *arg);
 
 /************************************ Http **********************************/
 /** 
@@ -336,7 +336,7 @@ typedef struct Http {
     @return The http service object.
     @ingroup Http
  */
-extern Http *httpCreate();
+PUBLIC Http *httpCreate();
 
 /**
     Configure endpoints with named virtual hosts
@@ -345,7 +345,7 @@ extern Http *httpCreate();
     @param port address for the named virtual host
     @ingroup HttpEndpoint
  */
-extern int httpConfigureNamedVirtualEndpoints(Http *http, cchar *ip, int port);
+PUBLIC int httpConfigureNamedVirtualEndpoints(Http *http, cchar *ip, int port);
 
 /**  
     Create the Http secret data for crypto
@@ -354,14 +354,14 @@ extern int httpConfigureNamedVirtualEndpoints(Http *http, cchar *ip, int port);
     @return "Zero" if successful, otherwise a negative MPR error code
     @ingroup Http
  */
-extern int httpCreateSecret(Http *http);
+PUBLIC int httpCreateSecret(Http *http);
 
 /**
     Destroy the Http service object
     @param http Http service object.
     @ingroup Http
  */
-extern void httpDestroy(Http *http);
+PUBLIC void httpDestroy(Http *http);
 
 /**
     Get the http context object
@@ -369,7 +369,7 @@ extern void httpDestroy(Http *http);
     @return The http context object defined via httpSetContext
     @ingroup Http
  */
-extern void *httpGetContext(Http *http);
+PUBLIC void *httpGetContext(Http *http);
 
 /**
     Get the time as an ISO date string
@@ -378,14 +378,14 @@ extern void *httpGetContext(Http *http);
     @return RFC822 formatted date string. 
     @ingroup Http
  */
-extern char *httpGetDateString(MprPath *sbuf);
+PUBLIC char *httpGetDateString(MprPath *sbuf);
 
 /**
     Set the http context object
     @param http Http object created via #httpCreate
     @param context New context object
  */
-extern void httpSetContext(Http *http, void *context);
+PUBLIC void httpSetContext(Http *http, void *context);
 
 /** 
     Define a default client host
@@ -394,7 +394,7 @@ extern void httpSetContext(Http *http, void *context);
     @param host Host or IP address
     @ingroup HttpConn
  */
-extern void httpSetDefaultClientHost(Http *http, cchar *host);
+PUBLIC void httpSetDefaultClientHost(Http *http, cchar *host);
 
 /** 
     Define a default client port
@@ -403,7 +403,7 @@ extern void httpSetDefaultClientHost(Http *http, cchar *host);
     @param port Integer port number
     @ingroup HttpConn
  */
-extern void httpSetDefaultClientPort(Http *http, int port);
+PUBLIC void httpSetDefaultClientPort(Http *http, int port);
 
 /** 
     Define a Http proxy host to use for all client connect requests.
@@ -413,7 +413,7 @@ extern void httpSetDefaultClientPort(Http *http, int port);
     @param port Proxy host port number.
     @ingroup Http
  */
-extern void httpSetProxy(Http *http, cchar *host, int port);
+PUBLIC void httpSetProxy(Http *http, cchar *host, int port);
 
 /**
     Lookup a Http status code
@@ -423,7 +423,7 @@ extern void httpSetProxy(Http *http, cchar *host, int port);
     @return Text message corresponding to the status code
     @ingroup Http
  */
-extern cchar *httpLookupStatus(Http *http, int status);
+PUBLIC cchar *httpLookupStatus(Http *http, int status);
 
 /**
     Lookup a host by name
@@ -432,7 +432,7 @@ extern cchar *httpLookupStatus(Http *http, int status);
     @return The corresponding host object
     @ingroup Http
  */
-extern struct HttpHost *httpLookupHost(Http *http, cchar *name);
+PUBLIC struct HttpHost *httpLookupHost(Http *http, cchar *name);
 
 /**
     Lookup a listening endpoint
@@ -441,24 +441,24 @@ extern struct HttpHost *httpLookupHost(Http *http, cchar *name);
     @param port Listening port number
     @return HttpEndpoint object
  */
-extern struct HttpEndpoint *httpLookupEndpoint(Http *http, cchar *ip, int port);
+PUBLIC struct HttpEndpoint *httpLookupEndpoint(Http *http, cchar *ip, int port);
 
 /**
     Set the software description
     @param http Http object created via #httpCreate
     @param description String describing the Http software. By default, this is set to HTTP_NAME.
  */
-extern void httpSetSoftware(Http *http, cchar *description);
+PUBLIC void httpSetSoftware(Http *http, cchar *description);
 
 /* Internal APIs */
-extern void httpAddConn(Http *http, struct HttpConn *conn);
-extern struct HttpEndpoint *httpGetFirstEndpoint(Http *http);
-extern void httpRemoveConn(Http *http, struct HttpConn *conn);
-extern void httpAddEndpoint(Http *http, struct HttpEndpoint *endpoint);
-extern void httpRemoveEndpoint(Http *http, struct HttpEndpoint *endpoint);
-extern void httpAddHost(Http *http, struct HttpHost *host);
-extern void httpRemoveHost(Http *http, struct HttpHost *host);
-extern void httpDefineRouteBuiltins();
+PUBLIC void httpAddConn(Http *http, struct HttpConn *conn);
+PUBLIC struct HttpEndpoint *httpGetFirstEndpoint(Http *http);
+PUBLIC void httpRemoveConn(Http *http, struct HttpConn *conn);
+PUBLIC void httpAddEndpoint(Http *http, struct HttpEndpoint *endpoint);
+PUBLIC void httpRemoveEndpoint(Http *http, struct HttpEndpoint *endpoint);
+PUBLIC void httpAddHost(Http *http, struct HttpHost *host);
+PUBLIC void httpRemoveHost(Http *http, struct HttpHost *host);
+PUBLIC void httpDefineRouteBuiltins();
 
 /************************************* Limits *********************************/
 /** 
@@ -504,7 +504,7 @@ typedef struct HttpLimits {
     @param serverSide Set to "true" for server side limits. Set to "false" for client side default limits
     @ingroup HttpLimits
  */
-extern void httpInitLimits(HttpLimits *limits, bool serverSide);
+PUBLIC void httpInitLimits(HttpLimits *limits, bool serverSide);
 
 /**
     Create a new limits object
@@ -513,7 +513,7 @@ extern void httpInitLimits(HttpLimits *limits, bool serverSide);
     @return The allocated limits object
     @ingroup HttpLimits
  */
-extern HttpLimits *httpCreateLimits(int serverSide);
+PUBLIC HttpLimits *httpCreateLimits(int serverSide);
 
 /**
     Ease the limits
@@ -522,7 +522,7 @@ extern HttpLimits *httpCreateLimits(int serverSide);
     @param limits Limits object. This can be either HttpHost.limits HttpConn.limits or HttpEndpoint.limits
     @ingroup HttpLimits
  */
-extern void httpEaseLimits(HttpLimits *limits);
+PUBLIC void httpEaseLimits(HttpLimits *limits);
 
 /**
     Enable use of the TRACE Http method by the object owning the limits object.
@@ -531,7 +531,7 @@ extern void httpEaseLimits(HttpLimits *limits);
     @param on Set to 1 to enable
     @ingroup HttpLimits
  */
-extern void httpEnableTraceMethod(struct HttpLimits *limits, bool on);
+PUBLIC void httpEnableTraceMethod(struct HttpLimits *limits, bool on);
 
 /************************************* URI Services ***************************/
 /** 
@@ -568,7 +568,7 @@ typedef struct HttpUri {
     @return A new URI object
     @ingroup HttpUri
  */
-extern HttpUri *httpCloneUri(HttpUri *base, int flags);
+PUBLIC HttpUri *httpCloneUri(HttpUri *base, int flags);
 
 /**
     Complete the given URI
@@ -579,7 +579,7 @@ extern HttpUri *httpCloneUri(HttpUri *base, int flags);
     @return The supplied URI.
     @ingroup HttpUri
   */
-extern HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *other);
+PUBLIC HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *other);
 
 /** 
     Create and initialize a URI.
@@ -589,7 +589,7 @@ extern HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *other);
     @return A newly allocated HttpUri structure. 
     @ingroup HttpUri
  */
-extern HttpUri *httpCreateUri(cchar *uri, int flags);
+PUBLIC HttpUri *httpCreateUri(cchar *uri, int flags);
 
 /**
     Create a URI from parts
@@ -605,7 +605,7 @@ extern HttpUri *httpCreateUri(cchar *uri, int flags);
     @return A new URI 
     @ingroup HttpUri
  */
-extern HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cchar *path, cchar *reference, 
+PUBLIC HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cchar *path, cchar *reference, 
         cchar *query, int flags);
 
 /** 
@@ -621,7 +621,7 @@ extern HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cch
     @return A newly allocated uri string
     @ingroup HttpUri
  */
-extern char *httpFormatUri(cchar *scheme, cchar *host, int port, cchar *path, cchar *ref, cchar *query, int flags);
+PUBLIC char *httpFormatUri(cchar *scheme, cchar *host, int port, cchar *path, cchar *ref, cchar *query, int flags);
 
 /**
     Join URIs
@@ -631,7 +631,7 @@ extern char *httpFormatUri(cchar *scheme, cchar *host, int port, cchar *path, cc
     @return The resulting, joined URI
     @ingroup HttpUri
  */
-extern HttpUri *httpJoinUri(HttpUri *base, int argc, HttpUri **others);
+PUBLIC HttpUri *httpJoinUri(HttpUri *base, int argc, HttpUri **others);
 
 /**
     Join a URI path
@@ -641,7 +641,7 @@ extern HttpUri *httpJoinUri(HttpUri *base, int argc, HttpUri **others);
     @return The result URI
     @ingroup HttpUri
  */
-extern HttpUri *httpJoinUriPath(HttpUri *result, HttpUri *base, HttpUri *other);
+PUBLIC HttpUri *httpJoinUriPath(HttpUri *result, HttpUri *base, HttpUri *other);
 
 /** 
     Get the mime type for an extension.
@@ -650,7 +650,7 @@ extern HttpUri *httpJoinUriPath(HttpUri *result, HttpUri *base, HttpUri *other);
     @returns Mime type. This is a static string.
     @ingroup HttpUri
  */
-extern cchar *httpLookupMimeType(cchar *ext);
+PUBLIC cchar *httpLookupMimeType(cchar *ext);
 
 /**
     Normalize a URI
@@ -658,7 +658,7 @@ extern cchar *httpLookupMimeType(cchar *ext);
     @param uri URI object to normalize
     @ingroup HttpUri
  */
-extern void httpNormalizeUri(HttpUri *uri);
+PUBLIC void httpNormalizeUri(HttpUri *uri);
 
 /** 
     Normalize a URI
@@ -668,7 +668,7 @@ extern void httpNormalizeUri(HttpUri *uri);
     @return A new validated uri string. 
     @ingroup HttpUri
  */
-extern char *httpNormalizeUriPath(cchar *uri);
+PUBLIC char *httpNormalizeUriPath(cchar *uri);
 
 /**
     Get a relative URI from the base to the target
@@ -680,7 +680,7 @@ extern char *httpNormalizeUriPath(cchar *uri);
         cannot be constructed.
     @ingroup HttpUri
   */
-extern HttpUri *httpGetRelativeUri(HttpUri *base, HttpUri *target, int clone);
+PUBLIC HttpUri *httpGetRelativeUri(HttpUri *base, HttpUri *target, int clone);
 
 /**
     Make a URI local
@@ -689,7 +689,7 @@ extern HttpUri *httpGetRelativeUri(HttpUri *base, HttpUri *target, int clone);
     @return The given URI. 
     @ingroup HttpUri
  */
-extern HttpUri *httpMakeUriLocal(HttpUri *uri);
+PUBLIC HttpUri *httpMakeUriLocal(HttpUri *uri);
 
 /**
     Resolve URIs relative to a base
@@ -699,7 +699,7 @@ extern HttpUri *httpMakeUriLocal(HttpUri *uri);
     @param local If true, the base scheme, host and port are ignored
     @ingroup HttpUri
   */
-extern HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool local);
+PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool local);
 
 /** 
     Convert a Uri to a string.
@@ -709,7 +709,7 @@ extern HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
     @return A newly allocated uri string. 
     @ingroup HttpUri
  */
-extern char *httpUriToString(HttpUri *uri, int flags);
+PUBLIC char *httpUriToString(HttpUri *uri, int flags);
 
 /************************************* Range **********************************/
 /** 
@@ -786,7 +786,7 @@ typedef struct HttpPacket {
     @param packet Packet to modify
     @param size Size to add to the packet current position.
  */
-extern void httpAdjustPacketStart(HttpPacket *packet, MprOff size);
+PUBLIC void httpAdjustPacketStart(HttpPacket *packet, MprOff size);
 
 /**
     Adjust the packet end position.
@@ -797,7 +797,7 @@ extern void httpAdjustPacketStart(HttpPacket *packet, MprOff size);
     @param packet Packet to modify
     @param size Size to adjust packet end position.
  */
-extern void httpAdjustPacketEnd(HttpPacket *packet, MprOff size);
+PUBLIC void httpAdjustPacketEnd(HttpPacket *packet, MprOff size);
 
 /**
     Clone a packet
@@ -805,7 +805,7 @@ extern void httpAdjustPacketEnd(HttpPacket *packet, MprOff size);
     @return A new packet equivalent to the original
     @ingroup HttpPacket
  */
-extern HttpPacket *httpClonePacket(HttpPacket *orig);
+PUBLIC HttpPacket *httpClonePacket(HttpPacket *orig);
 
 /** 
     Create a data packet
@@ -815,7 +815,7 @@ extern HttpPacket *httpClonePacket(HttpPacket *orig);
     @return HttpPacket object.
     @ingroup HttpPacket
  */
-extern HttpPacket *httpCreateDataPacket(ssize size);
+PUBLIC HttpPacket *httpCreateDataPacket(ssize size);
 
 /** 
     Create an eof packet
@@ -824,7 +824,7 @@ extern HttpPacket *httpCreateDataPacket(ssize size);
     @return HttpPacket object.
     @ingroup HttpPacket
  */
-extern HttpPacket *httpCreateEndPacket();
+PUBLIC HttpPacket *httpCreateEndPacket();
 
 /** 
     Create an entity data packet
@@ -837,7 +837,7 @@ extern HttpPacket *httpCreateEndPacket();
     @return HttpPacket object.
     @ingroup HttpPacket
  */
-extern HttpPacket *httpCreateEntityPacket(MprOff pos, MprOff size, HttpFillProc fill);
+PUBLIC HttpPacket *httpCreateEntityPacket(MprOff pos, MprOff size, HttpFillProc fill);
 
 /** 
     Create a response header packet
@@ -846,7 +846,7 @@ extern HttpPacket *httpCreateEntityPacket(MprOff pos, MprOff size, HttpFillProc 
     @return HttpPacket object.
     @ingroup HttpPacket
  */
-extern HttpPacket *httpCreateHeaderPacket();
+PUBLIC HttpPacket *httpCreateHeaderPacket();
 
 /** 
     Create a data packet
@@ -855,7 +855,7 @@ extern HttpPacket *httpCreateHeaderPacket();
     @return HttpPacket object.
     @ingroup HttpPacket
  */
-extern HttpPacket *httpCreatePacket(ssize size);
+PUBLIC HttpPacket *httpCreatePacket(ssize size);
 
 /** 
     Get the next packet from a queue
@@ -865,7 +865,7 @@ extern HttpPacket *httpCreatePacket(ssize size);
     @return The packet removed from the queue.
     @ingroup HttpQueue
  */
-extern HttpPacket *httpGetPacket(struct HttpQueue *q);
+PUBLIC HttpPacket *httpGetPacket(struct HttpQueue *q);
 
 #if DOXYGEN
 /** 
@@ -876,7 +876,7 @@ extern HttpPacket *httpGetPacket(struct HttpQueue *q);
     @return Count of bytes contained by the packet.
     @ingroup HttpPacket
  */
-extern ssize httpGetPacketLength(HttpPacket *packet);
+PUBLIC ssize httpGetPacketLength(HttpPacket *packet);
 #else
 #define httpGetPacketLength(p) ((p && p->content) ? mprGetBufLength(p->content) : 0)
 #endif
@@ -890,7 +890,7 @@ extern ssize httpGetPacketLength(HttpPacket *packet);
     @return "Zero" if successful, otherwise a negative Mpr error code
     @ingroup HttpPacket
  */
-extern int httpJoinPacket(HttpPacket *packet, HttpPacket *other);
+PUBLIC int httpJoinPacket(HttpPacket *packet, HttpPacket *other);
 
 /** 
     Split a data packet
@@ -904,7 +904,7 @@ extern int httpJoinPacket(HttpPacket *packet, HttpPacket *other);
         running request. Otherwise the packet memory will be released automatically when the request completes.
     @ingroup HttpPacket
  */
-extern HttpPacket *httpSplitPacket(HttpPacket *packet, ssize offset);
+PUBLIC HttpPacket *httpSplitPacket(HttpPacket *packet, ssize offset);
 
 /*
     Internal
@@ -1004,7 +1004,7 @@ typedef struct HttpQueue {
     @param q Queue reference
     @ingroup HttpQueue
  */
-extern void httpDisableQueue(HttpQueue *q);
+PUBLIC void httpDisableQueue(HttpQueue *q);
 
 /** 
     Discard all data from the queue
@@ -1014,7 +1014,7 @@ extern void httpDisableQueue(HttpQueue *q);
     @param removePackets If "true", the data packets will be removed from the queue.
     @ingroup HttpQueue
  */
-extern void httpDiscardQueueData(HttpQueue *q, bool removePackets);
+PUBLIC void httpDiscardQueueData(HttpQueue *q, bool removePackets);
 
 /** 
     Enable a queue after it has been disabled.
@@ -1023,7 +1023,7 @@ extern void httpDiscardQueueData(HttpQueue *q, bool removePackets);
     @param q Queue reference
     @ingroup HttpQueue
  */
-extern void httpEnableQueue(HttpQueue *q);
+PUBLIC void httpEnableQueue(HttpQueue *q);
 
 /**
     Flush queue data
@@ -1035,7 +1035,7 @@ extern void httpEnableQueue(HttpQueue *q);
     @param block If set to "true", this call will block until the data has drained below the queue maximum.
     @return "True" if there is room for more data in the queue after flushing.
  */
-extern bool httpFlushQueue(HttpQueue *q, bool block);
+PUBLIC bool httpFlushQueue(HttpQueue *q, bool block);
 
 /** 
     Get the room in the queue
@@ -1044,7 +1044,7 @@ extern bool httpFlushQueue(HttpQueue *q, bool block);
     @return A count of bytes that can be written to the queue
     @ingroup HttpQueue
  */
-extern ssize httpGetQueueRoom(HttpQueue *q);
+PUBLIC ssize httpGetQueueRoom(HttpQueue *q);
 
 /**
     Test if the connection has received all incoming content
@@ -1053,7 +1053,7 @@ extern ssize httpGetQueueRoom(HttpQueue *q);
     @return "True" if all Receive content has been received 
     @ingroup HttpQueue
  */
-extern bool httpIsEof(struct HttpConn *conn);
+PUBLIC bool httpIsEof(struct HttpConn *conn);
 
 /** 
     Test if a packet is too big 
@@ -1064,7 +1064,7 @@ extern bool httpIsEof(struct HttpConn *conn);
     @return "True" if the packet is too big for the downstream queue
     @ingroup HttpQueue
  */
-extern bool httpIsPacketTooBig(struct HttpQueue *q, HttpPacket *packet);
+PUBLIC bool httpIsPacketTooBig(struct HttpQueue *q, HttpPacket *packet);
 
 /** 
     Determine if the queue is empty
@@ -1073,7 +1073,7 @@ extern bool httpIsPacketTooBig(struct HttpQueue *q, HttpPacket *packet);
     @return "True" if there are no packets queued.
     @ingroup HttpQueue
  */
-extern bool httpIsQueueEmpty(HttpQueue *q);
+PUBLIC bool httpIsQueueEmpty(HttpQueue *q);
 
 /**
     Join the packets together
@@ -1084,7 +1084,7 @@ extern bool httpIsQueueEmpty(HttpQueue *q);
         and the downstream queues maximum packet size.
     @ingroup HttpQueue
  */
-extern void httpJoinPackets(HttpQueue *q, ssize size);
+PUBLIC void httpJoinPackets(HttpQueue *q, ssize size);
 
 /** 
     Join a packet onto the service queue
@@ -1096,7 +1096,7 @@ extern void httpJoinPackets(HttpQueue *q, ssize size);
     @param serviceQ If true, schedule the queue for service
     @ingroup HttpQueue
  */
-extern void httpJoinPacketForService(struct HttpQueue *q, HttpPacket *packet, bool serviceQ);
+PUBLIC void httpJoinPacketForService(struct HttpQueue *q, HttpPacket *packet, bool serviceQ);
 
 /** 
     Open the queue. Call the queue open entry point.
@@ -1104,7 +1104,7 @@ extern void httpJoinPacketForService(struct HttpQueue *q, HttpPacket *packet, bo
     @param chunkSize Preferred chunk size
     @return "Zero" if successful.
  */
-extern int httpOpenQueue(HttpQueue *q, ssize chunkSize);
+PUBLIC int httpOpenQueue(HttpQueue *q, ssize chunkSize);
 
 /** 
     Put a packet back onto a queue
@@ -1114,7 +1114,7 @@ extern int httpOpenQueue(HttpQueue *q, ssize chunkSize);
     @param packet Packet to put back
     @ingroup HttpQueue
  */
-extern void httpPutBackPacket(struct HttpQueue *q, HttpPacket *packet);
+PUBLIC void httpPutBackPacket(struct HttpQueue *q, HttpPacket *packet);
 
 /*
     Convenience flags for httpPutForService in the serviceQ argument
@@ -1130,7 +1130,7 @@ extern void httpPutBackPacket(struct HttpQueue *q, HttpPacket *packet);
     @param serviceQ If true, schedule the queue for service
     @ingroup HttpQueue
  */
-extern void httpPutForService(struct HttpQueue *q, HttpPacket *packet, bool serviceQ);
+PUBLIC void httpPutForService(struct HttpQueue *q, HttpPacket *packet, bool serviceQ);
 
 /** 
     Put a packet to the queue.
@@ -1140,7 +1140,7 @@ extern void httpPutForService(struct HttpQueue *q, HttpPacket *packet, bool serv
     @param packet Packet to put
     @ingroup HttpQueue
  */
-extern void httpPutPacket(struct HttpQueue *q, HttpPacket *packet);
+PUBLIC void httpPutPacket(struct HttpQueue *q, HttpPacket *packet);
 
 /** 
     Put a packet to the next queue downstream.
@@ -1151,7 +1151,7 @@ extern void httpPutPacket(struct HttpQueue *q, HttpPacket *packet);
     @param packet Packet to put
     @ingroup HttpQueue
  */
-extern void httpPutPacketToNext(struct HttpQueue *q, HttpPacket *packet);
+PUBLIC void httpPutPacketToNext(struct HttpQueue *q, HttpPacket *packet);
 
 /** 
     Remove a queue
@@ -1161,7 +1161,7 @@ extern void httpPutPacketToNext(struct HttpQueue *q, HttpPacket *packet);
     @param q Queue reference
     @ingroup HttpQueue
  */
-extern void httpRemoveQueue(HttpQueue *q);
+PUBLIC void httpRemoveQueue(HttpQueue *q);
 
 /** 
     Resize a packet
@@ -1173,7 +1173,7 @@ extern void httpRemoveQueue(HttpQueue *q);
     @return "Zero" if successful, otherwise a negative Mpr error code
     @ingroup HttpQueue
  */
-extern int httpResizePacket(struct HttpQueue *q, HttpPacket *packet, ssize size);
+PUBLIC int httpResizePacket(struct HttpQueue *q, HttpPacket *packet, ssize size);
 
 /** 
     Resume a queue
@@ -1183,7 +1183,7 @@ extern int httpResizePacket(struct HttpQueue *q, HttpPacket *packet, ssize size)
     @param q Queue reference
     @ingroup HttpQueue
  */
-extern void httpResumeQueue(HttpQueue *q);
+PUBLIC void httpResumeQueue(HttpQueue *q);
 
 /** 
     Schedule a queue
@@ -1191,7 +1191,7 @@ extern void httpResumeQueue(HttpQueue *q);
     @param q Queue reference
     @ingroup HttpQueue
  */
-extern void httpScheduleQueue(HttpQueue *q);
+PUBLIC void httpScheduleQueue(HttpQueue *q);
 
 /** 
     Service a queue
@@ -1199,7 +1199,7 @@ extern void httpScheduleQueue(HttpQueue *q);
     @param q Queue reference
     @ingroup HttpQueue
  */
-extern void httpServiceQueue(HttpQueue *q);
+PUBLIC void httpServiceQueue(HttpQueue *q);
 
 /** 
     Suspend a queue. 
@@ -1208,7 +1208,7 @@ extern void httpServiceQueue(HttpQueue *q);
     @param q Queue reference
     @ingroup HttpQueue
  */
-extern void httpSuspendQueue(HttpQueue *q);
+PUBLIC void httpSuspendQueue(HttpQueue *q);
 
 /**
     Verify a queue 
@@ -1216,7 +1216,7 @@ extern void httpSuspendQueue(HttpQueue *q);
     @return "True" if the queue verifies
     @internal
  */
-extern bool httpVerifyQueue(HttpQueue *q);
+PUBLIC bool httpVerifyQueue(HttpQueue *q);
 
 /** 
     Determine if the downstream queue will accept this packet.
@@ -1228,7 +1228,7 @@ extern bool httpVerifyQueue(HttpQueue *q);
     @return "True" if the downstream queue will accept the packet. Use $httpPutPacketToNext to send the packet downstream
     @ingroup HttpQueue
  */
-extern bool httpWillNextQueueAcceptPacket(HttpQueue *q, HttpPacket *packet);
+PUBLIC bool httpWillNextQueueAcceptPacket(HttpQueue *q, HttpPacket *packet);
 
 /** 
     Determine if the downstream queue will accept a certain amount of data.
@@ -1238,7 +1238,7 @@ extern bool httpWillNextQueueAcceptPacket(HttpQueue *q, HttpPacket *packet);
     @return "True" if the downstream queue will accept the given sized data.
     @ingroup HttpQueue
  */
-extern bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
+PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
 
 /** 
     Write a formatted string
@@ -1251,7 +1251,7 @@ extern bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
     @return A count of the bytes actually written
     @ingroup HttpQueue
  */
-extern ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
+PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
 
 /** 
     Write a block of data to the queue
@@ -1264,7 +1264,7 @@ extern ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
     @return The size value if successful or a negative MPR error code.
     @ingroup HttpQueue
  */
-extern ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size);
+PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size);
 
 /** 
     Write a string of data to the queue
@@ -1276,7 +1276,7 @@ extern ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size);
     @return A count of the bytes actually written
     @ingroup HttpQueue
  */
-extern ssize httpWriteString(HttpQueue *q, cchar *s);
+PUBLIC ssize httpWriteString(HttpQueue *q, cchar *s);
 
 /** 
     Write a safe string of data to the queue
@@ -1288,18 +1288,18 @@ extern ssize httpWriteString(HttpQueue *q, cchar *s);
     @return A count of the bytes actually written
     @ingroup HttpQueue
  */
-extern ssize httpWriteString(HttpQueue *q, cchar *s);
+PUBLIC ssize httpWriteString(HttpQueue *q, cchar *s);
 
 /* Internal */
-extern HttpQueue *httpFindPreviousQueue(HttpQueue *q);
-extern HttpQueue *httpCreateQueueHead(struct HttpConn *conn, cchar *name);
-extern HttpQueue *httpCreateQueue(struct HttpConn *conn, struct HttpStage *stage, int dir, HttpQueue *prev);
-extern HttpQueue *httpGetNextQueueForService(HttpQueue *q);
-extern void httpInitQueue(struct HttpConn *conn, HttpQueue *q, cchar *name);
-extern void httpInitSchedulerQueue(HttpQueue *q);
-extern void httpAppendQueue(HttpQueue *prev, HttpQueue *q);
-extern void httpMarkQueueHead(HttpQueue *q);
-extern void httpAssignQueue(HttpQueue *q, struct HttpStage *stage, int dir);
+PUBLIC HttpQueue *httpFindPreviousQueue(HttpQueue *q);
+PUBLIC HttpQueue *httpCreateQueueHead(struct HttpConn *conn, cchar *name);
+PUBLIC HttpQueue *httpCreateQueue(struct HttpConn *conn, struct HttpStage *stage, int dir, HttpQueue *prev);
+PUBLIC HttpQueue *httpGetNextQueueForService(HttpQueue *q);
+PUBLIC void httpInitQueue(struct HttpConn *conn, HttpQueue *q, cchar *name);
+PUBLIC void httpInitSchedulerQueue(HttpQueue *q);
+PUBLIC void httpAppendQueue(HttpQueue *prev, HttpQueue *q);
+PUBLIC void httpMarkQueueHead(HttpQueue *q);
+PUBLIC void httpAssignQueue(HttpQueue *q, struct HttpStage *stage, int dir);
 
 /******************************** Pipeline Stages *****************************/
 /*
@@ -1458,7 +1458,7 @@ typedef struct HttpStage {
     @return A new stage object
     @ingroup HttpStage
 */
-extern HttpStage *httpCloneStage(Http *http, HttpStage *stage);
+PUBLIC HttpStage *httpCloneStage(Http *http, HttpStage *stage);
 
 /** 
     Create a connector stage
@@ -1480,7 +1480,7 @@ extern HttpStage *httpCloneStage(Http *http, HttpStage *stage);
     @return A new stage object
     @ingroup HttpStage
  */
-extern HttpStage *httpCreateConnector(Http *http, cchar *name, int flags, MprModule *module);
+PUBLIC HttpStage *httpCreateConnector(Http *http, cchar *name, int flags, MprModule *module);
 
 /** 
     Create a filter stage
@@ -1502,7 +1502,7 @@ extern HttpStage *httpCreateConnector(Http *http, cchar *name, int flags, MprMod
     @return A new stage object
     @ingroup HttpStage
  */
-extern HttpStage *httpCreateFilter(Http *http, cchar *name, int flags, MprModule *module);
+PUBLIC HttpStage *httpCreateFilter(Http *http, cchar *name, int flags, MprModule *module);
 
 /** 
     Create a request handler stage
@@ -1525,7 +1525,7 @@ extern HttpStage *httpCreateFilter(Http *http, cchar *name, int flags, MprModule
     @return A new stage object
     @ingroup HttpStage
  */
-extern HttpStage *httpCreateHandler(Http *http, cchar *name, int flags, MprModule *module);
+PUBLIC HttpStage *httpCreateHandler(Http *http, cchar *name, int flags, MprModule *module);
 
 /** 
     Create a connector stage
@@ -1548,7 +1548,7 @@ extern HttpStage *httpCreateHandler(Http *http, cchar *name, int flags, MprModul
     @return A new stage object
     @ingroup HttpStage
  */
-extern HttpStage *httpCreateStage(Http *http, cchar *name, int flags, MprModule *module);
+PUBLIC HttpStage *httpCreateStage(Http *http, cchar *name, int flags, MprModule *module);
 
 /** 
     Lookup a stage by name
@@ -1557,7 +1557,7 @@ extern HttpStage *httpCreateStage(Http *http, cchar *name, int flags, MprModule 
     @return Stage or NULL if not found
     @ingroup HttpStage
 */
-extern struct HttpStage *httpLookupStage(Http *http, cchar *name);
+PUBLIC struct HttpStage *httpLookupStage(Http *http, cchar *name);
 
 /** 
     Default outgoing data handling
@@ -1566,7 +1566,7 @@ extern struct HttpStage *httpLookupStage(Http *http, cchar *name);
     @param q Queue object
     @ingroup HttpStage
  */
-extern void httpDefaultOutgoingServiceStage(HttpQueue *q);
+PUBLIC void httpDefaultOutgoingServiceStage(HttpQueue *q);
 
 /**
     Get stage data   
@@ -1577,7 +1577,7 @@ extern void httpDefaultOutgoingServiceStage(HttpQueue *q);
     @return A reference to the stage data. Otherwise return null if the route data for the given key was not found.
     @ingroup HttpRx
  */
-extern cvoid *httpGetStageData(struct HttpConn *conn, cchar *key);
+PUBLIC cvoid *httpGetStageData(struct HttpConn *conn, cchar *key);
 
 /**
     Handle a Http Trace or Options method request
@@ -1586,7 +1586,7 @@ extern cvoid *httpGetStageData(struct HttpConn *conn, cchar *key);
     @param conn HttpConn object created via $httpCreateConn
     @ingroup HttpStage
  */
-extern void httpHandleOptionsTrace(struct HttpConn *conn);
+PUBLIC void httpHandleOptionsTrace(struct HttpConn *conn);
 
 /** 
     Lookup stage data
@@ -1596,7 +1596,7 @@ extern void httpHandleOptionsTrace(struct HttpConn *conn);
     @return Reference to the stage data block.
     @ingroup HttpStage
  */
-extern void *httpLookupStageData(Http *http, cchar *name);
+PUBLIC void *httpLookupStageData(Http *http, cchar *name);
 
 /**
     Set stage data   
@@ -1607,22 +1607,22 @@ extern void *httpLookupStageData(Http *http, cchar *name);
     @param data Reference to custom data allocated via mprAlloc.
     @ingroup HttpRoute
  */
-extern void httpSetStageData(struct HttpConn *conn, cchar *key, cvoid *data);
+PUBLIC void httpSetStageData(struct HttpConn *conn, cchar *key, cvoid *data);
 
 /* Internal APIs */
-extern void httpAddStage(Http *http, HttpStage *stage);
-extern ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet);
-extern int httpOpenNetConnector(Http *http);
-extern int httpOpenSendConnector(Http *http);
-extern int httpOpenChunkFilter(Http *http);
-extern int httpOpenCacheHandler(Http *http);
-extern int httpOpenPassHandler(Http *http);
-extern int httpOpenProcHandler(Http *http);
-extern int httpOpenRangeFilter(Http *http);
-extern int httpOpenUploadFilter(Http *http);
-extern void httpSendOpen(HttpQueue *q);
-extern void httpSendOutgoingService(HttpQueue *q);
-extern int httpOpenWebSockFilter(Http *http);
+PUBLIC void httpAddStage(Http *http, HttpStage *stage);
+PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet);
+PUBLIC int httpOpenNetConnector(Http *http);
+PUBLIC int httpOpenSendConnector(Http *http);
+PUBLIC int httpOpenChunkFilter(Http *http);
+PUBLIC int httpOpenCacheHandler(Http *http);
+PUBLIC int httpOpenPassHandler(Http *http);
+PUBLIC int httpOpenProcHandler(Http *http);
+PUBLIC int httpOpenRangeFilter(Http *http);
+PUBLIC int httpOpenUploadFilter(Http *http);
+PUBLIC void httpSendOpen(HttpQueue *q);
+PUBLIC void httpSendOutgoingService(HttpQueue *q);
+PUBLIC int httpOpenWebSockFilter(Http *http);
 
 /********************************** HttpConn *********************************/
 /** 
@@ -1689,7 +1689,7 @@ typedef struct HttpTrace {
     MprHash         *exclude;                    /**< Extensions to exclude from trace */
 } HttpTrace;
 
-extern void httpManageTrace(HttpTrace *trace, int flags);
+PUBLIC void httpManageTrace(HttpTrace *trace, int flags);
 
 /**
     Callback to fill headers 
@@ -1708,7 +1708,7 @@ typedef int (*HttpHeadersCallback)(void *arg);
     @param arg Argument to provide when invoking the headers callback
     @ingroup HttpConn
  */
-extern void httpSetHeadersCallback(struct HttpConn *conn, HttpHeadersCallback fn, void *arg);
+PUBLIC void httpSetHeadersCallback(struct HttpConn *conn, HttpHeadersCallback fn, void *arg);
 
 /**
     I/O callback for connections
@@ -1728,7 +1728,7 @@ typedef void (*HttpIOCallback)(struct HttpConn *conn, MprEvent *event);
     @ingroup HttpConn
     @internal
   */
-extern void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
+PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
 
 /** 
     Http Connections
@@ -1846,14 +1846,14 @@ typedef struct HttpConn {
     @param mask Mask of events. MPR_READABLE | MPR_WRITABLE
     @ingroup HttpConn
  */
-extern void httpCallEvent(HttpConn *conn, int mask);
+PUBLIC void httpCallEvent(HttpConn *conn, int mask);
 
 /** 
     Close a connection
     @param conn HttpConn object created via $httpCreateConn
     @ingroup HttpConn
  */
-extern void httpCloseConn(HttpConn *conn);
+PUBLIC void httpCloseConn(HttpConn *conn);
 
 /**
     Connector has completed sending the response.
@@ -1861,7 +1861,7 @@ extern void httpCloseConn(HttpConn *conn);
     @ingroup HttpConn
     @internal
  */ 
-extern void httpConnectorComplete(HttpConn *conn);
+PUBLIC void httpConnectorComplete(HttpConn *conn);
 
 /**
     Signal a connection timeout on a connection
@@ -1872,7 +1872,7 @@ extern void httpConnectorComplete(HttpConn *conn);
     @param conn HttpConn connection object created via $httpCreateConn
     @ingroup HttpConn
   */
-extern void httpConnTimeout(HttpConn *conn);
+PUBLIC void httpConnTimeout(HttpConn *conn);
 
 /**
     Consume leftover data from the last request
@@ -1880,7 +1880,7 @@ extern void httpConnTimeout(HttpConn *conn);
     @ingroup HttpConn
     @internal
  */
-extern void httpConsumeLastRequest(HttpConn *conn);
+PUBLIC void httpConsumeLastRequest(HttpConn *conn);
 
 /** 
     Create a connection object.
@@ -1892,7 +1892,7 @@ extern void httpConsumeLastRequest(HttpConn *conn);
     @returns A new connection object
     @ingroup HttpConn
 */
-extern HttpConn *httpCreateConn(Http *http, struct HttpEndpoint *endpoint, MprDispatcher *dispatcher);
+PUBLIC HttpConn *httpCreateConn(Http *http, struct HttpEndpoint *endpoint, MprDispatcher *dispatcher);
 
 /**
     Create the receive request pipeline
@@ -1900,7 +1900,7 @@ extern HttpConn *httpCreateConn(Http *http, struct HttpEndpoint *endpoint, MprDi
     @param route Route object controlling how the pipeline is configured for the request
     @ingroup HttpConn
  */
-extern void httpCreateRxPipeline(HttpConn *conn, struct HttpRoute *route);
+PUBLIC void httpCreateRxPipeline(HttpConn *conn, struct HttpRoute *route);
 
 /**
     Create the transmit request pipeline
@@ -1908,21 +1908,21 @@ extern void httpCreateRxPipeline(HttpConn *conn, struct HttpRoute *route);
     @param route Route object controlling how the pipeline is configured for the request
     @ingroup HttpConn
  */
-extern void httpCreateTxPipeline(HttpConn *conn, struct HttpRoute *route);
+PUBLIC void httpCreateTxPipeline(HttpConn *conn, struct HttpRoute *route);
 
 /**
     Destroy the connection object
     @param conn HttpConn object created via $httpCreateConn
     @ingroup HttpConn
  */
-extern void httpDestroyConn(HttpConn *conn);
+PUBLIC void httpDestroyConn(HttpConn *conn);
 
 /**
     Destroy the pipeline
     @param conn HttpConn object created via $httpCreateConn
     @ingroup HttpConn
  */
-extern void httpDestroyPipeline(HttpConn *conn);
+PUBLIC void httpDestroyPipeline(HttpConn *conn);
 
 /**
     Discard buffered transmit pipeline data
@@ -1930,7 +1930,7 @@ extern void httpDestroyPipeline(HttpConn *conn);
     @param dir Queue direction. Either HTTP_QUEUE_TX or HTTP_QUEUE_RX.
     @ingroup HttpConn
  */
-extern void httpDiscardData(HttpConn *conn, int dir);
+PUBLIC void httpDiscardData(HttpConn *conn, int dir);
 
 /**
     Disconnect the connection's socket
@@ -1940,7 +1940,7 @@ extern void httpDiscardData(HttpConn *conn, int dir);
     @param conn HttpConn connection object created via $httpCreateConn
     @ingroup HttpConn
   */
-extern void httpDisconnect(HttpConn *conn);
+PUBLIC void httpDisconnect(HttpConn *conn);
 
 /**
     Enable connection events
@@ -1951,7 +1951,7 @@ extern void httpDisconnect(HttpConn *conn);
     @param conn HttpConn connection object created via $httpCreateConn
     @ingroup HttpConn
  */
-extern void httpEnableConnEvents(HttpConn *conn);
+PUBLIC void httpEnableConnEvents(HttpConn *conn);
 
 /** 
     Enable Multipart-Mime File Upload for this request. This will define a "Content-Type: multipart/form-data..."
@@ -1959,7 +1959,7 @@ extern void httpEnableConnEvents(HttpConn *conn);
     @param conn HttpConn connection object
     @ingroup HttpConn
  */
-extern void httpEnableUpload(HttpConn *conn);
+PUBLIC void httpEnableUpload(HttpConn *conn);
 
 /** 
     Error handling for the connection.
@@ -1971,7 +1971,7 @@ extern void httpEnableUpload(HttpConn *conn);
     @param ... Arguments for fmt
     @ingroup HttpConn
  */
-extern void httpError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpError(HttpConn *conn, int status, cchar *fmt, ...);
 
 /**
     Http I/O event handler. Invoke when there is an I/O event on the connection. This is normally invoked automatically
@@ -1980,7 +1980,7 @@ extern void httpError(HttpConn *conn, int status, cchar *fmt, ...);
     @param event Event structure
     @ingroup HttpConn
  */
-extern void httpEvent(struct HttpConn *conn, MprEvent *event);
+PUBLIC void httpEvent(struct HttpConn *conn, MprEvent *event);
 
 /**
     Get the async mode value for the connection
@@ -1988,7 +1988,7 @@ extern void httpEvent(struct HttpConn *conn, MprEvent *event);
     @return True if the connection is in async mode
     @ingroup HttpConn
  */
-extern int httpGetAsync(HttpConn *conn);
+PUBLIC int httpGetAsync(HttpConn *conn);
 
 /**
     Get the preferred chunked size for transfer chunk encoding.
@@ -1996,7 +1996,7 @@ extern int httpGetAsync(HttpConn *conn);
     @return Chunk size. Returns "zero" if not yet defined.
     @ingroup HttpConn
  */
-extern ssize httpGetChunkSize(HttpConn *conn);
+PUBLIC ssize httpGetChunkSize(HttpConn *conn);
 
 /**
     Get the connection context object
@@ -2004,7 +2004,7 @@ extern ssize httpGetChunkSize(HttpConn *conn);
     @return The connection context object defined via httpSetConnContext
     @ingroup HttpConn
  */
-extern void *httpGetConnContext(HttpConn *conn);
+PUBLIC void *httpGetConnContext(HttpConn *conn);
 
 /**
     Get the connection host object
@@ -2012,7 +2012,7 @@ extern void *httpGetConnContext(HttpConn *conn);
     @return The connection host object defined via httpSetConnHost
     @ingroup HttpConn
  */
-extern void *httpGetConnHost(HttpConn *conn);
+PUBLIC void *httpGetConnHost(HttpConn *conn);
 
 /** 
     Get the error message associated with the last request.
@@ -2021,7 +2021,7 @@ extern void *httpGetConnHost(HttpConn *conn);
     @return A error string. The caller must not free this reference.
     @ingroup HttpConn
  */
-extern cchar *httpGetError(HttpConn *conn);
+PUBLIC cchar *httpGetError(HttpConn *conn);
 
 /**
     Get a URI extension 
@@ -2031,7 +2031,7 @@ extern cchar *httpGetError(HttpConn *conn);
     @return The URI extension sans "."
     @ingroup HttpConn
   */
-extern char *httpGetExt(HttpConn *conn);
+PUBLIC char *httpGetExt(HttpConn *conn);
 
 /** 
     Get the count of Keep-Alive requests that will be used for this connection object.
@@ -2042,7 +2042,7 @@ extern char *httpGetExt(HttpConn *conn);
     @return The maximum count of Keep-Alive requests. 
     @ingroup HttpConn
  */
-extern int httpGetKeepAliveCount(HttpConn *conn);
+PUBLIC int httpGetKeepAliveCount(HttpConn *conn);
 
 /**
     Match the HttpHost object that should serve this request
@@ -2051,14 +2051,14 @@ extern int httpGetKeepAliveCount(HttpConn *conn);
     @param conn HttpConn connection object created via $httpCreateConn
     @ingroup HttpConn
   */
-extern void httpMatchHost(HttpConn *conn);
+PUBLIC void httpMatchHost(HttpConn *conn);
 
 /**
     Signal a memory allocation error
     @param conn HttpConn connection object created via $httpCreateConn
     @ingroup HttpConn
  */
-extern void httpMemoryError(HttpConn *conn);
+PUBLIC void httpMemoryError(HttpConn *conn);
 
 /**
     Inform notifiers of a connection event or state chagne
@@ -2067,7 +2067,7 @@ extern void httpMemoryError(HttpConn *conn);
     @param arg Argument to event
     @ingroup HttpConn
  */ 
-extern void httpNotify(HttpConn *conn, int event, int arg);
+PUBLIC void httpNotify(HttpConn *conn, int event, int arg);
 
 #define HTTP_NOTIFY(conn, event, arg) \
     if (1) { \
@@ -2082,7 +2082,7 @@ extern void httpNotify(HttpConn *conn, int event, int arg);
     @param conn HttpConn object created via $httpCreateConn
     @ingroup HttpConn
  */
-extern void httpPrepServerConn(HttpConn *conn);
+PUBLIC void httpPrepServerConn(HttpConn *conn);
 
 /**
     Pump the handler by invoking the writable callback.
@@ -2091,7 +2091,7 @@ extern void httpPrepServerConn(HttpConn *conn);
     @return True if the handler writable callback exists and can be invoked.
     @ingroup HttpConn
  */
-extern bool httpPumpHandler(HttpConn *conn);
+PUBLIC bool httpPumpHandler(HttpConn *conn);
 
 /**
     Prepare a client connection for a new request. 
@@ -2099,7 +2099,7 @@ extern bool httpPumpHandler(HttpConn *conn);
     @param keepHeaders If true, keep the headers already defined on the connection object
     @ingroup HttpConn
  */
-extern void httpPrepClientConn(HttpConn *conn, bool keepHeaders);
+PUBLIC void httpPrepClientConn(HttpConn *conn, bool keepHeaders);
 
 /**
     Run the handler ready callback.
@@ -2107,7 +2107,7 @@ extern void httpPrepClientConn(HttpConn *conn, bool keepHeaders);
     @param conn HttpConn object created via $httpCreateConn
     @ingroup HttpConn
  */
-extern void httpReadyHandler(HttpConn *conn);
+PUBLIC void httpReadyHandler(HttpConn *conn);
 
 /** 
     Reset the current security credentials
@@ -2115,20 +2115,20 @@ extern void httpReadyHandler(HttpConn *conn);
     @param conn HttpConn connection object created via $httpCreateConn
     @ingroup HttpConn
  */
-extern void httpResetCredentials(HttpConn *conn);
+PUBLIC void httpResetCredentials(HttpConn *conn);
 
 /**
     Route the request and select that matching route and handle to process the request.
     @param conn HttpConn connection object created via $httpCreateConn
     @ingroup HttpConn
   */
-extern void httpRouteRequest(HttpConn *conn);
+PUBLIC void httpRouteRequest(HttpConn *conn);
 
 /**
     Service pipeline queues to flow data.
     @param conn HttpConn object created via $httpCreateConn
  */
-extern bool httpServiceQueues(HttpConn *conn);
+PUBLIC bool httpServiceQueues(HttpConn *conn);
 
 /**
     Set the async mode value for the connection
@@ -2137,7 +2137,7 @@ extern bool httpServiceQueues(HttpConn *conn);
     @return True if the connection is in async mode
     @ingroup HttpConn
  */
-extern void httpSetAsync(HttpConn *conn, int enable);
+PUBLIC void httpSetAsync(HttpConn *conn, int enable);
 
 /** 
     Set the chunk size for transfer chunked encoding. When set, a "Transfer-Encoding: Chunked" header will
@@ -2146,7 +2146,7 @@ extern void httpSetAsync(HttpConn *conn, int enable);
     @param size Requested chunk size.
     @ingroup HttpConn
  */ 
-extern void httpSetChunkSize(HttpConn *conn, ssize size);
+PUBLIC void httpSetChunkSize(HttpConn *conn, ssize size);
 
 /**
     Set the connection context object
@@ -2154,7 +2154,7 @@ extern void httpSetChunkSize(HttpConn *conn, ssize size);
     @param context New context object
     @ingroup HttpConn
  */
-extern void httpSetConnContext(HttpConn *conn, void *context);
+PUBLIC void httpSetConnContext(HttpConn *conn, void *context);
 
 /**
     Set the connection host object
@@ -2162,7 +2162,7 @@ extern void httpSetConnContext(HttpConn *conn, void *context);
     @param host New context host
     @ingroup HttpConn
  */
-extern void httpSetConnHost(HttpConn *conn, void *host);
+PUBLIC void httpSetConnHost(HttpConn *conn, void *host);
 
 /** 
     Define a notifier callback for this connection.
@@ -2183,7 +2183,7 @@ extern void httpSetConnHost(HttpConn *conn, void *host);
     @param notifier Notifier function. 
     @ingroup HttpConn
  */
-void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier);
+PUBLIC void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier);
 
 /** 
     Set the Http credentials
@@ -2194,7 +2194,7 @@ void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier);
     @param password Decrypted password string
     @ingroup HttpConn
  */
-extern void httpSetCredentials(HttpConn *conn, cchar *user, cchar *password);
+PUBLIC void httpSetCredentials(HttpConn *conn, cchar *user, cchar *password);
 
 /** 
     Control Http Keep-Alive for the connection.
@@ -2205,7 +2205,7 @@ extern void httpSetCredentials(HttpConn *conn, cchar *user, cchar *password);
     @param count Count of Keep-Alive transactions to use before closing the connection. Set to zero to disable keep-alive.
     @ingroup HttpConn
  */
-extern void httpSetKeepAliveCount(HttpConn *conn, int count);
+PUBLIC void httpSetKeepAliveCount(HttpConn *conn, int count);
 
 /**
     Set the handler to process a client request
@@ -2215,7 +2215,7 @@ extern void httpSetKeepAliveCount(HttpConn *conn, int count);
     @param handler Stage handler to process the request
     @ingroup HttpConn
  */
-extern void httpSetPipelineHandler(HttpConn *conn, HttpStage *handler);
+PUBLIC void httpSetPipelineHandler(HttpConn *conn, HttpStage *handler);
 
 /** 
     Set the Http protocol variant for this connection
@@ -2226,7 +2226,7 @@ extern void httpSetPipelineHandler(HttpConn *conn, HttpStage *handler);
     Use HTTP/1.1 wherever possible.
     @ingroup HttpConn
  */
-extern void httpSetProtocol(HttpConn *conn, cchar *protocol);
+PUBLIC void httpSetProtocol(HttpConn *conn, cchar *protocol);
 
 /** 
     Set the Http retry count
@@ -2236,7 +2236,7 @@ extern void httpSetProtocol(HttpConn *conn, cchar *protocol);
     @param retries Count of retries
     @ingroup HttpConn
  */
-extern void httpSetRetries(HttpConn *conn, int retries);
+PUBLIC void httpSetRetries(HttpConn *conn, int retries);
 
 /**
     Set the "Send" connector to process the request
@@ -2246,7 +2246,7 @@ extern void httpSetRetries(HttpConn *conn, int retries);
     @param path File name to send as a response
     @ingroup HttpConn
  */
-extern void httpSetSendConnector(HttpConn *conn, cchar *path);
+PUBLIC void httpSetSendConnector(HttpConn *conn, cchar *path);
 
 /**
     Set the connection state and invoke notifiers.
@@ -2254,7 +2254,7 @@ extern void httpSetSendConnector(HttpConn *conn, cchar *path);
     @param state New state to enter
     @ingroup HttpConn
  */
-extern void httpSetState(HttpConn *conn, int state);
+PUBLIC void httpSetState(HttpConn *conn, int state);
 
 /** 
     Set the Http inactivity timeout
@@ -2266,7 +2266,7 @@ extern void httpSetState(HttpConn *conn, int state);
         existing value.
     @ingroup HttpConn
  */
-extern void httpSetTimeout(HttpConn *conn, int requestTimeout, int inactivityTimeout);
+PUBLIC void httpSetTimeout(HttpConn *conn, int requestTimeout, int inactivityTimeout);
 
 /**
     Define a timestamp in the MPR log file.
@@ -2274,7 +2274,7 @@ extern void httpSetTimeout(HttpConn *conn, int requestTimeout, int inactivityTim
     @param period Time in milliseconds between timestamps
     @ingroup HttpConn
  */
-extern void httpSetTimestamp(MprTime period);
+PUBLIC void httpSetTimestamp(MprTime period);
 
 /**
     Test if the item should be traced
@@ -2286,14 +2286,14 @@ extern void httpSetTimestamp(MprTime period);
     @return The level at which tracing should be done. Returns -1 if tracing should not be done for this item.
     @ingroup HttpConn
   */
-extern int httpShouldTrace(HttpConn *conn, int dir, int item, cchar *ext);
+PUBLIC int httpShouldTrace(HttpConn *conn, int dir, int item, cchar *ext);
 
 /**
     Start the pipeline. This starts the request handler.
     @param conn HttpConn object created via $httpCreateConn
     @ingroup HttpConn
  */
-extern void httpStartPipeline(HttpConn *conn);
+PUBLIC void httpStartPipeline(HttpConn *conn);
 
 /**
     Steal a connection from Appweb
@@ -2303,25 +2303,25 @@ extern void httpStartPipeline(HttpConn *conn);
     @param conn HttpConn object created via $httpCreateConn
     @return The connection socket object.
  */
-extern MprSocket *httpStealConn(HttpConn *conn);
+PUBLIC MprSocket *httpStealConn(HttpConn *conn);
 
 /**
     Verify the server handshake
     @param conn HttpConn connection object created via $httpCreateConn
     @return True if the handshake is valid
  */
-extern bool httpVerifyWebSocketsHandshake(HttpConn *conn);
+PUBLIC bool httpVerifyWebSocketsHandshake(HttpConn *conn);
 
 /** Internal APIs */
-extern struct HttpConn *httpAccept(struct HttpEndpoint *endpoint);
-extern void httpEnableConnEvents(HttpConn *conn);
-extern void httpInitTrace(HttpTrace *trace);
-extern void httpParseMethod(HttpConn *conn);
-extern HttpLimits *httpSetUniqueConnLimits(HttpConn *conn);
-extern int httpShouldTrace(HttpConn *conn, int dir, int item, cchar *ext);
-extern void httpTraceContent(HttpConn *conn, int dir, int item, HttpPacket *packet, ssize len, MprOff total);
-extern void httpUsePrimary(HttpConn *conn);
-extern void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *event);
+PUBLIC struct HttpConn *httpAccept(struct HttpEndpoint *endpoint);
+PUBLIC void httpEnableConnEvents(HttpConn *conn);
+PUBLIC void httpInitTrace(HttpTrace *trace);
+PUBLIC void httpParseMethod(HttpConn *conn);
+PUBLIC HttpLimits *httpSetUniqueConnLimits(HttpConn *conn);
+PUBLIC int httpShouldTrace(HttpConn *conn, int dir, int item, cchar *ext);
+PUBLIC void httpTraceContent(HttpConn *conn, int dir, int item, HttpPacket *packet, ssize len, MprOff total);
+PUBLIC void httpUsePrimary(HttpConn *conn);
+PUBLIC void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *event);
 
 /********************************** HttpAuth *********************************/
 /*  
@@ -2415,7 +2415,7 @@ typedef struct  HttpRole {
     @defgroup HttpAuth HttpAuth
     @see HttpAskLogin HttpAuth HttpAuthStore HttpAuthType HttpParseAuth HttpRole HttpSetAuth HttpVerifyUser HttpUser
         HttpVerifyUser httpAddAuthType httpAddAuthStore httpAddRole httpAddUser httpCanUser httpAuthenticate
-        httpComputeAllUserAbilities httpComputeUserAbilities httpCreateRole httpCreateAuth httpCreateRole httpCreateUser
+        httpComputeAllUserAbilities httpComputeUserAbilities httpCreateRole httpCreateAuth httpCreateUser
         httpIsAuthenticated httpLogin httpRemoveRole httpRemoveUser httpSetAuthAllow httpSetAuthAnyValidUser
         httpSetAuthAutoLogin httpSetAuthDeny httpSetAuthOrder httpSetAuthPermittedUsers httpSetAuthForm httpSetAuthQop
         httpSetAuthRealm httpSetAuthRequiredAbilities httpSetAuthStore httpSetAuthType
@@ -2451,7 +2451,7 @@ typedef struct HttpAuth {
     @return Zero if successful, otherwise a negative MPR error code
     @ingroup HttpAuth
  */
-extern int httpAddAuthType(Http *http, cchar *name, HttpAskLogin askLogin, HttpParseAuth parse, HttpSetAuth setAuth);
+PUBLIC int httpAddAuthType(Http *http, cchar *name, HttpAskLogin askLogin, HttpParseAuth parse, HttpSetAuth setAuth);
 
 /**
     Add an authorization store for password validation. The standard types are 'pam' and 'internal'
@@ -2462,7 +2462,7 @@ extern int httpAddAuthType(Http *http, cchar *name, HttpAskLogin askLogin, HttpP
     @return Zero if successful, otherwise a negative MPR error code
     @ingroup HttpAuth
  */
-extern int httpAddAuthStore(Http *http, cchar *name, HttpVerifyUser verifyUser);
+PUBLIC int httpAddAuthStore(Http *http, cchar *name, HttpVerifyUser verifyUser);
 
 /**
     Add a role
@@ -2473,7 +2473,7 @@ extern int httpAddAuthStore(Http *http, cchar *name, HttpVerifyUser verifyUser);
     @return Zero if successful, otherwise a negative MPR error code
     @ingroup HttpAuth
  */
-extern int httpAddRole(HttpAuth *auth, cchar *role, cchar *abilities);
+PUBLIC int httpAddRole(HttpAuth *auth, cchar *role, cchar *abilities);
 
 /**
     Add a user
@@ -2485,7 +2485,7 @@ extern int httpAddRole(HttpAuth *auth, cchar *role, cchar *abilities);
     @return Zero if successful, otherwise a negative MPR error code
     @ingroup HttpAuth
  */
-extern int httpAddUser(HttpAuth *auth, cchar *user, cchar *password, cchar *abilities);
+PUBLIC int httpAddUser(HttpAuth *auth, cchar *user, cchar *password, cchar *abilities);
 
 /**
     Test if a user has the required abilities
@@ -2493,14 +2493,14 @@ extern int httpAddUser(HttpAuth *auth, cchar *user, cchar *password, cchar *abil
     @return True if the user has all the required abilities
     @ingroup HttpAuth
  */
-extern bool httpCanUser(HttpConn *conn);
+PUBLIC bool httpCanUser(HttpConn *conn);
 
 /**
     Compute all the user abilities for a route using the given auth
     @param auth Auth object allocated by #httpCreateAuth
     @ingroup HttpAuth
  */
-extern void httpComputeAllUserAbilities(HttpAuth *auth);
+PUBLIC void httpComputeAllUserAbilities(HttpAuth *auth);
 
 /**
     Compute the user abilities for a given user in a route using the given auth
@@ -2508,7 +2508,7 @@ extern void httpComputeAllUserAbilities(HttpAuth *auth);
     @param user User object
     @ingroup HttpAuth
  */
-extern void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
+PUBLIC void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
 
 /**
     Create an authentication object
@@ -2516,7 +2516,7 @@ extern void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
     @ingroup HttpAuth
     @internal 
  */
-extern HttpAuth *httpCreateAuth();
+PUBLIC HttpAuth *httpCreateAuth();
 
 /**
     Create a new role
@@ -2527,7 +2527,7 @@ extern HttpAuth *httpCreateAuth();
     @return Zero if successful, otherwise a negative MPR error code
     @ingroup HttpAuth
  */
-HttpRole *httpCreateRole(HttpAuth *auth, cchar *name, cchar *abilities);
+PUBLIC HttpRole *httpCreateRole(HttpAuth *auth, cchar *name, cchar *abilities);
 
 /**
     Create a new user
@@ -2539,7 +2539,7 @@ HttpRole *httpCreateRole(HttpAuth *auth, cchar *name, cchar *abilities);
     @return Zero if successful, otherwise a negative MPR error code
     @ingroup HttpAuth
  */
-extern HttpUser *httpCreateUser(HttpAuth *auth, cchar *name, cchar *password, cchar *abilities);
+PUBLIC HttpUser *httpCreateUser(HttpAuth *auth, cchar *name, cchar *password, cchar *abilities);
 
 /**
     Test if the user is authenticated
@@ -2548,7 +2548,7 @@ extern HttpUser *httpCreateUser(HttpAuth *auth, cchar *name, cchar *password, cc
         to access the requested resource document.
     @ingroup HttpAuth
  */
-extern bool httpIsAuthenticated(HttpConn *conn);
+PUBLIC bool httpIsAuthenticated(HttpConn *conn);
 
 /**
     Log the user in. 
@@ -2561,7 +2561,7 @@ extern bool httpIsAuthenticated(HttpConn *conn);
     @return True if the username and password have been authenticated.
     @ingroup HttpAuth
  */
-extern bool httpLogin(HttpConn *conn, cchar *username, cchar *password);
+PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password);
 
 /**
     Remove a role
@@ -2571,7 +2571,7 @@ extern bool httpLogin(HttpConn *conn, cchar *username, cchar *password);
     @ingroup HttpAuth
     @internal 
  */
-extern int httpRemoveRole(HttpAuth *auth, cchar *role);
+PUBLIC int httpRemoveRole(HttpAuth *auth, cchar *role);
 
 /**
     Remove a user
@@ -2581,7 +2581,7 @@ extern int httpRemoveRole(HttpAuth *auth, cchar *role);
     @ingroup HttpAuth
     @internal 
  */
-extern int httpRemoveUser(HttpAuth *auth, cchar *user);
+PUBLIC int httpRemoveUser(HttpAuth *auth, cchar *user);
 
 /**
     Allow access by a client IP IP address
@@ -2589,7 +2589,7 @@ extern int httpRemoveUser(HttpAuth *auth, cchar *user);
     @param ip Client IP address to allow.
     @ingroup HttpAuth
  */
-extern void httpSetAuthAllow(HttpAuth *auth, cchar *ip);
+PUBLIC void httpSetAuthAllow(HttpAuth *auth, cchar *ip);
 
 /**
     Allow access by any valid user
@@ -2597,7 +2597,7 @@ extern void httpSetAuthAllow(HttpAuth *auth, cchar *ip);
     @param auth Authorization object allocated by #httpCreateAuth.
     @ingroup HttpAuth
  */
-extern void httpSetAuthAnyValidUser(HttpAuth *auth);
+PUBLIC void httpSetAuthAnyValidUser(HttpAuth *auth);
 
 /**
     Enable auto login
@@ -2606,7 +2606,7 @@ extern void httpSetAuthAnyValidUser(HttpAuth *auth);
     @param on Set to true to enable auto login.
     @ingroup HttpAuth
  */
-extern void httpSetAuthAutoLogin(HttpAuth *auth, bool on);
+PUBLIC void httpSetAuthAutoLogin(HttpAuth *auth, bool on);
 
 /**
     Deny access by a client IP address
@@ -2614,7 +2614,7 @@ extern void httpSetAuthAutoLogin(HttpAuth *auth, bool on);
     @param ip Client IP address to deny. This must be an IP address string.
     @ingroup HttpAuth
  */
-extern void httpSetAuthDeny(HttpAuth *auth, cchar *ip);
+PUBLIC void httpSetAuthDeny(HttpAuth *auth, cchar *ip);
 
 /**
     Set the auth allow/deny order
@@ -2623,7 +2623,7 @@ extern void httpSetAuthDeny(HttpAuth *auth, cchar *ip);
         checks before allow.
     @ingroup HttpAuth
  */
-extern void httpSetAuthOrder(HttpAuth *auth, int order);
+PUBLIC void httpSetAuthOrder(HttpAuth *auth, int order);
 
 /**
     Define the set of permitted users 
@@ -2631,7 +2631,7 @@ extern void httpSetAuthOrder(HttpAuth *auth, int order);
     @param users Space separated list of acceptable users.
     @ingroup HttpAuth
  */
-extern void httpSetAuthPermittedUsers(HttpAuth *auth, cchar *users);
+PUBLIC void httpSetAuthPermittedUsers(HttpAuth *auth, cchar *users);
 
 /**
     Define the callbabcks for the 'post' authentication type.
@@ -2645,7 +2645,7 @@ extern void httpSetAuthPermittedUsers(HttpAuth *auth, cchar *users);
         URI is utilized.
     @ingroup HttpAuth
  */
-extern void httpSetAuthForm(struct HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, 
+PUBLIC void httpSetAuthForm(struct HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, 
     cchar *loggedIn);
 
 /**
@@ -2655,7 +2655,7 @@ extern void httpSetAuthForm(struct HttpRoute *parent, cchar *loginPage, cchar *l
     @param qop Quality of service description.
     @ingroup HttpAuth
  */
-extern void httpSetAuthQop(HttpAuth *auth, cchar *qop);
+PUBLIC void httpSetAuthQop(HttpAuth *auth, cchar *qop);
 
 /**
     Set the required realm for basic or digest authentication
@@ -2665,7 +2665,7 @@ extern void httpSetAuthQop(HttpAuth *auth, cchar *qop);
     @param realm Authentication realm
     @ingroup HttpAuth
  */
-extern void httpSetAuthRealm(HttpAuth *auth, cchar *realm);
+PUBLIC void httpSetAuthRealm(HttpAuth *auth, cchar *realm);
 
 /**
     Set the required abilities for access
@@ -2673,7 +2673,7 @@ extern void httpSetAuthRealm(HttpAuth *auth, cchar *realm);
     @param abilities Spaces separated list of all the required abilities.
     @ingroup HttpAuth
  */
-extern void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities);
+PUBLIC void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities);
 
 /**
     Set the authentication password store to use
@@ -2681,7 +2681,7 @@ extern void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities);
     @param store Password store to use. Select from: 'pam', 'internal'
     @ingroup HttpAuth
  */
-extern int httpSetAuthStore(HttpAuth *auth, cchar *store);
+PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store);
 
 /**
     Set the authentication protocol to use
@@ -2690,25 +2690,25 @@ extern int httpSetAuthStore(HttpAuth *auth, cchar *store);
     @param details Extra protocol details.
     @ingroup HttpAuth
  */
-extern int httpSetAuthType(HttpAuth *auth, cchar *proto, cchar *details);
+PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *proto, cchar *details);
 
 /*
     Internal
  */
-extern void httpBasicLogin(HttpConn *conn);
-extern int httpBasicParse(HttpConn *conn);
-extern void httpBasicSetHeaders(HttpConn *conn);
-extern void httpDigestLogin(HttpConn *conn);
-extern int httpDigestParse(HttpConn *conn);
-extern void httpDigestSetHeaders(HttpConn *conn);
-extern bool httpPamVerifyUser(HttpConn *conn);
-extern bool httpInternalVerifyUser(HttpConn *conn);
-extern int httpAuthenticate(HttpConn *conn);
-extern void httpComputeAllUserAbilities(HttpAuth *auth);
-extern void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
-extern void httpInitAuth(Http *http);
-extern HttpAuth *httpCreateInheritedAuth(HttpAuth *parent);
-extern HttpAuthType *httpLookupAuthType(cchar *type);
+PUBLIC void httpBasicLogin(HttpConn *conn);
+PUBLIC int httpBasicParse(HttpConn *conn);
+PUBLIC void httpBasicSetHeaders(HttpConn *conn);
+PUBLIC void httpDigestLogin(HttpConn *conn);
+PUBLIC int httpDigestParse(HttpConn *conn);
+PUBLIC void httpDigestSetHeaders(HttpConn *conn);
+PUBLIC bool httpPamVerifyUser(HttpConn *conn);
+PUBLIC bool httpInternalVerifyUser(HttpConn *conn);
+PUBLIC int httpAuthenticate(HttpConn *conn);
+PUBLIC void httpComputeAllUserAbilities(HttpAuth *auth);
+PUBLIC void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
+PUBLIC void httpInitAuth(Http *http);
+PUBLIC HttpAuth *httpCreateInheritedAuth(HttpAuth *parent);
+PUBLIC HttpAuthType *httpLookupAuthType(cchar *type);
 
 /********************************** HttpLang  ********************************/
 
@@ -2826,7 +2826,7 @@ typedef struct HttpCache {
     @return A count of the bytes actually written
     @ingroup HttpCache
  */
-extern void httpAddCache(struct HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types, 
+PUBLIC void httpAddCache(struct HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types, 
         MprTime clientLifespan, MprTime serverLifespan, int flags);
 
 /**
@@ -2839,7 +2839,7 @@ extern void httpAddCache(struct HttpRoute *route, cchar *methods, cchar *uris, c
     @param lifespan Lifespan in milliseconds for the cached content
     @ingroup HttpCache
   */
-extern ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime lifespan);
+PUBLIC ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime lifespan);
 
 /**
     Write the cached content for a URI to the client
@@ -2848,7 +2848,7 @@ extern ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime li
     @param conn HttpConn connection object 
     @ingroup HttpCache
   */
-extern ssize httpWriteCached(HttpConn *conn);
+PUBLIC ssize httpWriteCached(HttpConn *conn);
 
 /******************************** Proc Handler *************************************/
 /**
@@ -2867,7 +2867,7 @@ typedef void (*HttpProc)(HttpConn *conn);
     @param fun Callback function procedure
     @ingroup HttpProc
  */
-extern void httpDefineProc(cchar *uri, HttpProc fun);
+PUBLIC void httpDefineProc(cchar *uri, HttpProc fun);
 
 /********************************** HttpRoute  *********************************/
 /*
@@ -3024,7 +3024,7 @@ typedef int (HttpRouteProc)(HttpConn *conn, HttpRoute *route, HttpRouteOp *item)
     @param resource Resource name. This should be a lower case, single word, alphabetic resource name.
     @ingroup HttpRoute
  */
-extern void httpAddResource(HttpRoute *parent, cchar *resource);
+PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource);
 
 /**
     Add routes for a group of resources
@@ -3046,7 +3046,7 @@ extern void httpAddResource(HttpRoute *parent, cchar *resource);
     @param resource Resource name. This should be a lower case, single word, alphabetic resource name.
     @ingroup HttpRoute
  */
-extern void httpAddResourceGroup(HttpRoute *parent, cchar *resource);
+PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource);
 
 /**
     Add a route for the home page.
@@ -3058,7 +3058,7 @@ extern void httpAddResourceGroup(HttpRoute *parent, cchar *resource);
     @param parent Parent route from which to inherit configuration.
     @ingroup HttpRoute
  */
-extern void httpAddHomeRoute(HttpRoute *parent);
+PUBLIC void httpAddHomeRoute(HttpRoute *parent);
 
 /**
     Add a route set package
@@ -3082,7 +3082,7 @@ extern void httpAddHomeRoute(HttpRoute *parent);
         \n\n
     @ingroup HttpRoute
  */
-extern void httpAddRouteSet(HttpRoute *parent, cchar *set);
+PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set);
 
 /**
     Add a route condition
@@ -3108,7 +3108,7 @@ extern void httpAddRouteSet(HttpRoute *parent, cchar *set);
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
  */
-extern int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, int flags);
+PUBLIC int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, int flags);
 
 /**
     Add an error document
@@ -3119,7 +3119,7 @@ extern int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, 
     @param uri URL describing the error document
     @ingroup HttpRoute
  */
-extern void httpAddRouteErrorDocument(HttpRoute *route, int status, cchar *uri);
+PUBLIC void httpAddRouteErrorDocument(HttpRoute *route, int status, cchar *uri);
 
 /**
     Cache response content in the client by extension.
@@ -3133,7 +3133,7 @@ extern void httpAddRouteErrorDocument(HttpRoute *route, int status, cchar *uri);
         cached in the client.
     @ingroup HttpRoute
  */
-extern void httpAddRouteExpiry(HttpRoute *route, MprTime when, cchar *extensions);
+PUBLIC void httpAddRouteExpiry(HttpRoute *route, MprTime when, cchar *extensions);
 
 /**
     Cache response content in the client by mime type.
@@ -3148,7 +3148,7 @@ extern void httpAddRouteExpiry(HttpRoute *route, MprTime when, cchar *extensions
         in the client.
     @ingroup HttpRoute
  */
-extern void httpAddRouteExpiryByType(HttpRoute *route, MprTime when, cchar *mimeTypes);
+PUBLIC void httpAddRouteExpiryByType(HttpRoute *route, MprTime when, cchar *mimeTypes);
 
 /**
     Add a route filter
@@ -3162,7 +3162,7 @@ extern void httpAddRouteExpiryByType(HttpRoute *route, MprTime when, cchar *mime
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
  */
-extern int httpAddRouteFilter(HttpRoute *route, cchar *name, cchar *extensions, int direction);
+PUBLIC int httpAddRouteFilter(HttpRoute *route, cchar *name, cchar *extensions, int direction);
 
 /**
     Add a route handler
@@ -3174,7 +3174,7 @@ extern int httpAddRouteFilter(HttpRoute *route, cchar *name, cchar *extensions, 
     @return Zero if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
  */
-extern int httpAddRouteHandler(HttpRoute *route, cchar *name, cchar *extensions);
+PUBLIC int httpAddRouteHandler(HttpRoute *route, cchar *name, cchar *extensions);
 
 /**
     Add a route header check
@@ -3185,7 +3185,7 @@ extern int httpAddRouteHandler(HttpRoute *route, cchar *name, cchar *extensions)
     @param flags Set to HTTP_ROUTE_NOT to negate the header test
     @ingroup HttpRoute
  */
-extern void httpAddRouteHeader(HttpRoute *route, cchar *header, cchar *value, int flags);
+PUBLIC void httpAddRouteHeader(HttpRoute *route, cchar *header, cchar *value, int flags);
 
 /**
     Set the route index document
@@ -3197,7 +3197,7 @@ extern void httpAddRouteHeader(HttpRoute *route, cchar *header, cchar *value, in
     @return A reference to the route data. Otherwise return null if the route data for the given key was not found.
     @ingroup HttpRoute
  */
-extern void httpAddRouteIndex(HttpRoute *route, cchar *path);
+PUBLIC void httpAddRouteIndex(HttpRoute *route, cchar *path);
 
 /**
     Add a route language suffix
@@ -3212,7 +3212,7 @@ extern void httpAddRouteIndex(HttpRoute *route, cchar *path);
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
  */
-extern int httpAddRouteLanguageSuffix(HttpRoute *route, cchar *language, cchar *suffix, int flags);
+PUBLIC int httpAddRouteLanguageSuffix(HttpRoute *route, cchar *language, cchar *suffix, int flags);
 
 /**
     Add a route language directory
@@ -3224,7 +3224,7 @@ extern int httpAddRouteLanguageSuffix(HttpRoute *route, cchar *language, cchar *
     @return Zero if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
  */
-extern int httpAddRouteLanguageDir(HttpRoute *route, cchar *language, cchar *path);
+PUBLIC int httpAddRouteLanguageDir(HttpRoute *route, cchar *language, cchar *path);
 
 /**
     Add a route param check
@@ -3235,7 +3235,7 @@ extern int httpAddRouteLanguageDir(HttpRoute *route, cchar *language, cchar *pat
     @param flags Set to HTTP_ROUTE_NOT to negate the query test
     @ingroup HttpRoute
  */
-extern void httpAddRouteParam(HttpRoute *route, cchar *field, cchar *value, int flags);
+PUBLIC void httpAddRouteParam(HttpRoute *route, cchar *field, cchar *value, int flags);
 
 /**
     Add a route update rule
@@ -3255,7 +3255,7 @@ extern void httpAddRouteParam(HttpRoute *route, cchar *field, cchar *value, int 
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
  */
-extern int httpAddRouteUpdate(HttpRoute *route, cchar *name, cchar *details, int flags);
+PUBLIC int httpAddRouteUpdate(HttpRoute *route, cchar *name, cchar *details, int flags);
 
 /**
     Add a route for static content under a "static" directory. This can be used for ESP applications. Use the EspDir
@@ -3268,7 +3268,7 @@ extern int httpAddRouteUpdate(HttpRoute *route, cchar *name, cchar *details, int
     @param parent Parent route from which to inherit configuration.
     @ingroup HttpRoute
  */
-extern void httpAddStaticRoute(HttpRoute *parent);
+PUBLIC void httpAddStaticRoute(HttpRoute *parent);
 
 /**
     Backup the route log if required
@@ -3277,7 +3277,7 @@ extern void httpAddStaticRoute(HttpRoute *parent);
     @param route Route to modify
     @ingroup HttpRoute
  */
-extern void httpBackupRouteLog(HttpRoute *route);
+PUBLIC void httpBackupRouteLog(HttpRoute *route);
 
 /**
     Clear the pipeline stages for the route
@@ -3286,7 +3286,7 @@ extern void httpBackupRouteLog(HttpRoute *route);
     @param direction Set to HTTP_STAGE_TX for transmit direction and HTTP_STAGE_RX for receive data flow.
     @ingroup HttpRoute
  */
-extern void httpClearRouteStages(HttpRoute *route, int direction);
+PUBLIC void httpClearRouteStages(HttpRoute *route, int direction);
 
 /**
     Create a route suitable for use as an alias
@@ -3299,7 +3299,7 @@ extern void httpClearRouteStages(HttpRoute *route, int direction);
     @return Allocated HttpRoute object
     @ingroup HttpRoute
  */
-extern HttpRoute *httpCreateAliasRoute(HttpRoute *parent, cchar *pattern, cchar *path, int status);
+PUBLIC HttpRoute *httpCreateAliasRoute(HttpRoute *parent, cchar *pattern, cchar *path, int status);
 
 /**
     Create a configured route 
@@ -3309,7 +3309,7 @@ extern HttpRoute *httpCreateAliasRoute(HttpRoute *parent, cchar *pattern, cchar 
     @return Allocated HttpRoute object
     @ingroup HttpRoute
  */
-extern HttpRoute *httpCreateConfiguredRoute(struct HttpHost *host, int serverSide);
+PUBLIC HttpRoute *httpCreateConfiguredRoute(struct HttpHost *host, int serverSide);
 
 /**
     Create a default route for a host
@@ -3318,7 +3318,7 @@ extern HttpRoute *httpCreateConfiguredRoute(struct HttpHost *host, int serverSid
     @return Allocated HttpRoute object
     @ingroup HttpRoute
  */
-extern HttpRoute *httpCreateDefaultRoute(struct HttpHost *host);
+PUBLIC HttpRoute *httpCreateDefaultRoute(struct HttpHost *host);
 
 /**
     Create a route inherited from a parent route
@@ -3327,7 +3327,7 @@ extern HttpRoute *httpCreateDefaultRoute(struct HttpHost *host);
     @return Allocated HttpRoute object
     @ingroup HttpRoute
  */
-extern HttpRoute *httpCreateInheritedRoute(HttpRoute *route);
+PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *route);
 
 /**
     Create a route for use with the Proc Handler
@@ -3339,7 +3339,7 @@ extern HttpRoute *httpCreateInheritedRoute(HttpRoute *route);
     @return Newly created route
     @ingroup HttpRoute
  */
-extern HttpRoute *httpCreateProcRoute(HttpRoute *parent, cchar *pattern, HttpProc proc);
+PUBLIC HttpRoute *httpCreateProcRoute(HttpRoute *parent, cchar *pattern, HttpProc proc);
 
 /**
     Create a route for a host
@@ -3349,7 +3349,7 @@ extern HttpRoute *httpCreateProcRoute(HttpRoute *parent, cchar *pattern, HttpPro
     @return Allocated HttpRoute object
     @ingroup HttpRoute
  */
-extern HttpRoute *httpCreateRoute(struct HttpHost *host);
+PUBLIC HttpRoute *httpCreateRoute(struct HttpHost *host);
 
 /**
     Define a route condition rule
@@ -3358,7 +3358,7 @@ extern HttpRoute *httpCreateRoute(struct HttpHost *host);
     @param proc Condition function to process the condition during route matching.
     @ingroup HttpRoute
  */
-extern void httpDefineRouteCondition(cchar *name, HttpRouteProc *proc);
+PUBLIC void httpDefineRouteCondition(cchar *name, HttpRouteProc *proc);
 
 /**
     Define a route target rule
@@ -3367,7 +3367,7 @@ extern void httpDefineRouteCondition(cchar *name, HttpRouteProc *proc);
     @param proc Target function to process the target during route matching.
     @ingroup HttpRoute
  */
-extern void httpDefineRouteTarget(cchar *name, HttpRouteProc *proc);
+PUBLIC void httpDefineRouteTarget(cchar *name, HttpRouteProc *proc);
 
 /**
     Define a route update rule
@@ -3376,7 +3376,7 @@ extern void httpDefineRouteTarget(cchar *name, HttpRouteProc *proc);
     @param proc Update function to process the update during route matching.
     @ingroup HttpRoute
  */
-extern void httpDefineRouteUpdate(cchar *name, HttpRouteProc *proc);
+PUBLIC void httpDefineRouteUpdate(cchar *name, HttpRouteProc *proc);
 
 /**
     Finalize a route
@@ -3384,7 +3384,7 @@ extern void httpDefineRouteUpdate(cchar *name, HttpRouteProc *proc);
     @param route Route to modify
     @ingroup HttpRoute
  */
-extern void httpFinalizeRoute(HttpRoute *route);
+PUBLIC void httpFinalizeRoute(HttpRoute *route);
 
 /**
     Get extra route data
@@ -3396,7 +3396,7 @@ extern void httpFinalizeRoute(HttpRoute *route);
     @see httpGetRouteData
     @ingroup HttpRoute
  */
-extern void *httpGetRouteData(HttpRoute *route, cchar *key);
+PUBLIC void *httpGetRouteData(HttpRoute *route, cchar *key);
 
 /**
     Get the route directory
@@ -3406,7 +3406,7 @@ extern void *httpGetRouteData(HttpRoute *route, cchar *key);
     @return The route documents directory pathname.
     @ingroup HttpRoute
  */
-extern cchar *httpGetRouteDir(HttpRoute *route);
+PUBLIC cchar *httpGetRouteDir(HttpRoute *route);
 
 /**
     Get the route method list
@@ -3414,7 +3414,7 @@ extern cchar *httpGetRouteDir(HttpRoute *route);
     @return The the list of support methods. Return NULL if not method list is defined.
     @ingroup HttpRoute
  */
-extern cchar *httpGetRouteMethods(HttpRoute *route);
+PUBLIC cchar *httpGetRouteMethods(HttpRoute *route);
 
 /**
     Graduate the limits from the parent route.
@@ -3423,7 +3423,7 @@ extern cchar *httpGetRouteMethods(HttpRoute *route);
     @param limits Limits to use if graduating.
     @ingroup HttpRoute
  */
-extern HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits);
+PUBLIC HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits);
 
 /** 
     Create a URI link. 
@@ -3491,7 +3491,7 @@ extern HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits);
     httpLink(conn, "{ template: '~/static/images/${theme}/background.jpg', theme: 'blue' }", 0);
     </pre>
 */
-extern char *httpLink(HttpConn *conn, cchar *target, MprHash *options);
+PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options);
 
 /**
     Lookup an error document by HTTP status code
@@ -3501,7 +3501,7 @@ extern char *httpLink(HttpConn *conn, cchar *target, MprHash *options);
     @return URI associated with the error document for the requested status.
     @ingroup HttpRoute
  */
-extern cchar *httpLookupRouteErrorDocument(HttpRoute *route, int status);
+PUBLIC cchar *httpLookupRouteErrorDocument(HttpRoute *route, int status);
 
 /**
     Make a filename path
@@ -3521,7 +3521,7 @@ extern cchar *httpLookupRouteErrorDocument(HttpRoute *route, int status);
     @return An absolute file name.
     @ingroup HttpRoute
  */
-extern char *httpMakePath(HttpRoute *route, cchar *path);
+PUBLIC char *httpMakePath(HttpRoute *route, cchar *path);
 
 /**
     Map the request URI and route target to a filename
@@ -3529,7 +3529,7 @@ extern char *httpMakePath(HttpRoute *route, cchar *path);
     @param conn HttpConn connection object 
     @param route Route to modify
  */
-extern void httpMapFile(HttpConn *conn, HttpRoute *route);
+PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route);
 
 /**
     Match a route against the current request 
@@ -3541,7 +3541,7 @@ extern void httpMapFile(HttpConn *conn, HttpRoute *route);
         route matching must be restarted.
     @ingroup HttpRoute
  */
-extern int httpMatchRoute(HttpConn *conn, HttpRoute *route);
+PUBLIC int httpMatchRoute(HttpConn *conn, HttpRoute *route);
 
 /**
     Reset the route pipeline
@@ -3550,7 +3550,7 @@ extern int httpMatchRoute(HttpConn *conn, HttpRoute *route);
     @param route Route to modify
     @ingroup HttpRoute
  */
-extern void httpResetRoutePipeline(HttpRoute *route);
+PUBLIC void httpResetRoutePipeline(HttpRoute *route);
 
 /**
     Set the route authentication
@@ -3559,7 +3559,7 @@ extern void httpResetRoutePipeline(HttpRoute *route);
     @param auth Authentication object
     @ingroup HttpRoute
  */
-extern void httpSetRouteAuth(HttpRoute *route, HttpAuth *auth);
+PUBLIC void httpSetRouteAuth(HttpRoute *route, HttpAuth *auth);
 
 /**
     Control file upload auto delete
@@ -3568,7 +3568,7 @@ extern void httpSetRouteAuth(HttpRoute *route, HttpAuth *auth);
     @param on Set to true to enable auto-delete. Auto-delete is enabled by default.
     @ingroup HttpRoute
  */
-extern void httpSetRouteAutoDelete(HttpRoute *route, bool on);
+PUBLIC void httpSetRouteAutoDelete(HttpRoute *route, bool on);
 
 /**
     Contol content compression for the route
@@ -3580,7 +3580,7 @@ extern void httpSetRouteAutoDelete(HttpRoute *route, bool on);
         extension.
     @ingroup HttpRoute
  */
-extern void httpSetRouteCompression(HttpRoute *route, int flags);
+PUBLIC void httpSetRouteCompression(HttpRoute *route, int flags);
 
 /**
     Set the connector to use for a route
@@ -3589,7 +3589,7 @@ extern void httpSetRouteCompression(HttpRoute *route, int flags);
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
  */
-extern int httpSetRouteConnector(HttpRoute *route, cchar *name);
+PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name);
 
 /**
     Set route data
@@ -3600,7 +3600,7 @@ extern int httpSetRouteConnector(HttpRoute *route, cchar *name);
     @param data Data object. This must be allocated via mprAlloc.
     @ingroup HttpRoute
  */
-extern void httpSetRouteData(HttpRoute *route, cchar *key, void *data);
+PUBLIC void httpSetRouteData(HttpRoute *route, cchar *key, void *data);
 
 /**
     Set the default language for the route
@@ -3610,7 +3610,7 @@ extern void httpSetRouteData(HttpRoute *route, cchar *key, void *data);
     @param language Language symbolic name. For example: "en" for english.
     @ingroup HttpRoute
  */
-extern void httpSetRouteDefaultLanguage(HttpRoute *route, cchar *language);
+PUBLIC void httpSetRouteDefaultLanguage(HttpRoute *route, cchar *language);
 
 /**
     Set the route directory
@@ -3621,7 +3621,7 @@ extern void httpSetRouteDefaultLanguage(HttpRoute *route, cchar *language);
     @return The route documents directory pathname.
     @ingroup HttpRoute
  */
-extern void httpSetRouteDir(HttpRoute *route, cchar *dir);
+PUBLIC void httpSetRouteDir(HttpRoute *route, cchar *dir);
 
 /**
     Update the route flags
@@ -3631,7 +3631,7 @@ extern void httpSetRouteDir(HttpRoute *route, cchar *dir);
     @ingroup HttpRoute
     @internal
  */
-extern void httpSetRouteFlags(HttpRoute *route, int flags);
+PUBLIC void httpSetRouteFlags(HttpRoute *route, int flags);
 
 /**
     Set the handler to use for a route
@@ -3642,7 +3642,7 @@ extern void httpSetRouteFlags(HttpRoute *route, int flags);
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
  */
-extern int httpSetRouteHandler(HttpRoute *route, cchar *name);
+PUBLIC int httpSetRouteHandler(HttpRoute *route, cchar *name);
 
 /*
     Define the owning host for a route.
@@ -3651,7 +3651,7 @@ extern int httpSetRouteHandler(HttpRoute *route, cchar *name);
     @param host HttpHost object
     @internal
  */
-extern void httpSetRouteHost(HttpRoute *route, struct HttpHost *host);
+PUBLIC void httpSetRouteHost(HttpRoute *route, struct HttpHost *host);
 
 /**
     Define the methods for the route
@@ -3661,7 +3661,7 @@ extern void httpSetRouteHost(HttpRoute *route, struct HttpHost *host);
         methods.  Standard methods include: "DELETE, GET, OPTIONS, POST, PUT, TRACE".
     @ingroup HttpRoute
  */
-extern void httpSetRouteMethods(HttpRoute *route, cchar *methods);
+PUBLIC void httpSetRouteMethods(HttpRoute *route, cchar *methods);
 
 /**
     Set the route name
@@ -3670,7 +3670,7 @@ extern void httpSetRouteMethods(HttpRoute *route, cchar *methods);
     @param name Unique symbolic name for the route. If a name is not defined, the route pattern will be used as the name. 
     @ingroup HttpRoute
  */
-extern void httpSetRouteName(HttpRoute *route, cchar *name);
+PUBLIC void httpSetRouteName(HttpRoute *route, cchar *name);
 
 /**
     Define a path token variable
@@ -3681,7 +3681,7 @@ extern void httpSetRouteName(HttpRoute *route, cchar *name);
     @param value Value of the token
     @ingroup HttpRoute
  */
-extern void httpSetRouteVar(HttpRoute *route, cchar *token, cchar *value);
+PUBLIC void httpSetRouteVar(HttpRoute *route, cchar *token, cchar *value);
 
 /**
     Set the route pattern
@@ -3697,7 +3697,7 @@ extern void httpSetRouteVar(HttpRoute *route, cchar *token, cchar *value);
     @param flags Set to HTTP_ROUTE_NOT to negate the pattern match result
     @ingroup HttpRoute
  */
-extern void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags);
+PUBLIC void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags);
 
 /**
     Set the route prefix
@@ -3707,7 +3707,7 @@ extern void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags);
     @param prefix URI prefix to define for the route. 
     @ingroup HttpRoute
  */
-extern void httpSetRoutePrefix(HttpRoute *route, cchar *prefix);
+PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix);
 
 /**
     Set the script to service the route.
@@ -3719,7 +3719,7 @@ extern void httpSetRoutePrefix(HttpRoute *route, cchar *prefix);
     @ingroup HttpRoute
     @internal
  */
-extern void httpSetRouteScript(HttpRoute *route, cchar *script, cchar *scriptPath);
+PUBLIC void httpSetRouteScript(HttpRoute *route, cchar *script, cchar *scriptPath);
 
 /**
     Set the source code module for the route
@@ -3728,7 +3728,7 @@ extern void httpSetRouteScript(HttpRoute *route, cchar *script, cchar *scriptPat
     @param source Source path or description 
     @ingroup HttpRoute
  */
-extern void httpSetRouteSource(HttpRoute *route, cchar *source);
+PUBLIC void httpSetRouteSource(HttpRoute *route, cchar *source);
 
 /**
     Set a route target
@@ -3807,7 +3807,7 @@ extern void httpSetRouteSource(HttpRoute *route, cchar *source);
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
  */
-extern int httpSetRouteTarget(HttpRoute *route, cchar *name, cchar *details);
+PUBLIC int httpSetRouteTarget(HttpRoute *route, cchar *name, cchar *details);
 
 /**
     Set the route template
@@ -3817,7 +3817,7 @@ extern int httpSetRouteTarget(HttpRoute *route, cchar *name, cchar *details);
         to the token names in the route pattern. 
     @ingroup HttpRoute
  */
-extern void httpSetRouteTemplate(HttpRoute *route, cchar *tplate);
+PUBLIC void httpSetRouteTemplate(HttpRoute *route, cchar *tplate);
 
 /**
     Set the route trace filter
@@ -3831,7 +3831,7 @@ extern void httpSetRouteTemplate(HttpRoute *route, cchar *tplate);
     @param exclude Comma or space separated list of extensions to exclude from tracing
     @ingroup HttpRoute
  */
-extern void httpSetRouteTraceFilter(HttpRoute *route, int dir, int levels[HTTP_TRACE_MAX_ITEM], 
+PUBLIC void httpSetRouteTraceFilter(HttpRoute *route, int dir, int levels[HTTP_TRACE_MAX_ITEM], 
         ssize len, cchar *include, cchar *exclude);
 
 /**
@@ -3841,7 +3841,7 @@ extern void httpSetRouteTraceFilter(HttpRoute *route, int dir, int levels[HTTP_T
     @ingroup HttpRoute
     @internal
  */
-extern void httpSetRouteWorkers(HttpRoute *route, int workers);
+PUBLIC void httpSetRouteWorkers(HttpRoute *route, int workers);
 
 /**
     Expand a template string using given options
@@ -3851,7 +3851,7 @@ extern void httpSetRouteWorkers(HttpRoute *route, int workers);
     @param options Hash of option values for embedded tokens.
     @ingroup HttpRoute
  */
-extern char *httpTemplate(HttpConn *conn, cchar *tplate, MprHash *options);
+PUBLIC char *httpTemplate(HttpConn *conn, cchar *tplate, MprHash *options);
 
 /**
     Tokenize a string based on route data
@@ -3873,7 +3873,7 @@ extern char *httpTemplate(HttpConn *conn, cchar *tplate, MprHash *options);
     @return True if the string can be successfully parsed.
     @ingroup HttpRoute
  */
-extern bool httpTokenize(HttpRoute *route, cchar *str, cchar *fmt, ...);
+PUBLIC bool httpTokenize(HttpRoute *route, cchar *str, cchar *fmt, ...);
 
 /**
     Tokenize a string based on route data
@@ -3886,7 +3886,7 @@ extern bool httpTokenize(HttpRoute *route, cchar *str, cchar *fmt, ...);
     @return True if the string can be successfully parsed.
     @ingroup HttpRoute
  */
-extern bool httpTokenizev(HttpRoute *route, cchar *str, cchar *fmt, va_list args);
+PUBLIC bool httpTokenizev(HttpRoute *route, cchar *str, cchar *fmt, va_list args);
 
 /**
     Configure the route access log
@@ -3899,7 +3899,7 @@ extern bool httpTokenizev(HttpRoute *route, cchar *str, cchar *fmt, va_list args
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
  */
-extern int httpSetRouteLog(HttpRoute *route, cchar *path, ssize size, int backup, cchar *format, int flags);
+PUBLIC int httpSetRouteLog(HttpRoute *route, cchar *path, ssize size, int backup, cchar *format, int flags);
 
 /**
     Write data to the route access log
@@ -3909,16 +3909,16 @@ extern int httpSetRouteLog(HttpRoute *route, cchar *path, ssize size, int backup
     @param len Size of the data buffer.
     @ingroup HttpRoute
  */
-extern void httpWriteRouteLog(HttpRoute *route, cchar *buf, ssize len);
+PUBLIC void httpWriteRouteLog(HttpRoute *route, cchar *buf, ssize len);
 
 /*
     Internal
  */
-extern void httpLogRequest(HttpConn *conn);
-extern MprFile *httpOpenRouteLog(HttpRoute *route);
-extern int httpStartRoute(HttpRoute *route);
-extern void httpStopRoute(HttpRoute *route);
-extern char *httpExpandRouteVars(HttpConn *conn, cchar *str);
+PUBLIC void httpLogRequest(HttpConn *conn);
+PUBLIC MprFile *httpOpenRouteLog(HttpRoute *route);
+PUBLIC int httpStartRoute(HttpRoute *route);
+PUBLIC void httpStopRoute(HttpRoute *route);
+PUBLIC char *httpExpandRouteVars(HttpConn *conn, cchar *str);
 
 /*********************************** Session ***************************************/
 
@@ -3946,7 +3946,7 @@ typedef struct HttpSession {
     @return A session state object
     @ingroup HttpSession
  */
-extern HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTime lifhttpan);
+PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTime lifhttpan);
 
 /**
     Create a session object.
@@ -3956,7 +3956,7 @@ extern HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTime lifhttpa
     @return A session state object
     @ingroup HttpSession
  */
-extern HttpSession *httpCreateSession(HttpConn *conn);
+PUBLIC HttpSession *httpCreateSession(HttpConn *conn);
 
 /**
     Destroy a session state object.
@@ -3964,7 +3964,7 @@ extern HttpSession *httpCreateSession(HttpConn *conn);
     @param sp Session state object allocated with #httpAllocSession
     @ingroup HttpSession
  */
-extern void httpDestroySession(HttpSession *sp);
+PUBLIC void httpDestroySession(HttpSession *sp);
 
 /**
     Get a session state object.
@@ -3974,7 +3974,7 @@ extern void httpDestroySession(HttpSession *sp);
     @return A session state object
     @ingroup HttpSession
  */
-extern HttpSession *httpGetSession(HttpConn *conn, int create);
+PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create);
 
 /**
     Get an object from the session state store.
@@ -3983,7 +3983,7 @@ extern HttpSession *httpGetSession(HttpConn *conn, int create);
     @param key Session state key
     @ingroup HttpSession
  */
-extern MprHash *httpGetSessionObj(HttpConn *conn, cchar *key);
+PUBLIC MprHash *httpGetSessionObj(HttpConn *conn, cchar *key);
 
 /**
     Get a session state variable.
@@ -3993,7 +3993,7 @@ extern MprHash *httpGetSessionObj(HttpConn *conn, cchar *key);
     @return The variable value or defaultValue if it does not exist.
     @ingroup HttpSession
  */
-extern cchar *httpGetSessionVar(HttpConn *conn, cchar *name, cchar *defaultValue);
+PUBLIC cchar *httpGetSessionVar(HttpConn *conn, cchar *name, cchar *defaultValue);
 
 /**
     Remove a session state variable
@@ -4002,7 +4002,7 @@ extern cchar *httpGetSessionVar(HttpConn *conn, cchar *name, cchar *defaultValue
     @return Zero if successful, otherwise a negative MPR error code.
     @ingroup HttpSession
  */
-extern int httpRemoveSessionVar(HttpConn *conn, cchar *name);
+PUBLIC int httpRemoveSessionVar(HttpConn *conn, cchar *name);
 
 /**
     Set a session variable.
@@ -4013,7 +4013,7 @@ extern int httpRemoveSessionVar(HttpConn *conn, cchar *name);
     @return A session state object
     @ingroup HttpSession
  */
-extern int httpSetSessionVar(HttpConn *conn, cchar *name, cchar *value);
+PUBLIC int httpSetSessionVar(HttpConn *conn, cchar *name, cchar *value);
 
 /**
     Get the session ID.
@@ -4022,7 +4022,7 @@ extern int httpSetSessionVar(HttpConn *conn, cchar *name, cchar *value);
     @return The session ID string
     @ingroup HttpSession
  */
-extern char *httpGetSessionID(HttpConn *conn);
+PUBLIC char *httpGetSessionID(HttpConn *conn);
 
 /**
     Set an object into the session state store.
@@ -4032,7 +4032,7 @@ extern char *httpGetSessionID(HttpConn *conn);
     @param value Object to serialize
     @ingroup HttpSession
  */
-extern int httpSetSessionObj(HttpConn *conn, cchar *key, MprHash *value);
+PUBLIC int httpSetSessionObj(HttpConn *conn, cchar *key, MprHash *value);
 
 /********************************** HttpUploadFile *********************************/
 /**
@@ -4058,7 +4058,7 @@ typedef struct HttpUploadFile {
     @ingroup HttpUploadFile
     @internal
  */
-extern void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *file);
+PUBLIC void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *file);
 
 /**
     Remove all uploaded files
@@ -4067,7 +4067,7 @@ extern void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *file);
     @ingroup HttpUploadFile
     @internal
  */
-extern void httpRemoveAllUploadedFiles(HttpConn *conn);
+PUBLIC void httpRemoveAllUploadedFiles(HttpConn *conn);
 
 /**
     Remove an uploaded file
@@ -4077,7 +4077,7 @@ extern void httpRemoveAllUploadedFiles(HttpConn *conn);
     @ingroup HttpUploadFile
     @internal
  */
-extern void httpRemoveUploadFile(HttpConn *conn, cchar *id);
+PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 
 /********************************** HttpRx *********************************/
 /* 
@@ -4239,7 +4239,7 @@ typedef struct HttpRx {
     @ingroup HttpRx
     @internal
  */
-extern void httpAddParams(HttpConn *conn);
+PUBLIC void httpAddParams(HttpConn *conn);
 
 /**
     Test if the content has not been modified
@@ -4249,7 +4249,7 @@ extern void httpAddParams(HttpConn *conn);
     @return True if the content is current and has not been modified.
     @ingroup HttpRx
  */
-extern bool httpContentNotModified(HttpConn *conn);
+PUBLIC bool httpContentNotModified(HttpConn *conn);
 
 /**
     Create CGI parameters
@@ -4260,7 +4260,7 @@ extern bool httpContentNotModified(HttpConn *conn);
     @param conn HttpConn connection object
     @ingroup HttpRx
  */
-extern void httpCreateCGIParams(HttpConn *conn);
+PUBLIC void httpCreateCGIParams(HttpConn *conn);
 
 /** 
     Get the receive body content length
@@ -4270,7 +4270,7 @@ extern void httpCreateCGIParams(HttpConn *conn);
     @return A count of the response content data in bytes.
     @ingroup HttpRx
  */
-extern MprOff httpGetContentLength(HttpConn *conn);
+PUBLIC MprOff httpGetContentLength(HttpConn *conn);
 
 /** 
     Get the request cookies
@@ -4279,7 +4279,7 @@ extern MprOff httpGetContentLength(HttpConn *conn);
     @return Return a string containing the cookies sent in the Http header of the last request
     @ingroup HttpRx
  */
-extern cchar *httpGetCookies(HttpConn *conn);
+PUBLIC cchar *httpGetCookies(HttpConn *conn);
 
 /**
     Get a request param
@@ -4291,7 +4291,7 @@ extern cchar *httpGetCookies(HttpConn *conn);
     @return String containing the request param's value. Caller should not free.
     @ingroup HttpRx
  */
-extern cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue);
+PUBLIC cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue);
 
 /**
     Get the request params table
@@ -4302,7 +4302,7 @@ extern cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue);
     @return $MprHash instance containing the form vars
     @ingroup HttpRx
  */
-extern MprHash *httpGetParams(HttpConn *conn);
+PUBLIC MprHash *httpGetParams(HttpConn *conn);
 
 /**
     Get the request params table as a string
@@ -4313,7 +4313,7 @@ extern MprHash *httpGetParams(HttpConn *conn);
     @return A string representation in www-urlencoded format.
     @ingroup HttpRx
  */
-extern char *httpGetParamsString(HttpConn *conn);
+PUBLIC char *httpGetParamsString(HttpConn *conn);
 
 /** 
     Get an rx http header.
@@ -4323,7 +4323,7 @@ extern char *httpGetParamsString(HttpConn *conn);
     @return Value associated with the header key or null if the key did not exist in the response.
     @ingroup HttpRx
  */
-extern cchar *httpGetHeader(HttpConn *conn, cchar *key);
+PUBLIC cchar *httpGetHeader(HttpConn *conn, cchar *key);
 
 /** 
     Get the hash table of rx Http headers
@@ -4332,7 +4332,7 @@ extern cchar *httpGetHeader(HttpConn *conn, cchar *key);
     @return Hash table. See MprHash for how to access the hash table.
     @ingroup HttpRx
  */
-extern MprHash *httpGetHeaderHash(HttpConn *conn);
+PUBLIC MprHash *httpGetHeaderHash(HttpConn *conn);
 
 /** 
     Get all the request http headers.
@@ -4342,7 +4342,7 @@ extern MprHash *httpGetHeaderHash(HttpConn *conn);
     @return String containing all the headers. The caller must free this returned string.
     @ingroup HttpRx
  */
-extern char *httpGetHeaders(HttpConn *conn);
+PUBLIC char *httpGetHeaders(HttpConn *conn);
 
 /**
     Get a header string from the given hash.
@@ -4351,7 +4351,7 @@ extern char *httpGetHeaders(HttpConn *conn);
     @ingroup HttpRx
     @internal
  */
-extern char *httpGetHeadersFromHash(MprHash *hash);
+PUBLIC char *httpGetHeadersFromHash(MprHash *hash);
 
 /**
     Get a form variable as an integer
@@ -4363,7 +4363,7 @@ extern char *httpGetHeadersFromHash(MprHash *hash);
     @return Integer containing the form variable's value
     @ingroup HttpRx
  */
-extern int httpGetIntParam(HttpConn *conn, cchar *var, int defaultValue);
+PUBLIC int httpGetIntParam(HttpConn *conn, cchar *var, int defaultValue);
 
 /**
     Get the language to use for the request
@@ -4375,7 +4375,7 @@ extern int httpGetIntParam(HttpConn *conn, cchar *var, int defaultValue);
     @return A HttpLang reference, or null if no language requested or no language found in the spoken table.
     @ingroup HttpRx
  */
-extern HttpLang *httpGetLanguage(HttpConn *conn, MprHash *spoken, cchar *defaultLang);
+PUBLIC HttpLang *httpGetLanguage(HttpConn *conn, MprHash *spoken, cchar *defaultLang);
 
 /** 
     Get the request query string
@@ -4384,14 +4384,14 @@ extern HttpLang *httpGetLanguage(HttpConn *conn, MprHash *spoken, cchar *default
     @return String containing the request query string. Caller should not free.
     @ingroup HttpRx
  */
-extern cchar *httpGetQueryString(HttpConn *conn);
+PUBLIC cchar *httpGetQueryString(HttpConn *conn);
 
 /**
     Get the number of bytes that can be read from the connection
     @param conn HttpConn connection object
     @return The number of bytes available in the read queue for the connection
  */
-extern ssize httpGetReadCount(HttpConn *conn);
+PUBLIC ssize httpGetReadCount(HttpConn *conn);
 
 /** 
     Get the response status 
@@ -4399,7 +4399,7 @@ extern ssize httpGetReadCount(HttpConn *conn);
     @return An integer Http response code. Typically 200 is success.
     @ingroup HttpRx
  */
-extern int httpGetStatus(HttpConn *conn);
+PUBLIC int httpGetStatus(HttpConn *conn);
 
 /** 
     Get the Http response status message. The Http status message is supplied on the first line of the Http response.
@@ -4407,7 +4407,7 @@ extern int httpGetStatus(HttpConn *conn);
     @returns A Http status message. 
     @ingroup HttpRx
  */
-extern char *httpGetStatusMessage(HttpConn *conn);
+PUBLIC char *httpGetStatusMessage(HttpConn *conn);
 
 /**
     Match a form variable with an expected value
@@ -4418,7 +4418,7 @@ extern char *httpGetStatusMessage(HttpConn *conn);
     @return True if the value matches
     @ingroup HttpRx
  */
-extern bool httpMatchParam(HttpConn *conn, cchar *var, cchar *expected);
+PUBLIC bool httpMatchParam(HttpConn *conn, cchar *var, cchar *expected);
 
 /** 
     Read rx body data. This will read available body data. If in sync mode, this call may block. If in async
@@ -4429,7 +4429,7 @@ extern bool httpMatchParam(HttpConn *conn, cchar *var, cchar *expected);
     @return The number of bytes read
     @ingroup HttpRx
  */
-extern ssize httpRead(HttpConn *conn, char *buffer, ssize size);
+PUBLIC ssize httpRead(HttpConn *conn, char *buffer, ssize size);
 
 /** 
     Read response data as a string. This will read all rx body and return a string that the caller should free. 
@@ -4438,7 +4438,7 @@ extern ssize httpRead(HttpConn *conn, char *buffer, ssize size);
     @returns A string containing the rx body. Caller should free.
     @ingroup HttpRx
  */
-extern char *httpReadString(HttpConn *conn);
+PUBLIC char *httpReadString(HttpConn *conn);
 
 /**
     Set a request param value
@@ -4449,7 +4449,7 @@ extern char *httpReadString(HttpConn *conn);
     @param value Default value to return if the variable is not defined. Can be null.
     @ingroup HttpRx
  */
-extern void httpSetParam(HttpConn *conn, cchar *var, cchar *value);
+PUBLIC void httpSetParam(HttpConn *conn, cchar *var, cchar *value);
 
 /**
     Set an integer request param value
@@ -4460,7 +4460,7 @@ extern void httpSetParam(HttpConn *conn, cchar *var, cchar *value);
     @param value Default value to return if the variable is not defined. Can be null.
     @ingroup HttpRx
  */
-extern void httpSetIntParam(HttpConn *conn, cchar *var, int value);
+PUBLIC void httpSetIntParam(HttpConn *conn, cchar *var, int value);
 
 /**
     Set a new HTTP method for processing
@@ -4470,7 +4470,7 @@ extern void httpSetIntParam(HttpConn *conn, cchar *var, int value);
     @param method New method to use. 
     @ingroup HttpRx
  */
-extern void httpSetMethod(HttpConn *conn, cchar *method);
+PUBLIC void httpSetMethod(HttpConn *conn, cchar *method);
 
 /**
     Set a new URI for processing
@@ -4485,7 +4485,7 @@ extern void httpSetMethod(HttpConn *conn, cchar *method);
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRx
  */
-extern int httpSetUri(HttpConn *conn, cchar *uri);
+PUBLIC int httpSetUri(HttpConn *conn, cchar *uri);
 
 /**
     Test if a request param is defined
@@ -4494,7 +4494,7 @@ extern int httpSetUri(HttpConn *conn, cchar *uri);
     @return True if the request param is defined
     @ingroup HttpRx
  */
-extern int httpTestParam(HttpConn *conn, cchar *var);
+PUBLIC int httpTestParam(HttpConn *conn, cchar *var);
 
 /**
     Trim extra path from the URI
@@ -4506,7 +4506,7 @@ extern int httpTestParam(HttpConn *conn, cchar *var);
     @param conn HttpConn connection object
     @ingroup HttpRx
  */
-extern void httpTrimExtraPath(HttpConn *conn);
+PUBLIC void httpTrimExtraPath(HttpConn *conn);
 
 /**
     Pump the Http engine
@@ -4514,17 +4514,17 @@ extern void httpTrimExtraPath(HttpConn *conn);
     @param packet Optional packet of input data. Set to NULL if calling from user handlers.
     @ingroup HttpRx
  */
-extern void httpPump(HttpConn *conn, HttpPacket *packet);
+PUBLIC void httpPump(HttpConn *conn, HttpPacket *packet);
 
 /* Internal */
-extern void httpCloseRx(struct HttpConn *conn);
-extern HttpRange *httpCreateRange(HttpConn *conn, MprOff start, MprOff end);
-extern HttpRx *httpCreateRx(HttpConn *conn);
-extern void httpDestroyRx(HttpRx *rx);
-extern bool httpMatchEtag(HttpConn *conn, char *requestedEtag);
-extern bool httpMatchModified(HttpConn *conn, MprTime time);
-extern bool httpProcessCompletion(HttpConn *conn);
-extern void httpProcessWriteEvent(HttpConn *conn);
+PUBLIC void httpCloseRx(struct HttpConn *conn);
+PUBLIC HttpRange *httpCreateRange(HttpConn *conn, MprOff start, MprOff end);
+PUBLIC HttpRx *httpCreateRx(HttpConn *conn);
+PUBLIC void httpDestroyRx(HttpRx *rx);
+PUBLIC bool httpMatchEtag(HttpConn *conn, char *requestedEtag);
+PUBLIC bool httpMatchModified(HttpConn *conn, MprTime time);
+PUBLIC bool httpProcessCompletion(HttpConn *conn);
+PUBLIC void httpProcessWriteEvent(HttpConn *conn);
 
 /********************************** HttpTx *********************************/
 /*  
@@ -4610,7 +4610,7 @@ typedef struct HttpTx {
         exists.
     @ingroup HttpTx
  */
-extern void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
+PUBLIC void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 
 /** 
     Add a header to the transmission
@@ -4622,7 +4622,7 @@ extern void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
         exists.
     @ingroup HttpTx
  */
-extern void httpAddHeaderString(HttpConn *conn, cchar *key, cchar *value);
+PUBLIC void httpAddHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
 /** 
     Append a transmission header
@@ -4633,7 +4633,7 @@ extern void httpAddHeaderString(HttpConn *conn, cchar *key, cchar *value);
     @param ... Arguments for fmt
     @ingroup HttpTx
  */
-extern void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
+PUBLIC void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 
 /** 
     Append a transmission header string
@@ -4643,7 +4643,7 @@ extern void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
     @param value Value to set for the header
     @ingroup HttpTx
  */
-extern void httpAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
+PUBLIC void httpAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
 /** 
     Connect to a server and issue Http client request.
@@ -4657,7 +4657,7 @@ extern void httpAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
     @return "Zero" if the request was successfully sent to the server. Otherwise a negative MPR error code is returned.
     @ingroup HttpTx
  */
-extern int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl *ssl);
+PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl *ssl);
 
 /** 
     Create the tx object. This is used internally by the http library.
@@ -4666,7 +4666,7 @@ extern int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl 
     @returns A tx object
     @ingroup HttpTx
  */
-extern HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers);
+PUBLIC HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers);
 
 /**
     Destroy the tx object
@@ -4674,7 +4674,7 @@ extern HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers);
     @param tx Tx object
     @ingroup HttpTx
  */
-extern void httpDestroyTx(HttpTx *tx);
+PUBLIC void httpDestroyTx(HttpTx *tx);
 
 /** 
     Finalize transmission of the http request
@@ -4684,14 +4684,14 @@ extern void httpDestroyTx(HttpTx *tx);
     @param conn HttpConn connection object
     @ingroup HttpTx
  */
-extern void httpFinalize(HttpConn *conn);
+PUBLIC void httpFinalize(HttpConn *conn);
 
 /**
     Flush tx data. This writes any buffered data. 
     @param conn HttpConn connection object created via $httpCreateConn
     @ingroup HttpTx
  */
-void httpFlush(HttpConn *conn);
+PUBLIC void httpFlush(HttpConn *conn);
 
 /** 
     Follow redirctions
@@ -4701,7 +4701,7 @@ void httpFlush(HttpConn *conn);
     @param follow Set to true to enable transparent redirections
     @ingroup HttpTx
  */
-extern void httpFollowRedirects(HttpConn *conn, bool follow);
+PUBLIC void httpFollowRedirects(HttpConn *conn, bool follow);
 
 /** 
     Format an error transmission
@@ -4716,7 +4716,7 @@ extern void httpFollowRedirects(HttpConn *conn, bool follow);
     @return A count of the number of bytes in the transmission body.
     @ingroup HttpTx
  */
-extern void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...);
 
 /** 
     Format an alternate response
@@ -4730,7 +4730,7 @@ extern void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...);
     @return A count of the number of bytes in the transmission body.
     @ingroup HttpTx
  */
-extern ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...);
+PUBLIC ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...);
 
 /** 
     Format an alternate response
@@ -4744,7 +4744,7 @@ extern ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...);
     @return A count of the number of bytes in the transmission body.
     @ingroup HttpTx
  */
-extern ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args);
+PUBLIC ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args);
 
 /** 
     Format a response body.
@@ -4760,7 +4760,7 @@ extern ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args);
     @return A count of the number of bytes in the transmission body.
     @ingroup HttpTx
  */
-extern ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ...);
+PUBLIC ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ...);
 
 /** 
     Format an error response body.
@@ -4777,14 +4777,14 @@ extern ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ..
     @ingroup HttpTx
     @internal
  */
-extern void httpFormatResponseError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpFormatResponseError(HttpConn *conn, int status, cchar *fmt, ...);
 
 /**
     Get the queue data for the connection
     @param conn HttpConn connection object created via $httpCreateConn
     @return the private queue data object
  */
-extern void *httpGetQueueData(HttpConn *conn);
+PUBLIC void *httpGetQueueData(HttpConn *conn);
 
 /** 
     Return whether transfer chunked encoding will be used on this request
@@ -4792,7 +4792,7 @@ extern void *httpGetQueueData(HttpConn *conn);
     @returns true if chunk encoding will be used
     @ingroup HttpTx
  */ 
-extern int httpIsChunked(HttpConn *conn);
+PUBLIC int httpIsChunked(HttpConn *conn);
 
 /**
     Test if request has been finalized
@@ -4801,7 +4801,7 @@ extern int httpIsChunked(HttpConn *conn);
     @param conn HttpConn connection object
     @ingroup HttpTx
  */
-extern int httpIsFinalized(HttpConn *conn);
+PUBLIC int httpIsFinalized(HttpConn *conn);
 
 /** 
     Determine if the transmission needs a transparent retry to implement authentication or redirection. This is used
@@ -4812,13 +4812,13 @@ extern int httpIsFinalized(HttpConn *conn);
     @return true if the request needs to be retried.
     @ingroup HttpTx
  */
-extern bool httpNeedRetry(HttpConn *conn, char **url);
+PUBLIC bool httpNeedRetry(HttpConn *conn, char **url);
 
 /**
     Tell the tx to omit sending any body
     @param conn HttpConn connection object created via $httpCreateConn
  */
-extern void httpOmitBody(HttpConn *conn);
+PUBLIC void httpOmitBody(HttpConn *conn);
 
 /** 
     Redirect the client
@@ -4828,7 +4828,7 @@ extern void httpOmitBody(HttpConn *conn);
     @param uri New uri for the client
     @ingroup HttpTx
  */
-extern void httpRedirect(HttpConn *conn, int status, cchar *uri);
+PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *uri);
 
 /** 
     Remove a header from the transmission
@@ -4838,7 +4838,7 @@ extern void httpRedirect(HttpConn *conn, int status, cchar *uri);
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpTx
  */
-extern int httpRemoveHeader(HttpConn *conn, cchar *key);
+PUBLIC int httpRemoveHeader(HttpConn *conn, cchar *key);
 
 /** 
     Define a content length header in the transmission. This will define a "Content-Length: NNN" request header and
@@ -4847,7 +4847,7 @@ extern int httpRemoveHeader(HttpConn *conn, cchar *key);
     @param length Numeric value for the content length header.
     @ingroup HttpTx
  */
-extern void httpSetContentLength(HttpConn *conn, MprOff length);
+PUBLIC void httpSetContentLength(HttpConn *conn, MprOff length);
 
 /** 
     Set the transmission (response) content mime type
@@ -4856,7 +4856,7 @@ extern void httpSetContentLength(HttpConn *conn, MprOff length);
     @param mimeType Mime type string
     @ingroup HttpTx
  */
-extern void httpSetContentType(HttpConn *conn, cchar *mimeType);
+PUBLIC void httpSetContentType(HttpConn *conn, cchar *mimeType);
 
 /*
     Flags for httpSetCookie
@@ -4879,7 +4879,7 @@ extern void httpSetContentType(HttpConn *conn, cchar *mimeType);
         See RFC 6265 for details about the 'Secure' and 'HttpOnly' cookie attributes.
     @ingroup HttpTx
  */
-extern void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, 
+PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, 
         MprTime lifespan, int flags);
 
 /**
@@ -4888,7 +4888,7 @@ extern void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
     @param conn HttpConn connection object created via $httpCreateConn
     @param len Transmission body length in bytes
  */
-extern void httpSetEntityLength(HttpConn *conn, MprOff len);
+PUBLIC void httpSetEntityLength(HttpConn *conn, MprOff len);
 
 /** 
     Set a transmission header
@@ -4899,7 +4899,7 @@ extern void httpSetEntityLength(HttpConn *conn, MprOff len);
     @param ... Arguments for fmt
     @ingroup HttpTx
  */
-extern void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
+PUBLIC void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 
 /** 
     Set a simple key/value transmission header
@@ -4909,7 +4909,7 @@ extern void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
     @param value String value for the key
     @ingroup HttpTx
  */
-extern void httpSetHeaderString(HttpConn *conn, cchar *key, cchar *value);
+PUBLIC void httpSetHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
 /** 
     Set a Http response status.
@@ -4918,7 +4918,7 @@ extern void httpSetHeaderString(HttpConn *conn, cchar *key, cchar *value);
     @param status Http status code.
     @ingroup HttpTx
  */
-extern void httpSetStatus(HttpConn *conn, int status);
+PUBLIC void httpSetStatus(HttpConn *conn, int status);
 
 /**
     Set the responded flag for the request
@@ -4927,14 +4927,14 @@ extern void httpSetStatus(HttpConn *conn, int status);
     @param conn HttpConn connection object
     @ingroup HttpTx
  */
-extern void httpSetResponded(HttpConn *conn);
+PUBLIC void httpSetResponded(HttpConn *conn);
 
 /**
     Indicate that the transmission socket is blocked
     @param conn Http connection object created via $httpCreateConn
     @ingroup HttpTx
  */
-extern void httpSocketBlocked(HttpConn *conn);
+PUBLIC void httpSocketBlocked(HttpConn *conn);
 
 /** 
     Wait for the connection to achieve the requested state Used for blocking client requests.
@@ -4945,7 +4945,7 @@ extern void httpSocketBlocked(HttpConn *conn);
         MPR_ERR_TIMEOUT and MPR_ERR_BAD_STATE.
     @ingroup HttpTx
  */
-extern int httpWait(HttpConn *conn, int state, MprTime timeout);
+PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout);
 
 /** 
     Write the transmission headers
@@ -4957,7 +4957,7 @@ extern int httpWait(HttpConn *conn, int state, MprTime timeout);
     @param packet Packet into which to place the headers
     @ingroup HttpTx
  */
-extern void httpWriteHeaders(HttpConn *conn, HttpPacket *packet);
+PUBLIC void httpWriteHeaders(HttpConn *conn, HttpPacket *packet);
 
 /** 
     Write Http upload body data
@@ -4969,7 +4969,7 @@ extern void httpWriteHeaders(HttpConn *conn, HttpPacket *packet);
     @return Number of bytes successfully written.
     @ingroup HttpConn
  */
-extern ssize httpWriteUploadData(HttpConn *conn, MprList *formData, MprList *fileData);
+PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *formData, MprList *fileData);
 
 /********************************* HttpEndpoint ***********************************/
 /*  
@@ -5014,7 +5014,7 @@ typedef struct HttpEndpoint {
     @return A HttpConn object representing the new connection.
     @internal
  */
-extern HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event);
+PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event);
 
 /**
     Add a host to an endpoint
@@ -5025,7 +5025,7 @@ extern HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event);
     @return "Zero" if the host can be added.
     @ingroup HttpEndpoint
  */
-extern void httpAddHostToEndpoint(HttpEndpoint *endpoint, struct HttpHost *host);
+PUBLIC void httpAddHostToEndpoint(HttpEndpoint *endpoint, struct HttpHost *host);
 
 /**
     Create and configure a new endpoint.
@@ -5037,7 +5037,7 @@ extern void httpAddHostToEndpoint(HttpEndpoint *endpoint, struct HttpHost *host)
     @param port Listening port number to use for the endpoint
     @return A configured HttpEndpoint object instance
 */
-extern HttpEndpoint *httpCreateConfiguredEndpoint(cchar *home, cchar *documents, cchar *ip, int port);
+PUBLIC HttpEndpoint *httpCreateConfiguredEndpoint(cchar *home, cchar *documents, cchar *ip, int port);
 
 /** 
     Create an endpoint  object.
@@ -5048,7 +5048,7 @@ extern HttpEndpoint *httpCreateConfiguredEndpoint(cchar *home, cchar *documents,
     @param dispatcher Dispatcher to use. Can be null.
     @ingroup HttpEndpoint
  */
-extern HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *dispatcher);
+PUBLIC HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *dispatcher);
 
 /**
     Destroy the endpoint
@@ -5057,14 +5057,14 @@ extern HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *disp
     @param endpoint HttpEndpoint object returned from #httpCreateEndpoint.
     @ingroup HttpEndpoint
  */
-extern void httpDestroyEndpoint(HttpEndpoint *endpoint);
+PUBLIC void httpDestroyEndpoint(HttpEndpoint *endpoint);
 
 /**
     Get the endpoint context object
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
     @return The endpoint context object defined via httpSetEndpointContext
  */
-extern void *httpGetEndpointContext(HttpEndpoint *endpoint);
+PUBLIC void *httpGetEndpointContext(HttpEndpoint *endpoint);
 
 /**
     Test if an endpoint has named virtual hosts.
@@ -5072,14 +5072,14 @@ extern void *httpGetEndpointContext(HttpEndpoint *endpoint);
     @return True if the endpoint has named virutal hosts.
     @ingroup HttpEndpoint
  */
-extern bool httpHasNamedVirtualHosts(HttpEndpoint *endpoint);
+PUBLIC bool httpHasNamedVirtualHosts(HttpEndpoint *endpoint);
 
 /**
     Get if the endpoint is running in asynchronous mode
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
     @return True if the endpoint is in async mode
  */
-extern int httpIsEndpointAsync(HttpEndpoint *endpoint);
+PUBLIC int httpIsEndpointAsync(HttpEndpoint *endpoint);
 
 /**
     Lookup a host name
@@ -5088,7 +5088,7 @@ extern int httpIsEndpointAsync(HttpEndpoint *endpoint);
     @param name Host name to search for
     @return An HttpHost object instance or null if the host cannot be found.
  */
-extern struct HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *name);
+PUBLIC struct HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *name);
 
 /**
     Secure an endpoint 
@@ -5098,7 +5098,7 @@ extern struct HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *
     @param ssl MprSsl object
     @returns "Zero" if successful, otherwise a negative MPR error code.
  */
-extern int httpSecureEndpoint(HttpEndpoint *endpoint, struct MprSsl *ssl);
+PUBLIC int httpSecureEndpoint(HttpEndpoint *endpoint, struct MprSsl *ssl);
 
 /**
     Secure an endpoint by name
@@ -5108,7 +5108,7 @@ extern int httpSecureEndpoint(HttpEndpoint *endpoint, struct MprSsl *ssl);
     @param ssl MprSsl object
     @returns Zero if successful, otherwise a negative MPR error code.
  */
-extern int httpSecureEndpointByName(cchar *name, struct MprSsl *ssl);
+PUBLIC int httpSecureEndpointByName(cchar *name, struct MprSsl *ssl);
 
 /**
     Set the endpoint IP address
@@ -5120,21 +5120,21 @@ extern int httpSecureEndpointByName(cchar *name, struct MprSsl *ssl);
     @param port Listening port number to use for the endpoint
     @ingroup HttpRx
  */
-extern void httpSetEndpointAddress(HttpEndpoint *endpoint, cchar *ip, int port);
+PUBLIC void httpSetEndpointAddress(HttpEndpoint *endpoint, cchar *ip, int port);
 
 /**
     Control if the endpoint is running in asynchronous mode
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
     @param enable Set to 1 to enable async mode.
  */
-extern void httpSetEndpointAsync(HttpEndpoint *endpoint, int enable);
+PUBLIC void httpSetEndpointAsync(HttpEndpoint *endpoint, int enable);
 
 /**
     Set the endpoint context object
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
     @param context New context object
  */
-extern void httpSetEndpointContext(HttpEndpoint *endpoint, void *context);
+PUBLIC void httpSetEndpointContext(HttpEndpoint *endpoint, void *context);
 
 /** 
     Define a notifier callback for this endpoint.
@@ -5143,7 +5143,7 @@ extern void httpSetEndpointContext(HttpEndpoint *endpoint, void *context);
     @param fn Notifier function. 
     @ingroup HttpConn
  */
-extern void httpSetEndpointNotifier(HttpEndpoint *endpoint, HttpNotifier fn);
+PUBLIC void httpSetEndpointNotifier(HttpEndpoint *endpoint, HttpNotifier fn);
 
 /**
     Control whether the endpoint has named virtual hosts.
@@ -5151,7 +5151,7 @@ extern void httpSetEndpointNotifier(HttpEndpoint *endpoint, HttpNotifier fn);
     @param on Set to true to enable named virtual hosts
     @ingroup HttpEndpoint
  */
-extern void httpSetHasNamedVirtualHosts(HttpEndpoint *endpoint, bool on);
+PUBLIC void httpSetHasNamedVirtualHosts(HttpEndpoint *endpoint, bool on);
 
 /** 
     Start listening for client connections.
@@ -5160,7 +5160,7 @@ extern void httpSetHasNamedVirtualHosts(HttpEndpoint *endpoint, bool on);
     @returns "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpEndpoint
  */
-extern int httpStartEndpoint(HttpEndpoint *endpoint);
+PUBLIC int httpStartEndpoint(HttpEndpoint *endpoint);
 
 /** 
     Stop the server listening for client connections.
@@ -5168,7 +5168,7 @@ extern int httpStartEndpoint(HttpEndpoint *endpoint);
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
     @ingroup HttpEndpoint
  */
-extern void httpStopEndpoint(HttpEndpoint *endpoint);
+PUBLIC void httpStopEndpoint(HttpEndpoint *endpoint);
 
 /**
     Validate the request against defined resource limits
@@ -5182,7 +5182,7 @@ extern void httpStopEndpoint(HttpEndpoint *endpoint);
     @return True if the request can be successfully validated against the endpoint limits.
     @ingroup HttpRx
  */
-extern bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn);
+PUBLIC bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn);
 
 /********************************** HttpHost ***************************************/
 /*
@@ -5230,7 +5230,7 @@ typedef struct HttpHost {
     @return "Zero" if the route can be added.
     @ingroup HttpHost
  */
-extern int httpAddRoute(HttpHost *host, HttpRoute *route);
+PUBLIC int httpAddRoute(HttpHost *host, HttpRoute *route);
 
 /**
     Clone a host
@@ -5239,7 +5239,7 @@ extern int httpAddRoute(HttpHost *host, HttpRoute *route);
     @return The new HttpHost object.
     @ingroup HttpHost
  */
-extern HttpHost *httpCloneHost(HttpHost *parent);
+PUBLIC HttpHost *httpCloneHost(HttpHost *parent);
 
 /**
     Create a host
@@ -5248,7 +5248,7 @@ extern HttpHost *httpCloneHost(HttpHost *parent);
     @return The new HttpHost object.
     @ingroup HttpHost
  */
-extern HttpHost *httpCreateHost(cchar *home);
+PUBLIC HttpHost *httpCreateHost(cchar *home);
 
 /**
     Define a route
@@ -5264,14 +5264,15 @@ extern HttpHost *httpCreateHost(cchar *home);
     @return Created route.
     @ingroup HttpRoute
  */
-HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, cchar *target, cchar *source);
+PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, 
+    cchar *target, cchar *source);
 
 /**
     Get the default host defined via httpSetDefaultHost
     @return The defaul thost object
     @ingroup HttpHost
  */
-extern HttpHost *httpGetDefaultHost();
+PUBLIC HttpHost *httpGetDefaultHost();
 
 /**
     Get the default route for a host
@@ -5279,7 +5280,7 @@ extern HttpHost *httpGetDefaultHost();
     @return The default route for the host
     @ingroup HttpRoute
  */
-extern HttpRoute *httpGetDefaultRoute(HttpHost *host);
+PUBLIC HttpRoute *httpGetDefaultRoute(HttpHost *host);
 
 /**
     Return the default route for a host
@@ -5290,14 +5291,14 @@ extern HttpRoute *httpGetDefaultRoute(HttpHost *host);
     @return Default route object
     @ingroup HttpRoute
  */
-extern HttpRoute *httpGetHostDefaultRoute(HttpHost *host);
+PUBLIC HttpRoute *httpGetHostDefaultRoute(HttpHost *host);
 
 /**
     Get a path extension 
     @param path File pathname to examine
     @return The path extension sans "."
   */
-extern char *httpGetPathExt(cchar *path);
+PUBLIC char *httpGetPathExt(cchar *path);
 
 /**
     Show the current route table to the error log.
@@ -5308,28 +5309,28 @@ extern char *httpGetPathExt(cchar *path);
     @param full Set to true for a "fuller" output route description.
     @ingroup HttpRoute
  */
-extern void httpLogRoutes(HttpHost *host, bool full);
+PUBLIC void httpLogRoutes(HttpHost *host, bool full);
 
 /**
     Lookup a route by name
     @param host HttpHost object owning the route table
     @param name Route name to find. If null or empty, look for "default"
  */
-extern HttpRoute *httpLookupRoute(HttpHost *host, cchar *name);
+PUBLIC HttpRoute *httpLookupRoute(HttpHost *host, cchar *name);
 
 /**
     Reset the list of routes for the host
     @param host HttpHost object
     @ingroup HttpHost
  */
-extern void httpResetRoutes(HttpHost *host);
+PUBLIC void httpResetRoutes(HttpHost *host);
 
 /**
     Set the default host for all servers.
     @param host Host to define as the default host
     @ingroup HttpHost
  */
-extern void httpSetDefaultHost(HttpHost *host);
+PUBLIC void httpSetDefaultHost(HttpHost *host);
 
 /**
     Set the default endpoint for a host
@@ -5337,7 +5338,7 @@ extern void httpSetDefaultHost(HttpHost *host);
     @param host Host to examine.
     @param endpoint Secure endpoint to use as the default
  */
-extern void httpSetHostDefaultEndpoint(HttpHost *host, HttpEndpoint *endpoint);
+PUBLIC void httpSetHostDefaultEndpoint(HttpHost *host, HttpEndpoint *endpoint);
 
 /**
     Set the default route for a host
@@ -5348,7 +5349,7 @@ extern void httpSetHostDefaultEndpoint(HttpHost *host, HttpEndpoint *endpoint);
     @param route Route to define as the default
     @ingroup HttpHost
  */
-extern void httpSetHostDefaultRoute(HttpHost *host, HttpRoute *route);
+PUBLIC void httpSetHostDefaultRoute(HttpHost *host, HttpRoute *route);
 
 /**
     Set the default secure endpoint for a host
@@ -5356,7 +5357,7 @@ extern void httpSetHostDefaultRoute(HttpHost *host, HttpRoute *route);
     @param host Host to examine.
     @param endpoint Secure endpoint to use as the default
  */
-extern void httpSetHostSecureEndpoint(HttpHost *host, HttpEndpoint *endpoint);
+PUBLIC void httpSetHostSecureEndpoint(HttpHost *host, HttpEndpoint *endpoint);
 
 /**
     Set the home directory for a host
@@ -5365,7 +5366,7 @@ extern void httpSetHostSecureEndpoint(HttpHost *host, HttpEndpoint *endpoint);
     @param dir Directory path for the host home
     @ingroup HttpHost
  */
-extern void httpSetHostHome(HttpHost *host, cchar *dir);
+PUBLIC void httpSetHostHome(HttpHost *host, cchar *dir);
 
 /**
     Set the host internet address
@@ -5376,7 +5377,7 @@ extern void httpSetHostHome(HttpHost *host, cchar *dir);
     @return "Zero" if the route can be added.
     @ingroup HttpHost
  */
-extern void httpSetHostIpAddr(HttpHost *host, cchar *ip, int port);
+PUBLIC void httpSetHostIpAddr(HttpHost *host, cchar *ip, int port);
 
 /**
     Set the host name
@@ -5388,7 +5389,7 @@ extern void httpSetHostIpAddr(HttpHost *host, cchar *ip, int port);
     @return Zero if the route can be added.
     @ingroup HttpHost
  */
-extern void httpSetHostName(HttpHost *host, cchar *name);
+PUBLIC void httpSetHostName(HttpHost *host, cchar *name);
 
 /**
     Set the host HTTP protocol version
@@ -5397,13 +5398,13 @@ extern void httpSetHostName(HttpHost *host, cchar *name);
     @param protocol Set to either HTTP/1.0 or HTTP/1.1
     @ingroup HttpHost
  */
-extern void httpSetHostProtocol(HttpHost *host, cchar *protocol);
+PUBLIC void httpSetHostProtocol(HttpHost *host, cchar *protocol);
 
 /*
     Internal
  */
-extern int httpStartHost(HttpHost *host);
-extern void httpStopHost(HttpHost *host);
+PUBLIC int httpStartHost(HttpHost *host);
+PUBLIC void httpStopHost(HttpHost *host);
 
 /********************************* Web Sockets *************************************/
 /** 
@@ -5466,7 +5467,7 @@ typedef struct WebSocket {
     @ingroup WebSocket
     @stability Prototype
  */
-extern char *httpGetWebSocketCloseReason(HttpConn *conn);
+PUBLIC char *httpGetWebSocketCloseReason(HttpConn *conn);
 
 /**
     Get the selected web socket protocol selected by the server
@@ -5475,7 +5476,7 @@ extern char *httpGetWebSocketCloseReason(HttpConn *conn);
     @ingroup WebSocket
     @stability Prototype
  */
-extern char *httpGetWebSocketProtocol(HttpConn *conn);
+PUBLIC char *httpGetWebSocketProtocol(HttpConn *conn);
 
 /**
     Send a UTF-8 text message to the web socket peer
@@ -5486,7 +5487,7 @@ extern char *httpGetWebSocketProtocol(HttpConn *conn);
     @ingroup WebSocket
     @stability Prototype
  */
-extern ssize httpSend(HttpConn *conn, cchar *fmt, ...);
+PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
 
 /**
     Send a message of a given type to the web socket peer
@@ -5501,7 +5502,7 @@ extern ssize httpSend(HttpConn *conn, cchar *fmt, ...);
     @ingroup WebSocket
     @stability Prototype
  */
-extern ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len);
+PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len);
 
 /**
     Send a close message to the web socket peer
@@ -5513,7 +5514,7 @@ extern ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len);
     @ingroup WebSocket
     @stability Prototype
  */
-extern void httpSendClose(HttpConn *conn, int status, cchar *reason);
+PUBLIC void httpSendClose(HttpConn *conn, int status, cchar *reason);
 
 /**
     Set a list of application-level protocols supported by the client
@@ -5522,7 +5523,7 @@ extern void httpSendClose(HttpConn *conn, int status, cchar *reason);
     @ingroup WebSocket
     @stability Prototype
  */
-extern void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols);
+PUBLIC void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols);
 
 /**
     Upgrade a client HTTP connection connection to use WebSockets
@@ -5534,7 +5535,7 @@ extern void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols);
     @stability Prototype
     @internal
  */
-extern int httpUpgradeWebSocket(HttpConn *conn);
+PUBLIC int httpUpgradeWebSocket(HttpConn *conn);
 
 /**
     Test if web socket connection was orderly closed by sending an acknowledged close message
@@ -5543,7 +5544,7 @@ extern int httpUpgradeWebSocket(HttpConn *conn);
     @ingroup WebSocket
     @stability Prototype
  */
-extern bool httpWebSocketOrderlyClosed(HttpConn *conn);
+PUBLIC bool httpWebSocketOrderlyClosed(HttpConn *conn);
 
 /************************************ Misc *****************************************/
 /**
@@ -5552,7 +5553,7 @@ extern bool httpWebSocketOrderlyClosed(HttpConn *conn);
     @param field Field key name
     @param value Value to use for the field
  */
-extern void httpAddOption(MprHash *options, cchar *field, cchar *value);
+PUBLIC void httpAddOption(MprHash *options, cchar *field, cchar *value);
 
 /**
     Add an option to the options table. 
@@ -5561,7 +5562,7 @@ extern void httpAddOption(MprHash *options, cchar *field, cchar *value);
     @param field Field key name
     @param value Value to use for the field
 */
-extern void httpInsertOption(MprHash *options, cchar *field, cchar *value);
+PUBLIC void httpInsertOption(MprHash *options, cchar *field, cchar *value);
 
 /**
     Extract a field value from an option string. 
@@ -5570,7 +5571,7 @@ extern void httpInsertOption(MprHash *options, cchar *field, cchar *value);
     @param defaultValue Value to use if "field" is not found in options
     @return Option value.
  */
-extern void *httpGetOption(MprHash *options, cchar *field, cchar *defaultValue);
+PUBLIC void *httpGetOption(MprHash *options, cchar *field, cchar *defaultValue);
 
 /**
     Get an option value that is itself an object (hash)
@@ -5581,7 +5582,7 @@ extern void *httpGetOption(MprHash *options, cchar *field, cchar *defaultValue);
     @return An MprHash instance for the given field. This will contain option sub-properties.
     @ingroup HttpRoute
  */
-extern MprHash *httpGetOptionHash(MprHash *options, cchar *field);
+PUBLIC MprHash *httpGetOptionHash(MprHash *options, cchar *field);
 
 /**
     Convert an options string into an options table
@@ -5589,7 +5590,7 @@ extern MprHash *httpGetOptionHash(MprHash *options, cchar *field);
         This is a sub-set of the JSON syntax. Arrays are not supported.
     @return Options table
  */
-extern MprHash *httpGetOptions(cchar *options);
+PUBLIC MprHash *httpGetOptions(cchar *options);
 
 //  MOB - inconsistent with httpGetOption
 /**
@@ -5600,7 +5601,7 @@ extern MprHash *httpGetOptions(cchar *options);
     @param useDefault If true and "field" is not found in options, return true
     @return Allocated value string.
  */
-extern bool httpOption(MprHash *options, cchar *field, cchar *value, int useDefault);
+PUBLIC bool httpOption(MprHash *options, cchar *field, cchar *value, int useDefault);
 
 /**
     Remove an option
@@ -5609,7 +5610,7 @@ extern bool httpOption(MprHash *options, cchar *field, cchar *value, int useDefa
     @param field Property field to remove
     @ingroup HttpRoute
  */
-extern void httpRemoveOption(MprHash *options, cchar *field);
+PUBLIC void httpRemoveOption(MprHash *options, cchar *field);
 
 /**
     Set an option
@@ -5619,7 +5620,7 @@ extern void httpRemoveOption(MprHash *options, cchar *field);
     @param value Property value to use
     @ingroup HttpRoute
  */
-extern void httpSetOption(MprHash *options, cchar *field, cchar *value);
+PUBLIC void httpSetOption(MprHash *options, cchar *field, cchar *value);
 
 #ifdef __cplusplus
 } /* extern C */

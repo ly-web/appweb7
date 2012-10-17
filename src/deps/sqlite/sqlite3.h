@@ -168,6 +168,16 @@
 extern int usleep(unsigned int msec);
 #endif
 
+#ifndef SQLITE_API
+    #if _WIN32
+        #define SQLITE_API extern __declspec(dllexport)
+    #else
+        #define SQLITE_API extern
+    #endif
+    #define SQLITE_EXTERN
+#endif
+
+
 #endif /* EMBEDTHIS_MODIFICATION */
 
 /*

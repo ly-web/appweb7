@@ -14,7 +14,7 @@
 
 #include "sqlite3.h"
 
-SQLITE_API const char sqlite3_version[] = SQLITE_VERSION;
+/* EMBEDTHIS SQLITE_API */ const char sqlite3_version[] = SQLITE_VERSION;
 #endif /* EMBEDTHIS_MODIFICATION */
 
 /******************************************************************************

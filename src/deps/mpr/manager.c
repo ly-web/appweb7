@@ -80,7 +80,7 @@ static int  writePid(int pid);
 
 /*********************************** Code *************************************/
 
-int main(int argc, char *argv[])
+PUBLIC int main(int argc, char *argv[])
 {
     char    *argp, *value;
     int     err, nextArg, status;
@@ -1625,7 +1625,7 @@ static void gracefulShutdown(MprTime timeout)
 
 
 #else
-void stubManager() {
+PUBLIC void stubManager() {
     fprintf(stderr, "Manager not supported on this architecture");
 }
 #endif /* BIT_WIN_LIKE */

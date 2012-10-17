@@ -58,10 +58,7 @@ don't change existing definitions of PCRE_EXP_DECL and PCRECPP_EXP_DECL. */
 /* EMBEDTHIS */
 #ifndef _VSB_CONFIG_FILE
     #define _VSB_CONFIG_FILE "vsbConfig.h"
-#endif
 
-/* UNUSED */
-#if BIT_ALL_IN_ONE && 0
     /*
      *  When building all-in-one, we must use internal definitions
      */
@@ -90,14 +87,6 @@ don't change existing definitions of PCRE_EXP_DECL and PCRECPP_EXP_DECL. */
     #    endif
     #  endif
     #endif
-    
-    /* EMBEDTHIS */
-    #undef PCRE_EXP_DEFN
-    #define PCRE_EXP_DEFN 
-    #undef PCRE_EXP_DATA_DEFN
-    #define PCRE_EXP_DATA_DEFN 
-    #undef PCRE_EXP_DECL
-    #define PCRE_EXP_DECL extern
 #else
     #if defined(_WIN32) && !defined(PCRE_STATIC)
     #  ifndef PCRE_EXP_DECL
@@ -131,14 +120,6 @@ don't change existing definitions of PCRE_EXP_DECL and PCRECPP_EXP_DECL. */
     #    define PCRECPP_EXP_DEFN
     #  endif
     #endif
-
-    /* EMBEDTHIS */
-    #undef PCRE_EXP_DEFN
-    #define PCRE_EXP_DEFN 
-    #undef PCRE_EXP_DATA_DEFN
-    #define PCRE_EXP_DATA_DEFN 
-    #undef PCRE_EXP_DECL
-    #define PCRE_EXP_DECL extern
 #endif
 
 /* Have to include stdlib.h in order to ensure that size_t is defined;

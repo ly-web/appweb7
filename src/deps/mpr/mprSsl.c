@@ -146,7 +146,7 @@ static ssize    writeMss(MprSocket *sp, cvoid *buf, ssize len);
 
 /************************************ Code ************************************/
 
-int mprCreateMatrixSslModule()
+PUBLIC int mprCreateMatrixSslModule()
 {
     MprSocketProvider   *provider;
 
@@ -737,7 +737,8 @@ static ssize flushMss(MprSocket *sp)
 
 #else
 
-int mprCreateMatrixSslModule() { return -1; }
+#include "mpr.h"
+PUBLIC int mprCreateMatrixSslModule() { return -1; }
 #endif /* BIT_PACK_MATRIXSSL */
 
 /*
@@ -856,7 +857,7 @@ static DH       *get_dh1024();
 /*
     Create the Openssl module. This is called only once
  */
-int mprCreateOpenSslModule()
+PUBLIC int mprCreateOpenSslModule()
 {
     RandBuf     randBuf;
     int         i;
@@ -1662,7 +1663,7 @@ static DH *get_dh1024()
 }
 
 #else
-int mprCreateOpenSslModule() { return -1; }
+PUBLIC int mprCreateOpenSslModule() { return -1; }
 #endif /* BIT_PACK_OPENSSL */
 
 /*
@@ -1706,7 +1707,7 @@ int mprCreateOpenSslModule() { return -1; }
 /*
     Module initialization entry point
  */
-int mprSslInit(void *unused, MprModule *module)
+PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
     mprAssert(module);
 
@@ -1726,7 +1727,7 @@ int mprSslInit(void *unused, MprModule *module)
 }
 
 #else
-int mprSslInit(void *unused, MprModule *module) { return -1; }
+PUBLIC int mprSslInit(void *unused, MprModule *module) { return -1; }
 #endif /* BLD_PACK_SSL */
 
 /*
