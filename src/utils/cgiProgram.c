@@ -629,7 +629,7 @@ static char *safeGetenv(char *key)
 }
 
 
-void error(char *fmt, ...)
+static void error(char *fmt, ...)
 {
     va_list args;
     char    buf[4096];

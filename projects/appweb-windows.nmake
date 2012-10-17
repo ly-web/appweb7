@@ -66,7 +66,6 @@ prep:
 	@if not exist $(CONFIG)\obj md $(CONFIG)\obj
 	@if not exist $(CONFIG)\bin md $(CONFIG)\bin
 	@if not exist $(CONFIG)\inc\bit.h copy projects\appweb-$(OS)-bit.h $(CONFIG)\inc\bit.h
-	@if not exist $(CONFIG)\bin\*.def xcopy /Y /S projects\appweb-windows\*.def $(CONFIG)\bin
 
 clean:
 	-if exist $(CONFIG)\bin\libmpr.dll del /Q $(CONFIG)\bin\libmpr.dll
@@ -149,7 +148,7 @@ $(CONFIG)\obj\mprLib.obj: \
 $(CONFIG)\bin\libmpr.dll:  \
         $(CONFIG)\inc\mpr.h \
         $(CONFIG)\obj\mprLib.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) -def:$(CONFIG)\bin\libmpr.def $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprLib.obj $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprLib.obj $(LIBS)
 
 $(CONFIG)\obj\mprSsl.obj: \
         src\deps\mpr\mprSsl.c \
@@ -159,7 +158,7 @@ $(CONFIG)\obj\mprSsl.obj: \
 $(CONFIG)\bin\libmprssl.dll:  \
         $(CONFIG)\bin\libmpr.dll \
         $(CONFIG)\obj\mprSsl.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) -def:$(CONFIG)\bin\libmprssl.def $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj libmpr.lib $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj libmpr.lib $(LIBS)
 
 $(CONFIG)\obj\manager.obj: \
         src\deps\mpr\manager.c \
@@ -193,7 +192,7 @@ $(CONFIG)\obj\pcre.obj: \
 $(CONFIG)\bin\libpcre.dll:  \
         $(CONFIG)\inc\pcre.h \
         $(CONFIG)\obj\pcre.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libpcre.dll -entry:$(ENTRY) -def:$(CONFIG)\bin\libpcre.def $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\pcre.obj $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libpcre.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\pcre.obj $(LIBS)
 
 $(CONFIG)\inc\http.h: 
 	-if exist $(CONFIG)\inc\http.h del /Q $(CONFIG)\inc\http.h
@@ -209,7 +208,7 @@ $(CONFIG)\bin\libhttp.dll:  \
         $(CONFIG)\bin\libpcre.dll \
         $(CONFIG)\inc\http.h \
         $(CONFIG)\obj\httpLib.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libhttp.dll -entry:$(ENTRY) -def:$(CONFIG)\bin\libhttp.def $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\httpLib.obj libpcre.lib libmpr.lib $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libhttp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\httpLib.obj libpcre.lib libmpr.lib $(LIBS)
 
 $(CONFIG)\obj\http.obj: \
         src\deps\http\http.c \
@@ -233,7 +232,7 @@ $(CONFIG)\obj\sqlite3.obj: \
 $(CONFIG)\bin\libsqlite3.dll:  \
         $(CONFIG)\inc\sqlite3.h \
         $(CONFIG)\obj\sqlite3.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libsqlite3.dll -entry:$(ENTRY) -def:$(CONFIG)\bin\libsqlite3.def $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite3.obj $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libsqlite3.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite3.obj $(LIBS)
 
 $(CONFIG)\obj\sqlite.obj: \
         src\deps\sqlite\sqlite.c \
@@ -293,7 +292,7 @@ $(CONFIG)\bin\libappweb.dll:  \
         $(CONFIG)\obj\fileHandler.obj \
         $(CONFIG)\obj\log.obj \
         $(CONFIG)\obj\server.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libappweb.dll -entry:$(ENTRY) -def:$(CONFIG)\bin\libappweb.def $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.obj $(CONFIG)\obj\convenience.obj $(CONFIG)\obj\dirHandler.obj $(CONFIG)\obj\fileHandler.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\server.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.obj $(CONFIG)\obj\convenience.obj $(CONFIG)\obj\dirHandler.obj $(CONFIG)\obj\fileHandler.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\server.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
 
 $(CONFIG)\inc\edi.h: 
 	-if exist $(CONFIG)\inc\edi.h del /Q $(CONFIG)\inc\edi.h
@@ -371,7 +370,7 @@ $(CONFIG)\bin\mod_esp.dll:  \
         $(CONFIG)\obj\espTemplate.obj \
         $(CONFIG)\obj\mdb.obj \
         $(CONFIG)\obj\sdb.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\mod_esp.dll -entry:$(ENTRY) -def:$(CONFIG)\bin\mod_esp.def $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espSession.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\mod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espSession.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\obj\esp.obj: \
         src\esp\esp.c \
@@ -413,7 +412,7 @@ $(CONFIG)\obj\cgiHandler.obj: \
 $(CONFIG)\bin\mod_cgi.dll:  \
         $(CONFIG)\bin\libappweb.dll \
         $(CONFIG)\obj\cgiHandler.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\mod_cgi.dll -entry:$(ENTRY) -def:$(CONFIG)\bin\mod_cgi.def $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\mod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\obj\authpass.obj: \
         src\utils\authpass.c \

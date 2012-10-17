@@ -127,7 +127,7 @@ static int ejsWorkersDirective(MaState *state, cchar *key, cchar *value)
 /*
     Loadable module initialization
  */
-int maEjsHandlerInit(Http *http, MprModule *module)
+PUBLIC int maEjsHandlerInit(Http *http, MprModule *module)
 {
     MaAppweb    *appweb;
     HttpStage   *stage;
@@ -150,7 +150,7 @@ int maEjsHandlerInit(Http *http, MprModule *module)
 }
 #else /* BIT_PACK_EJSCRIPT */
 
-int maEjsHandlerInit(Http *http, MprModule *module)
+PUBLIC int maEjsHandlerInit(Http *http, MprModule *module)
 {
     mprNop(0);
     return 0;

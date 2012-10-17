@@ -17,7 +17,7 @@ static void manageSession(EspSession *sp, int flags);
 
 /************************************* Code ***********************************/
 
-EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
+PUBLIC EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
 {
     EspReq      *req;
     EspSession  *sp;
@@ -40,7 +40,7 @@ EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
 }
 
 
-void espDestroySession(EspSession *sp)
+PUBLIC void espDestroySession(EspSession *sp)
 {
     mprAssert(sp);
     sp->id = 0;
@@ -56,13 +56,13 @@ static void manageSession(EspSession *sp, int flags)
 }
 
 
-EspSession *espCreateSession(HttpConn *conn)
+PUBLIC EspSession *espCreateSession(HttpConn *conn)
 {
     return espGetSession(conn, 1);
 }
 
 
-EspSession *espGetSession(HttpConn *conn, int create)
+PUBLIC EspSession *espGetSession(HttpConn *conn, int create)
 {
     EspReq      *req;
     char        *id;
@@ -85,7 +85,7 @@ EspSession *espGetSession(HttpConn *conn, int create)
 
 
 
-MprHash *espGetSessionObj(HttpConn *conn, cchar *key)
+PUBLIC MprHash *espGetSessionObj(HttpConn *conn, cchar *key)
 {
     cchar   *str;
 
@@ -97,7 +97,7 @@ MprHash *espGetSessionObj(HttpConn *conn, cchar *key)
 }
 
 
-cchar *espGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
+PUBLIC cchar *espGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
 {
     EspSession  *sp;
     cchar       *result;
@@ -113,14 +113,14 @@ cchar *espGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
 }
 
 
-int espSetSessionObj(HttpConn *conn, cchar *key, MprHash *obj)
+PUBLIC int espSetSessionObj(HttpConn *conn, cchar *key, MprHash *obj)
 {
     espSetSessionVar(conn, key, mprSerialize(obj, 0));
     return 0;
 }
 
 
-int espSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
+PUBLIC int espSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
 {
     EspSession  *sp;
 
@@ -138,7 +138,7 @@ int espSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
 }
 
 
-char *espGetSessionID(HttpConn *conn)
+PUBLIC char *espGetSessionID(HttpConn *conn)
 {
     EspReq  *req;
     cchar   *cookies, *cookie;

@@ -284,7 +284,7 @@ static void why(cchar *path, cchar *fmt, ...);
 
 /*********************************** Code *************************************/
 
-int main(int argc, char **argv)
+PUBLIC int main(int argc, char **argv)
 {
     Mpr     *mpr;
     cchar   *argp, *logSpec, *path;

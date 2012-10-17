@@ -548,7 +548,7 @@ static char *mapHyphen(char *str)
 /*
     loadable Module initialization
  */
-int maPhpHandlerInit(Http *http, MprModule *module)
+PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
 {
     HttpStage     *handler;
 
@@ -564,7 +564,7 @@ int maPhpHandlerInit(Http *http, MprModule *module)
 
 #else /* BIT_PACK_PHP */
 
-int maPhpHandlerInit(Http *http, MprModule *module)
+PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
 {
     mprNop(0);
     return 0;

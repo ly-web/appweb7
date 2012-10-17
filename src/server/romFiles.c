@@ -14984,7 +14984,7 @@ static uchar _file_48[] = {
     121, 62, 10, 60, 47,104,116,109,108, 62, 10,
     0 };
 
-MprRomInode romFiles[] = {
+PUBLIC MprRomInode romFiles[] = {
     { "", 0, 0, 0 },
     { "appweb.conf", _file_2, 4999, 2 },
     { "conf", 0, 0, 0 },

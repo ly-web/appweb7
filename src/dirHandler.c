@@ -52,7 +52,7 @@ static void sortList(HttpConn *conn, MprList *list);
     Test if this request is for a directory listing. This routine is called directly by the fileHandler.
     Directory listings are enabled in a route via "Options Indexes".
  */
-bool maRenderDirListing(HttpConn *conn)
+PUBLIC bool maRenderDirListing(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -683,7 +683,7 @@ static Dir *cloneDir(Dir *parent, HttpRoute *route)
 /*
     Loadable module initialization
  */
-int maOpenDirHandler(Http *http)
+PUBLIC int maOpenDirHandler(Http *http)
 {
     HttpStage   *handler;
     MaAppweb    *appweb;

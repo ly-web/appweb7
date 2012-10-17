@@ -1051,7 +1051,7 @@ static int scriptAliasDirective(MaState *state, cchar *key, cchar *value)
 /*  
     Loadable module initialization
  */
-int maCgiHandlerInit(Http *http, MprModule *module)
+PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *handler;
     MaAppweb    *appweb;
@@ -1079,7 +1079,7 @@ int maCgiHandlerInit(Http *http, MprModule *module)
 
 #else /* BIT_PACK_CGI */
 
-int maCgiHandlerInit(Http *http, MprModule *module)
+PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
 {
     mprNop(0);
     return 0;

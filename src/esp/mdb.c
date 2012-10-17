@@ -98,7 +98,7 @@ static EdiProvider MdbProvider = {
 
 /************************************* Code ***********************************/
 
-void mdbInit()
+PUBLIC void mdbInit()
 {
     ediAddProvider(&MdbProvider);
 }
@@ -855,7 +855,7 @@ static int mdbRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar 
 }
 
 
-bool mdbValidateRec(Edi *edi, EdiRec *rec)
+static bool mdbValidateRec(Edi *edi, EdiRec *rec)
 {
     Mdb         *mdb;
     MdbTable    *table;

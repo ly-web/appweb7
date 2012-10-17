@@ -451,10 +451,10 @@ static int writePort(MaServer *server)
 /*
     VxWorks link resolution
  */
-int _cleanup() {
+PUBLIC int _cleanup() {
     return 0;
 }
-int _exit() {
+PUBLIC int _exit() {
     return 0;
 }
 

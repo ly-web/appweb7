@@ -10,7 +10,7 @@
 
 /************************************ Code *************************************/
 
-void maWriteAccessLogEntry(HttpRoute *route, cchar *buf, int len)
+PUBLIC void maWriteAccessLogEntry(HttpRoute *route, cchar *buf, int len)
 {
     static int once = 0;
 
@@ -20,7 +20,7 @@ void maWriteAccessLogEntry(HttpRoute *route, cchar *buf, int len)
 }
 
 
-void maLogRequest(HttpConn *conn)
+PUBLIC void maLogRequest(HttpConn *conn)
 {
     HttpHost    *host;
     HttpRx      *rx;

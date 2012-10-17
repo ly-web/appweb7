@@ -27,7 +27,7 @@ static int setTarget(MaState *state, cchar *name, cchar *details);
 
 /******************************************************************************/
 
-int maOpenConfig(MaState *state, cchar *path)
+PUBLIC int maOpenConfig(MaState *state, cchar *path)
 {
     mprAssert(state);
     mprAssert(path && *path);
@@ -43,7 +43,7 @@ int maOpenConfig(MaState *state, cchar *path)
 }
 
 
-int maParseConfig(MaServer *server, cchar *path, int flags)
+PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
 {
     MaState     *state;
     HttpHost    *host;
@@ -2021,7 +2021,7 @@ static int webSocketsPingDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-bool maValidateServer(MaServer *server)
+PUBLIC bool maValidateServer(MaServer *server)
 {
     MaAppweb        *appweb;
     Http            *http;
@@ -2066,7 +2066,7 @@ bool maValidateServer(MaServer *server)
 }
 
 
-int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile)
+PUBLIC int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile)
 {
     char   *rest;
 
@@ -2153,7 +2153,7 @@ static bool conditionalDefinition(MaState *state, cchar *key)
         %W - Parse words into a list
         %! - Optional negate. Set value to HTTP_ROUTE_NOT present, otherwise zero.
  */
-bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
+PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
 {
     va_list     ap;
 
@@ -2227,7 +2227,7 @@ static MaState *createState(MaServer *server, HttpHost *host, HttpRoute *route)
 }
 
 
-MaState *maPushState(MaState *prev)
+PUBLIC MaState *maPushState(MaState *prev)
 {
     MaState   *state;
 
@@ -2253,7 +2253,7 @@ MaState *maPushState(MaState *prev)
 }
 
 
-MaState *maPopState(MaState *state)
+PUBLIC MaState *maPopState(MaState *state)
 {
     if (state->prev == 0) {
         mprError("Too many closing blocks.\nAt line %d in %s\n\n", state->lineNumber, state->filename);
@@ -2408,7 +2408,7 @@ static char *gettok(char *s, char **tok)
 }
 
 
-int maWriteAuthFile(HttpAuth *auth, char *path)
+PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
 {
     MprFile         *file;
     MprKey          *kp, *ap;
@@ -2445,13 +2445,13 @@ int maWriteAuthFile(HttpAuth *auth, char *path)
 }
 
 
-void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc)
+PUBLIC void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc)
 {
     mprAddKey(appweb->directives, directive, proc);
 }
 
 
-int maParseInit(MaAppweb *appweb)
+PUBLIC int maParseInit(MaAppweb *appweb)
 {
     if ((appweb->directives = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_CASELESS)) == 0) {
         return MPR_ERR_MEMORY;

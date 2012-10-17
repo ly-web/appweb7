@@ -20,7 +20,7 @@ static void openHandlers(Http *http);
 /*
     Create the top level appweb control object. This is typically a singleton.
  */
-MaAppweb *maCreateAppweb()
+PUBLIC MaAppweb *maCreateAppweb()
 {
     MaAppweb    *appweb;
     Http        *http;
@@ -69,19 +69,19 @@ static void openHandlers(Http *http)
 }
 
 
-void maAddServer(MaAppweb *appweb, MaServer *server)
+PUBLIC void maAddServer(MaAppweb *appweb, MaServer *server)
 {
     mprAddItem(appweb->servers, server);
 }
 
 
-void maSetDefaultServer(MaAppweb *appweb, MaServer *server)
+PUBLIC void maSetDefaultServer(MaAppweb *appweb, MaServer *server)
 {
     appweb->defaultServer = server;
 }
 
 
-MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
+PUBLIC MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
 {
     MaServer    *server;
     int         next;
@@ -95,7 +95,7 @@ MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
 }
 
 
-int maStartAppweb(MaAppweb *appweb)
+PUBLIC int maStartAppweb(MaAppweb *appweb)
 {
     MaServer    *server;
     char        *timeText;
@@ -112,7 +112,7 @@ int maStartAppweb(MaAppweb *appweb)
 }
 
 
-int maStopAppweb(MaAppweb *appweb)
+PUBLIC int maStopAppweb(MaAppweb *appweb)
 {
     MaServer  *server;
     int     next;
@@ -145,7 +145,7 @@ static void manageServer(MaServer *server, int flags)
     If ip/port endpoint is supplied, this call will create a Server on that endpoint. Otherwise, 
     maConfigureServer should be called later. A default route is created with the document root set to "."
  */
-MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
+PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
 {
     MaServer    *server;
     HttpHost    *host;
@@ -184,7 +184,7 @@ MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
 /*
     Configure the server. If the configFile is defined, use it. If not, then consider home, documents, ip and port.
  */
-int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port)
+PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port)
 {
     MaAppweb        *appweb;
     Http            *http;
@@ -263,7 +263,7 @@ int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *d
 }
 
 
-int maStartServer(MaServer *server)
+PUBLIC int maStartServer(MaServer *server)
 {
     HttpEndpoint    *endpoint;
     int             next, count, warned;
@@ -301,7 +301,7 @@ int maStartServer(MaServer *server)
 }
 
 
-void maStopServer(MaServer *server)
+PUBLIC void maStopServer(MaServer *server)
 {
     HttpEndpoint    *endpoint;
     int             next;
@@ -312,19 +312,19 @@ void maStopServer(MaServer *server)
 }
 
 
-void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint)
+PUBLIC void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint)
 {
     mprAddItem(server->endpoints, endpoint);
 }
 
 
-void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
+PUBLIC void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
 {
     mprRemoveItem(server->endpoints, endpoint);
 }
 
 
-int maSetPlatform(cchar *platform)
+PUBLIC int maSetPlatform(cchar *platform)
 {
     MprDirEntry *dp;
     MaAppweb    *appweb;
@@ -366,7 +366,7 @@ int maSetPlatform(cchar *platform)
 /*  
     Set the home directory (Server Root). We convert path into an absolute path.
  */
-void maSetServerHome(MaServer *server, cchar *path)
+PUBLIC void maSetServerHome(MaServer *server, cchar *path)
 {
     if (path == 0 || BIT_ROM) {
         path = ".";
@@ -388,7 +388,7 @@ void maSetServerHome(MaServer *server, cchar *path)
 /*
     Set the document root for the default server
  */
-void maSetServerAddress(MaServer *server, cchar *ip, int port)
+PUBLIC void maSetServerAddress(MaServer *server, cchar *ip, int port)
 {
     HttpEndpoint    *endpoint;
     int             next;
@@ -399,7 +399,7 @@ void maSetServerAddress(MaServer *server, cchar *ip, int port)
 }
 
 
-void maGetUserGroup(MaAppweb *appweb)
+PUBLIC void maGetUserGroup(MaAppweb *appweb)
 {
 #if BIT_UNIX_LIKE
     struct passwd   *pp;
@@ -423,7 +423,7 @@ void maGetUserGroup(MaAppweb *appweb)
 }
 
 
-int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
+PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
 #if BIT_UNIX_LIKE
     struct passwd   *pp;
@@ -450,7 +450,7 @@ int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 }
 
 
-int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
+PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
 #if BIT_UNIX_LIKE
     struct group    *gp;
@@ -477,7 +477,7 @@ int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 }
 
 
-int maApplyChangedUser(MaAppweb *appweb)
+PUBLIC int maApplyChangedUser(MaAppweb *appweb)
 {
 #if BIT_UNIX_LIKE
     if (appweb->userChanged && appweb->uid >= 0) {
@@ -497,7 +497,7 @@ int maApplyChangedUser(MaAppweb *appweb)
 }
 
 
-int maApplyChangedGroup(MaAppweb *appweb)
+PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
 {
 #if BIT_UNIX_LIKE
     if (appweb->groupChanged && appweb->gid >= 0) {
@@ -520,7 +520,7 @@ int maApplyChangedGroup(MaAppweb *appweb)
 /*
     Load a module. Returns 0 if the modules is successfully loaded (may have already been loaded).
  */
-int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
+PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
 {
     MprModule   *module;
     char        entryPoint[MPR_MAX_FNAME];
@@ -552,7 +552,7 @@ int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
 }
 
  
-HttpAuth *maGetDefaultAuth(MaServer *server)
+PUBLIC HttpAuth *maGetDefaultAuth(MaServer *server)
 {
     return server->defaultHost->defaultRoute->auth;
 }

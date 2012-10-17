@@ -59,7 +59,7 @@ static bool matchToken(cchar **str, cchar *token);
     VS          Visual Studio directory
     WINSDK      Windows SDK directory
  */
-char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module)
+PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module)
 {
     MprBuf      *buf;
     MaAppweb    *appweb;
@@ -234,7 +234,7 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
     source      ESP source file name
     module      Module file name
  */
-bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, int isView)
+PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, int isView)
 {
     MprFile     *fp;
     HttpRx      *rx;
@@ -374,7 +374,7 @@ static char *joinLine(cchar *str, ssize *lenp)
         @#field             Lookup the current record for the value of the field.
 
  */
-char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, char **err)
+PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, char **err)
 {
     EspParse    parse;
     EspRoute    *eroute;

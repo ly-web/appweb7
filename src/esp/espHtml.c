@@ -166,7 +166,7 @@ static void textInner(HttpConn *conn, cchar *field, MprHash *options);
 /************************************* Code ***********************************/
 
 //  MOB - what is this really doing?
-void espAlert(HttpConn *conn, cchar *text, cchar *optionString)
+PUBLIC void espAlert(HttpConn *conn, cchar *text, cchar *optionString)
 {
     MprHash     *options;
    
@@ -177,7 +177,7 @@ void espAlert(HttpConn *conn, cchar *text, cchar *optionString)
 }
 
 
-void espAnchor(HttpConn *conn, cchar *text, cchar *uri, cchar *optionString) 
+PUBLIC void espAnchor(HttpConn *conn, cchar *text, cchar *uri, cchar *optionString) 
 {
     MprHash     *options;
 
@@ -187,7 +187,7 @@ void espAnchor(HttpConn *conn, cchar *text, cchar *uri, cchar *optionString)
 }
 
 
-void espButton(HttpConn *conn, cchar *name, cchar *value, cchar *optionString)
+PUBLIC void espButton(HttpConn *conn, cchar *name, cchar *value, cchar *optionString)
 {
     MprHash     *options;
 
@@ -196,7 +196,7 @@ void espButton(HttpConn *conn, cchar *name, cchar *value, cchar *optionString)
 }
 
 
-void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *optionString)
+PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *optionString)
 {
     MprHash     *options;
 
@@ -206,7 +206,7 @@ void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *optionString)
 }
 
 
-void espChart(HttpConn *conn, EdiGrid *grid, cchar *optionString)
+PUBLIC void espChart(HttpConn *conn, EdiGrid *grid, cchar *optionString)
 {
     //  TODO
 }
@@ -219,7 +219,7 @@ void espChart(HttpConn *conn, EdiGrid *grid, cchar *optionString)
     Example:
         checkbox("admin", "true")
  */
-void espCheckbox(HttpConn *conn, cchar *field, cchar *checkedValue, cchar *optionString) 
+PUBLIC void espCheckbox(HttpConn *conn, cchar *field, cchar *checkedValue, cchar *optionString) 
 {
     MprHash     *options;
     cchar       *value, *checked;
@@ -232,7 +232,7 @@ void espCheckbox(HttpConn *conn, cchar *field, cchar *checkedValue, cchar *optio
 }
 
 
-void espDivision(HttpConn *conn, cchar *body, cchar *optionString) 
+PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *optionString) 
 {
     MprHash     *options;
 
@@ -241,13 +241,13 @@ void espDivision(HttpConn *conn, cchar *body, cchar *optionString)
 }
 
 
-void espEndform(HttpConn *conn) 
+PUBLIC void espEndform(HttpConn *conn) 
 {
     espRenderString(conn, "</form>");
 }
 
 
-void espFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
+PUBLIC void espFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
 {
     EspReq      *req;
     MprHash     *options;
@@ -270,7 +270,7 @@ void espFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
 }
 
 
-void espForm(HttpConn *conn, EdiRec *record, cchar *optionString)
+PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *optionString)
 {
     EspReq      *req;
     MprHash     *options;
@@ -321,7 +321,7 @@ void espForm(HttpConn *conn, EdiRec *record, cchar *optionString)
 }
 
 
-void espIcon(HttpConn *conn, cchar *uri, cchar *optionString)
+PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *optionString)
 {
     MprHash     *options;
     EspReq      *req;
@@ -335,7 +335,7 @@ void espIcon(HttpConn *conn, cchar *uri, cchar *optionString)
 }
 
 
-void espImage(HttpConn *conn, cchar *uri, cchar *optionString)
+PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *optionString)
 {
     MprHash     *options;
 
@@ -344,7 +344,7 @@ void espImage(HttpConn *conn, cchar *uri, cchar *optionString)
 }
 
 
-void espInput(HttpConn *conn, cchar *fieldName, cchar *optionString)
+PUBLIC void espInput(HttpConn *conn, cchar *fieldName, cchar *optionString)
 {
     MprHash     *options;
     EspReq      *req;
@@ -391,7 +391,7 @@ void espInput(HttpConn *conn, cchar *fieldName, cchar *optionString)
 }
 
 
-void espLabel(HttpConn *conn, cchar *text, cchar *optionString)
+PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *optionString)
 {
     MprHash     *options;
 
@@ -407,7 +407,7 @@ void espLabel(HttpConn *conn, cchar *text, cchar *optionString)
 
     Options can provide the defaultValue in a "value" property.
  */
-void espDropdown(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *optionString) 
+PUBLIC void espDropdown(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *optionString) 
 {
     EdiRec      *rec;
     MprHash     *options;
@@ -440,7 +440,7 @@ void espDropdown(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *optionSt
 }
 
 
-void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *optionString) 
+PUBLIC void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *optionString) 
 {
     MprHash     *options;
 
@@ -449,7 +449,7 @@ void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *optionString)
 }
 
 
-void espProgress(HttpConn *conn, cchar *percent, cchar *optionString)
+PUBLIC void espProgress(HttpConn *conn, cchar *percent, cchar *optionString)
 {
     MprHash     *options;
    
@@ -464,7 +464,7 @@ void espProgress(HttpConn *conn, cchar *percent, cchar *optionString)
     radio("priority", "{low: 0, med: 1, high: 2}", NULL)
     radio("priority", "{low: 0, med: 1, high: 2}", "{value:'2'}")  //  MOB - without a record
  */
-void espRadio(HttpConn *conn, cchar *field, cchar *choicesString, cchar *optionsString)
+PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choicesString, cchar *optionsString)
 {
     MprKey      *kp;
     MprHash     *choices, *options;
@@ -484,7 +484,7 @@ void espRadio(HttpConn *conn, cchar *field, cchar *choicesString, cchar *options
 /*
     Control the refresh of dynamic elements in the page
  */
-void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *optionString)
+PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *optionString)
 {
     MprHash     *options;
    
@@ -493,7 +493,7 @@ void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *optionString)
 }
 
 
-void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
+PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
 {
     EspReq      *req;
     cchar       *indent, *newline;
@@ -522,7 +522,7 @@ void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
 /*
     Get a security token. This will use and existing token or create if not present. It will store in the session store.
  */
-cchar *espGetSecurityToken(HttpConn *conn)
+PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
 {
     HttpRx      *rx;
 
@@ -542,7 +542,7 @@ cchar *espGetSecurityToken(HttpConn *conn)
 /*
     Generate a security token
  */
-void espSecurityToken(HttpConn *conn) 
+PUBLIC void espSecurityToken(HttpConn *conn) 
 {
     cchar   *securityToken;
 
@@ -558,13 +558,13 @@ void espSecurityToken(HttpConn *conn)
 }
 
 
-void espSetConn(HttpConn *conn)
+PUBLIC void espSetConn(HttpConn *conn)
 {
     mprSetThreadData(((Esp*) MPR->espService)->local, conn);
 }
 
 
-void espStylesheet(HttpConn *conn, cchar *uri, cchar *optionString) 
+PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *optionString) 
 {
     EspReq      *req;
     cchar       *indent, *newline;
@@ -854,7 +854,7 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
 }
 
 
-void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
+PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
 {
     MprHash     *options, *colOptions, *rowOptions, *thisCol;
     MprList     *cols;
@@ -953,7 +953,7 @@ void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
 /*
     tabs(makeRec("{ Status: 'pane-1', Edit: 'pane-2' }"))
  */
-void espTabs(HttpConn *conn, EdiRec *rec, cchar *optionString)
+PUBLIC void espTabs(HttpConn *conn, EdiRec *rec, cchar *optionString)
 {
     MprHash     *options;
     EdiField    *fp;
@@ -999,13 +999,13 @@ static void textInner(HttpConn *conn, cchar *field, MprHash *options)
 }
 
 
-void espText(HttpConn *conn, cchar *field, cchar *optionString)
+PUBLIC void espText(HttpConn *conn, cchar *field, cchar *optionString)
 {
     textInner(conn, field, httpGetOptions(optionString));
 }
 
 
-void espTree(HttpConn *conn, EdiGrid *grid, cchar *optionString)
+PUBLIC void espTree(HttpConn *conn, EdiGrid *grid, cchar *optionString)
 {
     //  MOB - implement
 }
@@ -1086,7 +1086,7 @@ static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
 }
 
 
-MprHash *makeParams(cchar *fmt, ...)
+PUBLIC MprHash *makeParams(cchar *fmt, ...)
 {
     va_list     args;
     MprObj      *obj;
@@ -1155,7 +1155,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
 }
 
 
-void espInitHtmlOptions(Esp *esp)
+PUBLIC void espInitHtmlOptions(Esp *esp)
 {
     char   **op;
 

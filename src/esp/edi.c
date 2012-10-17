@@ -18,7 +18,7 @@ static void manageEdiGrid(EdiGrid *grid, int flags);
 
 /************************************* Code ***********************************/
 
-EdiService *ediCreateService()
+PUBLIC EdiService *ediCreateService()
 {
     EdiService      *es;
 
@@ -41,19 +41,19 @@ static void manageEdiService(EdiService *es, int flags)
 }
 
 
-int ediAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)
+PUBLIC int ediAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)
 {
     return edi->provider->addColumn(edi, tableName, columnName, type, flags);
 }
 
 
-int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName)
+PUBLIC int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName)
 {
     return edi->provider->addIndex(edi, tableName, columnName, indexName);
 }
 
 
-void ediAddProvider(EdiProvider *provider)
+PUBLIC void ediAddProvider(EdiProvider *provider)
 {
     EdiService  *es;
 
@@ -71,7 +71,7 @@ static EdiProvider *lookupProvider(cchar *providerName)
 }
 
 
-int ediAddTable(Edi *edi, cchar *tableName)
+PUBLIC int ediAddTable(Edi *edi, cchar *tableName)
 {
     return edi->provider->addTable(edi, tableName);
 }
@@ -86,7 +86,7 @@ static void manageValidation(EdiValidation *vp, int flags)
 }
 
 
-int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *columnName, cvoid *data)
+PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *columnName, cvoid *data)
 {
     EdiService          *es;
     EdiValidation       *vp; 
@@ -114,55 +114,55 @@ int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *columnName,
 }
 
 
-int ediChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)
+PUBLIC int ediChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)
 {
     return edi->provider->changeColumn(edi, tableName, columnName, type, flags);
 }
 
 
-void ediClose(Edi *edi)
+PUBLIC void ediClose(Edi *edi)
 {
     edi->provider->close(edi);
 }
 
 
-EdiRec *ediCreateRec(Edi *edi, cchar *tableName)
+PUBLIC EdiRec *ediCreateRec(Edi *edi, cchar *tableName)
 {
     return edi->provider->createRec(edi, tableName);
 }
 
 
-int ediDelete(Edi *edi, cchar *path)
+PUBLIC int ediDelete(Edi *edi, cchar *path)
 {
     return edi->provider->delete(path);
 }
 
 
-int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key)
+PUBLIC int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key)
 {
     return edi->provider->deleteRow(edi, tableName, key);
 }
 
 
-MprList *ediGetColumns(Edi *edi, cchar *tableName)
+PUBLIC MprList *ediGetColumns(Edi *edi, cchar *tableName)
 {
     return edi->provider->getColumns(edi, tableName);
 }
 
 
-int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid)
+PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid)
 {
     return edi->provider->getColumnSchema(edi, tableName, columnName, type, flags, cid);
 }
 
 
-MprList *ediGetRecErrors(EdiRec *rec)
+PUBLIC MprList *ediGetRecErrors(EdiRec *rec)
 {
     return rec->errors;
 }
 
 
-MprList *ediGetGridColumns(EdiGrid *grid)
+PUBLIC MprList *ediGetGridColumns(EdiGrid *grid)
 {
     MprList     *cols;
     EdiRec      *rec;
@@ -183,7 +183,7 @@ MprList *ediGetGridColumns(EdiGrid *grid)
 }
 
 
-EdiField *ediGetField(EdiRec *rec, cchar *fieldName)
+PUBLIC EdiField *ediGetField(EdiRec *rec, cchar *fieldName)
 {
     EdiField    *fp;
 
@@ -196,7 +196,7 @@ EdiField *ediGetField(EdiRec *rec, cchar *fieldName)
 }
 
 
-cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName)
+PUBLIC cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName)
 {
     EdiField    *fp;
 
@@ -209,7 +209,7 @@ cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName)
 }
 
 
-int ediGetFieldType(EdiRec *rec, cchar *fieldName)
+PUBLIC int ediGetFieldType(EdiRec *rec, cchar *fieldName)
 {
     int     type;
     
@@ -220,7 +220,7 @@ int ediGetFieldType(EdiRec *rec, cchar *fieldName)
 }
 
 
-cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName)
+PUBLIC cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName)
 {
     EdiField    field;
 
@@ -232,7 +232,7 @@ cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName)
 }
 
 
-EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName)
+PUBLIC EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName)
 {
     EdiField    err, *fp;
 
@@ -246,19 +246,19 @@ EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName)
 }
 
 
-MprList *ediGetTables(Edi *edi)
+PUBLIC MprList *ediGetTables(Edi *edi)
 {
     return edi->provider->getTables(edi);
 }
 
 
-int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols)
+PUBLIC int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols)
 {
     return edi->provider->getTableSchema(edi, tableName, numRows, numCols);
 }
 
 
-char *ediGetTypeString(int type)
+PUBLIC char *ediGetTypeString(int type)
 {
     switch (type) {
     case EDI_TYPE_BINARY:
@@ -280,19 +280,19 @@ char *ediGetTypeString(int type)
 }
 
 
-int ediLoad(Edi *edi, cchar *path)
+PUBLIC int ediLoad(Edi *edi, cchar *path)
 {
     return edi->provider->load(edi, path);
 }
 
 
-int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName)
+PUBLIC int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName)
 {
     return edi->provider->lookupField(edi, tableName, fieldName);
 }
 
 
-Edi *ediOpen(cchar *path, cchar *providerName, int flags)
+PUBLIC Edi *ediOpen(cchar *path, cchar *providerName, int flags)
 {
     EdiProvider     *provider;
 
@@ -304,13 +304,13 @@ Edi *ediOpen(cchar *path, cchar *providerName, int flags)
 }
 
 
-EdiGrid *ediQuery(Edi *edi, cchar *cmd)
+PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd)
 {
     return edi->provider->query(edi, cmd);
 }
 
 
-cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *columnName, cchar *defaultValue)
+PUBLIC cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *columnName, cchar *defaultValue)
 {
     EdiField    field;
 
@@ -322,7 +322,7 @@ cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *c
 }
 
 
-EdiRec *ediReadOneWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+PUBLIC EdiRec *ediReadOneWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
     EdiGrid *grid;
     
@@ -337,79 +337,79 @@ EdiRec *ediReadOneWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *ope
 }
 
 
-EdiField ediReadRawField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName)
+PUBLIC EdiField ediReadRawField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName)
 {
     return edi->provider->readField(edi, tableName, key, fieldName);
 }
 
 
-EdiRec *ediReadRec(Edi *edi, cchar *tableName, cchar *key)
+PUBLIC EdiRec *ediReadRec(Edi *edi, cchar *tableName, cchar *key)
 {
     return edi->provider->readRec(edi, tableName, key);
 }
 
 
-EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+PUBLIC EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
     return edi->provider->readWhere(edi, tableName, fieldName, operation, value);
 }
 
 
-EdiGrid *ediReadTable(Edi *edi, cchar *tableName)
+PUBLIC EdiGrid *ediReadTable(Edi *edi, cchar *tableName)
 {
     return edi->provider->readWhere(edi, tableName, 0, 0, 0);
 }
 
 
-int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName)
+PUBLIC int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName)
 {
     return edi->provider->removeColumn(edi, tableName, columnName);
 }
 
 
-int ediRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName)
+PUBLIC int ediRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName)
 {
     return edi->provider->removeIndex(edi, tableName, indexName);
 }
 
 
-int ediRemoveTable(Edi *edi, cchar *tableName)
+PUBLIC int ediRemoveTable(Edi *edi, cchar *tableName)
 {
     return edi->provider->removeTable(edi, tableName);
 }
 
 
-int ediRenameTable(Edi *edi, cchar *tableName, cchar *newTableName)
+PUBLIC int ediRenameTable(Edi *edi, cchar *tableName, cchar *newTableName)
 {
     return edi->provider->renameTable(edi, tableName, newTableName);
 }
 
 
-int ediRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar *newColumnName)
+PUBLIC int ediRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar *newColumnName)
 {
     return edi->provider->renameColumn(edi, tableName, columnName, newColumnName);
 }
 
 
-int ediSave(Edi *edi)
+PUBLIC int ediSave(Edi *edi)
 {
     return edi->provider->save(edi);
 }
 
 
-int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
+PUBLIC int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
 {
     return edi->provider->updateField(edi, tableName, key, fieldName, value);
 }
 
 
-int ediUpdateRec(Edi *edi, EdiRec *rec)
+PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec)
 {
     return edi->provider->updateRec(edi, rec);
 }
 
 
-bool ediValidateRec(EdiRec *rec)
+PUBLIC bool ediValidateRec(EdiRec *rec)
 {
     mprAssert(rec->edi);
     if (rec->edi == 0) {
@@ -424,7 +424,7 @@ bool ediValidateRec(EdiRec *rec)
     Create a free-standing grid. Not saved to the database
     The edi and tableName parameters can be null
  */
-EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows)
+PUBLIC EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows)
 {
     EdiGrid  *grid;
 
@@ -443,7 +443,7 @@ EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows)
     Create a free-standing record. Not saved to the database.
     The tableName parameter can be null. The fields are not initialized (no schema).
  */
-EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields)
+PUBLIC EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields)
 {
     EdiRec      *rec;
 
@@ -458,7 +458,7 @@ EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields)
 }
 
 
-cchar *ediFormatField(cchar *fmt, EdiField *fp)
+PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp)
 {
     MprTime     when;
 
@@ -548,7 +548,7 @@ static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int jo
 /*
     List of grids to join must be null terminated
  */
-EdiGrid *ediJoin(Edi *edi, ...)
+PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
 {
     EdiGrid     *primary, *grid, *result, *current;
     EdiRec      *rec;
@@ -618,7 +618,7 @@ EdiGrid *ediJoin(Edi *edi, ...)
 }
 
 
-void ediManageEdiRec(EdiRec *rec, int flags)
+PUBLIC void ediManageEdiRec(EdiRec *rec, int flags)
 {
     int     fid;
 
@@ -655,7 +655,7 @@ static void manageEdiGrid(EdiGrid *grid, int flags)
         { id: '2', country: 'China' }, \
     ]");
  */
-EdiGrid *ediMakeGrid(cchar *json)
+PUBLIC EdiGrid *ediMakeGrid(cchar *json)
 {
     MprHash     *obj, *row;
     MprKey      *rp, *kp;
@@ -727,7 +727,7 @@ EdiGrid *ediMakeGrid(cchar *json)
 }
 
 
-MprHash *ediMakeHash(cchar *fmt, ...)
+PUBLIC MprHash *ediMakeHash(cchar *fmt, ...)
 {
     MprHash     *obj;
     va_list     args;
@@ -742,7 +742,7 @@ MprHash *ediMakeHash(cchar *fmt, ...)
 /*
     rec = ediMakeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
  */
-EdiRec *ediMakeRec(cchar *json)
+PUBLIC EdiRec *ediMakeRec(cchar *json)
 {
     MprHash     *obj;
     MprKey      *kp;
@@ -772,7 +772,7 @@ EdiRec *ediMakeRec(cchar *json)
 }
 
 
-int ediParseTypeString(cchar *type)
+PUBLIC int ediParseTypeString(cchar *type)
 {
     if (smatch(type, "binary")) {
         return EDI_TYPE_BINARY;
@@ -798,7 +798,7 @@ int ediParseTypeString(cchar *type)
 /*
     Swap rows for columns. The key field for each record is set to the prior column name.
  */
-EdiGrid *ediPivotGrid(EdiGrid *grid, int flags)
+PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags)
 {
     EdiGrid     *result;
     EdiRec      *rec, *first;
@@ -848,7 +848,7 @@ EdiGrid *ediPivotGrid(EdiGrid *grid, int flags)
     return result;
 }
 
-EdiGrid *ediCloneGrid(EdiGrid *grid)
+PUBLIC EdiGrid *ediCloneGrid(EdiGrid *grid)
 {
     EdiGrid     *result;
     EdiRec      *rec;
@@ -877,7 +877,7 @@ EdiGrid *ediCloneGrid(EdiGrid *grid)
 }
 
 
-EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value)
+PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value)
 {
     EdiField    *fp;
 
@@ -897,7 +897,7 @@ EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value)
 }
 
 
-EdiRec *ediSetFields(EdiRec *rec, MprHash *params)
+PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprHash *params)
 {
     MprKey  *kp;
 
@@ -932,7 +932,7 @@ static int sortRec(EdiRec **r1, EdiRec **r2, GridSort *gs)
 
 
 //  MOB - need ediLookupRecField
-int ediLookupGridField(EdiGrid *grid, cchar *name)
+PUBLIC int ediLookupGridField(EdiGrid *grid, cchar *name)
 {
     EdiRec      *rec;
     EdiField    *fp;
@@ -950,7 +950,7 @@ int ediLookupGridField(EdiGrid *grid, cchar *name)
 }
 
 
-EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder)
+PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder)
 {
     GridSort    gs;
 
@@ -1048,7 +1048,7 @@ static cchar *checkUnique(EdiValidation *vp, EdiRec *rec, cchar *fieldName, ccha
 }
 
 
-void ediDefineValidation(cchar *name, EdiValidationProc vfn)
+PUBLIC void ediDefineValidation(cchar *name, EdiValidationProc vfn)
 {
     EdiService  *es;
 
@@ -1057,7 +1057,7 @@ void ediDefineValidation(cchar *name, EdiValidationProc vfn)
 }
 
 
-void ediDefineMigration(Edi *edi, EdiMigration forw, EdiMigration back)
+PUBLIC void ediDefineMigration(Edi *edi, EdiMigration forw, EdiMigration back)
 {
     edi->forw = forw;
     edi->back = back;

@@ -48,7 +48,7 @@ static void closeProxy(HttpQueue *q)
 }
 
 
-HttpConn *getConn(HttpConn *conn)
+PUBLIC HttpConn *getConn(HttpConn *conn)
 {
 #if UNUSED
     HttpConn    *target;
@@ -246,7 +246,7 @@ static int proxyDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-int maProxyHandlerInit(Http *http, MprModule *module)
+PUBLIC int maProxyHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *handler;
     MaAppweb    *appweb;
@@ -268,7 +268,7 @@ int maProxyHandlerInit(Http *http, MprModule *module)
 }
 #else
 
-int maProxyHandlerInit(Http *http, MprModule *mp)
+PUBLIC int maProxyHandlerInit(Http *http, MprModule *mp)
 {
     return 0;
 }

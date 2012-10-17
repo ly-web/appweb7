@@ -26,7 +26,7 @@ static char *getpass(char *prompt);
 
 /*********************************** Code *************************************/
 
-int main(int argc, char *argv[])
+PUBLIC int main(int argc, char *argv[])
 {
     Mpr         *mpr;
     MprBuf      *buf;

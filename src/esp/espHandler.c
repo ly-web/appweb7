@@ -95,7 +95,7 @@ static void closeEsp(HttpQueue *q)
 
 
 
-void espClearFlash(HttpConn *conn)
+PUBLIC void espClearFlash(HttpConn *conn)
 {
     EspReq      *req;
 
@@ -288,7 +288,7 @@ static int runAction(HttpConn *conn)
 }
 
 
-void espRenderView(HttpConn *conn, cchar *name)
+PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 {
     MprModule   *mp;
     HttpRx      *rx;
@@ -982,7 +982,7 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-int espBindProc(HttpRoute *parent, cchar *pattern, void *proc)
+PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *proc)
 {
     EspRoute    *eroute;
     HttpRoute   *route;
@@ -1062,7 +1062,7 @@ static int espUpdateDirective(MaState *state, cchar *key, cchar *value)
 /*
     Loadable module configuration
  */
-int maEspHandlerInit(Http *http, MprModule *module)
+PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *handler;
     MaAppweb    *appweb;
@@ -1149,7 +1149,7 @@ static int unloadEsp(MprModule *mp)
 
 #else /* BIT_PACK_ESP */
 
-int maEspHandlerInit(Http *http, MprModule *mp)
+PUBLIC int maEspHandlerInit(Http *http, MprModule *mp)
 {
     mprNop(0);
     return 0;

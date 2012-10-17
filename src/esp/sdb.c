@@ -88,7 +88,7 @@ static EdiRec *createRec(Edi *edi, cchar *tableName, int nfields);
 static EdiField makeRecField(cchar *value, cchar *name, int type);
 static int query(Edi *edi, cchar *cmd, EdiGrid *gridp);
 
-EdiProvider SdbProvider = {
+PUBLIC EdiProvider SdbProvider = {
     "sdb",
     sdbAddColumn, sdbAddIndex, sdbAddTable, sdbAddValidation, sdbChangeColumn, sdbClose, sdbCreateRec, sdbDelete, 
     sdbDeleteRow, sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableSchema, NULL, sdbLookupField, 
@@ -99,7 +99,7 @@ EdiProvider SdbProvider = {
 
 /************************************* Code ***********************************/
 
-void sdbInit()
+PUBLIC void sdbInit()
 {
     ediAddProvider(&SdbProvider);
 }
@@ -722,7 +722,7 @@ static int sdbSave(Edi *edi)
 }
 
 
-bool sdbValidateRec(Edi *edi, EdiRec *rec)
+PUBLIC bool sdbValidateRec(Edi *edi, EdiRec *rec)
 {
 #if CONVERT
     Sdb         *sdb;
@@ -822,7 +822,7 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
 /*
     Optimized record creation
  */
-EdiRec *createRec(Edi *edi, cchar *tableName, int nfields)
+PUBLIC EdiRec *createRec(Edi *edi, cchar *tableName, int nfields)
 {
     EdiRec  *rec;
 
@@ -928,7 +928,7 @@ struct sqlite3_mem_methods mem = {
     Map mutexes to use MPR
  */
 
-int mutc = 0;
+PUBLIC int mutc = 0;
 
 static int initMutex(void) { 
     return 0; 

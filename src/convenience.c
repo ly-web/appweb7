@@ -12,7 +12,7 @@
 /*  
     Create a web server described by a config file. 
  */
-int maRunWebServer(cchar *configFile)
+PUBLIC int maRunWebServer(cchar *configFile)
 {
     Mpr         *mpr;
     MaAppweb    *appweb;
@@ -57,7 +57,7 @@ int maRunWebServer(cchar *configFile)
 /*
     Run a web server not based on a config file.
  */
-int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents)
+PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents)
 {
     Mpr         *mpr;
     MaServer    *server;
@@ -108,7 +108,7 @@ int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents)
     server, optionally modify the IP:PORT and resume listening. NOTE: running requests will be unaffected.
     WARNING: this is demonstration code and has no error checking.
  */
-void maRestartServer(cchar *ip, int port)
+PUBLIC void maRestartServer(cchar *ip, int port)
 {
     MaAppweb        *appweb;
     MaServer        *server;

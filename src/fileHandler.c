@@ -469,7 +469,7 @@ static void handleDeleteRequest(HttpQueue *q)
 /*  
     Loadable module initialization
  */
-int maOpenFileHandler(Http *http)
+PUBLIC int maOpenFileHandler(Http *http)
 {
     HttpStage     *handler;
 

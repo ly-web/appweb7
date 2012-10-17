@@ -45,14 +45,14 @@ typedef struct EdiService {
     @ingroup EdiService
     @internal
  */
-extern EdiService *ediCreateService();
+PUBLIC EdiService *ediCreateService();
 
 /**
     Add a database provider. 
     @description This should only be called by database providers. 
     @ingroup EdiService
  */
-extern void ediAddProvider(struct EdiProvider *provider);
+PUBLIC void ediAddProvider(struct EdiProvider *provider);
 
 /**
     Field validation callback procedure
@@ -81,7 +81,7 @@ typedef struct EdiValidation {
     @param vfn Validation callback to invoke when validating field data.
     @ingroup EdiService
  */
-extern void ediDefineValidation(cchar *name, EdiValidationProc vfn);
+PUBLIC void ediDefineValidation(cchar *name, EdiValidationProc vfn);
 
 /*
    Field data type hints
@@ -181,7 +181,7 @@ typedef int (*EdiMigration)(struct Edi *db);
         A successful return should be zero.
     @ingroup EdiService
  */
-extern void ediDefineMigration(struct Edi *edi, EdiMigration forw, EdiMigration back);
+PUBLIC void ediDefineMigration(struct Edi *edi, EdiMigration forw, EdiMigration back);
 
 /**
     Database structure
@@ -247,7 +247,7 @@ typedef struct EdiProvider {
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
+PUBLIC int ediAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
 
 /**
     Add an index to a table
@@ -258,7 +258,7 @@ extern int ediAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName);
+PUBLIC int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName);
 
 /**
     Add a table to a database
@@ -267,7 +267,7 @@ extern int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *ind
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediAddTable(Edi *edi, cchar *tableName);
+PUBLIC int ediAddTable(Edi *edi, cchar *tableName);
 
 /**
     Add a validation
@@ -288,7 +288,7 @@ extern int ediAddTable(Edi *edi, cchar *tableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *columnName, cvoid *data);
+PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *columnName, cvoid *data);
 
 /**
     Change a column schema definition
@@ -302,17 +302,17 @@ extern int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
+PUBLIC int ediChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
 
 /**
     Close a database
     @param edi Database handle
     @ingroup Edi
  */
-extern void ediClose(Edi *edi);
+PUBLIC void ediClose(Edi *edi);
 
 //  MOB
-extern EdiGrid *ediCloneGrid(EdiGrid *grid);
+PUBLIC EdiGrid *ediCloneGrid(EdiGrid *grid);
 
 /**
     Create a record
@@ -324,7 +324,7 @@ extern EdiGrid *ediCloneGrid(EdiGrid *grid);
     @return Record instance.
     @ingroup Edi
  */
-extern EdiRec *ediCreateRec(Edi *edi, cchar *tableName);
+PUBLIC EdiRec *ediCreateRec(Edi *edi, cchar *tableName);
 
 
 /**
@@ -335,7 +335,7 @@ extern EdiRec *ediCreateRec(Edi *edi, cchar *tableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediDelete(Edi *edi, cchar *path);
+PUBLIC int ediDelete(Edi *edi, cchar *path);
 
 //  MOB - should this be DeleteRec? RemoveRec
 /**
@@ -346,7 +346,7 @@ extern int ediDelete(Edi *edi, cchar *path);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key);
+PUBLIC int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key);
 
 /**
     Get a list of column names.
@@ -355,7 +355,7 @@ extern int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key);
     @return An MprList of column names in the given table.
     @ingroup Edi
  */
-extern MprList *ediGetColumns(Edi *edi, cchar *tableName);
+PUBLIC MprList *ediGetColumns(Edi *edi, cchar *tableName);
 
 /**
     Get the column schema
@@ -373,7 +373,7 @@ extern MprList *ediGetColumns(Edi *edi, cchar *tableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
+PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
 
 /**
     Get a list of database tables.
@@ -381,7 +381,7 @@ extern int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
     @return An MprList of table names in the database.
     @ingroup Edi
  */
-extern MprList *ediGetTables(Edi *edi);
+PUBLIC MprList *ediGetTables(Edi *edi);
 
 /**
     Join grids
@@ -390,7 +390,7 @@ extern MprList *ediGetTables(Edi *edi);
     @return A joined grid.
     @ingroup Edi
  */
-extern EdiGrid *ediJoin(Edi *edi, ...);
+PUBLIC EdiGrid *ediJoin(Edi *edi, ...);
 
 /**
     MOB - remove this API
@@ -401,7 +401,7 @@ extern EdiGrid *ediJoin(Edi *edi, ...);
     @ingroup Edi
     @internal
  */
-extern int ediLoad(Edi *edi, cchar *path);
+PUBLIC int ediLoad(Edi *edi, cchar *path);
 
 //  MOB - should this be LookupColumn?
 /**
@@ -412,7 +412,7 @@ extern int ediLoad(Edi *edi, cchar *path);
     @return The ordinal field (column) index in the table.
     @ingroup Edi
  */
-extern int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
+PUBLIC int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
 
 /**
     Open a database.
@@ -428,7 +428,7 @@ extern int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
     @return If successful, returns an EDI database instance object. Otherwise returns zero.
     @ingroup Edi
  */
-extern Edi *ediOpen(cchar *source, cchar *provider, int flags);
+PUBLIC Edi *ediOpen(cchar *source, cchar *provider, int flags);
 
 //  MOB - Should have an cchar *err argument.
 /**
@@ -441,7 +441,7 @@ extern Edi *ediOpen(cchar *source, cchar *provider, int flags);
     @return If succesful, returns tabular data in the form of an EgiGrid structure. Returns NULL on errors.
     @ingroup Edi
  */
-extern EdiGrid *ediQuery(Edi *edi, cchar *cmd);
+PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd);
 
 /**
     Read a field from the database and format the result.
@@ -456,7 +456,7 @@ extern EdiGrid *ediQuery(Edi *edi, cchar *cmd);
     @return Field value or default value if field is null or empty. Returns null if no matching record is found.
     @ingroup Edi
  */
-extern cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *fieldName, cchar *defaultValue);
+PUBLIC cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *fieldName, cchar *defaultValue);
 
 //  MOB - rename ReadRecWhere
 /**
@@ -471,7 +471,7 @@ extern cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, c
     @return First matching record. Returns NULL if no matching records.
     @ingroup Edi
  */
-extern EdiRec *ediReadOneWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
+PUBLIC EdiRec *ediReadOneWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
 /**
     Read a field from the database.
@@ -483,7 +483,7 @@ extern EdiRec *ediReadOneWhere(Edi *edi, cchar *tableName, cchar *fieldName, cch
     @return Field value or null if the no record is found. May return null or empty if the field is null or empty.
     @ingroup Edi
  */
-extern EdiField ediReadRawField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName);
+PUBLIC EdiField ediReadRawField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName);
 
 /**
     Read a record.
@@ -494,7 +494,7 @@ extern EdiField ediReadRawField(Edi *edi, cchar *tableName, cchar *key, cchar *f
     @return Record instance of EdiRec.
     @ingroup Edi
  */
-extern EdiRec *ediReadRec(Edi *edi, cchar *tableName, cchar *key);
+PUBLIC EdiRec *ediReadRec(Edi *edi, cchar *tableName, cchar *key);
 
 //  MOB - rename ReadGridWhere
 /**
@@ -509,7 +509,7 @@ extern EdiRec *ediReadRec(Edi *edi, cchar *tableName, cchar *key);
     @return A grid containing all matching records. Returns NULL if no matching records.
     @ingroup Edi
  */
-extern EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
+PUBLIC EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
 /**
     Read a table.
@@ -519,7 +519,7 @@ extern EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar
     @return A grid containing all records. Returns NULL if no matching records.
     @ingroup Edi
  */
-extern EdiGrid *ediReadTable(Edi *edi, cchar *tableName);
+PUBLIC EdiGrid *ediReadTable(Edi *edi, cchar *tableName);
 
 /**
     Remove a column from a table.
@@ -529,7 +529,7 @@ extern EdiGrid *ediReadTable(Edi *edi, cchar *tableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName);
+PUBLIC int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName);
 
 /**
     Remove a table index.
@@ -539,7 +539,7 @@ extern int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName);
+PUBLIC int ediRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName);
 
 /**
     Remove a table from the database.
@@ -548,7 +548,7 @@ extern int ediRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediRemoveTable(Edi *edi, cchar *tableName);
+PUBLIC int ediRemoveTable(Edi *edi, cchar *tableName);
 
 /**
     Rename a table.
@@ -558,7 +558,7 @@ extern int ediRemoveTable(Edi *edi, cchar *tableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediRenameTable(Edi *edi, cchar *tableName, cchar *newTableName);
+PUBLIC int ediRenameTable(Edi *edi, cchar *tableName, cchar *newTableName);
 
 /**
     Rename a column. 
@@ -569,7 +569,7 @@ extern int ediRenameTable(Edi *edi, cchar *tableName, cchar *newTableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar *newColumnName);
+PUBLIC int ediRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar *newColumnName);
 
 /**
     Save in-memory database contents to disk.
@@ -580,7 +580,7 @@ extern int ediRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar 
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediSave(Edi *edi);
+PUBLIC int ediSave(Edi *edi);
 
 /**
     Set a record field without writing to the database.
@@ -592,7 +592,7 @@ extern int ediSave(Edi *edi);
     @return The record instance if successful, otherwise NULL.
     @ingroup Edi
  */
-extern EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
+PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
 
 /**
     Set record fields without writing to the database.
@@ -607,7 +607,7 @@ extern EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
     @return The record instance if successful, otherwise NULL.
     @ingroup Edi
  */
-extern EdiRec *ediSetFields(EdiRec *rec, MprHash *data);
+PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprHash *data);
 
 /**
     Get table schema information.
@@ -620,7 +620,7 @@ extern EdiRec *ediSetFields(EdiRec *rec, MprHash *data);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+PUBLIC int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols);
 
 /**
     Write a value to a database table field
@@ -633,7 +633,7 @@ extern int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numC
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
+PUBLIC int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
 
 #if UNUSED
 /**
@@ -649,7 +649,7 @@ extern int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldNa
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediUpdateFields(Edi *edi, cchar *tableName, MprHash *data);
+PUBLIC int ediUpdateFields(Edi *edi, cchar *tableName, MprHash *data);
 #endif
 
 /**
@@ -661,7 +661,7 @@ extern int ediUpdateFields(Edi *edi, cchar *tableName, MprHash *data);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediUpdateRec(Edi *edi, EdiRec *rec);
+PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec);
 
 /**
     Validate a record.
@@ -672,7 +672,7 @@ extern int ediUpdateRec(Edi *edi, EdiRec *rec);
     @return True if all field valiations pass.
     @ingroup Edi
  */
-extern bool ediValidateRec(EdiRec *rec);
+PUBLIC bool ediValidateRec(EdiRec *rec);
 
 /**************************** Convenience Routines ****************************/
 /**
@@ -682,9 +682,9 @@ extern bool ediValidateRec(EdiRec *rec);
     @return Formatted value string
     @ingroup Edi
  */
-extern cchar *ediFormatField(cchar *fmt, EdiField *fp);
+PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp);
 
-extern EdiField *ediGetField(EdiRec *rec, cchar *fieldName);
+PUBLIC EdiField *ediGetField(EdiRec *rec, cchar *fieldName);
 
 /**
     Get a record field
@@ -693,7 +693,7 @@ extern EdiField *ediGetField(EdiRec *rec, cchar *fieldName);
     @return An EdiField structure containing the record field value and details.
     @ingroup Edi
  */
-extern cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName);
+PUBLIC cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName);
 
 /**
     Get and format a record field value.
@@ -703,7 +703,7 @@ extern cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName);
     @return String value of the field
     @ingroup Edi
  */
-extern cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName);
+PUBLIC cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName);
 
 /**
     Get the record field schema.
@@ -713,7 +713,7 @@ extern cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName);
     @return An EdiField structure containing the record field value and details.
     @ingroup Edi
  */
-extern EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName);
+PUBLIC EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName);
 
 /**
     Get the data type of a record field.
@@ -723,7 +723,7 @@ extern EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName);
         EDI_TYPE_INT, EDI_TYPE_STRING, EDI_TYPE_TEXT. 
     @ingroup Edi
  */
-extern int ediGetFieldType(EdiRec *rec, cchar *fieldName);
+PUBLIC int ediGetFieldType(EdiRec *rec, cchar *fieldName);
 
 /**
     Get record validation errors.
@@ -731,7 +731,7 @@ extern int ediGetFieldType(EdiRec *rec, cchar *fieldName);
     @return A list of validation errors. If validation passed, then this call returns NULL.
     @ingroup Edi
  */
-extern MprList *ediGetRecErrors(EdiRec *rec);
+PUBLIC MprList *ediGetRecErrors(EdiRec *rec);
 
 /**
     Get a list of grid column names.
@@ -739,7 +739,7 @@ extern MprList *ediGetRecErrors(EdiRec *rec);
     @return An MprList of column names in the given grid.
     @ingroup Edi
  */
-extern MprList *ediGetGridColumns(EdiGrid *grid);
+PUBLIC MprList *ediGetGridColumns(EdiGrid *grid);
 
 /**
     Make a hash container of property values.
@@ -751,7 +751,7 @@ extern MprList *ediGetGridColumns(EdiGrid *grid);
     @return MprHash instance
     @ingroup Edi
  */
-extern MprHash *ediMakeHash(cchar *fmt, ...);
+PUBLIC MprHash *ediMakeHash(cchar *fmt, ...);
 
 /**
     Make a grid.
@@ -766,7 +766,7 @@ grid = ediMakeGrid("[ \\ \n
     ]");
     @ingroup Edi
  */
-extern EdiGrid *ediMakeGrid(cchar *content);
+PUBLIC EdiGrid *ediMakeGrid(cchar *content);
 
 /**
     Make a record.
@@ -776,7 +776,7 @@ extern EdiGrid *ediMakeGrid(cchar *content);
     @example: rec = ediMakeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
     @ingroup Edi
  */
-extern EdiRec *ediMakeRec(cchar *content);
+PUBLIC EdiRec *ediMakeRec(cchar *content);
 
 /**
     Create a bare grid.
@@ -787,7 +787,7 @@ extern EdiRec *ediMakeRec(cchar *content);
     @return EdiGrid instance
     @ingroup Edi
  */
-extern EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
+PUBLIC EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
 
 /**
     Create a bare record.
@@ -798,7 +798,7 @@ extern EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
     @return EdiGrid instance
     @ingroup Edi
  */
-extern EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
+PUBLIC EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
 
 /**
     Convert an EDI type to a string.
@@ -807,7 +807,7 @@ extern EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
     @return Type string. This will be set to one of: "binary", "bool", "date", "float", "int", "string" or "text".
     @ingroup Edi
  */
-extern char *ediGetTypeString(int type);
+PUBLIC char *ediGetTypeString(int type);
 
 /**
     Parse an EDI type string.
@@ -816,7 +816,7 @@ extern char *ediGetTypeString(int type);
         EDI_TYPE_STRING, EDI_TYPE_TEXT.
     @ingroup Edi
  */
-extern int ediParseTypeString(cchar *type);
+PUBLIC int ediParseTypeString(cchar *type);
 
 /**
     Manage an EdiRec instance for garbage collection.
@@ -825,7 +825,7 @@ extern int ediParseTypeString(cchar *type);
     @ingroup Edi
     @internal
  */
-extern void ediManageEdiRec(EdiRec *rec, int flags);
+PUBLIC void ediManageEdiRec(EdiRec *rec, int flags);
 
 #if UNUSED
 /*
@@ -841,19 +841,19 @@ extern void ediManageEdiRec(EdiRec *rec, int flags);
     @result New pivoted grid
     @ingroup EdiGrid
  */
-extern EdiGrid *ediPivotGrid(EdiGrid *grid, int flags);
+PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags);
 
 /**
     @internal
   */
-extern EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder);
+PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder);
 
 #if BIT_MDB
-extern void mdbInit();
+PUBLIC void mdbInit();
 #endif
 
 #if BIT_SDB
-extern void sdbInit();
+PUBLIC void sdbInit();
 #endif
 
 #ifdef __cplusplus
