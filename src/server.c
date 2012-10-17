@@ -14,7 +14,6 @@
 /***************************** Forward Declarations ***************************/
 
 static void manageAppweb(MaAppweb *appweb, int flags);
-static void openHandlers(Http *http);
 
 /************************************ Code ************************************/
 /*
@@ -36,7 +35,13 @@ PUBLIC MaAppweb *maCreateAppweb()
     maSetPlatform(appweb->localPlatform);
     maGetUserGroup(appweb);
     maParseInit(appweb);
-    openHandlers(http);
+    /* 
+       Open the builtin handlers 
+     */
+#if BIT_PACK_DIR
+    maOpenDirHandler(http);
+#endif
+    maOpenFileHandler(http);
     return appweb; 
 }
 
@@ -57,15 +62,6 @@ static void manageAppweb(MaAppweb *appweb, int flags)
     } else if (flags & MPR_MANAGE_FREE) {
         maStopAppweb(appweb);
     }
-}
-
-
-static void openHandlers(Http *http)
-{
-#if BIT_PACK_DIR
-    maOpenDirHandler(http);
-#endif
-    maOpenFileHandler(http);
 }
 
 

@@ -552,8 +552,10 @@ PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
 {
     HttpStage     *handler;
 
-    mprSetModuleFinalizer(module, finalizePhp); 
-    if ((handler = httpCreateHandler(http, module->name, 0, module)) == 0) {
+    if (module) {
+        mprSetModuleFinalizer(module, finalizePhp); 
+    }
+    if ((handler = httpCreateHandler(http, "phpHandler", 0, module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     handler->open = openPhp;

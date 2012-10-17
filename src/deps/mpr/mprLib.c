@@ -14617,13 +14617,19 @@ PUBLIC void *mprLookupModuleData(cchar *name)
 
 PUBLIC void mprSetModuleTimeout(MprModule *module, MprTime timeout)
 {
-    module->timeout = timeout;
+    assure(module);
+    if (module) {
+        module->timeout = timeout;
+    }
 }
 
 
 PUBLIC void mprSetModuleFinalizer(MprModule *module, MprModuleProc stop)
 {
-    module->stop = stop;
+    assure(module);
+    if (module) {
+        module->stop = stop;
+    }
 }
 
 

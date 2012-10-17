@@ -273,10 +273,25 @@ static int changeRoot(cchar *jail)
 
 static int initializeAppweb(cchar *ip, int port)
 {
+    Http    *http;
+
     if ((app->appweb = maCreateAppweb()) == 0) {
         mprUserError("Can't create HTTP service for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
+    http = app->appweb->http;
+
+#if BIT_STATIC
+    /*
+        If doing a static build, must now reference required modules to force the linker to include them.
+        Don't actually call init routines here. They will be called via LoadModule statements in appweb.conf.
+     */
+    mprNop(maCgiHandlerInit);
+    mprNop(maEspHandlerInit);
+    mprNop(maPhpHandlerInit);
+    mprNop(maSslModuleInit);
+#endif
+
     if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
         mprUserError("Can't create HTTP server for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;

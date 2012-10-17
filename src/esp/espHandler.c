@@ -1082,8 +1082,9 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     MPR->espService = esp;
     esp->mutex = mprCreateLock();
     esp->local = mprCreateThreadLocal();
-    mprSetModuleFinalizer(module, unloadEsp);
-
+    if (module) {
+        mprSetModuleFinalizer(module, unloadEsp);
+    }
     if ((esp->internalOptions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
         return 0;
     }
