@@ -703,8 +703,12 @@ typedef int64 MprTime;
 
 
 #if BIT_WIN_LIKE
+    /*
+        This is the same for static and shared builds so *.exe on windows will have export symbols and
+        GetProcAddress can locate for dynmaic resolution of modules
+     */
     #if BIT_STATIC
-        #define PUBLIC 
+        #define PUBLIC      __declspec(dllexport)
         #define PRIVATE     static
     #else
         #define PUBLIC      __declspec(dllexport)
