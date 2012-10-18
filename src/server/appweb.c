@@ -273,14 +273,10 @@ static int changeRoot(cchar *jail)
 
 static int initializeAppweb(cchar *ip, int port)
 {
-    Http    *http;
-
     if ((app->appweb = maCreateAppweb()) == 0) {
         mprUserError("Can't create HTTP service for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
-    http = app->appweb->http;
-
 #if BIT_STATIC
     /*
         If doing a static build, must now reference required modules to force the linker to include them.
