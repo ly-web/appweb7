@@ -457,11 +457,16 @@ bit --help     # Show bit usage</pre>
             <p>On VxWorks, it is required to define BLD_APPWEB_PATH so that Appweb can load modules which
             are located relative to the Appweb executable image.</p>
             <p>Define BLD_CONFIG_FILE and BLD_SERVER_ROOT to set default locations for Appweb initialization.</p>
+
             <h3>Static Linking</h3>
-            <p>On VxWorks, it is sometimes required to statically link the Appweb web server. The default bit files
-            are setup to build Appweb and the loadable modules separately. If you want to
-            statically link Appweb and the modules together, edit the server/server.bit and uncomment the static
-            property by following the commented instructions.
+            <p>On some platforms, it is desirable to statically link the Appweb web server. The default bit files
+            are setup to build Appweb using shared libraries and to build the loadable modules separately. If you want to
+            statically link Appweb and the modules together, run configure with the <i>--static</i> option and then 
+            rebuild.</p>
+<pre>
+./configure --static
+bit
+</pre>
             <a id="installing"></a>
             <h2 class="section">Installing</h2>
             <p>You can install the newly built software via:</p>

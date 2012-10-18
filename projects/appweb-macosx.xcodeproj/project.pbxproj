@@ -739,24 +739,29 @@
 /* Begin PBXFileReference section */
 		004E6C37004F3D0E00000047 /* mprLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprLib.c; path = src/deps/mpr/mprLib.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000109 /* bit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bit.h; path = macosx-x64-xcode/inc/bit.h; sourceTree = "<group>"; };
+		004E6C37004F3D0E0000010A /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = macosx-x64-xcode/inc/mpr.h; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000087 /* libmpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmpr.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000049 /* mprSsl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprSsl.c; path = src/deps/mpr/mprSsl.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E0000010A /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E0000010B /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E0000004B /* manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = manager.c; path = src/deps/mpr/manager.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E0000010B /* manager */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = appman; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E0000010C /* manager */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = appman; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E0000004D /* makerom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = makerom.c; path = src/deps/mpr/makerom.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E0000010C /* makerom */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makerom; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E0000010D /* makerom */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makerom; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E0000004F /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = src/deps/pcre/pcre.c; sourceTree = "<group>"; };
+		004E6C37004F3D0E0000010E /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = macosx-x64-xcode/inc/pcre.h; sourceTree = "<group>"; };
 		004E6C37004F3D0E0000008B /* libpcre */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpcre.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000051 /* httpLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = httpLib.c; path = src/deps/http/httpLib.c; sourceTree = "<group>"; };
+		004E6C37004F3D0E0000010F /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = http.h; path = macosx-x64-xcode/inc/http.h; sourceTree = "<group>"; };
 		004E6C37004F3D0E0000008E /* libhttp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libhttp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000053 /* http.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = http.c; path = src/deps/http/http.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E0000010D /* http */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = http; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E00000110 /* http */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = http; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000055 /* sqlite3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sqlite3.c; path = src/deps/sqlite/sqlite3.c; sourceTree = "<group>"; };
+		004E6C37004F3D0E00000111 /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = macosx-x64-xcode/inc/sqlite3.h; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000092 /* libsqlite3 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libsqlite3.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000057 /* sqlite.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sqlite.c; path = src/deps/sqlite/sqlite.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E0000010E /* sqlite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = sqlite; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E00000112 /* sqlite */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = sqlite; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000059 /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = config.c; path = src/config.c; sourceTree = "<group>"; };
+		004E6C37004F3D0E00000113 /* appweb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = appweb.h; path = macosx-x64-xcode/inc/appweb.h; sourceTree = "<group>"; };
 		004E6C37004F3D0E0000005B /* convenience.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = convenience.c; path = src/convenience.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E0000005D /* dirHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dirHandler.c; path = src/dirHandler.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E0000005F /* fileHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fileHandler.c; path = src/fileHandler.c; sourceTree = "<group>"; };
@@ -764,15 +769,18 @@
 		004E6C37004F3D0E00000063 /* server.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = server.c; path = src/server.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000097 /* libappweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libappweb.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000065 /* edi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = edi.c; path = src/esp/edi.c; sourceTree = "<group>"; };
+		004E6C37004F3D0E00000114 /* edi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = edi.h; path = macosx-x64-xcode/inc/edi.h; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000067 /* espAbbrev.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espAbbrev.c; path = src/esp/espAbbrev.c; sourceTree = "<group>"; };
+		004E6C37004F3D0E00000115 /* esp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = esp.h; path = macosx-x64-xcode/inc/esp.h; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000069 /* espFramework.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espFramework.c; path = src/esp/espFramework.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E0000006B /* espHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espHandler.c; path = src/esp/espHandler.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E0000006D /* espHtml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espHtml.c; path = src/esp/espHtml.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E0000006F /* espSession.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espSession.c; path = src/esp/espSession.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000071 /* espTemplate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espTemplate.c; path = src/esp/espTemplate.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000073 /* mdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mdb.c; path = src/esp/mdb.c; sourceTree = "<group>"; };
+		004E6C37004F3D0E00000116 /* mdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mdb.h; path = macosx-x64-xcode/inc/mdb.h; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000075 /* sdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sdb.c; path = src/esp/sdb.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E0000010F /* mod_esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = mod_esp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E00000117 /* mod_esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = mod_esp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000065 /* edi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = edi.c; path = src/esp/edi.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000077 /* esp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esp.c; path = src/esp/esp.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000067 /* espAbbrev.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espAbbrev.c; path = src/esp/espAbbrev.c; sourceTree = "<group>"; };
@@ -783,24 +791,25 @@
 		004E6C37004F3D0E00000071 /* espTemplate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espTemplate.c; path = src/esp/espTemplate.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000073 /* mdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mdb.c; path = src/esp/mdb.c; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000075 /* sdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sdb.c; path = src/esp/sdb.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E00000110 /* esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = esp; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E00000118 /* esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = esp; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000079 /* cgiHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cgiHandler.c; path = src/modules/cgiHandler.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E00000111 /* mod_cgi */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = mod_cgi.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E00000119 /* mod_cgi */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = mod_cgi.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E0000007B /* authpass.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = authpass.c; path = src/utils/authpass.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E00000112 /* authpass */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = authpass; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E0000011A /* authpass */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = authpass; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E0000007D /* cgiProgram.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cgiProgram.c; path = src/utils/cgiProgram.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E00000113 /* cgiProgram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cgiProgram; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E0000011B /* cgiProgram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cgiProgram; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E0000007F /* setConfig.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = setConfig.c; path = src/utils/setConfig.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E00000114 /* setConfig */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = setConfig; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E0000011C /* setConfig */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = setConfig; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000081 /* appweb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = appweb.c; path = src/server/appweb.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E00000115 /* appweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = appweb; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E0000011D /* appweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = appweb; sourceTree = BUILT_PRODUCTS_DIR; };
 		004E6C37004F3D0E00000083 /* testAppweb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testAppweb.c; path = test/testAppweb.c; sourceTree = "<group>"; };
+		004E6C37004F3D0E0000011E /* testAppweb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = testAppweb.h; path = macosx-x64-xcode/inc/testAppweb.h; sourceTree = "<group>"; };
 		004E6C37004F3D0E00000085 /* testHttp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testHttp.c; path = test/testHttp.c; sourceTree = "<group>"; };
-		004E6C37004F3D0E00000116 /* testAppweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testAppweb; sourceTree = BUILT_PRODUCTS_DIR; };
+		004E6C37004F3D0E0000011F /* testAppweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testAppweb; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		004E6C37004F3D0E00000117 /* Frameworks and Libraries for libmpr */ = {
+		004E6C37004F3D0E00000120 /* Frameworks and Libraries for libmpr */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -808,7 +817,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000118 /* Frameworks and Libraries for libmprssl */ = {
+		004E6C37004F3D0E00000121 /* Frameworks and Libraries for libmprssl */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -816,7 +825,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000119 /* Frameworks and Libraries for manager */ = {
+		004E6C37004F3D0E00000122 /* Frameworks and Libraries for manager */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -824,7 +833,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E0000011A /* Frameworks and Libraries for makerom */ = {
+		004E6C37004F3D0E00000123 /* Frameworks and Libraries for makerom */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -832,7 +841,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E0000011B /* Frameworks and Libraries for libpcre */ = {
+		004E6C37004F3D0E00000124 /* Frameworks and Libraries for libpcre */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -840,7 +849,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E0000011C /* Frameworks and Libraries for libhttp */ = {
+		004E6C37004F3D0E00000125 /* Frameworks and Libraries for libhttp */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -849,7 +858,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E0000011D /* Frameworks and Libraries for http */ = {
+		004E6C37004F3D0E00000126 /* Frameworks and Libraries for http */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -859,7 +868,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E0000011E /* Frameworks and Libraries for libsqlite3 */ = {
+		004E6C37004F3D0E00000127 /* Frameworks and Libraries for libsqlite3 */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -867,7 +876,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E0000011F /* Frameworks and Libraries for sqlite */ = {
+		004E6C37004F3D0E00000128 /* Frameworks and Libraries for sqlite */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -875,7 +884,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000120 /* Frameworks and Libraries for libappweb */ = {
+		004E6C37004F3D0E00000129 /* Frameworks and Libraries for libappweb */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -885,7 +894,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000121 /* Frameworks and Libraries for mod_esp */ = {
+		004E6C37004F3D0E0000012A /* Frameworks and Libraries for mod_esp */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -896,7 +905,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000122 /* Frameworks and Libraries for esp */ = {
+		004E6C37004F3D0E0000012B /* Frameworks and Libraries for esp */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -907,7 +916,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000123 /* Frameworks and Libraries for mod_cgi */ = {
+		004E6C37004F3D0E0000012C /* Frameworks and Libraries for mod_cgi */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -918,7 +927,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000124 /* Frameworks and Libraries for authpass */ = {
+		004E6C37004F3D0E0000012D /* Frameworks and Libraries for authpass */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -929,7 +938,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000125 /* Frameworks and Libraries for cgiProgram */ = {
+		004E6C37004F3D0E0000012E /* Frameworks and Libraries for cgiProgram */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -937,7 +946,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000126 /* Frameworks and Libraries for setConfig */ = {
+		004E6C37004F3D0E0000012F /* Frameworks and Libraries for setConfig */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -945,7 +954,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000127 /* Frameworks and Libraries for appweb */ = {
+		004E6C37004F3D0E00000130 /* Frameworks and Libraries for appweb */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -956,7 +965,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		004E6C37004F3D0E00000128 /* Frameworks and Libraries for testAppweb */ = {
+		004E6C37004F3D0E00000131 /* Frameworks and Libraries for testAppweb */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -970,125 +979,137 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		004E6C37004F3D0E00000129 /* Top Group */ = {
+		004E6C37004F3D0E00000132 /* Top Group */ = {
             isa = PBXGroup;
             children = (
-				004E6C37004F3D0E0000012A /* libappweb */,
-				004E6C37004F3D0E0000012B /* libhttp */,
-				004E6C37004F3D0E0000012C /* libmpr */,
-				004E6C37004F3D0E0000012D /* libmprssl */,
-				004E6C37004F3D0E0000012E /* libpcre */,
-				004E6C37004F3D0E0000012F /* libsqlite3 */,
-				004E6C37004F3D0E00000130 /* mod_cgi */,
-				004E6C37004F3D0E00000131 /* mod_esp */,
-				004E6C37004F3D0E00000132 /* appweb */,
-				004E6C37004F3D0E00000133 /* authpass */,
-				004E6C37004F3D0E00000134 /* cgiProgram */,
-				004E6C37004F3D0E00000135 /* esp */,
-				004E6C37004F3D0E00000136 /* http */,
-				004E6C37004F3D0E00000137 /* makerom */,
-				004E6C37004F3D0E00000138 /* manager */,
-				004E6C37004F3D0E00000139 /* setConfig */,
-				004E6C37004F3D0E0000013A /* sqlite */,
-				004E6C37004F3D0E0000013B /* testAppweb */,
-				004E6C37004F3D0E0000013C /* Products */,
+				004E6C37004F3D0E00000133 /* libappweb */,
+				004E6C37004F3D0E00000134 /* libhttp */,
+				004E6C37004F3D0E00000135 /* libmpr */,
+				004E6C37004F3D0E00000136 /* libmprssl */,
+				004E6C37004F3D0E00000137 /* libpcre */,
+				004E6C37004F3D0E00000138 /* libsqlite3 */,
+				004E6C37004F3D0E00000139 /* mod_cgi */,
+				004E6C37004F3D0E0000013A /* mod_esp */,
+				004E6C37004F3D0E0000013B /* appweb */,
+				004E6C37004F3D0E0000013C /* authpass */,
+				004E6C37004F3D0E0000013D /* cgiProgram */,
+				004E6C37004F3D0E0000013E /* esp */,
+				004E6C37004F3D0E0000013F /* http */,
+				004E6C37004F3D0E00000140 /* makerom */,
+				004E6C37004F3D0E00000141 /* manager */,
+				004E6C37004F3D0E00000142 /* setConfig */,
+				004E6C37004F3D0E00000143 /* sqlite */,
+				004E6C37004F3D0E00000144 /* testAppweb */,
+				004E6C37004F3D0E00000145 /* Products */,
 			);
             sourceTree = "<group>";
         };
-		004E6C37004F3D0E0000012C /* libmpr */ = {
+		004E6C37004F3D0E00000135 /* libmpr */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E0000010A /* mpr.h */,
 				004E6C37004F3D0E00000047 /* mprLib.c */,
 			);
             name = "libmpr";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E0000012D /* libmprssl */ = {
+		004E6C37004F3D0E00000136 /* libmprssl */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E0000010A /* mpr.h */,
 				004E6C37004F3D0E00000049 /* mprSsl.c */,
 			);
             name = "libmprssl";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E00000138 /* manager */ = {
+		004E6C37004F3D0E00000141 /* manager */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E0000010A /* mpr.h */,
 				004E6C37004F3D0E0000004B /* manager.c */,
 			);
             name = "manager";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E00000137 /* makerom */ = {
+		004E6C37004F3D0E00000140 /* makerom */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E0000010A /* mpr.h */,
 				004E6C37004F3D0E0000004D /* makerom.c */,
 			);
             name = "makerom";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E0000012E /* libpcre */ = {
+		004E6C37004F3D0E00000137 /* libpcre */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E0000010E /* pcre.h */,
 				004E6C37004F3D0E0000004F /* pcre.c */,
 			);
             name = "libpcre";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E0000012B /* libhttp */ = {
+		004E6C37004F3D0E00000134 /* libhttp */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E0000010F /* http.h */,
+				004E6C37004F3D0E0000010E /* pcre.h */,
 				004E6C37004F3D0E00000051 /* httpLib.c */,
 			);
             name = "libhttp";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E00000136 /* http */ = {
+		004E6C37004F3D0E0000013F /* http */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E0000010F /* http.h */,
 				004E6C37004F3D0E00000053 /* http.c */,
 			);
             name = "http";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E0000012F /* libsqlite3 */ = {
+		004E6C37004F3D0E00000138 /* libsqlite3 */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E00000111 /* sqlite3.h */,
 				004E6C37004F3D0E00000055 /* sqlite3.c */,
 			);
             name = "libsqlite3";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E0000013A /* sqlite */ = {
+		004E6C37004F3D0E00000143 /* sqlite */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E00000111 /* sqlite3.h */,
 				004E6C37004F3D0E00000057 /* sqlite.c */,
 			);
             name = "sqlite";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E0000012A /* libappweb */ = {
+		004E6C37004F3D0E00000133 /* libappweb */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E00000113 /* appweb.h */,
+				004E6C37004F3D0E0000010E /* pcre.h */,
 				004E6C37004F3D0E00000059 /* config.c */,
 				004E6C37004F3D0E0000005B /* convenience.c */,
 				004E6C37004F3D0E0000005D /* dirHandler.c */,
@@ -1100,10 +1121,15 @@
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E00000131 /* mod_esp */ = {
+		004E6C37004F3D0E0000013A /* mod_esp */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E00000114 /* edi.h */,
+				004E6C37004F3D0E0000010E /* pcre.h */,
+				004E6C37004F3D0E00000115 /* esp.h */,
+				004E6C37004F3D0E00000113 /* appweb.h */,
+				004E6C37004F3D0E00000116 /* mdb.h */,
 				004E6C37004F3D0E00000065 /* edi.c */,
 				004E6C37004F3D0E00000067 /* espAbbrev.c */,
 				004E6C37004F3D0E00000069 /* espFramework.c */,
@@ -1118,10 +1144,15 @@
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E00000135 /* esp */ = {
+		004E6C37004F3D0E0000013E /* esp */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E00000114 /* edi.h */,
+				004E6C37004F3D0E0000010E /* pcre.h */,
+				004E6C37004F3D0E00000115 /* esp.h */,
+				004E6C37004F3D0E00000113 /* appweb.h */,
+				004E6C37004F3D0E00000116 /* mdb.h */,
 				004E6C37004F3D0E00000065 /* edi.c */,
 				004E6C37004F3D0E00000077 /* esp.c */,
 				004E6C37004F3D0E00000067 /* espAbbrev.c */,
@@ -1137,27 +1168,29 @@
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E00000130 /* mod_cgi */ = {
+		004E6C37004F3D0E00000139 /* mod_cgi */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E00000113 /* appweb.h */,
 				004E6C37004F3D0E00000079 /* cgiHandler.c */,
 			);
             name = "mod_cgi";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E00000133 /* authpass */ = {
+		004E6C37004F3D0E0000013C /* authpass */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E00000113 /* appweb.h */,
 				004E6C37004F3D0E0000007B /* authpass.c */,
 			);
             name = "authpass";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E00000134 /* cgiProgram */ = {
+		004E6C37004F3D0E0000013D /* cgiProgram */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
@@ -1167,30 +1200,34 @@
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E00000139 /* setConfig */ = {
+		004E6C37004F3D0E00000142 /* setConfig */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E0000010A /* mpr.h */,
 				004E6C37004F3D0E0000007F /* setConfig.c */,
 			);
             name = "setConfig";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E00000132 /* appweb */ = {
+		004E6C37004F3D0E0000013B /* appweb */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E00000113 /* appweb.h */,
+				004E6C37004F3D0E00000115 /* esp.h */,
 				004E6C37004F3D0E00000081 /* appweb.c */,
 			);
             name = "appweb";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E0000013B /* testAppweb */ = {
+		004E6C37004F3D0E00000144 /* testAppweb */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000109 /* bit.h */,
+				004E6C37004F3D0E0000011E /* testAppweb.h */,
 				004E6C37004F3D0E00000083 /* testAppweb.c */,
 				004E6C37004F3D0E00000085 /* testHttp.c */,
 			);
@@ -1198,27 +1235,27 @@
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		004E6C37004F3D0E0000013C /* Products */ = {
+		004E6C37004F3D0E00000145 /* Products */ = {
             isa = PBXGroup;
             children = (
 				004E6C37004F3D0E00000087 /* libmpr */,
-				004E6C37004F3D0E0000010A /* libmprssl */,
-				004E6C37004F3D0E0000010B /* manager */,
-				004E6C37004F3D0E0000010C /* makerom */,
+				004E6C37004F3D0E0000010B /* libmprssl */,
+				004E6C37004F3D0E0000010C /* manager */,
+				004E6C37004F3D0E0000010D /* makerom */,
 				004E6C37004F3D0E0000008B /* libpcre */,
 				004E6C37004F3D0E0000008E /* libhttp */,
-				004E6C37004F3D0E0000010D /* http */,
+				004E6C37004F3D0E00000110 /* http */,
 				004E6C37004F3D0E00000092 /* libsqlite3 */,
-				004E6C37004F3D0E0000010E /* sqlite */,
+				004E6C37004F3D0E00000112 /* sqlite */,
 				004E6C37004F3D0E00000097 /* libappweb */,
-				004E6C37004F3D0E0000010F /* mod_esp */,
-				004E6C37004F3D0E00000110 /* esp */,
-				004E6C37004F3D0E00000111 /* mod_cgi */,
-				004E6C37004F3D0E00000112 /* authpass */,
-				004E6C37004F3D0E00000113 /* cgiProgram */,
-				004E6C37004F3D0E00000114 /* setConfig */,
-				004E6C37004F3D0E00000115 /* appweb */,
-				004E6C37004F3D0E00000116 /* testAppweb */,
+				004E6C37004F3D0E00000117 /* mod_esp */,
+				004E6C37004F3D0E00000118 /* esp */,
+				004E6C37004F3D0E00000119 /* mod_cgi */,
+				004E6C37004F3D0E0000011A /* authpass */,
+				004E6C37004F3D0E0000011B /* cgiProgram */,
+				004E6C37004F3D0E0000011C /* setConfig */,
+				004E6C37004F3D0E0000011D /* appweb */,
+				004E6C37004F3D0E0000011F /* testAppweb */,
 			);
             name = "Products";
             path = ..;
@@ -1229,15 +1266,15 @@
 /* Begin PBXNativeTarget section */
 		004E6C37004F3D0E000000B2 /* libmpr */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E0000013E /* Build configuration list for PBXNativeTarget "libmpr" */;
+			buildConfigurationList = 004E6C37004F3D0E00000147 /* Build configuration list for PBXNativeTarget "libmpr" */;
 			buildPhases = (
-				004E6C37004F3D0E0000013D /* Sources */,
-				004E6C37004F3D0E00000117 /* Frameworks */,
+				004E6C37004F3D0E00000146 /* Sources */,
+				004E6C37004F3D0E00000120 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E0000013F /* Prep */,				
+				004E6C37004F3D0E00000148 /* Prep */,				
 			);
 			name = libmpr;
 			productName = appweb;
@@ -1246,69 +1283,69 @@
 		};
 		004E6C37004F3D0E000000E7 /* libmprssl */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000141 /* Build configuration list for PBXNativeTarget "libmprssl" */;
+			buildConfigurationList = 004E6C37004F3D0E0000014A /* Build configuration list for PBXNativeTarget "libmprssl" */;
 			buildPhases = (
-				004E6C37004F3D0E00000140 /* Sources */,
-				004E6C37004F3D0E00000118 /* Frameworks */,
+				004E6C37004F3D0E00000149 /* Sources */,
+				004E6C37004F3D0E00000121 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000142 /* libmpr */,
-				004E6C37004F3D0E00000143 /* Prep */,				
+				004E6C37004F3D0E0000014B /* libmpr */,
+				004E6C37004F3D0E0000014C /* Prep */,				
 			);
 			name = libmprssl;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E0000010A /* libmprssl */;
+			productReference = 004E6C37004F3D0E0000010B /* libmprssl */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		004E6C37004F3D0E000000E9 /* manager */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000145 /* Build configuration list for PBXNativeTarget "manager" */;
+			buildConfigurationList = 004E6C37004F3D0E0000014E /* Build configuration list for PBXNativeTarget "manager" */;
 			buildPhases = (
-				004E6C37004F3D0E00000144 /* Sources */,
-				004E6C37004F3D0E00000119 /* Frameworks */,
+				004E6C37004F3D0E0000014D /* Sources */,
+				004E6C37004F3D0E00000122 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000146 /* libmpr */,
-				004E6C37004F3D0E00000147 /* Prep */,				
+				004E6C37004F3D0E0000014F /* libmpr */,
+				004E6C37004F3D0E00000150 /* Prep */,				
 			);
 			name = manager;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E0000010B /* manager */;
+			productReference = 004E6C37004F3D0E0000010C /* manager */;
 			productType = "com.apple.product-type.tool";
 		};
 		004E6C37004F3D0E000000EB /* makerom */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000149 /* Build configuration list for PBXNativeTarget "makerom" */;
+			buildConfigurationList = 004E6C37004F3D0E00000152 /* Build configuration list for PBXNativeTarget "makerom" */;
 			buildPhases = (
-				004E6C37004F3D0E00000148 /* Sources */,
-				004E6C37004F3D0E0000011A /* Frameworks */,
+				004E6C37004F3D0E00000151 /* Sources */,
+				004E6C37004F3D0E00000123 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E0000014A /* libmpr */,
-				004E6C37004F3D0E0000014B /* Prep */,				
+				004E6C37004F3D0E00000153 /* libmpr */,
+				004E6C37004F3D0E00000154 /* Prep */,				
 			);
 			name = makerom;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E0000010C /* makerom */;
+			productReference = 004E6C37004F3D0E0000010D /* makerom */;
 			productType = "com.apple.product-type.tool";
 		};
 		004E6C37004F3D0E000000BB /* libpcre */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E0000014D /* Build configuration list for PBXNativeTarget "libpcre" */;
+			buildConfigurationList = 004E6C37004F3D0E00000156 /* Build configuration list for PBXNativeTarget "libpcre" */;
 			buildPhases = (
-				004E6C37004F3D0E0000014C /* Sources */,
-				004E6C37004F3D0E0000011B /* Frameworks */,
+				004E6C37004F3D0E00000155 /* Sources */,
+				004E6C37004F3D0E00000124 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E0000014E /* Prep */,				
+				004E6C37004F3D0E00000157 /* Prep */,				
 			);
 			name = libpcre;
 			productName = appweb;
@@ -1317,17 +1354,17 @@
 		};
 		004E6C37004F3D0E000000BE /* libhttp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000150 /* Build configuration list for PBXNativeTarget "libhttp" */;
+			buildConfigurationList = 004E6C37004F3D0E00000159 /* Build configuration list for PBXNativeTarget "libhttp" */;
 			buildPhases = (
-				004E6C37004F3D0E0000014F /* Sources */,
-				004E6C37004F3D0E0000011C /* Frameworks */,
+				004E6C37004F3D0E00000158 /* Sources */,
+				004E6C37004F3D0E00000125 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000151 /* libmpr */,
-				004E6C37004F3D0E00000152 /* libpcre */,
-				004E6C37004F3D0E00000153 /* Prep */,				
+				004E6C37004F3D0E0000015A /* libmpr */,
+				004E6C37004F3D0E0000015B /* libpcre */,
+				004E6C37004F3D0E0000015C /* Prep */,				
 			);
 			name = libhttp;
 			productName = appweb;
@@ -1336,33 +1373,33 @@
 		};
 		004E6C37004F3D0E000000EF /* http */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000155 /* Build configuration list for PBXNativeTarget "http" */;
+			buildConfigurationList = 004E6C37004F3D0E0000015E /* Build configuration list for PBXNativeTarget "http" */;
 			buildPhases = (
-				004E6C37004F3D0E00000154 /* Sources */,
-				004E6C37004F3D0E0000011D /* Frameworks */,
+				004E6C37004F3D0E0000015D /* Sources */,
+				004E6C37004F3D0E00000126 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000156 /* libhttp */,
-				004E6C37004F3D0E00000157 /* Prep */,				
+				004E6C37004F3D0E0000015F /* libhttp */,
+				004E6C37004F3D0E00000160 /* Prep */,				
 			);
 			name = http;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E0000010D /* http */;
+			productReference = 004E6C37004F3D0E00000110 /* http */;
 			productType = "com.apple.product-type.tool";
 		};
 		004E6C37004F3D0E000000C2 /* libsqlite3 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000159 /* Build configuration list for PBXNativeTarget "libsqlite3" */;
+			buildConfigurationList = 004E6C37004F3D0E00000162 /* Build configuration list for PBXNativeTarget "libsqlite3" */;
 			buildPhases = (
-				004E6C37004F3D0E00000158 /* Sources */,
-				004E6C37004F3D0E0000011E /* Frameworks */,
+				004E6C37004F3D0E00000161 /* Sources */,
+				004E6C37004F3D0E00000127 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E0000015A /* Prep */,				
+				004E6C37004F3D0E00000163 /* Prep */,				
 			);
 			name = libsqlite3;
 			productName = appweb;
@@ -1371,34 +1408,34 @@
 		};
 		004E6C37004F3D0E000000F2 /* sqlite */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E0000015C /* Build configuration list for PBXNativeTarget "sqlite" */;
+			buildConfigurationList = 004E6C37004F3D0E00000165 /* Build configuration list for PBXNativeTarget "sqlite" */;
 			buildPhases = (
-				004E6C37004F3D0E0000015B /* Sources */,
-				004E6C37004F3D0E0000011F /* Frameworks */,
+				004E6C37004F3D0E00000164 /* Sources */,
+				004E6C37004F3D0E00000128 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E0000015D /* libsqlite3 */,
-				004E6C37004F3D0E0000015E /* Prep */,				
+				004E6C37004F3D0E00000166 /* libsqlite3 */,
+				004E6C37004F3D0E00000167 /* Prep */,				
 			);
 			name = sqlite;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E0000010E /* sqlite */;
+			productReference = 004E6C37004F3D0E00000112 /* sqlite */;
 			productType = "com.apple.product-type.tool";
 		};
 		004E6C37004F3D0E000000C7 /* libappweb */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000160 /* Build configuration list for PBXNativeTarget "libappweb" */;
+			buildConfigurationList = 004E6C37004F3D0E00000169 /* Build configuration list for PBXNativeTarget "libappweb" */;
 			buildPhases = (
-				004E6C37004F3D0E0000015F /* Sources */,
-				004E6C37004F3D0E00000120 /* Frameworks */,
+				004E6C37004F3D0E00000168 /* Sources */,
+				004E6C37004F3D0E00000129 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000161 /* libhttp */,
-				004E6C37004F3D0E00000162 /* Prep */,				
+				004E6C37004F3D0E0000016A /* libhttp */,
+				004E6C37004F3D0E0000016B /* Prep */,				
 			);
 			name = libappweb;
 			productName = appweb;
@@ -1407,147 +1444,147 @@
 		};
 		004E6C37004F3D0E000000D7 /* mod_esp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000164 /* Build configuration list for PBXNativeTarget "mod_esp" */;
+			buildConfigurationList = 004E6C37004F3D0E0000016D /* Build configuration list for PBXNativeTarget "mod_esp" */;
 			buildPhases = (
-				004E6C37004F3D0E00000163 /* Sources */,
-				004E6C37004F3D0E00000121 /* Frameworks */,
+				004E6C37004F3D0E0000016C /* Sources */,
+				004E6C37004F3D0E0000012A /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000165 /* libappweb */,
-				004E6C37004F3D0E00000166 /* Prep */,				
+				004E6C37004F3D0E0000016E /* libappweb */,
+				004E6C37004F3D0E0000016F /* Prep */,				
 			);
 			name = mod_esp;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E0000010F /* mod_esp */;
+			productReference = 004E6C37004F3D0E00000117 /* mod_esp */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		004E6C37004F3D0E000000F6 /* esp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000168 /* Build configuration list for PBXNativeTarget "esp" */;
+			buildConfigurationList = 004E6C37004F3D0E00000171 /* Build configuration list for PBXNativeTarget "esp" */;
 			buildPhases = (
-				004E6C37004F3D0E00000167 /* Sources */,
-				004E6C37004F3D0E00000122 /* Frameworks */,
+				004E6C37004F3D0E00000170 /* Sources */,
+				004E6C37004F3D0E0000012B /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000169 /* libappweb */,
-				004E6C37004F3D0E0000016A /* Prep */,				
+				004E6C37004F3D0E00000172 /* libappweb */,
+				004E6C37004F3D0E00000173 /* Prep */,				
 			);
 			name = esp;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E00000110 /* esp */;
+			productReference = 004E6C37004F3D0E00000118 /* esp */;
 			productType = "com.apple.product-type.tool";
 		};
 		004E6C37004F3D0E000000D9 /* mod_cgi */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E0000016C /* Build configuration list for PBXNativeTarget "mod_cgi" */;
+			buildConfigurationList = 004E6C37004F3D0E00000175 /* Build configuration list for PBXNativeTarget "mod_cgi" */;
 			buildPhases = (
-				004E6C37004F3D0E0000016B /* Sources */,
-				004E6C37004F3D0E00000123 /* Frameworks */,
+				004E6C37004F3D0E00000174 /* Sources */,
+				004E6C37004F3D0E0000012C /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E0000016D /* libappweb */,
-				004E6C37004F3D0E0000016E /* Prep */,				
+				004E6C37004F3D0E00000176 /* libappweb */,
+				004E6C37004F3D0E00000177 /* Prep */,				
 			);
 			name = mod_cgi;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E00000111 /* mod_cgi */;
+			productReference = 004E6C37004F3D0E00000119 /* mod_cgi */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		004E6C37004F3D0E000000FC /* authpass */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000170 /* Build configuration list for PBXNativeTarget "authpass" */;
+			buildConfigurationList = 004E6C37004F3D0E00000179 /* Build configuration list for PBXNativeTarget "authpass" */;
 			buildPhases = (
-				004E6C37004F3D0E0000016F /* Sources */,
-				004E6C37004F3D0E00000124 /* Frameworks */,
+				004E6C37004F3D0E00000178 /* Sources */,
+				004E6C37004F3D0E0000012D /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000171 /* libappweb */,
-				004E6C37004F3D0E00000172 /* Prep */,				
+				004E6C37004F3D0E0000017A /* libappweb */,
+				004E6C37004F3D0E0000017B /* Prep */,				
 			);
 			name = authpass;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E00000112 /* authpass */;
+			productReference = 004E6C37004F3D0E0000011A /* authpass */;
 			productType = "com.apple.product-type.tool";
 		};
 		004E6C37004F3D0E000000DE /* cgiProgram */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000174 /* Build configuration list for PBXNativeTarget "cgiProgram" */;
+			buildConfigurationList = 004E6C37004F3D0E0000017D /* Build configuration list for PBXNativeTarget "cgiProgram" */;
 			buildPhases = (
-				004E6C37004F3D0E00000173 /* Sources */,
-				004E6C37004F3D0E00000125 /* Frameworks */,
+				004E6C37004F3D0E0000017C /* Sources */,
+				004E6C37004F3D0E0000012E /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000175 /* Prep */,				
+				004E6C37004F3D0E0000017E /* Prep */,				
 			);
 			name = cgiProgram;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E00000113 /* cgiProgram */;
+			productReference = 004E6C37004F3D0E0000011B /* cgiProgram */;
 			productType = "com.apple.product-type.tool";
 		};
 		004E6C37004F3D0E000000FF /* setConfig */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000177 /* Build configuration list for PBXNativeTarget "setConfig" */;
+			buildConfigurationList = 004E6C37004F3D0E00000180 /* Build configuration list for PBXNativeTarget "setConfig" */;
 			buildPhases = (
-				004E6C37004F3D0E00000176 /* Sources */,
-				004E6C37004F3D0E00000126 /* Frameworks */,
+				004E6C37004F3D0E0000017F /* Sources */,
+				004E6C37004F3D0E0000012F /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000178 /* libmpr */,
-				004E6C37004F3D0E00000179 /* Prep */,				
+				004E6C37004F3D0E00000181 /* libmpr */,
+				004E6C37004F3D0E00000182 /* Prep */,				
 			);
 			name = setConfig;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E00000114 /* setConfig */;
+			productReference = 004E6C37004F3D0E0000011C /* setConfig */;
 			productType = "com.apple.product-type.tool";
 		};
 		004E6C37004F3D0E00000101 /* appweb */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E0000017B /* Build configuration list for PBXNativeTarget "appweb" */;
+			buildConfigurationList = 004E6C37004F3D0E00000184 /* Build configuration list for PBXNativeTarget "appweb" */;
 			buildPhases = (
-				004E6C37004F3D0E0000017A /* Sources */,
-				004E6C37004F3D0E00000127 /* Frameworks */,
+				004E6C37004F3D0E00000183 /* Sources */,
+				004E6C37004F3D0E00000130 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E0000017C /* libappweb */,
-				004E6C37004F3D0E0000017D /* mod_esp */,
-				004E6C37004F3D0E0000017E /* mod_cgi */,
-				004E6C37004F3D0E0000017F /* Prep */,				
+				004E6C37004F3D0E00000185 /* libappweb */,
+				004E6C37004F3D0E00000186 /* mod_esp */,
+				004E6C37004F3D0E00000187 /* mod_cgi */,
+				004E6C37004F3D0E00000188 /* Prep */,				
 			);
 			name = appweb;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E00000115 /* appweb */;
+			productReference = 004E6C37004F3D0E0000011D /* appweb */;
 			productType = "com.apple.product-type.tool";
 		};
 		004E6C37004F3D0E00000103 /* testAppweb */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 004E6C37004F3D0E00000181 /* Build configuration list for PBXNativeTarget "testAppweb" */;
+			buildConfigurationList = 004E6C37004F3D0E0000018A /* Build configuration list for PBXNativeTarget "testAppweb" */;
 			buildPhases = (
-				004E6C37004F3D0E00000180 /* Sources */,
-				004E6C37004F3D0E00000128 /* Frameworks */,
+				004E6C37004F3D0E00000189 /* Sources */,
+				004E6C37004F3D0E00000131 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				004E6C37004F3D0E00000182 /* libappweb */,
-				004E6C37004F3D0E00000183 /* Prep */,				
+				004E6C37004F3D0E0000018B /* libappweb */,
+				004E6C37004F3D0E0000018C /* Prep */,				
 			);
 			name = testAppweb;
 			productName = appweb;
-			productReference = 004E6C37004F3D0E00000116 /* testAppweb */;
+			productReference = 004E6C37004F3D0E0000011F /* testAppweb */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -1772,8 +1809,8 @@ fi";
 			knownRegions = (
 				en,
 			);
-			mainGroup = 004E6C37004F3D0E00000129;
-			productRefGroup = 004E6C37004F3D0E0000013C /* Products */;
+			mainGroup = 004E6C37004F3D0E00000132;
+			productRefGroup = 004E6C37004F3D0E00000145 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -1810,7 +1847,7 @@ fi";
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		004E6C37004F3D0E0000013D /* libmpr Sources */ = {
+		004E6C37004F3D0E00000146 /* libmpr Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1818,7 +1855,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E00000140 /* libmprssl Sources */ = {
+		004E6C37004F3D0E00000149 /* libmprssl Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1826,7 +1863,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E00000144 /* manager Sources */ = {
+		004E6C37004F3D0E0000014D /* manager Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1834,7 +1871,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E00000148 /* makerom Sources */ = {
+		004E6C37004F3D0E00000151 /* makerom Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1842,7 +1879,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E0000014C /* libpcre Sources */ = {
+		004E6C37004F3D0E00000155 /* libpcre Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1850,7 +1887,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E0000014F /* libhttp Sources */ = {
+		004E6C37004F3D0E00000158 /* libhttp Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1858,7 +1895,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E00000154 /* http Sources */ = {
+		004E6C37004F3D0E0000015D /* http Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1866,7 +1903,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E00000158 /* libsqlite3 Sources */ = {
+		004E6C37004F3D0E00000161 /* libsqlite3 Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1874,7 +1911,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E0000015B /* sqlite Sources */ = {
+		004E6C37004F3D0E00000164 /* sqlite Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1882,7 +1919,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E0000015F /* libappweb Sources */ = {
+		004E6C37004F3D0E00000168 /* libappweb Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1895,7 +1932,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E00000163 /* mod_esp Sources */ = {
+		004E6C37004F3D0E0000016C /* mod_esp Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1911,7 +1948,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E00000167 /* esp Sources */ = {
+		004E6C37004F3D0E00000170 /* esp Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1928,7 +1965,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E0000016B /* mod_cgi Sources */ = {
+		004E6C37004F3D0E00000174 /* mod_cgi Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1936,7 +1973,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E0000016F /* authpass Sources */ = {
+		004E6C37004F3D0E00000178 /* authpass Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1944,7 +1981,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E00000173 /* cgiProgram Sources */ = {
+		004E6C37004F3D0E0000017C /* cgiProgram Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1952,7 +1989,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E00000176 /* setConfig Sources */ = {
+		004E6C37004F3D0E0000017F /* setConfig Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1960,7 +1997,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E0000017A /* appweb Sources */ = {
+		004E6C37004F3D0E00000183 /* appweb Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1968,7 +2005,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		004E6C37004F3D0E00000180 /* testAppweb Sources */ = {
+		004E6C37004F3D0E00000189 /* testAppweb Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1980,112 +2017,112 @@ fi";
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		004E6C37004F3D0E0000013F /* PBXTargetDependency libmpr depends on Prep */ = {
+		004E6C37004F3D0E00000148 /* PBXTargetDependency libmpr depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000B0 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000142 /* PBXTargetDependency libmprssl depends on libmpr */ = {
+		004E6C37004F3D0E0000014B /* PBXTargetDependency libmprssl depends on libmpr */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000B2 /* libmpr */;
 			targetProxy = 004E6C37004F3D0E000000B1 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000143 /* PBXTargetDependency libmprssl depends on Prep */ = {
+		004E6C37004F3D0E0000014C /* PBXTargetDependency libmprssl depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000B3 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000146 /* PBXTargetDependency manager depends on libmpr */ = {
+		004E6C37004F3D0E0000014F /* PBXTargetDependency manager depends on libmpr */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000B2 /* libmpr */;
 			targetProxy = 004E6C37004F3D0E000000B4 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000147 /* PBXTargetDependency manager depends on Prep */ = {
+		004E6C37004F3D0E00000150 /* PBXTargetDependency manager depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000B5 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000014A /* PBXTargetDependency makerom depends on libmpr */ = {
+		004E6C37004F3D0E00000153 /* PBXTargetDependency makerom depends on libmpr */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000B2 /* libmpr */;
 			targetProxy = 004E6C37004F3D0E000000B6 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000014B /* PBXTargetDependency makerom depends on Prep */ = {
+		004E6C37004F3D0E00000154 /* PBXTargetDependency makerom depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000B7 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000014E /* PBXTargetDependency libpcre depends on Prep */ = {
+		004E6C37004F3D0E00000157 /* PBXTargetDependency libpcre depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000B8 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000151 /* PBXTargetDependency libhttp depends on libmpr */ = {
+		004E6C37004F3D0E0000015A /* PBXTargetDependency libhttp depends on libmpr */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000B2 /* libmpr */;
 			targetProxy = 004E6C37004F3D0E000000B9 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000152 /* PBXTargetDependency libhttp depends on libpcre */ = {
+		004E6C37004F3D0E0000015B /* PBXTargetDependency libhttp depends on libpcre */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000BB /* libpcre */;
 			targetProxy = 004E6C37004F3D0E000000BA /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000153 /* PBXTargetDependency libhttp depends on Prep */ = {
+		004E6C37004F3D0E0000015C /* PBXTargetDependency libhttp depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000BC /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000156 /* PBXTargetDependency http depends on libhttp */ = {
+		004E6C37004F3D0E0000015F /* PBXTargetDependency http depends on libhttp */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000BE /* libhttp */;
 			targetProxy = 004E6C37004F3D0E000000BD /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000157 /* PBXTargetDependency http depends on Prep */ = {
+		004E6C37004F3D0E00000160 /* PBXTargetDependency http depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000BF /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000015A /* PBXTargetDependency libsqlite3 depends on Prep */ = {
+		004E6C37004F3D0E00000163 /* PBXTargetDependency libsqlite3 depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000C0 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000015D /* PBXTargetDependency sqlite depends on libsqlite3 */ = {
+		004E6C37004F3D0E00000166 /* PBXTargetDependency sqlite depends on libsqlite3 */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000C2 /* libsqlite3 */;
 			targetProxy = 004E6C37004F3D0E000000C1 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000015E /* PBXTargetDependency sqlite depends on Prep */ = {
+		004E6C37004F3D0E00000167 /* PBXTargetDependency sqlite depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000C3 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000161 /* PBXTargetDependency libappweb depends on libhttp */ = {
+		004E6C37004F3D0E0000016A /* PBXTargetDependency libappweb depends on libhttp */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000BE /* libhttp */;
 			targetProxy = 004E6C37004F3D0E000000C4 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000162 /* PBXTargetDependency libappweb depends on Prep */ = {
+		004E6C37004F3D0E0000016B /* PBXTargetDependency libappweb depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000C5 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000165 /* PBXTargetDependency mod_esp depends on libappweb */ = {
+		004E6C37004F3D0E0000016E /* PBXTargetDependency mod_esp depends on libappweb */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000C7 /* libappweb */;
 			targetProxy = 004E6C37004F3D0E000000C6 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000166 /* PBXTargetDependency mod_esp depends on Prep */ = {
+		004E6C37004F3D0E0000016F /* PBXTargetDependency mod_esp depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000C8 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000169 /* PBXTargetDependency esp depends on libappweb */ = {
+		004E6C37004F3D0E00000172 /* PBXTargetDependency esp depends on libappweb */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000C7 /* libappweb */;
 			targetProxy = 004E6C37004F3D0E000000C9 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000016A /* PBXTargetDependency esp depends on Prep */ = {
+		004E6C37004F3D0E00000173 /* PBXTargetDependency esp depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000CA /* PBXContainerItemProxy */;
@@ -2105,67 +2142,67 @@ fi";
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000CD /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000016D /* PBXTargetDependency mod_cgi depends on libappweb */ = {
+		004E6C37004F3D0E00000176 /* PBXTargetDependency mod_cgi depends on libappweb */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000C7 /* libappweb */;
 			targetProxy = 004E6C37004F3D0E000000CE /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000016E /* PBXTargetDependency mod_cgi depends on Prep */ = {
+		004E6C37004F3D0E00000177 /* PBXTargetDependency mod_cgi depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000CF /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000171 /* PBXTargetDependency authpass depends on libappweb */ = {
+		004E6C37004F3D0E0000017A /* PBXTargetDependency authpass depends on libappweb */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000C7 /* libappweb */;
 			targetProxy = 004E6C37004F3D0E000000D0 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000172 /* PBXTargetDependency authpass depends on Prep */ = {
+		004E6C37004F3D0E0000017B /* PBXTargetDependency authpass depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000D1 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000175 /* PBXTargetDependency cgiProgram depends on Prep */ = {
+		004E6C37004F3D0E0000017E /* PBXTargetDependency cgiProgram depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000D2 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000178 /* PBXTargetDependency setConfig depends on libmpr */ = {
+		004E6C37004F3D0E00000181 /* PBXTargetDependency setConfig depends on libmpr */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000B2 /* libmpr */;
 			targetProxy = 004E6C37004F3D0E000000D3 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000179 /* PBXTargetDependency setConfig depends on Prep */ = {
+		004E6C37004F3D0E00000182 /* PBXTargetDependency setConfig depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000D4 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000017C /* PBXTargetDependency appweb depends on libappweb */ = {
+		004E6C37004F3D0E00000185 /* PBXTargetDependency appweb depends on libappweb */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000C7 /* libappweb */;
 			targetProxy = 004E6C37004F3D0E000000D5 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000017D /* PBXTargetDependency appweb depends on mod_esp */ = {
+		004E6C37004F3D0E00000186 /* PBXTargetDependency appweb depends on mod_esp */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000D7 /* mod_esp */;
 			targetProxy = 004E6C37004F3D0E000000D6 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000017E /* PBXTargetDependency appweb depends on mod_cgi */ = {
+		004E6C37004F3D0E00000187 /* PBXTargetDependency appweb depends on mod_cgi */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000D9 /* mod_cgi */;
 			targetProxy = 004E6C37004F3D0E000000D8 /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E0000017F /* PBXTargetDependency appweb depends on Prep */ = {
+		004E6C37004F3D0E00000188 /* PBXTargetDependency appweb depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000DA /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000182 /* PBXTargetDependency testAppweb depends on libappweb */ = {
+		004E6C37004F3D0E0000018B /* PBXTargetDependency testAppweb depends on libappweb */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E000000C7 /* libappweb */;
 			targetProxy = 004E6C37004F3D0E000000DB /* PBXContainerItemProxy */;
 		};
-		004E6C37004F3D0E00000183 /* PBXTargetDependency testAppweb depends on Prep */ = {
+		004E6C37004F3D0E0000018C /* PBXTargetDependency testAppweb depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 004E6C37004F3D0E00000044 /* Prep */;
 			targetProxy = 004E6C37004F3D0E000000DC /* PBXContainerItemProxy */;
@@ -2474,7 +2511,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E00000184 /* Debug */ = {
+		004E6C37004F3D0E0000018D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libmpr;
@@ -2486,7 +2523,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E00000185 /* Release */ = {
+		004E6C37004F3D0E0000018E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libmpr;
@@ -2495,7 +2532,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E00000186 /* Debug */ = {
+		004E6C37004F3D0E0000018F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libmprssl;
@@ -2507,7 +2544,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E00000187 /* Release */ = {
+		004E6C37004F3D0E00000190 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libmprssl;
@@ -2516,7 +2553,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E00000188 /* Debug */ = {
+		004E6C37004F3D0E00000191 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = manager;
@@ -2528,7 +2565,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E00000189 /* Release */ = {
+		004E6C37004F3D0E00000192 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = manager;
@@ -2537,7 +2574,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E0000018A /* Debug */ = {
+		004E6C37004F3D0E00000193 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = makerom;
@@ -2549,7 +2586,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E0000018B /* Release */ = {
+		004E6C37004F3D0E00000194 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = makerom;
@@ -2558,7 +2595,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E0000018C /* Debug */ = {
+		004E6C37004F3D0E00000195 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libpcre;
@@ -2571,7 +2608,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E0000018D /* Release */ = {
+		004E6C37004F3D0E00000196 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libpcre;
@@ -2583,7 +2620,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E0000018E /* Debug */ = {
+		004E6C37004F3D0E00000197 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libhttp;
@@ -2600,7 +2637,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E0000018F /* Release */ = {
+		004E6C37004F3D0E00000198 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libhttp;
@@ -2613,7 +2650,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E00000190 /* Debug */ = {
+		004E6C37004F3D0E00000199 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = http;
@@ -2630,7 +2667,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E00000191 /* Release */ = {
+		004E6C37004F3D0E0000019A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = http;
@@ -2643,7 +2680,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E00000192 /* Debug */ = {
+		004E6C37004F3D0E0000019B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libsqlite3;
@@ -2656,7 +2693,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E00000193 /* Release */ = {
+		004E6C37004F3D0E0000019C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libsqlite3;
@@ -2666,7 +2703,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E00000194 /* Debug */ = {
+		004E6C37004F3D0E0000019D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = sqlite;
@@ -2678,7 +2715,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E00000195 /* Release */ = {
+		004E6C37004F3D0E0000019E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = sqlite;
@@ -2687,7 +2724,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E00000196 /* Debug */ = {
+		004E6C37004F3D0E0000019F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libappweb;
@@ -2704,7 +2741,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E00000197 /* Release */ = {
+		004E6C37004F3D0E000001A0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libappweb;
@@ -2717,7 +2754,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E00000198 /* Debug */ = {
+		004E6C37004F3D0E000001A1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = mod_esp;
@@ -2734,7 +2771,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E00000199 /* Release */ = {
+		004E6C37004F3D0E000001A2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = mod_esp;
@@ -2747,7 +2784,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E0000019A /* Debug */ = {
+		004E6C37004F3D0E000001A3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = esp;
@@ -2764,7 +2801,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E0000019B /* Release */ = {
+		004E6C37004F3D0E000001A4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = esp;
@@ -2777,7 +2814,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E0000019C /* Debug */ = {
+		004E6C37004F3D0E000001A5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = esp.conf;
@@ -2789,7 +2826,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E0000019D /* Release */ = {
+		004E6C37004F3D0E000001A6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = esp.conf;
@@ -2798,7 +2835,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E0000019E /* Debug */ = {
+		004E6C37004F3D0E000001A7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = esp.www;
@@ -2810,7 +2847,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E0000019F /* Release */ = {
+		004E6C37004F3D0E000001A8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = esp.www;
@@ -2819,7 +2856,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001A0 /* Debug */ = {
+		004E6C37004F3D0E000001A9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = esp-appweb.conf;
@@ -2831,7 +2868,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001A1 /* Release */ = {
+		004E6C37004F3D0E000001AA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = esp-appweb.conf;
@@ -2840,7 +2877,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001A2 /* Debug */ = {
+		004E6C37004F3D0E000001AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = mod_cgi;
@@ -2857,7 +2894,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001A3 /* Release */ = {
+		004E6C37004F3D0E000001AC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = mod_cgi;
@@ -2870,7 +2907,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001A4 /* Debug */ = {
+		004E6C37004F3D0E000001AD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = authpass;
@@ -2887,7 +2924,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001A5 /* Release */ = {
+		004E6C37004F3D0E000001AE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = authpass;
@@ -2900,7 +2937,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001A6 /* Debug */ = {
+		004E6C37004F3D0E000001AF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = cgiProgram;
@@ -2912,7 +2949,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001A7 /* Release */ = {
+		004E6C37004F3D0E000001B0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = cgiProgram;
@@ -2921,7 +2958,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001A8 /* Debug */ = {
+		004E6C37004F3D0E000001B1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = setConfig;
@@ -2933,7 +2970,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001A9 /* Release */ = {
+		004E6C37004F3D0E000001B2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = setConfig;
@@ -2942,7 +2979,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001AA /* Debug */ = {
+		004E6C37004F3D0E000001B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = appweb;
@@ -2952,8 +2989,6 @@ fi";
 					"$(inherited)"
 				);
 				OTHER_LDFLAGS = (
-					"-lmod_cgi",
-					"-lmod_esp",
 					"-lpam",
 					"$(inherited)"
 				);
@@ -2961,14 +2996,12 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001AB /* Release */ = {
+		004E6C37004F3D0E000001B4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = appweb;
 
 				OTHER_LDFLAGS = (
-					"-lmod_cgi",
-					"-lmod_esp",
 					"-lpam",
 					"$(inherited)"
 				);
@@ -2976,7 +3009,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001AC /* Debug */ = {
+		004E6C37004F3D0E000001B5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = testAppweb;
@@ -2993,7 +3026,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001AD /* Release */ = {
+		004E6C37004F3D0E000001B6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = testAppweb;
@@ -3006,7 +3039,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001AE /* Debug */ = {
+		004E6C37004F3D0E000001B7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = test-testScript;
@@ -3018,7 +3051,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001AF /* Release */ = {
+		004E6C37004F3D0E000001B8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = test-testScript;
@@ -3027,7 +3060,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001B0 /* Debug */ = {
+		004E6C37004F3D0E000001B9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = test-cache.cgi;
@@ -3039,7 +3072,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001B1 /* Release */ = {
+		004E6C37004F3D0E000001BA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = test-cache.cgi;
@@ -3048,7 +3081,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001B2 /* Debug */ = {
+		004E6C37004F3D0E000001BB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = test-basic.cgi;
@@ -3060,7 +3093,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001B3 /* Release */ = {
+		004E6C37004F3D0E000001BC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = test-basic.cgi;
@@ -3069,7 +3102,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001B4 /* Debug */ = {
+		004E6C37004F3D0E000001BD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = test-cgiProgram;
@@ -3081,7 +3114,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001B5 /* Release */ = {
+		004E6C37004F3D0E000001BE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = test-cgiProgram;
@@ -3090,7 +3123,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001B6 /* Debug */ = {
+		004E6C37004F3D0E000001BF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = test.js;
@@ -3102,7 +3135,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001B7 /* Release */ = {
+		004E6C37004F3D0E000001C0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = test.js;
@@ -3111,7 +3144,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001B8 /* Debug */ = {
+		004E6C37004F3D0E000001C1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = All;
@@ -3123,7 +3156,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001B9 /* Release */ = {
+		004E6C37004F3D0E000001C2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = All;
@@ -3132,7 +3165,7 @@ fi";
 			};
 			name = Release;
 		};
-		004E6C37004F3D0E000001BA /* Debug */ = {
+		004E6C37004F3D0E000001C3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = Prep;
@@ -3144,7 +3177,7 @@ fi";
 			};
 			name = Debug;
 		};
-		004E6C37004F3D0E000001BB /* Release */ = {
+		004E6C37004F3D0E000001C4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = Prep;
@@ -3165,110 +3198,110 @@ fi";
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E0000013E /* Build configuration list for PBXNativeTarget "libmpr" */ = {
+		004E6C37004F3D0E00000147 /* Build configuration list for PBXNativeTarget "libmpr" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E00000184 /* Debug */,
-				004E6C37004F3D0E00000185 /* Release */,
+				004E6C37004F3D0E0000018D /* Debug */,
+				004E6C37004F3D0E0000018E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000141 /* Build configuration list for PBXNativeTarget "libmprssl" */ = {
+		004E6C37004F3D0E0000014A /* Build configuration list for PBXNativeTarget "libmprssl" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E00000186 /* Debug */,
-				004E6C37004F3D0E00000187 /* Release */,
+				004E6C37004F3D0E0000018F /* Debug */,
+				004E6C37004F3D0E00000190 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000145 /* Build configuration list for PBXNativeTarget "manager" */ = {
+		004E6C37004F3D0E0000014E /* Build configuration list for PBXNativeTarget "manager" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E00000188 /* Debug */,
-				004E6C37004F3D0E00000189 /* Release */,
+				004E6C37004F3D0E00000191 /* Debug */,
+				004E6C37004F3D0E00000192 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000149 /* Build configuration list for PBXNativeTarget "makerom" */ = {
+		004E6C37004F3D0E00000152 /* Build configuration list for PBXNativeTarget "makerom" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E0000018A /* Debug */,
-				004E6C37004F3D0E0000018B /* Release */,
+				004E6C37004F3D0E00000193 /* Debug */,
+				004E6C37004F3D0E00000194 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E0000014D /* Build configuration list for PBXNativeTarget "libpcre" */ = {
+		004E6C37004F3D0E00000156 /* Build configuration list for PBXNativeTarget "libpcre" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E0000018C /* Debug */,
-				004E6C37004F3D0E0000018D /* Release */,
+				004E6C37004F3D0E00000195 /* Debug */,
+				004E6C37004F3D0E00000196 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000150 /* Build configuration list for PBXNativeTarget "libhttp" */ = {
+		004E6C37004F3D0E00000159 /* Build configuration list for PBXNativeTarget "libhttp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E0000018E /* Debug */,
-				004E6C37004F3D0E0000018F /* Release */,
+				004E6C37004F3D0E00000197 /* Debug */,
+				004E6C37004F3D0E00000198 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000155 /* Build configuration list for PBXNativeTarget "http" */ = {
+		004E6C37004F3D0E0000015E /* Build configuration list for PBXNativeTarget "http" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E00000190 /* Debug */,
-				004E6C37004F3D0E00000191 /* Release */,
+				004E6C37004F3D0E00000199 /* Debug */,
+				004E6C37004F3D0E0000019A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000159 /* Build configuration list for PBXNativeTarget "libsqlite3" */ = {
+		004E6C37004F3D0E00000162 /* Build configuration list for PBXNativeTarget "libsqlite3" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E00000192 /* Debug */,
-				004E6C37004F3D0E00000193 /* Release */,
+				004E6C37004F3D0E0000019B /* Debug */,
+				004E6C37004F3D0E0000019C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E0000015C /* Build configuration list for PBXNativeTarget "sqlite" */ = {
+		004E6C37004F3D0E00000165 /* Build configuration list for PBXNativeTarget "sqlite" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E00000194 /* Debug */,
-				004E6C37004F3D0E00000195 /* Release */,
+				004E6C37004F3D0E0000019D /* Debug */,
+				004E6C37004F3D0E0000019E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000160 /* Build configuration list for PBXNativeTarget "libappweb" */ = {
+		004E6C37004F3D0E00000169 /* Build configuration list for PBXNativeTarget "libappweb" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E00000196 /* Debug */,
-				004E6C37004F3D0E00000197 /* Release */,
+				004E6C37004F3D0E0000019F /* Debug */,
+				004E6C37004F3D0E000001A0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000164 /* Build configuration list for PBXNativeTarget "mod_esp" */ = {
+		004E6C37004F3D0E0000016D /* Build configuration list for PBXNativeTarget "mod_esp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E00000198 /* Debug */,
-				004E6C37004F3D0E00000199 /* Release */,
+				004E6C37004F3D0E000001A1 /* Debug */,
+				004E6C37004F3D0E000001A2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000168 /* Build configuration list for PBXNativeTarget "esp" */ = {
+		004E6C37004F3D0E00000171 /* Build configuration list for PBXNativeTarget "esp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E0000019A /* Debug */,
-				004E6C37004F3D0E0000019B /* Release */,
+				004E6C37004F3D0E000001A3 /* Debug */,
+				004E6C37004F3D0E000001A4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3276,8 +3309,8 @@ fi";
 		004E6C37004F3D0E00000005 /* Build configuration list for PBXNativeTarget "esp.conf" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E0000019C /* Debug */,
-				004E6C37004F3D0E0000019D /* Release */,
+				004E6C37004F3D0E000001A5 /* Debug */,
+				004E6C37004F3D0E000001A6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3285,8 +3318,8 @@ fi";
 		004E6C37004F3D0E00000009 /* Build configuration list for PBXNativeTarget "esp.www" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E0000019E /* Debug */,
-				004E6C37004F3D0E0000019F /* Release */,
+				004E6C37004F3D0E000001A7 /* Debug */,
+				004E6C37004F3D0E000001A8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3294,62 +3327,62 @@ fi";
 		004E6C37004F3D0E0000000D /* Build configuration list for PBXNativeTarget "esp-appweb.conf" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001A0 /* Debug */,
-				004E6C37004F3D0E000001A1 /* Release */,
+				004E6C37004F3D0E000001A9 /* Debug */,
+				004E6C37004F3D0E000001AA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E0000016C /* Build configuration list for PBXNativeTarget "mod_cgi" */ = {
+		004E6C37004F3D0E00000175 /* Build configuration list for PBXNativeTarget "mod_cgi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001A2 /* Debug */,
-				004E6C37004F3D0E000001A3 /* Release */,
+				004E6C37004F3D0E000001AB /* Debug */,
+				004E6C37004F3D0E000001AC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000170 /* Build configuration list for PBXNativeTarget "authpass" */ = {
+		004E6C37004F3D0E00000179 /* Build configuration list for PBXNativeTarget "authpass" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001A4 /* Debug */,
-				004E6C37004F3D0E000001A5 /* Release */,
+				004E6C37004F3D0E000001AD /* Debug */,
+				004E6C37004F3D0E000001AE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000174 /* Build configuration list for PBXNativeTarget "cgiProgram" */ = {
+		004E6C37004F3D0E0000017D /* Build configuration list for PBXNativeTarget "cgiProgram" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001A6 /* Debug */,
-				004E6C37004F3D0E000001A7 /* Release */,
+				004E6C37004F3D0E000001AF /* Debug */,
+				004E6C37004F3D0E000001B0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000177 /* Build configuration list for PBXNativeTarget "setConfig" */ = {
+		004E6C37004F3D0E00000180 /* Build configuration list for PBXNativeTarget "setConfig" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001A8 /* Debug */,
-				004E6C37004F3D0E000001A9 /* Release */,
+				004E6C37004F3D0E000001B1 /* Debug */,
+				004E6C37004F3D0E000001B2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E0000017B /* Build configuration list for PBXNativeTarget "appweb" */ = {
+		004E6C37004F3D0E00000184 /* Build configuration list for PBXNativeTarget "appweb" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001AA /* Debug */,
-				004E6C37004F3D0E000001AB /* Release */,
+				004E6C37004F3D0E000001B3 /* Debug */,
+				004E6C37004F3D0E000001B4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		004E6C37004F3D0E00000181 /* Build configuration list for PBXNativeTarget "testAppweb" */ = {
+		004E6C37004F3D0E0000018A /* Build configuration list for PBXNativeTarget "testAppweb" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001AC /* Debug */,
-				004E6C37004F3D0E000001AD /* Release */,
+				004E6C37004F3D0E000001B5 /* Debug */,
+				004E6C37004F3D0E000001B6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3357,8 +3390,8 @@ fi";
 		004E6C37004F3D0E00000011 /* Build configuration list for PBXNativeTarget "test-testScript" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001AE /* Debug */,
-				004E6C37004F3D0E000001AF /* Release */,
+				004E6C37004F3D0E000001B7 /* Debug */,
+				004E6C37004F3D0E000001B8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3366,8 +3399,8 @@ fi";
 		004E6C37004F3D0E00000016 /* Build configuration list for PBXNativeTarget "test-cache.cgi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001B0 /* Debug */,
-				004E6C37004F3D0E000001B1 /* Release */,
+				004E6C37004F3D0E000001B9 /* Debug */,
+				004E6C37004F3D0E000001BA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3375,8 +3408,8 @@ fi";
 		004E6C37004F3D0E0000001A /* Build configuration list for PBXNativeTarget "test-basic.cgi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001B2 /* Debug */,
-				004E6C37004F3D0E000001B3 /* Release */,
+				004E6C37004F3D0E000001BB /* Debug */,
+				004E6C37004F3D0E000001BC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3384,8 +3417,8 @@ fi";
 		004E6C37004F3D0E0000001E /* Build configuration list for PBXNativeTarget "test-cgiProgram" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001B4 /* Debug */,
-				004E6C37004F3D0E000001B5 /* Release */,
+				004E6C37004F3D0E000001BD /* Debug */,
+				004E6C37004F3D0E000001BE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3393,8 +3426,8 @@ fi";
 		004E6C37004F3D0E00000023 /* Build configuration list for PBXNativeTarget "test.js" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001B6 /* Debug */,
-				004E6C37004F3D0E000001B7 /* Release */,
+				004E6C37004F3D0E000001BF /* Debug */,
+				004E6C37004F3D0E000001C0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3402,8 +3435,8 @@ fi";
 		004E6C37004F3D0E00000027 /* Build configuration list for PBXNativeTarget "All" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001B8 /* Debug */,
-				004E6C37004F3D0E000001B9 /* Release */,
+				004E6C37004F3D0E000001C1 /* Debug */,
+				004E6C37004F3D0E000001C2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3411,8 +3444,8 @@ fi";
 		004E6C37004F3D0E00000043 /* Build configuration list for PBXNativeTarget "Prep" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				004E6C37004F3D0E000001BA /* Debug */,
-				004E6C37004F3D0E000001BB /* Release */,
+				004E6C37004F3D0E000001C3 /* Debug */,
+				004E6C37004F3D0E000001C4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
