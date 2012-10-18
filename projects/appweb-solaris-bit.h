@@ -9,6 +9,9 @@
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
 #endif
+#ifndef BIT_CIPHERS
+    #define BIT_CIPHERS "HIGH:MEDIUM"
+#endif
 #ifndef BIT_COMPANY
     #define BIT_COMPANY "Embedthis"
 #endif

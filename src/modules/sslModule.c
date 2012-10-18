@@ -16,7 +16,7 @@ static bool checkSsl(MaState *state)
         if (state->route->parent && state->route->parent->ssl) {
             state->route->ssl = mprCloneSsl(state->route->parent->ssl);
         } else {
-            state->route->ssl = mprCreateSsl(state->route);
+            state->route->ssl = mprCreateSsl(1);
         }
     }
     return 1;
@@ -48,7 +48,7 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
         if (state->route->parent && state->route->parent->ssl) {
             state->route->ssl = mprCloneSsl(state->route->parent->ssl);
         } else {
-            state->route->ssl = mprCreateSsl(state->route);
+            state->route->ssl = mprCreateSsl(1);
         }
     }
     httpSecureEndpoint(endpoint, state->route->ssl);

@@ -19146,7 +19146,7 @@ PUBLIC bool mprHasSecureSockets()
 
 PUBLIC int mprSetMaxSocketAccept(int max)
 {
-    mprAssert(max >= 0);
+    assure(max >= 0);
 
     MPR->socketService->maxAccept = max;
     return 0;
@@ -19212,7 +19212,7 @@ static void resetSocket(MprSocket *sp)
         sp->fd = -1;
         sp->ip = 0;
     }
-    mprAssert(sp->provider);
+    assure(sp->provider);
 }
 
 
@@ -19330,9 +19330,9 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 PUBLIC MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatcher *dispatcher, void *proc, 
     void *data, int flags)
 {
-    mprAssert(sp);
-    mprAssert(sp->fd >= 0);
-    mprAssert(proc);
+    assure(sp);
+    assure(sp->fd >= 0);
+    assure(proc);
 
     if (sp->fd < 0) {
         return 0;
@@ -19356,7 +19356,7 @@ PUBLIC void mprRemoveSocketHandler(MprSocket *sp)
 
 PUBLIC void mprEnableSocketEvents(MprSocket *sp, int mask)
 {
-    mprAssert(sp->handler);
+    assure(sp->handler);
     if (sp->handler) {
         mprWaitOn(sp->handler, mask);
     }
@@ -19520,7 +19520,7 @@ PUBLIC void mprCloseSocket(MprSocket *sp, bool gracefully)
     if (sp == NULL) {
         return;
     }
-    mprAssert(sp->provider);
+    assure(sp->provider);
     if (sp->provider == 0) {
         return;
     }
@@ -19645,7 +19645,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
         Get the remote client address
      */
     if (getSocketIpAddr(addr, addrlen, ip, sizeof(ip), &port) != 0) {
-        mprAssert(0);
+        assure(0);
         mprCloseSocket(nsp, 0);
         return 0;
     }
@@ -19671,10 +19671,10 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
  */
 PUBLIC ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
 {
-    mprAssert(sp);
-    mprAssert(buf);
-    mprAssert(bufsize > 0);
-    mprAssert(sp->provider);
+    assure(sp);
+    assure(buf);
+    assure(bufsize > 0);
+    assure(sp->provider);
 
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -19694,9 +19694,9 @@ static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize)
     ssize                   bytes;
     int                     errCode;
 
-    mprAssert(buf);
-    mprAssert(bufsize > 0);
-    mprAssert(~(sp->flags & MPR_SOCKET_CLOSED));
+    assure(buf);
+    assure(bufsize > 0);
+    assure(~(sp->flags & MPR_SOCKET_CLOSED));
 
     lock(sp);
     if (sp->flags & MPR_SOCKET_EOF) {
@@ -19759,10 +19759,10 @@ again:
  */
 PUBLIC ssize mprWriteSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 {
-    mprAssert(sp);
-    mprAssert(buf);
-    mprAssert(bufsize > 0);
-    mprAssert(sp->provider);
+    assure(sp);
+    assure(buf);
+    assure(bufsize > 0);
+    assure(sp->provider);
 
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -19781,9 +19781,9 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
     ssize               len, written, sofar;
     int                 family, protocol, errCode;
 
-    mprAssert(buf);
-    mprAssert(bufsize >= 0);
-    mprAssert((sp->flags & MPR_SOCKET_CLOSED) == 0);
+    assure(buf);
+    assure(bufsize >= 0);
+    assure((sp->flags & MPR_SOCKET_CLOSED) == 0);
 
     lock(sp);
     if (sp->flags & (MPR_SOCKET_BROADCAST | MPR_SOCKET_DATAGRAM)) {
@@ -19815,7 +19815,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
             }
             lock(sp);
             if (written < 0) {
-                mprAssert(errCode != 0);
+                assure(errCode != 0);
                 if (errCode == EINTR) {
                     continue;
                 } else if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
@@ -19870,7 +19870,7 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
         }
         start = iovec[0].start;
         len = (int) iovec[0].len;
-        mprAssert(len > 0);
+        assure(len > 0);
 
         for (total = i = 0; i < count; ) {
             written = mprWriteSocket(sp, start, len);
@@ -19903,7 +19903,7 @@ static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize le
     mprSeekFile(file, SEEK_SET, (int) offset);
     len = min(len, sizeof(buf));
     if ((len = mprReadFile(file, buf, len)) < 0) {
-        mprAssert(0);
+        assure(0);
         return MPR_ERR_CANT_READ;
     }
     return mprWriteSocket(sp, buf, len);
@@ -19957,7 +19957,7 @@ PUBLIC MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset,
             toWriteAfter += afterVec[i].len;
         }
         toWriteFile = (bytes - toWriteBefore - toWriteAfter);
-        mprAssert(toWriteFile >= 0);
+        assure(toWriteFile >= 0);
 
         /*
             Linux sendfile does not have the integrated ability to send headers. Must do it separately here.
@@ -20078,7 +20078,7 @@ PUBLIC int mprGetSocketFd(MprSocket *sp)
  */
 PUBLIC bool mprGetSocketBlockingMode(MprSocket *sp)
 {
-    mprAssert(sp);
+    assure(sp);
 
     return sp->flags & MPR_SOCKET_BLOCK;
 }
@@ -20100,7 +20100,7 @@ PUBLIC int mprSetSocketBlockingMode(MprSocket *sp, bool on)
 {
     int     oldMode;
 
-    mprAssert(sp);
+    assure(sp);
 
     lock(sp);
     oldMode = sp->flags & MPR_SOCKET_BLOCK;
@@ -20222,7 +20222,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
     char                *portStr;
     int                 v6;
 
-    mprAssert(addr);
+    assure(addr);
     ss = MPR->socketService;
 
     mprLock(ss->mutex);
@@ -20291,7 +20291,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
     ss = MPR->socketService;
 
     if ((sa = mprAllocStruct(struct sockaddr_in)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     memset((char*) sa, '\0', sizeof(struct sockaddr_in));
@@ -20316,7 +20316,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
         sa->sin_addr.s_addr = (ulong) hostGetByName((char*) ip);
         if (sa->sin_addr.s_addr < 0) {
             mprUnlock(ss->mutex);
-            mprAssert(0);
+            assure(0);
             return 0;
         }
 #else
@@ -20555,7 +20555,7 @@ static void manageSsl(MprSsl *ssl, int flags)
 /*
     Create a new SSL context object
  */
-PUBLIC MprSsl *mprCreateSsl()
+PUBLIC MprSsl *mprCreateSsl(int server)
 {
     MprSsl      *ssl;
 
@@ -20564,9 +20564,15 @@ PUBLIC MprSsl *mprCreateSsl()
     }
     ssl->ciphers = sclone(BIT_CIPHERS);
     ssl->protocols = MPR_PROTO_TLSV1 | MPR_PROTO_TLSV11;
-    ssl->verifyDepth = 1;
-    ssl->verifyPeer = 1;
-    ssl->verifyIssuer = 1;
+    if (server) {
+        ssl->verifyDepth = 0;
+        ssl->verifyPeer = 0;
+        ssl->verifyIssuer = 0;
+    } else {
+        ssl->verifyDepth = 1;
+        ssl->verifyPeer = 1;
+        ssl->verifyIssuer = 1;
+    }
     return ssl;
 }
 
@@ -20641,7 +20647,7 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
     char                *providerName;
 
     ss  = sp->service;
-    mprAssert(sp);
+    assure(sp);
 
     if (!ssl) {
         return MPR_ERR_BAD_ARGS;
@@ -20671,65 +20677,73 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
 
 PUBLIC void mprSetSslCiphers(MprSsl *ssl, cchar *ciphers)
 {
-    mprAssert(ssl);
+    assure(ssl);
     ssl->ciphers = sclone(ciphers);
 }
 
 
 PUBLIC void mprSetSslKeyFile(MprSsl *ssl, cchar *keyFile)
 {
-    mprAssert(ssl);
+    assure(ssl);
     ssl->keyFile = sclone(keyFile);
 }
 
 
 PUBLIC void mprSetSslCertFile(MprSsl *ssl, cchar *certFile)
 {
-    mprAssert(ssl);
+    assure(ssl);
     ssl->certFile = sclone(certFile);
 }
 
 
 PUBLIC void mprSetSslCaFile(MprSsl *ssl, cchar *caFile)
 {
-    mprAssert(ssl);
+    assure(ssl);
     ssl->caFile = sclone(caFile);
 }
 
 
 PUBLIC void mprSetSslCaPath(MprSsl *ssl, cchar *caPath)
 {
-    mprAssert(ssl);
+    assure(ssl);
     ssl->caPath = sclone(caPath);
 }
 
 
 PUBLIC void mprSetSslProtocols(MprSsl *ssl, int protocols)
 {
+    assure(ssl);
     ssl->protocols = protocols;
 }
 
 
 PUBLIC void mprSetSslProvider(MprSsl *ssl, cchar *provider)
 {
+    assure(ssl);
     ssl->providerName = (provider && *provider) ? sclone(provider) : 0;
 }
 
 
 PUBLIC void mprVerifySslPeer(MprSsl *ssl, bool on)
 {
-    ssl->verifyPeer = on;
+    if (ssl) {
+        ssl->verifyPeer = on;
+    } else {
+        MPR->verifySsl = on;
+    }
 }
 
 
 PUBLIC void mprVerifySslIssuer(MprSsl *ssl, bool on)
 {
+    assure(ssl);
     ssl->verifyIssuer = on;
 }
 
 
 PUBLIC void mprVerifySslDepth(MprSsl *ssl, int depth)
 {
+    assure(ssl);
     ssl->verifyDepth = depth;
 }
 

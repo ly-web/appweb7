@@ -7515,7 +7515,6 @@ typedef struct MprSsl {
     int             protocols;          /**< SSL protocols */
 } MprSsl;
 
-
 /*
     SSL protocols
  */
@@ -7544,9 +7543,10 @@ PUBLIC int mprLoadSsl();
 
 /**
     Create the SSL control structure
+    @param server True if the SSL configuration will be used on the server side.
     @ingroup MprSocket
  */
-PUBLIC struct MprSsl *mprCreateSsl();
+PUBLIC struct MprSsl *mprCreateSsl(int server);
 
 /**
     Create the a new SSL control structure based on an existing structure
@@ -8671,6 +8671,7 @@ typedef struct Mpr {
     int             flags;                  /**< Misc flags */
     int             hasError;               /**< Mpr has an initialization error */
     int             state;                  /**< Processing state */
+    int             verifySsl;              /**< Default verification of SSL certificates */
 
     bool            cmdlineLogging;         /**< App has specified --log on the command line */
 

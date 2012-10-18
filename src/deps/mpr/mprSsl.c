@@ -1203,7 +1203,7 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, int server)
     mprAssert(sp);
 
     if (ssl == 0) {
-        ssl = mprCreateSsl();
+        ssl = mprCreateSsl(server);
     }
     lock(sp);
     if ((osp = (MprOpenSocket*) mprAllocObj(MprOpenSocket, manageOpenSocket)) == 0) {

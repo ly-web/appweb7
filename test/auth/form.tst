@@ -8,6 +8,9 @@ const HTTPS = App.config.uris.https || "127.0.0.1:4110"
 let http: Http = new Http
 
 if (App.config.bit_ssl) {
+    //  Appweb uses a self-signed cert
+    http.verify = false
+
     //  Will be denied
     // http.setCredentials("anybody", "wrong password")
     http.get(HTTP + "/auth/form/index.html")
