@@ -191,3 +191,4 @@ access.log.*
 *-vsdebug
 test/web/js
 test/web/auth/basic/basic.cgi
+proto
