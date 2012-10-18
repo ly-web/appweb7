@@ -1579,7 +1579,7 @@ PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
             return 0;
         }
         chunkSize = (int) stoiradix(&start[2], 16, NULL);
-        if (!isxdigit((int) start[2]) || chunkSize < 0) {
+        if (!isxdigit((uchar) start[2]) || chunkSize < 0) {
             httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad chunk specification");
             return 0;
         }

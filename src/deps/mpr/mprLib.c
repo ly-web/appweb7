@@ -9105,7 +9105,7 @@ PUBLIC char *mprUriEncode(cchar *inbuf, int map)
         return MPR->emptyString;
     }
     for (len = 1, ip = inbuf; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & map) {
+        if (charMatch[(uchar) *ip] & map) {
             len += 2;
         }
     }
@@ -9191,7 +9191,7 @@ PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
         return MPR->emptyString;
     }
     for (len = 1, ip = cmd; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & MPR_ENCODE_SHELL) {
+        if (charMatch[(uchar) *ip] & MPR_ENCODE_SHELL) {
             len++;
         }
     }
@@ -9235,7 +9235,7 @@ PUBLIC char *mprEscapeHtml(cchar *html)
         return MPR->emptyString;
     }
     for (len = 1, ip = html; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & MPR_ENCODE_HTML) {
+        if (charMatch[(uchar) *ip] & MPR_ENCODE_HTML) {
             len += 5;
         }
     }
@@ -14189,7 +14189,7 @@ PUBLIC int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
         return 1;
     }
     for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
-        rc = tolower(*s1) - tolower(*s2);
+        rc = tolower((uchar) *s1) - tolower((uchar) *s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;
@@ -21109,25 +21109,25 @@ PUBLIC uint shashlower(cchar *cname, ssize len)
     name = (uchar*) cname;
 
     for (len >>= 2; len > 0; len--, name += 4) {
-        hash  += tolower(name[0]) | (tolower(name[1]) << 8);
-        tmp   =  ((tolower(name[2]) | (tolower(name[3]) << 8)) << 11) ^ hash;
+        hash  += tolower((uchar) name[0]) | (tolower((uchar) name[1]) << 8);
+        tmp   =  ((tolower((uchar) name[2]) | (tolower((uchar) name[3]) << 8)) << 11) ^ hash;
         hash  =  (hash << 16) ^ tmp;
         hash  += hash >> 11;
     }
     switch (rem) {
     case 3: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 16;
-        hash ^= tolower(name[2]) << 18;
+        hash ^= tolower((uchar) name[2]) << 18;
         hash += hash >> 11;
         break;
     case 2: 
-        hash += tolower(name[0]) + tolower((name[1]) << 8);
+        hash += tolower((uchar) name[0]) + tolower(((uchar) name[1]) << 8);
         hash ^= hash << 11;
         hash += hash >> 17;
         break;
     case 1: 
-        hash += tolower(name[0]);
+        hash += tolower((uchar) name[0]);
         hash ^= hash << 10;
         hash += hash >> 1;
     }
@@ -21207,7 +21207,7 @@ PUBLIC char *slower(cchar *str)
     if (str) {
         s = sclone(str);
         for (cp = s; *cp; cp++) {
-            if (isupper((int) *cp)) {
+            if (isupper((uchar) *cp)) {
                 *cp = (char) tolower((uchar) *cp);
             }
         }
@@ -25099,7 +25099,7 @@ static int getNumOrSym(char **token, int sep, int kind, int *isAlpah)
     if (*token == 0) {
         return 0;
     }
-    if (isalpha((int) **token)) {
+    if (isalpha((uchar) **token)) {
         *isAlpah = 1;
         cp = strchr(*token, sep);
         if (cp) {
@@ -25206,7 +25206,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
             /*
                 Timezone. Format: [GMT|UTC][+-]NN[:]NN
              */
-            if (!isalpha((int) *token)) {
+            if (!isalpha((uchar) *token)) {
                 cp = token;
             }
             negate = *cp == '-' ? -1 : 1;
@@ -25219,7 +25219,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
             zoneOffset = negate * (hour * 60 + min);
             explicitZone = 1;
 
-        } else if (isalpha((int) *token)) {
+        } else if (isalpha((uchar) *token)) {
             if ((tt = (TimeToken*) mprLookupKey(MPR->timeTokens, token)) != 0) {
                 kind = tt->value & TOKEN_MASK;
                 value = tt->value & ~TOKEN_MASK; 
@@ -26561,25 +26561,25 @@ PUBLIC uint whashlower(wchar *name, ssize count)
     rem = count & 3;
 
     for (count >>= 2; count > 0; count--, name += 4) {
-        hash  += tolower(name[0]) | (tolower(name[1]) << 8);
-        tmp   =  ((tolower(name[2]) | (tolower(name[3]) << 8)) << 11) ^ hash;
+        hash  += tolower((uchar) name[0]) | (tolower((uchar) name[1]) << 8);
+        tmp   =  ((tolower((uchar) name[2]) | (tolower((uchar) name[3]) << 8)) << 11) ^ hash;
         hash  =  (hash << 16) ^ tmp;
         hash  += hash >> 11;
     }
     switch (rem) {
     case 3: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 16;
-        hash ^= tolower(name[2]) << 18;
+        hash ^= tolower((uchar) name[2]) << 18;
         hash += hash >> 11;
         break;
     case 2: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 11;
         hash += hash >> 17;
         break;
     case 1: 
-        hash += tolower(name[0]);
+        hash += tolower((uchar) name[0]);
         hash ^= hash << 10;
         hash += hash >> 1;
     }
@@ -26672,8 +26672,8 @@ PUBLIC wchar *wlower(wchar *str)
     if (str) {
         s = wclone(str);
         for (cp = s; *cp; cp++) {
-            if (isupper((int) *cp)) {
-                *cp = (wchar) tolower(*cp);
+            if (isupper((uchar) *cp)) {
+                *cp = (wchar) tolower((uchar) *cp);
             }
         }
         str = s;
@@ -26699,7 +26699,7 @@ PUBLIC int wncasecmp(wchar *s1, wchar *s2, ssize count)
         return 1;
     }
     for (rc = 0; count > 0 && *s1 && rc == 0; s1++, s2++, count--) {
-        rc = tolower(*s1) - tolower(*s2);
+        rc = tolower((uchar) *s1) - tolower((uchar) *s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;
@@ -27004,8 +27004,8 @@ PUBLIC char *wupper(wchar *str)
     if (str) {
         s = wclone(str);
         for (cp = s; *cp; cp++) {
-            if (islower(*cp)) {
-                *cp = (wchar) toupper(*cp);
+            if (islower((uchar) *cp)) {
+                *cp = (wchar) toupper((uchar) *cp);
             }
         }
         str = s;
@@ -29326,7 +29326,7 @@ static void xmlError(MprXml *xp, char *fmt, ...)
  */
 static void trimToken(MprXml *xp)
 {
-    while (isspace(mprLookAtLastCharInBuf(xp->tokBuf))) {
+    while (isspace((uchar) mprLookAtLastCharInBuf(xp->tokBuf))) {
         mprAdjustBufEnd(xp->tokBuf, -1);
     }
     mprAddNullToBuf(xp->tokBuf);
