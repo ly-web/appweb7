@@ -829,8 +829,8 @@ static Mpr *mpr;
 static SERVICE_STATUS           svcStatus;
 static SERVICE_STATUS_HANDLE    svcHandle;
 static SERVICE_TABLE_ENTRY      svcTable[] = {
-    { T("default"), 0   },
-    { 0,            0   }
+    { UT("default"), 0   },
+    { 0,             0   }
 };
 
 static void     WINAPI serviceCallback(ulong code);

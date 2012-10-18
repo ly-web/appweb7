@@ -195,15 +195,15 @@
 #endif
 #if BIT_CHAR_LEN == 4
     typedef int wchar;
-    #define T(s) L ## s
+    #define UT(s) L ## s
     #define UNICODE 1
 #elif BIT_CHAR_LEN == 2
     typedef short wchar;
-    #define T(s) L ## s
+    #define UT(s) L ## s
     #define UNICODE 1
 #else
     typedef char wchar;
-    #define T(s) s
+    #define UT(s) s
 #endif
     #define TSZ(b) (sizeof(b) / sizeof(wchar))
 

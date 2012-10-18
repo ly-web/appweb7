@@ -3400,7 +3400,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
     if (desiredMask & MPR_WRITABLE) {
         winMask |= FD_WRITE;
     }
-    h = CreateEvent(NULL, FALSE, FALSE, T("mprWaitForSingleIO"));
+    h = CreateEvent(NULL, FALSE, FALSE, UT("mprWaitForSingleIO"));
     WSAEventSelect(fd, h, winMask);
     if (WaitForSingleObject(h, (DWORD) timeout) == WAIT_OBJECT_0) {
         CloseHandle(h);
@@ -27587,13 +27587,13 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
         if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, wide(logName), 0, NULL, 0, KEY_ALL_ACCESS, NULL, 
                 &hkey, &exists) == ERROR_SUCCESS) {
             value = "%SystemRoot%\\System32\\netmsg.dll";
-            if (RegSetValueEx(hkey, T("EventMessageFile"), 0, REG_EXPAND_SZ, 
+            if (RegSetValueEx(hkey, UT("EventMessageFile"), 0, REG_EXPAND_SZ, 
                     (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
                 RegCloseKey(hkey);
                 return;
             }
             errorType = EVENTLOG_ERROR_TYPE | EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
-            if (RegSetValueEx(hkey, T("TypesSupported"), 0, REG_DWORD, (uchar*) &errorType, 
+            if (RegSetValueEx(hkey, UT("TypesSupported"), 0, REG_DWORD, (uchar*) &errorType, 
                     sizeof(DWORD)) != ERROR_SUCCESS) {
                 RegCloseKey(hkey);
                 return;
