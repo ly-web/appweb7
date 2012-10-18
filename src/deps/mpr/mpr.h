@@ -7527,8 +7527,14 @@ typedef struct MprSsl {
 
 /*
     Default SSL configuration
+    Other cipher options
+
+        #define BIT_CIPHERS "HIGH:RC4+SHA"
+        #define BIT_CIPHERS "AES128-SHA"
  */
-#define MPR_DEFAULT_CIPHER_SUITE "HIGH:RC4+SHA"  /**< Default cipher suite */
+#ifndef BIT_CIPHERS
+    #define BIT_CIPHERS "HIGH:MEDIUM"  /**< Default cipher suite */
+#endif
 
 /**
     Load the SSL module.

@@ -58,6 +58,12 @@ Bit.load({
             Use PAM (Plugable Authentication Module) to store passwords
          */
         pam: true,
+
+        /*
+            Default cipher suite
+         */
+        ciphers: "HIGH:MEDIUM",
+
         packs: [ 'bits/packs' ]
         /* Must build locally to build tools */
         platforms: [ 'local' ],

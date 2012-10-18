@@ -20562,11 +20562,11 @@ PUBLIC MprSsl *mprCreateSsl()
     if ((ssl = mprAllocObj(MprSsl, manageSsl)) == 0) {
         return 0;
     }
-    ssl->ciphers = sclone(MPR_DEFAULT_CIPHER_SUITE);
+    ssl->ciphers = sclone(BIT_CIPHERS);
     ssl->protocols = MPR_PROTO_TLSV1 | MPR_PROTO_TLSV11;
     ssl->verifyDepth = 1;
-    ssl->verifyPeer = 0;
-    ssl->verifyIssuer = 0;
+    ssl->verifyPeer = 1;
+    ssl->verifyIssuer = 1;
     return ssl;
 }
 
