@@ -62,10 +62,10 @@ struct HttpUser;
     #define HTTP_CLIENTS_HASH          (131)                /**< Hash table for client IP addresses */
     #define HTTP_MAX_ROUTE_MATCHES     32                   /**< Maximum number of submatches in routes */
 
-    #define HTTP_MAX_WSS_SOCKETS       20                   /**< Support up to 5 simultaneous sockets */
-    #define HTTP_MAX_WSS_MESSAGE       (64 * 1024)          /**< Maximum message size */
-    #define HTTP_MAX_WSS_FRAME         (1024)               /**< Maximum message frame size */
-    #define HTTP_MAX_WSS_PACKET        (8 * 1024)           /**< Maximum size provided to application code in one packet */
+    #define HTTP_MAX_WSS_SOCKETS       200                  /**< Default max WebSockets */
+    #define HTTP_MAX_WSS_MESSAGE       (64 * 1024)          /**< Default max WebSockets message size */
+    #define HTTP_MAX_WSS_FRAME         (8 * 1024)           /**< Default max WebSockets message frame size */
+    #define HTTP_MAX_WSS_PACKET        (8 * 1024)           /**< Default max size to provided to application in one packet */
     #define HTTP_WSS_PING_PERIOD       20                   /**< Send ping every 30sec to defeat Keep-Alive timeouts */
 
 #elif BIT_TUNE == MPR_TUNE_BALANCED
@@ -763,7 +763,7 @@ typedef ssize (*HttpFillProc)(struct HttpQueue *q, struct HttpPacket *packet, Mp
     @defgroup HttpPacket HttpPacket
     @see HttpFillProc HttpPacket HttpQueue httpAdjustPacketEnd httpAdjustPacketStart httpClonePacket 
         httpCreateDataPacket httpCreateEndPacket httpCreateEntityPacket httpCreateHeaderPacket httpCreatePacket 
-        httpGetPacket httpGetPacketLength httpJoinPacket 
+        httpGetPacket httpGetPacketLength httpIsLastPacket httpJoinPacket 
         httpPutBackPacket httpPutForService httpPutPacket httpPutPacketToNext httpSplitPacket 
  */
 typedef struct HttpPacket {
@@ -772,8 +772,9 @@ typedef struct HttpPacket {
     MprOff          esize;                  /**< Data size in entity (file) */
     MprOff          epos;                   /**< Data position in entity (file) */
     HttpFillProc    fill;                   /**< Callback to fill packet with data */
-    int             flags:8;                /**< Packet flags */
-    int             type:24;                /**< Packet type extension */
+    uint            flags: 7;               /**< Packet flags */
+    uint            last: 1;                /**< Last packet in a message */
+    uint            type: 24;               /**< Packet type extension */
     struct HttpPacket *next;                /**< Next packet in chain */
 } HttpPacket;
 
@@ -880,6 +881,15 @@ PUBLIC ssize httpGetPacketLength(HttpPacket *packet);
 #else
 #define httpGetPacketLength(p) ((p && p->content) ? mprGetBufLength(p->content) : 0)
 #endif
+
+/**
+    Test if the packet is the last in a logical message.
+    @description Useful for WebSockets to test if the packet is the last frame in a message
+    @param packet Packet to examine
+    @return True if the packet is the last in a message.
+    @ingroup HttpPacket
+ */
+PUBLIC bool httpIsLastPacket(HttpPacket *packet);
 
 /** 
     Join two packets
@@ -1742,8 +1752,8 @@ PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
         httpConnectorComplete httpConnTimeout httpConsumeLastRequest httpCreateConn httpCreateRxPipeline 
         httpCreateTxPipeline httpDestroyConn httpDestroyPipeline httpDiscardData httpDisconnect 
         httpEnableUpload httpError httpEvent httpGetAsync httpGetChunkSize httpGetConnContext httpGetConnHost 
-        httpGetError httpGetExt httpGetKeepAliveCount httpMatchHost httpMemoryError httpPrepClientConn 
-        httpPrepServerConn httpPumpHandler httpResetCredentials httpRouteRequest httpRunHandlerReady
+        httpGetError httpGetExt httpGetKeepAliveCount httpGetWriteQueueCount httpMatchHost httpMemoryError
+        httpPrepClientConn httpPrepServerConn httpPumpHandler httpResetCredentials httpRouteRequest httpRunHandlerReady
         httpServiceQueues httpSetAsync httpSetChunkSize httpSetConnContext httpSetConnHost httpSetConnNotifier
         httpSetCredentials httpSetKeepAliveCount httpSetPipelineHandler httpSetProtocol httpSetRetries
         httpSetSendConnector httpSetState httpSetTimeout httpSetTimestamp httpShouldTrace httpStartPipeline
@@ -2043,6 +2053,14 @@ PUBLIC char *httpGetExt(HttpConn *conn);
     @ingroup HttpConn
  */
 PUBLIC int httpGetKeepAliveCount(HttpConn *conn);
+
+/** 
+    Get the count of bytes buffered on the write queue.
+    @param conn HttpConn connection object created via $httpCreateConn
+    @return The number of bytes buffered.
+    @ingroup HttpConn
+ */
+PUBLIC ssize httpGetWriteQueueCount(HttpConn *conn);
 
 /**
     Match the HttpHost object that should serve this request
@@ -4209,7 +4227,9 @@ typedef struct HttpRx {
      */
     HttpPacket      *currentPacket;         /**< Pending message packet */
     char            *extensions;            /**< WebSocket extensions */
+#if UNUSED
     int             finalFrame;             /**< Frame is final frame in a packet */
+#endif
     ssize           frameLength;            /**< Length of the current frame */
     uchar           dataMask[4];            /**< Mask for data */
     int             maskOffset;             /**< Offset in dataMask */
@@ -5451,6 +5471,7 @@ typedef struct WebSocket {
 #define WS_STATUS_MISSING_EXTENSION    1010     /**< Unsupported WebSockets extension */
 #define WS_STATUS_INTERNAL_ERROR       1011     /**< Server terminating due to an internal error */
 #define WS_STATUS_TLS_ERROR            1015     /**< TLS handshake error */
+#define WS_STATUS_MAX                  5000     /**< Maximum error status (less one) */
 
 /*
     WebSocket states (rx->webSockState)
@@ -5497,12 +5518,13 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
         by the Web Sockets module.
     @param buf Data buffer to send
     @param len Length of buf
+    @param last Set to true if there is no more data for this message.
     @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
         MPR error code.
     @ingroup WebSocket
     @stability Prototype
  */
-PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len);
+PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, bool last);
 
 /**
     Send a close message to the web socket peer
