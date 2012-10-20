@@ -50,7 +50,7 @@ static void outside() {
     dontAutoFinalize();
 }
 
-ESP_EXPORT int esp_controller_demo(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_module_demo(HttpRoute *route, MprModule *module) {
     EspRoute    *eroute;
     cchar       *schema;
 

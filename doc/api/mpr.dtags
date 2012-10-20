@@ -39,6 +39,13 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>BIT_CIPHERS</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>addae8ae5b96b16934c8efe1b7f9b25c0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_ALLOC_MANAGER</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a0fdfeef976b9c763e5e311d126752e59</anchor>
@@ -315,13 +322,6 @@
       <name>MPR_DECODE_TOKEQ</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>acbb0af96c8a7015a479fb63e014a6b02</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MPR_DEFAULT_CIPHER_SUITE</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>ab8fbb078c2e64bfd5c68925f2f2b9884</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -2442,8 +2442,8 @@
       <type>struct MprSsl *</type>
       <name>mprCreateSsl</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>gab67c6b658f311faf72f73ad5b34da656</anchor>
-      <arglist>()</arglist>
+      <anchor>gac6a41e387c7475251098f237f5f0a802</anchor>
+      <arglist>(int server)</arglist>
     </member>
     <member kind="function">
       <type>MprTestService *</type>
@@ -7991,8 +7991,8 @@
       <type>struct MprSsl *</type>
       <name>mprCreateSsl</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>gab67c6b658f311faf72f73ad5b34da656</anchor>
-      <arglist>()</arglist>
+      <anchor>gac6a41e387c7475251098f237f5f0a802</anchor>
+      <arglist>(int server)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

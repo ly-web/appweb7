@@ -62,7 +62,7 @@ static void update() {
     render("done");
 }
 
-ESP_EXPORT int esp_controller_cache(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_module_cache(HttpRoute *route, MprModule *module) {
     HttpRoute   *rp;
 
     espDefineAction(route, "cache-cmd-api", api);

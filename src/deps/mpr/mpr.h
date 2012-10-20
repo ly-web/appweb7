@@ -701,12 +701,12 @@ typedef int64 MprTime;
     #define UINT64(x)   (x##ULL)
 #endif
 
-
 #if BIT_WIN_LIKE
     /*
         This is the same for static and shared builds so *.exe on windows will have export symbols and
         GetProcAddress can locate for dynmaic resolution of modules
      */
+    //  BIT_STATIC part is UNUSED
     #if BIT_STATIC
         #define PUBLIC      __declspec(dllexport)
         #define PRIVATE     static
@@ -5482,7 +5482,7 @@ PUBLIC char *mprGetPathExt(cchar *path);
     Create a list of files in a directory or subdirectories. This call returns a list of MprDirEntry objects.
     @description Get the list of files in a directory and return a list.
     @param dir Directory to list.
-    @param flags The flags may be set to #MPR_PATH_DESCEND to traverse subdirectories. Set $MPR_PATH_NO_DIRS 
+    @param flags The flags may be set to #MPR_PATH_DESCEND to traverse subdirectories. Set #MPR_PATH_NODIRS 
         to exclude directories from the results. Set to MPR_PATH_HIDDEN to include hidden files that start with ".".
         Set to MPR_PATH_DEPTH_FIRST to do a depth-first traversal, i.e. traverse subdirectories before considering 
         adding the directory to the list.
@@ -5958,7 +5958,7 @@ PUBLIC cchar *mprGetModuleSearchPath();
     Load a module
     @description Load a module library. This will load a dynamic shared object (shared library) and call the
         modules library entry point. If the module is already loaded, this call will do nothing.
-    @param mp Module object created via $mprCreateModule.
+    @param mp Module object created via #mprCreateModule.
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup MprModule
  */
@@ -5967,14 +5967,14 @@ PUBLIC int mprLoadModule(MprModule *mp);
 #if BIT_HAS_DYN_LOAD || DOXYGEN
 /**
     Load a native module
-    @param mp Module object created via $mprCreateModule.
+    @param mp Module object created via #mprCreateModule.
     @returns Zero if successful, otherwise a negative MPR error code.
 */
 PUBLIC int mprLoadNativeModule(MprModule *mp);
 
 /**
     Unload a native module
-    @param mp Module object created via $mprCreateModule.
+    @param mp Module object created via #mprCreateModule.
     @returns Zero if successful, otherwise a negative MPR error code.
 */
 PUBLIC int mprUnloadNativeModule(MprModule *mp);
@@ -6551,7 +6551,7 @@ PUBLIC cchar *mprSerialize(MprObj *obj, int flags);
     @description Serializes a top level JSON object created via mprDeserialize into a characters string in JSON format.
         This extended deserialization API takes callback functions to control how the object tree is constructed. 
     @param str JSON string to deserialize.
-    @param callback Callback functions. This is an instance of the $MprJsonCallback structure.
+    @param callback Callback functions. This is an instance of the #MprJsonCallback structure.
     @param data Opaque object to pass to the given callbacks
     @return Returns a serialized JSON character string.
     @ingroup MprJson

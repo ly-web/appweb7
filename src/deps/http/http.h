@@ -198,7 +198,7 @@ struct HttpUser;
 
 /**
     Connection Http state change notification callback
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param state Http state
     @param flags Additional http state information
     @ingroup HttpConn
@@ -221,7 +221,7 @@ typedef int (*HttpListenCallback)(struct HttpEndpoint *endpoint);
 /** 
     Define an callback for IO events on this connection.
     @description The event callback will be invoked in response to I/O events.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param fn Callback function. 
     @param arg Data argument to provide to the callback function.
     @return The redirected URI string to use.
@@ -232,7 +232,7 @@ typedef cchar *(*HttpRedirectCallback)(struct HttpConn *conn, int *code, struct 
 /**
     Timeout callback
     @description The timeout callback for the request inactivity and duration timeouts
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
   */
 typedef void (*HttpTimeoutCallback)(struct HttpConn *conn);
@@ -390,7 +390,7 @@ PUBLIC void httpSetContext(Http *http, void *context);
 /** 
     Define a default client host
     @description Define a default host to use for client connections if the URI does not specify a host
-    @param http Http object created via $httpCreateConn
+    @param http Http object created via #httpCreateConn
     @param host Host or IP address
     @ingroup HttpConn
  */
@@ -399,7 +399,7 @@ PUBLIC void httpSetDefaultClientHost(Http *http, cchar *host);
 /** 
     Define a default client port
     @description Define a default port to use for client connections if the URI does not define a port
-    @param http Http object created via $httpCreateConn
+    @param http Http object created via #httpCreateConn
     @param port Integer port number
     @ingroup HttpConn
  */
@@ -780,8 +780,8 @@ typedef struct HttpPacket {
 
 /**
     Adjust the packet starting position.
-    This adjusts the packet content by the given size. The packet position is incremented by start and the packet
-    length (size) is decremented. If the packet describes entity data, the given size amount to the Packet.epos and 
+    @description This adjusts the packet content by the given size. The packet position is incremented by start and the
+    packet length (size) is decremented. If the packet describes entity data, the given size amount to the Packet.epos and 
     decrements the Packet.esize fields. If the packet has actual data buffered in Packet.content, the content buffer
     start is incremeneted by the size amount.
     @param packet Packet to modify
@@ -791,7 +791,7 @@ PUBLIC void httpAdjustPacketStart(HttpPacket *packet, MprOff size);
 
 /**
     Adjust the packet end position.
-    This adjusts the packet content by the given size. The packet length (size) is decremented by the requested 
+    @description This adjusts the packet content by the given size. The packet length (size) is decremented by the requested 
     amount. If the packet describes entity data, the Packet.esize field is reduced by the requested size amount. If the 
     packet has actual data buffered in Packet.content, the content buffer end position is reduced by
     by the size amount.
@@ -1059,7 +1059,7 @@ PUBLIC ssize httpGetQueueRoom(HttpQueue *q);
 /**
     Test if the connection has received all incoming content
     @description This tests if the connection is at an "End of File condition.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @return "True" if all Receive content has been received 
     @ingroup HttpQueue
  */
@@ -1235,7 +1235,7 @@ PUBLIC bool httpVerifyQueue(HttpQueue *q);
         and mark the downstream queue as full, and service it immediately to try to relieve the congestion.
     @param q Queue reference
     @param packet Packet to put
-    @return "True" if the downstream queue will accept the packet. Use $httpPutPacketToNext to send the packet downstream
+    @return "True" if the downstream queue will accept the packet. Use #httpPutPacketToNext to send the packet downstream
     @ingroup HttpQueue
  */
 PUBLIC bool httpWillNextQueueAcceptPacket(HttpQueue *q, HttpPacket *packet);
@@ -1593,7 +1593,7 @@ PUBLIC cvoid *httpGetStageData(struct HttpConn *conn, cchar *key);
     Handle a Http Trace or Options method request
     @description This call responds to a Trace or Options HTTP method request and generates an appropriate response
         to the client
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpStage
  */
 PUBLIC void httpHandleOptionsTrace(struct HttpConn *conn);
@@ -1713,7 +1713,7 @@ typedef int (*HttpHeadersCallback)(void *arg);
     Define a headers callback
     @description The headers callback will run before the standard response headers are generated. This gives an 
         opportunity to pre-populate the response headers.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param fn Callback function to invoke
     @param arg Argument to provide when invoking the headers callback
     @ingroup HttpConn
@@ -1722,7 +1722,7 @@ PUBLIC void httpSetHeadersCallback(struct HttpConn *conn, HttpHeadersCallback fn
 
 /**
     I/O callback for connections
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param event Event object describing the I/O event
     @ingroup HttpConn
     @internal
@@ -1733,7 +1733,7 @@ typedef void (*HttpIOCallback)(struct HttpConn *conn, MprEvent *event);
     Define an I/O callback for connections
     @description The I/O callback is invoked when I/O events are detected on the connection. The default I/O callback
         is #httpEvent.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param fn Callback function to invoke
     @ingroup HttpConn
     @internal
@@ -1852,7 +1852,7 @@ typedef struct HttpConn {
 
 /**
     Call httpEvent with the given event mask
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param mask Mask of events. MPR_READABLE | MPR_WRITABLE
     @ingroup HttpConn
  */
@@ -1860,14 +1860,14 @@ PUBLIC void httpCallEvent(HttpConn *conn, int mask);
 
 /** 
     Close a connection
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
  */
 PUBLIC void httpCloseConn(HttpConn *conn);
 
 /**
     Connector has completed sending the response.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
     @internal
  */ 
@@ -1879,14 +1879,14 @@ PUBLIC void httpConnectorComplete(HttpConn *conn);
         log. This call is normally invoked by the httpTimer which runs regularly to check for timed out requests.
         This call should not be made on another thread, but should be scheduled to run on the connection's dispatcher to
         avoid thread races.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
   */
 PUBLIC void httpConnTimeout(HttpConn *conn);
 
 /**
     Consume leftover data from the last request
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
     @internal
  */
@@ -1906,7 +1906,7 @@ PUBLIC HttpConn *httpCreateConn(Http *http, struct HttpEndpoint *endpoint, MprDi
 
 /**
     Create the receive request pipeline
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param route Route object controlling how the pipeline is configured for the request
     @ingroup HttpConn
  */
@@ -1914,7 +1914,7 @@ PUBLIC void httpCreateRxPipeline(HttpConn *conn, struct HttpRoute *route);
 
 /**
     Create the transmit request pipeline
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param route Route object controlling how the pipeline is configured for the request
     @ingroup HttpConn
  */
@@ -1922,21 +1922,21 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, struct HttpRoute *route);
 
 /**
     Destroy the connection object
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
  */
 PUBLIC void httpDestroyConn(HttpConn *conn);
 
 /**
     Destroy the pipeline
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
  */
 PUBLIC void httpDestroyPipeline(HttpConn *conn);
 
 /**
     Discard buffered transmit pipeline data
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param dir Queue direction. Either HTTP_QUEUE_TX or HTTP_QUEUE_RX.
     @ingroup HttpConn
  */
@@ -1947,7 +1947,7 @@ PUBLIC void httpDiscardData(HttpConn *conn, int dir);
     @description This call will close the socket and signal a connection error. Subsequent use of the connection socket
         will not be possible.  This call should not be made on another thread, but should be scheduled to run on the 
         connection's dispatcher to avoid thread races.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
   */
 PUBLIC void httpDisconnect(HttpConn *conn);
@@ -1958,7 +1958,7 @@ PUBLIC void httpDisconnect(HttpConn *conn);
         permits a connection to process the I/O without fear of interruption by another I/O event. At the completion
         of processing of the I/O request, the connection should be re-enabled via httpEnableConnEvents. This call is
         made for requests in #httpEvent.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
  */
 PUBLIC void httpEnableConnEvents(HttpConn *conn);
@@ -1974,7 +1974,7 @@ PUBLIC void httpEnableUpload(HttpConn *conn);
 /** 
     Error handling for the connection.
     @description The httpError call is used to flag the current request as failed.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param status Http status code. The status code can be ored with the flags HTTP_ABORT to immediately abort the connection
         or HTTP_CLOSE to close the connection at the completion of the request.
     @param fmt Printf style formatted string
@@ -1986,7 +1986,7 @@ PUBLIC void httpError(HttpConn *conn, int status, cchar *fmt, ...);
 /**
     Http I/O event handler. Invoke when there is an I/O event on the connection. This is normally invoked automatically
     when I/O events are received.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param event Event structure
     @ingroup HttpConn
  */
@@ -1994,7 +1994,7 @@ PUBLIC void httpEvent(struct HttpConn *conn, MprEvent *event);
 
 /**
     Get the async mode value for the connection
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @return True if the connection is in async mode
     @ingroup HttpConn
  */
@@ -2002,7 +2002,7 @@ PUBLIC int httpGetAsync(HttpConn *conn);
 
 /**
     Get the preferred chunked size for transfer chunk encoding.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return Chunk size. Returns "zero" if not yet defined.
     @ingroup HttpConn
  */
@@ -2010,7 +2010,7 @@ PUBLIC ssize httpGetChunkSize(HttpConn *conn);
 
 /**
     Get the connection context object
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @return The connection context object defined via httpSetConnContext
     @ingroup HttpConn
  */
@@ -2018,7 +2018,7 @@ PUBLIC void *httpGetConnContext(HttpConn *conn);
 
 /**
     Get the connection host object
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @return The connection host object defined via httpSetConnHost
     @ingroup HttpConn
  */
@@ -2027,7 +2027,7 @@ PUBLIC void *httpGetConnHost(HttpConn *conn);
 /** 
     Get the error message associated with the last request.
     @description Error messages may be generated for internal or client side errors.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return A error string. The caller must not free this reference.
     @ingroup HttpConn
  */
@@ -2037,8 +2037,8 @@ PUBLIC cchar *httpGetError(HttpConn *conn);
     Get a URI extension 
     @description If the URI has no extension and the response content filename (HttpTx.filename) has been calculated,
         it will be tested for an extension.
-    @param conn HttpConn connection object created via $httpCreateConn
-    @return The URI extension sans "."
+    @param conn HttpConn connection object created via #httpCreateConn
+    @return The URI extension without the leading period.
     @ingroup HttpConn
   */
 PUBLIC char *httpGetExt(HttpConn *conn);
@@ -2048,7 +2048,7 @@ PUBLIC char *httpGetExt(HttpConn *conn);
     @description Http Keep-Alive means that the TCP/IP connection is preserved accross multiple requests. This
         typically means much higher performance and better response. Http Keep-Alive is enabled by default 
         for Http/1.1 (the default). Disable Keep-Alive when talking to old, broken HTTP servers.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return The maximum count of Keep-Alive requests. 
     @ingroup HttpConn
  */
@@ -2056,7 +2056,7 @@ PUBLIC int httpGetKeepAliveCount(HttpConn *conn);
 
 /** 
     Get the count of bytes buffered on the write queue.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return The number of bytes buffered.
     @ingroup HttpConn
  */
@@ -2066,21 +2066,21 @@ PUBLIC ssize httpGetWriteQueueCount(HttpConn *conn);
     Match the HttpHost object that should serve this request
     @description This sets the conn->host field to the appropriate host. If no suitable host can be found, #httpError
         will be called and conn->error will be set
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
   */
 PUBLIC void httpMatchHost(HttpConn *conn);
 
 /**
     Signal a memory allocation error
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
  */
 PUBLIC void httpMemoryError(HttpConn *conn);
 
 /**
     Inform notifiers of a connection event or state chagne
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param event Event to issue
     @param arg Argument to event
     @ingroup HttpConn
@@ -2097,7 +2097,7 @@ PUBLIC void httpNotify(HttpConn *conn, int event, int arg);
 
 /**
     Prepare a connection for a new request. This is used internally when using Keep-Alive.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
  */
 PUBLIC void httpPrepServerConn(HttpConn *conn);
@@ -2105,7 +2105,7 @@ PUBLIC void httpPrepServerConn(HttpConn *conn);
 /**
     Pump the handler by invoking the writable callback.
     @description This optional handler callback is invoked when the service queue has room for more data.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @return True if the handler writable callback exists and can be invoked.
     @ingroup HttpConn
  */
@@ -2113,7 +2113,7 @@ PUBLIC bool httpPumpHandler(HttpConn *conn);
 
 /**
     Prepare a client connection for a new request. 
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param keepHeaders If true, keep the headers already defined on the connection object
     @ingroup HttpConn
  */
@@ -2122,7 +2122,7 @@ PUBLIC void httpPrepClientConn(HttpConn *conn, bool keepHeaders);
 /**
     Run the handler ready callback.
     @description This will be called when all incoming data for the request has been fully received.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
  */
 PUBLIC void httpReadyHandler(HttpConn *conn);
@@ -2130,27 +2130,27 @@ PUBLIC void httpReadyHandler(HttpConn *conn);
 /** 
     Reset the current security credentials
     @description Remove any existing security credentials.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
  */
 PUBLIC void httpResetCredentials(HttpConn *conn);
 
 /**
     Route the request and select that matching route and handle to process the request.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
   */
 PUBLIC void httpRouteRequest(HttpConn *conn);
 
 /**
     Service pipeline queues to flow data.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
  */
 PUBLIC bool httpServiceQueues(HttpConn *conn);
 
 /**
     Set the async mode value for the connection
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param enable Set to 1 to enable async mode
     @return True if the connection is in async mode
     @ingroup HttpConn
@@ -2160,7 +2160,7 @@ PUBLIC void httpSetAsync(HttpConn *conn, int enable);
 /** 
     Set the chunk size for transfer chunked encoding. When set, a "Transfer-Encoding: Chunked" header will
     be added to the request, and all write data will be broken into chunks of the requested size.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param size Requested chunk size.
     @ingroup HttpConn
  */ 
@@ -2168,7 +2168,7 @@ PUBLIC void httpSetChunkSize(HttpConn *conn, ssize size);
 
 /**
     Set the connection context object
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param context New context object
     @ingroup HttpConn
  */
@@ -2176,7 +2176,7 @@ PUBLIC void httpSetConnContext(HttpConn *conn, void *context);
 
 /**
     Set the connection host object
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param host New context host
     @ingroup HttpConn
  */
@@ -2197,7 +2197,7 @@ PUBLIC void httpSetConnHost(HttpConn *conn, void *host);
     <li>HTTP_EVENT_OPEN &mdash; The application layer is now open</li>
     <li>HTTP_EVENT_CLOSE &mdash; The application layer is now closed</li>
     </ul>
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param notifier Notifier function. 
     @ingroup HttpConn
  */
@@ -2207,7 +2207,7 @@ PUBLIC void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier);
     Set the Http credentials
     @description Define a user and password to use with Http authentication for sites that require it. This will
         be used for the next client connection.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param user String user
     @param password Decrypted password string
     @ingroup HttpConn
@@ -2219,7 +2219,7 @@ PUBLIC void httpSetCredentials(HttpConn *conn, cchar *user, cchar *password);
     @description Http Keep-Alive means that the TCP/IP connection is preserved accross multiple requests. This
         typically means much higher performance and better response. Http Keep-Alive is enabled by default 
         for Http/1.1 (the default). Disable Keep-Alive when talking to old, broken HTTP servers.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param count Count of Keep-Alive transactions to use before closing the connection. Set to zero to disable keep-alive.
     @ingroup HttpConn
  */
@@ -2229,7 +2229,7 @@ PUBLIC void httpSetKeepAliveCount(HttpConn *conn, int count);
     Set the handler to process a client request
     @description This overrides the normal handler selection with the given handler. This can only be called before
         the request pipeline has actually started and should only be done in the "match" or "open" stage functions.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param handler Stage handler to process the request
     @ingroup HttpConn
  */
@@ -2238,7 +2238,7 @@ PUBLIC void httpSetPipelineHandler(HttpConn *conn, HttpStage *handler);
 /** 
     Set the Http protocol variant for this connection
     @description Set the Http protocol variant to use. 
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param protocol  String representing the protocol variant. Valid values are: "HTTP/1.0", "HTTP/1.1". This parameter
         must be persistent.
     Use HTTP/1.1 wherever possible.
@@ -2250,7 +2250,7 @@ PUBLIC void httpSetProtocol(HttpConn *conn, cchar *protocol);
     Set the Http retry count
     @description Define the number of retries before failing a request. It is normative for network errors
         to require that requests be sometimes retried. The default retries is set to (2).
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param retries Count of retries
     @ingroup HttpConn
  */
@@ -2260,7 +2260,7 @@ PUBLIC void httpSetRetries(HttpConn *conn, int retries);
     Set the "Send" connector to process the request
     @description If the net connection has been selected, but the response content is a file, the pipeline connector
     can be upgraded to use the "Send" connector.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param path File name to send as a response
     @ingroup HttpConn
  */
@@ -2268,7 +2268,7 @@ PUBLIC void httpSetSendConnector(HttpConn *conn, cchar *path);
 
 /**
     Set the connection state and invoke notifiers.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param state New state to enter
     @ingroup HttpConn
  */
@@ -2277,7 +2277,7 @@ PUBLIC void httpSetState(HttpConn *conn, int state);
 /** 
     Set the Http inactivity timeout
     @description Define an inactivity timeout after which the Http connection will be closed. 
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @param requestTimeout Request timeout in msec. This is the total time for the request. Set to -1 to preserve the
         existing value.
     @param inactivityTimeout Inactivity timeout in msec. This is maximum connection idle time. Set to -1 to preserve the
@@ -2296,7 +2296,7 @@ PUBLIC void httpSetTimestamp(MprTime period);
 
 /**
     Test if the item should be traced
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param dir Direction of data flow. Set to HTTP_TRACE_RX or HTTP_TRACE_TX
     @param item Item to trace. Set to HTTP_TRACE_CONN, HTTP_TRACE_FIRST, HTTP_TRACE_HEADER, HTTP_TRACE_BODY, or 
         HTTP_TRACE_TIME
@@ -2308,7 +2308,7 @@ PUBLIC int httpShouldTrace(HttpConn *conn, int dir, int item, cchar *ext);
 
 /**
     Start the pipeline. This starts the request handler.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
  */
 PUBLIC void httpStartPipeline(HttpConn *conn);
@@ -2318,19 +2318,19 @@ PUBLIC void httpStartPipeline(HttpConn *conn);
     @description Steal a connection from Appweb and assume total responsibility for the connection.
     This removes the connection from active management by Appweb. After calling, request and inactivity
     timeouts will not be enforced. It is the callers responsibility to call mprCloseSocket.
-    @param conn HttpConn object created via $httpCreateConn
+    @param conn HttpConn object created via #httpCreateConn
     @return The connection socket object.
  */
 PUBLIC MprSocket *httpStealConn(HttpConn *conn);
 
 /**
     Verify the server handshake
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return True if the handshake is valid
  */
 PUBLIC bool httpVerifyWebSocketsHandshake(HttpConn *conn);
 
-/** Internal APIs */
+/* Internal APIs */
 PUBLIC struct HttpConn *httpAccept(struct HttpEndpoint *endpoint);
 PUBLIC void httpEnableConnEvents(HttpConn *conn);
 PUBLIC void httpInitTrace(HttpTrace *trace);
@@ -2507,7 +2507,7 @@ PUBLIC int httpAddUser(HttpAuth *auth, cchar *user, cchar *password, cchar *abil
 
 /**
     Test if a user has the required abilities
-    @param conn HttpConn connection object created via $httpCreateConn object.
+    @param conn HttpConn connection object created via #httpCreateConn object.
     @return True if the user has all the required abilities
     @ingroup HttpAuth
  */
@@ -2782,12 +2782,12 @@ typedef struct HttpCache {
     Server-side caching will cache both the response headers and content.
     \n\n
     If manual server-side caching is requested, the response will be automatically cached, but subsequent requests will
-    require the handler to explicitly send cached content by calling $httpWriteCached.
+    require the handler to explicitly send cached content by calling #httpWriteCached.
     \n\n
     If client-side caching is requested, a "Cache-Control" Http header will be sent to the client with the caching 
     "max-age" set to the lifespan argument value (converted to seconds). This causes the client to serve client-cached 
     content and to not contact the server at all until the max-age expires. 
-    Alternatively, you can use $httpSetHeader to explicitly set a "Cache-Control header. For your reference, here are 
+    Alternatively, you can use #httpSetHeader to explicitly set a "Cache-Control header. For your reference, here are 
     some keywords that can be used in the Cache-Control Http header.
     \n\n
         "max-age" Maximum time in seconds the resource is considered fresh.
@@ -2822,7 +2822,7 @@ typedef struct HttpCache {
     @param serverLifespan Lifespan of server cache items in milliseconds. If not set to positive integer, the lifespan will
         default to the route lifespan.
     @param flags Cache control flags. Select HTTP_CACHE_MANUAL to enable manual mode. In manual mode, cached content
-        will not be automatically sent. Use $httpWriteCached in the request handler to write previously cached content.
+        will not be automatically sent. Use #httpWriteCached in the request handler to write previously cached content.
         \n\n
         Select HTTP_CACHE_CLIENT to enable client-side caching. In this mode a "Cache-Control" Http header will be 
         sent to the client with the caching "max-age". WARNING: the client will not send any request for this URI
@@ -2837,9 +2837,9 @@ typedef struct HttpCache {
         ignored and all requests for a given URI path will cache to the same cache record.
         \n\n
         Select HTTP_CACHE_UNIQUE to uniquely cache requests with different request parameters. The URIs specified in 
-        $uris should not contain any request parameters.
+        uris should not contain any request parameters.
         \n\n
-        Select HTTP_CACHE_ONLY to cache only the exact URI with parameters specified in $uris. The parameters must be 
+        Select HTTP_CACHE_ONLY to cache only the exact URI with parameters specified in uris. The parameters must be 
         in sorted www-urlencoded format. For example: /example.esp?hobby=sailing&name=john.
     @return A count of the bytes actually written
     @ingroup HttpCache
@@ -2862,7 +2862,7 @@ PUBLIC ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime li
 /**
     Write the cached content for a URI to the client
     @description This call explicitly writes cached content to the client. It is useful when the caching is 
-        configured in manual mode via the HTTP_CACHE_MANUAL flag to $httpAddCache.
+        configured in manual mode via the HTTP_CACHE_MANUAL flag to #httpAddCache.
     @param conn HttpConn connection object 
     @ingroup HttpCache
   */
@@ -2872,7 +2872,7 @@ PUBLIC ssize httpWriteCached(HttpConn *conn);
 /**
     Proc handler callback procedure 
     @description The Procedure Handler provides a simple mechanism to bind "C" callback functions with URIs.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @defgroup HttpConn HttpConn
  */
 typedef void (*HttpProc)(HttpConn *conn);
@@ -3450,7 +3450,7 @@ PUBLIC HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits);
     are supplied using the current request and route tables. The resulting URI is a normalized, server-local 
     URI (that begins with "/"). The URI will include any defined route prefix, but will not include scheme, host or 
     port components.
-    @param conn HttpConn connection object 
+    @param [in] conn HttpConn connection object 
     @param target The URI target. The target parameter can be a URI string or JSON style set of options. 
         The target will have any embedded "{tokens}" expanded by using token values from the request parameters.
         If the target has an absolute URI path, that path is used directly after tokenization. If the target begins with
@@ -3489,8 +3489,7 @@ PUBLIC HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits);
         </ul>
     @param options Hash of option values for embedded tokens.
     @return A normalized, server-local Uri string.
-
-    <pre>
+    @remarks Examples:<pre>
     httpLink(conn, "http://example.com/index.html", 0);
     httpLink(conn, "/path/to/index.html", 0);
     httpLink(conn, "../images/splash.png", 0);
@@ -3507,7 +3506,7 @@ PUBLIC HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits);
     httpLink(conn, "{ product: 'candy', quantity: '10', template: '/cart/${product}/${quantity}' }", 0);
     httpLink(conn, "{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0);
     httpLink(conn, "{ template: '~/static/images/${theme}/background.jpg', theme: 'blue' }", 0);
-    </pre>
+</pre>
 */
 PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options);
 
@@ -3864,7 +3863,7 @@ PUBLIC void httpSetRouteWorkers(HttpRoute *route, int workers);
 /**
     Expand a template string using given options
     @description This expands a string with embedded tokens of the form "${token}" using values from the given options.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param tplate Template string to process
     @param options Hash of option values for embedded tokens.
     @ingroup HttpRoute
@@ -4070,7 +4069,7 @@ typedef struct HttpUploadFile {
 /**
     Add an Uploaded file
     @description Add an uploaded file to the Rx.files collection.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param id Unique identifier for the file  
     @param file Instance of HttpUploadFile
     @ingroup HttpUploadFile
@@ -4081,7 +4080,7 @@ PUBLIC void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *file);
 /**
     Remove all uploaded files
     @description Remove all uploaded files from the temporary file store
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpUploadFile
     @internal
  */
@@ -4090,7 +4089,7 @@ PUBLIC void httpRemoveAllUploadedFiles(HttpConn *conn);
 /**
     Remove an uploaded file
     @description Remove an uploaded file from the temporary file store
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param id Identifier used with #httpAddUploadFile for the file
     @ingroup HttpUploadFile
     @internal
@@ -4286,7 +4285,7 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn);
     Get the receive body content length
     @description Get the length of the receive body content (if any). This is used in servers to get the length of posted
         data and in clients to get the response body length.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return A count of the response content data in bytes.
     @ingroup HttpRx
  */
@@ -4295,7 +4294,7 @@ PUBLIC MprOff httpGetContentLength(HttpConn *conn);
 /** 
     Get the request cookies
     @description Get the cookies defined in the current requeset
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return Return a string containing the cookies sent in the Http header of the last request
     @ingroup HttpRx
  */
@@ -4317,9 +4316,9 @@ PUBLIC cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue);
     Get the request params table
     @description This call gets the form var table for the current request.
         Query data and www-url encoded form data is entered into the table after decoding.
-        Use $mprLookupKey to retrieve data from the table.
+        Use #mprLookupKey to retrieve data from the table.
     @param conn HttpConn connection object
-    @return $MprHash instance containing the form vars
+    @return #MprHash instance containing the form vars
     @ingroup HttpRx
  */
 PUBLIC MprHash *httpGetParams(HttpConn *conn);
@@ -4338,7 +4337,7 @@ PUBLIC char *httpGetParamsString(HttpConn *conn);
 /** 
     Get an rx http header.
     @description Get a http response header for a given header key.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param key Name of the header to retrieve. This should be a lower case header name. For example: "Connection"
     @return Value associated with the header key or null if the key did not exist in the response.
     @ingroup HttpRx
@@ -4348,7 +4347,7 @@ PUBLIC cchar *httpGetHeader(HttpConn *conn, cchar *key);
 /** 
     Get the hash table of rx Http headers
     @description Get the internal hash table of rx headers
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return Hash table. See MprHash for how to access the hash table.
     @ingroup HttpRx
  */
@@ -4358,7 +4357,7 @@ PUBLIC MprHash *httpGetHeaderHash(HttpConn *conn);
     Get all the request http headers.
     @description Get all the rx headers. The returned string formats all the headers in the form:
         key: value\\nkey2: value2\\n...
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return String containing all the headers. The caller must free this returned string.
     @ingroup HttpRx
  */
@@ -4415,7 +4414,7 @@ PUBLIC ssize httpGetReadCount(HttpConn *conn);
 
 /** 
     Get the response status 
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return An integer Http response code. Typically 200 is success.
     @ingroup HttpRx
  */
@@ -4423,7 +4422,7 @@ PUBLIC int httpGetStatus(HttpConn *conn);
 
 /** 
     Get the Http response status message. The Http status message is supplied on the first line of the Http response.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @returns A Http status message. 
     @ingroup HttpRx
  */
@@ -4443,7 +4442,7 @@ PUBLIC bool httpMatchParam(HttpConn *conn, cchar *var, cchar *expected);
 /** 
     Read rx body data. This will read available body data. If in sync mode, this call may block. If in async
     mode, the call will not block and will return with whatever data is available.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param buffer Buffer to receive read data
     @param size Size of buffer. 
     @return The number of bytes read
@@ -4454,7 +4453,7 @@ PUBLIC ssize httpRead(HttpConn *conn, char *buffer, ssize size);
 /** 
     Read response data as a string. This will read all rx body and return a string that the caller should free. 
     This will block and should not be used in async mode.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @returns A string containing the rx body. Caller should free.
     @ingroup HttpRx
  */
@@ -4622,7 +4621,7 @@ typedef struct HttpTx {
 /** 
     Add a header to the transmission using a format string.
     @description Add a header if it does not already exits.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param key Http response header key
     @param fmt Printf style formatted string to use as the header key value
     @param ... Arguments for fmt
@@ -4635,7 +4634,7 @@ PUBLIC void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 /** 
     Add a header to the transmission
     @description Add a header if it does not already exits.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param key Http response header key
     @param value Value to set for the header
     @return Zero if successful, otherwise a negative MPR error code. Returns MPR_ERR_ALREADY_EXISTS if the header already
@@ -4647,7 +4646,7 @@ PUBLIC void httpAddHeaderString(HttpConn *conn, cchar *key, cchar *value);
 /** 
     Append a transmission header
     @description Set the header if it does not already exists. Append with a ", " separator if the header already exists.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param key Http response header key
     @param fmt Printf style formatted string to use as the header key value
     @param ... Arguments for fmt
@@ -4658,7 +4657,7 @@ PUBLIC void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 /** 
     Append a transmission header string
     @description Set the header if it does not already exists. Append with a ", " separator if the header already exists.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param key Http response header key
     @param value Value to set for the header
     @ingroup HttpTx
@@ -4670,7 +4669,7 @@ PUBLIC void httpAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
     @description Start a new Http request on the http object and return. This routine does not block.
         After starting the request, you can use httpWait() or httpWForResponse() to wait for the request to 
         achieve a certain state or to complete.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param method Http method to use. Valid methods include: "GET", "POST", "PUT", "DELETE", "OPTIONS" and "TRACE" 
     @param uri URI to fetch
     @param ssl SSL configuration to use if a secure connection. 
@@ -4681,7 +4680,7 @@ PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl 
 
 /** 
     Create the tx object. This is used internally by the http library.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param headers Optional headers to use for the transmission
     @returns A tx object
     @ingroup HttpTx
@@ -4708,7 +4707,7 @@ PUBLIC void httpFinalize(HttpConn *conn);
 
 /**
     Flush tx data. This writes any buffered data. 
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpTx
  */
 PUBLIC void httpFlush(HttpConn *conn);
@@ -4717,7 +4716,7 @@ PUBLIC void httpFlush(HttpConn *conn);
     Follow redirctions
     @description Enabling follow redirects enables the Http service to transparently follow 301 and 302 redirections
         and fetch the redirected URI.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param follow Set to true to enable transparent redirections
     @ingroup HttpTx
  */
@@ -4727,7 +4726,7 @@ PUBLIC void httpFollowRedirects(HttpConn *conn, bool follow);
     Format an error transmission
     @description Format an error message to use instead of data generated by the request processing pipeline.
         This is typically used to send errors and redirections. The message is also sent to the error log.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param status Http response status code
     @param fmt Printf style formatted string. This string may contain HTML tags and is not HTML encoded before
         sending to the user. NOTE: Do not send user input back to the client using this method. Otherwise you open
@@ -4742,7 +4741,7 @@ PUBLIC void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...);
     Format an alternate response
     @description Format a response to use instead of data generated by the request processing pipeline.
         This is used for alternate responses that are not errors.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param fmt Printf style formatted string. This string may contain HTML tags and is not HTML encoded before
         sending to the user. NOTE: Do not send user input back to the client using this method. Otherwise you open
         large security holes.
@@ -4756,7 +4755,7 @@ PUBLIC ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...);
     Format an alternate response
     @description Format a response to use instead of data generated by the request processing pipeline.
         This is similar to #httpFormatResponse.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param fmt Printf style formatted string. This string may contain HTML tags and is not HTML encoded before
         sending to the user. NOTE: Do not send user input back to the client using this method. Otherwise you open
         large security holes.
@@ -4771,7 +4770,7 @@ PUBLIC ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args);
     @description Format a transmission body to use instead of data generated by the request processing pipeline.
         The body will be created in HTML or in plain text depending on the value of the request Accept header.
         This call is used for alternate responses that are not errors.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param title Title string to format into the HTML transmission body.
     @param fmt Printf style formatted string. This string may contain HTML tags and is not HTML encoded before
         sending to the user. NOTE: Do not send user input back to the client using this method. Otherwise you open
@@ -4787,7 +4786,7 @@ PUBLIC ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ..
     @description Format an error message transmission body to use instead of data generated by the request 
         processing pipeline.  The body will be created in HTML or in plain text depending on the value of 
         the request Accept header. This is an internal API and users should use #httpError instead.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param status HTTP response status code
     @param fmt Printf style formatted string. This string may contain HTML tags and is not HTML encoded before
         sending to the user. NOTE: Do not send user input back to the client using this method. Otherwise you open
@@ -4801,14 +4800,14 @@ PUBLIC void httpFormatResponseError(HttpConn *conn, int status, cchar *fmt, ...)
 
 /**
     Get the queue data for the connection
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return the private queue data object
  */
 PUBLIC void *httpGetQueueData(HttpConn *conn);
 
 /** 
     Return whether transfer chunked encoding will be used on this request
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @returns true if chunk encoding will be used
     @ingroup HttpTx
  */ 
@@ -4827,7 +4826,7 @@ PUBLIC int httpIsFinalized(HttpConn *conn);
     Determine if the transmission needs a transparent retry to implement authentication or redirection. This is used
     by client requests. If authentication is required, a request must first be tried once to receive some authentication 
     key information that must be resubmitted to gain access.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param url Reference to a string to receive a redirection URL. Set to NULL if not redirection is required.
     @return true if the request needs to be retried.
     @ingroup HttpTx
@@ -4836,14 +4835,14 @@ PUBLIC bool httpNeedRetry(HttpConn *conn, char **url);
 
 /**
     Tell the tx to omit sending any body
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
  */
 PUBLIC void httpOmitBody(HttpConn *conn);
 
 /** 
     Redirect the client
     @description Redirect the client to a new uri.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param status Http status code to send with the response
     @param uri New uri for the client
     @ingroup HttpTx
@@ -4853,7 +4852,7 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *uri);
 /** 
     Remove a header from the transmission
     @description Remove a header if present.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param key Http response header key
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpTx
@@ -4863,7 +4862,7 @@ PUBLIC int httpRemoveHeader(HttpConn *conn, cchar *key);
 /** 
     Define a content length header in the transmission. This will define a "Content-Length: NNN" request header and
         set Tx.length.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param length Numeric value for the content length header.
     @ingroup HttpTx
  */
@@ -4872,7 +4871,7 @@ PUBLIC void httpSetContentLength(HttpConn *conn, MprOff length);
 /** 
     Set the transmission (response) content mime type
     @description Set the mime type Http header in the transmission
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param mimeType Mime type string
     @ingroup HttpTx
  */
@@ -4887,7 +4886,7 @@ PUBLIC void httpSetContentType(HttpConn *conn, cchar *mimeType);
 /** 
     Set a transmission cookie
     @description Define a cookie to send in the transmission Http header
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param name Cookie name
     @param value Cookie value
     @param path URI path to which the cookie applies
@@ -4905,7 +4904,7 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
 /**
     Define the length of the transmission content. When static content is used for the transmission body, defining
     the entity length permits the request pipeline to know when all the data has been sent.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param len Transmission body length in bytes
  */
 PUBLIC void httpSetEntityLength(HttpConn *conn, MprOff len);
@@ -4913,7 +4912,7 @@ PUBLIC void httpSetEntityLength(HttpConn *conn, MprOff len);
 /** 
     Set a transmission header
     @description Set a Http header to send with the request. If the header already exists, it its value is overwritten.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param key Http response header key
     @param fmt Printf style formatted string to use as the header key value
     @param ... Arguments for fmt
@@ -4924,7 +4923,7 @@ PUBLIC void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 /** 
     Set a simple key/value transmission header
     @description Set a Http header to send with the request. If the header already exists, it its value is overwritten.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param key Http response header key
     @param value String value for the key
     @ingroup HttpTx
@@ -4934,7 +4933,7 @@ PUBLIC void httpSetHeaderString(HttpConn *conn, cchar *key, cchar *value);
 /** 
     Set a Http response status.
     @description Set the Http response status for the request. This defaults to 200 (OK).
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param status Http status code.
     @ingroup HttpTx
  */
@@ -4951,14 +4950,14 @@ PUBLIC void httpSetResponded(HttpConn *conn);
 
 /**
     Indicate that the transmission socket is blocked
-    @param conn Http connection object created via $httpCreateConn
+    @param conn Http connection object created via #httpCreateConn
     @ingroup HttpTx
  */
 PUBLIC void httpSocketBlocked(HttpConn *conn);
 
 /** 
     Wait for the connection to achieve the requested state Used for blocking client requests.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param state HTTP_STATE_XXX to wait for.
     @param timeout Timeout in milliseconds to wait 
     @return "Zero" if successful. Otherwise return a negative MPR error code. Specific returns include:
@@ -4973,7 +4972,7 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout);
         just prior to sending output to the client. It should be delayed as long as possible if the content length is
         not yet known to give the pipeline a chance to determine the transmission length. This way, a non-chunked 
         transmission can be sent with a content-length header. This is the fastest HTTP transmission.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param packet Packet into which to place the headers
     @ingroup HttpTx
  */
@@ -4983,7 +4982,7 @@ PUBLIC void httpWriteHeaders(HttpConn *conn, HttpPacket *packet);
     Write Http upload body data
     @description Write files and form fields as request body data. This will use transfer chunk encoding. This routine 
         will block until all the buffer is written even if a callback is defined.
-    @param conn Http connection object created via $httpCreateConn
+    @param conn Http connection object created via #httpCreateConn
     @param fileData List of string file names to upload
     @param formData List of strings containing "key=value" pairs. The form data should be already www-urlencoded.
     @return Number of bytes successfully written.
@@ -5428,15 +5427,22 @@ PUBLIC void httpStopHost(HttpHost *host);
 
 /********************************* Web Sockets *************************************/
 /** 
-    WebSockets Service
+    WebSocket Service to implement the WebSockets RFC 6455 specification for client and server communications.
+    @description WebSockets is a technology providing interactive communication between a server and client. Normal HTML
+    connections follow a request / response paradigm and do not easily support asynchronous communications or unsolicited
+    data pushed from the server to the client. WebSockets solves this by supporting bi-directional, full-duplex
+    communications over persistent connections. A WebSocket connection is established over a standard HTTP connection and is
+    then upgraded without impacting the original connection. This means it will work with existing networking infrastructure
+    including firewalls and proxies.
     @stability Prototype
     @defgroup HttpWebSockets HttpWebSockets
-    @see httpGetWebSocketCloseReason httpGetWebSocketProtocol httpSend httpSendBlock httpSendClose
-        httpSetWebSocketProtocols httpWebSocketOrderlyClosed
+    @see httpGetWebSocketCloseReason httpGetWebSocketProtocol httpGetWriteQueueCount httpIsLastPacket httpSend 
+        httpSendBlock httpSendClose httpSetWebSocketProtocols httpWebSocketOrderlyClosed
  */
-typedef struct WebSocket {
+typedef struct HttpWebSockets {
+    /** @internal */
     int     reserved;
-} WebSocket;
+} HttpWebSockets;
 
 #define WS_VERSION     13
 #define WS_MAGIC       "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -5483,36 +5489,36 @@ typedef struct WebSocket {
 
 /**
     Get the close reason supplied by the peer.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return The reason string supplied by the peer when closing the web socket.
-    @ingroup WebSocket
+    @ingroup HttpWebSockets
     @stability Prototype
  */
 PUBLIC char *httpGetWebSocketCloseReason(HttpConn *conn);
 
 /**
     Get the selected web socket protocol selected by the server
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return The web socket protocol string
-    @ingroup WebSocket
+    @ingroup HttpWebSockets
     @stability Prototype
  */
 PUBLIC char *httpGetWebSocketProtocol(HttpConn *conn);
 
 /**
     Send a UTF-8 text message to the web socket peer
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param fmt Printf style formatted string
     @param ... Arguments for the format
     @return Number of bytes written
-    @ingroup WebSocket
+    @ingroup HttpWebSockets
     @stability Prototype
  */
 PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
 
 /**
     Send a message of a given type to the web socket peer
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param type Web socket message type. Choose from WS_MSG_TEXT, WS_MSG_BINARY or WS_MSG_PING. 
         Use httpSendClose to send a close message. Do not send a WS_MSG_PONG message as it is generated internally
         by the Web Sockets module.
@@ -5521,28 +5527,28 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
     @param last Set to true if there is no more data for this message.
     @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
         MPR error code.
-    @ingroup WebSocket
+    @ingroup HttpWebSockets
     @stability Prototype
  */
 PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, bool last);
 
 /**
     Send a close message to the web socket peer
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param status Web socket status
     @param reason Optional reason text message. The reason must be less than 124 bytes in length.
     @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
         MPR error code.
-    @ingroup WebSocket
+    @ingroup HttpWebSockets
     @stability Prototype
  */
 PUBLIC void httpSendClose(HttpConn *conn, int status, cchar *reason);
 
 /**
     Set a list of application-level protocols supported by the client
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @param protocols Comma separated list of application-level protocols
-    @ingroup WebSocket
+    @ingroup HttpWebSockets
     @stability Prototype
  */
 PUBLIC void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols);
@@ -5552,18 +5558,19 @@ PUBLIC void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols);
     @description This requests an upgrade to use WebSockets. Note this is the upgrade request and the
         confirmation handshake response must still be received and validated. The connection must be upgraded
         before sending any data to the server.
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return Return Zero if the connection upgrade can be requested.
     @stability Prototype
+    @ingroup HttpWebSockets
     @internal
  */
 PUBLIC int httpUpgradeWebSocket(HttpConn *conn);
 
 /**
     Test if web socket connection was orderly closed by sending an acknowledged close message
-    @param conn HttpConn connection object created via $httpCreateConn
+    @param conn HttpConn connection object created via #httpCreateConn
     @return True if the web socket was orderly closed.
-    @ingroup WebSocket
+    @ingroup HttpWebSockets
     @stability Prototype
  */
 PUBLIC bool httpWebSocketOrderlyClosed(HttpConn *conn);

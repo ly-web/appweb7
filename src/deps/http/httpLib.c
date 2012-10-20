@@ -16993,6 +16993,7 @@ PUBLIC bool httpWebSocketOrderlyClosed(HttpConn *conn)
 
 PUBLIC void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols)
 {
+    assure(protocols && *protocols);
     conn->protocols = sclone(protocols);
 }
 

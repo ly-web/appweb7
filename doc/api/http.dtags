@@ -263,6 +263,13 @@
       <arglist>(HttpPacket *packet)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>httpIsLastPacket</name>
+      <anchorfile>group___http_packet.html</anchorfile>
+      <anchor>gaa25ed1b46cc6df6db57bc4abd2813774</anchor>
+      <arglist>(HttpPacket *packet)</arglist>
+    </member>
+    <member kind="function">
       <type>int</type>
       <name>httpJoinPacket</name>
       <anchorfile>group___http_packet.html</anchorfile>
@@ -800,6 +807,13 @@
       <name>httpGetKeepAliveCount</name>
       <anchorfile>group___http_conn.html</anchorfile>
       <anchor>gaa2099f58db09458014bab94511635438</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>ssize</type>
+      <name>httpGetWriteQueueCount</name>
+      <anchorfile>group___http_conn.html</anchorfile>
+      <anchor>ga00caa53532192c9e3f7bedb51ab77aca</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
@@ -2444,6 +2458,62 @@
     <name>HttpWebSockets</name>
     <title>HttpWebSockets</title>
     <filename>group___http_web_sockets.html</filename>
+    <member kind="function">
+      <type>char *</type>
+      <name>httpGetWebSocketCloseReason</name>
+      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchor>ga6c1a4a4b4d9cfc2ce626bb5fd005e6ac</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>httpGetWebSocketProtocol</name>
+      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchor>gad908e15f337a359e0f90258621d1329b</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>ssize</type>
+      <name>httpSend</name>
+      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchor>ga038d5c42a1ef5bce910dc617987a222c</anchor>
+      <arglist>(HttpConn *conn, cchar *fmt,...)</arglist>
+    </member>
+    <member kind="function">
+      <type>ssize</type>
+      <name>httpSendBlock</name>
+      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchor>gae2af890521914c06d63df6ad51dddb79</anchor>
+      <arglist>(HttpConn *conn, int type, cchar *buf, ssize len, bool last)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSendClose</name>
+      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchor>gadb22d418a67109b699890888ca66053a</anchor>
+      <arglist>(HttpConn *conn, int status, cchar *reason)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetWebSocketProtocols</name>
+      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchor>ga96f8cb3db541d8a1340caf0d2afbbb1f</anchor>
+      <arglist>(HttpConn *conn, cchar *protocols)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>httpUpgradeWebSocket</name>
+      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchor>ga3456efbc36a0e27b3dde28462ef88d90</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>httpWebSocketOrderlyClosed</name>
+      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchor>gacb7184072bfb15ebf2c95f9ef6d0ba8c</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
   </compound>
   <compound kind="struct">
     <name>HttpLang</name>

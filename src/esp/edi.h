@@ -317,7 +317,7 @@ PUBLIC EdiGrid *ediCloneGrid(EdiGrid *grid);
 /**
     Create a record
     @description This will create a record using the given database tableName to supply the record schema. Use
-        $ediCreateBareRec to create a free-standing record without requiring a database.
+        #ediCreateBareRec to create a free-standing record without requiring a database.
         The record is allocated and room is reserved to store record values. No record field values are stored.
     @param edi Database handle
     @param tableName Database table name
@@ -435,7 +435,7 @@ PUBLIC Edi *ediOpen(cchar *source, cchar *provider, int flags);
     Run a query.
     @description This runs a provider dependant query. For the SQLite provider, this runs an SQL statement.
     The "mdb" provider does not implement this API. To do queries using the "mdb" provider, use:
-        $ediReadRec, $ediReadOneWhere, $ediReadWhere, $ediReadField and $ediReadTable.
+        #ediReadRec, #ediReadOneWhere, #ediReadWhere, #ediReadField and #ediReadTable.
     @param edi Database handle
     @param cmd Query command to execute.
     @return If succesful, returns tabular data in the form of an EgiGrid structure. Returns NULL on errors.
@@ -585,7 +585,7 @@ PUBLIC int ediSave(Edi *edi);
 /**
     Set a record field without writing to the database.
     @description This routine updates the record object with the given value. The record will not be written
-        to the database. To write to the database, use $ediUpdateRec.
+        to the database. To write to the database, use #ediUpdateRec.
     @param rec Record to update
     @param fieldName Record field name to update
     @param value Value to update
@@ -597,11 +597,11 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
 /**
     Set record fields without writing to the database.
     @description This routine updates the record object with the given values. The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request $params() or it can be manually
+        a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: ediSetFields(rec, ediMakeHash("{ name: '%s', address: '%s' }", name, address))
         The record will not be written
-        to the database. To write to the database, use $ediUpdateRec.
+        to the database. To write to the database, use #ediUpdateRec.
     @param rec Record to update
     @param data Hash of field names and values to use for the update
     @return The record instance if successful, otherwise NULL.
@@ -639,7 +639,7 @@ PUBLIC int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldNa
 /**
     Write field values to a database row.
     @description This routine updates a database row with the given values.  The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request $params() or it can be manually
+        a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: ediUpdateFields(rec, params());
         Note: field validations are not run.
@@ -666,8 +666,8 @@ PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec);
 /**
     Validate a record.
     @description Run defined field validations and return true if the record validates. Field validations are defined
-        via $ediAddValidation calls. If any validations fail, error messages will be added to the record and can be 
-        retrieved via $ediGetRecErrors.
+        via #ediAddValidation calls. If any validations fail, error messages will be added to the record and can be 
+        retrieved via #ediGetRecErrors.
     @param rec Record to validate
     @return True if all field valiations pass.
     @ingroup Edi

@@ -123,7 +123,7 @@ static cchar *ControllerTemplateHeader = "\
 
 
 static cchar *ControllerTemplateFooter = "\
-ESP_EXPORT int esp_controller_${NAME}(EspRoute *eroute, MprModule *module) \n\
+ESP_EXPORT int esp_module_${NAME}(EspRoute *eroute, MprModule *module) \n\
 {\n\
 ${DEFINE_ACTIONS}    return 0;\n\
 }\n";
@@ -179,7 +179,7 @@ static void update() { \n\
 ";
 
 static cchar *ScaffoldTemplateFooter = "\
-ESP_EXPORT int esp_controller_${NAME}(HttpRoute *route, MprModule *module) \n\
+ESP_EXPORT int esp_module_${NAME}(HttpRoute *route, MprModule *module) \n\
 {\n\
     espDefineAction(route, \"${NAME}-create\", create);\n\
     espDefineAction(route, \"${NAME}-destroy\", destroy);\n\
@@ -934,7 +934,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
                 return;
             }
             mprWriteFileFmt(app->flatFile, "\n\n");
-            mprAddItem(app->flatItems, sfmt("esp_controller_%s", mprTrimPathExt(mprGetPathBase(source))));
+            mprAddItem(app->flatItems, sfmt("esp_module_%s", mprTrimPathExt(mprGetPathBase(source))));
         }
     }
     if (kind & (ESP_PAGE | ESP_VIEW)) {

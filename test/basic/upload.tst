@@ -21,6 +21,7 @@ if (App.config.bit_ejscript) {
     assert(http.response.contains('"clientFilename": "test.dat"'))
     assert(http.response.contains('Uploaded'))
     assert(http.response.contains('"address": "100 Mayfair"'))
+    http.close()
 
 } else {
     test.skip("Ejscript not enabled")

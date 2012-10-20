@@ -51,4 +51,5 @@ if (false) {
     http.wait()
     // print("CODE " + http.status)
     // print("GOT  " + http.response.length + " bytes of response")
+    http.close()
 }

@@ -377,7 +377,7 @@ static char *getControllerEntry(cchar *controllerName)
 {
     char    *cp, *entry;
 
-    entry = sfmt("esp_controller_%s", mprTrimPathExt(mprGetPathBase(controllerName)));
+    entry = sfmt("esp_module_%s", mprTrimPathExt(mprGetPathBase(controllerName)));
     for (cp = entry; *cp; cp++) {
         if (!isalnum((uchar) *cp) && *cp != '_') {
             *cp = '_';

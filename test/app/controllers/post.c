@@ -47,7 +47,7 @@ static void update() {
     }
 }
 
-ESP_EXPORT int esp_controller_post(HttpRoute *route, MprModule *module) 
+ESP_EXPORT int esp_module_post(HttpRoute *route, MprModule *module) 
 {
     Edi     *edi;
 
