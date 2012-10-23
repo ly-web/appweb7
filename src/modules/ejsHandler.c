@@ -40,7 +40,10 @@ static void openEjs(HttpQueue *q)
 
     mprLog(5, "Open EJS handler");
     if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        httpHandleOptionsTrace(q->conn);
+        /*
+            Ejscript accepts all methods if there is a registered route. However, we only advertise the standard methods.
+        */
+        httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
 
     } else if (!conn->ejs) {
         if (!route->context) {

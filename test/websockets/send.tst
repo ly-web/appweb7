@@ -2,12 +2,6 @@
     send - WebSocket send tests
  */
 
-function wait(ws: WebSocket, state: Number, timeout: Number = Number.MaxInt32): Boolean {
-    for (let mark = new Date; ws.readyState != state && mark.elapsed < timeout; )
-        App.run(timeout - mark.elapsed, true)
-    return ws.readyState == state
-}
-
 const PORT = App.config.test.http_port || "4100"
 const WS = "ws://127.0.0.1:" + PORT + "/websockets/basic/send"
 
@@ -22,11 +16,11 @@ ws.onopen = function (event) {
     ws.send("Dear Server: Thanks for listening")
 }
 
-wait(ws, WebSocket.OPEN)
+ws.wait(WebSocket.OPEN, 5000)
 assert(opened)
 
 ws.close()
 assert(ws.readyState == WebSocket.CLOSING)
-wait(ws, WebSocket.CLOSED)
+ws.wait(WebSocket.CLOSED, 5000)
 assert(ws.readyState == WebSocket.CLOSED)
 

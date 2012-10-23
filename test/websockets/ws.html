@@ -10,7 +10,7 @@
     // var ws = new WebSocket('ws://html5rocks.websocket.org/echo', ['soap', 'xmpp']);
     // ws = new WebSocket('ws://echo.websocket.org/', "");
     // ws = new WebSocket('ws://node.remysharp.com:8001');
-    ws = new WebSocket('ws://localhost:4100/websock/index.html');
+    ws = new WebSocket('ws://localhost:4100/websockets/basic/open');
 
     //  MOB - can't send here until handshake received
     // ws.send(JSON.stringify('Hello WebSockets World'));
@@ -20,9 +20,6 @@
         console.log(event.data);
     };
     ws.onmessage = function (event) {
-        if (event.data instanceof Blob) {
-        } else {
-        }
         console.log("MSG", event.data);
     };
     ws.onclose = function (event) {
