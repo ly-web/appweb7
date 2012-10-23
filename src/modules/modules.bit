@@ -7,18 +7,18 @@ Bit.load({
         '+depends': [ 'libappweb' ],
     },
     targets: {
-        mod_cgi: {
+        libmod_cgi: {
             enable: 'bit.packs.cgi.enable',
             type: 'lib',
             sources: [ 'cgiHandler.c' ],
         },
-        mod_ejs: {
+        libmod_ejs: {
             enable: 'bit.packs.ejscript.enable',
             type: 'lib',
             sources: [ 'ejsHandler.c' ],
             depends: [ 'libejs' ],
         },
-        mod_php: {
+        libmod_php: {
             enable: 'bit.packs.php.enable',
             type: 'lib',
             sources: [ 'phpHandler.c' ],
@@ -28,12 +28,12 @@ Bit.load({
                 '-Wshorten-64-to-32',
             ],
         },
-        mod_proxy: {
+        libmod_proxy: {
             enable: false,
             type: 'lib',
             sources: [ 'proxyHandler.c' ],
         },
-        mod_ssl: {
+        libmod_ssl: {
             enable: 'bit.packs.ssl.enable',
             type: 'lib',
             sources: [ 'sslModule.c' ],

@@ -9,7 +9,7 @@ Bit.load({
             /* 
                 When linking shared, the modules are not really required. But when doing a static build they are.
              */
-            depends: ['libappweb', 'mod_esp', 'mod_ssl', 'mod_ejs', 'mod_php', 'mod_cgi'],
+            depends: ['libappweb', 'libmod_esp', 'libmod_ssl', 'libmod_ejs', 'libmod_php', 'libmod_cgi'],
             sources: [ 'appweb.c' ],
             headers: [ '*.h' ],
         },

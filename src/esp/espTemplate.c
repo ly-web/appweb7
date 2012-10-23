@@ -841,9 +841,9 @@ static cchar *getLibs(cchar *os)
     cchar       *libs;
 
     if (smatch(os, "windows")) {
-        libs = "\"${LIBPATH}\\mod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\"";
+        libs = "\"${LIBPATH}\\libmod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\"";
     } else {
-        libs = "${LIBPATH}/mod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
+        libs = "${LIBPATH}/libmod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
     }
     return libs;
 }

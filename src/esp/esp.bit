@@ -4,7 +4,7 @@
 
 Bit.load({
     targets: {
-        mod_esp: {
+        libmod_esp: {
             type: 'lib',
             depends: [ 'libappweb' ],
             sources: [ '*.c' ],
