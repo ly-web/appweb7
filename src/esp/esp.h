@@ -1751,7 +1751,7 @@ PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *options);
 
 /**
     Render a script link.
-    @param uri Script URI to load. Set to null to get a default set of scripts. See $httpLink for a list of possible
+    @param uri Script URI to load. Set to null to get a default set of scripts. See #httpLink for a list of possible
         URI formats.
     @param conn Http connection object
     @param options Extra options. See \l EspControl \el for a list of the standard options.
@@ -1766,7 +1766,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
     The token will automatically be included whenever forms are submitted and the token is validated by the 
     receiving Controller. Typically, forms will automatically generate the security token. Note that explicitly
     calling this routine is not necessary unless a security token is required for non-form requests such as AJAX
-    requests. The $securityToken control should be called inside the &lt;head section of the web page.
+    requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @param conn Http connection object
     @ingroup EspControl
  */
@@ -1774,7 +1774,7 @@ PUBLIC void espSecurityToken(HttpConn *conn);
 
 /**
     Render a stylesheet link
-    @param uri Stylesheet URI to load. Set to null to get a default set of stylesheets. See $httpLink for a list of possible
+    @param uri Stylesheet URI to load. Set to null to get a default set of stylesheets. See #httpLink for a list of possible
         URI formats.
     @param conn Http connection object
     @param options Extra options. See \l EspControl \el for a list of the standard options.
@@ -1790,7 +1790,6 @@ PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
     @param conn Http connection object
     @param grid Data to display. The data is a grid of data. Use ediMakeGrid or ediReadGrid.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @param options Optional extra options. See $View for a list of the standard options.
     @arg cell Boolean Set to "true" to make click or edit links apply per cell instead of per row. 
         The default is false.
     @arg columns Object The columns list is an object hash of column objects where each column entry is a
@@ -1835,7 +1834,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
     @param conn Http connection object
     @param rec Tab data for the control. Tab data is be be a single object where the tab text is the property 
         key and the target to invoke is the property value. 
-    @param options Optional extra options. See $View for a list of the standard options.
+    @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg click Set to "true" to invoke the selected pane via a foreground click.
     @arg remote Set to "true" to invoke the selected pane via a background click.
     @arg toggle Set to "true" to show the selected pane and hide other panes.
@@ -1852,7 +1851,7 @@ PUBLIC void espTabs(HttpConn *conn, EdiRec *rec, cchar *options);
         this call is used without a form control record, the actual data value should be supplied via the 
         options.value property. If the cols or rows option is defined, then a textarea HTML element will be used for
         multiline input.
-    @param options Optional extra options. See $View for a list of the standard options.
+    @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg cols Number number of text columns
     @arg rows Number number of text rows
     @arg password Boolean The data to display is a password and should be obfuscated.
@@ -1866,7 +1865,7 @@ PUBLIC void espText(HttpConn *conn, cchar *field, cchar *options);
     @description The tree control can display static or dynamic tree data.
     @param grid Optional initial data for the control. The data option may be used with the refresh option to 
           dynamically refresh the data. The tree data is typically an XML document.
-    @param options Optional extra options. See $View for a list of the standard options.
+    @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
     @internal
  */
@@ -1946,7 +1945,7 @@ PUBLIC void chart(EdiGrid *grid, cchar *options);
     Render an input checkbox. 
     @description This creates a checkbox suitable for use within an input form. 
     @param field Name for the input checkbox. This defines the HTML element name and provides the source of the
-        initial value for the checkbox. The field should be a property of the $espForm current record. 
+        initial value for the checkbox. The field should be a property of the #espForm current record. 
         If this call is used without a form control record, the actual data value should be supplied via the 
         options.value property.
     @param checkedValue Value for which the checkbox will be checked.
@@ -1991,7 +1990,7 @@ PUBLIC void endform();
 /**
     Render flash notices.
     @description Flash notices are one-time messages that are displayed to the client on the next request (only).
-        See $espSetFlash for how to define flash messages. 
+        See #espSetFlash for how to define flash messages. 
     @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg retain -- Number of seconds to retain the message. If <= 0, the message is retained until another
@@ -2005,7 +2004,7 @@ PUBLIC void flash(cchar *kinds, cchar *options);
 /**
     Render an HTML form 
     @description This will render an HTML form tag and optionally associate the given record as the current record for
-        the request. Abbreviated controls (see $EspAbbrev) use the current record to supply form data fields and values.
+        the request. Abbreviated controls (see \l EspAbbrev \el) use the current record to supply form data fields and values.
         The espForm control can be used without a record. In this case, nested ESP controls may have to provide 
         values via an Options.value field.
     @param record Record to use by default to supply form field names and values. If NULL, use the default record.
@@ -2100,7 +2099,7 @@ PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
 
 /**
     Render a script link
-    @param uri Script URI to load. Set to null to get a default set of scripts. See $httpLink for a list of possible
+    @param uri Script URI to load. Set to null to get a default set of scripts. See #httpLink for a list of possible
         URI formats.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
@@ -2114,7 +2113,7 @@ PUBLIC void script(cchar *uri, cchar *options);
     The token will automatically be included whenever forms are submitted and the token be validated by the 
     receiving Controller. Forms will normally automatically generate the security token and that explicitly
     calling this routine is not required unless a security token is required for non-form requests such as AJAX
-    requests. The $securityToken control should be called inside the &lt;head section of the web page.
+    requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @ingroup EspAbbrev
  */
 PUBLIC void securityToken();
@@ -2122,7 +2121,7 @@ PUBLIC void securityToken();
 /**
     Render a stylesheet link
     @param uri Stylesheet URI to load. Set to null to get a default set of stylesheets. 
-        See \l httpLink \el for a list of possible URI formats.
+        See #httpLink for a list of possible URI formats.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
  */
@@ -2388,7 +2387,7 @@ PUBLIC cchar *getQuery();
 
 /**
     Get the current database record
-    @description The current record is defined via $setRec
+    @description The current record is defined via #setRec
     @return EdiRec instance
     @ingroup EspAbbrev
  */
@@ -2398,7 +2397,7 @@ PUBLIC EdiRec *getRec();
     Get the referring URI
     @description This returns the referring URI as described in the HTTP "referer" (yes the HTTP specification does
         spell it incorrectly) header. If this header is not defined, this routine will return the home URI as returned
-        by $home.
+        by #espGetTop.
     @return String URI back to the referring URI. If no referrer is defined, refers to the home URI.
     @ingroup EspAbbrev
  */
@@ -2406,7 +2405,7 @@ PUBLIC cchar *getReferrer();
 
 /**
     Get a session state variable
-    @description See also $espGetSessionVar and $espGetSessionObj for alternate ways to retrieve session data.
+    @description See also #httpGetSessionVar and #httpGetSessionObj for alternate ways to retrieve session data.
     @param name Variable name to get
     @return The session variable value. Returns NULL if not set.
     @ingroup EspAbbrev
@@ -2444,7 +2443,7 @@ PUBLIC cchar *getUri();
 
 /**
     Test if a current grid has been defined
-    @description The current grid is defined via $setRec
+    @description The current grid is defined via #setRec
     @return "true" if a current grid has been defined
     @ingroup EspAbbrev
  */
@@ -2478,7 +2477,6 @@ PUBLIC bool isFinalized();
     Set an informational flash notification message.
     @description Flash messages persist for only one request and are a convenient way to pass state information or 
     feedback messages to the next request. 
-    This routine calls $espInform.
     @param fmt Printf style message format
     @ingroup EspAbbrev
  */
@@ -2543,7 +2541,7 @@ PUBLIC void notice(cchar *fmt, ...);
     Get a request parameter
     @description Get the value of a named request parameter. Form variables are defined via www-urlencoded query or post
         data contained in the request.
-        This routine calls $espGetParam
+        This routine calls #espGetParam
     @param name Name of the request parameter to retrieve
     @return String containing the request parameter's value. Caller should not free.
     @ingroup EspAbbrev
@@ -2555,7 +2553,7 @@ PUBLIC cchar *param(cchar *name);
     @description This call gets the params hash table for the current request.
         Route tokens, request query data, and www-url encoded form data are all entered into the params table after decoding.
         Use #mprLookupKey to retrieve data from the table.
-        This routine calls $espGetParams
+        This routine calls #espGetParams
     @return #MprHash instance containing the request parameters
     @ingroup EspAbbrev
  */
@@ -2629,7 +2627,7 @@ PUBLIC ssize receive(char *buf, ssize size);
 /**
     Redirect the client
     @description Redirect the client to a new uri. This will redirect with an HTTP 302 status. If a different HTTP status
-    code is required, use $espRedirect.
+    code is required, use #espRedirect.
     @param target New target uri for the client
     @ingroup EspAbbrev
  */
@@ -2756,7 +2754,7 @@ PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value);
 /**
     Update record fields without writing to the database
     @description This routine updates the record object with the given values. The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request $params() or it can be manually
+        a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: updateFields(rec, hash("{ name: '%s', address: '%s' }", name, address))
         The record will not be written
@@ -2773,8 +2771,7 @@ PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *data);
     @description Flash messages persist for only one request and are a convenient way to pass state information or 
     feedback messages to the next request. 
     Flash messages use the session state store, but persist only for one request.
-    The $inform, $error and $warn convenience methods invoke $notice.
-    This routine calls $espSetFlash.
+    This routine calls #espSetFlash.
     @param kind Kind of flash message.
     @param fmt Printf style message format
     @ingroup EspAbbrev
@@ -2820,7 +2817,7 @@ PUBLIC EdiRec *setRec(EdiRec *rec);
 
 /**
     Set a session state variable
-    @description See also $espSetSessionVar and $espSetSessionObj for alternate ways to set session data.
+    @description See also #httpSetSessionVar and #httpSetSessionObj for alternate ways to set session data.
     @param name Variable name to set
     @param value Value to set
     @ingroup EspAbbrev
@@ -2878,7 +2875,7 @@ PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *v
     Write field values to a database row
     @description This routine updates the current record with the given data and then saves the record to
         the database. The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request $params() or it can be manually
+        a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: ediWriteFields(rec, params());
         The record runs field validations before saving to the database.
@@ -2892,7 +2889,7 @@ PUBLIC bool updateFields(cchar *tableName, MprHash *data);
 /**
     Write a record to the database
     @description The record will be saved to the database after running any field validations. If any field validations
-        fail to pass, the record will not be written and error details can be retrieved via $ediGetRecErrors.
+        fail to pass, the record will not be written and error details can be retrieved via #ediGetRecErrors.
         If the record is a new record and the "id" column is EDI_AUTO_INC, then the "id" will be assigned
         prior to saving the record.
     @param rec Record to write to the database.

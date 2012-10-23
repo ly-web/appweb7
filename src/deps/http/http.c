@@ -123,7 +123,7 @@ MAIN(httpMain, int argc, char **argv, char **envp)
         exit(2);
     }
     start = mprGetTime();
-    app->http = httpCreate();
+    app->http = httpCreate(HTTP_CLIENT_SIDE);
     httpEaseLimits(app->http->clientLimits);
 
     processing();
@@ -894,7 +894,7 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
         return MPR_ERR_CANT_CONNECT;
     }
     remaining = limits->requestTimeout;
-    while (!conn->error && conn->state < HTTP_STATE_COMPLETE && remaining > 0) {
+    while (!conn->tx->complete && conn->state < HTTP_STATE_COMPLETE && remaining > 0) {
         remaining = mprGetRemainingTime(mark, limits->requestTimeout);
         httpWait(conn, 0, remaining);
         readBody(conn);

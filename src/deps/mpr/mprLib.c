@@ -3857,6 +3857,7 @@ PUBLIC MprBuf *mprCloneBuf(MprBuf *orig)
     bp->refillArg = orig->refillArg;
     if ((len = mprGetBufLength(orig)) > 0) {
         memcpy(bp->data, orig->data, len);
+        bp->end = &bp->data[len];
     }
     return bp;
 }

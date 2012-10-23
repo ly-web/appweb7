@@ -59,7 +59,7 @@ static void openCgi(HttpQueue *q)
         return;
     }
     if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        httpHandleOptionsTrace(q->conn);
+        httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
     } else {
         httpTrimExtraPath(q->conn);
         httpMapFile(q->conn, rx->route);
@@ -396,7 +396,7 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
     default:
         /* Child death notification */
         if (cmd->pid == 0 && cmd->complete) {
-            httpFinalize(conn);
+            httpComplete(conn);
         }
     }
     if (conn->keepAliveCount < 0 && conn->state <= HTTP_STATE_CONNECTED) {
@@ -492,7 +492,7 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
     }
     if (cmd->complete && conn->state > HTTP_STATE_BEGIN) {
         mprAssert(conn->tx);
-        httpFinalize(conn);
+        httpComplete(conn);
     }
     return total;
 }
@@ -665,7 +665,6 @@ static bool parseCgiHeaders(HttpConn *conn, MprCmd *cmd)
 
     if (location) {
         httpRedirect(conn, tx->status, location);
-        httpFinalize(conn);
         if (conn->state == HTTP_STATE_COMPLETE) {
             httpPump(conn, NULL);
         }
@@ -1056,7 +1055,7 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
     HttpStage   *handler;
     MaAppweb    *appweb;
 
-    if ((handler = httpCreateHandler(http, "cgiHandler", 0, module)) == 0) {
+    if ((handler = httpCreateHandler(http, "cgiHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     http->cgiHandler = handler;

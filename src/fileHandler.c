@@ -16,7 +16,6 @@
 
 /***************************** Forward Declarations ***************************/
 
-static int findFile(HttpConn *conn);
 static void handleDeleteRequest(HttpQueue *q);
 static void handlePutRequest(HttpQueue *q);
 static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize size);
@@ -28,38 +27,25 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
 static int matchFileHandler(HttpConn *conn, HttpRoute *route, int dir)
 {
     HttpRx      *rx;
-    
-    rx = conn->rx;
-    httpMapFile(conn, route);
-    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
-        return findFile(conn);
-    }
-    return HTTP_ROUTE_OK;
-}
-
-
-/*
-    Map the request pathInfo to a physical file. This may respond by generating an error if the file can't be found.
- */
-static int findFile(HttpConn *conn)
-{
-    HttpRx      *rx;
     HttpTx      *tx;
     HttpUri     *prior;
-    HttpRoute   *route;
     MprPath     *info, zipInfo;
     cchar       *index;
     char        *path, *pathInfo, *uri, *zipfile;
     int         next;
-
+    
+    rx = conn->rx;
     tx = conn->tx;
     rx = conn->rx;
-    route = rx->route;
     prior = rx->parsedUri;
     info = &tx->fileInfo;
 
+    httpMapFile(conn, route);
     mprAssert(info->checked);
 
+    if (rx->flags & (HTTP_DELETE | HTTP_PUT)) {
+        return HTTP_ROUTE_OK;
+    }
     if (info->isDir) {
         /*
             Manage requests for directories
@@ -115,88 +101,94 @@ static int findFile(HttpConn *conn)
             httpSetHeader(conn, "Content-Encoding", "gzip");
         }
     }
-    if (!(info->valid || info->isDir) && !(conn->rx->flags & HTTP_PUT)) {
-        mprError("Can't open document %s", tx->filename);
-        if (rx->referrer) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s from %s", rx->uri, rx->referrer);
-        } else {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s", rx->uri);
-        }
-    } else if (info->valid) {
-        /*
-            The sendFile connector is optimized on some platforms to use the sendfile() system call.
-            Set the entity length for the sendFile connector to utilize.
-         */
-        httpSetEntityLength(conn, tx->fileInfo.size);
-        if (!tx->etag) {
-            /* Set the etag for caching in the client */
-            tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
-        }
-    }
     return HTTP_ROUTE_OK;
 }
 
 
-/*
-    Initialize a handler instance for the file handler for this request
- */
 static void openFileHandler(HttpQueue *q)
 {
     HttpRx      *rx;
     HttpTx      *tx;
     HttpRoute   *route;
     HttpConn    *conn;
+    MprPath     *info;
     char        *date;
 
     conn = q->conn;
     tx = conn->tx;
     rx = conn->rx;
     route = rx->route;
+    info = &tx->fileInfo;
 
-    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
-        if (tx->fileInfo.valid && tx->fileInfo.mtime) {
-            //  TODO - OPT could cache this
-            date = httpGetDateString(&tx->fileInfo);
-            httpSetHeader(conn, "Last-Modified", date);
+    if (rx->flags & (HTTP_PUT | HTTP_DELETE)) {
+        if (!(route->flags & HTTP_ROUTE_PUT_DELETE_METHODS)) {
+            httpError(q->conn, HTTP_CODE_BAD_METHOD, "The \"%s\" method is not supported by file handler", rx->method);
         }
-        if (httpContentNotModified(conn)) {
-            httpSetStatus(conn, HTTP_CODE_NOT_MODIFIED);
-            httpOmitBody(conn);
-            tx->length = -1;
-        }
-        if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't locate document: %s", rx->uri);
-            
-        } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
-            httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
-                "Http transmission aborted. File size exceeds max body of %,Ld bytes", conn->limits->transmissionBodySize);
-            
-        } else if (!(tx->connector == conn->http->sendConnector)) {
-            /*
-                If using the net connector, open the file if a body must be sent with the response. The file will be
-                automatically closed when the request completes.
-             */
-            if (!(tx->flags & HTTP_TX_NO_BODY)) {
-                tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
-                if (tx->file == 0) {
-                    if (rx->referrer) {
-                        httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", tx->filename, rx->referrer);
-                    } else {
-                        httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", tx->filename);
-                    }
+    } else {
+        if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
+            if (!(info->valid || info->isDir)) {
+                mprError("Can't open document %s", tx->filename);
+                if (rx->referrer) {
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s from %s", rx->uri, rx->referrer);
+                } else {
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s", rx->uri);
+                }
+            } else if (info->valid) {
+                /*
+                    The sendFile connector is optimized on some platforms to use the sendfile() system call.
+                    Set the entity length for the sendFile connector to utilize.
+                 */
+                httpSetEntityLength(conn, tx->fileInfo.size);
+                if (!tx->etag) {
+                    /* Set the etag for caching in the client */
+                    tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
                 }
             }
         }
+        if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST) && !conn->error) {
+            if (tx->fileInfo.valid && tx->fileInfo.mtime) {
+                //  TODO - OPT could cache this
+                date = httpGetDateString(&tx->fileInfo);
+                httpSetHeader(conn, "Last-Modified", date);
+            }
+            if (httpContentNotModified(conn)) {
+                httpSetStatus(conn, HTTP_CODE_NOT_MODIFIED);
+                httpOmitBody(conn);
+                tx->length = -1;
+            }
+            if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
+                httpError(conn, HTTP_CODE_NOT_FOUND, "Can't locate document: %s", rx->uri);
+                
+            } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
+                httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
+                    "Http transmission aborted. File size exceeds max body of %,Ld bytes", 
+                        conn->limits->transmissionBodySize);
+                
+            } else if (!(tx->connector == conn->http->sendConnector)) {
+                /*
+                    If using the net connector, open the file if a body must be sent with the response. The file will be
+                    automatically closed when the request completes.
+                 */
+                if (!(tx->flags & HTTP_TX_NO_BODY)) {
+                    tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
+                    if (tx->file == 0) {
+                        if (rx->referrer) {
+                            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", 
+                                tx->filename, rx->referrer);
+                        } else {
+                            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", tx->filename);
+                        }
+                    }
+                }
+            }
 
-    } else if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        httpHandleOptionsTrace(q->conn);
-
-    } else if ((rx->flags & (HTTP_PUT | HTTP_DELETE)) && (route->flags & HTTP_ROUTE_PUT_DELETE)) {
-        /* No response body is sent for PUT or DELETE */
-        httpOmitBody(conn);
-
-    } else {
-        httpError(q->conn, HTTP_CODE_BAD_METHOD, "The \"%s\" method is not supported by file handler", rx->method);
+        } else if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
+            if (route->flags & HTTP_ROUTE_PUT_DELETE_METHODS) {
+                httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
+            } else {
+                httpHandleOptionsTrace(q->conn, "GET,HEAD,POST");
+            }
+        }
     }
 }
 
@@ -211,14 +203,15 @@ static void startFileHandler(HttpQueue *q)
     conn = q->conn;
     rx = conn->rx;
     tx = conn->tx;
+    assure(!tx->complete);
     
-    if (tx->flags & HTTP_TX_NO_BODY) {
-        if (rx->flags & HTTP_PUT) {
-            handlePutRequest(q);
-        } else if (rx->flags & HTTP_DELETE) {
-            handleDeleteRequest(q);
-        }
-    } else {
+    if (rx->flags & HTTP_PUT) {
+        handlePutRequest(q);
+        
+    } else if (rx->flags & HTTP_DELETE) {
+        handleDeleteRequest(q);
+        
+    } else if (!(tx->flags & HTTP_TX_NO_BODY)) {
         /* Create a single data packet based on the entity length */
         packet = httpCreateEntityPacket(0, tx->entityLength, readFileData);
         if (!tx->outputRanges) {
@@ -237,9 +230,9 @@ static void startFileHandler(HttpQueue *q)
 static void readyFileHandler(HttpQueue *q)
 {
     /*
-        The queue already contains a single data packet representing all the output data. So can be finalized now.
+        The queue already contains a single data packet representing all the output data.
      */
-    httpFinalize(q->conn);
+    httpComplete(q->conn);
 }
 
 
@@ -335,7 +328,7 @@ static void outgoingFileService(HttpQueue *q)
     usingSend = (tx->connector == conn->http->sendConnector);
 
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
-        if (!usingSend && !tx->outputRanges && packet->flags & HTTP_PACKET_DATA) {
+        if (!usingSend && !tx->outputRanges && packet->esize) {
             if ((rc = prepPacket(q, packet)) < 0) {
                 return;
             } else if (rc == 0) {
@@ -476,7 +469,7 @@ PUBLIC int maOpenFileHandler(Http *http)
     /* 
         This handler serves requests without using thread workers.
      */
-    if ((handler = httpCreateHandler(http, "fileHandler", 0, NULL)) == 0) {
+    if ((handler = httpCreateHandler(http, "fileHandler", NULL)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     handler->match = matchFileHandler;

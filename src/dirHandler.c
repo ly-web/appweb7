@@ -94,6 +94,10 @@ static void startDir(HttpQueue *q)
     dir = conn->data;
     mprAssert(tx->filename);
 
+    if (!(rx->flags & (HTTP_GET | HTTP_HEAD))) {
+        httpError(conn, HTTP_CODE_BAD_METHOD, "Bad method");
+        return;
+    }
     httpSetHeaderString(conn, "Cache-Control", "no-cache");
     httpSetHeaderString(conn, "Last-Modified", conn->http->currentDate);
     parseQuery(conn);
@@ -121,7 +125,7 @@ static void startDir(HttpQueue *q)
         outputLine(q, dp, tx->filename, nameSize);
     }
     outputFooter(q);
-    httpFinalize(conn);
+    httpComplete(conn);
 }
  
 
@@ -689,7 +693,7 @@ PUBLIC int maOpenDirHandler(Http *http)
     MaAppweb    *appweb;
     Dir         *dir;
 
-    if ((handler = httpCreateHandler(http, "dirHandler", HTTP_STAGE_GET | HTTP_STAGE_HEAD, NULL)) == 0) {
+    if ((handler = httpCreateHandler(http, "dirHandler", NULL)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     if ((handler->stageData = dir = mprAllocObj(Dir, manageDir)) == 0) {

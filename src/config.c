@@ -1460,9 +1460,9 @@ static int putMethodDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (on) {
-        state->route->flags |= HTTP_ROUTE_PUT_DELETE;
+        state->route->flags |= HTTP_ROUTE_PUT_DELETE_METHODS;
     } else {
-        state->route->flags &= ~HTTP_ROUTE_PUT_DELETE;
+        state->route->flags &= ~HTTP_ROUTE_PUT_DELETE_METHODS;
     }
     return 0;
 }
@@ -1812,7 +1812,7 @@ static int traceMethodDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%B", &on)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    state->limits->enableTraceMethod = on;
+    httpEnableTraceMethod(state->route, on);
     return 0;
 }
 

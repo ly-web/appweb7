@@ -49,8 +49,10 @@ static void openEsp(HttpQueue *q)
     rx = conn->rx;
 
     if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        httpHandleOptionsTrace(q->conn);
-
+        /*
+            ESP accepts all methods if there is a registered route. However, we only advertise the standard methods
+         */
+        httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
     } else {
         if ((req = mprAllocObj(EspReq, manageReq)) == 0) {
             httpMemoryError(conn);
@@ -1069,7 +1071,7 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
 
     appweb = httpGetContext(http);
 
-    if ((handler = httpCreateHandler(http, "espHandler", 0, module)) == 0) {
+    if ((handler = httpCreateHandler(http, "espHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     handler->open = openEsp; 

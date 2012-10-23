@@ -143,7 +143,7 @@ static void openPhp(HttpQueue *q)
     mprLog(5, "Open php handler");
     httpTrimExtraPath(q->conn);
     if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        httpHandleOptionsTrace(q->conn);
+        httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
 
     } else if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST | HTTP_PUT)) {
         httpMapFile(q->conn, rx->route);
@@ -273,7 +273,7 @@ static void readyPhp(HttpQueue *q)
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR,  "PHP script shutdown failed");
     } zend_end_try();
 
-    httpFinalize(conn);
+    httpComplete(conn);
 }
 
  /*************************** PHP Support Functions ***************************/
@@ -555,7 +555,7 @@ PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
     if (module) {
         mprSetModuleFinalizer(module, finalizePhp); 
     }
-    if ((handler = httpCreateHandler(http, "phpHandler", 0, module)) == 0) {
+    if ((handler = httpCreateHandler(http, "phpHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     handler->open = openPhp;

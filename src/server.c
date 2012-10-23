@@ -28,7 +28,7 @@ PUBLIC MaAppweb *maCreateAppweb()
         return 0;
     }
     MPR->appwebService = appweb;
-    appweb->http = http = httpCreate(appweb);
+    appweb->http = http = httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE);
     httpSetContext(http, appweb);
     appweb->servers = mprCreateList(-1, 0);
     appweb->localPlatform = slower(sfmt("%s-%s-%s", BIT_OS, BIT_CPU, BIT_PROFILE));

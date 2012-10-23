@@ -10,7 +10,7 @@ http.setCredentials("anybody", "PASSWORD WONT MATTER")
 http.get(HTTP + "/index.html")
 assert(http.status == 200)
 
-//  Access to basic/basic.html accepts by any valid user
+//  Access to basic/basic.html accepts by any valid user. This should fail.
 http.get(HTTP + "/auth/basic/basic.html")
 assert(http.status == 401)
 

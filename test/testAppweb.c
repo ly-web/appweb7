@@ -303,7 +303,7 @@ bool bulkPost(MprTestGroup *gp, char *url, int size, int expectStatus)
 Http *getHttp(MprTestGroup *gp)
 {
     if (gp->http == 0) {
-        gp->http = httpCreate(gp);
+        gp->http = httpCreate(HTTP_SERVER_SIDE | HTTP_CLIENT_SIDE);
     }
     return gp->http;
 }
