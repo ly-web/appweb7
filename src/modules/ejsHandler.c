@@ -132,7 +132,7 @@ PUBLIC int maEjsHandlerInit(Http *http, MprModule *module)
     MaAppweb    *appweb;
     HttpStage   *stage;
 
-    if ((stage = httpCreateHandler(http, "ejsHandler", HTTP_STAGE_ALL, module)) != 0) {
+    if ((stage = httpCreateHandler(http, "ejsHandler", module)) != 0) {
         http->ejsHandler = stage;
         stage->open = openEjs;
         /*

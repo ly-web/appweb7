@@ -6335,6 +6335,7 @@ PUBLIC void httpHandleOptionsTrace(HttpConn *conn, cchar *methods)
     HttpRoute   *route;
     HttpQueue   *q;
     HttpPacket  *traceData, *headers;
+    MprKey      *method;
 
     tx = conn->tx;
     rx = conn->rx;
@@ -6366,7 +6367,15 @@ PUBLIC void httpHandleOptionsTrace(HttpConn *conn, cchar *methods)
         }
 
     } else if (rx->flags & HTTP_OPTIONS) {
-        httpSetHeader(conn, "Allow", "OPTIONS,%s%s", (route->flags & HTTP_ROUTE_TRACE_METHOD) ? "TRACE," : "", methods);
+        if (rx->route->methods) {
+            methods = 0;
+            for (ITERATE_KEYS(route->methods, method)) {
+                methods = (methods) ? sjoin(methods, ",", method->key, 0) : method->key;
+            }
+            httpSetHeader(conn, "Allow", "%s", methods);
+        } else {
+            httpSetHeader(conn, "Allow", "OPTIONS,%s%s", (route->flags & HTTP_ROUTE_TRACE_METHOD) ? "TRACE," : "", methods);
+        }
         assure(tx->length <= 0);
     }
     httpComplete(conn);
