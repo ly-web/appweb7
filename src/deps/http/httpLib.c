@@ -3857,7 +3857,7 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
 {
     HttpRx      *rx;
     HttpTx      *tx;
-    cchar       *uri, *statusMsg;;
+    cchar       *uri, *statusMsg;
     int         status;
 
     mprAssert(fmt);
