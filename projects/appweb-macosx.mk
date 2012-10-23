@@ -9,7 +9,7 @@ LD       ?= /usr/bin/ld
 PROFILE  ?= debug
 CONFIG   ?= $(OS)-$(ARCH)-$(PROFILE)
 
-CFLAGS   += -Wno-deprecated-declarations -w
+CFLAGS   += -w
 DFLAGS   += 
 IFLAGS   += -I$(CONFIG)/inc
 LDFLAGS  += '-Wl,-rpath,@executable_path/' '-Wl,-rpath,@loader_path/'
@@ -40,6 +40,7 @@ all: prep \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
         $(CONFIG)/bin/mod_cgi.dylib \
+        $(CONFIG)/bin/mod_ssl.dylib \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
         $(CONFIG)/bin/setConfig \
@@ -79,6 +80,7 @@ clean:
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
 	rm -rf $(CONFIG)/bin/mod_cgi.dylib
+	rm -rf $(CONFIG)/bin/mod_ssl.dylib
 	rm -rf $(CONFIG)/bin/authpass
 	rm -rf $(CONFIG)/bin/cgiProgram
 	rm -rf $(CONFIG)/bin/setConfig
@@ -150,12 +152,12 @@ $(CONFIG)/obj/mprSsl.o: \
         src/deps/mpr/mprSsl.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc -I../packages-macosx-x64/openssl/openssl-1.0.1c/include src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.dylib:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/mprSsl.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -L../packages-macosx-x64/openssl/openssl-1.0.1c -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS) -lssl -lcrypto
 
 $(CONFIG)/obj/manager.o: \
         src/deps/mpr/manager.c \
@@ -231,7 +233,7 @@ $(CONFIG)/obj/sqlite3.o: \
         src/deps/sqlite/sqlite3.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/sqlite3.h
-	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -arch x86_64 -Wno-deprecated-declarations -g -Wno-unused-result -w -w $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -arch x86_64 -w $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
 
 $(CONFIG)/bin/libsqlite3.dylib:  \
         $(CONFIG)/inc/sqlite3.h \
@@ -444,6 +446,17 @@ $(CONFIG)/bin/mod_cgi.dylib:  \
         $(CONFIG)/obj/cgiHandler.o
 	$(CC) -dynamiclib -o $(CONFIG)/bin/mod_cgi.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/mod_cgi.dylib $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
+$(CONFIG)/obj/sslModule.o: \
+        src/modules/sslModule.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/sslModule.c
+
+$(CONFIG)/bin/mod_ssl.dylib:  \
+        $(CONFIG)/bin/libappweb.dylib \
+        $(CONFIG)/obj/sslModule.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/mod_ssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/mod_ssl.dylib $(CONFIG)/obj/sslModule.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+
 $(CONFIG)/obj/authpass.o: \
         src/utils/authpass.c \
         $(CONFIG)/inc/bit.h \
@@ -489,10 +502,11 @@ $(CONFIG)/obj/appweb.o: \
 $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/bin/mod_esp.dylib \
+        $(CONFIG)/bin/mod_ssl.dylib \
         $(CONFIG)/bin/mod_cgi.dylib \
         $(CONFIG)/inc/appwebMonitor.h \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(CONFIG)/bin/mod_cgi.dylib $(CONFIG)/bin/mod_esp.dylib -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(CONFIG)/bin/mod_cgi.dylib $(CONFIG)/bin/mod_ssl.dylib $(CONFIG)/bin/mod_esp.dylib -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/inc/testAppweb.h: 
 	rm -fr $(CONFIG)/inc/testAppweb.h
