@@ -6604,7 +6604,6 @@ static int openQueue(HttpQueue *q, ssize chunkSize)
     if (stage->module) {
         stage->module->lastActivity = http->now;
     }
-    q->flags |= HTTP_QUEUE_OPEN;
     return 0;
 }
 
@@ -6623,6 +6622,7 @@ static void openQueues(HttpConn *conn)
                 if (q->pair == 0 || !(q->pair->flags & HTTP_QUEUE_OPEN)) {
                     openQueue(q, tx->chunkSize);
                     if (q->open && !tx->complete) {
+                        q->flags |= HTTP_QUEUE_OPEN;
                         q->stage->open(q);
                     }
                 }
@@ -12929,12 +12929,9 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
  */
 static MprOff buildSendVec(HttpQueue *q)
 {
-    HttpConn    *conn;
     HttpPacket  *packet;
 
     mprAssert(q->ioIndex == 0);
-
-    conn = q->conn;
     q->ioCount = 0;
     q->ioFile = 0;
 

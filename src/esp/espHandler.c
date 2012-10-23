@@ -50,7 +50,7 @@ static void openEsp(HttpQueue *q)
 
     if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
         /*
-            ESP accepts all methods if there is a registered route. However, we only advertise the standard methods
+            ESP accepts all methods if there is a registered route. However, we only advertise the standard methods.
          */
         httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
     } else {
