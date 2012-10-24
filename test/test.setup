@@ -63,6 +63,8 @@ if (test.phase == "init") {
     if (!App.getenv("SECOND")) {
         rm(find(".", "*.mod"))
         rm(find(".", "*.tdat"))
+        rm(find("cache", "*"))
+        rm(find("app/cache", "*"))
         cleanDir("web/tmp")
     }
     stdout.write("connecting to web server .. ")
