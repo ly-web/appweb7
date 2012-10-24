@@ -36,6 +36,7 @@ Bit.load({
         company: 'Embedthis',
         version: '4.1.0',
         buildNumber: '0',
+        bit: '2.2.0',
 
         /*
             Default ports. Overridden in appweb.conf
@@ -68,7 +69,7 @@ Bit.load({
         /* Must build locally to build tools */
         platforms: [ 'local' ],
         sync: ['http', 'mpr', 'pcre', 'sqlite'],
-        '+required': [ 'pcre'],
+        '+required': [ 'bit', 'pcre'],
 
         /*
             Optional packs to search for when configuring
