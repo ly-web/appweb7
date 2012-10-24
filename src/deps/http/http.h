@@ -289,9 +289,10 @@ typedef struct Http {
     struct HttpStage *sendConnector;        /**< Optimized sendfile connector */
     struct HttpStage *rangeFilter;          /**< Ranged requests filter */
     struct HttpStage *cacheFilter;          /**< Cache filter */
-    struct HttpStage *chunkFilter;          /**< Chunked transfer encoding filter */
     struct HttpStage *cacheHandler;         /**< Cache filter */
+    struct HttpStage *chunkFilter;          /**< Chunked transfer encoding filter */
     struct HttpStage *cgiHandler;           /**< CGI listing handler */
+    struct HttpStage *clientHandler;        /**< Client-side handler (dummy) */
     struct HttpStage *dirHandler;           /**< Directory listing handler */
     struct HttpStage *egiHandler;           /**< Embedded Gateway Interface (EGI) handler */
     struct HttpStage *ejsHandler;           /**< Ejscript Web Framework handler */

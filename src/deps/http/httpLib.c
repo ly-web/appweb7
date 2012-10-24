@@ -4508,6 +4508,7 @@ PUBLIC Http *httpCreate(int flags)
         http->defaultClientPort = 80;
         http->clientLimits = httpCreateLimits(0);
         http->clientRoute = httpCreateConfiguredRoute(0, 0);
+        http->clientHandler = httpCreateHandler(http, "client", 0);
     }
     mprGlobalUnlock();
     return http;
@@ -4534,6 +4535,7 @@ static void manageHttp(Http *http, int flags)
         mprMark(http->clientLimits);
         mprMark(http->serverLimits);
         mprMark(http->clientRoute);
+        mprMark(http->clientHandler);
         mprMark(http->timer);
         mprMark(http->timestamp);
         mprMark(http->mutex);
@@ -6541,11 +6543,7 @@ PUBLIC void httpCreateRxPipeline(HttpConn *conn, HttpRoute *route)
             }
         }
     }
-    if (tx->handler) {
-        mprAddItem(rx->inputPipeline, tx->handler);
-    } else {
-        mprAddItem(rx->inputPipeline, httpCreateStage(conn->http, "readq", 0, 0));
-    }
+    mprAddItem(rx->inputPipeline, tx->handler ? tx->handler : conn->http->clientHandler);
     /*  Create the incoming queue heads and open the queues.  */
     q = tx->queue[HTTP_QUEUE_RX];
     for (next = 0; (stage = mprGetNextItem(rx->inputPipeline, &next)) != 0; ) {
