@@ -11,6 +11,94 @@
 
 /************************************************************************/
 /*
+    Start of file "src/actionHandler.c"
+ */
+/************************************************************************/
+
+/*
+    actionHandler.c -- Action handler
+
+    This handler maps URIs to actions that are C functions that have been registered via httpDefineAction.
+
+    Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
+ */
+
+/********************************* Includes ***********************************/
+
+
+
+/*********************************** Code *************************************/
+
+static void startAction(HttpQueue *q)
+{
+    HttpConn    *conn;
+    HttpAction     action;
+    cchar       *name;
+
+    mprLog(5, "Start actionHandler");
+    conn = q->conn;
+    assure(!conn->error);
+    assure(!conn->tx->complete);
+
+    name = conn->rx->pathInfo;
+    if ((action = mprLookupKey(conn->tx->handler->stageData, name)) == 0) {
+        mprError("Can't find action: %s", name);
+    } else {
+        (*action)(conn);
+    }
+}
+
+
+PUBLIC void httpDefineAction(cchar *name, HttpAction action)
+{
+    HttpStage   *stage;
+
+    if ((stage = httpLookupStage(MPR->httpService, "actionHandler")) == 0) {
+        mprError("Can't find actionHandler");
+        return;
+    }
+    mprAddKey(stage->stageData, name, action);
+}
+
+
+PUBLIC int httpOpenActionHandler(Http *http)
+{
+    HttpStage     *stage;
+
+    if ((stage = httpCreateHandler(http, "actionHandler", NULL)) == 0) {
+        return MPR_ERR_CANT_CREATE;
+    }
+    http->actionHandler = stage;
+    if ((stage->stageData = mprCreateHash(0, MPR_HASH_STATIC_VALUES)) == 0) {
+        return MPR_ERR_MEMORY;
+    }
+    stage->start = startAction;
+    return 0;
+}
+
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
+
+/************************************************************************/
+/*
     Start of file "src/auth.c"
  */
 /************************************************************************/
@@ -418,7 +506,7 @@ PUBLIC void httpSetAuthForm(HttpRoute *parent, cchar *loginPage, cchar *loginSer
             loginService = &loginService[8];
             secure = 1;
         }
-        route = httpCreateProcRoute(parent, loginService, loginServiceProc);
+        route = httpCreateActionRoute(parent, loginService, loginServiceProc);
         httpSetRouteMethods(route, "POST");
         route->auth->type = 0;
         if (secure) {
@@ -432,7 +520,7 @@ PUBLIC void httpSetAuthForm(HttpRoute *parent, cchar *loginPage, cchar *loginSer
         }
         //  TODO MOB - should be only POST
         httpSetRouteMethods(route, "GET, POST");
-        route = httpCreateProcRoute(parent, logoutService, logoutServiceProc);
+        route = httpCreateActionRoute(parent, logoutService, logoutServiceProc);
         route->auth->type = 0;
         if (secure) {
             httpAddRouteCondition(route, "secure", 0, 0);
@@ -4505,7 +4593,7 @@ PUBLIC Http *httpCreate(int flags)
         httpOpenUploadFilter(http);
         httpOpenCacheHandler(http);
         httpOpenPassHandler(http);
-        httpOpenProcHandler(http);
+        httpOpenActionHandler(http);
         http->serverLimits = httpCreateLimits(1);
         httpDefineRouteBuiltins();
     }
@@ -6827,94 +6915,6 @@ static bool matchFilter(HttpConn *conn, HttpStage *filter, HttpRoute *route, int
 
 /************************************************************************/
 /*
-    Start of file "src/procHandler.c"
- */
-/************************************************************************/
-
-/*
-    procHandler.c -- Procedure callback handler
-
-    This handler maps URIs to procction names that have been registered via httpDefineProc.
-
-    Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
- */
-
-/********************************* Includes ***********************************/
-
-
-
-/*********************************** Code *************************************/
-
-static void startProc(HttpQueue *q)
-{
-    HttpConn    *conn;
-    HttpProc     proc;
-    cchar       *name;
-
-    mprLog(5, "Start procHandler");
-    conn = q->conn;
-    assure(!conn->error);
-    assure(!conn->tx->complete);
-
-    name = conn->rx->pathInfo;
-    if ((proc = mprLookupKey(conn->tx->handler->stageData, name)) == 0) {
-        mprError("Can't find procction callback %s", name);
-    } else {
-        (*proc)(conn);
-    }
-}
-
-
-PUBLIC void httpDefineProc(cchar *name, HttpProc proc)
-{
-    HttpStage   *stage;
-
-    if ((stage = httpLookupStage(MPR->httpService, "procHandler")) == 0) {
-        mprError("Can't find procHandler");
-        return;
-    }
-    mprAddKey(stage->stageData, name, proc);
-}
-
-
-PUBLIC int httpOpenProcHandler(Http *http)
-{
-    HttpStage     *stage;
-
-    if ((stage = httpCreateHandler(http, "procHandler", NULL)) == 0) {
-        return MPR_ERR_CANT_CREATE;
-    }
-    http->procHandler = stage;
-    if ((stage->stageData = mprCreateHash(0, MPR_HASH_STATIC_VALUES)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    stage->start = startProc;
-    return 0;
-}
-
-
-/*
-    @copy   default
-
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-
-    This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
-    commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.md distributed with
-    this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
- */
-
-/************************************************************************/
-/*
     Start of file "src/queue.c"
  */
 /************************************************************************/
@@ -8176,17 +8176,17 @@ PUBLIC HttpRoute *httpCreateAliasRoute(HttpRoute *parent, cchar *pattern, cchar 
 /*
     This routine binds a new route to a URI. It creates a handler, route and binds a callback to that route. 
  */
-PUBLIC HttpRoute *httpCreateProcRoute(HttpRoute *parent, cchar *pattern, HttpProc proc)
+PUBLIC HttpRoute *httpCreateActionRoute(HttpRoute *parent, cchar *pattern, HttpAction action)
 {
     HttpRoute   *route;
 
-    if (!pattern || !proc) {
+    if (!pattern || !action) {
         return 0;
     }
     if ((route = httpCreateInheritedRoute(parent)) != 0) {
-        route->handler = route->http->procHandler;
+        route->handler = route->http->actionHandler;
         httpSetRoutePattern(route, pattern, 0);
-        httpDefineProc(pattern, proc);
+        httpDefineAction(pattern, action);
         httpFinalizeRoute(route);
     }
     return route;

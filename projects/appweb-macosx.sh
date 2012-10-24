@@ -136,6 +136,31 @@ cp -r src/esp/www ${CONFIG}/bin/esp-www
 rm -rf ${CONFIG}/bin/esp-appweb.conf
 cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
+rm -rf ${CONFIG}/inc/ejs.h
+cp -r src/deps/ejs/ejs.h ${CONFIG}/inc/ejs.h
+
+rm -rf ${CONFIG}/inc/ejs.slots.h
+cp -r src/deps/ejs/ejs.slots.h ${CONFIG}/inc/ejs.slots.h
+
+rm -rf ${CONFIG}/inc/ejsByteGoto.h
+cp -r src/deps/ejs/ejsByteGoto.h ${CONFIG}/inc/ejsByteGoto.h
+
+${CC} -c -o ${CONFIG}/obj/ejsLib.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejsLib.c
+
+${CC} -dynamiclib -o ${CONFIG}/bin/libejs.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/libejs.dylib ${CONFIG}/obj/ejsLib.o -lpcre -lsqlite3 -lhttp ${LIBS} -lpcre -lmpr -lpam
+
+${CC} -c -o ${CONFIG}/obj/ejs.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejs.c
+
+${CC} -o ${CONFIG}/bin/ejs -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/ejs.o -lejs ${LIBS} -lpcre -lsqlite3 -lhttp -lmpr -lpam -ledit
+
+${CC} -c -o ${CONFIG}/obj/ejsc.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejsc.c
+
+${CC} -o ${CONFIG}/bin/ejsc -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/ejsc.o -lejs ${LIBS} -lpcre -lsqlite3 -lhttp -lmpr -lpam
+
+cd src/deps/ejs >/dev/null ;\
+../../../${CONFIG}/bin/ejsc --out ../../../${CONFIG}/bin/ejs.mod --optimize 9 --bind --require null ejs.es ;\
+cd - >/dev/null 
+
 ${CC} -c -o ${CONFIG}/obj/cgiHandler.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
 
 ${CC} -dynamiclib -o ${CONFIG}/bin/libmod_cgi.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/libmod_cgi.dylib ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam

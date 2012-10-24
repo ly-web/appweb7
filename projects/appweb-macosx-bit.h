@@ -6,6 +6,9 @@
  */
 
 /* Settings */
+#ifndef BIT_BIT
+    #define BIT_BIT "2.0.1"
+#endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
 #endif
@@ -17,6 +20,9 @@
 #endif
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
+#endif
+#ifndef BIT_EJS_ONE_MODULE
+    #define BIT_EJS_ONE_MODULE 1
 #endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 1
@@ -73,7 +79,7 @@
     #define BIT_PRODUCT "appweb"
 #endif
 #ifndef BIT_REQUIRED
-    #define BIT_REQUIRED "compiler,lib,link,pcre"
+    #define BIT_REQUIRED "compiler,lib,link,bit,pcre"
 #endif
 #ifndef BIT_SDB
     #define BIT_SDB 0
@@ -157,7 +163,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64 -without own -profile xcode -configure . -gen xcode"
+    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64 --without php -profile xcode -configure . -gen xcode"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -181,6 +187,9 @@
 #endif
 
 /* Packs */
+#ifndef BIT_PACK_BIT
+    #define BIT_PACK_BIT 1
+#endif
 #ifndef BIT_PACK_CGI
     #define BIT_PACK_CGI 1
 #endif
@@ -191,16 +200,16 @@
     #define BIT_PACK_DIR 1
 #endif
 #ifndef BIT_PACK_DOXYGEN
-    #define BIT_PACK_DOXYGEN 0
+    #define BIT_PACK_DOXYGEN 1
 #endif
 #ifndef BIT_PACK_DSI
-    #define BIT_PACK_DSI 0
+    #define BIT_PACK_DSI 1
 #endif
 #ifndef BIT_PACK_EJS
-    #define BIT_PACK_EJS 0
+    #define BIT_PACK_EJS 1
 #endif
 #ifndef BIT_PACK_EJSCRIPT
-    #define BIT_PACK_EJSCRIPT 0
+    #define BIT_PACK_EJSCRIPT 1
 #endif
 #ifndef BIT_PACK_ESP
     #define BIT_PACK_ESP 1
@@ -215,13 +224,13 @@
     #define BIT_PACK_LINK 1
 #endif
 #ifndef BIT_PACK_MAN
-    #define BIT_PACK_MAN 0
+    #define BIT_PACK_MAN 1
 #endif
 #ifndef BIT_PACK_MAN2HTML
-    #define BIT_PACK_MAN2HTML 0
+    #define BIT_PACK_MAN2HTML 1
 #endif
 #ifndef BIT_PACK_MATRIXSSL
-    #define BIT_PACK_MATRIXSSL 0
+    #define BIT_PACK_MATRIXSSL 1
 #endif
 #ifndef BIT_PACK_OPENSSL
     #define BIT_PACK_OPENSSL 1
@@ -233,7 +242,7 @@
     #define BIT_PACK_PHP 0
 #endif
 #ifndef BIT_PACK_PMAKER
-    #define BIT_PACK_PMAKER 0
+    #define BIT_PACK_PMAKER 1
 #endif
 #ifndef BIT_PACK_SQLITE
     #define BIT_PACK_SQLITE 1

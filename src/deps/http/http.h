@@ -285,9 +285,7 @@ typedef struct Http {
     /*  
         Some standard pipeline stages
      */
-    struct HttpStage *netConnector;         /**< Default network connector */
-    struct HttpStage *sendConnector;        /**< Optimized sendfile connector */
-    struct HttpStage *rangeFilter;          /**< Ranged requests filter */
+    struct HttpStage *actionHandler;        /**< Action handler */
     struct HttpStage *cacheFilter;          /**< Cache filter */
     struct HttpStage *cacheHandler;         /**< Cache filter */
     struct HttpStage *chunkFilter;          /**< Chunked transfer encoding filter */
@@ -297,9 +295,11 @@ typedef struct Http {
     struct HttpStage *egiHandler;           /**< Embedded Gateway Interface (EGI) handler */
     struct HttpStage *ejsHandler;           /**< Ejscript Web Framework handler */
     struct HttpStage *fileHandler;          /**< Static file handler */
+    struct HttpStage *netConnector;         /**< Default network connector */
     struct HttpStage *passHandler;          /**< Pass through handler */
-    struct HttpStage *procHandler;          /**< Proc handler */
     struct HttpStage *phpHandler;           /**< PHP through handler */
+    struct HttpStage *rangeFilter;          /**< Ranged requests filter */
+    struct HttpStage *sendConnector;        /**< Optimized sendfile connector */
     struct HttpStage *uploadFilter;         /**< Upload filter */
     struct HttpStage *webSocketFilter;      /**< WebSocket filter */
 
@@ -1630,17 +1630,17 @@ PUBLIC void httpSetStageData(struct HttpConn *conn, cchar *key, cvoid *data);
 /* Internal APIs */
 PUBLIC void httpAddStage(Http *http, HttpStage *stage);
 PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet);
-PUBLIC int httpOpenNetConnector(Http *http);
-PUBLIC int httpOpenSendConnector(Http *http);
+PUBLIC int httpOpenActionHandler(Http *http);
 PUBLIC int httpOpenChunkFilter(Http *http);
 PUBLIC int httpOpenCacheHandler(Http *http);
 PUBLIC int httpOpenPassHandler(Http *http);
-PUBLIC int httpOpenProcHandler(Http *http);
 PUBLIC int httpOpenRangeFilter(Http *http);
+PUBLIC int httpOpenNetConnector(Http *http);
+PUBLIC int httpOpenSendConnector(Http *http);
 PUBLIC int httpOpenUploadFilter(Http *http);
+PUBLIC int httpOpenWebSockFilter(Http *http);
 PUBLIC void httpSendOpen(HttpQueue *q);
 PUBLIC void httpSendOutgoingService(HttpQueue *q);
-PUBLIC int httpOpenWebSockFilter(Http *http);
 
 /********************************** HttpConn *********************************/
 /** 
@@ -2884,14 +2884,14 @@ PUBLIC ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime li
   */
 PUBLIC ssize httpWriteCached(HttpConn *conn);
 
-/******************************** Proc Handler *************************************/
+/******************************** Action Handler *************************************/
 /**
-    Proc handler callback procedure 
-    @description The Procedure Handler provides a simple mechanism to bind "C" callback functions with URIs.
+    Action handler callback signature
+    @description The Action Handler provides a simple mechanism to bind "C" callback functions with URIs.
     @param conn HttpConn connection object created via #httpCreateConn
     @defgroup HttpConn HttpConn
  */
-typedef void (*HttpProc)(HttpConn *conn);
+typedef void (*HttpAction)(HttpConn *conn);
 
 /**
     Define a function procedure to invoke when the specified URI is requested.
@@ -2899,9 +2899,9 @@ typedef void (*HttpProc)(HttpConn *conn);
     @param uri URI to bind with. When this URI is requested, the callback will be invoked if the procHandler is 
         configured for the request route.
     @param fun Callback function procedure
-    @ingroup HttpProc
+    @ingroup HttpAction
  */
-PUBLIC void httpDefineProc(cchar *uri, HttpProc fun);
+PUBLIC void httpDefineAction(cchar *uri, HttpAction fun);
 
 /********************************** HttpRoute  *********************************/
 /*
@@ -3365,16 +3365,16 @@ PUBLIC HttpRoute *httpCreateDefaultRoute(struct HttpHost *host);
 PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *route);
 
 /**
-    Create a route for use with the Proc Handler
+    Create a route for use with the Action Handler
     @description This call creates a route inheriting from a parent route. The new route is configured for use with the
-        procHandler and the given callback procedure.
+        actionHandler and the given callback procedure.
     @param parent Parent route from which to inherit
     @param pattern Pattern to match URIs 
-    @param proc Callback procedure to invoke
+    @param action Action to invoke
     @return Newly created route
     @ingroup HttpRoute
  */
-PUBLIC HttpRoute *httpCreateProcRoute(HttpRoute *parent, cchar *pattern, HttpProc proc);
+PUBLIC HttpRoute *httpCreateActionRoute(HttpRoute *parent, cchar *pattern, HttpAction action);
 
 /**
     Create a route for a host
