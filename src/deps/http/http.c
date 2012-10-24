@@ -745,7 +745,7 @@ static int sendRequest(HttpConn *conn, cchar *method, cchar *url, MprList *files
      */
     if (app->bodyData || app->formData || files) {
         if (writeBody(conn, files) < 0) {
-            mprError("Can't write body data to \"%s\". %s", url, httpGetError(conn));
+            mprError("Can't write body data to \"%s\". %s.", url, httpGetError(conn));
             return MPR_ERR_CANT_WRITE;
         }
     }
@@ -961,7 +961,6 @@ static ssize writeBody(HttpConn *conn, MprList *files)
 
     if (app->upload) {
         if (httpWriteUploadData(conn, app->files, app->formData) < 0) {
-            mprError("Can't write upload data %s", httpGetError(conn));
             return MPR_ERR_CANT_WRITE;
         }
     } else {

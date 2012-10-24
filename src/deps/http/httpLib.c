@@ -1963,6 +1963,10 @@ PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *fileData, MprList *for
     }
     if (fileData) {
         for (rc = next = 0; rc >= 0 && (path = mprGetNextItem(fileData, &next)) != 0; ) {
+            if (!mprPathExists(path, R_OK)) {
+                httpFormatError(conn, 0, "Can't open %s", path);
+                return MPR_ERR_CANT_OPEN;
+            }
             name = mprGetPathBase(path);
             rc += httpWrite(conn->writeq, "%s\r\nContent-Disposition: form-data; name=\"file%d\"; filename=\"%s\"\r\n", 
                 conn->boundary, next - 1, name);
@@ -1970,7 +1974,9 @@ PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *fileData, MprList *for
                 rc += httpWrite(conn->writeq, "Content-Type: %s\r\n", mprLookupMime(MPR->mimeTypes, path));
             }
             httpWrite(conn->writeq, "\r\n");
-            rc += blockingFileCopy(conn, path);
+            if (blockingFileCopy(conn, path) < 0) {
+                return MPR_ERR_CANT_WRITE;
+            }
             rc += httpWrite(conn->writeq, "\r\n");
         }
     }
@@ -5823,6 +5829,9 @@ PUBLIC HttpPacket *httpGetPacket(HttpQueue *q)
                 q->last = 0;
                 mprAssert(q->first == 0);
             }
+            if (q->first == 0) {
+                mprAssert(q->last == 0);
+            }
         }
         if (q->count < q->low) {
             prev = httpFindPreviousQueue(q);
@@ -5871,7 +5880,7 @@ PUBLIC void httpJoinPacketForService(HttpQueue *q, HttpPacket *packet, bool serv
         }
         q->count += httpGetPacketLength(packet);
     }
-    mprAssert(httpVerifyQueue(q));
+    VERIFY_QUEUE(q);
     if (serviceQ && !(q->flags & HTTP_QUEUE_SUSPENDED))  {
         httpScheduleQueue(q);
     }
@@ -5925,6 +5934,9 @@ PUBLIC void httpJoinPackets(HttpQueue *q, ssize size)
             httpJoinPacket(first, packet);
             /* Unlink the packet */
             first->next = packet->next;
+            if (q->last == packet) {
+                q->last = first;
+            }
         }
     }
 }
@@ -7101,6 +7113,9 @@ PUBLIC bool httpFlushQueue(HttpQueue *q, bool blocking)
         if (conn->sock == 0) {
             break;
         }
+        if (blocking) {
+            httpPumpHandler(conn);
+        }
     } while (blocking && q->count > 0);
     return (q->count < q->max) ? 1 : 0;
 }
@@ -7231,7 +7246,7 @@ PUBLIC ssize httpRead(HttpConn *conn, char *buf, ssize size)
     q = conn->readq;
     mprAssert(q->count >= 0);
     mprAssert(size >= 0);
-    mprAssert(httpVerifyQueue(q));
+    VERIFY_QUEUE(q);
 
     while (q->count <= 0 && !conn->async && !conn->tx->complete && conn->sock && (conn->state <= HTTP_STATE_CONTENT)) {
         httpServiceQueues(conn);
@@ -7240,7 +7255,6 @@ PUBLIC ssize httpRead(HttpConn *conn, char *buf, ssize size)
         }
     }
     conn->lastActivity = conn->http->now;
-    mprAssert(httpVerifyQueue(q));
 
     for (nbytes = 0; size > 0 && q->count > 0; ) {
         if ((packet = q->first) == 0) {
@@ -7264,7 +7278,6 @@ PUBLIC ssize httpRead(HttpConn *conn, char *buf, ssize size)
         }
     }
     mprAssert(q->count >= 0);
-    mprAssert(httpVerifyQueue(q));
     if (nbytes < size) {
         buf[nbytes] = '\0';
     }
@@ -7513,6 +7526,7 @@ PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...)
 }
 
 
+#if BIT_DEBUG
 PUBLIC bool httpVerifyQueue(HttpQueue *q)
 {
     HttpPacket  *packet;
@@ -7520,11 +7534,15 @@ PUBLIC bool httpVerifyQueue(HttpQueue *q)
 
     count = 0;
     for (packet = q->first; packet; packet = packet->next) {
+        if (packet->next == 0) {
+            assure(packet == q->last);
+        }
         count += httpGetPacketLength(packet);
     }
-    mprAssert(count <= q->count);
+    assure(count == q->count);
     return count <= q->count;
 }
+#endif
 
 /*
     @copy   default
@@ -13421,10 +13439,8 @@ static void outgoing(HttpQueue *q, HttpPacket *packet)
     /*  
         Handlers service routines must only be auto-enabled if in the running state.
      */
-    mprAssert(httpVerifyQueue(q));
     enableService = !(q->stage->flags & HTTP_STAGE_HANDLER) || (q->conn->state >= HTTP_STATE_READY) ? 1 : 0;
     httpPutForService(q, packet, enableService);
-    mprAssert(httpVerifyQueue(q));
 }
 
 
@@ -13434,8 +13450,8 @@ static void outgoing(HttpQueue *q, HttpPacket *packet)
 static void incoming(HttpQueue *q, HttpPacket *packet)
 {
     mprAssert(q);
+    VERIFY_QUEUE(q);
     mprAssert(packet);
-    mprAssert(httpVerifyQueue(q));
     
     if (q->nextQ->put) {
         httpPutPacketToNext(q, packet);
@@ -13454,7 +13470,6 @@ static void incoming(HttpQueue *q, HttpPacket *packet)
         }
         HTTP_NOTIFY(q->conn, HTTP_EVENT_READABLE, 0);
     }
-    mprAssert(httpVerifyQueue(q));
 }
 
 

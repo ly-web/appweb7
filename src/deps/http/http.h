@@ -1231,6 +1231,7 @@ PUBLIC void httpServiceQueue(HttpQueue *q);
  */
 PUBLIC void httpSuspendQueue(HttpQueue *q);
 
+#if BIT_DEBUG
 /**
     Verify a queue 
     @param q Queue reference
@@ -1238,6 +1239,10 @@ PUBLIC void httpSuspendQueue(HttpQueue *q);
     @internal
  */
 PUBLIC bool httpVerifyQueue(HttpQueue *q);
+#define VERIFY_QUEUE(q) httpVerifyQueue(q)
+#else
+#define VERIFY_QUEUE(q)
+#endif
 
 /** 
     Determine if the downstream queue will accept this packet.
