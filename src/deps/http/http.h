@@ -4262,8 +4262,10 @@ typedef struct HttpRx {
     ssize           frameLength;            /**< Length of the current frame */
     uchar           dataMask[4];            /**< Mask for data */
     int             maskOffset;             /**< Offset in dataMask */
-    int             messageCode;            /**< Current non-control frame code */
+#if UNUSED
     int             opcode;                 /**< Frame opcode */
+    int             messageCode;            /**< Current non-control frame code */
+#endif
     int             closing;                /**< Started closing sequnce */
     int             closeStatus;            /**< Close status provided by peer */
     char            *closeReason;           /**< Reason for closure */
@@ -5504,11 +5506,13 @@ typedef struct HttpWebSockets {
 /*
     httpSendBlock message types
  */
-#define WS_MSG_CLOSE    0       /**< httpSendBlock type for close message */
-#define WS_MSG_TEXT     1       /**< httpSendBlock type for text messages */
-#define WS_MSG_BINARY   2       /**< httpSendBlock type for binary messages */
-#define WS_MSG_PING     3       /**< httpSendBlock type for ping messages */
-#define WS_MSG_PONG     4       /**< httpSendBlock type for pong messages */
+#define WS_MSG_CONT     0x0       /**< Continuation of WebSocket message */
+#define WS_MSG_TEXT     0x1       /**< httpSendBlock type for text messages */
+#define WS_MSG_BINARY   0x2       /**< httpSendBlock type for binary messages */
+#define WS_MSG_CONTROL  0x8       /**< Start of control messages */
+#define WS_MSG_CLOSE    0x8       /**< httpSendBlock type for close message */
+#define WS_MSG_PING     0x9       /**< httpSendBlock type for ping messages */
+#define WS_MSG_PONG     0xA       /**< httpSendBlock type for pong messages */
 
 /*
     Close message status codes

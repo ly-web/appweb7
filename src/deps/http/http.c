@@ -521,6 +521,8 @@ static bool parseArgs(int argc, char **argv)
         }
         mprVerifySslPeer(app->ssl, app->validate);
         mprVerifySslIssuer(app->ssl, app->validate);
+    } else {
+        mprVerifySslPeer(NULL, 0);
     }
 #endif
     return 1;

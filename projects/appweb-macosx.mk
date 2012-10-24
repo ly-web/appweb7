@@ -34,13 +34,13 @@ all: prep \
         $(CONFIG)/bin/libsqlite3.dylib \
         $(CONFIG)/bin/sqlite \
         $(CONFIG)/bin/libappweb.dylib \
-        $(CONFIG)/bin/mod_esp.dylib \
+        $(CONFIG)/bin/libmod_esp.dylib \
         $(CONFIG)/bin/esp \
         $(CONFIG)/bin/esp.conf \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
-        $(CONFIG)/bin/mod_cgi.dylib \
-        $(CONFIG)/bin/mod_ssl.dylib \
+        $(CONFIG)/bin/libmod_cgi.dylib \
+        $(CONFIG)/bin/libmod_ssl.dylib \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
         $(CONFIG)/bin/setConfig \
@@ -74,13 +74,13 @@ clean:
 	rm -rf $(CONFIG)/bin/libsqlite3.dylib
 	rm -rf $(CONFIG)/bin/sqlite
 	rm -rf $(CONFIG)/bin/libappweb.dylib
-	rm -rf $(CONFIG)/bin/mod_esp.dylib
+	rm -rf $(CONFIG)/bin/libmod_esp.dylib
 	rm -rf $(CONFIG)/bin/esp
 	rm -rf $(CONFIG)/bin/esp.conf
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
-	rm -rf $(CONFIG)/bin/mod_cgi.dylib
-	rm -rf $(CONFIG)/bin/mod_ssl.dylib
+	rm -rf $(CONFIG)/bin/libmod_cgi.dylib
+	rm -rf $(CONFIG)/bin/libmod_ssl.dylib
 	rm -rf $(CONFIG)/bin/authpass
 	rm -rf $(CONFIG)/bin/cgiProgram
 	rm -rf $(CONFIG)/bin/setConfig
@@ -386,7 +386,7 @@ $(CONFIG)/obj/sdb.o: \
         $(CONFIG)/inc/edi.h
 	$(CC) -c -o $(CONFIG)/obj/sdb.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
 
-$(CONFIG)/bin/mod_esp.dylib:  \
+$(CONFIG)/bin/libmod_esp.dylib:  \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/inc/edi.h \
         $(CONFIG)/inc/esp-app.h \
@@ -401,7 +401,7 @@ $(CONFIG)/bin/mod_esp.dylib:  \
         $(CONFIG)/obj/espTemplate.o \
         $(CONFIG)/obj/mdb.o \
         $(CONFIG)/obj/sdb.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/mod_esp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/mod_esp.dylib $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libmod_esp.dylib $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/esp.o: \
         src/esp/esp.c \
@@ -441,10 +441,10 @@ $(CONFIG)/obj/cgiHandler.o: \
         $(CONFIG)/inc/appweb.h
 	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
 
-$(CONFIG)/bin/mod_cgi.dylib:  \
+$(CONFIG)/bin/libmod_cgi.dylib:  \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/obj/cgiHandler.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/mod_cgi.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/mod_cgi.dylib $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/sslModule.o: \
         src/modules/sslModule.c \
@@ -452,10 +452,10 @@ $(CONFIG)/obj/sslModule.o: \
         $(CONFIG)/inc/appweb.h
 	$(CC) -c -o $(CONFIG)/obj/sslModule.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/sslModule.c
 
-$(CONFIG)/bin/mod_ssl.dylib:  \
+$(CONFIG)/bin/libmod_ssl.dylib:  \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/obj/sslModule.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/mod_ssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/mod_ssl.dylib $(CONFIG)/obj/sslModule.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libmod_ssl.dylib $(CONFIG)/obj/sslModule.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/authpass.o: \
         src/utils/authpass.c \
@@ -501,12 +501,12 @@ $(CONFIG)/obj/appweb.o: \
 
 $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.dylib \
-        $(CONFIG)/bin/mod_esp.dylib \
-        $(CONFIG)/bin/mod_ssl.dylib \
-        $(CONFIG)/bin/mod_cgi.dylib \
+        $(CONFIG)/bin/libmod_esp.dylib \
+        $(CONFIG)/bin/libmod_ssl.dylib \
+        $(CONFIG)/bin/libmod_cgi.dylib \
         $(CONFIG)/inc/appwebMonitor.h \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(CONFIG)/bin/mod_cgi.dylib $(CONFIG)/bin/mod_ssl.dylib $(CONFIG)/bin/mod_esp.dylib -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lmod_cgi -lmod_ssl -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/inc/testAppweb.h: 
 	rm -fr $(CONFIG)/inc/testAppweb.h
