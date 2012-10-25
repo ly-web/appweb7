@@ -333,7 +333,7 @@ static int writeToClient(HttpQueue *q, MprCmd *cmd, MprBuf *buf, int channel)
                 httpSuspendQueue(q);
                 return -1;
             }
-            rc = httpWriteBlock(q, mprGetBufStart(buf), len);
+            rc = httpWriteBlock(q, mprGetBufStart(buf), len, HTTP_BLOCK);
             mprLog(7, "CGI: Write to client %d, absorbed %d, q->count %d, q->max %d, q->flags %x, writeBlocked %d", 
                 len, rc, q->count, q->max, q->flags, conn->writeBlocked);
         } else {

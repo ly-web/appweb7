@@ -300,7 +300,7 @@ static int writeBlock(cchar *str, uint len TSRMLS_DC)
     if (conn == 0) {
         return -1;
     }
-    written = httpWriteBlock(conn->tx->queue[HTTP_QUEUE_TX]->nextQ, str, len);
+    written = httpWriteBlock(conn->tx->queue[HTTP_QUEUE_TX]->nextQ, str, len, HTTP_BLOCK);
     mprLog(6, "php: write %d", written);
     if (written <= 0) {
         php_handle_aborted_connection();

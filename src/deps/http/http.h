@@ -61,12 +61,11 @@ struct HttpUser;
     #define HTTP_MAX_STAGE_BUFFER      (32 * 1024)          /**< Maximum buffer for any stage */
     #define HTTP_CLIENTS_HASH          (131)                /**< Hash table for client IP addresses */
     #define HTTP_MAX_ROUTE_MATCHES     32                   /**< Maximum number of submatches in routes */
-
     #define HTTP_MAX_WSS_SOCKETS       200                  /**< Default max WebSockets */
-    #define HTTP_MAX_WSS_MESSAGE       (64 * 1024)          /**< Default max WebSockets message size */
+    #define HTTP_MAX_WSS_MESSAGE       (2147483648)         /**< Default max WebSockets message size (2GB) */
     #define HTTP_MAX_WSS_FRAME         (8 * 1024)           /**< Default max WebSockets message frame size */
     #define HTTP_MAX_WSS_PACKET        (8 * 1024)           /**< Default max size to provided to application in one packet */
-    #define HTTP_WSS_PING_PERIOD       20                   /**< Send ping every 30sec to defeat Keep-Alive timeouts */
+    #define HTTP_WSS_PING_PERIOD       (30 * 1000)          /**< Ping defeat Keep-Alive timeouts (30 sec) */
 
 #elif BIT_TUNE == MPR_TUNE_BALANCED
     /*  
@@ -86,7 +85,11 @@ struct HttpUser;
     #define HTTP_MAX_STAGE_BUFFER      (64 * 1024)
     #define HTTP_CLIENTS_HASH          (257)
     #define HTTP_MAX_ROUTE_MATCHES     64
-
+    #define HTTP_MAX_WSS_SOCKETS       200
+    #define HTTP_MAX_WSS_MESSAGE       (2147483648)
+    #define HTTP_MAX_WSS_FRAME         (8 * 1024)
+    #define HTTP_MAX_WSS_PACKET        (8 * 1024)
+    #define HTTP_WSS_PING_PERIOD       (30 * 1000)
 #else
     /*  
         Tune for speed
@@ -105,6 +108,11 @@ struct HttpUser;
     #define HTTP_MAX_STAGE_BUFFER      (128 * 1024)
     #define HTTP_CLIENTS_HASH          (1009)
     #define HTTP_MAX_ROUTE_MATCHES     128
+    #define HTTP_MAX_WSS_SOCKETS       200
+    #define HTTP_MAX_WSS_MESSAGE       (2147483648)
+    #define HTTP_MAX_WSS_FRAME         (8 * 1024)
+    #define HTTP_MAX_WSS_PACKET        (8 * 1024)
+    #define HTTP_WSS_PING_PERIOD       (30 * 1000)
 #endif
 
 #define HTTP_MAX_TX_BODY           (INT_MAX)        /**< Maximum buffer for response data */
@@ -977,7 +985,7 @@ typedef void (*HttpQueueService)(struct HttpQueue *q);
     @see HttpConn HttpPacket HttpQueue httpDisableQueue httpDiscardQueueData httpEnableQueue httpFlushQueue httpGetQueueRoom
         httpIsEof httpIsPacketTooBig httpIsQueueEmpty httpJoinPacketForService httpJoinPackets
         httpPutBackPacket httpPutForService httpPutPacket httpPutPacketToNext httpRemoveQueue httpResizePacket
-        httpResumeQueue httpScheduleQueue httpServiceQueue httpSuspendQueue
+        httpResumeQueue httpScheduleQueue httpServiceQueue httpSetQueueLimits httpSuspendQueue
         httpWillNextQueueAcceptPacket httpWillNextQueueAcceptSize httpWrite httpWriteBlock httpWriteBody httpWriteString 
  */
 typedef struct HttpQueue {
@@ -1222,6 +1230,15 @@ PUBLIC void httpScheduleQueue(HttpQueue *q);
  */
 PUBLIC void httpServiceQueue(HttpQueue *q);
 
+/**
+    Set a queue's flow control low and high water marks
+    @param q Queue reference
+    @param low The low water mark. Typically 5% of the max.
+    @param max The high water mark.
+    @ingroup HttpQueue
+ */
+PUBLIC void httpSetQueueLimits(HttpQueue *q, ssize low, ssize max);
+
 /** 
     Suspend a queue. 
     @description Suspended a queue so that it will not be scheduled for service. The pipeline will 
@@ -1280,19 +1297,32 @@ PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
  */
 PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
 
+
+#define HTTP_BUFFER     0x0    /**< Flag for httpSendBlock and httpWriteBlock to always absorb the data without blocking */
+#define HTTP_BLOCK      0x1    /**< Flag for httpSendBlock and httpWriteBlock to indicate blocking operation */
+#define HTTP_NONBLOCK   0x2    /**< Flag for httpSendBlock and httpWriteBlock to indicate non-blocking operation */
+
 /** 
     Write a block of data to the queue
-    @description Write a block of data into packets onto the end of the queue. Data packets will be created
-        as required to store the write data. This call will either accept and write all the data or it will fail.
-        It will never return "short", i.e. with a partial write.
-        Data written after #httpFinalize or #httpError is called will be ignored.
+    @description Write a block of data onto the end of the queue. This will queue the data an may initiaite writing
+        to the connection if the queue is full. Data will be appended to last packet in the queue
+        if there is room. Otherwise, data packets will be created as required to store the write data. This call operates
+        in buffering mode by default unless either the HTTP_BLOCK OR HTTP_NONBLOCK flag is specified. When blocking, the
+        call will either accept and write all the data or it will fail, it will never return "short" with a partial write.
+        In blocking mode (HTTP_BLOCK), it block for up to the inactivity timeout specified in the
+        conn->limits->inactivityTimeout value.  In non-blocking mode (HTTP_NONBLOCK), the call may return having written
+        fewer bytes than requested. In buffering mode (HTTP_BUFFER), the data is always absorbed without blocking 
+        and queue size limits are ignored.
+        Data written after #httpComplete, #httpFinalize or #httpError is called will be ignored.
     @param q Queue reference
     @param buf Buffer containing the write data
     @param size of the data in buf
+    @param flags Set to HTTP_BLOCK for blocking operation or HTTP_NONBLOCK for non-blocking. Set to HTTP_BUFFER to
+        buffer the data if required and never block. Set to zero will default to HTTP_BUFFER.
     @return The size value if successful or a negative MPR error code.
     @ingroup HttpQueue
  */
-PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size);
+PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size, int flags);
 
 /** 
     Write a string of data to the queue
@@ -5580,21 +5610,28 @@ PUBLIC char *httpGetWebSocketProtocol(HttpConn *conn);
  */
 PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
 
+
+#define HTTP_MORE   0x1000         /**< Flag for #httpSendBlock to indicate there are more frames for this message */
+
 /**
     Send a message of a given type to the web socket peer
+    @description This call operates in blocking mode by default unless the HTTP_NONBLOCK flag is specified. When blocking,
+    the call will either accept and write all the data or it will fail, it will never return "short" with a partial write.
+    The call may block for up to the inactivity timeout specified in the conn->limits->inactivityTimeout value.
     @param conn HttpConn connection object created via #httpCreateConn
     @param type Web socket message type. Choose from WS_MSG_TEXT, WS_MSG_BINARY or WS_MSG_PING. 
         Use httpSendClose to send a close message. Do not send a WS_MSG_PONG message as it is generated internally
         by the Web Sockets module.
     @param buf Data buffer to send
     @param len Length of buf
-    @param last Set to true if there is no more data for this message.
+    @param flags Set to HTTP_BLOCK for blocking operation or HTTP_NONBLOCK for non-blocking. Set to HTTP_BUFFER to
+        buffer the data if required and never block. Set to zero will default to HTTP_BUFFER.
     @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
         MPR error code.
     @ingroup HttpWebSockets
     @stability Prototype
  */
-PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, bool last);
+PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int flags);
 
 /**
     Send a close message to the web socket peer

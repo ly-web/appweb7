@@ -957,7 +957,7 @@ static ssize writeBody(HttpConn *conn, MprList *files)
     MprFile     *file;
     char        buf[HTTP_BUFSIZE], *path, *pair;
     ssize       bytes, len, count, nbytes, sofar;
-    int         next, oldMode;
+    int         next;
 
     if (app->upload) {
         if (httpWriteUploadData(conn, app->files, app->formData) < 0) {
@@ -996,11 +996,10 @@ static ssize writeBody(HttpConn *conn, MprList *files)
                 if (app->verbose) {
                     mprPrintf("uploading: %s\n", path);
                 }
-                oldMode = mprSetSocketBlockingMode(conn->sock, 1);
                 while ((bytes = mprReadFile(file, buf, sizeof(buf))) > 0) {
                     sofar = 0;
                     while (bytes > 0) {
-                        if ((nbytes = httpWriteBlock(conn->writeq, &buf[sofar], bytes)) < 0) {
+                        if ((nbytes = httpWriteBlock(conn->writeq, &buf[sofar], bytes, HTTP_BLOCK)) < 0) {
                             mprCloseFile(file);
                             return MPR_ERR_CANT_WRITE;
                         }
@@ -1011,7 +1010,6 @@ static ssize writeBody(HttpConn *conn, MprList *files)
                     mprYield(0);
                 }
                 httpFlushQueue(conn->writeq, 1);
-                mprSetSocketBlockingMode(conn->sock, oldMode);
                 mprCloseFile(file);
                 app->inFile = 0;
             }
@@ -1019,7 +1017,7 @@ static ssize writeBody(HttpConn *conn, MprList *files)
         if (app->bodyData) {
             mprAddNullToBuf(app->bodyData);
             len = mprGetBufLength(app->bodyData);
-            if (httpWriteBlock(conn->writeq, mprGetBufStart(app->bodyData), len) != len) {
+            if (httpWriteBlock(conn->writeq, mprGetBufStart(app->bodyData), len, HTTP_BLOCK) != len) {
                 return MPR_ERR_CANT_WRITE;
             }
         }

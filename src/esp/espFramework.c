@@ -578,7 +578,7 @@ PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...)
 
 PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size)
 {
-    return httpWriteBlock(conn->writeq, buf, size);
+    return httpWriteBlock(conn->writeq, buf, size, HTTP_BLOCK);
 }
 
 

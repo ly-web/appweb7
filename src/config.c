@@ -2295,9 +2295,10 @@ static int configError(MaState *state, cchar *key)
 
 static int64 getnum(cchar *value)
 {
+    char    *junk;
     int64   num;
 
-    value = strim(slower(value), " \t", MPR_TRIM_BOTH);
+    value = stok(slower(value), " \t", &junk);
     if (sends(value, "kb") || sends(value, "k")) {
         num = stoi(value) * 1024;
     } else if (sends(value, "mb") || sends(value, "m")) {

@@ -1,5 +1,5 @@
 /*
-    WebSocket constructor tests
+    construct.tst - WebSocket constructor test
  */
 
 const PORT = App.config.test.http_port || "4100"

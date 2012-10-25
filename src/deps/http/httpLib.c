@@ -2000,7 +2000,6 @@ static int blockingFileCopy(HttpConn *conn, cchar *path)
     MprFile     *file;
     char        buf[MPR_BUFSIZE];
     ssize       bytes, nbytes, offset;
-    int         oldMode;
 
     file = mprOpenFile(path, O_RDONLY | O_BINARY, 0);
     if (file == 0) {
@@ -2008,11 +2007,10 @@ static int blockingFileCopy(HttpConn *conn, cchar *path)
         return MPR_ERR_CANT_OPEN;
     }
     mprAddRoot(file);
-    oldMode = mprSetSocketBlockingMode(conn->sock, 1);
     while ((bytes = mprReadFile(file, buf, sizeof(buf))) > 0) {
         offset = 0;
         while (bytes > 0) {
-            if ((nbytes = httpWriteBlock(conn->writeq, &buf[offset], bytes)) < 0) {
+            if ((nbytes = httpWriteBlock(conn->writeq, &buf[offset], bytes, HTTP_BLOCK)) < 0) {
                 mprCloseFile(file);
                 mprRemoveRoot(file);
                 return MPR_ERR_CANT_WRITE;
@@ -2024,7 +2022,6 @@ static int blockingFileCopy(HttpConn *conn, cchar *path)
         mprYield(0);
     }
     httpFlushQueue(conn->writeq, 1);
-    mprSetSocketBlockingMode(conn->sock, oldMode);
     mprCloseFile(file);
     mprRemoveRoot(file);
     return 0;
@@ -7031,6 +7028,13 @@ PUBLIC void httpInitQueue(HttpConn *conn, HttpQueue *q, cchar *name)
 }
 
 
+PUBLIC void httpSetQueueLimits(HttpQueue *q, ssize low, ssize max)
+{
+    q->low = low;
+    q->max = max;
+}
+
+
 #if UNUSED && KEEP
 /*  
     Insert a queue after the previous element
@@ -7411,7 +7415,76 @@ PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size)
 }
 
 
-/*  
+/*
+    Write a block of data. This is the lowest level write routine for data. This will buffer the data and flush if
+    the queue buffer is full. Flushing is done by calling httpFlushQueue which will service queues as required. This
+    may call the queue outgoing service routine and disable downstream queues if they are overfull.
+    This routine will always accept the data and never return "short". 
+ */
+PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize len, int flags)
+{
+    HttpPacket  *packet;
+    HttpConn    *conn;
+    HttpTx      *tx;
+    ssize       totalWritten, packetSize, thisWrite;
+
+    mprAssert(q == q->conn->writeq);
+               
+    conn = q->conn;
+    tx = conn->tx;
+    if (tx == 0 || tx->finalized) {
+        return MPR_ERR_CANT_WRITE;
+    }
+    tx->responded = 1;
+
+    for (totalWritten = 0; len > 0; ) {
+        LOG(7, "httpWriteBlock q_count %d, q_max %d", q->count, q->max);
+        if (conn->state >= HTTP_STATE_COMPLETE) {
+            return MPR_ERR_CANT_WRITE;
+        }
+        if (q->last && q->last != q->first && q->last->flags & HTTP_PACKET_DATA && mprGetBufSpace(q->last->content) > 0) {
+            packet = q->last;
+        } else {
+            packetSize = (tx->chunkSize > 0) ? tx->chunkSize : q->packetSize;
+            if ((packet = httpCreateDataPacket(packetSize)) == 0) {
+                return MPR_ERR_MEMORY;
+            }
+            httpPutForService(q, packet, HTTP_DELAY_SERVICE);
+        }
+        thisWrite = min(len, mprGetBufSpace(packet->content));
+        if (!(flags & HTTP_BUFFER)) {
+            thisWrite = min(thisWrite, q->max - q->count);
+        }
+        if ((thisWrite = mprPutBlockToBuf(packet->content, buf, thisWrite)) == 0) {
+            return MPR_ERR_MEMORY;
+        }
+        buf += thisWrite;
+        len -= thisWrite;
+        q->count += thisWrite;
+        totalWritten += thisWrite;
+
+        if (q->count >= q->max) {
+            httpFlushQueue(q, 0);
+            if (q->count >= q->max) {
+                if (flags & HTTP_NONBLOCK) {
+                    break;
+                } else if (flags & HTTP_BLOCK) {
+                    while (q->count >= q->max) {
+                        mprWaitForEvent(conn->dispatcher, conn->limits->inactivityTimeout);
+                    }
+                }
+            }
+        }
+    }
+    if (conn->error) {
+        return MPR_ERR_CANT_WRITE;
+    }
+    return totalWritten;
+}
+
+
+#if UNUSED
+/*
     Write a block of data. This is the lowest level write routine for data. This will buffer the data and flush if
     the queue buffer is full. Flushing is done by calling httpFlushQueue which will service queues as required. This
     may call the queue outgoing service routine and disable downstream queues if they are overfull.
@@ -7467,11 +7540,12 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size)
     }
     return written;
 }
+#endif
 
 
 PUBLIC ssize httpWriteString(HttpQueue *q, cchar *s)
 {
-    return httpWriteBlock(q, s, strlen(s));
+    return httpWriteBlock(q, s, strlen(s), HTTP_BUFFER);
 }
 
 
@@ -16537,7 +16611,7 @@ static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir)
 static void webSockPing(HttpConn *conn)
 {
     mprAssert(conn->rx);
-    httpSendBlock(conn, WS_MSG_PING, NULL, 0, 1);
+    httpSendBlock(conn, WS_MSG_PING, NULL, 0, HTTP_BUFFER);
 }
 
 
@@ -16555,6 +16629,7 @@ static void openWebSock(HttpQueue *q)
     mprAssert(q);
     mprLog(5, "webSocketFilter: Open WebSocket filter");
     conn = q->conn;
+    /* Not used */
     q->packetSize = min(conn->limits->stageBufferSize, q->max);
     conn->rx->closeStatus = WS_STATUS_NO_STATUS;
     conn->timeoutCallback = webSockTimeout;
@@ -16662,7 +16737,7 @@ static int processMessage(HttpQueue *q, HttpPacket *packet)
         break;
 
     case WS_MSG_PING:
-        httpSendBlock(conn, WS_MSG_PONG, mprGetBufStart(content), mprGetBufLength(content), 1);
+        httpSendBlock(conn, WS_MSG_PONG, mprGetBufStart(content), mprGetBufLength(content), HTTP_BUFFER);
         break;
 
     case WS_MSG_PONG:
@@ -16712,7 +16787,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
     while ((packet = httpGetPacket(q)) != 0) {
         content = packet->content;
         error = 0;
-        mprLog(5, "webSocketFilter: frame state %d", rx->frameState);
+        mprLog(5, "webSocketFilter: incoming data, frame state %d", rx->frameState);
         switch (rx->frameState) {
         case WS_CLOSED:
             if (httpGetPacketLength(packet) > 0) {
@@ -16752,8 +16827,10 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             lenBytes = 1;
             if (len == 126) {
                 lenBytes += 2;
+                len = 0;
             } else if (len == 127) {
                 lenBytes += 8;
+                len = 0;
             }
             if (httpGetPacketLength(packet) < (lenBytes + (mask * 4))) {
                 /* Return if we don't have the required packet control fields */
@@ -16775,11 +16852,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             }
             mprAssert(content);
             flen = fp - content->start;
-            VERIFY_QUEUE(q);
             mprAdjustBufStart(content, flen);
-#if UNUSED
-            q->count -= flen;
-#endif
             VERIFY_QUEUE(q);
             assure(q->count >= 0);
             rx->frameState = WS_MSG;
@@ -16787,6 +16860,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 packet->last, mask, len);
             /* Keep packet on queue as we need the packet->type */
             httpPutBackPacket(q, packet);
+            VERIFY_QUEUE(q);
             if (httpGetPacketLength(packet) == 0) {
                 return;
             }
@@ -16893,18 +16967,21 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...)
     va_start(args, fmt);
     buf = sfmtv(fmt, args);
     va_end(args);
-    return httpSendBlock(conn, WS_MSG_TEXT, buf, slen(buf), 1);
+    return httpSendBlock(conn, WS_MSG_TEXT, buf, slen(buf), HTTP_BUFFER);
 }
 
 
 /*
     Send a block of data with the specified message type. Set last to true for the last block of a logical message.
+    WARNING: this absorbs all data. The caller should ensure they don't write too much by checking conn->writeq->count.
  */
-PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, bool last)
+PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int flags)
 {
     HttpPacket  *packet;
-    ssize       thisLen;
+    HttpQueue   *q;
+    ssize       thisWrite, totalWritten;
 
+    q = conn->writeq;
     if (len < 0) {
         len = slen(buf);
     }
@@ -16912,25 +16989,42 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, bool
         mprError("webSocketFilter: Outgoing message is too large %d/%d", len, conn->limits->webSocketsMessageSize);
         return MPR_ERR_WONT_FIT;
     }
-    mprLog(5, "webSocketFilter: Sending message \"%s\", len %d", codetxt[type & 0xf], len);
-    while (len > 0) {
+    mprLog(5, "webSocketFilter: Sending message type \"%s\", len %d", codetxt[type & 0xf], len);
+    for (totalWritten = 0; len > 0; ) {
         /*
             Break into frames. Note: downstream may also fragment packets.
+            The outgoing service routine will convert every packet into a frame.
          */
-        thisLen = min(len, conn->limits->webSocketsFrameSize);
-        if ((packet = httpCreateDataPacket(thisLen)) == 0) {
+        thisWrite = min(len, conn->limits->webSocketsFrameSize);
+        thisWrite = min(thisWrite, q->packetSize);
+        if (!(flags & HTTP_BUFFER)) {
+            thisWrite = min(thisWrite, q->max - q->count);
+        }
+        if ((packet = httpCreateDataPacket(thisWrite)) == 0) {
             return MPR_ERR_MEMORY;
         }
         packet->type = type;
-        packet->last = (thisLen == len) ? last : 0;
-        if (mprPutBlockToBuf(packet->content, buf, len) != len) {
+        if (mprPutBlockToBuf(packet->content, buf, thisWrite) != thisWrite) {
             return MPR_ERR_MEMORY;
         }
-        len -= thisLen;
-        httpPutForService(conn->writeq, packet, HTTP_SCHEDULE_QUEUE);
+        len -= thisWrite;
+        packet->last = (len > 0) ? 0 : !(flags & HTTP_MORE);
+        httpPutForService(q, packet, HTTP_SCHEDULE_QUEUE);
+        if (q->count >= q->max) {
+            httpFlushQueue(q, 0);
+            if (q->count >= q->max) {
+                if (flags & HTTP_NONBLOCK) {
+                    break;
+                } else if (flags & HTTP_BLOCK) {
+                    while (q->count >= q->max) {
+                        mprWaitForEvent(conn->dispatcher, conn->limits->inactivityTimeout);
+                    }
+                }
+            }
+        }
     }
     httpServiceQueues(conn);
-    return len;
+    return totalWritten;
 }
 
 
@@ -16963,7 +17057,7 @@ PUBLIC void httpSendClose(HttpConn *conn, int status, cchar *reason)
         scopy(&msg[2], len - 2, reason);
     }
     mprLog(5, "webSocketFilter: sendClose, status %d reason \"%s\"", status, reason);
-    httpSendBlock(conn, WS_MSG_CLOSE, msg, len, 1);
+    httpSendBlock(conn, WS_MSG_CLOSE, msg, len, HTTP_BUFFER);
 }
 
 

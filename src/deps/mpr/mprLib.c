@@ -10524,7 +10524,6 @@ static ssize fillBuf(MprFile *file)
         return len;
     }
     mprAdjustBufEnd(bp, len);
-    mprAddNullToBuf(bp);
     return len;
 }
 
@@ -21606,6 +21605,9 @@ PUBLIC char *stok(char *str, cchar *delim, char **last)
 {
     char    *start, *end;
     ssize   i;
+
+    assure(last);
+    assure(delim);
 
     start = str ? str : *last;
 
