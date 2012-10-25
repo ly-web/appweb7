@@ -1,5 +1,5 @@
 #
-#   appweb-macosx.mk -- Makefile to build Embedthis Appweb for macosx
+#   appweb-macosx-debug.mk -- Makefile to build Embedthis Appweb for macosx
 #
 
 ARCH     ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/')

@@ -116,7 +116,7 @@
   <CustomBuildStep>
     <Command>cd ..\..\src\deps\pcre
 copy /Y pcre.h $(IncDir)
-cd ..\..\..\projects\appweb-windows</Command>
+cd ..\..\..\projects\appweb-windows-vs</Command>
     <Outputs>$(BinDir)\libpcre.dll</Outputs>
   </CustomBuildStep>
   </ItemDefinitionGroup>

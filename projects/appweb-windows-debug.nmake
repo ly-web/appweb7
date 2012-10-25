@@ -1,5 +1,5 @@
 #
-#   appweb-windows.nmake -- Makefile to build Embedthis Appweb for windows
+#   appweb-windows-debug.nmake -- Makefile to build Embedthis Appweb for windows
 #
 
 PA        = $(PROCESSOR_ARCHITECTURE)

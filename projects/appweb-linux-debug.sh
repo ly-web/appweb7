@@ -1,5 +1,5 @@
 #
-#   appweb-linux.sh -- Build It Shell Script to build Embedthis Appweb
+#   appweb-linux-debug.sh -- Build It Shell Script to build Embedthis Appweb
 #
 
 ARCH="x86"

@@ -1,5 +1,5 @@
 #
-#   appweb-macosx.sh -- Build It Shell Script to build Embedthis Appweb
+#   appweb-macosx-debug.sh -- Build It Shell Script to build Embedthis Appweb
 #
 
 ARCH="x64"
