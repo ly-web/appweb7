@@ -40,7 +40,7 @@ if (path) {
             dir.rename(ejs)
             tgz.remove()
             tar.remove()
-            for each (n in ['Makefile', 'bit.h', 'deps.c', 'ejsmod.c', 'pcre.c', 'pcre.h', 'sqlite3.c', 
+            for each (n in ['Makefile', 'bit.h', 'mpr.h', 'http.h', 'deps.c', 'ejsmod.c', 'pcre.c', 'pcre.h', 'sqlite3.c', 
                     'sqlite3.h', 'start.bit']) {
                 ejs.join(n).remove()
             }
@@ -86,6 +86,7 @@ if (Path('src/deps/ejs/ejsLib.c').exists) {
         libraries: [ 'ejs', 'mpr', 'mprssl', 'http', 'pcre' ],
         libpaths: [ libdir.parent ],
         imports: imports,
+        external: true,
     }
     /*
         Disable building libraries that are imported from Ejscript when using an external ejs distribution
@@ -95,6 +96,8 @@ if (Path('src/deps/ejs/ejsLib.c').exists) {
         bit.targets[tname] ||= {}
         bit.targets[tname].built = true
     }
+    bit.targets['libmod_ejs'].depends -= ['libejs']
+    bit.targets['libmod_ejs'].libraries += ['ejs']
 }
 if (bit.packs.sqlite && bit.packs.sqlite.enable) {
     cfg.libraries.push('sqlite3')
