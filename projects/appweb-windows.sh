@@ -125,7 +125,7 @@ cp -r src/esp/mdb.h ${CONFIG}/inc/mdb.h
 
 "${CC}" -c -Fo${CONFIG}/obj/sdb.obj -Fd${CONFIG}/obj/sdb.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/sdb.c
 
-"${LD}" -dll -out:${CONFIG}/bin/mod_esp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.obj ${CONFIG}/obj/espAbbrev.obj ${CONFIG}/obj/espFramework.obj ${CONFIG}/obj/espHandler.obj ${CONFIG}/obj/espHtml.obj ${CONFIG}/obj/espSession.obj ${CONFIG}/obj/espTemplate.obj ${CONFIG}/obj/mdb.obj ${CONFIG}/obj/sdb.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
+"${LD}" -dll -out:${CONFIG}/bin/libmod_esp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.obj ${CONFIG}/obj/espAbbrev.obj ${CONFIG}/obj/espFramework.obj ${CONFIG}/obj/espHandler.obj ${CONFIG}/obj/espHtml.obj ${CONFIG}/obj/espSession.obj ${CONFIG}/obj/espTemplate.obj ${CONFIG}/obj/mdb.obj ${CONFIG}/obj/sdb.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
 "${CC}" -c -Fo${CONFIG}/obj/esp.obj -Fd${CONFIG}/obj/esp.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/esp.c
 
@@ -142,7 +142,7 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
 "${CC}" -c -Fo${CONFIG}/obj/cgiHandler.obj -Fd${CONFIG}/obj/cgiHandler.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
 
-"${LD}" -dll -out:${CONFIG}/bin/mod_cgi.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiHandler.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
+"${LD}" -dll -out:${CONFIG}/bin/libmod_cgi.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiHandler.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
 "${CC}" -c -Fo${CONFIG}/obj/authpass.obj -Fd${CONFIG}/obj/authpass.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/authpass.c
 
@@ -161,7 +161,7 @@ cp -r src/server/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h
 
 "${CC}" -c -Fo${CONFIG}/obj/appweb.obj -Fd${CONFIG}/obj/appweb.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-"${LD}" -out:${CONFIG}/bin/appweb.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.obj mod_cgi.lib mod_esp.lib libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
+"${LD}" -out:${CONFIG}/bin/appweb.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.obj libmod_cgi.lib libmod_esp.lib libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
 "rc.exe" -nologo -Fo ${CONFIG}/obj/appwebMonitor.res src/server/windows/appwebMonitor.rc
 

@@ -4,8 +4,6 @@
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 
-#define WSS 0
-
 /**
     @file mpr.h
     The Multithreaded Portable Runtime (MPR) is a portable runtime library for embedded applications.

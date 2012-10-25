@@ -21,9 +21,6 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
-#ifndef BIT_EJS_ONE_MODULE
-    #define BIT_EJS_ONE_MODULE 1
-#endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 1
 #endif
@@ -163,7 +160,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64 --without php -profile xcode -configure . -gen xcode"
+    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64 -without all -profile xcode -configure . -gen xcode"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -200,16 +197,16 @@
     #define BIT_PACK_DIR 1
 #endif
 #ifndef BIT_PACK_DOXYGEN
-    #define BIT_PACK_DOXYGEN 1
+    #define BIT_PACK_DOXYGEN 0
 #endif
 #ifndef BIT_PACK_DSI
-    #define BIT_PACK_DSI 1
+    #define BIT_PACK_DSI 0
 #endif
 #ifndef BIT_PACK_EJS
-    #define BIT_PACK_EJS 1
+    #define BIT_PACK_EJS 0
 #endif
 #ifndef BIT_PACK_EJSCRIPT
-    #define BIT_PACK_EJSCRIPT 1
+    #define BIT_PACK_EJSCRIPT 0
 #endif
 #ifndef BIT_PACK_ESP
     #define BIT_PACK_ESP 1
@@ -224,16 +221,16 @@
     #define BIT_PACK_LINK 1
 #endif
 #ifndef BIT_PACK_MAN
-    #define BIT_PACK_MAN 1
+    #define BIT_PACK_MAN 0
 #endif
 #ifndef BIT_PACK_MAN2HTML
-    #define BIT_PACK_MAN2HTML 1
+    #define BIT_PACK_MAN2HTML 0
 #endif
 #ifndef BIT_PACK_MATRIXSSL
-    #define BIT_PACK_MATRIXSSL 1
+    #define BIT_PACK_MATRIXSSL 0
 #endif
 #ifndef BIT_PACK_OPENSSL
-    #define BIT_PACK_OPENSSL 1
+    #define BIT_PACK_OPENSSL 0
 #endif
 #ifndef BIT_PACK_PCRE
     #define BIT_PACK_PCRE 1
@@ -242,13 +239,13 @@
     #define BIT_PACK_PHP 0
 #endif
 #ifndef BIT_PACK_PMAKER
-    #define BIT_PACK_PMAKER 1
+    #define BIT_PACK_PMAKER 0
 #endif
 #ifndef BIT_PACK_SQLITE
     #define BIT_PACK_SQLITE 1
 #endif
 #ifndef BIT_PACK_SSL
-    #define BIT_PACK_SSL 1
+    #define BIT_PACK_SSL 0
 #endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1

@@ -37,7 +37,6 @@ static void dummy_action() {
 static void send_callback(HttpConn *conn, int event, int arg)
 {
     HttpPacket  *packet;
-    ssize       len;
 
     if (event == HTTP_EVENT_READABLE) {
         packet = httpGetPacket(conn->readq);
@@ -64,5 +63,6 @@ ESP_EXPORT int esp_module_websockets(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "basic-construct", dummy_action);
     espDefineAction(route, "basic-open", dummy_action);
     espDefineAction(route, "basic-send", send_action);
+    espDefineAction(route, "basic-ssl", send_action);
     return 0;
 }

@@ -5335,10 +5335,10 @@ PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int fl
     }
     mprLog(4, "mprStartCmd %s", cmd->program);
     for (i = 0; i < cmd->argc; i++) {
-        mprLog(4, "    arg[%d]: %s", i, cmd->argv[i]);
+        mprLog(6, "    arg[%d]: %s", i, cmd->argv[i]);
     }
     for (ITERATE_ITEMS(cmd->env, pair, next)) {
-        mprLog(4, "    env[%d]: %s", next, pair);
+        mprLog(6, "    env[%d]: %s", next, pair);
     }
     slock(cmd);
     if (makeCmdIO(cmd) < 0) {
@@ -6401,7 +6401,6 @@ PUBLIC int startProcess(MprCmd *cmd)
     int             pri, next;
 
     mprLog(4, "cmd: start %s", cmd->program);
-
     entryPoint = 0;
     if (cmd->env) {
         for (ITERATE_ITEMS(cmd->env, pair, next)) {

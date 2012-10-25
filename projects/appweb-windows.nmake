@@ -35,12 +35,12 @@ all: prep \
         $(CONFIG)\bin\libsqlite3.dll \
         $(CONFIG)\bin\sqlite.exe \
         $(CONFIG)\bin\libappweb.dll \
-        $(CONFIG)\bin\mod_esp.dll \
+        $(CONFIG)\bin\libmod_esp.dll \
         $(CONFIG)\bin\esp.exe \
         $(CONFIG)\bin\esp.conf \
         $(CONFIG)\bin\esp-www \
         $(CONFIG)\bin\esp-appweb.conf \
-        $(CONFIG)\bin\mod_cgi.dll \
+        $(CONFIG)\bin\libmod_cgi.dll \
         $(CONFIG)\bin\authpass.exe \
         $(CONFIG)\bin\cgiProgram.exe \
         $(CONFIG)\bin\setConfig.exe \
@@ -77,12 +77,12 @@ clean:
 	-if exist $(CONFIG)\bin\libsqlite3.dll del /Q $(CONFIG)\bin\libsqlite3.dll
 	-if exist $(CONFIG)\bin\sqlite.exe del /Q $(CONFIG)\bin\sqlite.exe
 	-if exist $(CONFIG)\bin\libappweb.dll del /Q $(CONFIG)\bin\libappweb.dll
-	-if exist $(CONFIG)\bin\mod_esp.dll del /Q $(CONFIG)\bin\mod_esp.dll
+	-if exist $(CONFIG)\bin\libmod_esp.dll del /Q $(CONFIG)\bin\libmod_esp.dll
 	-if exist $(CONFIG)\bin\esp.exe del /Q $(CONFIG)\bin\esp.exe
 	-if exist $(CONFIG)\bin\esp.conf del /Q $(CONFIG)\bin\esp.conf
 	-if exist $(CONFIG)\bin\esp-www del /Q $(CONFIG)\bin\esp-www
 	-if exist $(CONFIG)\bin\esp-appweb.conf del /Q $(CONFIG)\bin\esp-appweb.conf
-	-if exist $(CONFIG)\bin\mod_cgi.dll del /Q $(CONFIG)\bin\mod_cgi.dll
+	-if exist $(CONFIG)\bin\libmod_cgi.dll del /Q $(CONFIG)\bin\libmod_cgi.dll
 	-if exist $(CONFIG)\bin\authpass.exe del /Q $(CONFIG)\bin\authpass.exe
 	-if exist $(CONFIG)\bin\cgiProgram.exe del /Q $(CONFIG)\bin\cgiProgram.exe
 	-if exist $(CONFIG)\bin\setConfig.exe del /Q $(CONFIG)\bin\setConfig.exe
@@ -354,7 +354,7 @@ $(CONFIG)\obj\sdb.obj: \
         $(CONFIG)\inc\bit.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\sdb.c
 
-$(CONFIG)\bin\mod_esp.dll:  \
+$(CONFIG)\bin\libmod_esp.dll:  \
         $(CONFIG)\bin\libappweb.dll \
         $(CONFIG)\inc\edi.h \
         $(CONFIG)\inc\esp-app.h \
@@ -369,7 +369,7 @@ $(CONFIG)\bin\mod_esp.dll:  \
         $(CONFIG)\obj\espTemplate.obj \
         $(CONFIG)\obj\mdb.obj \
         $(CONFIG)\obj\sdb.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\mod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espSession.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espSession.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\obj\esp.obj: \
         src\esp\esp.c \
@@ -408,10 +408,10 @@ $(CONFIG)\obj\cgiHandler.obj: \
         $(CONFIG)\inc\bit.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\modules\cgiHandler.c
 
-$(CONFIG)\bin\mod_cgi.dll:  \
+$(CONFIG)\bin\libmod_cgi.dll:  \
         $(CONFIG)\bin\libappweb.dll \
         $(CONFIG)\obj\cgiHandler.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\mod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\obj\authpass.obj: \
         src\utils\authpass.c \
@@ -453,11 +453,11 @@ $(CONFIG)\obj\appweb.obj: \
 
 $(CONFIG)\bin\appweb.exe:  \
         $(CONFIG)\bin\libappweb.dll \
-        $(CONFIG)\bin\mod_esp.dll \
-        $(CONFIG)\bin\mod_cgi.dll \
+        $(CONFIG)\bin\libmod_esp.dll \
+        $(CONFIG)\bin\libmod_cgi.dll \
         $(CONFIG)\inc\appwebMonitor.h \
         $(CONFIG)\obj\appweb.obj
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj mod_cgi.lib mod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libmod_cgi.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\obj\appwebMonitor.res: \
         src\server\windows\appwebMonitor.rc

@@ -30,9 +30,9 @@ ${CC} -c -o ${CONFIG}/obj/mprLib.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/
 
 ${CC} -dynamiclib -o ${CONFIG}/bin/libmpr.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/libmpr.dylib ${CONFIG}/obj/mprLib.o ${LIBS}
 
-${CC} -c -o ${CONFIG}/obj/mprSsl.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc -I../packages-macosx-x64/openssl/openssl-1.0.1c/include src/deps/mpr/mprSsl.c
+${CC} -c -o ${CONFIG}/obj/mprSsl.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprSsl.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libmprssl.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -L../packages-macosx-x64/openssl/openssl-1.0.1c -install_name @rpath/libmprssl.dylib ${CONFIG}/obj/mprSsl.o -lmpr ${LIBS} -lssl -lcrypto
+${CC} -dynamiclib -o ${CONFIG}/bin/libmprssl.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/libmprssl.dylib ${CONFIG}/obj/mprSsl.o -lmpr ${LIBS}
 
 ${CC} -c -o ${CONFIG}/obj/manager.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/manager.c
 
@@ -136,38 +136,9 @@ cp -r src/esp/www ${CONFIG}/bin/esp-www
 rm -rf ${CONFIG}/bin/esp-appweb.conf
 cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
-rm -rf ${CONFIG}/inc/ejs.h
-cp -r src/deps/ejs/ejs.h ${CONFIG}/inc/ejs.h
-
-rm -rf ${CONFIG}/inc/ejs.slots.h
-cp -r src/deps/ejs/ejs.slots.h ${CONFIG}/inc/ejs.slots.h
-
-rm -rf ${CONFIG}/inc/ejsByteGoto.h
-cp -r src/deps/ejs/ejsByteGoto.h ${CONFIG}/inc/ejsByteGoto.h
-
-${CC} -c -o ${CONFIG}/obj/ejsLib.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejsLib.c
-
-${CC} -dynamiclib -o ${CONFIG}/bin/libejs.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/libejs.dylib ${CONFIG}/obj/ejsLib.o -lpcre -lsqlite3 -lhttp ${LIBS} -lpcre -lmpr -lpam
-
-${CC} -c -o ${CONFIG}/obj/ejs.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejs.c
-
-${CC} -o ${CONFIG}/bin/ejs -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/ejs.o -lejs ${LIBS} -lpcre -lsqlite3 -lhttp -lmpr -lpam -ledit
-
-${CC} -c -o ${CONFIG}/obj/ejsc.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejsc.c
-
-${CC} -o ${CONFIG}/bin/ejsc -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/ejsc.o -lejs ${LIBS} -lpcre -lsqlite3 -lhttp -lmpr -lpam
-
-cd src/deps/ejs >/dev/null ;\
-../../../${CONFIG}/bin/ejsc --out ../../../${CONFIG}/bin/ejs.mod --optimize 9 --bind --require null ejs.es ;\
-cd - >/dev/null 
-
 ${CC} -c -o ${CONFIG}/obj/cgiHandler.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
 
 ${CC} -dynamiclib -o ${CONFIG}/bin/libmod_cgi.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/libmod_cgi.dylib ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
-
-${CC} -c -o ${CONFIG}/obj/sslModule.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/sslModule.c
-
-${CC} -dynamiclib -o ${CONFIG}/bin/libmod_ssl.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.1.0 -current_version 4.1.0 ${LIBPATHS} -install_name @rpath/libmod_ssl.dylib ${CONFIG}/obj/sslModule.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 ${CC} -c -o ${CONFIG}/obj/authpass.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/authpass.c
 
@@ -186,7 +157,7 @@ cp -r src/server/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h
 
 ${CC} -c -o ${CONFIG}/obj/appweb.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-${CC} -o ${CONFIG}/bin/appweb -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lmod_cgi -lmod_ssl -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
+${CC} -o ${CONFIG}/bin/appweb -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 rm -rf ${CONFIG}/inc/testAppweb.h
 cp -r test/testAppweb.h ${CONFIG}/inc/testAppweb.h

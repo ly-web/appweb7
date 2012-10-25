@@ -121,7 +121,7 @@ ${CC} -c -o ${CONFIG}/obj/mdb.o -Wall -fPIC ${LDFLAGS} -mtune=generic ${DFLAGS} 
 
 ${CC} -c -o ${CONFIG}/obj/sdb.o -Wall -fPIC ${LDFLAGS} -mtune=generic ${DFLAGS} -I${CONFIG}/inc src/esp/sdb.c
 
-${CC} -shared -o ${CONFIG}/bin/mod_esp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
+${CC} -shared -o ${CONFIG}/bin/libmod_esp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
 
 ${CC} -c -o ${CONFIG}/obj/esp.o -Wall -fPIC ${LDFLAGS} -mtune=generic ${DFLAGS} -I${CONFIG}/inc src/esp/esp.c
 
@@ -138,7 +138,7 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
 ${CC} -c -o ${CONFIG}/obj/cgiHandler.o -Wall -fPIC ${LDFLAGS} -mtune=generic ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
 
-${CC} -shared -o ${CONFIG}/bin/mod_cgi.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
+${CC} -shared -o ${CONFIG}/bin/libmod_cgi.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
 
 ${CC} -c -o ${CONFIG}/obj/authpass.o -Wall -fPIC ${LDFLAGS} -mtune=generic ${DFLAGS} -I${CONFIG}/inc src/utils/authpass.c
 
@@ -157,7 +157,7 @@ cp -r src/server/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h
 
 ${CC} -c -o ${CONFIG}/obj/appweb.o -Wall -fPIC ${LDFLAGS} -mtune=generic ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o ${CONFIG}/bin/mod_cgi.so ${CONFIG}/bin/mod_esp.so -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
 
 rm -rf ${CONFIG}/inc/testAppweb.h
 cp -r test/testAppweb.h ${CONFIG}/inc/testAppweb.h

@@ -34,12 +34,12 @@ all: prep \
         $(CONFIG)/bin/libsqlite3.so \
         $(CONFIG)/bin/sqlite \
         $(CONFIG)/bin/libappweb.so \
-        $(CONFIG)/bin/mod_esp.so \
+        $(CONFIG)/bin/libmod_esp.so \
         $(CONFIG)/bin/esp \
         $(CONFIG)/bin/esp.conf \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
-        $(CONFIG)/bin/mod_cgi.so \
+        $(CONFIG)/bin/libmod_cgi.so \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
         $(CONFIG)/bin/setConfig \
@@ -73,12 +73,12 @@ clean:
 	rm -rf $(CONFIG)/bin/libsqlite3.so
 	rm -rf $(CONFIG)/bin/sqlite
 	rm -rf $(CONFIG)/bin/libappweb.so
-	rm -rf $(CONFIG)/bin/mod_esp.so
+	rm -rf $(CONFIG)/bin/libmod_esp.so
 	rm -rf $(CONFIG)/bin/esp
 	rm -rf $(CONFIG)/bin/esp.conf
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
-	rm -rf $(CONFIG)/bin/mod_cgi.so
+	rm -rf $(CONFIG)/bin/libmod_cgi.so
 	rm -rf $(CONFIG)/bin/authpass
 	rm -rf $(CONFIG)/bin/cgiProgram
 	rm -rf $(CONFIG)/bin/setConfig
@@ -350,7 +350,7 @@ $(CONFIG)/obj/sdb.o: \
         $(CONFIG)/inc/bit.h
 	$(CC) -c -o $(CONFIG)/obj/sdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
 
-$(CONFIG)/bin/mod_esp.so:  \
+$(CONFIG)/bin/libmod_esp.so:  \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/inc/edi.h \
         $(CONFIG)/inc/esp-app.h \
@@ -365,7 +365,7 @@ $(CONFIG)/bin/mod_esp.so:  \
         $(CONFIG)/obj/espTemplate.o \
         $(CONFIG)/obj/mdb.o \
         $(CONFIG)/obj/sdb.o
-	$(CC) -shared -o $(CONFIG)/bin/mod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
+	$(CC) -shared -o $(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
 
 $(CONFIG)/obj/esp.o: \
         src/esp/esp.c \
@@ -403,10 +403,10 @@ $(CONFIG)/obj/cgiHandler.o: \
         $(CONFIG)/inc/bit.h
 	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
 
-$(CONFIG)/bin/mod_cgi.so:  \
+$(CONFIG)/bin/libmod_cgi.so:  \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/obj/cgiHandler.o
-	$(CC) -shared -o $(CONFIG)/bin/mod_cgi.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
+	$(CC) -shared -o $(CONFIG)/bin/libmod_cgi.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
 
 $(CONFIG)/obj/authpass.o: \
         src/utils/authpass.c \
@@ -448,11 +448,11 @@ $(CONFIG)/obj/appweb.o: \
 
 $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.so \
-        $(CONFIG)/bin/mod_esp.so \
-        $(CONFIG)/bin/mod_cgi.so \
+        $(CONFIG)/bin/libmod_esp.so \
+        $(CONFIG)/bin/libmod_cgi.so \
         $(CONFIG)/inc/appwebMonitor.h \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(CONFIG)/bin/mod_cgi.so $(CONFIG)/bin/mod_esp.so -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lmod_cgi -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
 
 $(CONFIG)/inc/testAppweb.h: 
 	rm -fr $(CONFIG)/inc/testAppweb.h

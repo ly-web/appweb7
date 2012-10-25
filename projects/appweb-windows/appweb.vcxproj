@@ -109,7 +109,7 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>mod_cgi.lib;mod_esp.lib;libappweb.lib;libhttp.lib;libpcre.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libmod_cgi.lib;libmod_esp.lib;libappweb.lib;libhttp.lib;libpcre.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
 
@@ -129,15 +129,15 @@ cd ..\..\projects\appweb-windows</Command>
 </ItemGroup>
 
 <ItemGroup>
-  <ProjectReference Include="mod_esp.vcxproj">
-  <Project>9eb51d9e-5b85-410d-9913-4912ea2928bf</Project>
+  <ProjectReference Include="libmod_esp.vcxproj">
+  <Project>f86f4757-a3b0-4561-86ab-d9c18115067f</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
 
 <ItemGroup>
-  <ProjectReference Include="mod_cgi.vcxproj">
-  <Project>80dc892b-c6a8-4a69-8bd3-b400e555fa9d</Project>
+  <ProjectReference Include="libmod_cgi.vcxproj">
+  <Project>f3b1de60-c082-4cea-801a-723da98dc4b4</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

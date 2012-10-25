@@ -6,6 +6,9 @@
  */
 
 /* Settings */
+#ifndef BIT_BIT
+    #define BIT_BIT "2.0.1"
+#endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
 #endif
@@ -73,7 +76,7 @@
     #define BIT_PRODUCT "appweb"
 #endif
 #ifndef BIT_REQUIRED
-    #define BIT_REQUIRED "compiler,lib,link,pcre"
+    #define BIT_REQUIRED "compiler,lib,link,bit,pcre"
 #endif
 #ifndef BIT_SDB
     #define BIT_SDB 0
@@ -181,6 +184,9 @@
 #endif
 
 /* Packs */
+#ifndef BIT_PACK_BIT
+    #define BIT_PACK_BIT 1
+#endif
 #ifndef BIT_PACK_CGI
     #define BIT_PACK_CGI 1
 #endif
