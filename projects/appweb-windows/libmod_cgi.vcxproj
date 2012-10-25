@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9eb51d9e-5b85-410d-9913-4912ea2928bf}</ProjectGuid>
+    <ProjectGuid>{f3b1de60-c082-4cea-801a-723da98dc4b4}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -83,48 +83,24 @@
     <_ProjectFileVersion>10</_ProjectFileVersion>
 
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ObjDir)\mod_esp\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ObjDir)\libmod_cgi\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
 
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ObjDir)\mod_esp\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ObjDir)\libmod_cgi\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
 
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ObjDir)\mod_esp\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ObjDir)\libmod_cgi\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PreBuildEvent</CustomBuildBeforeTargets>
 
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ObjDir)\mod_esp\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ObjDir)\libmod_cgi\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PreBuildEvent</CustomBuildBeforeTargets>
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\src\esp\edi.c" />
-    <ClCompile Include="..\..\src\esp\espAbbrev.c" />
-    <ClCompile Include="..\..\src\esp\espFramework.c" />
-    <ClCompile Include="..\..\src\esp\espHandler.c" />
-    <ClCompile Include="..\..\src\esp\espHtml.c" />
-    <ClCompile Include="..\..\src\esp\espSession.c" />
-    <ClCompile Include="..\..\src\esp\espTemplate.c" />
-    <ClCompile Include="..\..\src\esp\mdb.c" />
-    <ClCompile Include="..\..\src\esp\sdb.c" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ClInclude Include="$(IncDir)\edi.h" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ClInclude Include="$(IncDir)\esp-app.h" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ClInclude Include="$(IncDir)\esp.h" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ClInclude Include="$(IncDir)\mdb.h" />
+    <ClCompile Include="..\..\src\modules\cgiHandler.c" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
@@ -132,16 +108,6 @@
     <AdditionalDependencies>libappweb.lib;libhttp.lib;libpcre.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
-
-  <CustomBuildStep>
-    <Command>cd ..\..\src\esp
-copy /Y edi.h $(IncDir)
-copy /Y esp-app.h $(IncDir)
-copy /Y esp.h $(IncDir)
-copy /Y mdb.h $(IncDir)
-cd ..\..\projects\appweb-windows</Command>
-    <Outputs>$(BinDir)\mod_esp.dll</Outputs>
-  </CustomBuildStep>
   </ItemDefinitionGroup>
 
 <ItemGroup>
