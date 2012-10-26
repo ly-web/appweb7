@@ -23,6 +23,7 @@
 NAME    := appweb
 OS      := $(shell uname | sed 's/CYGWIN.*/windows/;s/Darwin/macosx/' | tr '[A-Z]' '[a-z]')
 MAKE    := $(shell if which gmake >/dev/null 2>&1; then echo gmake ; else echo make ; fi)
+PROFILE := debug
 EXT     := mk
 
 ifeq ($(OS),windows)
@@ -36,10 +37,10 @@ endif
 endif
 
 all compile:
-	$(MAKE) -f projects/$(NAME)-$(OS).$(EXT) $@
+	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 clean clobber:
-	$(MAKE) -f projects/$(NAME)-$(OS).$(EXT) $@
+	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 #
 #   Convenience targets when building with Bit
@@ -52,7 +53,7 @@ build configure generate test package:
 #
 rebuild:
 	ku rm -fr $(OS)-*-debug -fr $(OS)-*-release
-	$(MAKE) -f projects/$(NAME)-$(OS).$(EXT)
+	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT)
 	$(OS)-*-debug/bin/bit --release configure build
 	rm -fr $(OS)-*-debug
 	bit install
