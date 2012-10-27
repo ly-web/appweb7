@@ -828,7 +828,7 @@ static cchar *getDebug()
 
     appweb = MPR->appwebService;
     //  MOB -- should be able to do release builds from xcode?
-    debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode");
+    debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode") || sends(appweb->platform, "-mine");
     if (scontains(appweb->platform, "windows-")) {
         return (debug) ? "-DBIT_DEBUG -Zi -Od" : "-O";
     }
