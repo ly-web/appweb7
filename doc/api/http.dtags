@@ -430,6 +430,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>httpSetQueueLimits</name>
+      <anchorfile>group___http_queue.html</anchorfile>
+      <anchor>ga6461bb9287ebb39aa6f0b926116308ce</anchor>
+      <arglist>(HttpQueue *q, ssize low, ssize max)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>httpSuspendQueue</name>
       <anchorfile>group___http_queue.html</anchorfile>
       <anchor>ga92b2f3b27c956c84e01a671eedec5e0c</anchor>
@@ -460,8 +467,8 @@
       <type>ssize</type>
       <name>httpWriteBlock</name>
       <anchorfile>group___http_queue.html</anchorfile>
-      <anchor>gae1b8876619f533e26837e38cf5a6575d</anchor>
-      <arglist>(HttpQueue *q, cchar *buf, ssize size)</arglist>
+      <anchor>gab3aa1e003e80d683e11c1641826da076</anchor>
+      <arglist>(HttpQueue *q, cchar *buf, ssize size, int flags)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -1424,6 +1431,13 @@
     </member>
     <member kind="function">
       <type>HttpRoute *</type>
+      <name>httpCreateActionRoute</name>
+      <anchorfile>group___http_route.html</anchorfile>
+      <anchor>ga5d648be4ce523b960d8385c09c832bc2</anchor>
+      <arglist>(HttpRoute *parent, cchar *pattern, HttpAction action)</arglist>
+    </member>
+    <member kind="function">
+      <type>HttpRoute *</type>
       <name>httpCreateAliasRoute</name>
       <anchorfile>group___http_route.html</anchorfile>
       <anchor>ga2d301112d0ee03a30a206ee0d8972ac4</anchor>
@@ -1449,13 +1463,6 @@
       <anchorfile>group___http_route.html</anchorfile>
       <anchor>ga4190cb538d908637fa3c7ea17384f1fa</anchor>
       <arglist>(HttpRoute *route)</arglist>
-    </member>
-    <member kind="function">
-      <type>HttpRoute *</type>
-      <name>httpCreateProcRoute</name>
-      <anchorfile>group___http_route.html</anchorfile>
-      <anchor>gaac1e913af64f173d6c5ee45c6a0db84a</anchor>
-      <arglist>(HttpRoute *parent, cchar *pattern, HttpProc proc)</arglist>
     </member>
     <member kind="function">
       <type>HttpRoute *</type>
@@ -2469,62 +2476,69 @@
     </member>
   </compound>
   <compound kind="group">
-    <name>HttpWebSockets</name>
-    <title>HttpWebSockets</title>
-    <filename>group___http_web_sockets.html</filename>
+    <name>HttpWebSocket</name>
+    <title>HttpWebSocket</title>
+    <filename>group___http_web_socket.html</filename>
     <member kind="function">
       <type>char *</type>
       <name>httpGetWebSocketCloseReason</name>
-      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchorfile>group___http_web_socket.html</anchorfile>
       <anchor>ga6c1a4a4b4d9cfc2ce626bb5fd005e6ac</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>ssize</type>
+      <name>httpGetWebSocketMessageLength</name>
+      <anchorfile>group___http_web_socket.html</anchorfile>
+      <anchor>ga1b12513bad90a3d388527ed9ad304c3f</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
       <type>char *</type>
       <name>httpGetWebSocketProtocol</name>
-      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchorfile>group___http_web_socket.html</anchorfile>
       <anchor>gad908e15f337a359e0f90258621d1329b</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
       <name>httpSend</name>
-      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchorfile>group___http_web_socket.html</anchorfile>
       <anchor>ga038d5c42a1ef5bce910dc617987a222c</anchor>
       <arglist>(HttpConn *conn, cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
       <name>httpSendBlock</name>
-      <anchorfile>group___http_web_sockets.html</anchorfile>
-      <anchor>gae2af890521914c06d63df6ad51dddb79</anchor>
-      <arglist>(HttpConn *conn, int type, cchar *buf, ssize len, bool last)</arglist>
+      <anchorfile>group___http_web_socket.html</anchorfile>
+      <anchor>ga139827d860ee64824f15ebfeb15478cc</anchor>
+      <arglist>(HttpConn *conn, int type, cchar *buf, ssize len, int flags)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>httpSendClose</name>
-      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchorfile>group___http_web_socket.html</anchorfile>
       <anchor>gadb22d418a67109b699890888ca66053a</anchor>
       <arglist>(HttpConn *conn, int status, cchar *reason)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>httpSetWebSocketProtocols</name>
-      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchorfile>group___http_web_socket.html</anchorfile>
       <anchor>ga96f8cb3db541d8a1340caf0d2afbbb1f</anchor>
       <arglist>(HttpConn *conn, cchar *protocols)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>httpUpgradeWebSocket</name>
-      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchorfile>group___http_web_socket.html</anchorfile>
       <anchor>ga3456efbc36a0e27b3dde28462ef88d90</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
       <name>httpWebSocketOrderlyClosed</name>
-      <anchorfile>group___http_web_sockets.html</anchorfile>
+      <anchorfile>group___http_web_socket.html</anchorfile>
       <anchor>gacb7184072bfb15ebf2c95f9ef6d0ba8c</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
