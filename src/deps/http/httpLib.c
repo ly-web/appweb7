@@ -11147,8 +11147,6 @@ PUBLIC void httpDestroyRx(HttpRx *rx)
  */
 PUBLIC void httpPump(HttpConn *conn, HttpPacket *packet)
 {
-    int     lastState;
-
     mprAssert(conn);
 
     if (conn->pumping) {
@@ -11158,7 +11156,6 @@ PUBLIC void httpPump(HttpConn *conn, HttpPacket *packet)
     conn->pumping = 1;
 
     while (conn->canProceed) {
-        lastState = conn->state;
         LOG(7, "httpProcess %s, state %d, error %d", conn->dispatcher->name, conn->state, conn->error);
         switch (conn->state) {
         case HTTP_STATE_BEGIN:
@@ -16864,7 +16861,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
 {
     HttpConn        *conn;
     HttpWebSocket   *ws;
-    HttpRx          *rx;
     HttpPacket      *tail;
     HttpLimits      *limits;
     MprBuf          *content;
@@ -16875,7 +16871,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
     conn = q->conn;
     ws = conn->rx->webSocket;
     assure(ws);
-    rx = conn->rx;
     limits = conn->limits;
     assure(packet);
     VERIFY_QUEUE(q);
@@ -17151,13 +17146,11 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
 PUBLIC void httpSendClose(HttpConn *conn, int status, cchar *reason)
 {
     HttpWebSocket   *ws;
-    HttpRx          *rx;
     char            msg[128];
     ssize           len;
 
     ws = conn->rx->webSocket;
     assure(ws);
-    rx = conn->rx;
     if (ws->closing) {
         return;
     }

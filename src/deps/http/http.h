@@ -63,7 +63,7 @@ struct HttpWebSocket;
     #define HTTP_CLIENTS_HASH          (131)                /**< Hash table for client IP addresses */
     #define HTTP_MAX_ROUTE_MATCHES     32                   /**< Maximum number of submatches in routes */
     #define HTTP_MAX_WSS_SOCKETS       200                  /**< Default max WebSockets */
-    #define HTTP_MAX_WSS_MESSAGE       (2147483648)         /**< Default max WebSockets message size (2GB) */
+    #define HTTP_MAX_WSS_MESSAGE       (2147483647)         /**< Default max WebSockets message size (2GB) */
     #define HTTP_MAX_WSS_FRAME         (8 * 1024)           /**< Default max WebSockets message frame size */
     #define HTTP_MAX_WSS_PACKET        (8 * 1024)           /**< Default max size to provided to application in one packet */
     #define HTTP_WSS_PING_PERIOD       (30 * 1000)          /**< Ping defeat Keep-Alive timeouts (30 sec) */
