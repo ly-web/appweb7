@@ -14135,7 +14135,7 @@ PUBLIC void httpComplete(HttpConn *conn)
         return;
     }
     tx->complete = 1;
-    if (conn->state < HTTP_STATE_CONNECTED || !conn->writeq) {
+    if (conn->state < HTTP_STATE_CONNECTED || !conn->writeq || !conn->sock) {
         /* Tx Pipeline not yet created */
         tx->pendingCompletion = 1;
         return;
@@ -14157,7 +14157,7 @@ PUBLIC void httpFinalize(HttpConn *conn)
     if (!tx || tx->finalized) {
         return;
     }
-    if (conn->state >= HTTP_STATE_CONNECTED && conn->writeq) {
+    if (conn->state >= HTTP_STATE_CONNECTED && conn->writeq && conn->sock) {
         tx->responded = 1;
         tx->finalized = 1;
         httpPutForService(conn->writeq, httpCreateEndPacket(), HTTP_SCHEDULE_QUEUE);
