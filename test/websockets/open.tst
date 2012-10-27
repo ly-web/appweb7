@@ -18,3 +18,9 @@ ws.onopen = function (event) {
 ws.wait(WebSocket.OPEN, TIMEOUT)
 assert(opened)
 assert(ws.readyState == WebSocket.OPEN)
+
+//  Cleanup
+ws.close()
+assert(ws.readyState == WebSocket.CLOSING)
+ws.wait(WebSocket.CLOSED, TIMEOUT)
+assert(ws.readyState == WebSocket.CLOSED)

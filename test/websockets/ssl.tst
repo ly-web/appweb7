@@ -4,7 +4,7 @@
 
 const SSL_PORT = App.config.test.http_port || "4110"
 const WS = "wss://127.0.0.1:" + SSL_PORT + "/websockets/basic/ssl"
-const TIMEOUT
+const TIMEOUT = 5000
 
 assert(WebSocket)
 let ws = new WebSocket(WS)
@@ -12,7 +12,7 @@ ws.verify = false
 assert(ws)
 assert(ws.readyState == WebSocket.CONNECTING)
 
-let closed, opened, reply
+let closed, opened, response
 let msg = "Hello Server"
 ws.onopen = function (event) {
     opened = true
@@ -23,7 +23,7 @@ ws.onclose = function (event) {
 }
 ws.onmessage = function (event) {
     assert(event.data is String)
-    reply = event.data
+    response = event.data
     ws.close()
 }
 ws.wait(WebSocket.OPEN, TIMEOUT)
@@ -32,4 +32,10 @@ assert(!closed)
 
 ws.wait(WebSocket.CLOSED, TIMEOUT)
 assert(ws.readyState == WebSocket.CLOSED)
-assert(reply == "got:" + msg)
+
+//  Text == 1, last == 1, first 10 data bytes
+let info = deserialize(response)
+assert(info.type == 1)
+assert(info.last == 1)
+assert(info.length == msg.length)
+assert(info.data == "Hello Serv")

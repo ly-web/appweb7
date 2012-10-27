@@ -1047,6 +1047,7 @@ PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key);
  */
 PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...);
 
+//  MOB - need a render that uses HTTP_BLOCK
 /**
     Render a block of data to the client.
     @description Render a block of data to the client. Data packets will be created as required to store the write data.

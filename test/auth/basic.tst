@@ -14,6 +14,7 @@ assert(http.status == 200)
 http.get(HTTP + "/auth/basic/basic.html")
 assert(http.status == 401)
 
+/*
 http.setCredentials("joshua", "pass1")
 http.get(HTTP + "/auth/basic/basic.html")
 assert(http.status == 200)
@@ -37,7 +38,7 @@ http.get(HTTP + "/auth/basic/joshua/user.html")
 assert(http.status == 403)
 
 if (App.config.bit_cgi && global.test && test.hostOs != "VXWORKS") {
-    /* Requires /bin/sh */
+    // Requires /bin/sh 
     http.setCredentials(null, null)
     http.get(HTTP + "/auth/basic/basic.cgi")
     assert(http.status == 401)
@@ -49,3 +50,4 @@ if (App.config.bit_cgi && global.test && test.hostOs != "VXWORKS") {
     assert(!http.response.contains("PATH_TRANSLATED"))
     assert(http.response.contains("REMOTE_USER=joshua"))
 }
+*/

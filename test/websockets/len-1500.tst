@@ -14,18 +14,23 @@ let ws = new WebSocket(WS)
 assert(ws)
 assert(ws.readyState == WebSocket.CONNECTING)
 
-let reply
+let response
 ws.onmessage = function (event) {
     assert(event.data is String)
-    reply = event.data
+    response = event.data
     ws.close()
 }
 
 ws.wait(WebSocket.OPEN, TIMEOUT)
 let msg = "0123456789".times(LEN / 10)
-print("LEN", msg.length)
 ws.send(msg)
 
 ws.wait(WebSocket.CLOSED, TIMEOUT)
 assert(ws.readyState == WebSocket.CLOSED)
-assert(reply == "got:" + msg)
+
+//  Text == 1, last == 1, first 10 data bytes
+let info = deserialize(response)
+assert(info.type == 1)
+assert(info.last == 1)
+assert(info.length == LEN)
+assert(info.data == "0123456789")

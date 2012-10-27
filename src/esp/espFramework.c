@@ -179,6 +179,8 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
 PUBLIC void espFinalize(HttpConn *conn) 
 {
     httpFinalize(conn);
+    //  MOB - should separate these concepts
+    httpComplete(conn);
 }
 
 
@@ -578,7 +580,11 @@ PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...)
 
 PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size)
 {
-    return httpWriteBlock(conn->writeq, buf, size, HTTP_BLOCK);
+    /*
+        Can't use HTTP_BLOCK here has it will yield for GC.
+        This is too onerous for callers to secure all memory
+     */
+    return httpWriteBlock(conn->writeq, buf, size, HTTP_BUFFER);
 }
 
 

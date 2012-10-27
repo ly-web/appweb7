@@ -33,6 +33,7 @@ struct HttpStage;
 struct HttpTx;
 struct HttpUri;
 struct HttpUser;
+struct HttpWebSocket;
 #endif
 
 /********************************** Tunables **********************************/
@@ -495,9 +496,9 @@ PUBLIC void httpDefineRouteBuiltins();
     @see HttpLimits httpInitLimits httpCreateLimits httpEaseLimits
  */
 typedef struct HttpLimits {
+    ssize   bufferSize;             /**< Maximum buffering by any pipeline stage */
     ssize   chunkSize;              /**< Maximum chunk size for transfer encoding */
     ssize   headerSize;             /**< Maximum size of the total header */
-    ssize   stageBufferSize;        /**< Maximum buffering by any pipeline stage */
     ssize   uriSize;                /**< Maximum size of a uri */
     ssize   cacheItemSize;          /**< Maximum size of a cachable item */
 
@@ -954,8 +955,9 @@ PUBLIC HttpPacket *httpSplitPacket(HttpPacket *packet, ssize offset);
 #define HTTP_QUEUE_ALL            0x10        /**< Queue has all the data there is and will be */
 #define HTTP_QUEUE_SERVICED       0x20        /**< Queue has been serviced at least once */
 #define HTTP_QUEUE_EOF            0x40        /**< Queue at end of data */
-#define HTTP_QUEUE_STARTED        0x80        /**< Queue started */
-#define HTTP_QUEUE_RESERVICE      0x100       /**< Queue requires reservicing */
+#define HTTP_QUEUE_STARTED        0x80        /**< Handler stage start routine called */
+#define HTTP_QUEUE_READY          0x100       /**< Handler stage ready routine called */
+#define HTTP_QUEUE_RESERVICE      0x200       /**< Queue requires reservicing */
 
 /*  
     Queue callback prototypes
@@ -1298,26 +1300,26 @@ PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
 PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
 
 
-#define HTTP_BUFFER     0x0    /**< Flag for httpSendBlock and httpWriteBlock to always absorb the data without blocking */
-#define HTTP_BLOCK      0x1    /**< Flag for httpSendBlock and httpWriteBlock to indicate blocking operation */
-#define HTTP_NONBLOCK   0x2    /**< Flag for httpSendBlock and httpWriteBlock to indicate non-blocking operation */
+#define HTTP_BUFFER     0x1    /**< Flag for httpSendBlock and httpWriteBlock to always absorb the data without blocking */
+#define HTTP_BLOCK      0x2    /**< Flag for httpSendBlock and httpWriteBlock to indicate blocking operation */
+#define HTTP_NON_BLOCK  0x4    /**< Flag for httpSendBlock and httpWriteBlock to indicate non-blocking operation */
 
 /** 
     Write a block of data to the queue
     @description Write a block of data onto the end of the queue. This will queue the data an may initiaite writing
         to the connection if the queue is full. Data will be appended to last packet in the queue
         if there is room. Otherwise, data packets will be created as required to store the write data. This call operates
-        in buffering mode by default unless either the HTTP_BLOCK OR HTTP_NONBLOCK flag is specified. When blocking, the
+        in buffering mode by default unless either the HTTP_BLOCK OR HTTP_NON_BLOCK flag is specified. When blocking, the
         call will either accept and write all the data or it will fail, it will never return "short" with a partial write.
         In blocking mode (HTTP_BLOCK), it block for up to the inactivity timeout specified in the
-        conn->limits->inactivityTimeout value.  In non-blocking mode (HTTP_NONBLOCK), the call may return having written
+        conn->limits->inactivityTimeout value.  In non-blocking mode (HTTP_NON_BLOCK), the call may return having written
         fewer bytes than requested. In buffering mode (HTTP_BUFFER), the data is always absorbed without blocking 
         and queue size limits are ignored.
         Data written after #httpComplete, #httpFinalize or #httpError is called will be ignored.
     @param q Queue reference
     @param buf Buffer containing the write data
     @param size of the data in buf
-    @param flags Set to HTTP_BLOCK for blocking operation or HTTP_NONBLOCK for non-blocking. Set to HTTP_BUFFER to
+    @param flags Set to HTTP_BLOCK for blocking operation or HTTP_NON_BLOCK for non-blocking. Set to HTTP_BUFFER to
         buffer the data if required and never block. Set to zero will default to HTTP_BUFFER.
     @return The size value if successful or a negative MPR error code.
     @ingroup HttpQueue
@@ -1808,7 +1810,7 @@ typedef struct HttpConn {
     int             state;                  /**< Connection state */
     int             error;                  /**< A request error has occurred */
     int             connError;              /**< A connection error has occurred */
-    int             inHttpProcess;          /**< Rre-entrancy prevention for httpProcess() */
+    int             pumping;                /**< Rre-entrancy prevention for httpPump() */
 
     HttpLimits      *limits;                /**< Service limits */
     Http            *http;                  /**< Http service object  */
@@ -1848,7 +1850,6 @@ typedef struct HttpConn {
     int             followRedirects;        /**< Follow redirects for client requests */
     int             keepAliveCount;         /**< Count of remaining Keep-Alive requests for this connection */
     int             http10;                 /**< Using legacy HTTP/1.0 */
-
     int             port;                   /**< Remote port */
     int             retries;                /**< Client request retries */
     int             secure;                 /**< Using https */
@@ -4231,8 +4232,6 @@ typedef struct HttpRx {
 
     int             authenticated;          /**< Request has been authenticated */
     int             chunkState;             /**< Chunk encoding state */
-    int             frameState;             /**< WebSockets message frame state */
-    int             webSockState;           /**< WebSockets state */
     int             flags;                  /**< Rx modifiers */
     int             form;                   /**< Using mime-type application/x-www-form-urlencoded */
     int             streamInput;            /**< Streaming read data. Means !form */
@@ -4251,6 +4250,7 @@ typedef struct HttpRx {
 
     /* 
         Header values
+        MOB OPT - eliminate some of these
      */
     char            *accept;                /**< Accept header */
     char            *acceptCharset;         /**< Accept-Charset header */
@@ -4282,26 +4282,23 @@ typedef struct HttpRx {
 
     /*  
         Upload details
+        MOB - move to an upload structure
      */
     MprHash         *files;                 /**< Uploaded files. Managed by the upload filter */
     char            *uploadDir;             /**< Upload directory */
     int             autoDelete;             /**< Automatically delete uploaded files */
 
+    struct HttpWebSocket *webSocket;        /**< WebSocket state */
+#if MOVED
     /*
         WebSockets fields
      */
-    HttpPacket      *currentPacket;         /**< Pending message packet */
+    HttpPacket      *currentFrame;          /**< Pending message frame */
+    HttpPacket      *currentMessage;        /**< Pending message frame */
     char            *extensions;            /**< WebSocket extensions */
-#if UNUSED
-    int             finalFrame;             /**< Frame is final frame in a packet */
-#endif
     ssize           frameLength;            /**< Length of the current frame */
     uchar           dataMask[4];            /**< Mask for data */
     int             maskOffset;             /**< Offset in dataMask */
-#if UNUSED
-    int             opcode;                 /**< Frame opcode */
-    int             messageCode;            /**< Current non-control frame code */
-#endif
     int             closing;                /**< Started closing sequnce */
     int             closeStatus;            /**< Close status provided by peer */
     char            *closeReason;           /**< Reason for closure */
@@ -4310,6 +4307,7 @@ typedef struct HttpRx {
     char            *webSockKey;            /**< Sec-WebSocket-Key header */
     char            *webSockProtocols;      /**< Sec-WebSocket-Protocol header */
     int             webSockVersion;         /**< Sec-WebSocket-Version header */
+#endif
 
     /*
         Routing info
@@ -4652,8 +4650,8 @@ typedef struct HttpTx {
     int             flags;                  /**< Response flags */
     int             connectorComplete;      /**< Connector has finished sending the response */
     int             complete;               /**< End of request including response */
+    int             pendingCompletion;      /**< Call httpComplete once the Tx pipeline is created */
     int             finalized;              /**< Handler or surrogate has finished writing response */
-    int             refinalize;             /**< Finalize required once the Tx pipeline is created */
     int             responded;              /**< The request has started to respond. Some output has been initiated. */
     int             started;                /**< Handler has started */
     int             status;                 /**< HTTP response status */
@@ -5527,14 +5525,25 @@ PUBLIC void httpStopHost(HttpHost *host);
     then upgraded without impacting the original connection. This means it will work with existing networking infrastructure
     including firewalls and proxies.
     @stability Prototype
-    @defgroup HttpWebSockets HttpWebSockets
-    @see httpGetWebSocketCloseReason httpGetWebSocketProtocol httpGetWriteQueueCount httpIsLastPacket httpSend 
-        httpSendBlock httpSendClose httpSetWebSocketProtocols httpWebSocketOrderlyClosed
+    @defgroup HttpWebSocket HttpWebSocket
+    @see httpGetWebSocketCloseReason httpGetWebSocketMessageLength httpGetWebSocketProtocol httpGetWriteQueueCount
+    httpIsLastPacket httpSend httpSendBlock httpSendClose httpSetWebSocketProtocols httpWebSocketOrderlyClosed
  */
-typedef struct HttpWebSockets {
-    /** @internal */
-    int     reserved;
-} HttpWebSockets;
+typedef struct HttpWebSocket {
+    int             state;                  /**< State */
+    int             frameState;             /**< Message frame state */
+    int             closing;                /**< Started closing sequnce */
+    int             closeStatus;            /**< Close status provided by peer */
+    ssize           frameLength;            /**< Length of the current frame */
+    ssize           messageLength;          /**< Length of the current message */
+    char            *subProtocol;           /**< Application level sub-protocol */
+    HttpPacket      *currentFrame;          /**< Pending message frame */
+    HttpPacket      *currentMessage;        /**< Pending message frame */
+    MprEvent        *pingEvent;             /**< Ping timer event */
+    char            *closeReason;           /**< Reason for closure */
+    uchar           dataMask[4];            /**< Mask for data */
+    int             maskOffset;             /**< Offset in dataMask */
+} HttpWebSocket;
 
 #define WS_VERSION     13
 #define WS_MAGIC       "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -5585,16 +5594,27 @@ typedef struct HttpWebSockets {
     Get the close reason supplied by the peer.
     @param conn HttpConn connection object created via #httpCreateConn
     @return The reason string supplied by the peer when closing the web socket.
-    @ingroup HttpWebSockets
+    @ingroup HttpWebSocket
     @stability Prototype
  */
 PUBLIC char *httpGetWebSocketCloseReason(HttpConn *conn);
 
 /**
+    Get the message length for the current message
+    @description The message length will be updated as the message frames are received. The message length is 
+        only valid when the last frame has been received. See #httpIsLastPacket
+    @param conn HttpConn connection object created via #httpCreateConn
+    @return The size of the message.
+    @ingroup HttpWebSocket
+    @stability Prototype
+ */
+PUBLIC ssize httpGetWebSocketMessageLength(HttpConn *conn);
+
+/**
     Get the selected web socket protocol selected by the server
     @param conn HttpConn connection object created via #httpCreateConn
     @return The web socket protocol string
-    @ingroup HttpWebSockets
+    @ingroup HttpWebSocket
     @stability Prototype
  */
 PUBLIC char *httpGetWebSocketProtocol(HttpConn *conn);
@@ -5605,7 +5625,7 @@ PUBLIC char *httpGetWebSocketProtocol(HttpConn *conn);
     @param fmt Printf style formatted string
     @param ... Arguments for the format
     @return Number of bytes written
-    @ingroup HttpWebSockets
+    @ingroup HttpWebSocket
     @stability Prototype
  */
 PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
@@ -5615,7 +5635,7 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
 
 /**
     Send a message of a given type to the web socket peer
-    @description This call operates in blocking mode by default unless the HTTP_NONBLOCK flag is specified. When blocking,
+    @description This call operates in blocking mode by default unless the HTTP_NON_BLOCK flag is specified. When blocking,
     the call will either accept and write all the data or it will fail, it will never return "short" with a partial write.
     The call may block for up to the inactivity timeout specified in the conn->limits->inactivityTimeout value.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -5624,11 +5644,11 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
         by the Web Sockets module.
     @param buf Data buffer to send
     @param len Length of buf
-    @param flags Set to HTTP_BLOCK for blocking operation or HTTP_NONBLOCK for non-blocking. Set to HTTP_BUFFER to
+    @param flags Set to HTTP_BLOCK for blocking operation or HTTP_NON_BLOCK for non-blocking. Set to HTTP_BUFFER to
         buffer the data if required and never block. Set to zero will default to HTTP_BUFFER.
     @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
         MPR error code.
-    @ingroup HttpWebSockets
+    @ingroup HttpWebSocket
     @stability Prototype
  */
 PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int flags);
@@ -5640,7 +5660,7 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
     @param reason Optional reason text message. The reason must be less than 124 bytes in length.
     @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
         MPR error code.
-    @ingroup HttpWebSockets
+    @ingroup HttpWebSocket
     @stability Prototype
  */
 PUBLIC void httpSendClose(HttpConn *conn, int status, cchar *reason);
@@ -5649,7 +5669,7 @@ PUBLIC void httpSendClose(HttpConn *conn, int status, cchar *reason);
     Set a list of application-level protocols supported by the client
     @param conn HttpConn connection object created via #httpCreateConn
     @param protocols Comma separated list of application-level protocols
-    @ingroup HttpWebSockets
+    @ingroup HttpWebSocket
     @stability Prototype
  */
 PUBLIC void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols);
@@ -5662,7 +5682,7 @@ PUBLIC void httpSetWebSocketProtocols(HttpConn *conn, cchar *protocols);
     @param conn HttpConn connection object created via #httpCreateConn
     @return Return Zero if the connection upgrade can be requested.
     @stability Prototype
-    @ingroup HttpWebSockets
+    @ingroup HttpWebSocket
     @internal
  */
 PUBLIC int httpUpgradeWebSocket(HttpConn *conn);
@@ -5671,7 +5691,7 @@ PUBLIC int httpUpgradeWebSocket(HttpConn *conn);
     Test if web socket connection was orderly closed by sending an acknowledged close message
     @param conn HttpConn connection object created via #httpCreateConn
     @return True if the web socket was orderly closed.
-    @ingroup HttpWebSockets
+    @ingroup HttpWebSocket
     @stability Prototype
  */
 PUBLIC bool httpWebSocketOrderlyClosed(HttpConn *conn);

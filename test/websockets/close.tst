@@ -17,4 +17,3 @@ ws.close()
 assert(ws.readyState == WebSocket.CLOSING)
 ws.wait(WebSocket.CLOSED, TIMEOUT)
 assert(ws.readyState == WebSocket.CLOSED)
-

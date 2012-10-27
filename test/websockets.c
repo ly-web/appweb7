@@ -9,15 +9,15 @@ static void traceEvent(HttpConn *conn, int event, int arg)
 
     if (event == HTTP_EVENT_READABLE) {
         packet = conn->readq->first;
-        print("websock.c: read %s event, last %d\n", packet->type == WS_MSG_TEXT ? "text" : "binary", packet->last);
-        print("websock.c: read: \"%s\"\n", mprGetBufStart(packet->content));
+        mprLog(3, "websock.c: read %s event, last %d", packet->type == WS_MSG_TEXT ? "text" : "binary", packet->last);
+        mprLog(3, "websock.c: read: (start of data only) \"%s\"", snclone(mprGetBufStart(packet->content), 40));
 
     } else if (event == HTTP_EVENT_APP_CLOSE) {
-        print("websock.c: close event. Status status %d, orderly closed %d, reason %s\n", arg,
+        mprLog(3, "websock.c: close event. Status status %d, orderly closed %d, reason %s", arg,
             httpWebSocketOrderlyClosed(conn), httpGetWebSocketCloseReason(conn));
 
     } else if (event == HTTP_EVENT_ERROR) {
-        print("websock.c: error event\n");
+        mprLog(2, "websock.c: error event");
     }
 }
 
@@ -32,12 +32,20 @@ static void dummy_action() {
 
 static void echo_callback(HttpConn *conn, int event, int arg)
 {
-    HttpPacket  *packet;
+    HttpPacket      *packet;
+    HttpWebSocket   *ws;
+    cchar           *data;
 
     traceEvent(conn, event, arg);
     if (event == HTTP_EVENT_READABLE) {
         packet = httpGetPacket(conn->readq);
-        httpSend(conn, sjoin("got:", mprGetBufStart(packet->content), NULL));
+        assure(packet);
+        /* Ignore precedding packets and just trace the last */
+        if (packet->last) {
+            ws = conn->rx->webSocket;
+            httpSend(conn, "{type: %d, last: %d, length: %d, data: \"%s\"}\n", packet->type, packet->last,
+                ws->messageLength, snclone(mprGetBufStart(packet->content), 10));
+        }
     }
 }
 

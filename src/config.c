@@ -1085,9 +1085,10 @@ static int limitResponseBodyDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    LimitStageBuffer bytes
+    LimitBuffer bytes
+    DEPRECATED: LimitStageBuffer bytes
  */
-static int limitStageBufferDirective(MaState *state, cchar *key, cchar *value)
+static int limitBufferDirective(MaState *state, cchar *key, cchar *value)
 {
     int     size;
 
@@ -1096,7 +1097,7 @@ static int limitStageBufferDirective(MaState *state, cchar *key, cchar *value)
     if (size > (1024 * 1024)) {
         size = (1024 * 1024);
     }
-    state->limits->stageBufferSize = size;
+    state->limits->bufferSize = size;
     return 0;
 }
 
@@ -2492,6 +2493,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "InactivityTimeout", inactivityTimeoutDirective);
     maAddDirective(appweb, "Include", includeDirective);
 
+    maAddDirective(appweb, "LimitBuffer", limitBufferDirective);
     maAddDirective(appweb, "LimitCache", limitCacheDirective);
     maAddDirective(appweb, "LimitCacheItem", limitCacheItemDirective);
     maAddDirective(appweb, "LimitChunk", limitChunkDirective);
@@ -2505,7 +2507,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitRequestHeaderLines", limitRequestHeaderLinesDirective);
     maAddDirective(appweb, "LimitRequestHeader", limitRequestHeaderDirective);
     maAddDirective(appweb, "LimitResponseBody", limitResponseBodyDirective);
-    maAddDirective(appweb, "LimitStageBuffer", limitStageBufferDirective);
     maAddDirective(appweb, "LimitUri", limitUriDirective);
     maAddDirective(appweb, "LimitUpload", limitUploadDirective);
     maAddDirective(appweb, "LimitWorkers", limitWorkersDirective);
@@ -2581,8 +2582,10 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "AuthUserFile", authUserFileDirective);
     /* Use AuthRealm */
     maAddDirective(appweb, "AuthName", authRealmDirective);
-    /* Use eprecated use LimitKeepAlive */
+    /* Use LimitKeepAlive */
     maAddDirective(appweb, "MaxKeepAliveRequests", limitKeepAliveDirective);
+    /* Use LimitBuffer */
+    maAddDirective(appweb, "LimitStageBuffer", limitBufferDirective);
     /* Use LimitUri */
     maAddDirective(appweb, "LimitUrl", limitUriDirective);
     maAddDirective(appweb, "ResetPipeline", resetPipelineDirective);

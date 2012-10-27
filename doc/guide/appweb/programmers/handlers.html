@@ -240,7 +240,7 @@ httpError(conn, 504, HTTP_ABOR, "Can't continue with the request");
             <p>The simplest way to generate a response is to use 
             <a href="../../../api/http.html#group___http_queue_1ga5599a178a2bab73929795952231d6e6a">httpWrite</a>. 
             This is effective if the total response content can be buffered in the pipeline and socket without blocking.
-            (Typically 64K or less depending on LimitStageBuffer in appweb.conf). The httpWrite routine will
+            (Typically 64K or less depending on LimitSBuffer in appweb.conf). The httpWrite routine will
             automatically flush data as required. When all the data has been written, call:
             <a href="../../../api/http.html#group___http_tx_1ga279ad49e5163402e2afd6caf478bcc70">httpFinalize</a>. This
             finalizes the output response data by sending an empty packet to the network connector which signifies 
