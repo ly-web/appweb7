@@ -7496,8 +7496,12 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize len, int flags)
                     break;
                 } else if (flags & HTTP_BLOCK) {
                     while (q->count >= q->max) {
-                        httpEnableConnEvents(conn);
-                        mprWaitForEvent(conn->dispatcher, conn->limits->inactivityTimeout);
+                        if (mprWaitForSingleIO(conn->sock->fd, MPR_WRITABLE, conn->limits->inactivityTimeout) 
+                                != MPR_WRITABLE) {
+                            return MPR_ERR_TIMEOUT;
+                        }
+                        httpResumeQueue(conn->connectorq);
+                        httpServiceQueues(conn);
                     }
                 }
             }
@@ -7508,66 +7512,6 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize len, int flags)
     }
     return totalWritten;
 }
-
-
-#if UNUSED
-/*
-    Write a block of data. This is the lowest level write routine for data. This will buffer the data and flush if
-    the queue buffer is full. Flushing is done by calling httpFlushQueue which will service queues as required. This
-    may call the queue outgoing service routine and disable downstream queues if they are overfull.
-    This routine will always accept the data and never return "short". 
- */
-PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size)
-{
-    HttpPacket  *packet;
-    HttpConn    *conn;
-    HttpTx      *tx;
-    ssize       bytes, written, packetSize;
-
-    mprAssert(q == q->conn->writeq);
-               
-    conn = q->conn;
-    tx = conn->tx;
-    if (tx == 0 || tx->finalized) {
-        return MPR_ERR_CANT_WRITE;
-    }
-    tx->responded = 1;
-
-    for (written = 0; size > 0; ) {
-        LOG(7, "httpWriteBlock q_count %d, q_max %d", q->count, q->max);
-        if (conn->state >= HTTP_STATE_COMPLETE) {
-            return MPR_ERR_CANT_WRITE;
-        }
-        if (q->last != q->first && q->last->flags & HTTP_PACKET_DATA) {
-            packet = q->last;
-            mprAssert(packet->content);
-        } else {
-            packet = 0;
-        }
-        if (packet == 0 || mprGetBufSpace(packet->content) == 0) {
-            packetSize = (tx->chunkSize > 0) ? tx->chunkSize : q->packetSize;
-            if ((packet = httpCreateDataPacket(packetSize)) == 0) {
-                return MPR_ERR_MEMORY;
-            }
-            httpPutForService(q, packet, HTTP_DELAY_SERVICE);
-        }
-        if ((bytes = mprPutBlockToBuf(packet->content, buf, size)) == 0) {
-            return MPR_ERR_MEMORY;
-        }
-        buf += bytes;
-        size -= bytes;
-        q->count += bytes;
-        written += bytes;
-        if (q->count >= q->max) {
-            httpFlushQueue(q, 0);
-        }
-    }
-    if (conn->error) {
-        return MPR_ERR_CANT_WRITE;
-    }
-    return written;
-}
-#endif
 
 
 PUBLIC ssize httpWriteString(HttpQueue *q, cchar *s)
@@ -12068,11 +12012,13 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
     }
     httpServiceQueues(conn);
     VERIFY_QUEUE(q);
-
+#if UNUSED
+    //  NOt until all the data is read
     if (tx->complete) {
         httpSetState(conn, HTTP_STATE_READY);
         return 1;
     }
+#endif
     if (rx->chunkState && nbytes <= 0) {
         /* Insufficient data */
         return 0;
@@ -14134,9 +14080,12 @@ PUBLIC void httpConnectorComplete(HttpConn *conn)
     tx = conn->tx;
     tx->connectorComplete = 1;
     tx->finalized = 1;
+#if UNUSED
+    /* Can't do this if there is still data to read */
     if (tx->complete) {
         httpSetState(conn, HTTP_STATE_COMPLETE);
     }
+#endif
 }
 
 
