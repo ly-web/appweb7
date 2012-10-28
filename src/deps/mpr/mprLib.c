@@ -16360,7 +16360,7 @@ PUBLIC char *mprSearchPath(cchar *file, int flags, cchar *search, ...)
 
     va_start(args, search);
 
-    mprLog(5, "mprSearchForFile: %s", file);
+    mprLog(6, "mprSearchForFile: %s", file);
 
     if ((result = checkPath(file, flags)) != 0) {
         return result;

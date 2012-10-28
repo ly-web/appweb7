@@ -4650,7 +4650,7 @@ typedef struct HttpTx {
     int             flags;                  /**< Response flags */
     int             connectorComplete;      /**< Connector has finished sending the response */
     int             complete;               /**< End of request including response */
-    int             pendingCompletion;      /**< Call httpComplete once the Tx pipeline is created */
+    int             pendingFinalize;        /**< Call httpFinalize again once the Tx pipeline is created */
     int             finalized;              /**< Handler or surrogate has finished writing response */
     int             responded;              /**< The request has started to respond. Some output has been initiated. */
     int             started;                /**< Handler has started */

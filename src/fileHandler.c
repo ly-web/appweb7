@@ -101,6 +101,13 @@ static int matchFileHandler(HttpConn *conn, HttpRoute *route, int dir)
             httpSetHeader(conn, "Content-Encoding", "gzip");
         }
     }
+    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST) && info->valid && !info->isDir && tx->length < 0) {
+        /*
+            The sendFile connector is optimized on some platforms to use the sendfile() system call.
+            Set the entity length for the sendFile connector to utilize.
+         */
+        httpSetEntityLength(conn, tx->fileInfo.size);
+    }
     return HTTP_ROUTE_OK;
 }
 
@@ -127,18 +134,13 @@ static void openFileHandler(HttpQueue *q)
     } else {
         if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
             if (!(info->valid || info->isDir)) {
-                mprError("Can't open document %s", tx->filename);
+                mprError("AA Can't open document %s", tx->filename);
                 if (rx->referrer) {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s from %s", rx->uri, rx->referrer);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "BB Can't open document for: %s from %s", rx->uri, rx->referrer);
                 } else {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s", rx->uri);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "CC Can't open document for: %s", rx->uri);
                 }
             } else if (info->valid) {
-                /*
-                    The sendFile connector is optimized on some platforms to use the sendfile() system call.
-                    Set the entity length for the sendFile connector to utilize.
-                 */
-                httpSetEntityLength(conn, tx->fileInfo.size);
                 if (!tx->etag) {
                     /* Set the etag for caching in the client */
                     tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
@@ -173,10 +175,10 @@ static void openFileHandler(HttpQueue *q)
                     tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
                     if (tx->file == 0) {
                         if (rx->referrer) {
-                            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", 
+                            httpError(conn, HTTP_CODE_NOT_FOUND, "DD Can't open document: %s from %s", 
                                 tx->filename, rx->referrer);
                         } else {
-                            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", tx->filename);
+                            httpError(conn, HTTP_CODE_NOT_FOUND, "EE Can't open document: %s from %s", tx->filename);
                         }
                     }
                 }
@@ -189,6 +191,18 @@ static void openFileHandler(HttpQueue *q)
                 httpHandleOptionsTrace(q->conn, "GET,HEAD,POST");
             }
         }
+    }
+}
+
+
+static void closeFileHandler(HttpQueue *q)
+{
+    HttpTx  *tx;
+
+    tx = q->conn->tx;
+    if (tx->file) {
+        mprCloseFile(tx->file);
+        tx->file = 0;
     }
 }
 
@@ -474,6 +488,7 @@ PUBLIC int maOpenFileHandler(Http *http)
     }
     handler->match = matchFileHandler;
     handler->open = openFileHandler;
+    handler->close = closeFileHandler;
     handler->start = startFileHandler;
     handler->ready = readyFileHandler;
     handler->outgoingService = outgoingFileService;
