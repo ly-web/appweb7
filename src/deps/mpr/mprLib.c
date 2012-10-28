@@ -3372,6 +3372,10 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         }
         wp->desiredMask = mask;
         WSAAsyncSelect(wp->fd, ws->hwnd, ws->socketMessage, winMask);
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     unlock(ws);
     return 0;
@@ -9444,6 +9448,10 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         }
         mprAssert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         wp->desiredMask = mask;
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     ws->handlerMap[fd] = (mask) ? wp : 0;
     unlock(ws);
@@ -11791,6 +11799,10 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         }
         mprAssert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         wp->desiredMask = mask;
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     ws->handlerMap[fd] = (mask) ? wp : 0;
     unlock(ws);
@@ -16640,7 +16652,6 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             }
             wp->desiredMask = mask;
         }
-
         /*
             Compact on removal. If not the last entry, copy last poll entry to replace the deleted fd.
          */
@@ -16653,6 +16664,10 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             ws->handlerMap[wp->fd] = 0;
             wp->notifierIndex = -1;
             wp->desiredMask = 0;
+        }
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
         }
     }
     unlock(ws);
@@ -18431,6 +18446,10 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
                 }
             }
             ws->highestFd = fd;
+        }
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
         }
     }
     unlock(ws);
@@ -26180,6 +26199,7 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
 
 static void ioEvent(void *data, MprEvent *event)
 {
+    event->handler->event = 0;
     event->handler->proc(data, event);
 }
 
