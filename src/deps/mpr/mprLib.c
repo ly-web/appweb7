@@ -7140,7 +7140,7 @@ PUBLIC char *mprEncode64Block(cchar *s, ssize len)
     end = &s[len];
     while (s < end) {
         shiftbuf = 0;
-        for (j = 2; j >= 0; j--, s++) {
+        for (j = 2; s < end && j >= 0; j--, s++) {
             shiftbuf |= ((*s & 0xff) << (j * 8));
         }
         shift = 18;

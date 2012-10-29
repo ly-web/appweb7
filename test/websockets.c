@@ -59,6 +59,7 @@ ESP_EXPORT int esp_module_websockets(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "basic-construct", dummy_action);
     espDefineAction(route, "basic-open", dummy_action);
     espDefineAction(route, "basic-send", dummy_action);
+    espDefineAction(route, "basic-echo", echo_action);
     espDefineAction(route, "basic-ssl", echo_action);
     espDefineAction(route, "basic-len", echo_action);
     return 0;
