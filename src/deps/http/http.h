@@ -2306,6 +2306,14 @@ PUBLIC void httpSetTimeout(HttpConn *conn, int requestTimeout, int inactivityTim
 PUBLIC void httpSetTimestamp(MprTime period);
 
 /**
+    Setup a wait handler for the connection to wait for desired events
+    @param conn HttpConn object created via #httpCreateConn
+    @param mask Mask of events. MPR_READABLE | MPR_WRITABLE
+    @ingroup HttpConn
+ */
+PUBLIC void httpSetupWaitHandler(HttpConn *conn, int eventMask);
+
+/**
     Test if the item should be traced
     @param conn HttpConn connection object created via #httpCreateConn
     @param dir Direction of data flow. Set to HTTP_TRACE_RX or HTTP_TRACE_TX
@@ -4706,8 +4714,7 @@ PUBLIC void httpFinalize(HttpConn *conn);
 /** 
     Connect to a server and issue Http client request.
     @description Start a new Http request on the http object and return. This routine does not block.
-        After starting the request, you can use httpWait() or httpWForResponse() to wait for the request to 
-        achieve a certain state or to complete.
+        After starting the request, you can use #httpWait to wait for the request to achieve a certain state or to complete.
     @param conn HttpConn connection object created via #httpCreateConn
     @param method Http method to use. Valid methods include: "GET", "POST", "PUT", "DELETE", "OPTIONS" and "TRACE" 
     @param uri URI to fetch
@@ -4989,10 +4996,13 @@ PUBLIC void httpSetResponded(HttpConn *conn);
 PUBLIC void httpSocketBlocked(HttpConn *conn);
 
 /** 
-    Wait for the connection to achieve the requested state Used for blocking client requests.
+    Wait for the connection to achieve the requested state.
+    @description This call blocks until the connection reaches the desired state. It creates a wait handler and
+        services any events while waiting. This is useful for blocking client requests.
     @param conn HttpConn connection object created via #httpCreateConn
     @param state HTTP_STATE_XXX to wait for.
-    @param timeout Timeout in milliseconds to wait 
+    @param timeout Timeout in milliseconds to wait. Set to -1 to use the default inactivity timeout. Set to zero
+        to wait for ever.
     @return "Zero" if successful. Otherwise return a negative MPR error code. Specific returns include:
         MPR_ERR_TIMEOUT and MPR_ERR_BAD_STATE.
     @ingroup HttpTx

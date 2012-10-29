@@ -2618,22 +2618,30 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
                 eventMask |= MPR_READABLE;
             }
         }
-        if (eventMask) {
-            if (conn->waitHandler == 0) {
-                conn->waitHandler = mprCreateWaitHandler(conn->sock->fd, eventMask, conn->dispatcher, conn->ioCallback, 
-                    conn, 0);
-            } else {
-                conn->waitHandler->dispatcher = conn->dispatcher;
-                mprWaitOn(conn->waitHandler, eventMask);
-            }
-        } else if (conn->waitHandler) {
-            mprWaitOn(conn->waitHandler, eventMask);
-        }
+        httpSetupWaitHandler(conn, eventMask);
         mprAssert(conn->dispatcher->enabled);
         unlock(conn->http);
     }
     if (tx && tx->handler && tx->handler->module) {
         tx->handler->module->lastActivity = conn->lastActivity;
+    }
+}
+
+
+PUBLIC void httpSetupWaitHandler(HttpConn *conn, int eventMask)
+{
+    if (conn->sock == 0) {
+        return;
+    }
+    if (eventMask) {
+        if (conn->waitHandler == 0) {
+            conn->waitHandler = mprCreateWaitHandler(conn->sock->fd, eventMask, conn->dispatcher, conn->ioCallback, conn, 0);
+        } else {
+            conn->waitHandler->dispatcher = conn->dispatcher;
+            mprWaitOn(conn->waitHandler, eventMask);
+        }
+    } else if (conn->waitHandler) {
+        mprWaitOn(conn->waitHandler, eventMask);
     }
 }
 
@@ -12360,10 +12368,12 @@ PUBLIC int httpSetUri(HttpConn *conn, cchar *uri)
 }
 
 
+#if UNUSED
 static void waitHandler(HttpConn *conn, struct MprEvent *event)
 {
     httpCallEvent(conn, event->mask);
 }
+#endif
 
 
 /*
@@ -12411,11 +12421,7 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout)
         eventMask |= MPR_WRITABLE;
     }
     if (conn->state < state) {
-        if (conn->waitHandler == 0) {
-            conn->waitHandler = mprCreateWaitHandler(conn->sock->fd, eventMask, conn->dispatcher, waitHandler, conn, 0);
-        } else {
-            mprWaitOn(conn->waitHandler, eventMask);
-        }
+        httpSetupWaitHandler(conn, eventMask);
     }
     remaining = timeout;
     do {
@@ -17053,7 +17059,8 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
         return MPR_ERR_WONT_FIT;
     }
     mprLog(5, "webSocketFilter: Sending message type \"%s\", len %d", codetxt[type & 0xf], len);
-    for (totalWritten = 0; len > 0; ) {
+    totalWritten = 0;
+    do {
         /*
             Break into frames. Note: downstream may also fragment packets.
             The outgoing service routine will convert every packet into a frame.
@@ -17067,12 +17074,14 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
             return MPR_ERR_MEMORY;
         }
         packet->type = type;
-        if (mprPutBlockToBuf(packet->content, buf, thisWrite) != thisWrite) {
-            return MPR_ERR_MEMORY;
+        if (thisWrite > 0) {
+            if (mprPutBlockToBuf(packet->content, buf, thisWrite) != thisWrite) {
+                return MPR_ERR_MEMORY;
+            }
+            len -= thisWrite;
+            buf += thisWrite;
+            totalWritten += thisWrite;
         }
-        len -= thisWrite;
-        buf += thisWrite;
-        totalWritten += thisWrite;
         packet->last = (len > 0) ? 0 : !(flags & HTTP_MORE);
         httpPutForService(q, packet, HTTP_SCHEDULE_QUEUE);
 
@@ -17088,7 +17097,7 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
                 }
             }
         }
-    }
+    } while (len > 0);
     httpServiceQueues(conn);
     return totalWritten;
 }
