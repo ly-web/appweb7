@@ -2333,9 +2333,11 @@ static MprTime gettime(cchar *value)
     MprTime     when;
 
     value = strim(slower(value), " \t", MPR_TRIM_BOTH);
-    if (sends(value, "min") || sends(value, "mins")) {
+    if (sends(value, "sec") || sends(value, "secs") || sends(value, "seconds") || sends(value, "seconds")) {
+        when = stoi(value);
+    } else if (sends(value, "min") || sends(value, "mins") || sends(value, "minute") || sends(value, "minutes")) {
         when = stoi(value) * 60;
-    } else if (sends(value, "hr") || sends(value, "hrs")) {
+    } else if (sends(value, "hr") || sends(value, "hrs") || sends(value, "hour") || sends(value, "hours")) {
         when = stoi(value) * 60 * 60;
     } else if (sends(value, "day") || sends(value, "days")) {
         when = stoi(value) * 60 * 60 * 24;
