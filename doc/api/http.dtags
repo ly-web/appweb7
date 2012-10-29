@@ -1027,6 +1027,13 @@
       <arglist>(MprTime period)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>httpSetupWaitHandler</name>
+      <anchorfile>group___http_conn.html</anchorfile>
+      <anchor>ga3b9e9dbb4d2b8da2de6fb6d20c307fc6</anchor>
+      <arglist>(HttpConn *conn, int eventMask)</arglist>
+    </member>
+    <member kind="function">
       <type>int</type>
       <name>httpShouldTrace</name>
       <anchorfile>group___http_conn.html</anchorfile>

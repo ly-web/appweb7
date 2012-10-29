@@ -2308,7 +2308,7 @@ PUBLIC void httpSetTimestamp(MprTime period);
 /**
     Setup a wait handler for the connection to wait for desired events
     @param conn HttpConn object created via #httpCreateConn
-    @param mask Mask of events. MPR_READABLE | MPR_WRITABLE
+    @param eventMask Mask of events. MPR_READABLE | MPR_WRITABLE
     @ingroup HttpConn
  */
 PUBLIC void httpSetupWaitHandler(HttpConn *conn, int eventMask);
