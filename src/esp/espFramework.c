@@ -179,8 +179,6 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
 PUBLIC void espFinalize(HttpConn *conn) 
 {
     httpFinalize(conn);
-    //  MOB - should separate these concepts
-    httpComplete(conn);
 }
 
 

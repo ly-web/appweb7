@@ -38,7 +38,7 @@ static void startAction(HttpQueue *q)
     mprLog(5, "Start actionHandler");
     conn = q->conn;
     assure(!conn->error);
-    assure(!conn->tx->complete);
+    assure(!conn->tx->finalized);
 
     name = conn->rx->pathInfo;
     if ((action = mprLookupKey(conn->tx->handler->stageData, name)) == 0) {
@@ -177,7 +177,7 @@ PUBLIC int httpAuthenticate(HttpConn *conn)
         }
         if (rx->authDetails && (auth->type->parseAuth)(conn) < 0) {
             mprAssert(conn->error);
-            mprAssert(conn->tx->complete);
+            mprAssert(conn->tx->finalized);
             return 0;
         }
         if (!conn->username) {
@@ -1041,7 +1041,7 @@ static void readyCacheHandler(HttpQueue *q)
             httpWriteString(q, data);
         }
     }
-    httpComplete(conn);
+    httpFinalize(conn);
 }
 
 
@@ -1293,7 +1293,7 @@ static void saveCachedResponse(HttpConn *conn)
     MprTime     modified;
 
     tx = conn->tx;
-    mprAssert(tx->finalized && tx->cacheBuffer);
+    mprAssert(tx->finalizedOutput && tx->cacheBuffer);
 
     buf = tx->cacheBuffer;
     mprAddNullToBuf(buf);
@@ -1326,7 +1326,7 @@ PUBLIC ssize httpWriteCached(HttpConn *conn)
     httpSetHeader(conn, "Last-Modified", mprFormatUniversalTime(MPR_HTTP_DATE, modified));
     conn->tx->cacheBuffer = 0;
     httpWriteString(conn->writeq, data);
-    httpComplete(conn);
+    httpFinalize(conn);
     return slen(data);
 }
 
@@ -3935,7 +3935,9 @@ PUBLIC void httpDisconnect(HttpConn *conn)
         conn->rx->eof = 1;
     }
     if (conn->tx) {
-        conn->tx->complete = 1;
+        conn->tx->finalized = 1;
+        conn->tx->finalizedOutput = 1;
+        conn->tx->finalizedConnector = 1;
     }
 }
 
@@ -4013,7 +4015,7 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
                 }
             }
         }
-        httpComplete(conn);
+        httpFinalize(conn);
     }
 }
 
@@ -5502,8 +5504,8 @@ static void netOutgoingService(HttpQueue *q)
     conn->lastActivity = conn->http->now;
     mprAssert(conn->sock);
     
-    if (!conn->sock || tx->connectorComplete) {
-        assure(conn->sock && !tx->connectorComplete);
+    if (!conn->sock || tx->finalizedConnector) {
+        assure(conn->sock && !tx->finalizedConnector);
         return;
     }
     if (tx->flags & HTTP_TX_NO_BODY) {
@@ -5513,7 +5515,7 @@ static void netOutgoingService(HttpQueue *q)
         httpError(conn, HTTP_CODE_REQUEST_TOO_LARGE | ((tx->bytesWritten) ? HTTP_ABORT : 0),
             "Http transmission aborted. Exceeded transmission max body of %,Ld bytes", conn->limits->transmissionBodySize);
         if (tx->bytesWritten) {
-            httpConnectorComplete(conn);
+            httpFinalizeConnector(conn);
             return;
         }
     }
@@ -5553,7 +5555,7 @@ static void netOutgoingService(HttpQueue *q)
                 LOG(5, "netOutgoingService write failed, error %d", errCode);
             }
             httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Write error %d", errCode);
-            httpConnectorComplete(conn);
+            httpFinalizeConnector(conn);
             break;
 
         } else if (written == 0) {
@@ -5569,7 +5571,7 @@ static void netOutgoingService(HttpQueue *q)
     }
     if (q->ioCount == 0) {
         if ((q->flags & HTTP_QUEUE_EOF)) {
-            httpConnectorComplete(conn);
+            httpFinalizeConnector(conn);
         } else {
             HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
         }
@@ -6420,7 +6422,7 @@ static void startPass(HttpQueue *q)
 
 static void readyPass(HttpQueue *q)
 {
-    httpComplete(q->conn);
+    httpFinalize(q->conn);
 }
 
 
@@ -6432,7 +6434,7 @@ static void readyError(HttpQueue *q)
          */
         httpError(q->conn, HTTP_CODE_SERVICE_UNAVAILABLE, "The requested resource is not available");
     }
-    httpComplete(q->conn);
+    httpFinalize(q->conn);
 }
 
 
@@ -6490,7 +6492,7 @@ PUBLIC void httpHandleOptionsTrace(HttpConn *conn, cchar *methods)
         }
         assure(tx->length <= 0);
     }
-    httpComplete(conn);
+    httpFinalize(conn);
 }
 
 
@@ -6579,7 +6581,7 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
 
     tx->outputPipeline = mprCreateList(-1, 0);
     if (conn->endpoint) {
-        if (tx->handler == 0 || tx->complete) {
+        if (tx->handler == 0 || tx->finalized) {
             tx->handler = http->passHandler;
         }
         mprAddItem(tx->outputPipeline, tx->handler);
@@ -6627,8 +6629,8 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
     openQueues(conn);
 
     if (tx->pendingFinalize) {
-        tx->finalized = 0;
-        httpFinalize(conn);
+        tx->finalizedOutput = 0;
+        httpFinalizeOutput(conn);
     }
 }
 
@@ -6732,7 +6734,7 @@ static void openQueues(HttpConn *conn)
             if (q->open && !(q->flags & (HTTP_QUEUE_OPEN))) {
                 if (q->pair == 0 || !(q->pair->flags & HTTP_QUEUE_OPEN)) {
                     openQueue(q, tx->chunkSize);
-                    if (q->open && !tx->complete) {
+                    if (q->open && !tx->finalized) {
                         q->flags |= HTTP_QUEUE_OPEN;
                         q->stage->open(q);
                     }
@@ -6789,7 +6791,7 @@ PUBLIC void httpStartPipeline(HttpConn *conn)
     rx = conn->rx;
     if (rx->needInputPipeline) {
         qhead = tx->queue[HTTP_QUEUE_RX];
-        for (q = qhead->nextQ; !tx->complete && q->nextQ != qhead; q = nextQ) {
+        for (q = qhead->nextQ; !tx->finalized && q->nextQ != qhead; q = nextQ) {
             nextQ = q->nextQ;
             if (q->start && !(q->flags & HTTP_QUEUE_STARTED)) {
                 if (q->pair == 0 || !(q->pair->flags & HTTP_QUEUE_STARTED)) {
@@ -6800,7 +6802,7 @@ PUBLIC void httpStartPipeline(HttpConn *conn)
         }
     }
     qhead = tx->queue[HTTP_QUEUE_TX];
-    for (q = qhead->prevQ; !tx->complete && q->prevQ != qhead; q = prevQ) {
+    for (q = qhead->prevQ; !tx->finalized && q->prevQ != qhead; q = prevQ) {
         prevQ = q->prevQ;
         if (q->start && !(q->flags & HTTP_QUEUE_STARTED)) {
             q->flags |= HTTP_QUEUE_STARTED;
@@ -6810,7 +6812,7 @@ PUBLIC void httpStartPipeline(HttpConn *conn)
     /* Start the handler last */
     q = qhead->nextQ;
     httpStartHandler(conn);
-    if (!tx->complete && !tx->connectorComplete && rx->remainingContent > 0) {
+    if (!tx->finalized && !tx->finalizedConnector && rx->remainingContent > 0) {
         /* If no remaining content, wait till the processing stage to avoid duplicate writable events */
         HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
     }
@@ -6822,7 +6824,7 @@ PUBLIC void httpReadyHandler(HttpConn *conn)
     HttpQueue   *q;
     
     q = conn->writeq;
-    if (q->stage->ready && !conn->tx->complete && !(q->flags & HTTP_QUEUE_READY)) {
+    if (q->stage->ready && !conn->tx->finalized && !(q->flags & HTTP_QUEUE_READY)) {
         q->flags |= HTTP_QUEUE_READY;
         q->stage->ready(q);
     }
@@ -6834,7 +6836,7 @@ static void httpStartHandler(HttpConn *conn)
     HttpQueue   *q;
     
     q = conn->writeq;
-    if (q->stage->start && !conn->tx->complete && !(q->flags & HTTP_QUEUE_STARTED)) {
+    if (q->stage->start && !conn->tx->finalized && !(q->flags & HTTP_QUEUE_STARTED)) {
         q->flags |= HTTP_QUEUE_STARTED;
         q->stage->start(q);
     }
@@ -6852,7 +6854,7 @@ PUBLIC bool httpPumpHandler(HttpConn *conn)
     if (!q->stage->writable) {
        return 0;
     }
-    if (!conn->tx->finalized) {
+    if (!conn->tx->finalizedOutput) {
         q->stage->writable(q);
         if (q->count > 0) {
             httpScheduleQueue(q);
@@ -7242,7 +7244,7 @@ PUBLIC ssize httpRead(HttpConn *conn, char *buf, ssize size)
     mprAssert(size >= 0);
     VERIFY_QUEUE(q);
 
-    while (q->count <= 0 && !conn->async && !conn->tx->complete && conn->sock && (conn->state <= HTTP_STATE_CONTENT)) {
+    while (q->count <= 0 && !conn->async && !conn->tx->finalized && conn->sock && (conn->state <= HTTP_STATE_CONTENT)) {
         httpServiceQueues(conn);
         if (conn->sock) {
             httpWait(conn, 0, MPR_TIMEOUT_NO_BUSY);
@@ -7457,7 +7459,7 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize len, int flags)
     if (flags == 0) {
         flags = HTTP_BUFFER;
     }
-    if (tx == 0 || tx->finalized) {
+    if (tx == 0 || tx->finalizedOutput) {
         return MPR_ERR_CANT_WRITE;
     }
     tx->responded = 1;
@@ -8288,7 +8290,7 @@ PUBLIC void httpRouteRequest(HttpConn *conn)
     if (rewrites >= HTTP_MAX_REWRITE) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Too many request rewrites");
     }
-    if (tx->complete) {
+    if (tx->finalized) {
         /* Pass handler can transmit the error */
         tx->handler = conn->http->passHandler;
     }
@@ -9833,7 +9835,7 @@ static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
         return HTTP_ROUTE_OK;
     }
     if (!httpAuthenticate(conn)) {
-        if (!conn->tx->complete && route->auth && route->auth->type) {
+        if (!conn->tx->finalized && route->auth && route->auth->type) {
             (route->auth->type->askLogin)(conn);
         }
         /* Request has been denied and fully handled */
@@ -10082,7 +10084,7 @@ static int writeTarget(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
     }
     httpSetStatus(conn, route->responseStatus);
     httpFormatResponse(conn, "%s", str);
-    httpComplete(conn);
+    httpFinalize(conn);
     return HTTP_ROUTE_OK;
 }
 
@@ -11065,20 +11067,8 @@ static void manageRx(HttpRx *rx, int flags)
         mprMark(rx->paramString);
         mprMark(rx->lang);
         mprMark(rx->target);
-
         mprMark(rx->upgrade);
         mprMark(rx->webSocket);
-#if UNUSED
-        //  MOB SORT
-        mprMark(rx->origin);
-        mprMark(rx->webSockKey);
-        mprMark(rx->webSockProtocols);
-        mprMark(rx->currentPacket);
-        mprMark(rx->extensions);
-        mprMark(rx->pingEvent);
-        mprMark(rx->subProtocol);
-        mprMark(rx->closeReason);
-#endif
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (rx->conn) {
@@ -11141,12 +11131,6 @@ PUBLIC void httpPump(HttpConn *conn, HttpPacket *packet)
             conn->canProceed = processCompletion(conn);
             break;
         }
-#if UNUSED
-        if (conn->state != HTTP_STATE_COMPLETE && (conn->connError || conn->complete)) {
-            httpSetState(conn, HTTP_STATE_COMPLETE);
-            conn->canProceed = 1;
-        }
-#endif
         packet = conn->input;
     }
     conn->pumping = 0;
@@ -11360,11 +11344,6 @@ static void parseMethod(HttpConn *conn)
         }
         break;
     }
-#if UNUSED
-    if (methodFlags == 0) {
-        methodFlags = HTTP_UNKNOWN;
-    }
-#endif
     rx->flags |= methodFlags;
 }
 
@@ -11496,7 +11475,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
     limits = conn->limits;
     keepAlive = (conn->http10) ? 0 : 1;
 
-    for (count = 0; content->start[0] != '\r' && !tx->complete; count++) {
+    for (count = 0; content->start[0] != '\r' && !tx->finalized; count++) {
         if (count >= limits->headerMax) {
             httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Too many headers");
             return 0;
@@ -11883,7 +11862,7 @@ static bool processParsed(HttpConn *conn)
         precedence and 100 Continue will not be sent. Also, if the connector has already written bytes to the socket, we
         do not send 100 Continue to avoid corrupting the response.
      */
-    if ((rx->flags & HTTP_EXPECT_CONTINUE) && !conn->tx->complete && !conn->tx->bytesWritten) {
+    if ((rx->flags & HTTP_EXPECT_CONTINUE) && !conn->tx->finalized && !conn->tx->bytesWritten) {
         sendContinue(conn);
         rx->flags &= ~HTTP_EXPECT_CONTINUE;
     }
@@ -11978,7 +11957,7 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
             } else {
                 conn->input = 0;
             }
-            if (!(tx->complete && conn->endpoint)) {
+            if (!(tx->finalized && conn->endpoint)) {
                 if (rx->form) {
                     httpPutForService(q, packet, HTTP_DELAY_SERVICE);
                 } else {
@@ -11988,7 +11967,7 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
         }
     }
     if (rx->eof) {
-        if (!tx->complete) {
+        if (!tx->finalized) {
             if (rx->form && conn->endpoint) {
                 /* Forms wait for all data before routing */
                 routeRequest(conn);
@@ -12012,8 +11991,8 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
     httpServiceQueues(conn);
     VERIFY_QUEUE(q);
 #if UNUSED
-    //  NOt until all the data is read
-    if (tx->complete) {
+    //  Not until all the data is read
+    if (tx->finalized) {
         httpSetState(conn, HTTP_STATE_READY);
         return 1;
     }
@@ -12058,8 +12037,8 @@ static bool processRunning(HttpConn *conn)
 
     if (conn->endpoint) {
         /* Server side */
-        if (tx->complete) {
-            if (tx->connectorComplete) {
+        if (tx->finalized) {
+            if (tx->finalizedConnector) {
                 /* Request complete and output complete */
                 httpSetState(conn, HTTP_STATE_COMPLETE);
             } else {
@@ -12099,7 +12078,7 @@ static bool processRunning(HttpConn *conn)
             canProceed = 0;
             assure(conn->state != HTTP_STATE_COMPLETE);
         } else {
-            httpComplete(conn);
+            httpFinalize(conn);
             httpSetState(conn, HTTP_STATE_COMPLETE);
             assure(canProceed);
         }
@@ -12428,7 +12407,7 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout)
     conn->async = 1;
 
     eventMask = MPR_READABLE;
-    if (!conn->tx->connectorComplete) {
+    if (!conn->tx->finalizedConnector) {
         eventMask |= MPR_WRITABLE;
     }
     if (conn->state < state) {
@@ -12448,7 +12427,7 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout)
             break;
         }
         remaining = mprGetRemainingTime(mark, timeout);
-    } while (!justOne && !conn->tx->complete && conn->state < state && remaining > 0);
+    } while (!justOne && !conn->tx->finalized && conn->state < state && remaining > 0);
 
     conn->async = saveAsync;
     if (conn->sock == 0 || conn->error) {
@@ -12916,8 +12895,8 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     conn->lastActivity = conn->http->now;
     mprAssert(conn->sock);
 
-    if (!conn->sock || tx->connectorComplete) {
-        assure(conn->sock && !tx->connectorComplete);
+    if (!conn->sock || tx->finalizedConnector) {
+        assure(conn->sock && !tx->finalizedConnector);
         return;
     }
     if (tx->flags & HTTP_TX_NO_BODY) {
@@ -12927,7 +12906,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
         httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE | ((tx->bytesWritten) ? HTTP_ABORT : 0),
             "Http transmission aborted. Exceeded max body of %,Ld bytes", conn->limits->transmissionBodySize);
         if (tx->bytesWritten) {
-            httpConnectorComplete(conn);
+            httpFinalizeConnector(conn);
             return;
         }
     }
@@ -12957,7 +12936,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
                 mprLog(7, "SendFileToSocket failed, errCode %d", errCode);
             }
             httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "SendFileToSocket failed, errCode %d", errCode);
-            httpConnectorComplete(conn);
+            httpFinalizeConnector(conn);
             break;
 
         } else if (written == 0) {
@@ -12973,7 +12952,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     }
     if (q->ioCount == 0) {
         if ((q->flags & HTTP_QUEUE_EOF)) {
-            httpConnectorComplete(conn);
+            httpFinalizeConnector(conn);
         } else {
             HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
         }
@@ -14072,43 +14051,40 @@ PUBLIC void httpSetHeaderString(HttpConn *conn, cchar *key, cchar *value)
 /*
     Called by connectors (ONLY) when writing the transmission is complete
  */
-PUBLIC void httpConnectorComplete(HttpConn *conn)
+PUBLIC void httpFinalizeConnector(HttpConn *conn)
 {
     HttpTx      *tx;
 
     tx = conn->tx;
-    tx->connectorComplete = 1;
-    tx->finalized = 1;
+    tx->finalizedConnector = 1;
+    tx->finalizedOutput = 1;
     /*
-        Use case: 
-        - server calling finalize in a timer. Must notify for close event in ejs.web/test/request/events.tst
+        Use case: server calling finalize in a timer. Must notify for close event in ejs.web/test/request/events.tst
       */ 
-#if MOB_CHANGE || 1
     /* Can't do this if there is still data to read */
-    if (tx->complete && conn->rx->eof) {
+    if (tx->finalized && conn->rx->eof) {
         httpSetState(conn, HTTP_STATE_COMPLETE);
     }
-#endif
 }
 
 
-PUBLIC void httpComplete(HttpConn *conn)
+PUBLIC void httpFinalize(HttpConn *conn)
 {
     HttpTx  *tx;
 
     tx = conn->tx;
-    if (!tx || tx->complete) {
+    if (!tx || tx->finalized) {
         return;
     }
-    tx->complete = 1;
-    if (!tx->finalized) {
-        httpFinalize(conn);
+    tx->finalized = 1;
+    if (!tx->finalizedOutput) {
+        httpFinalizeOutput(conn);
     } else {
         httpServiceQueues(conn);
-#if MOB_CHANGE
+#if UNUSED
         /*
             Use case:
-            - server calling finalized from timeout. Don't get readable event because of keep-alive.
+            - server calling httpFinalizeOutput from timeout. Don't get readable event because of keep-alive.
                 ejs.web/test/request/events.tst
          */
         if (!conn->pumping) {
@@ -14119,16 +14095,16 @@ PUBLIC void httpComplete(HttpConn *conn)
 }
 
 
-PUBLIC void httpFinalize(HttpConn *conn)
+PUBLIC void httpFinalizeOutput(HttpConn *conn)
 {
     HttpTx      *tx;
 
     tx = conn->tx;
-    if (!tx || tx->finalized) {
+    if (!tx || tx->finalizedOutput) {
         return;
     }
     tx->responded = 1;
-    tx->finalized = 1;
+    tx->finalizedOutput = 1;
     if (conn->state < HTTP_STATE_CONNECTED || !conn->writeq || !conn->sock) {
         /* Tx Pipeline not yet created */
         tx->pendingFinalize = 1;
@@ -14136,10 +14112,10 @@ PUBLIC void httpFinalize(HttpConn *conn)
     }
     httpPutForService(conn->writeq, httpCreateEndPacket(), HTTP_SCHEDULE_QUEUE);
     httpServiceQueues(conn);
-#if MOB_CHANGE
+#if UNUSED
     /*
         Use cases:
-        - server calling finalized from timeout. Don't get readable event because of keep-alive.
+        - server calling httpFinalizeOutput from timeout. Don't get readable event because of keep-alive.
             ejs.web/test/request/events.tst
      */
     if (!conn->pumping) {
@@ -14149,15 +14125,15 @@ PUBLIC void httpFinalize(HttpConn *conn)
 }
 
 
-PUBLIC int httpIsComplete(HttpConn *conn)
-{
-    return conn->tx->complete;
-}
-
-
 PUBLIC int httpIsFinalized(HttpConn *conn)
 {
     return conn->tx->finalized;
+}
+
+
+PUBLIC int httpIsOutputFinalized(HttpConn *conn)
+{
+    return conn->tx->finalizedOutput;
 }
 
 
@@ -14302,7 +14278,8 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
     rx = conn->rx;
     tx = conn->tx;
 
-    if (tx->complete) {
+    //  MOB - should really test responded
+    if (tx->finalized) {
         /* A response has already been formulated */
         return;
     }
@@ -14355,7 +14332,7 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
             "<body><h1>%s</h1>\r\n</body></html>\r\n",
             msg, msg);
     }
-    httpComplete(conn);
+    httpFinalize(conn);
 }
 
 
@@ -16880,7 +16857,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             if (httpGetPacketLength(packet) > 0) {
                 mprLog(5, "webSocketFilter: closed, ignore incoming packet");
             }
-            httpComplete(conn);
+            httpFinalize(conn);
             break;
 
         case WS_BEGIN:
@@ -16959,7 +16936,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             VERIFY_QUEUE(q);
             currentFrameLen = httpGetPacketLength(ws->currentFrame);
             len = httpGetPacketLength(packet);
-//  MOB - not right as currentFrameLen may have multiple, complete frames
             if ((currentFrameLen + len) > ws->frameLength) {
                 offset = ws->frameLength - currentFrameLen;
                 VERIFY_QUEUE(q);
@@ -16988,10 +16964,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 content = packet->content;
             }
             frameLen = httpGetPacketLength(packet);
-#if UNUSED
-            msgComplete = (packet->last && frameLen == ws->frameLength);
-            if (msgComplete || frameLen >= limits->webSocketsPacketSize) {
-#endif
             assure(frameLen <= ws->frameLength);
             if (frameLen == ws->frameLength) {
                 VERIFY_QUEUE(q);
@@ -17007,7 +16979,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 VERIFY_QUEUE(q);
                 if (ws->state == WS_STATE_CLOSED) {
                     HTTP_NOTIFY(conn, HTTP_EVENT_APP_CLOSE, ws->closeStatus);
-                    httpComplete(conn);
+                    httpFinalize(conn);
                     ws->frameState = WS_CLOSED;
                     break;
                 }

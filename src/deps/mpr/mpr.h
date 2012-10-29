@@ -1580,8 +1580,8 @@ PUBLIC void mprBreakpoint();
  */
 PUBLIC void assure(bool cond);
 #elif BIT_ASSERT
-    #define mprAssert(C)    if (C) ; else mprAssureError(MPR_LOC, #C)
-    #define assure(C)       if (C) ; else mprAssureError(MPR_LOC, #C)
+    #define mprAssert(C)    if (C) ; else mprAssure(MPR_LOC, #C)
+    #define assure(C)       if (C) ; else mprAssure(MPR_LOC, #C)
 #else
     #define mprAssert(C)    if (C) ; else
     #define assure(C)       if (1) ; else
@@ -4459,7 +4459,7 @@ PUBLIC int mprPushItem(MprList *list, cvoid *item);
     Logging Services
     @stability Evolving
     @defgroup MprLog MprLog
-    @see MprLogHandler mprAssureError mprError mprFatalError mprGetLogFile mprGetLogHandler mprLog mprMemoryError 
+    @see MprLogHandler mprAssure mprError mprFatalError mprGetLogFile mprGetLogHandler mprLog mprMemoryError 
         mprRawLog mprSetLogFile mprSetLogHandler mprSetLogLevel mprStaticError mprUserError mprUsingDefaultLogHandler 
         mprWarn 
  */
@@ -4479,55 +4479,6 @@ typedef struct MprLog { int dummy; } MprLog;
 typedef void (*MprLogHandler)(int flags, int level, cchar *msg);
 
 /**
-    Initialize the log service
-    @ingroup MprLog
- */
-PUBLIC void mprCreateLogService();
-
-/**
-    Start logging 
-    @param logSpec Set the log file name and level. The format is "pathName[:level]".
-    The following levels are generally observed:
-    <ul>
-        <li>0 - Essential messages, fatal errors and critical warnings</li>
-        <li>1 - Hard errors</li>
-        <li>2 - Configuration setup and soft warnings</li>
-        <li>3 - Useful informational messages</li>
-        <li>4 - Debug information</li>
-        <li>5-9 - Increasing levels of internal Appweb trace useful for debugging</li>
-    </ul>
-    @param showConfig Set to true to log an initial system configuration.
-    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup MprLog
-*/
-PUBLIC int mprStartLogging(cchar *logSpec, int showConfig);
-
-/**
-    Emit a descriptive log header
-    @ingroup MprLog
- */
-PUBLIC void mprLogHeader();
-
-/**
-    Backup a log
-    @param path Base log filename
-    @param count Count of archived logs to keep
-    @ingroup MprLog
- */
-PUBLIC int mprBackupLog(cchar *path, int count);
-
-/**
-    Set the log rotation parameters
-    @param logSize If the size is zero, then the log file will be rotated on each application boot. Otherwise,
-        the log file will be rotated if on application boot, the log file is larger than this size.
-    @param backupCount Count of the number of log files to keep
-    @param flags Set to MPR_LOG_APPEND to append to existing log files. Set to MPR_LOG_TRUNCATE to truncate log files
-        on application restart.
-    @ingroup MprLog
- */
-PUBLIC void mprSetLogBackup(ssize logSize, int backupCount, int flags);
-
-/**
     Output an assure assertion failed message.
     @description This will emit an assure assertion failed message to the standard error output. 
         It may bypass the logging system.
@@ -4536,7 +4487,21 @@ PUBLIC void mprSetLogBackup(ssize logSize, int backupCount, int flags);
     @param msg Simple string message to output
     @ingroup MprLog
  */
-PUBLIC void mprAssureError(cchar *loc, cchar *msg);
+PUBLIC void mprAssure(cchar *loc, cchar *msg);
+
+/**
+    Initialize the log service
+    @ingroup MprLog
+ */
+PUBLIC void mprCreateLogService();
+
+/**
+    Backup a log
+    @param path Base log filename
+    @param count Count of archived logs to keep
+    @ingroup MprLog
+ */
+PUBLIC int mprBackupLog(cchar *path, int count);
 
 /**
     Log an error message.
@@ -4588,6 +4553,12 @@ PUBLIC MprLogHandler mprGetLogHandler();
 PUBLIC void mprLog(int level, cchar *fmt, ...);
 
 /**
+    Emit a descriptive log header
+    @ingroup MprLog
+ */
+PUBLIC void mprLogHeader();
+
+/**
     Log a memory error message.
     @description Send a memory error message to the MPR debug logging subsystem. The message will be 
         passed to the log handler defined by #mprSetLogHandler. It is up to the log handler to respond appropriately
@@ -4613,6 +4584,17 @@ PUBLIC void mprMemoryError(cchar *fmt, ...);
 PUBLIC void mprRawLog(int level, cchar *fmt, ...);
 
 /**
+    Set the log rotation parameters
+    @param logSize If the size is zero, then the log file will be rotated on each application boot. Otherwise,
+        the log file will be rotated if on application boot, the log file is larger than this size.
+    @param backupCount Count of the number of log files to keep
+    @param flags Set to MPR_LOG_APPEND to append to existing log files. Set to MPR_LOG_TRUNCATE to truncate log files
+        on application restart.
+    @ingroup MprLog
+ */
+PUBLIC void mprSetLogBackup(ssize logSize, int backupCount, int flags);
+
+/**
     Set a file to be used for logging
     @param file MprFile object instance
  */
@@ -4625,6 +4607,24 @@ PUBLIC void mprSetLogFile(struct MprFile *file);
     @param handler Callback handler
  */
 PUBLIC void mprSetLogHandler(MprLogHandler handler);
+
+/**
+    Start logging 
+    @param logSpec Set the log file name and level. The format is "pathName[:level]".
+    The following levels are generally observed:
+    <ul>
+        <li>0 - Essential messages, fatal errors and critical warnings</li>
+        <li>1 - Hard errors</li>
+        <li>2 - Configuration setup and soft warnings</li>
+        <li>3 - Useful informational messages</li>
+        <li>4 - Debug information</li>
+        <li>5-9 - Increasing levels of internal Appweb trace useful for debugging</li>
+    </ul>
+    @param showConfig Set to true to log an initial system configuration.
+    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
+    @ingroup MprLog
+*/
+PUBLIC int mprStartLogging(cchar *logSpec, int showConfig);
 
 /**
     Display an error message to the console without allocating any memory.
@@ -8705,9 +8705,6 @@ typedef struct Mpr {
     MprOsThread     mainOsThread;           /**< Main OS thread ID */
     MprMutex        *mutex;                 /**< Thread synchronization */
     MprSpin         *spin;                  /**< Quick thread synchronization */
-#if UNUSED
-    MprSpin         *dtoaSpin[2];           /**< Dtoa thread synchronization */
-#endif
     MprCond         *cond;                  /**< Sync after starting events thread */
 
     char            *emptyString;           /**< Empty string */
@@ -9238,10 +9235,6 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value);
     Internal
  */
 PUBLIC void mprWriteToOsLog(cchar *msg, int flags, int level);
-#if UNUSED
-PUBLIC void mprUnlockDtoa(int n);
-PUBLIC void mprLockDtoa(int n);
-#endif
 
 /*********************************** External *********************************/
 /*

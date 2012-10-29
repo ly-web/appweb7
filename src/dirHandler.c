@@ -125,7 +125,7 @@ static void startDir(HttpQueue *q)
         outputLine(q, dp, tx->filename, nameSize);
     }
     outputFooter(q);
-    httpComplete(conn);
+    httpFinalize(conn);
 }
  
 

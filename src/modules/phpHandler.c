@@ -273,7 +273,7 @@ static void readyPhp(HttpQueue *q)
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR,  "PHP script shutdown failed");
     } zend_end_try();
 
-    httpComplete(conn);
+    httpFinalize(conn);
 }
 
  /*************************** PHP Support Functions ***************************/

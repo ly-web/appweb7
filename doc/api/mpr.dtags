@@ -2111,9 +2111,9 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprAssureError</name>
+      <name>mprAssure</name>
       <anchorfile>group___mpr_log.html</anchorfile>
-      <anchor>gabeb3e7fb2a5898b9819684eaa66a5481</anchor>
+      <anchor>ga3528e274d1c7dcc0c375b46c5370fcb4</anchor>
       <arglist>(cchar *loc, cchar *msg)</arglist>
     </member>
     <member kind="function">
@@ -6831,9 +6831,9 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprAssureError</name>
+      <name>mprAssure</name>
       <anchorfile>group___mpr_log.html</anchorfile>
-      <anchor>gabeb3e7fb2a5898b9819684eaa66a5481</anchor>
+      <anchor>ga3528e274d1c7dcc0c375b46c5370fcb4</anchor>
       <arglist>(cchar *loc, cchar *msg)</arglist>
     </member>
     <member kind="function">

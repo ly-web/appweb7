@@ -31,41 +31,11 @@ extern "C" {
 #define ESP_UNLOAD_TIMEOUT  (10)                        /**< Very short timeout for reloading */
 #define ESP_LIFESPAN        (3600 * MPR_TICKS_PER_SEC)  /**< Default generated content cache lifespan */
 
-#if UNUSED
-#if WINDOWS
-    #define ESP_CORE_LIBS "\"${LIBPATH}\\mod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \
-        \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\""
-#else
-    #define ESP_CORE_LIBS "${LIBPATH}/mod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lpthread -lm"
-#endif
-
-/*
-    Default SSL library switches
- */
-#if BIT_PACK_SSL
-    #if WINDOWS
-        #define ESP_SSL_LIBS " \"${LIBPATH}\\libmprssl.lib\""
-    #else
-        #define ESP_SSL_LIBS " -lmprssl"
-    #endif
-#else
-    #define ESP_SSL_LIBS
-#endif
-#define ESP_LIBS ESP_CORE_LIBS ESP_SSL_LIBS
-
-#if MACOSX
-    #define ESP_CCNAME "clang"
-#else
-    #define ESP_CCNAME "gcc"
-#endif
-#endif /* UNUSED */
-
 #if BIT_64
     #define ESP_VSKEY "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7"
 #else
     #define ESP_VSKEY "HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7"
 #endif
-
 
 /********************************** Defines ***********************************/
 /**
@@ -75,9 +45,6 @@ extern "C" {
 typedef void (*EspProc)(HttpConn *conn);
 
 #define CONTENT_MARKER  "${_ESP_CONTENT_MARKER_}"       /* Layout content marker */
-#if UNUSED
-#define ESP_SESSION     "-esp-session-"                 /* ESP session cookie name */
-#endif
 
 #if BIT_WIN_LIKE
     #define ESP_EXPORT __declspec(dllexport)
@@ -93,19 +60,19 @@ typedef void (*EspProc)(HttpConn *conn);
     Default VxWorks environment
  */
 #ifndef WIND_BASE
-#define WIND_BASE "WIND_BASE-Not-Configured"
+    #define WIND_BASE "WIND_BASE-Not-Configured"
 #endif
 #ifndef WIND_HOME
-#define WIND_HOME "WIND_HOME-Not-Configured"
+    #define WIND_HOME "WIND_HOME-Not-Configured"
 #endif
 #ifndef WIND_HOST_TYPE
-#define WIND_HOST_TYPE "WIND_HOST_TYPE-Not-Configured"
+    #define WIND_HOST_TYPE "WIND_HOST_TYPE-Not-Configured"
 #endif
 #ifndef WIND_PLATFORM
-#define WIND_PLATFORM "WIND_PLATFORM-Not-Configured"
+    #define WIND_PLATFORM "WIND_PLATFORM-Not-Configured"
 #endif
 #ifndef WIND_GNU_PATH
-#define WIND_GNU_PATH "WIND_GNU_PATH-Not-Configured"
+    #define WIND_GNU_PATH "WIND_GNU_PATH-Not-Configured"
 #endif
 
 /********************************** Parsing ***********************************/
@@ -129,9 +96,6 @@ typedef struct Esp {
     MprHash         *views;                 /**< Table of views */
     MprHash         *internalOptions;       /**< Table of internal HTML control options  */
     MprThreadLocal  *local;                 /**< Thread local data */
-#if UNUSED
-    MprCache        *sessionCache;          /**< Session state cache */
-#endif
     MprMutex        *mutex;                 /**< Multithread lock */
     EdiService      *ediService;            /**< Database service */
     int             inUse;                  /**< Active ESP request counter */
@@ -339,110 +303,6 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags);
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile);
 PUBLIC bool espUnloadModule(cchar *module, MprTime timeout);
 
-/********************************** Session ***********************************/
-#if UNUSED
-/**
-    ESP session state object
-    @defgroup EspSession EspSession
-    @see
- */
-typedef struct EspSession {
-    char            *id;                    /**< Session ID key */
-    MprCache        *cache;                 /**< Cache store reference */
-    MprTime         lifespan;               /**< Session inactivity timeout (msecs) */
-} EspSession;
-
-/**
-    Allocate a new session state object.
-    @description
-    @param conn Http connection object
-    @param id Unique session state ID
-    @param lifespan Session lifespan in ticks
-    @return A session state object
-    @ingroup EspSession
- */
-PUBLIC EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTime lifespan);
-
-/**
-    Create a session object.
-    @description This call creates a session object if one does not already exist.
-        Session state stores persist across individual HTTP requests.
-    @param conn Http connection object
-    @return A session state object
-    @ingroup EspSession
- */
-PUBLIC EspSession *espCreateSession(HttpConn *conn);
-
-/**
-    Destroy a session state object.
-    @description
-    @param sp Session state object allocated with #espAllocSession
-    @ingroup EspSession
- */
-PUBLIC void espDestroySession(EspSession *sp);
-
-/**
-    Get a session state object.
-    @description
-    @param conn Http connection object
-    @param create Set to "true" to create a session state object if one does not already exist for this client
-    @return A session state object
-    @ingroup EspSession
- */
-PUBLIC EspSession *espGetSession(HttpConn *conn, int create);
-
-/**
-    Get a session state variable.
-    @description
-    @param conn Http connection object
-    @param name Variable name to get
-    @param defaultValue If the variable does not exist, return the defaultValue.
-    @return The variable value or defaultValue if it does not exist.
-    @ingroup EspSession
- */
-PUBLIC cchar *espGetSessionVar(HttpConn *conn, cchar *name, cchar *defaultValue);
-
-/**
-    Set a session variable.
-    @description
-    @param conn Http connection object
-    @param name Variable name to set
-    @param value Variable value to use
-    @return A session state object
-    @ingroup EspSession
- */
-PUBLIC int espSetSessionVar(HttpConn *conn, cchar *name, cchar *value);
-
-/**
-    Get the session ID.
-    @description
-    @param conn Http connection object
-    @return The session ID string
-    @ingroup EspSession
- */
-PUBLIC char *espGetSessionID(HttpConn *conn);
-
-/**
-    Set an object into the session state store.
-    @description Store an object in the session state store by serializing all properties.
-    @param conn Http connection object
-    @param key Session state key
-    @param value Object to serialize
-    @ingroup EspSession
- */
-PUBLIC int espSetSessionObj(HttpConn *conn, cchar *key, MprHash *value);
-
-/**
-    Get an object from the session state store.
-    @description Retrieve an object from the session state store by deserializing all properties.
-    @param conn Http connection object
-    @param key Session state key
-    @ingroup EspSession
- */
-PUBLIC MprHash *espGetSessionObj(HttpConn *conn, cchar *key);
-
-#endif /* UNUSED */
-
 /********************************** Requests **********************************/
 /**
     View procedure callback.
@@ -575,9 +435,9 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn);
 PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *data);
 
 /**
-    Finalize transmission of the http request.
-    @description Finalize writing HTTP data by writing the final chunk trailer if required. If using chunked transfers,
-    a null chunk trailer is required to signify the end of write data.
+    Finalize processing of the http request.
+    @description Finalize the response by writing buffered HTTP data and by writing the final chunk trailer if required. If
+    using chunked transfers, a null chunk trailer is required to signify the end of write data.
     If the request is already finalized, this call does nothing.
     @param conn HttpConn connection object
     @ingroup EspReq
@@ -868,7 +728,7 @@ PUBLIC bool espIsEof(HttpConn *conn);
 PUBLIC bool espIsSecure(HttpConn *conn);
 
 /**
-    Test if a http request is finalized.
+    Test if the request has been finalized.
     @description This tests if #espFinalize or #httpFinalize has been called for a request.
     @param conn HttpConn connection object
     @return "True" if the request has been finalized.

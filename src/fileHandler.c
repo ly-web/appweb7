@@ -217,7 +217,7 @@ static void startFileHandler(HttpQueue *q)
     conn = q->conn;
     rx = conn->rx;
     tx = conn->tx;
-    assure(!tx->complete);
+    assure(!tx->finalized);
     
     if (rx->flags & HTTP_PUT) {
         handlePutRequest(q);
@@ -246,7 +246,7 @@ static void readyFileHandler(HttpQueue *q)
     /*
         The queue already contains a single data packet representing all the output data.
      */
-    httpComplete(q->conn);
+    httpFinalize(q->conn);
 }
 
 

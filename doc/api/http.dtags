@@ -678,13 +678,6 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>httpConnectorComplete</name>
-      <anchorfile>group___http_conn.html</anchorfile>
-      <anchor>ga9f0f73273ca89c8aff0cc7b249f2d34e</anchor>
-      <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
       <name>httpConnTimeout</name>
       <anchorfile>group___http_conn.html</anchorfile>
       <anchor>ga4036c3e7d17f9757a3fa83a91de54629</anchor>
@@ -773,6 +766,13 @@
       <anchorfile>group___http_conn.html</anchorfile>
       <anchor>ga11f9e50765d2cc174c40aa50d378eeaf</anchor>
       <arglist>(struct HttpConn *conn, MprEvent *event)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpFinalizeConnector</name>
+      <anchorfile>group___http_conn.html</anchorfile>
+      <anchor>gacfcd2c95c8988e79c314d0b336857e90</anchor>
+      <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -2143,13 +2143,6 @@
       <arglist>(HttpConn *conn, cchar *key, cchar *value)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>httpComplete</name>
-      <anchorfile>group___http_tx.html</anchorfile>
-      <anchor>gaeae65556c3b7e85e19e7563963852c45</anchor>
-      <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
       <type>int</type>
       <name>httpConnect</name>
       <anchorfile>group___http_tx.html</anchorfile>
@@ -2175,6 +2168,13 @@
       <name>httpFinalize</name>
       <anchorfile>group___http_tx.html</anchorfile>
       <anchor>ga279ad49e5163402e2afd6caf478bcc70</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpFinalizeOutput</name>
+      <anchorfile>group___http_tx.html</anchorfile>
+      <anchor>ga49edf0602dd2143b518c247f9cee8720</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
@@ -2228,16 +2228,16 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>httpIsComplete</name>
+      <name>httpIsFinalized</name>
       <anchorfile>group___http_tx.html</anchorfile>
-      <anchor>gacbb7a299a24f85cf7701d83a99f87c32</anchor>
+      <anchor>gaddcc759faff073cc695a204e29b2642e</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
-      <name>httpIsFinalized</name>
+      <name>httpIsOutputFinalized</name>
       <anchorfile>group___http_tx.html</anchorfile>
-      <anchor>gaddcc759faff073cc695a204e29b2642e</anchor>
+      <anchor>gace8d824cbe4a9f11448faea3b5d890a2</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">

@@ -2727,10 +2727,6 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->terminators);
         mprMark(mpr->mutex);
         mprMark(mpr->spin);
-#if UNUSED
-        mprMark(mpr->dtoaSpin[0]);
-        mprMark(mpr->dtoaSpin[1]);
-#endif
         mprMark(mpr->cond);
         mprMark(mpr->emptyString);
         mprMark(mpr->argBuf);
@@ -13465,7 +13461,7 @@ PUBLIC void mprStaticError(cchar *fmt, ...)
 }
 
 
-PUBLIC void mprAssureError(cchar *loc, cchar *msg)
+PUBLIC void mprAssure(cchar *loc, cchar *msg)
 {
 #if BIT_ASSERT
     char    buf[MPR_MAX_LOG];
@@ -18244,32 +18240,6 @@ PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
     MPR->stdOutput->fd = 1;
     MPR->stdOutput->fileSystem = fs;
     MPR->stdOutput->mode = O_WRONLY;
-
-#if UNUSED
-    fs->stdError = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdError == 0) {
-        return NULL;
-    }
-    fs->stdError->fd = 2;
-    fs->stdError->fileSystem = fs;
-    fs->stdError->mode = O_WRONLY;
-
-    fs->stdInput = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdInput == 0) {
-        return NULL;
-    }
-    fs->stdInput->fd = 0;
-    fs->stdInput->fileSystem = fs;
-    fs->stdInput->mode = O_RDONLY;
-
-    fs->stdOutput = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdOutput == 0) {
-        return NULL;
-    }
-    fs->stdOutput->fd = 1;
-    fs->stdOutput->fileSystem = fs;
-    fs->stdOutput->mode = O_WRONLY;
-#endif
     return rfs;
 }
 

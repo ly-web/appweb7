@@ -326,7 +326,7 @@ static int writeToClient(HttpQueue *q, MprCmd *cmd, MprBuf *buf, int channel)
         Write to the browser. Write as much as we can. Service queues to get the filters and connectors pumping.
      */
     while (tx && (len = mprGetBufLength(buf)) > 0) {
-        if (tx && !tx->finalized && conn->state < HTTP_STATE_COMPLETE) {
+        if (tx && !tx->finalizedOutput && conn->state < HTTP_STATE_COMPLETE) {
             if ((q->count + len) > q->max) {
                 cmd->userFlags |= MA_CGI_FLOW_CONTROL;
                 mprLog(7, "CGI: @@@ client write queue full. Suspend queue, enable conn events");
@@ -396,7 +396,7 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
     default:
         /* Child death notification */
         if (cmd->pid == 0 && cmd->complete) {
-            httpComplete(conn);
+            httpFinalize(conn);
         }
     }
     if (conn->keepAliveCount < 0 && conn->state <= HTTP_STATE_CONNECTED) {
@@ -492,7 +492,7 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
     }
     if (cmd->complete && conn->state > HTTP_STATE_BEGIN) {
         mprAssert(conn->tx);
-        httpComplete(conn);
+        httpFinalize(conn);
     }
     return total;
 }

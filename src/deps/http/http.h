@@ -1127,16 +1127,6 @@ PUBLIC void httpJoinPackets(HttpQueue *q, ssize size);
  */
 PUBLIC void httpJoinPacketForService(struct HttpQueue *q, HttpPacket *packet, bool serviceQ);
 
-#if UNUSED
-/** 
-    Open the queue. Call the queue open entry point.
-    @param q Queue reference
-    @param chunkSize Preferred chunk size
-    @return "Zero" if successful.
- */
-PUBLIC int httpOpenQueue(HttpQueue *q, ssize chunkSize);
-#endif
-
 /** 
     Put a packet back onto a queue
     @description Put the packet back onto the front of the queue. The queue's put() method is not called.
@@ -1290,7 +1280,7 @@ PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
     @description Write a formatted string of data into packets onto the end of the queue. Data packets will be created
         as required to store the write data. This call always accepts all the data and will buffer as required. 
         This call may block waiting for the downstream queue to drain if it is or becomes full.
-        Data written after #httpFinalize or #httpError is called will be ignored.
+        Data written after #httpFinalizeOutput or #httpError is called will be ignored.
     @param q Queue reference
     @param fmt Printf style formatted string
     @param ... Arguments for fmt
@@ -1315,7 +1305,7 @@ PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
         conn->limits->inactivityTimeout value.  In non-blocking mode (HTTP_NON_BLOCK), the call may return having written
         fewer bytes than requested. In buffering mode (HTTP_BUFFER), the data is always absorbed without blocking 
         and queue size limits are ignored.
-        Data written after #httpComplete, #httpFinalize or #httpError is called will be ignored.
+        Data written after #httpFinalize, #httpFinalizeOutput or #httpError is called will be ignored.
     @param q Queue reference
     @param buf Buffer containing the write data
     @param size of the data in buf
@@ -1331,7 +1321,7 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size, int flags);
     @description Write a string of data into packets onto the end of the queue. Data packets will be created
         as required to store the write data. This call may block waiting for the downstream queue to drain if it is 
         or becomes full.
-        Data written after #httpFinalize or #httpError is called will be ignored.
+        Data written after #httpFinalizeOutput or #httpError is called will be ignored.
     @param q Queue reference
     @param s String containing the data to write
     @return A count of the bytes actually written
@@ -1344,7 +1334,7 @@ PUBLIC ssize httpWriteString(HttpQueue *q, cchar *s);
     @description This will escape any HTML sequences before writing the string into packets onto the end of the queue. 
         Data packets will be created as required to store the write data. This call may block waiting for the 
         downstream queue to drain if it is or becomes full.
-        Data written after #httpFinalize or #httpError is called will be ignored.
+        Data written after #httpFinalizeOutput or #httpError is called will be ignored.
     @param q Queue reference
     @param s String containing the data to write
     @return A count of the bytes actually written
@@ -1367,19 +1357,6 @@ PUBLIC void httpAssignQueue(HttpQueue *q, struct HttpStage *stage, int dir);
 /*
     Stage Flags
  */
-#if UNUSED
-#define HTTP_STAGE_DELETE         HTTP_DELETE       /**< Support DELETE requests */
-#define HTTP_STAGE_GET            HTTP_GET          /**< Support GET requests */
-#define HTTP_STAGE_HEAD           HTTP_HEAD         /**< Support HEAD requests */
-#define HTTP_STAGE_OPTIONS        HTTP_OPTIONS      /**< Support OPTIONS requests */
-#define HTTP_STAGE_POST           HTTP_POST         /**< Support POST requests */
-#define HTTP_STAGE_PUT            HTTP_PUT          /**< Support PUT requests */
-#define HTTP_STAGE_TRACE          HTTP_TRACE        /**< Support TRACE requests */
-#define HTTP_STAGE_UNKNOWN        HTTP_UNKNOWN      /**< Support TRACE requests */
-#define HTTP_STAGE_METHODS        (HTTP_DELETE|HTTP_GET|HTTP_HEAD|HTTP_POST|HTTP_PUT) /**< Support default methods */
-#define HTTP_STAGE_ALL            HTTP_METHOD_MASK  /**< Mask for every possible method including custom methods */
-#endif
-
 #define HTTP_STAGE_CONNECTOR      0x1000            /**< Stage is a connector  */
 #define HTTP_STAGE_HANDLER        0x2000            /**< Stage is a handler  */
 #define HTTP_STAGE_FILTER         0x4000            /**< Stage is a filter  */
@@ -1521,7 +1498,7 @@ typedef struct HttpStage {
         The request is now fully ready.
         @description This callback will be invoked when all incoming data has been received. 
             The ready callback will not be called if the request already has an error.
-            If a handler finishes processing the request, it should call #httpFinalize in the ready routine.
+            If a handler finishes processing the request, it should call #httpFinalizeOutput in the ready routine.
         @param q Queue instance object
         @ingroup HttpStage
      */
@@ -1790,7 +1767,7 @@ PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
     @defgroup HttpConn HttpConn
     @see HttpConn HttpEnvCallback HttpGetPassword HttpListenCallback HttpNotifier HttpQueue HttpRedirectCallback 
         HttpRx HttpStage HttpTx HtttpListenCallback httpCallEvent httpCloseConn 
-        httpConnectorComplete httpConnTimeout httpConsumeLastRequest httpCreateConn httpCreateRxPipeline 
+        httpFinalizeConnector httpConnTimeout httpConsumeLastRequest httpCreateConn httpCreateRxPipeline 
         httpCreateTxPipeline httpDestroyConn httpDestroyPipeline httpDiscardData httpDisconnect 
         httpEnableUpload httpError httpEvent httpGetAsync httpGetChunkSize httpGetConnContext httpGetConnHost 
         httpGetError httpGetExt httpGetKeepAliveCount httpGetWriteQueueCount httpMatchHost httpMemoryError
@@ -1899,12 +1876,12 @@ PUBLIC void httpCallEvent(HttpConn *conn, int mask);
 PUBLIC void httpCloseConn(HttpConn *conn);
 
 /**
-    Connector has completed sending the response.
+    Finalize connector output sending the response.
     @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
     @internal
  */ 
-PUBLIC void httpConnectorComplete(HttpConn *conn);
+PUBLIC void httpFinalizeConnector(HttpConn *conn);
 
 /**
     Signal a connection timeout on a connection
@@ -2263,19 +2240,6 @@ PUBLIC void httpSetCredentials(HttpConn *conn, cchar *user, cchar *password);
     @ingroup HttpConn
  */
 PUBLIC void httpSetKeepAliveCount(HttpConn *conn, int count);
-
-#if UNUSED
-/**
-    Set the handler to process a client request
-    @description This overrides the normal handler selection with the given handler. This can only be called before
-        the request pipeline has actually started and should only be done in the "match" or "open" stage functions.
-    @param conn HttpConn connection object created via #httpCreateConn
-    @param handler Stage handler to process the request
-    @ingroup HttpConn
-    @internal
- */
-PUBLIC void httpSetPipelineHandler(HttpConn *conn, HttpStage *handler);
-#endif
 
 /** 
     Set the Http protocol variant for this connection
@@ -4172,18 +4136,14 @@ PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 #define HTTP_POST               0x10        /**< Post method */
 #define HTTP_PUT                0x20        /**< PUT method  */
 #define HTTP_TRACE              0x40        /**< TRACE method  */
-#if UNUSED
-#define HTTP_UNKNOWN            0x800       /**< Unknown method  */
-#define HTTP_METHOD_MASK        0xFFF       /**< Method mask */
-#endif
-#define HTTP_CREATE_ENV         0x100       /**< Must create env for this request */
-#define HTTP_IF_MODIFIED        0x200       /**< If-[un]modified-since supplied */
-#define HTTP_CHUNKED            0x400       /**< Content is chunk encoded */
-#define HTTP_ADDED_QUERY_PARAMS 0x800       /**< Query added to params */
-#define HTTP_ADDED_FORM_PARAMS  0x1000      /**< Form body data added to params */
-#define HTTP_LIMITS_OPENED      0x2000      /**< Request limits opened */
-#define HTTP_EXPECT_CONTINUE    0x4000      /**< Client expects an HTTP 100 Continue response */
-#define HTTP_AUTH_CHECKED       0x8000      /**< User authentication has been checked */
+#define HTTP_CREATE_ENV         0x80        /**< Must create env for this request */
+#define HTTP_IF_MODIFIED        0x100       /**< If-[un]modified-since supplied */
+#define HTTP_CHUNKED            0x200       /**< Content is chunk encoded */
+#define HTTP_ADDED_QUERY_PARAMS 0x400       /**< Query added to params */
+#define HTTP_ADDED_FORM_PARAMS  0x800       /**< Form body data added to params */
+#define HTTP_LIMITS_OPENED      0x1000      /**< Request limits opened */
+#define HTTP_EXPECT_CONTINUE    0x2000      /**< Client expects an HTTP 100 Continue response */
+#define HTTP_AUTH_CHECKED       0x4000      /**< User authentication has been checked */
 
 /*  
     Incoming chunk encoding states
@@ -4629,10 +4589,10 @@ PUBLIC void httpProcessWriteEvent(HttpConn *conn);
         transmission object.
     @stability Evolving
     @defgroup HttpTx HttpTx
-    @see HttpConn HttpRx HttpTx httpAddHeader httpAddHeaderString httpAppendHeader httpAppendHeaderString httpComplete
+    @see HttpConn HttpRx HttpTx httpAddHeader httpAddHeaderString httpAppendHeader httpAppendHeaderString httpFinalize
     httpConnect httpCreateTx httpDestroyTx httpFinalize httpFlush httpFollowRedirects httpFormatBody httpFormatError
     httpFormatErrorV httpFormatResponse httpFormatResponseBody httpFormatResponsev httpGetQueueData
-    httpIsChunked httpIsComplete httpIsFinalized httpNeedRetry httpOmitBody httpRedirect httpRemoveHeader
+    httpIsChunked httpIsComplete httpIsOutputFinalized httpNeedRetry httpOmitBody httpRedirect httpRemoveHeader
     httpSetContentLength httpSetContentType httpSetCookie httpSetEntityLength httpSetHeader httpSetHeaderString
     httpSetResponded httpSetStatus httpSocketBlocked httpWait httpWriteHeaders httpWriteUploadData 
  */
@@ -4648,10 +4608,10 @@ typedef struct HttpTx {
     MprOff          length;                 /**< Transmission content length */
 
     int             flags;                  /**< Response flags */
-    int             connectorComplete;      /**< Connector has finished sending the response */
-    int             complete;               /**< End of request including response */
+    int             finalized;              /**< Request response generated and handler processing is complete */
     int             pendingFinalize;        /**< Call httpFinalize again once the Tx pipeline is created */
-    int             finalized;              /**< Handler or surrogate has finished writing response */
+    int             finalizedConnector;     /**< Connector has finished sending the response */
+    int             finalizedOutput;        /**< Handler or surrogate has finished writing output response */
     int             responded;              /**< The request has started to respond. Some output has been initiated. */
     int             started;                /**< Handler has started */
     int             status;                 /**< HTTP response status */
@@ -4733,14 +4693,15 @@ PUBLIC void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 PUBLIC void httpAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
 /** 
-    Indicate the request is complete
-    @description This routine should be called by Handlers to signify the end of processing of a request.
-        It will call #httpFinalize and then set the request complete flag.  If the request is already complete, this call
-        does nothing. A handler MUST call either httpComplete when it has completed processing a request.
+    Indicate the request is finalized.
+    @description Calling this routine indicates that the handler has fully finished processing the request including
+        generating a full response and any other required processing. This call will invoke #httpFinalizeOutput and 
+        then set the request finalized flag. If the request is already finalized, this call does nothing. 
+        A handler MUST call httpFinalize when it has completed processing a request.
     @param conn HttpConn connection object
     @ingroup HttpTx
  */
-PUBLIC void httpComplete(HttpConn *conn);
+PUBLIC void httpFinalize(HttpConn *conn);
 
 /** 
     Connect to a server and issue Http client request.
@@ -4777,13 +4738,14 @@ PUBLIC void httpDestroyTx(HttpTx *tx);
     Finalize transmission of the http response
     @description This routine will force the transmission of buffered content to the peer. It should be called by clients
     and Handlers to signify the end of the body content being sent with the request or response body. 
-    HttpFinalize will set the finalized flag and write a final chunk trailer if using chunked transfers. If the request is
-    already finalized, this call does nothing.  Note that after finalization, incoming content may continue to be processed.
+    HttpFinalize will set the finalizedOutput flag and write a final chunk trailer if using chunked transfers. If the
+    request output is already finalized, this call does nothing.  Note that after finalization, incoming content may
+    continue to be processed.
     i.e. httpFinalize can be called before all incoming data has been received. 
     @param conn HttpConn connection object
     @ingroup HttpTx
  */
-PUBLIC void httpFinalize(HttpConn *conn);
+PUBLIC void httpFinalizeOutput(HttpConn *conn);
 
 /**
     Flush tx data. This writes any buffered data. 
@@ -4861,25 +4823,6 @@ PUBLIC ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args);
  */
 PUBLIC ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ...);
 
-#if UNUSED
-/** 
-    Format an error response body.
-    @description Format an error message transmission body to use instead of data generated by the request 
-        processing pipeline.  The body will be created in HTML or in plain text depending on the value of 
-        the request Accept header. This is an internal API and users should use #httpError instead.
-    @param conn HttpConn connection object created via #httpCreateConn
-    @param status HTTP response status code
-    @param fmt Printf style formatted string. This string may contain HTML tags and is not HTML encoded before
-        sending to the user. NOTE: Do not send user input back to the client using this method. Otherwise you open
-        large security holes.
-    @param ... Arguments for fmt
-    @return A count of the number of bytes in the transmission body.
-    @ingroup HttpTx
-    @internal
- */
-PUBLIC void httpFormatResponseError(HttpConn *conn, int status, cchar *fmt, ...);
-#endif
-
 /**
     Get the queue data for the connection
     @param conn HttpConn connection object created via #httpCreateConn
@@ -4896,21 +4839,21 @@ PUBLIC void *httpGetQueueData(HttpConn *conn);
 PUBLIC int httpIsChunked(HttpConn *conn);
 
 /**
-    Test if request has been completed
-    @description This call tests if httpComplete has been called.
-    @param conn HttpConn connection object
-    @ingroup HttpTx
- */
-PUBLIC int httpIsComplete(HttpConn *conn);
-
-/**
     Test if request has been finalized
-    @description This call tests if all transmit data has been sent and finalized. Handlers call #httpFinalize
-        to signify the end of transmit data.
+    @description This call tests if #httpFinalize has been called.
     @param conn HttpConn connection object
     @ingroup HttpTx
  */
 PUBLIC int httpIsFinalized(HttpConn *conn);
+
+/**
+    Test if request response has been fully generated.
+    @description This call tests if all transmit data has been generated and finalized. Handlers call #httpFinalizeOutput
+        to signify the end of transmit data.
+    @param conn HttpConn connection object
+    @ingroup HttpTx
+ */
+PUBLIC int httpIsOutputFinalized(HttpConn *conn);
 
 /** 
     Determine if the transmission needs a transparent retry to implement authentication or redirection. This is used

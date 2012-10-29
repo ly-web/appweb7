@@ -114,7 +114,7 @@ static void processProxy(HttpQueue *q)
     while (sofar < count) {
         httpWrite(q, "%d aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n", sofar++);
     }
-    httpFinalize(q->conn);
+    httpFinalizeOutput(q->conn);
     sofar = 0;
 #endif
     
@@ -122,7 +122,7 @@ static void processProxy(HttpQueue *q)
 #if USE1
     httpWrite(q, "%d aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n", sofar++);
     if (sofar == count) {
-        httpFinalize(q->conn);
+        httpFinalizeOutput(q->conn);
         sofar = 0;
     }
 #endif
@@ -134,7 +134,7 @@ static void processProxy(HttpQueue *q)
         httpWrite(q, "%d aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n", sofar++);
     }
     if (sofar == count) {
-        httpFinalize(q->conn);
+        httpFinalizeOutput(q->conn);
         sofar = 0;
     }
 #endif
@@ -157,7 +157,7 @@ static void processProxy(HttpQueue *q)
         httpPutForService(q, packet, HTTP_DELAY_SERVICE);
     }
     if (sofar == count) {
-        httpFinalize(q->conn);
+        httpFinalizeOutput(q->conn);
         sofar = 0;
     }
 #endif
