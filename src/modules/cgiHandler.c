@@ -423,15 +423,17 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
 static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf *buf)
 {
     HttpConn    *conn;
+    HttpTx      *tx;
     ssize       space, nbytes, total;
     int         err;
 
     conn = q->conn;
-    mprAssert(conn->state > HTTP_STATE_BEGIN);
+    tx = conn->tx;
+    mprAssert(HTTP_STATE_BEGIN < conn->state && conn->state < HTTP_STATE_COMPLETE);
     mprResetBufIfEmpty(buf);
     total = 0;
 
-    while (mprGetCmdFd(cmd, channel) >= 0 && conn->sock && conn->state > HTTP_STATE_BEGIN) {
+    while (mprGetCmdFd(cmd, channel) >= 0 && conn->sock && !tx->finalized) {
         do {
             mprAssert(conn->state > HTTP_STATE_BEGIN);
             /*
