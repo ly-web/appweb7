@@ -16788,6 +16788,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
         ws->state = WS_STATE_CLOSED;
         ws->closeStatus = WS_STATUS_COMMS_ERROR;
         HTTP_NOTIFY(conn, HTTP_EVENT_APP_CLOSE, ws->closeStatus);
+        httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Connection lost");
     }
     while ((packet = httpGetPacket(q)) != 0) {
         content = packet->content;
