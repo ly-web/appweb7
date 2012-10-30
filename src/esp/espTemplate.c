@@ -383,7 +383,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
     ssize       len;
     int         tid;
 
-    mprAssert(page);
+    assure(page);
 
     eroute = route->eroute;
     body = start = end = global = "";
@@ -549,8 +549,8 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         if (end && end[slen(end) - 1] != '\n') {
             end = sjoin(end, "\n", NULL);
         }
-        mprAssert(slen(path) > slen(route->dir));
-        mprAssert(sncmp(path, route->dir, slen(route->dir)) == 0);
+        assure(slen(path) > slen(route->dir));
+        assure(sncmp(path, route->dir, slen(route->dir)) == 0);
         if (sncmp(path, route->dir, slen(route->dir)) == 0) {
             path = &path[slen(route->dir) + 1];
         }

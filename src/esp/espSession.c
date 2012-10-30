@@ -22,9 +22,9 @@ PUBLIC EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
     EspReq      *req;
     EspSession  *sp;
 
-    mprAssert(conn);
+    assure(conn);
     req = conn->data;
-    mprAssert(req);
+    assure(req);
 
     if ((sp = mprAllocObj(EspSession, manageSession)) == 0) {
         return 0;
@@ -42,7 +42,7 @@ PUBLIC EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
 
 PUBLIC void espDestroySession(EspSession *sp)
 {
-    mprAssert(sp);
+    assure(sp);
     sp->id = 0;
 }
 
@@ -67,9 +67,9 @@ PUBLIC EspSession *espGetSession(HttpConn *conn, int create)
     EspReq      *req;
     char        *id;
 
-    mprAssert(conn);
+    assure(conn);
     req = conn->data;
-    mprAssert(req);
+    assure(req);
     if (req->session || !conn) {
         return req->session;
     }
@@ -90,7 +90,7 @@ PUBLIC MprHash *espGetSessionObj(HttpConn *conn, cchar *key)
     cchar   *str;
 
     if ((str = espGetSessionVar(conn, key, 0)) != 0 && *str) {
-        mprAssert(*str == '{');
+        assure(*str == '{');
         return mprDeserialize(str);
     }
     return 0;
@@ -102,8 +102,8 @@ PUBLIC cchar *espGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
     EspSession  *sp;
     cchar       *result;
 
-    mprAssert(conn);
-    mprAssert(key && *key);
+    assure(conn);
+    assure(key && *key);
 
     result = 0;
     if ((sp = espGetSession(conn, 0)) != 0) {
@@ -124,9 +124,9 @@ PUBLIC int espSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
 {
     EspSession  *sp;
 
-    mprAssert(conn);
-    mprAssert(key && *key);
-    mprAssert(value);
+    assure(conn);
+    assure(key && *key);
+    assure(value);
 
     if ((sp = espGetSession(conn, 1)) == 0) {
         return 0;
@@ -145,9 +145,9 @@ PUBLIC char *espGetSessionID(HttpConn *conn)
     char    *cp, *value;
     int     quoted;
 
-    mprAssert(conn);
+    assure(conn);
     req = conn->data;
-    mprAssert(req);
+    assure(req);
 
     if (req->session) {
         return req->session->id;
@@ -189,7 +189,7 @@ static char *makeSessionID(HttpConn *conn)
     char        idBuf[64];
     static int  nextSession = 0;
 
-    mprAssert(conn);
+    assure(conn);
 
     /* Thread race here on nextSession++ not critical */
     fmt(idBuf, sizeof(idBuf), "%08x%08x%d", PTOI(conn->data) + PTOI(conn), (int) mprGetTime(), nextSession++);

@@ -147,7 +147,7 @@ PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
     HttpHost    *host;
     HttpRoute   *route;
 
-    mprAssert(appweb);
+    assure(appweb);
 
     if ((server = mprAllocObj(MaServer, manageServer)) == NULL) {
         return 0;
@@ -207,9 +207,9 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         }
         maAddEndpoint(server, endpoint);
         host = mprGetFirstItem(endpoint->hosts);
-        mprAssert(host);
+        assure(host);
         route = mprGetFirstItem(host->routes);
-        mprAssert(route);
+        assure(route);
 
 #if BIT_PACK_CGI
         maLoadModule(appweb, "cgiHandler", "mod_cgi");

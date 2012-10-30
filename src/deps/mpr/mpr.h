@@ -1480,7 +1480,7 @@ struct  MprXml;
 #define MPR_ERROR_SRC       0x10        /**< Originated from mprError */
 #define MPR_WARN_SRC        0x20        /**< Originated from mprWarn */
 #define MPR_LOG_SRC         0x40        /**< Originated from mprLog */
-#define MPR_ASSERT_SRC      0x80        /**< Originated from mprAssert */
+#define MPR_ASSURE_SRC      0x80        /**< Originated from assure / mprAssure  */
 #define MPR_FATAL_SRC       0x100       /**< Fatal error. Log and exit */
 
 /*
@@ -1580,9 +1580,11 @@ PUBLIC void mprBreakpoint();
  */
 PUBLIC void assure(bool cond);
 #elif BIT_ASSERT
+    //  mprAssert is DEPRECATED UNUSED
     #define mprAssert(C)    if (C) ; else mprAssure(MPR_LOC, #C)
     #define assure(C)       if (C) ; else mprAssure(MPR_LOC, #C)
 #else
+    //  mprAssert is DEPRECATED UNUSED
     #define mprAssert(C)    if (C) ; else
     #define assure(C)       if (1) ; else
 #endif

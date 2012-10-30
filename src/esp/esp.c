@@ -726,7 +726,7 @@ static void process(int argc, char **argv)
     HttpRoute   *route;
     cchar       *cmd;
 
-    mprAssert(argc >= 1);
+    assure(argc >= 1);
     
     cmd = argv[0];
     if (smatch(cmd, "generate")) {
@@ -1074,7 +1074,7 @@ static void compileItems(HttpRoute *route)
     eroute = route->eroute;
 
     if (eroute->controllersDir) {
-        mprAssert(eroute);
+        assure(eroute);
         app->files = mprGetPathFiles(eroute->controllersDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
@@ -1693,7 +1693,7 @@ static void migrate(HttpRoute *route, int argc, char **argv)
                 edi->forw(edi);
             }
             if (backward) {
-                mprAssert(mig);
+                assure(mig);
                 ediDeleteRow(edi, ESP_MIGRATIONS, ediGetFieldValue(mig, "id"));
             } else {
                 mig = ediCreateRec(edi, ESP_MIGRATIONS);

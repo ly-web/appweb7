@@ -5573,6 +5573,14 @@ PUBLIC ssize httpGetWebSocketMessageLength(HttpConn *conn);
 PUBLIC char *httpGetWebSocketProtocol(HttpConn *conn);
 
 /**
+    Get the WebSocket state
+    @return The web socket state. Will be WS_STATE_CONNECTING, WS_STATE_OPEN, WS_STATE_CLOSING or WS_STATE_CLOSED.
+    @ingroup HttpWebSocket
+    @stability Prototype
+ */
+PUBLIC ssize httpGetWebSocketState(HttpConn *conn);
+
+/**
     Send a UTF-8 text message to the web socket peer
     @param conn HttpConn connection object created via #httpCreateConn
     @param fmt Printf style formatted string

@@ -29,8 +29,8 @@ static int setTarget(MaState *state, cchar *name, cchar *details);
 
 PUBLIC int maOpenConfig(MaState *state, cchar *path)
 {
-    mprAssert(state);
-    mprAssert(path && *path);
+    assure(state);
+    assure(path && *path);
 
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
@@ -49,8 +49,8 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     HttpHost    *host;
     HttpRoute   *route;
 
-    mprAssert(server);
-    mprAssert(path && *path);
+    assure(server);
+    assure(path && *path);
 
     mprLog(2, "Config File %s", path);
 
@@ -80,18 +80,18 @@ static int parseFile(MaState *state, cchar *path)
 {
     int     rc;
 
-    mprAssert(state);
-    mprAssert(path && *path);
+    assure(state);
+    assure(path && *path);
 
     if ((state = maPushState(state)) == 0) {
         return 0;
     }
-    mprAssert(state == state->top->current);
+    assure(state == state->top->current);
     
     rc = parseFileInner(state, path);
     state->lineNumber = state->prev->lineNumber;
     state = maPopState(state);
-    mprAssert(state->top->current == state);
+    assure(state->top->current == state);
     return rc;
 }
 
@@ -101,8 +101,8 @@ static int parseFileInner(MaState *state, cchar *path)
     MaDirective *directive;
     char        *tok, *key, *line, *value;
     
-    mprAssert(state);
-    mprAssert(path && *path);
+    assure(state);
+    assure(path && *path);
 
     if (maOpenConfig(state, path) < 0) {
         return MPR_ERR_CANT_OPEN;
@@ -2034,7 +2034,7 @@ PUBLIC bool maValidateServer(MaServer *server)
     appweb = server->appweb;
     http = appweb->http;
     defaultHost = server->defaultHost;
-    mprAssert(defaultHost);
+    assure(defaultHost);
 
     /*
         Add the default host to the endpoints
@@ -2356,8 +2356,8 @@ static char *getDirective(char *line, char **valuep)
     char    *key, *value;
     ssize   len;
     
-    mprAssert(line);
-    mprAssert(valuep);
+    assure(line);
+    assure(valuep);
 
     *valuep = 0;
     key = stok(line, " \t", &value);

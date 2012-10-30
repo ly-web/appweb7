@@ -145,7 +145,7 @@ static void startCgi(HttpQueue *q)
         count = copyVars(envv, 0, rx->params, "");
         count = copyVars(envv, 0, rx->svars, "");
         count = copyVars(envv, count, rx->headers, "HTTP_");
-        mprAssert(count <= varCount);
+        assure(count <= varCount);
     }
     cmd->stdoutBuf = mprCreateBuf(HTTP_BUFSIZE, HTTP_BUFSIZE);
     cmd->stderrBuf = mprCreateBuf(HTTP_BUFSIZE, HTTP_BUFSIZE);
@@ -230,8 +230,8 @@ static void incomingCgi(HttpQueue *q, HttpPacket *packet)
     HttpRx      *rx;
     MprCmd      *cmd;
 
-    mprAssert(q);
-    mprAssert(packet);
+    assure(q);
+    assure(packet);
     
     conn = q->conn;
     rx = conn->rx;
@@ -280,7 +280,7 @@ static void writeToCGI(HttpQueue *q)
     int         err;
 
     cmd = (MprCmd*) q->pair->queueData;
-    mprAssert(cmd);
+    assure(cmd);
     conn = q->conn;
 
     for (packet = httpGetPacket(q); packet && conn->state < HTTP_STATE_COMPLETE; packet = httpGetPacket(q)) {
@@ -320,7 +320,7 @@ static int writeToClient(HttpQueue *q, MprCmd *cmd, MprBuf *buf, int channel)
 
     conn = q->conn;
     tx = conn->tx;
-    mprAssert(tx);
+    assure(tx);
 
     /*
         Write to the browser. Write as much as we can. Service queues to get the filters and connectors pumping.
@@ -371,11 +371,11 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
     if (conn == 0) {
         return 0;
     }
-    mprAssert(conn->tx);
-    mprAssert(conn->rx);
+    assure(conn->tx);
+    assure(conn->rx);
 
     tx = conn->tx;
-    mprAssert(tx);
+    assure(tx);
     conn->lastActivity = conn->http->now;
     q = conn->writeq;
 
@@ -429,13 +429,13 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
 
     conn = q->conn;
     tx = conn->tx;
-    mprAssert(HTTP_STATE_BEGIN < conn->state && conn->state < HTTP_STATE_COMPLETE);
+    assure(HTTP_STATE_BEGIN < conn->state && conn->state < HTTP_STATE_COMPLETE);
     mprResetBufIfEmpty(buf);
     total = 0;
 
     while (mprGetCmdFd(cmd, channel) >= 0 && conn->sock && !tx->finalized) {
         do {
-            mprAssert(conn->state > HTTP_STATE_BEGIN);
+            assure(conn->state > HTTP_STATE_BEGIN);
             /*
                 Read as much data from the CGI as possible
              */
@@ -493,7 +493,7 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
         }
     }
     if (cmd->complete && conn->state > HTTP_STATE_BEGIN) {
-        mprAssert(conn->tx);
+        assure(conn->tx);
         httpFinalize(conn);
     }
     return total;
@@ -508,8 +508,8 @@ static int relayCgiResponse(HttpQueue *q, MprCmd *cmd, int channel, MprBuf *buf)
     HttpConn    *conn;
 
     conn = q->conn;
-    mprAssert(conn->state > HTTP_STATE_BEGIN);
-    mprAssert(conn->tx);
+    assure(conn->state > HTTP_STATE_BEGIN);
+    assure(conn->tx);
     
     mprLog(7, "relayCgiResponse pid %d", cmd->pid);
 
@@ -692,7 +692,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     tx = conn->tx;
 
     fileName = tx->filename;
-    mprAssert(fileName);
+    assure(fileName);
 
     actionProgram = 0;
     argind = 0;
@@ -733,7 +733,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         We look for *.exe, *.bat and also do unix style processing "#!/program"
      */
     findExecutable(conn, &program, &cmdScript, &bangScript, fileName);
-    mprAssert(program);
+    assure(program);
 
     if (cmdScript) {
         /*
@@ -816,7 +816,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         }
     }
     
-    mprAssert(argind <= argc);
+    assure(argind <= argc);
     argv[argind] = 0;
     *argcp = argc;
     *argvp = (cchar**) argv;
@@ -879,7 +879,7 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
     } else {
         path = fileName;
     }
-    mprAssert(path && *path);
+    assure(path && *path);
 
 #if BIT_WIN_LIKE
     if (ext && (strcmp(ext, ".bat") == 0 || strcmp(ext, ".cmd") == 0)) {

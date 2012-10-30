@@ -41,7 +41,7 @@ static int matchFileHandler(HttpConn *conn, HttpRoute *route, int dir)
     info = &tx->fileInfo;
 
     httpMapFile(conn, route);
-    mprAssert(info->checked);
+    assure(info->checked);
 
     if (rx->flags & (HTTP_DELETE | HTTP_PUT)) {
         return HTTP_ROUTE_OK;
@@ -134,11 +134,11 @@ static void openFileHandler(HttpQueue *q)
     } else {
         if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
             if (!(info->valid || info->isDir)) {
-                mprError("AA Can't open document %s", tx->filename);
+                mprError("Can't open document %s", tx->filename);
                 if (rx->referrer) {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "BB Can't open document for: %s from %s", rx->uri, rx->referrer);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s from %s", rx->uri, rx->referrer);
                 } else {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "CC Can't open document for: %s", rx->uri);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s", rx->uri);
                 }
             } else if (info->valid) {
                 if (!tx->etag) {
@@ -266,7 +266,7 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
     if (packet->content == 0 && (packet->content = mprCreateBuf(size, -1)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    mprAssert(size <= mprGetBufSpace(packet->content));    
+    assure(size <= mprGetBufSpace(packet->content));    
     mprLog(7, "readFileData size %d, pos %Ld", size, pos);
     
     if (pos >= 0) {
@@ -282,7 +282,7 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
     }
     mprAdjustBufEnd(packet->content, nbytes);
     packet->esize -= nbytes;
-    mprAssert(packet->esize == 0);
+    assure(packet->esize == 0);
     return nbytes;
 }
 
@@ -395,7 +395,7 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
     }
     buf = packet->content;
     len = mprGetBufLength(buf);
-    mprAssert(len > 0);
+    assure(len > 0);
 
     range = rx->inputRange;
     if (range && mprSeekFile(file, SEEK_SET, range->start) != range->start) {
@@ -417,12 +417,12 @@ static void handlePutRequest(HttpQueue *q)
     MprFile     *file;
     char        *path;
 
-    mprAssert(q->pair->queueData == 0);
+    assure(q->pair->queueData == 0);
 
     conn = q->conn;
     tx = conn->tx;
-    mprAssert(tx->filename);
-    mprAssert(tx->fileInfo.checked);
+    assure(tx->filename);
+    assure(tx->fileInfo.checked);
 
     path = tx->filename;
     if (tx->outputRanges) {
@@ -458,8 +458,8 @@ static void handleDeleteRequest(HttpQueue *q)
 
     conn = q->conn;
     tx = conn->tx;
-    mprAssert(tx->filename);
-    mprAssert(tx->fileInfo.checked);
+    assure(tx->filename);
+    assure(tx->fileInfo.checked);
 
     if (!tx->fileInfo.isReg) {
         httpError(conn, HTTP_CODE_NOT_FOUND, "URI not found");

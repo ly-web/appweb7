@@ -173,7 +173,7 @@ static MprMatrixSsl *createMatrixSslConfig(MprSsl *ssl, int server)
     MprMatrixSsl    *mssl;
     char            *password;
 
-    mprAssert(ssl);
+    assure(ssl);
 
     if ((ssl->pconfig = mprAllocObj(MprMatrixSsl, manageMatrixSsl)) == 0) {
         return 0;
@@ -258,11 +258,11 @@ static void closeMss(MprSocket *sp, bool gracefully)
     uchar               *obuf;
     int                 nbytes;
 
-    mprAssert(sp);
+    assure(sp);
 
     lock(sp);
     msp = sp->sslSocket;
-    mprAssert(msp);
+    assure(msp);
 
     if (!(sp->flags & MPR_SOCKET_EOF) && msp->handle) {
         /*
@@ -294,8 +294,8 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, int server)
     uint32              cipherSuite;
 
     ss = sp->service;
-    mprAssert(ss);
-    mprAssert(sp);
+    assure(ss);
+    assure(sp);
 
     if ((msp = (MprMatrixSocket*) mprAllocObj(MprMatrixSocket, manageMatrixSocket)) == 0) {
         return MPR_ERR_MEMORY;
@@ -367,7 +367,7 @@ static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
     unlock(ss);
     if (!sp) {
         /* Should not get here */
-        mprAssert(sp);
+        assure(sp);
         return SSL_ALLOW_ANON_CONNECTION;
     }
     if (alert > 0) {
@@ -561,7 +561,7 @@ static ssize processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, 
             return 0;
 
         case MATRIXSSL_RECEIVED_ALERT:
-            mprAssert(dlen == 2);
+            assure(dlen == 2);
             if (data[0] == SSL_ALERT_LEVEL_FATAL) {
                 return MPR_ERR;
             } else if (data[1] == SSL_ALERT_CLOSE_NOTIFY) {
@@ -1004,7 +1004,7 @@ static MprOpenSsl *createOpenSslConfig(MprSsl *ssl, int server)
     SSL_CTX             *context;
     uchar               resume[16];
 
-    mprAssert(ssl);
+    assure(ssl);
 
     if ((ssl->pconfig = mprAllocObj(MprOpenSsl, manageOpenSsl)) == 0) {
         return 0;
@@ -1016,7 +1016,7 @@ static MprOpenSsl *createOpenSslConfig(MprSsl *ssl, int server)
     ossl->dhKey1024 = defaultOpenSsl->dhKey1024;
 
     ossl = ssl->pconfig;
-    mprAssert(ossl);
+    assure(ossl);
 
     if ((context = SSL_CTX_new(SSLv23_method())) == 0) {
         mprError("OpenSSL: Unable to create SSL context"); 
@@ -1117,7 +1117,7 @@ static MprOpenSsl *createOpenSslConfig(MprSsl *ssl, int server)
  */
 static int configureCertificateFiles(MprSsl *ssl, SSL_CTX *ctx, char *key, char *cert)
 {
-    mprAssert(ctx);
+    assure(ctx);
 
     if (cert == 0) {
         return 0;
@@ -1180,8 +1180,8 @@ static void closeOss(MprSocket *sp, bool gracefully)
  */
 static int listenOss(MprSocket *sp, cchar *host, int port, int flags)
 {
-    mprAssert(sp);
-    mprAssert(port);
+    assure(sp);
+    assure(port);
     return sp->service->standardProvider->listenSocket(sp, host, port, flags);
 }
 
@@ -1197,7 +1197,7 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, int server)
     ulong           error;
     int             rc;
 
-    mprAssert(sp);
+    assure(sp);
 
     if (ssl == 0) {
         ssl = mprCreateSsl(server);
@@ -1271,10 +1271,10 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
 
     lock(sp);
     osp = (MprOpenSocket*) sp->sslSocket;
-    mprAssert(osp);
+    assure(osp);
 
     if (osp->handle == 0) {
-        mprAssert(osp->handle);
+        assure(osp->handle);
         unlock(sp);
         return -1;
     }
@@ -1361,7 +1361,7 @@ static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
     osp = (MprOpenSocket*) sp->sslSocket;
 
     if (osp->bio == 0 || osp->handle == 0 || len <= 0) {
-        mprAssert(0);
+        assure(0);
         unlock(sp);
         return -1;
     }
@@ -1378,7 +1378,7 @@ static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
                 continue;
             } else if (rc == SSL_ERROR_WANT_READ) {
                 //  AUTO-RETRY should stop this
-                mprAssert(0);
+                assure(0);
                 unlock(sp);
                 return -1;
             } else {
@@ -1496,7 +1496,7 @@ static ulong sslThreadId()
 
 static void sslStaticLock(int mode, int n, const char *file, int line)
 {
-    mprAssert(0 <= n && n < numLocks);
+    assure(0 <= n && n < numLocks);
 
     if (olocks) {
         if (mode & CRYPTO_LOCK) {
@@ -1550,7 +1550,7 @@ static RSA *rsaCallback(SSL *handle, int isExport, int keyLength)
 
     osp = (MprOpenSocket*) SSL_get_app_data(handle);
     sp = osp->sock;
-    mprAssert(sp);
+    assure(sp);
     ossl = sp->ssl->pconfig;
 
     key = 0;
@@ -1710,7 +1710,7 @@ PUBLIC int mprCreateOpenSslModule() { return -1; }
  */
 PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
-    mprAssert(module);
+    assure(module);
 
 #if BIT_PACK_MATRIXSSL
     if (mprCreateMatrixSslModule() < 0) {
