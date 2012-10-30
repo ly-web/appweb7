@@ -11986,25 +11986,15 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
             /*
                 Send "end" pack to signify eof to the handler
              */
-            VERIFY_QUEUE(q);
             httpPutPacketToNext(q, httpCreateEndPacket());
             if (!rx->streamInput) {
                 httpStartPipeline(conn);
             }
-            VERIFY_QUEUE(q);
         }
         httpSetState(conn, HTTP_STATE_READY);
         return conn->workerEvent ? 0 : 1;
     }
     httpServiceQueues(conn);
-    VERIFY_QUEUE(q);
-#if UNUSED
-    //  Not until all the data is read
-    if (tx->finalized) {
-        httpSetState(conn, HTTP_STATE_READY);
-        return 1;
-    }
-#endif
     if (rx->chunkState && nbytes <= 0) {
         /* Insufficient data */
         return 0;
@@ -12366,14 +12356,6 @@ PUBLIC int httpSetUri(HttpConn *conn, cchar *uri)
     rx->scriptName = mprEmptyString();
     return 0;
 }
-
-
-#if UNUSED
-static void waitHandler(HttpConn *conn, struct MprEvent *event)
-{
-    httpCallEvent(conn, event->mask);
-}
-#endif
 
 
 /*
@@ -14087,16 +14069,6 @@ PUBLIC void httpFinalize(HttpConn *conn)
         httpFinalizeOutput(conn);
     } else {
         httpServiceQueues(conn);
-#if UNUSED
-        /*
-            Use case:
-            - server calling httpFinalizeOutput from timeout. Don't get readable event because of keep-alive.
-                ejs.web/test/request/events.tst
-         */
-        if (!conn->pumping) {
-            httpEnableConnEvents(conn);
-        }
-#endif
     }
 }
 
@@ -14118,16 +14090,6 @@ PUBLIC void httpFinalizeOutput(HttpConn *conn)
     }
     httpPutForService(conn->writeq, httpCreateEndPacket(), HTTP_SCHEDULE_QUEUE);
     httpServiceQueues(conn);
-#if UNUSED
-    /*
-        Use cases:
-        - server calling httpFinalizeOutput from timeout. Don't get readable event because of keep-alive.
-            ejs.web/test/request/events.tst
-     */
-    if (!conn->pumping) {
-        httpEnableConnEvents(conn);
-    }
-#endif
 }
 
 
@@ -14211,33 +14173,6 @@ PUBLIC ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ..
     va_end(args);
     return httpFormatResponse(conn, "%s", msg);
 }
-
-
-#if UNUSED
-/*
-    Create an alternate body response. Typically used for error responses. The message is HTML escaped.
-    NOTE: this is an internal API. Users should use httpFormatError.
- */
-PUBLIC void httpFormatResponseError(HttpConn *conn, int status, cchar *fmt, ...)
-{
-    va_list     args;
-    cchar       *statusMsg;
-    char        *msg;
-
-    va_start(args, fmt);
-    msg = fmt ? sfmtv(fmt, args) : conn->errorMsg;
-    statusMsg = httpLookupStatus(conn->http, status);
-    if (scmp(conn->rx->accept, "text/plain") == 0) {
-        msg = sfmt("Access Error: %d -- %s\r\n%s\r\n", status, statusMsg, msg);
-    } else {
-        msg = sfmt("<h2>Access Error: %d -- %s</h2>\r\n<pre>%s</pre>\r\n", status, statusMsg, mprEscapeHtml(msg));
-    }
-    conn->errorMsg = msg;
-    httpAddHeaderString(conn, "Cache-Control", "no-cache");
-    httpFormatResponseBody(conn, statusMsg, NULL);
-    va_end(args);
-}
-#endif
 
 
 PUBLIC void *httpGetQueueData(HttpConn *conn)
@@ -16922,14 +16857,12 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             }
             assure(content);
             mprAdjustBufStart(content, fp - content->start);
-            VERIFY_QUEUE(q);
             assure(q->count >= 0);
             ws->frameState = WS_MSG;
             mprLog(5, "webSocketFilter: Begin new packet \"%s\", last %d, mask %d, length %d", codetxt[opcode & 0xf],
                 packet->last, mask, len);
             /* Keep packet on queue as we need the packet->type */
             httpPutBackPacket(q, packet);
-            VERIFY_QUEUE(q);
             if (httpGetPacketLength(packet) == 0) {
                 return;
             }
@@ -16939,23 +16872,17 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             /*
                 Split packet if it contains data for the next frame
              */
-            VERIFY_QUEUE(q);
             currentFrameLen = httpGetPacketLength(ws->currentFrame);
             len = httpGetPacketLength(packet);
             if ((currentFrameLen + len) > ws->frameLength) {
                 offset = ws->frameLength - currentFrameLen;
-                VERIFY_QUEUE(q);
                 if ((tail = httpSplitPacket(packet, offset)) != 0) {
-                    VERIFY_QUEUE(q);
                     tail->last = 0;
                     tail->type = 0;
-                    VERIFY_QUEUE(q);
                     httpPutBackPacket(q, tail);
-                    VERIFY_QUEUE(q);
                     mprLog(6, "webSocketFilter: Split data packet, %d/%d", ws->frameLength, httpGetPacketLength(tail));
                     len = httpGetPacketLength(packet);
                 }
-                VERIFY_QUEUE(q);
             }
             //  MOB - should we check
             if ((currentFrameLen + len) > conn->limits->webSocketsMessageSize) {
@@ -16972,7 +16899,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             frameLen = httpGetPacketLength(packet);
             assure(frameLen <= ws->frameLength);
             if (frameLen == ws->frameLength) {
-                VERIFY_QUEUE(q);
                 assure(packet->type);
                 if (ws->maskOffset >= 0) {
                     for (cp = content->start; cp < content->end; cp++) {
@@ -16982,7 +16908,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 if ((error = processFrame(q, packet)) != 0) {
                     break;
                 }
-                VERIFY_QUEUE(q);
                 if (ws->state == WS_STATE_CLOSED) {
                     HTTP_NOTIFY(conn, HTTP_EVENT_APP_CLOSE, ws->closeStatus);
                     httpFinalize(conn);
@@ -17017,7 +16942,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             return;
         }
     }
-    VERIFY_QUEUE(q);
 }
 
 
