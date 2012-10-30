@@ -640,7 +640,7 @@ static void filterCols(EdiGrid *grid, MprHash *options, MprHash *colOptions)
                 return;
             }
             pos = mprLookupStringItem(gridCols, columnName);
-            mprAssert(pos >= 0);
+            assure(pos >= 0);
             desired[c] = pos;
             location[c] = c;
         }
@@ -764,7 +764,7 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
     char        index[8];
     int         c, r, ncols;
    
-    mprAssert(grid);
+    assure(grid);
     if (grid->nrecords == 0) {
         espRender(conn, "<p>No Data</p>\r\n");
         return;
@@ -791,7 +791,7 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
         espRender(conn, "        <tr class='-esp-table-header'>\r\n");
         rec = grid->records[0];
         for (r = 0; r < ncols; r++) {
-            mprAssert(r <= grid->nrecords);
+            assure(r <= grid->nrecords);
             width = ((o = httpGetOption(options, "width", 0)) != 0) ? sfmt(" width='%s'", o) : "";
             thisCol = mprLookupKey(colOptions, itosbuf(index, sizeof(index), r, 10));
             header = httpGetOption(thisCol, "header", spascal(rec->id));
@@ -864,7 +864,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
     char        index[8];
     int         c, r, ncols, sortOrder;
    
-    mprAssert(grid);
+    assure(grid);
     if (grid == 0) {
         return;
     }
@@ -909,7 +909,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
         espRender(conn, "        <tr class='-esp-table-header'>\r\n");
         rec = grid->records[0];
         for (c = 0; c < ncols; c++) {
-            mprAssert(c <= rec->nfields);
+            assure(c <= rec->nfields);
             fp = &rec->fields[c];
             width = ((o = httpGetOption(options, "width", 0)) != 0) ? sfmt(" width='%s'", o) : "";
             thisCol = mprLookupKey(colOptions, itosbuf(index, sizeof(index), c, 10));

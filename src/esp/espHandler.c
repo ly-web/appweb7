@@ -91,7 +91,7 @@ static void closeEsp(HttpQueue *q)
 {
     lock(esp);
     esp->inUse--;
-    mprAssert(esp->inUse >= 0);
+    assure(esp->inUse >= 0);
     unlock(esp);
 }
 
@@ -115,7 +115,7 @@ static void setupFlash(HttpConn *conn)
         req->flash = httpGetSessionObj(conn, ESP_FLASH_VAR);
         req->lastFlash = 0;
         if (req->flash) {
-            mprAssert(req->flash->fn);
+            assure(req->flash->fn);
             httpSetSessionVar(conn, ESP_FLASH_VAR, "");
             req->lastFlash = mprCloneHash(req->flash);
         } else {
@@ -132,9 +132,9 @@ static void finalizeFlash(HttpConn *conn)
 
     req = conn->data;
     if (req->flash) {
-        mprAssert(req->flash->fn);
+        assure(req->flash->fn);
         if (req->lastFlash) {
-            mprAssert(req->lastFlash->fn);
+            assure(req->lastFlash->fn);
             for (ITERATE_KEYS(req->flash, kp)) {
                 for (ITERATE_KEYS(req->lastFlash, lp)) {
                     if (smatch(kp->key, lp->key) && kp->data == lp->data) {
@@ -198,7 +198,7 @@ static int runAction(HttpConn *conn)
     req = conn->data;
     route = rx->route;
     eroute = req->eroute;
-    mprAssert(eroute);
+    assure(eroute);
     updated = 0;
     recompile = 0;
 
@@ -491,8 +491,8 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
 {
     EspRoute      *eroute;
     
-    mprAssert(parent);
-    mprAssert(route);
+    assure(parent);
+    assure(route);
 
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;

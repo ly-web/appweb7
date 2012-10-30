@@ -325,7 +325,7 @@ static void registerServerVars(zval *track_vars_array TSRMLS_DC)
     php_import_environment_variables(track_vars_array TSRMLS_CC);
 
     php = httpGetQueueData(conn);
-    mprAssert(php);
+    assure(php);
     php->var_array = track_vars_array;
 
     httpCreateCGIParams(conn);

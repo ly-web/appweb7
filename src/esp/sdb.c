@@ -109,7 +109,7 @@ static Sdb *sdbCreate(cchar *path, int flags)
 {
     Sdb      *sdb;
 
-    mprAssert(path && *path);
+    assure(path && *path);
 
     initSqlite();
     if ((sdb = mprAllocObj(Sdb, manageSdb)) == 0) {
@@ -138,7 +138,7 @@ static void sdbClose(Edi *edi)
 {
     Sdb     *sdb;
 
-    mprAssert(edi);
+    assure(edi);
 
     sdb = (Sdb*) edi;
     if (sdb->db) {
@@ -250,9 +250,9 @@ static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
     SdbTable        *table;
     SdbCol          *col;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
-    mprAssert(columnName && *columnName);
+    assure(edi);
+    assure(tableName && *tableName);
+    assure(columnName && *columnName);
 
     sdb = (Sdb*) edi;
     lock(sdb);
@@ -447,7 +447,7 @@ static int query(Edi *edi, cchar *cmd, EdiGrid *gridp)
     ssize           len;
     int             r, nrows, i, ncol, rc, retries;
 
-    mprAssert(db);
+    assure(db);
     sdb = (Sdb*) edi;
     retries = 0;
 
@@ -611,8 +611,8 @@ static EdiGrid *sdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
     SdbRow      *row;
     int         nrows, next, op;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
+    assure(edi);
+    assure(tableName && *tableName);
 
     sdb = (Sdb*) edi;
     lock(sdb);
@@ -979,13 +979,13 @@ static void leaveMutex(sqlite3_mutex *mutex)
 
 
 static int mutexIsHeld(sqlite3_mutex *mutex) { 
-    mprAssert(0); 
+    assure(0); 
     return 0; 
 }
 
 
 static int mutexIsNotHeld(sqlite3_mutex *mutex) { 
-    mprAssert(0); 
+    assure(0); 
     return 0; 
 }
 

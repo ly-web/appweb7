@@ -744,7 +744,7 @@ static int sendRequest(HttpConn *conn, cchar *method, cchar *url, MprList *files
             return MPR_ERR_CANT_WRITE;
         }
     }
-    mprAssert(!mprGetCurrentThread()->yielded);
+    assure(!mprGetCurrentThread()->yielded);
     httpFinalizeOutput(conn);
     return 0;
 }
@@ -881,7 +881,7 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
     MprTime         mark, remaining;
     HttpLimits      *limits;
 
-    mprAssert(url && *url);
+    assure(url && *url);
     limits = conn->limits;
 
     mprLog(MPR_DEBUG, "fetch: %s %s", app->method, url);
@@ -976,7 +976,7 @@ static ssize writeBody(HttpConn *conn, MprList *files)
             }
         }
         if (files) {
-            mprAssert(mprGetListLength(files) == 1);
+            assure(mprGetListLength(files) == 1);
             for (next = 0; (path = mprGetNextItem(files, &next)) != 0; ) {
                 if (strcmp(path, "-") == 0) {
                     file = mprAttachFileFd(0, "stdin", O_RDONLY | O_BINARY);
@@ -1000,7 +1000,7 @@ static ssize writeBody(HttpConn *conn, MprList *files)
                         }
                         bytes -= nbytes;
                         sofar += nbytes;
-                        mprAssert(bytes >= 0);
+                        assure(bytes >= 0);
                     }
                     mprYield(0);
                 }

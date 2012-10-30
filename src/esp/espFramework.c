@@ -18,8 +18,8 @@ PUBLIC void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    mprAssert(key && *key);
-    mprAssert(fmt && *fmt);
+    assure(key && *key);
+    assure(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpAddHeaderString(conn, key, sfmt(fmt, vargs));
@@ -44,8 +44,8 @@ PUBLIC void espAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    mprAssert(key && *key);
-    mprAssert(fmt && *fmt);
+    assure(key && *key);
+    assure(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpAppendHeaderString(conn, key, sfmt(fmt, vargs));
@@ -132,9 +132,9 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *actionProc)
     EspRoute    *eroute;
     Esp         *esp;
 
-    mprAssert(route);
-    mprAssert(target && *target);
-    mprAssert(actionProc);
+    assure(route);
+    assure(target && *target);
+    assure(actionProc);
 
     esp = MPR->espService;
     if ((action = mprAllocObj(EspAction, espManageAction)) == 0) {
@@ -167,8 +167,8 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
 {
     Esp         *esp;
 
-    mprAssert(path && *path);
-    mprAssert(view);
+    assure(path && *path);
+    assure(view);
 
     esp = MPR->espService;
 	path = mprGetPortablePath(mprJoinPath(route->dir, path));
@@ -684,7 +684,7 @@ PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name)
 
 PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key)
 {
-    mprAssert(key && *key);
+    assure(key && *key);
     if (conn->tx == 0) {
         return MPR_ERR_CANT_ACCESS;
     }
@@ -786,8 +786,8 @@ PUBLIC void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    mprAssert(key && *key);
-    mprAssert(fmt && *fmt);
+    assure(key && *key);
+    assure(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpSetHeader(conn, key, sfmt(fmt, vargs));
