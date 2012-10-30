@@ -134,11 +134,11 @@ static void openFileHandler(HttpQueue *q)
     } else {
         if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
             if (!(info->valid || info->isDir)) {
-                mprError("AA Can't open document %s", tx->filename);
+                mprError("Can't open document %s", tx->filename);
                 if (rx->referrer) {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "BB Can't open document for: %s from %s", rx->uri, rx->referrer);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s from %s", rx->uri, rx->referrer);
                 } else {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "CC Can't open document for: %s", rx->uri);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s", rx->uri);
                 }
             } else if (info->valid) {
                 if (!tx->etag) {
