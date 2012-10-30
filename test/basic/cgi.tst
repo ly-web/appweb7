@@ -207,6 +207,10 @@ if (App.config.bit_cgi && Path(test.top).join("test/web/cgiProgram.cgi").exists)
             let http = new Http
             http.setHeader("SWITCHES", "-n")
             http.get(HTTP + "/cgi-bin/nph-cgiProgram")
+print("AFTER NPH TEST")
+print("STATUS", http.status)
+dump("HEADERS", http.headers)
+dump("RESPONSE", http.response)
             assert(http.status == 200)
             assert(http.header("X-CGI-CustomHeader") == "Any value at all")
         }
