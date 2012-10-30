@@ -429,9 +429,11 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
 
     conn = q->conn;
     tx = conn->tx;
-    assure(HTTP_STATE_BEGIN < conn->state && conn->state < HTTP_STATE_COMPLETE);
-    mprResetBufIfEmpty(buf);
     total = 0;
+    if (tx->finalized) {
+        mprCloseCmdFd(cmd, channel);
+    }
+    mprResetBufIfEmpty(buf);
 
     while (mprGetCmdFd(cmd, channel) >= 0 && conn->sock && !tx->finalized) {
         do {
