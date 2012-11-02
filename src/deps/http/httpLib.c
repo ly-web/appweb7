@@ -8227,9 +8227,10 @@ PUBLIC void httpRouteRequest(HttpConn *conn)
 
     rx = conn->rx;
     tx = conn->tx;
+    route = 0;
 
     for (next = rewrites = 0; rewrites < HTTP_MAX_REWRITE; ) {
-#if BIT_LOCK_FIX
+#if !BIT_LOCK_FIX
         if ((route = mprGetNextItem(conn->host->routes, &next)) == 0) {
             break;
         }
@@ -13152,13 +13153,13 @@ static void manageSession(HttpSession *sp, int flags);
 
 PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
 {
-    Http        *http;
     HttpSession *sp;
 
     assure(conn);
+#if UNUSED && FUTURE
+    Http        *http;
     http = conn->http;
 
-#if UNUSED && FUTURE
     //  OPT less contentions mutex
     lock(http);
     if (http->sessionCount >= conn->limits->sessionMax) {

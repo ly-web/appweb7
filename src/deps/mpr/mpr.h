@@ -1552,6 +1552,10 @@ struct  MprXml;
  */
 #define MPR_LITTLE_ENDIAN   1
 #define MPR_BIG_ENDIAN      2
+
+#ifndef BIT_ENDIAN
+    #define BIT_ENDIAN      MPR_LITTLE_ENDIAN
+#endif
 #define MPR_ENDIAN          BIT_ENDIAN
 
 /************************************** Debug *********************************/
