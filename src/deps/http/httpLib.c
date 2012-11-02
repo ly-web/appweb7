@@ -2372,11 +2372,39 @@ static bool prepForNext(HttpConn *conn)
 }
 
 
+PUBLIC void httpConsumeLastRequest(HttpConn *conn)
+{
+    MprTime     mark;
+    char        junk[4096];
+
+    if (!conn->sock) {
+        return;
+    }
+    if (conn->state >= HTTP_STATE_FIRST) {
+        mark = conn->http->now;
+        while (!httpIsEof(conn) && mprGetRemainingTime(mark, conn->limits->requestTimeout) > 0) {
+            if (httpRead(conn, junk, sizeof(junk)) <= 0) {
+                break;
+            }
+        }
+    }
+    if (HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_COMPLETE) {
+        conn->keepAliveCount = -1;
+    }
+}
+ 
+
 PUBLIC void httpPrepClientConn(HttpConn *conn, bool keepHeaders)
 {
     MprHash     *headers;
 
     assure(conn);
+    if (conn->keepAliveCount >= 0 && conn->sock) {
+        /* Eat remaining input incase last request did not consume all data */
+        httpConsumeLastRequest(conn);
+    } else {
+        conn->input = 0;
+    }
     conn->input = 0;
     if (conn->tx) {
         conn->tx->conn = 0;
