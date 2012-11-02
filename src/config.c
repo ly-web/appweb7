@@ -2361,7 +2361,7 @@ static char *getDirective(char *line, char **valuep)
 
     *valuep = 0;
     key = stok(line, " \t", &value);
-    key = strim(key, ">", MPR_TRIM_END);
+    key = strim(key, " \t\r\n>", MPR_TRIM_END);
     if (value) {
         value = strim(value, " \t\r\n>", MPR_TRIM_END);
         /*
