@@ -119,7 +119,6 @@ static void startCgi(HttpQueue *q)
         cmd->forkCallback = conn->http->forkCallback;
         cmd->forkData = conn->http->forkData;
     }
-
     argc = 1;                                   /* argv[0] == programName */
     buildArgs(conn, cmd, &argc, &argv);
     fileName = argv[0];
@@ -164,9 +163,20 @@ static void startCgi(HttpQueue *q)
 }
 
 
+static void readyCgi(HttpQueue *q)
+{
+    MprCmd  *cmd;
+
+    cmd = (MprCmd*) q->queueData;
+    if (q->pair->count == 0) {
+        mprCloseCmdFd(cmd, MPR_CMD_STDIN);
+    }
+}
+
+
 #if BIT_WIN_LIKE
 /*
-    This routine is called for when the outgoing queue is writable.  We don't actually do output here, just poll
+    This routine is called for when the outgoing queue is writable. We don't actually do output here, just poll
     on windows (only) until the command is complete.
  */
 static void writableCgi(HttpQueue *q)
@@ -178,9 +188,12 @@ static void writableCgi(HttpQueue *q)
     if (q->pair) {
         writeToCGI(q->pair);
     }
+#if UNUSED
     if (q->pair == 0 || q->pair->count == 0) {
+        //MOB - is this still required?
         mprCloseCmdFd(cmd, MPR_CMD_STDIN);
     }
+#endif
     /*
         Windows can't select on named pipes. So must poll here. This consumes a thread.
      */
@@ -201,7 +214,7 @@ static void outgoingCgiService(HttpQueue *q)
 
     cmd = (MprCmd*) q->queueData;
     mprLog(7, "CGI: OutgoingCgiService pid %d, q->count %d, q->flags %x, writeBlocked %d", 
-        (cmd) ? cmd->pid: -1, q->count, q->flags, q->conn->writeBlocked);
+        (cmd) ? cmd->pid: -1, q->count, q->flags, q->conn->tx->writeBlocked);
            
     /*
         This will copy outgoing packets downstream toward the network connector and on to the browser. 
@@ -223,6 +236,7 @@ static void outgoingCgiService(HttpQueue *q)
 
 /*
     Accept incoming body data from the client destined for the CGI gateway. This is typically POST or PUT data.
+    Note: In form POST requests, this will be called before the command is actually started. 
  */
 static void incomingCgi(HttpQueue *q, HttpPacket *packet)
 {
@@ -247,17 +261,26 @@ static void incomingCgi(HttpQueue *q, HttpPacket *packet)
             }
             q->queueData = 0;
             httpError(conn, HTTP_CODE_BAD_REQUEST, "Client supplied insufficient body data");
+#if UNUSED
         } else {
             /*  
-                Close the CGI program's stdin. This will allow the gateway to exit if it was 
-                expecting input data and insufficient was sent by the client.
+                Close the CGI program's stdin. This will allow the gateway to exit if insufficient data 
+                was sent by the client.
              */
             if (cmd && cmd->files[MPR_CMD_STDIN].fd >= 0) {
                 mprCloseCmdFd(cmd, MPR_CMD_STDIN);
             }
+#endif
+#if UNUSED
+        } else {
+            assure(rx->eof);
+            if (q->count == 0) {
+                mprCloseCmdFd(cmd, MPR_CMD_STDIN);
+            }
+#endif
         }
     } else {
-        /* No service routine, we just need it to be queued for writeToCGI */
+        /* Queued for writeToCGI */
         httpPutForService(q, packet, 0);
     }
     if (cmd) {
@@ -306,6 +329,9 @@ static void writeToCGI(HttpQueue *q)
             httpPutBackPacket(q, packet);
         }
     }
+    if (q->count == 0 && conn->rx->eof) {
+        mprCloseCmdFd(cmd, MPR_CMD_STDIN);
+    }
 }
 
 
@@ -334,8 +360,9 @@ static int writeToClient(HttpQueue *q, MprCmd *cmd, MprBuf *buf, int channel)
                 return -1;
             }
             rc = httpWriteBlock(q, mprGetBufStart(buf), len, HTTP_BLOCK);
-            mprLog(7, "CGI: Write to client %d, absorbed %d, q->count %d, q->max %d, q->flags %x, writeBlocked %d", 
-                len, rc, q->count, q->max, q->flags, conn->writeBlocked);
+            //MOB 7
+            mprLog(0, "CGI: Write to client %d, absorbed %d, q->count %d, q->max %d, q->flags %x, writeBlocked %d",
+                len, rc, q->count, q->max, q->flags, tx->writeBlocked);
         } else {
             /* Command complete - just discard the data */
             rc = len;
@@ -372,7 +399,6 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
         return 0;
     }
     assure(conn->tx);
-    assure(conn->rx);
 
     tx = conn->tx;
     assure(tx);
@@ -395,23 +421,23 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
             
     default:
         /* Child death notification */
-        if (cmd->pid == 0 && cmd->complete) {
-            httpFinalize(conn);
-        }
+        break;
     }
-    if (conn->keepAliveCount < 0 && conn->state <= HTTP_STATE_CONNECTED) {
-        httpDestroyConn(conn);
-    } else if (conn->state < HTTP_STATE_COMPLETE) {
-        if (cmd->pid && !(cmd->userFlags & MA_CGI_FLOW_CONTROL)) {
-            mprLog(7, "CGI: @@@ enable CGI events for channel %d", channel);
+    mprLog(0, "cgiCallback: channel %d, complete %d", channel, cmd->complete);
+    if (cmd->complete) {
+        assure(cmd->pid == 0);
+        assure(!cmd->handlers[0] && !cmd->handlers[1] && !cmd->handlers[2]);
+        assure(cmd->files[0].fd < 0 && cmd->files[1].fd < 0 && cmd->files[2].fd < 0);
+        httpFinalize(conn);
+        httpPumpRequest(conn, NULL);
+        mprLog(0, "cgiCallback: state %d, finalized %d, finalizedConnector %d", conn->state, conn->tx->finalized, conn->tx->finalizedConnector);
+        httpPostEvent(conn);
+
+    } else if (channel >= 0 && conn->state < HTTP_STATE_COMPLETE && !(cmd->userFlags & MA_CGI_FLOW_CONTROL)) {
+        mprLog(7, "CGI: @@@ enable CGI events for channel %d", channel);
+        if (cmd->handlers[channel]) {
             mprEnableCmdEvents(cmd, channel);
         }
-        if (conn->connectorq->count > 0) {
-            httpEnableConnEvents(conn);
-        }
-
-    } else {
-        httpPump(conn, NULL);
     }
     return nbytes;
 }
@@ -448,8 +474,8 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
                 }
             }
             nbytes = mprReadCmd(cmd, channel, mprGetBufEnd(buf), space);
-
-            mprLog(7, "CGI: Read from gateway, channel %d, got %d bytes. errno %d", channel, nbytes, 
+//MOB was 9
+            mprLog(0, "CGI: Read from gateway, channel %d, got %d bytes. errno %d", channel, nbytes,
                 nbytes >= 0 ? 0 : mprGetOsError());
             if (nbytes < 0) {
                 err = mprGetError();
@@ -470,7 +496,8 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
                     This may reap the terminated child and thus clear cmd->process if both stderr and stdout are closed.
                     WARNING: this may complete the request here 
                  */
-                mprLog(5, "CGI: Gateway EOF for %s, pid %d", (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr", cmd->pid);
+//MOB 5
+                mprLog(0, "CGI: Gateway EOF for %s, pid %d", (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr", cmd->pid);
                 mprCloseCmdFd(cmd, channel);
                 break;
 
@@ -494,10 +521,6 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
             break;
         }
     }
-    if (cmd->complete && conn->state > HTTP_STATE_BEGIN) {
-        assure(conn->tx);
-        httpFinalize(conn);
-    }
     return total;
 }
 
@@ -513,7 +536,8 @@ static int relayCgiResponse(HttpQueue *q, MprCmd *cmd, int channel, MprBuf *buf)
     assure(conn->state > HTTP_STATE_BEGIN);
     assure(conn->tx);
     
-    mprLog(7, "relayCgiResponse pid %d", cmd->pid);
+    //MOB 7
+    mprLog(0, "relayCgiResponse pid %d", cmd->pid);
 
     if (channel == MPR_CMD_STDERR) {
         /*
@@ -670,7 +694,7 @@ static bool parseCgiHeaders(HttpConn *conn, MprCmd *cmd)
     if (location) {
         httpRedirect(conn, tx->status, location);
         if (conn->state == HTTP_STATE_COMPLETE) {
-            httpPump(conn, NULL);
+            httpPumpRequest(conn, NULL);
         }
     }
     return 1;
@@ -1067,6 +1091,7 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
     handler->outgoingService = outgoingCgiService;
     handler->incoming = incomingCgi; 
     handler->open = openCgi; 
+    handler->ready = readyCgi; 
     handler->start = startCgi; 
 #if BIT_WIN_LIKE
     handler->writable = writableCgi; 

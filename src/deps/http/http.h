@@ -129,7 +129,7 @@ struct HttpWebSocket;
 #define HTTP_PACKET_ALIGN(x)      (((x) + 0x3FF) & ~0x3FF)
 #define HTTP_RANGE_BUFSIZE        128               /**< Size of a range boundary */
 #define HTTP_RETRIES              3                 /**< Default number of retries for client requests */
-#define HTTP_TIMER_PERIOD         1000              /**< Timer checks ever 1 second */
+#define HTTP_TIMER_PERIOD         1000              /**< HttpTimer checks ever 1 second */
 #define HTTP_MAX_REWRITE          20                /**< Maximum URI rewrites */
 
 #define HTTP_INACTIVITY_TIMEOUT   (60  * 1000)      /**< Keep connection alive timeout */
@@ -1679,6 +1679,9 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q);
 #define HTTP_STATE_CONTENT          5       /**< Reading posted content */
 #define HTTP_STATE_READY            6       /**< Handler ready - all body data received  */
 #define HTTP_STATE_RUNNING          7       /**< Handler running */
+#if UNUSED
+#define HTTP_STATE_FINALIZED        8       /**< Request complete */
+#endif
 #define HTTP_STATE_COMPLETE         8       /**< Request complete */
 
 /*
@@ -1766,15 +1769,14 @@ PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
     @stability Evolving
     @defgroup HttpConn HttpConn
     @see HttpConn HttpEnvCallback HttpGetPassword HttpListenCallback HttpNotifier HttpQueue HttpRedirectCallback 
-        HttpRx HttpStage HttpTx HtttpListenCallback httpCallEvent httpCloseConn 
-        httpFinalizeConnector httpConnTimeout httpConsumeLastRequest httpCreateConn httpCreateRxPipeline 
-        httpCreateTxPipeline httpDestroyConn httpDestroyPipeline httpDiscardData httpDisconnect 
-        httpEnableUpload httpError httpEvent httpGetAsync httpGetChunkSize httpGetConnContext httpGetConnHost 
-        httpGetError httpGetExt httpGetKeepAliveCount httpGetWriteQueueCount httpMatchHost httpMemoryError
-        httpPrepClientConn httpPrepServerConn httpPumpHandler httpResetCredentials httpRouteRequest httpRunHandlerReady
-        httpServiceQueues httpSetAsync httpSetChunkSize httpSetConnContext httpSetConnHost httpSetConnNotifier
-        httpSetCredentials httpSetKeepAliveCount httpSetProtocol httpSetRetries
-        httpSetSendConnector httpSetState httpSetTimeout httpSetTimestamp httpShouldTrace httpStartPipeline
+        HttpRx HttpStage HttpTx HtttpListenCallback httpCallEvent httpCloseConn httpFinalizeConnector httpConnTimeout
+        httpCreateConn httpCreateRxPipeline httpCreateTxPipeline httpDestroyConn httpDestroyPipeline httpDiscardData
+        httpDisconnect httpEnableUpload httpError httpEvent httpGetAsync httpGetChunkSize httpGetConnContext httpGetConnHost
+        httpGetError httpGetExt httpGetKeepAliveCount httpGetMoreOutput httpGetWriteQueueCount httpMatchHost httpMemoryError
+        httpPostEvent httpPrepClientConn httpResetCredentials httpRouteRequest httpRunHandlerReady httpServiceQueues
+        httpSetAsync httpSetChunkSize httpSetConnContext httpSetConnHost httpSetConnNotifier httpSetCredentials
+        httpSetKeepAliveCount httpSetProtocol httpSetRetries httpSetSendConnector httpSetState httpSetTimeout
+        httpSetTimestamp httpShouldTrace httpStartPipeline
  */
 typedef struct HttpConn {
     /*  Ordered for debugability */
@@ -1787,7 +1789,7 @@ typedef struct HttpConn {
     int             state;                  /**< Connection state */
     int             error;                  /**< A request error has occurred */
     int             connError;              /**< A connection error has occurred */
-    int             pumping;                /**< Rre-entrancy prevention for httpPump() */
+    int             pumping;                /**< Rre-entrancy prevention for httpPumpRequest() */
 
     HttpLimits      *limits;                /**< Service limits */
     Http            *http;                  /**< Http service object  */
@@ -1832,7 +1834,6 @@ typedef struct HttpConn {
     int             secure;                 /**< Using https */
     int             seqno;                  /**< Unique connection sequence number */
     int             upgraded;               /**< Request protocol upgraded */
-    int             writeBlocked;           /**< Transmission writing is blocked */
     int             worker;                 /**< Use worker */
 
     HttpTrace       trace[2];               /**< Tracing for [rx|tx] */
@@ -1894,14 +1895,6 @@ PUBLIC void httpFinalizeConnector(HttpConn *conn);
   */
 PUBLIC void httpConnTimeout(HttpConn *conn);
 
-/**
-    Consume leftover data from the last request
-    @param conn HttpConn object created via #httpCreateConn
-    @ingroup HttpConn
-    @internal
- */
-PUBLIC void httpConsumeLastRequest(HttpConn *conn);
-
 /** 
     Create a connection object.
     @description Most interactions with the Http library are via a connection object. It is used for server-side 
@@ -1938,7 +1931,8 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, struct HttpRoute *route);
 PUBLIC void httpDestroyConn(HttpConn *conn);
 
 /**
-    Destroy the pipeline
+    Destroy the request pipeline. 
+    @description This is called at the conclusion of a request.
     @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
  */
@@ -2068,6 +2062,15 @@ PUBLIC char *httpGetExt(HttpConn *conn);
  */
 PUBLIC int httpGetKeepAliveCount(HttpConn *conn);
 
+/**
+    Get more output data by invoking the writable callback.
+    @description This optional handler callback is invoked when the service queue has room for more data.
+    @param conn HttpConn object created via #httpCreateConn
+    @return True if the handler writable callback exists and can be invoked.
+    @ingroup HttpConn
+ */
+PUBLIC bool httpGetMoreOutput(HttpConn *conn);
+
 /** 
     Get the count of bytes buffered on the write queue.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -2106,24 +2109,14 @@ PUBLIC void httpNotify(HttpConn *conn, int event, int arg);
         if (conn->notifier) { \
             httpNotify(conn, event, arg); \
         } \
-    } else \
-
+    } else
 
 /**
-    Prepare a connection for a new request. This is used internally when using Keep-Alive.
+    Do post I/O event setup.
     @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
  */
-PUBLIC void httpPrepServerConn(HttpConn *conn);
-
-/**
-    Pump the handler by invoking the writable callback.
-    @description This optional handler callback is invoked when the service queue has room for more data.
-    @param conn HttpConn object created via #httpCreateConn
-    @return True if the handler writable callback exists and can be invoked.
-    @ingroup HttpConn
- */
-PUBLIC bool httpPumpHandler(HttpConn *conn);
+PUBLIC void httpPostEvent(HttpConn *conn);
 
 /**
     Prepare a client connection for a new request. 
@@ -4562,12 +4555,13 @@ PUBLIC int httpTestParam(HttpConn *conn, cchar *var);
 PUBLIC void httpTrimExtraPath(HttpConn *conn);
 
 /**
-    Pump the Http engine
+    Pump the Http engine for a request
     @param conn HttpConn connection object
     @param packet Optional packet of input data. Set to NULL if calling from user handlers.
+    @return True if the request is completed successfully.
     @ingroup HttpRx
  */
-PUBLIC void httpPump(HttpConn *conn, HttpPacket *packet);
+PUBLIC bool httpPumpRequest(HttpConn *conn, HttpPacket *packet);
 
 /* Internal */
 PUBLIC void httpCloseRx(struct HttpConn *conn);
@@ -4623,6 +4617,7 @@ typedef struct HttpTx {
     int             responded;              /**< The request has started to respond. Some output has been initiated. */
     int             started;                /**< Handler has started */
     int             status;                 /**< HTTP response status */
+    int             writeBlocked;           /**< Transmission writing is blocked */
 
     HttpUri         *parsedUri;             /**< Client request uri */
     char            *method;                /**< Client request method GET, HEAD, POST, DELETE, OPTIONS, PUT, TRACE */
@@ -5038,6 +5033,7 @@ PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *formData, MprList *fil
     Endpoint flags
  */
 #define HTTP_NAMED_VHOST    0x1             /**< Using named virtual hosting */
+#define HTTP_NEW_DISPATCHER 0x2             /**< New dispatcher for each connection */
 
 /** 
     Listening endpoints. Endpoints may have multiple virtual named hosts.
@@ -5065,6 +5061,7 @@ typedef struct HttpEndpoint {
     MprDispatcher   *dispatcher;            /**< Event dispatcher */
     HttpNotifier    notifier;               /**< Default connection notifier callback */
     struct MprSsl   *ssl;                   /**< Endpoint SSL configuration */
+    MprMutex        *mutex;                 /**< Multithread sync */
 } HttpEndpoint;
 
 /**
@@ -5511,6 +5508,7 @@ typedef struct HttpWebSocket {
 #define WS_MSG_CLOSE    0x8       /**< httpSendBlock type for close message */
 #define WS_MSG_PING     0x9       /**< httpSendBlock type for ping messages */
 #define WS_MSG_PONG     0xA       /**< httpSendBlock type for pong messages */
+#define WS_MSG_MAX      0xB       /**< Max message type for httpSendBlock */
 
 /*
     Close message status codes

@@ -7,8 +7,7 @@ const WS = "wss://127.0.0.1:" + SSL_PORT + "/websockets/basic/ssl"
 const TIMEOUT = 5000
 
 assert(WebSocket)
-let ws = new WebSocket(WS)
-ws.verify = false
+let ws = new WebSocket(WS, ['chat'], { verify: false })
 assert(ws)
 assert(ws.readyState == WebSocket.CONNECTING)
 

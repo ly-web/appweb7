@@ -704,22 +704,11 @@ typedef int64 MprTime;
         This is the same for static and shared builds so *.exe on windows will have export symbols and
         GetProcAddress can locate for dynmaic resolution of modules
      */
-    //  BIT_STATIC part is UNUSED
-    #if BIT_STATIC
-        #define PUBLIC      __declspec(dllexport)
-        #define PRIVATE     static
-    #else
-        #define PUBLIC      __declspec(dllexport)
-        #define PRIVATE     static
-    #endif
+    #define PUBLIC      __declspec(dllexport)
+    #define PRIVATE     static
 #else
-    #if BIT_STATIC
-        #define PUBLIC
-        #define PRIVATE     static
-    #else
-        #define PUBLIC
-        #define PRIVATE     static
-    #endif
+    #define PUBLIC
+    #define PRIVATE     static
 #endif
 
 #ifndef max
@@ -1343,8 +1332,8 @@ struct  MprXml;
 #define MPR_TIMEOUT_HANDLER     10000       /**< Wait period when removing a wait handler */
 #endif
 
-#define MPR_TIMEOUT_PRUNER      600000      /**< Time between worker thread pruner runs (10 min) */
-#define MPR_TIMEOUT_WORKER      300000      /**< Prune worker that has been idle for 5 minutes */
+#define MPR_TIMEOUT_PRUNER      120000      /**< Time between worker thread pruner runs (2 min) */
+#define MPR_TIMEOUT_WORKER      60000       /**< Prune worker that has been idle for 1 min */
 #define MPR_TIMEOUT_START_TASK  10000       /**< Time to start tasks running */
 #define MPR_TIMEOUT_STOP        30000       /**< Default wait when stopping resources (30 sec) */
 #define MPR_TIMEOUT_STOP_TASK   10000       /**< Time to stop or reap tasks (vxworks) */
@@ -1946,8 +1935,9 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
 /********************************* Memory Allocator ***************************/
 /*
     Allocator debug and stats selection
+    Use configure --set memoryCheck=true to enable
  */
-#if BIT_DEBUG
+#if BIT_MEMORY_CHECK
     #define BIT_MEMORY_DEBUG        1                   /**< Fill blocks, verifies block integrity. */
     #define BIT_MEMORY_STATS        1                   /**< Include memory stats routines */
     #define BIT_MEMORY_STACK        1                   /**< Monitor stack usage */
@@ -2275,6 +2265,7 @@ typedef struct MprHeap {
     ssize            priorFree;              /**< Last sweep free memory */
     int              rootIndex;              /**< Marker root scan index */
     int              scribble;               /**< Scribble over freed memory (slow) */
+    int              sweeping;               /**< Actually sweeping objects now */
     int              track;                  /**< Track memory allocations */
     int              verify;                 /**< Verify memory contents (very slow) */
 } MprHeap;
@@ -3439,34 +3430,6 @@ PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg);
     @defgroup MprFloat MprFloat
   */
 typedef struct MprFloat { int dummy; } MprFloat;
-
-#if UNUSED
-/*
-   Mode values for mprDtoa
- */
-#define MPR_DTOA_ALL_DIGITS         0       /**< Return all digits */
-#define MPR_DTOA_N_DIGITS           2       /**< Return total N digits */
-#define MPR_DTOA_N_FRACTION_DIGITS  3       /**< Return total fraction digits */
-
-/*
-    Flags for mprDtoa
- */
-#define MPR_DTOA_EXPONENT_FORM      0x10    /**< Result in exponent form (N.NNNNe+NN) */
-#define MPR_DTOA_FIXED_FORM         0x20    /**< Emit in fixed form (NNNN.MMMM)*/
-
-/**
-    Convert a double to ascii
-    @param value Value to convert
-    @param ndigits Number of digits to render
-    @param mode Modes are:
-         0   Shortest string,
-         1   Like 0, but with Steele & White stopping rule,
-         2   Return ndigits of result,
-         3   Number of digits applies after the decimal point.
-    @param flags Format flags
- */
-PUBLIC char *mprDtoa(double value, int ndigits, int mode, int flags);
-#endif
 
 /**
     Test if a double value is infinte
@@ -6066,8 +6029,9 @@ PUBLIC int mprUnloadModule(MprModule *mp);
 #define MPR_EVENT_DONT_QUEUE        0x4     /**< Don't queue the event. User must call mprQueueEvent */
 #define MPR_EVENT_STATIC_DATA       0x8     /**< Event data is permanent and should not be marked by GC */
 
-#define MPR_EVENT_MAGIC         0x12348765
-#define MPR_DISPATCHER_MAGIC    0x23418877
+#define MPR_EVENT_MAGIC             0x12348765
+#define MPR_DISPATCHER_MAGIC        0x23418877
+#define MPR_DISPATCHER_DESTROYED    0x42
 
 /**
     Event callback function
@@ -8112,6 +8076,7 @@ typedef struct MprCmd {
 
     cchar           *program;           /**< Program path name */
     int             pid;                /**< Process ID of the created process */
+    int             pid2;               /**< Persistent copy of the pid */
     int             status;             /**< Command exit status */
     int             flags;              /**< Control flags (userFlags not here) */
     int             eofCount;           /**< Count of end-of-files */
