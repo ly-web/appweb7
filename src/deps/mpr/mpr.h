@@ -87,7 +87,7 @@
     #define BIT_CPU_ARCH MPR_CPU_ITANIUM
 #elif defined(__mips__)
     #define BIT_CPU "MIPS"
-    #define BIT_CPU_ARCH MPR_CPU_SPARC
+    #define BIT_CPU_ARCH MPR_CPU_MIPS
 #elif defined(__ppc__) || defined(__powerpc__) || defined(__ppc64__)
     #define BIT_CPU "PPC"
     #define BIT_CPU_ARCH MPR_CPU_PPC
