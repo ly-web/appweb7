@@ -427,9 +427,12 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
         assure(!cmd->handlers[0] && !cmd->handlers[1] && !cmd->handlers[2]);
         assure(cmd->files[0].fd < 0 && cmd->files[1].fd < 0 && cmd->files[2].fd < 0);
         httpFinalize(conn);
-        httpPumpRequest(conn, NULL);
-        mprLog(0, "cgiCallback: state %d, finalized %d, finalizedConnector %d", conn->state, conn->tx->finalized, conn->tx->finalizedConnector);
-        httpPostEvent(conn);
+        if (!conn->pumping) {
+            httpPumpRequest(conn, NULL);
+            //  MOB
+            mprLog(0, "cgiCallback: state %d, finalized %d, finalizedConnector %d", conn->state, conn->tx->finalized, conn->tx->finalizedConnector);
+            httpPostEvent(conn);
+        }
 
     } else if (channel >= 0 && conn->state < HTTP_STATE_COMPLETE && !(cmd->userFlags & MA_CGI_FLOW_CONTROL)) {
         mprLog(7, "CGI: @@@ enable CGI events for channel %d", channel);

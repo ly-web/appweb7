@@ -30,7 +30,7 @@ if (App.config.bit_esp) {
 if (App.config.bit_ejscript) {
     testCache("/combined/cache.ejs")
 }
-if (App.config.bit_cgi) {
+if (App.config.bit_cgi && Config.OS != 'windows') {
     testCache("/combined/cache.cgi")
 }
 
