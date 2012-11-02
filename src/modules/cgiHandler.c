@@ -65,7 +65,6 @@ static void openCgi(HttpQueue *q)
         httpMapFile(q->conn, rx->route);
         httpCreateCGIParams(q->conn);
     }
-
 }
 
 
@@ -184,7 +183,6 @@ static void writableCgi(HttpQueue *q)
     MprCmd      *cmd;
 
     cmd = (MprCmd*) q->queueData;
-
     if (q->pair) {
         writeToCGI(q->pair);
     }
