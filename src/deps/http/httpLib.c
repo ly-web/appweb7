@@ -2258,7 +2258,7 @@ PUBLIC void httpCloseConn(HttpConn *conn)
     assure(conn);
 
     if (conn->sock) {
-        mprLog(6, "Closing connection");
+        mprLog(5, "Closing connection");
         if (conn->waitHandler) {
             mprRemoveWaitHandler(conn->waitHandler);
             conn->waitHandler = 0;
@@ -2478,6 +2478,8 @@ static void readEvent(HttpConn *conn)
         if ((packet = getPacket(conn, &size)) == 0) {
             return;
         }
+        assure(conn->input == packet);
+
         nbytes = mprReadSocket(conn->sock, mprGetBufEnd(packet->content), size);
         LOG(7, "http: read event. Got %d", nbytes);
 
@@ -2492,7 +2494,7 @@ static void readEvent(HttpConn *conn)
             }
         }
         do {
-            if (!httpPumpRequest(conn, packet)) {
+            if (!httpPumpRequest(conn, conn->input)) {
                 break;
             }
         } while (conn->endpoint && prepForNext(conn));
@@ -3202,9 +3204,8 @@ static char *createDigestNonce(HttpConn *conn, cchar *secret, cchar *realm)
     static int64 next = 0;
 
     assure(realm && *realm);
-
     now = conn->http->now;
-    fmt(nonce, sizeof(nonce), "%s:%s:%Lx:%Lx", secret, realm, now, next++);
+    fmt(nonce, sizeof(nonce), "%s:%s:%Lx:%Lx", secret, realm, now & 0xFFFF, next++);
     return mprEncode64(nonce);
 }
 
@@ -5065,7 +5066,6 @@ PUBLIC int httpCreateSecret(Http *http)
     int         i, pid;
 
     if (mprGetRandomBytes(bytes, sizeof(bytes), 0) < 0) {
-        mprError("Can't get sufficient random data for secure SSL operation. If SSL is used, it may not be secure.");
         now = http->now;
         pid = (int) getpid();
         cp = (char*) &now;
@@ -5080,7 +5080,6 @@ PUBLIC int httpCreateSecret(Http *http)
         assure(0);
         return MPR_ERR_CANT_INITIALIZE;
     }
-
     ap = ascii;
     for (i = 0; i < (int) sizeof(bytes); i++) {
         *ap++ = hex[((uchar) bytes[i]) >> 4];
