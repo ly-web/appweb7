@@ -224,7 +224,8 @@ static void outgoingCgiService(HttpQueue *q)
     httpDefaultOutgoingServiceStage(q);
 
     if (cmd && cmd->userFlags & MA_CGI_FLOW_CONTROL && q->count < q->low) {
-        mprLog(7, "CGI: @@@ OutgoingCgiService - re-enable gateway output count %d (low %d)", q->count, q->low);
+        //MOB 7
+        mprLog(4, "CGI: @@@ OutgoingCgiService - re-enable gateway output count %d (low %d)", q->count, q->low);
         cmd->userFlags &= ~MA_CGI_FLOW_CONTROL;
         mprEnableCmdEvents(cmd, MPR_CMD_STDOUT);
         httpResumeQueue(q);
@@ -353,13 +354,13 @@ static int writeToClient(HttpQueue *q, MprCmd *cmd, MprBuf *buf, int channel)
         if (tx && !tx->finalizedOutput && conn->state < HTTP_STATE_COMPLETE) {
             if ((q->count + len) > q->max) {
                 cmd->userFlags |= MA_CGI_FLOW_CONTROL;
-                mprLog(7, "CGI: @@@ client write queue full. Suspend queue, enable conn events");
+                //  MOB 7
+                mprLog(4, "CGI: @@@ client write queue full. Suspend queue, enable conn events");
                 httpSuspendQueue(q);
                 return -1;
             }
-            rc = httpWriteBlock(q, mprGetBufStart(buf), len, HTTP_BLOCK);
-            //MOB 7
-            mprLog(0, "CGI: Write to client %d, absorbed %d, q->count %d, q->max %d, q->flags %x, writeBlocked %d",
+            rc = httpWriteBlock(q, mprGetBufStart(buf), len, HTTP_NON_BLOCK);
+            mprLog(7, "CGI: Write to client %d, absorbed %d, q->count %d, q->max %d, q->flags %x, writeBlocked %d",
                 len, rc, q->count, q->max, q->flags, tx->writeBlocked);
         } else {
             /* Command complete - just discard the data */
@@ -421,7 +422,7 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
         /* Child death notification */
         break;
     }
-    mprLog(0, "cgiCallback: channel %d, complete %d", channel, cmd->complete);
+    mprLog(6, "cgiCallback: channel %d, complete %d", channel, cmd->complete);
     if (cmd->complete) {
         assure(cmd->pid == 0);
         assure(!cmd->handlers[0] && !cmd->handlers[1] && !cmd->handlers[2]);
@@ -429,14 +430,15 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
         httpFinalize(conn);
         if (!conn->pumping) {
             httpPumpRequest(conn, NULL);
-            //  MOB
-            mprLog(0, "cgiCallback: state %d, finalized %d, finalizedConnector %d", conn->state, conn->tx->finalized, conn->tx->finalizedConnector);
+            mprLog(6, "cgiCallback: state %d, finalized %d, finalizedConnector %d", conn->state, conn->tx->finalized, 
+                conn->tx->finalizedConnector);
             httpPostEvent(conn);
         }
 
-    } else if (channel >= 0 && conn->state < HTTP_STATE_COMPLETE && !(cmd->userFlags & MA_CGI_FLOW_CONTROL)) {
-        mprLog(7, "CGI: @@@ enable CGI events for channel %d", channel);
-        if (cmd->handlers[channel]) {
+    } else if (channel >= 0 && conn->state < HTTP_STATE_COMPLETE) {
+        if (cmd->userFlags & MA_CGI_FLOW_CONTROL) {
+            httpEnableConnEvents(conn);
+        } else if (cmd->handlers[channel]) {
             mprEnableCmdEvents(cmd, channel);
         }
     }
@@ -475,8 +477,7 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
                 }
             }
             nbytes = mprReadCmd(cmd, channel, mprGetBufEnd(buf), space);
-//MOB was 9
-            mprLog(0, "CGI: Read from gateway, channel %d, got %d bytes. errno %d", channel, nbytes,
+            mprLog(8, "CGI: Read from gateway, channel %d, got %d bytes. errno %d", channel, nbytes,
                 nbytes >= 0 ? 0 : mprGetOsError());
             if (nbytes < 0) {
                 err = mprGetError();
@@ -497,8 +498,7 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
                     This may reap the terminated child and thus clear cmd->process if both stderr and stdout are closed.
                     WARNING: this may complete the request here 
                  */
-//MOB 5
-                mprLog(0, "CGI: Gateway EOF for %s, pid %d", (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr", cmd->pid);
+                mprLog(6, "CGI: Gateway EOF for %s, pid %d", (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr", cmd->pid);
                 mprCloseCmdFd(cmd, channel);
                 break;
 
@@ -537,8 +537,7 @@ static int relayCgiResponse(HttpQueue *q, MprCmd *cmd, int channel, MprBuf *buf)
     assure(conn->state > HTTP_STATE_BEGIN);
     assure(conn->tx);
     
-    //MOB 7
-    mprLog(0, "relayCgiResponse pid %d", cmd->pid);
+    mprLog(7, "relayCgiResponse pid %d", cmd->pid);
 
     if (channel == MPR_CMD_STDERR) {
         /*
