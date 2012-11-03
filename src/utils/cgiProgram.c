@@ -81,7 +81,7 @@ static int      numQueryKeys;
 static int      originalArgc;
 static char     **originalArgv;
 static int      outputArgs, outputEnv, outputPost, outputQuery;
-static int      outputBytes, outputHeaderLines, responseStatus;
+static int      outputLines, outputHeaderLines, responseStatus;
 static char     *outputLocation;
 static char     *postBuf;
 static size_t   postBufLen;
@@ -116,11 +116,11 @@ int main(int argc, char **argv, char **envp)
 #endif
 {
     char    *cp, *method;
-    int     i, j, err;
+    int     l, i, j, err;
 
     err = 0;
     outputArgs = outputQuery = outputEnv = outputPost = 0;
-    outputBytes = outputHeaderLines = responseStatus = 0;
+    outputLines = outputHeaderLines = responseStatus = 0;
     outputLocation = 0;
     nonParsedHeader = 0;
     responseMsg = 0;
@@ -159,7 +159,7 @@ int main(int argc, char **argv, char **envp)
                 if (++i >= argc) {
                     err = __LINE__;
                 } else {
-                    outputBytes = atoi(argv[i]);
+                    outputLines = atoi(argv[i]);
                 }
                 break;
 
@@ -271,49 +271,44 @@ int main(int argc, char **argv, char **envp)
     }
     printf("\r\n");
 
-    if ((outputBytes + outputArgs + outputEnv + outputQuery + outputPost + outputLocation + responseStatus) == 0) {
+    if ((outputLines + outputArgs + outputEnv + outputQuery + outputPost + outputLocation + responseStatus) == 0) {
         outputArgs++;
         outputEnv++;
         outputQuery++;
         outputPost++;
     }
-
-    if (outputBytes) {
-        j = 0;
-        for (i = 0; i < outputBytes; i++) {
+    if (outputLines) {
+        for (j = l = 0; l < outputLines; ) {
             putchar('0' + j);
             j++;
             if (j > 9) {
-                if (++outputBytes > 0) {
-                    putchar('\r');
-                }
-                if (++outputBytes > 0) {
-                    putchar('\n');
-                }
+                putchar('\r');
+                putchar('\n');
                 j = 0;
+                l++;
             }
         }
 
-    } 
-    printf("<HTML><TITLE>cgiProgram: Output</TITLE><BODY>\r\n");
-    if (outputArgs) {
+    } else {
+        printf("<HTML><TITLE>cgiProgram: Output</TITLE><BODY>\r\n");
+        if (outputArgs) {
 #if _WIN32
-        printf("<P>CommandLine: %s</P>\r\n", GetCommandLine());
+            printf("<P>CommandLine: %s</P>\r\n", GetCommandLine());
 #endif
-        printf("<H2>Args</H2>\r\n");
-        for (i = 0; i < argc; i++) {
-            printf("<P>ARG[%d]=%s</P>\r\n", i, argv[i]);
+            printf("<H2>Args</H2>\r\n");
+            for (i = 0; i < argc; i++) {
+                printf("<P>ARG[%d]=%s</P>\r\n", i, argv[i]);
+            }
         }
+        printEnv(envp);
+        if (outputQuery) {
+            printQuery();
+        }
+        if (outputPost) {
+            printPost(postBuf, postBufLen);
+        }
+        printf("</BODY></HTML>\r\n");
     }
-    printEnv(envp);
-    if (outputQuery) {
-        printQuery();
-    }
-    if (outputPost) {
-        printPost(postBuf, postBufLen);
-    }
-    printf("</BODY></HTML>\r\n");
-
 #if VXWORKS
     /*
         VxWorks pipes need an explicit eof string
