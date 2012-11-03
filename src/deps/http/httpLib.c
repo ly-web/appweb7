@@ -176,8 +176,7 @@ PUBLIC int httpAuthenticate(HttpConn *conn)
             return 0;
         }
         if (rx->authDetails && (auth->type->parseAuth)(conn) < 0) {
-            assure(conn->error);
-            assure(conn->tx->finalized);
+            httpError(conn, HTTP_CODE_BAD_REQUEST, "Access denied. Bad authentication data.");
             return 0;
         }
         if (!conn->username) {
@@ -3205,7 +3204,7 @@ static char *createDigestNonce(HttpConn *conn, cchar *secret, cchar *realm)
 
     assure(realm && *realm);
     now = conn->http->now;
-    fmt(nonce, sizeof(nonce), "%s:%s:%Lx:%Lx", secret, realm, now & 0xFFFF, next++);
+    fmt(nonce, sizeof(nonce), "%s:%s:%Lx:%Lx", secret, realm, now, next++);
     return mprEncode64(nonce);
 }
 
@@ -7236,7 +7235,8 @@ PUBLIC bool httpIsQueueEmpty(HttpQueue *q)
 
 /*  
     Read data. If sync mode, this will block. If async, will never block.
-    Will return what data is available up to the requested size. Returns a byte count.
+    Will return what data is available up to the requested size. 
+    Returns a count of bytes read. Returns zero if not data. EOF if returns zero and conn->state is > HTTP_STATE_CONTENT.
  */
 PUBLIC ssize httpRead(HttpConn *conn, char *buf, ssize size)
 {
