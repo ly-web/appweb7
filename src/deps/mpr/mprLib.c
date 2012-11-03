@@ -8721,7 +8721,7 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     assure(dispatcher->enabled);
     assure(dispatcher->cond);
     assure(!dispatcher->destroyed);
-    for (count = 0; (event = mprGetNextEvent(dispatcher)) != 0 && !dispatcher->destroyed; count++) {
+    for (count = 0; !dispatcher->destroyed && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
         assure(event->magic == MPR_EVENT_MAGIC);
         /* Hold for GC */
         dispatcher->current = event;
