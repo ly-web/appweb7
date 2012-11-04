@@ -982,6 +982,8 @@ typedef void (*HttpQueueService)(struct HttpQueue *q);
         If a queue does not define a put() method, the default put() method will 
         be used which queues data onto the service queue. The default incoming put() method joins incoming packets
         into a single packet on the service queue.
+        \n\n
+        Data flows downstream from one queue to the next queue linked via the nextQ field.
     @stability Evolving
     @defgroup HttpQueue HttpQueue
     @see HttpConn HttpPacket HttpQueue httpDisableQueue httpDiscardQueueData httpEnableQueue httpFlushQueue httpGetQueueRoom
@@ -4625,7 +4627,7 @@ typedef struct HttpTx {
     struct HttpConn *conn;                  /**< Current connection object */
     MprList         *outputPipeline;        /**< Output processing */
     HttpStage       *connector;             /**< Network connector to send / receive socket data */
-    HttpQueue       *queue[2];              /**< Dummy head for the queues */
+    HttpQueue       *queue[2];              /**< Pipeline queue heads */
 
     MprHash         *headers;               /**< Transmission headers */
     HttpCache       *cache;                 /**< Cache control entry (only set if this request is being cached) */

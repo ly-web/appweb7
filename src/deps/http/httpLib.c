@@ -1933,6 +1933,9 @@ PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl 
     conn->startTime = conn->http->now;
     conn->startTicks = mprGetTicks();
 #endif
+    /*
+        The receive pipeline is created when parsing the response in parseIncoming()
+     */
     httpCreateTxPipeline(conn, conn->http->clientRoute);
     if (openConnection(conn, ssl) == 0) {
         return MPR_ERR_CANT_OPEN;
@@ -2408,11 +2411,11 @@ PUBLIC void httpPrepClientConn(HttpConn *conn, bool keepHeaders)
     if (conn->tx) {
         conn->tx->conn = 0;
     }
-    headers = (keepHeaders && conn->tx) ? conn->tx->headers: NULL;
-    conn->tx = httpCreateTx(conn, headers);
     if (conn->rx) {
         conn->rx->conn = 0;
     }
+    headers = (keepHeaders && conn->tx) ? conn->tx->headers: NULL;
+    conn->tx = httpCreateTx(conn, headers);
     conn->rx = httpCreateRx(conn);
     commonPrep(conn);
 }
@@ -2471,6 +2474,7 @@ PUBLIC void httpEvent(HttpConn *conn, MprEvent *event)
 static void readEvent(HttpConn *conn)
 {
     HttpPacket  *packet;
+    HttpQueue   *q;
     ssize       nbytes, size;
 
     do {
@@ -2498,7 +2502,8 @@ static void readEvent(HttpConn *conn)
             }
         } while (conn->endpoint && prepForNext(conn));
 
-    } while (nbytes > 0 && !mprGetSocketBlockingMode(conn->sock));
+        q = conn->readq;
+    } while (nbytes > 0 && !mprGetSocketBlockingMode(conn->sock) && (!q || q->count < q->max));
 }
 
 
@@ -2594,6 +2599,7 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
 #if !BIT_LOCK_FIX
         lock(conn->http);
 #endif
+        assure(tx || !mprIsSocketEof(conn->sock));
         if (tx) {
             /*
                 Can be blocked with data in the iovec and none in the queue
@@ -2604,13 +2610,22 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
             /*
                 Enable read events if the read queue is not full. 
              */
+            q = conn->readq;
+#if UNUSED
+            assure(q == tx->queue[HTTP_QUEUE_RX]->prevQ);
+            //  MOB - should be prevQ
             q = tx->queue[HTTP_QUEUE_RX]->nextQ;
+#endif
             //  MOB - why rx->form?
             if (q->count < q->max || rx->form) {
                 eventMask |= MPR_READABLE;
             }
+#if UNUSED && MOB01
         //  MOB - tested above - remove this test
         } else if (!mprIsSocketEof(conn->sock)) {
+#else 
+        } else {
+#endif
             eventMask |= MPR_READABLE;
         }
         httpSetupWaitHandler(conn, eventMask);
@@ -6622,7 +6637,11 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
     for (next = 0; (stage = mprGetNextItem(tx->outputPipeline, &next)) != 0; ) {
         q = httpCreateQueue(conn, stage, HTTP_QUEUE_TX, q);
     }
+#if UNUSED && MOB01
+    //  MOB - remove
+    assure(conn->writeq == tx->queue[HTTP_QUEUE_TX]->nextQ);
     conn->writeq = tx->queue[HTTP_QUEUE_TX]->nextQ;
+#endif
     conn->connectorq = tx->queue[HTTP_QUEUE_TX]->prevQ;
     pairQueues(conn);
 
@@ -6667,7 +6686,11 @@ PUBLIC void httpCreateRxPipeline(HttpConn *conn, HttpRoute *route)
     for (next = 0; (stage = mprGetNextItem(rx->inputPipeline, &next)) != 0; ) {
         q = httpCreateQueue(conn, stage, HTTP_QUEUE_RX, q);
     }
+#if UNUSED && MOB01
+    //  MOB - remove
+    assure(conn->readq == tx->queue[HTTP_QUEUE_RX]->prevQ);
     conn->readq = tx->queue[HTTP_QUEUE_RX]->prevQ;
+#endif
     if (!conn->endpoint) {
         pairQueues(conn);
         openQueues(conn);
@@ -6988,8 +7011,11 @@ PUBLIC HttpQueue *httpCreateQueue(HttpConn *conn, HttpStage *stage, int dir, Htt
     httpInitQueue(conn, q, stage->name);
     httpInitSchedulerQueue(q);
     httpAssignQueue(q, stage, dir);
-    if (prev) {
-        httpAppendQueue(prev, q);
+    httpAppendQueue(prev, q);
+    if (dir == HTTP_QUEUE_RX) {
+        conn->readq = conn->tx->queue[HTTP_QUEUE_RX]->prevQ;
+    } else {
+        conn->writeq = conn->tx->queue[HTTP_QUEUE_TX]->nextQ;
     }
     return q;
 }
@@ -12538,10 +12564,10 @@ PUBLIC bool httpMatchModified(HttpConn *conn, MprTime time)
     Where n1 is first byte pos and n2 is last byte pos
 
     Examples:
-        Range: 0-49             first 50 bytes
-        Range: 50-99,200-249    Two 50 byte ranges from 50 and 200
-        Range: -50              Last 50 bytes
-        Range: 1-               Skip first byte then emit the rest
+        Range: bytes=0-49             first 50 bytes
+        Range: bytes=50-99,200-249    Two 50 byte ranges from 50 and 200
+        Range: bytes=-50              Last 50 bytes
+        Range: bytes=1-               Skip first byte then emit the rest
 
     Return 1 if more ranges, 0 if end of ranges, -1 if bad range.
  */
@@ -13846,6 +13872,8 @@ PUBLIC HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers)
 
     tx->queue[HTTP_QUEUE_TX] = httpCreateQueueHead(conn, "TxHead");
     tx->queue[HTTP_QUEUE_RX] = httpCreateQueueHead(conn, "RxHead");
+    conn->readq = tx->queue[HTTP_QUEUE_RX]->prevQ;
+    conn->writeq = tx->queue[HTTP_QUEUE_TX]->nextQ;
 
     if (headers) {
         tx->headers = headers;
@@ -14090,11 +14118,25 @@ PUBLIC void httpFinalizeOutput(HttpConn *conn)
     }
     tx->responded = 1;
     tx->finalizedOutput = 1;
-    if (conn->state < HTTP_STATE_CONNECTED || !conn->writeq || !conn->sock) {
+    assure(conn->sock);
+    assure(conn->writeq);
+    if (conn->writeq == tx->queue[HTTP_QUEUE_TX]) {
         /* Tx Pipeline not yet created */
         tx->pendingFinalize = 1;
         return;
     }
+    assure(conn->state >= HTTP_STATE_CONNECTED);
+    assure(conn->sock);
+#if UNUSED
+    //  MOB UNUSED
+    if (conn->state < HTTP_STATE_CONNECTED /* MOB || !conn->writeq */ || !conn->sock) {
+        /* Tx Pipeline not yet created */
+        assure(conn->state >= HTTP_STATE_CONNECTED);
+        assure(conn->sock);
+        tx->pendingFinalize = 1;
+        return;
+    }
+#endif
     httpPutForService(conn->writeq, httpCreateEndPacket(), HTTP_SCHEDULE_QUEUE);
     httpServiceQueues(conn);
 }
@@ -16180,7 +16222,11 @@ static void addBodyParams(HttpConn *conn)
     rx = conn->rx;
     if (rx->form) {
         if (!(rx->flags & HTTP_ADDED_FORM_PARAMS)) {
+#if UNUSED && MOB01
+            //  MOB - should be already set
+            assure(conn->readq == conn->tx->queue[HTTP_QUEUE_RX]->prevQ);
             conn->readq = conn->tx->queue[HTTP_QUEUE_RX]->prevQ;
+#endif
             addParamsFromQueue(conn->readq);
             rx->flags |= HTTP_ADDED_FORM_PARAMS;
         }
