@@ -1681,10 +1681,8 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q);
 #define HTTP_STATE_CONTENT          5       /**< Reading posted content */
 #define HTTP_STATE_READY            6       /**< Handler ready - all body data received  */
 #define HTTP_STATE_RUNNING          7       /**< Handler running */
-#if UNUSED
-#define HTTP_STATE_FINALIZED        8       /**< Request complete */
-#endif
-#define HTTP_STATE_COMPLETE         8       /**< Request complete */
+#define HTTP_STATE_FINALIZED        8       /**< Input received, request processed and response transmitted */
+#define HTTP_STATE_COMPLETE         9       /**< Request complete */
 
 /*
     Limit validation events
@@ -1827,7 +1825,9 @@ typedef struct HttpConn {
     char            *protocol;              /**< HTTP protocol */
     char            *protocols;             /**< Supported web socket protocols (clients) */
     int             async;                  /**< Connection is in async mode (non-blocking) */
+#if UNUSED
     int             canProceed;             /**< State machine should continue to process the request */
+#endif
     int             followRedirects;        /**< Follow redirects for client requests */
     int             keepAliveCount;         /**< Count of remaining Keep-Alive requests for this connection */
     int             http10;                 /**< Using legacy HTTP/1.0 */
@@ -2198,9 +2198,9 @@ PUBLIC void httpSetConnHost(HttpConn *conn, void *host);
     <ul>
     <li>HTTP_EVENT_STATE &mdash; The request is changing state. Valid states are:
         HTTP_STATE_BEGIN, HTTP_STATE_CONNECTED, HTTP_STATE_FIRST, HTTP_STATE_CONTENT, HTTP_STATE_READY,
-        HTTP_STATE_RUNNING, HTTP_STATE_COMPLETE. A request will always visit all states and the notifier will be
-        invoked for each and every state. This is true even if the request has no content, the HTTP_STATE_CONTENT
-        will still be visited.</li>
+        HTTP_STATE_RUNNING, HTTP_STATE_FINALIZED and HTTP_STATE_COMPLETE. A request will always visit all states and the
+        notifier will be invoked for each and every state. This is true even if the request has no content, the
+        HTTP_STATE_CONTENT will still be visited.</li>
     <li>HTTP_EVENT_READABLE &mdash; There is data available to read</li>
     <li>HTTP_EVENT_WRITABLE &mdash; The outgoing pipeline can absorb more data</li>
     <li>HTTP_EVENT_ERROR &mdash; The request has encountered an error</li>
@@ -2270,7 +2270,7 @@ PUBLIC void httpSetSendConnector(HttpConn *conn, cchar *path);
 /**
     Set the connection state and invoke notifiers.
     @description The connection states are, in order : HTTP_STATE_BEGIN HTTP_STATE_CONNECTED HTTP_STATE_FIRST
-    HTTP_STATE_PARSED HTTP_STATE_CONTENT HTTP_STATE_READY HTTP_STATE_RUNNING HTTP_STATE_COMPLETE. 
+    HTTP_STATE_PARSED HTTP_STATE_CONTENT HTTP_STATE_READY HTTP_STATE_RUNNING HTTP_STATE_FINALIZED HTTP_STATE_COMPLETE. 
     When httpSetState advances the state it will invoke any registered #HttpNotifier. If the state is set to a state beyond
         the next intermediate state, the HttpNotifier will be invoked for all intervening states. 
         This is true even if the request has no content, the HTTP_STATE_CONTENT will still be visited..

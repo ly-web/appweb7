@@ -305,7 +305,7 @@ static void writeToCGI(HttpQueue *q)
     assure(cmd);
     conn = q->conn;
 
-    for (packet = httpGetPacket(q); packet && conn->state < HTTP_STATE_COMPLETE; packet = httpGetPacket(q)) {
+    for (packet = httpGetPacket(q); packet && conn->state < HTTP_STATE_FINALIZED; packet = httpGetPacket(q)) {
         conn->lastActivity = conn->http->now;
         buf = packet->content;
         len = mprGetBufLength(buf);
@@ -351,7 +351,8 @@ static int writeToClient(HttpQueue *q, MprCmd *cmd, MprBuf *buf, int channel)
         Write to the browser. Write as much as we can. Service queues to get the filters and connectors pumping.
      */
     while (tx && (len = mprGetBufLength(buf)) > 0) {
-        if (tx && !tx->finalizedOutput && conn->state < HTTP_STATE_COMPLETE) {
+        //  MOB - simplify (remove finalizedOutput)
+        if (tx && !tx->finalizedOutput && conn->state < HTTP_STATE_FINALIZED) {
             if ((q->count + len) > q->max) {
                 cmd->userFlags |= MA_CGI_FLOW_CONTROL;
                 //  MOB 7
@@ -435,7 +436,7 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
             httpPostEvent(conn);
         }
 
-    } else if (channel >= 0 && conn->state < HTTP_STATE_COMPLETE) {
+    } else if (channel >= 0 && conn->state < HTTP_STATE_FINALIZED) {
         if (cmd->userFlags & MA_CGI_FLOW_CONTROL) {
             httpEnableConnEvents(conn);
         } else if (cmd->handlers[channel]) {
@@ -693,7 +694,7 @@ static bool parseCgiHeaders(HttpConn *conn, MprCmd *cmd)
 
     if (location) {
         httpRedirect(conn, tx->status, location);
-        if (conn->state == HTTP_STATE_COMPLETE) {
+        if (conn->state == HTTP_STATE_FINALIZED) {
             httpPumpRequest(conn, NULL);
         }
     }

@@ -2390,6 +2390,7 @@ PUBLIC void httpConsumeLastRequest(HttpConn *conn)
             }
         }
     }
+    //  MOB UNUSURE
     if (HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_COMPLETE) {
         conn->keepAliveCount = -1;
     }
@@ -7498,7 +7499,8 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize len, int flags)
 
     for (totalWritten = 0; len > 0; ) {
         LOG(7, "httpWriteBlock q_count %d, q_max %d", q->count, q->max);
-        if (conn->state >= HTTP_STATE_COMPLETE) {
+        //  MOB UNUSURE
+        if (conn->state >= HTTP_STATE_FINALIZED) {
             return MPR_ERR_CANT_WRITE;
         }
         if (q->last && q->last != q->first && q->last->flags & HTTP_PACKET_DATA && mprGetBufSpace(q->last->content) > 0) {
@@ -11135,41 +11137,45 @@ PUBLIC void httpDestroyRx(HttpRx *rx)
  */
 PUBLIC bool httpPumpRequest(HttpConn *conn, HttpPacket *packet)
 {
-    assure(conn);
+    bool    canProceed;
 
+    assure(conn);
     if (conn->pumping) {
         return 0;
     }
-    conn->canProceed = 1;
+    canProceed = 1;
     conn->pumping = 1;
 
-    while (conn->canProceed) {
+    while (canProceed) {
         LOG(7, "httpProcess %s, state %d, error %d", conn->dispatcher->name, conn->state, conn->error);
         switch (conn->state) {
         case HTTP_STATE_BEGIN:
         case HTTP_STATE_CONNECTED:
-            conn->canProceed = parseIncoming(conn, packet);
+            canProceed = parseIncoming(conn, packet);
             break;
 
         case HTTP_STATE_PARSED:
-            conn->canProceed = processParsed(conn);
+            canProceed = processParsed(conn);
             break;
 
         case HTTP_STATE_CONTENT:
-            conn->canProceed = processContent(conn, packet);
+            canProceed = processContent(conn, packet);
             break;
 
         case HTTP_STATE_READY:
-            conn->canProceed = processReady(conn);
+            canProceed = processReady(conn);
             break;
 
         case HTTP_STATE_RUNNING:
-            conn->canProceed = processRunning(conn);
-            assure(conn->canProceed || conn->state == HTTP_STATE_RUNNING);
+            canProceed = processRunning(conn);
+            assure(canProceed || conn->state == HTTP_STATE_RUNNING);
+            break;
+
+        case HTTP_STATE_FINALIZED:
+            processCompletion(conn);
             break;
 
         case HTTP_STATE_COMPLETE:
-            processCompletion(conn);
             conn->pumping = 0;
             return !conn->connError;
         }
@@ -12076,20 +12082,20 @@ static bool processRunning(HttpConn *conn)
         if (tx->finalized) {
             if (tx->finalizedConnector) {
                 /* Request complete and output complete */
-                httpSetState(conn, HTTP_STATE_COMPLETE);
+                httpSetState(conn, HTTP_STATE_FINALIZED);
             } else {
                 /* Still got output to do. Wait for Tx I/O event. Do suspend incase handler not using auto-flow routines */
                 tx->writeBlocked = 1;
                 httpSuspendQueue(q);
                 httpEnableConnEvents(q->conn);
                 canProceed = 0;
-                assure(conn->state != HTTP_STATE_COMPLETE);
+                assure(conn->state < HTTP_STATE_FINALIZED);
             }
 
         } else if (!httpGetMoreOutput(conn)) {
             /* Request not complete yet. No process callback defined */
             canProceed = 0;
-            assure(conn->state != HTTP_STATE_COMPLETE);
+            assure(conn->state < HTTP_STATE_FINALIZED);
 
         } else if (q->count < q->low) {
             if (q->count == 0) {
@@ -12105,18 +12111,26 @@ static bool processRunning(HttpConn *conn)
             httpSuspendQueue(q);
             httpEnableConnEvents(q->conn);
             canProceed = 0;
-            assure(conn->state != HTTP_STATE_COMPLETE);
+            assure(conn->state < HTTP_STATE_FINALIZED);
         }
     } else {
         /* Client side */
         httpServiceQueues(conn);
         if (conn->upgraded) {
             canProceed = 0;
-            assure(conn->state != HTTP_STATE_COMPLETE);
+            assure(conn->state < HTTP_STATE_FINALIZED);
         } else {
             httpFinalize(conn);
-            httpSetState(conn, HTTP_STATE_COMPLETE);
+            if (tx->finalized && conn->rx->eof) {
+                httpSetState(conn, HTTP_STATE_FINALIZED);
+            } else {
+                assure(0);
+            }
+#if UNUSED
+            //  MOB - should not do this MOB77
+            httpSetState(conn, HTTP_STATE_FINALIZED);
             assure(canProceed);
+#endif
         }
     }
     return canProceed;
@@ -12156,7 +12170,9 @@ static void processCompletion(HttpConn *conn)
 {
     HttpRx      *rx;
 
-    assure(conn->state == HTTP_STATE_COMPLETE);
+    assure(conn->tx->finalized);
+    assure(conn->tx->finalizedOutput);
+    assure(conn->tx->finalizedConnector);
     rx = conn->rx;
     httpDestroyPipeline(conn);
     measure(conn);
@@ -12167,6 +12183,8 @@ static void processCompletion(HttpConn *conn)
         }
         httpValidateLimits(conn->endpoint, HTTP_VALIDATE_CLOSE_REQUEST, conn);
     }
+    assure(conn->state == HTTP_STATE_FINALIZED);
+    httpSetState(conn, HTTP_STATE_COMPLETE);
 }
 
 
@@ -12180,7 +12198,7 @@ PUBLIC void httpCloseRx(HttpConn *conn)
         /* May not have consumed all read data, so can't be assured the next request will be okay */
         conn->keepAliveCount = -1;
     }
-    if (conn->state < HTTP_STATE_COMPLETE) {
+    if (conn->state < HTTP_STATE_FINALIZED) {
         httpPumpRequest(conn, NULL);
     }
 }
@@ -12397,7 +12415,7 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout)
     int         eventMask, saveAsync, justOne, workDone;
 
     if (state == 0) {
-        state = HTTP_STATE_COMPLETE;
+        state = HTTP_STATE_FINALIZED;
         justOne = 1;
     } else {
         justOne = 0;
@@ -14086,7 +14104,7 @@ PUBLIC void httpFinalizeConnector(HttpConn *conn)
       */ 
     /* Can't do this if there is still data to read */
     if (tx->finalized && conn->rx->eof) {
-        httpSetState(conn, HTTP_STATE_COMPLETE);
+        httpSetState(conn, HTTP_STATE_FINALIZED);
     }
 }
 
@@ -14415,14 +14433,13 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
     if (tx->etag) {
         httpAddHeader(conn, "ETag", "%s", tx->etag);
     }
-
     length = tx->length > 0 ? tx->length : 0;
     if (rx->flags & HTTP_HEAD) {
         conn->tx->flags |= HTTP_TX_NO_BODY;
         httpDiscardData(conn, HTTP_QUEUE_TX);
         httpAddHeader(conn, "Content-Length", "%Ld", length);
 
-    } else if (tx->chunkSize > 0) {
+    } else if (tx->length < 0 && tx->chunkSize > 0) {
         httpSetHeaderString(conn, "Transfer-Encoding", "chunked");
 
     } else if (conn->endpoint) {
@@ -14436,7 +14453,6 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
         /* client with body */
         httpAddHeader(conn, "Content-Length", "%Ld", length);
     }
-
     if (tx->outputRanges) {
         if (tx->outputRanges->next == 0) {
             range = tx->outputRanges;
@@ -14576,7 +14592,7 @@ PUBLIC void httpWriteHeaders(HttpQueue *q, HttpPacket *packet)
     /* 
         By omitting the "\r\n" delimiter after the headers, chunks can emit "\r\nSize\r\n" as a single chunk delimiter
      */
-    if (tx->chunkSize <= 0) {
+    if (tx->length >= 0 || tx->chunkSize <= 0) {
         mprPutStringToBuf(buf, "\r\n");
     }
     if (tx->altBody) {
@@ -17041,7 +17057,7 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
         Note: we can come here before the handshake is complete. The data is queued and if the connection handshake 
         succeeds, then the data is sent.
      */
-    assure(HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_COMPLETE);
+    assure(HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_FINALIZED);
 
     if (type < 0 || type > WS_MSG_PONG) {
         mprError("webSocketFilter: httpSendBlock: bad message type %d", type);
