@@ -48,7 +48,7 @@ static void usageError();
 
 #if BIT_UNIX_LIKE
 #if defined(SIGINFO) || defined(SIGRTMIN)
-static void memHandler(void *ignored, MprSignal *sp);
+static void statusCheck(void *ignored, MprSignal *sp);
 #endif
 static void traceHandler(void *ignored, MprSignal *sp);
 static int  unixSecurityChecks(cchar *program, cchar *home);
@@ -310,9 +310,10 @@ static int initializeAppweb(cchar *ip, int port)
         Signal to dump memory stats. Must configure with ./configure --set memoryCheck=true
      */
 #if defined(SIGINFO)
-    app->traceToggle = mprAddSignalHandler(SIGINFO, memHandler, 0, 0, MPR_SIGNAL_AFTER);
+    app->traceToggle = mprAddSignalHandler(SIGINFO, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
 #elif defined(SIGRTMIN)
-    app->traceToggle = mprAddSignalHandler(SIGRTMIN, memHandler, 0, 0, MPR_SIGNAL_AFTER);
+    mprLog(4, "Trap SIGRTMIN %d\n", SIGRTMIN);
+    app->traceToggle = mprAddSignalHandler(SIGRTMIN, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
 #endif
 #endif
     return 0;
@@ -404,10 +405,26 @@ static void traceHandler(void *ignored, MprSignal *sp)
     SIGINFO will dump memory stats
     Use: ./configure --set memoryCheck=true
  */
-static void memHandler(void *ignored, MprSignal *sp)
+static void statusCheck(void *ignored, MprSignal *sp)
 {
+    Http                *http;
+    HttpEndpoint        *endpoint;
+    MprWorkerService    *ws;
+    int                 next;
+
+    ws = MPR->workerService;
+    http = MPR->httpService;
+
     mprRequestGC(MPR_FORCE_GC);
     mprPrintMem("Memory Usage", 1);
+
+    for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
+        printf("%2s:%d, Connections %2d, Requests: %2d/%d, Clients IPs %2d/%d, Processes %2d/%d, Threads %2d/%d\n",
+            endpoint->ip ? endpoint->ip : "*", endpoint->port,
+            mprGetListLength(http->connections), endpoint->requestCount, endpoint->limits->requestMax,
+            endpoint->clientCount, endpoint->limits->clientMax, http->processCount, endpoint->limits->processMax,
+            ws->numThreads, ws->maxThreads);
+    }
 }
 
 
