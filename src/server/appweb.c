@@ -47,7 +47,9 @@ static int initializeAppweb(cchar *ip, int port);
 static void usageError();
 
 #if BIT_UNIX_LIKE
+#if defined(SIGINFO) || defined(SIGRTMIN)
 static void memHandler(void *ignored, MprSignal *sp);
+#endif
 static void traceHandler(void *ignored, MprSignal *sp);
 static int  unixSecurityChecks(cchar *program, cchar *home);
 #elif BIT_WIN_LIKE
@@ -304,7 +306,14 @@ static int initializeAppweb(cchar *ip, int port)
     writePort(app->server);
 #elif BIT_UNIX_LIKE
     app->traceToggle = mprAddSignalHandler(SIGUSR2, traceHandler, 0, 0, MPR_SIGNAL_AFTER);
+    /*
+        Signal to dump memory stats. Must configure with ./configure --set memoryCheck=true
+     */
+#if defined(SIGINFO)
     app->traceToggle = mprAddSignalHandler(SIGINFO, memHandler, 0, 0, MPR_SIGNAL_AFTER);
+#elif defined(SIGRTMIN)
+    app->traceToggle = mprAddSignalHandler(SIGRTMIN, memHandler, 0, 0, MPR_SIGNAL_AFTER);
+#endif
 #endif
     return 0;
 }
