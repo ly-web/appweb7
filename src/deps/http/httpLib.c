@@ -2319,10 +2319,13 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
             httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Exceeded timeout %d sec", limits->requestTimeout / 1000);
         }
     }
+    httpDestroyConn(conn);
+#if UNUSED
     httpDisconnect(conn);
     httpDiscardQueueData(conn->writeq, 1);
     httpEnableConnEvents(conn);
     conn->timeoutEvent = 0;
+#endif
 }
 
 
