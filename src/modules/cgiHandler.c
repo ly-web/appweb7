@@ -224,8 +224,7 @@ static void outgoingCgiService(HttpQueue *q)
     httpDefaultOutgoingServiceStage(q);
 
     if (cmd && cmd->userFlags & MA_CGI_FLOW_CONTROL && q->count < q->low) {
-        //MOB 7
-        mprLog(4, "CGI: @@@ OutgoingCgiService - re-enable gateway output count %d (low %d)", q->count, q->low);
+        mprLog(7, "CGI: @@@ OutgoingCgiService - re-enable gateway output count %d (low %d)", q->count, q->low);
         cmd->userFlags &= ~MA_CGI_FLOW_CONTROL;
         mprEnableCmdEvents(cmd, MPR_CMD_STDOUT);
         httpResumeQueue(q);
@@ -355,8 +354,7 @@ static int writeToClient(HttpQueue *q, MprCmd *cmd, MprBuf *buf, int channel)
         if (tx && !tx->finalizedOutput && conn->state < HTTP_STATE_FINALIZED) {
             if ((q->count + len) > q->max) {
                 cmd->userFlags |= MA_CGI_FLOW_CONTROL;
-                //  MOB 7
-                mprLog(4, "CGI: @@@ client write queue full. Suspend queue, enable conn events");
+                mprLog(7, "CGI: @@@ client write queue full. Suspend queue, enable conn events");
                 httpSuspendQueue(q);
                 return -1;
             }
@@ -423,7 +421,7 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
         /* Child death notification */
         break;
     }
-    mprLog(6, "cgiCallback: channel %d, complete %d", channel, cmd->complete);
+    mprLog(6, "cgiCallback: channel %d, complete %d, conn-state %d", channel, cmd->complete, conn->state);
     if (cmd->complete) {
         assure(cmd->pid == 0);
         assure(!cmd->handlers[0] && !cmd->handlers[1] && !cmd->handlers[2]);
@@ -436,7 +434,10 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
             httpPostEvent(conn);
         }
 
-    } else if (channel >= 0 && conn->state < HTTP_STATE_FINALIZED) {
+    } else if (channel >= 0 && conn->state <= HTTP_STATE_FINALIZED) {
+        /*
+            Need to test against <= FINALIZED above, because a connection loss will set state to FINALIZED.
+         */
         if (cmd->userFlags & MA_CGI_FLOW_CONTROL) {
             httpEnableConnEvents(conn);
         } else if (cmd->handlers[channel]) {
