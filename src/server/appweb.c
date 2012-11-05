@@ -425,6 +425,7 @@ static void statusCheck(void *ignored, MprSignal *sp)
             endpoint->clientCount, endpoint->limits->clientMax, http->processCount, endpoint->limits->processMax,
             ws->numThreads, ws->maxThreads);
     }
+    printf("\n");
 }
 
 
