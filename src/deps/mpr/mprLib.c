@@ -16459,7 +16459,7 @@ PUBLIC char *mprSearchPath(cchar *file, int flags, cchar *search, ...)
         nextDir = sclone(nextDir);
         dir = stok(nextDir, MPR_SEARCH_SEP, &tok);
         while (dir && *dir) {
-            mprLog(5, "mprSearchForFile: %s in search path %s", file, dir);
+            mprLog(6, "mprSearchForFile: %s in search path %s", file, dir);
             path = mprJoinPath(dir, file);
             if ((result = checkPath(path, flags)) != 0) {
                 return mprNormalizePath(result);
