@@ -216,15 +216,10 @@ X-Request-Timeout: 600
 #include "esp.h"
 static void testCallback(HttpConn *conn, int event, int arg)
 {
-    char    buf[1024];
-    ssize   len;
     if (event == <b>HTTP_EVENT_READABLE</b>) {
         /* Incoming web sockets message */
-        len = httpGetReadCount();
-        buf = mprAlloc(len) + 1;
-        if ((len = <b>httpRead</b>(conn, buf, len)) > 0) {
-            print("websock.c: read: \"%s\"\n", buf);
-        }
+        HttpPacket *packet = <b>httpGetPacket</b>(conn->readq);
+        printf("Message %s\n", mprGetBufStart(packet->content));
         /* Send a reply message */
         <b>httpSend</b>(conn, "Reply message at %s", mprGetDate(0));
         /* No need to free buf, the garbage collector will free */
