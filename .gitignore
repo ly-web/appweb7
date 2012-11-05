@@ -194,3 +194,4 @@ test/web/auth/basic/basic.cgi
 proto
 projects/appweb-macosx-full.xcodeproj
 *-mine*
+test/cache/*.so
