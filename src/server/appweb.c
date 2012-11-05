@@ -47,6 +47,7 @@ static int initializeAppweb(cchar *ip, int port);
 static void usageError();
 
 #if BIT_UNIX_LIKE
+static void memHandler(void *ignored, MprSignal *sp);
 static void traceHandler(void *ignored, MprSignal *sp);
 static int  unixSecurityChecks(cchar *program, cchar *home);
 #elif BIT_WIN_LIKE
@@ -303,6 +304,7 @@ static int initializeAppweb(cchar *ip, int port)
     writePort(app->server);
 #elif BIT_UNIX_LIKE
     app->traceToggle = mprAddSignalHandler(SIGUSR2, traceHandler, 0, 0, MPR_SIGNAL_AFTER);
+    app->traceToggle = mprAddSignalHandler(SIGINFO, memHandler, 0, 0, MPR_SIGNAL_AFTER);
 #endif
     return 0;
 }
@@ -386,6 +388,17 @@ static void traceHandler(void *ignored, MprSignal *sp)
     level = mprGetLogLevel() > 2 ? 2 : 6;
     mprLog(0, "Change log level to %d", level);
     mprSetLogLevel(level);
+}
+
+
+/*
+    SIGINFO will dump memory stats
+    Use: ./configure --set memoryCheck=true
+ */
+static void memHandler(void *ignored, MprSignal *sp)
+{
+    mprRequestGC(MPR_FORCE_GC);
+    mprPrintMem("Memory Usage", 1);
 }
 
 

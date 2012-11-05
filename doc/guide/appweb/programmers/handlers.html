@@ -377,6 +377,33 @@ int maMyModuleInit(Http *http, MprModule *mp)
     return 0;
 }
 </pre>
+        <h2>Connection State</h2>
+        <p>As a handler progresses in its service of a request, it is often necessary to examine the state of the
+            request or underlying connection. Appweb provides a set of object fields that can be examined.
+            <table>
+                <thead>
+                    <tr><th>Field</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>HttpConn.error</td><td>Is set whenever there is an error with the request. ie. httpError is
+                            called.</td></tr>
+                    <tr><td>HttpConn.connError</td><td>Is set whenever HTTP_ABORT is supplied to httpError. This is
+                        used when the HTTP/1.1 protocol is compromised, corrupted or otherwise unlikely to be
+                        able to handle a subsequent keep-alive request.</td></tr>
+                    <tr><td>HttpConn.state</td><td>This defines the connection state and is often the best thing to
+                        test. States are: HTTP_STATE_BEGIN, HTTP_STATE_CONNECTED, HTTP_STATE_FIRST,
+                        HTTP_STATE_CONTENT, HTTP_STATE_READY, HTTP_STATE_RUNNING, HTTP_STATE_FINALIZED and
+                        HTTP_STATE_COMPLETE.</td></tr>
+                    <tr><td>HttpTx.finalized</td><td>Is set by the handler when httpFinalize is called. This means the
+                        request is complete. httpFinalize calls httpFinalizeOutput.</td></tr>
+                    <tr><td>HttpTx.finalizedOutput</td><td>Is set by the handler when all response data has been written,
+                        there may still be processing to complete.</td></tr>
+                    <tr><td>HttpTx.finalizedConnector</td><td>Is set by the connector when it has fully transmitted the
+                        response data to the network socket.</td></tr>
+                    <tr><td> HttpTx.responded</td><td>is set by various routines when any part of a
+                        response has been initiated httpWrite, httpSetStatus etc.</td></tr>
+                </tbody>
+            </table>
             <a id="more"></a>
             <h2>More Info</h2>
             <p>See the <a

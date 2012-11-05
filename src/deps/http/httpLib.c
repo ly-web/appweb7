@@ -2197,6 +2197,9 @@ PUBLIC void httpDestroyConn(HttpConn *conn)
         httpCloseConn(conn);
         conn->http = 0;
     }
+    if (conn->dispatcher->flags & MPR_DISPATCHER_AUTO_CREATE) {
+        mprDisableDispatcher(conn->dispatcher);
+    }
 }
 
 
@@ -2267,6 +2270,7 @@ PUBLIC void httpCloseConn(HttpConn *conn)
         }
         mprCloseSocket(conn->sock, 0);
 #if BIT_DEBUG
+        //  MOB - remove
         {
             MprEvent    *event;
             /*
@@ -2630,7 +2634,6 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
             eventMask |= MPR_READABLE;
         }
         httpSetupWaitHandler(conn, eventMask);
-        assure(conn->dispatcher->enabled);
 #if !BIT_LOCK_FIX
         unlock(conn->http);
 #endif
@@ -14136,7 +14139,6 @@ PUBLIC void httpFinalizeOutput(HttpConn *conn)
     }
     tx->responded = 1;
     tx->finalizedOutput = 1;
-    assure(conn->sock);
     assure(conn->writeq);
     if (conn->writeq == tx->queue[HTTP_QUEUE_TX]) {
         /* Tx Pipeline not yet created */
@@ -14144,7 +14146,6 @@ PUBLIC void httpFinalizeOutput(HttpConn *conn)
         return;
     }
     assure(conn->state >= HTTP_STATE_CONNECTED);
-    assure(conn->sock);
 #if UNUSED
     //  MOB UNUSED
     if (conn->state < HTTP_STATE_CONNECTED /* MOB || !conn->writeq */ || !conn->sock) {
@@ -14155,8 +14156,13 @@ PUBLIC void httpFinalizeOutput(HttpConn *conn)
         return;
     }
 #endif
-    httpPutForService(conn->writeq, httpCreateEndPacket(), HTTP_SCHEDULE_QUEUE);
-    httpServiceQueues(conn);
+    /*
+        This may be called from httpError when the connection fails.
+     */
+    if (conn->sock) {
+        httpPutForService(conn->writeq, httpCreateEndPacket(), HTTP_SCHEDULE_QUEUE);
+        httpServiceQueues(conn);
+    }
 }
 
 

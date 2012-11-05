@@ -2616,7 +2616,7 @@ PUBLIC void mprAddRoot(void *ptr);
     @description Initiates garbage collection to free unreachable memory blocks. This call may return before collection 
     is complete if garbage collection has been configured via mprCreate() to use dedicated threads for collection. 
     A single garbage collection may not free all memory. Use mprRequestGC(1) to free all unused memory blocks.
-    @param flags Flags to control the collection. Set flags to MPR_GC_FORCE to force one sweep. Set to zero
+    @param flags Flags to control the collection. Set flags to MPR_FORCE_GC to force one sweep. Set to zero
     to perform a conditional sweep where the sweep is only performed if there is sufficient garbage to warrant a collection.
     Other flags include MPR_GC_FROM_EVENTS which must be specified if calling mprCollectGarbage from a routine that 
     also blocks on mprServiceEvents. Similarly, use MPR_GC_FROM_OWN if managing garbage collections manually.
@@ -3987,7 +3987,7 @@ PUBLIC char *mprGetDate(char *fmt);
 /**
     Get the CPU tick count.
     @description Get the current CPU tick count. This is a system dependant high resolution timer. On some systems, 
-    this return time in nanosecond resolution. 
+        this returns time in nanosecond resolution. 
     @return Returns the CPU time in ticks. Will return the system time if CPU ticks are not available.
     @ingroup MprTime
  */
@@ -6034,8 +6034,6 @@ PUBLIC int mprUnloadModule(MprModule *mp);
 #define MPR_EVENT_STATIC_DATA       0x8     /**< Event data is permanent and should not be marked by GC */
 
 #define MPR_EVENT_MAGIC             0x12348765
-#define MPR_DISPATCHER_MAGIC        0x23418877
-#define MPR_DISPATCHER_DESTROYED    0x42
 
 /**
     Event callback function
@@ -6075,17 +6073,35 @@ typedef struct MprEvent {
 } MprEvent;
 
 /*
+    Dispatcher values
+ */
+#define MPR_DISPATCHER_MAGIC        0x23418877
+#define MPR_DISPATCHER_FREE         0x42
+
+/*
+    Dispatcher flags
+ */
+#define MPR_DISPATCHER_ENABLED      0x1
+#define MPR_DISPATCHER_WAITING      0x2
+#define MPR_DISPATCHER_DESTROYED    0x4
+#define MPR_DISPATCHER_AUTO_CREATE  0x8
+
+/*
     Event Dispatcher
  */
 typedef struct MprDispatcher {
+    //  MOB - remove
     int             magic;
     cchar           *name;              /**< Dispatcher name / purpose */
     MprEvent        *eventQ;            /**< Event queue */
     MprEvent        *current;           /**< Current event */
     MprCond         *cond;              /**< Multi-thread sync */
+#if UNUSED
     int             enabled;            /**< Dispatcher enabled to run events */
     int             waitingOnCond;      /**< Waiting on the cond */
     int             destroyed;          /**< Dispatcher has been destroyed */
+#endif
+    int             flags;              /**< Dispatcher control flags */
     struct MprDispatcher *next;         /**< Next dispatcher linkage */
     struct MprDispatcher *prev;         /**< Previous dispatcher linkage */
     struct MprDispatcher *parent;       /**< Queue pointer */
@@ -6113,20 +6129,29 @@ typedef struct MprEventService {
 /**
     Create a new event dispatcher
     @param name Useful name for debugging
-    @param enable If true, enable the dispatcher
+    @param flags Initial dispatcher flags. Set MPR_DISPATCHER_ENABLED to enable.
     @returns a Dispatcher object that can manage events and be used with mprCreateEvent
  */
-PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int enable);
+PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int flags);
 
+#if UNUSED
 /**
     Destroy a dispatcher
     @param dispatcher Dispatcher to destroy
  */
 PUBLIC void mprDestroyDispatcher(MprDispatcher *dispatcher);
+#endif
 
 /**
-    Enable a dispatcher to service events. The mprCreateDispatcher routiner creates dispatchers in the disabled state.
-    Use mprEnableDispatcher to enable them to begin servicing events.
+    Disable a dispatcher from service events. This removes the dispatcher from any dispatcher queues and allows
+    it to be garbage collected. 
+    @param dispatcher Dispatcher to disable.
+ */
+PUBLIC void mprDisableDispatcher(MprDispatcher *dispatcher);
+
+/**
+    Enable a dispatcher to service events. The mprCreateDispatcher routiner may create a dispatchers in 
+    the disabled state. Use mprEnableDispatcher to enable them to begin servicing events.
     @param dispatcher Dispatcher to enable
  */
 PUBLIC void mprEnableDispatcher(MprDispatcher *dispatcher);
