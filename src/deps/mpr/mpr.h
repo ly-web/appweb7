@@ -7104,6 +7104,7 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
 #define MPR_SOCKET_CLIENT       0x800       /**< Socket is a client */
 #define MPR_SOCKET_PENDING      0x1000      /**< Pending buffered read data */
 #define MPR_SOCKET_TRACED       0x2000      /**< Socket has been traced to the log */
+#define MPR_SOCKET_DISCONNECTED 0x4000      /**< The mprDisconnectSocket has been called */
 
 /**
     Socket Service
@@ -7127,8 +7128,10 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
  */
 typedef struct MprSocket {
     MprSocketService *service;          /**< Socket service */
-    int             error;              /**< Last error */
+#if UNUSED
+    int             error;              /**< Last error number */
     MprDispatcher   *dispatcher;        /**< Event dispatcher for I/O events */
+#endif
     MprWaitHandler  *handler;           /**< Wait handler */
     char            *acceptIp;          /**< Server addresss that accepted a new connection (actual interface) */
     char            *ip;                /**< Server listen address or remote client address */

@@ -1793,12 +1793,16 @@ typedef struct HttpConn {
 
     HttpLimits      *limits;                /**< Service limits */
     Http            *http;                  /**< Http service object  */
+#if UNUSED
     MprHash         *stages;                /**< Stages in pipeline */
+#endif
     MprDispatcher   *dispatcher;            /**< Event dispatcher */
     MprDispatcher   *newDispatcher;         /**< New dispatcher if using a worker thread */
     MprDispatcher   *oldDispatcher;         /**< Original dispatcher if using a worker thread */
     HttpNotifier    notifier;               /**< Connection Http state change notification callback */
+#if UNUSED
     MprWaitHandler  *waitHandler;           /**< I/O wait handler */
+#endif
     MprSocket       *sock;                  /**< Underlying socket handle */
 
     struct HttpQueue *serviceq;             /**< List of queues that require service for request pipeline */

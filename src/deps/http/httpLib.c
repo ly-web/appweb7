@@ -2214,11 +2214,15 @@ static void manageConn(HttpConn *conn, int flags)
         mprMark(conn->host);
         mprMark(conn->limits);
         mprMark(conn->http);
+#if UNUSED
         mprMark(conn->stages);
+#endif
         mprMark(conn->dispatcher);
         mprMark(conn->newDispatcher);
         mprMark(conn->oldDispatcher);
+#if UNUSED
         mprMark(conn->waitHandler);
+#endif
         mprMark(conn->sock);
         mprMark(conn->serviceq);
         mprMark(conn->currentq);
@@ -2264,10 +2268,12 @@ PUBLIC void httpCloseConn(HttpConn *conn)
 
     if (conn->sock) {
         mprLog(5, "Closing connection");
+#if UNUSED
         if (conn->waitHandler) {
             mprRemoveWaitHandler(conn->waitHandler);
             conn->waitHandler = 0;
         }
+#endif
         mprCloseSocket(conn->sock, 0);
 #if BIT_DEBUG
         //  MOB - remove
@@ -2561,10 +2567,14 @@ PUBLIC MprSocket *httpStealConn(HttpConn *conn)
     sock = conn->sock;
     conn->sock = 0;
 
+#if UNUSED
     if (conn->waitHandler) {
         mprRemoveWaitHandler(conn->waitHandler);
         conn->waitHandler = 0;
     }
+#else
+    mprRemoveSocketHandler(conn->sock);
+#endif
     if (conn->http) {
         lock(conn->http);
         httpRemoveConn(conn->http, conn);
@@ -2646,18 +2656,21 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
 
 PUBLIC void httpSetupWaitHandler(HttpConn *conn, int eventMask)
 {
-    if (conn->sock == 0) {
+    MprSocket   *sock;
+
+    sock = conn->sock;
+    if (sock == 0) {
         return;
     }
     if (eventMask) {
-        if (conn->waitHandler == 0) {
-            conn->waitHandler = mprCreateWaitHandler(conn->sock->fd, eventMask, conn->dispatcher, conn->ioCallback, conn, 0);
+        if (sock->handler == 0) {
+            mprAddSocketHandler(sock, eventMask, conn->dispatcher, conn->ioCallback, conn, 0);
         } else {
-            conn->waitHandler->dispatcher = conn->dispatcher;
-            mprWaitOn(conn->waitHandler, eventMask);
+            sock->handler->dispatcher = conn->dispatcher;
+            mprWaitOn(sock->handler, eventMask);
         }
-    } else if (conn->waitHandler) {
-        mprWaitOn(conn->waitHandler, eventMask);
+    } else if (sock->handler) {
+        mprWaitOn(sock->handler, eventMask);
     }
 }
 
