@@ -444,6 +444,7 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
             mprEnableCmdEvents(cmd, channel);
         }
     }
+    mprYield(0);
     return nbytes;
 }
 
