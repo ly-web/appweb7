@@ -710,7 +710,7 @@ PUBLIC void espSetContentLength(HttpConn *conn, MprOff length)
 }
 
 
-PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTime lifespan, 
+PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTicks lifespan, 
         bool isSecure)
 {
     httpSetCookie(conn, name, value, path, cookieDomain, lifespan, isSecure);
@@ -958,16 +958,16 @@ PUBLIC void espShowRequest(HttpConn *conn)
 /*
     This is called when unloading a view or controller module
  */
-PUBLIC bool espUnloadModule(cchar *module, MprTime timeout)
+PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout)
 {
     MprModule   *mp;
-    MprTime     mark;
+    MprTicks    mark;
     Esp         *esp;
 
     /* MOB - should this suspend new requests */
     if ((mp = mprLookupModule(module)) != 0) {
         esp = MPR->espService;
-        mark = mprGetTime();
+        mark = mprGetTicks();
         do {
             lock(esp);
             /* Own request will count as 1 */
@@ -979,7 +979,7 @@ PUBLIC bool espUnloadModule(cchar *module, MprTime timeout)
             unlock(esp);
             mprSleep(10);
             /* Defaults to 10 secs */
-        } while (mprGetRemainingTime(mark, timeout) > 0);
+        } while (mprGetRemainingTicks(mark, timeout) > 0);
     }
     return 0;
 }

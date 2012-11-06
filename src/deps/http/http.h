@@ -319,7 +319,7 @@ typedef struct Http {
     MprEvent        *timer;                 /**< Admin service timer */
     MprEvent        *timestamp;             /**< Timestamp timer */
     MprTime         booted;                 /**< Time the server started */
-    MprTime         now;                    /**< When was the currentDate last computed */
+    MprTicks        now;                    /**< When was the currentDate last computed */
     MprMutex        *mutex;
 
     char            *software;              /**< Software name and version */
@@ -329,7 +329,7 @@ typedef struct Http {
     int             connCount;              /**< Count of connections */
     int             sessionCount;           /**< Count of sessions */
     void            *context;               /**< Embedding context */
-    MprTime         currentTime;            /**< When currentDate was last calculated */
+    MprTicks        currentTime;            /**< When currentDate was last calculated (ticks) */
     char            *currentDate;           /**< Date string for HTTP response headers */
     char            *secret;                /**< Random bytes for authentication */
 
@@ -496,33 +496,33 @@ PUBLIC void httpDefineRouteBuiltins();
     @see HttpLimits httpInitLimits httpCreateLimits httpEaseLimits
  */
 typedef struct HttpLimits {
-    ssize   bufferSize;             /**< Maximum buffering by any pipeline stage */
-    ssize   chunkSize;              /**< Maximum chunk size for transfer encoding */
-    ssize   headerSize;             /**< Maximum size of the total header */
-    ssize   uriSize;                /**< Maximum size of a uri */
-    ssize   cacheItemSize;          /**< Maximum size of a cachable item */
+    ssize    bufferSize;                /**< Maximum buffering by any pipeline stage */
+    ssize    chunkSize;                 /**< Maximum chunk size for transfer encoding */
+    ssize    headerSize;                /**< Maximum size of the total header */
+    ssize    uriSize;                   /**< Maximum size of a uri */
+    ssize    cacheItemSize;             /**< Maximum size of a cachable item */
 
-    MprOff  receiveFormSize;        /**< Maximum size of form data */
-    MprOff  receiveBodySize;        /**< Maximum size of receive body data */
-    MprOff  transmissionBodySize;   /**< Maximum size of transmission body content */
-    MprOff  uploadSize;             /**< Maximum size of an uploaded file */
+    MprOff   receiveFormSize;           /**< Maximum size of form data */
+    MprOff   receiveBodySize;           /**< Maximum size of receive body data */
+    MprOff   transmissionBodySize;      /**< Maximum size of transmission body content */
+    MprOff   uploadSize;                /**< Maximum size of an uploaded file */
 
-    int     clientMax;              /**< Maximum number of simultaneous clients endpoints */
-    int     headerMax;              /**< Maximum number of header lines */
-    int     keepAliveMax;           /**< Maximum number of Keep-Alive requests to perform per socket */
-    int     requestMax;             /**< Maximum number of simultaneous concurrent requests */
-    int     processMax;             /**< Maximum number of processes (CGI) */
-    int     sessionMax;             /**< Maximum number of sessions */
+    int      clientMax;                 /**< Maximum number of simultaneous clients endpoints */
+    int      headerMax;                 /**< Maximum number of header lines */
+    int      keepAliveMax;              /**< Maximum number of Keep-Alive requests to perform per socket */
+    int      requestMax;                /**< Maximum number of simultaneous concurrent requests */
+    int      processMax;                /**< Maximum number of processes (CGI) */
+    int      sessionMax;                /**< Maximum number of sessions */
 
-    MprTime inactivityTimeout;      /**< Default timeout for keep-alive and idle requests (msec) */
-    MprTime requestTimeout;         /**< Default time a request can take (msec) */
-    MprTime sessionTimeout;         /**< Default time a session can persist (msec) */
+    MprTicks inactivityTimeout;         /**< Default timeout for keep-alive and idle requests (msec) */
+    MprTicks requestTimeout;            /**< Default time a request can take (msec) */
+    MprTicks sessionTimeout;            /**< Default time a session can persist (msec) */
+    MprTicks webSocketsPing;            /**< Time between pings */
 
-    MprTime webSocketsPing;         /**< Time between pings */
-    int     webSocketsMax;          /**< Maximum number of WebSockets */
-    ssize   webSocketsMessageSize;  /**< Maximum total size of a WebSocket message including all frames */
-    ssize   webSocketsFrameSize;    /**< Maximum size of a WebSocket frame on the wire */
-    ssize   webSocketsPacketSize;   /**< Maximum size of a WebSocket packet exchanged with the user */
+    int      webSocketsMax;             /**< Maximum number of WebSockets */
+    ssize    webSocketsMessageSize;     /**< Maximum total size of a WebSocket message including all frames */
+    ssize    webSocketsFrameSize;       /**< Maximum size of a WebSocket frame on the wire */
+    ssize    webSocketsPacketSize;      /**< Maximum size of a WebSocket packet exchanged with the user */
 } HttpLimits;
 
 /**
@@ -1812,8 +1812,8 @@ typedef struct HttpConn {
     HttpQueue       *readq;                 /**< End of the read pipeline */
     HttpQueue       *writeq;                /**< Start of the write pipeline */
     HttpQueue       *connectorq;            /**< Connector write queue */
-    MprTime         started;                /**< When the connection started */
-    MprTime         lastActivity;           /**< Last activity on the connection */
+    MprTicks        started;                /**< When the connection started (ticks) */
+    MprTicks        lastActivity;           /**< Last activity on the connection */
     MprEvent        *timeoutEvent;          /**< Connection or request timeout event */
     MprEvent        *workerEvent;           /**< Event for running connection via a worker thread */
     void            *context;               /**< Embedding context (EjsRequest) */
@@ -1861,8 +1861,7 @@ typedef struct HttpConn {
     void            *headersCallbackArg;    /**< Arg to fillHeaders */
 
 #if BIT_DEBUG
-    MprTime         startTime;              /**< Start time of request */
-    uint64          startTicks;             /**< Start tick time of request */
+    uint64          startMark;              /**< High resolution tick time of request */
 #endif
 } HttpConn;
 
@@ -2294,7 +2293,7 @@ PUBLIC void httpSetState(HttpConn *conn, int state);
         existing value.
     @ingroup HttpConn
  */
-PUBLIC void httpSetTimeout(HttpConn *conn, int requestTimeout, int inactivityTimeout);
+PUBLIC void httpSetTimeout(HttpConn *conn, MprTicks requestTimeout, MprTicks inactivityTimeout);
 
 /**
     Define a timestamp in the MPR log file.
@@ -2302,7 +2301,7 @@ PUBLIC void httpSetTimeout(HttpConn *conn, int requestTimeout, int inactivityTim
     @param period Time in milliseconds between timestamps
     @ingroup HttpConn
  */
-PUBLIC void httpSetTimestamp(MprTime period);
+PUBLIC void httpSetTimestamp(MprTicks period);
 
 /**
     Setup a wait handler for the connection to wait for desired events
@@ -2782,8 +2781,8 @@ typedef struct HttpCache {
     MprHash     *methods;                   /**< Methods to cache */
     MprHash     *types;                     /**< MimeTypes to cache */
     MprHash     *uris;                      /**< URIs to cache */
-    MprTime     clientLifespan;             /**< Lifespan for client cached content */
-    MprTime     serverLifespan;             /**< Lifespan for server cached content */
+    MprTicks    clientLifespan;             /**< Lifespan for client cached content */
+    MprTicks    serverLifespan;             /**< Lifespan for server cached content */
     int         flags;                      /**< Cache control flags */
 } HttpCache;
 
@@ -2863,7 +2862,7 @@ typedef struct HttpCache {
     @ingroup HttpCache
  */
 PUBLIC void httpAddCache(struct HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types, 
-        MprTime clientLifespan, MprTime serverLifespan, int flags);
+        MprTicks clientLifespan, MprTicks serverLifespan, int flags);
 
 /**
     Update the cached content for a URI
@@ -2875,7 +2874,7 @@ PUBLIC void httpAddCache(struct HttpRoute *route, cchar *methods, cchar *uris, c
     @param lifespan Lifespan in milliseconds for the cached content
     @ingroup HttpCache
   */
-PUBLIC ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime lifespan);
+PUBLIC ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTicks lifespan);
 
 /**
     Write the cached content for a URI to the client
@@ -2922,7 +2921,7 @@ PUBLIC void httpDefineAction(cchar *uri, HttpAction fun);
     Route Control
     @stability Evolving
     @defgroup HttpRoute HttpRoute
-    @see HttpRoute httpAddRouteCondition httpAddRouteErrorDocument httpAddRouteExpiry httpAddRouteExpiryByType 
+    @see HttpRoute httpAddRouteCondition httpAddRouteErrorDocument
         httpAddRouteFilter httpAddRouteHandler httpAddRouteHeader httpAddRouteLanguageDir httpAddRouteLanguageSuffix 
         httpAddRouteLoad httpAddRouteQuery httpAddRouteUpdate httpClearRouteStages httpCreateAliasRoute 
         httpCreateDefaultRoute httpCreateInheritedRoute httpCreateRoute httpDefineRoute
@@ -2957,7 +2956,7 @@ typedef struct HttpRoute {
     ssize           startSegmentLen;        /**< Prefix length */
 
     MprList         *caching;               /**< Items to cache */
-    MprTime         lifespan;               /**< Default lifespan for all cache items in route */
+    MprTicks        lifespan;               /**< Default lifespan for all cache items in route */
     HttpAuth        *auth;                  /**< Per route block authentication */
     Http            *http;                  /**< Http service object (copy of appweb->http) */
     struct HttpHost *host;                  /**< Owning host */
@@ -3014,7 +3013,7 @@ typedef struct HttpRoute {
     MprMutex        *mutex;                 /**< Multithread sync */
 
     char            *webSocketsProtocol;    /**< WebSockets sub-protocol */
-    MprTime         webSocketsPingPeriod;   /**< Time between pings (msec) */
+    MprTicks        webSocketsPingPeriod;   /**< Time between pings (msec) */
     int             ignoreEncodingErrors;   /**< Ignore UTF8 encoding errors */
 } HttpRoute;
 
@@ -3158,6 +3157,7 @@ PUBLIC int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, 
  */
 PUBLIC void httpAddRouteErrorDocument(HttpRoute *route, int status, cchar *uri);
 
+#if UNUSED
 /**
     Cache response content in the client by extension.
     @description This configures default caching lifespans for documents with various extensions. This call causes
@@ -3186,6 +3186,7 @@ PUBLIC void httpAddRouteExpiry(HttpRoute *route, MprTime when, cchar *extensions
     @ingroup HttpRoute
  */
 PUBLIC void httpAddRouteExpiryByType(HttpRoute *route, MprTime when, cchar *mimeTypes);
+#endif
 
 /**
     Add a route filter
@@ -3987,7 +3988,7 @@ PUBLIC char *httpExpandRouteVars(HttpConn *conn, cchar *str);
 typedef struct HttpSession {
     char            *id;                        /**< Session ID key */
     MprCache        *cache;                     /**< Cache store reference */
-    MprTime         lifespan;                   /**< Session inactivity timeout (msecs) */
+    MprTicks        lifespan;                   /**< Session inactivity timeout (msecs) */
 } HttpSession;
 
 /**
@@ -3995,11 +3996,11 @@ typedef struct HttpSession {
     @description
     @param conn Http connection object
     @param id Unique session state ID
-    @param lifhttpan Session lifhttpan in ticks
+    @param lifespan Session lifespan in ticks
     @return A session state object
     @ingroup HttpSession
  */
-PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTime lifhttpan);
+PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTicks lifespan);
 
 /**
     Create a session object.
@@ -4940,7 +4941,7 @@ PUBLIC void httpSetContentType(HttpConn *conn, cchar *mimeType);
     @ingroup HttpTx
  */
 PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, 
-        MprTime lifespan, int flags);
+        MprTicks lifespan, int flags);
 
 /**
     Define the length of the transmission content. When static content is used for the transmission body, defining
@@ -5008,7 +5009,7 @@ PUBLIC void httpSocketBlocked(HttpConn *conn);
         MPR_ERR_TIMEOUT and MPR_ERR_BAD_STATE.
     @ingroup HttpTx
  */
-PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout);
+PUBLIC int httpWait(HttpConn *conn, int state, MprTicks timeout);
 
 /** 
     Write the transmission headers into the given packet

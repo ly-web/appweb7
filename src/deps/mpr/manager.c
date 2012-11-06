@@ -544,7 +544,7 @@ static bool process(cchar *operation, bool quiet)
 
 static void runService()
 {
-    MprTime     mark;
+    MprTicks    mark;
     cchar       **av, **argv;
     char        *env[3];
     int         err, i, status, ac, next;
@@ -561,11 +561,11 @@ static void runService()
     if (writePid(getpid()) < 0) {
         return;
     }
-    mark = mprGetTime();
+    mark = mprGetTicks();
 
     while (!mprIsStopping()) {
-        if (mprGetElapsedTime(mark) > (3600 * 1000)) {
-            mark = mprGetTime();
+        if (mprGetElapsedTicks(mark) > (3600 * 1000)) {
+            mark = mprGetTicks();
             app->restartCount = 0;
             app->restartWarned = 0;
         }
@@ -840,7 +840,7 @@ static bool     installService();
 static void     logHandler(int flags, int level, cchar *msg);
 static int      registerService();
 static bool     removeService(int removeFromScmDb);
-static void     gracefulShutdown(MprTime timeout);
+static void     gracefulShutdown(MprTicks timeout);
 static bool     process(cchar *operation);
 static void     run();
 static int      startDispatcher(LPSERVICE_MAIN_FUNCTION svcMain);
@@ -1122,7 +1122,7 @@ static void run()
 {
     PROCESS_INFORMATION procInfo;
     STARTUPINFO         startInfo;
-    MprTime             mark;
+    MprTicks            mark;
     ulong               status;
     char                *path, *cmd, *key;
     int                 createFlags;
@@ -1159,11 +1159,11 @@ static void run()
     if (app->createConsole) {
         createFlags |= CREATE_NEW_CONSOLE;
     }
-    mark = mprGetTime();
+    mark = mprGetTicks();
 
     while (! app->exiting) {
-        if (mprGetElapsedTime(mark) > (3600 * 1000)) {
-            mark = mprGetTime();
+        if (mprGetElapsedTicks(mark) > (3600 * 1000)) {
+            mark = mprGetTicks();
             app->restartCount = 0;
             app->restartWarned = 0;
         }
@@ -1597,7 +1597,7 @@ static void terminating(int how, int status)
 }
 
 
-static void gracefulShutdown(MprTime timeout)
+static void gracefulShutdown(MprTicks timeout)
 {
     HWND    hwnd;
 

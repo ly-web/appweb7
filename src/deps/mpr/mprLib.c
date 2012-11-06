@@ -1473,17 +1473,17 @@ static int pauseThreads()
 {
     MprThreadService    *ts;
     MprThread           *tp;
-    MprTime             mark;
+    MprTicks            mark;
     int                 i, allYielded, timeout;
 
 #if BIT_DEBUG
-    uint64  ticks = mprGetTicks();
+    uint64  hticks = mprGetHiResTicks();
 #endif
     ts = MPR->threadService;
     timeout = MPR_TIMEOUT_GC_SYNC;
 
     LOG(7, "pauseThreads: wait for threads to yield, timeout %d", timeout);
-    mark = mprGetTime();
+    mark = mprGetTicks();
     if (mprGetDebugMode()) {
         timeout = timeout * 500;
     }
@@ -1499,7 +1499,7 @@ static int pauseThreads()
                 tp = (MprThread*) mprGetItem(ts->threads, i);
                 if (!tp->yielded) {
                     allYielded = 0;
-                    if (mprGetElapsedTime(mark) > 1000) {
+                    if (mprGetElapsedTicks(mark) > 1000) {
                         LOG(7, "Thread %s is not yielding", tp->name);
                     }
                     break;
@@ -1517,10 +1517,10 @@ static int pauseThreads()
         LOG(7, "pauseThreads: waiting for threads to yield");
         mprWaitForCond(ts->cond, 20);
 
-    } while (!allYielded && mprGetElapsedTime(mark) < timeout);
+    } while (!allYielded && mprGetElapsedTicks(mark) < timeout);
 
 #if BIT_DEBUG
-    LOG(7, "TIME: pauseThreads elapsed %,d msec, %,d ticks", mprGetElapsedTime(mark), mprGetTicks() - ticks);
+    LOG(7, "TIME: pauseThreads elapsed %,Ld msec, %,Ld hticks", mprGetElapsedTicks(mark), mprGetHiResTicks() - hticks);
 #endif
     if (allYielded) {
         checkYielded();
@@ -2961,12 +2961,12 @@ PUBLIC bool mprIsFinished()
 }
 
 
-PUBLIC int mprWaitTillIdle(MprTime timeout)
+PUBLIC int mprWaitTillIdle(MprTicks timeout)
 {
-    MprTime     mark, remaining, lastTrace;
+    MprTicks    mark, remaining, lastTrace;
 
-    lastTrace = mark = mprGetTime(); 
-    while (!mprIsIdle() && (remaining = mprGetRemainingTime(mark, timeout)) > 0) {
+    lastTrace = mark = mprGetTicks(); 
+    while (!mprIsIdle() && (remaining = mprGetRemainingTicks(mark, timeout)) > 0) {
         mprSleep(1);
         if ((lastTrace - remaining) > MPR_TICKS_PER_SEC) {
             mprLog(1, "Waiting for requests to complete, %d secs remaining ...", remaining / MPR_TICKS_PER_SEC);
@@ -3291,7 +3291,7 @@ PUBLIC void mprSetEnv(cchar *key, cchar *value)
 }
 
 
-PUBLIC void mprSetExitTimeout(MprTime timeout)
+PUBLIC void mprSetExitTimeout(MprTicks timeout)
 {
     MPR->exitTimeout = timeout;
 }
@@ -3382,7 +3382,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single descriptor. Return the number of I/O events found. Mask is the events of interest.
     Timeout is in milliseconds.
  */
-PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTicks timeout)
 {
     HANDLE      h;
     int         winMask;
@@ -3412,7 +3412,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
     Wait for I/O on all registered descriptors. Timeout is in milliseconds. Return the number of events serviced.
     Should only be called by the thread that calls mprServiceEvents
  */
-PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     MSG     msg;
 
@@ -4434,10 +4434,10 @@ typedef struct CacheItem
 {
     char        *key;                   /* Original key */
     char        *data;                  /* Cache data */
-    MprTime     lastAccessed;           /* Last accessed time */
-    MprTime     lastModified;           /* Last update time */
-    MprTime     expires;                /* Fixed expiry date. If zero, key is imortal */
-    MprTime     lifespan;               /* Lifespan after each access to key (msec) */
+    MprTicks    lifespan;               /* Lifespan after each access to key (msec) */
+    MprTicks    lastAccessed;           /* Last accessed time */
+    MprTicks    expires;                /* Fixed expiry date. If zero, key is imortal. */
+    MprTime     lastModified;           /* Last update time. This is an MprTime and records world-time. */
     int64       version;
 } CacheItem;
 
@@ -4495,7 +4495,7 @@ PUBLIC void *mprDestroyCache(MprCache *cache)
 }
 
 
-PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTime expires)
+PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTicks expires)
 {
     CacheItem   *item;
 
@@ -4549,7 +4549,7 @@ PUBLIC int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
     item->data = itos(value);
     cache->usedMem += slen(item->data);
     item->version++;
-    item->lastAccessed = mprGetTime();
+    item->lastAccessed = mprGetTicks();
     item->expires = item->lastAccessed + item->lifespan;
     unlock(cache);
     return value;
@@ -4573,7 +4573,7 @@ PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 
         unlock(cache);
         return 0;
     }
-    if (item->expires && item->expires <= mprGetTime()) {
+    if (item->expires && item->expires <= mprGetTicks()) {
         unlock(cache);
         return 0;
     }
@@ -4583,7 +4583,7 @@ PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 
     if (modified) {
         *modified = item->lastModified;
     }
-    item->lastAccessed = mprGetTime();
+    item->lastAccessed = mprGetTicks();
     item->expires = item->lastAccessed + item->lifespan;
     result = item->data;
     unlock(cache);
@@ -4624,7 +4624,7 @@ PUBLIC bool mprRemoveCache(MprCache *cache, cchar *key)
 }
 
 
-PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int64 memory, int resolution)
+PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTicks lifespan, int64 memory, int resolution)
 {
     assure(cache);
 
@@ -4656,8 +4656,7 @@ PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int
 }
 
 
-PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTime lifespan, 
-    int64 version, int options)
+PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTicks lifespan, int64 version, int options)
 {
     CacheItem   *item;
     MprKey      *kp;
@@ -4715,8 +4714,8 @@ PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime mo
     if (lifespan >= 0) {
         item->lifespan = lifespan;
     }
-    item->lastAccessed = mprGetTime();
-    item->lastAccessed = item->lastModified = modified ? modified : item->lastAccessed;
+    item->lastModified = modified ? modified : mprGetTime();
+    item->lastAccessed = mprGetTicks();
     item->expires = item->lastAccessed + item->lifespan;
     item->version++;
     len = slen(item->key) + slen(item->data);
@@ -4749,7 +4748,7 @@ static void removeItem(MprCache *cache, CacheItem *item)
 
 static void pruneCache(MprCache *cache, MprEvent *event)
 {
-    MprTime         when, factor;
+    MprTicks        when, factor;
     MprKey          *kp;
     CacheItem       *item;
     ssize           excessKeys;
@@ -4761,7 +4760,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
         }
     }
     if (event) {
-        when = mprGetTime();
+        when = mprGetTicks();
     } else {
         /* Expire all items by setting event to NULL */
         when = MAXINT64;
@@ -4966,7 +4965,7 @@ PUBLIC MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
     }
 #if UNUSED && KEEP
     cmd->timeoutPeriod = MPR_TIMEOUT_CMD;
-    cmd->timestamp = mprGetTime();
+    cmd->timestamp = mprGetTicks();
 #endif
     cmd->forkCallback = (MprForkCallback) closeFiles;
     cmd->dispatcher = dispatcher ? dispatcher : MPR->dispatcher;
@@ -5169,7 +5168,7 @@ PUBLIC int mprIsCmdComplete(MprCmd *cmd)
 /*
     Run a simple blocking command. See arg usage below in mprRunCmdV.
  */
-PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTime timeout, int flags)
+PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTicks timeout, int flags)
 {
     cchar   **argv;
     int     argc;
@@ -5208,7 +5207,7 @@ PUBLIC void mprSetCmdSearchPath(MprCmd *cmd, cchar *search)
         MPR_CMD_SHOW            Show the commands window on Windows
         MPR_CMD_IN              Connect to stdin
  */
-PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTime timeout, int flags)
+PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTicks timeout, int flags)
 {
     int     rc, status;
 
@@ -5497,12 +5496,12 @@ PUBLIC void mprDisableCmdEvents(MprCmd *cmd, int channel)
     WARNING: this should not be called from a dispatcher other than cmd->dispatcher. If so, then the calls to
     mprWaitForEvent may occur after the event has been processed.
  */
-static void waitForWinEvent(MprCmd *cmd, MprTime timeout)
+static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
 {
-    MprTime     mark, remaining, delay;
+    MprTicks    mark, remaining, delay;
     int         i, rc, nbytes;
 
-    mark = mprGetTime();
+    mark = mprGetTicks();
     if (cmd->stopped) {
         timeout = 0;
     }
@@ -5532,7 +5531,7 @@ static void waitForWinEvent(MprCmd *cmd, MprTime timeout)
         }
         mprResetYield();
         if (cmd->eofCount == cmd->requiredEof) {
-            remaining = mprGetRemainingTime(mark, timeout);
+            remaining = mprGetRemainingTicks(mark, timeout);
             mprYield(MPR_YIELD_STICKY);
             rc = WaitForSingleObject(cmd->process, (DWORD) remaining);
             mprResetYield();
@@ -5552,9 +5551,9 @@ static void waitForWinEvent(MprCmd *cmd, MprTime timeout)
 /*
     Wait for a command to complete. Return 0 if the command completed, otherwise it will return MPR_ERR_TIMEOUT. 
  */
-PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
+PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
 {
-    MprTime     expires, remaining;
+    MprTicks    expires, remaining;
 
     assure(cmd);
 
@@ -5567,7 +5566,7 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
     if (cmd->stopped) {
         timeout = 0;
     }
-    expires = mprGetTime() + timeout;
+    expires = mprGetTicks() + timeout;
     remaining = timeout;
 
     /* Add root to allow callers to use mprRunCmd without first managing the cmd */
@@ -5582,7 +5581,7 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
 #else
         mprWaitForEvent(cmd->dispatcher, remaining);
 #endif
-        remaining = (expires - mprGetTime());
+        remaining = (expires - mprGetTicks());
     }
     mprRemoveRoot(cmd);
     if (cmd->pid) {
@@ -5823,7 +5822,7 @@ PUBLIC bool mprIsCmdRunning(MprCmd *cmd)
 
 /* FUTURE - not yet supported */
 
-PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTime timeout)
+PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTicks timeout)
 {
     assure(0);
 #if UNUSED && KEEP
@@ -6185,7 +6184,7 @@ static int makeChannel(MprCmd *cmd, int index)
     SECURITY_ATTRIBUTES clientAtt, serverAtt, *att;
     HANDLE              readHandle, writeHandle;
     MprCmdFile          *file;
-    MprTime             now;
+    MprTicks            now;
     char                *pipeName;
     int                 openMode, pipeMode, readFd, writeFd;
     static int          tempSeed = 0;
@@ -6202,7 +6201,7 @@ static int makeChannel(MprCmd *cmd, int index)
     serverAtt.bInheritHandle = 0;
 
     file = &cmd->files[index];
-    now = ((int) mprGetTime() & 0xFFFF) % 64000;
+    now = ((int) mprGetTicks() & 0xFFFF) % 64000;
 
     lock(MPR->cmdService);
     pipeName = sfmt("\\\\.\\pipe\\MPR_%d_%d_%d.tmp", getpid(), (int) now, ++tempSeed);
@@ -6635,10 +6634,13 @@ static void manageCond(MprCond *cp, int flags)
     Wait for the event to be triggered. Should only be used when there are single waiters. If the event is already
     triggered, then it will return immediately. Timeout of -1 means wait forever. Timeout of 0 means no wait.
     Returns 0 if the event was signalled. Returns < 0 for a timeout.
+
+    WARNING: On unix, the pthread_cond_timedwait uses an absolute time (Ugh!). So time-warps for daylight-savings may
+    cause waits to prematurely return.
  */
-PUBLIC int mprWaitForCond(MprCond *cp, MprTime timeout)
+PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
 {
-    MprTime             now, expire;
+    MprTicks            now, expire;
     int                 rc;
 #if BIT_UNIX_LIKE
     struct timespec     waitTill;
@@ -6647,11 +6649,11 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTime timeout)
 #endif
 
     /*
-        Avoid doing a mprGetTime() if timeout is < 0
+        Avoid doing a mprGetTicks() if timeout is < 0
      */
     rc = 0;
     if (timeout >= 0) {
-        now = mprGetTime();
+        now = mprGetTicks();
         expire = now + timeout;
 #if BIT_UNIX_LIKE
         gettimeofday(&current, NULL);
@@ -6725,7 +6727,7 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTime timeout)
             }
         }
 #endif
-    } while (!cp->triggered && rc == 0 && (now && (now = mprGetTime()) < expire));
+    } while (!cp->triggered && rc == 0 && (now && (now = mprGetTicks()) < expire));
 
     if (cp->triggered) {
         cp->triggered = 0;
@@ -6781,8 +6783,11 @@ PUBLIC void mprResetCond(MprCond *cp)
     triggered, then it will return immediately. This call will not reset cp->triggered and must be reset manually.
     A timeout of -1 means wait forever. Timeout of 0 means no wait.  Returns 0 if the event was signalled. 
     Returns < 0 for a timeout.
+
+    WARNING: On unix, the pthread_cond_timedwait uses an absolute time (Ugh!). So time-warps for daylight-savings may
+    cause waits to prematurely return.
  */
-PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
+PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTicks timeout)
 {
     int         rc;
 #if BIT_UNIX_LIKE
@@ -6790,7 +6795,7 @@ PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
     struct timeval      current;
     int                 usec;
 #else
-    MprTime             now, expire;
+    MprTicks            now, expire;
 #endif
 
     if (timeout < 0) {
@@ -6802,7 +6807,7 @@ PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
     waitTill.tv_sec = current.tv_sec + ((int) (timeout / 1000)) + (usec / 1000000);
     waitTill.tv_nsec = (usec % 1000000) * 1000;
 #else
-    now = mprGetTime();
+    now = mprGetTicks();
     expire = now + timeout;
 #endif
 
@@ -8204,8 +8209,8 @@ PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 
 static void dequeueDispatcher(MprDispatcher *dispatcher);
 static int dispatchEvents(MprDispatcher *dispatcher);
-static MprTime getDispatcherIdleTime(MprDispatcher *dispatcher, MprTime timeout);
-static MprTime getIdleTime(MprEventService *es, MprTime timeout);
+static MprTicks getDispatcherIdleTicks(MprDispatcher *dispatcher, MprTicks timeout);
+static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout);
 static MprDispatcher *getNextReadyDispatcher(MprEventService *es);
 static void initDispatcher(MprDispatcher *q);
 static int makeRunnable(MprDispatcher *dispatcher);
@@ -8233,7 +8238,7 @@ PUBLIC MprEventService *mprCreateEventService()
         return 0;
     }
     MPR->eventService = es;
-    es->now = mprGetTime();
+    es->now = mprGetTicks();
     es->mutex = mprCreateLock();
     es->waitCond = mprCreateCond();
     es->runQ = mprCreateDispatcher("running", 0);
@@ -8446,11 +8451,11 @@ PUBLIC void mprEnableDispatcher(MprDispatcher *dispatcher)
     @param timeout Time in milliseconds to wait. Set to zero for no wait. Set to -1 to wait forever.
     @returns Zero if not events occurred. Otherwise returns non-zero.
  */
-PUBLIC int mprServiceEvents(MprTime timeout, int flags)
+PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
 {
     MprEventService     *es;
     MprDispatcher       *dp;
-    MprTime             expires, delay;
+    MprTicks            expires, delay;
     int                 beginEventCount, eventCount, justOne;
 
     if (MPR->eventing) {
@@ -8462,7 +8467,7 @@ PUBLIC int mprServiceEvents(MprTime timeout, int flags)
     es = MPR->eventService;
     beginEventCount = eventCount = es->eventCount;
 
-    es->now = mprGetTime();
+    es->now = mprGetTicks();
     expires = timeout < 0 ? MAXINT64 : (es->now + timeout);
     if (expires < 0) {
         expires = MAXINT64;
@@ -8488,7 +8493,7 @@ PUBLIC int mprServiceEvents(MprTime timeout, int flags)
         } 
         if (es->eventCount == eventCount) {
             lock(es);
-            delay = getIdleTime(es, expires - es->now);
+            delay = getIdleTicks(es, expires - es->now);
             if (delay > 0) {
                 es->waiting = 1;
                 es->willAwake = es->now + delay;
@@ -8504,7 +8509,7 @@ PUBLIC int mprServiceEvents(MprTime timeout, int flags)
                 unlock(es);
             }
         }
-        es->now = mprGetTime();
+        es->now = mprGetTicks();
         if (justOne) {
             break;
         }
@@ -8519,10 +8524,10 @@ PUBLIC int mprServiceEvents(MprTime timeout, int flags)
     WARNING: this will enable GC while sleeping
     Return Return 0 if an event was signalled. Return MPR_ERR_TIMEOUT if no event was seen before the timeout.
  */
-PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
+PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
 {
     MprEventService     *es;
-    MprTime             expires, delay;
+    MprTicks            expires, delay;
     MprOsThread         thread;
     int                 claimed, signalled, wasRunning, runEvents;
 
@@ -8530,7 +8535,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = MPR->eventService;
-    es->now = mprGetTime();
+    es->now = mprGetTicks();
 
     if (dispatcher == NULL) {
         dispatcher = MPR->dispatcher;
@@ -8568,7 +8573,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
             }
         }
         lock(es);
-        delay = getDispatcherIdleTime(dispatcher, expires - es->now);
+        delay = getDispatcherIdleTicks(dispatcher, expires - es->now);
         dispatcher->flags |= MPR_DISPATCHER_WAITING;
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         unlock(es);
@@ -8592,7 +8597,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
         mprResetYield();
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
         dispatcher->flags &= ~MPR_DISPATCHER_WAITING;
-        es->now = mprGetTime();
+        es->now = mprGetTicks();
     }
     if (!wasRunning) {
         scheduleDispatcher(dispatcher);
@@ -8904,11 +8909,11 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
 /*
     Get the time to sleep till the next pending event. Must be called locked.
  */
-static MprTime getIdleTime(MprEventService *es, MprTime timeout)
+static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout)
 {
     MprDispatcher   *readyQ, *waitQ, *dp;
     MprEvent        *event;
-    MprTime         delay;
+    MprTicks        delay;
 
     waitQ = es->waitQ;
     readyQ = es->readyQ;
@@ -8941,10 +8946,10 @@ static MprTime getIdleTime(MprEventService *es, MprTime timeout)
 }
 
 
-static MprTime getDispatcherIdleTime(MprDispatcher *dispatcher, MprTime timeout)
+static MprTicks getDispatcherIdleTicks(MprDispatcher *dispatcher, MprTicks timeout)
 {
     MprEvent    *next;
-    MprTime     delay;
+    MprTicks    delay;
 
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
@@ -9534,7 +9539,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct epoll_event  ev, events[2];
     int                 epfd, rc;
@@ -9579,7 +9584,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected. 
  */
-PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     int     rc;
 
@@ -9719,7 +9724,7 @@ PUBLIC void stubMmprEpoll() {}
 /***************************** Forward Declarations ***************************/
 
 static void dequeueEvent(MprEvent *event);
-static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTime period, void *proc, 
+static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTicks period, void *proc, 
         void *data, int flgs);
 static void initEventQ(MprEvent *q);
 static void manageEvent(MprEvent *event, int flags);
@@ -9746,7 +9751,7 @@ PUBLIC MprEvent *mprCreateEventQueue()
     Create and queue a new event for service. Period is used as the delay before running the event and as the period 
     between events for continuous events.
  */
-PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)
+PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, void *data, int flags)
 {
     MprEvent    *event;
 
@@ -9790,7 +9795,7 @@ static void manageEvent(MprEvent *event, int flags)
 }
 
 
-static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTime period, void *proc, void *data, 
+static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTicks period, void *proc, void *data, 
     int flags)
 {
     assure(dispatcher);
@@ -9799,7 +9804,7 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
     assure(event->next == 0);
     assure(event->prev == 0);
 
-    dispatcher->service->now = mprGetTime();
+    dispatcher->service->now = mprGetTicks();
     event->name = sclone(name);
     event->timestamp = dispatcher->service->now;
     event->proc = proc;
@@ -9817,7 +9822,7 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
 /*
     Create an interval timer
  */
-PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, 
+PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, 
     void *data, int flags)
 {
     return mprCreateEvent(dispatcher, name, period, proc, data, MPR_EVENT_CONTINUOUS | flags);
@@ -9884,7 +9889,7 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
 }
 
 
-PUBLIC void mprRescheduleEvent(MprEvent *event, MprTime period)
+PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
@@ -11886,7 +11891,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct timespec ts;
     struct kevent   interest[2], events[1];
@@ -11928,7 +11933,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected.
  */
-PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     struct timespec ts;
     int             rc;
@@ -14624,7 +14629,7 @@ PUBLIC MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *
         mp->entry = sclone(entry);
     }
     mp->moduleData = data;
-    mp->lastActivity = mprGetTime();
+    mp->lastActivity = mprGetTicks();
     index = mprAddItem(ms->modules, mp);
     if (index < 0 || mp->name == 0) {
         return 0;
@@ -14707,7 +14712,7 @@ PUBLIC void *mprLookupModuleData(cchar *name)
 }
 
 
-PUBLIC void mprSetModuleTimeout(MprModule *module, MprTime timeout)
+PUBLIC void mprSetModuleTimeout(MprModule *module, MprTicks timeout)
 {
     assure(module);
     if (module) {
@@ -16763,7 +16768,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct pollfd   fds[1];
     int             rc;
@@ -16801,7 +16806,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected.
  */
-PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     int     count, rc;
 
@@ -18519,7 +18524,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     MprWaitService  *ws;
     struct timeval  tval;
@@ -18560,7 +18565,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected.
  */
-PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     struct timeval  tval;
     int             rc, maxfd;
@@ -22749,9 +22754,9 @@ PUBLIC bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
 }
 
 
-PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
+PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTicks timeout)
 {
-    MprTime     expires, remaining;
+    MprTicks    expires, remaining;
     int         rc;
     
     assure(gp->dispatcher);
@@ -22760,11 +22765,11 @@ PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
     if (mprGetDebugMode()) {
         timeout *= 100;
     }
-    expires = mprGetTime() + timeout;
+    expires = mprGetTicks() + timeout;
     remaining = timeout;
     do {
         mprWaitForEvent(gp->dispatcher, remaining);
-        remaining = expires - mprGetTime();
+        remaining = expires - mprGetTicks();
     } while (!gp->testComplete && remaining > 0);
     rc = gp->testComplete;
     gp->testComplete = 0;
@@ -23749,7 +23754,7 @@ static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize)
     worker->idleCond = mprCreateCond();
 
     fmt(name, sizeof(name), "worker.%u", getNextThreadNum(ws));
-    mprLog(2, "Create %s, pool has %d workers. Limits %d-%d.", name, ws->numThreads, ws->minThreads, ws->maxThreads);
+    mprLog(2, "Create %s, pool has %d workers. Limits %d-%d.", name, ws->numThreads + 1, ws->minThreads, ws->maxThreads);
     worker->thread = mprCreateThread(name, (MprThreadProc) workerMain, worker, stackSize);
     return worker;
 }
@@ -24103,6 +24108,11 @@ static int leapMonthStart[] = {
     0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 0
 };
 
+#if !LINUX && !MACOSX && !BIT_WIN_LIKE
+static MprTime lastTicks;
+static MprTime adjustTicks = 0;
+#endif
+
 static MprTime daysSinceEpoch(int year);
 static void decodeTime(struct tm *tp, MprTime when, bool local);
 static int getTimeZoneOffsetFromTm(struct tm *tp);
@@ -24121,6 +24131,9 @@ PUBLIC int mprCreateTimeService()
     TimeToken           *tt;
 
     mpr = MPR;
+#if !LINUX && !MACOSX && !BIT_WIN_LIKE
+    lastTicks = mprGetTime();
+#endif
     mpr->timeTokens = mprCreateHash(59, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
     for (tt = days; tt->name; tt++) {
         mprAddKey(mpr->timeTokens, tt->name, (void*) tt);
@@ -24222,13 +24235,74 @@ PUBLIC MprTime mprGetTime()
 
 
 /*
+    High resolution timer
+ */
+#if MPR_HIGH_RES_TIMER
+    #if (LINUX || MACOSX) && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
+        uint64 mprGetHiResTime() {
+            uint64  now;
+            __asm__ __volatile__ ("rdtsc" : "=A" (now));
+            return now;
+        }
+    #elif WINDOWS
+        uint64 mprGetHiResTime() {
+            LARGE_INTEGER  now;
+            QueryPerformanceCounter(&now);
+            return (((uint64) now.HighPart) << 32) + now.LowPart;
+        }
+    #else
+        uint64 mprGetHiResTime() {
+            return (uint64) mprGetTicks();
+        }
+    #endif
+#else 
+    uint64 mprGetHiResTime() {
+        return (uint64) mprGetTicks();
+    }
+#endif
+
+
+/*
+    Return time in milliseconds that never goes backwards. This is used for timers and not for time of day.
+    The actual value returned is system dependant and does not represent time since Jan 1 1970.
+ */
+PUBLIC MprTicks mprGetTicks()
+{
+#if BIT_WIN_LIKE
+    return GetTickCount64();
+#elif MACOSX
+    mach_timebase_info_data_t info;
+    mach_timebase_info(&info);
+    return mach_absolute_time() * info.numer / info.denom / (1000 * 1000);
+#elif CLOCK_MONOTONIC_RAW
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &tv);
+    return (MprTicks) (((MprTicks) tv.tv_sec) * 1000) + (tv.tv_nsec / (1000 * 1000));
+#elif CLOCK_MONOTONIC
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC, &tv);
+    return (MprTicks) (((MprTicks) tv.tv_sec) * 1000) + (tv.tv_nsec / (1000 * 1000));
+#else
+    MprTime     result, diff;
+    result = mprGetTime() - adjustTicks;
+    if ((diff = (result < lastTicks)) < 0) {
+        adjustTicks += diff;
+        result += diff;
+    }
+    lastTicks = result;
+    return result;
+#endif
+}
+
+
+/*
     Return the number of milliseconds until the given timeout has expired.
  */
-PUBLIC MprTime mprGetRemainingTime(MprTime mark, MprTime timeout)
+PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout)
 {
-    MprTime     now, diff;
+    MprTicks    now, diff;
 
-    now = mprGetTime();
+    now = mprGetTicks();
     diff = (now - mark);
 
     if (diff < 0) {
@@ -24241,9 +24315,12 @@ PUBLIC MprTime mprGetRemainingTime(MprTime mark, MprTime timeout)
 }
 
 
-/*
-    Get the elapsed time since a time marker
- */
+PUBLIC MprTicks mprGetElapsedTicks(MprTicks mark)
+{
+    return mprGetTicks() - mark;
+}
+
+
 PUBLIC MprTime mprGetElapsedTime(MprTime mark)
 {
     return mprGetTime() - mark;
@@ -25601,35 +25678,6 @@ PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
 }
 #endif /* BIT_WIN_LIKE || VXWORKS */
 
-/********************************* Measurement **********************************/
-/*
-    High resolution timer
- */
-#if MPR_HIGH_RES_TIMER
-    #if BIT_UNIX_LIKE
-        uint64 mprGetTicks() {
-            uint64  now;
-            __asm__ __volatile__ ("rdtsc" : "=A" (now));
-            return now;
-        }
-    #elif BIT_WIN_LIKE
-        uint64 mprGetTicks() {
-            LARGE_INTEGER  now;
-            QueryPerformanceCounter(&now);
-            return (((uint64) now.HighPart) << 32) + now.LowPart;
-        }
-    #else
-        uint64 mprGetTicks() {
-            return (uint64) mprGetTime();
-        }
-    #endif
-#else 
-    uint64 mprGetTicks() {
-        return (uint64) mprGetTime();
-    }
-#endif
-
-
 /*
     @copy   default
 
@@ -25792,27 +25840,27 @@ PUBLIC int mprUnloadNativeModule(MprModule *mp)
 /*
     This routine does not yield
  */
-PUBLIC void mprNap(MprTime timeout)
+PUBLIC void mprNap(MprTicks timeout)
 {
-    MprTime         remaining, mark;
+    MprTicks        remaining, mark;
     struct timespec t;
     int             rc;
 
     assure(timeout >= 0);
     
-    mark = mprGetTime();
+    mark = mprGetTicks();
     remaining = timeout;
     do {
         /* MAC OS X corrupts the timeout if using the 2nd paramater, so recalc each time */
         t.tv_sec = ((int) (remaining / 1000));
         t.tv_nsec = ((int) ((remaining % 1000) * 1000000));
         rc = nanosleep(&t, NULL);
-        remaining = mprGetRemainingTime(mark, timeout);
+        remaining = mprGetRemainingTicks(mark, timeout);
     } while (rc < 0 && errno == EINTR && remaining > 0);
 }
 
 
-PUBLIC void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -25987,7 +26035,7 @@ PUBLIC int mprUnloadNativeModule(MprModule *mp)
 }
 
 
-PUBLIC void mprNap(MprTime milliseconds)
+PUBLIC void mprNap(MprTicks milliseconds)
 {
     struct timespec timeout;
     int             rc;
@@ -26001,7 +26049,7 @@ PUBLIC void mprNap(MprTime milliseconds)
 }
 
 
-PUBLIC void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -27666,13 +27714,13 @@ PUBLIC void mprSetSocketMessage(int socketMessage)
 }
 
 
-PUBLIC void mprNap(MprTime timeout)
+PUBLIC void mprNap(MprTicks timeout)
 {
     Sleep((int) timeout);
 }
 
 
-PUBLIC void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -28116,13 +28164,13 @@ PUBLIC void mprSetSocketMessage(int socketMessage)
 #endif /* WINCE */
 
 
-PUBLIC void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     Sleep((int) timeout);
 }
 
 
-PUBLIC void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);

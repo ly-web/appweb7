@@ -131,7 +131,7 @@ typedef struct EspRoute {
     char            *staticDir;             /**< Directory for static web content */
     char            *viewsDir;              /**< Directory for views */
 
-    MprTime         lifespan;               /**< Default cache lifespan */
+    MprTicks        lifespan;               /**< Default cache lifespan */
     int             update;                 /**< Auto-update modified ESP source */
     int             keepSource;             /**< Preserve generated source */
 	int				showErrors;				/**< Send server errors back to client */
@@ -301,7 +301,7 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
  */
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags);
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile);
-PUBLIC bool espUnloadModule(cchar *module, MprTime timeout);
+PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
 
 /********************************** Requests **********************************/
 /**
@@ -1030,7 +1030,7 @@ PUBLIC void espSetContentLength(HttpConn *conn, MprOff length);
     @param isSecure Set to "true" if the cookie only applies for SSL based connections
     @ingroup EspReq
  */
-PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTime lifespan,
+PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan,
         bool isSecure);
 
 /**
@@ -2583,7 +2583,7 @@ PUBLIC void renderView(cchar *view);
     @param isSecure Boolean Set to "true" if the cookie only applies for SSL based connections
     @ingroup EspAbbrev
 */
-PUBLIC void setCookie(cchar *name, cchar *value, cchar *path, cchar *domain, MprTime lifespan, bool isSecure);
+PUBLIC void setCookie(cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan, bool isSecure);
 
 /**
     Set the current request connection.
@@ -2701,7 +2701,7 @@ PUBLIC void setStatus(int status);
     @param data Argument to pass to proc
     @ingroup EspAbbrev
  */
-PUBLIC void setTimeout(void *proc, MprTime timeout, void *data);
+PUBLIC void setTimeout(void *proc, MprTicks timeout, void *data);
 
 /**
     Show request details

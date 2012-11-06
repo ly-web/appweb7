@@ -809,7 +809,7 @@ static int issueRequest(HttpConn *conn, cchar *url, MprList *files)
 }
 
 
-static int reportResponse(HttpConn *conn, cchar *url, MprTime elapsed)
+static int reportResponse(HttpConn *conn, cchar *url, MprTicks elapsed)
 {
     HttpRx      *rx;
     MprOff      bytesRead;
@@ -878,21 +878,21 @@ static void readBody(HttpConn *conn)
 
 static int doRequest(HttpConn *conn, cchar *url, MprList *files)
 {
-    MprTime         mark, remaining;
+    MprTicks        mark, remaining;
     HttpLimits      *limits;
 
     assure(url && *url);
     limits = conn->limits;
 
     mprLog(MPR_DEBUG, "fetch: %s %s", app->method, url);
-    mark = mprGetTime();
+    mark = mprGetTicks();
 
     if (issueRequest(conn, url, files) < 0) {
         return MPR_ERR_CANT_CONNECT;
     }
     remaining = limits->requestTimeout;
     while (!conn->tx->finalized && conn->state < HTTP_STATE_COMPLETE && remaining > 0) {
-        remaining = mprGetRemainingTime(mark, limits->requestTimeout);
+        remaining = mprGetRemainingTicks(mark, limits->requestTimeout);
         httpWait(conn, 0, remaining);
         readBody(conn);
     }
@@ -902,7 +902,7 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
     } else {
         readBody(conn);
     }
-    reportResponse(conn, url, mprGetTime() - mark);
+    reportResponse(conn, url, mprGetTicks() - mark);
 
     httpDestroyRx(conn->rx);
     httpDestroyTx(conn->tx);

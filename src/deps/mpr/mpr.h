@@ -396,6 +396,7 @@
     #include    <mach-o/dyld.h>
     #include    <mach-o/dyld.h>
     #include    <mach/mach_init.h>
+    #include    <mach/mach_time.h>
     #include    <mach/task.h>
     #include    <sys/sysctl.h>
     #include    <libkern/OSAtomic.h>
@@ -604,11 +605,16 @@ typedef int64 MprOff;
     Date and Time Service
     @stability Stable
     @see MprTime mprCompareTime mprCreateTimeService mprDecodeLocalTime mprDecodeUniversalTime mprFormatLocalTime 
-        mprFormatTm mprGetDate mprGetElapsedTime mprGetRemainingTime mprGetTicks mprGetTimeZoneOffset mprMakeTime 
+        mprFormatTm mprGetDate mprGetElapsedTicks mprGetRemainingTicks mprGetHiResTicks mprGetTimeZoneOffset mprMakeTime 
         mprMakeUniversalTime mprParseTime 
     @defgroup MprTime MprTime
  */
 typedef int64 MprTime;
+
+/**
+    Elapsed time data type. Stores time in milliseconds from some arbitrary start epoch.
+ */
+typedef int64 MprTicks;
 
 #ifndef BITSPERBYTE
     #define BITSPERBYTE     (8 * sizeof(char))
@@ -1639,7 +1645,7 @@ PUBLIC void mprResetCond(MprCond *cond);
     @return Zero if the event was signalled. Returns < 0 for a timeout.
     @ingroup MprSynch
  */
-PUBLIC int mprWaitForCond(MprCond *cond, MprTime timeout);
+PUBLIC int mprWaitForCond(MprCond *cond, MprTicks timeout);
 
 /**
     Signal a condition lock variable.
@@ -1671,7 +1677,7 @@ PUBLIC void mprSignalMultiCond(MprCond *cond);
     @return Zero if the event was signalled. Returns < 0 for a timeout.
     @ingroup MprSynch
  */
-PUBLIC int mprWaitForMultiCond(MprCond *cond, MprTime timeout);
+PUBLIC int mprWaitForMultiCond(MprCond *cond, MprTicks timeout);
 
 /**
     Multithreading lock control structure
@@ -2697,7 +2703,7 @@ PUBLIC void mprRemoveRoot(void *ptr);
 PUBLIC int  mprCreateGCService();
 PUBLIC void mprWakeGCService();
 PUBLIC void mprResumeThreads();
-PUBLIC int  mprSyncThreads(MprTime timeout);
+PUBLIC int  mprSyncThreads(MprTicks timeout);
 
 /********************************** Safe Strings ******************************/
 /**
@@ -3969,8 +3975,17 @@ PUBLIC char *mprFormatTm(cchar *fmt, struct tm *timep);
 
 /**
     Get the system time.
-    @description Get the system time in milliseconds.
-    @return Returns the time in milliseconds since boot.
+    @description Get the system time in milliseconds. This is a monotonically increasing time counter. 
+        It does not represent wall-clock time.
+    @return Returns the system time in milliseconds.
+    @ingroup MprTime
+ */
+PUBLIC MprTicks mprGetTicks();
+
+/**
+    Get the time.
+    @description Get the date/time in milliseconds since Jan 1 1970.
+    @return Returns the time in milliseconds since Jan 1 1970.
     @ingroup MprTime
  */
 PUBLIC MprTime mprGetTime();
@@ -3989,9 +4004,9 @@ PUBLIC char *mprGetDate(char *fmt);
     @description Get the current CPU tick count. This is a system dependant high resolution timer. On some systems, 
         this returns time in nanosecond resolution. 
     @return Returns the CPU time in ticks. Will return the system time if CPU ticks are not available.
-    @ingroup MprTime
+    @ingroup MprTicks
  */
-PUBLIC uint64 mprGetTicks();
+PUBLIC uint64 mprGetHiResTicks();
 
 #if (LINUX || MACOSX || WINDOWS) && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
     #define MPR_HIGH_RES_TIMER 1
@@ -4003,12 +4018,13 @@ PUBLIC uint64 mprGetTicks();
     #if MPR_HIGH_RES_TIMER
         #define MPR_MEASURE(level, tag1, tag2, op) \
             if (1) { \
-                MprTime elapsed, start = mprGetTime(); \
-                uint64  ticks = mprGetTicks(); \
+                MprTicks elapsed, start = mprGetTicks(); \
+                uint64  ticks = mprGetHiResTicks(); \
                 op; \
-                elapsed = mprGetTime() - start; \
+                elapsed = mprGetTicks() - start; \
                 if (elapsed < 1000) { \
-                    mprLog(level, "TIME: %s.%s elapsed %,d msec, %,d ticks", tag1, tag2, elapsed, mprGetTicks() - ticks); \
+                    mprLog(level, "TIME: %s.%s elapsed %,d msec, %,d ticks", \
+                        tag1, tag2, elapsed, mprGetHiResTicks() - ticks); \
                 } else { \
                     mprLog(level, "TIME: %s.%s elapsed %,d msec", tag1, tag2, elapsed); \
                 } \
@@ -4016,13 +4032,17 @@ PUBLIC uint64 mprGetTicks();
     #else
         #define MPR_MEASURE(level, tag1, tag2, op) \
             if (1) { \
-                MprTime start = mprGetTime(); \
+                MprTicks start = mprGetTicks(); \
                 op; \
-                mprLog(level, "TIME: %s.%s elapsed %,d msec", tag1, tag2, mprGetTime() - start); \
+                mprLog(level, "TIME: %s.%s elapsed %,d msec", tag1, tag2, mprGetTicks() - start); \
             } else 
     #endif
 #else
     #define MPR_MEASURE(level, tag1, tag2, op) op
+#endif
+
+#if DEPRECATED || 1
+#define mprGetHiResTime mprGetHiResTicks
 #endif
 
 
@@ -4033,14 +4053,25 @@ PUBLIC uint64 mprGetTicks();
     @return Time in milliseconds until the timeout elapses  
     @ingroup MprTime
  */
-PUBLIC MprTime mprGetRemainingTime(MprTime mark, MprTime timeout);
+PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout);
+
+#if DEPRECATED || 1
+#define mprGetRemainingTime mprGetRemainingTicks
+#endif
 
 /**
-    Get the elapsed time since a time mark. Create the time mark with mprGetTime()
+    Get the elapsed time since a ticks mark. Create the ticks mark with mprGetTicks()
     @param mark Starting time stamp 
     @returns the time elapsed since the mark was taken.
  */
-PUBLIC MprTime mprGetElapsedTime(MprTime mark);
+PUBLIC MprTicks mprGetElapsedTicks(MprTicks mark);
+
+/**
+    Get the elapsed time since a starting time.
+    @param mark Starting time created via mprGetTime()
+    @returns the time elapsed since the mark was taken.
+ */
+PUBLIC MprTime mprGetElapsedTime(MprTime when);
 
 /*
     Convert a time structure into a time value using local time.
@@ -5878,8 +5909,8 @@ typedef struct MprModule {
     void            *moduleData;        /**< Module specific data - must be alloced data */
     void            *handle;            /**< O/S shared library load handle */
     MprTime         modified;           /**< When the module file was last modified */
-    MprTime         lastActivity;       /**< When the module was last used */
-    MprTime         timeout;            /**< Inactivity unload timeout */
+    MprTicks        lastActivity;       /**< When the module was last used */
+    MprTicks        timeout;            /**< Inactivity unload timeout */
     int             flags;              /**< Module control flags */
     MprModuleProc   start;              /**< Start the module */
     MprModuleProc   stop;               /**< Stop the module. Should be unloadable after stopping */
@@ -5995,7 +6026,7 @@ PUBLIC void mprSetModuleSearchPath(char *searchPath);
     @param timeout Inactivity timeout in milliseconds before unloading the module
     @internal
  */
-PUBLIC void mprSetModuleTimeout(MprModule *module, MprTime timeout);
+PUBLIC void mprSetModuleTimeout(MprModule *module, MprTicks timeout);
 
 /**
     Start a module
@@ -6058,14 +6089,14 @@ typedef struct MprEvent {
     int magic;
     cchar               *name;          /**< Static debug name of the event */
     MprEventProc        proc;           /**< Callback procedure */
-    MprTime             timestamp;      /**< When was the event created */
-    MprTime             due;            /**< When is the event due */
+    MprTicks            timestamp;      /**< When was the event created */
+    MprTicks            due;            /**< When is the event due */
     void                *data;          /**< Event private data */
     int                 fd;             /**< File descriptor if an I/O event */
     int                 continuous;     /**< Event runs continuously */
     int                 flags;          /**< Event flags */
     int                 mask;           /**< I/O mask of events */
-    MprTime             period;         /**< Reschedule period */
+    MprTicks            period;         /**< Reschedule period */
     struct MprEvent     *next;          /**< Next event linkage */
     struct MprEvent     *prev;          /**< Previous event linkage */
     struct MprDispatcher *dispatcher;   /**< Event dispatcher service */
@@ -6112,8 +6143,8 @@ typedef struct MprDispatcher {
 
 
 typedef struct MprEventService {
-    MprTime         now;                /**< Current notion of time for the dispatcher service */
-    MprTime         willAwake;          /**< Time the even service will next awake */
+    MprTicks        now;                /**< Current notion of system time for the dispatcher service */
+    MprTicks        willAwake;          /**< When the event service will next awake */
     MprDispatcher   *runQ;              /**< Queue of running dispatchers */
     MprDispatcher   *readyQ;            /**< Queue of dispatchers with events ready to run */
     MprDispatcher   *waitQ;             /**< Queue of waiting (future) events */
@@ -6177,7 +6208,7 @@ PUBLIC MprDispatcher *mprGetDispatcher();
     @returns The number of events serviced. Returns MPR_ERR_BUSY is another thread is servicing events and timeout is zero.
     @ingroup MprEvent
  */
-PUBLIC int mprServiceEvents(MprTime delay, int flags);
+PUBLIC int mprServiceEvents(MprTicks delay, int flags);
 
 /**
     Wait for an event to occur on the given dispatcher
@@ -6186,7 +6217,7 @@ PUBLIC int mprServiceEvents(MprTime delay, int flags);
     @return Zero if successful and an event occurred before the timeout expired. Returns #MPR_ERR_TIMEOUT if no event
         is fired before the timeout expires.
  */
-PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout);
+PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout);
 
 /**
     Signal the dispatcher to wakeup and re-examine its queues
@@ -6210,7 +6241,7 @@ PUBLIC void mprSignalDispatcher(MprDispatcher *dispatcher);
     @return Returns the event object if successful.
     @ingroup MprEvent
  */
-PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags);
+PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, void *data, int flags);
 
 /**
     Create an event outside the MPR
@@ -6278,7 +6309,7 @@ PUBLIC void mprEnableContinuousEvent(MprEvent *event, int enable);
     @param flags Not used.
     @ingroup MprEvent
  */
-PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, 
+PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, void *data, 
     int flags);
 
 /**
@@ -6288,7 +6319,7 @@ PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, Mpr
     @param period Time in milliseconds used by continuous events between firing of the event.
     @ingroup MprEvent
  */
-PUBLIC void mprRescheduleEvent(MprEvent *event, MprTime period);
+PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period);
 
 /**
     Relay an event to a dispatcher. This invokes the callback proc as though it was invoked from the given dispatcher. 
@@ -6876,7 +6907,7 @@ PUBLIC int  mprInitWindow();
     @param timeout Timeout in milliseconds to wait for an event.
     @ingroup MprWaitHandler
  */
-PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout);
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout);
 
 /**
     Wait for I/O on a file descriptor. No processing of the I/O event is done.
@@ -6886,7 +6917,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout);
     @returns A count of events received.
     @ingroup MprWaitHandler
  */
-PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout);
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout);
 
 /*
     Handler Flags
@@ -7758,7 +7789,7 @@ typedef struct MprWorker {
     int             state;                  /**< Worker state */
     int             flags;                  /**< Worker flags */
     MprThread       *thread;                /**< Thread associated with this worker */
-    MprTime         lastActivity;           /**< When the worker was last used */
+    MprTicks        lastActivity;           /**< When the worker was last used */
     MprWorkerService *workerService;        /**< Worker service */
     MprCond         *idleCond;              /**< Used to wait for work */
 } MprWorker;
@@ -8123,8 +8154,8 @@ typedef struct MprCmd {
     char            *searchPath;        /**< Search path to use to locate the command */
     int             argc;               /**< Count of args in argv */
 #if UNUSED && FUTURE
-    MprTime         timestamp;          /**< Timeout timestamp for last I/O  */
-    MprTime         timeoutPeriod;      /**< Timeout value */
+    MprTicks        timestamp;          /**< Timeout timestamp for last I/O  */
+    MprTicks        timeoutPeriod;      /**< Timeout value */
 #endif
     int             timedout;           /**< Request has timedout */
     MprCmdFile      files[MPR_CMD_MAX_PIPE]; /**< Stdin, stdout for the command */
@@ -8258,7 +8289,7 @@ PUBLIC bool mprIsCmdRunning(MprCmd *cmd);
     @param timeout Time in milliseconds to wait for the command to complete and exit.
     @ingroup MprCmd
  */
-PUBLIC void mprPollCmd(MprCmd *cmd, MprTime timeout);
+PUBLIC void mprPollCmd(MprCmd *cmd, MprTicks timeout);
 
 /**
     Make the I/O channels to send and receive data to and from the command.
@@ -8278,7 +8309,7 @@ PUBLIC ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup MprCmd
  */
-PUBLIC int mprReapCmd(MprCmd *cmd, MprTime timeout);
+PUBLIC int mprReapCmd(MprCmd *cmd, MprTicks timeout);
 
 /**
     Run a command using a string command line. This starts the command via mprStartCmd() and waits for its completion.
@@ -8297,7 +8328,7 @@ PUBLIC int mprReapCmd(MprCmd *cmd, MprTime timeout);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup MprCmd
  */
-PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTime timeout, int flags);
+PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTicks timeout, int flags);
 
 /**
     Run a command using an argv[] array of arguments. This invokes mprStartCmd() and waits for its completion.
@@ -8316,7 +8347,8 @@ PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup MprCmd
  */
-PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTime timeout, int flags);
+PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, 
+    MprTicks timeout, int flags);
 
 /**
     Define a callback to be invoked to receive response data from the command.
@@ -8395,7 +8427,7 @@ PUBLIC int mprStopCmd(MprCmd *cmd, int signal);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup MprCmd
  */
-PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTime timeout);
+PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout);
 
 /**
     Write data to an I/O channel
@@ -8427,7 +8459,7 @@ typedef struct MprCache {
     MprHash         *store;             /**< Key/value store */
     MprMutex        *mutex;             /**< Cache lock*/
     MprEvent        *timer;             /**< Pruning timer */
-    MprTime         lifespan;           /**< Default lifespan (msec) */
+    MprTicks        lifespan;           /**< Default lifespan (msec) */
     int             resolution;         /**< Frequence for pruner */
     ssize           usedMem;            /**< Memory in use for keys and data */
     ssize           maxKeys;            /**< Max number of keys */
@@ -8459,7 +8491,7 @@ PUBLIC void *mprDestroyCache(MprCache *cache);
         cache.
     @ingroup MprCache
  */
-PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTime expires);
+PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTicks expires);
 
 /**
     Increment a numeric cache item
@@ -8511,7 +8543,7 @@ PUBLIC bool mprRemoveCache(MprCache *cache, cchar *key);
         items for expiration.
     @ingroup MprCache
   */
-PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, int64 lifespan, int64 memory, int resolution);
+PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTicks lifespan, int64 memory, int resolution);
 
 /**
     Write a cache item
@@ -8536,7 +8568,7 @@ PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, int64 lifespan, int64
         #MPR_ERR_ALREADY_EXISTS will be returned if #MPR_CACHE_ADD is specified and the cache item already exists.
     @ingroup MprCache
  */
-PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTime lifespan, 
+PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTicks lifespan, 
         int64 version, int options);
 
 /******************************** Mime Types **********************************/
@@ -8648,7 +8680,7 @@ typedef struct Mpr {
     MprFile         *stdInput;              /**< Standard input file */
     MprFile         *stdOutput;             /**< Standard output file */
     MprTime         start;                  /**< When the MPR started */
-    MprTime         exitTimeout;            /**< Request timeout when exiting */
+    MprTicks        exitTimeout;            /**< Request timeout when exiting */
     char            *pathEnv;               /**< Cached PATH env var. Used by MprCmd */
     char            *name;                  /**< Product name */
     char            *title;                 /**< Product title */
@@ -8973,7 +9005,7 @@ PUBLIC int mprMakeArgv(cchar *command, cchar ***argv, int flags);
     @param msec Number of milliseconds to sleep
     @ingroup Mpr
 */
-PUBLIC void mprNap(MprTime msec);
+PUBLIC void mprNap(MprTicks msec);
 
 /**
     Make a argv style array of command arguments
@@ -9081,7 +9113,7 @@ PUBLIC void mprSetExitStrategy(int strategy);
     @param timeout Time in milliseconds to wait when terminating the MPR
     @ingroup Mpr
  */
-PUBLIC void mprSetExitTimeout(MprTime timeout);
+PUBLIC void mprSetExitTimeout(MprTicks timeout);
 
 /**
     Set the application host name string. This is internal to the application and does not affect the O/S host name.
@@ -9135,7 +9167,7 @@ PUBLIC bool mprShouldDenyNewRequests();
     @param msec Number of milliseconds to sleep
     @ingroup Mpr
 */
-PUBLIC void mprSleep(MprTime msec);
+PUBLIC void mprSleep(MprTicks msec);
 
 /**
     Start the Mpr services
@@ -9176,7 +9208,7 @@ PUBLIC void mprTerminate(int flags, int status);
     @return True if the application is idle.
     @ingroup Mpr
  */
-PUBLIC int mprWaitTillIdle(MprTime timeout);
+PUBLIC int mprWaitTillIdle(MprTicks timeout);
 
 #if BIT_WIN_LIKE
 /**
@@ -9447,7 +9479,7 @@ PUBLIC void mprSignalTest2Complete(MprTestGroup *gp);
     @return True if the test was completed within the timeout
     @ingroup MprTestService
  */
-PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout);
+PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTicks timeout);
 
 /**
     Wait for a test to complete
@@ -9459,7 +9491,7 @@ PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout);
     @ingroup MprTestService
     @internal
  */
-PUBLIC bool mprWaitForTest2ToComplete(MprTestGroup *gp, MprTime timeout);
+PUBLIC bool mprWaitForTest2ToComplete(MprTestGroup *gp, MprTicks timeout);
 
 /**
     Test failure record

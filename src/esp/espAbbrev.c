@@ -560,7 +560,7 @@ PUBLIC void setContentType(cchar *mimeType)
 }
 
 
-PUBLIC void setCookie(cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTime lifespan, bool isSecure)
+PUBLIC void setCookie(cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTicks lifespan, bool isSecure)
 {
     espSetCookie(getConn(), name, value, path, cookieDomain, lifespan, isSecure);
 }
@@ -631,7 +631,7 @@ PUBLIC void setStatus(int status)
 }
 
 
-PUBLIC void setTimeout(void *proc, MprTime timeout, void *data)
+PUBLIC void setTimeout(void *proc, MprTicks timeout, void *data)
 {
     mprCreateEvent(getConn()->dispatcher, "setTimeout", (int) timeout, proc, data, 0);
 }

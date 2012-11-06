@@ -18,7 +18,7 @@ static MaState *createState(MaServer *server, HttpHost *host, HttpRoute *route);
 static char *getDirective(char *line, char **valuep);
 static int getint(cchar *value);
 static int64 getnum(cchar *value);
-static MprTime gettime(cchar *value);
+static MprTicks getticks(cchar *value);
 static char *gettok(char *s, char **tok);
 static void manageState(MaState *state, int flags);
 static int parseFile(MaState *state, cchar *path);
@@ -499,7 +499,7 @@ static int authDigestQopDirective(MaState *state, cchar *key, cchar *value)
  */
 static int cacheDirective(MaState *state, cchar *key, cchar *value)
 {
-    MprTime     lifespan, clientLifespan, serverLifespan;
+    MprTicks    lifespan, clientLifespan, serverLifespan;
     char        *option, *ovalue, *tok;
     char        *methods, *extensions, *types, *uris;
     int         flags;
@@ -520,18 +520,18 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
         option = stok(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if ((int) isdigit((uchar) *option)) {
-            lifespan = gettime(option);
+            lifespan = getticks(option);
 
         } else if (smatch(option, "client")) {
             flags |= HTTP_CACHE_CLIENT;
             if (snumber(ovalue)) {
-                clientLifespan = gettime(ovalue);
+                clientLifespan = getticks(ovalue);
             }
 
         } else if (smatch(option, "server")) {
             flags |= HTTP_CACHE_SERVER;
             if (snumber(ovalue)) {
-                serverLifespan = gettime(ovalue);
+                serverLifespan = getticks(ovalue);
             }
 
         } else if (smatch(option, "extensions")) {
@@ -762,7 +762,7 @@ static int errorDocumentDirective(MaState *state, cchar *key, cchar *value)
  */
 static int errorLogDirective(MaState *state, cchar *key, cchar *value)
 {
-    MprTime     stamp;
+    MprTicks    stamp;
     char        *option, *ovalue, *tok, *path;
     ssize       size;
     int         level, flags, backup;
@@ -800,7 +800,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
                 flags |= MPR_LOG_ANEW;
 
             } else if (smatch(option, "stamp")) {
-                stamp = gettime(ovalue);
+                stamp = getticks(ovalue);
 
             } else {
                 mprError("Unknown option %s", option);
@@ -838,7 +838,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
  */
 static int exitTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprSetExitTimeout(gettime(value));
+    mprSetExitTimeout(getticks(value));
     return 0;
 }
 
@@ -943,7 +943,7 @@ static int inactivityTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
     if (! mprGetDebugMode()) {
         state->limits = httpGraduateLimits(state->route, state->server->limits);
-        state->limits->inactivityTimeout = gettime(value);
+        state->limits->inactivityTimeout = getticks(value);
     }
     return 0;
 }
@@ -1530,7 +1530,7 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
  */
 static int requestTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
-    state->limits->requestTimeout = gettime(value);
+    state->limits->requestTimeout = getticks(value);
     return 0;
 }
 
@@ -1704,7 +1704,7 @@ static int serverRootDirective(MaState *state, cchar *key, cchar *value)
  */
 static int sessionTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
-    state->limits->sessionTimeout = gettime(value);
+    state->limits->sessionTimeout = getticks(value);
     return 0;
 }
 
@@ -1856,7 +1856,7 @@ static int unloadModuleDirective(MaState *state, cchar *key, cchar *value)
         mprError("Can't unload module %s due to match routine", module->name);
         return MPR_ERR_BAD_SYNTAX;
     } else {
-        module->timeout = gettime(timeout);
+        module->timeout = getticks(timeout);
     }
     return 0;
 }
@@ -2017,7 +2017,7 @@ static int webSocketsProtocolDirective(MaState *state, cchar *key, cchar *value)
 
 static int webSocketsPingDirective(MaState *state, cchar *key, cchar *value)
 {
-    state->route->webSocketsPingPeriod = gettime(value);
+    state->route->webSocketsPingPeriod = getticks(value);
     return 0;
 }
 
@@ -2328,9 +2328,9 @@ static int getint(cchar *value)
 }
 
 
-static MprTime gettime(cchar *value)
+static MprTicks getticks(cchar *value)
 {
-    MprTime     when;
+    MprTicks     when;
 
     value = strim(slower(value), " \t", MPR_TRIM_BOTH);
     if (sends(value, "sec") || sends(value, "secs") || sends(value, "seconds") || sends(value, "seconds")) {

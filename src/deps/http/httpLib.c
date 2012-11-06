@@ -1332,7 +1332,7 @@ PUBLIC ssize httpWriteCached(HttpConn *conn)
 }
 
 
-PUBLIC ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime lifespan)
+PUBLIC ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTicks lifespan)
 {
     cchar   *key;
     ssize   len;
@@ -1361,8 +1361,8 @@ PUBLIC ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTime li
     Note: the URI should not include the route prefix (scriptName)
     The extensions should not contain ".". The methods may contain "*" for all methods.
  */
-PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types, MprTime clientLifespan, 
-        MprTime serverLifespan, int flags)
+PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types, 
+        MprTicks clientLifespan, MprTicks serverLifespan, int flags)
 {
     HttpCache   *cache;
     char        *item, *tok;
@@ -1930,8 +1930,7 @@ PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl 
     conn->tx->method = supper(method);
     conn->tx->parsedUri = httpCreateUri(uri, 0);
 #if BIT_DEBUG
-    conn->startTime = conn->http->now;
-    conn->startTicks = mprGetTicks();
+    conn->startMark = mprGetHiResTime();
 #endif
     /*
         The receive pipeline is created when parsing the response in parseIncoming()
@@ -2297,7 +2296,7 @@ PUBLIC void httpCloseConn(HttpConn *conn)
 PUBLIC void httpConnTimeout(HttpConn *conn)
 {
     HttpLimits  *limits;
-    MprTime     now;
+    MprTicks    now;
 
     if (!conn->http) {
         return;
@@ -2389,7 +2388,7 @@ static bool prepForNext(HttpConn *conn)
 
 PUBLIC void httpConsumeLastRequest(HttpConn *conn)
 {
-    MprTime     mark;
+    MprTicks    mark;
     char        junk[4096];
 
     if (!conn->sock) {
@@ -2397,7 +2396,7 @@ PUBLIC void httpConsumeLastRequest(HttpConn *conn)
     }
     if (conn->state >= HTTP_STATE_FIRST) {
         mark = conn->http->now;
-        while (!httpIsEof(conn) && mprGetRemainingTime(mark, conn->limits->requestTimeout) > 0) {
+        while (!httpIsEof(conn) && mprGetRemainingTicks(mark, conn->limits->requestTimeout) > 0) {
             if (httpRead(conn, junk, sizeof(junk)) <= 0) {
                 break;
             }
@@ -2876,7 +2875,7 @@ PUBLIC void httpNotify(HttpConn *conn, int event, int arg)
 /*
     Set each timeout arg to -1 to skip. Set to zero for no timeout. Otherwise set to number of msecs
  */
-PUBLIC void httpSetTimeout(HttpConn *conn, int requestTimeout, int inactivityTimeout)
+PUBLIC void httpSetTimeout(HttpConn *conn, MprTicks requestTimeout, MprTicks inactivityTimeout)
 {
     if (requestTimeout >= 0) {
         if (requestTimeout == 0) {
@@ -3233,13 +3232,11 @@ PUBLIC void httpDigestSetHeaders(HttpConn *conn)
  */ 
 static char *createDigestNonce(HttpConn *conn, cchar *secret, cchar *realm)
 {
-    MprTime      now;
     char         nonce[256];
     static int64 next = 0;
 
     assure(realm && *realm);
-    now = conn->http->now;
-    fmt(nonce, sizeof(nonce), "%s:%s:%Lx:%Lx", secret, realm, now, next++);
+    fmt(nonce, sizeof(nonce), "%s:%s:%Lx:%Lx", secret, realm, mprGetTime(), next++);
     return mprEncode64(nonce);
 }
 
@@ -4931,9 +4928,10 @@ static void httpTimer(Http *http, MprEvent *event)
     }
     /* 
        Check for any inactive connections or expired requests (inactivityTimeout and requestTimeout)
+       OPT - could check for expired connections every 10 seconds.
      */
     lock(http->connections);
-    mprLog(6, "httpTimer: %d active connections", mprGetListLength(http->connections));
+    mprLog(7, "httpTimer: %d active connections", mprGetListLength(http->connections));
     for (active = 0, next = 0; (conn = mprGetNextItem(http->connections, &next)) != 0; active++) {
         rx = conn->rx;
         limits = conn->limits;
@@ -4959,6 +4957,7 @@ static void httpTimer(Http *http, MprEvent *event)
 
     /*
         Check for unloadable modules
+        OPT - could check for modules every minute
      */
     if (mprGetListLength(http->connections) == 0) {
         for (next = 0; (module = mprGetNextItem(MPR->moduleService->modules, &next)) != 0; ) {
@@ -4995,7 +4994,7 @@ static void timestamp()
 }
 
 
-PUBLIC void httpSetTimestamp(MprTime period)
+PUBLIC void httpSetTimestamp(MprTicks period)
 {
     Http    *http;
 
@@ -5035,9 +5034,9 @@ static bool isIdle()
 {
     HttpConn        *conn;
     Http            *http;
-    MprTime         now;
+    MprTicks        now;
     int             next;
-    static MprTime  lastTrace = 0;
+    static MprTicks lastTrace = 0;
 
     http = (Http*) mprGetMpr()->httpService;
     now = http->now;
@@ -5067,6 +5066,7 @@ static bool isIdle()
 
 PUBLIC void httpAddConn(Http *http, HttpConn *conn)
 {
+    http->now = mprGetTicks();
     conn->started = http->now;
     mprAddItem(http->connections, conn);
     updateCurrentDate(http);
@@ -5094,7 +5094,7 @@ PUBLIC void httpRemoveConn(Http *http, HttpConn *conn)
  */
 PUBLIC int httpCreateSecret(Http *http)
 {
-    MprTime     now;
+    MprTicks    now;
     char        *hex = "0123456789abcdef";
     char        bytes[HTTP_MAX_SECRET], ascii[HTTP_MAX_SECRET * 2 + 1], *ap, *cp, *bp;
     int         i, pid;
@@ -5127,12 +5127,12 @@ PUBLIC int httpCreateSecret(Http *http)
 
 PUBLIC char *httpGetDateString(MprPath *sbuf)
 {
-    MprTime     when;
+    MprTicks    when;
 
     if (sbuf == 0) {
         when = ((Http*) MPR->httpService)->now;
     } else {
-        when = (MprTime) sbuf->mtime * MPR_TICKS_PER_SEC;
+        when = (MprTicks) sbuf->mtime * MPR_TICKS_PER_SEC;
     }
     return mprFormatUniversalTime(HTTP_DATE_FORMAT, when);
 }
@@ -5189,8 +5189,11 @@ PUBLIC void httpSetProxy(Http *http, cchar *host, int port)
 
 static void updateCurrentDate(Http *http)
 {
-    http->now = mprGetTime();
+    http->now = mprGetTicks();
     if (http->now > (http->currentTime + MPR_TICKS_PER_SEC - 1)) {
+        /*
+            Optimize and only update the string date representation once per second
+         */
         http->currentTime = http->now;
         http->currentDate = httpGetDateString(NULL);
     }
@@ -11427,8 +11430,7 @@ static bool parseRequestLine(HttpConn *conn, HttpPacket *packet)
 
     rx = conn->rx;
 #if BIT_DEBUG
-    conn->startTime = conn->http->now;
-    conn->startTicks = mprGetTicks();
+    conn->startMark = mprGetHiResTime();
 #endif
     traceRequest(conn, packet);
 
@@ -12159,7 +12161,7 @@ static bool processRunning(HttpConn *conn)
 #if BIT_DEBUG
 static void measure(HttpConn *conn)
 {
-    MprTime     elapsed;
+    MprTicks    elapsed;
     HttpTx      *tx;
     cchar       *uri;
     int         level;
@@ -12171,10 +12173,10 @@ static void measure(HttpConn *conn)
     uri = (conn->endpoint) ? conn->rx->uri : tx->parsedUri->path;
    
     if ((level = httpShouldTrace(conn, HTTP_TRACE_TX, HTTP_TRACE_TIME, tx->ext)) >= 0) {
-        elapsed = mprGetTime() - conn->startTime;
+        elapsed = mprGetTicks() - conn->started;
 #if MPR_HIGH_RES_TIMER
         if (elapsed < 1000) {
-            mprLog(level, "TIME: Request %s took %,d msec %,d ticks", uri, elapsed, mprGetTicks() - conn->startTicks);
+            mprLog(level, "TIME: Request %s took %,d msec %,d ticks", uri, elapsed, mprGetHiResTime() - conn->startMark);
         } else
 #endif
             mprLog(level, "TIME: Request %s took %,d msec", uri, elapsed);
@@ -12428,9 +12430,9 @@ PUBLIC int httpSetUri(HttpConn *conn, cchar *uri)
     @param timeout Timeout in msec. If timeout is zer, wait forever. If timeout is < 0, use default inactivity 
         and duration timeouts.
  */
-PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout)
+PUBLIC int httpWait(HttpConn *conn, int state, MprTicks timeout)
 {
-    MprTime     mark, remaining, inactivityTimeout;
+    MprTicks    mark, remaining, inactivityTimeout;
     int         eventMask, saveAsync, justOne, workDone;
 
     if (state == 0) {
@@ -12450,7 +12452,7 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout)
     if (conn->error || !conn->sock) {
         return MPR_ERR_BAD_STATE;
     }
-    mark = mprGetTime();
+    mark = mprGetTicks();
     if (mprGetDebugMode()) {
         inactivityTimeout = timeout = MPR_MAX_TIMEOUT;
     } else {
@@ -12478,7 +12480,7 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTime timeout)
         if (conn->sock && mprIsSocketEof(conn->sock) && !workDone) {
             break;
         }
-        remaining = mprGetRemainingTime(mark, timeout);
+        remaining = mprGetRemainingTicks(mark, timeout);
     } while (!justOne && !conn->error && conn->state < state && remaining > 0);
 
     conn->async = saveAsync;
@@ -13241,7 +13243,7 @@ static void manageSession(HttpSession *sp, int flags);
 
 /************************************* Code ***********************************/
 
-PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
+PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTicks lifespan)
 {
     HttpSession *sp;
 
@@ -14379,7 +14381,7 @@ PUBLIC void httpSetContentLength(HttpConn *conn, MprOff length)
 
 
 PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, 
-        MprTime lifespan, int flags)
+        MprTicks lifespan, int flags)
 {
     HttpRx      *rx;
     char        *cp, *expiresAtt, *expires, *domainAtt, *domain, *secure, *httponly;
@@ -14404,7 +14406,7 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
     }
     if (lifespan > 0) {
         expiresAtt = "; expires=";
-        expires = mprFormatUniversalTime(MPR_HTTP_DATE, conn->http->now + lifespan);
+        expires = mprFormatUniversalTime(MPR_HTTP_DATE, mprGetTime() + lifespan);
 
     } else {
         expires = expiresAtt = "";

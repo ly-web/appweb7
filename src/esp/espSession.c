@@ -17,7 +17,7 @@ static void manageSession(EspSession *sp, int flags);
 
 /************************************* Code ***********************************/
 
-PUBLIC EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
+PUBLIC EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTicks lifespan)
 {
     EspReq      *req;
     EspSession  *sp;

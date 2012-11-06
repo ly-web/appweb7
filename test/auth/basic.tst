@@ -14,7 +14,6 @@ assert(http.status == 200)
 http.get(HTTP + "/auth/basic/basic.html")
 assert(http.status == 401)
 
-/*
 http.setCredentials("joshua", "pass1")
 http.get(HTTP + "/auth/basic/basic.html")
 assert(http.status == 200)
@@ -50,4 +49,3 @@ if (App.config.bit_cgi && global.test && test.hostOs != "VXWORKS") {
     assert(!http.response.contains("PATH_TRANSLATED"))
     assert(http.response.contains("REMOTE_USER=joshua"))
 }
-*/
