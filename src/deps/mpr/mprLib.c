@@ -18863,7 +18863,7 @@ PUBLIC void mprServiceSignals()
              */
             signo = (int) (ip - ssp->info);
             if ((sp = ssp->signals[signo]) != 0) {
-                mprCreateEvent(sp->dispatcher, "signalEvent", 0, signalEvent, sp, MPR_EVENT_QUICK);
+                mprCreateEvent(sp->dispatcher, "signalEvent", 0, signalEvent, sp, 0);
             }
         }
     }
@@ -18901,7 +18901,7 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
             Call all chained signal handlers. Create new event for each handler so we get the right dispatcher.
             WARNING: sp may have been removed and so sp->next may be null. That is why we capture np = sp->next above.
          */
-        mprCreateEvent(np->dispatcher, "signalEvent", 0, signalEvent, np, 0);
+        mprCreateEvent(np->dispatcher, "signalEvent", 0, signalEvent, np, MPR_EVENT_QUICK);
     }
 }
 
@@ -23464,7 +23464,7 @@ PUBLIC int mprStartWorkerService()
      */
     ws = MPR->workerService;
     mprSetMinWorkers(ws->minThreads);
-    ws->pruneTimer = mprCreateTimerEvent(NULL, "pruneWorkers", 15 * 1000, pruneWorkers, ws, MPR_EVENT_QUICK);
+    ws->pruneTimer = mprCreateTimerEvent(NULL, "pruneWorkers", MPR_TIMEOUT_PRUNER, pruneWorkers, ws, MPR_EVENT_QUICK);
     return 0;
 }
 
@@ -23613,7 +23613,8 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
     /*
         Try to find an idle thread and wake it up. It will wakeup in workerMain(). If not any available, then add 
         another thread to the worker. Must account for workers we've already created but have not yet gone to work 
-        and inserted themselves in the idle/busy queues.
+        and inserted themselves in the idle/busy queues. Get most recently used idle worker so we tend to reuse 
+        active threads. This lets the pruner trim idle workers.
      */
     worker = mprGetLastItem(ws->idleThreads);
     if (worker) {
@@ -23679,7 +23680,7 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
     }
     if (pruned) {
         mprLog(2, "Pruned %d workers, pool has %d workers. Limits %d-%d.", 
-            pruned, ws->numThreads, ws->minThreads, ws->maxThreads);
+            pruned, ws->numThreads - pruned, ws->minThreads, ws->maxThreads);
     }
     unlock(ws);
 }
