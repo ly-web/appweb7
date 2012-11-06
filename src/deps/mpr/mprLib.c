@@ -18863,7 +18863,7 @@ PUBLIC void mprServiceSignals()
              */
             signo = (int) (ip - ssp->info);
             if ((sp = ssp->signals[signo]) != 0) {
-                mprCreateEvent(sp->dispatcher, "signalEvent", 0, signalEvent, sp, 0);
+                mprCreateEvent(sp->dispatcher, "signalEvent", 0, signalEvent, sp, MPR_EVENT_QUICK);
             }
         }
     }
@@ -23464,7 +23464,7 @@ PUBLIC int mprStartWorkerService()
      */
     ws = MPR->workerService;
     mprSetMinWorkers(ws->minThreads);
-    ws->pruneTimer = mprCreateTimerEvent(NULL, "pruneWorkers", MPR_TIMEOUT_PRUNER, pruneWorkers, ws, MPR_EVENT_QUICK);
+    ws->pruneTimer = mprCreateTimerEvent(NULL, "pruneWorkers", 15 * 1000, pruneWorkers, ws, MPR_EVENT_QUICK);
     return 0;
 }
 
@@ -23615,7 +23615,7 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
         another thread to the worker. Must account for workers we've already created but have not yet gone to work 
         and inserted themselves in the idle/busy queues.
      */
-    worker = mprGetFirstItem(ws->idleThreads);
+    worker = mprGetLastItem(ws->idleThreads);
     if (worker) {
         worker->proc = proc;
         worker->data = data;

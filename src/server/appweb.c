@@ -419,11 +419,13 @@ static void statusCheck(void *ignored, MprSignal *sp)
     mprPrintMem("Memory Usage", 1);
 
     for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
-        printf("%2s:%d, Connections %2d, Requests: %2d/%d, Clients IPs %2d/%d, Processes %2d/%d, Threads %2d/%d\n",
+        printf("%2s:%d, Connections %2d, Requests: %2d/%d, Clients IPs %2d/%d, Processes %2d/%d, " \
+            "Threads %2d/%d idle %d busy %d, Sessions %2d/%d\n",
             endpoint->ip ? endpoint->ip : "*", endpoint->port,
             mprGetListLength(http->connections), endpoint->requestCount, endpoint->limits->requestMax,
             endpoint->clientCount, endpoint->limits->clientMax, http->processCount, endpoint->limits->processMax,
-            ws->numThreads, ws->maxThreads);
+            ws->numThreads, ws->maxThreads, ws->idleThreads->length, ws->busyThreads->length,
+            http->sessionCount, endpoint->limits->sessionMax);
     }
     printf("\n");
 }
