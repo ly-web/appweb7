@@ -14,7 +14,7 @@ DFLAGS   += -D_REENTRANT -DPIC
 IFLAGS   += -I$(CONFIG)/inc
 LDFLAGS  += '-Wl,--enable-new-dtags' '-Wl,-rpath,$$ORIGIN/' '-Wl,-rpath,$$ORIGIN/../bin' '-rdynamic'
 LIBPATHS += -L$(CONFIG)/bin
-LIBS     += -lpthread -lm -ldl
+LIBS     += -lpthread -lm -lrt -ldl
 
 CFLAGS-debug    := -DBIT_DEBUG -g
 CFLAGS-release  := -O2

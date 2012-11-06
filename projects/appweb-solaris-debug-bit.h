@@ -30,6 +30,9 @@
 #ifndef BIT_HAS_LIB_EDIT
     #define BIT_HAS_LIB_EDIT 0
 #endif
+#ifndef BIT_HAS_LIB_RT
+    #define BIT_HAS_LIB_RT 0
+#endif
 #ifndef BIT_HAS_MMU
     #define BIT_HAS_MMU 1
 #endif
