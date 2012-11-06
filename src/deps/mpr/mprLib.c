@@ -24108,11 +24108,6 @@ static int leapMonthStart[] = {
     0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 0
 };
 
-#if !LINUX && !MACOSX && !BIT_WIN_LIKE
-static MprTime lastTicks;
-static MprTime adjustTicks = 0;
-#endif
-
 static MprTime daysSinceEpoch(int year);
 static void decodeTime(struct tm *tp, MprTime when, bool local);
 static int getTimeZoneOffsetFromTm(struct tm *tp);
@@ -24131,9 +24126,6 @@ PUBLIC int mprCreateTimeService()
     TimeToken           *tt;
 
     mpr = MPR;
-#if !LINUX && !MACOSX && !BIT_WIN_LIKE
-    lastTicks = mprGetTime();
-#endif
     mpr->timeTokens = mprCreateHash(59, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
     for (tt = days; tt->name; tt++) {
         mprAddKey(mpr->timeTokens, tt->name, (void*) tt);
@@ -24268,7 +24260,8 @@ PUBLIC MprTime mprGetTime()
  */
 PUBLIC MprTicks mprGetTicks()
 {
-#if BIT_WIN_LIKE
+#if BIT_WIN_LIKE && _WIN32_WINNT >= 0x0600
+    /* Windows Vista and later */
     return GetTickCount64();
 #elif MACOSX
     mach_timebase_info_data_t info;
@@ -24283,8 +24276,13 @@ PUBLIC MprTicks mprGetTicks()
     clock_gettime(CLOCK_MONOTONIC, &tv);
     return (MprTicks) (((MprTicks) tv.tv_sec) * 1000) + (tv.tv_nsec / (1000 * 1000));
 #else
+    static MprTime lastTicks;
+    static MprTime adjustTicks = 0;
     MprTime     result, diff;
-    result = mprGetTime() - adjustTicks;
+    if (lastTicks == 0) {
+        lastTicks = mprGetTime();
+    }
+    result = mprGetTime() + adjustTicks;
     if ((diff = (result < lastTicks)) < 0) {
         adjustTicks += diff;
         result += diff;
