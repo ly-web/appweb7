@@ -109,10 +109,10 @@ int main(int argc, char **argv) {
         contents = replace(contents, "AccessLog", "AccessLog \"%s\"", mprJoinPath(logs, "access.log"));
     }
     if (user) {
-        contents = replace(contents, "User", "User %s", user);
+        contents = replace(contents, "UserAccount", "UserAccount %s", user);
     }
     if (group) {
-        contents = replace(contents, "Group", "Group %s", group);
+        contents = replace(contents, "GroupAccount", "GroupAccount %s", group);
     }
     if (cache) {
         contents = replace(contents, "EspDir cache", "EspDir cache \"%s\"", cache);
