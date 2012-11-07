@@ -67,71 +67,169 @@
             <h2 class="section">Changes in 4.1.0</h2>
             <h2>Major Features</h2>
             <ul>
-                <li>Enhanced role-based authentication management for granular access control.</li>
-                <li>Web based form authentication and custom authentication support</li>
-                <li>Customizable back-end password stores.</li>
-                <li>Require ability "token" directive to specify required route abilities for access</li>
+                <li>Enhanced role-based authentication management for granular access control
+                    <a href="https://github.com/embedthis/appweb-4/issues/19">[issue 19].</a>
+                </li>
+                <li>Web based form authentication and custom authentication support
+                    <a href="https://github.com/embedthis/appweb-4/issues/20">[issue 20].</a>
+                </li>
+                <li>Require ability "token" directive to specify required route abilities for access
+                    <a href="https://github.com/embedthis/appweb-4/issues/19">[issue 19].</a>
+                </li>
                 <li>Session state management and automatic cookie management. Optimizes authentication via session
-                storage of credentials. </li> 
-                <li>Other associated authentication changes include:
-                    <ul>
-                        <li>auth/httpPassword program renamed to authpass for clarity</li>
-                        <li>AuthMethod renamed to AuthStore for clarity (old directive preserved for compatibility)</li>
-                        <li>AuthName renamed to AuthRealm for clarity (old directive preserved for compatibility)</li>
-                    </ul>
-                <li>Prototype WebSockets support</li>
+                    storage of credentials
+                    <a href="https://github.com/embedthis/appweb-4/issues/21">[issue 21].</a>
+                </li> 
+                <li>Prototype WebSockets support
+                    <a href="https://github.com/embedthis/appweb-4/issues/22">[issue 22].</a>
+                </li>
             </ul>
             <h3>Minor Features</h3>
             <ul>
-                <li>Added static build support (configure --static)</li>
-                <li>Added ESP migrations</li>
-                <li>Upgraded ESP - Smart tables, HTML5 generation</li>
-                <li>Added HttpOnly cookie management in httpSetCookie()</li>
-                <li>Added lazy SSL loading. SSL library only loaded when SSL requests arrive</li>
-                <li>Support prior SSL library configuration</li>
-                <li>Add mprCreateEventOutside for calling back into Appweb from foreign threads</li>
-                <li>Add SSL unit tests</li>
-                <li>Add ListenSecure directive for SSL outside virtual hosts</li>
-                <li>Add support for Windows 8</li>
-                <li>Add support for Visual Studio 2012</li>
-                <li>Add error output to syslog</li>
-                <li>Add httpFinalizeOutput to signify completed output when still processing request</li>
-                <li>Added Action handler for simple URI to C function bindings</li>
-                <li>Remove *def files on windows. Use PUBLIC export decoration</li>
+                <li>Added static build support (configure --static)
+                    <a href="https://github.com/embedthis/appweb-4/issues/23">[issue 23].</a>
+                </li>
+                <li>Added ESP migrations
+                    <a href="https://github.com/embedthis/appweb-4/issues/24">[issue 24].</a>
+                </li>
+                <li>Upgraded ESP - Smart tables, HTML5 generation </li>
+                <li>Added HttpOnly cookie management in httpSetCookie()
+                    <a href="https://github.com/embedthis/appweb-4/issues/25">[issue 25].</a>
+                </li>
+                <li>Added lazy SSL loading. SSL library only loaded when SSL requests arrive
+                    <a href="https://github.com/embedthis/appweb-4/issues/26">[issue 26].</a>
+                </li>
+                <li>Add mprCreateEventOutside for calling back into Appweb from foreign threads
+                    <a href="https://github.com/embedthis/appweb-4/issues/27">[issue 27].</a>
+                </li>
+                <li>Add SSL unit tests </li>
+                <li>Add ListenSecure directive for SSL outside virtual hosts
+                    <a href="https://github.com/embedthis/appweb-4/issues/28">[issue 28].</a>
+                </li>
+                <li>Add support for Windows 8
+                    <a href="https://github.com/embedthis/appweb-4/issues/29">[issue 29].</a>
+                </li>
+                <li>Add support for Visual Studio 2012
+                    <a href="https://github.com/embedthis/appweb-4/issues/30">[issue 30].</a>
+                </li>
+                <li>Add error output to syslog
+                    <a href="https://github.com/embedthis/appweb-4/issues/31">[issue 31].</a>
+                </li>
+                <li>Add httpFinalizeOutput to signify completed output when still processing request
+                    <a href="https://github.com/embedthis/appweb-4/issues/32">[issue 32].</a>
+                </li>
+                <li>Added Action handler for simple URI to C function bindings
+                    <a href="https://github.com/embedthis/appweb-4/issues/33">[issue 33].</a>
+                </li>
+                <li>Remove *def files on windows. Use PUBLIC export decoration
+                    <a href="https://github.com/embedthis/appweb-4/issues/34">[issue 34].</a>
+                </li>
             </ul>
             <h3>Fixes</h3>
             <ul>
-                <li>Changed name of ESP module entry point. Renamed "controller" to "module".
-                    Existing controllers will need to be modified. </li>
-                <li>Fix documentation version number</li>
-                <li>Refactor scase => scaseless</li>
-                <li>Xcode debug builds to include BIT_DEBUG</li>
-                <li>CGI NPH fixes to not augment CGI headers</li>
-                <li>HTTP/1.0 connection management</li>
-                <li>ESP MDB database JSON format error</li>
-                <li>PUT method response to include Etag and Location</li>
-                <li>Consuming body of failed requests to preserve keep-alive</li>
-                <li>Remove Content-Length handling in responses</li>
-                <li>Http command --show displaying headers when no body in response</li>
-                <li>Fix SSL inheritance in appweb.conf for virtual hosts</li>
-                <li>If-Match header handling for case sensitivity</li>
-                <li>Cookie handling over SSL</li>
-                <li>Chunk parsing for trailing \r\n</li>
-                <li>Option request handling</li>
-                <li>Directory listings path names to be relative paths</li>
-                <li>Etag header handling of 64 bit values</li>
-                <li>Module loading by module name instead of module path</li>
-                <li>Xcode project to use unique output directory</li>
-                <li>Update MatrixSSL support to the latest version</li>
-                <li>Remove zlib not required</li>
-                <li>Rename T() to UT() to avoid winnt.h clash</li>
-                <li>Base64 encoding routines for blocks</li>
-                <li>Locating OpenSSL libraries on 64-bit systems</li>
-                <li>IPv6 unit tests</li>
-                <li>CGI load tests</li>
-                <li>Renamed modules to begin with "lib" so static libraries can work on Linux</li>
-                <li>Mips CPU detection and number to asci conversion on big-endian mips</li>
+                <li>Fix documentation version number
+                    <a href="https://github.com/embedthis/appweb-4/issues/35">[issue 35].</a>
+                </li>
+                <li>Xcode debug builds to include BIT_DEBUG
+                    <a href="https://github.com/embedthis/appweb-4/issues/36">[issue 36].</a>
+                </li>
+                <li>CGI NPH fixes to not augment CGI headers
+                    <a href="https://github.com/embedthis/appweb-4/issues/37">[issue 37].</a>
+                </li>
+                <li>ESP MDB database JSON format error
+                    <a href="https://github.com/embedthis/appweb-4/issues/38">[issue 38].</a>
+                </li>
+                <li>PUT method response to include Etag and Location
+                    <a href="https://github.com/embedthis/appweb-4/issues/39">[issue 39].</a>
+                </li>
+                <li>Consuming body of failed requests to preserve keep-alive
+                    <a href="https://github.com/embedthis/appweb-4/issues/40">[issue 40].</a>
+                </li>
+                <li>Http command --show displaying headers when no body in response
+                    <a href="https://github.com/embedthis/appweb-4/issues/41">[issue 41].</a>
+                </li>
+                <li>Fix SSL inheritance in appweb.conf for virtual hosts
+                    <a href="https://github.com/embedthis/appweb-4/issues/42">[issue 42].</a>
+                </li>
+                <li>If-Match header handling for case sensitivity
+                    <a href="https://github.com/embedthis/appweb-4/issues/43">[issue 43].</a>
+                </li>
+                <li>Option request handling
+                    <a href="https://github.com/embedthis/appweb-4/issues/44">[issue 44].</a>
+                </li>
+                <li>Directory listings path names to be relative paths
+                    <a href="https://github.com/embedthis/appweb-4/issues/45">[issue 45].</a>
+                </li>
+                <li>Xcode project to use unique output directory
+                    <a href="https://github.com/embedthis/appweb-4/issues/46">[issue 46].</a>
+                </li>
+                <li>Update MatrixSSL support to the latest version
+                    <a href="https://github.com/embedthis/appweb-4/issues/47">[issue 47].</a>
+                </li>
+                <li>Remove zlib not required
+                    <a href="https://github.com/embedthis/appweb-4/issues/48">[issue 48].</a>
+                </li>
+                <li>Rename T() to UT() to avoid winnt.h clash
+                    <a href="https://github.com/embedthis/appweb-4/issues/49">[issue 49].</a>
+                </li>
+                <li>Locating OpenSSL libraries on 64-bit systems
+                    <a href="https://github.com/embedthis/appweb-4/issues/50">[issue 50].</a>
+                </li>
+                <li>IPv6 unit tests
+                    <a href="https://github.com/embedthis/appweb-4/issues/51">[issue 51].</a>
+                </li>
+                <li>Renamed modules to begin with "lib" so static libraries can work on Linux
+                    <a href="https://github.com/embedthis/appweb-4/issues/52">[issue 52].</a>
+                </li>
+                <li>Mips CPU detection and number to asci conversion on big-endian mips
+                    <a href="https://github.com/embedthis/appweb-4/issues/53">[issue 53].</a>
+                    <a href="https://github.com/embedthis/appweb-4/issues/54">[issue 54].</a>
+                </li>
+                <li>Optimize memory usage under severe load </li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/55">[issue 55].</a>
+                <li>Premature timer expiry when time-warping
+                    <a href="https://github.com/embedthis/appweb-4/issues/56">[issue 56].</a>
+                </li>
             </ul>
+
+            <h3>API Changes</h3>
+            <ul>
+                <li>Refactor scase => scaseless
+                </li>
+                <li>Changed name of ESP module entry point. Renamed "controller" to "module".
+                Existing controllers will need to be modified. 
+                </li>
+                <li>The HttpConn.finalized field is moved to HttpTx.
+                </li>
+                <li>The httpCreateHandler and httpCreateFilter APIs remove the flags arg.
+                </li>
+                <li>HTTP_STAGE_ALL define and HTTP_STAGE_* flags removed.
+                </li>
+                <li>The httpHandleOPtionsTrace API has a mew "methods" parameter for the supported methods
+                    for the handler. This should be set to a comma separated list of methods in uppercase.
+                    </li>
+                <li>All public methods are decorated with PUBLIC to export from windows DLLs. This is instead of
+                    using dumpbin.
+                    </li>
+                <li>Many time routines have their timeout type renamed to MprTicks from MprTime. As part of a fix
+                for time-zone warping, timeouts are now specified in MprTick values. Ticks are measured in milliseconds
+                from some arbitrary system-dependant starting point. Ticks never go backwards and are monotonically 
+                increasing.
+                </li>
+                <li>The old MprGetTicks is renamed MprGetHiResTime.
+                </li>
+                <li>The LimitStageBuffer directive is renamed LimitBuffer. The old name is supported.
+                </li>
+                <li>The httpWriteBlock API now takes a flags argument. It can be set to control whether the 
+                    call blocks, buffers or non-blocks.
+                    </li>
+                    <li>The WebSockets prototype adds some WebSockets specific APIs.
+                    </li>
+                <li>auth/httpPassword program renamed to authpass for clarity</li>
+                <li>AuthMethod renamed to AuthStore for clarity (old directive preserved for compatibility)</li>
+                <li>AuthName renamed to AuthRealm for clarity (old directive preserved for compatibility) </li>
+            </ul>
+
             <a id="r4.0.0"></a>
             <h2 class="section">Changes in 4.0.0</h2>
             <h3>Major Features</h3>
