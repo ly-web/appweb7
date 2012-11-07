@@ -86,6 +86,8 @@ static void closeCgi(HttpQueue *q)
 }
 
 
+//MOB static int64 nnn = 0;
+
 /*  
     Start the CGI command program. This commences the CGI gateway program. This will be called after content for
     form and upload requests (or if "RunHandler" before specified), otherwise it runs before receiving content data.
@@ -108,6 +110,7 @@ static void startCgi(HttpQueue *q)
     tx = conn->tx;
 
     mprLog(5, "CGI: Start");
+//MOB nnn = 0;
 
     /*
         The command uses the conn dispatcher. This serializes all I/O for both the connection and the CGI gateway
@@ -282,6 +285,7 @@ static void incomingCgi(HttpQueue *q, HttpPacket *packet)
         httpPutForService(q, packet, 0);
     }
     if (cmd) {
+        //MOB mprLog(0, "INCOMING");
         writeToCGI(q);
     }
 }
@@ -303,18 +307,21 @@ static void writeToCGI(HttpQueue *q)
     cmd = (MprCmd*) q->pair->queueData;
     assure(cmd);
     conn = q->conn;
+    mprLog(7, "CGI: writetoCGI qcount %d", q->count);
 
     for (packet = httpGetPacket(q); packet && conn->state < HTTP_STATE_FINALIZED; packet = httpGetPacket(q)) {
         conn->lastActivity = conn->http->now;
         buf = packet->content;
         len = mprGetBufLength(buf);
         rc = mprWriteCmd(cmd, MPR_CMD_STDIN, mprGetBufStart(buf), len);
-        mprLog(5, "CGI: write %d bytes to gateway. Rc rc %d, errno %d", len, rc, mprGetOsError());
+        mprLog(5, "CGI: write %d bytes to gateway. Rc rc %d, errno %d", len, rc, rc < 0 ? mprGetOsError() : 0);
         if (rc < 0) {
             err = mprGetError();
             if (err == EINTR) {
                 continue;
             } else if (err == EAGAIN || err == EWOULDBLOCK) {
+                mprLog(7, "CGI: writeToCGI EAGAIN buf %d qcount %d", mprGetBufLength(buf), q->count);
+                httpPutBackPacket(q, packet);
                 break;
             }
             mprLog(2, "CGI: write to gateway failed for %d bytes, rc %d, errno %d", len, rc, mprGetOsError());
@@ -322,11 +329,14 @@ static void writeToCGI(HttpQueue *q)
             httpError(conn, HTTP_CODE_BAD_GATEWAY, "Can't write body data to CGI gateway");
             break;
         }
+        //MOB nnn += rc;
+        mprLog(7, "CGI: writeToCGI %d/%d, qmax %d", rc, len, q->max);
         mprAdjustBufStart(buf, rc);
         if (mprGetBufLength(buf) > 0) {
             httpPutBackPacket(q, packet);
         }
     }
+    //MOB mprLog(0, "STATE %d, count %d, complete %d, eof %d/%d", conn->state, q->count, cmd->complete, cmd->requiredEof, cmd->eofCount);
     if (q->count == 0 && conn->rx->eof) {
         mprCloseCmdFd(cmd, MPR_CMD_STDIN);
     }
@@ -406,7 +416,9 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
     switch (channel) {
     case MPR_CMD_STDIN:
         /* CGI's stdin can now accept more data */
-        writeToCGI(q->pair);
+        if (q->pair->count > 0) {
+            writeToCGI(q->pair);
+        }
         break;
 
     case MPR_CMD_STDOUT:
@@ -421,6 +433,7 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
         /* Child death notification */
         break;
     }
+    //  MOB 6
     mprLog(6, "cgiCallback: channel %d, complete %d, conn-state %d", channel, cmd->complete, conn->state);
     if (cmd->complete) {
         assure(cmd->pid == 0);
@@ -438,12 +451,23 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
         /*
             Need to test against <= FINALIZED above, because a connection loss will set state to FINALIZED.
          */
-        if (cmd->userFlags & MA_CGI_FLOW_CONTROL) {
+        if (cmd->userFlags & MA_CGI_FLOW_CONTROL || !conn->rx->eof) {
+            /* 
+                If flow controlled, need to listen for write events.
+                If still got content data to read from the client, need a read event.
+             */
             httpEnableConnEvents(conn);
-        } else if (cmd->handlers[channel]) {
-            mprEnableCmdEvents(cmd, channel);
+        } 
+        if (cmd->handlers[channel]) {
+            if (channel != MPR_CMD_STDIN || q->pair->count > 0) {
+                /* Don't enable the STDIN (to the CGI) channel unless we have more data to write */
+                mprEnableCmdEvents(cmd, channel);
+            }
         }
     }
+    /*
+        Important to yield here. Windows polls this routine and we must yield occasionally. 
+     */
     mprYield(0);
     return nbytes;
 }

@@ -28,6 +28,7 @@
 
 #include <errno.h>
 #include <ctype.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -438,6 +439,9 @@ static void printPost(char *buf, size_t len)
 {
     int     i;
 
+#if UNUSED
+    int ofd = open("in.tmp", O_WRONLY | O_TRUNC | O_CREAT, 0664);
+#endif
     if (numPostKeys) {
         printf("<H2>Decoded Post Variables</H2>\r\n");
         for (i = 0; i < (numPostKeys * 2); i += 2) {
@@ -446,10 +450,15 @@ static void printPost(char *buf, size_t len)
 
     } else if (buf) {
         if (len < (50 * 1000)) {
+            printf("<H2>Post Data %d bytes found (data below)</H2>\r\n", (int) len);
             if (write(1, buf, (int) len) != len) {}
         } else {
             printf("<H2>Post Data %d bytes found</H2>\r\n", (int) len);
         }
+#if UNUSED
+        write(ofd, buf, len);
+        close(ofd);
+#endif
 
     } else {
         printf("<H2>No Post Data Found</H2>\r\n");

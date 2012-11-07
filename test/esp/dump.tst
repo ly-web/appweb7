@@ -9,7 +9,7 @@ let http: Http = new Http
 http.get(HTTP + "/dump.esp?a=b&c=d")
 assert(http.status == 200)
 let r = http.response
-assert(r.contains("HEADER User-Agent=Embedthis-http/"))
+assert(r.contains("HEADER User-Agent=Embedthis-http"))
 assert(r.contains("HEADER Date="))
 assert(r.contains("HEADER Host="))
 
