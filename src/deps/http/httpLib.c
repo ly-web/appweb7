@@ -14461,7 +14461,9 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
     if (rx->flags & HTTP_HEAD) {
         conn->tx->flags |= HTTP_TX_NO_BODY;
         httpDiscardData(conn, HTTP_QUEUE_TX);
-        httpAddHeader(conn, "Content-Length", "%Ld", length);
+        if (tx->chunkSize <= 0) {
+            httpAddHeader(conn, "Content-Length", "%Ld", length);
+        }
 
     } else if (tx->length < 0 && tx->chunkSize > 0) {
         httpSetHeaderString(conn, "Transfer-Encoding", "chunked");

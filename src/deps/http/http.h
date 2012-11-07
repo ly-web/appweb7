@@ -41,7 +41,7 @@ struct HttpWebSocket;
 #define HTTP_DEFAULT_PORT 80
 
 #ifndef HTTP_NAME
-#define HTTP_NAME "Embedthis-http/" BIT_VERSION             /**< Default library name used in Http headers */
+#define HTTP_NAME "Embedthis-http"                          /**< Default Http protocol name used in Http Server header */
 #endif
 
 #if BIT_TUNE == MPR_TUNE_SIZE || DOXYGEN

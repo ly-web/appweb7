@@ -6773,8 +6773,8 @@ PUBLIC void mprSetThreadPriority(MprThread *thread, int priority);
  */
 PUBLIC int mprStartThread(MprThread *thread);
 
-#define MPR_YIELD_BLOCK     0x1
-#define MPR_YIELD_STICKY    0x2
+#define MPR_YIELD_BLOCK     0x1     /* Yield and wait until GC */
+#define MPR_YIELD_STICKY    0x2     /* Yield and remain yielded until reset */
 
 /**
     Yield a thread to allow garbage collection
