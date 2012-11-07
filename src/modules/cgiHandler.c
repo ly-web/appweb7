@@ -86,8 +86,6 @@ static void closeCgi(HttpQueue *q)
 }
 
 
-//MOB static int64 nnn = 0;
-
 /*  
     Start the CGI command program. This commences the CGI gateway program. This will be called after content for
     form and upload requests (or if "RunHandler" before specified), otherwise it runs before receiving content data.
@@ -110,7 +108,6 @@ static void startCgi(HttpQueue *q)
     tx = conn->tx;
 
     mprLog(5, "CGI: Start");
-//MOB nnn = 0;
 
     /*
         The command uses the conn dispatcher. This serializes all I/O for both the connection and the CGI gateway
@@ -285,7 +282,7 @@ static void incomingCgi(HttpQueue *q, HttpPacket *packet)
         httpPutForService(q, packet, 0);
     }
     if (cmd) {
-        //MOB mprLog(0, "INCOMING");
+        //MOB mprLog(0, "INCOMING qcount %d", q->count);
         writeToCGI(q);
     }
 }
@@ -307,20 +304,20 @@ static void writeToCGI(HttpQueue *q)
     cmd = (MprCmd*) q->pair->queueData;
     assure(cmd);
     conn = q->conn;
-    mprLog(7, "CGI: writetoCGI qcount %d", q->count);
+    //MOB mprLog(0, "CGI: writetoCGI TOP qcount %d", q->count);
 
     for (packet = httpGetPacket(q); packet && conn->state < HTTP_STATE_FINALIZED; packet = httpGetPacket(q)) {
         conn->lastActivity = conn->http->now;
         buf = packet->content;
         len = mprGetBufLength(buf);
         rc = mprWriteCmd(cmd, MPR_CMD_STDIN, mprGetBufStart(buf), len);
-        mprLog(5, "CGI: write %d bytes to gateway. Rc rc %d, errno %d", len, rc, rc < 0 ? mprGetOsError() : 0);
+        //MOB mprLog(0, "CGI: write %d bytes to gateway. Rc rc %d, errno %d", len, rc, rc < 0 ? mprGetOsError() : 0);
         if (rc < 0) {
             err = mprGetError();
             if (err == EINTR) {
                 continue;
             } else if (err == EAGAIN || err == EWOULDBLOCK) {
-                mprLog(7, "CGI: writeToCGI EAGAIN buf %d qcount %d", mprGetBufLength(buf), q->count);
+        //MOB mprLog(0, "CGI: writeToCGI EAGAIN buf %d qcount %d", mprGetBufLength(buf), q->count);
                 httpPutBackPacket(q, packet);
                 break;
             }
@@ -329,16 +326,20 @@ static void writeToCGI(HttpQueue *q)
             httpError(conn, HTTP_CODE_BAD_GATEWAY, "Can't write body data to CGI gateway");
             break;
         }
-        //MOB nnn += rc;
         mprLog(7, "CGI: writeToCGI %d/%d, qmax %d", rc, len, q->max);
         mprAdjustBufStart(buf, rc);
         if (mprGetBufLength(buf) > 0) {
             httpPutBackPacket(q, packet);
         }
     }
-    //MOB mprLog(0, "STATE %d, count %d, complete %d, eof %d/%d", conn->state, q->count, cmd->complete, cmd->requiredEof, cmd->eofCount);
-    if (q->count == 0 && conn->rx->eof) {
-        mprCloseCmdFd(cmd, MPR_CMD_STDIN);
+    //MOB mprLog(0, "leaving writeToCgi, STATE %d, count %d, complete %d, eof %d/%d", conn->state, q->count, cmd->complete, cmd->eofCount, cmd->requiredEof);
+    if (q->count == 0) {
+        if (conn->rx->eof) {
+            mprCloseCmdFd(cmd, MPR_CMD_STDIN);
+        }
+    } else {
+        //MOB mprLog(0, "#### ENABLE CMD from writeToCGI");
+        mprEnableCmdEvents(cmd, MPR_CMD_STDIN);
     }
 }
 
@@ -413,6 +414,7 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
     conn->lastActivity = conn->http->now;
     q = conn->writeq;
 
+//MOBmprLog(0, "CALLBACK @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ qcount %d", q->count);
     switch (channel) {
     case MPR_CMD_STDIN:
         /* CGI's stdin can now accept more data */
@@ -434,7 +436,7 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
         break;
     }
     //  MOB 6
-    mprLog(6, "cgiCallback: channel %d, complete %d, conn-state %d", channel, cmd->complete, conn->state);
+    //MOBmprLog(0, "cgiCallback MID: qcount %d, channel %d, complete %d, conn-state %d", q->pair->count, channel, cmd->complete, conn->state);
     if (cmd->complete) {
         assure(cmd->pid == 0);
         assure(!cmd->handlers[0] && !cmd->handlers[1] && !cmd->handlers[2]);
@@ -451,16 +453,20 @@ static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
         /*
             Need to test against <= FINALIZED above, because a connection loss will set state to FINALIZED.
          */
+//MOBmprLog(0, "Flags %x, eof %d, handles %p", cmd->userFlags, conn->rx->eof, cmd->handlers[channel]);
         if (cmd->userFlags & MA_CGI_FLOW_CONTROL || !conn->rx->eof) {
             /* 
                 If flow controlled, need to listen for write events.
                 If still got content data to read from the client, need a read event.
              */
             httpEnableConnEvents(conn);
+//MOB mprLog(0, "ENABLE CONN desired %d", conn->sock->handler->desiredMask);
         } 
         if (cmd->handlers[channel]) {
+//MOB mprLog(0, "HERE channel %d, count %d", channel, q->pair->count);
             if (channel != MPR_CMD_STDIN || q->pair->count > 0) {
                 /* Don't enable the STDIN (to the CGI) channel unless we have more data to write */
+//MOB mprLog(0, "ENABLE CMD");
                 mprEnableCmdEvents(cmd, channel);
             }
         }
@@ -511,6 +517,7 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
                 if (err == EINTR) {
                     continue;
                 } else if (err == EAGAIN || err == EWOULDBLOCK) {
+//MOB mprLog(0, "EAGAIN");
                     break;
                 }
                 mprLog(5, "CGI: Gateway read error %d for %s", err, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");

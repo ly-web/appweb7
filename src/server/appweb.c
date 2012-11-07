@@ -312,7 +312,6 @@ static int initializeAppweb(cchar *ip, int port)
 #if defined(SIGINFO)
     app->traceToggle = mprAddSignalHandler(SIGINFO, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
 #elif defined(SIGRTMIN)
-    mprLog(4, "Trap SIGRTMIN %d\n", SIGRTMIN);
     app->traceToggle = mprAddSignalHandler(SIGRTMIN, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
 #endif
 #endif
