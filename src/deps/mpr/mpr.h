@@ -4067,11 +4067,11 @@ PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout);
 PUBLIC MprTicks mprGetElapsedTicks(MprTicks mark);
 
 /**
-    Get the elapsed time since a starting time.
+    Get the elapsed time since a starting time mark.
     @param mark Starting time created via mprGetTime()
     @returns the time elapsed since the mark was taken.
  */
-PUBLIC MprTime mprGetElapsedTime(MprTime when);
+PUBLIC MprTime mprGetElapsedTime(MprTime mark);
 
 /*
     Convert a time structure into a time value using local time.

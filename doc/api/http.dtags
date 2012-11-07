@@ -684,13 +684,6 @@
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>httpConsumeLastRequest</name>
-      <anchorfile>group___http_conn.html</anchorfile>
-      <anchor>gaccd6b761a2e2210659c1cf5cde049883</anchor>
-      <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
       <type>HttpConn *</type>
       <name>httpCreateConn</name>
       <anchorfile>group___http_conn.html</anchorfile>
@@ -824,6 +817,13 @@
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>httpGetMoreOutput</name>
+      <anchorfile>group___http_conn.html</anchorfile>
+      <anchor>ga50c5f8d87dd5ada21612f28d2d6fd782</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
       <type>ssize</type>
       <name>httpGetWriteQueueCount</name>
       <anchorfile>group___http_conn.html</anchorfile>
@@ -853,24 +853,17 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>httpPostEvent</name>
+      <anchorfile>group___http_conn.html</anchorfile>
+      <anchor>ga53c72a19981c90039b3a4f8292b215e8</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>httpPrepClientConn</name>
       <anchorfile>group___http_conn.html</anchorfile>
       <anchor>gae24ec30899bb6b77e4840e6090aa2289</anchor>
       <arglist>(HttpConn *conn, bool keepHeaders)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>httpPrepServerConn</name>
-      <anchorfile>group___http_conn.html</anchorfile>
-      <anchor>gabfeb308d38f76b57e733459151ae1280</anchor>
-      <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>httpPumpHandler</name>
-      <anchorfile>group___http_conn.html</anchorfile>
-      <anchor>gab592a3b7c83415904a1ddbe08d24ea89</anchor>
-      <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1016,15 +1009,15 @@
       <type>void</type>
       <name>httpSetTimeout</name>
       <anchorfile>group___http_conn.html</anchorfile>
-      <anchor>ga62a6f4aec1892bd682d7a661d1aae4ee</anchor>
-      <arglist>(HttpConn *conn, int requestTimeout, int inactivityTimeout)</arglist>
+      <anchor>gaa4b4def5658e51af56d186e0b35ace55</anchor>
+      <arglist>(HttpConn *conn, MprTicks requestTimeout, MprTicks inactivityTimeout)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>httpSetTimestamp</name>
       <anchorfile>group___http_conn.html</anchorfile>
-      <anchor>gac7efa91325e9b336e4c680284c0ac1e5</anchor>
-      <arglist>(MprTime period)</arglist>
+      <anchor>gaac1789f20731bd9cbb129153f8ee7a07</anchor>
+      <arglist>(MprTicks period)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1280,15 +1273,15 @@
       <type>void</type>
       <name>httpAddCache</name>
       <anchorfile>group___http_cache.html</anchorfile>
-      <anchor>ga4ad093cda475dbb84ed4681753604d3a</anchor>
-      <arglist>(struct HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types, MprTime clientLifespan, MprTime serverLifespan, int flags)</arglist>
+      <anchor>gad23f207942ba83542e4d995a3f765681</anchor>
+      <arglist>(struct HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types, MprTicks clientLifespan, MprTicks serverLifespan, int flags)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
       <name>httpUpdateCache</name>
       <anchorfile>group___http_cache.html</anchorfile>
-      <anchor>gaa8e188110223d9b4e3503e7d3ae34b98</anchor>
-      <arglist>(HttpConn *conn, cchar *uri, cchar *data, MprTime lifespan)</arglist>
+      <anchor>ga2fd7b63c7f3834cd41260a22983cd932</anchor>
+      <arglist>(HttpConn *conn, cchar *uri, cchar *data, MprTicks lifespan)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -1337,20 +1330,6 @@
       <anchorfile>group___http_route.html</anchorfile>
       <anchor>ga88589290f2ddbebfdf376b86d171c9b9</anchor>
       <arglist>(HttpRoute *route, int status, cchar *uri)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>httpAddRouteExpiry</name>
-      <anchorfile>group___http_route.html</anchorfile>
-      <anchor>ga2ccff8ec61ebdbeed26c7465ac67f839</anchor>
-      <arglist>(HttpRoute *route, MprTime when, cchar *extensions)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>httpAddRouteExpiryByType</name>
-      <anchorfile>group___http_route.html</anchorfile>
-      <anchor>gada4fee2b5cbc719ccfb31bba0e061de8</anchor>
-      <arglist>(HttpRoute *route, MprTime when, cchar *mimeTypes)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -1809,8 +1788,8 @@
       <type>HttpSession *</type>
       <name>httpAllocSession</name>
       <anchorfile>group___http_session.html</anchorfile>
-      <anchor>ga222b4da34341c4226a32f988ec0ab7f9</anchor>
-      <arglist>(HttpConn *conn, cchar *id, MprTime lifhttpan)</arglist>
+      <anchor>ga8eb6b74c4f7ce9cad48eb099de634dcd</anchor>
+      <arglist>(HttpConn *conn, cchar *id, MprTicks lifespan)</arglist>
     </member>
     <member kind="function">
       <type>HttpSession *</type>
@@ -2040,10 +2019,10 @@
       <arglist>(HttpConn *conn, cchar *var, cchar *expected)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>httpPump</name>
+      <type>bool</type>
+      <name>httpPumpRequest</name>
       <anchorfile>group___http_rx.html</anchorfile>
-      <anchor>gaf5503f75323ec0c6df1b3ee5615ad496</anchor>
+      <anchor>gabec750f9be88c9321ffe026fdabf7b90</anchor>
       <arglist>(HttpConn *conn, HttpPacket *packet)</arglist>
     </member>
     <member kind="function">
@@ -2286,8 +2265,8 @@
       <type>void</type>
       <name>httpSetCookie</name>
       <anchorfile>group___http_tx.html</anchorfile>
-      <anchor>ga68ecc4498804bac99cc0c150a036c96e</anchor>
-      <arglist>(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTime lifespan, int flags)</arglist>
+      <anchor>ga90ec75fb3e35ce351e132d0e933e0147</anchor>
+      <arglist>(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan, int flags)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2328,8 +2307,8 @@
       <type>int</type>
       <name>httpWait</name>
       <anchorfile>group___http_tx.html</anchorfile>
-      <anchor>ga3403d2b2f33202d649ccd0ef003e1279</anchor>
-      <arglist>(HttpConn *conn, int state, MprTime timeout)</arglist>
+      <anchor>ga41b659331b27770caefc4a2920f0aad8</anchor>
+      <arglist>(HttpConn *conn, int state, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2505,6 +2484,13 @@
       <name>httpGetWebSocketProtocol</name>
       <anchorfile>group___http_web_socket.html</anchorfile>
       <anchor>gad908e15f337a359e0f90258621d1329b</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>ssize</type>
+      <name>httpGetWebSocketState</name>
+      <anchorfile>group___http_web_socket.html</anchorfile>
+      <anchor>ga026b733296a4ce32bd0e71902a26db8b</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">

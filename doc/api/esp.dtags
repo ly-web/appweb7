@@ -955,8 +955,8 @@
       <type>void</type>
       <name>espSetCookie</name>
       <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gab3fa02a25383898985307c8c12ab9147</anchor>
-      <arglist>(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTime lifespan, bool isSecure)</arglist>
+      <anchor>ga58039e1fafe24481848bf1b47a2d444f</anchor>
+      <arglist>(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan, bool isSecure)</arglist>
     </member>
     <member kind="function">
       <type>EdiRec *</type>
@@ -1805,8 +1805,8 @@
       <type>void</type>
       <name>setCookie</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>ga85b884db9ea1993efaa01dbe686f601c</anchor>
-      <arglist>(cchar *name, cchar *value, cchar *path, cchar *domain, MprTime lifespan, bool isSecure)</arglist>
+      <anchor>gaea6086cd23b087b13921a4028940792c</anchor>
+      <arglist>(cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan, bool isSecure)</arglist>
     </member>
     <member kind="function">
       <type>EdiRec *</type>
@@ -1875,8 +1875,8 @@
       <type>void</type>
       <name>setTimeout</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>gadeaed6401e64556c1a6ed364b47704aa</anchor>
-      <arglist>(void *proc, MprTime timeout, void *data)</arglist>
+      <anchor>ga07243a4b521119ce41362163afb45032</anchor>
+      <arglist>(void *proc, MprTicks timeout, void *data)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
