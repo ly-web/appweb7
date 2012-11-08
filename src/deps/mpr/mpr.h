@@ -68,32 +68,61 @@
 #define MPR_CPU_SPARC       7           /**< Sparc */
 
 /*
-    Use compiler definitions to determine the CPU
+    Byte orderings
+ */
+#define MPR_LITTLE_ENDIAN   1
+#define MPR_BIG_ENDIAN      2
+
+/*
+    Use compiler definitions to determine the CPU type. 
+    The endianness can be overridden by configure --endian big|little.
  */
 #if defined(__alpha__)
     #define BIT_CPU "ALPHA"
     #define BIT_CPU_ARCH MPR_CPU_ALPHA
+    #define CPU_ENDIAN MPR_LITTLE_ENDIAN
+
 #elif defined(__arm__)
     #define BIT_CPU "ARM"
     #define BIT_CPU_ARCH MPR_CPU_ARM
+    #define CPU_ENDIAN MPR_LITTLE_ENDIAN
+
 #elif defined(__x86_64__) || defined(_M_AMD64)
     #define BIT_CPU "x64"
     #define BIT_CPU_ARCH MPR_CPU_X64
+    #define CPU_ENDIAN MPR_LITTLE_ENDIAN
+
 #elif defined(__i386__) || defined(__i486__) || defined(__i585__) || defined(__i686__) || defined(_M_IX86)
     #define BIT_CPU "x86"
     #define BIT_CPU_ARCH MPR_CPU_X86
+    #define CPU_ENDIAN MPR_LITTLE_ENDIAN
+
 #elif defined(_M_IA64)
     #define BIT_CPU "IA64"
     #define BIT_CPU_ARCH MPR_CPU_ITANIUM
+    #define CPU_ENDIAN MPR_LITTLE_ENDIAN
+
 #elif defined(__mips__)
     #define BIT_CPU "MIPS"
     #define BIT_CPU_ARCH MPR_CPU_MIPS
+    #define CPU_ENDIAN MPR_BIG_ENDIAN
+
 #elif defined(__ppc__) || defined(__powerpc__) || defined(__ppc64__)
     #define BIT_CPU "PPC"
     #define BIT_CPU_ARCH MPR_CPU_PPC
+    #define CPU_ENDIAN MPR_BIG_ENDIAN
+
 #elif defined(__sparc__)
     #define BIT_CPU "SPARC"
     #define BIT_CPU_ARCH MPR_CPU_SPARC
+    #define CPU_ENDIAN MPR_BIG_ENDIAN
+#endif
+
+/*
+    Set endian if bit.h does not define it first
+ */
+#ifndef BIT_ENDIAN
+    #define BIT_ENDIAN CPU_ENDIAN
 #endif
 
 /*
@@ -1552,17 +1581,6 @@ struct  MprXml;
 #else
     #define MPR_INLINE inline
 #endif
-
-/*
-    Byte orderings
- */
-#define MPR_LITTLE_ENDIAN   1
-#define MPR_BIG_ENDIAN      2
-
-#ifndef BIT_ENDIAN
-    #define BIT_ENDIAN      MPR_LITTLE_ENDIAN
-#endif
-#define MPR_ENDIAN          BIT_ENDIAN
 
 /************************************** Debug *********************************/
 /**
