@@ -70,12 +70,12 @@
 /*
     Byte orderings
  */
-#define MPR_LITTLE_ENDIAN   1
-#define MPR_BIG_ENDIAN      2
+#define MPR_LITTLE_ENDIAN   1           /**< Little endian byte ordering */
+#define MPR_BIG_ENDIAN      2           /**< Big endian byte ordering */
 
 /*
     Use compiler definitions to determine the CPU type. 
-    The endianness can be overridden by configure --endian big|little.
+    The default endianness can be overridden by configure --endian big|little.
  */
 #if defined(__alpha__)
     #define BIT_CPU "ALPHA"
@@ -107,7 +107,7 @@
     #define BIT_CPU_ARCH MPR_CPU_MIPS
     #define CPU_ENDIAN MPR_BIG_ENDIAN
 
-#elif defined(__ppc__) || defined(__powerpc__) || defined(__ppc64__)
+#elif defined(__ppc__) || defined(__powerpc__) || defined(__ppc64__) || defined(__ppc)
     #define BIT_CPU "PPC"
     #define BIT_CPU_ARCH MPR_CPU_PPC
     #define CPU_ENDIAN MPR_BIG_ENDIAN
@@ -116,10 +116,13 @@
     #define BIT_CPU "SPARC"
     #define BIT_CPU_ARCH MPR_CPU_SPARC
     #define CPU_ENDIAN MPR_BIG_ENDIAN
+
+#else
+    #error "Cannot determine CPU type in mpr.h"
 #endif
 
 /*
-    Set endian if bit.h does not define it first
+    Set the default endian if bit.h does not define it explicitly
  */
 #ifndef BIT_ENDIAN
     #define BIT_ENDIAN CPU_ENDIAN
@@ -135,71 +138,85 @@
     #define MACOSX 1
     #define BIT_UNIX_LIKE 1
     #define BIT_WIN_LIKE 0
+
 #elif defined(__linux__)
     #define BIT_OS "linux"
     #define LINUX 1
     #define BIT_UNIX_LIKE 1
     #define BIT_WIN_LIKE 0
+
 #elif defined(__FreeBSD__)
     #define BIT_OS "freebsd"
     #define FREEBSD 1
     #define BIT_UNIX_LIKE 1
     #define BIT_WIN_LIKE 0
+
 #elif defined(_WIN32)
     #define BIT_OS "windows"
     #define WINDOWS 1
     #define BIT_UNIX_LIKE 0
     #define BIT_WIN_LIKE 1
+
 #elif defined(__OS2__)
     #define BIT_OS "os2"
     #define OS2 0
     #define BIT_UNIX_LIKE 0
     #define BIT_WIN_LIKE 0
+
 #elif defined(MSDOS) || defined(__DOS__)
     #define BIT_OS "msdos"
     #define WINDOWS 0
     #define BIT_UNIX_LIKE 0
     #define BIT_WIN_LIKE 0
+
 #elif defined(__NETWARE_386__)
     #define BIT_OS "netware"
     #define NETWARE 0
     #define BIT_UNIX_LIKE 0
     #define BIT_WIN_LIKE 0
+
 #elif defined(__bsdi__)
     #define BIT_OS "bsdi"
     #define BSDI 1
     #define BIT_UNIX_LIKE 1
     #define BIT_WIN_LIKE 0
+
 #elif defined(__NetBSD__)
     #define BIT_OS "netbsd"
     #define NETBSD 1
     #define BIT_UNIX_LIKE 1
     #define BIT_WIN_LIKE 0
+
 #elif defined(__QNX__)
     #define BIT_OS "qnx"
     #define QNX 0
     #define BIT_UNIX_LIKE 0
     #define BIT_WIN_LIKE 0
+
 #elif defined(__hpux)
     #define BIT_OS "hpux"
     #define HPUX 1
     #define BIT_UNIX_LIKE 1
     #define BIT_WIN_LIKE 0
+
 #elif defined(_AIX)
     #define BIT_OS "aix"
     #define AIX 1
     #define BIT_UNIX_LIKE 1
     #define BIT_WIN_LIKE 0
+
 #elif defined(__CYGWIN__)
     #define BIT_OS "cygwin"
     #define CYGWIN 1
     #define BIT_UNIX_LIKE 1
     #define BIT_WIN_LIKE 0
+
 #elif defined(__VMS)
     #define BIT_OS "vms"
     #define VMS 1
     #define BIT_UNIX_LIKE 0
     #define BIT_WIN_LIKE 0
+
 #elif defined(VXWORKS)
     /* VxWorks does not have a pre-defined symbol */
     #define BIT_OS "vxworks"
