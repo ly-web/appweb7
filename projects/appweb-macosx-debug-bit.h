@@ -21,9 +21,6 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
-#ifndef BIT_ENDIAN
-    #define BIT_ENDIAN 1
-#endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 1
 #endif
