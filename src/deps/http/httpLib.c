@@ -2213,15 +2213,9 @@ static void manageConn(HttpConn *conn, int flags)
         mprMark(conn->host);
         mprMark(conn->limits);
         mprMark(conn->http);
-#if UNUSED
-        mprMark(conn->stages);
-#endif
         mprMark(conn->dispatcher);
         mprMark(conn->newDispatcher);
         mprMark(conn->oldDispatcher);
-#if UNUSED
-        mprMark(conn->waitHandler);
-#endif
         mprMark(conn->sock);
         mprMark(conn->serviceq);
         mprMark(conn->currentq);
@@ -2267,12 +2261,6 @@ PUBLIC void httpCloseConn(HttpConn *conn)
 
     if (conn->sock) {
         mprLog(5, "Closing connection");
-#if UNUSED
-        if (conn->waitHandler) {
-            mprRemoveWaitHandler(conn->waitHandler);
-            conn->waitHandler = 0;
-        }
-#endif
         mprCloseSocket(conn->sock, 0);
 #if BIT_DEBUG
         //  MOB - remove
@@ -2319,12 +2307,6 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
         }
     }
     httpDestroyConn(conn);
-#if UNUSED
-    httpDisconnect(conn);
-    httpDiscardQueueData(conn->writeq, 1);
-    httpEnableConnEvents(conn);
-    conn->timeoutEvent = 0;
-#endif
 }
 
 
@@ -2569,14 +2551,7 @@ PUBLIC MprSocket *httpStealConn(HttpConn *conn)
     sock = conn->sock;
     conn->sock = 0;
 
-#if UNUSED
-    if (conn->waitHandler) {
-        mprRemoveWaitHandler(conn->waitHandler);
-        conn->waitHandler = 0;
-    }
-#else
     mprRemoveSocketHandler(conn->sock);
-#endif
     if (conn->http) {
         lock(conn->http);
         httpRemoveConn(conn->http, conn);
@@ -2628,21 +2603,10 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
                 Enable read events if the read queue is not full. 
              */
             q = conn->readq;
-#if UNUSED
-            assure(q == tx->queue[HTTP_QUEUE_RX]->prevQ);
-            //  MOB - should be prevQ
-            q = tx->queue[HTTP_QUEUE_RX]->nextQ;
-#endif
-            //  MOB - why rx->form?
-            if (q->count < q->max || rx->form) {
+            if (q->count < q->max && !rx->eof /* UNUSED || rx->form */) {
                 eventMask |= MPR_READABLE;
             }
-#if UNUSED && MOB01
-        //  MOB - tested above - remove this test
-        } else if (!mprIsSocketEof(conn->sock)) {
-#else 
         } else {
-#endif
             eventMask |= MPR_READABLE;
         }
         httpSetupWaitHandler(conn, eventMask);
@@ -5067,6 +5031,7 @@ static bool isIdle()
 PUBLIC void httpAddConn(Http *http, HttpConn *conn)
 {
     http->now = mprGetTicks();
+    assure(http->now >= 0);
     conn->started = http->now;
     mprAddItem(http->connections, conn);
     updateCurrentDate(http);
@@ -5190,6 +5155,7 @@ PUBLIC void httpSetProxy(Http *http, cchar *host, int port)
 static void updateCurrentDate(Http *http)
 {
     http->now = mprGetTicks();
+    assure(http->now >= 0);
     if (http->now > (http->currentTime + MPR_TICKS_PER_SEC - 1)) {
         /*
             Optimize and only update the string date representation once per second
@@ -5614,6 +5580,8 @@ static void netOutgoingService(HttpQueue *q)
     }
     if (q->ioCount == 0) {
         if ((q->flags & HTTP_QUEUE_EOF)) {
+            assure(conn->writeq->count == 0);
+            assure(conn->tx->finalizedOutput);
             httpFinalizeConnector(conn);
         } else {
             HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
@@ -5647,6 +5615,8 @@ static MprOff buildNetVec(HttpQueue *q)
             httpWriteHeaders(q, packet);
 
         } else if (packet->flags & HTTP_PACKET_END) {
+            assure(conn->writeq->count == 0);
+            assure(conn->tx->finalizedOutput);
             q->flags |= HTTP_QUEUE_EOF;
             if (packet->prefix == NULL) {
                 break;
@@ -7534,18 +7504,20 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize len, int flags)
             }
             httpPutForService(q, packet, HTTP_DELAY_SERVICE);
         }
+        assure(mprGetBufSpace(packet->content) > 0);
         thisWrite = min(len, mprGetBufSpace(packet->content));
         if (flags & (HTTP_BLOCK | HTTP_NON_BLOCK)) {
             thisWrite = min(thisWrite, q->max - q->count);
         }
-        if ((thisWrite = mprPutBlockToBuf(packet->content, buf, thisWrite)) == 0) {
-            return MPR_ERR_MEMORY;
+        if (thisWrite > 0) {
+            if ((thisWrite = mprPutBlockToBuf(packet->content, buf, thisWrite)) == 0) {
+                return MPR_ERR_MEMORY;
+            }
+            buf += thisWrite;
+            len -= thisWrite;
+            q->count += thisWrite;
+            totalWritten += thisWrite;
         }
-        buf += thisWrite;
-        len -= thisWrite;
-        q->count += thisWrite;
-        totalWritten += thisWrite;
-
         if (q->count >= q->max) {
             httpFlushQueue(q, 0);
             if (q->count >= q->max) {
@@ -12126,6 +12098,9 @@ static bool processRunning(HttpConn *conn)
             if (q->flags & HTTP_QUEUE_SUSPENDED) {
                 httpResumeQueue(q);
             }
+            /* Need to give events a chance to run. Otherwise can ping/pong suspend to resume */
+            canProceed = 0;
+
         } else {
             /* Wait for output to drain */
             tx->writeBlocked = 1;
@@ -12147,11 +12122,6 @@ static bool processRunning(HttpConn *conn)
             } else {
                 assure(0);
             }
-#if UNUSED
-            //  MOB - should not do this MOB77
-            httpSetState(conn, HTTP_STATE_FINALIZED);
-            assure(canProceed);
-#endif
         }
     }
     return canProceed;
@@ -13006,6 +12976,8 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     }
     if (q->ioCount == 0) {
         if ((q->flags & HTTP_QUEUE_EOF)) {
+            assure(conn->writeq->count == 0);
+            assure(conn->tx->finalizedOutput);
             httpFinalizeConnector(conn);
         } else {
             HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);

@@ -4257,25 +4257,6 @@ typedef struct HttpRx {
     int             autoDelete;             /**< Automatically delete uploaded files */
 
     struct HttpWebSocket *webSocket;        /**< WebSocket state */
-#if MOVED
-    /*
-        WebSockets fields
-     */
-    HttpPacket      *currentFrame;          /**< Pending message frame */
-    HttpPacket      *currentMessage;        /**< Pending message frame */
-    char            *extensions;            /**< WebSocket extensions */
-    ssize           frameLength;            /**< Length of the current frame */
-    uchar           dataMask[4];            /**< Mask for data */
-    int             maskOffset;             /**< Offset in dataMask */
-    int             closing;                /**< Started closing sequnce */
-    int             closeStatus;            /**< Close status provided by peer */
-    char            *closeReason;           /**< Reason for closure */
-    MprEvent        *pingEvent;             /**< Ping timer event */
-    char            *subProtocol;           /**< Application level sub-protocol */
-    char            *webSockKey;            /**< Sec-WebSocket-Key header */
-    char            *webSockProtocols;      /**< Sec-WebSocket-Protocol header */
-    int             webSockVersion;         /**< Sec-WebSocket-Version header */
-#endif
 
     /*
         Routing info
