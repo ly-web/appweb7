@@ -56,7 +56,6 @@
 /********************************* CPU Families *******************************/
 /*
     CPU Architectures
-    MOB - change to BIT_CPU
  */
 #define MPR_CPU_UNKNOWN     0
 #define MPR_CPU_ARM         1           /**< Arm */
@@ -3406,36 +3405,6 @@ PUBLIC ssize mprPrintf(cchar *fmt, ...);
  */
 PUBLIC ssize mprFprintf(struct MprFile *file, cchar *fmt, ...);
 
-#if UNUSED
-//  MOB - need a short name: fmt()?
-/**
-    Format a string into a statically allocated buffer.
-    @description This call format a string using printf style formatting arguments. A trailing null will 
-        always be appended. The call returns the size of the allocated string excluding the null.
-    @param buf Pointer to the buffer.
-    @param maxSize Size of the buffer.
-    @param fmt Printf style format string
-    @param ... Variable arguments to format
-    @return Returns the buffer.
-    @ingroup MprString
- */
-PUBLIC char *mprSprintf(char *buf, ssize maxSize, cchar *fmt, ...);
-
-//  MOB - need a short name: fmtv()?
-/**
-    Format a string into a statically allocated buffer.
-    @description This call format a string using printf style formatting arguments. A trailing null will 
-        always be appended. The call returns the size of the allocated string excluding the null.
-    @param buf Pointer to the buffer.
-    @param maxSize Size of the buffer.
-    @param fmt Printf style format string
-    @param args Varargs argument obtained from va_start.
-    @return Returns the buffer;
-    @ingroup MprString
- */
-PUBLIC char *fmtv(char *buf, ssize maxSize, cchar *fmt, va_list args);
-#endif
-
 //  DEPRECATED
 /**
     Format a string into an allocated buffer.
@@ -3520,7 +3489,7 @@ typedef int (*MprBufProc)(struct MprBuf* bp, void *arg);
     For performance, the specification of MprBuf is deliberately exposed. All members of MprBuf are implicitly public.
     However, it is still recommended that wherever possible, you use the accessor routines provided.
     @stability Stable.
-    @see MprBuf MprBufProc mprAddNullToBuf mprAddNullToWideBuf mprAdjustBufEnd mprAdjustBufStart mprCloneBuf 
+    @see MprBuf MprBufProc mprAddNullToBuf mprAddNullToWideBuf mprAdjustBufEnd mprAdjustBufStart mprBufToString mprCloneBuf 
         mprCompactBuf mprCreateBuf mprFlushBuf mprGetBlockFromBuf mprGetBufEnd mprGetBufLength mprGetBufOrigin 
         mprGetBufRefillProc mprGetBufSize mprGetBufSpace mprGetBufStart mprGetCharFromBuf mprGrowBuf 
         mprInsertCharToBuf mprLookAtLastCharInBuf mprLookAtNextCharInBuf mprPutBlockToBuf mprPutCharToBuf 
@@ -3574,6 +3543,14 @@ PUBLIC void mprAdjustBufEnd(MprBuf *buf, ssize count);
     @ingroup MprBuf
  */
 PUBLIC void mprAdjustBufStart(MprBuf *buf, ssize count);
+
+/**
+    Convert the buffer contents to a string
+    @param buf Buffer created via mprCreateBuf
+    @returns Allocated string
+    @ingroup MprBuf
+*/
+PUBLIC char *mprBufToString(MprBuf *buf);
 
 /**
     Create a new buffer
@@ -3675,7 +3652,6 @@ PUBLIC ssize mprGetBufSize(MprBuf *buf);
  */
 PUBLIC ssize mprGetBufSpace(MprBuf *buf);
 
-//  MOB - need mprBufToString() which adds a null and returns mprGetBufStart()
 /**
     Get the start of the buffer contents
     @description Get a pointer to the start of the buffer contents. Use #mprGetBufLength to determine the length
@@ -6147,10 +6123,10 @@ typedef struct MprEvent {
 /*
     Dispatcher flags
  */
-#define MPR_DISPATCHER_ENABLED      0x1
-#define MPR_DISPATCHER_WAITING      0x2
-#define MPR_DISPATCHER_DESTROYED    0x4
-#define MPR_DISPATCHER_AUTO_CREATE  0x8
+#define MPR_DISPATCHER_ENABLED      0x1 /**< Dispacher is enabled */
+#define MPR_DISPATCHER_WAITING      0x2 /**< Dispatcher waiting for an event */
+#define MPR_DISPATCHER_DESTROYED    0x4 /**< Dispatcher is destroyed */
+#define MPR_DISPATCHER_AUTO_CREATE  0x8 /**< Dispatcher is auto-created for incoming events */
 
 /*
     Event Dispatcher
@@ -6162,11 +6138,6 @@ typedef struct MprDispatcher {
     MprEvent        *eventQ;            /**< Event queue */
     MprEvent        *current;           /**< Current event */
     MprCond         *cond;              /**< Multi-thread sync */
-#if UNUSED
-    int             enabled;            /**< Dispatcher enabled to run events */
-    int             waitingOnCond;      /**< Waiting on the cond */
-    int             destroyed;          /**< Dispatcher has been destroyed */
-#endif
     int             flags;              /**< Dispatcher control flags */
     struct MprDispatcher *next;         /**< Next dispatcher linkage */
     struct MprDispatcher *prev;         /**< Previous dispatcher linkage */
@@ -7944,13 +7915,18 @@ PUBLIC char *mprGetSHA(cchar *str);
     @param buf Buffer to checksum
     @param len Size of the buffer
     @param prefix String prefix to insert at the start of the result
-    @returns An allocated SHA1 checksum string.
+    @returns An allocated string containing an SHA1 checksum.
     @ingroup Mpr
  */
 PUBLIC char *mprGetSHAWithPrefix(cchar *buf, ssize len, cchar *prefix);
 
-//  MOB
-PUBLIC char *mprGetSHABase64(cchar *buf);
+/**
+    Get an SHA1 checksum of a null terminated string
+    @param str String to checksum
+    @returns An allocated string containing an SHA1 checksum.
+    @ingroup Mpr
+ */
+PUBLIC char *mprGetSHABase64(cchar *str);
 
 /********************************* Encoding ***********************************/
 /*  
@@ -8134,9 +8110,8 @@ typedef struct MprCmdChild {
 
 /*
     Handler for command output and completion
-    Cmd procs must return the number of bytes read or -1 for errors.
  */
-typedef ssize (*MprCmdProc)(struct MprCmd *cmd, int channel, void *data);
+typedef void (*MprCmdProc)(struct MprCmd *cmd, int channel, void *data);
 
 /*
     Flags for mprRunCmd
@@ -8222,6 +8197,14 @@ typedef struct MprCmd {
     MprMutex        *mutex;             /**< Multithread sync */
 } MprCmd;
 
+/**
+    Return true if command events are enabled.
+    @param cmd MprCmd object created via mprCreateCmd
+    @param channel Channel number to close. Should be either MPR_CMD_STDIN, MPR_CMD_STDOUT or MPR_CMD_STDERR.
+    @return true if I/O events are enabled for the given channel.
+    @ingroup MprCmd
+ */
+PUBLIC bool mprAreCmdEventsEnabled(MprCmd *cmd, int channel);
 
 /**
     Close the command channel
@@ -8268,6 +8251,15 @@ PUBLIC void mprDisconnectCmd(MprCmd *cmd);
     @ingroup MprCmd
  */
 PUBLIC void mprEnableCmdEvents(MprCmd *cmd, int channel);
+
+/**
+    Enable command I/O events for the command's STDOUT and STDERR channels
+    @param cmd MprCmd object created via mprCreateCmd
+    @param on Set to true to enable events. Set to false to disable.
+    @return true if I/O events are enabled for the given channel.
+    @ingroup MprCmd
+ */
+PUBLIC void mprEnableCmdOutputEvents(MprCmd *cmd, bool on);
 
 /**
     Finalize the writing of data to the command process

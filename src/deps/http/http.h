@@ -298,7 +298,8 @@ typedef struct Http {
     struct HttpStage *cacheFilter;          /**< Cache filter */
     struct HttpStage *cacheHandler;         /**< Cache filter */
     struct HttpStage *chunkFilter;          /**< Chunked transfer encoding filter */
-    struct HttpStage *cgiHandler;           /**< CGI listing handler */
+    struct HttpStage *cgiHandler;           /**< CGI handler */
+    struct HttpStage *cgiConnector;         /**< CGI connector */
     struct HttpStage *clientHandler;        /**< Client-side handler (dummy) */
     struct HttpStage *dirHandler;           /**< Directory listing handler */
     struct HttpStage *egiHandler;           /**< Embedded Gateway Interface (EGI) handler */
@@ -987,13 +988,13 @@ typedef void (*HttpQueueService)(struct HttpQueue *q);
     @stability Evolving
     @defgroup HttpQueue HttpQueue
     @see HttpConn HttpPacket HttpQueue httpDisableQueue httpDiscardQueueData httpEnableQueue httpFlushQueue httpGetQueueRoom
-        httpIsEof httpIsPacketTooBig httpIsQueueEmpty httpJoinPacketForService httpJoinPackets
+        httpIsEof httpIsPacketTooBig httpIsQueueEmpty httpIsQueueSuspended httpJoinPacketForService httpJoinPackets
         httpPutBackPacket httpPutForService httpPutPacket httpPutPacketToNext httpRemoveQueue httpResizePacket
         httpResumeQueue httpScheduleQueue httpServiceQueue httpSetQueueLimits httpSuspendQueue
         httpWillNextQueueAcceptPacket httpWillNextQueueAcceptSize httpWrite httpWriteBlock httpWriteBody httpWriteString 
  */
 typedef struct HttpQueue {
-    cchar               *owner;                 /**< Name of owning stage */
+    cchar               *name;                  /**< Queue name for debugging */
     ssize               count;                  /**< Bytes in queue (Does not include virt packet data) */
     ssize               max;                    /**< Maxiumum queue size */
     ssize               low;                    /**< Low water mark for flow control */
@@ -1105,6 +1106,14 @@ PUBLIC bool httpIsPacketTooBig(struct HttpQueue *q, HttpPacket *packet);
     @ingroup HttpQueue
  */
 PUBLIC bool httpIsQueueEmpty(HttpQueue *q);
+
+/** 
+    Test if a queue is suspended.
+    @param q Queue reference
+    @return true if the queue is suspended.
+    @ingroup HttpQueue
+ */
+PUBLIC bool httpIsQueueSuspended(HttpQueue *q);
 
 /**
     Join the packets together
@@ -1266,6 +1275,18 @@ PUBLIC bool httpVerifyQueue(HttpQueue *q);
     @ingroup HttpQueue
  */
 PUBLIC bool httpWillNextQueueAcceptPacket(HttpQueue *q, HttpPacket *packet);
+
+/** 
+    Determine if the given queue will accept this packet.
+    @description Test if the queue will accept a packet. The packet will be resized, if split is true, in an
+        attempt to get the downstream queue to accept it. 
+    @param q Queue reference
+    @param packet Packet to put
+    @param split Set to true to split the packet if required to fit into the queue.
+    @return "True" if the queue will accept the packet. 
+    @ingroup HttpQueue
+ */
+PUBLIC bool httpWillQueueAcceptPacket(HttpQueue *q, HttpPacket *packet, bool split);
 
 /** 
     Determine if the downstream queue will accept a certain amount of data.

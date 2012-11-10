@@ -4312,6 +4312,13 @@ PUBLIC void mprResetBufIfEmpty(MprBuf *bp)
 }
 
 
+PUBLIC char *mprBufToString(MprBuf *bp)
+{
+    mprAddNullToBuf(bp);
+    return sclone(mprGetBufStart(bp));
+}
+
+
 #if BIT_CHAR_LEN > 1 && UNUSED
 PUBLIC void mprAddNullToWideBuf(MprBuf *bp)
 {
@@ -4887,7 +4894,7 @@ static void manageCacheItem(CacheItem *item, int flags)
 
 static int blendEnv(MprCmd *cmd, cchar **env, int flags);
 static void closeFiles(MprCmd *cmd);
-static ssize cmdCallback(MprCmd *cmd, int channel, void *data);
+static void defaultCmdCallback(MprCmd *cmd, int channel, void *data);
 static int makeChannel(MprCmd *cmd, int index);
 static int makeCmdIO(MprCmd *cmd);
 static void manageCmdService(MprCmdService *cmd, int flags);
@@ -5146,8 +5153,8 @@ PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
                 }
             }
         }
+        mprLog(6, "Close channel %d eof %d/%d, pid %d", channel, cmd->eofCount, cmd->requiredEof, cmd->pid);
     }
-    mprLog(6, "Close channel %d eof %d/%d, pid %d", channel, cmd->eofCount, cmd->requiredEof, cmd->pid);
 }
 
 
@@ -5230,7 +5237,7 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
     if (flags & MPR_CMD_ERR) {
         cmd->stderrBuf = mprCreateBuf(MPR_BUFSIZE, -1);
     }
-    mprSetCmdCallback(cmd, cmdCallback, NULL);
+    mprSetCmdCallback(cmd, defaultCmdCallback, NULL);
     rc = mprStartCmd(cmd, argc, argv, envp, flags);
 
     /*
@@ -5469,6 +5476,29 @@ PUBLIC ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
     }
 #endif
     return write(cmd->files[channel].fd, buf, (wsize) bufsize);
+}
+
+
+PUBLIC bool mprAreCmdEventsEnabled(MprCmd *cmd, int channel)
+{
+    MprWaitHandler  *wp;
+
+    int mask = (channel == MPR_CMD_STDIN) ? MPR_WRITABLE : MPR_READABLE;
+    return ((wp = cmd->handlers[channel]) != 0) && (wp->desiredMask & mask);
+}
+
+
+PUBLIC void mprEnableCmdOutputEvents(MprCmd *cmd, bool on)
+{
+    int     mask;
+
+    mask = on ? MPR_READABLE : 0;
+    if (cmd->handlers[MPR_CMD_STDOUT]) {
+        mprWaitOn(cmd->handlers[MPR_CMD_STDOUT], mask);
+    }
+    if (cmd->handlers[MPR_CMD_STDERR]) {
+        mprWaitOn(cmd->handlers[MPR_CMD_STDERR], mask);
+    }
 }
 
 
@@ -5716,7 +5746,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
     Default callback routine for the mprRunCmd routines. Uses may supply their own callback instead of this routine. 
     The callback is run whenever there is I/O to read/write to the CGI gateway.
  */
-static ssize cmdCallback(MprCmd *cmd, int channel, void *data)
+static void defaultCmdCallback(MprCmd *cmd, int channel, void *data)
 {
     MprBuf      *buf;
     ssize       len, space;
@@ -5727,7 +5757,7 @@ static ssize cmdCallback(MprCmd *cmd, int channel, void *data)
     buf = 0;
     switch (channel) {
     case MPR_CMD_STDIN:
-        return 0;
+        return;
     case MPR_CMD_STDOUT:
         buf = cmd->stdoutBuf;
         break;
@@ -5736,7 +5766,7 @@ static ssize cmdCallback(MprCmd *cmd, int channel, void *data)
         break;
     default:
         /* Child death notification */
-        return 0;
+        return;
     }
     /*
         Read and aggregate the result into a single string
@@ -5745,24 +5775,23 @@ static ssize cmdCallback(MprCmd *cmd, int channel, void *data)
     if (space < (MPR_BUFSIZE / 4)) {
         if (mprGrowBuf(buf, MPR_BUFSIZE) < 0) {
             mprCloseCmdFd(cmd, channel);
-            return 0;
+            return;
         }
         space = mprGetBufSpace(buf);
     }
     len = mprReadCmd(cmd, channel, mprGetBufEnd(buf), space);
-    mprLog(6, "cmdCallback channel %d, read len %d, pid %d, eof %d/%d", channel, len, cmd->pid, cmd->eofCount, 
+    mprLog(6, "defaultCmdCallback channel %d, read len %d, pid %d, eof %d/%d", channel, len, cmd->pid, cmd->eofCount, 
         cmd->requiredEof);
     if (len <= 0) {
         if (len == 0 || (len < 0 && !(errno == EAGAIN || errno == EWOULDBLOCK))) {
             mprCloseCmdFd(cmd, channel);
-            return len;
+            return;
         }
     } else {
         mprAdjustBufEnd(buf, len);
     }
     mprAddNullToBuf(buf);
     mprEnableCmdEvents(cmd, channel);
-    return len;
 }
 
 
