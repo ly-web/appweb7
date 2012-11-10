@@ -116,6 +116,13 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>MPR_BIG_ENDIAN</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a698836ebc1230ae5b16b87398ad7fde8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_BUF_INCR</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>aa2548e612d40219745d36809427d5fd0</anchor>
@@ -364,6 +371,34 @@
       <name>MPR_DISABLE_GC</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>acbca6bd804a91e8cf0ed731c1a2d35af</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_DISPATCHER_AUTO_CREATE</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a9d968aeadb004bcd3077c4895d38d271</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_DISPATCHER_DESTROYED</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a011e95e5bb1031a865f4dea64af4452c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_DISPATCHER_ENABLED</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>aa9595de4d0be6dcd8b96160bcac19912</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_DISPATCHER_WAITING</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a14c2e4d083c860836c2d2ee97f960a58</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -868,6 +903,13 @@
       <name>MPR_LIST_STATIC_VALUES</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>ad6c828f6e108fa0f7d6904c4dad515c1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_LITTLE_ENDIAN</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a23487a6ca7c07a19f112a180985f8a63</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -2110,6 +2152,13 @@
       <arglist>(MprList *list, MprList *add)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>mprAreCmdEventsEnabled</name>
+      <anchorfile>group___mpr_cmd.html</anchorfile>
+      <anchor>ga41a0e9cb643e435b21d5ff37658beec9</anchor>
+      <arglist>(MprCmd *cmd, int channel)</arglist>
+    </member>
+    <member kind="function">
       <type>char *</type>
       <name>mprAsprintf</name>
       <anchorfile>group___mpr_string.html</anchorfile>
@@ -2199,6 +2248,13 @@
       <anchorfile>group___mpr.html</anchorfile>
       <anchor>gac5203b2138474e781207b39ac4726c1b</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>mprBufToString</name>
+      <anchorfile>group___mpr_buf.html</anchorfile>
+      <anchor>ga82bb10164b117911778ca5ef4bc0862e</anchor>
+      <arglist>(MprBuf *buf)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2626,6 +2682,13 @@
       <anchorfile>group___mpr_cmd.html</anchorfile>
       <anchor>ga2fd38e2aaf8e7c2a1aed39aa1005155e</anchor>
       <arglist>(MprCmd *cmd, int channel)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprEnableCmdOutputEvents</name>
+      <anchorfile>group___mpr_cmd.html</anchorfile>
+      <anchor>ga39d49294df1ae6d358c30e958585e060</anchor>
+      <arglist>(MprCmd *cmd, bool on)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -3346,6 +3409,13 @@
       <name>mprGetSHA</name>
       <anchorfile>group___mpr.html</anchorfile>
       <anchor>ga5352f8f9f7d96d7e58dc7b784cd9c500</anchor>
+      <arglist>(cchar *str)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>mprGetSHABase64</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga08b9fc2b79eb1592298d20d9e3f4be5d</anchor>
       <arglist>(cchar *str)</arglist>
     </member>
     <member kind="function">
@@ -6455,6 +6525,13 @@
       <arglist>(MprBuf *buf, ssize count)</arglist>
     </member>
     <member kind="function">
+      <type>char *</type>
+      <name>mprBufToString</name>
+      <anchorfile>group___mpr_buf.html</anchorfile>
+      <anchor>ga82bb10164b117911778ca5ef4bc0862e</anchor>
+      <arglist>(MprBuf *buf)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>mprCompactBuf</name>
       <anchorfile>group___mpr_buf.html</anchorfile>
@@ -8336,6 +8413,13 @@
       <arglist>)(void *arg)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>mprAreCmdEventsEnabled</name>
+      <anchorfile>group___mpr_cmd.html</anchorfile>
+      <anchor>ga41a0e9cb643e435b21d5ff37658beec9</anchor>
+      <arglist>(MprCmd *cmd, int channel)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>mprCloseCmdFd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
@@ -8376,6 +8460,13 @@
       <anchorfile>group___mpr_cmd.html</anchorfile>
       <anchor>ga2fd38e2aaf8e7c2a1aed39aa1005155e</anchor>
       <arglist>(MprCmd *cmd, int channel)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprEnableCmdOutputEvents</name>
+      <anchorfile>group___mpr_cmd.html</anchorfile>
+      <anchor>ga39d49294df1ae6d358c30e958585e060</anchor>
+      <arglist>(MprCmd *cmd, bool on)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -8810,6 +8901,13 @@
       <name>mprGetSHA</name>
       <anchorfile>group___mpr.html</anchorfile>
       <anchor>ga5352f8f9f7d96d7e58dc7b784cd9c500</anchor>
+      <arglist>(cchar *str)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>mprGetSHABase64</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga08b9fc2b79eb1592298d20d9e3f4be5d</anchor>
       <arglist>(cchar *str)</arglist>
     </member>
     <member kind="function">

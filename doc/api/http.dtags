@@ -352,6 +352,13 @@
       <arglist>(HttpQueue *q)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>httpIsQueueSuspended</name>
+      <anchorfile>group___http_queue.html</anchorfile>
+      <anchor>ga8b793cab9130802476c4f81626b9fafc</anchor>
+      <arglist>(HttpQueue *q)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>httpJoinPacketForService</name>
       <anchorfile>group___http_queue.html</anchorfile>
@@ -455,6 +462,13 @@
       <anchorfile>group___http_queue.html</anchorfile>
       <anchor>ga1cc3389ca2a476dda61904b46d939740</anchor>
       <arglist>(HttpQueue *q, ssize size)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>httpWillQueueAcceptPacket</name>
+      <anchorfile>group___http_queue.html</anchorfile>
+      <anchor>ga5a91f11aad2cd85d6e59830d2ffaf5f5</anchor>
+      <arglist>(HttpQueue *q, HttpPacket *packet, bool split)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
