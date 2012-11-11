@@ -117,7 +117,7 @@ int main(int argc, char **argv, char **envp)
 #endif
 {
     char    *cp, *method;
-    int     l, i, j, err;
+    int     l, i, err;
 
     err = 0;
     outputArgs = outputQuery = outputEnv = outputPost = 0;
@@ -257,7 +257,7 @@ int main(int argc, char **argv, char **envp)
         printf("X-CGI-CustomHeader: Any value at all\r\n");
     }
 
-    printf("Content-type: %s\r\n", "text/html");
+    printf("Content-Type: %s\r\n", "text/html");
 
     if (outputHeaderLines) {
         for (i = 0; i < outputHeaderLines; i++) {
@@ -279,15 +279,8 @@ int main(int argc, char **argv, char **envp)
         outputPost++;
     }
     if (outputLines) {
-        for (j = l = 0; l < outputLines; ) {
-            putchar('0' + j);
-            j++;
-            if (j > 9) {
-                putchar('\r');
-                putchar('\n');
-                j = 0;
-                l++;
-            }
+        for (l = 0; l < outputLines; l++) {
+            printf("%010d\n", l);
         }
 
     } else {
