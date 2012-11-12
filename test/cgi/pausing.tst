@@ -19,17 +19,22 @@ assert(http.status == 200)
 //  Read data, but pause between reads to force flow control back to the CGI program
 let data = new ByteArray(1024 * 16, false)
 let count, n
+let fp = new File("a.tmp", "w")
 while (true) {
     if (http.read(data) == null) {
         break
     }
+    fp.write(data)
     count += data.length
     App.sleep(5)
     if (http.read(data) == null) {
         break
     }
+    fp.write(data)
     count += data.length
 }
+fp.close()
 
+print(bytes, count)
 assert(count == bytes)
 http.close()

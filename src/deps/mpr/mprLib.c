@@ -5528,28 +5528,39 @@ PUBLIC void mprDisableCmdEvents(MprCmd *cmd, int channel)
  */
 static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
 {
-    MprTicks    mark, remaining, delay;
-    int         i, rc, nbytes;
+    MprTicks        mark, remaining, delay;
+    MprWaitHandler  *wp;
+    int             i, rc, nbytes;
 
     mark = mprGetTicks();
     if (cmd->stopped) {
         timeout = 0;
     }
+    /*
+        First service socket IO events
+     */
+    mprWaitForEvent(cmd->dispatcher, 0);
+
     for (i = MPR_CMD_STDOUT; i < MPR_CMD_MAX_PIPE; i++) {
         if (cmd->files[i].handle) {
-            rc = PeekNamedPipe(cmd->files[i].handle, NULL, 0, NULL, &nbytes, NULL);
-            if (rc && nbytes > 0 || cmd->process == 0) {
-                mprQueueIOEvent(cmd->handlers[i]);
-                mprWaitForEvent(cmd->dispatcher, timeout);
-                return;
+            wp = cmd->handlers[i];
+            if (wp->desiredMask & MPR_READABLE) {
+                rc = PeekNamedPipe(cmd->files[i].handle, NULL, 0, NULL, &nbytes, NULL);
+                if (rc && nbytes > 0 || cmd->process == 0) {
+                    mprQueueIOEvent(wp);
+                    mprWaitForEvent(cmd->dispatcher, 0);
+                    return;
+                }
             }
         }
     }
     if (cmd->files[MPR_CMD_STDIN].handle) {
-        /* Not finalized */
-        mprQueueIOEvent(cmd->handlers[MPR_CMD_STDIN]);
-        mprWaitForEvent(cmd->dispatcher, timeout);
-        return;
+        wp = cmd->handlers[MPR_CMD_STDIN];
+        if (wp->desiredMask & MPR_WRITABLE) {
+            mprQueueIOEvent(wp);
+            mprWaitForEvent(cmd->dispatcher, 0);
+            return;
+        }
     }
     if (cmd->process) {
         delay = (cmd->eofCount == cmd->requiredEof && cmd->files[MPR_CMD_STDIN].handle == 0) ? timeout : 0;
@@ -5573,7 +5584,7 @@ static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
         }
     }
     /* Stop busy waiting */
-    mprSleep(10);
+    mprSleep(1);
 }
 #endif
 
@@ -8592,7 +8603,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
     }
     unlock(es);
 
-    while (es->now < expires && !mprIsStoppingCore()) {
+    while (es->now <= expires && !mprIsStoppingCore()) {
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         if (runEvents) {
             makeRunnable(dispatcher);
