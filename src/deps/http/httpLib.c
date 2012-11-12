@@ -11215,7 +11215,6 @@ PUBLIC bool httpPumpRequest(HttpConn *conn, HttpPacket *packet)
 
         case HTTP_STATE_RUNNING:
             canProceed = processRunning(conn);
-            assure(canProceed || conn->state == HTTP_STATE_RUNNING);
             break;
 
         case HTTP_STATE_FINALIZED:

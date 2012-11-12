@@ -314,30 +314,19 @@ static void browserToCgiService(HttpQueue *q)
 
 static void cgiToBrowserData(HttpQueue *q, HttpPacket *packet)
 {
-    HttpConn    *conn;
-    Cgi         *cgi;
-
-    assure(q);
-    assure(packet);
-    cgi = q->queueData;
-    assure(q == cgi->readq);
-    conn = q->conn;
-
-    httpPutForService(conn->writeq, packet, HTTP_SCHEDULE_QUEUE);
-    if (conn->writeq->count > conn->writeq->max) {
-        LOG(0, "CGI: SUSPEND WRITEQ: cgiToBrowserData writeq %d/%d", conn->writeq->count, conn->writeq->max);
-        httpSuspendQueue(conn->writeq);
-    }
+    httpPutForService(q->conn->writeq, packet, HTTP_SCHEDULE_QUEUE);
 }
 
 
 static void cgiToBrowserService(HttpQueue *q)
 {
-    Cgi     *cgi;
-    MprCmd  *cmd;
+    HttpConn    *conn;
+    MprCmd      *cmd;
+    Cgi         *cgi;
 
     cgi = q->queueData;
-    assure(q == cgi->conn->writeq);
+    conn = q->conn;
+    assure(q == conn->writeq);
     cmd = cgi->cmd;
 
     /*
@@ -351,9 +340,12 @@ static void cgiToBrowserService(HttpQueue *q)
     if (q->count < q->low) {
         mprEnableCmdOutputEvents(cmd, 1);
         LOG(0, "CGI: ENABLE CGI events: cgiToBrowserService");
+    } else if (q->count > q->max && conn->tx->writeBlocked) {
+        LOG(0, "CGI: SUSPEND WRITEQ: cgiToBrowserData writeq %d/%d", conn->writeq->count, conn->writeq->max);
+        httpSuspendQueue(conn->writeq);
     }
     LOG(0, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
-        cmd->pid, q->count, q->flags, q->conn->tx->writeBlocked);
+        cmd->pid, q->count, q->flags, conn->tx->writeBlocked);
 }
 
 
@@ -372,11 +364,11 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
     if ((conn = cgi->conn) == 0) {
         return;
     }
-    assure(!conn->pumping);
     conn->lastActivity = conn->http->now;
 
     switch (channel) {
     case MPR_CMD_STDIN:
+        /* Stdin can absorb more data */
         httpResumeQueue(cgi->writeq);
         break;
 
@@ -394,11 +386,9 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
     if (cmd->complete) {
         LOG(0, "CGI: cgiCallback complete");
         httpFinalize(conn);
-        if (!conn->pumping) {
-            httpPumpRequest(conn, NULL);
-            /* WARNING: this will complete this request and prep for the next */
-            httpPostEvent(conn);
-        }
+        httpPumpRequest(conn, NULL);
+        /* WARNING: this will complete this request and prep for the next */
+        httpPostEvent(conn);
         mprYield(0);
         return;
     } 
