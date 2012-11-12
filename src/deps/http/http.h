@@ -994,18 +994,19 @@ typedef void (*HttpQueueService)(struct HttpQueue *q);
         httpWillNextQueueAcceptPacket httpWillNextQueueAcceptSize httpWrite httpWriteBlock httpWriteBody httpWriteString 
  */
 typedef struct HttpQueue {
+    /* Ordered for debugging */
     cchar               *name;                  /**< Queue name for debugging */
     ssize               count;                  /**< Bytes in queue (Does not include virt packet data) */
+    int                 flags;                  /**< Queue flags */
+    struct HttpQueue    *nextQ;                 /**< Downstream queue for next stage */
+    HttpPacket          *first;                 /**< First packet in queue (singly linked) */
+    struct HttpConn     *conn;                  /**< Connection owning this queue */
     ssize               max;                    /**< Maxiumum queue size */
     ssize               low;                    /**< Low water mark for flow control */
     ssize               packetSize;             /**< Maximum acceptable packet size */
-    int                 flags;                  /**< Queue flags */
-    HttpPacket          *first;                 /**< First packet in queue (singly linked) */
     HttpPacket          *last;                  /**< Last packet in queue (tail pointer) */
-    struct HttpQueue    *nextQ;                 /**< Downstream queue for next stage */
     struct HttpQueue    *prevQ;                 /**< Upstream queue for prior stage */
     struct HttpStage    *stage;                 /**< Stage owning this queue */
-    struct HttpConn     *conn;                  /**< Connection owning this queue */
     HttpQueueOpen       open;                   /**< Open the queue */
     HttpQueueClose      close;                  /**< Close the queue */
     HttpQueueStart      start;                  /**< Start the queue */
@@ -1802,36 +1803,30 @@ PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
 typedef struct HttpConn {
     /*  Ordered for debugability */
 
-    struct HttpRx *rx;                      /**< Rx object */
-    struct HttpTx *tx;                      /**< Tx object */
-    struct HttpEndpoint *endpoint;          /**< Endpoint object (if set - indicates server-side) */
-    struct HttpHost *host;                  /**< Host object (if relevant) */
-
     int             state;                  /**< Connection state */
     int             error;                  /**< A request error has occurred */
     int             connError;              /**< A connection error has occurred */
     int             pumping;                /**< Rre-entrancy prevention for httpPumpRequest() */
 
+    struct HttpRx   *rx;                    /**< Rx object */
+    struct HttpTx   *tx;                    /**< Tx object */
+    HttpQueue       *readq;                 /**< End of the read pipeline */
+    HttpQueue       *writeq;                /**< Start of the write pipeline */
+
+    MprSocket       *sock;                  /**< Underlying socket handle */
     HttpLimits      *limits;                /**< Service limits */
     Http            *http;                  /**< Http service object  */
-#if UNUSED
-    MprHash         *stages;                /**< Stages in pipeline */
-#endif
     MprDispatcher   *dispatcher;            /**< Event dispatcher */
     MprDispatcher   *newDispatcher;         /**< New dispatcher if using a worker thread */
     MprDispatcher   *oldDispatcher;         /**< Original dispatcher if using a worker thread */
     HttpNotifier    notifier;               /**< Connection Http state change notification callback */
-#if UNUSED
-    MprWaitHandler  *waitHandler;           /**< I/O wait handler */
-#endif
-    MprSocket       *sock;                  /**< Underlying socket handle */
 
     struct HttpQueue *serviceq;             /**< List of queues that require service for request pipeline */
     struct HttpQueue *currentq;             /**< Current queue being serviced (just for GC) */
+    struct HttpEndpoint *endpoint;          /**< Endpoint object (if set - indicates server-side) */
+    struct HttpHost *host;                  /**< Host object (if relevant) */
 
     HttpPacket      *input;                 /**< Header packet */
-    HttpQueue       *readq;                 /**< End of the read pipeline */
-    HttpQueue       *writeq;                /**< Start of the write pipeline */
     HttpQueue       *connectorq;            /**< Connector write queue */
     MprTicks        started;                /**< When the connection started (ticks) */
     MprTicks        lastActivity;           /**< Last activity on the connection */
@@ -1850,9 +1845,6 @@ typedef struct HttpConn {
     char            *protocol;              /**< HTTP protocol */
     char            *protocols;             /**< Supported web socket protocols (clients) */
     int             async;                  /**< Connection is in async mode (non-blocking) */
-#if UNUSED
-    int             canProceed;             /**< State machine should continue to process the request */
-#endif
     int             followRedirects;        /**< Follow redirects for client requests */
     int             keepAliveCount;         /**< Count of remaining Keep-Alive requests for this connection */
     int             http10;                 /**< Using legacy HTTP/1.0 */

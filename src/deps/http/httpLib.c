@@ -7042,7 +7042,6 @@ static void manageQueue(HttpQueue *q, int flags)
         mprMark(q->schedulePrev);
         mprMark(q->pair);
         mprMark(q->queueData);
-        mprMark(q->queueData);
         if (q->nextQ && q->nextQ->stage) {
             /* Not a queue head */
             mprMark(q->nextQ);
@@ -7112,7 +7111,7 @@ PUBLIC void httpAppendQueueToHead(HttpQueue *head, HttpQueue *q)
 
 PUBLIC bool httpIsQueueSuspended(HttpQueue *q)
 {
-    return q->flags & HTTP_QUEUE_SUSPENDED;
+    return (q->flags & HTTP_QUEUE_SUSPENDED) ? 1 : 0;
 }
 
 
@@ -11215,7 +11214,6 @@ PUBLIC bool httpPumpRequest(HttpConn *conn, HttpPacket *packet)
 
         case HTTP_STATE_RUNNING:
             canProceed = processRunning(conn);
-            assure(canProceed || conn->state == HTTP_STATE_RUNNING);
             break;
 
         case HTTP_STATE_FINALIZED:
