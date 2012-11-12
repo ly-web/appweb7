@@ -377,6 +377,7 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
 
     switch (channel) {
     case MPR_CMD_STDIN:
+        //  MOB - not debugged
         httpResumeQueue(cgi->writeq);
         break;
 
