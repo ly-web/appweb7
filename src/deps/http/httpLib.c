@@ -3636,8 +3636,7 @@ static HttpConn *acceptConn(MprSocket *sock, MprDispatcher *dispatcher, HttpEndp
     Http        *http;
     HttpConn    *conn;
     MprEvent    e;
-    static int  warnOnceConnections = 0;
-    int         level, count;
+    int         level;
 
     assure(dispatcher);
     assure(endpoint);
@@ -3653,6 +3652,13 @@ static HttpConn *acceptConn(MprSocket *sock, MprDispatcher *dispatcher, HttpEndp
         mprCloseSocket(sock, 0);
         return 0;
     }
+#if FUTURE
+    static int  warnOnceConnections = 0;
+    int count;
+    /* 
+        Client connections are entered into http->connections. Need to split into two lists 
+        Also, ejs pre-allocates connections in the Http constructor.
+     */
     if ((count = mprGetListLength(http->connections)) >= endpoint->limits->requestMax) {
         /* To help alleviate DOS - we just close without responding */
         if (!warnOnceConnections) {
@@ -3663,6 +3669,7 @@ static HttpConn *acceptConn(MprSocket *sock, MprDispatcher *dispatcher, HttpEndp
         http->underAttack = 1;
         return 0;
     }
+#endif
     if ((conn = httpCreateConn(http, endpoint, dispatcher)) == 0) {
         mprCloseSocket(sock, 0);
         return 0;
