@@ -4912,7 +4912,6 @@ static void httpTimer(Http *http, MprEvent *event)
 {
     HttpConn    *conn;
     HttpStage   *stage;
-    HttpRx      *rx;
     HttpLimits  *limits;
     MprModule   *module;
     int         next, active, abort;
@@ -4930,7 +4929,6 @@ static void httpTimer(Http *http, MprEvent *event)
     lock(http->connections);
     mprLog(7, "httpTimer: %d active connections", mprGetListLength(http->connections));
     for (active = 0, next = 0; (conn = mprGetNextItem(http->connections, &next)) != 0; active++) {
-        rx = conn->rx;
         limits = conn->limits;
 #if UNUSED
         disconnect = 0;
