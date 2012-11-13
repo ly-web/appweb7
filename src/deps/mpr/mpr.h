@@ -6136,7 +6136,7 @@ typedef struct MprDispatcher {
     int             magic;
     cchar           *name;              /**< Dispatcher name / purpose */
     MprEvent        *eventQ;            /**< Event queue */
-    MprEvent        *current;           /**< Current event */
+    MprEvent        *currentQ;          /**< Currently executing events */
     MprCond         *cond;              /**< Multi-thread sync */
     int             flags;              /**< Dispatcher control flags */
     struct MprDispatcher *next;         /**< Next dispatcher linkage */
@@ -6338,21 +6338,22 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period);
 PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event);
 
 /* Internal API */
-PUBLIC MprEvent *mprCreateEventQueue();
-PUBLIC MprDispatcher *mprGetNonBlockDispatcher();
-PUBLIC void mprWakeDispatchers();
-PUBLIC int mprDispatchersAreIdle();
 PUBLIC void mprClaimDispatcher(MprDispatcher *dispatcher);
+PUBLIC MprEvent *mprCreateEventQueue();
 PUBLIC MprEventService *mprCreateEventService();
-PUBLIC void mprStopEventService();
-PUBLIC MprEvent *mprGetNextEvent(MprDispatcher *dispatcher);
-PUBLIC int mprGetEventCount(MprDispatcher *dispatcher);
-PUBLIC void mprInitEventQ(MprEvent *q);
-PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher);
-PUBLIC void mprQueueTimerEvent(MprDispatcher *dispatcher, MprEvent *event);
 PUBLIC void mprDedicateWorkerToDispatcher(MprDispatcher *dispatcher, struct MprWorker *worker);
-PUBLIC void mprReleaseWorkerFromDispatcher(MprDispatcher *dispatcher, struct MprWorker *worker);
+PUBLIC void mprDequeueEvent(MprEvent *event);
 PUBLIC bool mprDispatcherHasEvents(MprDispatcher *dispatcher);
+PUBLIC int mprDispatchersAreIdle();
+PUBLIC int mprGetEventCount(MprDispatcher *dispatcher);
+PUBLIC MprEvent *mprGetNextEvent(MprDispatcher *dispatcher);
+PUBLIC MprDispatcher *mprGetNonBlockDispatcher();
+PUBLIC void mprInitEventQ(MprEvent *q);
+PUBLIC void mprQueueTimerEvent(MprDispatcher *dispatcher, MprEvent *event);
+PUBLIC void mprReleaseWorkerFromDispatcher(MprDispatcher *dispatcher, struct MprWorker *worker);
+PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher);
+PUBLIC void mprStopEventService();
+PUBLIC void mprWakeDispatchers();
 PUBLIC void mprWakePendingDispatchers();
 
 /*********************************** XML **************************************/
@@ -8316,7 +8317,7 @@ PUBLIC bool mprIsCmdRunning(MprCmd *cmd);
     @param timeout Time in milliseconds to wait for the command to complete and exit.
     @ingroup MprCmd
  */
-PUBLIC void mprPollCmd(MprCmd *cmd, MprTicks timeout);
+PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout);
 
 /**
     Make the I/O channels to send and receive data to and from the command.

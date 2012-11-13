@@ -3170,37 +3170,6 @@ PUBLIC int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, 
  */
 PUBLIC void httpAddRouteErrorDocument(HttpRoute *route, int status, cchar *uri);
 
-#if UNUSED
-/**
-    Cache response content in the client by extension.
-    @description This configures default caching lifespans for documents with various extensions. This call causes
-        a Cache-Control header to be sent with the response instructing the client to cache the response content.
-        This is most useful for client caching static web content. For example: to cache "png" graphic files, use: 
-        httpAddRouteExpiry(route, when, "png");
-    @param route Route to modify
-    @param when Time to expire the item. Use mprGetTime() + milliseconds.
-    @param extensions Space or comma separated list of request extensions for which the content should be 
-        cached in the client.
-    @ingroup HttpRoute
- */
-PUBLIC void httpAddRouteExpiry(HttpRoute *route, MprTime when, cchar *extensions);
-
-/**
-    Cache response content in the client by mime type.
-    Add client cache expiry definitions to the route.
-    @description This configures default caching lifespans for documents with various mime types. The call causes
-        a Cache-Control header to be sent with the response instructing the client to cache the response content.
-        It is most useful for client caching static web content. For example: to cache "png" graphic files, use: 
-        httpAddRouteExpiry(route, when, "png");
-    @param route Route to modify
-    @param when Time to expire the item. Use mprGetTime() + milliseconds.
-    @param mimeTypes Space or command separated list of response mime types for which the content should be cached 
-        in the client.
-    @ingroup HttpRoute
- */
-PUBLIC void httpAddRouteExpiryByType(HttpRoute *route, MprTime when, cchar *mimeTypes);
-#endif
-
 /**
     Add a route filter
     @description This configures the route pipeline by adding processing filters for a request.

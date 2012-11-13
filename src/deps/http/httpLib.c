@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: magnetar.local
+    Prepared by: xp-32
  */
 
 #include "http.h"
@@ -2352,12 +2352,13 @@ static bool prepForNext(HttpConn *conn)
 {
     assure(conn->endpoint);
     assure(conn->state == HTTP_STATE_COMPLETE);
-    assure(conn->tx && conn->rx);
     if (conn->tx) {
         assure(conn->tx->finalized && conn->tx->finalizedConnector && conn->tx->finalizedOutput);
+        conn->tx->conn = 0;
     }
-    conn->rx->conn = 0;
-    conn->tx->conn = 0;
+    if (conn->rx) {
+        conn->rx->conn = 0;
+    }
     conn->rx = 0;
     conn->tx = 0;
     conn->readq = 0;
@@ -2431,12 +2432,15 @@ PUBLIC void httpCallEvent(HttpConn *conn, int mask)
 //  MOB - rename
 PUBLIC void httpPostEvent(HttpConn *conn)
 {
-    if (conn->state == HTTP_STATE_COMPLETE && conn->endpoint) {
-        prepForNext(conn);
+    if (conn->endpoint) {
+        if (conn->keepAliveCount < 0 && (conn->state == HTTP_STATE_BEGIN || conn->state == HTTP_STATE_COMPLETE)) {
+            httpDestroyConn(conn);
+            return;
+        } else if (conn->state == HTTP_STATE_COMPLETE) {
+            prepForNext(conn);
+        }
     }
-    if (conn->keepAliveCount < 0 && conn->state < HTTP_STATE_FIRST && conn->endpoint) {
-        httpDestroyConn(conn);
-    } else if (!conn->state != HTTP_STATE_RUNNING) {
+    if (!conn->state != HTTP_STATE_RUNNING) {
         httpEnableConnEvents(conn);
     }
 }
@@ -3592,6 +3596,11 @@ PUBLIC bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn
                 endpoint->clientCount, limits->clientMax);
         }
     }
+#if UNUSED && KEEP
+    LOG(0, "Validate Active connections %d, requests: %d/%d, IP %d/%d, Processes %d/%d", 
+        mprGetListLength(http->connections), endpoint->requestCount, limits->requestMax, 
+        endpoint->clientCount, limits->clientMax, http->processCount, limits->processMax);
+#endif
     unlock(endpoint);
     return 1;
 }
@@ -5519,7 +5528,6 @@ static void netOutgoingService(HttpQueue *q)
     assure(conn->sock);
     
     if (!conn->sock || tx->finalizedConnector) {
-        assure(conn->sock && !tx->finalizedConnector);
         return;
     }
     if (tx->flags & HTTP_TX_NO_BODY) {
@@ -11223,6 +11231,10 @@ PUBLIC bool httpPumpRequest(HttpConn *conn, HttpPacket *packet)
         case HTTP_STATE_COMPLETE:
             conn->pumping = 0;
             return !conn->connError;
+
+        default:
+            assure(conn->state == HTTP_STATE_COMPLETE);
+            break;
         }
         packet = conn->input;
     }
@@ -12140,6 +12152,10 @@ static bool processRunning(HttpConn *conn)
             canProceed = 0;
             assure(conn->state < HTTP_STATE_FINALIZED);
 
+        } else if (conn->state >= HTTP_STATE_FINALIZED) {
+            /* This happens when httpGetMoreOutput calls writable on windows which then completes the request */
+            canProceed = 1;
+
         } else if (q->count < q->low) {
             if (q->count == 0) {
                 /* Queue is empty and data may have drained above in httpServiceQueues. Yield to reclaim memory. */
@@ -12970,7 +12986,6 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     assure(conn->sock);
 
     if (!conn->sock || tx->finalizedConnector) {
-        assure(conn->sock && !tx->finalizedConnector);
         return;
     }
     if (tx->flags & HTTP_TX_NO_BODY) {

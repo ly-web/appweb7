@@ -11,10 +11,12 @@ assert(http.status == 200)
 http.close()
 
 //  Try to crash with DOS attack
+let count = 0
 for (i in 800) {
     let http = new Http
     http.get(HTTP + '/cgi-bin/cgiProgram')
     http.close()
+    count++
 }
 
 //  Check server still there

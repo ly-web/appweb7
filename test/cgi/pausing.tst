@@ -9,7 +9,7 @@ load("cgi.es")
 let sizes = [ 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 ]
 let depth = global.test ? test.depth : 1
 let len = sizes[depth] * 102400
-let bytes = len * 12
+let bytes = len * 11
 
 let http = new Http
 http.setHeader("SWITCHES", "-b%20" + len)
@@ -35,6 +35,8 @@ while (true) {
 }
 fp.close()
 
-print(bytes, count)
+if (bytes != count) {
+    print(bytes, count)
+}
 assert(count == bytes)
 http.close()

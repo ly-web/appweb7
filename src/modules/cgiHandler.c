@@ -48,6 +48,7 @@ static void readFromCgi(Cgi *cgi, int channel);
 #endif
 #if BIT_WIN_LIKE
     static void checkCompletion(HttpQueue *q, MprEvent *event);
+    static void waitForCgi(Cgi *cgi, MprEvent *event);
 #endif
 
 /************************************* Code ***********************************/
@@ -95,8 +96,6 @@ static void manageCgi(Cgi *cgi, int flags)
         mprMark(cgi->readq);
         mprMark(cgi->cmd);
         mprMark(cgi->headers);
-    } else {
-        assure(cgi->cmd == 0);
     }
 }
 
@@ -191,40 +190,56 @@ static void startCgi(HttpQueue *q)
 
     if (mprStartCmd(cmd, argc, argv, envv, MPR_CMD_IN | MPR_CMD_OUT | MPR_CMD_ERR) < 0) {
         httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Can't run CGI process: %s, URI %s", fileName, rx->uri);
+        return;
     }
-}
-
-
-static void readyCgi(HttpQueue *q)
-{
-#if UNUSED
-    //  MOB - expect to always get an End packet and process in browserToCgiService
-    Cgi     *cgi;
-
-    cgi = q->queueData;
-    assure(cgi->conn->rx->eof);
-    mprLog(0, "CGI: readyCgi. Close cgi STDIN");
-    mprCloseCmdFd(cgi->cmd, MPR_CMD_STDIN);
+#if BIT_WIN_LIKE
+    /*
+        Start the windows-waiter via an event. This ensures it is serialized in the request dispatcher
+     */
+    mprCreateEvent(conn->dispatcher, "cgi-win", 10, waitForCgi, cgi, MPR_EVENT_CONTINUOUS);
 #endif
 }
 
 
 #if BIT_WIN_LIKE
 /*
-    Windows can't select on named pipes. So must block and wait for the command to complete. This consumes a thread.
-    This routine is called for when the outgoing queue is writable. We don't actually do output here, just poll
-    on windows (only) until the command is complete.
+    Windows can't select on named pipes. So poll for events.
+    This runs on the connection dispatcher thread. Don't actually service events here. Otherwise it becomes too
+    complex with nested calls to mprWaitForEvent().
  */
-static void writableCgi(HttpQueue *q)
+static void waitForCgi(Cgi *cgi, MprEvent *event)
 {
-    Cgi     *cgi;
+    HttpConn    *conn;
+    MprCmd      *cmd;
 
-    assure(q->conn->writeq == q);
-    cgi = q->queueData;
-    mprLog(0, "CGI: writableCgi");
-    while (!cgi->cmd->complete) {
-        mprWaitForCmd(cgi->cmd, 1000);
+    conn = cgi->conn;
+    cmd = cgi->cmd;
+    if (!cmd->complete) {
+        mprPollWinCmd(cmd, 0);
+        if (conn->error && cmd->pid) {
+            mprStopCmd(cmd, -1);
+        }
     }
+#if UNUSED
+    while (!cmd->complete && !conn->error) {
+        /*
+            Poll CGI channels and create I/O events
+         */
+        mprPollWinCmd(cmd, MPR_MAX_TIMEOUT);
+        /* 
+            Service I/O events posted above and conn writable events
+         */ 
+        mprWaitForEvent(conn->dispatcher, 10);
+    }
+    mprLog(0, "STATE %d, error %d", conn->state, conn->error);
+    if (conn->state > HTTP_STATE_BEGIN && conn->error) {
+        if (cmd->pid) {
+            mprStopCmd(cmd, -1);
+        }
+        httpPumpRequest(conn, NULL);
+        httpPostEvent(conn);
+    }
+#endif
 }
 #endif
 
@@ -296,7 +311,7 @@ static void browserToCgiService(HttpQueue *q)
             httpError(conn, HTTP_CODE_BAD_GATEWAY, "Can't write body data to CGI gateway");
             break;
         }
-        LOG(0, "CGI: browserToCgiService %d/%d, qmax %d", rc, len, q->max);
+        LOG(6, "CGI: browserToCgiService %d/%d, qmax %d", rc, len, q->max);
         mprAdjustBufStart(buf, rc);
         if (mprGetBufLength(buf) > 0) {
             httpPutBackPacket(q, packet);
@@ -339,12 +354,12 @@ static void cgiToBrowserService(HttpQueue *q)
     httpDefaultOutgoingServiceStage(q);
     if (q->count < q->low) {
         mprEnableCmdOutputEvents(cmd, 1);
-        LOG(0, "CGI: ENABLE CGI events: cgiToBrowserService");
+        LOG(6, "CGI: ENABLE CGI events: cgiToBrowserService");
     } else if (q->count > q->max && conn->tx->writeBlocked) {
-        LOG(0, "CGI: SUSPEND WRITEQ: cgiToBrowserData writeq %d/%d", conn->writeq->count, conn->writeq->max);
+        LOG(6, "CGI: SUSPEND WRITEQ: cgiToBrowserData writeq %d/%d", conn->writeq->count, conn->writeq->max);
         httpSuspendQueue(conn->writeq);
     }
-    LOG(0, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
+    LOG(6, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
         cmd->pid, q->count, q->flags, conn->tx->writeBlocked);
 }
 
@@ -384,20 +399,18 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
     httpServiceQueues(conn);
 
     if (cmd->complete) {
-        LOG(0, "CGI: cgiCallback complete");
         httpFinalize(conn);
         httpPumpRequest(conn, NULL);
         /* WARNING: this will complete this request and prep for the next */
         httpPostEvent(conn);
-        mprYield(0);
         return;
     } 
     if (channel >= 0 && conn->state <= HTTP_STATE_FINALIZED) {
         httpEnableConnEvents(conn);
-        mprLog(0, "CGI: ENABLE CONN: cgiCallback mask %x", conn->sock->handler ? conn->sock->handler->desiredMask : 0);
+        mprLog(6, "CGI: ENABLE CONN: cgiCallback mask %x", conn->sock->handler ? conn->sock->handler->desiredMask : 0);
     }
     suspended = httpIsQueueSuspended(conn->writeq);
-    mprLog(0, "CGI: %s CGI: cgiCallback. Conn->writeq %d", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
+    mprLog(6, "CGI: %s CGI: cgiCallback. Conn->writeq %d", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
     assure(!suspended || conn->tx->writeBlocked);
     mprEnableCmdOutputEvents(cmd, !suspended);
 }
@@ -993,9 +1006,8 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
     handler->outgoingService = cgiToBrowserService;
     handler->incoming = browserToCgiData; 
     handler->open = openCgi; 
-    handler->ready = readyCgi; 
     handler->start = startCgi; 
-#if BIT_WIN_LIKE
+#if BIT_WIN_LIKE && UNUSED
     handler->writable = writableCgi; 
 #endif
 
