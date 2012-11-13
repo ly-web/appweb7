@@ -7138,11 +7138,11 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
 #define MPR_SOCKET_LISTENER     0x40        /**< MprSocket is server listener */
 #define MPR_SOCKET_NOREUSE      0x80        /**< Don't set SO_REUSEADDR option */
 #define MPR_SOCKET_NODELAY      0x100       /**< Disable Nagle algorithm */
-#define MPR_SOCKET_THREAD       0x400       /**< Process callbacks on a worker thread */
-#define MPR_SOCKET_CLIENT       0x800       /**< Socket is a client */
-#define MPR_SOCKET_PENDING      0x1000      /**< Pending buffered read data */
-#define MPR_SOCKET_TRACED       0x2000      /**< Socket has been traced to the log */
-#define MPR_SOCKET_DISCONNECTED 0x4000      /**< The mprDisconnectSocket has been called */
+#define MPR_SOCKET_THREAD       0x200       /**< Process callbacks on a worker thread */
+#define MPR_SOCKET_CLIENT       0x400       /**< Socket is a client */
+#define MPR_SOCKET_PENDING      0x800       /**< Pending buffered read data */
+#define MPR_SOCKET_TRACED       0x1000      /**< Socket has been traced to the log */
+#define MPR_SOCKET_DISCONNECTED 0x2000      /**< The mprDisconnectSocket has been called */
 
 /**
     Socket Service

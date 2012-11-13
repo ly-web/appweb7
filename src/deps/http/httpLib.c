@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: xp-32
+    Prepared by: magnetar.local
  */
 
 #include "http.h"
@@ -2292,12 +2292,12 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
     now = conn->http->now;
     limits = conn->limits;
     assure(limits);
-
     mprLog(6, "Inactive connection timed out");
-    if (conn->state >= HTTP_STATE_PARSED) {
-        if (conn->timeoutCallback) {
-            (conn->timeoutCallback)(conn);
-        }
+
+    if (conn->timeoutCallback) {
+        (conn->timeoutCallback)(conn);
+    }
+    if (conn->state >= HTTP_STATE_PARSED && !conn->connError) {
         if ((conn->lastActivity + limits->inactivityTimeout) < now) {
             httpError(conn, HTTP_CODE_REQUEST_TIMEOUT,
                 "Exceeded inactivity timeout of %Ld sec", limits->inactivityTimeout / 1000);
@@ -2433,7 +2433,7 @@ PUBLIC void httpCallEvent(HttpConn *conn, int mask)
 PUBLIC void httpPostEvent(HttpConn *conn)
 {
     if (conn->endpoint) {
-        if (conn->keepAliveCount < 0 && (conn->state == HTTP_STATE_BEGIN || conn->state == HTTP_STATE_COMPLETE)) {
+        if (conn->keepAliveCount < 0 && (conn->state < HTTP_STATE_PARSED || conn->state == HTTP_STATE_COMPLETE)) {
             httpDestroyConn(conn);
             return;
         } else if (conn->state == HTTP_STATE_COMPLETE) {
@@ -2492,7 +2492,7 @@ static void readEvent(HttpConn *conn)
             break;
         } else if (nbytes < 0 && mprIsSocketEof(conn->sock)) {
             conn->keepAliveCount = -1;
-            if (conn->state < HTTP_STATE_FIRST) {
+            if (conn->state < HTTP_STATE_PARSED) {
                 break;
             }
         }
@@ -2579,7 +2579,7 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
 
     mprLog(7, "EnableConnEvents");
 
-    if (!conn->async || !conn->sock || mprIsSocketEof(conn->sock)) {
+    if (!conn->async || !conn->sock) {
         return;
     }
     tx = conn->tx;
@@ -2596,7 +2596,6 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
 #if !BIT_LOCK_FIX
         lock(conn->http);
 #endif
-        assure(tx || !mprIsSocketEof(conn->sock));
         if (tx) {
             /*
                 Can be blocked with data in the iovec and none in the queue
@@ -2608,7 +2607,7 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
                 Enable read events if the read queue is not full. 
              */
             q = conn->readq;
-            if (q->count < q->max && !rx->eof /* UNUSED || rx->form */) {
+            if (q->count < q->max && !rx->eof) {
                 eventMask |= MPR_READABLE;
             }
         } else {
@@ -3634,12 +3633,15 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
  */
 static HttpConn *acceptConn(MprSocket *sock, MprDispatcher *dispatcher, HttpEndpoint *endpoint)
 {
-    HttpConn        *conn;
-    MprEvent        e;
-    int             level;
+    Http        *http;
+    HttpConn    *conn;
+    MprEvent    e;
+    static int  warnOnceConnections = 0;
+    int         level, count;
 
     assure(dispatcher);
     assure(endpoint);
+    http = endpoint->http;
 
     if (endpoint->ssl) {
         if (mprUpgradeSocket(sock, endpoint->ssl, 1) < 0) {
@@ -3651,7 +3653,17 @@ static HttpConn *acceptConn(MprSocket *sock, MprDispatcher *dispatcher, HttpEndp
         mprCloseSocket(sock, 0);
         return 0;
     }
-    if ((conn = httpCreateConn(endpoint->http, endpoint, dispatcher)) == 0) {
+    if ((count = mprGetListLength(http->connections)) >= endpoint->limits->requestMax) {
+        /* To help alleviate DOS - we just close without responding */
+        if (!warnOnceConnections) {
+            warnOnceConnections = 1;
+            mprLog(2, "Too many concurrent connections %d/%d", count, endpoint->limits->requestMax);
+        }
+        mprCloseSocket(sock, 0);
+        http->underAttack = 1;
+        return 0;
+    }
+    if ((conn = httpCreateConn(http, endpoint, dispatcher)) == 0) {
         mprCloseSocket(sock, 0);
         return 0;
     }
@@ -4004,8 +4016,8 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
         if (conn->endpoint && tx && rx) {
             if (tx->flags & HTTP_TX_HEADERS_CREATED) {
                 /* 
-                    If the response headers have been sent, must let the other side of the failure. Abort abort is the only way.
-                    Disconnect will cause a readable (EOF) event.
+                    If the response headers have been sent, must let the other side of the failure. 
+                    Abort abort is the only way. Disconnect will cause a readable (EOF) event.
                  */
                 flags |= HTTP_ABORT;
             } else {
@@ -4896,7 +4908,7 @@ static void httpTimer(Http *http, MprEvent *event)
     HttpRx      *rx;
     HttpLimits  *limits;
     MprModule   *module;
-    int         next, active;
+    int         next, active, abort;
 
     assure(event);
     
@@ -4913,9 +4925,16 @@ static void httpTimer(Http *http, MprEvent *event)
     for (active = 0, next = 0; (conn = mprGetNextItem(http->connections, &next)) != 0; active++) {
         rx = conn->rx;
         limits = conn->limits;
-        if (!conn->timeoutEvent && (
-                (conn->lastActivity + limits->inactivityTimeout) < http->now || 
-                (conn->started + limits->requestTimeout) < http->now)) {
+#if UNUSED
+        disconnect = 0;
+        if (http->underAttack) {
+            //  MOB - define 3000
+            if (conn->state < HTTP_STATE_PARSED && (conn->lastActivity + 3000) < http->now) {
+                disconnect = 1;
+                mprLog(0, "Request parse timeout");
+            }
+        } else if ((conn->lastActivity + limits->inactivityTimeout) < http->now || 
+                (conn->started + limits->requestTimeout) < http->now) {
             if (rx) {
                 /*
                     Don't call APIs on the conn directly (thread-race). Schedule a timer on the connection's dispatcher.
@@ -4925,12 +4944,30 @@ static void httpTimer(Http *http, MprEvent *event)
                 }
             } else {
                 mprLog(6, "Idle connection without active request timed out");
-                httpDisconnect(conn);
-                httpDiscardQueueData(conn->writeq, 1);
-                httpEnableConnEvents(conn);
-                conn->lastActivity = conn->started = http->now;
+                disconnect = 1;
             }
         }
+        if (disconnect) {
+            httpDisconnect(conn);
+            httpDiscardQueueData(conn->writeq, 1);
+            httpEnableConnEvents(conn);
+            conn->lastActivity = conn->started = http->now;
+        }
+#else
+        if (!conn->timeoutEvent) {
+            abort = 0;
+            if (http->underAttack && conn->state < HTTP_STATE_PARSED && (conn->lastActivity + 3000) < http->now) {
+                abort = 1;
+                httpDisconnect(conn);
+            } else if ((conn->lastActivity + limits->inactivityTimeout) < http->now || 
+                    (conn->started + limits->requestTimeout) < http->now) {
+                abort = 1;
+            }
+            if (abort) {
+                conn->timeoutEvent = mprCreateEvent(conn->dispatcher, "connTimeout", 0, httpConnTimeout, conn, 0);
+            }
+        }
+#endif
     }
 
     /*
@@ -16861,6 +16898,7 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
             /* Acknowledge the close. Echo the received status */
             httpSendClose(conn, WS_STATUS_OK, NULL);
             rx->eof = 1;
+            rx->remainingContent = 0;
         }
         /* Advance from the content state */
         httpSetState(conn, HTTP_STATE_READY);

@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: xp-32
+    Prepared by: magnetar.local
  */
 
 #include "mpr.h"
@@ -8252,6 +8252,9 @@ static bool serviceDispatcher(MprDispatcher *dp);
 #define isReady(dispatcher) (dispatcher->parent == dispatcher->service->readyQ)
 #define isWaiting(dispatcher) (dispatcher->parent == dispatcher->service->waitQ)
 #define isEmpty(dispatcher) (dispatcher->eventQ->next == dispatcher->eventQ)
+#if KEEP
+static int dqlen(MprDispatcher *dq);
+#endif
 
 /************************************* Code ***********************************/
 /*
@@ -8797,13 +8800,14 @@ static int dispatchEvents(MprDispatcher *dispatcher)
         (event->proc)(event->data, event);
 
         lock(es);
-        /* Remove from currentQ - GC can then collect */
-        mprDequeueEvent(event);
         if (event->continuous) {
             /* Reschedule if continuous */
             event->timestamp = dispatcher->service->now;
             event->due = event->timestamp + (event->period ? event->period : 1);
             mprQueueEvent(dispatcher, event);
+        } else {
+            /* Remove from currentQ - GC can then collect */
+            mprDequeueEvent(event);
         }
     }
     unlock(es);
@@ -9089,6 +9093,21 @@ static int makeRunnable(MprDispatcher *dispatcher)
     unlock(es);
     return wasRunning;
 }
+
+
+#if KEEP
+static int dqlen(MprDispatcher *dq)
+{
+    MprDispatcher   *dp;
+    int             count;
+
+    count = 0;
+    for (dp = dq->next; dp != dq; dp = dp->next) {
+        count++;
+    }
+    return count;
+}
+#endif
 
 
 #if UNUSED && KEEP
@@ -9882,12 +9901,11 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
             break;
         }
     }
-    assure(event->next == 0);
-    assure(event->prev == 0);
     assure(prior->next);
     assure(prior->prev);
     
     queueEvent(prior, event);
+    event->dispatcher = dispatcher;
     es->eventCount++;
     if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
         mprScheduleDispatcher(dispatcher);

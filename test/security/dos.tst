@@ -13,7 +13,7 @@ http.close()
 //  MOB - TEMP
 if (Config.OS != 'windows') {
     //  Try to crash with DOS attack
-    for (i in 2000) {
+    for (i in 1000) {
         let s = new Socket
         try {
             s.connect(HTTP.address)

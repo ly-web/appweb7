@@ -15,7 +15,6 @@ let http = new Http
 http.setHeader("SWITCHES", "-b%20" + len)
 http.get(HTTP + "/cgi-bin/cgiProgram")
 assert(http.status == 200)
-print("STATUS", http.status)
 if (bytes != http.response.length) {
     print('\n', bytes, '\n', http.response.length)
 }

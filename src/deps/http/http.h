@@ -329,6 +329,7 @@ typedef struct Http {
     int             nextAuth;               /**< Auth object version vector */
     int             connCount;              /**< Count of connections */
     int             sessionCount;           /**< Count of sessions */
+    int             underAttack;            /**< Under DOS attack */
     void            *context;               /**< Embedding context */
     MprTicks        currentTime;            /**< When currentDate was last calculated (ticks) */
     char            *currentDate;           /**< Date string for HTTP response headers */
@@ -4570,25 +4571,23 @@ PUBLIC void httpProcessWriteEvent(HttpConn *conn);
  */
 typedef struct HttpTx {
     /* Ordered for debugging */
+    int             finalized;              /**< Request response generated and handler processing is complete */
+    int             pendingFinalize;        /**< Call httpFinalize again once the Tx pipeline is created */
+    int             finalizedConnector;     /**< Connector has finished sending the response */
+    int             finalizedOutput;        /**< Handler or surrogate has finished writing output response */
+    char            *filename;              /**< Name of a real file being served (typically pathInfo mapped) */
+    int             flags;                  /**< Response flags */
+    int             status;                 /**< HTTP response status */
+    int             responded;              /**< The request has started to respond. Some output has been initiated. */
+    int             started;                /**< Handler has started */
     MprOff          bytesWritten;           /**< Bytes written including headers */
     MprOff          entityLength;           /**< Original content length before range subsetting */
     ssize           chunkSize;              /**< Chunk size to use when using transfer encoding. Zero for unchunked. */
     cchar           *ext;                   /**< Filename extension */
     char            *etag;                  /**< Unique identifier tag */
-    char            *filename;              /**< Name of a real file being served (typically pathInfo mapped) */
     HttpStage       *handler;               /**< Final handler serving the request */
     MprOff          length;                 /**< Transmission content length */
-
-    int             flags;                  /**< Response flags */
-    int             finalized;              /**< Request response generated and handler processing is complete */
-    int             pendingFinalize;        /**< Call httpFinalize again once the Tx pipeline is created */
-    int             finalizedConnector;     /**< Connector has finished sending the response */
-    int             finalizedOutput;        /**< Handler or surrogate has finished writing output response */
-    int             responded;              /**< The request has started to respond. Some output has been initiated. */
-    int             started;                /**< Handler has started */
-    int             status;                 /**< HTTP response status */
     int             writeBlocked;           /**< Transmission writing is blocked */
-
     HttpUri         *parsedUri;             /**< Client request uri */
     char            *method;                /**< Client request method GET, HEAD, POST, DELETE, OPTIONS, PUT, TRACE */
 
