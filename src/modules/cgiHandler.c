@@ -380,6 +380,7 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
         return;
     }
     conn->lastActivity = conn->http->now;
+    LOG(7, "CGI: cgiCallback event channel %d", channel);
 
     switch (channel) {
     case MPR_CMD_STDIN:
@@ -445,7 +446,8 @@ static void readFromCgi(Cgi *cgi, int channel)
         } else if ((packet = httpCreateDataPacket(HTTP_BUFSIZE)) == 0) {
             break;
         }
-        if ((nbytes = mprReadCmd(cmd, channel, mprGetBufEnd(packet->content), HTTP_BUFSIZE)) < 0) {
+        nbytes = mprReadCmd(cmd, channel, mprGetBufEnd(packet->content), HTTP_BUFSIZE);
+        if (nbytes < 0) {
             err = mprGetError();
             if (err == EINTR) {
                 continue;
@@ -479,7 +481,7 @@ static void readFromCgi(Cgi *cgi, int channel)
             cgi->headers = 0;
             cgi->seenHeader = 1;
         } 
-        if (!tx->finalizedOutput) {
+        if (!tx->finalizedOutput && httpGetPacketLength(packet) > 0) {
             /* Put the data to the CGI readq, then cgiToBrowserService will take care of it */ 
             httpPutPacket(q, packet);
         }
