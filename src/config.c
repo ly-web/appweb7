@@ -1554,9 +1554,6 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
 
     } else if (scaselesscmp(type, "secure") == 0) {
         addCondition(state, "secure", 0, 0);
-#if UNUSED
-        httpSetAuthSecure(state->auth, 1);
-#endif
 
     } else if (scaselesscmp(type, "user") == 0) {
         httpSetAuthPermittedUsers(state->auth, rest);

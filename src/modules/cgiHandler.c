@@ -250,9 +250,6 @@ static void browserToCgiData(HttpQueue *q, HttpPacket *packet)
             if (cgi->cmd) {
                 mprDestroyCmd(cgi->cmd);
             }
-#if UNUSED
-            q->queueData = 0;
-#endif
             httpError(conn, HTTP_CODE_BAD_REQUEST, "Client supplied insufficient body data");
         }
     }

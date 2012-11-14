@@ -5025,13 +5025,6 @@ static void manageCmd(MprCmd *cmd, int flags)
 
     } else if (flags & MPR_MANAGE_FREE) {
         mprDestroyCmd(cmd);
-#if UNUSED
-        resetCmd(cmd);
-        if (cmd->signal) {
-            mprRemoveSignalHandler(cmd->signal);
-            cmd->signal = 0;
-        }
-#endif
         vxCmdManager(cmd);
         mprRemoveItem(MPR->cmdService->cmds, cmd);
     }
@@ -5701,43 +5694,8 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
         }
         mprLog(6, "Cmd reaped: status %d, pid %d, eof %d / %d\n", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
         if (cmd->callback) {
-#if UNUSED
-            while (cmd->eofCount < cmd->requiredEof) {
-                /*
-                    Read outstanding data
-                 */  
-                got = 0;
-                if (cmd->files[MPR_CMD_STDERR].fd >= 0) {
-                    if ((nbytes = (cmd->callback)(cmd, MPR_CMD_STDERR, cmd->callbackData)) > 0) {
-                        got += nbytes;
-                    }
-                }
-                if (cmd->files[MPR_CMD_STDOUT].fd >= 0) {
-                    if ((nbytes = (cmd->callback)(cmd, MPR_CMD_STDOUT, cmd->callbackData)) > 0) {
-                        got += nbytes;
-                    }
-                }
-                if (got <= 0) {
-                    break;
-                }
-            }
-            if (cmd->files[MPR_CMD_STDERR].fd >= 0) {
-                mprCloseCmdFd(cmd, MPR_CMD_STDERR);
-            }
-            if (cmd->files[MPR_CMD_STDOUT].fd >= 0) {
-                mprCloseCmdFd(cmd, MPR_CMD_STDOUT);
-            }
-#endif
             (cmd->callback)(cmd, -1, cmd->callbackData);
             /* WARNING - this above call may invoke httpPump and complete the request. HttpConn.tx may be null */
-
-#if UNUSED && DONT_USE && KEEP
-            if (cmd->eofCount != cmd->requiredEof) {
-                mprLog(0, "reapCmd: insufficient EOFs %d %d, complete %d", cmd->eofCount, cmd->requiredEof, cmd->complete);
-            }
-            assure(cmd->eofCount == cmd->requiredEof);
-            assure(cmd->complete);
-#endif
         }
     }
 }
@@ -19306,9 +19264,6 @@ static void manageSocket(MprSocket *sp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(sp->service);
-#if UNUSED
-        mprMark(sp->dispatcher);
-#endif
         mprMark(sp->errorMsg);
         mprMark(sp->handler);
         mprMark(sp->acceptIp);
@@ -19337,9 +19292,6 @@ static void resetSocket(MprSocket *sp)
         mprCloseSocket(sp, 0);
     }
     if (sp->flags & MPR_SOCKET_CLOSED) {
-#if UNUSED
-        sp->error = 0;
-#endif
         sp->flags = 0;
         sp->port = -1;
         sp->fd = -1;
