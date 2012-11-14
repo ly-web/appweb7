@@ -96,6 +96,11 @@ static void manageCgi(Cgi *cgi, int flags)
         mprMark(cgi->readq);
         mprMark(cgi->cmd);
         mprMark(cgi->headers);
+    } else {
+        if (cgi->cmd) {
+            /* Just for safety */
+            mprDestroyCmd(cgi->cmd);
+        }
     }
 }
 
@@ -103,15 +108,14 @@ static void manageCgi(Cgi *cgi, int flags)
 static void closeCgi(HttpQueue *q)
 {
     Cgi     *cgi;
+    MprCmd  *cmd;
 
     mprLog(5, "CGI: close");
     cgi = q->queueData;
-    if (cgi->cmd) {
-        mprSetCmdCallback(cgi->cmd, NULL, NULL);
-        if (cgi->cmd->pid) {
-            mprStopCmd(cgi->cmd, -1);
-        }
-        mprDisconnectCmd(cgi->cmd);
+    cmd = cgi->cmd;
+    if (cmd) {
+        mprSetCmdCallback(cmd, NULL, NULL);
+        mprDestroyCmd(cmd);
     }
     httpValidateLimits(q->conn->endpoint, HTTP_VALIDATE_CLOSE_PROCESS, q->conn);
 }
@@ -220,26 +224,6 @@ static void waitForCgi(Cgi *cgi, MprEvent *event)
             mprStopCmd(cmd, -1);
         }
     }
-#if UNUSED
-    while (!cmd->complete && !conn->error) {
-        /*
-            Poll CGI channels and create I/O events
-         */
-        mprPollWinCmd(cmd, MPR_MAX_TIMEOUT);
-        /* 
-            Service I/O events posted above and conn writable events
-         */ 
-        mprWaitForEvent(conn->dispatcher, 10);
-    }
-    mprLog(0, "STATE %d, error %d", conn->state, conn->error);
-    if (conn->state > HTTP_STATE_BEGIN && conn->error) {
-        if (cmd->pid) {
-            mprStopCmd(cmd, -1);
-        }
-        httpPumpRequest(conn, NULL);
-        httpPostEvent(conn);
-    }
-#endif
 }
 #endif
 
@@ -266,7 +250,9 @@ static void browserToCgiData(HttpQueue *q, HttpPacket *packet)
             if (cgi->cmd) {
                 mprDestroyCmd(cgi->cmd);
             }
+#if UNUSED
             q->queueData = 0;
+#endif
             httpError(conn, HTTP_CODE_BAD_REQUEST, "Client supplied insufficient body data");
         }
     }
@@ -380,7 +366,7 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
         return;
     }
     conn->lastActivity = conn->http->now;
-    LOG(7, "CGI: cgiCallback event channel %d", channel);
+    LOG(6, "CGI: cgiCallback event channel %d", channel);
 
     switch (channel) {
     case MPR_CMD_STDIN:
@@ -398,6 +384,7 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
         break;
     }
     httpServiceQueues(conn);
+    LOG(7, "AFTER SERVICE state %d, error %d, complete %d", conn->state, conn->error, cmd->complete);
 
     if (cmd->complete) {
         httpFinalize(conn);
@@ -511,8 +498,9 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
     headers = mprGetBufStart(buf);
 
     /*
-        Split the headers from the body.
+        Split the headers from the body. Add null to ensure we can search for line terminators.
      */
+    mprAddNullToBuf(buf);
     len = 0;
     if ((endHeaders = strstr(headers, "\r\n\r\n")) == NULL) {
         if ((endHeaders = strstr(headers, "\n\n")) == NULL) {
@@ -525,6 +513,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
     } else {
         len = 4;
     }
+    assure(endHeaders <= buf->end);
     if (endHeaders) {
         endHeaders[len - 1] = '\0';
         endHeaders += len;
@@ -539,8 +528,6 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
         }
     }
     if (endHeaders && strchr(mprGetBufStart(buf), ':')) {
-        mprLog(4, "CGI: parseCgiHeaders: header\n%s", headers);
-
         while (mprGetBufLength(buf) > 0 && buf->start[0] && (buf->start[0] != '\r' && buf->start[0] != '\n')) {
             if ((key = getCgiToken(buf, ":")) == 0) {
                 key = "Bad Header";
@@ -549,6 +536,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
             while (isspace((uchar) *value)) {
                 value++;
             }
+            mprLog(4, "CGI: parseCgiHeader: key %s = %s", key, value);
             len = (int) strlen(value);
             while (len > 0 && (value[len - 1] == '\r' || value[len - 1] == '\n')) {
                 value[len - 1] = '\0';
@@ -1009,9 +997,6 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
     handler->incoming = browserToCgiData; 
     handler->open = openCgi; 
     handler->start = startCgi; 
-#if BIT_WIN_LIKE && UNUSED
-    handler->writable = writableCgi; 
-#endif
 
     if ((connector = httpCreateConnector(http, "cgiConnector", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
