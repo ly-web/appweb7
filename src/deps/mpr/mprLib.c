@@ -5024,12 +5024,15 @@ static void manageCmd(MprCmd *cmd, int flags)
 #endif
 
     } else if (flags & MPR_MANAGE_FREE) {
+        mprDestroyCmd(cmd);
+#if UNUSED
         resetCmd(cmd);
-        vxCmdManager(cmd);
         if (cmd->signal) {
             mprRemoveSignalHandler(cmd->signal);
             cmd->signal = 0;
         }
+#endif
+        vxCmdManager(cmd);
         mprRemoveItem(MPR->cmdService->cmds, cmd);
     }
 }
