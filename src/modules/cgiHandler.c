@@ -469,7 +469,7 @@ static void readFromCgi(Cgi *cgi, int channel)
             cgi->seenHeader = 1;
         } 
         if (!tx->finalizedOutput && httpGetPacketLength(packet) > 0) {
-            /* Put the data to the CGI readq, then cgiToBrowserService will take care of it */ 
+            /* Put the data to the CGI readq, then cgiToBrowserService will take care of it */
             httpPutPacket(q, packet);
         }
     }
@@ -488,6 +488,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
     HttpTx      *tx;
     MprBuf      *buf;
     char        *endHeaders, *headers, *key, *value, *location;
+    ssize       blen;
     int         len;
 
     conn = cgi->conn;
@@ -496,14 +497,14 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
     value = 0;
     buf = packet->content;
     headers = mprGetBufStart(buf);
-
+    blen = mprGetBufLength(buf);
+    
     /*
         Split the headers from the body. Add null to ensure we can search for line terminators.
      */
-    mprAddNullToBuf(buf);
     len = 0;
-    if ((endHeaders = strstr(headers, "\r\n\r\n")) == NULL) {
-        if ((endHeaders = strstr(headers, "\n\n")) == NULL) {
+    if ((endHeaders = sncontains(headers, "\r\n\r\n", blen)) == NULL) {
+        if ((endHeaders = sncontains(headers, "\n\n", blen)) == NULL) {
             if (mprGetCmdFd(cgi->cmd, MPR_CMD_STDOUT) >= 0 && strlen(headers) < HTTP_MAX_HEADERS) {
                 /* Not EOF and less than max headers and have not yet seen an end of headers delimiter */
                 return 0;
@@ -513,7 +514,10 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
     } else {
         len = 4;
     }
-    assure(endHeaders <= buf->end);
+    if (endHeaders > buf->end) {
+        assure(endHeaders <= buf->end);
+        return 0;
+    }
     if (endHeaders) {
         endHeaders[len - 1] = '\0';
         endHeaders += len;
