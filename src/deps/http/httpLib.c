@@ -2262,20 +2262,6 @@ PUBLIC void httpCloseConn(HttpConn *conn)
     if (conn->sock) {
         mprLog(5, "Closing connection");
         mprCloseSocket(conn->sock, 0);
-#if BIT_DEBUG
-        //  MOB - remove
-        {
-            MprEvent    *event;
-            /*
-                Should not be any queued events after closing the socket
-             */
-            for (event = conn->dispatcher->eventQ->next; event != conn->dispatcher->eventQ; event = event->next) {
-                if (event->fd == conn->sock->fd) {
-                    assure(0);
-                }
-            }
-        }
-#endif
         conn->sock = 0;
     }
 }
@@ -2385,7 +2371,6 @@ PUBLIC void httpConsumeLastRequest(HttpConn *conn)
             }
         }
     }
-    //  MOB UNUSURE
     if (HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_COMPLETE) {
         conn->keepAliveCount = -1;
     }
@@ -2605,9 +2590,10 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
             }
             /*
                 Enable read events if the read queue is not full. 
+                If request is a form, then must read and buffer all the input regardless
              */
             q = conn->readq;
-            if (q->count < q->max && !rx->eof) {
+            if (!rx->eof && (q->count < q->max || rx->form)) {
                 eventMask |= MPR_READABLE;
             }
         } else {
@@ -4930,35 +4916,6 @@ static void httpTimer(Http *http, MprEvent *event)
     mprLog(7, "httpTimer: %d active connections", mprGetListLength(http->connections));
     for (active = 0, next = 0; (conn = mprGetNextItem(http->connections, &next)) != 0; active++) {
         limits = conn->limits;
-#if UNUSED
-        disconnect = 0;
-        if (http->underAttack) {
-            //  MOB - define 3000
-            if (conn->state < HTTP_STATE_PARSED && (conn->lastActivity + 3000) < http->now) {
-                disconnect = 1;
-                mprLog(0, "Request parse timeout");
-            }
-        } else if ((conn->lastActivity + limits->inactivityTimeout) < http->now || 
-                (conn->started + limits->requestTimeout) < http->now) {
-            if (rx) {
-                /*
-                    Don't call APIs on the conn directly (thread-race). Schedule a timer on the connection's dispatcher.
-                 */
-                if (!conn->timeoutEvent) {
-                    conn->timeoutEvent = mprCreateEvent(conn->dispatcher, "connTimeout", 0, httpConnTimeout, conn, 0);
-                }
-            } else {
-                mprLog(6, "Idle connection without active request timed out");
-                disconnect = 1;
-            }
-        }
-        if (disconnect) {
-            httpDisconnect(conn);
-            httpDiscardQueueData(conn->writeq, 1);
-            httpEnableConnEvents(conn);
-            conn->lastActivity = conn->started = http->now;
-        }
-#else
         if (!conn->timeoutEvent) {
             abort = 0;
             if (http->underAttack && conn->state < HTTP_STATE_PARSED && (conn->lastActivity + 3000) < http->now) {
@@ -4972,7 +4929,6 @@ static void httpTimer(Http *http, MprEvent *event)
                 conn->timeoutEvent = mprCreateEvent(conn->dispatcher, "connTimeout", 0, httpConnTimeout, conn, 0);
             }
         }
-#endif
     }
 
     /*
@@ -6684,11 +6640,6 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
     for (next = 0; (stage = mprGetNextItem(tx->outputPipeline, &next)) != 0; ) {
         q = httpCreateQueue(conn, stage, HTTP_QUEUE_TX, q);
     }
-#if UNUSED && MOB01
-    //  MOB - remove
-    assure(conn->writeq == tx->queue[HTTP_QUEUE_TX]->nextQ);
-    conn->writeq = tx->queue[HTTP_QUEUE_TX]->nextQ;
-#endif
     conn->connectorq = tx->queue[HTTP_QUEUE_TX]->prevQ;
     pairQueues(conn);
 
@@ -6733,11 +6684,6 @@ PUBLIC void httpCreateRxPipeline(HttpConn *conn, HttpRoute *route)
     for (next = 0; (stage = mprGetNextItem(rx->inputPipeline, &next)) != 0; ) {
         q = httpCreateQueue(conn, stage, HTTP_QUEUE_RX, q);
     }
-#if UNUSED && MOB01
-    //  MOB - remove
-    assure(conn->readq == tx->queue[HTTP_QUEUE_RX]->prevQ);
-    conn->readq = tx->queue[HTTP_QUEUE_RX]->prevQ;
-#endif
     if (!conn->endpoint) {
         pairQueues(conn);
         openQueues(conn);
@@ -7113,9 +7059,6 @@ PUBLIC void httpAssignQueue(HttpQueue *q, HttpStage *stage, int dir)
         q->put = stage->incoming;
         q->service = stage->incomingService;
     }
-#if UNUSED
-    q->name = stage->name;
-#endif
 }
 
 
@@ -7594,7 +7537,6 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize len, int flags)
 
     for (totalWritten = 0; len > 0; ) {
         LOG(7, "httpWriteBlock q_count %d, q_max %d", q->count, q->max);
-        //  MOB UNUSURE
         if (conn->state >= HTTP_STATE_FINALIZED) {
             return MPR_ERR_CANT_WRITE;
         }
@@ -12079,34 +12021,34 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
         /*
             Enforce sandbox limits
          */
-        if (rx->bytesRead >= conn->limits->receiveBodySize) {
-            httpError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-                "Request body of %,Ld bytes is too big. Limit %,Ld", rx->bytesRead, conn->limits->receiveBodySize);
+        if (!conn->error) {
+            if (rx->bytesRead >= conn->limits->receiveBodySize) {
+                httpError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
+                    "Request body of %,Ld bytes is too big. Limit %,Ld", rx->bytesRead, conn->limits->receiveBodySize);
 
-        } else if (rx->form && rx->length >= conn->limits->receiveFormSize) {
-            httpError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-                "Request form of %,Ld bytes is too big. Limit %,Ld", rx->bytesRead, conn->limits->receiveFormSize);
-
+            } else if (rx->form && rx->bytesRead >= conn->limits->receiveFormSize) {
+                httpError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
+                    "Request form of %,Ld bytes is too big. Limit %,Ld", rx->bytesRead, conn->limits->receiveFormSize);
+            }
+        }
+        /*
+            Send packet upstream toward the handler
+         */
+        if (packet == rx->headerPacket && nbytes > 0) {
+            packet = httpSplitPacket(packet, 0);
+        }
+        if (httpGetPacketLength(packet) > nbytes) {
+            /*  Split excess data belonging to the next chunk or pipelined request */
+            LOG(7, "processContent: Split packet of %d at %d", httpGetPacketLength(packet), nbytes);
+            conn->input = httpSplitPacket(packet, nbytes);
         } else {
-            /*
-                Send packet upstream toward the handler
-             */
-            if (packet == rx->headerPacket && nbytes > 0) {
-                packet = httpSplitPacket(packet, 0);
-            }
-            if (httpGetPacketLength(packet) > nbytes) {
-                /*  Split excess data belonging to the next chunk or pipelined request */
-                LOG(7, "processContent: Split packet of %d at %d", httpGetPacketLength(packet), nbytes);
-                conn->input = httpSplitPacket(packet, nbytes);
+            conn->input = 0;
+        }
+        if (!(tx->finalized && conn->endpoint)) {
+            if (rx->form) {
+                httpPutForService(q, packet, HTTP_DELAY_SERVICE);
             } else {
-                conn->input = 0;
-            }
-            if (!(tx->finalized && conn->endpoint)) {
-                if (rx->form) {
-                    httpPutForService(q, packet, HTTP_DELAY_SERVICE);
-                } else {
-                    httpPutPacketToNext(q, packet);
-                }
+                httpPutPacketToNext(q, packet);
             }
         }
     }
@@ -12115,7 +12057,9 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
             /* Closing is the only way for HTTP/1.0 to signify the end of data */
             httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Connection lost");
         }
+#if UNUSED
         if (!tx->finalized) {
+#endif
             if (rx->form && conn->endpoint) {
                 /* Forms wait for all data before routing */
                 routeRequest(conn);
@@ -12130,7 +12074,9 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
             if (!rx->streamInput) {
                 httpStartPipeline(conn);
             }
+#if UNUSED
         }
+#endif
         httpSetState(conn, HTTP_STATE_READY);
         return conn->workerEvent ? 0 : 1;
     }
@@ -12289,7 +12235,6 @@ static void processCompletion(HttpConn *conn)
 
 /*
     Used by ejscript Request.close
-    MOB - review
  */
 PUBLIC void httpCloseRx(HttpConn *conn)
 {
@@ -13615,7 +13560,6 @@ static void incoming(HttpQueue *q, HttpPacket *packet)
         httpPutPacketToNext(q, packet);
     } else {
         /* This queue is the last queue in the pipeline */
-        //  MOB - should this call WillAccept?
         if (httpGetPacketLength(packet) > 0) {
             if (packet->flags & HTTP_PACKET_SOLO) {
                 httpPutForService(q, packet, HTTP_DELAY_SERVICE);
@@ -14242,16 +14186,6 @@ PUBLIC void httpFinalizeOutput(HttpConn *conn)
         return;
     }
     assure(conn->state >= HTTP_STATE_CONNECTED);
-#if UNUSED
-    //  MOB UNUSED
-    if (conn->state < HTTP_STATE_CONNECTED /* MOB || !conn->writeq */ || !conn->sock) {
-        /* Tx Pipeline not yet created */
-        assure(conn->state >= HTTP_STATE_CONNECTED);
-        assure(conn->sock);
-        tx->pendingFinalize = 1;
-        return;
-    }
-#endif
     /*
         This may be called from httpError when the connection fails.
      */
@@ -14387,7 +14321,6 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
     rx = conn->rx;
     tx = conn->tx;
 
-    //  MOB - should really test responded
     if (tx->finalized) {
         /* A response has already been formulated */
         return;
@@ -16342,11 +16275,6 @@ static void addBodyParams(HttpConn *conn)
     rx = conn->rx;
     if (rx->form) {
         if (!(rx->flags & HTTP_ADDED_FORM_PARAMS)) {
-#if UNUSED && MOB01
-            //  MOB - should be already set
-            assure(conn->readq == conn->tx->queue[HTTP_QUEUE_RX]->prevQ);
-            conn->readq = conn->tx->queue[HTTP_QUEUE_RX]->prevQ;
-#endif
             addParamsFromQueue(conn->readq);
             rx->flags |= HTTP_ADDED_FORM_PARAMS;
         }
@@ -16814,7 +16742,6 @@ static void closeWebSock(HttpQueue *q)
 
 static void readyWebSock(HttpQueue *q)
 {
-    //  MOB - are we getting here in normal operation?
     if (q->conn->endpoint) {
         HTTP_NOTIFY(q->conn, HTTP_EVENT_APP_OPEN, 0);
     }

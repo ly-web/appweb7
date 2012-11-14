@@ -19,7 +19,7 @@ if (dotcgi) {
     contains(http, "cgiProgram: Output")
 }
 
-if (App.test.os == "WIN") {
+if (App.test && App.test.os == "WIN") {
     http.get(HTTP + "/cgi-bin/cgiProgram.exe")
     assert(http.status == 200)
     contains(http, "cgiProgram: Output")

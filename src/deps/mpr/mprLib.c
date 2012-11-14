@@ -9846,7 +9846,9 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     assure(dispatcher);
     assure(event);
     assure(event->timestamp);
+#if UNUSED && KEEP
     assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+#endif
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     assure(event->magic == MPR_EVENT_MAGIC);

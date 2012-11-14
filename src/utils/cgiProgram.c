@@ -69,8 +69,8 @@
 
 /*********************************** Locals ***********************************/
 
-#define MPR_CMD_VXWORKS_EOF     "_ _EOF_ _"
-#define MPR_CMD_VXWORKS_EOF_LEN 9
+#define CMD_VXWORKS_EOF         "_ _EOF_ _"
+#define CMD_VXWORKS_EOF_LEN     9
 #define MAX_ARGV                64
 
 static char     *argvList[MAX_ARGV];
@@ -308,8 +308,8 @@ int main(int argc, char **argv, char **envp)
         VxWorks pipes need an explicit eof string
         Must not call exit(0) in Vxworks as that will exit the task before the CGI handler can cleanup. Must use return 0.
      */
-    write(1, MPR_CMD_VXWORKS_EOF, MPR_CMD_VXWORKS_EOF_LEN);
-    write(2, MPR_CMD_VXWORKS_EOF, MPR_CMD_VXWORKS_EOF_LEN);
+    write(1, CMD_VXWORKS_EOF, CMD_VXWORKS_EOF_LEN);
+    write(2, CMD_VXWORKS_EOF, CMD_VXWORKS_EOF_LEN);
 #endif
     fflush(stderr);
     fflush(stdout);

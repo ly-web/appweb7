@@ -4022,9 +4022,9 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprPollCmd</name>
+      <name>mprPollWinCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>gad17e3108ad2aa78c371e3b3286ee7c8b</anchor>
+      <anchor>ga192b4e4644029986c0fab0dc79d6999a</anchor>
       <arglist>(MprCmd *cmd, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
@@ -8505,9 +8505,9 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprPollCmd</name>
+      <name>mprPollWinCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>gad17e3108ad2aa78c371e3b3286ee7c8b</anchor>
+      <anchor>ga192b4e4644029986c0fab0dc79d6999a</anchor>
       <arglist>(MprCmd *cmd, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
