@@ -2512,7 +2512,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
 
     maAddDirective(appweb, "Listen", listenDirective);
 
-    //  MOB - not a great name "Load"
     maAddDirective(appweb, "Load", loadDirective);
     maAddDirective(appweb, "Log", logDirective);
     maAddDirective(appweb, "LogRoutes", logRoutesDirective);

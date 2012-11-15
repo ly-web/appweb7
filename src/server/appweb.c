@@ -147,7 +147,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
                 usageError();
             }
             app->home = mprGetAbsPath(argv[++argind]);
-#if UNUSED && KEEP
+#if KEEP
             if (chdir(app->home) < 0) {
                 mprError("%s: Can't change directory to %s", mprGetAppName(), app->home);
                 exit(4);

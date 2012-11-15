@@ -522,7 +522,7 @@ static int finalizePhp(MprModule *mp)
         mprLog(4, "php: Finalize library before unloading");
         phpSapiBlock.shutdown(&phpSapiBlock);
         sapi_shutdown();
-#if UNUSED && KEEP
+#if KEEP
         /* PHP crashes by destroying the EG(persistent_list) twice. Once in zend_shutdown and once in tsrm_shutdown */
         tsrm_shutdown();
 #endif
