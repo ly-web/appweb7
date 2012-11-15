@@ -5107,7 +5107,7 @@ PUBLIC char *httpGetDateString(MprPath *sbuf)
     MprTicks    when;
 
     if (sbuf == 0) {
-        when = ((Http*) MPR->httpService)->now;
+        when = mprGetTime();
     } else {
         when = (MprTicks) sbuf->mtime * MPR_TICKS_PER_SEC;
     }
