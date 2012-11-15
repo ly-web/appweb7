@@ -519,7 +519,7 @@ PUBLIC void httpSetAuthForm(HttpRoute *parent, cchar *loginPage, cchar *loginSer
             logoutService = &logoutService[8];
             secure = 1;
         }
-        //  TODO MOB - should be only POST
+        //  MOB - should be only POST
         httpSetRouteMethods(route, "GET, POST");
         route = httpCreateActionRoute(parent, logoutService, logoutServiceProc);
         route->auth->type = 0;
@@ -1218,7 +1218,7 @@ static void cacheAtClient(HttpConn *conn)
         } else {
             httpAddHeader(conn, "Cache-Control", "max-age=%d", cache->clientLifespan / MPR_TICKS_PER_SEC);
         }
-#if UNUSED && KEEP
+#if KEEP
         {
             /* Old HTTP/1.0 clients don't understand Cache-Control */
             struct tm   tm;
@@ -1436,7 +1436,7 @@ PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *e
     cache->flags = flags;
     mprAddItem(route->caching, cache);
 
-#if UNUSED && KEEP
+#if KEEP
     mprLog(3, "Caching route %s for methods %s, URIs %s, extensions %s, types %s, client lifespan %d, server lifespan %d", 
         route->name,
         (methods) ? methods: "*",
@@ -3581,7 +3581,7 @@ PUBLIC bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn
                 endpoint->clientCount, limits->clientMax);
         }
     }
-#if UNUSED && KEEP
+#if KEEP
     LOG(0, "Validate Active connections %d, requests: %d/%d, IP %d/%d, Processes %d/%d", 
         mprGetListLength(http->connections), endpoint->requestCount, limits->requestMax, 
         endpoint->clientCount, limits->clientMax, http->processCount, limits->processMax);
@@ -7088,7 +7088,7 @@ PUBLIC void httpSetQueueLimits(HttpQueue *q, ssize low, ssize max)
 }
 
 
-#if UNUSED && KEEP
+#if KEEP
 /*  
     Insert a queue after the previous element
  */
@@ -11263,7 +11263,6 @@ static bool parseIncoming(HttpConn *conn, HttpPacket *packet)
 
     /*
         Don't start processing until all the headers have been received (delimited by two blank lines)
-        MOB - should be tolerant and allow '\n\n'
      */
     if ((end = sncontains(start, "\r\n\r\n", len)) == 0) {
         if (len >= conn->limits->headerSize) {
@@ -11572,7 +11571,6 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad header format");
             return 0;
         }
-        //  MOB - should be tolerant and allow '\n'
         value = getToken(conn, "\r\n");
         while (isspace((uchar) *value)) {
             value++;
@@ -12057,26 +12055,20 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
             /* Closing is the only way for HTTP/1.0 to signify the end of data */
             httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Connection lost");
         }
-#if UNUSED
-        if (!tx->finalized) {
-#endif
-            if (rx->form && conn->endpoint) {
-                /* Forms wait for all data before routing */
-                routeRequest(conn);
-                while ((packet = httpGetPacket(q)) != 0) {
-                    httpPutPacketToNext(q, packet);
-                }
+        if (rx->form && conn->endpoint) {
+            /* Forms wait for all data before routing */
+            routeRequest(conn);
+            while ((packet = httpGetPacket(q)) != 0) {
+                httpPutPacketToNext(q, packet);
             }
-            /*
-                Send "end" pack to signify eof to the handler
-             */
-            httpPutPacketToNext(q, httpCreateEndPacket());
-            if (!rx->streamInput) {
-                httpStartPipeline(conn);
-            }
-#if UNUSED
         }
-#endif
+        /*
+            Send "end" pack to signify eof to the handler
+         */
+        httpPutPacketToNext(q, httpCreateEndPacket());
+        if (!rx->streamInput) {
+            httpStartPipeline(conn);
+        }
         httpSetState(conn, HTTP_STATE_READY);
         return conn->workerEvent ? 0 : 1;
     }
@@ -17028,7 +17020,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             }
             break;
 
-#if UNUSED && KEEP
+#if KEEP
         case WS_EXT_DATA:
             assure(packet);
             mprLog(5, "webSocketFilter: EXT DATA - RESERVED");

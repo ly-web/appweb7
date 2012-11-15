@@ -123,7 +123,7 @@ struct HttpWebSocket;
     Other constants
  */
 #define HTTP_DEFAULT_MAX_THREADS  10                /**< Default number of threads */
-#define HTTP_MAX_KEEP_ALIVE       100               /**< Maximum requests per connection */
+#define HTTP_MAX_KEEP_ALIVE       200               /**< Maximum requests per connection */
 #define HTTP_MAX_PASS             64                /**< Size of password */
 #define HTTP_MAX_SECRET           16                /**< Size of secret data for auth */
 #define HTTP_PACKET_ALIGN(x)      (((x) + 0x3FF) & ~0x3FF)

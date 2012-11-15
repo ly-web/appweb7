@@ -591,7 +591,7 @@ static MprMem *allocMem(ssize required, int flags)
             }
             groupMap &= ~(((ssize) 1) << group);
             heap->groupMap &= ~(((ssize) 1) << group);
-#if UNUSED && KEEP
+#if KEEP
             triggerGC(0);
 #endif
         }
@@ -1385,7 +1385,7 @@ static void marker(void *unused, MprThread *tp)
 }
 
 
-#if UNUSED && KEEP
+#if KEEP
 /*
     Sweeper thread main program. May be called from the marker thread.
  */
@@ -2535,6 +2535,7 @@ static void monitorStack()
 #undef mprCopyName
 #undef mprSetAllocName
 
+#if UNUSED
 /*
     Define stubs so windows can use same *.def for debug or release
  */
@@ -2542,6 +2543,7 @@ PUBLIC void mprCheckBlock(MprMem *mp) {}
 PUBLIC void *mprSetName(void *ptr, cchar *name) { return 0; }
 PUBLIC void *mprCopyName(void *dest, void *src) { return 0; }
 PUBLIC void *mprSetAllocName(void *ptr, cchar *name) { return 0; }
+#endif
 
 /*
     Re-instate defines for combo releases, where source will be appended below here
@@ -3578,8 +3580,6 @@ PUBLIC void mprSetWinMsgCallback(MprMsgCallback callback)
 }
 
 
-#else
-PUBLIC void stubMprAsync() {}
 #endif /* MPR_EVENT_ASYNC */
 
 /*
@@ -4970,7 +4970,7 @@ PUBLIC MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
     if ((cmd = mprAllocObj(MprCmd, manageCmd)) == 0) {
         return 0;
     }
-#if UNUSED && KEEP
+#if KEEP
     cmd->timeoutPeriod = MPR_TIMEOUT_CMD;
     cmd->timestamp = mprGetTicks();
 #endif
@@ -5813,7 +5813,7 @@ PUBLIC bool mprIsCmdRunning(MprCmd *cmd)
 PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTicks timeout)
 {
     assure(0);
-#if UNUSED && KEEP
+#if KEEP
     cmd->timeoutPeriod = timeout;
 #endif
 }
@@ -9071,7 +9071,7 @@ static int dqlen(MprDispatcher *dq)
 #endif
 
 
-#if UNUSED && KEEP
+#if KEEP
 /*
     Designate the required worker thread to run the event
  */
@@ -9506,7 +9506,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         }
         if (ev.events) {
             rc = epoll_ctl(ws->epoll, EPOLL_CTL_DEL, fd, &ev);
-#if UNUSED && KEEP
+#if KEEP
             if (rc != 0) {
                 mprError("Epoll del error %d on fd %d\n", errno, fd);
             }
@@ -9689,8 +9689,6 @@ PUBLIC void mprWakeNotifier()
     }
 }
 
-#else
-PUBLIC void stubMmprEpoll() {}
 #endif /* MPR_EVENT_EPOLL */
 
 /*
@@ -9846,7 +9844,7 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     assure(dispatcher);
     assure(event);
     assure(event->timestamp);
-#if UNUSED && KEEP
+#if KEEP
     assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
 #endif
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
@@ -10889,7 +10887,7 @@ PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
     if (!(flags & MPR_HASH_OWN)) {
         hash->mutex = mprCreateLock();
     }
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
     if (hash->flags & MPR_HASH_UNICODE) {
         if (hash->flags & MPR_HASH_CASELESS) {
             hash->fn = (MprHashProc) whashlower;
@@ -11177,7 +11175,7 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
     prev = 0;
 
     while (sp) {
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
         if (hash->flags & MPR_HASH_UNICODE) {
             wchar *u1, *u2;
             u1 = (wchar*) sp->key;
@@ -11262,7 +11260,7 @@ PUBLIC MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
 
 static void *dupKey(MprHash *hash, cvoid *key)
 {
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
     if (hash->flags & MPR_HASH_UNICODE) {
         return wclone((wchar*) key);
     } else
@@ -12062,8 +12060,6 @@ PUBLIC void mprWakeNotifier()
     }
 }
 
-#else
-PUBLIC void stubMprKqueue() {}
 #endif /* MPR_EVENT_KQUEUE */
 
 /*
@@ -14100,7 +14096,7 @@ PUBLIC cchar *mprLookupMime(MprHash *table, cchar *ext)
 
 
 
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
 /********************************** Forwards **********************************/
 
 PUBLIC int mcaselesscmp(wchar *str1, cchar *str2)
@@ -16911,8 +16907,6 @@ PUBLIC void mprWakeNotifier()
     }
 }
 
-#else
-PUBLIC void stubMprPollWait() {}
 #endif /* MPR_EVENT_POLL */
 
 /*
@@ -17103,7 +17097,7 @@ static int  growBuf(Format *fmt);
 static char *sprintfCore(char *buf, ssize maxsize, cchar *fmt, va_list arg);
 static void outNum(Format *fmt, cchar *prefix, uint64 val);
 static void outString(Format *fmt, cchar *str, ssize len);
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
 static void outWideString(Format *fmt, wchar *str, ssize len);
 #endif
 #if BIT_FLOAT
@@ -17419,7 +17413,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 /* Name */
                 qname = va_arg(args, MprEjsName);
                 if (qname.name) {
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
                     outWideString(&fmt, (wchar*) qname.space->value, qname.space->length);
                     BPUT(&fmt, ':');
                     BPUT(&fmt, ':');
@@ -17437,7 +17431,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'S':
                 /* Safe string */
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
                 if (fmt.flags & SPRINTF_LONG) {
                     //  UNICODE - not right wchar
                     safe = mprEscapeHtml(va_arg(args, wchar*));
@@ -17454,7 +17448,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 /* MprEjsString */
                 es = va_arg(args, MprEjsString*);
                 if (es) {
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
                     outWideString(&fmt, es->value, es->length);
 #else
                     outString(&fmt, (char*) es->value, es->length);
@@ -17466,7 +17460,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'w':
                 /* Wide string of wchar characters (Same as %ls"). Null terminated. */
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
                 outWideString(&fmt, va_arg(args, wchar*), -1);
                 break;
 #else
@@ -17475,7 +17469,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 's':
                 /* Standard string */
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
                 if (fmt.flags & SPRINTF_LONG) {
                     outWideString(&fmt, va_arg(args, wchar*), -1);
                 } else
@@ -17624,7 +17618,7 @@ static void outString(Format *fmt, cchar *str, ssize len)
 }
 
 
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
 static void outWideString(Format *fmt, wchar *str, ssize len)
 {
     wchar     *cp;
@@ -17827,148 +17821,6 @@ PUBLIC int mprIsZero(double value) {
     return fpclassify(value) == FP_ZERO;
 #endif
 }
-
-
-#if UNUSED
-/*
-    Convert a double to ascii. Caller must free the result. This uses the JavaScript ECMA-262 spec for formatting rules.
-
-    function dtoa(double value, int mode, int ndigits, int *periodOffset, int *sign, char **end)
- */
-PUBLIC char *mprDtoa(double value, int ndigits, int mode, int flags)
-{
-    MprBuf  *buf;
-    char    *intermediate, *ip;
-    int     period, sign, len, exponentForm, fixedForm, exponent, count, totalDigits, npad;
-
-    buf = mprCreateBuf(64, -1);
-    intermediate = 0;
-    exponentForm = 0;
-    fixedForm = 0;
-
-    if (mprIsNan(value)) {
-        mprPutStringToBuf(buf, "NaN");
-
-    } else if (mprIsInfinite(value)) {
-        if (value < 0) {
-            mprPutStringToBuf(buf, "-Infinity");
-        } else {
-            mprPutStringToBuf(buf, "Infinity");
-        }
-    } else if (value == 0) {
-        mprPutCharToBuf(buf, '0');
-
-    } else {
-        if (ndigits <= 0) {
-            if (!(flags & MPR_DTOA_FIXED_FORM)) {
-                mode = MPR_DTOA_ALL_DIGITS;
-            }
-            ndigits = 0;
-
-        } else if (mode == MPR_DTOA_ALL_DIGITS) {
-            mode = MPR_DTOA_N_DIGITS;
-        }
-        if (flags & MPR_DTOA_EXPONENT_FORM) {
-            exponentForm = 1;
-            if (ndigits > 0) {
-                ndigits++;
-            } else {
-                ndigits = 0;
-                mode = MPR_DTOA_ALL_DIGITS;
-            }
-        } else if (flags & MPR_DTOA_FIXED_FORM) {
-            fixedForm = 1;
-        }
-
-        /*
-            Convert to an intermediate string representation. Period is the offset of the decimal point. NOTE: the
-            intermediate representation may have less digits than period.
-            Note: ndigits < 0 seems to trim N digits from the end with rounding.
-         */
-        ip = intermediate = dtoa(value, mode, ndigits, &period, &sign, NULL);
-        len = (int) slen(intermediate);
-        exponent = period - 1;
-
-        if (mode == MPR_DTOA_ALL_DIGITS && ndigits == 0) {
-            ndigits = len;
-        }
-        if (!fixedForm) {
-            if (period <= -6 || period > 21) {
-                exponentForm = 1;
-            }
-        }
-        if (sign) {
-            mprPutCharToBuf(buf, '-');
-        }
-        if (exponentForm) {
-            mprPutCharToBuf(buf, ip[0] ? ip[0] : '0');
-            if (len > 1) {
-                mprPutCharToBuf(buf, '.');
-                mprPutSubStringToBuf(buf, &ip[1], (ndigits == 0) ? len - 1: ndigits);
-            }
-            mprPutCharToBuf(buf, 'e');
-            mprPutCharToBuf(buf, (period < 0) ? '-' : '+');
-            mprPutFmtToBuf(buf, "%d", (exponent < 0) ? -exponent: exponent);
-
-        } else {
-            if (mode == MPR_DTOA_N_FRACTION_DIGITS) {
-                /* Count of digits */
-                if (period <= 0) {
-                    /* Leading fractional zeros required */
-                    mprPutStringToBuf(buf, "0.");
-                    mprPutPadToBuf(buf, '0', -period);
-                    mprPutStringToBuf(buf, ip);
-                    npad = ndigits - len + period;
-                    if (npad > 0) {
-                        mprPutPadToBuf(buf, '0', npad);
-                    }
-
-                } else {
-                    count = min(len, period);
-                    /* Leading integral digits */
-                    mprPutSubStringToBuf(buf, ip, count);
-                    /* Trailing zero pad */
-                    if (period > len) {
-                        mprPutPadToBuf(buf, '0', period - len);
-                    }
-                    totalDigits = count + ndigits;
-                    if (period < totalDigits) {
-                        count = totalDigits + sign - (int) mprGetBufLength(buf);
-                        mprPutCharToBuf(buf, '.');
-                        mprPutSubStringToBuf(buf, &ip[period], count);
-                        mprPutPadToBuf(buf, '0', count - slen(&ip[period]));
-                    }
-                }
-
-            } else if (len <= period && period <= 21) {
-                /* data shorter than period */
-                mprPutStringToBuf(buf, ip);
-                mprPutPadToBuf(buf, '0', period - len);
-
-            } else if (0 < period && period <= 21) {
-                /* Period shorter than data */
-                mprPutSubStringToBuf(buf, ip, period);
-                mprPutCharToBuf(buf, '.');
-                mprPutStringToBuf(buf, &ip[period]);
-
-            } else if (-6 < period && period <= 0) {
-                /* Small negative exponent */
-                mprPutStringToBuf(buf, "0.");
-                mprPutPadToBuf(buf, '0', -period);
-                mprPutStringToBuf(buf, ip);
-
-            } else {
-                assure(0);
-            }
-        }
-    }
-    mprAddNullToBuf(buf);
-    if (intermediate) {
-        freedtoa(intermediate);
-    }
-    return sclone(mprGetBufStart(buf));
-}
-#endif
 #endif /* BIT_FLOAT */
 
 
@@ -18347,8 +18199,6 @@ PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
 }
 
 
-#else /* BIT_ROM */
-PUBLIC void stubRomfs() {}
 #endif /* BIT_ROM */
 
 /*
@@ -18678,7 +18528,6 @@ static void readPipe(MprWaitService *ws)
 {
     char        buf[128];
 
-    //  MOB - refactor
 #if VXWORKS
     int len = sizeof(ws->breakAddress);
     (void) recvfrom(ws->breakSock, buf, (int) sizeof(buf), 0, (struct sockaddr*) &ws->breakAddress, (int*) &len);
@@ -18688,8 +18537,6 @@ static void readPipe(MprWaitService *ws)
 #endif
 }
 
-#else
-PUBLIC void stubMprSelectWait() {}
 #endif /* MPR_EVENT_SELECT */
 
 /*
@@ -20610,7 +20457,6 @@ PUBLIC bool mprIsSocketV6(MprSocket *sp)
 }
 
 
-//  MOB - inconsistent with mprIsSocketV6
 PUBLIC bool mprIsIPv6(cchar *ip)
 {
     return ip && ipv6(ip);
@@ -20758,8 +20604,7 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
     mprLog(4, "Using %s SSL provider", ssl->providerName);
     sp->provider = ssl->provider;
 #if FUTURE
-    //  MOB - session resumption can cause problems with Nagle. 
-    //  However, appweb opens sockets with nodelay by default
+    /* session resumption can cause problems with Nagle. However, appweb opens sockets with nodelay by default */
     sp->flags |= MPR_SOCKET_NODELAY;
     mprSetSocketNoDelay(sp, 1);
 #endif
@@ -21744,7 +21589,6 @@ PUBLIC char *ssub(cchar *str, ssize offset, ssize len)
 }
 
 
-//  MOB - need strimSpace(str)
 /*
     Trim characters from the given set. Returns a newly allocated string.
  */
@@ -24312,7 +24156,7 @@ PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout)
 
     if (diff < 0) {
         /*
-            Detect time going backwards. MOB - should never happen now.
+            Detect time going backwards. Should never happen now.
          */
         assure(diff >= 0);
         diff = 0;
@@ -25899,8 +25743,6 @@ PUBLIC int mprInitWindow()
     return 0;
 }
 
-#else
-PUBLIC void stubMprUnix() {}
 #endif /* BIT_UNIX_LIKE */
 
 /*
@@ -26103,7 +25945,6 @@ PUBLIC int mprInitWindow()
 }
 
 
-//  MOB - is this still needed?
 /*
     Create a routine to pull in the GCC support routines for double and int64 manipulations for some platforms. Do this
     incase modules reference these routines. Without this, the modules have to reference them. Which leads to multiple 
@@ -26116,8 +25957,6 @@ double  __mpr_floating_point_resolution(double a, double b, int64 c, int64 d, ui
 }
 
 
-#else
-PUBLIC void stubMprVxWorks() {}
 #endif /* VXWORKS */
 
 /*
@@ -27204,8 +27043,6 @@ PUBLIC ssize wtom(char *dest, ssize destCount, wchar *src, ssize count)
 #elif BIT_WIN_LIKE
         len = WideCharToMultiByte(CP_ACP, 0, src, count, dest, (DWORD) destCount - 1, NULL, NULL);
 #else
-        //  MOB - does this support dest == NULL?
-        //  MOB - count is ignored
         len = wcstombs(dest, src, destCount - 1);
 #endif
         if (dest) {
@@ -27246,8 +27083,6 @@ PUBLIC ssize mtow(wchar *dest, ssize destCount, cchar *src, ssize count)
 #elif BIT_WIN_LIKE
         len = MultiByteToWideChar(CP_ACP, 0, src, count, dest, (DWORD) destCount - 1);
 #else
-        //  MOB - does this support dest == NULL
-        //  MOB - count is ignored
         len = mbstowcs(dest, src, destCount - 1);
 #endif
         if (dest) {
@@ -28825,8 +28660,6 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
 }
 
-#else
-PUBLIC void stubMprWince() {}
 #endif /* WINCE */
 
 /*

@@ -770,7 +770,7 @@ typedef int64 MprTicks;
 #endif
 
 #ifndef PRINTF_ATTRIBUTE
-    #if (__GNUC__ >= 3) && !DOXYGEN && BIT_DEBUG && UNUSED && KEEP
+    #if (__GNUC__ >= 3) && !DOXYGEN && BIT_DEBUG && KEEP
         /** 
             Use gcc attribute to check printf fns.  a1 is the 1-based index of the parameter containing the format, 
             and a2 the index of the first argument. Note that some gcc 2.x versions don't handle this properly 
@@ -1375,7 +1375,7 @@ struct  MprXml;
 /* 
     Timeouts
  */
-#if UNUSED && KEEP
+#if KEEP
 #define MPR_TIMEOUT_CMD         60000       /**< Command Request timeout (60 sec) */
 #define MPR_TIMEOUT_SOCKETS     10000       /**< Socket connection socket timeout */
 #define MPR_TIMEOUT_LOG_STAMP   3600000     /**< Time between log time stamps (1 hr) */
@@ -3242,7 +3242,7 @@ PUBLIC char    *awtom(wchar *src, ssize *len);
 PUBLIC ssize   wtom(char *dest, ssize count, wchar *src, ssize len);
 PUBLIC ssize   mtow(wchar *dest, ssize count, cchar *src, ssize len);
 
-#if UNUSED && KEEP
+#if KEEP
 PUBLIC wchar    *wfmt(wchar *fmt, ...);
 PUBLIC wchar    *itow(wchar *buf, ssize bufCount, int64 value, int radix);
 PUBLIC wchar    *wchr(wchar *s, int c);
@@ -3324,7 +3324,7 @@ PUBLIC wchar    *wupper(wchar *s);
     This API is not yet public
  */
 #if BIT_CHAR_LEN > 1
-#if UNUSED && FUTURE
+#if KEEP
 PUBLIC int      mcaselesscmp(wchar *s1, cchar *s2);
 PUBLIC int      mcmp(wchar *s1, cchar *s2);
 PUBLIC wchar    *mcontains(wchar *str, cchar *pattern);
@@ -3839,7 +3839,7 @@ PUBLIC void mprSetBufRefillProc(MprBuf *buf, MprBufProc fn, void *arg);
  */
 PUBLIC int mprSetBufSize(MprBuf *buf, ssize size, ssize maxSize);
 
-#if UNUSED && KEEP
+#if KEEP
 #if DOXYGEN || BIT_CHAR_LEN > 1
 /**
     Add a wide null character to the buffer contents.
@@ -6132,7 +6132,6 @@ typedef struct MprEvent {
     Event Dispatcher
  */
 typedef struct MprDispatcher {
-    //  MOB - remove
     int             magic;
     cchar           *name;              /**< Dispatcher name / purpose */
     MprEvent        *eventQ;            /**< Event queue */
@@ -6170,14 +6169,6 @@ typedef struct MprEventService {
     @returns a Dispatcher object that can manage events and be used with mprCreateEvent
  */
 PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int flags);
-
-#if UNUSED
-/**
-    Destroy a dispatcher
-    @param dispatcher Dispatcher to destroy
- */
-PUBLIC void mprDestroyDispatcher(MprDispatcher *dispatcher);
-#endif
 
 /**
     Disable a dispatcher from service events. This removes the dispatcher from any dispatcher queues and allows
@@ -7166,10 +7157,6 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
  */
 typedef struct MprSocket {
     MprSocketService *service;          /**< Socket service */
-#if UNUSED
-    int             error;              /**< Last error number */
-    MprDispatcher   *dispatcher;        /**< Event dispatcher for I/O events */
-#endif
     MprWaitHandler  *handler;           /**< Wait handler */
     char            *acceptIp;          /**< Server addresss that accepted a new connection (actual interface) */
     char            *ip;                /**< Server listen address or remote client address */

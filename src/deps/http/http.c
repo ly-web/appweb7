@@ -913,6 +913,7 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
     } else {
         outFile = mprGetStdout();
     }
+    mprAddRoot(outFile);
     while (!conn->tx->finalized && conn->state < HTTP_STATE_COMPLETE && remaining > 0) {
         remaining = mprGetRemainingTicks(mark, limits->requestTimeout);
         httpWait(conn, 0, remaining);
@@ -927,6 +928,7 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
     if (app->outFilename) {
         mprCloseFile(outFile);
     }
+    mprRemoveRoot(outFile);
     reportResponse(conn, url, mprGetTicks() - mark);
     httpDestroyRx(conn->rx);
     httpDestroyTx(conn->tx);

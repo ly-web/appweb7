@@ -713,32 +713,9 @@ static ssize writeMss(MprSocket *sp, cvoid *buf, ssize len)
  */
 static ssize flushMss(MprSocket *sp)
 {
-#if UNUSED
-    MprMatrixSocket     *msp;
-    ssize               written, bytes;
-    int                 prior;
-
-    msp = (MprMatrixSocket*) sp->sslSocket;
-    written = 0;
-    prior = mprSetSocketBlockingMode(sp, 1);
-    while (msp->outlen > 0) {
-        if ((bytes = writeMss(sp, NULL, 0)) < 0) {
-            mprSetSocketBlockingMode(sp, prior);
-            return bytes;
-        }
-        written += bytes;
-    }
-    mprSetSocketBlockingMode(sp, prior);
-    return written;
-#else
     return blockingWrite(sp, 0, 0);
-#endif
 }
 
-#else
-
-#include "mpr.h"
-PUBLIC int mprCreateMatrixSslModule() { return -1; }
 #endif /* BIT_PACK_MATRIXSSL */
 
 /*
