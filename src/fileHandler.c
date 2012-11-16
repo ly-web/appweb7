@@ -82,7 +82,7 @@ static int matchFileHandler(HttpConn *conn, HttpRoute *route, int dir)
         }
         /*
             If a directory, test if a directory listing should be rendered. If so, delegate to the dirHandler.
-            Can't use the sendFile handler and must use the netConnector.
+            Cannot use the sendFile handler and must use the netConnector.
          */
         if (info->isDir && maRenderDirListing(conn)) {
             tx->handler = conn->http->dirHandler;
@@ -134,11 +134,11 @@ static void openFileHandler(HttpQueue *q)
     } else {
         if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
             if (!(info->valid || info->isDir)) {
-                mprLog(4, "Can't open document %s", tx->filename);
+                mprLog(4, "Cannot open document %s", tx->filename);
                 if (rx->referrer) {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s from %s", rx->uri, rx->referrer);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document for: %s from %s", rx->uri, rx->referrer);
                 } else {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s", rx->uri);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document for: %s", rx->uri);
                 }
             } else if (info->valid) {
                 if (!tx->etag) {
@@ -159,7 +159,7 @@ static void openFileHandler(HttpQueue *q)
                 tx->length = -1;
             }
             if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-                httpError(conn, HTTP_CODE_NOT_FOUND, "Can't locate document: %s", rx->uri);
+                httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot locate document: %s", rx->uri);
                 
             } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
                 httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
@@ -175,10 +175,10 @@ static void openFileHandler(HttpQueue *q)
                     tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
                     if (tx->file == 0) {
                         if (rx->referrer) {
-                            httpError(conn, HTTP_CODE_NOT_FOUND, "DD Can't open document: %s from %s", 
+                            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", 
                                 tx->filename, rx->referrer);
                         } else {
-                            httpError(conn, HTTP_CODE_NOT_FOUND, "EE Can't open document: %s from %s", tx->filename);
+                            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", tx->filename);
                         }
                     }
                 }

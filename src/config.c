@@ -35,7 +35,7 @@ PUBLIC int maOpenConfig(MaState *state, cchar *path)
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
     if ((state->file = mprOpenFile(path, O_RDONLY | O_TEXT, 0444)) == 0) {
-        mprError("Can't open %s for config directives", path);
+        mprError("Cannot open %s for config directives", path);
         return MPR_ERR_CANT_OPEN;
     }
     mprLog(5, "Parsing config file: %s", state->filename);
@@ -208,7 +208,7 @@ static int addFilterDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddRouteFilter(state->route, filter, extensions, HTTP_STAGE_RX | HTTP_STAGE_TX) < 0) {
-        mprError("Can't add filter %s", filter);
+        mprError("Cannot add filter %s", filter);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -226,7 +226,7 @@ static int addInputFilterDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddRouteFilter(state->route, filter, extensions, HTTP_STAGE_RX) < 0) {
-        mprError("Can't add filter %s", filter);
+        mprError("Cannot add filter %s", filter);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -290,7 +290,7 @@ static int addOutputFilterDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddRouteFilter(state->route, filter, extensions, HTTP_STAGE_TX) < 0) {
-        mprError("Can't add filter %s", filter);
+        mprError("Cannot add filter %s", filter);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -308,7 +308,7 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddRouteHandler(state->route, handler, extensions) < 0) {
-        mprError("Can't add handler %s", handler);
+        mprError("Cannot add handler %s", handler);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -584,14 +584,14 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
     char    *path;
     path = httpMakePath(state->route, value);
     if (chdir(path) < 0) {
-        mprError("Can't change working directory to %s", path);
+        mprError("Cannot change working directory to %s", path);
         return MPR_ERR_CANT_OPEN;
     }
     if (chroot(path) < 0) {
         if (errno == EPERM) {
             mprError("Must be super user to use the --chroot option\n");
         } else {
-            mprError("Can't change change root directory to %s, errno %d\n", path, errno);
+            mprError("Cannot change change root directory to %s, errno %d\n", path, errno);
         }
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -821,7 +821,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
         path = httpMakePath(state->route, path);
     }
     if (mprStartLogging(path, 0) < 0) {
-        mprError("Can't write to ErrorLog: %s", path);
+        mprError("Cannot write to ErrorLog: %s", path);
         return MPR_ERR_BAD_SYNTAX;
     }
     mprSetLogLevel(level);
@@ -901,7 +901,7 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
         pattern = sjoin("^", pattern, "$", NULL);
         if ((includes = mprGetPathFiles(path, 0)) != 0) {
             if ((compiled = pcre_compile2(pattern, 0, 0, &errMsg, &column, NULL)) == 0) {
-                mprError("Can't compile include pattern. Error %s at column %d", errMsg, column);
+                mprError("Cannot compile include pattern. Error %s at column %d", errMsg, column);
                 return 0;
             }
             for (next = 0; (dp = mprGetNextItem(includes, &next)) != 0; ) {
@@ -1617,7 +1617,7 @@ static int roleDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddRole(state->auth, name, abilities) < 0) {
-        mprError("Can't add role %s", name);
+        mprError("Cannot add role %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
@@ -1727,7 +1727,7 @@ static int setDirective(MaState *state, cchar *key, cchar *value)
 static int setConnectorDirective(MaState *state, cchar *key, cchar *value)
 {
     if (httpSetRouteConnector(state->route, value) < 0) {
-        mprError("Can't add handler %s", value);
+        mprError("Cannot add handler %s", value);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -1745,7 +1745,7 @@ static int setHandlerDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpSetRouteHandler(state->route, name) < 0) {
-        mprError("Can't add handler %s", name);
+        mprError("Cannot add handler %s", name);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -1824,7 +1824,7 @@ static int typesConfigDirective(MaState *state, cchar *key, cchar *value)
 
     path = httpMakePath(state->route, value);
     if ((state->route->mimeTypes = mprCreateMimeTypes(path)) == 0) {
-        mprError("Can't open TypesConfig mime file %s", path);
+        mprError("Cannot open TypesConfig mime file %s", path);
         state->route->mimeTypes = mprCreateMimeTypes(NULL);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -1846,11 +1846,11 @@ static int unloadModuleDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if ((module = mprLookupModule(name)) == 0) {
-        mprError("Can't find module stage %s", name);
+        mprError("Cannot find module stage %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
     if ((stage = httpLookupStage(state->http, module->name)) != 0 && stage->match) {
-        mprError("Can't unload module %s due to match routine", module->name);
+        mprError("Cannot unload module %s due to match routine", module->name);
         return MPR_ERR_BAD_SYNTAX;
     } else {
         module->timeout = getticks(timeout);
@@ -1907,7 +1907,7 @@ static int userDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddUser(state->auth, name, password, abilities) < 0) {
-        mprError("Can't add user %s", name);
+        mprError("Cannot add user %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
@@ -1952,7 +1952,7 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
         httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
         state->auth = state->route->auth;
         if ((endpoint = httpLookupEndpoint(state->http, ip, port)) == 0) {
-            mprError("Can't find listen directive for virtual host %s", value);
+            mprError("Cannot find listen directive for virtual host %s", value);
             return MPR_ERR_BAD_SYNTAX;
         } else {
             httpAddHostToEndpoint(endpoint, state->host);
@@ -2367,7 +2367,7 @@ static char *getDirective(char *line, char **valuep)
         len = slen(value);
         if (*value == '\"' && value[len - 1] == '"' && len > 2 && value[1] != '\"' && !strpbrk(value, " \t")) {
             /*
-                Can't strip quotes if multiple args are quoted, only if one single arg is quoted
+                Cannot strip quotes if multiple args are quoted, only if one single arg is quoted
              */
             if (schr(&value[1], '"') == &value[len - 1]) {
                 value = snclone(&value[1], len - 2);
@@ -2419,7 +2419,7 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
 
     tempFile = mprGetTempPath(NULL);
     if ((file = mprOpenFile(tempFile, O_CREAT | O_TRUNC | O_WRONLY | O_TEXT, 0444)) == 0) {
-        mprError("Can't open %s", tempFile);
+        mprError("Cannot open %s", tempFile);
         return MPR_ERR_CANT_OPEN;
     }
     mprWriteFileFmt(file, "#\n#   %s - Authorization data\n#\n\n", mprGetPathBase(path));
@@ -2439,7 +2439,7 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
     mprCloseFile(file);
     unlink(path);
     if (rename(tempFile, path) < 0) {
-        mprError("Can't create new %s", path);
+        mprError("Cannot create new %s", path);
         return MPR_ERR_CANT_WRITE;
     }
     return 0;

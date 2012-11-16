@@ -989,7 +989,7 @@ PUBLIC void mprStartGCService()
         if (heap->flags & MPR_MARK_THREAD) {
             LOG(7, "DEBUG: startMemWorkers: start marker");
             if ((heap->marker = mprCreateThread("marker", marker, NULL, 0)) == 0) {
-                mprError("Can't create marker thread");
+                mprError("Cannot create marker thread");
                 MPR->hasError = 1;
             } else {
                 mprStartThread(heap->marker);
@@ -1000,7 +1000,7 @@ PUBLIC void mprStartGCService()
             LOG(7, "DEBUG: startMemWorkers: start sweeper");
             heap->hasSweeper = 1;
             if ((heap->sweeper = mprCreateThread("sweeper", sweeper, NULL, 0)) == 0) {
-                mprError("Can't create sweeper thread");
+                mprError("Cannot create sweeper thread");
                 MPR->hasError = 1;
             } else {
                 mprStartThread(heap->sweeper);
@@ -2006,11 +2006,11 @@ static void allocException(int cause, ssize size)
 
     if (cause == MPR_MEM_FAIL) {
         heap->hasError = 1;
-        mprLog(0, "%s: Can't allocate memory block of size %,d bytes.", MPR->name, size);
+        mprLog(0, "%s: Cannot allocate memory block of size %,d bytes.", MPR->name, size);
 
     } else if (cause == MPR_MEM_TOO_BIG) {
         heap->hasError = 1;
-        mprLog(0, "%s: Can't allocate memory block of size %,d bytes.", MPR->name, size);
+        mprLog(0, "%s: Cannot allocate memory block of size %,d bytes.", MPR->name, size);
 
     } else if (cause == MPR_MEM_REDLINE) {
         mprLog(0, "%s: Memory request for %,d bytes exceeds memory red-line.", MPR->name, size);
@@ -2895,7 +2895,7 @@ PUBLIC int mprStart()
     rc += mprStartModuleService();
     rc += mprStartWorkerService();
     if (rc != 0) {
-        mprUserError("Can't start MPR services");
+        mprUserError("Cannot start MPR services");
         return MPR_ERR_CANT_INITIALIZE;
     }
     MPR->state = MPR_STARTED;
@@ -3016,8 +3016,8 @@ PUBLIC int mprParseArgs(char *args, char **argv, int maxArgc)
     int     quote, argc;
 
     /*
-        Example     "showColors" red 'light blue' "yellow white" 'Can\'t \"render\"'
-        Becomes:    ["showColors", "red", "light blue", "yellow white", "Can't \"render\""]
+        Example     "showColors" red 'light blue' "yellow white" 'Cannot \"render\"'
+        Becomes:    ["showColors", "red", "light blue", "yellow white", "Cannot \"render\""]
      */
     for (argc = 0, src = args; src && *src != '\0' && argc < maxArgc; argc++) {
         while (isspace((uchar) *src)) {
@@ -3529,12 +3529,12 @@ PUBLIC int mprInitWindow()
 
     rc = RegisterClass(&wc);
     if (rc == 0) {
-        mprError("Can't register windows class");
+        mprError("Cannot register windows class");
         return MPR_ERR_CANT_INITIALIZE;
     }
     hwnd = CreateWindow(name, title, WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, 0, NULL);
     if (!hwnd) {
-        mprError("Can't create window");
+        mprError("Cannot create window");
         return -1;
     }
     ws->hwnd = hwnd;
@@ -5247,11 +5247,11 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
     if (rc < 0) {
         if (err) {
             if (rc == MPR_ERR_CANT_ACCESS) {
-                *err = sfmt("Can't access command %s", cmd->program);
+                *err = sfmt("Cannot access command %s", cmd->program);
             } else if (MPR_ERR_CANT_OPEN) {
-                *err = sfmt("Can't open standard I/O for command %s", cmd->program);
+                *err = sfmt("Cannot open standard I/O for command %s", cmd->program);
             } else if (rc == MPR_ERR_CANT_CREATE) {
-                *err = sfmt("Can't create process for %s", cmd->program);
+                *err = sfmt("Cannot create process for %s", cmd->program);
             }
         }
         return rc;
@@ -6024,8 +6024,8 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
     
     /*
         Add quotes around all args that have spaces and backquote [", ', \\]
-        Example:    ["showColors", "red", "light blue", "Can't \"render\""]
-        Becomes:    "showColors" "red" "light blue" "Can't \"render\""
+        Example:    ["showColors", "red", "light blue", "Cannot \"render\""]
+        Becomes:    "showColors" "red" "light blue" "Cannot \"render\""
      */
     dp = cmd->command;
     for (ap = &argv[0]; *ap; ) {
@@ -6099,9 +6099,9 @@ static int startProcess(MprCmd *cmd)
     if (! CreateProcess(0, wide(cmd->command), 0, 0, 1, 0, (char*) envBlock, wide(cmd->dir), &startInfo, &procInfo)) {
         err = mprGetOsError();
         if (err == ERROR_DIRECTORY) {
-            mprError("Can't create process: %s, directory %s is invalid", cmd->program, cmd->dir);
+            mprError("Cannot create process: %s, directory %s is invalid", cmd->program, cmd->dir);
         } else {
-            mprError("Can't create process: %s, %d", cmd->program, err);
+            mprError("Cannot create process: %s, %d", cmd->program, err);
         }
         return MPR_ERR_CANT_CREATE;
     }
@@ -6140,7 +6140,7 @@ static int makeChannel(MprCmd *cmd, int index)
     readHandle = CreateFile(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, att, OPEN_ALWAYS, 
         FILE_ATTRIBUTE_NORMAL,0);
     if (readHandle == INVALID_HANDLE_VALUE) {
-        mprError(cmd, "Can't create stdio pipes %s. Err %d\n", path, mprGetOsError());
+        mprError(cmd, "Cannot create stdio pipes %s. Err %d\n", path, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     readFd = (int) (int64) _open_osfhandle((int*) readHandle, 0);
@@ -6151,7 +6151,7 @@ static int makeChannel(MprCmd *cmd, int index)
     writeFd = (int) _open_osfhandle((int*) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {
-        mprError(cmd, "Can't create stdio pipes %s. Err %d\n", path, mprGetOsError());
+        mprError(cmd, "Cannot create stdio pipes %s. Err %d\n", path, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     if (index == MPR_CMD_STDIN) {
@@ -6206,7 +6206,7 @@ static int makeChannel(MprCmd *cmd, int index)
     att = (index == MPR_CMD_STDIN) ? &clientAtt : &serverAtt;
     readHandle = CreateNamedPipe(wide(pipeName), openMode, pipeMode, 1, 0, 256 * 1024, 1, att);
     if (readHandle == INVALID_HANDLE_VALUE) {
-        mprError("Can't create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
+        mprError("Cannot create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     readFd = (int) (int64) _open_osfhandle((long) readHandle, 0);
@@ -6216,7 +6216,7 @@ static int makeChannel(MprCmd *cmd, int index)
     writeFd = (int) _open_osfhandle((long) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {
-        mprError("Can't create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
+        mprError("Cannot create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     if (index == MPR_CMD_STDIN) {
@@ -6242,7 +6242,7 @@ static int makeChannel(MprCmd *cmd, int index)
     file = &cmd->files[index];
 
     if (pipe(fds) < 0) {
-        mprError("Can't create stdio pipes. Err %d", mprGetOsError());
+        mprError("Cannot create stdio pipes. Err %d", mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     if (index == MPR_CMD_STDIN) {
@@ -6268,7 +6268,7 @@ static int makeChannel(MprCmd *cmd, int index)
     file->name = sfmt("/pipe/%s_%d_%d", BIT_PRODUCT, taskIdSelf(), tempSeed++);
 
     if (pipeDevCreate(file->name, 5, MPR_BUFSIZE) < 0) {
-        mprError("Can't create pipes to run %s", cmd->program);
+        mprError("Cannot create pipes to run %s", cmd->program);
         return MPR_ERR_CANT_OPEN;
     }
     /*
@@ -6280,7 +6280,7 @@ static int makeChannel(MprCmd *cmd, int index)
         file->fd = open(file->name, O_RDONLY, 0644);
     }
     if (file->fd < 0) {
-        mprError("Can't create stdio pipes. Err %d", mprGetOsError());
+        mprError("Cannot create stdio pipes. Err %d", mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     nonBlock = 1;
@@ -6319,7 +6319,7 @@ static int startProcess(MprCmd *cmd)
         }
         if (cmd->dir) {
             if (chdir(cmd->dir) < 0) {
-                mprError("cmd: Can't change directory to %s", cmd->dir);
+                mprError("cmd: Cannot change directory to %s", cmd->dir);
                 return MPR_ERR_CANT_INITIALIZE;
             }
         }
@@ -6354,7 +6354,7 @@ static int startProcess(MprCmd *cmd)
             rc = execv(cmd->program, (char**) cmd->argv);
         }
         err = errno;
-        printf("Can't exec %s, rc %d, err %d\n", cmd->program, rc, err);
+        printf("Cannot exec %s, rc %d, err %d\n", cmd->program, rc, err);
 
         /*
             Use _exit to avoid flushing I/O any other I/O.
@@ -6497,7 +6497,7 @@ static void cmdTaskEntry(char *program, MprCmdTaskFn entry, int cmdArg)
         rc = chdir(dir);
     }
     if (rc < 0) {
-        mprError("cmd: Can't change directory to %s", cmd->dir);
+        mprError("cmd: Cannot change directory to %s", cmd->dir);
         exit(255);
     }
 }
@@ -9441,7 +9441,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
      *  to wait for I/O.
      */
     if (pipe(ws->breakPipe) < 0) {
-        mprError("Can't open breakout pipe");
+        mprError("Cannot open breakout pipe");
         return MPR_ERR_CANT_INITIALIZE;
     }
     fcntl(ws->breakPipe[0], F_SETFL, fcntl(ws->breakPipe[0], F_GETFL) | O_NONBLOCK);
@@ -11796,7 +11796,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
         Initialize the "wakeup" pipe. This is used to wakeup the service thread if other threads need to wait for I/O.
      */
     if (pipe(ws->breakPipe) < 0) {
-        mprError("Can't open breakout pipe");
+        mprError("Cannot open breakout pipe");
         return MPR_ERR_CANT_INITIALIZE;
     }
     fcntl(ws->breakPipe[0], F_SETFL, fcntl(ws->breakPipe[0], F_GETFL) | O_NONBLOCK);
@@ -13360,7 +13360,7 @@ PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
                 }
             }
             if ((file = mprOpenFile(path, mode, 0664)) == 0) {
-                mprError("Can't open log file %s", path);
+                mprError("Cannot open log file %s", path);
                 return -1;
             }
         }
@@ -13612,7 +13612,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
             mprBackupLog(MPR->logPath, MPR->logBackup);
             mode = O_CREAT | O_WRONLY | O_TEXT;
             if ((file = mprOpenFile(MPR->logPath, mode, 0664)) == 0) {
-                mprError("Can't open log file %s", MPR->logPath);
+                mprError("Cannot open log file %s", MPR->logPath);
                 unlock(MPR);
                 return;
             }
@@ -14017,7 +14017,7 @@ PUBLIC int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program)
         }
     }
     if (mt == 0) {
-        mprError("Can't find mime type %s for action program %s", mimeType, program);
+        mprError("Cannot find mime type %s for action program %s", mimeType, program);
         return MPR_ERR_CANT_FIND;
     }
     mt->program = sclone(program);
@@ -14784,7 +14784,7 @@ PUBLIC int mprUnloadModule(MprModule *mp)
 #if BIT_HAS_DYN_LOAD
     if (mp->handle) {
         if (mprUnloadNativeModule(mp) != 0) {
-            mprError("Can't unload module %s", mp->name);
+            mprError("Cannot unload module %s", mp->name);
         }
         mp->handle = 0;
     }
@@ -15048,11 +15048,11 @@ PUBLIC int mprCopyPath(cchar *fromName, cchar *toName, int mode)
     char        buf[MPR_BUFSIZE];
 
     if ((from = mprOpenFile(fromName, O_RDONLY | O_BINARY, 0)) == 0) {
-        mprError("Can't open %s", fromName);
+        mprError("Cannot open %s", fromName);
         return MPR_ERR_CANT_OPEN;
     }
     if ((to = mprOpenFile(toName, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, mode)) == 0) {
-        mprError("Can't open %s", toName);
+        mprError("Cannot open %s", toName);
         return MPR_ERR_CANT_OPEN;
     }
     while ((count = mprReadFile(from, buf, sizeof(buf))) > 0) {
@@ -16254,7 +16254,7 @@ PUBLIC char *mprReadPathContents(cchar *path, ssize *lenp)
     char        *buf;
 
     if ((file = mprOpenFile(path, O_RDONLY | O_BINARY, 0)) == 0) {
-        mprError("Can't open %s", path);
+        mprError("Cannot open %s", path);
         return 0;
     }
     if (mprGetPathInfo(path, &info) < 0) {
@@ -16569,11 +16569,11 @@ PUBLIC ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode)
         len = slen(buf);
     }
     if ((file = mprOpenFile(path, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, mode)) == 0) {
-        mprError("Can't open %s", path);
+        mprError("Cannot open %s", path);
         return MPR_ERR_CANT_OPEN;
     }
     if (mprWriteFile(file, buf, len) != len) {
-        mprError("Can't write %s", path);
+        mprError("Cannot write %s", path);
         mprCloseFile(file);
         return MPR_ERR_CANT_WRITE;
     }
@@ -16646,7 +16646,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
         Initialize the "wakeup" pipe. This is used to wakeup the service thread if other threads need to wait for I/O.
      */
     if (pipe(ws->breakPipe) < 0) {
-        mprError("Can't open breakout pipe");
+        mprError("Cannot open breakout pipe");
         return MPR_ERR_CANT_INITIALIZE;
     }
     fcntl(ws->breakPipe[0], F_SETFL, fcntl(ws->breakPipe[0], F_GETFL) | O_NONBLOCK);
@@ -18267,7 +18267,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
     for (rc = retries = 0; retries < maxTries; retries++) {
         breakSock = socket(AF_INET, SOCK_DGRAM, 0);
         if (breakSock < 0) {
-            mprLog(MPR_WARN, "Can't open port %d to use for select. Retrying.\n");
+            mprLog(MPR_WARN, "Cannot open port %d to use for select. Retrying.\n");
         }
 #if BIT_UNIX_LIKE
         fcntl(breakSock, F_SETFD, FD_CLOEXEC);
@@ -18297,7 +18297,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
     }
 
     if (breakSock < 0 || rc < 0) {
-        mprLog(MPR_WARN, "Can't bind any port to use for select. Tried %d-%d\n", breakPort, breakPort - maxTries);
+        mprLog(MPR_WARN, "Cannot bind any port to use for select. Tried %d-%d\n", breakPort, breakPort - maxTries);
         return MPR_ERR_CANT_OPEN;
     }
     ws->breakSock = breakSock;
@@ -18517,7 +18517,7 @@ PUBLIC void mprWakeNotifier()
         if (rc < 0) {
             static int warnOnce = 0;
             if (warnOnce++ == 0) {
-                mprError("Can't send wakeup to breakout socket: errno %d", errno);
+                mprError("Cannot send wakeup to breakout socket: errno %d", errno);
             }
         }
     }
@@ -18644,7 +18644,7 @@ static void hookSignal(int signo, MprSignal *sp)
         act.sa_flags &= ~SA_NODEFER;
         sigemptyset(&act.sa_mask);
         if (sigaction(signo, &act, 0) != 0) {
-            mprError("Can't hook signal %d, errno %d", signo, mprGetOsError());
+            mprError("Cannot hook signal %d, errno %d", signo, mprGetOsError());
         }
     }
     unlock(ssp);
@@ -18662,7 +18662,7 @@ static void unhookSignal(int signo)
     rc = sigaction(signo, 0, &act);
     if (rc == 0 && act.sa_sigaction == signalHandler) {
         if (sigaction(signo, &ssp->prior[signo], 0) != 0) {
-            mprError("Can't unhook signal %d, errno %d", signo, mprGetOsError());
+            mprError("Cannot unhook signal %d, errno %d", signo, mprGetOsError());
         }
     }
     unlock(ssp);
@@ -18750,7 +18750,7 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
     } 
     if (sp->sigaction) {
         /*
-            Call the original (foreign) action handler. Can't pass on siginfo, because there is no reliable and scalable
+            Call the original (foreign) action handler. Cannot pass on siginfo, because there is no reliable and scalable
             way to save siginfo state when the signalHandler is reentrant for a given signal across multiple threads.
          */
         (sp->sigaction)(sp->signo, NULL, NULL);
@@ -19013,7 +19013,7 @@ PUBLIC MprSocketService *mprCreateSocketService()
     hostName[0] = '\0';
     if (gethostname(serverName, sizeof(serverName)) < 0) {
         scopy(serverName, sizeof(serverName), "localhost");
-        mprUserError("Can't get host name. Using \"localhost\".");
+        mprUserError("Cannot get host name. Using \"localhost\".");
         /* Keep going */
     }
     if ((dp = strchr(serverName, '.')) != 0) {
@@ -19219,7 +19219,7 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     if (rc < 0) {
         rc = errno;
         if (rc == EADDRINUSE) {
-            mprLog(3, "Can't bind, address %s:%d already in use", ip, port);
+            mprLog(3, "Cannot bind, address %s:%d already in use", ip, port);
         }
         closesocket(sp->fd);
         sp->fd = -1;
@@ -20548,7 +20548,7 @@ PUBLIC int mprLoadSsl()
         return MPR_ERR_CANT_CREATE;
     }
     if (mprLoadModule(mp) < 0) {
-        mprError("Can't load %s", path);
+        mprError("Cannot load %s", path);
         ss->providers = 0;
         return MPR_ERR_CANT_READ;
     }
@@ -20569,7 +20569,7 @@ static int loadProviders()
         return MPR_ERR_CANT_READ;
     }
     if (!ss->providers) {
-        mprError("Can't load SSL provider");
+        mprError("Cannot load SSL provider");
         return MPR_ERR_CANT_INITIALIZE;
     }
     return 0;
@@ -20596,7 +20596,7 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
         }
         providerName = (ssl->providerName) ? ssl->providerName : ss->defaultProvider;
         if ((ssl->provider = mprLookupKey(ss->providers, providerName)) == 0) {
-            mprError("Can't use SSL, missing SSL provider %s", providerName);
+            mprError("Cannot use SSL, missing SSL provider %s", providerName);
             return MPR_ERR_CANT_INITIALIZE;
         }
         ssl->providerName = providerName;
@@ -22000,11 +22000,11 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
         fmt(path, sizeof(path), "./%s%s", fileName, BIT_SHOBJ);
     }
     if ((mp = mprCreateModule(base, path, entry, sp)) == 0) {
-        mprError("Can't create module %s", path);
+        mprError("Cannot create module %s", path);
         return -1;
     }
     if (mprLoadModule(mp) < 0) {
-        mprError("Can't load module %s", path);
+        mprError("Cannot load module %s", path);
         return -1;
     }
     return 0;
@@ -22061,7 +22061,7 @@ PUBLIC int mprRunTests(MprTestService *sp)
             return MPR_ERR_MEMORY;
         }
         if (mprStartThread(tp) < 0) {
-            mprError("Can't start thread %d", i);
+            mprError("Cannot start thread %d", i);
             return MPR_ERR_CANT_INITIALIZE;
         }
     }
@@ -22705,7 +22705,7 @@ static int setLogging(char *logSpec)
 
     } else {
         if ((file = mprOpenFile(logSpec, O_CREAT | O_WRONLY | O_TRUNC | O_TEXT, 0664)) == 0) {
-            mprPrintfError("Can't open log file %s\n", logSpec);
+            mprPrintfError("Cannot open log file %s\n", logSpec);
             return MPR_ERR_CANT_OPEN;
         }
     }
@@ -23009,7 +23009,7 @@ PUBLIC int mprStartThread(MprThread *tp)
     taskHandle = taskSpawn(tp->name, pri, VX_FP_TASK, tp->stackSize, (FUNCPTR) threadProcWrapper, (int) tp, 
         0, 0, 0, 0, 0, 0, 0, 0, 0);
     if (taskHandle < 0) {
-        mprError("Can't create thread %s\n", tp->name);
+        mprError("Cannot create thread %s\n", tp->name);
         unlock(tp);
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -23478,7 +23478,7 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
     } else if (ws->numThreads < ws->maxThreads) {
 
         /*
-            Can't find an idle thread. Try to create more workers in the pool. Otherwise, we will have to wait. 
+            Cannot find an idle thread. Try to create more workers in the pool. Otherwise, we will have to wait. 
             No need to wakeup the thread -- it will immediately go to work.
          */
         worker = createWorker(ws, ws->stackSize);
@@ -24427,7 +24427,7 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
         if (secs < MIN_TIME || secs > MAX_TIME) {
             /*
                 On some systems, localTime won't work for very small (negative) or very large times. 
-                Can't be certain localTime will work for all O/Ss with this year.  Map to an a date with a valid year.
+                Cannot be certain localTime will work for all O/Ss with this year.  Map to an a date with a valid year.
              */
             decodeTime(&t, when, 0);
             t.tm_year = 111;
@@ -25325,7 +25325,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
                 } else if (value1 > 12 || alpha2) {
                     /* 
                         dd/mm/yy 
-                        Can't detect 01/02/03  This will be evaluated as Jan 2 2003 below.
+                        Cannot detect 01/02/03  This will be evaluated as Jan 2 2003 below.
                      */  
                     tm.tm_mday = value1;
                     tm.tm_mon = value2;
@@ -25386,7 +25386,7 @@ static void validateTime(struct tm *tp, struct tm *defaults)
     struct tm   empty;
 
     /*
-        Fix apparent day-mon-year ordering issues. Can't fix everything!
+        Fix apparent day-mon-year ordering issues. Cannot fix everything!
      */
     if ((12 <= tp->tm_mon && tp->tm_mon <= 31) && 0 <= tp->tm_mday && tp->tm_mday <= 11) {
         /*
@@ -25646,7 +25646,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 #endif
     if (!mp->entry || !dlsym(handle, mp->entry)) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
-            mprError("Can't find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
+            mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
             return 0;
         }
@@ -25655,7 +25655,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mp->modified = info.mtime;
         mprLog(2, "Loading native module %s", mprGetPathBase(mp->path));
         if ((handle = dlopen(mp->path, RTLD_LAZY | RTLD_GLOBAL)) == 0) {
-            mprError("Can't load module %s\nReason: \"%s\"", mp->path, dlerror());
+            mprError("Cannot load module %s\nReason: \"%s\"", mp->path, dlerror());
             return MPR_ERR_CANT_OPEN;
         } 
         mp->handle = handle;
@@ -25671,7 +25671,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
                 return MPR_ERR_CANT_INITIALIZE;
             }
         } else {
-            mprError("Can't load module %s\nReason: can't find function \"%s\"", mp->path, mp->entry);
+            mprError("Cannot load module %s\nReason: can't find function \"%s\"", mp->path, mp->entry);
             dlclose(handle);
             return MPR_ERR_CANT_READ;
         }
@@ -25834,7 +25834,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 
     if (!mp->entry || symFindByName(sysSymTbl, mp->entry, (char**) &fn, &symType) == -1) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
-            mprError("Can't find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
+            mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
             return 0;
         }
@@ -25844,7 +25844,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 
         mprLog(2, "Loading native module %s", mp->path);
         if ((fd = open(mp->path, O_RDONLY, 0664)) < 0) {
-            mprError("Can't open module \"%s\"", mp->path);
+            mprError("Cannot open module \"%s\"", mp->path);
             return MPR_ERR_CANT_OPEN;
         }
         handle = loadModule(fd, LOAD_GLOBAL_SYMBOLS);
@@ -25853,7 +25853,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
             if (handle) {
                 unldByModuleId(handle, 0);
             }
-            mprError("Can't load module %s", mp->path);
+            mprError("Cannot load module %s", mp->path);
             return MPR_ERR_CANT_READ;
         }
         close(fd);
@@ -25864,7 +25864,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     }
     if (mp->entry) {
         if (symFindByName(sysSymTbl, mp->entry, (char**) &fn, &symType) == -1) {
-            mprError("Can't find symbol %s when loading %s", mp->entry, mp->path);
+            mprError("Cannot find symbol %s when loading %s", mp->entry, mp->path);
             return MPR_ERR_CANT_READ;
         }
         if ((fn)(mp->moduleData, mp) < 0) {
@@ -27492,7 +27492,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     }
     if (!handle || !mp->entry || !GetProcAddress(handle, mp->entry)) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
-            mprError("Can't find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
+            mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
             return 0;
         }
@@ -27502,7 +27502,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mprLog(2, "Loading native module %s", mp->path);
         baseName = mprGetPathBase(mp->path);
         if ((handle = GetModuleHandle(wide(baseName))) == 0 && (handle = LoadLibrary(wide(mp->path))) == 0) {
-            mprError("Can't load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
+            mprError("Cannot load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
             return MPR_ERR_CANT_READ;
         } 
         mp->handle = handle;
@@ -27512,7 +27512,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     }
     if (mp->entry) {
         if ((fn = (MprModuleEntry) GetProcAddress((HINSTANCE) handle, mp->entry)) == 0) {
-            mprError("Can't load module %s\nReason: can't find function \"%s\"\n", mp->name, mp->entry);
+            mprError("Cannot load module %s\nReason: can't find function \"%s\"\n", mp->name, mp->entry);
             FreeLibrary((HINSTANCE) handle);
             return MPR_ERR_CANT_ACCESS;
         }
@@ -27877,7 +27877,7 @@ PUBLIC int mprLoadModule(MprModule *mp)
 
     baseName = mprGetPathBase(mp->path);
     if ((handle = GetModuleHandle(baseName)) == 0 && (handle = LoadLibrary(mp->path)) == 0) {
-        mprError("Can't load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
+        mprError("Cannot load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
         return MPR_ERR_CANT_READ;
     } 
     mp->handle = handle;
@@ -27889,7 +27889,7 @@ PUBLIC int mprLoadModule(MprModule *mp)
                 return MPR_ERR_CANT_ACCESS;
             }
         } else {
-            mprError("Can't load module %s\nReason: can't find function \"%s\"\n", mp->name, mp->entry);
+            mprError("Cannot load module %s\nReason: can't find function \"%s\"\n", mp->name, mp->entry);
             FreeLibrary((HINSTANCE) handle);
             return MPR_ERR_CANT_INITIALIZE;
         }

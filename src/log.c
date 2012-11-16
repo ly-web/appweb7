@@ -15,7 +15,7 @@ PUBLIC void maWriteAccessLogEntry(HttpRoute *route, cchar *buf, int len)
     static int once = 0;
 
     if (mprWriteFile(route->log, (char*) buf, len) != len && once++ == 0) {
-        mprError("Can't write to access log %s", route->logPath);
+        mprError("Cannot write to access log %s", route->logPath);
     }
 }
 

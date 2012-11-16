@@ -103,7 +103,7 @@ static void startDir(HttpQueue *q)
     parseQuery(conn);
 
     if ((list = mprGetPathFiles(tx->filename, MPR_PATH_RELATIVE)) == 0) {
-        httpWrite(q, "<h2>Can't get file list</h2>\r\n");
+        httpWrite(q, "<h2>Cannot get file list</h2>\r\n");
         outputFooter(q);
         return;
     }

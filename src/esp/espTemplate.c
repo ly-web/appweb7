@@ -216,10 +216,10 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
 			err = out;
 		}
 		if (eroute->showErrors) {
-			httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't run command %s, error %s", req->commandLine, err);
+			httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot run command %s, error %s", req->commandLine, err);
 		} else {
-			mprError("ESP: Can't run command %s, error %s", req->commandLine, err);
-			httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't compile view");
+			mprError("ESP: Cannot run command %s, error %s", req->commandLine, err);
+			httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot compile view");
 		}
         return MPR_ERR_CANT_COMPLETE;
     }
@@ -253,7 +253,7 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
 
     if (isView) {
         if ((page = mprReadPathContents(source, &len)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't read %s", source);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot read %s", source);
             return 0;
         }
         /*
@@ -263,17 +263,17 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }
         if ((script = espBuildScript(route, page, source, cacheName, layout, &err)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't build %s, error %s", source, err);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot build %s, error %s", source, err);
             return 0;
         }
         csource = mprJoinPathExt(mprTrimPathExt(module), ".c");
         if ((fp = mprOpenFile(csource, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't open compiled script file %s", csource);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot open compiled script file %s", csource);
             return 0;
         }
         len = slen(script);
         if (mprWriteFile(fp, script, len) != len) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't write compiled script file %s", csource);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot write compiled script file %s", csource);
             mprCloseFile(fp);
             return 0;
         }
@@ -449,7 +449,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                     include = mprJoinPath(mprGetPathDir(path), token);
                 }
                 if ((incText = mprReadPathContents(include, &len)) == 0) {
-                    *err = sfmt("Can't read include file: %s", include);
+                    *err = sfmt("Cannot read include file: %s", include);
                     return 0;
                 }
                 /* Recurse and process the include script */
@@ -471,7 +471,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                         layout = mprJoinPath(eroute->layoutsDir ? eroute->layoutsDir : mprGetPathDir(path), token);
                     }
                     if (!mprPathExists(layout, F_OK)) {
-                        *err = sfmt("Can't access layout page %s", layout);
+                        *err = sfmt("Cannot access layout page %s", layout);
                         return 0;
                     }
                 }
@@ -528,7 +528,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
          */
         if (layout && mprPathExists(layout, R_OK)) {
             if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
-                *err = sfmt("Can't read layout page: %s", layout);
+                *err = sfmt("Cannot read layout page: %s", layout);
                 return 0;
             }
             layoutBuf = 0;

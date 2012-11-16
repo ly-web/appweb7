@@ -195,7 +195,7 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
     if (configFile) {
         path = mprGetAbsPath(configFile);
         if (maParseConfig(server, path, 0) < 0) {
-            /* mprUserError("Can't configure server using %s", path); */
+            /* mprUserError("Cannot configure server using %s", path); */
             return MPR_ERR_CANT_INITIALIZE;
         }
         return 0;
@@ -285,7 +285,7 @@ PUBLIC int maStartServer(MaServer *server)
     if (appweb->userChanged || appweb->groupChanged) {
         if (!smatch(MPR->logPath, "stdout") && !smatch(MPR->logPath, "stderr")) {
             if (chown(MPR->logPath, appweb->uid, appweb->gid) < 0) {
-                mprError("Can't change ownership on %s", MPR->logPath);
+                mprError("Cannot change ownership on %s", MPR->logPath);
             }
         }
     }
@@ -372,7 +372,7 @@ PUBLIC void maSetServerHome(MaServer *server, cchar *path)
         VxWorks stat() is broken if using a network FTP server.
      */
     if (! mprPathExists(path, R_OK)) {
-        mprError("Can't access ServerRoot directory %s", path);
+        mprError("Cannot access ServerRoot directory %s", path);
         return;
     }
 #endif
@@ -403,13 +403,13 @@ PUBLIC void maGetUserGroup(MaAppweb *appweb)
 
     appweb->uid = getuid();
     if ((pp = getpwuid(appweb->uid)) == 0) {
-        mprError("Can't read user credentials: %d. Check your /etc/passwd file.", appweb->uid);
+        mprError("Cannot read user credentials: %d. Check your /etc/passwd file.", appweb->uid);
     } else {
         appweb->user = sclone(pp->pw_name);
     }
     appweb->gid = getgid();
     if ((gp = getgrgid(appweb->gid)) == 0) {
-        mprError("Can't read group credentials: %d. Check your /etc/group file", appweb->gid);
+        mprError("Cannot read group credentials: %d. Check your /etc/group file", appweb->gid);
     } else {
         appweb->group = sclone(gp->gr_name);
     }
@@ -478,7 +478,7 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb)
 #if BIT_UNIX_LIKE
     if (appweb->userChanged && appweb->uid >= 0) {
         if ((setuid(appweb->uid)) != 0) {
-            mprError("Can't change user to: %s: %d\n"
+            mprError("Cannot change user to: %s: %d\n"
                 "WARNING: This is a major security exposure", appweb->user, appweb->uid);
             return MPR_ERR_BAD_STATE;
 #if LINUX && PR_SET_DUMPABLE
@@ -498,7 +498,7 @@ PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
 #if BIT_UNIX_LIKE
     if (appweb->groupChanged && appweb->gid >= 0) {
         if (setgid(appweb->gid) != 0) {
-            mprError("Can't change group to %s: %d\n"
+            mprError("Cannot change group to %s: %d\n"
                 "WARNING: This is a major security exposure", appweb->group, appweb->gid);
             return MPR_ERR_BAD_STATE;
 #if LINUX && PR_SET_DUMPABLE

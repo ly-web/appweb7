@@ -218,7 +218,7 @@ static void readyPhp(HttpQueue *q)
         CG(zend_lineno) = 0;
 
     } zend_catch {
-        mprError("Can't start PHP request");
+        mprError("Cannot start PHP request");
         zend_try {
             php_request_shutdown(0);
         } zend_end_try();
@@ -239,9 +239,9 @@ static void readyPhp(HttpQueue *q)
     file_handle.type = ZEND_HANDLE_FP;
     if ((fp = fopen(tx->filename, "r")) == NULL) {
         if (rx->referrer) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", tx->filename, rx->referrer);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", tx->filename, rx->referrer);
         } else {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s", tx->filename);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s", tx->filename);
         }
         return;
     }

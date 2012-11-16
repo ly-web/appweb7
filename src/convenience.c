@@ -21,23 +21,23 @@ PUBLIC int maRunWebServer(cchar *configFile)
 
     rc = MPR_ERR_CANT_CREATE;
     if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
-        mprError("Can't create the web server runtime");
+        mprError("Cannot create the web server runtime");
     } else {
         if (mprStart() < 0) {
-            mprError("Can't start the web server runtime");
+            mprError("Cannot start the web server runtime");
         } else {
             if ((appweb = maCreateAppweb(mpr)) == 0) {
-                mprError("Can't create appweb object");
+                mprError("Cannot create appweb object");
             } else {
                 mprAddRoot(appweb);
                 if ((server = maCreateServer(appweb, 0)) == 0) {
-                    mprError("Can't create the web server");
+                    mprError("Cannot create the web server");
                 } else {
                     if (maParseConfig(server, configFile, 0) < 0) {
-                        mprError("Can't parse the config file %s", configFile);
+                        mprError("Cannot parse the config file %s", configFile);
                     } else {
                         if (maStartServer(server) < 0) {
-                            mprError("Can't start the web server");
+                            mprError("Cannot start the web server");
                         } else {
                             mprServiceEvents(-1, 0);
                             rc = 0;
@@ -69,23 +69,23 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
      */
     rc = MPR_ERR_CANT_CREATE;
     if ((mpr = mprCreate(0, NULL, 0)) == 0) {
-        mprError("Can't create the web server runtime");
+        mprError("Cannot create the web server runtime");
     } else {
         if (mprStart(mpr) < 0) {
-            mprError("Can't start the web server runtime");
+            mprError("Cannot start the web server runtime");
         } else {
             if ((appweb = maCreateAppweb(mpr)) == 0) {
-                mprError("Can't create the web server http services");
+                mprError("Cannot create the web server http services");
             } else {
                 mprAddRoot(appweb);
                 if ((server = maCreateServer(appweb, 0)) == 0) {
-                    mprError("Can't create the web server");
+                    mprError("Cannot create the web server");
                 } else {
                     if (maConfigureServer(server, 0, home, documents, ip, port) < 0) {
-                        mprError("Can't create the web server");
+                        mprError("Cannot create the web server");
                     } else {
                         if (maStartServer(server) < 0) {
-                            mprError("Can't start the web server");
+                            mprError("Cannot start the web server");
                         } else {
                             mprServiceEvents(-1, 0);
                             rc = 0;

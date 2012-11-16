@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     path = argv[nextArg++];
 
     if ((contents = mprReadPathContents(path, NULL)) == 0) {
-        mprUserError("Can't read %s", path);
+        mprUserError("Cannot read %s", path);
         return 1;
     }
 	if (port) {
@@ -122,16 +122,16 @@ int main(int argc, char **argv) {
     }
     revised = mprGetTempPath(mprGetPathDir(path));
     if (mprWritePathContents(revised, contents, -1, 0644) < 0) {
-        mprUserError("Can't write %s", revised);
+        mprUserError("Cannot write %s", revised);
     }
 	bak = sfmt("%s.bak", path);
 	mprDeletePath(bak);
 	if (rename(path, bak) < 0) {
-        mprUserError("Can't save %s to %s: 0x%x", path, bak, mprGetError());
+        mprUserError("Cannot save %s to %s: 0x%x", path, bak, mprGetError());
 	}
 	mprDeletePath(path);
     if (rename(revised, path) < 0) {
-        mprUserError("Can't rename %s to %s: 0x%x", revised, path, mprGetError());
+        mprUserError("Cannot rename %s to %s: 0x%x", revised, path, mprGetError());
 		rename(bak, path);
     }
     return 0;

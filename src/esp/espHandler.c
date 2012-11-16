@@ -229,7 +229,7 @@ static int runAction(HttpConn *conn)
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->controllerPath, R_OK)) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't find controller %s", req->controllerPath);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find controller %s", req->controllerPath);
             return 0;
         }
         lock(req->esp);
@@ -251,7 +251,7 @@ static int runAction(HttpConn *conn)
             if (mprLoadModule(mp) < 0) {
                 unlock(req->esp);
                 httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, 
-                    "Can't load compiled esp module for %s", req->controllerPath);
+                    "Cannot load compiled esp module for %s", req->controllerPath);
                 return 0;
             }
             updated = 1;
@@ -332,7 +332,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->source, R_OK)) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't find web page %s", req->source);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find web page %s", req->source);
             return;
         }
         lock(req->esp);
@@ -355,14 +355,14 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             mprSetThreadData(esp->local, conn);
             if (mprLoadModule(mp) < 0) {
                 unlock(req->esp);
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't load compiled esp module for %s", req->source);
+                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", req->source);
                 return;
             }
         }
         unlock(req->esp);
     }
     if ((view = mprLookupKey(esp->views, mprGetPortablePath(req->source))) == 0) {
-        httpError(conn, HTTP_CODE_NOT_FOUND, "Can't find defined view for %s", req->view);
+        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find defined view for %s", req->view);
         return;
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
@@ -411,9 +411,9 @@ static int loadApp(HttpConn *conn, int *updated)
             mprGetPathInfo(mp->path, &minfo);
             if (minfo.valid && mp->modified < minfo.mtime) {
                 if (!espUnloadModule(eroute->appModuleName, 0)) {
-                    mprError("Can't unload module %s. Connections still open. Continue using old version.", 
+                    mprError("Cannot unload module %s. Connections still open. Continue using old version.", 
                         eroute->appModuleName);
-                    /* Can't unload - so keep using old module */
+                    /* Cannot unload - so keep using old module */
                     return 1;
                 }
                 mp = 0;
@@ -423,12 +423,12 @@ static int loadApp(HttpConn *conn, int *updated)
     if (mp == 0) {
         entry = sfmt("esp_app_%s", eroute->appModuleName);
         if ((mp = mprCreateModule(eroute->appModuleName, eroute->appModulePath, entry, req->route)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't find module %s", eroute->appModulePath);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find module %s", eroute->appModulePath);
             return 0;
         }
         mprSetThreadData(esp->local, conn);
         if (mprLoadModule(mp) < 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't load compiled esp module for %s", eroute->appModuleName);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", eroute->appModuleName);
             return 0;
         }
         *updated = 1;
@@ -758,7 +758,7 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value)
     path = mprJoinPath(eroute->dbDir, path);
     if ((eroute->edi = ediOpen(path, provider, flags)) == 0) {
         if (!(state->flags & MA_PARSE_NON_SERVER)) {
-            mprError("Can't open database %s", path);
+            mprError("Cannot open database %s", path);
             return MPR_ERR_CANT_OPEN;
         }
     }

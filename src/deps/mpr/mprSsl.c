@@ -182,7 +182,7 @@ static MprMatrixSsl *createMatrixSslConfig(MprSsl *ssl, int server)
 
     //  OPT - does this need to be done for each MprSsl or just once?
     if (matrixSslNewKeys(&mssl->keys) < 0) {
-        mprError("MatrixSSL: Can't create new MatrixSSL keys");
+        mprError("MatrixSSL: Cannot create new MatrixSSL keys");
         return 0;
     }
     /*
@@ -1101,7 +1101,7 @@ static int configureCertificateFiles(MprSsl *ssl, SSL_CTX *ctx, char *key, char 
     }
     if (cert && SSL_CTX_use_certificate_chain_file(ctx, cert) <= 0) {
         if (SSL_CTX_use_certificate_file(ctx, cert, SSL_FILETYPE_ASN1) <= 0) {
-            mprError("OpenSSL: Can't open certificate file: %s", cert); 
+            mprError("OpenSSL: Cannot open certificate file: %s", cert); 
             return -1;
         }
     }
@@ -1110,7 +1110,7 @@ static int configureCertificateFiles(MprSsl *ssl, SSL_CTX *ctx, char *key, char 
         if (SSL_CTX_use_PrivateKey_file(ctx, key, SSL_FILETYPE_PEM) <= 0) {
             /* attempt ASN1 for self-signed format */
             if (SSL_CTX_use_PrivateKey_file(ctx, key, SSL_FILETYPE_ASN1) <= 0) {
-                mprError("OpenSSL: Can't define private key file: %s", key); 
+                mprError("OpenSSL: Cannot define private key file: %s", key); 
                 return -1;
             }
         }

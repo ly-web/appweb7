@@ -1071,7 +1071,7 @@ static int checkMdbState(MprJson *jp, cchar *name)
     
     case MDB_LOAD_SCHEMA:
         if ((mdb->loadCol = createCol(mdb->loadTable, name)) == 0) {
-            mprJsonParseError(jp, "Can't create '%s' column", name);
+            mprJsonParseError(jp, "Cannot create '%s' column", name);
             return MPR_ERR_MEMORY;
         }
         pushState(mdb, MDB_LOAD_COL);
@@ -1309,11 +1309,11 @@ static int mdbSave(Edi *edi)
     bak = mprReplacePathExt(path, "bak");
     mprDeletePath(bak);
     if (mprPathExists(path, R_OK) && rename(path, bak) < 0) {
-        mprError("Can't rename %s to %s", path, bak);
+        mprError("Cannot rename %s to %s", path, bak);
         return MPR_ERR_CANT_WRITE;
     }
     if (rename(npath, path) < 0) {
-        mprError("Can't rename %s to %s", npath, path);
+        mprError("Cannot rename %s to %s", npath, path);
         /* Restore backup */
         rename(bak, path);
         return MPR_ERR_CANT_WRITE;

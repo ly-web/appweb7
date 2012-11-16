@@ -149,7 +149,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
             app->home = mprGetAbsPath(argv[++argind]);
 #if KEEP
             if (chdir(app->home) < 0) {
-                mprError("%s: Can't change directory to %s", mprGetAppName(), app->home);
+                mprError("%s: Cannot change directory to %s", mprGetAppName(), app->home);
                 exit(4);
             }
 #endif
@@ -176,7 +176,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
             verbose++;
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
-            mprPrintf("%s %s-%s\n", mprGetAppTitle(), BIT_VERSION, BIT_BUILD_NUMBER);
+            mprPrintf("%s-%s\n", BIT_VERSION, BIT_BUILD_NUMBER);
             exit(0);
 
         } else {
@@ -193,7 +193,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         mprSetCmdlineLogging(1);
     }
     if (mprStart() < 0) {
-        mprUserError("Can't start MPR for %s", mprGetAppName());
+        mprUserError("Cannot start MPR for %s", mprGetAppName());
         mprDestroy(MPR_EXIT_DEFAULT);
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -220,7 +220,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (maStartAppweb(app->appweb) < 0) {
-        mprUserError("Can't start HTTP service, exiting.");
+        mprUserError("Cannot start HTTP service, exiting.");
         exit(9);
     }
     /*
@@ -258,14 +258,14 @@ static int changeRoot(cchar *jail)
 {
 #if BIT_UNIX_LIKE
     if (chdir(app->home) < 0) {
-        mprError("%s: Can't change directory to %s", mprGetAppName(), app->home);
+        mprError("%s: Cannot change directory to %s", mprGetAppName(), app->home);
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (chroot(jail) < 0) {
         if (errno == EPERM) {
             mprError("%s: Must be super user to use the --chroot option", mprGetAppName());
         } else {
-            mprError("%s: Can't change change root directory to %s, errno %d", mprGetAppName(), jail, errno);
+            mprError("%s: Cannot change change root directory to %s, errno %d", mprGetAppName(), jail, errno);
         }
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -277,7 +277,7 @@ static int changeRoot(cchar *jail)
 static int initializeAppweb(cchar *ip, int port)
 {
     if ((app->appweb = maCreateAppweb()) == 0) {
-        mprUserError("Can't create HTTP service for %s", mprGetAppName());
+        mprUserError("Cannot create HTTP service for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
 #if BIT_STATIC
@@ -292,11 +292,11 @@ static int initializeAppweb(cchar *ip, int port)
 #endif
 
     if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
-        mprUserError("Can't create HTTP server for %s", mprGetAppName());
+        mprUserError("Cannot create HTTP server for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
     if (maConfigureServer(app->server, app->configFile, app->home, app->documents, ip, port) < 0) {
-        /* mprUserError("Can't configure the server, exiting."); */
+        /* mprUserError("Cannot configure the server, exiting."); */
         return MPR_ERR_CANT_CREATE;
     }
     if (app->workers >= 0) {
@@ -335,7 +335,7 @@ static int findAppwebConf()
             }
         }
         if (!mprPathExists(app->configFile, R_OK)) {
-            mprError("Can't open config file %s", app->configFile);
+            mprError("Cannot open config file %s", app->configFile);
             return MPR_ERR_CANT_OPEN;
         }
     }
@@ -438,7 +438,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
     struct stat     sbuf;
 
     if (((stat(home, &sbuf)) != 0) || !(S_ISDIR(sbuf.st_mode))) {
-        mprUserError("Can't access directory: %s", home);
+        mprUserError("Cannot access directory: %s", home);
         return MPR_ERR_BAD_STATE;
     }
     if ((sbuf.st_mode & S_IWOTH) || (sbuf.st_mode & S_IWGRP)) {
@@ -450,7 +450,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
      */
     if (*program == '/') {
         if ((stat(program, &sbuf)) != 0) {
-            mprUserError("Can't access program: %s", program);
+            mprUserError("Cannot access program: %s", program);
             return MPR_ERR_BAD_STATE;
         }
         if ((sbuf.st_mode & S_IWOTH) || (sbuf.st_mode & S_IWGRP)) {

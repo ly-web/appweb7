@@ -636,7 +636,7 @@ static void filterCols(EdiGrid *grid, MprHash *options, MprHash *colOptions)
         for (c = 0; c < ncols; c++) {
             cp = mprLookupKey(colOptions, itosbuf(key, sizeof(key), c, 10));
             if ((columnName = mprLookupKey(cp, "name")) == 0) {
-                mprError("Can't locate \"name\" field for column in table");
+                mprError("Cannot locate \"name\" field for column in table");
                 return;
             }
             pos = mprLookupStringItem(gridCols, columnName);

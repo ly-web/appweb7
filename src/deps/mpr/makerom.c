@@ -105,7 +105,7 @@ static int binToC(MprList *files, char *romName, char *prefix)
             continue;
         } 
         if ((file = mprOpenFile(filename, O_RDONLY | O_BINARY, 0666)) == 0) {
-            mprError("Can't open file %s\n", filename);
+            mprError("Cannot open file %s\n", filename);
             return -1;
         }
         mprPrintf("static uchar _file_%d[] = {\n", next);

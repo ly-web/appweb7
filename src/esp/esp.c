@@ -321,7 +321,7 @@ PUBLIC int main(int argc, char **argv)
             } else {
                 argp = argv[++argind];
                 if (chdir((char*) argp) < 0) {
-                    fail("Can't change directory to %s", argp);
+                    fail("Cannot change directory to %s", argp);
                 }
             }
 
@@ -331,7 +331,7 @@ PUBLIC int main(int argc, char **argv)
             } else {
                 path = argv[++argind];
                 if (chdir((char*) mprGetPathDir(path)) < 0) {
-                    mprError("Can't change directory to %s", mprGetPathDir(path));
+                    mprError("Cannot change directory to %s", mprGetPathDir(path));
                 }
                 app->configFile = mprGetPathBase(path);
             }
@@ -430,7 +430,7 @@ PUBLIC int main(int argc, char **argv)
     mprSetCmdlineLogging(1);
 
     if (mprStart() < 0) {
-        mprUserError("Can't start MPR for %s", mprGetAppName());
+        mprUserError("Cannot start MPR for %s", mprGetAppName());
         mprDestroy(MPR_EXIT_DEFAULT);
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -534,7 +534,7 @@ static MprList *getRoutes()
     int         prev, nextRoute;
 
     if ((host = mprGetFirstItem(http->hosts)) == 0) {
-        fail("Can't find default host");
+        fail("Cannot find default host");
         return 0;
     }
     routeName = app->routeName;
@@ -596,11 +596,11 @@ static MprList *getRoutes()
     }
     if (mprGetListLength(routes) == 0) {
         if (routeName) {
-            fail("Can't find usable ESP configuration in %s for route %s", app->configFile, routeName);
+            fail("Cannot find usable ESP configuration in %s for route %s", app->configFile, routeName);
         } else if (routePrefix) {
-            fail("Can't find usable ESP configuration in %s for route prefix %s", app->configFile, routePrefix);
+            fail("Cannot find usable ESP configuration in %s for route prefix %s", app->configFile, routePrefix);
         } else {
-            fail("Can't find usable ESP configuration in %s", app->configFile);
+            fail("Cannot find usable ESP configuration in %s", app->configFile);
         }
         return 0;
     }
@@ -609,7 +609,7 @@ static MprList *getRoutes()
      */
     for (ITERATE_KEYS(app->targets, kp)) {
         if (!kp->type) {
-            fail("Can't find a usable route for %s", kp->key);
+            fail("Cannot find a usable route for %s", kp->key);
         }
     }
     return routes;
@@ -625,7 +625,7 @@ static HttpRoute *getMvcRoute()
     int         prev;
 
     if ((host = mprGetFirstItem(http->hosts)) == 0) {
-        fail("Can't find default host");
+        fail("Cannot find default host");
         return 0;
     }
     routeName = app->routeName;
@@ -668,11 +668,11 @@ static HttpRoute *getMvcRoute()
     }
     if (route == 0) {
         if (routeName) {
-            fail("Can't find ESP configuration in %s for route %s", app->configFile, routeName);
+            fail("Cannot find ESP configuration in %s for route %s", app->configFile, routeName);
         } else if (routePrefix) {
-            fail("Can't find ESP configuration in %s for route prefix %s", app->configFile, routePrefix);
+            fail("Cannot find ESP configuration in %s for route prefix %s", app->configFile, routePrefix);
         } else {
-            fail("Can't find ESP configuration in %s", app->configFile);
+            fail("Cannot find ESP configuration in %s", app->configFile);
         }
     } else {
         mprLog(1, "Using route dir: %s, name: %s, prefix: %s", route->dir, route->name, route->startWith);
@@ -686,7 +686,7 @@ static bool readConfig(bool mvc)
     HttpStage   *stage;
 
     if ((app->appweb = maCreateAppweb()) == 0) {
-        fail("Can't create HTTP service for %s", mprGetAppName());
+        fail("Cannot create HTTP service for %s", mprGetAppName());
         return 0;
     }
     appweb = MPR->appwebService = app->appweb;
@@ -699,21 +699,21 @@ static bool readConfig(bool mvc)
         return 0;
     }
     if ((app->server = maCreateServer(appweb, "default")) == 0) {
-        fail("Can't create HTTP server for %s", mprGetAppName());
+        fail("Cannot create HTTP server for %s", mprGetAppName());
         return 0;
     }
     if (app->platform) {
         if (maSetPlatform(app->platform) < 0) {
-            fail("Can't find platform %s", app->platform);
+            fail("Cannot find platform %s", app->platform);
             return 0;
         }
     }
     if (maParseConfig(app->server, app->configFile, MA_PARSE_NON_SERVER) < 0) {
-        fail("Can't configure the server, exiting.");
+        fail("Cannot configure the server, exiting.");
         return 0;
     }
     if ((stage = httpLookupStage(http, "espHandler")) == 0) {
-        fail("Can't find ESP handler in %s", app->configFile);
+        fail("Cannot find ESP handler in %s", app->configFile);
         return 0;
     }
     esp = stage->stageData;
@@ -809,7 +809,7 @@ static void run(int argc, char **argv)
     cmd = mprCreateCmd(0);
     trace("Run", "appweb -v");
     if (mprRunCmd(cmd, "appweb -v", NULL, NULL, NULL, -1, MPR_CMD_DETACH) != 0) {
-        fail("Can't run command: \n%s", app->command);
+        fail("Cannot run command: \n%s", app->command);
         return;
     }
     mprWaitForCmd(cmd, -1);
@@ -854,7 +854,7 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
 			/* Windows puts errors to stdout Ugh! */
 			err = out;
 		}
-        fail("Can't run command: \n%s\nError: %s", app->command, err);
+        fail("Cannot run command: \n%s\nError: %s", app->command, err);
         return MPR_ERR_CANT_COMPLETE;
     }
     if (out && *out) {
@@ -896,7 +896,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     } else if (!espModuleIsStale(source, app->module, &recompile)) {
         if (kind & (ESP_PAGE | ESP_VIEW)) {
             if ((data = mprReadPathContents(source, &len)) == 0) {
-                fail("Can't read %s", source);
+                fail("Cannot read %s", source);
                 return;
             }
             if ((lpath = scontains(data, "@ layout \"")) != 0) {
@@ -926,11 +926,11 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         app->csource = source;
         if (app->flatFile) {
             if ((data = mprReadPathContents(source, &len)) == 0) {
-                fail("Can't read %s", source);
+                fail("Cannot read %s", source);
                 return;
             }
             if (mprWriteFile(app->flatFile, data, slen(data)) < 0) {
-                fail("Can't write compiled script file %s", app->flatFile->path);
+                fail("Cannot write compiled script file %s", app->flatFile->path);
                 return;
             }
             mprWriteFileFmt(app->flatFile, "\n\n");
@@ -939,18 +939,18 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     }
     if (kind & (ESP_PAGE | ESP_VIEW)) {
         if ((page = mprReadPathContents(source, &len)) == 0) {
-            fail("Can't read %s", source);
+            fail("Cannot read %s", source);
             return;
         }
         /* No yield here */
         if ((script = espBuildScript(route, page, source, app->cacheName, defaultLayout, &err)) == 0) {
-            fail("Can't build %s, error %s", source, err);
+            fail("Cannot build %s, error %s", source, err);
             return;
         }
         len = slen(script);
         if (app->flatFile) {
             if (mprWriteFile(app->flatFile, script, len) < 0) {
-                fail("Can't write compiled script file %s", app->flatFile->path);
+                fail("Cannot write compiled script file %s", app->flatFile->path);
                 return;
             }
             mprWriteFileFmt(app->flatFile, "\n\n");
@@ -960,7 +960,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
             app->csource = mprJoinPathExt(mprTrimPathExt(app->module), ".c");
             trace("Parse", "%s", source);
             if (mprWritePathContents(app->csource, script, len, 0664) < 0) {
-                fail("Can't write compiled script file %s", app->csource);
+                fail("Cannot write compiled script file %s", app->csource);
                 return;
             }
         }
@@ -1034,7 +1034,7 @@ static void compile(MprList *routes)
      */
     for (ITERATE_KEYS(app->targets, kp)) {
         if (!kp->type) {
-            fail("Can't find target %s to compile", kp->key);
+            fail("Cannot find target %s to compile", kp->key);
         }
     }
     if (!app->error) {
@@ -1141,7 +1141,7 @@ static void compileFlat(HttpRoute *route)
     app->flatItems = mprCreateList(-1, 0);
     app->flatPath = path = mprJoinPath(eroute->cacheDir, "app.c");
     if ((app->flatFile = mprOpenFile(path, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-        fail("Can't open %s", path);
+        fail("Cannot open %s", path);
         return;
     }
     mprWriteFileFmt(app->flatFile, "/*\n    Flat compilation of %s\n */\n\n", app->appName);
@@ -1428,11 +1428,11 @@ static void generateTable(HttpRoute *route, int argc, char **argv)
     edi->flags |= EDI_SUPPRESS_SAVE;
     if ((rc = ediAddTable(edi, tableName)) < 0) {
         if (rc != MPR_ERR_ALREADY_EXISTS) {
-            fail("Can't add table '%s'", tableName);
+            fail("Cannot add table '%s'", tableName);
         }
     } else {
         if ((rc = ediAddColumn(edi, tableName, "id", EDI_TYPE_INT, EDI_AUTO_INC | EDI_INDEX | EDI_KEY)) != 0) {
-            fail("Can't add column 'id'");
+            fail("Cannot add column 'id'");
         }
     }
     for (i = 1; i < argc && !app->error; i++) {
@@ -1443,7 +1443,7 @@ static void generateTable(HttpRoute *route, int argc, char **argv)
         }
         if ((rc = ediAddColumn(edi, tableName, field, type, 0)) != 0) {
             if (rc != MPR_ERR_ALREADY_EXISTS) {
-                fail("Can't add column '%s'", field);
+                fail("Cannot add column '%s'", field);
                 break;
             } else {
                 ediChangeColumn(edi, tableName, field, type, 0);
@@ -1584,7 +1584,7 @@ static void migrate(HttpRoute *route, int argc, char **argv)
         ediClose(edi);
         mprDeletePath(edi->path);
         if ((eroute->edi = ediOpen(edi->path, edi->provider->name, edi->flags | EDI_CREATE)) == 0) {
-            fail("Can't open database %s", edi->path);
+            fail("Cannot open database %s", edi->path);
         }
     }
     /*
@@ -1630,7 +1630,7 @@ static void migrate(HttpRoute *route, int argc, char **argv)
                 }
             }
             if (! targetSeq) {
-                fail("Can't find target migration: %s", command);
+                fail("Cannot find target migration: %s", command);
                 return;
             }
             if (lastMigration && targetSeq < lastMigration) {
@@ -1738,7 +1738,7 @@ static void fixupFile(HttpRoute *route, cchar *path)
 
     path = mprJoinPath(route->dir, path);
     if ((data = mprReadPathContents(path, &len)) == 0) {
-        fail("Can't read %s", path);
+        fail("Cannot read %s", path);
         return;
     }
     data = sreplace(data, "${NAME}", app->appName);
@@ -1750,11 +1750,11 @@ static void fixupFile(HttpRoute *route, cchar *path)
 
     tmp = mprGetTempPath(0);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
-        fail("Can't write %s", path);
+        fail("Cannot write %s", path);
         return;
     }
     if (rename(tmp, path) < 0) {
-        fail("Can't rename %s to %s", tmp, path);
+        fail("Cannot rename %s to %s", tmp, path);
     }
 }
 
@@ -1804,7 +1804,7 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
         if (dp->isDir) {
             if (!mprPathExists(to, R_OK)) {
                 if (mprMakeDir(to, 0755, -1, -1, 1) < 0) {
-                    fail("Can't make directory %s", to);
+                    fail("Cannot make directory %s", to);
                     return;
                 }
                 trace("Create",  "Directory: %s", mprGetRelPath(to, 0));
@@ -1813,7 +1813,7 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
         } else {
 #endif
         if (mprMakeDir(mprGetPathDir(to), 0755, -1, -1, 1) < 0) {
-            fail("Can't make directory %s", mprGetPathDir(to));
+            fail("Cannot make directory %s", mprGetPathDir(to));
             return;
         }
         if (mprPathExists(to, R_OK) && !app->overwrite) {
@@ -1821,7 +1821,7 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
         } else {
             trace("Create",  "File: %s", mprGetRelPath(to, 0));
             if (mprCopyPath(from, to, 0644) < 0) {
-                fail("Can't copy file %s to %s", from, mprGetRelPath(to, 0));
+                fail("Cannot copy file %s to %s", from, mprGetRelPath(to, 0));
                 return;
             }
         }
@@ -1840,7 +1840,7 @@ static void installAppConf()
         from = mprJoinPath(app->wwwDir, "appweb.conf");
     }
     if ((conf = mprReadPathContents(from)) == 0) {
-        fail("Can't read %s", from);
+        fail("Cannot read %s", from);
         return;
     }
     to = sfmt("%s/conf/%s.conf", app->serverRoot, mprGetPathBase(app->appName));
@@ -1849,7 +1849,7 @@ static void installAppConf()
         return;
 
     } else if (mprWritePathContents(to, conf, slen(conf), 0644) < 0) {
-        fail("Can't write %s", to);
+        fail("Cannot write %s", to);
         return;
     }
     fixupFile(route, to);
@@ -1864,7 +1864,7 @@ static void copyFile(HttpRoute *route, cchar *from, cchar *to)
     ssize   len;
 
     if ((data = mprReadPathContents(from, &len)) == 0) {
-        fail("Can't read %s", from);
+        fail("Cannot read %s", from);
         return;
     }
     if (mprPathExists(to, R_OK) && !app->overwrite) {
@@ -1872,7 +1872,7 @@ static void copyFile(HttpRoute *route, cchar *from, cchar *to)
         return;
 
     } else if (mprWritePathContents(to, data, slen(data), 0644) < 0) {
-        fail("Can't write %s", to);
+        fail("Cannot write %s", to);
         return;
     }
     fixupFile(route, mprGetAbsPath(to));
@@ -1937,7 +1937,7 @@ static bool findConfigFile(bool mvc)
     }
     if (!mprPathExists(app->configFile, R_OK)) {
         if (userPath) {
-            fail("Can't open config file %s", app->configFile);
+            fail("Cannot open config file %s", app->configFile);
             return 0;
         }
         for (path = mprGetCurrentPath(); path; path = nextPath) {
@@ -1956,13 +1956,13 @@ static bool findConfigFile(bool mvc)
             if (!app->configFile) {
                 app->configFile = mprJoinPath(mprGetAppDir(), sfmt("esp-%s.conf", BIT_PRODUCT));
                 if (!mprPathExists(app->configFile, R_OK)) {
-                    fail("Can't open config file %s", app->configFile);
+                    fail("Cannot open config file %s", app->configFile);
                     return 0;
                 }
             }
         }
         if (!app->configFile) {
-            fail("Not an ESP application directory. Can't find Appweb config file %s.", name);
+            fail("Not an ESP application directory. Cannot find Appweb config file %s.", name);
             return 0;
         }
     }
@@ -1975,7 +1975,7 @@ static bool findDefaultConfigFile()
 {
     app->configFile = mprJoinPath(mprGetAppDir(), sfmt("esp-%s.conf", BIT_PRODUCT));
     if (!mprPathExists(app->configFile, R_OK)) {
-        fail("Can't open config file %s", app->configFile);
+        fail("Cannot open config file %s", app->configFile);
         return 0;
     }
     return 1;
@@ -2009,7 +2009,7 @@ static void makeEspFile(cchar *path, cchar *data, cchar *msg)
         return;
     }
     if (mprWritePathContents(path, data, slen(data), 0644) < 0) {
-        fail("Can't write %s", path);
+        fail("Cannot write %s", path);
         return;
     }
     msg = sfmt("%s: %s", msg, path);

@@ -99,12 +99,12 @@ PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
     }
     vp->name = sclone(name);
     if ((vp->vfn = mprLookupKey(es->validations, name)) == 0) {
-        mprError("Can't find validation '%s'", name);
+        mprError("Cannot find validation '%s'", name);
         return MPR_ERR_CANT_FIND;
     }
     if (smatch(name, "format")) {
         if ((vp->mdata = pcre_compile2(data, 0, 0, &errMsg, &column, NULL)) == 0) {
-            mprError("Can't compile validation pattern. Error %s at column %d", errMsg, column); 
+            mprError("Cannot compile validation pattern. Error %s at column %d", errMsg, column); 
             return MPR_ERR_BAD_SYNTAX;
         }
         data = 0;
@@ -297,7 +297,7 @@ PUBLIC Edi *ediOpen(cchar *path, cchar *providerName, int flags)
     EdiProvider     *provider;
 
     if ((provider = lookupProvider(providerName)) == 0) {
-        mprError("Can't find EDI provider '%s'", providerName);
+        mprError("Cannot find EDI provider '%s'", providerName);
         return 0;
     }
     return provider->open(path, flags);

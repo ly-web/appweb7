@@ -100,10 +100,13 @@ Bit.load({
             action: "
                 let ro = {noio: true}
                 let depth = bit.settings.depth
-                run('utest -v -i 2 --depth ' + depth, ro)
-                if (depth >= 3) {
+                run('utest -v -i 1 --depth ' + depth, ro)
+                if (depth >= 2) {
                     trace('Test', 'Light load tests')
-                    run('utest -v -i 20 --depth ' + depth, ro)
+                    run('utest -v -i 5 --depth ' + depth, ro)
+                }
+                //  MOB - thread tests don't work yet
+                if (depth >= 3) {
                     for each (t in [2, 4]) {
                         trace('Test', 'Light thread tests')
                         run('utest -v -i 20 --depth ' + depth + ' --threads ' + t, ro)

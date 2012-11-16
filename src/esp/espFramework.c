@@ -231,7 +231,7 @@ PUBLIC Edi *espGetDatabase(HttpConn *conn)
     }
     eroute = req->eroute;
     if (eroute == 0 || eroute->edi == 0) {
-        httpError(conn, 0, "Can't get database instance");
+        httpError(conn, 0, "Cannot get database instance");
         return 0;
     }
     return eroute->edi;
@@ -465,7 +465,7 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
         *recompile = 1;
         if ((mp = mprLookupModule(source)) != 0) {
             if (!espUnloadModule(source, 0)) {
-                mprError("Can't unload module %s. Connections still open. Continue using old version.", source);
+                mprError("Cannot unload module %s. Connections still open. Continue using old version.", source);
                 return 0;
             }
         }
@@ -478,7 +478,7 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
     if (sinfo.valid && sinfo.mtime >= minfo.mtime) {
         if ((mp = mprLookupModule(source)) != 0) {
             if (!espUnloadModule(source, 0)) {
-                mprError("Can't unload module %s. Connections still open. Continue using old version.", source);
+                mprError("Cannot unload module %s. Connections still open. Continue using old version.", source);
                 return 0;
             }
         }
@@ -489,7 +489,7 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
         if (minfo.mtime > mp->modified) {
             /* Module file has been updated */
             if (!espUnloadModule(source, 0)) {
-                mprError("Can't unload module %s. Connections still open. Continue using old version.", source);
+                mprError("Cannot unload module %s. Connections still open. Continue using old version.", source);
                 return 0;
             }
             return 1;
@@ -579,7 +579,7 @@ PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...)
 PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size)
 {
     /*
-        Can't use HTTP_BLOCK here has it will yield for GC.
+        Cannot use HTTP_BLOCK here has it will yield for GC.
         This is too onerous for callers to secure all memory
      */
     return httpWriteBlock(conn->writeq, buf, size, HTTP_BUFFER);

@@ -208,7 +208,7 @@ static Edi *sdbOpen(cchar *path, int flags)
     }
     if (mprPathExists(path, R_OK) || (flags & EDI_CREATE)) {
         if (sqlite3_open(path, &sdb->db) != SQLITE_OK) {
-            mprError("Can't open database %s", path);
+            mprError("Cannot open database %s", path);
             return 0;
         }
         //  MOB - should be configurable somewhere
@@ -1010,7 +1010,7 @@ static void initSqlite()
 #endif
         sqlite3_config(THREAD_STYLE);
         if (sqlite3_initialize() != SQLITE_OK) {
-            mprError("Can't initialize SQLite");
+            mprError("Cannot initialize SQLite");
             return;
         }
         sqliteInitialized = 1;

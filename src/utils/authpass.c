@@ -97,11 +97,11 @@ PUBLIC int main(int argc, char *argv[])
             exit(2);
         }
         if (!mprPathExists(authFile, W_OK)) {
-            mprError("%s: Can't write to %s", programName, authFile);
+            mprError("%s: Cannot write to %s", programName, authFile);
             exit(4);
         }
     } else if (mprPathExists(authFile, R_OK)) {
-        mprError("%s: Can't create %s, already exists", programName, authFile);
+        mprError("%s: Cannot create %s, already exists", programName, authFile);
         exit(5);
     }
     if (!password && (password = getPassword()) == 0) {

@@ -144,7 +144,7 @@ int main(int argc, char **argv, char **envp)
         nonParsedHeader++;
     }
     if (getArgv(&argc, &argv, originalArgc, originalArgv) < 0) {
-        error("Can't read CGI input");
+        error("Cannot read CGI input");
     }
     for (i = 1; i < argc; i++) {
         if (argv[i][0] != '-') {
@@ -231,7 +231,7 @@ int main(int argc, char **argv, char **envp)
     }
     if ((method = getenv("REQUEST_METHOD")) != 0 && strcmp(method, "POST") == 0) {
         if (getPostData(&postBuf, &postBufLen) < 0) {
-            error("Can't read CGI input");
+            error("Cannot read CGI input");
         }
         if (strcmp(safeGetenv("CONTENT_TYPE"), "application/x-www-form-urlencoded") == 0) {
             numPostKeys = getVars(&postKeys, postBuf, postBufLen);
@@ -523,7 +523,7 @@ static int getVars(char ***cgiKeys, char *buf, size_t buflen)
 
     if (buflen > 0) {
         if ((newbuf = malloc(buflen + 1)) == 0) {
-            error("Can't allocate memory");
+            error("Cannot allocate memory");
             return 0;
         }
         strncpy(newbuf, buf, buflen);

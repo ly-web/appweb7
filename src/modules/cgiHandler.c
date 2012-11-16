@@ -193,7 +193,7 @@ static void startCgi(HttpQueue *q)
     mprSetCmdCallback(cmd, cgiCallback, cgi);
 
     if (mprStartCmd(cmd, argc, argv, envv, MPR_CMD_IN | MPR_CMD_OUT | MPR_CMD_ERR) < 0) {
-        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Can't run CGI process: %s, URI %s", fileName, rx->uri);
+        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Cannot run CGI process: %s, URI %s", fileName, rx->uri);
         return;
     }
 #if BIT_WIN_LIKE
@@ -291,7 +291,7 @@ static void browserToCgiService(HttpQueue *q)
             mprLog(2, "CGI: write to gateway failed for %d bytes, rc %d, errno %d", len, rc, mprGetOsError());
             mprCloseCmdFd(cmd, MPR_CMD_STDIN);
             httpDiscardQueueData(q, 1);
-            httpError(conn, HTTP_CODE_BAD_GATEWAY, "Can't write body data to CGI gateway");
+            httpError(conn, HTTP_CODE_BAD_GATEWAY, "Cannot write body data to CGI gateway");
             break;
         }
         LOG(6, "CGI: browserToCgiService %d/%d, qmax %d", rc, len, q->max);

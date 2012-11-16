@@ -1477,18 +1477,18 @@ struct  MprXml;
 #define MPR_ERR_BAD_TYPE                -9      /**< Bad object type */
 #define MPR_ERR_BAD_VALUE               -10     /**< Bad or unexpected value */
 #define MPR_ERR_BUSY                    -11     /**< Resource is busy */
-#define MPR_ERR_CANT_ACCESS             -12     /**< Can't access the file or resource */
-#define MPR_ERR_CANT_ALLOCATE           -13     /**< Can't allocate resource */
+#define MPR_ERR_CANT_ACCESS             -12     /**< Cannot access the file or resource */
+#define MPR_ERR_CANT_ALLOCATE           -13     /**< Cannot allocate resource */
 #define MPR_ERR_CANT_COMPLETE           -14     /**< Operation can't complete */
-#define MPR_ERR_CANT_CONNECT            -15     /**< Can't connect to network or resource */
-#define MPR_ERR_CANT_CREATE             -16     /**< Can't create the file or resource */
-#define MPR_ERR_CANT_DELETE             -17     /**< Can't delete the resource */
-#define MPR_ERR_CANT_FIND               -18     /**< Can't find resource */
-#define MPR_ERR_CANT_INITIALIZE         -19     /**< Can't initialize resource */
-#define MPR_ERR_CANT_LOAD               -20     /**< Can't load the resource */
-#define MPR_ERR_CANT_OPEN               -21     /**< Can't open the file or resource */
-#define MPR_ERR_CANT_READ               -22     /**< Can't read from the file or resource */
-#define MPR_ERR_CANT_WRITE              -23     /**< Can't write to the file or resource */
+#define MPR_ERR_CANT_CONNECT            -15     /**< Cannot connect to network or resource */
+#define MPR_ERR_CANT_CREATE             -16     /**< Cannot create the file or resource */
+#define MPR_ERR_CANT_DELETE             -17     /**< Cannot delete the resource */
+#define MPR_ERR_CANT_FIND               -18     /**< Cannot find resource */
+#define MPR_ERR_CANT_INITIALIZE         -19     /**< Cannot initialize resource */
+#define MPR_ERR_CANT_LOAD               -20     /**< Cannot load the resource */
+#define MPR_ERR_CANT_OPEN               -21     /**< Cannot open the file or resource */
+#define MPR_ERR_CANT_READ               -22     /**< Cannot read from the file or resource */
+#define MPR_ERR_CANT_WRITE              -23     /**< Cannot write to the file or resource */
 #define MPR_ERR_DELETED                 -24     /**< Resource has been deleted */
 #define MPR_ERR_MEMORY                  -25     /**< Memory allocation error */
 #define MPR_ERR_NETWORK                 -26     /**< Underlying network error */

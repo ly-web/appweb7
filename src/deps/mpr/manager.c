@@ -257,7 +257,7 @@ PUBLIC int main(int argc, char *argv[])
         status = 1;                                                                    
 
     } else if (mprStart() < 0) {
-        mprUserError("Can't start MPR for %s", mprGetAppName());                                           
+        mprUserError("Cannot start MPR for %s", mprGetAppName());                                           
         status = 2;                                                                    
 
     } else {
@@ -380,7 +380,7 @@ static bool process(cchar *operation, bool quiet)
         service++;
 
     } else {
-        mprError("Can't locate system tool to manage service");
+        mprError("Cannot locate system tool to manage service");
         return 0;
     }
 
@@ -528,7 +528,7 @@ static bool process(cchar *operation, bool quiet)
 
     if (!quiet) {
         if (!rc && app->error && *app->error) {
-            mprError("Can't run command: %s\nCommand output: %s\n", app->command, app->error);
+            mprError("Cannot run command: %s\nCommand output: %s\n", app->command, app->error);
         }
         /* Logging at level one will be visible if appman -v is used */
         if (app->error && *app->error) {
@@ -585,7 +585,7 @@ static void runService()
              */
             app->servicePid = vfork();
             if (app->servicePid < 0) {
-                mprError("Can't fork new process to run %s", app->serviceProgram);
+                mprError("Cannot fork new process to run %s", app->serviceProgram);
                 continue;
 
             } else if (app->servicePid == 0) {
@@ -630,7 +630,7 @@ static void runService()
 
                 /* Should not get here */
                 err = errno;
-                mprError("%s: Can't exec %s, err %d, cwd %s", app->appName, app->serviceProgram, err, app->serviceHome);
+                mprError("%s: Cannot exec %s, err %d, cwd %s", app->appName, app->serviceProgram, err, app->serviceHome);
                 exit(MPR_ERR_CANT_INITIALIZE);
             }
 
@@ -735,7 +735,7 @@ static int makeDaemon()
     act.sa_flags = SA_NOCLDSTOP | SA_RESTART | SA_SIGINFO;
 
     if (sigaction(SIGCHLD, &act, &old) < 0) {
-        mprError("Can't initialize signals");
+        mprError("Cannot initialize signals");
         return MPR_ERR_BAD_STATE;
     }
 
@@ -761,7 +761,7 @@ static int makeDaemon()
          */
         setsid();
         if (sigaction(SIGCHLD, &old, 0) < 0) {
-            mprError("Can't restore signals");
+            mprError("Cannot restore signals");
             return MPR_ERR_BAD_STATE;
         }
         mprLog(2, "Switching to background operation");
@@ -776,7 +776,7 @@ static int makeDaemon()
             mprSleep(100);
             continue;
         }
-        mprError("Can't wait for daemon parent.");
+        mprError("Cannot wait for daemon parent.");
         exit(0);
     }
     if (WEXITSTATUS(status) != 0) {
@@ -784,7 +784,7 @@ static int makeDaemon()
         exit(0);
     }
     if (sigaction(SIGCHLD, &old, 0) < 0) {
-        mprError("Can't restore signals");
+        mprError("Cannot restore signals");
         return MPR_ERR_BAD_STATE;
     }
     exit(0);
@@ -989,7 +989,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
         }
     }
     if (mprStart() < 0) {
-        mprUserError("Can't start MPR for %s", mprGetAppName());                                           
+        mprUserError("Cannot start MPR for %s", mprGetAppName());                                           
     } else {
         mprStartEventsThread();
         if (nextArg >= argc) {
@@ -1079,13 +1079,13 @@ static void WINAPI serviceMain(ulong argc, char **argv)
     app->heartBeatEvent = CreateEvent(0, TRUE, FALSE, 0);
 
     if (app->serviceThreadEvent == 0 || app->heartBeatEvent == 0) {
-        mprError("Can't create wait events");
+        mprError("Cannot create wait events");
         return;
     }
     app->threadHandle = CreateThread(0, 0, (LPTHREAD_START_ROUTINE) serviceThread, (void*) 0, 0, (ulong*) &threadId);
 
     if (app->threadHandle == 0) {
-        mprError("Can't create service thread");
+        mprError("Cannot create service thread");
         return;
     }
     WaitForSingleObject(app->serviceThreadEvent, INFINITE);
@@ -1103,7 +1103,7 @@ static void WINAPI serviceMain(ulong argc, char **argv)
 static void serviceThread(void *data)
 {
     if (registerService() < 0) {
-        mprError("Can't register service");
+        mprError("Cannot register service");
         ExitThread(0);
         return;
     }
@@ -1186,7 +1186,7 @@ static void run()
                 Launch the process
              */
             if (! CreateProcess(0, cmd, 0, 0, FALSE, createFlags, 0, app->serviceHome, &startInfo, &procInfo)) {
-                mprError("Can't create process: %s, %d", cmd, mprGetOsError());
+                mprError("Cannot create process: %s, %d", cmd, mprGetOsError());
             } else {
                 app->servicePid = (int) procInfo.hProcess;
             }
@@ -1218,7 +1218,7 @@ static int startDispatcher(LPSERVICE_MAIN_FUNCTION svcMain)
     ulong           len;
 
     if (!(mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS))) {
-        mprError("Can't open service manager");
+        mprError("Cannot open service manager");
         return MPR_ERR_CANT_OPEN;
     }
     /*
@@ -1250,7 +1250,7 @@ static int registerService()
 {
     svcHandle = RegisterServiceCtrlHandler(app->serviceName, serviceCallback);
     if (svcHandle == 0) {
-        mprError("Can't register handler: 0x%x", GetLastError());
+        mprError("Cannot register handler: 0x%x", GetLastError());
         return MPR_ERR_CANT_INITIALIZE;
     }
     /*
@@ -1317,7 +1317,7 @@ static bool installService()
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprUserError("Can't open service manager");
+        mprUserError("Cannot open service manager");
         return 0;
     }
     /*
@@ -1333,7 +1333,7 @@ static bool installService()
         svc = CreateService(mgr, app->serviceName, app->serviceTitle, SERVICE_ALL_ACCESS, serviceType, SERVICE_DISABLED, 
             SERVICE_ERROR_NORMAL, cmd, NULL, NULL, "", NULL, NULL);
         if (! svc) {
-            mprUserError("Can't create service: 0x%x == %d", GetLastError(), GetLastError());
+            mprUserError("Cannot create service: 0x%x == %d", GetLastError(), GetLastError());
             CloseServiceHandle(mgr);
             return 0;
         }
@@ -1346,12 +1346,12 @@ static bool installService()
      */
     fmt(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services");
     if (mprWriteRegistry(key, NULL, app->serviceName) < 0) {
-        mprError("Can't write %s key to registry");
+        mprError("Cannot write %s key to registry");
         return 0;
     }
     fmt(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\%s", app->serviceName);
     if (mprWriteRegistry(key, "Description", SERVICE_DESCRIPTION) < 0) {
-        mprError("Can't write service Description key to registry");
+        mprError("Cannot write service Description key to registry");
         return 0;
     }
 
@@ -1362,7 +1362,7 @@ static bool installService()
         app->serviceHome = mprGetPathParent(mprGetAppDir());
     }
     if (mprWriteRegistry(key, "HomeDir", app->serviceHome) < 0) {
-        mprError("Can't write HomeDir key to registry");
+        mprError("Cannot write HomeDir key to registry");
         return 0;
     }
 
@@ -1371,7 +1371,7 @@ static bool installService()
      */
     if (app->serviceArgs && *app->serviceArgs) {
         if (mprWriteRegistry(key, "Args", app->serviceArgs) < 0) {
-            mprError("Can't write Args key to registry");
+            mprError("Cannot write Args key to registry");
             return 0;
         }
     }
@@ -1390,13 +1390,13 @@ static bool removeService(int removeFromScmDb)
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprError("Can't open service manager");
+        mprError("Cannot open service manager");
         return 0;
     }
     svc = OpenService(mgr, app->serviceName, SERVICE_ALL_ACCESS);
     if (! svc) {
         CloseServiceHandle(mgr);
-        mprError("Can't open service");
+        mprError("Cannot open service");
         return 0;
     }
     gracefulShutdown(0);
@@ -1412,12 +1412,12 @@ static bool removeService(int removeFromScmDb)
             }
         }
         if (svcStatus.dwCurrentState != SERVICE_STOPPED) {
-            mprError("Can't stop service: 0x%x", GetLastError());
+            mprError("Cannot stop service: 0x%x", GetLastError());
         }
     }
     if (removeFromScmDb && !DeleteService(svc)) {
         if (GetLastError() != ERROR_SERVICE_MARKED_FOR_DELETE) {
-            mprError("Can't delete service: 0x%x", GetLastError());
+            mprError("Cannot delete service: 0x%x", GetLastError());
         }
     }
     CloseServiceHandle(svc);
@@ -1433,20 +1433,20 @@ static bool enableService(int enable)
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprUserError("Can't open service manager");
+        mprUserError("Cannot open service manager");
         return 0;
     }
     svc = OpenService(mgr, app->serviceName, SERVICE_ALL_ACCESS);
     if (svc == NULL) {
         if (enable) {
-            mprUserError("Can't access service");
+            mprUserError("Cannot access service");
         }
         CloseServiceHandle(mgr);
         return 0;
     }
     flag = (enable) ? SERVICE_AUTO_START : SERVICE_DISABLED;
     if (!ChangeServiceConfig(svc, SERVICE_NO_CHANGE, flag, SERVICE_NO_CHANGE, NULL, NULL, NULL, NULL, NULL, NULL, NULL)) {
-        mprUserError("Can't change service: 0x%x == %d", GetLastError(), GetLastError());
+        mprUserError("Cannot change service: 0x%x == %d", GetLastError(), GetLastError());
         CloseServiceHandle(svc);
         CloseServiceHandle(mgr);
         return 0;
@@ -1466,12 +1466,12 @@ static bool startService()
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprError("Can't open service manager");
+        mprError("Cannot open service manager");
         return 0;
     }
     svc = OpenService(mgr, app->serviceName, SERVICE_ALL_ACCESS);
     if (! svc) {
-        mprError("Can't open service");
+        mprError("Cannot open service");
         CloseServiceHandle(mgr);
         return 0;
     }
@@ -1480,7 +1480,7 @@ static bool startService()
     CloseServiceHandle(mgr);
 
     if (rc == 0) {
-        mprError("Can't start %s service: 0x%x", app->serviceName, GetLastError());
+        mprError("Cannot start %s service: 0x%x", app->serviceName, GetLastError());
         return 0;
     }
     return 1;

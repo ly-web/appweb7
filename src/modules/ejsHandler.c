@@ -63,7 +63,7 @@ static void openEjs(HttpQueue *q)
             Allocate an EJS VM engine to service the request
          */
         if ((ejs = ejsAllocPoolVM(pool, EJS_FLAG_HOSTED)) == 0) {
-            httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Can't create Ejs interpreter");
+            httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Cannot create Ejs interpreter");
             return;
         }
         conn->ejs = ejs;
