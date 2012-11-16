@@ -789,7 +789,7 @@ static int issueRequest(HttpConn *conn, cchar *url, MprList *files)
                     url = httpUriToString(target, HTTP_COMPLETE_URI);
                     count = 0;
                 }
-                if (rx->status == HTTP_CODE_UNAUTHORIZED && authType) {
+                if (conn->rx && conn->rx->status == HTTP_CODE_UNAUTHORIZED && authType) {
                     /* Supplied authentication details and failed */
                     break;
                 }
@@ -884,12 +884,10 @@ static int reportResponse(HttpConn *conn, cchar *url, MprTicks elapsed)
 
 static void readBody(HttpConn *conn, MprFile *outFile)
 {
-    HttpRx      *rx;
     char        buf[HTTP_BUFSIZE];
     cchar       *result;
     ssize       bytes;
 
-    rx = conn->rx;
     if (app->noout) {
         return;
     }
