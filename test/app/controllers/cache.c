@@ -57,13 +57,12 @@ static void manual() {
 }
 
 static void update() { 
-    cchar   *data;
-    data = sfmt("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
+    cchar   *data = sfmt("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
     espUpdateCache(getConn(), "/cache/manual", data, 86400);
     render("done");
 }
 
-ESP_EXPORT int esp_controller_cache(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_module_cache(HttpRoute *route, MprModule *module) {
     HttpRoute   *rp;
 
     espDefineAction(route, "cache-cmd-api", api);

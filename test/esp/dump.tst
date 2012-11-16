@@ -9,7 +9,7 @@ let http: Http = new Http
 http.get(HTTP + "/dump.esp?a=b&c=d")
 assert(http.status == 200)
 let r = http.response
-assert(r.contains("HEADER User-Agent=Embedthis-http/"))
+assert(r.contains("HEADER User-Agent=Embedthis-http"))
 assert(r.contains("HEADER Date="))
 assert(r.contains("HEADER Host="))
 
@@ -20,7 +20,7 @@ assert(r.contains("SERVER AUTH_USER=null"))
 assert(r.contains("SERVER AUTH_TYPE=null"))
 assert(r.contains("SERVER SERVER_ROOT="))
 assert(r.contains("SERVER CONTENT_TYPE=null"))
-assert(r.contains("SERVER SERVER_SOFTWARE=Embedthis-http/"))
+assert(r.contains("SERVER SERVER_SOFTWARE=Embedthis-http"))
 assert(r.contains("SERVER SERVER_PROTOCOL=HTTP/1.1"))
 assert(r.contains("SERVER SERVER_PORT="))
 assert(r.contains("SERVER SCRIPT_NAME=/dump.esp"))

@@ -39,7 +39,18 @@ static void first() {
     flush();
 }
 
-ESP_EXPORT int esp_controller_demo(HttpRoute *route, MprModule *module) {
+static void outsideProc(void *data, MprEvent *event) {
+    render("Message: %s\n", data);
+    finalize();
+}
+
+static void outside() {
+    /* Normally used by thread outside */
+    mprCreateEventOutside(getConn()->dispatcher, outsideProc, sclone("hello outside"));
+    dontAutoFinalize();
+}
+
+ESP_EXPORT int esp_module_demo(HttpRoute *route, MprModule *module) {
     EspRoute    *eroute;
     cchar       *schema;
 
@@ -58,15 +69,18 @@ ESP_EXPORT int esp_controller_demo(HttpRoute *route, MprModule *module) {
     eroute = route->eroute;
     eroute->edi = ediOpen(schema, "mdb", EDI_LITERAL);
 
+#if UNUSED
     EdiGrid *grid = makeGrid("[ \
         { id: '1', country: 'Australia' }, \
         { id: '2', country: 'China' }, \
     ]");
 
     EdiRec *rec = makeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
+#endif
 
     espDefineAction(route, "demo-list", list);
     espDefineAction(route, "demo-cmd-restart", restart);
     espDefineAction(route, "demo-cmd-first", first);
+    espDefineAction(route, "demo-cmd-outside", outside);
     return 0;
 }

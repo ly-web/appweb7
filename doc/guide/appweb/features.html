@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.0.0 Documentation</title>
+    <title>Embedthis Appweb 4.1.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.0.0</div>
+                <div class="version">Embedthis Appweb 4.1.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -59,7 +59,7 @@
                 <li>Appweb HTTP Client program</li>
                 <li>Appweb HTTP Client and Server libraries</li>
                 <li>Multiple web frameworks</li>
-                <li>Secure Sockets Layer (SSL/TLS)</li>
+                <li>Interface to Secure Sockets Layer (SSL/TLS)</li>
                 <li>Documentation</li>
                 <li>Samples</li>
                 <li>Source code</li>
@@ -68,6 +68,7 @@
             <h3>HTTP Server Engine</h3>
             <ul>
                 <li>Full HTTP/1.1 support</li>
+                <li>IPv4 and IPv6</li>
                 <li>Multithreaded, event-based server</li>
                 <li>Fast co-routine request pipeline</li>
                 <li>Request routing with RegularExpression request rewriting</li>
@@ -78,11 +79,10 @@
                 <li>Apache style configuration</li>
                 <li>Manager monitoring process</li>
                 <li>Sand-box resource limits</li>
-                <li>Garbage collection based memory allocator</li>
             </ul>
             <h3>Performance</h3>
             <ul>
-                <li>Request throughput (&gt; 5,000 requests per second)</li>
+                <li>Request throughput (&gt; 9,000 requests per second)</li>
                 <li>Multi-threaded core for scale and blocking requests</li>
                 <li>Small memory footprint even under heavy load (from 1MB)</li>
             </ul>
@@ -111,7 +111,7 @@
             </ul>
             <h3>Embedded Server Pages (ESP) Web Framework</h3>
             <ul>
-                <li>Web page templating engine without layout pages</li>
+                <li>Web page templating engine with layout pages</li>
                 <li>Model / View / Controller paradigm or stand-alone web pages</li>
                 <li>Embedded "C" language code in HTML pages</li>
                 <li>Fast, automatic recompilation and reloading of updated web pages</li>
@@ -123,9 +123,8 @@
             <h3>Developer Support</h3>
             <ul>
                 <li>HTTP server and client libraries</li>
-                <li>Shared and static libraries supplied</li>
+                <li>Shared and static library build options</li>
                 <li>Extensive C API</li>
-                <li>Operate single-threaded or multithreaded (Compile or run-time selectable)</li>
                 <li>Easy, intuitive programming model</li>
                 <li>Coding minimized as most features can be specified via the configuration file</li>
                 <li>Extensive debug trace logging</li>
@@ -133,6 +132,7 @@
             <h3>Documentation</h3>
             <ul>
                 <li>Full C API Documentation</li>
+                <li>Guides and programmer reference</li>
                 <li>Cookbook of samples (cut and paste to get going)</li>
                 <li>Tutorials</li>
             </ul>
@@ -144,7 +144,6 @@
                 <li>VxWorks (5.4, 6.3)</li>
                 <li>Free BSD</li>
                 <li>Unix</li>
-                <li>Windows CE</li>
             </ul>
             <h3>Embedding Support</h3>
             <ul>
@@ -171,7 +170,7 @@
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
-            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
     <script src="http://www.google.com/jsapi" type="text/javascript"></script>

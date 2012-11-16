@@ -14,13 +14,12 @@
 /***************************** Forward Declarations ***************************/
 
 static void manageAppweb(MaAppweb *appweb, int flags);
-static void openHandlers(Http *http);
 
 /************************************ Code ************************************/
 /*
     Create the top level appweb control object. This is typically a singleton.
  */
-MaAppweb *maCreateAppweb()
+PUBLIC MaAppweb *maCreateAppweb()
 {
     MaAppweb    *appweb;
     Http        *http;
@@ -29,14 +28,20 @@ MaAppweb *maCreateAppweb()
         return 0;
     }
     MPR->appwebService = appweb;
-    appweb->http = http = httpCreate(appweb);
+    appweb->http = http = httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE);
     httpSetContext(http, appweb);
     appweb->servers = mprCreateList(-1, 0);
     appweb->localPlatform = slower(sfmt("%s-%s-%s", BIT_OS, BIT_CPU, BIT_PROFILE));
     maSetPlatform(appweb->localPlatform);
     maGetUserGroup(appweb);
     maParseInit(appweb);
-    openHandlers(http);
+    /* 
+       Open the builtin handlers 
+     */
+#if BIT_PACK_DIR
+    maOpenDirHandler(http);
+#endif
+    maOpenFileHandler(http);
     return appweb; 
 }
 
@@ -60,28 +65,19 @@ static void manageAppweb(MaAppweb *appweb, int flags)
 }
 
 
-static void openHandlers(Http *http)
-{
-#if BIT_FEATURE_DIR
-    maOpenDirHandler(http);
-#endif
-    maOpenFileHandler(http);
-}
-
-
-void maAddServer(MaAppweb *appweb, MaServer *server)
+PUBLIC void maAddServer(MaAppweb *appweb, MaServer *server)
 {
     mprAddItem(appweb->servers, server);
 }
 
 
-void maSetDefaultServer(MaAppweb *appweb, MaServer *server)
+PUBLIC void maSetDefaultServer(MaAppweb *appweb, MaServer *server)
 {
     appweb->defaultServer = server;
 }
 
 
-MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
+PUBLIC MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
 {
     MaServer    *server;
     int         next;
@@ -95,7 +91,7 @@ MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
 }
 
 
-int maStartAppweb(MaAppweb *appweb)
+PUBLIC int maStartAppweb(MaAppweb *appweb)
 {
     MaServer    *server;
     char        *timeText;
@@ -112,7 +108,7 @@ int maStartAppweb(MaAppweb *appweb)
 }
 
 
-int maStopAppweb(MaAppweb *appweb)
+PUBLIC int maStopAppweb(MaAppweb *appweb)
 {
     MaServer  *server;
     int     next;
@@ -145,11 +141,13 @@ static void manageServer(MaServer *server, int flags)
     If ip/port endpoint is supplied, this call will create a Server on that endpoint. Otherwise, 
     maConfigureServer should be called later. A default route is created with the document root set to "."
  */
-MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
+PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
 {
     MaServer    *server;
+    HttpHost    *host;
+    HttpRoute   *route;
 
-    mprAssert(appweb);
+    assure(appweb);
 
     if ((server = mprAllocObj(MaServer, manageServer)) == NULL) {
         return 0;
@@ -162,6 +160,15 @@ MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
     server->limits = httpCreateLimits(1);
     server->appweb = appweb;
     server->http = appweb->http;
+
+    server->defaultHost = host = httpCreateHost(NULL);
+    if (!httpGetDefaultHost()) {
+        httpSetDefaultHost(host);
+    }
+    route = httpCreateRoute(host);
+    httpSetHostDefaultRoute(host, route);
+    route->limits = server->limits;
+
     maAddServer(appweb, server);
     if (appweb->defaultServer == 0) {
         maSetDefaultServer(appweb, server);
@@ -173,7 +180,7 @@ MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
 /*
     Configure the server. If the configFile is defined, use it. If not, then consider home, documents, ip and port.
  */
-int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port)
+PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port)
 {
     MaAppweb        *appweb;
     Http            *http;
@@ -200,11 +207,11 @@ int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *d
         }
         maAddEndpoint(server, endpoint);
         host = mprGetFirstItem(endpoint->hosts);
-        mprAssert(host);
+        assure(host);
         route = mprGetFirstItem(host->routes);
-        mprAssert(route);
+        assure(route);
 
-#if BIT_FEATURE_CGI
+#if BIT_PACK_CGI
         maLoadModule(appweb, "cgiHandler", "mod_cgi");
         if (httpLookupStage(http, "cgiHandler")) {
             httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
@@ -221,19 +228,19 @@ int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *d
             }
         }
 #endif
-#if BIT_FEATURE_ESP
+#if BIT_PACK_ESP
         maLoadModule(appweb, "espHandler", "mod_esp");
         if (httpLookupStage(http, "espHandler")) {
             httpAddRouteHandler(route, "espHandler", "esp");
         }
 #endif
-#if BIT_FEATURE_EJSCRIPT
+#if BIT_PACK_EJSCRIPT
         maLoadModule(appweb, "ejsHandler", "mod_ejs");
         if (httpLookupStage(http, "ejsHandler")) {
             httpAddRouteHandler(route, "ejsHandler", "ejs");
         }
 #endif
-#if BIT_FEATURE_PHP
+#if BIT_PACK_PHP
         maLoadModule(appweb, "phpHandler", "mod_php");
         if (httpLookupStage(http, "phpHandler")) {
             httpAddRouteHandler(route, "phpHandler", "php");
@@ -252,7 +259,7 @@ int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *d
 }
 
 
-int maStartServer(MaServer *server)
+PUBLIC int maStartServer(MaServer *server)
 {
     HttpEndpoint    *endpoint;
     int             next, count, warned;
@@ -290,7 +297,7 @@ int maStartServer(MaServer *server)
 }
 
 
-void maStopServer(MaServer *server)
+PUBLIC void maStopServer(MaServer *server)
 {
     HttpEndpoint    *endpoint;
     int             next;
@@ -301,19 +308,19 @@ void maStopServer(MaServer *server)
 }
 
 
-void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint)
+PUBLIC void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint)
 {
     mprAddItem(server->endpoints, endpoint);
 }
 
 
-void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
+PUBLIC void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
 {
     mprRemoveItem(server->endpoints, endpoint);
 }
 
 
-int maSetPlatform(cchar *platform)
+PUBLIC int maSetPlatform(cchar *platform)
 {
     MprDirEntry *dp;
     MaAppweb    *appweb;
@@ -355,9 +362,9 @@ int maSetPlatform(cchar *platform)
 /*  
     Set the home directory (Server Root). We convert path into an absolute path.
  */
-void maSetServerHome(MaServer *server, cchar *path)
+PUBLIC void maSetServerHome(MaServer *server, cchar *path)
 {
-    if (path == 0 || BIT_FEATURE_ROMFS) {
+    if (path == 0 || BIT_ROM) {
         path = ".";
     }
 #if !VXWORKS
@@ -377,7 +384,7 @@ void maSetServerHome(MaServer *server, cchar *path)
 /*
     Set the document root for the default server
  */
-void maSetServerAddress(MaServer *server, cchar *ip, int port)
+PUBLIC void maSetServerAddress(MaServer *server, cchar *ip, int port)
 {
     HttpEndpoint    *endpoint;
     int             next;
@@ -388,7 +395,7 @@ void maSetServerAddress(MaServer *server, cchar *ip, int port)
 }
 
 
-void maGetUserGroup(MaAppweb *appweb)
+PUBLIC void maGetUserGroup(MaAppweb *appweb)
 {
 #if BIT_UNIX_LIKE
     struct passwd   *pp;
@@ -412,7 +419,7 @@ void maGetUserGroup(MaAppweb *appweb)
 }
 
 
-int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
+PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
 #if BIT_UNIX_LIKE
     struct passwd   *pp;
@@ -439,7 +446,7 @@ int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 }
 
 
-int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
+PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
 #if BIT_UNIX_LIKE
     struct group    *gp;
@@ -466,7 +473,7 @@ int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 }
 
 
-int maApplyChangedUser(MaAppweb *appweb)
+PUBLIC int maApplyChangedUser(MaAppweb *appweb)
 {
 #if BIT_UNIX_LIKE
     if (appweb->userChanged && appweb->uid >= 0) {
@@ -486,7 +493,7 @@ int maApplyChangedUser(MaAppweb *appweb)
 }
 
 
-int maApplyChangedGroup(MaAppweb *appweb)
+PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
 {
 #if BIT_UNIX_LIKE
     if (appweb->groupChanged && appweb->gid >= 0) {
@@ -509,7 +516,7 @@ int maApplyChangedGroup(MaAppweb *appweb)
 /*
     Load a module. Returns 0 if the modules is successfully loaded (may have already been loaded).
  */
-int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
+PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
 {
     MprModule   *module;
     char        entryPoint[MPR_MAX_FNAME];
@@ -520,16 +527,16 @@ int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
         mprLog(1, "The %s module is now builtin. No need to use LoadModule", name);
         return 0;
     }
+    if ((module = mprLookupModule(name)) != 0) {
+        mprLog(MPR_CONFIG, "Activating module (Builtin) %s", name);
+        return 0;
+    }
     if (libname == 0) {
         path = sjoin("mod_", name, BIT_SHOBJ, NULL);
     } else {
         path = sclone(libname);
     }
-    if ((module = mprLookupModule(path)) != 0) {
-        mprLog(MPR_CONFIG, "Activating module (Builtin) %s", name);
-        return 0;
-    }
-    mprSprintf(entryPoint, sizeof(entryPoint), "ma%sInit", name);
+    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", name);
     entryPoint[2] = toupper((uchar) entryPoint[2]);
     if ((module = mprCreateModule(name, path, entryPoint, MPR->httpService)) == 0) {
         return 0;
@@ -540,33 +547,23 @@ int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
     return 0;
 }
 
+ 
+PUBLIC HttpAuth *maGetDefaultAuth(MaServer *server)
+{
+    return server->defaultHost->defaultRoute->auth;
+}
+
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

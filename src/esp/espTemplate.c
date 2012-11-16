@@ -8,7 +8,7 @@
 
 #include    "esp.h"
 
-#if BIT_FEATURE_ESP
+#if BIT_PACK_ESP
 
 /************************************ Defines *********************************/
 /*
@@ -59,7 +59,7 @@ static bool matchToken(cchar **str, cchar *token);
     VS          Visual Studio directory
     WINSDK      Windows SDK directory
  */
-char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module)
+PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module)
 {
     MprBuf      *buf;
     MaAppweb    *appweb;
@@ -234,19 +234,21 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
     source      ESP source file name
     module      Module file name
  */
-bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, int isView)
+PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, int isView)
 {
     MprFile     *fp;
     HttpRx      *rx;
     HttpRoute   *route;
     EspRoute    *eroute;
+    EspReq      *req;
     cchar       *csource;
     char        *layout, *script, *page, *err;
     ssize       len;
 
     rx = conn->rx;
     route = rx->route;
-    eroute = route->eroute;
+    req = conn->data;
+    eroute = req->eroute;
     layout = 0;
 
     if (isView) {
@@ -258,11 +260,7 @@ bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, 
             Use layouts iff there is a source defined on the route. Only MVC/controllers based apps do this.
          */
         if (eroute->layoutsDir) {
-#if UNUSED
-        layout = mprSamePath(eroute->layoutsDir, route->dir) ? 0 : mprJoinPath(eroute->layoutsDir, "default.esp");
-#else
-        layout = mprJoinPath(eroute->layoutsDir, "default.esp");
-#endif
+            layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }
         if ((script = espBuildScript(route, page, source, cacheName, layout, &err)) == 0) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't build %s, error %s", source, err);
@@ -376,7 +374,7 @@ static char *joinLine(cchar *str, ssize *lenp)
         @#field             Lookup the current record for the value of the field.
 
  */
-char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, char **err)
+PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, char **err)
 {
     EspParse    parse;
     EspRoute    *eroute;
@@ -385,7 +383,7 @@ char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheNam
     ssize       len;
     int         tid;
 
-    mprAssert(page);
+    assure(page);
 
     eroute = route->eroute;
     body = start = end = global = "";
@@ -502,7 +500,7 @@ char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheNam
             break;
 
         case ESP_TOK_FIELD:
-            /* @#field */
+            /* @#field -- field in the current record */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
             body = sjoin(body, "  espRender(conn, getField(\"", token, "\"));\n", NULL);
             break;
@@ -513,10 +511,10 @@ char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheNam
             break;
 
         case ESP_TOK_VAR:
-            /* @@var */
+            /* @@var -- variable in (param || session) */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-            /* espRenderParam uses espRenderSafeString */
-            body = sjoin(body, "  espRenderParam(conn, \"", token, "\");\n", NULL);
+            /* espRenderVar renders (param || session). It uses espRenderSafeString */
+            body = sjoin(body, "  espRenderVar(conn, \"", token, "\");\n", NULL);
             break;
 
         default:
@@ -538,7 +536,7 @@ char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheNam
                 return 0;
             }
 #if BIT_DEBUG
-            if (!scontains(layoutBuf, CONTENT_MARKER, -1)) {
+            if (!scontains(layoutBuf, CONTENT_MARKER)) {
                 *err = sfmt("Layout page is missing content marker: %s", layout);
                 return 0;
             }
@@ -551,8 +549,8 @@ char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheNam
         if (end && end[slen(end) - 1] != '\n') {
             end = sjoin(end, "\n", NULL);
         }
-        mprAssert(slen(path) > slen(route->dir));
-        mprAssert(sncmp(path, route->dir, slen(route->dir)) == 0);
+        assure(slen(path) > slen(route->dir));
+        assure(sncmp(path, route->dir, slen(route->dir)) == 0);
         if (sncmp(path, route->dir, slen(route->dir)) == 0) {
             path = &path[slen(route->dir) + 1];
         }
@@ -683,7 +681,7 @@ static int getEspToken(EspParse *parse)
 
         case '@':
             if ((next == start) || next[-1] != '\\') {
-                if (next[1] == '@' || next[1] == '*') {
+                if (next[1] == '@' || next[1] == '#') {
                     next += 2;
                     if (mprGetBufLength(parse->token) > 0) {
                         next -= 3;
@@ -790,17 +788,17 @@ static cchar *getCompilerName(cchar *os, cchar *arch)
     if (smatch(os, "vxworks")) {
         if (smatch(arch, "x86") || smatch(arch, "i586") || smatch(arch, "i686") || smatch(arch, "pentium")) {
             name = "ccpentium";
-        } else if (scontains(arch, "86", -1)) {
+        } else if (scontains(arch, "86")) {
             name = "cc386";
-        } else if (scontains(arch, "ppc", -1)) {
+        } else if (scontains(arch, "ppc")) {
             name = "ccppc";
-        } else if (scontains(arch, "xscale", -1) || scontains(arch, "arm", -1)) {
+        } else if (scontains(arch, "xscale") || scontains(arch, "arm")) {
             name = "ccarm";
-        } else if (scontains(arch, "68", -1)) {
+        } else if (scontains(arch, "68")) {
             name = "cc68k";
-        } else if (scontains(arch, "sh", -1)) {
+        } else if (scontains(arch, "sh")) {
             name = "ccsh";
-        } else if (scontains(arch, "mips", -1)) {
+        } else if (scontains(arch, "mips")) {
             name = "ccmips";
         }
     } else if (smatch(os, "macosx")) {
@@ -829,8 +827,9 @@ static cchar *getDebug()
     int         debug;
 
     appweb = MPR->appwebService;
-    debug = sends(appweb->platform, "-debug");
-    if (scontains(appweb->platform, "windows-", -1)) {
+    //  MOB -- should be able to do release builds from xcode?
+    debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode") || sends(appweb->platform, "-mine");
+    if (scontains(appweb->platform, "windows-")) {
         return (debug) ? "-DBIT_DEBUG -Zi -Od" : "-O";
     }
     return (debug) ? "-DBIT_DEBUG -g" : "-O2";
@@ -842,30 +841,12 @@ static cchar *getLibs(cchar *os)
     cchar       *libs;
 
     if (smatch(os, "windows")) {
-        libs = "\"${LIBPATH}\\mod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\" \"${LIBPATH}\\libmprssl.lib\"";
+        libs = "\"${LIBPATH}\\libmod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\"";
     } else {
-        libs = "${LIBPATH}/mod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lmprssl -lpthread -lm";
+        libs = "${LIBPATH}/libmod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
     }
     return libs;
 }
-
-
-#if UNUSED
-static char *getLibpath(cchar *name)
-{
-    return mprNormalizePath(sfmt("%s/../%s", mprGetAppDir(), name)); 
-    eroute->
-         mprNormalizePath(mprJoinPath(mprGetAppDir(), "../inc")
-    return mprJoin
-#if DEBUG_IDE
-    //  MOB - not right for cross dev
-    return mprGetAppDir();
-#else
-    //  MOB - not right for cross dev
-    return mprNormalizePath(sfmt("%s/../%s", mprGetAppDir(), name)); 
-#endif
-}
-#endif
 
 
 static bool matchToken(cchar **str, cchar *token)
@@ -912,17 +893,17 @@ static cchar *getVisualStudio()
 {
 #if WINDOWS
     cchar   *path;
-
-    //  MOB - check this key. Does 'Visual Studio' have a space?
-    path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\" BIT_VISUAL_STUDIO_VERSION, "ShellFolder");
-    if (!path) {
-        path = mprReadRegistry("HKCU\\SOFTWARE\\Microsoft\\VisualStudio\\" BIT_VISUAL_STUDIO_VERSION "_Config", 
-            "ShellFolder");
-        if (!path) {
-            path = "${VS}";
+    int     v;
+    for (v = 13; v >= 8; v--) {
+        if ((path = mprReadRegistry(ESP_VSKEY, sfmt("%d.0", v))) != 0) {
+            path = strim(path, "\\", MPR_TRIM_END);
+            break;
         }
     }
-    return strim(path, "\\", MPR_TRIM_END);
+    if (!path) {
+        path = "${VS}";
+    }
+    return path;
 #else
     return "";
 #endif
@@ -937,7 +918,7 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
      */
     MaAppweb *appweb = MPR->appwebService;
     cchar *path = getVisualStudio();
-    if (scontains(appweb->platform, "-x64-", -1)) {
+    if (scontains(appweb->platform, "-x64-")) {
         int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
         if (is64BitSystem) {
             path = mprJoinPath(path, "VC/bin/amd64/cl.exe");
@@ -954,34 +935,18 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
 #endif
 }
 
-#endif /* BIT_FEATURE_ESP */
+#endif /* BIT_PACK_ESP */
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

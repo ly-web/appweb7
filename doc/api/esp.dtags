@@ -28,6 +28,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>ediDefineMigration</name>
+      <anchorfile>group___edi_service.html</anchorfile>
+      <anchor>ga789f616e9f38aee34d6862bf85ac4742</anchor>
+      <arglist>(struct Edi *edi, EdiMigration forw, EdiMigration back)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>ediDefineValidation</name>
       <anchorfile>group___edi_service.html</anchorfile>
       <anchor>ga889df64bdd239f71c66b4fa920be8f46</anchor>
@@ -48,6 +55,13 @@
     <name>EdiGrid</name>
     <title>EdiGrid</title>
     <filename>group___edi_grid.html</filename>
+    <member kind="function">
+      <type>EdiGrid *</type>
+      <name>ediPivotGrid</name>
+      <anchorfile>group___edi_grid.html</anchorfile>
+      <anchor>gab083046f341a40f3880e0dc41a6f2845</anchor>
+      <arglist>(EdiGrid *grid, int flags)</arglist>
+    </member>
   </compound>
   <compound kind="group">
     <name>Edi</name>
@@ -134,8 +148,8 @@
       <type>cchar *</type>
       <name>ediFormatField</name>
       <anchorfile>group___edi.html</anchorfile>
-      <anchor>gaa5e7ed50f7256c03c82778c1b681ea87</anchor>
-      <arglist>(cchar *fmt, EdiField value)</arglist>
+      <anchor>ga64d2d436610342310b2b4a7dae4ed376</anchor>
+      <arglist>(cchar *fmt, EdiField *fp)</arglist>
     </member>
     <member kind="function">
       <type>MprList *</type>
@@ -150,13 +164,6 @@
       <anchorfile>group___edi.html</anchorfile>
       <anchor>gac764d3271d738b2e6d284e4d49e8b90e</anchor>
       <arglist>(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid)</arglist>
-    </member>
-    <member kind="function">
-      <type>cchar *</type>
-      <name>ediGetField</name>
-      <anchorfile>group___edi.html</anchorfile>
-      <anchor>gaf725c63758094eb5425fe30beaa3f4df</anchor>
-      <arglist>(EdiRec *rec, cchar *fieldName)</arglist>
     </member>
     <member kind="function">
       <type>cchar *</type>
@@ -177,6 +184,13 @@
       <name>ediGetFieldType</name>
       <anchorfile>group___edi.html</anchorfile>
       <anchor>ga1f563dfa6f4ad87a227f0470b2a9838e</anchor>
+      <arglist>(EdiRec *rec, cchar *fieldName)</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
+      <name>ediGetFieldValue</name>
+      <anchorfile>group___edi.html</anchorfile>
+      <anchor>gaa232690d3f51e8ee058aed2f294c2f6c</anchor>
       <arglist>(EdiRec *rec, cchar *fieldName)</arglist>
     </member>
     <member kind="function">
@@ -213,6 +227,13 @@
       <anchorfile>group___edi.html</anchorfile>
       <anchor>ga39664fad5ac6b8e8d4392e1b6196c668</anchor>
       <arglist>(int type)</arglist>
+    </member>
+    <member kind="function">
+      <type>EdiGrid *</type>
+      <name>ediJoin</name>
+      <anchorfile>group___edi.html</anchorfile>
+      <anchor>ga64b3d4293374b0c0ebeb7aa4a8729ccd</anchor>
+      <arglist>(Edi *edi,...)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -457,74 +478,6 @@
     </member>
   </compound>
   <compound kind="group">
-    <name>EspSession</name>
-    <title>EspSession</title>
-    <filename>group___esp_session.html</filename>
-    <member kind="function">
-      <type>EspSession *</type>
-      <name>espAllocSession</name>
-      <anchorfile>group___esp_session.html</anchorfile>
-      <anchor>ga7d2c9558796acec2501b7d31dfc877b9</anchor>
-      <arglist>(HttpConn *conn, cchar *id, MprTime lifespan)</arglist>
-    </member>
-    <member kind="function">
-      <type>EspSession *</type>
-      <name>espCreateSession</name>
-      <anchorfile>group___esp_session.html</anchorfile>
-      <anchor>ga11e5e8371651e92dae33c1d778265e77</anchor>
-      <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>espDestroySession</name>
-      <anchorfile>group___esp_session.html</anchorfile>
-      <anchor>gab325d1d70bce4551a89fd7f0d1208b07</anchor>
-      <arglist>(EspSession *sp)</arglist>
-    </member>
-    <member kind="function">
-      <type>EspSession *</type>
-      <name>espGetSession</name>
-      <anchorfile>group___esp_session.html</anchorfile>
-      <anchor>ga4a615da785dba2c514e3237f37c92338</anchor>
-      <arglist>(HttpConn *conn, int create)</arglist>
-    </member>
-    <member kind="function">
-      <type>char *</type>
-      <name>espGetSessionID</name>
-      <anchorfile>group___esp_session.html</anchorfile>
-      <anchor>ga74599c6792fca6d518dc85ea51fe12ab</anchor>
-      <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
-      <type>MprHash *</type>
-      <name>espGetSessionObj</name>
-      <anchorfile>group___esp_session.html</anchorfile>
-      <anchor>gac081825cc4af1199f77b638e659ab32d</anchor>
-      <arglist>(HttpConn *conn, cchar *key)</arglist>
-    </member>
-    <member kind="function">
-      <type>cchar *</type>
-      <name>espGetSessionVar</name>
-      <anchorfile>group___esp_session.html</anchorfile>
-      <anchor>ga60a5effb2a9ef53fdb02dbe865bf6093</anchor>
-      <arglist>(HttpConn *conn, cchar *name, cchar *defaultValue)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>espSetSessionObj</name>
-      <anchorfile>group___esp_session.html</anchorfile>
-      <anchor>ga01ef5e61df606729516e7955f5140704</anchor>
-      <arglist>(HttpConn *conn, cchar *key, MprHash *value)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>espSetSessionVar</name>
-      <anchorfile>group___esp_session.html</anchorfile>
-      <anchor>ga100b653cb5cb53f21805db558ffe609f</anchor>
-      <arglist>(HttpConn *conn, cchar *name, cchar *value)</arglist>
-    </member>
-  </compound>
-  <compound kind="group">
     <name>EspReq</name>
     <title>EspReq</title>
     <filename>group___esp_req.html</filename>
@@ -670,6 +623,13 @@
       <arglist>(HttpConn *conn, cchar *type)</arglist>
     </member>
     <member kind="function">
+      <type>EdiGrid *</type>
+      <name>espGetGrid</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga440de6fba35ad0513c2925f11a0f3710</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
       <type>cchar *</type>
       <name>espGetHeader</name>
       <anchorfile>group___esp_req.html</anchorfile>
@@ -736,8 +696,8 @@
       <type>Edi *</type>
       <name>espGetRouteDatabase</name>
       <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>ga72246c1dc89e871ec596ae0959077af2</anchor>
-      <arglist>(HttpRoute *route)</arglist>
+      <anchor>ga7f388bf60aa16e46a40dd7607f80c552</anchor>
+      <arglist>(EspRoute *eroute)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -894,6 +854,13 @@
       <arglist>(HttpConn *conn, cchar *key)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>espRemoveRec</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga366ed657abe537c8b22930f69273707b</anchor>
+      <arglist>(HttpConn *conn, cchar *tableName, cchar *key)</arglist>
+    </member>
+    <member kind="function">
       <type>ssize</type>
       <name>espRender</name>
       <anchorfile>group___esp_req.html</anchorfile>
@@ -930,13 +897,6 @@
     </member>
     <member kind="function">
       <type>ssize</type>
-      <name>espRenderParam</name>
-      <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gaf3bc7904c49db358937584129928579f</anchor>
-      <arglist>(HttpConn *conn, cchar *name)</arglist>
-    </member>
-    <member kind="function">
-      <type>ssize</type>
       <name>espRenderSafeString</name>
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga743eec6372aeb305a939bc9b0026281e</anchor>
@@ -948,6 +908,13 @@
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga2bc125ce68d2a8a8992228f0232c9b6f</anchor>
       <arglist>(HttpConn *conn, cchar *s)</arglist>
+    </member>
+    <member kind="function">
+      <type>ssize</type>
+      <name>espRenderVar</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>gad0c3cc923d09313ed81476b74c32ab00</anchor>
+      <arglist>(HttpConn *conn, cchar *name)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -988,8 +955,8 @@
       <type>void</type>
       <name>espSetCookie</name>
       <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gab3fa02a25383898985307c8c12ab9147</anchor>
-      <arglist>(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTime lifespan, bool isSecure)</arglist>
+      <anchor>ga58039e1fafe24481848bf1b47a2d444f</anchor>
+      <arglist>(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan, bool isSecure)</arglist>
     </member>
     <member kind="function">
       <type>EdiRec *</type>
@@ -1182,8 +1149,8 @@
       <type>void</type>
       <name>espDropdown</name>
       <anchorfile>group___esp_control.html</anchorfile>
-      <anchor>ga74f4ebc195992a3b8e1229db1cc864d3</anchor>
-      <arglist>(HttpConn *conn, cchar *field, cchar *choices, cchar *options)</arglist>
+      <anchor>ga33e8fdddf5ddee5ff011fd98a00b2846</anchor>
+      <arglist>(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *options)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1252,8 +1219,8 @@
       <type>void</type>
       <name>espRadio</name>
       <anchorfile>group___esp_control.html</anchorfile>
-      <anchor>ga8e7a51fb64f2adbd01183236875ce890</anchor>
-      <arglist>(HttpConn *conn, cchar *field, void *choices, cchar *options)</arglist>
+      <anchor>ga9ee9f9265ad04dd18ea399297fef7b06</anchor>
+      <arglist>(HttpConn *conn, cchar *field, cchar *choices, cchar *options)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1404,8 +1371,8 @@
       <type>void</type>
       <name>dropdown</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>gae43638b69d2bf1bf6cf037459aad2ce2</anchor>
-      <arglist>(cchar *field, cchar *choices, cchar *options)</arglist>
+      <anchor>ga5a0b16f22f61bfe444819b8eadb82178</anchor>
+      <arglist>(cchar *field, EdiGrid *choices, cchar *options)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1434,6 +1401,13 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga76b5e43ce8e841141744d0bb35a14079</anchor>
       <arglist>(void *record, cchar *options)</arglist>
+    </member>
+    <member kind="function">
+      <type>MprList *</type>
+      <name>getColumns</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga4ab3c77c072c0e1b7a21439a85240d7e</anchor>
+      <arglist>(EdiRec *rec)</arglist>
     </member>
     <member kind="function">
       <type>HttpConn *</type>
@@ -1486,6 +1460,20 @@
     </member>
     <member kind="function">
       <type>cchar *</type>
+      <name>getField</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gaae0c48e803f796f2549974ceaccc4f12</anchor>
+      <arglist>(cchar *field)</arglist>
+    </member>
+    <member kind="function">
+      <type>EdiGrid *</type>
+      <name>getGrid</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga2e60477a5b4168f59758c93507b4b899</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
       <name>getHeader</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga3a9e6969b5beb4c554ec9032b322c0fe</anchor>
@@ -1496,6 +1484,13 @@
       <name>getQuery</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga2382c30fce39d310820e556415abb763</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>EdiRec *</type>
+      <name>getRec</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga8a4d997f211531f9ad4a21133f761349</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
@@ -1531,6 +1526,20 @@
       <name>getUri</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga1562f14a38ec9ace0787756964e51cda</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>hasGrid</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga25287207066ad592e465b36148439e2d</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>hasRec</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga9ae793b0c68219491acb86735fa7a4d8</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
@@ -1654,10 +1663,24 @@
     </member>
     <member kind="function">
       <type>EdiRec *</type>
+      <name>readRec</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga34ab6b0e4c677e26dde41a749c6ebc1c</anchor>
+      <arglist>(cchar *tableName)</arglist>
+    </member>
+    <member kind="function">
+      <type>EdiRec *</type>
       <name>readRecByKey</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>gaa26e4e1c0388326035e93a9334f6e0ba</anchor>
       <arglist>(cchar *tableName, cchar *key)</arglist>
+    </member>
+    <member kind="function">
+      <type>EdiGrid *</type>
+      <name>readRecsWhere</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga0709c70065cc9048a1a7a5ac6e294d16</anchor>
+      <arglist>(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)</arglist>
     </member>
     <member kind="function">
       <type>EdiRec *</type>
@@ -1665,6 +1688,13 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga36f33afdfe9bdd2a583f43d2af4ed060</anchor>
       <arglist>(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)</arglist>
+    </member>
+    <member kind="function">
+      <type>EdiGrid *</type>
+      <name>readTable</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga550c1016448c47c8ef7b78612a67ccd2</anchor>
+      <arglist>(cchar *tableName)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -1693,6 +1723,13 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga6ddfd33e34cb0e8e442571979259a424</anchor>
       <arglist>(cchar *on, cchar *off, cchar *options)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>removeRec</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga09091b0bc981b74fdf0b197fbee8adab</anchor>
+      <arglist>(cchar *tableName, cchar *key)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -1768,8 +1805,8 @@
       <type>void</type>
       <name>setCookie</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>ga85b884db9ea1993efaa01dbe686f601c</anchor>
-      <arglist>(cchar *name, cchar *value, cchar *path, cchar *domain, MprTime lifespan, bool isSecure)</arglist>
+      <anchor>gaea6086cd23b087b13921a4028940792c</anchor>
+      <arglist>(cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan, bool isSecure)</arglist>
     </member>
     <member kind="function">
       <type>EdiRec *</type>
@@ -1793,6 +1830,13 @@
       <arglist>(cchar *kind, cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
+      <type>EdiGrid *</type>
+      <name>setGrid</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gaeed08cdbf64becc6ea822e9208831f63</anchor>
+      <arglist>(EdiGrid *grid)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>setHeader</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1805,6 +1849,13 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga65fe2a97ffad029e6229e4e2dd290dd5</anchor>
       <arglist>(cchar *name, cchar *value)</arglist>
+    </member>
+    <member kind="function">
+      <type>EdiRec *</type>
+      <name>setRec</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gafef8aa52aab6f3d8a3eebfe7eeb0edf4</anchor>
+      <arglist>(EdiRec *rec)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1824,8 +1875,8 @@
       <type>void</type>
       <name>setTimeout</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>gadeaed6401e64556c1a6ed364b47704aa</anchor>
-      <arglist>(void *proc, MprTime timeout, void *data)</arglist>
+      <anchor>ga07243a4b521119ce41362163afb45032</anchor>
+      <arglist>(void *proc, MprTicks timeout, void *data)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1984,13 +2035,6 @@
       <name>mutex</name>
       <anchorfile>struct_esp.html</anchorfile>
       <anchor>a71156c2af5c1018ffa495d97fc21c6ec</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>MprCache *</type>
-      <name>sessionCache</name>
-      <anchorfile>struct_esp.html</anchorfile>
-      <anchor>a48a345ed5471d8ed026c5440417ae0f6</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">

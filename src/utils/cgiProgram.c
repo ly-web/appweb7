@@ -28,6 +28,7 @@
 
 #include <errno.h>
 #include <ctype.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -68,8 +69,8 @@
 
 /*********************************** Locals ***********************************/
 
-#define MPR_CMD_VXWORKS_EOF     "_ _EOF_ _"
-#define MPR_CMD_VXWORKS_EOF_LEN 9
+#define CMD_VXWORKS_EOF         "_ _EOF_ _"
+#define CMD_VXWORKS_EOF_LEN     9
 #define MAX_ARGV                64
 
 static char     *argvList[MAX_ARGV];
@@ -81,7 +82,7 @@ static int      numQueryKeys;
 static int      originalArgc;
 static char     **originalArgv;
 static int      outputArgs, outputEnv, outputPost, outputQuery;
-static int      outputBytes, outputHeaderLines, responseStatus;
+static int      outputLines, outputHeaderLines, responseStatus;
 static char     *outputLocation;
 static char     *postBuf;
 static size_t   postBufLen;
@@ -116,11 +117,11 @@ int main(int argc, char **argv, char **envp)
 #endif
 {
     char    *cp, *method;
-    int     i, j, err;
+    int     l, i, err;
 
     err = 0;
     outputArgs = outputQuery = outputEnv = outputPost = 0;
-    outputBytes = outputHeaderLines = responseStatus = 0;
+    outputLines = outputHeaderLines = responseStatus = 0;
     outputLocation = 0;
     nonParsedHeader = 0;
     responseMsg = 0;
@@ -159,7 +160,7 @@ int main(int argc, char **argv, char **envp)
                 if (++i >= argc) {
                     err = __LINE__;
                 } else {
-                    outputBytes = atoi(argv[i]);
+                    outputLines = atoi(argv[i]);
                 }
                 break;
 
@@ -256,7 +257,7 @@ int main(int argc, char **argv, char **envp)
         printf("X-CGI-CustomHeader: Any value at all\r\n");
     }
 
-    printf("Content-type: %s\r\n", "text/html");
+    printf("Content-Type: %s\r\n", "text/html");
 
     if (outputHeaderLines) {
         for (i = 0; i < outputHeaderLines; i++) {
@@ -271,56 +272,44 @@ int main(int argc, char **argv, char **envp)
     }
     printf("\r\n");
 
-    if ((outputBytes + outputArgs + outputEnv + outputQuery + outputPost + outputLocation + responseStatus) == 0) {
+    if ((outputLines + outputArgs + outputEnv + outputQuery + outputPost + outputLocation + responseStatus) == 0) {
         outputArgs++;
         outputEnv++;
         outputQuery++;
         outputPost++;
     }
+    if (outputLines) {
+        for (l = 0; l < outputLines; l++) {
+            printf("%010d\n", l);
+        }
 
-    if (outputBytes) {
-        j = 0;
-        for (i = 0; i < outputBytes; i++) {
-            putchar('0' + j);
-            j++;
-            if (j > 9) {
-                if (++outputBytes > 0) {
-                    putchar('\r');
-                }
-                if (++outputBytes > 0) {
-                    putchar('\n');
-                }
-                j = 0;
+    } else {
+        printf("<HTML><TITLE>cgiProgram: Output</TITLE><BODY>\r\n");
+        if (outputArgs) {
+#if _WIN32
+            printf("<P>CommandLine: %s</P>\r\n", GetCommandLine());
+#endif
+            printf("<H2>Args</H2>\r\n");
+            for (i = 0; i < argc; i++) {
+                printf("<P>ARG[%d]=%s</P>\r\n", i, argv[i]);
             }
         }
-
-    } 
-    printf("<HTML><TITLE>cgiProgram: Output</TITLE><BODY>\r\n");
-    if (outputArgs) {
-#if _WIN32
-        printf("<P>CommandLine: %s</P>\r\n", GetCommandLine());
-#endif
-        printf("<H2>Args</H2>\r\n");
-        for (i = 0; i < argc; i++) {
-            printf("<P>ARG[%d]=%s</P>\r\n", i, argv[i]);
+        printEnv(envp);
+        if (outputQuery) {
+            printQuery();
         }
+        if (outputPost) {
+            printPost(postBuf, postBufLen);
+        }
+        printf("</BODY></HTML>\r\n");
     }
-    printEnv(envp);
-    if (outputQuery) {
-        printQuery();
-    }
-    if (outputPost) {
-        printPost(postBuf, postBufLen);
-    }
-    printf("</BODY></HTML>\r\n");
-
 #if VXWORKS
     /*
         VxWorks pipes need an explicit eof string
         Must not call exit(0) in Vxworks as that will exit the task before the CGI handler can cleanup. Must use return 0.
      */
-    write(1, MPR_CMD_VXWORKS_EOF, MPR_CMD_VXWORKS_EOF_LEN);
-    write(2, MPR_CMD_VXWORKS_EOF, MPR_CMD_VXWORKS_EOF_LEN);
+    write(1, CMD_VXWORKS_EOF, CMD_VXWORKS_EOF_LEN);
+    write(2, CMD_VXWORKS_EOF, CMD_VXWORKS_EOF_LEN);
 #endif
     fflush(stderr);
     fflush(stdout);
@@ -451,6 +440,7 @@ static void printPost(char *buf, size_t len)
 
     } else if (buf) {
         if (len < (50 * 1000)) {
+            printf("<H2>Post Data %d bytes found (data below)</H2>\r\n", (int) len);
             if (write(1, buf, (int) len) != len) {}
         } else {
             printf("<H2>Post Data %d bytes found</H2>\r\n", (int) len);
@@ -629,7 +619,7 @@ static char *safeGetenv(char *key)
 }
 
 
-void error(char *fmt, ...)
+static void error(char *fmt, ...)
 {
     va_list args;
     char    buf[4096];
@@ -659,31 +649,15 @@ int _exit() {
 
 /*
     @copy   default
-  
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-  
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-  
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-  
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
-  
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -692,3 +666,4 @@ int _exit() {
 
     @end
  */
+

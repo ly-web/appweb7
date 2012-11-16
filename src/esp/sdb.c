@@ -9,7 +9,7 @@
 #include    "appweb.h"
 #include    "edi.h"
 
-#if BIT_FEATURE_ESP && BIT_FEATURE_SDB
+#if BIT_PACK_ESP && BIT_SDB
  #include    "sqlite3.h"
 
 /************************************* Local **********************************/
@@ -24,7 +24,6 @@
 typedef struct Sdb {
     Edi             edi;            /**< */
     sqlite3         *db;
-    char            *path;          /**< Currently open database */
     MprMutex        *mutex;
 } Sdb;
 
@@ -89,7 +88,7 @@ static EdiRec *createRec(Edi *edi, cchar *tableName, int nfields);
 static EdiField makeRecField(cchar *value, cchar *name, int type);
 static int query(Edi *edi, cchar *cmd, EdiGrid *gridp);
 
-EdiProvider SdbProvider = {
+PUBLIC EdiProvider SdbProvider = {
     "sdb",
     sdbAddColumn, sdbAddIndex, sdbAddTable, sdbAddValidation, sdbChangeColumn, sdbClose, sdbCreateRec, sdbDelete, 
     sdbDeleteRow, sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableSchema, NULL, sdbLookupField, 
@@ -100,7 +99,7 @@ EdiProvider SdbProvider = {
 
 /************************************* Code ***********************************/
 
-void sdbInit()
+PUBLIC void sdbInit()
 {
     ediAddProvider(&SdbProvider);
 }
@@ -110,7 +109,7 @@ static Sdb *sdbCreate(cchar *path, int flags)
 {
     Sdb      *sdb;
 
-    mprAssert(path && *path);
+    assure(path && *path);
 
     initSqlite();
     if ((sdb = mprAllocObj(Sdb, manageSdb)) == 0) {
@@ -118,7 +117,7 @@ static Sdb *sdbCreate(cchar *path, int flags)
     }
     sdb->edi.flags = flags;
     sdb->edi.provider = &SdbProvider;
-    sdb->path = sclone(path);
+    sdb->edi.path = sclone(path);
     sdb->mutex = mprCreateLock();
     return sdb;
 }
@@ -127,7 +126,7 @@ static Sdb *sdbCreate(cchar *path, int flags)
 static void manageSdb(Sdb *sdb, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(sdb->path);
+        mprMark(sdb->edi.path);
         mprMark(sdb->mutex);
     } else if (flags & MPR_MANAGE_FREE) {
         sdbClose((Edi*) sdb);
@@ -139,14 +138,13 @@ static void sdbClose(Edi *edi)
 {
     Sdb     *sdb;
 
-    mprAssert(edi);
+    assure(edi);
 
     sdb = (Sdb*) edi;
     if (sdb->db) {
         sqlite3_close(sdb->db);
         sdb->db = 0;
     }
-    sdb->path = 0;
 }
 
 
@@ -252,9 +250,9 @@ static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
     SdbTable        *table;
     SdbCol          *col;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
-    mprAssert(columnName && *columnName);
+    assure(edi);
+    assure(tableName && *tableName);
+    assure(columnName && *columnName);
 
     sdb = (Sdb*) edi;
     lock(sdb);
@@ -449,7 +447,7 @@ static int query(Edi *edi, cchar *cmd, EdiGrid *gridp)
     ssize           len;
     int             r, nrows, i, ncol, rc, retries;
 
-    mprAssert(db);
+    assure(db);
     sdb = (Sdb*) edi;
     retries = 0;
 
@@ -457,7 +455,7 @@ static int query(Edi *edi, cchar *cmd, EdiGrid *gridp)
         *gridp = 0;
     }
     if ((db = sdb->db) == 0) {
-        mprError("Database '%s' is closed", sdb->path);
+        mprError("Database '%s' is closed", sdb->edi.path);
         return MPR_ERR_BAD_STATE;
     }
     if ((result = mprCreateList(0, 0)) == 0) {
@@ -613,8 +611,8 @@ static EdiGrid *sdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
     SdbRow      *row;
     int         nrows, next, op;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
+    assure(edi);
+    assure(tableName && *tableName);
 
     sdb = (Sdb*) edi;
     lock(sdb);
@@ -724,7 +722,7 @@ static int sdbSave(Edi *edi)
 }
 
 
-bool sdbValidateRec(Edi *edi, EdiRec *rec)
+PUBLIC bool sdbValidateRec(Edi *edi, EdiRec *rec)
 {
 #if CONVERT
     Sdb         *sdb;
@@ -824,7 +822,7 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
 /*
     Optimized record creation
  */
-EdiRec *createRec(Edi *edi, cchar *tableName, int nfields)
+PUBLIC EdiRec *createRec(Edi *edi, cchar *tableName, int nfields)
 {
     EdiRec  *rec;
 
@@ -930,7 +928,7 @@ struct sqlite3_mem_methods mem = {
     Map mutexes to use MPR
  */
 
-int mutc = 0;
+PUBLIC int mutc = 0;
 
 static int initMutex(void) { 
     return 0; 
@@ -981,13 +979,13 @@ static void leaveMutex(sqlite3_mutex *mutex)
 
 
 static int mutexIsHeld(sqlite3_mutex *mutex) { 
-    mprAssert(0); 
+    assure(0); 
     return 0; 
 }
 
 
 static int mutexIsNotHeld(sqlite3_mutex *mutex) { 
-    mprAssert(0); 
+    assure(0); 
     return 0; 
 }
 
@@ -1020,35 +1018,19 @@ static void initSqlite()
     mprGlobalUnlock();
 }
 
-#endif /* BIT_FEATURE_ESP && BIT_FEATURE_SDB */
+#endif /* BIT_PACK_ESP && BIT_SDB */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

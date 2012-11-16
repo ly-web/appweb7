@@ -8,7 +8,7 @@
 
 #include    "appweb.h"
 
-#if BIT_FEATURE_PHP
+#if BIT_PACK_PHP
 
 #if BIT_WIN_LIKE
     /*
@@ -103,7 +103,7 @@ static int  writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sap
  */
 static sapi_module_struct phpSapiBlock = {
     BIT_PRODUCT,                    /* Sapi name */
-    BIT_NAME,                       /* Full name */
+    BIT_TITLE,                      /* Full name */
     startup,                        /* Start routine */
     php_module_shutdown_wrapper,    /* Stop routine  */
     0,                              /* Activate */
@@ -143,7 +143,7 @@ static void openPhp(HttpQueue *q)
     mprLog(5, "Open php handler");
     httpTrimExtraPath(q->conn);
     if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        httpHandleOptionsTrace(q->conn);
+        httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
 
     } else if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST | HTTP_PUT)) {
         httpMapFile(q->conn, rx->route);
@@ -190,11 +190,11 @@ static void readyPhp(HttpQueue *q)
     zend_first_try {
         php->var_array = 0;
         SG(server_context) = conn;
-        if (conn->authUser) {
-            SG(request_info).auth_user = estrdup(conn->authUser);
+        if (conn->username) {
+            SG(request_info).auth_user = estrdup(conn->username);
         }
-        if (conn->authPassword) {
-            SG(request_info).auth_password = estrdup(conn->authPassword);
+        if (conn->password) {
+            SG(request_info).auth_password = estrdup(conn->password);
         }
         if ((value = httpGetHeader(conn, "Authorization")) != 0) {
             SG(request_info).auth_digest = estrdup(value);
@@ -209,7 +209,6 @@ static void readyPhp(HttpQueue *q)
 
         /*
             Workaround on MAC OS X where the SIGPROF is given to the wrong thread
-            MOB - need to implement a local timeout here via the host timeout. Then invoke zend_bailout.
          */
         PG(max_input_time) = -1;
         EG(timeout_seconds) = 0;
@@ -239,7 +238,11 @@ static void readyPhp(HttpQueue *q)
 #else
     file_handle.type = ZEND_HANDLE_FP;
     if ((fp = fopen(tx->filename, "r")) == NULL) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR,  "PHP can't open script");
+        if (rx->referrer) {
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", tx->filename, rx->referrer);
+        } else {
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s", tx->filename);
+        }
         return;
     }
     /*
@@ -297,7 +300,7 @@ static int writeBlock(cchar *str, uint len TSRMLS_DC)
     if (conn == 0) {
         return -1;
     }
-    written = httpWriteBlock(conn->tx->queue[HTTP_QUEUE_TX]->nextQ, str, len);
+    written = httpWriteBlock(conn->tx->queue[HTTP_QUEUE_TX]->nextQ, str, len, HTTP_BLOCK);
     mprLog(6, "php: write %d", written);
     if (written <= 0) {
         php_handle_aborted_connection();
@@ -322,7 +325,7 @@ static void registerServerVars(zval *track_vars_array TSRMLS_DC)
     php_import_environment_variables(track_vars_array TSRMLS_CC);
 
     php = httpGetQueueData(conn);
-    mprAssert(php);
+    assure(php);
     php->var_array = track_vars_array;
 
     httpCreateCGIParams(conn);
@@ -486,8 +489,8 @@ static int initializePhp(Http *http)
 
     mprLog(2, "php: initialize php library");
     appweb = httpGetContext(http);
-#ifdef BIT_FEATURE_PHP_INI
-    phpSapiBlock.php_ini_path_override = BIT_FEATURE_PHP_INI;
+#ifdef BIT_PACK_PHP_INI
+    phpSapiBlock.php_ini_path_override = BIT_PACK_PHP_INI;
 #else
     phpSapiBlock.php_ini_path_override = appweb->defaultServer->home;
 #endif
@@ -519,7 +522,7 @@ static int finalizePhp(MprModule *mp)
         mprLog(4, "php: Finalize library before unloading");
         phpSapiBlock.shutdown(&phpSapiBlock);
         sapi_shutdown();
-#if UNUSED && KEEP
+#if KEEP
         /* PHP crashes by destroying the EG(persistent_list) twice. Once in zend_shutdown and once in tsrm_shutdown */
         tsrm_shutdown();
 #endif
@@ -545,12 +548,14 @@ static char *mapHyphen(char *str)
 /*
     loadable Module initialization
  */
-int maPhpHandlerInit(Http *http, MprModule *module)
+PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
 {
     HttpStage     *handler;
 
-    mprSetModuleFinalizer(module, finalizePhp); 
-    if ((handler = httpCreateHandler(http, module->name, 0, module)) == 0) {
+    if (module) {
+        mprSetModuleFinalizer(module, finalizePhp); 
+    }
+    if ((handler = httpCreateHandler(http, "phpHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     handler->open = openPhp;
@@ -559,41 +564,25 @@ int maPhpHandlerInit(Http *http, MprModule *module)
     return 0;
 }
 
-#else /* BIT_FEATURE_PHP */
+#else /* BIT_PACK_PHP */
 
-int maPhpHandlerInit(Http *http, MprModule *module)
+PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
 {
     mprNop(0);
     return 0;
 }
-#endif /* BIT_FEATURE_PHP */
+#endif /* BIT_PACK_PHP */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

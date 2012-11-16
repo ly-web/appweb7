@@ -22,9 +22,9 @@ for (i in 64) {
 count = sizes[test.depth] * 1024
 
 function postTest(url: String) {
-    // print("@@@@ Writing " + count * buf.available + " to " + url)
+    // print("@@@@ Writing " + count * buf.length + " to " + url)
     http.post(HTTP + url)
-    // print("Count " + count + " buf " + buf.available + " total " + count * buf.available)
+    // print("Count " + count + " buf " + buf.length + " total " + count * buf.length)
     for (i in count) {
         let n = http.write(buf)
         // print('WROTE', n)
@@ -41,18 +41,18 @@ function postTest(url: String) {
 
 postTest("/index.html")
 
-if (App.config.bld_ejscript) {
+if (App.config.bit_ejscript) {
     postTest("/form.ejs")
 }
 
-if (App.config.bld_php) {
+if (App.config.bit_php) {
     postTest("/form.php")
 }
 
-if (App.config.bld_cgi) {
+if (App.config.bit_cgi) {
     postTest("/cgi-bin/cgiProgram")
 }
 
-if (App.config.bld_esp) {
+if (App.config.bit_esp) {
     postTest("/test.esp")
 }

@@ -163,7 +163,7 @@ bool simpleGet(MprTestGroup *gp, cchar *uri, int expectStatus)
         return 0;
     }
     conn = getConn(gp);
-    httpFinalize(conn);
+    httpFinalizeOutput(conn);
     if (httpWait(conn, HTTP_STATE_COMPLETE, -1) < 0) {
         return MPR_ERR_CANT_READ;
     }
@@ -208,7 +208,7 @@ bool simpleForm(MprTestGroup *gp, char *uri, char *formData, int expectStatus)
             return MPR_ERR_CANT_WRITE;
         }
     }
-    httpFinalize(conn);
+    httpFinalizeOutput(conn);
     if (httpWait(conn, HTTP_STATE_COMPLETE, -1) < 0) {
         return MPR_ERR_CANT_READ;
     }
@@ -247,7 +247,7 @@ bool simplePost(MprTestGroup *gp, char *uri, char *bodyData, ssize len, int expe
             return MPR_ERR_CANT_WRITE;
         }
     }
-    httpFinalize(conn);
+    httpFinalizeOutput(conn);
     if (httpWait(conn, HTTP_STATE_COMPLETE, -1) < 0) {
         return MPR_ERR_CANT_READ;
     }
@@ -278,9 +278,9 @@ bool bulkPost(MprTestGroup *gp, char *url, int size, int expectStatus)
 
     for (i = 0; i < size; i++) {
         if (i > 0) {
-            mprSprintf(&post[i], 10, "&%07d=", i / 64);
+            fmt(&post[i], 10, "&%07d=", i / 64);
         } else {
-            mprSprintf(&post[i], 10, "%08d=", i / 64);
+            fmt(&post[i], 10, "%08d=", i / 64);
         }
         for (j = i + 9; j < (i + 63); j++) {
             post[j] = 'a';
@@ -303,7 +303,7 @@ bool bulkPost(MprTestGroup *gp, char *url, int size, int expectStatus)
 Http *getHttp(MprTestGroup *gp)
 {
     if (gp->http == 0) {
-        gp->http = httpCreate(gp);
+        gp->http = httpCreate(HTTP_SERVER_SIDE | HTTP_CLIENT_SIDE);
     }
     return gp->http;
 }
@@ -351,7 +351,7 @@ bool matchAnyCase(MprTestGroup *gp, char *key, char *value)
     }
     trim = strim(vp, "\"", MPR_TRIM_BOTH);
 #if BIT_WIN_LIKE
-    if (vp == 0 || scasecmp(trim, value) != 0)
+    if (vp == 0 || scaselesscmp(trim, value) != 0)
 #else
     if (vp == 0 || value == 0 || scmp(trim, value) != 0)
 #endif
@@ -443,7 +443,7 @@ char *getDefaultHost(MprTestGroup *gp)
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire
     a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
+    by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details.
 
     This software is open source; you can redistribute it and/or modify it

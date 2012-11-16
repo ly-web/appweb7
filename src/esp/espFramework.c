@@ -8,18 +8,18 @@
 
 #include    "esp.h"
 
-#if BIT_FEATURE_ESP
+#if BIT_PACK_ESP
 
 /************************************* Code ***********************************/
 /*  
     Add a http header if not already defined
  */
-void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
+PUBLIC void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    mprAssert(key && *key);
-    mprAssert(fmt && *fmt);
+    assure(key && *key);
+    assure(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpAddHeaderString(conn, key, sfmt(fmt, vargs));
@@ -30,7 +30,7 @@ void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 /*
     Add a header string if not already defined
  */
-void espAddHeaderString(HttpConn *conn, cchar *key, cchar *value)
+PUBLIC void espAddHeaderString(HttpConn *conn, cchar *key, cchar *value)
 {
     httpAddHeaderString(conn, key, value);
 }
@@ -40,12 +40,12 @@ void espAddHeaderString(HttpConn *conn, cchar *key, cchar *value)
    Append a header. If already defined, the value is catenated to the pre-existing value after a ", " separator.
    As per the HTTP/1.1 spec.
  */
-void espAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
+PUBLIC void espAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    mprAssert(key && *key);
-    mprAssert(fmt && *fmt);
+    assure(key && *key);
+    assure(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpAppendHeaderString(conn, key, sfmt(fmt, vargs));
@@ -57,13 +57,13 @@ void espAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
    Append a header string. If already defined, the value is catenated to the pre-existing value after a ", " separator.
    As per the HTTP/1.1 spec.
  */
-void espAppendHeaderString(HttpConn *conn, cchar *key, cchar *value)
+PUBLIC void espAppendHeaderString(HttpConn *conn, cchar *key, cchar *value)
 {
     httpAppendHeaderString(conn, key, value);
 }
 
 
-void espAutoFinalize(HttpConn *conn) 
+PUBLIC void espAutoFinalize(HttpConn *conn) 
 {
     EspReq  *req;
 
@@ -74,31 +74,35 @@ void espAutoFinalize(HttpConn *conn)
 }
 
 
-void espManageAction(EspAction *ap, int flags)
+//  MOB
+PUBLIC void espManageAction(EspAction *ap, int flags)
 {
 }
 
 
-int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags)
+PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags)
 {
     httpAddCache(route, NULL, uri, NULL, NULL, 0, lifesecs * MPR_TICKS_PER_SEC, flags);
     return 0;
 }
 
 
-bool espCheckSecurityToken(HttpConn *conn) 
+PUBLIC bool espCheckSecurityToken(HttpConn *conn) 
 {
     HttpRx  *rx;
-    cchar   *securityTokenName, *sessionToken;
+    cchar   *securityToken, *sessionToken;
 
     rx = conn->rx;
     if (!(rx->flags & HTTP_POST)) {
         return 1;
     }
     if (rx->securityToken == 0) {
-        sessionToken = rx->securityToken = sclone(espGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, ""));
-        securityTokenName = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, "");
-        if (!smatch(sessionToken, securityTokenName)) {
+        sessionToken = rx->securityToken = sclone(httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, ""));
+#if UNUSED && KEEP
+        securityTokenName = espGetParam(conn, "SecurityTokenName", "");
+#endif
+        securityToken = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, "");
+        if (!smatch(sessionToken, securityToken)) {
             httpError(conn, HTTP_CODE_NOT_ACCEPTABLE, 
                 "Security token does not match. Potential CSRF attack. Denying request");
             return 0;
@@ -108,7 +112,7 @@ bool espCheckSecurityToken(HttpConn *conn)
 }
 
 
-EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *params)
+PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *params)
 {
     Edi         *edi;
     EdiRec      *rec;
@@ -122,44 +126,49 @@ EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *params)
 }
 
 
-void espDefineAction(HttpRoute *route, cchar *target, void *actionProc)
+PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *actionProc)
 {
     EspAction   *action;
     EspRoute    *eroute;
     Esp         *esp;
 
-    mprAssert(route);
-    mprAssert(target && *target);
-    mprAssert(actionProc);
+    assure(route);
+    assure(target && *target);
+    assure(actionProc);
 
     esp = MPR->espService;
-    eroute = route->eroute;
     if ((action = mprAllocObj(EspAction, espManageAction)) == 0) {
         return;
     }
     action->actionProc = actionProc;
     if (target) {
+        eroute = route->eroute;
         mprAddKey(esp->actions, mprJoinPath(eroute->controllersDir, target), action);
     }
 }
 
 
-void espDefineBase(HttpRoute *route, EspProc baseProc)
+/*
+    The base procedure is invoked prior to calling any and all actions
+ */
+PUBLIC void espDefineBase(HttpRoute *route, EspProc baseProc)
 {
-    ((EspRoute*) route->eroute)->controllerBase = baseProc;
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
+    eroute->controllerBase = baseProc;
 }
 
 
 /*
     Path should be an app-relative path to the view file (relative-path.esp)
  */
-void espDefineView(HttpRoute *route, cchar *path, void *view)
+PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
 {
     Esp         *esp;
 
-    mprAssert(route);
-    mprAssert(path && *path);
-    mprAssert(view);
+    assure(path && *path);
+    assure(view);
 
     esp = MPR->espService;
 	path = mprGetPortablePath(mprJoinPath(route->dir, path));
@@ -167,19 +176,20 @@ void espDefineView(HttpRoute *route, cchar *path, void *view)
 }
 
 
-void espFinalize(HttpConn *conn) 
+PUBLIC void espFinalize(HttpConn *conn) 
 {
     httpFinalize(conn);
 }
 
 
-void espFlush(HttpConn *conn) 
+PUBLIC void espFlush(HttpConn *conn) 
 {
     httpFlush(conn);
 }
 
 
-MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
+//  MOB - confusing vs ediGetColumns
+PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
 {
     if (rec == 0) {
         rec = conn->record;
@@ -191,26 +201,26 @@ MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
 }
 
 
-MprOff espGetContentLength(HttpConn *conn)
+PUBLIC MprOff espGetContentLength(HttpConn *conn)
 {
     return httpGetContentLength(conn);
 }
 
 
-cchar *espGetContentType(HttpConn *conn)
+PUBLIC cchar *espGetContentType(HttpConn *conn)
 {
     return conn->rx->mimeType;
 }
 
 
 //  MOB - need an API to parse these into a hash
-cchar *espGetCookies(HttpConn *conn) 
+PUBLIC cchar *espGetCookies(HttpConn *conn) 
 {
     return httpGetCookies(conn);
 }
 
 
-Edi *espGetDatabase(HttpConn *conn)
+PUBLIC Edi *espGetDatabase(HttpConn *conn)
 {
     EspRoute    *eroute;
     EspReq      *req;
@@ -228,7 +238,7 @@ Edi *espGetDatabase(HttpConn *conn)
 }
 
 
-EspRoute *espGetEspRoute(HttpConn *conn)
+PUBLIC EspRoute *espGetEspRoute(HttpConn *conn)
 {
     EspReq      *req;
 
@@ -239,13 +249,14 @@ EspRoute *espGetEspRoute(HttpConn *conn)
 }
 
 
-cchar *espGetDir(HttpConn *conn)
+PUBLIC cchar *espGetDir(HttpConn *conn)
 {   
     return conn->rx->route->dir;
 }
 
 
-cchar *espGetFlashMessage(HttpConn *conn, cchar *kind)
+//  MOB - rethink name espGetFlash
+PUBLIC cchar *espGetFlashMessage(HttpConn *conn, cchar *kind)
 {
     EspReq      *req;
     MprKey      *kp;
@@ -265,61 +276,61 @@ cchar *espGetFlashMessage(HttpConn *conn, cchar *kind)
 }
 
 
-EdiGrid *espGetGrid(HttpConn *conn)
+PUBLIC EdiGrid *espGetGrid(HttpConn *conn)
 {           
     return conn->grid;
 }
 
     
-cchar *espGetHeader(HttpConn *conn, cchar *key)
+PUBLIC cchar *espGetHeader(HttpConn *conn, cchar *key)
 {
     return httpGetHeader(conn, key);
 }
 
 
-MprHash *espGetHeaderHash(HttpConn *conn)
+PUBLIC MprHash *espGetHeaderHash(HttpConn *conn)
 {
     return httpGetHeaderHash(conn);
 }
 
 
-char *espGetHeaders(HttpConn *conn)
+PUBLIC char *espGetHeaders(HttpConn *conn)
 {
     return httpGetHeaders(conn);
 }
 
             
-cchar *espGetMethod(HttpConn *conn)
+PUBLIC cchar *espGetMethod(HttpConn *conn)
 {   
     return conn->rx->method;
 } 
 
 
-cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
+PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
 {
     return httpGetParam(conn, var, defaultValue);
 }
 
 
-MprHash *espGetParams(HttpConn *conn)
+PUBLIC MprHash *espGetParams(HttpConn *conn)
 {
     return httpGetParams(conn);
 }
 
 
-int espGetIntParam(HttpConn *conn, cchar *var, int defaultValue)
+PUBLIC int espGetIntParam(HttpConn *conn, cchar *var, int defaultValue)
 {
     return httpGetIntParam(conn, var, defaultValue);
 }
 
 
-cchar *espGetQueryString(HttpConn *conn)
+PUBLIC cchar *espGetQueryString(HttpConn *conn)
 {
     return httpGetQueryString(conn);
 }
 
 
-char *espGetReferrer(HttpConn *conn)
+PUBLIC char *espGetReferrer(HttpConn *conn)
 {
     if (conn->rx->referrer) {
         return conn->rx->referrer;
@@ -328,11 +339,8 @@ char *espGetReferrer(HttpConn *conn)
 }
 
 
-Edi *espGetRouteDatabase(HttpRoute *route)
+PUBLIC Edi *espGetRouteDatabase(EspRoute *eroute)
 {
-    EspRoute    *eroute;
-
-    eroute = route->eroute;
     if (eroute == 0 || eroute->edi == 0) {
         return 0;
     }
@@ -340,43 +348,43 @@ Edi *espGetRouteDatabase(HttpRoute *route)
 }
 
 
-int espGetStatus(HttpConn *conn)
+PUBLIC int espGetStatus(HttpConn *conn)
 {
     return httpGetStatus(conn);
 }
 
 
-char *espGetStatusMessage(HttpConn *conn)
+PUBLIC char *espGetStatusMessage(HttpConn *conn)
 {
     return httpGetStatusMessage(conn);
 }
 
 
-char *espGetTop(HttpConn *conn)
+PUBLIC char *espGetTop(HttpConn *conn)
 {
     return httpLink(conn, "~", NULL);
 }
 
 
-MprHash *espGetUploads(HttpConn *conn)
+PUBLIC MprHash *espGetUploads(HttpConn *conn)
 {
     return conn->rx->files;
 }
 
 
-cchar *espGetUri(HttpConn *conn)
+PUBLIC cchar *espGetUri(HttpConn *conn)
 {
     return conn->rx->uri;
 }
 
 
-bool espHasGrid(HttpConn *conn)
+PUBLIC bool espHasGrid(HttpConn *conn)
 {
     return conn->grid != 0;
 }
 
 
-bool espHasRec(HttpConn *conn)
+PUBLIC bool espHasRec(HttpConn *conn)
 {
     EdiRec  *rec;
 
@@ -385,19 +393,19 @@ bool espHasRec(HttpConn *conn)
 }
 
 
-bool espIsEof(HttpConn *conn)
+PUBLIC bool espIsEof(HttpConn *conn)
 {
     return httpIsEof(conn);
 }
 
 
-bool espIsFinalized(HttpConn *conn) 
+PUBLIC bool espIsFinalized(HttpConn *conn) 
 {
     return httpIsFinalized(conn);
 }
 
 
-bool espIsSecure(HttpConn *conn)
+PUBLIC bool espIsSecure(HttpConn *conn)
 {
     return conn->secure;
 }
@@ -409,13 +417,13 @@ bool espIsSecure(HttpConn *conn)
         { id: '2', country: 'China' }, \
     ]");
  */
-EdiGrid *espMakeGrid(cchar *contents)
+PUBLIC EdiGrid *espMakeGrid(cchar *contents)
 {
     return ediMakeGrid(contents);
 }
 
 
-MprHash *espMakeHash(cchar *fmt, ...)
+PUBLIC MprHash *espMakeHash(cchar *fmt, ...)
 {
     va_list     args;
     cchar       *str;
@@ -430,49 +438,100 @@ MprHash *espMakeHash(cchar *fmt, ...)
 /*
     rec = makeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
  */
-EdiRec *espMakeRec(cchar *contents)
+PUBLIC EdiRec *espMakeRec(cchar *contents)
 {
     return ediMakeRec(contents);
 }
 
 
-bool espMatchParam(HttpConn *conn, cchar *var, cchar *value)
+PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value)
 {
     return httpMatchParam(conn, var, value);
 }
 
 
-ssize espReceive(HttpConn *conn, char *buf, ssize len)
+/*
+    Test if a module has been updated (is stale).
+    This will unload the module if it is stale and loaded 
+ */
+PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
+{
+    MprModule   *mp;
+    MprPath     sinfo, minfo;
+
+    *recompile = 0;
+    mprGetPathInfo(module, &minfo);
+    if (!minfo.valid) {
+        *recompile = 1;
+        if ((mp = mprLookupModule(source)) != 0) {
+            if (!espUnloadModule(source, 0)) {
+                mprError("Can't unload module %s. Connections still open. Continue using old version.", source);
+                return 0;
+            }
+        }
+        return 1;
+    }
+    mprGetPathInfo(source, &sinfo);
+    /*
+        Use >= to ensure we reload. This may cause redundant reloads as mtime has a 1 sec granularity.
+     */
+    if (sinfo.valid && sinfo.mtime >= minfo.mtime) {
+        if ((mp = mprLookupModule(source)) != 0) {
+            if (!espUnloadModule(source, 0)) {
+                mprError("Can't unload module %s. Connections still open. Continue using old version.", source);
+                return 0;
+            }
+        }
+        *recompile = 1;
+        return 1;
+    }
+    if ((mp = mprLookupModule(source)) != 0) {
+        if (minfo.mtime > mp->modified) {
+            /* Module file has been updated */
+            if (!espUnloadModule(source, 0)) {
+                mprError("Can't unload module %s. Connections still open. Continue using old version.", source);
+                return 0;
+            }
+            return 1;
+        }
+    }
+    /* Loaded module is current */
+    return 0;
+}
+
+
+PUBLIC ssize espReceive(HttpConn *conn, char *buf, ssize len)
 {
     return httpRead(conn, buf, len);
 }
 
 
-EdiRec *espReadRecWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+PUBLIC EdiRec *espReadRecWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
     return espSetRec(conn, ediReadOneWhere(espGetDatabase(conn), tableName, fieldName, operation, value));
 }
 
 
-EdiRec *espReadRec(HttpConn *conn, cchar *tableName)
+PUBLIC EdiRec *espReadRec(HttpConn *conn, cchar *tableName)
 {
     return espSetRec(conn, ediReadRec(espGetDatabase(conn), tableName, espGetParam(conn, "id", NULL)));
 }
 
 
-EdiRec *espReadRecByKey(HttpConn *conn, cchar *tableName, cchar *key)
+PUBLIC EdiRec *espReadRecByKey(HttpConn *conn, cchar *tableName, cchar *key)
 {
     return espSetRec(conn, ediReadRec(espGetDatabase(conn), tableName, key));
 }
 
 
-EdiGrid *espReadRecsWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+PUBLIC EdiGrid *espReadRecsWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
+    //  MOB - where else should call espSetGrid
     return espSetGrid(conn, ediReadWhere(espGetDatabase(conn), tableName, fieldName, operation, value));
 }
 
 
-EdiGrid *espReadTable(HttpConn *conn, cchar *tableName)
+PUBLIC EdiGrid *espReadTable(HttpConn *conn, cchar *tableName)
 {
     EdiGrid *grid;
     
@@ -482,14 +541,14 @@ EdiGrid *espReadTable(HttpConn *conn, cchar *tableName)
 }
 
 
-void espRedirect(HttpConn *conn, int status, cchar *target)
+PUBLIC void espRedirect(HttpConn *conn, int status, cchar *target)
 {
     //  MOB - should this httpLink be pushed into httpRedirect?
     httpRedirect(conn, status, httpLink(conn, target, NULL));
 }
 
 
-void espRedirectBack(HttpConn *conn)
+PUBLIC void espRedirectBack(HttpConn *conn)
 {
     if (conn->rx->referrer) {
         espRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, conn->rx->referrer); 
@@ -497,7 +556,7 @@ void espRedirectBack(HttpConn *conn)
 }
 
 
-bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key)
+PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key)
 {
     if (ediDeleteRow(espGetDatabase(conn), tableName, key) < 0) {
         return 0;
@@ -505,7 +564,7 @@ bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key)
     return 1;
 }
 
-ssize espRender(HttpConn *conn, cchar *fmt, ...)
+PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...)
 {
     va_list     vargs;
     char        *buf;
@@ -517,20 +576,24 @@ ssize espRender(HttpConn *conn, cchar *fmt, ...)
 }
     
 
-ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size)
+PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size)
 {
-    return httpWriteBlock(conn->writeq, buf, size);
+    /*
+        Can't use HTTP_BLOCK here has it will yield for GC.
+        This is too onerous for callers to secure all memory
+     */
+    return httpWriteBlock(conn->writeq, buf, size, HTTP_BUFFER);
 }
 
 
 //  MOB - need a renderCached(), updateCache()
-ssize espRenderCached(HttpConn *conn)
+PUBLIC ssize espRenderCached(HttpConn *conn)
 {
     return httpWriteCached(conn);
 }
 
 
-ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
+PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
 {
     va_list     args;
     HttpRx      *rx;
@@ -571,7 +634,7 @@ ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
 }
 
 
-ssize espRenderFile(HttpConn *conn, cchar *path)
+PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 {
     MprFile     *from;
     ssize       count, written, nbytes;
@@ -592,33 +655,36 @@ ssize espRenderFile(HttpConn *conn, cchar *path)
 }
 
 
-ssize espRenderParam(HttpConn *conn, cchar *name)
-{
-    cchar   *value;
-
-    if ((value = espGetParam(conn, name, 0)) == 0) {
-        value = espGetSessionVar(conn, name, "");
-    }
-    return espRenderSafeString(conn, value);
-}
-
-
-ssize espRenderSafeString(HttpConn *conn, cchar *s)
+PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s)
 {
     s = mprEscapeHtml(s);
     return espRenderBlock(conn, s, slen(s));
 }
 
 
-ssize espRenderString(HttpConn *conn, cchar *s)
+PUBLIC ssize espRenderString(HttpConn *conn, cchar *s)
 {
     return espRenderBlock(conn, s, slen(s));
 }
 
 
-int espRemoveHeader(HttpConn *conn, cchar *key)
+/*
+    Render a request variable. If a param by the given name is not found, consult the session.
+ */
+PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name)
 {
-    mprAssert(key && *key);
+    cchar   *value;
+
+    if ((value = espGetParam(conn, name, 0)) == 0) {
+        value = httpGetSessionVar(conn, name, "");
+    }
+    return espRenderSafeString(conn, value);
+}
+
+
+PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key)
+{
+    assure(key && *key);
     if (conn->tx == 0) {
         return MPR_ERR_CANT_ACCESS;
     }
@@ -626,7 +692,7 @@ int espRemoveHeader(HttpConn *conn, cchar *key)
 }
 
 
-bool espSetAutoFinalizing(HttpConn *conn, bool on) 
+PUBLIC bool espSetAutoFinalizing(HttpConn *conn, bool on) 
 {
     EspReq  *req;
     bool    old;
@@ -638,38 +704,38 @@ bool espSetAutoFinalizing(HttpConn *conn, bool on)
 }
 
 
-void espSetContentLength(HttpConn *conn, MprOff length)
+PUBLIC void espSetContentLength(HttpConn *conn, MprOff length)
 {
     httpSetContentLength(conn, length);
 }
 
 
-void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTime lifespan, 
+PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTicks lifespan, 
         bool isSecure)
 {
     httpSetCookie(conn, name, value, path, cookieDomain, lifespan, isSecure);
 }
 
 
-void espSetContentType(HttpConn *conn, cchar *mimeType)
+PUBLIC void espSetContentType(HttpConn *conn, cchar *mimeType)
 {
     httpSetContentType(conn, mimeType);
 }
 
 
-EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value)
+PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value)
 {
     return ediSetField(rec, fieldName, value);
 }
 
 
-EdiRec *espSetFields(EdiRec *rec, MprHash *params)
+PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *params)
 {
     return ediSetFields(rec, params);
 }
 
 
-void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...)
+PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...)
 {
     va_list     args;
 
@@ -679,7 +745,7 @@ void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...)
 }
 
 
-void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
+PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 {
     EspReq      *req;
     MprKey      *kp;
@@ -690,7 +756,7 @@ void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 
     if (req->flash == 0) {
         req->flash = mprCreateHash(0, 0);
-        espGetSession(conn, 1);
+        httpGetSession(conn, 1);
     }
     if ((prior = mprLookupKey(req->flash, kind)) != 0) {
         kp = mprAddKey(req->flash, kind, sjoin(prior, "\n", msg, NULL));
@@ -703,7 +769,10 @@ void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 }
 
 
-EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
+/*
+    Set the default grid for a request
+ */
+PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
 {
     conn->grid = grid;
     return grid;
@@ -713,12 +782,12 @@ EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
 /*  
     Set a http header. Overwrite if present.
  */
-void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
+PUBLIC void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    mprAssert(key && *key);
-    mprAssert(fmt && *fmt);
+    assure(key && *key);
+    assure(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpSetHeader(conn, key, sfmt(fmt, vargs));
@@ -726,31 +795,34 @@ void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 }
 
 
-void espSetHeaderString(HttpConn *conn, cchar *key, cchar *value)
+PUBLIC void espSetHeaderString(HttpConn *conn, cchar *key, cchar *value)
 {
     httpSetHeaderString(conn, key, value);
 }
 
 
-void espSetIntParam(HttpConn *conn, cchar *var, int value) 
+PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value) 
 {
     httpSetIntParam(conn, var, value);
 }
 
 
-void espSetParam(HttpConn *conn, cchar *var, cchar *value) 
+PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value) 
 {
     httpSetParam(conn, var, value);
 }
 
 
-EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
+/*
+    Set the default record for a request
+ */
+PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
 {
     return conn->record = rec;
 }
 
 
-void espSetStatus(HttpConn *conn, int status)
+PUBLIC void espSetStatus(HttpConn *conn, int status)
 {
     httpSetStatus(conn, status);
 }
@@ -808,7 +880,7 @@ static int getParams(char ***keys, char *buf, int len)
 }
 
 
-void espShowRequest(HttpConn *conn)
+PUBLIC void espShowRequest(HttpConn *conn)
 {
     MprHash     *env;
     MprKey      *kp;
@@ -883,19 +955,49 @@ void espShowRequest(HttpConn *conn)
 }
 
 
-void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs)
+/*
+    This is called when unloading a view or controller module
+ */
+PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout)
+{
+    MprModule   *mp;
+    MprTicks    mark;
+    Esp         *esp;
+
+    /* MOB - should this suspend new requests */
+    if ((mp = mprLookupModule(module)) != 0) {
+        esp = MPR->espService;
+        mark = mprGetTicks();
+        do {
+            lock(esp);
+            /* Own request will count as 1 */
+            if (esp->inUse <= 1) {
+                mprUnloadModule(mp);
+                unlock(esp);
+                return 1;
+            }
+            unlock(esp);
+            mprSleep(10);
+            /* Defaults to 10 secs */
+        } while (mprGetRemainingTicks(mark, timeout) > 0);
+    }
+    return 0;
+}
+
+
+PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs)
 {
     httpUpdateCache(conn, uri, data, lifesecs * MPR_TICKS_PER_SEC);
 }
 
 
-bool espUpdateField(HttpConn *conn, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
+PUBLIC bool espUpdateField(HttpConn *conn, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
 {
     return ediUpdateField(espGetDatabase(conn), tableName, key, fieldName, value) == 0;
 }
 
 
-bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *params)
+PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *params)
 {
     EdiRec  *rec;
 
@@ -906,19 +1008,19 @@ bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *params)
 }
 
 
-bool espUpdateRec(HttpConn *conn, EdiRec *rec)
+PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec)
 {
     return ediUpdateRec(rec->edi, rec) == 0;
 }
 
 
-cchar *espUri(HttpConn *conn, cchar *target)
+PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 {
     return httpLink(conn, target, 0);
 }
 
 
-void espManageEspRoute(EspRoute *eroute, int flags)
+PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(eroute->appModuleName);
@@ -927,6 +1029,7 @@ void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->compile);
         mprMark(eroute->controllersDir);
         mprMark(eroute->dbDir);
+        mprMark(eroute->migrationsDir);
         mprMark(eroute->edi);
         mprMark(eroute->env);
         mprMark(eroute->layoutsDir);
@@ -938,34 +1041,18 @@ void espManageEspRoute(EspRoute *eroute, int flags)
 }
 
 
-#endif /* BIT_FEATURE_ESP */
+#endif /* BIT_PACK_ESP */
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

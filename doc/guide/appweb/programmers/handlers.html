@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.0.0 Documentation</title>
+    <title>Embedthis Appweb 4.1.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.0.0</div>
+                <div class="version">Embedthis Appweb 4.1.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -240,7 +240,7 @@ httpError(conn, 504, HTTP_ABOR, "Can't continue with the request");
             <p>The simplest way to generate a response is to use 
             <a href="../../../api/http.html#group___http_queue_1ga5599a178a2bab73929795952231d6e6a">httpWrite</a>. 
             This is effective if the total response content can be buffered in the pipeline and socket without blocking.
-            (Typically 64K or less depending on LimitStageBuffer in appweb.conf). The httpWrite routine will
+            (Typically 64K or less depending on LimitSBuffer in appweb.conf). The httpWrite routine will
             automatically flush data as required. When all the data has been written, call:
             <a href="../../../api/http.html#group___http_tx_1ga279ad49e5163402e2afd6caf478bcc70">httpFinalize</a>. This
             finalizes the output response data by sending an empty packet to the network connector which signifies 
@@ -377,6 +377,33 @@ int maMyModuleInit(Http *http, MprModule *mp)
     return 0;
 }
 </pre>
+        <h2>Connection State</h2>
+        <p>As a handler progresses in its service of a request, it is often necessary to examine the state of the
+            request or underlying connection. Appweb provides a set of object fields that can be examined.
+            <table>
+                <thead>
+                    <tr><th>Field</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>HttpConn.error</td><td>Is set whenever there is an error with the request. ie. httpError is
+                            called.</td></tr>
+                    <tr><td>HttpConn.connError</td><td>Is set whenever HTTP_ABORT is supplied to httpError. This is
+                        used when the HTTP/1.1 protocol is compromised, corrupted or otherwise unlikely to be
+                        able to handle a subsequent keep-alive request.</td></tr>
+                    <tr><td>HttpConn.state</td><td>This defines the connection state and is often the best thing to
+                        test. States are: HTTP_STATE_BEGIN, HTTP_STATE_CONNECTED, HTTP_STATE_FIRST,
+                        HTTP_STATE_CONTENT, HTTP_STATE_READY, HTTP_STATE_RUNNING, HTTP_STATE_FINALIZED and
+                        HTTP_STATE_COMPLETE.</td></tr>
+                    <tr><td>HttpTx.finalized</td><td>Is set by the handler when httpFinalize is called. This means the
+                        request is complete. httpFinalize calls httpFinalizeOutput.</td></tr>
+                    <tr><td>HttpTx.finalizedOutput</td><td>Is set by the handler when all response data has been written,
+                        there may still be processing to complete.</td></tr>
+                    <tr><td>HttpTx.finalizedConnector</td><td>Is set by the connector when it has fully transmitted the
+                        response data to the network socket.</td></tr>
+                    <tr><td> HttpTx.responded</td><td>is set by various routines when any part of a
+                        response has been initiated httpWrite, httpSetStatus etc.</td></tr>
+                </tbody>
+            </table>
             <a id="more"></a>
             <h2>More Info</h2>
             <p>See the <a
@@ -407,7 +434,7 @@ int maMyModuleInit(Http *http, MprModule *mp)
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
-            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
     <script src="http://www.google.com/jsapi" type="text/javascript"></script>

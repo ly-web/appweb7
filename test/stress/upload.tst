@@ -5,7 +5,7 @@
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 const TESTFILE = "upload-" + hashcode(self) + ".tdat"
 
-if (App.config.bld_ejscript) {
+if (App.config.bit_ejscript) {
 
     let http: Http = new Http
 
@@ -37,6 +37,7 @@ if (App.config.bld_ejscript) {
 
         let uploaded = Path("../web/tmp").join(Path(TESTFILE).basename)
         assert(uploaded.size == size)
+        //  MOB - remove need for diff
         Cmd.sh("diff " + uploaded + " " + TESTFILE)
     }
     Path(TESTFILE).remove()

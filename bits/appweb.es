@@ -34,8 +34,15 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
         install('doc/product/README.TXT', pkg, {fold: true, expand: true})
         install('package/install.sh', pkg.join('install'), {permissions: 0755, expand: true})
         install('package/uninstall.sh', pkg.join('uninstall'), {permissions: 0755, expand: true})
-
-        install('LICENSE.md', p.product, {fold: true, expand: true})
+        if (bit.platform.os == 'windows') {
+            install('package/windows/LICENSE.TXT', bin, {fold: true, expand: true})
+        }
+        install(['doc/licenses/*.txt'], p.product.join('LICENSE.TXT'), {
+            cat: true,
+            textfile: true,
+            fold: true,
+            title: bit.settings.title + ' Licenses',
+        })
         install('doc/product/README.TXT', p.product, {fold: true, expand: true})
         install('package/uninstall.sh', p.bin.join('uninstall'), {permissions: 0755, expand: true})
         install('package/linkup', p.bin, {permissions: 0755})
@@ -112,10 +119,12 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
                 {permissions: 0644, expand: true})
 
         } else if (bit.platform.os == 'windows') {
-            if (bit.platform.arch == 'x86_64') {
-                install(bit.packs.compiler.dir.join('VC/redist/x64/Microsoft.VC100.CRT/msvcr100.dll'), p.bin)
+            let version = bit.packs.compiler.version.replace('.', '')
+            if (bit.platform.arch == 'x64') {
+                install(bit.packs.compiler.dir.join('VC/redist/x64/Microsoft.VC' + 
+                    version + '.CRT/msvcr' + version + '.dll'), p.bin)
             } else {
-                install(bit.packs.compiler.dir.join('VC/redist/x86/Microsoft.VC100.CRT/msvcr100.dll'), p.bin)
+                install(bit.packs.compiler.dir.join('VC/redist/x86/Microsoft.VC100.CRT/msvcr' + version + '.dll'), p.bin)
             }
             /*
                 install(bit.packs.compiler.path.join('../../lib/msvcrt.lib'), p.bin)
@@ -174,7 +183,7 @@ public function packageComboFiles() {
     let pkg = src.join(s.product + '-' + s.version)
     safeRemove(pkg)
     pkg.makeDir()
-    install('projects/appweb-' + bit.platform.os + '-bit.h', pkg.join('src/deps/appweb/bit.h'))
+    install('projects/appweb-' + bit.platform.os + '-debug-bit.h', pkg.join('src/deps/appweb/bit.h'))
     install('package/start-flat.bit', pkg.join('src/deps/appweb/start.bit'))
     install('package/Makefile-flat', pkg.join('src/deps/appweb/Makefile'))
     install(['src/deps/mpr/mpr.h', 'src/deps/http/http.h', 'src/appweb.h', 'src/server/appwebMonitor.h',
@@ -246,7 +255,10 @@ public function uninstallBinary() {
     if (bit.platform.os == 'windows') {
         Cmd([bit.prefixes.bin.join('appwebMonitor'), '--stop'])
     }
-    Cmd([bit.prefixes.bin.join('appman'), '--continue', 'stop', 'disable', 'uninstall'])
+    let appman = Cmd.locate(bit.prefixes.bin.join('appman'))
+    if (appman) {
+        Cmd([appman, '--continue', 'stop', 'disable', 'uninstall'])
+    }
     let fileslog = bit.prefixes.productver.join('files.log')
     if (fileslog.exists) {
         for each (let file: Path in fileslog.readLines()) {
@@ -315,25 +327,10 @@ function updateLatestLink() {
     Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
   
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-  
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://www.embedthis.com/downloads/gplLicense.html
-  
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://www.embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
   
     Local variables:
     tab-width: 4

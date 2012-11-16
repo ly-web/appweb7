@@ -11,7 +11,7 @@
 
 #include    "appweb.h"
 
-#if BIT_FEATURE_ESP
+#if BIT_PACK_ESP
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,14 +45,14 @@ typedef struct EdiService {
     @ingroup EdiService
     @internal
  */
-extern EdiService *ediCreateService();
+PUBLIC EdiService *ediCreateService();
 
 /**
     Add a database provider. 
     @description This should only be called by database providers. 
     @ingroup EdiService
  */
-extern void ediAddProvider(struct EdiProvider *provider);
+PUBLIC void ediAddProvider(struct EdiProvider *provider);
 
 /**
     Field validation callback procedure
@@ -81,7 +81,7 @@ typedef struct EdiValidation {
     @param vfn Validation callback to invoke when validating field data.
     @ingroup EdiService
  */
-extern void ediDefineValidation(cchar *name, EdiValidationProc vfn);
+PUBLIC void ediDefineValidation(cchar *name, EdiValidationProc vfn);
 
 /*
    Field data type hints
@@ -90,16 +90,20 @@ extern void ediDefineValidation(cchar *name, EdiValidationProc vfn);
 #define EDI_TYPE_BOOL       2           /**< Boolean true|false value */
 #define EDI_TYPE_DATE       3           /**< Date type */
 #define EDI_TYPE_FLOAT      4           /**< Floating point number */
+
+//  MOB - consistency. TYPE_INTEGER?
 #define EDI_TYPE_INT        5           /**< Integer number */
 #define EDI_TYPE_STRING     6           /**< String */
 #define EDI_TYPE_TEXT       7           /**< Multi-line text */
 
 /*
     Field flags
+    MOB _ need a separate flag for EDI_ID
  */
 #define EDI_AUTO_INC        0x1         /**< Field flag -- Automatic increments on new row */
 #define EDI_KEY             0x2         /**< Field flag -- Column is the key */
 #define EDI_INDEX           0x4         /**< Field flag -- Column is indexed */
+#define EDI_FOREIGN         0x8         /**< Field flag -- Column is a foreign key */
  
 /**
     EDI Record field structure
@@ -130,6 +134,9 @@ typedef struct EdiRec {
     EdiField        fields[MPR_FLEX];   /**< Field records */
 } EdiRec;
 
+
+#define EDI_GRID_READ_ONLY  0x1         /**< Grid contains pure database records, must not be modified */
+
 /**
     Grid structure
     @description A grid is a tabular (grid) of rows and records.
@@ -140,6 +147,7 @@ typedef struct EdiGrid {
     struct Edi      *edi;               /**< Database handle */
     cchar           *tableName;         /**< Base table name for grid */
     int             nrecords;           /**< Number of records in grid */
+    int             flags;              /**< Grid flags */
     EdiRec          *records[MPR_FLEX]; /**< Grid records */
 } EdiGrid;
 
@@ -160,6 +168,21 @@ typedef struct EdiGrid {
 #define EDI_NOSAVE      0x1             /**< ediOpen flag -- Don't save the database on modifications */
 #endif
 
+typedef int (*EdiMigration)(struct Edi *db);
+
+/**
+    Define migration callbacks
+    @param edi Database handle
+    @param forw Forward migration callback. Of the form:
+        int forw(Edi *edit);
+        A successful return should be zero.
+    @param back Backward migration callback. Of the form:
+        int back(Edi *edit);
+        A successful return should be zero.
+    @ingroup EdiService
+ */
+PUBLIC void ediDefineMigration(struct Edi *edi, EdiMigration forw, EdiMigration back);
+
 /**
     Database structure
     @description The Embedded Database Interface (EDI) defines an abstract interface atop various relational 
@@ -168,7 +191,10 @@ typedef struct EdiGrid {
   */
 typedef struct Edi {
     struct EdiProvider *provider;       /**< Database provider */
+    cchar           *path;              /**< Database path */
     int             flags;              /**< Database flags */
+    EdiMigration    forw;               /**< Forward migration callback */
+    EdiMigration    back;               /**< Backward migration callback */
 } Edi;
 
 /**
@@ -221,7 +247,7 @@ typedef struct EdiProvider {
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
+PUBLIC int ediAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
 
 /**
     Add an index to a table
@@ -232,7 +258,7 @@ extern int ediAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName);
+PUBLIC int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName);
 
 /**
     Add a table to a database
@@ -241,7 +267,7 @@ extern int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *ind
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediAddTable(Edi *edi, cchar *tableName);
+PUBLIC int ediAddTable(Edi *edi, cchar *tableName);
 
 /**
     Add a validation
@@ -262,7 +288,7 @@ extern int ediAddTable(Edi *edi, cchar *tableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *columnName, cvoid *data);
+PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *columnName, cvoid *data);
 
 /**
     Change a column schema definition
@@ -276,26 +302,29 @@ extern int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
+PUBLIC int ediChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
 
 /**
     Close a database
     @param edi Database handle
     @ingroup Edi
  */
-extern void ediClose(Edi *edi);
+PUBLIC void ediClose(Edi *edi);
+
+//  MOB
+PUBLIC EdiGrid *ediCloneGrid(EdiGrid *grid);
 
 /**
     Create a record
     @description This will create a record using the given database tableName to supply the record schema. Use
-        $ediCreateBareRec to create a free-standing record without requiring a database.
+        #ediCreateBareRec to create a free-standing record without requiring a database.
         The record is allocated and room is reserved to store record values. No record field values are stored.
     @param edi Database handle
     @param tableName Database table name
     @return Record instance.
     @ingroup Edi
  */
-extern EdiRec *ediCreateRec(Edi *edi, cchar *tableName);
+PUBLIC EdiRec *ediCreateRec(Edi *edi, cchar *tableName);
 
 
 /**
@@ -306,9 +335,9 @@ extern EdiRec *ediCreateRec(Edi *edi, cchar *tableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediDelete(Edi *edi, cchar *path);
+PUBLIC int ediDelete(Edi *edi, cchar *path);
 
-//  MOB - should this be DeleteRec?
+//  MOB - should this be DeleteRec? RemoveRec
 /**
     Delete a row in a database table
     @param edi Database handle
@@ -317,7 +346,7 @@ extern int ediDelete(Edi *edi, cchar *path);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key);
+PUBLIC int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key);
 
 /**
     Get a list of column names.
@@ -326,7 +355,7 @@ extern int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key);
     @return An MprList of column names in the given table.
     @ingroup Edi
  */
-extern MprList *ediGetColumns(Edi *edi, cchar *tableName);
+PUBLIC MprList *ediGetColumns(Edi *edi, cchar *tableName);
 
 /**
     Get the column schema
@@ -344,7 +373,7 @@ extern MprList *ediGetColumns(Edi *edi, cchar *tableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
+PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
 
 /**
     Get a list of database tables.
@@ -352,7 +381,16 @@ extern int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
     @return An MprList of table names in the database.
     @ingroup Edi
  */
-extern MprList *ediGetTables(Edi *edi);
+PUBLIC MprList *ediGetTables(Edi *edi);
+
+/**
+    Join grids
+    @param edi Database handle
+    @param ... Null terminated list of data grids. These are instances of EdiGrid.
+    @return A joined grid.
+    @ingroup Edi
+ */
+PUBLIC EdiGrid *ediJoin(Edi *edi, ...);
 
 /**
     MOB - remove this API
@@ -363,7 +401,7 @@ extern MprList *ediGetTables(Edi *edi);
     @ingroup Edi
     @internal
  */
-extern int ediLoad(Edi *edi, cchar *path);
+PUBLIC int ediLoad(Edi *edi, cchar *path);
 
 //  MOB - should this be LookupColumn?
 /**
@@ -374,7 +412,7 @@ extern int ediLoad(Edi *edi, cchar *path);
     @return The ordinal field (column) index in the table.
     @ingroup Edi
  */
-extern int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
+PUBLIC int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
 
 /**
     Open a database.
@@ -390,20 +428,20 @@ extern int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
     @return If successful, returns an EDI database instance object. Otherwise returns zero.
     @ingroup Edi
  */
-extern Edi *ediOpen(cchar *source, cchar *provider, int flags);
+PUBLIC Edi *ediOpen(cchar *source, cchar *provider, int flags);
 
 //  MOB - Should have an cchar *err argument.
 /**
     Run a query.
     @description This runs a provider dependant query. For the SQLite provider, this runs an SQL statement.
     The "mdb" provider does not implement this API. To do queries using the "mdb" provider, use:
-        $ediReadRec, $ediReadOneWhere, $ediReadWhere, $ediReadField and $ediReadTable.
+        #ediReadRec, #ediReadOneWhere, #ediReadWhere, #ediReadField and #ediReadTable.
     @param edi Database handle
     @param cmd Query command to execute.
     @return If succesful, returns tabular data in the form of an EgiGrid structure. Returns NULL on errors.
     @ingroup Edi
  */
-extern EdiGrid *ediQuery(Edi *edi, cchar *cmd);
+PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd);
 
 /**
     Read a field from the database and format the result.
@@ -418,7 +456,7 @@ extern EdiGrid *ediQuery(Edi *edi, cchar *cmd);
     @return Field value or default value if field is null or empty. Returns null if no matching record is found.
     @ingroup Edi
  */
-extern cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *fieldName, cchar *defaultValue);
+PUBLIC cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *fieldName, cchar *defaultValue);
 
 //  MOB - rename ReadRecWhere
 /**
@@ -433,7 +471,7 @@ extern cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, c
     @return First matching record. Returns NULL if no matching records.
     @ingroup Edi
  */
-extern EdiRec *ediReadOneWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
+PUBLIC EdiRec *ediReadOneWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
 /**
     Read a field from the database.
@@ -445,7 +483,7 @@ extern EdiRec *ediReadOneWhere(Edi *edi, cchar *tableName, cchar *fieldName, cch
     @return Field value or null if the no record is found. May return null or empty if the field is null or empty.
     @ingroup Edi
  */
-extern EdiField ediReadRawField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName);
+PUBLIC EdiField ediReadRawField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName);
 
 /**
     Read a record.
@@ -456,7 +494,7 @@ extern EdiField ediReadRawField(Edi *edi, cchar *tableName, cchar *key, cchar *f
     @return Record instance of EdiRec.
     @ingroup Edi
  */
-extern EdiRec *ediReadRec(Edi *edi, cchar *tableName, cchar *key);
+PUBLIC EdiRec *ediReadRec(Edi *edi, cchar *tableName, cchar *key);
 
 //  MOB - rename ReadGridWhere
 /**
@@ -471,7 +509,7 @@ extern EdiRec *ediReadRec(Edi *edi, cchar *tableName, cchar *key);
     @return A grid containing all matching records. Returns NULL if no matching records.
     @ingroup Edi
  */
-extern EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
+PUBLIC EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
 /**
     Read a table.
@@ -481,7 +519,7 @@ extern EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar
     @return A grid containing all records. Returns NULL if no matching records.
     @ingroup Edi
  */
-extern EdiGrid *ediReadTable(Edi *edi, cchar *tableName);
+PUBLIC EdiGrid *ediReadTable(Edi *edi, cchar *tableName);
 
 /**
     Remove a column from a table.
@@ -491,7 +529,7 @@ extern EdiGrid *ediReadTable(Edi *edi, cchar *tableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName);
+PUBLIC int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName);
 
 /**
     Remove a table index.
@@ -501,7 +539,7 @@ extern int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName);
+PUBLIC int ediRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName);
 
 /**
     Remove a table from the database.
@@ -510,7 +548,7 @@ extern int ediRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediRemoveTable(Edi *edi, cchar *tableName);
+PUBLIC int ediRemoveTable(Edi *edi, cchar *tableName);
 
 /**
     Rename a table.
@@ -520,7 +558,7 @@ extern int ediRemoveTable(Edi *edi, cchar *tableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediRenameTable(Edi *edi, cchar *tableName, cchar *newTableName);
+PUBLIC int ediRenameTable(Edi *edi, cchar *tableName, cchar *newTableName);
 
 /**
     Rename a column. 
@@ -531,7 +569,7 @@ extern int ediRenameTable(Edi *edi, cchar *tableName, cchar *newTableName);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar *newColumnName);
+PUBLIC int ediRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar *newColumnName);
 
 /**
     Save in-memory database contents to disk.
@@ -542,34 +580,34 @@ extern int ediRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar 
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediSave(Edi *edi);
+PUBLIC int ediSave(Edi *edi);
 
 /**
     Set a record field without writing to the database.
     @description This routine updates the record object with the given value. The record will not be written
-        to the database. To write to the database, use $ediUpdateRec.
+        to the database. To write to the database, use #ediUpdateRec.
     @param rec Record to update
     @param fieldName Record field name to update
     @param value Value to update
     @return The record instance if successful, otherwise NULL.
     @ingroup Edi
  */
-extern EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
+PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
 
 /**
     Set record fields without writing to the database.
     @description This routine updates the record object with the given values. The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request $params() or it can be manually
+        a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: ediSetFields(rec, ediMakeHash("{ name: '%s', address: '%s' }", name, address))
         The record will not be written
-        to the database. To write to the database, use $ediUpdateRec.
+        to the database. To write to the database, use #ediUpdateRec.
     @param rec Record to update
     @param data Hash of field names and values to use for the update
     @return The record instance if successful, otherwise NULL.
     @ingroup Edi
  */
-extern EdiRec *ediSetFields(EdiRec *rec, MprHash *data);
+PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprHash *data);
 
 /**
     Get table schema information.
@@ -582,7 +620,7 @@ extern EdiRec *ediSetFields(EdiRec *rec, MprHash *data);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+PUBLIC int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols);
 
 /**
     Write a value to a database table field
@@ -595,13 +633,13 @@ extern int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numC
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
+PUBLIC int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
 
 #if UNUSED
 /**
     Write field values to a database row.
     @description This routine updates a database row with the given values.  The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request $params() or it can be manually
+        a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: ediUpdateFields(rec, params());
         Note: field validations are not run.
@@ -611,7 +649,7 @@ extern int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldNa
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediUpdateFields(Edi *edi, cchar *tableName, MprHash *data);
+PUBLIC int ediUpdateFields(Edi *edi, cchar *tableName, MprHash *data);
 #endif
 
 /**
@@ -623,28 +661,30 @@ extern int ediUpdateFields(Edi *edi, cchar *tableName, MprHash *data);
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
  */
-extern int ediUpdateRec(Edi *edi, EdiRec *rec);
+PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec);
 
 /**
     Validate a record.
     @description Run defined field validations and return true if the record validates. Field validations are defined
-        via $ediAddValidation calls. If any validations fail, error messages will be added to the record and can be 
-        retrieved via $ediGetRecErrors.
+        via #ediAddValidation calls. If any validations fail, error messages will be added to the record and can be 
+        retrieved via #ediGetRecErrors.
     @param rec Record to validate
     @return True if all field valiations pass.
     @ingroup Edi
  */
-extern bool ediValidateRec(EdiRec *rec);
+PUBLIC bool ediValidateRec(EdiRec *rec);
 
 /**************************** Convenience Routines ****************************/
 /**
     Format a field value.
     @param fmt Printf style format string
-    @param value Field value
+    @param fp Field whoes value will be formatted
     @return Formatted value string
     @ingroup Edi
  */
-extern cchar *ediFormatField(cchar *fmt, EdiField value);
+PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp);
+
+PUBLIC EdiField *ediGetField(EdiRec *rec, cchar *fieldName);
 
 /**
     Get a record field
@@ -653,7 +693,7 @@ extern cchar *ediFormatField(cchar *fmt, EdiField value);
     @return An EdiField structure containing the record field value and details.
     @ingroup Edi
  */
-extern cchar *ediGetField(EdiRec *rec, cchar *fieldName);
+PUBLIC cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName);
 
 /**
     Get and format a record field value.
@@ -663,7 +703,7 @@ extern cchar *ediGetField(EdiRec *rec, cchar *fieldName);
     @return String value of the field
     @ingroup Edi
  */
-extern cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName);
+PUBLIC cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName);
 
 /**
     Get the record field schema.
@@ -673,7 +713,7 @@ extern cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName);
     @return An EdiField structure containing the record field value and details.
     @ingroup Edi
  */
-extern EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName);
+PUBLIC EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName);
 
 /**
     Get the data type of a record field.
@@ -683,7 +723,7 @@ extern EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName);
         EDI_TYPE_INT, EDI_TYPE_STRING, EDI_TYPE_TEXT. 
     @ingroup Edi
  */
-extern int ediGetFieldType(EdiRec *rec, cchar *fieldName);
+PUBLIC int ediGetFieldType(EdiRec *rec, cchar *fieldName);
 
 /**
     Get record validation errors.
@@ -691,7 +731,7 @@ extern int ediGetFieldType(EdiRec *rec, cchar *fieldName);
     @return A list of validation errors. If validation passed, then this call returns NULL.
     @ingroup Edi
  */
-extern MprList *ediGetRecErrors(EdiRec *rec);
+PUBLIC MprList *ediGetRecErrors(EdiRec *rec);
 
 /**
     Get a list of grid column names.
@@ -699,7 +739,7 @@ extern MprList *ediGetRecErrors(EdiRec *rec);
     @return An MprList of column names in the given grid.
     @ingroup Edi
  */
-extern MprList *ediGetGridColumns(EdiGrid *grid);
+PUBLIC MprList *ediGetGridColumns(EdiGrid *grid);
 
 /**
     Make a hash container of property values.
@@ -711,7 +751,7 @@ extern MprList *ediGetGridColumns(EdiGrid *grid);
     @return MprHash instance
     @ingroup Edi
  */
-extern MprHash *ediMakeHash(cchar *fmt, ...);
+PUBLIC MprHash *ediMakeHash(cchar *fmt, ...);
 
 /**
     Make a grid.
@@ -726,7 +766,7 @@ grid = ediMakeGrid("[ \\ \n
     ]");
     @ingroup Edi
  */
-extern EdiGrid *ediMakeGrid(cchar *content);
+PUBLIC EdiGrid *ediMakeGrid(cchar *content);
 
 /**
     Make a record.
@@ -736,7 +776,7 @@ extern EdiGrid *ediMakeGrid(cchar *content);
     @example: rec = ediMakeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
     @ingroup Edi
  */
-extern EdiRec *ediMakeRec(cchar *content);
+PUBLIC EdiRec *ediMakeRec(cchar *content);
 
 /**
     Create a bare grid.
@@ -747,7 +787,7 @@ extern EdiRec *ediMakeRec(cchar *content);
     @return EdiGrid instance
     @ingroup Edi
  */
-extern EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
+PUBLIC EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
 
 /**
     Create a bare record.
@@ -758,7 +798,7 @@ extern EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
     @return EdiGrid instance
     @ingroup Edi
  */
-extern EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
+PUBLIC EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
 
 /**
     Convert an EDI type to a string.
@@ -767,7 +807,7 @@ extern EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
     @return Type string. This will be set to one of: "binary", "bool", "date", "float", "int", "string" or "text".
     @ingroup Edi
  */
-extern char *ediGetTypeString(int type);
+PUBLIC char *ediGetTypeString(int type);
 
 /**
     Parse an EDI type string.
@@ -776,7 +816,7 @@ extern char *ediGetTypeString(int type);
         EDI_TYPE_STRING, EDI_TYPE_TEXT.
     @ingroup Edi
  */
-extern int ediParseTypeString(cchar *type);
+PUBLIC int ediParseTypeString(cchar *type);
 
 /**
     Manage an EdiRec instance for garbage collection.
@@ -785,21 +825,42 @@ extern int ediParseTypeString(cchar *type);
     @ingroup Edi
     @internal
  */
-extern void ediManageEdiRec(EdiRec *rec, int flags);
+PUBLIC void ediManageEdiRec(EdiRec *rec, int flags);
 
-#if BIT_FEATURE_MDB
-extern void mdbInit();
+#if UNUSED
+/*
+    Flags for ediPivotGrid
+ */
+#define EDI_PIVOT_FIELD_NAMES 0x1       /**< Use field names as first column of data in pivot table */
+#endif
+    
+/**
+    Pivot a grid swapping rows for columns
+    @param grid Source grid
+    @param flags Control flags. Set to EDI_PIVOT_FIELD_NAMES to use field names as the first column of data.
+    @result New pivoted grid
+    @ingroup EdiGrid
+ */
+PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags);
+
+/**
+    @internal
+  */
+PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder);
+
+#if BIT_MDB
+PUBLIC void mdbInit();
 #endif
 
-#if BIT_FEATURE_SDB
-extern void sdbInit();
+#if BIT_SDB
+PUBLIC void sdbInit();
 #endif
 
 #ifdef __cplusplus
 } /* extern C */
 #endif
 
-#endif /* BIT_FEATURE_ESP */
+#endif /* BIT_PACK_ESP */
 #endif /* _h_EDI */
 
 /*
@@ -808,25 +869,10 @@ extern void sdbInit();
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below, or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http: *www.embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http: *www.embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -836,4 +882,3 @@ extern void sdbInit();
 
     @end
  */
-

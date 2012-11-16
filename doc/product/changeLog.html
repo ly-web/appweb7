@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.0.0 Documentation</title>
+    <title>Embedthis Appweb 4.1.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.0.0</div>
+                <div class="version">Embedthis Appweb 4.1.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -35,17 +35,10 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
+                <li><a href="#r4.1.0">Release 4.1.0</a></li>
                 <li><a href="#r4.0.0">Release 4.0.0</a></li>
-                <li><a href="#r3.3.2">Release 3.3.2</a></li>
-                <li><a href="#r3.3.1">Release 3.3.1</a></li>
-                <li><a href="#r3.3.0">Release 3.3.0</a></li>
-                <li><a href="#r3.2.2">Release 3.2.2</a></li>
-                <li><a href="#r3.2.1">Release 3.2.1</a></li>
-                <li><a href="#r3.2.0">Release 3.2.0</a></li>
-                <li><a href="#r3.1.2">Release 3.1.2</a></li>
-                <li><a href="#r3.1.1">Release 3.1.1</a></li>
-                <li><a href="#r3.1.0">Release 3.1.0</a></li>
-                <li><a href="#r2.4.2">Release 2.4.2</a></li>
+                <li><a href="#r3.4.0">Release 3.4.0</a></li>
+                <li><a href="#r2.4.4">Release 2.4.4</a></li>
             </ul>
 <!-- BeginDsi "dsi/genSeeAlso.html" -->
             <h1>See Also</h1>
@@ -69,6 +62,172 @@
             <p>The Appweb change log details the major features and changes for each release.</p>
             <p>See the Appweb <a href="http://github.com/embedthis/appweb-4/issues">issue database</a> for full 
             details of fixes. </p>
+        
+            <a id="r4.1.0"></a>
+            <h2 class="section">Changes in 4.1.0</h2>
+            <h2>Major Features</h2>
+            <ul>
+                <li>Enhanced role-based authentication management for granular access control
+                    <a href="https://github.com/embedthis/appweb-4/issues/19">[issue 19].</a>
+                </li>
+                <li>Web based form authentication and custom authentication support
+                    <a href="https://github.com/embedthis/appweb-4/issues/20">[issue 20].</a>
+                </li>
+                <li>Require ability "token" directive to specify required route abilities for access
+                    <a href="https://github.com/embedthis/appweb-4/issues/19">[issue 19].</a>
+                </li>
+                <li>Session state management and automatic cookie management. Optimizes authentication via session
+                    storage of credentials
+                    <a href="https://github.com/embedthis/appweb-4/issues/21">[issue 21].</a>
+                </li> 
+                <li>Prototype WebSockets support
+                    <a href="https://github.com/embedthis/appweb-4/issues/22">[issue 22].</a>
+                </li>
+            </ul>
+            <h3>Minor Features</h3>
+            <ul>
+                <li>Added static build support (configure --static)
+                    <a href="https://github.com/embedthis/appweb-4/issues/23">[issue 23].</a>
+                </li>
+                <li>Added ESP migrations
+                    <a href="https://github.com/embedthis/appweb-4/issues/24">[issue 24].</a>
+                </li>
+                <li>Upgraded ESP - Smart tables, HTML5 generation </li>
+                <li>Added HttpOnly cookie management in httpSetCookie()
+                    <a href="https://github.com/embedthis/appweb-4/issues/25">[issue 25].</a>
+                </li>
+                <li>Added lazy SSL loading. SSL library only loaded when SSL requests arrive
+                    <a href="https://github.com/embedthis/appweb-4/issues/26">[issue 26].</a>
+                </li>
+                <li>Add mprCreateEventOutside for calling back into Appweb from foreign threads
+                    <a href="https://github.com/embedthis/appweb-4/issues/27">[issue 27].</a>
+                </li>
+                <li>Add SSL unit tests </li>
+                <li>Add ListenSecure directive for SSL outside virtual hosts
+                    <a href="https://github.com/embedthis/appweb-4/issues/28">[issue 28].</a>
+                </li>
+                <li>Add support for Windows 8
+                    <a href="https://github.com/embedthis/appweb-4/issues/29">[issue 29].</a>
+                </li>
+                <li>Add support for Visual Studio 2012
+                    <a href="https://github.com/embedthis/appweb-4/issues/30">[issue 30].</a>
+                </li>
+                <li>Add error output to syslog
+                    <a href="https://github.com/embedthis/appweb-4/issues/31">[issue 31].</a>
+                </li>
+                <li>Add httpFinalizeOutput to signify completed output when still processing request
+                    <a href="https://github.com/embedthis/appweb-4/issues/32">[issue 32].</a>
+                </li>
+                <li>Added Action handler for simple URI to C function bindings
+                    <a href="https://github.com/embedthis/appweb-4/issues/33">[issue 33].</a>
+                </li>
+                <li>Remove *def files on windows. Use PUBLIC export decoration
+                    <a href="https://github.com/embedthis/appweb-4/issues/34">[issue 34].</a>
+                </li>
+            </ul>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Fix documentation version number
+                    <a href="https://github.com/embedthis/appweb-4/issues/35">[issue 35].</a>
+                </li>
+                <li>Xcode debug builds to include BIT_DEBUG
+                    <a href="https://github.com/embedthis/appweb-4/issues/36">[issue 36].</a>
+                </li>
+                <li>CGI NPH fixes to not augment CGI headers
+                    <a href="https://github.com/embedthis/appweb-4/issues/37">[issue 37].</a>
+                </li>
+                <li>ESP MDB database JSON format error
+                    <a href="https://github.com/embedthis/appweb-4/issues/38">[issue 38].</a>
+                </li>
+                <li>PUT method response to include Etag and Location
+                    <a href="https://github.com/embedthis/appweb-4/issues/39">[issue 39].</a>
+                </li>
+                <li>Consuming body of failed requests to preserve keep-alive
+                    <a href="https://github.com/embedthis/appweb-4/issues/40">[issue 40].</a>
+                </li>
+                <li>Http command --show displaying headers when no body in response
+                    <a href="https://github.com/embedthis/appweb-4/issues/41">[issue 41].</a>
+                </li>
+                <li>Fix SSL inheritance in appweb.conf for virtual hosts
+                    <a href="https://github.com/embedthis/appweb-4/issues/42">[issue 42].</a>
+                </li>
+                <li>If-Match header handling for case sensitivity
+                    <a href="https://github.com/embedthis/appweb-4/issues/43">[issue 43].</a>
+                </li>
+                <li>Option request handling
+                    <a href="https://github.com/embedthis/appweb-4/issues/44">[issue 44].</a>
+                </li>
+                <li>Directory listings path names to be relative paths
+                    <a href="https://github.com/embedthis/appweb-4/issues/45">[issue 45].</a>
+                </li>
+                <li>Xcode project to use unique output directory
+                    <a href="https://github.com/embedthis/appweb-4/issues/46">[issue 46].</a>
+                </li>
+                <li>Update MatrixSSL support to the latest version
+                    <a href="https://github.com/embedthis/appweb-4/issues/47">[issue 47].</a>
+                </li>
+                <li>Remove zlib not required
+                    <a href="https://github.com/embedthis/appweb-4/issues/48">[issue 48].</a>
+                </li>
+                <li>Rename T() to UT() to avoid winnt.h clash
+                    <a href="https://github.com/embedthis/appweb-4/issues/49">[issue 49].</a>
+                </li>
+                <li>Locating OpenSSL libraries on 64-bit systems
+                    <a href="https://github.com/embedthis/appweb-4/issues/50">[issue 50].</a>
+                </li>
+                <li>IPv6 unit tests
+                    <a href="https://github.com/embedthis/appweb-4/issues/51">[issue 51].</a>
+                </li>
+                <li>Renamed modules to begin with "lib" so static libraries can work on Linux
+                    <a href="https://github.com/embedthis/appweb-4/issues/52">[issue 52].</a>
+                </li>
+                <li>Mips CPU detection and number to asci conversion on big-endian mips
+                    <a href="https://github.com/embedthis/appweb-4/issues/53">[issue 53].</a>
+                    <a href="https://github.com/embedthis/appweb-4/issues/54">[issue 54].</a>
+                </li>
+                <li>Optimize memory usage under severe load </li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/55">[issue 55].</a>
+                <li>Premature timer expiry when time-warping
+                    <a href="https://github.com/embedthis/appweb-4/issues/56">[issue 56].</a>
+                </li>
+            </ul>
+            <h3>API Changes</h3>
+            <ul>
+                <li>Refactor scase => scaseless
+                </li>
+                <li>Changed name of ESP module entry point. Renamed "controller" to "module".
+                Existing controllers will need to be modified. 
+                </li>
+                <li>The HttpConn.finalized field is moved to HttpTx.
+                </li>
+                <li>The httpCreateHandler and httpCreateFilter APIs remove the flags arg.
+                </li>
+                <li>HTTP_STAGE_ALL define and HTTP_STAGE_* flags removed.
+                </li>
+                <li>The httpHandleOPtionsTrace API has a mew "methods" parameter for the supported methods
+                    for the handler. This should be set to a comma separated list of methods in uppercase.
+                    </li>
+                <li>All public methods are decorated with PUBLIC to export from windows DLLs. This is instead of
+                    using dumpbin.
+                    </li>
+                <li>Many time routines have their timeout type renamed to MprTicks from MprTime. As part of a fix
+                for time-zone warping, timeouts are now specified in MprTick values. Ticks are measured in milliseconds
+                from some arbitrary system-dependant starting point. Ticks never go backwards and are monotonically 
+                increasing.
+                </li>
+                <li>The old MprGetTicks is renamed MprGetHiResTime.
+                </li>
+                <li>The LimitStageBuffer directive is renamed LimitBuffer. The old name is supported.
+                </li>
+                <li>The httpWriteBlock API now takes a flags argument. It can be set to control whether the 
+                    call blocks, buffers or non-blocks.
+                    </li>
+                    <li>The WebSockets prototype adds some WebSockets specific APIs.
+                    </li>
+                <li>auth/httpPassword program renamed to authpass for clarity</li>
+                <li>AuthMethod renamed to AuthStore for clarity (old directive preserved for compatibility)</li>
+                <li>AuthName renamed to AuthRealm for clarity (old directive preserved for compatibility) </li>
+            </ul>
             <a id="r4.0.0"></a>
             <h2 class="section">Changes in 4.0.0</h2>
             <h3>Major Features</h3>
@@ -85,13 +244,28 @@
             <ul>
                 <li>Appweb 4 is a major release and most APIs have been modified based on the updated MPR.</li>
             </ul>
+            <a id="r3.4.0"></a>
+            <h2 class="section">Changes in 3.4.0</h2>
+            <h3>Key Fixes</h3>
+            <ul>
+                <li>Ejscript return in try blocks</li>
+                <li>Idle threads consuming CPU after long delay</li>
+                <li>Prune workers not terminating idle threads</li>
+                <li>Sign-extension assertion in ctype on windows</li>
+                <li>MprCond not waiting waking up prematurely</li>
+                <li>CPU load via spinning thread with no work to do</li>
+                <li>PruneWorkers to prune all idle threads and ignore pruneHighWater</li>
+                <li>Add LimitProcesses to limit the number of CGI processes</li>
+                <li>Accelerate reaping of CGI zombie processes</li>
+            </ul>
             <a id="r3.3.3"></a>
             <h2 class="section">Changes in 3.3.3</h2>
             <h3>Key Fixes</h3>
             <ul>
                 <li>Fixes for building for VxWorks on linux</li>
                 <li>Fix httpPassword parsing corrupt files</li>
-                <li>Add SSL_OP_NO_TICKET and SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION</li>
+                <li>Add SSL_OP_NO_TICKET and SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION to force
+                    renegotiaion of sessions.</li>
                 <li>Enable no free threads message to continually be emitted</li>
             </ul>
             <a id="r3.3.2"></a>
@@ -110,8 +284,7 @@
                 <li>setCookie()</li>
                 <li>PHP with basic/digest authentication requests</li>
                 <li>Session memory leaks</li>
-                <li>X509 certificate verification with SSL</li>
-                <li>BLAST attackSSL</li>
+                <li>Improve X509 certificate verification with SSL</li>
                 <li>Ejscript property scope searching</li>
                 <li>Ejscript setCookie</li>
                 <li>Optimize output of large static files</li>
@@ -392,6 +565,31 @@
                 <li>Project files for MAC OS Xcode and Microsoft Visual Studio</li>
                 <li>Enhanced http command supporting SSL, chunking, ranged requests and file upload</li>
             </ul>
+            <a id="r2.4.4"></a>
+            <h2 class="section">Changes in 2.4.4</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Add session resumption work-around for OpenSSL module. Not required if using OpenSSL >= 1.0.0</li>
+                <li>Linux compilation switches</li>
+                <li>Thread race in CGI/CMD</li>
+                <li>Sign extension assert in ctype routines on windows</li>
+                <li>Add CGI environment variable: REDIRECT_STATUS</li>
+            </ul>
+            <a id="r2.4.3"></a>
+            <h2 class="section">Changes in 2.4.3</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Increase default limits for LimitRequestBody and php.ini limits</li>
+                <li>Timeouts for requests that do no I/O</li>
+                <li>Setting of the upload directory</li>
+                <li>Setting IPv6 initialization</li>
+                <li>Formatting log file messages</li>
+                <li>Support Windows SDK 6.0+</li>
+                <li>Support Visual Studio 9.0</li>
+                <li>Support PHP 5.2.8</li>
+                <li>Support MatrixSSL 1.8.6</li>
+                <li>Support OpenSSL 0.9.8j</li>
+            </ul>
             <a id="r2.4.2"></a>
             <h2 class="section">Changes in 2.4.2</h2>
             <h3>Fixes</h3>
@@ -449,7 +647,6 @@
             <ul>
                 <li>Cross-compilation fixes for make install and make package.</li>
                 <li>Fix for ranged GETs when fetching a large chunk of data. Was sending incorrect data.</li>
-                <li>Fixed SSL requests hanging when using large posted data.</li>
                 <li>Fix Keep-Alive header timeout. Was in milliseconds, changed to be in seconds.</li>
                 <li>Fix for for large chunked requests hanging in some clients.</li>
                 <li>Fix for requests with large (incoming) headers.&nbsp;</li>
@@ -574,8 +771,7 @@
             <h3>Minor</h3>
             <ul>
                 <li>Added directive to enable / disable the TRACE method. Use TraceMethod on|off in the appweb.conf
-                configuration file. The trace method is now disabled by default as it can represent a security
-                risk.</li>
+                configuration file. The trace method is now disabled by default.</li>
                 <li>The use of winTools.zip is now officially deprecated. Please use the cygwin tools from
                 www.cygwin.com to build from source on windows instead.</li>
             </ul>
@@ -754,7 +950,7 @@
                 <li>Fix httpPassword overwriting existing password entries (Thanks lhearin)</li>
                 <li>Fixed bad build output formatting. (Thanks Matt McNeill)</li>
                 <li>Improved error messages in Appweb</li>
-                <li>Fix windows SSL crash due when missing a TypesConfig directive and using SSL (Thanks)</li>
+                <li>Fix windows SSL crash due when missing a TypesConfig directive and using SSL</li>
                 <li>Fix wrong license agreement display when installing.</li>
             </ul>
             <h2 class="section">Changes in 2.0.2</h2>
@@ -1050,7 +1246,7 @@
             <ul>
                 <li>Fix for ESP includes. On windows, was including files with text processing which resulted in bad
                 content lengths. Now reading RAW.</li>
-                <li>Added MatrixSSL handler (Thanks to J, Brian and Steve @ peersec)</li>
+                <li>Added MatrixSSL handler</li>
                 <li>Re-added some missing documentation pages</li>
                 <li>Changed default MPR number of threads to 10. Can be overridden in the appweb.conf file. Thanks
                 XDM.</li>
@@ -1102,7 +1298,6 @@
             <h3>Major Features</h3>
             <ul>
                 <li>Include PHP support</li>
-                <li>Some important security fixes</li>
                 <li>Enhanced uClibc support -- no patch required.</li>
                 <li>Enhanced uClinux support.</li>
             </ul>
@@ -1470,7 +1665,7 @@
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
-            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
     <script src="http://www.google.com/jsapi" type="text/javascript"></script>

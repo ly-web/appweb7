@@ -11,6 +11,7 @@ Bit.load({
         "src/deps/sqlite/sqlite.bit",
         "src/libappweb.bit",
         "src/esp/esp.bit",
+        /* The ejs.bit file is optional */
         "?src/deps/ejs/ejs.bit",
         "src/modules/modules.bit",
         "src/utils/utils.bit",
@@ -33,28 +34,76 @@ Bit.load({
         product: 'appweb',
         title: 'Embedthis Appweb',
         company: 'Embedthis',
-        version: '4.0.0',
+        version: '4.1.0',
         buildNumber: '0',
+        bit: '2.1.0',
+
+        /*
+            Default ports. Overridden in appweb.conf
+         */
         http_port: 80,
         ssl_port: 443,
+
+        /*
+            Support the MDB database for ESP
+         */ 
         mdb: true,
+
+        /*
+            Support the SQLite database for ESP
+         */ 
         sdb: false,
         manager: 'appman',
-        auth: 'file',
+
+        /*
+            Use PAM (Plugable Authentication Module) to store passwords
+         */
+        pam: true,
+
+        /*
+            Default cipher suite
+         */
+        ciphers: "HIGH:MEDIUM",
+
         packs: [ 'bits/packs' ]
         /* Must build locally to build tools */
         platforms: [ 'local' ],
         sync: ['http', 'mpr', 'pcre', 'sqlite'],
-        'without-all': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'php', 'pmaker', 'ssl', 'ejscript', 'php', 
-            'matrixssl', 'openssl' ],
-        '+required': [ 'pcre'],
+        '+required': [ 'bit', 'pcre'],
+
+        /*
+            Optional packs to search for when configuring
+         */
         '+optional': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'ejscript', 'esp', 'man', 'man2html', 'openssl', 
             'matrixssl', 'pmaker', 'php', 'sqlite', 'ssl', 'utest', 'zip' ],
+
+        /*
+            Packs to disable when using --without all
+         */
+        'without-all': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ssl', 'ejscript', 'php', 
+            'matrixssl', 'openssl' ],
+        'without-own': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ejscript', 'php', 'matrixssl' ],
+
+        /*
+            Set to true for a static (non-shared library) build
+         */
+        static: false,
+
+        /*
+            Enable stealth options. Disable OPTIONS and TRACE methods.
+         */
+        stealth: true,
     },
 
     usage: {
-        assert: 'Enable program assertions (true|false)',
-        tune: 'Optimize (size|speed|balanced)',
+        assert:             'Enable program assertions (true|false)',
+        mdb:                'Enable ESP MDB database support (true|false)',
+        pam:                'Enable Unix Pluggable Auth Module (true|false)',
+        sdb:                'Enable ESP SQLite database support (true|flase)',
+        static:             'Build with static linking (true|false)',
+        stealth:            'Run in stealth mode. Disable OPTIONS, TRACE (true|false)',
+        trace:              'Default location and level for debug log (path:level)',
+        tune:               'Optimize (size|speed|balanced)',
     },
 
     profiles: {
@@ -76,6 +125,10 @@ Bit.load({
         },
     },
 
+    /*
+        See src/server/server.bit for the appweb targets
+        See src/libappweb.bit for the appweb library target
+     */
     targets: {
         install: {
             depends: ['build'],

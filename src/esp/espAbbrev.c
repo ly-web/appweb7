@@ -8,64 +8,64 @@
 
 #include    "esp.h"
 
-#if BIT_FEATURE_ESP
+#if BIT_PACK_ESP
 /******************************* Abbreviated Controls *************************/ 
 
-void alert(cchar *text, cchar *optionString)
+PUBLIC void alert(cchar *text, cchar *optionString)
 {
     espAlert(getConn(), text, optionString);
 }
 
 
-void anchor(cchar *text, cchar *uri, cchar *optionString) 
+PUBLIC void anchor(cchar *text, cchar *uri, cchar *optionString) 
 {
     espAnchor(getConn(), text, uri, optionString);
 }
 
 
-void button(cchar *name, cchar *value, cchar *optionString)
+PUBLIC void button(cchar *name, cchar *value, cchar *optionString)
 {
     espButton(getConn(), name, value, optionString);
 }
 
 
-void buttonLink(cchar *text, cchar *uri, cchar *optionString)
+PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *optionString)
 {
     espButtonLink(getConn(), text, uri, optionString);
 }
 
 
-void chart(EdiGrid *grid, cchar *optionString)
+PUBLIC void chart(EdiGrid *grid, cchar *optionString)
 {
     espChart(getConn(), grid, optionString);
 }
 
 
-void checkbox(cchar *field, cchar *checkedValue, cchar *optionString) 
+PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *optionString) 
 {
     espCheckbox(getConn(), field, checkedValue, optionString);
 }
 
 
-void division(cchar *body, cchar *optionString) 
+PUBLIC void division(cchar *body, cchar *optionString) 
 {
     espDivision(getConn(), body, optionString);
 }
 
 
-void endform() 
+PUBLIC void endform() 
 {
     espEndform(getConn());
 }
 
 
-void flash(cchar *kind, cchar *optionString)
+PUBLIC void flash(cchar *kind, cchar *optionString)
 {
     espFlash(getConn(), kind, optionString);
 }
 
 
-void form(void *record, cchar *optionString)
+PUBLIC void form(void *record, cchar *optionString)
 {
     HttpConn    *conn;
 
@@ -77,104 +77,112 @@ void form(void *record, cchar *optionString)
 }
 
 
-void icon(cchar *uri, cchar *optionString)
+PUBLIC void icon(cchar *uri, cchar *optionString)
 {
     espIcon(getConn(), uri, optionString);
 }
 
 
-void image(cchar *src, cchar *optionString)
+PUBLIC void image(cchar *src, cchar *optionString)
 {
     espImage(getConn(), src, optionString);
 }
 
 
-void input(cchar *name, cchar *optionString)
+PUBLIC void input(cchar *name, cchar *optionString)
 {
     espInput(getConn(), name, optionString);
 }
 
 
-void label(cchar *text, cchar *optionString)
+PUBLIC void label(cchar *text, cchar *optionString)
 {
     espLabel(getConn(), text, optionString);
 }
 
 
-void dropdown(cchar *name, cchar *choices, cchar *optionString) 
+PUBLIC void dropdown(cchar *name, EdiGrid *choices, cchar *optionString) 
 {
     espDropdown(getConn(), name, choices, optionString);
 }
 
 
-void mail(cchar *name, cchar *address, cchar *optionString) 
+PUBLIC void mail(cchar *name, cchar *address, cchar *optionString) 
 {
     espMail(getConn(), name, address, optionString);
 }
 
 
-void progress(cchar *data, cchar *optionString)
+PUBLIC void progress(cchar *data, cchar *optionString)
 {
     espProgress(getConn(), data, optionString);
 }
 
 
-void radio(cchar *name, void *choices, cchar *optionString)
+/*
+    radio("priority", "{low: 0, med: 1, high: 2}", NULL)
+    radio("priority", "{low: 0, med: 1, high: 2}", "{value:'2'}")  //  MOB - without a record
+ */
+PUBLIC void radio(cchar *name, void *choices, cchar *optionString)
 {
     espRadio(getConn(), name, choices, optionString);
 }
 
 
-void refresh(cchar *on, cchar *off, cchar *optionString)
+//  MOB - add calling sequence comment to all APIs
+PUBLIC void refresh(cchar *on, cchar *off, cchar *optionString)
 {
     espRefresh(getConn(), on, off, optionString);
 }
 
 
-void script(cchar *uri, cchar *optionString)
+PUBLIC void script(cchar *uri, cchar *optionString)
 {
     espScript(getConn(), uri, optionString);
 }
 
 
-void securityToken()
+PUBLIC void securityToken()
 {
     espSecurityToken(getConn());
 }
 
 
-void stylesheet(cchar *uri, cchar *optionString) 
+PUBLIC void stylesheet(cchar *uri, cchar *optionString) 
 {
     espStylesheet(getConn(), uri, optionString);
 }
 
 
-void table(EdiGrid *grid, cchar *optionString)
+PUBLIC void table(EdiGrid *grid, cchar *optionString)
 {
+    if (grid == 0) {
+        grid = getGrid();
+    }
     espTable(getConn(), grid, optionString);
 }
 
 
-void tabs(EdiRec *rec, cchar *optionString)
+PUBLIC void tabs(EdiRec *rec, cchar *optionString)
 {
     espTabs(getConn(), rec, optionString);
 }
 
 
-void text(cchar *field, cchar *optionString)
+PUBLIC void text(cchar *field, cchar *optionString)
 {
     espText(getConn(), field, optionString);
 }
 
 
-void tree(EdiGrid *grid, cchar *optionString)
+PUBLIC void tree(EdiGrid *grid, cchar *optionString)
 {
     espTree(getConn(), grid, optionString);
 }
 
 /******************************* Abbreviated API ******************************/
 
-void addHeader(cchar *key, cchar *fmt, ...)
+PUBLIC void addHeader(cchar *key, cchar *fmt, ...)
 {
     va_list     args;
     cchar       *value;
@@ -186,187 +194,175 @@ void addHeader(cchar *key, cchar *fmt, ...)
 }
 
 
-EdiRec *createRec(cchar *tableName, MprHash *params)
+PUBLIC EdiRec *createRec(cchar *tableName, MprHash *params)
 {
     return espCreateRec(getConn(), tableName, params);
 }
 
 
-void createSession()
+PUBLIC void createSession()
 {
-    espCreateSession(getConn());
+    httpCreateSession(getConn());
 }
 
 
-void destroySession()
+PUBLIC void destroySession()
 {
-    EspSession  *sp;
+    HttpSession *sp;
     HttpConn    *conn;
 
     conn = getConn();
-    if ((sp = espGetSession(conn, 0)) != 0) {
-        espDestroySession(sp);
+    if ((sp = httpGetSession(conn, 0)) != 0) {
+        httpDestroySession(sp);
     }
 }
 
 
-void dontAutoFinalize()
+PUBLIC void dontAutoFinalize()
 {
     espSetAutoFinalizing(getConn(), 0);
 }
 
 
-#if UNUSED
-void error(cchar *fmt, ...)
-{
-    va_list     args;
-
-    va_start(args, fmt);
-    espSetFlashv(getConn(), "error", fmt, args);
-    va_end(args);
-}
-#endif
-
-
-void finalize()
+PUBLIC void finalize()
 {
     espFinalize(getConn());
 }
 
 
-void flush()
+PUBLIC void flush()
 {
     espFlush(getConn());
 }
 
 
-MprList *getColumns(EdiRec *rec)
+PUBLIC MprList *getColumns(EdiRec *rec)
 {
     return espGetColumns(getConn(), rec);
 }
 
 
-HttpConn *getConn()
+PUBLIC HttpConn *getConn()
 {
     return mprGetThreadData(((Esp*) MPR->espService)->local);
 }
 
 
-cchar *getCookies()
+PUBLIC cchar *getCookies()
 {
     return espGetCookies(getConn());
 }
 
 
-MprOff getContentLength()
+PUBLIC MprOff getContentLength()
 {
     return espGetContentLength(getConn());
 }
 
 
-cchar *getContentType()
+PUBLIC cchar *getContentType()
 {
     return getConn()->rx->mimeType;
 }
 
 
-Edi *getDatabase()
+PUBLIC Edi *getDatabase()
 {
     return espGetDatabase(getConn());
 }
 
 
-EspRoute *getEspRoute()
+PUBLIC EspRoute *getEspRoute()
 {
     return espGetEspRoute(getConn());
 }
 
 
-cchar *getDir()
+PUBLIC cchar *getDir()
 {
     return getConn()->rx->route->dir;
 }
 
 
-cchar *getField(cchar *field)
+PUBLIC cchar *getField(cchar *field)
 {
-    return ediGetField(getRec(), field);
+    return ediGetFieldValue(getRec(), field);
 }
 
 
-EdiGrid *getGrid()
+PUBLIC EdiGrid *getGrid()
 {
     return getConn()->grid;
 }
 
 
-cchar *getHeader(cchar *key)
+PUBLIC cchar *getHeader(cchar *key)
 {
     return espGetHeader(getConn(), key);
 }
 
 
-cchar *getMethod()
+PUBLIC cchar *getMethod()
 {
     return espGetMethod(getConn());
 }
 
 
-cchar *getQuery()
+PUBLIC cchar *getQuery()
 {
     return getConn()->rx->parsedUri->query;
 }
 
 
-EdiRec *getRec()
+PUBLIC EdiRec *getRec()
 {
     return getConn()->record;
 }
 
 
-cchar *getReferrer()
+PUBLIC cchar *getReferrer()
 {
     return espGetReferrer(getConn());
 }
 
 
-cchar *getSessionVar(cchar *key)
+PUBLIC cchar *getSessionVar(cchar *key)
 {
-    return espGetSessionVar(getConn(), key, "");
+    return httpGetSessionVar(getConn(), key, "");
 }
 
 
-cchar *getTop()
+PUBLIC cchar *getTop()
 {
     return espGetTop(getConn());
 }
 
 
-MprHash *getUploads()
+PUBLIC MprHash *getUploads()
 {
     return espGetUploads(getConn());
 }
 
 
-cchar *getUri()
+PUBLIC cchar *getUri()
 {
     return espGetUri(getConn());
 }
 
 
-bool hasGrid()
+PUBLIC bool hasGrid()
 {
     return espHasGrid(getConn());
 }
 
 
-bool hasRec()
+PUBLIC bool hasRec()
 {
     return espHasRec(getConn());
 }
 
 
-void inform(cchar *fmt, ...)
+PUBLIC void inform(cchar *fmt, ...)
 {
     va_list     args;
 
@@ -376,31 +372,31 @@ void inform(cchar *fmt, ...)
 }
 
 
-bool isEof()
+PUBLIC bool isEof()
 {
     return httpIsEof(getConn());
 }
 
 
-bool isFinalized()
+PUBLIC bool isFinalized()
 {
     return espIsFinalized(getConn());
 }
 
 
-bool isSecure()
+PUBLIC bool isSecure()
 {
     return espIsSecure(getConn());
 }
 
 
-EdiGrid *makeGrid(cchar *contents)
+PUBLIC EdiGrid *makeGrid(cchar *contents)
 {
     return espMakeGrid(contents);
 }
 
 
-MprHash *makeHash(cchar *fmt, ...)
+PUBLIC MprHash *makeHash(cchar *fmt, ...)
 {
     va_list     args;
     cchar       *str;
@@ -412,61 +408,61 @@ MprHash *makeHash(cchar *fmt, ...)
 }
 
 
-EdiRec *makeRec(cchar *contents)
+PUBLIC EdiRec *makeRec(cchar *contents)
 {
     return ediMakeRec(contents);
 }
 
 
-cchar *makeUri(cchar *target)
+PUBLIC cchar *makeUri(cchar *target)
 {
     return espUri(getConn(), target);
 }
 
 
-cchar *param(cchar *key)
+PUBLIC cchar *param(cchar *key)
 {
-    return espGetParam(getConn(), key, NULL);
+    return espGetParam(getConn(), key, "");
 }
 
 
-MprHash *params()
+PUBLIC MprHash *params()
 {
     return espGetParams(getConn());
 }
 
 
-ssize receive(char *buf, ssize len)
+PUBLIC ssize receive(char *buf, ssize len)
 {
     return httpRead(getConn(), buf, len);
 }
 
 
-EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
     return setRec(ediReadOneWhere(getDatabase(), tableName, fieldName, operation, value));
 }
 
 
-EdiRec *readRec(cchar *tableName)
+PUBLIC EdiRec *readRec(cchar *tableName)
 {
     return setRec(ediReadRec(getDatabase(), tableName, param("id")));
 }
 
 
-EdiRec *readRecByKey(cchar *tableName, cchar *key)
+PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key)
 {
     return setRec(ediReadRec(getDatabase(), tableName, key));
 }
 
 
-EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
     return setGrid(ediReadWhere(getDatabase(), tableName, fieldName, operation, value));
 }
 
 
-EdiGrid *readTable(cchar *tableName)
+PUBLIC EdiGrid *readTable(cchar *tableName)
 {
     EdiGrid *grid;
     
@@ -476,25 +472,25 @@ EdiGrid *readTable(cchar *tableName)
 }
 
 
-void redirect(cchar *target)
+PUBLIC void redirect(cchar *target)
 {
     espRedirect(getConn(), 302, target);
 }
 
 
-void redirectBack()
+PUBLIC void redirectBack()
 {
     espRedirectBack(getConn());
 }
 
 
-bool removeRec(cchar *tableName, cchar *key)
+PUBLIC bool removeRec(cchar *tableName, cchar *key)
 {
     return espRemoveRec(getConn(), tableName, key);
 }
 
 
-ssize render(cchar *fmt, ...)
+PUBLIC ssize render(cchar *fmt, ...)
 {
     va_list     args;
     ssize       count;
@@ -508,13 +504,13 @@ ssize render(cchar *fmt, ...)
 }
 
 
-ssize renderCached()
+PUBLIC ssize renderCached()
 {
     return espRenderCached(getConn());;
 }
 
 
-void renderError(int status, cchar *fmt, ...)
+PUBLIC void renderError(int status, cchar *fmt, ...)
 {
     va_list     args;
     cchar       *msg;
@@ -526,13 +522,13 @@ void renderError(int status, cchar *fmt, ...)
 }
 
 
-ssize renderFile(cchar *path)
+PUBLIC ssize renderFile(cchar *path)
 {
     return espRenderFile(getConn(), path);
 }
 
 
-ssize renderSafe(cchar *fmt, ...)
+PUBLIC ssize renderSafe(cchar *fmt, ...)
 {
     va_list     args;
     ssize       count;
@@ -546,43 +542,43 @@ ssize renderSafe(cchar *fmt, ...)
 }
 
 
-void renderView(cchar *view)
+PUBLIC void renderView(cchar *view)
 {
     espRenderView(getConn(), view);
 }
 
 
-void setConn(HttpConn *conn)
+PUBLIC void setConn(HttpConn *conn)
 {
     espSetConn(conn);
 }
 
 
-void setContentType(cchar *mimeType)
+PUBLIC void setContentType(cchar *mimeType)
 {
     espSetContentType(getConn(), mimeType);
 }
 
 
-void setCookie(cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTime lifespan, bool isSecure)
+PUBLIC void setCookie(cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTicks lifespan, bool isSecure)
 {
     espSetCookie(getConn(), name, value, path, cookieDomain, lifespan, isSecure);
 }
 
 
-EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value)
+PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value)
 {
     return espSetField(rec, fieldName, value);
 }
 
 
-EdiRec *setFields(EdiRec *rec, MprHash *params)
+PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *params)
 {
     return espSetFields(rec, params);
 }
 
 
-void setFlash(cchar *kind, cchar *fmt, ...)
+PUBLIC void setFlash(cchar *kind, cchar *fmt, ...)
 {
     va_list     args;
 
@@ -592,14 +588,14 @@ void setFlash(cchar *kind, cchar *fmt, ...)
 }
 
 
-EdiGrid *setGrid(EdiGrid *grid)
+PUBLIC EdiGrid *setGrid(EdiGrid *grid)
 {
     getConn()->grid = grid;
     return grid;
 }
 
 
-void setHeader(cchar *key, cchar *fmt, ...)
+PUBLIC void setHeader(cchar *key, cchar *fmt, ...)
 {
     va_list     args;
     cchar       *value;
@@ -611,105 +607,78 @@ void setHeader(cchar *key, cchar *fmt, ...)
 }
 
 
-void setParam(cchar *key, cchar *value)
+PUBLIC void setParam(cchar *key, cchar *value)
 {
     espSetParam(getConn(), key, value);
 }
 
 
-EdiRec *setRec(EdiRec *rec)
+PUBLIC EdiRec *setRec(EdiRec *rec)
 {
     return espSetRec(getConn(), rec);
 }
 
 
-void setSessionVar(cchar *key, cchar *value)
+PUBLIC void setSessionVar(cchar *key, cchar *value)
 {
-    espSetSessionVar(getConn(), key, value);
+    httpSetSessionVar(getConn(), key, value);
 }
 
 
-void setStatus(int status)
+PUBLIC void setStatus(int status)
 {
     espSetStatus(getConn(), status);
 }
 
 
-void setTimeout(void *proc, MprTime timeout, void *data)
+PUBLIC void setTimeout(void *proc, MprTicks timeout, void *data)
 {
     mprCreateEvent(getConn()->dispatcher, "setTimeout", (int) timeout, proc, data, 0);
 }
 
 
-void showRequest()
+PUBLIC void showRequest()
 {
     espShowRequest(getConn());
 }
 
 
-void updateCache(cchar *uri, cchar *data, int lifesecs)
+PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs)
 {
     espUpdateCache(getConn(), uri, data, lifesecs);
 }
 
 
-bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
+PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
 {
     return espUpdateField(getConn(), tableName, key, fieldName, value);
 }
 
 
-bool updateFields(cchar *tableName, MprHash *params)
+PUBLIC bool updateFields(cchar *tableName, MprHash *params)
 {
     return espUpdateFields(getConn(), tableName, params);
 }
 
 
-bool updateRec(EdiRec *rec)
+PUBLIC bool updateRec(EdiRec *rec)
 {
     return espUpdateRec(getConn(), rec);
 }
 
 
-#if UNUSED
-void warn(cchar *fmt, ...)
-{
-    va_list     args;
-
-    va_start(args, fmt);
-    espSetFlashv(getConn(), "warn", fmt, args);
-    va_end(args);
-}
-#endif
-
-#endif /* BIT_FEATURE_ESP */
+#endif /* BIT_PACK_ESP */
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

@@ -7,7 +7,7 @@ Bit.load({
         testAppweb: {
             type: 'exe',
             headers:   [ '*.h' ],
-            sources:   [ '*.c' ],
+            sources:   [ 'testAppweb.c', 'testHttp.c' ],
             depends:   [ 'libappweb' ],
             platforms: [ 'local' ],
         },
@@ -21,6 +21,7 @@ Bit.load({
             ",
             'generate-sh': "echo '#!${BIN}/cgiProgram${EXE}' >cgi-bin/testScript ; chmod +x cgi-bin/testScript",
             depends: ['cgiProgram'],
+            platforms: [ 'local' ],
         },
 
         'test-cache.cgi': {
@@ -39,23 +40,28 @@ Bit.load({
                 echo 'date' >>web/caching/cache.cgi
                 chmod +x web/caching/cache.cgi
             ",
+            platforms: [ 'local' ],
         },
 
         'test-basic.cgi': {
-            path: 'web/basic/basic.cgi',
+            path: 'web/auth/basic/basic.cgi',
             build: "
-                let path = Path('web/basic/basic.cgi')
+                let path = Path('web/auth/basic/basic.cgi')
                 path.write('#!' + App.exeDir.join('ejs') + '\n' + 
-                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + serialize(App.env, {pretty: true}) + \"\n\")')
+                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\")\n' +
+                    'for (let [key,value] in App.env) print(key + \"=\" + value)\n' +
+                    'print()\n')
                 path.setAttributes({permissions: 0755})
             ",
             'generate-sh': "\
-                echo \"#!`type -p sh`\" >web/basic/basic.cgi
-                echo '' >>web/basic/basic.cgi
-                echo 'echo Content-Type: text/plain' >>web/basic/basic.cgi
-                echo '/usr/bin/env' >>web/basic/basic.cgi
-                chmod +x web/basic/basic.cgi
+                echo \"#!`type -p sh`\" >web/auth/basic/basic.cgi
+                echo '' >>web/auth/basic/basic.cgi
+                echo 'echo Content-Type: text/plain' >>web/auth/basic/basic.cgi
+                echo 'echo' >>web/auth/basic/basic.cgi
+                echo '/usr/bin/env' >>web/auth/basic/basic.cgi
+                chmod +x web/auth/basic/basic.cgi
             ",
+            platforms: [ 'local' ],
         },
 
         'test-cgiProgram': {
@@ -76,6 +82,18 @@ Bit.load({
                 chmod +x cgi-bin/* web/cgiProgram.cgi
             ",
             depends: ['cgiProgram'],
+            platforms: [ 'local' ],
+        },
+
+        'test.js': {
+            path: 'web/js',
+            build: "
+                trace('Copy', 'ESP JS files')
+                cp('../src/esp/www/files/static/js', 'web/js')
+            ",
+            'generate-sh': "
+                cp -r ../src/esp/www/files/static/js 'web/js'
+            ",
         },
 
         test: {
@@ -101,6 +119,27 @@ Bit.load({
                 }
                 trace('Test', 'Unit tests complete')
             ",
+            platforms: [ 'local' ],
+        },
+
+        run: {
+            action: "
+                run('appweb -v', {noio: true})
+            ",
+        },
+
+        'auth.conf': {
+            action: "
+                let path = Path('new.conf')
+                trace('Generate', 'Authorization file: ' + path)
+                path.write('#\n#   ' + path + ' - Authorization roles and users\n#\n\n')
+                path.write('Role user view\nRole administrator view\nRole executive manage direct\n\n')
+                run('authpass -p pass4 ' + path + ' example.com julie user')
+                run('authpass -p pass3 ' + path + ' example.com peter user')
+                run('authpass -p pass2 ' + path + ' example.com mary user executive')
+                run('authpass -p pass1 ' + path + ' example.com joshua user administrator purchase')
+                
+            ",
         },
 
         'clean-test': {
@@ -109,10 +148,11 @@ Bit.load({
                 rm('cache/*')
                 rm('app/cache/*')
                 rm('junk/**')
+                rm('web/js')
                 Path('cache/.keep').write()
                 Path('app/cache/.keep').write()
                 Path('web/caching/cache.cgi').remove()
-                Path('web/basic/basic.cgi').remove()
+                Path('web/auth/basic/basic.cgi').remove()
             "                                                                                              
         },  
     },

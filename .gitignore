@@ -182,6 +182,16 @@ test/cache/view_*.*
 test/app/cache/controller_*.*
 test/app/cache/view_*.*
 *.dmp
-start.bit
 *.user
 .keep
+*-xcode
+test/web/tmp
+access.log.*
+/start.bit
+*-vsdebug
+test/web/js
+test/web/auth/basic/basic.cgi
+proto
+projects/appweb-macosx-full.xcodeproj
+*-mine*
+test/cache/*.so

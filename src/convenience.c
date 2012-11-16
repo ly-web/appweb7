@@ -12,7 +12,7 @@
 /*  
     Create a web server described by a config file. 
  */
-int maRunWebServer(cchar *configFile)
+PUBLIC int maRunWebServer(cchar *configFile)
 {
     Mpr         *mpr;
     MaAppweb    *appweb;
@@ -20,7 +20,7 @@ int maRunWebServer(cchar *configFile)
     int         rc;
 
     rc = MPR_ERR_CANT_CREATE;
-    if ((mpr = mprCreate(0, NULL, 0)) == 0) {
+    if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
         mprError("Can't create the web server runtime");
     } else {
         if (mprStart() < 0) {
@@ -57,7 +57,7 @@ int maRunWebServer(cchar *configFile)
 /*
     Run a web server not based on a config file.
  */
-int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents)
+PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents)
 {
     Mpr         *mpr;
     MaServer    *server;
@@ -108,7 +108,7 @@ int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents)
     server, optionally modify the IP:PORT and resume listening. NOTE: running requests will be unaffected.
     WARNING: this is demonstration code and has no error checking.
  */
-void maRestartServer(cchar *ip, int port)
+PUBLIC void maRestartServer(cchar *ip, int port)
 {
     MaAppweb        *appweb;
     MaServer        *server;
@@ -144,28 +144,12 @@ void maRestartServer(cchar *ip, int port)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

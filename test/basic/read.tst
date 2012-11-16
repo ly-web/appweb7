@@ -11,13 +11,13 @@ http.get(HTTP + "/test.xml")
 assert(http.readXml().customer.name == "Joe Green")
 */
 
-if (App.config.bld_ejscript) {
+if (App.config.bit_ejscript) {
     //  Test http.read() into a byte array
     http.get(HTTP + "/big.ejs")
     buf = new ByteArray
     count = 0
     while (http.read(buf) > 0) {
-        count += buf.available
+        count += buf.length
     }
     if (count != 63201) {
         print("COUNT IS " + count + " code " + http.status)

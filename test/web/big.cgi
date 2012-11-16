@@ -5,100 +5,23 @@ echo "Content-type: text/html"
 echo ""
 echo "<html><body>"
 
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
-cat big.txt big.txt big.txt big.txt big.txt big.txt big.txt
+i=0
+while [ $i -lt 5000 ]
+do
+    cat <<!EOF 
+0123456789012345678901234567890123456789012345678
+0123456789012345678901234567890123456789012345678
+0123456789012345678901234567890123456789012345678
+0123456789012345678901234567890123456789012345678
+0123456789012345678901234567890123456789012345678
+0123456789012345678901234567890123456789012345678
+0123456789012345678901234567890123456789012345678
+0123456789012345678901234567890123456789012345678
+0123456789012345678901234567890123456789012345678
+0123456789012345678901234567890123456789012345678
+!EOF
+    # sleep 10
+    i=$((i + 1))
+done
 echo "</body></html>"
+

@@ -13,35 +13,41 @@ let tgz = deps.join('ejs.tgz')
 let tar = deps.join('ejs.tar')
 
 if (path) {
-    if (path.startsWith('http:')) {
-        /*
-            Auto download ejs
-        let http = Http
-        let fp = File(tfile, 'w')
-        trace('Download', 'Ejscript from: ' + path)
-        http.get(path)
-        buf = new ByteArray
-        while (http.read(buf) > 0) {
-            fp.write(buf)
-        }
-        fp.close()
-        if (http.status != 200) {
-            throw "Cannot download Ejscript from " + path
-        }
-        http.close()
-         */
-        trace('Prepare', 'Ejscript distribution')
-        ejs.removeAll()
-        ejs.makeDir()
-        Zlib.uncompress(tgz, tar)
-        Tar(tar, {chdir: deps}).extract()
-        let dir = deps.files('ejs-*').sort().reverse()[0]
-        dir.rename(ejs)
-        tgz.remove()
-        tar.remove()
-        for each (n in ['Makefile', 'bit.h', 'deps.c', 'ejsmod.c', 'pcre.c', 'pcre.h', 'product.bit', 
-            'sqlite3.c', 'sqlite3.h', 'start.bit']) {
-            ejs.join(n).remove()
+    if (path.toString().startsWith('http:')) {
+        try {
+            /*
+                Auto download ejs
+             */
+            let http:Http = new Http
+            trace('Download', 'Ejscript from: ' + path)
+            http.get("" + path)
+            buf = new ByteArray
+            let fp = File(tgz, 'w')
+            while (http.read(buf) > 0) {
+                fp.write(buf)
+            }
+            fp.close()
+            if (http.status != 200) {
+                throw "Cannot download Ejscript from " + path
+            }
+            http.close()
+            trace('Prepare', 'Ejscript distribution')
+            ejs.removeAll()
+            ejs.makeDir()
+            Zlib.uncompress(tgz, tar)
+            Tar(tar, {chdir: deps}).extract()
+            let dir = deps.files('ejs-*').sort().reverse()[0]
+            dir.rename(ejs)
+            tgz.remove()
+            tar.remove()
+            for each (n in ['Makefile', 'bit.h', 'mpr.h', 'http.h', 'deps.c', 'ejsmod.c', 'pcre.c', 'pcre.h', 'sqlite3.c', 
+                    'sqlite3.h', 'start.bit']) {
+                ejs.join(n).remove()
+            }
+            trace('Done', 'Ejscript distribution')
+            bit.settings.ejsOneModule = true
+        } catch (e) {
+            trace('Prepare', 'Failed: ' + e)
         }
     }
 }
@@ -51,6 +57,7 @@ if (Path('src/deps/ejs/ejsLib.c').exists) {
     /*  Internal ejs distribution */
     let dir = bit.dir.src.join('src/deps/ejs')
     cfg = {
+        path: dir,
         dir: dir,
         includes: [ dir ],
         libraries: [ 'mpr', 'http', 'pcre' ]
@@ -73,11 +80,13 @@ if (Path('src/deps/ejs/ejsLib.c').exists) {
     let imports = libdir.files('ejs*.mod') + libraries + incdir.files('ejs*.h') + 
         incdir.files('mpr.h') + incdir.files('http.h') + incdir.files('pcre.h') + incdir.files('sqlite3.h')
     cfg = {
+        path: path,
         dir: path,
         includes: [ incdir ],
         libraries: [ 'ejs', 'mpr', 'mprssl', 'http', 'pcre' ],
         libpaths: [ libdir.parent ],
         imports: imports,
+        external: true,
     }
     /*
         Disable building libraries that are imported from Ejscript when using an external ejs distribution
@@ -87,6 +96,8 @@ if (Path('src/deps/ejs/ejsLib.c').exists) {
         bit.targets[tname] ||= {}
         bit.targets[tname].built = true
     }
+    bit.targets['libmod_ejs'].depends -= ['libejs']
+    bit.targets['libmod_ejs'].libraries += ['ejs']
 }
 if (bit.packs.sqlite && bit.packs.sqlite.enable) {
     cfg.libraries.push('sqlite3')

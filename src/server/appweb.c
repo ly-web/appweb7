@@ -17,6 +17,7 @@
 /********************************* Includes ***********************************/
 
 #include    "appweb.h"
+#include    "esp.h"
 
 /********************************** Locals ************************************/
 /*
@@ -46,6 +47,9 @@ static int initializeAppweb(cchar *ip, int port);
 static void usageError();
 
 #if BIT_UNIX_LIKE
+#if defined(SIGINFO) || defined(SIGRTMIN)
+static void statusCheck(void *ignored, MprSignal *sp);
+#endif
 static void traceHandler(void *ignored, MprSignal *sp);
 static int  unixSecurityChecks(cchar *program, cchar *home);
 #elif BIT_WIN_LIKE
@@ -87,7 +91,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
     }
-    mprSetAppName(BIT_PRODUCT, BIT_NAME, BIT_VERSION);
+    mprSetAppName(BIT_PRODUCT, BIT_TITLE, BIT_VERSION);
 
     if ((app = mprAllocObj(AppwebApp, manageApp)) == NULL) {
         exit(2);
@@ -95,7 +99,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     mprAddRoot(app);
     mprAddStandardSignals();
 
-#if BIT_FEATURE_ROMFS
+#if BIT_ROM
     extern MprRomInode romFiles[];
     mprSetRomFileSystem(romFiles);
 #endif
@@ -143,7 +147,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
                 usageError();
             }
             app->home = mprGetAbsPath(argv[++argind]);
-#if UNUSED && KEEP
+#if KEEP
             if (chdir(app->home) < 0) {
                 mprError("%s: Can't change directory to %s", mprGetAppName(), app->home);
                 exit(4);
@@ -172,7 +176,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
             verbose++;
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
-            mprPrintf("%s %s-%s\n", mprGetAppTitle(), BIT_VERSION, BIT_NUMBER);
+            mprPrintf("%s %s-%s\n", mprGetAppTitle(), BIT_VERSION, BIT_BUILD_NUMBER);
             exit(0);
 
         } else {
@@ -276,6 +280,17 @@ static int initializeAppweb(cchar *ip, int port)
         mprUserError("Can't create HTTP service for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
+#if BIT_STATIC
+    /*
+        If doing a static build, must now reference required modules to force the linker to include them.
+        Don't actually call init routines here. They will be called via LoadModule statements in appweb.conf.
+     */
+    mprNop(maCgiHandlerInit);
+    mprNop(maEspHandlerInit);
+    mprNop(maPhpHandlerInit);
+    mprNop(maSslModuleInit);
+#endif
+
     if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
         mprUserError("Can't create HTTP server for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
@@ -291,6 +306,14 @@ static int initializeAppweb(cchar *ip, int port)
     writePort(app->server);
 #elif BIT_UNIX_LIKE
     app->traceToggle = mprAddSignalHandler(SIGUSR2, traceHandler, 0, 0, MPR_SIGNAL_AFTER);
+    /*
+        Signal to dump memory stats. Must configure with ./configure --set memoryCheck=true
+     */
+#if defined(SIGINFO)
+    app->traceToggle = mprAddSignalHandler(SIGINFO, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
+#elif defined(SIGRTMIN)
+    app->traceToggle = mprAddSignalHandler(SIGRTMIN, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
+#endif
 #endif
     return 0;
 }
@@ -327,20 +350,20 @@ static void usageError(Mpr *mpr)
     name = mprGetAppName();
 
     mprPrintfError("\n%s Usage:\n\n"
-    "  %s [options] [IPaddress][:port] [documents]\n\n"
-    "  Options:\n"
-    "    --config configFile    # Use named config file instead appweb.conf\n"
-    "    --chroot directory     # Change root directory to run more securely (Unix)\n"
-    "    --debugger             # Disable timeouts to make debugging easier\n"
-    "    --exe path             # Set path to Appweb executable on Vxworks\n"
-    "    --home directory       # Change to directory to run\n"
-    "    --log logFile:level    # Log to file file at verbosity level\n"
-    "    --name uniqueName      # Unique name for this instance\n"
-    "    --threads maxThreads   # Set maximum worker threads\n"
-    "    --verbose              # Same as --log stderr:2\n"
-    "    --version              # Output version information\n\n"
-    "  Without IPaddress, %s will read the appweb.conf configuration file.\n\n",
-        mprGetAppTitle(), name, name, name, name);
+        "  %s [options] [IPaddress][:port] [documents]\n\n"
+        "  Options:\n"
+        "    --config configFile    # Use named config file instead appweb.conf\n"
+        "    --chroot directory     # Change root directory to run more securely (Unix)\n"
+        "    --debugger             # Disable timeouts to make debugging easier\n"
+        "    --exe path             # Set path to Appweb executable on Vxworks\n"
+        "    --home directory       # Change to directory to run\n"
+        "    --log logFile:level    # Log to file file at verbosity level\n"
+        "    --name uniqueName      # Unique name for this instance\n"
+        "    --threads maxThreads   # Set maximum worker threads\n"
+        "    --verbose              # Same as --log stderr:2\n"
+        "    --version              # Output version information\n\n"
+        "  Without IPaddress, %s will read the appweb.conf configuration file.\n\n",
+        mprGetAppTitle(), name, name);
     exit(10);
 }
 
@@ -374,6 +397,36 @@ static void traceHandler(void *ignored, MprSignal *sp)
     level = mprGetLogLevel() > 2 ? 2 : 6;
     mprLog(0, "Change log level to %d", level);
     mprSetLogLevel(level);
+}
+
+
+/*
+    SIGINFO will dump memory stats
+    Use: ./configure --set memoryCheck=true
+ */
+static void statusCheck(void *ignored, MprSignal *sp)
+{
+    Http                *http;
+    HttpEndpoint        *endpoint;
+    MprWorkerService    *ws;
+    int                 next;
+
+    ws = MPR->workerService;
+    http = MPR->httpService;
+
+    mprRequestGC(MPR_FORCE_GC);
+    mprPrintMem("Memory Usage", 1);
+
+    for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
+        printf("%2s:%d, Connections %2d, Requests: %2d/%d, Clients IPs %2d/%d, Processes %2d/%d, " \
+            "Threads %2d/%d idle %d busy %d, Sessions %2d/%d\n",
+            endpoint->ip ? endpoint->ip : "*", endpoint->port,
+            mprGetListLength(http->connections), endpoint->requestCount, endpoint->limits->requestMax,
+            endpoint->clientCount, endpoint->limits->clientMax, http->processCount, endpoint->limits->processMax,
+            ws->numThreads, ws->maxThreads, ws->idleThreads->length, ws->busyThreads->length,
+            http->sessionCount, endpoint->limits->sessionMax);
+    }
+    printf("\n");
 }
 
 
@@ -432,7 +485,7 @@ static int writePort(MaServer *server)
         mprError("Could not create port file %s", path);
         return MPR_ERR_CANT_CREATE;
     }
-    mprSprintf(numBuf, sizeof(numBuf), "%d", host->port);
+    fmt(numBuf, sizeof(numBuf), "%d", host->port);
 
     len = (int) strlen(numBuf);
     numBuf[len++] = '\n';
@@ -450,10 +503,10 @@ static int writePort(MaServer *server)
 /*
     VxWorks link resolution
  */
-int _cleanup() {
+PUBLIC int _cleanup() {
     return 0;
 }
-int _exit() {
+PUBLIC int _exit() {
     return 0;
 }
 
@@ -482,28 +535,12 @@ double  __dummy_appweb_floating_point_resolution(double a, double b, int64 c, in
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

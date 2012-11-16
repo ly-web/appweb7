@@ -11,23 +11,30 @@
 
 #include    "appweb.h"
 
-#if BIT_FEATURE_CGI
+#if BIT_PACK_CGI
 /************************************ Locals ***********************************/
 
-#define MA_CGI_SEEN_HEADER          0x1
-#define MA_CGI_FLOW_CONTROL         0x2     /* Output to client is flow controlled */
+typedef struct Cgi {
+    HttpConn    *conn;                  /**< Client connection object */
+    MprCmd      *cmd;                   /**< CGI command object */
+    HttpQueue   *writeq;                /**< Queue to write to the CGI */
+    HttpQueue   *readq;                 /**< Queue to read from the CGI */
+    HttpPacket  *headers;               /**< CGI response headers */
+    int         seenHeader;             /**< Parsed response header from CGI */
+} Cgi;
 
 /*********************************** Forwards *********************************/
 
+static void browserToCgiService(HttpQueue *q);
 static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp);
-static ssize cgiCallback(MprCmd *cmd, int channel, void *data);
+static void cgiCallback(MprCmd *cmd, int channel, void *data);
+static void cgiToBrowserData(HttpQueue *q, HttpPacket *packet);
 static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix);
 static char *getCgiToken(MprBuf *buf, cchar *delim);
-static bool parseFirstCgiResponse(HttpConn *conn, MprCmd *cmd);
-static bool parseHeader(HttpConn *conn, MprCmd *cmd);
-static int relayCgiResponse(HttpQueue *q, MprCmd *cmd, int channel, MprBuf *buf);
-static void writeToCGI(HttpQueue *q);
-static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf *buf);
+static void manageCgi(Cgi *cgi, int flags);
+static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet);
+static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet);
+static void readFromCgi(Cgi *cgi, int channel);
 
 #if BIT_DEBUG
     static void traceCGIData(MprCmd *cmd, char *src, ssize size);
@@ -41,6 +48,7 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
 #endif
 #if BIT_WIN_LIKE
     static void checkCompletion(HttpQueue *q, MprEvent *event);
+    static void waitForCgi(Cgi *cgi, MprEvent *event);
 #endif
 
 /************************************* Code ***********************************/
@@ -50,38 +58,64 @@ static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf 
 static void openCgi(HttpQueue *q)
 {
     HttpRx      *rx;
+    HttpConn    *conn;
+    Cgi         *cgi;
 
-    rx = q->conn->rx;
-
+    conn = q->conn;
+    rx = conn->rx;
     mprLog(5, "Open CGI handler");
-    if (!httpValidateLimits(q->conn->endpoint, HTTP_VALIDATE_OPEN_PROCESS, q->conn)) {
+    if (!httpValidateLimits(conn->endpoint, HTTP_VALIDATE_OPEN_PROCESS, q->conn)) {
         /* Too many active CGI processes */
         return;
     }
     if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        httpHandleOptionsTrace(q->conn);
+        httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
     } else {
         httpTrimExtraPath(q->conn);
         httpMapFile(q->conn, rx->route);
         httpCreateCGIParams(q->conn);
     }
+    if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
+        return;
+    }
+    q->queueData = q->pair->queueData = cgi;
+    cgi->conn = conn;
+    cgi->readq = httpCreateQueue(conn, conn->http->cgiConnector, HTTP_QUEUE_RX, 0);
+    cgi->writeq = httpCreateQueue(conn, conn->http->cgiConnector, HTTP_QUEUE_TX, 0);
+    cgi->readq->pair = cgi->writeq;
+    cgi->writeq->pair = cgi->readq;
+    cgi->writeq->queueData = cgi->readq->queueData = cgi;
+}
 
+
+static void manageCgi(Cgi *cgi, int flags)
+{
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(cgi->conn);
+        mprMark(cgi->writeq);
+        mprMark(cgi->readq);
+        mprMark(cgi->cmd);
+        mprMark(cgi->headers);
+    } else {
+        if (cgi->cmd) {
+            /* Just for safety */
+            mprDestroyCmd(cgi->cmd);
+        }
+    }
 }
 
 
 static void closeCgi(HttpQueue *q)
 {
+    Cgi     *cgi;
     MprCmd  *cmd;
 
     mprLog(5, "CGI: close");
-    cmd = (MprCmd*) q->queueData;
+    cgi = q->queueData;
+    cmd = cgi->cmd;
     if (cmd) {
         mprSetCmdCallback(cmd, NULL, NULL);
-        if (cmd->pid) {
-            /* Request has completed so can kill the command */
-            mprStopCmd(cmd, -1);
-        }
-        mprDisconnectCmd(cmd);
+        mprDestroyCmd(cmd);
     }
     httpValidateLimits(q->conn->endpoint, HTTP_VALIDATE_CLOSE_PROCESS, q->conn);
 }
@@ -97,6 +131,7 @@ static void startCgi(HttpQueue *q)
     HttpTx          *tx;
     HttpConn        *conn;
     MprCmd          *cmd;
+    Cgi             *cgi;
     cchar           *baseName;
     cchar           **argv, *fileName;
     cchar           **envv;
@@ -104,22 +139,24 @@ static void startCgi(HttpQueue *q)
 
     argv = 0;
     argc = 0;
+    cgi = q->queueData;
     conn = q->conn;
     rx = conn->rx;
     tx = conn->tx;
-
     mprLog(5, "CGI: Start");
 
     /*
-        The command uses the conn dispatcher. This serializes all I/O for both the connection and the CGI gateway
+        The command uses the conn dispatcher. This serializes all I/O for both the connection and the CGI gateway.
      */
-    cmd = q->queueData = mprCreateCmd(conn->dispatcher);
+    if ((cmd = mprCreateCmd(conn->dispatcher)) == 0) {
+        return;
+    }
+    cgi->cmd = cmd;
 
     if (conn->http->forkCallback) {
         cmd->forkCallback = conn->http->forkCallback;
         cmd->forkData = conn->http->forkData;
     }
-
     argc = 1;                                   /* argv[0] == programName */
     buildArgs(conn, cmd, &argc, &argv);
     fileName = argv[0];
@@ -131,7 +168,8 @@ static void startCgi(HttpQueue *q)
     if (strncmp(baseName, "nph-", 4) == 0 || 
             (strlen(baseName) > 4 && strcmp(&baseName[strlen(baseName) - 4], "-nph") == 0)) {
         /* Pretend we've seen the header for Non-parsed Header CGI programs */
-        cmd->userFlags |= MA_CGI_SEEN_HEADER;
+        cgi->seenHeader = 1;
+        tx->flags |= HTTP_TX_USE_OWN_HEADERS;
     }
     /*  
         Build environment variables
@@ -144,64 +182,151 @@ static void startCgi(HttpQueue *q)
         count = copyVars(envv, 0, rx->params, "");
         count = copyVars(envv, 0, rx->svars, "");
         count = copyVars(envv, count, rx->headers, "HTTP_");
-        mprAssert(count <= varCount);
+        assure(count <= varCount);
     }
-    cmd->stdoutBuf = mprCreateBuf(HTTP_BUFSIZE, HTTP_BUFSIZE);
-    cmd->stderrBuf = mprCreateBuf(HTTP_BUFSIZE, HTTP_BUFSIZE);
-
 #if !VXWORKS
     /*
         This will be ignored on VxWorks because there is only one global current directory for all tasks
      */
     mprSetCmdDir(cmd, mprGetPathDir(fileName));
 #endif
-    mprSetCmdCallback(cmd, cgiCallback, tx);
+    mprSetCmdCallback(cmd, cgiCallback, cgi);
 
     if (mprStartCmd(cmd, argc, argv, envv, MPR_CMD_IN | MPR_CMD_OUT | MPR_CMD_ERR) < 0) {
         httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Can't run CGI process: %s, URI %s", fileName, rx->uri);
+        return;
     }
+#if BIT_WIN_LIKE
+    /*
+        Start the windows-waiter via an event. This ensures it is serialized in the request dispatcher
+     */
+    mprCreateEvent(conn->dispatcher, "cgi-win", 10, waitForCgi, cgi, MPR_EVENT_CONTINUOUS);
+#endif
 }
 
 
 #if BIT_WIN_LIKE
 /*
-    This routine is called for when the outgoing queue is writable.  We don't actually do output here, just poll
-    on windows (only) until the command is complete.
+    Windows can't select on named pipes. So poll for events.
+    This runs on the connection dispatcher thread. Don't actually service events here. Otherwise it becomes too
+    complex with nested calls to mprWaitForEvent().
  */
-static void writableCgi(HttpQueue *q)
+static void waitForCgi(Cgi *cgi, MprEvent *event)
 {
+    HttpConn    *conn;
     MprCmd      *cmd;
 
-    cmd = (MprCmd*) q->queueData;
-
-    if (q->pair) {
-        writeToCGI(q->pair);
-    }
-    if (q->pair == 0 || q->pair->count == 0) {
-        mprCloseCmdFd(cmd, MPR_CMD_STDIN);
-    }
-    /*
-        Windows can't select on named pipes. So must poll here. This consumes a thread.
-     */
-    while (!cmd->complete) {
-        mprWaitForCmd(cmd, 1000);
+    conn = cgi->conn;
+    cmd = cgi->cmd;
+    if (!cmd->complete) {
+        mprPollWinCmd(cmd, 0);
+        if (conn->error && cmd->pid) {
+            mprStopCmd(cmd, -1);
+        }
     }
 }
 #endif
 
 
 /*
-    Service outgoing data destined for the browser. This is response data from the CGI program. See writeToClient.
-    This may be called by {maRunPipeline|cgiCallback} => httpServiceQueues
- */ 
-static void outgoingCgiService(HttpQueue *q)
+    Accept incoming body data from the client destined for the CGI gateway. This is typically POST or PUT data.
+    Note: For POST "form" requests, this will be called before the command is actually started. 
+ */
+static void browserToCgiData(HttpQueue *q, HttpPacket *packet)
 {
-    MprCmd      *cmd;
+    HttpConn    *conn;
+    Cgi         *cgi;
 
-    cmd = (MprCmd*) q->queueData;
-    mprLog(7, "CGI: OutgoingCgiService pid %d, q->count %d, q->flags %x, writeBlocked %d", 
-        (cmd) ? cmd->pid: -1, q->count, q->flags, q->conn->writeBlocked);
-           
+    assure(q);
+    assure(packet);
+    cgi = q->queueData;
+    conn = q->conn;
+    assure(q == conn->readq);
+
+    if (httpGetPacketLength(packet) == 0) {
+        /* End of input */
+        if (conn->rx->remainingContent > 0) {
+            /* Short incoming body data. Just kill the CGI process */
+            if (cgi->cmd) {
+                mprDestroyCmd(cgi->cmd);
+            }
+            httpError(conn, HTTP_CODE_BAD_REQUEST, "Client supplied insufficient body data");
+        }
+    }
+    httpPutForService(cgi->writeq, packet, HTTP_SCHEDULE_QUEUE);
+}
+
+
+static void browserToCgiService(HttpQueue *q)
+{
+    HttpConn    *conn;
+    HttpPacket  *packet;
+    Cgi         *cgi;
+    MprCmd      *cmd;
+    MprBuf      *buf;
+    ssize       rc, len;
+    int         err;
+
+    cgi = q->queueData;
+    assure(q == cgi->writeq);
+    cmd = cgi->cmd;
+    assure(cmd);
+    conn = cgi->conn;
+
+    for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
+        if ((buf = packet->content) == 0) {
+            /* End packet */
+            continue;
+        }
+        len = mprGetBufLength(buf);
+        rc = mprWriteCmd(cmd, MPR_CMD_STDIN, mprGetBufStart(buf), len);
+        if (rc < 0) {
+            err = mprGetError();
+            if (err == EINTR) {
+                continue;
+            } else if (err == EAGAIN || err == EWOULDBLOCK) {
+                httpPutBackPacket(q, packet);
+                break;
+            }
+            mprLog(2, "CGI: write to gateway failed for %d bytes, rc %d, errno %d", len, rc, mprGetOsError());
+            mprCloseCmdFd(cmd, MPR_CMD_STDIN);
+            httpDiscardQueueData(q, 1);
+            httpError(conn, HTTP_CODE_BAD_GATEWAY, "Can't write body data to CGI gateway");
+            break;
+        }
+        LOG(6, "CGI: browserToCgiService %d/%d, qmax %d", rc, len, q->max);
+        mprAdjustBufStart(buf, rc);
+        if (mprGetBufLength(buf) > 0) {
+            httpPutBackPacket(q, packet);
+            break;
+        }
+    }
+    if (q->count > 0) {
+        /* Wait for writable event so cgiCallback can recall this routine */
+        mprEnableCmdEvents(cmd, MPR_CMD_STDIN);
+    } else if (conn->rx->eof) {
+        mprCloseCmdFd(cmd, MPR_CMD_STDIN);
+    }
+}
+
+
+static void cgiToBrowserData(HttpQueue *q, HttpPacket *packet)
+{
+    httpPutForService(q->conn->writeq, packet, HTTP_SCHEDULE_QUEUE);
+}
+
+
+static void cgiToBrowserService(HttpQueue *q)
+{
+    HttpConn    *conn;
+    MprCmd      *cmd;
+    Cgi         *cgi;
+
+    cgi = q->queueData;
+    conn = q->conn;
+    assure(q == conn->writeq);
+    cmd = cgi->cmd;
+
     /*
         This will copy outgoing packets downstream toward the network connector and on to the browser. 
         This may disable the CGI queue if the downstream net connector queue overflows because the socket 
@@ -210,143 +335,15 @@ static void outgoingCgiService(HttpQueue *q)
         and schedule it for service again.
      */ 
     httpDefaultOutgoingServiceStage(q);
-
-    if (cmd && cmd->userFlags & MA_CGI_FLOW_CONTROL && q->count < q->low) {
-        mprLog(7, "CGI: @@@ OutgoingCgiService - re-enable gateway output count %d (low %d)", q->count, q->low);
-        cmd->userFlags &= ~MA_CGI_FLOW_CONTROL;
-        mprEnableCmdEvents(cmd, MPR_CMD_STDOUT);
-        httpResumeQueue(q);
+    if (q->count < q->low) {
+        mprEnableCmdOutputEvents(cmd, 1);
+        LOG(6, "CGI: ENABLE CGI events: cgiToBrowserService");
+    } else if (q->count > q->max && conn->tx->writeBlocked) {
+        LOG(6, "CGI: SUSPEND WRITEQ: cgiToBrowserData writeq %d/%d", conn->writeq->count, conn->writeq->max);
+        httpSuspendQueue(conn->writeq);
     }
-}
-
-
-/*
-    Accept incoming body data from the client destined for the CGI gateway. This is typically POST or PUT data.
- */
-static void incomingCgi(HttpQueue *q, HttpPacket *packet)
-{
-    HttpConn    *conn;
-    HttpRx      *rx;
-    MprCmd      *cmd;
-
-    mprAssert(q);
-    mprAssert(packet);
-    
-    conn = q->conn;
-    rx = conn->rx;
-    cmd = (MprCmd*) q->pair->queueData;
-    conn->lastActivity = conn->http->now;
-
-    if (httpGetPacketLength(packet) == 0) {
-        /* End of input */
-        if (rx->remainingContent > 0) {
-            /* Short incoming body data. Just kill the CGI process.  */
-            if (cmd) {
-                mprDestroyCmd(cmd);
-            }
-            q->queueData = 0;
-            httpError(conn, HTTP_CODE_BAD_REQUEST, "Client supplied insufficient body data");
-        } else {
-            /*  
-                Close the CGI program's stdin. This will allow the gateway to exit if it was 
-                expecting input data and insufficient was sent by the client.
-             */
-            if (cmd && cmd->files[MPR_CMD_STDIN].fd >= 0) {
-                mprCloseCmdFd(cmd, MPR_CMD_STDIN);
-            }
-        }
-    } else {
-        /* No service routine, we just need it to be queued for writeToCGI */
-        httpPutForService(q, packet, 0);
-    }
-    if (cmd) {
-        writeToCGI(q);
-    }
-}
-
-
-/*
-    Write data to the CGI program. This is called from incomingCgiData and from the cgiCallback when the pipe
-    to the CGI program becomes writable. This routine will write all queued data and will block until it is sent. 
- */
-static void writeToCGI(HttpQueue *q)
-{
-    HttpConn    *conn;
-    HttpPacket  *packet;
-    MprCmd      *cmd;
-    MprBuf      *buf;
-    ssize       rc, len;
-    int         err;
-
-    cmd = (MprCmd*) q->pair->queueData;
-    mprAssert(cmd);
-    conn = q->conn;
-
-    for (packet = httpGetPacket(q); packet && conn->state < HTTP_STATE_COMPLETE; packet = httpGetPacket(q)) {
-        conn->lastActivity = conn->http->now;
-        buf = packet->content;
-        len = mprGetBufLength(buf);
-        rc = mprWriteCmd(cmd, MPR_CMD_STDIN, mprGetBufStart(buf), len);
-        mprLog(5, "CGI: write %d bytes to gateway. Rc rc %d, errno %d", len, rc, mprGetOsError());
-        if (rc < 0) {
-            err = mprGetError();
-            if (err == EINTR) {
-                continue;
-            } else if (err == EAGAIN || err == EWOULDBLOCK) {
-                break;
-            }
-            mprLog(2, "CGI: write to gateway failed for %d bytes, rc %d, errno %d", len, rc, mprGetOsError());
-            mprCloseCmdFd(cmd, MPR_CMD_STDIN);
-            httpError(conn, HTTP_CODE_BAD_GATEWAY, "Can't write body data to CGI gateway");
-            break;
-        }
-        mprAdjustBufStart(buf, rc);
-        if (mprGetBufLength(buf) > 0) {
-            httpPutBackPacket(q, packet);
-        }
-    }
-}
-
-
-/*
-    Write data back to the client (browser). Must be locked when called.
- */
-static int writeToClient(HttpQueue *q, MprCmd *cmd, MprBuf *buf, int channel)
-{
-    HttpConn    *conn;
-    ssize       len, rc;
-
-    conn = q->conn;
-    mprAssert(conn->tx);
-
-    /*
-        Write to the browser. Write as much as we can. Service queues to get the filters and connectors pumping.
-     */
-    while (conn->tx && (len = mprGetBufLength(buf)) > 0) {
-        if (conn->tx && !conn->finalized && conn->state < HTTP_STATE_COMPLETE) {
-            if ((q->count + len) > q->max) {
-                cmd->userFlags |= MA_CGI_FLOW_CONTROL;
-                mprLog(7, "CGI: @@@ client write queue full. Suspend queue, enable conn events");
-                httpSuspendQueue(q);
-                return -1;
-            }
-            rc = httpWriteBlock(q, mprGetBufStart(buf), len);
-            mprLog(7, "CGI: Write to client %d, absorbed %d, q->count %d, q->max %d, q->flags %x, writeBlocked %d", 
-                len, rc, q->count, q->max, q->flags, conn->writeBlocked);
-        } else {
-            /* Command complete - just discard the data */
-            rc = len;
-        }
-        if (rc > 0) {
-            mprAdjustBufStart(buf, rc);
-            mprResetBufIfEmpty(buf);
-            httpFlushQueue(q, 0);
-            mprLog(7, "CGI: After flush q->count %d, q->max %d, q->flags %x", q->count, q->max, q->flags);
-        } else {
-            break;
-        }
-    }
-    return 0;
+    LOG(6, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
+        cmd->pid, q->count, q->flags, conn->tx->writeBlocked);
 }
 
 
@@ -355,244 +352,157 @@ static int writeToClient(HttpQueue *q, MprCmd *cmd, MprBuf *buf, int channel)
     I/O events from the CGI process for stdout/stderr data from the CGI script and for EOF from the CGI's stdin.
     This event runs on the connection's dispatcher. (ie. single threaded and safe)
  */
-static ssize cgiCallback(MprCmd *cmd, int channel, void *data)
+static void cgiCallback(MprCmd *cmd, int channel, void *data)
 {
-    HttpQueue   *q;
     HttpConn    *conn;
-    HttpTx      *tx;
-    ssize       nbytes;
+    Cgi         *cgi;
+    int         suspended;
 
-    tx = (HttpTx*) data;
-    conn = tx->conn;
-    nbytes = 0;
-    if (conn == 0) {
-        return 0;
+    cgi = data;
+    if ((conn = cgi->conn) == 0) {
+        return;
     }
-    mprAssert(conn->tx);
-    mprAssert(conn->rx);
-
-    tx = conn->tx;
-    mprAssert(tx);
     conn->lastActivity = conn->http->now;
-    q = conn->writeq;
+    LOG(6, "CGI: cgiCallback event channel %d", channel);
 
     switch (channel) {
     case MPR_CMD_STDIN:
-        /* CGI's stdin can now accept more data */
-        writeToCGI(q->pair);
+        /* Stdin can absorb more data */
+        httpResumeQueue(cgi->writeq);
         break;
 
     case MPR_CMD_STDOUT:
-        nbytes = readCgiResponseData(q, cmd, channel, cmd->stdoutBuf);
-        break;
-
     case MPR_CMD_STDERR:
-        nbytes = readCgiResponseData(q, cmd, channel, cmd->stderrBuf);
+        readFromCgi(cgi, channel);
         break;
             
     default:
         /* Child death notification */
-        if (cmd->pid == 0 && cmd->complete) {
-            httpFinalize(conn);
-        }
+        break;
     }
-    if (conn->state < HTTP_STATE_COMPLETE) {
-        if (cmd->pid && !(cmd->userFlags & MA_CGI_FLOW_CONTROL)) {
-            mprLog(7, "CGI: @@@ enable CGI events for channel %d", channel);
-            mprEnableCmdEvents(cmd, channel);
-        }
-        if (conn->connectorq->count > 0) {
-            httpEnableConnEvents(conn);
-        }
-    } else {
-        httpPump(conn, NULL);
+    httpServiceQueues(conn);
+    LOG(7, "AFTER SERVICE state %d, error %d, complete %d", conn->state, conn->error, cmd->complete);
+
+    if (cmd->complete) {
+        httpFinalize(conn);
+        httpPumpRequest(conn, NULL);
+        /* WARNING: this will complete this request and prep for the next */
+        httpPostEvent(conn);
+        return;
+    } 
+    if (channel >= 0 && conn->state <= HTTP_STATE_FINALIZED) {
+        httpEnableConnEvents(conn);
+        mprLog(6, "CGI: ENABLE CONN: cgiCallback mask %x", conn->sock->handler ? conn->sock->handler->desiredMask : 0);
     }
-    return nbytes;
+    suspended = httpIsQueueSuspended(conn->writeq);
+    mprLog(6, "CGI: %s CGI: cgiCallback. Conn->writeq %d", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
+    assure(!suspended || conn->tx->writeBlocked);
+    mprEnableCmdOutputEvents(cmd, !suspended);
 }
 
 
-/*
-    Come here for CGI stdout, stderr events. ie. reading data from the CGI program.
- */
-static ssize readCgiResponseData(HttpQueue *q, MprCmd *cmd, int channel, MprBuf *buf)
+static void readFromCgi(Cgi *cgi, int channel)
 {
     HttpConn    *conn;
-    ssize       space, nbytes, total;
+    HttpPacket  *packet;
+    HttpTx      *tx;
+    HttpQueue   *q, *writeq;
+    MprCmd      *cmd;
+    ssize       nbytes;
     int         err;
 
-    conn = q->conn;
-    mprAssert(conn->state > HTTP_STATE_BEGIN);
-    mprResetBufIfEmpty(buf);
-    total = 0;
+    cmd = cgi->cmd;
+    conn = cgi->conn;
+    tx = conn->tx;
+    q = cgi->readq;
+    writeq = conn->writeq;
+    assure(conn->sock);
+    assure(conn->state > HTTP_STATE_BEGIN);
 
-    while (mprGetCmdFd(cmd, channel) >= 0 && conn->sock && conn->state > HTTP_STATE_BEGIN) {
-        do {
-            mprAssert(conn->state > HTTP_STATE_BEGIN);
-            /*
-                Read as much data from the CGI as possible
-             */
-            if ((space = mprGetBufSpace(buf)) == 0) {
-                mprGrowBuf(buf, MPR_BUFSIZE);
-                if ((space = mprGetBufSpace(buf)) == 0) {
-                    break;
-                }
-            }
-            nbytes = mprReadCmd(cmd, channel, mprGetBufEnd(buf), space);
-
-            mprLog(7, "CGI: Read from gateway, channel %d, got %d bytes. errno %d", channel, nbytes, 
-                nbytes >= 0 ? 0 : mprGetOsError());
-            if (nbytes < 0) {
-                err = mprGetError();
-                if (err == EINTR) {
-                    continue;
-                } else if (err == EAGAIN || err == EWOULDBLOCK) {
-                    break;
-                }
-                mprLog(5, "CGI: Gateway read error %d for %s", err, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
-                /* 
-                    WARNING: this may complete the request here 
-                 */
-                mprCloseCmdFd(cmd, channel);
+    if (tx->finalized) {
+        mprCloseCmdFd(cmd, channel);
+    }
+    while (mprGetCmdFd(cmd, channel) >= 0 && !tx->finalized && writeq->count < writeq->max) {
+        if ((packet = cgi->headers) != 0) {
+            if (mprGetBufSpace(packet->content) < HTTP_BUFSIZE && mprGrowBuf(packet->content, HTTP_BUFSIZE) < 0) {
                 break;
-                
-            } else if (nbytes == 0) {
-                /*
-                    This may reap the terminated child and thus clear cmd->process if both stderr and stdout are closed.
-                    WARNING: this may complete the request here 
-                 */
-                mprLog(5, "CGI: Gateway EOF for %s, pid %d", (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr", cmd->pid);
-                mprCloseCmdFd(cmd, channel);
-                break;
-
-            } else {
-                mprLog(5, "CGI: Gateway read %d bytes from %s", nbytes, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
-                mprAdjustBufEnd(buf, nbytes);
-                traceData(cmd, mprGetBufStart(buf), nbytes);
-                mprAddNullToBuf(buf);
-                total += nbytes;
             }
-            conn->lastActivity = conn->http->now;
-        } while ((space = mprGetBufSpace(buf)) > 0 && conn->state > HTTP_STATE_BEGIN);
-
-        if (conn->state == HTTP_STATE_BEGIN) {
-            return total;
-        }
-        if (mprGetBufLength(buf) == 0) {
+        } else if ((packet = httpCreateDataPacket(HTTP_BUFSIZE)) == 0) {
             break;
         }
-        if (relayCgiResponse(q, cmd, channel, buf) < 0) {
+        nbytes = mprReadCmd(cmd, channel, mprGetBufEnd(packet->content), HTTP_BUFSIZE);
+        if (nbytes < 0) {
+            err = mprGetError();
+            if (err == EINTR) {
+                continue;
+            } else if (err == EAGAIN || err == EWOULDBLOCK) {
+                break;
+            }
+            mprLog(6, "CGI: Gateway read error %d for %s", err, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
+            mprCloseCmdFd(cmd, channel);
             break;
+            
+        } else if (nbytes == 0) {
+            mprLog(6, "CGI: Gateway EOF for %s, pid %d", (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr", cmd->pid);
+            mprCloseCmdFd(cmd, channel);
+            break;
+
+        } else {
+            mprLog(6, "CGI: Gateway read %d bytes from %s", nbytes, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
+            traceData(cmd, mprGetBufEnd(packet->content), nbytes);
+            mprAdjustBufEnd(packet->content, nbytes);
+        }
+        if (channel == MPR_CMD_STDERR) {
+            mprError("CGI: Error for \"%s\"\n\n%s", conn->rx->uri, mprGetBufStart(packet->content));
+            httpSetStatus(conn, HTTP_CODE_SERVICE_UNAVAILABLE);
+            cgi->seenHeader = 1;
+        }
+        if (!cgi->seenHeader) {
+            if (!parseCgiHeaders(cgi, packet)) {
+                cgi->headers = packet;
+                return;
+            }
+            cgi->headers = 0;
+            cgi->seenHeader = 1;
+        } 
+        if (!tx->finalizedOutput && httpGetPacketLength(packet) > 0) {
+            /* Put the data to the CGI readq, then cgiToBrowserService will take care of it */
+            httpPutPacket(q, packet);
         }
     }
-    if (cmd->complete && conn->state > HTTP_STATE_BEGIN) {
-        mprAssert(conn->tx);
-        httpFinalize(conn);
-    }
-    return total;
 }
 
 
 /*
-    Relay CGI response data to the client
+    Parse the CGI output headers. Sample CGI program output:
+        Content-type: text/html
+
+        <html.....
  */
-static int relayCgiResponse(HttpQueue *q, MprCmd *cmd, int channel, MprBuf *buf)
+static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
 {
     HttpConn    *conn;
-
-    conn = q->conn;
-    mprAssert(conn->state > HTTP_STATE_BEGIN);
-    mprAssert(conn->tx);
-    
-    mprLog(7, "relayCgiResponse pid %d", cmd->pid);
-
-    if (channel == MPR_CMD_STDERR) {
-        /*
-            Write stderr to the log AND write to the client
-         */
-        mprError("Error output from CGI command for \"%s\"\n\n%s", conn->rx->uri, mprGetBufStart(buf));
-        if (writeToClient(q, cmd, buf, channel) < 0) {
-            mprNop(0);
-            return -1;
-        }
-        httpSetStatus(conn, HTTP_CODE_SERVICE_UNAVAILABLE);
-        cmd->userFlags |= MA_CGI_SEEN_HEADER;
-        cmd->status = 0;
-
-    } else {
-        if (!(cmd->userFlags & MA_CGI_SEEN_HEADER) && !parseHeader(conn, cmd)) {
-            return -1;
-        } 
-        if (cmd->userFlags & MA_CGI_SEEN_HEADER && conn->state > HTTP_STATE_BEGIN) {
-            if (writeToClient(q, cmd, buf, channel) < 0) {
-                mprNop(0);
-                return -1;
-            }
-        }
-    }
-    return 0;
-}
-
-
-/*
-    Parse the CGI output first line
- */
-static bool parseFirstCgiResponse(HttpConn *conn, MprCmd *cmd)
-{
-    MprBuf      *buf;
-    char        *protocol, *status, *message;
-    
-    buf = mprGetCmdBuf(cmd, MPR_CMD_STDOUT);
-    
-    protocol = getCgiToken(buf, " ");
-    if (protocol == 0 || protocol[0] == '\0') {
-        httpError(conn, HTTP_CODE_BAD_GATEWAY, "Bad CGI HTTP protocol response");
-        return 0;
-    }
-    if (strncmp(protocol, "HTTP/1.", 7) != 0) {
-        httpError(conn, HTTP_CODE_BAD_GATEWAY, "Unsupported CGI protocol");
-        return 0;
-    }
-    status = getCgiToken(buf, " ");
-    if (status == 0 || *status == '\0') {
-        httpError(conn, HTTP_CODE_BAD_GATEWAY, "Bad CGI header response");
-        return 0;
-    }
-    message = getCgiToken(buf, "\n");
-    mprLog(4, "CGI: Status line: %s %s %s", protocol, status, message);
-    return 1;
-}
-
-
-/*
-    Parse the CGI output headers. 
-    Sample CGI program:
-
-    Content-type: text/html
-   
-    <html.....
- */
-static bool parseHeader(HttpConn *conn, MprCmd *cmd)
-{
     HttpTx      *tx;
     MprBuf      *buf;
     char        *endHeaders, *headers, *key, *value, *location;
-    int         fd, len;
+    ssize       blen;
+    int         len;
 
+    conn = cgi->conn;
     tx = conn->tx;
     location = 0;
     value = 0;
-
-    buf = mprGetCmdBuf(cmd, MPR_CMD_STDOUT);
+    buf = packet->content;
     headers = mprGetBufStart(buf);
-
+    blen = mprGetBufLength(buf);
+    
     /*
-        Split the headers from the body.
+        Split the headers from the body. Add null to ensure we can search for line terminators.
      */
     len = 0;
-    fd = mprGetCmdFd(cmd, MPR_CMD_STDOUT);
-    if ((endHeaders = strstr(headers, "\r\n\r\n")) == NULL) {
-        if ((endHeaders = strstr(headers, "\n\n")) == NULL) {
-            if (fd >= 0 && strlen(headers) < HTTP_MAX_HEADERS) {
+    if ((endHeaders = sncontains(headers, "\r\n\r\n", blen)) == NULL) {
+        if ((endHeaders = sncontains(headers, "\n\n", blen)) == NULL) {
+            if (mprGetCmdFd(cgi->cmd, MPR_CMD_STDOUT) >= 0 && strlen(headers) < HTTP_MAX_HEADERS) {
                 /* Not EOF and less than max headers and have not yet seen an end of headers delimiter */
                 return 0;
             }
@@ -601,23 +511,24 @@ static bool parseHeader(HttpConn *conn, MprCmd *cmd)
     } else {
         len = 4;
     }
+    if (endHeaders > buf->end) {
+        assure(endHeaders <= buf->end);
+        return 0;
+    }
     if (endHeaders) {
         endHeaders[len - 1] = '\0';
         endHeaders += len;
     }
-
     /*
         Want to be tolerant of CGI programs that omit the status line.
      */
     if (strncmp((char*) buf->start, "HTTP/1.", 7) == 0) {
-        if (!parseFirstCgiResponse(conn, cmd)) {
+        if (!parseFirstCgiResponse(cgi, packet)) {
             /* httpError already called */
             return 0;
         }
     }
     if (endHeaders && strchr(mprGetBufStart(buf), ':')) {
-        mprLog(4, "CGI: parseHeader: header\n%s", headers);
-
         while (mprGetBufLength(buf) > 0 && buf->start[0] && (buf->start[0] != '\r' && buf->start[0] != '\n')) {
             if ((key = getCgiToken(buf, ":")) == 0) {
                 key = "Bad Header";
@@ -626,6 +537,7 @@ static bool parseHeader(HttpConn *conn, MprCmd *cmd)
             while (isspace((uchar) *value)) {
                 value++;
             }
+            mprLog(4, "CGI: parseCgiHeader: key %s = %s", key, value);
             len = (int) strlen(value);
             while (len > 0 && (value[len - 1] == '\r' || value[len - 1] == '\n')) {
                 value[len - 1] = '\0';
@@ -655,15 +567,41 @@ static bool parseHeader(HttpConn *conn, MprCmd *cmd)
         }
         buf->start = endHeaders;
     }
-    cmd->userFlags |= MA_CGI_SEEN_HEADER;
-
     if (location) {
         httpRedirect(conn, tx->status, location);
-        httpFinalize(conn);
-        if (conn->state == HTTP_STATE_COMPLETE) {
-            httpPump(conn, NULL);
+        if (conn->state == HTTP_STATE_FINALIZED) {
+            httpPumpRequest(conn, NULL);
         }
     }
+    return 1;
+}
+
+
+/*
+    Parse the CGI output first line
+ */
+static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet)
+{
+    MprBuf      *buf;
+    char        *protocol, *status, *message;
+    
+    buf = packet->content;
+    protocol = getCgiToken(buf, " ");
+    if (protocol == 0 || protocol[0] == '\0') {
+        httpError(cgi->conn, HTTP_CODE_BAD_GATEWAY, "Bad CGI HTTP protocol response");
+        return 0;
+    }
+    if (strncmp(protocol, "HTTP/1.", 7) != 0) {
+        httpError(cgi->conn, HTTP_CODE_BAD_GATEWAY, "Unsupported CGI protocol");
+        return 0;
+    }
+    status = getCgiToken(buf, " ");
+    if (status == 0 || *status == '\0') {
+        httpError(cgi->conn, HTTP_CODE_BAD_GATEWAY, "Bad CGI header response");
+        return 0;
+    }
+    message = getCgiToken(buf, "\n");
+    mprLog(4, "CGI: Status line: %s %s %s", protocol, status, message);
     return 1;
 }
 
@@ -685,7 +623,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     tx = conn->tx;
 
     fileName = tx->filename;
-    mprAssert(fileName);
+    assure(fileName);
 
     actionProgram = 0;
     argind = 0;
@@ -701,7 +639,6 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
          */
         mprAddKey(rx->headers, "REDIRECT_STATUS", itos(HTTP_CODE_MOVED_TEMPORARILY));
     }
-
     /*
         Count the args for ISINDEX queries. Only valid if there is not a "=" in the query. 
         If this is so, then we must not have these args in the query env also?
@@ -727,7 +664,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         We look for *.exe, *.bat and also do unix style processing "#!/program"
      */
     findExecutable(conn, &program, &cmdScript, &bangScript, fileName);
-    mprAssert(program);
+    assure(program);
 
     if (cmdScript) {
         /*
@@ -752,7 +689,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
 
         len = strlen(cmdScript) + 2 + 1;
         cmdBuf = mprAlloc(len);
-        mprSprintf(cmdBuf, len, "\"%s\"", cmdScript);
+        fmt(cmdBuf, len, "\"%s\"", cmdScript);
         argv[argind++] = cmdBuf;
 
         mprSetCmdDir(cmd, cmdScript);
@@ -760,8 +697,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         
     } else if (bangScript) {
         /*
-            Script used "#!/program". NOTE: this may be overridden by a mime
-            Action directive.
+            Script used "#!/program". NOTE: this may be overridden by a mime Action directive.
          */
         argc++;     /* Adding bangScript arg */
 
@@ -804,7 +740,6 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
      */
     if (indexQuery) {
         indexQuery = sclone(indexQuery);
-
         cp = stok(indexQuery, "+", &tok);
         while (cp) {
             argv[argind++] = mprEscapeCmd(mprUriDecode(cp), 0);
@@ -812,7 +747,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         }
     }
     
-    mprAssert(argind <= argc);
+    assure(argind <= argc);
     argv[argind] = 0;
     *argcp = argc;
     *argvp = (cchar**) argv;
@@ -875,7 +810,7 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
     } else {
         path = fileName;
     }
-    mprAssert(path && *path);
+    assure(path && *path);
 
 #if BIT_WIN_LIKE
     if (ext && (strcmp(ext, ".bat") == 0 || strcmp(ext, ".cmd") == 0)) {
@@ -949,7 +884,7 @@ static char *getCgiToken(MprBuf *buf, cchar *delim)
         return "";
     }
     token = mprGetBufStart(buf);
-    nextToken = scontains(mprGetBufStart(buf), delim, len);
+    nextToken = sncontains(mprGetBufStart(buf), delim, len);
     if (nextToken) {
         *nextToken = '\0';
         len = (int) strlen(delim);
@@ -965,24 +900,25 @@ static char *getCgiToken(MprBuf *buf, cchar *delim)
 
 #if BIT_DEBUG
 /*
-    Trace output received from the cgi process
+    Trace output first part of output received from the cgi process
  */
 static void traceCGIData(MprCmd *cmd, char *src, ssize size)
 {
     char    dest[512];
     int     index, i;
 
-    mprRawLog(5, "@@@ CGI process wrote => \n");
-
-    for (index = 0; index < size; ) { 
-        for (i = 0; i < (sizeof(dest) - 1) && index < size; i++) {
-            dest[i] = src[index];
-            index++;
+    if (mprGetLogLevel() >= 5) {
+        mprRawLog(5, "CGI: process wrote (leading %d bytes) => \n", min(sizeof(dest), size));
+        for (index = 0; index < size; ) { 
+            for (i = 0; i < (sizeof(dest) - 1) && index < size; i++) {
+                dest[i] = src[index];
+                index++;
+            }
+            dest[i] = '\0';
+            mprRawLog(5, "%s", dest);
         }
-        dest[i] = '\0';
-        mprRawLog(5, "%s", dest);
+        mprRawLog(5, "\n");
     }
-    mprRawLog(5, "\n");
 }
 #endif
 
@@ -1048,23 +984,28 @@ static int scriptAliasDirective(MaState *state, cchar *key, cchar *value)
 /*  
     Loadable module initialization
  */
-int maCgiHandlerInit(Http *http, MprModule *module)
+PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
 {
-    HttpStage   *handler;
+    HttpStage   *handler, *connector;
     MaAppweb    *appweb;
 
-    if ((handler = httpCreateHandler(http, "cgiHandler", 0, module)) == 0) {
+    if ((handler = httpCreateHandler(http, "cgiHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     http->cgiHandler = handler;
     handler->close = closeCgi; 
-    handler->outgoingService = outgoingCgiService;
-    handler->incoming = incomingCgi; 
+    handler->outgoingService = cgiToBrowserService;
+    handler->incoming = browserToCgiData; 
     handler->open = openCgi; 
     handler->start = startCgi; 
-#if BIT_WIN_LIKE
-    handler->writable = writableCgi; 
-#endif
+
+    if ((connector = httpCreateConnector(http, "cgiConnector", module)) == 0) {
+        return MPR_ERR_CANT_CREATE;
+    }
+    http->cgiConnector = connector;
+    connector->outgoingService = browserToCgiService;
+    connector->incoming = cgiToBrowserData; 
+
     /*
         Add configuration file directives
      */
@@ -1074,42 +1015,19 @@ int maCgiHandlerInit(Http *http, MprModule *module)
     return 0;
 }
 
-#else /* BIT_FEATURE_CGI */
-
-int maCgiHandlerInit(Http *http, MprModule *module)
-{
-    mprNop(0);
-    return 0;
-}
-#endif /* BIT_FEATURE_CGI */
+#endif /* BIT_PACK_CGI */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

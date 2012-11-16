@@ -15,8 +15,8 @@ http \- HTTP Client program
 [\fI--form string\fR]
 [\fI--header 'key: value'\fR]
 [\fI--host hostName\fR]
-[\fI--insecure\fR]
 [\fI--iterations count\fR]
+[\fI--key file\fR]
 [\fI--log logSpec\fR]
 [\fI--method HTTP_METHOD\fR]
 [\fI--nofollow\fR]
@@ -26,6 +26,7 @@ http \- HTTP Client program
 [\fI--post\fR]
 [\fI--printable\fR]
 [\fI--protocol version\fR]
+[\fI--provider name\fR]
 [\fI--put\fR]
 [\fI--range byteRanges\fR]
 [\fI--retries count\fR]
@@ -37,6 +38,7 @@ http \- HTTP Client program
 [\fI--timeout seconds\fR]
 [\fI--upload\fR]
 [\fI--user name\fR]
+[\fI--validate\fR]
 [\fI--verbose\fR]
 [\fI--workers count\fR]
 [\fI--zero\fR] 
@@ -50,6 +52,7 @@ Output timing results after retrieving URLs.
 .TP
 \fB\--cert file\fR 
 Certificate authority file to validate server certificatess.
+If using --cert, you will need to use --key to specify the private key file.
 .TP
 \fB\--chunk size\fR 
 Request that web server use use transfer encoding for the response and break the response data into 
@@ -82,11 +85,11 @@ Add a custom header to send with the request. Multiple --header switches can be 
 Prepend all URLs with the specified host. For example if '-h www.myHost.com:8888" were used with the URL "/index.html", 
 then http will retrieve http://www.myHost.com:8888.
 .TP
-\fB\--insecure\fR 
-Don't validate server certificates when using SSL
-.TP
 \fB\--iterations count\fR 
 Retrieve the URLs iterations times. Useful for load testing. This switch can also be abbreviated as \fB\-i\fR.
+.TP
+\fB\--key file\fR 
+Private key file to use with the certificate file specified via --cert..
 .TP
 \fB\--log logSpec\fR 
 Specify a file to log messages.  The syntax is: \fB"--log logFile[:logLevel]"\fR.
@@ -118,6 +121,9 @@ Make binary output printable by printing hex digits for each character.
 \fB\--protocol HTTP_VERSION\fR 
 Use the specified HTTP protocol. httpVersion should be either '0' for HTTP/1.0 or 1 for HTTP/1.1.
 .TP
+\fB\--provider openssl|matrixssl\fR 
+Select the SSL stack provider. 
+.TP
 \fB\--put\fR 
 Issue a PUT request. This is an alias for --method PUT.
 .TP
@@ -142,10 +148,11 @@ Examples:
 Retry failed requests this number of times.
 .TP
 \fB\--showHeaders \fR 
-Output HTTP headers. Useful for debugging.
+Output HTTP headers to stdout. Useful for debugging.
 .TP
 \fB\--showStatus \fR 
-Output the HTTP response code. If this switch is used, the command will always exit with zero status.
+Output the HTTP response code to stdout. 
+If this switch is used, the command will always exit with zero status.
 .TP
 \fB\--single \fR 
 Single step between requests by pausing for user input before proceeding.
@@ -164,6 +171,9 @@ for --method POST with files on the command line.
 Specify a user name to send with the request. If a password is not specified via --password, the program will 
 prompt for a password (which will not be echoed). The username and password will be sent with the request
 according to the authentication protocol required by the requested web server and requested document.
+.TP
+\fB\--validate\fR 
+Validate server certificates when using SSL
 .TP
 \fB\--verbose\fR 
 Verbose mode. Trace activity to stdout. Can by specified multiple times for more verbose tracing.  

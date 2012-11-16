@@ -13,7 +13,7 @@
 #include    "mdb.h"
 #include    "pcre.h"
 
-#if BIT_FEATURE_ESP && BIT_FEATURE_MDB
+#if BIT_PACK_ESP && BIT_MDB
 /************************************* Local **********************************/
 
 #define MDB_LOAD_BEGIN   1      /* Initial state */
@@ -98,13 +98,13 @@ static EdiProvider MdbProvider = {
 
 /************************************* Code ***********************************/
 
-void mdbInit()
+PUBLIC void mdbInit()
 {
     ediAddProvider(&MdbProvider);
 }
 
 
-static Mdb *mdbCreate(cchar *path, int flags)
+static Mdb *mdbAlloc(cchar *path, int flags)
 {
     Mdb      *mdb;
 
@@ -113,7 +113,7 @@ static Mdb *mdbCreate(cchar *path, int flags)
     }
     mdb->edi.provider = &MdbProvider;
     mdb->edi.flags = flags;
-    mdb->path = sclone(path);
+    mdb->edi.path = sclone(path);
     mdb->mutex = mprCreateLock();
     return mdb;
 }
@@ -122,7 +122,7 @@ static Mdb *mdbCreate(cchar *path, int flags)
 static void manageMdb(Mdb *mdb, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(mdb->path);
+        mprMark(mdb->edi.path);
         mprMark(mdb->mutex);
         mprMark(mdb->tables);
         /* Don't mark load fields */
@@ -136,8 +136,8 @@ static void mdbClose(Edi *edi)
 {
     Mdb     *mdb;
    
+    /* MOB - should this save? */
     mdb = (Mdb*) edi;
-    mdb->path = 0;
     mdb->tables = 0;
 }
 
@@ -188,7 +188,7 @@ static Edi *mdbOpen(cchar *source, int flags)
 
     if (flags & EDI_LITERAL) {
         flags |= EDI_NO_SAVE;
-        if ((mdb = mdbCreate("literal", flags)) == 0) {
+        if ((mdb = mdbAlloc("literal", flags)) == 0) {
             return 0;
         }
         if (mdbLoadFromString((Edi*) mdb, source) < 0) {
@@ -196,11 +196,15 @@ static Edi *mdbOpen(cchar *source, int flags)
         }
 
     } else {
-        if (!mprPathExists(source, R_OK) && !(flags & EDI_CREATE)) {
+        if ((mdb = mdbAlloc(source, flags)) == 0) {
             return 0;
         }
-        if ((mdb = mdbCreate(source, flags)) == 0) {
-            return 0;
+        if (!mprPathExists(source, R_OK)) {
+            if (flags & EDI_CREATE) {
+                mdbSave((Edi*) mdb);
+            } else {
+                return 0;
+            }
         }
         if (mdbLoad((Edi*) mdb, source) < 0) {
             return 0;
@@ -216,10 +220,10 @@ static int mdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
     MdbTable    *table;
     MdbCol      *col;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
-    mprAssert(columnName && *columnName);
-    mprAssert(type);
+    assure(edi);
+    assure(tableName && *tableName);
+    assure(columnName && *columnName);
+    assure(type);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -237,9 +241,18 @@ static int mdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
     }
     col->type = type;
     col->flags = flags;
+    if (flags & EDI_INDEX) {
+        if (table->index) {
+            mprError("Index already specified in table %s, replacing.", tableName);
+        }
+        if ((table->index = mprCreateHash(0, MPR_HASH_STATIC_VALUES)) != 0) {
+            table->indexCol = col;
+        }
+    }
     autoSave(mdb, table);
     unlock(mdb);
     return 0;
+
 }
 
 
@@ -252,9 +265,9 @@ static int mdbAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *ind
     MdbTable    *table;
     MdbCol      *col;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
-    mprAssert(columnName && *columnName);
+    assure(edi);
+    assure(tableName && *tableName);
+    assure(columnName && *columnName);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -283,8 +296,8 @@ static int mdbAddTable(Edi *edi, cchar *tableName)
     Mdb         *mdb;
     MdbTable    *table;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
+    assure(edi);
+    assure(tableName && *tableName);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -321,9 +334,9 @@ static int mdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
     MdbTable        *table;
     MdbCol          *col;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
-    mprAssert(columnName && *columnName);
+    assure(edi);
+    assure(tableName && *tableName);
+    assure(columnName && *columnName);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -350,10 +363,10 @@ static int mdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int ty
     MdbTable    *table;
     MdbCol      *col;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
-    mprAssert(columnName && *columnName);
-    mprAssert(type);
+    assure(edi);
+    assure(tableName && *tableName);
+    assure(columnName && *columnName);
+    assure(type);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -379,9 +392,9 @@ static int mdbDeleteRow(Edi *edi, cchar *tableName, cchar *key)
     MdbTable    *table;
     int         r, rc;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
-    mprAssert(key && *key);
+    assure(edi);
+    assure(tableName && *tableName);
+    assure(key && *key);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -414,8 +427,8 @@ static MprList *mdbGetColumns(Edi *edi, cchar *tableName)
     MprList     *list;
     int         i;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
+    assure(edi);
+    assure(tableName && *tableName);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -424,7 +437,7 @@ static MprList *mdbGetColumns(Edi *edi, cchar *tableName)
         return 0;
     }
     schema = table->schema;
-    mprAssert(schema);
+    assure(schema);
     list = mprCreateList(schema->ncols, 0);
     for (i = 0; i < schema->ncols; i++) {
         /* No need to clone */
@@ -435,15 +448,19 @@ static MprList *mdbGetColumns(Edi *edi, cchar *tableName)
 }
 
 
+/*
+    Make a field. WARNING: the value is not cloned
+ */
 static EdiField makeFieldFromRow(MdbRow *row, MdbCol *col)
 {
     EdiField    f;
 
-    f.valid = 1;
+    /* Note: the value is not cloned */
     f.value = row->fields[col->cid];
     f.type = col->type;
     f.name = col->name;
     f.flags = col->flags;
+    f.valid = 1;
     return f;
 }
 
@@ -455,6 +472,12 @@ static int mdbGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
     MdbCol      *col;
 
     mdb = (Mdb*) edi;
+    if (type) {
+        *type = -1;
+    }
+    if (cid) {
+        *cid = -1;
+    }
     lock(mdb);
     if ((table = lookupTable(mdb, tableName)) == 0) {
         unlock(mdb);
@@ -556,7 +579,7 @@ static int mdbLookupField(Edi *edi, cchar *tableName, cchar *fieldName)
 static EdiGrid *mdbQuery(Edi *edi, cchar *cmd)
 {
     //  TODO MOB
-    mprAssert(0);
+    assure(0);
     return 0;
 }
 
@@ -642,7 +665,7 @@ static bool matchRow(MdbCol *col, cchar *existing, int op, cchar *value)
     case OP_GTE:
 #endif
     default:
-        mprAssert(0);
+        assure(0);
     }
     return 0;
 }
@@ -655,10 +678,10 @@ static EdiGrid *mdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
     MdbTable    *table;
     MdbCol      *col;
     MdbRow      *row;
-    int         nrows, next, op, r;
+    int         nrows, next, op, r, count;
 
-    mprAssert(edi);
-    mprAssert(tableName && *tableName);
+    assure(edi);
+    assure(tableName && *tableName);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -671,6 +694,7 @@ static EdiGrid *mdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
         unlock(mdb);
         return 0;
     }
+    grid->flags = EDI_GRID_READ_ONLY;
     if (columnName) {
         if ((col = lookupColumn(table, columnName)) == 0) {
             unlock(mdb);
@@ -684,19 +708,23 @@ static EdiGrid *mdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
             if ((r = lookupRow(table, value)) != 0) {
                 row = getRow(table, r);
                 grid->records[0] = createRecFromRow(edi, row);
+                grid->nrecords = 1;
             }
         } else {
+            grid->nrecords = count = 0;
             for (ITERATE_ITEMS(table->rows, row, next)) {
                 if (!matchRow(col, row->fields[col->cid], op, value)) {
                     continue;
                 }
-                grid->records[next - 1] = createRecFromRow(edi, row);
+                grid->records[count++] = createRecFromRow(edi, row);
+                grid->nrecords = count;
             }
         }
     } else {
         for (ITERATE_ITEMS(table->rows, row, next)) {
             grid->records[next - 1] = createRecFromRow(edi, row);
         }
+        grid->nrecords = next;
     }
     unlock(mdb);
     return grid;
@@ -729,13 +757,13 @@ static int mdbRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName)
         table->keyCol = 0;
     }
     schema = table->schema;
-    mprAssert(schema);
+    assure(schema);
     for (c = col->cid; c < schema->ncols; c++) {
         schema->cols[c] = schema->cols[c + 1];
     }
     schema->ncols--;
     schema->cols[schema->ncols].name = 0;
-    mprAssert(schema->ncols >= 0);
+    assure(schema->ncols >= 0);
     autoSave(mdb, table);
     unlock(mdb);
     return 0;
@@ -827,7 +855,7 @@ static int mdbRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar 
 }
 
 
-bool mdbValidateRec(Edi *edi, EdiRec *rec)
+static bool mdbValidateRec(Edi *edi, EdiRec *rec)
 {
     Mdb         *mdb;
     MdbTable    *table;
@@ -904,7 +932,7 @@ static int mdbUpdateFields(Edi *edi, cchar *tableName, MprHash *params)
     if ((table = lookupTable(mdb, tableName)) == 0) {
         return MPR_ERR_CANT_FIND;
     }
-    mprAssert(table->keyCol);
+    assure(table->keyCol);
 
     if ((key = mprLookupKey(params, table->keyCol->name)) == 0) {
         return MPR_ERR_CANT_FIND;
@@ -1104,6 +1132,8 @@ static int setMdbValue(MprJson *jp, MprObj *obj, int cid, cchar *name, cchar *va
             mdb->loadTable->keyCol = mdb->loadCol;
         } else if (smatch(name, "autoinc")) {
             mdb->loadCol->flags |= EDI_AUTO_INC;
+        } else if (smatch(name, "foreign")) {
+            mdb->loadCol->flags |= EDI_FOREIGN;
 #if FUTURE && KEEP
         } else if (smatch(name, "notnull")) {
             mdb->loadCol->flags |= EDI_NOT_NULL;
@@ -1120,7 +1150,7 @@ static int setMdbValue(MprJson *jp, MprObj *obj, int cid, cchar *name, cchar *va
             return MPR_ERR_BAD_FORMAT;
         }
         col = getCol(mdb->loadTable, cid);
-        mprAssert(col);
+        assure(col);
         if (col) {
             updateFieldValue(mdb->loadRow, col, value);
         }
@@ -1152,7 +1182,7 @@ static int mdbLoadFromString(Edi *edi, cchar *str)
 
     mdb = (Mdb*) edi;
     mdb->edi.flags |= EDI_SUPPRESS_SAVE;
-    mdb->flags |= MDB_LOADING;
+    mdb->edi.flags |= MDB_LOADING;
     mdb->loadStack = mprCreateList(0, 0);
     pushState(mdb, MDB_LOAD_BEGIN);
 
@@ -1162,7 +1192,7 @@ static int mdbLoadFromString(Edi *edi, cchar *str)
     cb.parseError = parseMdbError;
 
     obj = mprDeserializeCustom(str, cb, mdb);
-    mdb->flags &= ~MDB_LOADING;
+    mdb->edi.flags &= ~MDB_LOADING;
     mdb->edi.flags &= ~EDI_SUPPRESS_SAVE;
     mdb->loadStack = 0;
     if (obj == 0) {
@@ -1176,8 +1206,8 @@ static int mdbLoadFromString(Edi *edi, cchar *str)
 
 static void autoSave(Mdb *mdb, MdbTable *table)
 {
-    mprAssert(mdb);
-    mprAssert(table);
+    assure(mdb);
+    assure(table);
 
     if (mdb->edi.flags & EDI_AUTO_SAVE && !(mdb->edi.flags & EDI_SUPPRESS_SAVE)) {
         //  MOB - should have dirty bit
@@ -1196,8 +1226,8 @@ static int mdbSave(Edi *edi)
     MdbTable    *table;
     MdbRow      *row;
     MdbCol      *col;
-    cchar       *value;
-    char        *path, *npath, *bak, *type;
+    cchar       *value, *path;
+    char        *npath, *bak, *type;
     MprFile     *out;
     int         cid, rid, tid, ntables, nrows;
 
@@ -1205,7 +1235,7 @@ static int mdbSave(Edi *edi)
     if (mdb->edi.flags & EDI_NO_SAVE) {
         return MPR_ERR_BAD_STATE;
     }
-    path = mdb->path;
+    path = mdb->edi.path;
     if (path == 0) {
         mprError("No database path specified");
         return MPR_ERR_BAD_ARGS;
@@ -1214,12 +1244,14 @@ static int mdbSave(Edi *edi)
     if ((out = mprOpenFile(npath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
         return 0;
     }
+    mprWriteFileFmt(out, "{\n");
+
     ntables = mprGetListLength(mdb->tables);
     for (tid = 0; tid < ntables; tid++) {
         table = getTable(mdb, tid);
         schema = table->schema;
-        mprAssert(schema);
-        mprWriteFileFmt(out, "{\n    '%s': {\n", table->name);
+        assure(schema);
+        mprWriteFileFmt(out, "    '%s': {\n", table->name);
         mprWriteFileFmt(out, "        hints: {\n            ncols: %d\n        },\n", schema->ncols);
         mprWriteFileString(out, "        schema: {\n");
         /* Skip the id which is always the first column */
@@ -1235,6 +1267,9 @@ static int mdbSave(Edi *edi)
             }
             if (col->flags & EDI_KEY) {
                 mprWriteFileString(out, ", key: 'true'");
+            }
+            if (col->flags & EDI_FOREIGN) {
+                mprWriteFileString(out, ", foreign: 'true'");
             }
 #if UNUSED
             if (col->flags & EDI_NOT_NULL) {
@@ -1259,7 +1294,7 @@ static int mdbSave(Edi *edi)
 #if UNUSED
                 field = readField(row, cid);
                 //  MOB OPT - inline toString code here
-                mprWriteFileFmt(out, "'%s', ", ediFormatField(NULL, field));
+                mprWriteFileFmt(out, "'%s', ", ediFormatField(NULL, &field));
 #else
                 mprWriteFileFmt(out, "'%s', ", value);
 #endif
@@ -1273,7 +1308,7 @@ static int mdbSave(Edi *edi)
 
     bak = mprReplacePathExt(path, "bak");
     mprDeletePath(bak);
-    if (rename(path, bak) < 0) {
+    if (mprPathExists(path, R_OK) && rename(path, bak) < 0) {
         mprError("Can't rename %s to %s", path, bak);
         return MPR_ERR_CANT_WRITE;
     }
@@ -1491,7 +1526,7 @@ static EdiField readField(MdbRow *row, int fid)
 {
     EdiField    field;
     MdbCol      *col;
-    mprAssert(0 <= fid  && fid < row->nfields);
+    assure(0 <= fid  && fid < row->nfields);
 
     col = &row->table->schema->cols[fid];
     field.value = row->fields[fid];
@@ -1507,8 +1542,8 @@ static int updateFieldValue(MdbRow *row, MdbCol *col, cchar *value)
     MdbTable    *table;
     cchar       *key;
     
-    mprAssert(row);
-    mprAssert(col);
+    assure(row);
+    assure(col);
 
     table = row->table;
     if (col->flags & EDI_INDEX) {
@@ -1548,7 +1583,7 @@ static bool validateField(EdiRec *rec, MdbTable *table, MdbCol *col, cchar *valu
     int             next;
     bool            pass;
 
-    mprAssert(rec);
+    assure(rec);
 
     pass = 1;
     if (col->validations) {
@@ -1625,34 +1660,18 @@ static int parseOperation(cchar *operation)
 }
 
 
-#endif /* BIT_FEATURE_ESP && BIT_FEATURE_ESP && BIT_FEATURE_MDB */
+#endif /* BIT_PACK_ESP && BIT_MDB */
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

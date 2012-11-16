@@ -189,7 +189,10 @@ ALIASES                = "reminder=\xrefitem reminders \"Reminder\" \"Reminders\
                          "description=\par \b Description:\n" \
                          "elements=\par \b Elements:\n" \
                          "example=\par \b Example:\n" \
-                         "stability=\par \b API Stability:\n"
+                         "stability=\par \b API Stability:\n" \
+                         "examples=\par \b Examples:\n" \
+                         "l=\link" \
+                         "el=\endlink"
 
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C 
@@ -1259,20 +1262,20 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = WIN=1 \
 						 LINUX=1 \
+                         DOXYGEN=1 \
                          BIT_UNIX_LIKE=1 \
                          BIT_WIN_LIKE=1 \
-                         BIT_FEATURE_ASSERT=1 \
-                         BIT_FEATURE_FLOAT=1 \
-                         BIT_FEATURE_HTTP=1 \
-                         BIT_FEATURE_REGEXP=1 \
-                         BIT_FEATURE_SSL=1 \
-                         BIT_FEATURE_OPENSSL=1 \
-                         BIT_FEATURE_MATRIXSSL=1 \
-                         BIT_FEATURE_AUTH_FILE=1 \
-                         BIT_FEATURE_AUTH_PAM=1 \
-                         BIT_FEATURE_ESP=1 \
-                         BIT_FEATURE_EDI=1 \
-                         DOXYGEN=1
+                         BIT_ASSERT=1 \
+                         BIT_PACK_FLOAT=1 \
+                         BIT_PACK_SSL=1 \
+                         BIT_PACK_PCRE=1 \
+                         BIT_PACK_SQLITE=1 \
+                         BIT_PACK_OPENSSL=1 \
+                         BIT_PACK_MATRIXSSL=1 \
+                         BIT_PAM=1 \
+                         BIT_MDB=1 \
+                         BIT_PACK_ESP=1 \
+                         PUBLIC=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 

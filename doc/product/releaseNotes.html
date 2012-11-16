@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.0.0 Documentation</title>
+    <title>Embedthis Appweb 4.1.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.0.0</div>
+                <div class="version">Embedthis Appweb 4.1.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -69,16 +69,15 @@
             <h2 class="section">License</h2>
             <p>This software is copyrighted and distributed under license. It is available under a GPLv2 open source
             license and an optional <a href="http://embedthis.com/licensing/index.html">commercial license</a>.
-            Please read LICENSE.TXT for details.</p>
+            Please read LICENSE.md for details.</p>
             <p>Appweb includes support for several external packages such as MatrixSSL, OpenSSL, and PHP. These
             packages have their own licenses. Make sure you check the relevant package license details to ensure you are
             complying with their licenses.</p><a id="requirements"></a>
             <h2 class="section">System Requirements</h2>
             <p>Binary releases are supplied for the following operating systems.</p>
             <ul>
-                <li>Linux (Fedora (x86 and x86_64), Ubuntu (x86 and x86_64)</li>
                 <li>Windows (XP, Vista, Windows-7 in x86)</li>
-                <li>MAC OS X (Lion in x86_64)</li>
+                <li>MAC OS X (Lion in x64)</li>
             </ul>
             <p>The following operating systems may be supported by recompiling Appweb from source.</p>
             <ul>
@@ -88,6 +87,7 @@
                 <li>VxWorks 5.4 and 6.X</li>
                 <li>Windows</li>
             </ul>
+            <p>The following CPU architectures are supported: arm, mips, ppc, xscale, x86, x64, sparc.</p>
             <h2 class="section">Run-time System Requirements</h2>
             <p>To install Appweb on a development system, your system will need at least the following:</p>
             <ul>
@@ -98,6 +98,13 @@
             <ul>
                 <li>1-2 MB Disk / ROM space</li>
                 <li>1-2 MB RAM</li>
+            </ul>
+            <p>To develop with the ESP web framework, you will need a C compiler installed. Production use of ESP 
+            does not require a C language compiler. These are the supported compilers:</p>
+            <ul>
+                <li>Windows &mdash; Visual Studio 10 (express editions are fine)</li>
+                <li>MAC OS X &mdash; Xcode</li>
+                <li>Linux &mdash; the gcc compiler</li>
             </ul>
             <p>To rebuild Appweb from source code, you will need at least</p>
             <ul>
@@ -137,7 +144,7 @@ appweb -v
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
-            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
     <script src="http://www.google.com/jsapi" type="text/javascript"></script>

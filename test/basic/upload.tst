@@ -7,7 +7,9 @@ require ejs.unix
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 let http: Http = new Http
 
-if (App.config.bld_ejscript) {
+//  MOB - rewrite to not use ejs
+
+if (App.config.bit_ejscript) {
     http.upload(HTTP + "/upload.ejs", { myfile: "test.dat"} )
     assert(http.status == 200)
     assert(http.response.contains('"clientFilename": "test.dat"'))
@@ -19,6 +21,7 @@ if (App.config.bld_ejscript) {
     assert(http.response.contains('"clientFilename": "test.dat"'))
     assert(http.response.contains('Uploaded'))
     assert(http.response.contains('"address": "100 Mayfair"'))
+    http.close()
 
 } else {
     test.skip("Ejscript not enabled")

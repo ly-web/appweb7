@@ -16,8 +16,9 @@ static bool conditionalDefinition(MaState *state, cchar *key);
 static int configError(MaState *state, cchar *key);
 static MaState *createState(MaServer *server, HttpHost *host, HttpRoute *route);
 static char *getDirective(char *line, char **valuep);
+static int getint(cchar *value);
 static int64 getnum(cchar *value);
-static MprTime gettime(cchar *value);
+static MprTicks getticks(cchar *value);
 static char *gettok(char *s, char **tok);
 static void manageState(MaState *state, int flags);
 static int parseFile(MaState *state, cchar *path);
@@ -26,10 +27,10 @@ static int setTarget(MaState *state, cchar *name, cchar *details);
 
 /******************************************************************************/
 
-int maOpenConfig(MaState *state, cchar *path)
+PUBLIC int maOpenConfig(MaState *state, cchar *path)
 {
-    mprAssert(state);
-    mprAssert(path && *path);
+    assure(state);
+    assure(path && *path);
 
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
@@ -42,27 +43,21 @@ int maOpenConfig(MaState *state, cchar *path)
 }
 
 
-int maParseConfig(MaServer *server, cchar *path, int flags)
+PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
 {
     MaState     *state;
     HttpHost    *host;
     HttpRoute   *route;
 
-    mprAssert(server);
-    mprAssert(path && *path);
+    assure(server);
+    assure(path && *path);
 
     mprLog(2, "Config File %s", path);
 
-    /*
-        Create top level host and route
-        NOTE: the route is not added to the host until the finalization below
-     */
-    host = httpCreateHost(mprGetPathDir(path));
-    httpSetHostName(host, "default-server");
-    route = httpCreateRoute(host);
-    httpSetHostDefaultRoute(host, route);
-    httpSetRoutePathVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
-    route->limits = server->limits;
+    host = server->defaultHost;
+    route = host->defaultRoute;
+
+    httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
 
     state = createState(server, host, route);
     state->flags = flags;
@@ -85,18 +80,18 @@ static int parseFile(MaState *state, cchar *path)
 {
     int     rc;
 
-    mprAssert(state);
-    mprAssert(path && *path);
+    assure(state);
+    assure(path && *path);
 
     if ((state = maPushState(state)) == 0) {
         return 0;
     }
-    mprAssert(state == state->top->current);
+    assure(state == state->top->current);
     
     rc = parseFileInner(state, path);
     state->lineNumber = state->prev->lineNumber;
     state = maPopState(state);
-    mprAssert(state->top->current == state);
+    assure(state->top->current == state);
     return rc;
 }
 
@@ -106,8 +101,8 @@ static int parseFileInner(MaState *state, cchar *path)
     MaDirective *directive;
     char        *tok, *key, *line, *value;
     
-    mprAssert(state);
-    mprAssert(path && *path);
+    assure(state);
+    assure(path && *path);
 
     if (maOpenConfig(state, path) < 0) {
         return MPR_ERR_CANT_OPEN;
@@ -149,10 +144,10 @@ static int parseFileInner(MaState *state, cchar *path)
 }
 
 
-#if !BIT_FEATURE_ROMFS
+#if !BIT_ROM
 /*
     AccessLog path
-    AccessLog conf/log.conf size=10K, backup=5, append, anew, format=""
+    AccessLog conf/log.conf size=10K, backup=5, append, anew
  */
 static int accessLogDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -160,7 +155,7 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
     ssize       size;
     int         flags, backup;
 
-    size = INT_MAX;
+    size = MAXINT;
     backup = 0;
     flags = 0;
     path = 0;
@@ -251,9 +246,9 @@ static int addLanguageSuffixDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     flags = 0;
-    if (scasematch(position, "after")) {
+    if (scaselessmatch(position, "after")) {
         flags |= HTTP_LANG_AFTER;
-    } else if (scasematch(position, "before")) {
+    } else if (scaselessmatch(position, "before")) {
         flags |= HTTP_LANG_BEFORE;
     }
     httpAddRouteLanguageSuffix(state->route, lang, ext, flags);
@@ -273,7 +268,7 @@ static int addLanguageDirDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S %S", &lang, &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if ((path = stemplate(path, route->pathTokens)) == 0) {
+    if ((path = stemplate(path, route->vars)) == 0) {
         return MPR_ERR_BAD_SYNTAX;
     }
     if (mprIsPathRel(path)) {
@@ -386,28 +381,24 @@ static int allowDirective(MaState *state, cchar *key, cchar *value)
  */
 static int authGroupFileDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *path;
-
-    path = mprJoinPath(state->configDir, value);
-    path = httpMakePath(state->route, path);
-    if (httpReadGroupFile(state->auth, path) < 0) {
-        mprError("Can't open AuthGroupFile %s", path);
-        return MPR_ERR_BAD_SYNTAX;
-    }
+    mprError("The AuthGroupFile directive is deprecated. Use new User/Group directives instead.");
     return 0;
 }
 
 
 /*
-    AuthMethod pam|file
+    AuthStore pam|internal
  */
-static int authMethodDirective(MaState *state, cchar *key, cchar *value)
+static int authStoreDirective(MaState *state, cchar *key, cchar *value)
 {
-    if (scasecmp(value, "run") == 0) {
-        state->auth->backend = HTTP_AUTH_FILE;
-#if BLD_CC_PAM
-    } else if (scasecmp(value, "pam") == 0) {
-        state->auth->backend = HTTP_AUTH_PAM;
+    if (scaselesscmp(value, "internal") == 0) {
+        httpSetAuthStore(state->auth, "internal");
+    } else if (scaselesscmp(value, "pam") == 0) {
+#if BIT_HAS_PAM && BIT_PAM
+        httpSetAuthStore(state->auth, "pam");
+#else
+        mprError("The pam AuthStore is not supported on this platform");
+        return configError(state, key);
 #endif
     } else {
         return configError(state, key);
@@ -417,30 +408,40 @@ static int authMethodDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    AuthName realm
+    AuthRealm name
  */
-static int authNameDirective(MaState *state, cchar *key, cchar *value)
+static int authRealmDirective(MaState *state, cchar *key, cchar *value)
 {
-    value = strim(value, "\"'", MPR_TRIM_BOTH);
-    httpSetAuthRealm(state->auth, value);
+    httpSetAuthRealm(state->auth, strim(value, "\"'", MPR_TRIM_BOTH));
     return 0;
 }
 
 
 /*
-    AuthType basic|digest|none
+    AuthType basic|digest [realm]
+    AuthType form realm login-form [login-service logout-service logged-in]
  */
 static int authTypeDirective(MaState *state, cchar *key, cchar *value)
 {
-    if (scasecmp(value, "Basic") == 0) {
-        state->auth->type = HTTP_AUTH_BASIC;
-    } else if (scasecmp(value, "Digest") == 0) {
-        state->auth->type = HTTP_AUTH_DIGEST;
-    } else if (scasecmp(value, "None") == 0) {
-        state->auth->type = 0;
-    } else {
-        mprError("Unsupported authorization protocol");
+    char    *type, *details, *loginPage, *loginService, *logoutService, *loggedIn, *realm;
+
+    if (!maTokenize(state, value, "%S ?S ?*", &type, &realm, &details)) {
         return MPR_ERR_BAD_SYNTAX;
+    }
+    if (httpSetAuthType(state->auth, type, details) < 0) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    if (realm) {
+        httpSetAuthRealm(state->auth, strim(realm, "\"'", MPR_TRIM_BOTH));
+    } else if (!state->auth->realm) {
+        /* Try to detect users forgetting to define a realm */
+        mprError("Must define an AuthRealm before defining the AuthType");
+    }
+    if (smatch(type, "form")) {
+        if (!maTokenize(state, details, "%S ?S ?S ?S", &loginPage, &loginService, &logoutService, &loggedIn)) {
+            return MPR_ERR_BAD_SYNTAX;
+        }
+        httpSetAuthForm(state->route, loginPage, loginService, logoutService, loggedIn);
     }
     return addCondition(state, "auth", 0, 0);
 }
@@ -451,23 +452,33 @@ static int authTypeDirective(MaState *state, cchar *key, cchar *value)
  */
 static int authUserFileDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *path;
-    path = mprJoinPath(state->configDir, value);
-    path = httpMakePath(state->route, path);
-    if (httpReadUserFile(state->auth, path) < 0) {
-        mprError("Can't open AuthUserFile %s", path);
-        return MPR_ERR_BAD_SYNTAX;
-    }
+    mprError("The AuthGroupFile directive is deprecated. Use new User/Group directives instead.");
     return 0;
 }
 
 
 /*
-    AuthDigestQop none|auth|auth-int
+    AuthAutoLogin on|off
+ */
+static int authAutoLogin(MaState *state, cchar *key, cchar *value)
+{
+    bool    on;
+
+    if (!maTokenize(state, value, "%B", &on)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetAuthAutoLogin(state->auth, on);
+    return 0;
+}
+
+
+/*
+    AuthDigestQop none|auth
+    Note: auth-int is unsupported
  */
 static int authDigestQopDirective(MaState *state, cchar *key, cchar *value)
 {
-    if (!scasematch(value, "none") && !scasematch(value, "auth") && !scasematch(value, "auth-int")) {
+    if (!scaselessmatch(value, "none") && !scaselessmatch(value, "auth")) {
         return MPR_ERR_BAD_SYNTAX;
     }
     httpSetAuthQop(state->auth, value);
@@ -488,7 +499,7 @@ static int authDigestQopDirective(MaState *state, cchar *key, cchar *value)
  */
 static int cacheDirective(MaState *state, cchar *key, cchar *value)
 {
-    MprTime     lifespan, clientLifespan, serverLifespan;
+    MprTicks    lifespan, clientLifespan, serverLifespan;
     char        *option, *ovalue, *tok;
     char        *methods, *extensions, *types, *uris;
     int         flags;
@@ -509,18 +520,18 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
         option = stok(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if ((int) isdigit((uchar) *option)) {
-            lifespan = gettime(option);
+            lifespan = getticks(option);
 
         } else if (smatch(option, "client")) {
             flags |= HTTP_CACHE_CLIENT;
             if (snumber(ovalue)) {
-                clientLifespan = gettime(ovalue);
+                clientLifespan = getticks(ovalue);
             }
 
         } else if (smatch(option, "server")) {
             flags |= HTTP_CACHE_SERVER;
             if (snumber(ovalue)) {
-                serverLifespan = gettime(ovalue);
+                serverLifespan = getticks(ovalue);
             }
 
         } else if (smatch(option, "extensions")) {
@@ -620,10 +631,10 @@ static int compressDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S", &format)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (scasematch(format, "gzip")) {
+    if (scaselessmatch(format, "gzip")) {
         httpSetRouteCompression(state->route, HTTP_ROUTE_GZIP);
 
-    } else if (scasematch(format, "none") || scasematch(format, "off")) {
+    } else if (scaselessmatch(format, "none") || scaselessmatch(format, "off")) {
         httpSetRouteCompression(state->route, 0);
     }
     return 0;
@@ -631,11 +642,13 @@ static int compressDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    Condition [!] auth
     Condition [!] condition
-
     Condition [!] exists string
     Condition [!] directory string
     Condition [!] match string valuePattern
+    Condition [!] secure
+    Condition [!] unauthorized
 
     Strings can contain route->pattern and request ${tokens}
  */
@@ -644,10 +657,10 @@ static int conditionDirective(MaState *state, cchar *key, cchar *value)
     char    *name, *details;
     int     not;
 
-    if (!maTokenize(state, value, "%! %S %*", &not, &name, &details)) {
+    if (!maTokenize(state, value, "%! ?S ?*", &not, &name, &details)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    return addCondition(state, name, details, not);
+    return addCondition(state, name, details, not ? HTTP_ROUTE_NOT : 0);
 }
 
 
@@ -749,7 +762,7 @@ static int errorDocumentDirective(MaState *state, cchar *key, cchar *value)
  */
 static int errorLogDirective(MaState *state, cchar *key, cchar *value)
 {
-    MprTime     stamp;
+    MprTicks    stamp;
     char        *option, *ovalue, *tok, *path;
     ssize       size;
     int         level, flags, backup;
@@ -758,7 +771,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
         mprLog(4, "Already logging. Ignoring ErrorLog directive");
         return 0;
     }
-    size = INT_MAX;
+    size = MAXINT;
     stamp = 0;
     level = 0;
     backup = 0;
@@ -787,7 +800,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
                 flags |= MPR_LOG_ANEW;
 
             } else if (smatch(option, "stamp")) {
-                stamp = gettime(ovalue);
+                stamp = getticks(ovalue);
 
             } else {
                 mprError("Unknown option %s", option);
@@ -825,17 +838,19 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
  */
 static int exitTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprSetExitTimeout(gettime(value));
+    mprSetExitTimeout(getticks(value));
     return 0;
 }
 
 
 /*
-    Group groupName
+    GroupAccount groupName
  */
-static int groupDirective(MaState *state, cchar *key, cchar *value)
+static int groupAccountDirective(MaState *state, cchar *key, cchar *value)
 {
-    maSetHttpGroup(state->appweb, value);
+    if (!smatch(value, "_unchanged_")) {
+        maSetHttpGroup(state->appweb, value);
+    }
     return 0;
 }
 
@@ -851,7 +866,7 @@ static int headerDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "?! %S %*", &not, &header, &value)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpAddRouteHeader(state->route, header, value, not);
+    httpAddRouteHeader(state->route, header, value, not ? HTTP_ROUTE_NOT : 0);
     return 0;
 }
 
@@ -928,7 +943,7 @@ static int inactivityTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
     if (! mprGetDebugMode()) {
         state->limits = httpGraduateLimits(state->route, state->server->limits);
-        state->limits->inactivityTimeout = gettime(value);
+        state->limits->inactivityTimeout = getticks(value);
     }
     return 0;
 }
@@ -950,7 +965,7 @@ static int limitCacheDirective(MaState *state, cchar *key, cchar *value)
 static int limitCacheItemDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->cacheItemSize = (int) getnum(value);
+    state->limits->cacheItemSize = getint(value);
     return 0;
 }
 
@@ -961,7 +976,7 @@ static int limitCacheItemDirective(MaState *state, cchar *key, cchar *value)
 static int limitChunkDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->chunkSize = (int) getnum(value);
+    state->limits->chunkSize = getint(value);
     return 0;
 }
 
@@ -972,7 +987,7 @@ static int limitChunkDirective(MaState *state, cchar *key, cchar *value)
 static int limitClientsDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->clientMax = atoi(value);
+    state->limits->clientMax = getint(value);
     return 0;
 }
 
@@ -998,7 +1013,7 @@ static int limitMemoryDirective(MaState *state, cchar *key, cchar *value)
 static int limitProcessesDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->processMax = atoi(value);
+    state->limits->processMax = getint(value);
     return 0;
 }
 
@@ -1009,7 +1024,7 @@ static int limitProcessesDirective(MaState *state, cchar *key, cchar *value)
 static int limitRequestsDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->requestMax = atoi(value);
+    state->limits->requestMax = getint(value);
     return 0;
 }
 
@@ -1042,7 +1057,7 @@ static int limitRequestFormDirective(MaState *state, cchar *key, cchar *value)
 static int limitRequestHeaderLinesDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->headerMax = (int) getnum(value);
+    state->limits->headerMax = getint(value);
     return 0;
 }
 
@@ -1053,7 +1068,7 @@ static int limitRequestHeaderLinesDirective(MaState *state, cchar *key, cchar *v
 static int limitRequestHeaderDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->headerSize = (int) getnum(value);
+    state->limits->headerSize = getint(value);
     return 0;
 }
 
@@ -1070,12 +1085,19 @@ static int limitResponseBodyDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    LimitStageBuffer bytes
+    LimitBuffer bytes
+    DEPRECATED: LimitStageBuffer bytes
  */
-static int limitStageBufferDirective(MaState *state, cchar *key, cchar *value)
+static int limitBufferDirective(MaState *state, cchar *key, cchar *value)
 {
+    int     size;
+
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->stageBufferSize = (int) getnum(value);
+    size = getint(value);
+    if (size > (1024 * 1024)) {
+        size = (1024 * 1024);
+    }
+    state->limits->bufferSize = size;
     return 0;
 }
 
@@ -1086,7 +1108,7 @@ static int limitStageBufferDirective(MaState *state, cchar *key, cchar *value)
 static int limitUriDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->uriSize = (int) getnum(value);
+    state->limits->uriSize = getint(value);
     return 0;
 }
 
@@ -1114,75 +1136,17 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     HttpEndpoint    *endpoint;
     char            *ip;
     int             port;
-    
-#if UNUSED
-    int colonCount;
-    char *cp, *vp;
-    ssize           len;
-    
-    vp = sclone(value);
-    if (isdigit((uchar) *vp) && strchr(vp, '.') == 0 && strchr(vp, ':') == 0) {
-        /*
-            Port only, listen on all interfaces (ipv4 + ipv6)
-         */
-        port = (int) stoi(vp);
-        if (port <= 0 || port > 65535) {
-            mprError("Bad listen port number %d", port);
-            return MPR_ERR_BAD_SYNTAX;
-        }
-        ip = 0;
 
-    } else {
-        colonCount = 0;
-        for (cp = vp; ((*cp != '\0') && (colonCount < 2)) ; cp++) {
-            if (*cp == ':') {
-                colonCount++;
-            }
-        }
-        /*
-            Hostname with possible port number. Port number parsed if address enclosed in "[]"
-         */
-        if (colonCount > 1) {
-            /* ipv6 */
-            ip = vp;
-            if (*vp == '[' && (cp = strrchr(cp, ':')) != 0) {
-                *cp++ = '\0';
-                port = (int) stoi(cp);
-            } else {
-                port = HTTP_DEFAULT_PORT;
-            }
-
-        } else {
-            /* ipv4 */
-            ip = vp;
-            if ((cp = strrchr(vp, ':')) != 0) {
-                *cp++ = '\0';
-                port = (int) stoi(cp);
-
-            } else {
-                port = HTTP_DEFAULT_PORT;
-            }
-            if (*ip == '[') {
-                ip++;
-            }
-            len = slen(ip);
-            if (ip[len - 1] == ']') {
-                ip[len - 1] = '\0';
-            }
-        }
-        if (ip && *ip == '*') {
-            ip = 0;
-        }
-    }
-#else
     mprParseSocketAddress(value, &ip, &port, HTTP_DEFAULT_PORT);
-#endif
     if (port == 0) {
         mprError("Bad or missing port %d in Listen directive", port);
         return -1;
     }
     endpoint = httpCreateEndpoint(ip, port, NULL);
     mprAddItem(state->server->endpoints, endpoint);
+    if (!state->host->defaultEndpoint) {
+        httpSetHostDefaultEndpoint(state->host, endpoint);
+    }
     return 0;
 }
 
@@ -1224,7 +1188,7 @@ static int logDirective(MaState *state, cchar *key, cchar *value)
 
     include = exclude = 0;
     dir = HTTP_TRACE_RX;
-    size = INT_MAX;
+    size = MAXINT;
     
     for (i = 0; i < HTTP_TRACE_MAX_ITEM; i++) {
         levels[i] = 0;
@@ -1305,7 +1269,7 @@ static int loadModulePathDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     /*
-		 Search path is: USER_SEARCH : exeDir : /usr/lib/appweb/lib
+		 Search path is: USER_SEARCH : exeDir : /usr/lib/appweb/bin
      */
     sep = MPR_SEARCH_SEP;
     path = sjoin(value, sep, mprGetAppDir(), sep, BIT_BIN_PREFIX, NULL);
@@ -1338,7 +1302,7 @@ static int loadModuleDirective(MaState *state, cchar *key, cchar *value)
 static int limitKeepAliveDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->keepAliveMax = (int) stoi(value);
+    state->limits->keepAliveMax = getint(value);
     return 0;
 }
 
@@ -1351,8 +1315,8 @@ static int limitWorkersDirective(MaState *state, cchar *key, cchar *value)
     int     count;
 
     count = atoi(value);
-    if (count <= 1) {
-        mprError("Must have at least one worker");
+    if (count < 1) {
+        count = MAXINT;
     }
     mprSetMaxWorkers(count);
     return 0;
@@ -1401,17 +1365,12 @@ static int methodsDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-   Update param var value
-   Update cmd commandLine
+    MinWorkers count
  */
-static int updateDirective(MaState *state, cchar *key, cchar *value)
+static int minWorkersDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *name, *rest;
-
-    if (!maTokenize(state, value, "%S %*", &name, &rest)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    return addUpdate(state, name, rest, 0);
+    mprSetMinWorkers((int) stoi(value));
+    return 0;
 }
 
 
@@ -1436,9 +1395,9 @@ static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
  */
 static int orderDirective(MaState *state, cchar *key, cchar *value)
 {
-    if (scasecmp(value, "Allow,Deny") == 0) {
+    if (scaselesscmp(value, "Allow,Deny") == 0) {
         httpSetAuthOrder(state->auth, HTTP_ALLOW_DENY);
-    } else if (scasecmp(value, "Deny,Allow") == 0) {
+    } else if (scaselesscmp(value, "Deny,Allow") == 0) {
         httpSetAuthOrder(state->auth, HTTP_DENY_ALLOW);
     } else {
         return MPR_ERR_BAD_SYNTAX;
@@ -1458,7 +1417,7 @@ static int paramDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "?! %S %*", &not, &field, &value)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpAddRouteParam(state->route, field, value, not);
+    httpAddRouteParam(state->route, field, value, not ? HTTP_ROUTE_NOT : 0);
     return 0;
 }
 
@@ -1482,7 +1441,7 @@ static int prefixDirective(MaState *state, cchar *key, cchar *value)
 static int protocolDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetHostProtocol(state->host, value);
-    if (!scasematch(value, "HTTP/1.0") && !scasematch(value, "HTTP/1.1")) {
+    if (!scaselessmatch(value, "HTTP/1.0") && !scaselessmatch(value, "HTTP/1.1")) {
         mprError("Unknown http protocol %s. Should be HTTP/1.0 or HTTP/1.1", value);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -1502,16 +1461,16 @@ static int putMethodDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (on) {
-        state->route->flags |= HTTP_ROUTE_PUT_DELETE;
+        state->route->flags |= HTTP_ROUTE_PUT_DELETE_METHODS;
     } else {
-        state->route->flags &= ~HTTP_ROUTE_PUT_DELETE;
+        state->route->flags &= ~HTTP_ROUTE_PUT_DELETE_METHODS;
     }
     return 0;
 }
 
 
 /*
-    Redirect [status|permanent|temp|seeother|gone] prefix path
+    Redirect [status|permanent|temp|seeother|gone] from to
  */
 static int redirectDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1519,7 +1478,12 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
     char        *code, *uri, *path, *target;
     int         status;
 
-    if (value[0] == '/' || sncmp(value, "http://", 6) == 0) {
+    status = 0;
+    if (smatch(value, "secure")) {
+        uri = "/";
+        path = "https://";
+
+    } else if (value[0] == '/' || sncmp(value, "http://", 6) == 0) {
         if (!maTokenize(state, value, "%S %S", &uri, &path)) {
             return MPR_ERR_BAD_SYNTAX;
         }
@@ -1528,14 +1492,16 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
         if (!maTokenize(state, value, "%S %S ?S", &code, &uri, &path)) {
             return MPR_ERR_BAD_SYNTAX;
         }
-        if (scasematch(code, "permanent")) {
+        if (scaselessmatch(code, "permanent")) {
             status = 301;
-        } else if (scasematch(code, "temp")) {
+        } else if (scaselessmatch(code, "temp")) {
             status = 302;
-        } else if (scasematch(code, "seeother")) {
+        } else if (scaselessmatch(code, "seeother")) {
             status = 303;
-        } else if (scasematch(code, "gone")) {
+        } else if (scaselessmatch(code, "gone")) {
             status = 410;
+        } else if (scaselessmatch(code, "all")) {
+            status = 0;
         } else if (snumber(code)) {
             status = atoi(code);
         } else {
@@ -1545,12 +1511,15 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
     if (300 <= status && status <= 399 && (!path || *path == '\0')) {
         return configError(state, key);
     }
-    if (status <= 0 || uri == 0) {
+    if (status < 0 || uri == 0) {
         return configError(state, key);
     }
     alias = httpCreateAliasRoute(state->route, uri, 0, status);
     target = (path) ? sfmt("%d %s", status, path) : code;
     httpSetRouteTarget(alias, "redirect", target);
+    if (smatch(value, "secure")) {
+        httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
+    }
     httpFinalizeRoute(alias);
     return 0;
 }
@@ -1561,13 +1530,13 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
  */
 static int requestTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
-    state->limits->requestTimeout = gettime(value);
+    state->limits->requestTimeout = getticks(value);
     return 0;
 }
 
 
 /*
-    Require acl|valid-user|user|group details
+    Require ability|role|secure|user|valid-user names...
  */
 static int requireDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1576,14 +1545,25 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S ?*", &type, &rest)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (scasecmp(type, "acl") == 0) {
-        httpSetRequiredAcl(state->auth, httpParseAcl(state->auth, rest));
-    } else if (scasecmp(type, "valid-user") == 0) {
+    if (scaselesscmp(type, "ability") == 0) {
+        httpSetAuthRequiredAbilities(state->auth, rest);
+
+    /* Support require group for legacy support */
+    } else if (scaselesscmp(type, "group") == 0 || scaselesscmp(type, "role") == 0) {
+        httpSetAuthRequiredAbilities(state->auth, rest);
+
+    } else if (scaselesscmp(type, "secure") == 0) {
+        addCondition(state, "secure", 0, 0);
+
+    } else if (scaselesscmp(type, "user") == 0) {
+        httpSetAuthPermittedUsers(state->auth, rest);
+
+    } else if (scaselesscmp(type, "valid-user") == 0) {
+        /* DEPRECATED */
         httpSetAuthAnyValidUser(state->auth);
-    } else if (scasecmp(type, "user") == 0) {
-        httpSetAuthRequiredUsers(state->auth, rest);
-    } else if (scasecmp(type, "group") == 0) {
-        httpSetAuthRequiredGroups(state->auth, rest);
+
+    } else if (scaselesscmp(type, "acl") == 0) {
+        mprError("The Require acl directive is deprecated. Use Require ability instead.");
     } else {
         return configError(state, key);
     }
@@ -1602,10 +1582,10 @@ static int resetDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S", &name)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (scasematch(name, "routes")) {
+    if (scaselessmatch(name, "routes")) {
         httpResetRoutes(state->host);
 
-    } else if (scasematch(name, "pipeline")) {
+    } else if (scaselessmatch(name, "pipeline")) {
         httpResetRoutePipeline(state->route);
 
     } else {
@@ -1622,6 +1602,24 @@ static int resetDirective(MaState *state, cchar *key, cchar *value)
 static int resetPipelineDirective(MaState *state, cchar *key, cchar *value)
 {
     httpResetRoutePipeline(state->route);
+    return 0;
+}
+
+
+/*
+    Role name abilities...
+ */
+static int roleDirective(MaState *state, cchar *key, cchar *value)
+{
+    char    *name, *abilities;
+
+    if (!maTokenize(state, value, "%S ?*", &name, &abilities)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    if (httpAddRole(state->auth, name, abilities) < 0) {
+        mprError("Can't add role %s", name);
+        return MPR_ERR_BAD_SYNTAX;
+    }
     return 0;
 }
 
@@ -1650,7 +1648,7 @@ static int routeDirective(MaState *state, cchar *key, cchar *value)
             state->route = route;
         } else {
             state->route = httpCreateInheritedRoute(state->route);
-            httpSetRoutePattern(state->route, pattern, not);
+            httpSetRoutePattern(state->route, pattern, not ? HTTP_ROUTE_NOT : 0);
             httpSetRouteHost(state->route, state->host);
         }
         /* Routes are added when the route block is closed (see closeDirective) */
@@ -1692,7 +1690,7 @@ static int serverRootDirective(MaState *state, cchar *key, cchar *value)
     }
     maSetServerHome(state->server, path);
     httpSetHostHome(state->host, path);
-    httpSetRoutePathVar(state->route, "SERVER_ROOT", path);
+    httpSetRouteVar(state->route, "SERVER_ROOT", path);
     mprLog(MPR_CONFIG, "Server Root \"%s\"", path);
     return 0;
 }
@@ -1703,7 +1701,22 @@ static int serverRootDirective(MaState *state, cchar *key, cchar *value)
  */
 static int sessionTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
-    state->limits->sessionTimeout = gettime(value);
+    state->limits->sessionTimeout = getticks(value);
+    return 0;
+}
+
+
+/*
+    Set var value
+ */
+static int setDirective(MaState *state, cchar *key, cchar *value)
+{
+    char    *var;
+
+    if (!maTokenize(state, value, "%S %S", &var, &value)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteVar(state->route, var, value);
     return 0;
 }
 
@@ -1750,18 +1763,8 @@ static int sourceDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    StartWorkers count
- */
-static int startWorkersDirective(MaState *state, cchar *key, cchar *value)
-{
-    mprSetMinWorkers((int) stoi(value));
-    return 0;
-}
-
-
-/*
     Target close [immediate]
-    Target redirect [status] URI            # Redirect to a new URI and re-route
+    Target redirect status URI
     Target run ${DOCUMENT_ROOT}/${request:uri}
     Target run ${controller}-${name} 
     Target write [-r] status "Hello World\r\n"
@@ -1792,7 +1795,7 @@ static int templateDirective(MaState *state, cchar *key, cchar *value)
  */
 static int threadStackDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprSetThreadStackSize((int) getnum(value));
+    mprSetThreadStackSize(getint(value));
     return 0;
 }
 
@@ -1807,7 +1810,7 @@ static int traceMethodDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%B", &on)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    state->limits->enableTraceMethod = on;
+    httpEnableTraceMethod(state->route, on);
     return 0;
 }
 
@@ -1850,9 +1853,24 @@ static int unloadModuleDirective(MaState *state, cchar *key, cchar *value)
         mprError("Can't unload module %s due to match routine", module->name);
         return MPR_ERR_BAD_SYNTAX;
     } else {
-        module->timeout = gettime(timeout);
+        module->timeout = getticks(timeout);
     }
     return 0;
+}
+
+
+/*
+   Update param var value
+   Update cmd commandLine
+ */
+static int updateDirective(MaState *state, cchar *key, cchar *value)
+{
+    char    *name, *rest;
+
+    if (!maTokenize(state, value, "%S %*", &name, &rest)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    return addUpdate(state, name, rest, 0);
 }
 
 
@@ -1879,11 +1897,31 @@ static int uploadAutoDeleteDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    User username
+    User name password abilities...
  */
 static int userDirective(MaState *state, cchar *key, cchar *value)
 {
-    maSetHttpUser(state->appweb, value);
+    char    *name, *password, *abilities;
+
+    if (!maTokenize(state, value, "%S %S ?*", &name, &password, &abilities)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    if (httpAddUser(state->auth, name, password, abilities) < 0) {
+        mprError("Can't add user %s", name);
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    return 0;
+}
+
+
+/*
+    UserAccount username
+ */
+static int userAccountDirective(MaState *state, cchar *key, cchar *value)
+{
+    if (!smatch(value, "_unchanged_")) {
+        maSetHttpUser(state->appweb, value);
+    }
     return 0;
 }
 
@@ -1905,6 +1943,7 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
             Other routes are not inherited due to the reset routes below
          */
         state->route = httpCreateInheritedRoute(httpGetHostDefaultRoute(state->host));
+        state->route->ssl = 0;
         state->host = httpCloneHost(state->host);
         httpResetRoutes(state->host);
         httpSetRouteHost(state->route, state->host);
@@ -1922,8 +1961,65 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
     return 0;
 }
 
+static int ignoreEncodingErrors(MaState *state, cchar *key, cchar *value)
+{
+    bool    on;
 
-bool maValidateServer(MaServer *server)
+    if (!maTokenize(state, value, "%B", &on)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    state->route->ignoreEncodingErrors = on;
+    return 0;
+}
+
+
+static int limitWebSocketsDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->webSocketsMax = getint(value);
+    return 0;
+}
+
+
+static int limitWebSocketsMessageDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->webSocketsMessageSize = getint(value);
+    return 0;
+}
+
+
+static int limitWebSocketsFrameDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->webSocketsFrameSize = getint(value);
+    return 0;
+}
+
+
+static int limitWebSocketsPacketDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->webSocketsPacketSize = getint(value);
+    return 0;
+}
+
+
+static int webSocketsProtocolDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->route->webSocketsProtocol = sclone(value);
+    return 0;
+}
+
+
+static int webSocketsPingDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->route->webSocketsPingPeriod = getticks(value);
+    return 0;
+}
+
+
+PUBLIC bool maValidateServer(MaServer *server)
 {
     MaAppweb        *appweb;
     Http            *http;
@@ -1934,29 +2030,32 @@ bool maValidateServer(MaServer *server)
 
     appweb = server->appweb;
     http = appweb->http;
-    defaultHost = mprGetFirstItem(http->hosts);
-    mprAssert(defaultHost);
+    defaultHost = server->defaultHost;
+    assure(defaultHost);
 
     /*
-        Add hosts to relevant listen endpoints
+        Add the default host to the endpoints
      */
     for (nextEndpoint = 0; (endpoint = mprGetNextItem(http->endpoints, &nextEndpoint)) != 0; ) {
         if (mprGetListLength(endpoint->hosts) == 0) {
+            /* Add the defaultHost */
             httpAddHostToEndpoint(endpoint, defaultHost);
             if (!defaultHost->ip) {
                 httpSetHostIpAddr(defaultHost, endpoint->ip, endpoint->port);
             }
         }
     }
+    /*
+        Ensure the host home directory is set and the file handler is defined
+     */
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
-        mprAssert(host->name && host->name);
         if (host->home == 0) {
             httpSetHostHome(host, defaultHost->home);
         }
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(route->extensions, "")) {
                 mprError("Route %s in host %s is missing a catch-all handler\n"
-                        "Adding: AddHandler fileHandler \"\"", route->name, host->name);
+                    "Adding: AddHandler fileHandler \"\"", route->name, host->name);
                 httpAddRouteHandler(route, "fileHandler", "");
             }
         }
@@ -1965,7 +2064,7 @@ bool maValidateServer(MaServer *server)
 }
 
 
-int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile)
+PUBLIC int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile)
 {
     char   *rest;
 
@@ -1994,47 +2093,47 @@ static bool conditionalDefinition(MaState *state, cchar *key)
     }
     maParsePlatform(state->appweb->platform, &os, &arch, &profile);
 
-    if (scasematch(key, arch)) {
+    if (scaselessmatch(key, arch)) {
         result = 1;
 
-    } else if (scasematch(key, os)) {
+    } else if (scaselessmatch(key, os)) {
         result = 1;
 
-    } else if (scasematch(key, profile)) {
+    } else if (scaselessmatch(key, profile)) {
         result = 1;
 
-    } else if (scasematch(key, state->appweb->platform)) {
+    } else if (scaselessmatch(key, state->appweb->platform)) {
         result = 1;
 
 #if BIT_DEBUG
-    } else if (scasematch(key, "BIT_DEBUG")) {
+    } else if (scaselessmatch(key, "BIT_DEBUG")) {
         result = BIT_DEBUG;
 #endif
 
     } else if (state->appweb->skipModules) {
         /* ESP utility needs to be able to load mod_esp */
-        if (smatch(mprGetAppName(), "esp") && scasematch(key, "ESP_MODULE")) {
-            result = BIT_FEATURE_ESP;
+        if (smatch(mprGetAppName(), "esp") && scaselessmatch(key, "ESP_MODULE")) {
+            result = BIT_PACK_ESP;
         }
 
     } else {
-        if (scasematch(key, "CGI_MODULE")) {
-            result = BIT_FEATURE_CGI;
+        if (scaselessmatch(key, "CGI_MODULE")) {
+            result = BIT_PACK_CGI;
 
-        } else if (scasematch(key, "DIR_MODULE")) {
-            result = BIT_FEATURE_DIR;
+        } else if (scaselessmatch(key, "DIR_MODULE")) {
+            result = BIT_PACK_DIR;
 
-        } else if (scasematch(key, "EJS_MODULE")) {
-            result = BIT_FEATURE_EJSCRIPT;
+        } else if (scaselessmatch(key, "EJS_MODULE")) {
+            result = BIT_PACK_EJSCRIPT;
 
-        } else if (scasematch(key, "ESP_MODULE")) {
-            result = BIT_FEATURE_ESP;
+        } else if (scaselessmatch(key, "ESP_MODULE")) {
+            result = BIT_PACK_ESP;
 
-        } else if (scasematch(key, "PHP_MODULE")) {
-            result = BIT_FEATURE_PHP;
+        } else if (scaselessmatch(key, "PHP_MODULE")) {
+            result = BIT_PACK_PHP;
 
-        } else if (scasematch(key, "SSL_MODULE")) {
-            result = BIT_FEATURE_SSL;
+        } else if (scaselessmatch(key, "SSL_MODULE")) {
+            result = BIT_PACK_SSL;
         }
     }
     return (not) ? !result : result;
@@ -2052,7 +2151,7 @@ static bool conditionalDefinition(MaState *state, cchar *key)
         %W - Parse words into a list
         %! - Optional negate. Set value to HTTP_ROUTE_NOT present, otherwise zero.
  */
-bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
+PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
 {
     va_list     ap;
 
@@ -2071,7 +2170,7 @@ static int addCondition(MaState *state, cchar *name, cchar *condition, int flags
 {
     if (httpAddRouteCondition(state->route, name, condition, flags) < 0) {
         mprError("Bad \"%s\" directive at line %d in %s\nLine: %s %s\n", 
-                state->key, state->lineNumber, state->filename, state->key, condition);
+            state->key, state->lineNumber, state->filename, state->key, condition);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
@@ -2126,7 +2225,7 @@ static MaState *createState(MaServer *server, HttpHost *host, HttpRoute *route)
 }
 
 
-MaState *maPushState(MaState *prev)
+PUBLIC MaState *maPushState(MaState *prev)
 {
     MaState   *state;
 
@@ -2152,7 +2251,7 @@ MaState *maPushState(MaState *prev)
 }
 
 
-MaState *maPopState(MaState *state)
+PUBLIC MaState *maPopState(MaState *state)
 {
     if (state->prev == 0) {
         mprError("Too many closing blocks.\nAt line %d in %s\n\n", state->lineNumber, state->filename);
@@ -2194,30 +2293,48 @@ static int configError(MaState *state, cchar *key)
 
 static int64 getnum(cchar *value)
 {
+    char    *junk;
     int64   num;
 
-    value = strim(slower(value), " \t", MPR_TRIM_BOTH);
-    if (sends(value, "k") || sends(value, "KB")) {
+    value = stok(slower(value), " \t", &junk);
+    if (sends(value, "kb") || sends(value, "k")) {
         num = stoi(value) * 1024;
-    } else if (sends(value, "mb") || sends(value, "M")) {
+    } else if (sends(value, "mb") || sends(value, "m")) {
         num = stoi(value) * 1024 * 1024;
-    } else if (sends(value, "gb") || sends(value, "G")) {
+    } else if (sends(value, "gb") || sends(value, "g")) {
         num = stoi(value) * 1024 * 1024 * 1024;
     } else {
         num = stoi(value);
+    }
+    if (num == 0) {
+        num = MAXINT;
     }
     return num;
 }
 
 
-static MprTime gettime(cchar *value)
+static int getint(cchar *value)
 {
-    MprTime     when;
+    int64   num;
+
+    num = getnum(value);
+    if (num >= MAXINT) {
+        num = MAXINT;
+    }
+    return (int) num;
+}
+
+
+static MprTicks getticks(cchar *value)
+{
+    MprTicks     when;
 
     value = strim(slower(value), " \t", MPR_TRIM_BOTH);
-    if (sends(value, "min") || sends(value, "mins")) {
+    if (sends(value, "sec") || sends(value, "secs") || sends(value, "seconds") || sends(value, "seconds")) {
+        when = stoi(value);
+    } else if (sends(value, "min") || sends(value, "mins") || sends(value, "minute") || sends(value, "minutes")) {
         when = stoi(value) * 60;
-    } else if (sends(value, "hr") || sends(value, "hrs")) {
+    } else if (sends(value, "hr") || sends(value, "hrs") || sends(value, "hour") || sends(value, "hours")) {
         when = stoi(value) * 60 * 60;
     } else if (sends(value, "day") || sends(value, "days")) {
         when = stoi(value) * 60 * 60 * 24;
@@ -2236,12 +2353,12 @@ static char *getDirective(char *line, char **valuep)
     char    *key, *value;
     ssize   len;
     
-    mprAssert(line);
-    mprAssert(valuep);
+    assure(line);
+    assure(valuep);
 
     *valuep = 0;
     key = stok(line, " \t", &value);
-    key = strim(key, ">", MPR_TRIM_END);
+    key = strim(key, " \t\r\n>", MPR_TRIM_END);
     if (value) {
         value = strim(value, " \t\r\n>", MPR_TRIM_END);
         /*
@@ -2292,13 +2409,50 @@ static char *gettok(char *s, char **tok)
 }
 
 
-void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc)
+PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
+{
+    MprFile         *file;
+    MprKey          *kp, *ap;
+    HttpRole        *role;
+    HttpUser        *user;
+    char            *tempFile;
+
+    tempFile = mprGetTempPath(NULL);
+    if ((file = mprOpenFile(tempFile, O_CREAT | O_TRUNC | O_WRONLY | O_TEXT, 0444)) == 0) {
+        mprError("Can't open %s", tempFile);
+        return MPR_ERR_CANT_OPEN;
+    }
+    mprWriteFileFmt(file, "#\n#   %s - Authorization data\n#\n\n", mprGetPathBase(path));
+
+    for (ITERATE_KEY_DATA(auth->roles, kp, role)) {
+        mprWriteFileFmt(file, "Role %s", kp->key);
+        for (ITERATE_KEYS(role->abilities, ap)) {
+            mprWriteFileFmt(file, " %s", ap->key);
+        }
+        mprPutFileChar(file, '\n');
+    }
+    mprPutFileChar(file, '\n');
+    for (ITERATE_KEY_DATA(auth->users, kp, user)) {
+        mprWriteFileFmt(file, "User %s %s %s", user->name, user->password, user->roles);
+        mprPutFileChar(file, '\n');
+    }
+    mprCloseFile(file);
+    unlink(path);
+    if (rename(tempFile, path) < 0) {
+        mprError("Can't create new %s", path);
+        return MPR_ERR_CANT_WRITE;
+    }
+    return 0;
+}
+
+
+PUBLIC void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc)
 {
     mprAddKey(appweb->directives, directive, proc);
 }
 
 
-int maParseInit(MaAppweb *appweb)
+PUBLIC int maParseInit(MaAppweb *appweb)
 {
     if ((appweb->directives = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_CASELESS)) == 0) {
         return MPR_ERR_MEMORY;
@@ -2312,12 +2466,11 @@ int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "AddType", addTypeDirective);
     maAddDirective(appweb, "Alias", aliasDirective);
     maAddDirective(appweb, "Allow", allowDirective);
-    maAddDirective(appweb, "AuthGroupFile", authGroupFileDirective);
-    maAddDirective(appweb, "AuthMethod", authMethodDirective);
-    maAddDirective(appweb, "AuthName", authNameDirective);
-    maAddDirective(appweb, "AuthType", authTypeDirective);
-    maAddDirective(appweb, "AuthUserFile", authUserFileDirective);
+    maAddDirective(appweb, "AuthAutoLogin", authAutoLogin);
     maAddDirective(appweb, "AuthDigestQop", authDigestQopDirective);
+    maAddDirective(appweb, "AuthType", authTypeDirective);
+    maAddDirective(appweb, "AuthRealm", authRealmDirective);
+    maAddDirective(appweb, "AuthStore", authStoreDirective);
     maAddDirective(appweb, "Cache", cacheDirective);
     maAddDirective(appweb, "Chroot", chrootDirective);
     maAddDirective(appweb, "Compress", compressDirective);
@@ -2332,13 +2485,14 @@ int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "ErrorDocument", errorDocumentDirective);
     maAddDirective(appweb, "ErrorLog", errorLogDirective);
     maAddDirective(appweb, "ExitTimeout", exitTimeoutDirective);
-    maAddDirective(appweb, "Group", groupDirective);
+    maAddDirective(appweb, "GroupAccount", groupAccountDirective);
     maAddDirective(appweb, "Header", headerDirective);
     maAddDirective(appweb, "<If", ifDirective);
     maAddDirective(appweb, "</If", closeDirective);
     maAddDirective(appweb, "InactivityTimeout", inactivityTimeoutDirective);
     maAddDirective(appweb, "Include", includeDirective);
 
+    maAddDirective(appweb, "LimitBuffer", limitBufferDirective);
     maAddDirective(appweb, "LimitCache", limitCacheDirective);
     maAddDirective(appweb, "LimitCacheItem", limitCacheItemDirective);
     maAddDirective(appweb, "LimitChunk", limitChunkDirective);
@@ -2352,14 +2506,12 @@ int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitRequestHeaderLines", limitRequestHeaderLinesDirective);
     maAddDirective(appweb, "LimitRequestHeader", limitRequestHeaderDirective);
     maAddDirective(appweb, "LimitResponseBody", limitResponseBodyDirective);
-    maAddDirective(appweb, "LimitStageBuffer", limitStageBufferDirective);
     maAddDirective(appweb, "LimitUri", limitUriDirective);
     maAddDirective(appweb, "LimitUpload", limitUploadDirective);
     maAddDirective(appweb, "LimitWorkers", limitWorkersDirective);
 
     maAddDirective(appweb, "Listen", listenDirective);
 
-    //  MOB - not a great name "Load"
     maAddDirective(appweb, "Load", loadDirective);
     maAddDirective(appweb, "Log", logDirective);
     maAddDirective(appweb, "LogRoutes", logRoutesDirective);
@@ -2379,19 +2531,19 @@ int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "RequestTimeout", requestTimeoutDirective);
     maAddDirective(appweb, "Require", requireDirective);
     maAddDirective(appweb, "Reset", resetDirective);
+    maAddDirective(appweb, "Role", roleDirective);
 
-    /* Deprecated: ResetPipeline - use Reset */
-    maAddDirective(appweb, "ResetPipeline", resetPipelineDirective);
     maAddDirective(appweb, "<Route", routeDirective);
     maAddDirective(appweb, "</Route", closeDirective);
     maAddDirective(appweb, "ServerName", serverNameDirective);
     maAddDirective(appweb, "ServerRoot", serverRootDirective);
     maAddDirective(appweb, "SessionTimeout", sessionTimeoutDirective);
+    maAddDirective(appweb, "Set", setDirective);
     maAddDirective(appweb, "SetConnector", setConnectorDirective);
     maAddDirective(appweb, "SetHandler", setHandlerDirective);
     maAddDirective(appweb, "Source", sourceDirective);
 
-    maAddDirective(appweb, "StartWorkers", startWorkersDirective);
+    maAddDirective(appweb, "MinWorkers", minWorkersDirective);
     maAddDirective(appweb, "Target", targetDirective);
     maAddDirective(appweb, "Template", templateDirective);
 
@@ -2404,21 +2556,40 @@ int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "UploadAutoDelete", uploadAutoDeleteDirective);
     maAddDirective(appweb, "UploadDir", uploadDirDirective);
     maAddDirective(appweb, "User", userDirective);
+    maAddDirective(appweb, "UserAccount", userAccountDirective);
 
     maAddDirective(appweb, "<VirtualHost", virtualHostDirective);
     maAddDirective(appweb, "</VirtualHost", closeDirective);
 
-#if !BIT_FEATURE_ROMFS
+    maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrors);
+    maAddDirective(appweb, "LimitWebSockets", limitWebSocketsDirective);
+    maAddDirective(appweb, "LimitWebSocketsMessage", limitWebSocketsMessageDirective);
+    maAddDirective(appweb, "LimitWebSocketsFrame", limitWebSocketsFrameDirective);
+    maAddDirective(appweb, "LimitWebSocketsPacket", limitWebSocketsPacketDirective);
+    maAddDirective(appweb, "WebSocketsProtocol", webSocketsProtocolDirective);
+    maAddDirective(appweb, "WebSocketsPing", webSocketsPingDirective);
+
+#if !BIT_ROM
     maAddDirective(appweb, "AccessLog", accessLogDirective);
 #endif
 
 #if DEPRECATED || 1
-    /* Use eprecated use LimitKeepAlive */
+    /* Use AuthStore */
+    maAddDirective(appweb, "AuthMethod", authStoreDirective);
+    maAddDirective(appweb, "AuthGroupFile", authGroupFileDirective);
+    maAddDirective(appweb, "AuthUserFile", authUserFileDirective);
+    /* Use AuthRealm */
+    maAddDirective(appweb, "AuthName", authRealmDirective);
+    /* Use LimitKeepAlive */
     maAddDirective(appweb, "MaxKeepAliveRequests", limitKeepAliveDirective);
+    /* Use LimitBuffer */
+    maAddDirective(appweb, "LimitStageBuffer", limitBufferDirective);
     /* Use LimitUri */
     maAddDirective(appweb, "LimitUrl", limitUriDirective);
-    /* Use StartWorkers */
-    maAddDirective(appweb, "StartThreads", startWorkersDirective);
+    maAddDirective(appweb, "ResetPipeline", resetPipelineDirective);
+    /* Use MinWorkers */
+    maAddDirective(appweb, "StartWorkers", minWorkersDirective);
+    maAddDirective(appweb, "StartThreads", minWorkersDirective);
     /* Use requestTimeout */
     maAddDirective(appweb, "Timeout", requestTimeoutDirective);
     maAddDirective(appweb, "ThreadLimit", limitWorkersDirective);
@@ -2443,28 +2614,12 @@ int maParseInit(MaAppweb *appweb)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

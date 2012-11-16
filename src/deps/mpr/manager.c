@@ -80,7 +80,7 @@ static int  writePid(int pid);
 
 /*********************************** Code *************************************/
 
-int main(int argc, char *argv[])
+PUBLIC int main(int argc, char *argv[])
 {
     char    *argp, *value;
     int     err, nextArg, status;
@@ -489,7 +489,7 @@ static bool process(cchar *operation, bool quiet)
         } else if (upstart) {
             rc = run("/sbin/start %s", name);
             if (!rc) {
-                if (scontains(app->error, "start: Job is already running", -1)) {
+                if (scontains(app->error, "start: Job is already running")) {
                     rc = 0;
                 }
             }
@@ -544,7 +544,7 @@ static bool process(cchar *operation, bool quiet)
 
 static void runService()
 {
-    MprTime     mark;
+    MprTicks    mark;
     cchar       **av, **argv;
     char        *env[3];
     int         err, i, status, ac, next;
@@ -561,11 +561,11 @@ static void runService()
     if (writePid(getpid()) < 0) {
         return;
     }
-    mark = mprGetTime();
+    mark = mprGetTicks();
 
     while (!mprIsStopping()) {
-        if (mprGetElapsedTime(mark) > (3600 * 1000)) {
-            mark = mprGetTime();
+        if (mprGetElapsedTicks(mark) > (3600 * 1000)) {
+            mark = mprGetTicks();
             app->restartCount = 0;
             app->restartWarned = 0;
         }
@@ -796,7 +796,7 @@ static int makeDaemon()
 
 #define HEART_BEAT_PERIOD   (10 * 1000) /* Default heart beat period (10 sec) */
 #define RESTART_MAX         (15)        /* Max restarts per hour */
-#define SERVICE_DESCRIPTION ("Manages " BIT_NAME)
+#define SERVICE_DESCRIPTION ("Manages " BIT_TITLE)
 
 typedef struct App {
     HWND         hwnd;               /* Application window handle */
@@ -829,8 +829,8 @@ static Mpr *mpr;
 static SERVICE_STATUS           svcStatus;
 static SERVICE_STATUS_HANDLE    svcHandle;
 static SERVICE_TABLE_ENTRY      svcTable[] = {
-    { "default",    0   },
-    { 0,            0   }
+    { UT("default"), 0   },
+    { 0,             0   }
 };
 
 static void     WINAPI serviceCallback(ulong code);
@@ -840,7 +840,7 @@ static bool     installService();
 static void     logHandler(int flags, int level, cchar *msg);
 static int      registerService();
 static bool     removeService(int removeFromScmDb);
-static void     gracefulShutdown(MprTime timeout);
+static void     gracefulShutdown(MprTicks timeout);
 static bool     process(cchar *operation);
 static void     run();
 static int      startDispatcher(LPSERVICE_MAIN_FUNCTION svcMain);
@@ -857,7 +857,7 @@ static void     manageApp(void *unused, int flags);
 static LRESULT  msgProc(HWND hwnd, uint msg, uint wp, long lp);
 
 static void     serviceThread(void *data);
-static void WINAPI serviceMain(ulong argc, char **argv);
+static void WINAPI serviceMain(ulong argc, wchar **argv);
 
 /*********************************** Code *************************************/
 
@@ -877,7 +877,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
 
     setAppDefaults();
 
-    mprSetAppName(BIT_PRODUCT "Manager", BIT_NAME "Manager", BIT_VERSION);
+    mprSetAppName(BIT_PRODUCT "Manager", BIT_TITLE " Manager", BIT_VERSION);
     app->appName = mprGetAppName();
     app->appTitle = mprGetAppTitle(mpr);
     mprSetLogHandler(logHandler);
@@ -1122,7 +1122,7 @@ static void run()
 {
     PROCESS_INFORMATION procInfo;
     STARTUPINFO         startInfo;
-    MprTime             mark;
+    MprTicks            mark;
     ulong               status;
     char                *path, *cmd, *key;
     int                 createFlags;
@@ -1159,11 +1159,11 @@ static void run()
     if (app->createConsole) {
         createFlags |= CREATE_NEW_CONSOLE;
     }
-    mark = mprGetTime();
+    mark = mprGetTicks();
 
     while (! app->exiting) {
-        if (mprGetElapsedTime(mark) > (3600 * 1000)) {
-            mark = mprGetTime();
+        if (mprGetElapsedTicks(mark) > (3600 * 1000)) {
+            mark = mprGetTicks();
             app->restartCount = 0;
             app->restartWarned = 0;
         }
@@ -1344,12 +1344,12 @@ static bool installService()
     /*
         Write a service description
      */
-    mprSprintf(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services");
+    fmt(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services");
     if (mprWriteRegistry(key, NULL, app->serviceName) < 0) {
         mprError("Can't write %s key to registry");
         return 0;
     }
-    mprSprintf(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\%s", app->serviceName);
+    fmt(key, sizeof(key), "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\%s", app->serviceName);
     if (mprWriteRegistry(key, "Description", SERVICE_DESCRIPTION) < 0) {
         mprError("Can't write service Description key to registry");
         return 0;
@@ -1556,7 +1556,7 @@ static void setAppDefaults()
     app->serviceProgram = sjoin(mprGetAppDir(), "\\", BIT_PRODUCT, ".exe", NULL);
     app->serviceName = sclone(BIT_COMPANY "-" BIT_PRODUCT);
     app->serviceHome = NULL;
-    app->serviceTitle = sclone(BIT_NAME);
+    app->serviceTitle = sclone(BIT_TITLE);
     app->serviceStopped = 0;
 }
 
@@ -1597,11 +1597,11 @@ static void terminating(int how, int status)
 }
 
 
-static void gracefulShutdown(MprTime timeout)
+static void gracefulShutdown(MprTicks timeout)
 {
     HWND    hwnd;
 
-    hwnd = FindWindow(BIT_PRODUCT, BIT_NAME);
+    hwnd = FindWindow(BIT_PRODUCT, BIT_TITLE);
     if (hwnd) {
         PostMessage(hwnd, WM_QUIT, 0, 0L);
 
@@ -1611,7 +1611,7 @@ static void gracefulShutdown(MprTime timeout)
         while (timeout > 0 && hwnd) {
             mprSleep(100);
             timeout -= 100;
-            hwnd = FindWindow(BIT_PRODUCT, BIT_NAME);
+            hwnd = FindWindow(BIT_PRODUCT, BIT_TITLE);
             if (hwnd == 0) {
                 return;
             }
@@ -1625,7 +1625,7 @@ static void gracefulShutdown(MprTime timeout)
 
 
 #else
-void stubManager() {
+PUBLIC void stubManager() {
     fprintf(stderr, "Manager not supported on this architecture");
 }
 #endif /* BIT_WIN_LIKE */
@@ -1634,28 +1634,12 @@ void stubManager() {
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

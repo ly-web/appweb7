@@ -3,28 +3,34 @@
 esp \- ESP Application Generator for Server-Side Web Applications.
 .SH SYNOPSIS
 .B esp
+[\fI--apply]\fR] 
 [\fI--chdir dir]\fR] 
 [\fI--config configFile]\fR] 
 [\fI--database DB]\fR] 
 [\fI--flat\fR]
+[\fI--keep\fR]
 [\fI--listen [ip:]port\fR]
 [\fI--log logFile:level\fR]
 [\fI--overwrite\fR]
 [\fI--quiet\fR]
+[\fI--platform os-arch-profile\fR]
+[\fI--rebuild\fR]
 [\fI--routeName name\fR]
 [\fI--routePrefix prefix\fR]
 [\fI--verbose\fR]
+[\fI--why\fR]
 commands ...
 .SH ""
 .B Commands:
  esp clean
  esp compile
- esp compile controller name
- esp compile path/*.esp
+ esp compile [pathFilters...]
  esp generate app name
  esp generate controller name [action [, action] ...]
+ esp generate migration description model [field:type [, field:type] ...]
  esp generate scaffold model [field:type [, field:type] ...]
  esp generate table name model [field:type [, field:type] ...]
+ esp migrate [forward|backward|NNN]
  esp run
 .SH DESCRIPTION
 The \fBesp\fR command generates, manages and runs ESP web applications.
@@ -47,15 +53,16 @@ configuration and essential script files. For example:
 This will will create a set of directories which have the following meaning: 
 
 .RS 5
- controllers    - Controller source
  cache          - Cache directory for compiled content
+ controllers    - Controller source
  db             - Databases and scripts
+ db/migrations  - Databases migration modules
  layouts        - Web page layout files
- views          - View source files
  static         - Static web directory
  static/images  - Public images
  static/js      - Client side JavaScripts
  static/themes  - Application HTML themes
+ views          - View source files
 .RE
 .PP
 Most of these directories are initially empty, but may be used over time. ESP follows conventions
@@ -72,6 +79,31 @@ Esp will also create some files which have the following meaning:
  static/themes/default.css - Default theme CSS file
  static/js/jquery.js       - jQuery client side script
 .RE
+.SH GENERATING MIGRATIONS
+Migrations are generated code modules that manage portions of the database. Migrations are used to create tables, 
+initialize with test data and optionally destroy tables. Migrations are typically generated and then hand-edited to 
+include relevant initialization or test data. Migrations are useful to quickly recreate the database with the required
+tables and data.
+.RS 5
+
+ \fBesp generate migration DESCRIPTION TABLE [field:type ...]\fR
+.RE
+
+The DESCRIPTION is used to name the migration which is created in the \fBdb/migrations\fR directory. A migration 
+is given a unique ordered sequence number and the description is appended to this number. The description is mapped
+where spaces are changed to "_" characters. When migrations are run, they are run in sequence number order.
+.PP
+If field:type values are supplied, the database migration will include code to create a column for each 
+specified field of the requested type. The valid database types are: blob, boolean, date, float, integer, string, 
+and text.
+
+.SH GENERATING TABLES
+To generate a database table without creating a migration:
+.RS 5
+
+ \fBesp generate table TABLE [field:type ...]\fR
+.RE
+
 .SH GENERATING CONTROLLERS
 Controllers are the primary mechanism for responding to client requests. To generate a controller, 
 run:
@@ -84,36 +116,30 @@ This will create a controller of the requested name. It will create a controller
 directory. If action names are requested, the controller source will define an action method for each
 name. If not action names are requested, esp will define a default action named \fBindex\fR.
 You can edit the controller source to meet your needs.
-.SH GENERATING TABLES
-To generate a database table:
-.RS 5
-
- \fBesp generate table NAME [field:type ...]\fR
-.RE
-
-If field:type values are supplied, the database migration will include code to create a column for each 
-specified field of the requested type. The valid database types are: blob, boolean, date, float, integer, string, 
-and text.
 
 .SH GENERATING SCAFFOLDS
 .PP
-A scaffold is a generated controller, database table, and set of views that provides add, edit 
+A scaffold is a generated controller, database migration, and set of views that provides add, edit 
 and list functionality for the database table.
 Scaffolds are useful to quickly generate chunks of the application and prototype web pages and actions for 
 managing a database table.
 To generate a scaffold:
 .RS 5
 
- \fBesp generate scaffold MODEL [field:type ...]\fR
+ \fBesp generate scaffold TABLE [field:type ...]\fR
 .RE
 .PP
 This will create a scaffold for the specified database table and will generate a controller of the same name.
-If field:type values are supplied, the database migration will include code to create a column for each 
-specified field of the requested type. The valid database types are: blob, boolean, date, float, integer, string,
-and text.
-The scaffold will include an edit action and view that provides add and edit capability. The list action and view, 
-provides the ability to list the database table rows and select an entry to edit.
 .PP
+If field:type values are supplied, a database migration will be created with code to create a column for each 
+specified field of the requested type. The valid database types are: blob, boolean, date, float, integer, string,
+and text. The migration will use the name "create_scaffold_TABLE" and will be created under 
+the \fBdb/migrations\fR direcvtory.
+.PP
+The scaffold will include an edit action and view page that provides add and edit capability. The list action and view, 
+provides the ability to list the table rows and select an entry to edit.
+.PP
+
 .SH COMPILING
 Esp compiles controllers and ESP pages native code shared libraries. These are then loaded and
 run by ESP in response to incoming client requests. Code is compiled only once but can be run many times to
@@ -153,9 +179,16 @@ To run your application:
 .SH CLEANING
 To clean all generated module files:
 .RS 5
-
  \fBesp clean\fR
 .RE
+
+.SH MIGRATIONS
+Migration files can be run via the \fBesp migrate\fR command. With no other parameters, the command will run
+all migrations that have not yet been applied to the database. You can also use \fBesp migrate forward\fR to
+apply apply the next unapplied migration. Similarly \fBesp migrate backward\fR will reverse the last applied
+migration. You can also use \fBesp migrate NNN\fR to migrate forward or backward to a specific migration, where NNN
+is the migration sequence number at the start of the migration file name.
+.PP
 .SH COMMANDS
 .PP 
 esp has the following command usage patterns:
@@ -187,6 +220,10 @@ Use the specified database provider. Set to "mdb" or "sqlite".
 \fB\--flat\fR
 Compile the application flat into a single shared library file.
 .TP 6
+\fB\--keep\fR
+Keep intermediate source files in the cache directory. This overrides the 
+EspKeepSource setting in the appweb.conf file.
+.TP 6
 \fB\--listen [ip:]port\fR
 Define the listening endpoint address. This will be used when generating an application. The value
 will be patched into the generated appweb.conf configuration file.
@@ -202,6 +239,16 @@ previously generated files.
 \fB\--quiet\fR
 Suppress diagnostic trace to the console.
 .TP 6
+\fB\--platform os-arch-profile\fR
+Target platform configuration to build for.
+.TP 6
+\fB\--rebuild\fR
+Force a recompile of all items when used with the compile command. 
+When used with migrate, this will recreate the database and apply all migrations.
+.TP 6
+\fB\--reverse\fR
+Reverse the application of migrations.
+.TP 6
 \fB\--routeName name\fR
 This selects the Appweb route by name that will be used for the ESP configuration. The ESP directory names, 
 and compilation commands are determined by the ESP configuration drawn from the specified route. The default is the
@@ -214,6 +261,9 @@ first route with the ESP handler defined in appweb.conf.
 .TP 6
 \fB\--verbose\fR or \fB\-v\fR
 Run in verbose mode and trace actions to the console.
+.TP 6
+\fB\--why\fR or \fB\-w\fR
+Explain why a resource was or was not compiled.
 .PP
 .SH "REPORTING BUGS"
 Report bugs to dev@embedthis.com.

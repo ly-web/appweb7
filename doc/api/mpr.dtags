@@ -39,6 +39,13 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>BIT_CIPHERS</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>addae8ae5b96b16934c8efe1b7f9b25c0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_ALLOC_MANAGER</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a0fdfeef976b9c763e5e311d126752e59</anchor>
@@ -95,9 +102,9 @@
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_ASSERT_SRC</name>
+      <name>MPR_ASSURE_SRC</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a639e95b518a9e92095543e5184de15aa</anchor>
+      <anchor>ad2d08f2c4bb9d393a1c0f042d07c1dd9</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -105,6 +112,13 @@
       <name>MPR_BACKGROUND_PRIORITY</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a5e2e7058ae62846bc72aa87a94998e35</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_BIG_ENDIAN</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a698836ebc1230ae5b16b87398ad7fde8</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -249,6 +263,55 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>MPR_CPU_ARM</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>ad4309355fcaa40fc4eeca33f9e438716</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_CPU_ITANIUM</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a25b8322272ff1e8a7d8fbd798ec3ad25</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_CPU_MIPS</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a4fa00eba5466bbc8808f72fcd4870b65</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_CPU_PPC</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a22d1a9a68f1b429372c69f22fd3422e2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_CPU_SPARC</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a08cc14b0835d7363cba5a5eea187c312</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_CPU_X64</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>af84984451703eea8eb538e741af72c6b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_CPU_X86</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>aa62695e433819be4a4e938bf09150e77</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_CRITICAL_PRIORITY</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>ae06415ae3af35c8ac27f34b10d3001e3</anchor>
@@ -266,13 +329,6 @@
       <name>MPR_DECODE_TOKEQ</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>acbb0af96c8a7015a479fb63e014a6b02</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MPR_DEFAULT_CIPHER_SUITE</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>ab8fbb078c2e64bfd5c68925f2f2b9884</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -319,37 +375,30 @@
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_DTOA_ALL_DIGITS</name>
+      <name>MPR_DISPATCHER_AUTO_CREATE</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>ab6f99d19116e5ed72ba371a907cc58f4</anchor>
+      <anchor>a9d968aeadb004bcd3077c4895d38d271</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_DTOA_EXPONENT_FORM</name>
+      <name>MPR_DISPATCHER_DESTROYED</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>aad998f03e869e694ef5d42e071fbd1bd</anchor>
+      <anchor>a011e95e5bb1031a865f4dea64af4452c</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_DTOA_FIXED_FORM</name>
+      <name>MPR_DISPATCHER_ENABLED</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a37d32737da5ebd788bd1915ed3fa9998</anchor>
+      <anchor>aa9595de4d0be6dcd8b96160bcac19912</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_DTOA_N_DIGITS</name>
+      <name>MPR_DISPATCHER_WAITING</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>aab054201eaf0db5f9798276906aef48d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MPR_DTOA_N_FRACTION_DIGITS</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>aa92f422fc20cebea69d4479e22abbd18</anchor>
+      <anchor>a14c2e4d083c860836c2d2ee97f960a58</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -739,6 +788,20 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>MPR_HASH_LIST</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>aead51de23663190607c1affa83d6aea3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_HASH_OWN</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a034f0a8eb0b8e66aa222bdae0fddec8d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_HASH_STATIC_KEYS</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a4b4def421c22a58a925f617230ddb1ac</anchor>
@@ -756,6 +819,13 @@
       <name>MPR_HASH_UNICODE</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a0bf11498863580da02169e0ae6d798da</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_HASH_UNIQUE</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>ab63883c0a9cddb7697ef649141d0553c</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -823,9 +893,23 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>MPR_LIST_OWN</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a09edb4bc5a2dd0cd67f023602412348e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_LIST_STATIC_VALUES</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>ad6c828f6e108fa0f7d6904c4dad515c1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_LITTLE_ENDIAN</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a23487a6ca7c07a19f112a180985f8a63</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -1012,6 +1096,20 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>MPR_OBJ_HASH</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>aa3a00f803c06f8d85b8281dff1021acb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>MPR_OBJ_LIST</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>aad59e2d06de4bfe82780a8da386d39f7</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_PATH_DEPTH_FIRST</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>acd00b85221f26a15b12c07f33bfbaf75</anchor>
@@ -1110,13 +1208,6 @@
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_SECURE_CLIENT</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a7bbe6982e4e64f2f034971b88d3da3af</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
       <name>MPR_SERVICE_NO_GC</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a2a21cf060065f6162ecae871533ea9f7</anchor>
@@ -1194,6 +1285,13 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>MPR_SOCKET_DISCONNECTED</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>afe80b08ee0c6719a2ee1a0b829345b34</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_SOCKET_EOF</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a84190073ab879726ad4f3c97206fd01b</anchor>
@@ -1243,16 +1341,16 @@
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_SSL_BUFSIZE</name>
+      <name>MPR_SOCKET_TRACED</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>ae2d5fc1b9d658c93d2833e75ed45eb99</anchor>
+      <anchor>a633271674902560bd61db456a76c783e</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_SSL_PROVIDER_LOADED</name>
+      <name>MPR_SSL_BUFSIZE</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a02f1e1cc6a700feecac32b1a4c31b3c6</anchor>
+      <anchor>ae2d5fc1b9d658c93d2833e75ed45eb99</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -1767,6 +1865,13 @@
       <arglist>)(void *arg, struct MprThread *tp)</arglist>
     </member>
     <member kind="typedef">
+      <type>int64</type>
+      <name>MprTicks</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>aae0f83992c78df80c90bec757fc5723f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
       <type>void(*</type>
       <name>MprWorkerProc</name>
       <anchorfile>group___mpr_worker.html</anchorfile>
@@ -1842,6 +1947,27 @@
       <anchorfile>group___mpr_test_service.html</anchorfile>
       <anchor>ga7f44ec8c71e361a86def92a6d0911c79</anchor>
       <arglist>(MprTestGroup *gp, cchar *loc, bool success, cchar *msg)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>assure</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>ad6b3fc193f11f62a4d02bf780bb99199</anchor>
+      <arglist>(bool cond)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>fmt</name>
+      <anchorfile>group___mpr_string.html</anchorfile>
+      <anchor>gabf10ae3bef0267314c1a4a66ace2965c</anchor>
+      <arglist>(char *buf, ssize maxSize, cchar *fmt,...)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>fmtv</name>
+      <anchorfile>group___mpr_string.html</anchorfile>
+      <anchor>ga14db538ef7e8224840f6349cd4e94952</anchor>
+      <arglist>(char *buf, ssize maxSize, cchar *fmt, va_list args)</arglist>
     </member>
     <member kind="function">
       <type>char *</type>
@@ -1929,13 +2055,6 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprAddNullToWideBuf</name>
-      <anchorfile>group___mpr_buf.html</anchorfile>
-      <anchor>ga18cf5bf9ce0f825fa0d73a829cf7c474</anchor>
-      <arglist>(MprBuf *buf)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
       <name>mprAddRoot</name>
       <anchorfile>group___mpr_mem.html</anchorfile>
       <anchor>ga6630588bf1f967bfb55affc08a4cb547</anchor>
@@ -1954,6 +2073,13 @@
       <anchorfile>group___mpr_socket.html</anchorfile>
       <anchor>ga4bc5be8f167a30e77e8c3b38c8594049</anchor>
       <arglist>(MprSocket *sp, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprAddSocketProvider</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>ga48875519d20f48a69a66b233d411f62f</anchor>
+      <arglist>(cchar *name, MprSocketProvider *provider)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2026,6 +2152,13 @@
       <arglist>(MprList *list, MprList *add)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>mprAreCmdEventsEnabled</name>
+      <anchorfile>group___mpr_cmd.html</anchorfile>
+      <anchor>ga41a0e9cb643e435b21d5ff37658beec9</anchor>
+      <arglist>(MprCmd *cmd, int channel)</arglist>
+    </member>
+    <member kind="function">
       <type>char *</type>
       <name>mprAsprintf</name>
       <anchorfile>group___mpr_string.html</anchorfile>
@@ -2041,9 +2174,9 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprAssertError</name>
+      <name>mprAssure</name>
       <anchorfile>group___mpr_log.html</anchorfile>
-      <anchor>ga42ef49743936729111e89ae45ad8a752</anchor>
+      <anchor>ga3528e274d1c7dcc0c375b46c5370fcb4</anchor>
       <arglist>(cchar *loc, cchar *msg)</arglist>
     </member>
     <member kind="function">
@@ -2117,6 +2250,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>char *</type>
+      <name>mprBufToString</name>
+      <anchorfile>group___mpr_buf.html</anchorfile>
+      <anchor>ga82bb10164b117911778ca5ef4bc0862e</anchor>
+      <arglist>(MprBuf *buf)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>mprClearList</name>
       <anchorfile>group___mpr_list.html</anchorfile>
@@ -2143,6 +2283,13 @@
       <anchorfile>group___mpr_list.html</anchorfile>
       <anchor>ga44c886d9f401b9b3bba8c63d13a87799</anchor>
       <arglist>(MprList *src)</arglist>
+    </member>
+    <member kind="function">
+      <type>struct MprSsl *</type>
+      <name>mprCloneSsl</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>ga1542af34e1a866b23c7c19eb44fece34</anchor>
+      <arglist>(MprSsl *src)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2178,13 +2325,6 @@
       <anchorfile>group___mpr_time.html</anchorfile>
       <anchor>ga087ffc47d75b5f88dbfcabb8c3cd2d21</anchor>
       <arglist>(MprTime t1, MprTime t2)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>mprConfigureSsl</name>
-      <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>ga5f3e1db5d7e207edaa4dde272a63c5fa</anchor>
-      <arglist>(struct MprSsl *ssl)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -2246,15 +2386,22 @@
       <type>MprDispatcher *</type>
       <name>mprCreateDispatcher</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>aa14d15b51893c1378e8b975e5a626bb3</anchor>
-      <arglist>(cchar *name, int enable)</arglist>
+      <anchor>a94da5c23c5648b4b3c4f3b1fe5a4e7b1</anchor>
+      <arglist>(cchar *name, int flags)</arglist>
     </member>
     <member kind="function">
       <type>MprEvent *</type>
       <name>mprCreateEvent</name>
       <anchorfile>group___mpr_event.html</anchorfile>
-      <anchor>ga6154e34c582e39cd64b4505a6afb39c4</anchor>
-      <arglist>(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)</arglist>
+      <anchor>gac6fcf6faf6ba5c85d7954fa416b73e30</anchor>
+      <arglist>(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, void *data, int flags)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>mprCreateEventOutside</name>
+      <anchorfile>group___mpr_event.html</anchorfile>
+      <anchor>ga657761883a278d7b8e3f597c31f31a9c</anchor>
+      <arglist>(MprDispatcher *dispatcher, void *proc, void *data)</arglist>
     </member>
     <member kind="function">
       <type>MprFileSystem *</type>
@@ -2351,8 +2498,8 @@
       <type>MprSocket *</type>
       <name>mprCreateSocket</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>gabe2236ae68abd47188e86e4f8a62ea72</anchor>
-      <arglist>(struct MprSsl *ssl)</arglist>
+      <anchor>ga0ef02d313ec268eae6038a5af0ee5cc4</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>MprSpin *</type>
@@ -2365,8 +2512,8 @@
       <type>struct MprSsl *</type>
       <name>mprCreateSsl</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>gab67c6b658f311faf72f73ad5b34da656</anchor>
-      <arglist>()</arglist>
+      <anchor>gac6a41e387c7475251098f237f5f0a802</anchor>
+      <arglist>(int server)</arglist>
     </member>
     <member kind="function">
       <type>MprTestService *</type>
@@ -2386,8 +2533,8 @@
       <type>MprEvent *</type>
       <name>mprCreateTimerEvent</name>
       <anchorfile>group___mpr_event.html</anchorfile>
-      <anchor>ga38397c1964339e66e0251995bb91408c</anchor>
-      <arglist>(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)</arglist>
+      <anchor>ga3e92f13fc23a3f0ed2d730b077f61611</anchor>
+      <arglist>(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, void *data, int flags)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -2482,13 +2629,6 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprDestroyDispatcher</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>afd35a965e3ebadc852b8b02aace7a08e</anchor>
-      <arglist>(MprDispatcher *dispatcher)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
       <name>mprDestroyMemService</name>
       <anchorfile>group___mpr_mem.html</anchorfile>
       <anchor>ga99a90d38bdf5d5edad42f8f5edc937ea</anchor>
@@ -2500,6 +2640,13 @@
       <anchorfile>group___mpr_cmd.html</anchorfile>
       <anchor>ga66cccaaaa550e9d2cf381ff8854c2d7a</anchor>
       <arglist>(MprCmd *cmd, int channel)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprDisableDispatcher</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a5236d246266b55a3cfd9765de8501073</anchor>
+      <arglist>(MprDispatcher *dispatcher)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2524,13 +2671,6 @@
     </member>
     <member kind="function">
       <type>char *</type>
-      <name>mprDtoa</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a633cbdb3df239fb9aa88a4f72996bb0a</anchor>
-      <arglist>(double value, int ndigits, int mode, int flags)</arglist>
-    </member>
-    <member kind="function">
-      <type>char *</type>
       <name>mprEmptyString</name>
       <anchorfile>group___mpr.html</anchorfile>
       <anchor>ga14459c3278e0c72246970cd1c15dd55d</anchor>
@@ -2542,6 +2682,13 @@
       <anchorfile>group___mpr_cmd.html</anchorfile>
       <anchor>ga2fd38e2aaf8e7c2a1aed39aa1005155e</anchor>
       <arglist>(MprCmd *cmd, int channel)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprEnableCmdOutputEvents</name>
+      <anchorfile>group___mpr_cmd.html</anchorfile>
+      <anchor>ga39d49294df1ae6d358c30e958585e060</anchor>
+      <arglist>(MprCmd *cmd, bool on)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2617,8 +2764,8 @@
       <type>int</type>
       <name>mprExpireCache</name>
       <anchorfile>group___mpr_cache.html</anchorfile>
-      <anchor>gaeadf21cc8ad9f3265bedca59f48e1acb</anchor>
-      <arglist>(MprCache *cache, cchar *key, MprTime expires)</arglist>
+      <anchor>gacf17b95267136971ad528b236930a32f</anchor>
+      <arglist>(MprCache *cache, cchar *key, MprTicks expires)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2887,6 +3034,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>MprTicks</type>
+      <name>mprGetElapsedTicks</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a1f88b37382ba7d2e48289415df0383ea</anchor>
+      <arglist>(MprTicks mark)</arglist>
+    </member>
+    <member kind="function">
       <type>MprTime</type>
       <name>mprGetElapsedTime</name>
       <anchorfile>mpr_8h.html</anchorfile>
@@ -2971,6 +3125,13 @@
       <arglist>(MprHash *table)</arglist>
     </member>
     <member kind="function">
+      <type>uint64</type>
+      <name>mprGetHiResTicks</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a2b3db265ba01f3b265151ec6742b1ab6</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
       <type>cchar *</type>
       <name>mprGetHostName</name>
       <anchorfile>group___mpr.html</anchorfile>
@@ -3044,8 +3205,8 @@
       <type>char *</type>
       <name>mprGetMD5</name>
       <anchorfile>group___mpr.html</anchorfile>
-      <anchor>ga48e16a14037b33f6080d4e62e398d5d2</anchor>
-      <arglist>(cchar *s)</arglist>
+      <anchor>ga8097b3e02c4e50d5e9b1d4e8cbd29a8e</anchor>
+      <arglist>(cchar *str)</arglist>
     </member>
     <member kind="function">
       <type>char *</type>
@@ -3230,11 +3391,11 @@
       <arglist>(cchar *dest, cchar *origin)</arglist>
     </member>
     <member kind="function">
-      <type>MprTime</type>
-      <name>mprGetRemainingTime</name>
+      <type>MprTicks</type>
+      <name>mprGetRemainingTicks</name>
       <anchorfile>group___mpr_time.html</anchorfile>
-      <anchor>gae1dc5ecac49386f56a60314fe3978149</anchor>
-      <arglist>(MprTime mark, MprTime timeout)</arglist>
+      <anchor>ga431da15c3ff9707b89a7097a85bd90de</anchor>
+      <arglist>(MprTicks mark, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>cchar *</type>
@@ -3242,6 +3403,27 @@
       <anchorfile>group___mpr.html</anchorfile>
       <anchor>gae159a5aef748a3f62cd1acd541cf3d31</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>mprGetSHA</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga5352f8f9f7d96d7e58dc7b784cd9c500</anchor>
+      <arglist>(cchar *str)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>mprGetSHABase64</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga08b9fc2b79eb1592298d20d9e3f4be5d</anchor>
+      <arglist>(cchar *str)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>mprGetSHAWithPrefix</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga66f3b909d68d969920f962613d00d454</anchor>
+      <arglist>(cchar *buf, ssize len, cchar *prefix)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -3321,10 +3503,10 @@
       <arglist>(MprThread *thread)</arglist>
     </member>
     <member kind="function">
-      <type>uint64</type>
+      <type>MprTicks</type>
       <name>mprGetTicks</name>
       <anchorfile>group___mpr_time.html</anchorfile>
-      <anchor>ga390f8a0064788c82c0911899fba2e913</anchor>
+      <anchor>ga1d972a6ab180618674c5f9220f88d68a</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
@@ -3408,8 +3590,8 @@
       <type>void</type>
       <name>mprInitList</name>
       <anchorfile>group___mpr_list.html</anchorfile>
-      <anchor>gac1b1433c9a3b963c78572f53cf2a6fd8</anchor>
-      <arglist>(MprList *list)</arglist>
+      <anchor>ga0c797a3ea868662ad6dabb35f5255399</anchor>
+      <arglist>(MprList *list, int flags)</arglist>
     </member>
     <member kind="function">
       <type>MprMutex *</type>
@@ -3615,11 +3797,11 @@
       <arglist>(MprModule *mp)</arglist>
     </member>
     <member kind="function">
-      <type>MprModule *</type>
+      <type>int</type>
       <name>mprLoadSsl</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>ga4b64ed8b6bc299fc4b74704440b8f954</anchor>
-      <arglist>(bool lazy)</arglist>
+      <anchor>ga4cf59cde7f99bce19be6056483180e51</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -3707,6 +3889,13 @@
     </member>
     <member kind="function">
       <type>int</type>
+      <name>mprLookupStringItem</name>
+      <anchorfile>group___mpr_list.html</anchorfile>
+      <anchor>ga8b32a32be34fbcc2194767eb7031a3ad</anchor>
+      <arglist>(MprList *list, cchar *str)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
       <name>mprMakeArgv</name>
       <anchorfile>group___mpr.html</anchorfile>
       <anchor>ga02a389f1cd2f5a8ba4e5d2417ae87276</anchor>
@@ -3779,8 +3968,8 @@
       <type>void</type>
       <name>mprNap</name>
       <anchorfile>group___mpr.html</anchorfile>
-      <anchor>gaa85d07a3657f56f58dc45f4e45743648</anchor>
-      <arglist>(MprTime msec)</arglist>
+      <anchor>gaa3bb4935aa8ee20f4f064068ff28b2a5</anchor>
+      <arglist>(MprTicks msec)</arglist>
     </member>
     <member kind="function">
       <type>char *</type>
@@ -3833,10 +4022,10 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprPollCmd</name>
+      <name>mprPollWinCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>gaa959b4cdf9debde2fe4a3e8022f99c3b</anchor>
-      <arglist>(MprCmd *cmd, MprTime timeout)</arglist>
+      <anchor>ga192b4e4644029986c0fab0dc79d6999a</anchor>
+      <arglist>(MprCmd *cmd, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>void *</type>
@@ -3895,13 +4084,6 @@
       <arglist>(MprBuf *buf, int c)</arglist>
     </member>
     <member kind="function">
-      <type>int</type>
-      <name>mprPutCharToWideBuf</name>
-      <anchorfile>group___mpr_buf.html</anchorfile>
-      <anchor>gaa89ec8abfb851da06de8115f3aa3ea6c</anchor>
-      <arglist>(MprBuf *buf, int c)</arglist>
-    </member>
-    <member kind="function">
       <type>ssize</type>
       <name>mprPutFileChar</name>
       <anchorfile>group___mpr_file.html</anchorfile>
@@ -3923,13 +4105,6 @@
       <arglist>(MprBuf *buf, cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
-      <type>int</type>
-      <name>mprPutFmtToWideBuf</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a4078fbd19bcdd35294e10c091bffacc3</anchor>
-      <arglist>(MprBuf *buf, cchar *fmt,...)</arglist>
-    </member>
-    <member kind="function">
       <type>ssize</type>
       <name>mprPutIntToBuf</name>
       <anchorfile>group___mpr_buf.html</anchorfile>
@@ -3948,13 +4123,6 @@
       <name>mprPutStringToBuf</name>
       <anchorfile>group___mpr_buf.html</anchorfile>
       <anchor>ga50d08cdfc9c21e71af90586104a5839e</anchor>
-      <arglist>(MprBuf *buf, cchar *str)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>mprPutStringToWideBuf</name>
-      <anchorfile>group___mpr_buf.html</anchorfile>
-      <anchor>ga2ea1a462e574ebd1f1a95cbe695da4be</anchor>
       <arglist>(MprBuf *buf, cchar *str)</arglist>
     </member>
     <member kind="function">
@@ -4031,8 +4199,8 @@
       <type>int</type>
       <name>mprReapCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>ga9e57724aee88e3126e00fcb5336b590c</anchor>
-      <arglist>(MprCmd *cmd, MprTime timeout)</arglist>
+      <anchor>gaae5bd75d3750777971cfad687c0f9f15</anchor>
+      <arglist>(MprCmd *cmd, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -4140,6 +4308,13 @@
       <arglist>(MprSocket *sp)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>mprRemoveStringItem</name>
+      <anchorfile>group___mpr_list.html</anchorfile>
+      <anchor>ga7d948c448d34a433b728c7a19aae1814</anchor>
+      <arglist>(MprList *list, cchar *str)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>mprRemoveWaitHandler</name>
       <anchorfile>mpr_8h.html</anchorfile>
@@ -4171,8 +4346,8 @@
       <type>void</type>
       <name>mprRescheduleEvent</name>
       <anchorfile>group___mpr_event.html</anchorfile>
-      <anchor>ga7abedbcca593ebcc1e021bdfd927b3db</anchor>
-      <arglist>(MprEvent *event, MprTime period)</arglist>
+      <anchor>ga1919da044dd4f62d999526175f76bdc2</anchor>
+      <arglist>(MprEvent *event, MprTicks period)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -4234,15 +4409,15 @@
       <type>int</type>
       <name>mprRunCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>ga06e30d913b1432d1d3dc0fba6dfd1442</anchor>
-      <arglist>(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTime timeout, int flags)</arglist>
+      <anchor>gad616fcfa04dd3e7c13552e97e3c1f1dc</anchor>
+      <arglist>(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTicks timeout, int flags)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>mprRunCmdV</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>ga8eb158a3373ebe139ef6374c896be916</anchor>
-      <arglist>(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTime timeout, int flags)</arglist>
+      <anchor>ga9b05cb68ed79b6203bb0b7e48e94b428</anchor>
+      <arglist>(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTicks timeout, int flags)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -4297,8 +4472,8 @@
       <type>int</type>
       <name>mprServiceEvents</name>
       <anchorfile>group___mpr_event.html</anchorfile>
-      <anchor>gaff02030323e3d101661645fb0742d78a</anchor>
-      <arglist>(MprTime delay, int flags)</arglist>
+      <anchor>ga205adaee3b45d0cc899afc89eb9f3b3d</anchor>
+      <arglist>(MprTicks delay, int flags)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -4346,8 +4521,8 @@
       <type>void</type>
       <name>mprSetCacheLimits</name>
       <anchorfile>group___mpr_cache.html</anchorfile>
-      <anchor>ga54308aff3ba0770a6efdc32f8500590e</anchor>
-      <arglist>(MprCache *cache, int64 keys, int64 lifespan, int64 memory, int resolution)</arglist>
+      <anchor>gac79a433b92c0e81df3b282345eef07ad</anchor>
+      <arglist>(MprCache *cache, int64 keys, MprTicks lifespan, int64 memory, int resolution)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -4430,8 +4605,8 @@
       <type>void</type>
       <name>mprSetExitTimeout</name>
       <anchorfile>group___mpr.html</anchorfile>
-      <anchor>gaf75f894bad6a8c48f1b44a2f351bcef5</anchor>
-      <arglist>(MprTime timeout)</arglist>
+      <anchor>ga278ee775a1c2e956d09a4683e778caea</anchor>
+      <arglist>(MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -4577,8 +4752,8 @@
       <type>void</type>
       <name>mprSetModuleTimeout</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a963971123bde812749a4088a75ac650f</anchor>
-      <arglist>(MprModule *module, MprTime timeout)</arglist>
+      <anchor>a2db0b5b247179376ef476fa5ed05809a</anchor>
+      <arglist>(MprModule *module, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -4600,13 +4775,6 @@
       <anchorfile>group___mpr_file_system.html</anchorfile>
       <anchor>ga8ad660a935382da195d08a5d5d63067c</anchor>
       <arglist>(MprRomInode *inodeList)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>mprSetSecureProvider</name>
-      <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>ga06cb751d75f9435f1cf108efa5bad2ce</anchor>
-      <arglist>(MprSocketProvider *provider)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -4635,13 +4803,6 @@
       <anchorfile>group___mpr_socket.html</anchorfile>
       <anchor>ga51594bafaa2003511990ffd804189a31</anchor>
       <arglist>(MprSocket *sp, bool on)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>mprSetSocketSslConfig</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a01199611ed4a5bbc42cdee37bb013b59</anchor>
-      <arglist>(MprSocket *sp, struct MprSsl *ssl)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -4684,6 +4845,13 @@
       <anchorfile>group___mpr_socket.html</anchorfile>
       <anchor>ga00cd731b20d96a0b0080637d59becd4a</anchor>
       <arglist>(struct MprSsl *ssl, int protocols)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprSetSslProvider</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>ga98e6c82c9ff89135aea961c2ff3d4de4</anchor>
+      <arglist>(MprSsl *ssl, cchar *provider)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -4752,8 +4920,8 @@
       <type>void</type>
       <name>mprSleep</name>
       <anchorfile>group___mpr.html</anchorfile>
-      <anchor>gaf8bae04622ff05416af04d1b06e68e55</anchor>
-      <arglist>(MprTime msec)</arglist>
+      <anchor>ga85c39ea54c27d4b13825ba78c2e7adda</anchor>
+      <arglist>(MprTicks msec)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -4763,11 +4931,11 @@
       <arglist>(MprSocket *sp)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
+      <type>MprList *</type>
       <name>mprSortList</name>
       <anchorfile>group___mpr_list.html</anchorfile>
-      <anchor>gaf4ea2773fbe55ad1492d3ca0d4a33648</anchor>
-      <arglist>(MprList *list, void *compare)</arglist>
+      <anchor>ga0326ee9015a4949d2664fd386ca975f9</anchor>
+      <arglist>(MprList *list, MprSortProc compare, void *ctx)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -4782,20 +4950,6 @@
       <anchorfile>group___mpr_synch.html</anchorfile>
       <anchor>gaeb11c8a1f0c2c3f905967a932626121e</anchor>
       <arglist>(MprSpin *lock)</arglist>
-    </member>
-    <member kind="function">
-      <type>char *</type>
-      <name>mprSprintf</name>
-      <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>ga7f7048281c8d8e28b4a18ef304b884cb</anchor>
-      <arglist>(char *buf, ssize maxSize, cchar *fmt,...)</arglist>
-    </member>
-    <member kind="function">
-      <type>char *</type>
-      <name>mprSprintfv</name>
-      <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>gac10b622d1ad2471ebbfeb7e3a3a451db</anchor>
-      <arglist>(char *buf, ssize maxSize, cchar *fmt, va_list args)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -4980,6 +5134,13 @@
       <arglist>(MprWaitHandler *wp, bool wakeup)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>mprUpgradeSocket</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>gad6d08288a5b584089e713f24012f7bee</anchor>
+      <arglist>(MprSocket *sp, struct MprSsl *ssl, int server)</arglist>
+    </member>
+    <member kind="function">
       <type>char *</type>
       <name>mprUriDecode</name>
       <anchorfile>group___mpr.html</anchorfile>
@@ -5023,16 +5184,23 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprVerifySslClients</name>
+      <name>mprVerifySslDepth</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>gac388b7454d677ec235510b09de786589</anchor>
+      <anchor>ga541aec6f41d797ea79ca2df68836bc8b</anchor>
+      <arglist>(struct MprSsl *ssl, int depth)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprVerifySslIssuer</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>gaa94da504a06310268bed77f129201803</anchor>
       <arglist>(struct MprSsl *ssl, bool on)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprVerifySslServers</name>
+      <name>mprVerifySslPeer</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>ga4be0b8d2cff23e963531b92a819ba89c</anchor>
+      <anchor>ga4af0a4a1cfe174e1782027fc09faaeee</anchor>
       <arglist>(struct MprSsl *ssl, bool on)</arglist>
     </member>
     <member kind="function">
@@ -5053,57 +5221,57 @@
       <type>int</type>
       <name>mprWaitForCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>ga30851ab0da2af427994715c040a2b66f</anchor>
-      <arglist>(MprCmd *cmd, MprTime timeout)</arglist>
+      <anchor>ga1e3fc2a672d14270f5a15f08b9a99409</anchor>
+      <arglist>(MprCmd *cmd, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>mprWaitForCond</name>
       <anchorfile>group___mpr_synch.html</anchorfile>
-      <anchor>gad1c4890dfbcfaca337598129cf50ef57</anchor>
-      <arglist>(MprCond *cond, MprTime timeout)</arglist>
+      <anchor>ga2902c6005212638d289e867d567e16d7</anchor>
+      <arglist>(MprCond *cond, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>mprWaitForEvent</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a34675480c700f127f1820fa8eb830836</anchor>
-      <arglist>(MprDispatcher *dispatcher, MprTime timeout)</arglist>
+      <anchor>a7a997d3acde6a33b9367d14f4bc91d87</anchor>
+      <arglist>(MprDispatcher *dispatcher, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>mprWaitForIO</name>
       <anchorfile>group___mpr_wait_handler.html</anchorfile>
-      <anchor>ga82286bdefeaa86a6794bc5a19dbcad24</anchor>
-      <arglist>(MprWaitService *ws, MprTime timeout)</arglist>
+      <anchor>ga050cd9b37c257aca0790ce48bc760f0b</anchor>
+      <arglist>(MprWaitService *ws, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>mprWaitForMultiCond</name>
       <anchorfile>group___mpr_synch.html</anchorfile>
-      <anchor>ga4e03a1405dc584427ba6df0745b0c2ba</anchor>
-      <arglist>(MprCond *cond, MprTime timeout)</arglist>
+      <anchor>ga0b4bca5c7c7922fddc14e08213892289</anchor>
+      <arglist>(MprCond *cond, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>mprWaitForSingleIO</name>
       <anchorfile>group___mpr_wait_handler.html</anchorfile>
-      <anchor>ga053742b713a2a6e9c15483553fc953a6</anchor>
-      <arglist>(int fd, int mask, MprTime timeout)</arglist>
+      <anchor>ga0a93f3ae8149bd4904921ffb36e493c6</anchor>
+      <arglist>(int fd, int mask, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
       <name>mprWaitForTest2ToComplete</name>
       <anchorfile>group___mpr_test_service.html</anchorfile>
-      <anchor>ga066bdf9308e65fdb0455ff4197c9d93d</anchor>
-      <arglist>(MprTestGroup *gp, MprTime timeout)</arglist>
+      <anchor>ga8de80fc08cc763d79fa85689c5eb212a</anchor>
+      <arglist>(MprTestGroup *gp, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
       <name>mprWaitForTestToComplete</name>
       <anchorfile>group___mpr_test_service.html</anchorfile>
-      <anchor>gaca0d47bc769a56d43cca599cbfe62874</anchor>
-      <arglist>(MprTestGroup *gp, MprTime timeout)</arglist>
+      <anchor>ga24a30e124641f6b6d7f2da514e4b948c</anchor>
+      <arglist>(MprTestGroup *gp, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -5116,8 +5284,8 @@
       <type>int</type>
       <name>mprWaitTillIdle</name>
       <anchorfile>group___mpr.html</anchorfile>
-      <anchor>ga7aab2a7f8f90ad0708a7f3a2f7d29695</anchor>
-      <arglist>(MprTime timeout)</arglist>
+      <anchor>ga270c5c5030b1d061456d1c00fb258584</anchor>
+      <arglist>(MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -5130,8 +5298,8 @@
       <type>ssize</type>
       <name>mprWriteCache</name>
       <anchorfile>group___mpr_cache.html</anchorfile>
-      <anchor>gab19edd97c58857ef7621fc60e6841133</anchor>
-      <arglist>(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTime lifespan, int64 version, int options)</arglist>
+      <anchor>gad85cef853dbc0a16f343e7c720708ce8</anchor>
+      <arglist>(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTicks lifespan, int64 version, int options)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -5261,16 +5429,16 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>scasecmp</name>
+      <name>scaselesscmp</name>
       <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>gac0a146492e745c3406087beb673a63a3</anchor>
+      <anchor>gaf9cb27956141ddc4724cca9903fa69b2</anchor>
       <arglist>(cchar *s1, cchar *s2)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
-      <name>scasematch</name>
+      <name>scaselessmatch</name>
       <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>gad8d06beb6115f6fb5eb992424ed5a3ab</anchor>
+      <anchor>ga021eac46fe21719fb1f9c9d257f64280</anchor>
       <arglist>(cchar *s1, cchar *s2)</arglist>
     </member>
     <member kind="function">
@@ -5298,8 +5466,8 @@
       <type>char *</type>
       <name>scontains</name>
       <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>ga79b460442c5d5e907a04b1e77d2ff9e4</anchor>
-      <arglist>(cchar *str, cchar *pattern, ssize limit)</arglist>
+      <anchor>ga3e0b725c7dc165d8e468928ddc1a4462</anchor>
+      <arglist>(cchar *str, cchar *pattern)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -5309,10 +5477,10 @@
       <arglist>(char *dest, ssize destMax, cchar *src)</arglist>
     </member>
     <member kind="function">
-      <type>int</type>
+      <type>bool</type>
       <name>sends</name>
       <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>gac13036fa6e354ced672de4989efb894d</anchor>
+      <anchor>ga2bec6f1bdddf77d00badb855098b9ec6</anchor>
       <arglist>(cchar *str, cchar *suffix)</arglist>
     </member>
     <member kind="function">
@@ -5380,9 +5548,9 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>sncasecmp</name>
+      <name>sncaselesscmp</name>
       <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>gae254b45feeafd5e5fbc0601f5a8e3376</anchor>
+      <anchor>ga30d6259caa94ed51abd25be83c0c4972</anchor>
       <arglist>(cchar *s1, cchar *s2, ssize len)</arglist>
     </member>
     <member kind="function">
@@ -5398,6 +5566,13 @@
       <anchorfile>group___mpr_string.html</anchorfile>
       <anchor>ga5217429e3f1dd3731530fe287bd893a7</anchor>
       <arglist>(cchar *s1, cchar *s2, ssize len)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>sncontains</name>
+      <anchorfile>group___mpr_string.html</anchorfile>
+      <anchor>ga264efcf6cbe5b0258e4947b9d1fce573</anchor>
+      <arglist>(cchar *str, cchar *pattern, ssize limit)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -5559,17 +5734,17 @@
       <arglist>(cchar *fmt, MprTime time)</arglist>
     </member>
     <member kind="function">
-      <type>MprTime</type>
-      <name>mprGetRemainingTime</name>
+      <type>MprTicks</type>
+      <name>mprGetRemainingTicks</name>
       <anchorfile>group___mpr_time.html</anchorfile>
-      <anchor>gae1dc5ecac49386f56a60314fe3978149</anchor>
-      <arglist>(MprTime mark, MprTime timeout)</arglist>
+      <anchor>ga431da15c3ff9707b89a7097a85bd90de</anchor>
+      <arglist>(MprTicks mark, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
-      <type>uint64</type>
+      <type>MprTicks</type>
       <name>mprGetTicks</name>
       <anchorfile>group___mpr_time.html</anchorfile>
-      <anchor>ga390f8a0064788c82c0911899fba2e913</anchor>
+      <anchor>ga1d972a6ab180618674c5f9220f88d68a</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
@@ -5738,15 +5913,15 @@
       <type>int</type>
       <name>mprWaitForCond</name>
       <anchorfile>group___mpr_synch.html</anchorfile>
-      <anchor>gad1c4890dfbcfaca337598129cf50ef57</anchor>
-      <arglist>(MprCond *cond, MprTime timeout)</arglist>
+      <anchor>ga2902c6005212638d289e867d567e16d7</anchor>
+      <arglist>(MprCond *cond, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>mprWaitForMultiCond</name>
       <anchorfile>group___mpr_synch.html</anchorfile>
-      <anchor>ga4e03a1405dc584427ba6df0745b0c2ba</anchor>
-      <arglist>(MprCond *cond, MprTime timeout)</arglist>
+      <anchor>ga0b4bca5c7c7922fddc14e08213892289</anchor>
+      <arglist>(MprCond *cond, MprTicks timeout)</arglist>
     </member>
   </compound>
   <compound kind="group">
@@ -6026,6 +6201,20 @@
     <filename>group___mpr_string.html</filename>
     <member kind="function">
       <type>char *</type>
+      <name>fmt</name>
+      <anchorfile>group___mpr_string.html</anchorfile>
+      <anchor>gabf10ae3bef0267314c1a4a66ace2965c</anchor>
+      <arglist>(char *buf, ssize maxSize, cchar *fmt,...)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>fmtv</name>
+      <anchorfile>group___mpr_string.html</anchorfile>
+      <anchor>ga14db538ef7e8224840f6349cd4e94952</anchor>
+      <arglist>(char *buf, ssize maxSize, cchar *fmt, va_list args)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
       <name>itos</name>
       <anchorfile>group___mpr_string.html</anchorfile>
       <anchor>ga3274fba2fee514f336703ded246885f4</anchor>
@@ -6081,31 +6270,17 @@
       <arglist>(cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
-      <type>char *</type>
-      <name>mprSprintf</name>
-      <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>ga7f7048281c8d8e28b4a18ef304b884cb</anchor>
-      <arglist>(char *buf, ssize maxSize, cchar *fmt,...)</arglist>
-    </member>
-    <member kind="function">
-      <type>char *</type>
-      <name>mprSprintfv</name>
-      <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>gac10b622d1ad2471ebbfeb7e3a3a451db</anchor>
-      <arglist>(char *buf, ssize maxSize, cchar *fmt, va_list args)</arglist>
-    </member>
-    <member kind="function">
       <type>int</type>
-      <name>scasecmp</name>
+      <name>scaselesscmp</name>
       <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>gac0a146492e745c3406087beb673a63a3</anchor>
+      <anchor>gaf9cb27956141ddc4724cca9903fa69b2</anchor>
       <arglist>(cchar *s1, cchar *s2)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
-      <name>scasematch</name>
+      <name>scaselessmatch</name>
       <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>gad8d06beb6115f6fb5eb992424ed5a3ab</anchor>
+      <anchor>ga021eac46fe21719fb1f9c9d257f64280</anchor>
       <arglist>(cchar *s1, cchar *s2)</arglist>
     </member>
     <member kind="function">
@@ -6126,8 +6301,8 @@
       <type>char *</type>
       <name>scontains</name>
       <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>ga79b460442c5d5e907a04b1e77d2ff9e4</anchor>
-      <arglist>(cchar *str, cchar *pattern, ssize limit)</arglist>
+      <anchor>ga3e0b725c7dc165d8e468928ddc1a4462</anchor>
+      <arglist>(cchar *str, cchar *pattern)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -6137,10 +6312,10 @@
       <arglist>(char *dest, ssize destMax, cchar *src)</arglist>
     </member>
     <member kind="function">
-      <type>int</type>
+      <type>bool</type>
       <name>sends</name>
       <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>gac13036fa6e354ced672de4989efb894d</anchor>
+      <anchor>ga2bec6f1bdddf77d00badb855098b9ec6</anchor>
       <arglist>(cchar *str, cchar *suffix)</arglist>
     </member>
     <member kind="function">
@@ -6208,9 +6383,9 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>sncasecmp</name>
+      <name>sncaselesscmp</name>
       <anchorfile>group___mpr_string.html</anchorfile>
-      <anchor>gae254b45feeafd5e5fbc0601f5a8e3376</anchor>
+      <anchor>ga30d6259caa94ed51abd25be83c0c4972</anchor>
       <arglist>(cchar *s1, cchar *s2, ssize len)</arglist>
     </member>
     <member kind="function">
@@ -6219,6 +6394,13 @@
       <anchorfile>group___mpr_string.html</anchorfile>
       <anchor>ga5217429e3f1dd3731530fe287bd893a7</anchor>
       <arglist>(cchar *s1, cchar *s2, ssize len)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>sncontains</name>
+      <anchorfile>group___mpr_string.html</anchorfile>
+      <anchor>ga264efcf6cbe5b0258e4947b9d1fce573</anchor>
+      <arglist>(cchar *str, cchar *pattern, ssize limit)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -6330,13 +6512,6 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprAddNullToWideBuf</name>
-      <anchorfile>group___mpr_buf.html</anchorfile>
-      <anchor>ga18cf5bf9ce0f825fa0d73a829cf7c474</anchor>
-      <arglist>(MprBuf *buf)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
       <name>mprAdjustBufEnd</name>
       <anchorfile>group___mpr_buf.html</anchorfile>
       <anchor>ga95de494427536885cd80187593d45d91</anchor>
@@ -6348,6 +6523,13 @@
       <anchorfile>group___mpr_buf.html</anchorfile>
       <anchor>ga52128fe8a192cd1cf4541cccf6ce3625</anchor>
       <arglist>(MprBuf *buf, ssize count)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>mprBufToString</name>
+      <anchorfile>group___mpr_buf.html</anchorfile>
+      <anchor>ga82bb10164b117911778ca5ef4bc0862e</anchor>
+      <arglist>(MprBuf *buf)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -6476,13 +6658,6 @@
       <arglist>(MprBuf *buf, int c)</arglist>
     </member>
     <member kind="function">
-      <type>int</type>
-      <name>mprPutCharToWideBuf</name>
-      <anchorfile>group___mpr_buf.html</anchorfile>
-      <anchor>gaa89ec8abfb851da06de8115f3aa3ea6c</anchor>
-      <arglist>(MprBuf *buf, int c)</arglist>
-    </member>
-    <member kind="function">
       <type>ssize</type>
       <name>mprPutFmtToBuf</name>
       <anchorfile>group___mpr_buf.html</anchorfile>
@@ -6508,13 +6683,6 @@
       <name>mprPutStringToBuf</name>
       <anchorfile>group___mpr_buf.html</anchorfile>
       <anchor>ga50d08cdfc9c21e71af90586104a5839e</anchor>
-      <arglist>(MprBuf *buf, cchar *str)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>mprPutStringToWideBuf</name>
-      <anchorfile>group___mpr_buf.html</anchorfile>
-      <anchor>ga2ea1a462e574ebd1f1a95cbe695da4be</anchor>
       <arglist>(MprBuf *buf, cchar *str)</arglist>
     </member>
     <member kind="function">
@@ -6674,8 +6842,8 @@
       <type>void</type>
       <name>mprInitList</name>
       <anchorfile>group___mpr_list.html</anchorfile>
-      <anchor>gac1b1433c9a3b963c78572f53cf2a6fd8</anchor>
-      <arglist>(MprList *list)</arglist>
+      <anchor>ga0c797a3ea868662ad6dabb35f5255399</anchor>
+      <arglist>(MprList *list, int flags)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -6690,6 +6858,13 @@
       <anchorfile>group___mpr_list.html</anchorfile>
       <anchor>ga8b3d6afe4be8d416e28f64d05e8391eb</anchor>
       <arglist>(MprList *list, cvoid *item)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>mprLookupStringItem</name>
+      <anchorfile>group___mpr_list.html</anchorfile>
+      <anchor>ga8b32a32be34fbcc2194767eb7031a3ad</anchor>
+      <arglist>(MprList *list, cchar *str)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -6720,6 +6895,13 @@
       <arglist>(MprList *list, int start, int end)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>mprRemoveStringItem</name>
+      <anchorfile>group___mpr_list.html</anchorfile>
+      <anchor>ga7d948c448d34a433b728c7a19aae1814</anchor>
+      <arglist>(MprList *list, cchar *str)</arglist>
+    </member>
+    <member kind="function">
       <type>void *</type>
       <name>mprSetItem</name>
       <anchorfile>group___mpr_list.html</anchorfile>
@@ -6734,11 +6916,11 @@
       <arglist>(MprList *list, int initialSize, int maxSize)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
+      <type>MprList *</type>
       <name>mprSortList</name>
       <anchorfile>group___mpr_list.html</anchorfile>
-      <anchor>gaf4ea2773fbe55ad1492d3ca0d4a33648</anchor>
-      <arglist>(MprList *list, void *compare)</arglist>
+      <anchor>ga0326ee9015a4949d2664fd386ca975f9</anchor>
+      <arglist>(MprList *list, MprSortProc compare, void *ctx)</arglist>
     </member>
   </compound>
   <compound kind="group">
@@ -6754,9 +6936,9 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprAssertError</name>
+      <name>mprAssure</name>
       <anchorfile>group___mpr_log.html</anchorfile>
-      <anchor>ga42ef49743936729111e89ae45ad8a752</anchor>
+      <anchor>ga3528e274d1c7dcc0c375b46c5370fcb4</anchor>
       <arglist>(cchar *loc, cchar *msg)</arglist>
     </member>
     <member kind="function">
@@ -7562,15 +7744,22 @@
       <type>MprEvent *</type>
       <name>mprCreateEvent</name>
       <anchorfile>group___mpr_event.html</anchorfile>
-      <anchor>ga6154e34c582e39cd64b4505a6afb39c4</anchor>
-      <arglist>(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)</arglist>
+      <anchor>gac6fcf6faf6ba5c85d7954fa416b73e30</anchor>
+      <arglist>(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, void *data, int flags)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>mprCreateEventOutside</name>
+      <anchorfile>group___mpr_event.html</anchorfile>
+      <anchor>ga657761883a278d7b8e3f597c31f31a9c</anchor>
+      <arglist>(MprDispatcher *dispatcher, void *proc, void *data)</arglist>
     </member>
     <member kind="function">
       <type>MprEvent *</type>
       <name>mprCreateTimerEvent</name>
       <anchorfile>group___mpr_event.html</anchorfile>
-      <anchor>ga38397c1964339e66e0251995bb91408c</anchor>
-      <arglist>(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)</arglist>
+      <anchor>ga3e92f13fc23a3f0ed2d730b077f61611</anchor>
+      <arglist>(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, void *data, int flags)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -7590,8 +7779,8 @@
       <type>void</type>
       <name>mprRescheduleEvent</name>
       <anchorfile>group___mpr_event.html</anchorfile>
-      <anchor>ga7abedbcca593ebcc1e021bdfd927b3db</anchor>
-      <arglist>(MprEvent *event, MprTime period)</arglist>
+      <anchor>ga1919da044dd4f62d999526175f76bdc2</anchor>
+      <arglist>(MprEvent *event, MprTicks period)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -7604,8 +7793,8 @@
       <type>int</type>
       <name>mprServiceEvents</name>
       <anchorfile>group___mpr_event.html</anchorfile>
-      <anchor>gaff02030323e3d101661645fb0742d78a</anchor>
-      <arglist>(MprTime delay, int flags)</arglist>
+      <anchor>ga205adaee3b45d0cc899afc89eb9f3b3d</anchor>
+      <arglist>(MprTicks delay, int flags)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -7816,15 +8005,15 @@
       <type>void</type>
       <name>mprWaitForIO</name>
       <anchorfile>group___mpr_wait_handler.html</anchorfile>
-      <anchor>ga82286bdefeaa86a6794bc5a19dbcad24</anchor>
-      <arglist>(MprWaitService *ws, MprTime timeout)</arglist>
+      <anchor>ga050cd9b37c257aca0790ce48bc760f0b</anchor>
+      <arglist>(MprWaitService *ws, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>mprWaitForSingleIO</name>
       <anchorfile>group___mpr_wait_handler.html</anchorfile>
-      <anchor>ga053742b713a2a6e9c15483553fc953a6</anchor>
-      <arglist>(int fd, int mask, MprTime timeout)</arglist>
+      <anchor>ga0a93f3ae8149bd4904921ffb36e493c6</anchor>
+      <arglist>(int fd, int mask, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -7870,17 +8059,24 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>mprAddSocketProvider</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>ga48875519d20f48a69a66b233d411f62f</anchor>
+      <arglist>(cchar *name, MprSocketProvider *provider)</arglist>
+    </member>
+    <member kind="function">
+      <type>struct MprSsl *</type>
+      <name>mprCloneSsl</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>ga1542af34e1a866b23c7c19eb44fece34</anchor>
+      <arglist>(MprSsl *src)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>mprCloseSocket</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
       <anchor>ga5bd6e40cb8a29c92a8f5e1ce9529b726</anchor>
       <arglist>(MprSocket *sp, bool graceful)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>mprConfigureSsl</name>
-      <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>ga5f3e1db5d7e207edaa4dde272a63c5fa</anchor>
-      <arglist>(struct MprSsl *ssl)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -7893,15 +8089,15 @@
       <type>MprSocket *</type>
       <name>mprCreateSocket</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>gabe2236ae68abd47188e86e4f8a62ea72</anchor>
-      <arglist>(struct MprSsl *ssl)</arglist>
+      <anchor>ga0ef02d313ec268eae6038a5af0ee5cc4</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>struct MprSsl *</type>
       <name>mprCreateSsl</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>gab67c6b658f311faf72f73ad5b34da656</anchor>
-      <arglist>()</arglist>
+      <anchor>gac6a41e387c7475251098f237f5f0a802</anchor>
+      <arglist>(int server)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -7988,11 +8184,11 @@
       <arglist>(MprSocket *sp, cchar *ip, int port, int flags)</arglist>
     </member>
     <member kind="function">
-      <type>MprModule *</type>
+      <type>int</type>
       <name>mprLoadSsl</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>ga4b64ed8b6bc299fc4b74704440b8f954</anchor>
-      <arglist>(bool lazy)</arglist>
+      <anchor>ga4cf59cde7f99bce19be6056483180e51</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -8021,13 +8217,6 @@
       <anchorfile>group___mpr_socket.html</anchorfile>
       <anchor>gad69af558283f6f1f3277ae9e77029017</anchor>
       <arglist>(int max)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>mprSetSecureProvider</name>
-      <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>ga06cb751d75f9435f1cf108efa5bad2ce</anchor>
-      <arglist>(MprSocketProvider *provider)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -8093,6 +8282,13 @@
       <arglist>(struct MprSsl *ssl, int protocols)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>mprSetSslProvider</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>ga98e6c82c9ff89135aea961c2ff3d4de4</anchor>
+      <arglist>(MprSsl *ssl, cchar *provider)</arglist>
+    </member>
+    <member kind="function">
       <type>bool</type>
       <name>mprSocketHasPendingData</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
@@ -8100,17 +8296,31 @@
       <arglist>(MprSocket *sp)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>mprVerifySslClients</name>
+      <type>int</type>
+      <name>mprUpgradeSocket</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>gac388b7454d677ec235510b09de786589</anchor>
+      <anchor>gad6d08288a5b584089e713f24012f7bee</anchor>
+      <arglist>(MprSocket *sp, struct MprSsl *ssl, int server)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprVerifySslDepth</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>ga541aec6f41d797ea79ca2df68836bc8b</anchor>
+      <arglist>(struct MprSsl *ssl, int depth)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprVerifySslIssuer</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>gaa94da504a06310268bed77f129201803</anchor>
       <arglist>(struct MprSsl *ssl, bool on)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprVerifySslServers</name>
+      <name>mprVerifySslPeer</name>
       <anchorfile>group___mpr_socket.html</anchorfile>
-      <anchor>ga4be0b8d2cff23e963531b92a819ba89c</anchor>
+      <anchor>ga4af0a4a1cfe174e1782027fc09faaeee</anchor>
       <arglist>(struct MprSsl *ssl, bool on)</arglist>
     </member>
     <member kind="function">
@@ -8203,6 +8413,13 @@
       <arglist>)(void *arg)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>mprAreCmdEventsEnabled</name>
+      <anchorfile>group___mpr_cmd.html</anchorfile>
+      <anchor>ga41a0e9cb643e435b21d5ff37658beec9</anchor>
+      <arglist>(MprCmd *cmd, int channel)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>mprCloseCmdFd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
@@ -8246,6 +8463,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>mprEnableCmdOutputEvents</name>
+      <anchorfile>group___mpr_cmd.html</anchorfile>
+      <anchor>ga39d49294df1ae6d358c30e958585e060</anchor>
+      <arglist>(MprCmd *cmd, bool on)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>mprFinalizeCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
       <anchor>gac28276b68838d380698c4995fc9b1267</anchor>
@@ -8281,10 +8505,10 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>mprPollCmd</name>
+      <name>mprPollWinCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>gaa959b4cdf9debde2fe4a3e8022f99c3b</anchor>
-      <arglist>(MprCmd *cmd, MprTime timeout)</arglist>
+      <anchor>ga192b4e4644029986c0fab0dc79d6999a</anchor>
+      <arglist>(MprCmd *cmd, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -8297,22 +8521,22 @@
       <type>int</type>
       <name>mprReapCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>ga9e57724aee88e3126e00fcb5336b590c</anchor>
-      <arglist>(MprCmd *cmd, MprTime timeout)</arglist>
+      <anchor>gaae5bd75d3750777971cfad687c0f9f15</anchor>
+      <arglist>(MprCmd *cmd, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>mprRunCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>ga06e30d913b1432d1d3dc0fba6dfd1442</anchor>
-      <arglist>(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTime timeout, int flags)</arglist>
+      <anchor>gad616fcfa04dd3e7c13552e97e3c1f1dc</anchor>
+      <arglist>(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTicks timeout, int flags)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
       <name>mprRunCmdV</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>ga8eb158a3373ebe139ef6374c896be916</anchor>
-      <arglist>(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTime timeout, int flags)</arglist>
+      <anchor>ga9b05cb68ed79b6203bb0b7e48e94b428</anchor>
+      <arglist>(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTicks timeout, int flags)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -8353,8 +8577,8 @@
       <type>int</type>
       <name>mprWaitForCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>ga30851ab0da2af427994715c040a2b66f</anchor>
-      <arglist>(MprCmd *cmd, MprTime timeout)</arglist>
+      <anchor>ga1e3fc2a672d14270f5a15f08b9a99409</anchor>
+      <arglist>(MprCmd *cmd, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -8379,8 +8603,8 @@
       <type>int</type>
       <name>mprExpireCache</name>
       <anchorfile>group___mpr_cache.html</anchorfile>
-      <anchor>gaeadf21cc8ad9f3265bedca59f48e1acb</anchor>
-      <arglist>(MprCache *cache, cchar *key, MprTime expires)</arglist>
+      <anchor>gacf17b95267136971ad528b236930a32f</anchor>
+      <arglist>(MprCache *cache, cchar *key, MprTicks expires)</arglist>
     </member>
     <member kind="function">
       <type>int64</type>
@@ -8414,15 +8638,15 @@
       <type>void</type>
       <name>mprSetCacheLimits</name>
       <anchorfile>group___mpr_cache.html</anchorfile>
-      <anchor>ga54308aff3ba0770a6efdc32f8500590e</anchor>
-      <arglist>(MprCache *cache, int64 keys, int64 lifespan, int64 memory, int resolution)</arglist>
+      <anchor>gac79a433b92c0e81df3b282345eef07ad</anchor>
+      <arglist>(MprCache *cache, int64 keys, MprTicks lifespan, int64 memory, int resolution)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
       <name>mprWriteCache</name>
       <anchorfile>group___mpr_cache.html</anchorfile>
-      <anchor>gab19edd97c58857ef7621fc60e6841133</anchor>
-      <arglist>(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTime lifespan, int64 version, int options)</arglist>
+      <anchor>gad85cef853dbc0a16f343e7c720708ce8</anchor>
+      <arglist>(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTicks lifespan, int64 version, int options)</arglist>
     </member>
   </compound>
   <compound kind="group">
@@ -8641,8 +8865,8 @@
       <type>char *</type>
       <name>mprGetMD5</name>
       <anchorfile>group___mpr.html</anchorfile>
-      <anchor>ga48e16a14037b33f6080d4e62e398d5d2</anchor>
-      <arglist>(cchar *s)</arglist>
+      <anchor>ga8097b3e02c4e50d5e9b1d4e8cbd29a8e</anchor>
+      <arglist>(cchar *str)</arglist>
     </member>
     <member kind="function">
       <type>char *</type>
@@ -8671,6 +8895,27 @@
       <anchorfile>group___mpr.html</anchorfile>
       <anchor>gae159a5aef748a3f62cd1acd541cf3d31</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>mprGetSHA</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga5352f8f9f7d96d7e58dc7b784cd9c500</anchor>
+      <arglist>(cchar *str)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>mprGetSHABase64</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga08b9fc2b79eb1592298d20d9e3f4be5d</anchor>
+      <arglist>(cchar *str)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>mprGetSHAWithPrefix</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga66f3b909d68d969920f962613d00d454</anchor>
+      <arglist>(cchar *buf, ssize len, cchar *prefix)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -8718,8 +8963,8 @@
       <type>void</type>
       <name>mprNap</name>
       <anchorfile>group___mpr.html</anchorfile>
-      <anchor>gaa85d07a3657f56f58dc45f4e45743648</anchor>
-      <arglist>(MprTime msec)</arglist>
+      <anchor>gaa3bb4935aa8ee20f4f064068ff28b2a5</anchor>
+      <arglist>(MprTicks msec)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -8795,8 +9040,8 @@
       <type>void</type>
       <name>mprSetExitTimeout</name>
       <anchorfile>group___mpr.html</anchorfile>
-      <anchor>gaf75f894bad6a8c48f1b44a2f351bcef5</anchor>
-      <arglist>(MprTime timeout)</arglist>
+      <anchor>ga278ee775a1c2e956d09a4683e778caea</anchor>
+      <arglist>(MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -8844,8 +9089,8 @@
       <type>void</type>
       <name>mprSleep</name>
       <anchorfile>group___mpr.html</anchorfile>
-      <anchor>gaf8bae04622ff05416af04d1b06e68e55</anchor>
-      <arglist>(MprTime msec)</arglist>
+      <anchor>ga85c39ea54c27d4b13825ba78c2e7adda</anchor>
+      <arglist>(MprTicks msec)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -8886,8 +9131,8 @@
       <type>int</type>
       <name>mprWaitTillIdle</name>
       <anchorfile>group___mpr.html</anchorfile>
-      <anchor>ga7aab2a7f8f90ad0708a7f3a2f7d29695</anchor>
-      <arglist>(MprTime timeout)</arglist>
+      <anchor>ga270c5c5030b1d061456d1c00fb258584</anchor>
+      <arglist>(MprTicks timeout)</arglist>
     </member>
   </compound>
   <compound kind="group">
@@ -8985,15 +9230,15 @@
       <type>bool</type>
       <name>mprWaitForTest2ToComplete</name>
       <anchorfile>group___mpr_test_service.html</anchorfile>
-      <anchor>ga066bdf9308e65fdb0455ff4197c9d93d</anchor>
-      <arglist>(MprTestGroup *gp, MprTime timeout)</arglist>
+      <anchor>ga8de80fc08cc763d79fa85689c5eb212a</anchor>
+      <arglist>(MprTestGroup *gp, MprTicks timeout)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
       <name>mprWaitForTestToComplete</name>
       <anchorfile>group___mpr_test_service.html</anchorfile>
-      <anchor>gaca0d47bc769a56d43cca599cbfe62874</anchor>
-      <arglist>(MprTestGroup *gp, MprTime timeout)</arglist>
+      <anchor>ga24a30e124641f6b6d7f2da514e4b948c</anchor>
+      <arglist>(MprTestGroup *gp, MprTicks timeout)</arglist>
     </member>
   </compound>
   <compound kind="struct">
@@ -9261,10 +9506,31 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>MprCond *</type>
+      <name>markerCond</name>
+      <anchorfile>struct_mpr_heap.html</anchorfile>
+      <anchor>ac8dff11b856053c56957a55d6a680204</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>marking</name>
+      <anchorfile>struct_mpr_heap.html</anchorfile>
+      <anchor>a84ff2a7503d4bfbf2e089f6717376615</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>int</type>
       <name>mustYield</name>
       <anchorfile>struct_mpr_heap.html</anchorfile>
       <anchor>a96061b691a2b5d247f2eae9de73a29ef</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>MprMutex *</type>
+      <name>mutex</name>
+      <anchorfile>struct_mpr_heap.html</anchorfile>
+      <anchor>a6706b2115861c275cbc20778cca0f17f</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -9300,6 +9566,13 @@
       <name>pageSize</name>
       <anchorfile>struct_mpr_heap.html</anchorfile>
       <anchor>aeb5711432166603a0b5bc90f325336bd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>pauseGC</name>
+      <anchorfile>struct_mpr_heap.html</anchorfile>
+      <anchor>af042d31267c6ab1b22a0bd03a8d19613</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -9363,6 +9636,13 @@
       <name>sweeper</name>
       <anchorfile>struct_mpr_heap.html</anchorfile>
       <anchor>ad759957970a593589af4301a8cdfff07</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>sweeping</name>
+      <anchorfile>struct_mpr_heap.html</anchorfile>
+      <anchor>a7d7576b2a17cad93a2c2387ef5e29bde</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -9676,6 +9956,13 @@
     <name>MprSocketService</name>
     <filename>struct_mpr_socket_service.html</filename>
     <member kind="variable">
+      <type>char *</type>
+      <name>defaultProvider</name>
+      <anchorfile>struct_mpr_socket_service.html</anchorfile>
+      <anchor>a6a9e16266207f917b8672ce2d7f4a898</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>int</type>
       <name>maxAccept</name>
       <anchorfile>struct_mpr_socket_service.html</anchorfile>
@@ -9704,10 +9991,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>MprSocketProvider *</type>
-      <name>secureProvider</name>
+      <type>MprHash *</type>
+      <name>providers</name>
       <anchorfile>struct_mpr_socket_service.html</anchorfile>
-      <anchor>a9d3b4f66f937783ea078537717abe21c</anchor>
+      <anchor>aef910c34e81c261e0176232ece040d12</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -9953,13 +10240,6 @@
       <name>mainThread</name>
       <anchorfile>struct_mpr_thread_service.html</anchorfile>
       <anchor>afa377fab1e440a5e2c24214d5c6f8dde</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>MprMutex *</type>
-      <name>mutex</name>
-      <anchorfile>struct_mpr_thread_service.html</anchorfile>
-      <anchor>af804f049bfcfd5921f4e6bf9b5b5cdfb</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">

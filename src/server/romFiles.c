@@ -3,7 +3,7 @@
  */
 #include "mpr.h"
 
-#if BIT_FEATURE_ROMFS
+#if BIT_ROM
 static uchar _file_2[] = {
      35, 10, 35, 32, 32, 32, 97,112,112,119,101, 98, 46, 99,111,110,
     102, 32, 45, 45, 32, 68,101,102, 97,117,108,116, 32, 67,111,110,
@@ -14984,7 +14984,7 @@ static uchar _file_48[] = {
     121, 62, 10, 60, 47,104,116,109,108, 62, 10,
     0 };
 
-MprRomInode romFiles[] = {
+PUBLIC MprRomInode romFiles[] = {
     { "", 0, 0, 0 },
     { "appweb.conf", _file_2, 4999, 2 },
     { "conf", 0, 0, 0 },
@@ -15035,4 +15035,4 @@ MprRomInode romFiles[] = {
     { "web/test/upload/uploadComplete.html", _file_48, 59, 48 },
     { 0, 0, 0, 0 },
 };
-#endif /* BIT_FEATURE_ROMFS */
+#endif /* BIT_ROM */

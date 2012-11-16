@@ -47,7 +47,7 @@ static void update() {
     }
 }
 
-ESP_EXPORT int esp_controller_post(HttpRoute *route, MprModule *module) 
+ESP_EXPORT int esp_module_post(HttpRoute *route, MprModule *module) 
 {
     Edi     *edi;
 
@@ -63,7 +63,7 @@ ESP_EXPORT int esp_controller_post(HttpRoute *route, MprModule *module)
     /*
         Add model validations
      */
-    edi = espGetRouteDatabase(route);
+    edi = espGetRouteDatabase(route->eroute);
     ediAddValidation(edi, "present", "post", "title", 0);
     ediAddValidation(edi, "unique", "post", "title", 0);
     ediAddValidation(edi, "format", "post", "body", "(fox|dog)");

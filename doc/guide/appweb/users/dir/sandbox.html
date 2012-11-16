@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.0.0 Documentation</title>
+    <title>Embedthis Appweb 4.1.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.0.0</div>
+                <div class="version">Embedthis Appweb 4.1.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -37,6 +37,7 @@
             <h1>Quick Nav</h1>
             <ul>
                 <li><a href="#exitTimeout">ExitTimeout</a></li>
+                <li><a href="#limitBuffer">LimitBuffer</a></li>
                 <li><a href="#limitCache">LimitCache</a></li>
                 <li><a href="#limitCacheItem">LimitCacheItem</a></li>
                 <li><a href="#limitChunk">LimitChunk</a></li>
@@ -50,11 +51,10 @@
                 <li><a href="#limitRequestHeader">LimitRequestHeader</a></li>
                 <li><a href="#limitRequestHeaderLines">LimitRequestHeaderLines</a></li>
                 <li><a href="#limitResponseBody">LimitResponseBody</a></li>
-                <li><a href="#limitStageBuffer">LimitStageBuffer</a></li>
                 <li><a href="#limitUpload">LimitUpload</a></li>
                 <li><a href="#limitUri">LimitUri</a></li>
                 <li><a href="#limitWorkers">LimitWorkers</a></li>
-                <li><a href="#startWorkers">StartWorkers</a></li>
+                <li><a href="#minWorkers">MinWorkers</a></li>
                 <li><a href="#threadStack">ThreadStack</a></li>
             </ul>
             <h1>See Also</h1>
@@ -566,8 +566,8 @@
                 </tbody>
             </table>
             
-            <a id="limitStageBuffer"></a>
-            <h2>LimitStageBuffer</h2>
+            <a id="limitBuffer"></a>
+            <h2>LimitBuffer</h2>
             <table class="directive" title="directive">
                 <tbody>
                     <tr>
@@ -576,7 +576,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>LimitStageBuffer size</td>
+                        <td>LimitBuffer size</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -584,7 +584,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>LimitStageBuffer 8192</td>
+                        <td>LimitBuffer 8192</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -732,8 +732,8 @@
             </table>
             
             
-            <a id="startWorkers"></a>
-            <h2>StartWorkers</h2>
+            <a id="minWorkers"></a>
+            <h2>MinWorkers</h2>
             <table class="directive" title="directive">
                 <tbody>
                     <tr>
@@ -742,7 +742,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>StartWorkers number</td>
+                        <td>MinWorkers number</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -750,13 +750,13 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>StartWorkers 100</td>
+                        <td>MinWorkers 100</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>The StartWorkers directive will pre-allocate the specified number of worker threads on startup
-                            and then ensure that the worker pool always has at least this number of workers.</p>
+                            <p>The MinWorkers directive will pre-allocate the specified number of worker threads on startup
+                            and then ensure that the worker pool always has at least this minimum number of workers.</p>
                             <p>Appweb will automatically adjust the number of workers between the minimum specified
                             by this directive and the maximum specified by the WorkerLimit directive or via the Appweb
                             command line. Every ten minutes, Appweb will prune workers that have been idle for five
@@ -838,7 +838,7 @@
                             "../starting.html#appwebOptions">Appweb command line</a>, the command line value will take
                             precedence.</p>
                             <p>Appweb will automatically adjust the number of pool threads between the minimum specified
-                            by the StartWorkers directive and the maximum specified by this directive. Appweb will
+                            by the MinWorkers directive and the maximum specified by this directive. Appweb will
                             prune idle threads to reduce resource consumption as required.</p>
                         </td>
                     </tr>
@@ -850,7 +850,7 @@
 	<div class="bottom">
 		<p class="footnote"> 
             <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
-            All rights reserved. Embedthis, ESP, Ejscript and Appweb are trademarks of Embedthis Software LLC.</a>
+            All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>
     <script src="http://www.google.com/jsapi" type="text/javascript"></script>

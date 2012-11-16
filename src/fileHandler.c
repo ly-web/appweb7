@@ -16,7 +16,6 @@
 
 /***************************** Forward Declarations ***************************/
 
-static int findFile(HttpConn *conn);
 static void handleDeleteRequest(HttpQueue *q);
 static void handlePutRequest(HttpQueue *q);
 static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize size);
@@ -28,38 +27,25 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
 static int matchFileHandler(HttpConn *conn, HttpRoute *route, int dir)
 {
     HttpRx      *rx;
-    
-    rx = conn->rx;
-    httpMapFile(conn, route);
-    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
-        return findFile(conn);
-    }
-    return HTTP_ROUTE_OK;
-}
-
-
-/*
-    Map the request pathInfo to a physical file. This may respond by generating an error if the file can't be found.
- */
-static int findFile(HttpConn *conn)
-{
-    HttpRx      *rx;
     HttpTx      *tx;
     HttpUri     *prior;
-    HttpRoute   *route;
     MprPath     *info, zipInfo;
     cchar       *index;
     char        *path, *pathInfo, *uri, *zipfile;
     int         next;
-
+    
+    rx = conn->rx;
     tx = conn->tx;
     rx = conn->rx;
-    route = rx->route;
     prior = rx->parsedUri;
     info = &tx->fileInfo;
 
-    mprAssert(info->checked);
+    httpMapFile(conn, route);
+    assure(info->checked);
 
+    if (rx->flags & (HTTP_DELETE | HTTP_PUT)) {
+        return HTTP_ROUTE_OK;
+    }
     if (info->isDir) {
         /*
             Manage requests for directories
@@ -86,7 +72,7 @@ static int findFile(HttpConn *conn)
                     pathInfo = sjoin(rx->scriptName, rx->pathInfo, index, NULL);
                     uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, 
                         prior->query, 0);
-                    httpSetUri(conn, uri, 0);
+                    httpSetUri(conn, uri);
                     tx->filename = path;
                     tx->ext = httpGetExt(conn);
                     mprGetPathInfo(tx->filename, info);
@@ -115,86 +101,108 @@ static int findFile(HttpConn *conn)
             httpSetHeader(conn, "Content-Encoding", "gzip");
         }
     }
-    if (!(info->valid || info->isDir) && !(conn->rx->flags & HTTP_PUT)) {
-        if (rx->referrer) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", tx->filename, rx->referrer);
-        } else {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s", tx->filename);
-        }
-    } else if (info->valid) {
+    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST) && info->valid && !info->isDir && tx->length < 0) {
         /*
             The sendFile connector is optimized on some platforms to use the sendfile() system call.
             Set the entity length for the sendFile connector to utilize.
          */
         httpSetEntityLength(conn, tx->fileInfo.size);
-        if (!tx->etag) {
-            /* Set the etag for caching in the client */
-            tx->etag = sfmt("\"%x-%Lx-%Lx\"", info->inode, info->size, info->mtime);
-        }
     }
     return HTTP_ROUTE_OK;
 }
 
 
-/*
-    Initialize a handler instance for the file handler for this request
- */
 static void openFileHandler(HttpQueue *q)
 {
     HttpRx      *rx;
     HttpTx      *tx;
     HttpRoute   *route;
     HttpConn    *conn;
+    MprPath     *info;
     char        *date;
 
     conn = q->conn;
     tx = conn->tx;
     rx = conn->rx;
     route = rx->route;
+    info = &tx->fileInfo;
 
-    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
-        if (tx->fileInfo.valid && tx->fileInfo.mtime) {
-            //  TODO - OPT could cache this
-            date = httpGetDateString(&tx->fileInfo);
-            httpSetHeader(conn, "Last-Modified", date);
+    if (rx->flags & (HTTP_PUT | HTTP_DELETE)) {
+        if (!(route->flags & HTTP_ROUTE_PUT_DELETE_METHODS)) {
+            httpError(q->conn, HTTP_CODE_BAD_METHOD, "The \"%s\" method is not supported by file handler", rx->method);
         }
-        if (httpContentNotModified(conn)) {
-            httpSetStatus(conn, HTTP_CODE_NOT_MODIFIED);
-            httpOmitBody(conn);
-        }
-        if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't locate document: %s", rx->uri);
-            
-        } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
-            httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
-                "Http transmission aborted. File size exceeds max body of %,Ld bytes", conn->limits->transmissionBodySize);
-            
-        } else if (!(tx->connector == conn->http->sendConnector)) {
-            /*
-                If using the net connector, open the file if a body must be sent with the response. The file will be
-                automatically closed when the request completes.
-             */
-            if (!(tx->flags & HTTP_TX_NO_BODY)) {
-                tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
-                if (tx->file == 0) {
-                    if (rx->referrer) {
-                        httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", tx->filename, rx->referrer);
-                    } else {
-                        httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s from %s", tx->filename);
-                    }
+    } else {
+        if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
+            if (!(info->valid || info->isDir)) {
+                mprLog(4, "Can't open document %s", tx->filename);
+                if (rx->referrer) {
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s from %s", rx->uri, rx->referrer);
+                } else {
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document for: %s", rx->uri);
+                }
+            } else if (info->valid) {
+                if (!tx->etag) {
+                    /* Set the etag for caching in the client */
+                    tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
                 }
             }
         }
+        if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST) && !conn->error) {
+            if (tx->fileInfo.valid && tx->fileInfo.mtime) {
+                //  TODO - OPT could cache this
+                date = httpGetDateString(&tx->fileInfo);
+                httpSetHeader(conn, "Last-Modified", date);
+            }
+            if (httpContentNotModified(conn)) {
+                httpSetStatus(conn, HTTP_CODE_NOT_MODIFIED);
+                httpOmitBody(conn);
+                tx->length = -1;
+            }
+            if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
+                httpError(conn, HTTP_CODE_NOT_FOUND, "Can't locate document: %s", rx->uri);
+                
+            } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
+                httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
+                    "Http transmission aborted. File size exceeds max body of %,Ld bytes", 
+                        conn->limits->transmissionBodySize);
+                
+            } else if (!(tx->connector == conn->http->sendConnector)) {
+                /*
+                    If using the net connector, open the file if a body must be sent with the response. The file will be
+                    automatically closed when the request completes.
+                 */
+                if (!(tx->flags & HTTP_TX_NO_BODY)) {
+                    tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
+                    if (tx->file == 0) {
+                        if (rx->referrer) {
+                            httpError(conn, HTTP_CODE_NOT_FOUND, "DD Can't open document: %s from %s", 
+                                tx->filename, rx->referrer);
+                        } else {
+                            httpError(conn, HTTP_CODE_NOT_FOUND, "EE Can't open document: %s from %s", tx->filename);
+                        }
+                    }
+                }
+            }
 
-    } else if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        httpHandleOptionsTrace(q->conn);
+        } else if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
+            if (route->flags & HTTP_ROUTE_PUT_DELETE_METHODS) {
+                httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
+            } else {
+                httpHandleOptionsTrace(q->conn, "GET,HEAD,POST");
+            }
+        }
+    }
+}
 
-    } else if ((rx->flags & (HTTP_PUT | HTTP_DELETE)) && (route->flags & HTTP_ROUTE_PUT_DELETE)) {
-        /* No response body is sent for PUT or DELETE */
-        httpOmitBody(conn);
 
-    } else {
-        httpError(q->conn, HTTP_CODE_BAD_METHOD, "The \"%s\" method is not supported by file handler", rx->method);
+static void closeFileHandler(HttpQueue *q)
+{
+    HttpTx  *tx;
+
+    tx = q->conn->tx;
+    if (tx->file) {
+        mprCloseFile(tx->file);
+        tx->file = 0;
     }
 }
 
@@ -209,14 +217,15 @@ static void startFileHandler(HttpQueue *q)
     conn = q->conn;
     rx = conn->rx;
     tx = conn->tx;
+    assure(!tx->finalized);
     
-    if (tx->flags & HTTP_TX_NO_BODY) {
-        if (rx->flags & HTTP_PUT) {
-            handlePutRequest(q);
-        } else if (rx->flags & HTTP_DELETE) {
-            handleDeleteRequest(q);
-        }
-    } else {
+    if (rx->flags & HTTP_PUT) {
+        handlePutRequest(q);
+        
+    } else if (rx->flags & HTTP_DELETE) {
+        handleDeleteRequest(q);
+        
+    } else if (!(tx->flags & HTTP_TX_NO_BODY)) {
         /* Create a single data packet based on the entity length */
         packet = httpCreateEntityPacket(0, tx->entityLength, readFileData);
         if (!tx->outputRanges) {
@@ -235,7 +244,7 @@ static void startFileHandler(HttpQueue *q)
 static void readyFileHandler(HttpQueue *q)
 {
     /*
-        The queue already contains a single data packet representing all the output data. So can be finalized now.
+        The queue already contains a single data packet representing all the output data.
      */
     httpFinalize(q->conn);
 }
@@ -257,7 +266,7 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
     if (packet->content == 0 && (packet->content = mprCreateBuf(size, -1)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    mprAssert(size <= mprGetBufSpace(packet->content));    
+    assure(size <= mprGetBufSpace(packet->content));    
     mprLog(7, "readFileData size %d, pos %Ld", size, pos);
     
     if (pos >= 0) {
@@ -273,7 +282,7 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
     }
     mprAdjustBufEnd(packet->content, nbytes);
     packet->esize -= nbytes;
-    mprAssert(packet->esize == 0);
+    assure(packet->esize == 0);
     return nbytes;
 }
 
@@ -333,7 +342,7 @@ static void outgoingFileService(HttpQueue *q)
     usingSend = (tx->connector == conn->http->sendConnector);
 
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
-        if (!usingSend && !tx->outputRanges && packet->flags & HTTP_PACKET_DATA) {
+        if (!usingSend && !tx->outputRanges && packet->esize) {
             if ((rc = prepPacket(q, packet)) < 0) {
                 return;
             } else if (rc == 0) {
@@ -377,11 +386,16 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
             mprCloseFile(file);
         }
         q->queueData = 0;
+        if (!tx->etag) {
+            /* Set the etag for caching in the client */
+            mprGetPathInfo(tx->filename, &tx->fileInfo);
+            tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", tx->fileInfo.inode, tx->fileInfo.size, tx->fileInfo.mtime);
+        }
         return;
     }
     buf = packet->content;
     len = mprGetBufLength(buf);
-    mprAssert(len > 0);
+    assure(len > 0);
 
     range = rx->inputRange;
     if (range && mprSeekFile(file, SEEK_SET, range->start) != range->start) {
@@ -403,12 +417,12 @@ static void handlePutRequest(HttpQueue *q)
     MprFile     *file;
     char        *path;
 
-    mprAssert(q->pair->queueData == 0);
+    assure(q->pair->queueData == 0);
 
     conn = q->conn;
     tx = conn->tx;
-    mprAssert(tx->filename);
-    mprAssert(tx->fileInfo.checked);
+    assure(tx->filename);
+    assure(tx->fileInfo.checked);
 
     path = tx->filename;
     if (tx->outputRanges) {
@@ -429,8 +443,10 @@ static void handlePutRequest(HttpQueue *q)
             return;
         }
     }
+    if (!tx->fileInfo.isReg) {
+        httpSetHeader(conn, "Location", conn->rx->uri);
+    }
     httpSetStatus(conn, tx->fileInfo.isReg ? HTTP_CODE_NO_CONTENT : HTTP_CODE_CREATED);
-    httpSetContentLength(conn, 0);
     q->pair->queueData = (void*) file;
 }
 
@@ -442,8 +458,8 @@ static void handleDeleteRequest(HttpQueue *q)
 
     conn = q->conn;
     tx = conn->tx;
-    mprAssert(tx->filename);
-    mprAssert(tx->fileInfo.checked);
+    assure(tx->filename);
+    assure(tx->fileInfo.checked);
 
     if (!tx->fileInfo.isReg) {
         httpError(conn, HTTP_CODE_NOT_FOUND, "URI not found");
@@ -454,25 +470,25 @@ static void handleDeleteRequest(HttpQueue *q)
         return;
     }
     httpSetStatus(conn, HTTP_CODE_NO_CONTENT);
-    httpSetContentLength(conn, 0);
 }
 
 
 /*  
     Loadable module initialization
  */
-int maOpenFileHandler(Http *http)
+PUBLIC int maOpenFileHandler(Http *http)
 {
     HttpStage     *handler;
 
     /* 
         This handler serves requests without using thread workers.
      */
-    if ((handler = httpCreateHandler(http, "fileHandler", 0, NULL)) == 0) {
+    if ((handler = httpCreateHandler(http, "fileHandler", NULL)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     handler->match = matchFileHandler;
     handler->open = openFileHandler;
+    handler->close = closeFileHandler;
     handler->start = startFileHandler;
     handler->ready = readyFileHandler;
     handler->outgoingService = outgoingFileService;
@@ -486,28 +502,12 @@ int maOpenFileHandler(Http *http)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

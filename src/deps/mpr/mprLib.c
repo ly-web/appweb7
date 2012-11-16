@@ -3,6 +3,8 @@
 
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
+
+    Prepared by: magnetar.local
  */
 
 #include "mpr.h"
@@ -25,7 +27,7 @@
 
 /******************************* Local Defines ********************************/
 
-#if BIT_CC_MMU 
+#if BIT_HAS_MMU 
     #define VALLOC 1                /* Use virtual memory allocations */
 #else
     #define VALLOC 0
@@ -35,8 +37,8 @@
     Set this address to break when this address is allocated or freed
     Only used for debug, but defined regardless so we can have constant exports.
  */
-MprMem *stopAlloc = 0;
-int stopSeqno = -1;
+PUBLIC MprMem *stopAlloc = 0;
+PUBLIC int stopSeqno = -1;
 
 #define GET_MEM(ptr)                ((MprMem*) (((char*) (ptr)) - sizeof(MprMem)))
 #define GET_PTR(mp)                 ((char*) (((char*) mp) + sizeof(MprMem)))
@@ -163,7 +165,7 @@ int stopSeqno = -1;
 /********************************** Data **************************************/
 
 #undef              MPR
-Mpr                 *MPR;
+PUBLIC Mpr          *MPR;
 static MprHeap      *heap;
 static MprMemStats  memStats;
 static int          padding[] = { 0, MANAGER_SIZE };
@@ -181,10 +183,9 @@ static void mark();
 static void marker(void *unused, MprThread *tp);
 static void markRoots();
 static void nextGen();
+static int pauseThreads();
 static void sweep();
-static void sweeper(void *unused, MprThread *tp);
-static void synchronize();
-static int syncThreads();
+static void resumeThreads();
 static void triggerGC(int flags);
 
 #if BIT_WIN_LIKE
@@ -222,7 +223,7 @@ static void vmfree(void *ptr, ssize size);
 
 /************************************* Code ***********************************/
 
-Mpr *mprCreateMemService(MprManager manager, int flags)
+PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
 {
     MprMem      *mp;
     MprMem      *spare;
@@ -297,8 +298,8 @@ Mpr *mprCreateMemService(MprManager manager, int flags)
         SCRIBBLE(spare);
         linkBlock(spare);
     }
-
-    MPR->markerCond = mprCreateCond();
+    heap->markerCond = mprCreateCond();
+    heap->mutex = mprCreateLock();
     heap->roots = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     mprAddRoot(MPR);
     return MPR;
@@ -308,7 +309,7 @@ Mpr *mprCreateMemService(MprManager manager, int flags)
 /*
     Shutdown memory service. Run managers on all allocated blocks.
  */
-void mprDestroyMemService()
+PUBLIC void mprDestroyMemService()
 {
     volatile MprRegion  *region;
     MprMem              *mp, *next;
@@ -329,15 +330,15 @@ void mprDestroyMemService()
 }
 
 
-void *mprAllocMem(ssize usize, int flags)
+PUBLIC void *mprAllocMem(ssize usize, int flags)
 {
     MprMem      *mp;
     void        *ptr;
     ssize       size;
     int         padWords;
 
-    mprAssert(!MPR->marking);
-    mprAssert(usize >= 0);
+    assure(!heap->marking);
+    assure(usize >= 0);
 
     padWords = padding[flags & MPR_ALLOC_PAD_MASK];
     size = usize + sizeof(MprMem) + (padWords * sizeof(void*));
@@ -354,7 +355,7 @@ void *mprAllocMem(ssize usize, int flags)
     }
     BREAKPOINT(mp);
     CHECK(mp);
-    mprAssert(GET_GEN(mp) != heap->eternal);
+    assure(GET_GEN(mp) != heap->eternal);
     return ptr;
 }
 
@@ -362,22 +363,22 @@ void *mprAllocMem(ssize usize, int flags)
 /*
     Realloc will always zero new memory
  */
-void *mprReallocMem(void *ptr, ssize usize)
+PUBLIC void *mprReallocMem(void *ptr, ssize usize)
 {
     MprMem      *mp, *newb;
     void        *newptr;
     ssize       oldSize, oldUsize;
     int         flags, hasManager;
 
-    mprAssert(usize > 0);
+    assure(usize > 0);
 
     if (ptr == 0) {
         return mprAllocMem(usize, 0);
     }
     mp = GET_MEM(ptr);
     CHECK(mp);
-    mprAssert(!IS_FREE(mp));
-    mprAssert(GET_GEN(mp) != heap->dead);
+    assure(!IS_FREE(mp));
+    assure(GET_GEN(mp) != heap->dead);
     oldUsize = GET_USIZE(mp);
 
     if (usize <= oldUsize) {
@@ -404,7 +405,7 @@ void *mprReallocMem(void *ptr, ssize usize)
 }
 
 
-void *mprMemdupMem(cvoid *ptr, ssize usize)
+PUBLIC void *mprMemdupMem(cvoid *ptr, ssize usize)
 {
     char    *newp;
 
@@ -415,14 +416,14 @@ void *mprMemdupMem(cvoid *ptr, ssize usize)
 }
 
 
-int mprMemcmp(cvoid *s1, ssize s1Len, cvoid *s2, ssize s2Len)
+PUBLIC int mprMemcmp(cvoid *s1, ssize s1Len, cvoid *s2, ssize s2Len)
 {
     int         rc;
 
-    mprAssert(s1);
-    mprAssert(s2);
-    mprAssert(s1Len >= 0);
-    mprAssert(s2Len >= 0);
+    assure(s1);
+    assure(s2);
+    assure(s1Len >= 0);
+    assure(s2Len >= 0);
 
     if ((rc = memcmp(s1, s2, min(s1Len, s2Len))) == 0) {
         if (s1Len < s2Len) {
@@ -438,15 +439,15 @@ int mprMemcmp(cvoid *s1, ssize s1Len, cvoid *s2, ssize s2Len)
 /*
     mprMemcpy will support insitu copy where src and destination overlap
  */
-ssize mprMemcpy(void *dest, ssize destMax, cvoid *src, ssize nbytes)
+PUBLIC ssize mprMemcpy(void *dest, ssize destMax, cvoid *src, ssize nbytes)
 {
-    mprAssert(dest);
-    mprAssert(destMax <= 0 || destMax >= nbytes);
-    mprAssert(src);
-    mprAssert(nbytes >= 0);
+    assure(dest);
+    assure(destMax <= 0 || destMax >= nbytes);
+    assure(src);
+    assure(nbytes >= 0);
 
     if (destMax > 0 && nbytes > destMax) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (nbytes > 0) {
@@ -521,7 +522,7 @@ static MprMem *allocMem(ssize required, int flags)
     INC(requests);
 
     /*
-        TODO OPT - could break this locked section up.
+        OPT - could break this locked section up.
         - Can update bit maps conservatively and lockfree
         - Put locks around freeq unqueue
         - use unlinkBlock or linkBlock only. Do locks internally in these routines
@@ -548,10 +549,10 @@ static MprMem *allocMem(ssize required, int flags)
                 if (freeq->next != freeq) {
                     fp = freeq->next;
                     mp = (MprMem*) fp;
-                    mprAssert(IS_FREE(mp));
+                    assure(IS_FREE(mp));
                     unlinkBlock(fp);
 
-                    mprAssert(GET_GEN(mp) == heap->eternal);
+                    assure(GET_GEN(mp) == heap->eternal);
                     SET_GEN(mp, heap->active);
 
                     //  OPT
@@ -590,7 +591,7 @@ static MprMem *allocMem(ssize required, int flags)
             }
             groupMap &= ~(((ssize) 1) << group);
             heap->groupMap &= ~(((ssize) 1) << group);
-#if UNUSED && KEEP
+#if KEEP
             triggerGC(0);
 #endif
         }
@@ -611,7 +612,7 @@ static MprMem *growHeap(ssize required, int flags)
     ssize               size, rsize, spareLen;
     int                 hasManager;
 
-    mprAssert(required > 0);
+    assure(required > 0);
 
     rsize = MPR_ALLOC_ALIGN(sizeof(MprRegion));
     size = max(required + rsize, (ssize) heap->chunkSize);
@@ -655,7 +656,7 @@ static MprMem *growHeap(ssize required, int flags)
     heap->regions = region;
 
     if (spareLen > 0) {
-        mprAssert(spareLen >= sizeof(MprFreeMem));
+        assure(spareLen >= sizeof(MprFreeMem));
         spare = (MprMem*) ((char*) mp + required);
         INIT_BLK(spare, spareLen, 0, 1, mp);
         CHECK(spare);
@@ -693,7 +694,7 @@ static MprMem *freeBlock(MprMem *mp)
         BREAKPOINT(next);
         unlinkBlock((MprFreeMem*) next);
         if ((after = GET_NEXT(next)) != NULL) {
-            mprAssert(GET_PRIOR(after) == next);
+            assure(GET_PRIOR(after) == next);
             SET_PRIOR(after, mp);
         } else {
             SET_LAST(mp, 1);
@@ -712,7 +713,7 @@ static MprMem *freeBlock(MprMem *mp)
         BREAKPOINT(prev);
         unlinkBlock((MprFreeMem*) prev);
         if ((after = GET_NEXT(mp)) != NULL) {
-            mprAssert(GET_PRIOR(after) == mp);
+            assure(GET_PRIOR(after) == mp);
             SET_PRIOR(after, prev);
         } else {
             SET_LAST(prev, 1);
@@ -726,7 +727,7 @@ static MprMem *freeBlock(MprMem *mp)
         if (prev) {
             CHECK(prev);
         }
-        mprAssert(prev == 0 || !IS_FREE(prev));
+        assure(prev == 0 || !IS_FREE(prev));
     }
     next = GET_NEXT(mp);
 
@@ -738,7 +739,7 @@ static MprMem *freeBlock(MprMem *mp)
         unlockHeap();
         region = GET_REGION(mp);
         region->freeable = 1;
-        mprAssert(next == NULL);
+        assure(next == NULL);
     } else {
         linkBlock(mp);
         unlockHeap();
@@ -756,7 +757,7 @@ static int getQueueIndex(ssize size, int roundup)
     ssize       usize;
     int         asize, aligned, bucket, group, index, msb;
     
-    mprAssert(MPR_ALLOC_ALIGN(size) == size);
+    assure(MPR_ALLOC_ALIGN(size) == size);
 
     /*
         Allocate based on user sizes (sans header). This permits block searches to avoid scanning the next 
@@ -769,16 +770,16 @@ static int getQueueIndex(ssize size, int roundup)
     msb = (flsl((int) asize) - 1);
 
     group = max(0, msb - MPR_ALLOC_BUCKET_SHIFT + 1);
-    mprAssert(group < MPR_ALLOC_NUM_GROUPS);
+    assure(group < MPR_ALLOC_NUM_GROUPS);
 
     bucket = (asize >> max(0, group - 1)) & (MPR_ALLOC_NUM_BUCKETS - 1);
-    mprAssert(bucket < MPR_ALLOC_NUM_BUCKETS);
+    assure(bucket < MPR_ALLOC_NUM_BUCKETS);
 
     index = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
-    mprAssert(index < (heap->freeEnd - heap->freeq));
+    assure(index < (heap->freeEnd - heap->freeq));
     
 #if BIT_MEMORY_STATS
-    mprAssert(heap->freeq[index].info.stats.minSize <= (int) usize && 
+    assure(heap->freeq[index].info.stats.minSize <= (int) usize && 
         (int) usize < heap->freeq[index + 1].info.stats.minSize);
 #endif
     if (roundup) {
@@ -834,13 +835,13 @@ static void linkBlock(MprMem *mp)
      */
     fp = (MprFreeMem*) mp;
     freeq = &heap->freeq[index];
-    mprAssert(fp != freeq);
+    assure(fp != freeq);
     fp->next = freeq->next;
     fp->prev = freeq;
     freeq->next->prev = fp;
     freeq->next = fp;
-    mprAssert(fp != fp->next);
-    mprAssert(fp != fp->prev);
+    assure(fp != fp->next);
+    assure(fp != fp->prev);
 
     heap->stats.bytesFree += size;
 #if BIT_MEMORY_STATS
@@ -867,14 +868,14 @@ static void unlinkBlock(MprFreeMem *fp)
     mp = (MprMem*) fp;
     size = GET_SIZE(mp);
     heap->stats.bytesFree -= size;
-    mprAssert(IS_FREE(mp));
+    assure(IS_FREE(mp));
     SET_FREE(mp, 0);
     mprAtomicBarrier();
 #if BIT_MEMORY_STATS
 {
     MprFreeMem *freeq = getQueue(size);
     freeq->info.stats.count--;
-    mprAssert(freeq->info.stats.count >= 0);
+    assure(freeq->info.stats.count >= 0);
 }
 #endif
 }
@@ -899,7 +900,7 @@ static MprFreeMem *getQueue(ssize size)
     It is the application's responsibility to set the red-line value suitable for the system.
     Memory is zereod on all platforms.
  */
-void *mprVirtAlloc(ssize size, int mode)
+PUBLIC void *mprVirtAlloc(ssize size, int mode)
 {
     ssize       used;
     void        *ptr;
@@ -924,12 +925,12 @@ void *mprVirtAlloc(ssize size, int mode)
 }
 
 
-void mprVirtFree(void *ptr, ssize size)
+PUBLIC void mprVirtFree(void *ptr, ssize size)
 {
     vmfree(ptr, size);
     lockHeap();
     heap->stats.bytesAllocated -= size;
-    mprAssert(heap->stats.bytesAllocated >= 0);
+    assure(heap->stats.bytesAllocated >= 0);
     unlockHeap();
 }
 
@@ -964,7 +965,7 @@ static void vmfree(void *ptr, ssize size)
 #if VALLOC
     #if BIT_UNIX_LIKE
         if (munmap(ptr, size) != 0) {
-            mprAssert(0);
+            assure(0);
         }
     #elif BIT_WIN_LIKE
         VirtualFree(ptr, 0, MEM_RELEASE);
@@ -982,7 +983,7 @@ static void vmfree(void *ptr, ssize size)
 
 /***************************************************** Garbage Colllector *************************************************/
 
-void mprStartGCService()
+PUBLIC void mprStartGCService()
 {
     if (heap->enabled) {
         if (heap->flags & MPR_MARK_THREAD) {
@@ -994,6 +995,7 @@ void mprStartGCService()
                 mprStartThread(heap->marker);
             }
         }
+#if FUTURE && KEEP
         if (heap->flags & MPR_SWEEP_THREAD) {
             LOG(7, "DEBUG: startMemWorkers: start sweeper");
             heap->hasSweeper = 1;
@@ -1004,20 +1006,21 @@ void mprStartGCService()
                 mprStartThread(heap->sweeper);
             }
         }
+#endif
     }
 }
 
 
-void mprStopGCService()
+PUBLIC void mprStopGCService()
 {
     mprWakeGCService();
     mprNap(1);
 }
 
 
-void mprWakeGCService()
+PUBLIC void mprWakeGCService()
 {
-    mprSignalCond(MPR->markerCond);
+    mprSignalCond(heap->markerCond);
     mprResumeThreads();
 }
 
@@ -1030,13 +1033,13 @@ static void triggerGC(int flags)
         heap->mustYield = 1;
 #endif
         if (heap->flags & MPR_MARK_THREAD) {
-            mprSignalCond(MPR->markerCond);
+            mprSignalCond(heap->markerCond);
         }
     }
 }
 
 
-void mprRequestGC(int flags)
+PUBLIC void mprRequestGC(int flags)
 {
     int     i, count;
 
@@ -1060,7 +1063,7 @@ void mprRequestGC(int flags)
     synchronization point.  This happens infrequently and is essential to safely move to a new generation.
     All threads must yield to the marker (including sweeper)
  */
-static void synchronize()
+static void resumeThreads()
 {
 #if BIT_MEMORY_STATS
     LOG(7, "GC: MARKED %,d/%,d, SWEPT %,d/%,d, freed %,d, bytesFree %,d (prior %,d), newCount %,d/%,d, " 
@@ -1074,7 +1077,7 @@ static void synchronize()
     if (heap->notifier) {
         (heap->notifier)(MPR_MEM_ATTENTION, 0);
     }
-    if (syncThreads()) {
+    if (pauseThreads()) {
         nextGen();
     } else {
         LOG(7, "DEBUG: Pause for GC sync timed out");
@@ -1102,7 +1105,7 @@ static void mark()
     }
 #else
     heap->mustYield = 1;
-    if (!syncThreads()) {
+    if (!pauseThreads()) {
         LOG(6, "DEBUG: GC synchronization timed out, some threads did not yield.");
         LOG(6, "This is most often caused by a thread doing a long running operation and not first calling mprYield.");
         LOG(6, "If debugging, run the process with -D to enable debug mode.");
@@ -1116,11 +1119,13 @@ static void mark()
     heap->gc = 0;
     checkYielded();
     markRoots();
-    MPR->marking = 0;
+    heap->marking = 0;
     if (!heap->hasSweeper) {
+        heap->sweeping = 1;
         MPR_MEASURE(7, "GC", "sweep", sweep());
+        heap->sweeping = 0;
     }
-    synchronize();
+    resumeThreads();
 }
 
 
@@ -1160,7 +1165,7 @@ static void sweep()
         for (mp = region->start; mp; mp = GET_NEXT(mp)) {
             if (unlikely(GET_GEN(mp) == heap->dead && HAS_MANAGER(mp))) {
                 mgr = GET_MANAGER(mp);
-                mprAssert(!IS_FREE(mp));
+                assure(!IS_FREE(mp));
                 CHECK(mp);
                 BREAKPOINT(mp);
                 if (mgr && VALID_BLK(mp)) {
@@ -1179,7 +1184,7 @@ static void sweep()
      */
     prior = NULL;
     for (region = heap->regions; region; region = nextRegion) {
-        mprAssert(region->freeable == 0 || region->freeable == 1);
+        assure(region->freeable == 0 || region->freeable == 1);
         nextRegion = region->next;
 
         /*
@@ -1189,7 +1194,7 @@ static void sweep()
             CHECK(mp);
             INC(sweepVisited);
             if (unlikely(GET_GEN(mp) == heap->dead)) {
-                mprAssert(!IS_FREE(mp));
+                assure(!IS_FREE(mp));
                 CHECK(mp);
                 BREAKPOINT(mp);
                 INC(swept);
@@ -1239,6 +1244,8 @@ static void markRoots()
     heap->stats.markVisited = 0;
     heap->stats.marked = 0;
     mprMark(heap->roots);
+    mprMark(heap->mutex);
+    mprMark(heap->markerCond);
 
     heap->rootIndex = 0;
     while ((root = getNextRoot()) != 0) {
@@ -1249,7 +1256,7 @@ static void markRoots()
 }
 
 
-void mprMarkBlock(cvoid *ptr)
+PUBLIC void mprMarkBlock(cvoid *ptr)
 {
     MprMem      *mp;
     int         gen;
@@ -1266,19 +1273,19 @@ void mprMarkBlock(cvoid *ptr)
         mprError("Memory block is either not dynamically allocated, or is corrupted");
         return;
     }
-    mprAssert(!IS_FREE(mp));
+    assure(!IS_FREE(mp));
 #if PARALLEL_GC
-    mprAssert(GET_MARK(mp) != heap->dead);
-    mprAssert(GET_GEN(mp) != heap->dead);
+    assure(GET_MARK(mp) != heap->dead);
+    assure(GET_GEN(mp) != heap->dead);
     if (GET_MARK(mp) == heap->dead || IS_FREE(mp)) {
-        mprAssert(0);
+        assure(0);
         return;
     }
 #endif
 #endif
     CHECK(mp);
     INC(markVisited);
-    mprAssert((GET_MARK(mp) != heap->active) || GET_GEN(mp) == heap->active);
+    assure((GET_MARK(mp) != heap->active) || GET_GEN(mp) == heap->active);
 
     if (GET_MARK(mp) != heap->active) {
         BREAKPOINT(mp);
@@ -1306,7 +1313,7 @@ void mprMarkBlock(cvoid *ptr)
 
 
 //  WARNING: these do not mark component members
-void mprHold(void *ptr)
+PUBLIC void mprHold(void *ptr)
 {
     MprMem  *mp;
 
@@ -1320,18 +1327,39 @@ void mprHold(void *ptr)
 }
 
 
-void mprRelease(void *ptr)
+PUBLIC void mprRelease(void *ptr)
 {
     MprMem  *mp;
 
     if (ptr) {
         mp = GET_MEM(ptr);
         if (VALID_BLK(mp)) {
-            mprAssert(!IS_FREE(mp));
+            assure(!IS_FREE(mp));
             /* Lock-free update of mp->gen */
             SET_FIELD2(mp, GET_SIZE(mp), heap->active, UNMARKED, 0);
         }
     }
+}
+
+
+/*
+    If dispatcher is 0, will use MPR->nonBlock if MPR_EVENT_QUICK else MPR->dispatcher
+ */
+PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *data)
+{
+    MprEvent    *event;
+
+    heap->pauseGC++;
+    mprAtomicBarrier();
+    while (heap->mustYield) {
+        mprNap(0);
+    }
+    event = mprCreateEvent(dispatcher, "relay", 0, proc, data, MPR_EVENT_STATIC_DATA);
+    heap->pauseGC--;
+    if (!event) {
+        return MPR_ERR_CANT_CREATE;
+    }
+    return 0;
 }
 
 
@@ -1341,14 +1369,12 @@ void mprRelease(void *ptr)
 static void marker(void *unused, MprThread *tp)
 {
     LOG(5, "DEBUG: marker thread started");
-    //  TODO -- rename from marker to marking?
-    MPR->marker = 1;
     tp->stickyYield = 1;
     tp->yielded = 1;
 
     while (!mprIsFinished()) {
         if (!heap->mustYield) {
-            mprWaitForCond(MPR->markerCond, -1);
+            mprWaitForCond(heap->markerCond, -1);
             if (mprIsFinished()) {
                 break;
             }
@@ -1356,10 +1382,10 @@ static void marker(void *unused, MprThread *tp)
         MPR_MEASURE(7, "GC", "mark", mark());
     }
     heap->mustYield = 0;
-    MPR->marker = 0;
 }
 
 
+#if KEEP
 /*
     Sweeper thread main program. May be called from the marker thread.
  */
@@ -1367,13 +1393,14 @@ static void sweeper(void *unused, MprThread *tp)
 {
     LOG(5, "DEBUG: sweeper thread started");
 
-    MPR->sweeper = 1;
+    heap->sweeper = 1;
     while (!mprIsStoppingCore()) {
         MPR_MEASURE(7, "GC", "sweep", sweep());
         mprYield(MPR_YIELD_BLOCK);
     }
-    MPR->sweeper = 0;
+    heap->sweeper = 0;
 }
+#endif
 
 
 /*
@@ -1381,23 +1408,26 @@ static void sweeper(void *unused, MprThread *tp)
     If the GC marker is synchronizing, this call will block at the GC sync point (should be brief).
     NOTE: if called by ResetYield, we may be already marking.
  */
-void mprYield(int flags)
+PUBLIC void mprYield(int flags)
 {
     MprThreadService    *ts;
     MprThread           *tp;
 
     ts = MPR->threadService;
-    tp = mprGetCurrentThread();
-
+    if ((tp = mprGetCurrentThread()) == 0) {
+        mprError("Yield called from an unknown thread");
+        /* Called from a non-mpr thread */
+        return;
+    }
     /*
-        Must not call mprLog or derviatives here as it will allocate memory and assert
+        Must not call mprLog or derviatives after setting yielded as they will allocate memory and assert.
      */
     tp->yielded = 1;
     if (flags & MPR_YIELD_STICKY) {
         tp->stickyYield = 1;
     }
-    mprAssert(tp->yielded);
-    while (tp->yielded && (heap->mustYield || (flags & MPR_YIELD_BLOCK)) && MPR->marker) {
+    assure(tp->yielded);
+    while (tp->yielded && (heap->mustYield || (flags & MPR_YIELD_BLOCK)) && heap->marker) {
         if (heap->flags & MPR_MARK_THREAD) {
             mprSignalCond(ts->cond);
         }
@@ -1407,26 +1437,29 @@ void mprYield(int flags)
     if (!tp->stickyYield) {
         tp->yielded = 0;
     }
-    mprAssert(!MPR->marking);
+    assure(!heap->marking);
 }
 
 
-void mprResetYield()
+PUBLIC void mprResetYield()
 {
-    MprThread   *tp;
+    MprThreadService    *ts;
+    MprThread           *tp;
 
-    mprAssert(mprGetCurrentThread());
-
+    ts = MPR->threadService;
     if ((tp = mprGetCurrentThread()) != 0) {
         tp->stickyYield = 0;
     }
-    lock(MPR);
-    if (MPR->marking) {
-        unlock(MPR);
+    /*
+        May have been sticky yielded and so marking could be active. If so, must yield here regardless.
+     */
+    lock(ts->threads);
+    if (heap->marking || heap->sweeping) {
+        unlock(ts->threads);
         mprYield(0);
     } else {
         tp->yielded = 0;
-        unlock(MPR);
+        unlock(ts->threads);
     }
 }
 
@@ -1436,58 +1469,58 @@ void mprResetYield()
     NOTE: this functions differently if parallel. If so, then it will abort waiting. If !parallel, it waits for all
     threads to yield.
  */
-static int syncThreads()
+static int pauseThreads()
 {
     MprThreadService    *ts;
     MprThread           *tp;
-    MprTime             mark;
+    MprTicks            mark;
     int                 i, allYielded, timeout;
 
 #if BIT_DEBUG
-    uint64  ticks = mprGetTicks();
+    uint64  hticks = mprGetHiResTicks();
 #endif
-
     ts = MPR->threadService;
     timeout = MPR_TIMEOUT_GC_SYNC;
 
-    LOG(7, "syncThreads: wait for threads to yield, timeout %d", timeout);
-    mark = mprGetTime();
+    LOG(7, "pauseThreads: wait for threads to yield, timeout %d", timeout);
+    mark = mprGetTicks();
     if (mprGetDebugMode()) {
         timeout = timeout * 500;
     }
     do {
-        allYielded = 1;
         /*
-             The MPR is locked is to serialize access to MPR->marking. mprResetYield has a race where
-             its thread will have been yielded.
+            Use the thread list lock to serialize access to heap->marking. 
+            NOTE: mprResetYield has a race where its thread will have been yielded.
          */
-        lock(MPR);
-        mprLock(ts->mutex);
-        for (i = 0; i < ts->threads->length; i++) {
-            tp = (MprThread*) mprGetItem(ts->threads, i);
-            if (!tp->yielded) {
-                allYielded = 0;
-                if (mprGetElapsedTime(mark) > 1000) {
-                    LOG(7, "Thread %s is not yielding", tp->name);
+        lock(ts->threads);
+        if (!heap->pauseGC) {
+            allYielded = 1;
+            for (i = 0; i < ts->threads->length; i++) {
+                tp = (MprThread*) mprGetItem(ts->threads, i);
+                if (!tp->yielded) {
+                    allYielded = 0;
+                    if (mprGetElapsedTicks(mark) > 1000) {
+                        LOG(7, "Thread %s is not yielding", tp->name);
+                    }
+                    break;
                 }
+            }
+            if (allYielded) {
+                heap->marking = 1;
+                unlock(ts->threads);
                 break;
             }
+        } else {
+            allYielded = 0;
         }
-        mprUnlock(ts->mutex);
-
-        if (allYielded) {
-            MPR->marking = 1;
-            unlock(MPR);
-            break;
-        }
-        unlock(MPR);
-        LOG(7, "syncThreads: waiting for threads to yield");
+        unlock(ts->threads);
+        LOG(7, "pauseThreads: waiting for threads to yield");
         mprWaitForCond(ts->cond, 20);
 
-    } while (!allYielded && mprGetElapsedTime(mark) < timeout);
+    } while (!allYielded && mprGetElapsedTicks(mark) < timeout);
 
 #if BIT_DEBUG
-    LOG(7, "TIME: syncThreads elapsed %,d msec, %,d ticks", mprGetElapsedTime(mark), mprGetTicks() - ticks);
+    LOG(7, "TIME: pauseThreads elapsed %,Ld msec, %,Ld hticks", mprGetElapsedTicks(mark), mprGetHiResTicks() - hticks);
 #endif
     if (allYielded) {
         checkYielded();
@@ -1499,7 +1532,7 @@ static int syncThreads()
 /*
     Resume all yielded threads. Called by the GC marker only and when destroying the app.
  */
-void mprResumeThreads()
+PUBLIC void mprResumeThreads()
 {
     MprThreadService    *ts;
     MprThread           *tp;
@@ -1508,7 +1541,7 @@ void mprResumeThreads()
     ts = MPR->threadService;
     LOG(7, "mprResumeThreadsAfterGC sync");
 
-    mprLock(ts->mutex);
+    lock(ts->threads);
     for (i = 0; i < ts->threads->length; i++) {
         tp = (MprThread*) mprGetItem(ts->threads, i);
         if (tp && tp->yielded) {
@@ -1518,11 +1551,11 @@ void mprResumeThreads()
             mprSignalCond(tp->cond);
         }
     }
-    mprUnlock(ts->mutex);
+    unlock(ts->threads);
 }
 
 
-void mprVerifyMem()
+PUBLIC void mprVerifyMem()
 {
 #if BIT_MEMORY_DEBUG
     MprRegion   *region;
@@ -1543,8 +1576,8 @@ void mprVerifyMem()
         for (fp = freeq->next; fp != freeq; fp = fp->next) {
             mp = (MprMem*) fp;
             CHECK(mp);
-            mprAssert(GET_GEN(mp) == heap->eternal);
-            mprAssert(IS_FREE(mp));
+            assure(GET_GEN(mp) == heap->eternal);
+            assure(IS_FREE(mp));
 #if FUTURE
             uchar *ptr;
             int  usize;
@@ -1572,7 +1605,7 @@ void mprVerifyMem()
 /*
     WARNING: Caller must be locked so that the sweeper will not free this block. 
  */
-int mprIsDead(cvoid *ptr)
+PUBLIC int mprIsDead(cvoid *ptr)
 {
     MprMem      *mp;
 
@@ -1585,9 +1618,10 @@ int mprIsDead(cvoid *ptr)
 
 
 /*
+    Revive a block that is scheduled for sweeping.
     WARNING: Caller must be locked so that the sweeper will not free this block. 
  */
-void mprRevive(cvoid *ptr)
+PUBLIC void mprRevive(cvoid *ptr)
 {
     MprMem      *mp;
 
@@ -1597,7 +1631,7 @@ void mprRevive(cvoid *ptr)
 }
 
 
-bool mprEnableGC(bool on)
+PUBLIC bool mprEnableGC(bool on)
 {
     bool    old;
 
@@ -1642,7 +1676,7 @@ static void nextGen()
 }
 
 
-void mprAddRoot(void *root)
+PUBLIC void mprAddRoot(void *root)
 {
     /*
         Need to use root lock because mprAddItem may allocate
@@ -1653,7 +1687,7 @@ void mprAddRoot(void *root)
 }
 
 
-void mprRemoveRoot(void *root)
+PUBLIC void mprRemoveRoot(void *root)
 {
     ssize   index;
 
@@ -1787,7 +1821,7 @@ static void printGCStats()
 #endif /* BIT_MEMORY_STATS */
 
 
-void mprPrintMem(cchar *msg, int detail)
+PUBLIC void mprPrintMem(cchar *msg, int detail)
 {
 #if BIT_MEMORY_STATS
     MprMemStats   *ap;
@@ -1829,13 +1863,13 @@ static int validBlk(MprMem *mp)
     ssize   size;
 
     size = GET_SIZE(mp);
-    mprAssert(mp->magic == MPR_ALLOC_MAGIC);
-    mprAssert(size > 0);
+    assure(mp->magic == MPR_ALLOC_MAGIC);
+    assure(size > 0);
     return (mp->magic == MPR_ALLOC_MAGIC) && (size > 0);
 }
 
 
-void mprCheckBlock(MprMem *mp)
+PUBLIC void mprCheckBlock(MprMem *mp)
 {
     ssize   size;
 
@@ -1882,7 +1916,7 @@ static void breakpoint(MprMem *mp)
 /*
     Called to set the memory block name when doing an allocation
  */
-void *mprSetAllocName(void *ptr, cchar *name)
+PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
 {
     MPR_GET_MEM(ptr)->name = name;
 
@@ -1901,7 +1935,6 @@ void *mprSetAllocName(void *ptr, cchar *name)
                 break;
             }
         }
-        //  mprAssert(np < &lp->names[MPR_TRACK_NAMES]);
         if (np < &lp->names[MPR_TRACK_NAMES]) {
             *np = (char*) name;
         }
@@ -1933,7 +1966,7 @@ static void freeLocation(cchar *name, ssize size)
 }
 
 
-void *mprSetName(void *ptr, cchar *name) 
+PUBLIC void *mprSetName(void *ptr, cchar *name) 
 {
 #if BIT_MEMORY_STATS
     MprMem  *mp = GET_MEM(ptr);
@@ -1948,7 +1981,7 @@ void *mprSetName(void *ptr, cchar *name)
 }
 
 
-void *mprCopyName(void *dest, void *src) 
+PUBLIC void *mprCopyName(void *dest, void *src) 
 {
     return mprSetName(dest, mprGetName(src));
 }
@@ -2111,7 +2144,7 @@ static int winPageModes(int flags)
 #endif
 
 
-MprMemStats *mprGetMemStats()
+PUBLIC MprMemStats *mprGetMemStats()
 {
 #if LINUX
     char            buf[1024], *cp;
@@ -2163,7 +2196,7 @@ MprMemStats *mprGetMemStats()
     platforms. On FREEBDS it returns the peak resident set size using getrusage. If a suitable O/S API is not available,
     the amount of heap memory allocated by the MPR is returned.
  */
-ssize mprGetMem()
+PUBLIC ssize mprGetMem()
 {
     ssize size = 0;
 
@@ -2295,20 +2328,20 @@ static MPR_INLINE int flsl(ulong word)
 
 
 #if BIT_WIN_LIKE
-Mpr *mprGetMpr()
+PUBLIC Mpr *mprGetMpr()
 {
     return MPR;
 }
 #endif
 
 
-int mprGetPageSize()
+PUBLIC int mprGetPageSize()
 {
     return memStats.pageSize;
 }
 
 
-ssize mprGetBlockSize(cvoid *ptr)
+PUBLIC ssize mprGetBlockSize(cvoid *ptr)
 {
     MprMem      *mp;
 
@@ -2321,19 +2354,19 @@ ssize mprGetBlockSize(cvoid *ptr)
 }
 
 
-int mprGetHeapFlags()
+PUBLIC int mprGetHeapFlags()
 {
     return heap->flags;
 }
 
 
-void mprSetMemNotifier(MprMemNotifier cback)
+PUBLIC void mprSetMemNotifier(MprMemNotifier cback)
 {
     heap->notifier = cback;
 }
 
 
-void mprSetMemLimits(ssize redLine, ssize maxMemory)
+PUBLIC void mprSetMemLimits(ssize redLine, ssize maxMemory)
 {
     if (redLine > 0) {
         heap->stats.redLine = redLine;
@@ -2344,31 +2377,31 @@ void mprSetMemLimits(ssize redLine, ssize maxMemory)
 }
 
 
-void mprSetMemPolicy(int policy)
+PUBLIC void mprSetMemPolicy(int policy)
 {
     heap->allocPolicy = policy;
 }
 
 
-void mprSetMemError()
+PUBLIC void mprSetMemError()
 {
     heap->hasError = 1;
 }
 
 
-bool mprHasMemError()
+PUBLIC bool mprHasMemError()
 {
     return heap->hasError;
 }
 
 
-void mprResetMemError()
+PUBLIC void mprResetMemError()
 {
     heap->hasError = 0;
 }
 
 
-int mprIsValid(cvoid *ptr)
+PUBLIC int mprIsValid(cvoid *ptr)
 {
     MprMem      *mp;
 
@@ -2385,7 +2418,7 @@ int mprIsValid(cvoid *ptr)
     }
     return 0;
 #else
-#if BIT_DEBUG
+#if BIT_MEMORY_CHECK
     return ptr && mp->magic == MPR_ALLOC_MAGIC && GET_SIZE(mp) > 0;
 #else
     return ptr && GET_SIZE(mp) > 0;
@@ -2399,12 +2432,12 @@ static void dummyManager(void *ptr, int flags)
 }
 
 
-void *mprSetManager(void *ptr, MprManager manager)
+PUBLIC void *mprSetManager(void *ptr, MprManager manager)
 {
     MprMem      *mp;
 
     mp = GET_MEM(ptr);
-    mprAssert(HAS_MANAGER(mp));
+    assure(HAS_MANAGER(mp));
     if (HAS_MANAGER(mp)) {
         if (!manager) {
             manager = dummyManager;
@@ -2464,12 +2497,12 @@ static void checkYielded()
     int                 i;
 
     ts = MPR->threadService;
-    mprLock(ts->mutex);
+    lock(ts->threads);
     for (i = 0; i < ts->threads->length; i++) {
         tp = (MprThread*) mprGetItem(ts->threads, i);
-        mprAssert(tp->yielded);
+        assure(tp->yielded);
     }
-    mprUnlock(ts->mutex);
+    unlock(ts->threads);
 #endif
 }
 
@@ -2502,13 +2535,15 @@ static void monitorStack()
 #undef mprCopyName
 #undef mprSetAllocName
 
+#if UNUSED
 /*
     Define stubs so windows can use same *.def for debug or release
  */
-void mprCheckBlock(MprMem *mp) {}
-void *mprSetName(void *ptr, cchar *name) { return 0; }
-void *mprCopyName(void *dest, void *src) { return 0; }
-void *mprSetAllocName(void *ptr, cchar *name) { return 0; }
+PUBLIC void mprCheckBlock(MprMem *mp) {}
+PUBLIC void *mprSetName(void *ptr, cchar *name) { return 0; }
+PUBLIC void *mprCopyName(void *dest, void *src) { return 0; }
+PUBLIC void *mprSetAllocName(void *ptr, cchar *name) { return 0; }
+#endif
 
 /*
     Re-instate defines for combo releases, where source will be appended below here
@@ -2523,28 +2558,12 @@ void *mprSetAllocName(void *ptr, cchar *name) { return 0; }
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -2580,7 +2599,7 @@ static void serviceEventsThread(void *data, MprThread *tp);
 /*
     Create and initialize the MPR service.
  */
-Mpr *mprCreate(int argc, char **argv, int flags)
+PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
 {
     MprFileSystem   *fs;
     Mpr             *mpr;
@@ -2588,13 +2607,14 @@ Mpr *mprCreate(int argc, char **argv, int flags)
     srand((uint) time(NULL));
 
     if ((mpr = mprCreateMemService((MprManager) manageMpr, flags)) == 0) {
-        mprAssert(mpr);
+        assure(mpr);
         return 0;
     }
+    mpr->start = mprGetTime(); 
     mpr->exitStrategy = MPR_EXIT_NORMAL;
     mpr->emptyString = sclone("");
     mpr->exitTimeout = MPR_TIMEOUT_STOP;
-    mpr->title = sclone(BIT_NAME);
+    mpr->title = sclone(BIT_TITLE);
     mpr->version = sclone(BIT_VERSION);
     mpr->idleCallback = mprServicesAreIdle;
     mpr->mimeTypes = mprCreateMimeTypes(NULL);
@@ -2604,8 +2624,7 @@ Mpr *mprCreate(int argc, char **argv, int flags)
     mprCreateOsService();
     mpr->mutex = mprCreateLock();
     mpr->spin = mprCreateSpinLock();
-    mpr->dtoaSpin[0] = mprCreateSpinLock();
-    mpr->dtoaSpin[1] = mprCreateSpinLock();
+    mpr->verifySsl = 1;
 
     fs = mprCreateFileSystem("/");
     mprAddFileSystem(fs);
@@ -2649,8 +2668,8 @@ Mpr *mprCreate(int argc, char **argv, int flags)
     mpr->waitService = mprCreateWaitService();
     mpr->socketService = mprCreateSocketService();
 
-    mpr->dispatcher = mprCreateDispatcher("main", 1);
-    mpr->nonBlock = mprCreateDispatcher("nonblock", 1);
+    mpr->dispatcher = mprCreateDispatcher("main", MPR_DISPATCHER_ENABLED);
+    mpr->nonBlock = mprCreateDispatcher("nonblock", MPR_DISPATCHER_ENABLED);
     mpr->pathEnv = sclone(getenv("PATH"));
 
     if (flags & MPR_USER_EVENTS_THREAD) {
@@ -2710,11 +2729,8 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->terminators);
         mprMark(mpr->mutex);
         mprMark(mpr->spin);
-        mprMark(mpr->dtoaSpin[0]);
-        mprMark(mpr->dtoaSpin[1]);
         mprMark(mpr->cond);
         mprMark(mpr->emptyString);
-        mprMark(mpr->markerCond);
         mprMark(mpr->argBuf);
     }
 }
@@ -2727,7 +2743,7 @@ static void wgc(int mode)
 /*
     Destroy the Mpr and all services
  */
-void mprDestroy(int how)
+PUBLIC void mprDestroy(int how)
 {
     int         gmode;
 
@@ -2787,7 +2803,7 @@ void mprDestroy(int how)
 /*
     Start termination of the Mpr. May be called by mprDestroy or elsewhere.
  */
-void mprTerminate(int how, int status)
+PUBLIC void mprTerminate(int how, int status)
 {
     MprTerminator   terminator;
     int             next;
@@ -2836,19 +2852,19 @@ void mprTerminate(int how, int status)
 }
 
 
-int mprGetExitStatus()
+PUBLIC int mprGetExitStatus()
 {
     return MPR->exitStatus;
 }
 
 
-void mprAddTerminator(MprTerminator terminator)
+PUBLIC void mprAddTerminator(MprTerminator terminator)
 {
     mprAddItem(MPR->terminators, terminator);
 }
 
 
-void mprRestart()
+PUBLIC void mprRestart()
 {
 #if BIT_UNIX_LIKE
     int     i;
@@ -2871,7 +2887,7 @@ void mprRestart()
 }
 
 
-int mprStart()
+PUBLIC int mprStart()
 {
     int     rc;
 
@@ -2888,7 +2904,7 @@ int mprStart()
 }
 
 
-int mprStartEventsThread()
+PUBLIC int mprStartEventsThread()
 {
     MprThread   *tp;
 
@@ -2917,42 +2933,42 @@ static void serviceEventsThread(void *data, MprThread *tp)
 /*
     Services should call this to determine if they should accept new services
  */
-bool mprShouldAbortRequests()
+PUBLIC bool mprShouldAbortRequests()
 {
     return (mprIsStopping() && !(MPR->exitStrategy & MPR_EXIT_GRACEFUL));
 }
 
 
-bool mprShouldDenyNewRequests()
+PUBLIC bool mprShouldDenyNewRequests()
 {
     return mprIsStopping();
 }
 
 
-bool mprIsStopping()
+PUBLIC bool mprIsStopping()
 {
     return MPR->state >= MPR_STOPPING;
 }
 
 
-bool mprIsStoppingCore()
+PUBLIC bool mprIsStoppingCore()
 {
     return MPR->state >= MPR_STOPPING_CORE;
 }
 
 
-bool mprIsFinished()
+PUBLIC bool mprIsFinished()
 {
     return MPR->state >= MPR_FINISHED;
 }
 
 
-int mprWaitTillIdle(MprTime timeout)
+PUBLIC int mprWaitTillIdle(MprTicks timeout)
 {
-    MprTime     mark, remaining, lastTrace;
+    MprTicks    mark, remaining, lastTrace;
 
-    lastTrace = mark = mprGetTime(); 
-    while (!mprIsIdle() && (remaining = mprGetRemainingTime(mark, timeout)) > 0) {
+    lastTrace = mark = mprGetTicks(); 
+    while (!mprIsIdle() && (remaining = mprGetRemainingTicks(mark, timeout)) > 0) {
         mprSleep(1);
         if ((lastTrace - remaining) > MPR_TICKS_PER_SEC) {
             mprLog(1, "Waiting for requests to complete, %d secs remaining ...", remaining / MPR_TICKS_PER_SEC);
@@ -2966,7 +2982,7 @@ int mprWaitTillIdle(MprTime timeout)
 /*
     Test if the Mpr services are idle. Use mprIsIdle to determine if the entire process is idle.
  */
-bool mprServicesAreIdle()
+PUBLIC bool mprServicesAreIdle()
 {
     bool    idle;
 
@@ -2983,7 +2999,7 @@ bool mprServicesAreIdle()
 }
 
 
-bool mprIsIdle()
+PUBLIC bool mprIsIdle()
 {
     return (MPR->idleCallback)();
 }
@@ -2994,7 +3010,7 @@ bool mprIsIdle()
     then the args will be extracted, back-quotes removed and argv will be set to point to all the args.
     NOTE: this routine does not allocate.
  */
-int mprParseArgs(char *args, char **argv, int maxArgc)
+PUBLIC int mprParseArgs(char *args, char **argv, int maxArgc)
 {
     char    *dest, *src, *start;
     int     quote, argc;
@@ -3054,13 +3070,13 @@ int mprParseArgs(char *args, char **argv, int maxArgc)
     Set MPR_ARGV_ARGS_ONLY if not passing in a program name. 
     Always returns and argv[0] reserved for the program name or empty string.  First arg starts at argv[1].
  */
-int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
+PUBLIC int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
 {
     char    **argv, *vector, *args;
     ssize   len;
     int     argc;
 
-    mprAssert(command);
+    assure(command);
 
     /*
         Allocate one vector for argv and the actual args themselves
@@ -3071,7 +3087,7 @@ int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
         argc++;
     }
     if ((vector = (char*) mprAlloc(((argc + 1) * sizeof(char*)) + len)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     args = &vector[(argc + 1) * sizeof(char*)];
@@ -3090,7 +3106,7 @@ int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
 }
 
 
-MprIdleCallback mprSetIdleCallback(MprIdleCallback idleCallback)
+PUBLIC MprIdleCallback mprSetIdleCallback(MprIdleCallback idleCallback)
 {
     MprIdleCallback old;
     
@@ -3100,7 +3116,7 @@ MprIdleCallback mprSetIdleCallback(MprIdleCallback idleCallback)
 }
 
 
-int mprSetAppName(cchar *name, cchar *title, cchar *version)
+PUBLIC int mprSetAppName(cchar *name, cchar *title, cchar *version)
 {
     char    *cp;
 
@@ -3126,13 +3142,13 @@ int mprSetAppName(cchar *name, cchar *title, cchar *version)
 }
 
 
-cchar *mprGetAppName()
+PUBLIC cchar *mprGetAppName()
 {
     return MPR->name;
 }
 
 
-cchar *mprGetAppTitle()
+PUBLIC cchar *mprGetAppTitle()
 {
     return MPR->title;
 }
@@ -3141,7 +3157,7 @@ cchar *mprGetAppTitle()
 /*
     Full host name with domain. E.g. "server.domain.com"
  */
-void mprSetHostName(cchar *s)
+PUBLIC void mprSetHostName(cchar *s)
 {
     MPR->hostName = sclone(s);
 }
@@ -3150,7 +3166,7 @@ void mprSetHostName(cchar *s)
 /*
     Return the fully qualified host name
  */
-cchar *mprGetHostName()
+PUBLIC cchar *mprGetHostName()
 {
     return MPR->hostName;
 }
@@ -3159,25 +3175,25 @@ cchar *mprGetHostName()
 /*
     Server name portion (no domain name)
  */
-void mprSetServerName(cchar *s)
+PUBLIC void mprSetServerName(cchar *s)
 {
     MPR->serverName = sclone(s);
 }
 
 
-cchar *mprGetServerName()
+PUBLIC cchar *mprGetServerName()
 {
     return MPR->serverName;
 }
 
 
-void mprSetDomainName(cchar *s)
+PUBLIC void mprSetDomainName(cchar *s)
 {
     MPR->domainName = sclone(s);
 }
 
 
-cchar *mprGetDomainName()
+PUBLIC cchar *mprGetDomainName()
 {
     return MPR->domainName;
 }
@@ -3186,7 +3202,7 @@ cchar *mprGetDomainName()
 /*
     Set the IP address
  */
-void mprSetIpAddr(cchar *s)
+PUBLIC void mprSetIpAddr(cchar *s)
 {
     MPR->ip = sclone(s);
 }
@@ -3195,50 +3211,50 @@ void mprSetIpAddr(cchar *s)
 /*
     Return the IP address
  */
-cchar *mprGetIpAddr()
+PUBLIC cchar *mprGetIpAddr()
 {
     return MPR->ip;
 }
 
 
-cchar *mprGetAppVersion()
+PUBLIC cchar *mprGetAppVersion()
 {
     return MPR->version;
 }
 
 
-bool mprGetDebugMode()
+PUBLIC bool mprGetDebugMode()
 {
     return MPR->debugMode;
 }
 
 
-void mprSetDebugMode(bool on)
+PUBLIC void mprSetDebugMode(bool on)
 {
     MPR->debugMode = on;
 }
 
 
-MprDispatcher *mprGetDispatcher()
+PUBLIC MprDispatcher *mprGetDispatcher()
 {
     return MPR->dispatcher;
 }
 
 
-MprDispatcher *mprGetNonBlockDispatcher()
+PUBLIC MprDispatcher *mprGetNonBlockDispatcher()
 {
     return MPR->nonBlock;
 }
 
 
-cchar *mprCopyright()
+PUBLIC cchar *mprCopyright()
 {
     return  "Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.\n"
             "Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.";
 }
 
 
-int mprGetEndian()
+PUBLIC int mprGetEndian()
 {
     char    *probe;
     int     test;
@@ -3249,31 +3265,19 @@ int mprGetEndian()
 }
 
 
-char *mprEmptyString()
+PUBLIC char *mprEmptyString()
 {
     return MPR->emptyString;
 }
 
 
-void mprSetExitStrategy(int strategy)
+PUBLIC void mprSetExitStrategy(int strategy)
 {
     MPR->exitStrategy = strategy;
 }
 
 
-void mprLockDtoa(int n)
-{
-    mprSpinLock(MPR->dtoaSpin[n]);
-}
-
-
-void mprUnlockDtoa(int n)
-{
-    mprSpinUnlock(MPR->dtoaSpin[n]);
-}
-
-
-void mprSetEnv(cchar *key, cchar *value)
+PUBLIC void mprSetEnv(cchar *key, cchar *value)
 {
 #if !WINCE
 #if BIT_UNIX_LIKE
@@ -3283,46 +3287,30 @@ void mprSetEnv(cchar *key, cchar *value)
     putenv(cmd);
 #endif
 #endif
-    if (scasematch(key, "PATH")) {
+    if (scaselessmatch(key, "PATH")) {
         MPR->pathEnv = sclone(value);
     }
 }
 
 
-void mprSetExitTimeout(MprTime timeout)
+PUBLIC void mprSetExitTimeout(MprTicks timeout)
 {
     MPR->exitTimeout = timeout;
 }
 
 
-void mprNop(void *ptr) {}
+PUBLIC void mprNop(void *ptr) {}
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -3332,4300 +3320,6 @@ void mprNop(void *ptr) {}
 
     @end
  */
-
-/************************************************************************/
-/*
-    Start of file "src/dtoa.c"
- */
-/************************************************************************/
-
-/* 
-    Source from: http://www.netlib.org/fp/dtoa.c
-
-    Changes wrapped with #if EMBEDTHIS
- */
-/****************************************************************
- *
- * The author of this software is David M. Gay.
- *
- * Copyright (c) 1991, 2000, 2001 by Lucent Technologies.
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose without fee is hereby granted, provided that this entire notice
- * is included in all copies of any software which is or includes a copy
- * or modification of this software and in all copies of the supporting
- * documentation for such software.
- *
- * THIS SOFTWARE IS BEING PROVIDED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED
- * WARRANTY.  IN PARTICULAR, NEITHER THE AUTHOR NOR LUCENT MAKES ANY
- * REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
- * OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
- *
- ***************************************************************/
-
-/* Please send bug reports to David M. Gay (dmg at acm dot org,
- * with " at " changed at "@" and " dot " changed to ".").  */
-
-/* On a machine with IEEE extended-precision registers, it is
- * necessary to specify double-precision (53-bit) rounding precision
- * before invoking strtod or dtoa.  If the machine uses (the equivalent
- * of) Intel 80x87 arithmetic, the call
- *  _control87(PC_53, MCW_PC);
- * does this with many compilers.  Whether this or another call is
- * appropriate depends on the compiler; for this to work, it may be
- * necessary to #include "float.h" or another system-dependent header
- * file.
- */
-
-/* strtod for IEEE-, VAX-, and IBM-arithmetic machines.
- *
- * This strtod returns a nearest machine number to the input decimal
- * string (or sets errno to ERANGE).  With IEEE arithmetic, ties are
- * broken by the IEEE round-even rule.  Otherwise ties are broken by
- * biased rounding (add half and chop).
- *
- * Inspired loosely by William D. Clinger's paper "How to Read Floating
- * Point Numbers Accurately" [Proc. ACM SIGPLAN '90, pp. 92-101].
- *
- * Modifications:
- *
- *  1. We only require IEEE, IBM, or VAX double-precision
- *      arithmetic (not IEEE double-extended).
- *  2. We get by with floating-point arithmetic in a case that
- *      Clinger missed -- when we're computing d * 10^n
- *      for a small integer d and the integer n is not too
- *      much larger than 22 (the maximum integer k for which
- *      we can represent 10^k exactly), we may be able to
- *      compute (d*10^k) * 10^(e-k) with just one roundoff.
- *  3. Rather than a bit-at-a-time adjustment of the binary
- *      result in the hard case, we use floating-point
- *      arithmetic to determine the adjustment to within
- *      one bit; only in really hard cases do we need to
- *      compute a second residual.
- *  4. Because of 3., we don't need a large table of powers of 10
- *      for ten-to-e (just some small tables, e.g. of 10^k
- *      for 0 <= k <= 22).
- */
-
-/*
- * #define IEEE_8087 for IEEE-arithmetic machines where the least
- *  significant byte has the lowest address.
- * #define IEEE_MC68k for IEEE-arithmetic machines where the most
- *  significant byte has the lowest address.
- * #define Long int on machines with 32-bit ints and 64-bit longs.
- * #define IBM for IBM mainframe-style floating-point arithmetic.
- * #define VAX for VAX-style floating-point arithmetic (D_floating).
- * #define No_leftright to omit left-right logic in fast floating-point
- *  computation of dtoa.
- * #define Honor_FLT_ROUNDS if FLT_ROUNDS can assume the values 2 or 3
- *  and strtod and dtoa should round accordingly.  Unless Trust_FLT_ROUNDS
- *  is also #defined, fegetround() will be queried for the rounding mode.
- *  Note that both FLT_ROUNDS and fegetround() are specified by the C99
- *  standard (and are specified to be consistent, with fesetround()
- *  affecting the value of FLT_ROUNDS), but that some (Linux) systems
- *  do not work correctly in this regard, so using fegetround() is more
- *  portable than using FLT_FOUNDS directly.
- * #define Check_FLT_ROUNDS if FLT_ROUNDS can assume the values 2 or 3
- *  and Honor_FLT_ROUNDS is not #defined.
- * #define RND_PRODQUOT to use rnd_prod and rnd_quot (assembly routines
- *  that use extended-precision instructions to compute rounded
- *  products and quotients) with IBM.
- * #define ROUND_BIASED for IEEE-format with biased rounding.
- * #define Inaccurate_Divide for IEEE-format with correctly rounded
- *  products but inaccurate quotients, e.g., for Intel i860.
- * #define NO_LONG_LONG on machines that do not have a "long long"
- *  integer type (of >= 64 bits).  On such machines, you can
- *  #define Just_16 to store 16 bits per 32-bit Long when doing
- *  high-precision integer arithmetic.  Whether this speeds things
- *  up or slows things down depends on the machine and the number
- *  being converted.  If long long is available and the name is
- *  something other than "long long", #define Llong to be the name,
- *  and if "unsigned Llong" does not work as an unsigned version of
- *  Llong, #define #ULLong to be the corresponding unsigned type.
- * #define KR_headers for old-style C function headers.
- * #define Bad_float_h if your system lacks a float.h or if it does not
- *  define some or all of DBL_DIG, DBL_MAX_10_EXP, DBL_MAX_EXP,
- *  FLT_RADIX, FLT_ROUNDS, and DBL_MAX.
- * #define MALLOC your_malloc, where your_malloc(n) acts like malloc(n)
- *  if memory is available and otherwise does something you deem
- *  appropriate.  If MALLOC is undefined, malloc will be invoked
- *  directly -- and assumed always to succeed.  Similarly, if you
- *  want something other than the system's free() to be called to
- *  recycle memory acquired from MALLOC, #define FREE to be the
- *  name of the alternate routine.  (FREE or free is only called in
- *  pathological cases, e.g., in a dtoa call after a dtoa return in
- *  mode 3 with thousands of digits requested.)
- * #define Omit_Private_Memory to omit logic (added Jan. 1998) for making
- *  memory allocations from a private pool of memory when possible.
- *  When used, the private pool is PRIVATE_MEM bytes long:  2304 bytes,
- *  unless #defined to be a different length.  This default length
- *  suffices to get rid of MALLOC calls except for unusual cases,
- *  such as decimal-to-binary conversion of a very long string of
- *  digits.  The longest string dtoa can return is about 751 bytes
- *  long.  For conversions by strtod of strings of 800 digits and
- *  all dtoa conversions in single-threaded executions with 8-byte
- *  pointers, PRIVATE_MEM >= 7400 appears to suffice; with 4-byte
- *  pointers, PRIVATE_MEM >= 7112 appears adequate.
- * #define NO_INFNAN_CHECK if you do not wish to have INFNAN_CHECK
- *  #defined automatically on IEEE systems.  On such systems,
- *  when INFNAN_CHECK is #defined, strtod checks
- *  for Infinity and NaN (case insensitively).  On some systems
- *  (e.g., some HP systems), it may be necessary to #define NAN_WORD0
- *  appropriately -- to the most significant word of a quiet NaN.
- *  (On HP Series 700/800 machines, -DNAN_WORD0=0x7ff40000 works.)
- *  When INFNAN_CHECK is #defined and No_Hex_NaN is not #defined,
- *  strtod also accepts (case insensitively) strings of the form
- *  NaN(x), where x is a string of hexadecimal digits and spaces;
- *  if there is only one string of hexadecimal digits, it is taken
- *  for the 52 fraction bits of the resulting NaN; if there are two
- *  or more strings of hex digits, the first is for the high 20 bits,
- *  the second and subsequent for the low 32 bits, with intervening
- *  white space ignored; but if this results in none of the 52
- *  fraction bits being on (an IEEE Infinity symbol), then NAN_WORD0
- *  and NAN_WORD1 are used instead.
- * #define MULTIPLE_THREADS if the system offers preemptively scheduled
- *  multiple threads.  In this case, you must provide (or suitably
- *  #define) two locks, acquired by ACQUIRE_DTOA_LOCK(n) and freed
- *  by FREE_DTOA_LOCK(n) for n = 0 or 1.  (The second lock, accessed
- *  in pow5mult, ensures lazy evaluation of only one copy of high
- *  powers of 5; omitting this lock would introduce a small
- *  probability of wasting memory, but would otherwise be harmless.)
- *  You must also invoke freedtoa(s) to free the value s returned by
- *  dtoa.  You may do so whether or not MULTIPLE_THREADS is #defined.
- * #define NO_IEEE_Scale to disable new (Feb. 1997) logic in strtod that
- *  avoids underflows on inputs whose result does not underflow.
- *  If you #define NO_IEEE_Scale on a machine that uses IEEE-format
- *  floating-point numbers and flushes underflows to zero rather
- *  than implementing gradual underflow, then you must also #define
- *  Sudden_Underflow.
- * #define USE_LOCALE to use the current locale's decimal_point value.
- * #define SET_INEXACT if IEEE arithmetic is being used and extra
- *  computation should be done to set the inexact flag when the
- *  result is inexact and avoid setting inexact when the result
- *  is exact.  In this case, dtoa.c must be compiled in
- *  an environment, perhaps provided by #include "dtoa.c" in a
- *  suitable wrapper, that defines two functions,
- *      int get_inexact(void);
- *      void clear_inexact(void);
- *  such that get_inexact() returns a nonzero value if the
- *  inexact bit is already set, and clear_inexact() sets the
- *  inexact bit to 0.  When SET_INEXACT is #defined, strtod
- *  also does extra computations to set the underflow and overflow
- *  flags when appropriate (i.e., when the result is tiny and
- *  inexact or when it is a numeric value rounded to +-infinity).
- * #define NO_ERRNO if strtod should not assign errno = ERANGE when
- *  the result overflows to +-Infinity or underflows to 0.
- * #define NO_HEX_FP to omit recognition of hexadecimal floating-point
- *  values by strtod.
- * #define NO_STRTOD_BIGCOMP (on IEEE-arithmetic systems only for now)
- *  to disable logic for "fast" testing of very long input strings
- *  to strtod.  This testing proceeds by initially truncating the
- *  input string, then if necessary comparing the whole string with
- *  a decimal expansion to decide close cases. This logic is only
- *  used for input more than STRTOD_DIGLIM digits long (default 40).
- */
-
-#if EMBEDTHIS || 1
- #include    "bit.h"
-#endif
-#ifndef BIT_FEATURE_FLOAT
-    #define BIT_FEATURE_FLOAT 1
-#endif
-#if BIT_FEATURE_FLOAT
-
-#if EMBEDTHIS || 1
-
-    #define MULTIPLE_THREADS 1
-    extern void mprLockDtoa(int n);
-    extern void mprUnlockDtoa(int n);
-    #if WINDOWS || WINCE
-        typedef int int32_t;
-        typedef unsigned int uint32_t;
-    #endif
-    #define Long int32_t
-    #define ULong uint32_t
-#if BIT_CPU_ARCH == MPR_CPU_PPC
-    #define IEEE_MC68k 1
-#else
-    #define IEEE_8087 1
-#endif
-#if VXWORKS
-    #undef MALLOC
-    #undef FREE
-    #undef LSB
-    #undef Bcopy
-#endif
-#endif
-
-#ifndef Long
-#define Long long
-#endif
-#ifndef ULong
-typedef unsigned Long ULong;
-#endif
-
-#if !EMBEDTHIS
-#ifdef DEBUG
- #include "stdio.h"
-#define Bug(x) {fprintf(stderr, "%s\n", x); exit(1);}
-#endif
-
- #include "stdlib.h"
- #include "string.h"
-
-#if FREEBSD
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <unistd.h>
-#endif
-
-#ifdef USE_LOCALE
- #include "locale.h"
-#endif
-
-#ifdef Honor_FLT_ROUNDS
-#ifndef Trust_FLT_ROUNDS
- #include <fenv.h>
-#endif
-#endif
-#endif
-
-#ifdef MALLOC
-#ifdef KR_headers
-extern char *MALLOC();
-#else
-extern void *MALLOC(ssize);
-#endif
-#else
-#define MALLOC malloc
-#endif
-
-#ifndef Omit_Private_Memory
-#ifndef PRIVATE_MEM
-#define PRIVATE_MEM 2304
-#endif
-#define PRIVATE_mem ((PRIVATE_MEM+sizeof(double)-1)/sizeof(double))
-static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
-#endif
-
-#undef IEEE_Arith
-#undef Avoid_Underflow
-#ifdef IEEE_MC68k
-#define IEEE_Arith
-#endif
-#ifdef IEEE_8087
-#define IEEE_Arith
-#endif
-
-#ifdef IEEE_Arith
-#ifndef NO_INFNAN_CHECK
-#undef INFNAN_CHECK
-#define INFNAN_CHECK
-#endif
-#else
-#undef INFNAN_CHECK
-#define NO_STRTOD_BIGCOMP
-#endif
-
- #include "errno.h"
-
-#ifdef Bad_float_h
-
-#ifdef IEEE_Arith
-#define DBL_DIG 15
-#define DBL_MAX_10_EXP 308
-#define DBL_MAX_EXP 1024
-#define FLT_RADIX 2
-#endif /*IEEE_Arith*/
-
-#ifdef IBM
-#define DBL_DIG 16
-#define DBL_MAX_10_EXP 75
-#define DBL_MAX_EXP 63
-#define FLT_RADIX 16
-#define DBL_MAX 7.2370055773322621e+75
-#endif
-
-#ifdef VAX
-#define DBL_DIG 16
-#define DBL_MAX_10_EXP 38
-#define DBL_MAX_EXP 127
-#define FLT_RADIX 2
-#define DBL_MAX 1.7014118346046923e+38
-#endif
-
-#ifndef LONG_MAX
-#define LONG_MAX 2147483647
-#endif
-
-#else /* ifndef Bad_float_h */
- #include "float.h"
-#endif /* Bad_float_h */
-
-#ifndef __MATH_H__
- #include "math.h"
-#endif
-
-#if !EMBEDTHIS
-#define strtod unused_strtod
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifndef CONST
-#ifdef KR_headers
-#define CONST /* blank */
-#else
-#define CONST const
-#endif
-#endif
-
-#if defined(IEEE_8087) + defined(IEEE_MC68k) + defined(VAX) + defined(IBM) != 1
-Exactly one of IEEE_8087, IEEE_MC68k, VAX, or IBM should be defined.
-#endif
-
-typedef union { double d; ULong L[2]; } U;
-
-#ifdef IEEE_8087
-#define word0(x) (x)->L[1]
-#define word1(x) (x)->L[0]
-#else
-#define word0(x) (x)->L[0]
-#define word1(x) (x)->L[1]
-#endif
-#define dval(x) (x)->d
-
-#ifndef STRTOD_DIGLIM
-#define STRTOD_DIGLIM 40
-#endif
-
-#ifdef DIGLIM_DEBUG
-extern int strtod_diglim;
-#else
-#define strtod_diglim STRTOD_DIGLIM
-#endif
-
-/* The following definition of Storeinc is appropriate for MIPS processors.
- * An alternative that might be better on some machines is
- * #define Storeinc(a,b,c) (*a++ = b << 16 | c & 0xffff)
- */
-#if defined(IEEE_8087) + defined(VAX)
-#define Storeinc(a,b,c) (((unsigned short *)a)[1] = (unsigned short)b, \
-((unsigned short *)a)[0] = (unsigned short)c, a++)
-#else
-#define Storeinc(a,b,c) (((unsigned short *)a)[0] = (unsigned short)b, \
-((unsigned short *)a)[1] = (unsigned short)c, a++)
-#endif
-
-/* #define P DBL_MANT_DIG */
-/* Ten_pmax = floor(P*log(2)/log(5)) */
-/* Bletch = (highest power of 2 < DBL_MAX_10_EXP) / 16 */
-/* Quick_max = floor((P-1)*log(FLT_RADIX)/log(10) - 1) */
-/* Int_max = floor(P*log(FLT_RADIX)/log(10) - 1) */
-
-#ifdef IEEE_Arith
-#define Exp_shift  20
-#define Exp_shift1 20
-#define Exp_msk1    0x100000
-#define Exp_msk11   0x100000
-#define Exp_mask  0x7ff00000
-#define P 53
-#define Nbits 53
-#define BBias 1023
-#define Emax 1023
-#define Emin (-1022)
-#define Exp_1  0x3ff00000
-#define Exp_11 0x3ff00000
-#define Ebits 11
-#define Frac_mask  0xfffff
-#define Frac_mask1 0xfffff
-#define Ten_pmax 22
-#define Bletch 0x10
-#define Bndry_mask  0xfffff
-#define Bndry_mask1 0xfffff
-#define LSB 1
-#define Sign_bit 0x80000000
-#define Log2P 1
-#define Tiny0 0
-#define Tiny1 1
-#define Quick_max 14
-#define Int_max 14
-#ifndef NO_IEEE_Scale
-#define Avoid_Underflow
-#ifdef Flush_Denorm /* debugging option */
-#undef Sudden_Underflow
-#endif
-#endif
-
-#ifndef Flt_Rounds
-#ifdef FLT_ROUNDS
-#define Flt_Rounds FLT_ROUNDS
-#else
-#define Flt_Rounds 1
-#endif
-#endif /*Flt_Rounds*/
-
-#ifdef Honor_FLT_ROUNDS
-#undef Check_FLT_ROUNDS
-#define Check_FLT_ROUNDS
-#else
-#define Rounding Flt_Rounds
-#endif
-
-#else /* ifndef IEEE_Arith */
-#undef Check_FLT_ROUNDS
-#undef Honor_FLT_ROUNDS
-#undef SET_INEXACT
-#undef  Sudden_Underflow
-#define Sudden_Underflow
-#ifdef IBM
-#undef Flt_Rounds
-#define Flt_Rounds 0
-#define Exp_shift  24
-#define Exp_shift1 24
-#define Exp_msk1   0x1000000
-#define Exp_msk11  0x1000000
-#define Exp_mask  0x7f000000
-#define P 14
-#define Nbits 56
-#define BBias 65
-#define Emax 248
-#define Emin (-260)
-#define Exp_1  0x41000000
-#define Exp_11 0x41000000
-#define Ebits 8 /* exponent has 7 bits, but 8 is the right value in b2d */
-#define Frac_mask  0xffffff
-#define Frac_mask1 0xffffff
-#define Bletch 4
-#define Ten_pmax 22
-#define Bndry_mask  0xefffff
-#define Bndry_mask1 0xffffff
-#define LSB 1
-#define Sign_bit 0x80000000
-#define Log2P 4
-#define Tiny0 0x100000
-#define Tiny1 0
-#define Quick_max 14
-#define Int_max 15
-#else /* VAX */
-#undef Flt_Rounds
-#define Flt_Rounds 1
-#define Exp_shift  23
-#define Exp_shift1 7
-#define Exp_msk1    0x80
-#define Exp_msk11   0x800000
-#define Exp_mask  0x7f80
-#define P 56
-#define Nbits 56
-#define BBias 129
-#define Emax 126
-#define Emin (-129)
-#define Exp_1  0x40800000
-#define Exp_11 0x4080
-#define Ebits 8
-#define Frac_mask  0x7fffff
-#define Frac_mask1 0xffff007f
-#define Ten_pmax 24
-#define Bletch 2
-#define Bndry_mask  0xffff007f
-#define Bndry_mask1 0xffff007f
-#define LSB 0x10000
-#define Sign_bit 0x8000
-#define Log2P 1
-#define Tiny0 0x80
-#define Tiny1 0
-#define Quick_max 15
-#define Int_max 15
-#endif /* IBM, VAX */
-#endif /* IEEE_Arith */
-
-#ifndef IEEE_Arith
-#define ROUND_BIASED
-#endif
-
-#ifdef RND_PRODQUOT
-#define rounded_product(a,b) a = rnd_prod(a, b)
-#define rounded_quotient(a,b) a = rnd_quot(a, b)
-#ifdef KR_headers
-extern double rnd_prod(), rnd_quot();
-#else
-extern double rnd_prod(double, double), rnd_quot(double, double);
-#endif
-#else
-#define rounded_product(a,b) a *= b
-#define rounded_quotient(a,b) a /= b
-#endif
-
-#define Big0 (Frac_mask1 | Exp_msk1*(DBL_MAX_EXP+BBias-1))
-#define Big1 0xffffffff
-
-#ifndef Pack_32
-#define Pack_32
-#endif
-
-typedef struct BCinfo BCinfo;
- struct
-BCinfo { int dp0, dp1, dplen, dsign, e0, inexact, nd, nd0, rounding, scale, uflchk; };
-
-#ifdef KR_headers
-#define FFFFFFFF ((((unsigned long)0xffff)<<16)|(unsigned long)0xffff)
-#else
-#define FFFFFFFF 0xffffffffUL
-#endif
-
-#ifdef NO_LONG_LONG
-#undef ULLong
-#ifdef Just_16
-#undef Pack_32
-/* When Pack_32 is not defined, we store 16 bits per 32-bit Long.
- * This makes some inner loops simpler and sometimes saves work
- * during multiplications, but it often seems to make things slightly
- * slower.  Hence the default is now to store 32 bits per Long.
- */
-#endif
-#else   /* long long available */
-#ifndef Llong
-#define Llong long long
-#endif
-#ifndef ULLong
-#define ULLong unsigned Llong
-#endif
-#endif /* NO_LONG_LONG */
-
-#ifndef MULTIPLE_THREADS
-#define ACQUIRE_DTOA_LOCK(n)    /*nothing*/
-#define FREE_DTOA_LOCK(n)   /*nothing*/
-#else
-#define ACQUIRE_DTOA_LOCK(n) mprLockDtoa(n);
-#define FREE_DTOA_LOCK(n) mprUnlockDtoa(n);
-#endif
-
-#define Kmax 7
-
-#ifdef __cplusplus
-extern "C" double strtod(const char *s00, char **se);
-extern "C" char *dtoa(double d, int mode, int ndigits,
-            int *decpt, int *sign, char **rve);
-#endif
-
- struct
-Bigint {
-    struct Bigint *next;
-    int k, maxwds, sign, wds;
-    ULong x[1];
-    };
-
- typedef struct Bigint Bigint;
-
- static Bigint *freelist[Kmax+1];
-
- static Bigint *
-Balloc
-#ifdef KR_headers
-    (k) int k;
-#else
-    (int k)
-#endif
-{
-    int x;
-    Bigint *rv;
-#ifndef Omit_Private_Memory
-    unsigned int len;
-#endif
-
-    ACQUIRE_DTOA_LOCK(0);
-    /* The k > Kmax case does not need ACQUIRE_DTOA_LOCK(0), */
-    /* but this case seems very unlikely. */
-    if (k <= Kmax && (rv = freelist[k]))
-        freelist[k] = rv->next;
-    else {
-        x = 1 << k;
-#ifdef Omit_Private_Memory
-        rv = (Bigint *)MALLOC(sizeof(Bigint) + (x-1)*sizeof(ULong));
-#else
-        len = (unsigned int) ((sizeof(Bigint) + (x-1)*sizeof(ULong) + sizeof(double) - 1) / sizeof(double));
-        if (k <= Kmax && pmem_next - private_mem + len <= PRIVATE_mem) {
-            rv = (Bigint*)pmem_next;
-            pmem_next += len;
-        } else
-            rv = (Bigint*)MALLOC(len*sizeof(double));
-#endif
-        rv->k = k;
-        rv->maxwds = x;
-        }
-    FREE_DTOA_LOCK(0);
-    rv->sign = rv->wds = 0;
-    return rv;
-    }
-
- static void
-Bfree
-#ifdef KR_headers
-    (v) Bigint *v;
-#else
-    (Bigint *v)
-#endif
-{
-    if (v) {
-        if (v->k > Kmax)
-#ifdef FREE
-            FREE((void*)v);
-#else
-            free((void*)v);
-#endif
-        else {
-            ACQUIRE_DTOA_LOCK(0);
-            v->next = freelist[v->k];
-            freelist[v->k] = v;
-            FREE_DTOA_LOCK(0);
-            }
-        }
-    }
-
-#define Bcopy(x,y) memcpy((char *)&x->sign, (char *)&y->sign, \
-y->wds*sizeof(Long) + 2*sizeof(int))
-
- static Bigint *
-multadd
-#ifdef KR_headers
-    (b, m, a) Bigint *b; int m, a;
-#else
-    (Bigint *b, int m, int a)   /* multiply by m and add a */
-#endif
-{
-    int i, wds;
-#ifdef ULLong
-    ULong *x;
-    ULLong carry, y;
-#else
-    ULong carry, *x, y;
-#ifdef Pack_32
-    ULong xi, z;
-#endif
-#endif
-    Bigint *b1;
-
-    wds = b->wds;
-    x = b->x;
-    i = 0;
-    carry = a;
-    do {
-#ifdef ULLong
-        y = *x * (ULLong)m + carry;
-        carry = y >> 32;
-        *x++ = (ULong) (y & FFFFFFFF);
-#else
-#ifdef Pack_32
-        xi = *x;
-        y = (xi & 0xffff) * m + carry;
-        z = (xi >> 16) * m + (y >> 16);
-        carry = z >> 16;
-        *x++ = (z << 16) + (y & 0xffff);
-#else
-        y = *x * m + carry;
-        carry = y >> 16;
-        *x++ = y & 0xffff;
-#endif
-#endif
-        }
-        while(++i < wds);
-    if (carry) {
-        if (wds >= b->maxwds) {
-            b1 = Balloc(b->k+1);
-            Bcopy(b1, b);
-            Bfree(b);
-            b = b1;
-            }
-        b->x[wds++] = (ULong) carry;
-        b->wds = wds;
-        }
-    return b;
-    }
-
- static Bigint *
-s2b
-#ifdef KR_headers
-    (s, nd0, nd, y9, dplen) CONST char *s; int nd0, nd, dplen; ULong y9;
-#else
-    (CONST char *s, int nd0, int nd, ULong y9, int dplen)
-#endif
-{
-    Bigint *b;
-    int i, k;
-    Long x, y;
-
-    x = (nd + 8) / 9;
-    for(k = 0, y = 1; x > y; y <<= 1, k++) ;
-#ifdef Pack_32
-    b = Balloc(k);
-    b->x[0] = y9;
-    b->wds = 1;
-#else
-    b = Balloc(k+1);
-    b->x[0] = y9 & 0xffff;
-    b->wds = (b->x[1] = y9 >> 16) ? 2 : 1;
-#endif
-
-    i = 9;
-    if (9 < nd0) {
-        s += 9;
-        do b = multadd(b, 10, *s++ - '0');
-            while(++i < nd0);
-        s += dplen;
-        }
-    else
-        s += dplen + 9;
-    for(; i < nd; i++)
-        b = multadd(b, 10, *s++ - '0');
-    return b;
-    }
-
- static int
-hi0bits
-#ifdef KR_headers
-    (x) ULong x;
-#else
-    (ULong x)
-#endif
-{
-    int k = 0;
-
-    if (!(x & 0xffff0000)) {
-        k = 16;
-        x <<= 16;
-        }
-    if (!(x & 0xff000000)) {
-        k += 8;
-        x <<= 8;
-        }
-    if (!(x & 0xf0000000)) {
-        k += 4;
-        x <<= 4;
-        }
-    if (!(x & 0xc0000000)) {
-        k += 2;
-        x <<= 2;
-        }
-    if (!(x & 0x80000000)) {
-        k++;
-        if (!(x & 0x40000000))
-            return 32;
-        }
-    return k;
-    }
-
- static int
-lo0bits
-#ifdef KR_headers
-    (y) ULong *y;
-#else
-    (ULong *y)
-#endif
-{
-    int k;
-    ULong x = *y;
-
-    if (x & 7) {
-        if (x & 1)
-            return 0;
-        if (x & 2) {
-            *y = x >> 1;
-            return 1;
-            }
-        *y = x >> 2;
-        return 2;
-        }
-    k = 0;
-    if (!(x & 0xffff)) {
-        k = 16;
-        x >>= 16;
-        }
-    if (!(x & 0xff)) {
-        k += 8;
-        x >>= 8;
-        }
-    if (!(x & 0xf)) {
-        k += 4;
-        x >>= 4;
-        }
-    if (!(x & 0x3)) {
-        k += 2;
-        x >>= 2;
-        }
-    if (!(x & 1)) {
-        k++;
-        x >>= 1;
-        if (!x)
-            return 32;
-        }
-    *y = x;
-    return k;
-    }
-
- static Bigint *
-i2b
-#ifdef KR_headers
-    (i) int i;
-#else
-    (int i)
-#endif
-{
-    Bigint *b;
-
-    b = Balloc(1);
-    b->x[0] = i;
-    b->wds = 1;
-    return b;
-    }
-
- static Bigint *
-mult
-#ifdef KR_headers
-    (a, b) Bigint *a, *b;
-#else
-    (Bigint *a, Bigint *b)
-#endif
-{
-    Bigint *c;
-    int k, wa, wb, wc;
-    ULong *x, *xa, *xae, *xb, *xbe, *xc, *xc0;
-    ULong y;
-#ifdef ULLong
-    ULLong carry, z;
-#else
-    ULong carry, z;
-#ifdef Pack_32
-    ULong z2;
-#endif
-#endif
-
-    if (a->wds < b->wds) {
-        c = a;
-        a = b;
-        b = c;
-        }
-    k = a->k;
-    wa = a->wds;
-    wb = b->wds;
-    wc = wa + wb;
-    if (wc > a->maxwds)
-        k++;
-    c = Balloc(k);
-    for(x = c->x, xa = x + wc; x < xa; x++)
-        *x = 0;
-    xa = a->x;
-    xae = xa + wa;
-    xb = b->x;
-    xbe = xb + wb;
-    xc0 = c->x;
-#ifdef ULLong
-    for(; xb < xbe; xc0++) {
-        if ((y = *xb++)) {
-            x = xa;
-            xc = xc0;
-            carry = 0;
-            do {
-                z = *x++ * (ULLong)y + *xc + carry;
-                carry = z >> 32;
-                *xc++ = (ULong) (z & FFFFFFFF);
-                }
-                while(x < xae);
-            *xc = (ULong) carry;
-            }
-        }
-#else
-#ifdef Pack_32
-    for(; xb < xbe; xb++, xc0++) {
-        if (y = *xb & 0xffff) {
-            x = xa;
-            xc = xc0;
-            carry = 0;
-            do {
-                z = (*x & 0xffff) * y + (*xc & 0xffff) + carry;
-                carry = z >> 16;
-                z2 = (*x++ >> 16) * y + (*xc >> 16) + carry;
-                carry = z2 >> 16;
-                Storeinc(xc, z2, z);
-                }
-                while(x < xae);
-            *xc = carry;
-            }
-        if (y = *xb >> 16) {
-            x = xa;
-            xc = xc0;
-            carry = 0;
-            z2 = *xc;
-            do {
-                z = (*x & 0xffff) * y + (*xc >> 16) + carry;
-                carry = z >> 16;
-                Storeinc(xc, z, z2);
-                z2 = (*x++ >> 16) * y + (*xc & 0xffff) + carry;
-                carry = z2 >> 16;
-                }
-                while(x < xae);
-            *xc = z2;
-            }
-        }
-#else
-    for(; xb < xbe; xc0++) {
-        if (y = *xb++) {
-            x = xa;
-            xc = xc0;
-            carry = 0;
-            do {
-                z = *x++ * y + *xc + carry;
-                carry = z >> 16;
-                *xc++ = (ULong) (z & 0xffff);
-                }
-                while(x < xae);
-            *xc = carry;
-            }
-        }
-#endif
-#endif
-    for(xc0 = c->x, xc = xc0 + wc; wc > 0 && !*--xc; --wc) ;
-    c->wds = wc;
-    return c;
-    }
-
- static Bigint *p5s;
-
- static Bigint *
-pow5mult
-#ifdef KR_headers
-    (b, k) Bigint *b; int k;
-#else
-    (Bigint *b, int k)
-#endif
-{
-    Bigint *b1, *p5, *p51;
-    int i;
-    static int p05[3] = { 5, 25, 125 };
-
-    if ((i = k & 3))
-        b = multadd(b, p05[i-1], 0);
-
-    if (!(k >>= 2))
-        return b;
-    if (!(p5 = p5s)) {
-        /* first time */
-#ifdef MULTIPLE_THREADS
-        ACQUIRE_DTOA_LOCK(1);
-        if (!(p5 = p5s)) {
-            p5 = p5s = i2b(625);
-            p5->next = 0;
-            }
-        FREE_DTOA_LOCK(1);
-#else
-        p5 = p5s = i2b(625);
-        p5->next = 0;
-#endif
-        }
-    for(;;) {
-        if (k & 1) {
-            b1 = mult(b, p5);
-            Bfree(b);
-            b = b1;
-            }
-        if (!(k >>= 1))
-            break;
-        if (!(p51 = p5->next)) {
-#ifdef MULTIPLE_THREADS
-            ACQUIRE_DTOA_LOCK(1);
-            if (!(p51 = p5->next)) {
-                p51 = p5->next = mult(p5,p5);
-                p51->next = 0;
-                }
-            FREE_DTOA_LOCK(1);
-#else
-            p51 = p5->next = mult(p5,p5);
-            p51->next = 0;
-#endif
-            }
-        p5 = p51;
-        }
-    return b;
-    }
-
- static Bigint *
-lshift
-#ifdef KR_headers
-    (b, k) Bigint *b; int k;
-#else
-    (Bigint *b, int k)
-#endif
-{
-    int i, k1, n, n1;
-    Bigint *b1;
-    ULong *x, *x1, *xe, z;
-
-#ifdef Pack_32
-    n = k >> 5;
-#else
-    n = k >> 4;
-#endif
-    k1 = b->k;
-    n1 = n + b->wds + 1;
-    for(i = b->maxwds; n1 > i; i <<= 1)
-        k1++;
-    b1 = Balloc(k1);
-    x1 = b1->x;
-    for(i = 0; i < n; i++)
-        *x1++ = 0;
-    x = b->x;
-    xe = x + b->wds;
-#ifdef Pack_32
-    if (k &= 0x1f) {
-        k1 = 32 - k;
-        z = 0;
-        do {
-            *x1++ = *x << k | z;
-            z = *x++ >> k1;
-            }
-            while(x < xe);
-        if ((*x1 = z))
-            ++n1;
-        }
-#else
-    if (k &= 0xf) {
-        k1 = 16 - k;
-        z = 0;
-        do {
-            *x1++ = *x << k  & 0xffff | z;
-            z = *x++ >> k1;
-            }
-            while(x < xe);
-        if (*x1 = z)
-            ++n1;
-        }
-#endif
-    else do
-        *x1++ = *x++;
-        while(x < xe);
-    b1->wds = n1 - 1;
-    Bfree(b);
-    return b1;
-    }
-
- static int
-cmp
-#ifdef KR_headers
-    (a, b) Bigint *a, *b;
-#else
-    (Bigint *a, Bigint *b)
-#endif
-{
-    ULong *xa, *xa0, *xb, *xb0;
-    int i, j;
-
-    i = a->wds;
-    j = b->wds;
-#ifdef DEBUG
-    if (i > 1 && !a->x[i-1])
-        Bug("cmp called with a->x[a->wds-1] == 0");
-    if (j > 1 && !b->x[j-1])
-        Bug("cmp called with b->x[b->wds-1] == 0");
-#endif
-    if (i -= j)
-        return i;
-    xa0 = a->x;
-    xa = xa0 + j;
-    xb0 = b->x;
-    xb = xb0 + j;
-    for(;;) {
-        if (*--xa != *--xb)
-            return *xa < *xb ? -1 : 1;
-        if (xa <= xa0)
-            break;
-        }
-    return 0;
-    }
-
- static Bigint *
-diff
-#ifdef KR_headers
-    (a, b) Bigint *a, *b;
-#else
-    (Bigint *a, Bigint *b)
-#endif
-{
-    Bigint *c;
-    int i, wa, wb;
-    ULong *xa, *xae, *xb, *xbe, *xc;
-#ifdef ULLong
-    ULLong borrow, y;
-#else
-    ULong borrow, y;
-#ifdef Pack_32
-    ULong z;
-#endif
-#endif
-
-    i = cmp(a,b);
-    if (!i) {
-        c = Balloc(0);
-        c->wds = 1;
-        c->x[0] = 0;
-        return c;
-        }
-    if (i < 0) {
-        c = a;
-        a = b;
-        b = c;
-        i = 1;
-        }
-    else
-        i = 0;
-    c = Balloc(a->k);
-    c->sign = i;
-    wa = a->wds;
-    xa = a->x;
-    xae = xa + wa;
-    wb = b->wds;
-    xb = b->x;
-    xbe = xb + wb;
-    xc = c->x;
-    borrow = 0;
-#ifdef ULLong
-    do {
-        y = (ULLong)*xa++ - *xb++ - borrow;
-        borrow = y >> 32 & (ULong)1;
-        *xc++ = (ULong) (y & FFFFFFFF);
-        }
-        while(xb < xbe);
-    while(xa < xae) {
-        y = *xa++ - borrow;
-        borrow = y >> 32 & (ULong)1;
-        *xc++ = (ULong) (y & FFFFFFFF);
-        }
-#else
-#ifdef Pack_32
-    do {
-        y = (*xa & 0xffff) - (*xb & 0xffff) - borrow;
-        borrow = (y & 0x10000) >> 16;
-        z = (*xa++ >> 16) - (*xb++ >> 16) - borrow;
-        borrow = (z & 0x10000) >> 16;
-        Storeinc(xc, z, y);
-        }
-        while(xb < xbe);
-    while(xa < xae) {
-        y = (*xa & 0xffff) - borrow;
-        borrow = (y & 0x10000) >> 16;
-        z = (*xa++ >> 16) - borrow;
-        borrow = (z & 0x10000) >> 16;
-        Storeinc(xc, z, y);
-        }
-#else
-    do {
-        y = *xa++ - *xb++ - borrow;
-        borrow = (y & 0x10000) >> 16;
-        *xc++ = (ULong) (y & 0xffff);
-        }
-        while(xb < xbe);
-    while(xa < xae) {
-        y = *xa++ - borrow;
-        borrow = (y & 0x10000) >> 16;
-        *xc++ = (ULong) (y & 0xffff);
-        }
-#endif
-#endif
-    while(!*--xc)
-        wa--;
-    c->wds = wa;
-    return c;
-    }
-
- static double
-ulp
-#ifdef KR_headers
-    (x) U *x;
-#else
-    (U *x)
-#endif
-{
-    Long L;
-    U u;
-
-    L = (word0(x) & Exp_mask) - (P-1)*Exp_msk1;
-#ifndef Avoid_Underflow
-#ifndef Sudden_Underflow
-    if (L > 0) {
-#endif
-#endif
-#ifdef IBM
-        L |= Exp_msk1 >> 4;
-#endif
-        word0(&u) = L;
-        word1(&u) = 0;
-#ifndef Avoid_Underflow
-#ifndef Sudden_Underflow
-        }
-    else {
-        L = -L >> Exp_shift;
-        if (L < Exp_shift) {
-            word0(&u) = 0x80000 >> L;
-            word1(&u) = 0;
-            }
-        else {
-            word0(&u) = 0;
-            L -= Exp_shift;
-            word1(&u) = L >= 31 ? 1 : 1 << 31 - L;
-            }
-        }
-#endif
-#endif
-    return dval(&u);
-    }
-
- static double
-b2d
-#ifdef KR_headers
-    (a, e) Bigint *a; int *e;
-#else
-    (Bigint *a, int *e)
-#endif
-{
-    ULong *xa, *xa0, w, y, z;
-    int k;
-    U d;
-#ifdef VAX
-    ULong d0, d1;
-#else
-#define d0 word0(&d)
-#define d1 word1(&d)
-#endif
-
-    xa0 = a->x;
-    xa = xa0 + a->wds;
-    y = *--xa;
-#ifdef DEBUG
-    if (!y) Bug("zero y in b2d");
-#endif
-    k = hi0bits(y);
-    *e = 32 - k;
-#ifdef Pack_32
-    if (k < Ebits) {
-        d0 = Exp_1 | y >> (Ebits - k);
-        w = xa > xa0 ? *--xa : 0;
-        d1 = y << ((32-Ebits) + k) | w >> (Ebits - k);
-        goto ret_d;
-        }
-    z = xa > xa0 ? *--xa : 0;
-    if (k -= Ebits) {
-        d0 = Exp_1 | y << k | z >> (32 - k);
-        y = xa > xa0 ? *--xa : 0;
-        d1 = z << k | y >> (32 - k);
-        }
-    else {
-        d0 = Exp_1 | y;
-        d1 = z;
-        }
-#else
-    if (k < Ebits + 16) {
-        z = xa > xa0 ? *--xa : 0;
-        d0 = Exp_1 | y << k - Ebits | z >> Ebits + 16 - k;
-        w = xa > xa0 ? *--xa : 0;
-        y = xa > xa0 ? *--xa : 0;
-        d1 = z << k + 16 - Ebits | w << k - Ebits | y >> 16 + Ebits - k;
-        goto ret_d;
-        }
-    z = xa > xa0 ? *--xa : 0;
-    w = xa > xa0 ? *--xa : 0;
-    k -= Ebits + 16;
-    d0 = Exp_1 | y << k + 16 | z << k | w >> 16 - k;
-    y = xa > xa0 ? *--xa : 0;
-    d1 = w << k + 16 | y << k;
-#endif
- ret_d:
-#ifdef VAX
-    word0(&d) = d0 >> 16 | d0 << 16;
-    word1(&d) = d1 >> 16 | d1 << 16;
-#else
-#undef d0
-#undef d1
-#endif
-    return dval(&d);
-    }
-
- static Bigint *
-d2b
-#ifdef KR_headers
-    (d, e, bits) U *d; int *e, *bits;
-#else
-    (U *d, int *e, int *bits)
-#endif
-{
-    Bigint *b;
-    int de, k;
-    ULong *x, y, z;
-#ifndef Sudden_Underflow
-    int i;
-#endif
-#ifdef VAX
-    ULong d0, d1;
-    d0 = word0(d) >> 16 | word0(d) << 16;
-    d1 = word1(d) >> 16 | word1(d) << 16;
-#else
-#define d0 word0(d)
-#define d1 word1(d)
-#endif
-
-#ifdef Pack_32
-    b = Balloc(1);
-#else
-    b = Balloc(2);
-#endif
-    x = b->x;
-
-    z = d0 & Frac_mask;
-    d0 &= 0x7fffffff;   /* clear sign bit, which we ignore */
-#ifdef Sudden_Underflow
-    de = (int)(d0 >> Exp_shift);
-#ifndef IBM
-    z |= Exp_msk11;
-#endif
-#else
-    if ((de = (int)(d0 >> Exp_shift)))
-        z |= Exp_msk1;
-#endif
-#ifdef Pack_32
-    if ((y = d1)) {
-        if ((k = lo0bits(&y))) {
-            x[0] = y | z << (32 - k);
-            z >>= k;
-            }
-        else
-            x[0] = y;
-#ifndef Sudden_Underflow
-        i =
-#endif
-            b->wds = (x[1] = z) ? 2 : 1;
-        }
-    else {
-        k = lo0bits(&z);
-        x[0] = z;
-#ifndef Sudden_Underflow
-        i =
-#endif
-            b->wds = 1;
-        k += 32;
-        }
-#else
-    if (y = d1) {
-        if (k = lo0bits(&y))
-            if (k >= 16) {
-                x[0] = y | z << 32 - k & 0xffff;
-                x[1] = z >> k - 16 & 0xffff;
-                x[2] = z >> k;
-                i = 2;
-                }
-            else {
-                x[0] = y & 0xffff;
-                x[1] = y >> 16 | z << 16 - k & 0xffff;
-                x[2] = z >> k & 0xffff;
-                x[3] = z >> k+16;
-                i = 3;
-                }
-        else {
-            x[0] = y & 0xffff;
-            x[1] = y >> 16;
-            x[2] = z & 0xffff;
-            x[3] = z >> 16;
-            i = 3;
-            }
-        }
-    else {
-#ifdef DEBUG
-        if (!z)
-            Bug("Zero passed to d2b");
-#endif
-        k = lo0bits(&z);
-        if (k >= 16) {
-            x[0] = z;
-            i = 0;
-            }
-        else {
-            x[0] = z & 0xffff;
-            x[1] = z >> 16;
-            i = 1;
-            }
-        k += 32;
-        }
-    while(!x[i])
-        --i;
-    b->wds = i + 1;
-#endif
-#ifndef Sudden_Underflow
-    if (de) {
-#endif
-#ifdef IBM
-        *e = (de - BBias - (P-1) << 2) + k;
-        *bits = 4*P + 8 - k - hi0bits(word0(d) & Frac_mask);
-#else
-        *e = de - BBias - (P-1) + k;
-        *bits = P - k;
-#endif
-#ifndef Sudden_Underflow
-        }
-    else {
-        *e = de - BBias - (P-1) + 1 + k;
-#ifdef Pack_32
-        *bits = 32*i - hi0bits(x[i-1]);
-#else
-        *bits = (i+2)*16 - hi0bits(x[i]);
-#endif
-        }
-#endif
-    return b;
-    }
-#undef d0
-#undef d1
-
- static double
-ratio
-#ifdef KR_headers
-    (a, b) Bigint *a, *b;
-#else
-    (Bigint *a, Bigint *b)
-#endif
-{
-    U da, db;
-    int k, ka, kb;
-
-    dval(&da) = b2d(a, &ka);
-    dval(&db) = b2d(b, &kb);
-#ifdef Pack_32
-    k = ka - kb + 32*(a->wds - b->wds);
-#else
-    k = ka - kb + 16*(a->wds - b->wds);
-#endif
-#ifdef IBM
-    if (k > 0) {
-        word0(&da) += (k >> 2)*Exp_msk1;
-        if (k &= 3)
-            dval(&da) *= 1 << k;
-        }
-    else {
-        k = -k;
-        word0(&db) += (k >> 2)*Exp_msk1;
-        if (k &= 3)
-            dval(&db) *= 1 << k;
-        }
-#else
-    if (k > 0)
-        word0(&da) += k*Exp_msk1;
-    else {
-        k = -k;
-        word0(&db) += k*Exp_msk1;
-        }
-#endif
-    return dval(&da) / dval(&db);
-    }
-
- static CONST double
-tens[] = {
-        1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9,
-        1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19,
-        1e20, 1e21, 1e22
-#ifdef VAX
-        , 1e23, 1e24
-#endif
-        };
-
- static CONST double
-#ifdef IEEE_Arith
-bigtens[] = { 1e16, 1e32, 1e64, 1e128, 1e256 };
-static CONST double tinytens[] = { 1e-16, 1e-32, 1e-64, 1e-128,
-#ifdef Avoid_Underflow
-        9007199254740992.*9007199254740992.e-256
-        /* = 2^106 * 1e-256 */
-#else
-        1e-256
-#endif
-        };
-/* The factor of 2^53 in tinytens[4] helps us avoid setting the underflow */
-/* flag unnecessarily.  It leads to a song and dance at the end of strtod. */
-#define Scale_Bit 0x10
-#define n_bigtens 5
-#else
-#ifdef IBM
-bigtens[] = { 1e16, 1e32, 1e64 };
-static CONST double tinytens[] = { 1e-16, 1e-32, 1e-64 };
-#define n_bigtens 3
-#else
-bigtens[] = { 1e16, 1e32 };
-static CONST double tinytens[] = { 1e-16, 1e-32 };
-#define n_bigtens 2
-#endif
-#endif
-
-#undef Need_Hexdig
-#ifdef INFNAN_CHECK
-#ifndef No_Hex_NaN
-#define Need_Hexdig
-#endif
-#endif
-
-#ifndef Need_Hexdig
-#ifndef NO_HEX_FP
-#define Need_Hexdig
-#endif
-#endif
-
-#ifdef Need_Hexdig /*{*/
-static unsigned char hexdig[256];
-
- static void
-#ifdef KR_headers
-htinit(h, s, inc) unsigned char *h; unsigned char *s; int inc;
-#else
-htinit(unsigned char *h, unsigned char *s, int inc)
-#endif
-{
-    int i, j;
-    for(i = 0; (j = s[i]) !=0; i++)
-        h[j] = i + inc;
-    }
-
- static void
-#ifdef KR_headers
-hexdig_init()
-#else
-hexdig_init(void)
-#endif
-{
-#define USC (unsigned char *)
-    htinit(hexdig, USC "0123456789", 0x10);
-    htinit(hexdig, USC "abcdef", 0x10 + 10);
-    htinit(hexdig, USC "ABCDEF", 0x10 + 10);
-    }
-#endif /* } Need_Hexdig */
-
-#ifdef INFNAN_CHECK
-
-#ifndef NAN_WORD0
-#define NAN_WORD0 0x7ff80000
-#endif
-
-#ifndef NAN_WORD1
-#define NAN_WORD1 0
-#endif
-
- static int
-dmatch
-#ifdef KR_headers
-    (sp, t) char **sp, *t;
-#else
-    (CONST char **sp, char *t)
-#endif
-{
-    int c, d;
-    CONST char *s = *sp;
-
-    while((d = *t++)) {
-        if ((c = *++s) >= 'A' && c <= 'Z')
-            c += 'a' - 'A';
-        if (c != d)
-            return 0;
-        }
-    *sp = s + 1;
-    return 1;
-    }
-
-#ifndef No_Hex_NaN
- static void
-hexnan
-#ifdef KR_headers
-    (rvp, sp) U *rvp; CONST char **sp;
-#else
-    (U *rvp, CONST char **sp)
-#endif
-{
-    ULong c, x[2];
-    CONST char *s;
-    int c1, havedig, udx0, xshift;
-
-    if (!hexdig['0'])
-        hexdig_init();
-    x[0] = x[1] = 0;
-    havedig = xshift = 0;
-    udx0 = 1;
-    s = *sp;
-    /* allow optional initial 0x or 0X */
-    while((c = *(CONST unsigned char*)(s+1)) && c <= ' ')
-        ++s;
-    if (s[1] == '0' && (s[2] == 'x' || s[2] == 'X'))
-        s += 2;
-    while((c = *(CONST unsigned char*)++s)) {
-        if ((c1 = hexdig[c]))
-            c  = c1 & 0xf;
-        else if (c <= ' ') {
-            if (udx0 && havedig) {
-                udx0 = 0;
-                xshift = 1;
-                }
-            continue;
-            }
-#ifdef GDTOA_NON_PEDANTIC_NANCHECK
-        else if (/*(*/ c == ')' && havedig) {
-            *sp = s + 1;
-            break;
-            }
-        else
-            return; /* invalid form: don't change *sp */
-#else
-        else {
-            do {
-                if (/*(*/ c == ')') {
-                    *sp = s + 1;
-                    break;
-                    }
-                } while((c = *++s));
-            break;
-            }
-#endif
-        havedig = 1;
-        if (xshift) {
-            xshift = 0;
-            x[0] = x[1];
-            x[1] = 0;
-            }
-        if (udx0)
-            x[0] = (x[0] << 4) | (x[1] >> 28);
-        x[1] = (x[1] << 4) | c;
-        }
-    if ((x[0] &= 0xfffff) || x[1]) {
-        word0(rvp) = Exp_mask | x[0];
-        word1(rvp) = x[1];
-        }
-    }
-#endif /*No_Hex_NaN*/
-#endif /* INFNAN_CHECK */
-
-#ifdef Pack_32
-#define ULbits 32
-#define kshift 5
-#define kmask 31
-#else
-#define ULbits 16
-#define kshift 4
-#define kmask 15
-#endif
-#ifndef NO_HEX_FP /*{*/
-
- static void
-#ifdef KR_headers
-rshift(b, k) Bigint *b; int k;
-#else
-rshift(Bigint *b, int k)
-#endif
-{
-    ULong *x, *x1, *xe, y;
-    int n;
-
-    x = x1 = b->x;
-    n = k >> kshift;
-    if (n < b->wds) {
-        xe = x + b->wds;
-        x += n;
-        if (k &= kmask) {
-            n = 32 - k;
-            y = *x++ >> k;
-            while(x < xe) {
-                *x1++ = (y | (*x << n)) & 0xffffffff;
-                y = *x++ >> k;
-                }
-            if ((*x1 = y) !=0)
-                x1++;
-            }
-        else
-            while(x < xe)
-                *x1++ = *x++;
-        }
-    if ((b->wds = (int) (x1 - b->x)) == 0)
-        b->x[0] = 0;
-    }
-
- static ULong
-#ifdef KR_headers
-any_on(b, k) Bigint *b; int k;
-#else
-any_on(Bigint *b, int k)
-#endif
-{
-    int n, nwds;
-    ULong *x, *x0, x1, x2;
-
-    x = b->x;
-    nwds = b->wds;
-    n = k >> kshift;
-    if (n > nwds)
-        n = nwds;
-    else if (n < nwds && (k &= kmask)) {
-        x1 = x2 = x[n];
-        x1 >>= k;
-        x1 <<= k;
-        if (x1 != x2)
-            return 1;
-        }
-    x0 = x;
-    x += n;
-    while(x > x0)
-        if (*--x)
-            return 1;
-    return 0;
-    }
-
-enum {  /* rounding values: same as FLT_ROUNDS */
-    Round_zero = 0,
-    Round_near = 1,
-    Round_up = 2,
-    Round_down = 3
-    };
-
- static Bigint *
-#ifdef KR_headers
-increment(b) Bigint *b;
-#else
-increment(Bigint *b)
-#endif
-{
-    ULong *x, *xe;
-    Bigint *b1;
-
-    x = b->x;
-    xe = x + b->wds;
-    do {
-        if (*x < (ULong)0xffffffffL) {
-            ++*x;
-            return b;
-            }
-        *x++ = 0;
-        } while(x < xe);
-    {
-        if (b->wds >= b->maxwds) {
-            b1 = Balloc(b->k+1);
-            Bcopy(b1,b);
-            Bfree(b);
-            b = b1;
-            }
-        b->x[b->wds++] = 1;
-        }
-    return b;
-    }
-
- void
-#ifdef KR_headers
-gethex(sp, rvp, rounding, sign)
-    CONST char **sp; U *rvp; int rounding, sign;
-#else
-gethex( CONST char **sp, U *rvp, int rounding, int sign)
-#endif
-{
-    Bigint *b;
-    CONST unsigned char *decpt, *s0, *s, *s1;
-    Long e, e1;
-    ULong L, lostbits, *x;
-    int big, denorm, esign, havedig, k, n, nbits, up, zret;
-#ifdef IBM
-    int j;
-#endif
-    enum {
-#ifdef IEEE_Arith /*{{*/
-        emax = 0x7fe - BBias - P + 1,
-        emin = Emin - P + 1
-#else /*}{*/
-        emin = Emin - P,
-#ifdef VAX
-        emax = 0x7ff - BBias - P + 1
-#endif
-#ifdef IBM
-        emax = 0x7f - BBias - P
-#endif
-#endif /*}}*/
-        };
-#ifdef USE_LOCALE
-    int i;
-#ifdef NO_LOCALE_CACHE
-    const unsigned char *decimalpoint = (unsigned char*)
-        localeconv()->decimal_point;
-#else
-    const unsigned char *decimalpoint;
-    static unsigned char *decimalpoint_cache;
-    if (!(s0 = decimalpoint_cache)) {
-        s0 = (unsigned char*)localeconv()->decimal_point;
-        if ((decimalpoint_cache = (unsigned char*)
-                MALLOC(strlen((CONST char*)s0) + 1))) {
-            strcpy((char*)decimalpoint_cache, (CONST char*)s0);
-            s0 = decimalpoint_cache;
-            }
-        }
-    decimalpoint = s0;
-#endif
-#endif
-
-    if (!hexdig['0'])
-        hexdig_init();
-    havedig = 0;
-    s0 = *(CONST unsigned char **)sp + 2;
-    while(s0[havedig] == '0')
-        havedig++;
-    s0 += havedig;
-    s = s0;
-    decpt = 0;
-    zret = 0;
-    e = 0;
-    if (hexdig[*s])
-        havedig++;
-    else {
-        zret = 1;
-#ifdef USE_LOCALE
-        for(i = 0; decimalpoint[i]; ++i) {
-            if (s[i] != decimalpoint[i])
-                goto pcheck;
-            }
-        decpt = s += i;
-#else
-        if (*s != '.')
-            goto pcheck;
-        decpt = ++s;
-#endif
-        if (!hexdig[*s])
-            goto pcheck;
-        while(*s == '0')
-            s++;
-        if (hexdig[*s])
-            zret = 0;
-        havedig = 1;
-        s0 = s;
-        }
-    while(hexdig[*s])
-        s++;
-#ifdef USE_LOCALE
-    if (*s == *decimalpoint && !decpt) {
-        for(i = 1; decimalpoint[i]; ++i) {
-            if (s[i] != decimalpoint[i])
-                goto pcheck;
-            }
-        decpt = s += i;
-#else
-    if (*s == '.' && !decpt) {
-        decpt = ++s;
-#endif
-        while(hexdig[*s])
-            s++;
-        }/*}*/
-    if (decpt)
-        e = -(((Long)(s-decpt)) << 2);
- pcheck:
-    s1 = s;
-    big = esign = 0;
-    switch(*s) {
-      case 'p':
-      case 'P':
-        switch(*++s) {
-          case '-':
-            esign = 1;
-            /* no break */
-          case '+':
-            s++;
-          }
-        if ((n = hexdig[*s]) == 0 || n > 0x19) {
-            s = s1;
-            break;
-            }
-        e1 = n - 0x10;
-        while((n = hexdig[*++s]) !=0 && n <= 0x19) {
-            if (e1 & 0xf8000000)
-                big = 1;
-            e1 = 10*e1 + n - 0x10;
-            }
-        if (esign)
-            e1 = -e1;
-        e += e1;
-      }
-    *sp = (char*)s;
-    if (!havedig)
-        *sp = (char*)s0 - 1;
-    if (zret)
-        goto retz1;
-    if (big) {
-        if (esign) {
-#ifdef IEEE_Arith
-            switch(rounding) {
-              case Round_up:
-                if (sign)
-                    break;
-                goto ret_tiny;
-              case Round_down:
-                if (!sign)
-                    break;
-                goto ret_tiny;
-              }
-#endif
-            goto retz;
-#ifdef IEEE_Arith
- ret_tiny:
-#ifndef NO_ERRNO
-            errno = ERANGE;
-#endif
-            word0(rvp) = 0;
-            word1(rvp) = 1;
-            return;
-#endif /* IEEE_Arith */
-            }
-        switch(rounding) {
-          case Round_near:
-            goto ovfl1;
-          case Round_up:
-            if (!sign)
-                goto ovfl1;
-            goto ret_big;
-          case Round_down:
-            if (sign)
-                goto ovfl1;
-            goto ret_big;
-          }
- ret_big:
-        word0(rvp) = Big0;
-        word1(rvp) = Big1;
-        return;
-        }
-    n = (int) (s1 - s0) - 1;
-    for(k = 0; n > (1 << (kshift-2)) - 1; n >>= 1)
-        k++;
-    b = Balloc(k);
-    x = b->x;
-    n = 0;
-    L = 0;
-#ifdef USE_LOCALE
-    for(i = 0; decimalpoint[i+1]; ++i);
-#endif
-    while(s1 > s0) {
-#ifdef USE_LOCALE
-        if (*--s1 == decimalpoint[i]) {
-            s1 -= i;
-            continue;
-            }
-#else
-        if (*--s1 == '.')
-            continue;
-#endif
-        if (n == ULbits) {
-            *x++ = L;
-            L = 0;
-            n = 0;
-            }
-        L |= (hexdig[*s1] & 0x0f) << n;
-        n += 4;
-        }
-    *x++ = L;
-    b->wds = n = (int) (x - b->x);
-    n = ULbits*n - hi0bits(L);
-    nbits = Nbits;
-    lostbits = 0;
-    x = b->x;
-    if (n > nbits) {
-        n -= nbits;
-        if (any_on(b,n)) {
-            lostbits = 1;
-            k = n - 1;
-            if (x[k>>kshift] & 1 << (k & kmask)) {
-                lostbits = 2;
-                if (k > 0 && any_on(b,k))
-                    lostbits = 3;
-                }
-            }
-        rshift(b, n);
-        e += n;
-        }
-    else if (n < nbits) {
-        n = nbits - n;
-        b = lshift(b, n);
-        e -= n;
-        x = b->x;
-        }
-    if (e > Emax) {
- ovfl:
-        Bfree(b);
- ovfl1:
-#ifndef NO_ERRNO
-        errno = ERANGE;
-#endif
-        word0(rvp) = Exp_mask;
-        word1(rvp) = 0;
-        return;
-        }
-    denorm = 0;
-    if (e < emin) {
-        denorm = 1;
-        n = emin - e;
-        if (n >= nbits) {
-#ifdef IEEE_Arith /*{*/
-            switch (rounding) {
-              case Round_near:
-                if (n == nbits && (n < 2 || any_on(b,n-1)))
-                    goto ret_tiny;
-                break;
-              case Round_up:
-                if (!sign)
-                    goto ret_tiny;
-                break;
-              case Round_down:
-                if (sign)
-                    goto ret_tiny;
-              }
-#endif /* } IEEE_Arith */
-            Bfree(b);
- retz:
-#ifndef NO_ERRNO
-            errno = ERANGE;
-#endif
- retz1:
-            rvp->d = 0.;
-            return;
-            }
-        k = n - 1;
-        if (lostbits)
-            lostbits = 1;
-        else if (k > 0)
-            lostbits = any_on(b,k);
-        if (x[k>>kshift] & 1 << (k & kmask))
-            lostbits |= 2;
-        nbits -= n;
-        rshift(b,n);
-        e = emin;
-        }
-    if (lostbits) {
-        up = 0;
-        switch(rounding) {
-          case Round_zero:
-            break;
-          case Round_near:
-            if (lostbits & 2
-             && (lostbits & 1) | (x[0] & 1))
-                up = 1;
-            break;
-          case Round_up:
-            up = 1 - sign;
-            break;
-          case Round_down:
-            up = sign;
-          }
-        if (up) {
-            k = b->wds;
-            b = increment(b);
-            x = b->x;
-            if (denorm) {
-#if 0
-                if (nbits == Nbits - 1
-                 && x[nbits >> kshift] & 1 << (nbits & kmask))
-                    denorm = 0; /* not currently used */
-#endif
-                }
-            else if (b->wds > k
-             || ((n = nbits & kmask) !=0
-                 && hi0bits(x[k-1]) < 32-n)) {
-                rshift(b,1);
-                if (++e > Emax)
-                    goto ovfl;
-                }
-            }
-        }
-#ifdef IEEE_Arith
-    if (denorm)
-        word0(rvp) = b->wds > 1 ? b->x[1] & ~0x100000 : 0;
-    else
-        word0(rvp) = (b->x[1] & ~0x100000) | ((e + 0x3ff + 52) << 20);
-    word1(rvp) = b->x[0];
-#endif
-#ifdef IBM
-    if ((j = e & 3)) {
-        k = b->x[0] & ((1 << j) - 1);
-        rshift(b,j);
-        if (k) {
-            switch(rounding) {
-              case Round_up:
-                if (!sign)
-                    increment(b);
-                break;
-              case Round_down:
-                if (sign)
-                    increment(b);
-                break;
-              case Round_near:
-                j = 1 << (j-1);
-                if (k & j && ((k & (j-1)) | lostbits))
-                    increment(b);
-              }
-            }
-        }
-    e >>= 2;
-    word0(rvp) = b->x[1] | ((e + 65 + 13) << 24);
-    word1(rvp) = b->x[0];
-#endif
-#ifdef VAX
-    /* The next two lines ignore swap of low- and high-order 2 bytes. */
-    /* word0(rvp) = (b->x[1] & ~0x800000) | ((e + 129 + 55) << 23); */
-    /* word1(rvp) = b->x[0]; */
-    word0(rvp) = ((b->x[1] & ~0x800000) >> 16) | ((e + 129 + 55) << 7) | (b->x[1] << 16);
-    word1(rvp) = (b->x[0] >> 16) | (b->x[0] << 16);
-#endif
-    Bfree(b);
-    }
-#endif /*}!NO_HEX_FP*/
-
- static int
-#ifdef KR_headers
-dshift(b, p2) Bigint *b; int p2;
-#else
-dshift(Bigint *b, int p2)
-#endif
-{
-    int rv = hi0bits(b->x[b->wds-1]) - 4;
-    if (p2 > 0)
-        rv -= p2;
-    return rv & kmask;
-    }
-
- static int
-quorem
-#ifdef KR_headers
-    (b, S) Bigint *b, *S;
-#else
-    (Bigint *b, Bigint *S)
-#endif
-{
-    int n;
-    ULong *bx, *bxe, q, *sx, *sxe;
-#ifdef ULLong
-    ULLong borrow, carry, y, ys;
-#else
-    ULong borrow, carry, y, ys;
-#ifdef Pack_32
-    ULong si, z, zs;
-#endif
-#endif
-
-    n = S->wds;
-#ifdef DEBUG
-    /*debug*/ if (b->wds > n)
-    /*debug*/   Bug("oversize b in quorem");
-#endif
-    if (b->wds < n)
-        return 0;
-    sx = S->x;
-    sxe = sx + --n;
-    bx = b->x;
-    bxe = bx + n;
-    q = *bxe / (*sxe + 1);  /* ensure q <= true quotient */
-#ifdef DEBUG
-    /*debug*/ if (q > 9)
-    /*debug*/   Bug("oversized quotient in quorem");
-#endif
-    if (q) {
-        borrow = 0;
-        carry = 0;
-        do {
-#ifdef ULLong
-            ys = *sx++ * (ULLong)q + carry;
-            carry = ys >> 32;
-            y = *bx - (ys & FFFFFFFF) - borrow;
-            borrow = y >> 32 & (ULong)1;
-            *bx++ = (ULong) (y & FFFFFFFF);
-#else
-#ifdef Pack_32
-            si = *sx++;
-            ys = (si & 0xffff) * q + carry;
-            zs = (si >> 16) * q + (ys >> 16);
-            carry = zs >> 16;
-            y = (*bx & 0xffff) - (ys & 0xffff) - borrow;
-            borrow = (y & 0x10000) >> 16;
-            z = (*bx >> 16) - (zs & 0xffff) - borrow;
-            borrow = (z & 0x10000) >> 16;
-            Storeinc(bx, z, y);
-#else
-            ys = *sx++ * q + carry;
-            carry = ys >> 16;
-            y = *bx - (ys & 0xffff) - borrow;
-            borrow = (y & 0x10000) >> 16;
-            *bx++ = (ULong) (y & 0xffff);
-#endif
-#endif
-            }
-            while(sx <= sxe);
-        if (!*bxe) {
-            bx = b->x;
-            while(--bxe > bx && !*bxe)
-                --n;
-            b->wds = n;
-            }
-        }
-    if (cmp(b, S) >= 0) {
-        q++;
-        borrow = 0;
-        carry = 0;
-        bx = b->x;
-        sx = S->x;
-        do {
-#ifdef ULLong
-            ys = *sx++ + carry;
-            carry = ys >> 32;
-            y = *bx - (ys & FFFFFFFF) - borrow;
-            borrow = y >> 32 & (ULong)1;
-            *bx++ = (ULong) (y & FFFFFFFF);
-#else
-#ifdef Pack_32
-            si = *sx++;
-            ys = (si & 0xffff) + carry;
-            zs = (si >> 16) + (ys >> 16);
-            carry = zs >> 16;
-            y = (*bx & 0xffff) - (ys & 0xffff) - borrow;
-            borrow = (y & 0x10000) >> 16;
-            z = (*bx >> 16) - (zs & 0xffff) - borrow;
-            borrow = (z & 0x10000) >> 16;
-            Storeinc(bx, z, y);
-#else
-            ys = *sx++ + carry;
-            carry = ys >> 16;
-            y = *bx - (ys & 0xffff) - borrow;
-            borrow = (y & 0x10000) >> 16;
-            *bx++ = (ULong) (y & 0xffff);
-#endif
-#endif
-            }
-            while(sx <= sxe);
-        bx = b->x;
-        bxe = bx + n;
-        if (!*bxe) {
-            while(--bxe > bx && !*bxe)
-                --n;
-            b->wds = n;
-            }
-        }
-    return q;
-    }
-
-#ifndef NO_STRTOD_BIGCOMP
-
- static double
-sulp
-#ifdef KR_headers
-    (x, bc) U *x; BCinfo *bc;
-#else
-    (U *x, BCinfo *bc)
-#endif
-{
-    U u;
-    double rv;
-    int i;
-
-    rv = ulp(x);
-    if (!bc->scale)
-        return rv;
-    i = 2*P + 1 - ((word0(x) & Exp_mask) >> Exp_shift);
-    word0(&u) = Exp_1 + (i << Exp_shift);
-    word1(&u) = 0;
-    return rv * u.d;
-    }
-
- static void
-bigcomp
-#ifdef KR_headers
-    (rv, s0, bc)
-    U *rv; CONST char *s0; BCinfo *bc;
-#else
-    (U *rv, CONST char *s0, BCinfo *bc)
-#endif
-{
-    Bigint *b, *d;
-    int b2, bbits, d2, dd, dig, dsign, i, j, nd, nd0, p2, p5, speccase;
-
-    dd = 0;
-    dsign = bc->dsign;
-    nd = bc->nd;
-    nd0 = bc->nd0;
-    p5 = nd + bc->e0 - 1;
-    speccase = 0;
-#ifndef Sudden_Underflow
-    if (rv->d == 0.) {  /* special case: value near underflow-to-zero */
-                /* threshold was rounded to zero */
-        b = i2b(1);
-        p2 = Emin - P + 1;
-        bbits = 1;
-#ifdef Avoid_Underflow
-        word0(rv) = (P+2) << Exp_shift;
-#else
-        word1(rv) = 1;
-#endif
-        i = 0;
-#ifdef Honor_FLT_ROUNDS
-        if (bc->rounding == 1)
-#endif
-            {
-            speccase = 1;
-            --p2;
-            dsign = 0;
-            goto have_i;
-            }
-        }
-    else
-#endif
-        b = d2b(rv, &p2, &bbits);
-#ifdef Avoid_Underflow
-    p2 -= bc->scale;
-#endif
-    /* floor(log2(rv)) == bbits - 1 + p2 */
-    /* Check for denormal case. */
-    i = P - bbits;
-    if (i > (j = P - Emin - 1 + p2)) {
-#ifdef Sudden_Underflow
-        Bfree(b);
-        b = i2b(1);
-        p2 = Emin;
-        i = P - 1;
-#ifdef Avoid_Underflow
-        word0(rv) = (1 + bc->scale) << Exp_shift;
-#else
-        word0(rv) = Exp_msk1;
-#endif
-        word1(rv) = 0;
-#else
-        i = j;
-#endif
-        }
-#ifdef Honor_FLT_ROUNDS
-    if (bc->rounding != 1) {
-        if (i > 0)
-            b = lshift(b, i);
-        if (dsign)
-            b = increment(b);
-        }
-    else
-#endif
-        {
-        b = lshift(b, ++i);
-        b->x[0] |= 1;
-        }
-#ifndef Sudden_Underflow
- have_i:
-#endif
-    p2 -= p5 + i;
-    d = i2b(1);
-    /* Arrange for convenient computation of quotients:
-     * shift left if necessary so divisor has 4 leading 0 bits.
-     */
-    if (p5 > 0)
-        d = pow5mult(d, p5);
-    else if (p5 < 0)
-        b = pow5mult(b, -p5);
-    if (p2 > 0) {
-        b2 = p2;
-        d2 = 0;
-        }
-    else {
-        b2 = 0;
-        d2 = -p2;
-        }
-    i = dshift(d, d2);
-    if ((b2 += i) > 0)
-        b = lshift(b, b2);
-    if ((d2 += i) > 0)
-        d = lshift(d, d2);
-
-    /* Now b/d = exactly half-way between the two floating-point values */
-    /* on either side of the input string.  Compute first digit of b/d. */
-
-    if (!(dig = quorem(b,d))) {
-        b = multadd(b, 10, 0);  /* very unlikely */
-        dig = quorem(b,d);
-        }
-
-    /* EMBEDTHIS fix uninitialized var */
-    dd = -1;
-
-    /* Compare b/d with s0 */
-
-    for(i = 0; i < nd0; ) {
-        if ((dd = s0[i++] - '0' - dig))
-            goto ret;
-        if (!b->x[0] && b->wds == 1) {
-            if (i < nd)
-                dd = 1;
-            goto ret;
-            }
-        b = multadd(b, 10, 0);
-        dig = quorem(b,d);
-        }
-    for(j = bc->dp1; i++ < nd;) {
-        if ((dd = s0[j++] - '0' - dig))
-            goto ret;
-        if (!b->x[0] && b->wds == 1) {
-            if (i < nd)
-                dd = 1;
-            goto ret;
-            }
-        b = multadd(b, 10, 0);
-        dig = quorem(b,d);
-        }
-    if (b->x[0] || b->wds > 1)
-        dd = -1;
- ret:
-    Bfree(b);
-    Bfree(d);
-#ifdef Honor_FLT_ROUNDS
-    if (bc->rounding != 1) {
-        if (dd < 0) {
-            if (bc->rounding == 0) {
-                if (!dsign)
-                    goto retlow1;
-                }
-            else if (dsign)
-                goto rethi1;
-            }
-        else if (dd > 0) {
-            if (bc->rounding == 0) {
-                if (dsign)
-                    goto rethi1;
-                goto ret1;
-                }
-            if (!dsign)
-                goto rethi1;
-            dval(rv) += 2.*sulp(rv,bc);
-            }
-        else {
-            bc->inexact = 0;
-            if (dsign)
-                goto rethi1;
-            }
-        }
-    else
-#endif
-    if (speccase) {
-        if (dd <= 0)
-            rv->d = 0.;
-        }
-    else if (dd < 0) {
-        if (!dsign) /* does not happen for round-near */
-retlow1:
-            dval(rv) -= sulp(rv,bc);
-        }
-    else if (dd > 0) {
-        if (dsign) {
- rethi1:
-            dval(rv) += sulp(rv,bc);
-            }
-        }
-    else {
-        /* Exact half-way case:  apply round-even rule. */
-        if (word1(rv) & 1) {
-            if (dsign)
-                goto rethi1;
-            goto retlow1;
-            }
-        }
-
-#ifdef Honor_FLT_ROUNDS
- ret1:
-#endif
-    return;
-    }
-#endif /* NO_STRTOD_BIGCOMP */
-
- double
-strtod
-#ifdef KR_headers
-    (s00, se) CONST char *s00; char **se;
-#else
-    (CONST char *s00, char **se)
-#endif
-{
-    int bb2, bb5, bbe, bd2, bd5, bbbits, bs2, c, e, e1;
-    int esign, i, j, k, nd, nd0, nf, nz, nz0, sign;
-    CONST char *s, *s0, *s1;
-    double aadj, aadj1;
-    Long L;
-    U aadj2, adj, rv, rv0;
-    ULong y, z;
-    BCinfo bc;
-    Bigint *bb, *bb1, *bd, *bd0, *bs, *delta;
-#ifdef SET_INEXACT
-    int oldinexact;
-#endif
-#ifdef Honor_FLT_ROUNDS /*{*/
-#ifdef Trust_FLT_ROUNDS /*{{ only define this if FLT_ROUNDS really works! */
-    bc.rounding = Flt_Rounds;
-#else /*}{*/
-    bc.rounding = 1;
-    switch(fegetround()) {
-      case FE_TOWARDZERO:   bc.rounding = 0; break;
-      case FE_UPWARD:   bc.rounding = 2; break;
-      case FE_DOWNWARD: bc.rounding = 3;
-      }
-#endif /*}}*/
-#endif /*}*/
-#ifdef USE_LOCALE
-    CONST char *s2;
-#endif
-
-    sign = nz0 = nz = bc.dplen = bc.uflchk = 0;
-    dval(&rv) = 0.;
-    for(s = s00;;s++) switch(*s) {
-        case '-':
-            sign = 1;
-            /* no break */
-        case '+':
-            if (*++s)
-                goto break2;
-            /* no break */
-        case 0:
-            goto ret0;
-        case '\t':
-        case '\n':
-        case '\v':
-        case '\f':
-        case '\r':
-        case ' ':
-            continue;
-        default:
-            goto break2;
-        }
- break2:
-    if (*s == '0') {
-#ifndef NO_HEX_FP /*{*/
-        switch(s[1]) {
-          case 'x':
-          case 'X':
-#ifdef Honor_FLT_ROUNDS
-            gethex(&s, &rv, bc.rounding, sign);
-#else
-            gethex(&s, &rv, 1, sign);
-#endif
-            goto ret;
-          }
-#endif /*}*/
-        nz0 = 1;
-        while(*++s == '0') ;
-        if (!*s)
-            goto ret;
-        }
-    s0 = s;
-    y = z = 0;
-    for(nd = nf = 0; (c = *s) >= '0' && c <= '9'; nd++, s++)
-        if (nd < 9)
-            y = 10*y + c - '0';
-        else if (nd < 16)
-            z = 10*z + c - '0';
-    nd0 = nd;
-    bc.dp0 = bc.dp1 = (int) (s - s0);
-#ifdef USE_LOCALE
-    s1 = localeconv()->decimal_point;
-    if (c == *s1) {
-        c = '.';
-        if (*++s1) {
-            s2 = s;
-            for(;;) {
-                if (*++s2 != *s1) {
-                    c = 0;
-                    break;
-                    }
-                if (!*++s1) {
-                    s = s2;
-                    break;
-                    }
-                }
-            }
-        }
-#endif
-    if (c == '.') {
-        c = *++s;
-        bc.dp1 = (int) (s - s0);
-        bc.dplen = bc.dp1 - bc.dp0;
-        if (!nd) {
-            for(; c == '0'; c = *++s)
-                nz++;
-            if (c > '0' && c <= '9') {
-                s0 = s;
-                nf += nz;
-                nz = 0;
-                goto have_dig;
-                }
-            goto dig_done;
-            }
-        for(; c >= '0' && c <= '9'; c = *++s) {
- have_dig:
-            nz++;
-            if (c -= '0') {
-                nf += nz;
-                for(i = 1; i < nz; i++)
-                    if (nd++ < 9)
-                        y *= 10;
-                    else if (nd <= DBL_DIG + 1)
-                        z *= 10;
-                if (nd++ < 9)
-                    y = 10*y + c;
-                else if (nd <= DBL_DIG + 1)
-                    z = 10*z + c;
-                nz = 0;
-                }
-            }
-        }
- dig_done:
-    e = 0;
-    if (c == 'e' || c == 'E') {
-        if (!nd && !nz && !nz0) {
-            goto ret0;
-            }
-        s00 = s;
-        esign = 0;
-        switch(c = *++s) {
-            case '-':
-                esign = 1;
-            case '+':
-                c = *++s;
-            }
-        if (c >= '0' && c <= '9') {
-            while(c == '0')
-                c = *++s;
-            if (c > '0' && c <= '9') {
-                L = c - '0';
-                s1 = s;
-                while((c = *++s) >= '0' && c <= '9')
-                    L = 10*L + c - '0';
-                if (s - s1 > 8 || L > 19999)
-                    /* Avoid confusion from exponents
-                     * so large that e might overflow.
-                     */
-                    e = 19999; /* safe for 16 bit ints */
-                else
-                    e = (int)L;
-                if (esign)
-                    e = -e;
-                }
-            else
-                e = 0;
-            }
-        else
-            s = s00;
-        }
-    if (!nd) {
-        if (!nz && !nz0) {
-#ifdef INFNAN_CHECK
-            /* Check for Nan and Infinity */
-            if (!bc.dplen)
-             switch(c) {
-              case 'i':
-              case 'I':
-                if (dmatch(&s,"nf")) {
-                    --s;
-                    if (!dmatch(&s,"inity"))
-                        ++s;
-                    word0(&rv) = 0x7ff00000;
-                    word1(&rv) = 0;
-                    goto ret;
-                    }
-                break;
-              case 'n':
-              case 'N':
-                if (dmatch(&s, "an")) {
-                    word0(&rv) = NAN_WORD0;
-                    word1(&rv) = NAN_WORD1;
-#ifndef No_Hex_NaN
-                    if (*s == '(') /*)*/
-                        hexnan(&rv, &s);
-#endif
-                    goto ret;
-                    }
-              }
-#endif /* INFNAN_CHECK */
- ret0:
-            s = s00;
-            sign = 0;
-            }
-        goto ret;
-        }
-    bc.e0 = e1 = e -= nf;
-
-    /* Now we have nd0 digits, starting at s0, followed by a
-     * decimal point, followed by nd-nd0 digits.  The number we're
-     * after is the integer represented by those digits times
-     * 10**e */
-
-    if (!nd0)
-        nd0 = nd;
-    k = nd < DBL_DIG + 1 ? nd : DBL_DIG + 1;
-    dval(&rv) = y;
-    if (k > 9) {
-#ifdef SET_INEXACT
-        if (k > DBL_DIG)
-            oldinexact = get_inexact();
-#endif
-        dval(&rv) = tens[k - 9] * dval(&rv) + z;
-        }
-    bd0 = 0;
-    if (nd <= DBL_DIG
-#ifndef RND_PRODQUOT
-#ifndef Honor_FLT_ROUNDS
-        && Flt_Rounds == 1
-#endif
-#endif
-            ) {
-        if (!e)
-            goto ret;
-        if (e > 0) {
-            if (e <= Ten_pmax) {
-#ifdef VAX
-                goto vax_ovfl_check;
-#else
-#ifdef Honor_FLT_ROUNDS
-                /* round correctly FLT_ROUNDS = 2 or 3 */
-                if (sign) {
-                    rv.d = -rv.d;
-                    sign = 0;
-                    }
-#endif
-                /* rv = */ rounded_product(dval(&rv), tens[e]);
-                goto ret;
-#endif
-                }
-            i = DBL_DIG - nd;
-            if (e <= Ten_pmax + i) {
-                /* A fancier test would sometimes let us do
-                 * this for larger i values.
-                 */
-#ifdef Honor_FLT_ROUNDS
-                /* round correctly FLT_ROUNDS = 2 or 3 */
-                if (sign) {
-                    rv.d = -rv.d;
-                    sign = 0;
-                    }
-#endif
-                e -= i;
-                dval(&rv) *= tens[i];
-#ifdef VAX
-                /* VAX exponent range is so narrow we must
-                 * worry about overflow here...
-                 */
- vax_ovfl_check:
-                word0(&rv) -= P*Exp_msk1;
-                /* rv = */ rounded_product(dval(&rv), tens[e]);
-                if ((word0(&rv) & Exp_mask)
-                 > Exp_msk1*(DBL_MAX_EXP+BBias-1-P))
-                    goto ovfl;
-                word0(&rv) += P*Exp_msk1;
-#else
-                /* rv = */ rounded_product(dval(&rv), tens[e]);
-#endif
-                goto ret;
-                }
-            }
-#ifndef Inaccurate_Divide
-        else if (e >= -Ten_pmax) {
-#ifdef Honor_FLT_ROUNDS
-            /* round correctly FLT_ROUNDS = 2 or 3 */
-            if (sign) {
-                rv.d = -rv.d;
-                sign = 0;
-                }
-#endif
-            /* rv = */ rounded_quotient(dval(&rv), tens[-e]);
-            goto ret;
-            }
-#endif
-        }
-    e1 += nd - k;
-
-#ifdef IEEE_Arith
-#ifdef SET_INEXACT
-    bc.inexact = 1;
-    if (k <= DBL_DIG)
-        oldinexact = get_inexact();
-#endif
-#ifdef Avoid_Underflow
-    bc.scale = 0;
-#endif
-#ifdef Honor_FLT_ROUNDS
-    if (bc.rounding >= 2) {
-        if (sign)
-            bc.rounding = bc.rounding == 2 ? 0 : 2;
-        else
-            if (bc.rounding != 2)
-                bc.rounding = 0;
-        }
-#endif
-#endif /*IEEE_Arith*/
-
-    /* Get starting approximation = rv * 10**e1 */
-
-    if (e1 > 0) {
-        if ((i = e1 & 15))
-            dval(&rv) *= tens[i];
-        if (e1 &= ~15) {
-            if (e1 > DBL_MAX_10_EXP) {
- ovfl:
-#ifndef NO_ERRNO
-                errno = ERANGE;
-#endif
-                /* Can't trust HUGE_VAL */
-#ifdef IEEE_Arith
-#ifdef Honor_FLT_ROUNDS
-                switch(bc.rounding) {
-                  case 0: /* toward 0 */
-                  case 3: /* toward -infinity */
-                    word0(&rv) = Big0;
-                    word1(&rv) = Big1;
-                    break;
-                  default:
-                    word0(&rv) = Exp_mask;
-                    word1(&rv) = 0;
-                  }
-#else /*Honor_FLT_ROUNDS*/
-                word0(&rv) = Exp_mask;
-                word1(&rv) = 0;
-#endif /*Honor_FLT_ROUNDS*/
-#ifdef SET_INEXACT
-                /* set overflow bit */
-                dval(&rv0) = 1e300;
-                dval(&rv0) *= dval(&rv0);
-#endif
-#else /*IEEE_Arith*/
-                word0(&rv) = Big0;
-                word1(&rv) = Big1;
-#endif /*IEEE_Arith*/
-                goto ret;
-                }
-            e1 >>= 4;
-            for(j = 0; e1 > 1; j++, e1 >>= 1)
-                if (e1 & 1)
-                    dval(&rv) *= bigtens[j];
-        /* The last multiplication could overflow. */
-            word0(&rv) -= P*Exp_msk1;
-            dval(&rv) *= bigtens[j];
-            if ((z = word0(&rv) & Exp_mask)
-             > Exp_msk1*(DBL_MAX_EXP+BBias-P))
-                goto ovfl;
-            if (z > Exp_msk1*(DBL_MAX_EXP+BBias-1-P)) {
-                /* set to largest number */
-                /* (Can't trust DBL_MAX) */
-                word0(&rv) = Big0;
-                word1(&rv) = Big1;
-                }
-            else
-                word0(&rv) += P*Exp_msk1;
-            }
-        }
-    else if (e1 < 0) {
-        e1 = -e1;
-        if ((i = e1 & 15))
-            dval(&rv) /= tens[i];
-        if (e1 >>= 4) {
-            if (e1 >= 1 << n_bigtens)
-                goto undfl;
-#ifdef Avoid_Underflow
-            if (e1 & Scale_Bit)
-                bc.scale = 2*P;
-            for(j = 0; e1 > 0; j++, e1 >>= 1)
-                if (e1 & 1)
-                    dval(&rv) *= tinytens[j];
-            if (bc.scale && (j = 2*P + 1 - ((word0(&rv) & Exp_mask)
-                        >> Exp_shift)) > 0) {
-                /* scaled rv is denormal; clear j low bits */
-                if (j >= 32) {
-                    if (j > 53)
-                        goto undfl;
-                    word1(&rv) = 0;
-                    if (j >= 53)
-                     word0(&rv) = (P+2)*Exp_msk1;
-                    else
-                     word0(&rv) &= 0xffffffff << (j-32);
-                    }
-                else
-                    word1(&rv) &= 0xffffffff << j;
-                }
-#else
-            for(j = 0; e1 > 1; j++, e1 >>= 1)
-                if (e1 & 1)
-                    dval(&rv) *= tinytens[j];
-            /* The last multiplication could underflow. */
-            dval(&rv0) = dval(&rv);
-            dval(&rv) *= tinytens[j];
-            if (!dval(&rv)) {
-                dval(&rv) = 2.*dval(&rv0);
-                dval(&rv) *= tinytens[j];
-#endif
-                if (!dval(&rv)) {
- undfl:
-                    dval(&rv) = 0.;
-#ifndef NO_ERRNO
-                    errno = ERANGE;
-#endif
-                    goto ret;
-                    }
-#ifndef Avoid_Underflow
-                word0(&rv) = Tiny0;
-                word1(&rv) = Tiny1;
-                /* The refinement below will clean
-                 * this approximation up.
-                 */
-                }
-#endif
-            }
-        }
-
-    /* Now the hard part -- adjusting rv to the correct value.*/
-
-    /* Put digits into bd: true value = bd * 10^e */
-
-    bc.nd = nd;
-#ifndef NO_STRTOD_BIGCOMP
-    bc.nd0 = nd0;   /* Only needed if nd > strtod_diglim, but done here */
-            /* to silence an erroneous warning about bc.nd0 */
-            /* possibly not being initialized. */
-    if (nd > strtod_diglim) {
-        /* ASSERT(strtod_diglim >= 18); 18 == one more than the */
-        /* minimum number of decimal digits to distinguish double values */
-        /* in IEEE arithmetic. */
-        i = j = 18;
-        if (i > nd0)
-            j += bc.dplen;
-        for(;;) {
-            if (--j <= bc.dp1 && j >= bc.dp0)
-                j = bc.dp0 - 1;
-            if (s0[j] != '0')
-                break;
-            --i;
-            }
-        e += nd - i;
-        nd = i;
-        if (nd0 > nd)
-            nd0 = nd;
-        if (nd < 9) { /* must recompute y */
-            y = 0;
-            for(i = 0; i < nd0; ++i)
-                y = 10*y + s0[i] - '0';
-            for(j = bc.dp1; i < nd; ++i)
-                y = 10*y + s0[j++] - '0';
-            }
-        }
-#endif
-    bd0 = s2b(s0, nd0, nd, y, bc.dplen);
-
-    for(;;) {
-        bd = Balloc(bd0->k);
-        Bcopy(bd, bd0);
-        bb = d2b(&rv, &bbe, &bbbits);   /* rv = bb * 2^bbe */
-        bs = i2b(1);
-
-        if (e >= 0) {
-            bb2 = bb5 = 0;
-            bd2 = bd5 = e;
-            }
-        else {
-            bb2 = bb5 = -e;
-            bd2 = bd5 = 0;
-            }
-        if (bbe >= 0)
-            bb2 += bbe;
-        else
-            bd2 -= bbe;
-        bs2 = bb2;
-#ifdef Honor_FLT_ROUNDS
-        if (bc.rounding != 1)
-            bs2++;
-#endif
-#ifdef Avoid_Underflow
-        j = bbe - bc.scale;
-        i = j + bbbits - 1; /* logb(rv) */
-        if (i < Emin)   /* denormal */
-            j += P - Emin;
-        else
-            j = P + 1 - bbbits;
-#else /*Avoid_Underflow*/
-#ifdef Sudden_Underflow
-#ifdef IBM
-        j = 1 + 4*P - 3 - bbbits + ((bbe + bbbits - 1) & 3);
-#else
-        j = P + 1 - bbbits;
-#endif
-#else /*Sudden_Underflow*/
-        j = bbe;
-        i = j + bbbits - 1; /* logb(rv) */
-        if (i < Emin)   /* denormal */
-            j += P - Emin;
-        else
-            j = P + 1 - bbbits;
-#endif /*Sudden_Underflow*/
-#endif /*Avoid_Underflow*/
-        bb2 += j;
-        bd2 += j;
-#ifdef Avoid_Underflow
-        bd2 += bc.scale;
-#endif
-        i = bb2 < bd2 ? bb2 : bd2;
-        if (i > bs2)
-            i = bs2;
-        if (i > 0) {
-            bb2 -= i;
-            bd2 -= i;
-            bs2 -= i;
-            }
-        if (bb5 > 0) {
-            bs = pow5mult(bs, bb5);
-            bb1 = mult(bs, bb);
-            Bfree(bb);
-            bb = bb1;
-            }
-        if (bb2 > 0)
-            bb = lshift(bb, bb2);
-        if (bd5 > 0)
-            bd = pow5mult(bd, bd5);
-        if (bd2 > 0)
-            bd = lshift(bd, bd2);
-        if (bs2 > 0)
-            bs = lshift(bs, bs2);
-        delta = diff(bb, bd);
-        bc.dsign = delta->sign;
-        delta->sign = 0;
-        i = cmp(delta, bs);
-#ifndef NO_STRTOD_BIGCOMP
-        if (bc.nd > nd && i <= 0) {
-            if (bc.dsign)
-                break;  /* Must use bigcomp(). */
-#ifdef Honor_FLT_ROUNDS
-            if (bc.rounding != 1) {
-                if (i < 0)
-                    break;
-                }
-            else
-#endif
-                {
-                bc.nd = nd;
-                i = -1; /* Discarded digits make delta smaller. */
-                }
-            }
-#endif
-#ifdef Honor_FLT_ROUNDS
-        if (bc.rounding != 1) {
-            if (i < 0) {
-                /* Error is less than an ulp */
-                if (!delta->x[0] && delta->wds <= 1) {
-                    /* exact */
-#ifdef SET_INEXACT
-                    bc.inexact = 0;
-#endif
-                    break;
-                    }
-                if (bc.rounding) {
-                    if (bc.dsign) {
-                        adj.d = 1.;
-                        goto apply_adj;
-                        }
-                    }
-                else if (!bc.dsign) {
-                    adj.d = -1.;
-                    if (!word1(&rv)
-                     && !(word0(&rv) & Frac_mask)) {
-                        y = word0(&rv) & Exp_mask;
-#ifdef Avoid_Underflow
-                        if (!bc.scale || y > 2*P*Exp_msk1)
-#else
-                        if (y)
-#endif
-                          {
-                          delta = lshift(delta,Log2P);
-                          if (cmp(delta, bs) <= 0)
-                            adj.d = -0.5;
-                          }
-                        }
- apply_adj:
-#ifdef Avoid_Underflow
-                    if (bc.scale && (y = word0(&rv) & Exp_mask)
-                        <= 2*P*Exp_msk1)
-                      word0(&adj) += (2*P+1)*Exp_msk1 - y;
-#else
-#ifdef Sudden_Underflow
-                    if ((word0(&rv) & Exp_mask) <=
-                            P*Exp_msk1) {
-                        word0(&rv) += P*Exp_msk1;
-                        dval(&rv) += adj.d*ulp(dval(&rv));
-                        word0(&rv) -= P*Exp_msk1;
-                        }
-                    else
-#endif /*Sudden_Underflow*/
-#endif /*Avoid_Underflow*/
-                    dval(&rv) += adj.d*ulp(&rv);
-                    }
-                break;
-                }
-            adj.d = ratio(delta, bs);
-            if (adj.d < 1.)
-                adj.d = 1.;
-            if (adj.d <= 0x7ffffffe) {
-                /* adj = rounding ? ceil(adj) : floor(adj); */
-                y = (ULong) adj.d;
-                if (y != adj.d) {
-                    if (!((bc.rounding>>1) ^ bc.dsign))
-                        y++;
-                    adj.d = y;
-                    }
-                }
-#ifdef Avoid_Underflow
-            if (bc.scale && (y = word0(&rv) & Exp_mask) <= 2*P*Exp_msk1)
-                word0(&adj) += (2*P+1)*Exp_msk1 - y;
-#else
-#ifdef Sudden_Underflow
-            if ((word0(&rv) & Exp_mask) <= P*Exp_msk1) {
-                word0(&rv) += P*Exp_msk1;
-                adj.d *= ulp(dval(&rv));
-                if (bc.dsign)
-                    dval(&rv) += adj.d;
-                else
-                    dval(&rv) -= adj.d;
-                word0(&rv) -= P*Exp_msk1;
-                goto cont;
-                }
-#endif /*Sudden_Underflow*/
-#endif /*Avoid_Underflow*/
-            adj.d *= ulp(&rv);
-            if (bc.dsign) {
-                if (word0(&rv) == Big0 && word1(&rv) == Big1)
-                    goto ovfl;
-                dval(&rv) += adj.d;
-                }
-            else
-                dval(&rv) -= adj.d;
-            goto cont;
-            }
-#endif /*Honor_FLT_ROUNDS*/
-
-        if (i < 0) {
-            /* Error is less than half an ulp -- check for
-             * special case of mantissa a power of two.
-             */
-            if (bc.dsign || word1(&rv) || word0(&rv) & Bndry_mask
-#ifdef IEEE_Arith
-#ifdef Avoid_Underflow
-             || (word0(&rv) & Exp_mask) <= (2*P+1)*Exp_msk1
-#else
-             || (word0(&rv) & Exp_mask) <= Exp_msk1
-#endif
-#endif
-                ) {
-#ifdef SET_INEXACT
-                if (!delta->x[0] && delta->wds <= 1)
-                    bc.inexact = 0;
-#endif
-                break;
-                }
-            if (!delta->x[0] && delta->wds <= 1) {
-                /* exact result */
-#ifdef SET_INEXACT
-                bc.inexact = 0;
-#endif
-                break;
-                }
-            delta = lshift(delta,Log2P);
-            if (cmp(delta, bs) > 0)
-                goto drop_down;
-            break;
-            }
-        if (i == 0) {
-            /* exactly half-way between */
-            if (bc.dsign) {
-                if ((word0(&rv) & Bndry_mask1) == Bndry_mask1
-                 &&  word1(&rv) == (
-#ifdef Avoid_Underflow
-            (bc.scale && (y = word0(&rv) & Exp_mask) <= 2*P*Exp_msk1)
-        ? (0xffffffff & (0xffffffff << (2*P+1-(y>>Exp_shift)))) :
-#endif
-                           0xffffffff)) {
-                    /*boundary case -- increment exponent*/
-                    word0(&rv) = (word0(&rv) & Exp_mask)
-                        + Exp_msk1
-#ifdef IBM
-                        | Exp_msk1 >> 4
-#endif
-                        ;
-                    word1(&rv) = 0;
-#ifdef Avoid_Underflow
-                    bc.dsign = 0;
-#endif
-                    break;
-                    }
-                }
-            else if (!(word0(&rv) & Bndry_mask) && !word1(&rv)) {
- drop_down:
-                /* boundary case -- decrement exponent */
-#ifdef Sudden_Underflow /*{{*/
-                L = word0(&rv) & Exp_mask;
-#ifdef IBM
-                if (L <  Exp_msk1)
-#else
-#ifdef Avoid_Underflow
-                if (L <= (bc.scale ? (2*P+1)*Exp_msk1 : Exp_msk1))
-#else
-                if (L <= Exp_msk1)
-#endif /*Avoid_Underflow*/
-#endif /*IBM*/
-                    {
-                    if (bc.nd >nd) {
-                        bc.uflchk = 1;
-                        break;
-                        }
-                    goto undfl;
-                    }
-                L -= Exp_msk1;
-#else /*Sudden_Underflow}{*/
-#ifdef Avoid_Underflow
-                if (bc.scale) {
-                    L = word0(&rv) & Exp_mask;
-                    if (L <= (2*P+1)*Exp_msk1) {
-                        if (L > (P+2)*Exp_msk1)
-                            /* round even ==> */
-                            /* accept rv */
-                            break;
-                        /* rv = smallest denormal */
-                        if (bc.nd >nd) {
-                            bc.uflchk = 1;
-                            break;
-                            }
-                        goto undfl;
-                        }
-                    }
-#endif /*Avoid_Underflow*/
-                L = (word0(&rv) & Exp_mask) - Exp_msk1;
-#endif /*Sudden_Underflow}}*/
-                word0(&rv) = L | Bndry_mask1;
-                word1(&rv) = 0xffffffff;
-#ifdef IBM
-                goto cont;
-#else
-                break;
-#endif
-                }
-#ifndef ROUND_BIASED
-            if (!(word1(&rv) & LSB))
-                break;
-#endif
-            if (bc.dsign)
-                dval(&rv) += ulp(&rv);
-#ifndef ROUND_BIASED
-            else {
-                dval(&rv) -= ulp(&rv);
-#ifndef Sudden_Underflow
-                if (!dval(&rv)) {
-                    if (bc.nd >nd) {
-                        bc.uflchk = 1;
-                        break;
-                        }
-                    goto undfl;
-                    }
-#endif
-                }
-#ifdef Avoid_Underflow
-            bc.dsign = 1 - bc.dsign;
-#endif
-#endif
-            break;
-            }
-        if ((aadj = ratio(delta, bs)) <= 2.) {
-            if (bc.dsign)
-                aadj = aadj1 = 1.;
-            else if (word1(&rv) || word0(&rv) & Bndry_mask) {
-#ifndef Sudden_Underflow
-                if (word1(&rv) == Tiny1 && !word0(&rv)) {
-                    if (bc.nd >nd) {
-                        bc.uflchk = 1;
-                        break;
-                        }
-                    goto undfl;
-                    }
-#endif
-                aadj = 1.;
-                aadj1 = -1.;
-                }
-            else {
-                /* special case -- power of FLT_RADIX to be */
-                /* rounded down... */
-
-                if (aadj < 2./FLT_RADIX)
-                    aadj = 1./FLT_RADIX;
-                else
-                    aadj *= 0.5;
-                aadj1 = -aadj;
-                }
-            }
-        else {
-            aadj *= 0.5;
-            aadj1 = bc.dsign ? aadj : -aadj;
-#ifdef Check_FLT_ROUNDS
-            switch(bc.rounding) {
-                case 2: /* towards +infinity */
-                    aadj1 -= 0.5;
-                    break;
-                case 0: /* towards 0 */
-                case 3: /* towards -infinity */
-                    aadj1 += 0.5;
-                }
-#else
-            if (Flt_Rounds == 0)
-                aadj1 += 0.5;
-#endif /*Check_FLT_ROUNDS*/
-            }
-        y = word0(&rv) & Exp_mask;
-
-        /* Check for overflow */
-
-        if (y == Exp_msk1*(DBL_MAX_EXP+BBias-1)) {
-            dval(&rv0) = dval(&rv);
-            word0(&rv) -= P*Exp_msk1;
-            adj.d = aadj1 * ulp(&rv);
-            dval(&rv) += adj.d;
-            if ((word0(&rv) & Exp_mask) >=
-                    Exp_msk1*(DBL_MAX_EXP+BBias-P)) {
-                if (word0(&rv0) == Big0 && word1(&rv0) == Big1)
-                    goto ovfl;
-                word0(&rv) = Big0;
-                word1(&rv) = Big1;
-                goto cont;
-                }
-            else
-                word0(&rv) += P*Exp_msk1;
-            }
-        else {
-#ifdef Avoid_Underflow
-            if (bc.scale && y <= 2*P*Exp_msk1) {
-                if (aadj <= 0x7fffffff) {
-                    if ((z = (ULong) aadj) <= 0)
-                        z = 1;
-                    aadj = z;
-                    aadj1 = bc.dsign ? aadj : -aadj;
-                    }
-                dval(&aadj2) = aadj1;
-                word0(&aadj2) += (2*P+1)*Exp_msk1 - y;
-                aadj1 = dval(&aadj2);
-                }
-            adj.d = aadj1 * ulp(&rv);
-            dval(&rv) += adj.d;
-#else
-#ifdef Sudden_Underflow
-            if ((word0(&rv) & Exp_mask) <= P*Exp_msk1) {
-                dval(&rv0) = dval(&rv);
-                word0(&rv) += P*Exp_msk1;
-                adj.d = aadj1 * ulp(&rv);
-                dval(&rv) += adj.d;
-#ifdef IBM
-                if ((word0(&rv) & Exp_mask) <  P*Exp_msk1)
-#else
-                if ((word0(&rv) & Exp_mask) <= P*Exp_msk1)
-#endif
-                    {
-                    if (word0(&rv0) == Tiny0
-                     && word1(&rv0) == Tiny1) {
-                        if (bc.nd >nd) {
-                            bc.uflchk = 1;
-                            break;
-                            }
-                        goto undfl;
-                        }
-                    word0(&rv) = Tiny0;
-                    word1(&rv) = Tiny1;
-                    goto cont;
-                    }
-                else
-                    word0(&rv) -= P*Exp_msk1;
-                }
-            else {
-                adj.d = aadj1 * ulp(&rv);
-                dval(&rv) += adj.d;
-                }
-#else /*Sudden_Underflow*/
-            /* Compute adj so that the IEEE rounding rules will
-             * correctly round rv + adj in some half-way cases.
-             * If rv * ulp(rv) is denormalized (i.e.,
-             * y <= (P-1)*Exp_msk1), we must adjust aadj to avoid
-             * trouble from bits lost to denormalization;
-             * example: 1.2e-307 .
-             */
-            if (y <= (P-1)*Exp_msk1 && aadj > 1.) {
-                aadj1 = (double)(int)(aadj + 0.5);
-                if (!bc.dsign)
-                    aadj1 = -aadj1;
-                }
-            adj.d = aadj1 * ulp(&rv);
-            dval(&rv) += adj.d;
-#endif /*Sudden_Underflow*/
-#endif /*Avoid_Underflow*/
-            }
-        z = word0(&rv) & Exp_mask;
-#ifndef SET_INEXACT
-        if (bc.nd == nd) {
-#ifdef Avoid_Underflow
-        if (!bc.scale)
-#endif
-        if (y == z) {
-            /* Can we stop now? */
-            L = (Long)aadj;
-            aadj -= L;
-            /* The tolerances below are conservative. */
-            if (bc.dsign || word1(&rv) || word0(&rv) & Bndry_mask) {
-                if (aadj < .4999999 || aadj > .5000001)
-                    break;
-                }
-            else if (aadj < .4999999/FLT_RADIX)
-                break;
-            }
-        }
-#endif
- cont:
-        Bfree(bb);
-        Bfree(bd);
-        Bfree(bs);
-        Bfree(delta);
-        }
-    Bfree(bb);
-    Bfree(bd);
-    Bfree(bs);
-    Bfree(bd0);
-    Bfree(delta);
-#ifndef NO_STRTOD_BIGCOMP
-    if (bc.nd > nd)
-        bigcomp(&rv, s0, &bc);
-#endif
-#ifdef SET_INEXACT
-    if (bc.inexact) {
-        if (!oldinexact) {
-            word0(&rv0) = Exp_1 + (70 << Exp_shift);
-            word1(&rv0) = 0;
-            dval(&rv0) += 1.;
-            }
-        }
-    else if (!oldinexact)
-        clear_inexact();
-#endif
-#ifdef Avoid_Underflow
-    if (bc.scale) {
-        word0(&rv0) = Exp_1 - 2*P*Exp_msk1;
-        word1(&rv0) = 0;
-        dval(&rv) *= dval(&rv0);
-#ifndef NO_ERRNO
-        /* try to avoid the bug of testing an 8087 register value */
-#ifdef IEEE_Arith
-        if (!(word0(&rv) & Exp_mask))
-#else
-        if (word0(&rv) == 0 && word1(&rv) == 0)
-#endif
-            errno = ERANGE;
-#endif
-        }
-#endif /* Avoid_Underflow */
-#ifdef SET_INEXACT
-    if (bc.inexact && !(word0(&rv) & Exp_mask)) {
-        /* set underflow bit */
-        dval(&rv0) = 1e-300;
-        dval(&rv0) *= dval(&rv0);
-        }
-#endif
- ret:
-    if (se)
-        *se = (char *)s;
-    return sign ? -dval(&rv) : dval(&rv);
-    }
-
-#ifndef MULTIPLE_THREADS
- static char *dtoa_result;
-#endif
-
- static char *
-#ifdef KR_headers
-rv_alloc(i) int i;
-#else
-rv_alloc(int i)
-#endif
-{
-    int j, k, *r;
-
-    j = sizeof(ULong);
-    for(k = 0;
-        ((int) (sizeof(Bigint) - sizeof(ULong) - sizeof(int) + j)) <= i;
-        j <<= 1)
-            k++;
-    r = (int*)Balloc(k);
-    *r = k;
-    return
-#ifndef MULTIPLE_THREADS
-    dtoa_result =
-#endif
-        (char *)(r+1);
-    }
-
- static char *
-#ifdef KR_headers
-nrv_alloc(s, rve, n) char *s, **rve; int n;
-#else
-nrv_alloc(char *s, char **rve, int n)
-#endif
-{
-    char *rv, *t;
-
-    t = rv = rv_alloc(n);
-    while((*t = *s++)) t++;
-    if (rve)
-        *rve = t;
-    return rv;
-    }
-
-/* freedtoa(s) must be used to free values s returned by dtoa
- * when MULTIPLE_THREADS is #defined.  It should be used in all cases,
- * but for consistency with earlier versions of dtoa, it is optional
- * when MULTIPLE_THREADS is not defined.
- */
-
- void
-#ifdef KR_headers
-freedtoa(s) char *s;
-#else
-freedtoa(char *s)
-#endif
-{
-    Bigint *b = (Bigint *)((int *)s - 1);
-    b->maxwds = 1 << (b->k = *(int*)b);
-    Bfree(b);
-#ifndef MULTIPLE_THREADS
-    if (s == dtoa_result)
-        dtoa_result = 0;
-#endif
-    }
-
-/* dtoa for IEEE arithmetic (dmg): convert double to ASCII string.
- *
- * Inspired by "How to Print Floating-Point Numbers Accurately" by
- * Guy L. Steele, Jr. and Jon L. White [Proc. ACM SIGPLAN '90, pp. 112-126].
- *
- * Modifications:
- *  1. Rather than iterating, we use a simple numeric overestimate
- *     to determine k = floor(log10(d)).  We scale relevant
- *     quantities using O(log2(k)) rather than O(k) multiplications.
- *  2. For some modes > 2 (corresponding to ecvt and fcvt), we don't
- *     try to generate digits strictly left to right.  Instead, we
- *     compute with fewer bits and propagate the carry if necessary
- *     when rounding the final digit up.  This is often faster.
- *  3. Under the assumption that input will be rounded nearest,
- *     mode 0 renders 1e23 as 1e23 rather than 9.999999999999999e22.
- *     That is, we allow equality in stopping tests when the
- *     round-nearest rule will give the same floating-point value
- *     as would satisfaction of the stopping test with strict
- *     inequality.
- *  4. We remove common factors of powers of 2 from relevant
- *     quantities.
- *  5. When converting floating-point integers less than 1e16,
- *     we use floating-point arithmetic rather than resorting
- *     to multiple-precision integers.
- *  6. When asked to produce fewer than 15 digits, we first try
- *     to get by with floating-point arithmetic; we resort to
- *     multiple-precision integer arithmetic only if we cannot
- *     guarantee that the floating-point calculation has given
- *     the correctly rounded result.  For k requested digits and
- *     "uniformly" distributed input, the probability is
- *     something like 10^(k-15) that we must resort to the Long
- *     calculation.
- */
-
- char *
-dtoa
-#ifdef KR_headers
-    (dd, mode, ndigits, decpt, sign, rve)
-    double dd; int mode, ndigits, *decpt, *sign; char **rve;
-#else
-    (double dd, int mode, int ndigits, int *decpt, int *sign, char **rve)
-#endif
-{
- /* Arguments ndigits, decpt, sign are similar to those
-    of ecvt and fcvt; trailing zeros are suppressed from
-    the returned string.  If not null, *rve is set to point
-    to the end of the return value.  If d is +-Infinity or NaN,
-    then *decpt is set to 9999.
-
-    mode:
-        0 ==> shortest string that yields d when read in
-            and rounded to nearest.
-        1 ==> like 0, but with Steele & White stopping rule;
-            e.g. with IEEE P754 arithmetic , mode 0 gives
-            1e23 whereas mode 1 gives 9.999999999999999e22.
-        2 ==> max(1,ndigits) significant digits.  This gives a
-            return value similar to that of ecvt, except
-            that trailing zeros are suppressed.
-        3 ==> through ndigits past the decimal point.  This
-            gives a return value similar to that from fcvt,
-            except that trailing zeros are suppressed, and
-            ndigits can be negative.
-        4,5 ==> similar to 2 and 3, respectively, but (in
-            round-nearest mode) with the tests of mode 0 to
-            possibly return a shorter string that rounds to d.
-            With IEEE arithmetic and compilation with
-            -DHonor_FLT_ROUNDS, modes 4 and 5 behave the same
-            as modes 2 and 3 when FLT_ROUNDS != 1.
-        6-9 ==> Debugging modes similar to mode - 4:  don't try
-            fast floating-point estimate (if applicable).
-
-        Values of mode other than 0-9 are treated as mode 0.
-
-        Sufficient space is allocated to the return value
-        to hold the suppressed trailing zeros.
-    */
-
-    int bbits, b2, b5, be, dig, i, ieps, ilim, ilim0, ilim1,
-        j, j1, k, k0, k_check, leftright, m2, m5, s2, s5,
-        spec_case, try_quick;
-    Long L;
-#ifndef Sudden_Underflow
-    int denorm;
-    ULong x;
-#endif
-    Bigint *b, *b1, *delta, *mlo, *mhi, *S;
-    U d2, eps, u;
-    double ds;
-    char *s, *s0;
-#ifdef SET_INEXACT
-    int inexact, oldinexact;
-#endif
-#ifdef Honor_FLT_ROUNDS /*{*/
-    int Rounding;
-#ifdef Trust_FLT_ROUNDS /*{{ only define this if FLT_ROUNDS really works! */
-    Rounding = Flt_Rounds;
-#else /*}{*/
-    Rounding = 1;
-    switch(fegetround()) {
-      case FE_TOWARDZERO:   Rounding = 0; break;
-      case FE_UPWARD:   Rounding = 2; break;
-      case FE_DOWNWARD: Rounding = 3;
-      }
-#endif /*}}*/
-#endif /*}*/
-
-#ifndef MULTIPLE_THREADS
-    if (dtoa_result) {
-        freedtoa(dtoa_result);
-        dtoa_result = 0;
-        }
-#endif
-
-    mlo = 0;
-    u.d = dd;
-    if (word0(&u) & Sign_bit) {
-        /* set sign for everything, including 0's and NaNs */
-        *sign = 1;
-        word0(&u) &= ~Sign_bit; /* clear sign bit */
-        }
-    else
-        *sign = 0;
-
-#if defined(IEEE_Arith) + defined(VAX)
-#ifdef IEEE_Arith
-    if ((word0(&u) & Exp_mask) == Exp_mask)
-#else
-    if (word0(&u)  == 0x8000)
-#endif
-        {
-        /* Infinity or NaN */
-        *decpt = 9999;
-#ifdef IEEE_Arith
-        if (!word1(&u) && !(word0(&u) & 0xfffff))
-            return nrv_alloc("Infinity", rve, 8);
-#endif
-        return nrv_alloc("NaN", rve, 3);
-        }
-#endif
-#ifdef IBM
-    dval(&u) += 0; /* normalize */
-#endif
-    if (!dval(&u)) {
-        *decpt = 1;
-        return nrv_alloc("0", rve, 1);
-        }
-
-#ifdef SET_INEXACT
-    try_quick = oldinexact = get_inexact();
-    inexact = 1;
-#endif
-#ifdef Honor_FLT_ROUNDS
-    if (Rounding >= 2) {
-        if (*sign)
-            Rounding = Rounding == 2 ? 0 : 2;
-        else
-            if (Rounding != 2)
-                Rounding = 0;
-        }
-#endif
-
-    b = d2b(&u, &be, &bbits);
-#ifdef Sudden_Underflow
-    i = (int)(word0(&u) >> Exp_shift1 & (Exp_mask>>Exp_shift1));
-#else
-    if ((i = (int)(word0(&u) >> Exp_shift1 & (Exp_mask>>Exp_shift1)))) {
-#endif
-        dval(&d2) = dval(&u);
-        word0(&d2) &= Frac_mask1;
-        word0(&d2) |= Exp_11;
-#ifdef IBM
-        if (j = 11 - hi0bits(word0(&d2) & Frac_mask))
-            dval(&d2) /= 1 << j;
-#endif
-
-        /* log(x)   ~=~ log(1.5) + (x-1.5)/1.5
-         * log10(x)  =  log(x) / log(10)
-         *      ~=~ log(1.5)/log(10) + (x-1.5)/(1.5*log(10))
-         * log10(d) = (i-BBias)*log(2)/log(10) + log10(d2)
-         *
-         * This suggests computing an approximation k to log10(d) by
-         *
-         * k = (i - BBias)*0.301029995663981
-         *  + ( (d2-1.5)*0.289529654602168 + 0.176091259055681 );
-         *
-         * We want k to be too large rather than too small.
-         * The error in the first-order Taylor series approximation
-         * is in our favor, so we just round up the constant enough
-         * to compensate for any error in the multiplication of
-         * (i - BBias) by 0.301029995663981; since |i - BBias| <= 1077,
-         * and 1077 * 0.30103 * 2^-52 ~=~ 7.2e-14,
-         * adding 1e-13 to the constant term more than suffices.
-         * Hence we adjust the constant term to 0.1760912590558.
-         * (We could get a more accurate k by invoking log10,
-         *  but this is probably not worthwhile.)
-         */
-
-        i -= BBias;
-#ifdef IBM
-        i <<= 2;
-        i += j;
-#endif
-#ifndef Sudden_Underflow
-        denorm = 0;
-        }
-    else {
-        /* d is denormalized */
-
-        i = bbits + be + (BBias + (P-1) - 1);
-        x = i > 32  ? word0(&u) << (64 - i) | word1(&u) >> (i - 32)
-                : word1(&u) << (32 - i);
-        dval(&d2) = x;
-        word0(&d2) -= 31*Exp_msk1; /* adjust exponent */
-        i -= (BBias + (P-1) - 1) + 1;
-        denorm = 1;
-        }
-#endif
-    ds = (dval(&d2)-1.5)*0.289529654602168 + 0.1760912590558 + i*0.301029995663981;
-    k = (int)ds;
-    if (ds < 0. && ds != k)
-        k--;    /* want k = floor(ds) */
-    k_check = 1;
-    if (k >= 0 && k <= Ten_pmax) {
-        if (dval(&u) < tens[k])
-            k--;
-        k_check = 0;
-        }
-    j = bbits - i - 1;
-    if (j >= 0) {
-        b2 = 0;
-        s2 = j;
-        }
-    else {
-        b2 = -j;
-        s2 = 0;
-        }
-    if (k >= 0) {
-        b5 = 0;
-        s5 = k;
-        s2 += k;
-        }
-    else {
-        b2 -= k;
-        b5 = -k;
-        s5 = 0;
-        }
-    if (mode < 0 || mode > 9)
-        mode = 0;
-
-#ifndef SET_INEXACT
-#ifdef Check_FLT_ROUNDS
-    try_quick = Rounding == 1;
-#else
-    try_quick = 1;
-#endif
-#endif /*SET_INEXACT*/
-
-    if (mode > 5) {
-        mode -= 4;
-        try_quick = 0;
-        }
-    leftright = 1;
-    ilim = ilim1 = -1;  /* Values for cases 0 and 1; done here to */
-                /* silence erroneous "gcc -Wall" warning. */
-    switch(mode) {
-        case 0:
-        case 1:
-            i = 18;
-            ndigits = 0;
-            break;
-        case 2:
-            leftright = 0;
-            /* no break */
-        case 4:
-            if (ndigits <= 0)
-                ndigits = 1;
-            ilim = ilim1 = i = ndigits;
-            break;
-        case 3:
-            leftright = 0;
-            /* no break */
-        case 5:
-            i = ndigits + k + 1;
-            ilim = i;
-            ilim1 = i - 1;
-            if (i <= 0)
-                i = 1;
-        }
-    s = s0 = rv_alloc(i);
-
-#ifdef Honor_FLT_ROUNDS
-    if (mode > 1 && Rounding != 1)
-        leftright = 0;
-#endif
-
-    if (ilim >= 0 && ilim <= Quick_max && try_quick) {
-
-        /* Try to get by with floating-point arithmetic. */
-
-        i = 0;
-        dval(&d2) = dval(&u);
-        k0 = k;
-        ilim0 = ilim;
-        ieps = 2; /* conservative */
-        if (k > 0) {
-            ds = tens[k&0xf];
-            j = k >> 4;
-            if (j & Bletch) {
-                /* prevent overflows */
-                j &= Bletch - 1;
-                dval(&u) /= bigtens[n_bigtens-1];
-                ieps++;
-                }
-            for(; j; j >>= 1, i++)
-                if (j & 1) {
-                    ieps++;
-                    ds *= bigtens[i];
-                    }
-            dval(&u) /= ds;
-            }
-        else if ((j1 = -k)) {
-            dval(&u) *= tens[j1 & 0xf];
-            for(j = j1 >> 4; j; j >>= 1, i++)
-                if (j & 1) {
-                    ieps++;
-                    dval(&u) *= bigtens[i];
-                    }
-            }
-        if (k_check && dval(&u) < 1. && ilim > 0) {
-            if (ilim1 <= 0)
-                goto fast_failed;
-            ilim = ilim1;
-            k--;
-            dval(&u) *= 10.;
-            ieps++;
-            }
-        dval(&eps) = ieps*dval(&u) + 7.;
-        word0(&eps) -= (P-1)*Exp_msk1;
-        if (ilim == 0) {
-            S = mhi = 0;
-            dval(&u) -= 5.;
-            if (dval(&u) > dval(&eps))
-                goto one_digit;
-            if (dval(&u) < -dval(&eps))
-                goto no_digits;
-            goto fast_failed;
-            }
-#ifndef No_leftright
-        if (leftright) {
-            /* Use Steele & White method of only
-             * generating digits needed.
-             */
-            dval(&eps) = 0.5/tens[ilim-1] - dval(&eps);
-            for(i = 0;;) {
-                L = (Long) dval(&u);
-                dval(&u) -= L;
-                *s++ = '0' + (int)L;
-                if (dval(&u) < dval(&eps))
-                    goto ret1;
-                if (1. - dval(&u) < dval(&eps))
-                    goto bump_up;
-                if (++i >= ilim)
-                    break;
-                dval(&eps) *= 10.;
-                dval(&u) *= 10.;
-                }
-            }
-        else {
-#endif
-            /* Generate ilim digits, then fix them up. */
-            dval(&eps) *= tens[ilim-1];
-            for(i = 1;; i++, dval(&u) *= 10.) {
-                L = (Long)(dval(&u));
-                if (!(dval(&u) -= L))
-                    ilim = i;
-                *s++ = '0' + (int)L;
-                if (i == ilim) {
-                    if (dval(&u) > 0.5 + dval(&eps))
-                        goto bump_up;
-                    else if (dval(&u) < 0.5 - dval(&eps)) {
-                        while(*--s == '0');
-                        s++;
-                        goto ret1;
-                        }
-                    break;
-                    }
-                }
-#ifndef No_leftright
-            }
-#endif
- fast_failed:
-        s = s0;
-        dval(&u) = dval(&d2);
-        k = k0;
-        ilim = ilim0;
-        }
-
-    /* Do we have a "small" integer? */
-
-    if (be >= 0 && k <= Int_max) {
-        /* Yes. */
-        ds = tens[k];
-        if (ndigits < 0 && ilim <= 0) {
-            S = mhi = 0;
-            if (ilim < 0 || dval(&u) <= 5*ds)
-                goto no_digits;
-            goto one_digit;
-            }
-        for(i = 1;; i++, dval(&u) *= 10.) {
-            L = (Long)(dval(&u) / ds);
-            dval(&u) -= L*ds;
-#ifdef Check_FLT_ROUNDS
-            /* If FLT_ROUNDS == 2, L will usually be high by 1 */
-            if (dval(&u) < 0) {
-                L--;
-                dval(&u) += ds;
-                }
-#endif
-            *s++ = '0' + (int)L;
-            if (!dval(&u)) {
-#ifdef SET_INEXACT
-                inexact = 0;
-#endif
-                break;
-                }
-            if (i == ilim) {
-#ifdef Honor_FLT_ROUNDS
-                if (mode > 1)
-                switch(Rounding) {
-                  case 0: goto ret1;
-                  case 2: goto bump_up;
-                  }
-#endif
-                dval(&u) += dval(&u);
-                if (dval(&u) > ds || (dval(&u) == ds && L & 1)) {
- bump_up:
-                    while(*--s == '9')
-                        if (s == s0) {
-                            k++;
-                            *s = '0';
-                            break;
-                            }
-                    ++*s++;
-                    }
-                break;
-                }
-            }
-        goto ret1;
-        }
-
-    m2 = b2;
-    m5 = b5;
-    mhi = mlo = 0;
-    if (leftright) {
-        i =
-#ifndef Sudden_Underflow
-            denorm ? be + (BBias + (P-1) - 1 + 1) :
-#endif
-#ifdef IBM
-            1 + 4*P - 3 - bbits + ((bbits + be - 1) & 3);
-#else
-            1 + P - bbits;
-#endif
-        b2 += i;
-        s2 += i;
-        mhi = i2b(1);
-        }
-    if (m2 > 0 && s2 > 0) {
-        i = m2 < s2 ? m2 : s2;
-        b2 -= i;
-        m2 -= i;
-        s2 -= i;
-        }
-    if (b5 > 0) {
-        if (leftright) {
-            if (m5 > 0) {
-                mhi = pow5mult(mhi, m5);
-                b1 = mult(mhi, b);
-                Bfree(b);
-                b = b1;
-                }
-            if ((j = b5 - m5))
-                b = pow5mult(b, j);
-            }
-        else
-            b = pow5mult(b, b5);
-        }
-    S = i2b(1);
-    if (s5 > 0)
-        S = pow5mult(S, s5);
-
-    /* Check for special case that d is a normalized power of 2. */
-
-    spec_case = 0;
-    if ((mode < 2 || leftright)
-#ifdef Honor_FLT_ROUNDS
-            && Rounding == 1
-#endif
-                ) {
-        if (!word1(&u) && !(word0(&u) & Bndry_mask)
-#ifndef Sudden_Underflow
-         && word0(&u) & (Exp_mask & ~Exp_msk1)
-#endif
-                ) {
-            /* The special case */
-            b2 += Log2P;
-            s2 += Log2P;
-            spec_case = 1;
-            }
-        }
-
-    /* Arrange for convenient computation of quotients:
-     * shift left if necessary so divisor has 4 leading 0 bits.
-     *
-     * Perhaps we should just compute leading 28 bits of S once
-     * and for all and pass them and a shift to quorem, so it
-     * can do shifts and ors to compute the numerator for q.
-     */
-#ifdef Pack_32
-    if ((i = ((s5 ? 32 - hi0bits(S->x[S->wds-1]) : 1) + s2) & 0x1f))
-        i = 32 - i;
-#define iInc 28
-#else
-    if (i = ((s5 ? 32 - hi0bits(S->x[S->wds-1]) : 1) + s2) & 0xf)
-        i = 16 - i;
-#define iInc 12
-#endif
-    i = dshift(S, s2);
-    b2 += i;
-    m2 += i;
-    s2 += i;
-    if (b2 > 0)
-        b = lshift(b, b2);
-    if (s2 > 0)
-        S = lshift(S, s2);
-    if (k_check) {
-        if (cmp(b,S) < 0) {
-            k--;
-            b = multadd(b, 10, 0);  /* we botched the k estimate */
-            if (leftright)
-                mhi = multadd(mhi, 10, 0);
-            ilim = ilim1;
-            }
-        }
-    if (ilim <= 0 && (mode == 3 || mode == 5)) {
-        if (ilim < 0 || cmp(b,S = multadd(S,5,0)) <= 0) {
-            /* no digits, fcvt style */
- no_digits:
-            k = -1 - ndigits;
-            goto ret;
-            }
- one_digit:
-        *s++ = '1';
-        k++;
-        goto ret;
-        }
-    if (leftright) {
-        if (m2 > 0)
-            mhi = lshift(mhi, m2);
-
-        /* Compute mlo -- check for special case
-         * that d is a normalized power of 2.
-         */
-
-        mlo = mhi;
-        if (spec_case) {
-            mhi = Balloc(mhi->k);
-            Bcopy(mhi, mlo);
-            mhi = lshift(mhi, Log2P);
-            }
-
-        for(i = 1;;i++) {
-            dig = quorem(b,S) + '0';
-            /* Do we yet have the shortest decimal string
-             * that will round to d?
-             */
-            j = cmp(b, mlo);
-            delta = diff(S, mhi);
-            j1 = delta->sign ? 1 : cmp(b, delta);
-            Bfree(delta);
-#ifndef ROUND_BIASED
-            if (j1 == 0 && mode != 1 && !(word1(&u) & 1)
-#ifdef Honor_FLT_ROUNDS
-                && Rounding >= 1
-#endif
-                                   ) {
-                if (dig == '9')
-                    goto round_9_up;
-                if (j > 0)
-                    dig++;
-#ifdef SET_INEXACT
-                else if (!b->x[0] && b->wds <= 1)
-                    inexact = 0;
-#endif
-                *s++ = dig;
-                goto ret;
-                }
-#endif
-            if (j < 0 || (j == 0 && mode != 1
-#ifndef ROUND_BIASED
-                            && !(word1(&u) & 1)
-#endif
-                    )) {
-                if (!b->x[0] && b->wds <= 1) {
-#ifdef SET_INEXACT
-                    inexact = 0;
-#endif
-                    goto accept_dig;
-                    }
-#ifdef Honor_FLT_ROUNDS
-                if (mode > 1)
-                 switch(Rounding) {
-                  case 0: goto accept_dig;
-                  case 2: goto keep_dig;
-                  }
-#endif /*Honor_FLT_ROUNDS*/
-                if (j1 > 0) {
-                    b = lshift(b, 1);
-                    j1 = cmp(b, S);
-                    if ((j1 > 0 || (j1 == 0 && dig & 1))
-                    && dig++ == '9')
-                        goto round_9_up;
-                    }
- accept_dig:
-                *s++ = dig;
-                goto ret;
-                }
-            if (j1 > 0) {
-#ifdef Honor_FLT_ROUNDS
-                if (!Rounding)
-                    goto accept_dig;
-#endif
-                if (dig == '9') { /* possible if i == 1 */
- round_9_up:
-                    *s++ = '9';
-                    goto roundoff;
-                    }
-                *s++ = dig + 1;
-                goto ret;
-                }
-#ifdef Honor_FLT_ROUNDS
- keep_dig:
-#endif
-            *s++ = dig;
-            if (i == ilim)
-                break;
-            b = multadd(b, 10, 0);
-            if (mlo == mhi)
-                mlo = mhi = multadd(mhi, 10, 0);
-            else {
-                mlo = multadd(mlo, 10, 0);
-                mhi = multadd(mhi, 10, 0);
-                }
-            }
-        }
-    else
-        for(i = 1;; i++) {
-            *s++ = dig = quorem(b,S) + '0';
-            if (!b->x[0] && b->wds <= 1) {
-#ifdef SET_INEXACT
-                inexact = 0;
-#endif
-                goto ret;
-                }
-            if (i >= ilim)
-                break;
-            b = multadd(b, 10, 0);
-            }
-
-    /* Round off last digit */
-
-#ifdef Honor_FLT_ROUNDS
-    switch(Rounding) {
-      case 0: goto trimzeros;
-      case 2: goto roundoff;
-      }
-#endif
-    b = lshift(b, 1);
-    j = cmp(b, S);
-    if (j > 0 || (j == 0 && dig & 1)) {
- roundoff:
-        while(*--s == '9')
-            if (s == s0) {
-                k++;
-                *s++ = '1';
-                goto ret;
-                }
-        ++*s++;
-        }
-    else {
-#ifdef Honor_FLT_ROUNDS
- trimzeros:
-#endif
-        while(*--s == '0');
-        s++;
-        }
- ret:
-    Bfree(S);
-    if (mhi) {
-        if (mlo && mlo != mhi)
-            Bfree(mlo);
-        Bfree(mhi);
-        }
- ret1:
-#ifdef SET_INEXACT
-    if (inexact) {
-        if (!oldinexact) {
-            word0(&u) = Exp_1 + (70 << Exp_shift);
-            word1(&u) = 0;
-            dval(&u) += 1.;
-            }
-        }
-    else if (!oldinexact)
-        clear_inexact();
-#endif
-    Bfree(b);
-    *s = 0;
-    *decpt = k + 1;
-    if (rve)
-        *rve = s;
-    return s0;
-    }
-#ifdef __cplusplus
-}
-#endif
-/* EMBEDTHIS */
-#endif /* BIT_FEATURE_FLOAT */
 
 /************************************************************************/
 /*
@@ -7648,22 +3342,22 @@ dtoa
 #if MPR_EVENT_ASYNC
 /***************************** Forward Declarations ***************************/
 
-static LRESULT msgProc(HWND hwnd, uint msg, uint wp, long lp);
+static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {   
     ws->socketMessage = MPR_SOCKET_MESSAGE;
     return 0;
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     int     winMask;
 
-    mprAssert(ws->hwnd);
+    assure(ws->hwnd);
 
     lock(ws);
     winMask = 0;
@@ -7676,6 +3370,10 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         }
         wp->desiredMask = mask;
         WSAAsyncSelect(wp->fd, ws->hwnd, ws->socketMessage, winMask);
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     unlock(ws);
     return 0;
@@ -7686,7 +3384,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single descriptor. Return the number of I/O events found. Mask is the events of interest.
     Timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTicks timeout)
 {
     HANDLE      h;
     int         winMask;
@@ -7701,7 +3399,7 @@ int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
     if (desiredMask & MPR_WRITABLE) {
         winMask |= FD_WRITE;
     }
-    h = CreateEvent(NULL, FALSE, FALSE, "mprWaitForSingleIO");
+    h = CreateEvent(NULL, FALSE, FALSE, UT("mprWaitForSingleIO"));
     WSAEventSelect(fd, h, winMask);
     if (WaitForSingleObject(h, (DWORD) timeout) == WAIT_OBJECT_0) {
         CloseHandle(h);
@@ -7716,11 +3414,11 @@ int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
     Wait for I/O on all registered descriptors. Timeout is in milliseconds. Return the number of events serviced.
     Should only be called by the thread that calls mprServiceEvents
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     MSG     msg;
 
-    mprAssert(ws->hwnd);
+    assure(ws->hwnd);
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
@@ -7749,7 +3447,7 @@ void mprWaitForIO(MprWaitService *ws, MprTime timeout)
 }
 
 
-void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
+PUBLIC void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
 {
     MprWaitHandler      *wp;
     int                 index;
@@ -7790,7 +3488,7 @@ void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
 /*
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
    
@@ -7805,17 +3503,20 @@ void mprWakeNotifier()
 /*
     Create a default window if the application has not already created one.
  */ 
-int mprInitWindow()
+PUBLIC int mprInitWindow()
 {
     MprWaitService  *ws;
     WNDCLASS        wc;
     HWND            hwnd;
+	wchar			*name, *title;
     int             rc;
 
     ws = MPR->waitService;
     if (ws->hwnd) {
         return 0;
     }
+	name = (wchar*) wide(mprGetAppName());
+	title = (wchar*) wide(mprGetAppTitle());
     wc.style            = CS_HREDRAW | CS_VREDRAW;
     wc.hbrBackground    = (HBRUSH) (COLOR_WINDOW+1);
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
@@ -7824,14 +3525,14 @@ int mprInitWindow()
     wc.hInstance        = 0;
     wc.hIcon            = NULL;
     wc.lpfnWndProc      = (WNDPROC) msgProc;
-    wc.lpszMenuName     = wc.lpszClassName = mprGetAppName();
+    wc.lpszMenuName     = wc.lpszClassName = name;
 
     rc = RegisterClass(&wc);
     if (rc == 0) {
         mprError("Can't register windows class");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    hwnd = CreateWindow(mprGetAppName(), mprGetAppTitle(), WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, 0, NULL);
+    hwnd = CreateWindow(name, title, WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, 0, NULL);
     if (!hwnd) {
         mprError("Can't create window");
         return -1;
@@ -7845,7 +3546,7 @@ int mprInitWindow()
 /*
     Windows message processing loop for wakeup and socket messages
  */
-static LRESULT msgProc(HWND hwnd, uint msg, uint wp, long lp)
+static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp)
 {
     MprWaitService      *ws;
     int                 sock, winMask;
@@ -7870,7 +3571,7 @@ static LRESULT msgProc(HWND hwnd, uint msg, uint wp, long lp)
 }
 
 
-void mprSetWinMsgCallback(MprMsgCallback callback)
+PUBLIC void mprSetWinMsgCallback(MprMsgCallback callback)
 {
     MprWaitService  *ws;
 
@@ -7879,37 +3580,19 @@ void mprSetWinMsgCallback(MprMsgCallback callback)
 }
 
 
-#else
-void stubMprAsync() {}
 #endif /* MPR_EVENT_ASYNC */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -7937,7 +3620,7 @@ void stubMprAsync() {}
 
 /************************************ Code ************************************/
 
-void mprAtomicBarrier()
+PUBLIC void mprAtomicBarrier()
 {
     #ifdef VX_MEM_BARRIER_RW
         VX_MEM_BARRIER_RW();
@@ -7945,7 +3628,7 @@ void mprAtomicBarrier()
         OSMemoryBarrier();
     #elif BIT_WIN_LIKE
         MemoryBarrier();
-    #elif BIT_CC_SYNC
+    #elif BIT_HAS_SYNC
         __sync_synchronize();
     #elif __GNUC__ && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
         asm volatile ("mfence" : : : "memory");
@@ -7964,7 +3647,7 @@ void mprAtomicBarrier()
 /*
     Atomic Compare and swap a pointer with a full memory barrier
  */
-int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
+PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
 {
     #if MACOSX
         return OSAtomicCompareAndSwapPtrBarrier(expected, (void*) value, (void*) addr);
@@ -7974,9 +3657,9 @@ int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
             prev = InterlockedCompareExchangePointer(addr, (void*) value, expected);
             return expected == prev;
         }
-    #elif BIT_CC_SYNC_CAS
+    #elif BIT_HAS_SYNC_CAS
         return __sync_bool_compare_and_swap(addr, expected, value);
-    #elif VXWORKS && _VX_ATOMIC_INIT && !MPR_64BIT
+    #elif VXWORKS && _VX_ATOMIC_INIT && !BIT_64
         /* vxCas operates with integer values */
         return vxCas((atomic_t*) addr, (atomicVal_t) expected, (atomicVal_t) value);
     #elif BIT_CPU_ARCH == MPR_CPU_X86
@@ -7999,7 +3682,7 @@ int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
     #else
         mprGlobalLock();
         if (*addr == expected) {
-            *addr = value;
+            *addr = (void*) value;
             mprGlobalUnlock();
             return 1;
         }
@@ -8012,7 +3695,7 @@ int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
 /*
     Atomic add of a signed value. Used for add, subtract, inc, dec
  */
-void mprAtomicAdd(volatile int *ptr, int value)
+PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
 {
     #if MACOSX
         OSAtomicAdd32(value, ptr);
@@ -8036,11 +3719,11 @@ void mprAtomicAdd(volatile int *ptr, int value)
 /*
     On some platforms, this operation is only atomic with respect to other calls to mprAtomicAdd64
  */
-void mprAtomicAdd64(volatile int64 *ptr, int value)
+PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int value)
 {
 #if MACOSX
     OSAtomicAdd64(value, ptr);
-#elif BIT_WIN_LIKE && MPR_64_BIT
+#elif BIT_WIN_LIKE && BIT_64
     InterlockedExchangeAdd64(ptr, value);
 #elif BIT_UNIX_LIKE && FUTURE
     asm volatile ("lock; xaddl %0,%1"
@@ -8055,7 +3738,7 @@ void mprAtomicAdd64(volatile int64 *ptr, int value)
 }
 
 
-void *mprAtomicExchange(void * volatile *addr, cvoid *value)
+PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 {
 #if MACOSX && 0
     return OSAtomicCompareAndSwapPtrBarrier(expected, value, addr);
@@ -8079,7 +3762,7 @@ void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 /*
     Atomic list insertion. Inserts "item" at the "head" of the list. The "link" field is the next field in item.
  */
-void mprAtomicListInsert(void * volatile *head, volatile void **link, void *item)
+PUBLIC void mprAtomicListInsert(void * volatile *head, volatile void **link, void *item)
 {
     do {
         *link = *head;
@@ -8090,28 +3773,12 @@ void mprAtomicListInsert(void * volatile *head, volatile void **link, void *item
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -8150,7 +3817,7 @@ static void manageBuf(MprBuf *buf, int flags);
     used to define the amount to increase the size of the buffer each time if it becomes full. (Note: mprGrowBuf() will 
     exponentially increase this number for performance.)
  */
-MprBuf *mprCreateBuf(ssize initialSize, ssize maxSize)
+PUBLIC MprBuf *mprCreateBuf(ssize initialSize, ssize maxSize)
 {
     MprBuf      *bp;
     
@@ -8175,7 +3842,7 @@ static void manageBuf(MprBuf *bp, int flags)
 }
 
 
-MprBuf *mprCloneBuf(MprBuf *orig)
+PUBLIC MprBuf *mprCloneBuf(MprBuf *orig)
 {
     MprBuf      *bp;
     ssize       len;
@@ -8187,12 +3854,13 @@ MprBuf *mprCloneBuf(MprBuf *orig)
     bp->refillArg = orig->refillArg;
     if ((len = mprGetBufLength(orig)) > 0) {
         memcpy(bp->data, orig->data, len);
+        bp->end = &bp->data[len];
     }
     return bp;
 }
 
 
-char *mprGet(MprBuf *bp)
+PUBLIC char *mprGet(MprBuf *bp)
 {
     return (char*) bp->start;
 }
@@ -8201,9 +3869,9 @@ char *mprGet(MprBuf *bp)
 /*
     Set the current buffer size and maximum size limit.
  */
-int mprSetBufSize(MprBuf *bp, ssize initialSize, ssize maxSize)
+PUBLIC int mprSetBufSize(MprBuf *bp, ssize initialSize, ssize maxSize)
 {
-    mprAssert(bp);
+    assure(bp);
 
     if (initialSize <= 0) {
         if (maxSize > 0) {
@@ -8214,7 +3882,7 @@ int mprSetBufSize(MprBuf *bp, ssize initialSize, ssize maxSize)
     if (maxSize > 0 && initialSize > maxSize) {
         initialSize = maxSize;
     }
-    mprAssert(initialSize > 0);
+    assure(initialSize > 0);
 
     if (bp->data) {
         /*
@@ -8229,7 +3897,7 @@ int mprSetBufSize(MprBuf *bp, ssize initialSize, ssize maxSize)
         return 0;
     }
     if ((bp->data = mprAlloc(initialSize)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     bp->growBy = initialSize;
@@ -8243,7 +3911,7 @@ int mprSetBufSize(MprBuf *bp, ssize initialSize, ssize maxSize)
 }
 
 
-void mprSetBufMax(MprBuf *bp, ssize max)
+PUBLIC void mprSetBufMax(MprBuf *bp, ssize max)
 {
     bp->maxsize = max;
 }
@@ -8252,7 +3920,7 @@ void mprSetBufMax(MprBuf *bp, ssize max)
 /*
     This appends a silent null. It does not count as one of the actual bytes in the buffer
  */
-void mprAddNullToBuf(MprBuf *bp)
+PUBLIC void mprAddNullToBuf(MprBuf *bp)
 {
     ssize      space;
 
@@ -8262,23 +3930,23 @@ void mprAddNullToBuf(MprBuf *bp)
             return;
         }
     }
-    mprAssert(bp->end < bp->endbuf);
+    assure(bp->end < bp->endbuf);
     if (bp->end < bp->endbuf) {
         *((char*) bp->end) = (char) '\0';
     }
 }
 
 
-void mprAdjustBufEnd(MprBuf *bp, ssize size)
+PUBLIC void mprAdjustBufEnd(MprBuf *bp, ssize size)
 {
-    mprAssert(bp->buflen == (bp->endbuf - bp->data));
-    mprAssert(size <= bp->buflen);
-    mprAssert((bp->end + size) >= bp->data);
-    mprAssert((bp->end + size) <= bp->endbuf);
+    assure(bp->buflen == (bp->endbuf - bp->data));
+    assure(size <= bp->buflen);
+    assure((bp->end + size) >= bp->data);
+    assure((bp->end + size) <= bp->endbuf);
 
     bp->end += size;
     if (bp->end > bp->endbuf) {
-        mprAssert(bp->end <= bp->endbuf);
+        assure(bp->end <= bp->endbuf);
         bp->end = bp->endbuf;
     }
     if (bp->end < bp->data) {
@@ -8290,12 +3958,12 @@ void mprAdjustBufEnd(MprBuf *bp, ssize size)
 /*
     Adjust the start pointer after a user copy. Note: size can be negative.
  */
-void mprAdjustBufStart(MprBuf *bp, ssize size)
+PUBLIC void mprAdjustBufStart(MprBuf *bp, ssize size)
 {
-    mprAssert(bp->buflen == (bp->endbuf - bp->data));
-    mprAssert(size <= bp->buflen);
-    mprAssert((bp->start + size) >= bp->data);
-    mprAssert((bp->start + size) <= bp->end);
+    assure(bp->buflen == (bp->endbuf - bp->data));
+    assure(size <= bp->buflen);
+    assure((bp->start + size) >= bp->data);
+    assure((bp->start + size) <= bp->end);
 
     bp->start += size;
     if (bp->start > bp->end) {
@@ -8307,14 +3975,14 @@ void mprAdjustBufStart(MprBuf *bp, ssize size)
 }
 
 
-void mprFlushBuf(MprBuf *bp)
+PUBLIC void mprFlushBuf(MprBuf *bp)
 {
     bp->start = bp->data;
     bp->end = bp->data;
 }
 
 
-int mprGetCharFromBuf(MprBuf *bp)
+PUBLIC int mprGetCharFromBuf(MprBuf *bp)
 {
     if (bp->start == bp->end) {
         return -1;
@@ -8323,13 +3991,13 @@ int mprGetCharFromBuf(MprBuf *bp)
 }
 
 
-ssize mprGetBlockFromBuf(MprBuf *bp, char *buf, ssize size)
+PUBLIC ssize mprGetBlockFromBuf(MprBuf *bp, char *buf, ssize size)
 {
     ssize     thisLen, bytesRead;
 
-    mprAssert(buf);
-    mprAssert(size >= 0);
-    mprAssert(bp->buflen == (bp->endbuf - bp->data));
+    assure(buf);
+    assure(size >= 0);
+    assure(bp->buflen == (bp->endbuf - bp->data));
 
     /*
         Get the max bytes in a straight copy
@@ -8353,7 +4021,7 @@ ssize mprGetBlockFromBuf(MprBuf *bp, char *buf, ssize size)
 
 
 #ifndef mprGetBufLength
-ssize mprGetBufLength(MprBuf *bp)
+PUBLIC ssize mprGetBufLength(MprBuf *bp)
 {
     return (bp->end - bp->start);
 }
@@ -8361,7 +4029,7 @@ ssize mprGetBufLength(MprBuf *bp)
 
 
 #ifndef mprGetBufSize
-ssize mprGetBufSize(MprBuf *bp)
+PUBLIC ssize mprGetBufSize(MprBuf *bp)
 {
     return bp->buflen;
 }
@@ -8369,7 +4037,7 @@ ssize mprGetBufSize(MprBuf *bp)
 
 
 #ifndef mprGetBufSpace
-ssize mprGetBufSpace(MprBuf *bp)
+PUBLIC ssize mprGetBufSpace(MprBuf *bp)
 {
     return (bp->endbuf - bp->end);
 }
@@ -8377,7 +4045,7 @@ ssize mprGetBufSpace(MprBuf *bp)
 
 
 #ifndef mprGetBuf
-char *mprGetBuf(MprBuf *bp)
+PUBLIC char *mprGetBuf(MprBuf *bp)
 {
     return (char*) bp->data;
 }
@@ -8385,7 +4053,7 @@ char *mprGetBuf(MprBuf *bp)
 
 
 #ifndef mprGetBufStart
-char *mprGetBufStart(MprBuf *bp)
+PUBLIC char *mprGetBufStart(MprBuf *bp)
 {
     return (char*) bp->start;
 }
@@ -8393,16 +4061,14 @@ char *mprGetBufStart(MprBuf *bp)
 
 
 #ifndef mprGetBufEnd
-char *mprGetBufEnd(MprBuf *bp)
+PUBLIC char *mprGetBufEnd(MprBuf *bp)
 {
     return (char*) bp->end;
 }
 #endif
 
 
-//  TODO - rename mprPutbackCharToBuf as it really can't insert if the buffer is empty
-
-int mprInsertCharToBuf(MprBuf *bp, int c)
+PUBLIC int mprInsertCharToBuf(MprBuf *bp, int c)
 {
     if (bp->start == bp->data) {
         return MPR_ERR_BAD_STATE;
@@ -8412,7 +4078,7 @@ int mprInsertCharToBuf(MprBuf *bp, int c)
 }
 
 
-int mprLookAtNextCharInBuf(MprBuf *bp)
+PUBLIC int mprLookAtNextCharInBuf(MprBuf *bp)
 {
     if (bp->start == bp->end) {
         return -1;
@@ -8421,7 +4087,7 @@ int mprLookAtNextCharInBuf(MprBuf *bp)
 }
 
 
-int mprLookAtLastCharInBuf(MprBuf *bp)
+PUBLIC int mprLookAtLastCharInBuf(MprBuf *bp)
 {
     if (bp->start == bp->end) {
         return -1;
@@ -8430,12 +4096,12 @@ int mprLookAtLastCharInBuf(MprBuf *bp)
 }
 
 
-int mprPutCharToBuf(MprBuf *bp, int c)
+PUBLIC int mprPutCharToBuf(MprBuf *bp, int c)
 {
     char       *cp;
     ssize      space;
 
-    mprAssert(bp->buflen == (bp->endbuf - bp->data));
+    assure(bp->buflen == (bp->endbuf - bp->data));
 
     space = bp->buflen - mprGetBufLength(bp);
     if (space < sizeof(char)) {
@@ -8458,13 +4124,13 @@ int mprPutCharToBuf(MprBuf *bp, int c)
     Return the number of bytes written to the buffer. If no more bytes will fit, may return less than size.
     Never returns < 0.
  */
-ssize mprPutBlockToBuf(MprBuf *bp, cchar *str, ssize size)
+PUBLIC ssize mprPutBlockToBuf(MprBuf *bp, cchar *str, ssize size)
 {
     ssize      thisLen, bytes, space;
 
-    mprAssert(str);
-    mprAssert(size >= 0);
-    mprAssert(size < MAXINT);
+    assure(str);
+    assure(size >= 0);
+    assure(size < MAXINT);
 
     bytes = 0;
     while (size > 0) {
@@ -8490,7 +4156,7 @@ ssize mprPutBlockToBuf(MprBuf *bp, cchar *str, ssize size)
 }
 
 
-ssize mprPutStringToBuf(MprBuf *bp, cchar *str)
+PUBLIC ssize mprPutStringToBuf(MprBuf *bp, cchar *str)
 {
     if (str) {
         return mprPutBlockToBuf(bp, str, slen(str));
@@ -8499,7 +4165,7 @@ ssize mprPutStringToBuf(MprBuf *bp, cchar *str)
 }
 
 
-ssize mprPutSubStringToBuf(MprBuf *bp, cchar *str, ssize count)
+PUBLIC ssize mprPutSubStringToBuf(MprBuf *bp, cchar *str, ssize count)
 {
     ssize     len;
 
@@ -8514,9 +4180,9 @@ ssize mprPutSubStringToBuf(MprBuf *bp, cchar *str, ssize count)
 }
 
 
-ssize mprPutPadToBuf(MprBuf *bp, int c, ssize count)
+PUBLIC ssize mprPutPadToBuf(MprBuf *bp, int c, ssize count)
 {
-    mprAssert(count < MAXINT);
+    assure(count < MAXINT);
 
     while (count-- > 0) {
         if (mprPutCharToBuf(bp, c) < 0) {
@@ -8527,7 +4193,7 @@ ssize mprPutPadToBuf(MprBuf *bp, int c, ssize count)
 }
 
 
-ssize mprPutFmtToBuf(MprBuf *bp, cchar *fmt, ...)
+PUBLIC ssize mprPutFmtToBuf(MprBuf *bp, cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
@@ -8545,7 +4211,7 @@ ssize mprPutFmtToBuf(MprBuf *bp, cchar *fmt, ...)
 /*
     Grow the buffer. Return 0 if the buffer grows. Increase by the growBy size specified when creating the buffer. 
  */
-int mprGrowBuf(MprBuf *bp, ssize need)
+PUBLIC int mprGrowBuf(MprBuf *bp, ssize need)
 {
     char    *newbuf;
     ssize   growBy;
@@ -8562,7 +4228,7 @@ int mprGrowBuf(MprBuf *bp, ssize need)
         growBy = bp->growBy;
     }
     if ((newbuf = mprAlloc(bp->buflen + growBy)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     if (bp->data) {
@@ -8593,7 +4259,7 @@ int mprGrowBuf(MprBuf *bp, ssize need)
 /*
     Add a number to the buffer (always null terminated).
  */
-ssize mprPutIntToBuf(MprBuf *bp, int64 i)
+PUBLIC ssize mprPutIntToBuf(MprBuf *bp, int64 i)
 {
     ssize       rc;
 
@@ -8605,7 +4271,7 @@ ssize mprPutIntToBuf(MprBuf *bp, int64 i)
 }
 
 
-void mprCompactBuf(MprBuf *bp)
+PUBLIC void mprCompactBuf(MprBuf *bp)
 {
     if (mprGetBufLength(bp) == 0) {
         mprFlushBuf(bp);
@@ -8619,26 +4285,26 @@ void mprCompactBuf(MprBuf *bp)
 }
 
 
-MprBufProc mprGetBufRefillProc(MprBuf *bp) 
+PUBLIC MprBufProc mprGetBufRefillProc(MprBuf *bp) 
 {
     return bp->refillProc;
 }
 
 
-void mprSetBufRefillProc(MprBuf *bp, MprBufProc fn, void *arg)
+PUBLIC void mprSetBufRefillProc(MprBuf *bp, MprBufProc fn, void *arg)
 { 
     bp->refillProc = fn; 
     bp->refillArg = arg; 
 }
 
 
-int mprRefillBuf(MprBuf *bp) 
+PUBLIC int mprRefillBuf(MprBuf *bp) 
 { 
     return (bp->refillProc) ? (bp->refillProc)(bp, bp->refillArg) : 0; 
 }
 
 
-void mprResetBufIfEmpty(MprBuf *bp)
+PUBLIC void mprResetBufIfEmpty(MprBuf *bp)
 {
     if (mprGetBufLength(bp) == 0) {
         mprFlushBuf(bp);
@@ -8646,55 +4312,62 @@ void mprResetBufIfEmpty(MprBuf *bp)
 }
 
 
-#if BIT_CHAR_LEN > 1
-void mprAddNullToWideBuf(MprBuf *bp)
+PUBLIC char *mprBufToString(MprBuf *bp)
+{
+    mprAddNullToBuf(bp);
+    return sclone(mprGetBufStart(bp));
+}
+
+
+#if BIT_CHAR_LEN > 1 && UNUSED
+PUBLIC void mprAddNullToWideBuf(MprBuf *bp)
 {
     ssize      space;
 
     space = bp->endbuf - bp->end;
-    if (space < sizeof(MprChar)) {
-        if (mprGrowBuf(bp, sizeof(MprChar)) < 0) {
+    if (space < sizeof(wchar)) {
+        if (mprGrowBuf(bp, sizeof(wchar)) < 0) {
             return;
         }
     }
-    mprAssert(bp->end < bp->endbuf);
+    assure(bp->end < bp->endbuf);
     if (bp->end < bp->endbuf) {
-        *((MprChar*) bp->end) = (char) '\0';
+        *((wchar*) bp->end) = (char) '\0';
     }
 }
 
 
-int mprPutCharToWideBuf(MprBuf *bp, int c)
+PUBLIC int mprPutCharToWideBuf(MprBuf *bp, int c)
 {
-    MprChar *cp;
-    int     space;
+    wchar *cp;
+    ssize   space;
 
-    mprAssert(bp->buflen == (bp->endbuf - bp->data));
+    assure(bp->buflen == (bp->endbuf - bp->data));
 
     space = bp->buflen - mprGetBufLength(bp);
-    if (space < (sizeof(MprChar) * 2)) {
-        if (mprGrowBuf(bp, sizeof(MprChar) * 2) < 0) {
+    if (space < (sizeof(wchar) * 2)) {
+        if (mprGrowBuf(bp, sizeof(wchar) * 2) < 0) {
             return -1;
         }
     }
-    cp = (MprChar*) bp->end;
-    *cp++ = (MprChar) c;
+    cp = (wchar*) bp->end;
+    *cp++ = (wchar) c;
     bp->end = (char*) cp;
 
     if (bp->end < bp->endbuf) {
-        *((MprChar*) bp->end) = (char) '\0';
+        *((wchar*) bp->end) = (char) '\0';
     }
     return 1;
 }
 
 
-int mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
+PUBLIC ssize mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
 {
     va_list     ap;
-    MprChar     *wbuf;
+    wchar     *wbuf;
     char        *buf;
-    ssize       len;
-    int         rc, space;
+    ssize       len, space;
+    ssize       rc;
 
     if (fmt == 0) {
         return 0;
@@ -8703,20 +4376,20 @@ int mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
     space = mprGetBufSpace(bp);
     space += (bp->maxsize - bp->buflen);
     buf = sfmtv(fmt, ap);
-    wbuf = amtow(bp, buf, &len);
-    rc = mprPutBlockToBuf(bp, (char*) wbuf, len * sizeof(MprChar));
+    wbuf = amtow(buf, &len);
+    rc = mprPutBlockToBuf(bp, (char*) wbuf, len * sizeof(wchar));
     va_end(ap);
     return rc;
 }
 
 
-int mprPutStringToWideBuf(MprBuf *bp, cchar *str)
+PUBLIC ssize mprPutStringToWideBuf(MprBuf *bp, cchar *str)
 {
-    MprChar     *wstr;
+    wchar     *wstr;
     ssize       len;
 
     if (str) {
-        wstr = amtow(bp, str, &len);
+        wstr = amtow(str, &len);
         return mprPutBlockToBuf(bp, (char*) wstr, len);
     }
     return 0;
@@ -8726,31 +4399,15 @@ int mprPutStringToWideBuf(MprBuf *bp, cchar *str)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -8784,9 +4441,10 @@ typedef struct CacheItem
 {
     char        *key;                   /* Original key */
     char        *data;                  /* Cache data */
-    MprTime     lastModified;           /* Last update time */
-    MprTime     expires;                /* Fixed expiry date. If zero, key is imortal */
-    MprTime     lifespan;               /* Lifespan after each access to key (msec) */
+    MprTicks    lifespan;               /* Lifespan after each access to key (msec) */
+    MprTicks    lastAccessed;           /* Last accessed time */
+    MprTicks    expires;                /* Fixed expiry date. If zero, key is imortal. */
+    MprTime     lastModified;           /* Last update time. This is an MprTime and records world-time. */
     int64       version;
 } CacheItem;
 
@@ -8803,7 +4461,7 @@ static void removeItem(MprCache *cache, CacheItem *item);
 
 /************************************* Code ***********************************/
 
-MprCache *mprCreateCache(int options)
+PUBLIC MprCache *mprCreateCache(int options)
 {
     MprCache    *cache;
     int         wantShared;
@@ -8829,9 +4487,9 @@ MprCache *mprCreateCache(int options)
 }
 
 
-void *mprDestroyCache(MprCache *cache)
+PUBLIC void *mprDestroyCache(MprCache *cache)
 {
-    mprAssert(cache);
+    assure(cache);
 
     if (cache->timer && cache != shared) {
         mprRemoveEvent(cache->timer);
@@ -8844,16 +4502,16 @@ void *mprDestroyCache(MprCache *cache)
 }
 
 
-int mprExpireCache(MprCache *cache, cchar *key, MprTime expires)
+PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTicks expires)
 {
     CacheItem   *item;
 
-    mprAssert(cache);
-    mprAssert(key && *key);
+    assure(cache);
+    assure(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     lock(cache);
     if ((item = mprLookupKey(cache->store, key)) == 0) {
@@ -8870,17 +4528,17 @@ int mprExpireCache(MprCache *cache, cchar *key, MprTime expires)
 }
 
 
-int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
+PUBLIC int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
 {
     CacheItem   *item;
     int64       value;
 
-    mprAssert(cache);
-    mprAssert(key && *key);
+    assure(cache);
+    assure(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     value = amount;
 
@@ -8898,29 +4556,31 @@ int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
     item->data = itos(value);
     cache->usedMem += slen(item->data);
     item->version++;
+    item->lastAccessed = mprGetTicks();
+    item->expires = item->lastAccessed + item->lifespan;
     unlock(cache);
     return value;
 }
 
 
-char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version)
+PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version)
 {
     CacheItem   *item;
     char        *result;
 
-    mprAssert(cache);
-    mprAssert(key && *key);
+    assure(cache);
+    assure(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     lock(cache);
     if ((item = mprLookupKey(cache->store, key)) == 0) {
         unlock(cache);
         return 0;
     }
-    if (item->expires && item->expires <= mprGetTime()) {
+    if (item->expires && item->expires <= mprGetTicks()) {
         unlock(cache);
         return 0;
     }
@@ -8930,23 +4590,25 @@ char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *versio
     if (modified) {
         *modified = item->lastModified;
     }
+    item->lastAccessed = mprGetTicks();
+    item->expires = item->lastAccessed + item->lifespan;
     result = item->data;
     unlock(cache);
     return result;
 }
 
 
-bool mprRemoveCache(MprCache *cache, cchar *key)
+PUBLIC bool mprRemoveCache(MprCache *cache, cchar *key)
 {
     CacheItem   *item;
     bool        result;
 
-    mprAssert(cache);
-    mprAssert(key && *key);
+    assure(cache);
+    assure(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     lock(cache);
     if (key) {
@@ -8969,13 +4631,13 @@ bool mprRemoveCache(MprCache *cache, cchar *key)
 }
 
 
-void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int64 memory, int resolution)
+PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTicks lifespan, int64 memory, int resolution)
 {
-    mprAssert(cache);
+    assure(cache);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     if (keys > 0) {
         cache->maxKeys = (ssize) keys;
@@ -9001,21 +4663,20 @@ void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int64 memo
 }
 
 
-ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTime lifespan, 
-    int64 version, int options)
+PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTicks lifespan, int64 version, int options)
 {
     CacheItem   *item;
     MprKey      *kp;
     ssize       len, oldLen;
     int         exists, add, set, prepend, append, throw;
 
-    mprAssert(cache);
-    mprAssert(key && *key);
-    mprAssert(value);
+    assure(cache);
+    assure(key && *key);
+    assure(value);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     exists = add = prepend = append = throw = 0;
     add = options & MPR_CACHE_ADD;
@@ -9061,7 +4722,8 @@ ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified,
         item->lifespan = lifespan;
     }
     item->lastModified = modified ? modified : mprGetTime();
-    item->expires = item->lastModified + item->lifespan;
+    item->lastAccessed = mprGetTicks();
+    item->expires = item->lastAccessed + item->lifespan;
     item->version++;
     len = slen(item->key) + slen(item->data);
     cache->usedMem += (len - oldLen);
@@ -9081,8 +4743,8 @@ ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified,
 
 static void removeItem(MprCache *cache, CacheItem *item)
 {
-    mprAssert(cache);
-    mprAssert(item);
+    assure(cache);
+    assure(item);
 
     lock(cache);
     mprRemoveKey(cache->store, item->key);
@@ -9093,7 +4755,7 @@ static void removeItem(MprCache *cache, CacheItem *item)
 
 static void pruneCache(MprCache *cache, MprEvent *event)
 {
-    MprTime         when, factor;
+    MprTicks        when, factor;
     MprKey          *kp;
     CacheItem       *item;
     ssize           excessKeys;
@@ -9105,7 +4767,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
         }
     }
     if (event) {
-        when = mprGetTime();
+        when = mprGetTicks();
     } else {
         /* Expire all items by setting event to NULL */
         when = MAXINT64;
@@ -9123,7 +4785,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                 removeItem(cache, item);
             }
         }
-        mprAssert(cache->usedMem >= 0);
+        assure(cache->usedMem >= 0);
 
         /*
             If too many keys or too much memory used, prune keys that expire soonest.
@@ -9148,7 +4810,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                 when += factor;
             }
         }
-        mprAssert(cache->usedMem >= 0);
+        assure(cache->usedMem >= 0);
 
         if (mprGetHashLength(cache->store) == 0) {
             if (event) {
@@ -9161,7 +4823,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
 }
 
 
-void mprPruneCache(MprCache *cache)
+PUBLIC void mprPruneCache(MprCache *cache)
 {
     pruneCache(cache, NULL);
 }
@@ -9196,28 +4858,12 @@ static void manageCacheItem(CacheItem *item, int flags)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -9248,7 +4894,7 @@ static void manageCacheItem(CacheItem *item, int flags)
 
 static int blendEnv(MprCmd *cmd, cchar **env, int flags);
 static void closeFiles(MprCmd *cmd);
-static ssize cmdCallback(MprCmd *cmd, int channel, void *data);
+static void defaultCmdCallback(MprCmd *cmd, int channel, void *data);
 static int makeChannel(MprCmd *cmd, int index);
 static int makeCmdIO(MprCmd *cmd);
 static void manageCmdService(MprCmdService *cmd, int flags);
@@ -9283,7 +4929,7 @@ static void cmdTaskEntry(char *program, MprCmdTaskFn entry, int cmdArg);
 
 /************************************* Code ***********************************/
 
-MprCmdService *mprCreateCmdService()
+PUBLIC MprCmdService *mprCreateCmdService()
 {
     MprCmdService   *cs;
 
@@ -9296,7 +4942,7 @@ MprCmdService *mprCreateCmdService()
 }
 
 
-void mprStopCmdService()
+PUBLIC void mprStopCmdService()
 {
     mprClearList(MPR->cmdService->cmds);
 }
@@ -9315,7 +4961,7 @@ static void manageCmdService(MprCmdService *cs, int flags)
 }
 
 
-MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
+PUBLIC MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
 {
     MprCmd          *cmd;
     MprCmdFile      *files;
@@ -9324,9 +4970,9 @@ MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
     if ((cmd = mprAllocObj(MprCmd, manageCmd)) == 0) {
         return 0;
     }
-#if UNUSED && KEEP
+#if KEEP
     cmd->timeoutPeriod = MPR_TIMEOUT_CMD;
-    cmd->timestamp = mprGetTime();
+    cmd->timestamp = mprGetTicks();
 #endif
     cmd->forkCallback = (MprForkCallback) closeFiles;
     cmd->dispatcher = dispatcher ? dispatcher : MPR->dispatcher;
@@ -9378,12 +5024,8 @@ static void manageCmd(MprCmd *cmd, int flags)
 #endif
 
     } else if (flags & MPR_MANAGE_FREE) {
-        resetCmd(cmd);
+        mprDestroyCmd(cmd);
         vxCmdManager(cmd);
-        if (cmd->signal) {
-            mprRemoveSignalHandler(cmd->signal);
-            cmd->signal = 0;
-        }
         mprRemoveItem(MPR->cmdService->cmds, cmd);
     }
 }
@@ -9419,14 +5061,16 @@ static void vxCmdManager(MprCmd *cmd)
 }
 
 
-void mprDestroyCmd(MprCmd *cmd)
+PUBLIC void mprDestroyCmd(MprCmd *cmd)
 {
-    mprAssert(cmd);
+    assure(cmd);
+    slock(cmd);
     resetCmd(cmd);
     if (cmd->signal) {
         mprRemoveSignalHandler(cmd->signal);
         cmd->signal = 0;
     }
+    sunlock(cmd);
 }
 
 
@@ -9435,7 +5079,7 @@ static void resetCmd(MprCmd *cmd)
     MprCmdFile      *files;
     int             i;
 
-    mprAssert(cmd);
+    assure(cmd);
     files = cmd->files;
     for (i = 0; i < MPR_CMD_MAX_PIPE; i++) {
         if (cmd->handlers[i]) {
@@ -9463,11 +5107,11 @@ static void resetCmd(MprCmd *cmd)
 }
 
 
-void mprDisconnectCmd(MprCmd *cmd)
+PUBLIC void mprDisconnectCmd(MprCmd *cmd)
 {
     int     i;
 
-    mprAssert(cmd);
+    assure(cmd);
 
     for (i = 0; i < MPR_CMD_MAX_PIPE; i++) {
         if (cmd->handlers[i]) {
@@ -9481,10 +5125,10 @@ void mprDisconnectCmd(MprCmd *cmd)
 /*
     Close a command channel. Must be able to be called redundantly.
  */
-void mprCloseCmdFd(MprCmd *cmd, int channel)
+PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
 {
-    mprAssert(cmd);
-    mprAssert(0 <= channel && channel <= MPR_CMD_MAX_PIPE);
+    assure(cmd);
+    assure(0 <= channel && channel <= MPR_CMD_MAX_PIPE);
 
     if (cmd->handlers[channel]) {
         mprRemoveWaitHandler(cmd->handlers[channel]);
@@ -9507,20 +5151,20 @@ void mprCloseCmdFd(MprCmd *cmd, int channel)
                 }
             }
         }
+        mprLog(6, "Close channel %d eof %d/%d, pid %d", channel, cmd->eofCount, cmd->requiredEof, cmd->pid);
     }
-    mprLog(6, "Close channel %d eof %d/%d, pid %d", channel, cmd->eofCount, cmd->requiredEof, cmd->pid);
 }
 
 
-void mprFinalizeCmd(MprCmd *cmd)
+PUBLIC void mprFinalizeCmd(MprCmd *cmd)
 {
     mprLog(6, "mprFinalizeCmd");
-    mprAssert(cmd);
+    assure(cmd);
     mprCloseCmdFd(cmd, MPR_CMD_STDIN);
 }
 
 
-int mprIsCmdComplete(MprCmd *cmd)
+PUBLIC int mprIsCmdComplete(MprCmd *cmd)
 {
     return cmd->complete;
 }
@@ -9529,12 +5173,12 @@ int mprIsCmdComplete(MprCmd *cmd)
 /*
     Run a simple blocking command. See arg usage below in mprRunCmdV.
  */
-int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTime timeout, int flags)
+PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTicks timeout, int flags)
 {
     cchar   **argv;
     int     argc;
 
-    mprAssert(cmd);
+    assure(cmd);
     if ((argc = mprMakeArgv(command, &argv, 0)) < 0 || argv == 0) {
         return 0;
     }
@@ -9547,14 +5191,14 @@ int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err,
     Env is an array of "KEY=VALUE" strings. Null terminated
     The user must preserve the environment. This module does not clone the environment and uses the supplied reference.
  */
-void mprSetCmdDefaultEnv(MprCmd *cmd, cchar **env)
+PUBLIC void mprSetCmdDefaultEnv(MprCmd *cmd, cchar **env)
 {
     /* WARNING: defaultEnv is not cloned, but is marked */
     cmd->defaultEnv = env;
 }
 
 
-void mprSetCmdSearchPath(MprCmd *cmd, cchar *search)
+PUBLIC void mprSetCmdSearchPath(MprCmd *cmd, cchar *search)
 {
     cmd->searchPath = sclone(search);
 }
@@ -9568,11 +5212,11 @@ void mprSetCmdSearchPath(MprCmd *cmd, cchar *search)
         MPR_CMD_SHOW            Show the commands window on Windows
         MPR_CMD_IN              Connect to stdin
  */
-int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTime timeout, int flags)
+PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTicks timeout, int flags)
 {
     int     rc, status;
 
-    mprAssert(cmd);
+    assure(cmd);
     if (err) {
         *err = 0;
         flags |= MPR_CMD_ERR;
@@ -9591,7 +5235,7 @@ int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, ch
     if (flags & MPR_CMD_ERR) {
         cmd->stderrBuf = mprCreateBuf(MPR_BUFSIZE, -1);
     }
-    mprSetCmdCallback(cmd, cmdCallback, NULL);
+    mprSetCmdCallback(cmd, defaultCmdCallback, NULL);
     rc = mprStartCmd(cmd, argc, argv, envp, flags);
 
     /*
@@ -9656,18 +5300,17 @@ static void addCmdHandlers(MprCmd *cmd)
     run a command. The caller needs to do code like mprRunCmd() themselves to wait for completion and to send/receive data.
     The routine does not wait. Callers must call mprWaitForCmd to wait for the command to complete.
  */
-int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int flags)
+PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int flags)
 {
     MprPath     info;
     cchar       *program, *search, *pair;
     int         rc, next, i;
 
-    mprAssert(cmd);
-    mprAssert(argv);
-    mprAssert(argc > 0);
+    assure(cmd);
+    assure(argv);
 
     if (argc <= 0 || argv == NULL || argv[0] == NULL) {
-        return MPR_ERR_BAD_STATE;
+        return MPR_ERR_BAD_ARGS;
     }
     resetCmd(cmd);
     program = argv[0];
@@ -9696,10 +5339,10 @@ int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int flags)
     }
     mprLog(4, "mprStartCmd %s", cmd->program);
     for (i = 0; i < cmd->argc; i++) {
-        mprLog(4, "    arg[%d]: %s", i, cmd->argv[i]);
+        mprLog(6, "    arg[%d]: %s", i, cmd->argv[i]);
     }
     for (ITERATE_ITEMS(cmd->env, pair, next)) {
-        mprLog(4, "    env[%d]: %s", next, pair);
+        mprLog(6, "    env[%d]: %s", next, pair);
     }
     slock(cmd);
     if (makeCmdIO(cmd) < 0) {
@@ -9718,6 +5361,7 @@ int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int flags)
     }
     addCmdHandlers(cmd);
     rc = startProcess(cmd);
+    cmd->pid2 = cmd->pid;
     sunlock(cmd);
     return rc;
 }
@@ -9744,7 +5388,7 @@ static int makeCmdIO(MprCmd *cmd)
 /*
     Stop the command
  */
-int mprStopCmd(MprCmd *cmd, int signal)
+PUBLIC int mprStopCmd(MprCmd *cmd, int signal)
 {
     mprLog(7, "cmd: stop");
 
@@ -9768,14 +5412,14 @@ int mprStopCmd(MprCmd *cmd, int signal)
 /*
     Do non-blocking I/O - except on windows - will block
  */
-ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
+PUBLIC ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 {
 #if BIT_WIN_LIKE
     int     rc, count;
     /*
         Need to detect EOF in windows. Pipe always in blocking mode, but reads block even with no one on the other end.
      */
-    mprAssert(cmd->files[channel].handle);
+    assure(cmd->files[channel].handle);
     rc = PeekNamedPipe(cmd->files[channel].handle, NULL, 0, NULL, &count, NULL);
     if (rc > 0 && count > 0) {
         return read(cmd->files[channel].fd, buf, (uint) bufsize);
@@ -9810,7 +5454,7 @@ ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
     return rc;
 
 #else
-    mprAssert(cmd->files[channel].fd >= 0);
+    assure(cmd->files[channel].fd >= 0);
     return read(cmd->files[channel].fd, buf, bufsize);
 #endif
 }
@@ -9819,7 +5463,7 @@ ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 /*
     Do non-blocking I/O - except on windows - will block
  */
-ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
+PUBLIC ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 {
 #if BIT_WIN_LIKE
     /*
@@ -9833,7 +5477,30 @@ ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 }
 
 
-void mprEnableCmdEvents(MprCmd *cmd, int channel)
+PUBLIC bool mprAreCmdEventsEnabled(MprCmd *cmd, int channel)
+{
+    MprWaitHandler  *wp;
+
+    int mask = (channel == MPR_CMD_STDIN) ? MPR_WRITABLE : MPR_READABLE;
+    return ((wp = cmd->handlers[channel]) != 0) && (wp->desiredMask & mask);
+}
+
+
+PUBLIC void mprEnableCmdOutputEvents(MprCmd *cmd, bool on)
+{
+    int     mask;
+
+    mask = on ? MPR_READABLE : 0;
+    if (cmd->handlers[MPR_CMD_STDOUT]) {
+        mprWaitOn(cmd->handlers[MPR_CMD_STDOUT], mask);
+    }
+    if (cmd->handlers[MPR_CMD_STDERR]) {
+        mprWaitOn(cmd->handlers[MPR_CMD_STDERR], mask);
+    }
+}
+
+
+PUBLIC void mprEnableCmdEvents(MprCmd *cmd, int channel)
 {
     int mask = (channel == MPR_CMD_STDIN) ? MPR_WRITABLE : MPR_READABLE;
     if (cmd->handlers[channel]) {
@@ -9842,7 +5509,7 @@ void mprEnableCmdEvents(MprCmd *cmd, int channel)
 }
 
 
-void mprDisableCmdEvents(MprCmd *cmd, int channel)
+PUBLIC void mprDisableCmdEvents(MprCmd *cmd, int channel)
 {
     if (cmd->handlers[channel]) {
         mprWaitOn(cmd->handlers[channel], 0);
@@ -9853,58 +5520,53 @@ void mprDisableCmdEvents(MprCmd *cmd, int channel)
 #if BIT_WIN_LIKE && !WINCE
 /*
     Windows only routine to wait for I/O on the channels to the gateway and the child process.
-    NamedPipes can't use WaitForMultipleEvents (can use overlapped I/O)
-    WARNING: this should not be called from a dispatcher other than cmd->dispatcher. If so, then the calls to
-    mprWaitForEvent may occur after the event has been processed.
+    This will queue events on the dispatcher queue when I/O occurs or the process dies.
+    NOTE: NamedPipes can't use WaitForMultipleEvents, so we dedicate a thread to polling.
+    WARNING: this should not be called from a dispatcher other than cmd->dispatcher. 
  */
-static void waitForWinEvent(MprCmd *cmd, MprTime timeout)
+PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
 {
-    MprTime     mark, remaining, delay;
-    int         i, rc, nbytes;
+    MprTicks        mark, delay;
+    MprWaitHandler  *wp;
+    int             i, rc, nbytes;
 
-    mark = mprGetTime();
+    mark = mprGetTicks();
     if (cmd->stopped) {
         timeout = 0;
     }
+    slock(cmd);
     for (i = MPR_CMD_STDOUT; i < MPR_CMD_MAX_PIPE; i++) {
         if (cmd->files[i].handle) {
-            rc = PeekNamedPipe(cmd->files[i].handle, NULL, 0, NULL, &nbytes, NULL);
-            if (rc && nbytes > 0 || cmd->process == 0) {
-                mprQueueIOEvent(cmd->handlers[i]);
-                mprWaitForEvent(cmd->dispatcher, timeout);
-                return;
+            wp = cmd->handlers[i];
+            if (wp && wp->desiredMask & MPR_READABLE) {
+                rc = PeekNamedPipe(cmd->files[i].handle, NULL, 0, NULL, &nbytes, NULL);
+                if (rc && nbytes > 0 || cmd->process == 0) {
+                    mprQueueIOEvent(wp);
+                }
             }
         }
     }
     if (cmd->files[MPR_CMD_STDIN].handle) {
-        /* Not finalized */
-        mprQueueIOEvent(cmd->handlers[MPR_CMD_STDIN]);
-        mprWaitForEvent(cmd->dispatcher, timeout);
-        return;
+        wp = cmd->handlers[MPR_CMD_STDIN];
+        if (wp && wp->desiredMask & MPR_WRITABLE) {
+            mprQueueIOEvent(wp);
+        }
     }
     if (cmd->process) {
         delay = (cmd->eofCount == cmd->requiredEof && cmd->files[MPR_CMD_STDIN].handle == 0) ? timeout : 0;
-        mprYield(MPR_YIELD_STICKY);
-        if (WaitForSingleObject(cmd->process, (DWORD) delay) == WAIT_OBJECT_0) {
-            mprResetYield();
-            reapCmd(cmd, 0);
-            return;
-        }
-        mprResetYield();
-        if (cmd->eofCount == cmd->requiredEof) {
-            remaining = mprGetRemainingTime(mark, timeout);
+        do {
             mprYield(MPR_YIELD_STICKY);
-            rc = WaitForSingleObject(cmd->process, (DWORD) remaining);
-            mprResetYield();
-            if (rc == WAIT_OBJECT_0) {
+            if (WaitForSingleObject(cmd->process, (DWORD) delay) == WAIT_OBJECT_0) {
+                mprResetYield();
                 reapCmd(cmd, 0);
-                return;
+                break;
+            } else {
+                mprResetYield();
             }
-            mprError("Error waiting CGI I/O, error %d", mprGetOsError());
-        }
+            delay = mprGetRemainingTicks(mark, timeout);
+        } while (cmd->eofCount == cmd->requiredEof);
     }
-    /* Stop busy waiting */
-    mprSleep(10);
+    sunlock(cmd);
 }
 #endif
 
@@ -9912,11 +5574,11 @@ static void waitForWinEvent(MprCmd *cmd, MprTime timeout)
 /*
     Wait for a command to complete. Return 0 if the command completed, otherwise it will return MPR_ERR_TIMEOUT. 
  */
-int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
+PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
 {
-    MprTime     expires, remaining;
+    MprTicks    expires, remaining;
 
-    mprAssert(cmd);
+    assure(cmd);
 
     if (timeout < 0) {
         timeout = MAXINT;
@@ -9927,7 +5589,7 @@ int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
     if (cmd->stopped) {
         timeout = 0;
     }
-    expires = mprGetTime() + timeout;
+    expires = mprGetTicks() + timeout;
     remaining = timeout;
 
     /* Add root to allow callers to use mprRunCmd without first managing the cmd */
@@ -9937,12 +5599,13 @@ int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
         if (mprShouldAbortRequests()) {
             break;
         }
-#if BIT_WIN_LIKE
-        waitForWinEvent(cmd, remaining);
+#if BIT_WIN_LIKE && !WINCE
+        mprPollWinCmd(cmd, remaining);
+        mprWaitForEvent(cmd->dispatcher, 10);
 #else
         mprWaitForEvent(cmd->dispatcher, remaining);
 #endif
-        remaining = (expires - mprGetTime());
+        remaining = (expires - mprGetTicks());
     }
     mprRemoveRoot(cmd);
     if (cmd->pid) {
@@ -9960,7 +5623,6 @@ int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
  */
 static void reapCmd(MprCmd *cmd, MprSignal *sp)
 {
-    ssize   got, nbytes;
     int     status, rc;
 
     mprLog(6, "reapCmd CHECK pid %d, eof %d, required %d\n", cmd->pid, cmd->eofCount, cmd->requiredEof);
@@ -9985,7 +5647,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
                 mprLog(7, "waitpid FUNNY pid %d, errno %d", cmd->pid, errno);
             }
             cmd->pid = 0;
-            mprAssert(cmd->signal);
+            assure(cmd->signal);
             mprRemoveSignalHandler(cmd->signal);
             cmd->signal = 0;
         } else {
@@ -10018,9 +5680,9 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
     if (status != STILL_ACTIVE) {
         cmd->status = status;
         rc = CloseHandle(cmd->process);
-        mprAssert(rc != 0);
+        assure(rc != 0);
         rc = CloseHandle(cmd->thread);
-        mprAssert(rc != 0);
+        assure(rc != 0);
         cmd->process = 0;
         cmd->thread = 0;
         cmd->pid = 0;
@@ -10030,44 +5692,10 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
         if (cmd->eofCount >= cmd->requiredEof) {
             cmd->complete = 1;
         }
+        mprLog(6, "Cmd reaped: status %d, pid %d, eof %d / %d\n", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
         if (cmd->callback) {
             (cmd->callback)(cmd, -1, cmd->callbackData);
-        }
-        mprLog(6, "Cmd reaped: status %d, pid %d, eof %d / %d\n", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
-
-        if (cmd->callback) {
-            /*
-                Read outstanding data
-             */  
-            while (cmd->eofCount < cmd->requiredEof) {
-                got = 0;
-                if (cmd->files[MPR_CMD_STDERR].fd >= 0) {
-                    if ((nbytes = (cmd->callback)(cmd, MPR_CMD_STDERR, cmd->callbackData)) > 0) {
-                        got += nbytes;
-                    }
-                }
-                if (cmd->files[MPR_CMD_STDOUT].fd >= 0) {
-                    if ((nbytes = (cmd->callback)(cmd, MPR_CMD_STDOUT, cmd->callbackData)) > 0) {
-                        got += nbytes;
-                    }
-                }
-                if (got <= 0) {
-                    break;
-                }
-            }
-            if (cmd->files[MPR_CMD_STDERR].fd >= 0) {
-                mprCloseCmdFd(cmd, MPR_CMD_STDERR);
-            }
-            if (cmd->files[MPR_CMD_STDOUT].fd >= 0) {
-                mprCloseCmdFd(cmd, MPR_CMD_STDOUT);
-            }
-#if UNUSED && DONT_USE && KEEP
-            if (cmd->eofCount != cmd->requiredEof) {
-                mprLog(0, "reapCmd: insufficient EOFs %d %d, complete %d", cmd->eofCount, cmd->requiredEof, cmd->complete);
-            }
-            mprAssert(cmd->eofCount == cmd->requiredEof);
-            mprAssert(cmd->complete);
-#endif
+            /* WARNING - this above call may invoke httpPump and complete the request. HttpConn.tx may be null */
         }
     }
 }
@@ -10077,7 +5705,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
     Default callback routine for the mprRunCmd routines. Uses may supply their own callback instead of this routine. 
     The callback is run whenever there is I/O to read/write to the CGI gateway.
  */
-static ssize cmdCallback(MprCmd *cmd, int channel, void *data)
+static void defaultCmdCallback(MprCmd *cmd, int channel, void *data)
 {
     MprBuf      *buf;
     ssize       len, space;
@@ -10088,7 +5716,7 @@ static ssize cmdCallback(MprCmd *cmd, int channel, void *data)
     buf = 0;
     switch (channel) {
     case MPR_CMD_STDIN:
-        return 0;
+        return;
     case MPR_CMD_STDOUT:
         buf = cmd->stdoutBuf;
         break;
@@ -10097,7 +5725,7 @@ static ssize cmdCallback(MprCmd *cmd, int channel, void *data)
         break;
     default:
         /* Child death notification */
-        return 0;
+        return;
     }
     /*
         Read and aggregate the result into a single string
@@ -10106,24 +5734,23 @@ static ssize cmdCallback(MprCmd *cmd, int channel, void *data)
     if (space < (MPR_BUFSIZE / 4)) {
         if (mprGrowBuf(buf, MPR_BUFSIZE) < 0) {
             mprCloseCmdFd(cmd, channel);
-            return 0;
+            return;
         }
         space = mprGetBufSpace(buf);
     }
     len = mprReadCmd(cmd, channel, mprGetBufEnd(buf), space);
-    mprLog(6, "cmdCallback channel %d, read len %d, pid %d, eof %d/%d", channel, len, cmd->pid, cmd->eofCount, 
+    mprLog(6, "defaultCmdCallback channel %d, read len %d, pid %d, eof %d/%d", channel, len, cmd->pid, cmd->eofCount, 
         cmd->requiredEof);
     if (len <= 0) {
         if (len == 0 || (len < 0 && !(errno == EAGAIN || errno == EWOULDBLOCK))) {
             mprCloseCmdFd(cmd, channel);
-            return len;
+            return;
         }
     } else {
         mprAdjustBufEnd(buf, len);
     }
     mprAddNullToBuf(buf);
     mprEnableCmdEvents(cmd, channel);
-    return len;
 }
 
 
@@ -10157,16 +5784,16 @@ static void stderrCallback(MprCmd *cmd, MprEvent *event)
 }
 
 
-void mprSetCmdCallback(MprCmd *cmd, MprCmdProc proc, void *data)
+PUBLIC void mprSetCmdCallback(MprCmd *cmd, MprCmdProc proc, void *data)
 {
     cmd->callback = proc;
     cmd->callbackData = data;
 }
 
 
-int mprGetCmdExitStatus(MprCmd *cmd)
+PUBLIC int mprGetCmdExitStatus(MprCmd *cmd)
 {
-    mprAssert(cmd);
+    assure(cmd);
 
     if (cmd->pid == 0) {
         return cmd->status;
@@ -10175,39 +5802,41 @@ int mprGetCmdExitStatus(MprCmd *cmd)
 }
 
 
-bool mprIsCmdRunning(MprCmd *cmd)
+PUBLIC bool mprIsCmdRunning(MprCmd *cmd)
 {
     return cmd->pid > 0;
 }
 
 
-void mprSetCmdTimeout(MprCmd *cmd, MprTime timeout)
+/* FUTURE - not yet supported */
+
+PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTicks timeout)
 {
-    mprAssert(0);
-#if UNUSED
+    assure(0);
+#if KEEP
     cmd->timeoutPeriod = timeout;
 #endif
 }
 
 
-int mprGetCmdFd(MprCmd *cmd, int channel) 
+PUBLIC int mprGetCmdFd(MprCmd *cmd, int channel) 
 { 
     return cmd->files[channel].fd; 
 }
 
 
-MprBuf *mprGetCmdBuf(MprCmd *cmd, int channel)
+PUBLIC MprBuf *mprGetCmdBuf(MprCmd *cmd, int channel)
 {
     return (channel == MPR_CMD_STDOUT) ? cmd->stdoutBuf : cmd->stderrBuf;
 }
 
 
-void mprSetCmdDir(MprCmd *cmd, cchar *dir)
+PUBLIC void mprSetCmdDir(MprCmd *cmd, cchar *dir)
 {
 #if VXWORKS
     mprError("WARNING: Setting working directory on VxWorks is global: %s", dir);
 #else
-    mprAssert(dir && *dir);
+    assure(dir && *dir);
 
     cmd->dir = sclone(dir);
 #endif
@@ -10279,6 +5908,7 @@ static int blendEnv(MprCmd *cmd, cchar **env, int flags)
         Add new env keys. Detect and overwrite duplicates
      */
     for (ep = env; ep && *ep; ep++) {
+        prior = 0;
         for (ITERATE_ITEMS(cmd->env, prior, next)) {
             if (matchEnvKey(*ep, prior)) {
                 mprSetItem(cmd->env, next - 1, *ep);
@@ -10293,7 +5923,7 @@ static int blendEnv(MprCmd *cmd, cchar **env, int flags)
     /*
         Windows requires a caseless sort with two trailing nulls
      */
-    mprSortList(cmd->env, sortEnv);
+    mprSortList(cmd->env, (MprSortProc) sortEnv, 0);
 #endif
     mprAddItem(cmd->env, NULL);
     return 0;
@@ -10322,7 +5952,7 @@ static cchar *makeWinEnvBlock(MprCmd *cmd)
     /* Windows requires two nulls */
     *dp++ = '\0';
     *dp++ = '\0';
-    mprAssert(dp <= ep);
+    assure(dp <= ep);
     return env;
 }
 #endif
@@ -10353,7 +5983,7 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
     ssize       len;
     int         quote;
 
-    mprAssert(argc > 0 && argv[0] != NULL);
+    assure(argc > 0 && argv[0] != NULL);
 
     cmd->argv = argv;
     cmd->argc = argc;
@@ -10466,7 +6096,7 @@ static int startProcess(MprCmd *cmd)
         startInfo.hStdError = (HANDLE) _get_osfhandle((int) fileno(stderr));
     }
     envBlock = makeWinEnvBlock(cmd);
-    if (! CreateProcess(0, cmd->command, 0, 0, 1, 0, (char*) envBlock, cmd->dir, &startInfo, &procInfo)) {
+    if (! CreateProcess(0, wide(cmd->command), 0, 0, 1, 0, (char*) envBlock, wide(cmd->dir), &startInfo, &procInfo)) {
         err = mprGetOsError();
         if (err == ERROR_DIRECTORY) {
             mprError("Can't create process: %s, directory %s is invalid", cmd->program, cmd->dir);
@@ -10542,7 +6172,7 @@ static int makeChannel(MprCmd *cmd, int index)
     SECURITY_ATTRIBUTES clientAtt, serverAtt, *att;
     HANDLE              readHandle, writeHandle;
     MprCmdFile          *file;
-    MprTime             now;
+    MprTicks            now;
     char                *pipeName;
     int                 openMode, pipeMode, readFd, writeFd;
     static int          tempSeed = 0;
@@ -10559,7 +6189,7 @@ static int makeChannel(MprCmd *cmd, int index)
     serverAtt.bInheritHandle = 0;
 
     file = &cmd->files[index];
-    now = ((int) mprGetTime() & 0xFFFF) % 64000;
+    now = ((int) mprGetTicks() & 0xFFFF) % 64000;
 
     lock(MPR->cmdService);
     pipeName = sfmt("\\\\.\\pipe\\MPR_%d_%d_%d.tmp", getpid(), (int) now, ++tempSeed);
@@ -10574,7 +6204,7 @@ static int makeChannel(MprCmd *cmd, int index)
     pipeMode = 0;
 
     att = (index == MPR_CMD_STDIN) ? &clientAtt : &serverAtt;
-    readHandle = CreateNamedPipe(pipeName, openMode, pipeMode, 1, 0, 256 * 1024, 1, att);
+    readHandle = CreateNamedPipe(wide(pipeName), openMode, pipeMode, 1, 0, 256 * 1024, 1, att);
     if (readHandle == INVALID_HANDLE_VALUE) {
         mprError("Can't create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
@@ -10582,7 +6212,7 @@ static int makeChannel(MprCmd *cmd, int index)
     readFd = (int) (int64) _open_osfhandle((long) readHandle, 0);
 
     att = (index == MPR_CMD_STDIN) ? &serverAtt: &clientAtt;
-    writeHandle = CreateFile(pipeName, GENERIC_WRITE, 0, att, OPEN_EXISTING, openMode, 0);
+    writeHandle = CreateFile(wide(pipeName), GENERIC_WRITE, 0, att, OPEN_EXISTING, openMode, 0);
     writeFd = (int) _open_osfhandle((long) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {
@@ -10750,7 +6380,7 @@ static int startProcess(MprCmd *cmd)
 /*
     Start the command to run (stdIn and stdOut are named from the client's perspective)
  */
-int startProcess(MprCmd *cmd)
+PUBLIC int startProcess(MprCmd *cmd)
 {
     MprCmdTaskFn    entryFn;
     MprModule       *mp;
@@ -10759,7 +6389,6 @@ int startProcess(MprCmd *cmd)
     int             pri, next;
 
     mprLog(4, "cmd: start %s", cmd->program);
-
     entryPoint = 0;
     if (cmd->env) {
         for (ITERATE_ITEMS(cmd->env, pair, next)) {
@@ -10907,31 +6536,15 @@ static void closeFiles(MprCmd *cmd)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -10964,7 +6577,7 @@ static void manageCond(MprCond *cp, int flags);
     Create a condition variable for use by single or multiple waiters
  */
 
-MprCond *mprCreateCond()
+PUBLIC MprCond *mprCreateCond()
 {
     MprCond     *cp;
 
@@ -10987,13 +6600,13 @@ MprCond *mprCreateCond()
 
 static void manageCond(MprCond *cp, int flags)
 {
-    mprAssert(cp);
+    assure(cp);
     
     if (flags & MPR_MANAGE_MARK) {
         mprMark(cp->mutex);
 
     } else if (flags & MPR_MANAGE_FREE) {
-        mprAssert(cp->mutex);
+        assure(cp->mutex);
 #if BIT_WIN_LIKE
         CloseHandle(cp->cv);
 #elif VXWORKS
@@ -11009,10 +6622,13 @@ static void manageCond(MprCond *cp, int flags)
     Wait for the event to be triggered. Should only be used when there are single waiters. If the event is already
     triggered, then it will return immediately. Timeout of -1 means wait forever. Timeout of 0 means no wait.
     Returns 0 if the event was signalled. Returns < 0 for a timeout.
+
+    WARNING: On unix, the pthread_cond_timedwait uses an absolute time (Ugh!). So time-warps for daylight-savings may
+    cause waits to prematurely return.
  */
-int mprWaitForCond(MprCond *cp, MprTime timeout)
+PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
 {
-    MprTime             now, expire;
+    MprTicks            now, expire;
     int                 rc;
 #if BIT_UNIX_LIKE
     struct timespec     waitTill;
@@ -11020,67 +6636,87 @@ int mprWaitForCond(MprCond *cp, MprTime timeout)
     int                 usec;
 #endif
 
+    /*
+        Avoid doing a mprGetTicks() if timeout is < 0
+     */
     rc = 0;
-    if (timeout < 0) {
-        timeout = MAXINT;
-    }
-    now = mprGetTime();
-    expire = now + timeout;
-
+    if (timeout >= 0) {
+        now = mprGetTicks();
+        expire = now + timeout;
 #if BIT_UNIX_LIKE
-    gettimeofday(&current, NULL);
-    usec = current.tv_usec + ((int) (timeout % 1000)) * 1000;
-    waitTill.tv_sec = current.tv_sec + ((int) (timeout / 1000)) + (usec / 1000000);
-    waitTill.tv_nsec = (usec % 1000000) * 1000;
+        gettimeofday(&current, NULL);
+        usec = current.tv_usec + ((int) (timeout % 1000)) * 1000;
+        waitTill.tv_sec = current.tv_sec + ((int) (timeout / 1000)) + (usec / 1000000);
+        waitTill.tv_nsec = (usec % 1000000) * 1000;
 #endif
+    } else {
+        expire = -1;
+        now = 0;
+    }
     mprLock(cp->mutex);
-    if (!cp->triggered) {
-        /*
-            WARNING: Can get spurious wakeups on some platforms (Unix + pthreads). 
-         */
-        do {
+    /*
+        NOTE: The WaitForSingleObject and semTake APIs keeps state as to whether the object is signalled.
+        WaitForSingleObject and semTake will not block if the object is already signalled. However, pthread_cond_ 
+        is different and does not keep such state. If it is signalled before pthread_cond_wait, the thread will 
+        still block. Consequently we need to keep our own state in cp->triggered. This also protects against 
+        spurious wakeups which can happen (on windows).
+     */
+    do {
 #if BIT_WIN_LIKE
-            mprUnlock(cp->mutex);
-            rc = WaitForSingleObject(cp->cv, (int) (expire - now));
-            mprLock(cp->mutex);
-            if (rc == WAIT_OBJECT_0) {
-                rc = 0;
-                ResetEvent(cp->cv);
-            } else if (rc == WAIT_TIMEOUT) {
+        /*
+            Regardless of the state of cp->triggered, we must call WaitForSingleObject to consume the signalled
+            internal state of the object.
+         */
+        mprUnlock(cp->mutex);
+        rc = WaitForSingleObject(cp->cv, (int) (expire - now));
+        mprLock(cp->mutex);
+        if (rc == WAIT_OBJECT_0) {
+            rc = 0;
+            ResetEvent(cp->cv);
+        } else if (rc == WAIT_TIMEOUT) {
+            rc = MPR_ERR_TIMEOUT;
+        } else {
+            rc = MPR_ERR;
+        }
+#elif VXWORKS
+        /*
+            Regardless of the state of cp->triggered, we must call semTake to consume the semaphore signalled state
+         */
+        mprUnlock(cp->mutex);
+        rc = semTake(cp->cv, (int) (expire - now));
+        mprLock(cp->mutex);
+        if (rc != 0) {
+            if (errno == S_objLib_OBJ_UNAVAILABLE) {
                 rc = MPR_ERR_TIMEOUT;
             } else {
                 rc = MPR_ERR;
             }
-#elif VXWORKS
-            mprUnlock(cp->mutex);
-            rc = semTake(cp->cv, (int) (expire - now));
-            mprLock(cp->mutex);
-            if (rc != 0) {
-                if (errno == S_objLib_OBJ_UNAVAILABLE) {
-                    rc = MPR_ERR_TIMEOUT;
-                } else {
-                    rc = MPR_ERR;
-                }
-            }
-            
+        }
+        
 #elif BIT_UNIX_LIKE
-            /*
-                NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 
-                atomically unlock the mutex before sleeping and will relock on awakening.  
-             */
-            rc = pthread_cond_timedwait(&cp->cv, &cp->mutex->cs,  &waitTill);
+        /*
+            NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 
+            atomically unlock the mutex before sleeping and will relock on awakening.  
+         */
+        if (!cp->triggered) {
+            if (now) {
+                rc = pthread_cond_timedwait(&cp->cv, &cp->mutex->cs,  &waitTill);
+            } else {
+                rc = pthread_cond_wait(&cp->cv, &cp->mutex->cs);
+            }
             if (rc == ETIMEDOUT) {
                 rc = MPR_ERR_TIMEOUT;
             } else if (rc == EAGAIN) {
                 rc = 0;
             } else if (rc != 0) {
-                mprAssert(rc == 0);
+                assure(rc == 0);
                 mprError("pthread_cond_timedwait error rc %d", rc);
                 rc = MPR_ERR;
             }
+        }
 #endif
-        } while (!cp->triggered && rc == 0 && (now = mprGetTime()) < expire);
-    }
+    } while (!cp->triggered && rc == 0 && (now && (now = mprGetTicks()) < expire));
+
     if (cp->triggered) {
         cp->triggered = 0;
         rc = 0;
@@ -11095,7 +6731,7 @@ int mprWaitForCond(MprCond *cp, MprTime timeout)
 /*
     Signal a condition and wakeup the waiter. Note: this may be called prior to the waiter waiting.
  */
-void mprSignalCond(MprCond *cp)
+PUBLIC void mprSignalCond(MprCond *cp)
 {
     mprLock(cp->mutex);
     if (!cp->triggered) {
@@ -11112,7 +6748,7 @@ void mprSignalCond(MprCond *cp)
 }
 
 
-void mprResetCond(MprCond *cp)
+PUBLIC void mprResetCond(MprCond *cp)
 {
     mprLock(cp->mutex);
     cp->triggered = 0;
@@ -11135,8 +6771,11 @@ void mprResetCond(MprCond *cp)
     triggered, then it will return immediately. This call will not reset cp->triggered and must be reset manually.
     A timeout of -1 means wait forever. Timeout of 0 means no wait.  Returns 0 if the event was signalled. 
     Returns < 0 for a timeout.
+
+    WARNING: On unix, the pthread_cond_timedwait uses an absolute time (Ugh!). So time-warps for daylight-savings may
+    cause waits to prematurely return.
  */
-int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
+PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTicks timeout)
 {
     int         rc;
 #if BIT_UNIX_LIKE
@@ -11144,20 +6783,19 @@ int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
     struct timeval      current;
     int                 usec;
 #else
-    MprTime     now, expire;
+    MprTicks            now, expire;
 #endif
 
     if (timeout < 0) {
         timeout = MAXINT;
     }
-
 #if BIT_UNIX_LIKE
     gettimeofday(&current, NULL);
     usec = current.tv_usec + ((int) (timeout % 1000)) * 1000;
     waitTill.tv_sec = current.tv_sec + ((int) (timeout / 1000)) + (usec / 1000000);
     waitTill.tv_nsec = (usec % 1000000) * 1000;
 #else
-    now = mprGetTime();
+    now = mprGetTicks();
     expire = now + timeout;
 #endif
 
@@ -11185,7 +6823,7 @@ int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
     if (rc == ETIMEDOUT) {
         rc = MPR_ERR_TIMEOUT;
     } else if (rc != 0) {
-        mprAssert(rc == 0);
+        assure(rc == 0);
         rc = MPR_ERR;
     }
     mprUnlock(cp->mutex);
@@ -11197,7 +6835,7 @@ int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
 /*
     Signal a condition and wakeup the all the waiters. Note: this may be called before or after to the waiter waiting.
  */
-void mprSignalMultiCond(MprCond *cp)
+PUBLIC void mprSignalMultiCond(MprCond *cp)
 {
     mprLock(cp->mutex);
 #if BIT_WIN_LIKE
@@ -11220,28 +6858,12 @@ void mprSignalMultiCond(MprCond *cp)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -11273,7 +6895,7 @@ void mprSignalMultiCond(MprCond *cp)
 
 /*********************************** Locals ***********************************/
 /*
-    Constants for transform routine.
+    MD5 Constants for transform routine.
  */
 #define S11 7
 #define S12 12
@@ -11299,7 +6921,7 @@ static uchar PADDING[64] = {
 };
 
 /*
-   F, G, H and I are basic MD5 functions.
+   MD5 F, G, H and I are basic MD5 functions.
  */
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
@@ -11307,35 +6929,34 @@ static uchar PADDING[64] = {
 #define I(x, y, z) ((y) ^ ((x) | (~z)))
 
 /*
-   ROTATE_LEFT rotates x left n bits.
+   MD5 ROTATE_LEFT rotates x left n bits.
  */
 #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32-(n))))
 
 /*
-     FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
+     MD5 - FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
      Rotation is separate from addition to prevent recomputation.
  */
- 
 #define FF(a, b, c, d, x, s, ac) { \
- (a) += F ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += F ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 #define GG(a, b, c, d, x, s, ac) { \
- (a) += G ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += G ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 #define HH(a, b, c, d, x, s, ac) { \
- (a) += H ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += H ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 #define II(a, b, c, d, x, s, ac) { \
- (a) += I ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += I ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 
 typedef struct {
     uint state[4];
@@ -11388,6 +7009,19 @@ static signed char decodeMap[] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
+
+#define SHA_SIZE   20
+
+typedef struct MprSha {
+    uint    hash[SHA_SIZE / 4];     /* Message Digest */
+    uint    lowLength;              /* Message length in bits */
+    uint    highLength;             /* Message length in bits */
+    int     index;                  /* Index into message block array   */
+    uchar   block[64];              /* 512-bit message blocks */
+} MprSha;
+
+#define shaShift(bits,word) (((word) << (bits)) | ((word) >> (32-(bits))))
+
 /*************************** Forward Declarations *****************************/
 
 static void decode(uint *output, uchar *input, uint len);
@@ -11397,9 +7031,15 @@ static void initMD5(MD5CONTEXT *context);
 static void transform(uint state[4], uchar block[64]);
 static void update(MD5CONTEXT *context, uchar *input, uint inputLen);
 
+static void shaInit(MprSha *sha);
+static void shaUpdate(MprSha *sha, cuchar *msg, ssize len);
+static void shaFinalize(uchar *digest, MprSha *sha);
+static void shaPad(MprSha *sha);
+static void shaProcess(MprSha *sha);
+
 /*********************************** Code *************************************/
 
-int mprRandom()
+PUBLIC int mprRandom()
 {
 #if WINDOWS || VXWORKS
     return rand();
@@ -11413,7 +7053,7 @@ int mprRandom()
     Decode a null terminated string and returns a null terminated string.
     Stops decoding at the end of string or '='
  */
-char *mprDecode64(cchar *s)
+PUBLIC char *mprDecode64(cchar *s)
 {
     return mprDecode64Block(s, NULL, MPR_DECODE_TOKEQ);
 }
@@ -11423,7 +7063,7 @@ char *mprDecode64(cchar *s)
     Decode a null terminated string and return a block with length.
     Stops decoding at the end of the block or '=' if MPR_DECODE_TOKEQ is specified.
  */
-char *mprDecode64Block(cchar *s, ssize *len, int flags)
+PUBLIC char *mprDecode64Block(cchar *s, ssize *len, int flags)
 {
     uint    bitBuf;
     char    *buffer, *bp;
@@ -11450,7 +7090,7 @@ char *mprDecode64Block(cchar *s, ssize *len, int flags)
             shift -= 6;
         }
         --i;
-        mprAssert((bp + i) < &buffer[size]);
+        assure((bp + i) < &buffer[size]);
         for (j = 0; j < i; j++) {
             *bp++ = (char) ((bitBuf >> (8 * (2 - j))) & 0xff);
         }
@@ -11467,7 +7107,7 @@ char *mprDecode64Block(cchar *s, ssize *len, int flags)
     Encode a null terminated string.
     Returns a null terminated block
  */
-char *mprEncode64(cchar *s)
+PUBLIC char *mprEncode64(cchar *s)
 {
     return mprEncode64Block(s, slen(s));
 }
@@ -11477,7 +7117,7 @@ char *mprEncode64(cchar *s)
     Encode a block of a given length
     Returns a null terminated block
  */
-char *mprEncode64Block(cchar *s, ssize len)
+PUBLIC char *mprEncode64Block(cchar *s, ssize len)
 {
     uint    shiftbuf;
     char    *buffer, *bp;
@@ -11494,7 +7134,7 @@ char *mprEncode64Block(cchar *s, ssize len)
     end = &s[len];
     while (s < end) {
         shiftbuf = 0;
-        for (j = 2; j >= 0 && *s; j--, s++) {
+        for (j = 2; s < end && j >= 0; j--, s++) {
             shiftbuf |= ((*s & 0xff) << (j * 8));
         }
         shift = 18;
@@ -11511,7 +7151,7 @@ char *mprEncode64Block(cchar *s, ssize len)
 }
 
 
-char *mprGetMD5(cchar *s)
+PUBLIC char *mprGetMD5(cchar *s)
 {
     return mprGetMD5WithPrefix(s, slen(s), NULL);
 }
@@ -11520,7 +7160,7 @@ char *mprGetMD5(cchar *s)
 /*
     Return the MD5 hash of a block. Returns allocated string. A prefix for the result can be supplied.
  */
-char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
+PUBLIC char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
 {
     MD5CONTEXT      context;
     uchar           hash[CRYPT_HASH_SIZE];
@@ -11542,7 +7182,6 @@ char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
         *r++ = hex[hash[i] & 0xF];
     }
     *r = '\0';
-
     len = (prefix) ? slen(prefix) : 0;
     str = mprAlloc(sizeof(result) + len);
     if (str) {
@@ -11561,10 +7200,6 @@ char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
 static void initMD5(MD5CONTEXT *context)
 {
     context->count[0] = context->count[1] = 0;
-
-    /*
-        Load constants
-     */
     context->state[0] = 0x67452301;
     context->state[1] = 0xefcdab89;
     context->state[2] = 0x98badcfe;
@@ -11591,7 +7226,6 @@ static void update(MD5CONTEXT *context, uchar *input, uint inputLen)
     if (inputLen >= partLen) {
         memcpy((uchar*) &context->buffer[index], (uchar*) input, partLen);
         transform(context->state, context->buffer);
-
         for (i = partLen; i + 63 < inputLen; i += 64) {
             transform(context->state, &input[i]);
         }
@@ -11749,60 +7383,205 @@ static void decode(uint *output, uchar *input, uint len)
 }
 
 
-/********************************** Copyright *********************************/
+/************************************* Sha1 **********************************/
+
+PUBLIC char *mprGetSHA(cchar *s)
+{
+    return mprGetSHAWithPrefix(s, slen(s), NULL);
+}
+
+
+PUBLIC char *mprGetSHABase64(cchar *s)
+{
+    MprSha  sha;
+    uchar   hash[SHA_SIZE + 1];
+
+    shaInit(&sha);
+    shaUpdate(&sha, (cuchar*) s, slen(s));
+    shaFinalize(hash, &sha);
+    hash[SHA_SIZE] = '\0';
+    return mprEncode64Block((char*) hash, SHA_SIZE);
+}
+
+
+PUBLIC char *mprGetSHAWithPrefix(cchar *buf, ssize length, cchar *prefix)
+{
+    MprSha  sha;
+    uchar   hash[SHA_SIZE];
+    cchar   *hex = "0123456789abcdef";
+    char    *r, *str;
+    char    result[(SHA_SIZE * 2) + 1];
+    ssize   len;
+    int     i;
+
+    if (length < 0) {
+        length = slen(buf);
+    }
+    shaInit(&sha);
+    shaUpdate(&sha, (cuchar*) buf, length);
+    shaFinalize(hash, &sha);
+
+    for (i = 0, r = result; i < SHA_SIZE; i++) {
+        *r++ = hex[hash[i] >> 4];
+        *r++ = hex[hash[i] & 0xF];
+    }
+    *r = '\0';
+    len = (prefix) ? slen(prefix) : 0;
+    str = mprAlloc(sizeof(result) + len);
+    if (str) {
+        if (prefix) {
+            strcpy(str, prefix);
+        }
+        strcpy(str + len, result);
+    }
+    return str;
+}
+
+
+static void shaInit(MprSha *sha)
+{
+    sha->lowLength = 0;
+    sha->highLength = 0;
+    sha->index = 0;
+    sha->hash[0] = 0x67452301;
+    sha->hash[1] = 0xEFCDAB89;
+    sha->hash[2] = 0x98BADCFE;
+    sha->hash[3] = 0x10325476;
+    sha->hash[4] = 0xC3D2E1F0;
+}
+
+
+static void shaUpdate(MprSha *sha, cuchar *msg, ssize len)
+{
+    while (len--) {
+        sha->block[sha->index++] = (*msg & 0xFF);
+        sha->lowLength += 8;
+        if (sha->lowLength == 0) {
+            sha->highLength++;
+        }
+        if (sha->index == 64) {
+            shaProcess(sha);
+        }
+        msg++;
+    }
+}
+
+
+static void shaFinalize(uchar *digest, MprSha *sha)
+{
+    int i;
+
+    shaPad(sha);
+    memset(sha->block, 0, 64);
+    sha->lowLength = 0;
+    sha->highLength = 0;
+    for  (i = 0; i < SHA_SIZE; i++) {
+        digest[i] = sha->hash[i >> 2] >> 8 * (3 - (i & 0x03));
+    }
+}
+
+
+static void shaProcess(MprSha *sha)
+{
+    uint    K[] = { 0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6 };
+    uint    temp, W[80], A, B, C, D, E;
+    int     t;
+
+    for  (t = 0; t < 16; t++) {
+        W[t] = sha->block[t * 4] << 24;
+        W[t] |= sha->block[t * 4 + 1] << 16;
+        W[t] |= sha->block[t * 4 + 2] << 8;
+        W[t] |= sha->block[t * 4 + 3];
+    }
+    for (t = 16; t < 80; t++) {
+       W[t] = shaShift(1, W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16]);
+    }
+    A = sha->hash[0];
+    B = sha->hash[1];
+    C = sha->hash[2];
+    D = sha->hash[3];
+    E = sha->hash[4];
+
+    for (t = 0; t < 20; t++) {
+        temp =  shaShift(5, A) + ((B & C) | ((~B) & D)) + E + W[t] + K[0];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    for (t = 20; t < 40; t++) {
+        temp = shaShift(5, A) + (B ^ C ^ D) + E + W[t] + K[1];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    for (t = 40; t < 60; t++) {
+        temp = shaShift(5, A) + ((B & C) | (B & D) | (C & D)) + E + W[t] + K[2];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    for (t = 60; t < 80; t++) {
+        temp = shaShift(5, A) + (B ^ C ^ D) + E + W[t] + K[3];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    sha->hash[0] += A;
+    sha->hash[1] += B;
+    sha->hash[2] += C;
+    sha->hash[3] += D;
+    sha->hash[4] += E;
+    sha->index = 0;
+}
+
+
+static void shaPad(MprSha *sha)
+{
+    if (sha->index > 55) {
+        sha->block[sha->index++] = 0x80;
+        while(sha->index < 64) {
+            sha->block[sha->index++] = 0;
+        }
+        shaProcess(sha);
+        while (sha->index < 56) {
+            sha->block[sha->index++] = 0;
+        }
+    } else {
+        sha->block[sha->index++] = 0x80;
+        while(sha->index < 56) {
+            sha->block[sha->index++] = 0;
+        }
+    }
+    sha->block[56] = sha->highLength >> 24;
+    sha->block[57] = sha->highLength >> 16;
+    sha->block[58] = sha->highLength >> 8;
+    sha->block[59] = sha->highLength;
+    sha->block[60] = sha->lowLength >> 24;
+    sha->block[61] = sha->lowLength >> 16;
+    sha->block[62] = sha->lowLength >> 8;
+    sha->block[63] = sha->lowLength;
+    shaProcess(sha);
+}
 
 /*
-    @copy   custom
-    
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1994-2012. All Rights Reserved.
-    Portions Copyright (C) 1991-2, RSA Data Security, Inc. All rights reserved. 
-    
-    RSA License:
+    @copy   default
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions
-    are met:
-    
-    1. Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-    
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-    
-    THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-    OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-    HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-    SUCH DAMAGE.
-    
-    RSA License Details
-    -------------------
-    
-    License to copy and use this software is granted provided that it is 
-    identified as the "RSA Data Security, Inc. MD5 Message-Digest Algorithm" 
-    in all material mentioning or referencing this software or this function.
-    
-    License is also granted to make and use derivative works provided that such
-    works are identified as "derived from the RSA Data Security, Inc. MD5 
-    Message-Digest Algorithm" in all material mentioning or referencing the 
-    derived work.
-    
-    RSA Data Security, Inc. makes no representations concerning either the 
-    merchantability of this software or the suitability of this software for 
-    any particular purpose. It is provided "as is" without express or implied 
-    warranty of any kind.
-    
-    These notices must be retained in any copies of any part of this
-    documentation and/or software.
-    
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -11830,7 +7609,7 @@ static void decode(uint *output, uchar *input, uint len)
 
 
 
-#if !BIT_FEATURE_ROMFS
+#if !BIT_ROM
 /*********************************** Defines **********************************/
 
 #if WINDOWS
@@ -11838,6 +7617,13 @@ static void decode(uint *output, uchar *input, uint len)
     Open/Delete retries to circumvent windows pending delete problems
  */
 #define RETRIES 40
+
+/*
+    Windows only permits owner bits
+ */
+#define MASK_PERMS(perms)    perms & 0600
+#else
+#define MASK_PERMS(perms)    perms
 #endif
 
 /********************************** Forwards **********************************/
@@ -11855,13 +7641,13 @@ static int cygOpen(MprFileSystem *fs, cchar *path, int omode, int perms)
 {
     int     fd;
 
-    fd = open(path, omode, perms);
+    fd = open(path, omode, MASK_PERMS(perms));
 #if WINDOWS
     if (fd < 0) {
         if (*path == '/') {
             path = sjoin(fs->cygwin, path, NULL);
         }
-        fd = open(path, omode, perms);
+        fd = open(path, omode, MASK_PERMS(perms));
     }
 #endif
     return fd;
@@ -11872,13 +7658,13 @@ static MprFile *openFile(MprFileSystem *fs, cchar *path, int omode, int perms)
 {
     MprFile     *file;
     
-    mprAssert(path);
+    assure(path);
 
     if ((file = mprAllocObj(MprFile, manageDiskFile)) == 0) {
         return NULL;
     }
     file->path = sclone(path);
-    file->fd = open(path, omode, perms);
+    file->fd = open(path, omode, MASK_PERMS(perms));
     if (file->fd < 0) {
 #if WINDOWS
         /*
@@ -11887,7 +7673,7 @@ static MprFile *openFile(MprFileSystem *fs, cchar *path, int omode, int perms)
         int i, err = GetLastError();
         if (err == ERROR_ACCESS_DENIED) {
             for (i = 0; i < RETRIES; i++) {
-                file->fd = open(path, omode, perms);
+                file->fd = open(path, omode, MASK_PERMS(perms));
                 if (file->fd >= 0) {
                     break;
                 }
@@ -11913,7 +7699,7 @@ static void manageDiskFile(MprFile *file, int flags)
         mprMark(file->path);
         mprMark(file->fileSystem);
         mprMark(file->buf);
-#if BIT_FEATURE_ROMFS
+#if BIT_ROM
         mprMark(file->inode);
 #endif
 
@@ -11927,7 +7713,7 @@ static int closeFile(MprFile *file)
 {
     MprBuf  *bp;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return 0;
@@ -11946,8 +7732,8 @@ static int closeFile(MprFile *file)
 
 static ssize readFile(MprFile *file, void *buf, ssize size)
 {
-    mprAssert(file);
-    mprAssert(buf);
+    assure(file);
+    assure(buf);
 
     return read(file->fd, buf, (uint) size);
 }
@@ -11955,8 +7741,8 @@ static ssize readFile(MprFile *file, void *buf, ssize size)
 
 static ssize writeFile(MprFile *file, cvoid *buf, ssize count)
 {
-    mprAssert(file);
-    mprAssert(buf);
+    assure(file);
+    assure(buf);
 
 #if VXWORKS
     return write(file->fd, (void*) buf, count);
@@ -11968,14 +7754,14 @@ static ssize writeFile(MprFile *file, cvoid *buf, ssize count)
 
 static MprOff seekFile(MprFile *file, int seekType, MprOff distance)
 {
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
 #if BIT_WIN_LIKE
     return (MprOff) _lseeki64(file->fd, (int64) distance, seekType);
-#elif HAS_OFF64
+#elif BIT_HAS_OFF64
     return (MprOff) lseek64(file->fd, (off64_t) distance, seekType);
 #else
     return (MprOff) lseek(file->fd, (off_t) distance, seekType);
@@ -12010,7 +7796,7 @@ static int deletePath(MprDiskFileSystem *fs, cchar *path)
      */
     int i, err;
     for (i = 0; i < RETRIES; i++) {
-        if (DeleteFile((char*) path) != 0) {
+        if (DeleteFile(wide(path)) != 0) {
             return 0;
         }
         err = GetLastError();
@@ -12069,8 +7855,8 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     struct stat s;
     cchar       *ext;
 
-    mprAssert(path);
-    mprAssert(info);
+    assure(path);
+    assure(info);
 
     info->checked = 1;
     info->valid = 0;
@@ -12101,8 +7887,8 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     struct __stat64     s;
     cchar               *ext;
 
-    mprAssert(path);
-    mprAssert(info);
+    assure(path);
+    assure(info);
     info->checked = 1;
     info->valid = 0;
     info->isReg = 0;
@@ -12148,7 +7934,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     if (info->isReg) {
         long    att;
 
-        if ((att = GetFileAttributes(path)) == -1) {
+        if ((att = GetFileAttributes(wide(path))) == -1) {
             return -1;
         }
         if (att & (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_ENCRYPTED |
@@ -12160,7 +7946,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
         }
         if (info->isReg) {
             HANDLE handle;
-            handle = CreateFile(path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
+            handle = CreateFile(wide(path), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
             if (handle == INVALID_HANDLE_VALUE) {
                 info->isReg = 0;
             } else {
@@ -12267,7 +8053,7 @@ static int truncateFile(MprDiskFileSystem *fs, cchar *path, MprOff size)
 {
     HANDLE  h;
 
-    h = CreateFile(path, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    h = CreateFile(wide(path), GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
     SetFilePointer(h, (LONG) size, 0, FILE_BEGIN);
     if (h == INVALID_HANDLE_VALUE || SetEndOfFile(h) == 0) {
         CloseHandle(h);
@@ -12313,7 +8099,7 @@ static void manageDiskFileSystem(MprDiskFileSystem *dfs, int flags)
 }
 
 
-MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
+PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 {
     MprFileSystem       *fs;
     MprDiskFileSystem   *dfs;
@@ -12366,36 +8152,20 @@ MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 #endif
     return dfs;
 }
-#endif /* !BIT_FEATURE_ROMFS */
+#endif /* !BIT_ROM */
 
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -12404,7 +8174,6 @@ MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 
     @end
  */
-
 
 /************************************************************************/
 /*
@@ -12428,8 +8197,8 @@ MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 
 static void dequeueDispatcher(MprDispatcher *dispatcher);
 static int dispatchEvents(MprDispatcher *dispatcher);
-static MprTime getDispatcherIdleTime(MprDispatcher *dispatcher, MprTime timeout);
-static MprTime getIdleTime(MprEventService *es, MprTime timeout);
+static MprTicks getDispatcherIdleTicks(MprDispatcher *dispatcher, MprTicks timeout);
+static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout);
 static MprDispatcher *getNextReadyDispatcher(MprEventService *es);
 static void initDispatcher(MprDispatcher *q);
 static int makeRunnable(MprDispatcher *dispatcher);
@@ -12444,12 +8213,15 @@ static bool serviceDispatcher(MprDispatcher *dp);
 #define isReady(dispatcher) (dispatcher->parent == dispatcher->service->readyQ)
 #define isWaiting(dispatcher) (dispatcher->parent == dispatcher->service->waitQ)
 #define isEmpty(dispatcher) (dispatcher->eventQ->next == dispatcher->eventQ)
+#if KEEP
+static int dqlen(MprDispatcher *dq);
+#endif
 
 /************************************* Code ***********************************/
 /*
     Create the overall dispatch service. There may be many event dispatchers.
  */
-MprEventService *mprCreateEventService()
+PUBLIC MprEventService *mprCreateEventService()
 {
     MprEventService     *es;
 
@@ -12457,7 +8229,7 @@ MprEventService *mprCreateEventService()
         return 0;
     }
     MPR->eventService = es;
-    es->now = mprGetTime();
+    es->now = mprGetTicks();
     es->mutex = mprCreateLock();
     es->waitCond = mprCreateCond();
     es->runQ = mprCreateDispatcher("running", 0);
@@ -12471,6 +8243,8 @@ MprEventService *mprCreateEventService()
 
 static void manageEventService(MprEventService *es, int flags)
 {
+    MprDispatcher   *dp;
+
     if (flags & MPR_MANAGE_MARK) {
         mprMark(es->runQ);
         mprMark(es->readyQ);
@@ -12480,6 +8254,22 @@ static void manageEventService(MprEventService *es, int flags)
         mprMark(es->waitCond);
         mprMark(es->mutex);
 
+        for (dp = es->runQ->next; dp != es->runQ; dp = dp->next) {
+            mprMark(dp);
+        }
+        for (dp = es->readyQ->next; dp != es->readyQ; dp = dp->next) {
+            mprMark(dp);
+        }
+        for (dp = es->waitQ->next; dp != es->waitQ; dp = dp->next) {
+            mprMark(dp);
+        }
+        for (dp = es->idleQ->next; dp != es->idleQ; dp = dp->next) {
+            mprMark(dp);
+        }
+        for (dp = es->pendingQ->next; dp != es->pendingQ; dp = dp->next) {
+            mprMark(dp);
+        }
+
     } else if (flags & MPR_MANAGE_FREE) {
         /* Needed for race with manageDispatcher */
         es->mutex = 0;
@@ -12487,7 +8277,7 @@ static void manageEventService(MprEventService *es, int flags)
 }
 
 
-void mprStopEventService()
+PUBLIC void mprStopEventService()
 {
     mprWakeDispatchers();
     mprWakeNotifier();
@@ -12497,7 +8287,7 @@ void mprStopEventService()
 /*
     Create a disabled dispatcher. A dispatcher schedules events on a single dispatch queue.
  */
-MprDispatcher *mprCreateDispatcher(cchar *name, int enable)
+PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int flags)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
@@ -12507,11 +8297,12 @@ MprDispatcher *mprCreateDispatcher(cchar *name, int enable)
     }
     dispatcher->name = sclone(name);
     dispatcher->cond = mprCreateCond();
-    dispatcher->enabled = enable;
+    dispatcher->flags = flags;
     dispatcher->magic = MPR_DISPATCHER_MAGIC;
     es = dispatcher->service = MPR->eventService;
     dispatcher->eventQ = mprCreateEventQueue();
-    if (enable) {
+    dispatcher->currentQ = mprCreateEventQueue();
+    if (flags & MPR_DISPATCHER_ENABLED) {
         queueDispatcher(es->idleQ, dispatcher);
     } else {
         initDispatcher(dispatcher);
@@ -12520,30 +8311,32 @@ MprDispatcher *mprCreateDispatcher(cchar *name, int enable)
 }
 
 
-void mprDestroyDispatcher(MprDispatcher *dispatcher)
+static void mprDestroyDispatcher(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *q, *event, *next;
 
-    if (dispatcher && !dispatcher->destroyed) {
+    if (dispatcher && !(dispatcher->flags & MPR_DISPATCHER_DESTROYED)) {
         es = dispatcher->service;
-        mprAssert(es == MPR->eventService);
+        assure(es == MPR->eventService);
         lock(es);
-        mprAssert(dispatcher->service == MPR->eventService);
-        mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-        dequeueDispatcher(dispatcher);
-        mprAssert(dispatcher->parent == dispatcher);
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+        assure(dispatcher->service == MPR->eventService);
+        assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
         q = dispatcher->eventQ;
-        dispatcher->enabled = 0;
-        dispatcher->destroyed = 1;
         for (event = q->next; event != q; event = next) {
-            mprAssert(event->magic == MPR_EVENT_MAGIC);
+            assure(event->magic == MPR_EVENT_MAGIC);
             next = event->next;
             if (event->dispatcher) {
                 mprRemoveEvent(event);
             }
         }
-        mprAssert(dispatcher->parent == dispatcher);
+        dequeueDispatcher(dispatcher);
+        assure(dispatcher->parent == dispatcher);
+
+        dispatcher->flags = MPR_DISPATCHER_DESTROYED;
+        dispatcher->owner = 0;
+        dispatcher->magic = MPR_DISPATCHER_FREE;
         unlock(es);
     }
 }
@@ -12554,34 +8347,65 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
     MprEventService     *es;
     MprEvent            *q, *event;
 
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     es = dispatcher->service;
 
     if (flags & MPR_MANAGE_MARK) {
         mprMark(dispatcher->name);
         mprMark(dispatcher->eventQ);
-        mprMark(dispatcher->current);
+        mprMark(dispatcher->currentQ);
         mprMark(dispatcher->cond);
         mprMark(dispatcher->parent);
         mprMark(dispatcher->service);
         mprMark(dispatcher->requiredWorker);
 
+        //  MOB - is this lock needed?  Surely all threads are stopped.
         lock(es);
         q = dispatcher->eventQ;
         for (event = q->next; event != q; event = event->next) {
-            mprAssert(event->magic == MPR_EVENT_MAGIC);
+            assure(event->magic == MPR_EVENT_MAGIC);
+            mprMark(event);
+        }
+        q = dispatcher->currentQ;
+        for (event = q->next; event != q; event = event->next) {
+            assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
         unlock(es);
         
     } else if (flags & MPR_MANAGE_FREE) {
         mprDestroyDispatcher(dispatcher);
-        mprAssert(dispatcher->destroyed);
     }
 }
 
 
-void mprEnableDispatcher(MprDispatcher *dispatcher)
+PUBLIC void mprDisableDispatcher(MprDispatcher *dispatcher)
+{
+    MprEventService     *es;
+    MprEvent            *q, *event, *next;
+
+    if (dispatcher && (dispatcher->flags & MPR_DISPATCHER_ENABLED)) {
+        es = dispatcher->service;
+        lock(es);
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+        assure(dispatcher->service == MPR->eventService);
+        assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+        q = dispatcher->eventQ;
+        for (event = q->next; event != q; event = next) {
+            assure(event->magic == MPR_EVENT_MAGIC);
+            next = event->next;
+            if (event->dispatcher) {
+                mprRemoveEvent(event);
+            }
+        }
+        dequeueDispatcher(dispatcher);
+        assure(dispatcher->parent == dispatcher);
+        dispatcher->flags &= ~MPR_DISPATCHER_ENABLED;
+        unlock(es);
+    }
+}
+
+
+PUBLIC void mprEnableDispatcher(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     int                 mustWake;
@@ -12591,11 +8415,10 @@ void mprEnableDispatcher(MprDispatcher *dispatcher)
     }
     es = dispatcher->service;
     mustWake = 0;
-
     lock(es);
-    mprAssert(!dispatcher->destroyed);
-    if (!dispatcher->enabled) {
-        dispatcher->enabled = 1;
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    if (!(dispatcher->flags & MPR_DISPATCHER_ENABLED)) {
+        dispatcher->flags |= MPR_DISPATCHER_ENABLED;
         LOG(7, "mprEnableDispatcher: %s", dispatcher->name);
         if (!isEmpty(dispatcher) && !isReady(dispatcher) && !isRunning(dispatcher)) {
             queueDispatcher(es->readyQ, dispatcher);
@@ -12620,11 +8443,11 @@ void mprEnableDispatcher(MprDispatcher *dispatcher)
     @param timeout Time in milliseconds to wait. Set to zero for no wait. Set to -1 to wait forever.
     @returns Zero if not events occurred. Otherwise returns non-zero.
  */
-int mprServiceEvents(MprTime timeout, int flags)
+PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
 {
     MprEventService     *es;
     MprDispatcher       *dp;
-    MprTime             expires, delay;
+    MprTicks            expires, delay;
     int                 beginEventCount, eventCount, justOne;
 
     if (MPR->eventing) {
@@ -12636,7 +8459,7 @@ int mprServiceEvents(MprTime timeout, int flags)
     es = MPR->eventService;
     beginEventCount = eventCount = es->eventCount;
 
-    es->now = mprGetTime();
+    es->now = mprGetTicks();
     expires = timeout < 0 ? MAXINT64 : (es->now + timeout);
     if (expires < 0) {
         expires = MAXINT64;
@@ -12649,19 +8472,20 @@ int mprServiceEvents(MprTime timeout, int flags)
             mprServiceSignals();
         }
         while ((dp = getNextReadyDispatcher(es)) != NULL) {
-            mprAssert(!dp->destroyed);
-            mprAssert(dp->magic == MPR_DISPATCHER_MAGIC);
+            assure(!(dp->flags & MPR_DISPATCHER_DESTROYED));
+            assure(dp->magic == MPR_DISPATCHER_MAGIC);
             if (!serviceDispatcher(dp)) {
                 queueDispatcher(es->pendingQ, dp);
                 continue;
             }
             if (justOne) {
+                MPR->eventing = 0;
                 return abs(es->eventCount - beginEventCount);
             }
         } 
         if (es->eventCount == eventCount) {
             lock(es);
-            delay = getIdleTime(es, expires - es->now);
+            delay = getIdleTicks(es, expires - es->now);
             if (delay > 0) {
                 es->waiting = 1;
                 es->willAwake = es->now + delay;
@@ -12677,7 +8501,7 @@ int mprServiceEvents(MprTime timeout, int flags)
                 unlock(es);
             }
         }
-        es->now = mprGetTime();
+        es->now = mprGetTicks();
         if (justOne) {
             break;
         }
@@ -12688,28 +8512,28 @@ int mprServiceEvents(MprTime timeout, int flags)
 
 
 /*
-    Wait for an event to occur. Expect the event to signal the cond var.
-    WARNING: this will enable GC while sleeping
+    Wait for an event to occur and dispatch the event. This is the primary event dispatch routine.
     Return Return 0 if an event was signalled. Return MPR_ERR_TIMEOUT if no event was seen before the timeout.
+    WARNING: this will enable GC while sleeping
  */
-int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
+PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
 {
     MprEventService     *es;
-    MprTime             expires, delay;
+    MprTicks            expires, delay;
     MprOsThread         thread;
     int                 claimed, signalled, wasRunning, runEvents;
 
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    mprAssert(!dispatcher->destroyed);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = MPR->eventService;
-    es->now = mprGetTime();
+    es->now = mprGetTicks();
 
     if (dispatcher == NULL) {
         dispatcher = MPR->dispatcher;
     }
-    mprAssert(!dispatcher->waitingOnCond);
-    if (dispatcher->waitingOnCond) {
+    assure(!(dispatcher->flags & MPR_DISPATCHER_WAITING));
+    if (dispatcher->flags & MPR_DISPATCHER_WAITING) {
         return MPR_ERR_BUSY;
     }
     thread = mprGetCurrentOsThread();
@@ -12731,8 +8555,8 @@ int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
     }
     unlock(es);
 
-    while (es->now < expires && !mprIsStoppingCore()) {
-        mprAssert(!dispatcher->destroyed);
+    while (es->now <= expires && !mprIsStoppingCore()) {
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         if (runEvents) {
             makeRunnable(dispatcher);
             if (dispatchEvents(dispatcher)) {
@@ -12741,31 +8565,31 @@ int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
             }
         }
         lock(es);
-        delay = getDispatcherIdleTime(dispatcher, expires - es->now);
-        dispatcher->waitingOnCond = 1;
-        mprAssert(!dispatcher->destroyed);
+        delay = getDispatcherIdleTicks(dispatcher, expires - es->now);
+        dispatcher->flags |= MPR_DISPATCHER_WAITING;
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         unlock(es);
         
-        mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+        assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
         mprYield(MPR_YIELD_STICKY);
-        mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+        assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
-        if (mprWaitForCond(dispatcher->cond, (int) delay) == 0) {
-            mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+        if (mprWaitForCond(dispatcher->cond, delay) == 0) {
+            assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
             mprResetYield();
-            dispatcher->waitingOnCond = 0;
+            dispatcher->flags &= ~MPR_DISPATCHER_WAITING;
             if (runEvents) {
                 makeRunnable(dispatcher);
                 dispatchEvents(dispatcher);
             }
-            mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+            assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
             signalled++;
             break;
         }
         mprResetYield();
-        mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-        dispatcher->waitingOnCond = 0;
-        es->now = mprGetTime();
+        assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+        dispatcher->flags &= ~MPR_DISPATCHER_WAITING;
+        es->now = mprGetTicks();
     }
     if (!wasRunning) {
         scheduleDispatcher(dispatcher);
@@ -12773,12 +8597,12 @@ int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
             dispatcher->owner = 0;
         }
     }
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     return signalled ? 0 : MPR_ERR_TIMEOUT;
 }
 
 
-void mprWakeDispatchers()
+PUBLIC void mprWakeDispatchers()
 {
     MprEventService     *es;
     MprDispatcher       *runQ, *dp;
@@ -12787,15 +8611,13 @@ void mprWakeDispatchers()
     lock(es);
     runQ = es->runQ;
     for (dp = runQ->next; dp != runQ; dp = dp->next) {
-        mprAssert(dp->magic == MPR_DISPATCHER_MAGIC);
-        mprAssert(!dp->destroyed);
         mprSignalCond(dp->cond);
     }
     unlock(es);
 }
 
 
-int mprDispatchersAreIdle()
+PUBLIC int mprDispatchersAreIdle()
 {
     MprEventService     *es;
     MprDispatcher       *runQ, *dispatcher;
@@ -12818,14 +8640,14 @@ int mprDispatchersAreIdle()
 /*
     Relay an event to a dispatcher. This invokes the callback proc as though it was invoked from the given dispatcher. 
  */
-void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event)
+PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event)
 {
 #if BIT_DEBUG
     MprThread   *tp = mprGetCurrentThread();
     mprNop(tp);
 #endif
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    mprAssert(!dispatcher->destroyed);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     if (isRunning(dispatcher) && dispatcher->owner != mprGetCurrentOsThread()) {
         mprError("Relay to a running dispatcher owned by another thread");
@@ -12833,12 +8655,22 @@ void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *
     if (event) {
         event->timestamp = dispatcher->service->now;
     }
-    dispatcher->enabled = 1;
+    //  MOB - remove
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    dispatcher->flags |= MPR_DISPATCHER_ENABLED;
+
     dispatcher->owner = mprGetCurrentOsThread();
     makeRunnable(dispatcher);
     ((MprEventProc) proc)(data, event);
-    scheduleDispatcher(dispatcher);
-    dispatcher->owner = 0;
+
+    /*
+        The event may have disabled the dispatcher. Don't reschedule if disabled
+     */
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
+        scheduleDispatcher(dispatcher);
+        dispatcher->owner = 0;
+    }
 }
 
 
@@ -12847,25 +8679,28 @@ void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *
     the dispatcher is moved to the idleQ. If there is a past-due event, it is moved to the readyQ. If there is a future 
     event pending, it is put on the waitQ.
  */
-void mprScheduleDispatcher(MprDispatcher *dispatcher)
+PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *event;
     int                 mustWakeWaitService, mustWakeCond;
    
-    mprAssert(dispatcher);
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    mprAssert(!dispatcher->destroyed);
-    mprAssert(dispatcher->name);
-    mprAssert(dispatcher->cond);
+    assure(dispatcher);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    assure(dispatcher->name);
+    assure(dispatcher->cond);
     es = dispatcher->service;
 
     lock(es);
-    mprAssert(!dispatcher->destroyed);
-    if (isRunning(dispatcher) || !dispatcher->enabled) {
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+
+    //  MOB - remove
+    assure((dispatcher->flags & MPR_DISPATCHER_ENABLED));
+    if (isRunning(dispatcher) || !(dispatcher->flags & MPR_DISPATCHER_ENABLED)) {
         /* Wake up if waiting in mprWaitForIO */
         mustWakeWaitService = es->waiting;
-        mustWakeCond = dispatcher->waitingOnCond;
+        mustWakeCond = dispatcher->flags & MPR_DISPATCHER_WAITING;
 
     } else {
         if (isEmpty(dispatcher)) {
@@ -12874,19 +8709,19 @@ void mprScheduleDispatcher(MprDispatcher *dispatcher)
             return;
         }
         event = dispatcher->eventQ->next;
-        mprAssert(event->magic == MPR_EVENT_MAGIC);
+        assure(event->magic == MPR_EVENT_MAGIC);
         mustWakeWaitService = mustWakeCond = 0;
         if (event->due > es->now) {
-            mprAssert(!dispatcher->destroyed);
+            assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
             queueDispatcher(es->waitQ, dispatcher);
             if (event->due < es->willAwake) {
                 mustWakeWaitService = 1;
-                mustWakeCond = dispatcher->waitingOnCond;
+                mustWakeCond = dispatcher->flags & MPR_DISPATCHER_WAITING;
             }
         } else {
             queueDispatcher(es->readyQ, dispatcher);
             mustWakeWaitService = es->waiting;
-            mustWakeCond = dispatcher->waitingOnCond;
+            mustWakeCond = dispatcher->flags & MPR_DISPATCHER_WAITING;
         }
     }
     unlock(es);
@@ -12908,29 +8743,33 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     MprEvent            *event;
     int                 count;
 
-    mprAssert(dispatcher->enabled);
-    mprAssert(dispatcher->cond);
-    mprAssert(!dispatcher->destroyed);
+    assure(dispatcher->cond);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = dispatcher->service;
     LOG(7, "dispatchEvents for %s", dispatcher->name);
-
     lock(es);
-    for (count = 0; (event = mprGetNextEvent(dispatcher)) != 0; count++) {
-        mprAssert(event->magic == MPR_EVENT_MAGIC);
-        dispatcher->current = event;
+    assure(dispatcher->cond);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    for (count = 0; (dispatcher->flags & MPR_DISPATCHER_ENABLED) && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
+        assure(event->magic == MPR_EVENT_MAGIC);
+        unlock(es);
+
+        LOG(7, "Call event %s", event->name);
+        assure(event->proc);
+        (event->proc)(event->data, event);
+
+        lock(es);
         if (event->continuous) {
             /* Reschedule if continuous */
             event->timestamp = dispatcher->service->now;
             event->due = event->timestamp + (event->period ? event->period : 1);
             mprQueueEvent(dispatcher, event);
+        } else {
+            /* Remove from currentQ - GC can then collect */
+            mprDequeueEvent(event);
         }
-        mprAssert(event->proc);
-        unlock(es);
-        LOG(7, "Call event %s", event->name);
-        (event->proc)(event->data, event);
-        dispatcher->current = 0;
-        lock(es);
     }
     unlock(es);
     if (count && es->waiting) {
@@ -12943,11 +8782,10 @@ static int dispatchEvents(MprDispatcher *dispatcher)
 
 static bool serviceDispatcher(MprDispatcher *dispatcher)
 {
-    mprAssert(isRunning(dispatcher));
-    mprAssert(dispatcher->owner == 0);
-    mprAssert(dispatcher->cond);
-    mprAssert(!dispatcher->destroyed);
-    
+    assure(isRunning(dispatcher));
+    assure(dispatcher->owner == 0);
+    assure(dispatcher->cond);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     dispatcher->owner = mprGetCurrentOsThread();
 
     if (dispatcher == MPR->nonBlock) {
@@ -12965,33 +8803,46 @@ static bool serviceDispatcher(MprDispatcher *dispatcher)
 
 static void serviceDispatcherMain(MprDispatcher *dispatcher)
 {
-    if (dispatcher->destroyed) {
-        /* Dispatcher may have been destroyed after starting the worker */
+    MprEventService     *es;
+
+    assure(dispatcher->parent);
+    es = dispatcher->service;
+    lock(es);
+    //  MOB - should never be destroyed as it runs from gc when all threads give their ascent
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    if (!(dispatcher->flags & MPR_DISPATCHER_ENABLED) || (dispatcher->flags & MPR_DISPATCHER_DESTROYED)) {
+        /* Dispatcher may have been disabled after starting the worker */
+        unlock(es);
         return;
     }
-    mprAssert(isRunning(dispatcher));
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    mprAssert(dispatcher->cond);
-    mprAssert(dispatcher->name);
-    mprAssert(!dispatcher->destroyed);
+    unlock(es);
+    assure(isRunning(dispatcher));
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(dispatcher->cond);
+    assure(dispatcher->name);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    assure(dispatcher->parent);
 
     dispatcher->owner = mprGetCurrentOsThread();
     dispatchEvents(dispatcher);
-    if (!dispatcher->destroyed) {
+    /*
+        The dispatcher may be disabled in an event above
+     */
+    if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
         dispatcher->owner = 0;
         scheduleDispatcher(dispatcher);
     }
 }
 
 
-void mprClaimDispatcher(MprDispatcher *dispatcher)
+PUBLIC void mprClaimDispatcher(MprDispatcher *dispatcher)
 {
-    mprAssert(isRunning(dispatcher));
+    assure(isRunning(dispatcher));
     dispatcher->owner = mprGetCurrentOsThread();
 }
 
 
-void mprWakePendingDispatchers()
+PUBLIC void mprWakePendingDispatchers()
 {
     mprWakeNotifier();
 }
@@ -13013,9 +8864,9 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     lock(es);
     if (pendingQ->next != pendingQ && mprAvailableWorkers()) {
         dispatcher = pendingQ->next;
-        mprAssert(!dispatcher->destroyed);
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         queueDispatcher(es->runQ, dispatcher);
-        mprAssert(dispatcher->enabled);
+        assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
         dispatcher->owner = 0;
 
     } else if (readyQ->next == readyQ) {
@@ -13023,12 +8874,12 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
             ReadyQ is empty, try to transfer a dispatcher with due events onto the readyQ
          */
         for (dp = waitQ->next; dp != waitQ; dp = next) {
-            mprAssert(dp->magic == MPR_DISPATCHER_MAGIC);
-            mprAssert(!dp->destroyed);
+            assure(dp->magic == MPR_DISPATCHER_MAGIC);
+            assure(!(dp->flags & MPR_DISPATCHER_DESTROYED));
             next = dp->next;
             event = dp->eventQ->next;
-            mprAssert(event->magic == MPR_EVENT_MAGIC);
-            if (event->due <= es->now && dp->enabled) {
+            assure(event->magic == MPR_EVENT_MAGIC);
+            if (event->due <= es->now && dp->flags & MPR_DISPATCHER_ENABLED) {
                 queueDispatcher(es->readyQ, dp);
                 break;
             }
@@ -13036,16 +8887,16 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     }
     if (!dispatcher && readyQ->next != readyQ) {
         dispatcher = readyQ->next;
-        mprAssert(!dispatcher->destroyed);
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         queueDispatcher(es->runQ, dispatcher);
-        mprAssert(dispatcher->enabled);
+        assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
         dispatcher->owner = 0;
     }
     unlock(es);
-    mprAssert(dispatcher == NULL || isRunning(dispatcher));
-    mprAssert(dispatcher == NULL || dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    mprAssert(dispatcher == NULL || !dispatcher->destroyed);
-    mprAssert(dispatcher == NULL || dispatcher->cond);
+    assure(dispatcher == NULL || isRunning(dispatcher));
+    assure(dispatcher == NULL || dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(dispatcher == NULL || !(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    assure(dispatcher == NULL || dispatcher->cond);
     return dispatcher;
 }
 
@@ -13053,11 +8904,11 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
 /*
     Get the time to sleep till the next pending event. Must be called locked.
  */
-static MprTime getIdleTime(MprEventService *es, MprTime timeout)
+static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout)
 {
     MprDispatcher   *readyQ, *waitQ, *dp;
     MprEvent        *event;
-    MprTime         delay;
+    MprTicks        delay;
 
     waitQ = es->waitQ;
     readyQ = es->readyQ;
@@ -13072,10 +8923,11 @@ static MprTime getIdleTime(MprEventService *es, MprTime timeout)
             Examine all the dispatchers on the waitQ
          */
         for (dp = waitQ->next; dp != waitQ; dp = dp->next) {
-            mprAssert(dp->magic == MPR_DISPATCHER_MAGIC);
-            mprAssert(!dp->destroyed);
+            assure(dp->magic == MPR_DISPATCHER_MAGIC);
+            assure(!(dp->flags & MPR_DISPATCHER_DESTROYED));
+            assure(dp->flags & MPR_DISPATCHER_ENABLED);
             event = dp->eventQ->next;
-            mprAssert(event->magic == MPR_EVENT_MAGIC);
+            assure(event->magic == MPR_EVENT_MAGIC);
             if (event != dp->eventQ) {
                 delay = min(delay, (event->due - es->now));
                 if (delay <= 0) {
@@ -13089,12 +8941,12 @@ static MprTime getIdleTime(MprEventService *es, MprTime timeout)
 }
 
 
-static MprTime getDispatcherIdleTime(MprDispatcher *dispatcher, MprTime timeout)
+static MprTicks getDispatcherIdleTicks(MprDispatcher *dispatcher, MprTicks timeout)
 {
     MprEvent    *next;
-    MprTime     delay;
+    MprTicks    delay;
 
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     if (timeout < 0) {
         timeout = 0;
@@ -13113,24 +8965,25 @@ static MprTime getDispatcherIdleTime(MprDispatcher *dispatcher, MprTime timeout)
 }
 
 
-static void initDispatcher(MprDispatcher *q)
+static void initDispatcher(MprDispatcher *dispatcher)
 {
-    mprAssert(q->magic == MPR_DISPATCHER_MAGIC);
-    mprAssert(!q->destroyed);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(!(dispatcher->flags == MPR_DISPATCHER_DESTROYED));
            
-    q->next = q;
-    q->prev = q;
-    q->parent = q;
+    dispatcher->next = dispatcher;
+    dispatcher->prev = dispatcher;
+    dispatcher->parent = dispatcher;
 }
 
 
 static void queueDispatcher(MprDispatcher *prior, MprDispatcher *dispatcher)
 {
-    mprAssert(dispatcher->service == MPR->eventService);
+    assure(dispatcher->service == MPR->eventService);
     lock(dispatcher->service);
 
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    mprAssert(!dispatcher->destroyed);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
 
     if (dispatcher->parent) {
         dequeueDispatcher(dispatcher);
@@ -13140,21 +8993,18 @@ static void queueDispatcher(MprDispatcher *prior, MprDispatcher *dispatcher)
     dispatcher->next = prior->next;
     prior->next->prev = dispatcher;
     prior->next = dispatcher;
-    mprAssert(dispatcher->cond);
+    assure(dispatcher->cond);
     unlock(dispatcher->service);
 }
 
 
-/*
-    Remove an dispatcher
- */
 static void dequeueDispatcher(MprDispatcher *dispatcher)
 {
-    mprAssert(dispatcher->service == MPR->eventService);
+    assure(dispatcher->service == MPR->eventService);
     lock(dispatcher->service);
 
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    mprAssert(!dispatcher->destroyed);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
            
     if (dispatcher->next) {
         dispatcher->next->prev = dispatcher->prev;
@@ -13163,11 +9013,11 @@ static void dequeueDispatcher(MprDispatcher *dispatcher)
         dispatcher->prev = dispatcher;
         dispatcher->parent = dispatcher;
     } else {
-        mprAssert(dispatcher->parent == dispatcher);
-        mprAssert(dispatcher->next == dispatcher);
-        mprAssert(dispatcher->prev == dispatcher);
+        assure(dispatcher->parent == dispatcher);
+        assure(dispatcher->next == dispatcher);
+        assure(dispatcher->prev == dispatcher);
     }
-    mprAssert(dispatcher->cond);
+    assure(dispatcher->cond);
     unlock(dispatcher->service);
 }
 
@@ -13176,11 +9026,12 @@ static void scheduleDispatcher(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
 
-    mprAssert(dispatcher->service == MPR->eventService);
+    assure(dispatcher->service == MPR->eventService);
     es = dispatcher->service;
 
     lock(es);
-    mprAssert(dispatcher->cond);
+    assure(dispatcher->cond);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     dequeueDispatcher(dispatcher);
     mprScheduleDispatcher(dispatcher);
     unlock(es);
@@ -13195,7 +9046,7 @@ static int makeRunnable(MprDispatcher *dispatcher)
     es = dispatcher->service;
 
     lock(es);
-    mprAssert(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     wasRunning = isRunning(dispatcher);
     if (!isRunning(dispatcher)) {
         queueDispatcher(es->runQ, dispatcher);
@@ -13205,18 +9056,33 @@ static int makeRunnable(MprDispatcher *dispatcher)
 }
 
 
-#if UNUSED && KEEP
+#if KEEP
+static int dqlen(MprDispatcher *dq)
+{
+    MprDispatcher   *dp;
+    int             count;
+
+    count = 0;
+    for (dp = dq->next; dp != dq; dp = dp->next) {
+        count++;
+    }
+    return count;
+}
+#endif
+
+
+#if KEEP
 /*
     Designate the required worker thread to run the event
  */
-void mprDedicateWorkerToDispatcher(MprDispatcher *dispatcher, MprWorker *worker)
+PUBLIC void mprDedicateWorkerToDispatcher(MprDispatcher *dispatcher, MprWorker *worker)
 {
     dispatcher->requiredWorker = worker;
     mprDedicateWorker(worker);
 }
 
 
-void mprReleaseWorkerFromDispatcher(MprDispatcher *dispatcher, MprWorker *worker)
+PUBLIC void mprReleaseWorkerFromDispatcher(MprDispatcher *dispatcher, MprWorker *worker)
 {
     dispatcher->requiredWorker = 0;
     mprReleaseWorker(worker);
@@ -13224,7 +9090,7 @@ void mprReleaseWorkerFromDispatcher(MprDispatcher *dispatcher, MprWorker *worker
 #endif
 
 
-void mprSignalDispatcher(MprDispatcher *dispatcher)
+PUBLIC void mprSignalDispatcher(MprDispatcher *dispatcher)
 {
     if (dispatcher == NULL) {
         dispatcher = MPR->dispatcher;
@@ -13233,7 +9099,7 @@ void mprSignalDispatcher(MprDispatcher *dispatcher)
 }
 
 
-bool mprDispatcherHasEvents(MprDispatcher *dispatcher)
+PUBLIC bool mprDispatcherHasEvents(MprDispatcher *dispatcher)
 {
     if (dispatcher == 0) {
         return 0;
@@ -13244,31 +9110,15 @@ bool mprDispatcherHasEvents(MprDispatcher *dispatcher)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -13327,7 +9177,7 @@ static uchar charMatch[256] = {
 /*  
     Uri encode by encoding special characters with hex equivalents. Return an allocated string.
  */
-char *mprUriEncode(cchar *inbuf, int map)
+PUBLIC char *mprUriEncode(cchar *inbuf, int map)
 {
     static cchar    hexTable[] = "0123456789ABCDEF";
     uchar           c;
@@ -13335,11 +9185,14 @@ char *mprUriEncode(cchar *inbuf, int map)
     char            *result, *op;
     int             len;
 
-    mprAssert(inbuf);
-    mprAssert(inbuf);
+    assure(inbuf);
+    assure(inbuf);
 
+    if (!inbuf) {
+        return MPR->emptyString;
+    }
     for (len = 1, ip = inbuf; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & map) {
+        if (charMatch[(uchar) *ip] & map) {
             len += 2;
         }
     }
@@ -13359,7 +9212,7 @@ char *mprUriEncode(cchar *inbuf, int map)
             *op++ = c;
         }
     }
-    mprAssert(op < &result[len]);
+    assure(op < &result[len]);
     *op = '\0';
     return result;
 }
@@ -13368,19 +9221,18 @@ char *mprUriEncode(cchar *inbuf, int map)
 /*  
     Decode a string using URL encoding. Return an allocated string.
  */
-char *mprUriDecode(cchar *inbuf)
+PUBLIC char *mprUriDecode(cchar *inbuf)
 {
     cchar   *ip;
     char    *result, *op;
     int     num, i, c;
 
-    mprAssert(inbuf);
+    assure(inbuf);
 
     if ((result = sclone(inbuf)) == 0) {
         return 0;
     }
-
-    for (op = result, ip = inbuf; *ip; ip++, op++) {
+    for (op = result, ip = inbuf; ip && *ip; ip++, op++) {
         if (*ip == '+') {
             *op = ' ';
 
@@ -13413,17 +9265,20 @@ char *mprUriDecode(cchar *inbuf)
 /*  
     Escape a shell command. Not really Http, but useful anyway for CGI
  */
-char *mprEscapeCmd(cchar *cmd, int escChar)
+PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
 {
     uchar   c;
     cchar   *ip;
     char    *result, *op;
     int     len;
 
-    mprAssert(cmd);
+    assure(cmd);
 
+    if (!cmd) {
+        return MPR->emptyString;
+    }
     for (len = 1, ip = cmd; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & MPR_ENCODE_SHELL) {
+        if (charMatch[(uchar) *ip] & MPR_ENCODE_SHELL) {
             len++;
         }
     }
@@ -13437,7 +9292,7 @@ char *mprEscapeCmd(cchar *cmd, int escChar)
     op = result;
     while ((c = (uchar) *cmd++) != 0) {
 #if BIT_WIN_LIKE
-        //  TODO - should use fs->newline
+        //  MOB - should use fs->newline
         if ((c == '\r' || c == '\n') && *cmd != '\0') {
             c = ' ';
             continue;
@@ -13448,7 +9303,7 @@ char *mprEscapeCmd(cchar *cmd, int escChar)
         }
         *op++ = c;
     }
-    mprAssert(op < &result[len]);
+    assure(op < &result[len]);
     *op = '\0';
     return result;
 }
@@ -13457,14 +9312,17 @@ char *mprEscapeCmd(cchar *cmd, int escChar)
 /*  
     Escape HTML to escape defined characters (prevent cross-site scripting)
  */
-char *mprEscapeHtml(cchar *html)
+PUBLIC char *mprEscapeHtml(cchar *html)
 {
     cchar   *ip;
     char    *result, *op;
     int     len;
 
+    if (!html) {
+        return MPR->emptyString;
+    }
     for (len = 1, ip = html; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & MPR_ENCODE_HTML) {
+        if (charMatch[(uchar) *ip] & MPR_ENCODE_HTML) {
             len += 5;
         }
     }
@@ -13503,14 +9361,14 @@ char *mprEscapeHtml(cchar *html)
                 strcpy(op, "&#39;");
                 op += 5;
             } else {
-                mprAssert(0);
+                assure(0);
             }
             html++;
         } else {
             *op++ = *html++;
         }
     }
-    mprAssert(op < &result[len]);
+    assure(op < &result[len]);
     *op = '\0';
     return result;
 }
@@ -13520,28 +9378,12 @@ char *mprEscapeHtml(cchar *html)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -13579,7 +9421,7 @@ static void serviceIO(MprWaitService *ws, int count);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct epoll_event  ev;
 
@@ -13613,7 +9455,7 @@ int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-void mprManageEpoll(MprWaitService *ws, int flags)
+PUBLIC void mprManageEpoll(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->events);
@@ -13637,19 +9479,19 @@ static int growEvents(MprWaitService *ws)
 {
     ws->eventsMax *= 2;
     if ((ws->events = mprRealloc(ws->events, sizeof(struct epoll_event) * ws->eventsMax)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     struct epoll_event  ev;
     int                 fd, rc;
 
-    mprAssert(wp);
+    assure(wp);
     fd = wp->fd;
 
     lock(ws);
@@ -13664,7 +9506,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         }
         if (ev.events) {
             rc = epoll_ctl(ws->epoll, EPOLL_CTL_DEL, fd, &ev);
-#if UNUSED && KEEP
+#if KEEP
             if (rc != 0) {
                 mprError("Epoll del error %d on fd %d\n", errno, fd);
             }
@@ -13686,12 +9528,16 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         if (mask && fd >= ws->handlerMax) {
             ws->handlerMax = fd + 32;
             if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-                mprAssert(!MPR_ERR_MEMORY);
+                assure(!MPR_ERR_MEMORY);
                 return MPR_ERR_MEMORY;
             }
         }
-        mprAssert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+        assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         wp->desiredMask = mask;
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     ws->handlerMap[fd] = (mask) ? wp : 0;
     unlock(ws);
@@ -13703,7 +9549,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct epoll_event  ev, events[2];
     int                 epfd, rc;
@@ -13748,7 +9594,7 @@ int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected. 
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     int     rc;
 
@@ -13792,7 +9638,7 @@ static void serviceIO(MprWaitService *ws, int count)
     for (i = 0; i < count; i++) {
         ev = &ws->events[i];
         fd = ev->data.fd;
-        mprAssert(fd < ws->handlerMax);
+        assure(fd < ws->handlerMax);
         if ((wp = ws->handlerMap[fd]) == 0) {
             char    buf[128];
             if ((ev->events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (fd == ws->breakPipe[MPR_READ_PIPE])) {
@@ -13808,7 +9654,7 @@ static void serviceIO(MprWaitService *ws, int count)
             mask |= MPR_WRITABLE;
         }
         if (mask == 0) {
-            mprAssert(mask);
+            assure(mask);
             continue;
         }
         wp->presentMask = mask & wp->desiredMask;
@@ -13830,7 +9676,7 @@ static void serviceIO(MprWaitService *ws, int count)
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
     Must be async-safe.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
     int             c;
@@ -13843,36 +9689,18 @@ void mprWakeNotifier()
     }
 }
 
-#else
-void stubMmprEpoll() {}
 #endif /* MPR_EVENT_EPOLL */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -13903,8 +9731,7 @@ void stubMmprEpoll() {}
 
 /***************************** Forward Declarations ***************************/
 
-static void dequeueEvent(MprEvent *event);
-static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTime period, void *proc, 
+static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTicks period, void *proc, 
         void *data, int flgs);
 static void initEventQ(MprEvent *q);
 static void manageEvent(MprEvent *event, int flags);
@@ -13912,10 +9739,10 @@ static void queueEvent(MprEvent *prior, MprEvent *event);
 
 /************************************* Code ***********************************/
 /*
-    Create and queue a new event for service. Period is used as the delay before running the event and as the period between 
-    events for continuous events.
+    Create and queue a new event for service. Period is used as the delay before running the event and as the period 
+    between events for continuous events.
  */
-MprEvent *mprCreateEventQueue()
+PUBLIC MprEvent *mprCreateEventQueue()
 {
     MprEvent    *queue;
 
@@ -13928,10 +9755,10 @@ MprEvent *mprCreateEventQueue()
 
 
 /*
-    Create and queue a new event for service. Period is used as the delay before running the event and as the period between 
-    events for continuous events.
+    Create and queue a new event for service. Period is used as the delay before running the event and as the period 
+    between events for continuous events.
  */
-MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)
+PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, void *data, int flags)
 {
     MprEvent    *event;
 
@@ -13951,13 +9778,13 @@ MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTime period,
 
 static void manageEvent(MprEvent *event, int flags)
 {
-    mprAssert(event->magic == MPR_EVENT_MAGIC);
+    assure(event->magic == MPR_EVENT_MAGIC);
 
     if (flags & MPR_MANAGE_MARK) {
         /*
             Events in dispatcher queues are marked by the dispatcher managers, not via event->next,prev
          */
-        mprAssert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
+        assure(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
         mprMark(event->name);
         mprMark(event->dispatcher);
         mprMark(event->handler);
@@ -13967,7 +9794,7 @@ static void manageEvent(MprEvent *event, int flags)
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (event->next) {
-            mprAssert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
+            assure(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
             mprRemoveEvent(event);
             event->magic = 1;
         }
@@ -13975,16 +9802,16 @@ static void manageEvent(MprEvent *event, int flags)
 }
 
 
-static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTime period, void *proc, void *data, 
+static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTicks period, void *proc, void *data, 
     int flags)
 {
-    mprAssert(dispatcher);
-    mprAssert(event);
-    mprAssert(proc);
-    mprAssert(event->next == 0);
-    mprAssert(event->prev == 0);
+    assure(dispatcher);
+    assure(event);
+    assure(proc);
+    assure(event->next == 0);
+    assure(event->prev == 0);
 
-    dispatcher->service->now = mprGetTime();
+    dispatcher->service->now = mprGetTicks();
     event->name = sclone(name);
     event->timestamp = dispatcher->service->now;
     event->proc = proc;
@@ -14002,22 +9829,27 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
 /*
     Create an interval timer
  */
-MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)
+PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, 
+    void *data, int flags)
 {
     return mprCreateEvent(dispatcher, name, period, proc, data, MPR_EVENT_CONTINUOUS | flags);
 }
 
 
-void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
+PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
 {
     MprEventService     *es;
     MprEvent            *prior, *q;
 
-    mprAssert(dispatcher);
-    mprAssert(event);
-    mprAssert(event->timestamp);
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    mprAssert(event->magic == MPR_EVENT_MAGIC);
+    assure(dispatcher);
+    assure(event);
+    assure(event->timestamp);
+#if KEEP
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+#endif
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(event->magic == MPR_EVENT_MAGIC);
 
     es = dispatcher->service;
 
@@ -14030,21 +9862,20 @@ void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
             break;
         }
     }
-    mprAssert(event->next == 0);
-    mprAssert(event->prev == 0);
-    mprAssert(prior->next);
-    mprAssert(prior->prev);
+    assure(prior->next);
+    assure(prior->prev);
     
     queueEvent(prior, event);
+    event->dispatcher = dispatcher;
     es->eventCount++;
-    if (dispatcher->enabled) {
+    if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
         mprScheduleDispatcher(dispatcher);
     }
     unlock(es);
 }
 
 
-void mprRemoveEvent(MprEvent *event)
+PUBLIC void mprRemoveEvent(MprEvent *event)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
@@ -14054,9 +9885,10 @@ void mprRemoveEvent(MprEvent *event)
         es = dispatcher->service;
         lock(es);
         if (event->next) {
-            dequeueEvent(event);
+            mprDequeueEvent(event);
         }
-        if (dispatcher->enabled && event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
+        if (dispatcher->flags & MPR_DISPATCHER_ENABLED && 
+                event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
             mprScheduleDispatcher(dispatcher);
         }
         event->dispatcher = 0;
@@ -14065,14 +9897,14 @@ void mprRemoveEvent(MprEvent *event)
 }
 
 
-void mprRescheduleEvent(MprEvent *event, MprTime period)
+PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
 
-    mprAssert(event->magic == MPR_EVENT_MAGIC);
+    assure(event->magic == MPR_EVENT_MAGIC);
     dispatcher = event->dispatcher;
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     es = dispatcher->service;
 
@@ -14088,20 +9920,20 @@ void mprRescheduleEvent(MprEvent *event, MprTime period)
 }
 
 
-void mprStopContinuousEvent(MprEvent *event)
+PUBLIC void mprStopContinuousEvent(MprEvent *event)
 {
     event->continuous = 0;
 }
 
 
-void mprRestartContinuousEvent(MprEvent *event)
+PUBLIC void mprRestartContinuousEvent(MprEvent *event)
 {
     event->continuous = 1;
     mprRescheduleEvent(event, event->period);
 }
 
 
-void mprEnableContinuousEvent(MprEvent *event, int enable)
+PUBLIC void mprEnableContinuousEvent(MprEvent *event, int enable)
 {
     event->continuous = enable;
 }
@@ -14110,23 +9942,21 @@ void mprEnableContinuousEvent(MprEvent *event, int enable)
 /*
     Get the next due event from the front of the event queue.
  */
-MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
+PUBLIC MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *event, *next;
 
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     es = dispatcher->service;
     event = 0;
-
     lock(es);
     next = dispatcher->eventQ->next;
     if (next != dispatcher->eventQ) {
         if (next->due <= es->now) {
             event = next;
-            dequeueEvent(event);
-            mprAssert(event->magic == MPR_EVENT_MAGIC);
+            queueEvent(dispatcher->currentQ, event);
+            assure(event->magic == MPR_EVENT_MAGIC);
         }
     }
     unlock(es);
@@ -14134,20 +9964,20 @@ MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
 }
 
 
-int mprGetEventCount(MprDispatcher *dispatcher)
+PUBLIC int mprGetEventCount(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *event;
     int                 count;
 
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     es = dispatcher->service;
 
     lock(es);
 	count = 0;
     for (event = dispatcher->eventQ->next; event != dispatcher->eventQ; event = event->next) {
-        mprAssert(event->magic == MPR_EVENT_MAGIC);
+        assure(event->magic == MPR_EVENT_MAGIC);
         count++;
     }
     unlock(es);
@@ -14157,7 +9987,7 @@ int mprGetEventCount(MprDispatcher *dispatcher)
 
 static void initEventQ(MprEvent *q)
 {
-    mprAssert(q);
+    assure(q);
 
     q->next = q;
     q->prev = q;
@@ -14170,14 +10000,14 @@ static void initEventQ(MprEvent *q)
  */
 static void queueEvent(MprEvent *prior, MprEvent *event)
 {
-    mprAssert(prior);
-    mprAssert(event);
-    mprAssert(prior->next);
-    mprAssert(event->magic == MPR_EVENT_MAGIC);
-    mprAssert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(prior);
+    assure(event);
+    assure(prior->next);
+    assure(event->magic == MPR_EVENT_MAGIC);
+    assure(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     if (event->next) {
-        dequeueEvent(event);
+        mprDequeueEvent(event);
     }
     event->prev = prior;
     event->next = prior->next;
@@ -14189,13 +10019,13 @@ static void queueEvent(MprEvent *prior, MprEvent *event)
 /*
     Remove an event. Must be locked when called.
  */
-static void dequeueEvent(MprEvent *event)
+PUBLIC void mprDequeueEvent(MprEvent *event)
 {
-    mprAssert(event);
-    mprAssert(event->next);
-    mprAssert(event->magic == MPR_EVENT_MAGIC);
-    mprAssert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(event);
+    assure(event->magic == MPR_EVENT_MAGIC);
+    assure(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
+    /* If a continuous event is removed, next may already be null */
     if (event->next) {
         event->next->prev = event->prev;
         event->prev->next = event->next;
@@ -14207,31 +10037,15 @@ static void dequeueEvent(MprEvent *event)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -14267,7 +10081,7 @@ static void manageFile(MprFile *file, int flags);
 
 /************************************ Code ************************************/
 
-MprFile *mprAttachFileFd(int fd, cchar *name, int omode)
+PUBLIC MprFile *mprAttachFileFd(int fd, cchar *name, int omode)
 {
     MprFileSystem   *fs;
     MprFile         *file;
@@ -14299,13 +10113,13 @@ static void manageFile(MprFile *file, int flags)
 }
 
 
-int mprFlushFile(MprFile *file)
+PUBLIC int mprFlushFile(MprFile *file)
 {
     MprFileSystem   *fs;
     MprBuf          *bp;
     ssize           len, rc;
 
-    mprAssert(file);
+    assure(file);
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
@@ -14329,31 +10143,31 @@ int mprFlushFile(MprFile *file)
 }
 
 
-MprOff mprGetFilePosition(MprFile *file)
+PUBLIC MprOff mprGetFilePosition(MprFile *file)
 {
     return file->pos;
 }
 
 
-MprOff mprGetFileSize(MprFile *file)
+PUBLIC MprOff mprGetFileSize(MprFile *file)
 {
     return file->size;
 }
 
 
-MprFile *mprGetStderr()
+PUBLIC MprFile *mprGetStderr()
 {
     return MPR->stdError;
 }
 
 
-MprFile *mprGetStdin()
+PUBLIC MprFile *mprGetStdin()
 {
     return MPR->stdInput;
 }
 
 
-MprFile *mprGetStdout()
+PUBLIC MprFile *mprGetStdout()
 {
     return MPR->stdOutput;
 }
@@ -14362,12 +10176,12 @@ MprFile *mprGetStdout()
 /*
     Get a character from the file. This will put the file into buffered mode.
  */
-int mprGetFileChar(MprFile *file)
+PUBLIC int mprGetFileChar(MprFile *file)
 {
     MprBuf      *bp;
     ssize     len;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR;
@@ -14397,16 +10211,16 @@ static char *findNewline(cchar *str, cchar *newline, ssize len, ssize *nlen)
     ssize   newlines;
     int     i;
 
-    mprAssert(str);
-    mprAssert(newline);
-    mprAssert(nlen);
-    mprAssert(len > 0);
+    assure(str);
+    assure(newline);
+    assure(nlen);
+    assure(len > 0);
 
     if (str == NULL || newline == NULL) {
         return NULL;
     }
     newlines = slen(newline);
-    mprAssert(newlines == 1 || newlines == 2);
+    assure(newlines == 1 || newlines == 2);
 
     start = best = NULL;
     *nlen = 0;
@@ -14429,7 +10243,7 @@ static char *findNewline(cchar *str, cchar *newline, ssize len, ssize *nlen)
     Get a string from the file. This will put the file into buffered mode.
     Return NULL on eof.
  */
-char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
+PUBLIC char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
 {
     MprBuf          *bp;
     MprFileSystem   *fs;
@@ -14437,7 +10251,7 @@ char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
     cchar           *eol, *newline, *start;
     char            *result;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return NULL;
@@ -14488,7 +10302,7 @@ char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
 }
 
 
-MprFile *mprOpenFile(cchar *path, int omode, int perms)
+PUBLIC MprFile *mprOpenFile(cchar *path, int omode, int perms)
 {
     MprFileSystem   *fs;
     MprFile         *file;
@@ -14514,7 +10328,7 @@ MprFile *mprOpenFile(cchar *path, int omode, int perms)
 }
 
 
-int mprCloseFile(MprFile *file)
+PUBLIC int mprCloseFile(MprFile *file)
 {
     MprFileSystem   *fs;
 
@@ -14529,13 +10343,13 @@ int mprCloseFile(MprFile *file)
 /*
     Put a string to the file. This will put the file into buffered mode.
  */
-ssize mprPutFileString(MprFile *file, cchar *str)
+PUBLIC ssize mprPutFileString(MprFile *file, cchar *str)
 {
     MprBuf  *bp;
     ssize   total, bytes, count;
     char    *buf;
 
-    mprAssert(file);
+    assure(file);
     count = slen(str);
 
     /*
@@ -14578,12 +10392,12 @@ ssize mprPutFileString(MprFile *file, cchar *str)
 /*
     Peek at a character from the file without disturbing the read position. This will put the file into buffered mode.
  */
-int mprPeekFileChar(MprFile *file)
+PUBLIC int mprPeekFileChar(MprFile *file)
 {
     MprBuf      *bp;
     ssize       len;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR;
@@ -14609,9 +10423,9 @@ int mprPeekFileChar(MprFile *file)
 /*
     Put a character to the file. This will put the file into buffered mode.
  */
-ssize mprPutFileChar(MprFile *file, int c)
+PUBLIC ssize mprPutFileChar(MprFile *file, int c)
 {
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return -1;
@@ -14628,14 +10442,14 @@ ssize mprPutFileChar(MprFile *file, int c)
 }
 
 
-ssize mprReadFile(MprFile *file, void *buf, ssize size)
+PUBLIC ssize mprReadFile(MprFile *file, void *buf, ssize size)
 {
     MprFileSystem   *fs;
     MprBuf          *bp;
     ssize           bytes, totalRead;
     void            *bufStart;
 
-    mprAssert(file);
+    assure(file);
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
@@ -14666,11 +10480,11 @@ ssize mprReadFile(MprFile *file, void *buf, ssize size)
 }
 
 
-MprOff mprSeekFile(MprFile *file, int seekType, MprOff pos)
+PUBLIC MprOff mprSeekFile(MprFile *file, int seekType, MprOff pos)
 {
     MprFileSystem   *fs;
 
-    mprAssert(file);
+    assure(file);
     fs = file->fileSystem;
 
     if (file->buf) {
@@ -14708,11 +10522,11 @@ MprOff mprSeekFile(MprFile *file, int seekType, MprOff pos)
 }
 
 
-int mprTruncateFile(cchar *path, MprOff size)
+PUBLIC int mprTruncateFile(cchar *path, MprOff size)
 {
     MprFileSystem   *fs;
 
-    mprAssert(path && *path);
+    assure(path && *path);
 
     if ((fs = mprLookupFileSystem(path)) == 0) {
         return MPR_ERR_CANT_OPEN;
@@ -14721,13 +10535,13 @@ int mprTruncateFile(cchar *path, MprOff size)
 }
 
 
-ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count)
+PUBLIC ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count)
 {
     MprFileSystem   *fs;
     MprBuf          *bp;
     ssize           bytes, written;
 
-    mprAssert(file);
+    assure(file);
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
@@ -14761,13 +10575,13 @@ ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count)
 }
 
 
-ssize mprWriteFileString(MprFile *file, cchar *str)
+PUBLIC ssize mprWriteFileString(MprFile *file, cchar *str)
 {
     return mprWriteFile(file, str, slen(str));
 }
 
 
-ssize mprWriteFileFmt(MprFile *file, cchar *fmt, ...)
+PUBLIC ssize mprWriteFileFmt(MprFile *file, cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
@@ -14795,7 +10609,7 @@ static ssize fillBuf(MprFile *file)
     bp = file->buf;
     fs = file->fileSystem;
 
-    mprAssert(mprGetBufLength(bp) == 0);
+    assure(mprGetBufLength(bp) == 0);
     mprFlushBuf(bp);
 
     len = fs->readFile(file, mprGetBufStart(bp), mprGetBufSpace(bp));
@@ -14803,7 +10617,6 @@ static ssize fillBuf(MprFile *file)
         return len;
     }
     mprAdjustBufEnd(bp, len);
-    mprAddNullToBuf(bp);
     return len;
 }
 
@@ -14811,9 +10624,9 @@ static ssize fillBuf(MprFile *file)
 /*
     Enable and control file buffering
  */
-int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSize)
+PUBLIC int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSize)
 {
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR_BAD_STATE;
@@ -14834,45 +10647,29 @@ int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSize)
 }
 
 
-void mprDisableFileBuffering(MprFile *file)
+PUBLIC void mprDisableFileBuffering(MprFile *file)
 {
     mprFlushFile(file);
     file->buf = 0;
 }
 
 
-int mprGetFileFd(MprFile *file)
+PUBLIC int mprGetFileFd(MprFile *file)
 {
     return file->fd;
 }
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -14904,15 +10701,15 @@ int mprGetFileFd(MprFile *file)
 
 /************************************ Code ************************************/
 
-MprFileSystem *mprCreateFileSystem(cchar *path)
+PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp;
 
     /*
-        TODO - evolve this to support multiple file systems in a single system
+        FUTURE: evolve this to support multiple file systems in a single system
      */
-#if BIT_FEATURE_ROMFS
+#if BIT_ROM
     fs = (MprFileSystem*) mprCreateRomFileSystem(path);
 #else
     fs = (MprFileSystem*) mprCreateDiskFileSystem(path);
@@ -14954,11 +10751,11 @@ MprFileSystem *mprCreateFileSystem(cchar *path)
 }
 
 
-void mprAddFileSystem(MprFileSystem *fs)
+PUBLIC void mprAddFileSystem(MprFileSystem *fs)
 {
-    mprAssert(fs);
+    assure(fs);
     
-    //  TODO - this does not currently add a file system. It merely replaces the existing.
+    /* NOTE: this does not currently add a file system. It merely replaces the existing file system. */
     MPR->fileSystem = fs;
 }
 
@@ -14966,52 +10763,52 @@ void mprAddFileSystem(MprFileSystem *fs)
 /*
     Note: path can be null
  */
-MprFileSystem *mprLookupFileSystem(cchar *path)
+PUBLIC MprFileSystem *mprLookupFileSystem(cchar *path)
 {
     return MPR->fileSystem;
 }
 
 
-cchar *mprGetPathNewline(cchar *path)
+PUBLIC cchar *mprGetPathNewline(cchar *path)
 {
     MprFileSystem   *fs;
 
-    mprAssert(path);
+    assure(path);
 
     fs = mprLookupFileSystem(path);
     return fs->newline;
 }
 
 
-cchar *mprGetPathSeparators(cchar *path)
+PUBLIC cchar *mprGetPathSeparators(cchar *path)
 {
     MprFileSystem   *fs;
 
-    mprAssert(path);
+    assure(path);
 
     fs = mprLookupFileSystem(path);
     return fs->separators;
 }
 
 
-void mprSetPathSeparators(cchar *path, cchar *separators)
+PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators)
 {
     MprFileSystem   *fs;
 
-    mprAssert(path);
-    mprAssert(separators);
+    assure(path);
+    assure(separators);
     
     fs = mprLookupFileSystem(path);
     fs->separators = sclone(separators);
 }
 
 
-void mprSetPathNewline(cchar *path, cchar *newline)
+PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 {
     MprFileSystem   *fs;
     
-    mprAssert(path);
-    mprAssert(newline);
+    assure(path);
+    assure(newline);
     
     fs = mprLookupFileSystem(path);
     fs->newline = sclone(newline);
@@ -15020,31 +10817,15 @@ void mprSetPathNewline(cchar *path, cchar *newline)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -15079,7 +10860,7 @@ void mprSetPathNewline(cchar *path, cchar *newline)
 
 /**************************** Forward Declarations ****************************/
 
-static void *dupKey(MprHash *hash, MprKey *sp, cvoid *key);
+static void *dupKey(MprHash *hash, cvoid *key);
 static MprKey *lookupHash(int *index, MprKey **prevSp, MprHash *hash, cvoid *key);
 static void manageHashTable(MprHash *hash, int flags);
 
@@ -15087,7 +10868,7 @@ static void manageHashTable(MprHash *hash, int flags);
 /*
     Create a new hash hash of a given size. Caller should provide a size that is a prime number for the greatest efficiency.
  */
-MprHash *mprCreateHash(int hashSize, int flags)
+PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
 {
     MprHash     *hash;
 
@@ -15101,10 +10882,12 @@ MprHash *mprCreateHash(int hashSize, int flags)
         return NULL;
     }
     hash->size = hashSize;
-    hash->flags = flags;
+    hash->flags = flags | MPR_OBJ_HASH;
     hash->length = 0;
-    hash->mutex = mprCreateLock();
-#if BIT_CHAR_LEN > 1
+    if (!(flags & MPR_HASH_OWN)) {
+        hash->mutex = mprCreateLock();
+    }
+#if BIT_CHAR_LEN > 1 && KEEP
     if (hash->flags & MPR_HASH_UNICODE) {
         if (hash->flags & MPR_HASH_CASELESS) {
             hash->fn = (MprHashProc) whashlower;
@@ -15135,17 +10918,17 @@ static void manageHashTable(MprHash *hash, int flags)
         lock(hash);
         for (i = 0; i < hash->size; i++) {
             for (sp = (MprKey*) hash->buckets[i]; sp; sp = sp->next) {
-                mprAssert(mprIsValid(sp));
+                assure(mprIsValid(sp));
                 mprMark(sp);
                 if (!(hash->flags & MPR_HASH_STATIC_VALUES)) {
                     if (sp->data && !mprIsValid(sp->data)) {
                         mprLog(0, "Data in key %s is not valid", sp->key);
                     }
-                    mprAssert(sp->data == 0 || mprIsValid(sp->data));
+                    assure(sp->data == 0 || mprIsValid(sp->data));
                     mprMark(sp->data);
                 }
                 if (!(hash->flags & MPR_HASH_STATIC_KEYS)) {
-                    mprAssert(mprIsValid(sp->key));
+                    assure(mprIsValid(sp->key));
                     mprMark(sp->key);
                 }
             }
@@ -15159,18 +10942,21 @@ static void manageHashTable(MprHash *hash, int flags)
     Insert an entry into the hash hash. If the entry already exists, update its value. 
     Order of insertion is not preserved.
  */
-MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
+PUBLIC MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
 {
     MprKey      *sp, *prevSp;
     int         index;
 
     if (hash == 0) {
-        mprAssert(hash);
+        assure(hash);
         return 0;
     }
     lock(hash);
-    sp = lookupHash(&index, &prevSp, hash, key);
-    if (sp != 0) {
+    if ((sp = lookupHash(&index, &prevSp, hash, key)) != 0) {
+        if (hash->flags & MPR_HASH_UNIQUE) {
+            unlock(hash);
+            return 0;
+        }
         /*
             Already exists. Just update the data.
          */
@@ -15187,7 +10973,7 @@ MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
     }
     sp->data = ptr;
     if (!(hash->flags & MPR_HASH_STATIC_KEYS)) {
-        sp->key = dupKey(hash, sp, key);
+        sp->key = dupKey(hash, key);
     } else {
         sp->key = (void*) key;
     }
@@ -15200,7 +10986,7 @@ MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
 }
 
 
-MprKey *mprAddKeyFmt(MprHash *hash, cvoid *key, cchar *fmt, ...)
+PUBLIC MprKey *mprAddKeyFmt(MprHash *hash, cvoid *key, cchar *fmt, ...)
 {
     va_list     ap;
     char        *value;
@@ -15217,20 +11003,20 @@ MprKey *mprAddKeyFmt(MprHash *hash, cvoid *key, cchar *fmt, ...)
     Order of insertion is not preserved. Lookup cannot be used to retrieve all duplicate keys, some will be shadowed. 
     Use enumeration to retrieve the keys.
  */
-MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
+PUBLIC MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
 {
     MprKey      *sp;
     int         index;
 
-    mprAssert(hash);
-    mprAssert(key);
+    assure(hash);
+    assure(key);
 
     if ((sp = mprAllocStruct(MprKey)) == 0) {
         return 0;
     }
     sp->data = ptr;
     if (!(hash->flags & MPR_HASH_STATIC_KEYS)) {
-        sp->key = dupKey(hash, sp, key);
+        sp->key = dupKey(hash, key);
     } else {
         sp->key = (void*) key;
     }
@@ -15245,13 +11031,13 @@ MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
 }
 
 
-int mprRemoveKey(MprHash *hash, cvoid *key)
+PUBLIC int mprRemoveKey(MprHash *hash, cvoid *key)
 {
     MprKey      *sp, *prevSp;
     int         index;
 
-    mprAssert(hash);
-    mprAssert(key);
+    assure(hash);
+    assure(key);
 
     lock(hash);
     if ((sp = lookupHash(&index, &prevSp, hash, key)) == 0) {
@@ -15269,7 +11055,7 @@ int mprRemoveKey(MprHash *hash, cvoid *key)
 }
 
 
-MprHash *mprBlendHash(MprHash *hash, MprHash *extra)
+PUBLIC MprHash *mprBlendHash(MprHash *hash, MprHash *extra)
 {
     MprKey      *kp;
 
@@ -15283,13 +11069,12 @@ MprHash *mprBlendHash(MprHash *hash, MprHash *extra)
 }
 
 
-MprHash *mprCloneHash(MprHash *master)
+PUBLIC MprHash *mprCloneHash(MprHash *master)
 {
     MprKey      *kp;
     MprHash     *hash;
 
-    hash = mprCreateHash(master->size, master->flags);
-    if (hash == 0) {
+    if ((hash = mprCreateHash(master->size, master->flags)) == 0) {
         return 0;
     }
     kp = mprGetFirstKey(master);
@@ -15304,11 +11089,8 @@ MprHash *mprCloneHash(MprHash *master)
 /*
     Lookup a key and return the hash entry
  */
-MprKey *mprLookupKeyEntry(MprHash *hash, cvoid *key)
+PUBLIC MprKey *mprLookupKeyEntry(MprHash *hash, cvoid *key)
 {
-    mprAssert(key);
-    mprAssert(hash);
-
     return lookupHash(0, 0, hash, key);
 }
 
@@ -15316,12 +11098,9 @@ MprKey *mprLookupKeyEntry(MprHash *hash, cvoid *key)
 /*
     Lookup a key and return the hash entry data
  */
-void *mprLookupKey(MprHash *hash, cvoid *key)
+PUBLIC void *mprLookupKey(MprHash *hash, cvoid *key)
 {
     MprKey      *sp;
-
-    mprAssert(key);
-    mprAssert(hash);
 
     if ((sp = lookupHash(0, 0, hash, key)) == 0) {
         return 0;
@@ -15360,9 +11139,6 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
     MprKey      **buckets;
     int         hashSize, i, index, rc;
 
-    mprAssert(key);
-    mprAssert(hash);
-
     if (key == 0 || hash == 0) {
         return 0;
     }
@@ -15374,7 +11150,7 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
                 for (i = 0; i < hash->size; i++) {
                     for (sp = hash->buckets[i]; sp; sp = next) {
                         next = sp->next;
-                        mprAssert(next != sp);
+                        assure(next != sp);
                         index = hash->fn(sp->key, slen(sp->key)) % hashSize;
                         if (buckets[index]) {
                             sp->next = buckets[index];
@@ -15399,11 +11175,11 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
     prev = 0;
 
     while (sp) {
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && KEEP
         if (hash->flags & MPR_HASH_UNICODE) {
-            MprChar *u1, *u2;
-            u1 = (MprChar*) sp->key;
-            u2 = (MprChar*) key;
+            wchar *u1, *u2;
+            u1 = (wchar*) sp->key;
+            u2 = (wchar*) key;
             rc = -1;
             if (hash->flags & MPR_HASH_CASELESS) {
                 rc = wcasecmp(u1, u2);
@@ -15413,7 +11189,7 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
         } else 
 #endif
         if (hash->flags & MPR_HASH_CASELESS) {
-            rc = scasecmp(sp->key, key);
+            rc = scaselesscmp(sp->key, key);
         } else {
             rc = strcmp(sp->key, key);
         }
@@ -15424,14 +11200,14 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
             return sp;
         }
         prev = sp;
-        mprAssert(sp != sp->next);
+        assure(sp != sp->next);
         sp = sp->next;
     }
     return 0;
 }
 
 
-int mprGetHashLength(MprHash *hash)
+PUBLIC int mprGetHashLength(MprHash *hash)
 {
     return hash->length;
 }
@@ -15440,12 +11216,12 @@ int mprGetHashLength(MprHash *hash)
 /*
     Return the first entry in the hash.
  */
-MprKey *mprGetFirstKey(MprHash *hash)
+PUBLIC MprKey *mprGetFirstKey(MprHash *hash)
 {
     MprKey      *sp;
     int         i;
 
-    mprAssert(hash);
+    assure(hash);
 
     for (i = 0; i < hash->size; i++) {
         if ((sp = (MprKey*) hash->buckets[i]) != 0) {
@@ -15459,7 +11235,7 @@ MprKey *mprGetFirstKey(MprHash *hash)
 /*
     Return the next entry in the hash
  */
-MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
+PUBLIC MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
 {
     MprKey      *sp;
     int         i;
@@ -15482,18 +11258,18 @@ MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
 }
 
 
-static void *dupKey(MprHash *hash, MprKey *sp, cvoid *key)
+static void *dupKey(MprHash *hash, cvoid *key)
 {
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && KEEP
     if (hash->flags & MPR_HASH_UNICODE) {
-        return wclone(sp, (MprChar*) key, -1);
+        return wclone((wchar*) key);
     } else
 #endif
         return sclone(key);
 }
 
 
-MprHash *mprCreateHashFromWords(cchar *str)
+PUBLIC MprHash *mprCreateHashFromWords(cchar *str)
 {
     MprHash     *hash;
     char        *word, *next;
@@ -15512,28 +11288,12 @@ MprHash *mprCreateHashFromWords(cchar *str)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -15574,7 +11334,7 @@ static int setValue(MprJson *jp, MprObj *obj, int index, cchar *name, cchar *val
 
 /************************************ Code ************************************/
 
-MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data)
+PUBLIC MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data)
 {
     MprJson     jp;
 
@@ -15593,7 +11353,7 @@ MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data)
 /*
     Deserialize a JSON string into an MprHash object. Objects and lists "[]" are stored in hashes. 
  */
-MprObj *mprDeserialize(cchar *str)
+PUBLIC MprObj *mprDeserialize(cchar *str)
 {
     MprJsonCallback cb;
 
@@ -15657,37 +11417,45 @@ static MprObj *deserialize(MprJson *jp)
             /*
                 Value: String, "{" or "]"
              */
+            value = 0;
             if (index < 0) {
                 if ((name = parseName(jp)) == 0) {
                     return 0;
                 }
-                if (advanceToken(jp) != ':') {
-                    mprJsonParseError(jp, "Bad separator '%c'", *jp->tok);
-                    return 0;
+                if ((token = advanceToken(jp)) != ':') {
+                    if (token == ',' || token == '}' || token == ']') {
+                        valueType = MPR_JSON_STRING;
+                        value = name;
+                    } else {
+                        mprJsonParseError(jp, "Bad separator '%c'", *jp->tok);
+                        return 0;
+                    }
                 }
                 jp->tok++;
             } else {
                 name = 0;
             }
-            advanceToken(jp);
-            if (jp->callback.checkState && jp->callback.checkState(jp, name) < 0) {
-                return 0;
-            }
-            if (*jp->tok == '{') {
-                value = deserialize(jp);
-                valueType = MPR_JSON_OBJ;
+            if (!value) {
+                advanceToken(jp);
+                if (jp->callback.checkState && jp->callback.checkState(jp, name) < 0) {
+                    return 0;
+                }
+                if (*jp->tok == '{') {
+                    value = deserialize(jp);
+                    valueType = MPR_JSON_OBJ;
 
-            } else if (*jp->tok == '[') {
-                value = deserialize(jp);
-                valueType = MPR_JSON_ARRAY;
+                } else if (*jp->tok == '[') {
+                    value = deserialize(jp);
+                    valueType = MPR_JSON_ARRAY;
 
-            } else {
-                value = parseValue(jp);
-                valueType = MPR_JSON_STRING;
-            }
-            if (value == 0) {
-                /* Error already reported */
-                return 0;
+                } else {
+                    value = parseValue(jp);
+                    valueType = MPR_JSON_STRING;
+                }
+                if (!value) {
+                    /* Error already reported */
+                    return 0;
+                }
             }
             if ((rc = jp->callback.setValue(jp, obj, index, name, value, valueType)) < 0) {
                 return 0;
@@ -15801,7 +11569,15 @@ static int setValue(MprJson *jp, MprObj *obj, int index, cchar *key, cchar *valu
 
 static MprObj *makeObj(MprJson *jp, bool list)
 {
-    return (MprObj*) mprCreateHash(0, 0);
+    MprHash     *hash;
+
+    if ((hash = mprCreateHash(0, 0)) == 0) {
+        return 0;
+    }
+    if (list) {
+        hash->flags |= MPR_HASH_LIST;
+    }
+    return hash;
 }
 
 
@@ -15837,7 +11613,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
             itosbuf(numbuf, sizeof(numbuf), i, 10);
             if (pretty) mprPutStringToBuf(buf, "    ");
             if ((kp = mprLookupKeyEntry(obj, numbuf)) == 0) {
-                mprAssert(kp);
+                assure(kp);
                 continue;
             }
             if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
@@ -15876,7 +11652,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
 /*
     Serialize into JSON format.
  */
-cchar *mprSerialize(MprObj *obj, int flags)
+PUBLIC cchar *mprSerialize(MprObj *obj, int flags)
 {
     MprBuf  *buf;
     int     pretty;
@@ -15906,7 +11682,7 @@ static cchar *findQuote(cchar *tok, int quote)
 {
     cchar   *cp;
 
-    mprAssert(tok);
+    assure(tok);
     for (cp = tok; *cp; cp++) {
         if (*cp == quote && (cp == tok || *cp != '\\')) {
             return cp;
@@ -15920,7 +11696,7 @@ static cchar *findEndKeyword(MprJson *jp, cchar *str)
 {
     cchar   *cp, *etok;
 
-    mprAssert(str);
+    assure(str);
     for (cp = jp->tok; *cp; cp++) {
         if ((etok = strpbrk(cp, " \t\n\r:,}]")) != 0) {
             if (etok == jp->tok || *etok != '\\') {
@@ -15942,7 +11718,7 @@ static void jsonParseError(MprJson *jp, cchar *msg)
 }
 
 
-void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
+PUBLIC void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
 {
     va_list     args;
     cchar       *msg;
@@ -15954,34 +11730,17 @@ void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
 }
 
 
-
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -16018,7 +11777,7 @@ static void serviceIO(MprWaitService *ws, int count);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     ws->interestMax = MPR_FD_MIN;
     ws->eventsMax = MPR_FD_MIN;
@@ -16048,7 +11807,7 @@ int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-void mprManageKqueue(MprWaitService *ws, int flags)
+PUBLIC void mprManageKqueue(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->events);
@@ -16076,25 +11835,25 @@ static int growEvents(MprWaitService *ws)
     ws->interest = mprRealloc(ws->interest, sizeof(struct kevent) * ws->interestMax);
     ws->events = mprRealloc(ws->events, sizeof(struct kevent) * ws->eventsMax);
     if (ws->interest == 0 || ws->events == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     struct kevent   *kp, *start;
     int             fd;
 
-    mprAssert(wp);
+    assure(wp);
     fd = wp->fd;
 
     lock(ws);
     mprLog(7, "mprNotifyOn: fd %d, mask %x, old mask %x", wp->fd, mask, wp->desiredMask);
     if (wp->desiredMask != mask) {
-        mprAssert(fd >= 0);
+        assure(fd >= 0);
         while ((ws->interestCount + 4) >= ws->interestMax) {
             growEvents(ws);
         }
@@ -16119,12 +11878,16 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         if (fd >= ws->handlerMax) {
             ws->handlerMax = fd + 32;
             if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-                mprAssert(!MPR_ERR_MEMORY);
+                assure(!MPR_ERR_MEMORY);
                 return MPR_ERR_MEMORY;
             }
         }
-        mprAssert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+        assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         wp->desiredMask = mask;
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     ws->handlerMap[fd] = (mask) ? wp : 0;
     unlock(ws);
@@ -16136,7 +11899,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct timespec ts;
     struct kevent   interest[2], events[1];
@@ -16178,12 +11941,12 @@ int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected.
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     struct timespec ts;
     int             rc;
 
-    mprAssert(timeout > 0);
+    assure(timeout > 0);
 
     if (timeout < 0) {
         timeout = MAXINT;
@@ -16233,7 +11996,7 @@ static void serviceIO(MprWaitService *ws, int count)
     for (i = 0; i < count; i++) {
         kev = &ws->events[i];
         fd = (int) kev->ident;
-        mprAssert(fd < ws->handlerMax);
+        assure(fd < ws->handlerMax);
         if ((wp = ws->handlerMap[fd]) == 0) {
             if (kev->filter == EVFILT_READ && fd == ws->breakPipe[MPR_READ_PIPE]) {
                 (void) read(fd, buf, sizeof(buf));
@@ -16248,7 +12011,7 @@ static void serviceIO(MprWaitService *ws, int count)
                 mprNotifyOn(ws, wp, 0);
                 wp->desiredMask = 0;
                 mprNotifyOn(ws, wp, mask);
-                mprLog(7, "kqueue: file descriptor closed and reopened, fd %d", wp->fd);
+                mprLog(7, "kqueue: file descriptor may have been closed and reopened, fd %d", wp->fd);
 
             } else if (err == EBADF) {
                 /* File descriptor was closed */
@@ -16284,7 +12047,7 @@ static void serviceIO(MprWaitService *ws, int count)
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
     Must be async-safe.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
     int             c;
@@ -16297,36 +12060,18 @@ void mprWakeNotifier()
     }
 }
 
-#else
-void stubMprKqueue() {}
 #endif /* MPR_EVENT_KQUEUE */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -16368,7 +12113,7 @@ static void manageList(MprList *lp, int flags);
 /*
     Create a general growable list structure
  */
-MprList *mprCreateList(int size, int flags)
+PUBLIC MprList *mprCreateList(int size, int flags)
 {
     MprList     *lp;
 
@@ -16376,8 +12121,10 @@ MprList *mprCreateList(int size, int flags)
         return 0;
     }
     lp->maxSize = MAXINT;
-    lp->flags = flags;
-    lp->mutex = mprCreateLock();
+    lp->flags = flags | MPR_OBJ_LIST;
+    if (!(flags & MPR_LIST_OWN)) {
+        lp->mutex = mprCreateLock();
+    }
     if (size != 0) {
         mprSetListLimits(lp, size, -1);
     }
@@ -16395,7 +12142,7 @@ static void manageList(MprList *lp, int flags)
         mprMark(lp->items);
         if (!(lp->flags & MPR_LIST_STATIC_VALUES)) {
             for (i = 0; i < lp->length; i++) {
-                mprAssert(lp->items[i] == 0 || mprIsValid(lp->items[i]));
+                assure(lp->items[i] == 0 || mprIsValid(lp->items[i]));
                 mprMark(lp->items[i]);
             }
         }
@@ -16406,19 +12153,21 @@ static void manageList(MprList *lp, int flags)
 /*
     Initialize a list which may not be a memory context.
  */
-void mprInitList(MprList *lp)
+PUBLIC void mprInitList(MprList *lp, int flags)
 {
-    lp->capacity = 0;
+    lp->flags = 0;
+    lp->size = 0;
     lp->length = 0;
     lp->maxSize = MAXINT;
     lp->items = 0;
+    lp->mutex = (flags & MPR_LIST_OWN) ? 0 : mprCreateLock();
 }
 
 
 /*
     Define the list maximum size. If the list has not yet been written to, the initialSize will be observed.
  */
-int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
+PUBLIC int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
 {
     ssize   size;
 
@@ -16433,12 +12182,12 @@ int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
     lock(lp);
     if (lp->items == 0) {
         if ((lp->items = mprAlloc(size)) == 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             unlock(lp);
             return MPR_ERR_MEMORY;
         }
         memset(lp->items, 0, size);
-        lp->capacity = initialSize;
+        lp->size = initialSize;
     }
     lp->maxSize = maxSize;
     unlock(lp);
@@ -16446,7 +12195,7 @@ int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
 }
 
 
-int mprCopyListContents(MprList *dest, MprList *src)
+PUBLIC int mprCopyListContents(MprList *dest, MprList *src)
 {
     void        *item;
     int         next;
@@ -16454,14 +12203,14 @@ int mprCopyListContents(MprList *dest, MprList *src)
     mprClearList(dest);
 
     lock(src);
-    if (mprSetListLimits(dest, src->capacity, src->maxSize) < 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+    if (mprSetListLimits(dest, src->size, src->maxSize) < 0) {
+        assure(!MPR_ERR_MEMORY);
         unlock(src);
         return MPR_ERR_MEMORY;
     }
     for (next = 0; (item = mprGetNextItem(src, &next)) != 0; ) {
         if (mprAddItem(dest, item) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             unlock(src);
             return MPR_ERR_MEMORY;
         }
@@ -16471,11 +12220,11 @@ int mprCopyListContents(MprList *dest, MprList *src)
 }
 
 
-MprList *mprCloneList(MprList *src)
+PUBLIC MprList *mprCloneList(MprList *src)
 {
     MprList     *lp;
 
-    if ((lp = mprCreateList(src->capacity, src->flags)) == 0) {
+    if ((lp = mprCreateList(src->size, src->flags)) == 0) {
         return 0;
     }
     if (mprCopyListContents(lp, src) < 0) {
@@ -16485,12 +12234,12 @@ MprList *mprCloneList(MprList *src)
 }
 
 
-MprList *mprAppendList(MprList *lp, MprList *add)
+PUBLIC MprList *mprAppendList(MprList *lp, MprList *add)
 {
     void        *item;
     int         next;
 
-    mprAssert(lp);
+    assure(lp);
 
     for (next = 0; ((item = mprGetNextItem(add, &next)) != 0); ) {
         if (mprAddItem(lp, item) < 0) {
@@ -16504,15 +12253,15 @@ MprList *mprAppendList(MprList *lp, MprList *add)
 /*
     Change the item in the list at index. Return the old item.
  */
-void *mprSetItem(MprList *lp, int index, cvoid *item)
+PUBLIC void *mprSetItem(MprList *lp, int index, cvoid *item)
 {
     void    *old;
     int     length;
 
-    mprAssert(lp);
-    mprAssert(lp->capacity >= 0);
-    mprAssert(lp->length >= 0);
-    mprAssert(index >= 0);
+    assure(lp);
+    assure(lp->size >= 0);
+    assure(lp->length >= 0);
+    assure(index >= 0);
 
     length = lp->length;
 
@@ -16520,8 +12269,8 @@ void *mprSetItem(MprList *lp, int index, cvoid *item)
         length = index + 1;
     }
     lock(lp);
-    if (length > lp->capacity) {
-        if (growList(lp, length - lp->capacity) < 0) {
+    if (length > lp->size) {
+        if (growList(lp, length - lp->size) < 0) {
             unlock(lp);
             return 0;
         }
@@ -16538,16 +12287,16 @@ void *mprSetItem(MprList *lp, int index, cvoid *item)
 /*
     Add an item to the list and return the item index.
  */
-int mprAddItem(MprList *lp, cvoid *item)
+PUBLIC int mprAddItem(MprList *lp, cvoid *item)
 {
     int     index;
 
-    mprAssert(lp);
-    mprAssert(lp->capacity >= 0);
-    mprAssert(lp->length >= 0);
+    assure(lp);
+    assure(lp->size >= 0);
+    assure(lp->length >= 0);
 
     lock(lp);
-    if (lp->length >= lp->capacity) {
+    if (lp->length >= lp->size) {
         if (growList(lp, 1) < 0) {
             unlock(lp);
             return MPR_ERR_TOO_MANY;
@@ -16560,19 +12309,19 @@ int mprAddItem(MprList *lp, cvoid *item)
 }
 
 
-int mprAddNullItem(MprList *lp)
+PUBLIC int mprAddNullItem(MprList *lp)
 {
     int     index;
 
-    mprAssert(lp);
-    mprAssert(lp->capacity >= 0);
-    mprAssert(lp->length >= 0);
+    assure(lp);
+    assure(lp->size >= 0);
+    assure(lp->length >= 0);
 
     lock(lp);
     if (lp->length != 0 && lp->items[lp->length - 1] == 0) {
         index = lp->length - 1;
     } else {
-        if (lp->length >= lp->capacity) {
+        if (lp->length >= lp->size) {
             if (growList(lp, 1) < 0) {
                 unlock(lp);
                 return MPR_ERR_TOO_MANY;
@@ -16590,27 +12339,27 @@ int mprAddNullItem(MprList *lp)
     Insert an item to the list at a specified position. We insert before the item at "index".
     ie. The inserted item will go into the "index" location and the other elements will be moved up.
  */
-int mprInsertItemAtPos(MprList *lp, int index, cvoid *item)
+PUBLIC int mprInsertItemAtPos(MprList *lp, int index, cvoid *item)
 {
     void    **items;
     int     i;
 
-    mprAssert(lp);
-    mprAssert(lp->capacity >= 0);
-    mprAssert(lp->length >= 0);
-    mprAssert(index >= 0);
+    assure(lp);
+    assure(lp->size >= 0);
+    assure(lp->length >= 0);
+    assure(index >= 0);
 
     if (index < 0) {
         index = 0;
     }
     lock(lp);
-    if (index >= lp->capacity) {
-        if (growList(lp, index - lp->capacity + 1) < 0) {
+    if (index >= lp->size) {
+        if (growList(lp, index - lp->size + 1) < 0) {
             unlock(lp);
             return MPR_ERR_TOO_MANY;
         }
 
-    } else if (lp->length >= lp->capacity) {
+    } else if (lp->length >= lp->size) {
         if (growList(lp, 1) < 0) {
             unlock(lp);
             return MPR_ERR_TOO_MANY;
@@ -16637,11 +12386,11 @@ int mprInsertItemAtPos(MprList *lp, int index, cvoid *item)
 /*
     Remove an item from the list. Return the index where the item resided.
  */
-int mprRemoveItem(MprList *lp, cvoid *item)
+PUBLIC int mprRemoveItem(MprList *lp, cvoid *item)
 {
     int     index;
 
-    mprAssert(lp);
+    assure(lp);
 
     lock(lp);
     index = mprLookupItem(lp, item);
@@ -16650,17 +12399,17 @@ int mprRemoveItem(MprList *lp, cvoid *item)
         return index;
     }
     index = mprRemoveItemAtPos(lp, index);
-    mprAssert(index >= 0);
+    assure(index >= 0);
     unlock(lp);
     return index;
 }
 
 
-int mprRemoveLastItem(MprList *lp)
+PUBLIC int mprRemoveLastItem(MprList *lp)
 {
-    mprAssert(lp);
-    mprAssert(lp->capacity > 0);
-    mprAssert(lp->length > 0);
+    assure(lp);
+    assure(lp->size > 0);
+    assure(lp->length > 0);
 
     if (lp->length <= 0) {
         return MPR_ERR_CANT_FIND;
@@ -16673,14 +12422,14 @@ int mprRemoveLastItem(MprList *lp)
     Remove an index from the list. Return the index where the item resided.
     The list is compacted.
  */
-int mprRemoveItemAtPos(MprList *lp, int index)
+PUBLIC int mprRemoveItemAtPos(MprList *lp, int index)
 {
     void    **items;
 
-    mprAssert(lp);
-    mprAssert(lp->capacity > 0);
-    mprAssert(index >= 0 && index < lp->capacity);
-    mprAssert(lp->length > 0);
+    assure(lp);
+    assure(lp->size > 0);
+    assure(index >= 0 && index < lp->size);
+    assure(lp->length > 0);
 
     if (index < 0 || index >= lp->length) {
         return MPR_ERR_CANT_FIND;
@@ -16693,7 +12442,7 @@ int mprRemoveItemAtPos(MprList *lp, int index)
         /* Scan backwards to find last non-null item */
         for (ip = &items[index - 1]; ip >= items && *ip == 0; ip--) ;
         lp->length = ++ip - items;
-        mprAssert(lp->length >= 0);
+        assure(lp->length >= 0);
     } else {
         /* Copy down following items */
         for (ip = &items[index]; ip < &items[lp->length]; ip++) {
@@ -16703,15 +12452,10 @@ int mprRemoveItemAtPos(MprList *lp, int index)
     }
 #else
     memmove(&items[index], &items[index + 1], (lp->length - index - 1) * sizeof(void*));
-#if OLD
-    for (i = index; i < (lp->length - 1); i++) {
-        items[i] = items[i + 1];
-    }
-#endif
     lp->length--;
 #endif
     lp->items[lp->length] = 0;
-    mprAssert(lp->length >= 0);
+    assure(lp->length >= 0);
     unlock(lp);
     return index;
 }
@@ -16720,15 +12464,15 @@ int mprRemoveItemAtPos(MprList *lp, int index)
 /*
     Remove a set of items. Return 0 if successful.
  */
-int mprRemoveRangeOfItems(MprList *lp, int start, int end)
+PUBLIC int mprRemoveRangeOfItems(MprList *lp, int start, int end)
 {
     void    **items;
     int     i, count;
 
-    mprAssert(lp);
-    mprAssert(lp->capacity > 0);
-    mprAssert(lp->length > 0);
-    mprAssert(start > end);
+    assure(lp);
+    assure(lp->size > 0);
+    assure(lp->length > 0);
+    assure(start > end);
 
     if (start < 0 || start >= lp->length) {
         return MPR_ERR_CANT_FIND;
@@ -16739,7 +12483,6 @@ int mprRemoveRangeOfItems(MprList *lp, int start, int end)
     if (start > end) {
         return MPR_ERR_BAD_ARGS;
     }
-
     /*
         Copy down to compress
      */
@@ -16750,7 +12493,7 @@ int mprRemoveRangeOfItems(MprList *lp, int start, int end)
         items[i] = items[i + count];
     }
     lp->length -= count;
-    for (i = lp->length; i < lp->capacity; i++) {
+    for (i = lp->length; i < lp->size; i++) {
         items[i] = 0;
     }
     unlock(lp);
@@ -16758,9 +12501,31 @@ int mprRemoveRangeOfItems(MprList *lp, int start, int end)
 }
 
 
-void *mprGetItem(MprList *lp, int index)
+/*
+    Remove a string item from the list. Return the index where the item resided.
+ */
+PUBLIC int mprRemoveStringItem(MprList *lp, cchar *str)
 {
-    mprAssert(lp);
+    int     index;
+
+    assure(lp);
+
+    lock(lp);
+    index = mprLookupStringItem(lp, str);
+    if (index < 0) {
+        unlock(lp);
+        return index;
+    }
+    index = mprRemoveItemAtPos(lp, index);
+    assure(index >= 0);
+    unlock(lp);
+    return index;
+}
+
+
+PUBLIC void *mprGetItem(MprList *lp, int index)
+{
+    assure(lp);
 
     if (index < 0 || index >= lp->length) {
         return 0;
@@ -16769,9 +12534,9 @@ void *mprGetItem(MprList *lp, int index)
 }
 
 
-void *mprGetFirstItem(MprList *lp)
+PUBLIC void *mprGetFirstItem(MprList *lp)
 {
-    mprAssert(lp);
+    assure(lp);
 
     if (lp == 0) {
         return 0;
@@ -16783,9 +12548,9 @@ void *mprGetFirstItem(MprList *lp)
 }
 
 
-void *mprGetLastItem(MprList *lp)
+PUBLIC void *mprGetLastItem(MprList *lp)
 {
-    mprAssert(lp);
+    assure(lp);
 
     if (lp == 0) {
         return 0;
@@ -16797,13 +12562,13 @@ void *mprGetLastItem(MprList *lp)
 }
 
 
-void *mprGetNextItem(MprList *lp, int *next)
+PUBLIC void *mprGetNextItem(MprList *lp, int *next)
 {
     void    *item;
     int     index;
 
-    mprAssert(next);
-    mprAssert(*next >= 0);
+    assure(next);
+    assure(*next >= 0);
 
     if (lp == 0) {
         return 0;
@@ -16821,12 +12586,12 @@ void *mprGetNextItem(MprList *lp, int *next)
 }
 
 
-void *mprGetPrevItem(MprList *lp, int *next)
+PUBLIC void *mprGetPrevItem(MprList *lp, int *next)
 {
     void    *item;
     int     index;
 
-    mprAssert(next);
+    assure(next);
 
     if (lp == 0) {
         return 0;
@@ -16847,13 +12612,13 @@ void *mprGetPrevItem(MprList *lp, int *next)
 }
 
 
-int mprPushItem(MprList *lp, cvoid *item)
+PUBLIC int mprPushItem(MprList *lp, cvoid *item)
 {
     return mprAddItem(lp, item);
 }
 
 
-void *mprPopItem(MprList *lp)
+PUBLIC void *mprPopItem(MprList *lp)
 {
     void    *item;
     int     index;
@@ -16871,7 +12636,7 @@ void *mprPopItem(MprList *lp)
 
 
 #ifndef mprGetListLength
-int mprGetListLength(MprList *lp)
+PUBLIC int mprGetListLength(MprList *lp)
 {
     if (lp == 0) {
         return 0;
@@ -16881,22 +12646,22 @@ int mprGetListLength(MprList *lp)
 #endif
 
 
-int mprGetListCapacity(MprList *lp)
+PUBLIC int mprGetListCapacity(MprList *lp)
 {
-    mprAssert(lp);
+    assure(lp);
 
     if (lp == 0) {
         return 0;
     }
-    return lp->capacity;
+    return lp->size;
 }
 
 
-void mprClearList(MprList *lp)
+PUBLIC void mprClearList(MprList *lp)
 {
     int     i;
 
-    mprAssert(lp);
+    assure(lp);
 
     lock(lp);
     for (i = 0; i < lp->length; i++) {
@@ -16907,15 +12672,33 @@ void mprClearList(MprList *lp)
 }
 
 
-int mprLookupItem(MprList *lp, cvoid *item)
+PUBLIC int mprLookupItem(MprList *lp, cvoid *item)
 {
     int     i;
 
-    mprAssert(lp);
+    assure(lp);
     
     lock(lp);
     for (i = 0; i < lp->length; i++) {
         if (lp->items[i] == item) {
+            unlock(lp);
+            return i;
+        }
+    }
+    unlock(lp);
+    return MPR_ERR_CANT_FIND;
+}
+
+
+PUBLIC int mprLookupStringItem(MprList *lp, cchar *str)
+{
+    int     i;
+
+    assure(lp);
+    
+    lock(lp);
+    for (i = 0; i < lp->length; i++) {
+        if (smatch(lp->items[i], str)) {
             unlock(lp);
             return i;
         }
@@ -16939,8 +12722,8 @@ static int growList(MprList *lp, int incr)
     /*
         Need to grow the list
      */
-    if (lp->capacity >= lp->maxSize) {
-        mprAssert(lp->capacity < lp->maxSize);
+    if (lp->size >= lp->maxSize) {
+        assure(lp->size < lp->maxSize);
         return MPR_ERR_TOO_MANY;
     }
     /*
@@ -16948,29 +12731,36 @@ static int growList(MprList *lp, int incr)
         how much the list needs to grow.
      */
     if (incr <= 1) {
-        len = MPR_LIST_INCR + (lp->capacity * 2);
+        len = MPR_LIST_INCR + (lp->size * 2);
     } else {
-        len = lp->capacity + incr;
+        len = lp->size + incr;
     }
     memsize = len * sizeof(void*);
 
-    /*
-        Lock free realloc. Old list will be intact via lp->items until mprRealloc returns.
-     */
     if ((lp->items = mprRealloc(lp->items, memsize)) == NULL) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
-    lp->capacity = len;
+    lp->size = len;
     return 0;
 }
 
 
-void mprSortList(MprList *lp, void *compare)
+static int defaultSort(char **q1, char **q2, void *ctx)
+{
+    return scmp(*q1, *q2);
+}
+
+
+PUBLIC MprList *mprSortList(MprList *lp, MprSortProc compare, void *ctx)
 {
     lock(lp);
-    qsort(lp->items, lp->length, sizeof(void*), compare);
+    if (!compare) {
+        compare = (MprSortProc) defaultSort;
+    }
+    mprSort(lp->items, lp->length, sizeof(void*), compare, ctx);
     unlock(lp);
+    return lp;
 }
 
 
@@ -16983,7 +12773,7 @@ static void manageKeyValue(MprKeyValue *pair, int flags)
 }
 
 
-MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value)
+PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value)
 {
     MprKeyValue     *pair;
     
@@ -16996,33 +12786,111 @@ MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value)
 }
 
 
+static void swapElt(char *a, char *b, ssize width)
+{
+    char tmp;
+
+    if (a != b) {
+        while (width--) {
+            tmp = *a;
+            *a++ = *b;
+            *b++ = tmp;
+        }
+    }
+}
+
+
+static void shortsort(char *lo, char *hi, ssize width, MprSortProc comp, void *ctx)
+{
+    char    *p, *max;
+
+    while (hi > lo) {
+        max = lo;
+        for (p = lo + width; p <= hi; p += width) {
+            if (comp(p, max, ctx) > 0) {
+                max = p;
+            }
+        }
+        swapElt(max, hi, width);
+        hi -= width;
+    }
+}
+
+PUBLIC void mprSort(void *base, ssize num, ssize width, MprSortProc comp, void *ctx) 
+{
+    char    *lo, *hi, *mid, *l, *h, *lostk[30], *histk[30];
+    ssize   size;
+    int     stkptr;
+
+    if (num < 2 || width == 0) {
+        return;
+    }
+    stkptr = 0;
+    lo = base;
+    hi = (char *) base + width * (num - 1);
+
+recurse:
+    size = (int) (hi - lo) / width + 1;
+    if (size <= 8) {
+        shortsort(lo, hi, width, comp, ctx);
+    } else {
+        mid = lo + (size / 2) * width;
+        swapElt(mid, lo, width);
+        l = lo;
+        h = hi + width;
+
+        for (;;) {
+            do { l += width; } while (l <= hi && comp(l, lo, ctx) <= 0);
+            do { h -= width; } while (h > lo && comp(h, lo, ctx) >= 0);
+            if (h < l) break;
+            swapElt(l, h, width);
+        }
+        swapElt(lo, h, width);
+
+        if (h - 1 - lo >= hi - l) {
+            if (lo + width < h) {
+                lostk[stkptr] = lo;
+                histk[stkptr] = h - width;
+                ++stkptr;
+            }
+            if (l < hi) {
+                lo = l;
+                goto recurse;
+            }
+        } else {
+            if (l < hi) {
+                lostk[stkptr] = l;
+                histk[stkptr] = hi;
+                ++stkptr;
+            }
+            if (lo + width < h) {
+                hi = h - width;
+                goto recurse;
+            }
+        }
+    }
+    --stkptr;
+    if (stkptr >= 0) {
+        lo = lostk[stkptr];
+        hi = histk[stkptr];
+        goto recurse;
+    } else {
+        return;
+    }
+}
+
+
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -17054,7 +12922,7 @@ static void manageLock(MprMutex *lock, int flags);
 
 /************************************ Code ************************************/
 
-MprMutex *mprCreateLock()
+PUBLIC MprMutex *mprCreateLock()
 {
     MprMutex    *lock;
 #if BIT_UNIX_LIKE
@@ -17076,7 +12944,7 @@ MprMutex *mprCreateLock()
     /* Removed SEM_INVERSION_SAFE */
     lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
     if (lock->cs == 0) {
-        mprAssert(0);
+        assure(0);
         return 0;
     }
 #endif
@@ -17087,7 +12955,7 @@ MprMutex *mprCreateLock()
 static void manageLock(MprMutex *lock, int flags)
 {
     if (flags & MPR_MANAGE_FREE) {
-        mprAssert(lock);
+        assure(lock);
 #if BIT_UNIX_LIKE
         pthread_mutex_destroy(&lock->cs);
 #elif BIT_WIN_LIKE
@@ -17100,7 +12968,7 @@ static void manageLock(MprMutex *lock, int flags)
 }
 
 
-MprMutex *mprInitLock(MprMutex *lock)
+PUBLIC MprMutex *mprInitLock(MprMutex *lock)
 {
 #if BIT_UNIX_LIKE
     pthread_mutexattr_t attr;
@@ -17119,7 +12987,7 @@ MprMutex *mprInitLock(MprMutex *lock)
     /* Removed SEM_INVERSION_SAFE */
     lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
     if (lock->cs == 0) {
-        mprAssert(0);
+        assure(0);
         return 0;
     }
 #endif
@@ -17130,7 +12998,7 @@ MprMutex *mprInitLock(MprMutex *lock)
 /*
     Try to attain a lock. Do not block! Returns true if the lock was attained.
  */
-bool mprTryLock(MprMutex *lock)
+PUBLIC bool mprTryLock(MprMutex *lock)
 {
     int     rc;
 
@@ -17155,7 +13023,7 @@ bool mprTryLock(MprMutex *lock)
 }
 
 
-MprSpin *mprCreateSpinLock()
+PUBLIC MprSpin *mprCreateSpinLock()
 {
     MprSpin    *lock;
 
@@ -17166,10 +13034,10 @@ MprSpin *mprCreateSpinLock()
 }
 
 
-void mprManageSpinLock(MprSpin *lock, int flags)
+PUBLIC void mprManageSpinLock(MprSpin *lock, int flags)
 {
     if (flags & MPR_MANAGE_FREE) {
-        mprAssert(lock);
+        assure(lock);
 #if USE_MPR_LOCK || MACOSX
         ;
 #elif BIT_UNIX_LIKE && BIT_HAS_SPINLOCK
@@ -17189,7 +13057,7 @@ void mprManageSpinLock(MprSpin *lock, int flags)
 /*
     Static version just for mprAlloc which needs locks that don't allocate memory.
  */
-MprSpin *mprInitSpinLock(MprSpin *lock)
+PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock)
 {
 #if BIT_UNIX_LIKE && !BIT_HAS_SPINLOCK && !MACOSX
     pthread_mutexattr_t attr;
@@ -17217,7 +13085,7 @@ MprSpin *mprInitSpinLock(MprSpin *lock)
         /* Removed SEM_INVERSION_SAFE */
         lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
         if (lock->cs == 0) {
-            mprAssert(0);
+            assure(0);
             return 0;
         }
     #endif
@@ -17232,7 +13100,7 @@ MprSpin *mprInitSpinLock(MprSpin *lock)
 /*
     Try to attain a lock. Do not block! Returns true if the lock was attained.
  */
-bool mprTrySpinLock(MprSpin *lock)
+PUBLIC bool mprTrySpinLock(MprSpin *lock)
 {
     int     rc;
 
@@ -17258,7 +13126,7 @@ bool mprTrySpinLock(MprSpin *lock)
 #endif
 #if BIT_DEBUG
     if (rc == 0) {
-        mprAssert(lock->owner != mprGetCurrentOsThread());
+        assure(lock->owner != mprGetCurrentOsThread());
         lock->owner = mprGetCurrentOsThread();
     }
 #endif
@@ -17269,7 +13137,7 @@ bool mprTrySpinLock(MprSpin *lock)
 /*
     Big global lock. Avoid using this.
  */
-void mprGlobalLock()
+PUBLIC void mprGlobalLock()
 {
     if (MPR && MPR->mutex) {
         mprLock(MPR->mutex);
@@ -17277,7 +13145,7 @@ void mprGlobalLock()
 }
 
 
-void mprGlobalUnlock()
+PUBLIC void mprGlobalUnlock()
 {
     if (MPR && MPR->mutex) {
         mprUnlock(MPR->mutex);
@@ -17298,7 +13166,7 @@ void mprGlobalUnlock()
 /*
     Lock a mutex
  */
-void mprLock(MprMutex *lock)
+PUBLIC void mprLock(MprMutex *lock)
 {
     if (lock == 0) return;
 #if BIT_UNIX_LIKE
@@ -17318,7 +13186,7 @@ void mprLock(MprMutex *lock)
 }
 
 
-void mprUnlock(MprMutex *lock)
+PUBLIC void mprUnlock(MprMutex *lock)
 {
     if (lock == 0) return;
 #if BIT_UNIX_LIKE
@@ -17337,7 +13205,7 @@ void mprUnlock(MprMutex *lock)
 /*
     Lock a mutex
  */
-void mprSpinLock(MprSpin *lock)
+PUBLIC void mprSpinLock(MprSpin *lock)
 {
     if (lock == 0) return;
 
@@ -17345,7 +13213,7 @@ void mprSpinLock(MprSpin *lock)
     /*
         Spin locks don't support recursive locking on all operating systems.
      */
-    mprAssert(lock->owner != mprGetCurrentOsThread());
+    assure(lock->owner != mprGetCurrentOsThread());
 #endif
 
 #if USE_MPR_LOCK
@@ -17364,13 +13232,13 @@ void mprSpinLock(MprSpin *lock)
     semTake(lock->cs, WAIT_FOREVER);
 #endif
 #if BIT_DEBUG
-    mprAssert(lock->owner != mprGetCurrentOsThread());
+    assure(lock->owner != mprGetCurrentOsThread());
     lock->owner = mprGetCurrentOsThread();
 #endif
 }
 
 
-void mprSpinUnlock(MprSpin *lock)
+PUBLIC void mprSpinUnlock(MprSpin *lock)
 {
     if (lock == 0) return;
 
@@ -17398,28 +13266,12 @@ void mprSpinUnlock(MprSpin *lock)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -17455,13 +13307,14 @@ static void logOutput(int flags, int level, cchar *msg);
 /*
     Put first in file so it is easy to locate in a debugger
  */
-void mprBreakpoint()
+PUBLIC void mprBreakpoint()
 {
 #if DEBUG_PAUSE
     {
         static int  paused = 1;
         int         i;
         printf("Paused to permit debugger to attach - will awake in 2 minutes\n");
+        fflush(stdout);
         for (i = 0; i < 120 && paused; i++) {
             mprNap(1000);
         }
@@ -17470,13 +13323,13 @@ void mprBreakpoint()
 }
 
 
-void mprCreateLogService() 
+PUBLIC void mprCreateLogService() 
 {
     MPR->logFile = MPR->stdError;
 }
 
 
-int mprStartLogging(cchar *logSpec, int showConfig)
+PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
 {
     MprFile     *file;
     MprPath     info;
@@ -17524,11 +13377,11 @@ int mprStartLogging(cchar *logSpec, int showConfig)
 }
 
 
-void mprLogHeader()
+PUBLIC void mprLogHeader()
 {
     mprLog(MPR_CONFIG, "Configuration for %s", mprGetAppTitle());
     mprLog(MPR_CONFIG, "---------------------------------------------");
-    mprLog(MPR_CONFIG, "Version:            %s-%s", BIT_VERSION, BIT_NUMBER);
+    mprLog(MPR_CONFIG, "Version:            %s-%s", BIT_VERSION, BIT_BUILD_NUMBER);
     mprLog(MPR_CONFIG, "BuildType:          %s", BIT_DEBUG ? "Debug" : "Release");
     mprLog(MPR_CONFIG, "CPU:                %s", BIT_CPU);
     mprLog(MPR_CONFIG, "OS:                 %s", BIT_OS);
@@ -17539,7 +13392,7 @@ void mprLogHeader()
 }
 
 
-int mprBackupLog(cchar *path, int count)
+PUBLIC int mprBackupLog(cchar *path, int count)
 {
     char    *from, *to;
     int     i;
@@ -17560,7 +13413,7 @@ int mprBackupLog(cchar *path, int count)
 }
 
 
-void mprSetLogBackup(ssize size, int backup, int flags)
+PUBLIC void mprSetLogBackup(ssize size, int backup, int flags)
 {
     MPR->logBackup = backup;
     MPR->logSize = size;
@@ -17568,16 +13421,16 @@ void mprSetLogBackup(ssize size, int backup, int flags)
 }
 
 
-void mprLog(int level, cchar *fmt, ...)
+PUBLIC void mprLog(int level, cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
-    if (level > mprGetLogLevel()) {
+    if (level < 0 || level > mprGetLogLevel()) {
         return;
     }
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
     logOutput(MPR_LOG_SRC, level, buf);
 }
@@ -17586,7 +13439,7 @@ void mprLog(int level, cchar *fmt, ...)
 /*
     RawLog will call alloc. 
  */
-void mprRawLog(int level, cchar *fmt, ...)
+PUBLIC void mprRawLog(int level, cchar *fmt, ...)
 {
     va_list     args;
     char        *buf;
@@ -17602,35 +13455,33 @@ void mprRawLog(int level, cchar *fmt, ...)
 }
 
 
-void mprError(cchar *fmt, ...)
+PUBLIC void mprError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
-    
     logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, buf);
     mprBreakpoint();
 }
 
 
-void mprWarn(cchar *fmt, ...)
+PUBLIC void mprWarn(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
-    
     logOutput(MPR_ERROR_MSG | MPR_WARN_SRC, 0, buf);
     mprBreakpoint();
 }
 
 
-void mprMemoryError(cchar *fmt, ...)
+PUBLIC void mprMemoryError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
@@ -17639,35 +13490,33 @@ void mprMemoryError(cchar *fmt, ...)
         logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, "Memory allocation error");
     } else {
         va_start(args, fmt);
-        mprSprintfv(buf, sizeof(buf), fmt, args);
+        fmtv(buf, sizeof(buf), fmt, args);
         va_end(args);
         logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, buf);
     }
 }
 
 
-void mprUserError(cchar *fmt, ...)
+PUBLIC void mprUserError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
-    
     logOutput(MPR_USER_MSG | MPR_ERROR_SRC, 0, buf);
 }
 
 
-void mprFatalError(cchar *fmt, ...)
+PUBLIC void mprFatalError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
-    
     logOutput(MPR_USER_MSG | MPR_FATAL_SRC, 0, buf);
     exit(2);
 }
@@ -17676,27 +13525,28 @@ void mprFatalError(cchar *fmt, ...)
 /*
     Handle an error without allocating memory. Bypasses the logging mechanism.
  */
-void mprStaticError(cchar *fmt, ...)
+PUBLIC void mprStaticError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
 #if BIT_UNIX_LIKE || VXWORKS
     if (write(2, (char*) buf, slen(buf)) < 0) {}
     if (write(2, (char*) "\n", 1) < 0) {}
 #elif BIT_WIN_LIKE
     if (fprintf(stderr, "%s\n", buf) < 0) {}
+    fflush(stderr);
 #endif
     mprBreakpoint();
 }
 
 
-void mprAssertError(cchar *loc, cchar *msg)
+PUBLIC void mprAssure(cchar *loc, cchar *msg)
 {
-#if BIT_FEATURE_ASSERT
+#if BIT_ASSERT
     char    buf[MPR_MAX_LOG];
 
     if (loc) {
@@ -17708,6 +13558,11 @@ void mprAssertError(cchar *loc, cchar *msg)
         msg = buf;
     }
     mprLog(0, "%s", buf);
+    mprBreakpoint();
+#if WATSON_PAUSE
+    printf("Stop for WATSON\n");
+    mprNap(60 * 1000);
+#endif
 #endif
 }
 
@@ -17734,18 +13589,25 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
     MprPath     info;
     char        *prefix, buf[MPR_MAX_LOG];
     int         mode;
+    static int  check = 0;
 
+#if !BIT_LOCK_FIX
     lock(MPR);
+#endif
     if ((file = MPR->logFile) == 0) {
+#if !BIT_LOCK_FIX
         unlock(MPR);
+#endif
         return;
     }
     prefix = MPR->name;
 
-    if (MPR->logBackup > 0 && MPR->logSize) {
-        //  OPT - slow. Should not check every time
+    if (MPR->logBackup > 0 && MPR->logSize && (check++ % 1000) == 0) {
         mprGetPathInfo(MPR->logPath, &info);
         if (info.valid && info.size > MPR->logSize) {
+#if BIT_LOCK_FIX
+            lock(MPR);
+#endif
             mprSetLogFile(0);
             mprBackupLog(MPR->logPath, MPR->logBackup);
             mode = O_CREAT | O_WRONLY | O_TEXT;
@@ -17755,6 +13617,9 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
                 return;
             }
             mprSetLogFile(file);
+#if BIT_LOCK_FIX
+            unlock(MPR);
+#endif
         }
     }
     while (*msg == '\n') {
@@ -17762,37 +13627,39 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
         msg++;
     }
     if (flags & MPR_LOG_SRC) {
-        mprSprintf(buf, sizeof(buf), "%s: %d: %s\n", prefix, level, msg);
+        fmt(buf, sizeof(buf), "%s: %d: %s\n", prefix, level, msg);
         mprWriteFileString(file, buf);
 
     } else if (flags & (MPR_WARN_SRC | MPR_ERROR_SRC)) {
         if (flags & MPR_WARN_SRC) {
-            mprSprintf(buf, sizeof(buf), "%s: Warning: %s\n", prefix, msg);
+            fmt(buf, sizeof(buf), "%s: Warning: %s\n", prefix, msg);
         } else {
-            mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
+            fmt(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         }
-#if BIT_WIN_LIKE
+#if BIT_WIN_LIKE || BIT_UNIX_LIKE
         mprWriteToOsLog(buf, flags, level);
 #endif
-        mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
+        fmt(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         mprWriteFileString(file, buf);
 
     } else if (flags & MPR_FATAL_SRC) {
-        mprSprintf(buf, sizeof(buf), "%s: Fatal: %s\n", prefix, msg);
+        fmt(buf, sizeof(buf), "%s: Fatal: %s\n", prefix, msg);
         mprWriteToOsLog(buf, flags, level);
         mprWriteFileString(file, buf);
         
     } else if (flags & MPR_RAW) {
         mprWriteFileString(file, msg);
     }
+#if !BIT_LOCK_FIX
     unlock(MPR);
+#endif
 }
 
 
 /*
     Return the raw O/S error code
  */
-int mprGetOsError()
+PUBLIC int mprGetOsError()
 {
 #if BIT_WIN_LIKE
     int     rc;
@@ -17816,7 +13683,7 @@ int mprGetOsError()
 /*
     Return the mapped (portable, Posix) error code
  */
-int mprGetError()
+PUBLIC int mprGetError()
 {
 #if !BIT_WIN_LIKE
     return mprGetOsError();
@@ -17881,7 +13748,7 @@ int mprGetError()
 }
 
 
-int mprGetLogLevel()
+PUBLIC int mprGetLogLevel()
 {
     Mpr     *mpr;
 
@@ -17891,31 +13758,31 @@ int mprGetLogLevel()
 }
 
 
-MprLogHandler mprGetLogHandler()
+PUBLIC MprLogHandler mprGetLogHandler()
 {
     return MPR->logHandler;
 }
 
 
-int mprUsingDefaultLogHandler()
+PUBLIC int mprUsingDefaultLogHandler()
 {
     return MPR->logHandler == defaultLogHandler;
 }
 
 
-MprFile *mprGetLogFile()
+PUBLIC MprFile *mprGetLogFile()
 {
     return MPR->logFile;
 }
 
 
-void mprSetLogHandler(MprLogHandler handler)
+PUBLIC void mprSetLogHandler(MprLogHandler handler)
 {
     MPR->logHandler = handler;
 }
 
 
-void mprSetLogFile(MprFile *file)
+PUBLIC void mprSetLogFile(MprFile *file)
 {
     if (file != MPR->logFile && MPR->logFile != MPR->stdOutput && MPR->logFile != MPR->stdError) {
         mprCloseFile(MPR->logFile);
@@ -17924,13 +13791,13 @@ void mprSetLogFile(MprFile *file)
 }
 
 
-void mprSetLogLevel(int level)
+PUBLIC void mprSetLogLevel(int level)
 {
     MPR->logLevel = level;
 }
 
 
-bool mprSetCmdlineLogging(bool on)
+PUBLIC bool mprSetCmdlineLogging(bool on)
 {
     bool    wasLogging;
 
@@ -17940,7 +13807,7 @@ bool mprSetCmdlineLogging(bool on)
 }
 
 
-bool mprGetCmdlineLogging()
+PUBLIC bool mprGetCmdlineLogging()
 {
     return MPR->cmdlineLogging;
 }
@@ -17950,7 +13817,7 @@ bool mprGetCmdlineLogging()
 /*
     Just for conditional breakpoints when debugging in Xcode
  */
-int _cmp(char *s1, char *s2)
+PUBLIC int _cmp(char *s1, char *s2)
 {
     return !strcmp(s1, s2);
 }
@@ -17958,31 +13825,15 @@ int _cmp(char *s1, char *s2)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -18039,6 +13890,8 @@ static char *standardMimeTypes[] = {
     "js",    "application/javascript",
     "json",  "application/json",
     "mp3",   "audio/mpeg",
+    "mpg",   "video/mpeg",
+    "mpeg",  "video/mpeg",
     "pdf",   "application/pdf",
     "php",   "application/x-php",
     "pl",    "application/x-perl",
@@ -18071,7 +13924,7 @@ static void manageMimeType(MprMime *mt, int flags);
 
 /*********************************** Code *************************************/
 
-MprHash *mprCreateMimeTypes(cchar *path)
+PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
 {
     MprHash     *table;
     MprFile     *file;
@@ -18134,7 +13987,7 @@ static void manageMimeType(MprMime *mt, int flags)
 }
 
 
-MprMime *mprAddMime(MprHash *table, cchar *ext, cchar *mimeType)
+PUBLIC MprMime *mprAddMime(MprHash *table, cchar *ext, cchar *mimeType)
 {
     MprMime  *mt;
 
@@ -18150,7 +14003,7 @@ MprMime *mprAddMime(MprHash *table, cchar *ext, cchar *mimeType)
 }
 
 
-int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program)
+PUBLIC int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program)
 {
     MprKey      *kp;
     MprMime     *mt;
@@ -18172,7 +14025,7 @@ int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program)
 }
 
 
-cchar *mprGetMimeProgram(MprHash *table, cchar *mimeType)
+PUBLIC cchar *mprGetMimeProgram(MprHash *table, cchar *mimeType)
 {
     MprMime      *mt;
 
@@ -18186,7 +14039,7 @@ cchar *mprGetMimeProgram(MprHash *table, cchar *mimeType)
 }
 
 
-cchar *mprLookupMime(MprHash *table, cchar *ext)
+PUBLIC cchar *mprLookupMime(MprHash *table, cchar *ext)
 {
     MprMime     *mt;
     cchar       *ep;
@@ -18200,8 +14053,8 @@ cchar *mprLookupMime(MprHash *table, cchar *ext)
     if (table == 0) {
         table = MPR->mimeTypes;
     }
-    if ((mt = mprLookupKey(table, ext)) == 0) {;
-        return "text/html";
+    if ((mt = mprLookupKey(table, ext)) == 0) {
+        return 0;
     }
     return mt->type;
 }
@@ -18209,31 +14062,15 @@ cchar *mprLookupMime(MprHash *table, cchar *ext)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -18259,28 +14096,28 @@ cchar *mprLookupMime(MprHash *table, cchar *ext)
 
 
 
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && KEEP
 /********************************** Forwards **********************************/
 
-int mcasecmp(MprChar *str1, cchar *str2)
+PUBLIC int mcaselesscmp(wchar *str1, cchar *str2)
 {
-    return mncasecmp(str1, str2, -1);
+    return mncaselesscmp(str1, str2, -1);
 }
 
 
-int mcmp(MprChar *s1, cchar *s2)
+PUBLIC int mcmp(wchar *s1, cchar *s2)
 {
     return mncmp(s1, s2, -1);
 }
 
 
-MprChar *mcontains(MprChar *str, cchar *pattern, ssize limit)
+PUBLIC wchar *mncontains(wchar *str, cchar *pattern, ssize limit)
 {
-    MprChar     *cp, *s1;
-    cchar       *s2;
-    ssize       lim;
+    wchar   *cp, *s1;
+    cchar   *s2;
+    ssize   lim;
 
-    mprAssert(0 <= limit && limit < MAXSSIZE);
+    assure(0 <= limit && limit < MAXSSIZE);
 
     if (limit < 0) {
         limit = MAXINT;
@@ -18289,7 +14126,7 @@ MprChar *mcontains(MprChar *str, cchar *pattern, ssize limit)
         return 0;
     }
     if (pattern == 0 || *pattern == '\0') {
-        return (MprChar*) str;
+        return (wchar*) str;
     }
     for (cp = str; *cp && limit > 0; cp++, limit--) {
         s1 = cp;
@@ -18306,30 +14143,36 @@ MprChar *mcontains(MprChar *str, cchar *pattern, ssize limit)
 }
 
 
+PUBLIC wchar *mcontains(wchar *str, cchar *pattern)
+{
+    return mncontains(str, pattern, -1);
+}
+
+
 /*
     destMax and len are character counts, not sizes in bytes
  */
-ssize mcopy(MprChar *dest, cchar *src)
+PUBLIC ssize mcopy(wchar *dest, ssize destMax, cchar *src)
 {
     ssize       len;
 
-    mprAssert(src);
-    mprAssert(dest);
-    mprAssert(0 < destMax && destMax < MAXINT);
+    assure(src);
+    assure(dest);
+    assure(0 < destMax && destMax < MAXINT);
 
     len = slen(src);
     if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     return mtow(dest, len + 1, src, len);
 }
 
 
-int mends(MprChar *str, cchar *suffix)
+PUBLIC int mends(wchar *str, cchar *suffix)
 {
-    MprChar     *cp;
-    cchar       *sp;
+    wchar   *cp;
+    cchar   *sp;
 
     if (str == NULL || suffix == NULL) {
         return 0;
@@ -18348,12 +14191,12 @@ int mends(MprChar *str, cchar *suffix)
 }
 
 
-MprChar *mfmt(cchar *fmt, ...)
+PUBLIC wchar *mfmt(cchar *fmt, ...)
 {
     va_list     ap;
     char        *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(ap, fmt);
     mresult = sfmtv(fmt, ap);
@@ -18362,25 +14205,25 @@ MprChar *mfmt(cchar *fmt, ...)
 }
 
 
-MprChar *mfmtv(cchar *fmt, va_list arg)
+PUBLIC wchar *mfmtv(cchar *fmt, va_list arg)
 {
     char    *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
     mresult = sfmtv(fmt, arg);
     return amtow(mresult, NULL);
 }
 
 
 /*
-    Sep is ascii, args are MprChar
+    Sep is ascii, args are wchar
  */
-MprChar *mjoin(cchar *str, ...)
+PUBLIC wchar *mjoin(wchar *str, ...)
 {
-    MprChar     *result;
+    wchar       *result;
     va_list     ap;
 
-    mprAssert(str);
+    assure(str);
 
     va_start(ap, str);
     result = mjoinv(str, ap);
@@ -18389,40 +14232,43 @@ MprChar *mjoin(cchar *str, ...)
 }
 
 
-MprChar *mjoinv(MprChar *buf, va_list args)
+/*
+    MOB - comment required. What does this do?
+ */
+PUBLIC wchar *mjoinv(wchar *buf, va_list args)
 {
     va_list     ap;
-    MprChar     *dest, *str, *dp;
+    wchar       *dest, *str, *dp;
     int         required, len;
 
-    mprAssert(buf);
+    assure(buf);
 
     va_copy(ap, args);
     required = 1;
     if (buf) {
         required += wlen(buf);
     }
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         required += wlen(str);
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     if ((dest = mprAlloc(required)) == 0) {
         return 0;
     }
     dp = dest;
     if (buf) {
-        wcopy(dp, buf);
+        wcopy(dp, -1, buf);
         dp += wlen(buf);
     }
     va_copy(ap, args);
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         wcopy(dp, required, str);
         len = wlen(str);
         dp += len;
         required -= len;
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     *dp = '\0';
     return dest;
@@ -18432,11 +14278,11 @@ MprChar *mjoinv(MprChar *buf, va_list args)
 /*
     Case insensitive string comparison. Limited by length
  */
-int mncasecmp(MprChar *s1, cchar *s2, ssize n)
+PUBLIC int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXSSIZE);
+    assure(0 <= n && n < MAXSSIZE);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -18446,7 +14292,7 @@ int mncasecmp(MprChar *s1, cchar *s2, ssize n)
         return 1;
     }
     for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
-        rc = tolower(*s1) - tolower(*s2);
+        rc = tolower((uchar) *s1) - tolower((uchar) *s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;
@@ -18464,9 +14310,9 @@ int mncasecmp(MprChar *s1, cchar *s2, ssize n)
 
 
 
-int mncmp(MprChar *s1, cchar *s2, ssize n)
+PUBLIC int mncmp(wchar *s1, cchar *s2, ssize n)
 {
-    mprAssert(0 <= n && n < MAXSSIZE);
+    assure(0 <= n && n < MAXSSIZE);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -18493,16 +14339,16 @@ int mncmp(MprChar *s1, cchar *s2, ssize n)
 }
 
 
-ssize mncopy(MprChar *dest, ssize destMax, cchar *src, ssize len)
+PUBLIC ssize mncopy(wchar *dest, ssize destMax, cchar *src, ssize len)
 {
-    mprAssert(0 <= len && len < MAXSSIZE);
-    mprAssert(0 < destMax && destMax < MAXSSIZE);
+    assure(0 <= len && len < MAXSSIZE);
+    assure(0 < destMax && destMax < MAXSSIZE);
 
     return mtow(dest, destMax, src, len);
 }
 
 
-MprChar *mpbrk(MprChar *str, cchar *set)
+PUBLIC wchar *mpbrk(wchar *str, cchar *set)
 {
     cchar   *sp;
     int     count;
@@ -18522,12 +14368,12 @@ MprChar *mpbrk(MprChar *str, cchar *set)
 
 
 /*
-    Sep is ascii, args are MprChar
+    Sep is ascii, args are wchar
  */
-MprChar *mrejoin(MprChar *buf, ...)
+PUBLIC wchar *mrejoin(wchar *buf, ...)
 {
-    MprChar     *result;
     va_list     ap;
+    wchar       *result;
 
     va_start(ap, buf);
     result = mrejoinv(buf, ap);
@@ -18536,10 +14382,10 @@ MprChar *mrejoin(MprChar *buf, ...)
 }
 
 
-MprChar *mrejoinv(MprChar *buf, va_list args)
+PUBLIC wchar *mrejoinv(wchar *buf, va_list args)
 {
     va_list     ap;
-    MprChar     *dest, *str, *dp;
+    wchar       *dest, *str, *dp;
     int         required, len;
 
     va_copy(ap, args);
@@ -18547,30 +14393,30 @@ MprChar *mrejoinv(MprChar *buf, va_list args)
     if (buf) {
         required += wlen(buf);
     }
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         required += wlen(str);
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     if ((dest = mprRealloc(buf, required)) == 0) {
         return 0;
     }
     dp = dest;
     va_copy(ap, args);
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         wcopy(dp, required, str);
         len = wlen(str);
         dp += len;
         required -= len;
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     *dp = '\0';
     return dest;
 }
 
 
-ssize mspn(MprChar *str, cchar *set)
+PUBLIC ssize mspn(wchar *str, cchar *set)
 {
     cchar   *sp;
     int     count;
@@ -18592,7 +14438,7 @@ ssize mspn(MprChar *str, cchar *set)
 }
  
 
-int mstarts(MprChar *str, cchar *prefix)
+PUBLIC int mstarts(wchar *str, cchar *prefix)
 {
     if (str == NULL || prefix == NULL) {
         return 0;
@@ -18604,10 +14450,10 @@ int mstarts(MprChar *str, cchar *prefix)
 }
 
 
-MprChar *mtok(MprChar *str, cchar *delim, MprChar **last)
+PUBLIC wchar *mtok(wchar *str, cchar *delim, wchar **last)
 {
-    MprChar    *start, *end;
-    ssize      i;
+    wchar   *start, *end;
+    ssize   i;
 
     start = str ? str : *last;
 
@@ -18632,10 +14478,10 @@ MprChar *mtok(MprChar *str, cchar *delim, MprChar **last)
 }
 
 
-MprChar *mtrim(MprChar *str, cchar *set, int where)
+PUBLIC wchar *mtrim(wchar *str, cchar *set, int where)
 {
-    MprChar     s;
-    ssize       len, i;
+    wchar   s;
+    ssize   len, i;
 
     if (str == NULL || set == NULL) {
         return str;
@@ -18658,35 +14504,19 @@ MprChar *mtrim(MprChar *str, cchar *set, int where)
 }
 
 #else
-void dummyWide() {}
+PUBLIC void dummyWide() {}
 #endif /* BIT_CHAR_LEN > 1 */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -18696,7 +14526,6 @@ void dummyWide() {}
 
     @end
  */
-
 
 /************************************************************************/
 /*
@@ -18723,7 +14552,7 @@ static void manageModuleService(MprModuleService *ms, int flags);
 /*
     Open the module service
  */
-MprModuleService *mprCreateModuleService()
+PUBLIC MprModuleService *mprCreateModuleService()
 {
     MprModuleService    *ms;
 
@@ -18751,14 +14580,14 @@ static void manageModuleService(MprModuleService *ms, int flags)
 /*
     Call the start routine for each module
  */
-int mprStartModuleService()
+PUBLIC int mprStartModuleService()
 {
     MprModuleService    *ms;
     MprModule           *mp;
     int                 next;
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
 
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
         if (mprStartModule(mp) < 0) {
@@ -18772,14 +14601,14 @@ int mprStartModuleService()
 }
 
 
-void mprStopModuleService()
+PUBLIC void mprStopModuleService()
 {
     MprModuleService    *ms;
     MprModule           *mp;
     int                 next;
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
     mprLock(ms->mutex);
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
         mprStopModule(mp);
@@ -18788,14 +14617,14 @@ void mprStopModuleService()
 }
 
 
-MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *data)
+PUBLIC MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *data)
 {
     MprModuleService    *ms;
     MprModule           *mp;
     int                 index;
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
 
     if ((mp = mprAllocObj(MprModule, manageModule)) == 0) {
         return 0;
@@ -18806,7 +14635,7 @@ MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *data)
         mp->entry = sclone(entry);
     }
     mp->moduleData = data;
-    mp->lastActivity = mprGetTime();
+    mp->lastActivity = mprGetTicks();
     index = mprAddItem(ms->modules, mp);
     if (index < 0 || mp->name == 0) {
         return 0;
@@ -18826,9 +14655,9 @@ static void manageModule(MprModule *mp, int flags)
 }
 
 
-int mprStartModule(MprModule *mp)
+PUBLIC int mprStartModule(MprModule *mp)
 {
-    mprAssert(mp);
+    assure(mp);
 
     if (mp->start && !(mp->flags & MPR_MODULE_STARTED)) {
         if (mp->start(mp) < 0) {
@@ -18840,9 +14669,9 @@ int mprStartModule(MprModule *mp)
 }
 
 
-int mprStopModule(MprModule *mp)
+PUBLIC int mprStopModule(MprModule *mp)
 {
-    mprAssert(mp);
+    assure(mp);
 
     if (mp->stop && (mp->flags & MPR_MODULE_STARTED) && !(mp->flags & MPR_MODULE_STOPPED)) {
         if (mp->stop(mp) < 0) {
@@ -18857,19 +14686,19 @@ int mprStopModule(MprModule *mp)
 /*
     See if a module is already loaded
  */
-MprModule *mprLookupModule(cchar *name)
+PUBLIC MprModule *mprLookupModule(cchar *name)
 {
     MprModuleService    *ms;
     MprModule           *mp;
     int                 next;
 
-    mprAssert(name && name);
+    assure(name && name);
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
 
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
-        mprAssert(mp->name);
+        assure(mp->name);
         if (mp && strcmp(mp->name, name) == 0) {
             return mp;
         }
@@ -18878,7 +14707,7 @@ MprModule *mprLookupModule(cchar *name)
 }
 
 
-void *mprLookupModuleData(cchar *name)
+PUBLIC void *mprLookupModuleData(cchar *name)
 {
     MprModule   *module;
 
@@ -18889,27 +14718,30 @@ void *mprLookupModuleData(cchar *name)
 }
 
 
-void mprSetModuleTimeout(MprModule *module, MprTime timeout)
+PUBLIC void mprSetModuleTimeout(MprModule *module, MprTicks timeout)
 {
-    module->timeout = timeout;
+    assure(module);
+    if (module) {
+        module->timeout = timeout;
+    }
 }
 
 
-void mprSetModuleFinalizer(MprModule *module, MprModuleProc stop)
+PUBLIC void mprSetModuleFinalizer(MprModule *module, MprModuleProc stop)
 {
-    module->stop = stop;
+    assure(module);
+    if (module) {
+        module->stop = stop;
+    }
 }
 
 
-void mprSetModuleSearchPath(char *searchPath)
+PUBLIC void mprSetModuleSearchPath(char *searchPath)
 {
     MprModuleService    *ms;
 
     ms = MPR->moduleService;
     if (searchPath == 0) {
-#if UNUSED
-        dir = mprJoinPath(mprGetPathParent(mprGetAppDir()), BIT_LIB_NAME);
-#endif
         ms->searchPath = sjoin(mprGetAppDir(), MPR_SEARCH_SEP, mprGetAppDir(), MPR_SEARCH_SEP, BIT_BIN_PREFIX, NULL);
     } else {
         ms->searchPath = sclone(searchPath);
@@ -18917,7 +14749,7 @@ void mprSetModuleSearchPath(char *searchPath)
 }
 
 
-cchar *mprGetModuleSearchPath()
+PUBLIC cchar *mprGetModuleSearchPath()
 {
     return MPR->moduleService->searchPath;
 }
@@ -18926,10 +14758,10 @@ cchar *mprGetModuleSearchPath()
 /*
     Load a module. The module is located by searching for the filename by optionally using the module search path.
  */
-int mprLoadModule(MprModule *mp)
+PUBLIC int mprLoadModule(MprModule *mp)
 {
-#if BIT_CC_DYN_LOAD
-    mprAssert(mp);
+#if BIT_HAS_DYN_LOAD
+    assure(mp);
 
     if (mprLoadNativeModule(mp) < 0) {
         return MPR_ERR_CANT_READ;
@@ -18943,13 +14775,13 @@ int mprLoadModule(MprModule *mp)
 }
 
 
-int mprUnloadModule(MprModule *mp)
+PUBLIC int mprUnloadModule(MprModule *mp)
 {
     mprLog(6, "Unloading native module %s from %s", mp->name, mp->path);
     if (mprStopModule(mp) < 0) {
         return MPR_ERR_NOT_READY;
     }
-#if BIT_CC_DYN_LOAD
+#if BIT_HAS_DYN_LOAD
     if (mp->handle) {
         if (mprUnloadNativeModule(mp) != 0) {
             mprError("Can't unload module %s", mp->name);
@@ -18962,7 +14794,7 @@ int mprUnloadModule(MprModule *mp)
 }
 
 
-#if BIT_CC_DYN_LOAD
+#if BIT_HAS_DYN_LOAD
 /*
     Return true if the shared library in "file" can be found. Return the actual path in *path. The filename
     may not have a shared library extension which is typical so calling code can be cross platform.
@@ -18971,7 +14803,7 @@ static char *probe(cchar *filename)
 {
     char    *path;
 
-    mprAssert(filename && *filename);
+    assure(filename && *filename);
 
     mprLog(7, "Probe for native module %s", filename);
     if (mprPathExists(filename, R_OK)) {
@@ -18993,9 +14825,9 @@ static char *probe(cchar *filename)
 /*
     Search for a module "filename" in the modulePath. Return the result in "result"
  */
-char *mprSearchForModule(cchar *filename)
+PUBLIC char *mprSearchForModule(cchar *filename)
 {
-#if BIT_CC_DYN_LOAD
+#if BIT_HAS_DYN_LOAD
     char    *path, *f, *searchPath, *dir, *tok;
 
     filename = mprNormalizePath(filename);
@@ -19022,7 +14854,7 @@ char *mprSearchForModule(cchar *filename)
         }
         dir = stok(0, MPR_SEARCH_SEP, &tok);
     }
-#endif /* BIT_CC_DYN_LOAD */
+#endif /* BIT_HAS_DYN_LOAD */
     return 0;
 }
 
@@ -19031,28 +14863,12 @@ char *mprSearchForModule(cchar *filename)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -19099,7 +14915,7 @@ static MPR_INLINE bool isSep(MprFileSystem *fs, int c)
 {
     char    *separators;
 
-    mprAssert(fs);
+    assure(fs);
     for (separators = fs->separators; *separators; separators++) {
         if (*separators == c)
             return 1;
@@ -19112,8 +14928,8 @@ static MPR_INLINE bool hasDrive(MprFileSystem *fs, cchar *path)
 {
     char    *cp, *endDrive;
 
-    mprAssert(fs);
-    mprAssert(path);
+    assure(fs);
+    assure(path);
 
     if (fs->hasDriveSpecs) {
         cp = firstSep(fs, path);
@@ -19135,8 +14951,8 @@ static MPR_INLINE bool isAbsPath(MprFileSystem *fs, cchar *path)
 {
     char    *cp, *endDrive;
 
-    mprAssert(fs);
-    mprAssert(path);
+    assure(fs);
+    assure(path);
 
     if (path == NULL || *path == '\0') {
         return 0;
@@ -19168,8 +14984,8 @@ static MPR_INLINE bool isAbsPath(MprFileSystem *fs, cchar *path)
  */
 static MPR_INLINE bool isFullPath(MprFileSystem *fs, cchar *path) 
 {
-    mprAssert(fs);
-    mprAssert(path);
+    assure(fs);
+    assure(path);
 
 #if (BIT_WIN_LIKE || VXWORKS) && !WINCE
 {
@@ -19225,7 +15041,7 @@ static MPR_INLINE char *lastSep(MprFileSystem *fs, cchar *path)
 /*
     This copies a file.
  */
-int mprCopyPath(cchar *fromName, cchar *toName, int mode)
+PUBLIC int mprCopyPath(cchar *fromName, cchar *toName, int mode)
 {
     MprFile     *from, *to;
     ssize       count;
@@ -19248,7 +15064,7 @@ int mprCopyPath(cchar *fromName, cchar *toName, int mode)
 }
 
 
-int mprDeletePath(cchar *path)
+PUBLIC int mprDeletePath(cchar *path)
 {
     MprFileSystem   *fs;
 
@@ -19265,7 +15081,7 @@ int mprDeletePath(cchar *path)
     On CYGWIN, this is a cygwin path with forward-slashes and without drive specs. 
     Use mprGetWinPath for a windows style path with a drive specifier and back-slashes.
  */
-char *mprGetAbsPath(cchar *path)
+PUBLIC char *mprGetAbsPath(cchar *path)
 {
     MprFileSystem   *fs;
     char            *result;
@@ -19273,7 +15089,7 @@ char *mprGetAbsPath(cchar *path)
     if (path == 0 || *path == '\0') {
         path = ".";
     }
-#if BIT_FEATURE_ROMFS
+#if BIT_ROM
     return mprNormalizePath(path);
 #elif CYGWIN
     {
@@ -19307,10 +15123,10 @@ char *mprGetAbsPath(cchar *path)
 
 #if BIT_WIN_LIKE && !WINCE
 {
-    char    buf[MPR_MAX_PATH];
-    GetFullPathName(path, sizeof(buf) - 1, buf, NULL);
-    buf[sizeof(buf) - 1] = '\0';
-    result = mprNormalizePath(buf);
+    wchar    buf[MPR_MAX_PATH];
+    GetFullPathName(wide(path), sizeof(buf) - 1, buf, NULL);
+    buf[TSZ(buf) - 1] = '\0';
+    result = mprNormalizePath(multi(buf));
 }
 #elif VXWORKS
 {
@@ -19346,7 +15162,7 @@ char *mprGetAbsPath(cchar *path)
 /*
     Get the directory containing the application executable. Tries to return an absolute path.
  */
-char *mprGetAppDir()
+PUBLIC char *mprGetAppDir()
 { 
     if (MPR->appDir == 0) {
         MPR->appDir = mprGetPathDir(mprGetAppPath());
@@ -19358,7 +15174,7 @@ char *mprGetAppDir()
 /*
     Get the path for the application executable. Tries to return an absolute path.
  */
-char *mprGetAppPath()
+PUBLIC char *mprGetAppPath()
 { 
     if (MPR->appPath) {
         return sclone(MPR->appPath);
@@ -19412,12 +15228,12 @@ char *mprGetAppPath()
 }
 #elif BIT_WIN_LIKE
 {
-    char    pbuf[MPR_MAX_PATH];
+    wchar    pbuf[MPR_MAX_PATH];
 
     if (GetModuleFileName(0, pbuf, sizeof(pbuf) - 1) <= 0) {
         return 0;
     }
-    MPR->appPath = mprGetAbsPath(pbuf);
+    MPR->appPath = mprGetAbsPath(multi(pbuf));
 }
 #else
     if (mprIsPathAbs(MPR->argv[0])) {
@@ -19433,7 +15249,7 @@ char *mprGetAppPath()
 /*
     This will return a fully qualified absolute path for the current working directory.
  */
-char *mprGetCurrentPath()
+PUBLIC char *mprGetCurrentPath()
 {
     char    dir[MPR_MAX_PATH];
 
@@ -19468,7 +15284,7 @@ char *mprGetCurrentPath()
 }
 
 
-cchar *mprGetFirstPathSeparator(cchar *path) 
+PUBLIC cchar *mprGetFirstPathSeparator(cchar *path) 
 {
     MprFileSystem   *fs;
 
@@ -19480,7 +15296,7 @@ cchar *mprGetFirstPathSeparator(cchar *path)
 /*
     Return a pointer into the path at the last path separator or null if none found
  */
-cchar *mprGetLastPathSeparator(cchar *path) 
+PUBLIC cchar *mprGetLastPathSeparator(cchar *path) 
 {
     MprFileSystem   *fs;
 
@@ -19492,7 +15308,7 @@ cchar *mprGetLastPathSeparator(cchar *path)
 /*
     Return a path with native separators. This means "\\" on windows and cygwin
  */
-char *mprGetNativePath(cchar *path)
+PUBLIC char *mprGetNativePath(cchar *path)
 {
     return mprTransformPath(path, MPR_PATH_NATIVE_SEP);
 }
@@ -19501,7 +15317,7 @@ char *mprGetNativePath(cchar *path)
 /*
     Return the last portion of a pathname. The separators are not mapped and the path is not cleaned.
  */
-char *mprGetPathBase(cchar *path)
+PUBLIC char *mprGetPathBase(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp;
@@ -19529,7 +15345,7 @@ char *mprGetPathBase(cchar *path)
     Return the last portion of a pathname. The separators are not mapped and the path is not cleaned.
     This returns a reference into the original string
  */
-cchar *mprGetPathBaseRef(cchar *path)
+PUBLIC cchar *mprGetPathBaseRef(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp;
@@ -19555,16 +15371,16 @@ cchar *mprGetPathBaseRef(cchar *path)
 /*
     Return the directory portion of a pathname.
  */
-char *mprGetPathDir(cchar *path)
+PUBLIC char *mprGetPathDir(cchar *path)
 {
     MprFileSystem   *fs;
     cchar           *cp, *start;
     char            *result;
     ssize          len;
 
-    mprAssert(path);
+    assure(path);
 
-    if (*path == '\0') {
+    if (path == 0 || *path == '\0') {
         return sclone(path);
     }
 
@@ -19600,7 +15416,7 @@ char *mprGetPathDir(cchar *path)
     Return the extension portion of a pathname.
     Return the extension without the "."
  */
-char *mprGetPathExt(cchar *path)
+PUBLIC char *mprGetPathExt(cchar *path)
 {
     MprFileSystem  *fs;
     char            *cp;
@@ -19644,7 +15460,7 @@ static MprList *getDirFiles(cchar *dir, int flags)
     }
     seps = mprGetPathSeparators(dir);
 
-    h = FindFirstFile(path, &findData);
+    h = FindFirstFile(wide(path), &findData);
     if (h == INVALID_HANDLE_VALUE) {
         return 0;
     }
@@ -19657,13 +15473,13 @@ static MprList *getDirFiles(cchar *dir, int flags)
         if ((dp = mprAlloc(sizeof(MprDirEntry))) == 0) {
             return 0;
         }
-        dp->name = sclone(findData.cFileName);
+        dp->name = awtom(findData.cFileName, 0);
         if (dp->name == 0) {
             return 0;
         }
         /* dp->lastModified = (uint) findData.ftLastWriteTime.dwLowDateTime; */
 
-        if (mprSprintf(pbuf, sizeof(pbuf), "%s%c%s", dir, seps[0], dp->name) < 0) {
+        if (fmt(pbuf, sizeof(pbuf), "%s%c%s", dir, seps[0], dp->name) < 0) {
             dp->lastModified = 0;
         } else {
             mprGetPathInfo(pbuf, &fileInfo);
@@ -19720,7 +15536,7 @@ static MprList *getDirFiles(cchar *path, int flags)
             continue;
         }
         fileName = mprJoinPath(path, dirent->d_name);
-        //  MOB - workaround for if target of symlink does not exist
+        /* workaround for if target of symlink does not exist */
         fileInfo.isLink = 0;
         fileInfo.isDir = 0;
         rc = mprGetPathInfo(fileName, &fileInfo);
@@ -19792,6 +15608,14 @@ static MprList *findFiles(MprList *list, cchar *dir, cchar *base, int flags)
 }
 
 
+#if LINUX
+static int sortFiles(MprDirEntry **dp1, MprDirEntry **dp2)
+{
+    return strcmp((*dp1)->name, (*dp2)->name);
+}
+#endif
+
+
 /*
     Get the files in a directory. Returns a list of MprDirEntry objects.
 
@@ -19801,28 +15625,36 @@ static MprList *findFiles(MprList *list, cchar *dir, cchar *base, int flags)
     MPR_PATH_NODIRS         to exclude subdirectories
     MPR_PATH_RELATIVE       to return paths relative to the initial directory
  */
-MprList *mprGetPathFiles(cchar *dir, int flags)
+PUBLIC MprList *mprGetPathFiles(cchar *dir, int flags)
 {
+    MprList *list;
     cchar   *base;
 
     if (dir == 0 || *dir == '\0') {
         dir = ".";
     }
     base = (flags & MPR_PATH_RELATIVE) ? 0 : dir;
-    return findFiles(mprCreateList(-1, 0), dir, base, flags);
+    if ((list = findFiles(mprCreateList(-1, 0), dir, base, flags)) == 0) {
+        return 0;
+    }
+#if LINUX
+    /* Linux returns directories not sorted */
+    mprSortList(list, (MprSortProc) sortFiles, 0);
+#endif
+    return list;
 }
 
 
 /*
     Return the first directory of a pathname
  */
-char *mprGetPathFirstDir(cchar *path)
+PUBLIC char *mprGetPathFirstDir(cchar *path)
 {
     MprFileSystem   *fs;
     cchar           *cp;
     int             len;
 
-    mprAssert(path);
+    assure(path);
 
     fs = mprLookupFileSystem(path);
     if (isAbsPath(fs, path)) {
@@ -19837,7 +15669,7 @@ char *mprGetPathFirstDir(cchar *path)
 }
 
 
-int mprGetPathInfo(cchar *path, MprPath *info)
+PUBLIC int mprGetPathInfo(cchar *path, MprPath *info)
 {
     MprFileSystem  *fs;
 
@@ -19846,7 +15678,7 @@ int mprGetPathInfo(cchar *path, MprPath *info)
 }
 
 
-char *mprGetPathLink(cchar *path)
+PUBLIC char *mprGetPathLink(cchar *path)
 {
     MprFileSystem  *fs;
 
@@ -19859,7 +15691,7 @@ char *mprGetPathLink(cchar *path)
     GetPathParent is smarter than GetPathDir which operates purely textually on the path. GetPathParent will convert
     relative paths to absolute to determine the parent directory.
  */
-char *mprGetPathParent(cchar *path)
+PUBLIC char *mprGetPathParent(cchar *path)
 {
     MprFileSystem   *fs;
     char            *dir;
@@ -19880,7 +15712,7 @@ char *mprGetPathParent(cchar *path)
 }
 
 
-char *mprGetPortablePath(cchar *path)
+PUBLIC char *mprGetPortablePath(cchar *path)
 {
     char    *result, *cp;
 
@@ -19897,7 +15729,7 @@ char *mprGetPortablePath(cchar *path)
 /*
     This returns a path relative to the current working directory for the given path
  */
-char *mprGetRelPath(cchar *destArg, cchar *originArg)
+PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
 {
     MprFileSystem   *fs;
     char            originBuf[MPR_MAX_FNAME], *cp, *result, *dest, *lastcp, *origin, *op, *lastop;
@@ -19958,7 +15790,7 @@ char *mprGetRelPath(cchar *destArg, cchar *originArg)
             break;
         }
     }
-    mprAssert(commonSegments >= 0);
+    assure(commonSegments >= 0);
 
     if (*cp && *op) {
         op = lastop;
@@ -19996,7 +15828,10 @@ char *mprGetRelPath(cchar *destArg, cchar *originArg)
 }
 
 
-char *mprGetTempPath(cchar *tempDir)
+/*
+    Get a temporary file name. The file is created in the system temp location.
+ */
+PUBLIC char *mprGetTempPath(cchar *tempDir)
 {
     MprFile         *file;
     char            *dir, *path;
@@ -20024,7 +15859,6 @@ char *mprGetTempPath(cchar *tempDir)
     now = ((int) mprGetTime() & 0xFFFF) % 64000;
     file = 0;
     path = 0;
-
     for (i = 0; i < 128; i++) {
         path = sfmt("%s/MPR_%d_%d_%d.tmp", dir, getpid(), now, ++tempSeed);
         file = mprOpenFile(path, O_CREAT | O_EXCL | O_BINARY, 0664);
@@ -20044,14 +15878,14 @@ char *mprGetTempPath(cchar *tempDir)
     Return a windows path.
     On CYGWIN, this is a cygwin path without drive specs.
  */
-char *mprGetWinPath(cchar *path)
+PUBLIC char *mprGetWinPath(cchar *path)
 {
     char            *result;
 
     if (path == 0 || *path == '\0') {
         path = ".";
     }
-#if BIT_FEATURE_ROMFS
+#if BIT_ROM
     result = mprNormalizePath(path);
 #elif CYGWIN
 {
@@ -20074,7 +15908,7 @@ char *mprGetWinPath(cchar *path)
 }
 
 
-bool mprIsPathAbs(cchar *path)
+PUBLIC bool mprIsPathAbs(cchar *path)
 {
     MprFileSystem   *fs;
 
@@ -20083,7 +15917,7 @@ bool mprIsPathAbs(cchar *path)
 }
 
 
-bool mprIsPathDir(cchar *path)
+PUBLIC bool mprIsPathDir(cchar *path)
 {
     MprPath     info;
 
@@ -20091,7 +15925,7 @@ bool mprIsPathDir(cchar *path)
 }
 
 
-bool mprIsPathRel(cchar *path)
+PUBLIC bool mprIsPathRel(cchar *path)
 {
     MprFileSystem   *fs;
 
@@ -20100,7 +15934,7 @@ bool mprIsPathRel(cchar *path)
 }
 
 
-bool mprIsPathSeparator(cchar *path, cchar c)
+PUBLIC bool mprIsPathSeparator(cchar *path, cchar c)
 {
     MprFileSystem   *fs;
 
@@ -20114,7 +15948,7 @@ bool mprIsPathSeparator(cchar *path, cchar c)
     If other is absolute, then return other. If other is null, empty or "." then return path.
     The separator is chosen to match the first separator found in either path. If none, it uses the default separator.
  */
-char *mprJoinPath(cchar *path, cchar *other)
+PUBLIC char *mprJoinPath(cchar *path, cchar *other)
 {
     MprFileSystem   *fs;
     char            *join, *drive, *cp;
@@ -20159,7 +15993,7 @@ char *mprJoinPath(cchar *path, cchar *other)
     Join an extension to a path. If path already has an extension, this call does nothing.
     The extension should not have a ".", but this routine is tolerant if it does.
  */
-char *mprJoinPathExt(cchar *path, cchar *ext)
+PUBLIC char *mprJoinPathExt(cchar *path, cchar *ext)
 {
     MprFileSystem   *fs;
     char            *cp;
@@ -20183,7 +16017,7 @@ char *mprJoinPathExt(cchar *path, cchar *ext)
 /*
     Make a directory with all necessary intervening directories.
  */
-int mprMakeDir(cchar *path, int perms, int owner, int group, bool makeMissing)
+PUBLIC int mprMakeDir(cchar *path, int perms, int owner, int group, bool makeMissing)
 {
     MprFileSystem   *fs;
     char            *parent;
@@ -20208,7 +16042,7 @@ int mprMakeDir(cchar *path, int perms, int owner, int group, bool makeMissing)
 }
 
 
-int mprMakeLink(cchar *path, cchar *target, bool hard)
+PUBLIC int mprMakeLink(cchar *path, cchar *target, bool hard)
 {
     MprFileSystem   *fs;
 
@@ -20224,7 +16058,7 @@ int mprMakeLink(cchar *path, cchar *target, bool hard)
     Normalize a path to remove redundant "./" and cleanup "../" and make separator uniform. Does not make an abs path.
     It does not map separators, change case, nor add drive specifiers.
  */
-char *mprNormalizePath(cchar *pathArg)
+PUBLIC char *mprNormalizePath(cchar *pathArg)
 {
     MprFileSystem   *fs;
     char            *path, *sp, *dp, *mark, **segments;
@@ -20288,7 +16122,7 @@ char *mprNormalizePath(cchar *pathArg)
     /*
         Have dots to process so break into path segments. Add one incase we need have an absolute path with a drive-spec.
      */
-    mprAssert(segmentCount > 0);
+    assure(segmentCount > 0);
     if ((segments = mprAlloc(sizeof(char*) * (segmentCount + 1))) == 0) {
         return NULL;
     }
@@ -20309,14 +16143,14 @@ char *mprNormalizePath(cchar *pathArg)
             if (*mark == '.' && mark[1] == '.' && mark[2] == '\0' && i > 0 && strcmp(segments[i-1], "..") != 0) {
                 /* Erase ".." and previous segment */
                 if (*segments[i - 1] == '\0' ) {
-                    mprAssert(i == 1);
+                    assure(i == 1);
                     /* Previous segement is "/". Prevent escape from root */
                     segmentCount--;
                 } else {
                     i--;
                     segmentCount -= 2;
                 }
-                mprAssert(segmentCount >= 0);
+                assure(segmentCount >= 0);
                 mark = sp + 1;
                 continue;
             }
@@ -20339,7 +16173,7 @@ char *mprNormalizePath(cchar *pathArg)
         segments[i++] = mark;
         len += (sp - mark);
     }
-    mprAssert(i <= segmentCount);
+    assure(i <= segmentCount);
     segmentCount = i;
 
     if (segmentCount <= 0) {
@@ -20363,7 +16197,7 @@ char *mprNormalizePath(cchar *pathArg)
     if ((path = mprAlloc(len + segmentCount + 1)) == 0) {
         return NULL;
     }
-    mprAssert(segmentCount > 0);
+    assure(segmentCount > 0);
 
     /*
         First segment requires special treatment due to drive specs
@@ -20386,7 +16220,7 @@ char *mprNormalizePath(cchar *pathArg)
 }
 
 
-void mprMapSeparators(char *path, int separator)
+PUBLIC void mprMapSeparators(char *path, int separator)
 {
     MprFileSystem   *fs;
     char            *cp;
@@ -20400,7 +16234,7 @@ void mprMapSeparators(char *path, int separator)
 }
 
 
-bool mprPathExists(cchar *path, int omode)
+PUBLIC bool mprPathExists(cchar *path, int omode)
 {
     MprFileSystem  *fs;
 
@@ -20412,7 +16246,7 @@ bool mprPathExists(cchar *path, int omode)
 }
 
 
-char *mprReadPathContents(cchar *path, ssize *lenp)
+PUBLIC char *mprReadPathContents(cchar *path, ssize *lenp)
 {
     MprFile     *file;
     MprPath     info;
@@ -20445,13 +16279,13 @@ char *mprReadPathContents(cchar *path, ssize *lenp)
 }
 
 
-int mprRenamePath(cchar *from, cchar *to)
+PUBLIC int mprRenamePath(cchar *from, cchar *to)
 {
     return rename(from, to);
 }
 
 
-char *mprReplacePathExt(cchar *path, cchar *ext)
+PUBLIC char *mprReplacePathExt(cchar *path, cchar *ext)
 {
     return mprJoinPathExt(mprTrimPathExt(path), ext);
 }
@@ -20474,7 +16308,7 @@ char *mprReplacePathExt(cchar *path, cchar *ext)
     Returns a joined (normalized) path.
     If path is absolute, then return path. If path is null, empty or "." then return path.
  */
-char *mprResolvePath(cchar *base, cchar *path)
+PUBLIC char *mprResolvePath(cchar *base, cchar *path)
 {
     MprFileSystem   *fs;
     char            *join, *drive, *cp, *dir;
@@ -20510,7 +16344,7 @@ char *mprResolvePath(cchar *base, cchar *path)
 /*
     Compare two file path to determine if they point to the same file.
  */
-int mprSamePath(cchar *path1, cchar *path2)
+PUBLIC int mprSamePath(cchar *path1, cchar *path2)
 {
     MprFileSystem   *fs;
     cchar           *p1, *p2;
@@ -20519,7 +16353,7 @@ int mprSamePath(cchar *path1, cchar *path2)
 
     /*
         Convert to absolute (normalized) paths to compare. 
-        TODO - resolve symlinks.
+        MOB - resolve symlinks.
      */
     if (!isFullPath(fs, path1)) {
         path1 = mprGetAbsPath(path1);
@@ -20551,7 +16385,7 @@ int mprSamePath(cchar *path1, cchar *path2)
 /*
     Compare two file path to determine if they point to the same file.
  */
-int mprSamePathCount(cchar *path1, cchar *path2, ssize len)
+PUBLIC int mprSamePathCount(cchar *path1, cchar *path2, ssize len)
 {
     MprFileSystem   *fs;
     cchar           *p1, *p2;
@@ -20560,7 +16394,7 @@ int mprSamePathCount(cchar *path1, cchar *path2, ssize len)
 
     /*
         Convert to absolute paths to compare. 
-        TODO - resolve symlinks.
+        MOB - resolve symlinks.
      */
     if (!isFullPath(fs, path1)) {
         path1 = mprGetAbsPath(path1);
@@ -20585,7 +16419,7 @@ int mprSamePathCount(cchar *path1, cchar *path2, ssize len)
 }
 
 
-void mprSetAppPath(cchar *path)
+PUBLIC void mprSetAppPath(cchar *path)
 { 
     MPR->appPath = sclone(path);
     MPR->appDir = mprGetPathDir(MPR->appPath);
@@ -20614,14 +16448,14 @@ static char* checkPath(cchar *path, int flags)
 }
 
 
-char *mprSearchPath(cchar *file, int flags, cchar *search, ...)
+PUBLIC char *mprSearchPath(cchar *file, int flags, cchar *search, ...)
 {
     va_list     args;
     char        *result, *path, *dir, *nextDir, *tok;
 
     va_start(args, search);
 
-    mprLog(5, "mprSearchForFile: %s", file);
+    mprLog(6, "mprSearchForFile: %s", file);
 
     if ((result = checkPath(file, flags)) != 0) {
         return result;
@@ -20636,7 +16470,7 @@ char *mprSearchPath(cchar *file, int flags, cchar *search, ...)
         nextDir = sclone(nextDir);
         dir = stok(nextDir, MPR_SEARCH_SEP, &tok);
         while (dir && *dir) {
-            mprLog(5, "mprSearchForFile: %s in search path %s", file, dir);
+            mprLog(6, "mprSearchForFile: %s in search path %s", file, dir);
             path = mprJoinPath(dir, file);
             if ((result = checkPath(path, flags)) != 0) {
                 return mprNormalizePath(result);
@@ -20658,7 +16492,7 @@ char *mprSearchPath(cchar *file, int flags, cchar *search, ...)
     This normalizes a path. Returns a normalized path according to flags. Default is absolute. 
     if MPR_PATH_NATIVE_SEP is specified in the flags, map separators to the native format.
  */
-char *mprTransformPath(cchar *path, int flags)
+PUBLIC char *mprTransformPath(cchar *path, int flags)
 {
     char    *result;
 
@@ -20691,7 +16525,7 @@ char *mprTransformPath(cchar *path, int flags)
 }
 
 
-char *mprTrimPathExt(cchar *path)
+PUBLIC char *mprTrimPathExt(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp, *result;
@@ -20707,7 +16541,7 @@ char *mprTrimPathExt(cchar *path)
 }
 
 
-char *mprTrimPathDrive(cchar *path)
+PUBLIC char *mprTrimPathDrive(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp, *endDrive;
@@ -20724,7 +16558,7 @@ char *mprTrimPathDrive(cchar *path)
 }
 
 
-ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode)
+PUBLIC ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode)
 {
     MprFile     *file;
 
@@ -20750,31 +16584,15 @@ ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -20810,7 +16628,7 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct pollfd   *pollfd;
     int             fd;
@@ -20843,7 +16661,7 @@ int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-void mprManagePoll(MprWaitService *ws, int flags)
+PUBLIC void mprManagePoll(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->fds);
@@ -20864,7 +16682,7 @@ static int growFds(MprWaitService *ws)
 {
     ws->fdMax *= 2;
     if ((ws->fds = mprRealloc(ws->fds, sizeof(struct pollfd) * ws->fdMax)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -20875,14 +16693,14 @@ static int growHandlers(MprWaitService *ws, int fd)
 {
     ws->handlerMax = fd + 1;
     if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     struct pollfd   *pollfd;
     int             fd, index;
@@ -20897,15 +16715,15 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             if (index < 0) {
                 if (ws->fdsCount >= ws->fdMax && growFds(ws) < 0) {
                     unlock(ws);
-                    mprAssert(!MPR_ERR_MEMORY);
+                    assure(!MPR_ERR_MEMORY);
                     return MPR_ERR_MEMORY;
                 }
                 if (fd >= ws->handlerMax && growHandlers(ws, fd) < 0) {
                     unlock(ws);
                     return MPR_ERR_MEMORY;
                 }
-                mprAssert(fd < ws->handlerMax);
-                mprAssert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+                assure(fd < ws->handlerMax);
+                assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
                 ws->handlerMap[fd] = wp;
                 index = wp->notifierIndex = ws->fdsCount++;
                 pollfd = &ws->fds[index];
@@ -20929,7 +16747,6 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             }
             wp->desiredMask = mask;
         }
-
         /*
             Compact on removal. If not the last entry, copy last poll entry to replace the deleted fd.
          */
@@ -20943,6 +16760,10 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             wp->notifierIndex = -1;
             wp->desiredMask = 0;
         }
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     unlock(ws);
     return 0;
@@ -20953,7 +16774,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct pollfd   fds[1];
     int             rc;
@@ -20991,7 +16812,7 @@ int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected.
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     int     count, rc;
 
@@ -21049,8 +16870,8 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count)
         if (fp->revents & POLLOUT) {
             mask |= MPR_WRITABLE;
         }
-        mprAssert(mask);
-        mprAssert(fp->fd >= 0);
+        assure(mask);
+        assure(fp->fd >= 0);
         if ((wp = ws->handlerMap[fp->fd]) == 0) {
             char    buf[128];
             if (fp->fd == ws->breakPipe[MPR_READ_PIPE]) {
@@ -21073,7 +16894,7 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count)
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
     Must be async-safe.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
     int             c;
@@ -21086,36 +16907,18 @@ void mprWakeNotifier()
     }
 }
 
-#else
-void stubMprPollWait() {}
 #endif /* MPR_EVENT_POLL */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -21169,7 +16972,7 @@ void stubMprPollWait() {}
 #define STATE_TYPE      7               /* Data type */
 #define STATE_COUNT     8
 
-char stateMap[] = {
+PUBLIC char stateMap[] = {
     /*     STATES:  Normal Percent Modifier Width  Dot  Prec Bits Type */
     /* CLASS           0      1       2       3     4     5    6    7  */
     /* Normal   0 */   0,     0,      0,      0,    0,    0,   0,   0,
@@ -21188,7 +16991,7 @@ char stateMap[] = {
   
     The Class map will map from a specifier letter to a state.
  */
-char classMap[] = {
+PUBLIC char classMap[] = {
     /*   0  ' '    !     "     #     $     %     &     ' */
              2,    0,    0,    2,    0,    1,    0,    0,
     /*  07   (     )     *     +     ,     -     .     / */
@@ -21279,7 +17082,7 @@ typedef struct MprEjsString {
     void            *next;
     void            *prev;
     ssize           length;
-    MprChar         value[0];
+    wchar         value[0];
 } MprEjsString;
 
 typedef struct MprEjsName {
@@ -21294,16 +17097,16 @@ static int  growBuf(Format *fmt);
 static char *sprintfCore(char *buf, ssize maxsize, cchar *fmt, va_list arg);
 static void outNum(Format *fmt, cchar *prefix, uint64 val);
 static void outString(Format *fmt, cchar *str, ssize len);
-#if BIT_CHAR_LEN > 1
-static void outWideString(Format *fmt, MprChar *str, ssize len);
+#if BIT_CHAR_LEN > 1 && KEEP
+static void outWideString(Format *fmt, wchar *str, ssize len);
 #endif
-#if BIT_FEATURE_FLOAT
+#if BIT_FLOAT
 static void outFloat(Format *fmt, char specChar, double value);
 #endif
 
 /************************************* Code ***********************************/
 
-ssize mprPrintf(cchar *fmt, ...)
+PUBLIC ssize mprPrintf(cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
@@ -21323,7 +17126,7 @@ ssize mprPrintf(cchar *fmt, ...)
 }
 
 
-ssize mprPrintfError(cchar *fmt, ...)
+PUBLIC ssize mprPrintfError(cchar *fmt, ...)
 {
     va_list     ap;
     ssize       len;
@@ -21343,7 +17146,7 @@ ssize mprPrintfError(cchar *fmt, ...)
 }
 
 
-ssize mprFprintf(MprFile *file, cchar *fmt, ...)
+PUBLIC ssize mprFprintf(MprFile *file, cchar *fmt, ...)
 {
     ssize       len;
     va_list     ap;
@@ -21368,7 +17171,7 @@ ssize mprFprintf(MprFile *file, cchar *fmt, ...)
 /*
     Printf with a static buffer. Used internally only. WILL NOT MALLOC.
  */
-int mprStaticPrintf(cchar *fmt, ...)
+PUBLIC int mprStaticPrintf(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
@@ -21386,7 +17189,7 @@ int mprStaticPrintf(cchar *fmt, ...)
 /*
     Printf with a static buffer. Used internally only. WILL NOT MALLOC.
  */
-int mprStaticPrintfError(cchar *fmt, ...)
+PUBLIC int mprStaticPrintfError(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
@@ -21402,14 +17205,14 @@ int mprStaticPrintfError(cchar *fmt, ...)
 #endif
 
 
-char *mprSprintf(char *buf, ssize bufsize, cchar *fmt, ...)
+PUBLIC char *fmt(char *buf, ssize bufsize, cchar *fmt, ...)
 {
     va_list     ap;
     char        *result;
 
-    mprAssert(buf);
-    mprAssert(fmt);
-    mprAssert(bufsize > 0);
+    assure(buf);
+    assure(fmt);
+    assure(bufsize > 0);
 
     va_start(ap, fmt);
     result = sprintfCore(buf, bufsize, fmt, ap);
@@ -21418,22 +17221,23 @@ char *mprSprintf(char *buf, ssize bufsize, cchar *fmt, ...)
 }
 
 
-char *mprSprintfv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
+PUBLIC char *fmtv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
 {
-    mprAssert(buf);
-    mprAssert(fmt);
-    mprAssert(bufsize > 0);
+    assure(buf);
+    assure(fmt);
+    assure(bufsize > 0);
 
     return sprintfCore(buf, bufsize, fmt, arg);
 }
 
 
-char *mprAsprintf(cchar *fmt, ...)
+//  MOB - DEPRECATE
+PUBLIC char *mprAsprintf(cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(ap, fmt);
     buf = sprintfCore(NULL, -1, fmt, ap);
@@ -21442,9 +17246,9 @@ char *mprAsprintf(cchar *fmt, ...)
 }
 
 
-char *mprAsprintfv(cchar *fmt, va_list arg)
+PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg)
 {
-    mprAssert(fmt);
+    assure(fmt);
     return sprintfCore(NULL, -1, fmt, arg);
 }
 
@@ -21456,10 +17260,10 @@ static int getState(char c, int state)
     if (c < ' ' || c > 'z') {
         chrClass = CLASS_NORMAL;
     } else {
-        mprAssert((c - ' ') < (int) sizeof(classMap));
+        assure((c - ' ') < (int) sizeof(classMap));
         chrClass = classMap[(c - ' ')];
     }
-    mprAssert((chrClass * STATE_COUNT + state) < (int) sizeof(stateMap));
+    assure((chrClass * STATE_COUNT + state) < (int) sizeof(stateMap));
     state = stateMap[chrClass * STATE_COUNT + state];
     return state;
 }
@@ -21480,7 +17284,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
         spec = "";
     }
     if (buf != 0) {
-        mprAssert(maxsize > 0);
+        assure(maxsize > 0);
         fmt.buf = (uchar*) buf;
         fmt.endbuf = &fmt.buf[maxsize];
         fmt.growBy = -1;
@@ -21593,13 +17397,13 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
         case STATE_TYPE:
             switch (c) {
             case 'e':
-#if BIT_FEATURE_FLOAT
+#if BIT_FLOAT
             case 'g':
             case 'f':
                 fmt.radix = 10;
                 outFloat(&fmt, c, (double) va_arg(args, double));
                 break;
-#endif /* BIT_FEATURE_FLOAT */
+#endif /* BIT_FLOAT */
 
             case 'c':
                 BPUT(&fmt, (char) va_arg(args, int));
@@ -21609,16 +17413,16 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 /* Name */
                 qname = va_arg(args, MprEjsName);
                 if (qname.name) {
-#if BIT_CHAR_LEN == 1
+#if BIT_CHAR_LEN > 1 && KEEP
+                    outWideString(&fmt, (wchar*) qname.space->value, qname.space->length);
+                    BPUT(&fmt, ':');
+                    BPUT(&fmt, ':');
+                    outWideString(&fmt, (wchar*) qname.name->value, qname.name->length);
+#else
                     outString(&fmt, (char*) qname.space->value, qname.space->length);
                     BPUT(&fmt, ':');
                     BPUT(&fmt, ':');
                     outString(&fmt, (char*) qname.name->value, qname.name->length);
-#else
-                    outWideString(&fmt, (MprChar*) qname.space->value, qname.space->length);
-                    BPUT(&fmt, ':');
-                    BPUT(&fmt, ':');
-                    outWideString(&fmt, (MprChar*) qname.name->value, qname.name->length);
 #endif
                 } else {
                     outString(&fmt, NULL, 0);
@@ -21627,10 +17431,10 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'S':
                 /* Safe string */
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && KEEP
                 if (fmt.flags & SPRINTF_LONG) {
-                    //  MOB - not right MprChar
-                    safe = mprEscapeHtml(va_arg(args, MprChar*));
+                    //  UNICODE - not right wchar
+                    safe = mprEscapeHtml(va_arg(args, wchar*));
                     outWideString(&fmt, safe, -1);
                 } else
 #endif
@@ -21644,10 +17448,10 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 /* MprEjsString */
                 es = va_arg(args, MprEjsString*);
                 if (es) {
-#if BIT_CHAR_LEN == 1
-                    outString(&fmt, (char*) es->value, es->length);
-#else
+#if BIT_CHAR_LEN > 1 && KEEP
                     outWideString(&fmt, es->value, es->length);
+#else
+                    outString(&fmt, (char*) es->value, es->length);
 #endif
                 } else {
                     outString(&fmt, NULL, 0);
@@ -21655,9 +17459,9 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 break;
 
             case 'w':
-                /* Wide string of MprChar characters (Same as %ls"). Null terminated. */
-#if BIT_CHAR_LEN > 1
-                outWideString(&fmt, va_arg(args, MprChar*), -1);
+                /* Wide string of wchar characters (Same as %ls"). Null terminated. */
+#if BIT_CHAR_LEN > 1 && KEEP
+                outWideString(&fmt, va_arg(args, wchar*), -1);
                 break;
 #else
                 /* Fall through */
@@ -21665,9 +17469,9 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 's':
                 /* Standard string */
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && KEEP
                 if (fmt.flags & SPRINTF_LONG) {
-                    outWideString(&fmt, va_arg(args, MprChar*), -1);
+                    outWideString(&fmt, va_arg(args, wchar*), -1);
                 } else
 #endif
                     outString(&fmt, va_arg(args, char*), -1);
@@ -21702,7 +17506,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'X':
                 fmt.flags |= SPRINTF_UPPER_CASE;
-#if MPR_64_BIT
+#if BIT_64
                 fmt.flags &= ~(SPRINTF_SHORT|SPRINTF_LONG);
                 fmt.flags |= SPRINTF_INT64;
 #else
@@ -21759,7 +17563,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 break;
 
             case 'p':       /* Pointer */
-#if MPR_64_BIT
+#if BIT_64
                 uValue = (uint64) va_arg(args, void*);
 #else
                 uValue = (uint) PTOI(va_arg(args, void*));
@@ -21814,10 +17618,10 @@ static void outString(Format *fmt, cchar *str, ssize len)
 }
 
 
-#if BIT_CHAR_LEN > 1
-static void outWideString(Format *fmt, MprChar *str, ssize len)
+#if BIT_CHAR_LEN > 1 && KEEP
+static void outWideString(Format *fmt, wchar *str, ssize len)
 {
-    MprChar     *cp;
+    wchar     *cp;
     int         i;
 
     if (str == 0) {
@@ -21937,7 +17741,7 @@ static void outNum(Format *fmt, cchar *prefix, uint64 value)
 }
 
 
-#if BIT_FEATURE_FLOAT
+#if BIT_FLOAT
 static void outFloat(Format *fmt, char specChar, double value)
 {
     char    result[MPR_MAX_STRING], *cp;
@@ -21946,18 +17750,10 @@ static void outFloat(Format *fmt, char specChar, double value)
     result[0] = '\0';
     if (specChar == 'f') {
         sprintf(result, "%.*f", fmt->precision, value);
-        // result = mprDtoa(value, fmt->precision, MPR_DTOA_ALL_DIGITS, MPR_DTOA_FIXED_FORM);
-        // sprintf(result, "%*.*f", fmt->width, fmt->precision, value);
-
     } else if (specChar == 'g') {
         sprintf(result, "%*.*g", fmt->width, fmt->precision, value);
-        // sprintf(result, "%*.*g", fmt->width, fmt->precision, value);
-        // result = mprDtoa(value, fmt->precision, 0, 0);
-
     } else if (specChar == 'e') {
         sprintf(result, "%*.*e", fmt->width, fmt->precision, value);
-        // result = mprDtoa(value, fmt->precision, MPR_DTOA_N_DIGITS, MPR_DTOA_EXPONENT_FORM);
-        // sprintf(result, "%*.*e", fmt->width, fmt->precision, value);
     }
     len = (int) slen(result);
     fill = fmt->width - len;
@@ -21994,7 +17790,8 @@ static void outFloat(Format *fmt, char specChar, double value)
     BPUTNULL(fmt);
 }
 
-int mprIsNan(double value) {
+
+PUBLIC int mprIsNan(double value) {
 #if WINDOWS
     return _fpclass(value) & (_FPCLASS_SNAN | _FPCLASS_QNAN);
 #elif VXWORKS
@@ -22005,7 +17802,7 @@ int mprIsNan(double value) {
 }
 
 
-int mprIsInfinite(double value) {
+PUBLIC int mprIsInfinite(double value) {
 #if WINDOWS
     return _fpclass(value) & (_FPCLASS_PINF | _FPCLASS_NINF);
 #elif VXWORKS
@@ -22015,7 +17812,7 @@ int mprIsInfinite(double value) {
 #endif
 }
 
-int mprIsZero(double value) {
+PUBLIC int mprIsZero(double value) {
 #if WINDOWS
     return _fpclass(value) & (_FPCLASS_NZ | _FPCLASS_PZ);
 #elif VXWORKS
@@ -22024,146 +17821,7 @@ int mprIsZero(double value) {
     return fpclassify(value) == FP_ZERO;
 #endif
 }
-
-/*
-    Convert a double to ascii. Caller must free the result. This uses the JavaScript ECMA-262 spec for formatting rules.
-
-    function dtoa(double value, int mode, int ndigits, int *periodOffset, int *sign, char **end)
- */
-char *mprDtoa(double value, int ndigits, int mode, int flags)
-{
-    MprBuf  *buf;
-    char    *intermediate, *ip;
-    int     period, sign, len, exponentForm, fixedForm, exponent, count, totalDigits, npad;
-
-    buf = mprCreateBuf(64, -1);
-    intermediate = 0;
-    exponentForm = 0;
-    fixedForm = 0;
-
-    if (mprIsNan(value)) {
-        mprPutStringToBuf(buf, "NaN");
-
-    } else if (mprIsInfinite(value)) {
-        if (value < 0) {
-            mprPutStringToBuf(buf, "-Infinity");
-        } else {
-            mprPutStringToBuf(buf, "Infinity");
-        }
-    } else if (value == 0) {
-        mprPutCharToBuf(buf, '0');
-
-    } else {
-        if (ndigits <= 0) {
-            if (!(flags & MPR_DTOA_FIXED_FORM)) {
-                mode = MPR_DTOA_ALL_DIGITS;
-            }
-            ndigits = 0;
-
-        } else if (mode == MPR_DTOA_ALL_DIGITS) {
-            mode = MPR_DTOA_N_DIGITS;
-        }
-        if (flags & MPR_DTOA_EXPONENT_FORM) {
-            exponentForm = 1;
-            if (ndigits > 0) {
-                ndigits++;
-            } else {
-                ndigits = 0;
-                mode = MPR_DTOA_ALL_DIGITS;
-            }
-        } else if (flags & MPR_DTOA_FIXED_FORM) {
-            fixedForm = 1;
-        }
-
-        /*
-            Convert to an intermediate string representation. Period is the offset of the decimal point. NOTE: the
-            intermediate representation may have less digits than period.
-            Note: ndigits < 0 seems to trim N digits from the end with rounding.
-         */
-        ip = intermediate = dtoa(value, mode, ndigits, &period, &sign, NULL);
-        len = (int) slen(intermediate);
-        exponent = period - 1;
-
-        if (mode == MPR_DTOA_ALL_DIGITS && ndigits == 0) {
-            ndigits = len;
-        }
-        if (!fixedForm) {
-            if (period <= -6 || period > 21) {
-                exponentForm = 1;
-            }
-        }
-        if (sign) {
-            mprPutCharToBuf(buf, '-');
-        }
-        if (exponentForm) {
-            mprPutCharToBuf(buf, ip[0] ? ip[0] : '0');
-            if (len > 1) {
-                mprPutCharToBuf(buf, '.');
-                mprPutSubStringToBuf(buf, &ip[1], (ndigits == 0) ? len - 1: ndigits);
-            }
-            mprPutCharToBuf(buf, 'e');
-            mprPutCharToBuf(buf, (period < 0) ? '-' : '+');
-            mprPutFmtToBuf(buf, "%d", (exponent < 0) ? -exponent: exponent);
-
-        } else {
-            if (mode == MPR_DTOA_N_FRACTION_DIGITS) {
-                /* Count of digits */
-                if (period <= 0) {
-                    /* Leading fractional zeros required */
-                    mprPutStringToBuf(buf, "0.");
-                    mprPutPadToBuf(buf, '0', -period);
-                    mprPutStringToBuf(buf, ip);
-                    npad = ndigits - len + period;
-                    if (npad > 0) {
-                        mprPutPadToBuf(buf, '0', npad);
-                    }
-
-                } else {
-                    count = min(len, period);
-                    /* Leading integral digits */
-                    mprPutSubStringToBuf(buf, ip, count);
-                    /* Trailing zero pad */
-                    if (period > len) {
-                        mprPutPadToBuf(buf, '0', period - len);
-                    }
-                    totalDigits = count + ndigits;
-                    if (period < totalDigits) {
-                        count = totalDigits + sign - (int) mprGetBufLength(buf);
-                        mprPutCharToBuf(buf, '.');
-                        mprPutSubStringToBuf(buf, &ip[period], count);
-                        mprPutPadToBuf(buf, '0', count - slen(&ip[period]));
-                    }
-                }
-
-            } else if (len <= period && period <= 21) {
-                /* data shorter than period */
-                mprPutStringToBuf(buf, ip);
-                mprPutPadToBuf(buf, '0', period - len);
-
-            } else if (0 < period && period <= 21) {
-                /* Period shorter than data */
-                mprPutSubStringToBuf(buf, ip, period);
-                mprPutCharToBuf(buf, '.');
-                mprPutStringToBuf(buf, &ip[period]);
-
-            } else if (-6 < period && period <= 0) {
-                /* Small negative exponent */
-                mprPutStringToBuf(buf, "0.");
-                mprPutPadToBuf(buf, '0', -period);
-                mprPutStringToBuf(buf, ip);
-
-            } else {
-                mprAssert(0);
-            }
-        }
-    }
-    mprAddNullToBuf(buf);
-    if (intermediate) {
-        freedtoa(intermediate);
-    }
-    return sclone(mprGetBufStart(buf));
-}
-#endif /* BIT_FEATURE_FLOAT */
+#endif /* BIT_FLOAT */
 
 
 /*
@@ -22187,7 +17845,7 @@ static int growBuf(Format *fmt)
     }
     newbuf = mprAlloc(buflen + fmt->growBy);
     if (newbuf == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     if (fmt->buf) {
@@ -22212,10 +17870,11 @@ static int growBuf(Format *fmt)
 /*
     For easy debug trace
  */
-int print(cchar *fmt, ...)
+PUBLIC int print(cchar *fmt, ...)
 {
-    int             len;
-    va_list         ap;
+    va_list     ap;
+    int         len;
+
     va_start(ap, fmt);
     len = vprintf(fmt, ap);
     va_end(ap);
@@ -22224,31 +17883,15 @@ int print(cchar *fmt, ...)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -22278,7 +17921,7 @@ int print(cchar *fmt, ...)
 
 
 
-#if BIT_FEATURE_ROMFS 
+#if BIT_ROM 
 /****************************** Forward Declarations **************************/
 
 static void manageRomFile(MprFile *file, int flags);
@@ -22292,7 +17935,7 @@ static MprFile *openFile(MprFileSystem *fileSystem, cchar *path, int flags, int 
     MprRomFileSystem    *rfs;
     MprFile             *file;
     
-    mprAssert(path && *path);
+    assure(path && *path);
 
     rfs = (MprRomFileSystem*) fileSystem;
     file = mprAllocObj(MprFile, manageRomFile);
@@ -22324,26 +17967,26 @@ static int closeFile(MprFile *file)
 }
 
 
-static int readFile(MprFile *file, void *buf, uint size)
+static ssize readFile(MprFile *file, void *buf, ssize size)
 {
     MprRomInode     *inode;
-    int             len;
+    ssize           len;
 
-    mprAssert(buf);
+    assure(buf);
 
     if (file->fd == 0) {
         return read(file->fd, buf, size);
     }
     inode = file->inode;
     len = min(inode->size - file->iopos, size);
-    mprAssert(len >= 0);
+    assure(len >= 0);
     memcpy(buf, &inode->data[file->iopos], len);
     file->iopos += len;
     return len;
 }
 
 
-static int writeFile(MprFile *file, const void *buf, uint size)
+static ssize writeFile(MprFile *file, cvoid *buf, ssize size)
 {
     if (file->fd == 1 || file->fd == 2) {
         return write(file->fd, buf, size);
@@ -22356,7 +17999,7 @@ static long seekFile(MprFile *file, int seekType, long distance)
 {
     MprRomInode     *inode;
 
-    mprAssert(seekType == SEEK_SET || seekType == SEEK_CUR || seekType == SEEK_END);
+    assure(seekType == SEEK_SET || seekType == SEEK_CUR || seekType == SEEK_END);
 
     inode = file->inode;
 
@@ -22411,7 +18054,7 @@ static int getPathInfo(MprRomFileSystem *rfs, cchar *path, MprPath *info)
 {
     MprRomInode *ri;
 
-    mprAssert(path && *path);
+    assure(path && *path);
 
     info->checked = 1;
 
@@ -22448,7 +18091,6 @@ static MprRomInode *lookup(MprRomFileSystem *rfs, cchar *path)
     if (path == 0) {
         return 0;
     }
-
     /*
         Remove "./" segments
      */
@@ -22461,7 +18103,6 @@ static MprRomInode *lookup(MprRomFileSystem *rfs, cchar *path)
             break;
         }
     }
-
     /*
         Skip over the leading "/"
      */
@@ -22472,7 +18113,7 @@ static MprRomInode *lookup(MprRomFileSystem *rfs, cchar *path)
 }
 
 
-int mprSetRomFileSystem(MprRomInode *inodeList)
+PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList)
 {
     MprRomFileSystem    *rfs;
     MprRomInode         *ri;
@@ -22483,7 +18124,7 @@ int mprSetRomFileSystem(MprRomInode *inodeList)
 
     for (ri = inodeList; ri->path; ri++) {
         if (mprAddKey(rfs->fileIndex, ri->path, ri) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
     }
@@ -22491,14 +18132,11 @@ int mprSetRomFileSystem(MprRomInode *inodeList)
 }
 
 
-void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
+PUBLIC void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
 #if !WINCE
         MprFileSystem *fs = (MprFileSystem*) rfs;
-        mprMark(fs->stdError);
-        mprMark(fs->stdInput);
-        mprMark(fs->stdOutput);
         mprMark(fs->separators);
         mprMark(fs->newline);
         mprMark(fs->root);
@@ -22513,7 +18151,7 @@ void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
 }
 
 
-MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
+PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
 {
     MprFileSystem      *fs;
     MprRomFileSystem   *rfs;
@@ -22534,66 +18172,46 @@ MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
     fs->seekFile = (MprSeekFileProc) seekFile;
     fs->writeFile = (MprWriteFileProc) writeFile;
 
-#if !WINCE
-    fs->stdError = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdError == 0) {
+    if ((MPR->stdError = mprAllocStruct(MprFile)) == 0) {
         return NULL;
     }
-    fs->stdError->fd = 2;
-    fs->stdError->fileSystem = fs;
-    fs->stdError->mode = O_WRONLY;
+    mprSetName(MPR->stdError, "stderr");
+    MPR->stdError->fd = 2;
+    MPR->stdError->fileSystem = fs;
+    MPR->stdError->mode = O_WRONLY;
 
-    fs->stdInput = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdInput == 0) {
+    if ((MPR->stdInput = mprAllocStruct(MprFile)) == 0) {
         return NULL;
     }
-    fs->stdInput->fd = 0;
-    fs->stdInput->fileSystem = fs;
-    fs->stdInput->mode = O_RDONLY;
+    mprSetName(MPR->stdInput, "stdin");
+    MPR->stdInput->fd = 0;
+    MPR->stdInput->fileSystem = fs;
+    MPR->stdInput->mode = O_RDONLY;
 
-    fs->stdOutput = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdOutput == 0) {
+    if ((MPR->stdOutput = mprAllocStruct(MprFile)) == 0) {
         return NULL;
     }
-    fs->stdOutput->fd = 1;
-    fs->stdOutput->fileSystem = fs;
-    fs->stdOutput->mode = O_WRONLY;
-#endif
+    mprSetName(MPR->stdOutput, "stdout");
+    MPR->stdOutput->fd = 1;
+    MPR->stdOutput->fileSystem = fs;
+    MPR->stdOutput->mode = O_WRONLY;
     return rfs;
 }
 
 
-#else /* BIT_FEATURE_ROMFS */
-void stubRomfs() {}
-#endif /* BIT_FEATURE_ROMFS */
+#endif /* BIT_ROM */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -22629,7 +18247,7 @@ static void readPipe(MprWaitService *ws);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     int     rc, retries, breakPort, breakSock, maxTries;
 
@@ -22689,7 +18307,7 @@ int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-void mprManageSelect(MprWaitService *ws, int flags)
+PUBLIC void mprManageSelect(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_FREE) {
         if (ws->breakSock >= 0) {
@@ -22703,14 +18321,14 @@ static int growFds(MprWaitService *ws, int fd)
 {
     ws->handlerMax = max(ws->handlerMax * 2, fd);
     if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     int     fd;
 
@@ -22736,11 +18354,11 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         if (mask) {
             if (fd >= ws->handlerMax && growFds(ws, fd) < 0) {
                 unlock(ws);
-                mprAssert(!MPR_ERR_MEMORY);
+                assure(!MPR_ERR_MEMORY);
                 return MPR_ERR_MEMORY;
             }
         }
-        mprAssert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+        assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         ws->handlerMap[fd] = (mask) ? wp : 0;
         wp->desiredMask = mask;
         ws->highestFd = max(fd, ws->highestFd);
@@ -22752,6 +18370,10 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             }
             ws->highestFd = fd;
         }
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     unlock(ws);
     return 0;
@@ -22762,7 +18384,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     MprWaitService  *ws;
     struct timeval  tval;
@@ -22803,7 +18425,7 @@ int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected.
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     struct timeval  tval;
     int             rc, maxfd;
@@ -22881,7 +18503,7 @@ static void serviceIO(MprWaitService *ws, int maxfd)
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
     Must be async-safe.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
     ssize           rc;
@@ -22915,36 +18537,18 @@ static void readPipe(MprWaitService *ws)
 #endif
 }
 
-#else
-void stubMprSelectWait() {}
 #endif /* MPR_EVENT_SELECT */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -22983,7 +18587,7 @@ static void unhookSignal(int signo);
 
 /************************************ Code ************************************/
 
-MprSignalService *mprCreateSignalService()
+PUBLIC MprSignalService *mprCreateSignalService()
 {
     MprSignalService    *ssp;
 
@@ -23008,7 +18612,7 @@ static void manageSignalService(MprSignalService *ssp, int flags)
 }
 
 
-void mprStopSignalService()
+PUBLIC void mprStopSignalService()
 {
     int     i;
 
@@ -23027,8 +18631,7 @@ static void hookSignal(int signo, MprSignal *sp)
     struct sigaction    act, old;
     int                 rc;
 
-    mprAssert(0 < signo && signo < MPR_MAX_SIGNALS);
-
+    assure(0 < signo && signo < MPR_MAX_SIGNALS);
     ssp = MPR->signalService;
     lock(ssp);
     rc = sigaction(signo, 0, &old);
@@ -23086,6 +18689,8 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
         return;
     }
     if (signo == SIGINT) {
+        /* Fixes command line recall to complete the line */
+        printf("\n");
         exit(1);
         return;
     }
@@ -23102,7 +18707,7 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
 /*
     Called by mprServiceEvents after a signal has been received. Create an event and queue on the appropriate dispatcher
  */
-void mprServiceSignals()
+PUBLIC void mprServiceSignals()
 {
     MprSignalService    *ssp;
     MprSignal           *sp;
@@ -23134,8 +18739,8 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
 {
     MprSignal   *np;
     
-    mprAssert(sp);
-    mprAssert(event);
+    assure(sp);
+    assure(event);
 
     mprLog(7, "signalEvent signo %d, flags %x", sp->signo, sp->flags);
     np = sp->next;
@@ -23158,7 +18763,7 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
             Call all chained signal handlers. Create new event for each handler so we get the right dispatcher.
             WARNING: sp may have been removed and so sp->next may be null. That is why we capture np = sp->next above.
          */
-        mprCreateEvent(np->dispatcher, "signalEvent", 0, signalEvent, np, 0);
+        mprCreateEvent(np->dispatcher, "signalEvent", 0, signalEvent, np, MPR_EVENT_QUICK);
     }
 }
 
@@ -23193,7 +18798,7 @@ static void unlinkSignalHandler(MprSignal *sp)
         }
         prev = np;
     }
-    mprAssert(np);
+    assure(np);
     sp->next = 0;
     unlock(ssp);
 }
@@ -23204,7 +18809,7 @@ static void unlinkSignalHandler(MprSignal *sp)
     normal async-safe strictures of normal signal handlers. This manages a next of signal handlers and ensures
     that prior handlers will be called appropriately.
  */
-MprSignal *mprAddSignalHandler(int signo, void *handler, void *data, MprDispatcher *dispatcher, int flags)
+PUBLIC MprSignal *mprAddSignalHandler(int signo, void *handler, void *data, MprDispatcher *dispatcher, int flags)
 {
     MprSignal           *sp;
 
@@ -23239,7 +18844,7 @@ static void manageSignal(MprSignal *sp, int flags)
 }
 
 
-void mprRemoveSignalHandler(MprSignal *sp)
+PUBLIC void mprRemoveSignalHandler(MprSignal *sp)
 {
     if (sp) {
         unlinkSignalHandler(sp);
@@ -23257,7 +18862,7 @@ void mprRemoveSignalHandler(MprSignal *sp)
         SIGUSR2 - toggle trace level (Appweb)
         All others - default exit
  */
-void mprAddStandardSignals()
+PUBLIC void mprAddStandardSignals()
 {
     MprSignalService    *ssp;
 
@@ -23300,9 +18905,8 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 
 #if MACOSX && BIT_DEBUG
     } else if (sp->signo == SIGSEGV || sp->signo == SIGBUS) {
-        //  MOB - Review
         printf("PAUSED for watson to debug\n");
-        sleep(86400 * 7);
+        sleep(120);
 #endif
 
     } else {
@@ -23323,28 +18927,12 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -23384,10 +18972,8 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 
 /******************************* Forward Declarations *************************/
 
-static MprSocket *acceptSocket(MprSocket *listen);
 static void closeSocket(MprSocket *sp, bool gracefully);
 static int connectSocket(MprSocket *sp, cchar *ipAddr, int port, int initialFlags);
-static MprSocket *createSocket(MprSsl *ssl);
 static MprSocketProvider *createStandardProvider(MprSocketService *ss);
 static void disconnectSocket(MprSocket *sp);
 static ssize flushSocket(MprSocket *sp);
@@ -23395,8 +18981,8 @@ static int getSocketIpAddr(struct sockaddr *addr, int addrlen, char *ip, int siz
 static int ipv6(cchar *ip);
 static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags);
 static void manageSocket(MprSocket *sp, int flags);
-static void manageSocketProvider(MprSocketProvider *provider, int flags);
 static void manageSocketService(MprSocketService *ss, int flags);
+static void manageSsl(MprSsl *ssl, int flags);
 static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize);
 static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize);
 
@@ -23405,7 +18991,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize);
     Open the socket service
  */
 
-MprSocketService *mprCreateSocketService()
+PUBLIC MprSocketService *mprCreateSocketService()
 {
     MprSocketService    *ss;
     char                hostName[MPR_MAX_IP_NAME], serverName[MPR_MAX_IP_NAME], domainName[MPR_MAX_IP_NAME], *dp;
@@ -23419,7 +19005,6 @@ MprSocketService *mprCreateSocketService()
     if ((ss->standardProvider = createStandardProvider(ss)) == 0) {
         return 0;
     }
-    ss->secureProvider = NULL;
     if ((ss->mutex = mprCreateLock()) == 0) {
         return 0;
     }
@@ -23442,9 +19027,7 @@ MprSocketService *mprCreateSocketService()
     mprSetServerName(serverName);
     mprSetDomainName(domainName);
     mprSetHostName(hostName);
-#if BIT_FEATURE_SSL
     ss->secureSockets = mprCreateList(0, 0);
-#endif
     return ss;
 }
 
@@ -23453,11 +19036,10 @@ static void manageSocketService(MprSocketService *ss, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ss->standardProvider);
-        mprMark(ss->secureProvider);
+        mprMark(ss->providers);
+        mprMark(ss->defaultProvider);
         mprMark(ss->mutex);
-#if BIT_FEATURE_SSL
         mprMark(ss->secureSockets);
-#endif
     }
 }
 
@@ -23466,14 +19048,10 @@ static MprSocketProvider *createStandardProvider(MprSocketService *ss)
 {
     MprSocketProvider   *provider;
 
-    if ((provider = mprAllocObj(MprSocketProvider, manageSocketProvider)) == 0) {
+    if ((provider = mprAllocObj(MprSocketProvider, 0)) == 0) {
         return 0;
     }
-    provider->name = sclone("standard");
-    provider->acceptSocket = acceptSocket;
     provider->closeSocket = closeSocket;
-    provider->connectSocket = connectSocket;
-    provider->createSocket = createSocket;
     provider->disconnectSocket = disconnectSocket;
     provider->flushSocket = flushSocket;
     provider->listenSocket = listenSocket;
@@ -23483,44 +19061,40 @@ static MprSocketProvider *createStandardProvider(MprSocketService *ss)
 }
 
 
-static void manageSocketProvider(MprSocketProvider *provider, int flags)
+PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider)
 {
-    if (flags & MPR_MANAGE_MARK) {
-        mprMark(provider->name);
-        mprMark(provider->data);
-        mprMark(provider->defaultSsl);
+    MprSocketService    *ss;
+
+    ss = MPR->socketService;
+    
+    if (ss->providers == 0 && (ss->providers = mprCreateHash(0, 0)) == 0) {
+        return;
     }
+    mprAddKey(ss->providers, name, provider);
 }
 
 
-void mprSetSecureProvider(MprSocketProvider *provider)
+PUBLIC bool mprHasSecureSockets()
 {
-    MPR->socketService->secureProvider = provider;
+    return (MPR->socketService->providers != 0);
 }
 
 
-bool mprHasSecureSockets()
+PUBLIC int mprSetMaxSocketAccept(int max)
 {
-    return (MPR->socketService->secureProvider != 0);
-}
-
-
-int mprSetMaxSocketAccept(int max)
-{
-    mprAssert(max >= 0);
+    assure(max >= 0);
 
     MPR->socketService->maxAccept = max;
     return 0;
 }
 
 
-/*  
-    Create a new socket
- */
-static MprSocket *createSocket(struct MprSsl *ssl)
+PUBLIC MprSocket *mprCreateSocket()
 {
-    MprSocket       *sp;
+    MprSocketService    *ss;
+    MprSocket           *sp;
 
+    ss = MPR->socketService;
     if ((sp = mprAllocObj(MprSocket, manageSocket)) == 0) {
         return 0;
     }
@@ -23528,8 +19102,8 @@ static MprSocket *createSocket(struct MprSsl *ssl)
     sp->fd = -1;
     sp->flags = 0;
 
-    sp->provider = MPR->socketService->standardProvider;
-    sp->service = MPR->socketService;
+    sp->provider = ss->standardProvider;
+    sp->service = ss;
     sp->mutex = mprCreateLock();
     return sp;
 }
@@ -23539,7 +19113,7 @@ static void manageSocket(MprSocket *sp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(sp->service);
-        mprMark(sp->dispatcher);
+        mprMark(sp->errorMsg);
         mprMark(sp->handler);
         mprMark(sp->acceptIp);
         mprMark(sp->ip);
@@ -23558,32 +19132,6 @@ static void manageSocket(MprSocket *sp, int flags)
 }
 
 
-MprSocket *mprCreateSocket(struct MprSsl *ssl)
-{
-    MprSocketService    *ss;
-    MprSocket           *sp;
-
-    ss = MPR->socketService;
-
-    if (ssl) {
-#if !BIT_FEATURE_SSL
-        return 0;
-#endif
-        if (ss->secureProvider == NULL || ss->secureProvider->createSocket == NULL) {
-            mprError("Missing socket service provider");
-            return 0;
-        }
-        sp = ss->secureProvider->createSocket(ssl);
-
-    } else {
-        mprAssert(ss->standardProvider->createSocket);
-        sp = ss->standardProvider->createSocket(NULL);
-    }
-    sp->service = ss;
-    return sp;
-}
-
-
 /*  
     Re-initialize all socket variables so the socket can be reused. This closes the socket and removes all wait handlers.
  */
@@ -23593,20 +19141,19 @@ static void resetSocket(MprSocket *sp)
         mprCloseSocket(sp, 0);
     }
     if (sp->flags & MPR_SOCKET_CLOSED) {
-        sp->error = 0;
         sp->flags = 0;
         sp->port = -1;
         sp->fd = -1;
         sp->ip = 0;
     }
-    mprAssert(sp->provider);
+    assure(sp->provider);
 }
 
 
 /*  
     Open a server connection
  */
-int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
+PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
 {
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -23679,8 +19226,8 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         unlock(sp);
         return MPR_ERR_CANT_OPEN;
     }
-    /*  TODO NOTE: Datagrams have not been used in a long while. Probably broken */
 
+    /* NOTE: Datagrams have not been used in a long while. Maybe broken */
     if (!datagram) {
         sp->flags |= MPR_SOCKET_LISTENER;
         if (listen(sp->fd, SOMAXCONN) < 0) {
@@ -23714,11 +19261,12 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 }
 
 
-MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags)
+PUBLIC MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatcher *dispatcher, void *proc, 
+    void *data, int flags)
 {
-    mprAssert(sp);
-    mprAssert(sp->fd >= 0);
-    mprAssert(proc);
+    assure(sp);
+    assure(sp->fd >= 0);
+    assure(proc);
 
     if (sp->fd < 0) {
         return 0;
@@ -23731,7 +19279,7 @@ MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatcher *disp
 }
 
 
-void mprRemoveSocketHandler(MprSocket *sp)
+PUBLIC void mprRemoveSocketHandler(MprSocket *sp)
 {
     if (sp->handler) {
         mprRemoveWaitHandler(sp->handler);
@@ -23740,21 +19288,24 @@ void mprRemoveSocketHandler(MprSocket *sp)
 }
 
 
-void mprEnableSocketEvents(MprSocket *sp, int mask)
+PUBLIC void mprEnableSocketEvents(MprSocket *sp, int mask)
 {
-    mprWaitOn(sp->handler, mask);
+    assure(sp->handler);
+    if (sp->handler) {
+        mprWaitOn(sp->handler, mask);
+    }
 }
 
 
 /*  
     Open a client socket connection
  */
-int mprConnectSocket(MprSocket *sp, cchar *ip, int port, int flags)
+PUBLIC int mprConnectSocket(MprSocket *sp, cchar *ip, int port, int flags)
 {
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
     }
-    return sp->provider->connectSocket(sp, ip, port, flags);
+    return connectSocket(sp, ip, port, flags);
 }
 
 
@@ -23764,11 +19315,10 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     MprSocklen          addrlen;
     int                 broadcast, datagram, family, protocol, rc;
 
-    lock(sp);
-
-    resetSocket(sp);
-
     mprLog(6, "openClient: %s:%d, flags %x", ip, port, initialFlags);
+
+    lock(sp);
+    resetSocket(sp);
 
     sp->port = port;
     sp->flags = (initialFlags &
@@ -23789,20 +19339,16 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         unlock(sp);
         return MPR_ERR_CANT_ACCESS;
     }
-    sp->fd = (int) socket(family, datagram ? SOCK_DGRAM: SOCK_STREAM, protocol);
-    if (sp->fd < 0) {
+    if ((sp->fd = (int) socket(family, datagram ? SOCK_DGRAM: SOCK_STREAM, protocol)) < 0) {
         unlock(sp);
         return MPR_ERR_CANT_OPEN;
     }
-
 #if !BIT_WIN_LIKE && !VXWORKS
-
     /*  
         Children should not inherit this fd
      */
     fcntl(sp->fd, F_SETFD, FD_CLOEXEC);
 #endif
-
     if (broadcast) {
         int flag = 1;
         if (setsockopt(sp->fd, SOL_SOCKET, SO_BROADCAST, (char *) &flag, sizeof(flag)) < 0) {
@@ -23812,7 +19358,6 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
             return MPR_ERR_CANT_INITIALIZE;
         }
     }
-
     if (!datagram) {
         sp->flags |= MPR_SOCKET_CONNECTING;
         do {
@@ -23858,7 +19403,7 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     Abortive disconnect. Thread-safe. (e.g. from a timeout or callback thread). This closes the underlying socket file
     descriptor but keeps the handler and socket object intact. It also forces a recall on the wait handler.
  */
-void mprDisconnectSocket(MprSocket *sp)
+PUBLIC void mprDisconnectSocket(MprSocket *sp)
 {
     if (sp && sp->provider) {
         sp->provider->disconnectSocket(sp);
@@ -23885,26 +19430,31 @@ static void disconnectSocket(MprSocket *sp)
          */
         mprLog(6, "Disconnect socket %d", sp->fd);
         mprSetSocketBlockingMode(sp, 0);
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < 16; i++) {
             if (recv(sp->fd, buf, sizeof(buf), 0) <= 0) {
                 break;
             }
         }
         shutdown(sp->fd, SHUT_RDWR);
+        for (i = 0; i < 16; i++) {
+            if (recv(sp->fd, buf, sizeof(buf), 0) <= 0) {
+                break;
+            }
+        }
         fd = sp->fd;
-        sp->flags |= MPR_SOCKET_EOF;
+        sp->flags |= MPR_SOCKET_EOF | MPR_SOCKET_DISCONNECTED;
         mprRecallWaitHandlerByFd(fd);
     }
     unlock(sp);
 }
 
 
-void mprCloseSocket(MprSocket *sp, bool gracefully)
+PUBLIC void mprCloseSocket(MprSocket *sp, bool gracefully)
 {
     if (sp == NULL) {
         return;
     }
-    mprAssert(sp->provider);
+    assure(sp->provider);
     if (sp->provider == 0) {
         return;
     }
@@ -23939,9 +19489,7 @@ static void closeSocket(MprSocket *sp, bool gracefully)
         mprLog(6, "Close socket %d, graceful %d", sp->fd, gracefully);
         if (gracefully) {
             mprSetSocketBlockingMode(sp, 0);
-            while (recv(sp->fd, buf, sizeof(buf), 0) > 0) {
-                ;
-            }
+            while (recv(sp->fd, buf, sizeof(buf), 0) > 0) { }
         }
         if (shutdown(sp->fd, SHUT_RDWR) == 0) {
             if (gracefully) {
@@ -23968,16 +19516,7 @@ static void closeSocket(MprSocket *sp, bool gracefully)
 }
 
 
-MprSocket *mprAcceptSocket(MprSocket *listen)
-{
-    if (listen->provider) {
-        return listen->provider->acceptSocket(listen);
-    }
-    return 0;
-}
-
-
-static MprSocket *acceptSocket(MprSocket *listen)
+PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
 {
     MprSocketService            *ss;
     MprSocket                   *nsp;
@@ -24004,7 +19543,7 @@ static MprSocket *acceptSocket(MprSocket *listen)
         }
         return 0;
     }
-    if ((nsp = mprCreateSocket(listen->ssl)) == 0) {
+    if ((nsp = mprCreateSocket()) == 0) {
         closesocket(fd);
         return 0;
     }
@@ -24036,12 +19575,11 @@ static MprSocket *acceptSocket(MprSocket *listen)
     if (nsp->flags & MPR_SOCKET_NODELAY) {
         mprSetSocketNoDelay(nsp, 1);
     }
-
     /*
         Get the remote client address
      */
     if (getSocketIpAddr(addr, addrlen, ip, sizeof(ip), &port) != 0) {
-        mprAssert(0);
+        assure(0);
         mprCloseSocket(nsp, 0);
         return 0;
     }
@@ -24063,14 +19601,14 @@ static MprSocket *acceptSocket(MprSocket *listen)
 
 
 /*  
-    Read data. Return -1 for EOF and errors. On success, return the number of bytes read
+    Read data. Return -1 for EOF and errors. On success, return the number of bytes read.
  */
-ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
+PUBLIC ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
 {
-    mprAssert(sp);
-    mprAssert(buf);
-    mprAssert(bufsize > 0);
-    mprAssert(sp->provider);
+    assure(sp);
+    assure(buf);
+    assure(bufsize > 0);
+    assure(sp->provider);
 
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -24090,9 +19628,9 @@ static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize)
     ssize                   bytes;
     int                     errCode;
 
-    mprAssert(buf);
-    mprAssert(bufsize > 0);
-    mprAssert(~(sp->flags & MPR_SOCKET_CLOSED));
+    assure(buf);
+    assure(bufsize > 0);
+    assure(~(sp->flags & MPR_SOCKET_CLOSED));
 
     lock(sp);
     if (sp->flags & MPR_SOCKET_EOF) {
@@ -24153,12 +19691,12 @@ again:
     Write data. Return the number of bytes written or -1 on errors. NOTE: this routine will return with a
     short write if the underlying socket can't accept any more data.
  */
-ssize mprWriteSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
+PUBLIC ssize mprWriteSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 {
-    mprAssert(sp);
-    mprAssert(buf);
-    mprAssert(bufsize > 0);
-    mprAssert(sp->provider);
+    assure(sp);
+    assure(buf);
+    assure(bufsize > 0);
+    assure(sp->provider);
 
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -24177,9 +19715,9 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
     ssize               len, written, sofar;
     int                 family, protocol, errCode;
 
-    mprAssert(buf);
-    mprAssert(bufsize >= 0);
-    mprAssert((sp->flags & MPR_SOCKET_CLOSED) == 0);
+    assure(buf);
+    assure(bufsize >= 0);
+    assure((sp->flags & MPR_SOCKET_CLOSED) == 0);
 
     lock(sp);
     if (sp->flags & (MPR_SOCKET_BROADCAST | MPR_SOCKET_DATAGRAM)) {
@@ -24204,18 +19742,21 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
             } else {
                 written = send(sp->fd, &((char*) buf)[sofar], (int) len, MSG_NOSIGNAL);
             }
+            /* Get the error code before calling mprResetYield to avoid clearing global error numbers */
+            errCode = mprGetSocketError(sp);
             if (sp->flags & MPR_SOCKET_BLOCK) {
                 mprResetYield();
             }
             lock(sp);
             if (written < 0) {
-                errCode = mprGetSocketError(sp);
+                assure(errCode != 0);
                 if (errCode == EINTR) {
                     continue;
                 } else if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
 #if BIT_WIN_LIKE
                     /*
                         Windows sockets don't support blocking I/O. So we simulate here
+                        OPT - could wait for a writable event
                      */
                     if (sp->flags & MPR_SOCKET_BLOCK) {
                         mprNap(0);
@@ -24240,13 +19781,13 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 /*  
     Write a string to the socket
  */
-ssize mprWriteSocketString(MprSocket *sp, cchar *str)
+PUBLIC ssize mprWriteSocketString(MprSocket *sp, cchar *str)
 {
     return mprWriteSocket(sp, str, slen(str));
 }
 
 
-ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
+PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
 {
     char        *start;
     ssize       total, len, written;
@@ -24258,12 +19799,13 @@ ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
     } else
 #endif
     {
+        //  OPT - better to buffer and have fewer raw writes
         if (count <= 0) {
             return 0;
         }
         start = iovec[0].start;
         len = (int) iovec[0].len;
-        mprAssert(len > 0);
+        assure(len > 0);
 
         for (total = i = 0; i < count; ) {
             written = mprWriteSocket(sp, start, len);
@@ -24287,7 +19829,7 @@ ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
 }
 
 
-#if !BIT_FEATURE_ROMFS
+#if !BIT_ROM
 #if !LINUX || __UCLIBC__
 static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize len)
 {
@@ -24296,7 +19838,7 @@ static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize le
     mprSeekFile(file, SEEK_SET, (int) offset);
     len = min(len, sizeof(buf));
     if ((len = mprReadFile(file, buf, len)) < 0) {
-        mprAssert(0);
+        assure(0);
         return MPR_ERR_CANT_READ;
     }
     return mprWriteSocket(sp, buf, len);
@@ -24308,7 +19850,7 @@ static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize le
     Write data from a file to a socket. Includes the ability to write header before and after the file data.
     Works even with a null "file" to just output the headers.
  */
-MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff bytes, MprIOVec *beforeVec, 
+PUBLIC MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff bytes, MprIOVec *beforeVec, 
     int beforeCount, MprIOVec *afterVec, int afterCount)
 {
 #if MACOSX && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1050
@@ -24350,7 +19892,7 @@ MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff
             toWriteAfter += afterVec[i].len;
         }
         toWriteFile = (bytes - toWriteBefore - toWriteAfter);
-        mprAssert(toWriteFile >= 0);
+        assure(toWriteFile >= 0);
 
         /*
             Linux sendfile does not have the integrated ability to send headers. Must do it separately here.
@@ -24367,7 +19909,7 @@ MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff
         }
 
         if (!done && toWriteFile > 0 && file->fd >= 0) {
-#if LINUX && !__UCLIBC__ && !HAS_OFF64
+#if LINUX && !__UCLIBC__ && !BIT_HAS_OFF64
             off_t off = (off_t) offset;
 #endif
             while (!done && toWriteFile > 0) {
@@ -24376,7 +19918,7 @@ MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff
                     mprYield(MPR_YIELD_STICKY);
                 }
 #if LINUX && !__UCLIBC__
-    #if HAS_OFF64
+    #if BIT_HAS_OFF64
                 rc = sendfile64(sock->fd, file->fd, &offset, nbytes);
     #else
                 rc = sendfile(sock->fd, file->fd, &off, nbytes);
@@ -24412,7 +19954,7 @@ MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff
     }
     return written;
 }
-#endif /* !BIT_FEATURE_ROMFS */
+#endif /* !BIT_ROM */
 
 
 static ssize flushSocket(MprSocket *sp)
@@ -24421,7 +19963,7 @@ static ssize flushSocket(MprSocket *sp)
 }
 
 
-ssize mprFlushSocket(MprSocket *sp)
+PUBLIC ssize mprFlushSocket(MprSocket *sp)
 {
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -24430,7 +19972,7 @@ ssize mprFlushSocket(MprSocket *sp)
 }
 
 
-bool mprSocketHasPendingData(MprSocket *sp)
+PUBLIC bool mprSocketHasPendingData(MprSocket *sp)
 {
     return (sp->flags & MPR_SOCKET_PENDING) ? 1 : 0;
 }
@@ -24438,7 +19980,7 @@ bool mprSocketHasPendingData(MprSocket *sp)
 /*  
     Return true if end of file
  */
-bool mprIsSocketEof(MprSocket *sp)
+PUBLIC bool mprIsSocketEof(MprSocket *sp)
 {
     return ((sp->flags & MPR_SOCKET_EOF) != 0);
 }
@@ -24447,7 +19989,7 @@ bool mprIsSocketEof(MprSocket *sp)
 /*  
     Set the EOF condition
  */
-void mprSetSocketEof(MprSocket *sp, bool eof)
+PUBLIC void mprSetSocketEof(MprSocket *sp, bool eof)
 {
     if (eof) {
         sp->flags |= MPR_SOCKET_EOF;
@@ -24460,7 +20002,7 @@ void mprSetSocketEof(MprSocket *sp, bool eof)
 /*
     Return the O/S socket file handle
  */
-int mprGetSocketFd(MprSocket *sp)
+PUBLIC int mprGetSocketFd(MprSocket *sp)
 {
     return sp->fd;
 }
@@ -24469,18 +20011,18 @@ int mprGetSocketFd(MprSocket *sp)
 /*  
     Return the blocking mode of the socket
  */
-bool mprGetSocketBlockingMode(MprSocket *sp)
+PUBLIC bool mprGetSocketBlockingMode(MprSocket *sp)
 {
-    mprAssert(sp);
+    assure(sp);
 
-    return sp->flags & MPR_SOCKET_BLOCK;
+    return sp && (sp->flags & MPR_SOCKET_BLOCK);
 }
 
 
 /*  
     Get the socket flags
  */
-int mprGetSocketFlags(MprSocket *sp)
+PUBLIC int mprGetSocketFlags(MprSocket *sp)
 {
     return sp->flags;
 }
@@ -24489,11 +20031,11 @@ int mprGetSocketFlags(MprSocket *sp)
 /*  
     Set whether the socket blocks or not on read/write
  */
-int mprSetSocketBlockingMode(MprSocket *sp, bool on)
+PUBLIC int mprSetSocketBlockingMode(MprSocket *sp, bool on)
 {
     int     oldMode;
 
-    mprAssert(sp);
+    assure(sp);
 
     lock(sp);
     oldMode = sp->flags & MPR_SOCKET_BLOCK;
@@ -24513,7 +20055,6 @@ int mprSetSocketBlockingMode(MprSocket *sp, bool on)
     ioctl(sp->fd, FIONBIO, (int) &flag);
 }
 #else
-    //  TODO - check RC
     if (on) {
         fcntl(sp->fd, F_SETFL, fcntl(sp->fd, F_GETFL) & ~O_NONBLOCK);
     } else {
@@ -24528,7 +20069,7 @@ int mprSetSocketBlockingMode(MprSocket *sp, bool on)
 /*  
     Set the TCP delay behavior (nagle algorithm)
  */
-int mprSetSocketNoDelay(MprSocket *sp, bool on)
+PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on)
 {
     int     oldDelay;
 
@@ -24560,7 +20101,7 @@ int mprSetSocketNoDelay(MprSocket *sp, bool on)
 /*  
     Get the port number
  */
-int mprGetSocketPort(MprSocket *sp)
+PUBLIC int mprGetSocketPort(MprSocket *sp)
 {
     return sp->port;
 }
@@ -24569,7 +20110,7 @@ int mprGetSocketPort(MprSocket *sp)
 /*
     Map the O/S error code to portable error codes.
  */
-int mprGetSocketError(MprSocket *sp)
+PUBLIC int mprGetSocketError(MprSocket *sp)
 {
 #if BIT_WIN_LIKE
     int     rc;
@@ -24609,14 +20150,14 @@ int mprGetSocketError(MprSocket *sp)
     Get a socket address from a host/port combination. If a host provides both IPv4 and IPv6 addresses, 
     prefer the IPv4 address.
  */
-int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, socklen_t *addrlen)
+PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, socklen_t *addrlen)
 {
     MprSocketService    *ss;
     struct addrinfo     hints, *res, *r;
     char                *portStr;
     int                 v6;
 
-    mprAssert(addr);
+    assure(addr);
     ss = MPR->socketService;
 
     mprLock(ss->mutex);
@@ -24677,7 +20218,7 @@ int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct soc
 }
 #else
 
-int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, MprSocklen *addrlen)
+PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, MprSocklen *addrlen)
 {
     MprSocketService    *ss;
     struct sockaddr_in  *sa;
@@ -24685,7 +20226,7 @@ int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct soc
     ss = MPR->socketService;
 
     if ((sa = mprAllocStruct(struct sockaddr_in)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     memset((char*) sa, '\0', sizeof(struct sockaddr_in));
@@ -24710,7 +20251,7 @@ int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct soc
         sa->sin_addr.s_addr = (ulong) hostGetByName((char*) ip);
         if (sa->sin_addr.s_addr < 0) {
             mprUnlock(ss->mutex);
-            mprAssert(0);
+            assure(0);
             return 0;
         }
 #else
@@ -24773,7 +20314,7 @@ static int getSocketIpAddr(struct sockaddr *addr, int addrlen, char *ip, int ipL
     uchar   *cp;
     sa = (struct sockaddr_in*) addr;
     cp = (uchar*) &sa->sin_addr;
-    mprSprintf(ip, ipLen, "%d.%d.%d.%d", cp[0], cp[1], cp[2], cp[3]);
+    fmt(ip, ipLen, "%d.%d.%d.%d", cp[0], cp[1], cp[2], cp[3]);
 #endif
     *port = ntohs(sa->sin_port);
 #endif
@@ -24819,35 +20360,38 @@ static int ipv6(cchar *ip)
     If supplied an IPv6 address, the backets are stripped in the returned IP address.
     This routine skips any "protocol://" prefix.
  */
-int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int defaultPort)
+PUBLIC int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int defaultPort)
 {
-    char    *ip;
-    char    *cp;
+    char    *ip, *cp;
 
     ip = 0;
     if (defaultPort < 0) {
         defaultPort = 80;
     }
-    if ((cp = strstr(ipAddrPort, "://")) != 0) {
-        ipAddrPort = &cp[3];
+    ip = sclone(ipAddrPort);
+    if ((cp = strchr(ip, ' ')) != 0) {
+        *cp++ = '\0';
     }
-    if (ipv6(ipAddrPort)) {
+    if ((cp = strstr(ip, "://")) != 0) {
+        ip = sclone(&cp[3]);
+    }
+    if (ipv6(ip)) {
         /*  
             IPv6. If port is present, it will follow a closing bracket ']'
          */
-        if ((cp = strchr(ipAddrPort, ']')) != 0) {
+        if ((cp = strchr(ip, ']')) != 0) {
             cp++;
             if ((*cp) && (*cp == ':')) {
                 *pport = (*++cp == '*') ? -1 : atoi(cp);
 
                 /* Set ipAddr to ipv6 address without brackets */
-                ip = sclone(ipAddrPort+1);
+                ip = sclone(ip + 1);
                 cp = strchr(ip, ']');
                 *cp = '\0';
 
             } else {
                 /* Handles [a:b:c:d:e:f:g:h:i] case (no port)- should not occur */
-                ip = sclone(ipAddrPort + 1);
+                ip = sclone(ip + 1);
                 if ((cp = strchr(ip, ']')) != 0) {
                     *cp = '\0';
                 }
@@ -24859,8 +20403,6 @@ int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int default
             }
         } else {
             /* Handles a:b:c:d:e:f:g:h:i case (no port) */
-            ip = sclone(ipAddrPort);
-
             /* No port present, use callers default */
             *pport = defaultPort;
         }
@@ -24869,7 +20411,6 @@ int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int default
         /*  
             ipv4 
          */
-        ip = sclone(ipAddrPort);
         if ((cp = strchr(ip, ':')) != 0) {
             *cp++ = '\0';
             if (*cp == '*') {
@@ -24880,6 +20421,12 @@ int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int default
             if (*ip == '*') {
                 ip = 0;
             }
+
+        } else if (strchr(ip, '.')) {
+            if ((cp = strchr(ip, ' ')) != 0) {
+                *cp++ = '\0';
+            }
+            *pport = defaultPort;
 
         } else {
             if (isdigit((uchar) *ip)) {
@@ -24898,56 +20445,256 @@ int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int default
 }
 
 
-bool mprIsSocketSecure(MprSocket *sp)
+PUBLIC bool mprIsSocketSecure(MprSocket *sp)
 {
     return sp->sslSocket != 0;
 }
 
 
-bool mprIsSocketV6(MprSocket *sp)
+PUBLIC bool mprIsSocketV6(MprSocket *sp)
 {
     return sp->ip && ipv6(sp->ip);
 }
 
 
-bool mprIsIPv6(cchar *ip)
+PUBLIC bool mprIsIPv6(cchar *ip)
 {
     return ip && ipv6(ip);
 }
 
 
-void mprSetSocketPrebindCallback(MprSocketPrebind callback)
+PUBLIC void mprSetSocketPrebindCallback(MprSocketPrebind callback)
 {
     MPR->socketService->prebind = callback;
 }
 
 
+static void manageSsl(MprSsl *ssl, int flags) 
+{
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(ssl->key);
+        mprMark(ssl->cert);
+        mprMark(ssl->keyFile);
+        mprMark(ssl->certFile);
+        mprMark(ssl->caFile);
+        mprMark(ssl->caPath);
+        mprMark(ssl->ciphers);
+        mprMark(ssl->pconfig);
+        mprMark(ssl->provider);
+        mprMark(ssl->providerName);
+    }
+}
+
+
+/*
+    Create a new SSL context object
+ */
+PUBLIC MprSsl *mprCreateSsl(int server)
+{
+    MprSsl      *ssl;
+
+    if ((ssl = mprAllocObj(MprSsl, manageSsl)) == 0) {
+        return 0;
+    }
+    ssl->ciphers = sclone(BIT_CIPHERS);
+    ssl->protocols = MPR_PROTO_TLSV1 | MPR_PROTO_TLSV11;
+    /*
+        The default for servers is not to verify client certificates.
+        The default for clients is to verify unless MPR->verifySsl has been set to false
+     */
+    if (server) {
+        ssl->verifyDepth = 0;
+        ssl->verifyPeer = 0;
+        ssl->verifyIssuer = 0;
+    } else {
+        ssl->verifyDepth = MPR->verifySsl;
+        ssl->verifyPeer = MPR->verifySsl;
+        ssl->verifyIssuer = MPR->verifySsl;
+    }
+    return ssl;
+}
+
+
+/*
+    Clone a SSL context object
+ */
+PUBLIC MprSsl *mprCloneSsl(MprSsl *src)
+{
+    MprSsl      *ssl;
+
+    if ((ssl = mprAllocObj(MprSsl, manageSsl)) == 0) {
+        return 0;
+    }
+    if (src) {
+        *ssl = *src;
+    }
+    return ssl;
+}
+
+
+PUBLIC int mprLoadSsl()
+{
+#if BIT_PACK_SSL
+    MprSocketService    *ss;
+    MprModule           *mp;
+    cchar               *path;
+
+    ss = MPR->socketService;
+    if (ss->providers) {
+        return 0;
+    }
+    path = mprJoinPath(mprGetAppDir(), "libmprssl");
+    if ((mp = mprCreateModule("sslModule", path, "mprSslInit", NULL)) == 0) {
+        return MPR_ERR_CANT_CREATE;
+    }
+    if (mprLoadModule(mp) < 0) {
+        mprError("Can't load %s", path);
+        ss->providers = 0;
+        return MPR_ERR_CANT_READ;
+    }
+    return 0;
+#else
+    mprError("SSL communications support not included in build");
+    return MPR_ERR_BAD_STATE;
+#endif
+}
+
+
+static int loadProviders()
+{
+    MprSocketService    *ss;
+
+    ss = MPR->socketService;
+    if (!ss->providers && mprLoadSsl() < 0) {
+        return MPR_ERR_CANT_READ;
+    }
+    if (!ss->providers) {
+        mprError("Can't load SSL provider");
+        return MPR_ERR_CANT_INITIALIZE;
+    }
+    return 0;
+}
+
+
+/*
+    Upgrade a socket to use SSL
+ */
+PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
+{
+    MprSocketService    *ss;
+    char                *providerName;
+
+    ss  = sp->service;
+    assure(sp);
+
+    if (!ssl) {
+        return MPR_ERR_BAD_ARGS;
+    }
+    if (!ssl->provider) {
+        if (loadProviders() < 0) {
+            return MPR_ERR_CANT_INITIALIZE;
+        }
+        providerName = (ssl->providerName) ? ssl->providerName : ss->defaultProvider;
+        if ((ssl->provider = mprLookupKey(ss->providers, providerName)) == 0) {
+            mprError("Can't use SSL, missing SSL provider %s", providerName);
+            return MPR_ERR_CANT_INITIALIZE;
+        }
+        ssl->providerName = providerName;
+    }
+    mprLog(4, "Using %s SSL provider", ssl->providerName);
+    sp->provider = ssl->provider;
+#if FUTURE
+    /* session resumption can cause problems with Nagle. However, appweb opens sockets with nodelay by default */
+    sp->flags |= MPR_SOCKET_NODELAY;
+    mprSetSocketNoDelay(sp, 1);
+#endif
+    return sp->provider->upgradeSocket(sp, ssl, server);
+}
+
+
+PUBLIC void mprSetSslCiphers(MprSsl *ssl, cchar *ciphers)
+{
+    assure(ssl);
+    ssl->ciphers = sclone(ciphers);
+}
+
+
+PUBLIC void mprSetSslKeyFile(MprSsl *ssl, cchar *keyFile)
+{
+    assure(ssl);
+    ssl->keyFile = sclone(keyFile);
+}
+
+
+PUBLIC void mprSetSslCertFile(MprSsl *ssl, cchar *certFile)
+{
+    assure(ssl);
+    ssl->certFile = sclone(certFile);
+}
+
+
+PUBLIC void mprSetSslCaFile(MprSsl *ssl, cchar *caFile)
+{
+    assure(ssl);
+    ssl->caFile = sclone(caFile);
+}
+
+
+PUBLIC void mprSetSslCaPath(MprSsl *ssl, cchar *caPath)
+{
+    assure(ssl);
+    ssl->caPath = sclone(caPath);
+}
+
+
+PUBLIC void mprSetSslProtocols(MprSsl *ssl, int protocols)
+{
+    assure(ssl);
+    ssl->protocols = protocols;
+}
+
+
+PUBLIC void mprSetSslProvider(MprSsl *ssl, cchar *provider)
+{
+    assure(ssl);
+    ssl->providerName = (provider && *provider) ? sclone(provider) : 0;
+}
+
+
+PUBLIC void mprVerifySslPeer(MprSsl *ssl, bool on)
+{
+    if (ssl) {
+        ssl->verifyPeer = on;
+    } else {
+        MPR->verifySsl = on;
+    }
+}
+
+
+PUBLIC void mprVerifySslIssuer(MprSsl *ssl, bool on)
+{
+    assure(ssl);
+    ssl->verifyIssuer = on;
+}
+
+
+PUBLIC void mprVerifySslDepth(MprSsl *ssl, int depth)
+{
+    assure(ssl);
+    ssl->verifyDepth = depth;
+}
+
+
 /*
     @copy   default
- 
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -24979,15 +20726,16 @@ void mprSetSocketPrebindCallback(MprSocketPrebind callback)
 
 /************************************ Code ************************************/
 
-char *itos(int64 value)
+PUBLIC char *itos(int64 value)
 {
     return itosradix(value, 10);
 }
 
+
 /*
     Format a number as a string. Support radix 10 and 16.
  */
-char *itosradix(int64 value, int radix)
+PUBLIC char *itosradix(int64 value, int radix)
 {
     char    numBuf[32];
     char    *cp;
@@ -25018,7 +20766,7 @@ char *itosradix(int64 value, int radix)
 }
 
 
-char *itosbuf(char *buf, ssize size, int64 value, int radix)
+PUBLIC char *itosbuf(char *buf, ssize size, int64 value, int radix)
 {
     char    *cp, *end;
     char    digits[] = "0123456789ABCDEF";
@@ -25056,7 +20804,7 @@ char *itosbuf(char *buf, ssize size, int64 value, int radix)
 }
 
 
-char *scamel(cchar *str)
+PUBLIC char *scamel(cchar *str)
 {
     char    *ptr;
     ssize   size, len;
@@ -25077,9 +20825,8 @@ char *scamel(cchar *str)
 
 /*
     Case insensitive string comparison. Limited by length
-    MOB rename sacasecmp
  */
-int scasecmp(cchar *s1, cchar *s2)
+PUBLIC int scaselesscmp(cchar *s1, cchar *s2)
 {
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -25088,18 +20835,17 @@ int scasecmp(cchar *s1, cchar *s2)
     } else if (s2 == 0) {
         return 1;
     }
-    return sncasecmp(s1, s2, max(slen(s1), slen(s2)));
+    return sncaselesscmp(s1, s2, max(slen(s1), slen(s2)));
 }
 
 
-// MOB rename sacasematch
-bool scasematch(cchar *s1, cchar *s2)
+PUBLIC bool scaselessmatch(cchar *s1, cchar *s2)
 {
-    return scasecmp(s1, s2) == 0;
+    return scaselesscmp(s1, s2) == 0;
 }
 
 
-char *schr(cchar *s, int c)
+PUBLIC char *schr(cchar *s, int c)
 {
     if (s == 0) {
         return 0;
@@ -25108,8 +20854,7 @@ char *schr(cchar *s, int c)
 }
 
 
-//  MOB - this should have no limit and then provide sncontains
-char *scontains(cchar *str, cchar *pattern, ssize limit)
+PUBLIC char *sncontains(cchar *str, cchar *pattern, ssize limit)
 {
     cchar   *cp, *s1, *s2;
     ssize   lim;
@@ -25138,17 +20883,27 @@ char *scontains(cchar *str, cchar *pattern, ssize limit)
 }
 
 
-ssize scopy(char *dest, ssize destMax, cchar *src)
+PUBLIC char *scontains(cchar *str, cchar *pattern)
+{
+    return sncontains(str, pattern, -1);
+}
+
+
+/*
+    Copy a string into a buffer. Always ensure it is null terminated
+ */
+PUBLIC ssize scopy(char *dest, ssize destMax, cchar *src)
 {
     ssize      len;
 
-    mprAssert(src);
-    mprAssert(dest);
-    mprAssert(0 < dest && destMax < MAXINT);
+    assure(src);
+    assure(dest);
+    assure(0 < dest && destMax < MAXINT);
 
     len = slen(src);
+    /* Must ensure room for null */
     if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     strcpy(dest, src);
@@ -25156,7 +20911,7 @@ ssize scopy(char *dest, ssize destMax, cchar *src)
 }
 
 
-char *sclone(cchar *str)
+PUBLIC char *sclone(cchar *str)
 {
     char    *ptr;
     ssize   size, len;
@@ -25174,7 +20929,7 @@ char *sclone(cchar *str)
 }
 
 
-int scmp(cchar *s1, cchar *s2)
+PUBLIC int scmp(cchar *s1, cchar *s2)
 {
     if (s1 == s2) {
         return 0;
@@ -25187,8 +20942,7 @@ int scmp(cchar *s1, cchar *s2)
 }
 
 
-//  MOB should return bool
-int sends(cchar *str, cchar *suffix)
+PUBLIC bool sends(cchar *str, cchar *suffix)
 {
     if (str == 0 || suffix == 0) {
         return 0;
@@ -25200,24 +20954,25 @@ int sends(cchar *str, cchar *suffix)
 }
 
 
-char *sfmt(cchar *fmt, ...)
+PUBLIC char *sfmt(cchar *format, ...)
 {
     va_list     ap;
     char        *buf;
 
-    mprAssert(fmt);
-
-    va_start(ap, fmt);
-    buf = mprAsprintfv(fmt, ap);
+    if (format == 0) {
+        format = "%s";
+    }
+    va_start(ap, format);
+    buf = mprAsprintfv(format, ap);
     va_end(ap);
     return buf;
 }
 
 
-char *sfmtv(cchar *fmt, va_list arg)
+PUBLIC char *sfmtv(cchar *format, va_list arg)
 {
-    mprAssert(fmt);
-    return mprAsprintfv(fmt, arg);
+    assure(format);
+    return mprAsprintfv(format, arg);
 }
 
 
@@ -25225,13 +20980,13 @@ char *sfmtv(cchar *fmt, va_list arg)
     Compute a hash for a C string
     Inspired by Paul Hsieh (c) 2004-2008, see http://www.azillionmonkeys.com/qed/hash.html)
  */
-uint shash(cchar *cname, ssize len)
+PUBLIC uint shash(cchar *cname, ssize len)
 {
     uchar   *name;
     uint    hash, rem, tmp;
 
-    mprAssert(cname);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(cname);
+    assure(0 <= len && len < MAXINT);
 
     if (cname == 0) {
         return 0;
@@ -25275,13 +21030,13 @@ uint shash(cchar *cname, ssize len)
 /*
     Hash the lower case name
  */
-uint shashlower(cchar *cname, ssize len)
+PUBLIC uint shashlower(cchar *cname, ssize len)
 {
     uchar   *name;
     uint    hash, rem, tmp;
 
-    mprAssert(cname);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(cname);
+    assure(0 <= len && len < MAXINT);
 
     if (cname == 0) {
         return 0;
@@ -25291,25 +21046,25 @@ uint shashlower(cchar *cname, ssize len)
     name = (uchar*) cname;
 
     for (len >>= 2; len > 0; len--, name += 4) {
-        hash  += tolower(name[0]) | (tolower(name[1]) << 8);
-        tmp   =  ((tolower(name[2]) | (tolower(name[3]) << 8)) << 11) ^ hash;
+        hash  += tolower((uchar) name[0]) | (tolower((uchar) name[1]) << 8);
+        tmp   =  ((tolower((uchar) name[2]) | (tolower((uchar) name[3]) << 8)) << 11) ^ hash;
         hash  =  (hash << 16) ^ tmp;
         hash  += hash >> 11;
     }
     switch (rem) {
     case 3: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 16;
-        hash ^= tolower(name[2]) << 18;
+        hash ^= tolower((uchar) name[2]) << 18;
         hash += hash >> 11;
         break;
     case 2: 
-        hash += tolower(name[0]) + tolower((name[1]) << 8);
+        hash += tolower((uchar) name[0]) + tolower(((uchar) name[1]) << 8);
         hash ^= hash << 11;
         hash += hash >> 17;
         break;
     case 1: 
-        hash += tolower(name[0]);
+        hash += tolower((uchar) name[0]);
         hash ^= hash << 10;
         hash += hash >> 1;
     }
@@ -25323,7 +21078,7 @@ uint shashlower(cchar *cname, ssize len)
 }
 
 
-char *sjoin(cchar *str, ...)
+PUBLIC char *sjoin(cchar *str, ...)
 {
     va_list     ap;
     char        *result;
@@ -25335,7 +21090,7 @@ char *sjoin(cchar *str, ...)
 }
 
 
-char *sjoinv(cchar *buf, va_list args)
+PUBLIC char *sjoinv(cchar *buf, va_list args)
 {
     va_list     ap;
     char        *dest, *str, *dp;
@@ -25371,7 +21126,7 @@ char *sjoinv(cchar *buf, va_list args)
 }
 
 
-ssize slen(cchar *s)
+PUBLIC ssize slen(cchar *s)
 {
     return s ? strlen(s) : 0;
 }
@@ -25380,16 +21135,16 @@ ssize slen(cchar *s)
 /*  
     Map a string to lower case. Allocates a new string.
  */
-char *slower(cchar *str)
+PUBLIC char *slower(cchar *str)
 {
     char    *cp, *s;
 
-    mprAssert(str);
+    assure(str);
 
     if (str) {
         s = sclone(str);
         for (cp = s; *cp; cp++) {
-            if (isupper((int) *cp)) {
+            if (isupper((uchar) *cp)) {
                 *cp = (char) tolower((uchar) *cp);
             }
         }
@@ -25399,19 +21154,17 @@ char *slower(cchar *str)
 }
 
 
-bool smatch(cchar *s1, cchar *s2)
+PUBLIC bool smatch(cchar *s1, cchar *s2)
 {
     return scmp(s1, s2) == 0;
 }
 
 
-// MOB rename snacasecmp
-
-int sncasecmp(cchar *s1, cchar *s2, ssize n)
+PUBLIC int sncaselesscmp(cchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXINT);
+    assure(0 <= n && n < MAXINT);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -25442,7 +21195,7 @@ int sncasecmp(cchar *s1, cchar *s2, ssize n)
     Clone a sub-string of a specified length. The null is added after the length. The given len can be longer than the
     source string.
  */
-char *snclone(cchar *str, ssize len)
+PUBLIC char *snclone(cchar *str, ssize len)
 {
     char    *ptr;
     ssize   size, l;
@@ -25464,11 +21217,11 @@ char *snclone(cchar *str, ssize len)
 /*
     Case sensitive string comparison. Limited by length
  */
-int sncmp(cchar *s1, cchar *s2, ssize n)
+PUBLIC int sncmp(cchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXINT);
+    assure(0 <= n && n < MAXINT);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -25499,20 +21252,21 @@ int sncmp(cchar *s1, cchar *s2, ssize n)
     This routine copies at most "count" characters from a string. It ensures the result is always null terminated and 
     the buffer does not overflow. Returns MPR_ERR_WONT_FIT if the buffer is too small.
  */
-ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
+PUBLIC ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
 {
     ssize      len;
 
-    mprAssert(dest);
-    mprAssert(src);
-    mprAssert(src != dest);
-    mprAssert(0 <= count && count < MAXINT);
-    mprAssert(0 < destMax && destMax < MAXINT);
+    assure(dest);
+    assure(src);
+    assure(src != dest);
+    assure(0 <= count && count < MAXINT);
+    assure(0 < destMax && destMax < MAXINT);
 
+    //  OPT use strnlen(src, count);
     len = slen(src);
     len = min(len, count);
     if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (len > 0) {
@@ -25526,13 +21280,13 @@ ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
 }
 
 
-bool snumber(cchar *s)
+PUBLIC bool snumber(cchar *s)
 {
     return s && *s && strspn(s, "1234567890") == strlen(s);
 } 
 
 
-char *spascal(cchar *str)
+PUBLIC char *spascal(cchar *str)
 {
     char    *ptr;
     ssize   size, len;
@@ -25551,7 +21305,7 @@ char *spascal(cchar *str)
 }
 
 
-char *spbrk(cchar *str, cchar *set)
+PUBLIC char *spbrk(cchar *str, cchar *set)
 {
     cchar       *sp;
     int         count;
@@ -25570,7 +21324,7 @@ char *spbrk(cchar *str, cchar *set)
 }
 
 
-char *srchr(cchar *s, int c)
+PUBLIC char *srchr(cchar *s, int c)
 {
     if (s == 0) {
         return 0;
@@ -25579,7 +21333,7 @@ char *srchr(cchar *s, int c)
 }
 
 
-char *srejoin(char *buf, ...)
+PUBLIC char *srejoin(char *buf, ...)
 {
     va_list     args;
     char        *result;
@@ -25591,7 +21345,7 @@ char *srejoin(char *buf, ...)
 }
 
 
-char *srejoinv(char *buf, va_list args)
+PUBLIC char *srejoinv(char *buf, va_list args)
 {
     va_list     ap;
     char        *dest, *str, *dp;
@@ -25621,7 +21375,7 @@ char *srejoinv(char *buf, va_list args)
 }
 
 
-char *sreplace(cchar *str, cchar *pattern, cchar *replacement)
+PUBLIC char *sreplace(cchar *str, cchar *pattern, cchar *replacement)
 {
     MprBuf      *buf;
     cchar       *s;
@@ -25644,7 +21398,7 @@ char *sreplace(cchar *str, cchar *pattern, cchar *replacement)
 }
 
 
-ssize sspn(cchar *str, cchar *set)
+PUBLIC ssize sspn(cchar *str, cchar *set)
 {
 #if KEEP
     cchar       *sp;
@@ -25673,7 +21427,7 @@ ssize sspn(cchar *str, cchar *set)
 }
  
 
-bool sstarts(cchar *str, cchar *prefix)
+PUBLIC bool sstarts(cchar *str, cchar *prefix)
 {
     if (str == 0 || prefix == 0) {
         return 0;
@@ -25685,7 +21439,7 @@ bool sstarts(cchar *str, cchar *prefix)
 }
 
 
-int64 stoi(cchar *str)
+PUBLIC int64 stoi(cchar *str)
 {
     return stoiradix(str, 10, NULL);
 }
@@ -25700,7 +21454,7 @@ int64 stoi(cchar *str)
         [(+|-)][DIGITS]
 
  */
-int64 stoiradix(cchar *str, int radix, int *err)
+PUBLIC int64 stoiradix(cchar *str, int radix, int *err)
 {
     cchar   *start;
     int64   val;
@@ -25783,10 +21537,13 @@ int64 stoiradix(cchar *str, int radix, int *err)
     Note "str" is modifed as per strtok()
     WARNING:  this does not allocate
  */
-char *stok(char *str, cchar *delim, char **last)
+PUBLIC char *stok(char *str, cchar *delim, char **last)
 {
     char    *start, *end;
     ssize   i;
+
+    assure(last);
+    assure(delim);
 
     start = str ? str : *last;
 
@@ -25811,14 +21568,14 @@ char *stok(char *str, cchar *delim, char **last)
 }
 
 
-char *ssub(cchar *str, ssize offset, ssize len)
+PUBLIC char *ssub(cchar *str, ssize offset, ssize len)
 {
     char    *result;
     ssize   size;
 
-    mprAssert(str);
-    mprAssert(offset >= 0);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(str);
+    assure(offset >= 0);
+    assure(0 <= len && len < MAXINT);
 
     if (str == 0) {
         return 0;
@@ -25835,7 +21592,7 @@ char *ssub(cchar *str, ssize offset, ssize len)
 /*
     Trim characters from the given set. Returns a newly allocated string.
  */
-char *strim(cchar *str, cchar *set, int where)
+PUBLIC char *strim(cchar *str, cchar *set, int where)
 {
     char    *s;
     ssize   len, i;
@@ -25860,15 +21617,14 @@ char *strim(cchar *str, cchar *set, int where)
 }
 
 
-
 /*  
     Map a string to upper case
  */
-char *supper(cchar *str)
+PUBLIC char *supper(cchar *str)
 {
     char    *cp, *s;
 
-    mprAssert(str);
+    assure(str);
     if (str) {
         s = sclone(str);
         for (cp = s; *cp; cp++) {
@@ -25886,7 +21642,7 @@ char *supper(cchar *str)
     Expand ${token} references in a path or string.
     Currently support DOCUMENT_ROOT, SERVER_ROOT and PRODUCT, OS and VERSION.
  */
-char *stemplate(cchar *str, MprHash *keys)
+PUBLIC char *stemplate(cchar *str, MprHash *keys)
 {
     MprBuf      *buf;
     char        *src, *result, *cp, *tok, *value;
@@ -25934,31 +21690,15 @@ char *stemplate(cchar *str, MprHash *keys)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -26008,7 +21748,7 @@ static int      setLogging(char *logSpec);
 
 /******************************************************************************/
 
-MprTestService *mprCreateTestService()
+PUBLIC MprTestService *mprCreateTestService()
 {
     MprTestService      *sp;
 
@@ -26041,7 +21781,7 @@ static void manageTestService(MprTestService *ts, int flags)
 }
 
 
-int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser extraParser)
+PUBLIC int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser extraParser)
 {
     cchar       *programName;
     char        *argp;
@@ -26089,7 +21829,6 @@ int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser e
             sp->echoCmdLine = 1;
 
         } else if (strcmp(argp, "--filter") == 0 || strcmp(argp, "-f") == 0) {
-            //  TODO DEPRECATE
             if (nextArg >= argc) {
                 err++;
             } else {
@@ -26204,7 +21943,7 @@ int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser e
         return MPR_ERR_BAD_ARGS;
     }
     if (outputVersion) {
-        mprPrintfError("%s: Version: %s\n", BIT_NAME, BIT_VERSION);
+        mprPrintfError("%s: Version: %s\n", BIT_TITLE, BIT_VERSION);
         return MPR_ERR_BAD_ARGS;
     }
     sp->argc = argc;
@@ -26220,7 +21959,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
 {
     char    *str, *word, *tok;
 
-    mprAssert(filter);
+    assure(filter);
     if (filter == 0 || *filter == '\0') {
         return 0;
     }
@@ -26230,7 +21969,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
     word = stok(str, " \t\r\n", &tok);
     while (word) {
         if (mprAddItem(sp->testFilter, sclone(word)) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         word = stok(0, " \t\r\n", &tok);
@@ -26244,21 +21983,21 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
     MprModule   *mp;
     char        *cp, *base, entry[MPR_MAX_FNAME], path[MPR_MAX_FNAME];
 
-    mprAssert(fileName && *fileName);
+    assure(fileName && *fileName);
 
     base = mprGetPathBase(fileName);
-    mprAssert(base);
+    assure(base);
     if ((cp = strrchr(base, '.')) != 0) {
         *cp = '\0';
     }
     if (mprLookupModule(base)) {
         return 0;
     }
-    mprSprintf(entry, sizeof(entry), "%sInit", base);
+    fmt(entry, sizeof(entry), "%sInit", base);
     if (fileName[0] == '/' || (*fileName && fileName[1] == ':')) {
-        mprSprintf(path, sizeof(path), "%s%s", fileName, BIT_SHOBJ);
+        fmt(path, sizeof(path), "%s%s", fileName, BIT_SHOBJ);
     } else {
-        mprSprintf(path, sizeof(path), "./%s%s", fileName, BIT_SHOBJ);
+        fmt(path, sizeof(path), "./%s%s", fileName, BIT_SHOBJ);
     }
     if ((mp = mprCreateModule(base, path, entry, sp)) == 0) {
         mprError("Can't create module %s", path);
@@ -26272,7 +22011,7 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
 }
 
 
-int mprRunTests(MprTestService *sp)
+PUBLIC int mprRunTests(MprTestService *sp)
 {
     MprTestGroup    *gp;
     MprThread       *tp;
@@ -26301,13 +22040,13 @@ int mprRunTests(MprTestService *sp)
         Create worker threads for each test thread. 
      */
     for (i = 0; i < sp->numThreads; i++) {
-        mprSprintf(tName, sizeof(tName), "test.%d", i);
+        fmt(tName, sizeof(tName), "test.%d", i);
         if ((lp = copyGroups(sp, sp->groups)) == 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         if (mprAddItem(sp->threadData, lp) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         /*
@@ -26318,7 +22057,7 @@ int mprRunTests(MprTestService *sp)
             buildFullNames(gp, gp->name);
         }
         if ((tp = mprCreateThread(tName, relayEvent, lp, 0)) == 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         if (mprStartThread(tp) < 0) {
@@ -26362,7 +22101,7 @@ static void relayEvent(MprList *groups, MprThread *tp)
     MprTestGroup    *gp;
 
     gp = mprGetFirstItem(groups);
-    mprAssert(gp);
+    assure(gp);
 
     mprRelayEvent(gp->dispatcher, runTestThread, groups, NULL);
     if (tp) {
@@ -26381,7 +22120,7 @@ static void runTestThread(MprList *groups, MprThread *tp)
     int             next, i, count;
 
     sp = MPR->testService;
-    mprAssert(sp);
+    assure(sp);
 
     for (next = 0; (gp = mprGetNextItem(groups, &next)) != 0; ) {
         runInit(gp);
@@ -26403,7 +22142,7 @@ static void runTestThread(MprList *groups, MprThread *tp)
 }
 
 
-void mprReportTestResults(MprTestService *sp)
+PUBLIC void mprReportTestResults(MprTestService *sp)
 {
     if (sp->totalFailedCount == 0 && sp->verbose >= 1) {
         mprPrintf("%12s All tests PASSED for \"%s\"\n", "[REPORT]", sp->name);
@@ -26441,7 +22180,7 @@ static void buildFullNames(MprTestGroup *gp, cchar *name)
     while (--tos >= 0) {
         nameBuf = sjoin(nameBuf, ".", nameStack[tos], NULL);
     }
-    mprAssert(gp->fullName == 0);
+    assure(gp->fullName == 0);
     gp->fullName = sclone(nameBuf);
 
     /*
@@ -26459,7 +22198,7 @@ static void buildFullNames(MprTestGroup *gp, cchar *name)
 /*
     Used by main program to add the top level test group(s)
  */
-MprTestGroup *mprAddTestGroup(MprTestService *sp, MprTestDef *def)
+PUBLIC MprTestGroup *mprAddTestGroup(MprTestService *sp, MprTestDef *def)
 {
     MprTestGroup    *gp;
 
@@ -26503,8 +22242,8 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
     char            name[80];
     static int      counter = 0;
 
-    mprAssert(sp);
-    mprAssert(def);
+    assure(sp);
+    assure(def);
 
     gp = mprAllocObj(MprTestGroup, manageTestGroup);
     if (gp == 0) {
@@ -26514,7 +22253,7 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
     if (parent) {
         gp->dispatcher = parent->dispatcher;
     } else {
-        mprSprintf(name, sizeof(name), "Test-%d", counter++);
+        fmt(name, sizeof(name), "Test-%d", counter++);
         gp->dispatcher = mprCreateDispatcher(name, 1);
     }
 
@@ -26556,7 +22295,7 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
 }
 
 
-void mprResetTestGroup(MprTestGroup *gp)
+PUBLIC void mprResetTestGroup(MprTestGroup *gp)
 {
     gp->success = 1;
     gp->mutex = mprCreateLock();
@@ -26694,7 +22433,7 @@ static bool filterTestGroup(MprTestGroup *gp)
         pattern = mprGetNextItem(testFilter, &next);
         while (pattern) {
             len = min(slen(pattern), slen(gp->fullName));
-            if (sncasecmp(gp->fullName, pattern, len) == 0) {
+            if (sncaselesscmp(gp->fullName, pattern, len) == 0) {
                 break;
             }
             pattern = mprGetNextItem(testFilter, &next);
@@ -26734,7 +22473,7 @@ static bool filterTestCast(MprTestGroup *gp, MprTestCase *tc)
         pattern = mprGetNextItem(testFilter, &next);
         while (pattern) {
             len = min(slen(pattern), slen(fullName));
-            if (sncasecmp(fullName, pattern, len) == 0) {
+            if (sncaselesscmp(fullName, pattern, len) == 0) {
                 break;
             }
             pattern = mprGetNextItem(testFilter, &next);
@@ -26799,7 +22538,7 @@ static char *getErrorMessage(MprTestGroup *gp)
     errorMsg = sclone("");
     fp = mprGetNextItem(gp->failures, &next);
     while (fp) {
-        mprSprintf(msg, sizeof(msg), "Failure in %s\nAssertion: \"%s\"\n", fp->loc, fp->message);
+        fmt(msg, sizeof(msg), "Failure in %s\nAssertion: \"%s\"\n", fp->loc, fp->message);
         if ((errorMsg = sjoin(errorMsg, msg, NULL)) == NULL) {
             break;
         }
@@ -26815,8 +22554,8 @@ static int addFailure(MprTestGroup *gp, cchar *loc, cchar *message)
 
     fp = createFailure(gp, loc, message);
     if (fp == 0) {
-        mprAssert(fp);
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(fp);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     mprAddItem(gp->failures, fp);
@@ -26846,7 +22585,7 @@ static MprTestFailure *createFailure(MprTestGroup *gp, cchar *loc, cchar *messag
 }
 
 
-bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
+PUBLIC bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
 {
     if (! isTrue) {
         gp->success = isTrue;
@@ -26863,22 +22602,22 @@ bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
 }
 
 
-bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
+PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTicks timeout)
 {
-    MprTime     expires, remaining;
+    MprTicks    expires, remaining;
     int         rc;
     
-    mprAssert(gp->dispatcher);
-    mprAssert(timeout >= 0);
+    assure(gp->dispatcher);
+    assure(timeout >= 0);
 
     if (mprGetDebugMode()) {
         timeout *= 100;
     }
-    expires = mprGetTime() + timeout;
+    expires = mprGetTicks() + timeout;
     remaining = timeout;
     do {
         mprWaitForEvent(gp->dispatcher, remaining);
-        remaining = expires - mprGetTime();
+        remaining = expires - mprGetTicks();
     } while (!gp->testComplete && remaining > 0);
     rc = gp->testComplete;
     gp->testComplete = 0;
@@ -26886,7 +22625,7 @@ bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
 }
 
 
-void mprSignalTestComplete(MprTestGroup *gp)
+PUBLIC void mprSignalTestComplete(MprTestGroup *gp)
 {
     gp->testComplete = 1;
     mprSignalDispatcher(gp->dispatcher);
@@ -26979,31 +22718,15 @@ static int setLogging(char *logSpec)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -27033,7 +22756,7 @@ static int setLogging(char *logSpec)
 
 /*************************** Forward Declarations ****************************/
 
-static int changeState(MprWorker *worker, int state);
+static void changeState(MprWorker *worker, int state);
 static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize);
 static int getNextThreadNum(MprWorkerService *ws);
 static void manageThreadService(MprThreadService *ts, int flags);
@@ -27046,16 +22769,11 @@ static void workerMain(MprWorker *worker, MprThread *tp);
 
 /************************************ Code ***********************************/
 
-MprThreadService *mprCreateThreadService()
+PUBLIC MprThreadService *mprCreateThreadService()
 {
     MprThreadService    *ts;
 
-    ts = mprAllocObj(MprThreadService, manageThreadService);
-    if (ts == 0) {
-        return 0;
-    }
-    //  TODO - not used
-    if ((ts->mutex = mprCreateLock()) == 0) {
+    if ((ts = mprAllocObj(MprThreadService, manageThreadService)) == 0) {
         return 0;
     }
     if ((ts->cond = mprCreateCond()) == 0) {
@@ -27079,7 +22797,7 @@ MprThreadService *mprCreateThreadService()
 }
 
 
-void mprStopThreadService()
+PUBLIC void mprStopThreadService()
 {
 }
 
@@ -27089,7 +22807,6 @@ static void manageThreadService(MprThreadService *ts, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ts->threads);
         mprMark(ts->mainThread);
-        mprMark(ts->mutex);
         mprMark(ts->cond);
 
     } else if (flags & MPR_MANAGE_FREE) {
@@ -27098,13 +22815,13 @@ static void manageThreadService(MprThreadService *ts, int flags)
 }
 
 
-void mprSetThreadStackSize(ssize size)
+PUBLIC void mprSetThreadStackSize(ssize size)
 {
     MPR->threadService->stackSize = size;
 }
 
 
-MprThread *mprGetCurrentThread()
+PUBLIC MprThread *mprGetCurrentThread()
 {
     MprThreadService    *ts;
     MprThread           *tp;
@@ -27113,9 +22830,7 @@ MprThread *mprGetCurrentThread()
 
     ts = MPR->threadService;
     id = mprGetCurrentOsThread();
-    if (ts->threads->mutex) {
-        lock(ts->threads);
-    }
+    lock(ts->threads);
     for (i = 0; i < ts->threads->length; i++) {
         tp = mprGetItem(ts->threads, i);
         if (tp->osThread == id) {
@@ -27123,14 +22838,12 @@ MprThread *mprGetCurrentThread()
             return tp;
         }
     }
-    if (ts->threads->mutex) {
-        unlock(ts->threads);
-    }
+    unlock(ts->threads);
     return 0;
 }
 
 
-cchar *mprGetCurrentThreadName()
+PUBLIC cchar *mprGetCurrentThreadName()
 {
     MprThread       *tp;
 
@@ -27144,7 +22857,7 @@ cchar *mprGetCurrentThreadName()
 /*
     Return the current thread object
  */
-void mprSetCurrentThreadPriority(int pri)
+PUBLIC void mprSetCurrentThreadPriority(int pri)
 {
     MprThread       *tp;
 
@@ -27158,7 +22871,7 @@ void mprSetCurrentThreadPriority(int pri)
 /*
     Create a main thread
  */
-MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize stackSize)
+PUBLIC MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize stackSize)
 {
     MprThreadService    *ts;
     MprThread           *tp;
@@ -27184,8 +22897,8 @@ MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize stackSize
 #if BIT_WIN_LIKE
     tp->threadHandle = 0;
 #endif
-    mprAssert(ts);
-    mprAssert(ts->threads);
+    assure(ts);
+    assure(ts->threads);
     if (mprAddItem(ts->threads, tp) < 0) {
         return 0;
     }
@@ -27236,7 +22949,7 @@ static int threadProcWrapper(void *data)
 }
 
 #else
-void *threadProcWrapper(void *data) 
+PUBLIC void *threadProcWrapper(void *data) 
 {
     threadProc((MprThread*) data);
     return 0;
@@ -27250,7 +22963,7 @@ void *threadProcWrapper(void *data)
  */
 static void threadProc(MprThread *tp)
 {
-    mprAssert(tp);
+    assure(tp);
 
     tp->osThread = mprGetCurrentOsThread();
 
@@ -27267,9 +22980,8 @@ static void threadProc(MprThread *tp)
 /*
     Start a thread
  */
-int mprStartThread(MprThread *tp)
+PUBLIC int mprStartThread(MprThread *tp)
 {
-    //  TODO - lock not needed
     lock(tp);
 
 #if BIT_WIN_LIKE
@@ -27283,6 +22995,7 @@ int mprStartThread(MprThread *tp)
     h = (HANDLE) _beginthreadex(NULL, 0, threadProcWrapper, (void*) tp, 0, &threadId);
 #endif
     if (h == NULL) {
+        unlock(tp);
         return MPR_ERR_CANT_INITIALIZE;
     }
     tp->osThread = (int) threadId;
@@ -27297,6 +23010,7 @@ int mprStartThread(MprThread *tp)
         0, 0, 0, 0, 0, 0, 0, 0, 0);
     if (taskHandle < 0) {
         mprError("Can't create thread %s\n", tp->name);
+        unlock(tp);
         return MPR_ERR_CANT_INITIALIZE;
     }
 }
@@ -27310,8 +23024,9 @@ int mprStartThread(MprThread *tp)
     pthread_attr_setstacksize(&attr, tp->stackSize);
 
     if (pthread_create(&h, &attr, threadProcWrapper, (void*) tp) != 0) { 
-        mprAssert(0);
+        assure(0);
         pthread_attr_destroy(&attr);
+        unlock(tp);
         return MPR_ERR_CANT_CREATE;
     }
     pthread_attr_destroy(&attr);
@@ -27322,7 +23037,7 @@ int mprStartThread(MprThread *tp)
 }
 
 
-MprOsThread mprGetCurrentOsThread()
+PUBLIC MprOsThread mprGetCurrentOsThread()
 {
 #if BIT_UNIX_LIKE
     return (MprOsThread) pthread_self();
@@ -27334,7 +23049,7 @@ MprOsThread mprGetCurrentOsThread()
 }
 
 
-void mprSetThreadPriority(MprThread *tp, int newPriority)
+PUBLIC void mprSetThreadPriority(MprThread *tp, int newPriority)
 {
     int     osPri;
 
@@ -27373,7 +23088,7 @@ static void manageThreadLocal(MprThreadLocal *tls, int flags)
 }
 
 
-MprThreadLocal *mprCreateThreadLocal()
+PUBLIC MprThreadLocal *mprCreateThreadLocal()
 {
     MprThreadLocal      *tls;
 
@@ -27398,7 +23113,7 @@ MprThreadLocal *mprCreateThreadLocal()
 }
 
 
-int mprSetThreadData(MprThreadLocal *tls, void *value)
+PUBLIC int mprSetThreadData(MprThreadLocal *tls, void *value)
 {
     bool    err;
 
@@ -27417,7 +23132,7 @@ int mprSetThreadData(MprThreadLocal *tls, void *value)
 }
 
 
-void *mprGetThreadData(MprThreadLocal *tls)
+PUBLIC void *mprGetThreadData(MprThreadLocal *tls)
 {
 #if BIT_UNIX_LIKE
     return pthread_getspecific(tls->key);
@@ -27439,9 +23154,9 @@ void *mprGetThreadData(MprThreadLocal *tls)
     Warning: +15 will not yield the CPU, -15 may get starved. We should be very wary going above +11.
  */
 
-int mprMapMprPriorityToOs(int mprPriority)
+PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
-    mprAssert(mprPriority >= 0 && mprPriority <= 100);
+    assure(mprPriority >= 0 && mprPriority <= 100);
  
     if (mprPriority <= MPR_BACKGROUND_PRIORITY) {
         return THREAD_PRIORITY_LOWEST;
@@ -27460,7 +23175,7 @@ int mprMapMprPriorityToOs(int mprPriority)
 /*
     Map Windows priority to Mpr priority
  */ 
-int mprMapOsPriorityToMpr(int nativePriority)
+PUBLIC int mprMapOsPriorityToMpr(int nativePriority)
 {
     int     priority;
 
@@ -27480,11 +23195,11 @@ int mprMapOsPriorityToMpr(int nativePriority)
     Map MPR priority to VxWorks native priority.
  */
 
-int mprMapMprPriorityToOs(int mprPriority)
+PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
     int     nativePriority;
 
-    mprAssert(mprPriority >= 0 && mprPriority < 100);
+    assure(mprPriority >= 0 && mprPriority < 100);
 
     nativePriority = (100 - mprPriority) * 5 / 2;
 
@@ -27500,7 +23215,7 @@ int mprMapMprPriorityToOs(int mprPriority)
 /*
     Map O/S priority to Mpr priority.
  */ 
-int mprMapOsPriorityToMpr(int nativePriority)
+PUBLIC int mprMapOsPriorityToMpr(int nativePriority)
 {
     int     priority;
 
@@ -27519,9 +23234,9 @@ int mprMapOsPriorityToMpr(int nativePriority)
 /*
     Map MR priority to linux native priority. Unix priorities range from -19 to +19. Linux does -20 to +19. 
  */
-int mprMapMprPriorityToOs(int mprPriority)
+PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
-    mprAssert(mprPriority >= 0 && mprPriority < 100);
+    assure(mprPriority >= 0 && mprPriority < 100);
 
     if (mprPriority <= MPR_BACKGROUND_PRIORITY) {
         return 19;
@@ -27534,7 +23249,7 @@ int mprMapMprPriorityToOs(int mprPriority)
     } else {
         return -19;
     }
-    mprAssert(0);
+    assure(0);
     return 0;
 }
 
@@ -27542,7 +23257,7 @@ int mprMapMprPriorityToOs(int mprPriority)
 /*
     Map O/S priority to Mpr priority.
  */ 
-int mprMapOsPriorityToMpr(int nativePriority)
+PUBLIC int mprMapOsPriorityToMpr(int nativePriority)
 {
     int     priority;
 
@@ -27559,7 +23274,7 @@ int mprMapOsPriorityToMpr(int nativePriority)
 #endif /* UNIX */
 
 
-MprWorkerService *mprCreateWorkerService()
+PUBLIC MprWorkerService *mprCreateWorkerService()
 {
     MprWorkerService      *ws;
 
@@ -27593,7 +23308,7 @@ static void manageWorkerService(MprWorkerService *ws, int flags)
 }
 
 
-int mprStartWorkerService()
+PUBLIC int mprStartWorkerService()
 {
     MprWorkerService    *ws;
 
@@ -27607,14 +23322,14 @@ int mprStartWorkerService()
 }
 
 
-void mprWakeWorkers()
+PUBLIC void mprWakeWorkers()
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
     int                 next;
 
     ws = MPR->workerService;
-    mprLock(ws->mutex);
+    lock(ws);
     if (ws->pruneTimer) {
         mprRemoveEvent(ws->pruneTimer);
     }
@@ -27626,20 +23341,20 @@ void mprWakeWorkers()
     for (next = -1; (worker = (MprWorker*) mprGetPrevItem(ws->idleThreads, &next)) != 0; ) {
         changeState(worker, MPR_WORKER_BUSY);
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
 }
 
 
 /*
     Define the new minimum number of workers. Pre-allocate the minimum.
  */
-void mprSetMinWorkers(int n)
+PUBLIC void mprSetMinWorkers(int n)
 { 
     MprWorker           *worker;
     MprWorkerService    *ws;
 
     ws = MPR->workerService;
-    mprLock(ws->mutex);
+    lock(ws);
     ws->minThreads = n; 
     mprLog(4, "Pre-start %d workers", ws->minThreads);
     
@@ -27650,20 +23365,20 @@ void mprSetMinWorkers(int n)
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
 }
 
 
 /*
     Define a new maximum number of theads. Prune if currently over the max.
  */
-void mprSetMaxWorkers(int n)
+PUBLIC void mprSetMaxWorkers(int n)
 {
     MprWorkerService  *ws;
 
     ws = MPR->workerService;
 
-    mprLock(ws->mutex);
+    lock(ws);
     ws->maxThreads = n; 
     if (ws->numThreads > ws->maxThreads) {
         pruneWorkers(ws, 0);
@@ -27671,11 +23386,11 @@ void mprSetMaxWorkers(int n)
     if (ws->minThreads > ws->maxThreads) {
         ws->minThreads = ws->maxThreads;
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
 }
 
 
-int mprGetMaxWorkers()
+PUBLIC int mprGetMaxWorkers()
 {
     return MPR->workerService->maxThreads;
 }
@@ -27684,7 +23399,7 @@ int mprGetMaxWorkers()
 /*
     Return the current worker thread object
  */
-MprWorker *mprGetCurrentWorker()
+PUBLIC MprWorker *mprGetCurrentWorker()
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
@@ -27693,106 +23408,68 @@ MprWorker *mprGetCurrentWorker()
 
     ws = MPR->workerService;
 
-    mprLock(ws->mutex);
+    lock(ws);
     thread = mprGetCurrentThread();
     for (next = -1; (worker = (MprWorker*) mprGetPrevItem(ws->busyThreads, &next)) != 0; ) {
         if (worker->thread == thread) {
-            mprUnlock(ws->mutex);
+            unlock(ws);
             return worker;
         }
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
     return 0;
 }
 
 
-#if UNUSED && FUTURE && KEEP
-/*
-    Set the worker as dedicated to the current task
- */
-void mprDedicateWorker(MprWorker *worker)
-{
-    mprLock(worker->workerService->mutex);
-    worker->flags |= MPR_WORKER_DEDICATED;
-    mprUnlock(worker->workerService->mutex);
-}
-
-
-void mprReleaseWorker(MprWorker *worker)
-{
-    mprLock(worker->workerService->mutex);
-    worker->flags &= ~MPR_WORKER_DEDICATED;
-    mprUnlock(worker->workerService->mutex);
-}
-#endif
-
-
-void mprActivateWorker(MprWorker *worker, MprWorkerProc proc, void *data)
+PUBLIC void mprActivateWorker(MprWorker *worker, MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
 
     ws = worker->workerService;
 
-    mprLock(ws->mutex);
+    lock(ws);
     worker->proc = proc;
     worker->data = data;
-#if UNUSED && FUTURE && KEEP
-    mprAssert(worker->flags & MPR_WORKER_DEDICATED);
-#endif
     changeState(worker, MPR_WORKER_BUSY);
-    mprUnlock(ws->mutex);
+    unlock(ws);
 }
 
 
-void mprSetWorkerStartCallback(MprWorkerProc start)
+PUBLIC void mprSetWorkerStartCallback(MprWorkerProc start)
 {
     MPR->workerService->startWorker = start;
 }
 
 
-int mprAvailableWorkers()
+PUBLIC int mprAvailableWorkers()
 {
     MprWorkerService    *ws;
     int                 count;
 
     ws = MPR->workerService;
-    mprLock(ws->mutex);
+    lock(ws);
     count = mprGetListLength(ws->idleThreads) + (ws->maxThreads - ws->numThreads);
-    mprUnlock(ws->mutex);
+    unlock(ws);
     return count;
-
-#if FUTURE && UNUSED && KEEP
-    for (next = 0; (worker = (MprWorker*) mprGetNextItem(ws->idleThreads, &next)) != 0; ) {
-        if (!(worker->flags & MPR_WORKER_DEDICATED)) {
-            count++;
-        }
-    }
-#endif
 }
 
 
-int mprStartWorker(MprWorkerProc proc, void *data)
+PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
+    static int          warnOnceWorkers = 0;
 
     ws = MPR->workerService;
-    mprLock(ws->mutex);
+    lock(ws);
 
     /*
         Try to find an idle thread and wake it up. It will wakeup in workerMain(). If not any available, then add 
         another thread to the worker. Must account for workers we've already created but have not yet gone to work 
-        and inserted themselves in the idle/busy queues.
+        and inserted themselves in the idle/busy queues. Get most recently used idle worker so we tend to reuse 
+        active threads. This lets the pruner trim idle workers.
      */
-#if UNUSED
-    for (next = 0; (worker = (MprWorker*) mprGetNextItem(ws->idleThreads, &next)) != 0; ) {
-        if (!(worker->flags & MPR_WORKER_DEDICATED)) {
-            break;
-        }
-    }
-#else
-    worker = mprGetFirstItem(ws->idleThreads);
-#endif
+    worker = mprGetLastItem(ws->idleThreads);
     if (worker) {
         worker->proc = proc;
         worker->data = data;
@@ -27818,11 +23495,14 @@ int mprStartWorker(MprWorkerProc proc, void *data)
         /*
             No free workers and can't create anymore
          */
-        mprError("No free workers. Increase ThreadLimit. (Count %d of %d)", ws->numThreads, ws->maxThreads);
-        mprUnlock(ws->mutex);
+        if (!warnOnceWorkers) {
+            warnOnceWorkers = 1;
+            mprError("No free workers. Increase ThreadLimit. (Count %d of %d)", ws->numThreads, ws->maxThreads);
+        }
+        unlock(ws);
         return MPR_ERR_BUSY;
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
     return 0;
 }
 
@@ -27833,14 +23513,13 @@ int mprStartWorker(MprWorkerProc proc, void *data)
 static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
 {
     MprWorker     *worker;
-    int           index;
+    int           index, pruned;
 
     if (mprGetDebugMode()) {
         return;
     }
-    mprLog(6, "Check to prune idle workers. Pool has %d workers. Limits %d-%d", 
-        ws->numThreads, ws->minThreads, ws->maxThreads);
-    mprLock(ws->mutex);
+    lock(ws);
+    pruned = 0;
     for (index = 0; index < ws->idleThreads->length; index++) {
         if (ws->numThreads <= ws->minThreads) {
             break;
@@ -27848,13 +23527,19 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
         worker = mprGetItem(ws->idleThreads, index);
         if ((worker->lastActivity + MPR_TIMEOUT_WORKER) < MPR->eventService->now) {
             changeState(worker, MPR_WORKER_PRUNED);
+            pruned++;
+            index--;
         }
     }
-    mprUnlock(ws->mutex);
+    if (pruned) {
+        mprLog(2, "Pruned %d workers, pool has %d workers. Limits %d-%d.", 
+            pruned, ws->numThreads - pruned, ws->minThreads, ws->maxThreads);
+    }
+    unlock(ws);
 }
 
 
-int mprGetAvailableWorkers()
+PUBLIC int mprGetAvailableWorkers()
 {
     MprWorkerService  *ws;
 
@@ -27867,9 +23552,9 @@ static int getNextThreadNum(MprWorkerService *ws)
 {
     int     rc;
 
-    mprLock(ws->mutex);
+    lock(ws);
     rc = ws->nextThreadNum++;
-    mprUnlock(ws->mutex);
+    unlock(ws);
     return rc;
 }
 
@@ -27877,15 +23562,15 @@ static int getNextThreadNum(MprWorkerService *ws)
 /*
     Define a new stack size for new workers. Existing workers unaffected.
  */
-void mprSetWorkerStackSize(int n)
+PUBLIC void mprSetWorkerStackSize(int n)
 {
     MPR->workerService->stackSize = n; 
 }
 
 
-void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
+PUBLIC void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
 {
-    mprAssert(ws);
+    assure(ws);
 
     stats->maxThreads = ws->maxThreads;
     stats->minThreads = ws->minThreads;
@@ -27916,7 +23601,8 @@ static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize)
     worker->workerService = ws;
     worker->idleCond = mprCreateCond();
 
-    mprSprintf(name, sizeof(name), "worker.%u", getNextThreadNum(ws));
+    fmt(name, sizeof(name), "worker.%u", getNextThreadNum(ws));
+    mprLog(2, "Create %s, pool has %d workers. Limits %d-%d.", name, ws->numThreads + 1, ws->minThreads, ws->maxThreads);
     worker->thread = mprCreateThread(name, (MprThreadProc) workerMain, worker, stackSize);
     return worker;
 }
@@ -27938,31 +23624,39 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     MprWorkerService    *ws;
 
     ws = MPR->workerService;
-    mprAssert(worker->state == MPR_WORKER_BUSY);
-    mprAssert(!worker->idleCond->triggered);
+    assure(worker->state == MPR_WORKER_BUSY);
+    assure(!worker->idleCond->triggered);
 
     if (ws->startWorker) {
         (*ws->startWorker)(worker->data, worker);
     }
-    mprLock(ws->mutex);
+#if !BIT_LOCK_FIX
+    lock(ws);
+#endif
 
     while (!(worker->state & MPR_WORKER_PRUNED) && !mprIsStopping()) {
         if (worker->proc) {
-            mprUnlock(ws->mutex);
+#if !BIT_LOCK_FIX
+            unlock(ws);
+#endif
             (*worker->proc)(worker->data, worker);
-            mprLock(ws->mutex);
+#if !BIT_LOCK_FIX
+            lock(ws);
+#endif
             worker->proc = 0;
         }
         worker->lastActivity = MPR->eventService->now;
         changeState(worker, MPR_WORKER_IDLE);
 
-        mprAssert(worker->cleanup == 0);
+        assure(worker->cleanup == 0);
         if (worker->cleanup) {
             (*worker->cleanup)(worker->data, worker);
             worker->cleanup = NULL;
         }
         worker->data = 0;
-        mprUnlock(ws->mutex);
+#if !BIT_LOCK_FIX
+        unlock(ws);
+#endif
 
         /*
             Sleep till there is more work to do. Yield for GC first.
@@ -27970,28 +23664,34 @@ static void workerMain(MprWorker *worker, MprThread *tp)
         mprYield(MPR_YIELD_STICKY);
         mprWaitForCond(worker->idleCond, -1);
         mprResetYield();
-        mprLock(ws->mutex);
+#if !BIT_LOCK_FIX
+        lock(ws);
+#endif
     }
+#if BIT_LOCK_FIX
+    lock(ws);
+#endif
     changeState(worker, 0);
     worker->thread = 0;
     ws->numThreads--;
-    mprUnlock(ws->mutex);
+    unlock(ws);
     mprLog(4, "Worker exiting. There are %d workers remaining in the pool.", ws->numThreads);
 }
 
 
-static int changeState(MprWorker *worker, int state)
+static void changeState(MprWorker *worker, int state)
 {
     MprWorkerService    *ws;
     MprList             *lp;
     int                 wake;
 
-    mprAssert(worker->state != state);
-
+    if (state == worker->state) {
+        return;
+    }
     wake = 0;
     lp = 0;
     ws = worker->workerService;
-    mprLock(ws->mutex);
+    lock(ws);
 
     switch (worker->state) {
     case MPR_WORKER_BUSY:
@@ -27999,13 +23699,7 @@ static int changeState(MprWorker *worker, int state)
         break;
 
     case MPR_WORKER_IDLE:
-#if UNUSED && FUTURE && KEEP
-        if (!(worker->flags & MPR_WORKER_DEDICATED)) {
-#endif
-            lp = ws->idleThreads;
-#if UNUSED && FUTURE && KEEP
-        }
-#endif
+        lp = ws->idleThreads;
         wake = 1;
         break;
         
@@ -28026,13 +23720,7 @@ static int changeState(MprWorker *worker, int state)
         break;
 
     case MPR_WORKER_IDLE:
-#if UNUSED && FUTURE && KEEP
-        if (!(worker->flags & MPR_WORKER_DEDICATED)) {
-#endif
-            lp = ws->idleThreads;
-#if UNUSED && FUTURE && KEEP
-        }
-#endif
+        lp = ws->idleThreads;
         mprWakePendingDispatchers();
         break;
 
@@ -28045,46 +23733,29 @@ static int changeState(MprWorker *worker, int state)
 
     if (lp) {
         if (mprAddItem(lp, worker) < 0) {
-            mprUnlock(ws->mutex);
-            mprAssert(!MPR_ERR_MEMORY);
-            return MPR_ERR_MEMORY;
+            unlock(ws);
+            assure(!MPR_ERR_MEMORY);
+            return;
         }
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
     if (wake) {
         mprSignalCond(worker->idleCond); 
     }
-    return 0;
 }
 
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -28297,7 +23968,7 @@ static void validateTime(struct tm *tm, struct tm *defaults);
 /*
     Initialize the time service
  */
-int mprCreateTimeService()
+PUBLIC int mprCreateTimeService()
 {
     Mpr                 *mpr;
     TimeToken           *tt;
@@ -28329,7 +24000,7 @@ int mprCreateTimeService()
 }
 
 
-int mprCompareTime(MprTime t1, MprTime t2)
+PUBLIC int mprCompareTime(MprTime t1, MprTime t2)
 {
     if (t1 < t2) {
         return -1;
@@ -28340,56 +24011,56 @@ int mprCompareTime(MprTime t1, MprTime t2)
 }
 
 
-void mprDecodeLocalTime(struct tm *tp, MprTime when)
+PUBLIC void mprDecodeLocalTime(struct tm *tp, MprTime when)
 {
     decodeTime(tp, when, 1);
 }
 
 
-void mprDecodeUniversalTime(struct tm *tp, MprTime when)
+PUBLIC void mprDecodeUniversalTime(struct tm *tp, MprTime when)
 {
     decodeTime(tp, when, 0);
 }
 
 
-char *mprGetDate(char *fmt)
+PUBLIC char *mprGetDate(char *format)
 {
     struct tm   tm;
 
     mprDecodeLocalTime(&tm, mprGetTime());
-    if (fmt == 0 || *fmt == '\0') {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0 || *format == '\0') {
+        format = MPR_DEFAULT_DATE;
     }
-    return mprFormatTm(fmt, &tm);
+    return mprFormatTm(format, &tm);
 }
 
 
-char *mprFormatLocalTime(cchar *fmt, MprTime time)
+PUBLIC char *mprFormatLocalTime(cchar *format, MprTime time)
 {
     struct tm   tm;
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     mprDecodeLocalTime(&tm, time);
-    return mprFormatTm(fmt, &tm);
+    return mprFormatTm(format, &tm);
 }
 
 
-char *mprFormatUniversalTime(cchar *fmt, MprTime time)
+PUBLIC char *mprFormatUniversalTime(cchar *format, MprTime time)
 {
     struct tm   tm;
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     mprDecodeUniversalTime(&tm, time);
-    return mprFormatTm(fmt, &tm);
+    return mprFormatTm(format, &tm);
 }
 
 
 /*
     Returns time in milliseconds since the epoch: 0:0:0 UTC Jan 1 1970.
  */
-MprTime mprGetTime()
+PUBLIC MprTime mprGetTime()
 {
 #if VXWORKS
     struct timespec  tv;
@@ -28404,29 +24075,103 @@ MprTime mprGetTime()
 
 
 /*
+    High resolution timer
+ */
+#if MPR_HIGH_RES_TIMER
+    #if (LINUX || MACOSX) && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
+        uint64 mprGetHiResTime() {
+            uint64  now;
+            __asm__ __volatile__ ("rdtsc" : "=A" (now));
+            return now;
+        }
+    #elif WINDOWS
+        uint64 mprGetHiResTime() {
+            LARGE_INTEGER  now;
+            QueryPerformanceCounter(&now);
+            return (((uint64) now.HighPart) << 32) + now.LowPart;
+        }
+    #else
+        uint64 mprGetHiResTime() {
+            return (uint64) mprGetTicks();
+        }
+    #endif
+#else 
+    uint64 mprGetHiResTime() {
+        return (uint64) mprGetTicks();
+    }
+#endif
+
+
+/*
+    Return time in milliseconds that never goes backwards. This is used for timers and not for time of day.
+    The actual value returned is system dependant and does not represent time since Jan 1 1970.
+ */
+PUBLIC MprTicks mprGetTicks()
+{
+#if BIT_WIN_LIKE && _WIN32_WINNT >= 0x0600
+    /* Windows Vista and later */
+    return GetTickCount64();
+#elif MACOSX
+    mach_timebase_info_data_t info;
+    mach_timebase_info(&info);
+    return mach_absolute_time() * info.numer / info.denom / (1000 * 1000);
+#elif CLOCK_MONOTONIC_RAW
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &tv);
+    return (MprTicks) (((MprTicks) tv.tv_sec) * 1000) + (tv.tv_nsec / (1000 * 1000));
+#elif CLOCK_MONOTONIC
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC, &tv);
+    return (MprTicks) (((MprTicks) tv.tv_sec) * 1000) + (tv.tv_nsec / (1000 * 1000));
+#else
+    static MprTime lastTicks;
+    static MprTime adjustTicks = 0;
+    MprTime     result, diff;
+    if (lastTicks == 0) {
+        lastTicks = mprGetTime();
+    }
+    result = mprGetTime() + adjustTicks;
+    /*
+        Handle time reversals. Don't handle jumps forward. Sorry.
+     */
+    if ((diff = (result - lastTicks)) < 0) {
+        adjustTicks += diff;
+        result -= diff;
+    }
+    lastTicks = result;
+    return result;
+#endif
+}
+
+
+/*
     Return the number of milliseconds until the given timeout has expired.
  */
-MprTime mprGetRemainingTime(MprTime mark, MprTime timeout)
+PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout)
 {
-    MprTime     now, diff;
+    MprTicks    now, diff;
 
-    now = mprGetTime();
+    now = mprGetTicks();
     diff = (now - mark);
 
     if (diff < 0) {
         /*
-            Detect time going backwards
+            Detect time going backwards. Should never happen now.
          */
+        assure(diff >= 0);
         diff = 0;
     }
     return (timeout - diff);
 }
 
 
-/*
-    Get the elapsed time since a time marker
- */
-MprTime mprGetElapsedTime(MprTime mark)
+PUBLIC MprTicks mprGetElapsedTicks(MprTicks mark)
+{
+    return mprGetTicks() - mark;
+}
+
+
+PUBLIC MprTime mprGetElapsedTime(MprTime mark)
 {
     return mprGetTime() - mark;
 }
@@ -28436,7 +24181,7 @@ MprTime mprGetElapsedTime(MprTime mark)
     Get the timezone offset including DST
     Return the timezone offset (including DST) in msec. local == (UTC + offset)
  */
-int mprGetTimeZoneOffset(MprTime when)
+PUBLIC int mprGetTimeZoneOffset(MprTime when)
 {
     MprTime     alternate, secs;
     struct tm   t;
@@ -28462,7 +24207,7 @@ int mprGetTimeZoneOffset(MprTime when)
 /*
     Make a time value interpreting "tm" as a local time
  */
-MprTime mprMakeTime(struct tm *tp)
+PUBLIC MprTime mprMakeTime(struct tm *tp)
 {
     MprTime     when, alternate;
     struct tm   t;
@@ -28484,7 +24229,7 @@ MprTime mprMakeTime(struct tm *tp)
 }
 
 
-MprTime mprMakeUniversalTime(struct tm *tp)
+PUBLIC MprTime mprMakeUniversalTime(struct tm *tp)
 {
     return makeTime(tp);
 }
@@ -28652,7 +24397,7 @@ static int getYear(MprTime when)
 }
 
 
-MprTime floorDiv(MprTime x, MprTime divisor)
+PUBLIC MprTime floorDiv(MprTime x, MprTime divisor)
 {
     if (x < 0) {
         return (x - divisor + 1) / divisor;
@@ -28676,7 +24421,7 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
     offset = dst = 0;
 
     if (local) {
-        //  TODO -- cache the results somehow
+        //  OPT -- cache the results somehow
         timeForZoneCalc = when;
         secs = when / MS_PER_SEC;
         if (secs < MIN_TIME || secs > MAX_TIME) {
@@ -28732,15 +24477,15 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
     } else {
         tp->tm_mday = tp->tm_yday - normalMonthStart[tp->tm_mon] + 1;
     }
-    mprAssert(tp->tm_hour >= 0);
-    mprAssert(tp->tm_min >= 0);
-    mprAssert(tp->tm_sec >= 0);
-    mprAssert(tp->tm_wday >= 0);
-    mprAssert(tp->tm_mon >= 0);
+    assure(tp->tm_hour >= 0);
+    assure(tp->tm_min >= 0);
+    assure(tp->tm_sec >= 0);
+    assure(tp->tm_wday >= 0);
+    assure(tp->tm_mon >= 0);
     /* This asserts with some calculating some intermediate dates <= year 100 */
-    mprAssert(tp->tm_yday >= 0);
-    mprAssert(tp->tm_yday < 365 || (tp->tm_yday < 366 && leapYear(year)));
-    mprAssert(tp->tm_mday >= 1);
+    assure(tp->tm_yday >= 0);
+    assure(tp->tm_yday < 365 || (tp->tm_yday < 366 && leapYear(year)));
+    assure(tp->tm_mday >= 1);
 }
 
 
@@ -28812,7 +24557,7 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
 /*
     Preferred implementation as strftime() will be localized
  */
-char *mprFormatTm(cchar *fmt, struct tm *tp)
+PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
     char            localFmt[MPR_MAX_STRING];
@@ -28823,8 +24568,8 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
     int             value;
 
     dp = localFmt;
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     if (tp == 0) {
         mprDecodeLocalTime(&tm, mprGetTime());
@@ -28832,7 +24577,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
     }
     endp = &localFmt[sizeof(localFmt) - 1];
     size = sizeof(localFmt) - 1;
-    for (cp = fmt; *cp && dp < &localFmt[sizeof(localFmt) - 32]; size = (int) (endp - dp - 1)) {
+    for (cp = format; *cp && dp < &localFmt[sizeof(localFmt) - 32]; size = (int) (endp - dp - 1)) {
         if (*cp == '%') {
             *dp++ = *cp++;
         again:
@@ -28840,7 +24585,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
             case '+':
                 if (tp->tm_mday < 10) {
                     /* Some platforms don't support 'e' so avoid it here. Put a double space before %d */
-                    mprSprintf(dp, size, "%s  %d %s", "a %b", tp->tm_mday, "%H:%M:%S %Z %Y");
+                    fmt(dp, size, "%s  %d %s", "a %b", tp->tm_mday, "%H:%M:%S %Z %Y");
                 } else {
                     strcpy(dp, "a %b %d %H:%M:%S %Z %Y");
                 }
@@ -28989,7 +24734,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
                 if (value < 0) {
                     value = -value;
                 }
-                mprSprintf(dp, size, "%s%02d%02d", sign, value / 60, value % 60);
+                fmt(dp, size, "%s%02d%02d", sign, value / 60, value % 60);
                 dp += slen(dp);
                 cp++;
                 break;
@@ -29008,11 +24753,11 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
         }
     }
     *dp = '\0';
-    fmt = localFmt;
-    if (*fmt == '\0') {
-        fmt = "%a %b %d %H:%M:%S %Z %Y";
+    format = localFmt;
+    if (*format == '\0') {
+        format = "%a %b %d %H:%M:%S %Z %Y";
     }
-    if (strftime(buf, sizeof(buf) - 1, fmt, tp) > 0) {
+    if (strftime(buf, sizeof(buf) - 1, format, tp) > 0) {
         buf[sizeof(buf) - 1] = '\0';
         return sclone(buf);
     }
@@ -29063,15 +24808,15 @@ static char *getTimeZoneName(struct tm *tp)
 }
 
 
-char *mprFormatTm(cchar *fmt, struct tm *tp)
+PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
     MprBuf          *buf;
     char            *zone;
     int             w, value;
 
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     if (tp == 0) {
         mprDecodeLocalTime(&tm, mprGetTime());
@@ -29080,13 +24825,13 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
     if ((buf = mprCreateBuf(64, -1)) == 0) {
         return 0;
     }
-    while ((*fmt != '\0')) {
-        if (*fmt++ != '%') {
-            mprPutCharToBuf(buf, fmt[-1]);
+    while ((*format != '\0')) {
+        if (*format++ != '%') {
+            mprPutCharToBuf(buf, format[-1]);
             continue;
         }
     again:
-        switch (*fmt++) {
+        switch (*format++) {
         case '%' :                                      /* percent */
             mprPutCharToBuf(buf, '%');
             break;
@@ -29337,7 +25082,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
 
         default:
             mprPutCharToBuf(buf, '%');
-            mprPutCharToBuf(buf, fmt[-1]);
+            mprPutCharToBuf(buf, format[-1]);
             break;
         }
     }
@@ -29385,12 +25130,12 @@ static int getNumOrSym(char **token, int sep, int kind, int *isAlpah)
     char    *cp;
     int     num;
 
-    mprAssert(token && *token);
+    assure(token && *token);
 
     if (*token == 0) {
         return 0;
     }
-    if (isalpha((int) **token)) {
+    if (isalpha((uchar) **token)) {
         *isAlpah = 1;
         cp = strchr(*token, sep);
         if (cp) {
@@ -29424,7 +25169,7 @@ static void swapDayMonth(struct tm *tp)
     Parse the a date/time string according to the given zoneFlags and return the result in *time. Missing date items 
     may be provided via the defaults argument.
  */ 
-int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *defaults)
+PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *defaults)
 {
     TimeToken       *tt;
     struct tm       tm;
@@ -29497,7 +25242,7 @@ int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *def
             /*
                 Timezone. Format: [GMT|UTC][+-]NN[:]NN
              */
-            if (!isalpha((int) *token)) {
+            if (!isalpha((uchar) *token)) {
                 cp = token;
             }
             negate = *cp == '-' ? -1 : 1;
@@ -29510,7 +25255,7 @@ int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *def
             zoneOffset = negate * (hour * 60 + min);
             explicitZone = 1;
 
-        } else if (isalpha((int) *token)) {
+        } else if (isalpha((uchar) *token)) {
             if ((tt = (TimeToken*) mprLookupKey(MPR->timeTokens, token)) != 0) {
                 kind = tt->value & TOKEN_MASK;
                 value = tt->value & ~TOKEN_MASK; 
@@ -29727,7 +25472,7 @@ static void validateTime(struct tm *tp, struct tm *defaults)
     Compatibility for windows and VxWorks
  */
 #if BIT_WIN_LIKE || VXWORKS
-int gettimeofday(struct timeval *tv, struct timezone *tz)
+PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
 {
     #if BIT_WIN_LIKE
         FILETIME        fileTime;
@@ -29783,61 +25528,16 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 }
 #endif /* BIT_WIN_LIKE || VXWORKS */
 
-/********************************* Measurement **********************************/
-/*
-    High resolution timer
- */
-#if MPR_HIGH_RES_TIMER
-    #if BIT_UNIX_LIKE
-        uint64 mprGetTicks() {
-            uint64  now;
-            __asm__ __volatile__ ("rdtsc" : "=A" (now));
-            return now;
-        }
-    #elif BIT_WIN_LIKE
-        uint64 mprGetTicks() {
-            LARGE_INTEGER  now;
-            QueryPerformanceCounter(&now);
-            return (((uint64) now.HighPart) << 32) + now.LowPart;
-        }
-    #else
-        uint64 mprGetTicks() {
-            return (uint64) mprGetTime();
-        }
-    #endif
-#else 
-    uint64 mprGetTicks() {
-        return (uint64) mprGetTime();
-    }
-#endif
-
-
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -29867,7 +25567,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 #if BIT_UNIX_LIKE
 /*********************************** Code *************************************/
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     umask(022);
 
@@ -29879,26 +25579,27 @@ int mprCreateOsService()
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     /* 
         Open a syslog connection
      */
 #if SOLARIS
-    openlog(mprGetAppName(), LOG_CONS, LOG_LOCAL0);
+    openlog(mprGetAppName(), LOG_LOCAL0);
 #else
-    openlog(mprGetAppName(), LOG_CONS | LOG_PERROR, LOG_LOCAL0);
+    openlog(mprGetAppName(), 0, LOG_LOCAL0);
 #endif
     return 0;
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
+    closelog();
 }
 
 
-int mprGetRandomBytes(char *buf, ssize length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
 {
     ssize   sofar, rc;
     int     fd;
@@ -29910,7 +25611,7 @@ int mprGetRandomBytes(char *buf, ssize length, bool block)
     do {
         rc = read(fd, &buf[sofar], length);
         if (rc < 0) {
-            mprAssert(0);
+            assure(0);
             return MPR_ERR_CANT_READ;
         }
         length -= rc;
@@ -29921,15 +25622,15 @@ int mprGetRandomBytes(char *buf, ssize length, bool block)
 }
 
 
-#if BIT_CC_DYN_LOAD
-int mprLoadNativeModule(MprModule *mp)
+#if BIT_HAS_DYN_LOAD
+PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
     MprPath         info;
     char            *at;
     void            *handle;
 
-    mprAssert(mp);
+    assure(mp);
 
     /*
         Search the image incase the module has been statically linked
@@ -29952,7 +25653,7 @@ int mprLoadNativeModule(MprModule *mp)
         mp->path = at;
         mprGetPathInfo(mp->path, &info);
         mp->modified = info.mtime;
-        mprLog(2, "Loading native module %s", mp->name);
+        mprLog(2, "Loading native module %s", mprGetPathBase(mp->path));
         if ((handle = dlopen(mp->path, RTLD_LAZY | RTLD_GLOBAL)) == 0) {
             mprError("Can't load module %s\nReason: \"%s\"", mp->path, dlerror());
             return MPR_ERR_CANT_OPEN;
@@ -29979,7 +25680,7 @@ int mprLoadNativeModule(MprModule *mp)
 }
 
 
-int mprUnloadNativeModule(MprModule *mp)
+PUBLIC int mprUnloadNativeModule(MprModule *mp)
 {
     return dlclose(mp->handle);
 }
@@ -29989,27 +25690,27 @@ int mprUnloadNativeModule(MprModule *mp)
 /*
     This routine does not yield
  */
-void mprNap(MprTime timeout)
+PUBLIC void mprNap(MprTicks timeout)
 {
-    MprTime         remaining, mark;
+    MprTicks        remaining, mark;
     struct timespec t;
     int             rc;
 
-    mprAssert(timeout >= 0);
+    assure(timeout >= 0);
     
-    mark = mprGetTime();
+    mark = mprGetTicks();
     remaining = timeout;
     do {
         /* MAC OS X corrupts the timeout if using the 2nd paramater, so recalc each time */
         t.tv_sec = ((int) (remaining / 1000));
         t.tv_nsec = ((int) ((remaining % 1000) * 1000000));
         rc = nanosleep(&t, NULL);
-        remaining = mprGetRemainingTime(mark, timeout);
+        remaining = mprGetRemainingTicks(mark, timeout);
     } while (rc < 0 && errno == EINTR && remaining > 0);
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -30020,19 +25721,16 @@ void mprSleep(MprTime timeout)
 /*  
     Write a message in the O/S native log (syslog in the case of linux)
  */
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
     int     sflag;
 
     if (flags & MPR_FATAL_SRC) {
         sflag = LOG_ERR;
-
-    } else if (flags & MPR_ASSERT_SRC) {
+    } else if (flags & MPR_ASSURE_SRC) {
         sflag = LOG_WARNING;
-
     } else if (flags & MPR_ERROR_SRC) {
         sflag = LOG_ERR;
-
     } else {
         sflag = LOG_WARNING;
     }
@@ -30040,42 +25738,24 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
 }
 
 
-int mprInitWindow()
+PUBLIC int mprInitWindow()
 {
     return 0;
 }
 
-#else
-void stubMprUnix() {}
 #endif /* BIT_UNIX_LIKE */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -30097,38 +25777,38 @@ void stubMprUnix() {}
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 
-#if VXWORKS
 /********************************* Includes ***********************************/
 
 
 
+#if VXWORKS
 /*********************************** Code *************************************/
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     return 0;
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     return 0;
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
 }
 
 
-int access(const char *path, int mode)
+PUBLIC int access(const char *path, int mode)
 {
     struct stat sbuf;
     return stat((char*) path, &sbuf);
 }
 
 
-int mprGetRandomBytes(char *buf, int length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
 {
     int     i;
 
@@ -30139,7 +25819,7 @@ int mprGetRandomBytes(char *buf, int length, bool block)
 }
 
 
-int mprLoadNativeModule(MprModule *mp)
+PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
     SYM_TYPE        symType;
@@ -30148,7 +25828,7 @@ int mprLoadNativeModule(MprModule *mp)
     void            *handle;
     int             fd;
 
-    mprAssert(mp);
+    assure(mp);
     fn = 0;
     handle = 0;
 
@@ -30162,7 +25842,7 @@ int mprLoadNativeModule(MprModule *mp)
         mprGetPathInfo(mp->path, &info);
         mp->modified = info.mtime;
 
-        mprLog(2, "Loading native module %s", mp->name);
+        mprLog(2, "Loading native module %s", mp->path);
         if ((fd = open(mp->path, O_RDONLY, 0664)) < 0) {
             mprError("Can't open module \"%s\"", mp->path);
             return MPR_ERR_CANT_OPEN;
@@ -30196,19 +25876,19 @@ int mprLoadNativeModule(MprModule *mp)
 }
 
 
-int mprUnloadNativeModule(MprModule *mp)
+PUBLIC int mprUnloadNativeModule(MprModule *mp)
 {
     unldByModuleId((MODULE_ID) mp->handle, 0);
     return 0;
 }
 
 
-void mprNap(MprTime milliseconds)
+PUBLIC void mprNap(MprTicks milliseconds)
 {
     struct timespec timeout;
     int             rc;
 
-    mprAssert(milliseconds >= 0);
+    assure(milliseconds >= 0);
     timeout.tv_sec = milliseconds / 1000;
     timeout.tv_nsec = (milliseconds % 1000) * 1000000;
     do {
@@ -30217,7 +25897,7 @@ void mprNap(MprTime milliseconds)
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -30225,27 +25905,27 @@ void mprSleep(MprTime timeout)
 }
 
 
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
 }
 
 
-uint mprGetpid(void) {
+PUBLIC uint mprGetpid(void) {
     return taskIdSelf();
 }
 
 
-int fsync(int fd) { 
+PUBLIC int fsync(int fd) { 
     return 0; 
 }
 
 
-int ftruncate(int fd, off_t offset) { 
+PUBLIC int ftruncate(int fd, off_t offset) { 
     return 0; 
 }
 
 
-int usleep(uint msec)
+PUBLIC int usleep(uint msec)
 {
     struct timespec     timeout;
     int                 rc;
@@ -30259,13 +25939,12 @@ int usleep(uint msec)
 }
 
 
-int mprInitWindow()
+PUBLIC int mprInitWindow()
 {
     return 0;
 }
 
 
-//  TODO - is this still needed?
 /*
     Create a routine to pull in the GCC support routines for double and int64 manipulations for some platforms. Do this
     incase modules reference these routines. Without this, the modules have to reference them. Which leads to multiple 
@@ -30278,37 +25957,19 @@ double  __mpr_floating_point_resolution(double a, double b, int64 c, int64 d, ui
 }
 
 
-#else
-void stubMprVxWorks() {}
 #endif /* VXWORKS */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -30349,7 +26010,7 @@ static void manageWaitHandler(MprWaitHandler *wp, int flags);
 /*
     Initialize the service
  */
-MprWaitService *mprCreateWaitService()
+PUBLIC MprWaitService *mprCreateWaitService()
 {
     MprWaitService  *ws;
 
@@ -30399,18 +26060,9 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
 {
     MprWaitService  *ws;
 
-    mprAssert(fd >= 0);
+    assure(fd >= 0);
 
     ws = MPR->waitService;
-    if (mprGetListLength(ws->handlers) == FD_SETSIZE) {
-        mprError("io: Too many io handlers: %d\n", FD_SETSIZE);
-        return 0;
-    }
-#if BIT_UNIX_LIKE || VXWORKS
-    if (fd >= FD_SETSIZE) {
-        mprError("File descriptor %d exceeds max io of %d", fd, FD_SETSIZE);
-    }
-#endif
     wp->fd              = fd;
     wp->notifierIndex   = -1;
     wp->dispatcher      = dispatcher;
@@ -30420,6 +26072,15 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
     wp->service         = ws;
     wp->flags           = flags;
 
+    if (mprGetListLength(ws->handlers) == FD_SETSIZE) {
+        mprError("io: Too many io handlers: %d\n", FD_SETSIZE);
+        return 0;
+    }
+#if BIT_UNIX_LIKE || VXWORKS
+    if (fd >= FD_SETSIZE) {
+        mprError("File descriptor %d exceeds max io of %d", fd, FD_SETSIZE);
+    }
+#endif
     if (mask) {
         lock(ws);
         if (mprAddItem(ws->handlers, wp) < 0) {
@@ -30434,11 +26095,11 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
 }
 
 
-MprWaitHandler *mprCreateWaitHandler(int fd, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags)
+PUBLIC MprWaitHandler *mprCreateWaitHandler(int fd, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags)
 {
     MprWaitHandler  *wp;
 
-    mprAssert(fd >= 0);
+    assure(fd >= 0);
 
     if ((wp = mprAllocObj(MprWaitHandler, manageWaitHandler)) == 0) {
         return 0;
@@ -30466,7 +26127,7 @@ static void manageWaitHandler(MprWaitHandler *wp, int flags)
 }
 
 
-void mprRemoveWaitHandler(MprWaitHandler *wp)
+PUBLIC void mprRemoveWaitHandler(MprWaitHandler *wp)
 {
     MprWaitService      *ws;
 
@@ -30474,6 +26135,10 @@ void mprRemoveWaitHandler(MprWaitHandler *wp)
         return;
     }
     ws = wp->service;
+    if (ws == 0) {
+        /* This wait handler was never initialized. */
+        return;
+    }
     lock(ws);
     if (wp->fd >= 0) {
         if (wp->desiredMask) {
@@ -30491,14 +26156,14 @@ void mprRemoveWaitHandler(MprWaitHandler *wp)
 }
 
 
-void mprQueueIOEvent(MprWaitHandler *wp)
+PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
 {
     MprDispatcher   *dispatcher;
     MprEvent        *event;
 
     lock(wp->service);
     if (wp->flags & MPR_WAIT_NEW_DISPATCHER) {
-        dispatcher = mprCreateDispatcher("IO", 1);
+        dispatcher = mprCreateDispatcher("IO", MPR_DISPATCHER_ENABLED | MPR_DISPATCHER_AUTO_CREATE);
     } else {
         dispatcher = (wp->dispatcher) ? wp->dispatcher: mprGetDispatcher();
     }
@@ -30513,11 +26178,12 @@ void mprQueueIOEvent(MprWaitHandler *wp)
 
 static void ioEvent(void *data, MprEvent *event)
 {
+    event->handler->event = 0;
     event->handler->proc(data, event);
 }
 
 
-void mprWaitOn(MprWaitHandler *wp, int mask)
+PUBLIC void mprWaitOn(MprWaitHandler *wp, int mask)
 {
     lock(wp->service);
     if (mask != wp->desiredMask) {
@@ -30534,7 +26200,7 @@ void mprWaitOn(MprWaitHandler *wp, int mask)
 /*
     Set a handler to be recalled without further I/O
  */
-void mprRecallWaitHandlerByFd(int fd)
+PUBLIC void mprRecallWaitHandlerByFd(int fd)
 {
     MprWaitService  *ws;
     MprWaitHandler  *wp;
@@ -30554,7 +26220,7 @@ void mprRecallWaitHandlerByFd(int fd)
 }
 
 
-void mprRecallWaitHandler(MprWaitHandler *wp)
+PUBLIC void mprRecallWaitHandler(MprWaitHandler *wp)
 {
     MprWaitService  *ws;
 
@@ -30570,7 +26236,7 @@ void mprRecallWaitHandler(MprWaitHandler *wp)
 /*
     Recall a handler which may have buffered data. Only called by notifiers.
  */
-void mprDoWaitRecall(MprWaitService *ws)
+PUBLIC void mprDoWaitRecall(MprWaitService *ws)
 {
     MprWaitHandler      *wp;
     int                 index;
@@ -30593,28 +26259,12 @@ void mprDoWaitRecall(MprWaitService *ws)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -30642,16 +26292,18 @@ void mprDoWaitRecall(MprWaitService *ws)
 
 
 #if BIT_CHAR_LEN > 1
+#if UNUSED
 /************************************ Code ************************************/
 /*
     Format a number as a string. Support radix 10 and 16.
+    Count is the length of buf in characters.
  */
-MprChar *itow(MprChar *buf, ssize count, int64 value, int radix)
+PUBLIC wchar *itow(wchar *buf, ssize count, int64 value, int radix)
 {
-    MprChar     numBuf[32];
-    MprChar     *cp, *dp, *endp;
-    char        digits[] = "0123456789ABCDEF";
-    int         negative;
+    wchar   numBuf[32];
+    wchar   *cp, *dp, *endp;
+    char    digits[] = "0123456789ABCDEF";
+    int     negative;
 
     if (radix != 10 && radix != 16) {
         return 0;
@@ -30684,9 +26336,9 @@ MprChar *itow(MprChar *buf, ssize count, int64 value, int radix)
 }
 
 
-MprChar *wchr(MprChar *str, int c)
+PUBLIC wchar *wchr(wchar *str, int c)
 {
-    MprChar     *s;
+    wchar   *s;
 
     if (str == NULL) {
         return 0;
@@ -30700,7 +26352,7 @@ MprChar *wchr(MprChar *str, int c)
 }
 
 
-int wcasecmp(MprChar *s1, MprChar *s2)
+PUBLIC int wcasecmp(wchar *s1, wchar *s2)
 {
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -30713,26 +26365,26 @@ int wcasecmp(MprChar *s1, MprChar *s2)
 }
 
 
-MprChar *wclone(MprChar *str)
+PUBLIC wchar *wclone(wchar *str)
 {
-    MprChar     *result, nullBuf[1];
-    ssize       len, size;
+    wchar   *result, nullBuf[1];
+    ssize   len, size;
 
     if (str == NULL) {
         nullBuf[0] = 0;
         str = nullBuf;
     }
     len = wlen(str);
-    size = (len + 1) * sizeof(MprChar);
+    size = (len + 1) * sizeof(wchar);
     if ((result = mprAlloc(size)) != NULL) {
-        memcpy(result, str, len * sizeof(MprChar));
+        memcpy(result, str, len * sizeof(wchar));
     }
     result[len] = '\0';
     return result;
 }
 
 
-int wcmp(MprChar *s1, MprChar *s2)
+PUBLIC int wcmp(wchar *s1, wchar *s2)
 {
     if (s1 == s2) {
         return 0;
@@ -30745,15 +26397,18 @@ int wcmp(MprChar *s1, MprChar *s2)
 }
 
 
-MprChar *wcontains(MprChar *str, MprChar *pattern, ssize limit)
+/*
+    Count is the maximum number of characters to compare
+ */
+PUBLIC wchar *wncontains(wchar *str, wchar *pattern, ssize count)
 {
-    MprChar     *cp, *s1, *s2;
-    ssize       lim;
+    wchar   *cp, *s1, *s2;
+    ssize   lim;
 
-    mprAssert(0 <= limit && limit < MAXINT);
+    assure(0 <= count && count < MAXINT);
 
-    if (limit < 0) {
-        limit = MAXINT;
+    if (count < 0) {
+        count = MAXINT;
     }
     if (str == 0) {
         return 0;
@@ -30761,10 +26416,10 @@ MprChar *wcontains(MprChar *str, MprChar *pattern, ssize limit)
     if (pattern == 0 || *pattern == '\0') {
         return str;
     }
-    for (cp = str; *cp && limit > 0; cp++, limit--) {
+    for (cp = str; *cp && count > 0; cp++, count--) {
         s1 = cp;
         s2 = pattern;
-        for (lim = limit; *s1 && *s2 && (*s1 == *s2) && lim > 0; lim--) {
+        for (lim = count; *s1 && *s2 && (*s1 == *s2) && lim > 0; lim--) {
             s1++;
             s2++;
         }
@@ -30776,28 +26431,34 @@ MprChar *wcontains(MprChar *str, MprChar *pattern, ssize limit)
 }
 
 
+PUBLIC wchar *wcontains(wchar *str, wchar *pattern)
+{
+    return wncontains(str, pattern, -1);
+}
+
+
 /*
-    destMax and len are character counts, not sizes in bytes
+    count is the size of dest in characters
  */
-ssize wcopy(MprChar *dest, ssize destMax, MprChar *src)
+PUBLIC ssize wcopy(wchar *dest, ssize count, wchar *src)
 {
     ssize      len;
 
-    mprAssert(src);
-    mprAssert(dest);
-    mprAssert(0 < destMax && destMax < MAXINT);
+    assure(src);
+    assure(dest);
+    assure(0 < count && count < MAXINT);
 
     len = wlen(src);
-    if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+    if (count <= len) {
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
-    memcpy(dest, src, (len + 1) * sizeof(MprChar));
+    memcpy(dest, src, (len + 1) * sizeof(wchar));
     return len;
 }
 
 
-int wends(MprChar *str, MprChar *suffix)
+PUBLIC int wends(wchar *str, wchar *suffix)
 {
     if (str == NULL || suffix == NULL) {
         return 0;
@@ -30809,12 +26470,12 @@ int wends(MprChar *str, MprChar *suffix)
 }
 
 
-MprChar *wfmt(MprChar *fmt, ...)
+PUBLIC wchar *wfmt(wchar *fmt, ...)
 {
     va_list     ap;
     char        *mfmt, *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(ap, fmt);
     mfmt = awtom(fmt, NULL);
@@ -30824,11 +26485,11 @@ MprChar *wfmt(MprChar *fmt, ...)
 }
 
 
-MprChar *wfmtv(MprChar *fmt, va_list arg)
+PUBLIC wchar *wfmtv(wchar *fmt, va_list arg)
 {
     char        *mfmt, *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
     mfmt = awtom(fmt, NULL);
     mresult = sfmtv(mfmt, arg);
     return amtow(mresult, NULL);
@@ -30838,21 +26499,22 @@ MprChar *wfmtv(MprChar *fmt, va_list arg)
 /*
     Compute a hash for a Unicode string 
     (Based on work by Paul Hsieh, see http://www.azillionmonkeys.com/qed/hash.html)
+    Count is the length of name in characters
  */
-uint whash(MprChar *name, ssize len)
+PUBLIC uint whash(wchar *name, ssize count)
 {
     uint    tmp, rem, hash;
 
-    mprAssert(name);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(name);
+    assure(0 <= count && count < MAXINT);
 
-    if (len < 0) {
-        len = wlen(name);
+    if (count < 0) {
+        count = wlen(name);
     }
-    hash = len;
-    rem = len & 3;
+    hash = count;
+    rem = count & 3;
 
-    for (len >>= 2; len > 0; len--, name += 4) {
+    for (count >>= 2; count > 0; count--, name += 4) {
         hash  += name[0] | (name[1] << 8);
         tmp   =  ((name[2] | (name[3] << 8)) << 11) ^ hash;
         hash  =  (hash << 16) ^ tmp;
@@ -30885,39 +26547,42 @@ uint whash(MprChar *name, ssize len)
 }
 
 
-uint whashlower(MprChar *name, ssize len)
+/*
+    Count is the length of name in characters
+ */
+PUBLIC uint whashlower(wchar *name, ssize count)
 {
     uint    tmp, rem, hash;
 
-    mprAssert(name);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(name);
+    assure(0 <= count && count < MAXINT);
 
-    if (len < 0) {
-        len = wlen(name);
+    if (count < 0) {
+        count = wlen(name);
     }
-    hash = len;
-    rem = len & 3;
+    hash = count;
+    rem = count & 3;
 
-    for (len >>= 2; len > 0; len--, name += 4) {
-        hash  += tolower(name[0]) | (tolower(name[1]) << 8);
-        tmp   =  ((tolower(name[2]) | (tolower(name[3]) << 8)) << 11) ^ hash;
+    for (count >>= 2; count > 0; count--, name += 4) {
+        hash  += tolower((uchar) name[0]) | (tolower((uchar) name[1]) << 8);
+        tmp   =  ((tolower((uchar) name[2]) | (tolower((uchar) name[3]) << 8)) << 11) ^ hash;
         hash  =  (hash << 16) ^ tmp;
         hash  += hash >> 11;
     }
     switch (rem) {
     case 3: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 16;
-        hash ^= tolower(name[2]) << 18;
+        hash ^= tolower((uchar) name[2]) << 18;
         hash += hash >> 11;
         break;
     case 2: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 11;
         hash += hash >> 17;
         break;
     case 1: 
-        hash += tolower(name[0]);
+        hash += tolower((uchar) name[0]);
         hash ^= hash << 10;
         hash += hash >> 1;
     }
@@ -30931,9 +26596,9 @@ uint whashlower(MprChar *name, ssize len)
 }
 
 
-MprChar *wjoin(MprChar *str, ...)
+PUBLIC wchar *wjoin(wchar *str, ...)
 {
-    MprChar     *result;
+    wchar       *result;
     va_list     ap;
 
     va_start(ap, str);
@@ -30943,10 +26608,10 @@ MprChar *wjoin(MprChar *str, ...)
 }
 
 
-MprChar *wjoinv(MprChar *buf, va_list args)
+PUBLIC wchar *wjoinv(wchar *buf, va_list args)
 {
     va_list     ap;
-    MprChar     *dest, *str, *dp, nullBuf[1];
+    wchar       *dest, *str, *dp, nullBuf[1];
     int         required, len, blen;
 
     va_copy(ap, args);
@@ -30955,12 +26620,12 @@ MprChar *wjoinv(MprChar *buf, va_list args)
     if (buf) {
         required += blen;
     }
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         required += wlen(str);
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
-    if ((dest = mprAlloc(required * sizeof(MprChar))) == 0) {
+    if ((dest = mprAlloc(required * sizeof(wchar))) == 0) {
         return 0;
     }
     dp = dest;
@@ -30970,20 +26635,23 @@ MprChar *wjoinv(MprChar *buf, va_list args)
         required -= blen;
     }
     va_copy(ap, args);
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         wcopy(dp, required, str);
         len = wlen(str);
         dp += len;
         required -= len;
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     *dp = '\0';
     return dest;
 }
 
 
-ssize wlen(MprChar *s)
+/*
+    Return the length of "s" in characters
+ */
+PUBLIC ssize wlen(wchar *s)
 {
     ssize  i;
 
@@ -30998,17 +26666,17 @@ ssize wlen(MprChar *s)
 /*  
     Map a string to lower case 
  */
-MprChar *wlower(MprChar *str)
+PUBLIC wchar *wlower(wchar *str)
 {
-    MprChar *cp, *s;
+    wchar   *cp, *s;
 
-    mprAssert(str);
+    assure(str);
 
     if (str) {
         s = wclone(str);
         for (cp = s; *cp; cp++) {
-            if (isupper((int) *cp)) {
-                *cp = (MprChar) tolower(*cp);
+            if (isupper((uchar) *cp)) {
+                *cp = (wchar) tolower((uchar) *cp);
             }
         }
         str = s;
@@ -31017,11 +26685,14 @@ MprChar *wlower(MprChar *str)
 }
 
 
-int wncasecmp(MprChar *s1, MprChar *s2, ssize n)
+/*
+    Count is the maximum number of characters to compare
+ */
+PUBLIC int wncasecmp(wchar *s1, wchar *s2, ssize count)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXINT);
+    assure(0 <= count && count < MAXINT);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -31030,8 +26701,8 @@ int wncasecmp(MprChar *s1, MprChar *s2, ssize n)
     } else if (s2 == 0) {
         return 1;
     }
-    for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
-        rc = tolower(*s1) - tolower(*s2);
+    for (rc = 0; count > 0 && *s1 && rc == 0; s1++, s2++, count--) {
+        rc = tolower((uchar) *s1) - tolower((uchar) *s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;
@@ -31048,11 +26719,14 @@ int wncasecmp(MprChar *s1, MprChar *s2, ssize n)
 }
 
 
-int wncmp(MprChar *s1, MprChar *s2, ssize n)
+/*
+    Count is the maximum number of characters to compare
+ */
+PUBLIC int wncmp(wchar *s1, wchar *s2, ssize count)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXINT);
+    assure(0 <= count && count < MAXINT);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -31061,7 +26735,7 @@ int wncmp(MprChar *s1, MprChar *s2, ssize n)
     } else if (s2 == 0) {
         return 1;
     }
-    for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
+    for (rc = 0; count > 0 && *s1 && rc == 0; s1++, s2++, count--) {
         rc = *s1 - *s2;
     }
     if (rc) {
@@ -31081,27 +26755,27 @@ int wncmp(MprChar *s1, MprChar *s2, ssize n)
 
 /*
     This routine copies at most "count" characters from a string. It ensures the result is always null terminated and 
-    the buffer does not overflow. Returns MPR_ERR_WONT_FIT if the buffer is too small.
-    destMax and len are character counts, not sizes in bytes
+    the buffer does not overflow. DestCount is the maximum size of dest in characters.
+    Returns MPR_ERR_WONT_FIT if the buffer is too small.
  */
-ssize wncopy(MprChar *dest, ssize destMax, MprChar *src, ssize count)
+PUBLIC ssize wncopy(wchar *dest, ssize destCount, wchar *src, ssize count)
 {
     ssize      len;
 
-    mprAssert(dest);
-    mprAssert(src);
-    mprAssert(dest != src);
-    mprAssert(0 <= count && count < MAXINT);
-    mprAssert(0 < destMax && destMax < MAXINT);
+    assure(dest);
+    assure(src);
+    assure(dest != src);
+    assure(0 <= count && count < MAXINT);
+    assure(0 < destCount && destCount < MAXINT);
 
     len = wlen(src);
     len = min(len, count);
-    if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+    if (destCount <= len) {
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (len > 0) {
-        memcpy(dest, src, len * sizeof(MprChar));
+        memcpy(dest, src, len * sizeof(wchar));
         dest[len] = '\0';
     } else {
         *dest = '\0';
@@ -31111,10 +26785,10 @@ ssize wncopy(MprChar *dest, ssize destMax, MprChar *src, ssize count)
 }
 
 
-MprChar *wpbrk(MprChar *str, MprChar *set)
+PUBLIC wchar *wpbrk(wchar *str, wchar *set)
 {
-    MprChar     *sp;
-    int         count;
+    wchar   *sp;
+    int     count;
 
     if (str == NULL || set == NULL) {
         return 0;
@@ -31130,9 +26804,9 @@ MprChar *wpbrk(MprChar *str, MprChar *set)
 }
 
 
-MprChar *wrchr(MprChar *str, int c)
+PUBLIC wchar *wrchr(wchar *str, int c)
 {
-    MprChar     *s;
+    wchar   *s;
 
     if (str == NULL) {
         return 0;
@@ -31146,9 +26820,9 @@ MprChar *wrchr(MprChar *str, int c)
 }
 
 
-MprChar *wrejoin(MprChar *buf, ...)
+PUBLIC wchar *wrejoin(wchar *buf, ...)
 {
-    MprChar     *result;
+    wchar       *result;
     va_list     ap;
 
     va_start(ap, buf);
@@ -31158,44 +26832,44 @@ MprChar *wrejoin(MprChar *buf, ...)
 }
 
 
-MprChar *wrejoinv(MprChar *buf, va_list args)
+PUBLIC wchar *wrejoinv(wchar *buf, va_list args)
 {
     va_list     ap;
-    MprChar     *dest, *str, *dp, nullBuf[1];
+    wchar       *dest, *str, *dp, nullBuf[1];
     int         required, len, n;
 
     va_copy(ap, args);
     len = wlen(buf);
     required = len + 1;
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         required += wlen(str);
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
-    if ((dest = mprRealloc(buf, required * sizeof(MprChar))) == 0) {
+    if ((dest = mprRealloc(buf, required * sizeof(wchar))) == 0) {
         return 0;
     }
     dp = &dest[len];
     required -= len;
     va_copy(ap, args);
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         wcopy(dp, required, str);
         n = wlen(str);
         dp += n;
         required -= n;
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
-    mprAssert(required >= 0);
+    assure(required >= 0);
     *dp = '\0';
     return dest;
 }
 
 
-ssize wspn(MprChar *str, MprChar *set)
+PUBLIC ssize wspn(wchar *str, wchar *set)
 {
-    MprChar     *sp;
-    int         count;
+    wchar   *sp;
+    int     count;
 
     if (str == NULL || set == NULL) {
         return 0;
@@ -31214,7 +26888,7 @@ ssize wspn(MprChar *str, MprChar *set)
 }
  
 
-int wstarts(MprChar *str, MprChar *prefix)
+PUBLIC int wstarts(wchar *str, wchar *prefix)
 {
     if (str == NULL || prefix == NULL) {
         return 0;
@@ -31226,13 +26900,13 @@ int wstarts(MprChar *str, MprChar *prefix)
 }
 
 
-int64 wtoi(MprChar *str)
+PUBLIC int64 wtoi(wchar *str)
 {
     return wtoiradix(str, 10, NULL);
 }
 
 
-int64 wtoiradix(MprChar *str, int radix, int *err)
+PUBLIC int64 wtoiradix(wchar *str, int radix, int *err)
 {
     char    *bp, buf[32];
 
@@ -31244,10 +26918,10 @@ int64 wtoiradix(MprChar *str, int radix, int *err)
 }
 
 
-MprChar *wtok(MprChar *str, MprChar *delim, MprChar **last)
+PUBLIC wchar *wtok(wchar *str, wchar *delim, wchar **last)
 {
-    MprChar    *start, *end;
-    ssize      i;
+    wchar   *start, *end;
+    ssize   i;
 
     start = str ? str : *last;
 
@@ -31272,31 +26946,34 @@ MprChar *wtok(MprChar *str, MprChar *delim, MprChar **last)
 }
 
 
-MprChar *wsub(MprChar *str, ssize offset, ssize len)
+/*
+    Count is the length in characters to extract
+ */
+PUBLIC wchar *wsub(wchar *str, ssize offset, ssize count)
 {
-    MprChar    *result;
-    ssize      size;
+    wchar   *result;
+    ssize   size;
 
-    mprAssert(str);
-    mprAssert(offset >= 0);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(str);
+    assure(offset >= 0);
+    assure(0 <= count && count < MAXINT);
 
     if (str == 0) {
         return 0;
     }
-    size = (len + 1) * sizeof(MprChar);
+    size = (count + 1) * sizeof(wchar);
     if ((result = mprAlloc(size)) == NULL) {
         return NULL;
     }
-    wncopy(result, len + 1, &str[offset], len);
+    wncopy(result, count + 1, &str[offset], count);
     return result;
 }
 
 
-MprChar *wtrim(MprChar *str, MprChar *set, int where)
+PUBLIC wchar *wtrim(wchar *str, wchar *set, int where)
 {
-    MprChar     s;
-    ssize       len, i;
+    wchar   s;
+    ssize   len, i;
 
     if (str == NULL || set == NULL) {
         return str;
@@ -31322,63 +26999,59 @@ MprChar *wtrim(MprChar *str, MprChar *set, int where)
 /*  
     Map a string to upper case
  */
-char *wupper(MprChar *str)
+PUBLIC char *wupper(wchar *str)
 {
-    MprChar     *cp, *s;
+    wchar   *cp, *s;
 
-    mprAssert(str);
+    assure(str);
     if (str) {
         s = wclone(str);
         for (cp = s; *cp; cp++) {
-            if (islower(*cp)) {
-                *cp = (MprChar) toupper(*cp);
+            if (islower((uchar) *cp)) {
+                *cp = (wchar) toupper((uchar) *cp);
             }
         }
         str = s;
     }
     return str;
 }
+#endif /* UNUSED */
 
 /*********************************** Conversions *******************************/
 /*
-    Convert a wide unicode string into a multibyte string buffer. If len is supplied, it is used as the source length. 
-    DestCount is the max size of the dest buffer. At most destCount - 1 characters will be stored. The dest buffer will
-    always have a trailing null appended.  If dest is NULL, don't copy the string, just return the length.  
-    Return a count of characters copied or -1 if an invalid multibyte sequence was provided in src.
+    Convert a wide unicode string into a multibyte string buffer. If count is supplied, it is used as the source length 
+    in characters. Otherwise set to -1. DestCount is the max size of the dest buffer in bytes. At most destCount - 1 
+    characters will be stored. The dest buffer will always have a trailing null appended.  If dest is NULL, don't copy 
+    the string, just return the length of characters. Return a count of bytes copied to the destination or -1 if an 
+    invalid unicode sequence was provided in src.
     NOTE: does not allocate.
  */
-ssize wtom(char *dest, ssize destCount, MprChar *src, ssize len)
+PUBLIC ssize wtom(char *dest, ssize destCount, wchar *src, ssize count)
 {
-    ssize      size;
-
-    mprAssert(0 <= len && len < MAXINT);
+    ssize   len;
 
     if (destCount < 0) {
         destCount = MAXSSIZE;
     }
-    if (len < 0) {
-        len = MAXSSIZE;
-    }
-    size = min(destCount, len + 1);
-    if (size > 0) {
+    if (count > 0) {
 #if BIT_CHAR_LEN == 1
         if (dest) {
-            scopy(dest, size, src);
+            len = scopy(dest, destCount, src);
         } else {
-            len = min(slen(src), size - 1);
+            len = min(slen(src), destCount - 1);
         }
 #elif BIT_WIN_LIKE
-        //  TODO -- use destCount
-        len = WideCharToMultiByte(CP_ACP, 0, src, -1, dest, (DWORD) size, NULL, NULL);
+        len = WideCharToMultiByte(CP_ACP, 0, src, count, dest, (DWORD) destCount - 1, NULL, NULL);
 #else
-        len = wcstombs(dest, src, size);
+        len = wcstombs(dest, src, destCount - 1);
 #endif
-        if (len >= destCount) {
-            mprAssert(!MPR_ERR_WONT_FIT);
+        if (dest) {
+            if (len >= 0) {
+                dest[len] = 0;
+            }
+        } else if (len >= destCount) {
+            assure(!MPR_ERR_WONT_FIT);
             return MPR_ERR_WONT_FIT;
-        }
-        if (len >= 0) {
-            dest[len] = 0;
         }
     }
     return len;
@@ -31386,56 +27059,56 @@ ssize wtom(char *dest, ssize destCount, MprChar *src, ssize len)
 
 
 /*
-    Convert a multibyte string to a unicode string. If len is supplied, it is used as the source length. 
-    If dest is NULL, don't copy the string, just return the length.
-    NOTE: does not allocate
+    Convert a multibyte string to a unicode string. If count is supplied, it is used as the source length in bytes.
+    Otherwise set to -1. DestCount is the max size of the dest buffer in characters. At most destCount - 1 
+    characters will be stored. The dest buffer will always have a trailing null characters appended.  If dest is NULL, 
+    don't copy the string, just return the length of characters. Return a count of characters copied to the destination 
+    or -1 if an invalid multibyte sequence was provided in src.
+    NOTE: does not allocate.
  */
-ssize mtow(MprChar *dest, ssize destCount, cchar *src, ssize len) 
+PUBLIC ssize mtow(wchar *dest, ssize destCount, cchar *src, ssize count) 
 {
-    ssize      size;
-
-    mprAssert(0 < destCount && len < MAXINT);
-    mprAssert(0 <= len && len < MAXINT);
+    ssize      len;
 
     if (destCount < 0) {
         destCount = MAXSSIZE;
     }
-    size = min(destCount, len + 1);
-    if (size > 0) {
+    if (destCount > 0) {
 #if BIT_CHAR_LEN == 1
         if (dest) {
-            scopy(dest, size, src);
+            len = scopy(dest, destCount, src);
         } else {
-            len = min(slen(src), size - 1);
+            len = min(slen(src), destCount - 1);
         }
 #elif BIT_WIN_LIKE
-        len = MultiByteToWideChar(CP_ACP, 0, src, -1, dest, size);
+        len = MultiByteToWideChar(CP_ACP, 0, src, count, dest, (DWORD) destCount - 1);
 #else
-        len = mbstowcs(dest, src, size);
+        len = mbstowcs(dest, src, destCount - 1);
 #endif
-        if (len >= destCount) {
-            mprAssert(!MPR_ERR_WONT_FIT);
+        if (dest) {
+            if (len >= 0) {
+                dest[len] = 0;
+            }
+        } else if (len >= destCount) {
+            assure(!MPR_ERR_WONT_FIT);
             return MPR_ERR_WONT_FIT;
-        }
-        if (len >= 0) {
-            dest[len] = 0;
         }
     }
     return len;
 }
 
 
-MprChar *amtow(cchar *src, ssize *lenp)
+PUBLIC wchar *amtow(cchar *src, ssize *lenp)
 {
-    MprChar     *dest;
-    ssize       len;
+    wchar   *dest;
+    ssize   len;
 
-    len = mtow(NULL, MAXSSIZE, src, 0);
+    len = mtow(NULL, MAXSSIZE, src, -1);
     if (len < 0) {
         return NULL;
     }
-    if ((dest = mprAlloc((len + 1) * sizeof(MprChar))) != NULL) {
-        mtow(dest, len + 1, src, len);
+    if ((dest = mprAlloc((len + 1) * sizeof(wchar))) != NULL) {
+        mtow(dest, len + 1, src, -1);
     }
     if (lenp) {
         *lenp = len;
@@ -31444,18 +27117,19 @@ MprChar *amtow(cchar *src, ssize *lenp)
 }
 
 
-//  MOB - need a version that can supply a length
-char *awtom(MprChar *src, ssize *lenp)
+//  FUTURE UNICODE - need a version that can supply a length
+
+PUBLIC char *awtom(wchar *src, ssize *lenp)
 {
     char    *dest;
     ssize   len;
 
-    len = wtom(NULL, MAXSSIZE, src, 0);
+    len = wtom(NULL, MAXSSIZE, src, -1);
     if (len < 0) {
         return NULL;
     }
     if ((dest = mprAlloc(len + 1)) != 0) {
-        wtom(dest, len + 1, src, len);
+        wtom(dest, len + 1, src, -1);
     }
     if (lenp) {
         *lenp = len;
@@ -31538,16 +27212,15 @@ static int isValidUtf8(cuchar *src, int len)
 }
 
 
-//  TODO - CLEAN
 static int offsets[6] = { 0x00000000UL, 0x00003080UL, 0x000E2080UL, 0x03C82080UL, 0xFA082080UL, 0x82082080UL };
 
-ssize xmtow(MprChar *dest, ssize destMax, cchar *src, ssize len) 
+PUBLIC ssize xmtow(wchar *dest, ssize destMax, cchar *src, ssize len) 
 {
-    MprChar     *dp, *dend;
-    cchar       *sp, *send;
-    int         i, c, count;
+    wchar   *dp, *dend;
+    cchar   *sp, *send;
+    int     i, c, count;
 
-    mprAssert(0 <= len && len < MAXINT);
+    assure(0 <= len && len < MAXINT);
 
     if (len < 0) {
         len = slen(src);
@@ -31571,7 +27244,7 @@ ssize xmtow(MprChar *dest, ssize destMax, cchar *src, ssize len)
         c -= offsets[len];
         count++;
         if (dp >= dend) {
-            mprAssert(!MPR_ERR_WONT_FIT);
+            assure(!MPR_ERR_WONT_FIT);
             return MPR_ERR_WONT_FIT;
         }
         if (c <= 0xFFFF) {
@@ -31588,7 +27261,7 @@ ssize xmtow(MprChar *dest, ssize destMax, cchar *src, ssize len)
             c -= 0x0010000UL;
             *dp++ = (c >> 10) + 0xD800;
             if (dp >= dend) {
-                mprAssert(!MPR_ERR_WONT_FIT);
+                assure(!MPR_ERR_WONT_FIT);
                 return MPR_ERR_WONT_FIT;
             }
             *dp++ = (c & 0x3FF) + 0xDC00;
@@ -31598,7 +27271,6 @@ ssize xmtow(MprChar *dest, ssize destMax, cchar *src, ssize len)
     return count;
 }
 
-//  TODO - CLEAN
 static cuchar marks[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
 
 /*
@@ -31625,13 +27297,13 @@ static cuchar marks[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
    end if
 */
 
-ssize xwtom(char *dest, ssize destMax, MprChar *src, ssize len)
+PUBLIC ssize xwtom(char *dest, ssize destMax, wchar *src, ssize len)
 {
-    MprChar     *sp, *send;
-    char        *dp, *dend;
-    int         i, c, c2, count, bytes, mark, mask;
+    wchar   *sp, *send;
+    char    *dp, *dend;
+    int     i, c, c2, count, bytes, mark, mask;
 
-    mprAssert(0 <= len && len < MAXINT);
+    assure(0 <= len && len < MAXINT);
 
     if (len < 0) {
         len = wlen(src);
@@ -31651,7 +27323,7 @@ ssize xwtom(char *dest, ssize destMax, MprChar *src, ssize len)
                     c = ((c - 0xD800) << 10) + (c2 - 0xDC00) + 0x10000;
                 }
             } else {
-                mprAssert(!MPR_ERR_WONT_FIT);
+                assure(!MPR_ERR_WONT_FIT);
                 return MPR_ERR_WONT_FIT;
             }
         }
@@ -31668,7 +27340,7 @@ ssize xwtom(char *dest, ssize destMax, MprChar *src, ssize len)
         if (dest) {
             dp += bytes;
             if (dp >= dend) {
-                mprAssert(!MPR_ERR_WONT_FIT);
+                assure(!MPR_ERR_WONT_FIT);
                 return MPR_ERR_WONT_FIT;
             }
             for (i = 1; i < bytes; i++) {
@@ -31688,16 +27360,16 @@ ssize xwtom(char *dest, ssize destMax, MprChar *src, ssize len)
 
 #else /* BIT_CHAR_LEN == 1 */
 
-MprChar *amtow(cchar *src, ssize *len)
+PUBLIC wchar *amtow(cchar *src, ssize *len)
 {
     if (len) {
         *len = slen(src);
     }
-    return (MprChar*) sclone(src);
+    return (wchar*) sclone(src);
 }
 
 
-char *awtom(MprChar *src, ssize *len)
+PUBLIC char *awtom(wchar *src, ssize *len)
 {
     if (len) {
         *len = slen((char*) src);
@@ -31712,28 +27384,12 @@ char *awtom(MprChar *src, ssize *len)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -31743,7 +27399,6 @@ char *awtom(MprChar *src, ssize *len)
 
     @end
  */
-
 
 /************************************************************************/
 /*
@@ -31771,7 +27426,7 @@ char *awtom(MprChar *src, ssize *len)
     Initialize the O/S platform layer
  */ 
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     WSADATA     wsaData;
 
@@ -31782,31 +27437,31 @@ int mprCreateOsService()
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     return 0;
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
     WSACleanup();
 }
 
 
-long mprGetInst()
+PUBLIC long mprGetInst()
 {
     return (long) MPR->appInstance;
 }
 
 
-HWND mprGetHwnd()
+PUBLIC HWND mprGetHwnd()
 {
     return MPR->waitService->hwnd;
 }
 
 
-int mprGetRandomBytes(char *buf, ssize length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
 {
     HCRYPTPROV      prov;
     int             rc;
@@ -31823,14 +27478,14 @@ int mprGetRandomBytes(char *buf, ssize length, bool block)
 }
 
 
-int mprLoadNativeModule(MprModule *mp)
+PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
     MprPath         info;
     char            *at, *baseName;
     void            *handle;
 
-    mprAssert(mp);
+    assure(mp);
 
     if ((handle = (HANDLE) MPR->appInstance) == 0) {
         handle = GetModuleHandle(NULL);
@@ -31844,9 +27499,9 @@ int mprLoadNativeModule(MprModule *mp)
         mp->path = at;
         mprGetPathInfo(mp->path, &info);
         mp->modified = info.mtime;
-        mprLog(2, "Loading native module %s", mp->name);
+        mprLog(2, "Loading native module %s", mp->path);
         baseName = mprGetPathBase(mp->path);
-        if ((handle = GetModuleHandle(baseName)) == 0 && (handle = LoadLibrary(mp->path)) == 0) {
+        if ((handle = GetModuleHandle(wide(baseName))) == 0 && (handle = LoadLibrary(wide(mp->path))) == 0) {
             mprError("Can't load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
             return MPR_ERR_CANT_READ;
         } 
@@ -31871,9 +27526,9 @@ int mprLoadNativeModule(MprModule *mp)
 }
 
 
-int mprUnloadNativeModule(MprModule *mp)
+PUBLIC int mprUnloadNativeModule(MprModule *mp)
 {
-    mprAssert(mp->handle);
+    assure(mp->handle);
 
     if (FreeLibrary((HINSTANCE) mp->handle) == 0) {
         return MPR_ERR_ABORTED;
@@ -31882,31 +27537,31 @@ int mprUnloadNativeModule(MprModule *mp)
 }
 
 
-void mprSetInst(HINSTANCE inst)
+PUBLIC void mprSetInst(HINSTANCE inst)
 {
     MPR->appInstance = inst;
 }
 
 
-void mprSetHwnd(HWND h)
+PUBLIC void mprSetHwnd(HWND h)
 {
     MPR->waitService->hwnd = h;
 }
 
 
-void mprSetSocketMessage(int socketMessage)
+PUBLIC void mprSetSocketMessage(int socketMessage)
 {
     MPR->waitService->socketMessage = socketMessage;
 }
 
 
-void mprNap(MprTime timeout)
+PUBLIC void mprNap(MprTicks timeout)
 {
     Sleep((int) timeout);
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -31914,13 +27569,14 @@ void mprSleep(MprTime timeout)
 }
 
 
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
     HKEY        hkey;
     void        *event;
     long        errorType;
     ulong       exists;
-    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *lines[9], *cp, *value;
+    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *cp, *value;
+	wchar		*lines[9];
     int         type;
     static int  once = 0;
 
@@ -31930,7 +27586,7 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
         *cp-- = '\0';
     }
     type = EVENTLOG_ERROR_TYPE;
-    lines[0] = buf;
+    lines[0] = wide(buf);
     lines[1] = 0;
     lines[2] = lines[3] = lines[4] = lines[5] = 0;
     lines[6] = lines[7] = lines[8] = 0;
@@ -31938,19 +27594,20 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
     if (once == 0) {
         /*  Initialize the registry */
         once = 1;
-        mprSprintf(logName, sizeof(logName), "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s",
-            mprGetAppName());
+        fmt(logName, sizeof(logName), "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s", mprGetAppName());
         hkey = 0;
 
-        if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, logName, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkey, &exists) == ERROR_SUCCESS) {
+        if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, wide(logName), 0, NULL, 0, KEY_ALL_ACCESS, NULL, 
+                &hkey, &exists) == ERROR_SUCCESS) {
             value = "%SystemRoot%\\System32\\netmsg.dll";
-            if (RegSetValueEx(hkey, "EventMessageFile", 0, REG_EXPAND_SZ, 
+            if (RegSetValueEx(hkey, UT("EventMessageFile"), 0, REG_EXPAND_SZ, 
                     (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
                 RegCloseKey(hkey);
                 return;
             }
             errorType = EVENTLOG_ERROR_TYPE | EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
-            if (RegSetValueEx(hkey, "TypesSupported", 0, REG_DWORD, (uchar*) &errorType, sizeof(DWORD)) != ERROR_SUCCESS) {
+            if (RegSetValueEx(hkey, UT("TypesSupported"), 0, REG_DWORD, (uchar*) &errorType, 
+                    sizeof(DWORD)) != ERROR_SUCCESS) {
                 RegCloseKey(hkey);
                 return;
             }
@@ -31958,13 +27615,13 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
         }
     }
 
-    event = RegisterEventSource(0, mprGetAppName());
+    event = RegisterEventSource(0, wide(mprGetAppName()));
     if (event) {
         /*
             3299 is the event number for the generic message in netmsg.dll.
             "%1 %2 %3 %4 %5 %6 %7 %8 %9" -- thanks Apache for the tip
          */
-        ReportEvent(event, EVENTLOG_ERROR_TYPE, 0, 3299, NULL, sizeof(lines) / sizeof(char*), 0, (LPCSTR*) lines, 0);
+        ReportEvent(event, EVENTLOG_ERROR_TYPE, 0, 3299, NULL, sizeof(lines) / sizeof(wchar*), 0, lines, 0);
         DeregisterEventSource(event);
     }
 }
@@ -31983,7 +27640,7 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
     char    key[MPR_MAX_STRING], *cp;
     ssize   len;
 
-    mprAssert(keyPath && *keyPath);
+    assure(keyPath && *keyPath);
 
     *hive = 0;
 
@@ -31996,13 +27653,13 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
     if (cp == 0 || *cp == '\0') {
         return 0;
     }
-    if (!scasecmp(key, "HKEY_LOCAL_MACHINE") || !scasecmp(key, "HKLM")) {
+    if (!scaselesscmp(key, "HKEY_LOCAL_MACHINE") || !scaselesscmp(key, "HKLM")) {
         *hive = HKEY_LOCAL_MACHINE;
-    } else if (!scasecmp(key, "HKEY_CURRENT_USER") || !scasecmp(key, "HKCU")) {
+    } else if (!scaselesscmp(key, "HKEY_CURRENT_USER") || !scaselesscmp(key, "HKCU")) {
         *hive = HKEY_CURRENT_USER;
-    } else if (!scasecmp(key, "HKEY_USERS")) {
+    } else if (!scaselesscmp(key, "HKEY_USERS")) {
         *hive = HKEY_USERS;
-    } else if (!scasecmp(key, "HKEY_CLASSES_ROOT")) {
+    } else if (!scaselesscmp(key, "HKEY_CLASSES_ROOT")) {
         *hive = HKEY_CLASSES_ROOT;
     } else {
         return 0;
@@ -32015,13 +27672,13 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
 }
 
 
-char *mprReadRegistry(cchar *key, cchar *name)
+PUBLIC char *mprReadRegistry(cchar *key, cchar *name)
 {
     HKEY        top, h;
     char        *value;
     ulong       type, size;
 
-    mprAssert(key && *key);
+    assure(key && *key);
 
     /*
         Get the registry hive
@@ -32029,14 +27686,14 @@ char *mprReadRegistry(cchar *key, cchar *name)
     if ((key = getHive(key, &top)) == 0) {
         return 0;
     }
-    if (RegOpenKeyEx(top, key, 0, KEY_READ, &h) != ERROR_SUCCESS) {
+    if (RegOpenKeyEx(top, wide(key), 0, KEY_READ, &h) != ERROR_SUCCESS) {
         return 0;
     }
 
     /*
         Get the type
      */
-    if (RegQueryValueEx(h, name, 0, &type, 0, &size) != ERROR_SUCCESS) {
+    if (RegQueryValueEx(h, wide(name), 0, &type, 0, &size) != ERROR_SUCCESS) {
         RegCloseKey(h);
         return 0;
     }
@@ -32047,7 +27704,7 @@ char *mprReadRegistry(cchar *key, cchar *name)
     if ((value = mprAlloc(size + 1)) == 0) {
         return 0;
     }
-    if (RegQueryValueEx(h, name, 0, &type, (uchar*) value, &size) != ERROR_SUCCESS) {
+    if (RegQueryValueEx(h, wide(name), 0, &type, (uchar*) value, &size) != ERROR_SUCCESS) {
         RegCloseKey(h);
         return 0;
     }
@@ -32056,13 +27713,13 @@ char *mprReadRegistry(cchar *key, cchar *name)
     return value;
 }
 
-int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
+PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 {
     HKEY    top, h, subHandle;
     ulong   disposition;
 
-    mprAssert(key && *key);
-    mprAssert(value && *value);
+    assure(key && *key);
+    assure(value && *value);
 
     /*
         Get the registry hive
@@ -32074,10 +27731,10 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
         /*
             Write a registry string value
          */
-        if (RegOpenKeyEx(top, key, 0, KEY_ALL_ACCESS, &h) != ERROR_SUCCESS) {
+        if (RegOpenKeyEx(top, wide(key), 0, KEY_ALL_ACCESS, &h) != ERROR_SUCCESS) {
             return MPR_ERR_CANT_ACCESS;
         }
-        if (RegSetValueEx(h, name, 0, REG_SZ, (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
+        if (RegSetValueEx(h, wide(name), 0, REG_SZ, (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
             RegCloseKey(h);
             return MPR_ERR_CANT_READ;
         }
@@ -32086,10 +27743,10 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
         /*
             Create a new sub key
          */
-        if (RegOpenKeyEx(top, key, 0, KEY_CREATE_SUB_KEY, &h) != ERROR_SUCCESS){
+        if (RegOpenKeyEx(top, wide(key), 0, KEY_CREATE_SUB_KEY, &h) != ERROR_SUCCESS){
             return MPR_ERR_CANT_ACCESS;
         }
-        if (RegCreateKeyEx(h, value, 0, NULL, REG_OPTION_NON_VOLATILE,
+        if (RegCreateKeyEx(h, wide(value), 0, NULL, REG_OPTION_NON_VOLATILE,
                 KEY_ALL_ACCESS, NULL, &subHandle, &disposition) != ERROR_SUCCESS) {
             return MPR_ERR_CANT_ACCESS;
         }
@@ -32104,31 +27761,15 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -32167,7 +27808,7 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 
 static char     *currentDir;            /* Current working directory */
 static MprList  *files;                 /* List of open files */
-int             errno;                  /* Last error */
+PUBLIC int             errno;                  /* Last error */
 static char     timzeone[2][32];        /* Standard and daylight savings zones */
 
 /*
@@ -32183,7 +27824,7 @@ static void timeToFileTime(uint64 t, FILETIME *ft);
 
 /************************************************ Code **********************************************/
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     files = mprCreateList();
     currentDir = sclone("/");
@@ -32191,7 +27832,7 @@ int mprCreateOsService()
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     WSADATA     wsaData;
 
@@ -32202,13 +27843,13 @@ int mprStartOsService()
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
     WSACleanup();
 }
 
 
-int mprGetRandomBytes(char *buf, int length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
 {
     HCRYPTPROV      prov;
     int             rc;
@@ -32225,14 +27866,14 @@ int mprGetRandomBytes(char *buf, int length, bool block)
 }
 
 
-int mprLoadModule(MprModule *mp)
+PUBLIC int mprLoadModule(MprModule *mp)
     cchar *moduleName, cchar *initFunction)
 {
     MprModuleEntry  fn;
     void            *handle;
     char            *baseName;
 
-    mprAssert(moduleName && *moduleName);
+    assure(moduleName && *moduleName);
 
     baseName = mprGetPathBase(mp->path);
     if ((handle = GetModuleHandle(baseName)) == 0 && (handle = LoadLibrary(mp->path)) == 0) {
@@ -32267,7 +27908,7 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
     char    key[MPR_MAX_STRING], *cp;
     int     len;
 
-    mprAssert(keyPath && *keyPath);
+    assure(keyPath && *keyPath);
 
     *hive = 0;
 
@@ -32299,15 +27940,15 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
 }
 
 
-int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
+PUBLIC int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
 {
     HKEY        top, h;
     LPWSTR      wkey, wname;
     char        *value;
     ulong       type, size;
 
-    mprAssert(key && *key);
-    mprAssert(buf);
+    assure(key && *key);
+    assure(buf);
 
     if ((key = getHive(key, &top)) == 0) {
         return MPR_ERR_CANT_ACCESS;
@@ -32332,7 +27973,7 @@ int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
     value = mprAlloc(size);
     if ((int) size > max) {
         RegCloseKey(h);
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (RegQueryValueEx(h, wname, 0, &type, (uchar*) value, &size) != ERROR_SUCCESS) {
@@ -32345,32 +27986,32 @@ int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
 }
 
 
-void mprSetInst(Mpr *mpr, long inst)
+PUBLIC void mprSetInst(Mpr *mpr, long inst)
 {
     mpr->appInstance = inst;
 }
 
 
-void mprSetHwnd(HWND h)
+PUBLIC void mprSetHwnd(HWND h)
 {
     MPR->service->hwnd = h;
 }
 
 
-void mprSetSocketMessage(int socketMessage)
+PUBLIC void mprSetSocketMessage(int socketMessage)
 {
     MPR->service->socketMessage = socketMessage;
 }
 #endif /* WINCE */
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     Sleep((int) timeout);
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -32378,9 +28019,9 @@ void mprSleep(MprTime timeout)
 }
 
 
-void mprUnloadNativeModule(MprModule *mp)
+PUBLIC void mprUnloadNativeModule(MprModule *mp)
 {
-    mprAssert(mp->handle);
+    assure(mp->handle);
 
     if (FreeLibrary((HINSTANCE) mp->handle) == 0) {
         return MPR_ERR_ABORTED;
@@ -32390,7 +28031,7 @@ void mprUnloadNativeModule(MprModule *mp)
 
 
 #if KEEP
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
     HKEY        hkey;
     void        *event;
@@ -32416,8 +28057,7 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
     if (once == 0) {
         /*  Initialize the registry */
         once = 1;
-        mprSprintf(logName, sizeof(logName), "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s",
-            mprGetAppName());
+        fmt(logName, sizeof(logName), "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s", mprGetAppName());
         hkey = 0;
 
         if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, logName, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkey, &exists) == ERROR_SUCCESS) {
@@ -32446,14 +28086,14 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
     }
 }
 
-int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
+PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 {
     HKEY    top, h, subHandle;
     ulong   disposition;
 
-    mprAssert(key && *key);
-    mprAssert(name && *name);
-    mprAssert(value && *value);
+    assure(key && *key);
+    assure(name && *name);
+    assure(value && *value);
 
     /*
         Get the registry hive
@@ -32495,7 +28135,7 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 
 /******************************************* Posix Layer ********************************/
 
-int access(cchar *path, int flags)
+PUBLIC int access(cchar *path, int flags)
 {
     char    *tmpPath;
     int     rc;
@@ -32510,21 +28150,21 @@ int access(cchar *path, int flags)
 }
 
 
-int chdir(cchar *dir)
+PUBLIC int chdir(cchar *dir)
 {
     currentDir = mprGetAbsPath(MPR, dir);
     return 0;
 }
 
 
-int chmod(cchar *path, int mode)
+PUBLIC int chmod(cchar *path, int mode)
 {
     /* CE has no such permissions */
     return 0;
 }
 
 
-int close(int fd)
+PUBLIC int close(int fd)
 {
     int     rc;
 
@@ -32535,31 +28175,31 @@ int close(int fd)
 }
 
 
-long _get_osfhandle(int handle)
+PUBLIC long _get_osfhandle(int handle)
 {
     return (long) handle;
 }
 
 
-char *getenv(cchar *key)
+PUBLIC char *getenv(cchar *key)
 {
     return 0;
 }
 
 
-char *getcwd(char *buf, int size)
+PUBLIC char *getcwd(char *buf, int size)
 {
     scopy(buf, size, currentDir);
     return buf;
 }
 
 
-uint getpid() {
+PUBLIC uint getpid() {
     return 0;
 }
 
 
-long lseek(int handle, long offset, int origin)
+PUBLIC long lseek(int handle, long offset, int origin)
 {
     switch (origin) {
         case SEEK_SET: offset = FILE_BEGIN; break;
@@ -32570,7 +28210,7 @@ long lseek(int handle, long offset, int origin)
 }
 
 
-int mkdir(cchar *dir, int mode)
+PUBLIC int mkdir(cchar *dir, int mode)
 {
     char    *tmpDir;
     uni     *wdir;
@@ -32610,13 +28250,13 @@ static int addHandle(HANDLE h)
 }
 
 
-int _open_osfhandle(int *handle, int flags)
+PUBLIC int _open_osfhandle(int *handle, int flags)
 {
     return addHandle((HANDLE) handle);
 }
 
 
-uint open(cchar *path, int mode, va_list arg)
+PUBLIC uint open(cchar *path, int mode, va_list arg)
 {
     uni     *wpath;
     char    *tmpPath;
@@ -32652,7 +28292,7 @@ uint open(cchar *path, int mode, va_list arg)
 }
 
 
-int read(int fd, void *buffer, uint length)
+PUBLIC int read(int fd, void *buffer, uint length)
 {
     DWORD   dw;
 
@@ -32661,7 +28301,7 @@ int read(int fd, void *buffer, uint length)
 }
 
 
-int rename(cchar *oldname, cchar *newname)
+PUBLIC int rename(cchar *oldname, cchar *newname)
 {
     uni     *from, *to;
     char    *tmpOld, *tmpNew;
@@ -32684,7 +28324,7 @@ int rename(cchar *oldname, cchar *newname)
 }
 
 
-int rmdir(cchar *dir)
+PUBLIC int rmdir(cchar *dir)
 {
     uni     *wdir;
     char    *tmpDir;
@@ -32701,7 +28341,7 @@ int rmdir(cchar *dir)
 }
 
 
-int stat(cchar *path, struct stat *sbuf)
+PUBLIC int stat(cchar *path, struct stat *sbuf)
 {
     WIN32_FIND_DATAW    fd;
     DWORD               attributes;
@@ -32825,8 +28465,8 @@ struct tm *localtime_r(const time_t *when, struct tm *tp)
     TIME_ZONE_INFORMATION   tz;
     int                     bias, rc;
 
-    mprAssert(when);
-    mprAssert(tp);
+    assure(when);
+    assure(tp);
 
     rc = GetTimeZoneInformation(&tz);
     bias = tz.Bias;
@@ -32854,7 +28494,7 @@ struct tm *localtime_r(const time_t *when, struct tm *tp)
 }
 
 
-time_t mktime(struct tm *tp)
+PUBLIC time_t mktime(struct tm *tp)
 {
     TIME_ZONE_INFORMATION   tz;
     SYSTEMTIME              s;
@@ -32862,7 +28502,7 @@ time_t mktime(struct tm *tp)
     time_t                  result;
     int                     rc, bias;
 
-    mprAssert(tp);
+    assure(tp);
 
     rc = GetTimeZoneInformation(&tz);
     bias = tz.Bias;
@@ -32889,7 +28529,7 @@ time_t mktime(struct tm *tp)
 }
 
 
-int write(int fd, cvoid *buffer, uint count)
+PUBLIC int write(int fd, cvoid *buffer, uint count)
 {
     DWORD   dw;
 
@@ -32898,7 +28538,7 @@ int write(int fd, cvoid *buffer, uint count)
 }
 
 
-int unlink(cchar *file)
+PUBLIC int unlink(cchar *file)
 {
     uni     *wpath;
     int     rc;
@@ -32911,7 +28551,7 @@ int unlink(cchar *file)
 
 /********************************************** Windows32 Extensions *********************************************/
 
-WINBASEAPI HANDLE WINAPI CreateFileA(LPCSTR path, DWORD access, DWORD sharing,
+PUBLIC WINBASEAPI HANDLE WINAPI CreateFileA(LPCSTR path, DWORD access, DWORD sharing,
     LPSECURITY_ATTRIBUTES security, DWORD create, DWORD flags, HANDLE template)
 {
     LPWSTR  wpath;
@@ -32923,7 +28563,7 @@ WINBASEAPI HANDLE WINAPI CreateFileA(LPCSTR path, DWORD access, DWORD sharing,
 }
 
 
-BOOL WINAPI CreateProcessA(LPCSTR app, LPCSTR cmd, LPSECURITY_ATTRIBUTES att, LPSECURITY_ATTRIBUTES threadatt,
+PUBLIC BOOL WINAPI CreateProcessA(LPCSTR app, LPCSTR cmd, LPSECURITY_ATTRIBUTES att, LPSECURITY_ATTRIBUTES threadatt,
     BOOL options, DWORD flags, LPVOID env, LPSTR dir, LPSTARTUPINFO lpsi, LPPROCESS_INFORMATION info)
 {
     LPWSTR      wapp, wcmd, wdir;
@@ -32936,7 +28576,7 @@ BOOL WINAPI CreateProcessA(LPCSTR app, LPCSTR cmd, LPSECURITY_ATTRIBUTES att, LP
 }
 
 
-HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
+PUBLIC HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
 {
     WIN32_FIND_DATAW    wdata;
     LPWSTR              wpath;
@@ -32952,7 +28592,7 @@ HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
 }
 
 
-BOOL FindNextFileA(HANDLE handle, WIN32_FIND_DATAA *data)
+PUBLIC BOOL FindNextFileA(HANDLE handle, WIN32_FIND_DATAA *data)
 {
     WIN32_FIND_DATAW    wdata;
     char                *file;
@@ -32965,7 +28605,7 @@ BOOL FindNextFileA(HANDLE handle, WIN32_FIND_DATAA *data)
 }
 
 
-DWORD GetFileAttributesA(cchar *path)
+PUBLIC DWORD GetFileAttributesA(cchar *path)
 {
     LPWSTR      wpath;
     DWORD       result;
@@ -32976,7 +28616,7 @@ DWORD GetFileAttributesA(cchar *path)
 }
 
 
-DWORD GetModuleFileNameA(HMODULE module, LPSTR buf, DWORD size)
+PUBLIC DWORD GetModuleFileNameA(HMODULE module, LPSTR buf, DWORD size)
 {
     LPWSTR      wpath;
     LPSTR       mb;
@@ -32990,7 +28630,7 @@ DWORD GetModuleFileNameA(HMODULE module, LPSTR buf, DWORD size)
 }
 
 
-WINBASEAPI HMODULE WINAPI GetModuleHandleA(LPCSTR path)
+PUBLIC WINBASEAPI HMODULE WINAPI GetModuleHandleA(LPCSTR path)
 {
     LPWSTR      wpath;
 
@@ -32999,7 +28639,7 @@ WINBASEAPI HMODULE WINAPI GetModuleHandleA(LPCSTR path)
 }
 
 
-void GetSystemTimeAsFileTime(FILETIME *ft)
+PUBLIC void GetSystemTimeAsFileTime(FILETIME *ft)
 {
     SYSTEMTIME  s;
 
@@ -33008,7 +28648,7 @@ void GetSystemTimeAsFileTime(FILETIME *ft)
 }
 
 
-HINSTANCE WINAPI LoadLibraryA(LPCSTR path)
+PUBLIC HINSTANCE WINAPI LoadLibraryA(LPCSTR path)
 {
     LPWSTR      wpath;
 
@@ -33016,41 +28656,22 @@ HINSTANCE WINAPI LoadLibraryA(LPCSTR path)
     return LoadLibraryW(wpath);
 }
 
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
-    //  TODO
 }
 
-#else
-void stubMprWince() {}
 #endif /* WINCE */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -33094,7 +28715,7 @@ static void trimToken(MprXml *xp);
 
 /************************************ Code ************************************/
 
-MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
+PUBLIC MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
 {
     MprXml  *xp;
 
@@ -33118,16 +28739,16 @@ static void manageXml(MprXml *xml, int flags)
 }
 
 
-void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h)
+PUBLIC void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h)
 {
-    mprAssert(xp);
+    assure(xp);
     xp->handler = h;
 }
 
 
-void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
+PUBLIC void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
 {
-    mprAssert(xp);
+    assure(xp);
 
     xp->readFn = s;
     xp->inputArg = arg;
@@ -33137,9 +28758,9 @@ void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
 /*
     Set the parse arg
  */ 
-void mprXmlSetParseArg(MprXml *xp, void *parseArg)
+PUBLIC void mprXmlSetParseArg(MprXml *xp, void *parseArg)
 {
-    mprAssert(xp);
+    assure(xp);
 
     xp->parseArg = parseArg;
 }
@@ -33148,9 +28769,9 @@ void mprXmlSetParseArg(MprXml *xp, void *parseArg)
 /*
     Set the parse arg
  */ 
-void *mprXmlGetParseArg(MprXml *xp)
+PUBLIC void *mprXmlGetParseArg(MprXml *xp)
 {
-    mprAssert(xp);
+    assure(xp);
 
     return xp->parseArg;
 }
@@ -33159,9 +28780,9 @@ void *mprXmlGetParseArg(MprXml *xp)
 /*
     Parse an XML file. Return 0 for success, -1 for error.
  */ 
-int mprXmlParse(MprXml *xp)
+PUBLIC int mprXmlParse(MprXml *xp)
 {
-    mprAssert(xp);
+    assure(xp);
 
     return parseNext(xp, MPR_XML_BEGIN);
 }
@@ -33178,7 +28799,7 @@ static int parseNext(MprXml *xp, int state)
     char            *tname, *aname;
     int             rc;
 
-    mprAssert(state >= 0);
+    assure(state >= 0);
 
     tokBuf = xp->tokBuf;
     handler = xp->handler;
@@ -33248,7 +28869,7 @@ static int parseNext(MprXml *xp, int state)
                 state = MPR_XML_NEW_ELT;
                 tname = sclone(mprGetBufStart(tokBuf));
                 if (tname == 0) {
-                    mprAssert(!MPR_ERR_MEMORY);
+                    assure(!MPR_ERR_MEMORY);
                     return MPR_ERR_MEMORY;
                 }
                 rc = (*handler)(xp, state, tname, 0, 0);
@@ -33397,7 +29018,7 @@ static int parseNext(MprXml *xp, int state)
             return MPR_ERR;
         }
     }
-    mprAssert(0);
+    assure(0);
 }
 
 
@@ -33413,7 +29034,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
     char        *cp;
     int         c, rc;
 
-    mprAssert(state >= 0);
+    assure(state >= 0);
     tokBuf = xp->tokBuf;
 
     if ((c = getNextChar(xp)) < 0) {
@@ -33586,7 +29207,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
     }
 
     /* Should never get here */
-    mprAssert(0);
+    assure(0);
     return MPR_XMLTOK_ERR;
 }
 
@@ -33601,10 +29222,10 @@ static int scanFor(MprXml *xp, char *pattern)
     char    *start, *p, *cp;
     int     c;
 
-    mprAssert(pattern);
+    assure(pattern);
 
     tokBuf = xp->tokBuf;
-    mprAssert(tokBuf);
+    assure(tokBuf);
 
     start = mprGetBufStart(tokBuf);
     while (1) {
@@ -33670,7 +29291,7 @@ static int getNextChar(MprXml *xp)
 static int putLastChar(MprXml *xp, int c)
 {
     if (mprInsertCharToBuf(xp->inBuf, (char) c) < 0) {
-        mprAssert(0);
+        assure(0);
         return MPR_ERR_BAD_STATE;
     }
     if (c == '\n') {
@@ -33688,7 +29309,7 @@ static void xmlError(MprXml *xp, char *fmt, ...)
     va_list     args;
     char        *buf;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(args, fmt);
     buf = sfmtv(fmt, args);
@@ -33702,14 +29323,14 @@ static void xmlError(MprXml *xp, char *fmt, ...)
  */
 static void trimToken(MprXml *xp)
 {
-    while (isspace(mprLookAtLastCharInBuf(xp->tokBuf))) {
+    while (isspace((uchar) mprLookAtLastCharInBuf(xp->tokBuf))) {
         mprAdjustBufEnd(xp->tokBuf, -1);
     }
     mprAddNullToBuf(xp->tokBuf);
 }
 
 
-cchar *mprXmlGetErrorMsg(MprXml *xp)
+PUBLIC cchar *mprXmlGetErrorMsg(MprXml *xp)
 {
     if (xp->errMsg == 0) {
         return "";
@@ -33718,7 +29339,7 @@ cchar *mprXmlGetErrorMsg(MprXml *xp)
 }
 
 
-int mprXmlGetLineNumber(MprXml *xp)
+PUBLIC int mprXmlGetLineNumber(MprXml *xp)
 {
     return xp->lineNumber;
 }
@@ -33726,31 +29347,15 @@ int mprXmlGetLineNumber(MprXml *xp)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

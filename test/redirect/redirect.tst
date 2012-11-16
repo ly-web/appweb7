@@ -22,6 +22,5 @@ http.close()
 http = new Http
 http.get(HTTP + "/membersOnly")
 assert(http.status == 410)
-assert(http.response.contains("<title>Length Required</title>"))
 http.close()
 

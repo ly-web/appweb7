@@ -52,7 +52,7 @@ static void sortList(HttpConn *conn, MprList *list);
     Test if this request is for a directory listing. This routine is called directly by the fileHandler.
     Directory listings are enabled in a route via "Options Indexes".
  */
-bool maRenderDirListing(HttpConn *conn)
+PUBLIC bool maRenderDirListing(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -60,8 +60,8 @@ bool maRenderDirListing(HttpConn *conn)
 
     tx = conn->tx;
     rx = conn->rx;
-    mprAssert(tx->filename);
-    mprAssert(tx->fileInfo.checked);
+    assure(tx->filename);
+    assure(tx->fileInfo.checked);
 
     if ((dir = httpGetRouteData(rx->route, DIR_NAME)) == 0) {
         return 0;
@@ -92,8 +92,12 @@ static void startDir(HttpQueue *q)
     rx = conn->rx;
     tx = conn->tx;
     dir = conn->data;
-    mprAssert(tx->filename);
+    assure(tx->filename);
 
+    if (!(rx->flags & (HTTP_GET | HTTP_HEAD))) {
+        httpError(conn, HTTP_CODE_BAD_METHOD, "Bad method");
+        return;
+    }
     httpSetHeaderString(conn, "Cache-Control", "no-cache");
     httpSetHeaderString(conn, "Last-Modified", conn->http->currentDate);
     parseQuery(conn);
@@ -190,7 +194,7 @@ static void sortList(HttpConn *conn, MprList *list)
     }
     count = mprGetListLength(list);
     items = (MprDirEntry**) list->items;
-    if (scasematch(dir->sortField, "Name")) {
+    if (scaselessmatch(dir->sortField, "Name")) {
         for (i = 1; i < count; i++) {
             for (j = 0; j < i; j++) {
                 rc = strcmp(items[i]->name, items[j]->name);
@@ -210,7 +214,7 @@ static void sortList(HttpConn *conn, MprList *list)
             }
         }
 
-    } else if (scasematch(dir->sortField, "Size")) {
+    } else if (scaselessmatch(dir->sortField, "Size")) {
         for (i = 1; i < count; i++) {
             for (j = 0; j < i; j++) {
                 rc = (items[i]->size < items[j]->size) ? -1 : 1;
@@ -230,7 +234,7 @@ static void sortList(HttpConn *conn, MprList *list)
             }
         }
 
-    } else if (scasematch(dir->sortField, "Date")) {
+    } else if (scaselessmatch(dir->sortField, "Date")) {
         for (i = 1; i < count; i++) {
             for (j = 0; j < i; j++) {
                 rc = (items[i]->lastModified < items[j]->lastModified) ? -1: 1;
@@ -338,9 +342,9 @@ static void fmtNum(char *buf, int bufsize, int num, int divisor, char *suffix)
     point = (num % divisor) / (divisor / 10);
 
     if (point == 0) {
-        mprSprintf(buf, bufsize, "%6d%s", whole, suffix);
+        fmt(buf, bufsize, "%6d%s", whole, suffix);
     } else {
-        mprSprintf(buf, bufsize, "%4d.%d%s", whole, point, suffix);
+        fmt(buf, bufsize, "%4d.%d%s", whole, point, suffix);
     }
 }
 
@@ -369,7 +373,7 @@ static void outputLine(HttpQueue *q, MprDirEntry *ep, cchar *path, int nameSize)
         fmtNum(sizeBuf, sizeof(sizeBuf), (int) ep->size, 1024, "K");
 
     } else {
-        mprSprintf(sizeBuf, sizeof(sizeBuf), "%6d", (int) ep->size);
+        fmt(sizeBuf, sizeof(sizeBuf), "%6d", (int) ep->size);
     }
     newPath = mprJoinPath(path, ep->name);
 
@@ -400,8 +404,8 @@ static void outputLine(HttpQueue *q, MprDirEntry *ep, cchar *path, int nameSize)
     }
     mprDecodeLocalTime(&tm, when);
 
-    mprSprintf(timeBuf, sizeof(timeBuf), "%02d-%3s-%4d %02d:%02d",
-        tm.tm_mday, months[tm.tm_mon], tm.tm_year + 1900, tm.tm_hour,  tm.tm_min);
+    fmt(timeBuf, sizeof(timeBuf), "%02d-%3s-%4d %02d:%02d", tm.tm_mday, months[tm.tm_mon], tm.tm_year + 1900, 
+        tm.tm_hour,  tm.tm_min);
     len = (int) strlen(ep->name) + (int) strlen(dirSuffix);
 
     if (dir->fancyIndexing == 2) {
@@ -439,7 +443,7 @@ static void outputFooter(HttpQueue *q)
         httpWrite(q, "</ul>\r\n");
     }
     sock = conn->sock->listenSock;
-    httpWrite(q, "<address>%s %s at %s Port %d</address>\r\n", BIT_NAME, BIT_VERSION, sock->ip, sock->port);
+    httpWrite(q, "<address>%s %s at %s Port %d</address>\r\n", BIT_TITLE, BIT_VERSION, sock->ip, sock->port);
     httpWrite(q, "</body></html>\r\n");
 }
 
@@ -551,7 +555,7 @@ static int indexOrderDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     dir->sortField = 0;
-    if (scasematch(option, "ascending")) {
+    if (scaselessmatch(option, "ascending")) {
         dir->sortOrder = 1;
     } else {
         dir->sortOrder = -1;
@@ -574,11 +578,11 @@ static int indexOptionsDirective(MaState *state, cchar *key, cchar *value)
     dir = getDirObj(state);
     option = stok(sclone(value), " \t", &tok);
     while (option) {
-        if (scasematch(option, "FancyIndexing")) {
+        if (scaselessmatch(option, "FancyIndexing")) {
             dir->fancyIndexing = 1;
-        } else if (scasematch(option, "HTMLTable")) {
+        } else if (scaselessmatch(option, "HTMLTable")) {
             dir->fancyIndexing = 2;
-        } else if (scasematch(option, "FoldersFirst")) {
+        } else if (scaselessmatch(option, "FoldersFirst")) {
             dir->foldersFirst = 1;
         }
         option = stok(tok, " \t", &tok);
@@ -598,7 +602,7 @@ static int optionsDirective(MaState *state, cchar *key, cchar *value)
     dir = getDirObj(state);
     option = stok(sclone(value), " \t", &tok);
     while (option) {
-        if (scasematch(option, "Indexes")) {
+        if (scaselessmatch(option, "Indexes")) {
             dir->enabled = 1;
         }
         option = stok(tok, " \t", &tok);
@@ -645,7 +649,7 @@ static Dir *getDirObj(MaState *state)
             dir = allocDir(route);
         }
     }
-    mprAssert(dir);
+    assure(dir);
     return dir;
 }
 
@@ -683,13 +687,13 @@ static Dir *cloneDir(Dir *parent, HttpRoute *route)
 /*
     Loadable module initialization
  */
-int maOpenDirHandler(Http *http)
+PUBLIC int maOpenDirHandler(Http *http)
 {
     HttpStage   *handler;
     MaAppweb    *appweb;
     Dir         *dir;
 
-    if ((handler = httpCreateHandler(http, "dirHandler", HTTP_STAGE_GET | HTTP_STAGE_HEAD, NULL)) == 0) {
+    if ((handler = httpCreateHandler(http, "dirHandler", NULL)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     if ((handler->stageData = dir = mprAllocObj(Dir, manageDir)) == 0) {
@@ -712,31 +716,15 @@ int maOpenDirHandler(Http *http)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

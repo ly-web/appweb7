@@ -6,8 +6,11 @@
     LoadModule proxyHandler mod_proxy
     AddHandler proxyHandler 
 
-    ProxyPass /prefix http://ipaddr:port/uri timeout=NN keepalive=NN min=NN max=NN buffer=NN rewrite=headers,body
-        /prefix creates a location block
+    <Route /proxy>
+        ProxyPass http://ipaddr:port/uri timeout=NN keepalive=NN min=NN max=NN buffer=NN rewrite=headers,body
+    </Route>
+
+    Notes:
         rewrite rewrites Header and body URIs to appear to come from the proxy. Default == headers
 
     Headers:
@@ -24,7 +27,7 @@
 
 #include    "appweb.h"
 
-#if BIT_FEATURE_PROXY
+#if BIT_PACK_PROXY
 /************************************ Locals ***********************************/
 
 /*********************************** Forwards *********************************/
@@ -45,7 +48,7 @@ static void closeProxy(HttpQueue *q)
 }
 
 
-HttpConn *getConn(HttpConn *conn)
+PUBLIC HttpConn *getConn(HttpConn *conn)
 {
 #if UNUSED
     HttpConn    *target;
@@ -111,7 +114,7 @@ static void processProxy(HttpQueue *q)
     while (sofar < count) {
         httpWrite(q, "%d aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n", sofar++);
     }
-    httpFinalize(q->conn);
+    httpFinalizeOutput(q->conn);
     sofar = 0;
 #endif
     
@@ -119,7 +122,7 @@ static void processProxy(HttpQueue *q)
 #if USE1
     httpWrite(q, "%d aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n", sofar++);
     if (sofar == count) {
-        httpFinalize(q->conn);
+        httpFinalizeOutput(q->conn);
         sofar = 0;
     }
 #endif
@@ -131,7 +134,7 @@ static void processProxy(HttpQueue *q)
         httpWrite(q, "%d aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n", sofar++);
     }
     if (sofar == count) {
-        httpFinalize(q->conn);
+        httpFinalizeOutput(q->conn);
         sofar = 0;
     }
 #endif
@@ -154,7 +157,7 @@ static void processProxy(HttpQueue *q)
         httpPutForService(q, packet, HTTP_DELAY_SERVICE);
     }
     if (sofar == count) {
-        httpFinalize(q->conn);
+        httpFinalizeOutput(q->conn);
         sofar = 0;
     }
 #endif
@@ -243,7 +246,7 @@ static int proxyDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-int maProxyHandlerInit(Http *http, MprModule *module)
+PUBLIC int maProxyHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *handler;
     MaAppweb    *appweb;
@@ -265,40 +268,24 @@ int maProxyHandlerInit(Http *http, MprModule *module)
 }
 #else
 
-int maProxyHandlerInit(Http *http, MprModule *mp)
+PUBLIC int maProxyHandlerInit(Http *http, MprModule *mp)
 {
     return 0;
 }
 
-#endif /* BIT_FEATURE_PROXY */
+#endif /* BIT_PACK_PROXY */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://www.embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://www.embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

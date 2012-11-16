@@ -12,7 +12,7 @@
 #include    "appweb.h"
 #include    "edi.h"
 
-#if BIT_FEATURE_MDB
+#if BIT_MDB
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,8 +80,6 @@ typedef struct MdbTable {
  */
 typedef struct Mdb {
     Edi             edi;                /**< EDI database interface structure */
-    int             flags;              /**< MDB flags */
-    char            *path;              /**< Currently open database */
     MprMutex        *mutex;             /**< Multithread lock for Schema modifications only */
     MprList         *tables;            /**< List of tables */
 
@@ -102,7 +100,7 @@ typedef struct Mdb {
 } /* extern C */
 #endif
 
-#endif /* BIT_FEATURE_MDB */
+#endif /* BIT_MDB */
 #endif /* _h_MDB */
 
 /*
@@ -113,7 +111,7 @@ typedef struct Mdb {
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire
     a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
+    by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details.
 
     This software is open source; you can redistribute it and/or modify it

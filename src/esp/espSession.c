@@ -8,7 +8,7 @@
 
 #include    "esp.h"
 
-#if BIT_FEATURE_ESP
+#if BIT_PACK_ESP && UNUSED
 /********************************** Forwards  *********************************/
 
 static char *makeKey(EspSession *sp, cchar *key);
@@ -17,14 +17,14 @@ static void manageSession(EspSession *sp, int flags);
 
 /************************************* Code ***********************************/
 
-EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
+PUBLIC EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTicks lifespan)
 {
     EspReq      *req;
     EspSession  *sp;
 
-    mprAssert(conn);
+    assure(conn);
     req = conn->data;
-    mprAssert(req);
+    assure(req);
 
     if ((sp = mprAllocObj(EspSession, manageSession)) == 0) {
         return 0;
@@ -40,9 +40,9 @@ EspSession *espAllocSession(HttpConn *conn, cchar *id, MprTime lifespan)
 }
 
 
-void espDestroySession(EspSession *sp)
+PUBLIC void espDestroySession(EspSession *sp)
 {
-    mprAssert(sp);
+    assure(sp);
     sp->id = 0;
 }
 
@@ -56,20 +56,20 @@ static void manageSession(EspSession *sp, int flags)
 }
 
 
-EspSession *espCreateSession(HttpConn *conn)
+PUBLIC EspSession *espCreateSession(HttpConn *conn)
 {
     return espGetSession(conn, 1);
 }
 
 
-EspSession *espGetSession(HttpConn *conn, int create)
+PUBLIC EspSession *espGetSession(HttpConn *conn, int create)
 {
     EspReq      *req;
     char        *id;
 
-    mprAssert(conn);
+    assure(conn);
     req = conn->data;
-    mprAssert(req);
+    assure(req);
     if (req->session || !conn) {
         return req->session;
     }
@@ -85,25 +85,25 @@ EspSession *espGetSession(HttpConn *conn, int create)
 
 
 
-MprHash *espGetSessionObj(HttpConn *conn, cchar *key)
+PUBLIC MprHash *espGetSessionObj(HttpConn *conn, cchar *key)
 {
     cchar   *str;
 
     if ((str = espGetSessionVar(conn, key, 0)) != 0 && *str) {
-        mprAssert(*str == '{');
+        assure(*str == '{');
         return mprDeserialize(str);
     }
     return 0;
 }
 
 
-cchar *espGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
+PUBLIC cchar *espGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
 {
     EspSession  *sp;
     cchar       *result;
 
-    mprAssert(conn);
-    mprAssert(key && *key);
+    assure(conn);
+    assure(key && *key);
 
     result = 0;
     if ((sp = espGetSession(conn, 0)) != 0) {
@@ -113,20 +113,20 @@ cchar *espGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
 }
 
 
-int espSetSessionObj(HttpConn *conn, cchar *key, MprHash *obj)
+PUBLIC int espSetSessionObj(HttpConn *conn, cchar *key, MprHash *obj)
 {
     espSetSessionVar(conn, key, mprSerialize(obj, 0));
     return 0;
 }
 
 
-int espSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
+PUBLIC int espSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
 {
     EspSession  *sp;
 
-    mprAssert(conn);
-    mprAssert(key && *key);
-    mprAssert(value);
+    assure(conn);
+    assure(key && *key);
+    assure(value);
 
     if ((sp = espGetSession(conn, 1)) == 0) {
         return 0;
@@ -138,16 +138,16 @@ int espSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
 }
 
 
-char *espGetSessionID(HttpConn *conn)
+PUBLIC char *espGetSessionID(HttpConn *conn)
 {
     EspReq  *req;
     cchar   *cookies, *cookie;
     char    *cp, *value;
     int     quoted;
 
-    mprAssert(conn);
+    assure(conn);
     req = conn->data;
-    mprAssert(req);
+    assure(req);
 
     if (req->session) {
         return req->session->id;
@@ -189,10 +189,10 @@ static char *makeSessionID(HttpConn *conn)
     char        idBuf[64];
     static int  nextSession = 0;
 
-    mprAssert(conn);
+    assure(conn);
 
     /* Thread race here on nextSession++ not critical */
-    mprSprintf(idBuf, sizeof(idBuf), "%08x%08x%d", PTOI(conn->data) + PTOI(conn), (int) mprGetTime(), nextSession++);
+    fmt(idBuf, sizeof(idBuf), "%08x%08x%d", PTOI(conn->data) + PTOI(conn), (int) mprGetTime(), nextSession++);
     return mprGetMD5WithPrefix(idBuf, sizeof(idBuf), "::esp.session::");
 }
 
@@ -202,33 +202,17 @@ static char *makeKey(EspSession *sp, cchar *key)
     return sfmt("session-%s-%s", sp->id, key);
 }
 
-#endif /* BIT_FEATURE_ESP */
+#endif /* BIT_PACK_ESP */
 /*
     @copy   default
- 
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

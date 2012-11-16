@@ -22,11 +22,11 @@ extern "C" {
 #define MA_MAX_CONFIG_DEPTH     16                  /**< Max nest of directives in config file */
 #define MA_MAX_ACCESS_LOG       20971520            /**< Access file size (20 MB) */
 #define MA_MAX_REWRITE          10                  /**< Maximum recursive URI rewrites */
-#define MA_SDB_MEMORY           (20 * 1024 * 1024)  /**< SDB heap memory */
-#define MA_SDB_TIMEOUT          (20 * 1000)         /**< SDB busy timeout */
+#define MA_SDB_MEMORY           (20 * 1024 * 1024)  /**< SQLite heap memory */
+#define MA_SDB_TIMEOUT          (20 * 1000)         /**< SQLite busy timeout */
 
 #undef HTTP_NAME
-#define HTTP_NAME               MA_SERVER_NAME      /**< Default web server software identification */
+#define HTTP_NAME               MA_SERVER_NAME      /**< Default server software identification name */
 
 /********************************** Defines ***********************************/
 
@@ -37,7 +37,7 @@ struct MaAppweb;
 #endif
 
 /**
-    Appweb Service
+    Singleton Appweb service for the application
     @description There is one instance of MaAppweb per application. It manages a list of HTTP servers running in
         the application.
     @stability Evolving
@@ -69,41 +69,42 @@ typedef struct MaAppweb {
     @param appweb Appweb object created via #maCreateAppweb
     @param server MaServer object
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern void maAddServer(MaAppweb *appweb, struct MaServer *server);
+PUBLIC void maAddServer(MaAppweb *appweb, struct MaServer *server);
 
 /**
-    Apply the changed group
+    Apply the changed Appweb group ID.
     @description Apply configuration changes and actually change the Appweb group id
     @param appweb Appweb object created via #maCreateAppweb
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern int maApplyChangedGroup(MaAppweb *appweb);
+PUBLIC int maApplyChangedGroup(MaAppweb *appweb);
 
 /**
-    Apply the changed user
+    Apply the changed Appweb user ID
     @description Apply configuration changes and actually change the Appweb user id
     @param appweb Appweb object created via #maCreateAppweb
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern int maApplyChangedUser(MaAppweb *appweb);
+PUBLIC int maApplyChangedUser(MaAppweb *appweb);
 
-/** Create the Appweb object.
+/** 
+    Create the Appweb object.
     @description Appweb uses a singleton Appweb object to manage multiple web servers instances.
     @return A Http object. Use mprFree to close and release.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern MaAppweb *maCreateAppweb();
+PUBLIC MaAppweb *maCreateAppweb();
 
 /**
     Get the user group
     @description Get the user name and ID for appweb
     @param appweb Appweb object created via #maCreateAppweb
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern void maGetUserGroup(MaAppweb *appweb);
+PUBLIC void maGetUserGroup(MaAppweb *appweb);
 
 /**
     Load an appweb module
@@ -113,9 +114,9 @@ extern void maGetUserGroup(MaAppweb *appweb);
     @param name User name. Must be defined in the system password file.
     @param libname Library path name
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname);
+PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname);
 
 /**
     Lookup a server
@@ -123,28 +124,27 @@ extern int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname);
     @param appweb Appweb object created via #maCreateAppweb
     @param name Server name
     @return MaServer object
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern struct MaServer *maLookupServer(MaAppweb *appweb, cchar *name);
+PUBLIC struct MaServer *maLookupServer(MaAppweb *appweb, cchar *name);
 
 /**
     Test if a directory listing should be rendered for the request.
     @param conn Connection object
-    @param route Matching route object
     @return True if a directory listing is configured to be rendered for this request.
-    @ingroup Appweb
+    @ingroup MaAppweb
     @internal
  */
-extern bool maRenderDirListing(HttpConn *conn);
+PUBLIC bool maRenderDirListing(HttpConn *conn);
 
 /**
     Initialize the config file parser.
     @param appweb Appweb object created via #maCreateAppweb
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
     @internal
  */
-extern int maParseInit(MaAppweb *appweb);
+PUBLIC int maParseInit(MaAppweb *appweb);
 
 /**
     Parse a platform string
@@ -154,15 +154,15 @@ extern int maParseInit(MaAppweb *appweb);
     @param profile Parsed profile portion
     @return Zero if successful, otherwise a negative Mpr error code.
  */
-extern int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile);
+PUBLIC int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile);
 
 /**
     Set the default server
     @param appweb Appweb object created via #maCreateAppweb
     @param server MaServer object
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern void maSetDefaultServer(MaAppweb *appweb, struct MaServer *server);
+PUBLIC void maSetDefaultServer(MaAppweb *appweb, struct MaServer *server);
 
 /**
     Set the Http Group
@@ -170,9 +170,9 @@ extern void maSetDefaultServer(MaAppweb *appweb, struct MaServer *server);
     @param appweb Appweb object created via #maCreateAppweb
     @param group Group name. Must be defined in the system group file.
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern int maSetHttpGroup(MaAppweb *appweb, cchar *group);
+PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *group);
 
 /**
     Set the Http User
@@ -180,50 +180,50 @@ extern int maSetHttpGroup(MaAppweb *appweb, cchar *group);
     @param appweb Appweb object created via #maCreateAppweb
     @param user User name. Must be defined in the system password file.
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern int maSetHttpUser(MaAppweb *appweb, cchar *user);
+PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *user);
 
 /**
     Start Appweb services
     @description This starts listening for requests on all configured servers.
     @param appweb Appweb object created via #maCreateAppweb
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern int maStartAppweb(MaAppweb *appweb);
+PUBLIC int maStartAppweb(MaAppweb *appweb);
 
 /**
     Stop Appweb services
     @description This stops listening for requests on all configured servers. Shutdown is somewhat graceful.
     @param appweb Appweb object created via #maCreateAppweb
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern int maStopAppweb(MaAppweb *appweb);
+PUBLIC int maStopAppweb(MaAppweb *appweb);
 
 /*
     Internal
  */
-extern int maCgiHandlerInit(Http *http, MprModule *mp);
-extern int maDirHandlerInit(Http *http, MprModule *mp);
-extern int maEjsHandlerInit(Http *http, MprModule *mp);
-extern int maEspHandlerInit(Http *http, MprModule *mp);
-extern int maPhpHandlerInit(Http *http, MprModule *mp);
-extern int maSslModuleInit(Http *http, MprModule *mp);
-extern int maOpenDirHandler(Http *http);
-extern int maOpenFileHandler(Http *http);
-extern int maSetPlatform(cchar *platform);
+PUBLIC int maCgiHandlerInit(Http *http, MprModule *mp);
+PUBLIC int maDirHandlerInit(Http *http, MprModule *mp);
+PUBLIC int maEjsHandlerInit(Http *http, MprModule *mp);
+PUBLIC int maEspHandlerInit(Http *http, MprModule *mp);
+PUBLIC int maPhpHandlerInit(Http *http, MprModule *mp);
+PUBLIC int maSslModuleInit(Http *http, MprModule *mp);
+PUBLIC int maOpenDirHandler(Http *http);
+PUBLIC int maOpenFileHandler(Http *http);
+PUBLIC int maSetPlatform(cchar *platform);
 
 /********************************** MaServer **********************************/
 /**
-    The MaServer object.
-    @description An application may have any number of HTTP servers, each managed by a MaServer instance.
+    Appweb server object. 
+    @description An application may have any number of HTTP servers, each managed by an MaServer instance.
     @stability Evolving
     @defgroup MaServer MaServer
     @see MaServer maAddEndpoint maConfigureServer maCreateServer maParseConfig maRunSimpleWebServer 
         maRunWebServer maServiceWebServer maSetServerAddress maSetServerHome maStartServer maStopServer 
-        maValidateServer 
+        maValidateServer maWriteAuthFile
  */
 typedef struct MaServer {
     char            *name;                  /**< Unique name for this server */
@@ -231,6 +231,7 @@ typedef struct MaServer {
     Http            *http;                  /**< Http service object (copy of appweb->http) */
     HttpLimits      *limits;                /**< Limits for this server */
     MprList         *endpoints;             /**< List of HttpEndpoints */
+    HttpHost        *defaultHost;           /**< Default host for this server */
     char            *home;                  /**< Server root */
 } MaServer;
 
@@ -238,9 +239,9 @@ typedef struct MaServer {
     Add a listening endpoint
     @param server Server object to modify
     @param endpoint Listening endpoint to add to the server
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint);
+PUBLIC void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint);
 
 /** 
     Configure a web server.
@@ -255,7 +256,7 @@ extern void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint);
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
     @ingroup MaServer
  */
-extern int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port);
+PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port);
 
 /** 
     Create a MaServer object
@@ -268,7 +269,18 @@ extern int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
     @return MaServer A newly created MaServer object. Use mprFree to free and release.
     @ingroup MaServer
  */
-extern MaServer *maCreateServer(MaAppweb *appweb, cchar *name);
+PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name);
+
+/** 
+    Get the default authentication object for the server
+    @description The server has a default host, which in turn has a default route. Each route has an authentication
+        object to control access to server resources. This call retrieves that authentication object for use with the
+        HttpAuth APIs.
+    @param server MaServer object
+    @return HttpAuth object
+    @ingroup MaServer
+ */
+PUBLIC HttpAuth *maGetDefaultAuth(MaServer *server);
 
 /**
     Parse an Appweb configuration file
@@ -278,9 +290,9 @@ extern MaServer *maCreateServer(MaAppweb *appweb, cchar *name);
     @param path Configuration file pathname.
     @param flags Parse control flags. Reserved. Set to zero.
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern int maParseConfig(MaServer *server, cchar *path, int flags);
+PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags);
 
 /** 
     Create and run a simple web server listening on a single IP address.
@@ -294,7 +306,7 @@ extern int maParseConfig(MaServer *server, cchar *path, int flags);
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
     @ingroup MaServer
  */
-extern int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents);
+PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents);
 
 /** 
     Create and run a web server based on a configuration file
@@ -305,7 +317,7 @@ extern int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
     @ingroup MaServer
  */
-extern int maRunWebServer(cchar *configFile);
+PUBLIC int maRunWebServer(cchar *configFile);
 
 /**
     Set the server listen address
@@ -313,38 +325,51 @@ extern int maRunWebServer(cchar *configFile);
     @param server MaServer object created via #maCreateServer
     @param ip IP address to set for the server
     @param port Port number to use for the server
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern void maSetServerAddress(MaServer *server, cchar *ip, int port);
+PUBLIC void maSetServerAddress(MaServer *server, cchar *ip, int port);
 
 /**
     Set the server home directory.
     @param server MaServer object created via #maCreateServer
     @param path Path to the directory for the server configuration.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern void maSetServerHome(MaServer *server, cchar *path);
+PUBLIC void maSetServerHome(MaServer *server, cchar *path);
 
 /**
     Start a server
     @param server Object created via #maCreateServer
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
  */
-extern int maStartServer(MaServer *server);
+PUBLIC int maStartServer(MaServer *server);
 
 /**
     Stop a server
     @param server Object created via #maCreateServer
  */
-extern void maStopServer(MaServer *server);
+PUBLIC void maStopServer(MaServer *server);
 
 /**
     Validate the configuration of a server
     @param server Server object to validate
     @return True if the configuration is valid
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern bool maValidateServer(MaServer *server);
+PUBLIC bool maValidateServer(MaServer *server);
+
+/**
+    Save the authorization configuration to a file
+    AuthFile schema:
+        User name password abilities...
+        Role name abilities...
+    @param auth Auth object allocated by #httpCreateAuth.
+    @param path Path name of file
+    @return "Zero" if successful, otherwise a negative MPR error code
+    @ingroup HttpAuth
+    @internal 
+ */
+PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path);
 
 /******************************************************************************/
 /*
@@ -380,27 +405,27 @@ typedef struct MaState {
 } MaState;
 
 /**
-    Directive callback function
+    Appweb configuration file directive parsing callback function
     @description Directive callbacks are invoked to parse a directive. Directive callbacks are registered using
         #maAddDirective.
     @param state Current config parse state.
     @param key Directive key name
     @param value Directive key value
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
 typedef int (MaDirective)(MaState *state, cchar *key, cchar *value);
 
 /**
-    Define a new config directive
+    Define a new appweb configuration file directive
     @description The appweb configuration file parse is extensible. New directives can be registered by this call. When
         encountered in the config file, the given callback proc will be invoked to parse.
     @param appweb Appweb object created via #maCreateAppweb
     @param directive Directive name
     @param proc Directive callback procedure of the type #MaDirective. 
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc);
+PUBLIC void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc);
 
 /**
     Archive a log file
@@ -411,25 +436,25 @@ extern void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc)
     @param maxSize Reserved
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
  */
-extern int maArchiveLog(cchar *path, int count, int maxSize);
+PUBLIC int maArchiveLog(cchar *path, int count, int maxSize);
 
 /**
     Pop the state 
     @description This is used when parsing config files to handle nested include files and block level directives
     @param state Current state
     @return The next lower level state object
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern MaState *maPopState(MaState *state);
+PUBLIC MaState *maPopState(MaState *state);
 
 /**
     Push the state 
     @description This is used when parsing config files to handle nested include files and block level directives
     @param state Current state
     @return The state passed as a parameter which becomes the new top level state
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern MaState *maPushState(MaState *state);
+PUBLIC MaState *maPushState(MaState *state);
 
 /**
     Define the access log
@@ -441,36 +466,36 @@ extern MaState *maPushState(MaState *state);
         access log. The following log format specifiers are supported:
         <ul>
             <li>%% - Percent sign</li>
-            <li>%a - Remote IP address</li>
-            <li>%b - Response bytes written to the client include headers. If zero, "-" is written.</li>
-            <li>%B - Response bytes written excluding headers</li>
-            <li>%h - Remote hostname</li>
-            <li>%O - Bytes written include headers. If zero bytes, "0" is written.</li>
-            <li>%r - First line of the request</li>
-            <li>%s - HTTP response status code</li>
-            <li>%t - Time the request was completed</li>
-            <li>%u - Authenticated username</li>
-            <li>%{header}i - </li>
+            <li>\%a - Remote IP address</li>
+            <li>\%b - Response bytes written to the client include headers. If zero, "-" is written.</li>
+            <li>\%B - Response bytes written excluding headers</li>
+            <li>\%h - Remote hostname</li>
+            <li>\%O - Bytes written include headers. If zero bytes, "0" is written.</li>
+            <li>\%r - First line of the request</li>
+            <li>\%s - HTTP response status code</li>
+            <li>\%t - Time the request was completed</li>
+            <li>\%u - Authenticated username</li>
+            <li>\%{header}i - HTTP header value</li>
         </ul>
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern void maSetAccessLog(HttpRoute *route, cchar *path, cchar *format);
+PUBLIC void maSetAccessLog(HttpRoute *route, cchar *path, cchar *format);
 
 /**
     Start access logging
     @description Start access logging for a host
     @param route HttpRoute object
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern int maStartAccessLogging(HttpRoute *route);
+PUBLIC int maStartAccessLogging(HttpRoute *route);
 
 /**
     Stop access logging
     @param route HttpRoute object
-    @ingroup Appweb
+    @ingroup MaAppweb
  */
-extern void maStopAccessLogging(HttpRoute *route);
+PUBLIC void maStopAccessLogging(HttpRoute *route);
 
 /**
     Tokenize a string based on route data
@@ -492,7 +517,7 @@ extern void maStopAccessLogging(HttpRoute *route);
     @return True if the string can be successfully parsed.
     @ingroup HttpRoute
  */
-extern bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
+PUBLIC bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
 
 #ifdef __cplusplus
 } /* extern C */
@@ -511,25 +536,10 @@ extern bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http: *embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http: *embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -539,4 +549,3 @@ extern bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
 
     @end
  */
-

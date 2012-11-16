@@ -1,3 +1,0 @@
-LIBRARY cppModule.dll
-EXPORTS
-  maSimpleModuleInit
