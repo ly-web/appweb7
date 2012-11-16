@@ -65,6 +65,6 @@ setPerms
 #
 ${BIN_DIR}/appman install
 ${BIN_DIR}/appman enable
-${BIN_DIR}//appman start
+${BIN_DIR}/appman start
 
 exit 0

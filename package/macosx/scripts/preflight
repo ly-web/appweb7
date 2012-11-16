@@ -6,9 +6,6 @@
 #
 ###############################################################################
 
-echo @@@@@ preflight
-set -x
-
 removeOld() {
     prefix="/usr/lib/appweb"
     version=
