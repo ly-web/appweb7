@@ -4,6 +4,7 @@ http \- HTTP Client program
 .SH SYNOPSIS
 .B http [options] [files] url
 .PP
+[\fI--auth basic|digest \fR]
 [\fI--benchmark \fR]
 [\fI--cert file\fR]
 [\fI--chunk size \fR]
@@ -46,6 +47,9 @@ http \- HTTP Client program
 The http command issues HTTP commands to retrieve files from a web server. If "files" are provided on the command line
 these are included in the request body data. 
 .SH OPTIONS
+.TP
+\fB\--auth basic|digest\fR 
+Set the type of authentication to use. Defaults to basic.
 .TP
 \fB\--benchmark\fR 
 Output timing results after retrieving URLs.

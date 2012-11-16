@@ -21,6 +21,7 @@ typedef struct ThreadData {
 
 typedef struct App {
     int      activeLoadThreads;  /* Still running test threads */
+    char     *authType;          /* Authentication: basic|digest */
     int      benchmark;          /* Output benchmarks */
     cchar    *cert;              /* Cert file */
     int      chunkSize;          /* Ask for response data to be chunked in this quanta */
@@ -117,7 +118,7 @@ MAIN(httpMain, int argc, char **argv, char **envp)
     }
     mprSetMaxWorkers(app->workers);
     if (mprStart() < 0) {
-        mprError("Can't start MPR for %s", mprGetAppTitle());
+        mprError("Cannot start MPR for %s", mprGetAppTitle());
         exit(2);
     }
     start = mprGetTime();
@@ -179,6 +180,7 @@ static void initSettings()
     app->showHeaders = 0;
     app->zeroOnErrors = 0;
 
+    app->authType = sclone("basic");
     app->host = sclone("localhost");
     app->iterations = 1;
     app->loadThreads = 1;
@@ -210,7 +212,14 @@ static bool parseArgs(int argc, char **argv)
         if (*argp != '-') {
             break;
         }
-        if (smatch(argp, "--benchmark") || smatch(argp, "-b")) {
+        if (smatch(argp, "--auth")) {
+            if (nextArg >= argc) {
+                return 0;
+            } else {
+                app->authType = slower(argv[++nextArg]);
+            }
+
+        } else if (smatch(argp, "--benchmark") || smatch(argp, "-b")) {
             app->benchmark++;
 
         } else if (smatch(argp, "--cert")) {
@@ -524,6 +533,7 @@ static void showUsage()
 {
     mprPrintfError("usage: %s [options] [files] url\n"
         "  Options:\n"
+        "  --auth basic|digest   # Set authentication type.\n"
         "  --benchmark           # Compute benchmark results.\n"
         "  --cert file           # Certificate CA file to validate server certs.\n"
         "  --chunk size          # Request response data to use this chunk size.\n"
@@ -643,7 +653,7 @@ static int processThread(HttpConn *conn, MprEvent *event)
         if (app->password == 0 && !strchr(app->username, ':')) {
             app->password = getPassword();
         }
-        httpSetCredentials(conn, app->username, app->password);
+        httpSetCredentials(conn, app->username, app->password, app->authType);
     }
     for (count = 0; count < app->iterations; count++) {
         if (mprShouldDenyNewRequests(conn)) {
@@ -733,7 +743,7 @@ static int prepRequest(HttpConn *conn, MprList *files, int retry)
 static int sendRequest(HttpConn *conn, cchar *method, cchar *url, MprList *files)
 {
     if (httpConnect(conn, method, url, app->ssl) < 0) {
-        mprError("Can't process request for \"%s\"\n%s", url, httpGetError(conn));
+        mprError("Cannot process request for \"%s\"\n%s", url, httpGetError(conn));
         return MPR_ERR_CANT_OPEN;
     }
     /*  
@@ -742,7 +752,7 @@ static int sendRequest(HttpConn *conn, cchar *method, cchar *url, MprList *files
      */
     if (app->bodyData || app->formData || files) {
         if (writeBody(conn, files) < 0) {
-            mprError("Can't write body data to \"%s\". %s.", url, httpGetError(conn));
+            mprError("Cannot write body data to \"%s\". %s.", url, httpGetError(conn));
             return MPR_ERR_CANT_WRITE;
         }
     }
@@ -757,13 +767,14 @@ static int issueRequest(HttpConn *conn, cchar *url, MprList *files)
     HttpRx      *rx;
     HttpUri     *target, *location;
     char        *redirect;
-    cchar       *msg, *sep;
+    cchar       *msg, *sep, *authType;
     int         count, redirectCount, rc;
 
     httpSetRetries(conn, app->retries);
     httpSetTimeout(conn, app->timeout, app->timeout);
+    authType = conn->authType;
 
-    for (redirectCount = count = 0; count <= conn->retries && redirectCount < 16 && !mprShouldAbortRequests(conn); count++) {
+    for (redirectCount = count = 0; count <= conn->retries && redirectCount < 10 && !mprShouldAbortRequests(conn); count++) {
         if (prepRequest(conn, files, count) < 0) {
             return MPR_ERR_CANT_OPEN;
         }
@@ -778,7 +789,10 @@ static int issueRequest(HttpConn *conn, cchar *url, MprList *files)
                     url = httpUriToString(target, HTTP_COMPLETE_URI);
                     count = 0;
                 }
-                /* Count redirects and auth retries */
+                if (rx->status == HTTP_CODE_UNAUTHORIZED && authType) {
+                    /* Supplied authentication details and failed */
+                    break;
+                }
                 redirectCount++;
                 count--; 
             } else {
@@ -843,7 +857,7 @@ static int reportResponse(HttpConn *conn, cchar *url, MprTicks elapsed)
         }
     }
     if (status < 0) {
-        mprError("Can't process request for \"%s\" %s", url, httpGetError(conn));
+        mprError("Cannot process request for \"%s\" %s", url, httpGetError(conn));
         return MPR_ERR_CANT_READ;
 
     } else if (status == 0 && conn->protocol == 0) {
@@ -854,7 +868,7 @@ static int reportResponse(HttpConn *conn, cchar *url, MprTicks elapsed)
             app->success = 0;
         }
         if (!app->showStatus) {
-            mprError("Can't process request for \"%s\" (%d) %s", url, status, httpGetError(conn));
+            mprError("Cannot process request for \"%s\" (%d) %s", url, status, httpGetError(conn));
             return MPR_ERR_CANT_READ;
         }
     }
@@ -876,9 +890,14 @@ static void readBody(HttpConn *conn, MprFile *outFile)
     ssize       bytes;
 
     rx = conn->rx;
+    if (app->noout) {
+        return;
+    }
+#if UNUSED
     if (app->noout || rx->status == 401 || (conn->followRedirects && (301 <= rx->status && rx->status <= 302))) {
         return;
     }
+#endif
     while (!conn->error && conn->sock && (bytes = httpRead(conn, buf, sizeof(buf))) > 0) {
         result = formatOutput(conn, buf, &bytes);
         mprWriteFile(outFile, result, bytes);
@@ -907,7 +926,7 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
     if (app->outFilename) {
         path = app->loadThreads > 1 ? sfmt("%s-%s.tmp", app->outFilename, mprGetCurrentThreadName()): app->outFilename;
         if ((outFile = mprOpenFile(path, O_CREAT | O_WRONLY | O_TRUNC | O_TEXT, 0664)) == 0) {
-            mprError("Can't open %s", path);
+            mprError("Cannot open %s", path);
             return MPR_ERR_CANT_OPEN;
         }
     } else {
@@ -951,7 +970,7 @@ static int setContentLength(HttpConn *conn, MprList *files)
     for (next = 0; (path = mprGetNextItem(files, &next)) != 0; ) {
         if (strcmp(path, "-") != 0) {
             if (mprGetPathInfo(path, &info) < 0) {
-                mprError("Can't access file %s", path);
+                mprError("Cannot access file %s", path);
                 return MPR_ERR_CANT_ACCESS;
             }
             len += info.size;
@@ -1010,7 +1029,7 @@ static ssize writeBody(HttpConn *conn, MprList *files)
                     file = mprOpenFile(path, O_RDONLY | O_BINARY, 0);
                 }
                 if (file == 0) {
-                    mprError("Can't open \"%s\"", path);
+                    mprError("Cannot open \"%s\"", path);
                     return MPR_ERR_CANT_OPEN;
                 }
                 app->inFile = file;

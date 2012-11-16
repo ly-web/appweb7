@@ -42,7 +42,7 @@ static void startAction(HttpQueue *q)
 
     name = conn->rx->pathInfo;
     if ((action = mprLookupKey(conn->tx->handler->stageData, name)) == 0) {
-        mprError("Can't find action: %s", name);
+        mprError("Cannot find action: %s", name);
     } else {
         (*action)(conn);
     }
@@ -54,7 +54,7 @@ PUBLIC void httpDefineAction(cchar *name, HttpAction action)
     HttpStage   *stage;
 
     if ((stage = httpLookupStage(MPR->httpService, "actionHandler")) == 0) {
-        mprError("Can't find actionHandler");
+        mprError("Cannot find actionHandler");
         return;
     }
     mprAddKey(stage->stageData, name, action);
@@ -218,7 +218,7 @@ PUBLIC bool httpCanUser(HttpConn *conn)
     }
     if (!conn->user) {
         if (auth->users == 0 || (conn->user = mprLookupKey(auth->users, conn->username)) == 0) {
-            mprLog(2, "Can't find user %s", conn->username);
+            mprLog(2, "Cannot find user %s", conn->username);
             return 0;
         }
     }
@@ -564,7 +564,7 @@ PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store)
     }
 #if BIT_HAS_PAM && BIT_PAM
     if (smatch(store, "pam") && auth->type && smatch(auth->type->name, "digest")) {
-        mprError("Can't use PAM password stores with digest authentication");
+        mprError("Cannot use PAM password stores with digest authentication");
         return MPR_ERR_BAD_ARGS;
     }
 #else
@@ -584,7 +584,7 @@ PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *type, cchar *details)
 
     http = MPR->httpService;
     if ((auth->type = mprLookupKey(http->authTypes, type)) == 0) {
-        mprError("Can't find auth type %s", type);
+        mprError("Cannot find auth type %s", type);
         return MPR_ERR_CANT_FIND;
     }
     auth->version = ((Http*) MPR->httpService)->nextAuth++;
@@ -906,10 +906,12 @@ PUBLIC void httpBasicLogin(HttpConn *conn)
 
 /*
     Add the client 'Authorization' header for authenticated requests
+    NOTE: Can do this without first getting a 401 response
  */
-PUBLIC void httpBasicSetHeaders(HttpConn *conn)
+PUBLIC bool httpBasicSetHeaders(HttpConn *conn)
 {
     httpAddHeader(conn, "Authorization", "basic %s", mprEncode64(sfmt("%s:%s", conn->username, conn->password)));
+    return 1;
 }
 
 
@@ -1844,11 +1846,11 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
         return conn;
     }
     if ((sp = mprCreateSocket()) == 0) {
-        httpError(conn, HTTP_CODE_COMMS_ERROR, "Can't create socket for %s", uri->uri);
+        httpError(conn, HTTP_CODE_COMMS_ERROR, "Cannot create socket for %s", uri->uri);
         return 0;
     }
     if ((rc = mprConnectSocket(sp, ip, port, 0)) < 0) {
-        httpError(conn, HTTP_CODE_COMMS_ERROR, "Can't open socket on %s:%d", ip, port);
+        httpError(conn, HTTP_CODE_COMMS_ERROR, "Cannot open socket on %s:%d", ip, port);
         return 0;
     }
     conn->sock = sp;
@@ -1884,16 +1886,19 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
 
 static void setDefaultHeaders(HttpConn *conn)
 {
-    HttpAuthType    *authType;
+    HttpAuthType    *ap;
 
     assure(conn);
 
     if (smatch(conn->protocol, "HTTP/1.0")) {
         conn->http10 = 1;
     }
-    if (conn->authType && (authType = httpLookupAuthType(conn->authType)) != 0) {
-        (authType->setAuth)(conn);
-        conn->setCredentials = 1;
+    if (conn->username && conn->authType) {
+        if ((ap = httpLookupAuthType(conn->authType)) != 0) {
+            if ((ap->setAuth)(conn)) {
+                conn->authRequested = 1;
+            }
+        }
     }
     if (conn->port != 80) {
         httpAddHeader(conn, "Host", "%s:%d", conn->ip, conn->port);
@@ -1915,7 +1920,7 @@ PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl 
     assure(uri && *uri);
 
     if (conn->endpoint) {
-        httpError(conn, HTTP_CODE_BAD_GATEWAY, "Can't call connect in a server");
+        httpError(conn, HTTP_CODE_BAD_GATEWAY, "Cannot call connect in a server");
         return MPR_ERR_BAD_STATE;
     }
     mprLog(4, "Http: client request: %s %s", method, uri);
@@ -1926,7 +1931,7 @@ PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl 
     }
     assure(conn->state == HTTP_STATE_BEGIN);
     httpSetState(conn, HTTP_STATE_CONNECTED);
-    conn->setCredentials = 0;
+    conn->authRequested = 0;
     conn->tx->method = supper(method);
     conn->tx->parsedUri = httpCreateUri(uri, 0);
 #if BIT_DEBUG
@@ -1965,9 +1970,9 @@ PUBLIC bool httpNeedRetry(HttpConn *conn, char **url)
         return 0;
     }
     if (rx->status == HTTP_CODE_UNAUTHORIZED) {
-        if (conn->username == 0) {
+        if (conn->username == 0 || conn->authType == 0) {
             httpFormatError(conn, rx->status, "Authentication required");
-        } else if (conn->setCredentials) {
+        } else if (conn->authRequested) {
             httpFormatError(conn, rx->status, "Authentication failed");
         } else {
             if (conn->authType && (authType = httpLookupAuthType(conn->authType)) != 0) {
@@ -2006,7 +2011,7 @@ static int blockingFileCopy(HttpConn *conn, cchar *path)
 
     file = mprOpenFile(path, O_RDONLY | O_BINARY, 0);
     if (file == 0) {
-        mprError("Can't open %s", path);
+        mprError("Cannot open %s", path);
         return MPR_ERR_CANT_OPEN;
     }
     mprAddRoot(file);
@@ -2052,7 +2057,7 @@ PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *fileData, MprList *for
     if (fileData) {
         for (rc = next = 0; rc >= 0 && (path = mprGetNextItem(fileData, &next)) != 0; ) {
             if (!mprPathExists(path, R_OK)) {
-                httpFormatError(conn, 0, "Can't open %s", path);
+                httpFormatError(conn, 0, "Cannot open %s", path);
                 return MPR_ERR_CANT_OPEN;
             }
             name = mprGetPathBase(path);
@@ -2312,7 +2317,7 @@ static void commonPrep(HttpConn *conn)
     conn->error = 0;
     conn->errorMsg = 0;
     conn->state = 0;
-    conn->setCredentials = 0;
+    conn->authRequested = 0;
 
     if (conn->endpoint) {
         conn->authType = 0;
@@ -2715,7 +2720,11 @@ PUBLIC void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier)
 }
 
 
-PUBLIC void httpSetCredentials(HttpConn *conn, cchar *username, cchar *password)
+/*
+    password and authType can be null
+    User may be a combined user:password
+ */
+PUBLIC void httpSetCredentials(HttpConn *conn, cchar *username, cchar *password, cchar *authType)
 {
     httpResetCredentials(conn);
     conn->username = sclone(username);
@@ -2724,6 +2733,9 @@ PUBLIC void httpSetCredentials(HttpConn *conn, cchar *username, cchar *password)
         conn->password = sclone(conn->password);
     } else {
         conn->password = sclone(password);
+    }
+    if (authType) {
+        conn->authType = sclone(authType);
     }
 }
 
@@ -3147,8 +3159,9 @@ PUBLIC void httpDigestLogin(HttpConn *conn)
 
 /*
     Add the client 'Authorization' header for authenticated requests
+    Must first get a 401 response to get the authData.
  */
-PUBLIC void httpDigestSetHeaders(HttpConn *conn)
+PUBLIC bool httpDigestSetHeaders(HttpConn *conn)
 { 
     Http        *http;
     HttpTx      *tx;
@@ -3158,8 +3171,10 @@ PUBLIC void httpDigestSetHeaders(HttpConn *conn)
 
     http = conn->http;
     tx = conn->tx;
-    dp = conn->authData;
-
+    if ((dp = conn->authData) == 0) {
+        /* Need to await a failing auth response */
+        return 0;
+    }
     cnonce = sfmt("%s:%s:%x", http->secret, dp->realm, (int) http->now);
     fmt(a1Buf, sizeof(a1Buf), "%s:%s:%s", conn->username, dp->realm, conn->password);
     ha1 = mprGetMD5(a1Buf);
@@ -3178,6 +3193,7 @@ PUBLIC void httpDigestSetHeaders(HttpConn *conn)
         httpAddHeader(conn, "Authorization", "Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", "
             "uri=\"%s\", response=\"%s\"", conn->username, dp->realm, dp->nonce, tx->parsedUri->path, digest);
     }
+    return 1;
 }
 
 
@@ -3445,7 +3461,7 @@ PUBLIC int httpStartEndpoint(HttpEndpoint *endpoint)
         return MPR_ERR_MEMORY;
     }
     if (mprListenOnSocket(endpoint->sock, endpoint->ip, endpoint->port, MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD) < 0) {
-        mprError("Can't open a socket on %s:%d", *endpoint->ip ? endpoint->ip : "*", endpoint->port);
+        mprError("Cannot open a socket on %s:%d", *endpoint->ip ? endpoint->ip : "*", endpoint->port);
         return MPR_ERR_CANT_OPEN;
     }
     if (endpoint->http->listenCallback && (endpoint->http->listenCallback)(endpoint) < 0) {
@@ -5284,7 +5300,7 @@ PUBLIC MprFile *httpOpenRouteLog(HttpRoute *route)
     assure(route->log == 0);
     mode = O_CREAT | O_WRONLY | O_TEXT;
     if ((file = mprOpenFile(route->logPath, mode, 0664)) == 0) {
-        mprError("Can't open log file %s", route->logPath);
+        mprError("Cannot open log file %s", route->logPath);
         return 0;
     }
     route->log = file;
@@ -5304,7 +5320,7 @@ PUBLIC void httpWriteRouteLog(HttpRoute *route, cchar *buf, ssize len)
         }
     }
     if (mprWriteFile(route->log, (char*) buf, len) != len) {
-        mprError("Can't write to access log %s", route->logPath);
+        mprError("Cannot write to access log %s", route->logPath);
         mprCloseFile(route->log);
         route->log = 0;
     }
@@ -6730,7 +6746,7 @@ static int openQueue(HttpQueue *q, ssize chunkSize)
         module = stage->module;
         module = mprCreateModule(module->name, module->path, module->entry, http);
         if (mprLoadModule(module) < 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't load module %s", module->name);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load module %s", module->name);
             return MPR_ERR_CANT_READ;
         }
         stage->module = module;
@@ -7914,10 +7930,10 @@ static bool fixRangeLength(HttpConn *conn)
         if (range->start < 0) {
             if (length <= 0) {
                 /*
-                    Can't compute an offset from the end as we don't know the entity length and it is not always possible
+                    Cannot compute an offset from the end as we don't know the entity length and it is not always possible
                     or wise to buffer all the output.
                  */
-                httpError(conn, HTTP_CODE_RANGE_NOT_SATISFIABLE, "Can't compute end range with unknown content length"); 
+                httpError(conn, HTTP_CODE_RANGE_NOT_SATISFIABLE, "Cannot compute end range with unknown content length"); 
                 return 0;
             }
             /* select last -range-end bytes */
@@ -8291,7 +8307,7 @@ PUBLIC int httpStartRoute(HttpRoute *route)
             assure(!route->log);
             route->log = mprOpenFile(route->logPath, O_CREAT | O_APPEND | O_WRONLY | O_TEXT, 0664);
             if (route->log == 0) {
-                mprError("Can't open log file %s", route->logPath);
+                mprError("Cannot open log file %s", route->logPath);
                 return MPR_ERR_CANT_OPEN;
             }
         }
@@ -8355,8 +8371,8 @@ PUBLIC void httpRouteRequest(HttpConn *conn)
     }
     if (route == 0 || tx->handler == 0) {
         /* Ensure this is emitted to the log */
-        mprError("Can't find suitable route for request %s", rx->pathInfo);
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't find suitable route for request");
+        mprError("Cannot find suitable route for request %s", rx->pathInfo);
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find suitable route for request");
         return;
     }
     if (rx->traceLevel >= 0) {
@@ -8539,7 +8555,7 @@ static int testRoute(HttpConn *conn, HttpRoute *route)
         }
     }
     if ((proc = mprLookupKey(conn->http->routeTargets, route->targetRule)) == 0) {
-        httpError(conn, -1, "Can't find route target rule \"%s\"", route->targetRule);
+        httpError(conn, -1, "Cannot find route target rule \"%s\"", route->targetRule);
         return HTTP_ROUTE_REJECT;
     }
     if ((rc = (*proc)(conn, route, 0)) != HTTP_ROUTE_OK) {
@@ -8655,7 +8671,7 @@ PUBLIC int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, 
             return MPR_ERR_BAD_SYNTAX;
         }
         if ((op->mdata = pcre_compile2(pattern, 0, 0, &errMsg, &column, NULL)) == 0) {
-            mprError("Can't compile condition match pattern. Error %s at column %d", errMsg, column); 
+            mprError("Cannot compile condition match pattern. Error %s at column %d", errMsg, column); 
             return MPR_ERR_BAD_SYNTAX;
         }
         op->details = finalizeReplacement(route, value);
@@ -8680,7 +8696,7 @@ PUBLIC int httpAddRouteFilter(HttpRoute *route, cchar *name, cchar *extensions, 
     
     stage = httpLookupStage(route->http, name);
     if (stage == 0) {
-        mprError("Can't find filter %s", name); 
+        mprError("Cannot find filter %s", name); 
         return MPR_ERR_CANT_FIND;
     }
     /*
@@ -8732,7 +8748,7 @@ PUBLIC int httpAddRouteHandler(HttpRoute *route, cchar *name, cchar *extensions)
 
     http = route->http;
     if ((handler = httpLookupStage(http, name)) == 0) {
-        mprError("Can't find stage %s", name); 
+        mprError("Cannot find stage %s", name); 
         return MPR_ERR_CANT_FIND;
     }
     GRADUATE_HASH(route, extensions);
@@ -8794,7 +8810,7 @@ PUBLIC void httpAddRouteHeader(HttpRoute *route, cchar *header, cchar *value, in
         return;
     }
     if ((op->mdata = pcre_compile2(value, 0, 0, &errMsg, &column, NULL)) == 0) {
-        mprError("Can't compile header pattern. Error %s at column %d", errMsg, column); 
+        mprError("Cannot compile header pattern. Error %s at column %d", errMsg, column); 
     } else {
         mprAddItem(route->headers, op);
     }
@@ -8835,7 +8851,7 @@ PUBLIC void httpAddRouteParam(HttpRoute *route, cchar *field, cchar *value, int 
         return;
     }
     if ((op->mdata = pcre_compile2(value, 0, 0, &errMsg, &column, NULL)) == 0) {
-        mprError("Can't compile field pattern. Error %s at column %d", errMsg, column); 
+        mprError("Cannot compile field pattern. Error %s at column %d", errMsg, column); 
     } else {
         mprAddItem(route->params, op);
     }
@@ -9002,7 +9018,7 @@ PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name)
     
     stage = httpLookupStage(route->http, name);
     if (stage == 0) {
-        mprError("Can't find connector %s", name); 
+        mprError("Cannot find connector %s", name); 
         return MPR_ERR_CANT_FIND;
     }
     route->connector = stage;
@@ -9040,7 +9056,7 @@ PUBLIC int httpSetRouteHandler(HttpRoute *route, cchar *name)
     assure(name && *name);
     
     if ((handler = httpLookupStage(route->http, name)) == 0) {
-        mprError("Can't find handler %s", name); 
+        mprError("Cannot find handler %s", name); 
         return MPR_ERR_CANT_FIND;
     }
     route->handler = handler;
@@ -9379,7 +9395,7 @@ static void finalizePattern(HttpRoute *route)
         free(route->patternCompiled);
     }
     if ((route->patternCompiled = pcre_compile2(route->optimizedPattern, 0, 0, &errMsg, &column, NULL)) == 0) {
-        mprError("Can't compile route. Error %s at column %d", errMsg, column); 
+        mprError("Cannot compile route. Error %s at column %d", errMsg, column); 
     }
     route->flags |= HTTP_ROUTE_FREE_PATTERN;
 }
@@ -9437,7 +9453,7 @@ static char *finalizeReplacement(HttpRoute *route, cchar *str)
                             mprPutCharToBuf(buf, '$');
                             mprPutStringToBuf(buf, token);
                         } else {
-                            mprError("Can't find token \"%s\" in template \"%s\"", token, route->pattern);
+                            mprError("Cannot find token \"%s\" in template \"%s\"", token, route->pattern);
                         }
                     }
                 }
@@ -9662,7 +9678,7 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
         if (tplate) {
             target = httpTemplate(conn, tplate, options);
         } else {
-            mprError("Can't find template for URI %s", target);
+            mprError("Cannot find template for URI %s", target);
             target = "/";
         }
     }
@@ -9841,7 +9857,7 @@ static int testCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *conditio
     assure(condition);
 
     if ((proc = mprLookupKey(conn->http->routeConditions, condition->name)) == 0) {
-        httpError(conn, -1, "Can't find route condition rule %s", condition->name);
+        httpError(conn, -1, "Cannot find route condition rule %s", condition->name);
         return 0;
     }
     mprLog(6, "run condition on route %s condition %s", route->name, condition->name);
@@ -10033,7 +10049,7 @@ static int updateRequest(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
     assure(op);
 
     if ((proc = mprLookupKey(conn->http->routeUpdates, op->name)) == 0) {
-        httpError(conn, -1, "Can't find route update rule %s", op->name);
+        httpError(conn, -1, "Cannot find route update rule %s", op->name);
         return HTTP_ROUTE_OK;
     }
     mprLog(6, "run update on route %s update %s", route->name, op->name);
@@ -12933,7 +12949,7 @@ PUBLIC void httpSendOpen(HttpQueue *q)
         }
         tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
         if (tx->file == 0) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Can't open document: %s, err %d", tx->filename, mprGetError());
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s, err %d", tx->filename, mprGetError());
         }
     }
 }
@@ -14137,7 +14153,7 @@ PUBLIC void httpFinalizeConnector(HttpConn *conn)
     /*
         Use case: server calling finalize in a timer. Must notify for close event in ejs.web/test/request/events.tst
       */ 
-    /* Can't do this if there is still data to read */
+    /* Cannot do this if there is still data to read */
     if (tx->finalized && conn->rx->eof) {
         httpSetState(conn, HTTP_STATE_FINALIZED);
     }
@@ -14336,7 +14352,7 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
             if (endpoint) {
                 target->port = endpoint->port;
             } else {
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't find endpoint for scheme %s", target->scheme);
+                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find endpoint for scheme %s", target->scheme);
                 return;
             }
         }
@@ -15045,14 +15061,14 @@ static int processContentHeader(HttpQueue *q, char *line)
                 up->tmpPath = mprGetTempPath(rx->uploadDir);
                 if (up->tmpPath == 0) {
                     httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, 
-                        "Can't create upload temp file %s. Check upload temp dir %s", up->tmpPath, rx->uploadDir);
+                        "Cannot create upload temp file %s. Check upload temp dir %s", up->tmpPath, rx->uploadDir);
                     return MPR_ERR_CANT_OPEN;
                 }
                 mprLog(5, "File upload of: %s stored as %s", up->clientFilename, up->tmpPath);
 
                 up->file = mprOpenFile(up->tmpPath, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0600);
                 if (up->file == 0) {
-                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't open upload temp file %s", up->tmpPath);
+                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot open upload temp file %s", up->tmpPath);
                     return MPR_ERR_BAD_STATE;
                 }
                 /*  
@@ -15138,7 +15154,7 @@ static int writeToFile(HttpQueue *q, char *data, ssize len)
         rc = mprWriteFile(up->file, data, len);
         if (rc != len) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, 
-                "Can't write to upload temp file %s, rc %d, errno %d", up->tmpPath, rc, mprGetOsError());
+                "Cannot write to upload temp file %s, rc %d, errno %d", up->tmpPath, rc, mprGetOsError());
             return MPR_ERR_CANT_WRITE;
         }
         file->size += len;

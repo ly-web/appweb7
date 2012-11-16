@@ -1861,7 +1861,7 @@ typedef struct HttpConn {
     /*  
         Authentication
      */
-    int             setCredentials;         /**< Authorization headers set from credentials */
+    int             authRequested;          /**< Authorization requested based on user credentials */
     char            *authType;              /**< Type of authentication: set to basic, digest, post or a custom name */
     void            *authData;              /**< Authorization state data */
     char            *username;              /**< Supplied user name */
@@ -2238,9 +2238,10 @@ PUBLIC void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier);
     @param conn HttpConn connection object created via #httpCreateConn
     @param user String user
     @param password Decrypted password string
+    @param authType Authentication type. Set to basic or digest. Defaults to nothing.
     @ingroup HttpConn
  */
-PUBLIC void httpSetCredentials(HttpConn *conn, cchar *user, cchar *password);
+PUBLIC void httpSetCredentials(HttpConn *conn, cchar *user, cchar *password, cchar *authType);
 
 /** 
     Control Http Keep-Alive for the connection.
@@ -2399,9 +2400,10 @@ typedef int (*HttpParseAuth)(HttpConn *conn);
 /**
     AuthType callback to set the necessary HTTP authorization headers for a client request
     @param conn HttpConn connection object 
+    @return True if the authorization headers can be set. 
     @ingroup HttpAuth
  */
-typedef void (*HttpSetAuth)(HttpConn *conn);
+typedef bool (*HttpSetAuth)(HttpConn *conn);
 
 /**
     AuthStore callback Verify the user credentials
@@ -2746,10 +2748,10 @@ PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *proto, cchar *details);
  */
 PUBLIC void httpBasicLogin(HttpConn *conn);
 PUBLIC int httpBasicParse(HttpConn *conn);
-PUBLIC void httpBasicSetHeaders(HttpConn *conn);
+PUBLIC bool httpBasicSetHeaders(HttpConn *conn);
 PUBLIC void httpDigestLogin(HttpConn *conn);
 PUBLIC int httpDigestParse(HttpConn *conn);
-PUBLIC void httpDigestSetHeaders(HttpConn *conn);
+PUBLIC bool httpDigestSetHeaders(HttpConn *conn);
 PUBLIC bool httpPamVerifyUser(HttpConn *conn);
 PUBLIC bool httpInternalVerifyUser(HttpConn *conn);
 PUBLIC int httpAuthenticate(HttpConn *conn);
