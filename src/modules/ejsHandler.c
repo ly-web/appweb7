@@ -11,7 +11,9 @@
     #include    "ejs.h"
 
 /************************************* Data ***********************************/
-
+/*
+    Default Ejscript start.es script
+ */
 static char startup[] = "\
     require ejs.web; \
     let server: HttpServer = new HttpServer; \
@@ -47,7 +49,7 @@ static void openEjs(HttpQueue *q)
 
     } else if (!conn->ejs) {
         if (!route->context) {
-            if (route->script == 0) {
+            if (route->script == 0 && route->scriptPath == 0) {
                 route->script = sclone(startup);
             }
             if (route->workers < 0) {
