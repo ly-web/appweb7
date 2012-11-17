@@ -8863,6 +8863,7 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
 
     lock(es);
     if (pendingQ->next != pendingQ && mprAvailableWorkers()) {
+        /* No available workers to queue the dispatcher in the pending queue */
         dispatcher = pendingQ->next;
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         queueDispatcher(es->runQ, dispatcher);
