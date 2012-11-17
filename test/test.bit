@@ -177,7 +177,9 @@ Bit.load({
                         uninstallPackage()
                         if (Config.OS == 'windows') App.sleep(1000)
                         if (existing = checkUninstalled()) {
-                            trace('Test', 'Uninstall was not clean: ', existing)
+                            trace('Warning', 'The uninstall for testPackage was not clean: ', existing)
+                        } else {
+                            trace('Test', 'Uninstall is clean')
                         }
                     }
                 }
