@@ -175,6 +175,7 @@ Bit.load({
                         http.get('/index.html')
                         assert(http.response.contains('Embedthis Appweb'))
                         uninstallPackage()
+                        if (Config.OS == 'windows') App.sleep(1000)
                         if (existing = checkUninstalled()) {
                             trace('Existing', existing)
                         }
