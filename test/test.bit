@@ -145,6 +145,43 @@ Bit.load({
             ",
         },
 
+        testPackage: {
+            type: 'test',
+            action: "
+                let package = packageName()
+                if (!package || !package.exists || bit.settings.depth < 2) {
+                    trace('Test', 'testPackage -- SKIPPED (Runs at depth 2 on windows or macosx)')
+                } else {
+                    if (Config.OS == 'macosx' && App.uid != 0) {
+                        trace('Test', 'testPackage -- SKIPPED (Must run as root)')
+                    } else {
+                        trace('Test', 'testPackage')
+                        if (bit.prefixes.bin.join('uninstall').exists) {
+                            trace('Cleanup', 'Remove prior installation')
+                            uninstallPackage()
+                            checkUninstalled()
+                        }
+                        installPackage()
+                        if (missing = checkInstalled()) {
+                            trace('Missing', missing)
+                        }
+                        let s = bit.settings
+                        trace('Test', 'appweb -V')
+                        assert(Cmd.run([bit.prefixes.bin.join('appweb'), '-V']).trim() == s.version + '-' + s.buildNumber)
+                        trace('Test', 'appweb running')
+                        assert(Cmd.ps(/appweb/))
+                        let http = new Http
+                        trace('Test', 'GET /index.html')
+                        http.get('/index.html')
+                        assert(http.response.contains('Embedthis Appweb'))
+                        uninstallPackage()
+                        if (existing = checkUninstalled()) {
+                            trace('Existing', existing)
+                        }
+                    }
+                }
+            ",
+        },
         'clean-test': {
             type: 'clean',                                                                                 
             action: "                                                                                      
