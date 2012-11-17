@@ -157,13 +157,13 @@ Bit.load({
                     } else {
                         trace('Test', 'testPackage')
                         if (bit.prefixes.bin.join('uninstall').exists) {
-                            trace('Cleanup', 'Remove prior installation')
+                            trace('Test', 'Cleanup prior to installation')
                             uninstallPackage()
                             checkUninstalled()
                         }
                         installPackage()
                         if (missing = checkInstalled()) {
-                            trace('Missing', missing)
+                            trace('Test', 'Install is missing files: ' + missing)
                         }
                         let s = bit.settings
                         trace('Test', 'appweb -V')
@@ -177,7 +177,7 @@ Bit.load({
                         uninstallPackage()
                         if (Config.OS == 'windows') App.sleep(1000)
                         if (existing = checkUninstalled()) {
-                            trace('Existing', existing)
+                            trace('Test', 'Uninstall was not clean: ', existing)
                         }
                     }
                 }
