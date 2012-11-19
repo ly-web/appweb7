@@ -3166,7 +3166,6 @@ PUBLIC bool httpDigestSetHeaders(HttpConn *conn)
     Http        *http;
     HttpTx      *tx;
     DigestData  *dp;
-    char        a1Buf[256], a2Buf[256], digestBuf[256];
     char        *ha1, *ha2, *digest, *cnonce;
 
     http = conn->http;
@@ -3176,20 +3175,16 @@ PUBLIC bool httpDigestSetHeaders(HttpConn *conn)
         return 0;
     }
     cnonce = sfmt("%s:%s:%x", http->secret, dp->realm, (int) http->now);
-    fmt(a1Buf, sizeof(a1Buf), "%s:%s:%s", conn->username, dp->realm, conn->password);
-    ha1 = mprGetMD5(a1Buf);
-    fmt(a2Buf, sizeof(a2Buf), "%s:%s", tx->method, tx->parsedUri->path);
-    ha2 = mprGetMD5(a2Buf);
+    ha1 = mprGetMD5(sfmt("%s:%s:%s", conn->username, dp->realm, conn->password));
+    ha2 = mprGetMD5(sfmt("%s:%s", tx->method, tx->parsedUri->path));
     if (smatch(dp->qop, "auth")) {
-        fmt(digestBuf, sizeof(digestBuf), "%s:%s:%08x:%s:%s:%s", ha1, dp->nonce, dp->nc, cnonce, dp->qop, ha2);
-        digest = mprGetMD5(digestBuf);
+        digest = mprGetMD5(sfmt("%s:%s:%08x:%s:%s:%s", ha1, dp->nonce, dp->nc, cnonce, dp->qop, ha2));
         httpAddHeader(conn, "Authorization", "Digest username=\"%s\", realm=\"%s\", domain=\"%s\", "
             "algorithm=\"MD5\", qop=\"%s\", cnonce=\"%s\", nc=\"%08x\", nonce=\"%s\", opaque=\"%s\", "
             "stale=\"FALSE\", uri=\"%s\", response=\"%s\"", conn->username, dp->realm, dp->domain, dp->qop, 
             cnonce, dp->nc, dp->nonce, dp->opaque, tx->parsedUri->path, digest);
     } else {
-        fmt(digestBuf, sizeof(digestBuf), "%s:%s:%s", ha1, dp->nonce, ha2);
-        digest = mprGetMD5(digestBuf);
+        digest = mprGetMD5(sfmt("%s:%s:%s", ha1, dp->nonce, ha2));
         httpAddHeader(conn, "Authorization", "Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", "
             "uri=\"%s\", response=\"%s\"", conn->username, dp->realm, dp->nonce, tx->parsedUri->path, digest);
     }
@@ -3202,12 +3197,10 @@ PUBLIC bool httpDigestSetHeaders(HttpConn *conn)
  */ 
 static char *createDigestNonce(HttpConn *conn, cchar *secret, cchar *realm)
 {
-    char         nonce[256];
     static int64 next = 0;
 
     assure(realm && *realm);
-    fmt(nonce, sizeof(nonce), "%s:%s:%Lx:%Lx", secret, realm, mprGetTime(), next++);
-    return mprEncode64(nonce);
+    return mprEncode64(sfmt("%s:%s:%Lx:%Lx", secret, realm, mprGetTime(), next++));
 }
 
 
@@ -3232,7 +3225,7 @@ static int parseDigestNonce(char *nonce, cchar **secret, cchar **realm, MprTime 
 static char *calcDigest(HttpConn *conn, DigestData *dp)
 {
     HttpAuth    *auth;
-    char        abuf[256], digestBuf[256], *ha1, *ha2;
+    char        *digestBuf, *ha1, *ha2;
 
     auth = conn->rx->route->auth;
     if (!conn->user) {
@@ -3251,16 +3244,15 @@ static char *calcDigest(HttpConn *conn, DigestData *dp)
     /*
         HA2
      */ 
-    fmt(abuf, sizeof(abuf), "%s:%s", conn->rx->method, dp->uri);
-    ha2 = mprGetMD5(abuf);
+    ha2 = mprGetMD5(sfmt("%s:%s", conn->rx->method, dp->uri));
 
     /*
         H(HA1:nonce:HA2)
      */
     if (scmp(dp->qop, "auth") == 0) {
-        fmt(digestBuf, sizeof(digestBuf), "%s:%s:%s:%s:%s:%s", ha1, dp->nonce, dp->nc, dp->cnonce, dp->qop, ha2);
+        digestBuf = sfmt("%s:%s:%s:%s:%s:%s", ha1, dp->nonce, dp->nc, dp->cnonce, dp->qop, ha2);
     } else {
-        fmt(digestBuf, sizeof(digestBuf), "%s:%s:%s", ha1, dp->nonce, ha2);
+        digestBuf = sfmt("%s:%s:%s", ha1, dp->nonce, ha2);
     }
     return mprGetMD5(digestBuf);
 }
