@@ -30,17 +30,14 @@ PRODUCT="${settings.product}"
 NAME="${settings.title}"
 VERSION="${settings.version}"
 NUMBER="${settings.buildNumber}"
-OS="${platform.OS}"
+OS="${platform.os}"
 CPU="${platform.arch}"
 DIST="${platform.dist}"
 
 BIN_PREFIX="${prefixes.bin}"
 CFG_PREFIX="${prefixes.config}"
-DOC_PREFIX="${prefixes.lib}/doc"
-INC_PREFIX="${prefixes.include}"
-LIB_PREFIX="${prefixes.lib}"
+INC_PREFIX="${prefixes.inc}"
 LOG_PREFIX="${prefixes.log}"
-MAN_PREFIX="${prefixes.lib}/man"
 VER_PREFIX="${prefixes.productver}"
 PRD_PREFIX="${prefixes.product}"
 SPL_PREFIX="${prefixes.spool}"
@@ -296,7 +293,7 @@ installFiles() {
 
     if [ -f /etc/redhat-release -a -x /usr/bin/chcon ] ; then 
         if sestatus | grep enabled >/dev/nulll ; then
-            for f in $LIB_PREFIX/*.so ; do
+            for f in $BIN_PREFIX/*.so ; do
                 chcon /usr/bin/chcon -t texrel_shlib_t $f 2>&1 >/dev/null
             done
         fi
@@ -348,7 +345,7 @@ patchConfiguration() {
             --user $username --group $groupname "${CFG_PREFIX}/appweb.conf"
     else
         "$BIN_PREFIX/setConfig" --port ${HTTP_PORT} --ssl ${SSL_PORT} --home "${CFG_PREFIX}" \
-            --logs "${LOG_PREFIX}" --documents "${WEB_PREFIX}" --modules "${LIB_PREFIX}" \
+            --logs "${LOG_PREFIX}" --documents "${WEB_PREFIX}" --modules "${BIN_PREFIX}" \
             --cache "${SPL_PREFIX}/cache" --user $username --group $groupname "${CFG_PREFIX}/appweb.conf"
     fi
 }
