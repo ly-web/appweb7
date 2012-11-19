@@ -7,15 +7,15 @@ HTTP(1)                          User Commands                         HTTP(1)
 <B>SYNOPSIS</B>
        <B>http [options] [files] url</B>
 
-       [<I>--benchmark  </I>]  [<I>--cert  file</I>]  [<I>--chunk size </I>] [<I>--continue</I>] [<I>--cookie</I>
-       <I>cookieString</I>]  [<I>--data</I>]   [<I>--debugger</I>]   [<I>--delete</I>]   [<I>--form   string</I>]
-       [<I>--header  'key:  value'</I>] [<I>--host hostName</I>] [<I>--iterations count</I>] [<I>--key</I>
-       <I>file</I>] [<I>--log logSpec</I>]  [<I>--method  HTTP_METHOD</I>]  [<I>--nofollow</I>]  [<I>--noout</I>]
-       [<I>--out  file</I>] [<I>--password pass</I>] [<I>--post</I>] [<I>--printable</I>] [<I>--protocol ver-</I>
-       <I>sion</I>] [<I>--provider name</I>] [<I>--put</I>] [<I>--range byteRanges</I>] [<I>--retries  count</I>]
-       [<I>--sequence</I>]   [<I>--showHeaders</I>]   [<I>--showStatus</I>]  [<I>--single</I>]  [<I>--threads</I>
-       <I>count</I>]  [<I>--timeout  seconds</I>]  [<I>--upload</I>]  [<I>--user  name</I>]   [<I>--validate</I>]
-       [<I>--verbose</I>] [<I>--workers count</I>] [<I>--zero</I>]
+       [<I>--auth  basic|digest  </I>]  [<I>--benchmark  </I>] [<I>--cert file</I>] [<I>--chunk size </I>]
+       [<I>--continue</I>] [<I>--cookie cookieString</I>] [<I>--data</I>]  [<I>--debugger</I>]  [<I>--delete</I>]
+       [<I>--form string</I>] [<I>--header 'key: value'</I>] [<I>--host hostName</I>] [<I>--iterations</I>
+       <I>count</I>] [<I>--key file</I>] [<I>--log logSpec</I>] [<I>--method HTTP_METHOD</I>] [<I>--nofollow</I>]
+       [<I>--noout</I>] [<I>--out file</I>] [<I>--password pass</I>] [<I>--post</I>] [<I>--printable</I>] [<I>--pro-</I>
+       <I>tocol  version</I>]  [<I>--provider   name</I>]   [<I>--put</I>]   [<I>--range   byteRanges</I>]
+       [<I>--retries  count</I>]  [<I>--sequence</I>] [<I>--showHeaders</I>] [<I>--showStatus</I>] [<I>--sin-</I>
+       <I>gle</I>] [<I>--threads count</I>] [<I>--timeout  seconds</I>]  [<I>--upload</I>]  [<I>--user  name</I>]
+       [<I>--validate</I>] [<I>--verbose</I>] [<I>--workers count</I>] [<I>--zero</I>]
 
 <B>DESCRIPTION</B>
        The  http  command  issues  HTTP  commands to retrieve files from a web
@@ -23,6 +23,9 @@ HTTP(1)                          User Commands                         HTTP(1)
        in the request body data.
 
 <B>OPTIONS</B>
+       <B>--auth basic|digest</B>
+              Set the type of authentication to use. Defaults to basic.
+
        <B>--benchmark</B>
               Output timing results after retrieving URLs.
 
