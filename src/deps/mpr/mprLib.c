@@ -23633,19 +23633,12 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     if (ws->startWorker) {
         (*ws->startWorker)(worker->data, worker);
     }
-#if !BIT_LOCK_FIX
     lock(ws);
-#endif
-
     while (!(worker->state & MPR_WORKER_PRUNED) && !mprIsStopping()) {
         if (worker->proc) {
-#if !BIT_LOCK_FIX
             unlock(ws);
-#endif
             (*worker->proc)(worker->data, worker);
-#if !BIT_LOCK_FIX
             lock(ws);
-#endif
             worker->proc = 0;
         }
         worker->lastActivity = MPR->eventService->now;
@@ -23657,23 +23650,15 @@ static void workerMain(MprWorker *worker, MprThread *tp)
             worker->cleanup = NULL;
         }
         worker->data = 0;
-#if !BIT_LOCK_FIX
         unlock(ws);
-#endif
-
         /*
             Sleep till there is more work to do. Yield for GC first.
          */
         mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         mprWaitForCond(worker->idleCond, -1);
         mprResetYield();
-#if !BIT_LOCK_FIX
         lock(ws);
-#endif
     }
-#if BIT_LOCK_FIX
-    lock(ws);
-#endif
     changeState(worker, 0);
     worker->thread = 0;
     ws->numThreads--;
