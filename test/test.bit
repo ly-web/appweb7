@@ -28,8 +28,10 @@ Bit.load({
             path: 'web/caching/cache.cgi',
             build: "
                 let path = Path('web/caching/cache.cgi')
-                path.write('#!' + App.exeDir.join('ejs') + '\n' + 
-                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n{number: \" + App.pid + \"}\n\")')
+                path.write('#!/bin/sh\n' +
+                    'echo HTTP/1.0 200 OK\n' +
+                    'echo Content-Type: text/plain\n' +
+                    'echo\ndate\n')
                 path.setAttributes({permissions: 0755})
             ",
             'generate-sh': "\
