@@ -196,7 +196,7 @@ public function packageComboFiles() {
     install(['src/deps/**.c'], pkg.join('src/deps/appweb/deps.c'), {
         cat: true,
         filter: /^#inc.*appweb.*$|^#inc.*mpr.*$|^#inc.*http.*$|^#inc.*customize.*$|^#inc.*edi.*$|^#inc.*mdb.*$|^#inc.*esp.*$/mg,
-        exclude: /pcre|makerom|http\.c|sqlite|manager/,
+        exclude: /pcre|makerom|http\.c|sqlite|manager|ejs/,
         header: '#include \"appweb.h\"',
         title: bit.settings.title + ' Library Source',
     })

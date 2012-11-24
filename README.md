@@ -34,10 +34,12 @@ Images are built into */bin. The build configuration is saved in */inc/bit.h.
     sudo bit run
 
 This will run appweb in the src/server directory using the src/server/appweb.conf configuration file.
+To run appweb manually, you will need to put the target bin directory in your path. This is under
+OS-ARCH-PROFILE/bin.
 
 ### To Install:
 
-    bit install
+    sudo bit install
 
 Resources
 ---
