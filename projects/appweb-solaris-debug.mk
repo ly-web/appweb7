@@ -458,7 +458,7 @@ $(CONFIG)/bin/appweb:  \
 
 src/server/cache: 
 	cd src/server >/dev/null ;\
-		mkdir cache ;\
+		mkdir -p cache ;\
 		cd - >/dev/null 
 
 $(CONFIG)/inc/testAppweb.h: 

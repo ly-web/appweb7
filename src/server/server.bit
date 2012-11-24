@@ -37,7 +37,7 @@ Bit.load({
             path: 'cache',
             build: "Path('cache').makeDir()",
             'generate-nmake': "md cache",
-            generate: "mkdir cache",
+            generate: "mkdir -p cache",
         },
 
         run: {
