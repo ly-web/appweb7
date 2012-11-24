@@ -42,6 +42,7 @@
                 <li><a href="#limitCacheItem">LimitCacheItem</a></li>
                 <li><a href="#limitChunk">LimitChunk</a></li>
                 <li><a href="#limitClients">LimitClients</a></li>
+                <li><a href="#limitFiles">LimitFiles</a></li>
                 <li><a href="#limitKeepAlive">LimitKeepAlive</a></li>
                 <li><a href="#limitMemory">LimitMemory</a></li>
                 <li><a href="#limitProcesses">LimitProcesses</a></li>
@@ -225,6 +226,41 @@
                 </tbody>
             </table>
             
+            <a id="limitFiles"></a>
+            <h2>LimitFiles</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Sets the maximum number of open files/sockets that Appweb can open.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>LimitFiles count</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>LimitFiles 1024</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The LimitFiles directive defines the maximum number of files/sockets that Appweb can
+                            open on a Unix system. The files limit must be set sufficiently high to support the peak
+                            load anticipated for Appweb. Each request will always consume one file descriptor for the
+                            network socket. CGI requests will consume an additional three file descriptors to communicate
+                            with the CGI process.</p>
+                            <p>The default limit for Appweb is defined by the system ulimit.
+                            A limit of '0' means set the limit to the maximum permitted by the operating system.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
             <a id="limitKeepAlive"></a>
             <h2>LimitKeepAlive</h2>
             <table class="directive" title="directive">
@@ -344,7 +380,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>LimitRequests 10</td>
+                        <td>LimitRequests 40</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -356,6 +392,45 @@
                             limits the number of connected client systems.</p>
                             <p>NOTE: that many browsers can and will initiate multiple requests when requesting a
                             page. Some browsers will initiate up to six requests at a time for a single tab.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="limitRequestsPerClient"></a>
+            <h2>LimitRequestsPerClient</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Sets the maximum number of simultaneous HTTP requests for a single client IP address</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>LimitRequestsPerClient count</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>LimitRequestsPerClient 20</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The LimitRequestsPerClient directive defines the maximum number of simultaneous 
+                            client HTTP requests that are permitted per single client IP address. Requests in excess of this
+                            count will be rejected. A limit of '0' means unlimited.</p>
+                            <p>NOTE: that many browsers can and will initiate multiple requests when requesting a
+                            page. Some browsers will initiate up to six requests at a time for a single tab.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="security">Security</td>
+                        <td>
+                            <p>To mitigate denial of service attacks, this limit should be set as low as possible.</p>
                         </td>
                     </tr>
                 </tbody>

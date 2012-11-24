@@ -950,6 +950,47 @@
                 </tbody>
             </table>
             
+            <a id="requestParseTimeout"></a>
+            <h2>RequestParseTimeout</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Defines the maximum time to parse the request or response HTTP headers</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>RequestParseTimeout time</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>RequestParseTimeout 20secs</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This directive defines the maximum time to parse the HTTP headers for a request or a 
+                                response. If the maximum is exceeded, Appweb will forcibly terminate the request and close
+                                the connection.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="security">Security</td>
+                        <td>
+                            <p>This directive is useful to mitigate some denial of service attacks such as the 
+                            <a href="http://en.wikipedia.org/wiki/Slowloris">slowloris</a>. It should be configured
+                            to a low value typically less than 10 seconds.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
             <a id="requestTimeout"></a>
             <h2>RequestTimeout</h2>
             <table class="directive" title="details">
@@ -976,7 +1017,7 @@
                         <td class="pivot">Notes</td>
                         <td>
                             <p>This directive defines the maximum duration for a request. If the maximum is exceeded,
-                            Appweb will forcibly terminate the request and close the connection.
+                            Appweb will forcibly terminate the request and close the connection.</p>
                             <p>Some web user interfaces with monitoring applets open HTTP connections and keep them
                             open to stream response data back to the applet. To prevent Appweb from closing the
                             connection, you may need to increase the timeout value for the Route managing the request.</p>
@@ -984,6 +1025,7 @@
                     </tr>
                 </tbody>
             </table>
+
             <a id="reset"></a>
             <h2>Reset [routes|pipeline]</h2>
             <table class="directive" title="details">

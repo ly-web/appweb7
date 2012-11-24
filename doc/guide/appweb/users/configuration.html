@@ -385,8 +385,12 @@ Include conf/applications/*.conf
                         <td>Set the maximum transfer chunk encoding size.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/sandbox.html#limitConnections">LimitClients</a></td>
+                        <td><a href="dir/sandbox.html#limitClients">LimitClients</a></td>
                         <td>Set the limit of simultaneous clients.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/sandbox.html#limitFiles">LimitFiles</a></td>
+                        <td>Set the maximum number of open files or sockets on a Unix system.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/sandbox.html#limitKeepAlive">LimitKeepAlive</a></td>
@@ -403,6 +407,10 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/sandbox.html#limitRequests">LimitRequests</a></td>
                         <td>Set the limit of simultaneous requests.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/sandbox.html#limitRequestsPerClient">LimitRequestsPerClient</a></td>
+                        <td>Set the limit of simultaneous requests for a single IP address.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/sandbox.html#limitRequestBody">LimitRequestBody</a></td>
@@ -491,6 +499,10 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/route.html#redirect">Redirect</a></td>
                         <td>Redirect requests to a new target.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/route.html#requestParseTimeout">RequestParseTimeout</a></td>
+                        <td>Maximum time to parse a request or response HTTP headers.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#requestTimeout">RequestTimeout</a></td>
