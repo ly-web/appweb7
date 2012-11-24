@@ -125,12 +125,6 @@ Bit.load({
             platforms: [ 'local' ],
         },
 
-        run: {
-            action: "
-                run('appweb -v', {noio: true})
-            ",
-        },
-
         'auth.conf': {
             action: "
                 let path = Path('new.conf')

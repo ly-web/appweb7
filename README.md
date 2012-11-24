@@ -31,7 +31,7 @@ Images are built into */bin. The build configuration is saved in */inc/bit.h.
 
 ### To Run:
 
-    bit run
+    sudo bit run
 
 This will run appweb in the src/server directory using the src/server/appweb.conf configuration file.
 
@@ -39,12 +39,9 @@ This will run appweb in the src/server directory using the src/server/appweb.con
 
     bit install
 
-### To Create Packages:
-
-    bit package
-
 Resources
 ---
   - [Appweb web site](http://appwebserver.org/)
   - [Embedthis web site](http://embedthis.com/)
   - [Appweb GitHub repository](http://github.com/embedthis/appweb-4)
+  - [Appweb Mailing list](http://groups.google.com/groups/appweb)
