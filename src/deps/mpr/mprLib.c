@@ -13595,13 +13595,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
     int         mode;
     static int  check = 0;
 
-#if !BIT_LOCK_FIX
-    lock(MPR);
-#endif
     if ((file = MPR->logFile) == 0) {
-#if !BIT_LOCK_FIX
-        unlock(MPR);
-#endif
         return;
     }
     prefix = MPR->name;
@@ -13609,9 +13603,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
     if (MPR->logBackup > 0 && MPR->logSize && (check++ % 1000) == 0) {
         mprGetPathInfo(MPR->logPath, &info);
         if (info.valid && info.size > MPR->logSize) {
-#if BIT_LOCK_FIX
             lock(MPR);
-#endif
             mprSetLogFile(0);
             mprBackupLog(MPR->logPath, MPR->logBackup);
             mode = O_CREAT | O_WRONLY | O_TEXT;
@@ -13621,9 +13613,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
                 return;
             }
             mprSetLogFile(file);
-#if BIT_LOCK_FIX
             unlock(MPR);
-#endif
         }
     }
     while (*msg == '\n') {
@@ -13654,9 +13644,6 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
     } else if (flags & MPR_RAW) {
         mprWriteFileString(file, msg);
     }
-#if !BIT_LOCK_FIX
-    unlock(MPR);
-#endif
 }
 
 

@@ -2312,10 +2312,6 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
 
 static void commonPrep(HttpConn *conn)
 {
-#if !BIT_LOCK_FIX
-    Http    *http = conn->http;
-    lock(http);
-#endif
     if (conn->timeoutEvent) {
         mprRemoveEvent(conn->timeoutEvent);
         conn->timeoutEvent = 0;
@@ -2336,9 +2332,6 @@ static void commonPrep(HttpConn *conn)
     }
     httpSetState(conn, HTTP_STATE_BEGIN);
     httpInitSchedulerQueue(conn->serviceq);
-#if !BIT_LOCK_FIX
-    unlock(http);
-#endif
 }
 
 
@@ -2463,9 +2456,6 @@ PUBLIC void httpEvent(HttpConn *conn, MprEvent *event)
         readEvent(conn);
     }
     httpPostEvent(conn);
-#if !BIT_LOCK_FIX
-    mprYield(0);
-#endif
 }
 
 
@@ -2591,9 +2581,6 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
         mprQueueEvent(conn->dispatcher, event);
 
     } else {
-#if !BIT_LOCK_FIX
-        lock(conn->http);
-#endif
         if (tx) {
             /*
                 Can be blocked with data in the iovec and none in the queue
@@ -2613,9 +2600,6 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
             eventMask |= MPR_READABLE;
         }
         httpSetupWaitHandler(conn, eventMask);
-#if !BIT_LOCK_FIX
-        unlock(conn->http);
-#endif
     }
     if (tx && tx->handler && tx->handler->module) {
         tx->handler->module->lastActivity = conn->lastActivity;
@@ -8350,16 +8334,10 @@ PUBLIC void httpRouteRequest(HttpConn *conn)
     route = 0;
 
     for (next = rewrites = 0; rewrites < HTTP_MAX_REWRITE; ) {
-#if !BIT_LOCK_FIX
-        if ((route = mprGetNextItem(conn->host->routes, &next)) == 0) {
-            break;
-        }
-#else
         if (next >= conn->host->routes->length) {
             break;
         }
         route = conn->host->routes->items[next++];
-#endif
         if (route->startSegment && strncmp(rx->pathInfo, route->startSegment, route->startSegmentLen) != 0) {
             /* Failed to match the first URI segment, skip to the next group */
             assure(next <= route->nextGroup);
