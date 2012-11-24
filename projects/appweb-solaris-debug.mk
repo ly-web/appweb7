@@ -439,10 +439,6 @@ $(CONFIG)/bin/setConfig:  \
         $(CONFIG)/obj/setConfig.o
 	$(CC) -o $(CONFIG)/bin/setConfig $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o -lmpr $(LIBS) $(LDFLAGS)
 
-$(CONFIG)/inc/appwebMonitor.h: 
-	rm -fr $(CONFIG)/inc/appwebMonitor.h
-	cp -r src/server/appwebMonitor.h $(CONFIG)/inc/appwebMonitor.h
-
 $(CONFIG)/obj/appweb.o: \
         src/server/appweb.c \
         $(CONFIG)/inc/bit.h
@@ -452,7 +448,6 @@ $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/bin/libmod_esp.so \
         $(CONFIG)/bin/libmod_cgi.so \
-        $(CONFIG)/inc/appwebMonitor.h \
         $(CONFIG)/obj/appweb.o
 	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lmod_cgi -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
 

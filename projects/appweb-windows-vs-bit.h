@@ -82,7 +82,7 @@
     #define BIT_TITLE "Embedthis Appweb"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.1.0"
+    #define BIT_VERSION "4.2.0"
 #endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "doxygen,dsi,ejs,man,man2html,pmaker,ssl,ejscript,php,matrixssl,openssl"
@@ -153,13 +153,13 @@
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 1
+    #define BIT_MINOR_VERSION 2
 #endif
 #ifndef BIT_PATCH_VERSION
     #define BIT_PATCH_VERSION 0
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400010000
+    #define BIT_VNUM 400020000
 #endif
 
 /* Packs */

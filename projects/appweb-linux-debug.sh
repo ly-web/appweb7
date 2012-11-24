@@ -152,9 +152,6 @@ ${CC} -c -o ${CONFIG}/obj/setConfig.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CON
 
 ${CC} -o ${CONFIG}/bin/setConfig ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/setConfig.o -lmpr ${LIBS} ${LDFLAGS}
 
-rm -rf ${CONFIG}/inc/appwebMonitor.h
-cp -r src/server/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h
-
 ${CC} -c -o ${CONFIG}/obj/appweb.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
 ${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
