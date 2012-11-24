@@ -93,9 +93,6 @@ Bit.load({
             Enable stealth options. Disable OPTIONS and TRACE methods.
          */
         stealth: true,
-
-        //  MOB TEMP
-        lockFix: false,
     },
 
     usage: {
