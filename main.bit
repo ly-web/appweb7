@@ -95,7 +95,7 @@ Bit.load({
         stealth: true,
 
         //  MOB TEMP
-        lockFix: true,
+        lockFix: false,
     },
 
     usage: {
