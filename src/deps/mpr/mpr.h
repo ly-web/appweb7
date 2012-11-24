@@ -1389,7 +1389,7 @@ struct  MprXml;
 #define MPR_TIMEOUT_STOP        30000       /**< Default wait when stopping resources (30 sec) */
 #define MPR_TIMEOUT_STOP_TASK   10000       /**< Time to stop or reap tasks (vxworks) */
 #define MPR_TIMEOUT_LINGER      2000        /**< Close socket linger timeout */
-#define MPR_TIMEOUT_GC_SYNC     10000       /**< Wait period for threads to synchronize */
+#define MPR_TIMEOUT_GC_SYNC     100         /**< Short wait period for threads to synchronize */
 #define MPR_TIMEOUT_NO_BUSY     1000        /**< Wait period to minimize CPU drain */
 #define MPR_TIMEOUT_NAP         20          /**< Short pause */
 
@@ -4682,9 +4682,9 @@ PUBLIC void mprWarn(cchar *fmt, ...);
     Optimized logging calling sequence. This compiles out for release mode.
  */
 #if BIT_DEBUG
-    #define LOG mprLog
+    #define LOG(l, ...) if (l <= MPR->logLevel) mprLog(l, __VA_ARGS__)
 #else
-    #define LOG if (0) mprLog
+    #define LOG(l, ...) 
 #endif
 
 /*
@@ -6771,8 +6771,9 @@ PUBLIC void mprSetThreadPriority(MprThread *thread, int priority);
  */
 PUBLIC int mprStartThread(MprThread *thread);
 
-#define MPR_YIELD_BLOCK     0x1     /* Yield and wait until GC */
-#define MPR_YIELD_STICKY    0x2     /* Yield and remain yielded until reset */
+#define MPR_YIELD_NO_BLOCK  0x1     /* Yield but do not wait */
+#define MPR_YIELD_BLOCK     0x2     /* Yield and wait until GC */
+#define MPR_YIELD_STICKY    0x4     /* Yield and remain yielded until reset */
 
 /**
     Yield a thread to allow garbage collection
@@ -9129,6 +9130,12 @@ PUBLIC void mprSetExitStrategy(int strategy);
     @ingroup Mpr
  */
 PUBLIC void mprSetExitTimeout(MprTicks timeout);
+
+/**
+    Set the maximum number of open file/socket descriptors
+    @param limit Limit to enforce
+ */
+PUBLIC void mprSetFilesLimit(int limit);
 
 /**
     Set the application host name string. This is internal to the application and does not affect the O/S host name.

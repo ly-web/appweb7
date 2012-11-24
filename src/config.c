@@ -993,6 +993,18 @@ static int limitClientsDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    LimitFiles count
+ */
+static int limitFilesDirective(MaState *state, cchar *key, cchar *value)
+{
+#if BIT_UNIX_LIKE
+    mprSetFilesLimit(getint(value));
+#endif
+    return 0;
+}
+
+
+/*
     LimitMemory size
 
     Redline set to 85%
@@ -1025,6 +1037,17 @@ static int limitRequestsDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
     state->limits->requestMax = getint(value);
+    return 0;
+}
+
+
+/*
+    LimitRequestsPerClient count
+ */
+static int limitRequestsPerClientDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->requestsPerClientMax = getint(value);
     return 0;
 }
 
@@ -1521,6 +1544,16 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
         httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
     }
     httpFinalizeRoute(alias);
+    return 0;
+}
+
+
+/*
+    RequestParseTimeout secs
+ */
+static int requestParseTimeoutDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits->requestParseTimeout = getticks(value);
     return 0;
 }
 
@@ -2497,10 +2530,12 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitCacheItem", limitCacheItemDirective);
     maAddDirective(appweb, "LimitChunk", limitChunkDirective);
     maAddDirective(appweb, "LimitClients", limitClientsDirective);
+    maAddDirective(appweb, "LimitFiles", limitFilesDirective);
     maAddDirective(appweb, "LimitKeepAlive", limitKeepAliveDirective);
     maAddDirective(appweb, "LimitMemory", limitMemoryDirective);
     maAddDirective(appweb, "LimitProcesses", limitProcessesDirective);
     maAddDirective(appweb, "LimitRequests", limitRequestsDirective);
+    maAddDirective(appweb, "LimitRequestsPerClient", limitRequestsPerClientDirective);
     maAddDirective(appweb, "LimitRequestBody", limitRequestBodyDirective);
     maAddDirective(appweb, "LimitRequestForm", limitRequestFormDirective);
     maAddDirective(appweb, "LimitRequestHeaderLines", limitRequestHeaderLinesDirective);
@@ -2528,6 +2563,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Protocol", protocolDirective);
     maAddDirective(appweb, "PutMethod", putMethodDirective);
     maAddDirective(appweb, "Redirect", redirectDirective);
+    maAddDirective(appweb, "RequestParseTimeout", requestParseTimeoutDirective);
     maAddDirective(appweb, "RequestTimeout", requestTimeoutDirective);
     maAddDirective(appweb, "Require", requireDirective);
     maAddDirective(appweb, "Reset", resetDirective);
