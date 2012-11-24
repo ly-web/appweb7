@@ -186,7 +186,7 @@ public function packageComboFiles() {
     install('projects/appweb-' + bit.platform.os + '-debug-bit.h', pkg.join('src/deps/appweb/bit.h'))
     install('package/start-flat.bit', pkg.join('src/deps/appweb/start.bit'))
     install('package/Makefile-flat', pkg.join('src/deps/appweb/Makefile'))
-    install(['src/deps/mpr/mpr.h', 'src/deps/http/http.h', 'src/appweb.h', 'src/server/appwebMonitor.h',
+    install(['src/deps/mpr/mpr.h', 'src/deps/http/http.h', 'src/appweb.h', 'src/server/windows/appwebMonitor.h',
         'src/esp/edi.h', 'src/esp/mdb.h', 'src/esp/esp.h', 'src/deps/pcre/pcre.h'], 
         pkg.join('src/deps/appweb/appweb.h'), {
         cat: true,
