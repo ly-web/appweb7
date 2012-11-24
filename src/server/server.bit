@@ -33,12 +33,15 @@ Bit.load({
             generate: 'cp windows/appwebMonitor.ico ${BIN}',
         },
 
+        'server-cache': {
+            build: "Path('cache').makeDir()",
+        },
+
         run: {
             action: "
                 trace('Run', 'From directory src/server')
                 run('appweb -v', {noio: true})
             ",
         },
-
     },
 })
