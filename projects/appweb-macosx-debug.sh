@@ -159,6 +159,7 @@ ${CC} -c -o ${CONFIG}/obj/appweb.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAG
 
 ${CC} -o ${CONFIG}/bin/appweb -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
+#  Omit build script /Users/mob/git/appweb/src/server/cache
 rm -rf ${CONFIG}/inc/testAppweb.h
 cp -r test/testAppweb.h ${CONFIG}/inc/testAppweb.h
 
@@ -184,6 +185,7 @@ cd - >/dev/null
 cd test >/dev/null ;\
 echo "#!`type -p sh`" >web/auth/basic/basic.cgi ;\
 echo '' >>web/auth/basic/basic.cgi ;\
+echo 'echo HTTP/1.0 200 OK' >>web/auth/basic/basic.cgi ;\
 echo 'echo Content-Type: text/plain' >>web/auth/basic/basic.cgi ;\
 echo 'echo' >>web/auth/basic/basic.cgi ;\
 echo '/usr/bin/env' >>web/auth/basic/basic.cgi ;\

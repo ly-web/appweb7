@@ -44,6 +44,7 @@ all: prep \
         $(CONFIG)/bin/cgiProgram \
         $(CONFIG)/bin/setConfig \
         $(CONFIG)/bin/appweb \
+        src/server/cache \
         $(CONFIG)/bin/testAppweb \
         test/cgi-bin/testScript \
         test/web/caching/cache.cgi \
@@ -83,6 +84,7 @@ clean:
 	rm -rf $(CONFIG)/bin/cgiProgram
 	rm -rf $(CONFIG)/bin/setConfig
 	rm -rf $(CONFIG)/bin/appweb
+	rm -rf src/server/cache
 	rm -rf $(CONFIG)/bin/testAppweb
 	rm -rf test/cgi-bin/testScript
 	rm -rf test/web/caching/cache.cgi
@@ -494,6 +496,11 @@ $(CONFIG)/bin/appweb:  \
         $(CONFIG)/obj/appweb.o
 	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lmod_cgi -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
+src/server/cache: 
+	cd src/server >/dev/null ;\
+		mkdir -p cache ;\
+		cd - >/dev/null 
+
 $(CONFIG)/inc/testAppweb.h: 
 	rm -fr $(CONFIG)/inc/testAppweb.h
 	cp -r test/testAppweb.h $(CONFIG)/inc/testAppweb.h
@@ -537,6 +544,7 @@ test/web/auth/basic/basic.cgi:
 	cd test >/dev/null ;\
 		echo "#!`type -p sh`" >web/auth/basic/basic.cgi ;\
 	echo '' >>web/auth/basic/basic.cgi ;\
+	echo 'echo HTTP/1.0 200 OK' >>web/auth/basic/basic.cgi ;\
 	echo 'echo Content-Type: text/plain' >>web/auth/basic/basic.cgi ;\
 	echo 'echo' >>web/auth/basic/basic.cgi ;\
 	echo '/usr/bin/env' >>web/auth/basic/basic.cgi ;\
