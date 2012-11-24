@@ -32,5 +32,13 @@ Bit.load({
             build: "cp('windows/appwebMonitor.ico', ${BIN})",
             generate: 'cp windows/appwebMonitor.ico ${BIN}',
         },
+
+        run: {
+            action: "
+                trace('Run', 'From directory src/server')
+                run('appweb -v', {noio: true})
+            ",
+        },
+
     },
 })
