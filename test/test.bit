@@ -100,6 +100,7 @@ Bit.load({
             action: "
                 let ro = {noio: true}
                 let depth = bit.settings.depth
+                Path('cache').makeDir()
                 run('utest -v -i 1 --depth ' + depth, ro)
                 if (depth >= 2) {
                     trace('Test', 'Light load tests')
@@ -179,6 +180,7 @@ Bit.load({
                 }
             ",
         },
+
         'clean-test': {
             type: 'clean',                                                                                 
             action: "                                                                                      
