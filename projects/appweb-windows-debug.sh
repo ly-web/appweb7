@@ -172,6 +172,7 @@ cp -r src/server/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h
 rm -rf ${CONFIG}/bin/appwebMonitor.ico
 cp -r src/server/windows/appwebMonitor.ico ${CONFIG}/bin/appwebMonitor.ico
 
+#  Omit build script /Users/mob/git/appweb/src/server/cache
 rm -rf ${CONFIG}/inc/testAppweb.h
 cp -r test/testAppweb.h ${CONFIG}/inc/testAppweb.h
 
@@ -197,6 +198,7 @@ cd - >/dev/null
 cd test >/dev/null ;\
 echo "#!`type -p sh`" >web/auth/basic/basic.cgi ;\
 echo '' >>web/auth/basic/basic.cgi ;\
+echo 'echo HTTP/1.0 200 OK' >>web/auth/basic/basic.cgi ;\
 echo 'echo Content-Type: text/plain' >>web/auth/basic/basic.cgi ;\
 echo 'echo' >>web/auth/basic/basic.cgi ;\
 echo '/usr/bin/env' >>web/auth/basic/basic.cgi ;\
