@@ -24,7 +24,7 @@ Bit.load({
             platforms: [ 'local' ],
         },
 
-        'test-cache.cgi': {
+        'cache.cgi': {
             path: 'web/caching/cache.cgi',
             build: "
                 let path = Path('web/caching/cache.cgi')
@@ -34,13 +34,13 @@ Bit.load({
             ",
             'generate-sh': "\
                 echo \"#!`type -p ejs`\" >web/caching/cache.cgi
-                echo 'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + Date() + \"\n\")' >>web/caching/cache.cgi
+                echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n\" + Date() + \"\\n\")' >>web/caching/cache.cgi
                 chmod +x web/caching/cache.cgi
             ",
             platforms: [ 'local' ],
         },
 
-        'test-basic.cgi': {
+        'basic.cgi': {
             path: 'web/auth/basic/basic.cgi',
             build: "
                 let path = Path('web/auth/basic/basic.cgi')
@@ -50,7 +50,7 @@ Bit.load({
             ",
             'generate-sh': "\
                 echo \"#!`type -p ejs`\" >web/auth/basic/basic.cgi
-                echo 'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + serialize(App.env, {pretty: true}) + \"\n\")' >>web/caching/cache.cgi
+                echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n\" + serialize(App.env, {pretty: true}) + \"\\n\")' >>web/auth/basic/basic.cgi
                 chmod +x web/auth/basic/basic.cgi
             ",
             platforms: [ 'local' ],
@@ -180,7 +180,9 @@ Bit.load({
                 rm('app/cache/*')
                 rm('junk/**')
                 rm('web/js')
+                Path('cache').makeDir()
                 Path('cache/.keep').write()
+                Path('app/cache').makeDir()
                 Path('app/cache/.keep').write()
                 Path('web/caching/cache.cgi').remove()
                 Path('web/auth/basic/basic.cgi').remove()

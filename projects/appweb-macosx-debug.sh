@@ -71,11 +71,11 @@ ${CC} -c -o ${CONFIG}/obj/sqlite.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAG
 
 ${CC} -o ${CONFIG}/bin/sqlite -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sqlite.o -lsqlite3 ${LIBS}
 
-rm -rf ${CONFIG}/inc/appweb.h
-cp -r src/appweb.h ${CONFIG}/inc/appweb.h
-
 rm -rf ${CONFIG}/inc/customize.h
 cp -r src/customize.h ${CONFIG}/inc/customize.h
+
+rm -rf ${CONFIG}/inc/appweb.h
+cp -r src/appweb.h ${CONFIG}/inc/appweb.h
 
 ${CC} -c -o ${CONFIG}/obj/config.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/config.c
 
@@ -174,21 +174,14 @@ echo '#!../${CONFIG}/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/test
 cd - >/dev/null 
 
 cd test >/dev/null ;\
-echo "#!`type -p sh`" >web/caching/cache.cgi ;\
-echo '' >>web/caching/cache.cgi ;\
-echo 'echo HTTP/1.0 200 OK' >>web/caching/cache.cgi ;\
-echo 'echo Content-Type: text/plain' >>web/caching/cache.cgi ;\
-echo 'date' >>web/caching/cache.cgi ;\
+echo "#!`type -p ejs`" >web/caching/cache.cgi ;\
+echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ;\
 chmod +x web/caching/cache.cgi ;\
 cd - >/dev/null 
 
 cd test >/dev/null ;\
-echo "#!`type -p sh`" >web/auth/basic/basic.cgi ;\
-echo '' >>web/auth/basic/basic.cgi ;\
-echo 'echo HTTP/1.0 200 OK' >>web/auth/basic/basic.cgi ;\
-echo 'echo Content-Type: text/plain' >>web/auth/basic/basic.cgi ;\
-echo 'echo' >>web/auth/basic/basic.cgi ;\
-echo '/usr/bin/env' >>web/auth/basic/basic.cgi ;\
+echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ;\
+echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ;\
 chmod +x web/auth/basic/basic.cgi ;\
 cd - >/dev/null 
 

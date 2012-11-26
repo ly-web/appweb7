@@ -47,7 +47,7 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
         install('package/uninstall.sh', p.bin.join('uninstall'), {permissions: 0755, expand: true})
         install('package/linkup', p.bin, {permissions: 0755})
 
-        install('src/server/web', p.web, {exclude: /mgmt/, subtree: true})
+        install('src/server/web', p.web, { exclude: /mgmt/, subtree: true })
         install('src/server/web/test/*', p.web.join('test'), {
             include: /.cgi|test.pl|test.py/,
             permissions: 0755,
@@ -162,7 +162,7 @@ public function packageSourceFiles() {
         exclude: /\.log$|\.lst$|ejs\/|ejs.zip|\.stackdump$|\/cache\/|huge.txt|\.swp$|\.tmp/,
     })
     install('test', pkg, {
-        exclude: /\.log$|\.lst$|ejs.zip|\.stackdump$|\/cache\/|huge.txt|\.swp$|\.tmp|\.o$|\.obj$|\.so$|\.dylib$/,
+        exclude: /\.log$|\.lst$|ejs.zip|\.stackdump$|\/cache\/|huge.txt|\.swp$|\.tmp|\.o$|\.obj$|\.so$|\.dylib$|cache\.cgi|basic\.cgi|testScript/,
     })
     install('doc', pkg, {
         exclude: /\/xml\/|\/html\/|Archive|\.mod$|\.so$|\.dylib$|\.o$/,

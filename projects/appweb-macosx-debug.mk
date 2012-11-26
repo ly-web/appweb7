@@ -133,7 +133,8 @@ clean:
 clobber: clean
 	rm -fr ./$(CONFIG)
 
-$(CONFIG)/inc/mpr.h: 
+$(CONFIG)/inc/mpr.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/mpr.h
 	cp -r src/deps/mpr/mpr.h $(CONFIG)/inc/mpr.h
 
@@ -181,7 +182,8 @@ $(CONFIG)/bin/makerom:  \
         $(CONFIG)/obj/makerom.o
 	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS)
 
-$(CONFIG)/inc/pcre.h: 
+$(CONFIG)/inc/pcre.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/pcre.h
 	cp -r src/deps/pcre/pcre.h $(CONFIG)/inc/pcre.h
 
@@ -196,7 +198,9 @@ $(CONFIG)/bin/libpcre.dylib:  \
         $(CONFIG)/obj/pcre.o
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib -arch x86_64 $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libpcre.dylib $(CONFIG)/obj/pcre.o $(LIBS)
 
-$(CONFIG)/inc/http.h: 
+$(CONFIG)/inc/http.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
 	rm -fr $(CONFIG)/inc/http.h
 	cp -r src/deps/http/http.h $(CONFIG)/inc/http.h
 
@@ -225,7 +229,8 @@ $(CONFIG)/bin/http:  \
         $(CONFIG)/obj/http.o
 	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr -lpam
 
-$(CONFIG)/inc/sqlite3.h: 
+$(CONFIG)/inc/sqlite3.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/sqlite3.h
 	cp -r src/deps/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
 
@@ -251,13 +256,18 @@ $(CONFIG)/bin/sqlite:  \
         $(CONFIG)/obj/sqlite.o
 	$(CC) -o $(CONFIG)/bin/sqlite -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o -lsqlite3 $(LIBS)
 
-$(CONFIG)/inc/appweb.h: 
-	rm -fr $(CONFIG)/inc/appweb.h
-	cp -r src/appweb.h $(CONFIG)/inc/appweb.h
-
-$(CONFIG)/inc/customize.h: 
+$(CONFIG)/inc/customize.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/customize.h
 	cp -r src/customize.h $(CONFIG)/inc/customize.h
+
+$(CONFIG)/inc/appweb.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/inc/http.h \
+        $(CONFIG)/inc/customize.h
+	rm -fr $(CONFIG)/inc/appweb.h
+	cp -r src/appweb.h $(CONFIG)/inc/appweb.h
 
 $(CONFIG)/obj/config.o: \
         src/config.c \
@@ -308,7 +318,9 @@ $(CONFIG)/bin/libappweb.dylib:  \
         $(CONFIG)/obj/server.o
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.1.0 -current_version 4.1.0 -compatibility_version 4.1.0 -current_version 4.1.0 $(LIBPATHS) -install_name @rpath/libappweb.dylib $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr -lpam
 
-$(CONFIG)/inc/edi.h: 
+$(CONFIG)/inc/edi.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
 	rm -fr $(CONFIG)/inc/edi.h
 	cp -r src/esp/edi.h $(CONFIG)/inc/edi.h
 
@@ -316,11 +328,17 @@ $(CONFIG)/inc/esp-app.h:
 	rm -fr $(CONFIG)/inc/esp-app.h
 	cp -r src/esp/esp-app.h $(CONFIG)/inc/esp-app.h
 
-$(CONFIG)/inc/esp.h: 
+$(CONFIG)/inc/esp.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h \
+        $(CONFIG)/inc/edi.h
 	rm -fr $(CONFIG)/inc/esp.h
 	cp -r src/esp/esp.h $(CONFIG)/inc/esp.h
 
-$(CONFIG)/inc/mdb.h: 
+$(CONFIG)/inc/mdb.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h \
+        $(CONFIG)/inc/edi.h
 	rm -fr $(CONFIG)/inc/mdb.h
 	cp -r src/esp/mdb.h $(CONFIG)/inc/mdb.h
 
@@ -477,7 +495,8 @@ $(CONFIG)/bin/setConfig:  \
         $(CONFIG)/obj/setConfig.o
 	$(CC) -o $(CONFIG)/bin/setConfig -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o -lmpr $(LIBS)
 
-$(CONFIG)/inc/appwebMonitor.h: 
+$(CONFIG)/inc/appwebMonitor.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/appwebMonitor.h
 	cp -r src/server/appwebMonitor.h $(CONFIG)/inc/appwebMonitor.h
 
@@ -501,7 +520,10 @@ src/server/cache:
 		mkdir -p cache ;\
 		cd - >/dev/null 
 
-$(CONFIG)/inc/testAppweb.h: 
+$(CONFIG)/inc/testAppweb.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/inc/http.h
 	rm -fr $(CONFIG)/inc/testAppweb.h
 	cp -r test/testAppweb.h $(CONFIG)/inc/testAppweb.h
 
@@ -532,22 +554,15 @@ test/cgi-bin/testScript:  \
 
 test/web/caching/cache.cgi: 
 	cd test >/dev/null ;\
-		echo "#!`type -p sh`" >web/caching/cache.cgi ;\
-	echo '' >>web/caching/cache.cgi ;\
-	echo 'echo HTTP/1.0 200 OK' >>web/caching/cache.cgi ;\
-	echo 'echo Content-Type: text/plain' >>web/caching/cache.cgi ;\
-	echo 'date' >>web/caching/cache.cgi ;\
+		echo "#!`type -p ejs`" >web/caching/cache.cgi ;\
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ;\
 	chmod +x web/caching/cache.cgi ;\
 		cd - >/dev/null 
 
 test/web/auth/basic/basic.cgi: 
 	cd test >/dev/null ;\
-		echo "#!`type -p sh`" >web/auth/basic/basic.cgi ;\
-	echo '' >>web/auth/basic/basic.cgi ;\
-	echo 'echo HTTP/1.0 200 OK' >>web/auth/basic/basic.cgi ;\
-	echo 'echo Content-Type: text/plain' >>web/auth/basic/basic.cgi ;\
-	echo 'echo' >>web/auth/basic/basic.cgi ;\
-	echo '/usr/bin/env' >>web/auth/basic/basic.cgi ;\
+		echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ;\
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ;\
 	chmod +x web/auth/basic/basic.cgi ;\
 		cd - >/dev/null 
 
