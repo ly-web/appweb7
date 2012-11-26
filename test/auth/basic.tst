@@ -44,8 +44,8 @@ if (App.config.bit_cgi && global.test && test.hostOs != "VXWORKS") {
     http.setCredentials("joshua", "pass1")
     http.get(HTTP + "/auth/basic/basic.cgi")
     assert(http.status == 200)
-    assert(http.response.contains("SCRIPT_NAME=/auth/basic/basic.cgi"))
+    assert(http.response.contains("\"SCRIPT_NAME\": \"/auth/basic/basic.cgi\""))
     assert(!http.response.contains("PATH_INFO"))
     assert(!http.response.contains("PATH_TRANSLATED"))
-    assert(http.response.contains("REMOTE_USER=joshua"))
+    assert(http.response.contains("\"REMOTE_USER\": \"joshua\""))
 }
