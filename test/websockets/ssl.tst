@@ -27,10 +27,10 @@ ws.onmessage = function (event) {
 }
 ws.wait(WebSocket.OPEN, TIMEOUT)
 assert(opened)
-assert(!closed)
 
 ws.wait(WebSocket.CLOSED, TIMEOUT)
 assert(ws.readyState == WebSocket.CLOSED)
+assert(closed)
 
 //  Text == 1, last == 1, first 10 data bytes
 let info = deserialize(response)
