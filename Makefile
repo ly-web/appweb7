@@ -34,10 +34,17 @@ else
 endif
     MAKE:= projects/windows.bat $(ARCH)
     EXT := nmake
+else
+	ARCH:= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/')
 endif
 
 all compile:
 	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
+	@echo ; echo 'You can now run Appweb via: "make run"'
+	@echo ; echo "To run manually, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path" ; echo
+
+run:
+	sudo $(OS)-$(ARCH)-$(PROFILE)/bin/appweb --home src/server -v
 
 clean clobber:
 	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
