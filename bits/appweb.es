@@ -162,7 +162,7 @@ public function packageSourceFiles() {
         exclude: /\.log$|\.lst$|ejs\/|ejs.zip|\.stackdump$|\/cache\/|huge.txt|\.swp$|\.tmp/,
     })
     install('test', pkg, {
-        exclude: /\.log$|\.lst$|ejs.zip|\.stackdump$|\/cache\/|huge.txt|\.swp$|\.tmp|\.o$|\.obj$|\.so$|\.dylib$/,
+        exclude: /\.log$|\.lst$|ejs.zip|\.stackdump$|\/cache\/|huge.txt|\.swp$|\.tmp|\.o$|\.obj$|\.so$|\.dylib$|cache\.cgi|basic\.cgi|testScript/,
     })
     install('doc', pkg, {
         exclude: /\/xml\/|\/html\/|Archive|\.mod$|\.so$|\.dylib$|\.o$/,
