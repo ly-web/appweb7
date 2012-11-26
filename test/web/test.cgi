@@ -1,10 +1,8 @@
-#!/bin/sh
+#!/usr/bin/env ejs
 
-echo "Content-type: text/html"
-echo ""
-echo "PATH $PATH"
-echo "<html><body><p>Simple CGI program</p>"
-echo "<pre>" 
-env
-echo "</pre>"
-echo "</body></html>"
+print("HTTP/1.0 200 OK
+Content-Type: text/plain
+
+Simple CGI Program
+" + serialize(App.env, {pretty: true}) + "
+")
