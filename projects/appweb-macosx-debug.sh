@@ -71,11 +71,11 @@ ${CC} -c -o ${CONFIG}/obj/sqlite.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAG
 
 ${CC} -o ${CONFIG}/bin/sqlite -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sqlite.o -lsqlite3 ${LIBS}
 
-rm -rf ${CONFIG}/inc/customize.h
-cp -r src/customize.h ${CONFIG}/inc/customize.h
-
 rm -rf ${CONFIG}/inc/appweb.h
 cp -r src/appweb.h ${CONFIG}/inc/appweb.h
+
+rm -rf ${CONFIG}/inc/customize.h
+cp -r src/customize.h ${CONFIG}/inc/customize.h
 
 ${CC} -c -o ${CONFIG}/obj/config.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/config.c
 

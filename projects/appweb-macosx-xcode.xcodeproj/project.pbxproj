@@ -68,29 +68,29 @@
 			name = test-testScript;
 			productName = test-testScript;
 		};
-		9BE59F849BE5E10C0000001B /* cache.cgi */ = {
+		9BE59F849BE5E10C0000001B /* test-cache.cgi */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 9BE59F849BE5E10C0000001A /* Build configuration list for PBXAggregateTarget "cache.cgi" */;
+			buildConfigurationList = 9BE59F849BE5E10C0000001A /* Build configuration list for PBXAggregateTarget "test-cache.cgi" */;
 			buildPhases = (
 				9BE59F849BE5E10C0000001C,
 			);
 			dependencies = (
 				9BE59F849BE5E10C0000001D /* PBXTargetDependency Prep */,
 			);
-			name = cache.cgi;
-			productName = cache.cgi;
+			name = test-cache.cgi;
+			productName = test-cache.cgi;
 		};
-		9BE59F849BE5E10C0000001F /* basic.cgi */ = {
+		9BE59F849BE5E10C0000001F /* test-basic.cgi */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 9BE59F849BE5E10C0000001E /* Build configuration list for PBXAggregateTarget "basic.cgi" */;
+			buildConfigurationList = 9BE59F849BE5E10C0000001E /* Build configuration list for PBXAggregateTarget "test-basic.cgi" */;
 			buildPhases = (
 				9BE59F849BE5E10C00000020,
 			);
 			dependencies = (
 				9BE59F849BE5E10C00000021 /* PBXTargetDependency Prep */,
 			);
-			name = basic.cgi;
-			productName = basic.cgi;
+			name = test-basic.cgi;
+			productName = test-basic.cgi;
 		};
 		9BE59F849BE5E10C00000023 /* test-cgiProgram */ = {
 			isa = PBXAggregateTarget;
@@ -147,8 +147,8 @@
 				9BE59F849BE5E10C00000041 /* PBXTargetDependency server-cache */,
 				9BE59F849BE5E10C00000042 /* PBXTargetDependency testAppweb */,
 				9BE59F849BE5E10C00000043 /* PBXTargetDependency test-testScript */,
-				9BE59F849BE5E10C00000044 /* PBXTargetDependency cache.cgi */,
-				9BE59F849BE5E10C00000045 /* PBXTargetDependency basic.cgi */,
+				9BE59F849BE5E10C00000044 /* PBXTargetDependency test-cache.cgi */,
+				9BE59F849BE5E10C00000045 /* PBXTargetDependency test-basic.cgi */,
 				9BE59F849BE5E10C00000046 /* PBXTargetDependency test-cgiProgram */,
 				9BE59F849BE5E10C00000047 /* PBXTargetDependency test.js */,
 			);
@@ -539,14 +539,14 @@
 			remoteGlobalIDString = 9BE59F849BE5E10C00000049;
 			remoteInfo = Prep;
 		};
-		9BE59F849BE5E10C000000EA /* PBXContainerItemProxy Prep from cache.cgi */ = {
+		9BE59F849BE5E10C000000EA /* PBXContainerItemProxy Prep from test-cache.cgi */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9BE59F849BE5E10C00000001 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 9BE59F849BE5E10C00000049;
 			remoteInfo = Prep;
 		};
-		9BE59F849BE5E10C000000EB /* PBXContainerItemProxy Prep from basic.cgi */ = {
+		9BE59F849BE5E10C000000EB /* PBXContainerItemProxy Prep from test-basic.cgi */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9BE59F849BE5E10C00000001 /* Project object */;
 			proxyType = 1;
@@ -735,19 +735,19 @@
 			remoteGlobalIDString = 9BE59F849BE5E10C00000016;
 			remoteInfo = test-testScript;
 		};
-		9BE59F849BE5E10C00000110 /* PBXContainerItemProxy cache.cgi from All */ = {
+		9BE59F849BE5E10C00000110 /* PBXContainerItemProxy test-cache.cgi from All */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9BE59F849BE5E10C00000001 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 9BE59F849BE5E10C0000001B;
-			remoteInfo = cache.cgi;
+			remoteInfo = test-cache.cgi;
 		};
-		9BE59F849BE5E10C00000111 /* PBXContainerItemProxy basic.cgi from All */ = {
+		9BE59F849BE5E10C00000111 /* PBXContainerItemProxy test-basic.cgi from All */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9BE59F849BE5E10C00000001 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 9BE59F849BE5E10C0000001F;
-			remoteInfo = basic.cgi;
+			remoteInfo = test-basic.cgi;
 		};
 		9BE59F849BE5E10C00000112 /* PBXContainerItemProxy test-cgiProgram from All */ = {
 			isa = PBXContainerItemProxy;
@@ -1670,7 +1670,7 @@ mkdir -p cache";
 			shellScript = "cd ../test
 echo '#!../macosx-x64-xcode/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript";
 		};
-		9BE59F849BE5E10C0000001C /* ShellScript for cache.cgi */ = {
+		9BE59F849BE5E10C0000001C /* ShellScript for test-cache.cgi */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1688,7 +1688,7 @@ echo \"#!`type -p ejs`\" >web/caching/cache.cgi
 echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n\" + Date() + \"\\n\")' >>web/caching/cache.cgi
 chmod +x web/caching/cache.cgi";
 		};
-		9BE59F849BE5E10C00000020 /* ShellScript for basic.cgi */ = {
+		9BE59F849BE5E10C00000020 /* ShellScript for test-basic.cgi */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1838,12 +1838,12 @@ fi";
 				9BE59F849BE5E10C00000109 /* setConfig */,
 				9BE59F849BE5E10C000000FC /* sqlite */,
 				9BE59F849BE5E10C0000010E /* testAppweb */,
-				9BE59F849BE5E10C0000001F /* basic.cgi */,
-				9BE59F849BE5E10C0000001B /* cache.cgi */,
 				9BE59F849BE5E10C0000000E /* esp-appweb.conf */,
 				9BE59F849BE5E10C00000006 /* esp.conf */,
 				9BE59F849BE5E10C0000000A /* esp.www */,
 				9BE59F849BE5E10C00000012 /* server-cache */,
+				9BE59F849BE5E10C0000001F /* test-basic.cgi */,
+				9BE59F849BE5E10C0000001B /* test-cache.cgi */,
 				9BE59F849BE5E10C00000023 /* test-cgiProgram */,
 				9BE59F849BE5E10C00000016 /* test-testScript */,
 				9BE59F849BE5E10C00000028 /* test.js */,
@@ -2227,12 +2227,12 @@ fi";
 			target = 9BE59F849BE5E10C00000049 /* Prep */;
 			targetProxy = 9BE59F849BE5E10C000000E9 /* PBXContainerItemProxy */;
 		};
-		9BE59F849BE5E10C0000001D /* PBXTargetDependency cache.cgi depends on Prep */ = {
+		9BE59F849BE5E10C0000001D /* PBXTargetDependency test-cache.cgi depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 9BE59F849BE5E10C00000049 /* Prep */;
 			targetProxy = 9BE59F849BE5E10C000000EA /* PBXContainerItemProxy */;
 		};
-		9BE59F849BE5E10C00000021 /* PBXTargetDependency basic.cgi depends on Prep */ = {
+		9BE59F849BE5E10C00000021 /* PBXTargetDependency test-basic.cgi depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 9BE59F849BE5E10C00000049 /* Prep */;
 			targetProxy = 9BE59F849BE5E10C000000EB /* PBXContainerItemProxy */;
@@ -2367,14 +2367,14 @@ fi";
 			target = 9BE59F849BE5E10C00000016 /* test-testScript */;
 			targetProxy = 9BE59F849BE5E10C0000010F /* PBXContainerItemProxy */;
 		};
-		9BE59F849BE5E10C00000044 /* PBXTargetDependency All depends on cache.cgi */ = {
+		9BE59F849BE5E10C00000044 /* PBXTargetDependency All depends on test-cache.cgi */ = {
 			isa = PBXTargetDependency;
-			target = 9BE59F849BE5E10C0000001B /* cache.cgi */;
+			target = 9BE59F849BE5E10C0000001B /* test-cache.cgi */;
 			targetProxy = 9BE59F849BE5E10C00000110 /* PBXContainerItemProxy */;
 		};
-		9BE59F849BE5E10C00000045 /* PBXTargetDependency All depends on basic.cgi */ = {
+		9BE59F849BE5E10C00000045 /* PBXTargetDependency All depends on test-basic.cgi */ = {
 			isa = PBXTargetDependency;
-			target = 9BE59F849BE5E10C0000001F /* basic.cgi */;
+			target = 9BE59F849BE5E10C0000001F /* test-basic.cgi */;
 			targetProxy = 9BE59F849BE5E10C00000111 /* PBXContainerItemProxy */;
 		};
 		9BE59F849BE5E10C00000046 /* PBXTargetDependency All depends on test-cgiProgram */ = {
@@ -3099,7 +3099,7 @@ fi";
 		9BE59F849BE5E10C000001BB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = cache.cgi;
+				PRODUCT_NAME = test-cache.cgi;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"BIT_DEBUG",
@@ -3111,7 +3111,7 @@ fi";
 		9BE59F849BE5E10C000001BC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = cache.cgi;
+				PRODUCT_NAME = test-cache.cgi;
 
 
 			};
@@ -3120,7 +3120,7 @@ fi";
 		9BE59F849BE5E10C000001BD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = basic.cgi;
+				PRODUCT_NAME = test-basic.cgi;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"BIT_DEBUG",
@@ -3132,7 +3132,7 @@ fi";
 		9BE59F849BE5E10C000001BE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = basic.cgi;
+				PRODUCT_NAME = test-basic.cgi;
 
 
 			};
@@ -3441,7 +3441,7 @@ fi";
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		9BE59F849BE5E10C0000001A /* Build configuration list for PBXNativeTarget "cache.cgi" */ = {
+		9BE59F849BE5E10C0000001A /* Build configuration list for PBXNativeTarget "test-cache.cgi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9BE59F849BE5E10C000001BB /* Debug */,
@@ -3450,7 +3450,7 @@ fi";
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		9BE59F849BE5E10C0000001E /* Build configuration list for PBXNativeTarget "basic.cgi" */ = {
+		9BE59F849BE5E10C0000001E /* Build configuration list for PBXNativeTarget "test-basic.cgi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9BE59F849BE5E10C000001BD /* Debug */,

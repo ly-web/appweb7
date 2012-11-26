@@ -24,7 +24,7 @@ Bit.load({
             platforms: [ 'local' ],
         },
 
-        'cache.cgi': {
+        'test-cache.cgi': {
             path: 'web/caching/cache.cgi',
             build: "
                 let path = Path('web/caching/cache.cgi')
@@ -40,7 +40,7 @@ Bit.load({
             platforms: [ 'local' ],
         },
 
-        'basic.cgi': {
+        'test-basic.cgi': {
             path: 'web/auth/basic/basic.cgi',
             build: "
                 let path = Path('web/auth/basic/basic.cgi')
