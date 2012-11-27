@@ -1174,8 +1174,8 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     /*
         Single stack network cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint
      */
-    if (schr(value, ':')) {
-        mprAddItem(state->server->endpoints, httpCreateEndpoint("[::]", port, NULL));
+    if (!schr(value, ':')) {
+        mprAddItem(state->server->endpoints, httpCreateEndpoint("::", port, NULL));
     }
 #endif
     return 0;
