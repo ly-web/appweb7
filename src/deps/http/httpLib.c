@@ -2289,7 +2289,8 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
         (conn->timeoutCallback)(conn);
     }
     if (!conn->connError) {
-        if (conn->state < HTTP_STATE_PARSED && (conn->started + limits->requestParseTimeout) < now) {
+        if (HTTP_STATE_BEGIN < conn->state && conn->state < HTTP_STATE_PARSED && 
+                (conn->started + limits->requestParseTimeout) < now) {
             httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Exceeded parse headers timeout of %Ld sec", 
                 limits->requestParseTimeout  / 1000);
         } else {
@@ -4922,7 +4923,7 @@ static void httpTimer(Http *http, MprEvent *event)
         limits = conn->limits;
         if (!conn->timeoutEvent) {
             abort = 0;
-            if (conn->endpoint && conn->state < HTTP_STATE_PARSED && 
+            if (conn->endpoint && HTTP_STATE_BEGIN < conn->state && conn->state < HTTP_STATE_PARSED && 
                     (conn->started + limits->requestParseTimeout) < http->now) {
                 abort = 1;
             } else if ((conn->lastActivity + limits->inactivityTimeout) < http->now || 
