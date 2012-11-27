@@ -19197,6 +19197,11 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         rc = 1;
         setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR, (char*) &rc, sizeof(rc));
     }
+#elif WINDOWS
+{
+    int off = 0;
+    setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &off, sizeof(off));
+}
 #endif
     if (sp->service->prebind) {
         if ((sp->service->prebind)(sp) < 0) {
@@ -19217,6 +19222,7 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         unlock(sp);
         return MPR_ERR_CANT_OPEN;
     }
+
 
     /* NOTE: Datagrams have not been used in a long while. Maybe broken */
     if (!datagram) {
