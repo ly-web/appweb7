@@ -1106,9 +1106,9 @@ static void mark()
 #else
     heap->mustYield = 1;
     if (!pauseThreads()) {
-        LOG(6, "DEBUG: GC synchronization timed out, some threads did not yield.");
-        LOG(6, "This is most often caused by a thread doing a long running operation and not first calling mprYield.");
-        LOG(6, "If debugging, run the process with -D to enable debug mode.");
+        LOG(7, "DEBUG: GC synchronization timed out, some threads did not yield.");
+        LOG(7, "This is most often caused by a thread doing a long running operation and not first calling mprYield.");
+        LOG(7, "If debugging, run the process with -D to enable debug mode.");
         return;
     }
     nextGen();
@@ -19197,11 +19197,14 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         rc = 1;
         setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR, (char*) &rc, sizeof(rc));
     }
-#elif WINDOWS
-{
-    int off = 0;
-    setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &off, sizeof(off));
-}
+#elif WINDOWS && _WIN32_WINNT >= 0x0600
+    /*
+        Vista introduced dual network stack for IPv4 and IPv6
+     */
+    {
+        int off = 0;
+        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &off, sizeof(off));
+    }
 #endif
     if (sp->service->prebind) {
         if ((sp->service->prebind)(sp) < 0) {
@@ -19222,7 +19225,6 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         unlock(sp);
         return MPR_ERR_CANT_OPEN;
     }
-
 
     /* NOTE: Datagrams have not been used in a long while. Maybe broken */
     if (!datagram) {
@@ -25755,7 +25757,7 @@ PUBLIC void mprSetFilesLimit(int limit)
         }
     }
     getrlimit(RLIMIT_NOFILE, &r);
-    mprLog(6, "Set files limit to soft %d, max %d\n", r.rlim_cur, r.rlim_max);
+    mprLog(6, "Set files limit to soft %d, max %d", r.rlim_cur, r.rlim_max);
 }
 
 #endif /* BIT_UNIX_LIKE */
