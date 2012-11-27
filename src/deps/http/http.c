@@ -891,11 +891,6 @@ static void readBody(HttpConn *conn, MprFile *outFile)
     if (app->noout) {
         return;
     }
-#if UNUSED
-    if (app->noout || rx->status == 401 || (conn->followRedirects && (301 <= rx->status && rx->status <= 302))) {
-        return;
-    }
-#endif
     while (!conn->error && conn->sock && (bytes = httpRead(conn, buf, sizeof(buf))) > 0) {
         result = formatOutput(conn, buf, &bytes);
         mprWriteFile(outFile, result, bytes);

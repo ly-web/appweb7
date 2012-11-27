@@ -3584,7 +3584,7 @@ PUBLIC bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn
                 endpoint->clientCount, limits->clientMax);
         }
     }
-#if UNUSED
+#if KEEP
     LOG(0, "Validate Active connections %d, requests: %d/%d, IP %d/%d, Processes %d/%d", 
         mprGetListLength(http->connections), endpoint->requestCount, limits->requestMax, 
         endpoint->clientCount, limits->clientMax, http->processCount, limits->processMax);
@@ -4154,7 +4154,7 @@ static void manageHost(HttpHost *host, int flags);
 
 /*********************************** Code *************************************/
 
-PUBLIC HttpHost *httpCreateHost(cchar *home)
+PUBLIC HttpHost *httpCreateHost()
 {
     HttpHost    *host;
     Http        *http;
@@ -4172,7 +4172,6 @@ PUBLIC HttpHost *httpCreateHost(cchar *home)
     host->routes = mprCreateList(-1, 0);
     host->flags = HTTP_HOST_NO_TRACE;
     host->protocol = sclone("HTTP/1.1");
-    host->home = sclone(home ? home : ".");
     httpAddHost(http, host);
     return host;
 }
@@ -4196,7 +4195,6 @@ PUBLIC HttpHost *httpCloneHost(HttpHost *parent)
      */
     host->parent = parent;
     host->responseCache = parent->responseCache;
-    host->home = parent->home;
     host->routes = parent->routes;
     host->flags = parent->flags | HTTP_HOST_VHOST;
     host->protocol = parent->protocol;
@@ -4216,7 +4214,6 @@ static void manageHost(HttpHost *host, int flags)
         mprMark(host->defaultRoute);
         mprMark(host->protocol);
         mprMark(host->mutex);
-        mprMark(host->home);
         mprMark(host->defaultEndpoint);
         mprMark(host->secureEndpoint);
 
@@ -4318,12 +4315,6 @@ PUBLIC void httpLogRoutes(HttpHost *host, bool full)
         printRoute(host->defaultRoute, next - 1, full);
     }
     mprRawLog(0, "\n");
-}
-
-
-PUBLIC void httpSetHostHome(HttpHost *host, cchar *home)
-{
-    host->home = mprGetAbsPath(home);
 }
 
 
@@ -8036,6 +8027,7 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     route->auth = httpCreateAuth();
     route->defaultLanguage = sclone("en");
     route->dir = mprGetCurrentPath(".");
+    route->home = route->dir;
     route->errorDocuments = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
     route->extensions = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS);
     route->flags = HTTP_ROUTE_GZIP;
@@ -8090,6 +8082,7 @@ PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *parent)
     route->connector = parent->connector;
     route->defaultLanguage = parent->defaultLanguage;
     route->dir = parent->dir;
+    route->home = parent->home;
     route->data = parent->data;
     route->eroute = parent->eroute;
     route->errorDocuments = parent->errorDocuments;
@@ -8155,6 +8148,7 @@ static void manageRoute(HttpRoute *route, int flags)
         mprMark(route->targetRule);
         mprMark(route->target);
         mprMark(route->dir);
+        mprMark(route->home);
         mprMark(route->indicies);
         mprMark(route->methodSpec);
         mprMark(route->handler);
@@ -9057,6 +9051,16 @@ PUBLIC void httpSetRouteDir(HttpRoute *route, cchar *path)
 }
 
 
+PUBLIC void httpSetRouteHome(HttpRoute *route, cchar *path)
+{
+    assure(route);
+    assure(path && *path);
+    
+    route->home = httpMakePath(route, path);
+    httpSetRouteVar(route, "ROUTE_HOME", route->home);
+}
+
+
 /*
     WARNING: internal API only. 
  */
@@ -9753,7 +9757,7 @@ PUBLIC void httpSetRouteVar(HttpRoute *route, cchar *key, cchar *value)
 
 /*
     Make a path name. This replaces $references, converts to an absolute path name, cleans the path and maps delimiters.
-    Paths are resolved relative to host->home (ServerRoot).
+    Paths are resolved relative to the route home.
  */
 PUBLIC char *httpMakePath(HttpRoute *route, cchar *file)
 {
@@ -9766,7 +9770,7 @@ PUBLIC char *httpMakePath(HttpRoute *route, cchar *file)
         return 0;
     }
     if (mprIsPathRel(path) && route->host) {
-        path = mprJoinPath(route->host->home, path);
+        path = mprJoinPath(route->home, path);
     }
     return mprGetAbsPath(path);
 }
@@ -10429,7 +10433,9 @@ static void defineHostVars(HttpRoute *route)
 {
     assure(route);
     mprAddKey(route->vars, "DOCUMENT_ROOT", route->dir);
-    mprAddKey(route->vars, "SERVER_ROOT", route->host->home);
+    mprAddKey(route->vars, "ROUTE_HOME", route->home);
+    //  DEPRECATE
+    mprAddKey(route->vars, "SERVER_ROOT", route->home);
     mprAddKey(route->vars, "SERVER_NAME", route->host->name);
     mprAddKey(route->vars, "SERVER_PORT", itos(route->host->port));
 }
@@ -11615,10 +11621,6 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
                 } else if (scaselesscmp(value, "CLOSE") == 0) {
                     /*  Not really required, but set to 0 to be sure */
                     conn->keepAliveCount = 0;
-#if UNUSED && CLASHES
-                } else if (scaselesscmp(value, "upgrade") == 0) {
-                    rx->upgrade = sclone(value);
-#endif
                 }
 
             } else if (strcasecmp(key, "content-length") == 0) {
@@ -11811,33 +11813,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             } else if (strcasecmp(key, "referer") == 0) {
                 /* NOTE: yes the header is misspelt in the spec */
                 rx->referrer = sclone(value);
-#if UNUSED
-            /*
-                There is a draft spec for these, but it has bad DOS security implications.
-             */
-            } else if (strcasecmp(key, "request-timeout") == 0) {
-                conn->limits->requestTimeout = stoi(value) * MPR_TICKS_PER_SEC;
-                conn->limits->inactivityTimeout = stoi(value) * MPR_TICKS_PER_SEC;
-#endif
             }
-            break;
-
-        case 's':
-#if UNUSED
-            if (strcasecmp(key, "sec-websocket-key") == 0) {
-                rx->webSockKey = sclone(value);
-            } else if (strcasecmp(key, "sec-websocket-extensions") == 0) {
-                if (rx->extensions) {
-                    rx->extensions = sjoin(rx->extensions, ", ", value, NULL);
-                } else {
-                    rx->extensions = sclone(value);
-                }
-            } else if (strcasecmp(key, "sec-websocket-protocol") == 0) {
-                rx->webSockProtocols = sclone(value);
-            } else if (strcasecmp(key, "sec-websocket-version") == 0) {
-                rx->webSockVersion = (int) stoi(value);
-            }
-#endif
             break;
 
         case 't':
@@ -16121,6 +16097,10 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
     host = conn->host;
     sock = conn->sock;
 
+    mprAddKey(svars, "ROUTE_HOME", rx->route->home);
+    //  DEPRECATED
+    mprAddKey(svars, "SERVER_ROOT", rx->route->home);
+
     mprAddKey(svars, "AUTH_TYPE", conn->authType);
     mprAddKey(svars, "AUTH_USER", conn->username);
     mprAddKey(svars, "AUTH_ACL", MPR->emptyString);
@@ -16140,7 +16120,6 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
     mprAddKey(svars, "SERVER_NAME", host->name);
     mprAddKeyFmt(svars, "SERVER_PORT", "%d", sock->acceptPort);
     mprAddKey(svars, "SERVER_PROTOCOL", conn->protocol);
-    mprAddKey(svars, "SERVER_ROOT", host->home);
     mprAddKey(svars, "SERVER_SOFTWARE", conn->http->software);
     /*
         For PHP, REQUEST_URI must be the original URI. The SCRIPT_NAME will refer to the new pathInfo

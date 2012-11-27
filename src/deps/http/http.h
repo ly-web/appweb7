@@ -2967,7 +2967,10 @@ typedef struct HttpRoute {
     char            *tplate;                /**< URI template for forming links based on this route (includes prefix) */
     char            *targetRule;            /**< Target rule */
     char            *target;                /**< Route target details */
-    char            *dir;                   /**< Directory filename (DocumentRoot) */
+
+    //  MOB - rename documents
+    char            *dir;                   /**< Documents directory */
+    char            *home;                  /**< Home directory for configuration files */
     MprList         *indicies;              /**< Directory index documents */
     char            *methodSpec;            /**< Supported HTTP methods */
     HttpStage       *handler;               /**< Fixed handler */
@@ -3664,7 +3667,6 @@ PUBLIC void httpSetRouteDefaultLanguage(HttpRoute *route, cchar *language);
         target rules to calculate the response filename.
     @param route Route to modify
     @param dir Directory path name for the route content
-    @return The route documents directory pathname.
     @ingroup HttpRoute
  */
 PUBLIC void httpSetRouteDir(HttpRoute *route, cchar *dir);
@@ -3689,6 +3691,15 @@ PUBLIC void httpSetRouteFlags(HttpRoute *route, int flags);
     @ingroup HttpRoute
  */
 PUBLIC int httpSetRouteHandler(HttpRoute *route, cchar *name);
+
+/**
+    Set the route directory for configuration files
+    @description Routes can define a default directory for configuration files. 
+    @param route Route to modify
+    @param home Directory path name for configuration files 
+    @ingroup HttpRoute
+ */
+PUBLIC void httpSetRouteHome(HttpRoute *route, cchar *home);
 
 /*
     Define the owning host for a route.
@@ -5252,8 +5263,8 @@ typedef struct HttpHost {
     HttpRoute       *defaultRoute;          /**< Default route for the host */
     HttpEndpoint    *defaultEndpoint;       /**< Default endpoint for host */
     HttpEndpoint    *secureEndpoint;        /**< Secure endpoint for host */
-    char            *home;                  /**< Directory for configuration files */
     char            *protocol;              /**< Defaults to "HTTP/1.1" */
+    char            *root;                  /**< ServerRoot for this host */
     int             flags;                  /**< Host flags */
     MprMutex        *mutex;                 /**< Multithread sync */
 } HttpHost;
@@ -5397,13 +5408,13 @@ PUBLIC void httpSetHostDefaultRoute(HttpHost *host, HttpRoute *route);
 PUBLIC void httpSetHostSecureEndpoint(HttpHost *host, HttpEndpoint *endpoint);
 
 /**
-    Set the home directory for a host
-    @description The home directory is used by some host and route components to locate configuration files.
+    Set the server root for a host
+    @description The server root is used as the default directory to locate configuration files for the host
     @param host HttpHost object
-    @param dir Directory path for the host home
+    @param root Directory path for the host server root
     @ingroup HttpHost
  */
-PUBLIC void httpSetHostHome(HttpHost *host, cchar *dir);
+PUBLIC void httpSetHostRoot(HttpHost *host, cchar *root);
 
 /**
     Set the host internet address

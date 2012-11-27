@@ -232,7 +232,9 @@ typedef struct MaServer {
     HttpLimits      *limits;                /**< Limits for this server */
     MprList         *endpoints;             /**< List of HttpEndpoints */
     HttpHost        *defaultHost;           /**< Default host for this server */
+#if UNUSED
     char            *home;                  /**< Server root */
+#endif
 } MaServer;
 
 /**
@@ -329,6 +331,7 @@ PUBLIC int maRunWebServer(cchar *configFile);
  */
 PUBLIC void maSetServerAddress(MaServer *server, cchar *ip, int port);
 
+#if UNUSED
 /**
     Set the server home directory.
     @param server MaServer object created via #maCreateServer
@@ -336,6 +339,7 @@ PUBLIC void maSetServerAddress(MaServer *server, cchar *ip, int port);
     @ingroup MaAppweb
  */
 PUBLIC void maSetServerHome(MaServer *server, cchar *path);
+#endif
 
 /**
     Start a server

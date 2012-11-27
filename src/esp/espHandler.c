@@ -468,9 +468,9 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
-    path = mprJoinPath(route->host->home, "cache");
+    path = mprJoinPath(route->home, "cache");
     if (mprGetPathInfo(path, &info) != 0 || !info.isDir) {
-        path = route->host->home;
+        path = route->home;
     }
 #if DEBUG_IDE
     path = mprGetAppDir();
@@ -784,7 +784,7 @@ static int espDirDirective(MaState *state, cchar *key, cchar *value)
     if (scmp(name, "mvc") == 0) {
         setMvcDirs(eroute, state->route);
     } else {
-        path = stemplate(mprJoinPath(state->host->home, path), state->route->vars);
+        path = stemplate(mprJoinPath(state->route->home, path), state->route->vars);
         if (scmp(name, "cache") == 0) {
             eroute->cacheDir = path;
         } else if (scmp(name, "controllers") == 0) {
