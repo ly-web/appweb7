@@ -1152,7 +1152,7 @@ static int limitUploadDirective(MaState *state, cchar *key, cchar *value)
     Listen ip
     Listen port
 
-    Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[]" if appending a port.
+    Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[::]" if appending a port.
  */
 static int listenDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1170,6 +1170,14 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     if (!state->host->defaultEndpoint) {
         httpSetHostDefaultEndpoint(state->host, endpoint);
     }
+#if defined(BIT_HAS_SINGLE_STACK) || VXWORKS || (WINDOWS && _WIN32_WINNT < 0x0600)
+    /*
+        Single stack network cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint
+     */
+    if (schr(value, ':')) {
+        mprAddItem(state->server->endpoints, httpCreateEndpoint("[::]", port, NULL));
+    }
+#endif
     return 0;
 }
 

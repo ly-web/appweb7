@@ -21,6 +21,9 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
+#ifndef BIT_EJS_ONE_MODULE
+    #define BIT_EJS_ONE_MODULE 1
+#endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 1
 #endif

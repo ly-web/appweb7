@@ -66,6 +66,7 @@ Bit.load({
         ciphers: "HIGH:MEDIUM",
 
         packs: [ 'bits/packs' ]
+
         /* Must build locally to build tools */
         platforms: [ 'local' ],
         sync: ['http', 'mpr', 'pcre', 'sqlite'],

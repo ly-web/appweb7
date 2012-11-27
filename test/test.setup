@@ -6,7 +6,7 @@ require ejs.unix
 let conf        = Path("appweb.conf").readString()
 const HOST      = (test.hostOs == "VXWORKS") ? "192.168.200.1" : "127.0.0.1"
 const HOSTV6    = (test.hostOs == "VXWORKS") ? "192.168.200.1" : "[::1]"
-const HTTP      = "http://"  + HOST   + ":" + conf.replace(/.*Listen *\[::\]:*([0-9]+) *# MAIN.*/ms, "$1")
+const HTTP      = "http://"  + HOST   + ":" + conf.replace(/.*Listen *([0-9]+) *# MAIN.*/ms, "$1")
 const HTTPV6    = "http://"  + HOSTV6 + ":" + conf.replace(/.*Listen *([0-9]+) *# MAIN.*/ms, "$1")
 const SSL       = "https://" + HOST   + ":" + conf.replace(/.*ListenSecure *([0-9]+) *# SSL.*/ms, "$1")
 const MATRIXSSL = "https://" + HOST   + ":" + conf.replace(/.*ListenSecure *([0-9]+) *# MATRIX.*/ms, "$1")
