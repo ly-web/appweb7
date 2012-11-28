@@ -2295,8 +2295,10 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
                 limits->requestParseTimeout  / 1000);
         } else {
             if ((conn->lastActivity + limits->inactivityTimeout) < now) {
-                httpError(conn, HTTP_CODE_REQUEST_TIMEOUT,
-                    "Exceeded inactivity timeout of %Ld sec", limits->inactivityTimeout / 1000);
+                if (conn->state > HTTP_STATE_BEGIN) {
+                    httpError(conn, HTTP_CODE_REQUEST_TIMEOUT,
+                        "Exceeded inactivity timeout of %Ld sec", limits->inactivityTimeout / 1000);
+                }
 
             } else if ((conn->started + limits->requestTimeout) < now) {
                 httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Exceeded timeout %d sec", limits->requestTimeout / 1000);
@@ -11914,10 +11916,6 @@ static bool processParsed(HttpConn *conn)
         routeRequest(conn);
     }
     /*
-        Don't stream input if a form or upload. NOTE: Upload needs the Files[] collection.
-     */
-    rx->streamInput = !(rx->form || rx->upload);
-    /*
         Send a 100 (Continue) response if the client has requested it. If the connection has an error, that takes
         precedence and 100 Continue will not be sent. Also, if the connector has already written bytes to the socket, we
         do not send 100 Continue to avoid corrupting the response.
@@ -11931,14 +11929,15 @@ static bool processParsed(HttpConn *conn)
     }
     httpSetState(conn, HTTP_STATE_CONTENT);
 
-    if (rx->streamInput) {
-        httpStartPipeline(conn);
-    } else if (rx->remainingContent == 0) {
-        httpPutPacketToNext(conn->readq, httpCreateEndPacket());
+    if (rx->remainingContent == 0) {
         rx->eof = 1;
+    }
+    if (conn->endpoint && !(rx->form || rx->upload)) {
+        httpStartPipeline(conn);
+    }
+    if (rx->eof) {
         httpSetState(conn, HTTP_STATE_READY);
     }
-    httpServiceQueues(conn);
     return 1;
 }
 
@@ -12041,13 +12040,15 @@ static bool processContent(HttpConn *conn, HttpPacket *packet)
             Send "end" pack to signify eof to the handler
          */
         httpPutPacketToNext(q, httpCreateEndPacket());
-        if (!rx->streamInput) {
+        if (!tx->started) {
             httpStartPipeline(conn);
         }
         httpSetState(conn, HTTP_STATE_READY);
         return conn->workerEvent ? 0 : 1;
     }
-    httpServiceQueues(conn);
+    if (tx->started) {
+        httpServiceQueues(conn);
+    }
     if (rx->chunkState && nbytes <= 0) {
         /* Insufficient data */
         return 0;

@@ -4205,7 +4205,6 @@ typedef struct HttpRx {
     int             chunkState;             /**< Chunk encoding state */
     int             flags;                  /**< Rx modifiers */
     int             form;                   /**< Using mime-type application/x-www-form-urlencoded */
-    int             streamInput;            /**< Streaming read data. Means !form */
     int             needInputPipeline;      /**< Input pipeline required to process received data */
     int             traceLevel;             /**< General trace level for header level info */
     int             upload;                 /**< Request is using file upload */
