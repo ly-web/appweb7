@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' standalone='yes' ?>
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <tagfile>
   <compound kind="file">
     <name>mpr.h</name>
@@ -4607,6 +4607,13 @@
       <anchorfile>group___mpr.html</anchorfile>
       <anchor>ga278ee775a1c2e956d09a4683e778caea</anchor>
       <arglist>(MprTicks timeout)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprSetFilesLimit</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a53dd3e2813e09afdeca537bd1a8584c8</anchor>
+      <arglist>(int limit)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -10389,9 +10396,9 @@
     </member>
   </compound>
   <compound kind="dir">
-    <name>/Users/mob/git/mpr/src/</name>
+    <name>src</name>
     <path>/Users/mob/git/mpr/src/</path>
-    <filename>dir_5a99dfd120445cdafaf1d33ece26ab40.html</filename>
+    <filename>dir_68267d1309a1af8e8297ef4c3efbcdba.html</filename>
     <file>mpr.h</file>
   </compound>
 </tagfile>

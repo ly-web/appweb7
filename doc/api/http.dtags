@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' standalone='yes' ?>
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <tagfile>
   <compound kind="group">
     <name>Http</name>
@@ -939,8 +939,8 @@
       <type>void</type>
       <name>httpSetCredentials</name>
       <anchorfile>group___http_conn.html</anchorfile>
-      <anchor>gaa5e60e413456e688bb7286e238b50948</anchor>
-      <arglist>(HttpConn *conn, cchar *user, cchar *password)</arglist>
+      <anchor>gad6a93d697a3ae0fcba2ef78579fecf3c</anchor>
+      <arglist>(HttpConn *conn, cchar *user, cchar *password, cchar *authType)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1083,10 +1083,10 @@
       <arglist>)(HttpConn *conn)</arglist>
     </member>
     <member kind="typedef">
-      <type>void(*</type>
+      <type>bool(*</type>
       <name>HttpSetAuth</name>
       <anchorfile>group___http_auth.html</anchorfile>
-      <anchor>gaf985445db6520eba48313b8b60d3d8dc</anchor>
+      <anchor>ga9cbfc016784b5bad7de3e889265db572</anchor>
       <arglist>)(HttpConn *conn)</arglist>
     </member>
     <member kind="typedef">
@@ -1673,6 +1673,13 @@
       <anchorfile>group___http_route.html</anchorfile>
       <anchor>ga7f7b642a70a41a659ce3094881b872b6</anchor>
       <arglist>(HttpRoute *route, cchar *name)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetRouteHome</name>
+      <anchorfile>group___http_route.html</anchorfile>
+      <anchor>ga9f09cf024514587e80203b9a74f7a61f</anchor>
+      <arglist>(HttpRoute *route, cchar *home)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -2448,13 +2455,6 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>httpSetHostHome</name>
-      <anchorfile>group___http_host.html</anchorfile>
-      <anchor>ga5bc5d1f744922e3a408cb7e8cc86c2db</anchor>
-      <arglist>(HttpHost *host, cchar *dir)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
       <name>httpSetHostIpAddr</name>
       <anchorfile>group___http_host.html</anchorfile>
       <anchor>ga9c33731fd3222d8eed376feeb3b115ad</anchor>
@@ -2473,6 +2473,13 @@
       <anchorfile>group___http_host.html</anchorfile>
       <anchor>ga0f04d9504cb2005ef7f0f4ba2d653581</anchor>
       <arglist>(HttpHost *host, cchar *protocol)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetHostRoot</name>
+      <anchorfile>group___http_host.html</anchorfile>
+      <anchor>ga2302c34632a1b72ec759533ee9d7ad10</anchor>
+      <arglist>(HttpHost *host, cchar *root)</arglist>
     </member>
   </compound>
   <compound kind="group">
@@ -2672,9 +2679,9 @@
     </member>
   </compound>
   <compound kind="dir">
-    <name>/Users/mob/git/http/src/</name>
+    <name>src</name>
     <path>/Users/mob/git/http/src/</path>
-    <filename>dir_70295d4c3ce2bd5524090c949f8ed5c7.html</filename>
+    <filename>dir_68267d1309a1af8e8297ef4c3efbcdba.html</filename>
     <file>http.h</file>
   </compound>
 </tagfile>

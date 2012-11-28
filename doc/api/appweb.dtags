@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' standalone='yes' ?>
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <tagfile>
   <compound kind="group">
     <name>MaAppweb</name>
@@ -145,13 +145,6 @@
       <arglist>(MaServer *server, cchar *ip, int port)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>maSetServerHome</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>ga8e99d32507bca4e743bd52fb9175c6f3</anchor>
-      <arglist>(MaServer *server, cchar *path)</arglist>
-    </member>
-    <member kind="function">
       <type>int</type>
       <name>maStartAccessLogging</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
@@ -233,9 +226,9 @@
     <filename>group___ma_state.html</filename>
   </compound>
   <compound kind="dir">
-    <name>/Users/mob/git/appweb/src/</name>
+    <name>src</name>
     <path>/Users/mob/git/appweb/src/</path>
-    <filename>dir_9556dc5a760e16a3902915b1ecaf1631.html</filename>
+    <filename>dir_68267d1309a1af8e8297ef4c3efbcdba.html</filename>
     <file>appweb.h</file>
   </compound>
 </tagfile>

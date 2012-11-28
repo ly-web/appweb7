@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.1.0 Documentation</title>
+    <title>Embedthis Appweb 4.2.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.1.0</div>
+                <div class="version">Embedthis Appweb 4.2.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -83,12 +83,10 @@
             the profile of client access is often well known, and the profile of malicious attacks are well outside this
             profile. The profile includes the rate of accesses, the length of URLs and the size of pages returned to the
             user.</p>
-
             <p>Appweb has a set of configuration file directives that allow you to define a sandbox which specifies how
             Appweb must be used for a request to be serviced. By using well defined sandbox directives, you can help
             ensure that your application will not be compromised by malicious requests. You should customize the
             sandbox limits to use minimum values and thus provide the most protection.</p>
-
             <h3>Security Limit Directives</h3>
             <p>The Appweb security limits can be used to effectively block some denial of service attacks. 
             Setting the LimitRequestsPerClient to a low value can restrict the ability of a malicious client to monopolize
@@ -96,9 +94,7 @@
             request headers. The server is then forced to wait for the client to complete the request before it can
             act. However, setting the RequestParseTimeout directive to a low value will abort such requests and prevent
             such attacks.</p>
-
             <p>The important security limit directives are:</p>
-
             <table title="sandbox">
                 <tbody>
                     <tr>
@@ -132,10 +128,8 @@
                     </tr>
                 </tbody>
             </table>
-
             <h3>Sandbox Limit Directives</h3>
             <p>The additional sandbox limit directives are:</p>
-
             <table title="sandbox">
                 <tbody>
                     <tr>
@@ -200,9 +194,7 @@
                     </tr>
                 </tbody>
             </table>
-
             <p>See the <a href="dir/sandbox.html">Sandbox Directives</a> for further details.</p>
-
             <a id="account"></a>
             <h2 class="section">Appweb User Account</h2>
             <p>It is important that you run Appweb with the lowest system privilege that will get the job done. If any
