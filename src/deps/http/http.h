@@ -5295,7 +5295,7 @@ PUBLIC HttpHost *httpCloneHost(HttpHost *parent);
     @return The new HttpHost object.
     @ingroup HttpHost
  */
-PUBLIC HttpHost *httpCreateHost(cchar *home);
+PUBLIC HttpHost *httpCreateHost();
 
 /**
     Define a route
