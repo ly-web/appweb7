@@ -12203,8 +12203,9 @@ static void createErrorRequest(HttpConn *conn)
 
     rx = conn->rx;
     tx = conn->tx;
-    assure(rx->headerPacket);
-
+    if (!rx->headerPacket) {
+        return;
+    }
     conn->rx = httpCreateRx(conn);
     conn->tx = httpCreateTx(conn, NULL);
 
@@ -12217,13 +12218,18 @@ static void createErrorRequest(HttpConn *conn)
 
     packet = httpCreateDataPacket(HTTP_BUFSIZE);
     mprPutFmtToBuf(packet->content, "%s %s %s\r\n", rx->method, tx->errorDocument, conn->protocol);
+    buf = rx->headerPacket->content;
+    /*
+        Sever the old Rx and Tx for GC
+     */
+    rx->conn = 0;
+    tx->conn = 0;
 
     /*
         Reconstruct the headers. Change nulls to '\r', ' ', or ':' as appropriate
      */
     key = 0;
     headers = 0;
-    buf = rx->headerPacket->content;
     for (cp = buf->data; cp < &buf->end[-1]; cp++) {
         if (*cp == '\0') {
             if (cp[1] == '\n') {
@@ -12274,7 +12280,7 @@ static void processCompletion(HttpConn *conn)
     httpSetState(conn, HTTP_STATE_COMPLETE);
 
     if (tx->errorDocument && !conn->connError) {
-        mprLog(2, "Create error document %s for status %d from %s", tx->errorDocument, tx->status, rx->uri);
+        mprLog(2, "Create error document %s for status %d from %s and retry", tx->errorDocument, tx->status, rx->uri);
         createErrorRequest(conn);
     }
 }

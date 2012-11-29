@@ -386,7 +386,10 @@ static int sendHeaders(sapi_headers_struct *phpHeaders TSRMLS_DC)
 
     conn = (HttpConn*) SG(server_context);
     mprLog(6, "php: send headers");
-    httpSetStatus(conn, phpHeaders->http_response_code);
+    if (conn->tx->status == HTTP_CODE_OK) {
+        /* Preserve non-ok status that may be set if using a PHP ErrorDocument */
+        httpSetStatus(conn, phpHeaders->http_response_code);
+    }
     httpSetContentType(conn, phpHeaders->mimetype);
     return SAPI_HEADER_SENT_SUCCESSFULLY;
 }
