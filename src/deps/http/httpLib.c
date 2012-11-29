@@ -4080,8 +4080,7 @@ static char *formatErrorv(HttpConn *conn, int status, cchar *fmt, va_list args)
         if (conn->rx == 0 || conn->rx->uri == 0) {
             mprLog(2, "\"%s\", status %d: %s.", httpLookupStatus(conn->http, status), status, conn->errorMsg);
         } else {
-            mprLog(2, "Error: \"%s\", status %d for URI \"%s\": %s.",
-                httpLookupStatus(conn->http, status), status, conn->rx->uri ? conn->rx->uri : "", conn->errorMsg);
+            mprLog(2, "Error: %s", conn->errorMsg);
         }
     }
     return conn->errorMsg;

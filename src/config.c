@@ -1169,9 +1169,9 @@ static int limitUploadDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Listen ip:port
-    Listen ip
-    Listen port
+    Listen ip:port      Listens only on the specified interface
+    Listen ip           Listens only on the specified interface with the default port (80, 443)
+    Listen port         Listens on both IPv4 and IPv6
 
     Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[::]" if appending a port.
  */
@@ -1193,7 +1193,8 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     }
 #if defined(BIT_HAS_SINGLE_STACK) || VXWORKS || (WINDOWS && _WIN32_WINNT < 0x0600)
     /*
-        Single stack network cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint
+        Single stack network cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
+        This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
      */
     if (!schr(value, ':')) {
         mprAddItem(state->server->endpoints, httpCreateEndpoint("::", port, NULL));

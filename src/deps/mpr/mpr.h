@@ -7355,7 +7355,8 @@ PUBLIC bool mprIsSocketEof(MprSocket *sp);
 
 /**
     Listen on a server socket for incoming connections
-    @description Open a server socket and listen for client connections.
+    @description Open a server socket and listen for client connections. 
+        If ip is null, then this will listen on both IPv6 and IPv4.
     @param sp Socket object returned via #mprCreateSocket
     @param ip IP address to bind to. Set to 0.0.0.0 to bind to all possible addresses on a given port.
     @param port TCP/IP port number to connect to. 

@@ -19157,7 +19157,8 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
     MprSocklen          addrlen;
-    int                 datagram, family, protocol, rc;
+    cchar               *sip;
+    int                 datagram, family, protocol, rc, only;
 
     lock(sp);
 
@@ -19175,7 +19176,17 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
          MPR_SOCKET_LISTENER | MPR_SOCKET_NOREUSE | MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD));
 
     datagram = sp->flags & MPR_SOCKET_DATAGRAM;
-    if (mprGetSocketInfo(ip, port, &family, &protocol, &addr, &addrlen) < 0) {
+    /*
+        Change null IP address to be an IPv6 endpoint if the system is dual-stack. That way we can listen on 
+        both IPv4 and IPv6
+     */
+    sip = ip;
+#if !defined(BIT_HAS_SINGLE_STACK) && !VXWORKS && !(WINDOWS && _WIN32_WINNT < 0x0600)
+    if (ip == 0 || *ip == '\0') {
+        sip = "::";
+    }
+#endif
+    if (mprGetSocketInfo(sip, port, &family, &protocol, &addr, &addrlen) < 0) {
         unlock(sp);
         return MPR_ERR_CANT_FIND;
     }
@@ -19197,15 +19208,18 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         rc = 1;
         setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR, (char*) &rc, sizeof(rc));
     }
-#elif WINDOWS && _WIN32_WINNT >= 0x0600
-    /*
-        Vista introduced dual network stack for IPv4 and IPv6
-     */
-    {
-        int off = 0;
-        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &off, sizeof(off));
-    }
 #endif
+    /*
+        By default, most stacks listen on both IPv6 and IPv4 if ip == 0, except windows which inverts this.
+        So we explicitly control.
+     */
+    if (ip == 0) {
+        only = 0;
+        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+    } else if (ipv6(ip)) {
+        only = 1;
+        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+    }
     if (sp->service->prebind) {
         if ((sp->service->prebind)(sp) < 0) {
             closesocket(sp->fd);
