@@ -4156,7 +4156,6 @@ PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 #define HTTP_LIMITS_OPENED      0x1000      /**< Request limits opened */
 #define HTTP_EXPECT_CONTINUE    0x2000      /**< Client expects an HTTP 100 Continue response */
 #define HTTP_AUTH_CHECKED       0x4000      /**< User authentication has been checked */
-#define HTTP_REROUTE            0x8000      /**< The URI has been changed - reroute the request */
 
 /*  
     Incoming chunk encoding states
@@ -4611,6 +4610,7 @@ typedef struct HttpTx {
     int             writeBlocked;           /**< Transmission writing is blocked */
     HttpUri         *parsedUri;             /**< Client request uri */
     char            *method;                /**< Client request method GET, HEAD, POST, DELETE, OPTIONS, PUT, TRACE */
+    cchar           *errorDocument;         /**< Error document to render */
 
     struct HttpConn *conn;                  /**< Current connection object */
     MprList         *outputPipeline;        /**< Output processing */

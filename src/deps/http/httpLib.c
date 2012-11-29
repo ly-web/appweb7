@@ -4020,11 +4020,19 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
                 flags |= HTTP_ABORT;
             } else {
                 if (rx->route && (uri = httpLookupRouteErrorDocument(rx->route, tx->status))) {
-                    if (sstarts(uri, "http")) {
+                    /*
+                        If the response has started or it is an external redirect ... do a redirect
+                     */
+                    if (sstarts(uri, "http") || tx->flags & HTTP_TX_HEADERS_CREATED) {
                         httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
                     } else {
-                        rx->uri = (char*) uri;
-                        rx->flags |= HTTP_REROUTE;
+                        /*
+                            No response started and it is an internal redirect, so we can rerun the request.
+                            Set finalized to "cap" any output. processCompletion() in rx.c will rerun the request using
+                            the errorDocument.
+                         */
+                        tx->errorDocument = uri;
+                        tx->finalized = tx->finalizedOutput = tx->finalizedConnector = 1;
                     }
                 } else {
                     httpAddHeaderString(conn, "Cache-Control", "no-cache");
@@ -4043,9 +4051,7 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
                 }
             }
         }
-        if (!(rx->flags & HTTP_REROUTE)) {
-            httpFinalize(conn);
-        }
+        httpFinalize(conn);
     }
     if (flags & HTTP_ABORT) {
         httpDisconnect(conn);
@@ -11339,31 +11345,15 @@ static void mapMethod(HttpConn *conn)
 static void routeRequest(HttpConn *conn)
 {
     HttpRx  *rx;
-    HttpTx  *tx;
-    int     count;
 
     assure(conn->endpoint);
 
     rx = conn->rx;
-    tx = conn->tx;
     httpAddParams(conn);
     mapMethod(conn);
-    count = 0;
-    while (1) {
-        httpRouteRequest(conn);  
-        httpCreateRxPipeline(conn, rx->route);
-        httpCreateTxPipeline(conn, rx->route);
-        if (conn->error && rx->flags & HTTP_REROUTE && !(tx->flags & HTTP_TX_HEADERS_CREATED) && ++count < 10) {
-            rx->flags &= ~HTTP_REROUTE;
-            tx->flags &= ~HTTP_TX_NO_BODY;
-            conn->error = 0;
-            conn->errorMsg = 0;
-            httpDestroyPipeline(conn);
-            setParsedUri(conn);
-        } else {
-            break;
-        }
-    }
+    httpRouteRequest(conn);  
+    httpCreateRxPipeline(conn, rx->route);
+    httpCreateTxPipeline(conn, rx->route);
 }
 
 
@@ -12202,14 +12192,75 @@ static void measure(HttpConn *conn)
 #endif
 
 
+static void createErrorRequest(HttpConn *conn)
+{
+    HttpRx      *rx;
+    HttpTx      *tx;
+    HttpPacket  *packet;
+    MprBuf      *buf;
+    char        *cp, *headers;
+    int         key;
+
+    rx = conn->rx;
+    tx = conn->tx;
+    assure(rx->headerPacket);
+
+    conn->rx = httpCreateRx(conn);
+    conn->tx = httpCreateTx(conn, NULL);
+
+    /* Preserve the old status */
+    conn->tx->status = tx->status;
+    conn->error = 0;
+    conn->errorMsg = 0;
+    conn->upgraded = 0;
+    conn->worker = 0;
+
+    packet = httpCreateDataPacket(HTTP_BUFSIZE);
+    mprPutFmtToBuf(packet->content, "%s %s %s\r\n", rx->method, tx->errorDocument, conn->protocol);
+
+    /*
+        Reconstruct the headers. Change nulls to '\r', ' ', or ':' as appropriate
+     */
+    key = 0;
+    headers = 0;
+    buf = rx->headerPacket->content;
+    for (cp = buf->data; cp < &buf->end[-1]; cp++) {
+        if (*cp == '\0') {
+            if (cp[1] == '\n') {
+                if (!headers) {
+                    headers = &cp[2];
+                }
+                *cp = '\r';
+                key = 0;
+            } else if (!key) {
+                *cp = ':';
+                key = 1;
+            } else {
+                *cp = ' ';
+            }
+        }
+    }
+    if (headers && headers < buf->end) {
+        mprPutStringToBuf(packet->content, headers);
+        conn->input = packet;
+        conn->state = HTTP_STATE_CONNECTED;
+    } else {
+        httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Can't reconstruct headers");
+    }
+}
+
+
 static void processCompletion(HttpConn *conn)
 {
     HttpRx      *rx;
+    HttpTx      *tx;
 
-    assure(conn->tx->finalized);
-    assure(conn->tx->finalizedOutput);
-    assure(conn->tx->finalizedConnector);
     rx = conn->rx;
+    tx = conn->tx;
+    assure(tx->finalized);
+    assure(tx->finalizedOutput);
+    assure(tx->finalizedConnector);
+
     httpDestroyPipeline(conn);
     measure(conn);
     if (conn->endpoint && rx) {
@@ -12221,6 +12272,11 @@ static void processCompletion(HttpConn *conn)
     }
     assure(conn->state == HTTP_STATE_FINALIZED);
     httpSetState(conn, HTTP_STATE_COMPLETE);
+
+    if (tx->errorDocument && !conn->connError) {
+        mprLog(2, "Create error document %s for status %d from %s", tx->errorDocument, tx->status, rx->uri);
+        createErrorRequest(conn);
+    }
 }
 
 
@@ -13963,6 +14019,7 @@ static void manageTx(HttpTx *tx, int flags)
         mprMark(tx->currentRange);
         mprMark(tx->ext);
         mprMark(tx->etag);
+        mprMark(tx->errorDocument);
         mprMark(tx->file);
         mprMark(tx->filename);
         mprMark(tx->handler);

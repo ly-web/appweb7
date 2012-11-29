@@ -193,7 +193,7 @@ static void startCgi(HttpQueue *q)
     mprSetCmdCallback(cmd, cgiCallback, cgi);
 
     if (mprStartCmd(cmd, argc, argv, envv, MPR_CMD_IN | MPR_CMD_OUT | MPR_CMD_ERR) < 0) {
-        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Cannot run CGI process: %s, URI %s", fileName, rx->uri);
+        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot run CGI process: %s, URI %s", fileName, rx->uri);
         return;
     }
 #if BIT_WIN_LIKE
