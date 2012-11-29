@@ -80,7 +80,7 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/74">[issue 74].</a></li>
                 <li>Add Home directive to permit routes to store their own root directory for configuration files
                     <a href="https://github.com/embedthis/appweb-4/issues/75">[issue 75].</a></li>
-                <li>List to both IPv4 and IPv6 in response to a single "Listen port" directive
+                <li>Listen to both IPv4 and IPv6 in response to a single "Listen port" directive
                     <a href="https://github.com/embedthis/appweb-4/issues/76">[issue 76].</a></li>
                 <li>Enhance performance and worker thread utilization by optimizing lock contention and GC yielding
                     <a href="https://github.com/embedthis/appweb-4/issues/55">[issue 55].</a></li>
@@ -100,10 +100,14 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/81">[issue 81].</a></li>
                 <li>ErrorDocument preserves original failing HTTP status code for internal redirects.
                     <a href="https://github.com/embedthis/appweb-4/issues/82">[issue 82].</a></li>
+                <li>Bind to ports with exclusive use on Windows (SO_EXCLUSIVEADDRUSE).
+                    <a href="https://github.com/embedthis/appweb-4/issues/83">[issue 83].</a></li>
             </ul>
             <h3>API Changes</h3>
             <ul>
-                <li>None.</li>
+                <li>The Listen directive will now listen on both IPv4 and IPv6 by default if no network interface
+                is supplied. Previously it only listened on IPv4. If a network interface is supplied, only that
+                interface will be listened on.</li>
             </ul>
             <a id="r4.1.0"></a>
             <h2 class="section">Changes in 4.1.0</h2>

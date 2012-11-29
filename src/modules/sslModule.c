@@ -55,6 +55,17 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
     if (!state->host->secureEndpoint) {
         httpSetHostSecureEndpoint(state->host, endpoint);
     }
+#if defined(BIT_HAS_SINGLE_STACK) || VXWORKS || (WINDOWS && _WIN32_WINNT < 0x0600)
+    /*
+        Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
+        This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
+     */
+    if (!schr(value, ':')) {
+        endpoint = httpCreateEndpoint("::", port, NULL));
+        mprAddItem(state->server->endpoints, endpoint);
+        httpSecureEndpoint(endpoint, state->route->ssl);
+    }
+#endif
     return 0;
 #else
     mprError("Configuration lacks SSL support");

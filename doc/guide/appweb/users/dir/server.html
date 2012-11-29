@@ -239,13 +239,15 @@ application/x-appweb-php php
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The Listen directive specifies the IP endpoints on which Appweb will listen for incoming
-                            HTTP requests. If you specify only the portNumber and omit the IP address, Appweb will
-                            listen on all network interfaces including the loop-back adaptor. Multiple Listen
-                            directives may be given and Appweb will listen on all the specified endpoints.</p>
-                            <p>For IPv6 endpoints, enclose the IP address in square brackets. For example:
+                            HTTP requests. If you specify only the port number and omit the IP address, Appweb will
+                            listen on all network interfaces including the loop-back adaptor. It will listen on both 
+                            IPv4 and IPv6 if only a portNumber is specified. </p>
+                            <p>To listen on IPv6 endpoints, enclose the IP address in square brackets. For example:
                             Listen [2001:05c0:9168:0000:0000:0000:0000:0001]</p>
-                            <p>To listen for TLS/SSL requests, use the <a href="ssl.html#listenSecure">ListenSecure</a>
-                            directive.</p>
+                            <p>To listen on IPv4 endpoints, supply an IPv4 IP address. You may use 0.0.0.0 to listen
+                            on all IPv4 interfaces.</p>
+                            <p>To listen for SSL requests, use the <a href="ssl.html#listenSecure">ListenSecure</a>
+                                directive.</p>
                         </td>
                     </tr>
                 </tbody>

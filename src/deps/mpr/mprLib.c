@@ -19203,16 +19203,19 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     fcntl(sp->fd, F_SETFD, FD_CLOEXEC);
 #endif
 
-#if BIT_UNIX_LIKE
     if (!(sp->flags & MPR_SOCKET_NOREUSE)) {
         rc = 1;
+#if BIT_UNIX_LIKE
         setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR, (char*) &rc, sizeof(rc));
-    }
+#else
+        setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR | SO_EXCLUSIVEADDRUSE, (char*) &rc, sizeof(rc));
 #endif
+    }
     /*
         By default, most stacks listen on both IPv6 and IPv4 if ip == 0, except windows which inverts this.
         So we explicitly control.
      */
+#if defined(IPV6_V6ONLY)
     if (ip == 0) {
         only = 0;
         setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
@@ -19220,6 +19223,7 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         only = 1;
         setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
     }
+#endif
     if (sp->service->prebind) {
         if ((sp->service->prebind)(sp) < 0) {
             closesocket(sp->fd);
