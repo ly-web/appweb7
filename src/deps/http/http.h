@@ -4139,6 +4139,7 @@ PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 /********************************** HttpRx *********************************/
 /* 
     Rx flags
+    MOB - inconsistent with HTTP_TX_
  */
 #define HTTP_DELETE             0x1         /**< DELETE method  */
 #define HTTP_GET                0x2         /**< GET method  */
@@ -4155,6 +4156,7 @@ PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 #define HTTP_LIMITS_OPENED      0x1000      /**< Request limits opened */
 #define HTTP_EXPECT_CONTINUE    0x2000      /**< Client expects an HTTP 100 Continue response */
 #define HTTP_AUTH_CHECKED       0x4000      /**< User authentication has been checked */
+#define HTTP_REROUTE            0x8000      /**< The URI has been changed - reroute the request */
 
 /*  
     Incoming chunk encoding states

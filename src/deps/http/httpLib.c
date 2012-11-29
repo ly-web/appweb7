@@ -4014,13 +4014,18 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
         if (conn->endpoint && tx && rx) {
             if (tx->flags & HTTP_TX_HEADERS_CREATED) {
                 /* 
-                    If the response headers have been sent, must let the other side of the failure. 
-                    Abort abort is the only way. Disconnect will cause a readable (EOF) event.
+                    If the response headers have been sent, must let the other side of the failure ... aborting
+                    the request is the only way as the status has been sent.
                  */
                 flags |= HTTP_ABORT;
             } else {
                 if (rx->route && (uri = httpLookupRouteErrorDocument(rx->route, tx->status))) {
-                    httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
+                    if (sstarts(uri, "http")) {
+                        httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
+                    } else {
+                        rx->uri = (char*) uri;
+                        rx->flags |= HTTP_REROUTE;
+                    }
                 } else {
                     httpAddHeaderString(conn, "Cache-Control", "no-cache");
                     statusMsg = httpLookupStatus(conn->http, status);
@@ -4038,7 +4043,9 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
                 }
             }
         }
-        httpFinalize(conn);
+        if (!(rx->flags & HTTP_REROUTE)) {
+            httpFinalize(conn);
+        }
     }
     if (flags & HTTP_ABORT) {
         httpDisconnect(conn);
@@ -11332,15 +11339,31 @@ static void mapMethod(HttpConn *conn)
 static void routeRequest(HttpConn *conn)
 {
     HttpRx  *rx;
+    HttpTx  *tx;
+    int     count;
 
     assure(conn->endpoint);
 
     rx = conn->rx;
+    tx = conn->tx;
     httpAddParams(conn);
     mapMethod(conn);
-    httpRouteRequest(conn);  
-    httpCreateRxPipeline(conn, rx->route);
-    httpCreateTxPipeline(conn, rx->route);
+    count = 0;
+    while (1) {
+        httpRouteRequest(conn);  
+        httpCreateRxPipeline(conn, rx->route);
+        httpCreateTxPipeline(conn, rx->route);
+        if (conn->error && rx->flags & HTTP_REROUTE && !(tx->flags & HTTP_TX_HEADERS_CREATED) && ++count < 10) {
+            rx->flags &= ~HTTP_REROUTE;
+            tx->flags &= ~HTTP_TX_NO_BODY;
+            conn->error = 0;
+            conn->errorMsg = 0;
+            httpDestroyPipeline(conn);
+            setParsedUri(conn);
+        } else {
+            break;
+        }
+    }
 }
 
 
