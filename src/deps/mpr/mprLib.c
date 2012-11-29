@@ -19207,7 +19207,7 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         rc = 1;
 #if BIT_UNIX_LIKE
         setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR, (char*) &rc, sizeof(rc));
-#else
+#elif BIT_WIN_LIKE && defined(SO_EXCLUSIVEADDRUSE)
         setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR | SO_EXCLUSIVEADDRUSE, (char*) &rc, sizeof(rc));
 #endif
     }
