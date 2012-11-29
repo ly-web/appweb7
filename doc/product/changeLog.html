@@ -90,14 +90,16 @@
             <ul>
                 <li>Ensure the handler start() callback is always invoked before any incoming() data.
                     <a href="https://github.com/embedthis/appweb-4/issues/77">[issue 77].</a></li>
-                <li>Fix CGI unit test scripts to use ejs instead of /bin/sh so they can run on windows.
+                <li>CGI unit test scripts to use ejs instead of /bin/sh so they can run on windows.
                     <a href="https://github.com/embedthis/appweb-4/issues/78">[issue 78].</a></li>
-                <li>Fix timeout message for inactive keep-alive connections
+                <li>Timeout message for inactive keep-alive connections
                     <a href="https://github.com/embedthis/appweb-4/issues/79">[issue 79].</a></li>
-                <li>Fix making server/src/cache and test/cache directories for unit tests
+                <li>Make server/src/cache and test/cache directories for unit tests
                     <a href="https://github.com/embedthis/appweb-4/issues/80">[issue 80].</a></li>
-                <li>Fix "bit run" to invoke appweb in src/server
+                <li>Bit run" invokes appweb in src/server instead of ./test
                     <a href="https://github.com/embedthis/appweb-4/issues/81">[issue 81].</a></li>
+                <li>ErrorDocument preserves original failing HTTP status code for internal redirects.
+                    <a href="https://github.com/embedthis/appweb-4/issues/82">[issue 82].</a></li>
             </ul>
             <h3>API Changes</h3>
             <ul>
