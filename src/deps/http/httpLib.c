@@ -5582,9 +5582,10 @@ static void netOutgoingService(HttpQueue *q)
                 break;
             }
             if (errCode != EPIPE && errCode != ECONNRESET) {
-                LOG(5, "netOutgoingService write failed, error %d", errCode);
+                httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Write error %d", errCode);
+            } else {
+                httpDisconnect(conn);
             }
-            httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Write error %d", errCode);
             httpFinalizeConnector(conn);
             break;
 
@@ -13050,20 +13051,21 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
         }
         file = q->ioFile ? tx->file : 0;
         written = mprSendFileToSocket(conn->sock, file, q->ioPos, q->ioCount, q->iovec, q->ioIndex, NULL, 0);
+        errCode = mprGetError();
 
         mprLog(8, "Send connector ioCount %d, wrote %Ld, written so far %Ld, sending file %d, q->count %d/%d", 
                 q->ioCount, written, tx->bytesWritten, q->ioFile, q->count, q->max);
         if (written < 0) {
-            errCode = mprGetError(q);
             if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
                 /* Socket is full. Wait for an I/O event */
                 httpSocketBlocked(conn);
                 break;
             }
             if (errCode != EPIPE && errCode != ECONNRESET) {
-                mprLog(7, "SendFileToSocket failed, errCode %d", errCode);
+                httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "SendFileToSocket failed, errCode %d", errCode);
+            } else {
+                httpDisconnect(conn);
             }
-            httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "SendFileToSocket failed, errCode %d", errCode);
             httpFinalizeConnector(conn);
             break;
 
