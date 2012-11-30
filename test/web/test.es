@@ -1,4 +1,3 @@
-print("TOP")
 exports.app = function (request) { 
     return {
         status: 201, 
