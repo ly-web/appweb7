@@ -5573,7 +5573,6 @@ static void netOutgoingService(HttpQueue *q)
          */
         assure(q->ioIndex > 0);
         written = mprWriteSocketVector(conn->sock, q->iovec, q->ioIndex);
-        LOG(5, "Net connector wrote %d, written so far %Ld, q->count %d/%d", written, tx->bytesWritten, q->count, q->max);
         if (written < 0) {
             errCode = mprGetError(q);
             if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
@@ -5581,7 +5580,7 @@ static void netOutgoingService(HttpQueue *q)
                 httpSocketBlocked(conn);
                 break;
             }
-            if (errCode != EPIPE && errCode != ECONNRESET) {
+            if (errCode != EPIPE && errCode != ECONNRESET && errCode != ENOTCONN) {
                 httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Write error %d", errCode);
             } else {
                 httpDisconnect(conn);
@@ -5600,6 +5599,7 @@ static void netOutgoingService(HttpQueue *q)
             adjustNetVec(q, written);
         }
     }
+    LOG(5, "Net connector wrote %d, written so far %Ld, q->count %d/%d", written, tx->bytesWritten, q->count, q->max);
     if (q->ioCount == 0) {
         if ((q->flags & HTTP_QUEUE_EOF)) {
             assure(conn->writeq->count == 0);
@@ -12588,7 +12588,7 @@ static void addMatchEtag(HttpConn *conn, char *etag)
     if (rx->etags == 0) {
         rx->etags = mprCreateList(-1, 0);
     }
-    mprAddItem(rx->etags, etag);
+    mprAddItem(rx->etags, sclone(etag));
 }
 
 
@@ -13051,17 +13051,14 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
         }
         file = q->ioFile ? tx->file : 0;
         written = mprSendFileToSocket(conn->sock, file, q->ioPos, q->ioCount, q->iovec, q->ioIndex, NULL, 0);
-        errCode = mprGetError();
-
-        mprLog(8, "Send connector ioCount %d, wrote %Ld, written so far %Ld, sending file %d, q->count %d/%d", 
-                q->ioCount, written, tx->bytesWritten, q->ioFile, q->count, q->max);
         if (written < 0) {
+            errCode = mprGetError();
             if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
                 /* Socket is full. Wait for an I/O event */
                 httpSocketBlocked(conn);
                 break;
             }
-            if (errCode != EPIPE && errCode != ECONNRESET) {
+            if (errCode != EPIPE && errCode != ECONNRESET && errCode != ENOTCONN) {
                 httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "SendFileToSocket failed, errCode %d", errCode);
             } else {
                 httpDisconnect(conn);
@@ -13080,6 +13077,8 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
             adjustSendVec(q, written);
         }
     }
+    mprLog(8, "Send connector ioCount %d, wrote %Ld, written so far %Ld, sending file %d, q->count %d/%d", 
+            q->ioCount, written, tx->bytesWritten, q->ioFile, q->count, q->max);
     if (q->ioCount == 0) {
         if ((q->flags & HTTP_QUEUE_EOF)) {
             assure(conn->tx->finalizedOutput);
