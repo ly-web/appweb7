@@ -67,12 +67,11 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
                 '--port', settings.http_port, '--ssl', settings.ssl_port, '--user', user, '--group', group,
                 '--cache', prefixes.spool.join('cache'), '--modules', prefixes.bin, conf])
         }
-
         bit.dir.cfg.join('appweb.conf.bak').remove()
-        p.spool.join('cache').makeDir()
+        p.spool.join('cache').makeDir({user: user, group: group})
         let tmp = p.log.join('error.log')
         tmp.write()
-        tmp.setAttributes({permissions: 0755, uid: user, gid: group})
+        tmp.setAttributes({permissions: 0755, user: user, group: group})
 
     }
     install(bit.dir.bin + '/*', p.bin, {
@@ -102,6 +101,7 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
         }
     }
     if (bit.packs.ejscript.enable) {
+        p.config.join('ejsrc').write('{ dirs: { cache: "' + bit.prefixes.spool.join('cache') + '" } }\n')
         install(bit.dir.bin.join('ejs*.mod'), p.bin);
     }
     if (!bit.cross) {
@@ -243,7 +243,11 @@ public function installBinary() {
             Cmd([bit.prefixes.bin.join('appwebMonitor' + bit.globals.EXE)], {detach: true})
         }
     }
-    bit.dir.pkg.join('bin').removeAll()
+    if (!bit.options.keep) {
+        bit.dir.pkg.join('bin').removeAll()
+    } else {
+        trace('Keep', bit.dir.pkg.join('bin'))
+    }
     trace('Complete', bit.settings.title + ' installed')
 }
 
