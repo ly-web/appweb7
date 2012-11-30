@@ -61,7 +61,7 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
      */
     if (!schr(value, ':')) {
-        endpoint = httpCreateEndpoint("::", port, NULL));
+        endpoint = httpCreateEndpoint("::", port, NULL);
         mprAddItem(state->server->endpoints, endpoint);
         httpSecureEndpoint(endpoint, state->route->ssl);
     }
