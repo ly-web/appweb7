@@ -492,14 +492,12 @@ static void readFromCgi(Cgi *cgi, int channel)
 static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
 {
     HttpConn    *conn;
-    HttpTx      *tx;
     MprBuf      *buf;
     char        *endHeaders, *headers, *key, *value;
     ssize       blen;
     int         len;
 
     conn = cgi->conn;
-    tx = conn->tx;
     value = 0;
     buf = packet->content;
     headers = mprGetBufStart(buf);
