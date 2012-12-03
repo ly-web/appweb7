@@ -9559,7 +9559,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct epoll_event  ev, events[2];
-    int                 epfd, rc;
+    int                 epfd, rc, result;
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
@@ -9581,22 +9581,22 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     if (ev.events) {
         epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
     }
-    mask = 0;
+    result = 0;
     rc = epoll_wait(epfd, events, sizeof(events) / sizeof(struct epoll_event), timeout);
     close(epfd);
     if (rc < 0) {
         mprLog(2, "Epoll returned %d, errno %d", rc, errno);
     } else if (rc > 0) {
         if (rc > 0) {
-            if (events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP) && (mask & MPR_READABLE)) {
-                mask |= MPR_READABLE;
+            if ((events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (mask & MPR_READABLE)) {
+                result |= MPR_READABLE;
             }
-            if (events[0].events & (EPOLLOUT | EPOLLHUP) && (mask & MPR_WRITABLE)) {
-                mask |= MPR_WRITABLE;
+            if ((events[0].events & (EPOLLOUT | EPOLLHUP)) && (mask & MPR_WRITABLE)) {
+                result |= MPR_WRITABLE;
             }
         }
     }
-    return mask;
+    return result;
 }
 
 
@@ -11912,7 +11912,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct timespec ts;
     struct kevent   interest[2], events[1];
-    int             kq, interestCount, rc;
+    int             kq, interestCount, rc, result;
 
     if (timeout < 0) {
         timeout = MAXINT;
@@ -11928,7 +11928,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     ts.tv_sec = ((int) (timeout / 1000));
     ts.tv_nsec = ((int) (timeout % 1000)) * 1000 * 1000;
 
-    mask = 0;
+    result = 0;
     rc = kevent(kq, interest, interestCount, events, 1, &ts);
     close(kq);
     if (rc < 0) {
@@ -11936,14 +11936,14 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     } else if (rc > 0) {
         if (rc > 0) {
             if (events[0].filter & EVFILT_READ) {
-                mask |= MPR_READABLE;
+                result |= MPR_READABLE;
             }
             if (events[0].filter == EVFILT_WRITE) {
-                mask |= MPR_WRITABLE;
+                result |= MPR_WRITABLE;
             }
         }
     }
-    return mask;
+    return result;
 }
 
 
@@ -16773,7 +16773,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct pollfd   fds[1];
-    int             rc;
+    int             rc, result;
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
@@ -16788,20 +16788,20 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     if (mask & MPR_WRITABLE) {
         fds[0].events |= POLLOUT | POLLHUP;
     }
-    mask = 0;
 
+    result = 0;
     rc = poll(fds, 1, (int) timeout);
     if (rc < 0) {
         mprLog(8, "Poll returned %d, errno %d", rc, mprGetOsError());
     } else if (rc > 0) {
         if ((fds[0].revents & (POLLIN | POLLHUP)) && (mask & MPR_READABLE)) {
-            mask |= MPR_READABLE;
+            result |= MPR_READABLE;
         }
         if ((fds[0].revents & (POLLOUT | POLLHUP)) && (mask & MPR_WRITABLE)) {
-            mask |= MPR_WRITABLE;
+            result |= MPR_WRITABLE;
         }
     }
-    return mask;
+    return result;
 }
 
 
