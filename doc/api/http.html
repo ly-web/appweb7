@@ -176,7 +176,7 @@
 <tr class="apiDef"><td class="apiType"><a href="#group___http_stage" class="ref">HttpStage*</a></td><td><a href="#group___http_stage_1gab1e3174087a5e78598b66abe7ac5887e" class="nameRef">httpCreateFilter</a>(<a href="#group___http" class="ref">Http</a> *http, <a href="mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *name, <a href="mpr.html#group___mpr_module" class="ref">MprModule</a> *module)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a filter stage.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___http_stage" class="ref">HttpStage*</a></td><td><a href="#group___http_stage_1ga238f5fb9f76203fdcb07fd6227ae383f" class="nameRef">httpCreateHandler</a>(<a href="#group___http" class="ref">Http</a> *http, <a href="mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *name, <a href="mpr.html#group___mpr_module" class="ref">MprModule</a> *module)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a request handler stage.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___http_packet" class="ref">HttpPacket*</a></td><td><a href="#group___http_packet_1ga24b80ddbcd324b10ac430c4465823190" class="nameRef">httpCreateHeaderPacket</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a response header packet.</td></tr>
-<tr class="apiDef"><td class="apiType"><a href="#group___http_host" class="ref">HttpHost*</a></td><td><a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="nameRef">httpCreateHost</a>(<a href="mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *home)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a host.</td></tr>
+<tr class="apiDef"><td class="apiType"><a href="#group___http_host" class="ref">HttpHost*</a></td><td><a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="nameRef">httpCreateHost</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a host.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___http_route" class="ref">HttpRoute*</a></td><td><a href="#group___http_route_1ga4190cb538d908637fa3c7ea17384f1fa" class="nameRef">httpCreateInheritedRoute</a>(<a href="#group___http_route" class="ref">HttpRoute</a> *route)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a route inherited from a parent route.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___http_limits" class="ref">HttpLimits*</a></td><td><a href="#group___http_limits_1gaf6da4fb1c160ebf9ae4e5fbafcdd583c" class="nameRef">httpCreateLimits</a>(int serverSide)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a new limits object.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___http_packet" class="ref">HttpPacket*</a></td><td><a href="#group___http_packet_1ga736f27036a2f3752bc3aa5580f75eef7" class="nameRef">httpCreatePacket</a>(<a href="mpr.html#mpr_8h_1a7d08ccc1e981eb4d5a238641ac4ccfc1" class="ref">ssize</a> size)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a data packet.</td></tr>
@@ -3835,7 +3835,7 @@ Endpoint SSL configuration.
     <dl><dt><b>Description</b>:</dt><dd>A Host object represents a logical host. Several logical hosts may share a single HttpEndpoint.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
+    <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
     <dl><dt>Fields:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">HttpEndpoint *</td><td><td>defaultEndpoint</td><td>
@@ -3897,7 +3897,7 @@ Secure endpoint for host.
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>&quot;Zero&quot; if the route can be added.</dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
+    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
   </div>
 </div>
 <a name="group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b"></a>
@@ -3916,23 +3916,19 @@ Secure endpoint for host.
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>The new HttpHost object.</dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
+    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
   </div>
 </div>
-<a name="group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb"></a>
+<a name="group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b"></a>
 <div class="api">
   <div class="prototype">
     <a href="#group___http_host" class="ref">HttpHost</a> *
     httpCreateHost
-(<a href="mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *home)
+()
   </div>
   <div class="apiDetail">
 <p>Create a host.</p>
     <dl><dt><b>Description</b>:</dt><dd>Create a new host object. The host is added to the Http service&apos;s list of hosts.</dd></dl>
-    <dl><dt>Parameters:</dt><dd>
-    <table class="parameters" title="Parameters">
-    <tr><td class="param">home</td><td>directory for the host&apos;s configuration files.</td>
-    </table></dd></dl>
     <dl><dt>Returns:</dt><dd>The new HttpHost object.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
@@ -3949,7 +3945,7 @@ Secure endpoint for host.
 <p>Get the default host defined via httpSetDefaultHost.</p>
     <dl><dt>Returns:</dt><dd>The defaul thost object.</dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
+    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
   </div>
 </div>
 <a name="group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa"></a>
@@ -3966,7 +3962,7 @@ Secure endpoint for host.
     <tr><td class="param">host</td><td>HttpHost object.</td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
+    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
   </div>
 </div>
 <a name="group___http_host_1gacba7af49f198c1ac13e6cadd2673956f"></a>
@@ -3983,7 +3979,7 @@ Secure endpoint for host.
     <tr><td class="param">host</td><td>Host to define as the default host.</td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
+    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
   </div>
 </div>
 <a name="group___http_host_1gae8d3b5ebddb6c740c738befee3c78efb"></a>
@@ -4002,7 +3998,7 @@ Secure endpoint for host.
     <tr><td class="param">route</td><td>Route to define as the default.</td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
+    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
   </div>
 </div>
 <a name="group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad"></a>
@@ -4023,7 +4019,7 @@ Secure endpoint for host.
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>&quot;Zero&quot; if the route can be added.</dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
+    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
   </div>
 </div>
 <a name="group___http_host_1ga446cc7ba87875c92e544e035a404f33f"></a>
@@ -4043,7 +4039,7 @@ Secure endpoint for host.
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>Zero if the route can be added.</dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
+    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
   </div>
 </div>
 <a name="group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581"></a>
@@ -4062,7 +4058,7 @@ Secure endpoint for host.
     <tr><td class="param">protocol</td><td>Set to either HTTP/1.0 or HTTP/1.1.</td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a></dd></dl>
+    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a></dd></dl>
   </div>
 </div>
 <a name="group___http_host_1ga2302c34632a1b72ec759533ee9d7ad10"></a>
@@ -4081,7 +4077,7 @@ Secure endpoint for host.
     <tr><td class="param">root</td><td>Directory path for the host server root.</td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga45276b2bd047354e6fcaf9e279cc35cb" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
+    <a href="#group___http_host" class="ref">HttpHost</a>, <a href="#group___http_host_1gadcbb2c44a2ae32546fbdcccbfec64c0a" class="ref">httpAddRoute</a>, <a href="#group___http_host_1ga1fbea76e46959e0f9fd0c8f38090cb8b" class="ref">httpCloneHost</a>, <a href="#group___http_host_1ga3e6e98147b766aeff4cbfebe8146998b" class="ref">httpCreateHost</a>, <a href="#group___http_host_1gaaaa414cbf0f8cacd73ce305927b78efa" class="ref">httpResetRoutes</a>, <a href="#group___http_host_1ga9c33731fd3222d8eed376feeb3b115ad" class="ref">httpSetHostIpAddr</a>, <a href="#group___http_host_1ga446cc7ba87875c92e544e035a404f33f" class="ref">httpSetHostName</a>, <a href="#group___http_host_1ga0f04d9504cb2005ef7f0f4ba2d653581" class="ref">httpSetHostProtocol</a></dd></dl>
   </div>
 </div>
 <h1>HttpLimits</h1>
@@ -4544,7 +4540,7 @@ Last packet in queue (tail pointer).
 Low water mark for flow control.
 </td>
     <tr><td class="param"><a class="ref" href="#mpr_8h_1a7d08ccc1e981eb4d5a238641ac4ccfc1" >ssize</a></td><td><td>max</td><td>
-Maxiumum queue size.
+Advisory maxiumum queue size.
 </td>
     <tr><td class="param"><a class="ref" href="#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" >cchar</a> *</td><td><td>name</td><td>
 Queue name for debugging.
@@ -8117,6 +8113,9 @@ Current range being fullfilled.
 </td>
     <tr><td class="param"><a class="ref" href="#mpr_8h_1aa6887458d0a070b3665166af590089d8" >MprOff</a></td><td><td>entityLength</td><td>
 Original content length before range subsetting.
+</td>
+    <tr><td class="param"><a class="ref" href="#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" >cchar</a> *</td><td><td>errorDocument</td><td>
+Error document to render.
 </td>
     <tr><td class="param">char *</td><td><td>etag</td><td>
 Unique identifier tag.

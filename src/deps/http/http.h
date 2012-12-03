@@ -95,7 +95,7 @@ struct HttpWebSocket;
     #define HTTP_WSS_PING_PERIOD         (30 * 1000)
 #else
     /*  
-        Tune for speed
+        Tune for speed and scale
      */
     #define HTTP_BUFSIZE                 (32 * 1024)
     #define HTTP_MAX_CACHE_ITEM          (1024 * 1024)
@@ -1009,7 +1009,7 @@ typedef struct HttpQueue {
     struct HttpQueue    *nextQ;                 /**< Downstream queue for next stage */
     HttpPacket          *first;                 /**< First packet in queue (singly linked) */
     struct HttpConn     *conn;                  /**< Connection owning this queue */
-    ssize               max;                    /**< Maxiumum queue size */
+    ssize               max;                    /**< Advisory maxiumum queue size */
     ssize               low;                    /**< Low water mark for flow control */
     ssize               packetSize;             /**< Maximum acceptable packet size */
     HttpPacket          *last;                  /**< Last packet in queue (tail pointer) */
@@ -5293,7 +5293,6 @@ PUBLIC HttpHost *httpCloneHost(HttpHost *parent);
 /**
     Create a host
     @description Create a new host object. The host is added to the Http service's list of hosts.
-    @param home directory for the host's configuration files.
     @return The new HttpHost object.
     @ingroup HttpHost
  */

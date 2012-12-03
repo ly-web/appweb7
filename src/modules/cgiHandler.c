@@ -20,6 +20,7 @@ typedef struct Cgi {
     HttpQueue   *writeq;                /**< Queue to write to the CGI */
     HttpQueue   *readq;                 /**< Queue to read from the CGI */
     HttpPacket  *headers;               /**< CGI response headers */
+    char        *location;              /**< Redirection location */
     int         seenHeader;             /**< Parsed response header from CGI */
 } Cgi;
 
@@ -96,6 +97,7 @@ static void manageCgi(Cgi *cgi, int flags)
         mprMark(cgi->readq);
         mprMark(cgi->cmd);
         mprMark(cgi->headers);
+        mprMark(cgi->location);
     } else {
         if (cgi->cmd) {
             /* Just for safety */
@@ -380,16 +382,19 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
         /* Child death notification */
         break;
     }
-    httpServiceQueues(conn);
-    LOG(7, "AFTER SERVICE state %d, error %d, complete %d", conn->state, conn->error, cmd->complete);
-
-    if (cmd->complete) {
+    if (cgi->location) {
+        httpRedirect(conn, conn->tx->status, cgi->location);
+    }
+    if (cmd->complete || cgi->location) {
+        cgi->location = 0;
         httpFinalize(conn);
+        httpServiceQueues(conn);
         httpPumpRequest(conn, NULL);
         /* WARNING: this will complete this request and prep for the next */
         httpPostEvent(conn);
         return;
     } 
+    httpServiceQueues(conn);
     if (channel >= 0 && conn->state <= HTTP_STATE_FINALIZED) {
         httpEnableConnEvents(conn);
         mprLog(6, "CGI: ENABLE CONN: cgiCallback mask %x", conn->sock->handler ? conn->sock->handler->desiredMask : 0);
@@ -398,6 +403,11 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
     mprLog(6, "CGI: %s CGI: cgiCallback. Conn->writeq %d", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
     assure(!suspended || conn->tx->writeBlocked);
     mprEnableCmdOutputEvents(cmd, !suspended);
+
+    if (conn->state == HTTP_STATE_FINALIZED) {
+        httpPumpRequest(conn, NULL);
+        /* WARNING: the request may be completed here */
+    }
 }
 
 
@@ -484,13 +494,12 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
     HttpConn    *conn;
     HttpTx      *tx;
     MprBuf      *buf;
-    char        *endHeaders, *headers, *key, *value, *location;
+    char        *endHeaders, *headers, *key, *value;
     ssize       blen;
     int         len;
 
     conn = cgi->conn;
     tx = conn->tx;
-    location = 0;
     value = 0;
     buf = packet->content;
     headers = mprGetBufStart(buf);
@@ -546,7 +555,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
             key = slower(key);
 
             if (strcmp(key, "location") == 0) {
-                location = value;
+                cgi->location = value;
 
             } else if (strcmp(key, "status") == 0) {
                 httpSetStatus(conn, atoi(value));
@@ -567,12 +576,15 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
         }
         buf->start = endHeaders;
     }
+#if UNUSED
     if (location) {
         httpRedirect(conn, tx->status, location);
         if (conn->state == HTTP_STATE_FINALIZED) {
             httpPumpRequest(conn, NULL);
+            /* WARNING: the request may be completed here */
         }
     }
+#endif
     return 1;
 }
 

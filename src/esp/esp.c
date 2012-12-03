@@ -507,6 +507,7 @@ static void initialize()
     app->currentDir = mprGetCurrentPath();
     app->libDir = mprGetAppDir();
     app->wwwDir = mprJoinPath(app->libDir, "esp-www");
+    httpCreate(HTTP_SERVER_SIDE);
 }
 
 

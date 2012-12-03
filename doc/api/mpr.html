@@ -8839,7 +8839,7 @@ This is used to prevent further I/O wait events while still preserving the socke
   </div>
   <div class="apiDetail">
 <p>Listen on a server socket for incoming connections.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Open a server socket and listen for client connections.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Open a server socket and listen for client connections. If ip is null, then this will listen on both IPv6 and IPv4.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">sp</td><td>Socket object returned via <a class="ref" href="#group___mpr_socket_1ga0ef02d313ec268eae6038a5af0ee5cc4">mprCreateSocket</a></td>

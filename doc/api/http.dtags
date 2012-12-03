@@ -2422,8 +2422,8 @@
       <type>HttpHost *</type>
       <name>httpCreateHost</name>
       <anchorfile>group___http_host.html</anchorfile>
-      <anchor>ga45276b2bd047354e6fcaf9e279cc35cb</anchor>
-      <arglist>(cchar *home)</arglist>
+      <anchor>ga3e6e98147b766aeff4cbfebe8146998b</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>HttpHost *</type>

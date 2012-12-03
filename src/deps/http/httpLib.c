@@ -2293,15 +2293,24 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
                 (conn->started + limits->requestParseTimeout) < now) {
             httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Exceeded parse headers timeout of %Ld sec", 
                 limits->requestParseTimeout  / 1000);
+            if (conn->rx) {
+                LOG(2, "  State %d, uri %s", conn->state, conn->rx->uri);
+            }
         } else {
             if ((conn->lastActivity + limits->inactivityTimeout) < now) {
                 if (conn->state > HTTP_STATE_BEGIN) {
                     httpError(conn, HTTP_CODE_REQUEST_TIMEOUT,
                         "Exceeded inactivity timeout of %Ld sec", limits->inactivityTimeout / 1000);
+                    if (conn->rx) {
+                        LOG(2, "  State %d, uri %s", conn->state, conn->rx->uri);
+                    }
                 }
 
             } else if ((conn->started + limits->requestTimeout) < now) {
                 httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Exceeded timeout %d sec", limits->requestTimeout / 1000);
+                if (conn->rx) {
+                    LOG(2, "  State %d, uri %s", conn->state, conn->rx->uri);
+                }
             }
         }
     }
@@ -5588,26 +5597,17 @@ static void netOutgoingService(HttpQueue *q)
             httpFinalizeConnector(conn);
             break;
 
-        } else if (written == 0) {
-            /*  Socket full, wait for an I/O event */
-            httpSocketBlocked(conn);
-            break;
-
         } else if (written > 0) {
             tx->bytesWritten += written;
             freeNetPackets(q, written);
             adjustNetVec(q, written);
         }
     }
-    LOG(5, "Net connector wrote %d, written so far %Ld, q->count %d/%d", written, tx->bytesWritten, q->count, q->max);
-    if (q->ioCount == 0) {
-        if ((q->flags & HTTP_QUEUE_EOF)) {
-            assure(conn->writeq->count == 0);
-            assure(conn->tx->finalizedOutput);
-            httpFinalizeConnector(conn);
-        } else {
-            HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
-        }
+    if (q->first && q->first->flags & HTTP_PACKET_END) {
+        httpFinalizeConnector(conn);
+    } else {
+        httpSocketBlocked(conn);
+        HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
     }
 }
 
@@ -5635,13 +5635,6 @@ static MprOff buildNetVec(HttpQueue *q)
                 conn->keepAliveCount = 0;
             }
             httpWriteHeaders(q, packet);
-
-        } else if (packet->flags & HTTP_PACKET_END) {
-            assure(conn->tx->finalizedOutput);
-            q->flags |= HTTP_QUEUE_EOF;
-            if (packet->prefix == NULL) {
-                break;
-            }
         }
         if (q->ioIndex >= (HTTP_MAX_IOVEC - 2)) {
             break;
@@ -5696,14 +5689,17 @@ static void addPacketForNet(HttpQueue *q, HttpPacket *packet)
 
 static void freeNetPackets(HttpQueue *q, ssize bytes)
 {
-    HttpPacket    *packet;
-    ssize         len;
+    HttpPacket  *packet;
+    ssize       len;
 
     assure(q->count >= 0);
-    assure(bytes >= 0);
+    assure(bytes > 0);
 
-    while (bytes > 0 && (packet = q->first) != 0) {
+    while ((packet = q->first) != 0) {
         if (packet->prefix) {
+            /*
+                Note: the end packet may have the final chunk trailer in its prefix
+             */
             len = mprGetBufLength(packet->prefix);
             len = min(len, bytes);
             mprAdjustBufStart(packet->prefix, len);
@@ -5721,11 +5717,15 @@ static void freeNetPackets(HttpQueue *q, ssize bytes)
             q->count -= len;
             assure(q->count >= 0);
         }
-        if (packet->content == 0 || mprGetBufLength(packet->content) == 0) {
-            /*
-                This will remove the packet from the queue and will re-enable upstream disabled queues.
-             */
+        /*
+            Must not consume the END packet
+         */
+        if (httpGetPacketLength(packet) == 0 && !(packet->flags & HTTP_PACKET_END)) {
+            /* Consume the packet here */
             httpGetPacket(q);
+        }
+        if (bytes == 0) {
+            break;
         }
     }
 }
@@ -6652,6 +6652,13 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
         q = httpCreateQueue(conn, stage, HTTP_QUEUE_TX, q);
     }
     conn->connectorq = tx->queue[HTTP_QUEUE_TX]->prevQ;
+
+    /*
+        Double the connector max hi-water mark. This optimization permits connectors to accept packets without 
+        unnecesary flow control.
+     */
+    conn->connectorq->max *= 2;
+
     pairQueues(conn);
 
     /*
@@ -7460,11 +7467,17 @@ PUBLIC bool httpWillNextQueueAcceptPacket(HttpQueue *q, HttpPacket *packet)
     }
     size = httpGetPacketLength(packet);
     assure(size <= nextQ->packetSize);
-    if ((size + nextQ->count) <= nextQ->max) {
+    /* 
+        Packet size is now acceptable. Accept the packet if the queue is mostly empty (< low) or if the 
+        packet will fit entirely under the max or if the queue.
+        NOTE: queue maximums are advisory. We choose to potentially overflow the max here to optimize the case where
+        the queue may have say one byte and a max size packet would overflow by 1.
+     */
+    if (nextQ->count < nextQ->low || (size + nextQ->count) <= nextQ->max) {
         return 1;
     }
     /*  
-        The downstream queue is full, so disable the queue and mark the downstream queue as full and service 
+        The downstream queue cannot accept this packet, so disable queue and mark the downstream queue as full and service 
      */
     httpSuspendQueue(q);
     if (!(nextQ->flags & HTTP_QUEUE_SUSPENDED)) {
@@ -12278,9 +12291,8 @@ static void processCompletion(HttpConn *conn)
     }
     assure(conn->state == HTTP_STATE_FINALIZED);
     httpSetState(conn, HTTP_STATE_COMPLETE);
-
     if (tx->errorDocument && !conn->connError && !smatch(tx->errorDocument, rx->uri)) {
-        mprLog(2, "Create error document %s for status %d from %s and retry", tx->errorDocument, tx->status, rx->uri);
+        mprLog(2, "  ErrorDoc %s for %d from %s", tx->errorDocument, tx->status, rx->uri);
         createErrorRequest(conn);
     }
 }
@@ -13039,53 +13051,35 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
             return;
         }
     }
+    if (q->ioIndex == 0) {
+        buildSendVec(q);
+    }
     /*
-        Loop doing non-blocking I/O until blocked or all the packets received are written.
+        No need to loop around as send file tries to write as much of the file as possible. 
+        If not eof, will always have the socket blocked.
      */
-    while (1) {
-        /*
-            Rebuild the iovector only when the past vector has been completely written. Simplifies the logic quite a bit.
-         */
-        if (q->ioIndex == 0 && buildSendVec(q) <= 0) {
-            break;
-        }
-        file = q->ioFile ? tx->file : 0;
-        written = mprSendFileToSocket(conn->sock, file, q->ioPos, q->ioCount, q->iovec, q->ioIndex, NULL, 0);
-        if (written < 0) {
-            errCode = mprGetError();
-            if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
-                /* Socket is full. Wait for an I/O event */
-                httpSocketBlocked(conn);
-                break;
-            }
+    file = q->ioFile ? tx->file : 0;
+    written = mprSendFileToSocket(conn->sock, file, q->ioPos, q->ioCount, q->iovec, q->ioIndex, NULL, 0);
+    if (written < 0) {
+        errCode = mprGetError();
+        if (errCode != EAGAIN && errCode != EWOULDBLOCK) {
             if (errCode != EPIPE && errCode != ECONNRESET && errCode != ENOTCONN) {
                 httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "SendFileToSocket failed, errCode %d", errCode);
             } else {
                 httpDisconnect(conn);
             }
             httpFinalizeConnector(conn);
-            break;
-
-        } else if (written == 0) {
-            /* Socket is full. Wait for an I/O event */
-            httpSocketBlocked(conn);
-            break;
-
-        } else if (written > 0) {
-            tx->bytesWritten += written;
-            adjustPacketData(q, written);
-            adjustSendVec(q, written);
         }
+    } else if (written > 0) {
+        tx->bytesWritten += written;
+        adjustPacketData(q, written);
+        adjustSendVec(q, written);
     }
-    mprLog(8, "Send connector ioCount %d, wrote %Ld, written so far %Ld, sending file %d, q->count %d/%d", 
-            q->ioCount, written, tx->bytesWritten, q->ioFile, q->count, q->max);
-    if (q->ioCount == 0) {
-        if ((q->flags & HTTP_QUEUE_EOF)) {
-            assure(conn->tx->finalizedOutput);
-            httpFinalizeConnector(conn);
-        } else {
-            HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
-        }
+    if ((q->flags & HTTP_QUEUE_EOF)) {
+        httpFinalizeConnector(conn);
+    } else {
+        httpSocketBlocked(conn);
+        HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
     }
 }
 
@@ -13112,14 +13106,9 @@ static MprOff buildSendVec(HttpQueue *q)
     for (packet = q->first; packet; packet = packet->next) {
         if (packet->flags & HTTP_PACKET_HEADER) {
             httpWriteHeaders(q, packet);
-            
-        } else if (httpGetPacketLength(packet) == 0 && packet->esize == 0) {
-            q->flags |= HTTP_QUEUE_EOF;
-            if (packet->prefix == NULL) {
-                break;
-            }
         }
         if (q->ioFile || q->ioIndex >= (HTTP_MAX_IOVEC - 2)) {
+            /* Only one file entry allowed */
             break;
         }
         addPacketForSend(q, packet);
@@ -13211,8 +13200,8 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
             bytes -= len;
             assure(packet->esize >= 0);
             assure(bytes == 0);
-            if (packet->esize > 0) {
-                break;
+            if (packet->esize) {
+               break;
             }
         } else if ((len = httpGetPacketLength(packet)) > 0) {
             len = (ssize) min(len, bytes);
@@ -13221,12 +13210,11 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
             q->count -= len;
             assure(q->count >= 0);
         }
+        if (packet->flags & HTTP_PACKET_HEADER) {
+            q->flags |= HTTP_QUEUE_EOF;
+        }
         if (httpGetPacketLength(packet) == 0) {
             httpGetPacket(q);
-        }
-        assure(bytes >= 0);
-        if (bytes == 0 && (q->first == NULL || !(q->first->flags & HTTP_PACKET_END))) {
-            break;
         }
     }
 }
