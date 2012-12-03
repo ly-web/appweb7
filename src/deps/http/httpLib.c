@@ -13209,7 +13209,7 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
             q->count -= len;
             assure(q->count >= 0);
         }
-        if (packet->flags & HTTP_PACKET_HEADER) {
+        if (packet->flags & HTTP_PACKET_END) {
             q->flags |= HTTP_QUEUE_EOF;
         }
         if (httpGetPacketLength(packet) == 0) {
