@@ -7594,8 +7594,8 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize len, int flags)
                     break;
                 } else if (flags & HTTP_BLOCK) {
                     while (q->count >= q->max && !tx->finalized) {
-                        if (mprWaitForSingleIO(conn->sock->fd, MPR_WRITABLE, conn->limits->inactivityTimeout) 
-                                != MPR_WRITABLE) {
+                        if (!(mprWaitForSingleIO(conn->sock->fd, MPR_WRITABLE, conn->limits->inactivityTimeout) 
+                                & MPR_WRITABLE)) {
                             return MPR_ERR_TIMEOUT;
                         }
                         httpResumeQueue(conn->connectorq);
