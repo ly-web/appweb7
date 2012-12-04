@@ -3560,6 +3560,13 @@
     </member>
     <member kind="function">
       <type>bool</type>
+      <name>mprHasDualNetworkStack</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>ga5225bb78e37d614aa23ea152458f3037</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
       <name>mprHasMemError</name>
       <anchorfile>group___mpr_mem.html</anchorfile>
       <anchor>gabeb48547e7598825b6268f8a8c7ed70b</anchor>
@@ -8161,6 +8168,13 @@
       <anchorfile>group___mpr_socket.html</anchorfile>
       <anchor>gaa4d2f67f80f168a4be7e5f3b96541bab</anchor>
       <arglist>(MprSocket *sp)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>mprHasDualNetworkStack</name>
+      <anchorfile>group___mpr_socket.html</anchorfile>
+      <anchor>ga5225bb78e37d614aa23ea152458f3037</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
