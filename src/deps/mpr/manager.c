@@ -250,7 +250,6 @@ PUBLIC int main(int argc, char *argv[])
     if (app->runAsDaemon) {
         makeDaemon();
     }
-
     status = 0;
     if (getuid() != 0) {
         mprUserError("Must run with administrator privilege. Use sudo.");
@@ -724,7 +723,7 @@ static int writePid(int pid)
 static int makeDaemon()
 {
     struct sigaction    act, old;
-    int                 pid, status;
+    int                 i, pid, status;
 
     /*
         Ignore child death signals
@@ -737,6 +736,12 @@ static int makeDaemon()
     if (sigaction(SIGCHLD, &act, &old) < 0) {
         mprError("Cannot initialize signals");
         return MPR_ERR_BAD_STATE;
+    }
+    /*
+        Close all open files
+     */
+    for (i = 0; i < 128; i++) {
+        close(i);
     }
 
     /*
