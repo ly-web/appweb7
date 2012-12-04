@@ -19158,6 +19158,26 @@ PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
 }
 
 
+PUBLIC bool mprHasDualNetworkStack() 
+{
+    bool dual;
+
+#if defined(BIT_HAS_SINGLE_STACK) || VXWORKS
+    dual = 0;
+#elif WINDOWS
+    {
+        OSVERSIONINFO info;
+        info.dwOSVersionInfoSize = sizeof(info);
+        GetVersionEx(&info);
+        dual = info.dwMajorVersion >= 6;
+    }
+#else
+    dual = 1;
+#endif
+    return dual;
+}
+
+
 static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
@@ -19185,12 +19205,8 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         Change null IP address to be an IPv6 endpoint if the system is dual-stack. That way we can listen on 
         both IPv4 and IPv6
      */
-    sip = ip;
-#if !defined(BIT_HAS_SINGLE_STACK) && !VXWORKS && !(WINDOWS && _WIN32_WINNT < 0x0600)
-    if (ip == 0 || *ip == '\0') {
-        sip = "::";
-    }
-#endif
+    sip = ((ip == 0 || *ip == '\0') && mprHasDualNetworkStack()) ? "::" : ip;
+
     if (mprGetSocketInfo(sip, port, &family, &protocol, &addr, &addrlen) < 0) {
         unlock(sp);
         return MPR_ERR_CANT_FIND;
@@ -19221,7 +19237,7 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         So we explicitly control.
      */
 #if defined(IPV6_V6ONLY)
-    if (ip == 0) {
+    if (ip == 0 || *ip == '\0') {
         only = 0;
         setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
     } else if (ipv6(ip)) {
