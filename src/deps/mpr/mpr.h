@@ -1284,7 +1284,6 @@ struct  MprXml;
     #define MPR_GC_WORKERS          0             /**< Run garbage collection non-concurrently */
     
 #elif BIT_TUNE == MPR_TUNE_BALANCED
-    
     /*
         Tune balancing speed and size
      */
@@ -8784,6 +8783,9 @@ PUBLIC Mpr *mprGetMpr();
 #define MPR_USER_EVENTS_THREAD  0x10        /**< User will explicitly manage own mprServiceEvents calls */
 #define MPR_NO_WINDOW           0x20        /**< Don't create a windows Window */
 
+/*
+    Parallel sweep thread is not yet operational
+ */
 #if BIT_TUNE == MPR_TUNE_SPEED
     #define MPR_THREAD_PATTERN (MPR_MARK_THREAD)
 #else
