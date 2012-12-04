@@ -25,8 +25,9 @@
 #include    "bit.h"
 
 #if BIT_PACK_MATRIXSSL
-
-/* Work-around to allow the windows 7.* SDK to be used with VS 2012 */
+/* 
+    Work-around to allow the windows 7.* SDK to be used with VS 2012 
+ */
 #if _MSC_VER >= 1700
     #define SAL_SUPP_H
     #define SPECSTRING_SUPP_H

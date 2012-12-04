@@ -29,12 +29,6 @@
 
 /********************************** Includes **********************************/
 
-/* Work-around to allow the windows 7.* SDK to be used with VS 2012 */
-#if _MSC_VER >= 1700
-    #define SAL_SUPP_H
-    #define SPECSTRING_SUPP_H
-#endif
-
 #include "bit.h"
 
 /******************************* Default Features *****************************/
@@ -258,7 +252,7 @@
 
 /********************************* O/S Includes *******************************/
 /*
-    Out-of-order definitions and includes. Order really matters in this section
+    Out-of-order definitions and includes. Order really matters in this section.
  */
 #if WINDOWS
     #undef      _CRT_SECURE_NO_DEPRECATE
@@ -295,6 +289,16 @@
     #define     HAS_UINT 1
 #endif
 
+#if WINDOWS
+    /* 
+        Work-around to allow the windows 7.* SDK to be used with VS 2012 
+     */
+    #if _MSC_VER >= 1700
+        #define SAL_SUPP_H
+        #define SPECSTRING_SUPP_H
+    #endif
+#endif
+
 #if BIT_WIN_LIKE
     #include    <winsock2.h>
     #include    <windows.h>
@@ -315,7 +319,7 @@
         #include <crtdbg.h>
     #endif
 #endif
-// #undef     _WIN32_WINNT
+//UNUSED #undef     _WIN32_WINNT
 
 /*
     Includes in alphabetic order

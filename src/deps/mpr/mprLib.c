@@ -19146,18 +19146,6 @@ static void resetSocket(MprSocket *sp)
 }
 
 
-/*  
-    Open a server connection
- */
-PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
-{
-    if (sp->provider == 0) {
-        return MPR_ERR_NOT_INITIALIZED;
-    }
-    return sp->provider->listenSocket(sp, ip, port, flags);
-}
-
-
 PUBLIC bool mprHasDualNetworkStack() 
 {
     bool dual;
@@ -19169,12 +19157,25 @@ PUBLIC bool mprHasDualNetworkStack()
         OSVERSIONINFO info;
         info.dwOSVersionInfoSize = sizeof(info);
         GetVersionEx(&info);
+        /* Vista or later */
         dual = info.dwMajorVersion >= 6;
     }
 #else
     dual = 1;
 #endif
     return dual;
+}
+
+
+/*  
+    Open a server connection
+ */
+PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
+{
+    if (sp->provider == 0) {
+        return MPR_ERR_NOT_INITIALIZED;
+    }
+    return sp->provider->listenSocket(sp, ip, port, flags);
 }
 
 
