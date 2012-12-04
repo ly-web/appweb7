@@ -5603,7 +5603,7 @@ static void netOutgoingService(HttpQueue *q)
             adjustNetVec(q, written);
         }
     }
-    if (q->first && q->first->flags & HTTP_PACKET_END) {
+    if ((q->flags & HTTP_QUEUE_EOF)) {
         httpFinalizeConnector(conn);
     } else {
         httpSocketBlocked(conn);
@@ -5695,7 +5695,7 @@ static void freeNetPackets(HttpQueue *q, ssize bytes)
     assure(q->count >= 0);
     assure(bytes > 0);
 
-    while ((packet = q->first) != 0) {
+    while (bytes > 0 && (packet = q->first) != 0) {
         if (packet->prefix) {
             /*
                 Note: the end packet may have the final chunk trailer in its prefix
@@ -5717,16 +5717,15 @@ static void freeNetPackets(HttpQueue *q, ssize bytes)
             q->count -= len;
             assure(q->count >= 0);
         }
-        /*
-            Must not consume the END packet
-         */
-        if (httpGetPacketLength(packet) == 0 && !(packet->flags & HTTP_PACKET_END)) {
-            /* Consume the packet here */
+        if (httpGetPacketLength(packet) == 0) {
+            if (packet->flags & HTTP_PACKET_END) {
+                q->flags |= HTTP_QUEUE_EOF;
+            }
             httpGetPacket(q);
         }
-        if (bytes == 0) {
-            break;
-        }
+    }
+    if (q->first && q->first->flags & HTTP_PACKET_END) {
+        q->flags |= HTTP_QUEUE_EOF;
     }
 }
 
@@ -13181,7 +13180,7 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
     assure(q->count >= 0);
     assure(bytes >= 0);
 
-    while ((packet = q->first) != 0) {
+    while (bytes > 0 && (packet = q->first) != 0) {
         if (packet->prefix) {
             len = mprGetBufLength(packet->prefix);
             len = (ssize) min(len, bytes);
@@ -13209,15 +13208,15 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
             q->count -= len;
             assure(q->count >= 0);
         }
-        if (packet->flags & HTTP_PACKET_END) {
-            q->flags |= HTTP_QUEUE_EOF;
-        }
         if (httpGetPacketLength(packet) == 0) {
+            if (packet->flags & HTTP_PACKET_END) {
+                q->flags |= HTTP_QUEUE_EOF;
+            }
             httpGetPacket(q);
         }
-        if (bytes == 0) {
-            break;
-        }
+    }
+    if (q->first && q->first->flags & HTTP_PACKET_END) {
+        q->flags |= HTTP_QUEUE_EOF;
     }
 }
 
