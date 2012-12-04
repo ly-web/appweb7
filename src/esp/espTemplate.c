@@ -875,7 +875,9 @@ static cchar *getMappedArch(cchar *arch)
 
 static cchar *getWinSDK()
 {
-#if WINDOWS
+#if defined(BIT_PACK_WINSDK_PATH)
+    return BIT_PACK_WINSDK_PATH;
+#elif WINDOWS
     cchar   *path;
 
     path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows", "CurrentInstallFolder");
