@@ -873,11 +873,18 @@ static cchar *getMappedArch(cchar *arch)
     return arch;
 }
 
+
 static cchar *getWinSDK()
 {
-#if defined(BIT_PACK_WINSDK_PATH)
-    return BIT_PACK_WINSDK_PATH;
-#elif WINDOWS
+#if UNUSED && defined(XXBIT_PACK_WINSDK_PATH)
+    /* 
+        Can't use this as we want to use the current installed winsdk which may be different to that installed 
+        on the build system.
+     */
+    return mprGetNativePath(BIT_PACK_WINSDK_PATH);
+#endif
+
+#if WINDOWS
     cchar   *path;
 
     path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows", "CurrentInstallFolder");

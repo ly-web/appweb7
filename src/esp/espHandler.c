@@ -823,16 +823,22 @@ static void defineVisualStudioEnv(MaState *state)
     }
     if (scontains(appweb->platform, "-x64-")) {
         is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
+        espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\win8\\um\\x64;${WINSDK}\\LIB\\x64;${VS}\\VC\\lib\\amd64\"");
         if (is64BitSystem) {
-            espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\x64;${VS}\\VC\\lib\\amd64\"");
-            espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\amd64\\bin;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x64\"");
+            espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\amd64;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x64\"");
+
         } else {
-            /* Cross building for 64-bit on a 32-bit system */
-            espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\x64;${VS}\\VC\\lib\\amd64\"");
-            espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\x86_amd64\\bin;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x64\"");
+            /* Cross building on x86 for 64-bit */
+            espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_amd64;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x86\"");
         }
+
+    } else if (scontains(appweb->platform, "-arm-")) {
+        /* Cross building on x86 for arm. No winsdk 7 support for arm */
+        espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\win8\\um\\arm;${VS}\\VC\\lib\\arm\"");
+        espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_arm;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\arm\"");
+
     } else {
-        /* Building for 32 bit on any-bit */
+        /* Building for X86 */
         espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB;${VS}\\VC\\lib\"");
         espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\"");
     }
