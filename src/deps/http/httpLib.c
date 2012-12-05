@@ -1699,7 +1699,7 @@ PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
 static void outgoingChunkService(HttpQueue *q)
 {
     HttpConn    *conn;
-    HttpPacket  *packet;
+    HttpPacket  *packet, *finalChunk;
     HttpTx      *tx;
     cchar       *value;
 
@@ -1731,7 +1731,7 @@ static void outgoingChunkService(HttpQueue *q)
         httpDefaultOutgoingServiceStage(q);
     } else {
         for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
-            if (!(packet->flags & HTTP_PACKET_HEADER)) {
+            if (packet->flags & HTTP_PACKET_DATA) {
                 httpPutBackPacket(q, packet);
                 httpJoinPackets(q, tx->chunkSize);
                 packet = httpGetPacket(q);
@@ -1743,8 +1743,14 @@ static void outgoingChunkService(HttpQueue *q)
                 httpPutBackPacket(q, packet);
                 return;
             }
-            if (!(packet->flags & HTTP_PACKET_HEADER)) {
+            if (packet->flags & HTTP_PACKET_DATA) {
                 setChunkPrefix(q, packet);
+
+            } else if (packet->flags & HTTP_PACKET_END) {
+                /* Insert a packet for the final chunk */
+                finalChunk = httpCreateDataPacket(0);
+                setChunkPrefix(q, finalChunk);
+                httpPutPacketToNext(q, finalChunk);
             }
             httpPutPacketToNext(q, packet);
         }
@@ -5603,7 +5609,8 @@ static void netOutgoingService(HttpQueue *q)
             adjustNetVec(q, written);
         }
     }
-    if ((q->flags & HTTP_QUEUE_EOF)) {
+    LOG(6, "netConnector wrote %d, qflags %x", (int) written, q->flags);
+    if (q->first && q->first->flags & HTTP_PACKET_END) {
         httpFinalizeConnector(conn);
     } else {
         httpSocketBlocked(conn);
@@ -5697,9 +5704,6 @@ static void freeNetPackets(HttpQueue *q, ssize bytes)
 
     while (bytes > 0 && (packet = q->first) != 0) {
         if (packet->prefix) {
-            /*
-                Note: the end packet may have the final chunk trailer in its prefix
-             */
             len = mprGetBufLength(packet->prefix);
             len = min(len, bytes);
             mprAdjustBufStart(packet->prefix, len);
@@ -5718,15 +5722,15 @@ static void freeNetPackets(HttpQueue *q, ssize bytes)
             assure(q->count >= 0);
         }
         if (httpGetPacketLength(packet) == 0) {
-            if (packet->flags & HTTP_PACKET_END) {
-                q->flags |= HTTP_QUEUE_EOF;
-            }
+            assure(!(packet->flags & HTTP_PACKET_END));
             httpGetPacket(q);
         }
     }
+#if UNUSED
     if (q->first && q->first->flags & HTTP_PACKET_END) {
         q->flags |= HTTP_QUEUE_EOF;
     }
+#endif
 }
 
 
@@ -11949,6 +11953,7 @@ static bool processParsed(HttpConn *conn)
         rx->flags &= ~HTTP_EXPECT_CONTINUE;
     }
     if (!conn->endpoint && conn->upgraded && !httpVerifyWebSocketsHandshake(conn)) {
+        httpSetState(conn, HTTP_STATE_FINALIZED);
         return 1;
     }
     httpSetState(conn, HTTP_STATE_CONTENT);
@@ -12277,6 +12282,9 @@ static void processCompletion(HttpConn *conn)
     assure(tx->finalized);
     assure(tx->finalizedOutput);
     assure(tx->finalizedConnector);
+
+    mprLog(3, "Request complete, status %d, error %d, connError %d, uri %s",
+        tx->status, conn->error, conn->connError, rx->uri);
 
     httpDestroyPipeline(conn);
     measure(conn);
@@ -13073,7 +13081,8 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
         adjustPacketData(q, written);
         adjustSendVec(q, written);
     }
-    if ((q->flags & HTTP_QUEUE_EOF)) {
+    LOG(6, "sendConnector wrote %d, qflags %x", (int) written, q->flags);
+    if (q->first && q->first->flags & HTTP_PACKET_END) {
         httpFinalizeConnector(conn);
     } else {
         httpSocketBlocked(conn);
@@ -13209,15 +13218,15 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
             assure(q->count >= 0);
         }
         if (httpGetPacketLength(packet) == 0) {
-            if (packet->flags & HTTP_PACKET_END) {
-                q->flags |= HTTP_QUEUE_EOF;
-            }
+            assure(!(packet->flags & HTTP_PACKET_END));
             httpGetPacket(q);
         }
     }
+#if UNUSED
     if (q->first && q->first->flags & HTTP_PACKET_END) {
         q->flags |= HTTP_QUEUE_EOF;
     }
+#endif
 }
 
 
