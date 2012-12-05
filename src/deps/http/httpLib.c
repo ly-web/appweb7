@@ -5613,7 +5613,9 @@ static void netOutgoingService(HttpQueue *q)
     if (q->first && q->first->flags & HTTP_PACKET_END) {
         httpFinalizeConnector(conn);
     } else {
+#if UNUSED
         httpSocketBlocked(conn);
+#endif
         HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
     }
 }
@@ -6671,6 +6673,11 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
     httpPutForService(conn->writeq, httpCreateHeaderPacket(), HTTP_DELAY_SERVICE);
     openQueues(conn);
 
+#if FUTURE
+    if (rx->upgrade && !conn->upgraded) {
+        httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Cannot upgrade communications protocol");
+    }
+#endif
     if (tx->pendingFinalize) {
         tx->finalizedOutput = 0;
         httpFinalizeOutput(conn);
@@ -11220,7 +11227,7 @@ PUBLIC bool httpPumpRequest(HttpConn *conn, HttpPacket *packet)
     conn->pumping = 1;
 
     while (canProceed) {
-        LOG(7, "httpProcess %s, state %d, error %d", conn->dispatcher->name, conn->state, conn->error);
+        LOG(6, "httpProcess %s, state %d, error %d", conn->dispatcher->name, conn->state, conn->error);
         switch (conn->state) {
         case HTTP_STATE_BEGIN:
         case HTTP_STATE_CONNECTED:
@@ -13068,7 +13075,10 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     written = mprSendFileToSocket(conn->sock, file, q->ioPos, q->ioCount, q->iovec, q->ioIndex, NULL, 0);
     if (written < 0) {
         errCode = mprGetError();
-        if (errCode != EAGAIN && errCode != EWOULDBLOCK) {
+        if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
+            /*  Socket full, wait for an I/O event */
+            httpSocketBlocked(conn);
+        } else {
             if (errCode != EPIPE && errCode != ECONNRESET && errCode != ENOTCONN) {
                 httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "SendFileToSocket failed, errCode %d", errCode);
             } else {
@@ -13085,7 +13095,9 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     if (q->first && q->first->flags & HTTP_PACKET_END) {
         httpFinalizeConnector(conn);
     } else {
+#if UNUSED
         httpSocketBlocked(conn);
+#endif
         HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
     }
 }
@@ -17147,7 +17159,9 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
         succeeds, then the data is sent.
      */
     assure(HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_FINALIZED);
-
+    if (!(HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_FINALIZED) || !conn->upgraded) {
+        return MPR_ERR_BAD_STATE;
+    }
     if (type < 0 || type > WS_MSG_PONG) {
         mprError("webSocketFilter: httpSendBlock: bad message type %d", type);
         return MPR_ERR_BAD_ARGS;
@@ -17226,6 +17240,11 @@ PUBLIC void httpSendClose(HttpConn *conn, int status, cchar *reason)
     }
     ws->closing = 1;
     ws->state = WS_STATE_CLOSING;
+
+    if (!(HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_FINALIZED) || !conn->upgraded) {
+        /* Ignore closes when already finalized or not yet connected */
+        return;
+    } 
     len = 2;
     if (reason) {
         if (slen(reason) >= 124) {
@@ -17491,6 +17510,8 @@ PUBLIC bool httpVerifyWebSocketsHandshake(HttpConn *conn)
     assure(rx);
     assure(rx->webSocket);
     assure(conn->upgraded);
+
+    rx->webSocket->state = WS_STATE_CLOSED;
 
     if (rx->status != HTTP_CODE_SWITCHING) {
         httpError(conn, HTTP_CODE_BAD_HANDSHAKE, "Bad WebSocket handshake status %d", rx->status);
