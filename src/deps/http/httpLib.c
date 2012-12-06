@@ -13203,9 +13203,11 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
         There should be 3 packets on the queue. A header packet for the HTTP response headers, a data packet with 
         packet->esize set to the size of the file, and an end packet with no content.
         Must leave this routine with the end packet still on the queue and all bytes accounted for.
-        An empty file is a special case where packet->esize will be zero. Must still consume this packet.
+
+        NOTE: An empty file is a special case where packet->esize will be zero. Must still consume this packet so we
+            don't test for bytes > 0 in the loop.
      */
-    while ((packet = q->first) != 0 && !(packet->flags & HTTP_PACKET_END) && bytes > 0) {
+    while ((packet = q->first) != 0 && !(packet->flags & HTTP_PACKET_END) /* bytes > 0 */) {
         if (packet->prefix) {
             len = mprGetBufLength(packet->prefix);
             len = (ssize) min(len, bytes);
