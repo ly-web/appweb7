@@ -308,6 +308,8 @@ static void browserToCgiService(HttpQueue *q)
         mprEnableCmdEvents(cmd, MPR_CMD_STDIN);
     } else if (conn->rx->eof) {
         mprCloseCmdFd(cmd, MPR_CMD_STDIN);
+    } else {
+        mprDisableCmdEvents(cmd, MPR_CMD_STDIN);
     }
 }
 
