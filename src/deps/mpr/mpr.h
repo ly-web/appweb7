@@ -3897,9 +3897,9 @@ PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
 #define mprPutCharToWideBuf     mprPutCharToBuf
 #define mprPutStringToWideBuf   mprPutStringToBuf
 #define mprPutFmtToWideBuf      mprPutFmtToBuf
-
 #endif
 
+//  MOB - FIX
 #if MPR_BUF_MACROS || 1
 #define mprGetBufLength(bp) ((bp)->end - (bp)->start)
 #define mprGetBufSize(bp) ((bp)->buflen)
