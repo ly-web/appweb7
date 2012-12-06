@@ -5625,7 +5625,7 @@ static MprOff buildNetVec(HttpQueue *q)
 {
     HttpConn    *conn;
     HttpTx      *tx;
-    HttpPacket  *packet;
+    HttpPacket  *packet, *prev;
 
     conn = q->conn;
     tx = conn->tx;
@@ -5634,7 +5634,7 @@ static MprOff buildNetVec(HttpQueue *q)
         Examine each packet and accumulate as many packets into the I/O vector as possible. Leave the packets on the queue 
         for now, they are removed after the IO is complete for the entire packet.
      */
-    for (packet = q->first; packet; packet = packet->next) {
+    for (packet = prev = q->first; packet && !(packet->flags & HTTP_PACKET_END); packet = packet->next) {
         if (packet->flags & HTTP_PACKET_HEADER) {
             if (tx->chunkSize <= 0 && q->count > 0 && tx->length < 0) {
                 /* Incase no chunking filter and we've not seen all the data yet */
@@ -5645,7 +5645,14 @@ static MprOff buildNetVec(HttpQueue *q)
         if (q->ioIndex >= (HTTP_MAX_IOVEC - 2)) {
             break;
         }
-        addPacketForNet(q, packet);
+        if (httpGetPacketLength(packet) > 0 || packet->prefix) {
+            addPacketForNet(q, packet);
+        } else {
+            /* Remove empty packets */
+            prev->next = packet->next;
+            continue;
+        }
+        prev = packet;
     }
     return q->ioCount;
 }
@@ -12975,7 +12982,7 @@ PUBLIC void httpTrimExtraPath(HttpConn *conn)
 static void addPacketForSend(HttpQueue *q, HttpPacket *packet);
 static void adjustSendVec(HttpQueue *q, MprOff written);
 static MprOff buildSendVec(HttpQueue *q);
-static void adjustPacketData(HttpQueue *q, MprOff written);
+static void freeSendPackets(HttpQueue *q, MprOff written);
 static void sendClose(HttpQueue *q);
 
 /*********************************** Code *************************************/
@@ -13090,7 +13097,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
         }
     } else if (written > 0) {
         tx->bytesWritten += written;
-        adjustPacketData(q, written);
+        freeSendPackets(q, written);
         adjustSendVec(q, written);
     }
     LOG(6, "sendConnector wrote %d, qflags %x", (int) written, q->flags);
@@ -13109,7 +13116,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
  */
 static MprOff buildSendVec(HttpQueue *q)
 {
-    HttpPacket  *packet;
+    HttpPacket  *packet, *prev;
 
     assure(q->ioIndex == 0);
     q->ioCount = 0;
@@ -13121,7 +13128,7 @@ static MprOff buildSendVec(HttpQueue *q)
         vector entries. Leave the packets on the queue for now, they are removed after the IO is complete for the 
         entire packet.
      */
-    for (packet = q->first; packet; packet = packet->next) {
+    for (packet = prev = q->first; packet && !(packet->flags & HTTP_PACKET_END); packet = packet->next) {
         if (packet->flags & HTTP_PACKET_HEADER) {
             httpWriteHeaders(q, packet);
         }
@@ -13129,7 +13136,14 @@ static MprOff buildSendVec(HttpQueue *q)
             /* Only one file entry allowed */
             break;
         }
-        addPacketForSend(q, packet);
+        if (packet->prefix || packet->esize || httpGetPacketLength(packet) > 0) {
+            addPacketForSend(q, packet);
+        } else {
+            /* Remove empty packets */
+            prev->next = packet->next;
+            continue;
+        }
+        prev = packet;
     }
     return q->ioCount;
 }
@@ -13186,10 +13200,7 @@ static void addPacketForSend(HttpQueue *q, HttpPacket *packet)
 }
 
 
-/*  
-    Clear entries from the IO vector that have actually been transmitted. 
- */
-static void adjustPacketData(HttpQueue *q, MprOff bytes)
+static void freeSendPackets(HttpQueue *q, MprOff bytes)
 {
     HttpPacket  *packet;
     ssize       len;
@@ -13200,14 +13211,11 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
 
     /*
         Loop while data to be accounted for and we have not hit the end of data packet
-        There should be 3 packets on the queue. A header packet for the HTTP response headers, a data packet with 
-        packet->esize set to the size of the file, and an end packet with no content.
+        There should be 2-3 packets on the queue. A header packet for the HTTP response headers, an optional
+        data packet with packet->esize set to the size of the file, and an end packet with no content.
         Must leave this routine with the end packet still on the queue and all bytes accounted for.
-
-        NOTE: An empty file is a special case where packet->esize will be zero. Must still consume this packet so we
-            don't test for bytes > 0 in the loop.
      */
-    while ((packet = q->first) != 0 && !(packet->flags & HTTP_PACKET_END) /* bytes > 0 */) {
+    while ((packet = q->first) != 0 && !(packet->flags & HTTP_PACKET_END) && bytes > 0) {
         if (packet->prefix) {
             len = mprGetBufLength(packet->prefix);
             len = (ssize) min(len, bytes);
@@ -13224,11 +13232,14 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
             packet->epos += len;
             bytes -= len;
             assure(packet->esize >= 0);
+#if UNUSED
             if (packet->esize) {
                 /* Still more file to write, but this was all the socket could absorb */
                 assure(bytes == 0);
                 break;
             }
+#endif
+
         } else if ((len = httpGetPacketLength(packet)) > 0) {
             /* Header packets come here */
             len = (ssize) min(len, bytes);
@@ -13237,7 +13248,7 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
             q->count -= len;
             assure(q->count >= 0);
         }
-        if (httpGetPacketLength(packet) == 0) {
+        if (packet->esize == 0 && httpGetPacketLength(packet) == 0) {
             /* Done with this packet - consume it */
             assure(!(packet->flags & HTTP_PACKET_END));
             httpGetPacket(q);
