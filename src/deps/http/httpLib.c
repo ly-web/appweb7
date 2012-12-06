@@ -5613,9 +5613,6 @@ static void netOutgoingService(HttpQueue *q)
     if (q->first && q->first->flags & HTTP_PACKET_END) {
         httpFinalizeConnector(conn);
     } else {
-#if UNUSED
-        httpSocketBlocked(conn);
-#endif
         HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
     }
 }
@@ -5704,7 +5701,7 @@ static void freeNetPackets(HttpQueue *q, ssize bytes)
     assure(q->count >= 0);
     assure(bytes > 0);
 
-    while (bytes > 0 && (packet = q->first) != 0) {
+    while ((packet = q->first) != 0 && !(packet->flags & HTTP_PACKET_END)) {
         if (packet->prefix) {
             len = mprGetBufLength(packet->prefix);
             len = min(len, bytes);
@@ -5726,13 +5723,11 @@ static void freeNetPackets(HttpQueue *q, ssize bytes)
         if (httpGetPacketLength(packet) == 0) {
             assure(!(packet->flags & HTTP_PACKET_END));
             httpGetPacket(q);
+        } else {
+            break;
         }
     }
-#if UNUSED
-    if (q->first && q->first->flags & HTTP_PACKET_END) {
-        q->flags |= HTTP_QUEUE_EOF;
-    }
-#endif
+    assure(bytes == 0);
 }
 
 
@@ -13095,9 +13090,6 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     if (q->first && q->first->flags & HTTP_PACKET_END) {
         httpFinalizeConnector(conn);
     } else {
-#if UNUSED
-        httpSocketBlocked(conn);
-#endif
         HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
     }
 }
@@ -13201,7 +13193,7 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
     assure(q->count >= 0);
     assure(bytes >= 0);
 
-    while (bytes > 0 && (packet = q->first) != 0) {
+    while ((packet = q->first) != 0 && !(packet->flags & HTTP_PACKET_END)) {
         if (packet->prefix) {
             len = mprGetBufLength(packet->prefix);
             len = (ssize) min(len, bytes);
@@ -13218,7 +13210,6 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
             packet->epos += len;
             bytes -= len;
             assure(packet->esize >= 0);
-            assure(bytes == 0);
             if (packet->esize) {
                break;
             }
@@ -13232,13 +13223,11 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
         if (httpGetPacketLength(packet) == 0) {
             assure(!(packet->flags & HTTP_PACKET_END));
             httpGetPacket(q);
+        } else {
+            break;
         }
     }
-#if UNUSED
-    if (q->first && q->first->flags & HTTP_PACKET_END) {
-        q->flags |= HTTP_QUEUE_EOF;
-    }
-#endif
+    assure(bytes == 0);
 }
 
 
@@ -16697,11 +16686,11 @@ static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir)
     version = (int) stoi(httpGetHeader(conn, "sec-websocket-version"));
     if (version < WS_VERSION) {
         httpSetHeader(conn, "Sec-WebSocket-Version", "%d", WS_VERSION);
-        httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Unsupported Sec-WebSocket-Version");
+        httpError(conn, HTTP_CLOSE | HTTP_CODE_BAD_REQUEST, "Unsupported Sec-WebSocket-Version");
         return HTTP_ROUTE_OK;
     }
     if ((key = httpGetHeader(conn, "sec-websocket-key")) == 0) {
-        httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad Sec-WebSocket-Key");
+        httpError(conn, HTTP_CLOSE | HTTP_CODE_BAD_REQUEST, "Bad Sec-WebSocket-Key");
         return HTTP_ROUTE_OK;
     }
     protocols = httpGetHeader(conn, "sec-websocket-protocol");
@@ -16721,7 +16710,7 @@ static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir)
                 }
             }
             if (!kind) {
-                httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Unsupported Sec-WebSocket-Protocol");
+                httpError(conn, HTTP_CLOSE | HTTP_CODE_BAD_REQUEST, "Unsupported Sec-WebSocket-Protocol");
                 return HTTP_ROUTE_OK;
             }
             ws->subProtocol = sclone(kind);
