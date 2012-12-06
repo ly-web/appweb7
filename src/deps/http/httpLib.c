@@ -1686,7 +1686,7 @@ PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
         /* Remaining content is set to the next chunk size */
         rx->remainingContent = chunkSize;
         rx->chunkState = (chunkSize == 0) ? HTTP_CHUNK_EOF : HTTP_CHUNK_DATA;
-        mprLog(4, "chunkFilter: start incoming chunk of %d bytes", chunkSize);
+        mprLog(7, "chunkFilter: start incoming chunk of %d bytes", chunkSize);
         return min(chunkSize, mprGetBufLength(buf));
 
     default:
@@ -5590,14 +5590,14 @@ static void netOutgoingService(HttpQueue *q)
         written = mprWriteSocketVector(conn->sock, q->iovec, q->ioIndex);
         if (written < 0) {
             errCode = mprGetError(q);
-            LOG(6, "netConnector wrote %d, errno %d, qflags %x", (int) written, errCode, q->flags);
+            LOG(6, "netConnector: wrote %d, errno %d, qflags %x", (int) written, errCode, q->flags);
             if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
                 /*  Socket full, wait for an I/O event */
                 httpSocketBlocked(conn);
                 break;
             }
             if (errCode != EPIPE && errCode != ECONNRESET && errCode != ENOTCONN) {
-                httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "netConnector: Write to client error %d", errCode);
+                httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "netConnector: Write response error %d", errCode);
             } else {
                 httpDisconnect(conn);
             }
@@ -5605,13 +5605,14 @@ static void netOutgoingService(HttpQueue *q)
             break;
 
         } else if (written > 0) {
-            LOG(6, "netConnector wrote %d, ask %d, qflags %x", (int) written, q->ioCount, q->flags);
+            LOG(6, "netConnector: wrote %d, ask %d, qflags %x", (int) written, q->ioCount, q->flags);
             tx->bytesWritten += written;
             freeNetPackets(q, written);
             adjustNetVec(q, written);
         }
     }
     if (q->first && q->first->flags & HTTP_PACKET_END) {
+        LOG(6, "netConnector: end of stream. Finalize connector");
         httpFinalizeConnector(conn);
     } else {
         HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
@@ -11237,7 +11238,7 @@ PUBLIC bool httpPumpRequest(HttpConn *conn, HttpPacket *packet)
     conn->pumping = 1;
 
     while (canProceed) {
-        LOG(4, "httpProcess %s, state %d, error %d", conn->dispatcher->name, conn->state, conn->error);
+        LOG(6, "httpProcess %s, state %d, error %d", conn->dispatcher->name, conn->state, conn->error);
         switch (conn->state) {
         case HTTP_STATE_BEGIN:
         case HTTP_STATE_CONNECTED:
@@ -13090,7 +13091,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
             httpSocketBlocked(conn);
         } else {
             if (errCode != EPIPE && errCode != ECONNRESET && errCode != ENOTCONN) {
-                httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "SendFileToSocket failed, errCode %d", errCode);
+                httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "sendConnector: error, errCode %d", errCode);
             } else {
                 httpDisconnect(conn);
             }
@@ -13101,8 +13102,9 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
         freeSendPackets(q, written);
         adjustSendVec(q, written);
     }
-    LOG(6, "sendConnector wrote %d, qflags %x", (int) written, q->flags);
+    LOG(6, "sendConnector: wrote %d, qflags %x", (int) written, q->flags);
     if (q->first && q->first->flags & HTTP_PACKET_END) {
+        LOG(6, "sendConnector: end of stream. Finalize connector");
         httpFinalizeConnector(conn);
     } else {
         HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
