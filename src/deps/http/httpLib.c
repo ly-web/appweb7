@@ -5701,6 +5701,12 @@ static void freeNetPackets(HttpQueue *q, ssize bytes)
     assure(q->count >= 0);
     assure(bytes > 0);
 
+    /*
+        Loop while data to be accounted for and we have not hit the end of data packet.
+        Chunks will have the chunk header in the packet->prefix.
+        The final chunk trailer will be in a packet->prefix with no other data content.
+        Must leave this routine with the end packet still on the queue and all bytes accounted for.
+     */
     while ((packet = q->first) != 0 && !(packet->flags & HTTP_PACKET_END)) {
         if (packet->prefix) {
             len = mprGetBufLength(packet->prefix);
@@ -5721,6 +5727,7 @@ static void freeNetPackets(HttpQueue *q, ssize bytes)
             assure(q->count >= 0);
         }
         if (httpGetPacketLength(packet) == 0) {
+            /* Done with this packet - consume it */
             assure(!(packet->flags & HTTP_PACKET_END));
             httpGetPacket(q);
         } else {
@@ -13180,9 +13187,7 @@ static void addPacketForSend(HttpQueue *q, HttpPacket *packet)
 
 
 /*  
-    Clear entries from the IO vector that have actually been transmitted. This supports partial writes due to the socket
-    being full. Don't come here if we've seen all the packets and all the data has been completely written. ie. small files
-    don't come here.
+    Clear entries from the IO vector that have actually been transmitted. 
  */
 static void adjustPacketData(HttpQueue *q, MprOff bytes)
 {
@@ -13193,6 +13198,13 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
     assure(q->count >= 0);
     assure(bytes >= 0);
 
+    /*
+        Loop while data to be accounted for and we have not hit the end of data packet
+        There should be 3 packets on the queue. A header packet for the HTTP response headers, a data packet with 
+        packet->esize set to the size of the file, and an end packet with no content.
+        Must leave this routine with the end packet still on the queue and all bytes accounted for.
+        An empty file is a special case where packet->esize will be zero. Must still consume this packet.
+     */
     while ((packet = q->first) != 0 && !(packet->flags & HTTP_PACKET_END)) {
         if (packet->prefix) {
             len = mprGetBufLength(packet->prefix);
@@ -13211,9 +13223,12 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
             bytes -= len;
             assure(packet->esize >= 0);
             if (packet->esize) {
-               break;
+                /* Still more file to write, but this was all the socket could absorb */
+                assure(bytes == 0);
+                break;
             }
         } else if ((len = httpGetPacketLength(packet)) > 0) {
+            /* Header packets come here */
             len = (ssize) min(len, bytes);
             mprAdjustBufStart(packet->content, len);
             bytes -= len;
@@ -13221,6 +13236,7 @@ static void adjustPacketData(HttpQueue *q, MprOff bytes)
             assure(q->count >= 0);
         }
         if (httpGetPacketLength(packet) == 0) {
+            /* Done with this packet - consume it */
             assure(!(packet->flags & HTTP_PACKET_END));
             httpGetPacket(q);
         } else {
