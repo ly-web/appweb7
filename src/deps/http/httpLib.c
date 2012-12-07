@@ -12301,8 +12301,8 @@ static void processCompletion(HttpConn *conn)
     assure(tx->finalizedOutput);
     assure(tx->finalizedConnector);
 
-    mprLog(3, "Request complete, status %d, error %d, connError %d, uri %s",
-        tx->status, conn->error, conn->connError, rx->uri);
+    mprLog(1, "Request complete, status %d, error %d, connError %d, uri %s, memsize %.2f MB",
+        tx->status, conn->error, conn->connError, rx->uri, mprGetMem() / 1024 / 1024.0);
 
     httpDestroyPipeline(conn);
     measure(conn);
