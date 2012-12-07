@@ -524,11 +524,15 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
 
         } else if (smatch(option, "client")) {
             flags |= HTTP_CACHE_CLIENT;
-            clientLifespan = getticks(ovalue);
+            if (ovalue) {
+                clientLifespan = getticks(ovalue);
+            }
 
         } else if (smatch(option, "server")) {
             flags |= HTTP_CACHE_SERVER;
-            serverLifespan = getticks(ovalue);
+            if (ovalue) {
+                serverLifespan = getticks(ovalue);
+            }
 
         } else if (smatch(option, "extensions")) {
             extensions = ovalue;

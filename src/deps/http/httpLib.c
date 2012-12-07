@@ -12301,7 +12301,7 @@ static void processCompletion(HttpConn *conn)
     assure(tx->finalizedOutput);
     assure(tx->finalizedConnector);
 
-    mprLog(3, "Request complete, status %d, error %d, connError %d, %s%s, memsize %.2f MB",
+    LOG(3, "Request complete, status %d, error %d, connError %d, %s%s, memsize %.2f MB",
         tx->status, conn->error, conn->connError, rx->hostHeader, rx->uri, mprGetMem() / 1024 / 1024.0);
 
     httpDestroyPipeline(conn);
@@ -14424,7 +14424,13 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
         }
         target = httpCreateUri(targetUri, 0);
         base = rx->parsedUri;
-        if (!target->port && target->scheme && !smatch(target->scheme, base->scheme)) {
+        /*
+            Support URIs without a host:  https:///path. This is used to redirect onto the same host but with a 
+            different scheme. So find a suitable local endpoint to supply the port for the scheme.
+        */
+        if (!target->port &&
+                (!target->host || smatch(base->host, target->host)) &&
+                (target->scheme && !smatch(target->scheme, base->scheme))) {
             endpoint = smatch(target->scheme, "https") ? conn->host->secureEndpoint : conn->host->defaultEndpoint;
             if (endpoint) {
                 target->port = endpoint->port;
