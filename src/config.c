@@ -409,6 +409,7 @@ static int authStoreDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     AuthRealm name
+    DEPRECATED
  */
 static int authRealmDirective(MaState *state, cchar *key, cchar *value)
 {
