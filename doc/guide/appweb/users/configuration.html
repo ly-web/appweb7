@@ -95,10 +95,10 @@ configuration file into sections &mdash; especially application definitions.
             beginning with a "#" character are comments and are ignored.</p>
             <h2>Sample configuration file</h2>
             <pre>
-ServerRoot "."
+Home "."
 ErrorLog error.log
 ServerName http://localhost:7777
-DocumentRoot "/var/web"
+Documents "/var/web"
 Listen 7777
 LoadModule fileHandler mod_file
 AddHandler fileHandler html
@@ -132,7 +132,7 @@ AddHandler fileHandler html
             <p>Here is an example of an IP-based virtual host.</p>
             <pre>
 &lt;VirtualHost 206.148.97.56&gt;
-    DocumentRoot /var/www/mycorp
+    Documents /var/www/mycorp
     ...
 &lt;/VirtualHost&gt;
 </pre>
@@ -141,7 +141,7 @@ AddHandler fileHandler html
 NameVirtualHost 206.148.96.56
 &lt;VirtualHost 206.148.97.56&gt;
     ServerName www.mycorp.org
-    DocumentRoot /var/www/mycorp
+    Documents /var/www/mycorp
     ...
 &lt;/VirtualHost&gt;
 </pre>
@@ -185,7 +185,7 @@ Include conf/applications/*.conf
             </table><a id="order"></a>
             <h2 class="section">Order of Processing</h2>
             <p>The configuration file is parsed in a single top-to-bottom pass. The order of directives is important
-            as certain directives depend on others. For example, you must define the ServerRoot before using the
+            as certain directives depend on others. For example, you must define the Home before using the
             LoadModule directive. Also, block level directives inherit their configuration from the outer block. 
             For example: a Route block will inherit the outer configuration and may modify that inside the Route block.</p>
             
@@ -293,7 +293,7 @@ Include conf/applications/*.conf
                         <td>Define the default index file to service for directory requests.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/route.html#documentRoot">DocumentRoot</a></td>
+                        <td><a href="dir/route.html#documents">Documents</a></td>
                         <td>Directory containing web content.</td>
                     </tr>
                     <tr>
@@ -355,6 +355,10 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/server.html#groupAcount">GroupAccount</a></td>
                         <td>Define the O/S account group used by Appweb.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/server.html#home">Home</a></td>
+                        <td>Define the directory containing configuration files.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/dir.html#indexOptions">IndexOptions</a></td>
@@ -555,10 +559,6 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/server.html#serverName">ServerName</a></td>
                         <td>Define a name for the server to use for itself.</td>
-                    </tr>
-                    <tr>
-                        <td><a href="dir/server.html#serverRoot">ServerRoot</a></td>
-                        <td>Define the directory containing the core Appweb configuration.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#sessionTimeout">SessionTimeout</a></td>

@@ -3919,7 +3919,7 @@ PUBLIC char *httpTemplate(HttpConn *conn, cchar *tplate, MprHash *options);
     <li>%B - Boolean. Parses: on/off, true/false, yes/no.</li>
     <li>%N - Number. Parses numbers in base 10.</li>
     <li>%S - String. Removes quotes.</li>
-    <li>%P - Path string. Removes quotes and expands ${PathVars}. Resolved relative to host->dir (ServerRoot).</li>
+    <li>%P - Path string. Removes quotes and expands ${PathVars}. Resolved relative to host->dir (Home).</li>
     <li>%W - Parse words into a list</li>
     <li>%! - Optional negate. Set value to HTTP_ROUTE_NOT present, otherwise zero.</li>
     </ul>
@@ -5265,7 +5265,8 @@ typedef struct HttpHost {
     HttpEndpoint    *defaultEndpoint;       /**< Default endpoint for host */
     HttpEndpoint    *secureEndpoint;        /**< Secure endpoint for host */
     char            *protocol;              /**< Defaults to "HTTP/1.1" */
-    char            *root;                  /**< ServerRoot for this host */
+    //  MOB - rename home?
+    char            *root;                  /**< Home for this host */
     int             flags;                  /**< Host flags */
     MprMutex        *mutex;                 /**< Multithread sync */
 } HttpHost;

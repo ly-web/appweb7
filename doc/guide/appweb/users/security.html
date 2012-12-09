@@ -237,9 +237,9 @@
             <p>Configuration and log files used by the Appweb server should always be outside all directories
             containing served pages or scripts. The directory containing the log files must be writable by the Appweb
             user account.</p>
-            <h3>ServerRoot Permissions</h3>
-            <p>The root directory for Appweb is called the ServerRoot directory and is defined by the ServerRoot
-            directive in the configuration file. The ServerRoot directory, and the logs and lib directory below it,
+            <h3>Home Directory Permissions</h3>
+            <p>The root directory for Appweb is called the Home directory and is defined by the Home
+            directive in the configuration file. The Home directory, and the logs and lib directory below it,
             should be owned by <b>root</b> (or admin), and should be in the group <b>root</b> (or administrators). They
             should only be writable by this specific user and group.</p>
             <p>For Linux, these commands will ensure the privileges are correctly set up:</p>
@@ -248,7 +248,8 @@ cd    /etc/appweb
 chown root . lib logs
 chgrp root . lib logs
 chmod 755  . lib logs
-</pre><a id="dynamicContent"></a>
+</pre>
+            <a id="dynamicContent"></a>
             <h2 class="section">Dynamic Content</h2>
             <p>Appweb supports several Web Frameworks for creating dynamic content. These frameworks sometimes require
             special security considerations because they are executing code or scripts to render the content.</p>
@@ -321,7 +322,7 @@ AddType application/x-httpd-php .web
             exploits.</p>
             <a id="ssl"></a>
             <h2 class="section">SSL Servers</h2>
-            <p>If you configure a SSL virtual server, remember to define a separate DocumentRoot if you want to only
+            <p>If you configure a SSL virtual server, remember to define a separate Documents directory if you want to only
             serve private content to SSL users. Otherwise those pages will also be visible via the default
             server.</p><a id="authentication"></a>
             <h2 class="section">Authentication</h2>

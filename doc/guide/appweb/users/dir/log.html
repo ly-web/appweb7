@@ -79,7 +79,7 @@
                         <td>
                             <p>The AccessLog directive configures an access log that Appweb uses to log completed
                             HTTP requests for the current route. The given path may be an absolute filename or it may be
-                            relative to the ServerRoot. The AccessLog directive is inherited from outer routes in the
+                            relative to the Home directory. The AccessLog directive is inherited from outer routes in the
                             config file.</p>
                             <p>The <em>size</em> parameter specifies a maximum size to write to a single log file.
                             The <em>backup</em> parameter indicates how many backup log files to preserve. When the
@@ -127,7 +127,7 @@
                             <p>The ErrorLog directive configures the diagnostic error log for Appweb. There is one
                             such error log and all error messages and trace will be written to this log.</p>
                             The given <em>path</em> may be an absolute filename or it may be
-                            relative to the ServerRoot. 
+                            relative to the Home directory. 
                             <p>The <em>size</em> parameter specifies a maximum size to write to a single log file.
                             The <em>backup</em> parameter indicates how many backup log files to preserve. When the
                             maximum size is exceeded, the log files will be renamed by appending a sequential number
