@@ -12,6 +12,16 @@
 #undef      _CRT_SECURE_NO_DEPRECATE
 #define     _CRT_SECURE_NO_DEPRECATE 1
 
+#if WINDOWS
+    /* 
+        Work-around to allow the windows 7.* SDK to be used with VS 2012 
+     */
+    #if _MSC_VER >= 1700
+        #define SAL_SUPP_H
+        #define SPECSTRING_SUPP_H
+    #endif
+#endif
+
 #include "bit.h"
 
 #ifndef _h_SQLITE3_
