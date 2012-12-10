@@ -55,8 +55,11 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
 
         install('src/server/mime.types', p.config)
         install('src/server/php.ini', p.config)
-        install('src/server/appweb.conf', p.config)
-
+        if (Path('src/server/appweb.local').exists) {
+            install('src/server/appweb.local', p.config.join('appweb.conf'))
+        } else {
+            install('src/server/appweb.conf', p.config)
+        }
         let conf = Path(contents.portable + '' + bit.prefixes.config.removeDrive().portable + '/appweb.conf')
         let user = getWebUser(), group = getWebUser()
         if (bit.platform.os == 'windows') {
