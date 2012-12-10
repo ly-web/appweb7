@@ -325,9 +325,10 @@
                             <p>The LimitMemory directive defines the maximum amount of memory that Appweb can use.
                             On Linux and MacOSX, where a fast memory size API exists, this is the amount of memory currently
                             used by the application. On other platforms, it is the amount of Appweb heap memory and 
-                            does not include thread stack or code allocations.
+                            does not include thread stack, code allocations, or memory allocated by means other than
+                            the MPR memory allocation primitives.
                             If the memory limit is exceeded, Appweb will invoke the policy specified by the
-                            MemoryPolicy directive. </p>
+                            MemoryPolicy directive.</p>
                         </td>
                     </tr>
                 </tbody>
