@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: magnetar.local
+    Prepared by: ubuntu-32.local
  */
 
 #include "http.h"
@@ -5047,7 +5047,13 @@ static bool isIdle()
     for (next = 0; (conn = mprGetNextItem(http->connections, &next)) != 0; ) {
         if (conn->state != HTTP_STATE_BEGIN) {
             if (lastTrace < now) {
-                mprLog(1, "Waiting for request %s to complete", conn->rx->uri ? conn->rx->uri : conn->rx->pathInfo);
+                if (conn->rx) {
+                    mprLog(1, "  Request %s is still active", conn->rx->uri ? conn->rx->uri : conn->rx->pathInfo);
+                } else {
+                    mprLog(1, "Waiting for connection to close");
+                    conn->started = 0;
+                    conn->timeoutEvent = mprCreateEvent(conn->dispatcher, "connTimeout", 0, httpConnTimeout, conn, 0);
+                }
                 lastTrace = now;
             }
             unlock(http->connections);
@@ -5057,7 +5063,7 @@ static bool isIdle()
     unlock(http->connections);
     if (!mprServicesAreIdle()) {
         if (lastTrace < now) {
-            mprLog(4, "Waiting for MPR services complete");
+            mprLog(3, "Waiting for MPR services complete");
             lastTrace = now;
         }
         return 0;
@@ -11244,7 +11250,7 @@ PUBLIC bool httpPumpRequest(HttpConn *conn, HttpPacket *packet)
     conn->pumping = 1;
 
     while (canProceed) {
-        LOG(6, "httpProcess %s, state %d, error %d", conn->dispatcher->name, conn->state, conn->error);
+        LOG(6, "httpPumpRequest %s, state %d, error %d", conn->dispatcher->name, conn->state, conn->error);
         switch (conn->state) {
         case HTTP_STATE_BEGIN:
         case HTTP_STATE_CONNECTED:
@@ -11300,7 +11306,7 @@ static bool parseIncoming(HttpConn *conn, HttpPacket *packet)
         return 0;
     }
     if (mprShouldDenyNewRequests()) {
-        httpError(conn, HTTP_ABORT | HTTP_CODE_NOT_ACCEPTABLE, "Server terminating");
+        httpError(conn, HTTP_ABORT | HTTP_CODE_NOT_ACCEPTABLE, "The server is terminating");
         return 0;
     }
     if (!conn->rx) {
