@@ -134,12 +134,12 @@ static void openFileHandler(HttpQueue *q)
     } else {
         if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
             if (!(info->valid || info->isDir)) {
-                httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find %s", rx->uri);
                 if (rx->referrer) {
-                    mprLog(2, "  Referrer %s, filename %s", rx->referrer, tx->filename);
+                    mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
                 } else {
-                    mprLog(2, "  Filename %s", tx->filename);
+                    mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
                 }
+                httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find %s", rx->uri);
 
             } else if (info->valid) {
                 if (!tx->etag) {
