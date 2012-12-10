@@ -12307,9 +12307,10 @@ static void processCompletion(HttpConn *conn)
     assure(tx->finalizedOutput);
     assure(tx->finalizedConnector);
 
-    LOG(3, "Request complete, status %d, error %d, connError %d, %s%s, memsize %.2f MB",
+#if BIT_TRACE_MEM
+    mprLog(1, "Request complete, status %d, error %d, connError %d, %s%s, memsize %.2f MB",
         tx->status, conn->error, conn->connError, rx->hostHeader, rx->uri, mprGetMem() / 1024 / 1024.0);
-
+#endif
     httpDestroyPipeline(conn);
     measure(conn);
     if (conn->endpoint && rx) {
