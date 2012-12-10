@@ -3817,7 +3817,7 @@ Defaults to &quot;HTTP/1.1&quot;.
 Response content caching store.
 </td>
     <tr><td class="param">char *</td><td><td>root</td><td>
-ServerRoot for this host.
+Home for this host.
 </td>
     <tr><td class="param">MprList *</td><td><td>routes</td><td>
 List of Route defintions.
@@ -6126,7 +6126,7 @@ Create a URI link by expansions tokens based on the current request and route st
   </div>
   <div class="apiDetail">
 <p>Make a filename path.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This makes a filename by expanding the tokens &quot;${token}&quot; and then normalizing the path and converting to an absolute path name. The supported tokens are: <ul><li>PRODUCT - for the product name </li><li>OS - for the operating system name. E.g. LINUX, MACOSX, VXWORKS, or WIN </li><li>VERSION - for the product version. E.g. 4.0.2 </li><li>LIBDIR - for the shared library directory. E.g. /usr/lib/appweb/bin  </li><li>DOCUMENT_ROOT - for the default directory containing documents to serve </li><li>SERVER_ROOT - for the directory containing the web server configuration files </li></ul>
+    <dl><dt><b>Description</b>:</dt><dd>This makes a filename by expanding the tokens &quot;${token}&quot; and then normalizing the path and converting to an absolute path name. The supported tokens are: <ul><li>DOCUMENTS - for the default directory containing documents to serve </li><li>HOME - for the directory containing the web server configuration files </li><li>LIBDIR - for the shared library directory. E.g. /usr/lib/appweb/bin  </li><li>OS - for the operating system name. E.g. LINUX, MACOSX, VXWORKS, or WIN </li><li>PRODUCT - for the product name </li><li>VERSION - for the product version. E.g. 4.0.2 </li></ul>
 Additional tokens can be defined via <a class="ref" href="#group___http_route_1ga3c0b5cdd207914add45a78054b96f9fe">httpSetRouteVar</a></dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
@@ -6555,17 +6555,17 @@ Additional tokens can be defined via <a class="ref" href="#group___http_route_1g
   </div>
   <div class="apiDetail">
 <p>Set a route target.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This configures the route pipeline by defining a route target. The route target is interpreted by the selected route handler to process the request. Route targets can contain symbolic tokens that are expanded at run-time with their corresponding values. There are three classes of tokens: <ul><li>System varibles - such as DOCUMENT_ROOT, LIBDIR, PRODUCT, OS, SERVER_ROOT, VERSION. </li><li>Route URI tokens - these are the braced tokens in the route pattern. </li><li>Request fields - these are request state and property values. </li></ul>
+    <dl><dt><b>Description</b>:</dt><dd>This configures the route pipeline by defining a route target. The route target is interpreted by the selected route handler to process the request. Route targets can contain symbolic tokens that are expanded at run-time with their corresponding values. There are three classes of tokens: <ul><li>System and Route varibles - such as DOCUMENTS, HOME, LIBDIR, PRODUCT, OS, VERSION. </li><li>Route URI tokens - these are the braced tokens in the route pattern. </li><li>Request fields - these are request state and property values. </li></ul>
 System and URI tokens are of the form: &quot;${token}&quot; where &quot;token&quot; is the name of the variable or URI token. Request fields are of the form: &quot;${family:name=defaultValue}&quot; where the family defines a set of values. If the named field is not present, an optional default value &quot;=defaultValue&quot; will be used instead. These supported request field families are: <ul><li>header - for request HTTP header values </li><li>param - for request params </li><li>query - for request query field values </li><li>request - for request details </li><li>Any URI pattern token </li></ul>
 For example: &quot;run ${header:User-Agent}&quot; to select the client&apos;s browser string passed in the HTTP headers. For example: &quot;run ${field:name}&quot; to select the client&apos;s browser string passed in the HTTP headers. For example: &quot;run ${name}.html&quot; where {name} was a token in the route pattern. For example: &quot;run ${name}.html&quot; where {name} was a token in the route pattern. The supported request key names are: <ul><li>clientAddress - The client IP address </li><li>clientPort - The client port number </li><li>error - Any request or connection error message </li><li>ext - The request extension </li><li>extraPath - The request extra path after the script extension </li><li>filename - The mapped request filename in physical storage </li><li>language - The selected language for the request </li><li>languageDir - The langauge directory </li><li>host - The host name owning the route for the request </li><li>method - The request HTTP method </li><li>originalUri - The original, pre-decoded URI </li><li>pathInfo - The path portion of the URI after the host and port information </li><li>prefix - The route prefix </li><li>query - The request query information </li><li>reference - The request reference fragment. This is the URI portion after &quot;#&quot; </li><li>scheme - The request protocol scheme. E.g. &quot;http&quot; </li><li>scriptName - The request script or application name </li><li>serverAddress - The server IP address </li><li>serverPort - The server port number </li><li>uri - The full request URI. May be modified by routes, handlers and filters </li></ul>
-Also see <a class="ref" href="#group___http_route_1ga9f8966bad2eac58725b4b5a0d2049b62">httpMakePath</a> for additional tokens (DOCUMENT_ROOT, LIBDIR, PRODUCT, OS, SERVER_ROOT, VERSION).</dd></dl>
+Also see <a class="ref" href="#group___http_route_1ga9f8966bad2eac58725b4b5a0d2049b62">httpMakePath</a> for additional tokens (DOCUMENTS, HOME, LIBDIR, PRODUCT, OS, VERSION).</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">route</td><td>Route to modify.</td>
     <tr><td class="param">name</td><td>Target rule to add. Supported update rules include: &quot;close&quot;, &quot;redirect&quot;, &quot;run&quot; and &quot;write&quot;. <br/><br/>
  The &quot;close&quot; rule is used to do abortive closes for the request. This is useful for ward off known security attackers. For example: &quot;close immediate&quot;. The &quot;close&quot; rule takes no addition parameters. <br/><br/><br/><br/>
  The &quot;redirect&quot; rule is used to redirect the request to a new resource. For example: &quot;redirect 302 /tryAgain.html&quot;. The &quot;redirect&quot; takes the form: &quot;redirect status URI&quot;. The status code is used as the HTTP response code. The URI can be a fully qualified URI beginning with &quot;http&quot; or it can be a relative URI. <br/><br/>
- The &quot;run&quot; target is used to run the configured handler to respond to the request. For example: &quot;file ${DOCUMENT_ROOT}/${request.uri}.gz&quot;. <br/><br/>
+ The &quot;run&quot; target is used to run the configured handler to respond to the request. For example: &quot;file ${DOCUMENTS}/${request.uri}.gz&quot;. <br/><br/>
  The &quot;write&quot; rule is used to write literal data back to the client. For example: &quot;write 200 Hello World\r\n&quot;. The &quot;write&quot; rule takes the form: &quot;write [-r] status message&quot;. Write data is by default HTML encoded to help eliminate XSS security exposures. The &quot;-r&quot; option selects &quot;raw&quot; output and bypasses the HTML encoding of the write data string. <br/><br/>
  WARNING: Take great care when using raw writes with tokens. Write data is not HTML encoded and echoing back to raw data to the client can cause XSS and other security issues. The status field defines the HTTP status code to use in the response.</td>
     <tr><td class="param">details</td><td>Update rule parameters.</td>
@@ -6704,7 +6704,7 @@ Also see <a class="ref" href="#group___http_route_1ga9f8966bad2eac58725b4b5a0d20
   </div>
   <div class="apiDetail">
 <p>Tokenize a string based on route data.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This is a utility routine to parse a string into tokens given a format specifier. Mandatory tokens can be specified with &quot;%&quot; format specifier. Optional tokens are specified with &quot;?&quot; format. Supported tokens: <ul><li>B - Boolean. Parses: on/off, true/false, yes/no. </li><li>N - Number. Parses numbers in base 10. </li><li>S - String. Removes quotes. </li><li>P - Path string. Removes quotes and expands ${PathVars}. Resolved relative to host-&gt;dir (ServerRoot). </li><li>W - Parse words into a list </li><li>%! - Optional negate. Set value to HTTP_ROUTE_NOT present, otherwise zero. </li></ul>
+    <dl><dt><b>Description</b>:</dt><dd>This is a utility routine to parse a string into tokens given a format specifier. Mandatory tokens can be specified with &quot;%&quot; format specifier. Optional tokens are specified with &quot;?&quot; format. Supported tokens: <ul><li>B - Boolean. Parses: on/off, true/false, yes/no. </li><li>N - Number. Parses numbers in base 10. </li><li>S - String. Removes quotes. </li><li>P - Path string. Removes quotes and expands ${PathVars}. Resolved relative to host-&gt;dir (Home). </li><li>W - Parse words into a list </li><li>%! - Optional negate. Set value to HTTP_ROUTE_NOT present, otherwise zero. </li></ul>
 Values wrapped in quotes will have the outermost quotes trimmed.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">

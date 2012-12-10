@@ -3557,12 +3557,12 @@ PUBLIC cchar *httpLookupRouteErrorDocument(HttpRoute *route, int status);
     @description This makes a filename by expanding the tokens "${token}" and then normalizing the path and converting
         to an absolute path name. The supported tokens are:
         <ul>  
-            <li>PRODUCT - for the product name</li>
-            <li>OS - for the operating system name. E.g. LINUX, MACOSX, VXWORKS, or WIN</li>
-            <li>VERSION - for the product version. E.g. 4.0.2</li>
+            <li>DOCUMENTS - for the default directory containing documents to serve</li>
+            <li>HOME - for the directory containing the web server configuration files</li>
             <li>LIBDIR - for the shared library directory. E.g. /usr/lib/appweb/bin </li>
-            <li>DOCUMENT_ROOT - for the default directory containing documents to serve</li>
-            <li>SERVER_ROOT - for the directory containing the web server configuration files</li>
+            <li>OS - for the operating system name. E.g. LINUX, MACOSX, VXWORKS, or WIN</li>
+            <li>PRODUCT - for the product name</li>
+            <li>VERSION - for the product version. E.g. 4.0.2</li>
         </ul>  
         Additional tokens can be defined via #httpSetRouteVar.
     @param route Route to modify
@@ -3794,7 +3794,7 @@ PUBLIC void httpSetRouteSource(HttpRoute *route, cchar *source);
         Route targets can contain symbolic tokens that are expanded at run-time with their corresponding values. There are 
         three classes of tokens:
         <ul>  
-            <li>System varibles - such as DOCUMENT_ROOT, LIBDIR, PRODUCT, OS, SERVER_ROOT, VERSION.</li>
+            <li>System and Route varibles - such as DOCUMENTS, HOME, LIBDIR, PRODUCT, OS, VERSION.</li>
             <li>Route URI tokens - these are the braced tokens in the route pattern.</li>
             <li>Request fields - these are request state and property values.</li>
         </ul>
@@ -3836,7 +3836,7 @@ PUBLIC void httpSetRouteSource(HttpRoute *route, cchar *source);
             <li>serverPort - The server port number</li>
             <li>uri - The full request URI. May be modified by routes, handlers and filters</li>
         </ul>
-        Also see #httpMakePath for additional tokens (DOCUMENT_ROOT, LIBDIR, PRODUCT, OS, SERVER_ROOT, VERSION).
+        Also see #httpMakePath for additional tokens (DOCUMENTS, HOME, LIBDIR, PRODUCT, OS, VERSION).
     @param route Route to modify
     @param name Target rule to add. Supported update rules include:
         "close", "redirect", "run" and "write". 
@@ -3850,7 +3850,7 @@ PUBLIC void httpSetRouteSource(HttpRoute *route, cchar *source);
         code. The URI can be a fully qualified URI beginning with "http" or it can be a relative URI.
         \n\n
         The "run" target is used to run the configured handler to respond to the request.
-        For example: "file ${DOCUMENT_ROOT}/${request.uri}.gz". 
+        For example: "file ${DOCUMENTS}/${request.uri}.gz". 
         \n\n
         The "write" rule is used to write literal data back to the client. For example: "write 200 Hello World\r\n". 
         The "write" rule takes the form: "write [-r] status message". Write data is by default HTML encoded to help

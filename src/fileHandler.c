@@ -137,6 +137,8 @@ static void openFileHandler(HttpQueue *q)
                 httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find %s", rx->uri);
                 if (rx->referrer) {
                     mprLog(2, "  Referrer %s, filename %s", rx->referrer, tx->filename);
+                } else {
+                    mprLog(2, "  Filename %s", tx->filename);
                 }
 
             } else if (info->valid) {
