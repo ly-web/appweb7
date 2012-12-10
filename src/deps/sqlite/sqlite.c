@@ -6,18 +6,10 @@
 
 #if EMBEDTHIS_MODIFICATION
 #include "bit.h"
+
 #if VXWORKS
     #ifndef _VSB_CONFIG_FILE
         #define _VSB_CONFIG_FILE "vsbConfig.h"
-    #endif
-#endif
-#if WINDOWS
-    /* 
-        Work-around to allow the windows 7.* SDK to be used with VS 2012 
-     */
-    #if _MSC_VER >= 1700
-        #define SAL_SUPP_H
-        #define SPECSTRING_SUPP_H
     #endif
 #endif
 #endif
