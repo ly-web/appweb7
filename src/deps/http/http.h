@@ -3990,6 +3990,7 @@ PUBLIC char *httpExpandRouteVars(HttpConn *conn, cchar *str);
  */
 typedef struct HttpSession {
     char            *id;                        /**< Session ID key */
+    HttpConn        *conn;                      /**< Owning connection */
     MprCache        *cache;                     /**< Cache store reference */
     MprTicks        lifespan;                   /**< Session inactivity timeout (msecs) */
 } HttpSession;

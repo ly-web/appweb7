@@ -13394,9 +13394,7 @@ PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTicks lifespa
     }
     sp->id = sclone(id);
     sp->cache = conn->http->sessionCache;
-#if FUTURE
-    sp->cache= mprCreateCache(0);
-#endif
+    sp->conn = conn;
     return sp;
 }
 
@@ -13580,9 +13578,18 @@ static char *makeSessionID(HttpConn *conn)
 }
 
 
+/*
+    Make a session cache key. This includes the session cookie, the connection IP address and the variable key
+    The IP address is added to prevent hijacking.
+    Use ./configure --set sessionWithoutIp=true to create sessions without encoding the client IP
+ */
 static char *makeKey(HttpSession *sp, cchar *key)
 {
+#if BIT_SESSION_WITHOUT_IP
     return sfmt("session-%s-%s", sp->id, key);
+#else
+    return sfmt("session-%s-%s-%s", sp->id, sp->conn->ip, key);
+#endif
 }
 
 /*
