@@ -6764,6 +6764,14 @@ PUBLIC cchar *mprGetThreadName(MprThread *thread);
 PUBLIC int mprGetThreadPriority(MprThread *thread);
 
 /**
+    Get a count of yielded threads
+    @returns Count of threads that have yielded to the GC
+    @stability internal
+    @ingroup MprThread
+ */
+PUBLIC int mprGetYieldedThreadCount();
+
+/**
     Set the thread priroity for the current thread.
     @description Set the current priority for the specified thread.
     @param priority Priority to associate with the thread. Mpr thread priorities are are integer values between 0 

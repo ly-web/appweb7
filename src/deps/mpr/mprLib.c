@@ -1477,6 +1477,23 @@ PUBLIC void mprResetYield()
 }
 
 
+PUBLIC int mprGetYieldedThreadCount()
+{
+    MprThreadService    *ts;
+    MprThread           *tp;
+    int                 count, next;
+
+    ts = MPR->threadService;
+
+    lock(ts->threads);
+    for (count = 0, ITERATE_ITEMS(ts->threads, tp, next)) {
+        count += tp->yielded;
+    }
+    unlock(ts->threads);
+    return count;
+}
+
+
 /*
     Pause until all threads have yielded. Called by the GC marker only.
     NOTE: this functions differently if parallel. If so, then it will abort waiting. If !parallel, it waits for all
@@ -3754,12 +3771,14 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int value)
 
 PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 {
-#if MACOSX && 0
-    return OSAtomicCompareAndSwapPtrBarrier(expected, value, addr);
+#if MACOSX
+    void *old = *(void**) addr;
+    OSAtomicCompareAndSwapPtrBarrier(old, (void*) value, addr);
+    return old;
 #elif BIT_WIN_LIKE
     return (void*) InterlockedExchange((volatile LONG*) addr, (LONG) value);
-#elif BIT_UNIX_LIKE && FUTURE
-    return __sync_lock_test_and_set(addr, value);
+#elif BIT_HAS_SYNC
+    return __sync_lock_test_and_set(addr, (void*) value);
 #else
     {
         void    *old;
@@ -23538,7 +23557,7 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
-    static int          warnOnceWorkers = 0;
+    int                 ncpu, activeWorkers;
 
     ws = MPR->workerService;
     lock(ws);
@@ -23556,30 +23575,27 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
         changeState(worker, MPR_WORKER_BUSY);
 
     } else if (ws->numThreads < ws->maxThreads) {
-
         /*
-            Cannot find an idle thread. Try to create more workers in the pool. Otherwise, we will have to wait. 
-            No need to wakeup the thread -- it will immediately go to work.
-         */
+            No idle threads. See if we should start a new thread. Add one for the marker().
+        */
+        activeWorkers = mprGetListLength(ws->busyThreads) - mprGetYieldedThreadCount() + 1;
+        ncpu = MPR->heap->stats.numCpu;
+        if (activeWorkers >= ncpu) {
+            unlock(ws);
+            LOG(1, "Defer work till cpu becomes available. Busy workers %d, ncpu %d", activeWorkers, ncpu);
+            return MPR_ERR_BUSY;
+        }
         worker = createWorker(ws, ws->stackSize);
-
         ws->numThreads++;
         ws->maxUseThreads = max(ws->numThreads, ws->maxUseThreads);
         worker->proc = proc;
         worker->data = data;
-
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
 
     } else {
-        /*
-            No free workers and can't create anymore
-         */
-        if (!warnOnceWorkers) {
-            warnOnceWorkers = 1;
-            mprLog(1, "No free workers (count %d of %d)", ws->numThreads, ws->maxThreads);
-        }
         unlock(ws);
+        LOG(1, "Defer work till worker is available. Workers %d, max %d", ws->numThreads, ws->maxThreads);
         return MPR_ERR_BUSY;
     }
     unlock(ws);
