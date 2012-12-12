@@ -893,9 +893,9 @@
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_LIST_OWN</name>
+      <name>MPR_LIST_STABLE</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a09edb4bc5a2dd0cd67f023602412348e</anchor>
+      <anchor>a7e0930a91bd30665bf00a6354e836b27</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -3270,6 +3270,13 @@
       <anchorfile>group___mpr_hash.html</anchorfile>
       <anchor>ga7be8b20f3f390f7c3c05d90dbbb294b5</anchor>
       <arglist>(MprHash *table, MprKey *last)</arglist>
+    </member>
+    <member kind="function">
+      <type>void *</type>
+      <name>mprGetNextStableItem</name>
+      <anchorfile>group___mpr_list.html</anchorfile>
+      <anchor>ga31b345e5025febb1faca8311bddd5e1f</anchor>
+      <arglist>(MprList *list, int *lastIndex)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -6847,6 +6854,13 @@
     </member>
     <member kind="function">
       <type>void *</type>
+      <name>mprGetNextStableItem</name>
+      <anchorfile>group___mpr_list.html</anchorfile>
+      <anchor>ga31b345e5025febb1faca8311bddd5e1f</anchor>
+      <arglist>(MprList *list, int *lastIndex)</arglist>
+    </member>
+    <member kind="function">
+      <type>void *</type>
       <name>mprGetPrevItem</name>
       <anchorfile>group___mpr_list.html</anchorfile>
       <anchor>ga701e2771ac787973c94e523898d596a6</anchor>
@@ -9809,10 +9823,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>int64</type>
+      <type>uint64</type>
       <name>ram</name>
       <anchorfile>struct_mpr_mem_stats.html</anchorfile>
-      <anchor>abec30f70085a983cad40637319b53a1e</anchor>
+      <anchor>a79206414827de4a77031881a2f9eaa0a</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -9823,6 +9837,13 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>int</type>
+      <name>regions</name>
+      <anchorfile>struct_mpr_mem_stats.html</anchorfile>
+      <anchor>a2b125114d5d447d7b6fa2ec7a02e0119</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>ssize</type>
       <name>rss</name>
       <anchorfile>struct_mpr_mem_stats.html</anchorfile>
@@ -9830,10 +9851,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>int64</type>
+      <type>uint64</type>
       <name>user</name>
       <anchorfile>struct_mpr_mem_stats.html</anchorfile>
-      <anchor>a374e2d1f4090bca4f33306727071604e</anchor>
+      <anchor>a184f33a22ef26bf437a63d8ef598afce</anchor>
       <arglist></arglist>
     </member>
   </compound>

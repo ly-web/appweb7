@@ -44,6 +44,9 @@
 <td class="apiName"><a href="#group___http_stage" class="nameRef">HttpStage</a></td>
 <td class="apiBrief">Pipeline Stages.</td></tr>
 <tr class="apiDef">
+<td class="apiName"><a href="#group___http_stats" class="nameRef">HttpStats</a></td>
+<td class="apiBrief">HttpStats.</td></tr>
+<tr class="apiDef">
 <td class="apiName"><a href="#group___http_tx" class="nameRef">HttpTx</a></td>
 <td class="apiBrief">Http Tx.</td></tr>
 <tr class="apiDef">
@@ -219,6 +222,7 @@
 <tr class="apiDef"><td class="apiType"><a href="mprBare.html#struct_mpr_hash" class="ref">MprHash*</a></td><td><a href="#group___http_session_1ga8fd2d595fcee3a662e328af72c036b53" class="nameRef">httpGetSessionObj</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn, <a href="mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *key)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get an object from the session state store.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___http_session_1ga5ca28737a741dcf69eb0090640c09930" class="nameRef">httpGetSessionVar</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn, <a href="mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *name, <a href="mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *defaultValue)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get a session state variable.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mprBare.html#mpr_8h_1a5272042f7e0f5c53e2fd4b49ff47d92d" class="ref">cvoid*</a></td><td><a href="#group___http_rx_1gab3115e46e00ffbc29ec9c8c4a9f8fc61" class="nameRef">httpGetStageData</a>(struct HttpConn *conn, <a href="mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *key)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get stage data.</td></tr>
+<tr class="apiDef"><td class="apiType">void</td><td><a href="#group___http_stats_1ga346ba34e0ea1e88c6e9fb8c7be7afb55" class="nameRef">httpGetStats</a>(<a href="#group___http_stats" class="ref">HttpStats</a> *sp)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the Http performance statistics.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___http_rx_1gaf7d28c87e2d92899991228c32eeca10a" class="nameRef">httpGetStatus</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the response status.</td></tr>
 <tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___http_rx_1ga5e5417c28bda8b93d5ea80e5f889a83a" class="nameRef">httpGetStatusMessage</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the Http response status message.</td></tr>
 <tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___http_web_socket_1ga6c1a4a4b4d9cfc2ce626bb5fd005e6ac" class="nameRef">httpGetWebSocketCloseReason</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the close reason supplied by the peer.</td></tr>
@@ -397,6 +401,7 @@
 <tr class="apiDef"><td class="apiType"><a href="#group___http_packet" class="ref">HttpPacket*</a></td><td><a href="#group___http_packet_1ga99ecd872c756327114f8470650da5af9" class="nameRef">httpSplitPacket</a>(<a href="#group___http_packet" class="ref">HttpPacket</a> *packet, <a href="mprBare.html#mpr_8h_1a7d08ccc1e981eb4d5a238641ac4ccfc1" class="ref">ssize</a> offset)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Split a data packet.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___http_endpoint_1ga30fd4014d0b786ee8e705e3a45e42eb6" class="nameRef">httpStartEndpoint</a>(<a href="#group___http_endpoint" class="ref">HttpEndpoint</a> *endpoint)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Start listening for client connections.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___http_conn_1ga4bc751046420a19e3a2fa04beb93fba0" class="nameRef">httpStartPipeline</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Start the pipeline.</td></tr>
+<tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___http_stats_1ga7895265873d5e93a5da00d2423ccb886" class="nameRef">httpStatsReport</a>(int flags)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get an Http performance report.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mprBare.html#group___mpr_socket" class="ref">MprSocket*</a></td><td><a href="#http_8h_1a269af9eeb75763738059d298b48f1032" class="nameRef">httpStealConn</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Steal a connection from Appweb.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___http_endpoint_1ga4c1deccf2ac027252158420937d43156" class="nameRef">httpStopEndpoint</a>(<a href="#group___http_endpoint" class="ref">HttpEndpoint</a> *endpoint)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Stop the server listening for client connections.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___http_queue_1ga92b2f3b27c956c84e01a671eedec5e0c" class="nameRef">httpSuspendQueue</a>(<a href="#group___http_queue" class="ref">HttpQueue</a> *q)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Suspend a queue.</td></tr>
@@ -1361,6 +1366,12 @@
     <tr><td class="param">struct HttpStage *</td><td><td>actionHandler</td><td>
 Action handler.
 </td>
+    <tr><td class="param">int</td><td><td>activeProcesses</td><td>
+Count of active external processes.
+</td>
+    <tr><td class="param">int</td><td><td>activeSessions</td><td>
+Count of active sessions.
+</td>
     <tr><td class="param"><a class="ref" href="#struct_mpr_hash" external="mpr.dtags">MprHash</a> *</td><td><td>authStores</td><td>
 Available password stores.
 </td>
@@ -1393,9 +1404,6 @@ Client resource limits.
 </td>
     <tr><td class="param">struct HttpRoute *</td><td><td>clientRoute</td><td>
 Default route for clients.
-</td>
-    <tr><td class="param">int</td><td><td>connCount</td><td>
-Count of connections.
 </td>
     <tr><td class="param">MprList *</td><td><td>connections</td><td>
 Currently open connection requests.
@@ -1457,9 +1465,6 @@ Pass through handler.
     <tr><td class="param">struct HttpStage *</td><td><td>phpHandler</td><td>
 PHP through handler.
 </td>
-    <tr><td class="param">int</td><td><td>processCount</td><td>
-Count of current active external processes.
-</td>
     <tr><td class="param">char *</td><td><td>protocol</td><td>
 HTTP/1.0 or HTTP/1.1.
 </td>
@@ -1496,9 +1501,6 @@ Server resource limits.
     <tr><td class="param">MprCache *</td><td><td>sessionCache</td><td>
 Session state cache.
 </td>
-    <tr><td class="param">int</td><td><td>sessionCount</td><td>
-Count of sessions.
-</td>
     <tr><td class="param">char *</td><td><td>software</td><td>
 Software name and version.
 </td>
@@ -1513,6 +1515,12 @@ Admin service timer.
 </td>
     <tr><td class="param">MprEvent *</td><td><td>timestamp</td><td>
 Timestamp timer.
+</td>
+    <tr><td class="param">uint64</td><td><td>totalConnections</td><td>
+Total connections accepted.
+</td>
+    <tr><td class="param">uint64</td><td><td>totalRequests</td><td>
+Total requests served.
 </td>
     <tr><td class="param">int</td><td><td>underAttack</td><td>
 Under DOS attack.
@@ -3572,11 +3580,14 @@ This starts the request handler
     <a href="#group___http_endpoint_1ga4ef2065c27222065ba19f343cb9358d6" class="ref">httpAddHostToEndpoint</a>, <a href="#group___http_endpoint_1gad5bb2a3a29df9b1191c484a56fcf642c" class="ref">httpCreateEndpoint</a>, <a href="#group___http_endpoint_1ga77fcd662f068f86a06f61526aa87f4db" class="ref">httpDestroyEndpoint</a>, <a href="#group___http_endpoint_1ga95038407668d474b404fc8784006c9c2" class="ref">httpHasNamedVirtualHosts</a>, <a href="#group___http_rx_1ga713af86f8914a5cd3ad2a5832b1ffb35" class="ref">httpSetEndpointAddress</a>, <a href="#group___http_conn_1ga5bd47c988eb934173a7ac411ed2e58b0" class="ref">httpSetEndpointNotifier</a>, <a href="#group___http_endpoint_1ga768ffb7411647773b0e6f5b839763795" class="ref">httpSetHasNamedVirtualHosts</a>, <a href="#group___http_endpoint_1ga30fd4014d0b786ee8e705e3a45e42eb6" class="ref">httpStartEndpoint</a>, <a href="#group___http_endpoint_1ga4c1deccf2ac027252158420937d43156" class="ref">httpStopEndpoint</a>, <a href="#group___http_rx_1ga98e8cebcc329b8197b6eb7416afbb2ba" class="ref">httpValidateLimits</a></dd></dl>
     <dl><dt>Fields:</dt><dd>
     <table class="parameters" title="Parameters">
+    <tr><td class="param">int</td><td><td>activeClients</td><td>
+Count of current active clients.
+</td>
+    <tr><td class="param">int</td><td><td>activeRequests</td><td>
+Count of current active requests.
+</td>
     <tr><td class="param">int</td><td><td>async</td><td>
 Listening is in async mode (non-blocking).
-</td>
-    <tr><td class="param">int</td><td><td>clientCount</td><td>
-Count of current active clients.
 </td>
     <tr><td class="param"><a class="ref" href="#struct_mpr_hash" external="mpr.dtags">MprHash</a> *</td><td><td>clientLoad</td><td>
 Table of active client IPs and connection counts.
@@ -3611,9 +3622,6 @@ Default connection notifier callback.
 </td>
     <tr><td class="param">int</td><td><td>port</td><td>
 Listen port.
-</td>
-    <tr><td class="param">int</td><td><td>requestCount</td><td>
-Count of current active requests.
 </td>
     <tr><td class="param">MprSocket *</td><td><td>sock</td><td>
 Listening socket.
@@ -5462,7 +5470,7 @@ Number of workers to use for this route.
   </div>
   <div class="apiDetail">
 <p>Add a route handler.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This configures the route pipeline by adding the given handler.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This configures the route pipeline by adding the given handler. Must only be called at initialization time for the route.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">route</td><td>Route to modify.</td>
@@ -7556,6 +7564,9 @@ This will read all rx body and return a string that the caller should free. This
     <tr><td class="param">MprCache *</td><td><td>cache</td><td>
 Cache store reference.
 </td>
+    <tr><td class="param">HttpConn *</td><td><td>conn</td><td>
+Owning connection.
+</td>
     <tr><td class="param">char *</td><td><td>id</td><td>
 Session ID key.
 </td>
@@ -8014,6 +8025,112 @@ This is used when creating filters configured to match certain extensions
     <dl><dt>Returns:</dt><dd>Reference to the stage data block.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___http_conn" class="ref">HttpConn</a>, <a href="#group___http_queue" class="ref">HttpQueue</a>, <a href="#group___http_stage" class="ref">HttpStage</a>, <a href="#group___http_stage_1ga8971850225994ea96daf05429c001c7c" class="ref">httpCloneStage</a>, <a href="#group___http_stage_1ga5a62ae78862a15a0ca8c192f7d5a048c" class="ref">httpCreateConnector</a>, <a href="#group___http_stage_1gab1e3174087a5e78598b66abe7ac5887e" class="ref">httpCreateFilter</a>, <a href="#group___http_stage_1ga238f5fb9f76203fdcb07fd6227ae383f" class="ref">httpCreateHandler</a>, <a href="#group___http_stage_1gad9a57a81fd836d1ec4322d60bf0d56c7" class="ref">httpCreateStage</a>, <a href="#group___http_stage_1ga635121f5f5fa104bb218796fd47178fe" class="ref">httpDefaultOutgoingServiceStage</a>, <a href="#group___http_rx_1gab3115e46e00ffbc29ec9c8c4a9f8fc61" class="ref">httpGetStageData</a>, <a href="#group___http_stage_1ga289f62101d0dbc4a88465af5b40e11eb" class="ref">httpHandleOptionsTrace</a>, <a href="#group___http_stage_1ga890b60bd78dd3099a51898b885cb26ea" class="ref">httpLookupStage</a>, <a href="#group___http_route_1ga9ed9a3687b90670fb6e12697f579e744" class="ref">httpSetStageData</a></dd></dl>
+  </div>
+</div>
+<h1>HttpStats</h1>
+<a name="group___http_stats"></a>
+<div class="api">
+  <div class="prototype">HttpStats</div>
+  <div class="apiDetail">
+<p>HttpStats.</p>
+    <dl><dt><b>API</b> Stability:</dt><dd>Prototype.</dd></dl>
+    <dl><dt>Fields:</dt><dd>
+    <table class="parameters" title="Parameters">
+    <tr><td class="param">int</td><td><td>activeClients</td><td>
+Current active client IPs.
+</td>
+    <tr><td class="param">int</td><td><td>activeConnections</td><td>
+Current active connections.
+</td>
+    <tr><td class="param">int</td><td><td>activeProcesses</td><td>
+Current active processes.
+</td>
+    <tr><td class="param">int</td><td><td>activeRequests</td><td>
+Current active requests.
+</td>
+    <tr><td class="param">int</td><td><td>activeSessions</td><td>
+Current active sessions.
+</td>
+    <tr><td class="param">uint64</td><td><td>heap</td><td>
+Current application heap memory.
+</td>
+    <tr><td class="param">uint64</td><td><td>heapFree</td><td>
+Current heap memory available.
+</td>
+    <tr><td class="param">uint64</td><td><td>heapUsed</td><td>
+Current heap memory in use.
+</td>
+    <tr><td class="param">uint64</td><td><td>mem</td><td>
+Current application memory.
+</td>
+    <tr><td class="param">uint64</td><td><td>memMax</td><td>
+Memory maximum permitted.
+</td>
+    <tr><td class="param">uint64</td><td><td>memRedline</td><td>
+Memory redline limit.
+</td>
+    <tr><td class="param">int</td><td><td>pendingRequests</td><td>
+Pending requests waiting to be served.
+</td>
+    <tr><td class="param">int</td><td><td>regions</td><td>
+Current memory region count.
+</td>
+    <tr><td class="param">uint64</td><td><td>totalConnections</td><td>
+Total connections accepted.
+</td>
+    <tr><td class="param">uint64</td><td><td>totalRequests</td><td>
+Total requests served.
+</td>
+    <tr><td class="param">uint64</td><td><td>totalSweeps</td><td>
+Total GC sweeps.
+</td>
+    <tr><td class="param">int</td><td><td>workersBusy</td><td>
+Current busy worker threads.
+</td>
+    <tr><td class="param">int</td><td><td>workersIdle</td><td>
+Current idle worker threads.
+</td>
+    <tr><td class="param">int</td><td><td>workersMax</td><td>
+Total worker thread pool.
+</td>
+    </table></dd></dl>
+  </div>
+</div>
+<a name="group___http_stats_1ga346ba34e0ea1e88c6e9fb8c7be7afb55"></a>
+<div class="api">
+  <div class="prototype">
+    void
+    httpGetStats
+(<a href="#group___http_stats" class="ref">HttpStats</a> *sp)
+  </div>
+  <div class="apiDetail">
+<p>Get the Http performance statistics.</p>
+    <dl><dt>Parameters:</dt><dd>
+    <table class="parameters" title="Parameters">
+    <tr><td class="param">sp</td><td>Reference to a HttpStats structure.</td>
+    </table></dd></dl>
+    <dl><dt><b>API</b> Stability:</dt><dd>Internal.</dd></dl>
+    <dl><dt>See Also:</dt><dd>
+    </dd></dl>
+  </div>
+</div>
+<a name="group___http_stats_1ga7895265873d5e93a5da00d2423ccb886"></a>
+<div class="api">
+  <div class="prototype">
+    char *
+    httpStatsReport
+(int flags)
+  </div>
+  <div class="apiDetail">
+<p>Get an Http performance report.</p>
+    <dl><dt>Parameters:</dt><dd>
+    <table class="parameters" title="Parameters">
+    <tr><td class="param">flags</td><td>reserved.</td>
+    </table></dd></dl>
+    <dl><dt>Returns:</dt><dd>String containing the report.</dd></dl>
+    <dl><dt><b>API</b> Stability:</dt><dd>Internal.</dd></dl>
+    <dl><dt>See Also:</dt><dd>
+    </dd></dl>
   </div>
 </div>
 <h1>HttpTx</h1>

@@ -237,6 +237,8 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
         return NULL;
     }
     memset(heap, 0, sizeof(MprHeap));
+    heap->stats.numCpu = memStats.numCpu;
+    heap->stats.pageSize = memStats.pageSize;
     heap->stats.maxMemory = MAXINT;
     //  MOB - should this be 95%?
     heap->stats.redLine = MAXINT / 100 * 99;
@@ -282,6 +284,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
         heap->track = 1;
     }
     heap->stats.bytesAllocated += size;
+    heap->stats.regions++;
     INC(allocs);
 
     mprInitSpinLock(&heap->heapLock);
@@ -655,7 +658,7 @@ static MprMem *growHeap(ssize required, int flags)
     lockHeap();
     region->next = heap->regions;
     heap->regions = region;
-
+    heap->stats.regions++;
     if (spareLen > 0) {
         assure(spareLen >= sizeof(MprFreeMem));
         spare = (MprMem*) ((char*) mp + required);
@@ -1175,8 +1178,10 @@ static void sweep()
             }
         }
     }
+#if BIT_MEMORY_STATS
     heap->stats.sweepVisited = 0;
     heap->stats.swept = 0;
+#endif
 
     /*
         growHeap() will append new regions to the front of heap->regions and so will not race with this code. This code
@@ -1226,6 +1231,7 @@ static void sweep()
             } else {
                 heap->regions = nextRegion;
             }
+            heap->stats.regions--;
             unlockHeap();
             LOG(9, "DEBUG: Unpin %p to %p size %d, used %d", region, 
                 ((char*) region) + region->size, region->size,fastMemSize());
@@ -1242,8 +1248,10 @@ static void markRoots()
 {
     void    *root;
 
+#if BIT_MEMORY_STATS
     heap->stats.markVisited = 0;
     heap->stats.marked = 0;
+#endif
     mprMark(heap->roots);
     mprMark(heap->mutex);
     mprMark(heap->markerCond);
@@ -1456,9 +1464,10 @@ PUBLIC void mprResetYield()
     }
     /*
         May have been sticky yielded and so marking could be active. If so, must yield here regardless.
+        If GC being requested, then do a blocking pause here.
      */
     lock(ts->threads);
-    if (heap->marking || heap->sweeping) {
+    if (heap->mustYield || heap->marking || heap->sweeping) {
         unlock(ts->threads);
         mprYield(0);
     } else {
@@ -1827,29 +1836,31 @@ static void printGCStats()
 
 PUBLIC void mprPrintMem(cchar *msg, int detail)
 {
-#if BIT_MEMORY_STATS
-    MprMemStats   *ap;
+    MprMemStats     *ap;
+    MprWorkerService    *ws;
 
     ap = mprGetMemStats();
+    ws = MPR->workerService;
 
-    printf("\n\nMPR Memory Report %s\n", msg);
-    printf("------------------------------------------------------------------------------------------\n");
-    printf("  Total memory        %14d K\n",             (int) (mprGetMem() / 1024));
-    printf("  Current heap memory %14d K\n",             (int) (ap->bytesAllocated / 1024));
-    printf("  Free heap memory    %14d K\n",             (int) (ap->bytesFree / 1024));
-    printf("  Allocation errors   %14d\n",               ap->errors);
-    printf("  Memory limit        %14d MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
+    printf("\nMemory Report %s\n", msg);
+    printf("-------------\n");
+    printf("  Total memory      %14d K\n",             (int) (mprGetMem() / 1024));
+
+    printf("  Current heap      %14d K\n",             (int) (ap->bytesAllocated / 1024));
+    printf("  Free heap memory  %14d K\n",             (int) (ap->bytesFree / 1024));
+    printf("  Allocation errors %14d\n",               ap->errors);
+    printf("  Memory limit      %14d MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->maxMemory / 1024));
-    printf("  Memory redline      %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
+    printf("  Memory redline    %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->redLine / 1024));
 
+#if BIT_MEMORY_STATS
     printf("  Memory requests     %14d\n",               (int) ap->requests);
     printf("  O/S allocations     %14d %%\n",            percent(ap->allocs, ap->requests));
     printf("  Block unpinns       %14d %%\n",            percent(ap->unpins, ap->requests));
     printf("  Block reuse         %14d %%\n",            percent(ap->reuse, ap->requests));
     printf("  Joins               %14d %%\n",            percent(ap->joins, ap->requests));
     printf("  Splits              %14d %%\n",            percent(ap->splits, ap->requests));
-
     printGCStats();
     if (detail) {
         printQueueStats();
@@ -2784,9 +2795,9 @@ PUBLIC void mprDestroy(int how)
     mprRequestGC(gmode);
 
     if (how & MPR_EXIT_RESTART) {
-        mprLog(1, "Restarting\n\n");
+        mprLog(2, "Restarting\n\n");
     } else {
-        mprLog(1, "Exiting");
+        mprLog(2, "Exiting");
     }
     MPR->state = MPR_FINISHED;
     mprStopGCService();
@@ -3300,7 +3311,9 @@ PUBLIC void mprSetExitTimeout(MprTicks timeout)
 }
 
 
-PUBLIC void mprNop(void *ptr) {}
+PUBLIC void mprNop(void *ptr) {
+}
+
 
 /*
     @copy   default
@@ -8481,6 +8494,7 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
             assure(dp->magic == MPR_DISPATCHER_MAGIC);
             if (!serviceDispatcher(dp)) {
                 queueDispatcher(es->pendingQ, dp);
+                es->pendingCount++;
                 continue;
             }
             if (justOne) {
@@ -8867,6 +8881,8 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     if (pendingQ->next != pendingQ && mprAvailableWorkers()) {
         /* No available workers to queue the dispatcher in the pending queue */
         dispatcher = pendingQ->next;
+        dispatcher->service->pendingCount--;
+        assure(dispatcher->service->pendingCount >= 0);
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         queueDispatcher(es->runQ, dispatcher);
         assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
@@ -12130,7 +12146,7 @@ PUBLIC MprList *mprCreateList(int size, int flags)
     }
     lp->maxSize = MAXINT;
     lp->flags = flags | MPR_OBJ_LIST;
-    if (!(flags & MPR_LIST_OWN)) {
+    if (!(flags & MPR_LIST_STABLE)) {
         lp->mutex = mprCreateLock();
     }
     if (size != 0) {
@@ -12168,7 +12184,7 @@ PUBLIC void mprInitList(MprList *lp, int flags)
     lp->length = 0;
     lp->maxSize = MAXINT;
     lp->items = 0;
-    lp->mutex = (flags & MPR_LIST_OWN) ? 0 : mprCreateLock();
+    lp->mutex = (flags & MPR_LIST_STABLE) ? 0 : mprCreateLock();
 }
 
 
@@ -12590,6 +12606,28 @@ PUBLIC void *mprGetNextItem(MprList *lp, int *next)
         return item;
     }
     unlock(lp);
+    return 0;
+}
+
+
+PUBLIC void *mprGetNextStableItem(MprList *lp, int *next)
+{
+    void    *item;
+    int     index;
+
+    assure(next);
+    assure(*next >= 0);
+    assure(lp->flags & MPR_LIST_STABLE);
+
+    if (lp == 0) {
+        return 0;
+    }
+    index = *next;
+    if (index < lp->length) {
+        item = lp->items[index];
+        *next = ++index;
+        return item;
+    }
     return 0;
 }
 
@@ -23539,7 +23577,7 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
          */
         if (!warnOnceWorkers) {
             warnOnceWorkers = 1;
-            mprError("No free workers. Increase ThreadLimit. (Count %d of %d)", ws->numThreads, ws->maxThreads);
+            mprLog(1, "No free workers (count %d of %d)", ws->numThreads, ws->maxThreads);
         }
         unlock(ws);
         return MPR_ERR_BUSY;

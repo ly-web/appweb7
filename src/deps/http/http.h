@@ -332,8 +332,11 @@ typedef struct Http {
     void            *forkData;
 
     int             nextAuth;               /**< Auth object version vector */
-    int             connCount;              /**< Count of connections */
-    int             sessionCount;           /**< Count of sessions */
+    int             activeProcesses;        /**< Count of active external processes */
+    int             activeSessions;         /**< Count of active sessions */
+    uint64          totalConnections;       /**< Total connections accepted */
+    uint64          totalRequests;          /**< Total requests served */
+
     int             underAttack;            /**< Under DOS attack */
     void            *context;               /**< Embedding context */
     MprTicks        currentTime;            /**< When currentDate was last calculated (ticks) */
@@ -346,7 +349,6 @@ typedef struct Http {
     char            *protocol;              /**< HTTP/1.0 or HTTP/1.1 */
     char            *proxyHost;             /**< Proxy ip address */
     int             proxyPort;              /**< Proxy port */
-    int             processCount;           /**< Count of current active external processes */
 
     /*
         Callbacks
@@ -494,6 +496,57 @@ PUBLIC void httpRemoveEndpoint(Http *http, struct HttpEndpoint *endpoint);
 PUBLIC void httpAddHost(Http *http, struct HttpHost *host);
 PUBLIC void httpRemoveHost(Http *http, struct HttpHost *host);
 PUBLIC void httpDefineRouteBuiltins();
+
+/*********************************** HttpStats ********************************/
+/** 
+    HttpStats
+    @stability Prototype
+    @defgroup HttpStats HttpStats
+ */
+typedef struct HttpStats {
+    uint64  mem;                        /**< Current application memory */
+    uint64  memRedline;                 /**< Memory redline limit */
+    uint64  memMax;                     /**< Memory maximum permitted */
+
+    uint64  heap;                       /**< Current application heap memory */
+    uint64  heapUsed;                   /**< Current heap memory in use */
+    uint64  heapFree;                   /**< Current heap memory available */
+
+    int     workersBusy;                /**< Current busy worker threads */
+    int     workersIdle;                /**< Current idle worker threads */
+    int     workersMax;                 /**< Total worker thread pool */
+
+    int     activeClients;              /**< Current active client IPs */
+    int     activeConnections;          /**< Current active connections */
+    int     activeProcesses;            /**< Current active processes */
+    int     activeRequests;             /**< Current active requests */
+    int     activeSessions;             /**< Current active sessions */
+
+    uint64  totalSweeps;                /**< Total GC sweeps */
+    uint64  totalRequests;              /**< Total requests served */
+    uint64  totalConnections;           /**< Total connections accepted */
+
+    int     pendingRequests;            /**< Pending requests waiting to be served */
+    int     regions;                    /**< Current memory region count */
+    int     cpus;
+} HttpStats;
+
+/** 
+    Get an Http performance report
+    @param flags reserved
+    @return String containing the report
+    @ingroup HttpStats
+    @stability Internal
+ */
+PUBLIC char *httpStatsReport(int flags);
+
+/** 
+    Get the Http performance statistics
+    @param sp Reference to a HttpStats structure
+    @ingroup HttpStats
+    @stability Internal
+ */
+PUBLIC void httpGetStats(HttpStats *sp);
 
 /************************************* Limits *********************************/
 /** 
@@ -3200,6 +3253,7 @@ PUBLIC int httpAddRouteFilter(HttpRoute *route, cchar *name, cchar *extensions, 
 /**
     Add a route handler
     @description This configures the route pipeline by adding the given handler.
+        Must only be called at initialization time for the route.
     @param route Route to modify
     @param name Filter name to add
     @param extensions Request extensions for which the handler will be selected. A request extension may come from the URI
@@ -5044,8 +5098,8 @@ typedef struct HttpEndpoint {
     char            *ip;                    /**< Listen IP address. May be null if listening on all interfaces. */
     int             port;                   /**< Listen port */
     int             async;                  /**< Listening is in async mode (non-blocking) */
-    int             clientCount;            /**< Count of current active clients */
-    int             requestCount;           /**< Count of current active requests */
+    int             activeClients;          /**< Count of current active clients */
+    int             activeRequests;         /**< Count of current active requests */
     int             flags;                  /**< Endpoint control flags */
     void            *context;               /**< Embedding context */
     MprSocket       *sock;                  /**< Listening socket */

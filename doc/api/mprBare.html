@@ -282,6 +282,7 @@
 <tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___mpr_path_1ga652e05d48e7c4ce7584f58b52440023e" class="nameRef">mprGetNativePath</a>(<a href="#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *path)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get a path formatted according to the native O/S conventions.</td></tr>
 <tr class="apiDef"><td class="apiType">void*</td><td><a href="#group___mpr_list_1gaf84ab68545207f073e9f916adc8817e4" class="nameRef">mprGetNextItem</a>(<a href="#group___mpr_list" class="ref">MprList</a> *list, int *lastIndex)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the next item in the list.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#struct_mpr_key" class="ref">MprKey*</a></td><td><a href="#group___mpr_hash_1ga7be8b20f3f390f7c3c05d90dbbb294b5" class="nameRef">mprGetNextKey</a>(<a href="#group___mpr_hash" class="ref">MprHash</a> *table, <a href="#struct_mpr_key" class="ref">MprKey</a> *last)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Return the next symbol in a symbol entry.</td></tr>
+<tr class="apiDef"><td class="apiType">void*</td><td><a href="#group___mpr_list_1ga31b345e5025febb1faca8311bddd5e1f" class="nameRef">mprGetNextStableItem</a>(<a href="#group___mpr_list" class="ref">MprList</a> *list, int *lastIndex)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the next item in a stable list.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___mpr_1gad2fa15bdd6890ff1df432ae25f4c981c" class="nameRef">mprGetOsError</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Return the O/S error code.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___mpr_mem_1ga36c229b490da17109e4342139775fbfa" class="nameRef">mprGetPageSize</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the current O/S virtual page size.</td></tr>
 <tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___mpr_path_1gabd75bccc31adfe405ad12b566badcc68" class="nameRef">mprGetPathBase</a>(<a href="#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *path)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the base portion of a path.</td></tr>
@@ -1188,7 +1189,7 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Default list growth inc.</td></tr>
 <tr class="apiDef">
-<td>#define</td><td><a href="#mpr_8h_1a09edb4bc5a2dd0cd67f023602412348e" class="nameRef">MPR_LIST_OWN</a>&nbsp;&nbsp;&nbsp;0x40</td>
+<td>#define</td><td><a href="#mpr_8h_1a7e0930a91bd30665bf00a6354e836b27" class="nameRef">MPR_LIST_STABLE</a>&nbsp;&nbsp;&nbsp;0x40</td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>For own use.</td></tr>
 <tr class="apiDef">
@@ -5822,7 +5823,7 @@ Current list capacity.
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">size</td><td>Initial capacity of the list.</td>
-    <tr><td class="param">flags</td><td>Control flags. Possible values are: MPR_LIST_STATIC_VALUES to indicate list items are static and should not be marked for GC. MPR_LIST_OWN to create an optimized list for private use that is not thread-safe.</td>
+    <tr><td class="param">flags</td><td>Control flags. Possible values are: MPR_LIST_STATIC_VALUES to indicate list items are static and should not be marked for GC. MPR_LIST_STABLE to create an optimized list for private use that is not thread-safe.</td>
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>Returns a pointer to the list.</dd></dl>
     <dl><dt>See Also:</dt><dd>
@@ -5939,6 +5940,25 @@ Current list capacity.
     <a href="#group___mpr_list" class="ref">MprList</a>, <a href="#group___mpr_list_1gaa4064169552596b7923bc734da239f96" class="ref">MprListCompareProc</a>, <a href="#group___mpr_list_1gabf10109abc063c47702769c0e89442cf" class="ref">mprAddItem</a>, <a href="#mpr_8h_1a8a5c06bd4458f58c9ed20d043b21bba3" class="ref">mprAddNullItem</a>, <a href="#group___mpr_list_1ga5f81ae14eecf28b6e6bdd64677860e39" class="ref">mprAppendList</a>, <a href="#group___mpr_list_1gacf49292693e22c7bdc43fbb41a83817d" class="ref">mprClearList</a>, <a href="#group___mpr_list_1ga44c886d9f401b9b3bba8c63d13a87799" class="ref">mprCloneList</a>, <a href="#group___mpr_list_1ga64de8dd4049d256f9cbb931b640711ee" class="ref">mprCreateKeyPair</a>, <a href="#group___mpr_list_1gacc8d55930e99375f2220ffabfb2fec65" class="ref">mprCreateList</a>, <a href="#group___mpr_list_1ga34b6f80710796e4d3d766299ebf37078" class="ref">mprGetFirstItem</a>, <a href="#group___mpr_list_1ga4535837cc644f208063b1ca3e2ae46c2" class="ref">mprGetItem</a>, <a href="#group___mpr_list_1ga629c61d9bfbea110851227fd61569093" class="ref">mprGetLastItem</a>, <a href="#group___mpr_list_1gac47331b3442493d84405d32ffcb98aba" class="ref">mprGetListCapacity</a>, <a href="#group___mpr_list_1ga4c19ca9f47bf98e133716c174f225f54" class="ref">mprGetListLength</a>, <a href="#group___mpr_list_1ga701e2771ac787973c94e523898d596a6" class="ref">mprGetPrevItem</a>, <a href="#group___mpr_list_1ga0c797a3ea868662ad6dabb35f5255399" class="ref">mprInitList</a>, <a href="#group___mpr_list_1gaf3e8599ae4707459cf42ad960256af98" class="ref">mprInsertItemAtPos</a>, <a href="#group___mpr_list_1ga8b3d6afe4be8d416e28f64d05e8391eb" class="ref">mprLookupItem</a>, <a href="#group___mpr_list_1ga8b32a32be34fbcc2194767eb7031a3ad" class="ref">mprLookupStringItem</a>, <a href="#mpr_8h_1a330faeebdb584c0f83a3344423563cc2" class="ref">mprPopItem</a>, <a href="#mpr_8h_1a7f35b9db9fe36c3bf91954c6acb98467" class="ref">mprPushItem</a>, <a href="#group___mpr_list_1gaa7e9868693c4c804b2c356509dcbb798" class="ref">mprRemoveItem</a>, <a href="#group___mpr_list_1gac758d5af71b0bbf943bb6a1e263a494c" class="ref">mprRemoveItemAtPos</a>, <a href="#group___mpr_list_1ga16748fa2520761d373cebe4b39be3e8e" class="ref">mprRemoveRangeOfItems</a>, <a href="#group___mpr_list_1ga7d948c448d34a433b728c7a19aae1814" class="ref">mprRemoveStringItem</a>, <a href="#group___mpr_list_1ga20dffb6f04ddb568db844dd1a83025f7" class="ref">mprSetItem</a>, <a href="#group___mpr_list_1ga38bd862a8bc3076d86b0185d5bd81aa6" class="ref">mprSetListLimits</a>, <a href="#group___mpr_list_1ga0326ee9015a4949d2664fd386ca975f9" class="ref">mprSortList</a></dd></dl>
   </div>
 </div>
+<a name="group___mpr_list_1ga31b345e5025febb1faca8311bddd5e1f"></a>
+<div class="api">
+  <div class="prototype">
+    void *
+    mprGetNextStableItem
+(<a href="#group___mpr_list" class="ref">MprList</a> *list, int *lastIndex)
+  </div>
+  <div class="apiDetail">
+<p>Get the next item in a stable list.</p>
+    <dl><dt><b>Description</b>:</dt><dd>Returns the value of the next item in the list. Before calling this routine, mprGetFirstItem must be called to initialize the traversal of the list.</dd></dl>
+    <dl><dt>Parameters:</dt><dd>
+    <table class="parameters" title="Parameters">
+    <tr><td class="param">list</td><td>List pointer returned from mprCreateList.</td>
+    <tr><td class="param">lastIndex</td><td>Pointer to an integer that will hold the last index retrieved.</td>
+    </table></dd></dl>
+    <dl><dt>See Also:</dt><dd>
+    <a href="#group___mpr_list" class="ref">MprList</a>, <a href="#group___mpr_list_1gaa4064169552596b7923bc734da239f96" class="ref">MprListCompareProc</a>, <a href="#group___mpr_list_1gabf10109abc063c47702769c0e89442cf" class="ref">mprAddItem</a>, <a href="#mpr_8h_1a8a5c06bd4458f58c9ed20d043b21bba3" class="ref">mprAddNullItem</a>, <a href="#group___mpr_list_1ga5f81ae14eecf28b6e6bdd64677860e39" class="ref">mprAppendList</a>, <a href="#group___mpr_list_1gacf49292693e22c7bdc43fbb41a83817d" class="ref">mprClearList</a>, <a href="#group___mpr_list_1ga44c886d9f401b9b3bba8c63d13a87799" class="ref">mprCloneList</a>, <a href="#group___mpr_list_1ga64de8dd4049d256f9cbb931b640711ee" class="ref">mprCreateKeyPair</a>, <a href="#group___mpr_list_1gacc8d55930e99375f2220ffabfb2fec65" class="ref">mprCreateList</a>, <a href="#group___mpr_list_1ga34b6f80710796e4d3d766299ebf37078" class="ref">mprGetFirstItem</a>, <a href="#group___mpr_list_1ga4535837cc644f208063b1ca3e2ae46c2" class="ref">mprGetItem</a>, <a href="#group___mpr_list_1ga629c61d9bfbea110851227fd61569093" class="ref">mprGetLastItem</a>, <a href="#group___mpr_list_1gac47331b3442493d84405d32ffcb98aba" class="ref">mprGetListCapacity</a>, <a href="#group___mpr_list_1ga4c19ca9f47bf98e133716c174f225f54" class="ref">mprGetListLength</a>, <a href="#group___mpr_list_1gaf84ab68545207f073e9f916adc8817e4" class="ref">mprGetNextItem</a>, <a href="#group___mpr_list_1ga701e2771ac787973c94e523898d596a6" class="ref">mprGetPrevItem</a>, <a href="#group___mpr_list_1ga0c797a3ea868662ad6dabb35f5255399" class="ref">mprInitList</a>, <a href="#group___mpr_list_1gaf3e8599ae4707459cf42ad960256af98" class="ref">mprInsertItemAtPos</a>, <a href="#group___mpr_list_1ga8b3d6afe4be8d416e28f64d05e8391eb" class="ref">mprLookupItem</a>, <a href="#group___mpr_list_1ga8b32a32be34fbcc2194767eb7031a3ad" class="ref">mprLookupStringItem</a>, <a href="#mpr_8h_1a330faeebdb584c0f83a3344423563cc2" class="ref">mprPopItem</a>, <a href="#mpr_8h_1a7f35b9db9fe36c3bf91954c6acb98467" class="ref">mprPushItem</a>, <a href="#group___mpr_list_1gaa7e9868693c4c804b2c356509dcbb798" class="ref">mprRemoveItem</a>, <a href="#group___mpr_list_1gac758d5af71b0bbf943bb6a1e263a494c" class="ref">mprRemoveItemAtPos</a>, <a href="#group___mpr_list_1ga16748fa2520761d373cebe4b39be3e8e" class="ref">mprRemoveRangeOfItems</a>, <a href="#group___mpr_list_1ga7d948c448d34a433b728c7a19aae1814" class="ref">mprRemoveStringItem</a>, <a href="#group___mpr_list_1ga20dffb6f04ddb568db844dd1a83025f7" class="ref">mprSetItem</a>, <a href="#group___mpr_list_1ga38bd862a8bc3076d86b0185d5bd81aa6" class="ref">mprSetListLimits</a>, <a href="#group___mpr_list_1ga0326ee9015a4949d2664fd386ca975f9" class="ref">mprSortList</a></dd></dl>
+  </div>
+</div>
 <a name="group___mpr_list_1ga701e2771ac787973c94e523898d596a6"></a>
 <div class="api">
   <div class="prototype">
@@ -5971,7 +5991,7 @@ Current list capacity.
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">list</td><td>Reference to the MprList struct.</td>
-    <tr><td class="param">flags</td><td>Control flags. Possible values are: MPR_LIST_STATIC_VALUES to indicate list items are static and should not be marked for GC. MPR_LIST_OWN to create an optimized list for private use that is not thread-safe.</td>
+    <tr><td class="param">flags</td><td>Control flags. Possible values are: MPR_LIST_STATIC_VALUES to indicate list items are static and should not be marked for GC. MPR_LIST_STABLE to create an optimized list for private use that is not thread-safe.</td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___mpr_list" class="ref">MprList</a>, <a href="#group___mpr_list_1gaa4064169552596b7923bc734da239f96" class="ref">MprListCompareProc</a>, <a href="#group___mpr_list_1gabf10109abc063c47702769c0e89442cf" class="ref">mprAddItem</a>, <a href="#mpr_8h_1a8a5c06bd4458f58c9ed20d043b21bba3" class="ref">mprAddNullItem</a>, <a href="#group___mpr_list_1ga5f81ae14eecf28b6e6bdd64677860e39" class="ref">mprAppendList</a>, <a href="#group___mpr_list_1gacf49292693e22c7bdc43fbb41a83817d" class="ref">mprClearList</a>, <a href="#group___mpr_list_1ga44c886d9f401b9b3bba8c63d13a87799" class="ref">mprCloneList</a>, <a href="#group___mpr_list_1ga64de8dd4049d256f9cbb931b640711ee" class="ref">mprCreateKeyPair</a>, <a href="#group___mpr_list_1gacc8d55930e99375f2220ffabfb2fec65" class="ref">mprCreateList</a>, <a href="#group___mpr_list_1ga34b6f80710796e4d3d766299ebf37078" class="ref">mprGetFirstItem</a>, <a href="#group___mpr_list_1ga4535837cc644f208063b1ca3e2ae46c2" class="ref">mprGetItem</a>, <a href="#group___mpr_list_1ga629c61d9bfbea110851227fd61569093" class="ref">mprGetLastItem</a>, <a href="#group___mpr_list_1gac47331b3442493d84405d32ffcb98aba" class="ref">mprGetListCapacity</a>, <a href="#group___mpr_list_1ga4c19ca9f47bf98e133716c174f225f54" class="ref">mprGetListLength</a>, <a href="#group___mpr_list_1gaf84ab68545207f073e9f916adc8817e4" class="ref">mprGetNextItem</a>, <a href="#group___mpr_list_1ga701e2771ac787973c94e523898d596a6" class="ref">mprGetPrevItem</a>, <a href="#group___mpr_list_1gaf3e8599ae4707459cf42ad960256af98" class="ref">mprInsertItemAtPos</a>, <a href="#group___mpr_list_1ga8b3d6afe4be8d416e28f64d05e8391eb" class="ref">mprLookupItem</a>, <a href="#group___mpr_list_1ga8b32a32be34fbcc2194767eb7031a3ad" class="ref">mprLookupStringItem</a>, <a href="#mpr_8h_1a330faeebdb584c0f83a3344423563cc2" class="ref">mprPopItem</a>, <a href="#mpr_8h_1a7f35b9db9fe36c3bf91954c6acb98467" class="ref">mprPushItem</a>, <a href="#group___mpr_list_1gaa7e9868693c4c804b2c356509dcbb798" class="ref">mprRemoveItem</a>, <a href="#group___mpr_list_1gac758d5af71b0bbf943bb6a1e263a494c" class="ref">mprRemoveItemAtPos</a>, <a href="#group___mpr_list_1ga16748fa2520761d373cebe4b39be3e8e" class="ref">mprRemoveRangeOfItems</a>, <a href="#group___mpr_list_1ga7d948c448d34a433b728c7a19aae1814" class="ref">mprRemoveStringItem</a>, <a href="#group___mpr_list_1ga20dffb6f04ddb568db844dd1a83025f7" class="ref">mprSetItem</a>, <a href="#group___mpr_list_1ga38bd862a8bc3076d86b0185d5bd81aa6" class="ref">mprSetListLimits</a>, <a href="#group___mpr_list_1ga0326ee9015a4949d2664fd386ca975f9" class="ref">mprSortList</a></dd></dl>
@@ -13398,16 +13418,19 @@ Number of CPUs.
     <tr><td class="param"><a class="ref" href="#mpr_8h_1a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td><td><td>pageSize</td><td>
 System page size.
 </td>
-    <tr><td class="param">int64</td><td><td>ram</td><td>
+    <tr><td class="param">uint64</td><td><td>ram</td><td>
 System RAM size in bytes.
 </td>
     <tr><td class="param"><a class="ref" href="#mpr_8h_1a7d08ccc1e981eb4d5a238641ac4ccfc1">ssize</a></td><td><td>redLine</td><td>
 Warn if allocation exceeds this level.
 </td>
+    <tr><td class="param">int</td><td><td>regions</td><td>
+Number of allocated regions.
+</td>
     <tr><td class="param"><a class="ref" href="#mpr_8h_1a7d08ccc1e981eb4d5a238641ac4ccfc1">ssize</a></td><td><td>rss</td><td>
 OS calculated resident stack size in bytes.
 </td>
-    <tr><td class="param">int64</td><td><td>user</td><td>
+    <tr><td class="param">uint64</td><td><td>user</td><td>
 System user RAM size in bytes (excludes kernel).
 </td>
     </table></dd></dl>

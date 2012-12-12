@@ -3523,11 +3523,11 @@ PUBLIC bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn
         /*
             This measures active client systems with unique IP addresses.
          */
-        if (endpoint->clientCount >= limits->clientMax) {
+        if (endpoint->activeClients >= limits->clientMax) {
             unlock(endpoint);
             /*  Abort connection */
             httpError(conn, HTTP_ABORT | HTTP_CODE_SERVICE_UNAVAILABLE, 
-                "Too many concurrent clients %d/%d", endpoint->clientCount, limits->clientMax);
+                "Too many concurrent clients %d/%d", endpoint->activeClients, limits->clientMax);
             return 0;
         }
         count = (int) PTOL(mprLookupKey(endpoint->clientLoad, conn->ip));
@@ -3540,7 +3540,7 @@ PUBLIC bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn
             return 0;
         }
         mprAddKey(endpoint->clientLoad, conn->ip, ITOP(count + 1));
-        endpoint->clientCount = (int) mprGetHashLength(endpoint->clientLoad);
+        endpoint->activeClients = (int) mprGetHashLength(endpoint->clientLoad);
         dir = HTTP_TRACE_RX;
         break;
 
@@ -3551,19 +3551,19 @@ PUBLIC bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn
         } else {
             mprRemoveKey(endpoint->clientLoad, conn->ip);
         }
-        endpoint->clientCount = (int) mprGetHashLength(endpoint->clientLoad);
+        endpoint->activeClients = (int) mprGetHashLength(endpoint->clientLoad);
         dir = HTTP_TRACE_TX;
         break;
     
     case HTTP_VALIDATE_OPEN_REQUEST:
         assure(conn->rx);
-        if (endpoint->requestCount >= limits->requestMax) {
+        if (endpoint->activeRequests >= limits->requestMax) {
             unlock(endpoint);
             httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
-            mprLog(2, "Too many concurrent requests %d/%d", endpoint->requestCount, limits->requestMax);
+            mprLog(2, "Too many concurrent requests %d/%d", endpoint->activeRequests, limits->requestMax);
             return 0;
         }
-        endpoint->requestCount++;
+        endpoint->activeRequests++;
         conn->rx->flags |= HTTP_LIMITS_OPENED;
         dir = HTTP_TRACE_RX;
         break;
@@ -3571,40 +3571,40 @@ PUBLIC bool httpValidateLimits(HttpEndpoint *endpoint, int event, HttpConn *conn
     case HTTP_VALIDATE_CLOSE_REQUEST:
         if (conn->rx && conn->rx->flags & HTTP_LIMITS_OPENED) {
             /* Requests incremented only when conn->rx is assigned */
-            endpoint->requestCount--;
-            assure(endpoint->requestCount >= 0);
+            endpoint->activeRequests--;
+            assure(endpoint->activeRequests >= 0);
             dir = HTTP_TRACE_TX;
             conn->rx->flags &= ~HTTP_LIMITS_OPENED;
         }
         break;
 
     case HTTP_VALIDATE_OPEN_PROCESS:
-        http->processCount++;
-        if (http->processCount > limits->processMax) {
+        http->activeProcesses++;
+        if (http->activeProcesses > limits->processMax) {
             unlock(endpoint);
             httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
-            mprLog(2, "Too many concurrent processes %d/%d", http->processCount, limits->processMax);
+            mprLog(2, "Too many concurrent processes %d/%d", http->activeProcesses, limits->processMax);
             return 0;
         }
         dir = HTTP_TRACE_RX;
         break;
 
     case HTTP_VALIDATE_CLOSE_PROCESS:
-        http->processCount--;
-        assure(http->processCount >= 0);
+        http->activeProcesses--;
+        assure(http->activeProcesses >= 0);
         break;
     }
     if (event == HTTP_VALIDATE_CLOSE_CONN || event == HTTP_VALIDATE_CLOSE_REQUEST) {
         if ((level = httpShouldTrace(conn, dir, HTTP_TRACE_LIMITS, NULL)) >= 0) {
             LOG(4, "Validate request for %d. Active connections %d, active requests: %d/%d, active client IP %d/%d", 
-                event, mprGetListLength(http->connections), endpoint->requestCount, limits->requestMax, 
-                endpoint->clientCount, limits->clientMax);
+                event, mprGetListLength(http->connections), endpoint->activeRequests, limits->requestMax, 
+                endpoint->activeClients, limits->clientMax);
         }
     }
 #if KEEP
     LOG(0, "Validate Active connections %d, requests: %d/%d, IP %d/%d, Processes %d/%d", 
-        mprGetListLength(http->connections), endpoint->requestCount, limits->requestMax, 
-        endpoint->clientCount, limits->clientMax, http->processCount, limits->processMax);
+        mprGetListLength(http->connections), endpoint->activeRequests, limits->requestMax, 
+        endpoint->activeClients, limits->clientMax, http->activeProcesses, limits->processMax);
 #endif
     unlock(endpoint);
     return 1;
@@ -5082,7 +5082,7 @@ PUBLIC void httpAddConn(Http *http, HttpConn *conn)
 
     //  OPT - use a less contentions mutex
     lock(http);
-    conn->seqno = http->connCount++;
+    conn->seqno = (int) http->totalConnections++;
     if (!http->timer) {
         http->timer = mprCreateTimerEvent(NULL, "httpTimer", HTTP_TIMER_PERIOD, httpTimer, http, 
             MPR_EVENT_CONTINUOUS | MPR_EVENT_QUICK);
@@ -5208,6 +5208,98 @@ static void updateCurrentDate(Http *http)
         http->currentDate = httpGetDateString(NULL);
     }
 }
+
+
+PUBLIC void httpGetStats(HttpStats *sp)
+{
+    MprMemStats         *ap;
+    MprWorkerService    *ws;
+    Http                *http;
+    HttpEndpoint        *ep;
+    int                 next;
+
+    memset(sp, 0, sizeof(*sp));
+    http = MPR->httpService;
+    ap = mprGetMemStats();
+    ws = MPR->workerService;
+
+    sp->cpus = ap->numCpu;
+    sp->regions = ap->regions;
+    sp->pendingRequests = MPR->eventService->pendingCount;
+
+    sp->mem = ap->rss;
+    sp->memRedline = ap->redLine;
+    sp->memMax = ap->maxMemory;
+
+    sp->heap = ap->bytesAllocated + ap->bytesFree;
+    sp->heapUsed = ap->bytesAllocated;
+    sp->heapFree = ap->bytesFree;
+
+    sp->workersBusy = ws->busyThreads->length;
+    sp->workersIdle = ws->idleThreads->length;
+    sp->workersMax = ws->maxThreads;
+
+    sp->activeConnections = mprGetListLength(http->connections);
+    sp->activeProcesses = http->activeProcesses;
+    sp->activeSessions = http->activeSessions;
+    for (ITERATE_ITEMS(http->endpoints, ep, next)) {
+        sp->activeRequests += ep->activeRequests;
+        sp->activeClients += ep->activeClients;
+    }
+
+    sp->totalRequests = http->totalRequests;
+    sp->totalConnections = http->totalConnections;
+    sp->totalSweeps = MPR->heap->iteration;
+}
+
+
+PUBLIC char *httpStatsReport(int flags)
+{
+    MprTime             now;
+    MprBuf              *buf;
+    HttpStats           s;
+    double              elapsed;
+    static MprTime      lastTime;
+    static HttpStats    last;
+    double              mb;
+
+    mb = 1024.0 * 1024;
+    now = mprGetTime();
+    elapsed = (now - lastTime) / 1000.0;
+    httpGetStats(&s);
+    buf = mprCreateBuf(0, 0);
+
+    mprPutFmtToBuf(buf, "\nHttp Report: at %s\n\n", mprGetDate("%D %T"));
+    mprPutFmtToBuf(buf, "Memory      %8.1f MB, %2.1f%% mem\n", s.mem / mb, s.mem / (double) s.memMax);
+    mprPutFmtToBuf(buf, "Heap        %8.1f MB, %2.1f%% mem\n", s.heap / mb, s.heap / (double) s.mem);
+    mprPutFmtToBuf(buf, "Heap-used   %8.1f MB, %2.1f%% mem\n", s.heapUsed / mb, s.heapUsed / (double) s.heap);
+    mprPutFmtToBuf(buf, "Heap-free   %8.1f MB, %2.1f%% mem\n", s.heapFree / mb, s.heapFree / (double) s.heap);
+
+    mprPutCharToBuf(buf, '\n');
+    mprPutFmtToBuf(buf, "Regions     %8d\n", s.regions);
+    mprPutFmtToBuf(buf, "CPUs        %8d\n", s.cpus);
+    mprPutCharToBuf(buf, '\n');
+
+    mprPutFmtToBuf(buf, "Connections %8.1f per/sec\n", (s.totalConnections - last.totalConnections) / elapsed);
+    mprPutFmtToBuf(buf, "Requests    %8.1f per/sec\n", (s.totalRequests - last.totalRequests) / elapsed);
+    mprPutFmtToBuf(buf, "Sweeps      %8.1f per/sec\n", (s.totalSweeps - last.totalSweeps) / elapsed);
+    mprPutCharToBuf(buf, '\n');
+
+    mprPutFmtToBuf(buf, "Clients     %8d active\n", s.activeClients);
+    mprPutFmtToBuf(buf, "Connections %8d active\n", s.activeConnections);
+    mprPutFmtToBuf(buf, "Processes   %8d active\n", s.activeProcesses);
+    mprPutFmtToBuf(buf, "Requests    %8d active\n", s.activeRequests);
+    mprPutFmtToBuf(buf, "Sessions    %8d active\n", s.activeSessions);
+    mprPutFmtToBuf(buf, "Pending     %8d\n", s.pendingRequests);
+    mprPutFmtToBuf(buf, "Workers     %8d, %d, %d  (busy/idle/max)\n", s.workersBusy, s.workersIdle, s.workersMax);
+    mprPutCharToBuf(buf, '\n');
+    mprAddNullToBuf(buf);
+
+    last = s;
+    lastTime = now;
+    return sclone(mprGetBufStart(buf));
+}
+
 
 
 /*
@@ -8086,8 +8178,8 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     route->errorDocuments = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
     route->extensions = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS);
     route->flags = HTTP_ROUTE_GZIP;
-    route->handlers = mprCreateList(-1, 0);
-    route->handlersWithMatch = mprCreateList(-1, 0);
+    route->handlers = mprCreateList(-1, MPR_LIST_STABLE);
+    route->handlersWithMatch = mprCreateList(-1, MPR_LIST_STABLE);
     route->host = host;
     route->http = MPR->httpService;
     route->indicies = mprCreateList(-1, 0);
@@ -8616,7 +8708,7 @@ static int selectHandler(HttpConn *conn, HttpRoute *route)
     /*
         Handlers with match routines are examined first (in-order)
      */
-    for (next = 0; (tx->handler = mprGetNextItem(route->handlersWithMatch, &next)) != 0; ) {
+    for (next = 0; (tx->handler = mprGetNextStableItem(route->handlersWithMatch, &next)) != 0; ) {
         rc = tx->handler->match(conn, route, 0);
         if (rc == HTTP_ROUTE_OK || rc == HTTP_ROUTE_REROUTE) {
             return rc;
@@ -11546,6 +11638,7 @@ static bool parseRequestLine(HttpConn *conn, HttpPacket *packet)
         return 0;
     }
     rx->originalUri = rx->uri = sclone(uri);
+    conn->http->totalRequests++;
     httpSetState(conn, HTTP_STATE_FIRST);
     return 1;
 }
@@ -13374,13 +13467,13 @@ PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTicks lifespa
 
     //  OPT less contentions mutex
     lock(http);
-    if (http->sessionCount >= conn->limits->sessionMax) {
+    if (http->activeSessions >= conn->limits->sessionMax) {
         httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE,
-            "Too many sessions %d/%d", http->sessionCount, conn->limits->sessionMax);
+            "Too many sessions %d/%d", http->activeSessions, conn->limits->sessionMax);
         unlock(http);
         return 0;
     }
-    http->sessionCount++;
+    http->activeSessions++;
     unlock(http);
 #endif
 
@@ -13408,8 +13501,8 @@ PUBLIC void httpDestroySession(HttpSession *sp)
     assure(sp);
     //  OPT less contentions mutex
     lock(http);
-    http->sessionCount--;
-    assure(http->sessionCount >= 0);
+    http->activeSessions--;
+    assure(http->activeSessions >= 0);
     unlock(http);
     sp->id = 0;
 }

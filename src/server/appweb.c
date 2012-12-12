@@ -400,34 +400,83 @@ static void traceHandler(void *ignored, MprSignal *sp)
 }
 
 
+#if UNUSED
 /*
     SIGINFO will dump memory stats
-    Use: ./configure --set memoryCheck=true
+    For memory stats, use: ./configure --set memoryCheck=true
  */
 static void statusCheck(void *ignored, MprSignal *sp)
 {
     Http                *http;
     HttpEndpoint        *endpoint;
     MprWorkerService    *ws;
+    MprTime             now, elapsed;
     int                 next;
+    static MprTime      lastTime = 0;
+    static MprHeap      lastHeap;
+    static uint64       lastRequests, lastConn;
 
     ws = MPR->workerService;
     http = MPR->httpService;
+    now = mprGetTime();
+    elapsed = now - lastTime;
 
+#if KEEP
     mprRequestGC(MPR_FORCE_GC);
-    mprPrintMem("Memory Usage", 1);
+#endif
 
+    mprPrintMem("", 1);
+    printf("\nAppweb Stats\n------------\n");
+#if KEEP
+    printf("  Workers          %4d / %d / %d / %d  (busy/idle/total/max)\n", 
+        ws->busyThreads->length, ws->idleThreads->length, ws->numThreads, ws->maxThreads);
+#endif
+    printf("  GC sweeps      %6.1f / sec\n", (MPR->heap->iteration - lastHeap.iteration) / (elapsed / 1000.0));
+    printf("  Requests     %8.0f / sec\n", (http->requestCount - lastRequests) / (elapsed / 1000.0));
+    printf("  Connections  %8.0f / sec\n", (http->connCount - lastConn) / (elapsed / 1000.0));
+
+    printf("\nEndpoints\n---------\n");
     for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
         printf("%2s:%d, Connections %2d, Requests: %2d/%d, Clients IPs %2d/%d, Processes %2d/%d, " \
-            "Threads %2d/%d idle %d busy %d, Sessions %2d/%d\n",
-            endpoint->ip ? endpoint->ip : "*", endpoint->port,
+            "Sessions %2d/%d\n",
+            (endpoint->ip && *endpoint->ip) ? endpoint->ip : "*", endpoint->port,
             mprGetListLength(http->connections), endpoint->requestCount, endpoint->limits->requestMax,
             endpoint->clientCount, endpoint->limits->clientMax, http->processCount, endpoint->limits->processMax,
-            ws->numThreads, ws->maxThreads, ws->idleThreads->length, ws->busyThreads->length,
-            http->sessionCount, endpoint->limits->sessionMax);
+            (int) http->sessionCount, endpoint->limits->sessionMax);
     }
     printf("\n");
+    lastHeap = *MPR->heap;
+    lastTime = now;
+    lastRequests = http->requestCount;
+    lastConn = http->connCount;
 }
+#else
+/*
+    SIGINFO will dump memory stats
+    For detailed memory stats, use: ./configure --set memoryCheck=true
+ */
+static void statusCheck(void *ignored, MprSignal *sp)
+{
+    Http            *http;
+    HttpEndpoint    *endpoint;
+    int             next;
+
+    http = MPR->httpService;
+
+    mprRawLog(0, "%s", httpStatsReport(0));
+#if UNUSED
+    for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
+        mprRawLog(0, "%s:%d, Connections: %2d, Requests: %2d/%d, Clients IPs %2d/%d, Processes %2d/%d, " \
+            "Sessions %2d/%d\n",
+            (endpoint->ip && *endpoint->ip) ? endpoint->ip : "*", endpoint->port,
+            mprGetListLength(http->connections), endpoint->activeRequests, endpoint->limits->requestMax,
+            endpoint->activeClients, endpoint->limits->clientMax, http->processCount, endpoint->limits->processMax,
+            (int) http->sessionCount, endpoint->limits->sessionMax);
+    }
+#endif
+}
+
+#endif
 
 
 /*

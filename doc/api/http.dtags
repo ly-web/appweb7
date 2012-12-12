@@ -62,6 +62,25 @@
     </member>
   </compound>
   <compound kind="group">
+    <name>HttpStats</name>
+    <title>HttpStats</title>
+    <filename>group___http_stats.html</filename>
+    <member kind="function">
+      <type>void</type>
+      <name>httpGetStats</name>
+      <anchorfile>group___http_stats.html</anchorfile>
+      <anchor>ga346ba34e0ea1e88c6e9fb8c7be7afb55</anchor>
+      <arglist>(HttpStats *sp)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>httpStatsReport</name>
+      <anchorfile>group___http_stats.html</anchorfile>
+      <anchor>ga7895265873d5e93a5da00d2423ccb886</anchor>
+      <arglist>(int flags)</arglist>
+    </member>
+  </compound>
+  <compound kind="group">
     <name>HttpLimits</name>
     <title>HttpLimits</title>
     <filename>group___http_limits.html</filename>

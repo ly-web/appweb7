@@ -2224,7 +2224,9 @@ typedef struct MprLocationStats {
     @ingroup MemMem
   */
 typedef struct MprMemStats {
+    //  MOB - not consistent naming
     int             inMemException;         /**< Recursive protect */
+    int             regions;                /**< Number of allocated regions */
     uint            errors;                 /**< Allocation errors */
     uint            numCpu;                 /**< Number of CPUs */
     uint            pageSize;               /**< System page size */
@@ -2234,17 +2236,17 @@ typedef struct MprMemStats {
     ssize           redLine;                /**< Warn if allocation exceeds this level */
     ssize           maxMemory;              /**< Max memory that can be allocated */
     ssize           rss;                    /**< OS calculated resident stack size in bytes */
-    int64           user;                   /**< System user RAM size in bytes (excludes kernel) */
-    int64           ram;                    /**< System RAM size in bytes */
-    int             markVisited;
-    int             marked;
-    int             sweepVisited;
-    int             swept;
+    uint64          user;                   /**< System user RAM size in bytes (excludes kernel) */
+    uint64          ram;                    /**< System RAM size in bytes */
 
 #if BIT_MEMORY_STATS
     /*
-        Optional memory stats
+        Extended memory stats
      */
+    uint64          markVisited;            /**< Number of blocks examined for marking */
+    uint64          marked;                 /**< Number of blocks marked */
+    uint64          sweepVisited;           /**< Number of of blocks examined for sweeping */
+    uint64          swept;                  /**< Number of blocks swept */
     uint64          allocs;                 /**< Count of times a block was split Calls to allocate memory from the O/S */
     uint64          joins;                  /**< Count of times a block was joined (coalesced) with its neighbours */
     uint64          requests;               /**< Count of memory requests */
@@ -3742,6 +3744,7 @@ PUBLIC ssize mprPutBlockToBuf(MprBuf *buf, cchar *ptr, ssize size);
  */
 PUBLIC int mprPutCharToBuf(MprBuf *buf, int c);
 
+//  MOB - rename mprPutBuf
 /**
     Put a formatted string to the buffer.
     @description Format a string and append to the buffer at the end position and increment the end pointer.
@@ -4137,7 +4140,10 @@ PUBLIC int mprGetTimeZoneOffset(MprTime when);
  */
 #define MPR_OBJ_LIST            0x1     /**< Object is a hash */
 #define MPR_LIST_STATIC_VALUES  0x20    /**< Flag for #mprCreateList when values are permanent */
-#define MPR_LIST_OWN            0x40    /**< For own use. Not thread safe */
+#define MPR_LIST_STABLE         0x40    /**< For own use. Not thread safe */
+#if DEPRECATED || 1
+#define MPR_LIST_OWN MPR_LIST_STABLE
+#endif
 
 /**
     List data structure.
@@ -4232,7 +4238,7 @@ PUBLIC int mprCopyListContents(MprList *dest, MprList *src);
         required when items are added to the list.
     @param size Initial capacity of the list.
     @param flags Control flags. Possible values are: MPR_LIST_STATIC_VALUES to indicate list items are static
-        and should not be marked for GC. MPR_LIST_OWN to create an optimized list for private use that is not thread-safe.
+        and should not be marked for GC. MPR_LIST_STABLE to create an optimized list for private use that is not thread-safe.
     @return Returns a pointer to the list. 
     @ingroup MprList
  */
@@ -4292,6 +4298,17 @@ PUBLIC int mprGetListLength(MprList *list);
 PUBLIC void *mprGetNextItem(MprList *list, int *lastIndex);
 
 /**
+    Get the next item in a stable list.
+    @description Returns the value of the next item in the list. Before calling
+        this routine, mprGetFirstItem must be called to initialize the traversal of the list.
+    @param list List pointer returned from mprCreateList.
+    @param lastIndex Pointer to an integer that will hold the last index retrieved.
+    @ingroup MprList
+    @internal
+ */
+PUBLIC void *mprGetNextStableItem(MprList *list, int *lastIndex);
+
+/**
     Get the previous item in the list.
     @description Returns the value of the previous item in the list. Before 
         calling this routine, mprGetFirstItem and/or mprGetNextItem must be
@@ -4308,7 +4325,8 @@ PUBLIC void *mprGetPrevItem(MprList *list, int *lastIndex);
         initialize it before use.
     @param list Reference to the MprList struct.
     @param flags Control flags. Possible values are: MPR_LIST_STATIC_VALUES to indicate list items are static
-        and should not be marked for GC.  MPR_LIST_OWN to create an optimized list for private use that is not thread-safe.
+        and should not be marked for GC.  MPR_LIST_STABLE to create an optimized list for private use that is not
+        thread-safe.  
     @ingroup MprList
  */
 PUBLIC void mprInitList(MprList *list, int flags);
@@ -4472,6 +4490,7 @@ PUBLIC int mprPushItem(MprList *list, cvoid *item);
 
 #define MPR_GET_ITEM(list, index) list->items[index]
 #define ITERATE_ITEMS(list, item, next) next = 0, item = 0; list && (item = mprGetNextItem(list, &next)) != 0; 
+#define ITERATE_STABLE_ITEMS(list, item, next) next = 0, item = 0; list && (item = mprGetNextStableItem(list, &next)) != 0; 
 #define mprGetListLength(lp) ((lp) ? (lp)->length : 0)
 
 /********************************** Logging ***********************************/
@@ -6167,6 +6186,7 @@ typedef struct MprEventService {
     MprOsThread     serviceThread;      /**< Thread running the dispatcher service */
     int             eventCount;         /**< Count of events */
     int             waiting;            /**< Waiting for I/O (sleeping) */
+    int             pendingCount;       /**< Count of pendingQ dispatchers */
     struct MprCond  *waitCond;          /**< Waiting sync */
     struct MprMutex *mutex;             /**< Multi-thread sync */
 } MprEventService;
