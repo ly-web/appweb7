@@ -2304,6 +2304,7 @@ typedef struct MprHeap {
     int              enabled;                /**< GC is enabled */
     int              flags;                  /**< GC operational control flags */
     int              from;                   /**< Eligible mprCollectGarbage flags */
+    //  MOB - rename to requestCollection
     int              gc;                     /**< GC has been requested */
     int              hasError;               /**< Memory allocation error */
     int              hasSweeper;             /**< Has dedicated sweeper thread */
@@ -6764,14 +6765,6 @@ PUBLIC cchar *mprGetThreadName(MprThread *thread);
 PUBLIC int mprGetThreadPriority(MprThread *thread);
 
 /**
-    Get a count of yielded threads
-    @returns Count of threads that have yielded to the GC
-    @stability internal
-    @ingroup MprThread
- */
-PUBLIC int mprGetYieldedThreadCount();
-
-/**
     Set the thread priroity for the current thread.
     @description Set the current priority for the specified thread.
     @param priority Priority to associate with the thread. Mpr thread priorities are are integer values between 0 
@@ -7723,13 +7716,19 @@ typedef void (*MprWorkerProc)(void *data, struct MprWorker *worker);
     @ingroup MprWorker
  */
 typedef struct MprWorkerStats {
-    int             maxThreads;         /**< Configured max number of threads */
-    int             minThreads;         /**< Configured minimum */
-    int             numThreads;         /**< Configured minimum */
-    int             maxUse;             /**< Max used */
-    int             idleThreads;        /**< Current idle */
-    int             busyThreads;        /**< Current busy */
+    int     max;            /**< Configured max number of workers */
+    int     min;            /**< Configured minimum number of workers */
+    int     maxUsed;        /**< Max number of workers ever used used */
+    int     idle;           /**< Number of idle workers */
+    int     busy;           /**< Number of busy workers */
+    int     yielded;        /**< Number of busy workers yielded for GC */
 } MprWorkerStats;
+
+/**
+    Get the Worker service statistics
+    @param stats Reference to stats object to receive the stats
+ */
+PUBLIC void mprGetWorkerStats(MprWorkerStats *stats);
 
 /**
     Worker Thread Service
@@ -7741,7 +7740,7 @@ typedef struct MprWorkerService {
     MprList         *busyThreads;       /**< List of threads to service tasks */
     MprList         *idleThreads;       /**< List of threads to service tasks */
     int             maxThreads;         /**< Max # threads in worker pool */
-    int             maxUseThreads;      /**< Max threads ever used */
+    int             maxUsedThreads;     /**< Max threads ever used */
     int             minThreads;         /**< Max # threads in worker pool */
     int             nextThreadNum;      /**< Unique next thread number */
     int             numThreads;         /**< Current number of threads in worker pool */
@@ -7754,6 +7753,7 @@ typedef struct MprWorkerService {
 
 /*
     Internal
+    MOB - document and set stability to internal
  */
 PUBLIC MprWorkerService *mprCreateWorkerService();
 PUBLIC int mprStartWorkerService();
@@ -7765,8 +7765,9 @@ PUBLIC void mprSetWorkerStartCallback(MprWorkerProc start);
     Return the count of free threads in the worker thread pool.
     @returns An integer count of worker threads.
     @ingroup MprWorker
+    @stability internal
  */
-PUBLIC int mprGetAvailableWorkers();
+PUBLIC int mprAvailableWorkers();
 
 /**
     Set the default worker stack size
@@ -7800,13 +7801,6 @@ PUBLIC void mprSetMaxWorkers(int count);
  */
 PUBLIC int mprGetMaxWorkers();
 
-/**
-    Get the Worker service statistics
-    @param ws Worker service object
-    @param stats Reference to stats object to receive the stats
- */
-PUBLIC void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats);
-
 /*
     Worker Thread State
  */
@@ -7827,7 +7821,7 @@ typedef struct MprWorker {
     MprWorkerProc   cleanup;                /**< Procedure to cleanup after run before sleeping */
     void            *data;                  /**< User per-worker data */
     int             state;                  /**< Worker state */
-    int             flags;                  /**< Worker flags */
+    int             running;                /**< Worker running a job */
     MprThread       *thread;                /**< Thread associated with this worker */
     MprTicks        lastActivity;           /**< When the worker was last used */
     MprWorkerService *workerService;        /**< Worker service */
@@ -7865,9 +7859,6 @@ PUBLIC void mprReleaseWorker(MprWorker *worker);
     @returns Zero if successful, otherwise a negative MPR error code.
  */
 PUBLIC int mprStartWorker(MprWorkerProc proc, void *data);
-
-/* Internal */
-PUBLIC int mprAvailableWorkers();
 
 /********************************** Crypto ************************************/
 /**

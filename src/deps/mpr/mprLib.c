@@ -513,7 +513,7 @@ static MprMem *allocMem(ssize required, int flags)
     MprMem      *mp, *after, *spare;
     ssize       size, maxBlock;
     ulong       groupMap, bucketMap;
-    int         bucket, baseGroup, group, index;
+    int         bucket, baseGroup, group, index, miss;
     
 #if BIT_MEMORY_STACK
     monitorStack();
@@ -536,6 +536,7 @@ static MprMem *allocMem(ssize required, int flags)
     lockHeap();
     
     /* Mask groups lower than the base group */
+    miss = 0;
     groupMap = heap->groupMap & ~((((ssize) 1) << baseGroup) - 1);
     while (groupMap) {
         group = (int) (ffsl(groupMap) - 1);
@@ -587,6 +588,11 @@ static MprMem *allocMem(ssize required, int flags)
                             linkBlock(spare);
                         }
                     }
+#if FUTURE
+                    if (miss > 5) {
+                        triggerGC(0);
+                    }
+#endif
                     unlockHeap();
                     return mp;
                 }
@@ -598,6 +604,7 @@ static MprMem *allocMem(ssize required, int flags)
 #if KEEP
             triggerGC(0);
 #endif
+            miss++;
         }
     }
     unlockHeap();
@@ -1204,7 +1211,7 @@ static void sweep()
                 CHECK(mp);
                 BREAKPOINT(mp);
                 INC(swept);
-#if BIT_DEBUG && BIT_MEMORY_STATS
+#if BIT_MEMORY_STATS
                 if (heap->track) {
                     freeLocation(mp->name, GET_SIZE(mp));
                 }
@@ -1474,23 +1481,6 @@ PUBLIC void mprResetYield()
         tp->yielded = 0;
         unlock(ts->threads);
     }
-}
-
-
-PUBLIC int mprGetYieldedThreadCount()
-{
-    MprThreadService    *ts;
-    MprThread           *tp;
-    int                 count, next;
-
-    ts = MPR->threadService;
-
-    lock(ts->threads);
-    for (count = 0, ITERATE_ITEMS(ts->threads, tp, next)) {
-        count += tp->yielded;
-    }
-    unlock(ts->threads);
-    return count;
 }
 
 
@@ -1784,7 +1774,7 @@ static void printTracking()
     MprLocationStats     *lp;
     cchar                **np;
 
-    printf("\nManager Allocation Stats\n Size                       Location\n");
+    printf("\nAllocation Stats\n     Size Location\n");
     memcpy(sortLocations, heap->stats.locations, sizeof(sortLocations));
     qsort(sortLocations, MPR_TRACK_HASH, sizeof(MprLocationStats), sortLocation);
 
@@ -1834,7 +1824,7 @@ static void printGCStats()
             }
         }
         regionCount++;
-        printf("  Region %d is %d bytes, has %d allocated %d free\n", regionCount, (int) region->size, 
+        printf("  Region %3d is %8d bytes, has %4d allocated %3d free\n", regionCount, (int) region->size, 
             allocatedCount, freeCount);
     }
     printf("Regions: %d\n", regionCount);
@@ -1865,19 +1855,19 @@ PUBLIC void mprPrintMem(cchar *msg, int detail)
 
     printf("  Current heap      %14d K\n",             (int) (ap->bytesAllocated / 1024));
     printf("  Free heap memory  %14d K\n",             (int) (ap->bytesFree / 1024));
-    printf("  Allocation errors %14d\n",               ap->errors);
     printf("  Memory limit      %14d MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->maxMemory / 1024));
     printf("  Memory redline    %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->redLine / 1024));
+    printf("  Allocation errors %14d\n",               ap->errors);
 
 #if BIT_MEMORY_STATS
-    printf("  Memory requests     %14d\n",               (int) ap->requests);
-    printf("  O/S allocations     %14d %%\n",            percent(ap->allocs, ap->requests));
-    printf("  Block unpinns       %14d %%\n",            percent(ap->unpins, ap->requests));
-    printf("  Block reuse         %14d %%\n",            percent(ap->reuse, ap->requests));
-    printf("  Joins               %14d %%\n",            percent(ap->joins, ap->requests));
-    printf("  Splits              %14d %%\n",            percent(ap->splits, ap->requests));
+    printf("  Memory requests   %14d\n",               (int) ap->requests);
+    printf("  O/S allocations   %14d %%\n",            percent(ap->allocs, ap->requests));
+    printf("  Block unpinns     %14d %%\n",            percent(ap->unpins, ap->requests));
+    printf("  Block reuse       %14d %%\n",            percent(ap->reuse, ap->requests));
+    printf("  Joins             %14d %%\n",            percent(ap->joins, ap->requests));
+    printf("  Splits            %14d %%\n",            percent(ap->splits, ap->requests));
     printGCStats();
     if (detail) {
         printQueueStats();
@@ -8897,8 +8887,7 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     dispatcher = 0;
 
     lock(es);
-    if (pendingQ->next != pendingQ && mprAvailableWorkers()) {
-        /* No available workers to queue the dispatcher in the pending queue */
+    if (pendingQ->next != pendingQ && mprAvailableWorkers() > 0) {
         dispatcher = pendingQ->next;
         dispatcher->service->pendingCount--;
         assure(dispatcher->service->pendingCount >= 0);
@@ -23460,7 +23449,7 @@ PUBLIC void mprSetMinWorkers(int n)
     while (ws->numThreads < ws->minThreads) {
         worker = createWorker(ws, ws->stackSize);
         ws->numThreads++;
-        ws->maxUseThreads = max(ws->numThreads, ws->maxUseThreads);
+        ws->maxUsedThreads = max(ws->numThreads, ws->maxUsedThreads);
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
     }
@@ -23540,16 +23529,52 @@ PUBLIC void mprSetWorkerStartCallback(MprWorkerProc start)
 }
 
 
-PUBLIC int mprAvailableWorkers()
+PUBLIC void mprGetWorkerStats(MprWorkerStats *stats)
 {
     MprWorkerService    *ws;
-    int                 count;
+    MprWorker           *wp;
+    int                 next;
 
     ws = MPR->workerService;
+
     lock(ws);
-    count = mprGetListLength(ws->idleThreads) + (ws->maxThreads - ws->numThreads);
+    stats->max = ws->maxThreads;
+    stats->min = ws->minThreads;
+    stats->maxUsed = ws->maxUsedThreads;
+
+    stats->idle = (int) ws->idleThreads->length;
+    stats->busy = (int) ws->busyThreads->length;
+
+    stats->yielded = 0;
+    for (ITERATE_ITEMS(ws->busyThreads, wp, next)) {
+        /*
+            Only count as yielded, those workers who call yield from their user code
+            This excludes the yield in worker main
+         */
+        stats->yielded += (wp->thread->yielded && wp->running);
+    }
     unlock(ws);
-    return count;
+}
+
+
+PUBLIC int mprAvailableWorkers()
+{
+    MprWorkerStats  wstats;
+    int             activeWorkers, spareThreads, spareCores, result;
+
+    mprGetWorkerStats(&wstats);
+    spareThreads = wstats.max - wstats.busy - wstats.idle;
+    activeWorkers = wstats.busy - wstats.yielded;
+    spareCores = MPR->heap->stats.numCpu - activeWorkers;
+    if (spareCores <= 0 || spareThreads <= 0) {
+        return 0;
+    }
+    result = wstats.idle + min(spareThreads, spareCores);
+#if KEEP
+    printf("Avail %d, busy %d, yielded %d, idle %d, spare-threads %d, spare-cores %d, mustYield %d\n", result, wstats.busy,
+        wstats.yielded, wstats.idle, spareThreads, spareCores, MPR->heap->mustYield);
+#endif
+    return result;
 }
 
 
@@ -23557,7 +23582,6 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
-    int                 ncpu, activeWorkers;
 
     ws = MPR->workerService;
     lock(ws);
@@ -23570,32 +23594,25 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
      */
     worker = mprGetLastItem(ws->idleThreads);
     if (worker) {
-        worker->proc = proc;
         worker->data = data;
+        worker->proc = proc;
         changeState(worker, MPR_WORKER_BUSY);
 
     } else if (ws->numThreads < ws->maxThreads) {
-        /*
-            No idle threads. See if we should start a new thread. Add one for the marker().
-        */
-        activeWorkers = mprGetListLength(ws->busyThreads) - mprGetYieldedThreadCount() + 1;
-        ncpu = MPR->heap->stats.numCpu;
-        if (activeWorkers >= ncpu) {
+        if (mprAvailableWorkers() == 0) {
             unlock(ws);
-            LOG(1, "Defer work till cpu becomes available. Busy workers %d, ncpu %d", activeWorkers, ncpu);
             return MPR_ERR_BUSY;
         }
         worker = createWorker(ws, ws->stackSize);
         ws->numThreads++;
-        ws->maxUseThreads = max(ws->numThreads, ws->maxUseThreads);
-        worker->proc = proc;
+        ws->maxUsedThreads = max(ws->numThreads, ws->maxUsedThreads);
         worker->data = data;
+        worker->proc = proc;
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
 
     } else {
         unlock(ws);
-        LOG(1, "Defer work till worker is available. Workers %d, max %d", ws->numThreads, ws->maxThreads);
         return MPR_ERR_BUSY;
     }
     unlock(ws);
@@ -23635,15 +23652,6 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
 }
 
 
-PUBLIC int mprGetAvailableWorkers()
-{
-    MprWorkerService  *ws;
-
-    ws = MPR->workerService;
-    return (int) ws->idleThreads->length + (ws->maxThreads - ws->numThreads); 
-}
-
-
 static int getNextThreadNum(MprWorkerService *ws)
 {
     int     rc;
@@ -23664,19 +23672,6 @@ PUBLIC void mprSetWorkerStackSize(int n)
 }
 
 
-PUBLIC void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
-{
-    assure(ws);
-
-    stats->maxThreads = ws->maxThreads;
-    stats->minThreads = ws->minThreads;
-    stats->numThreads = ws->numThreads;
-    stats->maxUse = ws->maxUseThreads;
-    stats->idleThreads = (int) ws->idleThreads->length;
-    stats->busyThreads = (int) ws->busyThreads->length;
-}
-
-
 /*
     Create a new thread for the task
  */
@@ -23689,11 +23684,12 @@ static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize)
     if ((worker = mprAllocObj(MprWorker, manageWorker)) == 0) {
         return 0;
     }
-    worker->flags = 0;
+#if UNUSED
     worker->proc = 0;
     worker->cleanup = 0;
     worker->data = 0;
     worker->state = 0;
+#endif
     worker->workerService = ws;
     worker->idleCond = mprCreateCond();
 
@@ -23726,35 +23722,36 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     if (ws->startWorker) {
         (*ws->startWorker)(worker->data, worker);
     }
-    lock(ws);
+    /*
+        Very important for performance to elimminate to locking the WorkerService
+     */
     while (!(worker->state & MPR_WORKER_PRUNED)) {
         if (worker->proc) {
-            unlock(ws);
+            worker->running = 1;
             (*worker->proc)(worker->data, worker);
-            lock(ws);
-            worker->proc = 0;
+            worker->running = 0;
         }
         worker->lastActivity = MPR->eventService->now;
         if (mprIsStopping()) {
             break;
         }
-        changeState(worker, MPR_WORKER_IDLE);
-
         assure(worker->cleanup == 0);
         if (worker->cleanup) {
             (*worker->cleanup)(worker->data, worker);
             worker->cleanup = NULL;
         }
+        worker->proc = 0;
         worker->data = 0;
-        unlock(ws);
+        changeState(worker, MPR_WORKER_IDLE);
+
         /*
             Sleep till there is more work to do. Yield for GC first.
          */
         mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         mprWaitForCond(worker->idleCond, -1);
         mprResetYield();
-        lock(ws);
     }
+    lock(ws);
     changeState(worker, 0);
     worker->thread = 0;
     ws->numThreads--;

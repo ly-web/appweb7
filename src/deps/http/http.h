@@ -48,7 +48,7 @@ struct HttpWebSocket;
     /*  
         Tune for size
      */
-    #define HTTP_BUFSIZE                 (8 * 1024)           /**< Default I/O buffer size */
+    #define HTTP_BUFSIZE                 (4 * 1024)           /**< Default I/O buffer size */
     #define HTTP_MAX_CACHE_ITEM          (256 * 1024)         /**< Maximum cachable item size */
     #define HTTP_MAX_CHUNK               (8 * 1024)           /**< Maximum chunk size for transfer chunk encoding */
     #define HTTP_MAX_HEADERS             4096                 /**< Maximum size of the headers */
@@ -514,7 +514,8 @@ typedef struct HttpStats {
 
     int     workersBusy;                /**< Current busy worker threads */
     int     workersIdle;                /**< Current idle worker threads */
-    int     workersMax;                 /**< Total worker thread pool */
+    int     workersYielded;             /**< Number of busy workers that are yielded for GC */
+    int     workersMax;                 /**< Maximum number of workers in the thread pool */
 
     int     activeClients;              /**< Current active client IPs */
     int     activeConnections;          /**< Current active connections */
