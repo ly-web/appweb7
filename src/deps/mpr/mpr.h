@@ -6105,7 +6105,7 @@ PUBLIC int mprUnloadModule(MprModule *mp);
 #define MPR_EVENT_QUICK             0x2     /**< Execute inline without executing via a thread */
 #define MPR_EVENT_DONT_QUEUE        0x4     /**< Don't queue the event. User must call mprQueueEvent */
 #define MPR_EVENT_STATIC_DATA       0x8     /**< Event data is permanent and should not be marked by GC */
-
+#define MPR_EVENT_RUNNING           0x10    /**< Event currently executing */
 #define MPR_EVENT_MAGIC             0x12348765
 
 /**
@@ -6128,14 +6128,20 @@ typedef void (*MprEventProc)(void *data, struct MprEvent *event);
     @defgroup MprEvent MprEvent
  */
 typedef struct MprEvent {
+    //  MOB - remove
     int magic;
+    //  MOB - make BIT_DEBUG
     cchar               *name;          /**< Static debug name of the event */
+
     MprEventProc        proc;           /**< Callback procedure */
     MprTicks            timestamp;      /**< When was the event created */
     MprTicks            due;            /**< When is the event due */
     void                *data;          /**< Event private data */
+#if UNUSED
+    //  MOB - is this not part of the handler?
     int                 fd;             /**< File descriptor if an I/O event */
     int                 continuous;     /**< Event runs continuously */
+#endif
     int                 flags;          /**< Event flags */
     int                 mask;           /**< I/O mask of events */
     MprTicks            period;         /**< Reschedule period */

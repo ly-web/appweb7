@@ -304,6 +304,8 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     }
     heap->markerCond = mprCreateCond();
     heap->mutex = mprCreateLock();
+    //  MOB - should be stable
+    //  MOB - should preallocate with a large enough size
     heap->roots = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     mprAddRoot(MPR);
     return MPR;
@@ -1698,8 +1700,10 @@ PUBLIC void mprAddRoot(void *root)
 {
     /*
         Need to use root lock because mprAddItem may allocate
+        MOB - heap->roots should be stable
      */
     mprSpinLock(&heap->rootLock);
+    //  MOB OPT - could have an inline MACRO that does this for speed.
     mprAddItem(heap->roots, root);
     mprSpinUnlock(&heap->rootLock);
 }
@@ -1714,6 +1718,7 @@ PUBLIC void mprRemoveRoot(void *root)
     /*
         RemoveItem copies down. If the item was equal or before the current marker root, must adjust the marker rootIndex
         so we don't skip a root.
+        OPT MOB - but only if doing parallel GC
      */
     if (index <= heap->rootIndex && heap->rootIndex > 0) {
         heap->rootIndex--;
@@ -8768,21 +8773,35 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = dispatcher->service;
+    /*
+        OPT - mprGetNextEvent locks anyway, so should be able to get away without a lock here
+     */
     LOG(7, "dispatchEvents for %s", dispatcher->name);
     lock(es);
     assure(dispatcher->cond);
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    /*
+        Events are removed from the dispatcher queue and put onto the currentQ. This is so they will be marked for GC.
+        If the callback calls mprRemoveEvent, it will not remove from the currentQ. If it was a continuous event, 
+        mprRemoveEvent will clear the continuous flag.
+
+        OPT - this could all be simpler if dispatchEvents was never called recursively. Then a currentQ would not be needed,
+        and neither would a running flag. See mprRemoveEvent().
+     */
     for (count = 0; (dispatcher->flags & MPR_DISPATCHER_ENABLED) && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
         assure(event->magic == MPR_EVENT_MAGIC);
+        assure(!(event->flags & MPR_EVENT_RUNNING));
         unlock(es);
 
         LOG(7, "Call event %s", event->name);
         assure(event->proc);
+        event->flags |= MPR_EVENT_RUNNING;
         (event->proc)(event->data, event);
+        event->flags &= ~MPR_EVENT_RUNNING;
 
         lock(es);
-        if (event->continuous) {
+        if (event->flags & MPR_EVENT_CONTINUOUS) {
             /* Reschedule if continuous */
             event->timestamp = dispatcher->service->now;
             event->due = event->timestamp + (event->period ? event->period : 1);
@@ -9849,7 +9868,9 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
     event->dispatcher = dispatcher;
     event->next = event->prev = 0;
     event->flags = flags;
+#if UNUSED
     event->continuous = (flags & MPR_EVENT_CONTINUOUS) ? 1 : 0;
+#endif
     event->magic = MPR_EVENT_MAGIC;
 }
 
@@ -9912,14 +9933,15 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
     if (dispatcher) {
         es = dispatcher->service;
         lock(es);
-        if (event->next) {
+        if (event->next && !(event->flags & MPR_EVENT_RUNNING)) {
             mprDequeueEvent(event);
         }
+        event->dispatcher = 0;
+        event->flags &= ~MPR_EVENT_CONTINUOUS;
         if (dispatcher->flags & MPR_DISPATCHER_ENABLED && 
                 event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
             mprScheduleDispatcher(dispatcher);
         }
-        event->dispatcher = 0;
         unlock(es);
     }
 }
@@ -9950,20 +9972,29 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
 
 PUBLIC void mprStopContinuousEvent(MprEvent *event)
 {
-    event->continuous = 0;
+    lock(event->dispatcher->service);
+    event->flags &= ~MPR_EVENT_CONTINUOUS;
+    unlock(event->dispatcher->service);
 }
 
 
 PUBLIC void mprRestartContinuousEvent(MprEvent *event)
 {
-    event->continuous = 1;
+    lock(event->dispatcher->service);
+    event->flags |= MPR_EVENT_CONTINUOUS;
+    unlock(event->dispatcher->service);
     mprRescheduleEvent(event, event->period);
 }
 
 
 PUBLIC void mprEnableContinuousEvent(MprEvent *event, int enable)
 {
-    event->continuous = enable;
+    lock(event->dispatcher->service);
+    event->flags &= ~MPR_EVENT_CONTINUOUS;
+    if (enable) {
+        event->flags |= MPR_EVENT_CONTINUOUS;
+    }
+    unlock(event->dispatcher->service);
 }
 
 
@@ -26279,7 +26310,9 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
         dispatcher = (wp->dispatcher) ? wp->dispatcher: mprGetDispatcher();
     }
     event = wp->event = mprCreateEvent(dispatcher, "IOEvent", 0, ioEvent, wp->handlerData, MPR_EVENT_DONT_QUEUE);
+#if UNUSED
     event->fd = wp->fd;
+#endif
     event->mask = wp->presentMask;
     event->handler = wp;
     mprQueueEvent(dispatcher, event);
