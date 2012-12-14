@@ -588,11 +588,10 @@ static MprMem *allocMem(ssize required, int flags)
                             linkBlock(spare);
                         }
                     }
-#if FUTURE
-                    if (miss > 5) {
+                    /* Tested empirically to trigger GC when we are searching too much for an allocation */
+                    if (miss > 9) {
                         triggerGC(0);
                     }
-#endif
                     unlockHeap();
                     return mp;
                 }
@@ -601,9 +600,6 @@ static MprMem *allocMem(ssize required, int flags)
             }
             groupMap &= ~(((ssize) 1) << group);
             heap->groupMap &= ~(((ssize) 1) << group);
-#if KEEP
-            triggerGC(0);
-#endif
             miss++;
         }
     }
@@ -1038,7 +1034,7 @@ PUBLIC void mprWakeGCService()
 
 static void triggerGC(int flags)
 {
-    if (!heap->gc && ((flags & MPR_FORCE_GC) || (heap->newCount > heap->newQuota))) {
+    if (!heap->gc && ((flags & MPR_GC_FORCE) || (heap->newCount > heap->newQuota))) {
         heap->gc = 1;
 #if !PARALLEL_GC
         heap->mustYield = 1;
@@ -1056,15 +1052,17 @@ PUBLIC void mprRequestGC(int flags)
 
     LOG(7, "DEBUG: mprRequestGC");
 
-    count = (flags & MPR_COMPLETE_GC) ? 3 : 1;
+    count = (flags & MPR_GC_COMPLETE) ? 3 : 1;
     for (i = 0; i < count; i++) {
-        if ((flags & MPR_FORCE_GC) || (heap->newCount > heap->newQuota)) {
+        if ((flags & MPR_GC_FORCE) || (heap->newCount > heap->newQuota)) {
 #if PARALLEL_GC
             heap->mustYield = 1;
 #endif
-            triggerGC(MPR_FORCE_GC);
+            triggerGC(MPR_GC_FORCE);
         }
-        mprYield((flags & MPR_WAIT_GC) ? MPR_YIELD_BLOCK: 0);
+        if (!(flags & MPR_GC_NO_YIELD)) {
+            mprYield((flags & MPR_GC_NO_BLOCK) ? MPR_YIELD_NO_BLOCK: 0);
+        }
     }
 }
 
@@ -1844,10 +1842,8 @@ static void printGCStats()
 PUBLIC void mprPrintMem(cchar *msg, int detail)
 {
     MprMemStats     *ap;
-    MprWorkerService    *ws;
 
     ap = mprGetMemStats();
-    ws = MPR->workerService;
 
     printf("\nMemory Report %s\n", msg);
     printf("-------------\n");
@@ -2782,7 +2778,7 @@ PUBLIC void mprDestroy(int how)
     if (MPR->state < MPR_STOPPING) {
         mprTerminate(how, -1);
     }
-    gmode = MPR_FORCE_GC | MPR_COMPLETE_GC | MPR_WAIT_GC;
+    gmode = MPR_GC_FORCE | MPR_GC_COMPLETE;
     mprRequestGC(gmode);
 
     if (how & MPR_EXIT_GRACEFUL) {

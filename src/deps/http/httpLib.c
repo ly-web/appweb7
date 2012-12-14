@@ -4982,12 +4982,10 @@ static void httpTimer(Http *http, MprEvent *event)
     }
     unlock(http->connections);
 
-#if KEEP
     /*
-        This will trigger a GC if worthwhile
+        This will trigger a GC if worthwhile, but will defer yielding
      */
-    mprRequestGC(0);
-#endif
+    mprRequestGC(MPR_GC_NO_YIELD);
 }
 
 
@@ -5214,7 +5212,6 @@ static void updateCurrentDate(Http *http)
 PUBLIC void httpGetStats(HttpStats *sp)
 {
     MprMemStats         *ap;
-    MprWorkerService    *ws;
     MprWorkerStats      wstats;
     Http                *http;
     HttpEndpoint        *ep;
@@ -5223,7 +5220,6 @@ PUBLIC void httpGetStats(HttpStats *sp)
     memset(sp, 0, sizeof(*sp));
     http = MPR->httpService;
     ap = mprGetMemStats();
-    ws = MPR->workerService;
 
     sp->cpus = ap->numCpu;
     sp->regions = ap->regions;

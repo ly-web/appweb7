@@ -2659,19 +2659,21 @@ PUBLIC void mprStopGCService();
  */
 PUBLIC void mprAddRoot(void *ptr);
 
-#define MPR_FORCE_GC        0x1     /* Force a GC whether it is required or not */
-#define MPR_COMPLETE_GC     0x2     /* Do a complete collection (3 sweeps) */
-#define MPR_WAIT_GC         0x4     /* Wait for GC to complete */
+/*
+    Flags for mprRequestGC
+ */
+#define MPR_GC_FORCE        0x1     /**< mprRequestGC flags to force a GC whether it is required or not */
+#define MPR_GC_COMPLETE     0x2     /**< mprRequestGC flags to do a complete collection (3 sweeps) */
+#define MPR_GC_NO_BLOCK     0x4     /**< mprRequestGC flags to not wait for the GC */
+#define MPR_GC_NO_YIELD     0x8     /**< mprRequestGC flag to trigger GC but not yield */
 
 /**
     Collect garbage
     @description Initiates garbage collection to free unreachable memory blocks. This call may return before collection 
     is complete if garbage collection has been configured via mprCreate() to use dedicated threads for collection. 
-    A single garbage collection may not free all memory. Use mprRequestGC(1) to free all unused memory blocks.
-    @param flags Flags to control the collection. Set flags to MPR_FORCE_GC to force one sweep. Set to zero
+    A single garbage collection may not free all memory. Use mprRequestGC(MPR_GC_FORCE) to free all unused memory blocks.
+    @param flags Flags to control the collection. Set flags to MPR_GC_FORCE to force one sweep. Set to zero
     to perform a conditional sweep where the sweep is only performed if there is sufficient garbage to warrant a collection.
-    Other flags include MPR_GC_FROM_EVENTS which must be specified if calling mprCollectGarbage from a routine that 
-    also blocks on mprServiceEvents. Similarly, use MPR_GC_FROM_OWN if managing garbage collections manually.
     @ingroup MprMem
   */
 PUBLIC void mprRequestGC(int flags);
@@ -6801,9 +6803,9 @@ PUBLIC void mprSetThreadPriority(MprThread *thread, int priority);
  */
 PUBLIC int mprStartThread(MprThread *thread);
 
-#define MPR_YIELD_NO_BLOCK  0x1     /* Yield but do not wait */
-#define MPR_YIELD_BLOCK     0x2     /* Yield and wait until GC */
-#define MPR_YIELD_STICKY    0x4     /* Yield and remain yielded until reset */
+#define MPR_YIELD_NO_BLOCK  0x1     /**< mprYield flag to yield but do not wait */
+#define MPR_YIELD_BLOCK     0x2     /**< mprYield flag to yield and wait until GC the next GC occurs */
+#define MPR_YIELD_STICKY    0x4     /**< mprYield flag to yield and remain yielded until reset */
 
 /**
     Yield a thread to allow garbage collection

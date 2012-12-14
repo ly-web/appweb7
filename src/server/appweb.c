@@ -406,7 +406,7 @@ static void traceHandler(void *ignored, MprSignal *sp)
  */
 static void statusCheck(void *ignored, MprSignal *sp)
 {
-    mprRequestGC(MPR_COMPLETE_GC);
+    mprRequestGC(MPR_GC_COMPLETE);
     mprRawLog(0, "%s", httpStatsReport(0));
     if (MPR->heap->track) {
         mprPrintMem("", 1);
