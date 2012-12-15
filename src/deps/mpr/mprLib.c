@@ -336,6 +336,9 @@ PUBLIC void mprDestroyMemService()
 }
 
 
+/*
+    Note this does not zero memory and thus will not pin allocated memory if it is newly, virtually allocated
+ */
 PUBLIC void *mprAllocMem(ssize usize, int flags)
 {
     MprMem      *mp;

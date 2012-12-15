@@ -12407,7 +12407,6 @@ static void processCompletion(HttpConn *conn)
     tx = conn->tx;
     assure(tx->finalized);
     assure(tx->finalizedOutput);
-    assure(tx->finalizedConnector);
 
 #if BIT_TRACE_MEM
     mprLog(1, "Request complete, status %d, error %d, connError %d, %s%s, memsize %.2f MB",
