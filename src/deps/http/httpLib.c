@@ -5239,6 +5239,7 @@ PUBLIC void httpGetStats(HttpStats *sp)
     sp->workersYielded = wstats.yielded;
     sp->workersMax = wstats.max;
 
+    sp->activeVMs = http->activeVMs;
     sp->activeConnections = mprGetListLength(http->connections);
     sp->activeProcesses = http->activeProcesses;
     sp->activeSessions = http->activeSessions;
@@ -5250,6 +5251,7 @@ PUBLIC void httpGetStats(HttpStats *sp)
     sp->totalRequests = http->totalRequests;
     sp->totalConnections = http->totalConnections;
     sp->totalSweeps = MPR->heap->iteration;
+
 }
 
 
@@ -5290,7 +5292,8 @@ PUBLIC char *httpStatsReport(int flags)
     mprPutFmtToBuf(buf, "Processes   %8d active\n", s.activeProcesses);
     mprPutFmtToBuf(buf, "Requests    %8d active\n", s.activeRequests);
     mprPutFmtToBuf(buf, "Sessions    %8d active\n", s.activeSessions);
-    mprPutFmtToBuf(buf, "Pending     %8d\n", s.pendingRequests);
+    mprPutFmtToBuf(buf, "VMs         %8d active\n", s.activeVMs);
+    mprPutFmtToBuf(buf, "Pending     %8d requests\n", s.pendingRequests);
     mprPutCharToBuf(buf, '\n');
 
     mprPutFmtToBuf(buf, "Workers     %8d busy - %d yielded, %d idle, %d max\n", 

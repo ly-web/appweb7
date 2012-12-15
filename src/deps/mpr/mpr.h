@@ -319,7 +319,6 @@
         #include <crtdbg.h>
     #endif
 #endif
-//UNUSED #undef     _WIN32_WINNT
 
 /*
     Includes in alphabetic order
@@ -1625,11 +1624,11 @@ PUBLIC void mprBreakpoint();
  */
 PUBLIC void assure(bool cond);
 #elif BIT_ASSERT
-    //  mprAssert is DEPRECATED UNUSED
+    //  mprAssert is DEPRECATED
     #define mprAssert(C)    if (C) ; else mprAssure(MPR_LOC, #C)
     #define assure(C)       if (C) ; else mprAssure(MPR_LOC, #C)
 #else
-    //  mprAssert is DEPRECATED UNUSED
+    //  mprAssert is DEPRECATED
     #define mprAssert(C)    if (C) ; else
     #define assure(C)       if (1) ; else
 #endif
@@ -2340,8 +2339,7 @@ typedef struct MprHeap {
     int              enabled;                /**< GC is enabled */
     int              flags;                  /**< GC operational control flags */
     int              from;                   /**< Eligible mprCollectGarbage flags */
-    //  MOB - rename to requestCollection
-    int              gc;                     /**< GC has been requested */
+    int              gcRequested;            /**< GC has been requested */
     int              hasError;               /**< Memory allocation error */
     int              hasSweeper;             /**< Has dedicated sweeper thread */
     int              iteration;              /**< GC iteration counter (debug only) */
@@ -4078,15 +4076,15 @@ PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
 #define mprPutFmtToWideBuf      mprPutFmtToBuf
 #endif
 
-//  MOB - FIX
-#if MPR_BUF_MACROS || 1
+/*
+    Macros for speed
+ */
 #define mprGetBufLength(bp) ((bp)->end - (bp)->start)
 #define mprGetBufSize(bp) ((bp)->buflen)
 #define mprGetBufSpace(bp) ((bp)->endbuf - (bp)->end)
 #define mprGetBuf(bp) ((bp)->data)
 #define mprGetBufStart(bp) ((bp)->start)
 #define mprGetBufEnd(bp) ((bp)->end)
-#endif
 
 /******************************** Date and Time *******************************/
 /**
@@ -6531,7 +6529,7 @@ typedef void (*MprEventProc)(void *data, struct MprEvent *event);
     @stability Stable
  */
 typedef struct MprEvent {
-    //  MOB - remove
+    //  MOB - UNUSED remove
     int magic;
     //  MOB - make BIT_DEBUG
     cchar               *name;          /**< Static debug name of the event */
@@ -6540,11 +6538,6 @@ typedef struct MprEvent {
     MprTicks            timestamp;      /**< When was the event created */
     MprTicks            due;            /**< When is the event due */
     void                *data;          /**< Event private data */
-#if UNUSED
-    //  MOB - is this not part of the handler?
-    int                 fd;             /**< File descriptor if an I/O event */
-    int                 continuous;     /**< Event runs continuously */
-#endif
     int                 flags;          /**< Event flags */
     int                 mask;           /**< I/O mask of events */
     MprTicks            period;         /**< Reschedule period */
@@ -7508,20 +7501,6 @@ PUBLIC void mprRecallWaitHandlerByFd(int fd);
     @stability Stable
  */
 PUBLIC void mprRemoveWaitHandler(MprWaitHandler *wp);
-
-#if UNUSED
-/**
-    Apply wait handler updates. While a wait handler is in use, wait event updates are buffered. This routine applies
-        such buffered updates.
-    @param wp Wait handler created via #mprCreateWaitHandler
-    @param wakeup Wake up the service events thread. Typically it is safest to wake up the service events thread if the
-        wait handler event masks have been modified. However, there are some cases where it can be useful to suppress
-        this behavior.
-    @ingroup MprWaitHandler
-    @stability Stable
- */
-PUBLIC void mprUpdateWaitHandler(MprWaitHandler *wp, bool wakeup);
-#endif
 
 /**
     Subscribe for desired wait events
@@ -8785,10 +8764,6 @@ typedef struct MprCmd {
     cchar           **defaultEnv;       /**< Environment to use if no env passed to mprStartCmd */
     char            *searchPath;        /**< Search path to use to locate the command */
     int             argc;               /**< Count of args in argv */
-#if UNUSED && FUTURE
-    MprTicks        timestamp;          /**< Timeout timestamp for last I/O  */
-    MprTicks        timeoutPeriod;      /**< Timeout value */
-#endif
     int             timedout;           /**< Request has timedout */
     MprCmdFile      files[MPR_CMD_MAX_PIPE]; /**< Stdin, stdout for the command */
     MprWaitHandler  *handlers[MPR_CMD_MAX_PIPE];
@@ -10042,14 +10017,6 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value);
  */
 PUBLIC void mprWriteToOsLog(cchar *msg, int flags, int level);
 
-#if UNUSED
-/*********************************** External *********************************/
-/*
-   Double conversions
- */
-PUBLIC char *dtoa(double d, int mode, int ndigits, int* decpt, int* sign, char** rve);
-PUBLIC void freedtoa(char* ptr);
-#endif
 /************************************* Test ***********************************/
 
 struct MprTestGroup;

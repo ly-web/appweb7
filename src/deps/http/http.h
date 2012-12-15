@@ -344,6 +344,7 @@ typedef struct Http {
     uint64          totalConnections;       /**< Total connections accepted */
     uint64          totalRequests;          /**< Total requests served */
 
+    int             activeVMs;              /**< Number of ejs VMs */
     int             underAttack;            /**< Under DOS attack */
     void            *context;               /**< Embedding context */
     MprTicks        currentTime;            /**< When currentDate was last calculated (ticks) */
@@ -547,6 +548,7 @@ typedef struct HttpStats {
     int     activeProcesses;            /**< Current active processes */
     int     activeRequests;             /**< Current active requests */
     int     activeSessions;             /**< Current active sessions */
+    int     activeVMs;                  /**< Current ejs VMs */
 
     uint64  totalSweeps;                /**< Total GC sweeps */
     uint64  totalRequests;              /**< Total requests served */
@@ -5739,7 +5741,6 @@ typedef struct HttpHost {
     HttpEndpoint    *defaultEndpoint;       /**< Default endpoint for host */
     HttpEndpoint    *secureEndpoint;        /**< Secure endpoint for host */
     char            *protocol;              /**< Defaults to "HTTP/1.1" */
-    //  MOB - rename home?
     char            *root;                  /**< Home for this host */
     int             flags;                  /**< Host flags */
     MprMutex        *mutex;                 /**< Multithread sync */

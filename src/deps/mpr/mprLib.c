@@ -665,6 +665,7 @@ static MprMem *growHeap(ssize required, int flags)
 
     lockHeap();
     region->next = heap->regions;
+    heap->stats.bytesAllocated += size;
     heap->regions = region;
     heap->stats.regions++;
     if (spareLen > 0) {
@@ -930,9 +931,6 @@ PUBLIC void *mprVirtAlloc(ssize size, int mode)
         allocException(MPR_MEM_FAIL, size);
         return 0;
     }
-    lockHeap();
-    heap->stats.bytesAllocated += size;
-    unlockHeap();
     return ptr;
 }
 
@@ -940,10 +938,6 @@ PUBLIC void *mprVirtAlloc(ssize size, int mode)
 PUBLIC void mprVirtFree(void *ptr, ssize size)
 {
     vmfree(ptr, size);
-    lockHeap();
-    heap->stats.bytesAllocated -= size;
-    assure(heap->stats.bytesAllocated >= 0);
-    unlockHeap();
 }
 
 
@@ -1039,8 +1033,8 @@ PUBLIC void mprWakeGCService()
 
 static void triggerGC(int flags)
 {
-    if (!heap->gc && ((flags & MPR_GC_FORCE) || (heap->newCount > heap->newQuota))) {
-        heap->gc = 1;
+    if (!heap->gcRequested && ((flags & MPR_GC_FORCE) || (heap->newCount > heap->newQuota))) {
+        heap->gcRequested = 1;
 #if !PARALLEL_GC
         heap->mustYield = 1;
 #endif
@@ -1130,7 +1124,7 @@ static void mark()
     heap->priorNewCount = heap->newCount;
     heap->priorFree = heap->stats.bytesFree;
     heap->newCount = 0;
-    heap->gc = 0;
+    heap->gcRequested = 0;
     checkYielded();
     markRoots();
     heap->marking = 0;
@@ -1242,6 +1236,8 @@ static void sweep()
                 heap->regions = nextRegion;
             }
             heap->stats.regions--;
+            heap->stats.bytesAllocated -= region->size;
+            assure(heap->stats.bytesAllocated >= 0);
             unlockHeap();
             LOG(9, "DEBUG: Unpin %p to %p size %d, used %d", region, 
                 ((char*) region) + region->size, region->size,fastMemSize());
@@ -2561,16 +2557,6 @@ static void monitorStack()
 #undef mprSetName
 #undef mprCopyName
 #undef mprSetAllocName
-
-#if UNUSED
-/*
-    Define stubs so windows can use same *.def for debug or release
- */
-PUBLIC void mprCheckBlock(MprMem *mp) {}
-PUBLIC void *mprSetName(void *ptr, cchar *name) { return 0; }
-PUBLIC void *mprCopyName(void *dest, void *src) { return 0; }
-PUBLIC void *mprSetAllocName(void *ptr, cchar *name) { return 0; }
-#endif
 
 /*
     Re-instate defines for combo releases, where source will be appended below here
@@ -8372,7 +8358,7 @@ static void mprDestroyDispatcher(MprDispatcher *dispatcher)
 static void manageDispatcher(MprDispatcher *dispatcher, int flags)
 {
     MprEventService     *es;
-    MprEvent            *q, *event;
+    MprEvent            *q, *event, *next;
 
     es = dispatcher->service;
 
@@ -8388,12 +8374,14 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
         //  MOB - is this lock needed?  Surely all threads are stopped.
         lock(es);
         q = dispatcher->eventQ;
-        for (event = q->next; event != q; event = event->next) {
+        for (event = q->next; event != q; event = next) {
+            next = event->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
         q = dispatcher->currentQ;
-        for (event = q->next; event != q; event = event->next) {
+        for (event = q->next; event != q; event = next) {
+            next = event->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
