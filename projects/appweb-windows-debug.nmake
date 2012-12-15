@@ -444,10 +444,6 @@ $(CONFIG)\bin\setConfig.exe:  \
         $(CONFIG)\obj\setConfig.obj
 	"$(LD)" -out:$(CONFIG)\bin\setConfig.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\setConfig.obj libmpr.lib $(LIBS)
 
-$(CONFIG)\inc\appwebMonitor.h: 
-	-if exist $(CONFIG)\inc\appwebMonitor.h del /Q $(CONFIG)\inc\appwebMonitor.h
-	copy /Y src\server\appwebMonitor.h $(CONFIG)\inc\appwebMonitor.h
-
 $(CONFIG)\obj\appweb.obj: \
         src\server\appweb.c \
         $(CONFIG)\inc\bit.h
@@ -457,7 +453,6 @@ $(CONFIG)\bin\appweb.exe:  \
         $(CONFIG)\bin\libappweb.dll \
         $(CONFIG)\bin\libmod_esp.dll \
         $(CONFIG)\bin\libmod_cgi.dll \
-        $(CONFIG)\inc\appwebMonitor.h \
         $(CONFIG)\obj\appweb.obj
 	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libmod_cgi.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 

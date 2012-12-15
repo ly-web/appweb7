@@ -103,22 +103,11 @@
     <ClCompile Include="..\..\src\server\appweb.c" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ClInclude Include="$(IncDir)\appwebMonitor.h" />
-  </ItemGroup>
-
   <ItemDefinitionGroup>
   <Link>
     <AdditionalDependencies>libmod_cgi.lib;libmod_esp.lib;libappweb.lib;libhttp.lib;libpcre.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
-
-  <CustomBuildStep>
-    <Command>cd ..\..\src\server
-copy /Y appwebMonitor.h $(IncDir)
-cd ..\..\projects\appweb-windows-vs</Command>
-    <Outputs>$(BinDir)\appweb.exe</Outputs>
-  </CustomBuildStep>
   </ItemDefinitionGroup>
 
 <ItemGroup>

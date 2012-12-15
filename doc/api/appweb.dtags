@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' standalone='yes' ?>
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <tagfile>
   <compound kind="group">
     <name>MaAppweb</name>
@@ -47,6 +47,13 @@
       <arglist>(MaAppweb *appweb)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>maArchiveLog</name>
+      <anchorfile>group___ma_appweb.html</anchorfile>
+      <anchor>ga454f6a859fd29e3c76e136420fdfc3c4</anchor>
+      <arglist>(cchar *path, int count, int maxSize)</arglist>
+    </member>
+    <member kind="function">
       <type>MaAppweb *</type>
       <name>maCreateAppweb</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
@@ -87,6 +94,13 @@
       <anchorfile>group___ma_appweb.html</anchorfile>
       <anchor>gaf72ae42c5d6c767a221d6d84f4f0b83b</anchor>
       <arglist>(MaAppweb *appweb)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>maParsePlatform</name>
+      <anchorfile>group___ma_appweb.html</anchorfile>
+      <anchor>gaeeb83f9f10a5e54bcf16836f198f9f30</anchor>
+      <arglist>(cchar *platform, cchar **os, cchar **arch, cchar **profile)</arglist>
     </member>
     <member kind="function">
       <type>MaState *</type>
@@ -145,13 +159,6 @@
       <arglist>(MaServer *server, cchar *ip, int port)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>maSetServerHome</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>ga8e99d32507bca4e743bd52fb9175c6f3</anchor>
-      <arglist>(MaServer *server, cchar *path)</arglist>
-    </member>
-    <member kind="function">
       <type>int</type>
       <name>maStartAccessLogging</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
@@ -166,6 +173,13 @@
       <arglist>(MaAppweb *appweb)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>maStartServer</name>
+      <anchorfile>group___ma_appweb.html</anchorfile>
+      <anchor>ga3df448d06702386f01bdf34fa9e2df42</anchor>
+      <arglist>(MaServer *server)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>maStopAccessLogging</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
@@ -178,6 +192,20 @@
       <anchorfile>group___ma_appweb.html</anchorfile>
       <anchor>gae98b753968134ec1c2bc50d5d63b2a1f</anchor>
       <arglist>(MaAppweb *appweb)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>maStopServer</name>
+      <anchorfile>group___ma_appweb.html</anchorfile>
+      <anchor>ga18b14ec844e122a098d89abebde6d7de</anchor>
+      <arglist>(MaServer *server)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>maTokenize</name>
+      <anchorfile>group___ma_appweb.html</anchorfile>
+      <anchor>gabb856e86d408307d5e31ad0ff2d2f69a</anchor>
+      <arglist>(MaState *state, cchar *str, cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -233,9 +261,9 @@
     <filename>group___ma_state.html</filename>
   </compound>
   <compound kind="dir">
-    <name>/Users/mob/git/appweb/src/</name>
+    <name>src</name>
     <path>/Users/mob/git/appweb/src/</path>
-    <filename>dir_9556dc5a760e16a3902915b1ecaf1631.html</filename>
+    <filename>dir_68267d1309a1af8e8297ef4c3efbcdba.html</filename>
     <file>appweb.h</file>
   </compound>
 </tagfile>

@@ -402,31 +402,15 @@ static void traceHandler(void *ignored, MprSignal *sp)
 
 /*
     SIGINFO will dump memory stats
-    Use: ./configure --set memoryCheck=true
+    For detailed memory stats, use: ./configure --set memoryCheck=true
  */
 static void statusCheck(void *ignored, MprSignal *sp)
 {
-    Http                *http;
-    HttpEndpoint        *endpoint;
-    MprWorkerService    *ws;
-    int                 next;
-
-    ws = MPR->workerService;
-    http = MPR->httpService;
-
-    mprRequestGC(MPR_FORCE_GC);
-    mprPrintMem("Memory Usage", 1);
-
-    for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
-        printf("%2s:%d, Connections %2d, Requests: %2d/%d, Clients IPs %2d/%d, Processes %2d/%d, " \
-            "Threads %2d/%d idle %d busy %d, Sessions %2d/%d\n",
-            endpoint->ip ? endpoint->ip : "*", endpoint->port,
-            mprGetListLength(http->connections), endpoint->requestCount, endpoint->limits->requestMax,
-            endpoint->clientCount, endpoint->limits->clientMax, http->processCount, endpoint->limits->processMax,
-            ws->numThreads, ws->maxThreads, ws->idleThreads->length, ws->busyThreads->length,
-            http->sessionCount, endpoint->limits->sessionMax);
+    mprRequestGC(MPR_GC_COMPLETE);
+    mprRawLog(0, "%s", httpStatsReport(0));
+    if (MPR->heap->track) {
+        mprPrintMem("", 1);
     }
-    printf("\n");
 }
 
 

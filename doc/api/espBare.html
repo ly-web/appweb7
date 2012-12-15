@@ -321,7 +321,7 @@
 <tr class="apiDef">
 <td>#define</td><td><a href="#esp_8h_1a84cefff441de0de7ef30a78e55150c1a" class="nameRef">EDI_AUTO_INC</a>&nbsp;&nbsp;&nbsp;0x1</td>
 </tr>
-<tr class="apiBrief"><td>&nbsp;</td><td>Field flag &mdash; Automatic increments on new row.</td></tr>
+<tr class="apiBrief"><td>&nbsp;</td><td>Field flag <ndash/> Automatic increments on new row.</td></tr>
 <tr class="apiDef">
 <td>#define</td><td><a href="#esp_8h_1a0fc3c13863bc64f832d0524825eaccec" class="nameRef">EDI_AUTO_SAVE</a>&nbsp;&nbsp;&nbsp;0x2</td>
 </tr>
@@ -333,7 +333,7 @@
 <tr class="apiDef">
 <td>#define</td><td><a href="#esp_8h_1a26eb47bd03dbe38d487bfbe714eb8f45" class="nameRef">EDI_FOREIGN</a>&nbsp;&nbsp;&nbsp;0x8</td>
 </tr>
-<tr class="apiBrief"><td>&nbsp;</td><td>Field flag &mdash; Column is a foreign key.</td></tr>
+<tr class="apiBrief"><td>&nbsp;</td><td>Field flag <ndash/> Column is a foreign key.</td></tr>
 <tr class="apiDef">
 <td>#define</td><td><a href="#esp_8h_1af4b1c5417043e83de7e12253173c4b32" class="nameRef">EDI_GRID_READ_ONLY</a>&nbsp;&nbsp;&nbsp;0x1</td>
 </tr>
@@ -341,11 +341,11 @@
 <tr class="apiDef">
 <td>#define</td><td><a href="#esp_8h_1aa250b5270a6712a110ad52fb6de2e943" class="nameRef">EDI_INDEX</a>&nbsp;&nbsp;&nbsp;0x4</td>
 </tr>
-<tr class="apiBrief"><td>&nbsp;</td><td>Field flag &mdash; Column is indexed.</td></tr>
+<tr class="apiBrief"><td>&nbsp;</td><td>Field flag <ndash/> Column is indexed.</td></tr>
 <tr class="apiDef">
 <td>#define</td><td><a href="#esp_8h_1a14387cca6628803c8ef36dde843d6859" class="nameRef">EDI_KEY</a>&nbsp;&nbsp;&nbsp;0x2</td>
 </tr>
-<tr class="apiBrief"><td>&nbsp;</td><td>Field flag &mdash; Column is the key.</td></tr>
+<tr class="apiBrief"><td>&nbsp;</td><td>Field flag <ndash/> Column is the key.</td></tr>
 <tr class="apiDef">
 <td>#define</td><td><a href="#esp_8h_1a39aeab0f683f28577c0069b7fde2425a" class="nameRef">EDI_LITERAL</a>&nbsp;&nbsp;&nbsp;0x8</td>
 </tr>
@@ -387,7 +387,7 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Multi-line text.</td></tr>
 <tr class="apiDef">
-<td>#define</td><td><a href="#esp_8h_1a61427a6279173262d67b485f3e83a5d8" class="nameRef">ESP_LIFESPAN</a>&nbsp;&nbsp;&nbsp;(3600 * MPR_TICKS_PER_SEC)</td>
+<td>#define</td><td><a href="#esp_8h_1a61427a6279173262d67b485f3e83a5d8" class="nameRef">ESP_LIFESPAN</a>&nbsp;&nbsp;&nbsp;<initializer>(3600 * <ref refid="mpr_8h_1a3d29febaeaca5d39a1ad539c1a3b6225" kindref="member" external="mpr.dtags">MPR_TICKS_PER_SEC</ref>)</initializer></td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Default generated content cache lifespan.</td></tr>
 <tr class="apiDef">
@@ -509,7 +509,7 @@ Database provider.
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">edi</td><td>Database handle.</td>
-    <tr><td class="param">name</td><td>Validation name. Select from: <ul><li>boolean &mdash; to validate field data as &quot;true&quot; or &quot;false&quot; </li><li>date &mdash; to validate field data as a date or time. </li><li>format &mdash; to validate field data against a regular expression supplied in the &quot;data&quot; argument </li><li>integer &mdash; to validate field data as an integral value </li><li>number &mdash; to validate field data as a number. It may be an integer or floating point number. </li><li>present &mdash; to validate field data as not null. </li><li>unique &mdash; to validate field data as being unique in the database table. </li></ul></td>
+    <tr><td class="param">name</td><td>Validation name. Select from: <ul><li>boolean <ndash/> to validate field data as &quot;true&quot; or &quot;false&quot; </li><li>date <ndash/> to validate field data as a date or time. </li><li>format <ndash/> to validate field data against a regular expression supplied in the &quot;data&quot; argument </li><li>integer <ndash/> to validate field data as an integral value </li><li>number <ndash/> to validate field data as a number. It may be an integer or floating point number. </li><li>present <ndash/> to validate field data as not null. </li><li>unique <ndash/> to validate field data as being unique in the database table. </li></ul></td>
     <tr><td class="param">tableName</td><td>Database table name.</td>
     <tr><td class="param">columnName</td><td>Database column name.</td>
     <tr><td class="param">data</td><td>Argument data for the validator. For example: the &quot;format&quot; validator requires a regular expression.</td>
@@ -958,7 +958,8 @@ Database provider.
   </div>
   <div class="apiDetail">
 <p>Make a grid.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This call makes a free-standing data grid based on the JSON format content string.</dd></dl>
+\par \b Description:
+This call makes a free-standing data grid based on the JSON format content string
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">content</td><td>JSON format content string. The content should be an array of objects where each object is a set of property names and values.</td>
@@ -1044,7 +1045,7 @@ Database provider.
     <table class="parameters" title="Parameters">
     <tr><td class="param">source</td><td>Database path name. If using the &quot;mdb&quot; provider with the EDI_LITERAL flag, then the source argument can be set to a literal JSON database content string.</td>
     <tr><td class="param">provider</td><td>Database provider. Set to &quot;mdb&quot; for the Memory Database or &quot;sqlite&quot; for the SQLite provider.</td>
-    <tr><td class="param">flags</td><td>Set to: <ul><li>EDI_CREATE &mdash; Create database if not present. </li><li>EDI_AUTO_SAVE &mdash; Auto-save database if modified in memory. This option is only supported by the &quot;mdb&quot; provider. </li><li>EDI_NO_SAVE &mdash; Prevent saving to disk. This option is only supported by the &quot;mdb&quot; provider. </li><li>EDI_LITERAL &mdash; Literal schema in ediOpen source parameter. This option is only supported by the &quot;mdb&quot; provider. </li></ul></td>
+    <tr><td class="param">flags</td><td>Set to: <ul><li>EDI_CREATE <ndash/> Create database if not present. </li><li>EDI_AUTO_SAVE <ndash/> Auto-save database if modified in memory. This option is only supported by the &quot;mdb&quot; provider. </li><li>EDI_NO_SAVE <ndash/> Prevent saving to disk. This option is only supported by the &quot;mdb&quot; provider. </li><li>EDI_LITERAL <ndash/> Literal schema in ediOpen source parameter. This option is only supported by the &quot;mdb&quot; provider. </li></ul></td>
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>If successful, returns an EDI database instance object. Otherwise returns zero.</dd></dl>
     <dl><dt>See Also:</dt><dd>
@@ -1905,7 +1906,7 @@ Base table name for record.
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">kinds</td><td>Space separated list of flash messages types. Typical types are: &quot;error&quot;, &quot;inform&quot;, &quot;warning&quot;.</td>
-    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>retain &mdash; Number of seconds to retain the message. If &lt;= 0, the message is retained until another message is displayed. Default is 0. MOB - this default implies it is displayed for zero seconds </li></ul></td>
+    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>retain <ndash/> Number of seconds to retain the message. If &lt;= 0, the message is retained until another message is displayed. Default is 0. MOB - this default implies it is displayed for zero seconds </li></ul></td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a></dd></dl>
@@ -1938,7 +1939,7 @@ Base table name for record.
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">record</td><td>Record to use by default to supply form field names and values. If NULL, use the default record.</td>
-    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>hideErrors &mdash; Don&apos;t display database record errors. Records retain error diagnostics from the previous failed write. Setting this option will prevent the display of such errors. </li><li>modal &mdash; Make the form a modal dialog. This will block all other HTML controls except the form. </li><li>insecure &mdash; Don&apos;t generate a security token for the form. </li><li>securityToken &mdash; String Override CSRF security token to include when the form is submitted. A default security token will always be generated unless options.insecure is defined to be true. Security tokens are used by ESP to mitigate cross site scripting errors. </li></ul></td>
+    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>hideErrors <ndash/> Don&apos;t display database record errors. Records retain error diagnostics from the previous failed write. Setting this option will prevent the display of such errors. </li><li>modal <ndash/> Make the form a modal dialog. This will block all other HTML controls except the form. </li><li>insecure <ndash/> Don&apos;t generate a security token for the form. </li><li>securityToken <ndash/> String Override CSRF security token to include when the form is submitted. A default security token will always be generated unless options.insecure is defined to be true. Security tokens are used by ESP to mitigate cross site scripting errors. </li></ul></td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a></dd></dl>
@@ -2422,7 +2423,8 @@ for input fields
   </div>
   <div class="apiDetail">
 <p>Make a grid.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This call makes a free-standing data grid based on the JSON format content string. The record is not saved to the database.</dd></dl>
+\par \b Description:
+This call makes a free-standing data grid based on the JSON format content string. The record is not saved to the database
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">content</td><td>JSON format content string. The content should be an array of objects where each object is a set of property names and values.</td>
@@ -3421,7 +3423,7 @@ The tab control can manage a set of panes and will selectively show and hide or 
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>Http connection object.</td>
     <tr><td class="param">text</td><td>Alert text to display.</td>
-    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>period &mdash; Polling period in milliseconds for the client to check the server for status message updates. If this is not specifed, the connection to the server will be kept open. This permits the server to &quot;push&quot; alerts to the console, but will consume a connection at the server for each client. </li></ul></td>
+    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>period <ndash/> Polling period in milliseconds for the client to check the server for status message updates. If this is not specifed, the connection to the server will be kept open. This permits the server to &quot;push&quot; alerts to the console, but will consume a connection at the server for each client. </li></ul></td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga603c454b5dce3691e3ca7b0c1e7d860e" class="ref">espAnchor</a></dd></dl>
@@ -3602,7 +3604,7 @@ The tab control can manage a set of panes and will selectively show and hide or 
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>Http connection object.</td>
     <tr><td class="param">kinds</td><td>Space separated list of flash messages types. Typical types are: &quot;error&quot;, &quot;inform&quot;, &quot;warning&quot;.</td>
-    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>retain &mdash; Number of seconds to retain the message. If &lt;= 0, the message is retained until another message is displayed. Default is 0. MOB - this default implies it is displayed for zero seconds </li></ul></td>
+    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>retain <ndash/> Number of seconds to retain the message. If &lt;= 0, the message is retained until another message is displayed. Default is 0. MOB - this default implies it is displayed for zero seconds </li></ul></td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a>, <a href="#group___esp_control_1ga603c454b5dce3691e3ca7b0c1e7d860e" class="ref">espAnchor</a></dd></dl>
@@ -3622,7 +3624,7 @@ The tab control can manage a set of panes and will selectively show and hide or 
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>Http connection object.</td>
     <tr><td class="param">record</td><td>Record to use by default to supply form field names and values.</td>
-    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>hideErrors &mdash; Don&apos;t display database record errors. Records retain error diagnostics from the previous failed write. Setting this option will prevent the display of such errors. </li><li>modal &mdash; Make the form a modal dialog. This will block all other HTML controls except the form. </li><li>nosecurity &mdash; Don&apos;t generate a security token for the form. </li><li>securityToken &mdash; String Override CSRF security token to include when the form is submitted. A default security token will always be generated unless options.nosecurity is defined to be true. Security tokens are used by ESP to mitigate cross-site scripting errors. </li></ul></td>
+    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>hideErrors <ndash/> Don&apos;t display database record errors. Records retain error diagnostics from the previous failed write. Setting this option will prevent the display of such errors. </li><li>modal <ndash/> Make the form a modal dialog. This will block all other HTML controls except the form. </li><li>nosecurity <ndash/> Don&apos;t generate a security token for the form. </li><li>securityToken <ndash/> String Override CSRF security token to include when the form is submitted. A default security token will always be generated unless options.nosecurity is defined to be true. Security tokens are used by ESP to mitigate cross-site scripting errors. </li></ul></td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a>, <a href="#group___esp_control_1ga603c454b5dce3691e3ca7b0c1e7d860e" class="ref">espAnchor</a></dd></dl>
@@ -3782,7 +3784,7 @@ This creates a radio button suitable for use within an input form
     <tr><td class="param">conn</td><td>Http connection object.</td>
     <tr><td class="param">on</td><td>URI to invoke when turning &quot;on&quot; refresh.</td>
     <tr><td class="param">off</td><td>URI to invoke when turning &quot;off&quot; refresh.</td>
-    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>minified &mdash; Set to &quot;true&quot; to select a minified (compressed) version of the script. </li></ul></td>
+    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>minified <ndash/> Set to &quot;true&quot; to select a minified (compressed) version of the script. </li></ul></td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a>, <a href="#group___esp_control_1ga603c454b5dce3691e3ca7b0c1e7d860e" class="ref">espAnchor</a></dd></dl>
@@ -4764,7 +4766,8 @@ Path to view.
   </div>
   <div class="apiDetail">
 <p>Make a grid.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This call makes a free-standing data grid based on the JSON format content string. The record is not saved to the database.</dd></dl>
+\par \b Description:
+This call makes a free-standing data grid based on the JSON format content string. The record is not saved to the database
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">content</td><td>JSON format content string. The content should be an array of objects where each object is a set of property names and values.</td>

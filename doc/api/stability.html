@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.1.0 Documentation</title>
+    <title>Embedthis Appweb 4.2.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.1.0</div>
+                <div class="version">Embedthis Appweb 4.2.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -60,7 +60,10 @@
             <h1>Interface Stability Classification</h1>
             <p>The programming interfaces and data structures are classified with a stability class. These
             classifications help developers understand which interfaces may change in future releases and may
-            need&nbsp; to be wrapped within their applications.</p>
+            need to be wrapped within their applications.</p>
+            <p>When the classification is applied to an API, it applies to the complete function signature. When 
+            applied to a data structure or typedef, it applies to the structure name and not the internal structure fields.
+            All structure fields are regarded as internal unless explicitly stated otherwise.</p>
             <p>The version numbering for Embedthis products follows the scheme MAJOR.MINOR.PATCH. For example 2.1.3 is
             major version 2, minor version 1 and patch version 3.</p>
             <table title="classification">
@@ -71,7 +74,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                <tr>
                     <td>
                         <p>Mature</p>
                     </td>
@@ -95,7 +98,7 @@
                     </td>
                     <td>
                         <p>May change between major or minor releases. May not change between patch releases (e.g.
-                        2.0.0 to 2.0.1) release.<br /></p>
+                        2.0.0 to 2.0.1) release.</p>
                     </td>
                 </tr>
                 <tr>
@@ -108,7 +111,16 @@
                     </td>
                     <td>
                         <p>For use by legacy applications only. Customers are advised that these interfaces may be
-                        removed in the next major or minor release.<br /></p>
+                        removed in the next major or minor release.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p>Internal</p>
+                    </td>
+                    <td>
+                        <p>Internal API and may change at any time. Customers are strongly advised not to use these
+                        APIs.</p>
                     </td>
                 </tr>
                 </tbody>

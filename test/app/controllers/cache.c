@@ -23,7 +23,6 @@ static void big() {
     for (i = 0; i < 1000; i++) {
         render("Line: %05d %s", i, "aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>\r\n");
     }
-    // render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
 }
 
 static void huge() { 

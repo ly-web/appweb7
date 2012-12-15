@@ -48,6 +48,9 @@ static void openEjs(HttpQueue *q)
         httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
 
     } else if (!conn->ejs) {
+        /*
+            TODO OPT - check this pool is usable over all routes
+         */
         if (!route->context) {
             if (route->script == 0 && route->scriptPath == 0) {
                 route->script = sclone(startup);
@@ -55,12 +58,14 @@ static void openEjs(HttpQueue *q)
             if (route->workers < 0) {
                 route->workers = mprGetMaxWorkers();
             }
-            route->context = ejsCreatePool(route->workers, "require ejs.web", route->script, route->scriptPath, route->dir);
+            route->context = ejsCreatePool(route->workers, "require ejs.web", route->script, route->scriptPath,
+                route->home, route->dir);
             mprLog(5, "ejs: Create ejs pool for route %s", route->name);
         }
         pool = conn->pool = route->context;
+
         /*
-            Allocate an EJS VM engine to service the request
+            Allocate a VM engine to service the request
          */
         if ((ejs = ejsAllocPoolVM(pool, EJS_FLAG_HOSTED)) == 0) {
             httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Cannot create Ejs interpreter");
@@ -74,6 +79,11 @@ static void openEjs(HttpQueue *q)
             the Http pipeline needed them (first time). The loading of ejs.web above will have fully initialized them.
          */
         httpAssignQueue(q, conn->http->ejsHandler, HTTP_QUEUE_TX);
+
+        /*
+            Temporary stats. Store the pool structure.
+         */
+        conn->http->activeVMs = pool->count + (pool->template ? 1 : 0);
     }
 }
 

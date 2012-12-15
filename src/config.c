@@ -409,6 +409,7 @@ static int authStoreDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     AuthRealm name
+    DEPRECATED
  */
 static int authRealmDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -524,13 +525,13 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
 
         } else if (smatch(option, "client")) {
             flags |= HTTP_CACHE_CLIENT;
-            if (snumber(ovalue)) {
+            if (ovalue) {
                 clientLifespan = getticks(ovalue);
             }
 
         } else if (smatch(option, "server")) {
             flags |= HTTP_CACHE_SERVER;
-            if (snumber(ovalue)) {
+            if (ovalue) {
                 serverLifespan = getticks(ovalue);
             }
 
@@ -696,7 +697,7 @@ static int directoryDirective(MaState *state, cchar *key, cchar *value)
         The router and Route directives can't emulate this. The user needs to migrate such configurations to apply
         Auth directives to route URIs instead.
      */
-    mprError("The <Directory> directive is deprecated. Use <Route> with a DocumentRoot instead.");
+    mprError("The <Directory> directive is deprecated. Use <Route> with a Documents directive instead.");
     return MPR_ERR_BAD_SYNTAX;
 }
 
@@ -712,9 +713,10 @@ static int directoryIndexDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    Documents path
     DocumentRoot path
  */
-static int documentRootDirective(MaState *state, cchar *key, cchar *value)
+static int documentsDirective(MaState *state, cchar *key, cchar *value)
 {
     cchar   *path;
     if (!maTokenize(state, value, "%T", &path)) {
@@ -872,6 +874,26 @@ static int headerDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    Home path
+ */
+static int homeDirective(MaState *state, cchar *key, cchar *value)
+{
+    char    *path;
+
+    if (!maTokenize(state, value, "%T", &path)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+#if UNUSED
+    maSetServerHome(state->server, path);
+    httpSetHostHome(state->host, path);
+#endif
+    httpSetRouteHome(state->route, path);
+    mprLog(MPR_CONFIG, "Server Root \"%s\"", path);
+    return 0;
+}
+
+
+/*
     <Include pattern>
  */
 static int includeDirective(MaState *state, cchar *key, cchar *value)
@@ -894,7 +916,7 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
         /*
             Convert glob style to regexp
          */
-        path = mprGetPathDir(mprJoinPath(state->server->home, value));
+        path = mprGetPathDir(mprJoinPath(state->route->home, value));
         pattern = mprGetPathBase(value);
         pattern = sreplace(pattern, ".", "\\.");
         pattern = sreplace(pattern, "*", ".*");
@@ -993,6 +1015,18 @@ static int limitClientsDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    LimitFiles count
+ */
+static int limitFilesDirective(MaState *state, cchar *key, cchar *value)
+{
+#if BIT_UNIX_LIKE
+    mprSetFilesLimit(getint(value));
+#endif
+    return 0;
+}
+
+
+/*
     LimitMemory size
 
     Redline set to 85%
@@ -1025,6 +1059,17 @@ static int limitRequestsDirective(MaState *state, cchar *key, cchar *value)
 {
     state->limits = httpGraduateLimits(state->route, state->server->limits);
     state->limits->requestMax = getint(value);
+    return 0;
+}
+
+
+/*
+    LimitRequestsPerClient count
+ */
+static int limitRequestsPerClientDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->requestsPerClientMax = getint(value);
     return 0;
 }
 
@@ -1125,11 +1170,11 @@ static int limitUploadDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Listen ip:port
-    Listen ip
-    Listen port
+    Listen ip:port      Listens only on the specified interface
+    Listen ip           Listens only on the specified interface with the default port (80, 443)
+    Listen port         Listens on both IPv4 and IPv6
 
-    Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[]" if appending a port.
+    Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[::]" if appending a port.
  */
 static int listenDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1146,6 +1191,13 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     mprAddItem(state->server->endpoints, endpoint);
     if (!state->host->defaultEndpoint) {
         httpSetHostDefaultEndpoint(state->host, endpoint);
+    }
+    /*
+        Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
+        This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
+     */
+    if (!schr(value, ':') && !mprHasDualNetworkStack()) {
+        mprAddItem(state->server->endpoints, httpCreateEndpoint("::", port, NULL));
     }
     return 0;
 }
@@ -1526,6 +1578,16 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    RequestParseTimeout secs
+ */
+static int requestParseTimeoutDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits->requestParseTimeout = getticks(value);
+    return 0;
+}
+
+
+/*
     RequestTimeout secs
  */
 static int requestTimeoutDirective(MaState *state, cchar *key, cchar *value)
@@ -1678,6 +1740,7 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if UNUSED
 /*
     ServerRoot path
  */
@@ -1688,12 +1751,16 @@ static int serverRootDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%T", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
+#if UNUSED
     maSetServerHome(state->server, path);
-    httpSetHostHome(state->host, path);
+#endif
+    httpSetHostRoot(state->host, path);
+    httpSetRouteHome(state->route, path);
     httpSetRouteVar(state->route, "SERVER_ROOT", path);
     mprLog(MPR_CONFIG, "Server Root \"%s\"", path);
     return 0;
 }
+#endif
 
 
 /*
@@ -2049,9 +2116,12 @@ PUBLIC bool maValidateServer(MaServer *server)
         Ensure the host home directory is set and the file handler is defined
      */
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
-        if (host->home == 0) {
-            httpSetHostHome(host, defaultHost->home);
+#if UNUSED
+        //  MOB - remove
+        if (host->root == 0) {
+            httpSetHostRoot(host, defaultHost->home);
         }
+#endif
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(route->extensions, "")) {
                 mprError("Route %s in host %s is missing a catch-all handler\n"
@@ -2147,7 +2217,7 @@ static bool conditionalDefinition(MaState *state, cchar *key)
         %N - Number. Parses numbers in base 10.
         %S - String. Removes quotes.
         %T - Template String. Removes quotes and expand ${PathVars}
-        %P - Path string. Removes quotes and expands ${PathVars}. Resolved relative to host->dir (ServerRoot).
+        %P - Path string. Removes quotes and expands ${PathVars}. Resolved relative to route->home.
         %W - Parse words into a list
         %! - Optional negate. Set value to HTTP_ROUTE_NOT present, otherwise zero.
  */
@@ -2478,7 +2548,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "DefaultLanguage", defaultLanguageDirective);
     maAddDirective(appweb, "Deny", denyDirective);
     maAddDirective(appweb, "DirectoryIndex", directoryIndexDirective);
-    maAddDirective(appweb, "DocumentRoot", documentRootDirective);
+    maAddDirective(appweb, "Documents", documentsDirective);
     maAddDirective(appweb, "<Directory", directoryDirective);
     maAddDirective(appweb, "</Directory", closeDirective);
     maAddDirective(appweb, "<else", elseDirective);
@@ -2487,6 +2557,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "ExitTimeout", exitTimeoutDirective);
     maAddDirective(appweb, "GroupAccount", groupAccountDirective);
     maAddDirective(appweb, "Header", headerDirective);
+    maAddDirective(appweb, "Home", homeDirective);
     maAddDirective(appweb, "<If", ifDirective);
     maAddDirective(appweb, "</If", closeDirective);
     maAddDirective(appweb, "InactivityTimeout", inactivityTimeoutDirective);
@@ -2497,10 +2568,12 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitCacheItem", limitCacheItemDirective);
     maAddDirective(appweb, "LimitChunk", limitChunkDirective);
     maAddDirective(appweb, "LimitClients", limitClientsDirective);
+    maAddDirective(appweb, "LimitFiles", limitFilesDirective);
     maAddDirective(appweb, "LimitKeepAlive", limitKeepAliveDirective);
     maAddDirective(appweb, "LimitMemory", limitMemoryDirective);
     maAddDirective(appweb, "LimitProcesses", limitProcessesDirective);
     maAddDirective(appweb, "LimitRequests", limitRequestsDirective);
+    maAddDirective(appweb, "LimitRequestsPerClient", limitRequestsPerClientDirective);
     maAddDirective(appweb, "LimitRequestBody", limitRequestBodyDirective);
     maAddDirective(appweb, "LimitRequestForm", limitRequestFormDirective);
     maAddDirective(appweb, "LimitRequestHeaderLines", limitRequestHeaderLinesDirective);
@@ -2528,6 +2601,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Protocol", protocolDirective);
     maAddDirective(appweb, "PutMethod", putMethodDirective);
     maAddDirective(appweb, "Redirect", redirectDirective);
+    maAddDirective(appweb, "RequestParseTimeout", requestParseTimeoutDirective);
     maAddDirective(appweb, "RequestTimeout", requestTimeoutDirective);
     maAddDirective(appweb, "Require", requireDirective);
     maAddDirective(appweb, "Reset", resetDirective);
@@ -2536,7 +2610,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "<Route", routeDirective);
     maAddDirective(appweb, "</Route", closeDirective);
     maAddDirective(appweb, "ServerName", serverNameDirective);
-    maAddDirective(appweb, "ServerRoot", serverRootDirective);
     maAddDirective(appweb, "SessionTimeout", sessionTimeoutDirective);
     maAddDirective(appweb, "Set", setDirective);
     maAddDirective(appweb, "SetConnector", setConnectorDirective);
@@ -2580,6 +2653,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "AuthUserFile", authUserFileDirective);
     /* Use AuthRealm */
     maAddDirective(appweb, "AuthName", authRealmDirective);
+    /* Use Documents */
+    maAddDirective(appweb, "DocumentRoot", documentsDirective);
     /* Use LimitKeepAlive */
     maAddDirective(appweb, "MaxKeepAliveRequests", limitKeepAliveDirective);
     /* Use LimitBuffer */
@@ -2603,7 +2678,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     /* Use <Route> */
     maAddDirective(appweb, "<Location", routeDirective);
     maAddDirective(appweb, "</Location", closeDirective);
-    
+    /* Use Home */
+    maAddDirective(appweb, "ServerRoot", homeDirective);
 #endif
 
     return 0;

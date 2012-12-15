@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.1.0 Documentation</title>
+    <title>Embedthis Appweb 4.2.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.1.0</div>
+                <div class="version">Embedthis Appweb 4.2.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -73,9 +73,129 @@
             <p>Even the best application or HTTP server can experience some security vulnerabilities that are
             discovered after being deployed in the field. It is highly recommended that you stay up to date with the
             latest version of Appweb.</p>
-            <p><a href="http://www.embedthis.com/">Embedthis</a> offers a Security Enhancement Service as part of an
-            Appweb commercial license that will proactively notify you of any security flaws and will expedite fixes or
-            workarounds to minimize the vulnerability.</p><a id="account"></a>
+            <p><a href="http://www.embedthis.com/">Embedthis</a> provides security protoection 
+            as part of the Appweb commercial license that will proactively notify you of any security flaws
+            and will expedite fixes or workarounds to minimize the vulnerability.</p>
+            
+            <a id="sandBoxing"></a>
+            <h2 class="section">Sandboxing</h2>
+            <p>Sandboxing is the term applied to running Appweb in a confined environment. When embedding a HTTP server,
+            the profile of client access is often well known, and the profile of malicious attacks are well outside this
+            profile. The profile includes the rate of accesses, the length of URLs and the size of pages returned to the
+            user.</p>
+            <p>Appweb has a set of configuration file directives that allow you to define a sandbox which specifies how
+            Appweb must be used for a request to be serviced. By using well defined sandbox directives, you can help
+            ensure that your application will not be compromised by malicious requests. You should customize the
+            sandbox limits to use minimum values and thus provide the most protection.</p>
+            <h3>Security Limit Directives</h3>
+            <p>The Appweb security limits can be used to effectively block some denial of service attacks. 
+            Setting the LimitRequestsPerClient to a low value can restrict the ability of a malicious client to monopolize
+            the server. One attack method for denial of service attacks is to initiate requests, but not conclude the
+            request headers. The server is then forced to wait for the client to complete the request before it can
+            act. However, setting the RequestParseTimeout directive to a low value will abort such requests and prevent
+            such attacks.</p>
+            <p>The important security limit directives are:</p>
+            <table title="sandbox">
+                <tbody>
+                    <tr>
+                        <td class="pivot">InactivityTimeout</td>
+                        <td>Maximum request and connection inactivity duration. This can be defined per route, so if you
+                            have a long running request, create a dedicated route for that request.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitClients</td>
+                        <td>Maximum size of simultaneous clients</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitRequests</td>
+                        <td>Maximum number of simultaneous requests</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitRequestsPerClient</td>
+                        <td>Maximum number of simultaneous requests from a single client IP</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">RequestParseTimeout</td>
+                        <td>Maximum duration to parse the request headers. This should be set very short. 
+                            Typically a browser will send all the request headers in one network packet. Recommended
+                            value is 5 secs.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">RequestTimeout</td>
+                        <td>Maximum request duration. Set this to the maximum time a request can take. This can
+                            be defined per route, so if you have a long running request, create a dedicated
+                            route and RequestTimeout for it.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3>Sandbox Limit Directives</h3>
+            <p>The additional sandbox limit directives are:</p>
+            <table title="sandbox">
+                <tbody>
+                    <tr>
+                        <td class="pivot">LimitBuffer</td>
+                        <td>Pipeline stage buffer size</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitCache</td>
+                        <td>Maximum size of the response cache</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitCacheItem</td>
+                        <td>Maximum size of a single item in the response cache</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitChunk</td>
+                        <td>Maximum size of chunks when using Transfer Chunk Encoding</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitKeepAlive</td>
+                        <td>Maximum number of requests to serve using a single TCP/IP connection</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitMemory</td>
+                        <td>Maximum memory the server can allocate</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitRequestBody</td>
+                        <td>Maximum size of the incoming request body</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitRequestForm</td>
+                        <td>Maximum size of request form data (POST data)</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitRequestHeader</td>
+                        <td>Maximum size of the request header</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitRequestHeaderLines</td>
+                        <td>Maximum number of header lines in the request</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitResponseBody</td>
+                        <td>Maximum size of a response</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitUri</td>
+                        <td>Maximum size of a URI</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">StartThreads</td>
+                        <td>Number of threads to pre-allocate in the thread pool</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitUpload</td>
+                        <td>Maximum size of a file upload request</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">LimitWorkers</td>
+                        <td>Maximum number of worker threads to service requests</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>See the <a href="dir/sandbox.html">Sandbox Directives</a> for further details.</p>
+            <a id="account"></a>
             <h2 class="section">Appweb User Account</h2>
             <p>It is important that you run Appweb with the lowest system privilege that will get the job done. If any
             application is compromised, including Appweb, then the system will be safest if the compromised application
@@ -117,9 +237,9 @@
             <p>Configuration and log files used by the Appweb server should always be outside all directories
             containing served pages or scripts. The directory containing the log files must be writable by the Appweb
             user account.</p>
-            <h3>ServerRoot Permissions</h3>
-            <p>The root directory for Appweb is called the ServerRoot directory and is defined by the ServerRoot
-            directive in the configuration file. The ServerRoot directory, and the logs and lib directory below it,
+            <h3>Home Directory Permissions</h3>
+            <p>The root directory for Appweb is called the Home directory and is defined by the Home
+            directive in the configuration file. The Home directory, and the logs and lib directory below it,
             should be owned by <b>root</b> (or admin), and should be in the group <b>root</b> (or administrators). They
             should only be writable by this specific user and group.</p>
             <p>For Linux, these commands will ensure the privileges are correctly set up:</p>
@@ -128,7 +248,8 @@ cd    /etc/appweb
 chown root . lib logs
 chgrp root . lib logs
 chmod 755  . lib logs
-</pre><a id="dynamicContent"></a>
+</pre>
+            <a id="dynamicContent"></a>
             <h2 class="section">Dynamic Content</h2>
             <p>Appweb supports several Web Frameworks for creating dynamic content. These frameworks sometimes require
             special security considerations because they are executing code or scripts to render the content.</p>
@@ -201,98 +322,17 @@ AddType application/x-httpd-php .web
             exploits.</p>
             <a id="ssl"></a>
             <h2 class="section">SSL Servers</h2>
-            <p>If you configure a SSL virtual server, remember to define a separate DocumentRoot if you want to only
+            <p>If you configure a SSL virtual server, remember to define a separate Documents directory if you want to only
             serve private content to SSL users. Otherwise those pages will also be visible via the default
             server.</p><a id="authentication"></a>
             <h2 class="section">Authentication</h2>
             <p>It is highly recommended that you use only <a href="authentication.html#digestAuthentication">Digest</a>
             authentication and not Basic authentication. As implemented in Appweb, digest authentication provides many
             safeguards against known exploits including; man-in-the-middle attacks, client spoofing, and replay
-            attacks.</p><a id="sandBoxing"></a>
-            <h2 class="section">Sandboxing</h2>
-            <p>Sandboxing is the term applied to running Appweb in a confined environment. When embedding a HTTP server
-            in an application, the profile of client access is often well known. This profile includes the rate of
-            accesses, the length of URLs and the size of pages returned to the user.</p>
-            <p>Appweb has a set of configuration file directives that allow you to define a sandbox which specifies how
-            Appweb must be used for a request to be serviced. By using well defined sandbox directives, you can help
-            ensure that your application will not be compromised by malicious requests. By default, Appweb has a
-            relaxed set of defaults that will permit a wide range of requests.</p>
-            <h3>Sandbox Directives</h3>
-            <p>The sandbox directives are:</p>
-            <table title="sandbox">
-                <tbody>
-                    <tr>
-                        <td class="pivot">LimitBuffer</td>
-                        <td>Pipeline stage buffer size</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitCache</td>
-                        <td>Maximum size of the response cache</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitCacheItem</td>
-                        <td>Maximum size of a single item in the response cache</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitChunk</td>
-                        <td>Maximum size of chunks when using Transfer Chunk Encoding</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitClients</td>
-                        <td>Maximum size of simultaneous clients</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitKeepAlive</td>
-                        <td>Maximum number of requests to serve using a single TCP/IP connection</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitMemory</td>
-                        <td>Maximum memory the server can allocate</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitRequestBody</td>
-                        <td>Maximum size of the incoming request body</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitRequestForm</td>
-                        <td>Maximum size of request form data (POST data)</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitRequestHeader</td>
-                        <td>Maximum size of the request header</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitRequestHeaderLines</td>
-                        <td>Maximum number of header lines in the request</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitRequests</td>
-                        <td>Maximum number of simultaneous requests</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitResponseBody</td>
-                        <td>Maximum size of a response</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitUpload</td>
-                        <td>Maximum size of a file upload request</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitUri</td>
-                        <td>Maximum size of a URI</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">StartThreads</td>
-                        <td>Number of threads to pre-allocate in the thread pool</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">LimitWorkers</td>
-                        <td>Maximum number of worker threads to service requests</td>
-                    </tr>
-                </tbody>
-            </table>
-            <p>See the <a href="dir/sandbox.html">Sandbox Directives</a> and <a href="dir/perf.html">Performance
-            Directives</a> for further details.</p><a id="logFiles"></a>
+            attacks.</p>
+            
+            
+            <a id="logFiles"></a>
             <h2 class="section">Log Files</h2>
             <p>Appweb will log satisfied requests to the access log (usually logs/access.log) and errors to the error
             log (usually logs/error.log). It is recommended that you regularly review these logs for suspicious

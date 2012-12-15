@@ -521,6 +521,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
 
 /*
     Get a security token. This will use and existing token or create if not present. It will store in the session store.
+    Security tokens are used to prevent session capture and replay.
  */
 PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
 {
@@ -541,6 +542,8 @@ PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
 
 /*
     Generate a security token
+    Security tokens are used to prevent session capture and replay.
+    Note: the HttpSession API prevents session hijacking by pairing with the client IP
  */
 PUBLIC void espSecurityToken(HttpConn *conn) 
 {

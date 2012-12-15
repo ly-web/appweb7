@@ -55,8 +55,11 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
 
         install('src/server/mime.types', p.config)
         install('src/server/php.ini', p.config)
-        install('src/server/appweb.conf', p.config)
-
+        if (Path('src/server/appweb.local').exists) {
+            install('src/server/appweb.local', p.config.join('appweb.conf'))
+        } else {
+            install('src/server/appweb.conf', p.config)
+        }
         let conf = Path(contents.portable + '' + bit.prefixes.config.removeDrive().portable + '/appweb.conf')
         let user = getWebUser(), group = getWebUser()
         if (bit.platform.os == 'windows') {
@@ -67,12 +70,11 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
                 '--port', settings.http_port, '--ssl', settings.ssl_port, '--user', user, '--group', group,
                 '--cache', prefixes.spool.join('cache'), '--modules', prefixes.bin, conf])
         }
-
         bit.dir.cfg.join('appweb.conf.bak').remove()
-        p.spool.join('cache').makeDir()
+        p.spool.join('cache').makeDir({user: user, group: group})
         let tmp = p.log.join('error.log')
         tmp.write()
-        tmp.setAttributes({permissions: 0755, uid: user, gid: group})
+        tmp.setAttributes({permissions: 0755, user: user, group: group})
 
     }
     install(bit.dir.bin + '/*', p.bin, {
@@ -102,6 +104,7 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
         }
     }
     if (bit.packs.ejscript.enable) {
+        p.config.join('ejsrc').write('{ dirs: { cache: "' + bit.prefixes.spool.join('cache') + '" } }\n')
         install(bit.dir.bin.join('ejs*.mod'), p.bin);
     }
     if (!bit.cross) {
@@ -186,7 +189,7 @@ public function packageComboFiles() {
     install('projects/appweb-' + bit.platform.os + '-debug-bit.h', pkg.join('src/deps/appweb/bit.h'))
     install('package/start-flat.bit', pkg.join('src/deps/appweb/start.bit'))
     install('package/Makefile-flat', pkg.join('src/deps/appweb/Makefile'))
-    install(['src/deps/mpr/mpr.h', 'src/deps/http/http.h', 'src/appweb.h', 'src/server/appwebMonitor.h',
+    install(['src/deps/mpr/mpr.h', 'src/deps/http/http.h', 'src/appweb.h', 'src/server/windows/appwebMonitor.h',
         'src/esp/edi.h', 'src/esp/mdb.h', 'src/esp/esp.h', 'src/deps/pcre/pcre.h'], 
         pkg.join('src/deps/appweb/appweb.h'), {
         cat: true,
@@ -243,7 +246,11 @@ public function installBinary() {
             Cmd([bit.prefixes.bin.join('appwebMonitor' + bit.globals.EXE)], {detach: true})
         }
     }
-    bit.dir.pkg.join('bin').removeAll()
+    if (!bit.options.keep) {
+        bit.dir.pkg.join('bin').removeAll()
+    } else {
+        trace('Keep', bit.dir.pkg.join('bin'))
+    }
     trace('Complete', bit.settings.title + ' installed')
 }
 

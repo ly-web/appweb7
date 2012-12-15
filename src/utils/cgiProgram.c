@@ -25,6 +25,13 @@
 #ifndef _VSB_CONFIG_FILE
     #define _VSB_CONFIG_FILE "vsbConfig.h"
 #endif
+#if _WIN32 || WINCE
+/* Work-around to allow the windows 7.* SDK to be used with VS 2012 */
+#if _MSC_VER >= 1700
+    #define SAL_SUPP_H
+    #define SPECSTRING_SUPP_H
+#endif
+#endif
 
 #include <errno.h>
 #include <ctype.h>

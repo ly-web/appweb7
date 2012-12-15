@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.1.0 Documentation</title>
+    <title>Embedthis Appweb 4.2.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.1.0</div>
+                <div class="version">Embedthis Appweb 4.2.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -38,7 +38,6 @@
             <ul>
                 <li><a href="#allow">Allow</a></li>
                 <li><a href="#authDigestQop">AuthDigestQop</a></li>
-                <li><a href="#authRealm">AuthRealm</a></li>
                 <li><a href="#authStore">AuthStore</a></li>
                 <li><a href="#authType">AuthType</a></li>
                 <li><a href="#deny">Deny</a></li>
@@ -80,7 +79,7 @@
                         <td>
                             <pre class="paper">
 &lt;Directory /var/www/acme&gt;
-    Allow from www.acme.com
+    Allow from www.example.com
 &lt;/Directory&gt;
 </pre>
                         </td>
@@ -131,6 +130,7 @@
                 </tbody>
             </table>
             
+            <!-- DEPRECATED
             <a id="authRealm"></a>
             <h2>AuthRealm</h2>
             <table class="directive" title="directive">
@@ -169,6 +169,7 @@
                     </tr>
                 </tbody>
             </table>
+            -->
             
             <a id="authStore"></a>
             <h2>AuthStore</h2>
@@ -222,7 +223,8 @@
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>AuthType [Basic | Digest | None]</td>
+                        <td>AuthType [basic | digest | none] [realm]<br/>
+                        AuthType form realm login-page [login-service logout-service logged-in-page]</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -230,24 +232,35 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>AuthType Digest<br />
-                        AuthRealm "example.com"<br />
-                        Require user john</td>
+                        <td>AuthType basic example.com<br />
+                            AuthType form example.com https:///admin/login.esp -<br/>
+                                &nbsp; &nbsp; https:///login /logout /home.html<br/>
+                            Require ability modify</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The AuthType directive specifies the style of authorization to perform when validating
-                            users. AuthType is inherited from outer hosts and blocks in the config file.</p>
+                            users. If a route block does not define, the AuthType is inherited from outer routes in the config file.</p>
+                            <p>All forms of the AuthType directive specify an authentication realm.  The realm is included as an ingredient
+                            when encrypting passwords via the <a href="../../../../man/authpass.html">authpass</a> program.
+                            For basic and digest authentication, this realm is also displayed by the browser when the user logs in. </p>
+                            <p>The "AuthType form" authentication directive has extra arguments after the realm. These are
+                            four URIs to control the login and logout sequence. These are:
+                            <ol>
+                            <li>login-page &mdash; Unauthenticated users are redirected to this URI to log in</li>
+                            <li>login-service-page &mdash; URI to receive the login POST request from the client</li>
+                            <li>logout-service-page &mdash; URI to receive the logout request from the client</li>
+                            <li>logged-in-page &mdash; Authenticated users are redirected to this URI after logging in</li>
+                            </ol>
                         </td>
                     </tr>
                     <tr>
                         <td class="security">Security</td>
                         <td>
                             <p>Basic authentication is not very secure. It will transmit user credentials in a
-                            format that is very easy for malicious individuals to exploit. Unless you are also using
-                            SSL, basic authentication is not recommended. If at all possible, use SSL/TLS to
-                            secure communications of username and password information.</p>
+                            format that is very easy for malicious individuals to exploit. If using basic authentication, 
+                            you should use SSL to encrypt the transmission of the password.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -274,7 +287,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>Deny www.acme.com</td>
+                        <td>Deny www.example.com</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -305,7 +318,7 @@
                         <td class="pivot">Example</td>
                         <td>Order Deny,Allow<br />
                         Deny from all<br />
-                        Allow from www.acme.com</td>
+                        Allow from www.example.com</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -322,11 +335,11 @@
                             the allow directive or requests that match the deny directive will be denied. Access is
                             denied by default if either the deny or allow directive is omitted.</p>
                             <h3>Examples</h3>
-                            <p>To only allow access for a specified domain, www.acme.com:</p>
+                            <p>To only allow access for a specified domain, www.example.com:</p>
                             <pre>
 Order Deny,Allow
 Deny from All
-Allow from www.acme.com
+Allow from www.example.com
 </pre>
                             <p>To deny access to a specific domain: www.myCompetitor.com</p>
                             <pre>

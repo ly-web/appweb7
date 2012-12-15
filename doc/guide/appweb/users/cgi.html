@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.1.0 Documentation</title>
+    <title>Embedthis Appweb 4.2.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.1.0</div>
+                <div class="version">Embedthis Appweb 4.2.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -94,12 +94,12 @@
             <p>Appweb nominates a directory as a CGI directory via the <a href=
             "dir/server.html#scriptAlias">ScriptAlias</a> configuration file directive. For example:</p>
 <pre>
-ScriptAlias /cgi-bin/ $SERVER_ROOT/cgi-bin/ 
+ScriptAlias /cgi-bin/ $ROUTE_HOME/cgi-bin/ 
 </pre>
             <p>The ScriptAlias directive above is short hand for:
 <pre>
 &lt;Route /cgi-bin/&gt;
-    DocumentRoot $SERVER_ROOT/cgi-bin/
+    Documents $ROUTE_HOME/cgi-bin/
     SetHandler cgiHandler
     Target run
 &lt;/Route&gt;
@@ -267,7 +267,7 @@ Action application/x-appweb-perl /usr/bin/perl
                     </tr>
                     <tr>
                         <td>DOCUMENT_ROOT</td>
-                        <td>Set to the path location of web documents. Defined by the DocumentRoot directive in the
+                        <td>Set to the path location of web documents. Defined by the Documents directive in the
                         Appweb configuration file.</td>
                     </tr>
                     <tr>
@@ -380,7 +380,7 @@ http://hostname/cgi-bin/myScript/products/pricelists.pl?id=23&amp;payment=credit
                     </tr>
                     <tr>
                         <td>PATH_TRANSLATED</td>
-                        <td>/var/appweb/web/products/pricelists # where /var/appweb/web is the DocumentRoot</td>
+                        <td>/var/appweb/web/products/pricelists # where /var/appweb/web is the Documents directory</td>
                     </tr>
                     <tr>
                         <td>QUERY_STRING</td>

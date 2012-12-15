@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.1.1 Documentation</title>
+    <title>Embedthis Appweb 4.2.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.1.1</div>
+                <div class="version">Embedthis Appweb 4.2.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -35,8 +35,7 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="#r4.1.1">Release 4.1.1</a></li>
-                <li><a href="#r4.0.0">Release 4.0.0</a></li>
+                <li><a href="#r4.2.0">Release 4.2.0</a></li>
                 <li><a href="#r3.4.1">Release 3.4.1</a></li>
                 <li><a href="#r2.4.4">Release 2.4.4</a></li>
             </ul>
@@ -60,12 +59,75 @@
         <div class="contentLeft">
             <h1>Appweb Change Log</h1>
             <p>Brief Appweb change log of the the major features and changes for each release.</p>
-
             <h4>Note to security researchers:</h4>
             <p>Please do not mine this list and create security advisories.
             Please see the <a href="http://github.com/embedthis/appweb-4/issues">Appweb Issue Database</a> 
             for the official product issue list and for comprehensive CVE dispositions.</p>
         
+            <a id="r4.2.0"></a>
+            <h2 class="section">Changes in 4.2.0</h2>
+            <h3>Minor Features</h3>
+            <ul>
+                <li>Add LimitParseTimeout directive to abort requests that start without concluding the HTTP headers.
+                    This optimizes the denial of service protections offered by Appweb. This was not a security
+                    flaw, as other limit and timeout directives would have protected the server regardless.
+                    <a href="https://github.com/embedthis/appweb-4/issues/73">[issue 73].</a></li>
+                <li>Add LimitRequestsPerClient directive to limit the number of requests that can be issued by a single
+                client IP address. This optimizes the denial of service protections offered by Appweb. This was not 
+                a security flaw, as other limit and timeout directives would have protected the server regardless.
+                    <a href="https://github.com/embedthis/appweb-4/issues/74">[issue 74].</a></li>
+                <li>Add Home directive to permit routes to store their own root directory for configuration files
+                    <a href="https://github.com/embedthis/appweb-4/issues/75">[issue 75].</a></li>
+                <li>Listen to both IPv4 and IPv6 in response to a single "Listen port" directive
+                    <a href="https://github.com/embedthis/appweb-4/issues/76">[issue 76].</a></li>
+                <li>Enhance performance and worker thread utilization by optimizing lock contention and GC yielding
+                    <a href="https://github.com/embedthis/appweb-4/issues/55">[issue 55].</a></li>
+                </li>
+            </ul>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Ensure the handler start() callback is always invoked before any incoming() data.
+                    <a href="https://github.com/embedthis/appweb-4/issues/77">[issue 77].</a></li>
+                <li>CGI unit test scripts to use ejs instead of /bin/sh so they can run on windows.
+                    <a href="https://github.com/embedthis/appweb-4/issues/78">[issue 78].</a></li>
+                <li>Timeout message for inactive keep-alive connections
+                    <a href="https://github.com/embedthis/appweb-4/issues/79">[issue 79].</a></li>
+                <li>Make server/src/cache and test/cache directories for unit tests
+                    <a href="https://github.com/embedthis/appweb-4/issues/80">[issue 80].</a></li>
+                <li>Bit run" invokes appweb in src/server instead of ./test
+                    <a href="https://github.com/embedthis/appweb-4/issues/81">[issue 81].</a></li>
+                <li>ErrorDocument preserves original failing HTTP status code for internal redirects.
+                    <a href="https://github.com/embedthis/appweb-4/issues/82">[issue 82].</a></li>
+                <li>Bind to ports with exclusive use on Windows (SO_EXCLUSIVEADDRUSE).
+                    <a href="https://github.com/embedthis/appweb-4/issues/83">[issue 83].</a></li>
+                <li>Create /var/spool/appweb/cache for ESP and EJS compiled modules.
+                    <a href="https://github.com/embedthis/appweb-4/issues/84">[issue 84].</a></li>
+                <li>Building with VS 2012 and Windows SDK 8
+                    <a href="https://github.com/embedthis/appweb-4/issues/86">[issue 86].</a></li>
+                <li>Appman is slow to start appweb.
+                    <a href="https://github.com/embedthis/appweb-4/issues/87">[issue 87].</a></li>
+                <li>mprWriteSocketVector was returning incorrect status transmitting bad output
+                    <a href="https://github.com/embedthis/appweb-4/issues/88">[issue 88].</a></li>
+                <li>Linux epoll waiting now detects hangup on writable sockets.
+                    <a href="https://github.com/embedthis/appweb-4/issues/89">[issue 89].</a></li>
+                <li>Improve WebSockets error handling.
+                    <a href="https://github.com/embedthis/appweb-4/issues/91">[issue 91].</a></li>
+                <li>Improve connector end-of-output handling
+                    <a href="https://github.com/embedthis/appweb-4/issues/92">[issue 92].</a></li>
+                <li>External redirects that use a different scheme and the Redirect directive
+                    <a href="https://github.com/embedthis/appweb-4/issues/93">[issue 93].</a></li>
+                <li>Graceful shutdowns should wait for open requests to complete before stopping or restarting.
+                    <a href="https://github.com/embedthis/appweb-4/issues/94">[issue 94].</a></li>
+                <li>Added client IP to session lookup to strengthen session hijack preventions.
+                    <a href="https://github.com/embedthis/appweb-4/issues/95">[issue 95].</a></li>
+            </ul>
+            <h3>API Changes</h3>
+            <ul>
+                <li>The Listen directive will now listen on both IPv4 and IPv6 by default if no network interface
+                is supplied. Previously it only listened on IPv4. If a network interface is supplied, only that
+                interface will be listened on.</li>
+            </ul>
+
             <a id="r4.1.1"></a>
             <h2 class="section">Changes in 4.1.1</h2>
             <h3>Fixes</h3>
@@ -75,8 +137,6 @@
                 <li>Esp generation of apps on windows
                     <a href="https://github.com/embedthis/appweb-4/issues/90">[issue 90].</a></li>
             </ul>
-            </ul>
-
             <a id="r4.1.0"></a>
             <h2 class="section">Changes in 4.1.0</h2>
             <h2>Major Features</h2>
@@ -241,6 +301,9 @@
                 <li>auth/httpPassword program renamed to authpass for clarity</li>
                 <li>AuthMethod renamed to AuthStore for clarity (old directive preserved for compatibility)</li>
                 <li>AuthName renamed to AuthRealm for clarity (old directive preserved for compatibility) </li>
+                <li>The Group directive has been renamed GroupAccount and User renamed to UserAccount. This is to 
+                be more descriptive as the role-based access control uses the User directive to define
+                user abilities for access control.</li>
             </ul>
 
 
@@ -260,13 +323,15 @@
             <ul>
                 <li>Appweb 4 is a major release and most APIs have been modified based on the updated MPR.</li>
             </ul>
-
             <a name="r3.4.1" id="r3.4.1"></a>
             <h2 class="section">Changes in 3.4.1</h2>
             <h3>Fixes</h3>
             <ul>
                 <li>Add missing MA_MAX_REQUESTS and MA_MAX_PROCESSES for various tune settings
                     <a href="https://github.com/embedthis/appweb-3/issues/37">[issue 37].</a>
+                </li>
+                <li>Add support to permit changing a request timeout by updating conn->expires
+                    <a href="https://github.com/embedthis/appweb-3/issues/38">[issue 38].</a>
                 </li>
             </ul>
             

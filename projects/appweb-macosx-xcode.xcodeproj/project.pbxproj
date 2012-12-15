@@ -1597,7 +1597,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "cd ../src/esp
+			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../src/esp
 rm -rf ../${CFG_DIR}/bin/esp.conf
 cp -r esp.conf ../${CFG_DIR}/bin/esp.conf
 ";
@@ -1615,7 +1616,8 @@ cp -r esp.conf ../${CFG_DIR}/bin/esp.conf
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "cd ../src/esp
+			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../src/esp
 rm -rf ../${CFG_DIR}/bin/esp-www
 cp -r www ../${CFG_DIR}/bin/esp-www
 ";
@@ -1633,7 +1635,8 @@ cp -r www ../${CFG_DIR}/bin/esp-www
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "cd ../src/esp
+			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../src/esp
 rm -rf ../${CFG_DIR}/bin/esp-appweb.conf
 cp -r esp-appweb.conf ../${CFG_DIR}/bin/esp-appweb.conf
 ";
@@ -1651,7 +1654,8 @@ cp -r esp-appweb.conf ../${CFG_DIR}/bin/esp-appweb.conf
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "cd ../src/server
+			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../src/server
 mkdir -p cache";
 		};
 		9BE59F849BE5E10C00000017 /* ShellScript for test-testScript */ = {
@@ -1667,7 +1671,8 @@ mkdir -p cache";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "cd ../test
+			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../test
 echo '#!../macosx-x64-xcode/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript";
 		};
 		9BE59F849BE5E10C0000001C /* ShellScript for test-cache.cgi */ = {
@@ -1683,7 +1688,8 @@ echo '#!../macosx-x64-xcode/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-b
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "cd ../test
+			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../test
 echo \"#!`type -p ejs`\" >web/caching/cache.cgi
 echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n\" + Date() + \"\\n\")' >>web/caching/cache.cgi
 chmod +x web/caching/cache.cgi";
@@ -1701,7 +1707,8 @@ chmod +x web/caching/cache.cgi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "cd ../test
+			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../test
 echo \"#!`type -p ejs`\" >web/auth/basic/basic.cgi
 echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n\" + serialize(App.env, {pretty: true}) + \"\\n\")' >>web/auth/basic/basic.cgi
 chmod +x web/auth/basic/basic.cgi";
@@ -1719,7 +1726,8 @@ chmod +x web/auth/basic/basic.cgi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "cd ../test
+			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../test
 cp ../macosx-x64-xcode/bin/cgiProgram cgi-bin/cgiProgram
 cp ../macosx-x64-xcode/bin/cgiProgram cgi-bin/nph-cgiProgram
 cp ../macosx-x64-xcode/bin/cgiProgram 'cgi-bin/cgi Program'
@@ -1739,7 +1747,8 @@ chmod +x cgi-bin/* web/cgiProgram.cgi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "cd ../test
+			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../test
 cp -r ../src/esp/www/files/static/js 'web/js'";
 		};
 		9BE59F849BE5E10C0000004A /* ShellScript for Prep */ = {
@@ -1755,7 +1764,8 @@ cp -r ../src/esp/www/files/static/js 'web/js'";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "[ ! -x ${INC_DIR} ] && mkdir -p ${INC_DIR} ${OBJ_DIR} ${LIB_DIR} ${BIN_DIR}
+			shellScript = "PATH=$PATH:/usr/local/bin
+[ ! -x ${INC_DIR} ] && mkdir -p ${INC_DIR} ${OBJ_DIR} ${LIB_DIR} ${BIN_DIR}
 [ ! -f ${INC_DIR}/bit.h ] && cp appweb-macosx-xcode-bit.h ${INC_DIR}/bit.h
 if ! diff ${INC_DIR}/bit.h appweb-macosx-xcode-bit.h >/dev/null ; then
 cp appweb-macosx-xcode-bit.h ${INC_DIR}/bit.h
@@ -1789,9 +1799,6 @@ cp ../src/esp/esp.h ${CFG_DIR}/inc/esp.h
 fi
 if [ ../src/esp/mdb.h -nt ${CFG_DIR}/inc/mdb.h ] ; then
 cp ../src/esp/mdb.h ${CFG_DIR}/inc/mdb.h
-fi
-if [ ../src/server/appwebMonitor.h -nt ${CFG_DIR}/inc/appwebMonitor.h ] ; then
-cp ../src/server/appwebMonitor.h ${CFG_DIR}/inc/appwebMonitor.h
 fi
 if [ ../test/testAppweb.h -nt ${CFG_DIR}/inc/testAppweb.h ] ; then
 cp ../test/testAppweb.h ${CFG_DIR}/inc/testAppweb.h
@@ -2397,7 +2404,7 @@ fi";
                 /* Common Settings */
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-                CURRENT_PROJECT_VERSION = 4.1.0;
+                CURRENT_PROJECT_VERSION = 4.2.0;
                 DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                 DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -2466,7 +2473,7 @@ fi";
                 /* Common Settings */
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-                CURRENT_PROJECT_VERSION = 4.1.0;
+                CURRENT_PROJECT_VERSION = 4.2.0;
                 DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                 DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;

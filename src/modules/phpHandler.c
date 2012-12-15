@@ -386,7 +386,10 @@ static int sendHeaders(sapi_headers_struct *phpHeaders TSRMLS_DC)
 
     conn = (HttpConn*) SG(server_context);
     mprLog(6, "php: send headers");
-    httpSetStatus(conn, phpHeaders->http_response_code);
+    if (conn->tx->status == HTTP_CODE_OK) {
+        /* Preserve non-ok status that may be set if using a PHP ErrorDocument */
+        httpSetStatus(conn, phpHeaders->http_response_code);
+    }
     httpSetContentType(conn, phpHeaders->mimetype);
     return SAPI_HEADER_SENT_SUCCESSFULLY;
 }
@@ -489,10 +492,14 @@ static int initializePhp(Http *http)
 
     mprLog(2, "php: initialize php library");
     appweb = httpGetContext(http);
-#ifdef BIT_PACK_PHP_INI
+#if defined(BIT_PACK_PHP_INI)
     phpSapiBlock.php_ini_path_override = BIT_PACK_PHP_INI;
 #else
+#if UNUSED
     phpSapiBlock.php_ini_path_override = appweb->defaultServer->home;
+#else
+    phpSapiBlock.php_ini_path_override = appweb->defaultServer->defaultHost->defaultRoute->home;
+#endif
 #endif
     if (phpSapiBlock.php_ini_path_override) {
         mprLog(2, "Look for php.ini at %s", phpSapiBlock.php_ini_path_override);

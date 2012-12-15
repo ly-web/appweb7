@@ -134,12 +134,13 @@ static void openFileHandler(HttpQueue *q)
     } else {
         if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
             if (!(info->valid || info->isDir)) {
-                mprLog(4, "Cannot open document %s", tx->filename);
                 if (rx->referrer) {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document for: %s from %s", rx->uri, rx->referrer);
+                    mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
                 } else {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document for: %s", rx->uri);
+                    mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
                 }
+                httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find %s", rx->uri);
+
             } else if (info->valid) {
                 if (!tx->etag) {
                     /* Set the etag for caching in the client */

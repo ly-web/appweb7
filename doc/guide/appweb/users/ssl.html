@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.1.0 Documentation</title>
+    <title>Embedthis Appweb 4.2.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.1.0</div>
+                <div class="version">Embedthis Appweb 4.2.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -103,20 +103,20 @@ https://127.0.0.1:4443/index.html
             <p>Consider the default Appweb SSL configuration in the appweb.conf configuration file:</p>
             <pre>
 &lt;VirtualHost *:4443&gt;
-    DocumentRoot "$SERVER_ROOT/web"
+    Documents "$ROUTE_HOME/web"
     SSLEngine on
     SSLCipherSuite ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL
     SSLProtocol ALL -SSLV2
-    SSLCertificateFile "$SERVER_ROOT/server.crt"
-    SSLCertificateKeyFile "$SERVER_ROOT/server.key.pem"
+    SSLCertificateFile "$ROUTE_HOME/server.crt"
+    SSLCertificateKeyFile "$ROUTE_HOME/server.key.pem"
 &lt;/VirtualHost&gt;
 </pre>
             <p>This set of directives enables SSL on port 4443 for all network interfaces and uses the default supplied
             self-signed certificate to identify the server.</p>
             <p>The <b>&lt;virtualHost *:4443&gt;</b> directive instructs Appweb to process requests from all interfaces
             on port 4443 using this virtual host configuration.</p>
-            <p>The DocumentRoot "$SERVER_ROOT/web" locates documents for this virtual host in the <b>web</b>
-            subdirectory under the ServerRoot.</p>
+            <p>The Documents "$ROUTE_HOME/web" locates documents for this virtual host in the <b>web</b>
+            subdirectory under the Home.</p>
             <p>The <a href="dir/ssl.html#sslEngine">SSLEngine</a> directive enables SSL processing for this virtual
             host. Only requests that use SSL will be honored.</p>
             <p>The <a href="dir/ssl.html#sslCipherSuite">SSLCipherSuite</a> directive configures the underlying SSL

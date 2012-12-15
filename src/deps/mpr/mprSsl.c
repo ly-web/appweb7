@@ -25,6 +25,13 @@
 #include    "bit.h"
 
 #if BIT_PACK_MATRIXSSL
+/* 
+    Work-around to allow the windows 7.* SDK to be used with VS 2012 
+ */
+#if _MSC_VER >= 1700
+    #define SAL_SUPP_H
+    #define SPECSTRING_SUPP_H
+#endif
 /*
     Matrixssl defines int32, uint32, int64 and uint64, but does not provide HAS_XXX to disable. 
     So must include matrixsslApi.h first and then workaround. 

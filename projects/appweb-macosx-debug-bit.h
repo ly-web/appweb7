@@ -100,7 +100,7 @@
     #define BIT_TITLE "Embedthis Appweb"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.1.0"
+    #define BIT_VERSION "4.2.0"
 #endif
 #ifndef BIT_WARN64TO32
     #define BIT_WARN64TO32 1
@@ -120,10 +120,10 @@
     #define BIT_CFG_PREFIX "/etc/appweb"
 #endif
 #ifndef BIT_BIN_PREFIX
-    #define BIT_BIN_PREFIX "/usr/lib/appweb/4.1.0/bin"
+    #define BIT_BIN_PREFIX "/usr/lib/appweb/4.2.0/bin"
 #endif
 #ifndef BIT_INC_PREFIX
-    #define BIT_INC_PREFIX "/usr/lib/appweb/4.1.0/inc"
+    #define BIT_INC_PREFIX "/usr/lib/appweb/4.2.0/inc"
 #endif
 #ifndef BIT_LOG_PREFIX
     #define BIT_LOG_PREFIX "/var/log/appweb"
@@ -135,10 +135,10 @@
     #define BIT_SPL_PREFIX "/var/spool/appweb"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/src/appweb-4.1.0"
+    #define BIT_SRC_PREFIX "/usr/src/appweb-4.2.0"
 #endif
 #ifndef BIT_VER_PREFIX
-    #define BIT_VER_PREFIX "/usr/lib/appweb/4.1.0"
+    #define BIT_VER_PREFIX "/usr/lib/appweb/4.2.0"
 #endif
 #ifndef BIT_WEB_PREFIX
     #define BIT_WEB_PREFIX "/var/www/appweb-default"
@@ -177,13 +177,13 @@
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 1
+    #define BIT_MINOR_VERSION 2
 #endif
 #ifndef BIT_PATCH_VERSION
     #define BIT_PATCH_VERSION 0
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400010000
+    #define BIT_VNUM 400020000
 #endif
 
 /* Packs */

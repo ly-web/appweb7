@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.1.0 Documentation</title>
+    <title>Embedthis Appweb 4.2.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.1.0</div>
+                <div class="version">Embedthis Appweb 4.2.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -42,10 +42,12 @@
                 <li><a href="#limitCacheItem">LimitCacheItem</a></li>
                 <li><a href="#limitChunk">LimitChunk</a></li>
                 <li><a href="#limitClients">LimitClients</a></li>
+                <li><a href="#limitFiles">LimitFiles</a></li>
                 <li><a href="#limitKeepAlive">LimitKeepAlive</a></li>
                 <li><a href="#limitMemory">LimitMemory</a></li>
                 <li><a href="#limitProcesses">LimitProcesses</a></li>
                 <li><a href="#limitRequests">LimitRequests</a></li>
+                <li><a href="#limitRequestsPerClient">LimitRequestsPerClient</a></li>
                 <li><a href="#limitRequestBody">LimitRequestBody</a></li>
                 <li><a href="#limitRequestForm">LimitRequestForm</a></li>
                 <li><a href="#limitRequestHeader">LimitRequestHeader</a></li>
@@ -225,6 +227,41 @@
                 </tbody>
             </table>
             
+            <a id="limitFiles"></a>
+            <h2>LimitFiles</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Sets the maximum number of open files/sockets that Appweb can open.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>LimitFiles count</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>LimitFiles 1024</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The LimitFiles directive defines the maximum number of files/sockets that Appweb can
+                            open on a Unix system. The files limit must be set sufficiently high to support the peak
+                            load anticipated for Appweb. Each request will always consume one file descriptor for the
+                            network socket. CGI requests will consume an additional three file descriptors to communicate
+                            with the CGI process.</p>
+                            <p>The default limit for Appweb is defined by the system ulimit.
+                            A limit of '0' means set the limit to the maximum permitted by the operating system.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
             <a id="limitKeepAlive"></a>
             <h2>LimitKeepAlive</h2>
             <table class="directive" title="directive">
@@ -288,9 +325,10 @@
                             <p>The LimitMemory directive defines the maximum amount of memory that Appweb can use.
                             On Linux and MacOSX, where a fast memory size API exists, this is the amount of memory currently
                             used by the application. On other platforms, it is the amount of Appweb heap memory and 
-                            does not include thread stack or code allocations.
+                            does not include thread stack, code allocations, or memory allocated by means other than
+                            the MPR memory allocation primitives.
                             If the memory limit is exceeded, Appweb will invoke the policy specified by the
-                            MemoryPolicy directive. </p>
+                            MemoryPolicy directive.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -344,7 +382,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>LimitRequests 10</td>
+                        <td>LimitRequests 40</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -356,6 +394,45 @@
                             limits the number of connected client systems.</p>
                             <p>NOTE: that many browsers can and will initiate multiple requests when requesting a
                             page. Some browsers will initiate up to six requests at a time for a single tab.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="limitRequestsPerClient"></a>
+            <h2>LimitRequestsPerClient</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Sets the maximum number of simultaneous HTTP requests for a single client IP address</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>LimitRequestsPerClient count</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>LimitRequestsPerClient 20</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The LimitRequestsPerClient directive defines the maximum number of simultaneous 
+                            client HTTP requests that are permitted per single client IP address. Requests in excess of this
+                            count will be rejected. A limit of '0' means unlimited.</p>
+                            <p>NOTE: that many browsers can and will initiate multiple requests when requesting a
+                            page. Some browsers will initiate up to six requests at a time for a single tab.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="security">Security</td>
+                        <td>
+                            <p>To mitigate denial of service attacks, this limit should be set as low as possible.</p>
                         </td>
                     </tr>
                 </tbody>

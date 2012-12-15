@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.1.0 Documentation</title>
+    <title>Embedthis Appweb 4.2.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.1.0</div>
+                <div class="version">Embedthis Appweb 4.2.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -95,10 +95,10 @@ configuration file into sections &mdash; especially application definitions.
             beginning with a "#" character are comments and are ignored.</p>
             <h2>Sample configuration file</h2>
             <pre>
-ServerRoot "."
+Home "."
 ErrorLog error.log
 ServerName http://localhost:7777
-DocumentRoot "/var/web"
+Documents "/var/web"
 Listen 7777
 LoadModule fileHandler mod_file
 AddHandler fileHandler html
@@ -132,7 +132,7 @@ AddHandler fileHandler html
             <p>Here is an example of an IP-based virtual host.</p>
             <pre>
 &lt;VirtualHost 206.148.97.56&gt;
-    DocumentRoot /var/www/mycorp
+    Documents /var/www/mycorp
     ...
 &lt;/VirtualHost&gt;
 </pre>
@@ -141,7 +141,7 @@ AddHandler fileHandler html
 NameVirtualHost 206.148.96.56
 &lt;VirtualHost 206.148.97.56&gt;
     ServerName www.mycorp.org
-    DocumentRoot /var/www/mycorp
+    Documents /var/www/mycorp
     ...
 &lt;/VirtualHost&gt;
 </pre>
@@ -185,7 +185,7 @@ Include conf/applications/*.conf
             </table><a id="order"></a>
             <h2 class="section">Order of Processing</h2>
             <p>The configuration file is parsed in a single top-to-bottom pass. The order of directives is important
-            as certain directives depend on others. For example, you must define the ServerRoot before using the
+            as certain directives depend on others. For example, you must define the Home before using the
             LoadModule directive. Also, block level directives inherit their configuration from the outer block. 
             For example: a Route block will inherit the outer configuration and may modify that inside the Route block.</p>
             
@@ -293,7 +293,7 @@ Include conf/applications/*.conf
                         <td>Define the default index file to service for directory requests.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/route.html#documentRoot">DocumentRoot</a></td>
+                        <td><a href="dir/route.html#documents">Documents</a></td>
                         <td>Directory containing web content.</td>
                     </tr>
                     <tr>
@@ -353,8 +353,12 @@ Include conf/applications/*.conf
                         <td>Define a HTTP header test for a route.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/server.html#group">Group</a></td>
+                        <td><a href="dir/server.html#groupAcount">GroupAccount</a></td>
                         <td>Define the O/S account group used by Appweb.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/server.html#home">Home</a></td>
+                        <td>Define the directory containing configuration files.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/dir.html#indexOptions">IndexOptions</a></td>
@@ -385,8 +389,12 @@ Include conf/applications/*.conf
                         <td>Set the maximum transfer chunk encoding size.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/sandbox.html#limitConnections">LimitClients</a></td>
+                        <td><a href="dir/sandbox.html#limitClients">LimitClients</a></td>
                         <td>Set the limit of simultaneous clients.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/sandbox.html#limitFiles">LimitFiles</a></td>
+                        <td>Set the maximum number of open files or sockets on a Unix system.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/sandbox.html#limitKeepAlive">LimitKeepAlive</a></td>
@@ -403,6 +411,10 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/sandbox.html#limitRequests">LimitRequests</a></td>
                         <td>Set the limit of simultaneous requests.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/sandbox.html#limitRequestsPerClient">LimitRequestsPerClient</a></td>
+                        <td>Set the limit of simultaneous requests for a single IP address.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/sandbox.html#limitRequestBody">LimitRequestBody</a></td>
@@ -461,6 +473,10 @@ Include conf/applications/*.conf
                         <td>Define the action to take when memory is depleted.</td>
                     </tr>
                     <tr>
+                        <td><a href="dir/route.html#methods">Methods</a></td>
+                        <td>The acceptable HTTP method verbs.</td>
+                    </tr>
+                    <tr>
                         <td><a href="dir/vhost.html#namedVirtualHost">NameVirtualHost</a></td>
                         <td>Nominate an IP address for name-based virtual hosting.</td>
                     </tr>
@@ -491,6 +507,10 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/route.html#redirect">Redirect</a></td>
                         <td>Redirect requests to a new target.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/route.html#requestParseTimeout">RequestParseTimeout</a></td>
+                        <td>Maximum time to parse a request or response HTTP headers.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#requestTimeout">RequestTimeout</a></td>
@@ -543,10 +563,6 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/server.html#serverName">ServerName</a></td>
                         <td>Define a name for the server to use for itself.</td>
-                    </tr>
-                    <tr>
-                        <td><a href="dir/server.html#serverRoot">ServerRoot</a></td>
-                        <td>Define the directory containing the core Appweb configuration.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#sessionTimeout">SessionTimeout</a></td>
@@ -609,7 +625,7 @@ Include conf/applications/*.conf
                         <td>Control if files are auto-deleted after uploading.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/server.html#user">User</a></td>
+                        <td><a href="dir/server.html#userAccount">UserAcount</a></td>
                         <td>Define the O/S user account used by Appweb.</td>
                     </tr>
                     <tr>

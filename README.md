@@ -12,6 +12,7 @@ See LICENSE.md for details.
   See http://appwebserver.org/products/appweb/doc/product/index.html
 
 ### Prerequisites:
+
     Ejscript (http://www.ejscript.org/downloads/ejs/download.ejs) for the Bit and Utest tools to configure and build.
 
 ### To Build:
@@ -34,10 +35,11 @@ Images are built into */bin. The build configuration is saved in */inc/bit.h.
     sudo bit run
 
 This will run appweb in the src/server directory using the src/server/appweb.conf configuration file.
+To run appweb manually, you will need to put the target bin directory (OS-ARCH-PROFILE/bin) in your PATH.
 
 ### To Install:
 
-    bit install
+    sudo bit install
 
 Resources
 ---

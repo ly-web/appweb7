@@ -237,7 +237,10 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
         return NULL;
     }
     memset(heap, 0, sizeof(MprHeap));
+    heap->stats.numCpu = memStats.numCpu;
+    heap->stats.pageSize = memStats.pageSize;
     heap->stats.maxMemory = MAXINT;
+    //  MOB - should this be 95%?
     heap->stats.redLine = MAXINT / 100 * 99;
     mprInitSpinLock(&heap->heapLock);
     initGen();
@@ -281,6 +284,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
         heap->track = 1;
     }
     heap->stats.bytesAllocated += size;
+    heap->stats.regions++;
     INC(allocs);
 
     mprInitSpinLock(&heap->heapLock);
@@ -300,6 +304,8 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     }
     heap->markerCond = mprCreateCond();
     heap->mutex = mprCreateLock();
+    //  MOB - should be stable
+    //  MOB - should preallocate with a large enough size
     heap->roots = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     mprAddRoot(MPR);
     return MPR;
@@ -330,6 +336,9 @@ PUBLIC void mprDestroyMemService()
 }
 
 
+/*
+    Note this does not zero memory and thus will not pin allocated memory if it is newly, virtually allocated
+ */
 PUBLIC void *mprAllocMem(ssize usize, int flags)
 {
     MprMem      *mp;
@@ -509,7 +518,7 @@ static MprMem *allocMem(ssize required, int flags)
     MprMem      *mp, *after, *spare;
     ssize       size, maxBlock;
     ulong       groupMap, bucketMap;
-    int         bucket, baseGroup, group, index;
+    int         bucket, baseGroup, group, index, miss;
     
 #if BIT_MEMORY_STACK
     monitorStack();
@@ -532,6 +541,7 @@ static MprMem *allocMem(ssize required, int flags)
     lockHeap();
     
     /* Mask groups lower than the base group */
+    miss = 0;
     groupMap = heap->groupMap & ~((((ssize) 1) << baseGroup) - 1);
     while (groupMap) {
         group = (int) (ffsl(groupMap) - 1);
@@ -583,6 +593,10 @@ static MprMem *allocMem(ssize required, int flags)
                             linkBlock(spare);
                         }
                     }
+                    /* Tested empirically to trigger GC when we are searching too much for an allocation */
+                    if (miss > 9) {
+                        triggerGC(0);
+                    }
                     unlockHeap();
                     return mp;
                 }
@@ -591,9 +605,7 @@ static MprMem *allocMem(ssize required, int flags)
             }
             groupMap &= ~(((ssize) 1) << group);
             heap->groupMap &= ~(((ssize) 1) << group);
-#if KEEP
-            triggerGC(0);
-#endif
+            miss++;
         }
     }
     unlockHeap();
@@ -653,8 +665,9 @@ static MprMem *growHeap(ssize required, int flags)
 
     lockHeap();
     region->next = heap->regions;
+    heap->stats.bytesAllocated += size;
     heap->regions = region;
-
+    heap->stats.regions++;
     if (spareLen > 0) {
         assure(spareLen >= sizeof(MprFreeMem));
         spare = (MprMem*) ((char*) mp + required);
@@ -918,9 +931,6 @@ PUBLIC void *mprVirtAlloc(ssize size, int mode)
         allocException(MPR_MEM_FAIL, size);
         return 0;
     }
-    lockHeap();
-    heap->stats.bytesAllocated += size;
-    unlockHeap();
     return ptr;
 }
 
@@ -928,10 +938,6 @@ PUBLIC void *mprVirtAlloc(ssize size, int mode)
 PUBLIC void mprVirtFree(void *ptr, ssize size)
 {
     vmfree(ptr, size);
-    lockHeap();
-    heap->stats.bytesAllocated -= size;
-    assure(heap->stats.bytesAllocated >= 0);
-    unlockHeap();
 }
 
 
@@ -1027,8 +1033,8 @@ PUBLIC void mprWakeGCService()
 
 static void triggerGC(int flags)
 {
-    if (!heap->gc && ((flags & MPR_FORCE_GC) || (heap->newCount > heap->newQuota))) {
-        heap->gc = 1;
+    if (!heap->gcRequested && ((flags & MPR_GC_FORCE) || (heap->newCount > heap->newQuota))) {
+        heap->gcRequested = 1;
 #if !PARALLEL_GC
         heap->mustYield = 1;
 #endif
@@ -1045,15 +1051,17 @@ PUBLIC void mprRequestGC(int flags)
 
     LOG(7, "DEBUG: mprRequestGC");
 
-    count = (flags & MPR_COMPLETE_GC) ? 3 : 1;
+    count = (flags & MPR_GC_COMPLETE) ? 3 : 1;
     for (i = 0; i < count; i++) {
-        if ((flags & MPR_FORCE_GC) || (heap->newCount > heap->newQuota)) {
+        if ((flags & MPR_GC_FORCE) || (heap->newCount > heap->newQuota)) {
 #if PARALLEL_GC
             heap->mustYield = 1;
 #endif
-            triggerGC(MPR_FORCE_GC);
+            triggerGC(MPR_GC_FORCE);
         }
-        mprYield((flags & MPR_WAIT_GC) ? MPR_YIELD_BLOCK: 0);
+        if (!(flags & MPR_GC_NO_YIELD)) {
+            mprYield((flags & MPR_GC_NO_BLOCK) ? MPR_YIELD_NO_BLOCK: 0);
+        }
     }
 }
 
@@ -1106,9 +1114,9 @@ static void mark()
 #else
     heap->mustYield = 1;
     if (!pauseThreads()) {
-        LOG(6, "DEBUG: GC synchronization timed out, some threads did not yield.");
-        LOG(6, "This is most often caused by a thread doing a long running operation and not first calling mprYield.");
-        LOG(6, "If debugging, run the process with -D to enable debug mode.");
+        LOG(7, "DEBUG: GC synchronization timed out, some threads did not yield.");
+        LOG(7, "This is most often caused by a thread doing a long running operation and not first calling mprYield.");
+        LOG(7, "If debugging, run the process with -D to enable debug mode.");
         return;
     }
     nextGen();
@@ -1116,7 +1124,7 @@ static void mark()
     heap->priorNewCount = heap->newCount;
     heap->priorFree = heap->stats.bytesFree;
     heap->newCount = 0;
-    heap->gc = 0;
+    heap->gcRequested = 0;
     checkYielded();
     markRoots();
     heap->marking = 0;
@@ -1174,8 +1182,10 @@ static void sweep()
             }
         }
     }
+#if BIT_MEMORY_STATS
     heap->stats.sweepVisited = 0;
     heap->stats.swept = 0;
+#endif
 
     /*
         growHeap() will append new regions to the front of heap->regions and so will not race with this code. This code
@@ -1198,7 +1208,7 @@ static void sweep()
                 CHECK(mp);
                 BREAKPOINT(mp);
                 INC(swept);
-#if BIT_DEBUG && BIT_MEMORY_STATS
+#if BIT_MEMORY_STATS
                 if (heap->track) {
                     freeLocation(mp->name, GET_SIZE(mp));
                 }
@@ -1225,6 +1235,9 @@ static void sweep()
             } else {
                 heap->regions = nextRegion;
             }
+            heap->stats.regions--;
+            heap->stats.bytesAllocated -= region->size;
+            assure(heap->stats.bytesAllocated >= 0);
             unlockHeap();
             LOG(9, "DEBUG: Unpin %p to %p size %d, used %d", region, 
                 ((char*) region) + region->size, region->size,fastMemSize());
@@ -1241,8 +1254,10 @@ static void markRoots()
 {
     void    *root;
 
+#if BIT_MEMORY_STATS
     heap->stats.markVisited = 0;
     heap->stats.marked = 0;
+#endif
     mprMark(heap->roots);
     mprMark(heap->mutex);
     mprMark(heap->markerCond);
@@ -1426,10 +1441,13 @@ PUBLIC void mprYield(int flags)
     if (flags & MPR_YIELD_STICKY) {
         tp->stickyYield = 1;
     }
-    assure(tp->yielded);
+    //  MOB - remove heap->marker
     while (tp->yielded && (heap->mustYield || (flags & MPR_YIELD_BLOCK)) && heap->marker) {
         if (heap->flags & MPR_MARK_THREAD) {
             mprSignalCond(ts->cond);
+        }
+        if (tp->stickyYield && flags & MPR_YIELD_NO_BLOCK) {
+            return;
         }
         mprWaitForCond(tp->cond, -1);
         flags &= ~MPR_YIELD_BLOCK;
@@ -1452,9 +1470,10 @@ PUBLIC void mprResetYield()
     }
     /*
         May have been sticky yielded and so marking could be active. If so, must yield here regardless.
+        If GC being requested, then do a blocking pause here.
      */
     lock(ts->threads);
-    if (heap->marking || heap->sweeping) {
+    if (heap->mustYield || heap->marking || heap->sweeping) {
         unlock(ts->threads);
         mprYield(0);
     } else {
@@ -1680,8 +1699,10 @@ PUBLIC void mprAddRoot(void *root)
 {
     /*
         Need to use root lock because mprAddItem may allocate
+        MOB - heap->roots should be stable
      */
     mprSpinLock(&heap->rootLock);
+    //  MOB OPT - could have an inline MACRO that does this for speed.
     mprAddItem(heap->roots, root);
     mprSpinUnlock(&heap->rootLock);
 }
@@ -1696,6 +1717,7 @@ PUBLIC void mprRemoveRoot(void *root)
     /*
         RemoveItem copies down. If the item was equal or before the current marker root, must adjust the marker rootIndex
         so we don't skip a root.
+        OPT MOB - but only if doing parallel GC
      */
     if (index <= heap->rootIndex && heap->rootIndex > 0) {
         heap->rootIndex--;
@@ -1754,7 +1776,7 @@ static void printTracking()
     MprLocationStats     *lp;
     cchar                **np;
 
-    printf("\nManager Allocation Stats\n Size                       Location\n");
+    printf("\nAllocation Stats\n     Size Location\n");
     memcpy(sortLocations, heap->stats.locations, sizeof(sortLocations));
     qsort(sortLocations, MPR_TRACK_HASH, sizeof(MprLocationStats), sortLocation);
 
@@ -1804,7 +1826,7 @@ static void printGCStats()
             }
         }
         regionCount++;
-        printf("  Region %d is %d bytes, has %d allocated %d free\n", regionCount, (int) region->size, 
+        printf("  Region %3d is %8d bytes, has %4d allocated %3d free\n", regionCount, (int) region->size, 
             allocatedCount, freeCount);
     }
     printf("Regions: %d\n", regionCount);
@@ -1823,29 +1845,29 @@ static void printGCStats()
 
 PUBLIC void mprPrintMem(cchar *msg, int detail)
 {
-#if BIT_MEMORY_STATS
-    MprMemStats   *ap;
+    MprMemStats     *ap;
 
     ap = mprGetMemStats();
 
-    printf("\n\nMPR Memory Report %s\n", msg);
-    printf("------------------------------------------------------------------------------------------\n");
-    printf("  Total memory        %14d K\n",             (int) (mprGetMem() / 1024));
-    printf("  Current heap memory %14d K\n",             (int) (ap->bytesAllocated / 1024));
-    printf("  Free heap memory    %14d K\n",             (int) (ap->bytesFree / 1024));
-    printf("  Allocation errors   %14d\n",               ap->errors);
-    printf("  Memory limit        %14d MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
+    printf("\nMemory Report %s\n", msg);
+    printf("-------------\n");
+    printf("  Total memory      %14d K\n",             (int) (mprGetMem() / 1024));
+
+    printf("  Current heap      %14d K\n",             (int) (ap->bytesAllocated / 1024));
+    printf("  Free heap memory  %14d K\n",             (int) (ap->bytesFree / 1024));
+    printf("  Memory limit      %14d MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->maxMemory / 1024));
-    printf("  Memory redline      %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
+    printf("  Memory redline    %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->redLine / 1024));
+    printf("  Allocation errors %14d\n",               ap->errors);
 
-    printf("  Memory requests     %14d\n",               (int) ap->requests);
-    printf("  O/S allocations     %14d %%\n",            percent(ap->allocs, ap->requests));
-    printf("  Block unpinns       %14d %%\n",            percent(ap->unpins, ap->requests));
-    printf("  Block reuse         %14d %%\n",            percent(ap->reuse, ap->requests));
-    printf("  Joins               %14d %%\n",            percent(ap->joins, ap->requests));
-    printf("  Splits              %14d %%\n",            percent(ap->splits, ap->requests));
-
+#if BIT_MEMORY_STATS
+    printf("  Memory requests   %14d\n",               (int) ap->requests);
+    printf("  O/S allocations   %14d %%\n",            percent(ap->allocs, ap->requests));
+    printf("  Block unpinns     %14d %%\n",            percent(ap->unpins, ap->requests));
+    printf("  Block reuse       %14d %%\n",            percent(ap->reuse, ap->requests));
+    printf("  Joins             %14d %%\n",            percent(ap->joins, ap->requests));
+    printf("  Splits            %14d %%\n",            percent(ap->splits, ap->requests));
     printGCStats();
     if (detail) {
         printQueueStats();
@@ -2015,6 +2037,7 @@ static void allocException(int cause, ssize size)
     } else if (cause == MPR_MEM_REDLINE) {
         mprLog(0, "%s: Memory request for %,d bytes exceeds memory red-line.", MPR->name, size);
         mprPruneCache(NULL);
+        //  OPT - could trim workers too
 
     } else if (cause == MPR_MEM_LIMIT) {
         mprLog(0, "%s: Memory request for %,d bytes exceeds memory limit.", MPR->name, size);
@@ -2535,16 +2558,6 @@ static void monitorStack()
 #undef mprCopyName
 #undef mprSetAllocName
 
-#if UNUSED
-/*
-    Define stubs so windows can use same *.def for debug or release
- */
-PUBLIC void mprCheckBlock(MprMem *mp) {}
-PUBLIC void *mprSetName(void *ptr, cchar *name) { return 0; }
-PUBLIC void *mprCopyName(void *dest, void *src) { return 0; }
-PUBLIC void *mprSetAllocName(void *ptr, cchar *name) { return 0; }
-#endif
-
 /*
     Re-instate defines for combo releases, where source will be appended below here
  */
@@ -2735,10 +2748,6 @@ static void manageMpr(Mpr *mpr, int flags)
     }
 }
 
-static void wgc(int mode)
-{
-    mprRequestGC(mode);
-}
 
 /*
     Destroy the Mpr and all services
@@ -2763,7 +2772,7 @@ PUBLIC void mprDestroy(int how)
     if (MPR->state < MPR_STOPPING) {
         mprTerminate(how, -1);
     }
-    gmode = MPR_FORCE_GC | MPR_COMPLETE_GC | MPR_WAIT_GC;
+    gmode = MPR_GC_FORCE | MPR_GC_COMPLETE;
     mprRequestGC(gmode);
 
     if (how & MPR_EXIT_GRACEFUL) {
@@ -2780,12 +2789,12 @@ PUBLIC void mprDestroy(int how)
     mprStopSignalService();
 
     /* Final GC to run all finalizers */
-    wgc(gmode);
+    mprRequestGC(gmode);
 
     if (how & MPR_EXIT_RESTART) {
-        mprLog(3, "Restarting\n\n");
+        mprLog(2, "Restarting\n\n");
     } else {
-        mprLog(3, "Exiting");
+        mprLog(2, "Exiting");
     }
     MPR->state = MPR_FINISHED;
     mprStopGCService();
@@ -2797,7 +2806,6 @@ PUBLIC void mprDestroy(int how)
         mprRestart();
     }
 }
-
 
 
 /*
@@ -2970,6 +2978,7 @@ PUBLIC int mprWaitTillIdle(MprTicks timeout)
     lastTrace = mark = mprGetTicks(); 
     while (!mprIsIdle() && (remaining = mprGetRemainingTicks(mark, timeout)) > 0) {
         mprSleep(1);
+        mprServiceEvents(10, MPR_SERVICE_ONE_THING);
         if ((lastTrace - remaining) > MPR_TICKS_PER_SEC) {
             mprLog(1, "Waiting for requests to complete, %d secs remaining ...", remaining / MPR_TICKS_PER_SEC);
             lastTrace = remaining;
@@ -3299,7 +3308,9 @@ PUBLIC void mprSetExitTimeout(MprTicks timeout)
 }
 
 
-PUBLIC void mprNop(void *ptr) {}
+PUBLIC void mprNop(void *ptr) {
+}
+
 
 /*
     @copy   default
@@ -3434,7 +3445,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     }
     SetTimer(ws->hwnd, 0, (UINT) timeout, NULL);
 
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     if (GetMessage(&msg, NULL, 0, 0) == 0) {
         mprResetYield();
         mprTerminate(MPR_EXIT_DEFAULT, -1);
@@ -3740,12 +3751,14 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int value)
 
 PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 {
-#if MACOSX && 0
-    return OSAtomicCompareAndSwapPtrBarrier(expected, value, addr);
+#if MACOSX
+    void *old = *(void**) addr;
+    OSAtomicCompareAndSwapPtrBarrier(old, (void*) value, addr);
+    return old;
 #elif BIT_WIN_LIKE
     return (void*) InterlockedExchange((volatile LONG*) addr, (LONG) value);
-#elif BIT_UNIX_LIKE && FUTURE
-    return __sync_lock_test_and_set(addr, value);
+#elif BIT_HAS_SYNC
+    return __sync_lock_test_and_set(addr, (void*) value);
 #else
     {
         void    *old;
@@ -5555,7 +5568,7 @@ PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
     if (cmd->process) {
         delay = (cmd->eofCount == cmd->requiredEof && cmd->files[MPR_CMD_STDIN].handle == 0) ? timeout : 0;
         do {
-            mprYield(MPR_YIELD_STICKY);
+            mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
             if (WaitForSingleObject(cmd->process, (DWORD) delay) == WAIT_OBJECT_0) {
                 mprResetYield();
                 reapCmd(cmd, 0);
@@ -5625,7 +5638,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
 {
     int     status, rc;
 
-    mprLog(6, "reapCmd CHECK pid %d, eof %d, required %d\n", cmd->pid, cmd->eofCount, cmd->requiredEof);
+    mprLog(6, "reapCmd CHECK pid %d, eof %d, required %d", cmd->pid, cmd->eofCount, cmd->requiredEof);
     
     status = 0;
     if (cmd->pid == 0) {
@@ -5692,7 +5705,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
         if (cmd->eofCount >= cmd->requiredEof) {
             cmd->complete = 1;
         }
-        mprLog(6, "Cmd reaped: status %d, pid %d, eof %d / %d\n", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
+        mprLog(6, "Cmd reaped: status %d, pid %d, eof %d / %d", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
         if (cmd->callback) {
             (cmd->callback)(cmd, -1, cmd->callbackData);
             /* WARNING - this above call may invoke httpPump and complete the request. HttpConn.tx may be null */
@@ -6140,7 +6153,7 @@ static int makeChannel(MprCmd *cmd, int index)
     readHandle = CreateFile(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, att, OPEN_ALWAYS, 
         FILE_ATTRIBUTE_NORMAL,0);
     if (readHandle == INVALID_HANDLE_VALUE) {
-        mprError(cmd, "Cannot create stdio pipes %s. Err %d\n", path, mprGetOsError());
+        mprError(cmd, "Cannot create stdio pipes %s. Err %d", path, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     readFd = (int) (int64) _open_osfhandle((int*) readHandle, 0);
@@ -6151,7 +6164,7 @@ static int makeChannel(MprCmd *cmd, int index)
     writeFd = (int) _open_osfhandle((int*) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {
-        mprError(cmd, "Cannot create stdio pipes %s. Err %d\n", path, mprGetOsError());
+        mprError(cmd, "Cannot create stdio pipes %s. Err %d", path, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     if (index == MPR_CMD_STDIN) {
@@ -6206,7 +6219,7 @@ static int makeChannel(MprCmd *cmd, int index)
     att = (index == MPR_CMD_STDIN) ? &clientAtt : &serverAtt;
     readHandle = CreateNamedPipe(wide(pipeName), openMode, pipeMode, 1, 0, 256 * 1024, 1, att);
     if (readHandle == INVALID_HANDLE_VALUE) {
-        mprError("Cannot create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
+        mprError("Cannot create stdio pipes %s. Err %d", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     readFd = (int) (int64) _open_osfhandle((long) readHandle, 0);
@@ -6216,7 +6229,7 @@ static int makeChannel(MprCmd *cmd, int index)
     writeFd = (int) _open_osfhandle((long) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {
-        mprError("Cannot create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
+        mprError("Cannot create stdio pipes %s. Err %d", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     if (index == MPR_CMD_STDIN) {
@@ -8345,7 +8358,7 @@ static void mprDestroyDispatcher(MprDispatcher *dispatcher)
 static void manageDispatcher(MprDispatcher *dispatcher, int flags)
 {
     MprEventService     *es;
-    MprEvent            *q, *event;
+    MprEvent            *q, *event, *next;
 
     es = dispatcher->service;
 
@@ -8361,12 +8374,14 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
         //  MOB - is this lock needed?  Surely all threads are stopped.
         lock(es);
         q = dispatcher->eventQ;
-        for (event = q->next; event != q; event = event->next) {
+        for (event = q->next; event != q; event = next) {
+            next = event->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
         q = dispatcher->currentQ;
-        for (event = q->next; event != q; event = event->next) {
+        for (event = q->next; event != q; event = next) {
+            next = event->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
@@ -8466,7 +8481,11 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
     }
     justOne = (flags & MPR_SERVICE_ONE_THING) ? 1 : 0;
 
-    while (es->now < expires && !mprIsStoppingCore()) {
+    /*
+        Stop serviceing events when doing final shutdown of the core
+        Post-test for mprIsStopping so callers can pump remaining events once stopping has begun
+     */
+    while (es->now < expires) {
         eventCount = es->eventCount;
         if (MPR->signalService->hasSignals) {
             mprServiceSignals();
@@ -8476,6 +8495,7 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
             assure(dp->magic == MPR_DISPATCHER_MAGIC);
             if (!serviceDispatcher(dp)) {
                 queueDispatcher(es->pendingQ, dp);
+                es->pendingCount++;
                 continue;
             }
             if (justOne) {
@@ -8491,9 +8511,6 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
                 es->willAwake = es->now + delay;
                 unlock(es);
                 if (mprIsStopping()) {
-                    if (mprServicesAreIdle()) {
-                        break;
-                    }
                     delay = 10;
                 }
                 mprWaitForIO(MPR->waitService, delay);
@@ -8502,7 +8519,7 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
             }
         }
         es->now = mprGetTicks();
-        if (justOne) {
+        if (justOne || mprIsStopping()) {
             break;
         }
     }
@@ -8571,7 +8588,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
         unlock(es);
         
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
         if (mprWaitForCond(dispatcher->cond, delay) == 0) {
@@ -8747,21 +8764,35 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = dispatcher->service;
+    /*
+        OPT - mprGetNextEvent locks anyway, so should be able to get away without a lock here
+     */
     LOG(7, "dispatchEvents for %s", dispatcher->name);
     lock(es);
     assure(dispatcher->cond);
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    /*
+        Events are removed from the dispatcher queue and put onto the currentQ. This is so they will be marked for GC.
+        If the callback calls mprRemoveEvent, it will not remove from the currentQ. If it was a continuous event, 
+        mprRemoveEvent will clear the continuous flag.
+
+        OPT - this could all be simpler if dispatchEvents was never called recursively. Then a currentQ would not be needed,
+        and neither would a running flag. See mprRemoveEvent().
+     */
     for (count = 0; (dispatcher->flags & MPR_DISPATCHER_ENABLED) && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
         assure(event->magic == MPR_EVENT_MAGIC);
+        assure(!(event->flags & MPR_EVENT_RUNNING));
         unlock(es);
 
         LOG(7, "Call event %s", event->name);
         assure(event->proc);
+        event->flags |= MPR_EVENT_RUNNING;
         (event->proc)(event->data, event);
+        event->flags &= ~MPR_EVENT_RUNNING;
 
         lock(es);
-        if (event->continuous) {
+        if (event->flags & MPR_EVENT_CONTINUOUS) {
             /* Reschedule if continuous */
             event->timestamp = dispatcher->service->now;
             event->due = event->timestamp + (event->period ? event->period : 1);
@@ -8862,9 +8893,10 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     dispatcher = 0;
 
     lock(es);
-    if (pendingQ->next != pendingQ && mprAvailableWorkers()) {
-        /* No available workers to queue the dispatcher in the pending queue */
+    if (pendingQ->next != pendingQ && mprAvailableWorkers() > 0) {
         dispatcher = pendingQ->next;
+        dispatcher->service->pendingCount--;
+        assure(dispatcher->service->pendingCount >= 0);
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         queueDispatcher(es->runQ, dispatcher);
         assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
@@ -9500,10 +9532,13 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         memset(&ev, 0, sizeof(ev));
         ev.data.fd = fd;
         if (wp->desiredMask & MPR_READABLE) {
-            ev.events |= (EPOLLIN | EPOLLHUP);
+            ev.events |= EPOLLIN | EPOLLHUP;
         }
         if (wp->desiredMask & MPR_WRITABLE) {
             ev.events |= EPOLLOUT;
+        }
+        if (wp->desiredMask == (MPR_READABLE | MPR_WRITABLE)) {
+            ev.events |= EPOLLHUP;
         }
         if (ev.events) {
             rc = epoll_ctl(ws->epoll, EPOLL_CTL_DEL, fd, &ev);
@@ -9518,7 +9553,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             ev.events |= (EPOLLIN | EPOLLHUP);
         }
         if (mask & MPR_WRITABLE) {
-            ev.events |= EPOLLOUT;
+            ev.events |= EPOLLOUT | EPOLLHUP;
         }
         if (ev.events) {
             rc = epoll_ctl(ws->epoll, EPOLL_CTL_ADD, fd, &ev);
@@ -9553,7 +9588,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct epoll_event  ev, events[2];
-    int                 epfd, rc;
+    int                 epfd, rc, result;
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
@@ -9565,30 +9600,32 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
+    ev.events = 0;
     if (mask & MPR_READABLE) {
-        ev.events = (EPOLLIN | EPOLLHUP);
-        epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
+        ev.events = EPOLLIN | EPOLLHUP;
     }
     if (mask & MPR_WRITABLE) {
-        ev.events = EPOLLOUT;
+        ev.events = EPOLLOUT | EPOLLHUP;
+    }
+    if (ev.events) {
         epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
     }
-    mask = 0;
+    result = 0;
     rc = epoll_wait(epfd, events, sizeof(events) / sizeof(struct epoll_event), timeout);
     close(epfd);
     if (rc < 0) {
         mprLog(2, "Epoll returned %d, errno %d", rc, errno);
     } else if (rc > 0) {
         if (rc > 0) {
-            if (events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) {
-                mask |= MPR_READABLE;
+            if ((events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (mask & MPR_READABLE)) {
+                result |= MPR_READABLE;
             }
-            if (events[0].events & (EPOLLOUT)) {
-                mask |= MPR_WRITABLE;
+            if ((events[0].events & (EPOLLOUT | EPOLLHUP)) && (mask & MPR_WRITABLE)) {
+                result |= MPR_WRITABLE;
             }
         }
     }
-    return mask;
+    return result;
 }
 
 
@@ -9611,7 +9648,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
         mprDoWaitRecall(ws);
         return;
     }
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     rc = epoll_wait(ws->epoll, ws->events, ws->eventsMax, timeout);
     mprResetYield();
 
@@ -9651,7 +9688,7 @@ static void serviceIO(MprWaitService *ws, int count)
         if (ev->events & (EPOLLIN | EPOLLERR | EPOLLHUP)) {
             mask |= MPR_READABLE;
         }
-        if (ev->events & EPOLLOUT) {
+        if (ev->events & (EPOLLOUT | EPOLLHUP)) {
             mask |= MPR_WRITABLE;
         }
         if (mask == 0) {
@@ -9822,7 +9859,9 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
     event->dispatcher = dispatcher;
     event->next = event->prev = 0;
     event->flags = flags;
+#if UNUSED
     event->continuous = (flags & MPR_EVENT_CONTINUOUS) ? 1 : 0;
+#endif
     event->magic = MPR_EVENT_MAGIC;
 }
 
@@ -9885,14 +9924,15 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
     if (dispatcher) {
         es = dispatcher->service;
         lock(es);
-        if (event->next) {
+        if (event->next && !(event->flags & MPR_EVENT_RUNNING)) {
             mprDequeueEvent(event);
         }
+        event->dispatcher = 0;
+        event->flags &= ~MPR_EVENT_CONTINUOUS;
         if (dispatcher->flags & MPR_DISPATCHER_ENABLED && 
                 event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
             mprScheduleDispatcher(dispatcher);
         }
-        event->dispatcher = 0;
         unlock(es);
     }
 }
@@ -9923,20 +9963,29 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
 
 PUBLIC void mprStopContinuousEvent(MprEvent *event)
 {
-    event->continuous = 0;
+    lock(event->dispatcher->service);
+    event->flags &= ~MPR_EVENT_CONTINUOUS;
+    unlock(event->dispatcher->service);
 }
 
 
 PUBLIC void mprRestartContinuousEvent(MprEvent *event)
 {
-    event->continuous = 1;
+    lock(event->dispatcher->service);
+    event->flags |= MPR_EVENT_CONTINUOUS;
+    unlock(event->dispatcher->service);
     mprRescheduleEvent(event, event->period);
 }
 
 
 PUBLIC void mprEnableContinuousEvent(MprEvent *event, int enable)
 {
-    event->continuous = enable;
+    lock(event->dispatcher->service);
+    event->flags &= ~MPR_EVENT_CONTINUOUS;
+    if (enable) {
+        event->flags |= MPR_EVENT_CONTINUOUS;
+    }
+    unlock(event->dispatcher->service);
 }
 
 
@@ -11904,7 +11953,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct timespec ts;
     struct kevent   interest[2], events[1];
-    int             kq, interestCount, rc;
+    int             kq, interestCount, rc, result;
 
     if (timeout < 0) {
         timeout = MAXINT;
@@ -11920,22 +11969,22 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     ts.tv_sec = ((int) (timeout / 1000));
     ts.tv_nsec = ((int) (timeout % 1000)) * 1000 * 1000;
 
-    mask = 0;
+    result = 0;
     rc = kevent(kq, interest, interestCount, events, 1, &ts);
     close(kq);
     if (rc < 0) {
         mprLog(7, "Kevent returned %d, errno %d", rc, errno);
     } else if (rc > 0) {
         if (rc > 0) {
-            if (events[0].filter == EVFILT_READ) {
-                mask |= MPR_READABLE;
+            if (events[0].filter & EVFILT_READ) {
+                result |= MPR_READABLE;
             }
             if (events[0].filter == EVFILT_WRITE) {
-                mask |= MPR_WRITABLE;
+                result |= MPR_WRITABLE;
             }
         }
     }
-    return mask;
+    return result;
 }
 
 
@@ -11972,7 +12021,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     unlock(ws);
 
     LOG(8, "kevent sleep for %d", timeout);
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     rc = kevent(ws->kq, ws->stableInterest, ws->stableInterestCount, ws->events, ws->eventsMax, &ts);
     mprResetYield();
     LOG(8, "kevent wakes rc %d", rc);
@@ -12123,7 +12172,7 @@ PUBLIC MprList *mprCreateList(int size, int flags)
     }
     lp->maxSize = MAXINT;
     lp->flags = flags | MPR_OBJ_LIST;
-    if (!(flags & MPR_LIST_OWN)) {
+    if (!(flags & MPR_LIST_STABLE)) {
         lp->mutex = mprCreateLock();
     }
     if (size != 0) {
@@ -12161,7 +12210,7 @@ PUBLIC void mprInitList(MprList *lp, int flags)
     lp->length = 0;
     lp->maxSize = MAXINT;
     lp->items = 0;
-    lp->mutex = (flags & MPR_LIST_OWN) ? 0 : mprCreateLock();
+    lp->mutex = (flags & MPR_LIST_STABLE) ? 0 : mprCreateLock();
 }
 
 
@@ -12583,6 +12632,28 @@ PUBLIC void *mprGetNextItem(MprList *lp, int *next)
         return item;
     }
     unlock(lp);
+    return 0;
+}
+
+
+PUBLIC void *mprGetNextStableItem(MprList *lp, int *next)
+{
+    void    *item;
+    int     index;
+
+    assure(next);
+    assure(*next >= 0);
+    assure(lp->flags & MPR_LIST_STABLE);
+
+    if (lp == 0) {
+        return 0;
+    }
+    index = *next;
+    if (index < lp->length) {
+        item = lp->items[index];
+        *next = ++index;
+        return item;
+    }
     return 0;
 }
 
@@ -13592,13 +13663,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
     int         mode;
     static int  check = 0;
 
-#if !BIT_LOCK_FIX
-    lock(MPR);
-#endif
     if ((file = MPR->logFile) == 0) {
-#if !BIT_LOCK_FIX
-        unlock(MPR);
-#endif
         return;
     }
     prefix = MPR->name;
@@ -13606,9 +13671,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
     if (MPR->logBackup > 0 && MPR->logSize && (check++ % 1000) == 0) {
         mprGetPathInfo(MPR->logPath, &info);
         if (info.valid && info.size > MPR->logSize) {
-#if BIT_LOCK_FIX
             lock(MPR);
-#endif
             mprSetLogFile(0);
             mprBackupLog(MPR->logPath, MPR->logBackup);
             mode = O_CREAT | O_WRONLY | O_TEXT;
@@ -13618,9 +13681,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
                 return;
             }
             mprSetLogFile(file);
-#if BIT_LOCK_FIX
             unlock(MPR);
-#endif
         }
     }
     while (*msg == '\n') {
@@ -13651,9 +13712,6 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
     } else if (flags & MPR_RAW) {
         mprWriteFileString(file, msg);
     }
-#if !BIT_LOCK_FIX
-    unlock(MPR);
-#endif
 }
 
 
@@ -16744,7 +16802,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
                 pollfd->events |= POLLIN | POLLHUP;
             }
             if (mask & MPR_WRITABLE) {
-                pollfd->events |= POLLOUT;
+                pollfd->events |= POLLOUT | POLLHUP;
             }
             wp->desiredMask = mask;
         }
@@ -16778,7 +16836,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct pollfd   fds[1];
-    int             rc;
+    int             rc, result;
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
@@ -16791,22 +16849,22 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
         fds[0].events |= POLLIN | POLLHUP;
     }
     if (mask & MPR_WRITABLE) {
-        fds[0].events |= POLLOUT;
+        fds[0].events |= POLLOUT | POLLHUP;
     }
-    mask = 0;
 
+    result = 0;
     rc = poll(fds, 1, (int) timeout);
     if (rc < 0) {
         mprLog(8, "Poll returned %d, errno %d", rc, mprGetOsError());
     } else if (rc > 0) {
-        if (fds[0].revents & (POLLIN | POLLHUP)) {
-            mask |= MPR_READABLE;
+        if ((fds[0].revents & (POLLIN | POLLHUP)) && (mask & MPR_READABLE)) {
+            result |= MPR_READABLE;
         }
-        if (fds[0].revents & POLLOUT) {
-            mask |= MPR_WRITABLE;
+        if ((fds[0].revents & (POLLOUT | POLLHUP)) && (mask & MPR_WRITABLE)) {
+            result |= MPR_WRITABLE;
         }
     }
-    return mask;
+    return result;
 }
 
 
@@ -16837,7 +16895,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     }
     unlock(ws);
 
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     rc = poll(ws->pollFds, count, (int) timeout);
     mprResetYield();
 
@@ -16868,7 +16926,7 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count)
         if (fp->revents & (POLLIN | POLLHUP | POLLERR | POLLNVAL)) {
             mask |= MPR_READABLE;
         }
-        if (fp->revents & POLLOUT) {
+        if (fp->revents & (POLLOUT | POLLHUP)) {
             mask |= MPR_WRITABLE;
         }
         assure(mask);
@@ -18456,7 +18514,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     maxfd = ws->highestFd + 1;
     unlock(ws);
 
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     rc = select(maxfd, &ws->stableReadMask, &ws->stableWriteMask, NULL, &tval);
     mprResetYield();
 
@@ -19151,6 +19209,27 @@ static void resetSocket(MprSocket *sp)
 }
 
 
+PUBLIC bool mprHasDualNetworkStack() 
+{
+    bool dual;
+
+#if defined(BIT_HAS_SINGLE_STACK) || VXWORKS
+    dual = 0;
+#elif WINDOWS
+    {
+        OSVERSIONINFO info;
+        info.dwOSVersionInfoSize = sizeof(info);
+        GetVersionEx(&info);
+        /* Vista or later */
+        dual = info.dwMajorVersion >= 6;
+    }
+#else
+    dual = 1;
+#endif
+    return dual;
+}
+
+
 /*  
     Open a server connection
  */
@@ -19167,7 +19246,8 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
     MprSocklen          addrlen;
-    int                 datagram, family, protocol, rc;
+    cchar               *sip;
+    int                 datagram, family, protocol, rc, only;
 
     lock(sp);
 
@@ -19185,7 +19265,13 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
          MPR_SOCKET_LISTENER | MPR_SOCKET_NOREUSE | MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD));
 
     datagram = sp->flags & MPR_SOCKET_DATAGRAM;
-    if (mprGetSocketInfo(ip, port, &family, &protocol, &addr, &addrlen) < 0) {
+    /*
+        Change null IP address to be an IPv6 endpoint if the system is dual-stack. That way we can listen on 
+        both IPv4 and IPv6
+     */
+    sip = ((ip == 0 || *ip == '\0') && mprHasDualNetworkStack()) ? "::" : ip;
+
+    if (mprGetSocketInfo(sip, port, &family, &protocol, &addr, &addrlen) < 0) {
         unlock(sp);
         return MPR_ERR_CANT_FIND;
     }
@@ -19202,10 +19288,25 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     fcntl(sp->fd, F_SETFD, FD_CLOEXEC);
 #endif
 
-#if BIT_UNIX_LIKE
     if (!(sp->flags & MPR_SOCKET_NOREUSE)) {
         rc = 1;
+#if BIT_UNIX_LIKE
         setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR, (char*) &rc, sizeof(rc));
+#elif BIT_WIN_LIKE && defined(SO_EXCLUSIVEADDRUSE)
+        setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR | SO_EXCLUSIVEADDRUSE, (char*) &rc, sizeof(rc));
+#endif
+    }
+    /*
+        By default, most stacks listen on both IPv6 and IPv4 if ip == 0, except windows which inverts this.
+        So we explicitly control.
+     */
+#if defined(IPV6_V6ONLY)
+    if (ip == 0 || *ip == '\0') {
+        only = 0;
+        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+    } else if (ipv6(ip)) {
+        only = 1;
+        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
     }
 #endif
     if (sp->service->prebind) {
@@ -19532,7 +19633,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     addrlen = sizeof(addrStorage);
 
     if (listen->flags & MPR_SOCKET_BLOCK) {
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     }
     fd = (int) accept(listen->fd, addr, &addrlen);
     if (listen->flags & MPR_SOCKET_BLOCK) {
@@ -19639,7 +19740,7 @@ static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize)
     }
 again:
     if (sp->flags & MPR_SOCKET_BLOCK) {
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     }
     if (sp->flags & MPR_SOCKET_DATAGRAM) {
         len = sizeof(server);
@@ -19735,7 +19836,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
         while (len > 0) {
             unlock(sp);
             if (sp->flags & MPR_SOCKET_BLOCK) {
-                mprYield(MPR_YIELD_STICKY);
+                mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
             }
             if ((sp->flags & MPR_SOCKET_BROADCAST) || (sp->flags & MPR_SOCKET_DATAGRAM)) {
                 written = sendto(sp->fd, &((char*) buf)[sofar], (int) len, MSG_NOSIGNAL, addr, addrlen);
@@ -19764,7 +19865,10 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
                     }
 #endif
                     unlock(sp);
-                    return sofar;
+                    if (sofar) {
+                        return sofar;
+                    }
+                    return -errCode;
                 }
                 unlock(sp);
                 return -errCode;
@@ -19810,6 +19914,9 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
         for (total = i = 0; i < count; ) {
             written = mprWriteSocket(sp, start, len);
             if (written < 0) {
+                if (total > 0) {
+                    break;
+                }
                 return written;
             } else if (written == 0) {
                 break;
@@ -19871,7 +19978,7 @@ PUBLIC MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset,
     if (file && file->fd >= 0) {
         written = bytes;
         if (sock->flags & MPR_SOCKET_BLOCK) {
-            mprYield(MPR_YIELD_STICKY);
+            mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         }
         rc = sendfile(file->fd, sock->fd, offset, &written, &def, 0);
         if (sock->flags & MPR_SOCKET_BLOCK) {
@@ -19915,7 +20022,7 @@ PUBLIC MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset,
             while (!done && toWriteFile > 0) {
                 nbytes = (ssize) min(MAXSSIZE, toWriteFile);
                 if (sock->flags & MPR_SOCKET_BLOCK) {
-                    mprYield(MPR_YIELD_STICKY);
+                    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
                 }
 #if LINUX && !__UCLIBC__
     #if BIT_HAS_OFF64
@@ -21640,7 +21747,6 @@ PUBLIC char *supper(cchar *str)
 
 /*
     Expand ${token} references in a path or string.
-    Currently support DOCUMENT_ROOT, SERVER_ROOT and PRODUCT, OS and VERSION.
  */
 PUBLIC char *stemplate(cchar *str, MprHash *keys)
 {
@@ -23361,7 +23467,7 @@ PUBLIC void mprSetMinWorkers(int n)
     while (ws->numThreads < ws->minThreads) {
         worker = createWorker(ws, ws->stackSize);
         ws->numThreads++;
-        ws->maxUseThreads = max(ws->numThreads, ws->maxUseThreads);
+        ws->maxUsedThreads = max(ws->numThreads, ws->maxUsedThreads);
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
     }
@@ -23441,16 +23547,52 @@ PUBLIC void mprSetWorkerStartCallback(MprWorkerProc start)
 }
 
 
-PUBLIC int mprAvailableWorkers()
+PUBLIC void mprGetWorkerStats(MprWorkerStats *stats)
 {
     MprWorkerService    *ws;
-    int                 count;
+    MprWorker           *wp;
+    int                 next;
 
     ws = MPR->workerService;
+
     lock(ws);
-    count = mprGetListLength(ws->idleThreads) + (ws->maxThreads - ws->numThreads);
+    stats->max = ws->maxThreads;
+    stats->min = ws->minThreads;
+    stats->maxUsed = ws->maxUsedThreads;
+
+    stats->idle = (int) ws->idleThreads->length;
+    stats->busy = (int) ws->busyThreads->length;
+
+    stats->yielded = 0;
+    for (ITERATE_ITEMS(ws->busyThreads, wp, next)) {
+        /*
+            Only count as yielded, those workers who call yield from their user code
+            This excludes the yield in worker main
+         */
+        stats->yielded += (wp->thread->yielded && wp->running);
+    }
     unlock(ws);
-    return count;
+}
+
+
+PUBLIC int mprAvailableWorkers()
+{
+    MprWorkerStats  wstats;
+    int             activeWorkers, spareThreads, spareCores, result;
+
+    mprGetWorkerStats(&wstats);
+    spareThreads = wstats.max - wstats.busy - wstats.idle;
+    activeWorkers = wstats.busy - wstats.yielded;
+    spareCores = MPR->heap->stats.numCpu - activeWorkers;
+    if (spareCores <= 0 || spareThreads <= 0) {
+        return 0;
+    }
+    result = wstats.idle + min(spareThreads, spareCores);
+#if KEEP
+    printf("Avail %d, busy %d, yielded %d, idle %d, spare-threads %d, spare-cores %d, mustYield %d\n", result, wstats.busy,
+        wstats.yielded, wstats.idle, spareThreads, spareCores, MPR->heap->mustYield);
+#endif
+    return result;
 }
 
 
@@ -23458,7 +23600,6 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
-    static int          warnOnceWorkers = 0;
 
     ws = MPR->workerService;
     lock(ws);
@@ -23471,34 +23612,24 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
      */
     worker = mprGetLastItem(ws->idleThreads);
     if (worker) {
-        worker->proc = proc;
         worker->data = data;
+        worker->proc = proc;
         changeState(worker, MPR_WORKER_BUSY);
 
     } else if (ws->numThreads < ws->maxThreads) {
-
-        /*
-            Cannot find an idle thread. Try to create more workers in the pool. Otherwise, we will have to wait. 
-            No need to wakeup the thread -- it will immediately go to work.
-         */
+        if (mprAvailableWorkers() == 0) {
+            unlock(ws);
+            return MPR_ERR_BUSY;
+        }
         worker = createWorker(ws, ws->stackSize);
-
         ws->numThreads++;
-        ws->maxUseThreads = max(ws->numThreads, ws->maxUseThreads);
-        worker->proc = proc;
+        ws->maxUsedThreads = max(ws->numThreads, ws->maxUsedThreads);
         worker->data = data;
-
+        worker->proc = proc;
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
 
     } else {
-        /*
-            No free workers and can't create anymore
-         */
-        if (!warnOnceWorkers) {
-            warnOnceWorkers = 1;
-            mprError("No free workers. Increase ThreadLimit. (Count %d of %d)", ws->numThreads, ws->maxThreads);
-        }
         unlock(ws);
         return MPR_ERR_BUSY;
     }
@@ -23539,15 +23670,6 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
 }
 
 
-PUBLIC int mprGetAvailableWorkers()
-{
-    MprWorkerService  *ws;
-
-    ws = MPR->workerService;
-    return (int) ws->idleThreads->length + (ws->maxThreads - ws->numThreads); 
-}
-
-
 static int getNextThreadNum(MprWorkerService *ws)
 {
     int     rc;
@@ -23568,19 +23690,6 @@ PUBLIC void mprSetWorkerStackSize(int n)
 }
 
 
-PUBLIC void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
-{
-    assure(ws);
-
-    stats->maxThreads = ws->maxThreads;
-    stats->minThreads = ws->minThreads;
-    stats->numThreads = ws->numThreads;
-    stats->maxUse = ws->maxUseThreads;
-    stats->idleThreads = (int) ws->idleThreads->length;
-    stats->busyThreads = (int) ws->busyThreads->length;
-}
-
-
 /*
     Create a new thread for the task
  */
@@ -23593,11 +23702,12 @@ static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize)
     if ((worker = mprAllocObj(MprWorker, manageWorker)) == 0) {
         return 0;
     }
-    worker->flags = 0;
+#if UNUSED
     worker->proc = 0;
     worker->cleanup = 0;
     worker->data = 0;
     worker->state = 0;
+#endif
     worker->workerService = ws;
     worker->idleCond = mprCreateCond();
 
@@ -23630,47 +23740,36 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     if (ws->startWorker) {
         (*ws->startWorker)(worker->data, worker);
     }
-#if !BIT_LOCK_FIX
-    lock(ws);
-#endif
-
-    while (!(worker->state & MPR_WORKER_PRUNED) && !mprIsStopping()) {
+    /*
+        Very important for performance to elimminate to locking the WorkerService
+     */
+    while (!(worker->state & MPR_WORKER_PRUNED)) {
         if (worker->proc) {
-#if !BIT_LOCK_FIX
-            unlock(ws);
-#endif
+            worker->running = 1;
             (*worker->proc)(worker->data, worker);
-#if !BIT_LOCK_FIX
-            lock(ws);
-#endif
-            worker->proc = 0;
+            worker->running = 0;
         }
         worker->lastActivity = MPR->eventService->now;
-        changeState(worker, MPR_WORKER_IDLE);
-
+        if (mprIsStopping()) {
+            break;
+        }
         assure(worker->cleanup == 0);
         if (worker->cleanup) {
             (*worker->cleanup)(worker->data, worker);
             worker->cleanup = NULL;
         }
+        worker->proc = 0;
         worker->data = 0;
-#if !BIT_LOCK_FIX
-        unlock(ws);
-#endif
+        changeState(worker, MPR_WORKER_IDLE);
 
         /*
             Sleep till there is more work to do. Yield for GC first.
          */
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         mprWaitForCond(worker->idleCond, -1);
         mprResetYield();
-#if !BIT_LOCK_FIX
-        lock(ws);
-#endif
     }
-#if BIT_LOCK_FIX
     lock(ws);
-#endif
     changeState(worker, 0);
     worker->thread = 0;
     ws->numThreads--;
@@ -25712,7 +25811,7 @@ PUBLIC void mprNap(MprTicks timeout)
 
 PUBLIC void mprSleep(MprTicks timeout)
 {
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     mprNap(timeout);
     mprResetYield();
 }
@@ -25741,6 +25840,40 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 PUBLIC int mprInitWindow()
 {
     return 0;
+}
+
+
+PUBLIC void mprSetFilesLimit(int limit)
+{
+    struct rlimit r;
+    int           i;
+
+    if (limit == 0 || limit == MAXINT) {
+        /*
+            We need to determine a reasonable maximum possible limit value.
+            There is no #define we can use for this, so we test to determine it empirically
+         */
+        for (limit = 0x40000000; limit > 0; limit >>= 1) {
+            r.rlim_cur = r.rlim_max = limit;
+            if (setrlimit(RLIMIT_NOFILE, &r) == 0) {
+                for (i = (limit >> 4) * 15; i > 0; i--) {
+                    r.rlim_max = r.rlim_cur = limit + i;
+                    if (setrlimit(RLIMIT_NOFILE, &r) == 0) {
+                        limit = 0;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    } else {
+        r.rlim_cur = r.rlim_max = limit;
+        if (setrlimit(RLIMIT_NOFILE, &r) < 0) {
+            mprError("Can't set file limit to %d", limit);
+        }
+    }
+    getrlimit(RLIMIT_NOFILE, &r);
+    mprLog(6, "Set files limit to soft %d, max %d", r.rlim_cur, r.rlim_max);
 }
 
 #endif /* BIT_UNIX_LIKE */
@@ -25899,7 +26032,7 @@ PUBLIC void mprNap(MprTicks milliseconds)
 
 PUBLIC void mprSleep(MprTicks timeout)
 {
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     mprNap(timeout);
     mprResetYield();
 }
@@ -26168,7 +26301,9 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
         dispatcher = (wp->dispatcher) ? wp->dispatcher: mprGetDispatcher();
     }
     event = wp->event = mprCreateEvent(dispatcher, "IOEvent", 0, ioEvent, wp->handlerData, MPR_EVENT_DONT_QUEUE);
+#if UNUSED
     event->fd = wp->fd;
+#endif
     event->mask = wp->presentMask;
     event->handler = wp;
     mprQueueEvent(dispatcher, event);
@@ -27563,7 +27698,7 @@ PUBLIC void mprNap(MprTicks timeout)
 
 PUBLIC void mprSleep(MprTicks timeout)
 {
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     mprNap(timeout);
     mprResetYield();
 }
@@ -28013,7 +28148,7 @@ PUBLIC void mprSleep(MprTicks timeout)
 
 PUBLIC void mprSleep(MprTicks timeout)
 {
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     mprNap(timeout);
     mprResetYield();
 }

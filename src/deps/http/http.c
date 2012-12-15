@@ -891,14 +891,22 @@ static void readBody(HttpConn *conn, MprFile *outFile)
     if (app->noout) {
         return;
     }
-#if UNUSED
-    if (app->noout || rx->status == 401 || (conn->followRedirects && (301 <= rx->status && rx->status <= 302))) {
-        return;
-    }
-#endif
     while (!conn->error && conn->sock && (bytes = httpRead(conn, buf, sizeof(buf))) > 0) {
         result = formatOutput(conn, buf, &bytes);
         mprWriteFile(outFile, result, bytes);
+#if FUTURE
+        //  This should be pushed into a range filter.
+        //  Buffer all output and then parsing can work  
+        type = httpGetHeader(conn, "Content-Type");
+        if (scontains(type, "multipart/byteranges")) {
+            if ((boundary = scontains(type, "boundary=")) != 0) {
+                boundary += 9;
+                if (*boundary) {
+                    boundary = sfmt("--%s\r\n", boundary);
+                }
+            }
+        }
+#endif
     }
 }
 
