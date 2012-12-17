@@ -1749,11 +1749,12 @@ static void fixupFile(HttpRoute *route, cchar *path)
     data = sreplace(data, "${LISTEN}", app->listen);
     data = sreplace(data, "${LIBDIR}", app->libDir);
 
-    tmp = mprGetTempPath(0);
+    tmp = mprGetTempPath(route->dir);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
         fail("Cannot write %s", path);
         return;
     }
+    unlink(path);
     if (rename(tmp, path) < 0) {
         fail("Cannot rename %s to %s", tmp, path);
     }

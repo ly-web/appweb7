@@ -110,6 +110,16 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/88">[issue 88].</a></li>
                 <li>Linux epoll waiting now detects hangup on writable sockets.
                     <a href="https://github.com/embedthis/appweb-4/issues/89">[issue 89].</a></li>
+                <li>Improve WebSockets error handling.
+                    <a href="https://github.com/embedthis/appweb-4/issues/91">[issue 91].</a></li>
+                <li>Improve connector end-of-output handling
+                    <a href="https://github.com/embedthis/appweb-4/issues/92">[issue 92].</a></li>
+                <li>External redirects that use a different scheme and the Redirect directive
+                    <a href="https://github.com/embedthis/appweb-4/issues/93">[issue 93].</a></li>
+                <li>Graceful shutdowns should wait for open requests to complete before stopping or restarting.
+                    <a href="https://github.com/embedthis/appweb-4/issues/94">[issue 94].</a></li>
+                <li>Added client IP to session lookup to strengthen session hijack preventions.
+                    <a href="https://github.com/embedthis/appweb-4/issues/95">[issue 95].</a></li>
             </ul>
             <h3>API Changes</h3>
             <ul>
@@ -122,8 +132,9 @@
             <h3>Fixes</h3>
             <ul>
                 <li>Esp command was crashing on initialization
-                    <a href="https://github.com/embedthis/appweb-4/issues/85">[issue 85].</a>
-                </li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/85">[issue 85].</a></li>
+                <li>Fix esp generate app, on windows
+                    <a href="https://github.com/embedthis/appweb-4/issues/90">[issue 90].</a></li>
             </ul>
             <a id="r4.1.0"></a>
             <h2 class="section">Changes in 4.1.0</h2>
@@ -316,6 +327,10 @@
                 <li>Add missing MA_MAX_REQUESTS and MA_MAX_PROCESSES for various tune settings
                     <a href="https://github.com/embedthis/appweb-3/issues/37">[issue 37].</a>
                 </li>
+                <li>Add support to permit changing a request timeout by updating conn->expires
+                    <a href="https://github.com/embedthis/appweb-3/issues/38">[issue 38].</a>
+                </li>
+            </ul>
             </ul>
             
             <a id="r3.4.0"></a>

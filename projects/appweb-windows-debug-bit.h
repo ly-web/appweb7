@@ -241,3 +241,45 @@
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1
 #endif
+#ifndef BIT_PACK_BIT_PATH
+    #define BIT_PACK_BIT_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/bit"
+#endif
+#ifndef BIT_PACK_CGI_PATH
+    #define BIT_PACK_CGI_PATH "/Users/mob/git/appweb/src/modules/cgiHandler.c"
+#endif
+#ifndef BIT_PACK_COMPILER_PATH
+    #define BIT_PACK_COMPILER_PATH "cl.exe"
+#endif
+#ifndef BIT_PACK_DIR_PATH
+    #define BIT_PACK_DIR_PATH "/Users/mob/git/appweb/src/dirHandler.c"
+#endif
+#ifndef BIT_PACK_ESP_PATH
+    #define BIT_PACK_ESP_PATH "/Users/mob/git/appweb/src/esp/espHandler.c"
+#endif
+#ifndef BIT_PACK_HTTP_PATH
+    #define BIT_PACK_HTTP_PATH "${BIN}/http"
+#endif
+#ifndef BIT_PACK_LIB_PATH
+    #define BIT_PACK_LIB_PATH "lib.exe"
+#endif
+#ifndef BIT_PACK_LINK_PATH
+    #define BIT_PACK_LINK_PATH "link.exe"
+#endif
+#ifndef BIT_PACK_PCRE_PATH
+    #define BIT_PACK_PCRE_PATH "/Users/mob/git/appweb/src/deps/pcre"
+#endif
+#ifndef BIT_PACK_RC_PATH
+    #define BIT_PACK_RC_PATH "rc.exe"
+#endif
+#ifndef BIT_PACK_SQLITE_PATH
+    #define BIT_PACK_SQLITE_PATH "/Users/mob/git/appweb/src/deps/sqlite"
+#endif
+#ifndef BIT_PACK_UTEST_PATH
+    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
+#endif
+#ifndef BIT_PACK_WINSDK_PATH
+    #define BIT_PACK_WINSDK_PATH "$(SDK)"
+#endif
+#ifndef BIT_PACK_ZIP_PATH
+    #define BIT_PACK_ZIP_PATH "/usr/bin/zip"
+#endif

@@ -106,9 +106,9 @@
             their outer route block. For example:</p>
 <pre>
 &lt;Route /info/ &gt;
-    DocumentRoot /public-docs
+    Documents /public-docs
     &lt;Route /info/private/ &gt;
-        DocumentRoot /confidential-docs
+        Documents /confidential-docs
         AuthType digest
         AuthName "Top-Secret"
         Require valid-user
@@ -141,9 +141,9 @@
             The <em>directory</em> rule evaluates if the filename is a directory. The <em>match</em> rule
             tests the string argument against a regular expression pattern.
             A route may have any number of condition directives.</p>
-            <h3><a href="dir/route.html#documentRoot">DocumentRoot</a></h3>
-            <p>The directory containing documents can be defined via the <em>DocumentRoot</em> directive. If the client
-            is requesting a physical document, the request URI is appended to the DocumentRoot directory to locate the 
+            <h3><a href="dir/route.html#documentRoot">Documents</a></h3>
+            <p>The directory containing documents can be defined via the <em>Documents</em> directive. If the client
+            is requesting a physical document, the request URI is appended to the Documents directory to locate the 
             file to serve.</p>
             <h3><a href="dir/route.html#Header">Header</a></h3>
             <p>Header directives can define a required header and value that must be present for the route to be selected. 
@@ -198,7 +198,7 @@
             <p>Target, Condition and Update directives can reference tokenized values that are expanded
             when evaluated at run-time. There are three classes of tokens:</p>
             <ul>  
-                <li>System variables &mdash; DOCUMENT_ROOT, LIBDIR, PRODUCT, OS, SERVER_ROOT, VERSION.</li>
+                <li>System/Route variables &mdash; DOCUMENTS, LIBDIR, PRODUCT, OS, ROUTE_HOME, VERSION.</li>
                 <li>Route URI tokens &mdash; these are the braced tokens in the route pattern.</li>
                 <li>Request tokens &mdash; these are request state and property values.</li>
             </ul>
@@ -422,7 +422,7 @@ Target write 200 "Running controller ${controller} action ${action}\n\n"
             <p>To secure private content :</p>
 <pre>
 &lt;Route /private/ &gt;
-    DocumentRoot /private-docs
+    Documents /private-docs
     AuthType digest
     AuthName "Top-Secret"
     Require valid-user
@@ -433,7 +433,7 @@ Target write 200 "Running controller ${controller} action ${action}\n\n"
                 request document filename.</p>
 <pre>
 &lt;Route ^/store/ &gt;
-    DocumentRoot /store-app
+    Documents /store-app
     SetHandler phpHandler
     Target run $&amp;.php
 &lt;/Route&gt;
@@ -477,7 +477,7 @@ Target write 200 "Running controller ${controller} action ${action}\n\n"
 <pre>
 &lt;Route /manage/ &gt;
     Prefix /manage
-    DocumentRoot manage-app
+    Documents manage-app
     SetHandler espHandler
     &lt;Route /manage/{controller}/{action}&gt;
         Target run ${controller}-${action}

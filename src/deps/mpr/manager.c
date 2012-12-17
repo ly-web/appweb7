@@ -738,12 +738,11 @@ static int makeDaemon()
         return MPR_ERR_BAD_STATE;
     }
     /*
-        Close all open files
+        Close stdio so shells won't hang
      */
-    for (i = 0; i < 128; i++) {
+    for (i = 0; i < 3; i++) {
         close(i);
     }
-
     /*
         Fork twice to get a free child with no parent
      */

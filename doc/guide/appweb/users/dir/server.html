@@ -40,10 +40,10 @@
                 <li><a href="#addType">AddType</a></li>
                 <li><a href="#chroot">Chroot</a></li>
                 <li><a href="#groupAccount">GroupAccount</a></li>
+                <li><a href="#home">Home</a></li>
                 <li><a href="#listen">Listen</a></li>
                 <li><a href="#protocol">Protocol</a></li>
                 <li><a href="#serverName">ServerName</a></li>
-                <li><a href="#serverRoot">ServerRoot</a></li>
                 <li><a href="#typesConfig">TypesConfig</a></li>
                 <li><a href="#user">UserAccount</a></li>
             </ul>
@@ -212,6 +212,37 @@ application/x-appweb-php php
                 </tbody>
             </table>
             
+            <a id="home"></a>
+            <h2>Home</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Directory containing the core Appweb installation files</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>Home directoryPath</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>Home /etc/appweb</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The Home is by default /etc/appweb on Linux and "C:\appweb" on Windows. It is
+                            important that the server root directory be protected against modification by other users.
+                            It should be owned by either root or administrator and should only be writable by these
+                            users.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
             <a id="listen"></a>
             <h2>Listen</h2>
             <table class="directive" title="directive">
@@ -317,37 +348,9 @@ application/x-appweb-php php
                         </td>
                     </tr>
                 </tbody>
-            </table><a id="serverRoot"></a>
-            <h2>ServerRoot</h2>
-            <table class="directive" title="directive">
-                <tbody>
-                    <tr>
-                        <td class="pivot">Description</td>
-                        <td>Directory containing the core Appweb installation files</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Synopsis</td>
-                        <td>ServerRoot directoryPath</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Context</td>
-                        <td>Default server</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Example</td>
-                        <td>ServerRoot /etc/appweb</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Notes</td>
-                        <td>
-                            <p>The ServerRoot is by default /etc/appweb on Linux and "C:\appweb" on Windows. It is
-                            important that the server root directory be protected against modification by other users.
-                            It should be owned by either root or administrator and should only be writable by these
-                            users.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table><a id="typesConfig"></a>
+            </table>
+            
+            <a id="typesConfig"></a>
             <h2>TypesConfig</h2>
             <table class="directive" title="directive">
                 <tbody>
@@ -375,8 +378,7 @@ application/x-appweb-php php
                             determine the document content type which is included in the HTTP response back to the
                             browser. The MIME types file included with Appweb follows the standard specified by
                             IANA.</p>
-                            <p>The directory path may be an absolute path or it may be relative to the ServerRoot
-                            directory.</p>
+                            <p>The directory path may be an absolute path or it may be relative to the Home directory.</p>
                             <p>The MIME types file has lines of the format:</p>
                             <pre>
 ApplicationType [extensions]...

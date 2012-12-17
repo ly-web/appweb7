@@ -409,6 +409,7 @@ static int authStoreDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     AuthRealm name
+    DEPRECATED
  */
 static int authRealmDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -524,13 +525,13 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
 
         } else if (smatch(option, "client")) {
             flags |= HTTP_CACHE_CLIENT;
-            if (snumber(ovalue)) {
+            if (ovalue) {
                 clientLifespan = getticks(ovalue);
             }
 
         } else if (smatch(option, "server")) {
             flags |= HTTP_CACHE_SERVER;
-            if (snumber(ovalue)) {
+            if (ovalue) {
                 serverLifespan = getticks(ovalue);
             }
 
