@@ -1,5 +1,7 @@
 /*
     appweb.h -- Embedthis Appweb HTTP Web Server header
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 
 #ifndef _h_APPWEB
@@ -16,17 +18,17 @@ extern "C" {
 
 /********************************* Tunables ***********************************/
 
-#define MA_SERVER_NAME          "Embedthis-Appweb/" BIT_VERSION
-
 #define MA_UNLOAD_TIMEOUT       "5mins"             /**< Default module inactivity unload timeout */
+
+#if UNUSED
 #define MA_MAX_CONFIG_DEPTH     16                  /**< Max nest of directives in config file */
 #define MA_MAX_ACCESS_LOG       20971520            /**< Access file size (20 MB) */
 #define MA_MAX_REWRITE          10                  /**< Maximum recursive URI rewrites */
 #define MA_SDB_MEMORY           (20 * 1024 * 1024)  /**< SQLite heap memory */
 #define MA_SDB_TIMEOUT          (20 * 1000)         /**< SQLite busy timeout */
-
 #undef HTTP_NAME
 #define HTTP_NAME               MA_SERVER_NAME      /**< Default server software identification name */
+#endif
 
 /********************************** Defines ***********************************/
 

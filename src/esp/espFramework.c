@@ -638,7 +638,7 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 {
     MprFile     *from;
     ssize       count, written, nbytes;
-    char        buf[MPR_BUFSIZE];
+    char        buf[BIT_MAX_BUFFER];
 
     if ((from = mprOpenFile(path, O_RDONLY | O_BINARY, 0)) == 0) {
         return MPR_ERR_CANT_OPEN;
@@ -888,7 +888,7 @@ PUBLIC void espShowRequest(HttpConn *conn)
     HttpRx      *rx;
     HttpQueue   *q;
     cchar       *query;
-    char        qbuf[MPR_MAX_STRING], **keys, *value;
+    char        qbuf[BIT_MAX_URI], **keys, *value;
     int         i, numKeys;
 
     rx = conn->rx;

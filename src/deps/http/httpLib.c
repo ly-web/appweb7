@@ -1641,7 +1641,7 @@ PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
             return (ssize) min(rx->remainingContent, mprGetBufLength(buf));
         }
         /* End of chunk - prep for the next chunk */
-        rx->remainingContent = HTTP_BUFSIZE;
+        rx->remainingContent = BIT_MAX_BUFFER;
         rx->chunkState = HTTP_CHUNK_START;
         /* Fall through */
 
@@ -2012,7 +2012,7 @@ PUBLIC void httpEnableUpload(HttpConn *conn)
 static int blockingFileCopy(HttpConn *conn, cchar *path)
 {
     MprFile     *file;
-    char        buf[MPR_BUFSIZE];
+    char        buf[BIT_MAX_BUFFER];
     ssize       bytes, nbytes, offset;
 
     file = mprOpenFile(path, O_RDONLY | O_BINARY, 0);
@@ -2656,12 +2656,12 @@ static HttpPacket *getPacket(HttpConn *conn, ssize *size)
     MprBuf      *content;
 
     if ((packet = conn->input) == NULL) {
-        conn->input = packet = httpCreateDataPacket(HTTP_BUFSIZE);
+        conn->input = packet = httpCreateDataPacket(BIT_MAX_BUFFER);
     } else {
         content = packet->content;
         mprResetBufIfEmpty(content);
         mprAddNullToBuf(content);
-        if (mprGetBufSpace(content) < HTTP_BUFSIZE && mprGrowBuf(content, HTTP_BUFSIZE) < 0) {
+        if (mprGetBufSpace(content) < BIT_MAX_BUFFER && mprGrowBuf(content, BIT_MAX_BUFFER) < 0) {
             return 0;
         }
     }
@@ -3318,7 +3318,7 @@ PUBLIC HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *disp
     }
     http = MPR->httpService;
     endpoint->http = http;
-    endpoint->clientLoad = mprCreateHash(HTTP_CLIENTS_HASH, MPR_HASH_STATIC_VALUES);
+    endpoint->clientLoad = mprCreateHash(BIT_MAX_CLIENTS_HASH, MPR_HASH_STATIC_VALUES);
     endpoint->async = 1;
     endpoint->http = MPR->httpService;
     endpoint->port = port;
@@ -3385,7 +3385,7 @@ PUBLIC HttpEndpoint *httpCreateConfiguredEndpoint(cchar *home, cchar *documents,
         } else {
             ip = "localhost";
             if (port <= 0) {
-                port = HTTP_DEFAULT_PORT;
+                port = BIT_HTTP_PORT;
             }
             if ((endpoint = httpCreateEndpoint(ip, port, NULL)) == 0) {
                 return 0;
@@ -4191,7 +4191,7 @@ PUBLIC HttpHost *httpCreateHost()
     if ((host->responseCache = mprCreateCache(MPR_CACHE_SHARED)) == 0) {
         return 0;
     }
-    mprSetCacheLimits(host->responseCache, 0, HTTP_CACHE_LIFESPAN, 0, 0);
+    mprSetCacheLimits(host->responseCache, 0, BIT_MAX_CACHE_DURATION, 0, 0);
 
     host->mutex = mprCreateLock();
     host->routes = mprCreateList(-1, 0);
@@ -4607,7 +4607,7 @@ PUBLIC Http *httpCreate(int flags)
         return 0;
     }
     MPR->httpService = http;
-    http->software = sclone(HTTP_NAME);
+    http->software = sclone(BIT_HTTP_SOFTWARE);
     http->protocol = sclone("HTTP/1.1");
     http->mutex = mprCreateLock();
     http->stages = mprCreateHash(-1, 0);
@@ -4794,33 +4794,33 @@ PUBLIC HttpHost *httpLookupHost(Http *http, cchar *name)
 PUBLIC void httpInitLimits(HttpLimits *limits, bool serverSide)
 {
     memset(limits, 0, sizeof(HttpLimits));
-    limits->bufferSize = HTTP_MAX_STAGE_BUFFER;
-    limits->cacheItemSize = HTTP_MAX_CACHE_ITEM;
-    limits->chunkSize = HTTP_MAX_CHUNK;
-    limits->clientMax = HTTP_MAX_CLIENTS;
-    limits->headerMax = HTTP_MAX_NUM_HEADERS;
-    limits->headerSize = HTTP_MAX_HEADERS;
-    limits->keepAliveMax = HTTP_MAX_KEEP_ALIVE;
-    limits->receiveFormSize = HTTP_MAX_RECEIVE_FORM;
-    limits->receiveBodySize = HTTP_MAX_RECEIVE_BODY;
-    limits->processMax = HTTP_MAX_REQUESTS;
-    limits->requestsPerClientMax = HTTP_MAX_REQUESTS_PER_CLIENT;
-    limits->requestMax = HTTP_MAX_REQUESTS;
-    limits->sessionMax = HTTP_MAX_SESSIONS;
-    limits->transmissionBodySize = HTTP_MAX_TX_BODY;
-    limits->uploadSize = HTTP_MAX_UPLOAD;
-    limits->uriSize = MPR_MAX_URL;
+    limits->bufferSize = BIT_MAX_QBUFFER;
+    limits->cacheItemSize = BIT_MAX_CACHE_ITEM;
+    limits->chunkSize = BIT_MAX_CHUNK;
+    limits->clientMax = BIT_MAX_CLIENTS;
+    limits->headerMax = BIT_MAX_NUM_HEADERS;
+    limits->headerSize = BIT_MAX_HEADERS;
+    limits->keepAliveMax = BIT_MAX_KEEP_ALIVE;
+    limits->receiveFormSize = BIT_MAX_RECEIVE_FORM;
+    limits->receiveBodySize = BIT_MAX_RECEIVE_BODY;
+    limits->processMax = BIT_MAX_REQUESTS;
+    limits->requestsPerClientMax = BIT_MAX_REQUESTS_PER_CLIENT;
+    limits->requestMax = BIT_MAX_REQUESTS;
+    limits->sessionMax = BIT_MAX_SESSIONS;
+    limits->transmissionBodySize = BIT_MAX_TX_BODY;
+    limits->uploadSize = BIT_MAX_UPLOAD;
+    limits->uriSize = BIT_MAX_URI;
 
-    limits->inactivityTimeout = HTTP_INACTIVITY_TIMEOUT;
-    limits->requestTimeout = HTTP_REQUEST_TIMEOUT;
-    limits->requestParseTimeout = HTTP_PARSE_TIMEOUT;
-    limits->sessionTimeout = HTTP_SESSION_TIMEOUT;
+    limits->inactivityTimeout = BIT_MAX_INACTIVITY_DURATION;
+    limits->requestTimeout = BIT_MAX_REQUEST_DURATION;
+    limits->requestParseTimeout = BIT_MAX_PARSE_DURATION;
+    limits->sessionTimeout = BIT_MAX_SESSION_DURATION;
 
-    limits->webSocketsMax = HTTP_MAX_WSS_SOCKETS;
+    limits->webSocketsMax = BIT_MAX_WSS_SOCKETS;
     limits->webSocketsMessageSize = HTTP_MAX_WSS_MESSAGE;
-    limits->webSocketsFrameSize = HTTP_MAX_WSS_FRAME;
-    limits->webSocketsPacketSize = HTTP_MAX_WSS_PACKET;
-    limits->webSocketsPing = HTTP_WSS_PING_PERIOD;
+    limits->webSocketsFrameSize = BIT_MAX_WSS_FRAME;
+    limits->webSocketsPacketSize = BIT_MAX_WSS_PACKET;
+    limits->webSocketsPing = BIT_MAX_PING_DURATION;
 
 #if FUTURE
     mprSetMaxSocketClients(endpoint, atoi(value));
@@ -5355,7 +5355,7 @@ PUBLIC int httpSetRouteLog(HttpRoute *route, cchar *path, ssize size, int backup
     assure(format);
     
     if (format == NULL || *format == '\0') {
-        format = HTTP_LOG_FORMAT;
+        format = BIT_HTTP_LOG_FORMAT;
     }
     route->logFlags = flags;
     route->logSize = size;
@@ -5460,9 +5460,9 @@ PUBLIC void httpLogRequest(HttpConn *conn)
     }
     fmt = route->logFormat;
     if (fmt == 0) {
-        fmt = HTTP_LOG_FORMAT;
+        fmt = BIT_HTTP_LOG_FORMAT;
     }
-    len = MPR_MAX_URL + 256;
+    len = BIT_MAX_URI + 256;
     buf = mprCreateBuf(len, len);
 
     while ((c = *fmt++) != '\0') {
@@ -5749,7 +5749,7 @@ static MprOff buildNetVec(HttpQueue *q)
             }
             httpWriteHeaders(q, packet);
         }
-        if (q->ioIndex >= (HTTP_MAX_IOVEC - 2)) {
+        if (q->ioIndex >= (BIT_MAX_IOVEC - 2)) {
             break;
         }
         if (httpGetPacketLength(packet) > 0 || packet->prefix) {
@@ -5792,7 +5792,7 @@ static void addPacketForNet(HttpQueue *q, HttpPacket *packet)
     tx = conn->tx;
 
     assure(q->count >= 0);
-    assure(q->ioIndex < (HTTP_MAX_IOVEC - 2));
+    assure(q->ioIndex < (BIT_MAX_IOVEC - 2));
 
     if (packet->prefix) {
         addToNetVector(q, mprGetBufStart(packet->prefix), mprGetBufLength(packet->prefix));
@@ -5953,7 +5953,7 @@ PUBLIC HttpPacket *httpCreatePacket(ssize size)
         return 0;
     }
     if (size != 0) {
-        if ((packet->content = mprCreateBuf(size < 0 ? HTTP_BUFSIZE: (ssize) size, -1)) == 0) {
+        if ((packet->content = mprCreateBuf(size < 0 ? BIT_MAX_BUFFER: (ssize) size, -1)) == 0) {
             return 0;
         }
     }
@@ -6014,7 +6014,7 @@ PUBLIC HttpPacket *httpCreateHeaderPacket()
 {
     HttpPacket    *packet;
 
-    if ((packet = httpCreatePacket(HTTP_BUFSIZE)) == 0) {
+    if ((packet = httpCreatePacket(BIT_MAX_BUFFER)) == 0) {
         return 0;
     }
     packet->flags = HTTP_PACKET_HEADER;
@@ -6343,7 +6343,7 @@ PUBLIC HttpPacket *httpSplitPacket(HttpPacket *orig, ssize offset)
                 Adjust the content->start
          */
         count = httpGetPacketLength(orig) - offset;
-        size = max(count, HTTP_BUFSIZE);
+        size = max(count, BIT_MAX_BUFFER);
         size = HTTP_PACKET_ALIGN(size);
         if ((packet = httpCreateDataPacket(size)) == 0) {
             return 0;
@@ -7505,17 +7505,17 @@ PUBLIC char *httpReadString(HttpConn *conn)
             remaining -= nbytes;
         }
     } else {
-        content = mprAlloc(HTTP_BUFSIZE);
+        content = mprAlloc(BIT_MAX_BUFFER);
         sofar = 0;
         while (1) {
-            nbytes = httpRead(conn, &content[sofar], HTTP_BUFSIZE);
+            nbytes = httpRead(conn, &content[sofar], BIT_MAX_BUFFER);
             if (nbytes < 0) {
                 return 0;
             } else if (nbytes == 0) {
                 break;
             }
             sofar += nbytes;
-            content = mprRealloc(content, sofar + HTTP_BUFSIZE);
+            content = mprRealloc(content, sofar + BIT_MAX_BUFFER);
         }
     }
     content[sofar] = '\0';
@@ -7813,6 +7813,10 @@ PUBLIC bool httpVerifyQueue(HttpQueue *q)
 /********************************* Includes ***********************************/
 
 
+
+/********************************** Defines ***********************************/
+
+#define HTTP_RANGE_BUFSIZE 128              /* Packet size to hold range boundary */
 
 /********************************** Forwards **********************************/
 
@@ -8190,7 +8194,7 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     route->http = MPR->httpService;
     route->indicies = mprCreateList(-1, 0);
     route->inputStages = mprCreateList(-1, 0);
-    route->lifespan = HTTP_CACHE_LIFESPAN;
+    route->lifespan = BIT_MAX_CACHE_DURATION;
     route->outputStages = mprCreateList(-1, 0);
     route->vars = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS);
     route->pattern = MPR->emptyString;
@@ -8475,7 +8479,7 @@ PUBLIC void httpRouteRequest(HttpConn *conn)
     tx = conn->tx;
     route = 0;
 
-    for (next = rewrites = 0; rewrites < HTTP_MAX_REWRITE; ) {
+    for (next = rewrites = 0; rewrites < BIT_MAX_REWRITE; ) {
         if (next >= conn->host->routes->length) {
             break;
         }
@@ -8514,7 +8518,7 @@ PUBLIC void httpRouteRequest(HttpConn *conn)
     conn->trace[0] = route->trace[0];
     conn->trace[1] = route->trace[1];
 
-    if (rewrites >= HTTP_MAX_REWRITE) {
+    if (rewrites >= BIT_MAX_REWRITE) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Too many request rewrites");
     }
     if (tx->finalized) {
@@ -8607,7 +8611,7 @@ static int testRoute(HttpConn *conn, HttpRoute *route)
     HttpRx          *rx;
     HttpTx          *tx;
     cchar           *token, *value, *header, *field;
-    int             next, rc, matched[HTTP_MAX_ROUTE_MATCHES * 2], count, result;
+    int             next, rc, matched[BIT_MAX_ROUTE_MATCHES * 2], count, result;
 
     assure(conn);
     assure(route);
@@ -9860,7 +9864,7 @@ PUBLIC char *httpTemplate(HttpConn *conn, cchar *tplate, MprHash *options)
     MprBuf      *buf;
     HttpRoute   *route;
     cchar       *cp, *ep, *value;
-    char        key[MPR_MAX_STRING];
+    char        key[BIT_MAX_BUFFER];
 
     route = conn->rx->route;
     if (tplate == 0 || *tplate == '\0') {
@@ -10157,7 +10161,7 @@ static int existsCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 static int matchCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 {
     char    *str;
-    int     matched[HTTP_MAX_ROUTE_MATCHES * 2], count;
+    int     matched[BIT_MAX_ROUTE_MATCHES * 2], count;
 
     assure(conn);
     assure(route);
@@ -12361,7 +12365,7 @@ static void createErrorRequest(HttpConn *conn)
     conn->upgraded = 0;
     conn->worker = 0;
 
-    packet = httpCreateDataPacket(HTTP_BUFSIZE);
+    packet = httpCreateDataPacket(BIT_MAX_BUFFER);
     mprPutFmtToBuf(packet->content, "%s %s %s\r\n", rx->method, tx->errorDocument, conn->protocol);
     buf = rx->headerPacket->content;
     /*
@@ -13246,7 +13250,7 @@ static MprOff buildSendVec(HttpQueue *q)
         if (packet->flags & HTTP_PACKET_HEADER) {
             httpWriteHeaders(q, packet);
         }
-        if (q->ioFile || q->ioIndex >= (HTTP_MAX_IOVEC - 2)) {
+        if (q->ioFile || q->ioIndex >= (BIT_MAX_IOVEC - 2)) {
             /* Only one file entry allowed */
             break;
         }
@@ -13291,7 +13295,7 @@ static void addPacketForSend(HttpQueue *q, HttpPacket *packet)
     tx = conn->tx;
     
     assure(q->count >= 0);
-    assure(q->ioIndex < (HTTP_MAX_IOVEC - 2));
+    assure(q->ioIndex < (BIT_MAX_IOVEC - 2));
 
     if (packet->prefix) {
         addToSendVector(q, mprGetBufStart(packet->prefix), mprGetBufLength(packet->prefix));
@@ -14142,7 +14146,7 @@ PUBLIC HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers)
         tx->headers = headers;
     } else if ((tx->headers = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS)) != 0) {
         if (!conn->endpoint) {
-            httpAddHeaderString(conn, "User-Agent", sclone(HTTP_NAME));
+            httpAddHeaderString(conn, "User-Agent", sclone(BIT_HTTP_SOFTWARE));
         }
     }
     return tx;
@@ -15440,7 +15444,7 @@ static int processContentData(HttpQueue *q)
             httpSetParam(conn, key, data);
 
             if (packet == 0) {
-                packet = httpCreatePacket(HTTP_BUFSIZE);
+                packet = httpCreatePacket(BIT_MAX_BUFFER);
             }
             if (httpGetPacketLength(packet) > 0) {
                 /*
@@ -16314,6 +16318,10 @@ static void trimPathToDirname(HttpUri *uri)
 
 
 
+/********************************** Defines ***********************************/
+
+#define HTTP_VAR_HASH_SIZE  61           /* Hash size for vars and params */
+
 /*********************************** Code *************************************/
 /*
     Define standard CGI variables
@@ -16334,7 +16342,7 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
         /* Do only once */
         return;
     }
-    svars = rx->svars = mprCreateHash(HTTP_MED_HASH_SIZE, 0);
+    svars = rx->svars = mprCreateHash(HTTP_VAR_HASH_SIZE, 0);
     tx = conn->tx;
     host = conn->host;
     sock = conn->sock;
@@ -16507,7 +16515,7 @@ PUBLIC void httpAddParams(HttpConn *conn)
 PUBLIC MprHash *httpGetParams(HttpConn *conn)
 { 
     if (conn->rx->params == 0) {
-        conn->rx->params = mprCreateHash(HTTP_MED_HASH_SIZE, 0);
+        conn->rx->params = mprCreateHash(HTTP_VAR_HASH_SIZE, 0);
     }
     return conn->rx->params;
 }

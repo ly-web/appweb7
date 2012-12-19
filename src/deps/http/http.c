@@ -884,7 +884,7 @@ static int reportResponse(HttpConn *conn, cchar *url, MprTicks elapsed)
 
 static void readBody(HttpConn *conn, MprFile *outFile)
 {
-    char        buf[HTTP_BUFSIZE];
+    char        buf[BIT_MAX_BUFFER];
     cchar       *result;
     ssize       bytes;
 
@@ -1001,7 +1001,7 @@ static int setContentLength(HttpConn *conn, MprList *files)
 static ssize writeBody(HttpConn *conn, MprList *files)
 {
     MprFile     *file;
-    char        buf[HTTP_BUFSIZE], *path, *pair;
+    char        buf[BIT_MAX_BUFFER], *path, *pair;
     ssize       bytes, len, count, nbytes, sofar;
     int         next;
 
@@ -1209,7 +1209,7 @@ static void trace(HttpConn *conn, cchar *url, int fetchCount, cchar *method, int
 #if (BIT_WIN_LIKE && !WINCE) || VXWORKS
 static char *getpass(char *prompt)
 {
-    static char password[MPR_MAX_STRING];
+    static char password[80];
     int     c, i;
 
     fputs(prompt, stderr);

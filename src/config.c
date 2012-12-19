@@ -191,7 +191,7 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
         mprError("Missing filename");
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpSetRouteLog(state->route, httpMakePath(state->route, path), size, backup, HTTP_LOG_FORMAT, flags);
+    httpSetRouteLog(state->route, httpMakePath(state->route, path), size, backup, BIT_HTTP_LOG_FORMAT, flags);
     return 0;
 }
 #endif
@@ -1182,7 +1182,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     char            *ip;
     int             port;
 
-    mprParseSocketAddress(value, &ip, &port, HTTP_DEFAULT_PORT);
+    mprParseSocketAddress(value, &ip, &port, BIT_HTTP_PORT);
     if (port == 0) {
         mprError("Bad or missing port %d in Listen directive", port);
         return -1;

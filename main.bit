@@ -6,6 +6,7 @@ Bit.load({
     blend: [
         "${BITS}/embedthis.bit",
         "src/deps/mpr/mpr.bit",
+        "src/deps/est/est.bit",
         "src/deps/pcre/pcre.bit",
         "src/deps/http/http.bit",
         "src/deps/sqlite/sqlite.bit",
@@ -34,7 +35,7 @@ Bit.load({
         product: 'appweb',
         title: 'Embedthis Appweb',
         company: 'Embedthis',
-        version: '4.2.0',
+        version: '4.3.0',
         buildNumber: '0',
         bit: '2.1.0',
 
@@ -69,21 +70,21 @@ Bit.load({
 
         /* Must build locally to build tools */
         platforms: [ 'local' ],
-        sync: ['http', 'mpr', 'pcre', 'sqlite'],
+        sync: ['est', 'http', 'mpr', 'pcre', 'sqlite'],
+
         '+required': [ 'bit', 'pcre'],
 
         /*
             Optional packs to search for when configuring
          */
         '+optional': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'ejscript', 'esp', 'man', 'man2html', 'openssl', 
-            'matrixssl', 'pmaker', 'php', 'sqlite', 'ssl', 'utest', 'zip' ],
+            'pmaker', 'php', 'sqlite', 'ssl', 'utest', 'zip' ],
 
         /*
             Packs to disable when using --without all
          */
-        'without-all': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ssl', 'ejscript', 'php', 
+        'without-all': ['doxygen', 'dsi', 'est', 'ejs', 'man', 'man2html', 'pmaker', 'ssl', 'ejscript', 'php', 
             'matrixssl', 'openssl' ],
-        'without-own': ['doxygen', 'dsi', 'ejs', 'man', 'man2html', 'pmaker', 'ejscript', 'php', 'matrixssl' ],
 
         /*
             Set to true for a static (non-shared library) build
@@ -105,7 +106,6 @@ Bit.load({
         sdb:                'Enable ESP SQLite database support (true|flase)',
         static:             'Build with static linking (true|false)',
         trace:              'Default location and level for debug log (path:level)',
-        tune:               'Optimize (size|speed|balanced)',
     },
 
     profiles: {
@@ -121,10 +121,12 @@ Bit.load({
 
 
     packs: {
+        est: {},
         http: {
             enable: true,
             path: '${BIN}/http',
         },
+        matrixssl: {},
     },
 
     /*

@@ -38,118 +38,110 @@ struct HttpWebSocket;
 
 /********************************** Tunables **********************************/
 
-#define HTTP_DEFAULT_PORT 80
-
-#ifndef HTTP_NAME
-#define HTTP_NAME "Embedthis-http"                          /**< Default Http protocol name used in Http Server header */
+#ifndef BIT_HTTP_PORT
+    #define BIT_HTTP_PORT           80
+#endif
+#ifndef BIT_HTTP_SOFTWARE
+    #define BIT_HTTP_SOFTWARE       "Embedthis-http"    /**< Default Http protocol name used in Http Server header */
+#endif
+#ifndef BIT_MAX_URI
+    #define BIT_MAX_URI             256                 /**< Reasonable filename size */
+#endif
+#ifndef BIT_MAX_IOVEC
+    #define BIT_MAX_IOVEC           16                  /**< Number of fragments in a single socket write */
+#endif
+#ifndef BIT_MAX_ROUTE_MATCHES
+    #define BIT_MAX_ROUTE_MATCHES   32                  /**< Maximum number of submatches in routes */
+#endif
+#ifndef BIT_MAX_CLIENTS_HASH
+    #define BIT_MAX_CLIENTS_HASH    131                 /**< Hash table for client IP addresses */
+#endif
+#ifndef  BIT_MAX_CACHE_ITEM
+    #define BIT_MAX_CACHE_ITEM      (256 * 1024)        /**< Maximum cachable item size */
+#endif
+#ifndef BIT_MAX_CHUNK
+    #define BIT_MAX_CHUNK           (8 * 1024)          /**< Maximum chunk size for transfer chunk encoding */
+#endif
+#ifndef BIT_MAX_CLIENTS
+    #define BIT_MAX_CLIENTS         10                  /**< Maximum concurrent client endpoints */
+#endif
+#ifndef BIT_MAX_HEADERS
+    #define BIT_MAX_HEADERS         4096                /**< Maximum size of the headers */
+#endif
+#ifndef BIT_MAX_KEEP_ALIVE
+    #define BIT_MAX_KEEP_ALIVE      200                 /**< Maximum requests per connection */
+#endif
+#ifndef BIT_MAX_NUM_HEADERS
+    #define BIT_MAX_NUM_HEADERS     20                  /**< Maximum number of header lines */
+#endif
+#ifndef BIT_MAX_RECEIVE_BODY
+    #define BIT_MAX_RECEIVE_BODY    (128 * 1024 * 1024) /**< Maximum incoming body size */
+#endif
+#ifndef BIT_MAX_RECEIVE_FORM
+    #define BIT_MAX_RECEIVE_FORM    (1024 * 1024)       /**< Maximum incoming form size */
+#endif
+#ifndef BIT_MAX_REQUESTS
+    #define BIT_MAX_REQUESTS        20                  /**< Maximum concurrent requests */
+#endif
+#ifndef BIT_MAX_REQUESTS_PER_CLIENT
+    #define BIT_MAX_REQUESTS_PER_CLIENT 20              /**< Maximum concurrent requests */
+#endif
+#ifndef BIT_MAX_REWRITE
+    #define BIT_MAX_REWRITE         20                  /**< Maximum URI rewrites */
+#endif
+#ifndef BIT_MAX_SESSIONS
+    #define BIT_MAX_SESSIONS        100                 /**< Maximum concurrent sessions */
+#endif
+#ifndef BIT_MAX_QBUFFER
+    #define BIT_MAX_QBUFFER         (32 * 1024)         /**< Maximum buffer for any pipeline queue */
+#endif
+#ifndef BIT_MAX_TX_BODY
+    #define BIT_MAX_TX_BODY         (INT_MAX)           /**< Maximum buffer for response data */
+#endif
+#ifndef BIT_MAX_UPLOAD
+    #define BIT_MAX_UPLOAD          (INT_MAX)
+#endif
+#ifndef BIT_MAX_WSS_FRAME
+    #define BIT_MAX_WSS_FRAME       (8 * 1024)          /**< Default max WebSockets message frame size */
+#endif
+#ifndef BIT_MAX_WSS_PACKET
+    #define BIT_MAX_WSS_PACKET      (8 * 1024)          /**< Default size to provide to application in one packet */
+#endif
+#ifndef BIT_MAX_WSS_SOCKETS
+    #define BIT_MAX_WSS_SOCKETS     200                 /**< Default max WebSockets */
 #endif
 
-#if BIT_TUNE == MPR_TUNE_SIZE || DOXYGEN
-    /*  
-        Tune for size
-     */
-    #define HTTP_BUFSIZE                 (4 * 1024)           /**< Default I/O buffer size */
-    #define HTTP_MAX_CACHE_ITEM          (256 * 1024)         /**< Maximum cachable item size */
-    #define HTTP_MAX_CHUNK               (8 * 1024)           /**< Maximum chunk size for transfer chunk encoding */
-    #define HTTP_MAX_HEADERS             4096                 /**< Maximum size of the headers */
-    #define HTTP_MAX_IOVEC               16                   /**< Number of fragments in a single socket write */
-    #define HTTP_MAX_NUM_HEADERS         20                   /**< Maximum number of header lines */
-    #define HTTP_MAX_RECEIVE_FORM        (1024 * 1024)        /**< Maximum incoming form size */
-    #define HTTP_MAX_RECEIVE_BODY        (128 * 1024 * 1024)  /**< Maximum incoming body size */
-    #define HTTP_MAX_REQUESTS            20                   /**< Maximum concurrent requests */
-    #define HTTP_MAX_REQUESTS_PER_CLIENT 20                   /**< Maximum concurrent requests */
-    #define HTTP_MAX_CLIENTS             10                   /**< Maximum concurrent client endpoints */
-    #define HTTP_MAX_SESSIONS            100                  /**< Maximum concurrent sessions */
-    #define HTTP_MAX_STAGE_BUFFER        (32 * 1024)          /**< Maximum buffer for any stage */
-    #define HTTP_CLIENTS_HASH            (131)                /**< Hash table for client IP addresses */
-    #define HTTP_MAX_ROUTE_MATCHES       32                   /**< Maximum number of submatches in routes */
-    #define HTTP_MAX_WSS_SOCKETS         200                  /**< Default max WebSockets */
-    #define HTTP_MAX_WSS_MESSAGE         (2147483647)         /**< Default max WebSockets message size (2GB) */
-    #define HTTP_MAX_WSS_FRAME           (8 * 1024)           /**< Default max WebSockets message frame size */
-    #define HTTP_MAX_WSS_PACKET          (8 * 1024)           /**< Default size to provide to application in one packet */
-    #define HTTP_WSS_PING_PERIOD         (30 * 1000)          /**< Ping defeat Keep-Alive timeouts (30 sec) */
-
-#elif BIT_TUNE == MPR_TUNE_BALANCED
-    /*  
-        Tune balancing speed and size
-     */
-    #define HTTP_BUFSIZE                 (16 * 1024)
-    #define HTTP_MAX_CACHE_ITEM          (512 * 1024)
-    #define HTTP_MAX_CHUNK               (8 * 1024)
-    #define HTTP_MAX_HEADERS             (8 * 1024)
-    #define HTTP_MAX_IOVEC               24
-    #define HTTP_MAX_NUM_HEADERS         40
-    #define HTTP_MAX_RECEIVE_FORM        (8 * 1024 * 1024)
-    #define HTTP_MAX_RECEIVE_BODY        (128 * 1024 * 1024)
-    #define HTTP_MAX_REQUESTS            50
-    #define HTTP_MAX_REQUESTS_PER_CLIENT 20
-    #define HTTP_MAX_CLIENTS             25
-    #define HTTP_MAX_SESSIONS            500
-    #define HTTP_MAX_STAGE_BUFFER        (64 * 1024)
-    #define HTTP_CLIENTS_HASH            (257)
-    #define HTTP_MAX_ROUTE_MATCHES       64
-    #define HTTP_MAX_WSS_SOCKETS         200
-    #define HTTP_MAX_WSS_MESSAGE         (2147483648)
-    #define HTTP_MAX_WSS_FRAME           (8 * 1024)
-    #define HTTP_MAX_WSS_PACKET          (8 * 1024)
-    #define HTTP_WSS_PING_PERIOD         (30 * 1000)
-#else
-    /*  
-        Tune for speed and scale
-     */
-    #define HTTP_BUFSIZE                 (32 * 1024)
-    #define HTTP_MAX_CACHE_ITEM          (1024 * 1024)
-    #define HTTP_MAX_CHUNK               (16 * 1024) 
-    #define HTTP_MAX_HEADERS             (8 * 1024)
-    #define HTTP_MAX_IOVEC               32
-    #define HTTP_MAX_NUM_HEADERS         256
-    #define HTTP_MAX_RECEIVE_FORM        (16 * 1024 * 1024)
-    #define HTTP_MAX_RECEIVE_BODY        (256 * 1024 * 1024)
-    #define HTTP_MAX_REQUESTS            1000
-    #define HTTP_MAX_REQUESTS_PER_CLIENT 20
-    #define HTTP_MAX_CLIENTS             500
-    #define HTTP_MAX_SESSIONS            5000
-    #define HTTP_MAX_STAGE_BUFFER        (128 * 1024)
-    #define HTTP_CLIENTS_HASH            (1009)
-    #define HTTP_MAX_ROUTE_MATCHES       128
-    #define HTTP_MAX_WSS_SOCKETS         200
-    #define HTTP_MAX_WSS_MESSAGE         (2147483648)
-    #define HTTP_MAX_WSS_FRAME           (8 * 1024)
-    #define HTTP_MAX_WSS_PACKET          (8 * 1024)
-    #define HTTP_WSS_PING_PERIOD         (30 * 1000)
+#ifndef BIT_MAX_CACHE_DURATION
+    #define BIT_MAX_CACHE_DURATION  (86400 * 1000)      /**< Default cache lifespan to 1 day */
+#endif
+#ifndef BIT_MAX_INACTIVITY_DURATION
+    #define BIT_MAX_INACTIVITY_DURATION (60  * 1000)    /**< Default keep connection alive between requests timeout */
+#endif
+#ifndef BIT_MAX_PARSE_DURATION
+    #define BIT_MAX_PARSE_DURATION  (30  * 1000)        /**< Default request parse header timeout */
+#endif
+#ifndef BIT_MAX_REQUEST_DURATION
+    #define BIT_MAX_REQUEST_DURATION MAXINT             /**< Default request timeout (unlimited) */
+#endif
+#ifndef BIT_MAX_SESSION_DURATION
+    #define BIT_MAX_SESSION_DURATION (3600 * 1000)      /**< Default session timeout (one hour) */
+#endif
+#ifndef BIT_MAX_PING_DURATION
+    #define BIT_MAX_PING_DURATION (30 * 1000)           /**< WSS ping defeat Keep-Alive timeouts (30 sec) */
 #endif
 
-#define HTTP_MAX_TX_BODY           (INT_MAX)        /**< Maximum buffer for response data */
-#define HTTP_MAX_UPLOAD            (INT_MAX)
+#ifndef BIT_HTTP_LOG
+    #define BIT_HTTP_LOG_FORMAT     "%h %l %u %t \"%r\" %>s %b %n"
+#endif
 
-/*  
-    Other constants
- */
-#define HTTP_DEFAULT_MAX_THREADS  10                /**< Default number of threads */
-#define HTTP_MAX_KEEP_ALIVE       200               /**< Maximum requests per connection */
-#define HTTP_MAX_PASS             64                /**< Size of password */
-#define HTTP_MAX_SECRET           16                /**< Size of secret data for auth */
-#define HTTP_PACKET_ALIGN(x)      (((x) + 0x3FF) & ~0x3FF)
-#define HTTP_RANGE_BUFSIZE        128               /**< Size of a range boundary */
-#define HTTP_RETRIES              3                 /**< Default number of retries for client requests */
-#define HTTP_TIMER_PERIOD         1000              /**< HttpTimer checks ever 1 second */
-#define HTTP_MAX_REWRITE          20                /**< Maximum URI rewrites */
+#define HTTP_RETRIES                3                   /**< Default number of retries for client requests */
+#define HTTP_DATE_FORMAT            "%a, %d %b %Y %T GMT"
+#define HTTP_MAX_SECRET             16                  /**< Size of secret data for auth */
+#define HTTP_MAX_WSS_MESSAGE        (2147483647)        /**< Default max WebSockets message size (2GB) */
+#define HTTP_SMALL_HASH_SIZE        31                  /* Small hash (less than the alphabet) */
+#define HTTP_TIMER_PERIOD           1000                /**< HttpTimer checks ever 1 second */
 
-#define HTTP_INACTIVITY_TIMEOUT   (60  * 1000)      /**< Default keep connection alive between requests timeout */
-#define HTTP_PARSE_TIMEOUT        (30  * 1000)      /**< Default request parse header timeout */
-#define HTTP_SESSION_TIMEOUT      (3600 * 1000)     /**< Default session timeout (one hour) */
-#define HTTP_REQUEST_TIMEOUT      MAXINT            /**< Default request timeout (unlimited) */
-#define HTTP_CACHE_LIFESPAN       (86400 * 1000)    /**< Default cache lifespan to 1 day */
-
-#define HTTP_DATE_FORMAT          "%a, %d %b %Y %T GMT"
-#define HTTP_LOG_FORMAT           "%h %l %u %t \"%r\" %>s %b %n"
-
-/*  
-    Hash sizes (primes work best)
- */
-#define HTTP_SMALL_HASH_SIZE      31                /* Small hash (less than the alphabet) */
-#define HTTP_MED_HASH_SIZE        61                /* Medium */
-#define HTTP_LARGE_HASH_SIZE      101               /* Large */
+#define HTTP_PACKET_ALIGN(x)        (((x) + 0x3FF) & ~0x3FF)
 
 /********************************** Defines ***********************************/
 /*
@@ -1146,7 +1138,7 @@ typedef struct HttpQueue {
     /*  
         Connector instance data
      */
-    MprIOVec            iovec[HTTP_MAX_IOVEC];
+    MprIOVec            iovec[BIT_MAX_IOVEC];
     int                 ioIndex;                /**< Next index into iovec */
     int                 ioFile;                 /**< Sending a file */
     MprOff              ioCount;                /**< Count of bytes in iovec including file I/O */
@@ -4640,7 +4632,7 @@ typedef struct HttpRx {
         Routing info
      */
     char            *target;                /**< Route target */
-    int             matches[HTTP_MAX_ROUTE_MATCHES * 2];
+    int             matches[BIT_MAX_ROUTE_MATCHES * 2];
     int             matchCount;
 } HttpRx;
 

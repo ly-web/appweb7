@@ -30,7 +30,7 @@ if (bit.platform.os == 'windows') {
     let incdir = probe('main/php.h', {search: search}).absolute
     cfg = {
         dir: dir,
-        path: lib,
+        path: dir,
         includes: [ incdir, incdir.join('main'), incdir.join('Zend'), incdir.join('TSRM') ],
         libraries: [ 'php5ts.lib' ],
         linker: [ '-libpath:' + lib.parent ],
@@ -45,7 +45,7 @@ if (bit.platform.os == 'windows') {
     let incdir = probe('php.h', {search: search}).absolute.parent
     cfg = {
         dir: dir,
-        path: lib,
+        path: dir,
         includes: [ incdir, incdir.join('main'), incdir.join('Zend'), incdir.join('TSRM') ],
         libraries: [ 'php5' ],
         linker: [ '-L' + lib.parent ],
@@ -60,7 +60,7 @@ if (bit.platform.os == 'windows') {
     let incdir = probe('php.h', {search: search}).absolute.parent
     cfg = {
         dir: dir,
-        path: lib,
+        path: dir,
         includes: [ incdir, incdir.join('main'), incdir.join('Zend'), incdir.join('TSRM') ],
         libraries: [ 'php5' ],
         linker: [ '-L' + lib.parent ],

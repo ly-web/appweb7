@@ -1316,7 +1316,7 @@ static void WINAPI serviceCallback(ulong cmd)
 static bool installService()
 {
     SC_HANDLE   svc, mgr;
-    char        cmd[MPR_MAX_FNAME], key[MPR_MAX_FNAME];
+    char        cmd[BIT_MAX_FNAME], key[BIT_MAX_FNAME];
     int         serviceType;
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);

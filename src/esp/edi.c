@@ -993,7 +993,7 @@ static cchar *checkDate(EdiValidation *vp, EdiRec *rec, cchar *fieldName, cchar 
 
 static cchar *checkFormat(EdiValidation *vp, EdiRec *rec, cchar *fieldName, cchar *value)
 {
-    int     matched[HTTP_MAX_ROUTE_MATCHES * 2];
+    int     matched[BIT_MAX_ROUTE_MATCHES * 2];
 
     if (pcre_exec(vp->mdata, NULL, value, (int) slen(value), 0, 0, matched, sizeof(matched) / sizeof(int)) > 0) {
         return 0;

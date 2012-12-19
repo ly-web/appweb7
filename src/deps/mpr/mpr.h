@@ -49,9 +49,6 @@
 #ifndef BIT_ROM
     #define BIT_ROM 0
 #endif
-#ifndef BIT_TUNE
-    #define BIT_TUNE MPR_TUNE_SIZE
-#endif
 
 /********************************* CPU Families *******************************/
 /*
@@ -1056,8 +1053,8 @@ typedef int64 MprTicks;
     #define STARTF_USESHOWWINDOW 0
     #define STARTF_USESTDHANDLES 0
 
-    #define BUFSIZ   MPR_BUFSIZE
-    #define PATHSIZE MPR_MAX_PATH
+    #define BUFSIZ   BIT_MAX_BUFFER
+    #define PATHSIZE BIT_MAX_PATH
     #define gethostbyname2(a,b) gethostbyname(a)
 #endif /* WINCE */
 
@@ -1246,12 +1243,6 @@ struct  MprWorkerService;
 struct  MprXml;
 
 /******************************* Tunable Constants ****************************/
-/*
-    Build tuning
- */
-#define MPR_TUNE_SIZE       1       /**< Tune for size */
-#define MPR_TUNE_BALANCED   2       /**< Tune balancing speed and size */
-#define MPR_TUNE_SPEED      3       /**< Tune for speed, program will use memory more aggressively */
 
 #if BIT_HAS_MMU
     /* 
@@ -1267,88 +1258,52 @@ struct  MprXml;
     #define MPR_DEFAULT_STACK       (128 * 1024)   /**< Default thread stack size (0 means use system default) */
 #endif
 
-#if BIT_TUNE == MPR_TUNE_SIZE || DOXYGEN
-    /*
-        Reduce size allocations to reduce memory usage
-     */
-    #define MPR_MAX_FNAME           256           /**< Reasonable filename size */
-    #define MPR_MAX_PATH            512           /**< Reasonable path name size */
-    #define MPR_MAX_URL             512           /**< Max URL size. Also request URL size. */
-    #define MPR_MAX_STRING          1024          /**< Maximum (stack) string size */
-    #define MPR_MAX_LOG             (8 * 1024)    /**< Maximum log message size (impacts stack) */
-    #define MPR_SMALL_ALLOC         256           /**< Default small. Used in printf. */
-    #define MPR_DEFAULT_HASH_SIZE   23            /**< Default size of hash table */ 
-    #define MPR_BUFSIZE             4096          /**< Reasonable size for buffers */
-    #define MPR_BUF_INCR            4096          /**< Default buffer growth inc */
-    #define MPR_EPOLL_SIZE          32            /**< Epoll backlog */
-    #define MPR_MAX_BUF             4194304       /**< Max buffer size */
-    #define MPR_XML_BUFSIZE         4096          /**< XML read buffer size */
-    #define MPR_SSL_BUFSIZE         4096          /**< SSL has 16K max*/
-    #define MPR_LIST_INCR           8             /**< Default list growth inc */
-    #define MPR_FILES_HASH_SIZE     29            /**< Hash size for rom file system */
-    #define MPR_TIME_HASH_SIZE      67            /**< Hash size for time token lookup */
-    #define MPR_MEM_REGION_SIZE     (128 * 1024)  /**< Memory allocation chunk size */
-    #define MPR_GC_LOW_MEM          (32 * 1024)   /**< Free memory low water mark before invoking GC */
-    #define MPR_NEW_QUOTA           (4 * 1024)    /**< Number of new allocations before a GC is worthwhile */
-    #define MPR_GC_WORKERS          0             /**< Run garbage collection non-concurrently */
-    
-#elif BIT_TUNE == MPR_TUNE_BALANCED
-    /*
-        Tune balancing speed and size
-     */
-    #define MPR_MAX_FNAME           256
-    #define MPR_MAX_PATH            1024
-    #define MPR_MAX_URL             2048
-    #define MPR_MAX_STRING          2048
-    #define MPR_MAX_LOG             (32 * 1024)
-    #define MPR_SMALL_ALLOC         512
-    #define MPR_DEFAULT_HASH_SIZE   43
-    #define MPR_BUFSIZE             4096
-    #define MPR_BUF_INCR            4096
-    #define MPR_MAX_BUF             -1
-    #define MPR_EPOLL_SIZE          64
-    #define MPR_XML_BUFSIZE         4096
-    #define MPR_SSL_BUFSIZE         4096
-    #define MPR_LIST_INCR           16
-    #define MPR_FILES_HASH_SIZE     61
-    #define MPR_TIME_HASH_SIZE      89
-    #define MPR_MEM_REGION_SIZE     (256 * 1024)
-    #define MPR_GC_LOW_MEM          (64 * 1024)
-    #define MPR_NEW_QUOTA           (16 * 1024) 
-    #define MPR_GC_WORKERS          1
-    
-#else
-    /*
-        Tune for speed
-     */
-    #define MPR_MAX_FNAME           1024
-    #define MPR_MAX_PATH            2048
-    #define MPR_MAX_URL             4096
-    #define MPR_MAX_LOG             (64 * 1024)
-    #define MPR_MAX_STRING          4096
-    #define MPR_SMALL_ALLOC         1024
-    #define MPR_DEFAULT_HASH_SIZE   97
-    #define MPR_BUFSIZE             8192
-    #define MPR_MAX_BUF             -1
-    #define MPR_EPOLL_SIZE          128
-    #define MPR_XML_BUFSIZE         4096
-    #define MPR_SSL_BUFSIZE         8192
-    #define MPR_LIST_INCR           16
-    #define MPR_BUF_INCR            1024
-    #define MPR_FILES_HASH_SIZE     61
-    #define MPR_TIME_HASH_SIZE      97
-    #define MPR_MEM_REGION_SIZE     (1024 * 1024)
-    #define MPR_GC_LOW_MEM          (512 * 1024)
-    #define MPR_NEW_QUOTA           (32 * 1024) 
-    #define MPR_GC_WORKERS          2
+/*
+    Reduce size allocations to reduce memory usage
+ */
+#ifndef BIT_MAX_FNAME
+    #define BIT_MAX_FNAME      256           /**< Reasonable filename size */
+#endif
+#ifndef BIT_MAX_PATH
+    #define BIT_MAX_PATH       1024          /**< Reasonable filename size */
+#endif
+#ifndef BIT_MAX_BUFFER
+    #define BIT_MAX_BUFFER     4096          /**< Reasonable size for buffers */
+#endif
+#ifndef BIT_MAX_ARGC
+    #define BIT_MAX_ARGC       32           /**< Maximum number of command line args if using MAIN()*/
+#endif
+
+#if KEEP && DEPRECATED
+    #define MPR_MAX_PATH        1024          /**< Reasonable path name size */
+    #define MPR_MAX_FNAME       BIT_MAX_FNAME
+    #define MPR_BUFSIZE         BIT_MAX_BUFFER
+#endif
+#if UNUSED
+#define MPR_MAX_STRING          1024          /**< Maximum (stack) string size - MOB - used for what */
+#define MPR_MAX_URL             512           /**< Max URL size. Also request URL size. */
+#define MPR_DEFAULT_HASH_SIZE   23            /**< Default size of hash table */ 
+#define MPR_SMALL_ALLOC         256           /**< Default small. Used in printf. */
+#define MPR_MAX_LOG             (8 * 1024)    /**< Maximum log message size (impacts stack) */
+//  MOB - used for what
+#define MPR_MAX_BUF             4194304       /**< Max buffer size */
+#define MPR_SSL_BUFSIZE         4096          /**< SSL has 16K max*/
+#define MPR_FILES_HASH_SIZE     29            /**< Hash size for rom file system */
+#define MPR_TIME_HASH_SIZE      67            /**< Hash size for time token lookup */
+#define MPR_NEW_QUOTA           (4 * 1024)    /**< Number of new allocations before a GC is worthwhile */
+#define MPR_GC_LOW_MEM          (32 * 1024)   /**< Free memory low water mark before invoking GC */
+#define MPR_MEM_REGION_SIZE     (128 * 1024)  /**< Memory allocation chunk size */
 #endif
 
 /*
     Select wakeup port. Port can be any free port number. If this is not free, the MPR will use the next free port.
  */
-#define MPR_DEFAULT_BREAK_PORT  9473
+#ifndef BIT_WAKEUP_PORT
+    #define BIT_WAKEUP_PORT     9473
+#endif
 #define MPR_FD_MIN              32
 
+#if UNUSED
 /* 
     Longest IPv6 is XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX (40 bytes with null) 
  */ 
@@ -1356,6 +1311,7 @@ struct  MprXml;
 #define MPR_MAX_IP_ADDR         1024
 #define MPR_MAX_IP_PORT         8
 #define MPR_MAX_IP_ADDR_PORT    1024
+#endif
 
 /*
     Signal sent on Unix to break out of a select call.
@@ -1425,7 +1381,6 @@ struct  MprXml;
 /*
     Other tunable constants
  */
-#define MPR_MAX_ARGC            32           /**< Reasonable max of args for MAIN */
 #define MPR_TEST_POLL_NAP       25
 #define MPR_TEST_SLEEP          (60 * 1000)
 #define MPR_TEST_MAX_STACK      16
@@ -1564,14 +1519,14 @@ struct  MprXml;
         static int innerMain(int argc, char **argv, char **envp); \
         int name(char *arg0, ...) { \
             va_list args; \
-            char *argp, *largv[MPR_MAX_ARGC]; \
+            char *argp, *largv[BIT_MAX_ARGC]; \
             int largc = 0; \
             va_start(args, arg0); \
             largv[largc++] = #name; \
             if (arg0) { \
                 largv[largc++] = arg0; \
             } \
-            for (argp = va_arg(args, char*); argp && largc < MPR_MAX_ARGC; argp = va_arg(args, char*)) { \
+            for (argp = va_arg(args, char*); argp && largc < BIT_MAX_ARGC; argp = va_arg(args, char*)) { \
                 largv[largc++] = argp; \
             } \
             return innerMain(largc, largv, NULL); \
@@ -1581,9 +1536,9 @@ struct  MprXml;
     #define MAIN(name, _argc, _argv, _envp)  \
         APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2) { \
             extern int main(); \
-            char *largv[MPR_MAX_ARGC]; \
+            char *largv[BIT_MAX_ARGC]; \
             int largc; \
-            largc = mprParseArgs(command, &largv[1], MPR_MAX_ARGC - 1); \
+            largc = mprParseArgs(command, &largv[1], BIT_MAX_ARGC - 1); \
             largv[0] = #name; \
             main(largc, largv, NULL); \
         } \
@@ -4443,7 +4398,9 @@ PUBLIC int mprCopyListContents(MprList *dest, MprList *src);
     Create a list.
     @description Creates an empty list. MprList's can store generic pointers. They automatically grow as 
         required when items are added to the list.
-    @param size Initial capacity of the list.
+    @param size Initial capacity of the list. Set to < 0 to get a growable list with a default initial size.
+        Set to 0 to to create the list but without any initial list storage. Then call mprSetListLimits to define
+        the initial and maximum list size.
     @param flags Control flags. Possible values are: MPR_LIST_STATIC_VALUES to indicate list items are static
         and should not be marked for GC. MPR_LIST_STABLE to create an optimized list for private use that is not thread-safe.
     @return Returns a pointer to the list. 
@@ -5111,7 +5068,8 @@ PUBLIC MprHash *mprCloneHash(MprHash *table);
 /**
     Create a hash table
     @description Creates a hash table that can store arbitrary objects associated with string key values.
-    @param hashSize Size of the hash table for the symbol table. Should be a prime number.
+    @param hashSize Size of the hash table for the symbol table. Should be a prime number. Set to 0 or -1 to get
+        a default (small) hash table.
     @param flags Table control flags. Use MPR_HASH_CASELESS for case insensitive comparisions, MPR_HASH_UNICODE
         if the hash keys are unicode strings, MPR_HASH_STATIC_KEYS if the keys are permanent and should not be
         managed for Garbage collection, and MPR_HASH_STATIC_VALUES if the values are permanent.
@@ -8086,6 +8044,7 @@ typedef struct MprSsl {
     char            *caPath;            /**< Certificate verification cert directory */
     char            *ciphers;           /**< Candidate ciphers to use */
     int             configured;         /**< Set if this SSL configuration has been processed */
+    //  MOB - rename config
     void            *pconfig;           /**< Extended provider SSL configuration */
     int             verifyPeer;         /**< Verify the peer verificate */
     int             verifyIssuer;       /**< Set if the certificate issuer should be also verified */
@@ -8226,6 +8185,9 @@ PUBLIC void mprVerifySslIssuer(struct MprSsl *ssl, bool on);
  */
 PUBLIC void mprVerifySslDepth(struct MprSsl *ssl, int depth);
 
+#if BIT_PACK_EST
+    PUBLIC int mprCreateEstModule();
+#endif
 #if BIT_PACK_MATRIXSSL
     PUBLIC int mprCreateMatrixSslModule();
 #endif
@@ -9436,15 +9398,7 @@ PUBLIC Mpr *mprGetMpr();
 #define MPR_SWEEP_THREAD        0x8         /**< Start a dedicated sweeper thread for garbage collection (unsupported) */
 #define MPR_USER_EVENTS_THREAD  0x10        /**< User will explicitly manage own mprServiceEvents calls */
 #define MPR_NO_WINDOW           0x20        /**< Don't create a windows Window */
-
-/*
-    Parallel sweep thread is not yet operational
- */
-#if BIT_TUNE == MPR_TUNE_SPEED
-    #define MPR_THREAD_PATTERN (MPR_MARK_THREAD)
-#else
-    #define MPR_THREAD_PATTERN (MPR_MARK_THREAD)
-#endif
+#define MPR_THREAD_PATTERN      (MPR_MARK_THREAD)
 
 /**
     Add a terminator callback

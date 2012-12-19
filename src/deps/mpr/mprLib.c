@@ -25,10 +25,17 @@
 
 
 
-/******************************* Local Defines ********************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_GC_QUOTA
+    #define BIT_MAX_GC_QUOTA   4096            /* Number of allocations before a GC is worthwhile */
+#endif
+#ifndef BIT_MAX_REGION
+    #define BIT_MAX_REGION     (128 * 1024)    /* Memory allocation chunk size */
+#endif
 
 #if BIT_HAS_MMU 
-    #define VALLOC 1                /* Use virtual memory allocations */
+    #define VALLOC 1                            /* Use virtual memory allocations */
 #else
     #define VALLOC 0
 #endif
@@ -250,7 +257,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
      */
     mprSize = MPR_ALLOC_ALIGN(sizeof(MprMem) + sizeof(Mpr) + (MANAGER_SIZE * sizeof(void*)));
     regionSize = MPR_ALLOC_ALIGN(sizeof(MprRegion));
-    size = max(mprSize + regionSize, MPR_MEM_REGION_SIZE);
+    size = max(mprSize + regionSize, BIT_MAX_REGION);
     if ((region = mprVirtAlloc(size, MPR_MAP_READ | MPR_MAP_WRITE)) == NULL) {
         return NULL;
     }
@@ -265,11 +272,11 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
 
     heap->flags = flags | MPR_THREAD_PATTERN;
     heap->nextSeqno = 1;
-    heap->chunkSize = MPR_MEM_REGION_SIZE;
+    heap->chunkSize = BIT_MAX_REGION;
     heap->stats.maxMemory = MAXINT;
     heap->stats.redLine = MAXINT / 100 * 99;
-    heap->newQuota = MPR_NEW_QUOTA;
-    heap->earlyYieldQuota = MPR_NEW_QUOTA * 5;
+    heap->newQuota = BIT_MAX_GC_QUOTA;
+    heap->earlyYieldQuota = heap->newQuota * 5;
     heap->enabled = !(heap->flags & MPR_DISABLE_GC);
     if (scmp(getenv("MPR_DISABLE_GC"), "1") == 0) {
         heap->enabled = 0;
@@ -747,7 +754,7 @@ static MprMem *freeBlock(MprMem *mp)
     /*
         Release entire regions back to the O/S. (Blocks equal to Empty regions have no prior and are last)
      */
-    if (GET_PRIOR(mp) == NULL && IS_LAST(mp) && heap->stats.bytesFree > (MPR_MEM_REGION_SIZE * 4)) {
+    if (GET_PRIOR(mp) == NULL && IS_LAST(mp) && heap->stats.bytesFree > (BIT_MAX_REGION * 4)) {
         INC(unpins);
         unlockHeap();
         region = GET_REGION(mp);
@@ -2225,10 +2232,10 @@ PUBLIC ssize mprGetMem()
 
 #if LINUX
     int fd;
-    char path[MPR_MAX_PATH];
+    char path[BIT_MAX_PATH];
     sprintf(path, "/proc/%d/status", getpid());
     if ((fd = open(path, O_RDONLY)) >= 0) {
-        char buf[MPR_BUFSIZE], *tok;
+        char buf[BIT_MAX_BUFFER], *tok;
         int nbytes = read(fd, buf, sizeof(buf) - 1);
         close(fd);
         if (nbytes > 0) {
@@ -2474,7 +2481,7 @@ PUBLIC void *mprSetManager(void *ptr, MprManager manager)
 #if BIT_MEMORY_STATS && FUTURE
 static void showMem(MprMem *mp)
 {
-    char    *gen, *mark, buf[MPR_MAX_STRING];
+    char    *gen, *mark, buf[BIT_MAX_BUFFER];
     int     g, m;
 
     g = GET_GEN(mp);
@@ -3835,12 +3842,12 @@ PUBLIC MprBuf *mprCreateBuf(ssize initialSize, ssize maxSize)
     MprBuf      *bp;
     
     if (initialSize <= 0) {
-        initialSize = MPR_BUFSIZE;
+        initialSize = BIT_MAX_BUFFER;
     }
     if ((bp = mprAllocObj(MprBuf, manageBuf)) == 0) {
         return 0;
     }
-    bp->growBy = MPR_BUFSIZE;
+    bp->growBy = BIT_MAX_BUFFER;
     mprSetBufSize(bp, initialSize, maxSize);
     return bp;
 }
@@ -5243,10 +5250,10 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
         flags &= ~MPR_CMD_OUT;
     }
     if (flags & MPR_CMD_OUT) {
-        cmd->stdoutBuf = mprCreateBuf(MPR_BUFSIZE, -1);
+        cmd->stdoutBuf = mprCreateBuf(BIT_MAX_BUFFER, -1);
     }
     if (flags & MPR_CMD_ERR) {
-        cmd->stderrBuf = mprCreateBuf(MPR_BUFSIZE, -1);
+        cmd->stderrBuf = mprCreateBuf(BIT_MAX_BUFFER, -1);
     }
     mprSetCmdCallback(cmd, defaultCmdCallback, NULL);
     rc = mprStartCmd(cmd, argc, argv, envp, flags);
@@ -5744,8 +5751,8 @@ static void defaultCmdCallback(MprCmd *cmd, int channel, void *data)
         Read and aggregate the result into a single string
      */
     space = mprGetBufSpace(buf);
-    if (space < (MPR_BUFSIZE / 4)) {
-        if (mprGrowBuf(buf, MPR_BUFSIZE) < 0) {
+    if (space < (BIT_MAX_BUFFER / 4)) {
+        if (mprGrowBuf(buf, BIT_MAX_BUFFER) < 0) {
             mprCloseCmdFd(cmd, channel);
             return;
         }
@@ -6280,7 +6287,7 @@ static int makeChannel(MprCmd *cmd, int index)
     file = &cmd->files[index];
     file->name = sfmt("/pipe/%s_%d_%d", BIT_PRODUCT, taskIdSelf(), tempSeed++);
 
-    if (pipeDevCreate(file->name, 5, MPR_BUFSIZE) < 0) {
+    if (pipeDevCreate(file->name, 5, BIT_MAX_BUFFER) < 0) {
         mprError("Cannot create pipes to run %s", cmd->program);
         return MPR_ERR_CANT_OPEN;
     }
@@ -8034,7 +8041,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
 static char *getPathLink(MprDiskFileSystem *fs, cchar *path)
 {
 #if BIT_UNIX_LIKE
-    char    pbuf[MPR_MAX_PATH];
+    char    pbuf[BIT_MAX_PATH];
     ssize   len;
 
     if ((len = readlink(path, pbuf, sizeof(pbuf) - 1)) < 0) {
@@ -9447,6 +9454,12 @@ PUBLIC char *mprEscapeHtml(cchar *html)
 
 
 #if MPR_EVENT_EPOLL
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_EPOLL
+    #define BIT_MAX_EPOLL  32
+#endif
+
 /********************************** Forwards **********************************/
 
 static int growEvents(MprWaitService *ws);
@@ -9458,14 +9471,14 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct epoll_event  ev;
 
-    ws->eventsMax = MPR_EPOLL_SIZE;
+    ws->eventsMax = BIT_MAX_EPOLL;
     ws->handlerMax = MPR_FD_MIN;
     ws->events = mprAllocZeroed(sizeof(struct epoll_event) * ws->eventsMax);
     ws->handlerMap = mprAllocZeroed(sizeof(MprWaitHandler*) * ws->handlerMax);
     if (ws->events == 0 || ws->handlerMap == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
-    if ((ws->epoll = epoll_create(MPR_EPOLL_SIZE)) < 0) {
+    if ((ws->epoll = epoll_create(BIT_MAX_EPOLL)) < 0) {
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -9596,7 +9609,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     memset(&ev, 0, sizeof(ev));
     memset(events, 0, sizeof(events));
     ev.data.fd = fd;
-    if ((epfd = epoll_create(MPR_EPOLL_SIZE)) < 0) {
+    if ((epfd = epoll_create(BIT_MAX_EPOLL)) < 0) {
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -10237,7 +10250,7 @@ PUBLIC int mprGetFileChar(MprFile *file)
         return MPR_ERR;
     }
     if (file->buf == 0) {
-        file->buf = mprCreateBuf(MPR_BUFSIZE, MPR_BUFSIZE);
+        file->buf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     }
     bp = file->buf;
 
@@ -10310,7 +10323,7 @@ PUBLIC char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
         *lenp = 0;
     }
     if (maxline <= 0) {
-        maxline = MPR_BUFSIZE;
+        maxline = BIT_MAX_BUFFER;
     }
     fs = file->fileSystem;
     newline = fs->newline;
@@ -10406,7 +10419,7 @@ PUBLIC ssize mprPutFileString(MprFile *file, cchar *str)
         Buffer output and flush when full.
      */
     if (file->buf == 0) {
-        file->buf = mprCreateBuf(MPR_BUFSIZE, 0);
+        file->buf = mprCreateBuf(BIT_MAX_BUFFER, 0);
         if (file->buf == 0) {
             return MPR_ERR_CANT_ALLOCATE;
         }
@@ -10453,7 +10466,7 @@ PUBLIC int mprPeekFileChar(MprFile *file)
         return MPR_ERR;
     }
     if (file->buf == 0) {
-        file->buf = mprCreateBuf(MPR_BUFSIZE, MPR_BUFSIZE);
+        file->buf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     }
     bp = file->buf;
 
@@ -10682,10 +10695,10 @@ PUBLIC int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSiz
         return MPR_ERR_BAD_STATE;
     }
     if (initialSize <= 0) {
-        initialSize = MPR_BUFSIZE;
+        initialSize = BIT_MAX_BUFFER;
     }
     if (maxSize <= 0) {
-        maxSize = MPR_BUFSIZE;
+        maxSize = BIT_MAX_BUFFER;
     }
     if (maxSize <= initialSize) {
         maxSize = initialSize;
@@ -10908,7 +10921,13 @@ PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 
 
 
-/**************************** Forward Declarations ****************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_HASH
+    #define BIT_MAX_HASH 23           /* Default initial hash size */
+#endif
+
+/********************************** Forwards **********************************/
 
 static void *dupKey(MprHash *hash, cvoid *key);
 static MprKey *lookupHash(int *index, MprKey **prevSp, MprHash *hash, cvoid *key);
@@ -10917,6 +10936,7 @@ static void manageHashTable(MprHash *hash, int flags);
 /*********************************** Code *************************************/
 /*
     Create a new hash hash of a given size. Caller should provide a size that is a prime number for the greatest efficiency.
+    Can use hashSize -1, 0 to get a default hash.
  */
 PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
 {
@@ -10925,8 +10945,8 @@ PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
     if ((hash = mprAllocObj(MprHash, manageHashTable)) == 0) {
         return 0;
     }
-    if (hashSize < MPR_DEFAULT_HASH_SIZE) {
-        hashSize = MPR_DEFAULT_HASH_SIZE;
+    if (hashSize < BIT_MAX_HASH) {
+        hashSize = BIT_MAX_HASH;
     }
     if ((hash->buckets = mprAllocZeroed(sizeof(MprKey*) * hashSize)) == 0) {
         return NULL;
@@ -12154,7 +12174,13 @@ PUBLIC void mprWakeNotifier()
 
 
 
-/****************************** Forward Declarations **************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_LIST
+    #define BIT_MAX_LIST   8
+#endif
+
+/********************************** Forwards **********************************/
 
 static int growList(MprList *lp, int incr);
 static void manageList(MprList *lp, int flags);
@@ -12222,7 +12248,7 @@ PUBLIC int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
     ssize   size;
 
     if (initialSize <= 0) {
-        initialSize = MPR_LIST_INCR;
+        initialSize = BIT_MAX_LIST;
     }
     if (maxSize <= 0) {
         maxSize = MAXINT;
@@ -12803,7 +12829,7 @@ static int growList(MprList *lp, int incr)
         how much the list needs to grow.
      */
     if (incr <= 1) {
-        len = MPR_LIST_INCR + (lp->size * 2);
+        len = BIT_MAX_LIST + (lp->size * 2);
     } else {
         len = lp->size + incr;
     }
@@ -13370,7 +13396,13 @@ PUBLIC void mprSpinUnlock(MprSpin *lock)
 
 
 
-/****************************** Forward Declarations **************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_LOGLINE
+    #define BIT_MAX_LOGLINE 8192           /* Max size of a log line */
+#endif
+
+/********************************** Forwards **********************************/
 
 static void defaultLogHandler(int flags, int level, cchar *msg);
 static void logOutput(int flags, int level, cchar *msg);
@@ -13496,7 +13528,7 @@ PUBLIC void mprSetLogBackup(ssize size, int backup, int flags)
 PUBLIC void mprLog(int level, cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     if (level < 0 || level > mprGetLogLevel()) {
         return;
@@ -13530,7 +13562,7 @@ PUBLIC void mprRawLog(int level, cchar *fmt, ...)
 PUBLIC void mprError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -13543,7 +13575,7 @@ PUBLIC void mprError(cchar *fmt, ...)
 PUBLIC void mprWarn(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -13556,7 +13588,7 @@ PUBLIC void mprWarn(cchar *fmt, ...)
 PUBLIC void mprMemoryError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     if (fmt == 0) {
         logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, "Memory allocation error");
@@ -13572,7 +13604,7 @@ PUBLIC void mprMemoryError(cchar *fmt, ...)
 PUBLIC void mprUserError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -13584,7 +13616,7 @@ PUBLIC void mprUserError(cchar *fmt, ...)
 PUBLIC void mprFatalError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -13600,7 +13632,7 @@ PUBLIC void mprFatalError(cchar *fmt, ...)
 PUBLIC void mprStaticError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -13619,7 +13651,7 @@ PUBLIC void mprStaticError(cchar *fmt, ...)
 PUBLIC void mprAssure(cchar *loc, cchar *msg)
 {
 #if BIT_ASSERT
-    char    buf[MPR_MAX_LOG];
+    char    buf[BIT_MAX_LOGLINE];
 
     if (loc) {
 #if BIT_UNIX_LIKE
@@ -13659,7 +13691,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
 {
     MprFile     *file;
     MprPath     info;
-    char        *prefix, buf[MPR_MAX_LOG];
+    char        *prefix, buf[BIT_MAX_LOGLINE];
     int         mode;
     static int  check = 0;
 
@@ -13994,7 +14026,7 @@ PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
         if ((file = mprOpenFile(path, O_RDONLY | O_TEXT, 0)) == 0) {
             return 0;
         }
-        if ((table = mprCreateHash(MPR_DEFAULT_HASH_SIZE, 0)) == 0) {
+        if ((table = mprCreateHash(47, 0)) == 0) {
             mprCloseFile(file);
             return 0;
         }
@@ -15104,7 +15136,7 @@ PUBLIC int mprCopyPath(cchar *fromName, cchar *toName, int mode)
 {
     MprFile     *from, *to;
     ssize       count;
-    char        buf[MPR_BUFSIZE];
+    char        buf[BIT_MAX_BUFFER];
 
     if ((from = mprOpenFile(fromName, O_RDONLY | O_BINARY, 0)) == 0) {
         mprError("Cannot open %s", fromName);
@@ -15182,7 +15214,7 @@ PUBLIC char *mprGetAbsPath(cchar *path)
 
 #if BIT_WIN_LIKE && !WINCE
 {
-    wchar    buf[MPR_MAX_PATH];
+    wchar    buf[BIT_MAX_PATH];
     GetFullPathName(wide(path), sizeof(buf) - 1, buf, NULL);
     buf[TSZ(buf) - 1] = '\0';
     result = mprNormalizePath(multi(buf));
@@ -15241,7 +15273,7 @@ PUBLIC char *mprGetAppPath()
 
 #if MACOSX
 {
-    char    path[MPR_MAX_PATH], pbuf[MPR_MAX_PATH];
+    char    path[BIT_MAX_PATH], pbuf[BIT_MAX_PATH];
     uint    size;
     ssize   len;
 
@@ -15259,7 +15291,7 @@ PUBLIC char *mprGetAppPath()
 }
 #elif FREEBSD 
 {
-    char    pbuf[MPR_MAX_STRING];
+    char    pbuf[BIT_MAX_PATH];
     int     len;
 
     len = readlink("/proc/curproc/file", pbuf, sizeof(pbuf) - 1);
@@ -15271,7 +15303,7 @@ PUBLIC char *mprGetAppPath()
 }
 #elif BIT_UNIX_LIKE 
 {
-    char    pbuf[MPR_MAX_STRING], *path;
+    char    pbuf[BIT_MAX_PATH], *path;
     int     len;
 #if SOLARIS
     path = sfmt("/proc/%i/path/a.out", getpid()); 
@@ -15287,7 +15319,7 @@ PUBLIC char *mprGetAppPath()
 }
 #elif BIT_WIN_LIKE
 {
-    wchar    pbuf[MPR_MAX_PATH];
+    wchar    pbuf[BIT_MAX_PATH];
 
     if (GetModuleFileName(0, pbuf, sizeof(pbuf) - 1) <= 0) {
         return 0;
@@ -15310,7 +15342,7 @@ PUBLIC char *mprGetAppPath()
  */
 PUBLIC char *mprGetCurrentPath()
 {
-    char    dir[MPR_MAX_PATH];
+    char    dir[BIT_MAX_PATH];
 
     if (getcwd(dir, sizeof(dir)) == 0) {
         return mprGetAbsPath("/");
@@ -15504,7 +15536,7 @@ static MprList *getDirFiles(cchar *dir, int flags)
     MprPath         fileInfo;
     MprList         *list;
     cchar           *seps;
-    char            *path, pbuf[MPR_MAX_PATH];
+    char            *path, pbuf[BIT_MAX_PATH];
 #if WINCE
     WIN32_FIND_DATAA findData;
 #else
@@ -15791,7 +15823,7 @@ PUBLIC char *mprGetPortablePath(cchar *path)
 PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
 {
     MprFileSystem   *fs;
-    char            originBuf[MPR_MAX_FNAME], *cp, *result, *dest, *lastcp, *origin, *op, *lastop;
+    char            originBuf[BIT_MAX_FNAME], *cp, *result, *dest, *lastcp, *origin, *op, *lastop;
     int             originSegments, i, commonSegments, sep;
 
     fs = mprLookupFileSystem(destArg);
@@ -17149,6 +17181,12 @@ typedef struct MprEjsName {
     MprEjsString    *space;
 } MprEjsName;
 
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_FMT
+    #define BIT_MAX_FMT 256           /* Initial size of a printf buffer */
+#endif
+
 /***************************** Forward Declarations ***************************/
 
 static int  getState(char c, int state);
@@ -17226,7 +17264,7 @@ PUBLIC ssize mprFprintf(MprFile *file, cchar *fmt, ...)
 }
 
 
-#if FUTURE
+#if KEEP
 /*
     Printf with a static buffer. Used internally only. WILL NOT MALLOC.
  */
@@ -17234,12 +17272,12 @@ PUBLIC int mprStaticPrintf(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
-    char            buf[MPR_MAX_STRING];
+    char            buf[BIT_MAX_BUFFER];
 
     fs = mprLookupFileSystem(NULL, "/");
 
     va_start(ap, fmt);
-    sprintfCore(buf, MPR_MAX_STRING, fmt, ap);
+    sprintfCore(buf, BIT_MAX_BUFFER, fmt, ap);
     va_end(ap);
     return mprWriteFile(fs->stdOutput, buf, slen(buf));
 }
@@ -17252,12 +17290,12 @@ PUBLIC int mprStaticPrintfError(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
-    char            buf[MPR_MAX_STRING];
+    char            buf[BIT_MAX_BUFFER];
 
     fs = mprLookupFileSystem(NULL, "/");
 
     va_start(ap, fmt);
-    sprintfCore(buf, MPR_MAX_STRING, fmt, ap);
+    sprintfCore(buf, BIT_MAX_BUFFER, fmt, ap);
     va_end(ap);
     return mprWriteFile(fs->stdError, buf, slen(buf));
 }
@@ -17351,14 +17389,13 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
         if (maxsize <= 0) {
             maxsize = MAXINT;
         }
-        len = min(MPR_SMALL_ALLOC, maxsize);
-        buf = mprAlloc(len);
-        if (buf == 0) {
+        len = min(BIT_MAX_FMT, maxsize);
+        if ((buf = mprAlloc(len)) == 0) {
             return 0;
         }
         fmt.buf = (uchar*) buf;
         fmt.endbuf = &fmt.buf[len];
-        fmt.growBy = min(MPR_SMALL_ALLOC * 2, maxsize - len);
+        fmt.growBy = min(len * 2, maxsize - len);
     }
     fmt.maxsize = maxsize;
     fmt.start = fmt.buf;
@@ -17636,6 +17673,9 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
             }
         }
     }
+    /*
+        Return the buffer as the result. Prevents a double alloc.
+     */
     BPUTNULL(&fmt);
     return (char*) fmt.buf;
 }
@@ -17803,7 +17843,7 @@ static void outNum(Format *fmt, cchar *prefix, uint64 value)
 #if BIT_FLOAT
 static void outFloat(Format *fmt, char specChar, double value)
 {
-    char    result[MPR_MAX_STRING], *cp;
+    char    result[256], *cp;
     int     c, fill, i, len, index;
 
     result[0] = '\0';
@@ -17981,7 +18021,13 @@ PUBLIC int print(cchar *fmt, ...)
 
 
 #if BIT_ROM 
-/****************************** Forward Declarations **************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_ROMFS
+    #define BIT_MAX_ROMFS 37           /* Size of the ROMFS hash lookup */
+#endif
+
+/********************************** Forwards **********************************/
 
 static void manageRomFile(MprFile *file, int flags);
 static int getPathInfo(MprRomFileSystem *rfs, cchar *path, MprPath *info);
@@ -18179,7 +18225,7 @@ PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList)
 
     rfs = (MprRomFileSystem*) MPR->fileSystem;
     rfs->romInodes = inodeList;
-    rfs->fileIndex = mprCreateHash(MPR_FILES_HASH_SIZE, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
+    rfs->fileIndex = mprCreateHash(BIT_MAX_ROMFS, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
 
     for (ri = inodeList; ri->path; ri++) {
         if (mprAddKey(rfs->fileIndex, ri->path, ri) < 0) {
@@ -18322,7 +18368,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
         Try to find a good port to use to break out of the select wait
      */ 
     maxTries = 100;
-    breakPort = MPR_DEFAULT_BREAK_PORT;
+    breakPort = BIT_WAKEUP_PORT;
     for (rc = retries = 0; retries < maxTries; retries++) {
         breakSock = socket(AF_INET, SOCK_DGRAM, 0);
         if (breakSock < 0) {
@@ -19029,7 +19075,13 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 #define BIT_HAS_GETADDRINFO 1
 #endif
 
-/******************************* Forward Declarations *************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_IP
+    #define BIT_MAX_IP 1024
+#endif
+
+/********************************** Forwards **********************************/
 
 static void closeSocket(MprSocket *sp, bool gracefully);
 static int connectSocket(MprSocket *sp, cchar *ipAddr, int port, int initialFlags);
@@ -19053,7 +19105,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize);
 PUBLIC MprSocketService *mprCreateSocketService()
 {
     MprSocketService    *ss;
-    char                hostName[MPR_MAX_IP_NAME], serverName[MPR_MAX_IP_NAME], domainName[MPR_MAX_IP_NAME], *dp;
+    char                hostName[BIT_MAX_IP], serverName[BIT_MAX_IP], domainName[BIT_MAX_IP], *dp;
 
     if ((ss = mprAllocObj(MprSocketService, manageSocketService)) == 0) {
         return 0;
@@ -19515,7 +19567,7 @@ PUBLIC void mprDisconnectSocket(MprSocket *sp)
 
 static void disconnectSocket(MprSocket *sp)
 {
-    char    buf[MPR_BUFSIZE];
+    char    buf[BIT_MAX_BUFFER];
     int     i, fd;
 
     /*  
@@ -19624,7 +19676,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     MprSocket                   *nsp;
     struct sockaddr_storage     addrStorage, saddrStorage;
     struct sockaddr             *addr, *saddr;
-    char                        ip[MPR_MAX_IP_ADDR], acceptIp[MPR_MAX_IP_ADDR];
+    char                        ip[BIT_MAX_IP], acceptIp[BIT_MAX_IP];
     MprSocklen                  addrlen, saddrlen;
     int                         fd, port, acceptPort;
 
@@ -19940,7 +19992,7 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
 #if !LINUX || __UCLIBC__
 static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize len)
 {
-    char    buf[MPR_BUFSIZE];
+    char    buf[BIT_MAX_BUFFER];
 
     mprSeekFile(file, SEEK_SET, (int) offset);
     len = min(len, sizeof(buf));
@@ -22087,7 +22139,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
 static int loadTestModule(MprTestService *sp, cchar *fileName)
 {
     MprModule   *mp;
-    char        *cp, *base, entry[MPR_MAX_FNAME], path[MPR_MAX_FNAME];
+    char        *cp, *base, entry[BIT_MAX_FNAME], path[BIT_MAX_FNAME];
 
     assure(fileName && *fileName);
 
@@ -22637,7 +22689,7 @@ static void runTestProc(MprTestGroup *gp, MprTestCase *test)
 static char *getErrorMessage(MprTestGroup *gp)
 {
     MprTestFailure  *fp;
-    char            msg[MPR_MAX_STRING], *errorMsg;
+    char            msg[BIT_MAX_BUFFER], *errorMsg;
     int             next;
 
     next = 0;
@@ -24659,10 +24711,8 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
 PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
-    char            localFmt[MPR_MAX_STRING];
     cchar           *cp;
-    char            *dp, *endp, *sign;
-    char            buf[MPR_MAX_STRING];
+    char            localFmt[256], buf[256], *dp, *endp, *sign;
     ssize           size;
     int             value;
 
@@ -27710,7 +27760,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
     void        *event;
     long        errorType;
     ulong       exists;
-    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *cp, *value;
+    char        buf[BIT_MAX_PATH], logName[BIT_MAX_PATH], *cp, *value;
 	wchar		*lines[9];
     int         type;
     static int  once = 0;
@@ -27772,7 +27822,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
  */ 
 static cchar *getHive(cchar *keyPath, HKEY *hive)
 {
-    char    key[MPR_MAX_STRING], *cp;
+    char    key[BIT_MAX_PATH], *cp;
     ssize   len;
 
     assure(keyPath && *keyPath);
@@ -28040,7 +28090,7 @@ PUBLIC int mprLoadModule(MprModule *mp)
  */ 
 static cchar *getHive(cchar *keyPath, HKEY *hive)
 {
-    char    key[MPR_MAX_STRING], *cp;
+    char    key[BIT_MAX_PATH], *cp;
     int     len;
 
     assure(keyPath && *keyPath);
@@ -28172,7 +28222,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
     void        *event;
     long        errorType;
     ulong       exists;
-    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *lines[9], *cp, *value;
+    char        buf[BIT_MAX_PATH], logName[BIT_MAX_PATH], *lines[9], *cp, *value;
     int         type;
     static int  once = 0;
 
@@ -28837,7 +28887,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 
 
 
-/****************************** Forward Declarations **************************/
+/********************************** Forwards **********************************/
 
 static MprXmlToken getXmlToken(MprXml *xp, int state);
 static int  getNextChar(MprXml *xp);
@@ -28856,7 +28906,7 @@ PUBLIC MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
 
     xp = mprAllocObj(MprXml, manageXml);
     
-    xp->inBuf = mprCreateBuf(MPR_XML_BUFSIZE, MPR_XML_BUFSIZE);
+    xp->inBuf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     xp->tokBuf = mprCreateBuf(initialSize, maxSize);
     return xp;
 }

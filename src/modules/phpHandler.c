@@ -173,7 +173,7 @@ static void readyPhp(HttpQueue *q)
     MaPhp               *php;
     FILE                *fp;
     cchar               *value;
-    char                shebang[MPR_MAX_STRING];
+    char                shebang[BIT_MAX_PATH];
     zend_file_handle    file_handle;
 
     TSRMLS_FETCH();

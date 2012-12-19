@@ -436,13 +436,13 @@ static void readFromCgi(Cgi *cgi, int channel)
     }
     while (mprGetCmdFd(cmd, channel) >= 0 && !tx->finalized && writeq->count < writeq->max) {
         if ((packet = cgi->headers) != 0) {
-            if (mprGetBufSpace(packet->content) < HTTP_BUFSIZE && mprGrowBuf(packet->content, HTTP_BUFSIZE) < 0) {
+            if (mprGetBufSpace(packet->content) < BIT_MAX_BUFFER && mprGrowBuf(packet->content, BIT_MAX_BUFFER) < 0) {
                 break;
             }
-        } else if ((packet = httpCreateDataPacket(HTTP_BUFSIZE)) == 0) {
+        } else if ((packet = httpCreateDataPacket(BIT_MAX_BUFFER)) == 0) {
             break;
         }
-        nbytes = mprReadCmd(cmd, channel, mprGetBufEnd(packet->content), HTTP_BUFSIZE);
+        nbytes = mprReadCmd(cmd, channel, mprGetBufEnd(packet->content), BIT_MAX_BUFFER);
         if (nbytes < 0) {
             err = mprGetError();
             if (err == EINTR) {
@@ -511,7 +511,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
     len = 0;
     if ((endHeaders = sncontains(headers, "\r\n\r\n", blen)) == NULL) {
         if ((endHeaders = sncontains(headers, "\n\n", blen)) == NULL) {
-            if (mprGetCmdFd(cgi->cmd, MPR_CMD_STDOUT) >= 0 && strlen(headers) < HTTP_MAX_HEADERS) {
+            if (mprGetCmdFd(cgi->cmd, MPR_CMD_STDOUT) >= 0 && strlen(headers) < BIT_MAX_HEADERS) {
                 /* Not EOF and less than max headers and have not yet seen an end of headers delimiter */
                 return 0;
             }
