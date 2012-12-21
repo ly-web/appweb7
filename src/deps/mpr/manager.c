@@ -1,5 +1,5 @@
 /**
-    manager.c -- Manager program 
+    manger.c -- Manager program 
 
     The manager watches over daemon programs.
     Key commands:

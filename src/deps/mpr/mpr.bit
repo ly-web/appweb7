@@ -13,7 +13,7 @@ Bit.load({
 
         libmprssl: {
             type: 'lib',
-            depends: [ 'libmpr', 'openssl', 'matrixssl' ],
+            depends: [ 'libmpr', 'libest', 'openssl', 'matrixssl' ],
             sources: [ 'mprSsl.c' ],
         },
 

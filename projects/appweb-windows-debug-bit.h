@@ -46,7 +46,7 @@
     #define BIT_MDB 1
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,matrixssl,pmaker,php,sqlite,ssl,utest,zip"
+    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite,ssl,utest,zip"
 #endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
@@ -76,19 +76,16 @@
     #define BIT_STEALTH 1
 #endif
 #ifndef BIT_SYNC
-    #define BIT_SYNC "http,mpr,pcre,sqlite"
+    #define BIT_SYNC "est,http,mpr,pcre,sqlite"
 #endif
 #ifndef BIT_TITLE
     #define BIT_TITLE "Embedthis Appweb"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.2.0"
+    #define BIT_VERSION "4.3.0"
 #endif
 #ifndef BIT_WITHOUT_ALL
-    #define BIT_WITHOUT_ALL "doxygen,dsi,ejs,man,man2html,pmaker,ssl,ejscript,php,matrixssl,openssl"
-#endif
-#ifndef BIT_WITHOUT_OWN
-    #define BIT_WITHOUT_OWN "doxygen,dsi,ejs,man,man2html,pmaker,ejscript,php,matrixssl"
+    #define BIT_WITHOUT_ALL "doxygen,dsi,est,ejs,man,man2html,pmaker,ssl,ejscript,php,matrixssl,openssl"
 #endif
 
 /* Prefixes */
@@ -153,13 +150,13 @@
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 2
+    #define BIT_MINOR_VERSION 3
 #endif
 #ifndef BIT_PATCH_VERSION
     #define BIT_PATCH_VERSION 0
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400020000
+    #define BIT_VNUM 400030000
 #endif
 
 /* Packs */
@@ -192,6 +189,9 @@
 #endif
 #ifndef BIT_PACK_ESP
     #define BIT_PACK_ESP 1
+#endif
+#ifndef BIT_PACK_EST
+    #define BIT_PACK_EST 0
 #endif
 #ifndef BIT_PACK_HTTP
     #define BIT_PACK_HTTP 1

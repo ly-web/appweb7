@@ -129,7 +129,7 @@ static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *val
 static int sslCipherSuiteDirective(MaState *state, cchar *key, cchar *value)
 {
     checkSsl(state);
-    mprSetSslCiphers(state->route->ssl, value);
+    mprAddSslCiphers(state->route->ssl, value);
     return 0;
 }
 

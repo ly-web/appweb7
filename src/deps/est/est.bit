@@ -6,9 +6,10 @@ Bit.load({
 
     targets: {
         libest: {
+            enable: 'bit.packs.est.enable',
             type: 'lib',
             headers: [ '*.h' ],
-            sources: [ 'est.c' ],
+            sources: [ 'estLib.c' ],
             '-compiler': [
                 '-Wall',
                 '-Wshorten-64-to-32',

@@ -102,6 +102,7 @@ clean:
 	-if exist $(CONFIG)\obj\mprSsl.obj del /Q $(CONFIG)\obj\mprSsl.obj
 	-if exist $(CONFIG)\obj\manager.obj del /Q $(CONFIG)\obj\manager.obj
 	-if exist $(CONFIG)\obj\makerom.obj del /Q $(CONFIG)\obj\makerom.obj
+	-if exist $(CONFIG)\obj\estLib.obj del /Q $(CONFIG)\obj\estLib.obj
 	-if exist $(CONFIG)\obj\pcre.obj del /Q $(CONFIG)\obj\pcre.obj
 	-if exist $(CONFIG)\obj\httpLib.obj del /Q $(CONFIG)\obj\httpLib.obj
 	-if exist $(CONFIG)\obj\http.obj del /Q $(CONFIG)\obj\http.obj

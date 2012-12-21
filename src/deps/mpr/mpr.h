@@ -698,6 +698,13 @@ typedef int64 MprTicks;
     #endif
 #endif
 
+#if BIT_WIN_LIKE
+    #define INT64(x)    (x##i64)
+    #define UINT64(x)   (x##Ui64)
+#else
+    #define INT64(x)    (x##LL)
+    #define UINT64(x)   (x##ULL)
+#endif
 
 #ifndef MAXINT
 #if INT_MAX
@@ -746,14 +753,6 @@ typedef int64 MprTicks;
     #define PTOI(i)     ((int) i)
     #define LTOP(i)     ((void*) ((int) i))
     #define PTOL(i)     ((int64) (int) i)
-#endif
-
-#if BIT_WIN_LIKE
-    #define INT64(x)    (x##i64)
-    #define UINT64(x)   (x##Ui64)
-#else
-    #define INT64(x)    (x##LL)
-    #define UINT64(x)   (x##ULL)
 #endif
 
 #if BIT_WIN_LIKE
@@ -1279,21 +1278,6 @@ struct  MprXml;
     #define MPR_MAX_FNAME       BIT_MAX_FNAME
     #define MPR_BUFSIZE         BIT_MAX_BUFFER
 #endif
-#if UNUSED
-#define MPR_MAX_STRING          1024          /**< Maximum (stack) string size - MOB - used for what */
-#define MPR_MAX_URL             512           /**< Max URL size. Also request URL size. */
-#define MPR_DEFAULT_HASH_SIZE   23            /**< Default size of hash table */ 
-#define MPR_SMALL_ALLOC         256           /**< Default small. Used in printf. */
-#define MPR_MAX_LOG             (8 * 1024)    /**< Maximum log message size (impacts stack) */
-//  MOB - used for what
-#define MPR_MAX_BUF             4194304       /**< Max buffer size */
-#define MPR_SSL_BUFSIZE         4096          /**< SSL has 16K max*/
-#define MPR_FILES_HASH_SIZE     29            /**< Hash size for rom file system */
-#define MPR_TIME_HASH_SIZE      67            /**< Hash size for time token lookup */
-#define MPR_NEW_QUOTA           (4 * 1024)    /**< Number of new allocations before a GC is worthwhile */
-#define MPR_GC_LOW_MEM          (32 * 1024)   /**< Free memory low water mark before invoking GC */
-#define MPR_MEM_REGION_SIZE     (128 * 1024)  /**< Memory allocation chunk size */
-#endif
 
 /*
     Select wakeup port. Port can be any free port number. If this is not free, the MPR will use the next free port.
@@ -1302,16 +1286,6 @@ struct  MprXml;
     #define BIT_WAKEUP_PORT     9473
 #endif
 #define MPR_FD_MIN              32
-
-#if UNUSED
-/* 
-    Longest IPv6 is XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX (40 bytes with null) 
- */ 
-#define MPR_MAX_IP_NAME         1024
-#define MPR_MAX_IP_ADDR         1024
-#define MPR_MAX_IP_PORT         8
-#define MPR_MAX_IP_ADDR_PORT    1024
-#endif
 
 /*
     Signal sent on Unix to break out of a select call.
@@ -7892,6 +7866,8 @@ PUBLIC int mprParseSocketAddress(cchar *ipSpec, char **ip, int *port, int defaul
     @param buf Pointer to a buffer to hold the read data. 
     @param size Size of the buffer.
     @return A count of bytes actually read. Return a negative MPR error code on errors.
+    @return Return -1 for EOF and errors. On success, return the number of bytes read. Use  mprIsSocketEof to 
+        distinguision between EOF and errors.
     @ingroup MprSocket
     @stability Stable
  */
@@ -8050,6 +8026,7 @@ typedef struct MprSsl {
     int             verifyIssuer;       /**< Set if the certificate issuer should be also verified */
     int             verifyDepth;        /**< Set if the cert chain depth should be verified */
     int             protocols;          /**< SSL protocols */
+    MprMutex        *mutex;             /**< Multithread sync */
 } MprSsl;
 
 /*
@@ -8059,25 +8036,17 @@ typedef struct MprSsl {
 #define MPR_PROTO_SSLV3    0x2              /**< SSL V3 protocol */
 #define MPR_PROTO_TLSV1    0x4              /**< TLS V1 protocol */
 #define MPR_PROTO_TLSV11   0x8              /**< TLS V1.1 protocol */
-#define MPR_PROTO_ALL      0xf              /**< All SSL protocols */
-
-/*
-    Default SSL configuration
-    Other cipher options
-
-        #define BIT_CIPHERS "HIGH:RC4+SHA"
-        #define BIT_CIPHERS "AES128-SHA"
- */
-#ifndef BIT_CIPHERS
-    #define BIT_CIPHERS "HIGH:MEDIUM"  /**< Default cipher suite */
-#endif
+#define MPR_PROTO_TLSV12   0x10             /**< TLS V1.2 protocol */
+#define MPR_PROTO_ALL      0x1F             /**< All SSL protocols */
 
 /**
-    Load the SSL module.
+    Add the ciphers to use for SSL
+    @param ssl SSL instance returned from #mprCreateSsl
+    @param ciphers Cipher string to add to any existing ciphers
     @ingroup MprSsl
     @stability Evolving
  */
-PUBLIC int mprLoadSsl();
+PUBLIC void mprAddSslCiphers(struct MprSsl *ssl, cchar *ciphers);
 
 /**
     Create the SSL control structure
@@ -8096,13 +8065,11 @@ PUBLIC struct MprSsl *mprCreateSsl(int server);
 PUBLIC struct MprSsl *mprCloneSsl(MprSsl *src);
 
 /**
-    Set the ciphers to use for SSL
-    @param ssl SSL instance returned from #mprCreateSsl
-    @param ciphers Cipher string
+    Load the SSL module.
     @ingroup MprSsl
     @stability Evolving
  */
-PUBLIC void mprSetSslCiphers(struct MprSsl *ssl, cchar *ciphers);
+PUBLIC int mprLoadSsl();
 
 /**
     Set the key file to use for SSL

@@ -285,10 +285,18 @@ static int initializeAppweb(cchar *ip, int port)
         If doing a static build, must now reference required modules to force the linker to include them.
         Don't actually call init routines here. They will be called via LoadModule statements in appweb.conf.
      */
+#if BIT_PACK_CGI
     mprNop(maCgiHandlerInit);
+#endif
+#if BIT_PACK_ESP
     mprNop(maEspHandlerInit);
+#endif
+#if BIT_PACK_PHP
     mprNop(maPhpHandlerInit);
+#endif
+#if BIT_PACK_SSL
     mprNop(maSslModuleInit);
+#endif
 #endif
 
     if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
