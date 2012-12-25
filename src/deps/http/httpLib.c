@@ -13350,13 +13350,6 @@ static void freeSendPackets(HttpQueue *q, MprOff bytes)
             packet->epos += len;
             bytes -= len;
             assure(packet->esize >= 0);
-#if UNUSED
-            if (packet->esize) {
-                /* Still more file to write, but this was all the socket could absorb */
-                assure(bytes == 0);
-                break;
-            }
-#endif
 
         } else if ((len = httpGetPacketLength(packet)) > 0) {
             /* Header packets come here */
