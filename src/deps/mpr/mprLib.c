@@ -2131,6 +2131,7 @@ static void getSystemInfo()
             return;
         }
         match = 1;
+        memStats.numCpu = 0;
         for (col = 0; read(fd, &c, 1) == 1; ) {
             if (c == '\n') {
                 col = 0;
@@ -2148,7 +2149,9 @@ static void getSystemInfo()
                 }
             }
         }
-        --memStats.numCpu;
+        if (memStats.numCpu <= 0) {
+            memStats.numCpu = 1;
+        }
         close(fd);
         memStats.pageSize = sysconf(_SC_PAGESIZE);
     }
@@ -3277,7 +3280,7 @@ PUBLIC int mprGetEndian()
 
     test = 1;
     probe = (char*) &test;
-    return (*probe == 1) ? MPR_LITTLE_ENDIAN : MPR_BIG_ENDIAN;
+    return (*probe == 1) ? BIT_LITTLE_ENDIAN : BIT_BIG_ENDIAN;
 }
 
 
@@ -19386,6 +19389,10 @@ PUBLIC MprSocketService *mprCreateSocketService()
     mprSetDomainName(domainName);
     mprSetHostName(hostName);
     ss->secureSockets = mprCreateList(0, 0);
+    ss->hasIPv6 = socket(AF_INET6, SOCK_STREAM, 0) == 0;
+    if (!ss->hasIPv6) {
+        mprLog(2, "System has only IPv4 support");
+    }
     return ss;
 }
 
@@ -19523,9 +19530,15 @@ PUBLIC bool mprHasDualNetworkStack()
         dual = info.dwMajorVersion >= 6;
     }
 #else
-    dual = 1;
+    dual = MPR->socketService->hasIPv6;
 #endif
     return dual;
+}
+
+
+PUBLIC bool mprHasIPv6() 
+{
+    return MPR->socketService->hasIPv6;
 }
 
 
@@ -19544,7 +19557,7 @@ PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
 static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
-    MprSocklen          addrlen;
+    Socklen             addrlen;
     cchar               *sip;
     int                 datagram, family, protocol, rc, only;
 
@@ -19600,12 +19613,14 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         So we explicitly control.
      */
 #if defined(IPV6_V6ONLY)
-    if (ip == 0 || *ip == '\0') {
-        only = 0;
-        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
-    } else if (ipv6(ip)) {
-        only = 1;
-        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+    if (MPR->socketService->hasIPv6) {
+        if (ip == 0 || *ip == '\0') {
+            only = 0;
+            setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+        } else if (ipv6(ip)) {
+            only = 1;
+            setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+        }
     }
 #endif
     if (sp->service->prebind) {
@@ -19713,7 +19728,7 @@ PUBLIC int mprConnectSocket(MprSocket *sp, cchar *ip, int port, int flags)
 static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
-    MprSocklen          addrlen;
+    Socklen             addrlen;
     int                 broadcast, datagram, family, protocol, rc;
 
     mprLog(6, "openClient: %s:%d, flags %x", ip, port, initialFlags);
@@ -19924,7 +19939,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     struct sockaddr_storage     addrStorage, saddrStorage;
     struct sockaddr             *addr, *saddr;
     char                        ip[BIT_MAX_IP], acceptIp[BIT_MAX_IP];
-    MprSocklen                  addrlen, saddrlen;
+    Socklen                     addrlen, saddrlen;
     int                         fd, port, acceptPort;
 
     ss = MPR->socketService;
@@ -20024,7 +20039,7 @@ PUBLIC ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
 static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize)
 {
     struct sockaddr_storage server;
-    MprSocklen              len;
+    Socklen                 len;
     ssize                   bytes;
     int                     errCode;
 
@@ -20043,7 +20058,7 @@ again:
     }
     if (sp->flags & MPR_SOCKET_DATAGRAM) {
         len = sizeof(server);
-        bytes = recvfrom(sp->fd, buf, (int) bufsize, MSG_NOSIGNAL, (struct sockaddr*) &server, (MprSocklen*) &len);
+        bytes = recvfrom(sp->fd, buf, (int) bufsize, MSG_NOSIGNAL, (struct sockaddr*) &server, (Socklen*) &len);
     } else {
         bytes = recv(sp->fd, buf, (int) bufsize, MSG_NOSIGNAL);
     }
@@ -20111,7 +20126,7 @@ PUBLIC ssize mprWriteSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 {
     struct sockaddr     *addr;
-    MprSocklen          addrlen;
+    Socklen             addrlen;
     ssize               len, written, sofar;
     int                 family, protocol, errCode;
 
@@ -20575,7 +20590,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
      */
     if (ip == 0 || ip[0] == '\0') {
         ip = 0;
-        hints.ai_flags |= AI_PASSIVE;           /* Bind to 0.0.0.0 and :: */
+        hints.ai_flags |= AI_PASSIVE;           /* Bind to 0.0.0.0 and :: if available */
     }
     v6 = ipv6(ip);
     hints.ai_socktype = SOCK_STREAM;
@@ -20624,7 +20639,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
 }
 #else
 
-PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, MprSocklen *addrlen)
+PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, Socklen *addrlen)
 {
     MprSocketService    *ss;
     struct sockaddr_in  *sa;

@@ -802,6 +802,7 @@ static char *dhg = "4";
 
 //MOB http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
 
+#if UNUSED
 #define KEY_RSA         (0x1)
 #define KEY_DHr         (0x2)
 #define KEY_DHd         (0x4)
@@ -833,6 +834,7 @@ static char *dhg = "4";
 
 #define CMED             (INT64(0x1) << 32)
 #define CHIGH            (INT64(0x2) << 32)
+#endif
 
 typedef struct Ciphers {
     int     code;
@@ -848,17 +850,19 @@ HIGH    0A 13 16 1B 2F 32 33 34 35 38 39 3A 3C 3D 40 41 44 45 46 67 6A 6B 6C 6D 
 
 /** MOB - should have a high security and a fast security list */
 static Ciphers cipherList[] = {
-{ 0x2F, "TLS_RSA_WITH_AES_128_CBC_SHA",          SSL_RSA_AES_128_SHA            },
-{ 0x35, "TLS_RSA_WITH_AES_256_CBC_SHA",          SSL_RSA_AES_256_SHA            },
-{ 0x05, "TLS_RSA_WITH_RC4_128_SHA",              SSL_RSA_RC4_128_SHA            },      /* MED */
-{ 0x0A, "TLS_RSA_WITH_3DES_EDE_CBC_SHA",         SSL_RSA_DES_168_SHA            },
-{ 0x04, "TLS_RSA_WITH_RC4_128_MD5",              SSL_RSA_RC4_128_MD5            },      /* MED */
-{ 0x39, "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",      SSL_EDH_RSA_AES_256_SHA        },
-{ 0x16, "TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA",     SSL_EDH_RSA_DES_168_SHA        },
+{ 0x2F, "TLS_RSA_WITH_AES_128_CBC_SHA",          TLS_RSA_WITH_AES_128_CBC_SHA           },
+{ 0x35, "TLS_RSA_WITH_AES_256_CBC_SHA",          TLS_RSA_WITH_AES_256_CBC_SHA           },
+{ 0x05, "TLS_RSA_WITH_RC4_128_SHA",              TLS_RSA_WITH_RC4_128_SHA               },      /* MED */
+{ 0x0A, "TLS_RSA_WITH_3DES_EDE_CBC_SHA",         TLS_RSA_WITH_3DES_EDE_CBC_SHA          },
+{ 0x04, "TLS_RSA_WITH_RC4_128_MD5",              TLS_RSA_WITH_RC4_128_MD5               },      /* MED */
+{ 0x39, "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",      TLS_DHE_RSA_WITH_AES_256_CBC_SHA       },
+{ 0x16, "TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA",     TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA      },
 
-{ 0x41, "TLS_RSA_WITH_CAMELLIA_128_CBC_SHA",     SSL_RSA_CAMELLIA_128_SHA       },
-{ 0x88, "TLS_RSA_WITH_CAMELLIA_256_CBC_SHA",     SSL_EDH_RSA_CAMELLIA_256_SHA   },
-{ 0x84, "TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA", SSL_RSA_CAMELLIA_256_SHA       },
+#if UNUSED
+{ 0x41, "TLS_RSA_WITH_CAMELLIA_128_CBC_SHA",     TLS_RSA_WITH_CAMELLIA_128_CBC_SHA      },
+{ 0x88, "TLS_RSA_WITH_CAMELLIA_256_CBC_SHA",     TLS_RSA_WITH_CAMELLIA_256_CBC_SHA      },
+{ 0x84, "TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA", TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA  },
+#endif
 { 0x00, 0, 0 },
 };
 
@@ -1143,8 +1147,9 @@ static ssize readEst(MprSocket *sp, void *buf, ssize len)
     assure(esp->cfg);
 
     while (esp->ssl.state != SSL_HANDSHAKE_OVER && (rc = ssl_handshake(&esp->ssl)) != 0) {
-        if (rc != TROPICSSL_ERR_NET_TRY_AGAIN) {
-            mprLog(2, "EST: Can't handshake: %d", rc);
+        if (rc != EST_ERR_NET_TRY_AGAIN) {
+            mprLog(2, "EST: readEst: Cannot handshake: %d", rc);
+            sp->flags |= MPR_SOCKET_EOF;
             return -1;
         }
     }
@@ -1152,13 +1157,13 @@ static ssize readEst(MprSocket *sp, void *buf, ssize len)
         rc = ssl_read(&esp->ssl, buf, (int) len);
         mprLog(5, "EST: ssl_read %d", rc);
         if (rc < 0) {
-            if (rc == TROPICSSL_ERR_NET_TRY_AGAIN)  {
+            if (rc == EST_ERR_NET_TRY_AGAIN)  {
                 continue;
-            } else if (rc == TROPICSSL_ERR_SSL_PEER_CLOSE_NOTIFY) {
+            } else if (rc == EST_ERR_SSL_PEER_CLOSE_NOTIFY) {
                 mprLog(5, "EST: connection was closed gracefully\n");
                 sp->flags |= MPR_SOCKET_EOF;
                 return -1;
-            } else if (rc == TROPICSSL_ERR_NET_CONN_RESET) {
+            } else if (rc == EST_ERR_NET_CONN_RESET) {
                 mprLog(5, "EST: connection reset");
                 sp->flags |= MPR_SOCKET_EOF;
                 return -1;
@@ -1194,14 +1199,14 @@ static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
         rc = ssl_write(&esp->ssl, (uchar*) buf, (int) len);
         mprLog(7, "EST: written %d, requested len %d", rc, len);
         if (rc <= 0) {
-            if (rc == TROPICSSL_ERR_NET_TRY_AGAIN) {                                                          
+            if (rc == EST_ERR_NET_TRY_AGAIN) {                                                          
                 continue;
             }
-            if (rc == TROPICSSL_ERR_NET_CONN_RESET) {                                                         
+            if (rc == EST_ERR_NET_CONN_RESET) {                                                         
                 printf(" failed\n  ! peer closed the connection\n\n");                                         
                 mprLog(0, "ssl_write peer closed");
                 return -1;
-            } else if (rc != TROPICSSL_ERR_NET_TRY_AGAIN) {                                                          
+            } else if (rc != EST_ERR_NET_TRY_AGAIN) {                                                          
                 mprLog(0, "ssl_write failed rc %d", rc);
                 return -1;
             }

@@ -1196,7 +1196,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
         Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
      */
-    if (!schr(value, ':') && !mprHasDualNetworkStack()) {
+    if (!schr(value, ':') && mprHasIPv6() && !mprHasDualNetworkStack()) {
         mprAddItem(state->server->endpoints, httpCreateEndpoint("::", port, NULL));
     }
     return 0;

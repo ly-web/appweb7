@@ -201,7 +201,6 @@ static void initSettings()
 
 static bool parseArgs(int argc, char **argv)
 {
-    HttpUri     *uri;
     char        *argp, *key, *value;
     int         i, setWorkers, nextArg;
 
@@ -483,7 +482,6 @@ static bool parseArgs(int argc, char **argv)
     argc = argc - nextArg;
     argv = &argv[nextArg];
     app->target = argv[argc - 1];
-    uri = httpCreateUri(app->target, 0);
     if (--argc > 0) {
         /*
             Files present on command line
@@ -506,6 +504,8 @@ static bool parseArgs(int argc, char **argv)
         }
     }
 #if BIT_PACK_SSL
+{
+    HttpUri *uri = httpCreateUri(app->target, 0);
     if (app->validate || app->cert || app->provider || uri->secure) {
         app->ssl = mprCreateSsl(0);
         if (app->provider) {
@@ -524,6 +524,7 @@ static bool parseArgs(int argc, char **argv)
     } else {
         mprVerifySslPeer(NULL, 0);
     }
+}
 #endif
     return 1;
 }

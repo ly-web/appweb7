@@ -45,7 +45,7 @@ typedef struct MdbCol {
 typedef struct MdbSchema {
     int             ncols;              /* Number of columns in table */
     int             capacity;           /* Capacity of cols */
-    MdbCol          cols[MPR_FLEX];     /* Array of columns */
+    MdbCol          cols[ARRAY_FLEX];   /* Array of columns */
 } MdbSchema;
 
 /*
@@ -55,7 +55,7 @@ typedef struct MdbRow {
     struct MdbTable *table;             /* Reference to MdbTable */
     int             rid;                /* Table index in MdbTable.row */
     int             nfields;            /* Number of fields in fields */
-    cchar           *fields[MPR_FLEX];
+    cchar           *fields[ARRAY_FLEX];
 } MdbRow;
 
 /*
