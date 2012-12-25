@@ -70,7 +70,7 @@ Bit.load({
 
         /* Must build locally to build tools */
         platforms: [ 'local' ],
-        sync: ['est', 'http', 'mpr', 'pcre', 'sqlite'],
+        sync: [ 'bitos', 'est', 'http', 'mpr', 'pcre', 'sqlite' ],
 
         '+required': [ 'bit', 'pcre'],
 

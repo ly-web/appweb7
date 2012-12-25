@@ -1,5 +1,5 @@
 /*
-    est.h -- Embedthis TLS Library Library Source
+    est.h -- Embedthis Security Transport Library Source
 
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
@@ -8,6 +8,7 @@
  */
 
 #include "bit.h"
+#include "bitos.h"
 
 
 /************************************************************************/
@@ -16,333 +17,173 @@
  */
 /************************************************************************/
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+/**
+    @file est.h
+
+    Embedded Security Transport is an implementation of the SSL/TLS protocol standard.
+ */
+
+#ifndef _h_EST
+#define _h_EST 1
+
+/********************************** Includes **********************************/
 
 
-#define _FILE_OFFSET_BITS 64
 
-#ifndef TROPICSSL_CONFIG_H
-#define TROPICSSL_CONFIG_H
 
-#ifndef _CRT_SECURE_NO_DEPRECATE
-#define _CRT_SECURE_NO_DEPRECATE 1
+/*********************************** Forwards *********************************/
+
+//  MOB - what about x64?
+#if BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64
+    #define EST_HAVE_ASM 1
+#endif
+
+/* Enable if using Intel CPU with SSE2 */
+#define BIT_EST_SSE2 0
+/*
+    Default configuration, optionally overridden by bit.h
+ */
+#ifndef BIT_EST_AES
+    #define BIT_EST_AES 1
+#endif
+#ifndef BIT_EST_BIGNUM
+    #define BIT_EST_BIGNUM 1
+#endif
+#ifndef BIT_EST_BASE64
+    #define BIT_EST_BASE64 1
+#endif
+#ifndef BIT_EST_CAMELLIA
+    #define BIT_EST_CAMELLIA 0
+#endif
+#ifndef BIT_EST_DES
+    #define BIT_EST_DES 1
+#endif
+#ifndef BIT_EST_DHM
+    #define BIT_EST_DHM 1
+#endif
+#ifndef BIT_EST_GEN_PRIME
+    #define BIT_EST_GEN_PRIME 1
+#endif
+#ifndef BIT_EST_HAVEGE
+    #define BIT_EST_HAVEGE 1
+#endif
+#ifndef BIT_EST_LOGGING
+    #define BIT_EST_LOGGING 1
+#endif
+#ifndef BIT_EST_MD2
+    #define BIT_EST_MD2 0
+#endif
+#ifndef BIT_EST_MD4
+    #define BIT_EST_MD4 0
+#endif
+#ifndef BIT_EST_MD5
+    #define BIT_EST_MD5 1
+#endif
+#ifndef BIT_EST_NET
+    #define BIT_EST_NET 1
+#endif
+#ifndef BIT_EST_PADLOCK
+    #define BIT_EST_PADLOCK 1
+#endif
+#ifndef BIT_EST_RC4
+    #define BIT_EST_RC4 1
+#endif
+#ifndef BIT_EST_ROM_TABLES
+    #define BIT_EST_ROM_TABLES 1
+#endif
+#ifndef BIT_EST_RSA
+    #define BIT_EST_RSA 1
+#endif
+#ifndef BIT_EST_SELF_TEST
+    #define BIT_EST_SELF_TEST 0
+#endif
+#ifndef BIT_EST_SHA1
+    #define BIT_EST_SHA1 1
+#endif
+#ifndef BIT_EST_SHA2
+    #define BIT_EST_SHA2 1
+#endif
+#ifndef BIT_EST_SHA4
+    #define BIT_EST_SHA4 1
+#endif
+#ifndef BIT_EST_CLIENT
+    #define BIT_EST_CLIENT 1
+#endif
+#ifndef BIT_EST_SERVER
+    #define BIT_EST_SERVER 1
+#endif
+#ifndef BIT_EST_TEST_CERTS
+    #define BIT_EST_TEST_CERTS 1
+#endif
+#ifndef BIT_EST_X509
+    #define BIT_EST_X509 1
+#endif
+#ifndef BIT_EST_X509_WRITE
+    #define BIT_EST_X509_WRITE 1
+#endif
+#ifndef BIT_EST_XTEA
+    #define BIT_EST_XTEA 1
 #endif
 
 /*
- * Uncomment if native integers are 8-bit wide.
- *
-#define TROPICSSL_HAVE_INT8
+    Required settings
  */
+#define BIT_EST_SSL 1
+#define BIT_EST_TIMING 1
 
 /*
- * Uncomment if native integers are 16-bit wide.
- *
-#define TROPICSSL_HAVE_INT16
+    Include all EST headers
  */
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _h_EST */
+
 /*
- * Uncomment if the compiler supports long long.
- *
-#define TROPICSSL_HAVE_LONGLONG
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
  */
-
-/*
- * Uncomment to enable the use of assembly code.
- */
-#define TROPICSSL_HAVE_ASM
-
-/*
- * Uncomment if the CPU supports SSE2 (IA-32 specific).
- *
-#define TROPICSSL_HAVE_SSE2
- */
-
-/*
- * Enable all SSL/TLS debugging messages.
- */
-#define TROPICSSL_DEBUG_MSG
-
-/*
- * Enable the checkup functions (*_self_test).
- */
-#define TROPICSSL_SELF_TEST
-
-/*
- * Enable the prime-number generation code.
- */
-#define TROPICSSL_GENPRIME
-
-/*
- * Uncomment this macro to store the AES tables in ROM.
- *
-#define TROPICSSL_AES_ROM_TABLES
- */
-
-/*
- * Module:  library/aes.c
- * Caller:  library/ssl_tls.c
- *
- * This module enables the following ciphersuites:
- *      SSL_RSA_AES_128_SHA
- *      SSL_RSA_AES_256_SHA
- *      SSL_EDH_RSA_AES_256_SHA
- */
-#define TROPICSSL_AES_C
-
-/*
- * Module:  library/arc4.c
- * Caller:  library/ssl_tls.c
- *
- * This module enables the following ciphersuites:
- *      SSL_RSA_RC4_128_MD5
- *      SSL_RSA_RC4_128_SHA
- */
-#define TROPICSSL_ARC4_C
-
-/*
- * Module:  library/base64.c
- * Caller:  library/x509parse.c
- *
- * This module is required for X.509 support.
- */
-#define TROPICSSL_BASE64_C
-
-/*
- * Module:  library/bignum.c
- * Caller:  library/dhm.c
- *          library/rsa.c
- *          library/ssl_tls.c
- *          library/x509parse.c
- *
- * This module is required for RSA and DHM support.
- */
-#define TROPICSSL_BIGNUM_C
-
-/*
- * Module:  library/camellia.c
- * Caller:
- *
- * This module enabled the following cipher suites:
- */
-#define TROPICSSL_CAMELLIA_C
-
-/*
- * Module:  library/certs.c
- * Caller:
- *
- * This module is used for testing (ssl_client/server).
- */
-#define TROPICSSL_CERTS_C
-
-/*
- * Module:  library/debug.c
- * Caller:  library/ssl_cli.c
- *          library/ssl_srv.c
- *          library/ssl_tls.c
- *
- * This module provides debugging functions.
- */
-#define TROPICSSL_DEBUG_C
-
-/*
- * Module:  library/des.c
- * Caller:  library/ssl_tls.c
- *
- * This module enables the following ciphersuites:
- *      SSL_RSA_DES_168_SHA
- *      SSL_EDH_RSA_DES_168_SHA
- */
-#define TROPICSSL_DES_C
-
-/*
- * Module:  library/dhm.c
- * Caller:  library/ssl_cli.c
- *          library/ssl_srv.c
- *
- * This module enables the following ciphersuites:
- *      SSL_EDH_RSA_DES_168_SHA
- *      SSL_EDH_RSA_AES_256_SHA
- */
-#define TROPICSSL_DHM_C
-
-/*
- * Module:  library/havege.c
- * Caller:
- *
- * This module enables the HAVEGE random number generator.
- */
-#define TROPICSSL_HAVEGE_C
-
-/*
- * Module:  library/md2.c
- * Caller:  library/x509parse.c
- *
- * Uncomment to enable support for (rare) MD2-signed X.509 certs.
- *
-#define TROPICSSL_MD2_C
- */
-
-/*
- * Module:  library/md4.c
- * Caller:  library/x509parse.c
- *
- * Uncomment to enable support for (rare) MD4-signed X.509 certs.
- *
-#define TROPICSSL_MD4_C
- */
-
-/*
- * Module:  library/md5.c
- * Caller:  library/ssl_tls.c
- *          library/x509parse.c
- *
- * This module is required for SSL/TLS and X.509.
- */
-#define TROPICSSL_MD5_C
-
-/*
- * Module:  library/net.c
- * Caller:
- *
- * This module provides TCP/IP networking routines.
- */
-#define TROPICSSL_NET_C
-
-/*
- * Module:  library/padlock.c
- * Caller:  library/aes.c
- *
- * This modules adds support for the VIA PadLock on x86.
- */
-#define TROPICSSL_PADLOCK_C
-
-/*
- * Module:  library/rsa.c
- * Caller:  library/ssl_cli.c
- *          library/ssl_srv.c
- *          library/ssl_tls.c
- *          library/x509.c
- *
- * This module is required for SSL/TLS and MD5-signed certificates.
- */
-#define TROPICSSL_RSA_C
-
-/*
- * Module:  library/sha1.c
- * Caller:  library/ssl_cli.c
- *          library/ssl_srv.c
- *          library/ssl_tls.c
- *          library/x509parse.c
- *
- * This module is required for SSL/TLS and SHA1-signed certificates.
- */
-#define TROPICSSL_SHA1_C
-
-/*
- * Module:  library/sha2.c
- * Caller:
- *
- * This module adds support for SHA-224 and SHA-256.
- */
-#define TROPICSSL_SHA2_C
-
-/*
- * Module:  library/sha4.c
- * Caller:
- *
- * This module adds support for SHA-384 and SHA-512.
- */
-#define TROPICSSL_SHA4_C
-
-/*
- * Module:  library/ssl_cli.c
- * Caller:
- *
- * This module is required for SSL/TLS client support.
- */
-#define TROPICSSL_SSL_CLI_C
-
-/*
- * Module:  library/ssl_srv.c
- * Caller:
- *
- * This module is required for SSL/TLS server support.
- */
-#define TROPICSSL_SSL_SRV_C
-
-/*
- * Module:  library/ssl_tls.c
- * Caller:  library/ssl_cli.c
- *          library/ssl_srv.c
- *
- * This module is required for SSL/TLS.
- */
-#define TROPICSSL_SSL_TLS_C
-
-/*
- * Module:  library/timing.c
- * Caller:  library/havege.c
- *
- * This module is used by the HAVEGE random number generator.
- */
-#define TROPICSSL_TIMING_C
-
-/*
- * Module:  library/x509parse.c
- * Caller:  library/ssl_cli.c
- *          library/ssl_srv.c
- *          library/ssl_tls.c
- *
- * This module is required for X.509 certificate parsing.
- */
-#define TROPICSSL_X509_PARSE_C
-
-/*
- * Module:  library/x509_write.c
- * Caller:
- *
- * This module is required for X.509 certificate writing.
- */
-#define TROPICSSL_X509_WRITE_C
-
-/*
- * Module:  library/xtea.c
- * Caller:
- */
-#define TROPICSSL_XTEA_C
-#endif /* config.h */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-*/
 
 /************************************************************************/
 /*
@@ -350,440 +191,429 @@
  */
 /************************************************************************/
 
-/**
- * \file bignum.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    bignum.h -- Bit number support
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_BIGNUM_H
-#define TROPICSSL_BIGNUM_H
+#ifndef EST_BIGNUM_H
+#define EST_BIGNUM_H
 
-#include <stdio.h>
-
-#define TROPICSSL_ERR_MPI_FILE_IO_ERROR                     -0x0002
-#define TROPICSSL_ERR_MPI_BAD_INPUT_DATA                    -0x0004
-#define TROPICSSL_ERR_MPI_INVALID_CHARACTER                 -0x0006
-#define TROPICSSL_ERR_MPI_BUFFER_TOO_SMALL                  -0x0008
-#define TROPICSSL_ERR_MPI_NEGATIVE_VALUE                    -0x000A
-#define TROPICSSL_ERR_MPI_DIVISION_BY_ZERO                  -0x000C
-#define TROPICSSL_ERR_MPI_NOT_ACCEPTABLE                    -0x000E
+#define EST_ERR_MPI_FILE_IO_ERROR                     -0x0002
+#define EST_ERR_MPI_BAD_INPUT_DATA                    -0x0004
+#define EST_ERR_MPI_INVALID_CHARACTER                 -0x0006
+#define EST_ERR_MPI_BUFFER_TOO_SMALL                  -0x0008
+#define EST_ERR_MPI_NEGATIVE_VALUE                    -0x000A
+#define EST_ERR_MPI_DIVISION_BY_ZERO                  -0x000C
+#define EST_ERR_MPI_NOT_ACCEPTABLE                    -0x000E
 
 #define MPI_CHK(f) if( ( ret = f ) != 0 ) goto cleanup
 
 /*
  * Define the base integer type, architecture-wise
  */
-#if defined(TROPICSSL_HAVE_INT8)
-typedef unsigned char t_int;
-typedef unsigned short t_dbl;
+//  MOB - change to chained elif
+#if BIT_WORDSIZE == 8
+    typedef uchar t_int;
+    typedef ushort t_dbl;
+#elif BIT_WORDSIZE == 16
+    typedef ushort t_int;
+    typedef ulong t_dbl;
 #else
-#if defined(TROPICSSL_HAVE_INT16)
-typedef unsigned short t_int;
-typedef unsigned long t_dbl;
-#else
-typedef unsigned long t_int;
-#if defined(_MSC_VER) && defined(_M_IX86)
-typedef unsigned __int64 t_dbl;
-#else
-#if defined(__amd64__) || defined(__x86_64__)    || \
-        defined(__ppc64__) || defined(__powerpc64__) || \
-        defined(__ia64__)  || defined(__alpha__)
-typedef unsigned int t_dbl __attribute__ ((mode(TI)));
-#else
-typedef unsigned long long t_dbl;
-#endif
-#endif
-#endif
+    typedef ulong t_int;
+    #if defined(_MSC_VER) && defined(_M_IX86)
+        typedef unsigned __int64 t_dbl;
+    #else
+        #if defined(__amd64__) || defined(__x86_64__) || defined(__ppc64__) || defined(__powerpc64__) || \
+                defined(__ia64__)  || defined(__alpha__)
+            typedef uint t_dbl __attribute__ ((mode(TI)));
+        #else
+            typedef unsigned long long t_dbl;
+            //  MOB - should other cases use this too?
+            #define BIT_USE_LONG_LONG 1
+        #endif
+    #endif
 #endif
 
 /**
  * \brief          MPI structure
  */
 typedef struct {
-	int s;			/*!<  integer sign      */
-	int n;			/*!<  total # of limbs  */
-	t_int *p;		/*!<  pointer to limbs  */
+    int s;          /*!<  integer sign      */
+    int n;          /*!<  total # of limbs  */
+    t_int *p;       /*!<  pointer to limbs  */
 } mpi;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          Initialize one or more mpi
-	 */
-	void mpi_init(mpi * X, ...);
+    /**
+     * \brief          Initialize one or more mpi
+     */
+    void mpi_init(mpi * X, ...);
 
-	/**
-	 * \brief          Unallocate one or more mpi
-	 */
-	void mpi_free(mpi * X, ...);
+    /**
+     * \brief          Unallocate one or more mpi
+     */
+    void mpi_free(mpi * X, ...);
 
-	/**
-	 * \brief          Enlarge to the specified number of limbs
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_grow(mpi * X, int nblimbs);
+    /**
+     * \brief          Enlarge to the specified number of limbs
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_grow(mpi * X, int nblimbs);
 
-	/**
-	 * \brief          Copy the contents of Y into X
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_copy(mpi * X, mpi * Y);
+    /**
+     * \brief          Copy the contents of Y into X
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_copy(mpi * X, mpi * Y);
 
-	/**
-	 * \brief          Swap the contents of X and Y
-	 */
-	void mpi_swap(mpi * X, mpi * Y);
+    /**
+     * \brief          Swap the contents of X and Y
+     */
+    void mpi_swap(mpi * X, mpi * Y);
 
-	/**
-	 * \brief          Set value from integer
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_lset(mpi * X, int z);
+    /**
+     * \brief          Set value from integer
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_lset(mpi * X, int z);
 
-	/**
-	 * \brief          Return the number of least significant bits
-	 */
-	int mpi_lsb(mpi * X);
+    /**
+     * \brief          Return the number of least significant bits
+     */
+    int mpi_lsb(mpi * X);
 
-	/**
-	 * \brief          Return the number of most significant bits
-	 */
-	int mpi_msb(mpi * X);
+    /**
+     * \brief          Return the number of most significant bits
+     */
+    int mpi_msb(mpi * X);
 
-	/**
-	 * \brief          Return the total size in bytes
-	 */
-	int mpi_size(mpi * X);
+    /**
+     * \brief          Return the total size in bytes
+     */
+    int mpi_size(mpi * X);
 
-	/**
-	 * \brief          Import from an ASCII string
-	 *
-	 * \param X        destination mpi
-	 * \param radix    input numeric base
-	 * \param s        null-terminated string buffer
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_MPI_XXX error code
-	 */
-	int mpi_read_string(mpi * X, int radix, char *s);
+    /**
+     * \brief          Import from an ASCII string
+     *
+     * \param X        destination mpi
+     * \param radix    input numeric base
+     * \param s        null-terminated string buffer
+     *
+     * \return         0 if successful, or an EST_ERR_MPI_XXX error code
+     */
+    int mpi_read_string(mpi * X, int radix, char *s);
 
-	/**
-	 * \brief          Export into an ASCII string
-	 *
-	 * \param X        source mpi
-	 * \param radix    output numeric base
-	 * \param s        string buffer
-	 * \param slen     string buffer size
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_MPI_XXX error code
-	 *
-	 * \note           Call this function with *slen = 0 to obtain the
-	 *                 minimum required buffer size in *slen.
-	 */
-	int mpi_write_string(mpi * X, int radix, char *s, int *slen);
+    /**
+     * \brief          Export into an ASCII string
+     *
+     * \param X        source mpi
+     * \param radix    output numeric base
+     * \param s        string buffer
+     * \param slen     string buffer size
+     *
+     * \return         0 if successful, or an EST_ERR_MPI_XXX error code
+     *
+     * \note           Call this function with *slen = 0 to obtain the
+     *                 minimum required buffer size in *slen.
+     */
+    int mpi_write_string(mpi * X, int radix, char *s, int *slen);
 
-	/**
-	 * \brief          Read X from an opened file
-	 *
-	 * \param X        destination mpi
-	 * \param radix    input numeric base
-	 * \param fin      input file handle
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_MPI_XXX error code
-	 */
-	int mpi_read_file(mpi * X, int radix, FILE * fin);
+    /**
+     * \brief          Read X from an opened file
+     *
+     * \param X        destination mpi
+     * \param radix    input numeric base
+     * \param fin      input file handle
+     *
+     * \return         0 if successful, or an EST_ERR_MPI_XXX error code
+     */
+    int mpi_read_file(mpi * X, int radix, FILE * fin);
 
-	/**
-	 * \brief          Write X into an opened file, or stdout
-	 *
-	 * \param p        prefix, can be NULL
-	 * \param X        source mpi
-	 * \param radix    output numeric base
-	 * \param fout     output file handle
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_MPI_XXX error code
-	 *
-	 * \note           Set fout == NULL to print X on the console.
-	 */
-	int mpi_write_file(char *p, mpi * X, int radix, FILE * fout);
+    /**
+     * \brief          Write X into an opened file, or stdout
+     *
+     * \param p        prefix, can be NULL
+     * \param X        source mpi
+     * \param radix    output numeric base
+     * \param fout     output file handle
+     *
+     * \return         0 if successful, or an EST_ERR_MPI_XXX error code
+     *
+     * \note           Set fout == NULL to print X on the console.
+     */
+    int mpi_write_file(char *p, mpi * X, int radix, FILE * fout);
 
-	/**
-	 * \brief          Import X from unsigned binary data, big endian
-	 *
-	 * \param X        destination mpi
-	 * \param buf      input buffer
-	 * \param buflen   input buffer size
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_read_binary(mpi * X, unsigned char *buf, int buflen);
+    /**
+     * \brief          Import X from unsigned binary data, big endian
+     *
+     * \param X        destination mpi
+     * \param buf      input buffer
+     * \param buflen   input buffer size
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_read_binary(mpi * X, uchar *buf, int buflen);
 
-	/**
-	 * \brief          Export X into unsigned binary data, big endian
-	 *
-	 * \param X        source mpi
-	 * \param buf      output buffer
-	 * \param buflen   output buffer size
-	 *
-	 * \return         0 if successful,
-	 *                 TROPICSSL_ERR_MPI_BUFFER_TOO_SMALL if buf isn't large enough
-	 *
-	 * \note           Call this function with *buflen = 0 to obtain the
-	 *                 minimum required buffer size in *buflen.
-	 */
-	int mpi_write_binary(mpi * X, unsigned char *buf, int buflen);
+    /**
+     * \brief          Export X into unsigned binary data, big endian
+     *
+     * \param X        source mpi
+     * \param buf      output buffer
+     * \param buflen   output buffer size
+     *
+     * \return         0 if successful,
+     *                 EST_ERR_MPI_BUFFER_TOO_SMALL if buf isn't large enough
+     *
+     * \note           Call this function with *buflen = 0 to obtain the
+     *                 minimum required buffer size in *buflen.
+     */
+    int mpi_write_binary(mpi * X, uchar *buf, int buflen);
 
-	/**
-	 * \brief          Left-shift: X <<= count
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_shift_l(mpi * X, int count);
+    /**
+     * \brief          Left-shift: X <<= count
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_shift_l(mpi * X, int count);
 
-	/**
-	 * \brief          Right-shift: X >>= count
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_shift_r(mpi * X, int count);
+    /**
+     * \brief          Right-shift: X >>= count
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_shift_r(mpi * X, int count);
 
-	/**
-	 * \brief          Compare unsigned values
-	 *
-	 * \return         1 if |X| is greater than |Y|,
-	 *                -1 if |X| is lesser  than |Y| or
-	 *                 0 if |X| is equal to |Y|
-	 */
-	int mpi_cmp_abs(mpi * X, mpi * Y);
+    /**
+     * \brief          Compare unsigned values
+     *
+     * \return         1 if |X| is greater than |Y|,
+     *                -1 if |X| is lesser  than |Y| or
+     *                 0 if |X| is equal to |Y|
+     */
+    int mpi_cmp_abs(mpi * X, mpi * Y);
 
-	/**
-	 * \brief          Compare signed values
-	 *
-	 * \return         1 if X is greater than Y,
-	 *                -1 if X is lesser  than Y or
-	 *                 0 if X is equal to Y
-	 */
-	int mpi_cmp_mpi(mpi * X, mpi * Y);
+    /**
+     * \brief          Compare signed values
+     *
+     * \return         1 if X is greater than Y,
+     *                -1 if X is lesser  than Y or
+     *                 0 if X is equal to Y
+     */
+    int mpi_cmp_mpi(mpi * X, mpi * Y);
 
-	/**
-	 * \brief          Compare signed values
-	 *
-	 * \return         1 if X is greater than z,
-	 *                -1 if X is lesser  than z or
-	 *                 0 if X is equal to z
-	 */
-	int mpi_cmp_int(mpi * X, int z);
+    /**
+     * \brief          Compare signed values
+     *
+     * \return         1 if X is greater than z,
+     *                -1 if X is lesser  than z or
+     *                 0 if X is equal to z
+     */
+    int mpi_cmp_int(mpi * X, int z);
 
-	/**
-	 * \brief          Unsigned addition: X = |A| + |B|
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_add_abs(mpi * X, mpi * A, mpi * B);
+    /**
+     * \brief          Unsigned addition: X = |A| + |B|
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_add_abs(mpi * X, mpi * A, mpi * B);
 
-	/**
-	 * \brief          Unsigned substraction: X = |A| - |B|
-	 *
-	 * \return         0 if successful,
-	 *                 TROPICSSL_ERR_MPI_NEGATIVE_VALUE if B is greater than A
-	 */
-	int mpi_sub_abs(mpi * X, mpi * A, mpi * B);
+    /**
+     * \brief          Unsigned substraction: X = |A| - |B|
+     *
+     * \return         0 if successful,
+     *                 EST_ERR_MPI_NEGATIVE_VALUE if B is greater than A
+     */
+    int mpi_sub_abs(mpi * X, mpi * A, mpi * B);
 
-	/**
-	 * \brief          Signed addition: X = A + B
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_add_mpi(mpi * X, mpi * A, mpi * B);
+    /**
+     * \brief          Signed addition: X = A + B
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_add_mpi(mpi * X, mpi * A, mpi * B);
 
-	/**
-	 * \brief          Signed substraction: X = A - B
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_sub_mpi(mpi * X, mpi * A, mpi * B);
+    /**
+     * \brief          Signed substraction: X = A - B
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_sub_mpi(mpi * X, mpi * A, mpi * B);
 
-	/**
-	 * \brief          Signed addition: X = A + b
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_add_int(mpi * X, mpi * A, int b);
+    /**
+     * \brief          Signed addition: X = A + b
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_add_int(mpi * X, mpi * A, int b);
 
-	/**
-	 * \brief          Signed substraction: X = A - b
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_sub_int(mpi * X, mpi * A, int b);
+    /**
+     * \brief          Signed substraction: X = A - b
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_sub_int(mpi * X, mpi * A, int b);
 
-	/**
-	 * \brief          Baseline multiplication: X = A * B
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_mul_mpi(mpi * X, mpi * A, mpi * B);
+    /**
+     * \brief          Baseline multiplication: X = A * B
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_mul_mpi(mpi * X, mpi * A, mpi * B);
 
-	/**
-	 * \brief          Baseline multiplication: X = A * b
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_mul_int(mpi * X, mpi * A, t_int b);
+    /**
+     * \brief          Baseline multiplication: X = A * b
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_mul_int(mpi * X, mpi * A, t_int b);
 
-	/**
-	 * \brief          Division by mpi: A = Q * B + R
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed,
-	 *                 TROPICSSL_ERR_MPI_DIVISION_BY_ZERO if B == 0
-	 *
-	 * \note           Either Q or R can be NULL.
-	 */
-	int mpi_div_mpi(mpi * Q, mpi * R, mpi * A, mpi * B);
+    /**
+     * \brief          Division by mpi: A = Q * B + R
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed,
+     *                 EST_ERR_MPI_DIVISION_BY_ZERO if B == 0
+     *
+     * \note           Either Q or R can be NULL.
+     */
+    int mpi_div_mpi(mpi * Q, mpi * R, mpi * A, mpi * B);
 
-	/**
-	 * \brief          Division by int: A = Q * b + R
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed,
-	 *                 TROPICSSL_ERR_MPI_DIVISION_BY_ZERO if b == 0
-	 *
-	 * \note           Either Q or R can be NULL.
-	 */
-	int mpi_div_int(mpi * Q, mpi * R, mpi * A, int b);
+    /**
+     * \brief          Division by int: A = Q * b + R
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed,
+     *                 EST_ERR_MPI_DIVISION_BY_ZERO if b == 0
+     *
+     * \note           Either Q or R can be NULL.
+     */
+    int mpi_div_int(mpi * Q, mpi * R, mpi * A, int b);
 
-	/**
-	 * \brief          Modulo: R = A mod B
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed,
-	 *                 TROPICSSL_ERR_MPI_DIVISION_BY_ZERO if B == 0
-	 */
-	int mpi_mod_mpi(mpi * R, mpi * A, mpi * B);
+    /**
+     * \brief          Modulo: R = A mod B
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed,
+     *                 EST_ERR_MPI_DIVISION_BY_ZERO if B == 0
+     */
+    int mpi_mod_mpi(mpi * R, mpi * A, mpi * B);
 
-	/**
-	 * \brief          Modulo: r = A mod b
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed,
-	 *                 TROPICSSL_ERR_MPI_DIVISION_BY_ZERO if b == 0
-	 */
-	int mpi_mod_int(t_int * r, mpi * A, int b);
+    /**
+     * \brief          Modulo: r = A mod b
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed,
+     *                 EST_ERR_MPI_DIVISION_BY_ZERO if b == 0
+     */
+    int mpi_mod_int(t_int * r, mpi * A, int b);
 
-	/**
-	 * \brief          Sliding-window exponentiation: X = A^E mod N
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed,
-	 *                 TROPICSSL_ERR_MPI_BAD_INPUT_DATA if N is negative or even
-	 *
-	 * \note           _RR is used to avoid re-computing R*R mod N across
-	 *                 multiple calls, which speeds up things a bit. It can
-	 *                 be set to NULL if the extra performance is unneeded.
-	 */
-	int mpi_exp_mod(mpi * X, mpi * A, mpi * E, mpi * N, mpi * _RR);
+    /**
+     * \brief          Sliding-window exponentiation: X = A^E mod N
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed,
+     *                 EST_ERR_MPI_BAD_INPUT_DATA if N is negative or even
+     *
+     * \note           _RR is used to avoid re-computing R*R mod N across
+     *                 multiple calls, which speeds up things a bit. It can
+     *                 be set to NULL if the extra performance is unneeded.
+     */
+    int mpi_exp_mod(mpi * X, mpi * A, mpi * E, mpi * N, mpi * _RR);
 
-	/**
-	 * \brief          Greatest common divisor: G = gcd(A, B)
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed
-	 */
-	int mpi_gcd(mpi * G, mpi * A, mpi * B);
+    /**
+     * \brief          Greatest common divisor: G = gcd(A, B)
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed
+     */
+    int mpi_gcd(mpi * G, mpi * A, mpi * B);
 
-	/**
-	 * \brief          Modular inverse: X = A^-1 mod N
-	 *
-	 * \return         0 if successful,
-	 *                 1 if memory allocation failed,
-	 *                 TROPICSSL_ERR_MPI_BAD_INPUT_DATA if N is negative or nil
-	 *                 TROPICSSL_ERR_MPI_NOT_ACCEPTABLE if A has no inverse mod N
-	 */
-	int mpi_inv_mod(mpi * X, mpi * A, mpi * N);
+    /**
+     * \brief          Modular inverse: X = A^-1 mod N
+     *
+     * \return         0 if successful,
+     *                 1 if memory allocation failed,
+     *                 EST_ERR_MPI_BAD_INPUT_DATA if N is negative or nil
+     *                 EST_ERR_MPI_NOT_ACCEPTABLE if A has no inverse mod N
+     */
+    int mpi_inv_mod(mpi * X, mpi * A, mpi * N);
 
-	/**
-	 * \brief          Miller-Rabin primality test
-	 *
-	 * \return         0 if successful (probably prime),
-	 *                 1 if memory allocation failed,
-	 *                 TROPICSSL_ERR_MPI_NOT_ACCEPTABLE if X is not prime
-	 */
-	int mpi_is_prime(mpi * X, int (*f_rng) (void *), void *p_rng);
+    /**
+     * \brief          Miller-Rabin primality test
+     *
+     * \return         0 if successful (probably prime),
+     *                 1 if memory allocation failed,
+     *                 EST_ERR_MPI_NOT_ACCEPTABLE if X is not prime
+     */
+    int mpi_is_prime(mpi * X, int (*f_rng) (void *), void *p_rng);
 
-	/**
-	 * \brief          Prime number generation
-	 *
-	 * \param X        destination mpi
-	 * \param nbits    required size of X in bits
-	 * \param dh_flag  if 1, then (X-1)/2 will be prime too
-	 * \param f_rng    RNG function
-	 * \param p_rng    RNG parameter
-	 *
-	 * \return         0 if successful (probably prime),
-	 *                 1 if memory allocation failed,
-	 *                 TROPICSSL_ERR_MPI_BAD_INPUT_DATA if nbits is < 3
-	 */
-	int mpi_gen_prime(mpi * X, int nbits, int dh_flag,
-			  int (*f_rng) (void *), void *p_rng);
+    /**
+     * \brief          Prime number generation
+     *
+     * \param X        destination mpi
+     * \param nbits    required size of X in bits
+     * \param dh_flag  if 1, then (X-1)/2 will be prime too
+     * \param f_rng    RNG function
+     * \param p_rng    RNG parameter
+     *
+     * \return         0 if successful (probably prime),
+     *                 1 if memory allocation failed,
+     *                 EST_ERR_MPI_BAD_INPUT_DATA if nbits is < 3
+     */
+    int mpi_gen_prime(mpi * X, int nbits, int dh_flag,
+              int (*f_rng) (void *), void *p_rng);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int mpi_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int mpi_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* bignum.h */
+#endif              /* bignum.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -791,139 +621,130 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file net.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-#ifndef TROPICSSL_NET_H
-#define TROPICSSL_NET_H
+/*
+    net.h -- Networking I/O
 
-#define TROPICSSL_ERR_NET_UNKNOWN_HOST                      -0x0F00
-#define TROPICSSL_ERR_NET_SOCKET_FAILED                     -0x0F10
-#define TROPICSSL_ERR_NET_CONNECT_FAILED                    -0x0F20
-#define TROPICSSL_ERR_NET_BIND_FAILED                       -0x0F30
-#define TROPICSSL_ERR_NET_LISTEN_FAILED                     -0x0F40
-#define TROPICSSL_ERR_NET_ACCEPT_FAILED                     -0x0F50
-#define TROPICSSL_ERR_NET_RECV_FAILED                       -0x0F60
-#define TROPICSSL_ERR_NET_SEND_FAILED                       -0x0F70
-#define TROPICSSL_ERR_NET_CONN_RESET                        -0x0F80
-#define TROPICSSL_ERR_NET_TRY_AGAIN                         -0x0F90
+    Copyright (c) All Rights Reserved. See details at the end of the file.
+ */
+#ifndef EST_NET_H
+#define EST_NET_H
+
+#define EST_ERR_NET_UNKNOWN_HOST                      -0x0F00
+#define EST_ERR_NET_SOCKET_FAILED                     -0x0F10
+#define EST_ERR_NET_CONNECT_FAILED                    -0x0F20
+#define EST_ERR_NET_BIND_FAILED                       -0x0F30
+#define EST_ERR_NET_LISTEN_FAILED                     -0x0F40
+#define EST_ERR_NET_ACCEPT_FAILED                     -0x0F50
+#define EST_ERR_NET_RECV_FAILED                       -0x0F60
+#define EST_ERR_NET_SEND_FAILED                       -0x0F70
+#define EST_ERR_NET_CONN_RESET                        -0x0F80
+#define EST_ERR_NET_TRY_AGAIN                         -0x0F90
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          Initiate a TCP connection with host:port
-	 *
-	 * \return         0 if successful, or one of:
-	 *                      TROPICSSL_ERR_NET_SOCKET_FAILED,
-	 *                      TROPICSSL_ERR_NET_UNKNOWN_HOST,
-	 *                      TROPICSSL_ERR_NET_CONNECT_FAILED
-	 */
-	int net_connect(int *fd, char *host, int port);
+    /**
+     * \brief          Initiate a TCP connection with host:port
+     *
+     * \return         0 if successful, or one of:
+     *                      EST_ERR_NET_SOCKET_FAILED,
+     *                      EST_ERR_NET_UNKNOWN_HOST,
+     *                      EST_ERR_NET_CONNECT_FAILED
+     */
+    int net_connect(int *fd, char *host, int port);
 
-	/**
-	 * \brief          Create a listening socket on bind_ip:port.
-	 *                 If bind_ip == NULL, all interfaces are binded.
-	 *
-	 * \return         0 if successful, or one of:
-	 *                      TROPICSSL_ERR_NET_SOCKET_FAILED,
-	 *                      TROPICSSL_ERR_NET_BIND_FAILED,
-	 *                      TROPICSSL_ERR_NET_LISTEN_FAILED
-	 */
-	int net_bind(int *fd, char *bind_ip, int port);
+    /**
+     * \brief          Create a listening socket on bind_ip:port.
+     *                 If bind_ip == NULL, all interfaces are binded.
+     *
+     * \return         0 if successful, or one of:
+     *                      EST_ERR_NET_SOCKET_FAILED,
+     *                      EST_ERR_NET_BIND_FAILED,
+     *                      EST_ERR_NET_LISTEN_FAILED
+     */
+    int net_bind(int *fd, char *bind_ip, int port);
 
-	/**
-	 * \brief          Accept a connection from a remote client
-	 *
-	 * \return         0 if successful, TROPICSSL_ERR_NET_ACCEPT_FAILED, or
-	 *                 TROPICSSL_ERR_NET_WOULD_BLOCK is bind_fd was set to
-	 *                 non-blocking and accept() is blocking.
-	 */
-	int net_accept(int bind_fd, int *client_fd, void *client_ip);
+    /**
+     * \brief          Accept a connection from a remote client
+     *
+     * \return         0 if successful, EST_ERR_NET_ACCEPT_FAILED, or
+     *                 EST_ERR_NET_WOULD_BLOCK is bind_fd was set to
+     *                 non-blocking and accept() is blocking.
+     */
+    int net_accept(int bind_fd, int *client_fd, void *client_ip);
 
-	/**
-	 * \brief          Set the socket blocking
-	 *
-	 * \return         0 if successful, or a non-zero error code
-	 */
-	int net_set_block(int fd);
+    /**
+     * \brief          Set the socket blocking
+     *
+     * \return         0 if successful, or a non-zero error code
+     */
+    int net_set_block(int fd);
 
-	/**
-	 * \brief          Set the socket non-blocking
-	 *
-	 * \return         0 if successful, or a non-zero error code
-	 */
-	int net_set_nonblock(int fd);
+    /**
+     * \brief          Set the socket non-blocking
+     *
+     * \return         0 if successful, or a non-zero error code
+     */
+    int net_set_nonblock(int fd);
 
-	/**
-	 * \brief          Portable usleep helper
-	 *
-	 * \note           Real amount of time slept will not be less than
-	 *                 select()'s timeout granularity (typically, 10ms).
-	 */
-	void net_usleep(unsigned long usec);
+    /**
+     * \brief          Portable usleep helper
+     *
+     * \note           Real amount of time slept will not be less than
+     *                 select()'s timeout granularity (typically, 10ms).
+     */
+    void net_usleep(ulong usec);
 
-	/**
-	 * \brief          Read at most 'len' characters. len is updated to
-	 *                 reflect the actual number of characters read.
-	 *
-	 * \return         This function returns the number of bytes received,
-	 *                 or a negative error code; TROPICSSL_ERR_NET_TRY_AGAIN
-	 *                 indicates read() is blocking.
-	 */
-	int net_recv(void *ctx, unsigned char *buf, int len);
+    /**
+     * \brief          Read at most 'len' characters. len is updated to
+     *                 reflect the actual number of characters read.
+     *
+     * \return         This function returns the number of bytes received,
+     *                 or a negative error code; EST_ERR_NET_TRY_AGAIN
+     *                 indicates read() is blocking.
+     */
+    int net_recv(void *ctx, uchar *buf, int len);
 
-	/**
-	 * \brief          Write at most 'len' characters. len is updated to
-	 *                 reflect the number of characters _not_ written.
-	 *
-	 * \return         This function returns the number of bytes sent,
-	 *                 or a negative error code; TROPICSSL_ERR_NET_TRY_AGAIN
-	 *                 indicates write() is blocking.
-	 */
-	int net_send(void *ctx, unsigned char *buf, int len);
+    /**
+     * \brief          Write at most 'len' characters. len is updated to
+     *                 reflect the number of characters _not_ written.
+     *
+     * \return         This function returns the number of bytes sent,
+     *                 or a negative error code; EST_ERR_NET_TRY_AGAIN
+     *                 indicates write() is blocking.
+     */
+    int net_send(void *ctx, uchar *buf, int len);
 
-	/**
-	 * \brief          Gracefully shutdown the connection
-	 */
-	void net_close(int fd);
+    /**
+     * \brief          Gracefully shutdown the connection
+     */
+    void net_close(int fd);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* net.h */
+#endif              /* net.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -931,156 +752,143 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file dhm.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    dhm.h -- Diffie-Helman Support
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_DHM_H
-#define TROPICSSL_DHM_H
+#ifndef EST_DHM_H
+#define EST_DHM_H
 
-#if UNUSED
-
-#endif
-
-#define TROPICSSL_ERR_DHM_BAD_INPUT_DATA                    -0x0480
-#define TROPICSSL_ERR_DHM_READ_PARAMS_FAILED                -0x0490
-#define TROPICSSL_ERR_DHM_MAKE_PARAMS_FAILED                -0x04A0
-#define TROPICSSL_ERR_DHM_READ_PUBLIC_FAILED                -0x04B0
-#define TROPICSSL_ERR_DHM_MAKE_PUBLIC_FAILED                -0x04C0
-#define TROPICSSL_ERR_DHM_CALC_SECRET_FAILED                -0x04D0
+#define EST_ERR_DHM_BAD_INPUT_DATA                    -0x0480
+#define EST_ERR_DHM_READ_PARAMS_FAILED                -0x0490
+#define EST_ERR_DHM_MAKE_PARAMS_FAILED                -0x04A0
+#define EST_ERR_DHM_READ_PUBLIC_FAILED                -0x04B0
+#define EST_ERR_DHM_MAKE_PUBLIC_FAILED                -0x04C0
+#define EST_ERR_DHM_CALC_SECRET_FAILED                -0x04D0
 
 typedef struct {
-	int len;		/*!<  size(P) in chars  */
-	mpi P;			/*!<  prime modulus     */
-	mpi G;			/*!<  generator         */
-	mpi X;			/*!<  secret value      */
-	mpi GX;			/*!<  self = G^X mod P  */
-	mpi GY;			/*!<  peer = G^Y mod P  */
-	mpi K;			/*!<  key = GY^X mod P  */
-	mpi RP;			/*!<  cached R^2 mod P  */
+    int len;        /*!<  size(P) in chars  */
+    mpi P;          /*!<  prime modulus     */
+    mpi G;          /*!<  generator         */
+    mpi X;          /*!<  secret value      */
+    mpi GX;         /*!<  self = G^X mod P  */
+    mpi GY;         /*!<  peer = G^Y mod P  */
+    mpi K;          /*!<  key = GY^X mod P  */
+    mpi RP;         /*!<  cached R^2 mod P  */
 } dhm_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          Parse the ServerKeyExchange parameters
-	 *
-	 * \param ctx      DHM context
-	 * \param p        &(start of input buffer)
-	 * \param end      end of buffer
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_DHM_XXX error code
-	 */
-	int dhm_read_params(dhm_context * ctx,
-			    unsigned char **p, unsigned char *end);
+    /**
+     * \brief          Parse the ServerKeyExchange parameters
+     *
+     * \param ctx      DHM context
+     * \param p        &(start of input buffer)
+     * \param end      end of buffer
+     *
+     * \return         0 if successful, or an EST_ERR_DHM_XXX error code
+     */
+    int dhm_read_params(dhm_context * ctx,
+                uchar **p, uchar *end);
 
-	/**
-	 * \brief          Setup and write the ServerKeyExchange parameters
-	 *
-	 * \param ctx      DHM context
-	 * \param x_size   private value size in bits
-	 * \param output   destination buffer
-	 * \param olen     number of chars written
-	 * \param f_rng    RNG function
-	 * \param p_rng    RNG parameter
-	 *
-	 * \note           This function assumes that ctx->P and ctx->G
-	 *                 have already been properly set (for example
-	 *                 using mpi_read_string or mpi_read_binary).
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_DHM_XXX error code
-	 */
-	int dhm_make_params(dhm_context * ctx, int s_size,
-			    unsigned char *output, int *olen,
-			    int (*f_rng) (void *), void *p_rng);
+    /**
+     * \brief          Setup and write the ServerKeyExchange parameters
+     *
+     * \param ctx      DHM context
+     * \param x_size   private value size in bits
+     * \param output   destination buffer
+     * \param olen     number of chars written
+     * \param f_rng    RNG function
+     * \param p_rng    RNG parameter
+     *
+     * \note           This function assumes that ctx->P and ctx->G
+     *                 have already been properly set (for example
+     *                 using mpi_read_string or mpi_read_binary).
+     *
+     * \return         0 if successful, or an EST_ERR_DHM_XXX error code
+     */
+    int dhm_make_params(dhm_context * ctx, int s_size,
+                uchar *output, int *olen,
+                int (*f_rng) (void *), void *p_rng);
 
-	/**
-	 * \brief          Import the peer's public value G^Y
-	 *
-	 * \param ctx      DHM context
-	 * \param input    input buffer
-	 * \param ilen     size of buffer
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_DHM_XXX error code
-	 */
-	int dhm_read_public(dhm_context * ctx, unsigned char *input, int ilen);
+    /**
+     * \brief          Import the peer's public value G^Y
+     *
+     * \param ctx      DHM context
+     * \param input    input buffer
+     * \param ilen     size of buffer
+     *
+     * \return         0 if successful, or an EST_ERR_DHM_XXX error code
+     */
+    int dhm_read_public(dhm_context * ctx, uchar *input, int ilen);
 
-	/**
-	 * \brief          Create own private value X and export G^X
-	 *
-	 * \param ctx      DHM context
-	 * \param x_size   private value size in bits
-	 * \param output   destination buffer
-	 * \param olen     must be equal to ctx->P.len
-	 * \param f_rng    RNG function
-	 * \param p_rng    RNG parameter
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_DHM_XXX error code
-	 */
-	int dhm_make_public(dhm_context * ctx, int s_size,
-			    unsigned char *output, int olen,
-			    int (*f_rng) (void *), void *p_rng);
+    /**
+     * \brief          Create own private value X and export G^X
+     *
+     * \param ctx      DHM context
+     * \param x_size   private value size in bits
+     * \param output   destination buffer
+     * \param olen     must be equal to ctx->P.len
+     * \param f_rng    RNG function
+     * \param p_rng    RNG parameter
+     *
+     * \return         0 if successful, or an EST_ERR_DHM_XXX error code
+     */
+    int dhm_make_public(dhm_context * ctx, int s_size,
+                uchar *output, int olen,
+                int (*f_rng) (void *), void *p_rng);
 
-	/**
-	 * \brief          Derive and export the shared secret (G^Y)^X mod P
-	 *
-	 * \param ctx      DHM context
-	 * \param output   destination buffer
-	 * \param olen     number of chars written
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_DHM_XXX error code
-	 */
-	int dhm_calc_secret(dhm_context * ctx,
-			    unsigned char *output, int *olen);
+    /**
+     * \brief          Derive and export the shared secret (G^Y)^X mod P
+     *
+     * \param ctx      DHM context
+     * \param output   destination buffer
+     * \param olen     number of chars written
+     *
+     * \return         0 if successful, or an EST_ERR_DHM_XXX error code
+     */
+    int dhm_calc_secret(dhm_context * ctx,
+                uchar *output, int *olen);
 
-	/*
-	 * \brief          Free the components of a DHM key
-	 */
-	void dhm_free(dhm_context * ctx);
+    /*
+     * \brief          Free the components of a DHM key
+     */
+    void dhm_free(dhm_context * ctx);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int dhm_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int dhm_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
 #endif
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -1088,55 +896,22 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file rsa.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    rsa.h -- RSA
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_RSA_H
-#define TROPICSSL_RSA_H
+#ifndef EST_RSA_H
+#define EST_RSA_H
 
-#if UNUSED
-
-#endif
-
-#define TROPICSSL_ERR_RSA_BAD_INPUT_DATA                    -0x0400
-#define TROPICSSL_ERR_RSA_INVALID_PADDING                   -0x0410
-#define TROPICSSL_ERR_RSA_KEY_GEN_FAILED                    -0x0420
-#define TROPICSSL_ERR_RSA_KEY_CHECK_FAILED                  -0x0430
-#define TROPICSSL_ERR_RSA_PUBLIC_FAILED                     -0x0440
-#define TROPICSSL_ERR_RSA_PRIVATE_FAILED                    -0x0450
-#define TROPICSSL_ERR_RSA_VERIFY_FAILED                     -0x0460
-#define TROPICSSL_ERR_RSA_OUTPUT_TO_LARGE                   -0x0470
+#define EST_ERR_RSA_BAD_INPUT_DATA                    -0x0400
+#define EST_ERR_RSA_INVALID_PADDING                   -0x0410
+#define EST_ERR_RSA_KEY_GEN_FAILED                    -0x0420
+#define EST_ERR_RSA_KEY_CHECK_FAILED                  -0x0430
+#define EST_ERR_RSA_PUBLIC_FAILED                     -0x0440
+#define EST_ERR_RSA_PRIVATE_FAILED                    -0x0450
+#define EST_ERR_RSA_VERIFY_FAILED                     -0x0460
+#define EST_ERR_RSA_OUTPUT_TO_LARGE                   -0x0470
 
 /*
  * PKCS#1 constants
@@ -1178,216 +953,236 @@ extern "C" {
  * \brief          RSA context structure
  */
 typedef struct {
-	int ver;		/*!<  always 0          */
-	int len;		/*!<  size(N) in chars  */
+    int ver;        /*!<  always 0          */
+    int len;        /*!<  size(N) in chars  */
 
-	mpi N;			/*!<  public modulus    */
-	mpi E;			/*!<  public exponent   */
+    mpi N;          /*!<  public modulus    */
+    mpi E;          /*!<  public exponent   */
 
-	mpi D;			/*!<  private exponent  */
-	mpi P;			/*!<  1st prime factor  */
-	mpi Q;			/*!<  2nd prime factor  */
-	mpi DP;			/*!<  D % (P - 1)       */
-	mpi DQ;			/*!<  D % (Q - 1)       */
-	mpi QP;			/*!<  1 / (Q % P)       */
+    mpi D;          /*!<  private exponent  */
+    mpi P;          /*!<  1st prime factor  */
+    mpi Q;          /*!<  2nd prime factor  */
+    mpi DP;         /*!<  D % (P - 1)       */
+    mpi DQ;         /*!<  D % (Q - 1)       */
+    mpi QP;         /*!<  1 / (Q % P)       */
 
-	mpi RN;			/*!<  cached R^2 mod N  */
-	mpi RP;			/*!<  cached R^2 mod P  */
-	mpi RQ;			/*!<  cached R^2 mod Q  */
+    mpi RN;         /*!<  cached R^2 mod N  */
+    mpi RP;         /*!<  cached R^2 mod P  */
+    mpi RQ;         /*!<  cached R^2 mod Q  */
 
-	int padding;		/*!<  1.5 or OAEP/PSS   */
-	int hash_id;		/*!<  hash identifier   */
-	int (*f_rng) (void *);	/*!<  RNG function      */
-	void *p_rng;		/*!<  RNG parameter     */
+    int padding;        /*!<  1.5 or OAEP/PSS   */
+    int hash_id;        /*!<  hash identifier   */
+    int (*f_rng) (void *);  /*!<  RNG function      */
+    void *p_rng;        /*!<  RNG parameter     */
 } rsa_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          Initialize an RSA context
-	 *
-	 * \param ctx      RSA context to be initialized
-	 * \param padding  RSA_PKCS_V15 or RSA_PKCS_V21
-	 * \param hash_id  RSA_PKCS_V21 hash identifier
-	 * \param f_rng    RNG function
-	 * \param p_rng    RNG parameter
-	 *
-	 * \note           The hash_id parameter is actually ignored
-	 *                 when using RSA_PKCS_V15 padding.
-	 *
-	 * \note           Currently (xyssl-0.8), RSA_PKCS_V21 padding
-	 *                 is not supported.
-	 */
-	void rsa_init(rsa_context * ctx,
-		      int padding,
-		      int hash_id, int (*f_rng) (void *), void *p_rng);
+    /**
+     * \brief          Initialize an RSA context
+     *
+     * \param ctx      RSA context to be initialized
+     * \param padding  RSA_PKCS_V15 or RSA_PKCS_V21
+     * \param hash_id  RSA_PKCS_V21 hash identifier
+     * \param f_rng    RNG function
+     * \param p_rng    RNG parameter
+     *
+     * \note           The hash_id parameter is actually ignored
+     *                 when using RSA_PKCS_V15 padding.
+     *
+     * \note           Currently (xyssl-0.8), RSA_PKCS_V21 padding
+     *                 is not supported.
+     */
+    void rsa_init(rsa_context * ctx,
+              int padding,
+              int hash_id, int (*f_rng) (void *), void *p_rng);
 
-	/**
-	 * \brief          Generate an RSA keypair
-	 *
-	 * \param ctx      RSA context that will hold the key
-	 * \param nbits    size of the public key in bits
-	 * \param exponent public exponent (e.g., 65537)
-	 *
-	 * \note           rsa_init() must be called beforehand to setup
-	 *                 the RSA context (especially f_rng and p_rng).
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_RSA_XXX error code
-	 */
-	int rsa_gen_key(rsa_context * ctx, int nbits, int exponent);
+    /**
+     * \brief          Generate an RSA keypair
+     *
+     * \param ctx      RSA context that will hold the key
+     * \param nbits    size of the public key in bits
+     * \param exponent public exponent (e.g., 65537)
+     *
+     * \note           rsa_init() must be called beforehand to setup
+     *                 the RSA context (especially f_rng and p_rng).
+     *
+     * \return         0 if successful, or an EST_ERR_RSA_XXX error code
+     */
+    int rsa_gen_key(rsa_context * ctx, int nbits, int exponent);
 
-	/**
-	 * \brief          Check a public RSA key
-	 *
-	 * \param ctx      RSA context to be checked
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_RSA_XXX error code
-	 */
-	int rsa_check_pubkey(rsa_context * ctx);
+    /**
+     * \brief          Check a public RSA key
+     *
+     * \param ctx      RSA context to be checked
+     *
+     * \return         0 if successful, or an EST_ERR_RSA_XXX error code
+     */
+    int rsa_check_pubkey(rsa_context * ctx);
 
-	/**
-	 * \brief          Check a private RSA key
-	 *
-	 * \param ctx      RSA context to be checked
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_RSA_XXX error code
-	 */
-	int rsa_check_privkey(rsa_context * ctx);
+    /**
+     * \brief          Check a private RSA key
+     *
+     * \param ctx      RSA context to be checked
+     *
+     * \return         0 if successful, or an EST_ERR_RSA_XXX error code
+     */
+    int rsa_check_privkey(rsa_context * ctx);
 
-	/**
-	 * \brief          Do an RSA public key operation
-	 *
-	 * \param ctx      RSA context
-	 * \param input    input buffer
-	 * \param output   output buffer
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_RSA_XXX error code
-	 *
-	 * \note           This function does NOT take care of message
-	 *                 padding. Also, be sure to set input[0] = 0.
-	 *
-	 * \note           The input and output buffers must be large
-	 *                 enough (eg. 128 bytes if RSA-1024 is used).
-	 */
-	int rsa_public(rsa_context * ctx,
-		       unsigned char *input, unsigned char *output);
+    /**
+     * \brief          Do an RSA public key operation
+     *
+     * \param ctx      RSA context
+     * \param input    input buffer
+     * \param output   output buffer
+     *
+     * \return         0 if successful, or an EST_ERR_RSA_XXX error code
+     *
+     * \note           This function does NOT take care of message
+     *                 padding. Also, be sure to set input[0] = 0.
+     *
+     * \note           The input and output buffers must be large
+     *                 enough (eg. 128 bytes if RSA-1024 is used).
+     */
+    int rsa_public(rsa_context * ctx,
+               uchar *input, uchar *output);
 
-	/**
-	 * \brief          Do an RSA private key operation
-	 *
-	 * \param ctx      RSA context
-	 * \param input    input buffer
-	 * \param output   output buffer
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_RSA_XXX error code
-	 *
-	 * \note           The input and output buffers must be large
-	 *                 enough (eg. 128 bytes if RSA-1024 is used).
-	 */
-	int rsa_private(rsa_context * ctx,
-			unsigned char *input, unsigned char *output);
+    /**
+     * \brief          Do an RSA private key operation
+     *
+     * \param ctx      RSA context
+     * \param input    input buffer
+     * \param output   output buffer
+     *
+     * \return         0 if successful, or an EST_ERR_RSA_XXX error code
+     *
+     * \note           The input and output buffers must be large
+     *                 enough (eg. 128 bytes if RSA-1024 is used).
+     */
+    int rsa_private(rsa_context * ctx,
+            uchar *input, uchar *output);
 
-	/**
-	 * \brief          Add the message padding, then do an RSA operation
-	 *
-	 * \param ctx      RSA context
-	 * \param mode     RSA_PUBLIC or RSA_PRIVATE
-	 * \param ilen     contains the the plaintext length
-	 * \param input    buffer holding the data to be encrypted
-	 * \param output   buffer that will hold the ciphertext
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_RSA_XXX error code
-	 *
-	 * \note           The output buffer must be as large as the size
-	 *                 of ctx->N (eg. 128 bytes if RSA-1024 is used).
-	 */
-	int rsa_pkcs1_encrypt(rsa_context * ctx,
-			      int mode, int ilen,
-			      unsigned char *input, unsigned char *output);
+    /**
+     * \brief          Add the message padding, then do an RSA operation
+     *
+     * \param ctx      RSA context
+     * \param mode     RSA_PUBLIC or RSA_PRIVATE
+     * \param ilen     contains the the plaintext length
+     * \param input    buffer holding the data to be encrypted
+     * \param output   buffer that will hold the ciphertext
+     *
+     * \return         0 if successful, or an EST_ERR_RSA_XXX error code
+     *
+     * \note           The output buffer must be as large as the size
+     *                 of ctx->N (eg. 128 bytes if RSA-1024 is used).
+     */
+    int rsa_pkcs1_encrypt(rsa_context * ctx,
+                  int mode, int ilen,
+                  uchar *input, uchar *output);
 
-	/**
-	 * \brief          Do an RSA operation, then remove the message padding
-	 *
-	 * \param ctx      RSA context
-	 * \param mode     RSA_PUBLIC or RSA_PRIVATE
-	 * \param input    buffer holding the encrypted data
-	 * \param output   buffer that will hold the plaintext
-	 * \param olen     will contain the plaintext length
-	 * \param output_max_len	maximum length of the output buffer
-	 *
-	 * \return         0 if successful, or an TROPICSSL_ERR_RSA_XXX error code
-	 *
-	 * \note           The output buffer must be as large as the size
-	 *                 of ctx->N (eg. 128 bytes if RSA-1024 is used) otherwise
-	 *                 an error is thrown.
-	 */
-	int rsa_pkcs1_decrypt(rsa_context * ctx,
-			      int mode, int *olen,
-			      unsigned char *input,
-			      unsigned char *output, int output_max_len);
+    /**
+     * \brief          Do an RSA operation, then remove the message padding
+     *
+     * \param ctx      RSA context
+     * \param mode     RSA_PUBLIC or RSA_PRIVATE
+     * \param input    buffer holding the encrypted data
+     * \param output   buffer that will hold the plaintext
+     * \param olen     will contain the plaintext length
+     * \param output_max_len    maximum length of the output buffer
+     *
+     * \return         0 if successful, or an EST_ERR_RSA_XXX error code
+     *
+     * \note           The output buffer must be as large as the size
+     *                 of ctx->N (eg. 128 bytes if RSA-1024 is used) otherwise
+     *                 an error is thrown.
+     */
+    int rsa_pkcs1_decrypt(rsa_context * ctx,
+                  int mode, int *olen,
+                  uchar *input,
+                  uchar *output, int output_max_len);
 
-	/**
-	 * \brief          Do a private RSA to sign a message digest
-	 *
-	 * \param ctx      RSA context
-	 * \param mode     RSA_PUBLIC or RSA_PRIVATE
-	 * \param hash_id  RSA_RAW, RSA_MD{2,4,5} or RSA_SHA{1,256}
-	 * \param hashlen  message digest length (for RSA_RAW only)
-	 * \param hash     buffer holding the message digest
-	 * \param sig      buffer that will hold the ciphertext
-	 *
-	 * \return         0 if the signing operation was successful,
-	 *                 or an TROPICSSL_ERR_RSA_XXX error code
-	 *
-	 * \note           The "sig" buffer must be as large as the size
-	 *                 of ctx->N (eg. 128 bytes if RSA-1024 is used).
-	 */
-	int rsa_pkcs1_sign(rsa_context * ctx,
-			   int mode,
-			   int hash_id,
-			   int hashlen,
-			   unsigned char *hash, unsigned char *sig);
+    /**
+     * \brief          Do a private RSA to sign a message digest
+     *
+     * \param ctx      RSA context
+     * \param mode     RSA_PUBLIC or RSA_PRIVATE
+     * \param hash_id  RSA_RAW, RSA_MD{2,4,5} or RSA_SHA{1,256}
+     * \param hashlen  message digest length (for RSA_RAW only)
+     * \param hash     buffer holding the message digest
+     * \param sig      buffer that will hold the ciphertext
+     *
+     * \return         0 if the signing operation was successful,
+     *                 or an EST_ERR_RSA_XXX error code
+     *
+     * \note           The "sig" buffer must be as large as the size
+     *                 of ctx->N (eg. 128 bytes if RSA-1024 is used).
+     */
+    int rsa_pkcs1_sign(rsa_context * ctx,
+               int mode,
+               int hash_id,
+               int hashlen,
+               uchar *hash, uchar *sig);
 
-	/**
-	 * \brief          Do a public RSA and check the message digest
-	 *
-	 * \param ctx      points to an RSA public key
-	 * \param mode     RSA_PUBLIC or RSA_PRIVATE
-	 * \param hash_id  RSA_RAW, RSA_MD{2,4,5} or RSA_SHA{1,256}
-	 * \param hashlen  message digest length (for RSA_RAW only)
-	 * \param hash     buffer holding the message digest
-	 * \param sig      buffer holding the ciphertext
-	 *
-	 * \return         0 if the verify operation was successful,
-	 *                 or an TROPICSSL_ERR_RSA_XXX error code
-	 *
-	 * \note           The "sig" buffer must be as large as the size
-	 *                 of ctx->N (eg. 128 bytes if RSA-1024 is used).
-	 */
-	int rsa_pkcs1_verify(rsa_context * ctx,
-			     int mode,
-			     int hash_id,
-			     int hashlen,
-			     unsigned char *hash, unsigned char *sig);
+    /**
+     * \brief          Do a public RSA and check the message digest
+     *
+     * \param ctx      points to an RSA public key
+     * \param mode     RSA_PUBLIC or RSA_PRIVATE
+     * \param hash_id  RSA_RAW, RSA_MD{2,4,5} or RSA_SHA{1,256}
+     * \param hashlen  message digest length (for RSA_RAW only)
+     * \param hash     buffer holding the message digest
+     * \param sig      buffer holding the ciphertext
+     *
+     * \return         0 if the verify operation was successful,
+     *                 or an EST_ERR_RSA_XXX error code
+     *
+     * \note           The "sig" buffer must be as large as the size
+     *                 of ctx->N (eg. 128 bytes if RSA-1024 is used).
+     */
+    int rsa_pkcs1_verify(rsa_context * ctx,
+                 int mode,
+                 int hash_id,
+                 int hashlen,
+                 uchar *hash, uchar *sig);
 
-	/**
-	 * \brief          Free the components of an RSA key
-	 */
-	void rsa_free(rsa_context * ctx);
+    /**
+     * \brief          Free the components of an RSA key
+     */
+    void rsa_free(rsa_context * ctx);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int rsa_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int rsa_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* rsa.h */
+#endif              /* rsa.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -1395,152 +1190,143 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file md5.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    md5.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_MD5_H
-#define TROPICSSL_MD5_H
+#ifndef EST_MD5_H
+#define EST_MD5_H
 
 /**
  * \brief          MD5 context structure
  */
 typedef struct {
-	unsigned long total[2];	/*!< number of bytes processed  */
-	unsigned long state[4];	/*!< intermediate digest state  */
-	unsigned char buffer[64];	/*!< data block being processed */
+    ulong total[2]; /*!< number of bytes processed  */
+    ulong state[4]; /*!< intermediate digest state  */
+    uchar buffer[64];   /*!< data block being processed */
 
-	unsigned char ipad[64];	/*!< HMAC: inner padding        */
-	unsigned char opad[64];	/*!< HMAC: outer padding        */
+    uchar ipad[64]; /*!< HMAC: inner padding        */
+    uchar opad[64]; /*!< HMAC: outer padding        */
 } md5_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          MD5 context setup
-	 *
-	 * \param ctx      context to be initialized
-	 */
-	void md5_starts(md5_context * ctx);
+    /**
+     * \brief          MD5 context setup
+     *
+     * \param ctx      context to be initialized
+     */
+    void md5_starts(md5_context * ctx);
 
-	/**
-	 * \brief          MD5 process buffer
-	 *
-	 * \param ctx      MD5 context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void md5_update(md5_context * ctx, unsigned char *input, int ilen);
+    /**
+     * \brief          MD5 process buffer
+     *
+     * \param ctx      MD5 context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void md5_update(md5_context * ctx, uchar *input, int ilen);
 
-	/**
-	 * \brief          MD5 final digest
-	 *
-	 * \param ctx      MD5 context
-	 * \param output   MD5 checksum result
-	 */
-	void md5_finish(md5_context * ctx, unsigned char output[16]);
+    /**
+     * \brief          MD5 final digest
+     *
+     * \param ctx      MD5 context
+     * \param output   MD5 checksum result
+     */
+    void md5_finish(md5_context * ctx, uchar output[16]);
 
-	/**
-	 * \brief          Output = MD5( input buffer )
-	 *
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   MD5 checksum result
-	 */
-	void md5(unsigned char *input, int ilen, unsigned char output[16]);
+    /**
+     * \brief          Output = MD5( input buffer )
+     *
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   MD5 checksum result
+     */
+    void md5(uchar *input, int ilen, uchar output[16]);
 
-	/**
-	 * \brief          Output = MD5( file contents )
-	 *
-	 * \param path     input file name
-	 * \param output   MD5 checksum result
-	 *
-	 * \return         0 if successful, 1 if fopen failed,
-	 *                 or 2 if fread failed
-	 */
-	int md5_file(char *path, unsigned char output[16]);
+    /**
+     * \brief          Output = MD5( file contents )
+     *
+     * \param path     input file name
+     * \param output   MD5 checksum result
+     *
+     * \return         0 if successful, 1 if fopen failed,
+     *                 or 2 if fread failed
+     */
+    int md5_file(char *path, uchar output[16]);
 
-	/**
-	 * \brief          MD5 HMAC context setup
-	 *
-	 * \param ctx      HMAC context to be initialized
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 */
-	void md5_hmac_starts(md5_context * ctx, unsigned char *key, int keylen);
+    /**
+     * \brief          MD5 HMAC context setup
+     *
+     * \param ctx      HMAC context to be initialized
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     */
+    void md5_hmac_starts(md5_context * ctx, uchar *key, int keylen);
 
-	/**
-	 * \brief          MD5 HMAC process buffer
-	 *
-	 * \param ctx      HMAC context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void md5_hmac_update(md5_context * ctx, unsigned char *input, int ilen);
+    /**
+     * \brief          MD5 HMAC process buffer
+     *
+     * \param ctx      HMAC context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void md5_hmac_update(md5_context * ctx, uchar *input, int ilen);
 
-	/**
-	 * \brief          MD5 HMAC final digest
-	 *
-	 * \param ctx      HMAC context
-	 * \param output   MD5 HMAC checksum result
-	 */
-	void md5_hmac_finish(md5_context * ctx, unsigned char output[16]);
+    /**
+     * \brief          MD5 HMAC final digest
+     *
+     * \param ctx      HMAC context
+     * \param output   MD5 HMAC checksum result
+     */
+    void md5_hmac_finish(md5_context * ctx, uchar output[16]);
 
-	/**
-	 * \brief          Output = HMAC-MD5( hmac key, input buffer )
-	 *
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   HMAC-MD5 result
-	 */
-	void md5_hmac(unsigned char *key, int keylen,
-		      unsigned char *input, int ilen, unsigned char output[16]);
+    /**
+     * \brief          Output = HMAC-MD5( hmac key, input buffer )
+     *
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   HMAC-MD5 result
+     */
+    void md5_hmac(uchar *key, int keylen,
+              uchar *input, int ilen, uchar output[16]);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int md5_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int md5_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* md5.h */
+#endif              /* md5.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -1548,155 +1334,146 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file sha1.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    sha1.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_SHA1_H
-#define TROPICSSL_SHA1_H
+#ifndef EST_SHA1_H
+#define EST_SHA1_H
 
 /**
  * \brief          SHA-1 context structure
  */
 typedef struct {
-	unsigned long total[2];	/*!< number of bytes processed  */
-	unsigned long state[5];	/*!< intermediate digest state  */
-	unsigned char buffer[64];	/*!< data block being processed */
+    ulong total[2]; /*!< number of bytes processed  */
+    ulong state[5]; /*!< intermediate digest state  */
+    uchar buffer[64];   /*!< data block being processed */
 
-	unsigned char ipad[64];	/*!< HMAC: inner padding        */
-	unsigned char opad[64];	/*!< HMAC: outer padding        */
+    uchar ipad[64]; /*!< HMAC: inner padding        */
+    uchar opad[64]; /*!< HMAC: outer padding        */
 } sha1_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          SHA-1 context setup
-	 *
-	 * \param ctx      context to be initialized
-	 */
-	void sha1_starts(sha1_context * ctx);
+    /**
+     * \brief          SHA-1 context setup
+     *
+     * \param ctx      context to be initialized
+     */
+    void sha1_starts(sha1_context * ctx);
 
-	/**
-	 * \brief          SHA-1 process buffer
-	 *
-	 * \param ctx      SHA-1 context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void sha1_update(sha1_context * ctx, unsigned char *input, int ilen);
+    /**
+     * \brief          SHA-1 process buffer
+     *
+     * \param ctx      SHA-1 context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void sha1_update(sha1_context * ctx, uchar *input, int ilen);
 
-	/**
-	 * \brief          SHA-1 final digest
-	 *
-	 * \param ctx      SHA-1 context
-	 * \param output   SHA-1 checksum result
-	 */
-	void sha1_finish(sha1_context * ctx, unsigned char output[20]);
+    /**
+     * \brief          SHA-1 final digest
+     *
+     * \param ctx      SHA-1 context
+     * \param output   SHA-1 checksum result
+     */
+    void sha1_finish(sha1_context * ctx, uchar output[20]);
 
-	/**
-	 * \brief          Output = SHA-1( input buffer )
-	 *
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   SHA-1 checksum result
-	 */
-	void sha1(unsigned char *input, int ilen, unsigned char output[20]);
+    /**
+     * \brief          Output = SHA-1( input buffer )
+     *
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   SHA-1 checksum result
+     */
+    void sha1(uchar *input, int ilen, uchar output[20]);
 
-	/**
-	 * \brief          Output = SHA-1( file contents )
-	 *
-	 * \param path     input file name
-	 * \param output   SHA-1 checksum result
-	 *
-	 * \return         0 if successful, 1 if fopen failed,
-	 *                 or 2 if fread failed
-	 */
-	int sha1_file(char *path, unsigned char output[20]);
+    /**
+     * \brief          Output = SHA-1( file contents )
+     *
+     * \param path     input file name
+     * \param output   SHA-1 checksum result
+     *
+     * \return         0 if successful, 1 if fopen failed,
+     *                 or 2 if fread failed
+     */
+    int sha1_file(char *path, uchar output[20]);
 
-	/**
-	 * \brief          SHA-1 HMAC context setup
-	 *
-	 * \param ctx      HMAC context to be initialized
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 */
-	void sha1_hmac_starts(sha1_context * ctx, unsigned char *key,
-			      int keylen);
+    /**
+     * \brief          SHA-1 HMAC context setup
+     *
+     * \param ctx      HMAC context to be initialized
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     */
+    void sha1_hmac_starts(sha1_context * ctx, uchar *key,
+                  int keylen);
 
-	/**
-	 * \brief          SHA-1 HMAC process buffer
-	 *
-	 * \param ctx      HMAC context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void sha1_hmac_update(sha1_context * ctx, unsigned char *input,
-			      int ilen);
+    /**
+     * \brief          SHA-1 HMAC process buffer
+     *
+     * \param ctx      HMAC context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void sha1_hmac_update(sha1_context * ctx, uchar *input,
+                  int ilen);
 
-	/**
-	 * \brief          SHA-1 HMAC final digest
-	 *
-	 * \param ctx      HMAC context
-	 * \param output   SHA-1 HMAC checksum result
-	 */
-	void sha1_hmac_finish(sha1_context * ctx, unsigned char output[20]);
+    /**
+     * \brief          SHA-1 HMAC final digest
+     *
+     * \param ctx      HMAC context
+     * \param output   SHA-1 HMAC checksum result
+     */
+    void sha1_hmac_finish(sha1_context * ctx, uchar output[20]);
 
-	/**
-	 * \brief          Output = HMAC-SHA-1( hmac key, input buffer )
-	 *
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   HMAC-SHA-1 result
-	 */
-	void sha1_hmac(unsigned char *key, int keylen,
-		       unsigned char *input, int ilen,
-		       unsigned char output[20]);
+    /**
+     * \brief          Output = HMAC-SHA-1( hmac key, input buffer )
+     *
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   HMAC-SHA-1 result
+     */
+    void sha1_hmac(uchar *key, int keylen,
+               uchar *input, int ilen,
+               uchar output[20]);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int sha1_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int sha1_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* sha1.h */
+#endif              /* sha1.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -1704,78 +1481,45 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file x509.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    x509.h -- Header for the Multithreaded Portable Runtime (MPR).
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_X509_H
-#define TROPICSSL_X509_H
+#ifndef EST_X509_H
+#define EST_X509_H
 
-#if UNUSED
+#define EST_ERR_ASN1_OUT_OF_DATA                      -0x0014
+#define EST_ERR_ASN1_UNEXPECTED_TAG                   -0x0016
+#define EST_ERR_ASN1_INVALID_LENGTH                   -0x0018
+#define EST_ERR_ASN1_LENGTH_MISMATCH                  -0x001A
+#define EST_ERR_ASN1_INVALID_DATA                     -0x001C
 
-#endif
-
-#define TROPICSSL_ERR_EST_ASN1_OUT_OF_DATA                      -0x0014
-#define TROPICSSL_ERR_EST_ASN1_UNEXPECTED_TAG                   -0x0016
-#define TROPICSSL_ERR_EST_ASN1_INVALID_LENGTH                   -0x0018
-#define TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH                  -0x001A
-#define TROPICSSL_ERR_EST_ASN1_INVALID_DATA                     -0x001C
-
-#define TROPICSSL_ERR_X509_FEATURE_UNAVAILABLE              -0x0020
-#define TROPICSSL_ERR_X509_CERT_INVALID_PEM                 -0x0040
-#define TROPICSSL_ERR_X509_CERT_INVALID_FORMAT              -0x0060
-#define TROPICSSL_ERR_X509_CERT_INVALID_VERSION             -0x0080
-#define TROPICSSL_ERR_X509_CERT_INVALID_SERIAL              -0x00A0
-#define TROPICSSL_ERR_X509_CERT_INVALID_ALG                 -0x00C0
-#define TROPICSSL_ERR_X509_CERT_INVALID_NAME                -0x00E0
-#define TROPICSSL_ERR_X509_CERT_INVALID_DATE                -0x0100
-#define TROPICSSL_ERR_X509_CERT_INVALID_PUBKEY              -0x0120
-#define TROPICSSL_ERR_X509_CERT_INVALID_SIGNATURE           -0x0140
-#define TROPICSSL_ERR_X509_CERT_INVALID_EXTENSIONS          -0x0160
-#define TROPICSSL_ERR_X509_CERT_UNKNOWN_VERSION             -0x0180
-#define TROPICSSL_ERR_X509_CERT_UNKNOWN_SIG_ALG             -0x01A0
-#define TROPICSSL_ERR_X509_CERT_UNKNOWN_PK_ALG              -0x01C0
-#define TROPICSSL_ERR_X509_CERT_SIG_MISMATCH                -0x01E0
-#define TROPICSSL_ERR_X509_CERT_VERIFY_FAILED               -0x0200
-#define TROPICSSL_ERR_X509_KEY_INVALID_PEM                  -0x0220
-#define TROPICSSL_ERR_X509_KEY_INVALID_VERSION              -0x0240
-#define TROPICSSL_ERR_X509_KEY_INVALID_FORMAT               -0x0260
-#define TROPICSSL_ERR_X509_KEY_INVALID_ENC_IV               -0x0280
-#define TROPICSSL_ERR_X509_KEY_UNKNOWN_ENC_ALG              -0x02A0
-#define TROPICSSL_ERR_X509_KEY_PASSWORD_REQUIRED            -0x02C0
-#define TROPICSSL_ERR_X509_KEY_PASSWORD_MISMATCH            -0x02E0
-#define TROPICSSL_ERR_X509_POINT_ERROR                      -0x0300
-#define TROPICSSL_ERR_X509_VALUE_TO_LENGTH                  -0x0320
+#define EST_ERR_X509_FEATURE_UNAVAILABLE              -0x0020
+#define EST_ERR_X509_CERT_INVALID_PEM                 -0x0040
+#define EST_ERR_X509_CERT_INVALID_FORMAT              -0x0060
+#define EST_ERR_X509_CERT_INVALID_VERSION             -0x0080
+#define EST_ERR_X509_CERT_INVALID_SERIAL              -0x00A0
+#define EST_ERR_X509_CERT_INVALID_ALG                 -0x00C0
+#define EST_ERR_X509_CERT_INVALID_NAME                -0x00E0
+#define EST_ERR_X509_CERT_INVALID_DATE                -0x0100
+#define EST_ERR_X509_CERT_INVALID_PUBKEY              -0x0120
+#define EST_ERR_X509_CERT_INVALID_SIGNATURE           -0x0140
+#define EST_ERR_X509_CERT_INVALID_EXTENSIONS          -0x0160
+#define EST_ERR_X509_CERT_UNKNOWN_VERSION             -0x0180
+#define EST_ERR_X509_CERT_UNKNOWN_SIG_ALG             -0x01A0
+#define EST_ERR_X509_CERT_UNKNOWN_PK_ALG              -0x01C0
+#define EST_ERR_X509_CERT_SIG_MISMATCH                -0x01E0
+#define EST_ERR_X509_CERT_VERIFY_FAILED               -0x0200
+#define EST_ERR_X509_KEY_INVALID_PEM                  -0x0220
+#define EST_ERR_X509_KEY_INVALID_VERSION              -0x0240
+#define EST_ERR_X509_KEY_INVALID_FORMAT               -0x0260
+#define EST_ERR_X509_KEY_INVALID_ENC_IV               -0x0280
+#define EST_ERR_X509_KEY_UNKNOWN_ENC_ALG              -0x02A0
+#define EST_ERR_X509_KEY_PASSWORD_REQUIRED            -0x02C0
+#define EST_ERR_X509_KEY_PASSWORD_MISMATCH            -0x02E0
+#define EST_ERR_X509_POINT_ERROR                      -0x0300
+#define EST_ERR_X509_VALUE_TO_LENGTH                  -0x0320
 
 #define BADCERT_EXPIRED                 1
 #define BADCERT_REVOKED                 2
@@ -1833,191 +1577,211 @@ extern "C" {
  * Structures for parsing X.509 certificates
  */
 typedef struct _x509_buf {
-	int tag;
-	int len;
-	unsigned char *p;
+    int tag;
+    int len;
+    uchar *p;
 } x509_buf;
 
 typedef struct _x509_name {
-	x509_buf oid;
-	x509_buf val;
-	struct _x509_name *next;
+    x509_buf oid;
+    x509_buf val;
+    struct _x509_name *next;
 } x509_name;
 
 typedef struct _x509_time {
-	int year, mon, day;
-	int hour, min, sec;
+    int year, mon, day;
+    int hour, min, sec;
 } x509_time;
 
 typedef struct _x509_cert {
-	x509_buf raw;
-	x509_buf tbs;
+    x509_buf raw;
+    x509_buf tbs;
 
-	int version;
-	x509_buf serial;
-	x509_buf sig_oid1;
+    int version;
+    x509_buf serial;
+    x509_buf sig_oid1;
 
-	x509_buf issuer_raw;
-	x509_buf subject_raw;
+    x509_buf issuer_raw;
+    x509_buf subject_raw;
 
-	x509_name issuer;
-	x509_name subject;
+    x509_name issuer;
+    x509_name subject;
 
-	x509_time valid_from;
-	x509_time valid_to;
+    x509_time valid_from;
+    x509_time valid_to;
 
-	x509_buf pk_oid;
-	rsa_context rsa;
+    x509_buf pk_oid;
+    rsa_context rsa;
 
-	x509_buf issuer_id;
-	x509_buf subject_id;
-	x509_buf v3_ext;
+    x509_buf issuer_id;
+    x509_buf subject_id;
+    x509_buf v3_ext;
 
-	int ca_istrue;
-	int max_pathlen;
+    int ca_istrue;
+    int max_pathlen;
 
-	x509_buf sig_oid2;
-	x509_buf sig;
+    x509_buf sig_oid2;
+    x509_buf sig;
 
-	struct _x509_cert *next;
+    struct _x509_cert *next;
 } x509_cert;
 
 /*
  * Structures for writing X.509 certificates
  */
 typedef struct _x509_node {
-	unsigned char *data;
-	unsigned char *p;
-	unsigned char *end;
+    uchar *data;
+    uchar *p;
+    uchar *end;
 
-	size_t len;
+    size_t len;
 } x509_node;
 
 typedef struct _x509_raw {
-	x509_node raw;
-	x509_node tbs;
+    x509_node raw;
+    x509_node tbs;
 
-	x509_node version;
-	x509_node serial;
-	x509_node tbs_signalg;
-	x509_node issuer;
-	x509_node validity;
-	x509_node subject;
-	x509_node subpubkey;
+    x509_node version;
+    x509_node serial;
+    x509_node tbs_signalg;
+    x509_node issuer;
+    x509_node validity;
+    x509_node subject;
+    x509_node subpubkey;
 
-	x509_node signalg;
-	x509_node sign;
+    x509_node signalg;
+    x509_node sign;
 } x509_raw;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          Parse one or more certificates and add them
-	 *                 to the chained list
-	 *
-	 * \param chain    points to the start of the chain
-	 * \param buf      buffer holding the certificate data
-	 * \param buflen   size of the buffer
-	 *
-	 * \return         0 if successful, or a specific X509 error code
-	 */
-	int x509parse_crt(x509_cert * crt, unsigned char *buf, int buflen);
+    /**
+     * \brief          Parse one or more certificates and add them
+     *                 to the chained list
+     *
+     * \param chain    points to the start of the chain
+     * \param buf      buffer holding the certificate data
+     * \param buflen   size of the buffer
+     *
+     * \return         0 if successful, or a specific X509 error code
+     */
+    int x509parse_crt(x509_cert * crt, uchar *buf, int buflen);
 
-	/**
-	 * \brief          Load one or more certificates and add them
-	 *                 to the chained list
-	 *
-	 * \param chain    points to the start of the chain
-	 * \param path     filename to read the certificates from
-	 *
-	 * \return         0 if successful, or a specific X509 error code
-	 */
-	int x509parse_crtfile(x509_cert * crt, char *path);
+    /**
+     * \brief          Load one or more certificates and add them
+     *                 to the chained list
+     *
+     * \param chain    points to the start of the chain
+     * \param path     filename to read the certificates from
+     *
+     * \return         0 if successful, or a specific X509 error code
+     */
+    int x509parse_crtfile(x509_cert * crt, char *path);
 
-	/**
-	 * \brief          Parse a private RSA key
-	 *
-	 * \param rsa      RSA context to be initialized
-	 * \param buf      input buffer
-	 * \param buflen   size of the buffer
-	 * \param pwd      password for decryption (optional)
-	 * \param pwdlen   size of the password
-	 *
-	 * \return         0 if successful, or a specific X509 error code
-	 */
-	int x509parse_key(rsa_context * rsa,
-			  unsigned char *buf, int buflen,
-			  unsigned char *pwd, int pwdlen);
+    /**
+     * \brief          Parse a private RSA key
+     *
+     * \param rsa      RSA context to be initialized
+     * \param buf      input buffer
+     * \param buflen   size of the buffer
+     * \param pwd      password for decryption (optional)
+     * \param pwdlen   size of the password
+     *
+     * \return         0 if successful, or a specific X509 error code
+     */
+    int x509parse_key(rsa_context * rsa,
+              uchar *buf, int buflen,
+              uchar *pwd, int pwdlen);
 
-	/**
-	 * \brief          Load and parse a private RSA key
-	 *
-	 * \param rsa      RSA context to be initialized
-	 * \param path     filename to read the private key from
-	 * \param pwd      password to decrypt the file (can be NULL)
-	 *
-	 * \return         0 if successful, or a specific X509 error code
-	 */
-	int x509parse_keyfile(rsa_context * rsa, char *path, char *password);
+    /**
+     * \brief          Load and parse a private RSA key
+     *
+     * \param rsa      RSA context to be initialized
+     * \param path     filename to read the private key from
+     * \param pwd      password to decrypt the file (can be NULL)
+     *
+     * \return         0 if successful, or a specific X509 error code
+     */
+    int x509parse_keyfile(rsa_context * rsa, char *path, char *password);
 
-	/**
-	 * \brief          Store the certificate DN in printable form into buf;
-	 *                 no more than (end - buf) characters will be written.
-	 */
-	int x509parse_dn_gets(char *buf, char *end, x509_name * dn);
+    /**
+     * \brief          Store the certificate DN in printable form into buf;
+     *                 no more than (end - buf) characters will be written.
+     */
+    int x509parse_dn_gets(char *buf, char *end, x509_name * dn);
 
-	/**
-	 * \brief          Returns an informational string about the
-	 *                 certificate.
-	 */
-	char *x509parse_cert_info(char *prefix, x509_cert * crt);
+    /**
+     * \brief          Returns an informational string about the
+     *                 certificate.
+     */
+    char *x509parse_cert_info(char *prefix, x509_cert * crt);
 
-	/**
-	 * \brief          Return 0 if the certificate is still valid,
-	 *                 or BADCERT_EXPIRED
-	 */
-	int x509parse_expired(x509_cert * crt);
+    /**
+     * \brief          Return 0 if the certificate is still valid,
+     *                 or BADCERT_EXPIRED
+     */
+    int x509parse_expired(x509_cert * crt);
 
-	/**
-	 * \brief          Verify the certificate signature
-	 *
-	 * \param crt      a certificate to be verified
-	 * \param trust_ca the trusted CA chain
-	 * \param cn       expected Common Name (can be set to
-	 *                 NULL if the CN must not be verified)
-	 * \param flags    result of the verification
-	 *
-	 * \return         0 if successful or TROPICSSL_ERR_X509_SIG_VERIFY_FAILED,
-	 *                 in which case *flags will have one or more of
-	 *                 the following values set:
-	 *                      BADCERT_EXPIRED --
-	 *                      BADCERT_REVOKED --
-	 *                      BADCERT_CN_MISMATCH --
-	 *                      BADCERT_NOT_TRUSTED
-	 *
-	 * \note           TODO: add two arguments, depth and crl
-	 */
-	int x509parse_verify(x509_cert * crt,
-			     x509_cert * trust_ca, char *cn, int *flags);
+    /**
+     * \brief          Verify the certificate signature
+     *
+     * \param crt      a certificate to be verified
+     * \param trust_ca the trusted CA chain
+     * \param cn       expected Common Name (can be set to
+     *                 NULL if the CN must not be verified)
+     * \param flags    result of the verification
+     *
+     * \return         0 if successful or EST_ERR_X509_SIG_VERIFY_FAILED,
+     *                 in which case *flags will have one or more of
+     *                 the following values set:
+     *                      BADCERT_EXPIRED --
+     *                      BADCERT_REVOKED --
+     *                      BADCERT_CN_MISMATCH --
+     *                      BADCERT_NOT_TRUSTED
+     *
+     * \note           TODO: add two arguments, depth and crl
+     */
+    int x509parse_verify(x509_cert * crt,
+                 x509_cert * trust_ca, char *cn, int *flags);
 
-	/**
-	 * \brief          Unallocate all certificate data
-	 */
-	void x509_free(x509_cert * crt);
+    /**
+     * \brief          Unallocate all certificate data
+     */
+    void x509_free(x509_cert * crt);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int x509_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int x509_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* x509.h */
+#endif              /* x509.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -2025,89 +1789,49 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file ssl.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    ssl.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_SSL_H
-#define TROPICSSL_SSL_H
+#ifndef EST_SSL_H
+#define EST_SSL_H
 
-#include <time.h>
-
-#if UNUSED
-
-
-
-
-
-
-#endif
-
-#define TROPICSSL_ERR_SSL_FEATURE_UNAVAILABLE               -0x1000
-#define TROPICSSL_ERR_SSL_BAD_INPUT_DATA                    -0x1800
-#define TROPICSSL_ERR_SSL_INVALID_MAC                       -0x2000
-#define TROPICSSL_ERR_SSL_INVALID_RECORD                    -0x2800
-#define TROPICSSL_ERR_SSL_INVALID_MODULUS_SIZE              -0x3000
-#define TROPICSSL_ERR_SSL_UNKNOWN_CIPHER                    -0x3800
-#define TROPICSSL_ERR_SSL_NO_CIPHER_CHOSEN                  -0x4000
-#define TROPICSSL_ERR_SSL_NO_SESSION_FOUND                  -0x4800
-#define TROPICSSL_ERR_SSL_NO_CLIENT_CERTIFICATE             -0x5000
-#define TROPICSSL_ERR_SSL_CERTIFICATE_TOO_LARGE             -0x5800
-#define TROPICSSL_ERR_SSL_CERTIFICATE_REQUIRED              -0x6000
-#define TROPICSSL_ERR_SSL_PRIVATE_KEY_REQUIRED              -0x6800
-#define TROPICSSL_ERR_SSL_CA_CHAIN_REQUIRED                 -0x7000
-#define TROPICSSL_ERR_SSL_UNEXPECTED_MESSAGE                -0x7800
-#define TROPICSSL_ERR_SSL_FATAL_ALERT_MESSAGE               -0x8000
-#define TROPICSSL_ERR_SSL_PEER_VERIFY_FAILED                -0x8800
-#define TROPICSSL_ERR_SSL_PEER_CLOSE_NOTIFY                 -0x9000
-#define TROPICSSL_ERR_SSL_BAD_HS_CLIENT_HELLO               -0x9800
-#define TROPICSSL_ERR_SSL_BAD_HS_SERVER_HELLO               -0xA000
-#define TROPICSSL_ERR_SSL_BAD_HS_CERTIFICATE                -0xA800
-#define TROPICSSL_ERR_SSL_BAD_HS_CERTIFICATE_REQUEST        -0xB000
-#define TROPICSSL_ERR_SSL_BAD_HS_SERVER_KEY_EXCHANGE        -0xB800
-#define TROPICSSL_ERR_SSL_BAD_HS_SERVER_HELLO_DONE          -0xC000
-#define TROPICSSL_ERR_SSL_BAD_HS_CLIENT_KEY_EXCHANGE        -0xC800
-#define TROPICSSL_ERR_SSL_BAD_HS_CERTIFICATE_VERIFY         -0xD000
-#define TROPICSSL_ERR_SSL_BAD_HS_CHANGE_CIPHER_SPEC         -0xD800
-#define TROPICSSL_ERR_SSL_BAD_HS_FINISHED                   -0xE000
+#define EST_ERR_SSL_FEATURE_UNAVAILABLE               -0x1000
+#define EST_ERR_SSL_BAD_INPUT_DATA                    -0x1800
+#define EST_ERR_SSL_INVALID_MAC                       -0x2000
+#define EST_ERR_SSL_INVALID_RECORD                    -0x2800
+#define EST_ERR_SSL_INVALID_MODULUS_SIZE              -0x3000
+#define EST_ERR_SSL_UNKNOWN_CIPHER                    -0x3800
+#define EST_ERR_SSL_NO_CIPHER_CHOSEN                  -0x4000
+#define EST_ERR_SSL_NO_SESSION_FOUND                  -0x4800
+#define EST_ERR_SSL_NO_CLIENT_CERTIFICATE             -0x5000
+#define EST_ERR_SSL_CERTIFICATE_TOO_LARGE             -0x5800
+#define EST_ERR_SSL_CERTIFICATE_REQUIRED              -0x6000
+#define EST_ERR_SSL_PRIVATE_KEY_REQUIRED              -0x6800
+#define EST_ERR_SSL_CA_CHAIN_REQUIRED                 -0x7000
+#define EST_ERR_SSL_UNEXPECTED_MESSAGE                -0x7800
+#define EST_ERR_SSL_FATAL_ALERT_MESSAGE               -0x8000
+#define EST_ERR_SSL_PEER_VERIFY_FAILED                -0x8800
+#define EST_ERR_SSL_PEER_CLOSE_NOTIFY                 -0x9000
+#define EST_ERR_SSL_BAD_HS_CLIENT_HELLO               -0x9800
+#define EST_ERR_SSL_BAD_HS_SERVER_HELLO               -0xA000
+#define EST_ERR_SSL_BAD_HS_CERTIFICATE                -0xA800
+#define EST_ERR_SSL_BAD_HS_CERTIFICATE_REQUEST        -0xB000
+#define EST_ERR_SSL_BAD_HS_SERVER_KEY_EXCHANGE        -0xB800
+#define EST_ERR_SSL_BAD_HS_SERVER_HELLO_DONE          -0xC000
+#define EST_ERR_SSL_BAD_HS_CLIENT_KEY_EXCHANGE        -0xC800
+#define EST_ERR_SSL_BAD_HS_CERTIFICATE_VERIFY         -0xD000
+#define EST_ERR_SSL_BAD_HS_CHANGE_CIPHER_SPEC         -0xD800
+#define EST_ERR_SSL_BAD_HS_FINISHED                   -0xE000
 
 /*
- * Various constants
+    Various constants
  */
 #define SSL_MAJOR_VERSION_3             3
-#define SSL_MINOR_VERSION_0             0	/*!< SSL v3.0 */
-#define SSL_MINOR_VERSION_1             1	/*!< TLS v1.0 */
-#define SSL_MINOR_VERSION_2             2	/*!< TLS v1.1 */
+#define SSL_MINOR_VERSION_0             0   /*!< SSL v3.0 */
+#define SSL_MINOR_VERSION_1             1   /*!< TLS v1.0 */
+#define SSL_MINOR_VERSION_2             2   /*!< TLS v1.1 */
 
 #define SSL_IS_CLIENT                   0
 #define SSL_IS_SERVER                   1
@@ -2120,28 +1844,26 @@ extern "C" {
 #define SSL_MAX_CONTENT_LEN         16384
 
 /*
- * Allow an extra 512 bytes for the record header
- * and encryption overhead (counter + MAC + padding).
+    Allow an extra 512 bytes for the record header and encryption overhead (counter + MAC + padding).
  */
 #define SSL_BUFFER_LEN (SSL_MAX_CONTENT_LEN + 512)
 
 /*
- * Supported ciphersuites
+   Supported ciphersuites
  */
-#define SSL_RSA_RC4_128_MD5             0x4     /* TLS_RSA_WITH_RC4_128_MD5 */
-#define SSL_RSA_RC4_128_SHA             0x5     /* TLS_RSA_WITH_RC4_128_SHA */
-#define SSL_RSA_DES_168_SHA             0xA     /* TLS_RSA_WITH_3DES_EDE_CBC_SHA */
-#define SSL_EDH_RSA_DES_168_SHA         0x16    /* TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA */
-#define SSL_RSA_AES_128_SHA             0x2F    /* TLS_RSA_WITH_AES_128_CBC_SHA */
-#define SSL_RSA_AES_256_SHA             0x35    /* TLS_RSA_WITH_AES_256_CBC_SHA */
-#define SSL_EDH_RSA_AES_256_SHA         0x39    /* TLS_DHE_RSA_WITH_AES_256_CBC_SHA */
-
-#define SSL_RSA_CAMELLIA_128_SHA	    0x41    /* TLS_RSA_WITH_CAMELLIA_128_CBC_SHA */
-#define SSL_RSA_CAMELLIA_256_SHA	    0x84    /* TLS_RSA_WITH_CAMELLIA_256_CBC_SHA */
-#define SSL_EDH_RSA_CAMELLIA_256_SHA	0x88    /* TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA */
+#define TLS_RSA_WITH_RC4_128_MD5                0x4
+#define TLS_RSA_WITH_RC4_128_SHA                0x5
+#define TLS_RSA_WITH_3DES_EDE_CBC_SHA           0xA
+#define TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA       0x16
+#define TLS_RSA_WITH_AES_128_CBC_SHA            0x2F
+#define TLS_RSA_WITH_AES_256_CBC_SHA            0x35
+#define TLS_DHE_RSA_WITH_AES_256_CBC_SHA        0x39
+#define TLS_RSA_WITH_CAMELLIA_128_CBC_SHA       0x41
+#define TLS_RSA_WITH_CAMELLIA_256_CBC_SHA       0x84
+#define TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA   0x88
 
 /*
- * Message, alert and handshake types
+   Message, alert and handshake types
  */
 #define SSL_MSG_CHANGE_CIPHER_SPEC     20
 #define SSL_MSG_ALERT                  21
@@ -2165,413 +1887,433 @@ extern "C" {
 #define SSL_HS_FINISHED                20
 
 /*
- * TLS extensions
+    TLS extensions
  */
 #define TLS_EXT_SERVERNAME              0
 #define TLS_EXT_SERVERNAME_HOSTNAME     0
 
 /*
- * SSL state machine
+    SSL state machine
  */
 typedef enum {
-	SSL_HELLO_REQUEST,
-	SSL_CLIENT_HELLO,
-	SSL_SERVER_HELLO,
-	SSL_SERVER_CERTIFICATE,
-	SSL_SERVER_KEY_EXCHANGE,
-	SSL_CERTIFICATE_REQUEST,
-	SSL_SERVER_HELLO_DONE,
-	SSL_CLIENT_CERTIFICATE,
-	SSL_CLIENT_KEY_EXCHANGE,
-	SSL_CERTIFICATE_VERIFY,
-	SSL_CLIENT_CHANGE_CIPHER_SPEC,
-	SSL_CLIENT_FINISHED,
-	SSL_SERVER_CHANGE_CIPHER_SPEC,
-	SSL_SERVER_FINISHED,
-	SSL_FLUSH_BUFFERS,
-	SSL_HANDSHAKE_OVER
+    SSL_HELLO_REQUEST,
+    SSL_CLIENT_HELLO,
+    SSL_SERVER_HELLO,
+    SSL_SERVER_CERTIFICATE,
+    SSL_SERVER_KEY_EXCHANGE,
+    SSL_CERTIFICATE_REQUEST,
+    SSL_SERVER_HELLO_DONE,
+    SSL_CLIENT_CERTIFICATE,
+    SSL_CLIENT_KEY_EXCHANGE,
+    SSL_CERTIFICATE_VERIFY,
+    SSL_CLIENT_CHANGE_CIPHER_SPEC,
+    SSL_CLIENT_FINISHED,
+    SSL_SERVER_CHANGE_CIPHER_SPEC,
+    SSL_SERVER_FINISHED,
+    SSL_FLUSH_BUFFERS,
+    SSL_HANDSHAKE_OVER
 } ssl_states;
 
 typedef struct _ssl_session ssl_session;
 typedef struct _ssl_context ssl_context;
 
 /*
- * This structure is used for session resuming.
+    This structure is used for session resuming.
  */
 struct _ssl_session {
-	time_t start;		/*!< starting time      */
-	int cipher;		/*!< chosen cipher      */
-	int length;		/*!< session id length  */
-	unsigned char id[32];	/*!< session identifier */
-	unsigned char master[48];	/*!< the master secret  */
-	ssl_session *next;	/*!< next session entry */
+    time_t start;       /*!< starting time      */
+    int cipher;     /*!< chosen cipher      */
+    int length;     /*!< session id length  */
+    uchar id[32];   /*!< session identifier */
+    uchar master[48];   /*!< the master secret  */
+    ssl_session *next;  /*!< next session entry */
 };
 
 struct _ssl_context {
-	/*
-	 * Miscellaneous
-	 */
-	int state;		/*!< SSL handshake: current state     */
+    /*
+        Miscellaneous
+     */
+    int state;          /*!< SSL handshake: current state     */
 
-	int major_ver;		/*!< equal to  SSL_MAJOR_VERSION_3    */
-	int minor_ver;		/*!< either 0 (SSL3) or 1 (TLS1.0)    */
+    int major_ver;      /*!< equal to  SSL_MAJOR_VERSION_3    */
+    int minor_ver;      /*!< either 0 (SSL3) or 1 (TLS1.0)    */
 
-	int max_major_ver;	/*!< max. major version from client   */
-	int max_minor_ver;	/*!< max. minor version from client   */
+    int max_major_ver;  /*!< max. major version from client   */
+    int max_minor_ver;  /*!< max. minor version from client   */
 
-	/*
-	 * Callbacks (RNG, debug, I/O)
-	 */
-	int (*f_rng) (void *);
-	void (*f_dbg) (void *, int, char *);
-	int (*f_recv) (void *, unsigned char *, int);
-	int (*f_send) (void *, unsigned char *, int);
+    /*
+        Callbacks (RNG, debug, I/O)
+     */
+    int (*f_rng) (void *);
+    void (*f_dbg) (void *, int, char *);
+    int (*f_recv) (void *, uchar *, int);
+    int (*f_send) (void *, uchar *, int);
 
-	void *p_rng;		/*!< context for the RNG function     */
-	void *p_dbg;		/*!< context for the debug function   */
-	void *p_recv;		/*!< context for reading operations   */
-	void *p_send;		/*!< context for writing operations   */
+    void *p_rng;        /*!< context for the RNG function     */
+    void *p_dbg;        /*!< context for the debug function   */
+    void *p_recv;       /*!< context for reading operations   */
+    void *p_send;       /*!< context for writing operations   */
 
-	/*
-	 * Session layer
-	 */
-	int resume;		/*!<  session resuming flag   */
-	int timeout;		/*!<  sess. expiration time   */
-	ssl_session *session;	/*!<  current session data    */
-	int (*s_get) (ssl_context *);	/*!<  (server) get callback   */
-	int (*s_set) (ssl_context *);	/*!<  (server) set callback   */
+    /*
+        Session layer
+     */
+    int resume;                     /*!<  session resuming flag   */
+    int timeout;                    /*!<  sess. expiration time   */
+    ssl_session *session;           /*!<  current session data    */
+    int (*s_get) (ssl_context *);   /*!<  (server) get callback   */
+    int (*s_set) (ssl_context *);   /*!<  (server) set callback   */
 
-	/*
-	 * Record layer (incoming data)
-	 */
-	unsigned char *in_ctr;	/*!< 64-bit incoming message counter  */
-	unsigned char *in_hdr;	/*!< 5-byte record header (in_ctr+8)  */
-	unsigned char *in_msg;	/*!< the message contents (in_hdr+5)  */
-	unsigned char *in_offt;	/*!< read offset in application data  */
+    /*
+        Record layer (incoming data)
+     */
+    uchar *in_ctr;      /*!< 64-bit incoming message counter  */
+    uchar *in_hdr;      /*!< 5-byte record header (in_ctr+8)  */
+    uchar *in_msg;      /*!< the message contents (in_hdr+5)  */
+    uchar *in_offt;     /*!< read offset in application data  */
 
-	int in_msgtype;		/*!< record header: message type      */
-	int in_msglen;		/*!< record header: message length    */
-	int in_left;		/*!< amount of data read so far       */
+    int in_msgtype;     /*!< record header: message type      */
+    int in_msglen;      /*!< record header: message length    */
+    int in_left;        /*!< amount of data read so far       */
 
-	int in_hslen;		/*!< current handshake message length */
-	int nb_zero;		/*!< # of 0-length encrypted messages */
+    int in_hslen;       /*!< current handshake message length */
+    int nb_zero;        /*!< # of 0-length encrypted messages */
 
-	/*
-	 * Record layer (outgoing data)
-	 */
-	unsigned char *out_ctr;	/*!< 64-bit outgoing message counter  */
-	unsigned char *out_hdr;	/*!< 5-byte record header (out_ctr+8) */
-	unsigned char *out_msg;	/*!< the message contents (out_hdr+5) */
+    /*
+        Record layer (outgoing data)
+     */
+    uchar *out_ctr; /*!< 64-bit outgoing message counter  */
+    uchar *out_hdr; /*!< 5-byte record header (out_ctr+8) */
+    uchar *out_msg; /*!< the message contents (out_hdr+5) */
 
-	int out_msgtype;	/*!< record header: message type      */
-	int out_msglen;		/*!< record header: message length    */
-	int out_left;		/*!< amount of data not yet written   */
+    int out_msgtype;    /*!< record header: message type      */
+    int out_msglen;     /*!< record header: message length    */
+    int out_left;       /*!< amount of data not yet written   */
 
-	/*
-	 * PKI layer
-	 */
-	rsa_context *rsa_key;	/*!<  own RSA private key     */
-	x509_cert *own_cert;	/*!<  own X.509 certificate   */
-	x509_cert *ca_chain;	/*!<  own trusted CA chain    */
-	x509_cert *peer_cert;	/*!<  peer X.509 cert chain   */
-	char *peer_cn;		/*!<  expected peer CN        */
+    /*
+        PKI layer
+     */
+    rsa_context *rsa_key;   /*!<  own RSA private key     */
+    x509_cert *own_cert;    /*!<  own X.509 certificate   */
+    x509_cert *ca_chain;    /*!<  own trusted CA chain    */
+    x509_cert *peer_cert;   /*!<  peer X.509 cert chain   */
+    char *peer_cn;      /*!<  expected peer CN        */
 
-	int endpoint;		/*!<  0: client, 1: server    */
-	int authmode;		/*!<  verification mode       */
-	int client_auth;	/*!<  flag for client auth.   */
-	int verify_result;	/*!<  verification result     */
+    int endpoint;       /*!<  0: client, 1: server    */
+    int authmode;       /*!<  verification mode       */
+    int client_auth;    /*!<  flag for client auth.   */
+    int verify_result;  /*!<  verification result     */
 
-	/*
-	 * Crypto layer
-	 */
-	dhm_context dhm_ctx;	/*!<  DHM key exchange        */
-	md5_context fin_md5;	/*!<  Finished MD5 checksum   */
-	sha1_context fin_sha1;	/*!<  Finished SHA-1 checksum */
+    /*
+        Crypto layer
+     */
+    dhm_context dhm_ctx;    /*!<  DHM key exchange        */
+    md5_context fin_md5;    /*!<  Finished MD5 checksum   */
+    sha1_context fin_sha1;  /*!<  Finished SHA-1 checksum */
 
-	int do_crypt;		/*!<  en(de)cryption flag     */
-	int *ciphers;		/*!<  allowed ciphersuites    */
-	int pmslen;		/*!<  premaster length        */
-	int keylen;		/*!<  symmetric key length    */
-	int minlen;		/*!<  min. ciphertext length  */
-	int ivlen;		/*!<  IV length               */
-	int maclen;		/*!<  MAC length              */
+    int do_crypt;       /*!<  en(de)cryption flag     */
+    int *ciphers;       /*!<  allowed ciphersuites    */
+    int pmslen;     /*!<  premaster length        */
+    int keylen;     /*!<  symmetric key length    */
+    int minlen;     /*!<  min. ciphertext length  */
+    int ivlen;      /*!<  IV length               */
+    int maclen;     /*!<  MAC length              */
 
-	unsigned char randbytes[64];	/*!<  random bytes            */
-	unsigned char premaster[256];	/*!<  premaster secret        */
+    uchar randbytes[64];    /*!<  random bytes            */
+    uchar premaster[256];   /*!<  premaster secret        */
 
-	unsigned char iv_enc[16];	/*!<  IV (encryption)         */
-	unsigned char iv_dec[16];	/*!<  IV (decryption)         */
+    uchar iv_enc[16];   /*!<  IV (encryption)         */
+    uchar iv_dec[16];   /*!<  IV (decryption)         */
 
-	unsigned char mac_enc[32];	/*!<  MAC (encryption)        */
-	unsigned char mac_dec[32];	/*!<  MAC (decryption)        */
+    uchar mac_enc[32];  /*!<  MAC (encryption)        */
+    uchar mac_dec[32];  /*!<  MAC (decryption)        */
 
-	unsigned long ctx_enc[128];	/*!<  encryption context      */
-	unsigned long ctx_dec[128];	/*!<  decryption context      */
+    ulong ctx_enc[128]; /*!<  encryption context      */
+    ulong ctx_dec[128]; /*!<  decryption context      */
 
-	/*
-	 * TLS extensions
-	 */
-	unsigned char *hostname;
-	unsigned long hostname_len;
+    /*
+        TLS extensions
+     */
+    uchar *hostname;
+    ulong hostname_len;
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	extern int ssl_default_ciphers[];
+    extern int ssl_default_ciphers[];
 
-	/**
-	 * \brief          Initialize an SSL context
-	 *
-	 * \param ssl      SSL context
-	 *
-	 * \return         0 if successful, or 1 if memory allocation failed
-	 */
-	int ssl_init(ssl_context * ssl);
+    /**
+     * \brief          Initialize an SSL context
+     *
+     * \param ssl      SSL context
+     *
+     * \return         0 if successful, or 1 if memory allocation failed
+     */
+    int ssl_init(ssl_context * ssl);
 
-	/**
-	 * \brief          Set the current endpoint type
-	 *
-	 * \param ssl      SSL context
-	 * \param endpoint must be SSL_IS_CLIENT or SSL_IS_SERVER
-	 */
-	void ssl_set_endpoint(ssl_context * ssl, int endpoint);
+    /**
+     * \brief          Set the current endpoint type
+     *
+     * \param ssl      SSL context
+     * \param endpoint must be SSL_IS_CLIENT or SSL_IS_SERVER
+     */
+    void ssl_set_endpoint(ssl_context * ssl, int endpoint);
 
-	/**
-	 * \brief          Set the certificate verification mode
-	 *
-	 * \param ssl      SSL context
-	 * \param mode     can be:
-	 *
-	 *  SSL_VERIFY_NO_CHECK:  peer certificate is not checked (default),
-	 *                        this is insecure and SHOULD be avoided.
-	 *
-	 *  SSL_VERIFY_OPTIONAL:  peer certificate is checked, however the
-	 *                        handshake continues even if verification failed;
-	 *                        ssl_get_verify_result() can be called after the
-	 *                        handshake is complete.
-	 *
-	 *  SSL_VERIFY_REQUIRED:  peer *must* present a valid certificate,
-	 *                        handshake is aborted if verification failed.
-	 */
-	void ssl_set_authmode(ssl_context * ssl, int authmode);
+    /**
+     * \brief          Set the certificate verification mode
+     *
+     * \param ssl      SSL context
+     * \param mode     can be:
+     *
+     *  SSL_VERIFY_NO_CHECK:  peer certificate is not checked (default),
+     *                        this is insecure and SHOULD be avoided.
+     *
+     *  SSL_VERIFY_OPTIONAL:  peer certificate is checked, however the
+     *                        handshake continues even if verification failed;
+     *                        ssl_get_verify_result() can be called after the
+     *                        handshake is complete.
+     *
+     *  SSL_VERIFY_REQUIRED:  peer *must* present a valid certificate,
+     *                        handshake is aborted if verification failed.
+     */
+    void ssl_set_authmode(ssl_context * ssl, int authmode);
 
-	/**
-	 * \brief          Set the random number generator callback
-	 *
-	 * \param ssl      SSL context
-	 * \param f_rng    RNG function
-	 * \param p_rng    RNG parameter
-	 */
-	void ssl_set_rng(ssl_context * ssl, int (*f_rng) (void *), void *p_rng);
+    /**
+     * \brief          Set the random number generator callback
+     *
+     * \param ssl      SSL context
+     * \param f_rng    RNG function
+     * \param p_rng    RNG parameter
+     */
+    void ssl_set_rng(ssl_context * ssl, int (*f_rng) (void *), void *p_rng);
 
-	/**
-	 * \brief          Set the debug callback
-	 *
-	 * \param ssl      SSL context
-	 * \param f_dbg    debug function
-	 * \param p_dbg    debug parameter
-	 */
-	void ssl_set_dbg(ssl_context * ssl,
-			 void (*f_dbg) (void *, int, char *), void *p_dbg);
+    /**
+     * \brief          Set the debug callback
+     *
+     * \param ssl      SSL context
+     * \param f_dbg    debug function
+     * \param p_dbg    debug parameter
+     */
+    void ssl_set_dbg(ssl_context * ssl,
+             void (*f_dbg) (void *, int, char *), void *p_dbg);
 
-	/**
-	 * \brief          Set the underlying BIO read and write callbacks
-	 *
-	 * \param ssl      SSL context
-	 * \param f_recv   read callback
-	 * \param p_recv   read parameter
-	 * \param f_send   write callback
-	 * \param p_send   write parameter
-	 */
-	void ssl_set_bio(ssl_context * ssl,
-			 int (*f_recv) (void *, unsigned char *, int),
-			 void *p_recv, int (*f_send) (void *, unsigned char *,
-						      int), void *p_send);
+    /**
+     * \brief          Set the underlying BIO read and write callbacks
+     *
+     * \param ssl      SSL context
+     * \param f_recv   read callback
+     * \param p_recv   read parameter
+     * \param f_send   write callback
+     * \param p_send   write parameter
+     */
+    void ssl_set_bio(ssl_context * ssl,
+             int (*f_recv) (void *, uchar *, int),
+             void *p_recv, int (*f_send) (void *, uchar *,
+                              int), void *p_send);
 
-	/**
-	 * \brief          Set the session callbacks (server-side only)
-	 *
-	 * \param ssl      SSL context
-	 * \param s_get    session get callback
-	 * \param s_set    session set callback
-	 */
-	void ssl_set_scb(ssl_context * ssl,
-			 int (*s_get) (ssl_context *),
-			 int (*s_set) (ssl_context *));
+    /**
+     * \brief          Set the session callbacks (server-side only)
+     *
+     * \param ssl      SSL context
+     * \param s_get    session get callback
+     * \param s_set    session set callback
+     */
+    void ssl_set_scb(ssl_context * ssl,
+             int (*s_get) (ssl_context *),
+             int (*s_set) (ssl_context *));
 
-	/**
-	 * \brief          Set the session resuming flag, timeout and data
-	 *
-	 * \param ssl      SSL context
-	 * \param resume   if 0 (default), the session will not be resumed
-	 * \param timeout  session timeout in seconds, or 0 (no timeout)
-	 * \param session  session context
-	 */
-	void ssl_set_session(ssl_context * ssl, int resume, int timeout,
-			     ssl_session * session);
+    /**
+     * \brief          Set the session resuming flag, timeout and data
+     *
+     * \param ssl      SSL context
+     * \param resume   if 0 (default), the session will not be resumed
+     * \param timeout  session timeout in seconds, or 0 (no timeout)
+     * \param session  session context
+     */
+    void ssl_set_session(ssl_context * ssl, int resume, int timeout,
+                 ssl_session * session);
 
-	/**
-	 * \brief          Set the list of allowed ciphersuites
-	 *
-	 * \param ssl      SSL context
-	 * \param ciphers  0-terminated list of allowed ciphers
-	 */
-	void ssl_set_ciphers(ssl_context * ssl, int *ciphers);
+    /**
+     * \brief          Set the list of allowed ciphersuites
+     *
+     * \param ssl      SSL context
+     * \param ciphers  0-terminated list of allowed ciphers
+     */
+    void ssl_set_ciphers(ssl_context * ssl, int *ciphers);
 
-	/**
-	 * \brief          Set the data required to verify peer certificate
-	 *
-	 * \param ssl      SSL context
-	 * \param ca_chain trusted CA chain
-	 * \param peer_cn  expected peer CommonName (or NULL)
-	 *
-	 * \note           TODO: add two more parameters: depth and crl
-	 */
-	void ssl_set_ca_chain(ssl_context * ssl, x509_cert * ca_chain,
-			      char *peer_cn);
+    /**
+     * \brief          Set the data required to verify peer certificate
+     *
+     * \param ssl      SSL context
+     * \param ca_chain trusted CA chain
+     * \param peer_cn  expected peer CommonName (or NULL)
+     *
+     * \note           TODO: add two more parameters: depth and crl
+     */
+    void ssl_set_ca_chain(ssl_context * ssl, x509_cert * ca_chain,
+                  char *peer_cn);
 
-	/**
-	 * \brief          Set own certificate and private key
-	 *
-	 * \param ssl      SSL context
-	 * \param own_cert own public certificate
-	 * \param rsa_key  own private RSA key
-	 */
-	void ssl_set_own_cert(ssl_context * ssl, x509_cert * own_cert,
-			      rsa_context * rsa_key);
+    /**
+     * \brief          Set own certificate and private key
+     *
+     * \param ssl      SSL context
+     * \param own_cert own public certificate
+     * \param rsa_key  own private RSA key
+     */
+    void ssl_set_own_cert(ssl_context * ssl, x509_cert * own_cert,
+                  rsa_context * rsa_key);
 
-	/**
-	 * \brief          Set the Diffie-Hellman public P and G values,
-	 *                 read as hexadecimal strings (server-side only)
-	 *
-	 * \param ssl      SSL context
-	 * \param dhm_P    Diffie-Hellman-Merkle modulus
-	 * \param dhm_G    Diffie-Hellman-Merkle generator
-	 *
-	 * \return         0 if successful
-	 */
-	int ssl_set_dh_param(ssl_context * ssl, char *dhm_P, char *dhm_G);
+    /**
+     * \brief          Set the Diffie-Hellman public P and G values,
+     *                 read as hexadecimal strings (server-side only)
+     *
+     * \param ssl      SSL context
+     * \param dhm_P    Diffie-Hellman-Merkle modulus
+     * \param dhm_G    Diffie-Hellman-Merkle generator
+     *
+     * \return         0 if successful
+     */
+    int ssl_set_dh_param(ssl_context * ssl, char *dhm_P, char *dhm_G);
 
-	/**
-	 * \brief          Set hostname for ServerName TLS Extension
-	 *
-	 *
-	 * \param ssl      SSL context
-	 * \param hostname the server hostname
-	 *
-	 * \return         0 if successful
-	 */
-	int ssl_set_hostname(ssl_context * ssl, char *hostname);
+    /**
+     * \brief          Set hostname for ServerName TLS Extension
+     *
+     *
+     * \param ssl      SSL context
+     * \param hostname the server hostname
+     *
+     * \return         0 if successful
+     */
+    int ssl_set_hostname(ssl_context * ssl, char *hostname);
 
-	/**
-	 * \brief          Return the number of data bytes available to read
-	 *
-	 * \param ssl      SSL context
-	 *
-	 * \return         how many bytes are available in the read buffer
-	 */
-	int ssl_get_bytes_avail(ssl_context * ssl);
+    /**
+     * \brief          Return the number of data bytes available to read
+     *
+     * \param ssl      SSL context
+     *
+     * \return         how many bytes are available in the read buffer
+     */
+    int ssl_get_bytes_avail(ssl_context * ssl);
 
-	/**
-	 * \brief          Return the result of the certificate verification
-	 *
-	 * \param ssl      SSL context
-	 *
-	 * \return         0 if successful, or a combination of:
-	 *                      BADCERT_EXPIRED
-	 *                      BADCERT_REVOKED
-	 *                      BADCERT_CN_MISMATCH
-	 *                      BADCERT_NOT_TRUSTED
-	 */
-	int ssl_get_verify_result(ssl_context * ssl);
+    /**
+     * \brief          Return the result of the certificate verification
+     *
+     * \param ssl      SSL context
+     *
+     * \return         0 if successful, or a combination of:
+     *                      BADCERT_EXPIRED
+     *                      BADCERT_REVOKED
+     *                      BADCERT_CN_MISMATCH
+     *                      BADCERT_NOT_TRUSTED
+     */
+    int ssl_get_verify_result(ssl_context * ssl);
 
-	/**
-	 * \brief          Return the name of the current cipher
-	 *
-	 * \param ssl      SSL context
-	 *
-	 * \return         a string containing the cipher name
-	 */
-	char *ssl_get_cipher(ssl_context * ssl);
+    /**
+     * \brief          Return the name of the current cipher
+     *
+     * \param ssl      SSL context
+     *
+     * \return         a string containing the cipher name
+     */
+    char *ssl_get_cipher(ssl_context * ssl);
 
-	/**
-	 * \brief          Perform the SSL handshake
-	 *
-	 * \param ssl      SSL context
-	 *
-	 * \return         0 if successful, TROPICSSL_ERR_NET_TRY_AGAIN,
-	 *                 or a specific SSL error code.
-	 */
-	int ssl_handshake(ssl_context * ssl);
+    /**
+     * \brief          Perform the SSL handshake
+     *
+     * \param ssl      SSL context
+     *
+     * \return         0 if successful, EST_ERR_NET_TRY_AGAIN,
+     *                 or a specific SSL error code.
+     */
+    int ssl_handshake(ssl_context * ssl);
 
-	/**
-	 * \brief          Read at most 'len' application data bytes
-	 *
-	 * \param ssl      SSL context
-	 * \param buf      buffer that will hold the data
-	 * \param len      how many bytes must be read
-	 *
-	 * \return         This function returns the number of bytes read,
-	 *                 or a negative error code.
-	 */
-	int ssl_read(ssl_context * ssl, unsigned char *buf, int len);
+    /**
+     * \brief          Read at most 'len' application data bytes
+     *
+     * \param ssl      SSL context
+     * \param buf      buffer that will hold the data
+     * \param len      how many bytes must be read
+     *
+     * \return         This function returns the number of bytes read,
+     *                 or a negative error code.
+     */
+    int ssl_read(ssl_context * ssl, uchar *buf, int len);
 
-	/**
-	 * \brief          Write exactly 'len' application data bytes
-	 *
-	 * \param ssl      SSL context
-	 * \param buf      buffer holding the data
-	 * \param len      how many bytes must be written
-	 *
-	 * \return         This function returns the number of bytes written,
-	 *                 or a negative error code.
-	 *
-	 * \note           When this function returns TROPICSSL_ERR_NET_TRY_AGAIN,
-	 *                 it must be called later with the *same* arguments,
-	 *                 until it returns a positive value.
-	 */
-	int ssl_write(ssl_context * ssl, unsigned char *buf, int len);
+    /**
+     * \brief          Write exactly 'len' application data bytes
+     *
+     * \param ssl      SSL context
+     * \param buf      buffer holding the data
+     * \param len      how many bytes must be written
+     *
+     * \return         This function returns the number of bytes written,
+     *                 or a negative error code.
+     *
+     * \note           When this function returns EST_ERR_NET_TRY_AGAIN,
+     *                 it must be called later with the *same* arguments,
+     *                 until it returns a positive value.
+     */
+    int ssl_write(ssl_context * ssl, uchar *buf, int len);
 
-	/**
-	 * \brief          Notify the peer that the connection is being closed
-	 */
-	int ssl_close_notify(ssl_context * ssl);
+    /**
+     * \brief          Notify the peer that the connection is being closed
+     */
+    int ssl_close_notify(ssl_context * ssl);
 
-	/**
-	 * \brief          Free an SSL context
-	 */
-	void ssl_free(ssl_context * ssl);
+    /**
+     * \brief          Free an SSL context
+     */
+    void ssl_free(ssl_context * ssl);
 
-	/*
-	 * Internal functions (do not call directly)
-	 */
-	int ssl_handshake_client(ssl_context * ssl);
-	int ssl_handshake_server(ssl_context * ssl);
+    /*
+     * Internal functions (do not call directly)
+     */
+    int ssl_handshake_client(ssl_context * ssl);
+    int ssl_handshake_server(ssl_context * ssl);
 
-	int ssl_derive_keys(ssl_context * ssl);
-	void ssl_calc_verify(ssl_context * ssl, unsigned char hash[36]);
+    int ssl_derive_keys(ssl_context * ssl);
+    void ssl_calc_verify(ssl_context * ssl, uchar hash[36]);
 
-	int ssl_read_record(ssl_context * ssl);
-	int ssl_fetch_input(ssl_context * ssl, int nb_want);
+    int ssl_read_record(ssl_context * ssl);
+    int ssl_fetch_input(ssl_context * ssl, int nb_want);
 
-	int ssl_write_record(ssl_context * ssl);
-	int ssl_flush_output(ssl_context * ssl);
+    int ssl_write_record(ssl_context * ssl);
+    int ssl_flush_output(ssl_context * ssl);
 
-	int ssl_parse_certificate(ssl_context * ssl);
-	int ssl_write_certificate(ssl_context * ssl);
+    int ssl_parse_certificate(ssl_context * ssl);
+    int ssl_write_certificate(ssl_context * ssl);
 
-	int ssl_parse_change_cipher_spec(ssl_context * ssl);
-	int ssl_write_change_cipher_spec(ssl_context * ssl);
+    int ssl_parse_change_cipher_spec(ssl_context * ssl);
+    int ssl_write_change_cipher_spec(ssl_context * ssl);
 
-	int ssl_parse_finished(ssl_context * ssl);
-	int ssl_write_finished(ssl_context * ssl);
+    int ssl_parse_finished(ssl_context * ssl);
+    int ssl_write_finished(ssl_context * ssl);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* ssl.h */
+#endif              /* ssl.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -2579,42 +2321,13 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file aes.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    aes.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_AES_H
-#define TROPICSSL_AES_H
+#ifndef EST_AES_H
+#define EST_AES_H
 
 #define AES_ENCRYPT     1
 #define AES_DECRYPT     0
@@ -2623,90 +2336,110 @@ extern "C" {
  * \brief          AES context structure
  */
 typedef struct {
-	int nr;			/*!<  number of rounds  */
-	unsigned long *rk;	/*!<  AES round keys    */
-	unsigned long buf[68];	/*!<  unaligned data    */
+    int nr;         /*!<  number of rounds  */
+    ulong *rk;  /*!<  AES round keys    */
+    ulong buf[68];  /*!<  unaligned data    */
 } aes_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          AES key schedule (encryption)
-	 *
-	 * \param ctx      AES context to be initialized
-	 * \param key      encryption key
-	 * \param keysize  must be 128, 192 or 256
-	 */
-	void aes_setkey_enc(aes_context * ctx, unsigned char *key, int keysize);
+    /**
+     * \brief          AES key schedule (encryption)
+     *
+     * \param ctx      AES context to be initialized
+     * \param key      encryption key
+     * \param keysize  must be 128, 192 or 256
+     */
+    void aes_setkey_enc(aes_context * ctx, uchar *key, int keysize);
 
-	/**
-	 * \brief          AES key schedule (decryption)
-	 *
-	 * \param ctx      AES context to be initialized
-	 * \param key      decryption key
-	 * \param keysize  must be 128, 192 or 256
-	 */
-	void aes_setkey_dec(aes_context * ctx, unsigned char *key, int keysize);
+    /**
+     * \brief          AES key schedule (decryption)
+     *
+     * \param ctx      AES context to be initialized
+     * \param key      decryption key
+     * \param keysize  must be 128, 192 or 256
+     */
+    void aes_setkey_dec(aes_context * ctx, uchar *key, int keysize);
 
-	/**
-	 * \brief          AES-ECB block encryption/decryption
-	 *
-	 * \param ctx      AES context
-	 * \param mode     AES_ENCRYPT or AES_DECRYPT
-	 * \param input    16-byte input block
-	 * \param output   16-byte output block
-	 */
-	void aes_crypt_ecb(aes_context * ctx,
-			   int mode,
-			   unsigned char input[16], unsigned char output[16]);
+    /**
+     * \brief          AES-ECB block encryption/decryption
+     *
+     * \param ctx      AES context
+     * \param mode     AES_ENCRYPT or AES_DECRYPT
+     * \param input    16-byte input block
+     * \param output   16-byte output block
+     */
+    void aes_crypt_ecb(aes_context * ctx,
+               int mode,
+               uchar input[16], uchar output[16]);
 
-	/**
-	 * \brief          AES-CBC buffer encryption/decryption
-	 *
-	 * \param ctx      AES context
-	 * \param mode     AES_ENCRYPT or AES_DECRYPT
-	 * \param length   length of the input data
-	 * \param iv       initialization vector (updated after use)
-	 * \param input    buffer holding the input data
-	 * \param output   buffer holding the output data
-	 */
-	void aes_crypt_cbc(aes_context * ctx,
-			   int mode,
-			   int length,
-			   unsigned char iv[16],
-			   unsigned char *input, unsigned char *output);
+    /**
+     * \brief          AES-CBC buffer encryption/decryption
+     *
+     * \param ctx      AES context
+     * \param mode     AES_ENCRYPT or AES_DECRYPT
+     * \param length   length of the input data
+     * \param iv       initialization vector (updated after use)
+     * \param input    buffer holding the input data
+     * \param output   buffer holding the output data
+     */
+    void aes_crypt_cbc(aes_context * ctx,
+               int mode,
+               int length,
+               uchar iv[16],
+               uchar *input, uchar *output);
 
-	/**
-	 * \brief          AES-CFB128 buffer encryption/decryption
-	 *
-	 * \param ctx      AES context
-	 * \param mode     AES_ENCRYPT or AES_DECRYPT
-	 * \param length   length of the input data
-	 * \param iv_off   offset in IV (updated after use)
-	 * \param iv       initialization vector (updated after use)
-	 * \param input    buffer holding the input data
-	 * \param output   buffer holding the output data
-	 */
-	void aes_crypt_cfb128(aes_context * ctx,
-			      int mode,
-			      int length,
-			      int *iv_off,
-			      unsigned char iv[16],
-			      unsigned char *input, unsigned char *output);
+    /**
+     * \brief          AES-CFB128 buffer encryption/decryption
+     *
+     * \param ctx      AES context
+     * \param mode     AES_ENCRYPT or AES_DECRYPT
+     * \param length   length of the input data
+     * \param iv_off   offset in IV (updated after use)
+     * \param iv       initialization vector (updated after use)
+     * \param input    buffer holding the input data
+     * \param output   buffer holding the output data
+     */
+    void aes_crypt_cfb128(aes_context * ctx,
+                  int mode,
+                  int length,
+                  int *iv_off,
+                  uchar iv[16],
+                  uchar *input, uchar *output);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int aes_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int aes_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* aes.h */
+#endif              /* aes.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -2714,85 +2447,76 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file arc4.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    arc4.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_ARC4_H
-#define TROPICSSL_ARC4_H
+#ifndef EST_ARC4_H
+#define EST_ARC4_H
 
 /**
  * \brief          ARC4 context structure
  */
 typedef struct {
-	int x;			/*!< permutation index */
-	int y;			/*!< permutation index */
-	unsigned char m[256];	/*!< permutation table */
+    int x;          /*!< permutation index */
+    int y;          /*!< permutation index */
+    uchar m[256];   /*!< permutation table */
 } arc4_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          ARC4 key schedule
-	 *
-	 * \param ctx      ARC4 context to be initialized
-	 * \param key      the secret key
-	 * \param keylen   length of the key
-	 */
-	void arc4_setup(arc4_context * ctx, unsigned char *key, int keylen);
+    /**
+     * \brief          ARC4 key schedule
+     *
+     * \param ctx      ARC4 context to be initialized
+     * \param key      the secret key
+     * \param keylen   length of the key
+     */
+    void arc4_setup(arc4_context * ctx, uchar *key, int keylen);
 
-	/**
-	 * \brief          ARC4 cipher function
-	 *
-	 * \param ctx      ARC4 context
-	 * \param buf      buffer to be processed
-	 * \param buflen   amount of data in buf
-	 */
-	void arc4_crypt(arc4_context * ctx, unsigned char *buf, int buflen);
+    /**
+     * \brief          ARC4 cipher function
+     *
+     * \param ctx      ARC4 context
+     * \param buf      buffer to be processed
+     * \param buflen   amount of data in buf
+     */
+    void arc4_crypt(arc4_context * ctx, uchar *buf, int buflen);
 
-	/*
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int arc4_self_test(int verbose);
+    /*
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int arc4_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* arc4.h */
+#endif              /* arc4.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -2800,98 +2524,69 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file base64.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-#ifndef TROPICSSL_BASE64_H
-#define TROPICSSL_BASE64_H
+/*
+    base64.h -- Header for the Multithreaded Portable Runtime (MPR).
 
-#define TROPICSSL_ERR_BASE64_BUFFER_TOO_SMALL               -0x0010
-#define TROPICSSL_ERR_BASE64_INVALID_CHARACTER              -0x0012
+    Copyright (c) All Rights Reserved. See details at the end of the file.
+ */
+#ifndef EST_BASE64_H
+#define EST_BASE64_H
+
+#define EST_ERR_BASE64_BUFFER_TOO_SMALL               -0x0010
+#define EST_ERR_BASE64_INVALID_CHARACTER              -0x0012
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          Encode a buffer into base64 format
-	 *
-	 * \param dst      destination buffer
-	 * \param dlen     size of the buffer
-	 * \param src      source buffer
-	 * \param slen     amount of data to be encoded
-	 *
-	 * \return         0 if successful, or TROPICSSL_ERR_BASE64_BUFFER_TOO_SMALL.
-	 *                 *dlen is always updated to reflect the amount
-	 *                 of data that has (or would have) been written.
-	 *
-	 * \note           Call this function with *dlen = 0 to obtain the
-	 *                 required buffer size in *dlen
-	 */
-	int base64_encode(unsigned char *dst, int *dlen,
-			  unsigned char *src, int slen);
+    /**
+     * \brief          Encode a buffer into base64 format
+     *
+     * \param dst      destination buffer
+     * \param dlen     size of the buffer
+     * \param src      source buffer
+     * \param slen     amount of data to be encoded
+     *
+     * \return         0 if successful, or EST_ERR_BASE64_BUFFER_TOO_SMALL.
+     *                 *dlen is always updated to reflect the amount
+     *                 of data that has (or would have) been written.
+     *
+     * \note           Call this function with *dlen = 0 to obtain the
+     *                 required buffer size in *dlen
+     */
+    int base64_encode(uchar *dst, int *dlen,
+              uchar *src, int slen);
 
-	/**
-	 * \brief          Decode a base64-formatted buffer
-	 *
-	 * \param dst      destination buffer
-	 * \param dlen     size of the buffer
-	 * \param src      source buffer
-	 * \param slen     amount of data to be decoded
-	 *
-	 * \return         0 if successful, TROPICSSL_ERR_BASE64_BUFFER_TOO_SMALL, or
-	 *                 TROPICSSL_ERR_BASE64_INVALID_DATA if the input data is not
-	 *                 correct. *dlen is always updated to reflect the amount
-	 *                 of data that has (or would have) been written.
-	 *
-	 * \note           Call this function with *dlen = 0 to obtain the
-	 *                 required buffer size in *dlen
-	 */
-	int base64_decode(unsigned char *dst, int *dlen,
-			  unsigned char *src, int slen);
+    /**
+     * \brief          Decode a base64-formatted buffer
+     *
+     * \param dst      destination buffer
+     * \param dlen     size of the buffer
+     * \param src      source buffer
+     * \param slen     amount of data to be decoded
+     *
+     * \return         0 if successful, EST_ERR_BASE64_BUFFER_TOO_SMALL, or
+     *                 EST_ERR_BASE64_INVALID_DATA if the input data is not
+     *                 correct. *dlen is always updated to reflect the amount
+     *                 of data that has (or would have) been written.
+     *
+     * \note           Call this function with *dlen = 0 to obtain the
+     *                 required buffer size in *dlen
+     */
+    int base64_decode(uchar *dst, int *dlen,
+              uchar *src, int slen);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int base64_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int base64_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* base64.h */
+#endif              /* base64.h */
 
 /************************************************************************/
 /*
@@ -2899,39 +2594,10 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file bn_mul.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    bn_mul.h -- Header for the Multithreaded Portable Runtime (MPR).
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 /*
  *      Multiply source vector [s] with b, add result
@@ -2947,14 +2613,10 @@ extern "C" {
  *         . Alpha                . MIPS32
  *         . C, longlong          . C, generic
  */
-#ifndef TROPICSSL_BN_MUL_H
-#define TROPICSSL_BN_MUL_H
+#ifndef EST_BN_MUL_H
+#define EST_BN_MUL_H
 
-#if UNUSED
-
-#endif
-
-#if defined(TROPICSSL_HAVE_ASM)
+#if defined(EST_HAVE_ASM)
 
 #if defined(__GNUC__)
 #if defined(__i386__)
@@ -2976,7 +2638,7 @@ extern "C" {
     asm( "movl   %edx,   %ecx   " );            \
     asm( "stosl                 " );
 
-#if defined(TROPICSSL_HAVE_SSE2)
+#if BIT_EST_SSE2
 
 #define MULADDC_HUIT                            \
     asm( "movd     %ecx,     %mm1     " );      \
@@ -3499,7 +3161,7 @@ extern "C" {
     __asm   mov     ecx, edx                    \
     __asm   stosd
 
-#if defined(TROPICSSL_HAVE_SSE2)
+#if BIT_EST_SSE2
 
 #define EMIT __asm _emit
 
@@ -3582,10 +3244,10 @@ extern "C" {
 #endif /* SSE2 */
 #endif /* MSVC */
 
-#endif /* TROPICSSL_HAVE_ASM */
+#endif /* EST_HAVE_ASM */
 
 #if !defined(MULADDC_CORE)
-#if defined(TROPICSSL_HAVE_LONGLONG)
+#if BIT_USE_LONG_LONG
 
 #define MULADDC_INIT                    \
 {                                       \
@@ -3633,46 +3295,39 @@ extern "C" {
 
 #endif /* bn_mul.h */
 
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
+
 /************************************************************************/
 /*
     Start of file "src/camellia.h"
  */
 /************************************************************************/
 
-/**
- * \file camellia.h
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    camellia.h -- Camellia Cipher
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_CAMELLIA_H
-#define TROPICSSL_CAMELLIA_H
+#ifndef EST_CAMELLIA_H
+#define EST_CAMELLIA_H
 
 #define CAMELLIA_ENCRYPT     1
 #define CAMELLIA_DECRYPT     0
@@ -3681,92 +3336,112 @@ extern "C" {
  * \brief          CAMELLIA context structure
  */
 typedef struct {
-	int nr;			/*!<  number of rounds  */
-	unsigned long rk[68];	/*!<  CAMELLIA round keys    */
+    int nr;         /*!<  number of rounds  */
+    ulong rk[68];   /*!<  CAMELLIA round keys    */
 } camellia_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          CAMELLIA key schedule (encryption)
-	 *
-	 * \param ctx      CAMELLIA context to be initialized
-	 * \param key      encryption key
-	 * \param keysize  must be 128, 192 or 256
-	 */
-	void camellia_setkey_enc(camellia_context * ctx, unsigned char *key,
-				 int keysize);
+    /**
+     * \brief          CAMELLIA key schedule (encryption)
+     *
+     * \param ctx      CAMELLIA context to be initialized
+     * \param key      encryption key
+     * \param keysize  must be 128, 192 or 256
+     */
+    void camellia_setkey_enc(camellia_context * ctx, uchar *key,
+                 int keysize);
 
-	/**
-	 * \brief          CAMELLIA key schedule (decryption)
-	 *
-	 * \param ctx      CAMELLIA context to be initialized
-	 * \param key      decryption key
-	 * \param keysize  must be 128, 192 or 256
-	 */
-	void camellia_setkey_dec(camellia_context * ctx, unsigned char *key,
-				 int keysize);
+    /**
+     * \brief          CAMELLIA key schedule (decryption)
+     *
+     * \param ctx      CAMELLIA context to be initialized
+     * \param key      decryption key
+     * \param keysize  must be 128, 192 or 256
+     */
+    void camellia_setkey_dec(camellia_context * ctx, uchar *key,
+                 int keysize);
 
-	/**
-	 * \brief          CAMELLIA-ECB block encryption/decryption
-	 *
-	 * \param ctx      CAMELLIA context
-	 * \param mode     CAMELLIA_ENCRYPT or CAMELLIA_DECRYPT
-	 * \param input    16-byte input block
-	 * \param output   16-byte output block
-	 */
-	void camellia_crypt_ecb(camellia_context * ctx,
-				int mode,
-				unsigned char input[16],
-				unsigned char output[16]);
+    /**
+     * \brief          CAMELLIA-ECB block encryption/decryption
+     *
+     * \param ctx      CAMELLIA context
+     * \param mode     CAMELLIA_ENCRYPT or CAMELLIA_DECRYPT
+     * \param input    16-byte input block
+     * \param output   16-byte output block
+     */
+    void camellia_crypt_ecb(camellia_context * ctx,
+                int mode,
+                uchar input[16],
+                uchar output[16]);
 
-	/**
-	 * \brief          CAMELLIA-CBC buffer encryption/decryption
-	 *
-	 * \param ctx      CAMELLIA context
-	 * \param mode     CAMELLIA_ENCRYPT or CAMELLIA_DECRYPT
-	 * \param length   length of the input data
-	 * \param iv       initialization vector (updated after use)
-	 * \param input    buffer holding the input data
-	 * \param output   buffer holding the output data
-	 */
-	void camellia_crypt_cbc(camellia_context * ctx,
-				int mode,
-				int length,
-				unsigned char iv[16],
-				unsigned char *input, unsigned char *output);
+    /**
+     * \brief          CAMELLIA-CBC buffer encryption/decryption
+     *
+     * \param ctx      CAMELLIA context
+     * \param mode     CAMELLIA_ENCRYPT or CAMELLIA_DECRYPT
+     * \param length   length of the input data
+     * \param iv       initialization vector (updated after use)
+     * \param input    buffer holding the input data
+     * \param output   buffer holding the output data
+     */
+    void camellia_crypt_cbc(camellia_context * ctx,
+                int mode,
+                int length,
+                uchar iv[16],
+                uchar *input, uchar *output);
 
-	/**
-	 * \brief          CAMELLIA-CFB128 buffer encryption/decryption
-	 *
-	 * \param ctx      CAMELLIA context
-	 * \param mode     CAMELLIA_ENCRYPT or CAMELLIA_DECRYPT
-	 * \param length   length of the input data
-	 * \param iv_off   offset in IV (updated after use)
-	 * \param iv       initialization vector (updated after use)
-	 * \param input    buffer holding the input data
-	 * \param output   buffer holding the output data
-	 */
-	void camellia_crypt_cfb128(camellia_context * ctx,
-				   int mode,
-				   int length,
-				   int *iv_off,
-				   unsigned char iv[16],
-				   unsigned char *input, unsigned char *output);
+    /**
+     * \brief          CAMELLIA-CFB128 buffer encryption/decryption
+     *
+     * \param ctx      CAMELLIA context
+     * \param mode     CAMELLIA_ENCRYPT or CAMELLIA_DECRYPT
+     * \param length   length of the input data
+     * \param iv_off   offset in IV (updated after use)
+     * \param iv       initialization vector (updated after use)
+     * \param input    buffer holding the input data
+     * \param output   buffer holding the output data
+     */
+    void camellia_crypt_cfb128(camellia_context * ctx,
+                   int mode,
+                   int length,
+                   int *iv_off,
+                   uchar iv[16],
+                   uchar *input, uchar *output);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int camellia_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int camellia_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* camellia.h */
+#endif              /* camellia.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -3774,60 +3449,31 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file certs.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    certs.h -- Test certificates
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_CERTS_H
-#define TROPICSSL_CERTS_H
+#ifndef EST_CERTS_H
+#define EST_CERTS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	extern char test_ca_crt[];
-	extern char test_ca_key[];
-	extern char test_ca_pwd[];
-	extern char test_srv_crt[];
-	extern char test_srv_key[];
-	extern char test_cli_crt[];
-	extern char test_cli_key[];
-	extern char xyssl_ca_crt[];
+    extern char test_ca_crt[];
+    extern char test_ca_key[];
+    extern char test_ca_pwd[];
+    extern char test_srv_crt[];
+    extern char test_srv_key[];
+    extern char test_cli_crt[];
+    extern char test_cli_key[];
+    extern char xyssl_ca_crt[];
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* certs.h */
+#endif              /* certs.h */
 
 /************************************************************************/
 /*
@@ -3835,50 +3481,15 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file debug.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    debug.h -- Debugging support
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 #ifndef SSL_DEBUG_H
 #define SSL_DEBUG_H
 
-#if UNUSED
-
-
-#endif
-
-#if defined(TROPICSSL_DEBUG_MSG)
-
+#if BIT_EST_LOGGING
 #define SSL_DEBUG_MSG( level, args )                    \
     debug_print_msg( ssl, level, __FILE__, __LINE__, debug_fmt args );
 
@@ -3893,7 +3504,6 @@ extern "C" {
 
 #define SSL_DEBUG_CRT( level, text, crt )                \
     debug_print_crt( ssl, level, __FILE__, __LINE__, text, crt );
-
 #else
 
 #define SSL_DEBUG_MSG( level, args )            do { } while( 0 )
@@ -3901,35 +3511,43 @@ extern "C" {
 #define SSL_DEBUG_BUF( level, text, buf, len )  do { } while( 0 )
 #define SSL_DEBUG_MPI( level, text, X )         do { } while( 0 )
 #define SSL_DEBUG_CRT( level, text, crt )       do { } while( 0 )
-
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	char *debug_fmt(const char *format, ...);
-
-	void debug_print_msg(ssl_context * ssl, int level,
-			     char *file, int line, char *text);
-
-	void debug_print_ret(ssl_context * ssl, int level,
-			     char *file, int line, char *text, int ret);
-
-	void debug_print_buf(ssl_context * ssl, int level,
-			     char *file, int line, char *text,
-			     unsigned char *buf, int len);
-
-	void debug_print_mpi(ssl_context * ssl, int level,
-			     char *file, int line, char *text, mpi * X);
-
-	void debug_print_crt(ssl_context * ssl, int level,
-			     char *file, int line, char *text, x509_cert * crt);
+    char *debug_fmt(const char *format, ...);
+    void debug_print_msg(ssl_context * ssl, int level, char *file, int line, char *text);
+    void debug_print_ret(ssl_context * ssl, int level, char *file, int line, char *text, int ret);
+    void debug_print_buf(ssl_context * ssl, int level, char *file, int line, char *text, uchar *buf, int len);
+    void debug_print_mpi(ssl_context * ssl, int level, char *file, int line, char *text, mpi * X);
+    void debug_print_crt(ssl_context * ssl, int level, char *file, int line, char *text, x509_cert * crt);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* debug.h */
+#endif  /* debug.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -3937,42 +3555,13 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file des.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    des.h -- Des Cipher
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_DES_H
-#define TROPICSSL_DES_H
+#ifndef EST_DES_H
+#define EST_DES_H
 
 #define DES_ENCRYPT     1
 #define DES_DECRYPT     0
@@ -3981,133 +3570,153 @@ extern "C" {
  * \brief          DES context structure
  */
 typedef struct {
-	int mode;		/*!<  encrypt/decrypt   */
-	unsigned long sk[32];	/*!<  DES subkeys       */
+    int mode;       /*!<  encrypt/decrypt   */
+    ulong sk[32];   /*!<  DES subkeys       */
 } des_context;
 
 /**
  * \brief          Triple-DES context structure
  */
 typedef struct {
-	int mode;		/*!<  encrypt/decrypt   */
-	unsigned long sk[96];	/*!<  3DES subkeys      */
+    int mode;       /*!<  encrypt/decrypt   */
+    ulong sk[96];   /*!<  3DES subkeys      */
 } des3_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          DES key schedule (56-bit, encryption)
-	 *
-	 * \param ctx      DES context to be initialized
-	 * \param key      8-byte secret key
-	 */
-	void des_setkey_enc(des_context * ctx, unsigned char key[8]);
+    /**
+     * \brief          DES key schedule (56-bit, encryption)
+     *
+     * \param ctx      DES context to be initialized
+     * \param key      8-byte secret key
+     */
+    void des_setkey_enc(des_context * ctx, uchar key[8]);
 
-	/**
-	 * \brief          DES key schedule (56-bit, decryption)
-	 *
-	 * \param ctx      DES context to be initialized
-	 * \param key      8-byte secret key
-	 */
-	void des_setkey_dec(des_context * ctx, unsigned char key[8]);
+    /**
+     * \brief          DES key schedule (56-bit, decryption)
+     *
+     * \param ctx      DES context to be initialized
+     * \param key      8-byte secret key
+     */
+    void des_setkey_dec(des_context * ctx, uchar key[8]);
 
-	/**
-	 * \brief          Triple-DES key schedule (112-bit, encryption)
-	 *
-	 * \param ctx      3DES context to be initialized
-	 * \param key      16-byte secret key
-	 */
-	void des3_set2key_enc(des3_context * ctx, unsigned char key[16]);
+    /**
+     * \brief          Triple-DES key schedule (112-bit, encryption)
+     *
+     * \param ctx      3DES context to be initialized
+     * \param key      16-byte secret key
+     */
+    void des3_set2key_enc(des3_context * ctx, uchar key[16]);
 
-	/**
-	 * \brief          Triple-DES key schedule (112-bit, decryption)
-	 *
-	 * \param ctx      3DES context to be initialized
-	 * \param key      16-byte secret key
-	 */
-	void des3_set2key_dec(des3_context * ctx, unsigned char key[16]);
+    /**
+     * \brief          Triple-DES key schedule (112-bit, decryption)
+     *
+     * \param ctx      3DES context to be initialized
+     * \param key      16-byte secret key
+     */
+    void des3_set2key_dec(des3_context * ctx, uchar key[16]);
 
-	/**
-	 * \brief          Triple-DES key schedule (168-bit, encryption)
-	 *
-	 * \param ctx      3DES context to be initialized
-	 * \param key      24-byte secret key
-	 */
-	void des3_set3key_enc(des3_context * ctx, unsigned char key[24]);
+    /**
+     * \brief          Triple-DES key schedule (168-bit, encryption)
+     *
+     * \param ctx      3DES context to be initialized
+     * \param key      24-byte secret key
+     */
+    void des3_set3key_enc(des3_context * ctx, uchar key[24]);
 
-	/**
-	 * \brief          Triple-DES key schedule (168-bit, decryption)
-	 *
-	 * \param ctx      3DES context to be initialized
-	 * \param key      24-byte secret key
-	 */
-	void des3_set3key_dec(des3_context * ctx, unsigned char key[24]);
+    /**
+     * \brief          Triple-DES key schedule (168-bit, decryption)
+     *
+     * \param ctx      3DES context to be initialized
+     * \param key      24-byte secret key
+     */
+    void des3_set3key_dec(des3_context * ctx, uchar key[24]);
 
-	/**
-	 * \brief          DES-ECB block encryption/decryption
-	 *
-	 * \param ctx      DES context
-	 * \param input    64-bit input block
-	 * \param output   64-bit output block
-	 */
-	void des_crypt_ecb(des_context * ctx,
-			   unsigned char input[8], unsigned char output[8]);
+    /**
+     * \brief          DES-ECB block encryption/decryption
+     *
+     * \param ctx      DES context
+     * \param input    64-bit input block
+     * \param output   64-bit output block
+     */
+    void des_crypt_ecb(des_context * ctx,
+               uchar input[8], uchar output[8]);
 
-	/**
-	 * \brief          DES-CBC buffer encryption/decryption
-	 *
-	 * \param ctx      DES context
-	 * \param mode     DES_ENCRYPT or DES_DECRYPT
-	 * \param length   length of the input data
-	 * \param iv       initialization vector (updated after use)
-	 * \param input    buffer holding the input data
-	 * \param output   buffer holding the output data
-	 */
-	void des_crypt_cbc(des_context * ctx,
-			   int mode,
-			   int length,
-			   unsigned char iv[8],
-			   unsigned char *input, unsigned char *output);
+    /**
+     * \brief          DES-CBC buffer encryption/decryption
+     *
+     * \param ctx      DES context
+     * \param mode     DES_ENCRYPT or DES_DECRYPT
+     * \param length   length of the input data
+     * \param iv       initialization vector (updated after use)
+     * \param input    buffer holding the input data
+     * \param output   buffer holding the output data
+     */
+    void des_crypt_cbc(des_context * ctx,
+               int mode,
+               int length,
+               uchar iv[8],
+               uchar *input, uchar *output);
 
-	/**
-	 * \brief          3DES-ECB block encryption/decryption
-	 *
-	 * \param ctx      3DES context
-	 * \param input    64-bit input block
-	 * \param output   64-bit output block
-	 */
-	void des3_crypt_ecb(des3_context * ctx,
-			    unsigned char input[8], unsigned char output[8]);
+    /**
+     * \brief          3DES-ECB block encryption/decryption
+     *
+     * \param ctx      3DES context
+     * \param input    64-bit input block
+     * \param output   64-bit output block
+     */
+    void des3_crypt_ecb(des3_context * ctx,
+                uchar input[8], uchar output[8]);
 
-	/**
-	 * \brief          3DES-CBC buffer encryption/decryption
-	 *
-	 * \param ctx      3DES context
-	 * \param mode     DES_ENCRYPT or DES_DECRYPT
-	 * \param length   length of the input data
-	 * \param iv       initialization vector (updated after use)
-	 * \param input    buffer holding the input data
-	 * \param output   buffer holding the output data
-	 */
-	void des3_crypt_cbc(des3_context * ctx,
-			    int mode,
-			    int length,
-			    unsigned char iv[8],
-			    unsigned char *input, unsigned char *output);
+    /**
+     * \brief          3DES-CBC buffer encryption/decryption
+     *
+     * \param ctx      3DES context
+     * \param mode     DES_ENCRYPT or DES_DECRYPT
+     * \param length   length of the input data
+     * \param iv       initialization vector (updated after use)
+     * \param input    buffer holding the input data
+     * \param output   buffer holding the output data
+     */
+    void des3_crypt_cbc(des3_context * ctx,
+                int mode,
+                int length,
+                uchar iv[8],
+                uchar *input, uchar *output);
 
-	/*
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int des_self_test(int verbose);
+    /*
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int des_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* des.h */
+#endif              /* des.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -4115,42 +3724,13 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file havege.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    havege.h -- Havege Random Support
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_HAVEGE_H
-#define TROPICSSL_HAVEGE_H
+#ifndef EST_HAVEGE_H
+#define EST_HAVEGE_H
 
 #define COLLECT_SIZE 1024
 
@@ -4158,35 +3738,55 @@ extern "C" {
  * \brief          HAVEGE state structure
  */
 typedef struct {
-	int PT1, PT2, offset[2];
-	int pool[COLLECT_SIZE];
-	int WALK[8192];
+    int PT1, PT2, offset[2];
+    int pool[COLLECT_SIZE];
+    int WALK[8192];
 } havege_state;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          HAVEGE initialization
-	 *
-	 * \param hs       HAVEGE state to be initialized
-	 */
-	void havege_init(havege_state * hs);
+    /**
+     * \brief          HAVEGE initialization
+     *
+     * \param hs       HAVEGE state to be initialized
+     */
+    void havege_init(havege_state * hs);
 
-	/**
-	 * \brief          HAVEGE rand function
-	 *
-	 * \param rng_st   points to an HAVEGE state
-	 *
-	 * \return         A random int
-	 */
-	int havege_rand(void *p_rng);
+    /**
+     * \brief          HAVEGE rand function
+     *
+     * \param rng_st   points to an HAVEGE state
+     *
+     * \return         A random int
+     */
+    int havege_rand(void *p_rng);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* havege.h */
+#endif              /* havege.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -4194,153 +3794,144 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file md2.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    md2.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_MD2_H
-#define TROPICSSL_MD2_H
+#ifndef EST_MD2_H
+#define EST_MD2_H
 
 /**
  * \brief          MD2 context structure
  */
 typedef struct {
-	unsigned char cksum[16];	/*!< checksum of the data block */
-	unsigned char state[48];	/*!< intermediate digest state  */
-	unsigned char buffer[16];	/*!< data block being processed */
+    uchar cksum[16];    /*!< checksum of the data block */
+    uchar state[48];    /*!< intermediate digest state  */
+    uchar buffer[16];   /*!< data block being processed */
 
-	unsigned char ipad[64];	/*!< HMAC: inner padding        */
-	unsigned char opad[64];	/*!< HMAC: outer padding        */
-	int left;		/*!< amount of data in buffer   */
+    uchar ipad[64]; /*!< HMAC: inner padding        */
+    uchar opad[64]; /*!< HMAC: outer padding        */
+    int left;       /*!< amount of data in buffer   */
 } md2_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          MD2 context setup
-	 *
-	 * \param ctx      context to be initialized
-	 */
-	void md2_starts(md2_context * ctx);
+    /**
+     * \brief          MD2 context setup
+     *
+     * \param ctx      context to be initialized
+     */
+    void md2_starts(md2_context * ctx);
 
-	/**
-	 * \brief          MD2 process buffer
-	 *
-	 * \param ctx      MD2 context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void md2_update(md2_context * ctx, unsigned char *input, int ilen);
+    /**
+     * \brief          MD2 process buffer
+     *
+     * \param ctx      MD2 context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void md2_update(md2_context * ctx, uchar *input, int ilen);
 
-	/**
-	 * \brief          MD2 final digest
-	 *
-	 * \param ctx      MD2 context
-	 * \param output   MD2 checksum result
-	 */
-	void md2_finish(md2_context * ctx, unsigned char output[16]);
+    /**
+     * \brief          MD2 final digest
+     *
+     * \param ctx      MD2 context
+     * \param output   MD2 checksum result
+     */
+    void md2_finish(md2_context * ctx, uchar output[16]);
 
-	/**
-	 * \brief          Output = MD2( input buffer )
-	 *
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   MD2 checksum result
-	 */
-	void md2(unsigned char *input, int ilen, unsigned char output[16]);
+    /**
+     * \brief          Output = MD2( input buffer )
+     *
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   MD2 checksum result
+     */
+    void md2(uchar *input, int ilen, uchar output[16]);
 
-	/**
-	 * \brief          Output = MD2( file contents )
-	 *
-	 * \param path     input file name
-	 * \param output   MD2 checksum result
-	 *
-	 * \return         0 if successful, 1 if fopen failed,
-	 *                 or 2 if fread failed
-	 */
-	int md2_file(char *path, unsigned char output[16]);
+    /**
+     * \brief          Output = MD2( file contents )
+     *
+     * \param path     input file name
+     * \param output   MD2 checksum result
+     *
+     * \return         0 if successful, 1 if fopen failed,
+     *                 or 2 if fread failed
+     */
+    int md2_file(char *path, uchar output[16]);
 
-	/**
-	 * \brief          MD2 HMAC context setup
-	 *
-	 * \param ctx      HMAC context to be initialized
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 */
-	void md2_hmac_starts(md2_context * ctx, unsigned char *key, int keylen);
+    /**
+     * \brief          MD2 HMAC context setup
+     *
+     * \param ctx      HMAC context to be initialized
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     */
+    void md2_hmac_starts(md2_context * ctx, uchar *key, int keylen);
 
-	/**
-	 * \brief          MD2 HMAC process buffer
-	 *
-	 * \param ctx      HMAC context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void md2_hmac_update(md2_context * ctx, unsigned char *input, int ilen);
+    /**
+     * \brief          MD2 HMAC process buffer
+     *
+     * \param ctx      HMAC context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void md2_hmac_update(md2_context * ctx, uchar *input, int ilen);
 
-	/**
-	 * \brief          MD2 HMAC final digest
-	 *
-	 * \param ctx      HMAC context
-	 * \param output   MD2 HMAC checksum result
-	 */
-	void md2_hmac_finish(md2_context * ctx, unsigned char output[16]);
+    /**
+     * \brief          MD2 HMAC final digest
+     *
+     * \param ctx      HMAC context
+     * \param output   MD2 HMAC checksum result
+     */
+    void md2_hmac_finish(md2_context * ctx, uchar output[16]);
 
-	/**
-	 * \brief          Output = HMAC-MD2( hmac key, input buffer )
-	 *
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   HMAC-MD2 result
-	 */
-	void md2_hmac(unsigned char *key, int keylen,
-		      unsigned char *input, int ilen, unsigned char output[16]);
+    /**
+     * \brief          Output = HMAC-MD2( hmac key, input buffer )
+     *
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   HMAC-MD2 result
+     */
+    void md2_hmac(uchar *key, int keylen,
+              uchar *input, int ilen, uchar output[16]);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int md2_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int md2_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* md2.h */
+#endif              /* md2.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -4348,152 +3939,143 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file md4.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    md4.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_MD4_H
-#define TROPICSSL_MD4_H
+#ifndef EST_MD4_H
+#define EST_MD4_H
 
 /**
  * \brief          MD4 context structure
  */
 typedef struct {
-	unsigned long total[2];	/*!< number of bytes processed  */
-	unsigned long state[4];	/*!< intermediate digest state  */
-	unsigned char buffer[64];	/*!< data block being processed */
+    ulong total[2]; /*!< number of bytes processed  */
+    ulong state[4]; /*!< intermediate digest state  */
+    uchar buffer[64];   /*!< data block being processed */
 
-	unsigned char ipad[64];	/*!< HMAC: inner padding        */
-	unsigned char opad[64];	/*!< HMAC: outer padding        */
+    uchar ipad[64]; /*!< HMAC: inner padding        */
+    uchar opad[64]; /*!< HMAC: outer padding        */
 } md4_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          MD4 context setup
-	 *
-	 * \param ctx      context to be initialized
-	 */
-	void md4_starts(md4_context * ctx);
+    /**
+     * \brief          MD4 context setup
+     *
+     * \param ctx      context to be initialized
+     */
+    void md4_starts(md4_context * ctx);
 
-	/**
-	 * \brief          MD4 process buffer
-	 *
-	 * \param ctx      MD4 context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void md4_update(md4_context * ctx, unsigned char *input, int ilen);
+    /**
+     * \brief          MD4 process buffer
+     *
+     * \param ctx      MD4 context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void md4_update(md4_context * ctx, uchar *input, int ilen);
 
-	/**
-	 * \brief          MD4 final digest
-	 *
-	 * \param ctx      MD4 context
-	 * \param output   MD4 checksum result
-	 */
-	void md4_finish(md4_context * ctx, unsigned char output[16]);
+    /**
+     * \brief          MD4 final digest
+     *
+     * \param ctx      MD4 context
+     * \param output   MD4 checksum result
+     */
+    void md4_finish(md4_context * ctx, uchar output[16]);
 
-	/**
-	 * \brief          Output = MD4( input buffer )
-	 *
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   MD4 checksum result
-	 */
-	void md4(unsigned char *input, int ilen, unsigned char output[16]);
+    /**
+     * \brief          Output = MD4( input buffer )
+     *
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   MD4 checksum result
+     */
+    void md4(uchar *input, int ilen, uchar output[16]);
 
-	/**
-	 * \brief          Output = MD4( file contents )
-	 *
-	 * \param path     input file name
-	 * \param output   MD4 checksum result
-	 *
-	 * \return         0 if successful, 1 if fopen failed,
-	 *                 or 2 if fread failed
-	 */
-	int md4_file(char *path, unsigned char output[16]);
+    /**
+     * \brief          Output = MD4( file contents )
+     *
+     * \param path     input file name
+     * \param output   MD4 checksum result
+     *
+     * \return         0 if successful, 1 if fopen failed,
+     *                 or 2 if fread failed
+     */
+    int md4_file(char *path, uchar output[16]);
 
-	/**
-	 * \brief          MD4 HMAC context setup
-	 *
-	 * \param ctx      HMAC context to be initialized
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 */
-	void md4_hmac_starts(md4_context * ctx, unsigned char *key, int keylen);
+    /**
+     * \brief          MD4 HMAC context setup
+     *
+     * \param ctx      HMAC context to be initialized
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     */
+    void md4_hmac_starts(md4_context * ctx, uchar *key, int keylen);
 
-	/**
-	 * \brief          MD4 HMAC process buffer
-	 *
-	 * \param ctx      HMAC context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void md4_hmac_update(md4_context * ctx, unsigned char *input, int ilen);
+    /**
+     * \brief          MD4 HMAC process buffer
+     *
+     * \param ctx      HMAC context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void md4_hmac_update(md4_context * ctx, uchar *input, int ilen);
 
-	/**
-	 * \brief          MD4 HMAC final digest
-	 *
-	 * \param ctx      HMAC context
-	 * \param output   MD4 HMAC checksum result
-	 */
-	void md4_hmac_finish(md4_context * ctx, unsigned char output[16]);
+    /**
+     * \brief          MD4 HMAC final digest
+     *
+     * \param ctx      HMAC context
+     * \param output   MD4 HMAC checksum result
+     */
+    void md4_hmac_finish(md4_context * ctx, uchar output[16]);
 
-	/**
-	 * \brief          Output = HMAC-MD4( hmac key, input buffer )
-	 *
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   HMAC-MD4 result
-	 */
-	void md4_hmac(unsigned char *key, int keylen,
-		      unsigned char *input, int ilen, unsigned char output[16]);
+    /**
+     * \brief          Output = HMAC-MD4( hmac key, input buffer )
+     *
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   HMAC-MD4 result
+     */
+    void md4_hmac(uchar *key, int keylen,
+              uchar *input, int ilen, uchar output[16]);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int md4_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int md4_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* md4.h */
+#endif              /* md4.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -4501,51 +4083,19 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file padlock.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    padlock.h -- Via padlock support
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_PADLOCK_H
-#define TROPICSSL_PADLOCK_H
+#ifndef EST_PADLOCK_H
+#define EST_PADLOCK_H
 
-#if UNUSED
-
-#endif
+//  MOB - use #if BIT_CPU_ARCH == BIT_CPU_X86
 
 #if (defined(__GNUC__) && defined(__i386__))
-
-#ifndef TROPICSSL_HAVE_X86
-#define TROPICSSL_HAVE_X86
+#ifndef EST_HAVE_X86
+#define EST_HAVE_X86
 #endif
 
 #define PADLOCK_RNG 0x000C
@@ -4553,57 +4103,77 @@ extern "C" {
 #define PADLOCK_PHE 0x0C00
 #define PADLOCK_PMM 0x3000
 
-#define PADLOCK_ALIGN16(x) (unsigned long *) (16 + ((long) x & ~15))
+#define PADLOCK_ALIGN16(x) (ulong *) (16 + ((long) x & ~15))
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          PadLock detection routine
-	 *
-	 * \return         1 if CPU has support for the feature, 0 otherwise
-	 */
-	int padlock_supports(int feature);
+    /**
+     * \brief          PadLock detection routine
+     *
+     * \return         1 if CPU has support for the feature, 0 otherwise
+     */
+    int padlock_supports(int feature);
 
-	/**
-	 * \brief          PadLock AES-ECB block en(de)cryption
-	 *
-	 * \param ctx      AES context
-	 * \param mode     AES_ENCRYPT or AES_DECRYPT
-	 * \param input    16-byte input block
-	 * \param output   16-byte output block
-	 *
-	 * \return         0 if success, 1 if operation failed
-	 */
-	int padlock_xcryptecb(aes_context * ctx,
-			      int mode,
-			      unsigned char input[16],
-			      unsigned char output[16]);
+    /**
+     * \brief          PadLock AES-ECB block en(de)cryption
+     *
+     * \param ctx      AES context
+     * \param mode     AES_ENCRYPT or AES_DECRYPT
+     * \param input    16-byte input block
+     * \param output   16-byte output block
+     *
+     * \return         0 if success, 1 if operation failed
+     */
+    int padlock_xcryptecb(aes_context * ctx,
+                  int mode,
+                  uchar input[16],
+                  uchar output[16]);
 
-	/**
-	 * \brief          PadLock AES-CBC buffer en(de)cryption
-	 *
-	 * \param ctx      AES context
-	 * \param mode     AES_ENCRYPT or AES_DECRYPT
-	 * \param length   length of the input data
-	 * \param iv       initialization vector (updated after use)
-	 * \param input    buffer holding the input data
-	 * \param output   buffer holding the output data
-	 *
-	 * \return         0 if success, 1 if operation failed
-	 */
-	int padlock_xcryptcbc(aes_context * ctx,
-			      int mode,
-			      int length,
-			      unsigned char iv[16],
-			      unsigned char *input, unsigned char *output);
+    /**
+     * \brief          PadLock AES-CBC buffer en(de)cryption
+     *
+     * \param ctx      AES context
+     * \param mode     AES_ENCRYPT or AES_DECRYPT
+     * \param length   length of the input data
+     * \param iv       initialization vector (updated after use)
+     * \param input    buffer holding the input data
+     * \param output   buffer holding the output data
+     *
+     * \return         0 if success, 1 if operation failed
+     */
+    int padlock_xcryptcbc(aes_context * ctx,
+                  int mode,
+                  int length,
+                  uchar iv[16],
+                  uchar *input, uchar *output);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* HAVE_X86  */
-#endif				/* padlock.h */
+#endif              /* HAVE_X86  */
+#endif              /* padlock.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -4611,162 +4181,153 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file sha2.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    sha2.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_SHA2_H
-#define TROPICSSL_SHA2_H
+#ifndef EST_SHA2_H
+#define EST_SHA2_H
 
 /**
  * \brief          SHA-256 context structure
  */
 typedef struct {
-	unsigned long total[2];	/*!< number of bytes processed  */
-	unsigned long state[8];	/*!< intermediate digest state  */
-	unsigned char buffer[64];	/*!< data block being processed */
+    ulong total[2]; /*!< number of bytes processed  */
+    ulong state[8]; /*!< intermediate digest state  */
+    uchar buffer[64];   /*!< data block being processed */
 
-	unsigned char ipad[64];	/*!< HMAC: inner padding        */
-	unsigned char opad[64];	/*!< HMAC: outer padding        */
-	int is224;		/*!< 0 => SHA-256, else SHA-224 */
+    uchar ipad[64]; /*!< HMAC: inner padding        */
+    uchar opad[64]; /*!< HMAC: outer padding        */
+    int is224;      /*!< 0 => SHA-256, else SHA-224 */
 } sha2_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          SHA-256 context setup
-	 *
-	 * \param ctx      context to be initialized
-	 * \param is224    0 = use SHA256, 1 = use SHA224
-	 */
-	void sha2_starts(sha2_context * ctx, int is224);
+    /**
+     * \brief          SHA-256 context setup
+     *
+     * \param ctx      context to be initialized
+     * \param is224    0 = use SHA256, 1 = use SHA224
+     */
+    void sha2_starts(sha2_context * ctx, int is224);
 
-	/**
-	 * \brief          SHA-256 process buffer
-	 *
-	 * \param ctx      SHA-256 context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void sha2_update(sha2_context * ctx, unsigned char *input, int ilen);
+    /**
+     * \brief          SHA-256 process buffer
+     *
+     * \param ctx      SHA-256 context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void sha2_update(sha2_context * ctx, uchar *input, int ilen);
 
-	/**
-	 * \brief          SHA-256 final digest
-	 *
-	 * \param ctx      SHA-256 context
-	 * \param output   SHA-224/256 checksum result
-	 */
-	void sha2_finish(sha2_context * ctx, unsigned char output[32]);
+    /**
+     * \brief          SHA-256 final digest
+     *
+     * \param ctx      SHA-256 context
+     * \param output   SHA-224/256 checksum result
+     */
+    void sha2_finish(sha2_context * ctx, uchar output[32]);
 
-	/**
-	 * \brief          Output = SHA-256( input buffer )
-	 *
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   SHA-224/256 checksum result
-	 * \param is224    0 = use SHA256, 1 = use SHA224
-	 */
-	void sha2(unsigned char *input, int ilen,
-		  unsigned char output[32], int is224);
+    /**
+     * \brief          Output = SHA-256( input buffer )
+     *
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   SHA-224/256 checksum result
+     * \param is224    0 = use SHA256, 1 = use SHA224
+     */
+    void sha2(uchar *input, int ilen,
+          uchar output[32], int is224);
 
-	/**
-	 * \brief          Output = SHA-256( file contents )
-	 *
-	 * \param path     input file name
-	 * \param output   SHA-224/256 checksum result
-	 * \param is224    0 = use SHA256, 1 = use SHA224
-	 *
-	 * \return         0 if successful, 1 if fopen failed,
-	 *                 or 2 if fread failed
-	 */
-	int sha2_file(char *path, unsigned char output[32], int is224);
+    /**
+     * \brief          Output = SHA-256( file contents )
+     *
+     * \param path     input file name
+     * \param output   SHA-224/256 checksum result
+     * \param is224    0 = use SHA256, 1 = use SHA224
+     *
+     * \return         0 if successful, 1 if fopen failed,
+     *                 or 2 if fread failed
+     */
+    int sha2_file(char *path, uchar output[32], int is224);
 
-	/**
-	 * \brief          SHA-256 HMAC context setup
-	 *
-	 * \param ctx      HMAC context to be initialized
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 * \param is224    0 = use SHA256, 1 = use SHA224
-	 */
-	void sha2_hmac_starts(sha2_context * ctx, unsigned char *key,
-			      int keylen, int is224);
+    /**
+     * \brief          SHA-256 HMAC context setup
+     *
+     * \param ctx      HMAC context to be initialized
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     * \param is224    0 = use SHA256, 1 = use SHA224
+     */
+    void sha2_hmac_starts(sha2_context * ctx, uchar *key,
+                  int keylen, int is224);
 
-	/**
-	 * \brief          SHA-256 HMAC process buffer
-	 *
-	 * \param ctx      HMAC context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void sha2_hmac_update(sha2_context * ctx, unsigned char *input,
-			      int ilen);
+    /**
+     * \brief          SHA-256 HMAC process buffer
+     *
+     * \param ctx      HMAC context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void sha2_hmac_update(sha2_context * ctx, uchar *input,
+                  int ilen);
 
-	/**
-	 * \brief          SHA-256 HMAC final digest
-	 *
-	 * \param ctx      HMAC context
-	 * \param output   SHA-224/256 HMAC checksum result
-	 */
-	void sha2_hmac_finish(sha2_context * ctx, unsigned char output[32]);
+    /**
+     * \brief          SHA-256 HMAC final digest
+     *
+     * \param ctx      HMAC context
+     * \param output   SHA-224/256 HMAC checksum result
+     */
+    void sha2_hmac_finish(sha2_context * ctx, uchar output[32]);
 
-	/**
-	 * \brief          Output = HMAC-SHA-256( hmac key, input buffer )
-	 *
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   HMAC-SHA-224/256 result
-	 * \param is224    0 = use SHA256, 1 = use SHA224
-	 */
-	void sha2_hmac(unsigned char *key, int keylen,
-		       unsigned char *input, int ilen,
-		       unsigned char output[32], int is224);
+    /**
+     * \brief          Output = HMAC-SHA-256( hmac key, input buffer )
+     *
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   HMAC-SHA-224/256 result
+     * \param is224    0 = use SHA256, 1 = use SHA224
+     */
+    void sha2_hmac(uchar *key, int keylen,
+               uchar *input, int ilen,
+               uchar output[32], int is224);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int sha2_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int sha2_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* sha2.h */
+#endif              /* sha2.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -4774,42 +4335,13 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file sha4.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    sha4.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_SHA4_H
-#define TROPICSSL_SHA4_H
+#ifndef EST_SHA4_H
+#define EST_SHA4_H
 
 #if defined(_MSC_VER) || defined(__WATCOMC__)
 #define UL64(x) x##ui64
@@ -4823,121 +4355,141 @@ extern "C" {
  * \brief          SHA-512 context structure
  */
 typedef struct {
-	unsigned int64 total[2];	/*!< number of bytes processed  */
-	unsigned int64 state[8];	/*!< intermediate digest state  */
-	unsigned char buffer[128];	/*!< data block being processed */
+    uint64 total[2];    /*!< number of bytes processed  */
+    uint64 state[8];    /*!< intermediate digest state  */
+    uchar buffer[128];  /*!< data block being processed */
 
-	unsigned char ipad[128];	/*!< HMAC: inner padding        */
-	unsigned char opad[128];	/*!< HMAC: outer padding        */
-	int is384;		/*!< 0 => SHA-512, else SHA-384 */
+    uchar ipad[128];    /*!< HMAC: inner padding        */
+    uchar opad[128];    /*!< HMAC: outer padding        */
+    int is384;      /*!< 0 => SHA-512, else SHA-384 */
 } sha4_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          SHA-512 context setup
-	 *
-	 * \param ctx      context to be initialized
-	 * \param is384    0 = use SHA512, 1 = use SHA384
-	 */
-	void sha4_starts(sha4_context * ctx, int is384);
+    /**
+     * \brief          SHA-512 context setup
+     *
+     * \param ctx      context to be initialized
+     * \param is384    0 = use SHA512, 1 = use SHA384
+     */
+    void sha4_starts(sha4_context * ctx, int is384);
 
-	/**
-	 * \brief          SHA-512 process buffer
-	 *
-	 * \param ctx      SHA-512 context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void sha4_update(sha4_context * ctx, unsigned char *input, int ilen);
+    /**
+     * \brief          SHA-512 process buffer
+     *
+     * \param ctx      SHA-512 context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void sha4_update(sha4_context * ctx, uchar *input, int ilen);
 
-	/**
-	 * \brief          SHA-512 final digest
-	 *
-	 * \param ctx      SHA-512 context
-	 * \param output   SHA-384/512 checksum result
-	 */
-	void sha4_finish(sha4_context * ctx, unsigned char output[64]);
+    /**
+     * \brief          SHA-512 final digest
+     *
+     * \param ctx      SHA-512 context
+     * \param output   SHA-384/512 checksum result
+     */
+    void sha4_finish(sha4_context * ctx, uchar output[64]);
 
-	/**
-	 * \brief          Output = SHA-512( input buffer )
-	 *
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   SHA-384/512 checksum result
-	 * \param is384    0 = use SHA512, 1 = use SHA384
-	 */
-	void sha4(unsigned char *input, int ilen,
-		  unsigned char output[64], int is384);
+    /**
+     * \brief          Output = SHA-512( input buffer )
+     *
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   SHA-384/512 checksum result
+     * \param is384    0 = use SHA512, 1 = use SHA384
+     */
+    void sha4(uchar *input, int ilen,
+          uchar output[64], int is384);
 
-	/**
-	 * \brief          Output = SHA-512( file contents )
-	 *
-	 * \param path     input file name
-	 * \param output   SHA-384/512 checksum result
-	 * \param is384    0 = use SHA512, 1 = use SHA384
-	 *
-	 * \return         0 if successful, 1 if fopen failed,
-	 *                 or 2 if fread failed
-	 */
-	int sha4_file(char *path, unsigned char output[64], int is384);
+    /**
+     * \brief          Output = SHA-512( file contents )
+     *
+     * \param path     input file name
+     * \param output   SHA-384/512 checksum result
+     * \param is384    0 = use SHA512, 1 = use SHA384
+     *
+     * \return         0 if successful, 1 if fopen failed,
+     *                 or 2 if fread failed
+     */
+    int sha4_file(char *path, uchar output[64], int is384);
 
-	/**
-	 * \brief          SHA-512 HMAC context setup
-	 *
-	 * \param ctx      HMAC context to be initialized
-	 * \param is384    0 = use SHA512, 1 = use SHA384
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 */
-	void sha4_hmac_starts(sha4_context * ctx, unsigned char *key,
-			      int keylen, int is384);
+    /**
+     * \brief          SHA-512 HMAC context setup
+     *
+     * \param ctx      HMAC context to be initialized
+     * \param is384    0 = use SHA512, 1 = use SHA384
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     */
+    void sha4_hmac_starts(sha4_context * ctx, uchar *key,
+                  int keylen, int is384);
 
-	/**
-	 * \brief          SHA-512 HMAC process buffer
-	 *
-	 * \param ctx      HMAC context
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 */
-	void sha4_hmac_update(sha4_context * ctx, unsigned char *input,
-			      int ilen);
+    /**
+     * \brief          SHA-512 HMAC process buffer
+     *
+     * \param ctx      HMAC context
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     */
+    void sha4_hmac_update(sha4_context * ctx, uchar *input,
+                  int ilen);
 
-	/**
-	 * \brief          SHA-512 HMAC final digest
-	 *
-	 * \param ctx      HMAC context
-	 * \param output   SHA-384/512 HMAC checksum result
-	 */
-	void sha4_hmac_finish(sha4_context * ctx, unsigned char output[64]);
+    /**
+     * \brief          SHA-512 HMAC final digest
+     *
+     * \param ctx      HMAC context
+     * \param output   SHA-384/512 HMAC checksum result
+     */
+    void sha4_hmac_finish(sha4_context * ctx, uchar output[64]);
 
-	/**
-	 * \brief          Output = HMAC-SHA-512( hmac key, input buffer )
-	 *
-	 * \param key      HMAC secret key
-	 * \param keylen   length of the HMAC key
-	 * \param input    buffer holding the  data
-	 * \param ilen     length of the input data
-	 * \param output   HMAC-SHA-384/512 result
-	 * \param is384    0 = use SHA512, 1 = use SHA384
-	 */
-	void sha4_hmac(unsigned char *key, int keylen,
-		       unsigned char *input, int ilen,
-		       unsigned char output[64], int is384);
+    /**
+     * \brief          Output = HMAC-SHA-512( hmac key, input buffer )
+     *
+     * \param key      HMAC secret key
+     * \param keylen   length of the HMAC key
+     * \param input    buffer holding the  data
+     * \param ilen     length of the input data
+     * \param output   HMAC-SHA-384/512 result
+     * \param is384    0 = use SHA512, 1 = use SHA384
+     */
+    void sha4_hmac(uchar *key, int keylen,
+               uchar *input, int ilen,
+               uchar output[64], int is384);
 
-	/**
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int sha4_self_test(int verbose);
+    /**
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int sha4_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* sha4.h */
+#endif              /* sha4.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -4945,85 +4497,76 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file timing.h
- *
- *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    timing.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_TIMING_H
-#define TROPICSSL_TIMING_H
+#ifndef EST_TIMING_H
+#define EST_TIMING_H
 
 /**
  * \brief          timer structure
  */
 struct hr_time {
-	unsigned char opaque[32];
+    uchar opaque[32];
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	extern int alarmed;
+    extern int alarmed;
 
-	/**
-	 * \brief          Return the CPU cycle counter value
-	 */
-	unsigned long hardclock(void);
+    /**
+     * \brief          Return the CPU cycle counter value
+     */
+    ulong hardclock(void);
 
-	/**
-	 * \brief          Return the elapsed time in milliseconds
-	 *
-	 * \param val      points to a timer structure
-	 * \param reset    if set to 1, the timer is restarted
-	 */
-	unsigned long get_timer(struct hr_time *val, int reset);
+    /**
+     * \brief          Return the elapsed time in milliseconds
+     *
+     * \param val      points to a timer structure
+     * \param reset    if set to 1, the timer is restarted
+     */
+    ulong get_timer(struct hr_time *val, int reset);
 
-	/**
-	 * \brief          Setup an alarm clock
-	 *
-	 * \param seconds  delay before the "alarmed" flag is set
-	 */
-	void set_alarm(int seconds);
+    /**
+     * \brief          Setup an alarm clock
+     *
+     * \param seconds  delay before the "alarmed" flag is set
+     */
+    void set_alarm(int seconds);
 
-	/**
-	 * \brief          Sleep for a certain amount of time
-	 */
-	void m_sleep(int milliseconds);
+    /**
+     * \brief          Sleep for a certain amount of time
+     */
+    void m_sleep(int milliseconds);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* timing.h */
+#endif              /* timing.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
 
 /************************************************************************/
 /*
@@ -5031,40 +4574,13 @@ extern "C" {
  */
 /************************************************************************/
 
-/**
- * \file xtea.h
- *
- *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * Neither the names of PolarSSL or XySSL nor the names of its contributors
- *      may be used to endorse or promote products derived from this software
- *      without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- *  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- *  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/*
+    xtea.h -- 
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
  */
-#ifndef TROPICSSL_XTEA_H
-#define TROPICSSL_XTEA_H
+#ifndef EST_XTEA_H
+#define EST_XTEA_H
 
 #define XTEA_ENCRYPT     1
 #define XTEA_DECRYPT     0
@@ -5073,41 +4589,61 @@ extern "C" {
  * \brief          XTEA context structure
  */
 typedef struct {
-	unsigned long k[4];	/*!< key */
+    ulong k[4]; /*!< key */
 } xtea_context;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-	/**
-	 * \brief          XTEA key schedule
-	 *
-	 * \param ctx      XTEA context to be initialized
-	 * \param key      the secret key
-	 */
-	void xtea_setup(xtea_context * ctx, unsigned char key[16]);
+    /**
+     * \brief          XTEA key schedule
+     *
+     * \param ctx      XTEA context to be initialized
+     * \param key      the secret key
+     */
+    void xtea_setup(xtea_context * ctx, uchar key[16]);
 
-	/**
-	 * \brief          XTEA cipher function
-	 *
-	 * \param ctx      XTEA context
-	 * \param mode     XTEA_ENCRYPT or XTEA_DECRYPT
-	 * \param input    8-byte input block
-	 * \param output   8-byte output block
-	 */
-	void xtea_crypt(xtea_context * ctx,
-			int mode,
-			unsigned char input[8], unsigned char output[8]);
+    /**
+     * \brief          XTEA cipher function
+     *
+     * \param ctx      XTEA context
+     * \param mode     XTEA_ENCRYPT or XTEA_DECRYPT
+     * \param input    8-byte input block
+     * \param output   8-byte output block
+     */
+    void xtea_crypt(xtea_context * ctx,
+            int mode,
+            uchar input[8], uchar output[8]);
 
-	/*
-	 * \brief          Checkup routine
-	 *
-	 * \return         0 if successful, or 1 if the test failed
-	 */
-	int xtea_self_test(int verbose);
+    /*
+     * \brief          Checkup routine
+     *
+     * \return         0 if successful, or 1 if the test failed
+     */
+    int xtea_self_test(int verbose);
 
 #ifdef __cplusplus
 }
 #endif
-#endif				/* xtea.h */
+#endif              /* xtea.h */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
