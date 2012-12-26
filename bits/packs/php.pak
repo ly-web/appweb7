@@ -6,10 +6,10 @@ pack('php', 'PHP Web Framework')
 let cfg
 let path = bit.packs.php.path
 if (!path) {
-    if (bit.dir.packs.join('php/latest').exists) {
+    if (bit.dir.packs.join('php/latest').exists && Config.OS != 'windows') {
         path = bit.dir.packs.join('php/latest')
     } else {
-        let vers = bit.dir.packs.join('php').files('php-5*').sort().reverse()
+        let vers = bit.dir.packs.join('php').files('php-5-3*').sort().reverse()
         if (vers.length == 0) {
             throw 'Can\'t find php'
         }
