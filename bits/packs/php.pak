@@ -9,7 +9,7 @@ if (!path) {
     if (bit.dir.packs.join('php/latest').exists && Config.OS != 'windows') {
         path = bit.dir.packs.join('php/latest')
     } else {
-        let phpver = 'php-5.3*'
+        let phpver = Config.OS == 'windows' ? 'php-5.4*' : 'php-5.3*'
         let versions = sortVersions(bit.dir.packs.join('php').files(phpver))
         if (versions.length == 0) {
             throw 'Can\'t find php'
