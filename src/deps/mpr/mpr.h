@@ -32,10 +32,6 @@
 #include "bit.h"
 #include "bitos.h"
 
-#ifdef __cplusplus
-}
-#endif
-
 /*********************************** Forwards *********************************/
 
 #ifdef __cplusplus
@@ -96,17 +92,19 @@ struct  MprXml;
         If the system supports virtual memory, then stack size should use system default. Only used pages will
         actually consume memory 
      */
-    #define MPR_DEFAULT_STACK       (0)           /**< Default thread stack size (0 means use system default) */
+    #define MPR_DEFAULT_STACK       (0)             /**< Default thread stack size (0 means use system default) */
 #else
     /* 
         No MMU, so the stack size actually consumes memory. Set this as low as possible. 
         NOTE: php and ejs use stack heavily.
      */
-    #define MPR_DEFAULT_STACK       (128 * 1024)   /**< Default thread stack size (0 means use system default) */
+    #define MPR_DEFAULT_STACK       (128 * 1024)    /**< Default thread stack size (0 means use system default) */
 #endif
 
-#if KEEP && DEPRECATED
-    #define MPR_MAX_PATH        1024          /**< Reasonable path name size */
+#if DEPRECATED || 1
+    /* Remove in 4.4 */
+    #define MPR_MAX_STRING      BIT_MAX_BUFFER
+    #define MPR_MAX_PATH        BIT_MAX_PATH
     #define MPR_MAX_FNAME       BIT_MAX_FNAME
     #define MPR_BUFSIZE         BIT_MAX_BUFFER
 #endif
@@ -2157,6 +2155,7 @@ PUBLIC uint     whashlower(wchar *name, ssize len);
 PUBLIC wchar    *wjoin(wchar *sep, ...);
 PUBLIC wchar    *wjoinv(wchar *sep, va_list args);
 PUBLIC ssize    wlen(wchar *s);
+#endif
 
 PUBLIC wchar    *wlower(wchar *s);
 PUBLIC int      wncaselesscmp(wchar *s1, wchar *s2, ssize len);
@@ -2174,7 +2173,6 @@ PUBLIC int64    wtoiradix(wchar *str, int radix, int *err);
 PUBLIC wchar    *wtok(wchar *str, wchar *delim, wchar **last);
 PUBLIC wchar    *wtrim(wchar *str, wchar *set, int where);
 PUBLIC wchar    *wupper(wchar *s);
-#endif
 
 #else
 
@@ -2246,7 +2244,7 @@ PUBLIC wchar    *mtok(wchar *str, cchar *delim, wchar **last);
 PUBLIC wchar    *mtrim(wchar *str, cchar *set, int where);
 #endif
 
-#else
+#else /* BIT_CHAR_LEN <= 1 */
 
 #define mcaselesscmp(s1, s2)            scaselesscmp(s1, s2)
 #define mcmp(s1, s2)                    scmp(s1, s2)
@@ -2269,7 +2267,7 @@ PUBLIC wchar    *mtrim(wchar *str, cchar *set, int where);
 #define mtok(str, delim, last)          stok(str, delim, last)
 #define mtrim(str, set, where)          strim(str, set, where)
 
-#endif /* BIT_CHAR_LEN > 1 */
+#endif /* BIT_CHAR_LEN <= 1 */
 
 /************************************ Formatting ******************************/
 /**
@@ -2785,8 +2783,8 @@ PUBLIC void mprSetBufRefillProc(MprBuf *buf, MprBufProc fn, void *arg);
  */
 PUBLIC int mprSetBufSize(MprBuf *buf, ssize size, ssize maxSize);
 
-#if KEEP
 #if DOXYGEN || BIT_CHAR_LEN > 1
+#if KEEP
 /**
     Add a wide null character to the buffer contents.
     @description Add a null character but do not change the buffer content lengths. The null is added outside the
@@ -2831,8 +2829,8 @@ PUBLIC ssize mprPutStringToWideBuf(MprBuf *buf, cchar *str);
     @stability prototype
  */
 PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
-#endif
 
+#endif /* KEEP */
 #else /* BIT_CHAR_LEN == 1 */
 
 #define mprAddNullToWideBuf     mprAddNullToBuf
@@ -4053,6 +4051,15 @@ typedef struct MprFileSystem {
 #endif
 } MprFileSystem;
 
+/**
+    Create and initialize the FileSystem subsystem. 
+    @description This is an internal routine called by the MPR during initialization.
+    @param path Path name to the root of the file system.
+    @return Returns a new file system object
+    @ingroup MprFileSystem
+    @stability Internal
+ */
+PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path);
 
 #if BIT_ROM
 /**
@@ -4073,23 +4080,7 @@ typedef struct MprRomFileSystem {
     MprRomInode     *romInodes;
     int             rootLen;
 } MprRomFileSystem;
-#else /* !BIT_ROM */
 
-typedef MprFileSystem MprDiskFileSystem;
-#endif
-
-/**
-    Create and initialize the FileSystem subsystem. 
-    @description This is an internal routine called by the MPR during initialization.
-    @param path Path name to the root of the file system.
-    @return Returns a new file system object
-    @ingroup MprFileSystem
-    @stability Internal
- */
-PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path);
-
-
-#if BIT_ROM
 /**
     Create and initialize the ROM FileSystem. 
     @description This is an internal routine called by the MPR during initialization.
@@ -4109,8 +4100,9 @@ PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path);
     @stability Stable
  */
 PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList);
-#else
+#else /* BIT_ROM */
 
+typedef MprFileSystem MprDiskFileSystem;
 /**
     Create and initialize the disk FileSystem. 
     @description This is an internal routine called by the MPR during initialization.
@@ -4120,7 +4112,7 @@ PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList);
     @stability Internal
  */
 PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path);
-#endif
+#endif /* !BIT_ROM */
 
 /**
     Create and initialize the disk FileSystem. 
@@ -8217,15 +8209,15 @@ typedef struct Mpr {
 PUBLIC void mprNop(void *ptr);
 
 #if DOXYGEN || BIT_WIN_LIKE
-/**
-    Return the MPR control instance.
-    @description Return the MPR singleton control object. 
-    @return Returns the MPR control object.
-    @ingroup Mpr
-    @stability Stable.
- */
-PUBLIC Mpr *mprGetMpr();
-#define MPR mprGetMpr()
+    /**
+        Return the MPR control instance.
+        @description Return the MPR singleton control object. 
+        @return Returns the MPR control object.
+        @ingroup Mpr
+        @stability Stable.
+     */
+    PUBLIC Mpr *mprGetMpr();
+    #define MPR mprGetMpr()
 #else
     #define mprGetMpr() MPR
     extern Mpr *MPR;
