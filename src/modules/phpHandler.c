@@ -42,6 +42,7 @@
     #define ZTS 1
     #undef ulong
     #undef ZEND_API
+    #undef _res /* Defined by linux /usr/include/resolv.h */
     #undef HAVE_SOCKLEN_T
 
     /*
@@ -82,7 +83,7 @@ static zend_executor_globals   *executor_globals;
 
 static void flushOutput(void *context);
 static int initializePhp(Http *http);
-static void logMessage(char *message);
+static void logMessage(char *message TSRMLS_DC);
 static char *mapHyphen(char *str);
 static char *readCookies(TSRMLS_D);
 static int  readBodyData(char *buffer, uint len TSRMLS_DC);
@@ -365,7 +366,7 @@ static void registerServerVars(zval *track_vars_array TSRMLS_DC)
 }
 
 
-static void logMessage(char *message)
+static void logMessage(char *message TSRMLS_DC)
 {
     mprLog(3, "phpModule: %s", message);
 }
