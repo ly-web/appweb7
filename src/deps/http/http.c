@@ -201,7 +201,6 @@ static void initSettings()
 
 static bool parseArgs(int argc, char **argv)
 {
-    HttpUri     *uri;
     char        *argp, *key, *value;
     int         i, setWorkers, nextArg;
 
@@ -483,7 +482,6 @@ static bool parseArgs(int argc, char **argv)
     argc = argc - nextArg;
     argv = &argv[nextArg];
     app->target = argv[argc - 1];
-    uri = httpCreateUri(app->target, 0);
     if (--argc > 0) {
         /*
             Files present on command line
@@ -506,6 +504,8 @@ static bool parseArgs(int argc, char **argv)
         }
     }
 #if BIT_PACK_SSL
+{
+    HttpUri *uri = httpCreateUri(app->target, 0);
     if (app->validate || app->cert || app->provider || uri->secure) {
         app->ssl = mprCreateSsl(0);
         if (app->provider) {
@@ -524,6 +524,7 @@ static bool parseArgs(int argc, char **argv)
     } else {
         mprVerifySslPeer(NULL, 0);
     }
+}
 #endif
     return 1;
 }
@@ -884,7 +885,7 @@ static int reportResponse(HttpConn *conn, cchar *url, MprTicks elapsed)
 
 static void readBody(HttpConn *conn, MprFile *outFile)
 {
-    char        buf[HTTP_BUFSIZE];
+    char        buf[BIT_MAX_BUFFER];
     cchar       *result;
     ssize       bytes;
 
@@ -894,6 +895,19 @@ static void readBody(HttpConn *conn, MprFile *outFile)
     while (!conn->error && conn->sock && (bytes = httpRead(conn, buf, sizeof(buf))) > 0) {
         result = formatOutput(conn, buf, &bytes);
         mprWriteFile(outFile, result, bytes);
+#if FUTURE
+        //  This should be pushed into a range filter.
+        //  Buffer all output and then parsing can work  
+        type = httpGetHeader(conn, "Content-Type");
+        if (scontains(type, "multipart/byteranges")) {
+            if ((boundary = scontains(type, "boundary=")) != 0) {
+                boundary += 9;
+                if (*boundary) {
+                    boundary = sfmt("--%s\r\n", boundary);
+                }
+            }
+        }
+#endif
     }
 }
 
@@ -988,7 +1002,7 @@ static int setContentLength(HttpConn *conn, MprList *files)
 static ssize writeBody(HttpConn *conn, MprList *files)
 {
     MprFile     *file;
-    char        buf[HTTP_BUFSIZE], *path, *pair;
+    char        buf[BIT_MAX_BUFFER], *path, *pair;
     ssize       bytes, len, count, nbytes, sofar;
     int         next;
 
@@ -1196,7 +1210,7 @@ static void trace(HttpConn *conn, cchar *url, int fetchCount, cchar *method, int
 #if (BIT_WIN_LIKE && !WINCE) || VXWORKS
 static char *getpass(char *prompt)
 {
-    static char password[MPR_MAX_STRING];
+    static char password[80];
     int     c, i;
 
     fputs(prompt, stderr);

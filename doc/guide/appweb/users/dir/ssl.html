@@ -432,7 +432,7 @@ SSLProtocol all -SSLv2
                             <p>The SSLCertificateFile directive defines the file containing the PEM encoded X.509
                             certificate for the server. The file may also contain the private key for the server in
                             which case you do not need to use the SSLCertificateKeyFile directive.</p>
-                            <p>The path may be an absolute path or it may be relative to the ServerRoot.</p>
+                            <p>The path may be an absolute path or it may be relative to the Home directory.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -510,7 +510,7 @@ SSLProtocol all -SSLv2
                             verify client certificates. If so, you must specify the "SSLVerifyClient Require"
                             directive.</p>
                             <p>The certificate file contains the concatenated certificates to use in preference order.
-                            The path may be an absolute path or it may be relative to the ServerRoot.</p>
+                            The path may be an absolute path or it may be relative to the Home directory.</p>
                             <p>You may alternatively use SSLCACertificatePath if you have separate certificates.</p>
                         </td>
                     </tr>
@@ -546,7 +546,7 @@ SSLProtocol all -SSLv2
                             use when authenticating client certificates. This directive is only necessary if you wish
                             to verify client certificates. If so, you must specify the "SSLVerifyClient Require"
                             directive.</p>
-                            <p>The path may be an absolute path or it may be relative to the ServerRoot.</p>
+                            <p>The path may be an absolute path or it may be relative to the Home directory.</p>
                             <p>You may alternatively use SSLCACertificateFile if you have a bundle of certificates
                             concatenated together.</p>
                         </td>

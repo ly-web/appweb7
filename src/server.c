@@ -528,7 +528,7 @@ PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
 PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
 {
     MprModule   *module;
-    char        entryPoint[MPR_MAX_FNAME];
+    char        entryPoint[BIT_MAX_FNAME];
     char        *path;
 
     if (strcmp(name, "authFilter") == 0 || strcmp(name, "rangeFilter") == 0 || strcmp(name, "uploadFilter") == 0 ||

@@ -6,6 +6,7 @@ Bit.load({
 
     targets: {
         libpcre: {
+            enable: 'bit.packs.pcre.enable',
 			scripts: {
 				prebuild: "
 					if (bit.settings.charlen == 2) {

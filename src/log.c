@@ -44,7 +44,7 @@ PUBLIC void maLogRequest(HttpConn *conn)
     if (rx->method == 0) {
         return;
     }
-    len = MPR_MAX_URL + 256;
+    len = BIT_MAX_URI + 256;
     buf = mprCreateBuf(len, len);
 
     while ((c = *fmt++) != '\0') {

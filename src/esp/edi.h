@@ -131,7 +131,7 @@ typedef struct EdiRec {
     cchar           *tableName;         /**< Base table name for record */
     cchar           *id;                /**< Record key ID */
     int             nfields;            /**< Number of fields in record */
-    EdiField        fields[MPR_FLEX];   /**< Field records */
+    EdiField        fields[ARRAY_FLEX]; /**< Field records */
 } EdiRec;
 
 
@@ -148,7 +148,7 @@ typedef struct EdiGrid {
     cchar           *tableName;         /**< Base table name for grid */
     int             nrecords;           /**< Number of records in grid */
     int             flags;              /**< Grid flags */
-    EdiRec          *records[MPR_FLEX]; /**< Grid records */
+    EdiRec          *records[ARRAY_FLEX];/**< Grid records */
 } EdiGrid;
 
 /*

@@ -1,5 +1,5 @@
 /**
-    manager.c -- Manager program 
+    manger.c -- Manager program 
 
     The manager watches over daemon programs.
     Key commands:
@@ -738,12 +738,11 @@ static int makeDaemon()
         return MPR_ERR_BAD_STATE;
     }
     /*
-        Close all open files
+        Close stdio so shells won't hang
      */
-    for (i = 0; i < 128; i++) {
+    for (i = 0; i < 3; i++) {
         close(i);
     }
-
     /*
         Fork twice to get a free child with no parent
      */
@@ -1317,7 +1316,7 @@ static void WINAPI serviceCallback(ulong cmd)
 static bool installService()
 {
     SC_HANDLE   svc, mgr;
-    char        cmd[MPR_MAX_FNAME], key[MPR_MAX_FNAME];
+    char        cmd[BIT_MAX_FNAME], key[BIT_MAX_FNAME];
     int         serviceType;
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);

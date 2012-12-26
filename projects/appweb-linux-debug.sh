@@ -3,18 +3,18 @@
 #
 
 ARCH="x86"
-ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/'`"
+ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/'`"
 OS="linux"
 PROFILE="debug"
 CONFIG="${OS}-${ARCH}-${PROFILE}"
-CC="gcc"
+CC="/usr/bin/gcc"
 LD="/usr/bin/ld"
-CFLAGS="-Wall -fPIC -g -Wno-unused-result"
+CFLAGS="-Wall -fPIC -g -Wshorten-64-to-32"
 DFLAGS="-D_REENTRANT -DPIC -DBIT_DEBUG"
 IFLAGS="-I${CONFIG}/inc"
 LDFLAGS="-Wl,--enable-new-dtags -Wl,-rpath,\$ORIGIN/ -Wl,-rpath,\$ORIGIN/../bin -rdynamic -g"
 LIBPATHS="-L${CONFIG}/bin"
-LIBS="-lpthread -lm -lrt -ldl"
+LIBS="-lpthread -lm -ldl"
 
 [ ! -x ${CONFIG}/inc ] && mkdir -p ${CONFIG}/inc ${CONFIG}/obj ${CONFIG}/lib ${CONFIG}/bin
 
@@ -23,12 +23,18 @@ if ! diff ${CONFIG}/inc/bit.h projects/appweb-${OS}-${PROFILE}-bit.h >/dev/null 
 	cp projects/appweb-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
 fi
 
+rm -rf ${CONFIG}/inc/bitos.h
+cp -r src/bitos.h ${CONFIG}/inc/bitos.h
+
 rm -rf ${CONFIG}/inc/mpr.h
 cp -r src/deps/mpr/mpr.h ${CONFIG}/inc/mpr.h
 
 ${CC} -c -o ${CONFIG}/obj/mprLib.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprLib.c
 
 ${CC} -shared -o ${CONFIG}/bin/libmpr.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mprLib.o ${LIBS}
+
+rm -rf ${CONFIG}/inc/est.h
+cp -r src/deps/est/est.h ${CONFIG}/inc/est.h
 
 ${CC} -c -o ${CONFIG}/obj/mprSsl.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprSsl.c
 
@@ -54,16 +60,16 @@ cp -r src/deps/http/http.h ${CONFIG}/inc/http.h
 
 ${CC} -c -o ${CONFIG}/obj/httpLib.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/http/httpLib.c
 
-${CC} -shared -o ${CONFIG}/bin/libhttp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/httpLib.o -lpcre -lmpr ${LIBS}
+${CC} -shared -o ${CONFIG}/bin/libhttp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/httpLib.o -lpcre -lmpr ${LIBS} -lpam
 
 ${CC} -c -o ${CONFIG}/obj/http.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/http/http.c
 
-${CC} -o ${CONFIG}/bin/http ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/http.o -lhttp ${LIBS} -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/http ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/http.o -lhttp ${LIBS} -lpcre -lmpr -lpam ${LDFLAGS}
 
 rm -rf ${CONFIG}/inc/sqlite3.h
 cp -r src/deps/sqlite/sqlite3.h ${CONFIG}/inc/sqlite3.h
 
-${CC} -c -o ${CONFIG}/obj/sqlite3.o -mtune=generic -fPIC -g -Wno-unused-result -w ${DFLAGS} -I${CONFIG}/inc src/deps/sqlite/sqlite3.c
+${CC} -c -o ${CONFIG}/obj/sqlite3.o -mtune=generic -fPIC -g -w ${DFLAGS} -I${CONFIG}/inc src/deps/sqlite/sqlite3.c
 
 ${CC} -shared -o ${CONFIG}/bin/libsqlite3.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sqlite3.o ${LIBS}
 
@@ -71,11 +77,11 @@ ${CC} -c -o ${CONFIG}/obj/sqlite.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG
 
 ${CC} -o ${CONFIG}/bin/sqlite ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sqlite.o -lsqlite3 ${LIBS} ${LDFLAGS}
 
-rm -rf ${CONFIG}/inc/appweb.h
-cp -r src/appweb.h ${CONFIG}/inc/appweb.h
-
 rm -rf ${CONFIG}/inc/customize.h
 cp -r src/customize.h ${CONFIG}/inc/customize.h
+
+rm -rf ${CONFIG}/inc/appweb.h
+cp -r src/appweb.h ${CONFIG}/inc/appweb.h
 
 ${CC} -c -o ${CONFIG}/obj/config.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/config.c
 
@@ -89,7 +95,7 @@ ${CC} -c -o ${CONFIG}/obj/log.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/i
 
 ${CC} -c -o ${CONFIG}/obj/server.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server.c
 
-${CC} -shared -o ${CONFIG}/bin/libappweb.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/config.o ${CONFIG}/obj/convenience.o ${CONFIG}/obj/dirHandler.o ${CONFIG}/obj/fileHandler.o ${CONFIG}/obj/log.o ${CONFIG}/obj/server.o -lhttp ${LIBS} -lpcre -lmpr
+${CC} -shared -o ${CONFIG}/bin/libappweb.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/config.o ${CONFIG}/obj/convenience.o ${CONFIG}/obj/dirHandler.o ${CONFIG}/obj/fileHandler.o ${CONFIG}/obj/log.o ${CONFIG}/obj/server.o -lhttp ${LIBS} -lpcre -lmpr -lpam
 
 rm -rf ${CONFIG}/inc/edi.h
 cp -r src/esp/edi.h ${CONFIG}/inc/edi.h
@@ -121,11 +127,11 @@ ${CC} -c -o ${CONFIG}/obj/mdb.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/i
 
 ${CC} -c -o ${CONFIG}/obj/sdb.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/sdb.c
 
-${CC} -shared -o ${CONFIG}/bin/libmod_esp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
+${CC} -shared -o ${CONFIG}/bin/libmod_esp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 ${CC} -c -o ${CONFIG}/obj/esp.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/esp.c
 
-${CC} -o ${CONFIG}/bin/esp ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/esp.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/esp ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/esp.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam ${LDFLAGS}
 
 rm -rf ${CONFIG}/bin/esp.conf
 cp -r src/esp/esp.conf ${CONFIG}/bin/esp.conf
@@ -138,11 +144,11 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
 ${CC} -c -o ${CONFIG}/obj/cgiHandler.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
 
-${CC} -shared -o ${CONFIG}/bin/libmod_cgi.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
+${CC} -shared -o ${CONFIG}/bin/libmod_cgi.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 ${CC} -c -o ${CONFIG}/obj/authpass.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/authpass.c
 
-${CC} -o ${CONFIG}/bin/authpass ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/authpass.o -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/authpass ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/authpass.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam ${LDFLAGS}
 
 ${CC} -c -o ${CONFIG}/obj/cgiProgram.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/cgiProgram.c
 
@@ -154,7 +160,7 @@ ${CC} -o ${CONFIG}/bin/setConfig ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/setConfig.
 
 ${CC} -c -o ${CONFIG}/obj/appweb.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam ${LDFLAGS}
 
 #  Omit build script /Users/mob/git/appweb/src/server/cache
 rm -rf ${CONFIG}/inc/testAppweb.h
@@ -164,7 +170,7 @@ ${CC} -c -o ${CONFIG}/obj/testAppweb.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CO
 
 ${CC} -c -o ${CONFIG}/obj/testHttp.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc test/testHttp.c
 
-${CC} -o ${CONFIG}/bin/testAppweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/testAppweb.o ${CONFIG}/obj/testHttp.o -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/testAppweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/testAppweb.o ${CONFIG}/obj/testHttp.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam ${LDFLAGS}
 
 cd test >/dev/null ;\
 echo '#!../${CONFIG}/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ;\

@@ -28,7 +28,7 @@
     #define BIT_HAS_DYN_LOAD 1
 #endif
 #ifndef BIT_HAS_LIB_EDIT
-    #define BIT_HAS_LIB_EDIT 0
+    #define BIT_HAS_LIB_EDIT 1
 #endif
 #ifndef BIT_HAS_LIB_RT
     #define BIT_HAS_LIB_RT 0
@@ -40,16 +40,16 @@
     #define BIT_HAS_MTUNE 1
 #endif
 #ifndef BIT_HAS_PAM
-    #define BIT_HAS_PAM 0
+    #define BIT_HAS_PAM 1
 #endif
 #ifndef BIT_HAS_STACK_PROTECTOR
     #define BIT_HAS_STACK_PROTECTOR 1
 #endif
 #ifndef BIT_HAS_SYNC
-    #define BIT_HAS_SYNC 0
+    #define BIT_HAS_SYNC 1
 #endif
 #ifndef BIT_HAS_SYNC_CAS
-    #define BIT_HAS_SYNC_CAS 0
+    #define BIT_HAS_SYNC_CAS 1
 #endif
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
@@ -64,7 +64,7 @@
     #define BIT_MDB 1
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,matrixssl,pmaker,php,sqlite,ssl,utest,zip"
+    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite,ssl,utest,zip"
 #endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
@@ -94,25 +94,22 @@
     #define BIT_STEALTH 1
 #endif
 #ifndef BIT_SYNC
-    #define BIT_SYNC "http,mpr,pcre,sqlite"
+    #define BIT_SYNC "bitos,est,http,mpr,pcre,sqlite"
 #endif
 #ifndef BIT_TITLE
     #define BIT_TITLE "Embedthis Appweb"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.2.0"
+    #define BIT_VERSION "4.3.0"
 #endif
 #ifndef BIT_WARN64TO32
-    #define BIT_WARN64TO32 0
+    #define BIT_WARN64TO32 1
 #endif
 #ifndef BIT_WARN_UNUSED
     #define BIT_WARN_UNUSED 0
 #endif
 #ifndef BIT_WITHOUT_ALL
-    #define BIT_WITHOUT_ALL "doxygen,dsi,ejs,man,man2html,pmaker,ssl,ejscript,php,matrixssl,openssl"
-#endif
-#ifndef BIT_WITHOUT_OWN
-    #define BIT_WITHOUT_OWN "doxygen,dsi,ejs,man,man2html,pmaker,ejscript,php,matrixssl"
+    #define BIT_WITHOUT_ALL "doxygen,dsi,est,ejs,man,man2html,pmaker,ssl,ejscript,php,matrixssl,openssl"
 #endif
 
 /* Prefixes */
@@ -120,10 +117,10 @@
     #define BIT_CFG_PREFIX "/etc/appweb"
 #endif
 #ifndef BIT_BIN_PREFIX
-    #define BIT_BIN_PREFIX "/usr/lib/appweb/4.2.0/bin"
+    #define BIT_BIN_PREFIX "/usr/lib/appweb/4.3.0/bin"
 #endif
 #ifndef BIT_INC_PREFIX
-    #define BIT_INC_PREFIX "/usr/lib/appweb/4.2.0/inc"
+    #define BIT_INC_PREFIX "/usr/lib/appweb/4.3.0/inc"
 #endif
 #ifndef BIT_LOG_PREFIX
     #define BIT_LOG_PREFIX "/var/log/appweb"
@@ -135,10 +132,10 @@
     #define BIT_SPL_PREFIX "/var/spool/appweb"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/src/appweb-4.2.0"
+    #define BIT_SRC_PREFIX "/usr/src/appweb-4.3.0"
 #endif
 #ifndef BIT_VER_PREFIX
-    #define BIT_VER_PREFIX "/usr/lib/appweb/4.2.0"
+    #define BIT_VER_PREFIX "/usr/lib/appweb/4.3.0"
 #endif
 #ifndef BIT_WEB_PREFIX
     #define BIT_WEB_PREFIX "/var/www/appweb-default"
@@ -177,13 +174,13 @@
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 2
+    #define BIT_MINOR_VERSION 3
 #endif
 #ifndef BIT_PATCH_VERSION
     #define BIT_PATCH_VERSION 0
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400020000
+    #define BIT_VNUM 400030000
 #endif
 
 /* Packs */
@@ -213,6 +210,9 @@
 #endif
 #ifndef BIT_PACK_ESP
     #define BIT_PACK_ESP 1
+#endif
+#ifndef BIT_PACK_EST
+    #define BIT_PACK_EST 0
 #endif
 #ifndef BIT_PACK_HTTP
     #define BIT_PACK_HTTP 1
@@ -255,4 +255,40 @@
 #endif
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1
+#endif
+#ifndef BIT_PACK_BIT_PATH
+    #define BIT_PACK_BIT_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/bit"
+#endif
+#ifndef BIT_PACK_CGI_PATH
+    #define BIT_PACK_CGI_PATH "/Users/mob/git/appweb/src/modules/cgiHandler.c"
+#endif
+#ifndef BIT_PACK_COMPILER_PATH
+    #define BIT_PACK_COMPILER_PATH "/usr/bin/gcc"
+#endif
+#ifndef BIT_PACK_DIR_PATH
+    #define BIT_PACK_DIR_PATH "/Users/mob/git/appweb/src/dirHandler.c"
+#endif
+#ifndef BIT_PACK_ESP_PATH
+    #define BIT_PACK_ESP_PATH "/Users/mob/git/appweb/src/esp/espHandler.c"
+#endif
+#ifndef BIT_PACK_HTTP_PATH
+    #define BIT_PACK_HTTP_PATH "${BIN}/http"
+#endif
+#ifndef BIT_PACK_LIB_PATH
+    #define BIT_PACK_LIB_PATH "/usr/bin/ar"
+#endif
+#ifndef BIT_PACK_LINK_PATH
+    #define BIT_PACK_LINK_PATH "/usr/bin/ld"
+#endif
+#ifndef BIT_PACK_PCRE_PATH
+    #define BIT_PACK_PCRE_PATH "/Users/mob/git/appweb/src/deps/pcre"
+#endif
+#ifndef BIT_PACK_SQLITE_PATH
+    #define BIT_PACK_SQLITE_PATH "/Users/mob/git/appweb/src/deps/sqlite"
+#endif
+#ifndef BIT_PACK_UTEST_PATH
+    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
+#endif
+#ifndef BIT_PACK_ZIP_PATH
+    #define BIT_PACK_ZIP_PATH "/usr/bin/zip"
 #endif

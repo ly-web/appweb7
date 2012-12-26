@@ -11,12 +11,12 @@
 
 /************************************************************************/
 /*
-    Start of file "src/mprMem.c"
+    Start of file "src/mem.c"
  */
 /************************************************************************/
 
 /**
-    mprMem.c - Memory Allocator and Garbage Collector. 
+    mem.c - Memory Allocator and Garbage Collector. 
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -25,10 +25,17 @@
 
 
 
-/******************************* Local Defines ********************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_GC_QUOTA
+    #define BIT_MAX_GC_QUOTA   4096            /* Number of allocations before a GC is worthwhile */
+#endif
+#ifndef BIT_MAX_REGION
+    #define BIT_MAX_REGION     (128 * 1024)    /* Memory allocation chunk size */
+#endif
 
 #if BIT_HAS_MMU 
-    #define VALLOC 1                /* Use virtual memory allocations */
+    #define VALLOC 1                            /* Use virtual memory allocations */
 #else
     #define VALLOC 0
 #endif
@@ -237,7 +244,10 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
         return NULL;
     }
     memset(heap, 0, sizeof(MprHeap));
+    heap->stats.numCpu = memStats.numCpu;
+    heap->stats.pageSize = memStats.pageSize;
     heap->stats.maxMemory = MAXINT;
+    //  MOB - should this be 95%?
     heap->stats.redLine = MAXINT / 100 * 99;
     mprInitSpinLock(&heap->heapLock);
     initGen();
@@ -247,7 +257,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
      */
     mprSize = MPR_ALLOC_ALIGN(sizeof(MprMem) + sizeof(Mpr) + (MANAGER_SIZE * sizeof(void*)));
     regionSize = MPR_ALLOC_ALIGN(sizeof(MprRegion));
-    size = max(mprSize + regionSize, MPR_MEM_REGION_SIZE);
+    size = max(mprSize + regionSize, BIT_MAX_REGION);
     if ((region = mprVirtAlloc(size, MPR_MAP_READ | MPR_MAP_WRITE)) == NULL) {
         return NULL;
     }
@@ -262,11 +272,11 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
 
     heap->flags = flags | MPR_THREAD_PATTERN;
     heap->nextSeqno = 1;
-    heap->chunkSize = MPR_MEM_REGION_SIZE;
+    heap->chunkSize = BIT_MAX_REGION;
     heap->stats.maxMemory = MAXINT;
     heap->stats.redLine = MAXINT / 100 * 99;
-    heap->newQuota = MPR_NEW_QUOTA;
-    heap->earlyYieldQuota = MPR_NEW_QUOTA * 5;
+    heap->newQuota = BIT_MAX_GC_QUOTA;
+    heap->earlyYieldQuota = heap->newQuota * 5;
     heap->enabled = !(heap->flags & MPR_DISABLE_GC);
     if (scmp(getenv("MPR_DISABLE_GC"), "1") == 0) {
         heap->enabled = 0;
@@ -281,6 +291,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
         heap->track = 1;
     }
     heap->stats.bytesAllocated += size;
+    heap->stats.regions++;
     INC(allocs);
 
     mprInitSpinLock(&heap->heapLock);
@@ -300,6 +311,8 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     }
     heap->markerCond = mprCreateCond();
     heap->mutex = mprCreateLock();
+    //  MOB - should be stable
+    //  MOB - should preallocate with a large enough size
     heap->roots = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     mprAddRoot(MPR);
     return MPR;
@@ -330,6 +343,9 @@ PUBLIC void mprDestroyMemService()
 }
 
 
+/*
+    Note this does not zero memory and thus will not pin allocated memory if it is newly, virtually allocated
+ */
 PUBLIC void *mprAllocMem(ssize usize, int flags)
 {
     MprMem      *mp;
@@ -509,7 +525,7 @@ static MprMem *allocMem(ssize required, int flags)
     MprMem      *mp, *after, *spare;
     ssize       size, maxBlock;
     ulong       groupMap, bucketMap;
-    int         bucket, baseGroup, group, index;
+    int         bucket, baseGroup, group, index, miss;
     
 #if BIT_MEMORY_STACK
     monitorStack();
@@ -532,6 +548,7 @@ static MprMem *allocMem(ssize required, int flags)
     lockHeap();
     
     /* Mask groups lower than the base group */
+    miss = 0;
     groupMap = heap->groupMap & ~((((ssize) 1) << baseGroup) - 1);
     while (groupMap) {
         group = (int) (ffsl(groupMap) - 1);
@@ -583,6 +600,10 @@ static MprMem *allocMem(ssize required, int flags)
                             linkBlock(spare);
                         }
                     }
+                    /* Tested empirically to trigger GC when we are searching too much for an allocation */
+                    if (miss > 9) {
+                        triggerGC(0);
+                    }
                     unlockHeap();
                     return mp;
                 }
@@ -591,9 +612,7 @@ static MprMem *allocMem(ssize required, int flags)
             }
             groupMap &= ~(((ssize) 1) << group);
             heap->groupMap &= ~(((ssize) 1) << group);
-#if KEEP
-            triggerGC(0);
-#endif
+            miss++;
         }
     }
     unlockHeap();
@@ -653,8 +672,9 @@ static MprMem *growHeap(ssize required, int flags)
 
     lockHeap();
     region->next = heap->regions;
+    heap->stats.bytesAllocated += size;
     heap->regions = region;
-
+    heap->stats.regions++;
     if (spareLen > 0) {
         assure(spareLen >= sizeof(MprFreeMem));
         spare = (MprMem*) ((char*) mp + required);
@@ -734,7 +754,7 @@ static MprMem *freeBlock(MprMem *mp)
     /*
         Release entire regions back to the O/S. (Blocks equal to Empty regions have no prior and are last)
      */
-    if (GET_PRIOR(mp) == NULL && IS_LAST(mp) && heap->stats.bytesFree > (MPR_MEM_REGION_SIZE * 4)) {
+    if (GET_PRIOR(mp) == NULL && IS_LAST(mp) && heap->stats.bytesFree > (BIT_MAX_REGION * 4)) {
         INC(unpins);
         unlockHeap();
         region = GET_REGION(mp);
@@ -918,9 +938,6 @@ PUBLIC void *mprVirtAlloc(ssize size, int mode)
         allocException(MPR_MEM_FAIL, size);
         return 0;
     }
-    lockHeap();
-    heap->stats.bytesAllocated += size;
-    unlockHeap();
     return ptr;
 }
 
@@ -928,10 +945,6 @@ PUBLIC void *mprVirtAlloc(ssize size, int mode)
 PUBLIC void mprVirtFree(void *ptr, ssize size)
 {
     vmfree(ptr, size);
-    lockHeap();
-    heap->stats.bytesAllocated -= size;
-    assure(heap->stats.bytesAllocated >= 0);
-    unlockHeap();
 }
 
 
@@ -1027,8 +1040,8 @@ PUBLIC void mprWakeGCService()
 
 static void triggerGC(int flags)
 {
-    if (!heap->gc && ((flags & MPR_FORCE_GC) || (heap->newCount > heap->newQuota))) {
-        heap->gc = 1;
+    if (!heap->gcRequested && ((flags & MPR_GC_FORCE) || (heap->newCount > heap->newQuota))) {
+        heap->gcRequested = 1;
 #if !PARALLEL_GC
         heap->mustYield = 1;
 #endif
@@ -1045,15 +1058,17 @@ PUBLIC void mprRequestGC(int flags)
 
     LOG(7, "DEBUG: mprRequestGC");
 
-    count = (flags & MPR_COMPLETE_GC) ? 3 : 1;
+    count = (flags & MPR_GC_COMPLETE) ? 3 : 1;
     for (i = 0; i < count; i++) {
-        if ((flags & MPR_FORCE_GC) || (heap->newCount > heap->newQuota)) {
+        if ((flags & MPR_GC_FORCE) || (heap->newCount > heap->newQuota)) {
 #if PARALLEL_GC
             heap->mustYield = 1;
 #endif
-            triggerGC(MPR_FORCE_GC);
+            triggerGC(MPR_GC_FORCE);
         }
-        mprYield((flags & MPR_WAIT_GC) ? MPR_YIELD_BLOCK: 0);
+        if (!(flags & MPR_GC_NO_YIELD)) {
+            mprYield((flags & MPR_GC_NO_BLOCK) ? MPR_YIELD_NO_BLOCK: 0);
+        }
     }
 }
 
@@ -1116,7 +1131,7 @@ static void mark()
     heap->priorNewCount = heap->newCount;
     heap->priorFree = heap->stats.bytesFree;
     heap->newCount = 0;
-    heap->gc = 0;
+    heap->gcRequested = 0;
     checkYielded();
     markRoots();
     heap->marking = 0;
@@ -1174,8 +1189,10 @@ static void sweep()
             }
         }
     }
+#if BIT_MEMORY_STATS
     heap->stats.sweepVisited = 0;
     heap->stats.swept = 0;
+#endif
 
     /*
         growHeap() will append new regions to the front of heap->regions and so will not race with this code. This code
@@ -1198,7 +1215,7 @@ static void sweep()
                 CHECK(mp);
                 BREAKPOINT(mp);
                 INC(swept);
-#if BIT_DEBUG && BIT_MEMORY_STATS
+#if BIT_MEMORY_STATS
                 if (heap->track) {
                     freeLocation(mp->name, GET_SIZE(mp));
                 }
@@ -1225,6 +1242,9 @@ static void sweep()
             } else {
                 heap->regions = nextRegion;
             }
+            heap->stats.regions--;
+            heap->stats.bytesAllocated -= region->size;
+            assure(heap->stats.bytesAllocated >= 0);
             unlockHeap();
             LOG(9, "DEBUG: Unpin %p to %p size %d, used %d", region, 
                 ((char*) region) + region->size, region->size,fastMemSize());
@@ -1241,8 +1261,10 @@ static void markRoots()
 {
     void    *root;
 
+#if BIT_MEMORY_STATS
     heap->stats.markVisited = 0;
     heap->stats.marked = 0;
+#endif
     mprMark(heap->roots);
     mprMark(heap->mutex);
     mprMark(heap->markerCond);
@@ -1455,9 +1477,10 @@ PUBLIC void mprResetYield()
     }
     /*
         May have been sticky yielded and so marking could be active. If so, must yield here regardless.
+        If GC being requested, then do a blocking pause here.
      */
     lock(ts->threads);
-    if (heap->marking || heap->sweeping) {
+    if (heap->mustYield || heap->marking || heap->sweeping) {
         unlock(ts->threads);
         mprYield(0);
     } else {
@@ -1683,8 +1706,10 @@ PUBLIC void mprAddRoot(void *root)
 {
     /*
         Need to use root lock because mprAddItem may allocate
+        MOB - heap->roots should be stable
      */
     mprSpinLock(&heap->rootLock);
+    //  MOB OPT - could have an inline MACRO that does this for speed.
     mprAddItem(heap->roots, root);
     mprSpinUnlock(&heap->rootLock);
 }
@@ -1699,6 +1724,7 @@ PUBLIC void mprRemoveRoot(void *root)
     /*
         RemoveItem copies down. If the item was equal or before the current marker root, must adjust the marker rootIndex
         so we don't skip a root.
+        OPT MOB - but only if doing parallel GC
      */
     if (index <= heap->rootIndex && heap->rootIndex > 0) {
         heap->rootIndex--;
@@ -1757,7 +1783,7 @@ static void printTracking()
     MprLocationStats     *lp;
     cchar                **np;
 
-    printf("\nManager Allocation Stats\n Size                       Location\n");
+    printf("\nAllocation Stats\n     Size Location\n");
     memcpy(sortLocations, heap->stats.locations, sizeof(sortLocations));
     qsort(sortLocations, MPR_TRACK_HASH, sizeof(MprLocationStats), sortLocation);
 
@@ -1807,7 +1833,7 @@ static void printGCStats()
             }
         }
         regionCount++;
-        printf("  Region %d is %d bytes, has %d allocated %d free\n", regionCount, (int) region->size, 
+        printf("  Region %3d is %8d bytes, has %4d allocated %3d free\n", regionCount, (int) region->size, 
             allocatedCount, freeCount);
     }
     printf("Regions: %d\n", regionCount);
@@ -1826,29 +1852,29 @@ static void printGCStats()
 
 PUBLIC void mprPrintMem(cchar *msg, int detail)
 {
-#if BIT_MEMORY_STATS
-    MprMemStats   *ap;
+    MprMemStats     *ap;
 
     ap = mprGetMemStats();
 
-    printf("\n\nMPR Memory Report %s\n", msg);
-    printf("------------------------------------------------------------------------------------------\n");
-    printf("  Total memory        %14d K\n",             (int) (mprGetMem() / 1024));
-    printf("  Current heap memory %14d K\n",             (int) (ap->bytesAllocated / 1024));
-    printf("  Free heap memory    %14d K\n",             (int) (ap->bytesFree / 1024));
-    printf("  Allocation errors   %14d\n",               ap->errors);
-    printf("  Memory limit        %14d MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
+    printf("\nMemory Report %s\n", msg);
+    printf("-------------\n");
+    printf("  Total memory      %14d K\n",             (int) (mprGetMem() / 1024));
+
+    printf("  Current heap      %14d K\n",             (int) (ap->bytesAllocated / 1024));
+    printf("  Free heap memory  %14d K\n",             (int) (ap->bytesFree / 1024));
+    printf("  Memory limit      %14d MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->maxMemory / 1024));
-    printf("  Memory redline      %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
+    printf("  Memory redline    %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->redLine / 1024));
+    printf("  Allocation errors %14d\n",               ap->errors);
 
-    printf("  Memory requests     %14d\n",               (int) ap->requests);
-    printf("  O/S allocations     %14d %%\n",            percent(ap->allocs, ap->requests));
-    printf("  Block unpinns       %14d %%\n",            percent(ap->unpins, ap->requests));
-    printf("  Block reuse         %14d %%\n",            percent(ap->reuse, ap->requests));
-    printf("  Joins               %14d %%\n",            percent(ap->joins, ap->requests));
-    printf("  Splits              %14d %%\n",            percent(ap->splits, ap->requests));
-
+#if BIT_MEMORY_STATS
+    printf("  Memory requests   %14d\n",               (int) ap->requests);
+    printf("  O/S allocations   %14d %%\n",            percent(ap->allocs, ap->requests));
+    printf("  Block unpinns     %14d %%\n",            percent(ap->unpins, ap->requests));
+    printf("  Block reuse       %14d %%\n",            percent(ap->reuse, ap->requests));
+    printf("  Joins             %14d %%\n",            percent(ap->joins, ap->requests));
+    printf("  Splits            %14d %%\n",            percent(ap->splits, ap->requests));
     printGCStats();
     if (detail) {
         printQueueStats();
@@ -2018,6 +2044,7 @@ static void allocException(int cause, ssize size)
     } else if (cause == MPR_MEM_REDLINE) {
         mprLog(0, "%s: Memory request for %,d bytes exceeds memory red-line.", MPR->name, size);
         mprPruneCache(NULL);
+        //  OPT - could trim workers too
 
     } else if (cause == MPR_MEM_LIMIT) {
         mprLog(0, "%s: Memory request for %,d bytes exceeds memory limit.", MPR->name, size);
@@ -2104,6 +2131,7 @@ static void getSystemInfo()
             return;
         }
         match = 1;
+        memStats.numCpu = 0;
         for (col = 0; read(fd, &c, 1) == 1; ) {
             if (c == '\n') {
                 col = 0;
@@ -2121,7 +2149,9 @@ static void getSystemInfo()
                 }
             }
         }
-        --memStats.numCpu;
+        if (memStats.numCpu <= 0) {
+            memStats.numCpu = 1;
+        }
         close(fd);
         memStats.pageSize = sysconf(_SC_PAGESIZE);
     }
@@ -2205,10 +2235,10 @@ PUBLIC ssize mprGetMem()
 
 #if LINUX
     int fd;
-    char path[MPR_MAX_PATH];
+    char path[BIT_MAX_PATH];
     sprintf(path, "/proc/%d/status", getpid());
     if ((fd = open(path, O_RDONLY)) >= 0) {
-        char buf[MPR_BUFSIZE], *tok;
+        char buf[BIT_MAX_BUFFER], *tok;
         int nbytes = read(fd, buf, sizeof(buf) - 1);
         close(fd);
         if (nbytes > 0) {
@@ -2454,7 +2484,7 @@ PUBLIC void *mprSetManager(void *ptr, MprManager manager)
 #if BIT_MEMORY_STATS && FUTURE
 static void showMem(MprMem *mp)
 {
-    char    *gen, *mark, buf[MPR_MAX_STRING];
+    char    *gen, *mark, buf[BIT_MAX_BUFFER];
     int     g, m;
 
     g = GET_GEN(mp);
@@ -2537,16 +2567,6 @@ static void monitorStack()
 #undef mprSetName
 #undef mprCopyName
 #undef mprSetAllocName
-
-#if UNUSED
-/*
-    Define stubs so windows can use same *.def for debug or release
- */
-PUBLIC void mprCheckBlock(MprMem *mp) {}
-PUBLIC void *mprSetName(void *ptr, cchar *name) { return 0; }
-PUBLIC void *mprCopyName(void *dest, void *src) { return 0; }
-PUBLIC void *mprSetAllocName(void *ptr, cchar *name) { return 0; }
-#endif
 
 /*
     Re-instate defines for combo releases, where source will be appended below here
@@ -2738,10 +2758,6 @@ static void manageMpr(Mpr *mpr, int flags)
     }
 }
 
-static void wgc(int mode)
-{
-    mprRequestGC(mode);
-}
 
 /*
     Destroy the Mpr and all services
@@ -2766,7 +2782,7 @@ PUBLIC void mprDestroy(int how)
     if (MPR->state < MPR_STOPPING) {
         mprTerminate(how, -1);
     }
-    gmode = MPR_FORCE_GC | MPR_COMPLETE_GC | MPR_WAIT_GC;
+    gmode = MPR_GC_FORCE | MPR_GC_COMPLETE;
     mprRequestGC(gmode);
 
     if (how & MPR_EXIT_GRACEFUL) {
@@ -2783,12 +2799,12 @@ PUBLIC void mprDestroy(int how)
     mprStopSignalService();
 
     /* Final GC to run all finalizers */
-    wgc(gmode);
+    mprRequestGC(gmode);
 
     if (how & MPR_EXIT_RESTART) {
-        mprLog(3, "Restarting\n\n");
+        mprLog(2, "Restarting\n\n");
     } else {
-        mprLog(3, "Exiting");
+        mprLog(2, "Exiting");
     }
     MPR->state = MPR_FINISHED;
     mprStopGCService();
@@ -2800,7 +2816,6 @@ PUBLIC void mprDestroy(int how)
         mprRestart();
     }
 }
-
 
 
 /*
@@ -2973,6 +2988,7 @@ PUBLIC int mprWaitTillIdle(MprTicks timeout)
     lastTrace = mark = mprGetTicks(); 
     while (!mprIsIdle() && (remaining = mprGetRemainingTicks(mark, timeout)) > 0) {
         mprSleep(1);
+        mprServiceEvents(10, MPR_SERVICE_ONE_THING);
         if ((lastTrace - remaining) > MPR_TICKS_PER_SEC) {
             mprLog(1, "Waiting for requests to complete, %d secs remaining ...", remaining / MPR_TICKS_PER_SEC);
             lastTrace = remaining;
@@ -3264,7 +3280,7 @@ PUBLIC int mprGetEndian()
 
     test = 1;
     probe = (char*) &test;
-    return (*probe == 1) ? MPR_LITTLE_ENDIAN : MPR_BIG_ENDIAN;
+    return (*probe == 1) ? BIT_LITTLE_ENDIAN : BIT_BIG_ENDIAN;
 }
 
 
@@ -3302,7 +3318,9 @@ PUBLIC void mprSetExitTimeout(MprTicks timeout)
 }
 
 
-PUBLIC void mprNop(void *ptr) {}
+PUBLIC void mprNop(void *ptr) {
+}
+
 
 /*
     @copy   default
@@ -3326,12 +3344,12 @@ PUBLIC void mprNop(void *ptr) {}
 
 /************************************************************************/
 /*
-    Start of file "src/mprAsync.c"
+    Start of file "src/async.c"
  */
 /************************************************************************/
 
 /**
-    mprAsync.c - Wait for I/O on Windows.
+    async.c - Wait for I/O on Windows.
 
     This module provides io management for sockets on Windows like systems. 
 
@@ -3607,12 +3625,12 @@ PUBLIC void mprSetWinMsgCallback(MprMsgCallback callback)
 
 /************************************************************************/
 /*
-    Start of file "src/mprAtomic.c"
+    Start of file "src/atomic.c"
  */
 /************************************************************************/
 
 /**
-    mprAtomic.c - Atomic operations
+    atomic.c - Atomic operations
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -3743,12 +3761,14 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int value)
 
 PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 {
-#if MACOSX && 0
-    return OSAtomicCompareAndSwapPtrBarrier(expected, value, addr);
+#if MACOSX
+    void *old = *(void**) addr;
+    OSAtomicCompareAndSwapPtrBarrier(old, (void*) value, addr);
+    return old;
 #elif BIT_WIN_LIKE
     return (void*) InterlockedExchange((volatile LONG*) addr, (LONG) value);
-#elif BIT_UNIX_LIKE && FUTURE
-    return __sync_lock_test_and_set(addr, value);
+#elif BIT_HAS_SYNC
+    return __sync_lock_test_and_set(addr, (void*) value);
 #else
     {
         void    *old;
@@ -3794,12 +3814,12 @@ PUBLIC void mprAtomicListInsert(void * volatile *head, volatile void **link, voi
 
 /************************************************************************/
 /*
-    Start of file "src/mprBuf.c"
+    Start of file "src/buf.c"
  */
 /************************************************************************/
 
 /**
-    mprBuf.c - Dynamic buffer module
+    buf.c - Dynamic buffer module
 
     This module is not thread-safe for performance. Callers must do their own locking.
 
@@ -3825,12 +3845,12 @@ PUBLIC MprBuf *mprCreateBuf(ssize initialSize, ssize maxSize)
     MprBuf      *bp;
     
     if (initialSize <= 0) {
-        initialSize = MPR_BUFSIZE;
+        initialSize = BIT_MAX_BUFFER;
     }
     if ((bp = mprAllocObj(MprBuf, manageBuf)) == 0) {
         return 0;
     }
-    bp->growBy = MPR_BUFSIZE;
+    bp->growBy = BIT_MAX_BUFFER;
     mprSetBufSize(bp, initialSize, maxSize);
     return bp;
 }
@@ -4422,12 +4442,12 @@ PUBLIC ssize mprPutStringToWideBuf(MprBuf *bp, cchar *str)
 
 /************************************************************************/
 /*
-    Start of file "src/mprCache.c"
+    Start of file "src/cache.c"
  */
 /************************************************************************/
 
 /**
-    mprCache.c - In-process caching
+    cache.c - In-process caching
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -4879,12 +4899,12 @@ static void manageCacheItem(CacheItem *item, int flags)
 
 /************************************************************************/
 /*
-    Start of file "src/mprCmd.c"
+    Start of file "src/cmd.c"
  */
 /************************************************************************/
 
 /* 
-    mprCmd.c - Run external commands
+    cmd.c - Run external commands
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -5233,10 +5253,10 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
         flags &= ~MPR_CMD_OUT;
     }
     if (flags & MPR_CMD_OUT) {
-        cmd->stdoutBuf = mprCreateBuf(MPR_BUFSIZE, -1);
+        cmd->stdoutBuf = mprCreateBuf(BIT_MAX_BUFFER, -1);
     }
     if (flags & MPR_CMD_ERR) {
-        cmd->stderrBuf = mprCreateBuf(MPR_BUFSIZE, -1);
+        cmd->stderrBuf = mprCreateBuf(BIT_MAX_BUFFER, -1);
     }
     mprSetCmdCallback(cmd, defaultCmdCallback, NULL);
     rc = mprStartCmd(cmd, argc, argv, envp, flags);
@@ -5734,8 +5754,8 @@ static void defaultCmdCallback(MprCmd *cmd, int channel, void *data)
         Read and aggregate the result into a single string
      */
     space = mprGetBufSpace(buf);
-    if (space < (MPR_BUFSIZE / 4)) {
-        if (mprGrowBuf(buf, MPR_BUFSIZE) < 0) {
+    if (space < (BIT_MAX_BUFFER / 4)) {
+        if (mprGrowBuf(buf, BIT_MAX_BUFFER) < 0) {
             mprCloseCmdFd(cmd, channel);
             return;
         }
@@ -6270,7 +6290,7 @@ static int makeChannel(MprCmd *cmd, int index)
     file = &cmd->files[index];
     file->name = sfmt("/pipe/%s_%d_%d", BIT_PRODUCT, taskIdSelf(), tempSeed++);
 
-    if (pipeDevCreate(file->name, 5, MPR_BUFSIZE) < 0) {
+    if (pipeDevCreate(file->name, 5, BIT_MAX_BUFFER) < 0) {
         mprError("Cannot create pipes to run %s", cmd->program);
         return MPR_ERR_CANT_OPEN;
     }
@@ -6559,12 +6579,12 @@ static void closeFiles(MprCmd *cmd)
 
 /************************************************************************/
 /*
-    Start of file "src/mprCond.c"
+    Start of file "src/cond.c"
  */
 /************************************************************************/
 
 /**
-    mprCond.c - Thread Conditional variables
+    cond.c - Thread Conditional variables
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -6879,12 +6899,12 @@ PUBLIC void mprSignalMultiCond(MprCond *cp)
 
 /************************************************************************/
 /*
-    Start of file "src/mprCrypt.c"
+    Start of file "src/crypt.c"
  */
 /************************************************************************/
 
 /*
-    mprCrypt.c - Base-64 encoding and decoding and MD5 support.
+    crypt.c - Base-64 encoding and decoding and MD5 support.
 
     Algorithms by RSA. See license at the end of the file. 
     This module is not thread safe.
@@ -7596,12 +7616,12 @@ static void shaPad(MprSha *sha)
 
 /************************************************************************/
 /*
-    Start of file "src/mprDisk.c"
+    Start of file "src/disk.c"
  */
 /************************************************************************/
 
 /**
-    mprDisk.c - File services for systems with a (disk) based file system.
+    disk.c - File services for systems with a (disk) based file system.
 
     This module is not thread safe.
 
@@ -8024,7 +8044,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
 static char *getPathLink(MprDiskFileSystem *fs, cchar *path)
 {
 #if BIT_UNIX_LIKE
-    char    pbuf[MPR_MAX_PATH];
+    char    pbuf[BIT_MAX_PATH];
     ssize   len;
 
     if ((len = readlink(path, pbuf, sizeof(pbuf) - 1)) < 0) {
@@ -8180,12 +8200,12 @@ PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 
 /************************************************************************/
 /*
-    Start of file "src/mprDispatcher.c"
+    Start of file "src/dispatcher.c"
  */
 /************************************************************************/
 
 /*
-    mprDispatcher.c - Event dispatch services
+    dispatcher.c - Event dispatch services
 
     This module is thread-safe.
 
@@ -8348,7 +8368,7 @@ static void mprDestroyDispatcher(MprDispatcher *dispatcher)
 static void manageDispatcher(MprDispatcher *dispatcher, int flags)
 {
     MprEventService     *es;
-    MprEvent            *q, *event;
+    MprEvent            *q, *event, *next;
 
     es = dispatcher->service;
 
@@ -8364,12 +8384,14 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
         //  MOB - is this lock needed?  Surely all threads are stopped.
         lock(es);
         q = dispatcher->eventQ;
-        for (event = q->next; event != q; event = event->next) {
+        for (event = q->next; event != q; event = next) {
+            next = event->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
         q = dispatcher->currentQ;
-        for (event = q->next; event != q; event = event->next) {
+        for (event = q->next; event != q; event = next) {
+            next = event->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
@@ -8469,7 +8491,11 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
     }
     justOne = (flags & MPR_SERVICE_ONE_THING) ? 1 : 0;
 
-    while (es->now < expires && !mprIsStoppingCore()) {
+    /*
+        Stop serviceing events when doing final shutdown of the core
+        Post-test for mprIsStopping so callers can pump remaining events once stopping has begun
+     */
+    while (es->now < expires) {
         eventCount = es->eventCount;
         if (MPR->signalService->hasSignals) {
             mprServiceSignals();
@@ -8479,6 +8505,7 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
             assure(dp->magic == MPR_DISPATCHER_MAGIC);
             if (!serviceDispatcher(dp)) {
                 queueDispatcher(es->pendingQ, dp);
+                es->pendingCount++;
                 continue;
             }
             if (justOne) {
@@ -8494,9 +8521,6 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
                 es->willAwake = es->now + delay;
                 unlock(es);
                 if (mprIsStopping()) {
-                    if (mprServicesAreIdle()) {
-                        break;
-                    }
                     delay = 10;
                 }
                 mprWaitForIO(MPR->waitService, delay);
@@ -8505,7 +8529,7 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
             }
         }
         es->now = mprGetTicks();
-        if (justOne) {
+        if (justOne || mprIsStopping()) {
             break;
         }
     }
@@ -8750,21 +8774,35 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = dispatcher->service;
+    /*
+        OPT - mprGetNextEvent locks anyway, so should be able to get away without a lock here
+     */
     LOG(7, "dispatchEvents for %s", dispatcher->name);
     lock(es);
     assure(dispatcher->cond);
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    /*
+        Events are removed from the dispatcher queue and put onto the currentQ. This is so they will be marked for GC.
+        If the callback calls mprRemoveEvent, it will not remove from the currentQ. If it was a continuous event, 
+        mprRemoveEvent will clear the continuous flag.
+
+        OPT - this could all be simpler if dispatchEvents was never called recursively. Then a currentQ would not be needed,
+        and neither would a running flag. See mprRemoveEvent().
+     */
     for (count = 0; (dispatcher->flags & MPR_DISPATCHER_ENABLED) && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
         assure(event->magic == MPR_EVENT_MAGIC);
+        assure(!(event->flags & MPR_EVENT_RUNNING));
         unlock(es);
 
         LOG(7, "Call event %s", event->name);
         assure(event->proc);
+        event->flags |= MPR_EVENT_RUNNING;
         (event->proc)(event->data, event);
+        event->flags &= ~MPR_EVENT_RUNNING;
 
         lock(es);
-        if (event->continuous) {
+        if (event->flags & MPR_EVENT_CONTINUOUS) {
             /* Reschedule if continuous */
             event->timestamp = dispatcher->service->now;
             event->due = event->timestamp + (event->period ? event->period : 1);
@@ -8865,9 +8903,10 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     dispatcher = 0;
 
     lock(es);
-    if (pendingQ->next != pendingQ && mprAvailableWorkers()) {
-        /* No available workers to queue the dispatcher in the pending queue */
+    if (pendingQ->next != pendingQ && mprAvailableWorkers() > 0) {
         dispatcher = pendingQ->next;
+        dispatcher->service->pendingCount--;
+        assure(dispatcher->service->pendingCount >= 0);
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         queueDispatcher(es->runQ, dispatcher);
         assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
@@ -9134,12 +9173,13 @@ PUBLIC bool mprDispatcherHasEvents(MprDispatcher *dispatcher)
 
 /************************************************************************/
 /*
-    Start of file "src/mprEncode.c"
+    Start of file "src/encode.c"
  */
 /************************************************************************/
 
 /*
-    mprEncode.c - URI encode and decode routines
+    encode.c - URI encode and decode routines
+
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 
@@ -9400,12 +9440,12 @@ PUBLIC char *mprEscapeHtml(cchar *html)
 
 /************************************************************************/
 /*
-    Start of file "src/mprEpoll.c"
+    Start of file "src/epoll.c"
  */
 /************************************************************************/
 
 /**
-    mprEpoll.c - Wait for I/O by using epoll on unix like systems.
+    epoll.c - Wait for I/O by using epoll on unix like systems.
 
     This module augments the mprWait wait services module by providing kqueue() based waiting support.
     Also see mprAsyncSelectWait and mprSelectWait. This module is thread-safe.
@@ -9418,6 +9458,12 @@ PUBLIC char *mprEscapeHtml(cchar *html)
 
 
 #if MPR_EVENT_EPOLL
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_EPOLL
+    #define BIT_MAX_EPOLL  32
+#endif
+
 /********************************** Forwards **********************************/
 
 static int growEvents(MprWaitService *ws);
@@ -9429,14 +9475,14 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct epoll_event  ev;
 
-    ws->eventsMax = MPR_EPOLL_SIZE;
+    ws->eventsMax = BIT_MAX_EPOLL;
     ws->handlerMax = MPR_FD_MIN;
     ws->events = mprAllocZeroed(sizeof(struct epoll_event) * ws->eventsMax);
     ws->handlerMap = mprAllocZeroed(sizeof(MprWaitHandler*) * ws->handlerMax);
     if (ws->events == 0 || ws->handlerMap == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
-    if ((ws->epoll = epoll_create(MPR_EPOLL_SIZE)) < 0) {
+    if ((ws->epoll = epoll_create(BIT_MAX_EPOLL)) < 0) {
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -9567,7 +9613,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     memset(&ev, 0, sizeof(ev));
     memset(events, 0, sizeof(events));
     ev.data.fd = fd;
-    if ((epfd = epoll_create(MPR_EPOLL_SIZE)) < 0) {
+    if ((epfd = epoll_create(BIT_MAX_EPOLL)) < 0) {
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -9722,12 +9768,12 @@ PUBLIC void mprWakeNotifier()
 
 /************************************************************************/
 /*
-    Start of file "src/mprEvent.c"
+    Start of file "src/event.c"
  */
 /************************************************************************/
 
 /*
-    mprEvent.c - Event and dispatch services
+    event.c - Event and dispatch services
 
     This module is thread-safe.
 
@@ -9830,7 +9876,6 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
     event->dispatcher = dispatcher;
     event->next = event->prev = 0;
     event->flags = flags;
-    event->continuous = (flags & MPR_EVENT_CONTINUOUS) ? 1 : 0;
     event->magic = MPR_EVENT_MAGIC;
 }
 
@@ -9893,14 +9938,15 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
     if (dispatcher) {
         es = dispatcher->service;
         lock(es);
-        if (event->next) {
+        if (event->next && !(event->flags & MPR_EVENT_RUNNING)) {
             mprDequeueEvent(event);
         }
+        event->dispatcher = 0;
+        event->flags &= ~MPR_EVENT_CONTINUOUS;
         if (dispatcher->flags & MPR_DISPATCHER_ENABLED && 
                 event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
             mprScheduleDispatcher(dispatcher);
         }
-        event->dispatcher = 0;
         unlock(es);
     }
 }
@@ -9931,20 +9977,29 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
 
 PUBLIC void mprStopContinuousEvent(MprEvent *event)
 {
-    event->continuous = 0;
+    lock(event->dispatcher->service);
+    event->flags &= ~MPR_EVENT_CONTINUOUS;
+    unlock(event->dispatcher->service);
 }
 
 
 PUBLIC void mprRestartContinuousEvent(MprEvent *event)
 {
-    event->continuous = 1;
+    lock(event->dispatcher->service);
+    event->flags |= MPR_EVENT_CONTINUOUS;
+    unlock(event->dispatcher->service);
     mprRescheduleEvent(event, event->period);
 }
 
 
 PUBLIC void mprEnableContinuousEvent(MprEvent *event, int enable)
 {
-    event->continuous = enable;
+    lock(event->dispatcher->service);
+    event->flags &= ~MPR_EVENT_CONTINUOUS;
+    if (enable) {
+        event->flags |= MPR_EVENT_CONTINUOUS;
+    }
+    unlock(event->dispatcher->service);
 }
 
 
@@ -10066,12 +10121,12 @@ PUBLIC void mprDequeueEvent(MprEvent *event)
 
 /************************************************************************/
 /*
-    Start of file "src/mprFile.c"
+    Start of file "src/file.c"
  */
 /************************************************************************/
 
 /**
-    mprFile.c - File services.
+    file.c - File services.
 
     This modules provides a simple cross platform file I/O abstraction. It uses the MprFileSystem to provide I/O services.
     This module is not thread safe.
@@ -10196,7 +10251,7 @@ PUBLIC int mprGetFileChar(MprFile *file)
         return MPR_ERR;
     }
     if (file->buf == 0) {
-        file->buf = mprCreateBuf(MPR_BUFSIZE, MPR_BUFSIZE);
+        file->buf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     }
     bp = file->buf;
 
@@ -10269,7 +10324,7 @@ PUBLIC char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
         *lenp = 0;
     }
     if (maxline <= 0) {
-        maxline = MPR_BUFSIZE;
+        maxline = BIT_MAX_BUFFER;
     }
     fs = file->fileSystem;
     newline = fs->newline;
@@ -10365,7 +10420,7 @@ PUBLIC ssize mprPutFileString(MprFile *file, cchar *str)
         Buffer output and flush when full.
      */
     if (file->buf == 0) {
-        file->buf = mprCreateBuf(MPR_BUFSIZE, 0);
+        file->buf = mprCreateBuf(BIT_MAX_BUFFER, 0);
         if (file->buf == 0) {
             return MPR_ERR_CANT_ALLOCATE;
         }
@@ -10412,7 +10467,7 @@ PUBLIC int mprPeekFileChar(MprFile *file)
         return MPR_ERR;
     }
     if (file->buf == 0) {
-        file->buf = mprCreateBuf(MPR_BUFSIZE, MPR_BUFSIZE);
+        file->buf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     }
     bp = file->buf;
 
@@ -10641,10 +10696,10 @@ PUBLIC int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSiz
         return MPR_ERR_BAD_STATE;
     }
     if (initialSize <= 0) {
-        initialSize = MPR_BUFSIZE;
+        initialSize = BIT_MAX_BUFFER;
     }
     if (maxSize <= 0) {
-        maxSize = MPR_BUFSIZE;
+        maxSize = BIT_MAX_BUFFER;
     }
     if (maxSize <= initialSize) {
         maxSize = initialSize;
@@ -10690,12 +10745,12 @@ PUBLIC int mprGetFileFd(MprFile *file)
 
 /************************************************************************/
 /*
-    Start of file "src/mprFileSystem.c"
+    Start of file "src/fs.c"
  */
 /************************************************************************/
 
 /**
-    mprFileSystem.c - File system services.
+    fs.c - File system services.
 
     This module provides a simple cross platform file system abstraction. File systems provide a file system switch and 
     underneath a file system provider that implements actual I/O.
@@ -10846,12 +10901,12 @@ PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 
 /************************************************************************/
 /*
-    Start of file "src/mprHash.c"
+    Start of file "src/hash.c"
  */
 /************************************************************************/
 
 /*
-    mprHash.c - Fast hashing hash lookup module
+    hash.c - Fast hashing hash lookup module
 
     This hash hash uses a fast key lookup mechanism. Keys may be C strings or unicode strings. The hash value entries 
     are arbitrary pointers. The keys are hashed into a series of buckets which then have a chain of hash entries.
@@ -10867,7 +10922,13 @@ PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 
 
 
-/**************************** Forward Declarations ****************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_HASH
+    #define BIT_MAX_HASH 23           /* Default initial hash size */
+#endif
+
+/********************************** Forwards **********************************/
 
 static void *dupKey(MprHash *hash, cvoid *key);
 static MprKey *lookupHash(int *index, MprKey **prevSp, MprHash *hash, cvoid *key);
@@ -10876,6 +10937,7 @@ static void manageHashTable(MprHash *hash, int flags);
 /*********************************** Code *************************************/
 /*
     Create a new hash hash of a given size. Caller should provide a size that is a prime number for the greatest efficiency.
+    Can use hashSize -1, 0 to get a default hash.
  */
 PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
 {
@@ -10884,8 +10946,8 @@ PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
     if ((hash = mprAllocObj(MprHash, manageHashTable)) == 0) {
         return 0;
     }
-    if (hashSize < MPR_DEFAULT_HASH_SIZE) {
-        hashSize = MPR_DEFAULT_HASH_SIZE;
+    if (hashSize < BIT_MAX_HASH) {
+        hashSize = BIT_MAX_HASH;
     }
     if ((hash->buckets = mprAllocZeroed(sizeof(MprKey*) * hashSize)) == 0) {
         return NULL;
@@ -11315,12 +11377,12 @@ PUBLIC MprHash *mprCreateHashFromWords(cchar *str)
 
 /************************************************************************/
 /*
-    Start of file "src/mprJSON.c"
+    Start of file "src/jSON.c"
  */
 /************************************************************************/
 
 /**
-    mprJSON.c - A JSON parser and serializer. 
+    json.c - A JSON parser and serializer. 
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -11761,12 +11823,12 @@ PUBLIC void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
 
 /************************************************************************/
 /*
-    Start of file "src/mprKqueue.c"
+    Start of file "src/kqueue.c"
  */
 /************************************************************************/
 
 /**
-    mprKevent.c - Wait for I/O by using kevent on BSD based Unix systems.
+    kevent.c - Wait for I/O by using kevent on BSD based Unix systems.
 
     This module augments the mprWait wait services module by providing kqueue() based waiting support.
     Also see mprAsyncSelectWait and mprSelectWait. This module is thread-safe.
@@ -12093,12 +12155,12 @@ PUBLIC void mprWakeNotifier()
 
 /************************************************************************/
 /*
-    Start of file "src/mprList.c"
+    Start of file "src/list.c"
  */
 /************************************************************************/
 
 /**
-    mprList.c - Simple list type.
+    list.c - Simple list type.
 
     The list supports two modes of operation. Compact mode where the list is compacted after removing list items, 
     and no-compact mode where removed items are zeroed. No-compact mode implies that all valid list entries must 
@@ -12113,7 +12175,13 @@ PUBLIC void mprWakeNotifier()
 
 
 
-/****************************** Forward Declarations **************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_LIST
+    #define BIT_MAX_LIST   8
+#endif
+
+/********************************** Forwards **********************************/
 
 static int growList(MprList *lp, int incr);
 static void manageList(MprList *lp, int flags);
@@ -12131,7 +12199,7 @@ PUBLIC MprList *mprCreateList(int size, int flags)
     }
     lp->maxSize = MAXINT;
     lp->flags = flags | MPR_OBJ_LIST;
-    if (!(flags & MPR_LIST_OWN)) {
+    if (!(flags & MPR_LIST_STABLE)) {
         lp->mutex = mprCreateLock();
     }
     if (size != 0) {
@@ -12169,7 +12237,7 @@ PUBLIC void mprInitList(MprList *lp, int flags)
     lp->length = 0;
     lp->maxSize = MAXINT;
     lp->items = 0;
-    lp->mutex = (flags & MPR_LIST_OWN) ? 0 : mprCreateLock();
+    lp->mutex = (flags & MPR_LIST_STABLE) ? 0 : mprCreateLock();
 }
 
 
@@ -12181,7 +12249,7 @@ PUBLIC int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
     ssize   size;
 
     if (initialSize <= 0) {
-        initialSize = MPR_LIST_INCR;
+        initialSize = BIT_MAX_LIST;
     }
     if (maxSize <= 0) {
         maxSize = MAXINT;
@@ -12595,6 +12663,28 @@ PUBLIC void *mprGetNextItem(MprList *lp, int *next)
 }
 
 
+PUBLIC void *mprGetNextStableItem(MprList *lp, int *next)
+{
+    void    *item;
+    int     index;
+
+    assure(next);
+    assure(*next >= 0);
+    assure(lp->flags & MPR_LIST_STABLE);
+
+    if (lp == 0) {
+        return 0;
+    }
+    index = *next;
+    if (index < lp->length) {
+        item = lp->items[index];
+        *next = ++index;
+        return item;
+    }
+    return 0;
+}
+
+
 PUBLIC void *mprGetPrevItem(MprList *lp, int *next)
 {
     void    *item;
@@ -12740,7 +12830,7 @@ static int growList(MprList *lp, int incr)
         how much the list needs to grow.
      */
     if (incr <= 1) {
-        len = MPR_LIST_INCR + (lp->size * 2);
+        len = BIT_MAX_LIST + (lp->size * 2);
     } else {
         len = lp->size + incr;
     }
@@ -12911,12 +13001,12 @@ recurse:
 
 /************************************************************************/
 /*
-    Start of file "src/mprLock.c"
+    Start of file "src/lock.c"
  */
 /************************************************************************/
 
 /**
-    mprLock.c - Thread Locking Support
+    lock.c - Thread Locking Support
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -13293,12 +13383,12 @@ PUBLIC void mprSpinUnlock(MprSpin *lock)
 
 /************************************************************************/
 /*
-    Start of file "src/mprLog.c"
+    Start of file "src/log.c"
  */
 /************************************************************************/
 
 /**
-    mprLog.c - Multithreaded Portable Runtime (MPR) Logging and error reporting.
+    log.c - Multithreaded Portable Runtime (MPR) Logging and error reporting.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -13307,7 +13397,13 @@ PUBLIC void mprSpinUnlock(MprSpin *lock)
 
 
 
-/****************************** Forward Declarations **************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_LOGLINE
+    #define BIT_MAX_LOGLINE 8192           /* Max size of a log line */
+#endif
+
+/********************************** Forwards **********************************/
 
 static void defaultLogHandler(int flags, int level, cchar *msg);
 static void logOutput(int flags, int level, cchar *msg);
@@ -13433,7 +13529,7 @@ PUBLIC void mprSetLogBackup(ssize size, int backup, int flags)
 PUBLIC void mprLog(int level, cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     if (level < 0 || level > mprGetLogLevel()) {
         return;
@@ -13467,7 +13563,7 @@ PUBLIC void mprRawLog(int level, cchar *fmt, ...)
 PUBLIC void mprError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -13480,7 +13576,7 @@ PUBLIC void mprError(cchar *fmt, ...)
 PUBLIC void mprWarn(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -13493,7 +13589,7 @@ PUBLIC void mprWarn(cchar *fmt, ...)
 PUBLIC void mprMemoryError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     if (fmt == 0) {
         logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, "Memory allocation error");
@@ -13509,7 +13605,7 @@ PUBLIC void mprMemoryError(cchar *fmt, ...)
 PUBLIC void mprUserError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -13521,7 +13617,7 @@ PUBLIC void mprUserError(cchar *fmt, ...)
 PUBLIC void mprFatalError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -13537,7 +13633,7 @@ PUBLIC void mprFatalError(cchar *fmt, ...)
 PUBLIC void mprStaticError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -13556,7 +13652,7 @@ PUBLIC void mprStaticError(cchar *fmt, ...)
 PUBLIC void mprAssure(cchar *loc, cchar *msg)
 {
 #if BIT_ASSERT
-    char    buf[MPR_MAX_LOG];
+    char    buf[BIT_MAX_LOGLINE];
 
     if (loc) {
 #if BIT_UNIX_LIKE
@@ -13596,7 +13692,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
 {
     MprFile     *file;
     MprPath     info;
-    char        *prefix, buf[MPR_MAX_LOG];
+    char        *prefix, buf[BIT_MAX_LOGLINE];
     int         mode;
     static int  check = 0;
 
@@ -13841,12 +13937,12 @@ PUBLIC int _cmp(char *s1, char *s2)
 
 /************************************************************************/
 /*
-    Start of file "src/mprMime.c"
+    Start of file "src/mime.c"
  */
 /************************************************************************/
 
 /* 
-    mprMime.c - Mime type handling
+    mime.c - Mime type handling
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
@@ -13931,7 +14027,7 @@ PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
         if ((file = mprOpenFile(path, O_RDONLY | O_TEXT, 0)) == 0) {
             return 0;
         }
-        if ((table = mprCreateHash(MPR_DEFAULT_HASH_SIZE, 0)) == 0) {
+        if ((table = mprCreateHash(47, 0)) == 0) {
             mprCloseFile(file);
             return 0;
         }
@@ -14078,12 +14174,12 @@ PUBLIC cchar *mprLookupMime(MprHash *table, cchar *ext)
 
 /************************************************************************/
 /*
-    Start of file "src/mprMixed.c"
+    Start of file "src/mixed.c"
  */
 /************************************************************************/
 
 /**
-    mprMixed.c - Mixed mode strings. Unicode results with ascii args.
+    mixed.c - Mixed mode strings. Unicode results with ascii args.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -14525,12 +14621,12 @@ PUBLIC void dummyWide() {}
 
 /************************************************************************/
 /*
-    Start of file "src/mprModule.c"
+    Start of file "src/module.c"
  */
 /************************************************************************/
 
 /**
-    mprModule.c - Dynamic module loading support.
+    module.c - Dynamic module loading support.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -14877,12 +14973,12 @@ PUBLIC char *mprSearchForModule(cchar *filename)
 
 /************************************************************************/
 /*
-    Start of file "src/mprPath.c"
+    Start of file "src/path.c"
  */
 /************************************************************************/
 
 /**
-    mprPath.c - Path (filename) services.
+    path.c - Path (filename) services.
 
     This modules provides cross platform path name services.
 
@@ -15041,7 +15137,7 @@ PUBLIC int mprCopyPath(cchar *fromName, cchar *toName, int mode)
 {
     MprFile     *from, *to;
     ssize       count;
-    char        buf[MPR_BUFSIZE];
+    char        buf[BIT_MAX_BUFFER];
 
     if ((from = mprOpenFile(fromName, O_RDONLY | O_BINARY, 0)) == 0) {
         mprError("Cannot open %s", fromName);
@@ -15119,7 +15215,7 @@ PUBLIC char *mprGetAbsPath(cchar *path)
 
 #if BIT_WIN_LIKE && !WINCE
 {
-    wchar    buf[MPR_MAX_PATH];
+    wchar    buf[BIT_MAX_PATH];
     GetFullPathName(wide(path), sizeof(buf) - 1, buf, NULL);
     buf[TSZ(buf) - 1] = '\0';
     result = mprNormalizePath(multi(buf));
@@ -15178,7 +15274,7 @@ PUBLIC char *mprGetAppPath()
 
 #if MACOSX
 {
-    char    path[MPR_MAX_PATH], pbuf[MPR_MAX_PATH];
+    char    path[BIT_MAX_PATH], pbuf[BIT_MAX_PATH];
     uint    size;
     ssize   len;
 
@@ -15196,7 +15292,7 @@ PUBLIC char *mprGetAppPath()
 }
 #elif FREEBSD 
 {
-    char    pbuf[MPR_MAX_STRING];
+    char    pbuf[BIT_MAX_PATH];
     int     len;
 
     len = readlink("/proc/curproc/file", pbuf, sizeof(pbuf) - 1);
@@ -15208,7 +15304,7 @@ PUBLIC char *mprGetAppPath()
 }
 #elif BIT_UNIX_LIKE 
 {
-    char    pbuf[MPR_MAX_STRING], *path;
+    char    pbuf[BIT_MAX_PATH], *path;
     int     len;
 #if SOLARIS
     path = sfmt("/proc/%i/path/a.out", getpid()); 
@@ -15224,7 +15320,7 @@ PUBLIC char *mprGetAppPath()
 }
 #elif BIT_WIN_LIKE
 {
-    wchar    pbuf[MPR_MAX_PATH];
+    wchar    pbuf[BIT_MAX_PATH];
 
     if (GetModuleFileName(0, pbuf, sizeof(pbuf) - 1) <= 0) {
         return 0;
@@ -15247,7 +15343,7 @@ PUBLIC char *mprGetAppPath()
  */
 PUBLIC char *mprGetCurrentPath()
 {
-    char    dir[MPR_MAX_PATH];
+    char    dir[BIT_MAX_PATH];
 
     if (getcwd(dir, sizeof(dir)) == 0) {
         return mprGetAbsPath("/");
@@ -15441,7 +15537,7 @@ static MprList *getDirFiles(cchar *dir, int flags)
     MprPath         fileInfo;
     MprList         *list;
     cchar           *seps;
-    char            *path, pbuf[MPR_MAX_PATH];
+    char            *path, pbuf[BIT_MAX_PATH];
 #if WINCE
     WIN32_FIND_DATAA findData;
 #else
@@ -15728,7 +15824,7 @@ PUBLIC char *mprGetPortablePath(cchar *path)
 PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
 {
     MprFileSystem   *fs;
-    char            originBuf[MPR_MAX_FNAME], *cp, *result, *dest, *lastcp, *origin, *op, *lastop;
+    char            originBuf[BIT_MAX_FNAME], *cp, *result, *dest, *lastcp, *origin, *op, *lastop;
     int             originSegments, i, commonSegments, sep;
 
     fs = mprLookupFileSystem(destArg);
@@ -16600,12 +16696,12 @@ PUBLIC ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode)
 
 /************************************************************************/
 /*
-    Start of file "src/mprPoll.c"
+    Start of file "src/poll.c"
  */
 /************************************************************************/
 
 /**
-    mprPoll.c - Wait for I/O by using poll on unix like systems.
+    poll.c - Wait for I/O by using poll on unix like systems.
 
     This module augments the mprWait wait services module by providing poll() based waiting support.
     Also see mprAsyncSelectWait and mprSelectWait. This module is thread-safe.
@@ -16927,12 +17023,263 @@ PUBLIC void mprWakeNotifier()
 
 /************************************************************************/
 /*
-    Start of file "src/mprPrintf.c"
+    Start of file "src/posix.c"
  */
 /************************************************************************/
 
 /**
-    mprPrintf.c - Printf routines safe for embedded programming
+    posix.c - Posix specific adaptions
+
+    Copyright (c) All Rights Reserved. See details at the end of the file.
+ */
+
+/********************************* Includes ***********************************/
+
+
+
+#if BIT_UNIX_LIKE
+/*********************************** Code *************************************/
+
+PUBLIC int mprCreateOsService()
+{
+    umask(022);
+
+    /*
+        Cleanup the environment. IFS is often a security hole
+     */
+    putenv("IFS=\t ");
+    return 0;
+}
+
+
+PUBLIC int mprStartOsService()
+{
+    /* 
+        Open a syslog connection
+     */
+#if SOLARIS
+    openlog(mprGetAppName(), LOG_LOCAL0);
+#else
+    openlog(mprGetAppName(), 0, LOG_LOCAL0);
+#endif
+    return 0;
+}
+
+
+PUBLIC void mprStopOsService()
+{
+    closelog();
+}
+
+
+PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
+{
+    ssize   sofar, rc;
+    int     fd;
+
+    if ((fd = open((block) ? "/dev/random" : "/dev/urandom", O_RDONLY, 0666)) < 0) {
+        return MPR_ERR_CANT_OPEN;
+    }
+    sofar = 0;
+    do {
+        rc = read(fd, &buf[sofar], length);
+        if (rc < 0) {
+            assure(0);
+            return MPR_ERR_CANT_READ;
+        }
+        length -= rc;
+        sofar += rc;
+    } while (length > 0);
+    close(fd);
+    return 0;
+}
+
+
+#if BIT_HAS_DYN_LOAD
+PUBLIC int mprLoadNativeModule(MprModule *mp)
+{
+    MprModuleEntry  fn;
+    MprPath         info;
+    char            *at;
+    void            *handle;
+
+    assure(mp);
+
+    /*
+        Search the image incase the module has been statically linked
+     */
+#ifdef RTLD_DEFAULT
+    handle = RTLD_DEFAULT;
+#else
+#ifdef RTLD_MAIN_ONLY
+    handle = RTLD_MAIN_ONLY;
+#else
+    handle = 0;
+#endif
+#endif
+    if (!mp->entry || !dlsym(handle, mp->entry)) {
+        if ((at = mprSearchForModule(mp->path)) == 0) {
+            mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
+                mprGetModuleSearchPath());
+            return 0;
+        }
+        mp->path = at;
+        mprGetPathInfo(mp->path, &info);
+        mp->modified = info.mtime;
+        mprLog(2, "Loading native module %s", mprGetPathBase(mp->path));
+        if ((handle = dlopen(mp->path, RTLD_LAZY | RTLD_GLOBAL)) == 0) {
+            mprError("Cannot load module %s\nReason: \"%s\"", mp->path, dlerror());
+            return MPR_ERR_CANT_OPEN;
+        } 
+        mp->handle = handle;
+
+    } else if (mp->entry) {
+        mprLog(2, "Activating native module %s", mp->name);
+    }
+    if (mp->entry) {
+        if ((fn = (MprModuleEntry) dlsym(handle, mp->entry)) != 0) {
+            if ((fn)(mp->moduleData, mp) < 0) {
+                mprError("Initialization for module %s failed", mp->name);
+                dlclose(handle);
+                return MPR_ERR_CANT_INITIALIZE;
+            }
+        } else {
+            mprError("Cannot load module %s\nReason: can't find function \"%s\"", mp->path, mp->entry);
+            dlclose(handle);
+            return MPR_ERR_CANT_READ;
+        }
+    }
+    return 0;
+}
+
+
+PUBLIC int mprUnloadNativeModule(MprModule *mp)
+{
+    return dlclose(mp->handle);
+}
+#endif
+
+
+/*
+    This routine does not yield
+ */
+PUBLIC void mprNap(MprTicks timeout)
+{
+    MprTicks        remaining, mark;
+    struct timespec t;
+    int             rc;
+
+    assure(timeout >= 0);
+    
+    mark = mprGetTicks();
+    remaining = timeout;
+    do {
+        /* MAC OS X corrupts the timeout if using the 2nd paramater, so recalc each time */
+        t.tv_sec = ((int) (remaining / 1000));
+        t.tv_nsec = ((int) ((remaining % 1000) * 1000000));
+        rc = nanosleep(&t, NULL);
+        remaining = mprGetRemainingTicks(mark, timeout);
+    } while (rc < 0 && errno == EINTR && remaining > 0);
+}
+
+
+PUBLIC void mprSleep(MprTicks timeout)
+{
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
+    mprNap(timeout);
+    mprResetYield();
+}
+
+
+/*  
+    Write a message in the O/S native log (syslog in the case of linux)
+ */
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
+{
+    int     sflag;
+
+    if (flags & MPR_FATAL_SRC) {
+        sflag = LOG_ERR;
+    } else if (flags & MPR_ASSURE_SRC) {
+        sflag = LOG_WARNING;
+    } else if (flags & MPR_ERROR_SRC) {
+        sflag = LOG_ERR;
+    } else {
+        sflag = LOG_WARNING;
+    }
+    syslog(sflag, "%s", message);
+}
+
+
+PUBLIC int mprInitWindow()
+{
+    return 0;
+}
+
+
+PUBLIC void mprSetFilesLimit(int limit)
+{
+    struct rlimit r;
+    int           i;
+
+    if (limit == 0 || limit == MAXINT) {
+        /*
+            We need to determine a reasonable maximum possible limit value.
+            There is no #define we can use for this, so we test to determine it empirically
+         */
+        for (limit = 0x40000000; limit > 0; limit >>= 1) {
+            r.rlim_cur = r.rlim_max = limit;
+            if (setrlimit(RLIMIT_NOFILE, &r) == 0) {
+                for (i = (limit >> 4) * 15; i > 0; i--) {
+                    r.rlim_max = r.rlim_cur = limit + i;
+                    if (setrlimit(RLIMIT_NOFILE, &r) == 0) {
+                        limit = 0;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    } else {
+        r.rlim_cur = r.rlim_max = limit;
+        if (setrlimit(RLIMIT_NOFILE, &r) < 0) {
+            mprError("Can't set file limit to %d", limit);
+        }
+    }
+    getrlimit(RLIMIT_NOFILE, &r);
+    mprLog(6, "Set files limit to soft %d, max %d", r.rlim_cur, r.rlim_max);
+}
+
+#endif /* BIT_UNIX_LIKE */
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
+
+/************************************************************************/
+/*
+    Start of file "src/printf.c"
+ */
+/************************************************************************/
+
+/**
+    printf.c - Printf routines safe for embedded programming
 
     This module provides safe replacements for the standard printf formatting routines. Most routines in this file 
     are not thread-safe. It is the callers responsibility to perform all thread synchronization.
@@ -17086,6 +17433,12 @@ typedef struct MprEjsName {
     MprEjsString    *space;
 } MprEjsName;
 
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_FMT
+    #define BIT_MAX_FMT 256           /* Initial size of a printf buffer */
+#endif
+
 /***************************** Forward Declarations ***************************/
 
 static int  getState(char c, int state);
@@ -17163,7 +17516,7 @@ PUBLIC ssize mprFprintf(MprFile *file, cchar *fmt, ...)
 }
 
 
-#if FUTURE
+#if KEEP
 /*
     Printf with a static buffer. Used internally only. WILL NOT MALLOC.
  */
@@ -17171,12 +17524,12 @@ PUBLIC int mprStaticPrintf(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
-    char            buf[MPR_MAX_STRING];
+    char            buf[BIT_MAX_BUFFER];
 
     fs = mprLookupFileSystem(NULL, "/");
 
     va_start(ap, fmt);
-    sprintfCore(buf, MPR_MAX_STRING, fmt, ap);
+    sprintfCore(buf, BIT_MAX_BUFFER, fmt, ap);
     va_end(ap);
     return mprWriteFile(fs->stdOutput, buf, slen(buf));
 }
@@ -17189,12 +17542,12 @@ PUBLIC int mprStaticPrintfError(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
-    char            buf[MPR_MAX_STRING];
+    char            buf[BIT_MAX_BUFFER];
 
     fs = mprLookupFileSystem(NULL, "/");
 
     va_start(ap, fmt);
-    sprintfCore(buf, MPR_MAX_STRING, fmt, ap);
+    sprintfCore(buf, BIT_MAX_BUFFER, fmt, ap);
     va_end(ap);
     return mprWriteFile(fs->stdError, buf, slen(buf));
 }
@@ -17288,14 +17641,13 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
         if (maxsize <= 0) {
             maxsize = MAXINT;
         }
-        len = min(MPR_SMALL_ALLOC, maxsize);
-        buf = mprAlloc(len);
-        if (buf == 0) {
+        len = min(BIT_MAX_FMT, maxsize);
+        if ((buf = mprAlloc(len)) == 0) {
             return 0;
         }
         fmt.buf = (uchar*) buf;
         fmt.endbuf = &fmt.buf[len];
-        fmt.growBy = min(MPR_SMALL_ALLOC * 2, maxsize - len);
+        fmt.growBy = min(len * 2, maxsize - len);
     }
     fmt.maxsize = maxsize;
     fmt.start = fmt.buf;
@@ -17573,6 +17925,9 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
             }
         }
     }
+    /*
+        Return the buffer as the result. Prevents a double alloc.
+     */
     BPUTNULL(&fmt);
     return (char*) fmt.buf;
 }
@@ -17740,7 +18095,7 @@ static void outNum(Format *fmt, cchar *prefix, uint64 value)
 #if BIT_FLOAT
 static void outFloat(Format *fmt, char specChar, double value)
 {
-    char    result[MPR_MAX_STRING], *cp;
+    char    result[256], *cp;
     int     c, fill, i, len, index;
 
     result[0] = '\0';
@@ -17899,12 +18254,12 @@ PUBLIC int print(cchar *fmt, ...)
 
 /************************************************************************/
 /*
-    Start of file "src/mprRomFile.c"
+    Start of file "src/rom.c"
  */
 /************************************************************************/
 
 /*
-    mprRomFile.c - ROM File system
+    rom.c - ROM File system
 
     ROM support for systems without disk or flash based file systems. This module provides read-only file retrieval 
     from compiled file images. Use the mprRomComp program to compile files into C code and then link them into your 
@@ -17918,7 +18273,13 @@ PUBLIC int print(cchar *fmt, ...)
 
 
 #if BIT_ROM 
-/****************************** Forward Declarations **************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_ROMFS
+    #define BIT_MAX_ROMFS 37           /* Size of the ROMFS hash lookup */
+#endif
+
+/********************************** Forwards **********************************/
 
 static void manageRomFile(MprFile *file, int flags);
 static int getPathInfo(MprRomFileSystem *rfs, cchar *path, MprPath *info);
@@ -18116,7 +18477,7 @@ PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList)
 
     rfs = (MprRomFileSystem*) MPR->fileSystem;
     rfs->romInodes = inodeList;
-    rfs->fileIndex = mprCreateHash(MPR_FILES_HASH_SIZE, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
+    rfs->fileIndex = mprCreateHash(BIT_MAX_ROMFS, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
 
     for (ri = inodeList; ri->path; ri++) {
         if (mprAddKey(rfs->fileIndex, ri->path, ri) < 0) {
@@ -18219,12 +18580,12 @@ PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
 
 /************************************************************************/
 /*
-    Start of file "src/mprSelect.c"
+    Start of file "src/select.c"
  */
 /************************************************************************/
 
 /**
-    mprSelect.c - Wait for I/O by using select.
+    select.c - Wait for I/O by using select.
 
     This module provides I/O wait management for sockets on VxWorks and systems that use select(). Windows and Unix
     uses different mechanisms. See mprAsyncSelectWait and mprPollWait. This module is thread-safe.
@@ -18259,7 +18620,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
         Try to find a good port to use to break out of the select wait
      */ 
     maxTries = 100;
-    breakPort = MPR_DEFAULT_BREAK_PORT;
+    breakPort = BIT_WAKEUP_PORT;
     for (rc = retries = 0; retries < maxTries; retries++) {
         breakSock = socket(AF_INET, SOCK_DGRAM, 0);
         if (breakSock < 0) {
@@ -18557,12 +18918,12 @@ static void readPipe(MprWaitService *ws)
 
 /************************************************************************/
 /*
-    Start of file "src/mprSignal.c"
+    Start of file "src/signal.c"
  */
 /************************************************************************/
 
 /**
-    mprSignal.c - Signal handling for Unix systems
+    signal.c - Signal handling for Unix systems
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -18941,16 +19302,14 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 
 /************************************************************************/
 /*
-    Start of file "src/mprSocket.c"
+    Start of file "src/socket.c"
  */
 /************************************************************************/
 
 /**
-    mprSocket.c - Convenience class for the management of sockets
+    socket.c - Convenience class for the management of sockets
 
     This module provides a higher interface to interact with the standard sockets API. It does not perform buffering.
-
-    This module is thread-safe.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -18966,7 +19325,13 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 #define BIT_HAS_GETADDRINFO 1
 #endif
 
-/******************************* Forward Declarations *************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_IP
+    #define BIT_MAX_IP 1024
+#endif
+
+/********************************** Forwards **********************************/
 
 static void closeSocket(MprSocket *sp, bool gracefully);
 static int connectSocket(MprSocket *sp, cchar *ipAddr, int port, int initialFlags);
@@ -18990,7 +19355,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize);
 PUBLIC MprSocketService *mprCreateSocketService()
 {
     MprSocketService    *ss;
-    char                hostName[MPR_MAX_IP_NAME], serverName[MPR_MAX_IP_NAME], domainName[MPR_MAX_IP_NAME], *dp;
+    char                hostName[BIT_MAX_IP], serverName[BIT_MAX_IP], domainName[BIT_MAX_IP], *dp;
 
     if ((ss = mprAllocObj(MprSocketService, manageSocketService)) == 0) {
         return 0;
@@ -19024,6 +19389,10 @@ PUBLIC MprSocketService *mprCreateSocketService()
     mprSetDomainName(domainName);
     mprSetHostName(hostName);
     ss->secureSockets = mprCreateList(0, 0);
+    ss->hasIPv6 = socket(AF_INET6, SOCK_STREAM, 0) == 0;
+    if (!ss->hasIPv6) {
+        mprLog(2, "System has only IPv4 support");
+    }
     return ss;
 }
 
@@ -19161,9 +19530,15 @@ PUBLIC bool mprHasDualNetworkStack()
         dual = info.dwMajorVersion >= 6;
     }
 #else
-    dual = 1;
+    dual = MPR->socketService->hasIPv6;
 #endif
     return dual;
+}
+
+
+PUBLIC bool mprHasIPv6() 
+{
+    return MPR->socketService->hasIPv6;
 }
 
 
@@ -19182,7 +19557,7 @@ PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
 static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
-    MprSocklen          addrlen;
+    Socklen             addrlen;
     cchar               *sip;
     int                 datagram, family, protocol, rc, only;
 
@@ -19238,12 +19613,14 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         So we explicitly control.
      */
 #if defined(IPV6_V6ONLY)
-    if (ip == 0 || *ip == '\0') {
-        only = 0;
-        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
-    } else if (ipv6(ip)) {
-        only = 1;
-        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+    if (MPR->socketService->hasIPv6) {
+        if (ip == 0 || *ip == '\0') {
+            only = 0;
+            setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+        } else if (ipv6(ip)) {
+            only = 1;
+            setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+        }
     }
 #endif
     if (sp->service->prebind) {
@@ -19351,7 +19728,7 @@ PUBLIC int mprConnectSocket(MprSocket *sp, cchar *ip, int port, int flags)
 static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
-    MprSocklen          addrlen;
+    Socklen             addrlen;
     int                 broadcast, datagram, family, protocol, rc;
 
     mprLog(6, "openClient: %s:%d, flags %x", ip, port, initialFlags);
@@ -19452,7 +19829,7 @@ PUBLIC void mprDisconnectSocket(MprSocket *sp)
 
 static void disconnectSocket(MprSocket *sp)
 {
-    char    buf[MPR_BUFSIZE];
+    char    buf[BIT_MAX_BUFFER];
     int     i, fd;
 
     /*  
@@ -19561,8 +19938,8 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     MprSocket                   *nsp;
     struct sockaddr_storage     addrStorage, saddrStorage;
     struct sockaddr             *addr, *saddr;
-    char                        ip[MPR_MAX_IP_ADDR], acceptIp[MPR_MAX_IP_ADDR];
-    MprSocklen                  addrlen, saddrlen;
+    char                        ip[BIT_MAX_IP], acceptIp[BIT_MAX_IP];
+    Socklen                     addrlen, saddrlen;
     int                         fd, port, acceptPort;
 
     ss = MPR->socketService;
@@ -19662,7 +20039,7 @@ PUBLIC ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
 static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize)
 {
     struct sockaddr_storage server;
-    MprSocklen              len;
+    Socklen                 len;
     ssize                   bytes;
     int                     errCode;
 
@@ -19681,7 +20058,7 @@ again:
     }
     if (sp->flags & MPR_SOCKET_DATAGRAM) {
         len = sizeof(server);
-        bytes = recvfrom(sp->fd, buf, (int) bufsize, MSG_NOSIGNAL, (struct sockaddr*) &server, (MprSocklen*) &len);
+        bytes = recvfrom(sp->fd, buf, (int) bufsize, MSG_NOSIGNAL, (struct sockaddr*) &server, (Socklen*) &len);
     } else {
         bytes = recv(sp->fd, buf, (int) bufsize, MSG_NOSIGNAL);
     }
@@ -19749,7 +20126,7 @@ PUBLIC ssize mprWriteSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 {
     struct sockaddr     *addr;
-    MprSocklen          addrlen;
+    Socklen             addrlen;
     ssize               len, written, sofar;
     int                 family, protocol, errCode;
 
@@ -19877,7 +20254,7 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
 #if !LINUX || __UCLIBC__
 static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize len)
 {
-    char    buf[MPR_BUFSIZE];
+    char    buf[BIT_MAX_BUFFER];
 
     mprSeekFile(file, SEEK_SET, (int) offset);
     len = min(len, sizeof(buf));
@@ -20213,7 +20590,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
      */
     if (ip == 0 || ip[0] == '\0') {
         ip = 0;
-        hints.ai_flags |= AI_PASSIVE;           /* Bind to 0.0.0.0 and :: */
+        hints.ai_flags |= AI_PASSIVE;           /* Bind to 0.0.0.0 and :: if available */
     }
     v6 = ipv6(ip);
     hints.ai_socktype = SOCK_STREAM;
@@ -20262,7 +20639,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
 }
 #else
 
-PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, MprSocklen *addrlen)
+PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, Socklen *addrlen)
 {
     MprSocketService    *ss;
     struct sockaddr_in  *sa;
@@ -20523,6 +20900,7 @@ static void manageSsl(MprSsl *ssl, int flags)
         mprMark(ssl->caFile);
         mprMark(ssl->caPath);
         mprMark(ssl->ciphers);
+        mprMark(ssl->mutex);
         mprMark(ssl->pconfig);
         mprMark(ssl->provider);
         mprMark(ssl->providerName);
@@ -20540,8 +20918,7 @@ PUBLIC MprSsl *mprCreateSsl(int server)
     if ((ssl = mprAllocObj(MprSsl, manageSsl)) == 0) {
         return 0;
     }
-    ssl->ciphers = sclone(BIT_CIPHERS);
-    ssl->protocols = MPR_PROTO_TLSV1 | MPR_PROTO_TLSV11;
+    ssl->protocols = MPR_PROTO_TLSV1 | MPR_PROTO_TLSV11 | MPR_PROTO_TLSV12;
     /*
         The default for servers is not to verify client certificates.
         The default for clients is to verify unless MPR->verifySsl has been set to false
@@ -20555,6 +20932,7 @@ PUBLIC MprSsl *mprCreateSsl(int server)
         ssl->verifyPeer = MPR->verifySsl;
         ssl->verifyIssuer = MPR->verifySsl;
     }
+    ssl->mutex = mprCreateLock();
     return ssl;
 }
 
@@ -20656,6 +21034,17 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
 }
 
 
+PUBLIC void mprAddSslCiphers(MprSsl *ssl, cchar *ciphers)
+{
+    assure(ssl);
+    if (ssl->ciphers) {
+        ssl->ciphers = sjoin(ssl->ciphers, ":", ciphers, NULL);
+    } else {
+        ssl->ciphers = sclone(ciphers);
+    }
+}
+
+
 PUBLIC void mprSetSslCiphers(MprSsl *ssl, cchar *ciphers)
 {
     assure(ssl);
@@ -20751,12 +21140,12 @@ PUBLIC void mprVerifySslDepth(MprSsl *ssl, int depth)
 
 /************************************************************************/
 /*
-    Start of file "src/mprString.c"
+    Start of file "src/string.c"
  */
 /************************************************************************/
 
 /**
-    mprString.c - String routines safe for embedded programming
+    string.c - String routines safe for embedded programming
 
     This module provides safe replacements for the standard string library. 
     Most routines in this file are not thread-safe. It is the callers responsibility to perform all thread synchronization.
@@ -21684,7 +22073,6 @@ PUBLIC char *supper(cchar *str)
 
 /*
     Expand ${token} references in a path or string.
-    Currently support DOCUMENT_ROOT, SERVER_ROOT and PRODUCT, OS and VERSION.
  */
 PUBLIC char *stemplate(cchar *str, MprHash *keys)
 {
@@ -21754,12 +22142,12 @@ PUBLIC char *stemplate(cchar *str, MprHash *keys)
 
 /************************************************************************/
 /*
-    Start of file "src/mprTest.c"
+    Start of file "src/test.c"
  */
 /************************************************************************/
 
 /*
-    mprTest.c - Embedthis Unit Test Framework
+    test.c - Embedthis Unit Test Framework
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -22025,7 +22413,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
 static int loadTestModule(MprTestService *sp, cchar *fileName)
 {
     MprModule   *mp;
-    char        *cp, *base, entry[MPR_MAX_FNAME], path[MPR_MAX_FNAME];
+    char        *cp, *base, entry[BIT_MAX_FNAME], path[BIT_MAX_FNAME];
 
     assure(fileName && *fileName);
 
@@ -22575,7 +22963,7 @@ static void runTestProc(MprTestGroup *gp, MprTestCase *test)
 static char *getErrorMessage(MprTestGroup *gp)
 {
     MprTestFailure  *fp;
-    char            msg[MPR_MAX_STRING], *errorMsg;
+    char            msg[BIT_MAX_BUFFER], *errorMsg;
     int             next;
 
     next = 0;
@@ -22782,12 +23170,12 @@ static int setLogging(char *logSpec)
 
 /************************************************************************/
 /*
-    Start of file "src/mprThread.c"
+    Start of file "src/thread.c"
  */
 /************************************************************************/
 
 /**
-    mprThread.c - Primitive multi-threading support for Windows
+    thread.c - Primitive multi-threading support for Windows
 
     This module provides threading, mutex and condition variable APIs.
 
@@ -23405,7 +23793,7 @@ PUBLIC void mprSetMinWorkers(int n)
     while (ws->numThreads < ws->minThreads) {
         worker = createWorker(ws, ws->stackSize);
         ws->numThreads++;
-        ws->maxUseThreads = max(ws->numThreads, ws->maxUseThreads);
+        ws->maxUsedThreads = max(ws->numThreads, ws->maxUsedThreads);
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
     }
@@ -23485,16 +23873,52 @@ PUBLIC void mprSetWorkerStartCallback(MprWorkerProc start)
 }
 
 
-PUBLIC int mprAvailableWorkers()
+PUBLIC void mprGetWorkerStats(MprWorkerStats *stats)
 {
     MprWorkerService    *ws;
-    int                 count;
+    MprWorker           *wp;
+    int                 next;
 
     ws = MPR->workerService;
+
     lock(ws);
-    count = mprGetListLength(ws->idleThreads) + (ws->maxThreads - ws->numThreads);
+    stats->max = ws->maxThreads;
+    stats->min = ws->minThreads;
+    stats->maxUsed = ws->maxUsedThreads;
+
+    stats->idle = (int) ws->idleThreads->length;
+    stats->busy = (int) ws->busyThreads->length;
+
+    stats->yielded = 0;
+    for (ITERATE_ITEMS(ws->busyThreads, wp, next)) {
+        /*
+            Only count as yielded, those workers who call yield from their user code
+            This excludes the yield in worker main
+         */
+        stats->yielded += (wp->thread->yielded && wp->running);
+    }
     unlock(ws);
-    return count;
+}
+
+
+PUBLIC int mprAvailableWorkers()
+{
+    MprWorkerStats  wstats;
+    int             activeWorkers, spareThreads, spareCores, result;
+
+    mprGetWorkerStats(&wstats);
+    spareThreads = wstats.max - wstats.busy - wstats.idle;
+    activeWorkers = wstats.busy - wstats.yielded;
+    spareCores = MPR->heap->stats.numCpu - activeWorkers;
+    if (spareCores <= 0 || spareThreads <= 0) {
+        return 0;
+    }
+    result = wstats.idle + min(spareThreads, spareCores);
+#if KEEP
+    printf("Avail %d, busy %d, yielded %d, idle %d, spare-threads %d, spare-cores %d, mustYield %d\n", result, wstats.busy,
+        wstats.yielded, wstats.idle, spareThreads, spareCores, MPR->heap->mustYield);
+#endif
+    return result;
 }
 
 
@@ -23502,7 +23926,6 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
-    static int          warnOnceWorkers = 0;
 
     ws = MPR->workerService;
     lock(ws);
@@ -23515,34 +23938,24 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
      */
     worker = mprGetLastItem(ws->idleThreads);
     if (worker) {
-        worker->proc = proc;
         worker->data = data;
+        worker->proc = proc;
         changeState(worker, MPR_WORKER_BUSY);
 
     } else if (ws->numThreads < ws->maxThreads) {
-
-        /*
-            Cannot find an idle thread. Try to create more workers in the pool. Otherwise, we will have to wait. 
-            No need to wakeup the thread -- it will immediately go to work.
-         */
+        if (mprAvailableWorkers() == 0) {
+            unlock(ws);
+            return MPR_ERR_BUSY;
+        }
         worker = createWorker(ws, ws->stackSize);
-
         ws->numThreads++;
-        ws->maxUseThreads = max(ws->numThreads, ws->maxUseThreads);
-        worker->proc = proc;
+        ws->maxUsedThreads = max(ws->numThreads, ws->maxUsedThreads);
         worker->data = data;
-
+        worker->proc = proc;
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
 
     } else {
-        /*
-            No free workers and can't create anymore
-         */
-        if (!warnOnceWorkers) {
-            warnOnceWorkers = 1;
-            mprError("No free workers. Increase ThreadLimit. (Count %d of %d)", ws->numThreads, ws->maxThreads);
-        }
         unlock(ws);
         return MPR_ERR_BUSY;
     }
@@ -23583,15 +23996,6 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
 }
 
 
-PUBLIC int mprGetAvailableWorkers()
-{
-    MprWorkerService  *ws;
-
-    ws = MPR->workerService;
-    return (int) ws->idleThreads->length + (ws->maxThreads - ws->numThreads); 
-}
-
-
 static int getNextThreadNum(MprWorkerService *ws)
 {
     int     rc;
@@ -23612,19 +24016,6 @@ PUBLIC void mprSetWorkerStackSize(int n)
 }
 
 
-PUBLIC void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
-{
-    assure(ws);
-
-    stats->maxThreads = ws->maxThreads;
-    stats->minThreads = ws->minThreads;
-    stats->numThreads = ws->numThreads;
-    stats->maxUse = ws->maxUseThreads;
-    stats->idleThreads = (int) ws->idleThreads->length;
-    stats->busyThreads = (int) ws->busyThreads->length;
-}
-
-
 /*
     Create a new thread for the task
  */
@@ -23637,11 +24028,6 @@ static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize)
     if ((worker = mprAllocObj(MprWorker, manageWorker)) == 0) {
         return 0;
     }
-    worker->flags = 0;
-    worker->proc = 0;
-    worker->cleanup = 0;
-    worker->data = 0;
-    worker->state = 0;
     worker->workerService = ws;
     worker->idleCond = mprCreateCond();
 
@@ -23674,32 +24060,36 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     if (ws->startWorker) {
         (*ws->startWorker)(worker->data, worker);
     }
-    lock(ws);
-    while (!(worker->state & MPR_WORKER_PRUNED) && !mprIsStopping()) {
+    /*
+        Very important for performance to elimminate to locking the WorkerService
+     */
+    while (!(worker->state & MPR_WORKER_PRUNED)) {
         if (worker->proc) {
-            unlock(ws);
+            worker->running = 1;
             (*worker->proc)(worker->data, worker);
-            lock(ws);
-            worker->proc = 0;
+            worker->running = 0;
         }
         worker->lastActivity = MPR->eventService->now;
-        changeState(worker, MPR_WORKER_IDLE);
-
+        if (mprIsStopping()) {
+            break;
+        }
         assure(worker->cleanup == 0);
         if (worker->cleanup) {
             (*worker->cleanup)(worker->data, worker);
             worker->cleanup = NULL;
         }
+        worker->proc = 0;
         worker->data = 0;
-        unlock(ws);
+        changeState(worker, MPR_WORKER_IDLE);
+
         /*
             Sleep till there is more work to do. Yield for GC first.
          */
         mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         mprWaitForCond(worker->idleCond, -1);
         mprResetYield();
-        lock(ws);
     }
+    lock(ws);
     changeState(worker, 0);
     worker->thread = 0;
     ws->numThreads--;
@@ -23796,13 +24186,13 @@ static void changeState(MprWorker *worker, int state)
 
 /************************************************************************/
 /*
-    Start of file "src/mprTime.c"
+    Start of file "src/time.c"
  */
 /************************************************************************/
 
 /**
-    mprTime.c - Date and Time handling
- *
+    time.c - Date and Time handling
+ 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 
@@ -24589,10 +24979,8 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
 PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
-    char            localFmt[MPR_MAX_STRING];
     cchar           *cp;
-    char            *dp, *endp, *sign;
-    char            buf[MPR_MAX_STRING];
+    char            localFmt[256], buf[256], *dp, *endp, *sign;
     ssize           size;
     int             value;
 
@@ -25579,263 +25967,12 @@ PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
 
 /************************************************************************/
 /*
-    Start of file "src/mprUnix.c"
+    Start of file "src/vxworks.c"
  */
 /************************************************************************/
 
 /**
-    mprUnix.c - Unix specific adaptions
-
-    Copyright (c) All Rights Reserved. See details at the end of the file.
- */
-
-/********************************* Includes ***********************************/
-
-
-
-#if BIT_UNIX_LIKE
-/*********************************** Code *************************************/
-
-PUBLIC int mprCreateOsService()
-{
-    umask(022);
-
-    /*
-        Cleanup the environment. IFS is often a security hole
-     */
-    putenv("IFS=\t ");
-    return 0;
-}
-
-
-PUBLIC int mprStartOsService()
-{
-    /* 
-        Open a syslog connection
-     */
-#if SOLARIS
-    openlog(mprGetAppName(), LOG_LOCAL0);
-#else
-    openlog(mprGetAppName(), 0, LOG_LOCAL0);
-#endif
-    return 0;
-}
-
-
-PUBLIC void mprStopOsService()
-{
-    closelog();
-}
-
-
-PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
-{
-    ssize   sofar, rc;
-    int     fd;
-
-    if ((fd = open((block) ? "/dev/random" : "/dev/urandom", O_RDONLY, 0666)) < 0) {
-        return MPR_ERR_CANT_OPEN;
-    }
-    sofar = 0;
-    do {
-        rc = read(fd, &buf[sofar], length);
-        if (rc < 0) {
-            assure(0);
-            return MPR_ERR_CANT_READ;
-        }
-        length -= rc;
-        sofar += rc;
-    } while (length > 0);
-    close(fd);
-    return 0;
-}
-
-
-#if BIT_HAS_DYN_LOAD
-PUBLIC int mprLoadNativeModule(MprModule *mp)
-{
-    MprModuleEntry  fn;
-    MprPath         info;
-    char            *at;
-    void            *handle;
-
-    assure(mp);
-
-    /*
-        Search the image incase the module has been statically linked
-     */
-#ifdef RTLD_DEFAULT
-    handle = RTLD_DEFAULT;
-#else
-#ifdef RTLD_MAIN_ONLY
-    handle = RTLD_MAIN_ONLY;
-#else
-    handle = 0;
-#endif
-#endif
-    if (!mp->entry || !dlsym(handle, mp->entry)) {
-        if ((at = mprSearchForModule(mp->path)) == 0) {
-            mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
-                mprGetModuleSearchPath());
-            return 0;
-        }
-        mp->path = at;
-        mprGetPathInfo(mp->path, &info);
-        mp->modified = info.mtime;
-        mprLog(2, "Loading native module %s", mprGetPathBase(mp->path));
-        if ((handle = dlopen(mp->path, RTLD_LAZY | RTLD_GLOBAL)) == 0) {
-            mprError("Cannot load module %s\nReason: \"%s\"", mp->path, dlerror());
-            return MPR_ERR_CANT_OPEN;
-        } 
-        mp->handle = handle;
-
-    } else if (mp->entry) {
-        mprLog(2, "Activating native module %s", mp->name);
-    }
-    if (mp->entry) {
-        if ((fn = (MprModuleEntry) dlsym(handle, mp->entry)) != 0) {
-            if ((fn)(mp->moduleData, mp) < 0) {
-                mprError("Initialization for module %s failed", mp->name);
-                dlclose(handle);
-                return MPR_ERR_CANT_INITIALIZE;
-            }
-        } else {
-            mprError("Cannot load module %s\nReason: can't find function \"%s\"", mp->path, mp->entry);
-            dlclose(handle);
-            return MPR_ERR_CANT_READ;
-        }
-    }
-    return 0;
-}
-
-
-PUBLIC int mprUnloadNativeModule(MprModule *mp)
-{
-    return dlclose(mp->handle);
-}
-#endif
-
-
-/*
-    This routine does not yield
- */
-PUBLIC void mprNap(MprTicks timeout)
-{
-    MprTicks        remaining, mark;
-    struct timespec t;
-    int             rc;
-
-    assure(timeout >= 0);
-    
-    mark = mprGetTicks();
-    remaining = timeout;
-    do {
-        /* MAC OS X corrupts the timeout if using the 2nd paramater, so recalc each time */
-        t.tv_sec = ((int) (remaining / 1000));
-        t.tv_nsec = ((int) ((remaining % 1000) * 1000000));
-        rc = nanosleep(&t, NULL);
-        remaining = mprGetRemainingTicks(mark, timeout);
-    } while (rc < 0 && errno == EINTR && remaining > 0);
-}
-
-
-PUBLIC void mprSleep(MprTicks timeout)
-{
-    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
-    mprNap(timeout);
-    mprResetYield();
-}
-
-
-/*  
-    Write a message in the O/S native log (syslog in the case of linux)
- */
-PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
-{
-    int     sflag;
-
-    if (flags & MPR_FATAL_SRC) {
-        sflag = LOG_ERR;
-    } else if (flags & MPR_ASSURE_SRC) {
-        sflag = LOG_WARNING;
-    } else if (flags & MPR_ERROR_SRC) {
-        sflag = LOG_ERR;
-    } else {
-        sflag = LOG_WARNING;
-    }
-    syslog(sflag, "%s", message);
-}
-
-
-PUBLIC int mprInitWindow()
-{
-    return 0;
-}
-
-
-PUBLIC void mprSetFilesLimit(int limit)
-{
-    struct rlimit r;
-    int           i;
-
-    if (limit == 0 || limit == MAXINT) {
-        /*
-            We need to determine a reasonable maximum possible limit value.
-            There is no #define we can use for this, so we test to determine it empirically
-         */
-        for (limit = 0x40000000; limit > 0; limit >>= 1) {
-            r.rlim_cur = r.rlim_max = limit;
-            if (setrlimit(RLIMIT_NOFILE, &r) == 0) {
-                for (i = (limit >> 4) * 15; i > 0; i--) {
-                    r.rlim_max = r.rlim_cur = limit + i;
-                    if (setrlimit(RLIMIT_NOFILE, &r) == 0) {
-                        limit = 0;
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-    } else {
-        r.rlim_cur = r.rlim_max = limit;
-        if (setrlimit(RLIMIT_NOFILE, &r) < 0) {
-            mprError("Can't set file limit to %d", limit);
-        }
-    }
-    getrlimit(RLIMIT_NOFILE, &r);
-    mprLog(6, "Set files limit to soft %d, max %d", r.rlim_cur, r.rlim_max);
-}
-
-#endif /* BIT_UNIX_LIKE */
-
-/*
-    @copy   default
-
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-
-    This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
-    commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.md distributed with
-    this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
- */
-
-/************************************************************************/
-/*
-    Start of file "src/mprVxworks.c"
- */
-/************************************************************************/
-
-/**
-    mprVxworks.c - Vxworks specific adaptions
+    vxworks.c - Vxworks specific adaptions
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -26044,12 +26181,12 @@ double  __mpr_floating_point_resolution(double a, double b, int64 c, int64 d, ui
 
 /************************************************************************/
 /*
-    Start of file "src/mprWait.c"
+    Start of file "src/wait.c"
  */
 /************************************************************************/
 
 /*
-    mprWait.c - Wait for I/O service.
+    wait.c - Wait for I/O service.
 
     This module provides wait management for sockets and other file descriptors and allows users to create wait
     handlers which will be called when I/O events are detected. Multiple backends (one at a time) are supported.
@@ -26231,7 +26368,6 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
         dispatcher = (wp->dispatcher) ? wp->dispatcher: mprGetDispatcher();
     }
     event = wp->event = mprCreateEvent(dispatcher, "IOEvent", 0, ioEvent, wp->handlerData, MPR_EVENT_DONT_QUEUE);
-    event->fd = wp->fd;
     event->mask = wp->presentMask;
     event->handler = wp;
     mprQueueEvent(dispatcher, event);
@@ -26340,12 +26476,12 @@ PUBLIC void mprDoWaitRecall(MprWaitService *ws)
 
 /************************************************************************/
 /*
-    Start of file "src/mprWide.c"
+    Start of file "src/wide.c"
  */
 /************************************************************************/
 
 /**
-    mprUnicode.c - Memory Allocator and Garbage Collector. 
+    unicode.c - Unicode support
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -27465,12 +27601,12 @@ PUBLIC char *awtom(wchar *src, ssize *len)
 
 /************************************************************************/
 /*
-    Start of file "src/mprWin.c"
+    Start of file "src/win.c"
  */
 /************************************************************************/
 
 /**
-    mprWin.c - Windows specific adaptions. Used by BIT_WIN_LIKE and CYGWIN
+    win.c - Windows specific adaptions
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -27638,7 +27774,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
     void        *event;
     long        errorType;
     ulong       exists;
-    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *cp, *value;
+    char        buf[BIT_MAX_PATH], logName[BIT_MAX_PATH], *cp, *value;
 	wchar		*lines[9];
     int         type;
     static int  once = 0;
@@ -27700,7 +27836,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
  */ 
 static cchar *getHive(cchar *keyPath, HKEY *hive)
 {
-    char    key[MPR_MAX_STRING], *cp;
+    char    key[BIT_MAX_PATH], *cp;
     ssize   len;
 
     assure(keyPath && *keyPath);
@@ -27844,12 +27980,12 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 
 /************************************************************************/
 /*
-    Start of file "src/mprWince.c"
+    Start of file "src/wince.c"
  */
 /************************************************************************/
 
 /**
-    mprWince.c - Windows CE platform specific code.
+    wince.c - Windows CE platform specific code.
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
@@ -27968,7 +28104,7 @@ PUBLIC int mprLoadModule(MprModule *mp)
  */ 
 static cchar *getHive(cchar *keyPath, HKEY *hive)
 {
-    char    key[MPR_MAX_STRING], *cp;
+    char    key[BIT_MAX_PATH], *cp;
     int     len;
 
     assure(keyPath && *keyPath);
@@ -28100,7 +28236,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
     void        *event;
     long        errorType;
     ulong       exists;
-    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *lines[9], *cp, *value;
+    char        buf[BIT_MAX_PATH], logName[BIT_MAX_PATH], *lines[9], *cp, *value;
     int         type;
     static int  once = 0;
 
@@ -28747,12 +28883,12 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 
 /************************************************************************/
 /*
-    Start of file "src/mprXml.c"
+    Start of file "src/xml.c"
  */
 /************************************************************************/
 
 /**
-    mprXml.c - A simple SAX style XML parser
+    xml.c - A simple SAX style XML parser
 
     This is a recursive descent parser for XML text files. It is a one-pass simple parser that invokes a user 
     supplied callback for key tokens in the XML file. The user supplies a read function so that XML files can 
@@ -28765,7 +28901,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 
 
 
-/****************************** Forward Declarations **************************/
+/********************************** Forwards **********************************/
 
 static MprXmlToken getXmlToken(MprXml *xp, int state);
 static int  getNextChar(MprXml *xp);
@@ -28784,7 +28920,7 @@ PUBLIC MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
 
     xp = mprAllocObj(MprXml, manageXml);
     
-    xp->inBuf = mprCreateBuf(MPR_XML_BUFSIZE, MPR_XML_BUFSIZE);
+    xp->inBuf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     xp->tokBuf = mprCreateBuf(initialSize, maxSize);
     return xp;
 }

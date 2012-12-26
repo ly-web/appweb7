@@ -3,7 +3,7 @@
 #
 
 ARCH="x64"
-ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/'`"
+ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/'`"
 OS="macosx"
 PROFILE="debug"
 CONFIG="${OS}-${ARCH}-${PROFILE}"
@@ -23,16 +23,22 @@ if ! diff ${CONFIG}/inc/bit.h projects/appweb-${OS}-${PROFILE}-bit.h >/dev/null 
 	cp projects/appweb-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
 fi
 
+rm -rf ${CONFIG}/inc/bitos.h
+cp -r src/bitos.h ${CONFIG}/inc/bitos.h
+
 rm -rf ${CONFIG}/inc/mpr.h
 cp -r src/deps/mpr/mpr.h ${CONFIG}/inc/mpr.h
 
 ${CC} -c -o ${CONFIG}/obj/mprLib.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprLib.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libmpr.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.2.0 -current_version 4.2.0 ${LIBPATHS} -install_name @rpath/libmpr.dylib ${CONFIG}/obj/mprLib.o ${LIBS}
+${CC} -dynamiclib -o ${CONFIG}/bin/libmpr.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libmpr.dylib ${CONFIG}/obj/mprLib.o ${LIBS}
+
+rm -rf ${CONFIG}/inc/est.h
+cp -r src/deps/est/est.h ${CONFIG}/inc/est.h
 
 ${CC} -c -o ${CONFIG}/obj/mprSsl.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprSsl.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libmprssl.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.2.0 -current_version 4.2.0 ${LIBPATHS} -install_name @rpath/libmprssl.dylib ${CONFIG}/obj/mprSsl.o -lmpr ${LIBS}
+${CC} -dynamiclib -o ${CONFIG}/bin/libmprssl.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libmprssl.dylib ${CONFIG}/obj/mprSsl.o -lmpr ${LIBS}
 
 ${CC} -c -o ${CONFIG}/obj/manager.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/manager.c
 
@@ -54,7 +60,7 @@ cp -r src/deps/http/http.h ${CONFIG}/inc/http.h
 
 ${CC} -c -o ${CONFIG}/obj/httpLib.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/http/httpLib.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libhttp.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.2.0 -current_version 4.2.0 ${LIBPATHS} -install_name @rpath/libhttp.dylib ${CONFIG}/obj/httpLib.o -lpcre -lmpr ${LIBS} -lpam
+${CC} -dynamiclib -o ${CONFIG}/bin/libhttp.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libhttp.dylib ${CONFIG}/obj/httpLib.o -lpcre -lmpr ${LIBS} -lpam
 
 ${CC} -c -o ${CONFIG}/obj/http.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/http/http.c
 
@@ -65,7 +71,7 @@ cp -r src/deps/sqlite/sqlite3.h ${CONFIG}/inc/sqlite3.h
 
 ${CC} -c -o ${CONFIG}/obj/sqlite3.o -arch x86_64 -mtune=generic -Wno-deprecated-declarations -g -Wno-unused-result -w ${DFLAGS} -I${CONFIG}/inc src/deps/sqlite/sqlite3.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libsqlite3.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.2.0 -current_version 4.2.0 ${LIBPATHS} -install_name @rpath/libsqlite3.dylib ${CONFIG}/obj/sqlite3.o ${LIBS}
+${CC} -dynamiclib -o ${CONFIG}/bin/libsqlite3.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libsqlite3.dylib ${CONFIG}/obj/sqlite3.o ${LIBS}
 
 ${CC} -c -o ${CONFIG}/obj/sqlite.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/sqlite/sqlite.c
 
@@ -89,7 +95,7 @@ ${CC} -c -o ${CONFIG}/obj/log.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} 
 
 ${CC} -c -o ${CONFIG}/obj/server.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libappweb.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.2.0 -current_version 4.2.0 ${LIBPATHS} -install_name @rpath/libappweb.dylib ${CONFIG}/obj/config.o ${CONFIG}/obj/convenience.o ${CONFIG}/obj/dirHandler.o ${CONFIG}/obj/fileHandler.o ${CONFIG}/obj/log.o ${CONFIG}/obj/server.o -lhttp ${LIBS} -lpcre -lmpr -lpam
+${CC} -dynamiclib -o ${CONFIG}/bin/libappweb.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libappweb.dylib ${CONFIG}/obj/config.o ${CONFIG}/obj/convenience.o ${CONFIG}/obj/dirHandler.o ${CONFIG}/obj/fileHandler.o ${CONFIG}/obj/log.o ${CONFIG}/obj/server.o -lhttp ${LIBS} -lpcre -lmpr -lpam
 
 rm -rf ${CONFIG}/inc/edi.h
 cp -r src/esp/edi.h ${CONFIG}/inc/edi.h
@@ -121,7 +127,7 @@ ${CC} -c -o ${CONFIG}/obj/mdb.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} 
 
 ${CC} -c -o ${CONFIG}/obj/sdb.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/sdb.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libmod_esp.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.2.0 -current_version 4.2.0 ${LIBPATHS} -install_name @rpath/libmod_esp.dylib ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
+${CC} -dynamiclib -o ${CONFIG}/bin/libmod_esp.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libmod_esp.dylib ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 ${CC} -c -o ${CONFIG}/obj/esp.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/esp.c
 
@@ -138,7 +144,7 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
 ${CC} -c -o ${CONFIG}/obj/cgiHandler.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libmod_cgi.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.2.0 -current_version 4.2.0 ${LIBPATHS} -install_name @rpath/libmod_cgi.dylib ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
+${CC} -dynamiclib -o ${CONFIG}/bin/libmod_cgi.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libmod_cgi.dylib ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 ${CC} -c -o ${CONFIG}/obj/authpass.o -arch x86_64 -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/authpass.c
 

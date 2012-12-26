@@ -191,7 +191,7 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
         mprError("Missing filename");
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpSetRouteLog(state->route, httpMakePath(state->route, path), size, backup, HTTP_LOG_FORMAT, flags);
+    httpSetRouteLog(state->route, httpMakePath(state->route, path), size, backup, BIT_HTTP_LOG_FORMAT, flags);
     return 0;
 }
 #endif
@@ -409,6 +409,7 @@ static int authStoreDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     AuthRealm name
+    DEPRECATED
  */
 static int authRealmDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -524,13 +525,13 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
 
         } else if (smatch(option, "client")) {
             flags |= HTTP_CACHE_CLIENT;
-            if (snumber(ovalue)) {
+            if (ovalue) {
                 clientLifespan = getticks(ovalue);
             }
 
         } else if (smatch(option, "server")) {
             flags |= HTTP_CACHE_SERVER;
-            if (snumber(ovalue)) {
+            if (ovalue) {
                 serverLifespan = getticks(ovalue);
             }
 
@@ -1181,7 +1182,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     char            *ip;
     int             port;
 
-    mprParseSocketAddress(value, &ip, &port, HTTP_DEFAULT_PORT);
+    mprParseSocketAddress(value, &ip, &port, BIT_HTTP_PORT);
     if (port == 0) {
         mprError("Bad or missing port %d in Listen directive", port);
         return -1;
@@ -1195,7 +1196,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
         Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
      */
-    if (!schr(value, ':') && !mprHasDualNetworkStack()) {
+    if (!schr(value, ':') && mprHasIPv6() && !mprHasDualNetworkStack()) {
         mprAddItem(state->server->endpoints, httpCreateEndpoint("::", port, NULL));
     }
     return 0;

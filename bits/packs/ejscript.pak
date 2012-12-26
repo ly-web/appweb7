@@ -28,7 +28,8 @@ if (path) {
             }
             fp.close()
             if (http.status != 200) {
-                throw "Cannot download Ejscript from " + path
+                App.log.error("Cannot download Ejscript from " + path)
+                App.exit(1)
             }
             http.close()
             trace('Prepare', 'Ejscript distribution')
