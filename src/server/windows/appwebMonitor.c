@@ -71,10 +71,10 @@ static void     updateMenu(int id, char *text, int enable, int check);
 
 APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
 {
-    char    *argv[MPR_MAX_ARGC], *argp;
+    char    *argv[BIT_MAX_ARGC], *argp;
     int     argc, err, nextArg, manage, stop;
 
-    argc = mprParseArgs(command, &argv[1], MPR_MAX_ARGC - 1) + 1;
+    argc = mprParseArgs(command, &argv[1], BIT_MAX_ARGC - 1) + 1;
     if (mprCreate(argc, argv, MPR_USER_EVENTS_THREAD | MPR_NO_WINDOW) == NULL) {
         exit(1);
     }
@@ -280,7 +280,7 @@ BOOL CALLBACK dialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 static long msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp)
 {
     MprThread   *tp;
-    char        buf[MPR_MAX_FNAME];
+    char        buf[BIT_MAX_FNAME];
 
     switch (msg) {
     case WM_DESTROY:
@@ -566,7 +566,7 @@ static int runBrowser(char *page)
 {
     PROCESS_INFORMATION procInfo;
     STARTUPINFO         startInfo;
-    char                cmdBuf[MPR_MAX_STRING];
+    char                cmdBuf[BIT_MAX_BUFFER];
     char                *path;
     char                *pathArg;
     int                 port;
@@ -576,7 +576,7 @@ static int runBrowser(char *page)
         mprError("Can't get Appweb listening port");
         return -1;
     }
-    path = getBrowserPath(MPR_MAX_STRING);
+    path = getBrowserPath(BIT_MAX_BUFFER);
     if (path == 0) {
         mprError("Can't get browser startup command");
         return -1;
@@ -586,14 +586,14 @@ static int runBrowser(char *page)
         page++;
     }
     if (pathArg == 0) {
-        fmt(cmdBuf, MPR_MAX_STRING, "%s http://localhost:%d/%s", path, port, page);
+        fmt(cmdBuf, BIT_MAX_BUFFER, "%s http://localhost:%d/%s", path, port, page);
 
     } else {
         /*
             Patch out the "%1"
          */
         *pathArg = '\0';
-        fmt(cmdBuf, MPR_MAX_STRING, "%s \"http://localhost:%d/%s\"", path, port, page);
+        fmt(cmdBuf, BIT_MAX_BUFFER, "%s \"http://localhost:%d/%s\"", path, port, page);
     }
 
     mprLog(4, "Running %s\n", cmdBuf);
@@ -614,13 +614,13 @@ static int runBrowser(char *page)
  */ 
 static char *getBrowserPath(int size)
 {
-    char    cmd[MPR_MAX_STRING];
+    char    cmd[BIT_MAX_BUFFER];
     char    *type, *cp, *path;
 
     if ((type = mprReadRegistry("HKEY_CLASSES_ROOT\\.htm", "")) == 0) {
         return 0;
     }
-    fmt(cmd, MPR_MAX_STRING, "HKEY_CLASSES_ROOT\\%s\\shell\\open\\command", type);
+    fmt(cmd, BIT_MAX_BUFFER, "HKEY_CLASSES_ROOT\\%s\\shell\\open\\command", type);
     if ((path = mprReadRegistry(cmd, "")) == 0) {
         return 0;
     }
