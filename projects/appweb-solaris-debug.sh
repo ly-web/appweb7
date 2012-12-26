@@ -3,7 +3,7 @@
 #
 
 ARCH="x86"
-ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/'`"
+ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/'`"
 OS="solaris"
 PROFILE="debug"
 CONFIG="${OS}-${ARCH}-${PROFILE}"
@@ -23,12 +23,18 @@ if ! diff ${CONFIG}/inc/bit.h projects/appweb-${OS}-${PROFILE}-bit.h >/dev/null 
 	cp projects/appweb-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
 fi
 
+rm -rf ${CONFIG}/inc/bitos.h
+cp -r src/bitos.h ${CONFIG}/inc/bitos.h
+
 rm -rf ${CONFIG}/inc/mpr.h
 cp -r src/deps/mpr/mpr.h ${CONFIG}/inc/mpr.h
 
 ${CC} -c -o ${CONFIG}/obj/mprLib.o -mtune=generic -Wall -fPIC ${LDFLAGS} -Wshorten-64-to-32 ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprLib.c
 
 ${CC} -shared -o ${CONFIG}/bin/libmpr.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mprLib.o ${LIBS}
+
+rm -rf ${CONFIG}/inc/est.h
+cp -r src/deps/est/est.h ${CONFIG}/inc/est.h
 
 ${CC} -c -o ${CONFIG}/obj/mprSsl.o -mtune=generic -Wall -fPIC ${LDFLAGS} -Wshorten-64-to-32 ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprSsl.c
 
@@ -71,11 +77,11 @@ ${CC} -c -o ${CONFIG}/obj/sqlite.o -mtune=generic -Wall -fPIC ${LDFLAGS} -Wshort
 
 ${CC} -o ${CONFIG}/bin/sqlite ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sqlite.o -lsqlite3 ${LIBS} ${LDFLAGS}
 
-rm -rf ${CONFIG}/inc/appweb.h
-cp -r src/appweb.h ${CONFIG}/inc/appweb.h
-
 rm -rf ${CONFIG}/inc/customize.h
 cp -r src/customize.h ${CONFIG}/inc/customize.h
+
+rm -rf ${CONFIG}/inc/appweb.h
+cp -r src/appweb.h ${CONFIG}/inc/appweb.h
 
 ${CC} -c -o ${CONFIG}/obj/config.o -mtune=generic -Wall -fPIC ${LDFLAGS} -Wshorten-64-to-32 ${DFLAGS} -I${CONFIG}/inc src/config.c
 

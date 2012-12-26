@@ -76,7 +76,7 @@
     #define BIT_STEALTH 1
 #endif
 #ifndef BIT_SYNC
-    #define BIT_SYNC "est,http,mpr,pcre,sqlite"
+    #define BIT_SYNC "bitos,est,http,mpr,pcre,sqlite"
 #endif
 #ifndef BIT_TITLE
     #define BIT_TITLE "Embedthis Appweb"

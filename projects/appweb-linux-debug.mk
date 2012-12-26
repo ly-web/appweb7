@@ -2,7 +2,7 @@
 #   appweb-linux-debug.mk -- Makefile to build Embedthis Appweb for linux
 #
 
-ARCH     ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/')
+ARCH     ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 OS       ?= linux
 CC       ?= /usr/bin/gcc
 LD       ?= /usr/bin/ld
@@ -134,24 +134,39 @@ clean:
 clobber: clean
 	rm -fr ./$(CONFIG)
 
-$(CONFIG)/inc/mpr.h: 
+$(CONFIG)/inc/bitos.h: 
+	rm -fr $(CONFIG)/inc/bitos.h
+	cp -r src/bitos.h $(CONFIG)/inc/bitos.h
+
+$(CONFIG)/inc/mpr.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/bitos.h
 	rm -fr $(CONFIG)/inc/mpr.h
 	cp -r src/deps/mpr/mpr.h $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/mprLib.o: \
         src/deps/mpr/mprLib.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/mprLib.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/mprLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
 
 $(CONFIG)/bin/libmpr.so:  \
         $(CONFIG)/inc/mpr.h \
         $(CONFIG)/obj/mprLib.o
 	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprLib.o $(LIBS)
 
+$(CONFIG)/inc/est.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/bitos.h
+	rm -fr $(CONFIG)/inc/est.h
+	cp -r src/deps/est/est.h $(CONFIG)/inc/est.h
+
 $(CONFIG)/obj/mprSsl.o: \
         src/deps/mpr/mprSsl.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/inc/est.h
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.so:  \
         $(CONFIG)/bin/libmpr.so \
@@ -160,8 +175,9 @@ $(CONFIG)/bin/libmprssl.so:  \
 
 $(CONFIG)/obj/manager.o: \
         src/deps/mpr/manager.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/manager.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/manager.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/manager.c
 
 $(CONFIG)/bin/appman:  \
         $(CONFIG)/bin/libmpr.so \
@@ -170,36 +186,43 @@ $(CONFIG)/bin/appman:  \
 
 $(CONFIG)/obj/makerom.o: \
         src/deps/mpr/makerom.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/makerom.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
 
 $(CONFIG)/bin/makerom:  \
         $(CONFIG)/bin/libmpr.so \
         $(CONFIG)/obj/makerom.o
 	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS) $(LDFLAGS)
 
-$(CONFIG)/inc/pcre.h: 
+$(CONFIG)/inc/pcre.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/pcre.h
 	cp -r src/deps/pcre/pcre.h $(CONFIG)/inc/pcre.h
 
 $(CONFIG)/obj/pcre.o: \
         src/deps/pcre/pcre.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/pcre.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/pcre/pcre.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/pcre.h
+	$(CC) -c -o $(CONFIG)/obj/pcre.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/pcre/pcre.c
 
 $(CONFIG)/bin/libpcre.so:  \
         $(CONFIG)/inc/pcre.h \
         $(CONFIG)/obj/pcre.o
 	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o $(LIBS)
 
-$(CONFIG)/inc/http.h: 
+$(CONFIG)/inc/http.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
 	rm -fr $(CONFIG)/inc/http.h
 	cp -r src/deps/http/http.h $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/httpLib.o: \
         src/deps/http/httpLib.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/httpLib.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/http.h \
+        $(CONFIG)/inc/pcre.h
+	$(CC) -c -o $(CONFIG)/obj/httpLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
 
 $(CONFIG)/bin/libhttp.so:  \
         $(CONFIG)/bin/libmpr.so \
@@ -210,22 +233,25 @@ $(CONFIG)/bin/libhttp.so:  \
 
 $(CONFIG)/obj/http.o: \
         src/deps/http/http.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/http.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/http.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/http.h
+	$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/http.c
 
 $(CONFIG)/bin/http:  \
         $(CONFIG)/bin/libhttp.so \
         $(CONFIG)/obj/http.o
 	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr -lpam $(LDFLAGS)
 
-$(CONFIG)/inc/sqlite3.h: 
+$(CONFIG)/inc/sqlite3.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/sqlite3.h
 	cp -r src/deps/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
 
 $(CONFIG)/obj/sqlite3.o: \
         src/deps/sqlite/sqlite3.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -mtune=generic -fPIC -w $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/sqlite3.h
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -fPIC -w $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
 
 $(CONFIG)/bin/libsqlite3.so:  \
         $(CONFIG)/inc/sqlite3.h \
@@ -234,55 +260,69 @@ $(CONFIG)/bin/libsqlite3.so:  \
 
 $(CONFIG)/obj/sqlite.o: \
         src/deps/sqlite/sqlite.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/sqlite.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/sqlite3.h
+	$(CC) -c -o $(CONFIG)/obj/sqlite.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
 
 $(CONFIG)/bin/sqlite:  \
         $(CONFIG)/bin/libsqlite3.so \
         $(CONFIG)/obj/sqlite.o
 	$(CC) -o $(CONFIG)/bin/sqlite $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o -lsqlite3 $(LIBS) $(LDFLAGS)
 
-$(CONFIG)/inc/appweb.h: 
-	rm -fr $(CONFIG)/inc/appweb.h
-	cp -r src/appweb.h $(CONFIG)/inc/appweb.h
-
-$(CONFIG)/inc/customize.h: 
+$(CONFIG)/inc/customize.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/customize.h
 	cp -r src/customize.h $(CONFIG)/inc/customize.h
 
+$(CONFIG)/inc/appweb.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/inc/http.h \
+        $(CONFIG)/inc/customize.h
+	rm -fr $(CONFIG)/inc/appweb.h
+	cp -r src/appweb.h $(CONFIG)/inc/appweb.h
+
 $(CONFIG)/obj/config.o: \
         src/config.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/config.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/config.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h \
+        $(CONFIG)/inc/pcre.h
+	$(CC) -c -o $(CONFIG)/obj/config.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/config.c
 
 $(CONFIG)/obj/convenience.o: \
         src/convenience.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/convenience.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/convenience.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/convenience.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/convenience.c
 
 $(CONFIG)/obj/dirHandler.o: \
         src/dirHandler.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/dirHandler.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dirHandler.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/dirHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dirHandler.c
 
 $(CONFIG)/obj/fileHandler.o: \
         src/fileHandler.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/fileHandler.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fileHandler.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/fileHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fileHandler.c
 
 $(CONFIG)/obj/log.o: \
         src/log.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/log.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/log.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
 
 $(CONFIG)/obj/server.o: \
         src/server.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/server.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/server.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server.c
 
 $(CONFIG)/bin/libappweb.so:  \
         $(CONFIG)/bin/libhttp.so \
         $(CONFIG)/inc/appweb.h \
+        $(CONFIG)/inc/bitos.h \
         $(CONFIG)/inc/customize.h \
         $(CONFIG)/obj/config.o \
         $(CONFIG)/obj/convenience.o \
@@ -292,7 +332,9 @@ $(CONFIG)/bin/libappweb.so:  \
         $(CONFIG)/obj/server.o
 	$(CC) -shared -o $(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr -lpam
 
-$(CONFIG)/inc/edi.h: 
+$(CONFIG)/inc/edi.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
 	rm -fr $(CONFIG)/inc/edi.h
 	cp -r src/esp/edi.h $(CONFIG)/inc/edi.h
 
@@ -300,58 +342,81 @@ $(CONFIG)/inc/esp-app.h:
 	rm -fr $(CONFIG)/inc/esp-app.h
 	cp -r src/esp/esp-app.h $(CONFIG)/inc/esp-app.h
 
-$(CONFIG)/inc/esp.h: 
+$(CONFIG)/inc/esp.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h \
+        $(CONFIG)/inc/edi.h
 	rm -fr $(CONFIG)/inc/esp.h
 	cp -r src/esp/esp.h $(CONFIG)/inc/esp.h
 
-$(CONFIG)/inc/mdb.h: 
+$(CONFIG)/inc/mdb.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h \
+        $(CONFIG)/inc/edi.h
 	rm -fr $(CONFIG)/inc/mdb.h
 	cp -r src/esp/mdb.h $(CONFIG)/inc/mdb.h
 
 $(CONFIG)/obj/edi.o: \
         src/esp/edi.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/edi.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/edi.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/edi.h \
+        $(CONFIG)/inc/pcre.h
+	$(CC) -c -o $(CONFIG)/obj/edi.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/edi.c
 
 $(CONFIG)/obj/espAbbrev.o: \
         src/esp/espAbbrev.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espAbbrev.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h
+	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espAbbrev.c
 
 $(CONFIG)/obj/espFramework.o: \
         src/esp/espFramework.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/espFramework.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espFramework.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h
+	$(CC) -c -o $(CONFIG)/obj/espFramework.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espFramework.c
 
 $(CONFIG)/obj/espHandler.o: \
         src/esp/espHandler.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/espHandler.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHandler.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h \
+        $(CONFIG)/inc/esp.h \
+        $(CONFIG)/inc/edi.h
+	$(CC) -c -o $(CONFIG)/obj/espHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHandler.c
 
 $(CONFIG)/obj/espHtml.o: \
         src/esp/espHtml.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/espHtml.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h \
+        $(CONFIG)/inc/edi.h
+	$(CC) -c -o $(CONFIG)/obj/espHtml.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
 
 $(CONFIG)/obj/espSession.o: \
         src/esp/espSession.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/espSession.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espSession.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h
+	$(CC) -c -o $(CONFIG)/obj/espSession.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espSession.c
 
 $(CONFIG)/obj/espTemplate.o: \
         src/esp/espTemplate.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/espTemplate.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espTemplate.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h
+	$(CC) -c -o $(CONFIG)/obj/espTemplate.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espTemplate.c
 
 $(CONFIG)/obj/mdb.o: \
         src/esp/mdb.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/mdb.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/mdb.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h \
+        $(CONFIG)/inc/edi.h \
+        $(CONFIG)/inc/mdb.h \
+        $(CONFIG)/inc/pcre.h
+	$(CC) -c -o $(CONFIG)/obj/mdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/mdb.c
 
 $(CONFIG)/obj/sdb.o: \
         src/esp/sdb.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/sdb.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h \
+        $(CONFIG)/inc/edi.h
+	$(CC) -c -o $(CONFIG)/obj/sdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
 
 $(CONFIG)/bin/libmod_esp.so:  \
         $(CONFIG)/bin/libappweb.so \
@@ -372,8 +437,9 @@ $(CONFIG)/bin/libmod_esp.so:  \
 
 $(CONFIG)/obj/esp.o: \
         src/esp/esp.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/esp.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/esp.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h
+	$(CC) -c -o $(CONFIG)/obj/esp.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/esp.c
 
 $(CONFIG)/bin/esp:  \
         $(CONFIG)/bin/libappweb.so \
@@ -403,8 +469,9 @@ $(CONFIG)/bin/esp-appweb.conf:
 
 $(CONFIG)/obj/cgiHandler.o: \
         src/modules/cgiHandler.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
 
 $(CONFIG)/bin/libmod_cgi.so:  \
         $(CONFIG)/bin/libappweb.so \
@@ -413,8 +480,9 @@ $(CONFIG)/bin/libmod_cgi.so:  \
 
 $(CONFIG)/obj/authpass.o: \
         src/utils/authpass.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/authpass.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/authpass.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/authpass.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/authpass.c
 
 $(CONFIG)/bin/authpass:  \
         $(CONFIG)/bin/libappweb.so \
@@ -424,7 +492,7 @@ $(CONFIG)/bin/authpass:  \
 $(CONFIG)/obj/cgiProgram.o: \
         src/utils/cgiProgram.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/cgiProgram.c
+	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/cgiProgram.c
 
 $(CONFIG)/bin/cgiProgram:  \
         $(CONFIG)/obj/cgiProgram.o
@@ -432,8 +500,9 @@ $(CONFIG)/bin/cgiProgram:  \
 
 $(CONFIG)/obj/setConfig.o: \
         src/utils/setConfig.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/setConfig.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/setConfig.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/setConfig.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/setConfig.c
 
 $(CONFIG)/bin/setConfig:  \
         $(CONFIG)/bin/libmpr.so \
@@ -442,8 +511,10 @@ $(CONFIG)/bin/setConfig:  \
 
 $(CONFIG)/obj/appweb.o: \
         src/server/appweb.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/appweb.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/appweb.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h \
+        $(CONFIG)/inc/esp.h
+	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/appweb.c
 
 $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.so \
@@ -457,19 +528,24 @@ src/server/cache:
 		mkdir -p cache ;\
 		cd - >/dev/null 
 
-$(CONFIG)/inc/testAppweb.h: 
+$(CONFIG)/inc/testAppweb.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/inc/http.h
 	rm -fr $(CONFIG)/inc/testAppweb.h
 	cp -r test/testAppweb.h $(CONFIG)/inc/testAppweb.h
 
 $(CONFIG)/obj/testAppweb.o: \
         test/testAppweb.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/testAppweb.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/testAppweb.h
+	$(CC) -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
 
 $(CONFIG)/obj/testHttp.o: \
         test/testHttp.c \
-        $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/testHttp.o -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHttp.c
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/testAppweb.h
+	$(CC) -c -o $(CONFIG)/obj/testHttp.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHttp.c
 
 $(CONFIG)/bin/testAppweb:  \
         $(CONFIG)/bin/libappweb.so \

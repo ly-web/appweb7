@@ -3856,8 +3856,8 @@ void debug_print_mpi(ssl_context * ssl, int level,
         if (X->p[n] != 0)
             break;
 
-    snprintf(str, maxlen, "%s(%04d): value of '%s' (%lu bits) is:\n",
-         file, line, text, ((n + 1) * sizeof(t_int)) << 3);
+    snprintf(str, maxlen, "%s(%04d): value of '%s' (%u bits) is:\n", file, line, text, 
+            (int) ((n + 1) * sizeof(t_int)) << 3);
 
     str[maxlen] = '\0';
     ssl->f_dbg(ssl->p_dbg, level, str);
@@ -4799,6 +4799,9 @@ void dhm_free(dhm_context * ctx)
 
 
 #if BIT_EST_HAVEGE
+
+/* Windows */
+#undef IN
 
 /*
    On average, one iteration accesses two 8-word blocks in the havege WALK table, and generates 16 words in the RES array.
@@ -6048,9 +6051,9 @@ void md5_hmac(uchar *key, int keylen, uchar *input, int ilen,
 #if BIT_EST_NET
 
 #if WINDOWS || WINCE
-    #define read(fd,buf,len)        recv(fd,buf,len,0)
-    #define write(fd,buf,len)       send(fd,buf,len,0)
-    #define close(fd)               closesocket(fd)
+    // #define read(fd,buf,len)        recv(fd,buf,len,0)
+    // #define write(fd,buf,len)       send(fd,buf,len,0)
+    // #define close(fd)               closesocket(fd)
     static int wsa_init_done = 0;
 #endif
 
@@ -6099,7 +6102,7 @@ int net_connect(int *fd, char *host, int port)
     server_addr.sin_port = net_htons(port);
 
     if (connect(*fd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
-        close(*fd);
+        closesocket(*fd);
         return EST_ERR_NET_CONNECT_FAILED;
     }
     return 0;
@@ -6152,11 +6155,11 @@ int net_bind(int *fd, char *bind_ip, int port)
     }
 
     if (bind(*fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        close(*fd);
+        closesocket(*fd);
         return EST_ERR_NET_BIND_FAILED;
     }
     if (listen(*fd, 10) != 0) {
-        close(*fd);
+        closesocket(*fd);
         return EST_ERR_NET_LISTEN_FAILED;
     }
     return 0;
@@ -6254,7 +6257,7 @@ void net_usleep(ulong usec)
  */
 int net_recv(void *ctx, uchar *buf, int len)
 {
-    int ret = read(*((int *)ctx), buf, len);
+    int ret = recv(*((int*)ctx), buf, len, 0);
 
     if (len > 0 && ret == 0)
         return EST_ERR_NET_CONN_RESET;
@@ -6285,7 +6288,7 @@ int net_recv(void *ctx, uchar *buf, int len)
  */
 int net_send(void *ctx, uchar *buf, int len)
 {
-    int ret = write(*((int *)ctx), buf, len);
+    int ret = send(*((int*)ctx), buf, len, 0);
 
     if (ret < 0) {
         if (net_is_blocking() != 0)
@@ -6312,7 +6315,7 @@ int net_send(void *ctx, uchar *buf, int len)
 void net_close(int fd)
 {
     shutdown(fd, 2);
-    close(fd);
+    closesocket(fd);
 }
 
 #endif
@@ -11635,7 +11638,8 @@ struct _hr_time {
 
 #endif
 
-#if (defined(_MSC_VER) && defined(_M_IX86)) || defined(__WATCOMC__)
+//  MOB -- fix
+#if UNUSED && (defined(_MSC_VER) && defined(_M_IX86)) || defined(__WATCOMC__)
 
 ulong hardclock(void)
 {
@@ -11779,6 +11783,63 @@ void set_alarm(int seconds)
 void m_sleep(int milliseconds)
 {
     Sleep(milliseconds);
+}
+
+
+//  MOB - needed for VxWorks too
+PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
+{
+    #if BIT_WIN_LIKE
+        FILETIME        fileTime;
+        Time            now;
+        static int      tzOnce;
+
+        if (NULL != tv) {
+            /* Convert from 100-nanosec units to microsectonds */
+            GetSystemTimeAsFileTime(&fileTime);
+            now = ((((Time) fileTime.dwHighDateTime) << BITS(uint)) + ((Time) fileTime.dwLowDateTime));
+            now /= 10;
+
+            now -= TIME_GENESIS;
+            tv->tv_sec = (long) (now / 1000000);
+            tv->tv_usec = (long) (now % 1000000);
+        }
+        if (NULL != tz) {
+            TIME_ZONE_INFORMATION   zone;
+            int                     rc, bias;
+            rc = GetTimeZoneInformation(&zone);
+            bias = (int) zone.Bias;
+            if (rc == TIME_ZONE_ID_DAYLIGHT) {
+                tz->tz_dsttime = 1;
+            } else {
+                tz->tz_dsttime = 0;
+            }
+            tz->tz_minuteswest = bias;
+        }
+        return 0;
+
+    #elif VXWORKS
+        struct tm       tm;
+        struct timespec now;
+        time_t          t;
+        char            *tze, *p;
+        int             rc;
+
+        if ((rc = clock_gettime(CLOCK_REALTIME, &now)) == 0) {
+            tv->tv_sec  = now.tv_sec;
+            tv->tv_usec = (now.tv_nsec + 500) / MS_PER_SEC;
+            if ((tze = getenv("TIMEZONE")) != 0) {
+                if ((p = strchr(tze, ':')) != 0) {
+                    if ((p = strchr(tze, ':')) != 0) {
+                        tz->tz_minuteswest = stoi(++p);
+                    }
+                }
+                t = tickGet();
+                tz->tz_dsttime = (localtime_r(&t, &tm) == 0) ? tm.tm_isdst : 0;
+            }
+        }
+        return rc;
+    #endif
 }
 
 #else
