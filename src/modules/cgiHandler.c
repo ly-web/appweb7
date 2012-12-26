@@ -787,7 +787,7 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
     MprKey      *kp;
     MprFile     *file;
     cchar       *actionProgram, *ext, *cmdShell, *cp, *start;
-    char        *tok, buf[MPR_MAX_FNAME + 1], *path;
+    char        *tok, buf[BIT_MAX_FNAME + 1], *path;
 
     rx = conn->rx;
     tx = conn->tx;
@@ -847,9 +847,9 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
         *program = sclone(actionProgram);
 
     } else if ((file = mprOpenFile(path, O_RDONLY, 0)) != 0) {
-        if (mprReadFile(file, buf, MPR_MAX_FNAME) > 0) {
+        if (mprReadFile(file, buf, BIT_MAX_FNAME) > 0) {
             mprCloseFile(file);
-            buf[MPR_MAX_FNAME] = '\0';
+            buf[BIT_MAX_FNAME] = '\0';
             if (buf[0] == '#' && buf[1] == '!') {
                 cp = start = &buf[2];
                 cmdShell = stok(&buf[2], "\r\n", &tok);
