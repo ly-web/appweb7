@@ -33,7 +33,6 @@ if (path) {
             http.close()
             trace('Prepare', 'Ejscript distribution')
             ejs.removeAll()
-            ejs.makeDir()
             Zlib.uncompress(tgz, tar)
             Tar(tar, {chdir: deps}).extract()
             let dir = deps.files('ejs-*').sort().reverse()[0]
