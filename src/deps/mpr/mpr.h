@@ -798,7 +798,7 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     Alignment bit sizes for the allocator. Blocks are aligned on 4 byte boundaries for 32 bits systems and 8 byte 
     boundaries for 64 bit systems and those systems that require doubles to be 8 byte aligned.
  */
-#if !BIT_64 && !(MPR_CPU_MIPS)
+#if !BIT_64 && !(BIT_CPU_MIPS)
     #define MPR_ALIGN               4
     #define MPR_ALIGN_SHIFT         2
 #else
@@ -2993,7 +2993,7 @@ PUBLIC char *mprGetDate(char *fmt);
  */
 PUBLIC uint64 mprGetHiResTicks();
 
-#if (LINUX || MACOSX || WINDOWS) && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
+#if (LINUX || MACOSX || WINDOWS) && (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
     #define MPR_HIGH_RES_TIMER 1
 #else
     #define MPR_HIGH_RES_TIMER 0

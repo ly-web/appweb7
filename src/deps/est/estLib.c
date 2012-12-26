@@ -6133,7 +6133,7 @@ int net_bind(int *fd, char *bind_ip, int port)
         return EST_ERR_NET_SOCKET_FAILED;
 
     n = 1;
-    setsockopt(*fd, SOL_SOCKET, SO_REUSEADDR, (cchar *)&n, sizeof(n));
+    setsockopt(*fd, SOL_SOCKET, SO_REUSEADDR, (char*) &n, sizeof(n));
 
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_family = AF_INET;
@@ -11617,8 +11617,10 @@ void ssl_free(ssl_context * ssl)
 
 #if defined(WIN32)
 
+#if UNUSED
 #include <windows.h>
 #include <winbase.h>
+#endif
 
 struct _hr_time {
     LARGE_INTEGER start;
@@ -11626,11 +11628,13 @@ struct _hr_time {
 
 #else
 
+#if UNUSED
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <signal.h>
 #include <time.h>
+#endif
 
 struct _hr_time {
     struct timeval start;
