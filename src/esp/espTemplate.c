@@ -828,9 +828,10 @@ static cchar *getDebug()
 
     appweb = MPR->appwebService;
     //  MOB -- should be able to do release builds from xcode?
-    debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode") || sends(appweb->platform, "-mine");
+    debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode") || 
+        sends(appweb->platform, "-mine") || sends(appweb->platform, "-vsdebug");
     if (scontains(appweb->platform, "windows-")) {
-        return (debug) ? "-DBIT_DEBUG -Zi -Od" : "-O";
+        return (debug) ? "-DBIT_DEBUG -Zi -Od" : "-Os";
     }
     return (debug) ? "-DBIT_DEBUG -g" : "-O2";
 }
@@ -873,21 +874,33 @@ static cchar *getMappedArch(cchar *arch)
     return arch;
 }
 
+//  UNUSED
+#ifndef BIT_64
+#define BIT_64 0
+#endif
 
 static cchar *getWinSDK()
 {
-#if UNUSED && defined(XXBIT_PACK_WINSDK_PATH)
-    /* 
-        Can't use this as we want to use the current installed winsdk which may be different to that installed 
-        on the build system.
-     */
-    return mprGetNativePath(BIT_PACK_WINSDK_PATH);
-#endif
-
 #if WINDOWS
-    cchar   *path;
+    char *versions[] = { "8.0", 0 };
+    /*
+        MS has made a big mess of where and how the windows SDKs are installed. The registry key at 
+        HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted. MS have
+        moved the SDK to Windows Kits, while still using the old folder for some bits. The old-reliable
+        registry key is now unusable. So we must scan for explicit SDK versions listed above. Ugh!
+     */
+    cchar   *path, *key, **vp;
 
-    path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows", "CurrentInstallFolder");
+    for (vp = versions; *vp; vp++) {
+        key = sfmt("HKLM\\SOFTWARE%s\\Microsoft\\Microsoft SDKs\\Windows\\v%s", (BIT_64) ? "\\Wow6432Node" : "", *vp);
+        if ((path = mprReadRegistry(key, "InstallationFolder")) != 0) {
+            break;
+        }
+    }
+    if (!path) {
+        /* Old Windows SDK 7 registry location */
+        path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows", "CurrentInstallFolder");
+    }
     if (!path) {
         path = "${WINSDK}";
     }
@@ -928,6 +941,7 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
     MaAppweb *appweb = MPR->appwebService;
     cchar *path = getVisualStudio();
     if (scontains(appweb->platform, "-x64-")) {
+        //  MOB - do once at startup?
         int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
         if (is64BitSystem) {
             path = mprJoinPath(path, "VC/bin/amd64/cl.exe");
