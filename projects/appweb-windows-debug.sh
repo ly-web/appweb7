@@ -167,6 +167,12 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
 "${LD}" -out:${CONFIG}/bin/appweb.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.obj libmod_cgi.lib libmod_esp.lib libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
+rm -rf ${CONFIG}/inc/appwebMonitor.h
+cp -r src/server/windows/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h
+
+rm -rf ${CONFIG}/inc/monitorResources.h
+cp -r src/server/windows/monitorResources.h ${CONFIG}/inc/monitorResources.h
+
 "rc.exe" -nologo -Fo ${CONFIG}/obj/appwebMonitor.res src/server/windows/appwebMonitor.rc
 
 "${CC}" -c -Fo${CONFIG}/obj/appwebMonitor.obj -Fd${CONFIG}/obj/appwebMonitor.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/windows/appwebMonitor.c

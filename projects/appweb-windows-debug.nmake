@@ -528,6 +528,16 @@ $(CONFIG)\bin\appweb.exe:  \
         $(CONFIG)\obj\appweb.obj
 	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libmod_cgi.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
+$(CONFIG)\inc\appwebMonitor.h:  \
+        $(CONFIG)\inc\bit.h
+	-if exist $(CONFIG)\inc\appwebMonitor.h del /Q $(CONFIG)\inc\appwebMonitor.h
+	copy /Y src\server\windows\appwebMonitor.h $(CONFIG)\inc\appwebMonitor.h
+
+$(CONFIG)\inc\monitorResources.h:  \
+        $(CONFIG)\inc\bit.h
+	-if exist $(CONFIG)\inc\monitorResources.h del /Q $(CONFIG)\inc\monitorResources.h
+	copy /Y src\server\windows\monitorResources.h $(CONFIG)\inc\monitorResources.h
+
 $(CONFIG)\obj\appwebMonitor.res: \
         src\server\windows\appwebMonitor.rc
 	"$(RC)" -nologo -Fo $(CONFIG)\obj\appwebMonitor.res src\server\windows\appwebMonitor.rc
@@ -537,11 +547,13 @@ $(CONFIG)\obj\appwebMonitor.obj: \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h \
         $(CONFIG)\inc\appwebMonitor.h \
-        $(CONFIG)\inc\resource.h
+        $(CONFIG)\inc\monitorResources.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\appwebMonitor.obj -Fd$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\windows\appwebMonitor.c
 
 $(CONFIG)\bin\appwebMonitor.exe:  \
         $(CONFIG)\bin\libappweb.dll \
+        $(CONFIG)\inc\appwebMonitor.h \
+        $(CONFIG)\inc\monitorResources.h \
         $(CONFIG)\obj\appwebMonitor.res \
         $(CONFIG)\obj\appwebMonitor.obj
 	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appwebMonitor.res $(CONFIG)\obj\appwebMonitor.obj libappweb.lib shell32.lib libhttp.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib libpcre.lib libmpr.lib

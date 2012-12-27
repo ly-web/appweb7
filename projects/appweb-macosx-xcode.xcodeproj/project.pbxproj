@@ -1846,6 +1846,12 @@ fi
 if [ ../src/esp/mdb.h -nt ${CFG_DIR}/inc/mdb.h ] ; then
 cp ../src/esp/mdb.h ${CFG_DIR}/inc/mdb.h
 fi
+if [ ../src/server/windows/appwebMonitor.h -nt ${CFG_DIR}/inc/appwebMonitor.h ] ; then
+cp ../src/server/windows/appwebMonitor.h ${CFG_DIR}/inc/appwebMonitor.h
+fi
+if [ ../src/server/windows/monitorResources.h -nt ${CFG_DIR}/inc/monitorResources.h ] ; then
+cp ../src/server/windows/monitorResources.h ${CFG_DIR}/inc/monitorResources.h
+fi
 if [ ../test/testAppweb.h -nt ${CFG_DIR}/inc/testAppweb.h ] ; then
 cp ../test/testAppweb.h ${CFG_DIR}/inc/testAppweb.h
 fi";

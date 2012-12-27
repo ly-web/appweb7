@@ -10,7 +10,7 @@
 
 #include    "mpr.h"
 #include    "appwebMonitor.h"
-#include    "resource.h"
+#include    "monitorResources.h"
 
 #include    <winUser.h>
 

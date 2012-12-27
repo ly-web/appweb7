@@ -19,7 +19,7 @@ Bit.load({
             rule: 'gui'
             depends: [ 'libappweb' ],
             sources: [ 'windows/appwebMonitor.c' ],
-            headers: [ ],
+            headers: [ 'windows/*.h' ],
             libraries: [ 'shell32.lib' ],
             resources: [ 'windows/appwebMonitor.rc' ],
         },
