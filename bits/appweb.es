@@ -127,7 +127,8 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
                 install(bit.packs.compiler.dir.join('VC/redist/x64/Microsoft.VC' + 
                     version + '.CRT/msvcr' + version + '.dll'), p.bin)
             } else {
-                install(bit.packs.compiler.dir.join('VC/redist/x86/Microsoft.VC100.CRT/msvcr' + version + '.dll'), p.bin)
+                install(bit.packs.compiler.dir.join('VC/redist/x86/Microsoft.VC' + 
+                    version + '.CRT/msvcr' + version + '.dll'), p.bin)
             }
             /*
                 install(bit.packs.compiler.path.join('../../lib/msvcrt.lib'), p.bin)
