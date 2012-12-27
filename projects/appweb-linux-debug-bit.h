@@ -22,16 +22,16 @@
     #define BIT_DEPTH 1
 #endif
 #ifndef BIT_HAS_DOUBLE_BRACES
-    #define BIT_HAS_DOUBLE_BRACES 1
+    #define BIT_HAS_DOUBLE_BRACES 0
 #endif
 #ifndef BIT_HAS_DYN_LOAD
     #define BIT_HAS_DYN_LOAD 1
 #endif
 #ifndef BIT_HAS_LIB_EDIT
-    #define BIT_HAS_LIB_EDIT 1
+    #define BIT_HAS_LIB_EDIT 0
 #endif
 #ifndef BIT_HAS_LIB_RT
-    #define BIT_HAS_LIB_RT 0
+    #define BIT_HAS_LIB_RT 1
 #endif
 #ifndef BIT_HAS_MMU
     #define BIT_HAS_MMU 1
@@ -40,7 +40,7 @@
     #define BIT_HAS_MTUNE 1
 #endif
 #ifndef BIT_HAS_PAM
-    #define BIT_HAS_PAM 1
+    #define BIT_HAS_PAM 0
 #endif
 #ifndef BIT_HAS_STACK_PROTECTOR
     #define BIT_HAS_STACK_PROTECTOR 1
@@ -49,7 +49,7 @@
     #define BIT_HAS_SYNC 1
 #endif
 #ifndef BIT_HAS_SYNC_CAS
-    #define BIT_HAS_SYNC_CAS 1
+    #define BIT_HAS_SYNC_CAS 0
 #endif
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
@@ -103,10 +103,10 @@
     #define BIT_VERSION "4.3.0"
 #endif
 #ifndef BIT_WARN64TO32
-    #define BIT_WARN64TO32 1
+    #define BIT_WARN64TO32 0
 #endif
 #ifndef BIT_WARN_UNUSED
-    #define BIT_WARN_UNUSED 0
+    #define BIT_WARN_UNUSED 1
 #endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "doxygen,dsi,est,ejs,man,man2html,pmaker,ssl,ejscript,php,matrixssl,openssl"

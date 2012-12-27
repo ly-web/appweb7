@@ -13,7 +13,7 @@ PROFILE="debug"
 CONFIG="${OS}-${ARCH}-${PROFILE}"
 CC="cl.exe"
 LD="link.exe"
-CFLAGS="-nologo -GR- -W3 -Zi -Od -MDd"
+CFLAGS="-nologo -GR- -W3 -Zi -Od -MDd -w"
 DFLAGS="-D_REENTRANT -D_MT -DBIT_DEBUG"
 IFLAGS="-I${CONFIG}/inc"
 LDFLAGS="-nologo -nodefaultlib -incremental:no -debug -machine:x86"
@@ -23,6 +23,7 @@ LIBS="ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib sh
 [ ! -x ${CONFIG}/inc ] && mkdir -p ${CONFIG}/inc ${CONFIG}/obj ${CONFIG}/lib ${CONFIG}/bin
 
 [ ! -f ${CONFIG}/inc/bit.h ] && cp projects/appweb-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
+[ ! -f ${CONFIG}/inc/bitos.h ] && cp src/bitos.h ${CONFIG}/inc/bitos.h
 if ! diff ${CONFIG}/inc/bit.h projects/appweb-${OS}-${PROFILE}-bit.h >/dev/null ; then
 	cp projects/appweb-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
 fi

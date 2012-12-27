@@ -28,7 +28,7 @@
     #define BIT_HAS_DYN_LOAD 1
 #endif
 #ifndef BIT_HAS_LIB_EDIT
-    #define BIT_HAS_LIB_EDIT 1
+    #define BIT_HAS_LIB_EDIT 0
 #endif
 #ifndef BIT_HAS_LIB_RT
     #define BIT_HAS_LIB_RT 0
@@ -40,16 +40,16 @@
     #define BIT_HAS_MTUNE 1
 #endif
 #ifndef BIT_HAS_PAM
-    #define BIT_HAS_PAM 1
+    #define BIT_HAS_PAM 0
 #endif
 #ifndef BIT_HAS_STACK_PROTECTOR
     #define BIT_HAS_STACK_PROTECTOR 1
 #endif
 #ifndef BIT_HAS_SYNC
-    #define BIT_HAS_SYNC 1
+    #define BIT_HAS_SYNC 0
 #endif
 #ifndef BIT_HAS_SYNC_CAS
-    #define BIT_HAS_SYNC_CAS 1
+    #define BIT_HAS_SYNC_CAS 0
 #endif
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
@@ -103,7 +103,7 @@
     #define BIT_VERSION "4.3.0"
 #endif
 #ifndef BIT_WARN64TO32
-    #define BIT_WARN64TO32 1
+    #define BIT_WARN64TO32 0
 #endif
 #ifndef BIT_WARN_UNUSED
     #define BIT_WARN_UNUSED 0

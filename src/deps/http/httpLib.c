@@ -3455,7 +3455,7 @@ PUBLIC int httpStartEndpoint(HttpEndpoint *endpoint)
     for (ITERATE_ITEMS(endpoint->hosts, host, next)) {
         httpStartHost(host);
     }
-    if ((endpoint->sock = mprCreateSocket(endpoint->ssl)) == 0) {
+    if ((endpoint->sock = mprCreateSocket()) == 0) {
         return MPR_ERR_MEMORY;
     }
     if (mprListenOnSocket(endpoint->sock, endpoint->ip, endpoint->port, MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD) < 0) {
