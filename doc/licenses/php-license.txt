@@ -1,5 +1,5 @@
 The PHP License, version 3.01
-Used in the binary demo only.
+Not part of the source product. Only shipped in the binary demo.
 
 Copyright (c) 1999 - 2012 The PHP Group. All rights reserved.
 
