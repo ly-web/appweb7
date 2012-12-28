@@ -35,7 +35,7 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="#r4.2.0">Release 4.2.0</a></li>
+                <li><a href="#r4.3.0">Release 4.3.0</a></li>
                 <li><a href="#r3.4.1">Release 3.4.1</a></li>
                 <li><a href="#r2.4.4">Release 2.4.4</a></li>
             </ul>
@@ -64,6 +64,38 @@
             Please see the <a href="http://github.com/embedthis/appweb-4/issues">Appweb Issue Database</a> 
             for the official product issue list and for comprehensive CVE dispositions.</p>
         
+            <a id="r4.3.0"></a>
+            <h2 class="section">Changes in 4.3.0</h2>
+            <h3>Minor Features</h3>
+            <ul>
+                <li>Fixed listening on Windows 64 with IPv6 and IPv4 on a single socket.
+                    <a href="https://github.com/embedthis/appweb-4/issues/98">[issue 98].</a></li>
+                <li>Change tunable defines to be overridable via configure. These are now all named: BIT_*.
+                    <a href="https://github.com/embedthis/appweb-4/issues/99">[issue 99].</a></li>
+                <li>Update to PHP5.4
+                    <a href="https://github.com/embedthis/appweb-4/issues/100">[issue 100].</a></li>
+                <li>Add support for the Mocana SSL stack:
+                    <a href="https://github.com/embedthis/appweb-4/issues/102">[issue 102].</a></li>
+                <li>Add prototype support for the EST SSL stack:
+                    <a href="https://github.com/embedthis/appweb-4/issues/101">[issue 101].</a></li>
+            </ul>
+            <h3>Fixes</h3>
+            <ul>
+                <li>The mpr.h header has been split into a cross platform operating system layer called bitos.h.
+                    The mpr.h header includes this, so there should be no API impact.
+                    <a href="https://github.com/embedthis/appweb-4/issues/103">[issue 103].</a></li>
+                <li>Remove compiler switch -mtune when not required
+                    <a href="https://github.com/embedthis/appweb-4/issues/104">[issue 104].</a></li>
+                <li>Fix generated makefiles determining the system CPU architecture
+                    <a href="https://github.com/embedthis/appweb-4/issues/105">[issue 105].</a></li>
+            </ul>
+            <h3>API Changes</h3>
+            <ul>
+                <li>The Listen directive will now listen on both IPv4 and IPv6 by default if no network interface
+                is supplied. Previously it only listened on IPv4. If a network interface is supplied, only that
+                interface will be listened on.</li>
+            </ul>
+
             <a id="r4.2.0"></a>
             <h2 class="section">Changes in 4.2.0</h2>
             <h3>Minor Features</h3>
@@ -82,7 +114,6 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/76">[issue 76].</a></li>
                 <li>Enhance performance and worker thread utilization by optimizing lock contention and GC yielding
                     <a href="https://github.com/embedthis/appweb-4/issues/55">[issue 55].</a></li>
-                </li>
             </ul>
             <h3>Fixes</h3>
             <ul>
@@ -127,6 +158,8 @@
                 is supplied. Previously it only listened on IPv4. If a network interface is supplied, only that
                 interface will be listened on.</li>
             </ul>
+
+
             <a id="r4.1.1"></a>
             <h2 class="section">Changes in 4.1.1</h2>
             <h3>Fixes</h3>
@@ -141,21 +174,16 @@
             <h2>Major Features</h2>
             <ul>
                 <li>Enhanced role-based authentication management for granular access control
-                    <a href="https://github.com/embedthis/appweb-4/issues/19">[issue 19].</a>
-                </li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/19">[issue 19].</a></li>
                 <li>Web based form authentication and custom authentication support
-                    <a href="https://github.com/embedthis/appweb-4/issues/20">[issue 20].</a>
-                </li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/20">[issue 20].</a></li>
                 <li>Require ability "token" directive to specify required route abilities for access
-                    <a href="https://github.com/embedthis/appweb-4/issues/19">[issue 19].</a>
-                </li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/19">[issue 19].</a></li>
                 <li>Session state management and automatic cookie management. Optimizes authentication via session
                     storage of credentials
-                    <a href="https://github.com/embedthis/appweb-4/issues/21">[issue 21].</a>
-                </li> 
+                    <a href="https://github.com/embedthis/appweb-4/issues/21">[issue 21].</a></li> 
                 <li>Prototype WebSockets support
-                    <a href="https://github.com/embedthis/appweb-4/issues/22">[issue 22].</a>
-                </li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/22">[issue 22].</a></li>
             </ul>
             <h3>Minor Features</h3>
             <ul>
