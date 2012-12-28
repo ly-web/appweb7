@@ -80,7 +80,7 @@ PUBLIC int httpOpenActionHandler(Http *http)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -833,7 +833,7 @@ static void formLogin(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -918,7 +918,7 @@ PUBLIC bool httpBasicSetHeaders(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -1258,7 +1258,7 @@ static bool fetchCachedResponse(HttpConn *conn)
             See if a NotModified response can be served. This is much faster than sending the response.
             Observe headers:
                 If-None-Match: "ec18d-54-4d706a63"
-                If-Modified-Since: Fri, 04 Mar 2012 04:28:19 GMT
+                If-Modified-Since: Fri, 04 Mar 2013 04:28:19 GMT
             Set status to OK when content must be transmitted.
          */
         cacheOk = 1;
@@ -1505,7 +1505,7 @@ static cchar *setHeadersFromCache(HttpConn *conn, cchar *content)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -1778,7 +1778,7 @@ static void setChunkPrefix(HttpQueue *q, HttpPacket *packet)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -2087,7 +2087,7 @@ PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *fileData, MprList *for
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -2881,7 +2881,7 @@ PUBLIC HttpLimits *httpSetUniqueConnLimits(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -3266,7 +3266,7 @@ static char *calcDigest(HttpConn *conn, DigestData *dp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -3917,7 +3917,7 @@ PUBLIC int httpConfigureNamedVirtualEndpoints(Http *http, cchar *ip, int port)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -4133,7 +4133,7 @@ PUBLIC void httpMemoryError(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -4492,7 +4492,7 @@ PUBLIC HttpRoute *httpGetDefaultRoute(HttpHost *host)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -5311,7 +5311,7 @@ PUBLIC char *httpStatsReport(int flags)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -5567,7 +5567,7 @@ PUBLIC void httpLogRequest(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -5902,7 +5902,7 @@ static void adjustNetVec(HttpQueue *q, ssize written)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -6372,7 +6372,7 @@ bool httpIsLastPacket(HttpPacket *packet)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -6528,7 +6528,7 @@ static int pamChat(int msgCount, const struct pam_message **msg, struct pam_resp
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -6677,7 +6677,7 @@ PUBLIC int httpOpenPassHandler(Http *http)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -7086,7 +7086,7 @@ static bool matchFilter(HttpConn *conn, HttpStage *filter, HttpRoute *route, int
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -7782,7 +7782,7 @@ PUBLIC bool httpVerifyQueue(HttpQueue *q)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -8092,7 +8092,7 @@ static bool fixRangeLength(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -11196,7 +11196,7 @@ PUBLIC HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -13056,7 +13056,7 @@ PUBLIC void httpTrimExtraPath(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -13417,7 +13417,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q) {}
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -13690,7 +13690,7 @@ static char *makeKey(HttpSession *sp, cchar *key)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -13859,7 +13859,7 @@ PUBLIC HttpStage *httpCreateConnector(Http *http, cchar *name, MprModule *module
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -14078,7 +14078,7 @@ PUBLIC void httpTraceContent(HttpConn *conn, int dir, int item, HttpPacket *pack
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -14864,7 +14864,7 @@ PUBLIC bool httpFileExists(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -15502,7 +15502,7 @@ static char *getBoundary(void *buf, ssize bufLen, void *boundary, ssize boundary
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -16279,7 +16279,7 @@ static void trimPathToDirname(HttpUri *uri)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -16670,7 +16670,7 @@ PUBLIC void httpRemoveAllUploadedFiles(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -17688,7 +17688,7 @@ PUBLIC bool httpVerifyWebSocketsHandshake(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

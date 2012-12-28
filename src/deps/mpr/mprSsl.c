@@ -26,7 +26,7 @@
 
 #if BIT_PACK_MATRIXSSL
 /* 
-    Work-around to allow the windows 7.* SDK to be used with VS 2012 
+    Work-around to allow the windows 7.* SDK to be used with VS 2013 
  */
 #if _MSC_VER >= 1700
     #define SAL_SUPP_H
@@ -709,7 +709,7 @@ static ssize flushMss(MprSocket *sp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -1370,7 +1370,7 @@ static void estTrace(void *fp, int level, char *str)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -2279,7 +2279,7 @@ PUBLIC int mprCreateOpenSslModule() { return -1; }
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -2350,7 +2350,7 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
