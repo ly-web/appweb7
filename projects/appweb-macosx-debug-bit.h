@@ -7,19 +7,23 @@
 
 /* Settings */
 #ifndef BIT_BIT
-    #define BIT_BIT "2.1.0"
+    #define BIT_BIT "2.3.0"
 #endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
-#endif
-#ifndef BIT_CIPHERS
-    #define BIT_CIPHERS "HIGH:MEDIUM"
 #endif
 #ifndef BIT_COMPANY
     #define BIT_COMPANY "Embedthis"
 #endif
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
+#endif
+/* Settings */
+#ifndef BIT_ESP_MDB
+    #define BIT_ESP_MDB 1
+#endif
+#ifndef BIT_ESP_SDB
+    #define BIT_ESP_SDB 0
 #endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 1
@@ -54,23 +58,22 @@
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
 #endif
-#ifndef BIT_HTTP_PORT
-    #define BIT_HTTP_PORT 80
+/* Settings */
+#ifndef BIT_HTTP_PAM
+    #define BIT_HTTP_PAM 1
 #endif
-#ifndef BIT_MANAGER
-    #define BIT_MANAGER "appman"
+#ifndef BIT_HTTP_STEALTH
+    #define BIT_HTTP_STEALTH 1
 #endif
-#ifndef BIT_MDB
-    #define BIT_MDB 1
+/* Settings */
+#ifndef BIT_MPR_MANAGER
+    #define BIT_MPR_MANAGER "appman"
 #endif
 #ifndef BIT_OPTIONAL
     #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite,ssl,utest,zip"
 #endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
-#endif
-#ifndef BIT_PAM
-    #define BIT_PAM 1
 #endif
 #ifndef BIT_PLATFORMS
     #define BIT_PLATFORMS "local"
@@ -81,17 +84,8 @@
 #ifndef BIT_REQUIRED
     #define BIT_REQUIRED "compiler,lib,link,bit,pcre"
 #endif
-#ifndef BIT_SDB
-    #define BIT_SDB 0
-#endif
-#ifndef BIT_SSL_PORT
-    #define BIT_SSL_PORT 443
-#endif
 #ifndef BIT_STATIC
     #define BIT_STATIC 0
-#endif
-#ifndef BIT_STEALTH
-    #define BIT_STEALTH 1
 #endif
 #ifndef BIT_SYNC
     #define BIT_SYNC "bitos,est,http,mpr,pcre,sqlite"
