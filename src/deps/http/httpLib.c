@@ -130,7 +130,7 @@ PUBLIC void httpInitAuth(Http *http)
     httpAddAuthType(http, "digest", httpDigestLogin, httpDigestParse, httpDigestSetHeaders);
     httpAddAuthType(http, "form", formLogin, NULL, NULL);
 
-#if BIT_HAS_PAM && BIT_PAM
+#if BIT_HAS_PAM && BIT_HTTP_PAM
     /*
         Pam must be actively selected during configuration
      */
@@ -562,7 +562,7 @@ PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store)
     if ((auth->store = mprLookupKey(http->authStores, store)) == 0) {
         return MPR_ERR_CANT_FIND;
     }
-#if BIT_HAS_PAM && BIT_PAM
+#if BIT_HAS_PAM && BIT_HTTP_PAM
     if (smatch(store, "pam") && auth->type && smatch(auth->type->name, "digest")) {
         mprError("Cannot use PAM password stores with digest authentication");
         return MPR_ERR_BAD_ARGS;
@@ -6405,7 +6405,7 @@ bool httpIsLastPacket(HttpPacket *packet)
 
 
 
-#if BIT_HAS_PAM && BIT_PAM
+#if BIT_HAS_PAM && BIT_HTTP_PAM
  #include    <security/pam_appl.h>
 
 /********************************* Defines ************************************/

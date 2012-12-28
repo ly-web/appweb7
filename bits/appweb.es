@@ -63,11 +63,11 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
         let conf = Path(contents.portable + '' + bit.prefixes.config.removeDrive().portable + '/appweb.conf')
         let user = getWebUser(), group = getWebUser()
         if (bit.platform.os == 'windows') {
-            run(['setConfig', '--home', '.', '--documents', 'web', '--logs', 'logs', '--port', settings.http_port,
-                '--ssl', settings.ssl_port, '--cache', 'cache', '--modules', 'bin', conf])
+            run(['setConfig', '--home', '.', '--documents', 'web', '--logs', 'logs', '--port', 80,
+                '--ssl', 443, '--cache', 'cache', '--modules', 'bin', conf])
         } else {
             run(['setConfig', '--home', prefixes.config, '--documents', prefixes.web, '--logs', prefixes.log,
-                '--port', settings.http_port, '--ssl', settings.ssl_port, '--user', user, '--group', group,
+                '--port', 80, '--ssl', 443, '--user', user, '--group', group,
                 '--cache', prefixes.spool.join('cache'), '--modules', prefixes.bin, conf])
         }
         bit.dir.cfg.join('appweb.conf.bak').remove()

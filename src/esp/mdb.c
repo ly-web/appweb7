@@ -13,7 +13,7 @@
 #include    "mdb.h"
 #include    "pcre.h"
 
-#if BIT_PACK_ESP && BIT_MDB
+#if BIT_PACK_ESP && BIT_ESP_MDB
 /************************************* Local **********************************/
 
 #define MDB_LOAD_BEGIN   1      /* Initial state */
@@ -1660,7 +1660,7 @@ static int parseOperation(cchar *operation)
 }
 
 
-#endif /* BIT_PACK_ESP && BIT_MDB */
+#endif /* BIT_PACK_ESP && BIT_ESP_MDB */
 /*
     @copy   default
 

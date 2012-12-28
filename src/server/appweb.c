@@ -208,7 +208,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         if (argc > argind) {
             app->documents = sclone(argv[argind++]);
         }
-        mprParseSocketAddress(ipAddrPort, &ip, &port, BIT_HTTP_PORT);
+        mprParseSocketAddress(ipAddrPort, &ip, &port, 80);
         
     } else if (findAppwebConf() < 0) {
         exit(7);

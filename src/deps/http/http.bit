@@ -12,7 +12,8 @@ Bit.load({
             depends: [ 'libmpr', 'libpcre', ],
             scripts: {
                 postblend: "
-                    if (bit.settings.hasPam) {
+                    let s = bit.settings
+                    if (s.hasPam && s.http && s.http.pam) {
                         bit.target.libraries.push('pam')
                     }
                 ",

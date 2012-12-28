@@ -37,39 +37,11 @@ Bit.load({
         company: 'Embedthis',
         version: '4.3.0',
         buildNumber: '0',
-        bit: '2.1.0',
-
-        /*
-            Default ports. Overridden in appweb.conf
-         */
-        http_port: 80,
-        ssl_port: 443,
-
-        /*
-            Support the MDB database for ESP
-         */ 
-        mdb: true,
-
-        /*
-            Support the SQLite database for ESP
-         */ 
-        sdb: false,
-        manager: 'appman',
-
-        /*
-            Use PAM (Plugable Authentication Module) to store passwords
-         */
-        pam: true,
-
-        /*
-            Default cipher suite
-         */
-        ciphers: "HIGH:MEDIUM",
-
-        packs: [ 'bits/packs' ]
+        bit: '2.3.0',
 
         /* Must build locally to build tools */
         platforms: [ 'local' ],
+        packs: [ 'bits/packs' ]
         sync: [ 'bitos', 'est', 'http', 'mpr', 'pcre', 'sqlite' ],
 
         '+required': [ 'bit', 'pcre'],
@@ -91,21 +63,35 @@ Bit.load({
          */
         static: false,
 
-        /*
-            Not yet operational
-            Enable stealth options. Disable OPTIONS and TRACE methods.
-            stealth: 'Run in stealth mode. Disable OPTIONS, TRACE (true|false)',
-         */
-        stealth: true,
+        http: {
+            /* Use PAM (Plugable Authentication Module) to store passwords */
+            pam: true,
+
+            /*
+                Enable stealth options. Disable OPTIONS and TRACE methods. Not yet operational.
+             */
+            stealth: true,
+        },
+
+        esp: {
+            /* Support the MDB database */ 
+            mdb: true,
+
+            /* Support the SQLite database */ 
+            sdb: false,
+        },
+
+        mpr: {
+            manager: 'appman',
+        },
     },
 
     usage: {
-        assert:             'Enable program assertions (true|false)',
-        mdb:                'Enable ESP MDB database support (true|false)',
-        pam:                'Enable Unix Pluggable Auth Module (true|false)',
-        sdb:                'Enable ESP SQLite database support (true|flase)',
-        static:             'Build with static linking (true|false)',
-        trace:              'Default location and level for debug log (path:level)',
+        assert:       'Enable program assertions (true|false)',
+        static:       'Build with static linking (true|false)',
+        'esp.mdb':    'Enable ESP MDB database support (true|false)',
+        'esp.sdb':    'Enable ESP SQLite database support (true|flase)',
+        'http.pam':   'Enable Unix Pluggable Auth Module (true|false)',
     },
 
     profiles: {

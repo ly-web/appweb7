@@ -12,7 +12,7 @@
 #include    "appweb.h"
 #include    "edi.h"
 
-#if BIT_MDB
+#if BIT_ESP_MDB
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,7 +100,7 @@ typedef struct Mdb {
 } /* extern C */
 #endif
 
-#endif /* BIT_MDB */
+#endif /* BIT_ESP_MDB */
 #endif /* _h_MDB */
 
 /*

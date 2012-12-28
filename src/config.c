@@ -394,7 +394,7 @@ static int authStoreDirective(MaState *state, cchar *key, cchar *value)
     if (scaselesscmp(value, "internal") == 0) {
         httpSetAuthStore(state->auth, "internal");
     } else if (scaselesscmp(value, "pam") == 0) {
-#if BIT_HAS_PAM && BIT_PAM
+#if BIT_HAS_PAM && BIT_HTTP_PAM
         httpSetAuthStore(state->auth, "pam");
 #else
         mprError("The pam AuthStore is not supported on this platform");
@@ -1171,7 +1171,7 @@ static int limitUploadDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     Listen ip:port      Listens only on the specified interface
-    Listen ip           Listens only on the specified interface with the default port (80, 443)
+    Listen ip           Listens only on the specified interface with the default port
     Listen port         Listens on both IPv4 and IPv6
 
     Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[::]" if appending a port.
@@ -1182,7 +1182,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     char            *ip;
     int             port;
 
-    mprParseSocketAddress(value, &ip, &port, BIT_HTTP_PORT);
+    mprParseSocketAddress(value, &ip, &port, 80);
     if (port == 0) {
         mprError("Bad or missing port %d in Listen directive", port);
         return -1;

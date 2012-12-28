@@ -848,11 +848,11 @@ PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags);
   */
 PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder);
 
-#if BIT_MDB
+#if BIT_ESP_MDB
 PUBLIC void mdbInit();
 #endif
 
-#if BIT_SDB
+#if BIT_ESP_SDB
 PUBLIC void sdbInit();
 #endif
 
