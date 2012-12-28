@@ -21,7 +21,7 @@ Bit.load({
                     settings.title + ' ' + settings.version + '<'))
                 for each (path in Path('.').files('**.html', {exclude: /Bare.html|dsi/})) {
                     vtrace('Patch', path)
-                    Cmd('dsi -v -I. ' + path)
+                    Cmd([bit.packs.dsi.path, '-v', '-I ', path])
                 }
             "
         },
