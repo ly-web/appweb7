@@ -24,7 +24,7 @@ commonName				= supplied
 emailAddress			= supplied
 
 [ userCert ]
-basicConstraints		=CA:FALSE
+basicConstraints		= CA:FALSE
 
 [ req ]
 default_bits			= 1024
@@ -37,8 +37,8 @@ X509_extensions			= rootCaExtensions
 [ rootCaDistinguishedName ]
 countryName				= US
 stateOrProvinceName		= Washington
-localityName			= Bellevue
-0.organizationName		= Example Inc.
+localityName			= Seattle
+0.organizationName		= Example.com
 organizationalUnitName	= Production
 commonName				= www.example.com
 emailAddress			= admin@example.com

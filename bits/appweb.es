@@ -93,7 +93,7 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
     install(bit.dir.bin + '/esp-appweb.conf', p.bin)
     install(bit.dir.inc.join('*.h'), p.inc)
 
-    if (bit.packs.ssl.enable && bit.platform.os == 'linux') {
+    if (bit.ssl && bit.platform.os == 'linux') {
         install(bit.dir.bin.join('*.' + bit.ext.shobj + '*'), p.bin, {strip: strip, permissions: 0755})
         for each (f in p.bin.files('*.so.*')) {
             let withver = f.basename

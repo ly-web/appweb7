@@ -44,6 +44,7 @@
                 <li><a href="#sslCaCertificateFile">SSLCACertificateFile</a></li>
                 <li><a href="#sslCaCertificatePath">SSLCACertificatePath</a></li>
                 <li><a href="#sslVerifyClient">SSLVerifyClient</a></li>
+                <li><a href="#sslVerifyIssuer">SSLVerifyIssuer</a></li>
             </ul>
             <h1>See Also</h1>
             <ul>
@@ -507,7 +508,7 @@ SSLProtocol all -SSLv2
                         <td>
                             <p>The SSLCACertificateFile directive defines the file containing the certificates to use
                             when authenticating client certificates. This directive is only necessary if you wish to
-                            verify client certificates. If so, you must specify the "SSLVerifyClient Require"
+                            verify client certificates. If so, you must specify the "SSLVerifyClient on"
                             directive.</p>
                             <p>The certificate file contains the concatenated certificates to use in preference order.
                             The path may be an absolute path or it may be relative to the Home directory.</p>
@@ -544,7 +545,7 @@ SSLProtocol all -SSLv2
                         <td>
                             <p>The SSLCACertificatePath directive defines the directory containing the certificates to
                             use when authenticating client certificates. This directive is only necessary if you wish
-                            to verify client certificates. If so, you must specify the "SSLVerifyClient Require"
+                            to verify client certificates. If so, you must specify the "SSLVerifyClient on"
                             directive.</p>
                             <p>The path may be an absolute path or it may be relative to the Home directory.</p>
                             <p>You may alternatively use SSLCACertificateFile if you have a bundle of certificates
@@ -566,7 +567,7 @@ SSLProtocol all -SSLv2
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>SSLVerifyClient [none | require]</td>
+                        <td>SSLVerifyClient [off | on]</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -574,16 +575,50 @@ SSLProtocol all -SSLv2
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>SSLVerifyClient require</td>
+                        <td>SSLVerifyClient on</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
                             <p>This directive controls whether the client must provide a client certificate for the
-                            server to verify the identity of the client. If set to <b>none</b>, no certificate is
-                            required. If one is supplied, it will be ignored.</p>
-                            <p>If the directive is set to <b>required</b>, the client must provide a valid
-                            certificate.</p>
+                            server to verify the identity of the client. If set to <b>off</b>, no certificate is
+                            required. If one is supplied, it will be ignored. The certificate and the certificate's
+                            issuer will be verified. Use the SSLVerifyIssuer directive to turn off verification of the
+                            issuer if you need to use a self-signed test certificate.</p>
+                            <p>If the directive is set to <b>on</b>, the client must provide a valid certificate.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <a id="sslVerifyIssuer"></a>
+            <h2>SSLVerifyIssuer</h2>
+            <table class="directive" title="directive">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Defines whether the issuer of the client certificate is verified.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SSLVerifyIssuer [off | on]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>SSLVerifyIssuer on</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This directive controls whether the issuer of the client certificate will be verified.
+                            If set to <b>off</b>, the certificate issuer will not be verified. This is useful to 
+                            accept self-signed test certificates.</p>
                         </td>
                     </tr>
                 </tbody>

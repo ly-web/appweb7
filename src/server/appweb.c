@@ -3,7 +3,8 @@
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
 
-    usage: appweb [options] [IpAddr][:port] [documents]
+    usage: appweb [options] 
+    or:    appweb [options] [documents] [[ip][:port] ...]
             --config configFile     # Use given config file instead 
             --debugger              # Disable timeouts to make debugging easier
             --home path             # Set the home working directory
@@ -28,6 +29,7 @@ typedef struct AppwebApp {
     MaAppweb    *appweb;
     MaServer    *server;
     MprSignal   *traceToggle;
+    MprSignal   *statusCheck;
     char        *documents;
     char        *home;
     char        *configFile;
@@ -43,18 +45,19 @@ static int changeRoot(cchar *jail);
 static int checkEnvironment(cchar *program);
 static int findAppwebConf();
 static void manageApp(AppwebApp *app, int flags);
-static int initializeAppweb(cchar *ip, int port);
+static int createEndpoints(int argc, char **argv);
 static void usageError();
 
 #if BIT_UNIX_LIKE
-#if defined(SIGINFO) || defined(SIGRTMIN)
-static void statusCheck(void *ignored, MprSignal *sp);
-#endif
-static void traceHandler(void *ignored, MprSignal *sp);
-static int  unixSecurityChecks(cchar *program, cchar *home);
+    #if defined(SIGINFO) || defined(SIGRTMIN)
+        static void statusCheck(void *ignored, MprSignal *sp);
+        static void addSignals();
+    #endif
+    static void traceHandler(void *ignored, MprSignal *sp);
+    static int  unixSecurityChecks(cchar *program, cchar *home);
 #elif BIT_WIN_LIKE
-static int writePort(MaServer *server);
-static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
+    static int writePort(MaServer *server);
+    static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
 #endif
 
 /*
@@ -76,14 +79,11 @@ static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
 MAIN(appweb, int argc, char **argv, char **envp)
 {
     Mpr     *mpr;
-    cchar   *ipAddrPort, *argp, *jail;
-    char    *ip, *logSpec;
-    int     argind, port, status, verbose;
+    cchar   *argp, *jail;
+    char    *logSpec;
+    int     argind, status, verbose;
 
-    ipAddrPort = 0;
-    ip = 0;
     jail = 0;
-    port = -1;
     verbose = 0;
     logSpec = 0;
     argv[0] = BIT_APPWEB_PATH;
@@ -180,7 +180,9 @@ MAIN(appweb, int argc, char **argv, char **envp)
             exit(0);
 
         } else {
-            mprError("Unknown switch \"%s\"", argp);
+            if (!smatch(argp, "?")) {
+                mprError("Unknown switch \"%s\"", argp);
+            }
             usageError();
             exit(5);
         }
@@ -200,23 +202,13 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (checkEnvironment(argv[0]) < 0) {
         exit(6);
     }
-    if (argc > argind) {
-        if (argc > (argind + 2)) {
-            usageError();
-        }
-        ipAddrPort = argv[argind++];
-        if (argc > argind) {
-            app->documents = sclone(argv[argind++]);
-        }
-        mprParseSocketAddress(ipAddrPort, &ip, &port, 80);
-        
-    } else if (findAppwebConf() < 0) {
+    if (findAppwebConf() < 0) {
         exit(7);
     }
     if (jail && changeRoot(jail) < 0) {
         exit(8);
     }
-    if (initializeAppweb(ip, port) < 0) {
+    if (createEndpoints(argc - argind, &argv[argind]) < 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (maStartAppweb(app->appweb) < 0) {
@@ -243,6 +235,7 @@ static void manageApp(AppwebApp *app, int flags)
         mprMark(app->appweb);
         mprMark(app->server);
         mprMark(app->traceToggle);
+        mprMark(app->statusCheck);
         mprMark(app->documents);
         mprMark(app->configFile);
         mprMark(app->pathVar);
@@ -274,17 +267,13 @@ static int changeRoot(cchar *jail)
 }
 
 
-static int initializeAppweb(cchar *ip, int port)
+/*
+    If doing a static build, must now reference required modules to force the linker to include them.
+    Don't actually call init routines here. They will be called via maConfigureServer.
+ */
+static void loadStaticModules()
 {
-    if ((app->appweb = maCreateAppweb()) == 0) {
-        mprUserError("Cannot create HTTP service for %s", mprGetAppName());
-        return MPR_ERR_CANT_CREATE;
-    }
 #if BIT_STATIC
-    /*
-        If doing a static build, must now reference required modules to force the linker to include them.
-        Don't actually call init routines here. They will be called via LoadModule statements in appweb.conf.
-     */
 #if BIT_PACK_CGI
     mprNop(maCgiHandlerInit);
 #endif
@@ -294,18 +283,49 @@ static int initializeAppweb(cchar *ip, int port)
 #if BIT_PACK_PHP
     mprNop(maPhpHandlerInit);
 #endif
-#if BIT_PACK_SSL
+#if BIT_SSL
     mprNop(maSslModuleInit);
 #endif
 #endif
+}
 
+static int createEndpoints(int argc, char **argv)
+{
+    cchar   *endpoint;
+    char    *ip;
+    int     argind, port, secure;
+
+    ip = 0;
+    port = -1;
+    endpoint = 0;
+    argind = 0;
+
+    if ((app->appweb = maCreateAppweb()) == 0) {
+        mprUserError("Cannot create HTTP service for %s", mprGetAppName());
+        return MPR_ERR_CANT_CREATE;
+    }
     if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
         mprUserError("Cannot create HTTP server for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
-    if (maConfigureServer(app->server, app->configFile, app->home, app->documents, ip, port) < 0) {
-        /* mprUserError("Cannot configure the server, exiting."); */
-        return MPR_ERR_CANT_CREATE;
+    loadStaticModules();
+
+    if (argc > argind) {
+        app->documents = sclone(argv[argind++]);
+        mprLog(2, "Documents %s", app->documents);
+    }
+    if (argind == argc) {
+        if (maParseConfig(app->server, app->configFile, 0) < 0) {
+            return MPR_ERR_CANT_CREATE;
+        }
+    } else {
+        while (argind < argc) {
+            endpoint = argv[argind++];
+            mprParseSocketAddress(endpoint, &ip, &port, &secure, 80);
+            if (maConfigureServer(app->server, NULL, app->home, app->documents, ip, port) < 0) {
+                return MPR_ERR_CANT_CREATE;
+            }
+        }
     }
     if (app->workers >= 0) {
         mprSetMaxWorkers(app->workers);
@@ -313,15 +333,7 @@ static int initializeAppweb(cchar *ip, int port)
 #if BIT_WIN_LIKE
     writePort(app->server);
 #elif BIT_UNIX_LIKE
-    app->traceToggle = mprAddSignalHandler(SIGUSR2, traceHandler, 0, 0, MPR_SIGNAL_AFTER);
-    /*
-        Signal to dump memory stats. Must configure with ./configure --set memoryCheck=true
-     */
-#if defined(SIGINFO)
-    app->traceToggle = mprAddSignalHandler(SIGINFO, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
-#elif defined(SIGRTMIN)
-    app->traceToggle = mprAddSignalHandler(SIGRTMIN, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
-#endif
+    addSignals();
 #endif
     return 0;
 }
@@ -358,7 +370,9 @@ static void usageError(Mpr *mpr)
     name = mprGetAppName();
 
     mprPrintfError("\n%s Usage:\n\n"
-        "  %s [options] [IPaddress][:port] [documents]\n\n"
+        "  %s [options]\n"
+        "  %s [options] documents ip[:port] ...\n\n"
+        "  Without [documents ip:port], %s will read the appweb.conf configuration file.\n\n"
         "  Options:\n"
         "    --config configFile    # Use named config file instead appweb.conf\n"
         "    --chroot directory     # Change root directory to run more securely (Unix)\n"
@@ -369,9 +383,8 @@ static void usageError(Mpr *mpr)
         "    --name uniqueName      # Unique name for this instance\n"
         "    --threads maxThreads   # Set maximum worker threads\n"
         "    --verbose              # Same as --log stderr:2\n"
-        "    --version              # Output version information\n\n"
-        "  Without IPaddress, %s will read the appweb.conf configuration file.\n\n",
-        mprGetAppTitle(), name, name);
+        "    --version              # Output version information\n\n",
+        mprGetAppTitle(), name, name, name);
     exit(10);
 }
 
@@ -395,6 +408,21 @@ static int checkEnvironment(cchar *program)
 
 
 #if BIT_UNIX_LIKE
+static void addSignals()
+{
+    app->traceToggle = mprAddSignalHandler(SIGUSR2, traceHandler, 0, 0, MPR_SIGNAL_AFTER);
+
+    /*
+        Signal to dump memory stats. Must configure with ./configure --set memoryCheck=true
+     */
+#if defined(SIGINFO)
+    app->statusCheck = mprAddSignalHandler(SIGINFO, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
+#elif defined(SIGRTMIN)
+    app->statusCheck = mprAddSignalHandler(SIGRTMIN, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
+#endif
+}
+
+
 /*
     SIGUSR2 will toggle trace from level 2 to 6
  */

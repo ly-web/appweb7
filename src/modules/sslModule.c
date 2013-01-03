@@ -7,7 +7,7 @@
 
 #include    "appweb.h"
 
-#if BIT_PACK_SSL
+#if BIT_SSL
 /*********************************** Code *************************************/
 
 static bool checkSsl(MaState *state)
@@ -32,12 +32,12 @@ static bool checkSsl(MaState *state)
  */
 static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
 {
-#if BIT_PACK_SSL
+#if BIT_SSL
     HttpEndpoint    *endpoint;
     char            *ip;
     int             port;
 
-    mprParseSocketAddress(value, &ip, &port, 443);
+    mprParseSocketAddress(value, &ip, &port, NULL, 443);
     if (port == 0) {
         mprError("Bad or missing port %d in ListenSecure directive", port);
         return -1;
@@ -173,19 +173,28 @@ static int sslEngineDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+/*
+    SSLVerifyClient [on|off]
+    DEPRECATED: SSLVerifyClient [none|require]
+ */
 static int sslVerifyClientDirective(MaState *state, cchar *key, cchar *value)
 {
+    bool    on;
+
+    on = 0;
     checkSsl(state);
     if (scaselesscmp(value, "require") == 0) {
-        mprVerifySslPeer(state->route->ssl, 1);
+        on = 1;
 
     } else if (scaselesscmp(value, "none") == 0) {
-        mprVerifySslPeer(state->route->ssl, 0);
+        on = 0;
 
     } else {
-        mprError("Unknown verify client option");
-        return MPR_ERR_BAD_STATE;
+        if (!maTokenize(state, value, "%B", &on)) {
+            return MPR_ERR_BAD_SYNTAX;
+        }
     }
+    mprVerifySslPeer(state->route->ssl, on);
     return 0;
 }
 
@@ -198,6 +207,9 @@ static int sslVerifyDepthDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+/*
+    SSLVerifyIssuer [on|off]
+ */
 static int sslVerifyIssuerDirective(MaState *state, cchar *key, cchar *value)
 {
     bool    on;
@@ -283,7 +295,7 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *mp)
 {
     return 0;
 }
-#endif /* BIT_PACK_SSL */
+#endif /* BIT_SSL */
 
 /*
     @copy   default

@@ -49,14 +49,14 @@ Bit.load({
         /*
             Optional packs to search for when configuring
          */
-        '+optional': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'ejscript', 'esp', 'man', 'man2html', 'openssl', 
-            'pmaker', 'php', 'sqlite', 'ssl', 'utest', 'zip' ],
+        '+optional': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'ejscript', 'esp', 'est', 'man', 'man2html',
+            'pmaker', 'php', 'sqlite', 'utest', 'zip' ],
 
         /*
             Packs to disable when using --without all
          */
-        'without-all': ['doxygen', 'dsi', 'est', 'ejs', 'man', 'man2html', 'pmaker', 'ssl', 'ejscript', 'php', 
-            'matrixssl', 'openssl' ],
+        'without-all': ['doxygen', 'dsi', 'est', 'ejs', 'man', 'man2html', 'pmaker', 'ejscript', 'php', 'matrixssl',
+            'openssl' ],
 
         /*
             Set to true for a static (non-shared library) build
@@ -113,6 +113,7 @@ Bit.load({
             path: '${BIN}/http',
         },
         matrixssl: {},
+        openssl: {},
     },
 
     /*

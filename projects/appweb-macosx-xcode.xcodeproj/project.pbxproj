@@ -1806,7 +1806,7 @@ cp -r ../src/esp/www/files/static/js 'web/js'";
 			shellScript = "PATH=$PATH:/usr/local/bin
 [ ! -x ${INC_DIR} ] && mkdir -p ${INC_DIR} ${OBJ_DIR} ${LIB_DIR} ${BIN_DIR}
 [ ! -f ${INC_DIR}/bit.h ] && cp appweb-macosx-xcode-bit.h ${INC_DIR}/bit.h
-[ ! -f ${INC_DIR}/bitos.h ] && cp src/bitos.h ${INC_DIR}/bitos.h
+[ ! -f ${INC_DIR}/bitos.h ] && cp ${SRC_DIR}/src/bitos.h ${INC_DIR}/bitos.h
 if ! diff ${INC_DIR}/bit.h appweb-macosx-xcode-bit.h >/dev/null ; then
 cp appweb-macosx-xcode-bit.h ${INC_DIR}/bit.h
 fi

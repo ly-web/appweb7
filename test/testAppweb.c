@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         exit(4);
     }
 
-#if BIT_FEATURE_SSL
+#if BIT_SSL
     if (!mprLoadSsl(0)) {
         return 0;
     }

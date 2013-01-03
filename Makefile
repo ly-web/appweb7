@@ -14,7 +14,7 @@
 #       export PROFILE   = Debug or release profile. For example: debug
 #       export CONFIG    = Output directory for built items. Defaults to OS-ARCH-PROFILE
 #       export CFLAGS    = Add compiler options. For example: -Wall
-#       export DFLAGS    = Add compiler defines. Overrides bit.h defaults. For example: -DBIT_PACK_SSL=0
+#       export DFLAGS    = Add compiler defines. Overrides bit.h defaults. For example: -DBIT_SSL=0
 #       export IFLAGS    = Add compiler include directories. For example: -I/extra/includes
 #       export LDFLAGS   = Add linker options
 #       export LIBPATHS  = Add linker library search directories. For example: -L/libraries

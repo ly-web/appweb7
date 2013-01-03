@@ -5,6 +5,7 @@
     configure or define variables in your Makefile to override these default values.
  */
 
+
 /* Settings */
 #ifndef BIT_BIT
     #define BIT_BIT "2.3.0"
@@ -18,7 +19,6 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
-/* Settings */
 #ifndef BIT_ESP_MDB
     #define BIT_ESP_MDB 1
 #endif
@@ -58,19 +58,17 @@
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
 #endif
-/* Settings */
 #ifndef BIT_HTTP_PAM
     #define BIT_HTTP_PAM 1
 #endif
 #ifndef BIT_HTTP_STEALTH
     #define BIT_HTTP_STEALTH 1
 #endif
-/* Settings */
 #ifndef BIT_MPR_MANAGER
     #define BIT_MPR_MANAGER "appman"
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite,ssl,utest,zip"
+    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,est,man,man2html,pmaker,php,sqlite,utest,zip"
 #endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
@@ -103,7 +101,7 @@
     #define BIT_WARN_UNUSED 1
 #endif
 #ifndef BIT_WITHOUT_ALL
-    #define BIT_WITHOUT_ALL "doxygen,dsi,est,ejs,man,man2html,pmaker,ssl,ejscript,php,matrixssl,openssl"
+    #define BIT_WITHOUT_ALL "doxygen,dsi,est,ejs,man,man2html,pmaker,ejscript,php,matrixssl,openssl"
 #endif
 
 /* Prefixes */
@@ -240,9 +238,6 @@
 #endif
 #ifndef BIT_PACK_SQLITE
     #define BIT_PACK_SQLITE 1
-#endif
-#ifndef BIT_PACK_SSL
-    #define BIT_PACK_SSL 0
 #endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1

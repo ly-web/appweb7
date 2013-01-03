@@ -44,7 +44,7 @@ Bit.load({
             sources: [ 'proxyHandler.c' ],
         },
         libmod_ssl: {
-            enable: 'bit.packs.ssl.enable',
+            enable: 'bit.settings.ssl',
             type: 'lib',
             sources: [ 'sslModule.c' ],
         },

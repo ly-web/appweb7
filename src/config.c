@@ -1182,7 +1182,9 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     char            *ip;
     int             port;
 
-    mprParseSocketAddress(value, &ip, &port, 80);
+    //  MOB - should permit https://IP:PORT for SSL
+
+    mprParseSocketAddress(value, &ip, &port, NULL, 80);
     if (port == 0) {
         mprError("Bad or missing port %d in Listen directive", port);
         return -1;
@@ -1435,7 +1437,7 @@ static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
     int     port;
 
     mprLog(4, "NameVirtual Host: %s ", value);
-    mprParseSocketAddress(value, &ip, &port, -1);
+    mprParseSocketAddress(value, &ip, &port, NULL, -1);
     httpConfigureNamedVirtualEndpoints(state->http, ip, port);
     return 0;
 }
@@ -2004,7 +2006,7 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
 
     state = maPushState(state);
     if (state->enabled) {
-        mprParseSocketAddress(value, &ip, &port, -1);
+        mprParseSocketAddress(value, &ip, &port, NULL, -1);
         /*
             Inherit the current default route configuration (only)
             Other routes are not inherited due to the reset routes below
@@ -2203,7 +2205,7 @@ static bool conditionalDefinition(MaState *state, cchar *key)
             result = BIT_PACK_PHP;
 
         } else if (scaselessmatch(key, "SSL_MODULE")) {
-            result = BIT_PACK_SSL;
+            result = BIT_SSL;
         }
     }
     return (not) ? !result : result;

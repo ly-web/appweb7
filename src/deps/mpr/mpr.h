@@ -2069,7 +2069,7 @@ PUBLIC int64 stoiradix(cchar *str, int radix, int *err);
     Tokenize a string
     @description Split a string into tokens.
     @param str String to tokenize.
-    @param delim String of characters to use as token separators.
+    @param delim Set of characters that are used as token separators.
     @param last Last token pointer.
     @return Returns a pointer to the next token.
     @ingroup MprString
@@ -3761,9 +3761,9 @@ PUBLIC void mprWarn(cchar *fmt, ...);
     Optimized logging calling sequence. This compiles out for release mode.
  */
 #if BIT_DEBUG
-    #define LOG(l, ...) if (l <= MPR->logLevel) mprLog(l, __VA_ARGS__)
+    #define LOG(l, ...) if (l <= MPR->logLevel) { mprLog(l, __VA_ARGS__); } else
 #else
-    #define LOG(l, ...) 
+    #define LOG(l, ...) if (1) ; else
 #endif
 
 /*
@@ -6327,13 +6327,15 @@ typedef int (*MprSocketProc)(void *data, int mask);
  */
 typedef struct MprSocketProvider {
     void    *data;
+    //  MOB - document these APIs
     void    (*closeSocket)(struct MprSocket *socket, bool gracefully);
     void    (*disconnectSocket)(struct MprSocket *socket);
     ssize   (*flushSocket)(struct MprSocket *socket);
     int     (*listenSocket)(struct MprSocket *socket, cchar *host, int port, int flags);
     ssize   (*readSocket)(struct MprSocket *socket, void *buf, ssize len);
     ssize   (*writeSocket)(struct MprSocket *socket, cvoid *buf, ssize len);
-    int     (*upgradeSocket)(struct MprSocket *socket, struct MprSsl *ssl, int server);
+    int     (*upgradeSocket)(struct MprSocket *socket, struct MprSsl *ssl, cchar *peerName);
+    char    *(*socketState)(struct MprSocket *socket);
 } MprSocketProvider;
 
 /**
@@ -6409,20 +6411,21 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
 /*
     Socket Flags
  */
-#define MPR_SOCKET_BLOCK        0x1         /**< Use blocking I/O */
-#define MPR_SOCKET_BROADCAST    0x2         /**< Broadcast mode */
-#define MPR_SOCKET_CLOSED       0x4         /**< MprSocket has been closed */
-#define MPR_SOCKET_CONNECTING   0x8         /**< MprSocket is connecting */
-#define MPR_SOCKET_DATAGRAM     0x10        /**< Use datagrams */
-#define MPR_SOCKET_EOF          0x20        /**< Seen end of file */
-#define MPR_SOCKET_LISTENER     0x40        /**< MprSocket is server listener */
-#define MPR_SOCKET_NOREUSE      0x80        /**< Don't set SO_REUSEADDR option */
-#define MPR_SOCKET_NODELAY      0x100       /**< Disable Nagle algorithm */
-#define MPR_SOCKET_THREAD       0x200       /**< Process callbacks on a worker thread */
-#define MPR_SOCKET_CLIENT       0x400       /**< Socket is a client */
-#define MPR_SOCKET_PENDING      0x800       /**< Pending buffered read data */
-#define MPR_SOCKET_TRACED       0x1000      /**< Socket has been traced to the log */
-#define MPR_SOCKET_DISCONNECTED 0x2000      /**< The mprDisconnectSocket has been called */
+#define MPR_SOCKET_BLOCK            0x1     /**< Use blocking I/O */
+#define MPR_SOCKET_BROADCAST        0x2     /**< Broadcast mode */
+#define MPR_SOCKET_CLOSED           0x4     /**< MprSocket has been closed */
+#define MPR_SOCKET_CONNECTING       0x8     /**< MprSocket is connecting */
+#define MPR_SOCKET_DATAGRAM         0x10    /**< Use datagrams */
+#define MPR_SOCKET_EOF              0x20    /**< Seen end of file */
+#define MPR_SOCKET_LISTENER         0x40    /**< MprSocket is server listener */
+#define MPR_SOCKET_NOREUSE          0x80    /**< Don't set SO_REUSEADDR option */
+#define MPR_SOCKET_NODELAY          0x100   /**< Disable Nagle algorithm */
+#define MPR_SOCKET_THREAD           0x200   /**< Process callbacks on a worker thread */
+#define MPR_SOCKET_SERVER           0x400   /**< Socket is on the server-side */
+#define MPR_SOCKET_BUFFERED_READ    0x800   /**< Socket has buffered read data (in SSL stack) */
+#define MPR_SOCKET_BUFFERED_WRITE   0x1000  /**< Socket has buffered write data (in SSL stack) */
+#define MPR_SOCKET_TRACED           0x2000  /**< Socket has been traced to the log */
+#define MPR_SOCKET_DISCONNECTED     0x4000  /**< The mprDisconnectSocket has been called */
 
 /**
     Socket Service
@@ -6436,12 +6439,11 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
     @see MprSocket MprSocketPrebind MprSocketProc MprSocketProvider MprSocketService mprAddSocketHandler 
         mprCloseSocket mprConnectSocket mprCreateSocket mprCreateSocketService mprCreateSsl mprCloneSsl
         mprDisconnectSocket mprEnableSocketEvents mprFlushSocket mprGetSocketBlockingMode mprGetSocketError 
-        mprGetSocketFd mprGetSocketInfo mprGetSocketPort mprHasSecureSockets mprIsSocketEof mprIsSocketSecure 
-        mprListenOnSocket mprLoadSsl mprParseIp mprReadSocket mprSendFileToSocket mprSetSecureProvider 
-        mprSetSocketBlockingMode mprSetSocketCallback mprSetSocketEof mprSetSocketNoDelay mprSetSslCaFile 
-        mprSetSslCaPath mprSetSslCertFile mprSetSslCiphers mprSetSslKeyFile mprSetSslSslProtocols 
-        mprSetSslVerifySslClients mprWriteSocket mprWriteSocketString mprWriteSocketVector 
-        mprSocketHasPendingData mprUpgradeSocket
+        mprGetSocketFd mprGetSocketInfo mprGetSocketPort mprGetSocketState mprHasSecureSockets mprIsSocketEof
+        mprIsSocketSecure mprListenOnSocket mprLoadSsl mprParseIp mprReadSocket mprSendFileToSocket mprSetSecureProvider
+        mprSetSocketBlockingMode mprSetSocketCallback mprSetSocketEof mprSetSocketNoDelay mprSetSslCaFile mprSetSslCaPath
+        mprSetSslCertFile mprSetSslCiphers mprSetSslKeyFile mprSetSslSslProtocols mprSetSslVerifySslClients mprWriteSocket
+        mprWriteSocketString mprWriteSocketVector mprSocketHasBufferedRead mprSocketHasBufferedWrite mprUpgradeSocket
     @defgroup MprSocket MprSocket
     @stability Stable
  */
@@ -6622,6 +6624,16 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
 PUBLIC int mprGetSocketPort(MprSocket *sp);
 
 /**
+    Get the socket state
+    @description Get the socket state as a parseable string description
+    @param sp Socket object returned from #mprCreateSocket
+    @return The an allocated string
+    @ingroup MprSocket
+    @stability Stable
+ */
+PUBLIC char *mprGetSocketState(MprSocket *sp);
+
+/**
     has the system got a dual IPv4 + IPv6 network stack
     @return True if the network can listen on IPv4 and IPv6 on a single socket
     @ingroup MprSocket
@@ -6703,17 +6715,18 @@ PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags);
     Parse an socket address IP address. 
     @description This parses a string containing an IP:PORT specification and returns the IP address and port 
     components. Handles ipv4 and ipv6 addresses. 
-    @param ipSpec An IP:PORT specification. The :PORT is optional. When an IP address contains an ipv6 port it should be 
+    @param address An IP:PORT specification. The :PORT is optional. When an IP address contains an ipv6 port it should be 
     written as
         aaaa:bbbb:cccc:dddd:eeee:ffff:gggg:hhhh:iiii    or
        [aaaa:bbbb:cccc:dddd:eeee:ffff:gggg:hhhh:iiii]:port
     @param ip Pointer to receive a dynamically allocated IP string.
     @param port Pointer to an integer to receive the port value.
-    @param defaultPort The default port number to use if the ipSpec does not contain a port
+    @param secure Pointer to an integer to receive true if the address requires SSL.
+    @param defaultPort The default port number to use if the address does not contain a port
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC int mprParseSocketAddress(cchar *ipSpec, char **ip, int *port, int defaultPort);
+PUBLIC int mprParseSocketAddress(cchar *address, char **ip, int *port, int *secure, int defaultPort);
 
 /**
     Read from a socket
@@ -6803,18 +6816,28 @@ PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on);
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC bool mprSocketHasPendingData(MprSocket *sp);
+PUBLIC bool mprSocketHasBufferedRead(MprSocket *sp);
+
+/**
+    Test if the socket has buffered write data.
+    @description Use this function to detect that there is buffer data to write in a SSL stack.
+    @param sp Socket object returned from #mprCreateSocket
+    @return True if the socket has pending write data.
+    @ingroup MprSocket
+    @stability Stable
+ */
+PUBLIC bool mprSocketHasBufferedWrite(MprSocket *sp);
 
 /**
     Upgrade a socket to use SSL/TLS
     @param sp Socket to upgrade
     @param ssl SSL configuration to use. Set to NULL to use the default.
-    @param server Set to one for server-side, set to zero for client side.
+    @param peerName Required peer name in handshake with peer. Used by clients to verify the server hostname.
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup MprSocket
     @stability Evolving
  */
-PUBLIC int mprUpgradeSocket(MprSocket *sp, struct MprSsl *ssl, int server);
+PUBLIC int mprUpgradeSocket(MprSocket *sp, struct MprSsl *ssl, cchar *peerName);
 
 /**
     Write to a socket
@@ -6870,7 +6893,6 @@ typedef struct MprSsl {
     char            *providerName;      /**< SSL provider to use - null if default */
     struct MprSocketProvider *provider; /**< Cached SSL provider to use */
     char            *key;               /**< Key string */
-    char            *cert;              /**< Cert string */
     char            *keyFile;           /**< Alternatively, locate the key in a file */
     char            *certFile;          /**< Alternatively, locate the cert in a file */
     char            *caFile;            /**< Certificate verification cert file or bundle */
@@ -7023,6 +7045,9 @@ PUBLIC void mprVerifySslDepth(struct MprSsl *ssl, int depth);
 #endif
 #if BIT_PACK_MATRIXSSL
     PUBLIC int mprCreateMatrixSslModule();
+#endif
+#if BIT_PACK_MOCANA
+    PUBLIC int mprCreateMocanaModule();
 #endif
 #if BIT_PACK_OPENSSL
     PUBLIC int mprCreateOpenSslModule();

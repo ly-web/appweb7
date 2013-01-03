@@ -1865,17 +1865,17 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
     conn->secure = uri->secure;
     conn->keepAliveCount = (conn->limits->keepAliveMax) ? conn->limits->keepAliveMax : -1;
 
-#if BIT_PACK_SSL
+#if BIT_SSL
     /* Must be done even if using keep alive for repeat SSL requests */
     if (uri->secure) {
         if (ssl == 0) {
             ssl = mprCreateSsl(0);
         }
-        if (mprUpgradeSocket(sp, ssl, 0) < 0) {
+        if (mprUpgradeSocket(sp, ssl, uri->host) < 0) {
             conn->errorMsg = sp->errorMsg;
+            mprError("Cannot upgrade socket for SSL: %s", conn->errorMsg);
             return 0;
         }
-        mprLog(4, "Http: upgrade socket to TLS");
     }
 #endif
     if (uri->webSockets && httpUpgradeWebSocket(conn) < 0) {
@@ -2448,6 +2448,8 @@ PUBLIC void httpPostEvent(HttpConn *conn)
         } else if (conn->state == HTTP_STATE_COMPLETE) {
             prepForNext(conn);
         }
+    } else if (mprIsSocketEof(conn->sock)) {
+        return;
     }
     if (!conn->state != HTTP_STATE_RUNNING) {
         httpEnableConnEvents(conn);
@@ -2492,9 +2494,12 @@ static void readEvent(HttpConn *conn)
 
     if (nbytes > 0) {
         mprAdjustBufEnd(packet->content, nbytes);
+
     } else if (nbytes == 0) {
         return;
+
     } else if (nbytes < 0 && mprIsSocketEof(conn->sock)) {
+        conn->errorMsg = conn->sock->errorMsg;
         conn->keepAliveCount = -1;
         if (conn->state < HTTP_STATE_PARSED || conn->state == HTTP_STATE_COMPLETE) {
             return;
@@ -2598,7 +2603,8 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
             /*
                 Can be blocked with data in the iovec and none in the queue
              */
-            if (tx->writeBlocked || (conn->connectorq && conn->connectorq->count > 0)) {
+            if (tx->writeBlocked || (conn->connectorq && conn->connectorq->count > 0) || 
+                    mprSocketHasBufferedWrite(conn->sock)) {
                 eventMask |= MPR_WRITABLE;
             }
             /*
@@ -2606,7 +2612,7 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
                 If request is a form, then must read and buffer all the input regardless
              */
             q = conn->readq;
-            if (!rx->eof && (q->count < q->max || rx->form)) {
+            if (!rx->eof && (q->count < q->max || rx->form || mprSocketHasBufferedRead(conn->sock))) {
                 eventMask |= MPR_READABLE;
             }
         } else {
@@ -3375,7 +3381,7 @@ PUBLIC HttpEndpoint *httpCreateConfiguredEndpoint(cchar *home, cchar *documents,
 
     http = MPR->httpService;
 
-    if (ip == 0) {
+    if (ip == 0 && port <= 0) {
         /*  
             If no IP:PORT specified, find the first endpoint
          */
@@ -3644,7 +3650,8 @@ static HttpConn *acceptConn(MprSocket *sock, MprDispatcher *dispatcher, HttpEndp
     http = endpoint->http;
 
     if (endpoint->ssl) {
-        if (mprUpgradeSocket(sock, endpoint->ssl, 1) < 0) {
+        if (mprUpgradeSocket(sock, endpoint->ssl, 0) < 0) {
+            mprError("Cannot upgrade socket for SSL: %s", sock->errorMsg);
             mprCloseSocket(sock, 0);
             return 0;
         }
@@ -3806,7 +3813,7 @@ PUBLIC void httpSetEndpointNotifier(HttpEndpoint *endpoint, HttpNotifier notifie
 
 PUBLIC int httpSecureEndpoint(HttpEndpoint *endpoint, struct MprSsl *ssl)
 {
-#if BIT_PACK_SSL
+#if BIT_SSL
     endpoint->ssl = ssl;
     return 0;
 #else
@@ -3823,7 +3830,7 @@ PUBLIC int httpSecureEndpointByName(cchar *name, struct MprSsl *ssl)
     int             port, next, count;
 
     http = MPR->httpService;
-    mprParseSocketAddress(name, &ip, &port, -1);
+    mprParseSocketAddress(name, &ip, &port, NULL, -1);
     if (ip == 0) {
         ip = "";
     }
@@ -4352,7 +4359,7 @@ PUBLIC void httpSetHostIpAddr(HttpHost *host, cchar *ip, int port)
     char    *pip;
 
     if (port < 0 && schr(ip, ':')) {
-        mprParseSocketAddress(ip, &pip, &port, -1);
+        mprParseSocketAddress(ip, &pip, &port, NULL, -1);
         ip = pip;
     }
     host->ip = sclone(ip);
@@ -5701,8 +5708,11 @@ static void netOutgoingService(HttpQueue *q)
                 httpSocketBlocked(conn);
                 break;
             }
-            if (errCode != EPIPE && errCode != ECONNRESET && errCode != ECONNABORTED && errCode != ENOTCONN) {
-                httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "netConnector: Write response error %d", errCode);
+            if (errCode == EPROTO && conn->secure) {
+                httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Can't negotiate SSL with server: %s",
+                    conn->sock->errorMsg);
+            } else if (errCode != EPIPE && errCode != ECONNRESET && errCode != ECONNABORTED && errCode != ENOTCONN) {
+                httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "netConnector: Can't write. errno %d", errCode);
             } else {
                 httpDisconnect(conn);
             }
@@ -5714,6 +5724,9 @@ static void netOutgoingService(HttpQueue *q)
             tx->bytesWritten += written;
             freeNetPackets(q, written);
             adjustNetVec(q, written);
+
+        } else {
+            break;
         }
     }
     if (q->first && q->first->flags & HTTP_PACKET_END) {
@@ -10625,7 +10638,7 @@ static char *expandRequestTokens(HttpConn *conn, char *str)
     HttpRoute   *route;
     MprBuf      *buf;
     HttpLang    *lang;
-    char        *tok, *cp, *key, *value, *field, *header, *defaultValue;
+    char        *tok, *cp, *key, *value, *field, *header, *defaultValue, *state, *v;
 
     assure(conn);
     assure(str);
@@ -10643,7 +10656,7 @@ static char *expandRequestTokens(HttpConn *conn, char *str)
         if (tok > cp) {
             mprPutBlockToBuf(buf, cp, tok - cp);
         }
-        if ((key = stok(&tok[2], ":", &value)) == 0) {
+        if ((key = stok(&tok[2], ":}", &value)) == 0) {
             continue;
         }
         stok(value, "}", &cp);
@@ -10746,6 +10759,17 @@ static char *expandRequestTokens(HttpConn *conn, char *str)
             } else if (smatch(value, "uri")) {
                 mprPutStringToBuf(buf, rx->uri);
             }
+        } else if (smatch(key, "ssl")) {
+            value = stok(value, "=", &defaultValue);
+            if (smatch(value, "state")) {
+                mprPutStringToBuf(buf, mprGetSocketState(conn->sock));
+            } else {
+                state = mprGetSocketState(conn->sock);
+                if ((cp = scontains(state, value)) != 0) {
+                    stok(cp, "=", &v);
+                    mprPutStringToBuf(buf, stok(v, ", ", NULL));
+                }
+            }
         }
     }
     if (tok) {
@@ -10779,9 +10803,11 @@ static char *expandPatternTokens(cchar *str, cchar *replacement, int *matches, i
     assure(replacement);
     assure(matches);
 
+#if UNUSED
     if (matchCount <= 0) {
         return MPR->emptyString;
     }
+#endif
     result = mprCreateBuf(-1, -1);
     lastReplace = replacement;
     end = &replacement[slen(replacement)];
@@ -10797,15 +10823,21 @@ static char *expandPatternTokens(cchar *str, cchar *replacement, int *matches, i
                 break;
             case '&':
                 /* Replace the matched string */
-                mprPutSubStringToBuf(result, &str[matches[0]], matches[1] - matches[0]);
+                if (matchCount > 0) {
+                    mprPutSubStringToBuf(result, &str[matches[0]], matches[1] - matches[0]);
+                }
                 break;
             case '`':
                 /* Insert the portion that preceeds the matched string */
-                mprPutSubStringToBuf(result, str, matches[0]);
+                if (matchCount > 0) {
+                    mprPutSubStringToBuf(result, str, matches[0]);
+                }
                 break;
             case '\'':
                 /* Insert the portion that follows the matched string */
-                mprPutSubStringToBuf(result, &str[matches[1]], slen(str) - matches[1]);
+                if (matchCount > 0) {
+                    mprPutSubStringToBuf(result, &str[matches[1]], slen(str) - matches[1]);
+                }
                 break;
             default:
                 /* Insert the nth submatch */
@@ -12660,7 +12692,7 @@ PUBLIC int httpSetUri(HttpConn *conn, cchar *uri)
 PUBLIC int httpWait(HttpConn *conn, int state, MprTicks timeout)
 {
     MprTicks    mark, remaining, inactivityTimeout;
-    int         eventMask, saveAsync, justOne, workDone;
+    int         saveAsync, justOne, workDone;
 
     if (state == 0) {
         state = HTTP_STATE_FINALIZED;
@@ -12691,12 +12723,15 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTicks timeout)
     saveAsync = conn->async;
     conn->async = 1;
 
-    eventMask = MPR_READABLE;
-    if (!conn->tx->finalizedConnector) {
-        eventMask |= MPR_WRITABLE;
-    }
     if (conn->state < state) {
+        httpEnableConnEvents(conn);
+#if UNUSED
+        eventMask = MPR_READABLE;
+        if (!conn->tx->finalizedConnector && ) {
+            eventMask |= MPR_WRITABLE;
+        }
         httpSetupWaitHandler(conn, eventMask);
+#endif
     }
     remaining = timeout;
     do {
@@ -16785,7 +16820,7 @@ PUBLIC int httpOpenWebSockFilter(Http *http)
 
     assure(http);
 
-    mprLog(5, "Open WebSock filter");
+    mprLog(5, "Open webSock filter");
     if ((filter = httpCreateFilter(http, "webSocketFilter", NULL)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }

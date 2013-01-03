@@ -492,7 +492,7 @@
                             Condition [!] missing<br/>
                             Condition [!] directory string<br/>
                             Condition [!] exists string<br/>
-                            Condition [!] match string pattern<br/>
+                            Condition [!] match string regular-expression-pattern<br/>
                         </td>
                     </tr>
                     <tr>
@@ -515,7 +515,7 @@
                                 <li>missing &mdash; True if the default request filename is missing.</li>
                                 <li>directory &mdash; True the if rule argument evaluates to a directory</li>
                                 <li>exists &mdash; True if the rule argument evaluates to an existing file</li>
-                                <li>match &mdash; True if the regular expression matches the argument</li>
+                                <li>match &mdash; True if the regular expression pattern matches the string argument</li>
                             </ul>
                             <p>The rule result can be negated by prefixing with "<em>!</em>".</p>
                             <p>For information about embedded {tokens}, see <a href="../routing.html#tokens">Tokens</a>
@@ -537,7 +537,7 @@
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>DefaultLanguage languageNmenonic</td>
+                        <td>DefaultLanguage language</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -551,7 +551,8 @@
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The DefaultLanguage directive defines the default language to use when the
-                                the client Accept-Language HTTP header is either absent or requests a non-supported language.</p>
+                                the client Accept-Language HTTP header is either absent or requests a non-supported
+                                language.</p> 
                         </td>
                     </tr>
                 </tbody>

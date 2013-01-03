@@ -19345,6 +19345,7 @@ static void manageSocket(MprSocket *sp, int flags);
 static void manageSocketService(MprSocketService *ss, int flags);
 static void manageSsl(MprSsl *ssl, int flags);
 static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize);
+static char *socketState(MprSocket *sp);
 static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize);
 
 /************************************ Code ************************************/
@@ -19422,6 +19423,7 @@ static MprSocketProvider *createStandardProvider(MprSocketService *ss)
     provider->listenSocket = listenSocket;
     provider->readSocket = readSocket;
     provider->writeSocket = writeSocket;
+    provider->socketState = socketState;
     return provider;
 }
 
@@ -19465,7 +19467,6 @@ PUBLIC MprSocket *mprCreateSocket()
     }
     sp->port = -1;
     sp->fd = -1;
-    sp->flags = 0;
 
     sp->provider = ss->standardProvider;
     sp->service = ss;
@@ -19572,11 +19573,10 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 
     sp->ip = sclone(ip);
     sp->port = port;
-    sp->flags = (initialFlags &
-        (MPR_SOCKET_BROADCAST | MPR_SOCKET_DATAGRAM | MPR_SOCKET_BLOCK |
-         MPR_SOCKET_LISTENER | MPR_SOCKET_NOREUSE | MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD));
-
+    sp->flags = (initialFlags & (MPR_SOCKET_BROADCAST | MPR_SOCKET_DATAGRAM | MPR_SOCKET_BLOCK |
+         MPR_SOCKET_NOREUSE | MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD));
     datagram = sp->flags & MPR_SOCKET_DATAGRAM;
+
     /*
         Change null IP address to be an IPv6 endpoint if the system is dual-stack. That way we can listen on 
         both IPv4 and IPv6
@@ -19690,6 +19690,12 @@ PUBLIC MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatche
     if (sp->handler) {
         mprRemoveWaitHandler(sp->handler);
     }
+    if (sp->flags & MPR_SOCKET_BUFFERED_READ) {
+        mask |= MPR_READABLE;
+    }
+    if (sp->flags & MPR_SOCKET_BUFFERED_WRITE) {
+        mask |= MPR_WRITABLE;
+    }
     sp->handler = mprCreateWaitHandler(sp->fd, mask, dispatcher, proc, data, flags);
     return sp->handler;
 }
@@ -19704,10 +19710,18 @@ PUBLIC void mprRemoveSocketHandler(MprSocket *sp)
 }
 
 
+//  MOB mprWaitOnSocket
+
 PUBLIC void mprEnableSocketEvents(MprSocket *sp, int mask)
 {
     assure(sp->handler);
     if (sp->handler) {
+        if (sp->flags & MPR_SOCKET_BUFFERED_READ) {
+            mask |= MPR_READABLE;
+        }
+        if (sp->flags & MPR_SOCKET_BUFFERED_WRITE) {
+            mask |= MPR_WRITABLE;
+        }
         mprWaitOn(sp->handler, mask);
     }
 }
@@ -19740,7 +19754,6 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     sp->flags = (initialFlags &
         (MPR_SOCKET_BROADCAST | MPR_SOCKET_DATAGRAM | MPR_SOCKET_BLOCK |
          MPR_SOCKET_LISTENER | MPR_SOCKET_NOREUSE | MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD));
-    sp->flags |= MPR_SOCKET_CLIENT;
     sp->ip = sclone(ip);
 
     broadcast = sp->flags & MPR_SOCKET_BROADCAST;
@@ -19859,7 +19872,9 @@ static void disconnectSocket(MprSocket *sp)
         }
         fd = sp->fd;
         sp->flags |= MPR_SOCKET_EOF | MPR_SOCKET_DISCONNECTED;
-        mprRecallWaitHandlerByFd(fd);
+        if (sp->handler) {
+            mprRecallWaitHandler(sp->handler);
+        }
     }
     unlock(sp);
 }
@@ -19921,7 +19936,7 @@ static void closeSocket(MprSocket *sp, bool gracefully)
         sp->fd = -1;
     }
 
-    if (! (sp->flags & (MPR_SOCKET_LISTENER | MPR_SOCKET_CLIENT))) {
+    if (sp->flags & MPR_SOCKET_SERVER) {
         mprLock(ss->mutex);
         if (--ss->numAccept < 0) {
             ss->numAccept = 0;
@@ -19963,6 +19978,11 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
         closesocket(fd);
         return 0;
     }
+    nsp->fd = fd;
+    nsp->listenSock = listen;
+    nsp->port = listen->port;
+    nsp->flags = ((listen->flags & ~MPR_SOCKET_LISTENER) | MPR_SOCKET_SERVER);
+
     /*  
         Limit the number of simultaneous clients
      */
@@ -19979,12 +19999,6 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     /* Prevent children inheriting this socket */
     fcntl(fd, F_SETFD, FD_CLOEXEC);         
 #endif
-
-    nsp->fd = fd;
-    nsp->port = listen->port;
-    nsp->flags = listen->flags;
-    nsp->flags &= ~MPR_SOCKET_LISTENER;
-    nsp->listenSock = listen;
 
     mprSetSocketBlockingMode(nsp, (nsp->flags & MPR_SOCKET_BLOCK) ? 1: 0);
     if (nsp->flags & MPR_SOCKET_NODELAY) {
@@ -20086,17 +20100,6 @@ again:
         sp->flags |= MPR_SOCKET_EOF;
         bytes = -1;
     }
-
-#if KEEP && FOR_SSL
-    /*
-        If there is more buffered data to read, then ensure the handler recalls us again even if there is no more IO events.
-     */
-    if (isBufferedData()) {
-        if (sp->handler) {
-            mprRecallWaitHandler(sp->handler);
-        }
-    }
-#endif
     unlock(sp);
     return bytes;
 }
@@ -20393,10 +20396,32 @@ PUBLIC ssize mprFlushSocket(MprSocket *sp)
 }
 
 
-PUBLIC bool mprSocketHasPendingData(MprSocket *sp)
+static char *socketState(MprSocket *sp)
 {
-    return (sp->flags & MPR_SOCKET_PENDING) ? 1 : 0;
+    return MPR->emptyString;
 }
+
+
+PUBLIC char *mprGetSocketState(MprSocket *sp)
+{
+    if (sp->provider == 0) {
+        return 0;
+    }
+    return sp->provider->socketState(sp);
+}
+
+
+PUBLIC bool mprSocketHasBufferedRead(MprSocket *sp)
+{
+    return (sp->flags & MPR_SOCKET_BUFFERED_READ) ? 1 : 0;
+}
+
+
+PUBLIC bool mprSocketHasBufferedWrite(MprSocket *sp)
+{
+    return (sp->flags & MPR_SOCKET_BUFFERED_WRITE) ? 1 : 0;
+}
+
 
 /*  
     Return true if end of file
@@ -20768,28 +20793,31 @@ static int ipv6(cchar *ip)
 
 
 /*  
-    Parse ipAddrPort and return the IP address and port components. Handles ipv4 and ipv6 addresses. 
+    Parse address and return the IP address and port components. Handles ipv4 and ipv6 addresses. 
     If the IP portion is absent, *pip is set to null. If the port portion is absent, port is set to the defaultPort.
     If a ":*" port specifier is used, *pport is set to -1;
-    When an ipAddrPort
-    contains an ipv6 port it should be written as
+    When an address contains an ipv6 port it should be written as:
 
         aaaa:bbbb:cccc:dddd:eeee:ffff:gggg:hhhh:iiii
     or
         [aaaa:bbbb:cccc:dddd:eeee:ffff:gggg:hhhh:iiii]:port
 
     If supplied an IPv6 address, the backets are stripped in the returned IP address.
-    This routine skips any "protocol://" prefix.
+    This routine parses any "https://" prefix.
  */
-PUBLIC int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int defaultPort)
+PUBLIC int mprParseSocketAddress(cchar *address, char **pip, int *pport, int *psecure, int defaultPort)
 {
     char    *ip, *cp;
+    int     port;
 
     ip = 0;
     if (defaultPort < 0) {
         defaultPort = 80;
     }
-    ip = sclone(ipAddrPort);
+    if (psecure) {
+        *psecure = sncmp(address, "https", 5);
+    }
+    ip = sclone(address);
     if ((cp = strchr(ip, ' ')) != 0) {
         *cp++ = '\0';
     }
@@ -20803,7 +20831,7 @@ PUBLIC int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int 
         if ((cp = strchr(ip, ']')) != 0) {
             cp++;
             if ((*cp) && (*cp == ':')) {
-                *pport = (*++cp == '*') ? -1 : atoi(cp);
+                port = (*++cp == '*') ? -1 : atoi(cp);
 
                 /* Set ipAddr to ipv6 address without brackets */
                 ip = sclone(ip + 1);
@@ -20820,12 +20848,12 @@ PUBLIC int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int 
                     ip = 0;
                 }
                 /* No port present, use callers default */
-                *pport = defaultPort;
+                port = defaultPort;
             }
         } else {
             /* Handles a:b:c:d:e:f:g:h:i case (no port) */
             /* No port present, use callers default */
-            *pport = defaultPort;
+            port = defaultPort;
         }
 
     } else {
@@ -20835,9 +20863,9 @@ PUBLIC int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int 
         if ((cp = strchr(ip, ':')) != 0) {
             *cp++ = '\0';
             if (*cp == '*') {
-                *pport = -1;
+                port = -1;
             } else {
-                *pport = atoi(cp);
+                port = atoi(cp);
             }
             if (*ip == '*') {
                 ip = 0;
@@ -20847,17 +20875,20 @@ PUBLIC int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int 
             if ((cp = strchr(ip, ' ')) != 0) {
                 *cp++ = '\0';
             }
-            *pport = defaultPort;
+            port = defaultPort;
 
         } else {
             if (isdigit((uchar) *ip)) {
-                *pport = atoi(ip);
+                port = atoi(ip);
                 ip = 0;
             } else {
                 /* No port present, use callers default */
-                *pport = defaultPort;
+                port = defaultPort;
             }
         }
+    }
+    if (pport) {
+        *pport = port;
     }
     if (pip) {
         *pip = ip;
@@ -20894,7 +20925,6 @@ static void manageSsl(MprSsl *ssl, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ssl->key);
-        mprMark(ssl->cert);
         mprMark(ssl->keyFile);
         mprMark(ssl->certFile);
         mprMark(ssl->caFile);
@@ -20956,7 +20986,7 @@ PUBLIC MprSsl *mprCloneSsl(MprSsl *src)
 
 PUBLIC int mprLoadSsl()
 {
-#if BIT_PACK_SSL
+#if BIT_SSL
     MprSocketService    *ss;
     MprModule           *mp;
     cchar               *path;
@@ -21001,7 +21031,7 @@ static int loadProviders()
 /*
     Upgrade a socket to use SSL
  */
-PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
+PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 {
     MprSocketService    *ss;
     char                *providerName;
@@ -21030,10 +21060,12 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
     sp->flags |= MPR_SOCKET_NODELAY;
     mprSetSocketNoDelay(sp, 1);
 #endif
-    return sp->provider->upgradeSocket(sp, ssl, server);
+    mprLog(4, "Start upgrade socket to TLS");
+    return sp->provider->upgradeSocket(sp, ssl, peerName);
 }
 
 
+//  MOB - is this supported in Est?
 PUBLIC void mprAddSslCiphers(MprSsl *ssl, cchar *ciphers)
 {
     assure(ssl);
@@ -21073,6 +21105,7 @@ PUBLIC void mprSetSslCaFile(MprSsl *ssl, cchar *caFile)
 }
 
 
+//  MOB - is this supported in Est?
 PUBLIC void mprSetSslCaPath(MprSsl *ssl, cchar *caPath)
 {
     assure(ssl);
@@ -21080,6 +21113,7 @@ PUBLIC void mprSetSslCaPath(MprSsl *ssl, cchar *caPath)
 }
 
 
+//  MOB - is this supported in Est?
 PUBLIC void mprSetSslProtocols(MprSsl *ssl, int protocols)
 {
     assure(ssl);
@@ -21098,6 +21132,7 @@ PUBLIC void mprVerifySslPeer(MprSsl *ssl, bool on)
 {
     if (ssl) {
         ssl->verifyPeer = on;
+        ssl->verifyIssuer = on;
     } else {
         MPR->verifySsl = on;
     }
@@ -21975,19 +22010,21 @@ PUBLIC char *stok(char *str, cchar *delim, char **last)
     char    *start, *end;
     ssize   i;
 
-    assure(last);
     assure(delim);
-
-    start = str ? str : *last;
+    start = (str || *last == 0) ? str : *last;
 
     if (start == 0) {
-        *last = 0;
+        if (last) {
+            *last = 0;
+        }
         return 0;
     }
     i = strspn(start, delim);
     start += i;
     if (*start == '\0') {
-        *last = 0;
+        if (last) {
+            *last = 0;
+        }
         return 0;
     }
     end = strpbrk(start, delim);
@@ -21996,7 +22033,9 @@ PUBLIC char *stok(char *str, cchar *delim, char **last)
         i = strspn(end, delim);
         end += i;
     }
-    *last = end;
+    if (last) {
+        *last = end;
+    }
     return start;
 }
 
@@ -26423,12 +26462,14 @@ PUBLIC void mprRecallWaitHandler(MprWaitHandler *wp)
 {
     MprWaitService  *ws;
 
-    ws = MPR->waitService;
-    lock(ws);
-    wp->flags |= MPR_WAIT_RECALL_HANDLER;
-    ws->needRecall = 1;
-    mprWakeNotifier();
-    unlock(ws);
+    if (wp) {
+        ws = MPR->waitService;
+        lock(ws);
+        wp->flags |= MPR_WAIT_RECALL_HANDLER;
+        ws->needRecall = 1;
+        mprWakeNotifier();
+        unlock(ws);
+    }
 }
 
 

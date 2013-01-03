@@ -1708,15 +1708,15 @@ extern "C" {
 
     /**
      * \brief          Store the certificate DN in printable form into buf;
-     *                 no more than (end - buf) characters will be written.
+     *                 no more than (bufsize) characters will be written.
      */
-    int x509parse_dn_gets(char *buf, char *end, x509_name * dn);
+    int x509parse_dn_gets(char *prefix, char *buf, int bufsize, x509_name *dn);
 
     /**
      * \brief          Returns an informational string about the
-     *                 certificate.
+     *                 certificate. 
      */
-    char *x509parse_cert_info(char *prefix, x509_cert * crt);
+    char *x509parse_cert_info(char *prefix, char *buf, int bufsize, x509_cert *crt);
 
     /**
      * \brief          Return 0 if the certificate is still valid,
@@ -1838,6 +1838,7 @@ extern "C" {
 #define SSL_COMPRESS_NULL               0
 
 #define SSL_VERIFY_NO_CHECK             0
+//  MOB - rename VERIFY_MANUAL. Reconsider all names
 #define SSL_VERIFY_OPTIONAL             1
 #define SSL_VERIFY_REQUIRED             2
 
@@ -2095,8 +2096,7 @@ extern "C" {
      * \param f_dbg    debug function
      * \param p_dbg    debug parameter
      */
-    void ssl_set_dbg(ssl_context * ssl,
-             void (*f_dbg) (void *, int, char *), void *p_dbg);
+    void ssl_set_dbg(ssl_context * ssl, void (*f_dbg) (void *, int, char *), void *p_dbg);
 
     /**
      * \brief          Set the underlying BIO read and write callbacks
@@ -2109,8 +2109,7 @@ extern "C" {
      */
     void ssl_set_bio(ssl_context * ssl,
              int (*f_recv) (void *, uchar *, int),
-             void *p_recv, int (*f_send) (void *, uchar *,
-                              int), void *p_send);
+             void *p_recv, int (*f_send) (void *, uchar *, int), void *p_send);
 
     /**
      * \brief          Set the session callbacks (server-side only)
@@ -2119,9 +2118,7 @@ extern "C" {
      * \param s_get    session get callback
      * \param s_set    session set callback
      */
-    void ssl_set_scb(ssl_context * ssl,
-             int (*s_get) (ssl_context *),
-             int (*s_set) (ssl_context *));
+    void ssl_set_scb(ssl_context * ssl, int (*s_get) (ssl_context *), int (*s_set) (ssl_context *));
 
     /**
      * \brief          Set the session resuming flag, timeout and data
@@ -2131,8 +2128,7 @@ extern "C" {
      * \param timeout  session timeout in seconds, or 0 (no timeout)
      * \param session  session context
      */
-    void ssl_set_session(ssl_context * ssl, int resume, int timeout,
-                 ssl_session * session);
+    void ssl_set_session(ssl_context * ssl, int resume, int timeout, ssl_session * session);
 
     /**
      * \brief          Set the list of allowed ciphersuites
@@ -2149,10 +2145,9 @@ extern "C" {
      * \param ca_chain trusted CA chain
      * \param peer_cn  expected peer CommonName (or NULL)
      *
-     * \note           TODO: add two more parameters: depth and crl
+     * \note           MOB TODO: add two more parameters: depth and crl
      */
-    void ssl_set_ca_chain(ssl_context * ssl, x509_cert * ca_chain,
-                  char *peer_cn);
+    void ssl_set_ca_chain(ssl_context * ssl, x509_cert * ca_chain, char *peer_cn);
 
     /**
      * \brief          Set own certificate and private key
@@ -2161,8 +2156,7 @@ extern "C" {
      * \param own_cert own public certificate
      * \param rsa_key  own private RSA key
      */
-    void ssl_set_own_cert(ssl_context * ssl, x509_cert * own_cert,
-                  rsa_context * rsa_key);
+    void ssl_set_own_cert(ssl_context * ssl, x509_cert * own_cert, rsa_context * rsa_key);
 
     /**
      * \brief          Set the Diffie-Hellman public P and G values,
@@ -3489,40 +3483,49 @@ extern "C" {
 #ifndef SSL_DEBUG_H
 #define SSL_DEBUG_H
 
+#if FUTURE && BIT_EST_LOGGING
+#if BIT_DEBUG
+    #define LOG(l, ...) if (l <= logLevel) estLog(l, __VA_ARGS__) ; else
+    #define RET(l, ...) if (l <= logLevel) estLog(l, __VA_ARGS__) ; else
+#else
+    #define LOG(l, ...) if (1) ; else
+    #define RET(l, ...) if (1) ; else
+#endif
+
+    #define SSL_DEBUG_MSG(level, args)              debug_print_msg(ssl, level, debug_fmt args);
+    #define SSL_DEBUG_RET(level, text, ret)         debug_print_ret(ssl, level, text, ret);
+    #define SSL_DEBUG_BUF(level, text, buf, len)    debug_print_buf(ssl, level, text, buf, len);
+    #define SSL_DEBUG_MPI(level, text, X)           debug_print_mpi(ssl, level, text, X);
+    #define SSL_DEBUG_CRT(level, text, crt)         debug_print_crt(ssl, level, text, crt);
+
+#endif
+
 #if BIT_EST_LOGGING
-#define SSL_DEBUG_MSG( level, args )                    \
-    debug_print_msg( ssl, level, __FILE__, __LINE__, debug_fmt args );
-
-#define SSL_DEBUG_RET( level, text, ret )                \
-    debug_print_ret( ssl, level, __FILE__, __LINE__, text, ret );
-
-#define SSL_DEBUG_BUF( level, text, buf, len )           \
-    debug_print_buf( ssl, level, __FILE__, __LINE__, text, buf, len );
-
-#define SSL_DEBUG_MPI( level, text, X )                  \
-    debug_print_mpi( ssl, level, __FILE__, __LINE__, text, X );
-
-#define SSL_DEBUG_CRT( level, text, crt )                \
-    debug_print_crt( ssl, level, __FILE__, __LINE__, text, crt );
+    #define SSL_DEBUG_MSG(level, args)              debug_print_msg(ssl, level, debug_fmt args);
+    #define SSL_DEBUG_RET(level, text, ret)         debug_print_ret(ssl, level, text, ret);
+    #define SSL_DEBUG_BUF(level, text, buf, len)    debug_print_buf(ssl, level, text, buf, len);
+    #define SSL_DEBUG_MPI(level, text, X)           debug_print_mpi(ssl, level, text, X);
+    #define SSL_DEBUG_CRT(level, text, crt)         debug_print_crt(ssl, level, text, crt);
 #else
 
-#define SSL_DEBUG_MSG( level, args )            do { } while( 0 )
-#define SSL_DEBUG_RET( level, text, ret )       do { } while( 0 )
-#define SSL_DEBUG_BUF( level, text, buf, len )  do { } while( 0 )
-#define SSL_DEBUG_MPI( level, text, X )         do { } while( 0 )
-#define SSL_DEBUG_CRT( level, text, crt )       do { } while( 0 )
+    #define SSL_DEBUG_MSG(level, args)            do {} while(0)
+    #define SSL_DEBUG_RET(level, text, ret)       do {} while(0)
+    #define SSL_DEBUG_BUF(level, text, buf, len)  do {} while(0)
+    #define SSL_DEBUG_MPI(level, text, X)         do {} while(0)
+    #define SSL_DEBUG_CRT(level, text, crt)       do {} while(0)
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+    //  MOB - move to an estDep.h
+    int snfmt(char *buf, ssize bufsize, cchar *fmt, ...);
     char *debug_fmt(const char *format, ...);
-    void debug_print_msg(ssl_context * ssl, int level, char *file, int line, char *text);
-    void debug_print_ret(ssl_context * ssl, int level, char *file, int line, char *text, int ret);
-    void debug_print_buf(ssl_context * ssl, int level, char *file, int line, char *text, uchar *buf, int len);
-    void debug_print_mpi(ssl_context * ssl, int level, char *file, int line, char *text, mpi * X);
-    void debug_print_crt(ssl_context * ssl, int level, char *file, int line, char *text, x509_cert * crt);
+    void debug_print_msg(ssl_context *ssl, int level, char *text);
+    void debug_print_ret(ssl_context *ssl, int level, char *text, int ret);
+    void debug_print_buf(ssl_context *ssl, int level, char *text, uchar *buf, int len);
+    void debug_print_mpi(ssl_context *ssl, int level, char *text, mpi * X);
+    void debug_print_crt(ssl_context *ssl, int level, char *text, x509_cert * crt);
 
 #ifdef __cplusplus
 }

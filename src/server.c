@@ -128,9 +128,6 @@ static void manageServer(MaServer *server, int flags)
         mprMark(server->http);
         mprMark(server->limits);
         mprMark(server->endpoints);
-#if UNUSED
-        mprMark(server->home);
-#endif
 
     } else if (flags & MPR_MANAGE_FREE) {
         maStopServer(server);
@@ -203,7 +200,6 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         return 0;
 
     } else {
-        mprLog(2, "DocumentRoot %s", documents);
         if ((endpoint = httpCreateConfiguredEndpoint(home, documents, ip, port)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
@@ -250,16 +246,14 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
 #endif
         httpAddRouteHandler(route, "fileHandler", "");
         httpFinalizeRoute(route);
-    }
-    if (home) {
+        if (home) {
+            httpSetRouteHome(route, home);
+        }
 #if UNUSED
-        maSetServerHome(server, home);
-#else
-        httpSetRouteHome(route, home);
+        if (ip || port > 0) {
+            maSetServerAddress(server, ip, port);
+        }
 #endif
-    }
-    if (ip || port > 0) {
-        maSetServerAddress(server, ip, port);
     }
     return 0;
 }
@@ -364,30 +358,6 @@ PUBLIC int maSetPlatform(cchar *platform)
     appweb->platform = platform;
     return 0;
 }
-
-
-#if UNUSED
-/*  
-    Set the home directory (Server Root). We convert path into an absolute path.
- */
-PUBLIC void maSetServerHome(MaServer *server, cchar *path)
-{
-    if (path == 0 || BIT_ROM) {
-        path = ".";
-    }
-#if !VXWORKS
-    /*
-        VxWorks stat() is broken if using a network FTP server.
-     */
-    if (! mprPathExists(path, R_OK)) {
-        mprError("Cannot access ServerRoot directory %s", path);
-        return;
-    }
-#endif
-    server->home = mprGetAbsPath(path);
-    mprLog(MPR_CONFIG, "Set server root to: \"%s\"", server->home);
-}
-#endif
 
 
 /*

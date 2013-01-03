@@ -6,7 +6,7 @@
 
     Use "bit ServerCertReq" to generate a certificate request to send to a certificate authority like Verisign.
  
-    To run appweb, you need to do:
+    To use appweb with HTTP, you need a server certificate. This command will generate a self-signed test certificate.
  
         bit serverCert
  
@@ -14,16 +14,16 @@
  
         bit ca
         bit serverChainCert
- 
  */
 
 Bit.load({
 
     targets: {
         /*
-            Self-signed server certificate.
+            WARNING: Self-signed server certificate for testing ONLY.
             Use a self-signed certificate when you just want quick and dirty testing.
-            The browser will say it doesn't recognize this certificate, but that is ok.
+            The browser will say it doesn't recognize this certificate, but that is ok for testing only.
+            Create a private key in server.key with a password of "server". Decrypt this in server.key.pem.
          */
         serverCert: {
             shell: "
@@ -50,7 +50,7 @@ Bit.load({
 
         /*
              Setup a test certificate authority. Use this if you will be generating multiple certificates for clients and 
-             servers and want to validate them. The browser will say it doesn't recognize this certificate, but that is ok.
+             servers. The browser will say it doesn't recognize this certificate, but that is ok.
              NOTE: this is only for test. The certificate authority is not a real entity!
          */
         ca: {
@@ -64,7 +64,7 @@ Bit.load({
         },
 
         /*
-             Client certificate to put in your browser. Used when doing client validation
+            Client certificate to put in your browser. Used when doing client validation.
          */
         clientChainCert: {
             shell: "
@@ -73,12 +73,12 @@ Bit.load({
                 openssl req -passout pass:client -newkey rsa:1024 -keyout client.key -out client.req < response.client
                 openssl rsa -passin pass:client -in client.key -out client.key.pem
                 OPENSSL_CONF=openssl.ca ; export OPENSSL_CONF
-                openssl ca -in client.req -out client.crt <response.yes
+                openssl ca -in client.req -out client.crt < response.yes
             ",
         },
 
         /*
-             Server certificate to put in Appweb. Necessary.
+            Server certificate to put in Appweb. Necessary.
          */
         serverChainCert: {
             shell: "
@@ -91,7 +91,7 @@ Bit.load({
         },
 
         /*
-             Generate a request to send to a certificate authority like Verisign
+            Generate a certificate request to send to a certificate authority like Verisign
          */
         certReq: {
             shell: "

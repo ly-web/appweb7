@@ -13,7 +13,7 @@ Bit.load({
 
         libmprssl: {
             type: 'lib',
-            depends: [ 'libmpr', 'libest', 'openssl', 'matrixssl' ],
+            depends: [ 'libmpr', 'libest', 'openssl', 'matrixssl', 'mocana' ],
             sources: [ 'mprSsl.c' ],
         },
 
@@ -24,7 +24,7 @@ Bit.load({
             rule: 'gui',
             depends: [ 'libmpr' ],
             sources: [ 'manager.c' ],
-            scripts: { prebuild: "bit.settings.mpr.manager ||= 'manager'" },
+            scripts: { prebuild: "if (bit.settings.mpr) { bit.settings.mpr.manager ||= 'manager'}" },
         },
 
         makerom: {
@@ -34,4 +34,11 @@ Bit.load({
             platforms: [ 'local' ],
         },
 	},
+
+    packs: {
+        est: {},
+        matrixssl: {},
+        openssl: {},
+        mocana: {},
+    },
 })
