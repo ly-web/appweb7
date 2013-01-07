@@ -141,7 +141,7 @@ static void openPhp(HttpQueue *q)
         PHP will buffer all input. i.e. does not stream. The normal Limits still apply.
      */
     q->max = q->pair->max = MAXINT;
-    mprLog(5, "Open php handler");
+    mprTrace(5, "Open php handler");
     httpTrimExtraPath(q->conn);
     if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
         httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
@@ -302,7 +302,7 @@ static int writeBlock(cchar *str, uint len TSRMLS_DC)
         return -1;
     }
     written = httpWriteBlock(conn->tx->queue[HTTP_QUEUE_TX]->nextQ, str, len, HTTP_BLOCK);
-    mprLog(6, "phpHandler: write response %d bytes", written);
+    mprTrace(6, "phpHandler: write response %d bytes", written);
     if (written <= 0) {
         php_handle_aborted_connection();
     }
@@ -326,7 +326,7 @@ static void registerServerVars(zval *track_vars_array TSRMLS_DC)
     php_import_environment_variables(track_vars_array TSRMLS_CC);
 
     php = httpGetQueueData(conn);
-    assure(php);
+    assert(php);
     php->var_array = track_vars_array;
 
     httpCreateCGIParams(conn);
@@ -339,7 +339,7 @@ static void registerServerVars(zval *track_vars_array TSRMLS_DC)
             if (kp->data) {
                 key = mapHyphen(sjoin("HTTP_", supper(kp->key), NULL));
                 php_register_variable(key, (char*) kp->data, php->var_array TSRMLS_CC);
-                mprLog(4, "php: header %s = %s", key, kp->data);
+                mprTrace(4, "php: header %s = %s", key, kp->data);
             }
         }
     }
@@ -347,7 +347,7 @@ static void registerServerVars(zval *track_vars_array TSRMLS_DC)
         for (ITERATE_KEYS(rx->svars, kp)) {
             if (kp->data) {
                 php_register_variable(kp->key, (char*) kp->data, php->var_array TSRMLS_CC);
-                mprLog(4, "php: server var %s = %s", kp->key, kp->data);
+                mprTrace(4, "php: server var %s = %s", kp->key, kp->data);
             }
         }
     }
@@ -355,7 +355,7 @@ static void registerServerVars(zval *track_vars_array TSRMLS_DC)
         for (ITERATE_KEYS(rx->params, kp)) {
             if (kp->data) {
                 php_register_variable(supper(kp->key), (char*) kp->data, php->var_array TSRMLS_CC);
-                mprLog(4, "php: form var %s = %s", kp->key, kp->data);
+                mprTrace(4, "php: form var %s = %s", kp->key, kp->data);
             }
         }
     }
@@ -386,7 +386,7 @@ static int sendHeaders(sapi_headers_struct *phpHeaders TSRMLS_DC)
     HttpConn      *conn;
 
     conn = (HttpConn*) SG(server_context);
-    mprLog(6, "php: send headers");
+    mprTrace(6, "php: send headers");
     if (conn->tx->status == HTTP_CODE_OK) {
         /* Preserve non-ok status that may be set if using a PHP ErrorDocument */
         httpSetStatus(conn, phpHeaders->http_response_code);
@@ -469,7 +469,7 @@ static int readBodyData(char *buffer, uint bufsize TSRMLS_DC)
         mprMemcpy(buffer, len, mprGetBufStart(content), len);
         mprAdjustBufStart(content, len);
     }
-    mprLog(5, "php: read post data len %d remaining %d", len, mprGetBufLength(content));
+    mprTrace(5, "php: read post data len %d remaining %d", len, mprGetBufLength(content));
     return (int) len;
 }
 
@@ -491,7 +491,7 @@ static int initializePhp(Http *http)
     sapi_globals = (sapi_globals_struct*) ts_resource(sapi_globals_id);
     tsrm_ls = (void***) ts_resource(0);
 
-    mprLog(2, "php: initialize php library");
+    mprTrace(2, "php: initialize php library");
     appweb = httpGetContext(http);
 #if defined(BIT_PACK_PHP_INI)
     phpSapiBlock.php_ini_path_override = BIT_PACK_PHP_INI;
@@ -527,7 +527,7 @@ static int finalizePhp(MprModule *mp)
         return 0;
     }
     if (stage->stageData) {
-        mprLog(4, "php: Finalize library before unloading");
+        mprTrace(4, "php: Finalize library before unloading");
         phpSapiBlock.shutdown(&phpSapiBlock);
         sapi_shutdown();
 #if KEEP

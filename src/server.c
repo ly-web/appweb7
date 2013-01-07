@@ -146,7 +146,7 @@ PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
     HttpHost    *host;
     HttpRoute   *route;
 
-    assure(appweb);
+    assert(appweb);
 
     if ((server = mprAllocObj(MaServer, manageServer)) == NULL) {
         return 0;
@@ -194,7 +194,7 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
     if (configFile) {
         path = mprGetAbsPath(configFile);
         if (maParseConfig(server, path, 0) < 0) {
-            /* mprUserError("Cannot configure server using %s", path); */
+            /* mprError("Cannot configure server using %s", path); */
             return MPR_ERR_CANT_INITIALIZE;
         }
         return 0;
@@ -205,9 +205,9 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         }
         maAddEndpoint(server, endpoint);
         host = mprGetFirstItem(endpoint->hosts);
-        assure(host);
+        assert(host);
         route = mprGetFirstItem(host->routes);
-        assure(route);
+        assert(route);
 
 #if BIT_PACK_CGI
         maLoadModule(appweb, "cgiHandler", "mod_cgi");
@@ -220,7 +220,7 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
             if (mprPathExists(path, X_OK)) {
                 HttpRoute *cgiRoute;
                 cgiRoute = httpCreateAliasRoute(route, "/cgi-bin/", path, 0);
-                mprLog(4, "ScriptAlias \"/cgi-bin/\":\"%s\"", path);
+                mprTrace(4, "ScriptAlias \"/cgi-bin/\":\"%s\"", path);
                 httpSetRouteHandler(cgiRoute, "cgiHandler");
                 httpFinalizeRoute(cgiRoute);
             }

@@ -430,7 +430,7 @@ PUBLIC int main(int argc, char **argv)
     mprSetCmdlineLogging(1);
 
     if (mprStart() < 0) {
-        mprUserError("Cannot start MPR for %s", mprGetAppName());
+        mprError("Cannot start MPR for %s", mprGetAppName());
         mprDestroy(MPR_EXIT_DEFAULT);
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -546,7 +546,7 @@ static MprList *getRoutes()
         Filter ESP routes. Go in reverse order to locate outermost routes first.
      */
     for (prev = -1; (route = mprGetPrevItem(host->routes, &prev)) != 0; ) {
-        mprLog(3, "Check route name %s, prefix %s", route->name, route->startWith);
+        mprTrace(3, "Check route name %s, prefix %s", route->name, route->startWith);
 
         if ((eroute = route->eroute) == 0 || !eroute->compile) {
             /* No ESP configuration for compiling */
@@ -590,8 +590,7 @@ static MprList *getRoutes()
             continue;
         }
         if (mprLookupItem(routes, route) < 0) {
-            // mprLog(1, "Compiling route dir: %-40s name: %-16s prefix: %-16s", route->dir, route->name, route->startWith);
-            mprLog(2, "Compiling route dir: %s name: %s prefix: %s", route->dir, route->name, route->startWith);
+            mprTrace(2, "Compiling route dir: %s name: %s prefix: %s", route->dir, route->name, route->startWith);
             mprAddItem(routes, route);
         }
     }
@@ -637,7 +636,7 @@ static HttpRoute *getMvcRoute()
         Go in reverse order to locate outermost routes first.
      */
     for (prev = -1; (route = mprGetPrevItem(host->routes, &prev)) != 0; ) {
-        mprLog(3, "Check route name %s, prefix %s", route->name, route->startWith);
+        mprTrace(3, "Check route name %s, prefix %s", route->name, route->startWith);
         if ((eroute = route->eroute) == 0 || !eroute->compile) {
             /* No ESP configuration for compiling */
             continue;
@@ -727,7 +726,7 @@ static void process(int argc, char **argv)
     HttpRoute   *route;
     cchar       *cmd;
 
-    assure(argc >= 1);
+    assert(argc >= 1);
     
     cmd = argv[0];
     if (smatch(cmd, "generate")) {
@@ -832,7 +831,7 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
         fail("Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
-    mprLog(4, "ESP command: %s\n", app->command);
+    mprTrace(4, "ESP command: %s\n", app->command);
     if (eroute->env) {
         elist = mprCreateList(0, 0);
         for (ITERATE_KEYS(eroute->env, var)) {
@@ -1023,7 +1022,7 @@ static void compile(MprList *routes)
         kp->type = 0;
     }
     for (ITERATE_ITEMS(routes, route, next)) {
-        mprLog(2, "Build with route \"%s\" at %s", route->name, route->dir);
+        mprTrace(2, "Build with route \"%s\" at %s", route->name, route->dir);
         if (app->flat) {
             compileFlat(route);
         } else {
@@ -1075,7 +1074,7 @@ static void compileItems(HttpRoute *route)
     eroute = route->eroute;
 
     if (eroute->controllersDir) {
-        assure(eroute);
+        assert(eroute);
         app->files = mprGetPathFiles(eroute->controllersDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
@@ -1694,7 +1693,7 @@ static void migrate(HttpRoute *route, int argc, char **argv)
                 edi->forw(edi);
             }
             if (backward) {
-                assure(mig);
+                assert(mig);
                 ediDeleteRow(edi, ESP_MIGRATIONS, ediGetFieldValue(mig, "id"));
             } else {
                 mig = ediCreateRec(edi, ESP_MIGRATIONS);
@@ -2029,7 +2028,7 @@ static void usageError(Mpr *mpr)
 
     name = mprGetAppName();
 
-    mprPrintfError("\nESP Usage:\n\n"
+    mprEprintf("\nESP Usage:\n\n"
     "  %s [options] [commands]\n\n"
     "  Options:\n"
     "    --chdir dir                # Change to the named directory first\n"

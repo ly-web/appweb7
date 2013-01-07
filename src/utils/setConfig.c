@@ -70,9 +70,9 @@ int main(int argc, char **argv) {
     }
     if (err) {
 #if BIT_WIN_LIKE
-        mprUserError("Bad command line:");
+        mprError("Bad command line:");
 #else
-        mprUserError("Bad command line:\n"
+        mprError("Bad command line:\n"
             "  Usage: pathConfig [options]\n"
             "  Switches:\n"
             "    --cache dir          # Cache dir"
@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     path = argv[nextArg++];
 
     if ((contents = mprReadPathContents(path, NULL)) == 0) {
-        mprUserError("Cannot read %s", path);
+        mprError("Cannot read %s", path);
         return 1;
     }
 	if (port) {
@@ -122,16 +122,16 @@ int main(int argc, char **argv) {
     }
     revised = mprGetTempPath(mprGetPathDir(path));
     if (mprWritePathContents(revised, contents, -1, 0644) < 0) {
-        mprUserError("Cannot write %s", revised);
+        mprError("Cannot write %s", revised);
     }
 	bak = sfmt("%s.bak", path);
 	mprDeletePath(bak);
 	if (rename(path, bak) < 0) {
-        mprUserError("Cannot save %s to %s: 0x%x", path, bak, mprGetError());
+        mprError("Cannot save %s to %s: 0x%x", path, bak, mprGetError());
 	}
 	mprDeletePath(path);
     if (rename(revised, path) < 0) {
-        mprUserError("Cannot rename %s to %s: 0x%x", revised, path, mprGetError());
+        mprError("Cannot rename %s to %s: 0x%x", revised, path, mprGetError());
 		rename(bak, path);
     }
     return 0;
@@ -183,7 +183,7 @@ static void logHandler(int flags, int level, cchar *msg)
         MessageBoxEx(NULL, msg, mprGetAppTitle(), MB_OK, 0);
     }
     mprWriteToOsLog(msg, 0, 0);
-    mprPrintfError("%s\n", msg);
+    mprEprintf("%s\n", msg);
 }
 #endif
 

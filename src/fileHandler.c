@@ -41,7 +41,7 @@ static int matchFileHandler(HttpConn *conn, HttpRoute *route, int dir)
     info = &tx->fileInfo;
 
     httpMapFile(conn, route);
-    assure(info->checked);
+    assert(info->checked);
 
     if (rx->flags & (HTTP_DELETE | HTTP_PUT)) {
         return HTTP_ROUTE_OK;
@@ -218,7 +218,7 @@ static void startFileHandler(HttpQueue *q)
     conn = q->conn;
     rx = conn->rx;
     tx = conn->tx;
-    assure(!tx->finalized);
+    assert(!tx->finalized);
     
     if (rx->flags & HTTP_PUT) {
         handlePutRequest(q);
@@ -267,8 +267,8 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
     if (packet->content == 0 && (packet->content = mprCreateBuf(size, -1)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    assure(size <= mprGetBufSpace(packet->content));    
-    mprLog(7, "readFileData size %d, pos %Ld", size, pos);
+    assert(size <= mprGetBufSpace(packet->content));    
+    mprTrace(7, "readFileData size %d, pos %Ld", size, pos);
     
     if (pos >= 0) {
         mprSeekFile(tx->file, SEEK_SET, pos);
@@ -283,7 +283,7 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
     }
     mprAdjustBufEnd(packet->content, nbytes);
     packet->esize -= nbytes;
-    assure(packet->esize == 0);
+    assert(packet->esize == 0);
     return nbytes;
 }
 
@@ -347,15 +347,15 @@ static void outgoingFileService(HttpQueue *q)
             if ((rc = prepPacket(q, packet)) < 0) {
                 return;
             } else if (rc == 0) {
-                mprLog(7, "OutgoingFileService downstream full, putback");
+                mprTrace(7, "OutgoingFileService downstream full, putback");
                 httpPutBackPacket(q, packet);
                 return;
             }
-            mprLog(7, "OutgoingFileService readData %d", rc);
+            mprTrace(7, "OutgoingFileService readData %d", rc);
         }
         httpPutPacketToNext(q, packet);
     }
-    mprLog(7, "OutgoingFileService complete");
+    mprTrace(7, "OutgoingFileService complete");
 }
 
 
@@ -396,7 +396,7 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
     }
     buf = packet->content;
     len = mprGetBufLength(buf);
-    assure(len > 0);
+    assert(len > 0);
 
     range = rx->inputRange;
     if (range && mprSeekFile(file, SEEK_SET, range->start) != range->start) {
@@ -418,12 +418,12 @@ static void handlePutRequest(HttpQueue *q)
     MprFile     *file;
     char        *path;
 
-    assure(q->pair->queueData == 0);
+    assert(q->pair->queueData == 0);
 
     conn = q->conn;
     tx = conn->tx;
-    assure(tx->filename);
-    assure(tx->fileInfo.checked);
+    assert(tx->filename);
+    assert(tx->fileInfo.checked);
 
     path = tx->filename;
     if (tx->outputRanges) {
@@ -459,8 +459,8 @@ static void handleDeleteRequest(HttpQueue *q)
 
     conn = q->conn;
     tx = conn->tx;
-    assure(tx->filename);
-    assure(tx->fileInfo.checked);
+    assert(tx->filename);
+    assert(tx->fileInfo.checked);
 
     if (!tx->fileInfo.isReg) {
         httpError(conn, HTTP_CODE_NOT_FOUND, "URI not found");

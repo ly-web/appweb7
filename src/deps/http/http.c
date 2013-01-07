@@ -493,7 +493,7 @@ static bool parseArgs(int argc, char **argv)
             app->verbose++;
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
-            mprPrintfError("%s %s\n"
+            mprEprintf("%s %s\n"
                 "Copyright (C) Embedthis Software 2003-2013\n"
                 "Copyright (C) Michael O'Brien 2003-2013\n",
                BIT_TITLE, BIT_VERSION);
@@ -590,13 +590,14 @@ static bool parseArgs(int argc, char **argv)
 
 static void showUsage()
 {
-    mprPrintfError("usage: %s [options] [files] url\n"
+    mprEprintf("usage: %s [options] [files] url\n"
         "  Options:\n"
         "  --auth basic|digest   # Set authentication type.\n"
         "  --benchmark           # Compute benchmark results.\n"
         "  --ca file             # Certificate bundle to use when validating the server certificate.\n"
         "  --cert file           # Certificate to send to the server to identify the client.\n"
         "  --chunk size          # Request response data to use this chunk size.\n"
+        "  --ciphers cipher,...  # List of suitable ciphers.\n"
         "  --continue            # Continue on errors.\n"
         "  --cookie CookieString # Define a cookie header. Multiple uses okay.\n"
         "  --data bodyData       # Body data to send with PUT or POST.\n"
@@ -816,7 +817,7 @@ static int sendRequest(HttpConn *conn, cchar *method, cchar *url, MprList *files
             return MPR_ERR_CANT_WRITE;
         }
     }
-    assure(!mprGetCurrentThread()->yielded);
+    assert(!mprGetCurrentThread()->yielded);
     httpFinalizeOutput(conn);
     return 0;
 }
@@ -873,7 +874,7 @@ static int issueRequest(HttpConn *conn, cchar *url, MprList *files)
                 break;
             }
         }
-        mprLog(MPR_DEBUG, "retry %d of %d for: %s %s", count, conn->retries, app->method, url);
+        mprTrace(4, "retry %d of %d for: %s %s", count, conn->retries, app->method, url);
     }
     if (conn->error) {
         msg = (conn->errorMsg) ? conn->errorMsg : "";
@@ -900,7 +901,7 @@ static int reportResponse(HttpConn *conn, cchar *url, MprTicks elapsed)
     if (bytesRead < 0 && conn->rx) {
         bytesRead = conn->rx->bytesRead;
     }
-    mprLog(6, "Response status %d, elapsed %Ld", status, elapsed);
+    mprTrace(6, "Response status %d, elapsed %Ld", status, elapsed);
     if (conn->error) {
         app->success = 0;
     }
@@ -978,10 +979,10 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
     MprFile         *outFile;
     cchar           *path;
 
-    assure(url && *url);
+    assert(url && *url);
     limits = conn->limits;
 
-    mprLog(MPR_DEBUG, "fetch: %s %s", app->method, url);
+    mprTrace(4, "fetch: %s %s", app->method, url);
     mark = mprGetTicks();
 
     if (issueRequest(conn, url, files) < 0) {
@@ -1087,7 +1088,7 @@ static ssize writeBody(HttpConn *conn, MprList *files)
             }
         }
         if (files) {
-            assure(mprGetListLength(files) == 1);
+            assert(mprGetListLength(files) == 1);
             for (next = 0; (path = mprGetNextItem(files, &next)) != 0; ) {
                 if (strcmp(path, "-") == 0) {
                     file = mprAttachFileFd(0, "stdin", O_RDONLY | O_BINARY);
@@ -1111,7 +1112,7 @@ static ssize writeBody(HttpConn *conn, MprList *files)
                         }
                         bytes -= nbytes;
                         sofar += nbytes;
-                        assure(bytes >= 0);
+                        assert(bytes >= 0);
                     }
                     mprYield(0);
                 }

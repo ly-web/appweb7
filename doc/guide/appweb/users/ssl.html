@@ -82,15 +82,12 @@ https://127.0.0.1:4443/index.html
             "http://www.verisign.com">Verisign</a>.</p><a id="sslConfigurationDirectives"></a>
             <h2 class="section">SSL Configuration Directives</h2>
             <p>Appweb uses several configuration file directives to control SSL and manage secure access to the server.
-            These directives can be specified in the Default Server section or in a Virtual Host section. When included
-            in a Virtual Host section, the SSL directives will only apply for that virtual host.</p>
+            These directives can be specified in the Default Server section or in a Virtual Host section. </p>
             <p>The relevant SSL directives are:</p>
             <ul>
-                <li><a href="dir/ssl.html#sslEngine">SSLEngine</a></li>
-                <li><a href="dir/ssl.html#sslCipherSuite">SSLCipherSuite</a></li>
-                <li><a href="dir/ssl.html#sslProtocol">SSLProtocol</a></li>
                 <li><a href="dir/ssl.html#sslCertificateFile">SSLCertificateFile</a></li>
                 <li><a href="dir/ssl.html#sslCertificateKeyFile">SSLCertificateKeyFile</a></li>
+                <li><a href="dir/ssl.html#listenSecure">ListenSecure</a></li>
             </ul>
             <p>There are some additional directives that are necessary should you wish to have Appweb verify client
             certificates. These directives are:</p>
@@ -103,29 +100,14 @@ https://127.0.0.1:4443/index.html
             <h2 class="section">SSL Configuration Example</h2>
             <p>Consider the default Appweb SSL configuration in the appweb.conf configuration file:</p>
             <pre>
-&lt;VirtualHost *:4443&gt;
-    Documents "$ROUTE_HOME/web"
-    SSLEngine on
-    SSLCipherSuite ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL
-    SSLProtocol ALL -SSLV2
-    SSLCertificateFile "$ROUTE_HOME/server.crt"
-    SSLCertificateKeyFile "$ROUTE_HOME/server.key.pem"
-&lt;/VirtualHost&gt;
+SSLCertificateFile "server.crt"
+SSLCertificateKeyFile "server.key.pem"
+ListenSecure 443
 </pre>
             <p>This set of directives enables SSL on port 4443 for all network interfaces and uses the default supplied
-            self-signed certificate to identify the server.</p>
-            <p>The <b>&lt;virtualHost *:4443&gt;</b> directive instructs Appweb to process requests from all interfaces
-            on port 4443 using this virtual host configuration.</p>
-            <p>The Documents "$ROUTE_HOME/web" locates documents for this virtual host in the <b>web</b>
-            subdirectory under the Home.</p>
-            <p>The <a href="dir/ssl.html#sslEngine">SSLEngine</a> directive enables SSL processing for this virtual
-            host. Only requests that use SSL will be honored.</p>
-            <p>The <a href="dir/ssl.html#sslCipherSuite">SSLCipherSuite</a> directive configures the underlying SSL
-            provider to use the appropriate ciphers when negotiating the session with the client. See the <a href=
-            "dir/ssl.html#sslCipherSuite">SSLCipherSuite</a> directive for details about how to create the cipher
-            spec.</p>
-            <p>The <a href="dir/ssl.html#sslProtocol">SSLProtocol</a> directive enables all SSL protocol version except
-            for SSLv2 which is somewhat flawed.</p>
+                self-signed certificate to identify the server.</p>
+            <p>The <a href="dir/ssl.html#listenSecure">ListenSecure</a> directive instructs Appweb to process requests
+                from all interfaces on port 4443 using current SSL configuration.</p>
             <p>The <a href="dir/ssl.html#sslCertificateFile">SSLCertificateFile</a> directive specifies the server
             certificate to use and the <a href="dir/ssl.html#sslCertificateKeyFile">SSLCertificateKeyFile</a> directive
             specifies the server private key for signing.</p>
@@ -134,6 +116,7 @@ https://127.0.0.1:4443/index.html
             <p>The server key file is a PEM encoded private key. You may supply either an encrypted private key or a
             decrypted private key. If you use an encrypted private key, the server will prompt you for a pass-phrase to
             decrypt the key when the server boots.</p><a id="generatingKeys"></a>
+<!--
             <h2 class="section">Generating Keys and Certificates</h2>
             <p>To generate a request file that you can send to a certificate issuing authority such as <a href=
             "http://www.verisign.com">Verisign</a>, use the following openssl command or equivalent command from your
@@ -150,18 +133,22 @@ openssl req -new -key server.key -out server.csr
             to enter a pass-phrase password to decrypt the server private key. REMEMBER this password.</p>
             <p><b>SECURITY WARNING</b>: Safeguard the "server.key" private key jealously. If this falls into malicious
             hands, then your server identity may be hijacked by another site.</p><a id="sslProviders"></a>
+-->
             <h2 class="section">SSL Providers</h2>
             <p>Appweb employs an open architecture SSL Provider interface so that customers can select the ideal SSL
             provider for their needs. Different SSL implementations excel in various ways. Some are compact, others are
             fast and some are extensive in their cipher support.</p>
-            <p>Appweb supports two SSL implementations:</p>
+            <p>Appweb supports four SSL implementations:</p>
             <ul>
                 <li>OpenSSL -- designed for enterprise use. See <a href=
-                "http://www.openssl.org">http://www.openssl.org</a>.</li>
+                    "http://www.openssl.org">http://www.openssl.org</a>.</li>
                 <li>PeerSec MatrixSSL -- designed for embedding. See <a href=
-                "http://www.peersec.com">http://www.peersec.com</a>.</li>
+                    "http://www.peersec.com">http://www.peersec.com</a>.</li>
+                <li>Mocana NanoSSL -- designed for embedding. See <a href=
+                    "https://mocana.com/nanossl.html">https://mocana.com/nanossl.html</a>.</li>
+                <li>EST SSL -- included with Appweb and designed for embedding.</li>
             </ul>
-            <p>The binary installation will use the OpenSSL SSL provider by default.</p>
+            <p>The binary installation will use the EST SSL provider by default.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->

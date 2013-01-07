@@ -64,7 +64,7 @@ static void openCgi(HttpQueue *q)
 
     conn = q->conn;
     rx = conn->rx;
-    mprLog(5, "Open CGI handler");
+    mprTrace(5, "Open CGI handler");
     if (!httpValidateLimits(conn->endpoint, HTTP_VALIDATE_OPEN_PROCESS, q->conn)) {
         /* Too many active CGI processes */
         return;
@@ -112,7 +112,7 @@ static void closeCgi(HttpQueue *q)
     Cgi     *cgi;
     MprCmd  *cmd;
 
-    mprLog(5, "CGI: close");
+    mprTrace(5, "CGI: close");
     cgi = q->queueData;
     cmd = cgi->cmd;
     if (cmd) {
@@ -145,7 +145,7 @@ static void startCgi(HttpQueue *q)
     conn = q->conn;
     rx = conn->rx;
     tx = conn->tx;
-    mprLog(5, "CGI: Start");
+    mprTrace(5, "CGI: Start");
 
     /*
         The command uses the conn dispatcher. This serializes all I/O for both the connection and the CGI gateway.
@@ -184,7 +184,7 @@ static void startCgi(HttpQueue *q)
         count = copyVars(envv, 0, rx->params, "");
         count = copyVars(envv, 0, rx->svars, "");
         count = copyVars(envv, count, rx->headers, "HTTP_");
-        assure(count <= varCount);
+        assert(count <= varCount);
     }
 #if !VXWORKS
     /*
@@ -239,11 +239,11 @@ static void browserToCgiData(HttpQueue *q, HttpPacket *packet)
     HttpConn    *conn;
     Cgi         *cgi;
 
-    assure(q);
-    assure(packet);
+    assert(q);
+    assert(packet);
     cgi = q->queueData;
     conn = q->conn;
-    assure(q == conn->readq);
+    assert(q == conn->readq);
 
     if (httpGetPacketLength(packet) == 0) {
         /* End of input */
@@ -270,9 +270,9 @@ static void browserToCgiService(HttpQueue *q)
     int         err;
 
     cgi = q->queueData;
-    assure(q == cgi->writeq);
+    assert(q == cgi->writeq);
     cmd = cgi->cmd;
-    assure(cmd);
+    assert(cmd);
     conn = cgi->conn;
 
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
@@ -296,7 +296,7 @@ static void browserToCgiService(HttpQueue *q)
             httpError(conn, HTTP_CODE_BAD_GATEWAY, "Cannot write body data to CGI gateway");
             break;
         }
-        LOG(6, "CGI: browserToCgiService %d/%d, qmax %d", rc, len, q->max);
+        mprTrace(6, "CGI: browserToCgiService %d/%d, qmax %d", rc, len, q->max);
         mprAdjustBufStart(buf, rc);
         if (mprGetBufLength(buf) > 0) {
             httpPutBackPacket(q, packet);
@@ -328,7 +328,7 @@ static void cgiToBrowserService(HttpQueue *q)
 
     cgi = q->queueData;
     conn = q->conn;
-    assure(q == conn->writeq);
+    assert(q == conn->writeq);
     cmd = cgi->cmd;
 
     /*
@@ -341,12 +341,12 @@ static void cgiToBrowserService(HttpQueue *q)
     httpDefaultOutgoingServiceStage(q);
     if (q->count < q->low) {
         mprEnableCmdOutputEvents(cmd, 1);
-        LOG(6, "CGI: ENABLE CGI events: cgiToBrowserService");
+        mprTrace(6, "CGI: ENABLE CGI events: cgiToBrowserService");
     } else if (q->count > q->max && conn->tx->writeBlocked) {
-        LOG(6, "CGI: SUSPEND WRITEQ: cgiToBrowserData writeq %d/%d", conn->writeq->count, conn->writeq->max);
+        mprTrace(6, "CGI: SUSPEND WRITEQ: cgiToBrowserData writeq %d/%d", conn->writeq->count, conn->writeq->max);
         httpSuspendQueue(conn->writeq);
     }
-    LOG(6, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
+    mprTrace(6, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
         cmd->pid, q->count, q->flags, conn->tx->writeBlocked);
 }
 
@@ -367,7 +367,7 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
         return;
     }
     conn->lastActivity = conn->http->now;
-    LOG(6, "CGI: cgiCallback event channel %d", channel);
+    mprTrace(6, "CGI: cgiCallback event channel %d", channel);
 
     switch (channel) {
     case MPR_CMD_STDIN:
@@ -399,11 +399,11 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
     httpServiceQueues(conn);
     if (channel >= 0 && conn->state <= HTTP_STATE_FINALIZED) {
         httpEnableConnEvents(conn);
-        mprLog(6, "CGI: ENABLE CONN: cgiCallback mask %x", conn->sock->handler ? conn->sock->handler->desiredMask : 0);
+        mprTrace(6, "CGI: ENABLE CONN: cgiCallback mask %x", conn->sock->handler ? conn->sock->handler->desiredMask : 0);
     }
     suspended = httpIsQueueSuspended(conn->writeq);
-    mprLog(6, "CGI: %s CGI: cgiCallback. Conn->writeq %d", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
-    assure(!suspended || conn->tx->writeBlocked);
+    mprTrace(6, "CGI: %s CGI: cgiCallback. Conn->writeq %d", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
+    assert(!suspended || conn->tx->writeBlocked);
     mprEnableCmdOutputEvents(cmd, !suspended);
 
     if (conn->state == HTTP_STATE_FINALIZED) {
@@ -428,8 +428,8 @@ static void readFromCgi(Cgi *cgi, int channel)
     tx = conn->tx;
     q = cgi->readq;
     writeq = conn->writeq;
-    assure(conn->sock);
-    assure(conn->state > HTTP_STATE_BEGIN);
+    assert(conn->sock);
+    assert(conn->state > HTTP_STATE_BEGIN);
 
     if (tx->finalized) {
         mprCloseCmdFd(cmd, channel);
@@ -450,17 +450,17 @@ static void readFromCgi(Cgi *cgi, int channel)
             } else if (err == EAGAIN || err == EWOULDBLOCK) {
                 break;
             }
-            mprLog(6, "CGI: Gateway read error %d for %s", err, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
+            mprTrace(6, "CGI: Gateway read error %d for %s", err, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
             mprCloseCmdFd(cmd, channel);
             break;
             
         } else if (nbytes == 0) {
-            mprLog(6, "CGI: Gateway EOF for %s, pid %d", (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr", cmd->pid);
+            mprTrace(6, "CGI: Gateway EOF for %s, pid %d", (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr", cmd->pid);
             mprCloseCmdFd(cmd, channel);
             break;
 
         } else {
-            mprLog(6, "CGI: Gateway read %d bytes from %s", nbytes, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
+            mprTrace(6, "CGI: Gateway read %d bytes from %s", nbytes, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
             traceData(cmd, mprGetBufEnd(packet->content), nbytes);
             mprAdjustBufEnd(packet->content, nbytes);
         }
@@ -521,7 +521,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
         len = 4;
     }
     if (endHeaders > buf->end) {
-        assure(endHeaders <= buf->end);
+        assert(endHeaders <= buf->end);
         return 0;
     }
     if (endHeaders) {
@@ -546,7 +546,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
             while (isspace((uchar) *value)) {
                 value++;
             }
-            mprLog(4, "CGI: parseCgiHeader: key %s = %s", key, value);
+            mprTrace(4, "CGI: parseCgiHeader: key %s = %s", key, value);
             len = (int) strlen(value);
             while (len > 0 && (value[len - 1] == '\r' || value[len - 1] == '\n')) {
                 value[len - 1] = '\0';
@@ -613,7 +613,7 @@ static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet)
         return 0;
     }
     message = getCgiToken(buf, "\n");
-    mprLog(4, "CGI: Status line: %s %s %s", protocol, status, message);
+    mprTrace(4, "CGI: Status line: %s %s %s", protocol, status, message);
     return 1;
 }
 
@@ -635,7 +635,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     tx = conn->tx;
 
     fileName = tx->filename;
-    assure(fileName);
+    assert(fileName);
 
     actionProgram = 0;
     argind = 0;
@@ -676,7 +676,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         We look for *.exe, *.bat and also do unix style processing "#!/program"
      */
     findExecutable(conn, &program, &cmdScript, &bangScript, fileName);
-    assure(program);
+    assert(program);
 
     if (cmdScript) {
         /*
@@ -759,14 +759,14 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         }
     }
     
-    assure(argind <= argc);
+    assert(argind <= argc);
     argv[argind] = 0;
     *argcp = argc;
     *argvp = (cchar**) argv;
 
-    mprLog(5, "CGI: command:");
+    mprTrace(5, "CGI: command:");
     for (i = 0; i < argind; i++) {
-        mprLog(5, "   argv[%d] = %s", i, argv[i]);
+        mprTrace(5, "   argv[%d] = %s", i, argv[i]);
     }
 }
 
@@ -822,7 +822,7 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
     } else {
         path = fileName;
     }
-    assure(path && *path);
+    assert(path && *path);
 
 #if BIT_WIN_LIKE
     if (ext && (strcmp(ext, ".bat") == 0 || strcmp(ext, ".cmd") == 0)) {
@@ -988,7 +988,7 @@ static int scriptAliasDirective(MaState *state, cchar *key, cchar *value)
     httpSetRoutePattern(route, sfmt("^%s(.*)$", prefix), 0);
     httpSetRouteTarget(route, "run", "$1");
     httpFinalizeRoute(route);
-    mprLog(4, "ScriptAlias \"%s\" for \"%s\"", prefix, path);
+    mprTrace(4, "ScriptAlias \"%s\" for \"%s\"", prefix, path);
     return 0;
 }
 

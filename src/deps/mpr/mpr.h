@@ -32,7 +32,7 @@
 #include "bit.h"
 #include "bitos.h"
 
-/*********************************** Forwards *********************************/
+/*********************************** Defines **********************************/
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,7 +69,16 @@ struct  MprWorker;
 struct  MprWorkerService;
 struct  MprXml;
 
-/******************************* Tunable Constants ****************************/
+#ifndef BIT_MPR_LOGGING
+    #define BIT_MPR_LOGGING 1           /**< Default for logging is "on" */
+#endif
+#ifndef BIT_MPR_TRACING
+    #if BIT_DEBUG
+        #define BIT_MPR_TRACING 1       /**< Tracing is on in debug builds */
+    #else
+        #define BIT_MPR_TRACING 0
+    #endif
+#endif
 /*
     Reduce size allocations to reduce memory usage
  */
@@ -275,33 +284,40 @@ struct  MprXml;
 #define MPR_ERROR           1           /**< Hard error trace level */
 #define MPR_WARN            2           /**< Soft warning trace level */
 #define MPR_CONFIG          2           /**< Configuration settings trace level. */
-#define MPR_INFO            3           /**< Informational trace only */
-#define MPR_DEBUG           4           /**< Debug information trace level */
 #define MPR_VERBOSE         9           /**< Highest level of trace */
 #define MPR_LEVEL_MASK      0xf         /**< Level mask */
 
-/*
-    Error source flags
- */
-#define MPR_ERROR_SRC       0x10        /**< Originated from mprError */
-#define MPR_WARN_SRC        0x20        /**< Originated from mprWarn */
-#define MPR_LOG_SRC         0x40        /**< Originated from mprLog */
-#define MPR_ASSURE_SRC      0x80        /**< Originated from assure / mprAssure  */
-#define MPR_FATAL_SRC       0x100       /**< Fatal error. Log and exit */
+//  Removed in 4.3
+#if DEPRECATED
+#define MPR_INFO            3           /**< Informational trace only */
+#define MPR_DEBUG           4           /**< Debug information trace level */
+#endif
 
 /*
-    Log message type flags. Specify what kind of log / error message it is. Listener handlers examine this flag
-    to determine if they should process the message. Assert messages are trapped when in DEV mode. Otherwise ignored.
+    Log message flags
+ */
+#define MPR_ASSERT_MSG      0x10        /**< Originated from assert */
+#define MPR_ERROR_MSG       0x20        /**< Originated from mprError */
+#define MPR_INFO_MSG        0x40        /**< Originated from mprInfo */
+#define MPR_LOG_MSG         0x80        /**< Originated from mprLog */
+#define MPR_RAW_MSG         0x100       /**< Raw message output */
+#define MPR_TRACE_MSG       0x200       /**< Originated from mprTrace */
+#define MPR_WARN_MSG        0x400       /**< Originated from mprWarn */
+
+//  Removed in 4.3
+#if DEPRECATED || 1
+#define MPR_FATAL_MSG       0x800       /**< Fatal error, log and exit */
+#endif
+
+#if UNUSED
+/*
+    Log message type flags. Specify what kind of log / error message it is. 
  */
 #define MPR_LOG_MSG         0x1000      /* Log trace message - not an error */
 #define MPR_ERROR_MSG       0x2000      /* General error */
 #define MPR_ASSERT_MSG      0x4000      /* Assert flags -- trap in debugger */
 #define MPR_USER_MSG        0x8000      /* User message */
-
-/*
-    Log output modifiers
- */
-#define MPR_RAW             0x1000      /**< Raw trace output */
+#endif
 
 /*
     Error line number information.
@@ -379,21 +395,28 @@ typedef Ticks MprTicks;
 PUBLIC void mprBreakpoint();
 
 #if DOXYGEN
+#undef assert
 /**
-    Assure that an assert condition is true
+    Assert that a condition is true
     @param cond Boolean result of a conditional test
     @ingroup Mpr
     @stability evolving
  */
-PUBLIC void assure(bool cond);
-#elif BIT_ASSERT
-    //  mprAssert is DEPRECATED
-    #define mprAssert(C)    if (C) ; else mprAssure(MPR_LOC, #C)
-    #define assure(C)       if (C) ; else mprAssure(MPR_LOC, #C)
+PUBLIC void assert(bool cond);
+#elif BIT_MPR_TRACING
+    #undef assert
+    //  Removed in 4.3
+    #if DEPRECATED || 1
+        #define mprAssure(C)    if (C) ; else mprAssert(MPR_LOC, #C)
+    #endif
+    #define assert(C)       if (C) ; else mprAssert(MPR_LOC, #C)
 #else
-    //  mprAssert is DEPRECATED
-    #define mprAssert(C)    if (C) ; else
-    #define assure(C)       if (1) ; else
+    #undef assert
+    //  Removed in 4.3
+    #if DEPRECATED || 1
+        #define mprAssure(C)    if (C) ; else
+    #endif
+    #define assert(C)       if (1) ; else
 #endif
 
 /*********************************** Thread Sync ******************************/
@@ -1594,7 +1617,7 @@ PUBLIC int  mprSyncThreads(MprTicks timeout);
     @description The MPR provides a suite of safe ascii string manipulation routines to help prevent buffer overflows
         and other potential security traps.
     @defgroup MprString MprString
-    @see MprString itos itosradix itosbuf mprPrintf mprPrintfError scamel scaselesscmp scaselessmatch schr 
+    @see MprString itos itosradix itosbuf mprEprintf mprPrintf scamel scaselesscmp scaselessmatch schr 
         sclone scmp scontains scopy sends sfmt sfmtv shash shashlower sjoin sjoinv slen slower smatch sncaselesscmp snclone
         sncmp sncopy snumber spascal spbrk srchr srejoin srejoinv sreplace sspn sstarts ssub stemplate stoi stoiradix
         stok strim supper sncontains mprFprintf fmtv fmt
@@ -2279,18 +2302,7 @@ PUBLIC wchar    *mtrim(wchar *str, cchar *set, int where);
     @ingroup MprString
     @stability Evolving
  */
-PUBLIC ssize mprPrintfError(cchar *fmt, ...);
-
-/**
-    Formatted print. This is a secure verion of printf that can handle null args.
-    @description This is a secure replacement for printf. It can handle null arguments without crashes.
-    @param fmt Printf style format string
-    @param ... Variable arguments to format
-    @return Returns the number of bytes written
-    @ingroup MprString
-    @stability Evolving
- */
-PUBLIC ssize mprPrintf(cchar *fmt, ...);
+PUBLIC ssize mprEprintf(cchar *fmt, ...);
 
 /**
     Print a formatted message to a file descriptor
@@ -2305,13 +2317,23 @@ PUBLIC ssize mprPrintf(cchar *fmt, ...);
  */
 PUBLIC ssize mprFprintf(struct MprFile *file, cchar *fmt, ...);
 
-//  DEPRECATED
+/**
+    Formatted print. This is a secure verion of printf that can handle null args.
+    @description This is a secure replacement for printf. It can handle null arguments without crashes.
+    @param fmt Printf style format string
+    @param ... Variable arguments to format
+    @return Returns the number of bytes written
+    @ingroup MprString
+    @stability Evolving
+ */
+PUBLIC ssize mprPrintf(cchar *fmt, ...);
+
+#if DEPRECATED
 /**
     Format a string into an allocated buffer.
     @description This call will dynamically allocate a buffer up to the specified maximum size and will format the 
         supplied arguments into the buffer.  A trailing null will always be appended. The call returns
-        the size of the allocated string excluding the null.
-        This call is deprecated. Use #sfmt instead.
+        the allocated string. This call is deprecated. Use #sfmt instead.
     @param fmt Printf style format string
     @param ... Variable arguments to format
     @return Returns the number of characters in the string.
@@ -2321,13 +2343,11 @@ PUBLIC ssize mprFprintf(struct MprFile *file, cchar *fmt, ...);
  */
 PUBLIC char *mprAsprintf(cchar *fmt, ...);
 
-//  DEPRECATED
 /**
     Allocate a buffer of sufficient length to hold the formatted string.
     @description This call will dynamically allocate a buffer up to the specified maximum size and will format 
-        the supplied arguments into the buffer. A trailing null will always be appended. The call returns
-        the size of the allocated string excluding the null.
-        This call is deprecated. Use #sfmtv instead.
+        the supplied arguments into the buffer. A trailing null will always be appended. The call returns the
+        allocated string. This call is deprecated. Use #sfmtv instead.
     @param fmt Printf style format string
     @param arg Varargs argument obtained from va_start.
     @return Returns the number of characters in the string.
@@ -2336,6 +2356,30 @@ PUBLIC char *mprAsprintf(cchar *fmt, ...);
     @stability Deprecated
  */
 PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg);
+#else
+    //  Removed in 4.3
+    #define mprAsprintf sfmt
+    #define mprAsprintfv sfmtv
+#endif
+
+/*
+    Internal
+ */
+/**
+    Format a string into a buffer.
+    @description This routine will format the arguments into a result. If a buffer is supplied, it will be used. Otherwise
+        if the buf argument is NULL, a buffer will be allocated. The arguments will be formatted up to the maximum
+        size supplied by the maxsize argument.  A trailing null will always be appended. 
+    @param buf Optional buffer to contain the formatted result
+    @param maxsize Maximum size of the result
+    @param fmt Printf style format string
+    @param ... Variable arguments to format
+    @return Returns the number of characters in the string.
+    @ingroup MprString
+    @internal
+    @stability Deprecated
+ */
+PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *fmt, va_list args);
 
 /********************************* Floating Point *****************************/
 #if BIT_FLOAT
@@ -2997,7 +3041,7 @@ PUBLIC uint64 mprGetHiResTicks();
     #define MPR_HIGH_RES_TIMER 0
 #endif
 
-#if BIT_DEBUG
+#if BIT_LOGGING
     #if MPR_HIGH_RES_TIMER
         #define MPR_MEASURE(level, tag1, tag2, op) \
             if (1) { \
@@ -3024,7 +3068,7 @@ PUBLIC uint64 mprGetHiResTicks();
     #define MPR_MEASURE(level, tag1, tag2, op) op
 #endif
 
-#if DEPRECATED || 1
+#if DEPRECATED //MOB || 1
 #define mprGetHiResTime mprGetHiResTicks
 #endif
 
@@ -3039,7 +3083,7 @@ PUBLIC uint64 mprGetHiResTicks();
  */
 PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout);
 
-#if DEPRECATED || 1
+#if DEPRECATED //MOB || 1
 #define mprGetRemainingTime mprGetRemainingTicks
 #endif
 
@@ -3114,7 +3158,7 @@ PUBLIC int mprGetTimeZoneOffset(MprTime when);
 #define MPR_OBJ_LIST            0x1     /**< Object is a hash */
 #define MPR_LIST_STATIC_VALUES  0x20    /**< Flag for #mprCreateList when values are permanent */
 #define MPR_LIST_STABLE         0x40    /**< For own use. Not thread safe */
-#if DEPRECATED || 1
+#if DEPRECATED //MOB || 1
 #define MPR_LIST_OWN MPR_LIST_STABLE
 #endif
 
@@ -3528,9 +3572,8 @@ PUBLIC int mprPushItem(MprList *list, cvoid *item);
 /**
     Logging Services
     @defgroup MprLog MprLog
-    @see MprLogHandler mprAssure mprError mprFatalError mprGetLogFile mprGetLogHandler mprLog mprMemoryError 
-        mprRawLog mprSetLogFile mprSetLogHandler mprSetLogLevel mprStaticError mprUserError mprUsingDefaultLogHandler 
-        mprWarn 
+    @see MprLogHandler mprAssert mprError mprGetLogFile mprGetLogHandler mprInfo mprLog mprRawLog mprTrace
+        mprSetLogFile mprSetLogHandler mprSetLogLevel mprStaticError mprUsingDefaultLogHandler mprWarn 
     @stability Stable
  */
 typedef struct MprLog { int dummy; } MprLog;
@@ -3559,7 +3602,7 @@ typedef void (*MprLogHandler)(int flags, int level, cchar *msg);
     @ingroup MprLog
     @stability Evolving
  */
-PUBLIC void mprAssure(cchar *loc, cchar *msg);
+PUBLIC void mprAssert(cchar *loc, cchar *msg);
 
 /**
     Initialize the log service
@@ -3589,6 +3632,7 @@ PUBLIC int mprBackupLog(cchar *path, int count);
  */
 PUBLIC void mprError(cchar *fmt, ...);
 
+#if DEPRECATED
 /**
     Log a fatal error message and exit.
     @description Send a fatal error message to the MPR debug logging subsystem and then exit the application by
@@ -3599,7 +3643,10 @@ PUBLIC void mprError(cchar *fmt, ...);
     @ingroup MprLog
     @stability Stable
  */
-PUBLIC void mprFatalError(cchar *fmt, ...);
+PUBLIC void mprFatal(cchar *fmt, ...);
+#else
+//MOB #define mprFatalError mprFatal
+#endif
 
 /**
     Get the log file object
@@ -3620,8 +3667,24 @@ PUBLIC struct MprFile *mprGetLogFile();
 PUBLIC MprLogHandler mprGetLogHandler();
 
 /**
-    Write a message to the diagnostic log file.
-    @description Send a message to the MPR logging subsystem.
+    Log an informational message.
+    @description Send an informational message to the MPR debug logging subsystem. The 
+        message will be to the log handler defined by #mprSetLogHandler. It 
+        is up to the log handler to respond appropriately and log the message.
+    @param fmt Printf style format string. Variable number of arguments to 
+    @param ... Variable number of arguments for printf data
+    @ingroup MprLog
+    @stability Evolving
+ */
+PUBLIC void mprInfo(cchar *fmt, ...);
+
+#if DOXYGEN
+/**
+    Write a message to the log file.
+    @description Send a message to the MPR logging subsystem. Logging support is enabled via the BIT_MPR_LOGGING
+        define which is typically set via the Bit setting "logging: true".
+        Logging typically is enabled in both debug and release builds.
+        The mprLog function is a macro which translates into the mprLogProc function.
     @param level Logging level for this message. The level is 0-9 with zero being the most verbose.
     @param fmt Printf style format string. Variable number of arguments to 
     @param ... Variable number of arguments for printf data
@@ -3630,6 +3693,8 @@ PUBLIC MprLogHandler mprGetLogHandler();
     @stability Stable
  */
 PUBLIC void mprLog(int level, cchar *fmt, ...);
+#endif
+PUBLIC void mprLogProc(int level, cchar *fmt, ...);
 
 /**
     Emit a descriptive log header
@@ -3638,6 +3703,7 @@ PUBLIC void mprLog(int level, cchar *fmt, ...);
  */
 PUBLIC void mprLogHeader();
 
+#if DEPRECATED
 /**
     Log a memory error message.
     @description Send a memory error message to the MPR debug logging subsystem. The message will be 
@@ -3651,6 +3717,9 @@ PUBLIC void mprLogHeader();
     @stability Stable
  */
 PUBLIC void mprMemoryError(cchar *fmt, ...);
+#else
+//MOB   #define mprMemoryError mprError
+#endif
 
 /**
     Write a raw log message to the diagnostic log file.
@@ -3712,6 +3781,7 @@ PUBLIC void mprSetLogHandler(MprLogHandler handler);
 */
 PUBLIC int mprStartLogging(cchar *logSpec, int showConfig);
 
+#if UNUSED
 /**
     Display an error message to the console without allocating any memory.
     @description Display an error message to the console. This will bypass the MPR logging subsystem.
@@ -3722,7 +3792,28 @@ PUBLIC int mprStartLogging(cchar *logSpec, int showConfig);
     @stability Stable
  */
 PUBLIC void mprStaticError(cchar *fmt, ...);
+#endif
 
+#if DOXYGEN
+/**
+    Write a trace message to the diagnostic log file.
+    @description Send a trace message to the MPR logging subsystem. Debug tracing support is enabled via the BIT_MPR_TRACING
+        define which is typically set via the Bit setting "tracing: true".
+        Tracing is typically is enabled in only debug builds.
+        The mprTrace function is a macro which translates into the mprTraceProc function.
+    @description Sends a debug trace message to the MPR logging subsystem. 
+    @param level Logging level for this message. The level is 0-9 with zero being the most verbose.
+    @param fmt Printf style format string. Variable number of arguments to 
+    @param ... Variable number of arguments for printf data
+    @remarks mprTrace is highly useful as a debugging aid when integrating or when developing new modules. 
+    @ingroup MprLog
+    @stability Stable
+ */
+PUBLIC void mprTrace(int level, cchar *fmt, ...);
+#endif
+PUBLIC void mprTraceProc(int level, cchar *fmt, ...);
+
+#if DEPRECATED
 /**
     Display an error message to the user.
     @description Display an error message to the user and then send it to the 
@@ -3735,6 +3826,9 @@ PUBLIC void mprStaticError(cchar *fmt, ...);
     @stability Stable
  */
 PUBLIC void mprUserError(cchar *fmt, ...);
+#else
+//MOB   #define mprUserError mprError
+#endif
 
 /**
     Determine if the app is using the default MPR log handler.
@@ -3757,21 +3851,35 @@ PUBLIC int mprUsingDefaultLogHandler();
  */
 PUBLIC void mprWarn(cchar *fmt, ...);
 
-/*
-    Optimized logging calling sequence. This compiles out for release mode.
- */
-#if BIT_DEBUG
-    #define LOG(l, ...) if (l <= MPR->logLevel) { mprLog(l, __VA_ARGS__); } else
+#if BIT_MPR_TRACING
+    #define mprTrace(l, ...) if ((l) <= MPR->logLevel) { mprTraceProc(l, __VA_ARGS__); } else
 #else
-    #define LOG(l, ...) if (1) ; else
+    #define mprTrace(l, ...) if (1) ; else
 #endif
 
+#if BIT_MPR_LOGGING
+    #define mprLog(l, ...) if ((l) <= MPR->logLevel) { mprLogProc(l, __VA_ARGS__); } else
+#else
+    #define mprLog(l, ...) if (1) ; else
+#endif
+
+#if DEPRECATED  //MOB
+#define LOG mprTrace
+#define mprFatalError mprError
+#define mprUserError mprError
+#define mprMemoryError mprError
+#define mprPrintfError mprEprintf
+#define assure assert
+#endif
+
+#if UNUSED
 /*
     Just for easy debugging. Adds a "\n" automatically.
     @internal
     @stability Internal
  */
 PUBLIC int print(cchar *fmt, ...);
+#endif
 
 /************************************ Hash ************************************/
 /**
@@ -6426,6 +6534,7 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
 #define MPR_SOCKET_BUFFERED_WRITE   0x1000  /**< Socket has buffered write data (in SSL stack) */
 #define MPR_SOCKET_TRACED           0x2000  /**< Socket has been traced to the log */
 #define MPR_SOCKET_DISCONNECTED     0x4000  /**< The mprDisconnectSocket has been called */
+#define MPR_SOCKET_HANDSHAKING      0x8000  /**< Doing an SSL handshake */
 
 /**
     Socket Service
@@ -6443,7 +6552,8 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
         mprIsSocketSecure mprListenOnSocket mprLoadSsl mprParseIp mprReadSocket mprSendFileToSocket mprSetSecureProvider
         mprSetSocketBlockingMode mprSetSocketCallback mprSetSocketEof mprSetSocketNoDelay mprSetSslCaFile mprSetSslCaPath
         mprSetSslCertFile mprSetSslCiphers mprSetSslKeyFile mprSetSslSslProtocols mprSetSslVerifySslClients mprWriteSocket
-        mprWriteSocketString mprWriteSocketVector mprSocketHasBufferedRead mprSocketHasBufferedWrite mprUpgradeSocket
+        mprWriteSocketString mprWriteSocketVector mprSocketHandshaking mprSocketHasBufferedRead mprSocketHasBufferedWrite
+        mprUpgradeSocket 
     @defgroup MprSocket MprSocket
     @stability Stable
  */
@@ -6651,6 +6761,15 @@ PUBLIC bool mprHasDualNetworkStack();
 PUBLIC bool mprHasIPv6();
 
 /**
+    Indicate that the application layer has buffered data for the socket. 
+    @description This is used by SSL and other network stacks that buffer pending data
+    @param sp Socket object returned from #mprCreateSocket
+    @param len Length of buffered data in bytes
+    @param dir Buffer direction. Set to MPR_READABLE for buffered read data and MPR_WRITABLE for buffered write data.
+ */
+PUBLIC void mprHiddenSocketData(MprSocket *sp, ssize len, int dir);
+
+/**
     Determine if the IP address is an IPv6 address
     @param ip IP address
     @return True if the address is an IPv6 address, otherwise zero.
@@ -6809,6 +6928,15 @@ PUBLIC void mprSetSocketEof(MprSocket *sp, bool eof);
 PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on);
 
 /**
+    Test if the socket is doing an SSL handshake
+    @param sp Socket object returned from #mprCreateSocket
+    @return True if the SSL stack is handshaking
+    @ingroup MprSocket
+    @stability Stable
+ */
+PUBLIC bool mprSocketHandshaking(MprSocket *sp);
+
+/**
     Test if the socket has buffered read data.
     @description Use this function to avoid waiting for incoming I/O if data is already buffered.
     @param sp Socket object returned from #mprCreateSocket
@@ -6899,8 +7027,7 @@ typedef struct MprSsl {
     char            *caPath;            /**< Certificate verification cert directory */
     char            *ciphers;           /**< Candidate ciphers to use */
     int             configured;         /**< Set if this SSL configuration has been processed */
-    //  MOB - rename config
-    void            *pconfig;           /**< Extended provider SSL configuration */
+    void            *config;            /**< Extended provider SSL configuration */
     int             verifyPeer;         /**< Verify the peer verificate */
     int             verifyIssuer;       /**< Set if the certificate issuer should be also verified */
     int             verifyDepth;        /**< Set if the cert chain depth should be verified */
@@ -8867,13 +8994,12 @@ typedef struct MprTestDef {
 } MprTestDef;
 
 
-#undef  assert
 /**
     Assert macro for use by unit tests
     @ingroup MprTestService
     @stability Internal
  */
-#define assert(C)   assertTrue(gp, MPR_LOC, C, #C)
+#define tassert(C)   assertTrue(gp, MPR_LOC, C, #C)
 
 #define MPR_TEST(level, functionName) { #functionName, level, functionName, 0, 0 }
 
@@ -9009,7 +9135,7 @@ PUBLIC MprTestGroup *mprAddTestGroup(MprTestService *ts, MprTestDef *def);
 PUBLIC void mprResetTestGroup(MprTestGroup *gp);
 
 /**
-    Assert test
+    Test assert
     @description This is the primary assertion test routine for unit tests. This is typically invoked by using the
         #assert macro. 
     @param gp Test group reference

@@ -18,8 +18,8 @@ PUBLIC void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    assure(key && *key);
-    assure(fmt && *fmt);
+    assert(key && *key);
+    assert(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpAddHeaderString(conn, key, sfmt(fmt, vargs));
@@ -44,8 +44,8 @@ PUBLIC void espAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    assure(key && *key);
-    assure(fmt && *fmt);
+    assert(key && *key);
+    assert(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpAppendHeaderString(conn, key, sfmt(fmt, vargs));
@@ -132,9 +132,9 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *actionProc)
     EspRoute    *eroute;
     Esp         *esp;
 
-    assure(route);
-    assure(target && *target);
-    assure(actionProc);
+    assert(route);
+    assert(target && *target);
+    assert(actionProc);
 
     esp = MPR->espService;
     if ((action = mprAllocObj(EspAction, espManageAction)) == 0) {
@@ -167,8 +167,8 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
 {
     Esp         *esp;
 
-    assure(path && *path);
-    assure(view);
+    assert(path && *path);
+    assert(view);
 
     esp = MPR->espService;
 	path = mprGetPortablePath(mprJoinPath(route->dir, path));
@@ -626,7 +626,7 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
             httpSetHeader(conn, "Content-Type", "text/html");
             written += espRenderString(conn, text);
             espFinalize(conn);
-            mprLog(4, "Request error (%d) for: \"%s\"", status, rx->pathInfo);
+            mprTrace(4, "Request error (%d) for: \"%s\"", status, rx->pathInfo);
         }
     }
     va_end(args);    
@@ -684,7 +684,7 @@ PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name)
 
 PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key)
 {
-    assure(key && *key);
+    assert(key && *key);
     if (conn->tx == 0) {
         return MPR_ERR_CANT_ACCESS;
     }
@@ -786,8 +786,8 @@ PUBLIC void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    assure(key && *key);
-    assure(fmt && *fmt);
+    assert(key && *key);
+    assert(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpSetHeader(conn, key, sfmt(fmt, vargs));

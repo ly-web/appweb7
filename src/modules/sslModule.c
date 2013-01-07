@@ -78,7 +78,6 @@ static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *valu
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-
     checkSsl(state);
     mprSetSslCaPath(state->route->ssl, path);
     return 0;
@@ -91,7 +90,6 @@ static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *valu
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-
     checkSsl(state);
     mprSetSslCaFile(state->route->ssl, path);
     return 0;
@@ -104,7 +102,6 @@ static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-
     checkSsl(state);
     mprSetSslCertFile(state->route->ssl, path);
     return 0;
@@ -117,7 +114,6 @@ static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *val
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-
     checkSsl(state);
     mprSetSslKeyFile(state->route->ssl, path);
     return 0;
@@ -199,6 +195,9 @@ static int sslVerifyClientDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+/*
+    SSLVerifyDepth N
+ */
 static int sslVerifyDepthDirective(MaState *state, cchar *key, cchar *value)
 {
     checkSsl(state);
@@ -223,6 +222,9 @@ static int sslVerifyIssuerDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+/*
+    SSLProtocol [+|-] protocol
+ */
 static int sslProtocolDirective(MaState *state, cchar *key, cchar *value)
 {
     char    *word, *tok;
@@ -284,9 +286,10 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *module)
     maAddDirective(appweb, "SSLProtocol", sslProtocolDirective);
     maAddDirective(appweb, "SSLProvider", sslProviderDirective);
     maAddDirective(appweb, "SSLVerifyClient", sslVerifyClientDirective);
-    maAddDirective(appweb, "SSLVerifyDepth", sslVerifyDepthDirective);
     maAddDirective(appweb, "SSLVerifyIssuer", sslVerifyIssuerDirective);
 
+    //  This is undocumented
+    maAddDirective(appweb, "SSLVerifyDepth", sslVerifyDepthDirective);
     return 0;
 }
 #else

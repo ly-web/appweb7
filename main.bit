@@ -55,8 +55,7 @@ Bit.load({
         /*
             Packs to disable when using --without all
          */
-        'without-all': ['doxygen', 'dsi', 'est', 'ejs', 'man', 'man2html', 'pmaker', 'ejscript', 'php', 'matrixssl',
-            'openssl' ],
+        'without-all': ['doxygen', 'dsi', 'est', 'ejs', 'man', 'man2html', 'pmaker', 'ejscript', 'php' ],
 
         /*
             Set to true for a static (non-shared library) build
@@ -82,7 +81,20 @@ Bit.load({
         },
 
         mpr: {
+            /*
+                Enable logging via mprLog to the log file. Error messages are always enabled.
+                The default is to enable logging for both debug and release builds.
+             */
+            logging: true,
+
             manager: 'appman',
+
+            /*
+                Enable debug trace and asserts to the log file.
+                This is enabled by default for debug builds. 
+
+                tracing: true,
+             */
         },
     },
 

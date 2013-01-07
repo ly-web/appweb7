@@ -195,7 +195,7 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
-    mprLog(4, "ESP command: %s\n", req->commandLine);
+    mprTrace(4, "ESP command: %s\n", req->commandLine);
     if (eroute->env) {
         elist = mprCreateList(0, 0);
         for (ITERATE_KEYS(eroute->env, var)) {
@@ -383,7 +383,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
     ssize       len;
     int         tid;
 
-    assure(page);
+    assert(page);
 
     eroute = route->eroute;
     body = start = end = global = "";
@@ -549,8 +549,8 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         if (end && end[slen(end) - 1] != '\n') {
             end = sjoin(end, "\n", NULL);
         }
-        assure(slen(path) > slen(route->dir));
-        assure(sncmp(path, route->dir, slen(route->dir)) == 0);
+        assert(slen(path) > slen(route->dir));
+        assert(sncmp(path, route->dir, slen(route->dir)) == 0);
         if (sncmp(path, route->dir, slen(route->dir)) == 0) {
             path = &path[slen(route->dir) + 1];
         }
@@ -566,7 +566,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             "   return 0;\n"\
             "}\n",
             path, global, cacheName, start, body, end, ESP_EXPORT_STRING, cacheName, mprGetPortablePath(path), cacheName);
-        mprLog(6, "Create ESP script: \n%s\n", body);
+        mprTrace(6, "Create ESP script: \n%s\n", body);
     }
     return body;
 }

@@ -180,7 +180,8 @@ prompt for a password (which will not be echoed). The username and password will
 according to the authentication protocol required by the requested web server and requested document.
 .TP
 \fB\--verify\fR 
-Verify the server certificates when using SSL.
+Verify the server presented certificate when using SSL. This will verify the certificate has not expired, is validly
+issued and that the certificate common name corresponds to the host name.
 .TP
 \fB\--verbose\fR 
 Verbose mode. Trace activity to stdout. Can by specified multiple times for more verbose tracing.  

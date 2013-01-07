@@ -195,7 +195,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         mprSetCmdlineLogging(1);
     }
     if (mprStart() < 0) {
-        mprUserError("Cannot start MPR for %s", mprGetAppName());
+        mprError("Cannot start MPR for %s", mprGetAppName());
         mprDestroy(MPR_EXIT_DEFAULT);
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -212,7 +212,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (maStartAppweb(app->appweb) < 0) {
-        mprUserError("Cannot start HTTP service, exiting.");
+        mprError("Cannot start HTTP service, exiting.");
         exit(9);
     }
     /*
@@ -301,11 +301,11 @@ static int createEndpoints(int argc, char **argv)
     argind = 0;
 
     if ((app->appweb = maCreateAppweb()) == 0) {
-        mprUserError("Cannot create HTTP service for %s", mprGetAppName());
+        mprError("Cannot create HTTP service for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
     if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
-        mprUserError("Cannot create HTTP server for %s", mprGetAppName());
+        mprError("Cannot create HTTP server for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }
     loadStaticModules();
@@ -369,7 +369,7 @@ static void usageError(Mpr *mpr)
 
     name = mprGetAppName();
 
-    mprPrintfError("\n%s Usage:\n\n"
+    mprEprintf("\n%s Usage:\n\n"
         "  %s [options]\n"
         "  %s [options] documents ip[:port] ...\n\n"
         "  Without [documents ip:port], %s will read the appweb.conf configuration file.\n\n"
@@ -458,11 +458,11 @@ static int unixSecurityChecks(cchar *program, cchar *home)
     struct stat     sbuf;
 
     if (((stat(home, &sbuf)) != 0) || !(S_ISDIR(sbuf.st_mode))) {
-        mprUserError("Cannot access directory: %s", home);
+        mprError("Cannot access directory: %s", home);
         return MPR_ERR_BAD_STATE;
     }
     if ((sbuf.st_mode & S_IWOTH) || (sbuf.st_mode & S_IWGRP)) {
-        mprUserError("Security risk, directory %s is writeable by others", home);
+        mprError("Security risk, directory %s is writeable by others", home);
     }
 
     /*
@@ -470,17 +470,17 @@ static int unixSecurityChecks(cchar *program, cchar *home)
      */
     if (*program == '/') {
         if ((stat(program, &sbuf)) != 0) {
-            mprUserError("Cannot access program: %s", program);
+            mprError("Cannot access program: %s", program);
             return MPR_ERR_BAD_STATE;
         }
         if ((sbuf.st_mode & S_IWOTH) || (sbuf.st_mode & S_IWGRP)) {
-            mprUserError("Security risk, Program %s is writeable by others", program);
+            mprError("Security risk, Program %s is writeable by others", program);
         }
         if (sbuf.st_mode & S_ISUID) {
-            mprUserError("Security risk, %s is setuid", program);
+            mprError("Security risk, %s is setuid", program);
         }
         if (sbuf.st_mode & S_ISGID) {
-            mprUserError("Security risk, %s is setgid", program);
+            mprError("Security risk, %s is setgid", program);
         }
     }
     return 0;

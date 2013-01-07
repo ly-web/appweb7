@@ -411,7 +411,7 @@ PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec)
 
 PUBLIC bool ediValidateRec(EdiRec *rec)
 {
-    assure(rec->edi);
+    assert(rec->edi);
     if (rec->edi == 0) {
         return 0;
     }
@@ -590,7 +590,7 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
 
     for (r = 0; r < primary->nrecords; r++) {
         if ((rec = ediCreateBareRec(edi, NULL, nfields)) == 0) {
-            assure(0);
+            assert(0);
             return 0;
         }
         result->records[r] = rec;
@@ -605,7 +605,7 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
                     keyValue = primary->records[r]->fields[col->joinField].value;
                     rec = ediReadOneWhere(edi, col->grid->tableName, "id", "==", keyValue);
                 }
-                assure(rec);
+                assert(rec);
                 fp = &rec->fields[col->field];
                 *dest = *fp;
                 dest->name = sfmt("%s.%s", col->grid->tableName, fp->name);
@@ -666,16 +666,16 @@ PUBLIC EdiGrid *ediMakeGrid(cchar *json)
     int         r, nrows, nfields;
 
     if ((obj = mprDeserialize(json)) == 0) {
-        assure(0);
+        assert(0);
         return 0;
     }
     if (!(obj->flags & MPR_HASH_LIST)) {
-        assure(obj->flags & MPR_HASH_LIST);
+        assert(obj->flags & MPR_HASH_LIST);
         return 0;
     }
     nrows = mprGetHashLength(obj);
     if ((grid = ediCreateBareGrid(NULL, "", nrows)) == 0) {
-        assure(0);
+        assert(0);
         return 0;
     }
     if (nrows <= 0) {
@@ -717,7 +717,7 @@ PUBLIC EdiGrid *ediMakeGrid(cchar *json)
                 fp++;
             }
             if (ediSetFields(rec, row) == 0) {
-                assure(0);
+                assert(0);
                 return 0;
             }
         }

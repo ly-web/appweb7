@@ -215,7 +215,7 @@ PUBLIC int main(int argc, char *argv[])
         err++;
     }
     if (err) {
-        mprUserError("Bad command line: \n"
+        mprEprintf("Bad command line: \n"
             "  Usage: %s [commands]\n"
             "  Switches:\n"
             "    --args               # Args to pass to service\n"
@@ -252,11 +252,11 @@ PUBLIC int main(int argc, char *argv[])
     }
     status = 0;
     if (getuid() != 0) {
-        mprUserError("Must run with administrator privilege. Use sudo.");
+        mprError("Must run with administrator privilege. Use sudo.");
         status = 1;                                                                    
 
     } else if (mprStart() < 0) {
-        mprUserError("Cannot start MPR for %s", mprGetAppName());                                           
+        mprError("Cannot start MPR for %s", mprGetAppName());                                           
         status = 2;                                                                    
 
     } else {
@@ -342,7 +342,6 @@ static bool run(cchar *fmt, ...)
     va_start(args, fmt);
     app->command = sfmtv(fmt, args);
     mprLog(1, "Run: %s", app->command);
-
     cmd = mprCreateCmd(NULL);
     rc = mprRunCmd(cmd, app->command, NULL, &out, &err, MANAGE_TIMEOUT, 0);
     app->error = sclone(err);
@@ -970,7 +969,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
             err++;
         }
         if (err) {
-            mprUserError("Bad command line: %s\n"
+            mprEprintf("Bad command line: %s\n"
                 "  Usage: %s [options] [program args]\n"
                 "  Switches:\n"
                 "    --args               # Args to pass to service\n"
@@ -993,7 +992,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
         }
     }
     if (mprStart() < 0) {
-        mprUserError("Cannot start MPR for %s", mprGetAppName());                                           
+        mprError("Cannot start MPR for %s", mprGetAppName());                                           
     } else {
         mprStartEventsThread();
         if (nextArg >= argc) {
@@ -1321,7 +1320,7 @@ static bool installService()
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprUserError("Cannot open service manager");
+        mprError("Cannot open service manager");
         return 0;
     }
     /*
@@ -1337,7 +1336,7 @@ static bool installService()
         svc = CreateService(mgr, app->serviceName, app->serviceTitle, SERVICE_ALL_ACCESS, serviceType, SERVICE_DISABLED, 
             SERVICE_ERROR_NORMAL, cmd, NULL, NULL, "", NULL, NULL);
         if (! svc) {
-            mprUserError("Cannot create service: 0x%x == %d", GetLastError(), GetLastError());
+            mprError("Cannot create service: 0x%x == %d", GetLastError(), GetLastError());
             CloseServiceHandle(mgr);
             return 0;
         }
@@ -1437,20 +1436,20 @@ static bool enableService(int enable)
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprUserError("Cannot open service manager");
+        mprError("Cannot open service manager");
         return 0;
     }
     svc = OpenService(mgr, app->serviceName, SERVICE_ALL_ACCESS);
     if (svc == NULL) {
         if (enable) {
-            mprUserError("Cannot access service");
+            mprError("Cannot access service");
         }
         CloseServiceHandle(mgr);
         return 0;
     }
     flag = (enable) ? SERVICE_AUTO_START : SERVICE_DISABLED;
     if (!ChangeServiceConfig(svc, SERVICE_NO_CHANGE, flag, SERVICE_NO_CHANGE, NULL, NULL, NULL, NULL, NULL, NULL, NULL)) {
-        mprUserError("Cannot change service: 0x%x == %d", GetLastError(), GetLastError());
+        mprError("Cannot change service: 0x%x == %d", GetLastError(), GetLastError());
         CloseServiceHandle(svc);
         CloseServiceHandle(mgr);
         return 0;

@@ -73,10 +73,10 @@ int main(int argc, char **argv)
 
 static void printUsage(Mpr *mpr)
 {
-    mprPrintfError("usage: makerom [options] files... >output.c\n");
-    mprPrintfError("  Makerom options:\n");
-    mprPrintfError("  --prefix prefix       # File prefix to remove\n");
-    mprPrintfError("  --name structName     # Name of top level C struct\n");
+    mprEprintf("usage: makerom [options] files... >output.c\n");
+    mprEprintf("  Makerom options:\n");
+    mprEprintf("  --prefix prefix       # File prefix to remove\n");
+    mprEprintf("  --name structName     # Name of top level C struct\n");
 }
 
 

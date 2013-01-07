@@ -78,6 +78,11 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/102">[issue 102].</a></li>
                 <li>Add prototype support for the EST SSL stack:
                     <a href="https://github.com/embedthis/appweb-4/issues/101">[issue 101].</a></li>
+                <li>Add main.bit settings "logging". This is enabled by default for debug and release builds.
+                    If disabled, calls to mprLog() will be optimized out. Calls to mprError will always be enabled.
+                    Similarly, added main.bit settings "tracing". This is enabled by default for only for debug builds.
+                    If disabled, calls to assert() and mprTrace() will be optimized out.
+                    <a href="https://github.com/embedthis/appweb-4/issues/107">[issue 107].</a></li>
             </ul>
             <h3>Fixes</h3>
             <ul>
@@ -88,6 +93,13 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/104">[issue 104].</a></li>
                 <li>Fix generated makefiles determining the system CPU architecture
                     <a href="https://github.com/embedthis/appweb-4/issues/105">[issue 105].</a></li>
+                <li>Main.bit settings are grouped into collections: http, esp, mpr. Use
+                    configure --set NAME.FIELD=value where NAME is the collection name.
+                    <a href="https://github.com/embedthis/appweb-4/issues/108">[issue 108].</a></li>
+                <li>Update licenses. Remove licenses for SSL stacks that are not included in the product.
+                    <a href="https://github.com/embedthis/appweb-4/issues/109">[issue 109].</a></li>
+                <li>Fix test if IPv6 is supported on a system
+                    <a href="https://github.com/embedthis/appweb-4/issues/110">[issue 110].</a></li>
             </ul>
             <h3>API Changes</h3>
             <ul>

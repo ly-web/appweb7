@@ -40,7 +40,7 @@ static void openEjs(HttpQueue *q)
     rx = conn->rx;
     route = rx->route;
 
-    mprLog(5, "Open EJS handler");
+    mprTrace(5, "Open EJS handler");
     if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
         /*
             Ejscript accepts all methods if there is a registered route. However, we only advertise the standard methods.
@@ -60,7 +60,7 @@ static void openEjs(HttpQueue *q)
             }
             route->context = ejsCreatePool(route->workers, "require ejs.web", route->script, route->scriptPath,
                 route->home, route->dir);
-            mprLog(5, "ejs: Create ejs pool for route %s", route->name);
+            mprTrace(5, "ejs: Create ejs pool for route %s", route->name);
         }
         pool = conn->pool = route->context;
 

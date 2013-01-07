@@ -29,8 +29,8 @@ static int setTarget(MaState *state, cchar *name, cchar *details);
 
 PUBLIC int maOpenConfig(MaState *state, cchar *path)
 {
-    assure(state);
-    assure(path && *path);
+    assert(state);
+    assert(path && *path);
 
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
@@ -38,7 +38,7 @@ PUBLIC int maOpenConfig(MaState *state, cchar *path)
         mprError("Cannot open %s for config directives", path);
         return MPR_ERR_CANT_OPEN;
     }
-    mprLog(5, "Parsing config file: %s", state->filename);
+    mprTrace(5, "Parsing config file: %s", state->filename);
     return 0;
 }
 
@@ -49,8 +49,8 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     HttpHost    *host;
     HttpRoute   *route;
 
-    assure(server);
-    assure(path && *path);
+    assert(server);
+    assert(path && *path);
 
     mprLog(2, "Config File %s", path);
 
@@ -80,18 +80,18 @@ static int parseFile(MaState *state, cchar *path)
 {
     int     rc;
 
-    assure(state);
-    assure(path && *path);
+    assert(state);
+    assert(path && *path);
 
     if ((state = maPushState(state)) == 0) {
         return 0;
     }
-    assure(state == state->top->current);
+    assert(state == state->top->current);
     
     rc = parseFileInner(state, path);
     state->lineNumber = state->prev->lineNumber;
     state = maPopState(state);
-    assure(state->top->current == state);
+    assert(state->top->current == state);
     return rc;
 }
 
@@ -101,8 +101,8 @@ static int parseFileInner(MaState *state, cchar *path)
     MaDirective *directive;
     char        *tok, *key, *line, *value;
     
-    assure(state);
-    assure(path && *path);
+    assert(state);
+    assert(path && *path);
 
     if (maOpenConfig(state, path) < 0) {
         return MPR_ERR_CANT_OPEN;
@@ -116,7 +116,7 @@ static int parseFileInner(MaState *state, cchar *path)
         key = getDirective(line, &value);
         if (!state->enabled) {
             if (key[0] != '<') {
-                mprLog(8, "Skip: %s %s", key, value);
+                mprTrace(8, "Skip: %s %s", key, value);
                 continue;
             }
         }
@@ -125,7 +125,7 @@ static int parseFileInner(MaState *state, cchar *path)
             return MPR_ERR_BAD_SYNTAX;
         }
         state->key = key;
-        mprLog(8, "Line %d, Parse %s %s", state->lineNumber, key, value ? value : "");
+        mprTrace(8, "Line %d, Parse %s %s", state->lineNumber, key, value ? value : "");
         if ((*directive)(state, key, value) < 0) {
             mprError("Error with directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
@@ -951,7 +951,7 @@ static int ifDirective(MaState *state, cchar *key, cchar *value)
     if (state->enabled) {
         state->enabled = conditionalDefinition(state, value);
         if (!state->enabled) {
-            mprLog(7, "If \"%s\" conditional is false at %s:%d", value, state->filename, state->lineNumber);
+            mprTrace(7, "If \"%s\" conditional is false at %s:%d", value, state->filename, state->lineNumber);
         }
     }
     return 0;
@@ -1436,7 +1436,7 @@ static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
     char    *ip;
     int     port;
 
-    mprLog(4, "NameVirtual Host: %s ", value);
+    mprTrace(4, "NameVirtual Host: %s ", value);
     mprParseSocketAddress(value, &ip, &port, NULL, -1);
     httpConfigureNamedVirtualEndpoints(state->http, ip, port);
     return 0;
@@ -2100,7 +2100,7 @@ PUBLIC bool maValidateServer(MaServer *server)
     appweb = server->appweb;
     http = appweb->http;
     defaultHost = server->defaultHost;
-    assure(defaultHost);
+    assert(defaultHost);
 
     /*
         Add the default host to the endpoints
@@ -2425,8 +2425,8 @@ static char *getDirective(char *line, char **valuep)
     char    *key, *value;
     ssize   len;
     
-    assure(line);
-    assure(valuep);
+    assert(line);
+    assert(valuep);
 
     *valuep = 0;
     key = stok(line, " \t", &value);

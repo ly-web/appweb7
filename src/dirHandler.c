@@ -60,8 +60,8 @@ PUBLIC bool maRenderDirListing(HttpConn *conn)
 
     tx = conn->tx;
     rx = conn->rx;
-    assure(tx->filename);
-    assure(tx->fileInfo.checked);
+    assert(tx->filename);
+    assert(tx->fileInfo.checked);
 
     if ((dir = httpGetRouteData(rx->route, DIR_NAME)) == 0) {
         return 0;
@@ -92,7 +92,7 @@ static void startDir(HttpQueue *q)
     rx = conn->rx;
     tx = conn->tx;
     dir = conn->data;
-    assure(tx->filename);
+    assert(tx->filename);
 
     if (!(rx->flags & (HTTP_GET | HTTP_HEAD))) {
         httpError(conn, HTTP_CODE_BAD_METHOD, "Bad method");
@@ -649,7 +649,7 @@ static Dir *getDirObj(MaState *state)
             dir = allocDir(route);
         }
     }
-    assure(dir);
+    assert(dir);
     return dir;
 }
 

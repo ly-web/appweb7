@@ -192,7 +192,7 @@ static char *getpass(char *prompt)
 
 static void printUsage(cchar *programName)
 {
-    mprPrintfError("usage: %s [-c] [-p password] authFile realm user roles...\n"
+    mprEprintf("usage: %s [-c] [-p password] authFile realm user roles...\n"
         "Options:\n"
         "    -c              Create the password file\n"
         "    -p passWord     Use the specified password\n"
