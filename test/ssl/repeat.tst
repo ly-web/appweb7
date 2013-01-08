@@ -1,5 +1,5 @@
 /*
-    repeat.tst - Repeated SSL http tests
+    repeat.tst - Repeated SSL http tests using the default SSL provider (EST)
  */
 
 if (!Config.SSL) {

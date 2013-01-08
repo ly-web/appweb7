@@ -2000,7 +2000,6 @@ static int userAccountDirective(MaState *state, cchar *key, cchar *value)
  */
 static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
 {
-    HttpEndpoint    *endpoint;
     char            *ip;
     int             port;
 
@@ -2020,15 +2019,39 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
         httpSetHostIpAddr(state->host, ip, port);
         httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
         state->auth = state->route->auth;
+#if UNUSED
+        HttpEndpoint    *endpoint;
         if ((endpoint = httpLookupEndpoint(state->http, ip, port)) == 0) {
             mprError("Cannot find listen directive for virtual host %s", value);
             return MPR_ERR_BAD_SYNTAX;
         } else {
             httpAddHostToEndpoint(endpoint, state->host);
         }
+#endif
     }
     return 0;
 }
+
+
+/*
+    </VirtualHost>
+ */
+static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
+{
+    HttpEndpoint    *endpoint;
+
+    if (state->enabled) {
+        if ((endpoint = httpLookupEndpoint(state->http, state->host->ip, state->host->port)) == 0) {
+            mprError("Cannot find listen directive for virtual host %s", state->host->name);
+            return MPR_ERR_BAD_SYNTAX;
+        } else {
+            httpAddHostToEndpoint(endpoint, state->host);
+        }
+    }
+    closeDirective(state, key, value);
+    return 0;
+}
+
 
 static int ignoreEncodingErrors(MaState *state, cchar *key, cchar *value)
 {
@@ -2634,7 +2657,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "UserAccount", userAccountDirective);
 
     maAddDirective(appweb, "<VirtualHost", virtualHostDirective);
-    maAddDirective(appweb, "</VirtualHost", closeDirective);
+    maAddDirective(appweb, "</VirtualHost", closeVirtualHostDirective);
 
     maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrors);
     maAddDirective(appweb, "LimitWebSockets", limitWebSocketsDirective);

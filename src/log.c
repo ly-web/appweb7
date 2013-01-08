@@ -87,7 +87,7 @@ PUBLIC void maLogRequest(HttpConn *conn)
             break;
 
         case 'r':                           /* First line of request */
-            mprPutFmtToBuf(buf, "%s %s %s", rx->method, rx->uri, conn->protocol);
+            mprPutToBuf(buf, "%s %s %s", rx->method, rx->uri, conn->protocol);
             break;
 
         case 's':                           /* Response code */

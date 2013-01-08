@@ -1144,7 +1144,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
                         /* Trim last "&" */
                         pstr[strlen(pstr) - 1] = '\0';
                     }
-                    mprPutFmtToBuf(buf, "%s-params='%s", params);
+                    mprPutToBuf(buf, "%s-params='%s", params);
                 }
             }
             mprPutStringToBuf(buf, kp->key);

@@ -767,7 +767,7 @@ PUBLIC void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user)
         MprBuf *buf = mprCreateBuf(0, 0);
         MprKey *ap;
         for (ITERATE_KEYS(user->abilities, ap)) {
-            mprPutFmtToBuf(buf, "%s ", ap->key);
+            mprPutToBuf(buf, "%s ", ap->key);
         }
         mprAddNullToBuf(buf);
         mprLog(5, "User \"%s\" has abilities: %s", user->name, mprGetBufStart(buf));
@@ -1102,9 +1102,9 @@ static void outgoingCacheFilterService(HttpQueue *q)
                 /*
                     Add defined headers to the start of the cache buffer. Separate with a double newline.
                  */
-                mprPutFmtToBuf(tx->cacheBuffer, "X-Status: %d\n", tx->status);
+                mprPutToBuf(tx->cacheBuffer, "X-Status: %d\n", tx->status);
                 for (kp = 0; (kp = mprGetNextKey(tx->headers, kp)) != 0; ) {
-                    mprPutFmtToBuf(tx->cacheBuffer, "%s: %s\n", kp->key, kp->data);
+                    mprPutToBuf(tx->cacheBuffer, "%s: %s\n", kp->key, kp->data);
                 }
                 mprPutCharToBuf(tx->cacheBuffer, '\n');
             }
@@ -1769,7 +1769,7 @@ static void setChunkPrefix(HttpQueue *q, HttpPacket *packet)
         NOTE: prefixes don't count in the queue length. No need to adjust q->count
      */
     if (httpGetPacketLength(packet)) {
-        mprPutFmtToBuf(packet->prefix, "\r\n%x\r\n", httpGetPacketLength(packet));
+        mprPutToBuf(packet->prefix, "\r\n%x\r\n", httpGetPacketLength(packet));
     } else {
         mprPutStringToBuf(packet->prefix, "\r\n0\r\n\r\n");
     }
@@ -1823,7 +1823,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
     Http        *http;
     HttpUri     *uri;
     MprSocket   *sp;
-    char        *ip, *peerName;
+    char        *ip;
     int         port, rc, level;
 
     assert(conn);
@@ -1869,6 +1869,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
 #if BIT_SSL
     /* Must be done even if using keep alive for repeat SSL requests */
     if (uri->secure) {
+        char *peerName;
         if (ssl == 0) {
             ssl = mprCreateSsl(0);
         }
@@ -5288,32 +5289,32 @@ PUBLIC char *httpStatsReport(int flags)
     httpGetStats(&s);
     buf = mprCreateBuf(0, 0);
 
-    mprPutFmtToBuf(buf, "\nHttp Report: at %s\n\n", mprGetDate("%D %T"));
-    mprPutFmtToBuf(buf, "Memory      %8.1f MB, %5.1f%% max\n", s.mem / mb, s.mem / (double) s.memMax * 100.0);
-    mprPutFmtToBuf(buf, "Heap        %8.1f MB, %5.1f%% mem\n", s.heap / mb, s.heap / (double) s.mem * 100.0);
-    mprPutFmtToBuf(buf, "Heap-used   %8.1f MB, %5.1f%% used\n", s.heapUsed / mb, s.heapUsed / (double) s.heap * 100.0);
-    mprPutFmtToBuf(buf, "Heap-free   %8.1f MB, %5.1f%% free\n", s.heapFree / mb, s.heapFree / (double) s.heap * 100.0);
+    mprPutToBuf(buf, "\nHttp Report: at %s\n\n", mprGetDate("%D %T"));
+    mprPutToBuf(buf, "Memory      %8.1f MB, %5.1f%% max\n", s.mem / mb, s.mem / (double) s.memMax * 100.0);
+    mprPutToBuf(buf, "Heap        %8.1f MB, %5.1f%% mem\n", s.heap / mb, s.heap / (double) s.mem * 100.0);
+    mprPutToBuf(buf, "Heap-used   %8.1f MB, %5.1f%% used\n", s.heapUsed / mb, s.heapUsed / (double) s.heap * 100.0);
+    mprPutToBuf(buf, "Heap-free   %8.1f MB, %5.1f%% free\n", s.heapFree / mb, s.heapFree / (double) s.heap * 100.0);
 
     mprPutCharToBuf(buf, '\n');
-    mprPutFmtToBuf(buf, "Regions     %8d\n", s.regions);
-    mprPutFmtToBuf(buf, "CPUs        %8d\n", s.cpus);
+    mprPutToBuf(buf, "Regions     %8d\n", s.regions);
+    mprPutToBuf(buf, "CPUs        %8d\n", s.cpus);
     mprPutCharToBuf(buf, '\n');
 
-    mprPutFmtToBuf(buf, "Connections %8.1f per/sec\n", (s.totalConnections - last.totalConnections) / elapsed);
-    mprPutFmtToBuf(buf, "Requests    %8.1f per/sec\n", (s.totalRequests - last.totalRequests) / elapsed);
-    mprPutFmtToBuf(buf, "Sweeps      %8.1f per/sec\n", (s.totalSweeps - last.totalSweeps) / elapsed);
+    mprPutToBuf(buf, "Connections %8.1f per/sec\n", (s.totalConnections - last.totalConnections) / elapsed);
+    mprPutToBuf(buf, "Requests    %8.1f per/sec\n", (s.totalRequests - last.totalRequests) / elapsed);
+    mprPutToBuf(buf, "Sweeps      %8.1f per/sec\n", (s.totalSweeps - last.totalSweeps) / elapsed);
     mprPutCharToBuf(buf, '\n');
 
-    mprPutFmtToBuf(buf, "Clients     %8d active\n", s.activeClients);
-    mprPutFmtToBuf(buf, "Connections %8d active\n", s.activeConnections);
-    mprPutFmtToBuf(buf, "Processes   %8d active\n", s.activeProcesses);
-    mprPutFmtToBuf(buf, "Requests    %8d active\n", s.activeRequests);
-    mprPutFmtToBuf(buf, "Sessions    %8d active\n", s.activeSessions);
-    mprPutFmtToBuf(buf, "VMs         %8d active\n", s.activeVMs);
-    mprPutFmtToBuf(buf, "Pending     %8d requests\n", s.pendingRequests);
+    mprPutToBuf(buf, "Clients     %8d active\n", s.activeClients);
+    mprPutToBuf(buf, "Connections %8d active\n", s.activeConnections);
+    mprPutToBuf(buf, "Processes   %8d active\n", s.activeProcesses);
+    mprPutToBuf(buf, "Requests    %8d active\n", s.activeRequests);
+    mprPutToBuf(buf, "Sessions    %8d active\n", s.activeSessions);
+    mprPutToBuf(buf, "VMs         %8d active\n", s.activeVMs);
+    mprPutToBuf(buf, "Pending     %8d requests\n", s.pendingRequests);
     mprPutCharToBuf(buf, '\n');
 
-    mprPutFmtToBuf(buf, "Workers     %8d busy - %d yielded, %d idle, %d max\n", 
+    mprPutToBuf(buf, "Workers     %8d busy - %d yielded, %d idle, %d max\n", 
         s.workersBusy, s.workersYielded, s.workersIdle, s.workersMax);
     mprPutCharToBuf(buf, '\n');
     mprAddNullToBuf(buf);
@@ -5521,7 +5522,7 @@ PUBLIC void httpLogRequest(HttpConn *conn)
             break;
 
         case 'r':                           /* First line of request */
-            mprPutFmtToBuf(buf, "%s %s %s", rx->method, rx->uri, conn->protocol);
+            mprPutToBuf(buf, "%s %s %s", rx->method, rx->uri, conn->protocol);
             break;
 
         case 's':                           /* Response code */
@@ -6491,7 +6492,7 @@ PUBLIC bool httpPamVerifyUser(HttpConn *conn)
             abilities = mprCreateBuf(0, 0);
             for (i = 0; i < ngroups; i++) {
                 if ((gp = getgrgid(groups[i])) != 0) {
-                    mprPutFmtToBuf(abilities, "%s ", gp->gr_name);
+                    mprPutToBuf(abilities, "%s ", gp->gr_name);
                 }
             }
             mprAddNullToBuf(abilities);
@@ -6653,7 +6654,7 @@ PUBLIC void httpHandleOptionsTrace(HttpConn *conn, cchar *methods)
             q->count -= httpGetPacketLength(headers);
             assert(q->count == 0);
             mprFlushBuf(headers->content);
-            mprPutFmtToBuf(traceData->content, mprGetBufStart(q->first->content));
+            mprPutToBuf(traceData->content, mprGetBufStart(q->first->content));
             httpSetContentType(conn, "message/http");
             httpPutForService(q, traceData, HTTP_DELAY_SERVICE);
         }
@@ -8020,7 +8021,7 @@ static HttpPacket *createRangePacket(HttpConn *conn, HttpRange *range)
     length = (tx->entityLength >= 0) ? itos(tx->entityLength) : "*";
     packet = httpCreatePacket(HTTP_RANGE_BUFSIZE);
     packet->flags |= HTTP_PACKET_RANGE;
-    mprPutFmtToBuf(packet->content, 
+    mprPutToBuf(packet->content, 
         "\r\n--%s\r\n"
         "Content-Range: bytes %Ld-%Ld/%s\r\n\r\n",
         tx->rangeBoundary, range->start, range->end - 1, length);
@@ -8040,7 +8041,7 @@ static HttpPacket *createFinalRangePacket(HttpConn *conn)
 
     packet = httpCreatePacket(HTTP_RANGE_BUFSIZE);
     packet->flags |= HTTP_PACKET_RANGE;
-    mprPutFmtToBuf(packet->content, "\r\n--%s--\r\n", tx->rangeBoundary);
+    mprPutToBuf(packet->content, "\r\n--%s--\r\n", tx->rangeBoundary);
     return packet;
 }
 
@@ -12408,7 +12409,7 @@ static void createErrorRequest(HttpConn *conn)
     conn->worker = 0;
 
     packet = httpCreateDataPacket(BIT_MAX_BUFFER);
-    mprPutFmtToBuf(packet->content, "%s %s %s\r\n", rx->method, tx->errorDocument, conn->protocol);
+    mprPutToBuf(packet->content, "%s %s %s\r\n", rx->method, tx->errorDocument, conn->protocol);
     buf = rx->headerPacket->content;
     /*
         Sever the old Rx and Tx for GC
@@ -14842,15 +14843,15 @@ PUBLIC void httpWriteHeaders(HttpQueue *q, HttpPacket *packet)
         parsedUri = tx->parsedUri;
         if (http->proxyHost && *http->proxyHost) {
             if (parsedUri->query && *parsedUri->query) {
-                mprPutFmtToBuf(buf, "http://%s:%d%s?%s %s", http->proxyHost, http->proxyPort, 
+                mprPutToBuf(buf, "http://%s:%d%s?%s %s", http->proxyHost, http->proxyPort, 
                     parsedUri->path, parsedUri->query, conn->protocol);
             } else {
-                mprPutFmtToBuf(buf, "http://%s:%d%s %s", http->proxyHost, http->proxyPort, parsedUri->path,
+                mprPutToBuf(buf, "http://%s:%d%s %s", http->proxyHost, http->proxyPort, parsedUri->path,
                     conn->protocol);
             }
         } else {
             if (parsedUri->query && *parsedUri->query) {
-                mprPutFmtToBuf(buf, "%s?%s %s", parsedUri->path, parsedUri->query, conn->protocol);
+                mprPutToBuf(buf, "%s?%s %s", parsedUri->path, parsedUri->query, conn->protocol);
             } else {
                 mprPutStringToBuf(buf, parsedUri->path);
                 mprPutCharToBuf(buf, ' ');
@@ -15493,7 +15494,7 @@ static int processContentData(HttpQueue *q)
                 conn->rx->mimeType = sclone("application/x-www-form-urlencoded");
 
             }
-            mprPutFmtToBuf(packet->content, "%s=%s", up->id, data);
+            mprPutToBuf(packet->content, "%s=%s", up->id, data);
         }
     }
     if (up->clientFilename) {

@@ -37,6 +37,7 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
     char            *ip;
     int             port;
 
+
     mprParseSocketAddress(value, &ip, &port, NULL, 443);
     if (port == 0) {
         mprError("Bad or missing port %d in ListenSecure directive", port);

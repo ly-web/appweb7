@@ -354,7 +354,7 @@ struct  MprXml;
 #elif BIT_WIN_LIKE
     #define MAIN(name, _argc, _argv, _envp)  \
         APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2) { \
-            extern int main(); \
+            PUBLIC int main(); \
             char *largv[BIT_MAX_ARGC]; \
             int largc; \
             largc = mprParseArgs(command, &largv[1], BIT_MAX_ARGC - 1); \
@@ -2721,7 +2721,12 @@ PUBLIC int mprPutCharToBuf(MprBuf *buf, int c);
     @ingroup MprBuf
     @stability Evolving.
  */
-PUBLIC ssize mprPutFmtToBuf(MprBuf *buf, cchar *fmt, ...);
+PUBLIC ssize mprPutToBuf(MprBuf *buf, cchar *fmt, ...);
+
+//  Renamed in 4.3
+#if DEPRECATED
+    #define mprPutFmtToBuf mprPutToBuf
+#endif
 
 /**
     Put an integer to the buffer.
@@ -7024,7 +7029,7 @@ typedef struct MprSsl {
     char            *keyFile;           /**< Alternatively, locate the key in a file */
     char            *certFile;          /**< Alternatively, locate the cert in a file */
     char            *caFile;            /**< Certificate verification cert file or bundle */
-    char            *caPath;            /**< Certificate verification cert directory */
+    char            *caPath;            /**< Certificate verification cert directory (OpenSSL only) */
     char            *ciphers;           /**< Candidate ciphers to use */
     int             configured;         /**< Set if this SSL configuration has been processed */
     void            *config;            /**< Extended provider SSL configuration */
@@ -7106,6 +7111,7 @@ PUBLIC void mprSetSslCaFile(struct MprSsl *ssl, cchar *caFile);
 
 /**
     Set the path for the client certificate directory
+    @description This is supported for OpenSSL only.
     @param ssl SSL instance returned from #mprCreateSsl
     @param caPath Path to the SSL client certificate directory
     @ingroup MprSsl
@@ -8375,7 +8381,7 @@ PUBLIC void mprNop(void *ptr);
     #define MPR mprGetMpr()
 #else
     #define mprGetMpr() MPR
-    extern Mpr *MPR;
+    PUBLIC_DATA Mpr *MPR;
 #endif
 
 #define MPR_DISABLE_GC          0x1         /**< Disable GC */

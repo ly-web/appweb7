@@ -4,47 +4,48 @@
     This file provides targets to help you get going with SSL (using OpenSSL). 
     WARNING: All these certificates are for internal use only.
 
-    Use "bit ServerCertReq" to generate a certificate request to send to a certificate authority like Verisign.
+    Use "bit certReq" to generate a certificate request to send to a certificate authority like Verisign.
  
-    To use appweb with HTTP, you need a server certificate. This command will generate a self-signed test certificate.
+    To use appweb with HTTP, you need a server certificate. 
+    This command will generate a self-signed test certificate called "self.crt" with a private key "self.key".
  
-        bit serverCert
+        bit selfSignedCert
  
     To create a CA and then a server cert based on this CA, do:
+    This command will generate a CA certificate in ca.crt with a CA private key in ca.key. The last minted certificate
+    serial number is in ca.srl.
  
         bit ca
-        bit serverChainCert
+
+    To generate a certificate signed by the test CA, do:
+    This will generate a certificate in "test.crt" with a private key in "test.key".
+        bit cert
+
+    For all cert targets:
+
+        bit certs
  */
 
 Bit.load({
 
     targets: {
+        certs: {
+            depends: ['ca', 'selfSigned', 'cert', 'certReq'],
+        },
+
         /*
             WARNING: Self-signed server certificate for testing ONLY.
             Use a self-signed certificate when you just want quick and dirty testing.
             The browser will say it doesn't recognize this certificate, but that is ok for testing only.
             Create a private key in server.key with a password of "server". Decrypt this in server.key.pem.
-         */
-        serverCert: {
-            shell: "
-                umask 77 ; OPENSSL_CONF=openssl.conf ; export OPENSSL_CONF
-                openssl genrsa -des3 -passout pass:server -out server.key 1024
-                openssl req -passin pass:server -new -x509 -days 365 -key server.key -out server.crt < response.server 
-                openssl rsa -passin pass:server -in server.key -out server.key.pem
-            ",
-        },
 
-        /*
-            Self-signed client request
-            On MacOSX, add client.crt to the KeyChain by double-clicking in finder.
+            See: http://www.sslshopper.com/article-most-common-openssl-commands.html
          */
-        clientCert: {
+        selfSigned: {
             shell: "
-                umask 77 
-                OPENSSL_CONF=openssl.conf ; export OPENSSL_CONF
-                openssl genrsa -des3 -passout pass:client -out client.key 1024
-                openssl req -passin pass:client -new -x509 -days 365 -key client.key -out client.crt < response.client 
-                openssl rsa -passin pass:client -in client.key -out client.key.pem <response.yes
+                umask 77
+                openssl genrsa -out self.key 2048
+                openssl req -new -x509 -days 365 -key server.key -out self.crt < response.self 
             ",
         },
 
@@ -56,37 +57,23 @@ Bit.load({
         ca: {
             shell: "
                 umask 77 ; OPENSSL_CONF=openssl.ca ; export OPENSSL_CONF
-                openssl req -x509 -newkey rsa:1024 -passout pass:ca -out ca.crt -outform PEM
-                openssl rsa -passin pass:ca -in ca.key -out ca.key.pem
-                echo '01' >ca.serial
+                openssl genrsa -out ca.key 2048
+                openssl req -new -x509 -key ca.key -out ca.crt
+                echo '01' >ca.srl
                 >ca.db
             ",
         },
 
         /*
-            Client certificate to put in your browser. Used when doing client validation.
+            Certificate to put in your browser. Used when doing client validation.
          */
-        clientChainCert: {
+        cert: {
             shell: "
                 umask 77 ; OPENSSL_CONF=openssl.conf ; export OPENSSL_CONF
-                rm -f client.crt client.key client.key.pem client.req
-                openssl req -passout pass:client -newkey rsa:1024 -keyout client.key -out client.req < response.client
-                openssl rsa -passin pass:client -in client.key -out client.key.pem
-                OPENSSL_CONF=openssl.ca ; export OPENSSL_CONF
-                openssl ca -in client.req -out client.crt < response.yes
-            ",
-        },
-
-        /*
-            Server certificate to put in Appweb. Necessary.
-         */
-        serverChainCert: {
-            shell: "
-                umask 77 ; OPENSSL_CONF=openssl.conf ; export OPENSSL_CONF
-                rm -f server.crt server.key server.key.pem server.req
-                openssl req -passout pass:server -newkey rsa:1024 -keyout server.key -out server.req < response.server
-                openssl rsa -passin pass:server -in server.key -out server.key.pem
-                OPENSSL_CONF=openssl.ca ; export OPENSSL_CONF ; openssl ca -in server.req -out server.crt <response.yes
+                rm -f test.crt test.key
+                openssl genrsa -out test.key 2048
+                openssl req -new -key test.key -out test.csr < response.cert
+                OPENSSL_CONF=openssl.ca openssl x509 -req -in test.csr -CA ca.crt -CAkey ca.key -out test.crt
             ",
         },
 
@@ -95,29 +82,9 @@ Bit.load({
          */
         certReq: {
             shell: "
-                umask 77
-                openssl genrsa -des3 -passout pass:server -out server.key 1024
-                openssl req -new -key server.key -out server.csr
-            ",
-        },
-
-        /*
-             Stop the key asking for a password by decrypting it and rewriting back
-             to server.key. WARNING: this is not secure as the key is now decrypted.
-         */
-        noPassPhrase: {
-            shell: "
-                openssl genrsa 1024 -out server.key
-                chmod 600 server.key
-            ",
-        },
-
-        /*
-             Decrypt the key into server.key.pem
-         */
-        decrypted: {
-            shell: "
-                openssl rsa -in server.key -out server.key.pem
+                umask 77 ; OPENSSL_CONF=openssl.conf ; export OPENSSL_CONF
+                openssl genrsa -out server.key 2048
+                openssl req -new -key server.key -out server.csr < response.cert
             ",
         },
     },

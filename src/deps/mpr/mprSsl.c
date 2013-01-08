@@ -63,13 +63,16 @@ typedef struct MatrixConfig {
  */
 typedef struct MatrixSocket {
     MprSocket       *sock;
-    ssl_t           *handle;            /* MatrixSSL ssl_t structure */
+    MatrixConfig    *cfg;
+    ssl_t           *ctx;               /* MatrixSSL ssl_t structure */
     char            *outbuf;            /* Pending output data */
+    char            *peerName;          /* Desired peer name */
     ssize           outlen;             /* Length of outbuf */
     ssize           written;            /* Number of unencoded bytes written */
     int             more;               /* MatrixSSL stack has buffered data */
 } MatrixSocket;
 
+#if UNUSED
 /*
     Empty CA cert.
  */
@@ -126,14 +129,15 @@ static uchar CAcertSrvBuf[] = {
     201, 16, 116, 204, 66, 111, 187, 36, 87, 144, 81, 194, 26,
     184, 76, 67, 209, 132, 6, 150, 183, 119, 59
 };
+#endif
 
 /***************************** Forward Declarations ***************************/
 
 static void     closeMss(MprSocket *sp, bool gracefully);
-static MatrixConfig *createMatrixConfig(MprSsl *ssl);
 static void     disconnectMss(MprSocket *sp);
-static int      doHandshake(MprSocket *sp, short cipherSuite);
+static int      mssHandshake(MprSocket *sp, short cipherSuite);
 static ssize    flushMss(MprSocket *sp);
+static char     *getMssState(MprSocket *sp);
 static ssize    innerRead(MprSocket *sp, char *userBuf, ssize len);
 static int      listenMss(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageMatrixSocket(MatrixSocket *msp, int flags);
@@ -158,6 +162,7 @@ PUBLIC int mprCreateMatrixSslModule()
     provider->flushSocket = flushMss;
     provider->listenSocket = listenMss;
     provider->readSocket = readMss;
+    provider->socketState = getMssState;
     provider->writeSocket = writeMss;
     provider->upgradeSocket = upgradeMss;
     mprAddSocketProvider("matrixssl", provider);
@@ -166,42 +171,6 @@ PUBLIC int mprCreateMatrixSslModule()
         return 0;
     }
     return 0;
-}
-
-
-/*
-    Initialize the SSL configuration. An application can have multiple different SSL
-    configurations for different routes. There is default SSL configuration that is used
-    when a route does not define a configuration and also for clients.
- */
-static MatrixConfig *createMatrixConfig(MprSsl *ssl)
-{
-    MatrixConfig    *cfg;
-    char            *password;
-
-    assert(ssl);
-
-    if ((ssl->config = mprAllocObj(MatrixConfig, manageMatrixConfig)) == 0) {
-        return 0;
-    }
-    cfg = ssl->config;
-
-    //  OPT - does this need to be done for each MprSsl or just once?
-    if (matrixSslNewKeys(&cfg->keys) < 0) {
-        mprError("MatrixSSL: Cannot create new MatrixSSL keys");
-        return 0;
-    }
-    /*
-        Read the certificate and the key file for this server. FUTURE - If using encrypted private keys, 
-        we could prompt through a dialog box or on the console, for the user to enter the password
-        rather than using NULL as the password here.
-     */
-    password = NULL;
-    if (matrixSslLoadRsaKeys(cfg->keys, ssl->certFile, ssl->keyFile, password, NULL) < 0) {
-        mprError("MatrixSSL: Could not read or decode certificate or key file."); 
-        return 0;
-    }
-    return cfg;
 }
 
 
@@ -225,10 +194,12 @@ static void manageMatrixSocket(MatrixSocket *msp, int flags)
 
     if (flags & MPR_MANAGE_MARK) {
         mprMark(msp->sock);
+        mprMark(msp->peerName);
 
     } else if (flags & MPR_MANAGE_FREE) {
-        if (msp->handle) {
-            matrixSslDeleteSession(msp->handle);
+        //MOB - goahead does matrixSslEncodeClosureAlert, matrixSslGetOutdata here
+        if (msp->ctx) {
+            matrixSslDeleteSession(msp->ctx);
         }
         ss = MPR->socketService;
         mprRemoveItem(ss->secureSockets, msp->sock);
@@ -251,13 +222,13 @@ static void closeMss(MprSocket *sp, bool gracefully)
     msp = sp->sslSocket;
     assert(msp);
 
-    if (!(sp->flags & MPR_SOCKET_EOF) && msp->handle) {
+    if (!(sp->flags & MPR_SOCKET_EOF) && msp->ctx) {
         /*
             Flush data. Append a closure alert to any buffered output data, and try to send it.
             Don't bother retrying or blocking, we're just closing anyway.
          */
-        matrixSslEncodeClosureAlert(msp->handle);
-        if ((nbytes = matrixSslGetOutdata(msp->handle, &obuf)) > 0) {
+        matrixSslEncodeClosureAlert(msp->ctx);
+        if ((nbytes = matrixSslGetOutdata(msp->ctx, &obuf)) > 0) {
             /* Ignore return */
             sp->service->standardProvider->writeSocket(sp, obuf, nbytes);
         }
@@ -278,6 +249,7 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     MprSocketService    *ss;
     MatrixSocket        *msp;
     MatrixConfig        *cfg;
+    char                *password;
     uint32              cipherSuite;
 
     ss = sp->service;
@@ -292,37 +264,62 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     msp->sock = sp;
     sp->sslSocket = msp;
     sp->ssl = ssl;
+    password = 0;
 
     mprAddItem(ss->secureSockets, sp);
 
-    if (!ssl->config && (ssl->config = createMatrixConfig(ssl)) == 0) {
-        unlock(sp);
-        return MPR_ERR_CANT_INITIALIZE;
+    if (ssl->config) {
+        msp->cfg = cfg = ssl->config;
+
+    } else {
+        if ((ssl->config = mprAllocObj(MatrixConfig, manageMatrixConfig)) == 0) {
+            unlock(sp);
+            return MPR_ERR_MEMORY;
+        }
+        msp->cfg = cfg = ssl->config;
+
+        //  OPT - does this need to be done for each MprSsl or just once?
+        if (matrixSslNewKeys(&cfg->keys) < 0) {
+            mprError("MatrixSSL: Cannot create new MatrixSSL keys");
+            unlock(sp);
+            return MPR_ERR_CANT_INITIALIZE;
+        }
+        /*
+            Read the certificate and the key file for this server. FUTURE - If using encrypted private keys, 
+            we could prompt through a dialog box or on the console, for the user to enter the password
+            rather than using NULL as the password here.
+         */
+        password = NULL;
+        if (matrixSslLoadRsaKeys(cfg->keys, ssl->certFile, ssl->keyFile, password, NULL) < 0) {
+            mprError("MatrixSSL: Could not read or decode certificate or key file."); 
+            unlock(sp);
+            return MPR_ERR_CANT_READ;
+        }
     }
-    cfg = ssl->config;
+    unlock(sp);
 
     /* 
         Associate a new ssl session with this socket. The session represents the state of the ssl protocol 
         over this socket. Session caching is handled automatically by this api.
      */
     if (sp->flags & MPR_SOCKET_SERVER) {
-        if (matrixSslNewServerSession(&msp->handle, cfg->keys, NULL) < 0) {
+        if (matrixSslNewServerSession(&msp->ctx, cfg->keys, verifyCert) < 0) {
             unlock(sp);
             return MPR_ERR_CANT_CREATE;
         }
     } else {
-        if (matrixSslLoadRsaKeysMem(cfg->keys, NULL, 0, NULL, 0, CAcertSrvBuf, sizeof(CAcertSrvBuf)) < 0) {
+        msp->peerName = sclone(peerName);
+        if (matrixSslLoadRsaKeys(cfg->keys, NULL, NULL, password, ssl->caFile) < 0) {
             mprError("MatrixSSL: Could not read or decode certificate or key file."); 
             unlock(sp);
             return MPR_ERR_CANT_INITIALIZE;
         }
         cipherSuite = 0;
-        if (matrixSslNewClientSession(&msp->handle, cfg->keys, NULL, cipherSuite, verifyCert, NULL, NULL) < 0) {
+        if (matrixSslNewClientSession(&msp->ctx, cfg->keys, NULL, cipherSuite, verifyCert, NULL, NULL) < 0) {
             unlock(sp);
             return MPR_ERR_CANT_CONNECT;
         }
-        //  MOB - need to verify peerName
-        if (doHandshake(sp, 0) < 0) {
+        if (mssHandshake(sp, 0) < 0) {
             unlock(sp);
             return MPR_ERR_CANT_CONNECT;
         }
@@ -332,9 +329,103 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 }
 
 
+#if UNUSED
+/*
+    Store the name in printable form into buf; no more than (end - buf) characters will be written
+ */
+static void parseCert(MprBuf *buf, char *prefix, x509_name * dn)
+{
+    x509_name   *name;
+    int         i;
+    uchar       c;
+
+    memset(s, 0, sizeof(s));
+    name = dn;
+
+    while (name != NULL) {
+        mprPutToBuf(p, end - p, "%s", prefix);
+        if (memcmp(name->oid.p, OID_X520, 2) == 0) {
+            switch (name->oid.p[2]) {
+            case X520_COMMON_NAME:
+                mprPutToBuf(buf, "CN=");
+                break;
+
+            case X520_COUNTRY:
+                mprPutToBuf(buf, "C=");
+                break;
+
+            case X520_LOCALITY:
+                mprPutToBuf(buf, "L=");
+                break;
+
+            case X520_STATE:
+                mprPutToBuf(buf, "ST=");
+                break;
+
+            case X520_ORGANIZATION:
+                mprPutToBuf(buf, "O=");
+                break;
+
+            case X520_ORG_UNIT:
+                mprPutToBuf(buf, "OU=");
+                break;
+
+            default:
+                mprPutToBuf(buf, "0x%02X=", name->oid.p[2]);
+                break;
+            }
+        } else if (memcmp(name->oid.p, OID_PKCS9, 8) == 0) {
+            switch (name->oid.p[8]) {
+            case PKCS9_EMAIL:
+                mprPutToBuf(buf, "EMAIL=");
+                break;
+
+            default:
+                mprPutToBuf(buf, "0x%02X=", name->oid.p[8]);
+                break;
+            }
+        } else {
+            mprPutToBuf(buf, "\?\?=");
+        }
+        for (i = 0; i < name->val.len; i++) {
+            if (i >= (int)sizeof(s) - 1) {
+                break;
+            }
+            c = name->val.p[i];
+            if (c < 32 || c == 127 || (c > 128 && c < 160))
+                s[i] = '?';
+            else
+                s[i] = c;
+        }
+        s[i] = '\0';
+        mprPutToBuf(buf, "%s", s);
+        name = name->next;
+        mprPutToBuf(buf, ", ");
+    }
+}
+#endif
+
+
+static char *getMssState(MprSocket *sp)
+{
+    MatrixSocket    *msp;
+    ssl_t           *ctx;
+    MprBuf          *buf;
+
+    msp = sp->sslSocket;
+    ctx = msp->ctx;
+    buf = mprCreateBuf(0, 0);
+#if UNUSED
+    char            *own, *peer;
+    certState(buf, sp->acceptIp ? "CLIENT_" : "SERVER_", ctx->keys->cdert);
+    certState(buf, sp->acceptIp ? "SERVER_" : "CLIENT_", ctx->cert);
+#endif
+    return mprGetBufStart(buf);
+}
+
+
 /*
     Validate certificates
-    UGLY: really need a MatrixConfig handle here
  */
 static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
 {
@@ -345,30 +436,53 @@ static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
     int                 next, y, m, d;
 
     ss = MPR->socketService;
+
+    /*
+        Find our handle. This is really ugly because the matrix api does not provide a handle
+     */
     lock(ss);
     sp = 0;
     for (ITERATE_ITEMS(ss->secureSockets, sp, next)) {
-        if (sp->ssl && ((MatrixSocket*) sp->sslSocket)->handle == ssl) {
+        if (sp->ssl && ((MatrixSocket*) sp->sslSocket)->ctx == ssl) {
             break;
         }
     }
     unlock(ss);
+
+    /*
+        MOB - cases:
+            - Not trused by CA
+            - Self-signed
+     */
     if (!sp) {
         /* Should not get here */
         assert(sp);
         return SSL_ALLOW_ANON_CONNECTION;
     }
+
     if (alert > 0) {
+        if (alert == SSL_ALERT_UNKNOWN_CA) {
+            if (sp->ssl->verifyIssuer) {
+                return alert;
+            }
+        }
         if (!sp->ssl->verifyPeer) {
             return SSL_ALLOW_ANON_CONNECTION;
         }
         return alert;
     }
-    mprDecodeLocalTime(&t, mprGetTime());
+#if FUTURE
+    msp = sp->sslSocket;
+    if (msp->peerName && !smatch(msp->peerName, cert->subject.commonName)) {
+        mprError("SSL certificate Common name mismatch");
+        return PS_FAILURE;
+    }
+#endif
 
 	/* 
         Validate the 'not before' date 
      */
+    mprDecodeLocalTime(&t, mprGetTime());
 	if ((c = cert->notBefore) != NULL) {
 		if (strlen(c) < 8) {
 			return PS_FAILURE;
@@ -398,6 +512,7 @@ static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
             }
 		}
 	}
+
 	/* 
         Validate the 'not after' date 
      */
@@ -463,7 +578,7 @@ static ssize blockingWrite(MprSocket *sp, cvoid *buf, ssize len)
     the SSL handshake. Can be used in the re-handshake scenario as well.
     This is a blocking routine.
  */
-static int doHandshake(MprSocket *sp, short cipherSuite)
+static int mssHandshake(MprSocket *sp, short cipherSuite)
 {
     MatrixSocket    *msp;
     ssize           rc, written, toWrite;
@@ -472,12 +587,12 @@ static int doHandshake(MprSocket *sp, short cipherSuite)
 
     msp = sp->sslSocket;
 
-    toWrite = matrixSslGetOutdata(msp->handle, (uchar**) &obuf);
+    toWrite = matrixSslGetOutdata(msp->ctx, (uchar**) &obuf);
     if ((written = blockingWrite(sp, obuf, toWrite)) < 0) {
         mprError("MatrixSSL: Error in socketWrite");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    matrixSslSentData(msp->handle, (int) written);
+    matrixSslSentData(msp->ctx, (int) written);
     mode = mprSetSocketBlockingMode(sp, 1);
 
     while (1) {
@@ -489,7 +604,7 @@ static int doHandshake(MprSocket *sp, short cipherSuite)
                 mprSetSocketBlockingMode(sp, mode);
                 return MPR_ERR_CANT_INITIALIZE;
             }
-            if (matrixSslHandshakeIsComplete(msp->handle)) {
+            if (matrixSslHandshakeIsComplete(msp->ctx)) {
                 break;
             }
         } else {
@@ -521,7 +636,7 @@ static ssize processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, 
     /*
         Process the received data. If there is application data, it is returned in data/dlen
      */
-    rc = matrixSslReceivedData(msp->handle, (int) nbytes, &data, &dlen);
+    rc = matrixSslReceivedData(msp->ctx, (int) nbytes, &data, &dlen);
 
     while (1) {
         switch (rc) {
@@ -529,12 +644,12 @@ static ssize processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, 
             return sofar;
 
         case MATRIXSSL_REQUEST_SEND:
-            toWrite = matrixSslGetOutdata(msp->handle, &obuf);
+            toWrite = matrixSslGetOutdata(msp->ctx, &obuf);
             if ((written = blockingWrite(sp, obuf, toWrite)) < 0) {
                 mprError("MatrixSSL: Error in process");
                 return MPR_ERR_CANT_INITIALIZE;
             }
-            matrixSslSentData(msp->handle, (int) written);
+            matrixSslSentData(msp->ctx, (int) written);
             *readMore = 1;
             return 0;
 
@@ -558,7 +673,7 @@ static ssize processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, 
             } else {
                 //  ignore
             }
-            rc = matrixSslProcessedData(msp->handle, &data, &dlen);
+            rc = matrixSslProcessedData(msp->ctx, &data, &dlen);
             break;
 
         case MATRIXSSL_APP_DATA:
@@ -572,7 +687,7 @@ static ssize processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, 
             msp->more = ((ssize) dlen > size) ? 1 : 0;
             if (!msp->more) {
                 /* The MatrixSSL buffer has been consumed, see if we can get more data */
-                rc = matrixSslProcessedData(msp->handle, &data, &dlen);
+                rc = matrixSslProcessedData(msp->ctx, &data, &dlen);
                 break;
             }
             return sofar;
@@ -601,7 +716,7 @@ static ssize innerRead(MprSocket *sp, char *buf, ssize size)
         /*
             Get the MatrixSSL read buffer to read data into
          */
-        if ((msize = matrixSslGetReadbuf(msp->handle, &mbuf)) < 0) {
+        if ((msize = matrixSslGetReadbuf(msp->ctx, &mbuf)) < 0) {
             return MPR_ERR_BAD_STATE;
         }
         readMore = 0;
@@ -630,7 +745,7 @@ static ssize readMss(MprSocket *sp, void *buf, ssize len)
     bytes = innerRead(sp, buf, len);
     msp = (MatrixSocket*) sp->sslSocket;
     if (msp->more) {
-        sp->flags |= MPR_SOCKET_PENDING;
+        sp->flags |= MPR_SOCKET_BUFFERED_READ;
         mprRecallWaitHandlerByFd(sp->fd);
     }
     unlock(sp);
@@ -667,7 +782,7 @@ static ssize writeMss(MprSocket *sp, cvoid *buf, ssize len)
     msp = (MatrixSocket*) sp->sslSocket;
 
     while (len > 0 || msp->outlen > 0) {
-        if ((encoded = matrixSslGetOutdata(msp->handle, &obuf)) <= 0) {
+        if ((encoded = matrixSslGetOutdata(msp->ctx, &obuf)) <= 0) {
             if (msp->outlen <= 0) {
                 msp->outbuf = (char*) buf;
                 msp->outlen = len;
@@ -675,7 +790,7 @@ static ssize writeMss(MprSocket *sp, cvoid *buf, ssize len)
                 len = 0;
             }
             nbytes = min(msp->outlen, SSL_MAX_PLAINTEXT_LEN);
-            if ((encoded = matrixSslEncodeToOutdata(msp->handle, (uchar*) buf, (int) nbytes)) < 0) {
+            if ((encoded = matrixSslEncodeToOutdata(msp->ctx, (uchar*) buf, (int) nbytes)) < 0) {
                 return encoded;
             }
             msp->outbuf += nbytes;
@@ -687,7 +802,7 @@ static ssize writeMss(MprSocket *sp, cvoid *buf, ssize len)
         } else if (written == 0) {
             break;
         }
-        matrixSslSentData(msp->handle, (int) written);
+        matrixSslSentData(msp->ctx, (int) written);
     }
     /*
         Only signify all the data has been written if MatrixSSL has absorbed all the data
@@ -703,6 +818,14 @@ static ssize flushMss(MprSocket *sp)
 {
     return blockingWrite(sp, 0, 0);
 }
+
+
+/*
+    Cleanup for all-in-one distributions
+ */
+#undef SSL_RSA_WITH_3DES_EDE_CBC_SHA
+#undef TLS_RSA_WITH_AES_128_CBC_SHA
+#undef TLS_RSA_WITH_AES_256_CBC_SHA
 
 #endif /* BIT_PACK_MATRIXSSL */
 
@@ -755,7 +878,7 @@ static ssize flushMss(MprSocket *sp)
 typedef struct EstConfig {
     rsa_context     rsa;                /* RSA context */
     x509_cert       cert;               /* Certificate (own) */
-    x509_cert       cabundle;           /* Certificate bundle to veryify peery */
+    x509_cert       ca;                 /* Certificate authority bundle to verify peer */
     int             *ciphers;           /* Set of acceptable ciphers */
     char            *dhKey;             /* DH keys */
 } EstConfig;
@@ -856,7 +979,7 @@ static void manageEstConfig(EstConfig *cfg, int flags)
     } else if (flags & MPR_MANAGE_FREE) {
         rsa_free(&cfg->rsa);
         x509_free(&cfg->cert);
-        x509_free(&cfg->cabundle);
+        x509_free(&cfg->ca);
         free(cfg->ciphers);
     }
 }
@@ -934,7 +1057,10 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         }
         est->cfg = ssl->config = cfg;
         if (ssl->certFile) {
-            //  MOB - openssl uses encrypted and/not 
+            //  MOB - encrypted and/not?
+            //  MOB PEM/DER?
+            //  MOB catenated with key file?
+            //  MOB - must check that a keyFile is provided
             if (x509parse_crtfile(&cfg->cert, ssl->certFile) != 0) {
                 sp->errorMsg = sfmt("Unable to parse certificate %s", ssl->certFile); 
                 unlock(ssl);
@@ -943,6 +1069,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         }
         if (ssl->keyFile) {
             //  MOB - last arg is password
+            //  MOB - must check that a certFile is provided
             if (x509parse_keyfile(&cfg->rsa, ssl->keyFile, 0) != 0) {
                 sp->errorMsg = sfmt("Unable to parse key file %s", ssl->keyFile); 
                 unlock(ssl);
@@ -950,8 +1077,8 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             }
         }
         if (ssl->caFile) {
-            if (x509parse_crtfile(&cfg->cabundle, ssl->caFile) != 0) {
-                sp->errorMsg = sfmt("Unable to parse certificate bundle %s", ssl->caFile); 
+            if (x509parse_crtfile(&cfg->ca, ssl->caFile) != 0) {
+                sp->errorMsg = sfmt("Unable to parse certificate authority bundle %s", ssl->caFile); 
                 unlock(ssl);
                 return MPR_ERR_CANT_READ;
             }
@@ -986,8 +1113,10 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 	ssl_set_session(&est->ctx, 1, 0, &est->session);
 	memset(&est->session, 0, sizeof(ssl_session));
 
-	ssl_set_ca_chain(&est->ctx, &cfg->cabundle, (char*) peerName);
-	ssl_set_own_cert(&est->ctx, &cfg->cert, &cfg->rsa);
+    ssl_set_ca_chain(&est->ctx, ssl->caFile ? &cfg->ca : NULL, (char*) peerName);
+    if (ssl->keyFile && ssl->certFile) {
+        ssl_set_own_cert(&est->ctx, &cfg->cert, &cfg->rsa);
+    }
 	ssl_set_dh_param(&est->ctx, dhKey, dhG);
 
     if (estHandshake(sp) < 0) {
@@ -1031,7 +1160,12 @@ static int estHandshake(MprSocket *sp)
         Analyze the handshake result
      */
     if (rc < 0) {
-        sp->errorMsg = sfmt("Cannot handshake: error -0x%x", -rc);
+        //  MOB - more codes here or have est set a textual message (better)
+        if (rc == EST_ERR_SSL_PRIVATE_KEY_REQUIRED && !(sp->ssl->keyFile || sp->ssl->certFile)) {
+            sp->errorMsg = sclone("Missing required certificate and key");
+        } else {
+            sp->errorMsg = sfmt("Cannot handshake: error -0x%x", -rc);
+        }
         mprLog(4, "%s", sp->errorMsg);
         sp->flags |= MPR_SOCKET_EOF;
         errno = EPROTO;
@@ -1039,28 +1173,28 @@ static int estHandshake(MprSocket *sp)
        
     } else if ((vrc = ssl_get_verify_result(&est->ctx)) != 0) {
         if (vrc & BADCERT_EXPIRED) {
-            sp->errorMsg = sfmt("Certificate expired");
+            sp->errorMsg = sclone("Certificate expired");
 
         } else if (vrc & BADCERT_REVOKED) {
-            sp->errorMsg = sfmt("Certificate revoked");
+            sp->errorMsg = sclone("Certificate revoked");
 
         } else if (vrc & BADCERT_CN_MISMATCH) {
-            sp->errorMsg = sfmt("Certificate common name mismatch");
+            sp->errorMsg = sclone("Certificate common name mismatch");
 
         } else if (vrc & BADCERT_NOT_TRUSTED) {
             if (est->ctx.peer_cert->next && est->ctx.peer_cert->next->version == 0) {
                 //  MOB - est should have dedicated EST error code for this.
-                sp->errorMsg = sfmt("Self-signed certificate");
+                sp->errorMsg = sclone("Self-signed certificate");
             } else {
-                sp->errorMsg = sfmt("Certificate not trusted");
+                sp->errorMsg = sclone("Certificate not trusted");
             }
             trusted = 0;
 
         } else {
             if (est->ctx.client_auth && !sp->ssl->certFile) {
-                sp->errorMsg = sfmt("Server requires a client certificate");
+                sp->errorMsg = sclone("Server requires a client certificate");
             } else if (rc == EST_ERR_NET_CONN_RESET) {
-                sp->errorMsg = sfmt("Peer disconnected");
+                sp->errorMsg = sclone("Peer disconnected");
             } else {
                 sp->errorMsg = sfmt("Cannot handshake: error -0x%x", -rc);
             }
@@ -1189,6 +1323,7 @@ static char *getEstState(MprSocket *sp)
     est = sp->sslSocket;
     ctx = &est->ctx;
     buf = mprCreateBuf(0, 0);
+    mprPutToBuf(buf, "CIPHER=%s, ", ssl_get_cipher(ctx));
 
     own =  sp->acceptIp ? "SERVER_" : "CLIENT_";
     peer = sp->acceptIp ? "CLIENT_" : "SERVER_";
@@ -1196,6 +1331,7 @@ static char *getEstState(MprSocket *sp)
     mprPutStringToBuf(buf, cbuf);
     x509parse_cert_info(own, cbuf, sizeof(cbuf), ctx->own_cert);
     mprPutStringToBuf(buf, cbuf);
+    mprTrace(4, "EST state: %s", mprGetBufStart(buf));
     return mprGetBufStart(buf);
 }
 
@@ -1262,7 +1398,7 @@ static void estTrace(void *fp, int level, char *str)
 {
     level += 3;
     if (level <= MPR->logLevel) {
-        mprLog(level, "EST: %s", str);
+        mprRawLog(level, "EST: %s", str);
     }
 }
 
@@ -1326,6 +1462,7 @@ typedef struct OpenConfig {
 
 typedef struct OpenSocket {
     MprSocket       *sock;
+    OpenConfig      *cfg;
     char            *peerName;
     SSL             *handle;
     BIO             *bio;
@@ -1350,10 +1487,11 @@ typedef struct CRYPTO_dynlock_value DynLock;
 
 static void     closeOss(MprSocket *sp, bool gracefully);
 static int      configureCertificateFiles(MprSsl *ssl, SSL_CTX *ctx, char *key, char *cert);
-static OpenConfig *createOpenSslConfig(MprSsl *ssl);
+static OpenConfig *createOpenSslConfig(MprSocket *sp);
 static DH       *dhCallback(SSL *ssl, int isExport, int keyLength);
 static void     disconnectOss(MprSocket *sp);
 static ssize    flushOss(MprSocket *sp);
+static char     *getOssState(MprSocket *sp);
 static int      listenOss(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageOpenConfig(OpenConfig *cfg, int flags);
 static void     manageOpenProvider(MprSocketProvider *provider, int flags);
@@ -1399,6 +1537,7 @@ PUBLIC int mprCreateOpenSslModule()
     openProvider->disconnectSocket = disconnectOss;
     openProvider->flushSocket = flushOss;
     openProvider->listenSocket = listenOss;
+    openProvider->socketState = getOssState;
     openProvider->readSocket = readOss;
     openProvider->writeSocket = writeOss;
     mprAddSocketProvider("openssl", openProvider);
@@ -1502,12 +1641,14 @@ static void manageOpenProvider(MprSocketProvider *provider, int flags)
     configurations for different routes. There is default SSL configuration that is used
     when a route does not define a configuration and also for clients.
  */
-static OpenConfig *createOpenSslConfig(MprSsl *ssl)
+static OpenConfig *createOpenSslConfig(MprSocket *sp)
 {
+    MprSsl          *ssl;
     OpenConfig      *cfg;
     SSL_CTX         *context;
     uchar           resume[16];
 
+    ssl = sp->ssl;
     assert(ssl);
 
     if ((ssl->config = mprAllocObj(OpenConfig, manageOpenConfig)) == 0) {
@@ -1575,9 +1716,8 @@ static OpenConfig *createOpenSslConfig(MprSsl *ssl)
             SSL_CTX_set_verify(context, SSL_VERIFY_NONE, verifyX509Certificate);
         }
     } else {
-//  MOB -- enable verify peer
         if (ssl->verifyPeer) {
-            SSL_CTX_set_verify(context, SSL_VERIFY_PEER, verifyX509Certificate);
+            SSL_CTX_set_verify(context, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, verifyX509Certificate);
         } else {
             SSL_CTX_set_verify(context, SSL_VERIFY_NONE, verifyX509Certificate);
         }
@@ -1709,13 +1849,13 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     sp->sslSocket = osp;
     sp->ssl = ssl;
 
-    if (!ssl->config && (ssl->config = createOpenSslConfig(ssl)) == 0) {
+    if (!ssl->config && (ssl->config = createOpenSslConfig(sp)) == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     /*
         Create and configure the SSL struct
      */
-    cfg = sp->ssl->config;
+    cfg = osp->cfg = sp->ssl->config;
     if ((osp->handle = (SSL*) SSL_new(cfg->context)) == 0) {
         return MPR_ERR_BAD_STATE;
     }
@@ -1729,19 +1869,78 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     if (sp->flags & MPR_SOCKET_SERVER) {
         SSL_set_accept_state(osp->handle);
     } else {
+        if (peerName) {
+            osp->peerName = sclone(peerName);
+        }
         /* Block while connecting */
         mprSetSocketBlockingMode(sp, 1);
+        sp->errorMsg = 0;
         if ((rc = SSL_connect(osp->handle)) < 1) {
-            error = ERR_get_error();
-            ERR_error_string_n(error, ebuf, sizeof(ebuf) - 1);
-            sp->errorMsg = sclone(ebuf);
-            mprLog(4, "SSL_read error %s", ebuf);
+            if (sp->errorMsg) {
+                mprLog(4, "%s", sp->errorMsg);
+            } else {
+                error = ERR_get_error();
+                ERR_error_string_n(error, ebuf, sizeof(ebuf) - 1);
+                sp->errorMsg = sclone(ebuf);
+                mprLog(4, "SSL_read error %s", ebuf);
+            }
             return MPR_ERR_CANT_CONNECT;
         }
         mprSetSocketBlockingMode(sp, 0);
     }
-    osp->peerName = sclone(peerName);
     return 0;
+}
+
+
+static void parseCertFields(MprBuf *buf, char *prefix, char *prefix2, char *info)
+{
+    char    *cp, *term;
+
+    for (term = cp = info; *cp; cp++) {
+        if (*cp == '/') {
+            *cp = '\0';
+            mprPutToBuf(buf, "%s%s%s, ", prefix, prefix2, term);
+            *cp = '/';
+            term = &cp[1];
+        }
+    }
+    mprPutToBuf(buf, "%s%s%s, ", prefix, prefix2, term);
+}
+
+
+static char *getOssState(MprSocket *sp)
+{
+    OpenSocket      *osp;
+    MprBuf          *buf;
+    X509            *cert;
+    char            *prefix;
+    char            subject[512], issuer[512];
+
+    osp = sp->sslSocket;
+    buf = mprCreateBuf(0, 0);
+    mprPutToBuf(buf, "CIPHER=%s, ", SSL_get_cipher(osp->handle));
+
+    if ((cert = SSL_get_peer_certificate(osp->handle)) != 0) {
+        prefix = sp->acceptIp ? "CLIENT_" : "SERVER_";
+
+        X509_NAME_oneline(X509_get_subject_name(cert), subject, sizeof(subject) -1);
+        parseCertFields(buf, prefix, "S_", &subject[1]);
+
+        X509_NAME_oneline(X509_get_issuer_name(cert), issuer, sizeof(issuer) -1);
+        parseCertFields(buf, prefix, "I_", &subject[1]);
+        X509_free(cert);
+    }
+    if ((cert = SSL_get_certificate(osp->handle)) != 0) {
+        prefix =  sp->acceptIp ? "SERVER_" : "CLIENT_";
+        X509_NAME_oneline(X509_get_subject_name(cert), subject, sizeof(subject) -1);
+        parseCertFields(buf, prefix, "S_", &subject[1]);
+
+        X509_NAME_oneline(X509_get_issuer_name(cert), issuer, sizeof(issuer) -1);
+        parseCertFields(buf, prefix, "I_", &subject[1]);
+        X509_free(cert);
+    }
+    mprTrace(4, "OpenSSL state: %s", mprGetBufStart(buf));
+    return mprGetBufStart(buf);
 }
 
 
@@ -1754,10 +1953,14 @@ static void disconnectOss(MprSocket *sp)
 static void traceCert(MprSocket *sp)
 {
     MprSsl      *ssl;
+    OpenSocket  *osp;
     X509        *cert;
-    char        subject[260], issuer[260], peer[260];
+    X509_NAME   *xSubject;
+    char        subject[512], issuer[512], peer[512];
 
     ssl = sp->ssl;
+    osp = (OpenSocket*) sp->sslSocket;
+
     mprLog(4, "OpenSSL connected using cipher: \"%s\" from set %s", SSL_get_cipher(osp->handle), ssl->ciphers);
     if (ssl->caFile) {
         mprLog(4, "OpenSSL: Using certificates from %s", ssl->caFile);
@@ -1786,9 +1989,6 @@ static void traceCert(MprSocket *sp)
 static ssize readOss(MprSocket *sp, void *buf, ssize len)
 {
     OpenSocket      *osp;
-    MprSsl          *ssl;
-    X509_NAME       *xSubject;
-    X509            *cert;
     char            ebuf[BIT_MAX_BUFFER];
     ulong           serror;
     int             rc, error, retries, i;
@@ -1847,7 +2047,7 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
             sp->flags |= MPR_SOCKET_EOF;
         }
     } else if (SSL_pending(osp->handle) > 0) {
-        sp->flags |= MPR_SOCKET_PENDING;
+        sp->flags |= MPR_SOCKET_BUFFERED_READ;
         mprRecallWaitHandlerByFd(sp->fd);
     }
     unlock(sp);
@@ -1913,6 +2113,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
     X509            *cert;
     SSL             *handle;
     OpenSocket      *osp;
+    MprSocket       *sp;
     MprSsl          *ssl;
     char            subject[260], issuer[260], peer[260];
     int             error, depth;
@@ -1921,7 +2122,8 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
 
     handle = (SSL*) X509_STORE_CTX_get_app_data(xContext);
     osp = (OpenSocket*) SSL_get_app_data(handle);
-    ssl = osp->sock->ssl;
+    sp = osp->sock;
+    ssl = sp->ssl;
 
     cert = X509_STORE_CTX_get_current_cert(xContext);
     depth = X509_STORE_CTX_get_error_depth(xContext);
@@ -1929,16 +2131,20 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
 
     ok = 1;
     if (X509_NAME_oneline(X509_get_subject_name(cert), subject, sizeof(subject) - 1) < 0) {
+        sp->errorMsg = sclone("Cannot get subject name");
         ok = 0;
     }
     if (X509_NAME_oneline(X509_get_issuer_name(xContext->current_cert), issuer, sizeof(issuer) - 1) < 0) {
+        sp->errorMsg = sclone("Cannot get issuer name");
         ok = 0;
     }
     if (X509_NAME_get_text_by_NID(X509_get_subject_name(xContext->current_cert), NID_commonName, peer, 
             sizeof(peer) - 1) < 0) {
+        sp->errorMsg = sclone("Cannot get peer name");
         ok = 0;
     }
-    if (ok && ssl->verifyPeer && smatch(peer, osp->peerName)) {
+    if (ok && ssl->verifyPeer && osp->peerName && !smatch(peer, osp->peerName)) {
+        sp->errorMsg = sclone("Certificate common name mismatch");
         ok = 0;
     }
     if (ok && ssl->verifyDepth < depth) {
@@ -1948,12 +2154,19 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
     }
     switch (error) {
     case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
-        /* Normal self signed certificate */
     case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
+        /* Normal self signed certificate */
+        if (ssl->verifyIssuer) {
+            sp->errorMsg = sclone("Self-signed certificate");
+            ok = 0;
+        }
+        break;
+
     case X509_V_ERR_CERT_UNTRUSTED:
     case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
         if (ssl->verifyIssuer) {
             /* Issuer can't be verified */
+            sp->errorMsg = sclone("Certificate not trusted");
             ok = 0;
         }
         break;
@@ -1969,6 +2182,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
     case X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE:
     case X509_V_ERR_INVALID_CA:
     default:
+        sp->errorMsg = sfmt("Certificate verification error %d", error);
         ok = 0;
         break;
     }
@@ -1977,7 +2191,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
         mprLog(4, "OpenSSL: Issuer: %s", issuer);
         mprLog(4, "OpenSSL: Peer: %s", peer);
     } else {
-        mprLog(1, "OpenSSL: Certification failed: subject %s (more trace at level 4)", subject);
+        mprLog(3, "OpenSSL: Certificate cannot be verified: subject %s (more trace at level 4)", subject);
         mprLog(4, "OpenSSL: Issuer: %s", issuer);
         mprLog(4, "OpenSSL: Peer: %s", peer);
         mprLog(4, "OpenSSL: Error: %d: %s", error, X509_verify_cert_error_string(error));

@@ -40,12 +40,14 @@
     #define VALLOC 0
 #endif
 
+#if BIT_MEMORY_DEBUG
 /*
     Set this address to break when this address is allocated or freed
     Only used for debug, but defined regardless so we can have constant exports.
  */
-PUBLIC MprMem *stopAlloc = 0;
-PUBLIC int stopSeqno = -1;
+static MprMem *stopAlloc = 0;
+static int stopSeqno = -1;
+#endif
 
 #define GET_MEM(ptr)                ((MprMem*) (((char*) (ptr)) - sizeof(MprMem)))
 #define GET_PTR(mp)                 ((char*) (((char*) mp) + sizeof(MprMem)))
@@ -4215,7 +4217,7 @@ PUBLIC ssize mprPutPadToBuf(MprBuf *bp, int c, ssize count)
 }
 
 
-PUBLIC ssize mprPutFmtToBuf(MprBuf *bp, cchar *fmt, ...)
+PUBLIC ssize mprPutToBuf(MprBuf *bp, cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
@@ -17324,7 +17326,7 @@ PUBLIC void mprSetFilesLimit(int limit)
 #define STATE_TYPE      7               /* Data type */
 #define STATE_COUNT     8
 
-PUBLIC char stateMap[] = {
+static char stateMap[] = {
     /*     STATES:  Normal Percent Modifier Width  Dot  Prec Bits Type */
     /* CLASS           0      1       2       3     4     5    6    7  */
     /* Normal   0 */   0,     0,      0,      0,    0,    0,   0,   0,
@@ -17343,7 +17345,7 @@ PUBLIC char stateMap[] = {
   
     The Class map will map from a specifier letter to a state.
  */
-PUBLIC char classMap[] = {
+static char classMap[] = {
     /*   0  ' '    !     "     #     $     %     &     ' */
              2,    0,    0,    2,    0,    1,    0,    0,
     /*  07   (     )     *     +     ,     -     .     / */
@@ -19272,7 +19274,7 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
     } else if (sp->signo == SIGPIPE || sp->signo == SIGXFSZ) {
         /* Ignore */
 
-#if MACOSX && BIT_DEBUG
+#if EMBEDTHIS
     } else if (sp->signo == SIGSEGV || sp->signo == SIGBUS) {
         printf("PAUSED for watson to debug\n");
         sleep(120);
@@ -21086,19 +21088,17 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         }
         ssl->providerName = providerName;
     }
-    mprLog(4, "Using %s SSL provider", ssl->providerName);
+    mprLog(4, "Using SSL provider: %s", ssl->providerName);
     sp->provider = ssl->provider;
 #if FUTURE
     /* session resumption can cause problems with Nagle. However, appweb opens sockets with nodelay by default */
     sp->flags |= MPR_SOCKET_NODELAY;
     mprSetSocketNoDelay(sp, 1);
 #endif
-    mprLog(4, "Start upgrade socket to TLS");
     return sp->provider->upgradeSocket(sp, ssl, peerName);
 }
 
 
-//  MOB - is this supported in Est?
 PUBLIC void mprAddSslCiphers(MprSsl *ssl, cchar *ciphers)
 {
     assert(ssl);
@@ -21120,33 +21120,33 @@ PUBLIC void mprSetSslCiphers(MprSsl *ssl, cchar *ciphers)
 PUBLIC void mprSetSslKeyFile(MprSsl *ssl, cchar *keyFile)
 {
     assert(ssl);
-    ssl->keyFile = sclone(keyFile);
+    ssl->keyFile = (keyFile && *keyFile) ? sclone(keyFile) : 0;
 }
 
 
 PUBLIC void mprSetSslCertFile(MprSsl *ssl, cchar *certFile)
 {
     assert(ssl);
-    ssl->certFile = sclone(certFile);
+    ssl->certFile = (certFile && *certFile) ? sclone(certFile) : 0;
 }
 
 
 PUBLIC void mprSetSslCaFile(MprSsl *ssl, cchar *caFile)
 {
     assert(ssl);
-    ssl->caFile = sclone(caFile);
+    ssl->caFile = (caFile && *caFile) ? sclone(caFile) : 0;
 }
 
 
-//  MOB - is this supported in Est?
+/* Only supported in OpenSSL */
 PUBLIC void mprSetSslCaPath(MprSsl *ssl, cchar *caPath)
 {
     assert(ssl);
-    ssl->caPath = sclone(caPath);
+    ssl->caPath = (caPath && *caPath) ? sclone(caPath) : 0;
 }
 
 
-//  MOB - is this supported in Est?
+/* Only supported in OpenSSL */
 PUBLIC void mprSetSslProtocols(MprSsl *ssl, int protocols)
 {
     assert(ssl);
@@ -23860,8 +23860,9 @@ PUBLIC void mprSetMinWorkers(int n)
     ws = MPR->workerService;
     lock(ws);
     ws->minThreads = n; 
-    mprTrace(4, "Pre-start %d workers", ws->minThreads);
-    
+    if (n > 0) {
+        mprTrace(4, "Pre-start %d workers", ws->minThreads);
+    }
     while (ws->numThreads < ws->minThreads) {
         worker = createWorker(ws, ws->stackSize);
         ws->numThreads++;
@@ -25477,7 +25478,7 @@ PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
             break;
 
         case 's':                                       /* seconds since epoch */
-            mprPutFmtToBuf(buf, "%d", mprMakeTime(tp) / MS_PER_SEC);
+            mprPutToBuf(buf, "%d", mprMakeTime(tp) / MS_PER_SEC);
             break;
 
         case 'T':

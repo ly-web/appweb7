@@ -23,7 +23,7 @@ typedef struct App {
     int      activeLoadThreads;  /* Still running test threads */
     char     *authType;          /* Authentication: basic|digest */
     int      benchmark;          /* Output benchmarks */
-    cchar    *cabundle;          /* Certificate bundle to use when validating the server certificate */
+    cchar    *ca;                /* Certificate bundle to use when validating the server certificate */
     cchar    *cert;              /* Certificate to identify the client */
     int      chunkSize;          /* Ask for response data to be chunked in this quanta */
     char     *ciphers;           /* Set of acceptable ciphers to use for SSL */
@@ -154,7 +154,7 @@ MAIN(httpMain, int argc, char **argv, char **envp)
 static void manageApp(App *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(app->cabundle);
+        mprMark(app->ca);
         mprMark(app->cert);
         mprMark(app->ciphers);
         mprMark(app->files);
@@ -194,6 +194,7 @@ static void initSettings()
     app->protocol = "HTTP/1.1";
     app->retries = HTTP_RETRIES;
     app->success = 1;
+    app->ca = mprJoinPath(mprGetAppDir(), "http-ca.crt");
 
     /* zero means no timeout */
     app->timeout = 0;
@@ -233,9 +234,9 @@ static bool parseArgs(int argc, char **argv)
             if (nextArg >= argc) {
                 return 0;
             } else {
-                app->cabundle = sclone(argv[++nextArg]);
-                if (!mprPathExists(app->cabundle, R_OK)) {
-                    mprError("Cannot find ca file %s", app->cabundle);
+                app->ca = sclone(argv[++nextArg]);
+                if (!mprPathExists(app->ca, R_OK)) {
+                    mprError("Cannot find ca file %s", app->ca);
                     return 0;
                 }
             }
@@ -567,9 +568,9 @@ static bool parseArgs(int argc, char **argv)
             mprSetSslCertFile(app->ssl, app->cert);
             mprSetSslKeyFile(app->ssl, app->key);
         }
-        if (app->cabundle) {
-            //  MOB - what about caPath?
-            mprSetSslCaFile(app->ssl, app->cabundle);
+        if (app->ca) {
+            mprLog(4, "Using CA: %s", app->ca);
+            mprSetSslCaFile(app->ssl, app->ca);
         }
         if (app->verifyIssuer == -1) {
             app->verifyIssuer = app->verifyPeer ? 1 : 0;

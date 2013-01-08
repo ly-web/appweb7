@@ -6,7 +6,7 @@ if (!Config.SSL) {
     test.skip("SSL not enabled in ejs")
 
 } else if (App.config.bit_matrixssl) {
-    const HTTPS = App.config.uris.matrixssl || "https://127.0.0.1:4210"
+    const HTTPS = App.config.uris.matrixssl || "https://127.0.0.1:6443"
     let http: Http = new Http
 
     /*
@@ -33,5 +33,5 @@ if (!Config.SSL) {
     }
 
 } else {
-    test.skip("SSL not enabled")
+    test.skip("MatrixSSL not enabled")
 }
