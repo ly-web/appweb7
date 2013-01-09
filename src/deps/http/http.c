@@ -235,7 +235,10 @@ static bool parseArgs(int argc, char **argv)
                 return 0;
             } else {
                 app->ca = sclone(argv[++nextArg]);
-                if (!mprPathExists(app->ca, R_OK)) {
+                if (smatch(app->ca, "none")) {
+                    app->ca = MPR->emptyString;
+                }
+                if (app->ca[0] && !mprPathExists(app->ca, R_OK)) {
                     mprError("Cannot find ca file %s", app->ca);
                     return 0;
                 }
@@ -569,7 +572,7 @@ static bool parseArgs(int argc, char **argv)
             mprSetSslKeyFile(app->ssl, app->key);
         }
         if (app->ca) {
-            mprLog(4, "Using CA: %s", app->ca);
+            mprLog(4, "Using CA: \"%s\"", app->ca);
             mprSetSslCaFile(app->ssl, app->ca);
         }
         if (app->verifyIssuer == -1) {

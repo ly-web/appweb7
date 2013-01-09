@@ -6439,6 +6439,7 @@ typedef int (*MprSocketProc)(void *data, int mask);
     @stability Stable
  */
 typedef struct MprSocketProvider {
+    char    *name;
     void    *data;
     //  MOB - document these APIs
     void    (*closeSocket)(struct MprSocket *socket, bool gracefully);
@@ -7037,6 +7038,7 @@ typedef struct MprSsl {
     int             verifyIssuer;       /**< Set if the certificate issuer should be also verified */
     int             verifyDepth;        /**< Set if the cert chain depth should be verified */
     int             protocols;          /**< SSL protocols */
+    int             changed;            /**< Set if there is a change in the SSL config. Reset by providers */
     MprMutex        *mutex;             /**< Multithread sync */
 } MprSsl;
 

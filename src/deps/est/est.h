@@ -1500,6 +1500,7 @@ extern "C" {
 #define BADCERT_REVOKED                 2
 #define BADCERT_CN_MISMATCH             4
 #define BADCERT_NOT_TRUSTED             8
+#define BADCERT_SELF_SIGNED             0x10
 
 /*
  * DER constants
@@ -1712,7 +1713,8 @@ extern "C" {
      *                      BADCERT_EXPIRED --
      *                      BADCERT_REVOKED --
      *                      BADCERT_CN_MISMATCH --
-     *                      BADCERT_NOT_TRUSTED
+     *                      BADCERT_NOT_TRUSTED --
+     *                      BADCERT_SELF_SIGNED
      *
      * \note           TODO: add two arguments, depth and crl
      */
@@ -2175,6 +2177,7 @@ extern "C" {
      *                      BADCERT_REVOKED
      *                      BADCERT_CN_MISMATCH
      *                      BADCERT_NOT_TRUSTED
+     *                      BADCERT_SELF_SIGNED
      */
     PUBLIC int ssl_get_verify_result(ssl_context * ssl);
 

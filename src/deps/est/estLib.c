@@ -8394,7 +8394,6 @@ static int ssl_write_client_hello(ssl_context * ssl)
         *p++ = (uchar)((ssl->hostname_len) & 0xFF);
 
         memcpy(p, ssl->hostname, ssl->hostname_len);
-
         p += ssl->hostname_len;
     }
     ssl->out_msglen = p - buf;
@@ -9891,7 +9890,7 @@ int *ssl_create_ciphers(cchar *cipherSuite)
     ciphers = malloc((nciphers + 1) * sizeof(int));
 
     if (!cipherSuite) {
-        memcpy(ciphers, ssl_default_ciphers, nciphers);
+        memcpy(ciphers, ssl_default_ciphers, nciphers * sizeof(int));
         ciphers[nciphers] = 0;
         return ciphers;
     }
@@ -11012,7 +11011,8 @@ int ssl_parse_certificate(ssl_context * ssl)
         }
         ret = x509parse_verify(ssl->peer_cert, ssl->ca_chain, ssl->peer_cn, &ssl->verify_result);
         if (ret != 0) {
-            SSL_DEBUG_MSG(1, ("x509_verify_cert %d, verify_result %d", ret, ssl->verify_result));
+            //  MOB - this trace is misleading if not verifying peer or issuer
+            SSL_DEBUG_MSG(3, ("x509_verify_cert %d, verify_result %d", ret, ssl->verify_result));
         }
         if (ssl->authmode != SSL_VERIFY_REQUIRED) {
             ret = 0;
@@ -11543,11 +11543,11 @@ PUBLIC int ssl_handshake(ssl_context * ssl)
     SSL_DEBUG_MSG(2, ("<= handshake"));
     
     if (ssl->state == SSL_HANDSHAKE_OVER && old_state != SSL_HANDSHAKE_OVER) {
-        SSL_DEBUG_MSG(1, ("EST using cipher: %s", ssl_get_cipher(ssl)));
+        SSL_DEBUG_MSG(1, ("using cipher: %s", ssl_get_cipher(ssl)));
         if (ssl->peer_cert) {
-            SSL_DEBUG_MSG(2, ("Peer certificate: %s", x509parse_cert_info("", cbuf, sizeof(cbuf), ssl->peer_cert)));
+            SSL_DEBUG_MSG(1, ("Peer certificate: %s", x509parse_cert_info("", cbuf, sizeof(cbuf), ssl->peer_cert)));
         } else {
-            SSL_DEBUG_MSG(2, ("Peer supplied no certificate"));
+            SSL_DEBUG_MSG(1, ("Peer supplied no certificate"));
         }
     }
     return ret;
@@ -13323,7 +13323,7 @@ int x509parse_dn_gets(char *prefix, char *buf, int bufsize, x509_name * dn)
         s[i] = '\0';
         p += snfmt(p, end - p, "%s", s);
         name = name->next;
-        p += snfmt(p, end - p, ", ");
+        p += snfmt(p, end - p, ",");
     }
     return p - buf;
 }
@@ -13334,17 +13334,18 @@ int x509parse_dn_gets(char *prefix, char *buf, int bufsize, x509_name * dn)
  */
 char *x509parse_cert_info(char *prefix, char *buf, int bufsize, x509_cert *crt)
 {
+    //  MOB - should not use a static buffer pbuf
     char    *end, *p, *cipher, pbuf[5120];
     int     i, n;
 
     p = buf;
     end = &buf[bufsize];
-    p += snfmt(p, end - p, "%sVERSION=%d, %sSERIAL=", prefix, crt->version, prefix);
+    p += snfmt(p, end - p, "%sVERSION=%d,%sSERIAL=", prefix, crt->version, prefix);
     n = (crt->serial.len <= 32) ? crt->serial.len : 32;
     for (i = 0; i < n; i++) {
         p += snfmt(p, end - p, "%02X%s", crt->serial.p[i], (i < n - 1) ? ":" : "");
     }
-    p += snfmt(p, end - p, ", ");
+    p += snfmt(p, end - p, ",");
 
     snfmt(pbuf, sizeof(pbuf), "%sS_", prefix);
     p += x509parse_dn_gets(pbuf, p, end - p, &crt->subject);
@@ -13352,10 +13353,10 @@ char *x509parse_cert_info(char *prefix, char *buf, int bufsize, x509_cert *crt)
     snfmt(pbuf, sizeof(pbuf), "%sI_", prefix);
     p += x509parse_dn_gets(pbuf, p, end - p, &crt->issuer);
 
-    p += snfmt(p, end - p, "%sSTART=%04d-%02d-%02d %02d:%02d:%02d, ", prefix, crt->valid_from.year, crt->valid_from.mon,
+    p += snfmt(p, end - p, "%sSTART=%04d-%02d-%02d %02d:%02d:%02d,", prefix, crt->valid_from.year, crt->valid_from.mon,
         crt->valid_from.day, crt->valid_from.hour, crt->valid_from.min, crt->valid_from.sec);
 
-    p += snfmt(p, end - p, "%sEND=%04d-%02d-%02d %02d:%02d:%02d, ", prefix, crt->valid_to.year, crt->valid_to.mon, 
+    p += snfmt(p, end - p, "%sEND=%04d-%02d-%02d %02d:%02d:%02d,", prefix, crt->valid_to.year, crt->valid_to.mon, 
         crt->valid_to.day, crt->valid_to.hour, crt->valid_to.min, crt->valid_to.sec);
 
     switch (crt->sig_oid1.p[8]) {
@@ -13375,9 +13376,8 @@ char *x509parse_cert_info(char *prefix, char *buf, int bufsize, x509_cert *crt)
         cipher = "RSA";
         break;
     }
-    //  MOB - This is the cipher encrypting the cert
-    p += snfmt(p, end - p, "%sCIPHER=%s, ", prefix, cipher);
-    p += snfmt(p, end - p, "%sKEYSIZE=%d, ", prefix, crt->rsa.N.n * (int)sizeof(ulong) * 8);
+    p += snfmt(p, end - p, "%sCIPHER=%s,", prefix, cipher);
+    p += snfmt(p, end - p, "%sKEYSIZE=%d,", prefix, crt->rsa.N.n * (int)sizeof(ulong) * 8);
     return buf;
 }
 
@@ -13504,6 +13504,12 @@ int x509parse_verify(x509_cert *crt, x509_cert *trust_ca, char *cn, int *flags)
             break;
         }
         trust_ca = trust_ca->next;
+    }
+    if (*flags & BADCERT_NOT_TRUSTED) {
+        if (crt->issuer_raw.len == crt->subject_raw.len && 
+                memcmp(crt->issuer_raw.p, crt->subject_raw.p, crt->issuer_raw.len) == 0) {
+            *flags |= BADCERT_SELF_SIGNED;
+        }
     }
     if (*flags != 0) {
         return EST_ERR_X509_CERT_VERIFY_FAILED;

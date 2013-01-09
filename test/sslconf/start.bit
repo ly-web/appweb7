@@ -4,12 +4,15 @@
     This file provides targets to help you get going with SSL (using OpenSSL). 
     WARNING: All these certificates are for internal use only.
 
-    Use "bit certReq" to generate a certificate request to send to a certificate authority like Verisign.
+    To generate a certificate request to send to a certificate authority like Verisign, do:
+    This will create a certificate request file in "server.csr" and a private key in "server.key"
+
+        bit certReq
  
     To use appweb with HTTP, you need a server certificate. 
     This command will generate a self-signed test certificate called "self.crt" with a private key "self.key".
  
-        bit selfSignedCert
+        bit selfSigned
  
     To create a CA and then a server cert based on this CA, do:
     This command will generate a CA certificate in ca.crt with a CA private key in ca.key. The last minted certificate
@@ -37,7 +40,7 @@ Bit.load({
             WARNING: Self-signed server certificate for testing ONLY.
             Use a self-signed certificate when you just want quick and dirty testing.
             The browser will say it doesn't recognize this certificate, but that is ok for testing only.
-            Create a private key in server.key with a password of "server". Decrypt this in server.key.pem.
+            Creates a private key in self.key.
 
             See: http://www.sslshopper.com/article-most-common-openssl-commands.html
          */
@@ -45,7 +48,7 @@ Bit.load({
             shell: "
                 umask 77
                 openssl genrsa -out self.key 2048
-                openssl req -new -x509 -days 365 -key server.key -out self.crt < response.self 
+                openssl req -new -x509 -days 365 -key self.key -out self.crt < response.self 
             ",
         },
 
@@ -79,6 +82,7 @@ Bit.load({
 
         /*
             Generate a certificate request to send to a certificate authority like Verisign
+            Generates a server key in "server.key"
          */
         certReq: {
             shell: "

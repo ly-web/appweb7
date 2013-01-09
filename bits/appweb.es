@@ -92,6 +92,7 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
     install(bit.dir.bin + '/esp-www', p.bin)
     install(bit.dir.bin + '/esp-appweb.conf', p.bin)
     install(bit.dir.inc.join('*.h'), p.inc)
+    install(bit.dir.bin.join('http-ca.crt'), p.bin)
 
     if (bit.ssl && bit.platform.os == 'linux') {
         install(bit.dir.bin.join('*.' + bit.ext.shobj + '*'), p.bin, {strip: strip, permissions: 0755})

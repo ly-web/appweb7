@@ -10,16 +10,24 @@
 #if BIT_SSL
 /*********************************** Code *************************************/
 
-static bool checkSsl(MaState *state)
+static void checkSsl(MaState *state)
 {
-    if (state->route->ssl == 0) {
-        if (state->route->parent && state->route->parent->ssl) {
-            state->route->ssl = mprCloneSsl(state->route->parent->ssl);
+    HttpRoute   *route, *parent;
+    
+    route = state->route;
+    parent = route->parent;
+
+    if (route->ssl == 0) {
+        if (parent && parent->ssl) {
+            route->ssl = mprCloneSsl(parent->ssl);
         } else {
-            state->route->ssl = mprCreateSsl(1);
+            route->ssl = mprCreateSsl(1);
+        }
+    } else {
+        if (parent && route->ssl == parent->ssl) {
+            route->ssl = mprCloneSsl(parent->ssl);
         }
     }
-    return 1;
 }
 
 

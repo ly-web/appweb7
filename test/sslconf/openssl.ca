@@ -39,9 +39,9 @@ countryName				= US
 stateOrProvinceName		= Washington
 localityName			= Seattle
 0.organizationName		= Example.com
-organizationalUnitName	= Production
+organizationalUnitName	= Licensing
 commonName				= www.example.com
-emailAddress			= admin@example.com
+emailAddress			= licensing@example.com
 
 [ rootCaExtensions]
 basicConstraints 		= CA:true

@@ -46,6 +46,9 @@
 #ifndef BIT_HTTP_STEALTH
     #define BIT_HTTP_STEALTH 1
 #endif
+#ifndef BIT_MPR_LOGGING
+    #define BIT_MPR_LOGGING 1
+#endif
 #ifndef BIT_MPR_MANAGER
     #define BIT_MPR_MANAGER "appman"
 #endif
@@ -77,7 +80,7 @@
     #define BIT_VERSION "4.3.0"
 #endif
 #ifndef BIT_WITHOUT_ALL
-    #define BIT_WITHOUT_ALL "doxygen,dsi,est,ejs,man,man2html,pmaker,ejscript,php,matrixssl,openssl"
+    #define BIT_WITHOUT_ALL "doxygen,dsi,est,ejs,man,man2html,pmaker,ejscript,php"
 #endif
 
 /* Prefixes */
@@ -202,6 +205,9 @@
 #endif
 #ifndef BIT_PACK_MATRIXSSL
     #define BIT_PACK_MATRIXSSL 0
+#endif
+#ifndef BIT_PACK_MOCANA
+    #define BIT_PACK_MOCANA 0
 #endif
 #ifndef BIT_PACK_OPENSSL
     #define BIT_PACK_OPENSSL 0
