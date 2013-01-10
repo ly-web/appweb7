@@ -5,7 +5,7 @@
 if (!Config.SSL) {
     test.skip("SSL not enabled in ejs")
 
-} else if (App.config.bit_openssl !== false) {
+} else if (App.config.bit_openssl !== 0) {
     let http: Http = new Http
 
     http.retries = 0

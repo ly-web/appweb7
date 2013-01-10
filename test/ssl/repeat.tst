@@ -5,7 +5,7 @@
 if (!Config.SSL) {
     test.skip("SSL not enabled in ejs")
 
-} else if (App.config.bit_ssl !== false) {
+} else if (App.config.bit_ssl !== 0) {
     const HTTPS = App.config.uris.ssl || "https://127.0.0.1:4443"
     let http: Http = new Http
 
