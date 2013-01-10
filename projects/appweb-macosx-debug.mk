@@ -28,6 +28,7 @@ all: prep \
         $(CONFIG)/bin/libmprssl.dylib \
         $(CONFIG)/bin/appman \
         $(CONFIG)/bin/makerom \
+        $(CONFIG)/bin/ca.crt \
         $(CONFIG)/bin/libpcre.dylib \
         $(CONFIG)/bin/libhttp.dylib \
         $(CONFIG)/bin/http \
@@ -70,6 +71,7 @@ clean:
 	rm -rf $(CONFIG)/bin/libmprssl.dylib
 	rm -rf $(CONFIG)/bin/appman
 	rm -rf $(CONFIG)/bin/makerom
+	rm -rf $(CONFIG)/bin/ca.crt
 	rm -rf $(CONFIG)/bin/libpcre.dylib
 	rm -rf $(CONFIG)/bin/libhttp.dylib
 	rm -rf $(CONFIG)/bin/http
@@ -197,6 +199,10 @@ $(CONFIG)/bin/makerom:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/makerom.o
 	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS)
+
+$(CONFIG)/bin/ca.crt: 
+	rm -fr $(CONFIG)/bin/ca.crt
+	cp -r src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
 
 $(CONFIG)/inc/pcre.h:  \
         $(CONFIG)/inc/bit.h

@@ -49,6 +49,9 @@ ${CC} -c -o ${CONFIG}/obj/makerom.o -arch x86_64 ${CFLAGS} -DEMBEDTHIS=1 ${DFLAG
 
 ${CC} -o ${CONFIG}/bin/makerom -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/makerom.o -lmpr ${LIBS}
 
+rm -rf ${CONFIG}/bin/ca.crt
+cp -r src/deps/est/ca.crt ${CONFIG}/bin/ca.crt
+
 rm -rf ${CONFIG}/inc/pcre.h
 cp -r src/deps/pcre/pcre.h ${CONFIG}/inc/pcre.h
 

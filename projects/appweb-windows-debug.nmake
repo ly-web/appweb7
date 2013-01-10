@@ -29,6 +29,7 @@ all: prep \
         $(CONFIG)\bin\libmprssl.dll \
         $(CONFIG)\bin\appman.exe \
         $(CONFIG)\bin\makerom.exe \
+        $(CONFIG)\bin\ca.crt \
         $(CONFIG)\bin\libpcre.dll \
         $(CONFIG)\bin\libhttp.dll \
         $(CONFIG)\bin\http.exe \
@@ -73,6 +74,7 @@ clean:
 	-if exist $(CONFIG)\bin\libmprssl.dll del /Q $(CONFIG)\bin\libmprssl.dll
 	-if exist $(CONFIG)\bin\appman.exe del /Q $(CONFIG)\bin\appman.exe
 	-if exist $(CONFIG)\bin\makerom.exe del /Q $(CONFIG)\bin\makerom.exe
+	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
 	-if exist $(CONFIG)\bin\libpcre.dll del /Q $(CONFIG)\bin\libpcre.dll
 	-if exist $(CONFIG)\bin\libhttp.dll del /Q $(CONFIG)\bin\libhttp.dll
 	-if exist $(CONFIG)\bin\http.exe del /Q $(CONFIG)\bin\http.exe
@@ -200,6 +202,10 @@ $(CONFIG)\bin\makerom.exe:  \
         $(CONFIG)\bin\libmpr.dll \
         $(CONFIG)\obj\makerom.obj
 	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj libmpr.lib $(LIBS)
+
+$(CONFIG)\bin\ca.crt: 
+	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
+	copy /Y src\deps\est\ca.crt $(CONFIG)\bin\ca.crt
 
 $(CONFIG)\inc\pcre.h:  \
         $(CONFIG)\inc\bit.h
