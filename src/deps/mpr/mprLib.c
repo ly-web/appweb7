@@ -19881,7 +19881,7 @@ PUBLIC void mprDisconnectSocket(MprSocket *sp)
 static void disconnectSocket(MprSocket *sp)
 {
     char    buf[BIT_MAX_BUFFER];
-    int     i, fd;
+    int     i;
 
     /*  
         Defensive lock buster. Use try lock incase an operation is blocked somewhere with a lock asserted. 
@@ -19908,7 +19908,6 @@ static void disconnectSocket(MprSocket *sp)
                 break;
             }
         }
-        fd = sp->fd;
         sp->flags |= MPR_SOCKET_EOF | MPR_SOCKET_DISCONNECTED;
         if (sp->handler) {
             mprRecallWaitHandler(sp->handler);

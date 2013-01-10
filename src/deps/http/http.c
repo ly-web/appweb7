@@ -587,6 +587,9 @@ static bool parseArgs(int argc, char **argv)
         mprVerifySslPeer(NULL, 0);
     }
 }
+#else
+    /* Suppress comp warning */
+    mprNop(&ssl);
 #endif
     return 1;
 }
