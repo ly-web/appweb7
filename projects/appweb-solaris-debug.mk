@@ -153,7 +153,7 @@ $(CONFIG)/obj/mprLib.o: \
         src/deps/mpr/mprLib.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprLib.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
+	$(CC) -c -o $(CONFIG)/obj/mprLib.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
 
 $(CONFIG)/bin/libmpr.so:  \
         $(CONFIG)/inc/mpr.h \
@@ -171,7 +171,7 @@ $(CONFIG)/obj/mprSsl.o: \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h \
         $(CONFIG)/inc/est.h
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.so:  \
         $(CONFIG)/bin/libmpr.so \
@@ -182,7 +182,7 @@ $(CONFIG)/obj/manager.o: \
         src/deps/mpr/manager.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/manager.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/manager.c
+	$(CC) -c -o $(CONFIG)/obj/manager.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/manager.c
 
 $(CONFIG)/bin/appman:  \
         $(CONFIG)/bin/libmpr.so \
@@ -193,7 +193,7 @@ $(CONFIG)/obj/makerom.o: \
         src/deps/mpr/makerom.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/makerom.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
+	$(CC) -c -o $(CONFIG)/obj/makerom.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
 
 $(CONFIG)/bin/makerom:  \
         $(CONFIG)/bin/libmpr.so \
@@ -213,7 +213,7 @@ $(CONFIG)/obj/pcre.o: \
         src/deps/pcre/pcre.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/pcre.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/deps/pcre/pcre.c
+	$(CC) -c -o $(CONFIG)/obj/pcre.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/pcre/pcre.c
 
 $(CONFIG)/bin/libpcre.so:  \
         $(CONFIG)/inc/pcre.h \
@@ -231,7 +231,7 @@ $(CONFIG)/obj/httpLib.o: \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/http.h \
         $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/httpLib.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
+	$(CC) -c -o $(CONFIG)/obj/httpLib.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
 
 $(CONFIG)/bin/libhttp.so:  \
         $(CONFIG)/bin/libmpr.so \
@@ -244,7 +244,7 @@ $(CONFIG)/obj/http.o: \
         src/deps/http/http.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/http.h
-	$(CC) -c -o $(CONFIG)/obj/http.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/deps/http/http.c
+	$(CC) -c -o $(CONFIG)/obj/http.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/http.c
 
 $(CONFIG)/bin/http:  \
         $(CONFIG)/bin/libhttp.so \
@@ -264,7 +264,7 @@ $(CONFIG)/obj/sqlite3.o: \
         src/deps/sqlite/sqlite3.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/sqlite3.h
-	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -fPIC $(LDFLAGS) -w -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -fPIC $(LDFLAGS) -w $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
 
 $(CONFIG)/bin/libsqlite3.so:  \
         $(CONFIG)/inc/sqlite3.h \
@@ -275,7 +275,7 @@ $(CONFIG)/obj/sqlite.o: \
         src/deps/sqlite/sqlite.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/sqlite3.h
-	$(CC) -c -o $(CONFIG)/obj/sqlite.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
 
 $(CONFIG)/bin/sqlite:  \
         $(CONFIG)/bin/libsqlite3.so \
@@ -300,37 +300,37 @@ $(CONFIG)/obj/config.o: \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h \
         $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/config.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/config.c
+	$(CC) -c -o $(CONFIG)/obj/config.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/config.c
 
 $(CONFIG)/obj/convenience.o: \
         src/convenience.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/convenience.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/convenience.c
+	$(CC) -c -o $(CONFIG)/obj/convenience.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/convenience.c
 
 $(CONFIG)/obj/dirHandler.o: \
         src/dirHandler.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/dirHandler.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/dirHandler.c
+	$(CC) -c -o $(CONFIG)/obj/dirHandler.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dirHandler.c
 
 $(CONFIG)/obj/fileHandler.o: \
         src/fileHandler.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/fileHandler.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/fileHandler.c
+	$(CC) -c -o $(CONFIG)/obj/fileHandler.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fileHandler.c
 
 $(CONFIG)/obj/log.o: \
         src/log.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/log.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/log.c
+	$(CC) -c -o $(CONFIG)/obj/log.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
 
 $(CONFIG)/obj/server.o: \
         src/server.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/server.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/server.c
+	$(CC) -c -o $(CONFIG)/obj/server.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server.c
 
 $(CONFIG)/bin/libappweb.so:  \
         $(CONFIG)/bin/libhttp.so \
@@ -374,19 +374,19 @@ $(CONFIG)/obj/edi.o: \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/edi.h \
         $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/edi.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/esp/edi.c
+	$(CC) -c -o $(CONFIG)/obj/edi.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/edi.c
 
 $(CONFIG)/obj/espAbbrev.o: \
         src/esp/espAbbrev.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/esp/espAbbrev.c
+	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espAbbrev.c
 
 $(CONFIG)/obj/espFramework.o: \
         src/esp/espFramework.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espFramework.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/esp/espFramework.c
+	$(CC) -c -o $(CONFIG)/obj/espFramework.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espFramework.c
 
 $(CONFIG)/obj/espHandler.o: \
         src/esp/espHandler.c \
@@ -394,26 +394,26 @@ $(CONFIG)/obj/espHandler.o: \
         $(CONFIG)/inc/appweb.h \
         $(CONFIG)/inc/esp.h \
         $(CONFIG)/inc/edi.h
-	$(CC) -c -o $(CONFIG)/obj/espHandler.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/esp/espHandler.c
+	$(CC) -c -o $(CONFIG)/obj/espHandler.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHandler.c
 
 $(CONFIG)/obj/espHtml.o: \
         src/esp/espHtml.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/esp.h \
         $(CONFIG)/inc/edi.h
-	$(CC) -c -o $(CONFIG)/obj/espHtml.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
+	$(CC) -c -o $(CONFIG)/obj/espHtml.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
 
 $(CONFIG)/obj/espSession.o: \
         src/esp/espSession.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espSession.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/esp/espSession.c
+	$(CC) -c -o $(CONFIG)/obj/espSession.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espSession.c
 
 $(CONFIG)/obj/espTemplate.o: \
         src/esp/espTemplate.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espTemplate.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/esp/espTemplate.c
+	$(CC) -c -o $(CONFIG)/obj/espTemplate.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espTemplate.c
 
 $(CONFIG)/obj/mdb.o: \
         src/esp/mdb.c \
@@ -422,14 +422,14 @@ $(CONFIG)/obj/mdb.o: \
         $(CONFIG)/inc/edi.h \
         $(CONFIG)/inc/mdb.h \
         $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/mdb.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/esp/mdb.c
+	$(CC) -c -o $(CONFIG)/obj/mdb.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/mdb.c
 
 $(CONFIG)/obj/sdb.o: \
         src/esp/sdb.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h \
         $(CONFIG)/inc/edi.h
-	$(CC) -c -o $(CONFIG)/obj/sdb.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
+	$(CC) -c -o $(CONFIG)/obj/sdb.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
 
 $(CONFIG)/bin/libmod_esp.so:  \
         $(CONFIG)/bin/libappweb.so \
@@ -452,7 +452,7 @@ $(CONFIG)/obj/esp.o: \
         src/esp/esp.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/esp.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/esp/esp.c
+	$(CC) -c -o $(CONFIG)/obj/esp.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/esp.c
 
 $(CONFIG)/bin/esp:  \
         $(CONFIG)/bin/libappweb.so \
@@ -484,7 +484,7 @@ $(CONFIG)/obj/cgiHandler.o: \
         src/modules/cgiHandler.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
+	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
 
 $(CONFIG)/bin/libmod_cgi.so:  \
         $(CONFIG)/bin/libappweb.so \
@@ -495,7 +495,7 @@ $(CONFIG)/obj/authpass.o: \
         src/utils/authpass.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/authpass.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/utils/authpass.c
+	$(CC) -c -o $(CONFIG)/obj/authpass.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/authpass.c
 
 $(CONFIG)/bin/authpass:  \
         $(CONFIG)/bin/libappweb.so \
@@ -505,7 +505,7 @@ $(CONFIG)/bin/authpass:  \
 $(CONFIG)/obj/cgiProgram.o: \
         src/utils/cgiProgram.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/utils/cgiProgram.c
+	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/cgiProgram.c
 
 $(CONFIG)/bin/cgiProgram:  \
         $(CONFIG)/obj/cgiProgram.o
@@ -515,7 +515,7 @@ $(CONFIG)/obj/setConfig.o: \
         src/utils/setConfig.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/setConfig.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/utils/setConfig.c
+	$(CC) -c -o $(CONFIG)/obj/setConfig.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/setConfig.c
 
 $(CONFIG)/bin/setConfig:  \
         $(CONFIG)/bin/libmpr.so \
@@ -527,7 +527,7 @@ $(CONFIG)/obj/appweb.o: \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h \
         $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/appweb.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/server/appweb.c
+	$(CC) -c -o $(CONFIG)/obj/appweb.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/appweb.c
 
 $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.so \
@@ -552,13 +552,13 @@ $(CONFIG)/obj/testAppweb.o: \
         test/testAppweb.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/testAppweb.h
-	$(CC) -c -o $(CONFIG)/obj/testAppweb.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
+	$(CC) -c -o $(CONFIG)/obj/testAppweb.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
 
 $(CONFIG)/obj/testHttp.o: \
         test/testHttp.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/testAppweb.h
-	$(CC) -c -o $(CONFIG)/obj/testHttp.o -fPIC $(LDFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testHttp.c
+	$(CC) -c -o $(CONFIG)/obj/testHttp.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHttp.c
 
 $(CONFIG)/bin/testAppweb:  \
         $(CONFIG)/bin/libappweb.so \
