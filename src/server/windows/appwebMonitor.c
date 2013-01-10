@@ -112,7 +112,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
             err++;
         }
         if (err) {
-            mprUserError("Bad command line: %s\n"
+            mprError("Bad command line: %s\n"
                 "  Usage: %s [options]\n"
                 "  Switches:\n"
                 "    --manage             # Launch browser to manage",
@@ -126,11 +126,11 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         return 0;
     }
     if (findInstance()) {
-        mprUserError("Application %s is already active.", mprGetAppTitle());
+        mprError("Application %s is already active.", mprGetAppTitle());
         return MPR_ERR_BUSY;
     }
     if (mprInitWindow() < 0) {
-        mprUserError("Can't initialize application Window");
+        mprError("Can't initialize application Window");
         return MPR_ERR_CANT_INITIALIZE;
     }
     app->appHwnd = mprGetHwnd();
@@ -147,7 +147,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
 
     } else {
         if (openMonitorIcon() < 0) {
-            mprUserError("Can't open %s tray", mprGetAppName());
+            mprError("Can't open %s tray", mprGetAppName());
         } else {
             eventLoop();
             closeMonitorIcon();
