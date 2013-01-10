@@ -1107,6 +1107,10 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     } else {
         verifyMode = SSL_VERIFY_OPTIONAL;
     }
+    if (verifyMode == SSL_VERIFY_OPTIONAL && !ssl->caFile) {
+        mprError("Can't verify peer certificate without a defined CA bundle");
+        verifyMode = SSL_VERIFY_NO_CHECK;
+    }
     ssl_set_authmode(&est->ctx, verifyMode);
     ssl_set_rng(&est->ctx, havege_rand, &est->hs);
 	ssl_set_dbg(&est->ctx, estTrace, NULL);
