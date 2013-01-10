@@ -1,11 +1,11 @@
 /*
-    matrixssl.tst - Test MatrixSSL
+    openssl.tst - Test OpenSSL
  */
 
 if (!Config.SSL) {
     test.skip("SSL not enabled in ejs")
 
-} else if (App.config.bit_matrixssl !== false) {
+} else if (App.config.bit_openssl !== false) {
     let http: Http = new Http
 
     http.retries = 0
@@ -13,7 +13,7 @@ if (!Config.SSL) {
     assert(http.verify == true)
  
     //  Verify the server cert and send a client cert 
-    endpoint = App.config.uris.matrixssl || "https://127.0.0.1:8443"
+    endpoint = App.config.uris.openssl || "https://127.0.0.1:7443"
     http.key = '../sslconf/test.key'
     http.certificate = '../sslconf/test.crt'
     http.get(endpoint + '/index.html')

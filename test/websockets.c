@@ -39,7 +39,7 @@ static void echo_callback(HttpConn *conn, int event, int arg)
     traceEvent(conn, event, arg);
     if (event == HTTP_EVENT_READABLE) {
         packet = httpGetPacket(conn->readq);
-        assure(packet);
+        assert(packet);
         /* Ignore precedding packets and just trace the last */
         if (packet->last) {
             ws = conn->rx->webSocket;

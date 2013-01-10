@@ -1,5 +1,5 @@
 /*
-    est.tst - EST SSL tests
+    cert.tst - Test SSL certificates
  */
 
 if (!Config.SSL) {
@@ -7,24 +7,15 @@ if (!Config.SSL) {
 
 } else if (App.config.bit_ssl !== false) {
     let http: Http
-    let providers
 
-    if (global.test) {
-dump(App.config)
-        providers = []
-        for each (provider in ['est', 'matrixssl', 'mocana', 'openssl']) {
-            if (App.config['bit_' + provider]) {
-                providers.push(provider)
-            }
+    for each (let provider in Http.providers) {
+        if (provider == 'matrixssl') {
+            //  MatrixSSL doesn't support certificate state yet
+            continue
         }
-    } else {
-        providers = ['est', 'openssl']
-    }
-
-    for each (provider in providers) {
         http = new Http
         http.provider = provider;
-        http.ca = 'sslconf/ca.crt'
+        http.ca = '../sslconf/ca.crt'
         http.verify = true
         http.key = null
         http.certificate = null
@@ -56,7 +47,7 @@ dump(App.config)
 
         //  Test a server self-signed cert. Verify but not the issuer.
         //  Note in a self-signed cert the subject == issuer
-        let endpoint = App.config.uris.ssl || "https://127.0.0.1:5443"
+        let endpoint = App.config.uris.selfcert || "https://127.0.0.1:5443"
         http.verify = true
         http.verifyIssuer = false
         http.get(endpoint + '/index.html')
@@ -67,18 +58,19 @@ dump(App.config)
         assert(!http.info.CLIENT_S_CN)
         http.close()
 
-        //  Test SSL with a client cert and a server self-signed cert 
-        endpoint = App.config.uris.clientcert || "https://127.0.0.1:5443"
-        http.key = 'sslconf/test.key'
-        http.certificate = 'sslconf/test.crt'
-        http.verify = false
+        //  Test SSL with a client cert 
+        endpoint = App.config.uris.clientcert || "https://127.0.0.1:6443"
+        http.key = '../sslconf/test.key'
+        http.certificate = '../sslconf/test.crt'
+        // http.verify = false
         http.get(endpoint + '/index.html')
         assert(http.status == 200) 
         // assert(info.PROVIDER == provider)
         assert(http.info.CLIENT_S_CN == 'localhost')
         assert(http.info.SERVER_S_CN == 'localhost')
-        assert(http.info.SERVER_I_OU == http.info.SERVER_S_OU)
-        assert(http.info.SERVER_I_EMAIL == 'dev@example.com')
+        assert(http.info.SERVER_I_OU != http.info.SERVER_S_OU)
+        assert(http.info.SERVER_I_EMAIL == 'licensing@example.com')
+        http.close()
     }
 
 } else {

@@ -2,8 +2,8 @@
     ssl.tst - WebSocket over SSL tests
  */
 
-const SSL_PORT = App.config.test.http_port || "4110"
-const WS = "wss://127.0.0.1:" + SSL_PORT + "/websockets/basic/ssl"
+const HTTPS = App.config.test.http_port || "https://localhost:4443"
+var WS = HTTPS.replace('https', 'wss') + '/websockets/basic/ssl'
 const TIMEOUT = 5000
 
 assert(WebSocket)

@@ -7013,10 +7013,14 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count);
 
 /************************************ SSL *************************************/
 
+#if UNUSED
 #define MPR_DEFAULT_SERVER_CERT_FILE    "server.crt"
 #define MPR_DEFAULT_SERVER_KEY_FILE     "server.key.pem"
 #define MPR_DEFAULT_CLIENT_CERT_FILE    "client.crt"
 #define MPR_DEFAULT_CLIENT_CERT_PATH    "certs"
+#endif
+
+#define MPR_CA_CERT "ca.crt"
 
 /**
     SSL control structure

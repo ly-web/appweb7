@@ -194,7 +194,9 @@ static void initSettings()
     app->protocol = "HTTP/1.1";
     app->retries = HTTP_RETRIES;
     app->success = 1;
+#if UNUSED
     app->ca = mprJoinPath(mprGetAppDir(), "http-ca.crt");
+#endif
 
     /* zero means no timeout */
     app->timeout = 0;
@@ -235,10 +237,7 @@ static bool parseArgs(int argc, char **argv)
                 return 0;
             } else {
                 app->ca = sclone(argv[++nextArg]);
-                if (smatch(app->ca, "none")) {
-                    app->ca = MPR->emptyString;
-                }
-                if (app->ca[0] && !mprPathExists(app->ca, R_OK)) {
+                if (!mprPathExists(app->ca, R_OK)) {
                     mprError("Cannot find ca file %s", app->ca);
                     return 0;
                 }

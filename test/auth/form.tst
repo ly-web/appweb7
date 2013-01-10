@@ -3,7 +3,7 @@
  */
 
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
-const HTTPS = App.config.uris.https || "127.0.0.1:4110"
+const HTTPS = App.config.uris.ssl || "https://127.0.0.1:4443"
 
 let http: Http = new Http
 
@@ -28,7 +28,7 @@ if (App.config.bit_ssl) {
     //  Login. The response should redirct to /auth/form
     http.reset()
     // http.setCookie(cookie)
-    http.form("https://" + HTTPS + "/auth/form/login", {username: "joshua", password: "pass1"})
+    http.form(HTTPS + "/auth/form/login", {username: "joshua", password: "pass1"})
     assert(http.status == 302)
     location = http.header('location')
     assert(location.contains('https'))
@@ -39,13 +39,13 @@ if (App.config.bit_ssl) {
     //  Now logged in
     http.reset()
     http.setCookie(cookie)
-    http.get("https://" + HTTPS + "/auth/form/index.html")
+    http.get(HTTPS + "/auth/form/index.html")
     assert(http.status == 200)
 
     //  Now log out. Will be redirected to the login page.
     http.reset()
     http.setCookie(cookie)
-    http.get("https://" + HTTPS + "/auth/form/logout")
+    http.get(HTTPS + "/auth/form/logout")
     assert(http.status == 302)
     let location = http.header('location')
     assert(location.contains('https'))

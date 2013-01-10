@@ -10,6 +10,7 @@ const HTTP       = "http://"  + conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv4>.
 const HTTPV6     = "http://"  + conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv6>.*/ms, "$1")
 
 const SSL        = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <HTTPSv4>.*/ms, "$1")
+const SELFCERT   = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <SELFCERT>.*/ms, "$1")
 const CLIENTCERT = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <CLIENTCERT>.*/ms, "$1")
 const OPENSSL    = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <OPENSSL>.*/ms, "$1")
 const MATRIXSSL  = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <MATRIXSSL>.*/ms, "$1")
@@ -22,10 +23,10 @@ const PIDFILE   = ".pidfile"
 /*
     Provide definitions via App.config.uris[]
  */
-print("HTTP", HTTP)
 shareUri("http", HTTP)
 shareUri("httpv6", HTTPV6)
 shareUri("ssl", SSL)
+shareUri("selfcert", SELFCERT)
 shareUri("clientcert", CLIENTCERT)
 shareUri("openssl", OPENSSL)
 shareUri("matrixssl", MATRIXSSL)

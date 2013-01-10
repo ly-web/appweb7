@@ -1047,6 +1047,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     est->sock = sp;
     sp->sslSocket = est;
     sp->ssl = ssl;
+    verifyMode = (sp->flags & MPR_SOCKET_SERVER && !ssl->verifyPeer) ? SSL_VERIFY_NO_CHECK : SSL_VERIFY_OPTIONAL;
 
     lock(ssl);
     if (ssl->config && !ssl->changed) {
@@ -1082,9 +1083,14 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
                 return MPR_ERR_CANT_READ;
             }
         }
-        if (ssl->caFile) {
+        if (verifyMode != SSL_VERIFY_NO_CHECK) {
+            if (!ssl->caFile) {
+                sp->errorMsg = sclone("No defined certificate authority file");
+                unlock(ssl);
+                return MPR_ERR_CANT_READ;
+            }
             if (x509parse_crtfile(&cfg->ca, ssl->caFile) != 0) {
-                sp->errorMsg = sfmt("Unable to parse certificate authority bundle %s", ssl->caFile); 
+                sp->errorMsg = sfmt("Unable to open or parse certificate authority file %s", ssl->caFile); 
                 unlock(ssl);
                 return MPR_ERR_CANT_READ;
             }
@@ -1100,17 +1106,6 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     havege_init(&est->hs);
     ssl_init(&est->ctx);
 	ssl_set_endpoint(&est->ctx, sp->flags & MPR_SOCKET_SERVER ? SSL_IS_SERVER : SSL_IS_CLIENT);
-
-    /* Optional means to manually verify in estHandshake */
-    if (sp->flags & MPR_SOCKET_SERVER) {
-        verifyMode = ssl->verifyPeer ? SSL_VERIFY_OPTIONAL : SSL_VERIFY_NO_CHECK;
-    } else {
-        verifyMode = SSL_VERIFY_OPTIONAL;
-    }
-    if (verifyMode == SSL_VERIFY_OPTIONAL && !ssl->caFile) {
-        mprError("Can't verify peer certificate without a defined CA bundle");
-        verifyMode = SSL_VERIFY_NO_CHECK;
-    }
     ssl_set_authmode(&est->ctx, verifyMode);
     ssl_set_rng(&est->ctx, havege_rand, &est->hs);
 	ssl_set_dbg(&est->ctx, estTrace, NULL);
@@ -1721,7 +1716,7 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
     }
     if (sp->flags & MPR_SOCKET_SERVER) {
         if (ssl->verifyPeer) {
-            if (!ssl->caFile == 0 && !ssl->caPath) {
+            if (!ssl->caFile && !ssl->caPath) {
                 mprError("OpenSSL: Must define CA certificates if using client verification");
                 SSL_CTX_free(context);
                 return 0;
