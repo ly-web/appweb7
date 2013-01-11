@@ -96,6 +96,17 @@ Bit.load({
                 tracing: true,
              */
         },
+
+        est: {
+            camellia: false,
+            padlock: false,
+            sslClient: false,
+            des: false,
+            testCerts: false,
+            xtea: false,
+            romTables: false,
+            genPrime: false,
+        },
     },
 
     usage: {
