@@ -1143,8 +1143,11 @@ static int handshakeEst(MprSocket *sp)
     int         rc, vrc, trusted;
 
     est = (EstSocket*) sp->sslSocket;
+    assert(!(est->ctx.state == SSL_HANDSHAKE_OVER));
+
     trusted = 1;
     sp->flags |= MPR_SOCKET_HANDSHAKING;
+    rc = 0;
 
     while (est->ctx.state != SSL_HANDSHAKE_OVER) {
         if ((rc = ssl_handshake(&est->ctx)) != 0) {
@@ -2558,6 +2561,9 @@ PUBLIC int mprCreateMocanaModule()
     if ((defaultMocConfig = mprAllocObj(MocConfig, manageMocConfig)) == 0) {
         return MPR_ERR_MEMORY;
     }
+#if FUTURE
+    MOCANA_initLog
+#endif
     if (MOCANA_initMocana() < 0) {
         mprError("MOCANA_initMocana failed");
         return MPR_ERR_CANT_INITIALIZE;
@@ -2594,6 +2600,7 @@ static void manageMocProvider(MprSocketProvider *provider, int flags)
 static void manageMocConfig(MocConfig *cfg, int flags)
 {
     if (flags & MPR_MANAGE_FREE) {
+        //  MOB - to where read was done
         MOCANA_freeReadFile(&cfg->cert.pCertificate);
         MOCANA_freeReadFile(&cfg->cert.pKeyBlob);    
     }
@@ -2687,18 +2694,35 @@ static int upgradeMoc(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         }
         mp->cfg = ssl->config = cfg;
         if (ssl->certFile) {
-            if ((rc = MOCANA_readFile((sbyte*) ssl->certFile, &cfg->cert.pCertificate, &cfg->cert.certLength))) {
+            certDescriptor tmp;
+            if ((rc = MOCANA_readFile((sbyte*) ssl->certFile, &tmp.pCertificate, &tmp.certLength)) < 0) {
                 mprError("MOCANA: Unable to read certificate %s", ssl->certFile); 
-                CA_MGMT_freeCertificate(&cfg->cert);
+                CA_MGMT_freeCertificate(&tmp);
+                unlock(ssl);
+                return MPR_ERR_CANT_READ;
+            }
+            assert(__ENABLE_MOCANA_PEM_CONVERSION__);
+            if ((rc = CA_MGMT_decodeCertificate(tmp.pCertificate, tmp.certLength, 
+                    &cfg->cert.pCertificate, &cfg->cert.certLength)) < 0) {
+                mprError("MOCANA: Unable to decode PEM certificate %s", ssl->certFile); 
+                CA_MGMT_freeCertificate(&tmp);
                 unlock(ssl);
                 return MPR_ERR_CANT_READ;
             }
         }
         if (ssl->keyFile) {
-            if ((rc = MOCANA_readFile((sbyte*) ssl->keyFile, &cfg->cert.pKeyBlob, &cfg->cert.keyBlobLength)) < 0) {
+            certDescriptor tmp;
+            if ((rc = MOCANA_readFile((sbyte*) ssl->keyFile, &tmp.pKeyBlob, &tmp.keyBlobLength)) < 0) {
                 mprError("MOCANA: Unable to read key file %s", ssl->keyFile); 
                 CA_MGMT_freeCertificate(&cfg->cert);
                 unlock(ssl);
+            }
+            if ((rc = CA_MGMT_convertKeyPEM(tmp.pKeyBlob, tmp.keyBlobLength, 
+                    &cfg->cert.pKeyBlob, &cfg->cert.keyBlobLength)) < 0) {
+                mprError("MOCANA: Unable to decode PEM key file %s", ssl->keyFile); 
+                CA_MGMT_freeCertificate(&tmp);
+                unlock(ssl);
+                return MPR_ERR_CANT_READ;
             }
         }
         /// if (verifyMode != ...)

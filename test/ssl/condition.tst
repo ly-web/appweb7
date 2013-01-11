@@ -20,15 +20,15 @@ if (!Config.SSL) {
 
         //  Should fail if no cert is provided
         endpoint = App.config.uris.clientcert || "https://127.0.0.1:6443"
-        // http.key = '../sslconf/test.key'
-        // http.certificate = '../sslconf/test.crt'
-        http.get(endpoint + '/ssl-match/index.html')
+        let caught
         try {
+            /* Should throw */
+            http.get(endpoint + '/ssl-match/index.html')
             assert(http.status == 200) 
         } catch {
-            /* Should catch */
-            assert(true)
+            caught = true
         }
+        assert(caught)
         http.close()
 
         //  Should pass with a cert
