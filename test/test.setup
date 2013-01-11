@@ -7,14 +7,15 @@ let conf         = Path("appweb.conf").readString()
 //const HOST       = (test.hostOs == "VXWORKS") ? "192.168.200.1" : "127.0.0.1"
 //const HOSTV6     = (test.hostOs == "VXWORKS") ? "192.168.200.1" : "[::1]"
 const HTTP       = "http://"  + conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv4>.*/ms, "$1")
-const HTTPV6     = "http://"  + conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv6>.*/ms, "$1")
+const HTTPV6     = "http://"  + conf.replace(/.*Listen *([\[\]:0-9]+) *# <HTTPv6>.*/ms, "$1")
 
 const SSL        = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <HTTPSv4>.*/ms, "$1")
+print("SSL", SSL)
 const SELFCERT   = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <SELFCERT>.*/ms, "$1")
 const CLIENTCERT = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <CLIENTCERT>.*/ms, "$1")
 const OPENSSL    = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <OPENSSL>.*/ms, "$1")
 const MATRIXSSL  = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <MATRIXSSL>.*/ms, "$1")
-const MACONA     = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <MOCANA>.*/ms, "$1")
+const MOCANA     = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <MOCANA>.*/ms, "$1")
 const NAMED      = "http://"  + conf.replace(/.*Listen *([\.:0-9]+) *# <NAMED>.*/ms, "$1")
 const VIP        = "http://"  + conf.replace(/.*Listen *([\.:0-9]+) *# <IPHOST>.*/ms, "$1")
 
@@ -30,7 +31,7 @@ shareUri("selfcert", SELFCERT)
 shareUri("clientcert", CLIENTCERT)
 shareUri("openssl", OPENSSL)
 shareUri("matrixssl", MATRIXSSL)
-shareUri("macona", MACONA)
+shareUri("mocana", MOCANA)
 shareUri("named", NAMED)
 shareUri("virt", VIP)
 
