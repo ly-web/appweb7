@@ -10,7 +10,6 @@ const HTTP       = "http://"  + conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv4>.
 const HTTPV6     = "http://"  + conf.replace(/.*Listen *([\[\]:0-9]+) *# <HTTPv6>.*/ms, "$1")
 
 const SSL        = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <HTTPSv4>.*/ms, "$1")
-print("SSL", SSL)
 const SELFCERT   = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <SELFCERT>.*/ms, "$1")
 const CLIENTCERT = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <CLIENTCERT>.*/ms, "$1")
 const OPENSSL    = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <OPENSSL>.*/ms, "$1")
