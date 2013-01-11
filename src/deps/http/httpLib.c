@@ -1876,7 +1876,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
         peerName = isdigit(uri->host[0]) ? 0 : uri->host;
         if (mprUpgradeSocket(sp, ssl, peerName) < 0) {
             conn->errorMsg = sp->errorMsg;
-            mprError("Cannot upgrade socket for SSL: %s", conn->errorMsg);
+            mprLog(4, "Cannot upgrade socket for SSL: %s", conn->errorMsg);
             return 0;
         }
     }
