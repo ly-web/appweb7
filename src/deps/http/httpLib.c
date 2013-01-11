@@ -1876,7 +1876,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
         peerName = isdigit(uri->host[0]) ? 0 : uri->host;
         if (mprUpgradeSocket(sp, ssl, peerName) < 0) {
             conn->errorMsg = sp->errorMsg;
-            mprError("Cannot upgrade socket for SSL: %s", conn->errorMsg);
+            mprLog(4, "Cannot upgrade socket for SSL: %s", conn->errorMsg);
             return 0;
         }
     }
@@ -7013,7 +7013,7 @@ PUBLIC void httpReadyHandler(HttpConn *conn)
     HttpQueue   *q;
     
     q = conn->writeq;
-    if (q->stage->ready && !conn->tx->finalized && !(q->flags & HTTP_QUEUE_READY)) {
+    if (q->stage && q->stage->ready && !conn->tx->finalized && !(q->flags & HTTP_QUEUE_READY)) {
         q->flags |= HTTP_QUEUE_READY;
         q->stage->ready(q);
     }
@@ -7040,7 +7040,7 @@ PUBLIC bool httpGetMoreOutput(HttpConn *conn)
     HttpQueue   *q;
     
     q = conn->writeq;
-    if (!q->stage->writable) {
+    if (!q->stage || !q->stage->writable) {
        return 0;
     }
     if (!conn->tx->finalizedOutput) {

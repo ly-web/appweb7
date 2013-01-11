@@ -280,6 +280,9 @@ PUBLIC int maStartServer(MaServer *server)
         }
         return MPR_ERR_CANT_OPEN;
     }
+    if (warned) {
+        return MPR_ERR_CANT_OPEN;        
+    }
 #if BIT_UNIX_LIKE
     MaAppweb    *appweb = server->appweb;
     if (appweb->userChanged || appweb->groupChanged) {

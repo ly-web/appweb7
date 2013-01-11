@@ -25,6 +25,30 @@
 #ifndef BIT_ESP_SDB
     #define BIT_ESP_SDB 0
 #endif
+#ifndef BIT_EST_CAMELLIA
+    #define BIT_EST_CAMELLIA 0
+#endif
+#ifndef BIT_EST_DES
+    #define BIT_EST_DES 0
+#endif
+#ifndef BIT_EST_GEN_PRIME
+    #define BIT_EST_GEN_PRIME 0
+#endif
+#ifndef BIT_EST_PADLOCK
+    #define BIT_EST_PADLOCK 0
+#endif
+#ifndef BIT_EST_ROM_TABLES
+    #define BIT_EST_ROM_TABLES 0
+#endif
+#ifndef BIT_EST_SSL_CLIENT
+    #define BIT_EST_SSL_CLIENT 0
+#endif
+#ifndef BIT_EST_TEST_CERTS
+    #define BIT_EST_TEST_CERTS 0
+#endif
+#ifndef BIT_EST_XTEA
+    #define BIT_EST_XTEA 0
+#endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 0
 #endif
