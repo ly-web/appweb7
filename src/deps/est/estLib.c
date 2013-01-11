@@ -3793,7 +3793,7 @@ int snfmt(char *buf, ssize bufsize, cchar *fmt, ...)
     va_start(ap, fmt);
 #if _WIN32
     /* Windows does not guarantee a null will be appended */
-    if ((n = snprintf(buf, bufsize - 1, fmt, ap)) < 0) {
+    if ((n = vsnprintf(buf, bufsize - 1, fmt, ap)) < 0) {
         n = 0;
     }
     buf[n] = '\0';
