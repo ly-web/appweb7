@@ -477,6 +477,12 @@ static ssize blockingWrite(MprSocket *sp, cvoid *buf, ssize len)
 }
 
 
+static int32 handshakeIsComplete(ssl_t *ssl)
+{	
+	return (ssl->hsState == SSL_HS_DONE) ? PS_TRUE : PS_FALSE;
+}
+
+
 /*
     Construct the initial HELLO message to send to the server and initiate
     the SSL handshake. Can be used in the re-handshake scenario as well.
@@ -508,7 +514,7 @@ static int doHandshake(MprSocket *sp, short cipherSuite)
                 mprSetSocketBlockingMode(sp, mode);
                 return MPR_ERR_CANT_INITIALIZE;
             }
-            if (matrixSslHandshakeIsComplete(msp->handle)) {
+            if (handshakeIsComplete(msp->handle)) {
                 break;
             }
         } else {
