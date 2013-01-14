@@ -42,7 +42,8 @@
     #define ZTS 1
     #undef ulong
     #undef ZEND_API
-    #undef HAVE_SOCKLEN_T
+    #undef _res /* Defined by linux /usr/include/resolv.h */
+    #undef HAVE_SOCKLEN_T  
 
     /*
         Indent headers to side-step make depend if PHP is not enabled
