@@ -5733,6 +5733,7 @@ static void defaultCmdCallback(MprCmd *cmd, int channel, void *data)
 {
     MprBuf      *buf;
     ssize       len, space;
+    int         errCode;
 
     /*
         Note: stdin, stdout and stderr are named from the client's perspective
@@ -5763,10 +5764,11 @@ static void defaultCmdCallback(MprCmd *cmd, int channel, void *data)
         space = mprGetBufSpace(buf);
     }
     len = mprReadCmd(cmd, channel, mprGetBufEnd(buf), space);
+    errCode = mprGetError();
     mprTrace(6, "defaultCmdCallback channel %d, read len %d, pid %d, eof %d/%d", channel, len, cmd->pid, cmd->eofCount, 
         cmd->requiredEof);
     if (len <= 0) {
-        if (len == 0 || (len < 0 && !(errno == EAGAIN || errno == EWOULDBLOCK))) {
+        if (len == 0 || (len < 0 && !(errCode == EAGAIN || errCode == EWOULDBLOCK))) {
             mprCloseCmdFd(cmd, channel);
             return;
         }
@@ -10305,7 +10307,7 @@ static char *findNewline(cchar *str, cchar *newline, ssize len, ssize *nlen)
 
 
 /*
-    Get a string from the file. This will put the file into buffered mode.
+    Read a line from the file. This will put the file into buffered mode.
     Return NULL on eof.
  */
 PUBLIC char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
