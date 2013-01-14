@@ -1344,6 +1344,22 @@ struct  MprXml;
 #endif
 
 /*
+    Default defintions for newer bit versions
+ */
+#ifndef BIT_MAX_FNAME
+    #define BIT_MAX_FNAME      256           /**< Reasonable filename size */
+#endif
+#ifndef BIT_MAX_PATH
+    #define BIT_MAX_PATH       1024          /**< Reasonable filename size */
+#endif
+#ifndef BIT_MAX_BUFFER
+    #define BIT_MAX_BUFFER     4096          /**< Reasonable size for buffers */
+#endif
+#ifndef BIT_MAX_ARGC
+    #define BIT_MAX_ARGC       32           /**< Maximum number of command line args if using MAIN()*/
+#endif
+
+/*
     Select wakeup port. Port can be any free port number. If this is not free, the MPR will use the next free port.
  */
 #define MPR_DEFAULT_BREAK_PORT  9473
