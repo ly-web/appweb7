@@ -115,6 +115,8 @@ Bit.load({
         'esp.mdb':    'Enable ESP MDB database support (true|false)',
         'esp.sdb':    'Enable ESP SQLite database support (true|flase)',
         'http.pam':   'Enable Unix Pluggable Auth Module (true|false)',
+        'mpr.logging':'Enable application logging (true|false)',
+        'mpr.tracing':'Enable debug tracing (true|false)',
     },
 
     profiles: {
