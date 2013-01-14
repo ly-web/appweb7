@@ -882,12 +882,14 @@ static cchar *getMappedArch(cchar *arch)
 static cchar *getWinSDK()
 {
 #if WINDOWS
-    char *versions[] = { "8.0", 0 };
+    char *versions[] = { "8.0", "7.1", "7.0A", "7.0", 0 };
     /*
         MS has made a big mess of where and how the windows SDKs are installed. The registry key at 
-        HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted. MS have
-        moved the SDK to Windows Kits, while still using the old folder for some bits. The old-reliable
-        registry key is now unusable. So we must scan for explicit SDK versions listed above. Ugh!
+        HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted and often
+        points to the old 7.X SDKs even when 8.X is installed and active. MS have also moved the 8.X
+        SDK to Windows Kits, while still using the old folder for some bits. So the old-reliable
+        CurrentInstallFolder registry key is now unusable. So we must scan for explicit SDK versions 
+        listed above. Ugh!
      */
     cchar   *path, *key, **vp;
 
