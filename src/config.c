@@ -57,7 +57,10 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     host = server->defaultHost;
     route = host->defaultRoute;
 
+    //  MOB DEPRECATE LIBDIR
     httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
+
+    httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
 
     state = createState(server, host, route);
     state->flags = flags;
