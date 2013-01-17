@@ -5687,6 +5687,7 @@ static void netOutgoingService(HttpQueue *q)
             return;
         }
     }
+#if !BIT_ROM
     if (tx->flags & HTTP_TX_SENDFILE) {
         /* Relay via the send connector */
         if (tx->file == 0) {
@@ -5702,6 +5703,7 @@ static void netOutgoingService(HttpQueue *q)
             return;
         }
     }
+#endif
     while (q->first || q->ioIndex) {
         if (q->ioIndex == 0 && buildNetVec(q) <= 0) {
             break;
@@ -6778,10 +6780,13 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
         }
     }
     if (tx->connector == 0) {
+#if !BIT_ROM
         if (tx->handler == http->fileHandler && (rx->flags & HTTP_GET) && !hasOutputFilters && 
                 !conn->secure && httpShouldTrace(conn, HTTP_TRACE_TX, HTTP_TRACE_BODY, tx->ext) < 0) {
             tx->connector = http->sendConnector;
-        } else if (route && route->connector) {
+        } else 
+#endif
+        if (route && route->connector) {
             tx->connector = route->connector;
         } else {
             tx->connector = http->netConnector;
@@ -8783,6 +8788,9 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
         tx->filename = mprJoinPath(lang->path, tx->filename);
     }
     tx->filename = mprJoinPath(route->dir, tx->filename);
+#if BIT_ROM
+    tx->filename = mprGetRelPath(tx->filename, NULL);
+#endif
     tx->ext = httpGetExt(conn);
     info = &tx->fileInfo;
     mprGetPathInfo(tx->filename, info);

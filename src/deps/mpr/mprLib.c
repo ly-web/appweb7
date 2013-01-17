@@ -5600,7 +5600,7 @@ PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
  */
 PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
 {
-    MprTicks    expires, remaining;
+    MprTicks    expires, remaining, delay;
 
     assert(cmd);
 
@@ -5625,10 +5625,11 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
         }
 #if BIT_WIN_LIKE && !WINCE
         mprPollWinCmd(cmd, remaining);
-        mprWaitForEvent(cmd->dispatcher, 10);
+        delay = 10;
 #else
-        mprWaitForEvent(cmd->dispatcher, remaining);
+        delay = (cmd->eofCount >= cmd->requiredEof) ? 10 : remaining;
 #endif
+        mprWaitForEvent(cmd->dispatcher, delay);
         remaining = (expires - mprGetTicks());
     }
     mprRemoveRoot(cmd);
@@ -13440,9 +13441,8 @@ PUBLIC void mprCreateLogService()
 PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
 {
     MprFile     *file;
-    MprPath     info;
     char        *levelSpec, *path;
-    int         level, mode;
+    int         level;
 
     level = -1;
     if (logSpec == 0) {
@@ -13458,7 +13458,10 @@ PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
             file = MPR->stdOutput;
         } else if (strcmp(path, "stderr") == 0) {
             file = MPR->stdError;
+#if !BIT_ROM
         } else {
+            MprPath     info;
+            int         mode;
             mode = (MPR->flags & MPR_LOG_APPEND)  ? O_APPEND : O_TRUNC;
             mode |= O_CREAT | O_WRONLY | O_TEXT;
             if (MPR->logBackup > 0) {
@@ -13471,6 +13474,7 @@ PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
                 mprError("Cannot open log file %s", path);
                 return -1;
             }
+#endif
         }
         if (level >= 0) {
             mprSetLogLevel(level);
@@ -13707,32 +13711,36 @@ static void logOutput(int flags, int level, cchar *msg)
 static void defaultLogHandler(int flags, int level, cchar *msg)
 {
     MprFile     *file;
-    MprPath     info;
     char        *prefix, buf[BIT_MAX_LOGLINE], *tag;
-    int         mode;
-    static int  check = 0;
 
     if ((file = MPR->logFile) == 0) {
         return;
     }
     prefix = MPR->name;
 
-    if (MPR->logBackup > 0 && MPR->logSize && (check++ % 1000) == 0) {
-        mprGetPathInfo(MPR->logPath, &info);
-        if (info.valid && info.size > MPR->logSize) {
-            lock(MPR);
-            mprSetLogFile(0);
-            mprBackupLog(MPR->logPath, MPR->logBackup);
-            mode = O_CREAT | O_WRONLY | O_TEXT;
-            if ((file = mprOpenFile(MPR->logPath, mode, 0664)) == 0) {
-                mprError("Cannot open log file %s", MPR->logPath);
+#if !BIT_ROM
+    {
+        static int  check = 0;
+        MprPath     info;
+        int         mode;
+        if (MPR->logBackup > 0 && MPR->logSize && (check++ % 1000) == 0) {
+            mprGetPathInfo(MPR->logPath, &info);
+            if (info.valid && info.size > MPR->logSize) {
+                lock(MPR);
+                mprSetLogFile(0);
+                mprBackupLog(MPR->logPath, MPR->logBackup);
+                mode = O_CREAT | O_WRONLY | O_TEXT;
+                if ((file = mprOpenFile(MPR->logPath, mode, 0664)) == 0) {
+                    mprError("Cannot open log file %s", MPR->logPath);
+                    unlock(MPR);
+                    return;
+                }
+                mprSetLogFile(file);
                 unlock(MPR);
-                return;
             }
-            mprSetLogFile(file);
-            unlock(MPR);
         }
     }
+#endif
     while (*msg == '\n') {
         mprWriteFile(file, "\n", 1);
         msg++;
@@ -14031,6 +14039,7 @@ static void manageMimeType(MprMime *mt, int flags);
 PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
 {
     MprHash     *table;
+#if !BIT_ROM
     MprFile     *file;
     char        *buf, *tok, *ext, *type;
     int         line;
@@ -14062,7 +14071,9 @@ PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
         }
         mprCloseFile(file);
 
-    } else {
+    } else 
+#endif
+    {
         if ((table = mprCreateHash(59, 0)) == 0) {
             return 0;
         }
@@ -17131,7 +17142,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         if ((at = mprSearchForModule(mp->path)) == 0) {
             mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
-            return 0;
+            return MPR_ERR_CANT_ACCESS;
         }
         mp->path = at;
         mprGetPathInfo(mp->path, &info);
@@ -18429,13 +18440,12 @@ static int getPathInfo(MprRomFileSystem *rfs, cchar *path, MprPath *info)
 
     assert(path && *path);
 
-    info->checked = 1;
-
     if ((ri = (MprRomInode*) lookup(rfs, path)) == 0) {
         return MPR_ERR_CANT_FIND;
     }
     memset(info, 0, sizeof(MprPath));
 
+    info->checked = 1;
     info->valid = 1;
     info->size = ri->size;
     info->mtime = 0;
@@ -18518,7 +18528,9 @@ PUBLIC void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
         mprMark(fs->cygwin);
 #endif
         mprMark(rfs->fileIndex);
+#if UNUSED
         mprMark(rfs->romInodes);
+#endif
 #endif
     }
 }
@@ -26132,7 +26144,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         if ((at = mprSearchForModule(mp->path)) == 0) {
             mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
-            return 0;
+            return MPR_ERR_CANT_ACCESS;
         }
         mp->path = at;
         mprGetPathInfo(mp->path, &info);
@@ -27791,7 +27803,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         if ((at = mprSearchForModule(mp->path)) == 0) {
             mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
-            return 0;
+            return MPR_ERR_CANT_ACCESS;
         }
         mp->path = at;
         mprGetPathInfo(mp->path, &info);

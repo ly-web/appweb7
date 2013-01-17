@@ -2492,6 +2492,7 @@ PUBLIC void httpSetProtocol(HttpConn *conn, cchar *protocol);
  */
 PUBLIC void httpSetRetries(HttpConn *conn, int retries);
 
+#if !BIT_ROM
 /**
     Set the "Send" connector to process the request
     @description If the net connection has been selected, but the response content is a file, the pipeline connector
@@ -2502,6 +2503,7 @@ PUBLIC void httpSetRetries(HttpConn *conn, int retries);
     @stability Stable
  */
 PUBLIC void httpSetSendConnector(HttpConn *conn, cchar *path);
+#endif
 
 /**
     Set the connection state and invoke notifiers.
