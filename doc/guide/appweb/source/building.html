@@ -309,6 +309,133 @@
             <pre>
 configure --with openssl=/usr/src/openssl
 </pre>
+            <h3>Packages</h3>
+            <p>The following table describes the packages that can extend Appweb configure. 
+            The use of Internal/External documents whether the page is shipped internally with the Appweb source
+            code, or whether it is an external third party package.</p>
+            <table title="env">
+                <thead>
+                    <tr>
+                        <th>Package</th>
+                        <th>Integrated</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>cgi</td>
+                    <td>Internal</td>
+                    <td>Common Gateway Interface (CGI).</td>
+                </tr>
+                <tr>
+                    <td>dir</td>
+                    <td>Internal</td>
+                    <td>Directory Listing Handler.</td>
+                </tr>
+                <tr>
+                    <td>ejscript</td>
+                    <td>Internal</td>
+                    <td>Ejscript web framework.</td>
+                </tr>
+                <tr>
+                    <td>esp</td>
+                    <td>Internal</td>
+                    <td>Embedded Server Pages web framework.</td>
+                </tr>
+                <tr>
+                    <td>est</td>
+                    <td>Internal</td>
+                    <td>Embedded Security Transport. SSL stack.</td>
+                </tr>
+                <tr>
+                    <td>matrixssl</td>
+                    <td>External</td>
+                    <td>MatrixSSL SSL stack. Requires a commerical license from PeerSec.</td>
+                </tr>
+                <tr>
+                    <td>mocana</td>
+                    <td>External</td>
+                    <td>Mocana NanoSSL stack. Requires a commerical license from Mocana.</td>
+                </tr>
+                <tr>
+                    <td>openssl</td>
+                    <td>External</td>
+                    <td>OpenSSL SSL stack. Requires OpenSSL libraries.</td>
+                </tr>
+                <tr>
+                    <td>php</td>
+                    <td>External</td>
+                    <td>PHP framework. Requires PHP libphp5 library.</td>
+                </tr>
+                <tr>
+                    <td>sqlite</td>
+                    <td>Internal</td>
+                    <td>SQLite SQL database.</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <p>The following table describes the tool packages that can be used when building, running and 
+            managing Appweb. 
+            The use of Internal/External documents whether the page is shipped internally with the Appweb source
+            code, or whether it is an external third party package.</p>
+            <table title="env">
+                <thead>
+                    <tr>
+                        <th>Package</th>
+                        <th>Integrated</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>doxygen</td>
+                    <td>External</td>
+                    <td>C API documentation generator.</td>
+                </tr>
+                <tr>
+                    <td>dsi</td>
+                    <td>External</td>
+                    <td>Dev Side Includes. Simple static web page templates.</td>
+                </tr>
+                <tr>
+                    <td>ejs</td>
+                    <td>External</td>
+                    <td>Ejscript command shell. See http://ejscript.org.</td>
+                </tr>
+                <tr>
+                    <td>http</td>
+                    <td>Internal</td>
+                    <td>Http test client program.</td>
+                </tr>
+                <tr>
+                    <td>man</td>
+                    <td>External</td>
+                    <td>Manual page reader and renderer.</td>
+                </tr>
+                <tr>
+                    <td>man2html</td>
+                    <td>External</td>
+                    <td>Program to convert man pages to HTML.</td>
+                </tr>
+                <tr>
+                    <td>pmaker</td>
+                    <td>External</td>
+                    <td>Native package maker. This resolves to InnoSetup on Windows and PackageMaker on MAC OS X.</td>
+                </tr>
+                <tr>
+                    <td>utest</td>
+                    <td>External</td>
+                    <td>Ejscript unit test framework. See http://ejscript.org.</td>
+                </tr>
+                <tr>
+                    <td>zip</td>
+                    <td>External</td>
+                    <td>Zip compression program. Used when creating installable packages.</td>
+                </tr>
+                </tbody>
+            </table>
+
             <h3>Environment Variables</h3>
             <p>When cross-building, certain environment variables may be passed to the configure script and on to 
             <em>bit</em> to configure the compiler and linker paths and flags. </p>
@@ -330,15 +457,15 @@ configure --with openssl=/usr/src/openssl
                 </tr>
                 <tr>
                     <td>CFLAGS</td>
-                    <td>Compiler control flags</td>
+                    <td>Compiler control flags.</td>
                 </tr>
                 <tr>
                     <td>DFLAGS</td>
-                    <td>Compiler preprocessor defines</td>
+                    <td>Compiler preprocessor defines.</td>
                 </tr>
                 <tr>
                     <td>IFLAGS</td>
-                    <td>Include directory options</td>
+                    <td>Include directory options.</td>
                 </tr>
                 <tr>
                     <td>LD</td>
