@@ -341,7 +341,6 @@ static void outgoingFileService(HttpQueue *q)
     conn = q->conn;
     tx = conn->tx;
     usingSend = (tx->connector == conn->http->sendConnector);
-
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
         if (!usingSend && !tx->outputRanges && packet->esize) {
             if ((rc = prepPacket(q, packet)) < 0) {
