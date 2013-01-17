@@ -554,9 +554,8 @@ PUBLIC void espSecurityToken(HttpConn *conn)
      */
     securityToken = espGetSecurityToken(conn);
     espAddHeaderString(conn, "X-Security-Token", securityToken);
-#if UNUSED && KEEP
+    //  MOB - just until jquery.esp.js is updated to not require this
     espRender(conn, "<meta name='SecurityTokenName' content='%s' />\r\n", ESP_SECURITY_TOKEN_NAME);
-#endif
     espRender(conn, "<meta name='%s' content='%s' />", ESP_SECURITY_TOKEN_NAME, securityToken);
 }
 

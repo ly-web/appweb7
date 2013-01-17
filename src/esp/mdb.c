@@ -633,8 +633,9 @@ static EdiRec *mdbReadRec(Edi *edi, cchar *tableName, cchar *key)
         unlock(mdb);
         return 0;
     }
-    row = mprGetItem(table->rows, r);
-    rec = createRecFromRow(edi, row);
+    if ((row = mprGetItem(table->rows, r)) != 0) {
+        rec = createRecFromRow(edi, row);
+    }
     unlock(mdb);
     return rec;
 }

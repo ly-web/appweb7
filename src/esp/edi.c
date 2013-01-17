@@ -862,6 +862,7 @@ PUBLIC EdiGrid *ediCloneGrid(EdiGrid *grid)
     for (r = 0; r < grid->nrecords; r++) {
         rec = ediCreateBareRec(grid->edi, grid->tableName, grid->records[r]->nfields);
         result->records[r] = rec;
+        rec->id = grid->records[r]->id;
         src = grid->records[r]->fields;
         dest = rec->fields;
         for (c = 0; c < rec->nfields; c++) {

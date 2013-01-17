@@ -83,6 +83,13 @@
                     Similarly, added main.bit settings "tracing". This is enabled by default for only for debug builds.
                     If disabled, calls to assert() and mprTrace() will be optimized out.
                     <a href="https://github.com/embedthis/appweb-4/issues/107">[issue 107].</a></li>
+                <li>Added esp --genlink, to generate a static link file for loading esp applications.
+                    Added "bit genapp" sample target to generate slink.c based on esp applications under
+                    src/server/web.
+                    <a href="https://github.com/embedthis/appweb-4/issues/114">[issue 114].</a></li>
+                <li>Added Ejscript as an integrated component instead of requiring a separate download.
+                    Use "configure --with ejscript" to enable.
+                    <a href="https://github.com/embedthis/appweb-4/issues/117">[issue 117].</a></li>
             </ul>
             <h3>Fixes</h3>
             <ul>
@@ -100,6 +107,14 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/109">[issue 109].</a></li>
                 <li>Fix test if IPv6 is supported on a system
                     <a href="https://github.com/embedthis/appweb-4/issues/110">[issue 110].</a></li>
+                <li>Fix creating browser cookies for localhost
+                    <a href="https://github.com/embedthis/appweb-4/issues/112">[issue 112].</a></li>
+                <li>Fix esp --flat, to compile esp applications into a single library
+                    <a href="https://github.com/embedthis/appweb-4/issues/113">[issue 113].</a></li>
+                <li>Building with ROM fs support. Added configure --rom, and the sample target "bit rom"
+                    <a href="https://github.com/embedthis/appweb-4/issues/115">[issue 115].</a></li>
+                <li>Using static linking with esp applications.
+                    <a href="https://github.com/embedthis/appweb-4/issues/116">[issue 116].</a></li>
             </ul>
             <h3>API Changes</h3>
             <ul>
