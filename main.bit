@@ -47,15 +47,23 @@ Bit.load({
         '+required': [ 'bit', 'pcre'],
 
         /*
-            Optional packs to automatically configure
+            Optional packs to automatically discover and configure
+            OpenSSL is the default SSL stack. Pre-release EST must be explicitly requested.
          */
-        '+optional': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'esp', 'est', 'man', 'man2html',
+        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'esp', 'man', 'man2html', 'openssl',
             'pmaker', 'php', 'sqlite', 'utest', 'zip' ],
 
         /*
             Packs to disable when using --without all
          */
-        'without-all': ['doxygen', 'dsi', 'est', 'ejs', 'man', 'man2html', 'pmaker', 'ejscript', 'php' ],
+        'without-all': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'ejscript', 'esp', 'man', 'man2html', 
+            'openssl', 'pmaker', 'php', 'sqlite', ],
+
+        /*
+            Packs to disable when using --without default (generating packages)
+         */
+        'without-default': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'ejscript', 'esp', 'man', 'man2html', 
+            'openssl', 'pmaker', 'php', 'sqlite', ],
 
         /*
             Set to true for a static (non-shared library) build
@@ -112,12 +120,12 @@ Bit.load({
     },
 
     usage: {
-        static:       'Build with static linking (true|false)',
-        'esp.mdb':    'Enable ESP MDB database support (true|false)',
-        'esp.sdb':    'Enable ESP SQLite database support (true|flase)',
-        'http.pam':   'Enable Unix Pluggable Auth Module (true|false)',
-        'mpr.logging':'Enable application logging (true|false)',
-        'mpr.tracing':'Enable debug tracing (true|false)',
+        static:         'Build with static linking (true|false)',
+        'esp.mdb':      'Enable ESP MDB database support (true|false)',
+        'esp.sdb':      'Enable ESP SQLite database support (true|flase)',
+        'http.pam':     'Enable Unix Pluggable Auth Module (true|false)',
+        'mpr.logging':  'Enable application logging (true|false)',
+        'mpr.tracing':  'Enable debug tracing (true|false)',
     },
 
     profiles: {

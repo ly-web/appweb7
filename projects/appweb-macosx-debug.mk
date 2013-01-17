@@ -42,6 +42,8 @@ all: prep \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
         $(CONFIG)/bin/libmod_cgi.dylib \
+        $(CONFIG)/bin/libmod_php.dylib \
+        $(CONFIG)/bin/libmod_ssl.dylib \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
         $(CONFIG)/bin/setConfig \
@@ -86,6 +88,8 @@ clean:
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
 	rm -rf $(CONFIG)/bin/libmod_cgi.dylib
+	rm -rf $(CONFIG)/bin/libmod_php.dylib
+	rm -rf $(CONFIG)/bin/libmod_ssl.dylib
 	rm -rf $(CONFIG)/bin/authpass
 	rm -rf $(CONFIG)/bin/cgiProgram
 	rm -rf $(CONFIG)/bin/setConfig
@@ -177,12 +181,12 @@ $(CONFIG)/obj/mprSsl.o: \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h \
         $(CONFIG)/inc/est.h
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc -I../packages-macosx-x64/openssl/latest/include src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.dylib:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/mprSsl.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -L../packages-macosx-x64/openssl/latest -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS) -lssl -lcrypto
 
 $(CONFIG)/obj/manager.o: \
         src/deps/mpr/manager.c \
@@ -497,6 +501,28 @@ $(CONFIG)/bin/libmod_cgi.dylib:  \
         $(CONFIG)/obj/cgiHandler.o
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
+$(CONFIG)/obj/phpHandler.o: \
+        src/modules/phpHandler.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o -arch x86_64 $(DFLAGS) -I$(CONFIG)/inc -I../packages-macosx-x64/php/latest -I../packages-macosx-x64/php/latest/main -I../packages-macosx-x64/php/latest/Zend -I../packages-macosx-x64/php/latest/TSRM src/modules/phpHandler.c
+
+$(CONFIG)/bin/libmod_php.dylib:  \
+        $(CONFIG)/bin/libappweb.dylib \
+        $(CONFIG)/obj/phpHandler.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch x86_64 $(LDFLAGS) -L/Users/mob/git/packages-macosx-x64/php/latest/.libs -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_php.dylib $(CONFIG)/obj/phpHandler.o -lappweb $(LIBS) -lphp5 -lhttp -lpcre -lmpr -lpam
+
+$(CONFIG)/obj/sslModule.o: \
+        src/modules/sslModule.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/sslModule.c
+
+$(CONFIG)/bin/libmod_ssl.dylib:  \
+        $(CONFIG)/bin/libappweb.dylib \
+        $(CONFIG)/obj/sslModule.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_ssl.dylib $(CONFIG)/obj/sslModule.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+
 $(CONFIG)/obj/authpass.o: \
         src/utils/authpass.c \
         $(CONFIG)/inc/bit.h \
@@ -550,10 +576,12 @@ $(CONFIG)/obj/appweb.o: \
 $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/bin/libmod_esp.dylib \
+        $(CONFIG)/bin/libmod_ssl.dylib \
+        $(CONFIG)/bin/libmod_php.dylib \
         $(CONFIG)/bin/libmod_cgi.dylib \
         $(CONFIG)/bin/libapp.dylib \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) -L/Users/mob/git/packages-macosx-x64/php/latest/.libs $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_php -lmod_ssl -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam -lphp5
 
 src/server/cache: 
 	cd src/server >/dev/null ;\

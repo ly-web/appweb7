@@ -19,6 +19,9 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
+#ifndef BIT_DISCOVER
+    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,ejs,esp,man,man2html,openssl,pmaker,php,sqlite,utest,zip"
+#endif
 #ifndef BIT_EJS_ONE_MODULE
     #define BIT_EJS_ONE_MODULE 1
 #endif
@@ -80,7 +83,7 @@
     #define BIT_MPR_MANAGER "appman"
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,esp,est,man,man2html,pmaker,php,sqlite,utest,zip"
+    #define BIT_OPTIONAL ""
 #endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
@@ -107,7 +110,10 @@
     #define BIT_VERSION "4.3.0"
 #endif
 #ifndef BIT_WITHOUT_ALL
-    #define BIT_WITHOUT_ALL "doxygen,dsi,est,ejs,man,man2html,pmaker,ejscript,php"
+    #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
+#endif
+#ifndef BIT_WITHOUT_DEFAULT
+    #define BIT_WITHOUT_DEFAULT "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
 #endif
 
 /* Prefixes */
@@ -158,7 +164,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86 -without all -configure . -gen sh,nmake"
+    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86 -without default -configure . -gen sh,nmake"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -191,20 +197,23 @@
 #ifndef BIT_PACK_CC
     #define BIT_PACK_CC 1
 #endif
+#ifndef BIT_PACK_DEFAULT
+    #define BIT_PACK_DEFAULT 0
+#endif
 #ifndef BIT_PACK_DIR
     #define BIT_PACK_DIR 1
 #endif
 #ifndef BIT_PACK_DOXYGEN
-    #define BIT_PACK_DOXYGEN 0
+    #define BIT_PACK_DOXYGEN 1
 #endif
 #ifndef BIT_PACK_DSI
-    #define BIT_PACK_DSI 0
+    #define BIT_PACK_DSI 1
 #endif
 #ifndef BIT_PACK_DUMPBIN
     #define BIT_PACK_DUMPBIN 0
 #endif
 #ifndef BIT_PACK_EJS
-    #define BIT_PACK_EJS 0
+    #define BIT_PACK_EJS 1
 #endif
 #ifndef BIT_PACK_EJSCRIPT
     #define BIT_PACK_EJSCRIPT 0
@@ -225,10 +234,10 @@
     #define BIT_PACK_LINK 1
 #endif
 #ifndef BIT_PACK_MAN
-    #define BIT_PACK_MAN 0
+    #define BIT_PACK_MAN 1
 #endif
 #ifndef BIT_PACK_MAN2HTML
-    #define BIT_PACK_MAN2HTML 0
+    #define BIT_PACK_MAN2HTML 1
 #endif
 #ifndef BIT_PACK_MATRIXSSL
     #define BIT_PACK_MATRIXSSL 0
@@ -275,6 +284,15 @@
 #ifndef BIT_PACK_DIR_PATH
     #define BIT_PACK_DIR_PATH "/Users/mob/git/appweb/src/dirHandler.c"
 #endif
+#ifndef BIT_PACK_DOXYGEN_PATH
+    #define BIT_PACK_DOXYGEN_PATH "/usr/local/bin/doxygen"
+#endif
+#ifndef BIT_PACK_DSI_PATH
+    #define BIT_PACK_DSI_PATH "/opt/bin/dsi"
+#endif
+#ifndef BIT_PACK_EJS_PATH
+    #define BIT_PACK_EJS_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/ejs"
+#endif
 #ifndef BIT_PACK_ESP_PATH
     #define BIT_PACK_ESP_PATH "/Users/mob/git/appweb/src/esp/espHandler.c"
 #endif
@@ -286,6 +304,12 @@
 #endif
 #ifndef BIT_PACK_LINK_PATH
     #define BIT_PACK_LINK_PATH "link.exe"
+#endif
+#ifndef BIT_PACK_MAN_PATH
+    #define BIT_PACK_MAN_PATH "/usr/bin/man"
+#endif
+#ifndef BIT_PACK_MAN2HTML_PATH
+    #define BIT_PACK_MAN2HTML_PATH "/opt/bin/man2html"
 #endif
 #ifndef BIT_PACK_PCRE_PATH
     #define BIT_PACK_PCRE_PATH "/Users/mob/git/appweb/src/deps/pcre"
