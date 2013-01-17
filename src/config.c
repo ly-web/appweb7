@@ -34,7 +34,7 @@ PUBLIC int maOpenConfig(MaState *state, cchar *path)
 
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
-    if ((state->file = mprOpenFile(path, O_RDONLY | O_TEXT, 0444)) == 0) {
+    if ((state->file = mprOpenFile(mprGetRelPath(path, NULL), O_RDONLY | O_TEXT, 0444)) == 0) {
         mprError("Cannot open %s for config directives", path);
         return MPR_ERR_CANT_OPEN;
     }
@@ -2204,6 +2204,12 @@ static bool conditionalDefinition(MaState *state, cchar *key)
     } else if (scaselessmatch(key, "BIT_DEBUG")) {
         result = BIT_DEBUG;
 #endif
+
+    } else if (scaselessmatch(key, "dynamic")) {
+        result = !state->appweb->staticLink;
+
+    } else if (scaselessmatch(key, "static")) {
+        result = state->appweb->staticLink;
 
     } else if (state->appweb->skipModules) {
         /* ESP utility needs to be able to load mod_esp */
