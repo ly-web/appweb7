@@ -47,9 +47,9 @@ Bit.load({
         '+required': [ 'bit', 'pcre'],
 
         /*
-            Optional packs to search for when configuring
+            Optional packs to automatically configure
          */
-        '+optional': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'ejscript', 'esp', 'est', 'man', 'man2html',
+        '+optional': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'esp', 'est', 'man', 'man2html',
             'pmaker', 'php', 'sqlite', 'utest', 'zip' ],
 
         /*
@@ -92,11 +92,13 @@ Bit.load({
             /*
                 Enable debug trace and asserts to the log file.
                 This is enabled by default for debug builds. 
-
                 tracing: true,
              */
         },
 
+        /*
+            EST SSL stack configuration
+         */
         est: {
             camellia: false,
             padlock: false,
@@ -110,7 +112,6 @@ Bit.load({
     },
 
     usage: {
-        assert:       'Enable program assertions (true|false)',
         static:       'Build with static linking (true|false)',
         'esp.mdb':    'Enable ESP MDB database support (true|false)',
         'esp.sdb':    'Enable ESP SQLite database support (true|flase)',
@@ -132,6 +133,7 @@ Bit.load({
 
 
     packs: {
+        ejscript: {},
         est: {},
         http: {
             enable: true,
