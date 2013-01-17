@@ -104,7 +104,7 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
         securityToken = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, "");
         if (!smatch(sessionToken, securityToken)) {
             httpError(conn, HTTP_CODE_NOT_ACCEPTABLE, 
-                "Security token does not match. Potential CSRF attack. Denying request");
+                "Security token does not match. Potential CSRF attack. Denying request.");
             return 0;
         }
     }
