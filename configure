@@ -20,4 +20,7 @@ if [ "${MIN_BIT}" = "${ver}" ] ; then
     echo Please upgrade \"bit\" to $MIN_BIT
     exit 255
 fi
+if [ -f start.bit ] ; then
+    bit clean >/dev/null 2>&1
+fi
 bit configure "$@"
