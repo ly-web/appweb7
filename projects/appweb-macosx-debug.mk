@@ -45,6 +45,7 @@ all: prep \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
         $(CONFIG)/bin/setConfig \
+        $(CONFIG)/bin/libapp.dylib \
         $(CONFIG)/bin/appweb \
         src/server/cache \
         $(CONFIG)/bin/testAppweb \
@@ -88,8 +89,8 @@ clean:
 	rm -rf $(CONFIG)/bin/authpass
 	rm -rf $(CONFIG)/bin/cgiProgram
 	rm -rf $(CONFIG)/bin/setConfig
+	rm -rf $(CONFIG)/bin/libapp.dylib
 	rm -rf $(CONFIG)/bin/appweb
-	rm -rf src/server/cache
 	rm -rf $(CONFIG)/bin/testAppweb
 	rm -rf test/cgi-bin/testScript
 	rm -rf test/web/caching/cache.cgi
@@ -122,6 +123,9 @@ clean:
 	rm -rf $(CONFIG)/obj/mdb.o
 	rm -rf $(CONFIG)/obj/sdb.o
 	rm -rf $(CONFIG)/obj/esp.o
+	rm -rf $(CONFIG)/obj/ejsLib.o
+	rm -rf $(CONFIG)/obj/ejs.o
+	rm -rf $(CONFIG)/obj/ejsc.o
 	rm -rf $(CONFIG)/obj/cgiHandler.o
 	rm -rf $(CONFIG)/obj/ejsHandler.o
 	rm -rf $(CONFIG)/obj/phpHandler.o
@@ -130,6 +134,7 @@ clean:
 	rm -rf $(CONFIG)/obj/authpass.o
 	rm -rf $(CONFIG)/obj/cgiProgram.o
 	rm -rf $(CONFIG)/obj/setConfig.o
+	rm -rf $(CONFIG)/obj/slink.o
 	rm -rf $(CONFIG)/obj/appweb.o
 	rm -rf $(CONFIG)/obj/appwebMonitor.o
 	rm -rf $(CONFIG)/obj/testAppweb.o
@@ -139,7 +144,8 @@ clean:
 clobber: clean
 	rm -fr ./$(CONFIG)
 
-$(CONFIG)/inc/bitos.h: 
+$(CONFIG)/inc/bitos.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/bitos.h
 	cp -r src/bitos.h $(CONFIG)/inc/bitos.h
 
@@ -522,6 +528,18 @@ $(CONFIG)/bin/setConfig:  \
         $(CONFIG)/obj/setConfig.o
 	$(CC) -o $(CONFIG)/bin/setConfig -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o -lmpr $(LIBS)
 
+$(CONFIG)/obj/slink.o: \
+        src/server/slink.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h
+	$(CC) -c -o $(CONFIG)/obj/slink.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/slink.c
+
+$(CONFIG)/bin/libapp.dylib:  \
+        $(CONFIG)/bin/esp \
+        $(CONFIG)/bin/libmod_esp.dylib \
+        $(CONFIG)/obj/slink.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libapp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libapp.dylib $(CONFIG)/obj/slink.o -lmod_esp $(LIBS) -lappweb -lhttp -lpcre -lmpr -lpam
+
 $(CONFIG)/obj/appweb.o: \
         src/server/appweb.c \
         $(CONFIG)/inc/bit.h \
@@ -533,8 +551,9 @@ $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/bin/libmod_esp.dylib \
         $(CONFIG)/bin/libmod_cgi.dylib \
+        $(CONFIG)/bin/libapp.dylib \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lmod_cgi -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 src/server/cache: 
 	cd src/server >/dev/null ;\

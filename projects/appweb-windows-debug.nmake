@@ -46,6 +46,7 @@ all: prep \
         $(CONFIG)\bin\authpass.exe \
         $(CONFIG)\bin\cgiProgram.exe \
         $(CONFIG)\bin\setConfig.exe \
+        $(CONFIG)\bin\libapp.dll \
         $(CONFIG)\bin\appweb.exe \
         $(CONFIG)\bin\appwebMonitor.exe \
         $(CONFIG)\bin\appwebMonitor.ico \
@@ -91,10 +92,10 @@ clean:
 	-if exist $(CONFIG)\bin\authpass.exe del /Q $(CONFIG)\bin\authpass.exe
 	-if exist $(CONFIG)\bin\cgiProgram.exe del /Q $(CONFIG)\bin\cgiProgram.exe
 	-if exist $(CONFIG)\bin\setConfig.exe del /Q $(CONFIG)\bin\setConfig.exe
+	-if exist $(CONFIG)\bin\libapp.dll del /Q $(CONFIG)\bin\libapp.dll
 	-if exist $(CONFIG)\bin\appweb.exe del /Q $(CONFIG)\bin\appweb.exe
 	-if exist $(CONFIG)\bin\appwebMonitor.exe del /Q $(CONFIG)\bin\appwebMonitor.exe
 	-if exist $(CONFIG)\bin\appwebMonitor.ico del /Q $(CONFIG)\bin\appwebMonitor.ico
-	-if exist src\server\cache del /Q src\server\cache
 	-if exist $(CONFIG)\bin\testAppweb.exe del /Q $(CONFIG)\bin\testAppweb.exe
 	-if exist test\cgi-bin\testScript del /Q test\cgi-bin\testScript
 	-if exist test\web\caching\cache.cgi del /Q test\web\caching\cache.cgi
@@ -128,6 +129,9 @@ clean:
 	-if exist $(CONFIG)\obj\mdb.obj del /Q $(CONFIG)\obj\mdb.obj
 	-if exist $(CONFIG)\obj\sdb.obj del /Q $(CONFIG)\obj\sdb.obj
 	-if exist $(CONFIG)\obj\esp.obj del /Q $(CONFIG)\obj\esp.obj
+	-if exist $(CONFIG)\obj\ejsLib.obj del /Q $(CONFIG)\obj\ejsLib.obj
+	-if exist $(CONFIG)\obj\ejs.obj del /Q $(CONFIG)\obj\ejs.obj
+	-if exist $(CONFIG)\obj\ejsc.obj del /Q $(CONFIG)\obj\ejsc.obj
 	-if exist $(CONFIG)\obj\cgiHandler.obj del /Q $(CONFIG)\obj\cgiHandler.obj
 	-if exist $(CONFIG)\obj\ejsHandler.obj del /Q $(CONFIG)\obj\ejsHandler.obj
 	-if exist $(CONFIG)\obj\phpHandler.obj del /Q $(CONFIG)\obj\phpHandler.obj
@@ -136,13 +140,15 @@ clean:
 	-if exist $(CONFIG)\obj\authpass.obj del /Q $(CONFIG)\obj\authpass.obj
 	-if exist $(CONFIG)\obj\cgiProgram.obj del /Q $(CONFIG)\obj\cgiProgram.obj
 	-if exist $(CONFIG)\obj\setConfig.obj del /Q $(CONFIG)\obj\setConfig.obj
+	-if exist $(CONFIG)\obj\slink.obj del /Q $(CONFIG)\obj\slink.obj
 	-if exist $(CONFIG)\obj\appweb.obj del /Q $(CONFIG)\obj\appweb.obj
 	-if exist $(CONFIG)\obj\appwebMonitor.obj del /Q $(CONFIG)\obj\appwebMonitor.obj
 	-if exist $(CONFIG)\obj\testAppweb.obj del /Q $(CONFIG)\obj\testAppweb.obj
 	-if exist $(CONFIG)\obj\testHttp.obj del /Q $(CONFIG)\obj\testHttp.obj
 	-if exist $(CONFIG)\obj\removeFiles.obj del /Q $(CONFIG)\obj\removeFiles.obj
 
-$(CONFIG)\inc\bitos.h: 
+$(CONFIG)\inc\bitos.h:  \
+        $(CONFIG)\inc\bit.h
 	-if exist $(CONFIG)\inc\bitos.h del /Q $(CONFIG)\inc\bitos.h
 	copy /Y src\bitos.h $(CONFIG)\inc\bitos.h
 
@@ -526,6 +532,18 @@ $(CONFIG)\bin\setConfig.exe:  \
         $(CONFIG)\obj\setConfig.obj
 	"$(LD)" -out:$(CONFIG)\bin\setConfig.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\setConfig.obj libmpr.lib $(LIBS)
 
+$(CONFIG)\obj\slink.obj: \
+        src\server\slink.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\esp.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\slink.c
+
+$(CONFIG)\bin\libapp.dll:  \
+        $(CONFIG)\bin\esp.exe \
+        $(CONFIG)\bin\libmod_esp.dll \
+        $(CONFIG)\obj\slink.obj
+	"$(LD)" -dll -out:$(CONFIG)\bin\libapp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj libmod_esp.lib $(LIBS) libappweb.lib libhttp.lib libpcre.lib libmpr.lib
+
 $(CONFIG)\obj\appweb.obj: \
         src\server\appweb.c \
         $(CONFIG)\inc\bit.h \
@@ -537,16 +555,15 @@ $(CONFIG)\bin\appweb.exe:  \
         $(CONFIG)\bin\libappweb.dll \
         $(CONFIG)\bin\libmod_esp.dll \
         $(CONFIG)\bin\libmod_cgi.dll \
+        $(CONFIG)\bin\libapp.dll \
         $(CONFIG)\obj\appweb.obj
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libmod_cgi.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
-$(CONFIG)\inc\appwebMonitor.h:  \
-        $(CONFIG)\inc\bit.h
+$(CONFIG)\inc\appwebMonitor.h: 
 	-if exist $(CONFIG)\inc\appwebMonitor.h del /Q $(CONFIG)\inc\appwebMonitor.h
 	copy /Y src\server\windows\appwebMonitor.h $(CONFIG)\inc\appwebMonitor.h
 
-$(CONFIG)\inc\monitorResources.h:  \
-        $(CONFIG)\inc\bit.h
+$(CONFIG)\inc\monitorResources.h: 
 	-if exist $(CONFIG)\inc\monitorResources.h del /Q $(CONFIG)\inc\monitorResources.h
 	copy /Y src\server\windows\monitorResources.h $(CONFIG)\inc\monitorResources.h
 
@@ -557,9 +574,7 @@ $(CONFIG)\obj\appwebMonitor.res: \
 $(CONFIG)\obj\appwebMonitor.obj: \
         src\server\windows\appwebMonitor.c \
         $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\mpr.h \
-        $(CONFIG)\inc\appwebMonitor.h \
-        $(CONFIG)\inc\monitorResources.h
+        $(CONFIG)\inc\mpr.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\appwebMonitor.obj -Fd$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\windows\appwebMonitor.c
 
 $(CONFIG)\bin\appwebMonitor.exe:  \

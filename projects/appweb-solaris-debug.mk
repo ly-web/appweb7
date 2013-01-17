@@ -45,6 +45,7 @@ all: prep \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
         $(CONFIG)/bin/setConfig \
+        $(CONFIG)/bin/libapp.so \
         $(CONFIG)/bin/appweb \
         src/server/cache \
         $(CONFIG)/bin/testAppweb \
@@ -88,8 +89,8 @@ clean:
 	rm -rf $(CONFIG)/bin/authpass
 	rm -rf $(CONFIG)/bin/cgiProgram
 	rm -rf $(CONFIG)/bin/setConfig
+	rm -rf $(CONFIG)/bin/libapp.so
 	rm -rf $(CONFIG)/bin/appweb
-	rm -rf src/server/cache
 	rm -rf $(CONFIG)/bin/testAppweb
 	rm -rf test/cgi-bin/testScript
 	rm -rf test/web/caching/cache.cgi
@@ -122,6 +123,9 @@ clean:
 	rm -rf $(CONFIG)/obj/mdb.o
 	rm -rf $(CONFIG)/obj/sdb.o
 	rm -rf $(CONFIG)/obj/esp.o
+	rm -rf $(CONFIG)/obj/ejsLib.o
+	rm -rf $(CONFIG)/obj/ejs.o
+	rm -rf $(CONFIG)/obj/ejsc.o
 	rm -rf $(CONFIG)/obj/cgiHandler.o
 	rm -rf $(CONFIG)/obj/ejsHandler.o
 	rm -rf $(CONFIG)/obj/phpHandler.o
@@ -130,6 +134,7 @@ clean:
 	rm -rf $(CONFIG)/obj/authpass.o
 	rm -rf $(CONFIG)/obj/cgiProgram.o
 	rm -rf $(CONFIG)/obj/setConfig.o
+	rm -rf $(CONFIG)/obj/slink.o
 	rm -rf $(CONFIG)/obj/appweb.o
 	rm -rf $(CONFIG)/obj/appwebMonitor.o
 	rm -rf $(CONFIG)/obj/testAppweb.o
@@ -139,7 +144,8 @@ clean:
 clobber: clean
 	rm -fr ./$(CONFIG)
 
-$(CONFIG)/inc/bitos.h: 
+$(CONFIG)/inc/bitos.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/bitos.h
 	cp -r src/bitos.h $(CONFIG)/inc/bitos.h
 
@@ -522,6 +528,18 @@ $(CONFIG)/bin/setConfig:  \
         $(CONFIG)/obj/setConfig.o
 	$(CC) -o $(CONFIG)/bin/setConfig $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o -lmpr $(LIBS) $(LDFLAGS)
 
+$(CONFIG)/obj/slink.o: \
+        src/server/slink.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h
+	$(CC) -c -o $(CONFIG)/obj/slink.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/slink.c
+
+$(CONFIG)/bin/libapp.so:  \
+        $(CONFIG)/bin/esp \
+        $(CONFIG)/bin/libmod_esp.so \
+        $(CONFIG)/obj/slink.o
+	$(CC) -shared -o $(CONFIG)/bin/libapp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o -lmod_esp $(LIBS) -lappweb -lhttp -lpcre -lmpr
+
 $(CONFIG)/obj/appweb.o: \
         src/server/appweb.c \
         $(CONFIG)/inc/bit.h \
@@ -533,8 +551,9 @@ $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/bin/libmod_esp.so \
         $(CONFIG)/bin/libmod_cgi.so \
+        $(CONFIG)/bin/libapp.so \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lmod_cgi -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
 
 src/server/cache: 
 	cd src/server >/dev/null ;\

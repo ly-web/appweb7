@@ -19,6 +19,9 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
+#ifndef BIT_EJS_ONE_MODULE
+    #define BIT_EJS_ONE_MODULE 1
+#endif
 #ifndef BIT_ESP_MDB
     #define BIT_ESP_MDB 1
 #endif
@@ -95,7 +98,7 @@
     #define BIT_MPR_MANAGER "appman"
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,est,man,man2html,pmaker,php,sqlite,utest,zip"
+    #define BIT_OPTIONAL "cgi,dir,doxygen,dsi,ejs,esp,est,man,man2html,pmaker,php,sqlite,utest,zip"
 #endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"

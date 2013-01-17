@@ -169,9 +169,13 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
 "${LD}" -out:${CONFIG}/bin/setConfig.exe -entry:WinMainCRTStartup -subsystem:Windows ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/setConfig.obj libmpr.lib ${LIBS}
 
+"${CC}" -c -Fo${CONFIG}/obj/slink.obj -Fd${CONFIG}/obj/slink.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
+
+"${LD}" -dll -out:${CONFIG}/bin/libapp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.obj libmod_esp.lib ${LIBS} libappweb.lib libhttp.lib libpcre.lib libmpr.lib
+
 "${CC}" -c -Fo${CONFIG}/obj/appweb.obj -Fd${CONFIG}/obj/appweb.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-"${LD}" -out:${CONFIG}/bin/appweb.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.obj libmod_cgi.lib libmod_esp.lib libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
+"${LD}" -out:${CONFIG}/bin/appweb.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.obj libapp.lib libmod_cgi.lib libmod_esp.lib libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
 rm -rf ${CONFIG}/inc/appwebMonitor.h
 cp -r src/server/windows/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h

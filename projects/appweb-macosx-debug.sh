@@ -165,9 +165,13 @@ ${CC} -c -o ${CONFIG}/obj/setConfig.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFI
 
 ${CC} -o ${CONFIG}/bin/setConfig -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/setConfig.o -lmpr ${LIBS}
 
+${CC} -c -o ${CONFIG}/obj/slink.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
+
+${CC} -dynamiclib -o ${CONFIG}/bin/libapp.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libapp.dylib ${CONFIG}/obj/slink.o -lmod_esp ${LIBS} -lappweb -lhttp -lpcre -lmpr -lpam
+
 ${CC} -c -o ${CONFIG}/obj/appweb.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-${CC} -o ${CONFIG}/bin/appweb -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
+${CC} -o ${CONFIG}/bin/appweb -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lapp -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 #  Omit build script /Users/mob/git/appweb/src/server/cache
 rm -rf ${CONFIG}/inc/testAppweb.h

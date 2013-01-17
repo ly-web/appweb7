@@ -165,9 +165,13 @@ ${CC} -c -o ${CONFIG}/obj/setConfig.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc
 
 ${CC} -o ${CONFIG}/bin/setConfig ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/setConfig.o -lmpr ${LIBS} ${LDFLAGS}
 
+${CC} -c -o ${CONFIG}/obj/slink.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
+
+${CC} -shared -o ${CONFIG}/bin/libapp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.o -lmod_esp ${LIBS} -lappweb -lhttp -lpcre -lmpr
+
 ${CC} -c -o ${CONFIG}/obj/appweb.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lapp -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
 
 #  Omit build script /Users/mob/git/appweb/src/server/cache
 rm -rf ${CONFIG}/inc/testAppweb.h
