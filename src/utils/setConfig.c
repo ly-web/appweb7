@@ -75,13 +75,13 @@ int main(int argc, char **argv) {
         mprError("Bad command line:\n"
             "  Usage: pathConfig [options]\n"
             "  Switches:\n"
-            "    --cache dir          # Cache dir"
-            "    --documents dir      # Static documents directory"
-            "    --group groupname    # Group name"
-            "    --home dir           # Server home directory"
-            "    --logs dir           # Log directory"
-            "    --modules dir        # moduels dir"
-            "    --port number        # HTTP port number"
+            "    --cache dir          # Cache dir\n"
+            "    --documents dir      # Static documents directory\n"
+            "    --group groupname    # Group name\n"
+            "    --home dir           # Server home directory\n"
+            "    --logs dir           # Log directory\n"
+            "    --modules dir        # moduels dir\n"
+            "    --port number        # HTTP port number\n"
             "    --user username      # User name");
 #endif
         return 1;
