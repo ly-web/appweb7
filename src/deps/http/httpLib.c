@@ -2298,7 +2298,7 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
         (conn->timeoutCallback)(conn);
     }
     if (!conn->connError) {
-        if (HTTP_STATE_BEGIN < conn->state && conn->state < HTTP_STATE_PARSED && 
+        if (HTTP_STATE_CONNECTED < conn->state && conn->state < HTTP_STATE_PARSED && 
                 (conn->started + limits->requestParseTimeout) < now) {
             httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Exceeded parse headers timeout of %Ld sec", 
                 limits->requestParseTimeout  / 1000);
@@ -14674,7 +14674,11 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
     }
     domainAtt = domain ? "; domain=" : "";
     if (domain && !strchr(domain, '.')) {
-        domain = sjoin(".", domain, NULL);
+        if (smatch(domain, "localhost")) {
+            domainAtt = domain = "";
+        } else {
+            domain = sjoin(".", domain, NULL);
+        }
     }
     if (lifespan > 0) {
         expiresAtt = "; expires=";
