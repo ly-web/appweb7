@@ -116,6 +116,7 @@ typedef struct EspRoute {
     HttpRoute       *route;                 /**< Back link to the owning route */
     MprHash         *env;                   /**< Environment variables for route */
     char            *compile;               /**< Compile template */
+    char            *archive;               /**< Archive template */
     char            *link;                  /**< Link template */
     char            *searchPath;            /**< Search path to use when locating compiler/linker */
     EspProc         controllerBase;         /**< Initialize base for a controller */

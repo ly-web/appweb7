@@ -28,7 +28,7 @@ static EspRoute *getEroute(HttpRoute *route);
 static int loadApp(HttpConn *conn, int *updated);
 static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
-static int  runAction(HttpConn *conn);
+static int runAction(HttpConn *conn);
 static void setRouteDirs(MaState *state, cchar *kind);
 static int unloadEsp(MprModule *mp);
 static bool viewExists(HttpConn *conn);
@@ -428,7 +428,8 @@ static int loadApp(HttpConn *conn, int *updated)
         }
         mprSetThreadData(esp->local, conn);
         if (mprLoadModule(mp) < 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", eroute->appModuleName);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, 
+                "Cannot load compiled esp module for %s", eroute->appModuleName);
             return 0;
         }
         *updated = 1;
@@ -506,6 +507,9 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->keepSource = parent->keepSource;
     eroute->showErrors = parent->showErrors;
     eroute->lifespan = parent->lifespan;
+    if (parent->archive) {
+        eroute->archive = sclone(parent->archive);
+    }
     if (parent->compile) {
         eroute->compile = sclone(parent->compile);
     }
@@ -756,7 +760,7 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_CANT_OPEN;
     }
     path = mprJoinPath(eroute->dbDir, path);
-    if ((eroute->edi = ediOpen(path, provider, flags)) == 0) {
+    if ((eroute->edi = ediOpen(mprGetRelPath(path, NULL), provider, flags)) == 0) {
         if (!(state->flags & MA_PARSE_NON_SERVER)) {
             mprError("Cannot open database %s", path);
             return MPR_ERR_CANT_OPEN;
@@ -911,6 +915,21 @@ static int espLinkDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_MEMORY;
     }
     eroute->link = sclone(value);
+    return 0;
+}
+
+
+/*
+    EspArchive template
+ */
+static int espArchiveDirective(MaState *state, cchar *key, cchar *value)
+{
+    EspRoute    *eroute;
+
+    if ((eroute = getEroute(state->route)) == 0) {
+        return MPR_ERR_MEMORY;
+    }
+    eroute->archive = sclone(value);
     return 0;
 }
 
@@ -1114,6 +1133,7 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
         Add configuration file directives
      */
     maAddDirective(appweb, "EspApp", espAppDirective);
+    maAddDirective(appweb, "EspArchive", espArchiveDirective);
     maAddDirective(appweb, "EspCompile", espCompileDirective);
     maAddDirective(appweb, "EspDb", espDbDirective);
     maAddDirective(appweb, "EspDir", espDirDirective);

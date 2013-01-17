@@ -28,8 +28,10 @@
 static int getEspToken(EspParse *parse);
 static cchar *getDebug();
 static cchar *getEnvString(EspRoute *eroute, cchar *key, cchar *defaultValue);
+static cchar *getArExt(cchar *os);
 static cchar *getShlibExt(cchar *os);
 static cchar *getShobjExt(cchar *os);
+static cchar *getArPath(cchar *os, cchar *arch);
 static cchar *getCompilerName(cchar *os, cchar *arch);
 static cchar *getCompilerPath(cchar *os, cchar *arch);
 static cchar *getLibs(cchar *os);
@@ -43,15 +45,17 @@ static bool matchToken(cchar **str, cchar *token);
 /************************************* Code ***********************************/
 /*
     Tokens:
+    AR          Library archiver (ar)   
+    ARLIB       Archive library extension (.a, .lib)
     ARCH        Build architecture (64)
-    GCC_ARCH    ARCH mapped to gcc -arch switches (x86_64)
     CC          Compiler (cc)
     DEBUG       Debug compilation options (-g, -Zi -Od)
+    GCC_ARCH    ARCH mapped to gcc -arch switches (x86_64)
     INC         Include directory out/inc
-    LIB         Library directory (out/lib, xcode/VS: out/bin)
+    LIBPATH     Library search path
     LIBS        Libraries required to link with ESP
     OBJ         Name of compiled source (out/lib/view-MD5.o)
-    MOD         Output module (view_MD5.dylib)
+    MOD         Output module (view_MD5)
     SHLIB       Host Shared library (.lib, .so)
     SHOBJ       Host Shared Object (.dll, .so)
     SRC         Source code for view or controller (already templated)
@@ -79,6 +83,10 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
             if (matchToken(&cp, "${ARCH}")) {
                 /* Target architecture (x86|mips|arm|x64) */
                 mprPutStringToBuf(buf, arch);
+
+            } else if (matchToken(&cp, "${ARLIB}")) {
+                /* .a, .lib */
+                mprPutStringToBuf(buf, getArExt(os));
 
             } else if (matchToken(&cp, "${GCC_ARCH}")) {
                 /* Target architecture mapped to GCC mtune|mcpu values */
@@ -138,33 +146,48 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
                 mprPutStringToBuf(buf, getWinSDK());
 
             /*
-                These vars can be configured from environment variables.
-                NOTE: the default esp.conf includes "esp->vxworks.conf" which has EspEnv definitions for the configured 
-                VxWorks toolchain
+                These vars can be also be configured from environment variables.
+                NOTE: the default esp.conf includes "esp->vxworks.conf" which has EspEnv definitions for the configured VxWorks toolchain
              */
+            } else if (matchToken(&cp, "${AR}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "AR", getArPath(os, arch)));
+
             } else if (matchToken(&cp, "${CC}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "CC", getCompilerPath(os, arch)));
-            } else if (matchToken(&cp, "${LINK}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "LINK", ""));
+
             } else if (matchToken(&cp, "${CFLAGS}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "CFLAGS", ""));
+
             } else if (matchToken(&cp, "${DEBUG}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "DEBUG", getDebug()));
+
             } else if (matchToken(&cp, "${LDFLAGS}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "LDFLAGS", ""));
 
+            } else if (matchToken(&cp, "${LIB}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "LIB", ""));
+
+            } else if (matchToken(&cp, "${LINK}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "LINK", ""));
+
             } else if (matchToken(&cp, "${WIND_BASE}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_BASE", WIND_BASE));
+
             } else if (matchToken(&cp, "${WIND_HOME}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_HOME", WIND_HOME));
+
             } else if (matchToken(&cp, "${WIND_HOST_TYPE}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_HOST_TYPE", WIND_HOST_TYPE));
+
             } else if (matchToken(&cp, "${WIND_PLATFORM}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_PLATFORM", WIND_PLATFORM));
+
             } else if (matchToken(&cp, "${WIND_GNU_PATH}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_GNU_PATH", WIND_GNU_PATH));
+
             } else if (matchToken(&cp, "${WIND_CCNAME}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_CCNAME", getCompilerName(os, arch)));
+
             } else {
                 mprPutCharToBuf(buf, *cp++);
             }
@@ -287,7 +310,11 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
     if (runCommand(conn, eroute->compile, csource, module) < 0) {
         return 0;
     }
-    if (eroute->link) {
+    if (eroute->archive) {
+        if (runCommand(conn, eroute->archive, csource, module) < 0) {
+            return 0;
+        }
+    } else if (eroute->link) {
         /* WARNING: GC yield here */
         if (runCommand(conn, eroute->link, csource, module) < 0) {
             return 0;
@@ -780,6 +807,15 @@ static cchar *getObjExt(cchar *os)
 }
 
 
+static cchar *getArExt(cchar *os)
+{
+    if (smatch(os, "windows")) {
+        return ".lib";
+    }
+    return ".a";
+}
+
+
 static cchar *getCompilerName(cchar *os, cchar *arch)
 {
     cchar       *name;
@@ -844,7 +880,7 @@ static cchar *getLibs(cchar *os)
     if (smatch(os, "windows")) {
         libs = "\"${LIBPATH}\\libmod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\"";
     } else {
-        libs = "${LIBPATH}/libmod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
+        libs = "-lmod_esp -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
     }
     return libs;
 }
@@ -930,6 +966,33 @@ static cchar *getVisualStudio()
     return path;
 #else
     return "";
+#endif
+}
+
+
+static cchar *getArPath(cchar *os, cchar *arch)
+{
+#if WINDOWS
+    /* 
+        Get the real system architecture (32 or 64 bit)
+     */
+    MaAppweb *appweb = MPR->appwebService;
+    cchar *path = getVisualStudio();
+    if (scontains(appweb->platform, "-x64-")) {
+        //  MOB - CHECK
+        int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
+        if (is64BitSystem) {
+            path = mprJoinPath(path, "VC/bin/amd64/lib.exe");
+        } else {
+            /* Cross building on a 32-bit system */
+            path = mprJoinPath(path, "VC/bin/x86_amd64/lib.exe");
+        }
+    } else {
+        path = mprJoinPath(path, "VC/bin/lib.exe");
+    }
+    return path;
+#else
+    return "ar";
 #endif
 }
 

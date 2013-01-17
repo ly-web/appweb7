@@ -170,6 +170,10 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
     assert(path && *path);
     assert(view);
 
+    if (!route) {
+        mprError("Route not defined for view %s", path);
+        return;
+    }
     esp = MPR->espService;
 	path = mprGetPortablePath(mprJoinPath(route->dir, path));
     mprAddKey(esp->views, path, view);
@@ -1033,6 +1037,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->edi);
         mprMark(eroute->env);
         mprMark(eroute->layoutsDir);
+        mprMark(eroute->archive);
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
         mprMark(eroute->staticDir);
