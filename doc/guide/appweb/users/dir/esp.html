@@ -467,6 +467,9 @@ EspLoad blog cache/app.dylib
                             application provides the ultimate in performance and eliminates any per-request overhead
                             in checking for changed modules or source code.</p>
                             <p>The Name argument to the directive should be a unique, descriptive name for the application.
+                            By default, when esp compiles an application, this name is the folder name of the application, 
+                            though this can be overridden by the esp --name switch.</p>
+                            <p>
                             The second argument is a path to the compiled, flat application. This by default is called
                             <em>cache/app.so</em> where <em>.so</em> may vary depending on the O/S platform. The path
                             may be specified with or without an extension. Omitting the extension will allow a common
