@@ -50,7 +50,7 @@ Bit.load({
             Optional packs to automatically discover and configure
             OpenSSL is the default SSL stack. Pre-release EST must be explicitly requested.
          */
-        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'est', 'man', 'man2html', 'openssl',
+        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'est', 'man', 'man2html', 
             'pmaker', 'php', 'sqlite', 'utest', 'zip' ],
 
         /*
