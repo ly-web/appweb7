@@ -1,0 +1,18 @@
+/*
+	start.bit - Bit file for the spyFilter sample
+ */
+
+Bit.load({
+    defaults: {
+        '+includes': [ '/usr/lib/appweb/latest/inc' ],
+        '+libpaths': [ '/usr/lib/appweb/latest/bin' ],
+    },
+	targets: {
+		simpleHandler: {
+			type: 'lib',
+			sources: ['*.c'],
+            '+libraries': [ 'appweb', 'http', 'mpr', 'mprssl' ],
+		}
+	},
+})
+
