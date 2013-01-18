@@ -18439,13 +18439,12 @@ static int getPathInfo(MprRomFileSystem *rfs, cchar *path, MprPath *info)
     MprRomInode *ri;
 
     assert(path && *path);
+    memset(info, 0, sizeof(MprPath));
+    info->checked = 1;
 
     if ((ri = (MprRomInode*) lookup(rfs, path)) == 0) {
         return MPR_ERR_CANT_FIND;
     }
-    memset(info, 0, sizeof(MprPath));
-
-    info->checked = 1;
     info->valid = 1;
     info->size = ri->size;
     info->mtime = 0;
