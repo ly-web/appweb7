@@ -47,7 +47,7 @@ MAIN(simpleClient, int argc, char **argv, char **envp)
     /* 
        Create an Http service object
      */
-    app->http = httpCreate(mpr);
+    app->http = httpCreate(HTTP_CLIENT_SIDE);
 
     /* 
        Get a client http object to work with. We can issue multiple requests with this one object.

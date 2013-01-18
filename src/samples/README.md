@@ -6,10 +6,24 @@ directory. This is also available online at:
 
   http://www.embedthis.com/products/appweb/doc/product/index.html
 
-The samples are into code samples for the C/C++ language, and pure Ejscript 
-samples. If you are using C/C++, you can still the C APIs.
+These samples are configured to use an installed Appweb to provide the
+appweb.h header and libappweb library at /usr/lib/apppweb.
 
 The following samples are available:
+
+C Language
+---
+    simpleClient        Http client
+    simpleEsp           Simple ESP  web framework sample
+    simpleHandler       Simple Appweb URL handler
+    simpleModule        Simple Appweb loadable module
+    simpleServer        Simple Http server
+    spyFilter           Simple Http server
+
+C++ Language
+---
+    cppHandler          Simple Appweb URL handler
+    cppModule           Simple Appweb loadable module
 
 Ejscript
 ---
@@ -20,27 +34,12 @@ Ejscript
     sessions            Demonstrates how to store client session state data
     upload              Demonstrates how to use the file upload feature
 
-C/C++ Language
----
-    configByApi         Web server configured via API and not via a config file
-    ejsApi              Demonstrates the Ejscript API
-    pollEventLoop       Http server using a polling event loop
-    selectEventLoop     Http server using a select event loop
-    simpleClient        Http client
-    simpleEgi           Simple Embedded Gateway Interface sample
-    simpleEjs           Simple Ejscript web framework sample
-    simpleHandler       Simple Appweb URL handler
-    simpleModule        Simple Appweb loadable module
-    simpleServer        Simple Http server
-    typeicalServer      A more typical (less trivial) Http server example
-    winEventLoop        Http server using a windows messages event loop
-
 Licensing
 ---
 
 Please see: 
 
-    http://www.embedthis.com/downloads/licensing.html
+    http://embedthis.com/downloads/licensing.html
 
 
 Support
@@ -50,7 +49,7 @@ avail yourself of free support via our Online Forum. This is a community based
 forum where users can share ideas and ask questions. You can also search the
 forum for answers to past questions. To visit the Appweb forum, go to:
 
-    http://appwebserver.org/forum/
+    https://groups.google.com/group/appweb
 
 You also have the option of purchasing support with the Embedthis Commercial
 License. It includes paid support as part of the license benefits.
