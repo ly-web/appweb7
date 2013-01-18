@@ -598,9 +598,6 @@ static void manageEsp(Esp *esp, int flags)
         mprMark(esp->internalOptions);
         mprMark(esp->local);
         mprMark(esp->mutex);
-#if UNUSED
-        mprMark(esp->sessionCache);
-#endif
         mprMark(esp->views);
     }
 }
@@ -1123,11 +1120,6 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if ((esp->actions = mprCreateHash(-1, 0)) == 0) {
         return 0;
     }
-#if UNUSED
-    if ((esp->sessionCache = mprCreateCache(MPR_CACHE_SHARED)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-#endif
 
     /*
         Add configuration file directives

@@ -405,7 +405,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
 {
     EspParse    parse;
     EspRoute    *eroute;
-    char        *control, *incBuf, *incText, *global, *token, *body, *where;
+    char        *control, *incBuf, *incText, *global, *token, *body, *where, *dir;
     char        *rest, *start, *end, *include, *line, *fmt, *layoutPage, *layoutBuf;
     ssize       len;
     int         tid;
@@ -576,10 +576,12 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         if (end && end[slen(end) - 1] != '\n') {
             end = sjoin(end, "\n", NULL);
         }
-        assert(slen(path) > slen(route->dir));
-        assert(sncmp(path, route->dir, slen(route->dir)) == 0);
-        if (sncmp(path, route->dir, slen(route->dir)) == 0) {
-            path = &path[slen(route->dir) + 1];
+        dir = mprGetRelPath(route->dir, NULL);
+        path = mprGetRelPath(path, NULL);
+        assert(slen(path) > slen(dir));
+        assert(sncmp(path, dir, slen(dir)) == 0);
+        if (sncmp(path, dir, slen(dir)) == 0) {
+            path = &path[slen(dir) + 1];
         }
         body = sfmt(\
             "/*\n   Generated from %s\n */\n"\

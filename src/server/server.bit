@@ -85,10 +85,12 @@ Bit.load({
             action: "
                 let files = [ '.' ]
                 files += Path('web').files('**')
-                files += Path('junk').files('**', {exclude: /\\/cache|\\/controllers|\\/views|\\/layouts|\\.conf/ })
+                files += Path('junk/static').files('**')
+                files += Path('junk/db').files('*.mdb')
                 files.push('appweb.conf')
+                files.push('mob.conf')
                 files.push('auth.conf')
-                // files.push('esp.conf')
+                files.push('esp.conf')
                 Path('romFiles.c').write(Cmd.run(['makerom', '--prefix', '/'] + files))
             ",
         },

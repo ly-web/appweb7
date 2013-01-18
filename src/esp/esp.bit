@@ -26,16 +26,22 @@ Bit.load({
             files: [ 'esp.conf' ],
         },
 
+        'esp.conf.server': {
+            type: 'file',
+            path: '../server/esp.conf',
+            files: [ 'esp.conf' ],
+        },
+
         'esp.www': {
             type: 'file',
-            path: '${LIB}/esp-www',
+            path: '${BIN}/esp-www',
             files: [ 'www' ],
             platforms: [ 'local' ],
         },
 
         'esp-appweb.conf': {
             type: 'file',
-            path: '${LIB}/esp-appweb.conf',
+            path: '${BIN}/esp-appweb.conf',
             files: [ 'esp-appweb.conf' ],
             platforms: [ 'local' ],
         },

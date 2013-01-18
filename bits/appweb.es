@@ -89,6 +89,7 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
         })
     }
     install(bit.dir.bin + '/esp.conf', p.bin)
+    install(bit.dir.bin + '/esp.conf', p.config)
     install(bit.dir.bin + '/esp-www', p.bin)
     install(bit.dir.bin + '/esp-appweb.conf', p.bin)
     install(bit.dir.inc.join('*.h'), p.inc)
