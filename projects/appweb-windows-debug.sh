@@ -41,17 +41,17 @@ cp -r src/deps/mpr/mpr.h ${CONFIG}/inc/mpr.h
 rm -rf ${CONFIG}/inc/est.h
 cp -r src/deps/est/est.h ${CONFIG}/inc/est.h
 
+"${CC}" -c -Fo${CONFIG}/obj/estLib.obj -Fd${CONFIG}/obj/estLib.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/est/estLib.c
+
+"${LD}" -dll -out:${CONFIG}/bin/libest.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/estLib.obj ${LIBS}
+
 "${CC}" -c -Fo${CONFIG}/obj/mprSsl.obj -Fd${CONFIG}/obj/mprSsl.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprSsl.c
 
-"${LD}" -dll -out:${CONFIG}/bin/libmprssl.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mprSsl.obj libmpr.lib ${LIBS}
+"${LD}" -dll -out:${CONFIG}/bin/libmprssl.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mprSsl.obj libest.lib libmpr.lib ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/manager.obj -Fd${CONFIG}/obj/manager.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/manager.c
 
 "${LD}" -out:${CONFIG}/bin/appman.exe -entry:WinMainCRTStartup -subsystem:Windows ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/manager.obj libmpr.lib ${LIBS}
-
-"${CC}" -c -Fo${CONFIG}/obj/makerom.obj -Fd${CONFIG}/obj/makerom.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/makerom.c
-
-"${LD}" -out:${CONFIG}/bin/makerom.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/makerom.obj libmpr.lib ${LIBS}
 
 rm -rf ${CONFIG}/bin/ca.crt
 cp -r src/deps/est/ca.crt ${CONFIG}/bin/ca.crt
@@ -147,6 +147,9 @@ cp -r src/esp/mdb.h ${CONFIG}/inc/mdb.h
 rm -rf ${CONFIG}/bin/esp.conf
 cp -r src/esp/esp.conf ${CONFIG}/bin/esp.conf
 
+rm -rf src/server/esp.conf
+cp -r src/esp/esp.conf src/server/esp.conf
+
 rm -rf ${CONFIG}/bin/esp-www
 cp -r src/esp/www ${CONFIG}/bin/esp-www
 
@@ -156,6 +159,10 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 "${CC}" -c -Fo${CONFIG}/obj/cgiHandler.obj -Fd${CONFIG}/obj/cgiHandler.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
 
 "${LD}" -dll -out:${CONFIG}/bin/libmod_cgi.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiHandler.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
+
+"${CC}" -c -Fo${CONFIG}/obj/sslModule.obj -Fd${CONFIG}/obj/sslModule.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/sslModule.c
+
+"${LD}" -dll -out:${CONFIG}/bin/libmod_ssl.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sslModule.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
 "${CC}" -c -Fo${CONFIG}/obj/authpass.obj -Fd${CONFIG}/obj/authpass.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/authpass.c
 
@@ -175,7 +182,7 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
 "${CC}" -c -Fo${CONFIG}/obj/appweb.obj -Fd${CONFIG}/obj/appweb.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-"${LD}" -out:${CONFIG}/bin/appweb.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.obj libapp.lib libmod_cgi.lib libmod_esp.lib libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
+"${LD}" -out:${CONFIG}/bin/appweb.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.obj libapp.lib libmod_cgi.lib libmod_ssl.lib libmod_esp.lib libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
 rm -rf ${CONFIG}/inc/appwebMonitor.h
 cp -r src/server/windows/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h

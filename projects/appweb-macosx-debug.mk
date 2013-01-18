@@ -27,7 +27,7 @@ all: prep \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/bin/libmprssl.dylib \
         $(CONFIG)/bin/appman \
-        $(CONFIG)/bin/makerom \
+        $(CONFIG)/bin/libest.dylib \
         $(CONFIG)/bin/ca.crt \
         $(CONFIG)/bin/libpcre.dylib \
         $(CONFIG)/bin/libhttp.dylib \
@@ -39,6 +39,7 @@ all: prep \
         $(CONFIG)/bin/libmod_esp.dylib \
         $(CONFIG)/bin/esp \
         $(CONFIG)/bin/esp.conf \
+        src/server/esp.conf \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
         $(CONFIG)/bin/libmod_cgi.dylib \
@@ -73,7 +74,7 @@ clean:
 	rm -rf $(CONFIG)/bin/libmpr.dylib
 	rm -rf $(CONFIG)/bin/libmprssl.dylib
 	rm -rf $(CONFIG)/bin/appman
-	rm -rf $(CONFIG)/bin/makerom
+	rm -rf $(CONFIG)/bin/libest.dylib
 	rm -rf $(CONFIG)/bin/ca.crt
 	rm -rf $(CONFIG)/bin/libpcre.dylib
 	rm -rf $(CONFIG)/bin/libhttp.dylib
@@ -85,6 +86,7 @@ clean:
 	rm -rf $(CONFIG)/bin/libmod_esp.dylib
 	rm -rf $(CONFIG)/bin/esp
 	rm -rf $(CONFIG)/bin/esp.conf
+	rm -rf src/server/esp.conf
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
 	rm -rf $(CONFIG)/bin/libmod_cgi.dylib
@@ -176,6 +178,17 @@ $(CONFIG)/inc/est.h:  \
 	rm -fr $(CONFIG)/inc/est.h
 	cp -r src/deps/est/est.h $(CONFIG)/inc/est.h
 
+$(CONFIG)/obj/estLib.o: \
+        src/deps/est/estLib.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/est.h
+	$(CC) -c -o $(CONFIG)/obj/estLib.o -arch x86_64 $(DFLAGS) -I$(CONFIG)/inc src/deps/est/estLib.c
+
+$(CONFIG)/bin/libest.dylib:  \
+        $(CONFIG)/inc/est.h \
+        $(CONFIG)/obj/estLib.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libest.dylib $(CONFIG)/obj/estLib.o $(LIBS)
+
 $(CONFIG)/obj/mprSsl.o: \
         src/deps/mpr/mprSsl.c \
         $(CONFIG)/inc/bit.h \
@@ -185,8 +198,9 @@ $(CONFIG)/obj/mprSsl.o: \
 
 $(CONFIG)/bin/libmprssl.dylib:  \
         $(CONFIG)/bin/libmpr.dylib \
+        $(CONFIG)/bin/libest.dylib \
         $(CONFIG)/obj/mprSsl.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -L../packages-macosx-x64/openssl/latest -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS) -lssl -lcrypto
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -L../packages-macosx-x64/openssl/latest -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lest -lmpr $(LIBS) -lssl -lcrypto
 
 $(CONFIG)/obj/manager.o: \
         src/deps/mpr/manager.c \
@@ -198,17 +212,6 @@ $(CONFIG)/bin/appman:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/manager.o
 	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o -lmpr $(LIBS)
-
-$(CONFIG)/obj/makerom.o: \
-        src/deps/mpr/makerom.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
-
-$(CONFIG)/bin/makerom:  \
-        $(CONFIG)/bin/libmpr.dylib \
-        $(CONFIG)/obj/makerom.o
-	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS)
 
 $(CONFIG)/bin/ca.crt: 
 	rm -fr $(CONFIG)/bin/ca.crt
@@ -481,6 +484,10 @@ $(CONFIG)/bin/esp:  \
 $(CONFIG)/bin/esp.conf: 
 	rm -fr $(CONFIG)/bin/esp.conf
 	cp -r src/esp/esp.conf $(CONFIG)/bin/esp.conf
+
+src/server/esp.conf: 
+	rm -fr src/server/esp.conf
+	cp -r src/esp/esp.conf src/server/esp.conf
 
 $(CONFIG)/bin/esp-www: 
 	rm -fr $(CONFIG)/bin/esp-www

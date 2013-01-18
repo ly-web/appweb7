@@ -27,7 +27,7 @@ all: prep \
         $(CONFIG)/bin/libmpr.so \
         $(CONFIG)/bin/libmprssl.so \
         $(CONFIG)/bin/appman \
-        $(CONFIG)/bin/makerom \
+        $(CONFIG)/bin/libest.so \
         $(CONFIG)/bin/ca.crt \
         $(CONFIG)/bin/libpcre.so \
         $(CONFIG)/bin/libhttp.so \
@@ -39,9 +39,11 @@ all: prep \
         $(CONFIG)/bin/libmod_esp.so \
         $(CONFIG)/bin/esp \
         $(CONFIG)/bin/esp.conf \
+        src/server/esp.conf \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
         $(CONFIG)/bin/libmod_cgi.so \
+        $(CONFIG)/bin/libmod_ssl.so \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
         $(CONFIG)/bin/setConfig \
@@ -71,7 +73,7 @@ clean:
 	rm -rf $(CONFIG)/bin/libmpr.so
 	rm -rf $(CONFIG)/bin/libmprssl.so
 	rm -rf $(CONFIG)/bin/appman
-	rm -rf $(CONFIG)/bin/makerom
+	rm -rf $(CONFIG)/bin/libest.so
 	rm -rf $(CONFIG)/bin/ca.crt
 	rm -rf $(CONFIG)/bin/libpcre.so
 	rm -rf $(CONFIG)/bin/libhttp.so
@@ -83,9 +85,11 @@ clean:
 	rm -rf $(CONFIG)/bin/libmod_esp.so
 	rm -rf $(CONFIG)/bin/esp
 	rm -rf $(CONFIG)/bin/esp.conf
+	rm -rf src/server/esp.conf
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
 	rm -rf $(CONFIG)/bin/libmod_cgi.so
+	rm -rf $(CONFIG)/bin/libmod_ssl.so
 	rm -rf $(CONFIG)/bin/authpass
 	rm -rf $(CONFIG)/bin/cgiProgram
 	rm -rf $(CONFIG)/bin/setConfig
@@ -172,6 +176,17 @@ $(CONFIG)/inc/est.h:  \
 	rm -fr $(CONFIG)/inc/est.h
 	cp -r src/deps/est/est.h $(CONFIG)/inc/est.h
 
+$(CONFIG)/obj/estLib.o: \
+        src/deps/est/estLib.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/est.h
+	$(CC) -c -o $(CONFIG)/obj/estLib.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/est/estLib.c
+
+$(CONFIG)/bin/libest.so:  \
+        $(CONFIG)/inc/est.h \
+        $(CONFIG)/obj/estLib.o
+	$(CC) -shared -o $(CONFIG)/bin/libest.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/estLib.o $(LIBS)
+
 $(CONFIG)/obj/mprSsl.o: \
         src/deps/mpr/mprSsl.c \
         $(CONFIG)/inc/bit.h \
@@ -181,8 +196,9 @@ $(CONFIG)/obj/mprSsl.o: \
 
 $(CONFIG)/bin/libmprssl.so:  \
         $(CONFIG)/bin/libmpr.so \
+        $(CONFIG)/bin/libest.so \
         $(CONFIG)/obj/mprSsl.o
-	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprSsl.o -lest -lmpr $(LIBS)
 
 $(CONFIG)/obj/manager.o: \
         src/deps/mpr/manager.c \
@@ -194,17 +210,6 @@ $(CONFIG)/bin/appman:  \
         $(CONFIG)/bin/libmpr.so \
         $(CONFIG)/obj/manager.o
 	$(CC) -o $(CONFIG)/bin/appman $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o -lmpr $(LIBS) $(LDFLAGS)
-
-$(CONFIG)/obj/makerom.o: \
-        src/deps/mpr/makerom.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/makerom.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
-
-$(CONFIG)/bin/makerom:  \
-        $(CONFIG)/bin/libmpr.so \
-        $(CONFIG)/obj/makerom.o
-	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS) $(LDFLAGS)
 
 $(CONFIG)/bin/ca.crt: 
 	rm -fr $(CONFIG)/bin/ca.crt
@@ -478,6 +483,10 @@ $(CONFIG)/bin/esp.conf:
 	rm -fr $(CONFIG)/bin/esp.conf
 	cp -r src/esp/esp.conf $(CONFIG)/bin/esp.conf
 
+src/server/esp.conf: 
+	rm -fr src/server/esp.conf
+	cp -r src/esp/esp.conf src/server/esp.conf
+
 $(CONFIG)/bin/esp-www: 
 	rm -fr $(CONFIG)/bin/esp-www
 	cp -r src/esp/www $(CONFIG)/bin/esp-www
@@ -496,6 +505,17 @@ $(CONFIG)/bin/libmod_cgi.so:  \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/obj/cgiHandler.o
 	$(CC) -shared -o $(CONFIG)/bin/libmod_cgi.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
+
+$(CONFIG)/obj/sslModule.o: \
+        src/modules/sslModule.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/sslModule.c
+
+$(CONFIG)/bin/libmod_ssl.so:  \
+        $(CONFIG)/bin/libappweb.so \
+        $(CONFIG)/obj/sslModule.o
+	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sslModule.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
 
 $(CONFIG)/obj/authpass.o: \
         src/utils/authpass.c \
@@ -550,10 +570,11 @@ $(CONFIG)/obj/appweb.o: \
 $(CONFIG)/bin/appweb:  \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/bin/libmod_esp.so \
+        $(CONFIG)/bin/libmod_ssl.so \
         $(CONFIG)/bin/libmod_cgi.so \
         $(CONFIG)/bin/libapp.so \
         $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_ssl -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr $(LDFLAGS)
 
 src/server/cache: 
 	cd src/server >/dev/null ;\

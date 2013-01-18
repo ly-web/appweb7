@@ -28,7 +28,7 @@ all: prep \
         $(CONFIG)\bin\libmpr.dll \
         $(CONFIG)\bin\libmprssl.dll \
         $(CONFIG)\bin\appman.exe \
-        $(CONFIG)\bin\makerom.exe \
+        $(CONFIG)\bin\libest.dll \
         $(CONFIG)\bin\ca.crt \
         $(CONFIG)\bin\libpcre.dll \
         $(CONFIG)\bin\libhttp.dll \
@@ -40,9 +40,11 @@ all: prep \
         $(CONFIG)\bin\libmod_esp.dll \
         $(CONFIG)\bin\esp.exe \
         $(CONFIG)\bin\esp.conf \
+        src\server\esp.conf \
         $(CONFIG)\bin\esp-www \
         $(CONFIG)\bin\esp-appweb.conf \
         $(CONFIG)\bin\libmod_cgi.dll \
+        $(CONFIG)\bin\libmod_ssl.dll \
         $(CONFIG)\bin\authpass.exe \
         $(CONFIG)\bin\cgiProgram.exe \
         $(CONFIG)\bin\setConfig.exe \
@@ -74,7 +76,7 @@ clean:
 	-if exist $(CONFIG)\bin\libmpr.dll del /Q $(CONFIG)\bin\libmpr.dll
 	-if exist $(CONFIG)\bin\libmprssl.dll del /Q $(CONFIG)\bin\libmprssl.dll
 	-if exist $(CONFIG)\bin\appman.exe del /Q $(CONFIG)\bin\appman.exe
-	-if exist $(CONFIG)\bin\makerom.exe del /Q $(CONFIG)\bin\makerom.exe
+	-if exist $(CONFIG)\bin\libest.dll del /Q $(CONFIG)\bin\libest.dll
 	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
 	-if exist $(CONFIG)\bin\libpcre.dll del /Q $(CONFIG)\bin\libpcre.dll
 	-if exist $(CONFIG)\bin\libhttp.dll del /Q $(CONFIG)\bin\libhttp.dll
@@ -86,9 +88,11 @@ clean:
 	-if exist $(CONFIG)\bin\libmod_esp.dll del /Q $(CONFIG)\bin\libmod_esp.dll
 	-if exist $(CONFIG)\bin\esp.exe del /Q $(CONFIG)\bin\esp.exe
 	-if exist $(CONFIG)\bin\esp.conf del /Q $(CONFIG)\bin\esp.conf
+	-if exist src\server\esp.conf del /Q src\server\esp.conf
 	-if exist $(CONFIG)\bin\esp-www del /Q $(CONFIG)\bin\esp-www
 	-if exist $(CONFIG)\bin\esp-appweb.conf del /Q $(CONFIG)\bin\esp-appweb.conf
 	-if exist $(CONFIG)\bin\libmod_cgi.dll del /Q $(CONFIG)\bin\libmod_cgi.dll
+	-if exist $(CONFIG)\bin\libmod_ssl.dll del /Q $(CONFIG)\bin\libmod_ssl.dll
 	-if exist $(CONFIG)\bin\authpass.exe del /Q $(CONFIG)\bin\authpass.exe
 	-if exist $(CONFIG)\bin\cgiProgram.exe del /Q $(CONFIG)\bin\cgiProgram.exe
 	-if exist $(CONFIG)\bin\setConfig.exe del /Q $(CONFIG)\bin\setConfig.exe
@@ -175,6 +179,17 @@ $(CONFIG)\inc\est.h:  \
 	-if exist $(CONFIG)\inc\est.h del /Q $(CONFIG)\inc\est.h
 	copy /Y src\deps\est\est.h $(CONFIG)\inc\est.h
 
+$(CONFIG)\obj\estLib.obj: \
+        src\deps\est\estLib.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\est.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\est\estLib.c
+
+$(CONFIG)\bin\libest.dll:  \
+        $(CONFIG)\inc\est.h \
+        $(CONFIG)\obj\estLib.obj
+	"$(LD)" -dll -out:$(CONFIG)\bin\libest.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\estLib.obj $(LIBS)
+
 $(CONFIG)\obj\mprSsl.obj: \
         src\deps\mpr\mprSsl.c \
         $(CONFIG)\inc\bit.h \
@@ -184,8 +199,9 @@ $(CONFIG)\obj\mprSsl.obj: \
 
 $(CONFIG)\bin\libmprssl.dll:  \
         $(CONFIG)\bin\libmpr.dll \
+        $(CONFIG)\bin\libest.dll \
         $(CONFIG)\obj\mprSsl.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj libmpr.lib $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj libest.lib libmpr.lib $(LIBS)
 
 $(CONFIG)\obj\manager.obj: \
         src\deps\mpr\manager.c \
@@ -197,17 +213,6 @@ $(CONFIG)\bin\appman.exe:  \
         $(CONFIG)\bin\libmpr.dll \
         $(CONFIG)\obj\manager.obj
 	"$(LD)" -out:$(CONFIG)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj libmpr.lib $(LIBS)
-
-$(CONFIG)\obj\makerom.obj: \
-        src\deps\mpr\makerom.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\mpr\makerom.c
-
-$(CONFIG)\bin\makerom.exe:  \
-        $(CONFIG)\bin\libmpr.dll \
-        $(CONFIG)\obj\makerom.obj
-	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj libmpr.lib $(LIBS)
 
 $(CONFIG)\bin\ca.crt: 
 	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
@@ -481,6 +486,10 @@ $(CONFIG)\bin\esp.conf:
 	-if exist $(CONFIG)\bin\esp.conf del /Q $(CONFIG)\bin\esp.conf
 	copy /Y src\esp\esp.conf $(CONFIG)\bin\esp.conf
 
+src\server\esp.conf: 
+	-if exist src\server\esp.conf del /Q src\server\esp.conf
+	copy /Y src\esp\esp.conf src\server\esp.conf
+
 $(CONFIG)\bin\esp-www: 
 	-if exist $(CONFIG)\bin\esp-www del /Q $(CONFIG)\bin\esp-www
 	if not exist $(CONFIG)\bin\esp-www md $(CONFIG)\bin\esp-www
@@ -500,6 +509,17 @@ $(CONFIG)\bin\libmod_cgi.dll:  \
         $(CONFIG)\bin\libappweb.dll \
         $(CONFIG)\obj\cgiHandler.obj
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+
+$(CONFIG)\obj\sslModule.obj: \
+        src\modules\sslModule.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\appweb.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\modules\sslModule.c
+
+$(CONFIG)\bin\libmod_ssl.dll:  \
+        $(CONFIG)\bin\libappweb.dll \
+        $(CONFIG)\obj\sslModule.obj
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sslModule.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\obj\authpass.obj: \
         src\utils\authpass.c \
@@ -554,10 +574,11 @@ $(CONFIG)\obj\appweb.obj: \
 $(CONFIG)\bin\appweb.exe:  \
         $(CONFIG)\bin\libappweb.dll \
         $(CONFIG)\bin\libmod_esp.dll \
+        $(CONFIG)\bin\libmod_ssl.dll \
         $(CONFIG)\bin\libmod_cgi.dll \
         $(CONFIG)\bin\libapp.dll \
         $(CONFIG)\obj\appweb.obj
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_ssl.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\inc\appwebMonitor.h: 
 	-if exist $(CONFIG)\inc\appwebMonitor.h del /Q $(CONFIG)\inc\appwebMonitor.h

@@ -20,7 +20,7 @@
     #define BIT_DEPTH 1
 #endif
 #ifndef BIT_DISCOVER
-    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,ejs,esp,man,man2html,openssl,pmaker,php,sqlite,utest,zip"
+    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,est,man,man2html,openssl,pmaker,php,sqlite,utest,zip"
 #endif
 #ifndef BIT_EJS_ONE_MODULE
     #define BIT_EJS_ONE_MODULE 1
@@ -97,6 +97,9 @@
 #ifndef BIT_REQUIRED
     #define BIT_REQUIRED "winsdk,compiler,lib,link,dumpbin,rc,bit,pcre"
 #endif
+#ifndef BIT_SSL
+    #define BIT_SSL 1
+#endif
 #ifndef BIT_STATIC
     #define BIT_STATIC 0
 #endif
@@ -110,10 +113,10 @@
     #define BIT_VERSION "4.3.0"
 #endif
 #ifndef BIT_WITHOUT_ALL
-    #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
+    #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
 #endif
 #ifndef BIT_WITHOUT_DEFAULT
-    #define BIT_WITHOUT_DEFAULT "cgi,dir,doxygen,dsi,ejs,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
+    #define BIT_WITHOUT_DEFAULT "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
 #endif
 
 /* Prefixes */
@@ -212,9 +215,6 @@
 #ifndef BIT_PACK_DUMPBIN
     #define BIT_PACK_DUMPBIN 0
 #endif
-#ifndef BIT_PACK_EJS
-    #define BIT_PACK_EJS 1
-#endif
 #ifndef BIT_PACK_EJSCRIPT
     #define BIT_PACK_EJSCRIPT 0
 #endif
@@ -222,7 +222,7 @@
     #define BIT_PACK_ESP 1
 #endif
 #ifndef BIT_PACK_EST
-    #define BIT_PACK_EST 0
+    #define BIT_PACK_EST 1
 #endif
 #ifndef BIT_PACK_HTTP
     #define BIT_PACK_HTTP 1
@@ -290,11 +290,11 @@
 #ifndef BIT_PACK_DSI_PATH
     #define BIT_PACK_DSI_PATH "/opt/bin/dsi"
 #endif
-#ifndef BIT_PACK_EJS_PATH
-    #define BIT_PACK_EJS_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/ejs"
-#endif
 #ifndef BIT_PACK_ESP_PATH
     #define BIT_PACK_ESP_PATH "/Users/mob/git/appweb/src/esp/espHandler.c"
+#endif
+#ifndef BIT_PACK_EST_PATH
+    #define BIT_PACK_EST_PATH "/Users/mob/git/appweb/src/deps/est"
 #endif
 #ifndef BIT_PACK_HTTP_PATH
     #define BIT_PACK_HTTP_PATH "${BIN}/http"

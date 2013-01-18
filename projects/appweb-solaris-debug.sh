@@ -37,17 +37,17 @@ ${CC} -shared -o ${CONFIG}/bin/libmpr.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mp
 rm -rf ${CONFIG}/inc/est.h
 cp -r src/deps/est/est.h ${CONFIG}/inc/est.h
 
+${CC} -c -o ${CONFIG}/obj/estLib.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/est/estLib.c
+
+${CC} -shared -o ${CONFIG}/bin/libest.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/estLib.o ${LIBS}
+
 ${CC} -c -o ${CONFIG}/obj/mprSsl.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprSsl.c
 
-${CC} -shared -o ${CONFIG}/bin/libmprssl.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mprSsl.o -lmpr ${LIBS}
+${CC} -shared -o ${CONFIG}/bin/libmprssl.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mprSsl.o -lest -lmpr ${LIBS}
 
 ${CC} -c -o ${CONFIG}/obj/manager.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/manager.c
 
 ${CC} -o ${CONFIG}/bin/appman ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/manager.o -lmpr ${LIBS} ${LDFLAGS}
-
-${CC} -c -o ${CONFIG}/obj/makerom.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/makerom.c
-
-${CC} -o ${CONFIG}/bin/makerom ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/makerom.o -lmpr ${LIBS} ${LDFLAGS}
 
 rm -rf ${CONFIG}/bin/ca.crt
 cp -r src/deps/est/ca.crt ${CONFIG}/bin/ca.crt
@@ -143,6 +143,9 @@ ${CC} -o ${CONFIG}/bin/esp ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/
 rm -rf ${CONFIG}/bin/esp.conf
 cp -r src/esp/esp.conf ${CONFIG}/bin/esp.conf
 
+rm -rf src/server/esp.conf
+cp -r src/esp/esp.conf src/server/esp.conf
+
 rm -rf ${CONFIG}/bin/esp-www
 cp -r src/esp/www ${CONFIG}/bin/esp-www
 
@@ -152,6 +155,10 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 ${CC} -c -o ${CONFIG}/obj/cgiHandler.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
 
 ${CC} -shared -o ${CONFIG}/bin/libmod_cgi.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
+
+${CC} -c -o ${CONFIG}/obj/sslModule.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/sslModule.c
+
+${CC} -shared -o ${CONFIG}/bin/libmod_ssl.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sslModule.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
 
 ${CC} -c -o ${CONFIG}/obj/authpass.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/authpass.c
 
@@ -171,7 +178,7 @@ ${CC} -shared -o ${CONFIG}/bin/libapp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sl
 
 ${CC} -c -o ${CONFIG}/obj/appweb.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lapp -lmod_cgi -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lapp -lmod_cgi -lmod_ssl -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr ${LDFLAGS}
 
 #  Omit build script /Users/mob/git/appweb/src/server/cache
 rm -rf ${CONFIG}/inc/testAppweb.h
