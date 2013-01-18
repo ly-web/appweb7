@@ -6,6 +6,7 @@ Bit.load({
     defaults: {
         '+includes': [ '/usr/lib/appweb/latest/inc' ],
         '+libpaths': [ '/usr/lib/appweb/latest/bin' ],
+        '+linker':   [ '-Wl,-rpath,/usr/lib/appweb/latest/bin' ],
     },
 	targets: {
 		simpleHandler: {

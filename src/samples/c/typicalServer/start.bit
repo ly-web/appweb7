@@ -1,5 +1,5 @@
 /*
-	start.bit - Bit file for the simpleAction sample
+	start.bit - Bit file for the typicalServer sample
  */
 
 Bit.load({
@@ -9,8 +9,9 @@ Bit.load({
         '+linker':   [ '-Wl,-rpath,/usr/lib/appweb/latest/bin' ],
     },
 	targets: {
-		simpleAction: {
+		typicalServer: {
 			type: 'exe',
+            static: true,
 			sources: ['*.c'],
             '+libraries': [ 'appweb', 'http', 'mpr', 'mprssl' ],
 		},

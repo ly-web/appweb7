@@ -19,20 +19,12 @@ C Language
     simpleModule        Simple Appweb loadable module
     simpleServer        Simple Http server
     spyFilter           Simple Http server
+    typicalServer       A more fully featured server main program
 
 C++ Language
 ---
     cppHandler          Simple Appweb URL handler
     cppModule           Simple Appweb loadable module
-
-Ejscript
----
-    languageFeatures    Demonstrates the various language features of
-                        ESP and JavaScript
-    postBack            Demonstrates how to use one web page to display
-                        a form and also accept posted user data
-    sessions            Demonstrates how to store client session state data
-    upload              Demonstrates how to use the file upload feature
 
 Licensing
 ---
