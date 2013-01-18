@@ -14,7 +14,7 @@
 /****************************** Forward Declarations **************************/
 
 #ifdef __cplusplus
-PUBLIC "C" {
+extern "C" {
 #endif
 
 #if !DOXYGEN
