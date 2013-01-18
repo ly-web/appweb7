@@ -411,8 +411,7 @@ static int loadApp(HttpConn *conn, int *updated)
             mprGetPathInfo(mp->path, &minfo);
             if (minfo.valid && mp->modified < minfo.mtime) {
                 if (!espUnloadModule(eroute->appModuleName, 0)) {
-                    mprError("Cannot unload module %s. Connections still open. Continue using old version.", 
-                        eroute->appModuleName);
+                    mprError("Cannot unload module %s. Connections still open. Continue using old version.", eroute->appModuleName);
                     /* Cannot unload - so keep using old module */
                     return 1;
                 }
@@ -428,8 +427,7 @@ static int loadApp(HttpConn *conn, int *updated)
         }
         mprSetThreadData(esp->local, conn);
         if (mprLoadModule(mp) < 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, 
-                "Cannot load compiled esp module for %s", eroute->appModuleName);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", eroute->appModuleName);
             return 0;
         }
         *updated = 1;
@@ -674,6 +672,9 @@ static int appDirective(MaState *state, cchar *key, cchar *value)
         appName = MPR->emptyString;
     } else {
         httpSetRoutePrefix(route, appName);
+        if (route->name == 0 || *route->name == '\0') {
+            route->name = appName;
+        }
     }
     if (route->pattern == 0) {
         httpSetRoutePattern(route, sjoin("/", appName, NULL), 0);
@@ -717,6 +718,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     state = maPushState(state);
     state->route = route;
     rc = appDirective(state, key, value);
+    httpFinalizeRoute(route);
     maPopState(state);
     return rc;
 }
@@ -936,8 +938,10 @@ static int espArchiveDirective(MaState *state, cchar *key, cchar *value)
  */
 static int espLoadDirective(MaState *state, cchar *key, cchar *value)
 {
-    EspRoute    *eroute;
+    HttpRoute   *rp;
+    EspRoute    *eroute, *ep;
     char        *name, *path;
+    int         next;
 
     if ((eroute = getEroute(state->route)) == 0) {
         return MPR_ERR_MEMORY;
@@ -947,6 +951,14 @@ static int espLoadDirective(MaState *state, cchar *key, cchar *value)
     }
     eroute->appModuleName = sclone(name);
     eroute->appModulePath = sclone(path);
+
+    for (ITERATE_ITEMS(state->host->routes, rp, next)) {
+        if (rp->eroute && rp->parent == state->route) {
+            ep = rp->eroute;
+            ep->appModuleName = eroute->appModuleName;
+            ep->appModulePath = eroute->appModulePath;
+        }
+    }
     return 0;
 }
 

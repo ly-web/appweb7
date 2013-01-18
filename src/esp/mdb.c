@@ -1212,6 +1212,7 @@ static void autoSave(Mdb *mdb, MdbTable *table)
 
     if (mdb->edi.flags & EDI_AUTO_SAVE && !(mdb->edi.flags & EDI_SUPPRESS_SAVE)) {
         //  MOB - should have dirty bit
+        //  MOB - need error handling. If save fails, need to fail all subsequent operations.
         mdbSave((Edi*) mdb);
     }
 }
@@ -1243,6 +1244,7 @@ static int mdbSave(Edi *edi)
     }
     npath = mprReplacePathExt(path, "new");
     if ((out = mprOpenFile(npath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
+        mprError("Can't open database %s", npath);
         return 0;
     }
     mprWriteFileFmt(out, "{\n");

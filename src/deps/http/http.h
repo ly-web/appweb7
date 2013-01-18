@@ -3223,6 +3223,7 @@ PUBLIC void httpDefineAction(cchar *uri, HttpAction fun);
  */
 typedef struct HttpRoute {
     /* Ordered for debugging */
+    struct HttpRoute *parent;               /**< Parent route */
     char            *name;                  /**< Route name */
     char            *pattern;               /**< Original matching URI pattern for the route (includes prefix) */
     char            *startSegment;          /**< Starting literal segment of pattern (includes prefix) */
@@ -3251,7 +3252,6 @@ typedef struct HttpRoute {
     HttpAuth        *auth;                  /**< Per route block authentication */
     Http            *http;                  /**< Http service object (copy of appweb->http) */
     struct HttpHost *host;                  /**< Owning host */
-    struct HttpRoute *parent;               /**< Parent route */
     int             flags;                  /**< Route flags */
 
     char            *defaultLanguage;       /**< Default language */
