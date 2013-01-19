@@ -20,7 +20,7 @@
     #define BIT_DEPTH 1
 #endif
 #ifndef BIT_DISCOVER
-    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,est,man,man2html,openssl,pmaker,php,sqlite,utest,zip"
+    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,est,man,man2html,pmaker,php,sqlite,utest,zip"
 #endif
 #ifndef BIT_EJS_ONE_MODULE
     #define BIT_EJS_ONE_MODULE 1
@@ -267,7 +267,7 @@
     #define BIT_PACK_MOCANA 0
 #endif
 #ifndef BIT_PACK_OPENSSL
-    #define BIT_PACK_OPENSSL 1
+    #define BIT_PACK_OPENSSL 0
 #endif
 #ifndef BIT_PACK_PCRE
     #define BIT_PACK_PCRE 1
@@ -325,9 +325,6 @@
 #endif
 #ifndef BIT_PACK_MAN2HTML_PATH
     #define BIT_PACK_MAN2HTML_PATH "/opt/bin/man2html"
-#endif
-#ifndef BIT_PACK_OPENSSL_PATH
-    #define BIT_PACK_OPENSSL_PATH "/Users/mob/git/packages-macosx-x64/openssl/latest"
 #endif
 #ifndef BIT_PACK_PCRE_PATH
     #define BIT_PACK_PCRE_PATH "/Users/mob/git/appweb/src/deps/pcre"

@@ -48,6 +48,7 @@ all: prep \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
         $(CONFIG)/bin/setConfig \
+        src/server/slink.c \
         $(CONFIG)/bin/libapp.dylib \
         $(CONFIG)/bin/appweb \
         src/server/cache \
@@ -194,13 +195,13 @@ $(CONFIG)/obj/mprSsl.o: \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h \
         $(CONFIG)/inc/est.h
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc -I../packages-macosx-x64/openssl/latest/include src/deps/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.dylib:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/bin/libest.dylib \
         $(CONFIG)/obj/mprSsl.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -L../packages-macosx-x64/openssl/latest -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lest -lmpr $(LIBS) -lssl -lcrypto
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lest -lmpr $(LIBS)
 
 $(CONFIG)/obj/manager.o: \
         src/deps/mpr/manager.c \
@@ -561,6 +562,11 @@ $(CONFIG)/bin/setConfig:  \
         $(CONFIG)/obj/setConfig.o
 	$(CC) -o $(CONFIG)/bin/setConfig -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o -lmpr $(LIBS)
 
+src/server/slink.c: 
+	cd src/server >/dev/null ;\
+		[ ! -f slink.c ] && cp slink.empty slink.c ;\
+		cd - >/dev/null 
+
 $(CONFIG)/obj/slink.o: \
         src/server/slink.c \
         $(CONFIG)/inc/bit.h \
@@ -568,6 +574,7 @@ $(CONFIG)/obj/slink.o: \
 	$(CC) -c -o $(CONFIG)/obj/slink.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/slink.c
 
 $(CONFIG)/bin/libapp.dylib:  \
+        src/server/slink.c \
         $(CONFIG)/bin/esp \
         $(CONFIG)/bin/libmod_esp.dylib \
         $(CONFIG)/obj/slink.o

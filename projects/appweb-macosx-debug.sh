@@ -41,9 +41,9 @@ ${CC} -c -o ${CONFIG}/obj/estLib.o -arch x86_64 ${DFLAGS} -I${CONFIG}/inc src/de
 
 ${CC} -dynamiclib -o ${CONFIG}/bin/libest.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libest.dylib ${CONFIG}/obj/estLib.o ${LIBS}
 
-${CC} -c -o ${CONFIG}/obj/mprSsl.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc -I../packages-macosx-x64/openssl/latest/include src/deps/mpr/mprSsl.c
+${CC} -c -o ${CONFIG}/obj/mprSsl.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/mprSsl.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libmprssl.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -L../packages-macosx-x64/openssl/latest -install_name @rpath/libmprssl.dylib ${CONFIG}/obj/mprSsl.o -lest -lmpr ${LIBS} -lssl -lcrypto
+${CC} -dynamiclib -o ${CONFIG}/bin/libmprssl.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libmprssl.dylib ${CONFIG}/obj/mprSsl.o -lest -lmpr ${LIBS}
 
 ${CC} -c -o ${CONFIG}/obj/manager.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/mpr/manager.c
 
@@ -175,6 +175,10 @@ ${CC} -o ${CONFIG}/bin/cgiProgram -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/
 ${CC} -c -o ${CONFIG}/obj/setConfig.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/setConfig.c
 
 ${CC} -o ${CONFIG}/bin/setConfig -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/setConfig.o -lmpr ${LIBS}
+
+cd src/server >/dev/null ;\
+[ ! -f slink.c ] && cp slink.empty slink.c ;\
+cd - >/dev/null 
 
 ${CC} -c -o ${CONFIG}/obj/slink.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
 

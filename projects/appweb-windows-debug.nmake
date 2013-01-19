@@ -48,6 +48,7 @@ all: prep \
         $(CONFIG)\bin\authpass.exe \
         $(CONFIG)\bin\cgiProgram.exe \
         $(CONFIG)\bin\setConfig.exe \
+        src\server\slink.c \
         $(CONFIG)\bin\libapp.dll \
         $(CONFIG)\bin\appweb.exe \
         $(CONFIG)\bin\appwebMonitor.exe \
@@ -552,6 +553,11 @@ $(CONFIG)\bin\setConfig.exe:  \
         $(CONFIG)\obj\setConfig.obj
 	"$(LD)" -out:$(CONFIG)\bin\setConfig.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\setConfig.obj libmpr.lib $(LIBS)
 
+src\server\slink.c: 
+	cd src\server
+		if not exist slink.c copy slink.empty slink.c
+		cd ..\..
+
 $(CONFIG)\obj\slink.obj: \
         src\server\slink.c \
         $(CONFIG)\inc\bit.h \
@@ -559,6 +565,7 @@ $(CONFIG)\obj\slink.obj: \
 	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\slink.c
 
 $(CONFIG)\bin\libapp.dll:  \
+        src\server\slink.c \
         $(CONFIG)\bin\esp.exe \
         $(CONFIG)\bin\libmod_esp.dll \
         $(CONFIG)\obj\slink.obj

@@ -176,6 +176,10 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
 "${LD}" -out:${CONFIG}/bin/setConfig.exe -entry:WinMainCRTStartup -subsystem:Windows ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/setConfig.obj libmpr.lib ${LIBS}
 
+cd src/server >/dev/null ;\
+[ ! -f slink.c ] && cp slink.empty slink.c ;\
+cd - >/dev/null 
+
 "${CC}" -c -Fo${CONFIG}/obj/slink.obj -Fd${CONFIG}/obj/slink.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
 
 "${LD}" -dll -out:${CONFIG}/bin/libapp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.obj libmod_esp.lib ${LIBS} libappweb.lib libhttp.lib libpcre.lib libmpr.lib

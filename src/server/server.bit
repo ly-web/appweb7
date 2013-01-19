@@ -9,25 +9,34 @@ Bit.load({
             generate: "esp --static --genlink slink.c --flat compile",
         },
 
+        'slink.c': {
+            path: 'slink.c',
+            precious: true,
+            build: "
+                if (!Path('slink.c').exists) {
+                    trace('Generate', 'slink.c')
+                    cp('slink.empty', 'slink.c')
+                }
+            ",
+            'generate-nmake': 'if not exist slink.c copy slink.empty slink.c',
+            'generate-sh': '[ ! -f slink.c ] && cp slink.empty slink.c',
+        },
+
         /*
             Static library for esp applications. Always built but only contains code if static linking.
          */
         libapp: {
             type: 'lib',
-            depends: [ 'esp', 'libmod_esp' ],
+            depends: [ 'slink.c', 'esp', 'libmod_esp' ],
             sources: [ 'slink.c' ],
             scripts: {
                 postblend: "
-                    let slink = Path('slink.c')
-                    if (!slink.exists) {
-                        trace('Generate', 'slink.c')
-                        slink.write('/* slink.c  -- Generated AppWeb Static Initialization */\n\n' +
-                            '#include \"esp.h\"\n\nPUBLIC void appwebStaticInitialize() {}\n')
-                    }
-                    /* Dynamically compute the required sources for static linking */
-                    let sources = bit.targets.libapp.sources
-                    for each (file in slink.readString().match(/SOURCE [^ ]*/g)) {
-                        sources.push(TARGET.home.join(file.replace(/SOURCE /mg, '')))
+                    if (Path('slink.c').exists) {
+                        /* Dynamically compute the required sources for static linking */
+                        let sources = bit.targets.libapp.sources
+                        for each (file in Path('slink.c').readString().match(/SOURCE [^ ]*/g)) {
+                            sources.push(TARGET.home.join(file.replace(/SOURCE /mg, '')))
+                        }
                     }
                 ",
             },
