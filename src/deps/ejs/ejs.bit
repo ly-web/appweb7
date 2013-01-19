@@ -13,7 +13,7 @@ Bit.load({
             type: 'lib',
             sources: [ 'ejsLib.c' ],
             headers: [ '*.h' ],
-            depends: [ 'libhttp', 'libpcre', 'libmpr' ],
+            depends: [ 'libhttp', 'libpcre', 'libmpr', 'libsqlite3' ],
         },
 
         ejs: {
