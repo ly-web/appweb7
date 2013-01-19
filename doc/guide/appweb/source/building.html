@@ -93,17 +93,20 @@
             <h2 class="section">Build Overview</h2>
             <p>Appweb supports several methods of building from source:
             <ol>
-                <li>Building via the <a href="http://ejscript.org/products/ejs/doc/guide/bit/index.html">Bit
-                    (Build It) tool</a></li>
+                <li>Building via the <a href="http://ejscript.org/products/ejs/doc/guide/ejs/users/bit.html">Bit
+                    (Build It) tool. This is the recommended option.</a></li>
                 <li>Building via make (or nmake on Windows)</li>
                 <li>Building via an IDE such as Visual Studio or Xcode</li>
             </ol>
             <p>Building with Bit is the most flexible and offers the most control. It requires installing the
             <a href="http://ejscript.org/downloads/ejs/download.ejs">Ejscript Product</a> which includes the
-            <em>bit</em> tool.</p>
-            <p>Building with make or nmake is useful for a minimal build, but you do not have the flexibility to configure
-            the product for your system. Similarly, IDE builds are convenient, but are somewhat fixed in the software
-            configuration they build. We recommend building with Bit. It is fast, flexible and configurable.</p>
+            <em>bit</em> tool. Using bit is required if you are cross-compiling or using static linking.</p>
+
+            <p>Building with make or nmake is useful for a default (pre-configured) build. You do not have the 
+            flexibility to configure the product for your system. Similarly, IDE builds are convenient, but are somewhat
+            fixed in the software configuration they build. We recommend building with Bit. It is fast, flexible and
+            configurable.</p>
+
             <a id="env"></a>
             <h3>Preparing the Environment</h3>
             <p>Before building, you may need to install required tools such as cross-compilers, SDKs, and system
@@ -225,6 +228,14 @@
                     <td>Run quietly without progress trace.</td>
                 </tr>
                 <tr>
+                    <td>--rom</td>
+                    <td>Configure for for systems using ROM for web documents (without a file system).</td>
+                </tr>
+                <tr>
+                    <td>--static</td>
+                    <td>Configure for static linking.</td>
+                </tr>
+                <tr>
                     <td>--release</td>
                     <td>Build a release build. This builds an optimized, production-ready build of the software.</td>
                 </tr>
@@ -244,7 +255,7 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <td class="nowrap">--platform OS-ARCH[-CPU]'</td>
+                    <td class="nowrap">--platform OS-ARCH[-CPU]</td>
                     <td><p>Specify the target platform for which to build. For example "-platform linux-arm". 
                         Supported operating systems are: freebsd, linux, macosx, solaris, vxworks and windows. 
                         Supported architectures are: arm, mips, ppc, x64 or x86.
@@ -255,34 +266,6 @@
                     </td>
                 </tr>
             </tbody>
-            </table>
-            <h3>Feature Options</h3>
-            <table title="options">
-                <thead>
-                    <tr>
-                        <th>Option</th>
-                        <th>Default</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td class="nowrap">--without all</td>
-                    <td></td>
-                    <td>Disable all non-essential possible packages.</td>
-                </tr>
-                <tr>
-                    <td>--set assert=true</td>
-                    <td>Enabled</td>
-                    <td>Build with debug assert checking on.</td>
-                </tr>
-                <tr>
-                    <td class="nowrap">--set tune=MODE</td>
-                    <td>size</td>
-                    <td>Tune the build to optimize for "size", "speed". You can also select "balanced" for a balance
-                    between speed and size.</td>
-                </tr>
-                </tbody>
             </table>
             <h3>Optional Packages</h3>
             <table title="packages">
@@ -301,7 +284,8 @@
                 </tr>
                 <tr>
                     <td>--without PACKAGE</td>
-                    <td>Do not include the PACKAGE in the build.</td>
+                    <td>Do not include the PACKAGE in the build.
+                    Use --without all to disable all possible non-essential packages.</td>
                 </tr>
                 </tbody>
             </table>
@@ -310,8 +294,8 @@
 configure --with openssl=/usr/src/openssl
 </pre>
             <h3>Packages</h3>
-            <p>The following table describes the packages that can extend Appweb configure. 
-            The use of Internal/External documents whether the page is shipped internally with the Appweb source
+            <p>The following table describes the packages that can extend the Appweb configuration. 
+            The use of the Internal/External field states whether the package is shipped internally with the Appweb source
             code, or whether it is an external third party package.</p>
             <table title="env">
                 <thead>
@@ -377,7 +361,7 @@ configure --with openssl=/usr/src/openssl
 
             <p>The following table describes the tool packages that can be used when building, running and 
             managing Appweb. 
-            The use of Internal/External documents whether the page is shipped internally with the Appweb source
+            The use of the Internal/External field documents whether the package is shipped internally with the Appweb source
             code, or whether it is an external third party package.</p>
             <table title="env">
                 <thead>
@@ -492,7 +476,7 @@ CC=/opt/bin/ccarm configure
             <p>To configure using PHP from a specific source location:</p>
             <pre>configure --with php=/path/to/php-source</pre>
             <p>To configure to build for 32-bit X86 (when on a 64-bit system):</p>
-            <pre>configure --emulate x86</pre>
+            <pre>configure --platform linux-x86</pre>
             <p>Use the "--help" switch to see the available options or see the <a
                 href="http://ejscript.org/products/ejs/doc/guide/ejs/users/bit.html">Bit</a> document for more details.</p> 
             
@@ -514,12 +498,10 @@ make                        # Does a bootstrap build
 sudo bit install            # Install so Appweb can use bit
 </pre></li> 
                 <li>Then, from the Appweb source directory run the Appweb configure:
-                <pre>./configure --with ejscript=/path/to/ejscript
+                <pre>./configure --with ejscript
 bit           # To build Appweb with Ejscript support</pre></li>
             </ol>
-            <p>During configuration, the required ejscript libraries and headers will be copied into
-            the Appweb source tree. NOTE: Ejscript will provide the MPR and HTTP libraries as they must be 
-            common between Appweb and Ejscript.</p>
+
             <a id="cross"></a>
             <h2 class="section">Cross Compilation</h2>
             <p>To build a product for platform different to that of the local system is called <em>cross compiling</em>.
@@ -587,6 +569,7 @@ bit --help     # Show bit usage</pre>
             <p>On VxWorks, it is required to define BLD_APPWEB_PATH so that Appweb can load modules which
             are located relative to the Appweb executable image.</p>
             <p>Define BLD_CONFIG_FILE and BLD_SERVER_ROOT to set default locations for Appweb initialization.</p>
+
             <h3>Static Linking</h3>
             <p>On some platforms, it is desirable to statically link the Appweb web server. The default bit files
             are setup to build Appweb using shared libraries and to build the loadable modules separately. If you want to
@@ -596,6 +579,15 @@ bit --help     # Show bit usage</pre>
 ./configure --static
 bit
 </pre>
+
+            <h3>Serving from ROM</h3>
+            <p>Appweb supports systems without a file system where web documents are compiled into C code and served from
+            ROM. To enable this, configure with the <em>--rom</em> switch.
+            <pre>
+configure --rom
+</pre>
+            <p>See <a href="../programmers/rom.html">Serving Pages from ROM</a> for more information.</p>
+
             <a id="installing"></a>
             <h2 class="section">Installing</h2>
             <p>You can install the newly built software via:</p>
@@ -620,6 +612,14 @@ sudo bit uninstall
             <pre>
  git clone <a href="http://github.com/embedthis/appweb-4">http://github.com/embedthis/appweb-4</a>
 </pre>
+
+            <p>There are three repository branches that you can select:
+            <ul>
+                <li>stable &mdash; Source code for the most recent release.</li>
+                <li>master &mdash; Most recent, quasi-stable development snapshot.</li>
+                <li>dev &mdash; Current source code under active development. Least stable.</li>
+            </ul>
+
             <p>Once checked out, the normal instructions for building from source apply.</p><a id="keyFiles"></a>
             <h2 class="section">Key Files and Directories</h2>
             <p>Source trees contain the following key directories under the top directory.</p>

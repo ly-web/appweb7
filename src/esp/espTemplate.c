@@ -310,11 +310,14 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
     if (runCommand(conn, eroute->compile, csource, module) < 0) {
         return 0;
     }
+#if UNUSED
     if (eroute->archive) {
         if (runCommand(conn, eroute->archive, csource, module) < 0) {
             return 0;
         }
-    } else if (eroute->link) {
+    } else 
+#endif
+    if (eroute->link) {
         /* WARNING: GC yield here */
         if (runCommand(conn, eroute->link, csource, module) < 0) {
             return 0;

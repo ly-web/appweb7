@@ -1037,7 +1037,9 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->edi);
         mprMark(eroute->env);
         mprMark(eroute->layoutsDir);
+#if UNUSED
         mprMark(eroute->archive);
+#endif
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
         mprMark(eroute->staticDir);

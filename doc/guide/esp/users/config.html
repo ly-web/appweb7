@@ -103,10 +103,10 @@
             <p>For ESP to receive incoming client requests, the Appweb router must be told what requests to send to ESP.
             The <em>AddHandler</em> directive below achieves this. It tells Appweb that the <em>espHandler</em> will service
             all URIs that end with "<em>.esp</em>".</p>
-<pre>AddHandler espHandler *.esp</pre>
+<pre>AddHandler espHandler esp</pre>
             <p>This is all that is needed to service any ESP web page that ends with "<em>.esp</em>". If you want to
             ESP pages with another extension, you can specify extra extensions:</p>
-<pre>AddHandler espHandler *.esp *.myesp</pre>
+<pre>AddHandler espHandler esp myesp</pre>
             <a id="errors"></a>
             <h2 class="section">Error Handling</h2>
             <p>If an ESP page has a syntax error or a run-time error, messages will be sent to the Appweb log file.

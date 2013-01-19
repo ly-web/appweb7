@@ -427,6 +427,9 @@ EspDir static ./web</pre>
                             include for <em>esp.conf</em>.
                             <p>Some platforms can do the compile and link phases in one command. Others require a 
                             separate link.</p>
+                            <p>If appweb is built with static linking or if the esp command is invoked with the --static 
+                            switch, the EspLink command should perform static linking. The default esp.conf configuration
+                            file has separate commands for dynamic and static linking.</p>
                         </td>
                     </tr>
                 </tbody>

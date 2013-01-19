@@ -505,9 +505,11 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->keepSource = parent->keepSource;
     eroute->showErrors = parent->showErrors;
     eroute->lifespan = parent->lifespan;
+#if UNUSED
     if (parent->archive) {
         eroute->archive = sclone(parent->archive);
     }
+#endif
     if (parent->compile) {
         eroute->compile = sclone(parent->compile);
     }
@@ -918,6 +920,7 @@ static int espLinkDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if UNUSED
 /*
     EspArchive template
  */
@@ -931,7 +934,7 @@ static int espArchiveDirective(MaState *state, cchar *key, cchar *value)
     eroute->archive = sclone(value);
     return 0;
 }
-
+#endif
 
 /*
     EspLoad name path
@@ -1137,7 +1140,9 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
         Add configuration file directives
      */
     maAddDirective(appweb, "EspApp", espAppDirective);
+#if UNUSED
     maAddDirective(appweb, "EspArchive", espArchiveDirective);
+#endif
     maAddDirective(appweb, "EspCompile", espCompileDirective);
     maAddDirective(appweb, "EspDb", espDbDirective);
     maAddDirective(appweb, "EspDir", espDirDirective);

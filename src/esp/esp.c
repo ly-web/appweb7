@@ -1008,6 +1008,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         if (runEspCommand(route, eroute->compile, app->csource, app->module) < 0) {
             return;
         }
+#if UNUSED
         if (eroute->archive) {
             vtrace("Archive", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
             if (runEspCommand(route, eroute->archive, app->csource, app->module) < 0) {
@@ -1019,7 +1020,9 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
              */
             mprDeletePath(mprJoinPathExt(mprTrimPathExt(app->module), BIT_OBJ));
 #endif
-        } else if (eroute->link) {
+        } else 
+#endif
+        if (eroute->link) {
             vtrace("Link", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
             if (runEspCommand(route, eroute->link, app->csource, app->module) < 0) {
                 return;
@@ -1289,12 +1292,15 @@ static void compileFlat(HttpRoute *route)
         if (runEspCommand(route, eroute->compile, app->flatPath, app->module) < 0) {
             return;
         }
+#if UNUSED
         if (eroute->archive) {
             trace("Archive", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
             if (runEspCommand(route, eroute->archive, app->flatPath, app->module) < 0) {
                 return;
             }
-        } else if (eroute->link) {
+        } else 
+#endif
+        if (eroute->link) {
             trace("Link", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
             if (runEspCommand(route, eroute->link, app->flatPath, app->module) < 0) {
                 return;
