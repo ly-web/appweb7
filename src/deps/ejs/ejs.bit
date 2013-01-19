@@ -13,7 +13,7 @@ Bit.load({
             type: 'lib',
             sources: [ 'ejsLib.c' ],
             headers: [ '*.h' ],
-            depends: [ 'libhttp', 'libpcre', 'libmpr', 'libsqlite3' ],
+            depends: [ 'libhttp', 'libsqlite3', 'libpcre', 'libmpr' ],
         },
 
         ejs: {
@@ -40,17 +40,17 @@ Bit.load({
 		'ejs.mod': {
             enable: 'bit.packs.ejscript.enable',
             files: [ 'ejs.es' ],
-            path: "${LIB}/ejs.mod",
+            path: "${BIN}/ejs.mod",
             //  Add --debug for debug symbols
             build: "
                 trace('Compile', 'ejs.mod')
-                run('${BIN}/ejsc --out ${LIB}/ejs.mod --optimize 9 --bind --require null ejs.es')
+                run('${BIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null ejs.es')
             ",
             'generate-nmake': '\
-                "${BIN}\\ejsc" --out "${LIB}/ejs.mod" --optimize 9 --bind --require null "ejs.es"
+                "${BIN}\\ejsc" --out "${BIN}/ejs.mod" --optimize 9 --bind --require null "ejs.es"
             ',
             'generate-sh': '\
-                ${BIN}/ejsc --out ${LIB}/ejs.mod --optimize 9 --bind --require null ejs.es 
+                ${BIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null ejs.es 
             ',
             depends: [ 'ejsc' ],
 		},
