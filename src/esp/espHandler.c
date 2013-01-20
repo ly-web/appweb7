@@ -219,6 +219,7 @@ static int runAction(HttpConn *conn)
         if (!loadApp(conn, &updated)) {
             return 0;
         }
+#if !BIT_STATIC
     } else if (eroute->update) {
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
         source = req->controllerPath;
@@ -257,6 +258,7 @@ static int runAction(HttpConn *conn)
             updated = 1;
         }
         unlock(req->esp);
+#endif
     }
     key = mprJoinPath(eroute->controllersDir, rx->target);
     if ((action = mprLookupKey(esp->actions, key)) == 0) {
@@ -322,6 +324,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         if (!loadApp(conn, &updated)) {
             return;
         }
+#if !BIT_STATIC
     } else if (eroute->update) {
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
         source = req->source;
@@ -360,13 +363,13 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             }
         }
         unlock(req->esp);
+#endif
     }
     if ((view = mprLookupKey(esp->views, mprGetPortablePath(req->source))) == 0) {
         httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find defined view for %s", req->view);
         return;
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
-
     //  MOB - does this need a lock
     mprSetThreadData(esp->local, conn);
     (view)(conn);
@@ -407,6 +410,7 @@ static int loadApp(HttpConn *conn, int *updated)
     *updated = 0;
     eroute = req->eroute;
     if ((mp = mprLookupModule(eroute->appModuleName)) != 0) {
+#if !BIT_STATIC
         if (eroute->update) {
             mprGetPathInfo(mp->path, &minfo);
             if (minfo.valid && mp->modified < minfo.mtime) {
@@ -418,6 +422,7 @@ static int loadApp(HttpConn *conn, int *updated)
                 mp = 0;
             }
         }
+#endif
     }
     if (mp == 0) {
         entry = sfmt("esp_app_%s", eroute->appModuleName);

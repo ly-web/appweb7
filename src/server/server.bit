@@ -19,7 +19,7 @@ Bit.load({
                 }
             ",
             'generate-nmake': 'if not exist slink.c copy slink.empty slink.c',
-            'generate-sh': '[ ! -f slink.c ] && cp slink.empty slink.c',
+            'generate-sh': '[ ! -f slink.c ] && cp slink.empty slink.c ; true',
         },
 
         /*

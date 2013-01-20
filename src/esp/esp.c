@@ -330,7 +330,7 @@ PUBLIC int main(int argc, char **argv)
                 }
             }
 
-        } else if (smatch(argp, "config")) {
+        } else if (smatch(argp, "config") || smatch(argp, "conf")) {
             if (argind >= argc) {
                 usageError();
             } else {
