@@ -192,3 +192,6 @@ projects/appweb-macosx-full.xcodeproj
 *-mine*
 test/cache/*.so
 src/server/slink.c
+src/server/esp.conf
+src/server/junk
+src/server/static.conf

@@ -23,6 +23,7 @@ static Esp *esp;
 static EspRoute *allocEspRoute(HttpRoute *loc);
 static int espDbDirective(MaState *state, cchar *key, cchar *value);
 static int espEnvDirective(MaState *state, cchar *key, cchar *value);
+static int espLoadDirective(MaState *state, cchar *key, cchar *value);
 static char *getControllerEntry(cchar *controllerName);
 static EspRoute *getEroute(HttpRoute *route);
 static int loadApp(HttpConn *conn, int *updated);
@@ -649,8 +650,7 @@ static void setRouteDirs(MaState *state, cchar *kind)
     NOTE: This is not a public directive. Internal use only.
     WARNING: this modifies the route prefix and pattern. Only suitable to be used by EspApp
 
-    EspApp Prefix [Dir [RouteSet [Database]]]
-
+    Used by the: EspApp Prefix [Dir [RouteSet [Database]]]
         Prefix       appName
         DocumentRoot path
         AddHandler   espHandler
@@ -707,6 +707,9 @@ static int appDirective(MaState *state, cchar *key, cchar *value)
         }
     }
     /* NOTE: this route is not finalized */
+#if BIT_STATIC
+    espLoadDirective(state, NULL, sfmt("%s %s", appName, eroute->cacheDir));
+#endif
     return 0;
 }
 
