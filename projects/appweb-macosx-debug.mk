@@ -142,6 +142,8 @@ clean:
 	rm -rf $(CONFIG)/obj/cgiProgram.o
 	rm -rf $(CONFIG)/obj/setConfig.o
 	rm -rf $(CONFIG)/obj/slink.o
+	rm -rf $(CONFIG)/obj/web.o
+	rm -rf $(CONFIG)/obj/junk.o
 	rm -rf $(CONFIG)/obj/appweb.o
 	rm -rf $(CONFIG)/obj/appwebMonitor.o
 	rm -rf $(CONFIG)/obj/testAppweb.o
@@ -365,16 +367,18 @@ $(CONFIG)/inc/edi.h:  \
 	rm -fr $(CONFIG)/inc/edi.h
 	cp -r src/esp/edi.h $(CONFIG)/inc/edi.h
 
-$(CONFIG)/inc/esp-app.h: 
-	rm -fr $(CONFIG)/inc/esp-app.h
-	cp -r src/esp/esp-app.h $(CONFIG)/inc/esp-app.h
-
 $(CONFIG)/inc/esp.h:  \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h \
         $(CONFIG)/inc/edi.h
 	rm -fr $(CONFIG)/inc/esp.h
 	cp -r src/esp/esp.h $(CONFIG)/inc/esp.h
+
+$(CONFIG)/inc/esp-app.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h
+	rm -fr $(CONFIG)/inc/esp-app.h
+	cp -r src/esp/esp-app.h $(CONFIG)/inc/esp-app.h
 
 $(CONFIG)/inc/mdb.h:  \
         $(CONFIG)/inc/bit.h \
@@ -564,7 +568,7 @@ $(CONFIG)/bin/setConfig:  \
 
 src/server/slink.c: 
 	cd src/server >/dev/null ;\
-		[ ! -f slink.c ] && cp slink.empty slink.c ;\
+		[ ! -f slink.c ] && cp slink.empty slink.c ; true ;\
 		cd - >/dev/null 
 
 $(CONFIG)/obj/slink.o: \
@@ -573,12 +577,28 @@ $(CONFIG)/obj/slink.o: \
         $(CONFIG)/inc/esp.h
 	$(CC) -c -o $(CONFIG)/obj/slink.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/slink.c
 
+$(CONFIG)/obj/web.o: \
+        src/server/cache/web.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h \
+        $(CONFIG)/inc/esp-app.h
+	$(CC) -c -o $(CONFIG)/obj/web.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/cache/web.c
+
+$(CONFIG)/obj/junk.o: \
+        src/server/junk/cache/junk.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/esp.h \
+        $(CONFIG)/inc/esp-app.h
+	$(CC) -c -o $(CONFIG)/obj/junk.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/junk/cache/junk.c
+
 $(CONFIG)/bin/libapp.dylib:  \
         src/server/slink.c \
         $(CONFIG)/bin/esp \
         $(CONFIG)/bin/libmod_esp.dylib \
-        $(CONFIG)/obj/slink.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libapp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libapp.dylib $(CONFIG)/obj/slink.o -lmod_esp $(LIBS) -lappweb -lhttp -lpcre -lmpr -lpam
+        $(CONFIG)/obj/slink.o \
+        $(CONFIG)/obj/web.o \
+        $(CONFIG)/obj/junk.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libapp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libapp.dylib $(CONFIG)/obj/slink.o $(CONFIG)/obj/web.o $(CONFIG)/obj/junk.o -lmod_esp $(LIBS) -lappweb -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/appweb.o: \
         src/server/appweb.c \

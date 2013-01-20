@@ -143,6 +143,15 @@ typedef struct EspRoute {
 } EspRoute;
 
 /**
+    Entry point for a loadable ESP module
+    @param route HttpRoute object
+    @param module Mpr module object
+    @return Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+  */
+typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
+
+/**
     Add caching for response content.
     @description This call configures caching for request responses. Caching may be used for any HTTP method, 
     though typically it is most useful for state-less GET requests. Output data may be uniquely cached for requests 
@@ -249,7 +258,6 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc
 //  MOB
 PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *proc);
 
-
 /**
     Define a base function to invoke for all controller actions.
     @description A base function can be defined that will be called before calling any controller action. This
@@ -298,6 +306,15 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
     @ingroup EspRoute
  */
 PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module);
+
+/**
+    Initialize a static library ESP module
+    @description This invokes the ESP initializers for the required pre-compiled ESP shared library.
+    @param appName Name of the ESP application
+    @param routeName Name of the route in the appweb.conf file for this ESP application or page
+    @return Zero if successful, otherwise a negative MPR error code. 
+  */
+PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *routeName);
 
 /*
     Internal

@@ -146,6 +146,8 @@ clean:
 	-if exist $(CONFIG)\obj\cgiProgram.obj del /Q $(CONFIG)\obj\cgiProgram.obj
 	-if exist $(CONFIG)\obj\setConfig.obj del /Q $(CONFIG)\obj\setConfig.obj
 	-if exist $(CONFIG)\obj\slink.obj del /Q $(CONFIG)\obj\slink.obj
+	-if exist $(CONFIG)\obj\web.obj del /Q $(CONFIG)\obj\web.obj
+	-if exist $(CONFIG)\obj\junk.obj del /Q $(CONFIG)\obj\junk.obj
 	-if exist $(CONFIG)\obj\appweb.obj del /Q $(CONFIG)\obj\appweb.obj
 	-if exist $(CONFIG)\obj\appwebMonitor.obj del /Q $(CONFIG)\obj\appwebMonitor.obj
 	-if exist $(CONFIG)\obj\testAppweb.obj del /Q $(CONFIG)\obj\testAppweb.obj
@@ -366,16 +368,18 @@ $(CONFIG)\inc\edi.h:  \
 	-if exist $(CONFIG)\inc\edi.h del /Q $(CONFIG)\inc\edi.h
 	copy /Y src\esp\edi.h $(CONFIG)\inc\edi.h
 
-$(CONFIG)\inc\esp-app.h: 
-	-if exist $(CONFIG)\inc\esp-app.h del /Q $(CONFIG)\inc\esp-app.h
-	copy /Y src\esp\esp-app.h $(CONFIG)\inc\esp-app.h
-
 $(CONFIG)\inc\esp.h:  \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\appweb.h \
         $(CONFIG)\inc\edi.h
 	-if exist $(CONFIG)\inc\esp.h del /Q $(CONFIG)\inc\esp.h
 	copy /Y src\esp\esp.h $(CONFIG)\inc\esp.h
+
+$(CONFIG)\inc\esp-app.h:  \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\esp.h
+	-if exist $(CONFIG)\inc\esp-app.h del /Q $(CONFIG)\inc\esp-app.h
+	copy /Y src\esp\esp-app.h $(CONFIG)\inc\esp-app.h
 
 $(CONFIG)\inc\mdb.h:  \
         $(CONFIG)\inc\bit.h \
@@ -564,12 +568,28 @@ $(CONFIG)\obj\slink.obj: \
         $(CONFIG)\inc\esp.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\slink.c
 
+$(CONFIG)\obj\web.obj: \
+        src\server\cache\web.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\esp.h \
+        $(CONFIG)\inc\esp-app.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\web.obj -Fd$(CONFIG)\obj\web.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\cache\web.c
+
+$(CONFIG)\obj\junk.obj: \
+        src\server\junk\cache\junk.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\esp.h \
+        $(CONFIG)\inc\esp-app.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\junk.obj -Fd$(CONFIG)\obj\junk.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\junk\cache\junk.c
+
 $(CONFIG)\bin\libapp.dll:  \
         src\server\slink.c \
         $(CONFIG)\bin\esp.exe \
         $(CONFIG)\bin\libmod_esp.dll \
-        $(CONFIG)\obj\slink.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libapp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj libmod_esp.lib $(LIBS) libappweb.lib libhttp.lib libpcre.lib libmpr.lib
+        $(CONFIG)\obj\slink.obj \
+        $(CONFIG)\obj\web.obj \
+        $(CONFIG)\obj\junk.obj
+	"$(LD)" -dll -out:$(CONFIG)\bin\libapp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj $(CONFIG)\obj\web.obj $(CONFIG)\obj\junk.obj libmod_esp.lib $(LIBS) libappweb.lib libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\obj\appweb.obj: \
         src\server\appweb.c \

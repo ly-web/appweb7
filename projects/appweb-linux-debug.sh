@@ -107,11 +107,11 @@ ${CC} -shared -o ${CONFIG}/bin/libappweb.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj
 rm -rf ${CONFIG}/inc/edi.h
 cp -r src/esp/edi.h ${CONFIG}/inc/edi.h
 
-rm -rf ${CONFIG}/inc/esp-app.h
-cp -r src/esp/esp-app.h ${CONFIG}/inc/esp-app.h
-
 rm -rf ${CONFIG}/inc/esp.h
 cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
+
+rm -rf ${CONFIG}/inc/esp-app.h
+cp -r src/esp/esp-app.h ${CONFIG}/inc/esp-app.h
 
 rm -rf ${CONFIG}/inc/mdb.h
 cp -r src/esp/mdb.h ${CONFIG}/inc/mdb.h
@@ -173,12 +173,16 @@ ${CC} -c -o ${CONFIG}/obj/setConfig.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/ut
 ${CC} -o ${CONFIG}/bin/setConfig ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/setConfig.o -lmpr ${LIBS} -lmpr -lpthread -lm -lrt -ldl ${LDFLAGS}
 
 cd src/server >/dev/null ;\
-[ ! -f slink.c ] && cp slink.empty slink.c ;\
+[ ! -f slink.c ] && cp slink.empty slink.c ; true ;\
 cd - >/dev/null 
 
 ${CC} -c -o ${CONFIG}/obj/slink.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
 
-${CC} -shared -o ${CONFIG}/bin/libapp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.o -lmod_esp ${LIBS} -lappweb -lhttp -lpcre -lmpr
+${CC} -c -o ${CONFIG}/obj/web.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/cache/web.c
+
+${CC} -c -o ${CONFIG}/obj/junk.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/junk/cache/junk.c
+
+${CC} -shared -o ${CONFIG}/bin/libapp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.o ${CONFIG}/obj/web.o ${CONFIG}/obj/junk.o -lmod_esp ${LIBS} -lappweb -lhttp -lpcre -lmpr
 
 ${CC} -c -o ${CONFIG}/obj/appweb.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 

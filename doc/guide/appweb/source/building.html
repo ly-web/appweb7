@@ -579,6 +579,28 @@ bit --help     # Show bit usage</pre>
 ./configure --static
 bit
 </pre>
+            <p>If using ESP with static linking, you must take extra steps to pre-compile your ESP pages and applications.
+            These steps are:
+            <ol>
+                <li>Pre-compile your ESP pages and applications.</li>
+                <li>Link the ESP initializer code into appweb.</li>
+                <li>Pre-initialize the ESP components for your pages and applications.</li>
+            </ol>
+            <h4>Pre-compile ESP</h4>
+            <p>You can pre-compile ESP pages and applications for static linking and create a static library that
+            can be linked with appweb when rebuilding appweb. Use the following command to compile all ESP pages and
+            applications that are defined in the appweb.conf file.
+            <pre>cd src/server
+esp --static --flat --genlink slink.c compile</pre>
+            <p>This will create a static library in the cache directory for each ESP application and in the 
+            src/server/cache directory for stand-alone ESP pages.</p>
+
+            <h4>Link the ESP initializers</h4>
+            <p>The <em>--genlink slink.c</em> option will generate the slink.c file which contains a 
+            function <em>appwebStaticInitialize()</em> that will invoke the
+            ESP initializers for the ESP pages and applications. Appweb contains a reference to this function and 
+            when rebuilt with bit, it will automatically link with all the ESP static libraries.</p>
+
 
             <h3>Serving from ROM</h3>
             <p>Appweb supports systems without a file system where web documents are compiled into C code and served from

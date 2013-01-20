@@ -101,6 +101,8 @@
   
   <ItemGroup>
     <ClCompile Include="..\..\src\server\slink.c" />
+    <ClCompile Include="..\..\src\server\cache\web.c" />
+    <ClCompile Include="..\..\src\server\junk\cache\junk.c" />
   </ItemGroup>
 
   <ItemDefinitionGroup>

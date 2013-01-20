@@ -1106,7 +1106,7 @@ static void compile(MprList *routes)
         mprWriteFileFmt(file, "\nPUBLIC void appwebStaticInitialize()\n{\n");
         for (ITERATE_ITEMS(app->slink, route, next)) {
             name = app->appName ? app->appName : mprGetPathBase(route->dir);
-            mprWriteFileFmt(file, "    esp_app_%s(httpLookupRoute(NULL, \"%s\"), NULL);\n", name, route->name);
+            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s, \"%s\", \"%s\");\n", name, name, route->name);
         }
         mprWriteFileFmt(file, "}\n");
         mprCloseFile(file);
