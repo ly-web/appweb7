@@ -20919,7 +20919,7 @@ static EcNode *parseSuper(EcCompiler *cp)
  */
 PUBLIC EcNode *ecResetError(EcCompiler *cp, EcNode *np, bool eatInput)
 {
-    int     tid;
+    int     tid, count;
 
     assert(cp->error);
 
@@ -20933,7 +20933,9 @@ PUBLIC EcNode *ecResetError(EcCompiler *cp, EcNode *np, bool eatInput)
     /*
         Try to resync by eating input up to the next statement / directive
      */
-    while (!cp->interactive) {
+    //  MOB - workaround
+    count = 0;
+    while (!cp->interactive && count++ < 50) {
         tid = peekToken(cp);
         if (tid == T_SEMICOLON || tid == T_RBRACE || tid == T_RBRACKET || tid == T_RPAREN || tid == T_ERR || tid == T_EOF)  {
             break;
@@ -35364,6 +35366,18 @@ PUBLIC int ejsBlendObject(Ejs *ejs, EjsObj *dest, EjsObj *src, int flags)
     char        *str;
     int         i, j, count, start, deep, functions, overwrite, privateProps, trace, kind, combine, cflags;
 
+    if (!ejsIsPot(ejs, dest)) {
+        ejsThrowArgError(ejs, "destination is not an object");
+        return -1;
+    }
+    if (!ejsIsDefined(ejs, src)) {
+        /* Allow this - blend nothing */
+        return 0;
+    }
+    if (!ejsIsPot(ejs, src)) {
+        ejsThrowArgError(ejs, "source is not an object");
+        return -1;
+    }
     count = ejsGetLength(ejs, src);
     start = (flags & EJS_BLEND_SUBCLASSES) ? 0 : TYPE(src)->numInherited;
     deep = (flags & EJS_BLEND_DEEP) ? 1 : 0;
@@ -47663,7 +47677,7 @@ PUBLIC int ejsContainsAsc(Ejs *ejs, EjsString *sp, cchar *pat)
     assert(sp);
     assert(pat);
 
-    if (pat == 0 || *pat == '\0') {
+    if (pat == 0 || *pat == '\0' || sp == 0) {
         return 0;
     }
     len = strlen(pat);

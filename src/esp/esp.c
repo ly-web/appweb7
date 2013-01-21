@@ -316,6 +316,7 @@ PUBLIC int main(int argc, char **argv)
     app->database = sclone("mdb");
 #else
     mprError("No database provider defined");
+    exit 1;
 #endif
 
     for (argind = 1; argind < argc && !app->error; argind++) {
