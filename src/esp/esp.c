@@ -310,7 +310,13 @@ PUBLIC int main(int argc, char **argv)
     app->mpr = mpr;
     app->configFile = 0;
     app->listen = sclone(ESP_LISTEN);
+#if BIT_PACK_SQLITE
+    app->database = sclone("sqlite");
+#elif BIT_ESP_MDB 
     app->database = sclone("mdb");
+#else
+    mprError("No database provider defined");
+#endif
 
     for (argind = 1; argind < argc && !app->error; argind++) {
         argp = argv[argind];

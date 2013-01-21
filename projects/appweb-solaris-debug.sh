@@ -57,7 +57,7 @@ cp -r src/deps/pcre/pcre.h ${CONFIG}/inc/pcre.h
 
 ${CC} -c -o ${CONFIG}/obj/pcre.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/pcre/pcre.c
 
-${CC} -shared -o ${CONFIG}/bin/libpcre.so ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} ${CONFIG}/obj/pcre.o ${LIBS}
+${CC} -shared -o ${CONFIG}/bin/libpcre.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/pcre.o ${LIBS}
 
 rm -rf ${CONFIG}/inc/http.h
 cp -r src/deps/http/http.h ${CONFIG}/inc/http.h

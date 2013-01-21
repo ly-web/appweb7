@@ -230,7 +230,7 @@ $(CONFIG)/obj/pcre.o: \
 $(CONFIG)/bin/libpcre.so:  \
         $(CONFIG)/inc/pcre.h \
         $(CONFIG)/obj/pcre.o
-	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) $(CONFIG)/obj/pcre.o $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o $(LIBS)
 
 $(CONFIG)/inc/http.h:  \
         $(CONFIG)/inc/bit.h \
