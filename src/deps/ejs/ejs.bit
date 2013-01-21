@@ -69,7 +69,6 @@ Bit.load({
                 Tar(tar, {chdir: deps}).extract()
                 let dir = deps.files('ejs-*').sort().reverse()[0]
                 dir.rename(ejs)
-                tgz.remove()
                 tar.remove()
                 for each (n in ['Makefile', 'bit.h', 'mpr.h', 'http.h', 'deps.c', 'ejsmod.c', 'pcre.c', 'pcre.h', 
                         'sqlite3.c', 'sqlite3.h', 'start.bit']) {
