@@ -16,7 +16,7 @@ Bit.load({
 					} else {
 						bit.target.defines = [ '-DPCRE_CHAR=char' ]
 					}
-                    if (bit.target.type == 'lib') {
+                    if (bit.platform.os == 'macosx' && bit.target.type == 'lib') {
                         bit.target.linker.push('-compatibility_version ' + bit.settings.version)
                         bit.target.linker.push('-current_version ' + bit.settings.version)                                
                     }  
