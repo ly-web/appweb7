@@ -82,9 +82,6 @@
 #ifndef BIT_MPR_MANAGER
     #define BIT_MPR_MANAGER "appman"
 #endif
-#ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL ""
-#endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
 #endif

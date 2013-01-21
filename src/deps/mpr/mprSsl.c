@@ -1976,13 +1976,13 @@ static void disconnectOss(MprSocket *sp)
 }
 
 
-static void traceCert(MprSocket *sp)
+static int checkCert(MprSocket *sp)
 {
     MprSsl      *ssl;
     OpenSocket  *osp;
     X509        *cert;
     X509_NAME   *xSubject;
-    char        subject[512], issuer[512], peer[512];
+    char        subject[512], issuer[512], peer[512], *dp, *pp;
 
     ssl = sp->ssl;
     osp = (OpenSocket*) sp->sslSocket;
@@ -1996,6 +1996,7 @@ static void traceCert(MprSocket *sp)
     cert = SSL_get_peer_certificate(osp->handle);
     if (cert == 0) {
         mprLog(4, "OpenSSL: client supplied no certificate");
+        peer[0] = '\0';
     } else {
         xSubject = X509_get_subject_name(cert);
         X509_NAME_oneline(xSubject, subject, sizeof(subject) -1);
@@ -2006,7 +2007,30 @@ static void traceCert(MprSocket *sp)
         mprLog(4, "OpenSSL Peer: %s", peer);
         X509_free(cert);
     }
+    if (ssl->verifyPeer && osp->peerName) {
+        if (smatch(peer, osp->peerName)) {
+            /* simple match */
+        } else if (*peer == '*' && peer[1] == '.') {
+            pp = &peer[2];
+            if (!strchr(pp, '.')) {
+                sp->errorMsg = sfmt("Peer CN is not valid %s", peer);
+                return -1;
+            }
+            if ((dp = strchr(osp->peerName, '.')) != 0) {
+                /* Strip the host portion and just test the domain portion */
+                if (!smatch(pp, &dp[1])) {
+                    sp->errorMsg = sfmt("Certificate common name mismatch CN \"%s\" vs required \"%s\"", 
+                        peer, osp->peerName);
+                    return -1;
+                }
+            }
+        } else {
+            sp->errorMsg = sfmt("Certificate common name mismatch CN \"%s\" vs required \"%s\"", peer, osp->peerName);
+        }
+    }
+    return 0;
 }
+
 
 /*
     Return the number of bytes read. Return -1 on errors and EOF. Distinguish EOF via mprIsSocketEof.
@@ -2046,10 +2070,11 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
         }
         break;
     }
-    //  MOB - functionalize
-    if (rc > 0 && !(sp->flags & MPR_SOCKET_TRACED)) {
-        traceCert(sp);
-        sp->flags |= MPR_SOCKET_TRACED;
+    if (rc > 0 && !(sp->flags & MPR_SOCKET_CHECKED)) {
+        if (checkCert(sp) < 0) {
+            return MPR_ERR_BAD_STATE;
+        }
+        sp->flags |= MPR_SOCKET_CHECKED;
     }
     if (rc <= 0) {
         error = SSL_get_error(osp->handle, rc);
@@ -2141,7 +2166,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
     OpenSocket      *osp;
     MprSocket       *sp;
     MprSsl          *ssl;
-    char            subject[260], issuer[260], peer[260];
+    char            subject[512], issuer[512], peer[512];
     int             error, depth;
     
     subject[0] = issuer[0] = '\0';
@@ -2160,17 +2185,12 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
         sp->errorMsg = sclone("Cannot get subject name");
         ok = 0;
     }
-    if (X509_NAME_oneline(X509_get_issuer_name(xContext->current_cert), issuer, sizeof(issuer) - 1) < 0) {
+    if (X509_NAME_oneline(X509_get_issuer_name(cert), issuer, sizeof(issuer) - 1) < 0) {
         sp->errorMsg = sclone("Cannot get issuer name");
         ok = 0;
     }
-    if (X509_NAME_get_text_by_NID(X509_get_subject_name(xContext->current_cert), NID_commonName, peer, 
-            sizeof(peer) - 1) < 0) {
+    if (X509_NAME_get_text_by_NID(X509_get_subject_name(cert), NID_commonName, peer, sizeof(peer) - 1) < 0) {
         sp->errorMsg = sclone("Cannot get peer name");
-        ok = 0;
-    }
-    if (ok && ssl->verifyPeer && osp->peerName && !smatch(peer, osp->peerName)) {
-        sp->errorMsg = sclone("Certificate common name mismatch");
         ok = 0;
     }
     if (ok && ssl->verifyDepth < depth) {
@@ -2215,15 +2235,13 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
         break;
     }
     if (ok) {
-        mprLog(3, "OpenSSL: Certificate verified: subject %s", subject);
-        mprLog(4, "OpenSSL: Issuer: %s", issuer);
-        mprLog(4, "OpenSSL: Peer: %s", peer);
+        mprLog(3, "OpenSSL: Certificate verified");
     } else {
-        mprLog(3, "OpenSSL: Certificate cannot be verified: subject %s (more trace at level 4)", subject);
-        mprLog(4, "OpenSSL: Issuer: %s", issuer);
-        mprLog(4, "OpenSSL: Peer: %s", peer);
-        mprLog(4, "OpenSSL: Error: %d: %s", error, X509_verify_cert_error_string(error));
+        mprLog(3, "OpenSSL: Certificate cannot be verified (more trace at level 4)");
     }
+    mprLog(4, "OpenSSL: Subject: %s", subject);
+    mprLog(4, "OpenSSL: Issuer: %s", issuer);
+    mprLog(4, "OpenSSL: Peer: %s", peer);
     return ok;
 }
 
@@ -2786,7 +2804,7 @@ static void traceCert(MprSocket *sp)
     } else {
         mprRawLog(4, "%s", x509parse_cert_inf("", ssl->peer_cert));
     }
-    sp->flags |= MPR_SOCKET_TRACED;
+    sp->flags |= MPR_SOCKET_CHECKED;
 }
 #endif
 

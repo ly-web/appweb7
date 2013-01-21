@@ -140,8 +140,6 @@ clean:
 	rm -rf $(CONFIG)/obj/cgiProgram.o
 	rm -rf $(CONFIG)/obj/setConfig.o
 	rm -rf $(CONFIG)/obj/slink.o
-	rm -rf $(CONFIG)/obj/web.o
-	rm -rf $(CONFIG)/obj/junk.o
 	rm -rf $(CONFIG)/obj/appweb.o
 	rm -rf $(CONFIG)/obj/appwebMonitor.o
 	rm -rf $(CONFIG)/obj/testAppweb.o
@@ -232,7 +230,7 @@ $(CONFIG)/obj/pcre.o: \
 $(CONFIG)/bin/libpcre.so:  \
         $(CONFIG)/inc/pcre.h \
         $(CONFIG)/obj/pcre.o
-	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) $(CONFIG)/obj/pcre.o $(LIBS)
 
 $(CONFIG)/inc/http.h:  \
         $(CONFIG)/inc/bit.h \
@@ -365,18 +363,16 @@ $(CONFIG)/inc/edi.h:  \
 	rm -fr $(CONFIG)/inc/edi.h
 	cp -r src/esp/edi.h $(CONFIG)/inc/edi.h
 
+$(CONFIG)/inc/esp-app.h: 
+	rm -fr $(CONFIG)/inc/esp-app.h
+	cp -r src/esp/esp-app.h $(CONFIG)/inc/esp-app.h
+
 $(CONFIG)/inc/esp.h:  \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h \
         $(CONFIG)/inc/edi.h
 	rm -fr $(CONFIG)/inc/esp.h
 	cp -r src/esp/esp.h $(CONFIG)/inc/esp.h
-
-$(CONFIG)/inc/esp-app.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/esp.h
-	rm -fr $(CONFIG)/inc/esp-app.h
-	cp -r src/esp/esp-app.h $(CONFIG)/inc/esp-app.h
 
 $(CONFIG)/inc/mdb.h:  \
         $(CONFIG)/inc/bit.h \
@@ -564,28 +560,12 @@ $(CONFIG)/obj/slink.o: \
         $(CONFIG)/inc/esp.h
 	$(CC) -c -o $(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/slink.c
 
-$(CONFIG)/obj/web.o: \
-        src/server/cache/web.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/esp.h \
-        $(CONFIG)/inc/esp-app.h
-	$(CC) -c -o $(CONFIG)/obj/web.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/cache/web.c
-
-$(CONFIG)/obj/junk.o: \
-        src/server/junk/cache/junk.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/esp.h \
-        $(CONFIG)/inc/esp-app.h
-	$(CC) -c -o $(CONFIG)/obj/junk.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/junk/cache/junk.c
-
 $(CONFIG)/bin/libapp.so:  \
         src/server/slink.c \
         $(CONFIG)/bin/esp \
         $(CONFIG)/bin/libmod_esp.so \
-        $(CONFIG)/obj/slink.o \
-        $(CONFIG)/obj/web.o \
-        $(CONFIG)/obj/junk.o
-	$(CC) -shared -o $(CONFIG)/bin/libapp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o $(CONFIG)/obj/web.o $(CONFIG)/obj/junk.o -lmod_esp $(LIBS) -lappweb -lhttp -lpcre -lmpr
+        $(CONFIG)/obj/slink.o
+	$(CC) -shared -o $(CONFIG)/bin/libapp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o -lmod_esp $(LIBS) -lappweb -lhttp -lpcre -lmpr
 
 $(CONFIG)/obj/appweb.o: \
         src/server/appweb.c \

@@ -21015,7 +21015,7 @@ PUBLIC MprSsl *mprCreateSsl(int server)
         ssl->verifyPeer = 0;
         ssl->verifyIssuer = 0;
     } else {
-        ssl->verifyDepth = MPR->verifySsl;
+        ssl->verifyDepth = 10;
         ssl->verifyPeer = MPR->verifySsl;
         ssl->verifyIssuer = MPR->verifySsl;
         ssl->caFile = mprJoinPath(mprGetAppDir(), MPR_CA_CERT);

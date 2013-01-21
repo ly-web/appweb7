@@ -61,7 +61,7 @@ cp -r src/deps/pcre/pcre.h ${CONFIG}/inc/pcre.h
 
 "${CC}" -c -Fo${CONFIG}/obj/pcre.obj -Fd${CONFIG}/obj/pcre.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/pcre/pcre.c
 
-"${LD}" -dll -out:${CONFIG}/bin/libpcre.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/pcre.obj ${LIBS}
+"${LD}" -dll -out:${CONFIG}/bin/libpcre.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} ${CONFIG}/obj/pcre.obj ${LIBS}
 
 rm -rf ${CONFIG}/inc/http.h
 cp -r src/deps/http/http.h ${CONFIG}/inc/http.h
@@ -111,11 +111,11 @@ cp -r src/appweb.h ${CONFIG}/inc/appweb.h
 rm -rf ${CONFIG}/inc/edi.h
 cp -r src/esp/edi.h ${CONFIG}/inc/edi.h
 
-rm -rf ${CONFIG}/inc/esp.h
-cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
-
 rm -rf ${CONFIG}/inc/esp-app.h
 cp -r src/esp/esp-app.h ${CONFIG}/inc/esp-app.h
+
+rm -rf ${CONFIG}/inc/esp.h
+cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
 
 rm -rf ${CONFIG}/inc/mdb.h
 cp -r src/esp/mdb.h ${CONFIG}/inc/mdb.h
@@ -182,11 +182,7 @@ cd - >/dev/null
 
 "${CC}" -c -Fo${CONFIG}/obj/slink.obj -Fd${CONFIG}/obj/slink.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
 
-"${CC}" -c -Fo${CONFIG}/obj/web.obj -Fd${CONFIG}/obj/web.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/cache/web.c
-
-"${CC}" -c -Fo${CONFIG}/obj/junk.obj -Fd${CONFIG}/obj/junk.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/junk/cache/junk.c
-
-"${LD}" -dll -out:${CONFIG}/bin/libapp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.obj ${CONFIG}/obj/web.obj ${CONFIG}/obj/junk.obj libmod_esp.lib ${LIBS} libappweb.lib libhttp.lib libpcre.lib libmpr.lib
+"${LD}" -dll -out:${CONFIG}/bin/libapp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.obj libmod_esp.lib ${LIBS} libappweb.lib libhttp.lib libpcre.lib libmpr.lib
 
 "${CC}" -c -Fo${CONFIG}/obj/appweb.obj -Fd${CONFIG}/obj/appweb.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 

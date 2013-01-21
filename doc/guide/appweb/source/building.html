@@ -584,7 +584,6 @@ bit
             <ol>
                 <li>Pre-compile your ESP pages and applications.</li>
                 <li>Link the ESP initializer code into appweb.</li>
-                <li>Pre-initialize the ESP components for your pages and applications.</li>
             </ol>
             <h4>Pre-compile ESP</h4>
             <p>You can pre-compile ESP pages and applications for static linking and create a static library that
@@ -600,7 +599,6 @@ esp --static --flat --genlink slink.c compile</pre>
             function <em>appwebStaticInitialize()</em> that will invoke the
             ESP initializers for the ESP pages and applications. Appweb contains a reference to this function and 
             when rebuilt with bit, it will automatically link with all the ESP static libraries.</p>
-
 
             <h3>Serving from ROM</h3>
             <p>Appweb supports systems without a file system where web documents are compiled into C code and served from

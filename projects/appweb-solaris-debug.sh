@@ -57,7 +57,7 @@ cp -r src/deps/pcre/pcre.h ${CONFIG}/inc/pcre.h
 
 ${CC} -c -o ${CONFIG}/obj/pcre.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/pcre/pcre.c
 
-${CC} -shared -o ${CONFIG}/bin/libpcre.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/pcre.o ${LIBS}
+${CC} -shared -o ${CONFIG}/bin/libpcre.so ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} ${CONFIG}/obj/pcre.o ${LIBS}
 
 rm -rf ${CONFIG}/inc/http.h
 cp -r src/deps/http/http.h ${CONFIG}/inc/http.h
@@ -107,11 +107,11 @@ ${CC} -shared -o ${CONFIG}/bin/libappweb.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj
 rm -rf ${CONFIG}/inc/edi.h
 cp -r src/esp/edi.h ${CONFIG}/inc/edi.h
 
-rm -rf ${CONFIG}/inc/esp.h
-cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
-
 rm -rf ${CONFIG}/inc/esp-app.h
 cp -r src/esp/esp-app.h ${CONFIG}/inc/esp-app.h
+
+rm -rf ${CONFIG}/inc/esp.h
+cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
 
 rm -rf ${CONFIG}/inc/mdb.h
 cp -r src/esp/mdb.h ${CONFIG}/inc/mdb.h
@@ -178,11 +178,7 @@ cd - >/dev/null
 
 ${CC} -c -o ${CONFIG}/obj/slink.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
 
-${CC} -c -o ${CONFIG}/obj/web.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/cache/web.c
-
-${CC} -c -o ${CONFIG}/obj/junk.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/junk/cache/junk.c
-
-${CC} -shared -o ${CONFIG}/bin/libapp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.o ${CONFIG}/obj/web.o ${CONFIG}/obj/junk.o -lmod_esp ${LIBS} -lappweb -lhttp -lpcre -lmpr
+${CC} -shared -o ${CONFIG}/bin/libapp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.o -lmod_esp ${LIBS} -lappweb -lhttp -lpcre -lmpr
 
 ${CC} -c -o ${CONFIG}/obj/appweb.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 

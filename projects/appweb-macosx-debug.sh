@@ -57,7 +57,7 @@ cp -r src/deps/pcre/pcre.h ${CONFIG}/inc/pcre.h
 
 ${CC} -c -o ${CONFIG}/obj/pcre.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/pcre/pcre.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libpcre.dylib -arch x86_64 ${LDFLAGS} ${LIBPATHS} -install_name @rpath/libpcre.dylib ${CONFIG}/obj/pcre.o ${LIBS}
+${CC} -dynamiclib -o ${CONFIG}/bin/libpcre.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libpcre.dylib ${CONFIG}/obj/pcre.o ${LIBS}
 
 rm -rf ${CONFIG}/inc/http.h
 cp -r src/deps/http/http.h ${CONFIG}/inc/http.h
@@ -107,11 +107,11 @@ ${CC} -dynamiclib -o ${CONFIG}/bin/libappweb.dylib -arch x86_64 ${LDFLAGS} -comp
 rm -rf ${CONFIG}/inc/edi.h
 cp -r src/esp/edi.h ${CONFIG}/inc/edi.h
 
-rm -rf ${CONFIG}/inc/esp.h
-cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
-
 rm -rf ${CONFIG}/inc/esp-app.h
 cp -r src/esp/esp-app.h ${CONFIG}/inc/esp-app.h
+
+rm -rf ${CONFIG}/inc/esp.h
+cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
 
 rm -rf ${CONFIG}/inc/mdb.h
 cp -r src/esp/mdb.h ${CONFIG}/inc/mdb.h
@@ -182,11 +182,7 @@ cd - >/dev/null
 
 ${CC} -c -o ${CONFIG}/obj/slink.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
 
-${CC} -c -o ${CONFIG}/obj/web.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/cache/web.c
-
-${CC} -c -o ${CONFIG}/obj/junk.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/junk/cache/junk.c
-
-${CC} -dynamiclib -o ${CONFIG}/bin/libapp.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libapp.dylib ${CONFIG}/obj/slink.o ${CONFIG}/obj/web.o ${CONFIG}/obj/junk.o -lmod_esp ${LIBS} -lappweb -lhttp -lpcre -lmpr -lpam
+${CC} -dynamiclib -o ${CONFIG}/bin/libapp.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libapp.dylib ${CONFIG}/obj/slink.o -lmod_esp ${LIBS} -lappweb -lhttp -lpcre -lmpr -lpam
 
 ${CC} -c -o ${CONFIG}/obj/appweb.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
