@@ -2012,10 +2012,12 @@ static int checkCert(MprSocket *sp)
             /* simple match */
         } else if (*peer == '*' && peer[1] == '.') {
             pp = &peer[2];
+            /* Cert peer must be of the form *.domain.tld. i.e. *.com is not valid */
             if (!strchr(pp, '.')) {
                 sp->errorMsg = sfmt("Peer CN is not valid %s", peer);
                 return -1;
             }
+            /* Required peer name must have a domain portion. i.e. domain.tld */
             if ((dp = strchr(osp->peerName, '.')) != 0) {
                 /* Strip the host portion and just test the domain portion */
                 if (!smatch(pp, &dp[1])) {
