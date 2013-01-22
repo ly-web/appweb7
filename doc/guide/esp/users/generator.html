@@ -272,7 +272,6 @@ esp compile
             <p>If you are using static linking, use the <em>--static</em> switch to generate archive libraries instead of
                 shared libraries. If you are doing this, you must manually call the ESP initializers. See the --genlink
                 option for how to generate the code to call the ESP initializers.</p>
-
             <h3>Routes</h3>
             <p>When <em>esp</em> is invoked it, loads the <em>appweb.conf</em> configuration file from the current
             directory, unless <em>esp</em> is invoked with the <em>--config</em> switch to select an alternative 
@@ -309,7 +308,6 @@ esp --flat compile
             <p>If you compile flat, you will need to add an <em>EspLoad</em> directive to the appweb.conf. This tells
             ESP to pre-load the application and where to locate the module file.</p>
 <pre>EspLoad NAME PATH</pre>
-
             <p>When using dynamic linking, appweb automatically invokes the necessary ESP initializers when running
             ESP pages or invoking ESP controllers. However, if you are using static linking, you need to manually
             call these ESP initializers. You can generate the necessary initialization calls via the esp <em>--genlink
@@ -318,7 +316,6 @@ esp --flat compile
             <pre>
 esp --flat --static --genlink slink.c
 </pre>
-
             <h3>Cross Compiling</h3>
             <p>When <em>esp compile</em> is invoked, it selects its compile and link rules from the <em>esp.conf</em>
             configuration file. This file, which may be customized, contains the rules for various operating systems

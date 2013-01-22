@@ -101,12 +101,10 @@
             <p>Building with Bit is the most flexible and offers the most control. It requires installing the
             <a href="http://ejscript.org/downloads/ejs/download.ejs">Ejscript Product</a> which includes the
             <em>bit</em> tool. Using bit is required if you are cross-compiling or using static linking.</p>
-
             <p>Building with make or nmake is useful for a default (pre-configured) build. You do not have the 
             flexibility to configure the product for your system. Similarly, IDE builds are convenient, but are somewhat
             fixed in the software configuration they build. We recommend building with Bit. It is fast, flexible and
             configurable.</p>
-
             <a id="env"></a>
             <h3>Preparing the Environment</h3>
             <p>Before building, you may need to install required tools such as cross-compilers, SDKs, and system
@@ -358,7 +356,6 @@ configure --with openssl=/usr/src/openssl
                 </tr>
                 </tbody>
             </table>
-
             <p>The following table describes the tool packages that can be used when building, running and 
             managing Appweb. 
             The use of the Internal/External field documents whether the package is shipped internally with the Appweb source
@@ -419,7 +416,6 @@ configure --with openssl=/usr/src/openssl
                 </tr>
                 </tbody>
             </table>
-
             <h3>Environment Variables</h3>
             <p>When cross-building, certain environment variables may be passed to the configure script and on to 
             <em>bit</em> to configure the compiler and linker paths and flags. </p>
@@ -501,7 +497,6 @@ sudo bit install            # Install so Appweb can use bit
                 <pre>./configure --with ejscript
 bit           # To build Appweb with Ejscript support</pre></li>
             </ol>
-
             <a id="cross"></a>
             <h2 class="section">Cross Compilation</h2>
             <p>To build a product for platform different to that of the local system is called <em>cross compiling</em>.
@@ -569,7 +564,6 @@ bit --help     # Show bit usage</pre>
             <p>On VxWorks, it is required to define BLD_APPWEB_PATH so that Appweb can load modules which
             are located relative to the Appweb executable image.</p>
             <p>Define BLD_CONFIG_FILE and BLD_SERVER_ROOT to set default locations for Appweb initialization.</p>
-
             <h3>Static Linking</h3>
             <p>On some platforms, it is desirable to statically link the Appweb web server. The default bit files
             are setup to build Appweb using shared libraries and to build the loadable modules separately. If you want to
@@ -593,13 +587,11 @@ bit
 esp --static --flat --genlink slink.c compile</pre>
             <p>This will create a static library in the cache directory for each ESP application and in the 
             src/server/cache directory for stand-alone ESP pages.</p>
-
             <h4>Link the ESP initializers</h4>
             <p>The <em>--genlink slink.c</em> option will generate the slink.c file which contains a 
             function <em>appwebStaticInitialize()</em> that will invoke the
             ESP initializers for the ESP pages and applications. Appweb contains a reference to this function and 
             when rebuilt with bit, it will automatically link with all the ESP static libraries.</p>
-
             <h3>Serving from ROM</h3>
             <p>Appweb supports systems without a file system where web documents are compiled into C code and served from
             ROM. To enable this, configure with the <em>--rom</em> switch.
@@ -607,7 +599,6 @@ esp --static --flat --genlink slink.c compile</pre>
 configure --rom
 </pre>
             <p>See <a href="../programmers/rom.html">Serving Pages from ROM</a> for more information.</p>
-
             <a id="installing"></a>
             <h2 class="section">Installing</h2>
             <p>You can install the newly built software via:</p>
@@ -632,14 +623,12 @@ sudo bit uninstall
             <pre>
  git clone <a href="http://github.com/embedthis/appweb-4">http://github.com/embedthis/appweb-4</a>
 </pre>
-
             <p>There are three repository branches that you can select:
             <ul>
                 <li>stable &mdash; Source code for the most recent release.</li>
                 <li>master &mdash; Most recent, quasi-stable development snapshot.</li>
                 <li>dev &mdash; Current source code under active development. Least stable.</li>
             </ul>
-
             <p>Once checked out, the normal instructions for building from source apply.</p><a id="keyFiles"></a>
             <h2 class="section">Key Files and Directories</h2>
             <p>Source trees contain the following key directories under the top directory.</p>

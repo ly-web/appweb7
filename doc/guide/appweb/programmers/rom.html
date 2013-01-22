@@ -61,7 +61,6 @@
             <p>To enable Appweb to be used on an embedded system without a file system, Appweb supports the compilation of
             web pages and configuration files into C code that can be stored in Read Only Memory (ROM) and fetched by
             Appweb to respond to relevant requests.</p>
-
             <p>Appweb has a virtual file system interface that allows the run-time switching between serving web pages
             on a disk-based file system and a compiled ROM based store of web pages.</p>
             <p>This ROM facility may also be used to enhance security by preventing the modification of web documents,
@@ -78,7 +77,6 @@ makerom `find web -print` &gt;romFiles.c
 </pre>
             <p>This will create a list of all the web files and then convert these files into C structures in the file
             romFiles.c.</p>
-
             <p>The <b>makerom</b> program takes two options:</p>
             <table title="Switches" class="width">
                 <thead>
@@ -102,7 +100,6 @@ makerom `find web -print` &gt;romFiles.c
                     </tr>
                 </tbody>
             </table>
-
             <p>It is important to include some essential Appweb configuration files into the ROM. These include the
             Appweb configuration file, the mime.types file, and any authorization database files. The following script
             is used to compile the web pages in three web directories ("sslWeb", "vhostWeb", and "web") and to also
