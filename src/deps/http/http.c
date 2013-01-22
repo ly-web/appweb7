@@ -955,12 +955,11 @@ static void readBody(HttpConn *conn, MprFile *outFile)
     cchar       *result;
     ssize       bytes;
 
-    if (app->noout) {
-        return;
-    }
     while (!conn->error && conn->sock && (bytes = httpRead(conn, buf, sizeof(buf))) > 0) {
-        result = formatOutput(conn, buf, &bytes);
-        mprWriteFile(outFile, result, bytes);
+        if (!app->noout) {
+            result = formatOutput(conn, buf, &bytes);
+            mprWriteFile(outFile, result, bytes);
+        }
 #if FUTURE
         //  This should be pushed into a range filter.
         //  Buffer all output and then parsing can work  
