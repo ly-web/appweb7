@@ -316,7 +316,6 @@ PUBLIC int main(int argc, char **argv)
     app->database = sclone("mdb");
 #else
     mprError("No database provider defined");
-    exit 1;
 #endif
 
     for (argind = 1; argind < argc && !app->error; argind++) {
@@ -2034,7 +2033,7 @@ static void generateAppDb(HttpRoute *route)
     char        *ext, *dbpath, buf[1];
 
     eroute = route->eroute;
-    ext = smatch(app->database, "mdb") ? "mdb" : "sdb";
+    ext = app->database;
     dbpath = sfmt("%s/%s.%s", eroute->dbDir, app->appName, ext);
     if (mprWritePathContents(dbpath, buf, 0, 0664) < 0) {
         return;

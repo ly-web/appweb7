@@ -310,6 +310,7 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
 /**
     Initialize a static library ESP module
     @description This invokes the ESP initializers for the required pre-compiled ESP shared library.
+    @param entry ESP initialization function.
     @param appName Name of the ESP application
     @param routeName Name of the route in the appweb.conf file for this ESP application or page
     @return Zero if successful, otherwise a negative MPR error code. 
