@@ -2027,8 +2027,8 @@ PUBLIC char *srejoinv(char *buf, va_list args);
 /*
     Replace a pattern in a string
     @param str String to examine
-    @param pattern Pattern to search for
-    @param replacmenet Replacement pattern
+    @param pattern Pattern to search for. Can be null in which case the str is cloned.
+    @param replacement Replacement pattern. If replacement is null, the pattern is removed.
     @return A new allocated string
     @ingroup MprString
     @stability Evolving

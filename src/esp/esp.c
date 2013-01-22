@@ -1841,13 +1841,15 @@ static void generateAppDirs(HttpRoute *route)
     makeEspDir(route, "");
     makeEspDir(route, "cache");
     makeEspDir(route, "controllers");
-    makeEspDir(route, "db");
     makeEspDir(route, "layouts");
     makeEspDir(route, "static");
     makeEspDir(route, "static/images");
     makeEspDir(route, "static/js");
     makeEspDir(route, "static/themes");
     makeEspDir(route, "views");
+    if (app->database) {
+        makeEspDir(route, "db");
+    }
 }
 
 
@@ -2030,8 +2032,12 @@ static void generateAppHeader(HttpRoute *route)
 static void generateAppDb(HttpRoute *route)
 {
     EspRoute    *eroute;
-    char        *ext, *dbpath, buf[1];
+    cchar       *ext;
+    char        *dbpath, buf[1];
 
+    if (!app->database) {
+        return;
+    }
     eroute = route->eroute;
     ext = app->database;
     dbpath = sfmt("%s/%s.%s", eroute->dbDir, app->appName, ext);

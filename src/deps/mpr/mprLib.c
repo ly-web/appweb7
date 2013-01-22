@@ -21920,16 +21920,19 @@ PUBLIC char *sreplace(cchar *str, cchar *pattern, cchar *replacement)
     cchar       *s;
     ssize       plen;
 
+    if (!pattern || pattern[0] == '\0') {
+        return sclone(str);
+    }
     buf = mprCreateBuf(-1, -1);
-    if (pattern && *pattern && replacement) {
-        plen = slen(pattern);
-        for (s = str; *s; s++) {
-            if (sncmp(s, pattern, plen) == 0) {
+    plen = slen(pattern);
+    for (s = str; *s; s++) {
+        if (sncmp(s, pattern, plen) == 0) {
+            if (replacement) {
                 mprPutStringToBuf(buf, replacement);
-                s += plen - 1;
-            } else {
-                mprPutCharToBuf(buf, *s);
             }
+            s += plen - 1;
+        } else {
+            mprPutCharToBuf(buf, *s);
         }
     }
     mprAddNullToBuf(buf);
