@@ -2373,7 +2373,7 @@ PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg);
     @param buf Optional buffer to contain the formatted result
     @param maxsize Maximum size of the result
     @param fmt Printf style format string
-    @param ... Variable arguments to format
+    @param args Variable arguments to format
     @return Returns the number of characters in the string.
     @ingroup MprString
     @internal
