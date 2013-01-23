@@ -80,7 +80,7 @@ static ssize    flushMss(MprSocket *sp);
 static char     *getMssState(MprSocket *sp);
 static int      handshakeMss(MprSocket *sp, short cipherSuite);
 static ssize    innerRead(MprSocket *sp, char *userBuf, ssize len);
-static int      listenMss(MprSocket *sp, cchar *host, int port, int flags);
+static Socket   listenMss(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageMatrixSocket(MatrixSocket *msp, int flags);
 static void     manageMatrixConfig(MatrixConfig *cfg, int flags);
 static ssize    processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, int *readMore);
@@ -179,7 +179,7 @@ static void closeMss(MprSocket *sp, bool gracefully)
 }
 
 
-static int listenMss(MprSocket *sp, cchar *host, int port, int flags)
+static Socket listenMss(MprSocket *sp, cchar *host, int port, int flags)
 {
     return sp->service->standardProvider->listenSocket(sp, host, port, flags);
 }
@@ -867,7 +867,7 @@ static void     disconnectEst(MprSocket *sp);
 static void     estTrace(void *fp, int level, char *str);
 static int      handshakeEst(MprSocket *sp);
 static char     *getEstState(MprSocket *sp);
-static int      listenEst(MprSocket *sp, cchar *host, int port, int flags);
+static Socket   listenEst(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageEstConfig(EstConfig *cfg, int flags);
 static void     manageEstProvider(MprSocketProvider *provider, int flags);
 static void     manageEstSocket(EstSocket *ssp, int flags);
@@ -962,7 +962,7 @@ static void closeEst(MprSocket *sp, bool gracefully)
 /*
     Initialize a new server-side connection
  */
-static int listenEst(MprSocket *sp, cchar *host, int port, int flags)
+static Socket listenEst(MprSocket *sp, cchar *host, int port, int flags)
 {
     assert(sp);
     assert(port);
@@ -1453,7 +1453,7 @@ static DH       *dhCallback(SSL *ssl, int isExport, int keyLength);
 static void     disconnectOss(MprSocket *sp);
 static ssize    flushOss(MprSocket *sp);
 static char     *getOssState(MprSocket *sp);
-static int      listenOss(MprSocket *sp, cchar *host, int port, int flags);
+static Socket   listenOss(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageOpenConfig(OpenConfig *cfg, int flags);
 static void     manageOpenProvider(MprSocketProvider *provider, int flags);
 static void     manageOpenSocket(OpenSocket *ssp, int flags);
@@ -1773,7 +1773,7 @@ static void closeOss(MprSocket *sp, bool gracefully)
 }
 
 
-static int listenOss(MprSocket *sp, cchar *host, int port, int flags)
+static Socket listenOss(MprSocket *sp, cchar *host, int port, int flags)
 {
     assert(sp);
     assert(port);
@@ -2508,7 +2508,7 @@ certDistinguishedName testCert = {
 static void     closeMoc(MprSocket *sp, bool gracefully);
 static void     disconnectMoc(MprSocket *sp);
 static char     *getMocState(MprSocket *sp);
-static int      listenMoc(MprSocket *sp, cchar *host, int port, int flags);
+static Socket   listenMoc(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageMocConfig(MocConfig *cfg, int flags);
 static void     manageMocProvider(MprSocketProvider *provider, int flags);
 static void     manageMocSocket(MocSocket *ssp, int flags);
@@ -2623,7 +2623,7 @@ static void closeMoc(MprSocket *sp, bool gracefully)
 /*
     Initialize a new server-side connection
  */
-static int listenMoc(MprSocket *sp, cchar *host, int port, int flags)
+static Socket listenMoc(MprSocket *sp, cchar *host, int port, int flags)
 {
     assert(sp);
     assert(port);
