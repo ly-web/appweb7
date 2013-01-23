@@ -129,7 +129,6 @@ clean:
 	-if exist $(CONFIG)\obj\espFramework.obj del /Q $(CONFIG)\obj\espFramework.obj
 	-if exist $(CONFIG)\obj\espHandler.obj del /Q $(CONFIG)\obj\espHandler.obj
 	-if exist $(CONFIG)\obj\espHtml.obj del /Q $(CONFIG)\obj\espHtml.obj
-	-if exist $(CONFIG)\obj\espSession.obj del /Q $(CONFIG)\obj\espSession.obj
 	-if exist $(CONFIG)\obj\espTemplate.obj del /Q $(CONFIG)\obj\espTemplate.obj
 	-if exist $(CONFIG)\obj\mdb.obj del /Q $(CONFIG)\obj\mdb.obj
 	-if exist $(CONFIG)\obj\sdb.obj del /Q $(CONFIG)\obj\sdb.obj
@@ -418,12 +417,6 @@ $(CONFIG)\obj\espHtml.obj: \
         $(CONFIG)\inc\edi.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espHtml.c
 
-$(CONFIG)\obj\espSession.obj: \
-        src\esp\espSession.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espSession.obj -Fd$(CONFIG)\obj\espSession.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espSession.c
-
 $(CONFIG)\obj\espTemplate.obj: \
         src\esp\espTemplate.c \
         $(CONFIG)\inc\bit.h \
@@ -457,11 +450,10 @@ $(CONFIG)\bin\libmod_esp.dll:  \
         $(CONFIG)\obj\espFramework.obj \
         $(CONFIG)\obj\espHandler.obj \
         $(CONFIG)\obj\espHtml.obj \
-        $(CONFIG)\obj\espSession.obj \
         $(CONFIG)\obj\espTemplate.obj \
         $(CONFIG)\obj\mdb.obj \
         $(CONFIG)\obj\sdb.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espSession.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\obj\esp.obj: \
         src\esp\esp.c \
@@ -477,11 +469,10 @@ $(CONFIG)\bin\esp.exe:  \
         $(CONFIG)\obj\espFramework.obj \
         $(CONFIG)\obj\espHandler.obj \
         $(CONFIG)\obj\espHtml.obj \
-        $(CONFIG)\obj\espSession.obj \
         $(CONFIG)\obj\espTemplate.obj \
         $(CONFIG)\obj\mdb.obj \
         $(CONFIG)\obj\sdb.obj
-	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espSession.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\bin\esp.conf: 
 	-if exist $(CONFIG)\bin\esp.conf del /Q $(CONFIG)\bin\esp.conf

@@ -101,7 +101,7 @@
     #define BIT_STATIC 0
 #endif
 #ifndef BIT_SYNC
-    #define BIT_SYNC "bitos,est,http,mpr,pcre,sqlite"
+    #define BIT_SYNC "bitos,est,http,mpr,pcre,sqlite,ejs"
 #endif
 #ifndef BIT_TITLE
     #define BIT_TITLE "Embedthis Appweb"

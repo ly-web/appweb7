@@ -126,19 +126,17 @@ ${CC} -c -o ${CONFIG}/obj/espHandler.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/e
 
 ${CC} -c -o ${CONFIG}/obj/espHtml.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espHtml.c
 
-${CC} -c -o ${CONFIG}/obj/espSession.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espSession.c
-
 ${CC} -c -o ${CONFIG}/obj/espTemplate.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espTemplate.c
 
 ${CC} -c -o ${CONFIG}/obj/mdb.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/mdb.c
 
 ${CC} -c -o ${CONFIG}/obj/sdb.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/sdb.c
 
-${CC} -shared -o ${CONFIG}/bin/libmod_esp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
+${CC} -shared -o ${CONFIG}/bin/libmod_esp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
 
 ${CC} -c -o ${CONFIG}/obj/esp.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/esp.c
 
-${CC} -o ${CONFIG}/bin/esp ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/esp.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/esp ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/esp.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr ${LDFLAGS}
 
 rm -rf ${CONFIG}/bin/esp.conf
 cp -r src/esp/esp.conf ${CONFIG}/bin/esp.conf

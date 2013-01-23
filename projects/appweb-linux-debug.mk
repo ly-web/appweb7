@@ -123,7 +123,6 @@ clean:
 	rm -rf $(CONFIG)/obj/espFramework.o
 	rm -rf $(CONFIG)/obj/espHandler.o
 	rm -rf $(CONFIG)/obj/espHtml.o
-	rm -rf $(CONFIG)/obj/espSession.o
 	rm -rf $(CONFIG)/obj/espTemplate.o
 	rm -rf $(CONFIG)/obj/mdb.o
 	rm -rf $(CONFIG)/obj/sdb.o
@@ -415,12 +414,6 @@ $(CONFIG)/obj/espHtml.o: \
         $(CONFIG)/inc/edi.h
 	$(CC) -c -o $(CONFIG)/obj/espHtml.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
 
-$(CONFIG)/obj/espSession.o: \
-        src/esp/espSession.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espSession.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espSession.c
-
 $(CONFIG)/obj/espTemplate.o: \
         src/esp/espTemplate.c \
         $(CONFIG)/inc/bit.h \
@@ -454,11 +447,10 @@ $(CONFIG)/bin/libmod_esp.so:  \
         $(CONFIG)/obj/espFramework.o \
         $(CONFIG)/obj/espHandler.o \
         $(CONFIG)/obj/espHtml.o \
-        $(CONFIG)/obj/espSession.o \
         $(CONFIG)/obj/espTemplate.o \
         $(CONFIG)/obj/mdb.o \
         $(CONFIG)/obj/sdb.o
-	$(CC) -shared -o $(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
+	$(CC) -shared -o $(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
 
 $(CONFIG)/obj/esp.o: \
         src/esp/esp.c \
@@ -474,11 +466,10 @@ $(CONFIG)/bin/esp:  \
         $(CONFIG)/obj/espFramework.o \
         $(CONFIG)/obj/espHandler.o \
         $(CONFIG)/obj/espHtml.o \
-        $(CONFIG)/obj/espSession.o \
         $(CONFIG)/obj/espTemplate.o \
         $(CONFIG)/obj/mdb.o \
         $(CONFIG)/obj/sdb.o
-	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espSession.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr $(LDFLAGS)
 
 $(CONFIG)/bin/esp.conf: 
 	rm -fr $(CONFIG)/bin/esp.conf

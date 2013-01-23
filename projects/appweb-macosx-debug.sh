@@ -126,19 +126,17 @@ ${CC} -c -o ${CONFIG}/obj/espHandler.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONF
 
 ${CC} -c -o ${CONFIG}/obj/espHtml.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espHtml.c
 
-${CC} -c -o ${CONFIG}/obj/espSession.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espSession.c
-
 ${CC} -c -o ${CONFIG}/obj/espTemplate.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espTemplate.c
 
 ${CC} -c -o ${CONFIG}/obj/mdb.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/mdb.c
 
 ${CC} -c -o ${CONFIG}/obj/sdb.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/sdb.c
 
-${CC} -dynamiclib -o ${CONFIG}/bin/libmod_esp.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libmod_esp.dylib ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
+${CC} -dynamiclib -o ${CONFIG}/bin/libmod_esp.dylib -arch x86_64 ${LDFLAGS} -compatibility_version 4.3.0 -current_version 4.3.0 ${LIBPATHS} -install_name @rpath/libmod_esp.dylib ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 ${CC} -c -o ${CONFIG}/obj/esp.o -arch x86_64 ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/esp.c
 
-${CC} -o ${CONFIG}/bin/esp -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/esp.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espSession.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
+${CC} -o ${CONFIG}/bin/esp -arch x86_64 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/esp.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lpam
 
 rm -rf ${CONFIG}/bin/esp.conf
 cp -r src/esp/esp.conf ${CONFIG}/bin/esp.conf

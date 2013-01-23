@@ -130,19 +130,17 @@ cp -r src/esp/mdb.h ${CONFIG}/inc/mdb.h
 
 "${CC}" -c -Fo${CONFIG}/obj/espHtml.obj -Fd${CONFIG}/obj/espHtml.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espHtml.c
 
-"${CC}" -c -Fo${CONFIG}/obj/espSession.obj -Fd${CONFIG}/obj/espSession.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espSession.c
-
 "${CC}" -c -Fo${CONFIG}/obj/espTemplate.obj -Fd${CONFIG}/obj/espTemplate.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espTemplate.c
 
 "${CC}" -c -Fo${CONFIG}/obj/mdb.obj -Fd${CONFIG}/obj/mdb.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/mdb.c
 
 "${CC}" -c -Fo${CONFIG}/obj/sdb.obj -Fd${CONFIG}/obj/sdb.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/sdb.c
 
-"${LD}" -dll -out:${CONFIG}/bin/libmod_esp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.obj ${CONFIG}/obj/espAbbrev.obj ${CONFIG}/obj/espFramework.obj ${CONFIG}/obj/espHandler.obj ${CONFIG}/obj/espHtml.obj ${CONFIG}/obj/espSession.obj ${CONFIG}/obj/espTemplate.obj ${CONFIG}/obj/mdb.obj ${CONFIG}/obj/sdb.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
+"${LD}" -dll -out:${CONFIG}/bin/libmod_esp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.obj ${CONFIG}/obj/espAbbrev.obj ${CONFIG}/obj/espFramework.obj ${CONFIG}/obj/espHandler.obj ${CONFIG}/obj/espHtml.obj ${CONFIG}/obj/espTemplate.obj ${CONFIG}/obj/mdb.obj ${CONFIG}/obj/sdb.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
 "${CC}" -c -Fo${CONFIG}/obj/esp.obj -Fd${CONFIG}/obj/esp.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/esp.c
 
-"${LD}" -out:${CONFIG}/bin/esp.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.obj ${CONFIG}/obj/esp.obj ${CONFIG}/obj/espAbbrev.obj ${CONFIG}/obj/espFramework.obj ${CONFIG}/obj/espHandler.obj ${CONFIG}/obj/espHtml.obj ${CONFIG}/obj/espSession.obj ${CONFIG}/obj/espTemplate.obj ${CONFIG}/obj/mdb.obj ${CONFIG}/obj/sdb.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
+"${LD}" -out:${CONFIG}/bin/esp.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.obj ${CONFIG}/obj/esp.obj ${CONFIG}/obj/espAbbrev.obj ${CONFIG}/obj/espFramework.obj ${CONFIG}/obj/espHandler.obj ${CONFIG}/obj/espHtml.obj ${CONFIG}/obj/espTemplate.obj ${CONFIG}/obj/mdb.obj ${CONFIG}/obj/sdb.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
 rm -rf ${CONFIG}/bin/esp.conf
 cp -r src/esp/esp.conf ${CONFIG}/bin/esp.conf
