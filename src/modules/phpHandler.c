@@ -496,11 +496,7 @@ static int initializePhp(Http *http)
 #if defined(BIT_PACK_PHP_INI)
     phpSapiBlock.php_ini_path_override = BIT_PACK_PHP_INI;
 #else
-#if UNUSED
-    phpSapiBlock.php_ini_path_override = appweb->defaultServer->home;
-#else
     phpSapiBlock.php_ini_path_override = appweb->defaultServer->defaultHost->defaultRoute->home;
-#endif
 #endif
     if (phpSapiBlock.php_ini_path_override) {
         mprLog(2, "Look for php.ini at %s", phpSapiBlock.php_ini_path_override);

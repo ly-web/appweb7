@@ -57,9 +57,9 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     host = server->defaultHost;
     route = host->defaultRoute;
 
-    //  MOB DEPRECATE LIBDIR
+#if DEPRECATED || 1
     httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
-
+#endif
     httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
 
     state = createState(server, host, route);
@@ -886,10 +886,6 @@ static int homeDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%T", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-#if UNUSED
-    maSetServerHome(state->server, path);
-    httpSetHostHome(state->host, path);
-#endif
     httpSetRouteHome(state->route, path);
     mprLog(MPR_CONFIG, "Server Root \"%s\"", path);
     return 0;
@@ -1178,14 +1174,13 @@ static int limitUploadDirective(MaState *state, cchar *key, cchar *value)
     Listen port         Listens on both IPv4 and IPv6
 
     Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[::]" if appending a port.
+    Can provide http:// and https:// prefixes.
  */
 static int listenDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpEndpoint    *endpoint;
     char            *ip;
     int             port;
-
-    //  MOB - should permit https://IP:PORT for SSL
 
     mprParseSocketAddress(value, &ip, &port, NULL, 80);
     if (port == 0) {
@@ -1745,29 +1740,6 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if UNUSED
-/*
-    ServerRoot path
- */
-static int serverRootDirective(MaState *state, cchar *key, cchar *value)
-{
-    char    *path;
-
-    if (!maTokenize(state, value, "%T", &path)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-#if UNUSED
-    maSetServerHome(state->server, path);
-#endif
-    httpSetHostRoot(state->host, path);
-    httpSetRouteHome(state->route, path);
-    httpSetRouteVar(state->route, "SERVER_ROOT", path);
-    mprLog(MPR_CONFIG, "Server Root \"%s\"", path);
-    return 0;
-}
-#endif
-
-
 /*
     SessionTimeout secs
  */
@@ -2022,15 +1994,6 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
         httpSetHostIpAddr(state->host, ip, port);
         httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
         state->auth = state->route->auth;
-#if UNUSED
-        HttpEndpoint    *endpoint;
-        if ((endpoint = httpLookupEndpoint(state->http, ip, port)) == 0) {
-            mprError("Cannot find listen directive for virtual host %s", value);
-            return MPR_ERR_BAD_SYNTAX;
-        } else {
-            httpAddHostToEndpoint(endpoint, state->host);
-        }
-#endif
     }
     return 0;
 }
@@ -2144,12 +2107,6 @@ PUBLIC bool maValidateServer(MaServer *server)
         Ensure the host home directory is set and the file handler is defined
      */
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
-#if UNUSED
-        //  MOB - remove
-        if (host->root == 0) {
-            httpSetHostRoot(host, defaultHost->home);
-        }
-#endif
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(route->extensions, "")) {
                 mprError("Route %s in host %s is missing a catch-all handler\n"

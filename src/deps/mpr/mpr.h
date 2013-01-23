@@ -309,16 +309,6 @@ struct  MprXml;
 #define MPR_FATAL_MSG       0x800       /**< Fatal error, log and exit */
 #endif
 
-#if UNUSED
-/*
-    Log message type flags. Specify what kind of log / error message it is. 
- */
-#define MPR_LOG_MSG         0x1000      /* Log trace message - not an error */
-#define MPR_ERROR_MSG       0x2000      /* General error */
-#define MPR_ASSERT_MSG      0x4000      /* Assert flags -- trap in debugger */
-#define MPR_USER_MSG        0x8000      /* User message */
-#endif
-
 /*
     Error line number information.
  */
@@ -2710,7 +2700,6 @@ PUBLIC ssize mprPutBlockToBuf(MprBuf *buf, cchar *ptr, ssize size);
  */
 PUBLIC int mprPutCharToBuf(MprBuf *buf, int c);
 
-//  MOB - rename mprPutBuf
 /**
     Put a formatted string to the buffer.
     @description Format a string and append to the buffer at the end position and increment the end pointer.
@@ -3073,7 +3062,7 @@ PUBLIC uint64 mprGetHiResTicks();
     #define MPR_MEASURE(level, tag1, tag2, op) op
 #endif
 
-#if DEPRECATED //MOB || 1
+#if DEPRECATED || 1
 #define mprGetHiResTime mprGetHiResTicks
 #endif
 
@@ -3088,7 +3077,7 @@ PUBLIC uint64 mprGetHiResTicks();
  */
 PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout);
 
-#if DEPRECATED //MOB || 1
+#if DEPRECATED || 1
 #define mprGetRemainingTime mprGetRemainingTicks
 #endif
 
@@ -3163,7 +3152,7 @@ PUBLIC int mprGetTimeZoneOffset(MprTime when);
 #define MPR_OBJ_LIST            0x1     /**< Object is a hash */
 #define MPR_LIST_STATIC_VALUES  0x20    /**< Flag for #mprCreateList when values are permanent */
 #define MPR_LIST_STABLE         0x40    /**< For own use. Not thread safe */
-#if DEPRECATED //MOB || 1
+#if DEPRECATED || 1
 #define MPR_LIST_OWN MPR_LIST_STABLE
 #endif
 
@@ -3650,7 +3639,7 @@ PUBLIC void mprError(cchar *fmt, ...);
  */
 PUBLIC void mprFatal(cchar *fmt, ...);
 #else
-//MOB #define mprFatalError mprFatal
+#define mprFatalError mprFatal
 #endif
 
 /**
@@ -3723,7 +3712,7 @@ PUBLIC void mprLogHeader();
  */
 PUBLIC void mprMemoryError(cchar *fmt, ...);
 #else
-//MOB   #define mprMemoryError mprError
+#define mprMemoryError mprError
 #endif
 
 /**
@@ -3786,19 +3775,6 @@ PUBLIC void mprSetLogHandler(MprLogHandler handler);
 */
 PUBLIC int mprStartLogging(cchar *logSpec, int showConfig);
 
-#if UNUSED
-/**
-    Display an error message to the console without allocating any memory.
-    @description Display an error message to the console. This will bypass the MPR logging subsystem.
-        It will not allocated any memory and is used by low level memory allocating and garbage collection routines.
-    @param fmt Printf style format string. Variable number of arguments to 
-    @param ... Variable number of arguments for printf data
-    @ingroup MprLog
-    @stability Stable
- */
-PUBLIC void mprStaticError(cchar *fmt, ...);
-#endif
-
 #if DOXYGEN
 /**
     Write a trace message to the diagnostic log file.
@@ -3832,7 +3808,7 @@ PUBLIC void mprTraceProc(int level, cchar *fmt, ...);
  */
 PUBLIC void mprUserError(cchar *fmt, ...);
 #else
-//MOB   #define mprUserError mprError
+#define mprUserError mprError
 #endif
 
 /**
@@ -3868,22 +3844,13 @@ PUBLIC void mprWarn(cchar *fmt, ...);
     #define mprLog(l, ...) if (1) ; else
 #endif
 
-#if DEPRECATED  //MOB
+#if DEPRECATED
 #define LOG mprTrace
 #define mprFatalError mprError
 #define mprUserError mprError
 #define mprMemoryError mprError
 #define mprPrintfError mprEprintf
 #define assure assert
-#endif
-
-#if UNUSED
-/*
-    Just for easy debugging. Adds a "\n" automatically.
-    @internal
-    @stability Internal
- */
-PUBLIC int print(cchar *fmt, ...);
 #endif
 
 /************************************ Hash ************************************/
@@ -7012,13 +6979,6 @@ PUBLIC ssize mprWriteSocketString(MprSocket *sp, cchar *str);
 PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count);
 
 /************************************ SSL *************************************/
-
-#if UNUSED
-#define MPR_DEFAULT_SERVER_CERT_FILE    "server.crt"
-#define MPR_DEFAULT_SERVER_KEY_FILE     "server.key.pem"
-#define MPR_DEFAULT_CLIENT_CERT_FILE    "client.crt"
-#define MPR_DEFAULT_CLIENT_CERT_PATH    "certs"
-#endif
 
 #define MPR_CA_CERT "ca.crt"
 

@@ -249,8 +249,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     heap->stats.numCpu = memStats.numCpu;
     heap->stats.pageSize = memStats.pageSize;
     heap->stats.maxMemory = MAXINT;
-    //  MOB - should this be 95%?
-    heap->stats.redLine = MAXINT / 100 * 99;
+    heap->stats.redLine = MAXINT / 100 * 95;
     mprInitSpinLock(&heap->heapLock);
     initGen();
 
@@ -313,8 +312,6 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     }
     heap->markerCond = mprCreateCond();
     heap->mutex = mprCreateLock();
-    //  MOB - should be stable
-    //  MOB - should preallocate with a large enough size
     heap->roots = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     mprAddRoot(MPR);
     return MPR;
@@ -1708,10 +1705,8 @@ PUBLIC void mprAddRoot(void *root)
 {
     /*
         Need to use root lock because mprAddItem may allocate
-        MOB - heap->roots should be stable
      */
     mprSpinLock(&heap->rootLock);
-    //  MOB OPT - could have an inline MACRO that does this for speed.
     mprAddItem(heap->roots, root);
     mprSpinUnlock(&heap->rootLock);
 }
@@ -1725,8 +1720,7 @@ PUBLIC void mprRemoveRoot(void *root)
     index = mprRemoveItem(heap->roots, root);
     /*
         RemoveItem copies down. If the item was equal or before the current marker root, must adjust the marker rootIndex
-        so we don't skip a root.
-        OPT MOB - but only if doing parallel GC
+        so we don't skip a root. (OPT but only if doing parallel GC)
      */
     if (index <= heap->rootIndex && heap->rootIndex > 0) {
         heap->rootIndex--;
@@ -8686,10 +8680,6 @@ PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, Mpr
     if (event) {
         event->timestamp = dispatcher->service->now;
     }
-    //  MOB - remove
-    assert(dispatcher->flags & MPR_DISPATCHER_ENABLED);
-    dispatcher->flags |= MPR_DISPATCHER_ENABLED;
-
     dispatcher->owner = mprGetCurrentOsThread();
     makeRunnable(dispatcher);
     ((MprEventProc) proc)(data, event);
@@ -8726,8 +8716,6 @@ PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
     lock(es);
     assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
-    //  MOB - remove
-    assert((dispatcher->flags & MPR_DISPATCHER_ENABLED));
     if (isRunning(dispatcher) || !(dispatcher->flags & MPR_DISPATCHER_ENABLED)) {
         /* Wake up if waiting in mprWaitForIO */
         mustWakeWaitService = es->waiting;
@@ -8853,8 +8841,6 @@ static void serviceDispatcherMain(MprDispatcher *dispatcher)
     assert(dispatcher->parent);
     es = dispatcher->service;
     lock(es);
-    //  MOB - should never be destroyed as it runs from gc when all threads give their ascent
-    assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     if (!(dispatcher->flags & MPR_DISPATCHER_ENABLED) || (dispatcher->flags & MPR_DISPATCHER_DESTROYED)) {
         /* Dispatcher may have been disabled after starting the worker */
         unlock(es);
@@ -14347,9 +14333,6 @@ PUBLIC wchar *mjoin(wchar *str, ...)
 }
 
 
-/*
-    MOB - comment required. What does this do?
- */
 PUBLIC wchar *mjoinv(wchar *buf, va_list args)
 {
     va_list     ap;
@@ -17222,7 +17205,6 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
     if (flags & MPR_FATAL_MSG) {
         sflag = LOG_ERR;
     } else if (flags & MPR_INFO_MSG) {
-        //  MOB - check value
         sflag = LOG_WARNING;
     } else if (flags & MPR_ASSERT_MSG) {
         sflag = LOG_WARNING;
@@ -17602,29 +17584,6 @@ PUBLIC char *fmtv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
 
     return mprPrintfCore(buf, bufsize, fmt, arg);
 }
-
-
-#if UNUSED
-PUBLIC char *mprAsprintf(cchar *fmt, ...)
-{
-    va_list     ap;
-    char        *buf;
-
-    assert(fmt);
-
-    va_start(ap, fmt);
-    buf = mprPrintfCore(NULL, -1, fmt, ap);
-    va_end(ap);
-    return buf;
-}
-
-
-PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg)
-{
-    assert(fmt);
-    return mprPrintfCore(NULL, -1, fmt, arg);
-}
-#endif
 
 
 static int getState(char c, int state)
@@ -18243,22 +18202,6 @@ static int growBuf(Format *fmt)
 }
 
 
-#if UNUSED
-/*
-    For easy debug trace
- */
-PUBLIC int print(cchar *fmt, ...)
-{
-    va_list     ap;
-    int         len;
-
-    va_start(ap, fmt);
-    len = vprintf(fmt, ap);
-    va_end(ap);
-    return len;
-}
-#endif
-
 /*
     @copy   default
 
@@ -18527,9 +18470,6 @@ PUBLIC void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
         mprMark(fs->cygwin);
 #endif
         mprMark(rfs->fileIndex);
-#if UNUSED
-        mprMark(rfs->romInodes);
-#endif
 #endif
     }
 }
@@ -19765,7 +19705,7 @@ PUBLIC void mprHiddenSocketData(MprSocket *sp, ssize len, int dir)
 }
 
 
-//  MOB mprWaitOnSocket
+//  MOB rename to mprWaitOnSocket
 
 PUBLIC void mprEnableSocketEvents(MprSocket *sp, int mask)
 {

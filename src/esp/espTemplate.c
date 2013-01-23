@@ -310,13 +310,6 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
     if (runCommand(conn, eroute->compile, csource, module) < 0) {
         return 0;
     }
-#if UNUSED
-    if (eroute->archive) {
-        if (runCommand(conn, eroute->archive, csource, module) < 0) {
-            return 0;
-        }
-    } else 
-#endif
     if (eroute->link) {
         /* WARNING: GC yield here */
         if (runCommand(conn, eroute->link, csource, module) < 0) {
@@ -868,7 +861,6 @@ static cchar *getDebug()
     int         debug;
 
     appweb = MPR->appwebService;
-    //  MOB -- should be able to do release builds from xcode?
     debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode") || 
         sends(appweb->platform, "-mine") || sends(appweb->platform, "-vsdebug");
     if (scontains(appweb->platform, "windows-")) {
@@ -904,7 +896,6 @@ static bool matchToken(cchar **str, cchar *token)
 }
 
 
-//  MOB order
 static cchar *getMappedArch(cchar *arch)
 {
     if (smatch(arch, "x64")) {
@@ -984,7 +975,6 @@ static cchar *getArPath(cchar *os, cchar *arch)
     MaAppweb *appweb = MPR->appwebService;
     cchar *path = getVisualStudio();
     if (scontains(appweb->platform, "-x64-")) {
-        //  MOB - CHECK
         int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
         if (is64BitSystem) {
             path = mprJoinPath(path, "VC/bin/amd64/lib.exe");
@@ -1011,7 +1001,6 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
     MaAppweb *appweb = MPR->appwebService;
     cchar *path = getVisualStudio();
     if (scontains(appweb->platform, "-x64-")) {
-        //  MOB - do once at startup?
         int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
         if (is64BitSystem) {
             path = mprJoinPath(path, "VC/bin/amd64/cl.exe");

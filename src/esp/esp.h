@@ -116,9 +116,6 @@ typedef struct EspRoute {
     HttpRoute       *route;                 /**< Back link to the owning route */
     MprHash         *env;                   /**< Environment variables for route */
     char            *compile;               /**< Compile template */
-#if UNUSED
-    char            *archive;               /**< Archive template */
-#endif
     char            *link;                  /**< Link template */
     char            *searchPath;            /**< Search path to use when locating compiler/linker */
     EspProc         controllerBase;         /**< Initialize base for a controller */
@@ -255,8 +252,15 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
  */
 PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc);
 
-//  MOB
-PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *proc);
+/**
+    Define an action for a URI pattern.
+    @description This defines an action routine for the route that is responsible for the given URI pattern. 
+    @param route HttpRoute object
+    @param pattern URI pattern to use to find the releavant route.
+    @param actionProc EspProc callback procedure to invoke when the action is requested.
+    @ingroup EspRoute
+ */
+PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *actionProc);
 
 /**
     Define a base function to invoke for all controller actions.
@@ -332,7 +336,7 @@ PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
  */
 typedef void (*EspViewProc)(HttpConn *conn);
 
-//  MOB - simplify EspAction to just EspProc
+#if UNUSED
 /**
     ESP Action
     @description Actions are run after a request URI is routed to a controller.
@@ -342,6 +346,9 @@ typedef void (*EspViewProc)(HttpConn *conn);
 typedef struct EspAction {
     EspProc         actionProc;             /**< Action procedure to run to respond to the request */
 } EspAction;
+#else
+typedef EspProc EspAction;                  /**< Action procedure to run to respond to the request */
+#endif
 
 PUBLIC void espManageAction(EspAction *ap, int flags);
 
@@ -353,7 +360,9 @@ PUBLIC void espManageAction(EspAction *ap, int flags);
 typedef struct EspReq {
     HttpRoute       *route;                 /**< Route reference */
     EspRoute        *eroute;                /**< Extended route info */
+#if UNUSED
     EspAction       *action;                /**< Action to invoke */
+#endif
     Esp             *esp;                   /**< Convenient esp reference */
     MprHash         *flash;                 /**< New flash messages */
     MprHash         *lastFlash;             /**< Flash messages from the last request */
@@ -1491,6 +1500,7 @@ PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
  */
 PUBLIC void espEndform(HttpConn *conn);
 
+// MOB - this retain default implies it is displayed for zero seconds
 /**
     Render flash messages.
     @description Flash messages are one-time messages that are displayed to the client on the next request (only).
@@ -1501,7 +1511,6 @@ PUBLIC void espEndform(HttpConn *conn);
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg retain -- Number of seconds to retain the message. If <= 0, the message is retained until another
         message is displayed. Default is 0.
-    MOB - this default implies it is displayed for zero seconds
     @ingroup EspControl
  */
 PUBLIC void espFlash(HttpConn *conn, cchar *kinds, cchar *options);

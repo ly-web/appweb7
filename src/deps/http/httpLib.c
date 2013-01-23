@@ -2441,8 +2441,7 @@ PUBLIC void httpCallEvent(HttpConn *conn, int mask)
 }
 
 
-//  MOB - rename
-PUBLIC void httpPostEvent(HttpConn *conn)
+PUBLIC void httpAfterEvent(HttpConn *conn)
 {
     if (conn->endpoint) {
         if (conn->keepAliveCount < 0 && (conn->state < HTTP_STATE_PARSED || conn->state == HTTP_STATE_COMPLETE)) {
@@ -2478,7 +2477,7 @@ PUBLIC void httpEvent(HttpConn *conn, MprEvent *event)
     if (event->mask & MPR_READABLE) {
         readEvent(conn);
     }
-    httpPostEvent(conn);
+    httpAfterEvent(conn);
 }
 
 
@@ -10823,11 +10822,6 @@ static char *expandPatternTokens(cchar *str, cchar *replacement, int *matches, i
     assert(replacement);
     assert(matches);
 
-#if UNUSED
-    if (matchCount <= 0) {
-        return MPR->emptyString;
-    }
-#endif
     result = mprCreateBuf(-1, -1);
     lastReplace = replacement;
     end = &replacement[slen(replacement)];
@@ -12745,13 +12739,6 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTicks timeout)
 
     if (conn->state < state) {
         httpEnableConnEvents(conn);
-#if UNUSED
-        eventMask = MPR_READABLE;
-        if (!conn->tx->finalizedConnector && ) {
-            eventMask |= MPR_WRITABLE;
-        }
-        httpSetupWaitHandler(conn, eventMask);
-#endif
     }
     remaining = timeout;
     do {

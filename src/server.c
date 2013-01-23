@@ -249,11 +249,6 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         if (home) {
             httpSetRouteHome(route, home);
         }
-#if UNUSED
-        if (ip || port > 0) {
-            maSetServerAddress(server, ip, port);
-        }
-#endif
     }
     return 0;
 }

@@ -179,11 +179,6 @@ static char *replace(cchar *str, cchar *pattern, cchar *fmt, ...)
  */
 static void logHandler(int flags, int level, cchar *msg)
 {
-#if UNUSED
-    if (flags & MPR_USER_MSG) {
-        MessageBoxEx(NULL, msg, mprGetAppTitle(), MB_OK, 0);
-    }
-#endif
     mprWriteToOsLog(msg, 0, 0);
     mprEprintf("%s\n", msg);
 }

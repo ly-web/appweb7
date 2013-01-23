@@ -1969,7 +1969,7 @@ PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
         httpCreateConn httpCreateRxPipeline httpCreateTxPipeline httpDestroyConn httpDestroyPipeline httpDiscardData
         httpDisconnect httpEnableUpload httpError httpEvent httpGetAsync httpGetChunkSize httpGetConnContext httpGetConnHost
         httpGetError httpGetExt httpGetKeepAliveCount httpGetMoreOutput httpGetWriteQueueCount httpMatchHost httpMemoryError
-        httpPostEvent httpPrepClientConn httpResetCredentials httpRouteRequest httpRunHandlerReady httpServiceQueues
+        httpAfterEvent httpPrepClientConn httpResetCredentials httpRouteRequest httpRunHandlerReady httpServiceQueues
         httpSetAsync httpSetChunkSize httpSetConnContext httpSetConnHost httpSetConnNotifier httpSetCredentials
         httpSetKeepAliveCount httpSetProtocol httpSetRetries httpSetSendConnector httpSetState httpSetTimeout
         httpSetTimestamp httpShouldTrace httpStartPipeline
@@ -2332,12 +2332,12 @@ PUBLIC void httpNotify(HttpConn *conn, int event, int arg);
     } else
 
 /**
-    Do post I/O event setup.
+    Do setup after an I/O event to receive future events.
     @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
     @stability Internal
  */
-PUBLIC void httpPostEvent(HttpConn *conn);
+PUBLIC void httpAfterEvent(HttpConn *conn);
 
 /**
     Prepare a client connection for a new request. 

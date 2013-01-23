@@ -74,12 +74,6 @@ PUBLIC void espAutoFinalize(HttpConn *conn)
 }
 
 
-//  MOB
-PUBLIC void espManageAction(EspAction *ap, int flags)
-{
-}
-
-
 PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags)
 {
     httpAddCache(route, NULL, uri, NULL, NULL, 0, lifesecs * MPR_TICKS_PER_SEC, flags);
@@ -126,21 +120,16 @@ PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *params)
 }
 
 
-PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *actionProc)
+PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 {
-    EspAction   *action;
     EspRoute    *eroute;
     Esp         *esp;
 
     assert(route);
     assert(target && *target);
-    assert(actionProc);
+    assert(action);
 
     esp = MPR->espService;
-    if ((action = mprAllocObj(EspAction, espManageAction)) == 0) {
-        return;
-    }
-    action->actionProc = actionProc;
     if (target) {
         eroute = route->eroute;
         mprAddKey(esp->actions, mprJoinPath(eroute->controllersDir, target), action);
@@ -193,6 +182,7 @@ PUBLIC void espFlush(HttpConn *conn)
 
 
 //  MOB - confusing vs ediGetColumns
+
 PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
 {
     if (rec == 0) {
@@ -1037,9 +1027,6 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->edi);
         mprMark(eroute->env);
         mprMark(eroute->layoutsDir);
-#if UNUSED
-        mprMark(eroute->archive);
-#endif
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
         mprMark(eroute->staticDir);

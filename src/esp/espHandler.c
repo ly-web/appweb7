@@ -195,7 +195,7 @@ static int runAction(HttpConn *conn)
     HttpRoute   *route;
     EspRoute    *eroute;
     EspReq      *req;
-    EspAction   *action;
+    EspAction   action;
     char        *key;
     int         updated, recompile;
 
@@ -281,20 +281,22 @@ static int runAction(HttpConn *conn)
             }
         }
     }
+#if UNUSED
     req->action = action;
+#endif
     
     if (rx->flags & HTTP_POST) {
         if (!espCheckSecurityToken(conn)) {
             return 1;
         }
     }
-    if (action && action->actionProc) {
+    if (action) {
         //  MOB - does this need a lock
         mprSetThreadData(esp->local, conn);
         if (eroute->controllerBase) {
             (eroute->controllerBase)(conn);
         }
-        (action->actionProc)(conn);
+        (action)(conn);
     }
     return 1;
 }
@@ -578,7 +580,9 @@ static void setMvcDirs(EspRoute *eroute, HttpRoute *route)
 static void manageReq(EspReq *req, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+#if UNUSED
         mprMark(req->action);
+#endif
         mprMark(req->cacheName);
         mprMark(req->commandLine);
         mprMark(req->controllerName);
@@ -1161,7 +1165,7 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if ((esp->views = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
         return 0;
     }
-    if ((esp->actions = mprCreateHash(-1, 0)) == 0) {
+    if ((esp->actions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
         return 0;
     }
 
