@@ -51,7 +51,7 @@ typedef void (*EspProc)(HttpConn *conn);
 #else
     #define ESP_EXPORT
 #endif
-    #define ESP_EXPORT_STRING MPR_STRINGIFY(ESP_EXPORT)
+#define ESP_EXPORT_STRING MPR_STRINGIFY(ESP_EXPORT)
 
 #define ESP_SECURITY_TOKEN_NAME "__esp_security_token__"
 #define ESP_FLASH_VAR           "__flash__"

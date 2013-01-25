@@ -13,7 +13,7 @@
 #       export OS        = Operating system (linux, macosx, windows, vxworks, ...)
 #       export CC        = Compiler to use 
 #       export LD        = Linker to use
-#       export PROFILE   = Debug or release profile. For example: debug
+#       export DEBUG     = Set to debug or release for debug or optimized builds
 #       export CONFIG    = Output directory for built items. Defaults to OS-ARCH-PROFILE
 #       export CFLAGS    = Add compiler options. For example: -Wall
 #       export DFLAGS    = Add compiler defines. For example: -DCOLOR=blue
@@ -21,6 +21,7 @@
 #       export LDFLAGS   = Add linker options
 #       export LIBPATHS  = Add linker library search directories. For example: -L/libraries
 #       export LIBS      = Add linker libraries. For example: -lpthreads
+#       export PROFILE   = Build profile, used in output products directory name
 #
 #	See projects/$(OS)-$(ARCH)-$(PROFILE)-bit.h for configuration default settings. Can override via
 #	environment variables. For example: make BIT_PACK_SQLITE=0. These are converted to DFLAGS and 
@@ -29,7 +30,8 @@
 NAME    := appweb
 OS      := $(shell uname | sed 's/CYGWIN.*/windows/;s/Darwin/macosx/' | tr '[A-Z]' '[a-z]')
 MAKE    := $(shell if which gmake >/dev/null 2>&1; then echo gmake ; else echo make ; fi)
-PROFILE := debug
+PROFILE := default
+DEBUG	:= debug
 EXT     := mk
 
 ifeq ($(OS),windows)
@@ -60,7 +62,7 @@ help:
 	@echo 'With make, the default configuration can be modified by setting make' >&2
 	@echo 'variables. Set to 0 to disable and 1 to enable:' >&2
 	@echo '' >&2
-	@echo '      BIT_ROM            # Build for ROM without a file system'
+	@echo '      PROFILE            # Select default or static for static linking'
 	@echo '      BIT_ESP_MDB        # Enable ESP MDB database support'
 	@echo '      BIT_ESP_SDB        # Enable ESP SQLite database support'
 	@echo '      BIT_MPR_LOGGING    # Enable application logging'
@@ -75,12 +77,17 @@ help:
 	@echo '      BIT_PACK_OPENSSL   # Enable the OpenSSL SSL stack'
 	@echo '      BIT_PACK_PHP       # Enable the PHP framework'
 	@echo '      BIT_PACK_SQLITE    # Enable the SQLite database'
+	@echo '      BIT_ROM            # Build for ROM without a file system'
 	@echo ''
 	@echo 'For example, to disable CGI:' >&2
-	@echo ''
+	@echo '' >&2
 	@echo '      make BIT_PACK_CGI=0' >&2
-	@echo ''
+	@echo '' >&2
+	@echo 'Other make variables include:' >&2
+	@echo '' >&2
+	@echo '      ARCH, CC, CFLAGS, DFLAGS, IFLAGS, LD, LDFLAGS, LIBPATHS, LIBS, OS' >&2
+	@echo '' >&2
 	@echo 'Alternatively, for faster, easier and fully configurable building, install' >&2
 	@echo 'bit from http://embedthis.com/downloads/bit/download.ejs and re-run'>&2
 	@echo 'configure and then build with bit.' >&2
-	@echo ''
+	@echo '' >&2

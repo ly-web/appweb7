@@ -195,3 +195,6 @@ src/server/slink.c
 src/server/esp.conf
 src/server/junk
 src/server/static.conf
+.flags
+macosx-x64-default
+macosx-x64-static

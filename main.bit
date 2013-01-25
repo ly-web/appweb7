@@ -39,6 +39,11 @@ Bit.load({
         buildNumber: '0',
         bit: '0.8.0',
 
+        /*
+            Enable a debug build with debug symbols and without optimization
+         */
+        debug: true,
+
         /* Must build locally to build tools */
         platforms: [ 'local' ],
         packs: [ 'bits/packs' ]
@@ -62,8 +67,7 @@ Bit.load({
         /*
             Packs to disable when using --without default (generating packages)
          */
-        'without-default': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejscript', 'esp', 'man', 'man2html', 
-            'openssl', 'pmaker', 'php', 'sqlite', ],
+        'without-default': [ 'doxygen', 'dsi', 'ejscript', 'man', 'man2html', 'openssl', 'pmaker', 'php', 'sqlite', ],
 
         /*
             Set to true for a static (non-shared library) build
@@ -122,6 +126,11 @@ Bit.load({
             romTables: false,
             genPrime: false,
         },
+
+        /*
+            Tailor the optimization for size|speed
+         */
+        tune: 'size',
     },
 
     usage: {
@@ -131,18 +140,6 @@ Bit.load({
         'mpr.logging':  'Enable application logging (true|false)',
         'mpr.tracing':  'Enable debug tracing (true|false)',
     },
-
-    profiles: {
-        debug: { settings: { 
-            debug: true, 
-            assert: true,
-        }, },
-        release: { settings: { 
-            debug: false, 
-            assert: false,
-        } },
-    },
-
 
     packs: {
         ejscript: {},
