@@ -2,6 +2,10 @@
 #   appweb-windows-debug.nmake -- Makefile to build Embedthis Appweb for windows
 #
 
+PRODUCT         =appweb
+VERSION         =4.3.0
+BUILD_NUMBER    =0
+PROFILE  = debug
 PA        = $(PROCESSOR_ARCHITECTURE)
 !IF "$(PA)" == "AMD64"
 ARCH     = x64
@@ -12,7 +16,6 @@ ENTRY    = _DllMainCRTStartup@12
 !ENDIF
 
 OS       = windows
-PROFILE  = debug
 CONFIG   = $(OS)-$(ARCH)-$(PROFILE)
 CC       = cl
 LD       = link
@@ -24,7 +27,7 @@ LDFLAGS  = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS = -libpath:$(CONFIG)\bin
 LIBS     = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
-all: prep \
+all compile: prep \
         $(CONFIG)\bin\libmpr.dll \
         $(CONFIG)\bin\libmprssl.dll \
         $(CONFIG)\bin\appman.exe \
@@ -34,19 +37,17 @@ all: prep \
         $(CONFIG)\bin\libhttp.dll \
         $(CONFIG)\bin\http.exe \
         $(CONFIG)\bin\http-ca.crt \
-        $(CONFIG)\bin\libsqlite3.dll \
-        $(CONFIG)\bin\sqlite.exe \
         $(CONFIG)\bin\libappweb.dll \
-        $(CONFIG)\bin\libmod_esp.dll \
-        $(CONFIG)\bin\esp.exe \
         $(CONFIG)\bin\esp.conf \
         src\server\esp.conf \
         $(CONFIG)\bin\esp-www \
         $(CONFIG)\bin\esp-appweb.conf \
-        $(CONFIG)\bin\libmod_cgi.dll \
+        $(CONFIG)\bin\libejs.dll \
+        $(CONFIG)\bin\ejs.exe \
+        $(CONFIG)\bin\ejsc.exe \
+        $(CONFIG)\bin\ejs.mod \
         $(CONFIG)\bin\libmod_ssl.dll \
         $(CONFIG)\bin\authpass.exe \
-        $(CONFIG)\bin\cgiProgram.exe \
         $(CONFIG)\bin\setConfig.exe \
         src\server\slink.c \
         $(CONFIG)\bin\libapp.dll \
@@ -73,6 +74,8 @@ prep:
 	@if not exist $(CONFIG)\obj md $(CONFIG)\obj
 	@if not exist $(CONFIG)\bin md $(CONFIG)\bin
 	@if not exist $(CONFIG)\inc\bit.h copy projects\appweb-$(OS)-$(PROFILE)-bit.h $(CONFIG)\inc\bit.h
+	@echo $(DFLAGS) $(CFLAGS) >projects/.flags
+
 clean:
 	-if exist $(CONFIG)\bin\libmpr.dll del /Q $(CONFIG)\bin\libmpr.dll
 	-if exist $(CONFIG)\bin\libmprssl.dll del /Q $(CONFIG)\bin\libmprssl.dll
@@ -83,19 +86,17 @@ clean:
 	-if exist $(CONFIG)\bin\libhttp.dll del /Q $(CONFIG)\bin\libhttp.dll
 	-if exist $(CONFIG)\bin\http.exe del /Q $(CONFIG)\bin\http.exe
 	-if exist $(CONFIG)\bin\http-ca.crt del /Q $(CONFIG)\bin\http-ca.crt
-	-if exist $(CONFIG)\bin\libsqlite3.dll del /Q $(CONFIG)\bin\libsqlite3.dll
-	-if exist $(CONFIG)\bin\sqlite.exe del /Q $(CONFIG)\bin\sqlite.exe
 	-if exist $(CONFIG)\bin\libappweb.dll del /Q $(CONFIG)\bin\libappweb.dll
-	-if exist $(CONFIG)\bin\libmod_esp.dll del /Q $(CONFIG)\bin\libmod_esp.dll
-	-if exist $(CONFIG)\bin\esp.exe del /Q $(CONFIG)\bin\esp.exe
 	-if exist $(CONFIG)\bin\esp.conf del /Q $(CONFIG)\bin\esp.conf
 	-if exist src\server\esp.conf del /Q src\server\esp.conf
 	-if exist $(CONFIG)\bin\esp-www del /Q $(CONFIG)\bin\esp-www
 	-if exist $(CONFIG)\bin\esp-appweb.conf del /Q $(CONFIG)\bin\esp-appweb.conf
-	-if exist $(CONFIG)\bin\libmod_cgi.dll del /Q $(CONFIG)\bin\libmod_cgi.dll
+	-if exist $(CONFIG)\bin\libejs.dll del /Q $(CONFIG)\bin\libejs.dll
+	-if exist $(CONFIG)\bin\ejs.exe del /Q $(CONFIG)\bin\ejs.exe
+	-if exist $(CONFIG)\bin\ejsc.exe del /Q $(CONFIG)\bin\ejsc.exe
+	-if exist $(CONFIG)\bin\ejs.mod del /Q $(CONFIG)\bin\ejs.mod
 	-if exist $(CONFIG)\bin\libmod_ssl.dll del /Q $(CONFIG)\bin\libmod_ssl.dll
 	-if exist $(CONFIG)\bin\authpass.exe del /Q $(CONFIG)\bin\authpass.exe
-	-if exist $(CONFIG)\bin\cgiProgram.exe del /Q $(CONFIG)\bin\cgiProgram.exe
 	-if exist $(CONFIG)\bin\setConfig.exe del /Q $(CONFIG)\bin\setConfig.exe
 	-if exist $(CONFIG)\bin\libapp.dll del /Q $(CONFIG)\bin\libapp.dll
 	-if exist $(CONFIG)\bin\appweb.exe del /Q $(CONFIG)\bin\appweb.exe
@@ -145,6 +146,7 @@ clean:
 	-if exist $(CONFIG)\obj\cgiProgram.obj del /Q $(CONFIG)\obj\cgiProgram.obj
 	-if exist $(CONFIG)\obj\setConfig.obj del /Q $(CONFIG)\obj\setConfig.obj
 	-if exist $(CONFIG)\obj\slink.obj del /Q $(CONFIG)\obj\slink.obj
+	-if exist $(CONFIG)\obj\web.obj del /Q $(CONFIG)\obj\web.obj
 	-if exist $(CONFIG)\obj\appweb.obj del /Q $(CONFIG)\obj\appweb.obj
 	-if exist $(CONFIG)\obj\appwebMonitor.obj del /Q $(CONFIG)\obj\appwebMonitor.obj
 	-if exist $(CONFIG)\obj\testAppweb.obj del /Q $(CONFIG)\obj\testAppweb.obj
@@ -269,33 +271,6 @@ $(CONFIG)\bin\http-ca.crt:
 	-if exist $(CONFIG)\bin\http-ca.crt del /Q $(CONFIG)\bin\http-ca.crt
 	copy /Y src\deps\http\http-ca.crt $(CONFIG)\bin\http-ca.crt
 
-$(CONFIG)\inc\sqlite3.h:  \
-        $(CONFIG)\inc\bit.h
-	-if exist $(CONFIG)\inc\sqlite3.h del /Q $(CONFIG)\inc\sqlite3.h
-	copy /Y src\deps\sqlite\sqlite3.h $(CONFIG)\inc\sqlite3.h
-
-$(CONFIG)\obj\sqlite3.obj: \
-        src\deps\sqlite\sqlite3.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\sqlite3.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\sqlite\sqlite3.c
-
-$(CONFIG)\bin\libsqlite3.dll:  \
-        $(CONFIG)\inc\sqlite3.h \
-        $(CONFIG)\obj\sqlite3.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libsqlite3.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite3.obj $(LIBS)
-
-$(CONFIG)\obj\sqlite.obj: \
-        src\deps\sqlite\sqlite.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\sqlite3.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\sqlite\sqlite.c
-
-$(CONFIG)\bin\sqlite.exe:  \
-        $(CONFIG)\bin\libsqlite3.dll \
-        $(CONFIG)\obj\sqlite.obj
-	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj libsqlite3.lib $(LIBS)
-
 $(CONFIG)\inc\customize.h:  \
         $(CONFIG)\inc\bit.h
 	-if exist $(CONFIG)\inc\customize.h del /Q $(CONFIG)\inc\customize.h
@@ -359,121 +334,6 @@ $(CONFIG)\bin\libappweb.dll:  \
         $(CONFIG)\obj\server.obj
 	"$(LD)" -dll -out:$(CONFIG)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.obj $(CONFIG)\obj\convenience.obj $(CONFIG)\obj\dirHandler.obj $(CONFIG)\obj\fileHandler.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\server.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
 
-$(CONFIG)\inc\edi.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\appweb.h
-	-if exist $(CONFIG)\inc\edi.h del /Q $(CONFIG)\inc\edi.h
-	copy /Y src\esp\edi.h $(CONFIG)\inc\edi.h
-
-$(CONFIG)\inc\esp-app.h: 
-	-if exist $(CONFIG)\inc\esp-app.h del /Q $(CONFIG)\inc\esp-app.h
-	copy /Y src\esp\esp-app.h $(CONFIG)\inc\esp-app.h
-
-$(CONFIG)\inc\esp.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\appweb.h \
-        $(CONFIG)\inc\edi.h
-	-if exist $(CONFIG)\inc\esp.h del /Q $(CONFIG)\inc\esp.h
-	copy /Y src\esp\esp.h $(CONFIG)\inc\esp.h
-
-$(CONFIG)\inc\mdb.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\appweb.h \
-        $(CONFIG)\inc\edi.h
-	-if exist $(CONFIG)\inc\mdb.h del /Q $(CONFIG)\inc\mdb.h
-	copy /Y src\esp\mdb.h $(CONFIG)\inc\mdb.h
-
-$(CONFIG)\obj\edi.obj: \
-        src\esp\edi.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\edi.h \
-        $(CONFIG)\inc\pcre.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\edi.c
-
-$(CONFIG)\obj\espAbbrev.obj: \
-        src\esp\espAbbrev.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espAbbrev.obj -Fd$(CONFIG)\obj\espAbbrev.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espAbbrev.c
-
-$(CONFIG)\obj\espFramework.obj: \
-        src\esp\espFramework.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espFramework.obj -Fd$(CONFIG)\obj\espFramework.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espFramework.c
-
-$(CONFIG)\obj\espHandler.obj: \
-        src\esp\espHandler.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\appweb.h \
-        $(CONFIG)\inc\esp.h \
-        $(CONFIG)\inc\edi.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espHandler.obj -Fd$(CONFIG)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espHandler.c
-
-$(CONFIG)\obj\espHtml.obj: \
-        src\esp\espHtml.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\esp.h \
-        $(CONFIG)\inc\edi.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espHtml.c
-
-$(CONFIG)\obj\espTemplate.obj: \
-        src\esp\espTemplate.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espTemplate.obj -Fd$(CONFIG)\obj\espTemplate.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espTemplate.c
-
-$(CONFIG)\obj\mdb.obj: \
-        src\esp\mdb.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\appweb.h \
-        $(CONFIG)\inc\edi.h \
-        $(CONFIG)\inc\mdb.h \
-        $(CONFIG)\inc\pcre.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\mdb.obj -Fd$(CONFIG)\obj\mdb.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\mdb.c
-
-$(CONFIG)\obj\sdb.obj: \
-        src\esp\sdb.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\appweb.h \
-        $(CONFIG)\inc\edi.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\sdb.c
-
-$(CONFIG)\bin\libmod_esp.dll:  \
-        $(CONFIG)\bin\libappweb.dll \
-        $(CONFIG)\inc\edi.h \
-        $(CONFIG)\inc\esp-app.h \
-        $(CONFIG)\inc\esp.h \
-        $(CONFIG)\inc\mdb.h \
-        $(CONFIG)\obj\edi.obj \
-        $(CONFIG)\obj\espAbbrev.obj \
-        $(CONFIG)\obj\espFramework.obj \
-        $(CONFIG)\obj\espHandler.obj \
-        $(CONFIG)\obj\espHtml.obj \
-        $(CONFIG)\obj\espTemplate.obj \
-        $(CONFIG)\obj\mdb.obj \
-        $(CONFIG)\obj\sdb.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
-
-$(CONFIG)\obj\esp.obj: \
-        src\esp\esp.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\esp.c
-
-$(CONFIG)\bin\esp.exe:  \
-        $(CONFIG)\bin\libappweb.dll \
-        $(CONFIG)\obj\edi.obj \
-        $(CONFIG)\obj\esp.obj \
-        $(CONFIG)\obj\espAbbrev.obj \
-        $(CONFIG)\obj\espFramework.obj \
-        $(CONFIG)\obj\espHandler.obj \
-        $(CONFIG)\obj\espHtml.obj \
-        $(CONFIG)\obj\espTemplate.obj \
-        $(CONFIG)\obj\mdb.obj \
-        $(CONFIG)\obj\sdb.obj
-	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
-
 $(CONFIG)\bin\esp.conf: 
 	-if exist $(CONFIG)\bin\esp.conf del /Q $(CONFIG)\bin\esp.conf
 	copy /Y src\esp\esp.conf $(CONFIG)\bin\esp.conf
@@ -491,16 +351,75 @@ $(CONFIG)\bin\esp-appweb.conf:
 	-if exist $(CONFIG)\bin\esp-appweb.conf del /Q $(CONFIG)\bin\esp-appweb.conf
 	copy /Y src\esp\esp-appweb.conf $(CONFIG)\bin\esp-appweb.conf
 
-$(CONFIG)\obj\cgiHandler.obj: \
-        src\modules\cgiHandler.c \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\appweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\modules\cgiHandler.c
+$(CONFIG)\inc\ejs.slots.h:  \
+        $(CONFIG)\inc\bit.h
+	-if exist $(CONFIG)\inc\ejs.slots.h del /Q $(CONFIG)\inc\ejs.slots.h
+	copy /Y src\deps\ejs\ejs.slots.h $(CONFIG)\inc\ejs.slots.h
 
-$(CONFIG)\bin\libmod_cgi.dll:  \
-        $(CONFIG)\bin\libappweb.dll \
-        $(CONFIG)\obj\cgiHandler.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+$(CONFIG)\inc\ejs.h:  \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\bitos.h \
+        $(CONFIG)\inc\mpr.h \
+        $(CONFIG)\inc\http.h \
+        $(CONFIG)\inc\ejs.slots.h
+	-if exist $(CONFIG)\inc\ejs.h del /Q $(CONFIG)\inc\ejs.h
+	copy /Y src\deps\ejs\ejs.h $(CONFIG)\inc\ejs.h
+
+$(CONFIG)\inc\ejsByteGoto.h: 
+	-if exist $(CONFIG)\inc\ejsByteGoto.h del /Q $(CONFIG)\inc\ejsByteGoto.h
+	copy /Y src\deps\ejs\ejsByteGoto.h $(CONFIG)\inc\ejsByteGoto.h
+
+$(CONFIG)\inc\sqlite3.h:  \
+        $(CONFIG)\inc\bit.h
+	-if exist $(CONFIG)\inc\sqlite3.h del /Q $(CONFIG)\inc\sqlite3.h
+	copy /Y src\deps\sqlite\sqlite3.h $(CONFIG)\inc\sqlite3.h
+
+$(CONFIG)\obj\ejsLib.obj: \
+        src\deps\ejs\ejsLib.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\ejs.h \
+        $(CONFIG)\inc\mpr.h \
+        $(CONFIG)\inc\pcre.h \
+        $(CONFIG)\inc\sqlite3.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\ejs\ejsLib.c
+
+$(CONFIG)\bin\libejs.dll:  \
+        $(CONFIG)\bin\libhttp.dll \
+        $(CONFIG)\bin\libpcre.dll \
+        $(CONFIG)\bin\libmpr.dll \
+        $(CONFIG)\inc\ejs.h \
+        $(CONFIG)\inc\ejs.slots.h \
+        $(CONFIG)\inc\ejsByteGoto.h \
+        $(CONFIG)\obj\ejsLib.obj
+	"$(LD)" -dll -out:$(CONFIG)\bin\libejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsLib.obj libmpr.lib libpcre.lib libhttp.lib $(LIBS) libpcre.lib libmpr.lib
+
+$(CONFIG)\obj\ejs.obj: \
+        src\deps\ejs\ejs.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\ejs.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\ejs\ejs.c
+
+$(CONFIG)\bin\ejs.exe:  \
+        $(CONFIG)\bin\libejs.dll \
+        $(CONFIG)\obj\ejs.obj
+	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj libejs.lib $(LIBS) libmpr.lib libpcre.lib libhttp.lib
+
+$(CONFIG)\obj\ejsc.obj: \
+        src\deps\ejs\ejsc.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\ejs.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\ejs\ejsc.c
+
+$(CONFIG)\bin\ejsc.exe:  \
+        $(CONFIG)\bin\libejs.dll \
+        $(CONFIG)\obj\ejsc.obj
+	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj libejs.lib $(LIBS) libmpr.lib libpcre.lib libhttp.lib
+
+$(CONFIG)\bin\ejs.mod:  \
+        $(CONFIG)\bin\ejsc.exe
+	cd src\deps\ejs
+		"..\..\..\$(CONFIG)\bin\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null "ejs.es"
+		cd ..\..\..
 
 $(CONFIG)\obj\sslModule.obj: \
         src\modules\sslModule.c \
@@ -524,15 +443,6 @@ $(CONFIG)\bin\authpass.exe:  \
         $(CONFIG)\obj\authpass.obj
 	"$(LD)" -out:$(CONFIG)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\authpass.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
-$(CONFIG)\obj\cgiProgram.obj: \
-        src\utils\cgiProgram.c \
-        $(CONFIG)\inc\bit.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\cgiProgram.obj -Fd$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\utils\cgiProgram.c
-
-$(CONFIG)\bin\cgiProgram.exe:  \
-        $(CONFIG)\obj\cgiProgram.obj
-	"$(LD)" -out:$(CONFIG)\bin\cgiProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiProgram.obj $(LIBS)
-
 $(CONFIG)\obj\setConfig.obj: \
         src\utils\setConfig.c \
         $(CONFIG)\inc\bit.h \
@@ -549,18 +459,43 @@ src\server\slink.c:
 		if not exist slink.c copy slink.empty slink.c
 		cd ..\..
 
+$(CONFIG)\inc\edi.h:  \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\appweb.h
+	-if exist $(CONFIG)\inc\edi.h del /Q $(CONFIG)\inc\edi.h
+	copy /Y src\esp\edi.h $(CONFIG)\inc\edi.h
+
+$(CONFIG)\inc\esp.h:  \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\appweb.h \
+        $(CONFIG)\inc\edi.h
+	-if exist $(CONFIG)\inc\esp.h del /Q $(CONFIG)\inc\esp.h
+	copy /Y src\esp\esp.h $(CONFIG)\inc\esp.h
+
 $(CONFIG)\obj\slink.obj: \
         src\server\slink.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\esp.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\slink.c
 
+$(CONFIG)\inc\esp-app.h:  \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\esp.h
+	-if exist $(CONFIG)\inc\esp-app.h del /Q $(CONFIG)\inc\esp-app.h
+	copy /Y src\esp\esp-app.h $(CONFIG)\inc\esp-app.h
+
+$(CONFIG)\obj\web.obj: \
+        src\server\cache\web.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\esp.h \
+        $(CONFIG)\inc\esp-app.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\web.obj -Fd$(CONFIG)\obj\web.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\cache\web.c
+
 $(CONFIG)\bin\libapp.dll:  \
         src\server\slink.c \
-        $(CONFIG)\bin\esp.exe \
-        $(CONFIG)\bin\libmod_esp.dll \
-        $(CONFIG)\obj\slink.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libapp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj libmod_esp.lib $(LIBS) libappweb.lib libhttp.lib libpcre.lib libmpr.lib
+        $(CONFIG)\obj\slink.obj \
+        $(CONFIG)\obj\web.obj
+	"$(LD)" -dll -out:$(CONFIG)\bin\libapp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj $(CONFIG)\obj\web.obj $(LIBS)
 
 $(CONFIG)\obj\appweb.obj: \
         src\server\appweb.c \
@@ -571,12 +506,10 @@ $(CONFIG)\obj\appweb.obj: \
 
 $(CONFIG)\bin\appweb.exe:  \
         $(CONFIG)\bin\libappweb.dll \
-        $(CONFIG)\bin\libmod_esp.dll \
         $(CONFIG)\bin\libmod_ssl.dll \
-        $(CONFIG)\bin\libmod_cgi.dll \
         $(CONFIG)\bin\libapp.dll \
         $(CONFIG)\obj\appweb.obj
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_ssl.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_ssl.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\inc\appwebMonitor.h: 
 	-if exist $(CONFIG)\inc\appwebMonitor.h del /Q $(CONFIG)\inc\appwebMonitor.h
@@ -639,8 +572,7 @@ $(CONFIG)\bin\testAppweb.exe:  \
         $(CONFIG)\obj\testHttp.obj
 	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
-test\cgi-bin\testScript:  \
-        $(CONFIG)\bin\cgiProgram.exe
+test\cgi-bin\testScript: 
 #  Omit build script /Users/mob/git/appweb/test/cgi-bin/testScript
 
 test\web\caching\cache.cgi: 
@@ -649,8 +581,7 @@ test\web\caching\cache.cgi:
 test\web\auth\basic\basic.cgi: 
 #  Omit build script /Users/mob/git/appweb/test/web/auth/basic/basic.cgi
 
-test\cgi-bin\cgiProgram.exe:  \
-        $(CONFIG)\bin\cgiProgram.exe
+test\cgi-bin\cgiProgram.exe: 
 #  Omit build script /Users/mob/git/appweb/test/cgi-bin/cgiProgram.exe
 
 test\web\js: 
@@ -665,4 +596,72 @@ $(CONFIG)\bin\removeFiles.exe:  \
         $(CONFIG)\bin\libmpr.dll \
         $(CONFIG)\obj\removeFiles.obj
 	"$(LD)" -out:$(CONFIG)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\removeFiles.obj libmpr.lib $(LIBS)
+
+version: 
+	@echo 4.3.0-0
+
+genslink: 
+	cd src\server
+		esp --static --genlink slink.c --flat compile
+		cd ..\..
+
+run:  \
+        compile
+	cd src\server
+		sudo $(CONFIG)/bin/appweb -v
+		cd ..\..
+
+test-run:  \
+        compile
+	cd test
+		$(CONFIG)/bin/appweb -v
+		cd ..
+
+install: 
+	cd .
+		sudo make root-install
+		cd .
+
+install-prep:  \
+        compile
+	cd .
+		$(eval $(shell $(BIN)/ejs bits/getbitvals projects/$(NAME)-$(OS)-$(PROFILE)-bit.h 
+	PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX 
+	>.prefixes; chmod 666 .prefixes))
+	$(eval include .prefixes)
+		cd .
+
+root-install:  \
+        compile \
+        install-prep
+	cd .
+		@$(BIN)/appman stop disable uninstall >/dev/null 2>&1 ; true
+	rm -f $(BIT_PRD_PREFIX)/latest $(LBIN)/appweb $(LBIN)/appman $(LBIN)/esp
+	install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX)
+	install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
+	install -m 755 $(filter-out $(BIN)/esp-www,$(wildcard $(BIN)/*)) $(BIT_BIN_PREFIX)
+	install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
+	$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) 
+	--logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache 
+	--modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf
+	ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest
+	ln -s $(BIT_BIN_PREFIX)/appweb $(LBIN)/appweb
+	ln -s $(BIT_BIN_PREFIX)/appman $(LBIN)/appman
+	[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp $(LBIN)/esp
+	$(BIN)/appman install enable start
+	exit 0
+		cd .
+
+uninstall: 
+	cd .
+		sudo make root-uninstall
+		cd .
+
+root-uninstall:  \
+        compile \
+        install-prep
+	cd .
+		$(BIN)/appman stop disable uninstall
+	rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)
+		cd .
 

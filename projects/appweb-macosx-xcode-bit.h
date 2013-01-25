@@ -8,7 +8,7 @@
 
 /* Settings */
 #ifndef BIT_BIT
-    #define BIT_BIT "2.3.0"
+    #define BIT_BIT "0.8.0"
 #endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
@@ -24,6 +24,9 @@
 #endif
 #ifndef BIT_EJS_ONE_MODULE
     #define BIT_EJS_ONE_MODULE 1
+#endif
+#ifndef BIT_EJSCRIPT
+    #define BIT_EJSCRIPT 1
 #endif
 #ifndef BIT_ESP_MDB
     #define BIT_ESP_MDB 1
@@ -188,7 +191,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64 -without default -profile xcode -configure . -gen xcode"
+    #define BIT_CONFIG_CMD "bit -q -configure . -profile xcode"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -220,9 +223,6 @@
 #endif
 #ifndef BIT_PACK_CC
     #define BIT_PACK_CC 1
-#endif
-#ifndef BIT_PACK_DEFAULT
-    #define BIT_PACK_DEFAULT 0
 #endif
 #ifndef BIT_PACK_DIR
     #define BIT_PACK_DIR 1
@@ -285,7 +285,7 @@
     #define BIT_PACK_ZIP 1
 #endif
 #ifndef BIT_PACK_BIT_PATH
-    #define BIT_PACK_BIT_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/bit"
+    #define BIT_PACK_BIT_PATH "/Users/mob/git/bit/macosx-x64-debug/bin/bit"
 #endif
 #ifndef BIT_PACK_CGI_PATH
     #define BIT_PACK_CGI_PATH "/Users/mob/git/appweb/src/modules/cgiHandler.c"
@@ -336,7 +336,7 @@
     #define BIT_PACK_SQLITE_PATH "/Users/mob/git/appweb/src/deps/sqlite"
 #endif
 #ifndef BIT_PACK_UTEST_PATH
-    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
+    #define BIT_PACK_UTEST_PATH "/usr/local/bin/utest"
 #endif
 #ifndef BIT_PACK_ZIP_PATH
     #define BIT_PACK_ZIP_PATH "/usr/bin/zip"

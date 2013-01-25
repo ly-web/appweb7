@@ -2,10 +2,13 @@
 #   appweb-linux-debug.sh -- Build It Shell Script to build Embedthis Appweb
 #
 
+PRODUCT="appweb"
+VERSION="4.3.0"
+BUILD_NUMBER="0"
+PROFILE="debug"
 ARCH="x86"
 ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/'`"
 OS="linux"
-PROFILE="debug"
 CONFIG="${OS}-${ARCH}-${PROFILE}"
 CC="/usr/bin/gcc"
 LD="/usr/bin/ld"
@@ -73,17 +76,6 @@ ${CC} -o ${CONFIG}/bin/http ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/http.o -lhttp $
 rm -rf ${CONFIG}/bin/http-ca.crt
 cp -r src/deps/http/http-ca.crt ${CONFIG}/bin/http-ca.crt
 
-rm -rf ${CONFIG}/inc/sqlite3.h
-cp -r src/deps/sqlite/sqlite3.h ${CONFIG}/inc/sqlite3.h
-
-${CC} -c -o ${CONFIG}/obj/sqlite3.o -fPIC ${DFLAGS} -I${CONFIG}/inc src/deps/sqlite/sqlite3.c
-
-${CC} -shared -o ${CONFIG}/bin/libsqlite3.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sqlite3.o ${LIBS}
-
-${CC} -c -o ${CONFIG}/obj/sqlite.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/sqlite/sqlite.c
-
-${CC} -o ${CONFIG}/bin/sqlite ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sqlite.o -lsqlite3 ${LIBS} -lsqlite3 -lpthread -lm -lrt -ldl ${LDFLAGS}
-
 rm -rf ${CONFIG}/inc/customize.h
 cp -r src/customize.h ${CONFIG}/inc/customize.h
 
@@ -104,40 +96,6 @@ ${CC} -c -o ${CONFIG}/obj/server.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/serve
 
 ${CC} -shared -o ${CONFIG}/bin/libappweb.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/config.o ${CONFIG}/obj/convenience.o ${CONFIG}/obj/dirHandler.o ${CONFIG}/obj/fileHandler.o ${CONFIG}/obj/log.o ${CONFIG}/obj/server.o -lhttp ${LIBS} -lpcre -lmpr
 
-rm -rf ${CONFIG}/inc/edi.h
-cp -r src/esp/edi.h ${CONFIG}/inc/edi.h
-
-rm -rf ${CONFIG}/inc/esp-app.h
-cp -r src/esp/esp-app.h ${CONFIG}/inc/esp-app.h
-
-rm -rf ${CONFIG}/inc/esp.h
-cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
-
-rm -rf ${CONFIG}/inc/mdb.h
-cp -r src/esp/mdb.h ${CONFIG}/inc/mdb.h
-
-${CC} -c -o ${CONFIG}/obj/edi.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/edi.c
-
-${CC} -c -o ${CONFIG}/obj/espAbbrev.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espAbbrev.c
-
-${CC} -c -o ${CONFIG}/obj/espFramework.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espFramework.c
-
-${CC} -c -o ${CONFIG}/obj/espHandler.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espHandler.c
-
-${CC} -c -o ${CONFIG}/obj/espHtml.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espHtml.c
-
-${CC} -c -o ${CONFIG}/obj/espTemplate.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espTemplate.c
-
-${CC} -c -o ${CONFIG}/obj/mdb.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/mdb.c
-
-${CC} -c -o ${CONFIG}/obj/sdb.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/sdb.c
-
-${CC} -shared -o ${CONFIG}/bin/libmod_esp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
-
-${CC} -c -o ${CONFIG}/obj/esp.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/esp.c
-
-${CC} -o ${CONFIG}/bin/esp ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.o ${CONFIG}/obj/esp.o ${CONFIG}/obj/espAbbrev.o ${CONFIG}/obj/espFramework.o ${CONFIG}/obj/espHandler.o ${CONFIG}/obj/espHtml.o ${CONFIG}/obj/espTemplate.o ${CONFIG}/obj/mdb.o ${CONFIG}/obj/sdb.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr ${LDFLAGS}
-
 rm -rf ${CONFIG}/bin/esp.conf
 cp -r src/esp/esp.conf ${CONFIG}/bin/esp.conf
 
@@ -150,9 +108,33 @@ cp -r src/esp/www ${CONFIG}/bin/esp-www
 rm -rf ${CONFIG}/bin/esp-appweb.conf
 cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
-${CC} -c -o ${CONFIG}/obj/cgiHandler.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
+rm -rf ${CONFIG}/inc/ejs.slots.h
+cp -r src/deps/ejs/ejs.slots.h ${CONFIG}/inc/ejs.slots.h
 
-${CC} -shared -o ${CONFIG}/bin/libmod_cgi.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiHandler.o -lappweb ${LIBS} -lhttp -lpcre -lmpr
+rm -rf ${CONFIG}/inc/ejs.h
+cp -r src/deps/ejs/ejs.h ${CONFIG}/inc/ejs.h
+
+rm -rf ${CONFIG}/inc/ejsByteGoto.h
+cp -r src/deps/ejs/ejsByteGoto.h ${CONFIG}/inc/ejsByteGoto.h
+
+rm -rf ${CONFIG}/inc/sqlite3.h
+cp -r src/deps/sqlite/sqlite3.h ${CONFIG}/inc/sqlite3.h
+
+${CC} -c -o ${CONFIG}/obj/ejsLib.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejsLib.c
+
+${CC} -shared -o ${CONFIG}/bin/libejs.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/ejsLib.o -lmpr -lpcre -lhttp ${LIBS} -lpcre -lmpr
+
+${CC} -c -o ${CONFIG}/obj/ejs.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejs.c
+
+${CC} -o ${CONFIG}/bin/ejs ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/ejs.o -lejs ${LIBS} -lmpr -lpcre -lhttp -lejs -lpthread -lm -lrt -ldl -lmpr -lpcre -lhttp ${LDFLAGS}
+
+${CC} -c -o ${CONFIG}/obj/ejsc.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejsc.c
+
+${CC} -o ${CONFIG}/bin/ejsc ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/ejsc.o -lejs ${LIBS} -lmpr -lpcre -lhttp -lejs -lpthread -lm -lrt -ldl -lmpr -lpcre -lhttp ${LDFLAGS}
+
+cd src/deps/ejs >/dev/null ;\
+../../../${CONFIG}/bin/ejsc --out ../../../${CONFIG}/bin/ejs.mod --optimize 9 --bind --require null ejs.es ;\
+cd - >/dev/null 
 
 ${CC} -c -o ${CONFIG}/obj/sslModule.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/sslModule.c
 
@@ -162,10 +144,6 @@ ${CC} -c -o ${CONFIG}/obj/authpass.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/uti
 
 ${CC} -o ${CONFIG}/bin/authpass ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/authpass.o -lappweb ${LIBS} -lhttp -lpcre -lmpr -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr ${LDFLAGS}
 
-${CC} -c -o ${CONFIG}/obj/cgiProgram.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/cgiProgram.c
-
-${CC} -o ${CONFIG}/bin/cgiProgram ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiProgram.o ${LIBS} -lpthread -lm -lrt -ldl ${LDFLAGS}
-
 ${CC} -c -o ${CONFIG}/obj/setConfig.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/setConfig.c
 
 ${CC} -o ${CONFIG}/bin/setConfig ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/setConfig.o -lmpr ${LIBS} -lmpr -lpthread -lm -lrt -ldl ${LDFLAGS}
@@ -174,13 +152,24 @@ cd src/server >/dev/null ;\
 [ ! -f slink.c ] && cp slink.empty slink.c ; true ;\
 cd - >/dev/null 
 
+rm -rf ${CONFIG}/inc/edi.h
+cp -r src/esp/edi.h ${CONFIG}/inc/edi.h
+
+rm -rf ${CONFIG}/inc/esp.h
+cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
+
 ${CC} -c -o ${CONFIG}/obj/slink.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
 
-${CC} -shared -o ${CONFIG}/bin/libapp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.o -lmod_esp ${LIBS} -lappweb -lhttp -lpcre -lmpr
+rm -rf ${CONFIG}/inc/esp-app.h
+cp -r src/esp/esp-app.h ${CONFIG}/inc/esp-app.h
+
+${CC} -c -o ${CONFIG}/obj/web.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/cache/web.c
+
+${CC} -shared -o ${CONFIG}/bin/libapp.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.o ${CONFIG}/obj/web.o ${LIBS}
 
 ${CC} -c -o ${CONFIG}/obj/appweb.o ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lapp -lmod_cgi -lmod_ssl -lmod_esp -lappweb ${LIBS} -lhttp -lpcre -lmpr -lapp -lmod_cgi -lmod_ssl -lmod_esp -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr ${LDFLAGS}
+${CC} -o ${CONFIG}/bin/appweb ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.o -lapp -lmod_ssl -lappweb ${LIBS} -lhttp -lpcre -lmpr -lapp -lmod_ssl -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr ${LDFLAGS}
 
 #  Omit build script /Users/mob/git/appweb/src/server/cache
 rm -rf ${CONFIG}/inc/testAppweb.h
@@ -220,3 +209,12 @@ cd test >/dev/null ;\
 cp -r ../src/esp/www/files/static/js 'web/js' ;\
 cd - >/dev/null 
 
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined

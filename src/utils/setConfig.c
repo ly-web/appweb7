@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
         mprError("Bad command line:");
 #else
         mprError("Bad command line:\n"
-            "  Usage: pathConfig [options]\n"
+            "  Usage: setConfig [options]\n"
             "  Switches:\n"
             "    --cache dir          # Cache dir\n"
             "    --documents dir      # Static documents directory\n"

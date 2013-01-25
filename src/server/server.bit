@@ -84,10 +84,12 @@ Bit.load({
         },
 
         run: {
+            depends: [ 'compile' ],
             action: "
                 trace('Run', 'From directory src/server')
                 run('appweb -v', {noio: true})
             ",
+            generate: "sudo ${BIN}/appweb -v"
         },
 
         rom: {

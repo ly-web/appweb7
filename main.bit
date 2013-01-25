@@ -37,7 +37,7 @@ Bit.load({
         company: 'Embedthis',
         version: '4.3.0',
         buildNumber: '0',
-        bit: '2.3.0',
+        bit: '0.8.0',
 
         /* Must build locally to build tools */
         platforms: [ 'local' ],
@@ -69,6 +69,11 @@ Bit.load({
             Set to true for a static (non-shared library) build
          */
         static: false,
+
+        /*
+            Always build ejscript for tools
+         */
+        ejscript: true,
 
         http: {
             /* Use PAM (Plugable Authentication Module) to store passwords */
@@ -120,7 +125,6 @@ Bit.load({
     },
 
     usage: {
-        static:         'Build with static linking (true|false)',
         'esp.mdb':      'Enable ESP MDB database support (true|false)',
         'esp.sdb':      'Enable ESP SQLite database support (true|flase)',
         'http.pam':     'Enable Unix Pluggable Auth Module (true|false)',
@@ -159,6 +163,38 @@ Bit.load({
         install: {
             depends: ['build'],
             action: "installBinary()",
+            'generate-make': "sudo make root-install",
+        },
+
+		'install-prep': {
+			action: '',
+			depends: ['compile'],
+            'generate-make': "
+				$(eval $(shell $(BIN)/ejs bits/getbitvals projects/$(NAME)-$(OS)-$(PROFILE)-bit.h \
+					PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX \
+					>.prefixes; chmod 666 .prefixes))
+				$(eval include .prefixes)",
+		},
+
+        'root-install': {
+			action: '',
+			depends: ['compile', 'install-prep'],
+            'generate-make': "
+				@$(BIN)/appman stop disable uninstall >/dev/null 2>&1 ; true
+				rm -f $(BIT_PRD_PREFIX)/latest $(LBIN)/appweb $(LBIN)/appman $(LBIN)/esp
+				install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX)
+				install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
+				install -m 755 $(filter-out $(BIN)/esp-www,$(wildcard $(BIN)/*)) $(BIT_BIN_PREFIX)
+				install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
+				$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) \
+					--logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache \
+					--modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf
+				ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest
+				ln -s $(BIT_BIN_PREFIX)/appweb $(LBIN)/appweb
+				ln -s $(BIT_BIN_PREFIX)/appman $(LBIN)/appman
+				[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp $(LBIN)/esp
+				$(BIN)/appman install enable start
+				exit 0",
         },
 
         package: {
@@ -183,6 +219,15 @@ Bit.load({
 
         uninstall: {
             action: "uninstallBinary()"
+			generate: "sudo make root-uninstall",
         },
+
+        'root-uninstall': {
+			action: '',
+			depends: ['compile', 'install-prep'],
+            'generate-make': "
+				$(BIN)/appman stop disable uninstall
+				rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)"
+		},
     },
 })

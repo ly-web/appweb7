@@ -380,7 +380,7 @@ static char *joinLine(cchar *str, ssize *lenp)
 
         <%@ include "file"  Include an esp file
         <%@ layout "file"   Specify a layout page to use. Use layout "" to disable layout management
-        <%@ content         Mark the location to substitute content in a layout pag
+        <%@ content         Mark the location to substitute content in a layout page
 
         <%                  Begin esp section containing C code
         <%^ global          Put esp code at the global level
@@ -545,33 +545,36 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         }
         tid = getEspToken(&parse);
     }
-    if (cacheName) {
-        /*
-            CacheName will only be set for the outermost invocation
-         */
-        if (layout && mprPathExists(layout, R_OK)) {
-            if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
-                *err = sfmt("Cannot read layout page: %s", layout);
-                return 0;
-            }
-            layoutBuf = 0;
-            if ((layoutBuf = espBuildScript(route, layoutPage, layout, NULL, NULL, err)) == 0) {
-                return 0;
-            }
-#if BIT_DEBUG
-            if (!scontains(layoutBuf, CONTENT_MARKER)) {
-                *err = sfmt("Layout page is missing content marker: %s", layout);
-                return 0;
-            }
-#endif
-            body = sreplace(layoutBuf, CONTENT_MARKER, body);
+
+    if (layout && mprPathExists(layout, R_OK)) {
+        if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
+            *err = sfmt("Cannot read layout page: %s", layout);
+            return 0;
         }
+        layoutBuf = 0;
+        if ((layoutBuf = espBuildScript(route, layoutPage, layout, NULL, NULL, err)) == 0) {
+            return 0;
+        }
+#if BIT_DEBUG
+        if (!scontains(layoutBuf, CONTENT_MARKER)) {
+            *err = sfmt("Layout page is missing content marker: %s", layout);
+            return 0;
+        }
+#endif
+        body = sreplace(layoutBuf, CONTENT_MARKER, body);
+
         if (start && start[slen(start) - 1] != '\n') {
             start = sjoin(start, "\n", NULL);
         }
         if (end && end[slen(end) - 1] != '\n') {
             end = sjoin(end, "\n", NULL);
         }
+    }
+
+    /*
+        CacheName will only be set for the outermost invocation
+     */
+    if (cacheName) {
         dir = mprGetRelPath(route->dir, NULL);
         path = mprGetRelPath(path, NULL);
         assert(slen(path) > slen(dir));

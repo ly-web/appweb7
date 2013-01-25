@@ -7,45 +7,62 @@ Licensing
 ---
 See LICENSE.md for details.
 
-### To Read Documentation:
+### To read documentation:
 
   See http://appwebserver.org/products/appweb/doc/product/index.html
 
 ### Building
     You can build with make or with Bit. Bit is quicker and more flexible.
-    If building with Bit, download Bit from http://embedthis.com/downloads/bit/download.ejs
+    To install Bit, download Bit from http://embedthis.com/downloads/bit/download.ejs
 
-    Images are built into */bin. The build configuration is saved in */inc/bit.h.
-
-### To Build with make:
+### To build with make:
 
     make
 
-### To Build with nmake on Windows:
+    You can pass make variables to tailor the build. For a list of variables:
+
+	make help
+
+### To build with nmake on Windows:
 
     WinMake
 
-### To Build with Bit:
+### To build with Bit:
 
     ./configure
     bit
 
-### To Run
+	For a list of configure options:
 
-    cd src/server
-    ../../*/bin/appweb -v 
+	./configure --help
+
+### To run
+
+	make run
 
     or
 
     bit run
 
-### To Test:
+### To install:
 
-    bit test
+    sudo make install
 
-### To Install:
+	or 
 
     sudo bit install
+
+### To uninstall
+
+    sudo make uninstall
+
+	or 
+
+    sudo bit uninstall
+
+### To test:
+
+    bit test
 
 Resources
 ---

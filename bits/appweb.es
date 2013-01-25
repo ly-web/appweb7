@@ -11,7 +11,7 @@ require ejs.unix
     Copy binary files to package staging area
     This is run for local and cross platforms. The last platform does the packaging
  */
-public function packageBinaryFiles(formats = ['tar', 'native']) {
+public function packageBinaryFiles(formats = ['tar', 'native'], minimal = false) {
     let settings = bit.settings
     let bin = bit.dir.pkg.join('bin')
     safeRemove(bit.dir.pkg)
@@ -31,30 +31,34 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
 
     if (!bit.cross) {
         /* These three files are replicated outside the data directory */
-        install('doc/product/README.TXT', pkg, {fold: true, expand: true})
-        install('package/install.sh', pkg.join('install'), {permissions: 0755, expand: true})
-        install('package/uninstall.sh', pkg.join('uninstall'), {permissions: 0755, expand: true})
-        if (bit.platform.os == 'windows') {
-            install('package/windows/LICENSE.TXT', bin, {fold: true, expand: true})
+        if (!minimal) {
+            install('doc/product/README.TXT', pkg, {fold: true, expand: true})
+            install('package/install.sh', pkg.join('install'), {permissions: 0755, expand: true})
+            install('package/uninstall.sh', pkg.join('uninstall'), {permissions: 0755, expand: true})
+            if (bit.platform.os == 'windows') {
+                install('package/windows/LICENSE.TXT', bin, {fold: true, expand: true})
+            }
+            install(['doc/licenses/*.txt'], p.product.join('LICENSE.TXT'), {
+                cat: true,
+                textfile: true,
+                fold: true,
+                title: bit.settings.title + ' Licenses',
+            })
+            install('doc/product/README.TXT', p.product, {fold: true, expand: true})
+            install('package/uninstall.sh', p.bin.join('uninstall'), {permissions: 0755, expand: true})
+            install('package/linkup', p.bin, {permissions: 0755})
         }
-        install(['doc/licenses/*.txt'], p.product.join('LICENSE.TXT'), {
-            cat: true,
-            textfile: true,
-            fold: true,
-            title: bit.settings.title + ' Licenses',
-        })
-        install('doc/product/README.TXT', p.product, {fold: true, expand: true})
-        install('package/uninstall.sh', p.bin.join('uninstall'), {permissions: 0755, expand: true})
-        install('package/linkup', p.bin, {permissions: 0755})
-
         install('src/server/web', p.web, {exclude: /mgmt/, subtree: true})
-        install('src/server/web/test/*', p.web.join('test'), {
-            include: /.cgi|test.pl|test.py/,
-            permissions: 0755,
-        })
-
+        if (!minimal) {
+            install('src/server/web/test/*', p.web.join('test'), {
+                include: /.cgi|test.pl|test.py/,
+                permissions: 0755,
+            })
+        }
         install('src/server/mime.types', p.config)
-        install('src/server/php.ini', p.config)
+        if (bit.packs.php && bit.packs.php.enable) {
+            install('src/server/php.ini', p.config)
+        }
         if (Path('src/server/appweb.local').exists) {
             install('src/server/appweb.local', p.config.join('appweb.conf'))
         } else {
@@ -75,7 +79,6 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
         let tmp = p.log.join('error.log')
         tmp.write()
         tmp.setAttributes({permissions: 0755, user: user, group: group})
-
     }
     install(bit.dir.bin + '/*', p.bin, {
         include: /appweb|appman|esp|http|auth|makerom|libappweb|libmpr|setConfig|\.dll/,
@@ -92,8 +95,10 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
     install(bit.dir.bin + '/esp.conf', p.config)
     install(bit.dir.bin + '/esp-www', p.bin)
     install(bit.dir.bin + '/esp-appweb.conf', p.bin)
-    install(bit.dir.inc.join('*.h'), p.inc)
     install(bit.dir.bin.join('http-ca.crt'), p.bin)
+    if (!minimal) {
+        install(bit.dir.inc.join('*.h'), p.inc)
+    }
 
     if (bit.ssl && bit.platform.os == 'linux') {
         install(bit.dir.bin.join('*.' + bit.ext.shobj + '*'), p.bin, {strip: strip, permissions: 0755})
@@ -135,17 +140,20 @@ public function packageBinaryFiles(formats = ['tar', 'native']) {
             /*
                 install(bit.packs.compiler.path.join('../../lib/msvcrt.lib'), p.bin)
              */
-            install(bit.dir.bin.join('removeFiles' + bit.globals.EXE), p.bin)
+            if (!minimal) {
+                install(bit.dir.bin.join('removeFiles' + bit.globals.EXE), p.bin)
+            }
             install(bit.dir.bin.join('setConf*'), p.bin)
         }
-        if (bit.platform.like == 'posix') {
+        if (bit.platform.like == 'posix' && !minimal) {
             install('doc/man/*.1', p.productver.join('doc/man/man1'), {compress: true})
         }
     }
-    let files = contents.files('**', {exclude: /\/$/, relative: true})
-    files = files.map(function(f) Path("/" + f))
-    p.productver.join('files.log').append(files.join('\n') + '\n')
-
+    if (!minimal) {
+        let files = contents.files('**', {exclude: /\/$/, relative: true})
+        files = files.map(function(f) Path("/" + f))
+        p.productver.join('files.log').append(files.join('\n') + '\n')
+    }
     if (formats && bit.platform.last) {
         package(bit.dir.pkg.join('bin'), formats)
     }
@@ -230,7 +238,7 @@ public function installBinary() {
     if (Config.OS != 'windows' && App.uid != 0) {
         throw 'Must run as root. Use \"sudo bit install\"'
     }
-    packageBinaryFiles(null)
+    packageBinaryFiles(null, true)
     if (!bit.cross) {
         if (bit.platform.os == 'windows') {
             Cmd([bit.dir.bin.join('appwebMonitor' + bit.globals.EXE), '--stop'])

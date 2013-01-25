@@ -101,28 +101,15 @@
   
   <ItemGroup>
     <ClCompile Include="..\..\src\server\slink.c" />
+    <ClCompile Include="..\..\src\server\cache\web.c" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libmod_esp.lib;libappweb.lib;libhttp.lib;libpcre.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
-
-<ItemGroup>
-  <ProjectReference Include="esp.vcxproj">
-  <Project>4b41c5f1-a9d9-4dd2-896a-b6c2d5cedfd7</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
-
-<ItemGroup>
-  <ProjectReference Include="libmod_esp.vcxproj">
-  <Project>f86f4757-a3b0-4561-86ab-d9c18115067f</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
 
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

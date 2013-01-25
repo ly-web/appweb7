@@ -6,10 +6,13 @@ export PATH="$(SDK)/Bin:$(VS)/VC/Bin:$(VS)/Common7/IDE:$(VS)/Common7/Tools:$(VS)
 export INCLUDE="$(INCLUDE);$(SDK)/Include:$(VS)/VC/INCLUDE"
 export LIB="$(LIB);$(SDK)/Lib:$(VS)/VC/lib"
 
+PRODUCT="appweb"
+VERSION="4.3.0"
+BUILD_NUMBER="0"
+PROFILE="debug"
 ARCH="x86"
 ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/'`"
 OS="windows"
-PROFILE="debug"
 CONFIG="${OS}-${ARCH}-${PROFILE}"
 CC="cl.exe"
 LD="link.exe"
@@ -77,17 +80,6 @@ cp -r src/deps/http/http.h ${CONFIG}/inc/http.h
 rm -rf ${CONFIG}/bin/http-ca.crt
 cp -r src/deps/http/http-ca.crt ${CONFIG}/bin/http-ca.crt
 
-rm -rf ${CONFIG}/inc/sqlite3.h
-cp -r src/deps/sqlite/sqlite3.h ${CONFIG}/inc/sqlite3.h
-
-"${CC}" -c -Fo${CONFIG}/obj/sqlite3.obj -Fd${CONFIG}/obj/sqlite3.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/sqlite/sqlite3.c
-
-"${LD}" -dll -out:${CONFIG}/bin/libsqlite3.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sqlite3.obj ${LIBS}
-
-"${CC}" -c -Fo${CONFIG}/obj/sqlite.obj -Fd${CONFIG}/obj/sqlite.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/sqlite/sqlite.c
-
-"${LD}" -out:${CONFIG}/bin/sqlite.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/sqlite.obj libsqlite3.lib ${LIBS}
-
 rm -rf ${CONFIG}/inc/customize.h
 cp -r src/customize.h ${CONFIG}/inc/customize.h
 
@@ -108,40 +100,6 @@ cp -r src/appweb.h ${CONFIG}/inc/appweb.h
 
 "${LD}" -dll -out:${CONFIG}/bin/libappweb.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/config.obj ${CONFIG}/obj/convenience.obj ${CONFIG}/obj/dirHandler.obj ${CONFIG}/obj/fileHandler.obj ${CONFIG}/obj/log.obj ${CONFIG}/obj/server.obj libhttp.lib ${LIBS} libpcre.lib libmpr.lib
 
-rm -rf ${CONFIG}/inc/edi.h
-cp -r src/esp/edi.h ${CONFIG}/inc/edi.h
-
-rm -rf ${CONFIG}/inc/esp-app.h
-cp -r src/esp/esp-app.h ${CONFIG}/inc/esp-app.h
-
-rm -rf ${CONFIG}/inc/esp.h
-cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
-
-rm -rf ${CONFIG}/inc/mdb.h
-cp -r src/esp/mdb.h ${CONFIG}/inc/mdb.h
-
-"${CC}" -c -Fo${CONFIG}/obj/edi.obj -Fd${CONFIG}/obj/edi.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/edi.c
-
-"${CC}" -c -Fo${CONFIG}/obj/espAbbrev.obj -Fd${CONFIG}/obj/espAbbrev.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espAbbrev.c
-
-"${CC}" -c -Fo${CONFIG}/obj/espFramework.obj -Fd${CONFIG}/obj/espFramework.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espFramework.c
-
-"${CC}" -c -Fo${CONFIG}/obj/espHandler.obj -Fd${CONFIG}/obj/espHandler.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espHandler.c
-
-"${CC}" -c -Fo${CONFIG}/obj/espHtml.obj -Fd${CONFIG}/obj/espHtml.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espHtml.c
-
-"${CC}" -c -Fo${CONFIG}/obj/espTemplate.obj -Fd${CONFIG}/obj/espTemplate.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/espTemplate.c
-
-"${CC}" -c -Fo${CONFIG}/obj/mdb.obj -Fd${CONFIG}/obj/mdb.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/mdb.c
-
-"${CC}" -c -Fo${CONFIG}/obj/sdb.obj -Fd${CONFIG}/obj/sdb.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/sdb.c
-
-"${LD}" -dll -out:${CONFIG}/bin/libmod_esp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.obj ${CONFIG}/obj/espAbbrev.obj ${CONFIG}/obj/espFramework.obj ${CONFIG}/obj/espHandler.obj ${CONFIG}/obj/espHtml.obj ${CONFIG}/obj/espTemplate.obj ${CONFIG}/obj/mdb.obj ${CONFIG}/obj/sdb.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
-
-"${CC}" -c -Fo${CONFIG}/obj/esp.obj -Fd${CONFIG}/obj/esp.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/esp/esp.c
-
-"${LD}" -out:${CONFIG}/bin/esp.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/edi.obj ${CONFIG}/obj/esp.obj ${CONFIG}/obj/espAbbrev.obj ${CONFIG}/obj/espFramework.obj ${CONFIG}/obj/espHandler.obj ${CONFIG}/obj/espHtml.obj ${CONFIG}/obj/espTemplate.obj ${CONFIG}/obj/mdb.obj ${CONFIG}/obj/sdb.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
-
 rm -rf ${CONFIG}/bin/esp.conf
 cp -r src/esp/esp.conf ${CONFIG}/bin/esp.conf
 
@@ -154,9 +112,33 @@ cp -r src/esp/www ${CONFIG}/bin/esp-www
 rm -rf ${CONFIG}/bin/esp-appweb.conf
 cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
-"${CC}" -c -Fo${CONFIG}/obj/cgiHandler.obj -Fd${CONFIG}/obj/cgiHandler.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/cgiHandler.c
+rm -rf ${CONFIG}/inc/ejs.slots.h
+cp -r src/deps/ejs/ejs.slots.h ${CONFIG}/inc/ejs.slots.h
 
-"${LD}" -dll -out:${CONFIG}/bin/libmod_cgi.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiHandler.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
+rm -rf ${CONFIG}/inc/ejs.h
+cp -r src/deps/ejs/ejs.h ${CONFIG}/inc/ejs.h
+
+rm -rf ${CONFIG}/inc/ejsByteGoto.h
+cp -r src/deps/ejs/ejsByteGoto.h ${CONFIG}/inc/ejsByteGoto.h
+
+rm -rf ${CONFIG}/inc/sqlite3.h
+cp -r src/deps/sqlite/sqlite3.h ${CONFIG}/inc/sqlite3.h
+
+"${CC}" -c -Fo${CONFIG}/obj/ejsLib.obj -Fd${CONFIG}/obj/ejsLib.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejsLib.c
+
+"${LD}" -dll -out:${CONFIG}/bin/libejs.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/ejsLib.obj libmpr.lib libpcre.lib libhttp.lib ${LIBS} libpcre.lib libmpr.lib
+
+"${CC}" -c -Fo${CONFIG}/obj/ejs.obj -Fd${CONFIG}/obj/ejs.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejs.c
+
+"${LD}" -out:${CONFIG}/bin/ejs.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/ejs.obj libejs.lib ${LIBS} libmpr.lib libpcre.lib libhttp.lib
+
+"${CC}" -c -Fo${CONFIG}/obj/ejsc.obj -Fd${CONFIG}/obj/ejsc.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/deps/ejs/ejsc.c
+
+"${LD}" -out:${CONFIG}/bin/ejsc.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/ejsc.obj libejs.lib ${LIBS} libmpr.lib libpcre.lib libhttp.lib
+
+cd src/deps/ejs >/dev/null ;\
+../../../${CONFIG}/bin/ejsc --out ../../../${CONFIG}/bin/ejs.mod --optimize 9 --bind --require null ejs.es ;\
+cd - >/dev/null 
 
 "${CC}" -c -Fo${CONFIG}/obj/sslModule.obj -Fd${CONFIG}/obj/sslModule.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/modules/sslModule.c
 
@@ -166,10 +148,6 @@ cp -r src/esp/esp-appweb.conf ${CONFIG}/bin/esp-appweb.conf
 
 "${LD}" -out:${CONFIG}/bin/authpass.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/authpass.obj libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
-"${CC}" -c -Fo${CONFIG}/obj/cgiProgram.obj -Fd${CONFIG}/obj/cgiProgram.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/cgiProgram.c
-
-"${LD}" -out:${CONFIG}/bin/cgiProgram.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/cgiProgram.obj ${LIBS}
-
 "${CC}" -c -Fo${CONFIG}/obj/setConfig.obj -Fd${CONFIG}/obj/setConfig.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/setConfig.c
 
 "${LD}" -out:${CONFIG}/bin/setConfig.exe -entry:WinMainCRTStartup -subsystem:Windows ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/setConfig.obj libmpr.lib ${LIBS}
@@ -178,13 +156,24 @@ cd src/server >/dev/null ;\
 [ ! -f slink.c ] && cp slink.empty slink.c ; true ;\
 cd - >/dev/null 
 
+rm -rf ${CONFIG}/inc/edi.h
+cp -r src/esp/edi.h ${CONFIG}/inc/edi.h
+
+rm -rf ${CONFIG}/inc/esp.h
+cp -r src/esp/esp.h ${CONFIG}/inc/esp.h
+
 "${CC}" -c -Fo${CONFIG}/obj/slink.obj -Fd${CONFIG}/obj/slink.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/slink.c
 
-"${LD}" -dll -out:${CONFIG}/bin/libapp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.obj libmod_esp.lib ${LIBS} libappweb.lib libhttp.lib libpcre.lib libmpr.lib
+rm -rf ${CONFIG}/inc/esp-app.h
+cp -r src/esp/esp-app.h ${CONFIG}/inc/esp-app.h
+
+"${CC}" -c -Fo${CONFIG}/obj/web.obj -Fd${CONFIG}/obj/web.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/cache/web.c
+
+"${LD}" -dll -out:${CONFIG}/bin/libapp.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/slink.obj ${CONFIG}/obj/web.obj ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/appweb.obj -Fd${CONFIG}/obj/appweb.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/server/appweb.c
 
-"${LD}" -out:${CONFIG}/bin/appweb.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.obj libapp.lib libmod_cgi.lib libmod_ssl.lib libmod_esp.lib libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
+"${LD}" -out:${CONFIG}/bin/appweb.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/appweb.obj libapp.lib libmod_ssl.lib libappweb.lib ${LIBS} libhttp.lib libpcre.lib libmpr.lib
 
 rm -rf ${CONFIG}/inc/appwebMonitor.h
 cp -r src/server/windows/appwebMonitor.h ${CONFIG}/inc/appwebMonitor.h
@@ -243,3 +232,12 @@ cd - >/dev/null
 
 "${LD}" -out:${CONFIG}/bin/removeFiles.exe -entry:WinMainCRTStartup -subsystem:Windows ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/removeFiles.obj libmpr.lib ${LIBS}
 
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
+#  Omit build script undefined
