@@ -14,7 +14,7 @@
 /****************************** Forward Declarations **************************/
 
 #ifdef __cplusplus
-PUBLIC "C" {
+extern "C" {
 #endif
 
 #if !DOXYGEN
@@ -1969,7 +1969,7 @@ PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
         httpCreateConn httpCreateRxPipeline httpCreateTxPipeline httpDestroyConn httpDestroyPipeline httpDiscardData
         httpDisconnect httpEnableUpload httpError httpEvent httpGetAsync httpGetChunkSize httpGetConnContext httpGetConnHost
         httpGetError httpGetExt httpGetKeepAliveCount httpGetMoreOutput httpGetWriteQueueCount httpMatchHost httpMemoryError
-        httpPostEvent httpPrepClientConn httpResetCredentials httpRouteRequest httpRunHandlerReady httpServiceQueues
+        httpAfterEvent httpPrepClientConn httpResetCredentials httpRouteRequest httpRunHandlerReady httpServiceQueues
         httpSetAsync httpSetChunkSize httpSetConnContext httpSetConnHost httpSetConnNotifier httpSetCredentials
         httpSetKeepAliveCount httpSetProtocol httpSetRetries httpSetSendConnector httpSetState httpSetTimeout
         httpSetTimestamp httpShouldTrace httpStartPipeline
@@ -2332,12 +2332,12 @@ PUBLIC void httpNotify(HttpConn *conn, int event, int arg);
     } else
 
 /**
-    Do post I/O event setup.
+    Do setup after an I/O event to receive future events.
     @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
     @stability Internal
  */
-PUBLIC void httpPostEvent(HttpConn *conn);
+PUBLIC void httpAfterEvent(HttpConn *conn);
 
 /**
     Prepare a client connection for a new request. 
@@ -2492,6 +2492,7 @@ PUBLIC void httpSetProtocol(HttpConn *conn, cchar *protocol);
  */
 PUBLIC void httpSetRetries(HttpConn *conn, int retries);
 
+#if !BIT_ROM
 /**
     Set the "Send" connector to process the request
     @description If the net connection has been selected, but the response content is a file, the pipeline connector
@@ -2502,6 +2503,7 @@ PUBLIC void httpSetRetries(HttpConn *conn, int retries);
     @stability Stable
  */
 PUBLIC void httpSetSendConnector(HttpConn *conn, cchar *path);
+#endif
 
 /**
     Set the connection state and invoke notifiers.
@@ -3221,6 +3223,7 @@ PUBLIC void httpDefineAction(cchar *uri, HttpAction fun);
  */
 typedef struct HttpRoute {
     /* Ordered for debugging */
+    struct HttpRoute *parent;               /**< Parent route */
     char            *name;                  /**< Route name */
     char            *pattern;               /**< Original matching URI pattern for the route (includes prefix) */
     char            *startSegment;          /**< Starting literal segment of pattern (includes prefix) */
@@ -3249,7 +3252,6 @@ typedef struct HttpRoute {
     HttpAuth        *auth;                  /**< Per route block authentication */
     Http            *http;                  /**< Http service object (copy of appweb->http) */
     struct HttpHost *host;                  /**< Owning host */
-    struct HttpRoute *parent;               /**< Parent route */
     int             flags;                  /**< Route flags */
 
     char            *defaultLanguage;       /**< Default language */

@@ -13,6 +13,7 @@ Bit.load({
         },
 
         cgiProgram: {
+            enable: 'bit.packs.cgi.enable',
             type: 'exe',
             sources: [ 'cgiProgram.c' ],
         },

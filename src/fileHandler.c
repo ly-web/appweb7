@@ -80,6 +80,7 @@ static int matchFileHandler(HttpConn *conn, HttpRoute *route, int dir)
                 }
             }
         }
+#if BIT_PACK_DIR
         /*
             If a directory, test if a directory listing should be rendered. If so, delegate to the dirHandler.
             Cannot use the sendFile handler and must use the netConnector.
@@ -89,6 +90,7 @@ static int matchFileHandler(HttpConn *conn, HttpRoute *route, int dir)
             tx->connector = conn->http->netConnector;
             return HTTP_ROUTE_OK;
         }
+#endif
     }
     if (!info->valid && (route->flags & HTTP_ROUTE_GZIP) && rx->acceptEncoding && strstr(rx->acceptEncoding, "gzip") != 0) {
         /*
@@ -341,7 +343,6 @@ static void outgoingFileService(HttpQueue *q)
     conn = q->conn;
     tx = conn->tx;
     usingSend = (tx->connector == conn->http->sendConnector);
-
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
         if (!usingSend && !tx->outputRanges && packet->esize) {
             if ((rc = prepPacket(q, packet)) < 0) {

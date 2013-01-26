@@ -13,6 +13,7 @@
 
 #include    "appweb.h"
 
+#if BIT_PACK_DIR
 /********************************** Defines ***********************************/
 /*
     Handler configuration
@@ -712,6 +713,7 @@ PUBLIC int maOpenDirHandler(Http *http)
     maAddDirective(appweb, "Options", optionsDirective);
     return 0;
 }
+#endif /* BIT_PACK_DIR */
 
 
 /*

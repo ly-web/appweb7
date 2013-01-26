@@ -24,7 +24,8 @@ typedef struct App {
     cchar       *currentDir;            /* Initial starting current directory */
     cchar       *database;              /* Database provider "mdb" | "sqlite" */
     cchar       *flatPath;              /* Output filename for flat compilations */
-    cchar       *libDir;                /* Appweb lib directory */
+
+    cchar       *binDir;                /* Appweb bin directory */
     cchar       *listen;                /* Listen endpoint for "esp run" */
     cchar       *platform;              /* Target platform os-arch-profile (lower) */
     cchar       *wwwDir;                /* Appweb esp-www default files directory */
@@ -34,14 +35,17 @@ typedef struct App {
     /*
         GC retention
      */
-    MprList     *routes;
+    MprList     *routes;                /* Routes to process */
     MprList     *files;                 /* List of files to process */
+    MprList     *build;                 /* Items to build */
+    MprList     *slink;                 /* List of items for static link */
     MprHash     *targets;               /* Command line targets */
     EdiGrid     *migrations;            /* Migrations table */
 
     cchar       *command;               /* Compilation or link command */
     cchar       *cacheName;             /* MD5 name of cached component */
     cchar       *csource;               /* Name of "C" source for controller or view */
+    cchar       *genlink;               /* Static link resolution file */
     cchar       *routeName;             /* Name of route to use for ESP configuration */
     cchar       *routePrefix;           /* Route prefix to use for ESP configuration */
     cchar       *module;                /* Compiled module name */
@@ -57,6 +61,7 @@ typedef struct App {
     int         rebuild;                /* Force a rebuild */
     int         reverse;                /* Reverse migrations */
     int         show;                   /* Show compilation commands */
+    int         staticLink;             /* Use static linking */
     int         verbose;                /* Verbose mode */
     int         why;                    /* Why rebuild */
 } App;
@@ -305,7 +310,13 @@ PUBLIC int main(int argc, char **argv)
     app->mpr = mpr;
     app->configFile = 0;
     app->listen = sclone(ESP_LISTEN);
+#if BIT_PACK_SQLITE
+    app->database = sclone("sqlite");
+#elif BIT_ESP_MDB 
     app->database = sclone("mdb");
+#else
+    mprError("No database provider defined");
+#endif
 
     for (argind = 1; argind < argc && !app->error; argind++) {
         argp = argv[argind];
@@ -325,7 +336,7 @@ PUBLIC int main(int argc, char **argv)
                 }
             }
 
-        } else if (smatch(argp, "config")) {
+        } else if (smatch(argp, "config") || smatch(argp, "conf")) {
             if (argind >= argc) {
                 usageError();
             } else {
@@ -350,6 +361,13 @@ PUBLIC int main(int argc, char **argv)
         } else if (smatch(argp, "flat") || smatch(argp, "f")) {
             app->flat = 1;
 
+        } else if (smatch(argp, "genlink") || smatch(argp, "g")) {
+            if (argind >= argc) {
+                usageError();
+            } else {
+                app->genlink = sclone(argv[++argind]);
+            }
+
         } else if (smatch(argp, "keep") || smatch(argp, "k")) {
             app->keep = 1;
 
@@ -369,6 +387,13 @@ PUBLIC int main(int argc, char **argv)
 
         } else if (smatch(argp, "min")) {
             app->minified = 1;
+
+        } else if (smatch(argp, "name")) {
+            if (argind >= argc) {
+                usageError();
+            } else {
+                app->appName = argv[++argind];
+            }
 
         } else if (smatch(argp, "overwrite")) {
             app->overwrite = 1;
@@ -402,6 +427,9 @@ PUBLIC int main(int argc, char **argv)
 
         } else if (smatch(argp, "show") || smatch(argp, "s")) {
             app->show = 1;
+
+        } else if (smatch(argp, "static")) {
+            app->staticLink = 1;
 
         } else if (smatch(argp, "verbose") || smatch(argp, "v")) {
             logSpec = "stderr:2";
@@ -459,7 +487,8 @@ static void manageApp(App *app, int flags)
         mprMark(app->flatFile);
         mprMark(app->flatItems);
         mprMark(app->flatPath);
-        mprMark(app->libDir);
+        mprMark(app->genlink);
+        mprMark(app->binDir);
         mprMark(app->listen);
         mprMark(app->module);
         mprMark(app->mpr);
@@ -467,6 +496,8 @@ static void manageApp(App *app, int flags)
         mprMark(app->migrations);
         mprMark(app->entry);
         mprMark(app->platform);
+        mprMark(app->build);
+        mprMark(app->slink);
         mprMark(app->routes);
         mprMark(app->routeName);
         mprMark(app->routePrefix);
@@ -505,8 +536,8 @@ static HttpRoute *createRoute(cchar *dir)
 static void initialize()
 {
     app->currentDir = mprGetCurrentPath();
-    app->libDir = mprGetAppDir();
-    app->wwwDir = mprJoinPath(app->libDir, "esp-www");
+    app->binDir = mprGetAppDir();
+    app->wwwDir = mprJoinPath(app->binDir, "esp-www");
     httpCreate(HTTP_SERVER_SIDE);
 }
 
@@ -573,7 +604,7 @@ static MprList *getRoutes()
             continue;
         }
         /*
-            Check for routes of the same directory or of a direct parent directory
+            Check for routes with a duplicate base directory
          */
         rp = 0;
         for (ITERATE_ITEMS(routes, rp, nextRoute)) {
@@ -695,6 +726,8 @@ static bool readConfig(bool mvc)
     if (app->platform) {
         appweb->platform = app->platform;
     }
+    appweb->staticLink = app->staticLink;
+
     if (!findConfigFile(mvc) || app->error) {
         return 0;
     }
@@ -891,7 +924,9 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, app->cacheName, BIT_SHOBJ));
     defaultLayout = (eroute->layoutsDir) ? mprJoinPath(eroute->layoutsDir, "default.esp") : 0;
 
-    if (app->rebuild) {
+    if (app->flat) {
+        why(source, "flat forces complete rebuild");
+    } else if (app->rebuild) {
         why(source, "due to forced rebuild");
     } else if (!espModuleIsStale(source, app->module, &recompile)) {
         if (kind & (ESP_PAGE | ESP_VIEW)) {
@@ -921,7 +956,9 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     } else {
         why(source, "%s is missing", app->module);
     }
-
+    if (app->flatFile) {
+        mprWriteFileFmt(app->flatFile, "/*\n    Source from %s\n */\n", source);
+    }
     if (kind & (ESP_CONTROLLER | ESP_MIGRATION)) {
         app->csource = source;
         if (app->flatFile) {
@@ -965,7 +1002,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
             }
         }
     }
-    if (! app->flatFile) {
+    if (!app->flatFile) {
         /*
             WARNING: GC yield here
          */
@@ -977,8 +1014,22 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         if (runEspCommand(route, eroute->compile, app->csource, app->module) < 0) {
             return;
         }
+#if UNUSED
+        if (eroute->archive) {
+            vtrace("Archive", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
+            if (runEspCommand(route, eroute->archive, app->csource, app->module) < 0) {
+                return;
+            }
+#if !(BIT_DEBUG && MACOSX)
+            /*
+                MAC needs the object for debug information
+             */
+            mprDeletePath(mprJoinPathExt(mprTrimPathExt(app->module), BIT_OBJ));
+#endif
+        } else 
+#endif
         if (eroute->link) {
-            vtrace("Link", "%s", app->module);
+            vtrace("Link", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
             if (runEspCommand(route, eroute->link, app->csource, app->module) < 0) {
                 return;
             }
@@ -1012,7 +1063,10 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
 static void compile(MprList *routes)
 {
     HttpRoute   *route;
+    EspRoute    *eroute;
+    MprFile     *file;
     MprKey      *kp;
+    cchar       *name;
     int         next;
  
     if (app->error) {
@@ -1020,6 +1074,9 @@ static void compile(MprList *routes)
     }
     for (ITERATE_KEYS(app->targets, kp)) {
         kp->type = 0;
+    }
+    if (app->flat && app->genlink) {
+        app->slink = mprCreateList(0, 0);
     }
     for (ITERATE_ITEMS(routes, route, next)) {
         mprTrace(2, "Build with route \"%s\" at %s", route->name, route->dir);
@@ -1037,8 +1094,32 @@ static void compile(MprList *routes)
             fail("Cannot find target %s to compile", kp->key);
         }
     }
+    if (app->slink) {
+        trace("Generate", app->genlink);
+        if ((file = mprOpenFile(app->genlink, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
+            fail("Cannot open %s", app->flatPath);
+            return;
+        }
+        mprWriteFileFmt(file, "/*\n    %s -- Generated Appweb Static Initialization\n */\n", app->genlink);
+        mprWriteFileFmt(file, "#include \"esp.h\"\n\n");
+        for (ITERATE_ITEMS(app->slink, route, next)) {
+            name = app->appName ? app->appName : mprGetPathBase(route->dir);
+            mprWriteFileFmt(file, "extern int esp_app_%s(HttpRoute *route, MprModule *module);", name);
+            eroute = route->eroute;
+            mprWriteFileFmt(file, "    /* SOURCE %s */\n", 
+                mprGetRelPath(mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL)), NULL));
+        }
+        mprWriteFileFmt(file, "\nPUBLIC void appwebStaticInitialize()\n{\n");
+        for (ITERATE_ITEMS(app->slink, route, next)) {
+            name = app->appName ? app->appName : mprGetPathBase(route->dir);
+            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s, \"%s\", \"%s\");\n", name, name, route->name);
+        }
+        mprWriteFileFmt(file, "}\n");
+        mprCloseFile(file);
+        app->slink = 0;
+    }
     if (!app->error) {
-        trace("TASK", "Complete");
+        trace("Task", "Complete");
     }
 }
 
@@ -1130,73 +1211,112 @@ static void compileFlat(HttpRoute *route)
 {
     EspRoute    *eroute;
     MprDirEntry *dp;
+    MprKeyValue *kp;
+    cchar       *name;
     char        *path, *line;
-    int         next;
+    int         next, kind;
     
     eroute = route->eroute;
+    name = app->appName ? app->appName : mprGetPathBase(route->dir);
     
     /*
         Flat ... Catenate all source
      */
     app->flatItems = mprCreateList(-1, 0);
-    app->flatPath = path = mprJoinPath(eroute->cacheDir, "app.c");
-    if ((app->flatFile = mprOpenFile(path, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-        fail("Cannot open %s", path);
-        return;
-    }
-    mprWriteFileFmt(app->flatFile, "/*\n    Flat compilation of %s\n */\n\n", app->appName);
+    app->flatPath = mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL));
 
-    if (route->sourceName) {
-        /* MVC */
+    app->build = mprCreateList(0, 0);
+    if (eroute->controllersDir) {
         app->files = mprGetPathFiles(eroute->controllersDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (smatch(mprGetPathExt(path), "c")) {
-                compileFile(route, path, ESP_CONTROLLER);
+                mprAddItem(app->build, mprCreateKeyPair(path, "controller"));
+                // compileFile(route, path, ESP_CONTROLLER);
             }
         }
+    }
+    if (eroute->viewsDir) {
         app->files = mprGetPathFiles(eroute->viewsDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
-            compileFile(route, path, ESP_VIEW);
+            mprAddItem(app->build, mprCreateKeyPair(path, "view"));
+            // compileFile(route, path, ESP_VIEW);
         }
+    }
+    if (eroute->staticDir) {
         app->files = mprGetPathFiles(eroute->staticDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (smatch(mprGetPathExt(path), "esp")) {
-                compileFile(route, path, ESP_PAGE);
+                mprAddItem(app->build, mprCreateKeyPair(path, "page"));
+                // compileFile(route, path, ESP_PAGE);
             }
         }
-    } else {
+    }
+    if (!eroute->viewsDir && !eroute->staticDir) {
+        /* MOB - better way to detect MV apps */
         app->files = mprGetPathFiles(route->dir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (smatch(mprGetPathExt(path), "esp")) {
-                compileFile(route, path, ESP_PAGE);
+                mprAddItem(app->build, mprCreateKeyPair(path, "page"));
+                // compileFile(route, path, ESP_PAGE);
             }
         }
     }
-    mprWriteFileFmt(app->flatFile, "\nESP_EXPORT int esp_app_%s(EspRoute *el, MprModule *module) {\n", app->appName);
-    for (next = 0; (line = mprGetNextItem(app->flatItems, &next)) != 0; ) {
-        mprWriteFileFmt(app->flatFile, "    %s(el, module);\n", line);
-    }
-    mprWriteFileFmt(app->flatFile, "    return 0;\n}\n");
-    mprCloseFile(app->flatFile);
-
-    app->module = mprNormalizePath(sfmt("%s/app%s", eroute->cacheDir, BIT_SHOBJ));
-    trace("Compile", "%s", app->csource);
-    if (runEspCommand(route, eroute->compile, app->flatPath, app->module) < 0) {
-        return;
-    }
-    if (eroute->link) {
-        trace("Link", "%s", app->module);
-        if (runEspCommand(route, eroute->link, app->flatPath, app->module) < 0) {
+    if (mprGetListLength(app->build) > 0) {
+        if ((app->flatFile = mprOpenFile(app->flatPath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
+            fail("Cannot open %s", app->flatPath);
             return;
+        }
+        mprWriteFileFmt(app->flatFile, "/*\n    Flat compilation of %s\n */\n\n", name);
+        mprWriteFileFmt(app->flatFile, "#include \"esp.h\"\n\n");
+
+        for (ITERATE_ITEMS(app->build, kp, next)) {
+            if (smatch(kp->value, "controller")) {
+                kind = ESP_CONTROLLER;
+            } else if (smatch(kp->value, "view")) {
+                kind = ESP_VIEW;
+            } else {
+                kind = ESP_PAGE;
+            }
+            compileFile(route, kp->key, kind);
+        }
+        if (app->slink) {
+            mprAddItem(app->slink, route);
+        }
+        mprWriteFileFmt(app->flatFile, "\nESP_EXPORT int esp_app_%s(HttpRoute *route, MprModule *module) {\n", name);
+        for (next = 0; (line = mprGetNextItem(app->flatItems, &next)) != 0; ) {
+            mprWriteFileFmt(app->flatFile, "    %s(route, module);\n", line);
+        }
+        mprWriteFileFmt(app->flatFile, "    return 0;\n}\n");
+        mprCloseFile(app->flatFile);
+
+        app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, name, BIT_SHOBJ));
+        trace("Compile", "%s", name);
+        if (runEspCommand(route, eroute->compile, app->flatPath, app->module) < 0) {
+            return;
+        }
+#if UNUSED
+        if (eroute->archive) {
+            trace("Archive", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
+            if (runEspCommand(route, eroute->archive, app->flatPath, app->module) < 0) {
+                return;
+            }
+        } else 
+#endif
+        if (eroute->link) {
+            trace("Link", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
+            if (runEspCommand(route, eroute->link, app->flatPath, app->module) < 0) {
+                return;
+            }
         }
     }
     app->flatItems = 0;
     app->flatFile = 0;
     app->flatPath = 0;
+    app->build = 0;
 }
 
     
@@ -1242,7 +1362,7 @@ static void generateMigration(HttpRoute *route, int argc, char **argv)
     stem = sfmt("Migration %s", argv[0]);
     /* Migration name used in the filename and in the exported load symbol */
     name = sreplace(slower(stem), " ", "_");
-    createMigration(route, name, table, stem, argc - 2, &argv[2]);
+    createMigration(route, name, table, stem, argc - 1, &argv[1]);
 }
 
 
@@ -1401,7 +1521,7 @@ static void generateScaffoldMigration(HttpRoute *route, int argc, char **argv)
     }
     table = sclone(argv[0]);
     comment = sfmt("Create Scaffold %s", spascal(table));
-    createMigration(route, sfmt("create_scaffold_%s", table), table, comment, argc - 2, &argv[2]);
+    createMigration(route, sfmt("create_scaffold_%s", table), table, comment, argc - 1, &argv[1]);
 }
 
 
@@ -1721,13 +1841,15 @@ static void generateAppDirs(HttpRoute *route)
     makeEspDir(route, "");
     makeEspDir(route, "cache");
     makeEspDir(route, "controllers");
-    makeEspDir(route, "db");
     makeEspDir(route, "layouts");
     makeEspDir(route, "static");
     makeEspDir(route, "static/images");
     makeEspDir(route, "static/js");
     makeEspDir(route, "static/themes");
     makeEspDir(route, "views");
+    if (app->database) {
+        makeEspDir(route, "db");
+    }
 }
 
 
@@ -1746,7 +1868,7 @@ static void fixupFile(HttpRoute *route, cchar *path)
     data = sreplace(data, "${DATABASE}", app->database);
     data = sreplace(data, "${DIR}", route->dir);
     data = sreplace(data, "${LISTEN}", app->listen);
-    data = sreplace(data, "${LIBDIR}", app->libDir);
+    data = sreplace(data, "${BINDIR}", app->binDir);
 
     tmp = mprGetTempPath(route->dir);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
@@ -1910,10 +2032,14 @@ static void generateAppHeader(HttpRoute *route)
 static void generateAppDb(HttpRoute *route)
 {
     EspRoute    *eroute;
-    char        *ext, *dbpath, buf[1];
+    cchar       *ext;
+    char        *dbpath, buf[1];
 
+    if (!app->database) {
+        return;
+    }
     eroute = route->eroute;
-    ext = smatch(app->database, "mdb") ? "mdb" : "sdb";
+    ext = app->database;
     dbpath = sfmt("%s/%s.%s", eroute->dbDir, app->appName, ext);
     if (mprWritePathContents(dbpath, buf, 0, 0664) < 0) {
         return;
@@ -2035,9 +2161,11 @@ static void usageError(Mpr *mpr)
     "    --config configFile        # Use named config file instead appweb.conf\n"
     "    --database name            # Database provider 'mdb|sqlite' \n"
     "    --flat                     # Compile into a single module\n"
+    "    --genlink                  # Generate a static link module for flat compilations\n"
     "    --keep                     # Keep intermediate source\n"
     "    --listen [ip:]port         # Listen on specified address \n"
     "    --log logFile:level        # Log to file file at verbosity level\n"
+    "    --name appName             # Name for the app when compiling flat\n"
     "    --overwrite                # Overwrite existing files \n"
     "    --quiet                    # Don't emit trace \n"
     "    --platform os-arch-profile # Target platform\n"
@@ -2046,6 +2174,7 @@ static void usageError(Mpr *mpr)
     "    --routeName name           # Route name in appweb.conf to use \n"
     "    --routePrefix prefix       # Route prefix in appweb.conf to use \n"
     "    --show                     # Show compile commands\n"
+    "    --static                   # Use static linking\n"
     "    --verbose                  # Emit verbose trace \n"
     "    --why                      # Why compile or skip\n"
     "\n"

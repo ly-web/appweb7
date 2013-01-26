@@ -427,6 +427,13 @@
     <name>EspRoute</name>
     <title>EspRoute</title>
     <filename>group___esp_route.html</filename>
+    <member kind="typedef">
+      <type>int(*</type>
+      <name>EspModuleEntry</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>gaf56d656b4e4b27a101b8c032aa522b84</anchor>
+      <arglist>)(HttpRoute *route, MprModule *module)</arglist>
+    </member>
     <member kind="function">
       <type>char *</type>
       <name>espBuildScript</name>

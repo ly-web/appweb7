@@ -12,7 +12,7 @@
 #include    "appweb.h"
 #include    "edi.h"
 
-#if BIT_ESP_MDB
+#if BIT_PACK_ESP && BIT_ESP_MDB
 
 #ifdef __cplusplus
 extern "C" {

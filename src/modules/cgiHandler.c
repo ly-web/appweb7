@@ -393,7 +393,7 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
         httpServiceQueues(conn);
         httpPumpRequest(conn, NULL);
         /* WARNING: this will complete this request and prep for the next */
-        httpPostEvent(conn);
+        httpAfterEvent(conn);
         return;
     } 
     httpServiceQueues(conn);
@@ -576,15 +576,6 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
         }
         buf->start = endHeaders;
     }
-#if UNUSED
-    if (location) {
-        httpRedirect(conn, tx->status, location);
-        if (conn->state == HTTP_STATE_FINALIZED) {
-            httpPumpRequest(conn, NULL);
-            /* WARNING: the request may be completed here */
-        }
-    }
-#endif
     return 1;
 }
 

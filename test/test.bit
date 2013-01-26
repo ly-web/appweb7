@@ -13,6 +13,7 @@ Bit.load({
         },
 
         'test-testScript': {
+            enable: 'bit.packs.cgi.enable',
             path: 'cgi-bin/testScript',
             build: "
                 let path = Path('cgi-bin/testScript')
@@ -57,6 +58,7 @@ Bit.load({
         },
 
         'test-cgiProgram': {
+            enable: 'bit.packs.cgi.enable',
             path: 'cgi-bin/cgiProgram${EXE}',
             build: "
                 let perms = { permissions: 0755 }
@@ -80,7 +82,6 @@ Bit.load({
         'test.js': {
             path: 'web/js',
             build: "
-                trace('Copy', 'ESP JS files')
                 cp('../src/esp/www/files/static/js', 'web/js')
             ",
             'generate-sh': "
@@ -171,6 +172,15 @@ Bit.load({
                     }
                 }
             ",
+        },
+
+        'test-run': {
+            depends: [ 'compile' ],
+            action: "
+                trace('Run', 'From directory src/server')
+                run('appweb -v', {noio: true})
+            ",
+            generate: "${platform.configuration}/bin/appweb -v"
         },
 
         'clean-test': {

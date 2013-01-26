@@ -9,8 +9,9 @@
 /********************************* Includes ***********************************/
 
 #include    "mpr.h"
-#include    "appwebMonitor.h"
-#include    "monitorResources.h"
+
+    #include    "appwebMonitor.h"
+    #include    "monitorResources.h"
 
 #include    <winUser.h>
 

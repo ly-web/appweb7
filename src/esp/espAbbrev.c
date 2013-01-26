@@ -121,7 +121,7 @@ PUBLIC void progress(cchar *data, cchar *optionString)
 
 /*
     radio("priority", "{low: 0, med: 1, high: 2}", NULL)
-    radio("priority", "{low: 0, med: 1, high: 2}", "{value:'2'}")  //  MOB - without a record
+    radio("priority", "{low: 0, med: 1, high: 2}", "{value:'2'}")
  */
 PUBLIC void radio(cchar *name, void *choices, cchar *optionString)
 {

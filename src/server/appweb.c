@@ -267,13 +267,13 @@ static int changeRoot(cchar *jail)
 }
 
 
-/*
-    If doing a static build, must now reference required modules to force the linker to include them.
-    Don't actually call init routines here. They will be called via maConfigureServer.
- */
 static void loadStaticModules()
 {
 #if BIT_STATIC
+    /*
+        If doing a static build, must now reference required modules to force the linker to include them.
+        Don't actually call init routines here. They will be called via maConfigureServer.
+     */
 #if BIT_PACK_CGI
     mprNop(maCgiHandlerInit);
 #endif
@@ -286,8 +286,9 @@ static void loadStaticModules()
 #if BIT_SSL
     mprNop(maSslModuleInit);
 #endif
-#endif
+#endif /* BIT_STATIC */
 }
+
 
 static int createEndpoints(int argc, char **argv)
 {
@@ -330,6 +331,11 @@ static int createEndpoints(int argc, char **argv)
     if (app->workers >= 0) {
         mprSetMaxWorkers(app->workers);
     }
+    /*
+        Call any ESP initializers from slink.c
+     */
+    appwebStaticInitialize();
+    
 #if BIT_WIN_LIKE
     writePort(app->server);
 #elif BIT_UNIX_LIKE
@@ -347,6 +353,7 @@ static int findAppwebConf()
     if (app->configFile == 0) {
         app->configFile = mprJoinPathExt(mprGetAppName(), ".conf");
     }
+#if !BIT_ROM
     if (!mprPathExists(app->configFile, R_OK)) {
         if (!userPath) {
             app->configFile = mprJoinPath(app->home, "appweb.conf");
@@ -359,6 +366,7 @@ static int findAppwebConf()
             return MPR_ERR_CANT_OPEN;
         }
     }
+#endif
     return 0;
 }
 
@@ -455,6 +463,7 @@ static void statusCheck(void *ignored, MprSignal *sp)
  */
 static int unixSecurityChecks(cchar *program, cchar *home)
 {
+#if !BIT_ROM
     struct stat     sbuf;
 
     if (((stat(home, &sbuf)) != 0) || !(S_ISDIR(sbuf.st_mode))) {
@@ -483,6 +492,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
             mprError("Security risk, %s is setgid", program);
         }
     }
+#endif /* !BIT_ROM */
     return 0;
 }
 #endif /* BIT_HOST_UNIX */

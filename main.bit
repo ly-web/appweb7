@@ -37,30 +37,47 @@ Bit.load({
         company: 'Embedthis',
         version: '4.3.0',
         buildNumber: '0',
-        bit: '2.3.0',
+        bit: '0.8.0',
+
+        /*
+            Enable a debug build with debug symbols and without optimization
+         */
+        debug: true,
 
         /* Must build locally to build tools */
         platforms: [ 'local' ],
         packs: [ 'bits/packs' ]
-        sync: [ 'bitos', 'est', 'http', 'mpr', 'pcre', 'sqlite' ],
+        sync: [ 'bitos', 'est', 'http', 'mpr', 'pcre', 'sqlite', 'ejs' ],
 
         '+required': [ 'bit', 'pcre'],
 
         /*
-            Optional packs to search for when configuring
+            Optional packs to automatically discover and configure
+            OpenSSL is the default SSL stack. Pre-release EST must be explicitly requested.
          */
-        '+optional': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejs', 'ejscript', 'esp', 'est', 'man', 'man2html',
+        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'est', 'man', 'man2html', 
             'pmaker', 'php', 'sqlite', 'utest', 'zip' ],
 
         /*
             Packs to disable when using --without all
          */
-        'without-all': ['doxygen', 'dsi', 'est', 'ejs', 'man', 'man2html', 'pmaker', 'ejscript', 'php' ],
+        'without-all': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejscript', 'esp', 'man', 'man2html', 
+            'openssl', 'pmaker', 'php', 'sqlite', ],
+
+        /*
+            Packs to disable when using --without default (generating packages)
+         */
+        'without-default': [ 'doxygen', 'dsi', 'ejscript', 'man', 'man2html', 'openssl', 'pmaker', 'php', 'sqlite', ],
 
         /*
             Set to true for a static (non-shared library) build
          */
         static: false,
+
+        /*
+            Always build ejscript for tools
+         */
+        ejscript: true,
 
         http: {
             /* Use PAM (Plugable Authentication Module) to store passwords */
@@ -92,11 +109,13 @@ Bit.load({
             /*
                 Enable debug trace and asserts to the log file.
                 This is enabled by default for debug builds. 
-
                 tracing: true,
              */
         },
 
+        /*
+            EST SSL stack configuration
+         */
         est: {
             camellia: false,
             padlock: false,
@@ -107,29 +126,23 @@ Bit.load({
             romTables: false,
             genPrime: false,
         },
+
+        /*
+            Tailor the optimization for size|speed
+         */
+        tune: 'size',
     },
 
     usage: {
-        assert:       'Enable program assertions (true|false)',
-        static:       'Build with static linking (true|false)',
-        'esp.mdb':    'Enable ESP MDB database support (true|false)',
-        'esp.sdb':    'Enable ESP SQLite database support (true|flase)',
-        'http.pam':   'Enable Unix Pluggable Auth Module (true|false)',
+        'esp.mdb':      'Enable ESP MDB database support (true|false)',
+        'esp.sdb':      'Enable ESP SQLite database support (true|flase)',
+        'http.pam':     'Enable Unix Pluggable Auth Module (true|false)',
+        'mpr.logging':  'Enable application logging (true|false)',
+        'mpr.tracing':  'Enable debug tracing (true|false)',
     },
-
-    profiles: {
-        debug: { settings: { 
-            debug: true, 
-            assert: true,
-        }, },
-        release: { settings: { 
-            debug: false, 
-            assert: false,
-        } },
-    },
-
 
     packs: {
+        ejscript: {},
         est: {},
         http: {
             enable: true,
@@ -147,6 +160,34 @@ Bit.load({
         install: {
             depends: ['build'],
             action: "installBinary()",
+            'generate-make': "sudo make root-install",
+        },
+
+		'install-prep': {
+			action: '',
+			depends: ['compile'],
+            'generate-make': "
+				${BIN}/ejs bits/getbitvals projects/appweb-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes
+				echo $(eval include .prefixes)",
+		},
+
+        'root-install': {
+			action: '',
+			depends: ['compile', 'install-prep'],
+            'generate-make': "
+				@${BIN}/appman stop disable uninstall >/dev/null 2>&1 ; true
+				rm -f $(BIT_PRD_PREFIX)/latest ${dir.programs}/appweb ${dir.programs}/appman ${dir.programs}/esp
+				install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX)
+				install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
+				install -m 755 $(filter-out ${BIN}/esp-www,$(wildcard ${BIN}/*)) $(BIT_BIN_PREFIX)
+				install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
+				$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf
+				ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest
+				ln -s $(BIT_BIN_PREFIX)/appweb ${dir.programs}/appweb
+				ln -s $(BIT_BIN_PREFIX)/appman ${dir.programs}/appman
+				[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp ${dir.programs}/esp
+				${BIN}/appman install enable start
+				exit 0",
         },
 
         package: {
@@ -171,6 +212,15 @@ Bit.load({
 
         uninstall: {
             action: "uninstallBinary()"
+			generate: "sudo make root-uninstall",
         },
+
+        'root-uninstall': {
+			action: '',
+			depends: ['compile', 'install-prep'],
+            'generate-make': "
+				$(BIN)/appman stop disable uninstall
+				rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)"
+		},
     },
 })

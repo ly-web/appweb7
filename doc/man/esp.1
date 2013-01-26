@@ -8,6 +8,7 @@ esp \- ESP Application Generator for Server-Side Web Applications.
 [\fI--config configFile]\fR] 
 [\fI--database DB]\fR] 
 [\fI--flat\fR]
+[\fI--genlink slink.c\fR]
 [\fI--keep\fR]
 [\fI--listen [ip:]port\fR]
 [\fI--log logFile:level\fR]
@@ -15,6 +16,7 @@ esp \- ESP Application Generator for Server-Side Web Applications.
 [\fI--quiet\fR]
 [\fI--platform os-arch-profile\fR]
 [\fI--rebuild\fR]
+[\fI--static\fR]
 [\fI--routeName name\fR]
 [\fI--routePrefix prefix\fR]
 [\fI--verbose\fR]
@@ -215,10 +217,15 @@ Change the current working directory before beginning processing.
 Use the specified config file instead of appweb.conf
 .TP 6
 \fB\--database Database provider\fR
-Use the specified database provider. Set to "mdb" or "sqlite".
+Use the specified database provider. Set to "mdb" or "sdb" for SQLite.
 .TP 6
 \fB\--flat\fR
 Compile the application flat into a single shared library file.
+.TP 6
+\fB\--genlink slink.c\fR
+Generate a static link initialization file for ESP pages and applications. 
+This is used with --static to generate a appwebStaticInitialize() function that will invoke all ESP initializers.
+By default, appweb expects this to be in the src/server/slink.c file.
 .TP 6
 \fB\--keep\fR
 Keep intermediate source files in the cache directory. This overrides the 
@@ -258,6 +265,9 @@ first route with the ESP handler defined in appweb.conf.
 This selects the Appweb route by prefix that will be used for the ESP configuration. The ESP directory names, 
 and compilation commands are determined by the ESP configuration drawn from the specified route. The default is the
 first route with the ESP handler defined in appweb.conf.
+.TP 6
+\fB\--static\fR
+Use static linking when building ESP components. This causes esp to create archive libraries instead of shared libraries.
 .TP 6
 \fB\--verbose\fR or \fB\-v\fR
 Run in verbose mode and trace actions to the console.

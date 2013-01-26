@@ -2298,7 +2298,7 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
         (conn->timeoutCallback)(conn);
     }
     if (!conn->connError) {
-        if (HTTP_STATE_BEGIN < conn->state && conn->state < HTTP_STATE_PARSED && 
+        if (HTTP_STATE_CONNECTED < conn->state && conn->state < HTTP_STATE_PARSED && 
                 (conn->started + limits->requestParseTimeout) < now) {
             httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Exceeded parse headers timeout of %Ld sec", 
                 limits->requestParseTimeout  / 1000);
@@ -2441,8 +2441,7 @@ PUBLIC void httpCallEvent(HttpConn *conn, int mask)
 }
 
 
-//  MOB - rename
-PUBLIC void httpPostEvent(HttpConn *conn)
+PUBLIC void httpAfterEvent(HttpConn *conn)
 {
     if (conn->endpoint) {
         if (conn->keepAliveCount < 0 && (conn->state < HTTP_STATE_PARSED || conn->state == HTTP_STATE_COMPLETE)) {
@@ -2478,7 +2477,7 @@ PUBLIC void httpEvent(HttpConn *conn, MprEvent *event)
     if (event->mask & MPR_READABLE) {
         readEvent(conn);
     }
-    httpPostEvent(conn);
+    httpAfterEvent(conn);
 }
 
 
@@ -5687,6 +5686,7 @@ static void netOutgoingService(HttpQueue *q)
             return;
         }
     }
+#if !BIT_ROM
     if (tx->flags & HTTP_TX_SENDFILE) {
         /* Relay via the send connector */
         if (tx->file == 0) {
@@ -5702,6 +5702,7 @@ static void netOutgoingService(HttpQueue *q)
             return;
         }
     }
+#endif
     while (q->first || q->ioIndex) {
         if (q->ioIndex == 0 && buildNetVec(q) <= 0) {
             break;
@@ -6778,10 +6779,13 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
         }
     }
     if (tx->connector == 0) {
+#if !BIT_ROM
         if (tx->handler == http->fileHandler && (rx->flags & HTTP_GET) && !hasOutputFilters && 
                 !conn->secure && httpShouldTrace(conn, HTTP_TRACE_TX, HTTP_TRACE_BODY, tx->ext) < 0) {
             tx->connector = http->sendConnector;
-        } else if (route && route->connector) {
+        } else 
+#endif
+        if (route && route->connector) {
             tx->connector = route->connector;
         } else {
             tx->connector = http->netConnector;
@@ -7744,7 +7748,7 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize len, int flags)
                     break;
                 } else if (flags & HTTP_BLOCK) {
                     while (q->count >= q->max && !tx->finalized) {
-                        if (!mprWaitForSingleIO(conn->sock->fd, MPR_WRITABLE, conn->limits->inactivityTimeout)) {
+                        if (!mprWaitForSingleIO((int) conn->sock->fd, MPR_WRITABLE, conn->limits->inactivityTimeout)) {
                             return MPR_ERR_TIMEOUT;
                         }
                         httpResumeQueue(conn->connectorq);
@@ -8148,7 +8152,10 @@ static bool fixRangeLength(HttpConn *conn)
 /********************************* Includes ***********************************/
 
 
-#include    "pcre.h"
+
+#if BIT_PACK_PCRE
+ #include    "pcre.h"
+#endif
 
 /********************************** Forwards **********************************/
 
@@ -8165,6 +8172,12 @@ static bool fixRangeLength(HttpConn *conn)
         route->field = mprCloneHash(route->parent->field); \
     }
 
+//MOB temp
+#if !BIT_PACK_PCRE
+    int pcre_exec(void *a, void *b, cchar *c, int d, int e, int f, int *g, int h) { return -1; }
+    void *pcre_compile2(cchar *a, int b, int *c, cchar **d, int *e, const unsigned char *f) { return 0; }
+#endif
+     
 /********************************** Forwards **********************************/
 
 static void addUniqueItem(MprList *list, HttpRouteOp *op);
@@ -8783,6 +8796,9 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
         tx->filename = mprJoinPath(lang->path, tx->filename);
     }
     tx->filename = mprJoinPath(route->dir, tx->filename);
+#if BIT_ROM
+    tx->filename = mprGetRelPath(tx->filename, NULL);
+#endif
     tx->ext = httpGetExt(conn);
     info = &tx->fileInfo;
     mprGetPathInfo(tx->filename, info);
@@ -10815,11 +10831,6 @@ static char *expandPatternTokens(cchar *str, cchar *replacement, int *matches, i
     assert(replacement);
     assert(matches);
 
-#if UNUSED
-    if (matchCount <= 0) {
-        return MPR->emptyString;
-    }
-#endif
     result = mprCreateBuf(-1, -1);
     lastReplace = replacement;
     end = &replacement[slen(replacement)];
@@ -11236,6 +11247,7 @@ PUBLIC HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits)
     }
     return route->limits;
 }
+
 
 /*
     @copy   default
@@ -12737,13 +12749,6 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTicks timeout)
 
     if (conn->state < state) {
         httpEnableConnEvents(conn);
-#if UNUSED
-        eventMask = MPR_READABLE;
-        if (!conn->tx->finalizedConnector && ) {
-            eventMask |= MPR_WRITABLE;
-        }
-        httpSetupWaitHandler(conn, eventMask);
-#endif
     }
     remaining = timeout;
     do {
@@ -14666,7 +14671,11 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
     }
     domainAtt = domain ? "; domain=" : "";
     if (domain && !strchr(domain, '.')) {
-        domain = sjoin(".", domain, NULL);
+        if (smatch(domain, "localhost")) {
+            domainAtt = domain = "";
+        } else {
+            domain = sjoin(".", domain, NULL);
+        }
     }
     if (lifespan > 0) {
         expiresAtt = "; expires=";

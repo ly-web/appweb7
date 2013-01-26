@@ -20,16 +20,6 @@ extern "C" {
 
 #define MA_UNLOAD_TIMEOUT       "5mins"             /**< Default module inactivity unload timeout */
 
-#if UNUSED
-#define MA_MAX_CONFIG_DEPTH     16                  /**< Max nest of directives in config file */
-#define MA_MAX_ACCESS_LOG       20971520            /**< Access file size (20 MB) */
-#define MA_MAX_REWRITE          10                  /**< Maximum recursive URI rewrites */
-#define MA_SDB_MEMORY           (20 * 1024 * 1024)  /**< SQLite heap memory */
-#define MA_SDB_TIMEOUT          (20 * 1000)         /**< SQLite busy timeout */
-#undef HTTP_NAME
-#define HTTP_NAME               MA_SERVER_NAME      /**< Default server software identification name */
-#endif
-
 /********************************** Defines ***********************************/
 
 #if !DOXYGEN
@@ -60,6 +50,7 @@ typedef struct MaAppweb {
     cchar               *user;                  /**< O/S application user name */
     int                 uid;                    /**< User Id */
     int                 gid;                    /**< Group Id */
+    int                 staticLink;             /**< Target platform is using a static linking */
     int                 userChanged;            /**< User name changed */
     int                 groupChanged;           /**< Group name changed */
     int                 skipModules;            /**< Don't load modules */
@@ -232,6 +223,11 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *mp);
 PUBLIC int maOpenDirHandler(Http *http);
 PUBLIC int maOpenFileHandler(Http *http);
 PUBLIC int maSetPlatform(cchar *platform);
+
+/*
+    This is exported from slink.c which is either manually created or generated locally
+ */
+PUBLIC void appwebStaticInitialize();
 
 /********************************** MaServer **********************************/
 /**

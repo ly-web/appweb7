@@ -74,12 +74,6 @@ PUBLIC void espAutoFinalize(HttpConn *conn)
 }
 
 
-//  MOB
-PUBLIC void espManageAction(EspAction *ap, int flags)
-{
-}
-
-
 PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags)
 {
     httpAddCache(route, NULL, uri, NULL, NULL, 0, lifesecs * MPR_TICKS_PER_SEC, flags);
@@ -104,7 +98,7 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
         securityToken = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, "");
         if (!smatch(sessionToken, securityToken)) {
             httpError(conn, HTTP_CODE_NOT_ACCEPTABLE, 
-                "Security token does not match. Potential CSRF attack. Denying request");
+                "Security token does not match. Potential CSRF attack. Denying request.");
             return 0;
         }
     }
@@ -126,21 +120,16 @@ PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *params)
 }
 
 
-PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *actionProc)
+PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 {
-    EspAction   *action;
     EspRoute    *eroute;
     Esp         *esp;
 
     assert(route);
     assert(target && *target);
-    assert(actionProc);
+    assert(action);
 
     esp = MPR->espService;
-    if ((action = mprAllocObj(EspAction, espManageAction)) == 0) {
-        return;
-    }
-    action->actionProc = actionProc;
     if (target) {
         eroute = route->eroute;
         mprAddKey(esp->actions, mprJoinPath(eroute->controllersDir, target), action);
@@ -170,6 +159,10 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
     assert(path && *path);
     assert(view);
 
+    if (!route) {
+        mprError("Route not defined for view %s", path);
+        return;
+    }
     esp = MPR->espService;
 	path = mprGetPortablePath(mprJoinPath(route->dir, path));
     mprAddKey(esp->views, path, view);
@@ -189,6 +182,7 @@ PUBLIC void espFlush(HttpConn *conn)
 
 
 //  MOB - confusing vs ediGetColumns
+
 PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
 {
     if (rec == 0) {

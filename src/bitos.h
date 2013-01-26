@@ -40,6 +40,7 @@
 #define BIT_CPU_MIPS        5           /**< Mips */
 #define BIT_CPU_PPC         6           /**< Power PC */
 #define BIT_CPU_SPARC       7           /**< Sparc */
+#define BIT_CPU_TIDSP       8           /**< TI DSP */
 
 /*
     Byte orderings
@@ -91,8 +92,14 @@
     #define BIT_CPU_ARCH BIT_CPU_SPARC
     #define CPU_ENDIAN BIT_BIG_ENDIAN
 
+#elif defined(_TMS320C6X)
+    #define TIDSP 1
+    #define BIT_CPU "tidsp"
+    #define BIT_CPU_ARCH BIT_CPU_SPARC
+    #define CPU_ENDIAN BIT_LITTLE_ENDIAN
+
 #else
-    #error "Cannot determine CPU type in est.h"
+    #error "Cannot determine CPU type in bitos.h"
 #endif
 
 /*
@@ -111,6 +118,8 @@
     #define MACOSX 1
     #define BIT_UNIX_LIKE 1
     #define BIT_WIN_LIKE 0
+    #define HAS_USHORT 1
+    #define HAS_UINT 1
 
 #elif defined(__linux__)
     #define BIT_OS "linux"
@@ -195,12 +204,20 @@
     #define BIT_OS "vxworks"
     #define BIT_UNIX_LIKE 0
     #define BIT_WIN_LIKE 0
+    #define HAS_USHORT 1
 
 #elif defined(ECOS)
     /* ECOS may not have a pre-defined symbol */
     #define BIT_OS "ecos"
     #define BIT_UNIX_LIKE 0
     #define BIT_WIN_LIKE 0
+
+#elif defined(TIDSP) 
+    #define BIT_OS "tidsp"
+    #define BIT_UNIX_LIKE 0
+    #define BIT_WIN_LIKE 0
+    #define HAS_INT32 1
+
 #endif
 
 #if __WORDSIZE == 64 || __amd64 || __x86_64 || __x86_64__ || _WIN64
@@ -271,12 +288,6 @@
         #define _VSB_CONFIG_FILE "vsbConfig.h"
     #endif
     #include    <vxWorks.h>
-    #define     HAS_USHORT 1
-#endif
-
-#if MACOSX
-    #define     HAS_USHORT 1
-    #define     HAS_UINT 1
 #endif
 
 #if BIT_WIN_LIKE
@@ -301,13 +312,15 @@
     Includes in alphabetic order
  */
     #include    <ctype.h>
+#if !BIT_ROM
 #if BIT_WIN_LIKE
     #include    <direct.h>
 #else
     #include    <dirent.h>
-#if !VXWORKS
-    #include    <dlfcn.h>
 #endif
+#endif
+#if BIT_UNIX_LIKE
+    #include    <dlfcn.h>
 #endif
     #include    <fcntl.h>
     #include    <errno.h>
@@ -353,8 +366,10 @@
 #if BIT_UNIX_LIKE
     #include    <syslog.h>
 #endif
+#if !TIDSP
     #include    <sys/stat.h>
     #include    <sys/types.h>
+#endif
 #if BIT_UNIX_LIKE
     #include    <sys/ioctl.h>
     #include    <sys/mman.h>
@@ -371,6 +386,9 @@
     #include    <unistd.h>
 #endif
     #include    <time.h>
+#if !VXWORKS && !TIDSP
+    #include    <wchar.h>
+#endif
 
 /*
     Extra includes per O/S
@@ -419,8 +437,14 @@
         #include    <symSync.h>
         #include    <vxAtomicLib.h>
     #endif
-#else
-    #include    <wchar.h>
+#endif
+
+#if TIDSP
+    #include    <mathf.h>
+    #include    <netmain.h>
+    #include    <nettools/inc/dnsif.h>
+    #include    <socket.h>
+    #include    <file.h>
 #endif
 
 /************************************** Types *********************************/
@@ -495,6 +519,38 @@
     typedef const void cvoid;
 #endif
 
+#ifndef HAS_INT8
+    #define HAS_INT8 1
+    /**
+        Integer 8 bits data type.
+     */
+    typedef char int8;
+#endif
+
+#ifndef HAS_UINT8
+    #define HAS_UINT8 1
+    /**
+        Unsigned integer 8 bits data type.
+     */
+    typedef unsigned char uint8;
+#endif
+
+#ifndef HAS_INT16
+    #define HAS_INT16 1
+    /**
+        Integer 16 bits data type.
+     */
+    typedef short int16;
+#endif
+
+#ifndef HAS_UINT16
+    #define HAS_UINT16 1
+    /**
+        Unsigned integer 16 bits data type.
+     */
+    typedef unsigned short uint16;
+#endif
+
 #ifndef HAS_INT32
     #define HAS_INT32 1
     /**
@@ -533,6 +589,9 @@
         /**
             Signed integer size field large enough to hold a pointer offset.
          */
+        typedef ssize_t ssize;
+    #elif TIDSP
+        typedef int ssize_t;
         typedef ssize_t ssize;
     #else
         typedef SSIZE_T ssize;
@@ -587,6 +646,20 @@ typedef int64 Offset;
     typedef int Socklen;
 #else
     typedef socklen_t Socklen;
+#endif
+
+#if DOXYGEN || BIT_UNIX_LIKE || VXWORKS
+    /** Argument for sockets */
+    typedef int Socket;
+    #define SOCKET_ERROR -1
+#elif BIT_WIN_LIKE
+    typedef SOCKET Socket;
+#elif TIDSP
+    typedef SOCKET Socket;
+    #define SOCKET_ERROR INVALID_SOCKET
+#else
+    typedef int Socket;
+    #define SOCKET_ERROR -1
 #endif
 
 typedef int64 Time;
@@ -783,14 +856,19 @@ typedef int64 Ticks;
     #define     LIBKERN_INLINE          /* to avoid kernel inline functions */
 #endif /* ECOS */
 
-#if BIT_UNIX_LIKE || VXWORKS
+#if BIT_UNIX_LIKE || VXWORKS || TIDSP
     #define FILE_TEXT        ""
     #define FILE_BINARY      ""
 #endif
 
+#if !TIDSP
+    #define BIT_HAS_MACRO_VARARGS 1
+#else
+    #define BIT_HAS_MACRO_VARARGS 1
+#endif
+
 #if BIT_UNIX_LIKE
     #define closesocket(x)  close(x)
-    #define SOCKET_ERROR    -1
     #ifndef PTHREAD_MUTEX_RECURSIVE_NP
         #define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
     #endif
@@ -812,14 +890,6 @@ typedef int64 Ticks;
     #define __WALL          0
     #if !CYGWIN
         #define MSG_NOSIGNAL 0
-    #endif
-    #if UNUSED && !defined(_STRUCT_TIMEVAL)
-        struct timeval
-        {
-            time_t  tv_sec;     /* Seconds.  */
-            time_t  tv_usec;    /* Microseconds.  */
-        };
-        #define _STRUCT_TIMEVAL 1
     #endif
 #endif
 
@@ -1010,6 +1080,18 @@ typedef int64 Ticks;
     #define gethostbyname2(a,b) gethostbyname(a)
     #pragma comment( lib, "ws2.lib" )
 #endif /* WINCE */
+
+#if TIDSP
+    #define EINTR   4
+    #define EAGAIN  11
+    #define INADDR_NONE 0xFFFFFFFF
+    #define NBBY 8
+    #define hostent _hostent
+    #define NFDBITS (sizeof(fd_mask) * NBBY)
+    typedef long fd_mask;
+    typedef int Socklen;
+    struct sockaddr_storage { char pad[1024]; };                                                               
+#endif /* TIDSP */
 
 /*********************************** Externs **********************************/
 

@@ -103,7 +103,7 @@ PUBLIC int maStartAppweb(MaAppweb *appweb)
         }
     }
     timeText = mprGetDate(0);
-    mprLog(1, "HTTP services Started at %s with max %d threads", timeText, mprGetMaxWorkers(appweb));
+    mprLog(1, "Started at %s with max %d threads", timeText, mprGetMaxWorkers(appweb));
     return 0;
 }
 
@@ -249,11 +249,6 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         if (home) {
             httpSetRouteHome(route, home);
         }
-#if UNUSED
-        if (ip || port > 0) {
-            maSetServerAddress(server, ip, port);
-        }
-#endif
     }
     return 0;
 }
@@ -325,22 +320,23 @@ PUBLIC void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
 
 PUBLIC int maSetPlatform(cchar *platform)
 {
-    MprDirEntry *dp;
     MaAppweb    *appweb;
     cchar       *base, *dir, *junk;
-    int         next;
 
     appweb = MPR->appwebService;
     if (mprSamePath(mprGetAppDir(), BIT_BIN_PREFIX)) {
-        /* Installed */
+        /* Installed => /usr/lib/appweb/VER/bin */
         base = mprGetPathParent(mprGetAppDir());
         dir = smatch(platform, appweb->localPlatform) ? base : mprJoinPath(base, platform);
     } else {
-        /* Local Dev */
+        /* Local Dev =>  ../../OS-ARCH */
         base = mprGetPathParent(mprGetPathParent(mprGetAppDir()));
         dir = mprJoinPath(base, platform);
     }
+#if !BIT_ROM
     if (!mprIsPathDir(dir)) {
+        MprDirEntry *dp;
+        int         next;
         for (ITERATE_ITEMS(mprGetPathFiles(base, 0), dp, next)) {
             if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
                 platform = mprGetPathBase(dp->name);
@@ -354,6 +350,7 @@ PUBLIC int maSetPlatform(cchar *platform)
             return MPR_ERR_BAD_ARGS;
         }
     }
+#endif
     if (maParsePlatform(platform, &junk, &junk, &junk) < 0) {
         return MPR_ERR_BAD_ARGS;
     }

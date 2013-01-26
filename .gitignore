@@ -42,7 +42,6 @@ build/bin/*.pdb
 bin/*.def
 bin/*.exp
 src/server/*.res
-src/deps/ejs/.ejs.slots.h
 lib/*.so
 src/test/trace.txt
 lib/appweb.conf
@@ -74,7 +73,6 @@ bin/*.cmd
 .cpy_copied
 bin/www
 lib/www
-src/deps/ejs/*.lst
 bin/angel*
 doc/api/appweb/html
 doc/api/appweb/xml
@@ -82,7 +80,6 @@ bin/*.manifest
 bin/*.res
 *.out
 src/test/regress/tcp
-src/include/ejs.slots.h
 */x86_64-*
 out
 src/server/conf/apps/web.conf
@@ -144,7 +141,6 @@ access.log
 src/server/error.log*
 src/test/access.log*
 imports
-src/deps/ejs
 dtmp
 install.log
 val.log
@@ -195,3 +191,11 @@ proto
 projects/appweb-macosx-full.xcodeproj
 *-mine*
 test/cache/*.so
+src/server/slink.c
+src/server/esp.conf
+src/server/junk
+src/server/static.conf
+.flags
+macosx-x64-default
+macosx-x64-static
+.prefixes

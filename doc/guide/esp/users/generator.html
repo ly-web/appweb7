@@ -269,6 +269,9 @@ esp compile
 </pre>
             <p>This will compile and link all controllers and views and place the generated shared libraries (DLLs)
             in the <em>cache</em> directory.</p>
+            <p>If you are using static linking, use the <em>--static</em> switch to generate archive libraries instead of
+                shared libraries. If you are doing this, you must manually call the ESP initializers. See the --genlink
+                option for how to generate the code to call the ESP initializers.</p>
             <h3>Routes</h3>
             <p>When <em>esp</em> is invoked it, loads the <em>appweb.conf</em> configuration file from the current
             directory, unless <em>esp</em> is invoked with the <em>--config</em> switch to select an alternative 
@@ -299,12 +302,20 @@ esp compile /directory/of/apps
             <h3>Compile Application as One Module</h3>
             <p>For deployment in a production environment, it can be useful to compile the entire application including
             all controllers, views and web pages into a single module file. Use the <em>--flat</em> esp option to
-            achieve this::</p> <pre>
+            achieve this:</p> <pre>
 esp --flat compile
 </pre>
             <p>If you compile flat, you will need to add an <em>EspLoad</em> directive to the appweb.conf. This tells
             ESP to pre-load the application and where to locate the module file.</p>
 <pre>EspLoad NAME PATH</pre>
+            <p>When using dynamic linking, appweb automatically invokes the necessary ESP initializers when running
+            ESP pages or invoking ESP controllers. However, if you are using static linking, you need to manually
+            call these ESP initializers. You can generate the necessary initialization calls via the esp <em>--genlink
+                slink.c</em> switch. The generated code should be linked with your appweb main program replacing the default
+            slink.c file.
+            <pre>
+esp --flat --static --genlink slink.c
+</pre>
             <h3>Cross Compiling</h3>
             <p>When <em>esp compile</em> is invoked, it selects its compile and link rules from the <em>esp.conf</em>
             configuration file. This file, which may be customized, contains the rules for various operating systems
@@ -338,25 +349,34 @@ esp clean
 ESP Usage:
   esp [options] [commands]
   Options:
-    --arch CPU             # Target CPU architecture
-    --chdir dir            # Change to the named directory first
-    --config configFile    # Use named config file instead appweb.conf
-    --database name        # Database provider 'mdb|sqlite' 
-    --flat                 # Compile into a single module
-    --host OS              # Target O/S
-    --listen [ip:]port     # Listen on specified address 
-    --log logFile:level    # Log to file file at verbosity level
-    --overwrite            # Overwrite existing files 
-    --quiet                # Don't emit trace 
-    --routeName name       # Route name in appweb.conf to use 
-    --routePrefix prefix   # Route prefix in appweb.conf to use 
-    --verbose              # Emit verbose trace 
+    --chdir dir                # Change to the named directory first
+    --config configFile        # Use named config file instead appweb.conf
+    --database name            # Database provider 'mdb|sqlite' 
+    --flat                     # Compile into a single module
+    --genlink                  # Generate a static link module for flat compilations
+    --host OS                  # Target O/S
+    --keep                     # Keep intermediate source
+    --listen [ip:]port         # Listen on specified address 
+    --log logFile:level        # Log to file file at verbosity level
+    --overwrite                # Overwrite existing files 
+    --quiet                    # Don't emit trace 
+    --platform os-arch-profile # Target platform
+    --rebuild                  # Force a rebuild
+    --reverse                  # Reverse migrations
+    --routeName name           # Route name in appweb.conf to use 
+    --routePrefix prefix       # Route prefix in appweb.conf to use 
+    --show                     # Show compile commands
+    --static                   # Use static linking
+    --verbose                  # Emit verbose trace 
+    --why                      # Why compile or skip
   Commands:
     esp clean
     esp compile
     esp compile [pathFilters ...]
+    esp migrate [forward|backward|NNN]
     esp generate app name
     esp generate controller name [action [, action] ...
+    esp generate migration description model [field:type [, field:type] ...]
     esp generate scaffold model [field:type [, field:type] ...]
     esp generate table name [field:type [, field:type] ...]
     esp run
@@ -370,8 +390,12 @@ ESP Usage:
                 </thead>
                 <tbody>
                     <tr>
-                        <td>--arch CPU</td>
-                        <td>CPU architecture to target.</td>
+                        <td>--chdir dir</td>
+                        <td>Change to the specified directory.</td>
+                    </tr>
+                    <tr>
+                        <td>--config configFile</td>
+                        <td>Use the named config file instead of appweb.conf.</td>
                     </tr>
                     <tr>
                         <td class="nowrap">--database connector</td>
@@ -383,8 +407,12 @@ ESP Usage:
                         <td>Compile entire application into a single module. Same as "esp compile flat".</td>
                     </tr>
                     <tr>
-                        <td>--host</td>
-                        <td>The operating system used by the host system.</td>
+                        <td>--genlink slink.c</td>
+                        <td>Generate a file of ESP initializers when using --static and --flat".</td>
+                    </tr>
+                    <tr>
+                        <td>--keep</td>
+                        <td>Preserve intermediate files. Useful for debugging.</td>
                     </tr>
                     <tr>
                         <td>--listen [ip:]port</td>
@@ -396,6 +424,10 @@ ESP Usage:
                             nine being the most verbose.</td>
                     </tr>
                     <tr>
+                        <td>--name</td>
+                        <td>Name for the application when compiling flat.</td>
+                    </tr>
+                    <tr>
                         <td>--overwrite</td>
                         <td>Overwrite existing files. The <em>esp</em> command normally will not overwrite 
                             existing files. This is to preserve user changes to previously generated files.</td>
@@ -405,12 +437,40 @@ ESP Usage:
                         <td>Run quietly and don't trace actions to the console.</td>
                     </tr>
                     <tr>
+                        <td nowrap="nowrap">--platform os-arch-profile</td>
+                        <td>Target platform.</td>
+                    </tr>
+                    <tr>
+                        <td>--rebuild</td>
+                        <td>Force a rebuild of all components.</td>
+                    </tr>
+                    <tr>
+                        <td>--reverse</td>
+                        <td>Reverse migrations.</td>
+                    </tr>
+                    <tr>
                         <td>--routeName name</td>
                         <td>Route name in appweb.conf to use for ESP configuration.</td>
                     </tr>
                     <tr>
+                        <td>--routePrefix prefix</td>
+                        <td>Route prefix in appweb.conf to use for ESP configuration.</td>
+                    </tr>
+                    <tr>
+                        <td>--show</td>
+                        <td>Show all commands invoked by esp.</td>
+                    </tr>
+                    <tr>
+                        <td>--static</td>
+                        <td>Use static linking when compiling ESP components.</td>
+                    </tr>
+                    <tr>
                         <td>--verbose or -v</td>
                         <td>Run in verbose mode and trace actions to the console (default).</td>
+                    </tr>
+                    <tr>
+                        <td>--why</td>
+                        <td>Show why a compile was performed or omitted.</td>
                     </tr>
                 </tbody>
             </table>

@@ -4,13 +4,56 @@
 
 Bit.load({
     targets: {
+        'genslink': {
+            action: "run('esp --static --genlink slink.c --flat compile')",
+            generate: "esp --static --genlink slink.c --flat compile",
+        },
+
+        'slink.c': {
+            path: 'slink.c',
+            precious: true,
+            build: "
+                if (!Path('slink.c').exists) {
+                    trace('Generate', 'slink.c')
+                    cp('slink.empty', 'slink.c')
+                }
+            ",
+            'generate-nmake': 'if not exist slink.c copy slink.empty slink.c',
+            'generate-sh': '[ ! -f slink.c ] && cp slink.empty slink.c ; true',
+        },
+
+        /*
+            Static library for esp applications. Always built but only contains code if static linking.
+         */
+        libapp: {
+            type: 'lib',
+            depends: [ 'slink.c', 'esp', 'libmod_esp' ],
+            sources: [ 'slink.c' ],
+            scripts: {
+                postblend: "
+                    if (Path('slink.c').exists) {
+                        /* Dynamically compute the required sources for static linking */
+                        let sources = bit.targets.libapp.sources
+                        for each (file in Path('slink.c').readString().match(/SOURCE [^ ]*/g)) {
+                            sources.push(TARGET.home.join(file.replace(/SOURCE /mg, '')))
+                        }
+                    }
+                ",
+            },
+        },
+
         appweb: {
             type: 'exe',
-            /* 
-                When linking shared, the modules are not really required. But when doing a static build they are.
-             */
-            depends: ['libappweb', 'libmod_esp', 'libmod_ssl', 'libmod_ejs', 'libmod_php', 'libmod_cgi'],
+            depends: ['libappweb', 'libmod_esp', 'libmod_ssl', 'libmod_ejs', 'libmod_php', 'libmod_cgi', 'libapp'],
             sources: [ 'appweb.c' ],
+            scripts: {
+                postblend: "
+                    let sources = bit.targets.appweb.sources
+                    if (bit.settings.rom) {
+                        sources.push(TARGET.home.join('romFiles.c'))
+                    }
+                ",
+            }
         },
 
         appwebMonitor: {
@@ -34,15 +77,32 @@ Bit.load({
 
         'server-cache': {
             path: 'cache',
+            precious: true,
             build: "Path('cache').makeDir()",
-            'generate-nmake': "md cache",
             generate: "mkdir -p cache",
+            'generate-nmake': "md cache",
         },
 
         run: {
+            depends: [ 'compile' ],
             action: "
                 trace('Run', 'From directory src/server')
                 run('appweb -v', {noio: true})
+            ",
+            generate: "sudo ${BIN}/appweb -v"
+        },
+
+        rom: {
+            action: "
+                let files = [ '.' ]
+                files += Path('web').files('**')
+                files += Path('junk/static').files('**')
+                files += Path('junk/db').files('*.mdb')
+                files.push('appweb.conf')
+                files.push('mob.conf')
+                files.push('auth.conf')
+                files.push('esp.conf')
+                Path('romFiles.c').write(Cmd.run(['makerom', '--prefix', '/'] + files))
             ",
         },
     },

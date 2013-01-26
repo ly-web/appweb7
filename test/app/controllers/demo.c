@@ -5,11 +5,11 @@
  */
 #include "esp.h"
 
-static void list() {
+static void demo_list() {
     render("DONE\n");
 }
 
-static void restart() {
+static void demo_restart() {
     MaAppweb        *appweb;
     MaServer        *server;
     HttpEndpoint    *endpoint;
@@ -23,19 +23,18 @@ static void restart() {
     httpStopEndpoint(endpoint);
     endpoint->port = 5555;
     httpStartEndpoint(endpoint);
-    print("RESTARTING ON PORT 5555");
 }
 
-static void second(HttpConn *conn) {
+static void demo_second(HttpConn *conn) {
     setConn(conn);
     render("World\n");
     finalize();
 }
 
-static void first() {
+static void demo_first() {
     dontAutoFinalize();
     render("Hello ");
-    setTimeout(second, 5000, getConn());
+    setTimeout(demo_second, 5000, getConn());
     flush();
 }
 
@@ -44,7 +43,7 @@ static void outsideProc(void *data, MprEvent *event) {
     finalize();
 }
 
-static void outside() {
+static void demo_outside() {
     /* Normally used by thread outside */
     mprCreateEventOutside(getConn()->dispatcher, outsideProc, sclone("hello outside"));
     dontAutoFinalize();
@@ -78,9 +77,9 @@ ESP_EXPORT int esp_module_demo(HttpRoute *route, MprModule *module) {
     EdiRec *rec = makeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
 #endif
 
-    espDefineAction(route, "demo-list", list);
-    espDefineAction(route, "demo-cmd-restart", restart);
-    espDefineAction(route, "demo-cmd-first", first);
-    espDefineAction(route, "demo-cmd-outside", outside);
+    espDefineAction(route, "demo-list", demo_list);
+    espDefineAction(route, "demo-cmd-restart", demo_restart);
+    espDefineAction(route, "demo-cmd-first", demo_first);
+    espDefineAction(route, "demo-cmd-outside", demo_outside);
     return 0;
 }

@@ -206,7 +206,6 @@
             <h4>System and URI Tokens</h4>
             <p>System and URI tokens are of the form: <em>"${token}"</em> where "token" is the name of the variable or 
             URI token to substitute.</p>
-
             <h4>Request Tokens</h4>
             <p>Request tokens are of the form: <em>"${family:name=defaultValue}"</em> where the family 
             defines a set of values. 
@@ -218,7 +217,6 @@
                 <li>request &mdash; for request details</li>
                 <li>ssl &mdash; for SSL state details</li>
             </ul>
-
             <h4>Request Family Tokens</h4>
             <p>The supported request key names are:</p>
             <ul>
@@ -243,7 +241,6 @@
                 <li>serverPort &mdash; The server port number</li>
                 <li>uri &mdash; The full request URI. May be modified by routes, handlers and filters</li>
             </ul>
-
             <h4>SSL Family Tokens</h4>
                 <p>The supported ssl key names are listed below:</p>
                 <table>
@@ -258,7 +255,6 @@
                         <tr><td>CIPHER_IANA</td><td>0x39</td><td>IANA cipher code</td></tr>
                     </tbody>
                 </table>
-
                 <h4>SSL Certificate Key Tokens</h4>
                     <p>The keys below pertain to the client or server side certificate and are prefixed with either 
                         "CLIENT_" or "SERVER_".</p>
@@ -288,7 +284,6 @@
                         <tr><td>CIPHER</td><td>RSA_SHA1</td><td>Certificate encoding cipher</td></tr>
                     </tbody>
                 </table>
-
             <h4>Example</h4>
             <p>For example, to select the client's browser string passed in the HTTP headers:</p>
 <pre>Target run ${header:User-Agent}</pre>

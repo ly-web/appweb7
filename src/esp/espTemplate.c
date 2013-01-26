@@ -28,8 +28,10 @@
 static int getEspToken(EspParse *parse);
 static cchar *getDebug();
 static cchar *getEnvString(EspRoute *eroute, cchar *key, cchar *defaultValue);
+static cchar *getArExt(cchar *os);
 static cchar *getShlibExt(cchar *os);
 static cchar *getShobjExt(cchar *os);
+static cchar *getArPath(cchar *os, cchar *arch);
 static cchar *getCompilerName(cchar *os, cchar *arch);
 static cchar *getCompilerPath(cchar *os, cchar *arch);
 static cchar *getLibs(cchar *os);
@@ -43,15 +45,17 @@ static bool matchToken(cchar **str, cchar *token);
 /************************************* Code ***********************************/
 /*
     Tokens:
+    AR          Library archiver (ar)   
+    ARLIB       Archive library extension (.a, .lib)
     ARCH        Build architecture (64)
-    GCC_ARCH    ARCH mapped to gcc -arch switches (x86_64)
     CC          Compiler (cc)
     DEBUG       Debug compilation options (-g, -Zi -Od)
+    GCC_ARCH    ARCH mapped to gcc -arch switches (x86_64)
     INC         Include directory out/inc
-    LIB         Library directory (out/lib, xcode/VS: out/bin)
+    LIBPATH     Library search path
     LIBS        Libraries required to link with ESP
     OBJ         Name of compiled source (out/lib/view-MD5.o)
-    MOD         Output module (view_MD5.dylib)
+    MOD         Output module (view_MD5)
     SHLIB       Host Shared library (.lib, .so)
     SHOBJ       Host Shared Object (.dll, .so)
     SRC         Source code for view or controller (already templated)
@@ -79,6 +83,10 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
             if (matchToken(&cp, "${ARCH}")) {
                 /* Target architecture (x86|mips|arm|x64) */
                 mprPutStringToBuf(buf, arch);
+
+            } else if (matchToken(&cp, "${ARLIB}")) {
+                /* .a, .lib */
+                mprPutStringToBuf(buf, getArExt(os));
 
             } else if (matchToken(&cp, "${GCC_ARCH}")) {
                 /* Target architecture mapped to GCC mtune|mcpu values */
@@ -138,33 +146,48 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
                 mprPutStringToBuf(buf, getWinSDK());
 
             /*
-                These vars can be configured from environment variables.
-                NOTE: the default esp.conf includes "esp->vxworks.conf" which has EspEnv definitions for the configured 
-                VxWorks toolchain
+                These vars can be also be configured from environment variables.
+                NOTE: the default esp.conf includes "esp->vxworks.conf" which has EspEnv definitions for the configured VxWorks toolchain
              */
+            } else if (matchToken(&cp, "${AR}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "AR", getArPath(os, arch)));
+
             } else if (matchToken(&cp, "${CC}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "CC", getCompilerPath(os, arch)));
-            } else if (matchToken(&cp, "${LINK}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "LINK", ""));
+
             } else if (matchToken(&cp, "${CFLAGS}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "CFLAGS", ""));
+
             } else if (matchToken(&cp, "${DEBUG}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "DEBUG", getDebug()));
+
             } else if (matchToken(&cp, "${LDFLAGS}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "LDFLAGS", ""));
 
+            } else if (matchToken(&cp, "${LIB}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "LIB", ""));
+
+            } else if (matchToken(&cp, "${LINK}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "LINK", ""));
+
             } else if (matchToken(&cp, "${WIND_BASE}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_BASE", WIND_BASE));
+
             } else if (matchToken(&cp, "${WIND_HOME}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_HOME", WIND_HOME));
+
             } else if (matchToken(&cp, "${WIND_HOST_TYPE}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_HOST_TYPE", WIND_HOST_TYPE));
+
             } else if (matchToken(&cp, "${WIND_PLATFORM}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_PLATFORM", WIND_PLATFORM));
+
             } else if (matchToken(&cp, "${WIND_GNU_PATH}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_GNU_PATH", WIND_GNU_PATH));
+
             } else if (matchToken(&cp, "${WIND_CCNAME}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_CCNAME", getCompilerName(os, arch)));
+
             } else {
                 mprPutCharToBuf(buf, *cp++);
             }
@@ -357,7 +380,7 @@ static char *joinLine(cchar *str, ssize *lenp)
 
         <%@ include "file"  Include an esp file
         <%@ layout "file"   Specify a layout page to use. Use layout "" to disable layout management
-        <%@ content         Mark the location to substitute content in a layout pag
+        <%@ content         Mark the location to substitute content in a layout page
 
         <%                  Begin esp section containing C code
         <%^ global          Put esp code at the global level
@@ -378,7 +401,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
 {
     EspParse    parse;
     EspRoute    *eroute;
-    char        *control, *incBuf, *incText, *global, *token, *body, *where;
+    char        *control, *incBuf, *incText, *global, *token, *body, *where, *dir;
     char        *rest, *start, *end, *include, *line, *fmt, *layoutPage, *layoutBuf;
     ssize       len;
     int         tid;
@@ -522,37 +545,42 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         }
         tid = getEspToken(&parse);
     }
-    if (cacheName) {
-        /*
-            CacheName will only be set for the outermost invocation
-         */
-        if (layout && mprPathExists(layout, R_OK)) {
-            if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
-                *err = sfmt("Cannot read layout page: %s", layout);
-                return 0;
-            }
-            layoutBuf = 0;
-            if ((layoutBuf = espBuildScript(route, layoutPage, layout, NULL, NULL, err)) == 0) {
-                return 0;
-            }
-#if BIT_DEBUG
-            if (!scontains(layoutBuf, CONTENT_MARKER)) {
-                *err = sfmt("Layout page is missing content marker: %s", layout);
-                return 0;
-            }
-#endif
-            body = sreplace(layoutBuf, CONTENT_MARKER, body);
+
+    if (layout && mprPathExists(layout, R_OK)) {
+        if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
+            *err = sfmt("Cannot read layout page: %s", layout);
+            return 0;
         }
+        layoutBuf = 0;
+        if ((layoutBuf = espBuildScript(route, layoutPage, layout, NULL, NULL, err)) == 0) {
+            return 0;
+        }
+#if BIT_DEBUG
+        if (!scontains(layoutBuf, CONTENT_MARKER)) {
+            *err = sfmt("Layout page is missing content marker: %s", layout);
+            return 0;
+        }
+#endif
+        body = sreplace(layoutBuf, CONTENT_MARKER, body);
+
         if (start && start[slen(start) - 1] != '\n') {
             start = sjoin(start, "\n", NULL);
         }
         if (end && end[slen(end) - 1] != '\n') {
             end = sjoin(end, "\n", NULL);
         }
-        assert(slen(path) > slen(route->dir));
-        assert(sncmp(path, route->dir, slen(route->dir)) == 0);
-        if (sncmp(path, route->dir, slen(route->dir)) == 0) {
-            path = &path[slen(route->dir) + 1];
+    }
+
+    /*
+        CacheName will only be set for the outermost invocation
+     */
+    if (cacheName) {
+        dir = mprGetRelPath(route->dir, NULL);
+        path = mprGetRelPath(path, NULL);
+        assert(slen(path) > slen(dir));
+        assert(sncmp(path, dir, slen(dir)) == 0);
+        if (sncmp(path, dir, slen(dir)) == 0) {
+            path = &path[slen(dir) + 1];
         }
         body = sfmt(\
             "/*\n   Generated from %s\n */\n"\
@@ -780,6 +808,15 @@ static cchar *getObjExt(cchar *os)
 }
 
 
+static cchar *getArExt(cchar *os)
+{
+    if (smatch(os, "windows")) {
+        return ".lib";
+    }
+    return ".a";
+}
+
+
 static cchar *getCompilerName(cchar *os, cchar *arch)
 {
     cchar       *name;
@@ -827,7 +864,6 @@ static cchar *getDebug()
     int         debug;
 
     appweb = MPR->appwebService;
-    //  MOB -- should be able to do release builds from xcode?
     debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode") || 
         sends(appweb->platform, "-mine") || sends(appweb->platform, "-vsdebug");
     if (scontains(appweb->platform, "windows-")) {
@@ -844,7 +880,7 @@ static cchar *getLibs(cchar *os)
     if (smatch(os, "windows")) {
         libs = "\"${LIBPATH}\\libmod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\"";
     } else {
-        libs = "${LIBPATH}/libmod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
+        libs = "-lmod_esp -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
     }
     return libs;
 }
@@ -863,7 +899,6 @@ static bool matchToken(cchar **str, cchar *token)
 }
 
 
-//  MOB order
 static cchar *getMappedArch(cchar *arch)
 {
     if (smatch(arch, "x64")) {
@@ -882,12 +917,14 @@ static cchar *getMappedArch(cchar *arch)
 static cchar *getWinSDK()
 {
 #if WINDOWS
-    char *versions[] = { "8.0", 0 };
+    char *versions[] = { "8.0", "7.1", "7.0A", "7.0", 0 };
     /*
         MS has made a big mess of where and how the windows SDKs are installed. The registry key at 
-        HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted. MS have
-        moved the SDK to Windows Kits, while still using the old folder for some bits. The old-reliable
-        registry key is now unusable. So we must scan for explicit SDK versions listed above. Ugh!
+        HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted and often
+        points to the old 7.X SDKs even when 8.X is installed and active. MS have also moved the 8.X
+        SDK to Windows Kits, while still using the old folder for some bits. So the old-reliable
+        CurrentInstallFolder registry key is now unusable. So we must scan for explicit SDK versions 
+        listed above. Ugh!
      */
     cchar   *path, *key, **vp;
 
@@ -932,6 +969,32 @@ static cchar *getVisualStudio()
 }
 
 
+static cchar *getArPath(cchar *os, cchar *arch)
+{
+#if WINDOWS
+    /* 
+        Get the real system architecture (32 or 64 bit)
+     */
+    MaAppweb *appweb = MPR->appwebService;
+    cchar *path = getVisualStudio();
+    if (scontains(appweb->platform, "-x64-")) {
+        int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
+        if (is64BitSystem) {
+            path = mprJoinPath(path, "VC/bin/amd64/lib.exe");
+        } else {
+            /* Cross building on a 32-bit system */
+            path = mprJoinPath(path, "VC/bin/x86_amd64/lib.exe");
+        }
+    } else {
+        path = mprJoinPath(path, "VC/bin/lib.exe");
+    }
+    return path;
+#else
+    return "ar";
+#endif
+}
+
+
 static cchar *getCompilerPath(cchar *os, cchar *arch)
 {
 #if WINDOWS
@@ -941,7 +1004,6 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
     MaAppweb *appweb = MPR->appwebService;
     cchar *path = getVisualStudio();
     if (scontains(appweb->platform, "-x64-")) {
-        //  MOB - do once at startup?
         int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
         if (is64BitSystem) {
             path = mprJoinPath(path, "VC/bin/amd64/cl.exe");

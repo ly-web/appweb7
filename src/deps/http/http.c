@@ -194,9 +194,6 @@ static void initSettings()
     app->protocol = "HTTP/1.1";
     app->retries = HTTP_RETRIES;
     app->success = 1;
-#if UNUSED
-    app->ca = mprJoinPath(mprGetAppDir(), "http-ca.crt");
-#endif
 
     /* zero means no timeout */
     app->timeout = 0;
@@ -562,7 +559,6 @@ static bool parseArgs(int argc, char **argv)
             mprSetSslProvider(app->ssl, app->provider);
         }
         if (app->cert) {
-            //  MOB - should allow a key in the cert?
             if (!app->key) {
                 mprError("Must specify key file");
                 return 0;
@@ -955,12 +951,11 @@ static void readBody(HttpConn *conn, MprFile *outFile)
     cchar       *result;
     ssize       bytes;
 
-    if (app->noout) {
-        return;
-    }
     while (!conn->error && conn->sock && (bytes = httpRead(conn, buf, sizeof(buf))) > 0) {
-        result = formatOutput(conn, buf, &bytes);
-        mprWriteFile(outFile, result, bytes);
+        if (!app->noout) {
+            result = formatOutput(conn, buf, &bytes);
+            mprWriteFile(outFile, result, bytes);
+        }
 #if FUTURE
         //  This should be pushed into a range filter.
         //  Buffer all output and then parsing can work  

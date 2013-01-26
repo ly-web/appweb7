@@ -309,16 +309,6 @@ struct  MprXml;
 #define MPR_FATAL_MSG       0x800       /**< Fatal error, log and exit */
 #endif
 
-#if UNUSED
-/*
-    Log message type flags. Specify what kind of log / error message it is. 
- */
-#define MPR_LOG_MSG         0x1000      /* Log trace message - not an error */
-#define MPR_ERROR_MSG       0x2000      /* General error */
-#define MPR_ASSERT_MSG      0x4000      /* Assert flags -- trap in debugger */
-#define MPR_USER_MSG        0x8000      /* User message */
-#endif
-
 /*
     Error line number information.
  */
@@ -2027,8 +2017,8 @@ PUBLIC char *srejoinv(char *buf, va_list args);
 /*
     Replace a pattern in a string
     @param str String to examine
-    @param pattern Pattern to search for
-    @param replacmenet Replacement pattern
+    @param pattern Pattern to search for. Can be null in which case the str is cloned.
+    @param replacement Replacement pattern. If replacement is null, the pattern is removed.
     @return A new allocated string
     @ingroup MprString
     @stability Evolving
@@ -2373,7 +2363,7 @@ PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg);
     @param buf Optional buffer to contain the formatted result
     @param maxsize Maximum size of the result
     @param fmt Printf style format string
-    @param ... Variable arguments to format
+    @param args Variable arguments to format
     @return Returns the number of characters in the string.
     @ingroup MprString
     @internal
@@ -2710,7 +2700,6 @@ PUBLIC ssize mprPutBlockToBuf(MprBuf *buf, cchar *ptr, ssize size);
  */
 PUBLIC int mprPutCharToBuf(MprBuf *buf, int c);
 
-//  MOB - rename mprPutBuf
 /**
     Put a formatted string to the buffer.
     @description Format a string and append to the buffer at the end position and increment the end pointer.
@@ -3073,7 +3062,7 @@ PUBLIC uint64 mprGetHiResTicks();
     #define MPR_MEASURE(level, tag1, tag2, op) op
 #endif
 
-#if DEPRECATED //MOB || 1
+#if DEPRECATED || 1
 #define mprGetHiResTime mprGetHiResTicks
 #endif
 
@@ -3088,7 +3077,7 @@ PUBLIC uint64 mprGetHiResTicks();
  */
 PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout);
 
-#if DEPRECATED //MOB || 1
+#if DEPRECATED || 1
 #define mprGetRemainingTime mprGetRemainingTicks
 #endif
 
@@ -3163,7 +3152,7 @@ PUBLIC int mprGetTimeZoneOffset(MprTime when);
 #define MPR_OBJ_LIST            0x1     /**< Object is a hash */
 #define MPR_LIST_STATIC_VALUES  0x20    /**< Flag for #mprCreateList when values are permanent */
 #define MPR_LIST_STABLE         0x40    /**< For own use. Not thread safe */
-#if DEPRECATED //MOB || 1
+#if DEPRECATED || 1
 #define MPR_LIST_OWN MPR_LIST_STABLE
 #endif
 
@@ -3650,7 +3639,7 @@ PUBLIC void mprError(cchar *fmt, ...);
  */
 PUBLIC void mprFatal(cchar *fmt, ...);
 #else
-//MOB #define mprFatalError mprFatal
+#define mprFatalError mprFatal
 #endif
 
 /**
@@ -3723,7 +3712,7 @@ PUBLIC void mprLogHeader();
  */
 PUBLIC void mprMemoryError(cchar *fmt, ...);
 #else
-//MOB   #define mprMemoryError mprError
+#define mprMemoryError mprError
 #endif
 
 /**
@@ -3786,19 +3775,6 @@ PUBLIC void mprSetLogHandler(MprLogHandler handler);
 */
 PUBLIC int mprStartLogging(cchar *logSpec, int showConfig);
 
-#if UNUSED
-/**
-    Display an error message to the console without allocating any memory.
-    @description Display an error message to the console. This will bypass the MPR logging subsystem.
-        It will not allocated any memory and is used by low level memory allocating and garbage collection routines.
-    @param fmt Printf style format string. Variable number of arguments to 
-    @param ... Variable number of arguments for printf data
-    @ingroup MprLog
-    @stability Stable
- */
-PUBLIC void mprStaticError(cchar *fmt, ...);
-#endif
-
 #if DOXYGEN
 /**
     Write a trace message to the diagnostic log file.
@@ -3832,7 +3808,7 @@ PUBLIC void mprTraceProc(int level, cchar *fmt, ...);
  */
 PUBLIC void mprUserError(cchar *fmt, ...);
 #else
-//MOB   #define mprUserError mprError
+#define mprUserError mprError
 #endif
 
 /**
@@ -3868,22 +3844,13 @@ PUBLIC void mprWarn(cchar *fmt, ...);
     #define mprLog(l, ...) if (1) ; else
 #endif
 
-#if DEPRECATED  //MOB
+#if DEPRECATED
 #define LOG mprTrace
 #define mprFatalError mprError
 #define mprUserError mprError
 #define mprMemoryError mprError
 #define mprPrintfError mprEprintf
 #define assure assert
-#endif
-
-#if UNUSED
-/*
-    Just for easy debugging. Adds a "\n" automatically.
-    @internal
-    @stability Internal
- */
-PUBLIC int print(cchar *fmt, ...);
 #endif
 
 /************************************ Hash ************************************/
@@ -6445,7 +6412,7 @@ typedef struct MprSocketProvider {
     void    (*closeSocket)(struct MprSocket *socket, bool gracefully);
     void    (*disconnectSocket)(struct MprSocket *socket);
     ssize   (*flushSocket)(struct MprSocket *socket);
-    int     (*listenSocket)(struct MprSocket *socket, cchar *host, int port, int flags);
+    Socket  (*listenSocket)(struct MprSocket *socket, cchar *host, int port, int flags);
     ssize   (*readSocket)(struct MprSocket *socket, void *buf, ssize len);
     ssize   (*writeSocket)(struct MprSocket *socket, cvoid *buf, ssize len);
     int     (*upgradeSocket)(struct MprSocket *socket, struct MprSsl *ssl, cchar *peerName);
@@ -6538,7 +6505,7 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
 #define MPR_SOCKET_SERVER           0x400   /**< Socket is on the server-side */
 #define MPR_SOCKET_BUFFERED_READ    0x800   /**< Socket has buffered read data (in SSL stack) */
 #define MPR_SOCKET_BUFFERED_WRITE   0x1000  /**< Socket has buffered write data (in SSL stack) */
-#define MPR_SOCKET_TRACED           0x2000  /**< Socket has been traced to the log */
+#define MPR_SOCKET_CHECKED          0x2000  /**< Peer certificate has been checked */
 #define MPR_SOCKET_DISCONNECTED     0x4000  /**< The mprDisconnectSocket has been called */
 #define MPR_SOCKET_HANDSHAKING      0x8000  /**< Doing an SSL handshake */
 
@@ -6571,7 +6538,7 @@ typedef struct MprSocket {
     char            *errorMsg;          /**< Connection related error messages */
     int             acceptPort;         /**< Server port doing the listening */
     int             port;               /**< Port to listen or connect on */
-    int             fd;                 /**< Actual socket file handle */
+    Socket          fd;                 /**< Actual socket file handle */
     int             flags;              /**< Current state flags */
     MprSocketProvider *provider;        /**< Socket implementation provider */
     struct MprSocket *listenSock;       /**< Listening socket */
@@ -6709,11 +6676,11 @@ PUBLIC int mprGetSocketError(MprSocket *sp);
     Get the socket file descriptor.
     @description Get the file descriptor associated with a socket.
     @param sp Socket object returned from #mprCreateSocket
-    @return The integer file descriptor used by the O/S for the socket.
+    @return The Socket file descriptor used by the O/S for the socket.
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC int mprGetSocketFd(MprSocket *sp);
+PUBLIC Socket mprGetSocketFd(MprSocket *sp);
 
 /**
     Get the socket for an IP:Port address
@@ -6834,7 +6801,7 @@ PUBLIC bool mprIsSocketEof(MprSocket *sp);
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags);
+PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags);
 
 /**
     Parse an socket address IP address. 
@@ -7012,13 +6979,6 @@ PUBLIC ssize mprWriteSocketString(MprSocket *sp, cchar *str);
 PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count);
 
 /************************************ SSL *************************************/
-
-#if UNUSED
-#define MPR_DEFAULT_SERVER_CERT_FILE    "server.crt"
-#define MPR_DEFAULT_SERVER_KEY_FILE     "server.key.pem"
-#define MPR_DEFAULT_CLIENT_CERT_FILE    "client.crt"
-#define MPR_DEFAULT_CLIENT_CERT_PATH    "certs"
-#endif
 
 #define MPR_CA_CERT "ca.crt"
 
