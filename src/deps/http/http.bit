@@ -9,12 +9,15 @@ Bit.load({
             type: 'lib',
             sources: [ 'httpLib.c' ],
             headers: [ '*.h' ],
-            depends: [ 'libmpr', 'libpcre', ],
+            depends: [ 'libmpr' ],
             scripts: {
                 postblend: "
                     let s = bit.settings
                     if (s.hasPam && s.http && s.http.pam) {
                         bit.target.libraries.push('pam')
+                    }
+                    if (bit.packs.pcre && bit.packs.pcre.enable) {
+                        bit.target.depends.push('libpcre')
                     }
                 ",
             },

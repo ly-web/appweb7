@@ -13,11 +13,17 @@ Bit.load({
             type: 'lib',
             sources: [ 'ejsLib.c' ],
             headers: [ '*.h' ],
-            depends: [ 'libhttp', 'libsqlite3', 'libpcre', 'libmpr' ],
+            depends: [ 'libhttp', 'libpcre', 'libmpr' ],
+            scripts: {
+                postblend: "
+                    if (bit.packs.sqlite && bit.packs.sqlite.enable) {
+                        bit.target.depends.push('libsqlite3')
+                    }
+                ",
+            },
         },
 
         ejs: {
-            msg: 'Building ejs, required by tools',
             enable: 'bit.packs.ejscript.enable || bit.settings.ejscript',
             type: 'exe',
             sources: [ 'ejs.c' ],

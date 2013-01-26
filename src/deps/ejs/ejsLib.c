@@ -35199,10 +35199,12 @@ PUBLIC int ejsBlendObject(Ejs *ejs, EjsObj *dest, EjsObj *src, int flags)
         /* Allow this - blend nothing */
         return 0;
     }
+#if FUTURE
     if (!ejsIsPot(ejs, src)) {
         ejsThrowArgError(ejs, "source is not an object");
         return -1;
     }
+#endif
     count = ejsGetLength(ejs, src);
     start = (flags & EJS_BLEND_SUBCLASSES) ? 0 : TYPE(src)->numInherited;
     deep = (flags & EJS_BLEND_DEEP) ? 1 : 0;
@@ -40993,7 +40995,7 @@ static EjsArray *obj_getOwnPropertyNames(Ejs *ejs, EjsObj *unused, int argc, Ejs
     obj = (EjsObj*) argv[0];
     includeBases = 0;
     excludeFunctions = 0;
-    if (argc > 0) {
+    if (argc > 1) {
         options = argv[1];
         if ((arg = ejsGetPropertyByName(ejs, options, EN("includeBases"))) != 0) {
             includeBases = (arg == ESV(true));
@@ -48868,8 +48870,8 @@ PUBLIC EjsType *ejsFinalizeScriptType(Ejs *ejs, EjsName qname, int size, void *m
 }
 
 
-PUBLIC EjsType *ejsConfigureType(Ejs *ejs, EjsType *type, EjsModule *up, EjsType *baseType, int numTypeProp, int numInstanceProp, 
-    int64 attributes)
+PUBLIC EjsType *ejsConfigureType(Ejs *ejs, EjsType *type, EjsModule *up, EjsType *baseType, int numTypeProp, 
+        int numInstanceProp, int64 attributes)
 {
     type->module = up;
 
@@ -73887,14 +73889,15 @@ static int initializeModule(Ejs *ejs, EjsModule *mp)
             nativeModule = ejsLookupNativeModule(ejs, ejsToMulti(ejs, mp->name));
             if (nativeModule == NULL) {
                 if (ejs->exception == 0) {
-                    ejsThrowIOError(ejs, "Cannot load or initialize the native module %@ in file \"%s\"", mp->name, mp->path);
+                    ejsThrowIOError(ejs, "Cannot load or initialize the native module %@ in file \"%s\"", 
+                        mp->name, mp->path);
                 }
                 return MPR_ERR_CANT_INITIALIZE;
             }
             if (!(ejs->flags & EJS_FLAG_NO_INIT)) {
                 if (nativeModule->checksum != mp->checksum) {
-                    ejsThrowIOError(ejs, "Module \"%s\" does not match native code (%d, %d)", mp->path, 
-                            nativeModule->checksum, mp->checksum);
+                    ejsThrowIOError(ejs, "Module \"%s\" XXX does not match native code (%d, %d)", mp->path, 
+                        nativeModule->checksum, mp->checksum);
                     return MPR_ERR_BAD_STATE;
                 }
             }

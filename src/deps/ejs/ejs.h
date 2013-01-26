@@ -4032,10 +4032,6 @@ extern "C" {
 /*
     Internal constants
  */
-#if UNUSED
-#define HEAP_OVERHEAD (MPR_ALLOC_HDR_SIZE + MPR_ALLOC_ALIGN(sizeof(MprRegion) + sizeof(MprHeap) + sizeof(MprDestructor)))
-#endif
-
 #define EJS_LOTSA_PROP              256             /**< Object with lots of properties. Grow by bigger chunks */
 #define EJS_MIN_FRAME_SLOTS         16              /**< Miniumum number of slots for function frames */
 #define EJS_NUM_GLOBAL              256             /**< Number of globals slots to pre-create */
@@ -4245,8 +4241,6 @@ typedef BIT_NUM_TYPE MprNumber;
 #define EJS_SOURCE_EXT              ".es"
 #define EJS_LISTING_EXT             ".lst"
 
-//  MOB -- reorder this file
-
 /************************************************ EjsObj ************************************************/
 
 #define EJS_SHIFT_VISITED       0
@@ -4340,7 +4334,6 @@ PUBLIC EjsName ejsWideName(struct Ejs *ejs, wchar *space, wchar *name);
 PUBLIC EjsName ejsEmptyWideName(struct Ejs *ejs, wchar *name);
 PUBLIC EjsName ejsEmptyName(struct Ejs *ejs, cchar *name);
 
-//  MOB -- NAMING
 #define WEN(name) ejsEmptyWideName(ejs, name)
 #define EN(name) ejsEmptyName(ejs, name)
 #define N(space, name) ejsName(ejs, space, name)
@@ -5642,7 +5635,7 @@ PUBLIC EjsString *ejsSerializeWithOptions(Ejs *ejs, EjsAny *obj, EjsObj *options
     @param ejs Ejs reference returned from #ejsCreateVM
     @param obj Object to convert
     @return A string object
-    @ingroup MOB
+    @ingroup EjsString
  */
 PUBLIC EjsString *ejsToString(Ejs *ejs, EjsAny *obj);
 
@@ -6172,7 +6165,7 @@ typedef struct EjsFunction {
      */
     extern bool ejsIsInitializer(Ejs *ejs, EjsAny *obj);
 #else
-    //  MOB OPT
+    //  OPT
     #define ejsIsFunction(ejs, obj)       (obj && POT(obj) && ((EjsPot*) obj)->isFunction)
     #define ejsIsNativeFunction(ejs, obj) (ejsIsFunction(ejs, obj) && (((EjsFunction*) (obj))->isNativeProc))
     #define ejsIsInitializer(ejs, obj)    (ejsIsFunction(ejs, obj) && (((EjsFunction*) (obj))->isInitializer)
@@ -6352,7 +6345,7 @@ PUBLIC EjsAny *ejsRunFunctionByName(Ejs *ejs, EjsAny *container, EjsName qname, 
     @param handlerEnd Pointer ot one past the end of the catch / finally block
     @param numBlocks Count of blocks opened before the try block
     @param numStack Count of stack slots pushed before the try block
-    @param flags MOB
+    @param flags Reserved
     @param preferredIndex Preferred index in the function exceptions list. Set to -1 for the next available slot.
     @return The allocated exception object
     @ingroup EjsFunction
@@ -8011,7 +8004,6 @@ typedef struct EjsType {
     uint            virtualSlots         : 1;       /**< Properties are not stored in slots[] */
     
     int             endClass;                       /**< Offset in mod file for end of class */
-    //  MOB -- pack with above?
     ushort          numInherited;                   /**< Number of inherited prototype properties */
     ushort          instanceSize;                   /**< Size of instances in bytes */
     short           sid;                            /**< Slot index into service->immutable[] */
@@ -8476,9 +8468,7 @@ typedef struct EjsLookup {
     uint            nthBase;                /**< Property on Nth super type -- count from the object */
     uint            nthBlock;               /**< Property on Nth block in the scope chain -- count from the end */
     EjsType         *type;                  /**< Type containing property (if on a prototype obj) */
-    //  MOB -- check all these being used
     uint            instanceProperty;       /**< Property is an instance property */
-    //  MOB -- check all these being used
     uint            ownerIsType;            /**< Original object owning the property is a type */
     uint            useThis;                /**< Property accessible via "this." */
     EjsAny          *obj;                   /**< Final object / Type containing the variable */
@@ -8498,7 +8488,6 @@ typedef struct EjsIntern {
     struct EjsString    *buckets;               /**< Hash buckets and references to link chains of strings (unicode) */
     int                 size;                   /**< Size of hash */
     int                 count;                  /**< Count of entries */
-    //  MOB - these should be debug only
     uint64              reuse;                  /**< Reuse counter */
     uint64              accesses;               /**< NUmber of accesses to string */
     MprMutex            *mutex;
@@ -8514,9 +8503,6 @@ typedef struct EjsService {
     EjsObj          *(*loadScriptLiteral)(Ejs *ejs, EjsString *script, cchar *cache);
     EjsObj          *(*loadScriptFile)(Ejs *ejs, cchar *path, cchar *cache);
     MprList         *vmlist;                /**< List of all VM interpreters */
-#if UNUSED
-    MprList         *vmpool;                /**< Pool of unused (cached) VM interpreters */
-#endif
     MprHash         *nativeModules;         /**< Set of loaded native modules */
     Http            *http;                  /**< Http service */
     uint            dontExit: 1;            /**< Prevent App.exit() from exiting */
