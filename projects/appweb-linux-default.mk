@@ -712,7 +712,7 @@ run:  \
 test-run:  \
         compile
 	cd test >/dev/null ;\
-		$(CONFIG)/bin/appweb -v ;\
+		/bin/appweb -v ;\
 		cd - >/dev/null 
 
 install: 

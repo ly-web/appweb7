@@ -735,7 +735,7 @@ run:  \
 test-run:  \
         compile
 	cd test
-		$(CONFIG)/bin/appweb -v
+		/bin/appweb -v
 		cd ..
 
 install: 
