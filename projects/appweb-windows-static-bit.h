@@ -312,7 +312,7 @@
     #define BIT_PACK_RC_PATH "rc.exe"
 #endif
 #ifndef BIT_PACK_UTEST_PATH
-    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
+    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-release/bin/utest"
 #endif
 #ifndef BIT_PACK_WINSDK_PATH
     #define BIT_PACK_WINSDK_PATH "$(SDK)"

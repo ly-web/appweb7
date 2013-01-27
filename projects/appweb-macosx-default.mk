@@ -21,19 +21,20 @@ LIBS            += -lpthread -lm -ldl
 
 DEBUG           ?= debug
 CFLAGS-debug    := -g
-CFLAGS-release  := -O2
 DFLAGS-debug    := -DBIT_DEBUG
-DFLAGS-release  := 
 LDFLAGS-debug   := -g
+DFLAGS-release  := 
+CFLAGS-release  := -O2
 LDFLAGS-release := 
-CFLAGS          += $(CFLAGS-$(PROFILE))
-DFLAGS          += $(DFLAGS-$(PROFILE))
-LDFLAGS         += $(LDFLAGS-$(PROFILE))
+CFLAGS          += $(CFLAGS-$(DEBUG))
+DFLAGS          += $(DFLAGS-$(DEBUG))
+LDFLAGS         += $(LDFLAGS-$(DEBUG))
 
 all compile: prep \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/bin/libmprssl.dylib \
         $(CONFIG)/bin/appman \
+        $(CONFIG)/bin/makerom \
         $(CONFIG)/bin/libest.dylib \
         $(CONFIG)/bin/ca.crt \
         $(CONFIG)/bin/libpcre.dylib \
@@ -84,6 +85,7 @@ clean:
 	rm -rf $(CONFIG)/bin/libmpr.dylib
 	rm -rf $(CONFIG)/bin/libmprssl.dylib
 	rm -rf $(CONFIG)/bin/appman
+	rm -rf $(CONFIG)/bin/makerom
 	rm -rf $(CONFIG)/bin/libest.dylib
 	rm -rf $(CONFIG)/bin/ca.crt
 	rm -rf $(CONFIG)/bin/libpcre.dylib
@@ -223,6 +225,17 @@ $(CONFIG)/bin/appman:  \
         $(CONFIG)/obj/manager.o
 	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o -lmpr $(LIBS)
 
+$(CONFIG)/obj/makerom.o: \
+        src/deps/mpr/makerom.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
+
+$(CONFIG)/bin/makerom:  \
+        $(CONFIG)/bin/libmpr.dylib \
+        $(CONFIG)/obj/makerom.o
+	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS)
+
 $(CONFIG)/bin/ca.crt: 
 	rm -fr $(CONFIG)/bin/ca.crt
 	cp -r src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
@@ -252,8 +265,7 @@ $(CONFIG)/inc/http.h:  \
 $(CONFIG)/obj/httpLib.o: \
         src/deps/http/httpLib.c \
         $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/http.h \
-        $(CONFIG)/inc/pcre.h
+        $(CONFIG)/inc/http.h
 	$(CC) -c -o $(CONFIG)/obj/httpLib.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
 
 $(CONFIG)/bin/libhttp.dylib:  \
@@ -723,30 +735,26 @@ install:
 install-prep:  \
         compile
 	cd . >/dev/null ;\
-		$(eval $(shell $(BIN)/ejs bits/getbitvals projects/$(NAME)-$(OS)-$(PROFILE)-bit.h  ;\
-	PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX  ;\
-	>.prefixes; chmod 666 .prefixes)) ;\
-	$(eval include .prefixes) ;\
+		./$(CONFIG)/bin/ejs bits/getbitvals projects/appweb-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes ;\
+	echo $(eval include .prefixes) ;\
 		cd - >/dev/null 
 
 root-install:  \
         compile \
         install-prep
 	cd . >/dev/null ;\
-		@$(BIN)/appman stop disable uninstall >/dev/null 2>&1 ; true ;\
-	rm -f $(BIT_PRD_PREFIX)/latest $(LBIN)/appweb $(LBIN)/appman $(LBIN)/esp ;\
+		@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true ;\
+	rm -f $(BIT_PRD_PREFIX)/latest /usr/local/bin/appweb /usr/local/bin/appman /usr/local/bin/esp ;\
 	install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX) ;\
 	install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX) ;\
-	install -m 755 $(filter-out $(BIN)/esp-www,$(wildcard $(BIN)/*)) $(BIT_BIN_PREFIX) ;\
+	install -m 755 $(filter-out ./$(CONFIG)/bin/esp-www,$(wildcard ./$(CONFIG)/bin/*)) $(BIT_BIN_PREFIX) ;\
 	install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons ;\
-	$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX)  ;\
-	--logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache  ;\
-	--modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf ;\
+	$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf ;\
 	ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest ;\
-	ln -s $(BIT_BIN_PREFIX)/appweb $(LBIN)/appweb ;\
-	ln -s $(BIT_BIN_PREFIX)/appman $(LBIN)/appman ;\
-	[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp $(LBIN)/esp ;\
-	$(BIN)/appman install enable start ;\
+	ln -s $(BIT_BIN_PREFIX)/appweb /usr/local/bin/appweb ;\
+	ln -s $(BIT_BIN_PREFIX)/appman /usr/local/bin/appman ;\
+	[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp /usr/local/bin/esp ;\
+	./$(CONFIG)/bin/appman install enable start ;\
 	exit 0 ;\
 		cd - >/dev/null 
 

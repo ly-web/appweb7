@@ -54,7 +54,7 @@ all compile:
 	@echo ; echo 'You can now run Appweb via: "make run"'
 	@echo ; echo "To run manually, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path" ; echo
 
-clean clobber install uninstall run:
+clean clobber install uninstall run root-install root-uninstall:
 	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 help:

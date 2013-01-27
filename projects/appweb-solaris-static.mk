@@ -34,6 +34,7 @@ all compile: prep \
         $(CONFIG)/bin/libmpr.a \
         $(CONFIG)/bin/libmprssl.a \
         $(CONFIG)/bin/appman \
+        $(CONFIG)/bin/makerom \
         $(CONFIG)/bin/libest.a \
         $(CONFIG)/bin/ca.crt \
         $(CONFIG)/bin/libpcre.a \
@@ -84,6 +85,7 @@ clean:
 	rm -rf $(CONFIG)/bin/libmpr.a
 	rm -rf $(CONFIG)/bin/libmprssl.a
 	rm -rf $(CONFIG)/bin/appman
+	rm -rf $(CONFIG)/bin/makerom
 	rm -rf $(CONFIG)/bin/libest.a
 	rm -rf $(CONFIG)/bin/ca.crt
 	rm -rf $(CONFIG)/bin/libpcre.a
@@ -223,6 +225,17 @@ $(CONFIG)/bin/appman:  \
         $(CONFIG)/obj/manager.o
 	$(CC) -o $(CONFIG)/bin/appman $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o -lmpr $(LIBS) -lmpr -llxnet -lrt -lsocket -lpthread -lm -ldl $(LDFLAGS)
 
+$(CONFIG)/obj/makerom.o: \
+        src/deps/mpr/makerom.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/makerom.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
+
+$(CONFIG)/bin/makerom:  \
+        $(CONFIG)/bin/libmpr.a \
+        $(CONFIG)/obj/makerom.o
+	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS) -lmpr -llxnet -lrt -lsocket -lpthread -lm -ldl $(LDFLAGS)
+
 $(CONFIG)/bin/ca.crt: 
 	rm -fr $(CONFIG)/bin/ca.crt
 	cp -r src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
@@ -252,8 +265,7 @@ $(CONFIG)/inc/http.h:  \
 $(CONFIG)/obj/httpLib.o: \
         src/deps/http/httpLib.c \
         $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/http.h \
-        $(CONFIG)/inc/pcre.h
+        $(CONFIG)/inc/http.h
 	$(CC) -c -o $(CONFIG)/obj/httpLib.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
 
 $(CONFIG)/bin/libhttp.a:  \
@@ -723,8 +735,7 @@ install:
 install-prep:  \
         compile
 	cd . >/dev/null ;\
-		$(eval $(shell $(BIN)/ejs bits/getbitvals projects/$(NAME)-$(OS)-$(PROFILE)-bit.h  ;\
-	PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX  ;\
+		$(eval $(shell $(BIN)/ejs bits/getbitvals projects/$(NAME)-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX  ;\
 	>.prefixes; chmod 666 .prefixes)) ;\
 	$(eval include .prefixes) ;\
 		cd - >/dev/null 
