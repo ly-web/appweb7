@@ -28322,7 +28322,7 @@ PUBLIC int ejsInsertItem(Ejs *ejs, EjsArray *ap, int index, EjsAny *item)
 
 PUBLIC EjsString *ejsJoinArray(Ejs *ejs, EjsArray *ap, EjsString *join)
 {
-    return joinArray(ejs, ap, 1, (EjsObj**) &join);
+    return joinArray(ejs, ap, 1, (EjsObj**) (void*) &join);
 }
 
 
@@ -43270,7 +43270,7 @@ PUBLIC EjsPath *ejsCreatePath(Ejs *ejs, EjsString *path)
     if ((fp = ejsCreateObj(ejs, ESV(Path), 0)) == 0) {
         return 0;
     }
-    pathConstructor(ejs, fp, 1, (EjsObj**) &path);
+    pathConstructor(ejs, fp, 1, (EjsObj**) (void*) &path);
     return fp;
 }
 
@@ -49855,7 +49855,7 @@ static EjsAny *invokeUriOperator(Ejs *ejs, EjsUri *lhs, int opcode,  EjsUri *rhs
         Binary operators
      */
     case EJS_OP_ADD:
-        return uri_join(ejs, lhs, 1, (EjsObj**) &rhs);
+        return uri_join(ejs, lhs, 1, (EjsObj**) (void*) &rhs);
 
     default:
         ejsThrowTypeError(ejs, "Opcode %d not implemented for type %@", opcode, TYPE(lhs)->qname.name);
@@ -50814,7 +50814,7 @@ PUBLIC EjsUri *ejsCreateUri(Ejs *ejs, EjsString *path)
     if ((up = ejsCreateObj(ejs, ESV(Uri), 0)) == NULL) {
         return 0;
     }
-    uri_constructor(ejs, up, 1, (EjsObj**) &path);
+    uri_constructor(ejs, up, 1, (EjsObj**) (void*) &path);
     return up;
 }
 
@@ -55074,8 +55074,8 @@ static void indent(MprBuf *bp, int level)
     #define unlink      _unlink
     #define write       _write
     extern void sleep(int secs);
-    extern int _getpid();
-    extern int _getch();
+    // extern int _getpid();
+    // extern int _getch();
 #endif
 #endif /* WINMAP_H */
 
@@ -77658,7 +77658,7 @@ int ejsSendEvent(Ejs *ejs, EjsObj *emitter, cchar *name, EjsAny *thisObj, EjsAny
 {
     EjsObj  **argv;
 
-    argv = (EjsObj**) &arg;
+    argv = (EjsObj**) (void*) &arg;
     return ejsSendEventv(ejs, emitter, name, thisObj, 1, argv);
 }
 
