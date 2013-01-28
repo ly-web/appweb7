@@ -197,7 +197,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default -without default -configure . -gen sh,make"
+    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default -without default -configure . -gen xcode"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -294,7 +294,7 @@
     #define BIT_PACK_ZIP 1
 #endif
 #ifndef BIT_PACK_BIT_PATH
-    #define BIT_PACK_BIT_PATH "/Users/mob/git/bit/macosx-x64-debug/bin/bit"
+    #define BIT_PACK_BIT_PATH "/usr/local/bin/bit"
 #endif
 #ifndef BIT_PACK_CGI_PATH
     #define BIT_PACK_CGI_PATH "/Users/mob/git/appweb/src/modules/cgiHandler.c"
