@@ -91049,8 +91049,7 @@ SQLITE_PRIVATE void (*sqlite3IoTrace)(const char*, ...) = 0;
 ** See also the "PRAGMA temp_store_directory" SQL command.
 */
 #if _WIN32
-SQLITE_API 
-    char *sqlite3_temp_directory = 0;
+SQLITE_API SQLITE_EXTERN 
 #endif
     char *sqlite3_temp_directory = 0;
 
