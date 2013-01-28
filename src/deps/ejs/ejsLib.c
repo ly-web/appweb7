@@ -56033,7 +56033,7 @@ const unsigned long FAR * ZEXPORT get_crc_table()
     if (crc_table_empty)
         make_crc_table();
 #endif /* DYNAMIC_CRC_TABLE */
-    return (const unsigned long FAR *)crc_table;
+    return (const unsigned long FAR *) (void*) crc_table;
 }
 
 /* ========================================================================= */
@@ -58885,7 +58885,7 @@ local int gz_load(state, buf, len, have)
 
     *have = 0;
     do {
-        ret = (int) read(state->fd, buf + *have, (int) (len - *have));
+        ret = (int) read(state->fd,(void*) (buf + *have), (int) (len - *have));
         if (ret <= 0)
             break;
         *have += ret;
@@ -59530,7 +59530,7 @@ local int gz_comp(state, flush)
 
     /* write directly if requested */
     if (state->direct) {
-        got = (int) write(state->fd, strm->next_in, (int) strm->avail_in);
+        got = (int) write(state->fd, (void*) strm->next_in, (int) strm->avail_in);
         if (got < 0 || (unsigned)got != strm->avail_in) {
             gz_error(state, Z_ERRNO, zstrerror());
             return -1;
@@ -59547,7 +59547,7 @@ local int gz_comp(state, flush)
         if (strm->avail_out == 0 || (flush != Z_NO_FLUSH &&
             (flush != Z_FINISH || ret == Z_STREAM_END))) {
             have = (unsigned)(strm->next_out - state->x.next);
-            if (have && ((got = (int) write(state->fd, state->x.next, (int) have)) < 0 ||
+            if (have && ((got = (int) write(state->fd, (void*) state->x.next, (int) have)) < 0 ||
                          (unsigned)got != have)) {
                 gz_error(state, Z_ERRNO, zstrerror());
                 return -1;
