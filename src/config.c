@@ -1602,7 +1602,8 @@ static int requestTimeoutDirective(MaState *state, cchar *key, cchar *value)
  */
 static int requireDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *type, *rest;
+    char    *age, *type, *rest, *option, *ovalue, *tok;
+    int     domains;
 
     if (!maTokenize(state, value, "%S ?*", &type, &rest)) {
         return MPR_ERR_BAD_SYNTAX;
@@ -1615,7 +1616,23 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
         httpSetAuthRequiredAbilities(state->auth, rest);
 
     } else if (scaselesscmp(type, "secure") == 0) {
-        addCondition(state, "secure", 0, 0);
+        domains = 0;
+        age = 0;
+        for (option = stok(sclone(rest), " \t", &tok); option; option = stok(0, " \t", &tok)) {
+            option = stok(option, " =\t,", &ovalue);
+            ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
+            if (smatch(option, "age")) {
+                age = sfmt("%Ld", (int64) getticks(ovalue));
+            } else if (smatch(option, "domains")) {
+                domains = 1;
+            }
+        }
+        if (age) {
+            if (domains) {
+                age = sjoin("-1", age, NULL);
+            }
+        }
+        addCondition(state, "secure", age, 0);
 
     } else if (scaselesscmp(type, "user") == 0) {
         httpSetAuthPermittedUsers(state->auth, rest);
