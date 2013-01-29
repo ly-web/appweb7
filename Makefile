@@ -50,12 +50,14 @@ BIN 	:= $(OS)-$(ARCH)-$(PROFILE)/bin
 .EXPORT_ALL_VARIABLES:
 
 all compile:
-	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
-	@echo ; echo 'You can now run Appweb via: "make run"'
-	@echo ; echo "To run manually, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path" ; echo
+	$(MAKE) --no-print-directory -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
+	@echo ; echo 'You can now install via "make install" or run Appweb via: "make run"'
 
-clean clobber install uninstall run root-install root-uninstall:
-	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
+clean clobber install uninstall run:
+	$(MAKE) --no-print-directory -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
+
+version:
+	@$(MAKE) --no-print-directory -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 help:
 	@echo '' >&2
