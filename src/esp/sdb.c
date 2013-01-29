@@ -22,9 +22,9 @@
 #define THREAD_STYLE SQLITE_CONFIG_MULTITHREAD
 
 typedef struct Sdb {
-    Edi             edi;            /**< */
-    sqlite3         *db;
-    MprMutex        *mutex;
+    Edi             edi;            /**< EDI database interface structure */
+    sqlite3         *db;            /**< SQLite database handle */
+    MprMutex        *mutex;         /**< Multithread lock */
 } Sdb;
 
 static int sqliteInitialized;
@@ -47,7 +47,6 @@ static var DataTypeToSqlType: Object = {
     "timestamp":    "datetime",
 };
 #endif
-
 
 /************************************ Forwards ********************************/
 

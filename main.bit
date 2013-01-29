@@ -152,75 +152,11 @@ Bit.load({
         openssl: {},
     },
 
-    /*
-        See src/server/server.bit for the appweb targets
-        See src/libappweb.bit for the appweb library target
-     */
     targets: {
-        install: {
-            depends: ['build'],
-            action: "installBinary()",
-            'generate-make': "sudo make root-install",
-        },
-
-		'install-prep': {
-			action: '',
-			depends: ['compile'],
-            'generate-make': "
-				${BIN}/ejs bits/getbitvals projects/$(PRODUCT)-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes
-				echo $(eval include .prefixes)",
-		},
-
-        'root-install': {
-			action: '',
-			depends: ['compile', 'install-prep'],
-            'generate-make': "
-				@${BIN}/appman stop disable uninstall >/dev/null 2>&1 ; true
-				rm -f $(BIT_PRD_PREFIX)/latest ${prefixes.ubin}/appweb ${prefixes.ubin}/appman ${prefixes.ubin}/esp
-				install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX)
-				install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
-				install -m 755 $(filter-out ${BIN}/esp-www,$(wildcard ${BIN}/*)) $(BIT_BIN_PREFIX)
-				install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
-				$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf
-				ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest
-				ln -s $(BIT_BIN_PREFIX)/appweb ${prefixes.ubin}/appweb
-				ln -s $(BIT_BIN_PREFIX)/appman ${prefixes.ubin}/appman
-				[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp ${prefixes.ubin}/esp
-				${BIN}/appman install enable start
-				exit 0",
-        },
-
-        package: {
-            enable: "'${OS}' == 'linux' || '${OS}' == 'macosx' || '${OS}' == 'windows'",
-            depends: ['packageBinary', 'packageSource', 'packageCombo'],
-        },
-
-        packageBinary: {
-            depends: ['build'],
-            action: "packageBinaryFiles()",
-        },
-
-        packageSource: {
-            depends: ['build'],
-            action: "packageSourceFiles()",
-        },
-
-        packageCombo: {
-            depends: ['build'],
-            action: "packageComboFiles()",
-        },
-
-        uninstall: {
-            action: "uninstallBinary()"
-			generate: "sudo make root-uninstall",
-        },
-
-        'root-uninstall': {
-			action: '',
-			depends: ['compile', 'install-prep'],
-            'generate-make': "
-				$(BIN)/appman stop disable uninstall
-				rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)"
-		},
+        /*
+            See src/server/server.bit for the appweb targets
+            See src/libappweb.bit for the appweb library target
+            See package/package.bit for the install/package targets
+         */
     },
 })

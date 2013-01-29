@@ -79,9 +79,9 @@ prep:
 	echo "Visual Studio vars not set. Run vcvars.bat."
 	exit 255
 !ENDIF
+	@if not exist $(CONFIG)\bin md $(CONFIG)\bin
 	@if not exist $(CONFIG)\inc md $(CONFIG)\inc
 	@if not exist $(CONFIG)\obj md $(CONFIG)\obj
-	@if not exist $(CONFIG)\bin md $(CONFIG)\bin
 	@if not exist $(CONFIG)\inc\bit.h copy projects\appweb-$(OS)-$(PROFILE)-bit.h $(CONFIG)\inc\bit.h
 	@echo $(DFLAGS) $(CFLAGS) >projects/.flags
 
@@ -754,37 +754,29 @@ test-run:  \
 	/bin/appweb -v
 	cd ..
 
-install: 
-	sudo make root-install
-
-install-prep:  \
-        compile
-	.\$(CONFIG)\bin\ejs bits/getbitvals projects/$(PRODUCT)-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes
-	echo $(eval include .prefixes)
+$(CONFIG)\inc\.prefixes: projects/$(PRODUCT)-$(OS)-$(PROFILE)-bit.h
+	.\$(CONFIG)\bin\ejs ./bits/getbitvals ./projects/$(PRODUCT)-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX UBIN_PREFIX >.prefixes
 
 root-install:  \
         compile \
-        install-prep
-	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
-	rm -f $(BIT_PRD_PREFIX)/latest C:/Program Files (x86)/Embedthis Appweb/bin/appweb C:/Program Files (x86)/Embedthis Appweb/bin/appman C:/Program Files (x86)/Embedthis Appweb/bin/esp
-	install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX)
-	install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
-	install -m 755 $(filter-out .\$(CONFIG)\bin\esp-www,$(wildcard .\$(CONFIG)\bin\*)) $(BIT_BIN_PREFIX)
-	install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
-	$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf
-	ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest
-	ln -s $(BIT_BIN_PREFIX)/appweb C:/Program Files (x86)/Embedthis Appweb/bin/appweb
-	ln -s $(BIT_BIN_PREFIX)/appman C:/Program Files (x86)/Embedthis Appweb/bin/appman
-	[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp C:/Program Files (x86)/Embedthis Appweb/bin/esp
-	.\$(CONFIG)\bin\appman install enable start
-	exit 0
+        $(CONFIG)\inc\.prefixes
+!IF EXISTS(.prefixes)
+	xcopy /I /S /Y /Q $(CONFIG)\bin "$(BIT_BIN_PREFIX)"
+	del /Q $(BIT_BIN_PREFIX)\sqlite $(BIT_BIN_PREFIX)\makerom $(BIT_BIN_PREFIX)\ejsc
+	$(BIT_BIN_PREFIX)\ejs $(BIT_BIN_PREFIX)\http
+!ELSE
+	nmake -nologo -f ./projects/$(PRODUCT)-$(OS)-$(PROFILE).nmake $@
+!ENDIF
 
-uninstall: 
-	sudo make root-uninstall
+install:  \
+        compile
+	nmake -nologo -f ./projects/$(PRODUCT)-$(OS)-$(PROFILE).nmake root-install
 
 root-uninstall:  \
-        compile \
-        install-prep
+        $(CONFIG)\inc\.prefixes
 	$(BIN)/appman stop disable uninstall
-	rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)
+	del /Q "$(BIT_PRD_PREFIX)"
+
+uninstall: 
+	nmake -nologo -f ./projects/$(PRODUCT)-$(OS)-$(PROFILE).nmake root-uninstall
 
