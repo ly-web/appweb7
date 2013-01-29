@@ -51,9 +51,9 @@ Bit.load({
             ",
             'generate-nmake': "
                 !IF EXISTS(.prefixes)
+                    ${BIN}/appman stop disable uninstall
                     xcopy /I /S /Y /Q $(CONFIG)\\bin \"$(BIT_BIN_PREFIX)\"
-                    del /Q $(BIT_BIN_PREFIX)\\sqlite $(BIT_BIN_PREFIX)\\makerom $(BIT_BIN_PREFIX)\\ejsc
-$(BIT_BIN_PREFIX)\\ejs $(BIT_BIN_PREFIX)\\http
+                    ${BIN}/appman install enable start
                 !ELSE
 				    nmake -nologo -f ${TOP}/projects/$(PRODUCT)-$(OS)-$(PROFILE).nmake $@
                 !ENDIF
