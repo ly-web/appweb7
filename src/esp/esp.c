@@ -310,7 +310,7 @@ PUBLIC int main(int argc, char **argv)
     app->mpr = mpr;
     app->configFile = 0;
     app->listen = sclone(ESP_LISTEN);
-#if BIT_PACK_SQLITE
+#if BIT_ESP_SDB && BIT_PACK_SQLITE
     app->database = sclone("sqlite");
 #elif BIT_ESP_MDB 
     app->database = sclone("mdb");
@@ -842,7 +842,7 @@ static void run(int argc, char **argv)
     cmd = mprCreateCmd(0);
     trace("Run", "appweb -v");
     if (mprRunCmd(cmd, "appweb -v", NULL, NULL, NULL, -1, MPR_CMD_DETACH) != 0) {
-        fail("Cannot run command: \n%s", app->command);
+        fail("Cannot run command: appweb -v");
         return;
     }
     mprWaitForCmd(cmd, -1);
