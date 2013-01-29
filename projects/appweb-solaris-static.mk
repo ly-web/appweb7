@@ -681,25 +681,25 @@ test/cgi-bin/testScript:  \
 test/web/caching/cache.cgi: 
 	cd test >/dev/null ;\
 		echo "#!`type -p ejs`" >web/caching/cache.cgi ;\
-	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ;\
-	chmod +x web/caching/cache.cgi ;\
+		echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ;\
+		chmod +x web/caching/cache.cgi ;\
 		cd - >/dev/null 
 
 test/web/auth/basic/basic.cgi: 
 	cd test >/dev/null ;\
 		echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ;\
-	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ;\
-	chmod +x web/auth/basic/basic.cgi ;\
+		echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ;\
+		chmod +x web/auth/basic/basic.cgi ;\
 		cd - >/dev/null 
 
 test/cgi-bin/cgiProgram:  \
         $(CONFIG)/bin/cgiProgram
 	cd test >/dev/null ;\
 		cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram ;\
-	cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram ;\
-	cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program' ;\
-	cp ../$(CONFIG)/bin/cgiProgram web/cgiProgram.cgi ;\
-	chmod +x cgi-bin/* web/cgiProgram.cgi ;\
+		cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram ;\
+		cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program' ;\
+		cp ../$(CONFIG)/bin/cgiProgram web/cgiProgram.cgi ;\
+		chmod +x cgi-bin/* web/cgiProgram.cgi ;\
 		cd - >/dev/null 
 
 test/web/js: 
@@ -728,46 +728,36 @@ test-run:  \
 		cd - >/dev/null 
 
 install: 
-	cd . >/dev/null ;\
-		sudo make root-install ;\
-		cd - >/dev/null 
+	sudo make root-install 
 
 install-prep:  \
         compile
-	cd . >/dev/null ;\
-		./$(CONFIG)/bin/ejs bits/getbitvals projects/appweb-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes ;\
-	echo $(eval include .prefixes) ;\
-		cd - >/dev/null 
+	./$(CONFIG)/bin/ejs bits/getbitvals projects/$(PRODUCT)-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes ;\
+		echo $(eval include .prefixes) 
 
 root-install:  \
         compile \
         install-prep
-	cd . >/dev/null ;\
-		@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true ;\
-	rm -f $(BIT_PRD_PREFIX)/latest /usr/local/bin/appweb /usr/local/bin/appman /usr/local/bin/esp ;\
-	install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX) ;\
-	install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX) ;\
-	install -m 755 $(filter-out ./$(CONFIG)/bin/esp-www,$(wildcard ./$(CONFIG)/bin/*)) $(BIT_BIN_PREFIX) ;\
-	install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons ;\
-	$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf ;\
-	ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest ;\
-	ln -s $(BIT_BIN_PREFIX)/appweb /usr/local/bin/appweb ;\
-	ln -s $(BIT_BIN_PREFIX)/appman /usr/local/bin/appman ;\
-	[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp /usr/local/bin/esp ;\
-	./$(CONFIG)/bin/appman install enable start ;\
-	exit 0 ;\
-		cd - >/dev/null 
+	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true ;\
+		rm -f $(BIT_PRD_PREFIX)/latest /usr/local/bin/appweb /usr/local/bin/appman /usr/local/bin/esp ;\
+		install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX) ;\
+		install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX) ;\
+		install -m 755 $(filter-out ./$(CONFIG)/bin/esp-www,$(wildcard ./$(CONFIG)/bin/*)) $(BIT_BIN_PREFIX) ;\
+		install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons ;\
+		$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf ;\
+		ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest ;\
+		ln -s $(BIT_BIN_PREFIX)/appweb /usr/local/bin/appweb ;\
+		ln -s $(BIT_BIN_PREFIX)/appman /usr/local/bin/appman ;\
+		[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp /usr/local/bin/esp ;\
+		./$(CONFIG)/bin/appman install enable start ;\
+		exit 0 
 
 uninstall: 
-	cd . >/dev/null ;\
-		sudo make root-uninstall ;\
-		cd - >/dev/null 
+	sudo make root-uninstall 
 
 root-uninstall:  \
         compile \
         install-prep
-	cd . >/dev/null ;\
-		$(BIN)/appman stop disable uninstall ;\
-	rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX) ;\
-		cd - >/dev/null 
+	$(BIN)/appman stop disable uninstall ;\
+		rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX) 
 

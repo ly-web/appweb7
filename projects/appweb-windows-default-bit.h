@@ -153,6 +153,9 @@
 #ifndef BIT_WEB_PREFIX
     #define BIT_WEB_PREFIX "C:/Program Files (x86)/Embedthis Appweb/web"
 #endif
+#ifndef BIT_UBIN_PREFIX
+    #define BIT_UBIN_PREFIX "C:/Program Files (x86)/Embedthis Appweb/bin"
+#endif
 
 /* Suffixes */
 #ifndef BIT_EXE
@@ -279,7 +282,7 @@
     #define BIT_PACK_ZIP 1
 #endif
 #ifndef BIT_PACK_BIT_PATH
-    #define BIT_PACK_BIT_PATH "/usr/local/bin/bit"
+    #define BIT_PACK_BIT_PATH "/Users/mob/git/bit/macosx-x64-debug/bin/bit"
 #endif
 #ifndef BIT_PACK_CGI_PATH
     #define BIT_PACK_CGI_PATH "/Users/mob/git/appweb/src/modules/cgiHandler.c"
@@ -312,7 +315,7 @@
     #define BIT_PACK_RC_PATH "rc.exe"
 #endif
 #ifndef BIT_PACK_UTEST_PATH
-    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-release/bin/utest"
+    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
 #endif
 #ifndef BIT_PACK_WINSDK_PATH
     #define BIT_PACK_WINSDK_PATH "$(SDK)"

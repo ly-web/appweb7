@@ -2,16 +2,16 @@
 #   appweb-windows-static.nmake -- Makefile to build Embedthis Appweb for windows
 #
 
-PRODUCT         =appweb
-VERSION         =4.3.0
-BUILD_NUMBER    =0
-PROFILE  = static
+PRODUCT         = appweb
+VERSION         = 4.3.0
+BUILD_NUMBER    = 0
+PROFILE   = static
 PA        = $(PROCESSOR_ARCHITECTURE)
 !IF "$(PA)" == "AMD64"
 ARCH     = x64
 ENTRY    = _DllMainCRTStartup
 !ELSE
-ARCH  = x86
+ARCH     = x86
 ENTRY    = _DllMainCRTStartup@12
 !ENDIF
 
@@ -26,6 +26,10 @@ IFLAGS   = -I$(CONFIG)\inc
 LDFLAGS  = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS = -libpath:$(CONFIG)\bin
 LIBS     = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
+
+!IF EXISTS(.prefixes)
+!INCLUDE .prefixes
+!ENDIF
 
 all compile: prep \
         $(CONFIG)\bin\libmpr.lib \
@@ -552,8 +556,8 @@ $(CONFIG)\bin\ejsc.exe:  \
 $(CONFIG)\bin\ejs.mod:  \
         $(CONFIG)\bin\ejsc.exe
 	cd src\deps\ejs
-		"..\..\..\$(CONFIG)\bin\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null "ejs.es"
-		cd ..\..\..
+	"..\..\..\$(CONFIG)\bin\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null "ejs.es"
+	cd ..\..\..
 
 $(CONFIG)\obj\cgiHandler.obj: \
         src\modules\cgiHandler.c \
@@ -610,8 +614,8 @@ $(CONFIG)\bin\setConfig.exe:  \
 
 src\server\slink.c: 
 	cd src\server
-		if not exist slink.c copy slink.empty slink.c
-		cd ..\..
+	if not exist slink.c copy slink.empty slink.c
+	cd ..\..
 
 $(CONFIG)\obj\slink.obj: \
         src\server\slink.c \
@@ -674,8 +678,8 @@ $(CONFIG)\bin\appwebMonitor.ico:
 
 src\server\cache: 
 	cd src\server
-		md cache
-		cd ..\..
+	md cache
+	cd ..\..
 
 $(CONFIG)\inc\testAppweb.h:  \
         $(CONFIG)\inc\bit.h \
@@ -735,62 +739,52 @@ version:
 
 genslink: 
 	cd src\server
-		esp --static --genlink slink.c --flat compile
-		cd ..\..
+	esp --static --genlink slink.c --flat compile
+	cd ..\..
 
 run:  \
         compile
 	cd src\server
-		sudo ..\..\$(CONFIG)\bin\appweb -v
-		cd ..\..
+	sudo ..\..\$(CONFIG)\bin\appweb -v
+	cd ..\..
 
 test-run:  \
         compile
 	cd test
-		/bin/appweb -v
-		cd ..
+	/bin/appweb -v
+	cd ..
 
 install: 
-	cd .
-		sudo make root-install
-		cd .
+	sudo make root-install
 
 install-prep:  \
         compile
-	cd .
-		.\$(CONFIG)\bin\ejs bits/getbitvals projects/appweb-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes
+	.\$(CONFIG)\bin\ejs bits/getbitvals projects/$(PRODUCT)-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes
 	echo $(eval include .prefixes)
-		cd .
 
 root-install:  \
         compile \
         install-prep
-	cd .
-		@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
-	rm -f $(BIT_PRD_PREFIX)/latest /usr/local/bin/appweb /usr/local/bin/appman /usr/local/bin/esp
+	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
+	rm -f $(BIT_PRD_PREFIX)/latest C:/Program Files (x86)/Embedthis Appweb/bin/appweb C:/Program Files (x86)/Embedthis Appweb/bin/appman C:/Program Files (x86)/Embedthis Appweb/bin/esp
 	install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX)
 	install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
 	install -m 755 $(filter-out .\$(CONFIG)\bin\esp-www,$(wildcard .\$(CONFIG)\bin\*)) $(BIT_BIN_PREFIX)
 	install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
 	$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf
 	ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest
-	ln -s $(BIT_BIN_PREFIX)/appweb /usr/local/bin/appweb
-	ln -s $(BIT_BIN_PREFIX)/appman /usr/local/bin/appman
-	[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp /usr/local/bin/esp
+	ln -s $(BIT_BIN_PREFIX)/appweb C:/Program Files (x86)/Embedthis Appweb/bin/appweb
+	ln -s $(BIT_BIN_PREFIX)/appman C:/Program Files (x86)/Embedthis Appweb/bin/appman
+	[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp C:/Program Files (x86)/Embedthis Appweb/bin/esp
 	.\$(CONFIG)\bin\appman install enable start
 	exit 0
-		cd .
 
 uninstall: 
-	cd .
-		sudo make root-uninstall
-		cd .
+	sudo make root-uninstall
 
 root-uninstall:  \
         compile \
         install-prep
-	cd .
-		$(BIN)/appman stop disable uninstall
+	$(BIN)/appman stop disable uninstall
 	rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)
-		cd .
 

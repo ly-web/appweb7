@@ -624,6 +624,8 @@ static EdiRec *mdbReadRec(Edi *edi, cchar *tableName, cchar *key)
     int         r;
 
     mdb = (Mdb*) edi;
+    rec = 0;
+
     lock(mdb);
     if ((table = lookupTable(mdb, tableName)) == 0) {
         unlock(mdb);

@@ -2248,7 +2248,7 @@ cp -r esp-appweb.conf ../${CFG_DIR}/bin/esp-appweb.conf
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/deps/ejs
-../../../macosx-x64-default/bin/ejsc --out ../../../macosx-x64-default/bin/ejs.mod --optimize 9 --bind --require null ejs.es";
+/Users/mob/git/appweb/macosx-x64-default/bin/ejsc --out ../../../macosx-x64-default/bin/ejs.mod --optimize 9 --bind --require null ejs.es";
 		};
 		AB04609AAB04738200000024 /* ShellScript for slink.c */ = {
 			isa = PBXShellScriptBuildPhase;
