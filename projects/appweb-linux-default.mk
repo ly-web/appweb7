@@ -715,24 +715,24 @@ install:
 install-prep:  \
         compile
 	./$(CONFIG)/bin/ejs bits/getbitvals projects/$(PRODUCT)-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes
-		echo $(eval include .prefixes)
+	echo $(eval include .prefixes)
 
 root-install:  \
         compile \
         install-prep
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
-		rm -f $(BIT_PRD_PREFIX)/latest /usr/local/bin/appweb /usr/local/bin/appman /usr/local/bin/esp
-		install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX)
-		install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
-		install -m 755 $(filter-out ./$(CONFIG)/bin/esp-www,$(wildcard ./$(CONFIG)/bin/*)) $(BIT_BIN_PREFIX)
-		install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
-		$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf
-		ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest
-		ln -s $(BIT_BIN_PREFIX)/appweb /usr/local/bin/appweb
-		ln -s $(BIT_BIN_PREFIX)/appman /usr/local/bin/appman
-		[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp /usr/local/bin/esp
-		./$(CONFIG)/bin/appman install enable start
-		exit 0
+	rm -f $(BIT_PRD_PREFIX)/latest /usr/local/bin/appweb /usr/local/bin/appman /usr/local/bin/esp
+	install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX)
+	install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
+	install -m 755 $(filter-out ./$(CONFIG)/bin/esp-www,$(wildcard ./$(CONFIG)/bin/*)) $(BIT_BIN_PREFIX)
+	install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
+	$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf
+	ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest
+	ln -s $(BIT_BIN_PREFIX)/appweb /usr/local/bin/appweb
+	ln -s $(BIT_BIN_PREFIX)/appman /usr/local/bin/appman
+	[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp /usr/local/bin/esp
+	./$(CONFIG)/bin/appman install enable start
+	exit 0
 
 uninstall: 
 	sudo make root-uninstall
@@ -741,5 +741,5 @@ root-uninstall:  \
         compile \
         install-prep
 	$(BIN)/appman stop disable uninstall
-		rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)
+	rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)
 
