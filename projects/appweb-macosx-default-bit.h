@@ -180,6 +180,9 @@
 #ifndef BIT_UBIN_PREFIX
     #define BIT_UBIN_PREFIX "/usr/local/bin"
 #endif
+#ifndef BIT_MAN_PREFIX
+    #define BIT_MAN_PREFIX "/usr/local/share/man/man1"
+#endif
 
 /* Suffixes */
 #ifndef BIT_EXE
@@ -327,7 +330,7 @@
     #define BIT_PACK_PCRE_PATH "/Users/mob/git/appweb/src/deps/pcre"
 #endif
 #ifndef BIT_PACK_UTEST_PATH
-    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
+    #define BIT_PACK_UTEST_PATH "/usr/local/bin/utest"
 #endif
 #ifndef BIT_PACK_ZIP_PATH
     #define BIT_PACK_ZIP_PATH "/usr/bin/zip"

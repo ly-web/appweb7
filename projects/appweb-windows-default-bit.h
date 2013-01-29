@@ -156,6 +156,9 @@
 #ifndef BIT_UBIN_PREFIX
     #define BIT_UBIN_PREFIX "C:/Program Files (x86)/Embedthis Appweb/bin"
 #endif
+#ifndef BIT_MAN_PREFIX
+    #define BIT_MAN_PREFIX "C:/Program Files (x86)/Embedthis Appweb/man"
+#endif
 
 /* Suffixes */
 #ifndef BIT_EXE

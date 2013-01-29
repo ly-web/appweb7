@@ -240,7 +240,7 @@ $(CONFIG)\bin\makerom.exe:  \
         $(CONFIG)\obj\makerom.obj
 	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj libmpr.lib $(LIBS)
 
-$(CONFIG)\bin\ca.crt: 
+$(CONFIG)\bin\ca.crt: src/deps/est/ca.crt
 	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
 	copy /Y src\deps\est\ca.crt $(CONFIG)\bin\ca.crt
 
@@ -290,7 +290,7 @@ $(CONFIG)\bin\http.exe:  \
         $(CONFIG)\obj\http.obj
 	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
 
-$(CONFIG)\bin\http-ca.crt: 
+$(CONFIG)\bin\http-ca.crt: src/deps/http/http-ca.crt
 	-if exist $(CONFIG)\bin\http-ca.crt del /Q $(CONFIG)\bin\http-ca.crt
 	copy /Y src\deps\http\http-ca.crt $(CONFIG)\bin\http-ca.crt
 
@@ -472,20 +472,20 @@ $(CONFIG)\bin\esp.exe:  \
         $(CONFIG)\obj\sdb.obj
 	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
-$(CONFIG)\bin\esp.conf: 
+$(CONFIG)\bin\esp.conf: src/esp/esp.conf
 	-if exist $(CONFIG)\bin\esp.conf del /Q $(CONFIG)\bin\esp.conf
 	copy /Y src\esp\esp.conf $(CONFIG)\bin\esp.conf
 
-src\server\esp.conf: 
+src\server\esp.conf: src/esp/esp.conf
 	-if exist src\server\esp.conf del /Q src\server\esp.conf
 	copy /Y src\esp\esp.conf src\server\esp.conf
 
-$(CONFIG)\bin\esp-www: 
+$(CONFIG)\bin\esp-www: src/esp/www
 	-if exist $(CONFIG)\bin\esp-www del /Q $(CONFIG)\bin\esp-www
 	if not exist $(CONFIG)\bin\esp-www md $(CONFIG)\bin\esp-www
 	xcopy /S /Y src\esp\www $(CONFIG)\bin\esp-www
 
-$(CONFIG)\bin\esp-appweb.conf: 
+$(CONFIG)\bin\esp-appweb.conf: src/esp/esp-appweb.conf
 	-if exist $(CONFIG)\bin\esp-appweb.conf del /Q $(CONFIG)\bin\esp-appweb.conf
 	copy /Y src\esp\esp-appweb.conf $(CONFIG)\bin\esp-appweb.conf
 
@@ -672,7 +672,7 @@ $(CONFIG)\bin\appwebMonitor.exe:  \
         $(CONFIG)\obj\appwebMonitor.obj
 	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appwebMonitor.res $(CONFIG)\obj\appwebMonitor.obj libappweb.lib shell32.lib libhttp.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib libpcre.lib libmpr.lib
 
-$(CONFIG)\bin\appwebMonitor.ico: 
+$(CONFIG)\bin\appwebMonitor.ico: src/server/windows/appwebMonitor.ico
 	-if exist $(CONFIG)\bin\appwebMonitor.ico del /Q $(CONFIG)\bin\appwebMonitor.ico
 	copy /Y src\server\windows\appwebMonitor.ico $(CONFIG)\bin\appwebMonitor.ico
 
