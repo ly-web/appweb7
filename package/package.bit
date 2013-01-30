@@ -36,6 +36,9 @@ Bit.load({
             'generate-nmake': "
                 ${BIN}/appman stop disable uninstall
                 xcopy /I /S /Y /Q $(CONFIG)\\bin \"$(BIT_BIN_PREFIX)\"
+                del /Q \"$(BIT_BIN_PREFIX)\\*.pdb\"
+                del /Q \"$(BIT_BIN_PREFIX)\\*.exp\"
+                del /Q \"$(BIT_BIN_PREFIX)\\*.lib\"
                 ${BIN}/appman install enable start
             ",
         },
@@ -57,7 +60,8 @@ Bit.load({
             ",
             'generate-nmake': "
 				$(BIN)/appman stop disable uninstall
-                del /Q \"$(BIT_CFG_PREFIX)\" \"$(BIT_PRD_PREFIX)\"
+                if exist \"$(BIT_CFG_PREFIX)\" rd /Q /S \"$(BIT_CFG_PREFIX)\"
+                if exist \"$(BIT_PRD_PREFIX)\" rd /Q /S \"$(BIT_PRD_PREFIX)\"
             ",
 		},
 
