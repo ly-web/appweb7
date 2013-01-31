@@ -19228,10 +19228,12 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
     } else if (sp->signo == SIGPIPE || sp->signo == SIGXFSZ) {
         /* Ignore */
 
-#if EMBEDTHIS
     } else if (sp->signo == SIGSEGV || sp->signo == SIGBUS) {
+#if EMBEDTHIS
         printf("PAUSED for watson to debug\n");
         sleep(120);
+#else
+        exit(255);
 #endif
 
     } else {
@@ -21203,6 +21205,10 @@ PUBLIC void mprVerifySslDepth(MprSsl *ssl, int depth)
 
 
 
+/*********************************** Locals ***********************************/
+
+#define HASH_PRIME 0x01000193
+
 /************************************ Code ************************************/
 
 PUBLIC char *itos(int64 value)
@@ -21455,14 +21461,9 @@ PUBLIC char *sfmtv(cchar *format, va_list arg)
 }
 
 
-/*
-    Compute a hash for a C string
-    Inspired by Paul Hsieh (c) 2004-2008, see http://www.azillionmonkeys.com/qed/hash.html)
- */
 PUBLIC uint shash(cchar *cname, ssize len)
 {
-    uchar   *name;
-    uint    hash, rem, tmp;
+    uint    hash;
 
     assert(cname);
     assert(0 <= len && len < MAXINT);
@@ -21471,37 +21472,10 @@ PUBLIC uint shash(cchar *cname, ssize len)
         return 0;
     }
     hash = (uint) len;
-    rem = (int) (len & 3);
-    name = (uchar*) cname;
-    for (len >>= 2; len > 0; len--, name += 4) {
-        hash  += name[0] | (name[1] << 8);
-        tmp   =  ((name[2] | (name[3] << 8)) << 11) ^ hash;
-        hash  =  (hash << 16) ^ tmp;
-        hash  += hash >> 11;
+    while (len-- > 0) {
+        hash ^= *cname++;
+        hash *= HASH_PRIME;
     }
-    switch (rem) {
-    case 3: 
-        hash += name[0] + (name[1] << 8);
-        hash ^= hash << 16;
-        hash ^= name[2] << 18;
-        hash += hash >> 11;
-        break;
-    case 2: 
-        hash += name[0] + (name[1] << 8);
-        hash ^= hash << 11;
-        hash += hash >> 17;
-        break;
-    case 1: 
-        hash += name[0];
-        hash ^= hash << 10;
-        hash += hash >> 1;
-    }
-    hash ^= hash << 3;
-    hash += hash >> 5;
-    hash ^= hash << 4;
-    hash += hash >> 17;
-    hash ^= hash << 25;
-    hash += hash >> 6;
     return hash;
 }
 
@@ -21511,8 +21485,7 @@ PUBLIC uint shash(cchar *cname, ssize len)
  */
 PUBLIC uint shashlower(cchar *cname, ssize len)
 {
-    uchar   *name;
-    uint    hash, rem, tmp;
+    uint    hash;
 
     assert(cname);
     assert(0 <= len && len < MAXINT);
@@ -21521,38 +21494,10 @@ PUBLIC uint shashlower(cchar *cname, ssize len)
         return 0;
     }
     hash = (uint) len;
-    rem = (int) (len & 3);
-    name = (uchar*) cname;
-
-    for (len >>= 2; len > 0; len--, name += 4) {
-        hash  += tolower((uchar) name[0]) | (tolower((uchar) name[1]) << 8);
-        tmp   =  ((tolower((uchar) name[2]) | (tolower((uchar) name[3]) << 8)) << 11) ^ hash;
-        hash  =  (hash << 16) ^ tmp;
-        hash  += hash >> 11;
+    while (len-- > 0) {
+        hash ^= tolower((uchar) *cname++);
+        hash *= HASH_PRIME;
     }
-    switch (rem) {
-    case 3: 
-        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
-        hash ^= hash << 16;
-        hash ^= tolower((uchar) name[2]) << 18;
-        hash += hash >> 11;
-        break;
-    case 2: 
-        hash += tolower((uchar) name[0]) + tolower(((uchar) name[1]) << 8);
-        hash ^= hash << 11;
-        hash += hash >> 17;
-        break;
-    case 1: 
-        hash += tolower((uchar) name[0]);
-        hash ^= hash << 10;
-        hash += hash >> 1;
-    }
-    hash ^= hash << 3;
-    hash += hash >> 5;
-    hash ^= hash << 4;
-    hash += hash >> 17;
-    hash ^= hash << 25;
-    hash += hash >> 6;
     return hash;
 }
 

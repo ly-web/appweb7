@@ -27,9 +27,17 @@ LDFLAGS  = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS = -libpath:$(CONFIG)\bin
 LIBS     = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
-!IF EXISTS(.prefixes)
-!INCLUDE .prefixes
-!ENDIF
+BIT_PRD_PREFIX  = C:/Program Files/Embedthis Appweb
+BIT_VER_PREFIX  = $(BIT_PRD_PREFIX)
+BIT_CFG_PREFIX  = $(BIT_PRD_PREFIX)
+BIT_BIN_PREFIX  = $(BIT_PRD_PREFIX)/bin
+BIT_INC_PREFIX  = $(BIT_PRD_PREFIX)/inc
+BIT_LOG_PREFIX  = $(BIT_PRD_PREFIX)/logs
+BIT_SPL_PREFIX  = $(BIT_PRD_PREFIX)/tmp
+BIT_SRC_PREFIX  = $(BIT_PRD_PREFIX)/src
+BIT_WEB_PREFIX  = $(BIT_PRD_PREFIX)/web
+BIT_UBIN_PREFIX = $(BIT_PRD_PREFIX)/bin
+BIT_MAN_PREFIX  = $(BIT_PRD_PREFIX)/man
 
 all compile: prep \
         $(CONFIG)\bin\libmpr.dll \
@@ -79,9 +87,13 @@ prep:
 	echo "Visual Studio vars not set. Run vcvars.bat."
 	exit 255
 !ENDIF
+!IF "$(BIT_PRD_PREFIX)" == ""
+	echo "BIT_PRD_PREFIX not set."
+	exit 255
+!ENDIF
+	@if not exist $(CONFIG)\bin md $(CONFIG)\bin
 	@if not exist $(CONFIG)\inc md $(CONFIG)\inc
 	@if not exist $(CONFIG)\obj md $(CONFIG)\obj
-	@if not exist $(CONFIG)\bin md $(CONFIG)\bin
 	@if not exist $(CONFIG)\inc\bit.h copy projects\appweb-$(OS)-$(PROFILE)-bit.h $(CONFIG)\inc\bit.h
 	@echo $(DFLAGS) $(CFLAGS) >projects/.flags
 
@@ -754,37 +766,20 @@ test-run:  \
 	/bin/appweb -v
 	cd ..
 
-install: 
-	sudo make root-install
-
-install-prep:  \
-        compile
-	.\$(CONFIG)\bin\ejs bits/getbitvals projects/$(PRODUCT)-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes
-	echo $(eval include .prefixes)
-
 root-install:  \
-        compile \
-        install-prep
-	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
-	rm -f $(BIT_PRD_PREFIX)/latest C:/Program Files (x86)/Embedthis Appweb/bin/appweb C:/Program Files (x86)/Embedthis Appweb/bin/appman C:/Program Files (x86)/Embedthis Appweb/bin/esp
-	install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX)
-	install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
-	install -m 755 $(filter-out .\$(CONFIG)\bin\esp-www,$(wildcard .\$(CONFIG)\bin\*)) $(BIT_BIN_PREFIX)
-	install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
-	$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf
-	ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest
-	ln -s $(BIT_BIN_PREFIX)/appweb C:/Program Files (x86)/Embedthis Appweb/bin/appweb
-	ln -s $(BIT_BIN_PREFIX)/appman C:/Program Files (x86)/Embedthis Appweb/bin/appman
-	[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp C:/Program Files (x86)/Embedthis Appweb/bin/esp
+        compile
+	.\$(CONFIG)\bin\appman stop disable uninstall
+	xcopy /I /S /Y /Q $(CONFIG)\bin "$(BIT_BIN_PREFIX)"
 	.\$(CONFIG)\bin\appman install enable start
-	exit 0
+
+install:  \
+        compile
+	nmake -nologo -f ./projects/$(PRODUCT)-$(OS)-$(PROFILE).nmake root-install
+
+root-uninstall: 
+	$(BIN)/appman stop disable uninstall
+	del /Q "$(BIT_CFG_PREFIX)" "$(BIT_PRD_PREFIX)"
 
 uninstall: 
-	sudo make root-uninstall
-
-root-uninstall:  \
-        compile \
-        install-prep
-	$(BIN)/appman stop disable uninstall
-	rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)
+	nmake -nologo -f ./projects/$(PRODUCT)-$(OS)-$(PROFILE).nmake root-uninstall
 

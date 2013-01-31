@@ -127,37 +127,37 @@
 
 /* Prefixes */
 #ifndef BIT_CFG_PREFIX
-    #define BIT_CFG_PREFIX "C:/Program Files (x86)/Embedthis Appweb"
+    #define BIT_CFG_PREFIX "C:/Program Files/Embedthis Appweb"
 #endif
 #ifndef BIT_BIN_PREFIX
-    #define BIT_BIN_PREFIX "C:/Program Files (x86)/Embedthis Appweb/bin"
+    #define BIT_BIN_PREFIX "C:/Program Files/Embedthis Appweb/bin"
 #endif
 #ifndef BIT_INC_PREFIX
-    #define BIT_INC_PREFIX "C:/Program Files (x86)/Embedthis Appweb/inc"
+    #define BIT_INC_PREFIX "C:/Program Files/Embedthis Appweb/inc"
 #endif
 #ifndef BIT_LOG_PREFIX
-    #define BIT_LOG_PREFIX "C:/Program Files (x86)/Embedthis Appweb/logs"
+    #define BIT_LOG_PREFIX "C:/Program Files/Embedthis Appweb/logs"
 #endif
 #ifndef BIT_PRD_PREFIX
-    #define BIT_PRD_PREFIX "C:/Program Files (x86)/Embedthis Appweb"
+    #define BIT_PRD_PREFIX "C:/Program Files/Embedthis Appweb"
 #endif
 #ifndef BIT_SPL_PREFIX
-    #define BIT_SPL_PREFIX "C:/Program Files (x86)/Embedthis Appweb/tmp"
+    #define BIT_SPL_PREFIX "C:/Program Files/Embedthis Appweb/tmp"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "C:/Program Files (x86)/Embedthis Appweb/src"
+    #define BIT_SRC_PREFIX "C:/Program Files/Embedthis Appweb/src"
 #endif
 #ifndef BIT_VER_PREFIX
-    #define BIT_VER_PREFIX "C:/Program Files (x86)/Embedthis Appweb"
+    #define BIT_VER_PREFIX "C:/Program Files/Embedthis Appweb"
 #endif
 #ifndef BIT_WEB_PREFIX
-    #define BIT_WEB_PREFIX "C:/Program Files (x86)/Embedthis Appweb/web"
+    #define BIT_WEB_PREFIX "C:/Program Files/Embedthis Appweb/web"
 #endif
 #ifndef BIT_UBIN_PREFIX
-    #define BIT_UBIN_PREFIX "C:/Program Files (x86)/Embedthis Appweb/bin"
+    #define BIT_UBIN_PREFIX "C:/Program Files/Embedthis Appweb/bin"
 #endif
 #ifndef BIT_MAN_PREFIX
-    #define BIT_MAN_PREFIX "C:/Program Files (x86)/Embedthis Appweb/man"
+    #define BIT_MAN_PREFIX "C:/Program Files/Embedthis Appweb/man"
 #endif
 
 /* Suffixes */

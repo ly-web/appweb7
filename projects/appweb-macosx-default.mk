@@ -12,6 +12,18 @@ CC              ?= /usr/bin/clang
 LD              ?= /usr/bin/ld
 CONFIG          ?= $(OS)-$(ARCH)-$(PROFILE)
 
+BIT_CFG_PREFIX  ?= /etc/appweb
+BIT_PRD_PREFIX  ?= /usr/lib/appweb
+BIT_VER_PREFIX  ?= $(BIT_PRD_PREFIX)/4.3.0
+BIT_BIN_PREFIX  ?= $(BIT_VER_PREFIX)/bin
+BIT_INC_PREFIX  ?= $(BIT_VER_PREFIX)/inc
+BIT_LOG_PREFIX  ?= /var/log/appweb
+BIT_SPL_PREFIX  ?= /var/spool/appweb
+BIT_SRC_PREFIX  ?= /usr/src/appweb-4.3.0
+BIT_WEB_PREFIX  ?= /var/www/appweb-default
+BIT_UBIN_PREFIX ?= /usr/local/bin
+BIT_MAN_PREFIX  ?= /usr/local/share/man/man1
+
 CFLAGS          += -w
 DFLAGS          += $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS)))
 IFLAGS          += -I$(CONFIG)/inc
@@ -30,9 +42,7 @@ CFLAGS          += $(CFLAGS-$(DEBUG))
 DFLAGS          += $(DFLAGS-$(DEBUG))
 LDFLAGS         += $(LDFLAGS-$(DEBUG))
 
-ifeq ($(wildcard $(CONFIG)/inc/.prefixes*),$(CONFIG)/inc/.prefixes)
-    include $(CONFIG)/inc/.prefixes
-endif
+unexport CDPATH
 
 all compile: prep \
         $(CONFIG)/bin/libmpr.dylib \
@@ -76,7 +86,10 @@ all compile: prep \
 
 prep:
 	@if [ "$(CONFIG)" = "" ] ; then echo WARNING: CONFIG not set ; exit 255 ; fi
-	@[ ! -x $(CONFIG)/inc ] && mkdir -p $(CONFIG)/inc $(CONFIG)/obj $(CONFIG)/lib $(CONFIG)/bin ; true
+	@if [ "$(BIT_PRD_PREFIX)" = "" ] ; then echo WARNING: BIT_PRD_PREFIX not set ; exit 255 ; fi
+	@[ ! -x $(CONFIG)/bin ] && mkdir -p $(CONFIG)/bin; true
+	@[ ! -x $(CONFIG)/inc ] && mkdir -p $(CONFIG)/inc; true
+	@[ ! -x $(CONFIG)/obj ] && mkdir -p $(CONFIG)/obj; true
 	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/appweb-$(OS)-$(PROFILE)-bit.h $(CONFIG)/inc/bit.h ; true
 	@[ ! -f $(CONFIG)/inc/bitos.h ] && cp src/bitos.h $(CONFIG)/inc/bitos.h ; true
 	@if ! diff $(CONFIG)/inc/bit.h projects/appweb-$(OS)-$(PROFILE)-bit.h >/dev/null ; then\
@@ -554,7 +567,7 @@ $(CONFIG)/bin/ejsc:  \
 
 $(CONFIG)/bin/ejs.mod:  \
         $(CONFIG)/bin/ejsc
-	cd src/deps/ejs >/dev/null; ../../../$(CONFIG)/bin/ejsc --out ../../../$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; cd - >/dev/null
+	cd src/deps/ejs; ../../../$(CONFIG)/bin/ejsc --out ../../../$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; cd ../../..
 
 $(CONFIG)/obj/cgiHandler.o: \
         src/modules/cgiHandler.c \
@@ -610,7 +623,7 @@ $(CONFIG)/bin/setConfig:  \
 	$(CC) -o $(CONFIG)/bin/setConfig -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o -lmpr $(LIBS)
 
 src/server/slink.c: 
-	cd src/server >/dev/null; [ ! -f slink.c ] && cp slink.empty slink.c ; true ; cd - >/dev/null
+	cd src/server; [ ! -f slink.c ] && cp slink.empty slink.c ; true ; cd ../..
 
 $(CONFIG)/obj/slink.o: \
         src/server/slink.c \
@@ -642,7 +655,7 @@ $(CONFIG)/bin/appweb:  \
 	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_ssl -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 src/server/cache: 
-	cd src/server >/dev/null; mkdir -p cache ; cd - >/dev/null
+	cd src/server; mkdir -p cache ; cd ../..
 
 $(CONFIG)/inc/testAppweb.h:  \
         $(CONFIG)/inc/bit.h \
@@ -672,74 +685,65 @@ $(CONFIG)/bin/testAppweb:  \
 
 test/cgi-bin/testScript:  \
         $(CONFIG)/bin/cgiProgram
-	cd test >/dev/null; echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd - >/dev/null
+	cd test; echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..
 
 test/web/caching/cache.cgi: 
-	cd test >/dev/null; echo "#!`type -p ejs`" >web/caching/cache.cgi ; cd - >/dev/null
-	cd test >/dev/null; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; cd - >/dev/null
-	cd test >/dev/null; chmod +x web/caching/cache.cgi ; cd - >/dev/null
+	cd test; echo "#!`type -p ejs`" >web/caching/cache.cgi ; cd ..
+	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; cd ..
+	cd test; chmod +x web/caching/cache.cgi ; cd ..
 
 test/web/auth/basic/basic.cgi: 
-	cd test >/dev/null; echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; cd - >/dev/null
-	cd test >/dev/null; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; cd - >/dev/null
-	cd test >/dev/null; chmod +x web/auth/basic/basic.cgi ; cd - >/dev/null
+	cd test; echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; cd ..
+	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; cd ..
+	cd test; chmod +x web/auth/basic/basic.cgi ; cd ..
 
 test/cgi-bin/cgiProgram:  \
         $(CONFIG)/bin/cgiProgram
-	cd test >/dev/null; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram ; cd - >/dev/null
-	cd test >/dev/null; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram ; cd - >/dev/null
-	cd test >/dev/null; cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program' ; cd - >/dev/null
-	cd test >/dev/null; cp ../$(CONFIG)/bin/cgiProgram web/cgiProgram.cgi ; cd - >/dev/null
-	cd test >/dev/null; chmod +x cgi-bin/* web/cgiProgram.cgi ; cd - >/dev/null
+	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram ; cd ..
+	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram ; cd ..
+	cd test; cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program' ; cd ..
+	cd test; cp ../$(CONFIG)/bin/cgiProgram web/cgiProgram.cgi ; cd ..
+	cd test; chmod +x cgi-bin/* web/cgiProgram.cgi ; cd ..
 
 test/web/js: 
-	cd test >/dev/null; cp -r ../src/esp/www/files/static/js 'web/js' ; cd - >/dev/null
+	cd test; cp -r ../src/esp/www/files/static/js 'web/js' ; cd ..
 
 version: 
 	@echo 4.3.0-0
 
 genslink: 
-	cd src/server >/dev/null; esp --static --genlink slink.c --flat compile ; cd - >/dev/null
+	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
 run:  \
         compile
-	cd src/server >/dev/null; sudo ../../$(CONFIG)/bin/appweb -v ; cd - >/dev/null
+	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 
 test-run:  \
         compile
-	cd test >/dev/null; /bin/appweb -v ; cd - >/dev/null
-
-install: 
-	sudo make root-install
-
-install-prep:  \
-        compile
-	./$(CONFIG)/bin/ejs bits/getbitvals projects/$(PRODUCT)-$(OS)-$(PROFILE)-bit.h PRODUCT VERSION CFG_PREFIX PRD_PREFIX WEB_PREFIX LOG_PREFIX BIN_PREFIX SPL_PREFIX BIN_PREFIX >.prefixes; chmod 666 .prefixes
-	echo $(eval include .prefixes)
+	cd test; /bin/appweb -v ; cd ..
 
 root-install:  \
-        compile \
-        install-prep
+        compile
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
-	rm -f $(BIT_PRD_PREFIX)/latest /usr/local/bin/appweb /usr/local/bin/appman /usr/local/bin/esp
+	rm -f $(BIT_PRD_PREFIX)/latest $(BIT_UBIN_PREFIX)/bit
+	for n in appman appweb authpass esp; do rm -f $(BIT_UBIN_PREFIX)/$$n ; done
 	install -d -m 755 $(BIT_CFG_PREFIX) $(BIT_BIN_PREFIX)
 	install -m 644 src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
-	install -m 755 $(filter-out ./$(CONFIG)/bin/esp-www,$(wildcard ./$(CONFIG)/bin/*)) $(BIT_BIN_PREFIX)
+	cp -R -P ./$(CONFIG)/bin/* $(BIT_BIN_PREFIX)
 	install -m 644 -o root -g wheel ./package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
 	$(OS)-$(ARCH)-$(PROFILE)/bin/setConfig --home $(BIT_CFG_PREFIX) --documents $(BIT_WEB_PREFIX) --logs $(BIT_LOG_PREFIX) --cache $(BIT_SPL_PREFIX)/cache --modules $(BIT_BIN_PREFIX)  $(BIT_CFG_PREFIX)/appweb.conf
-	ln -s $(BIT_VERSION) $(BIT_PRD_PREFIX)/latest
-	ln -s $(BIT_BIN_PREFIX)/appweb /usr/local/bin/appweb
-	ln -s $(BIT_BIN_PREFIX)/appman /usr/local/bin/appman
-	[ -f $(BIT_BIN_PREFIX)/esp ] && ln -s $(BIT_BIN_PREFIX)/esp /usr/local/bin/esp
+	ln -s $(VERSION) $(BIT_PRD_PREFIX)/latest
+	for n in appman appweb authpass esp; do 	rm -f $(BIT_UBIN_PREFIX)/$$n ; 	ln -s $(BIT_BIN_PREFIX)/$$n $(BIT_UBIN_PREFIX)/$$n ; 	done
 	./$(CONFIG)/bin/appman install enable start
-	exit 0
 
-uninstall: 
-	sudo make root-uninstall
+install:  \
+        compile
+	sudo $(MAKE) -C . -f projects/$(PRODUCT)-$(OS)-$(PROFILE).mk $(MAKEFLAGS) root-install
 
-root-uninstall:  \
-        compile \
-        install-prep
+root-uninstall: 
 	$(BIN)/appman stop disable uninstall
 	rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)
+
+uninstall: 
+	sudo $(MAKE) -C . -f projects/$(PRODUCT)-$(OS)-$(PROFILE).mk $(MAKEFLAGS) root-uninstall
 

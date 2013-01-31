@@ -51,7 +51,8 @@ BIN 	:= $(OS)-$(ARCH)-$(PROFILE)/bin
 
 all compile:
 	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
-	@echo ; echo 'You can now install via "make install" or run Appweb via: "make run"'
+	@echo ; echo 'You can now install via "sudo make install" or run Appweb via: "sudo make run"'
+	@echo ; echo "To run locally, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path" ; echo
 
 clean clobber install uninstall run:
 	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
