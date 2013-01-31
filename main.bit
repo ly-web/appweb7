@@ -96,6 +96,7 @@ Bit.load({
             tar: true,                                                                                     
             template: true,                                                                               
             web: true,                                                                                    
+            zlib: true,
         },
 
         esp: {

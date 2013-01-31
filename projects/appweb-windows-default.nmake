@@ -178,21 +178,20 @@ clean:
 	-if exist $(CONFIG)\obj\testHttp.obj del /Q $(CONFIG)\obj\testHttp.obj
 	-if exist $(CONFIG)\obj\removeFiles.obj del /Q $(CONFIG)\obj\removeFiles.obj
 
+$(CONFIG)\inc\mpr.h: 
+	-if exist $(CONFIG)\inc\mpr.h del /Q $(CONFIG)\inc\mpr.h
+	copy /Y src\deps\mpr\mpr.h $(CONFIG)\inc\mpr.h
+
 $(CONFIG)\inc\bitos.h:  \
         $(CONFIG)\inc\bit.h
 	-if exist $(CONFIG)\inc\bitos.h del /Q $(CONFIG)\inc\bitos.h
 	copy /Y src\bitos.h $(CONFIG)\inc\bitos.h
 
-$(CONFIG)\inc\mpr.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\bitos.h
-	-if exist $(CONFIG)\inc\mpr.h del /Q $(CONFIG)\inc\mpr.h
-	copy /Y src\deps\mpr\mpr.h $(CONFIG)\inc\mpr.h
-
 $(CONFIG)\obj\mprLib.obj: \
         src\deps\mpr\mprLib.c \
         $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\mpr.h
+        $(CONFIG)\inc\mpr.h \
+        $(CONFIG)\inc\bitos.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\mprLib.obj -Fd$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\mpr\mprLib.c
 
 $(CONFIG)\bin\libmpr.dll:  \
@@ -200,16 +199,15 @@ $(CONFIG)\bin\libmpr.dll:  \
         $(CONFIG)\obj\mprLib.obj
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprLib.obj $(LIBS)
 
-$(CONFIG)\inc\est.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\bitos.h
+$(CONFIG)\inc\est.h: 
 	-if exist $(CONFIG)\inc\est.h del /Q $(CONFIG)\inc\est.h
 	copy /Y src\deps\est\est.h $(CONFIG)\inc\est.h
 
 $(CONFIG)\obj\estLib.obj: \
         src\deps\est\estLib.c \
         $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\est.h
+        $(CONFIG)\inc\est.h \
+        $(CONFIG)\inc\bitos.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\est\estLib.c
 
 $(CONFIG)\bin\libest.dll:  \
@@ -256,8 +254,7 @@ $(CONFIG)\bin\ca.crt: src/deps/est/ca.crt
 	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
 	copy /Y src\deps\est\ca.crt $(CONFIG)\bin\ca.crt
 
-$(CONFIG)\inc\pcre.h:  \
-        $(CONFIG)\inc\bit.h
+$(CONFIG)\inc\pcre.h: 
 	-if exist $(CONFIG)\inc\pcre.h del /Q $(CONFIG)\inc\pcre.h
 	copy /Y src\deps\pcre\pcre.h $(CONFIG)\inc\pcre.h
 
@@ -272,16 +269,15 @@ $(CONFIG)\bin\libpcre.dll:  \
         $(CONFIG)\obj\pcre.obj
 	"$(LD)" -dll -out:$(CONFIG)\bin\libpcre.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\pcre.obj $(LIBS)
 
-$(CONFIG)\inc\http.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\mpr.h
+$(CONFIG)\inc\http.h: 
 	-if exist $(CONFIG)\inc\http.h del /Q $(CONFIG)\inc\http.h
 	copy /Y src\deps\http\http.h $(CONFIG)\inc\http.h
 
 $(CONFIG)\obj\httpLib.obj: \
         src\deps\http\httpLib.c \
         $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\http.h
+        $(CONFIG)\inc\http.h \
+        $(CONFIG)\inc\mpr.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\http\httpLib.c
 
 $(CONFIG)\bin\libhttp.dll:  \
@@ -306,24 +302,22 @@ $(CONFIG)\bin\http-ca.crt: src/deps/http/http-ca.crt
 	-if exist $(CONFIG)\bin\http-ca.crt del /Q $(CONFIG)\bin\http-ca.crt
 	copy /Y src\deps\http\http-ca.crt $(CONFIG)\bin\http-ca.crt
 
-$(CONFIG)\inc\customize.h:  \
-        $(CONFIG)\inc\bit.h
-	-if exist $(CONFIG)\inc\customize.h del /Q $(CONFIG)\inc\customize.h
-	copy /Y src\customize.h $(CONFIG)\inc\customize.h
-
-$(CONFIG)\inc\appweb.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\mpr.h \
-        $(CONFIG)\inc\http.h \
-        $(CONFIG)\inc\customize.h
+$(CONFIG)\inc\appweb.h: 
 	-if exist $(CONFIG)\inc\appweb.h del /Q $(CONFIG)\inc\appweb.h
 	copy /Y src\appweb.h $(CONFIG)\inc\appweb.h
+
+$(CONFIG)\inc\customize.h: 
+	-if exist $(CONFIG)\inc\customize.h del /Q $(CONFIG)\inc\customize.h
+	copy /Y src\customize.h $(CONFIG)\inc\customize.h
 
 $(CONFIG)\obj\config.obj: \
         src\config.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\appweb.h \
-        $(CONFIG)\inc\pcre.h
+        $(CONFIG)\inc\pcre.h \
+        $(CONFIG)\inc\mpr.h \
+        $(CONFIG)\inc\http.h \
+        $(CONFIG)\inc\customize.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\config.obj -Fd$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\config.c
 
 $(CONFIG)\obj\convenience.obj: \
@@ -369,9 +363,7 @@ $(CONFIG)\bin\libappweb.dll:  \
         $(CONFIG)\obj\server.obj
 	"$(LD)" -dll -out:$(CONFIG)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.obj $(CONFIG)\obj\convenience.obj $(CONFIG)\obj\dirHandler.obj $(CONFIG)\obj\fileHandler.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\server.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
 
-$(CONFIG)\inc\edi.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\appweb.h
+$(CONFIG)\inc\edi.h: 
 	-if exist $(CONFIG)\inc\edi.h del /Q $(CONFIG)\inc\edi.h
 	copy /Y src\esp\edi.h $(CONFIG)\inc\edi.h
 
@@ -379,17 +371,11 @@ $(CONFIG)\inc\esp-app.h:
 	-if exist $(CONFIG)\inc\esp-app.h del /Q $(CONFIG)\inc\esp-app.h
 	copy /Y src\esp\esp-app.h $(CONFIG)\inc\esp-app.h
 
-$(CONFIG)\inc\esp.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\appweb.h \
-        $(CONFIG)\inc\edi.h
+$(CONFIG)\inc\esp.h: 
 	-if exist $(CONFIG)\inc\esp.h del /Q $(CONFIG)\inc\esp.h
 	copy /Y src\esp\esp.h $(CONFIG)\inc\esp.h
 
-$(CONFIG)\inc\mdb.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\appweb.h \
-        $(CONFIG)\inc\edi.h
+$(CONFIG)\inc\mdb.h: 
 	-if exist $(CONFIG)\inc\mdb.h del /Q $(CONFIG)\inc\mdb.h
 	copy /Y src\esp\mdb.h $(CONFIG)\inc\mdb.h
 
@@ -501,26 +487,19 @@ $(CONFIG)\bin\esp-appweb.conf: src/esp/esp-appweb.conf
 	-if exist $(CONFIG)\bin\esp-appweb.conf del /Q $(CONFIG)\bin\esp-appweb.conf
 	copy /Y src\esp\esp-appweb.conf $(CONFIG)\bin\esp-appweb.conf
 
-$(CONFIG)\inc\ejs.slots.h:  \
-        $(CONFIG)\inc\bit.h
-	-if exist $(CONFIG)\inc\ejs.slots.h del /Q $(CONFIG)\inc\ejs.slots.h
-	copy /Y src\deps\ejs\ejs.slots.h $(CONFIG)\inc\ejs.slots.h
-
-$(CONFIG)\inc\ejs.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\bitos.h \
-        $(CONFIG)\inc\mpr.h \
-        $(CONFIG)\inc\http.h \
-        $(CONFIG)\inc\ejs.slots.h
+$(CONFIG)\inc\ejs.h: 
 	-if exist $(CONFIG)\inc\ejs.h del /Q $(CONFIG)\inc\ejs.h
 	copy /Y src\deps\ejs\ejs.h $(CONFIG)\inc\ejs.h
+
+$(CONFIG)\inc\ejs.slots.h: 
+	-if exist $(CONFIG)\inc\ejs.slots.h del /Q $(CONFIG)\inc\ejs.slots.h
+	copy /Y src\deps\ejs\ejs.slots.h $(CONFIG)\inc\ejs.slots.h
 
 $(CONFIG)\inc\ejsByteGoto.h: 
 	-if exist $(CONFIG)\inc\ejsByteGoto.h del /Q $(CONFIG)\inc\ejsByteGoto.h
 	copy /Y src\deps\ejs\ejsByteGoto.h $(CONFIG)\inc\ejsByteGoto.h
 
-$(CONFIG)\inc\sqlite3.h:  \
-        $(CONFIG)\inc\bit.h
+$(CONFIG)\inc\sqlite3.h: 
 	-if exist $(CONFIG)\inc\sqlite3.h del /Q $(CONFIG)\inc\sqlite3.h
 	copy /Y src\deps\sqlite\sqlite3.h $(CONFIG)\inc\sqlite3.h
 
@@ -530,7 +509,10 @@ $(CONFIG)\obj\ejsLib.obj: \
         $(CONFIG)\inc\ejs.h \
         $(CONFIG)\inc\mpr.h \
         $(CONFIG)\inc\pcre.h \
-        $(CONFIG)\inc\sqlite3.h
+        $(CONFIG)\inc\sqlite3.h \
+        $(CONFIG)\inc\bitos.h \
+        $(CONFIG)\inc\http.h \
+        $(CONFIG)\inc\ejs.slots.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\ejs\ejsLib.c
 
 $(CONFIG)\bin\libejs.dll:  \
@@ -693,17 +675,16 @@ src\server\cache:
 	md cache
 	cd ..\..
 
-$(CONFIG)\inc\testAppweb.h:  \
-        $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\mpr.h \
-        $(CONFIG)\inc\http.h
+$(CONFIG)\inc\testAppweb.h: 
 	-if exist $(CONFIG)\inc\testAppweb.h del /Q $(CONFIG)\inc\testAppweb.h
 	copy /Y test\testAppweb.h $(CONFIG)\inc\testAppweb.h
 
 $(CONFIG)\obj\testAppweb.obj: \
         test\testAppweb.c \
         $(CONFIG)\inc\bit.h \
-        $(CONFIG)\inc\testAppweb.h
+        $(CONFIG)\inc\testAppweb.h \
+        $(CONFIG)\inc\mpr.h \
+        $(CONFIG)\inc\http.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testAppweb.c
 
 $(CONFIG)\obj\testHttp.obj: \
@@ -770,6 +751,9 @@ root-install:  \
         compile
 	.\$(CONFIG)\bin\appman stop disable uninstall
 	xcopy /I /S /Y /Q $(CONFIG)\bin "$(BIT_BIN_PREFIX)"
+	del /Q "$(BIT_BIN_PREFIX)\*.pdb"
+	del /Q "$(BIT_BIN_PREFIX)\*.exp"
+	del /Q "$(BIT_BIN_PREFIX)\*.lib"
 	.\$(CONFIG)\bin\appman install enable start
 
 install:  \
@@ -778,7 +762,8 @@ install:  \
 
 root-uninstall: 
 	$(BIN)/appman stop disable uninstall
-	del /Q "$(BIT_CFG_PREFIX)" "$(BIT_PRD_PREFIX)"
+	if exist "$(BIT_CFG_PREFIX)" rd /Q /S "$(BIT_CFG_PREFIX)"
+	if exist "$(BIT_PRD_PREFIX)" rd /Q /S "$(BIT_PRD_PREFIX)"
 
 uninstall: 
 	nmake -nologo -f ./projects/$(PRODUCT)-$(OS)-$(PROFILE).nmake root-uninstall

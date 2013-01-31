@@ -179,21 +179,20 @@ clean:
 clobber: clean
 	rm -fr ./$(CONFIG)
 
+$(CONFIG)/inc/mpr.h: 
+	rm -fr $(CONFIG)/inc/mpr.h
+	cp -r src/deps/mpr/mpr.h $(CONFIG)/inc/mpr.h
+
 $(CONFIG)/inc/bitos.h:  \
         $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/bitos.h
 	cp -r src/bitos.h $(CONFIG)/inc/bitos.h
 
-$(CONFIG)/inc/mpr.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/bitos.h
-	rm -fr $(CONFIG)/inc/mpr.h
-	cp -r src/deps/mpr/mpr.h $(CONFIG)/inc/mpr.h
-
 $(CONFIG)/obj/mprLib.o: \
         src/deps/mpr/mprLib.c \
         $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
+        $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/inc/bitos.h
 	$(CC) -c -o $(CONFIG)/obj/mprLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
 
 $(CONFIG)/bin/libmpr.so:  \
@@ -201,16 +200,15 @@ $(CONFIG)/bin/libmpr.so:  \
         $(CONFIG)/obj/mprLib.o
 	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprLib.o $(LIBS)
 
-$(CONFIG)/inc/est.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/bitos.h
+$(CONFIG)/inc/est.h: 
 	rm -fr $(CONFIG)/inc/est.h
 	cp -r src/deps/est/est.h $(CONFIG)/inc/est.h
 
 $(CONFIG)/obj/estLib.o: \
         src/deps/est/estLib.c \
         $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/est.h
+        $(CONFIG)/inc/est.h \
+        $(CONFIG)/inc/bitos.h
 	$(CC) -c -o $(CONFIG)/obj/estLib.o -fPIC $(DFLAGS) -I$(CONFIG)/inc src/deps/est/estLib.c
 
 $(CONFIG)/bin/libest.so:  \
@@ -257,8 +255,7 @@ $(CONFIG)/bin/ca.crt: src/deps/est/ca.crt
 	rm -fr $(CONFIG)/bin/ca.crt
 	cp -r src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
 
-$(CONFIG)/inc/pcre.h:  \
-        $(CONFIG)/inc/bit.h
+$(CONFIG)/inc/pcre.h: 
 	rm -fr $(CONFIG)/inc/pcre.h
 	cp -r src/deps/pcre/pcre.h $(CONFIG)/inc/pcre.h
 
@@ -273,16 +270,15 @@ $(CONFIG)/bin/libpcre.so:  \
         $(CONFIG)/obj/pcre.o
 	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o $(LIBS)
 
-$(CONFIG)/inc/http.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
+$(CONFIG)/inc/http.h: 
 	rm -fr $(CONFIG)/inc/http.h
 	cp -r src/deps/http/http.h $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/httpLib.o: \
         src/deps/http/httpLib.c \
         $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/http.h
+        $(CONFIG)/inc/http.h \
+        $(CONFIG)/inc/mpr.h
 	$(CC) -c -o $(CONFIG)/obj/httpLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
 
 $(CONFIG)/bin/libhttp.so:  \
@@ -307,24 +303,22 @@ $(CONFIG)/bin/http-ca.crt: src/deps/http/http-ca.crt
 	rm -fr $(CONFIG)/bin/http-ca.crt
 	cp -r src/deps/http/http-ca.crt $(CONFIG)/bin/http-ca.crt
 
-$(CONFIG)/inc/customize.h:  \
-        $(CONFIG)/inc/bit.h
-	rm -fr $(CONFIG)/inc/customize.h
-	cp -r src/customize.h $(CONFIG)/inc/customize.h
-
-$(CONFIG)/inc/appweb.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h \
-        $(CONFIG)/inc/http.h \
-        $(CONFIG)/inc/customize.h
+$(CONFIG)/inc/appweb.h: 
 	rm -fr $(CONFIG)/inc/appweb.h
 	cp -r src/appweb.h $(CONFIG)/inc/appweb.h
+
+$(CONFIG)/inc/customize.h: 
+	rm -fr $(CONFIG)/inc/customize.h
+	cp -r src/customize.h $(CONFIG)/inc/customize.h
 
 $(CONFIG)/obj/config.o: \
         src/config.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/appweb.h \
-        $(CONFIG)/inc/pcre.h
+        $(CONFIG)/inc/pcre.h \
+        $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/inc/http.h \
+        $(CONFIG)/inc/customize.h
 	$(CC) -c -o $(CONFIG)/obj/config.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/config.c
 
 $(CONFIG)/obj/convenience.o: \
@@ -370,9 +364,7 @@ $(CONFIG)/bin/libappweb.so:  \
         $(CONFIG)/obj/server.o
 	$(CC) -shared -o $(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr
 
-$(CONFIG)/inc/edi.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/appweb.h
+$(CONFIG)/inc/edi.h: 
 	rm -fr $(CONFIG)/inc/edi.h
 	cp -r src/esp/edi.h $(CONFIG)/inc/edi.h
 
@@ -380,17 +372,11 @@ $(CONFIG)/inc/esp-app.h:
 	rm -fr $(CONFIG)/inc/esp-app.h
 	cp -r src/esp/esp-app.h $(CONFIG)/inc/esp-app.h
 
-$(CONFIG)/inc/esp.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/appweb.h \
-        $(CONFIG)/inc/edi.h
+$(CONFIG)/inc/esp.h: 
 	rm -fr $(CONFIG)/inc/esp.h
 	cp -r src/esp/esp.h $(CONFIG)/inc/esp.h
 
-$(CONFIG)/inc/mdb.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/appweb.h \
-        $(CONFIG)/inc/edi.h
+$(CONFIG)/inc/mdb.h: 
 	rm -fr $(CONFIG)/inc/mdb.h
 	cp -r src/esp/mdb.h $(CONFIG)/inc/mdb.h
 
@@ -501,26 +487,19 @@ $(CONFIG)/bin/esp-appweb.conf: src/esp/esp-appweb.conf
 	rm -fr $(CONFIG)/bin/esp-appweb.conf
 	cp -r src/esp/esp-appweb.conf $(CONFIG)/bin/esp-appweb.conf
 
-$(CONFIG)/inc/ejs.slots.h:  \
-        $(CONFIG)/inc/bit.h
-	rm -fr $(CONFIG)/inc/ejs.slots.h
-	cp -r src/deps/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
-
-$(CONFIG)/inc/ejs.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/bitos.h \
-        $(CONFIG)/inc/mpr.h \
-        $(CONFIG)/inc/http.h \
-        $(CONFIG)/inc/ejs.slots.h
+$(CONFIG)/inc/ejs.h: 
 	rm -fr $(CONFIG)/inc/ejs.h
 	cp -r src/deps/ejs/ejs.h $(CONFIG)/inc/ejs.h
+
+$(CONFIG)/inc/ejs.slots.h: 
+	rm -fr $(CONFIG)/inc/ejs.slots.h
+	cp -r src/deps/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
 
 $(CONFIG)/inc/ejsByteGoto.h: 
 	rm -fr $(CONFIG)/inc/ejsByteGoto.h
 	cp -r src/deps/ejs/ejsByteGoto.h $(CONFIG)/inc/ejsByteGoto.h
 
-$(CONFIG)/inc/sqlite3.h:  \
-        $(CONFIG)/inc/bit.h
+$(CONFIG)/inc/sqlite3.h: 
 	rm -fr $(CONFIG)/inc/sqlite3.h
 	cp -r src/deps/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
 
@@ -530,7 +509,10 @@ $(CONFIG)/obj/ejsLib.o: \
         $(CONFIG)/inc/ejs.h \
         $(CONFIG)/inc/mpr.h \
         $(CONFIG)/inc/pcre.h \
-        $(CONFIG)/inc/sqlite3.h
+        $(CONFIG)/inc/sqlite3.h \
+        $(CONFIG)/inc/bitos.h \
+        $(CONFIG)/inc/http.h \
+        $(CONFIG)/inc/ejs.slots.h
 	$(CC) -c -o $(CONFIG)/obj/ejsLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsLib.c
 
 $(CONFIG)/bin/libejs.so:  \
@@ -657,17 +639,16 @@ $(CONFIG)/bin/appweb:  \
 src/server/cache: 
 	cd src/server; mkdir -p cache ; cd ../..
 
-$(CONFIG)/inc/testAppweb.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h \
-        $(CONFIG)/inc/http.h
+$(CONFIG)/inc/testAppweb.h: 
 	rm -fr $(CONFIG)/inc/testAppweb.h
 	cp -r test/testAppweb.h $(CONFIG)/inc/testAppweb.h
 
 $(CONFIG)/obj/testAppweb.o: \
         test/testAppweb.c \
         $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/testAppweb.h
+        $(CONFIG)/inc/testAppweb.h \
+        $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/inc/http.h
 	$(CC) -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
 
 $(CONFIG)/obj/testHttp.o: \

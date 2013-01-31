@@ -25,6 +25,24 @@
 #ifndef BIT_DISCOVER
     #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,est,man,man2html,pmaker,php,sqlite,utest,zip"
 #endif
+#ifndef BIT_EJS_DB
+    #define BIT_EJS_DB 1
+#endif
+#ifndef BIT_EJS_MAIL
+    #define BIT_EJS_MAIL 1
+#endif
+#ifndef BIT_EJS_MAPPER
+    #define BIT_EJS_MAPPER 1
+#endif
+#ifndef BIT_EJS_TAR
+    #define BIT_EJS_TAR 1
+#endif
+#ifndef BIT_EJS_TEMPLATE
+    #define BIT_EJS_TEMPLATE 1
+#endif
+#ifndef BIT_EJS_WEB
+    #define BIT_EJS_WEB 1
+#endif
 #ifndef BIT_EJS_ONE_MODULE
     #define BIT_EJS_ONE_MODULE 1
 #endif
@@ -98,7 +116,7 @@
     #define BIT_PRODUCT "appweb"
 #endif
 #ifndef BIT_REQUIRED
-    #define BIT_REQUIRED "winsdk,compiler,lib,link,dumpbin,rc,bit,pcre"
+    #define BIT_REQUIRED "winsdk,compiler,lib,link,dumpbin,rc,pcre"
 #endif
 #ifndef BIT_SSL
     #define BIT_SSL 1
@@ -203,9 +221,6 @@
 #endif
 
 /* Packs */
-#ifndef BIT_PACK_BIT
-    #define BIT_PACK_BIT 1
-#endif
 #ifndef BIT_PACK_CGI
     #define BIT_PACK_CGI 1
 #endif
@@ -283,9 +298,6 @@
 #endif
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1
-#endif
-#ifndef BIT_PACK_BIT_PATH
-    #define BIT_PACK_BIT_PATH "/Users/mob/git/bit/macosx-x64-debug/bin/bit"
 #endif
 #ifndef BIT_PACK_CGI_PATH
     #define BIT_PACK_CGI_PATH "/Users/mob/git/appweb/src/modules/cgiHandler.c"
