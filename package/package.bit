@@ -9,7 +9,6 @@ Bit.load({
             type: 'exe',
             rule: 'gui'
             sources: [ 'windows/removeFiles.c' ],
-            depends: [ 'libmpr' ],
             platforms: [ 'local' ],
         },
     },
