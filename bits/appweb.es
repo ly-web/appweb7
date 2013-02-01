@@ -95,7 +95,6 @@ public function packageBinaryFiles(formats = ['tar', 'native'], minimal = false)
     install(bit.dir.bin + '/esp.conf', p.config)
     install(bit.dir.bin + '/esp-www', p.bin)
     install(bit.dir.bin + '/esp-appweb.conf', p.bin)
-    install(bit.dir.bin.join('http-ca.crt'), p.bin)
     if (!minimal) {
         install(bit.dir.inc.join('*.h'), p.inc)
     }
