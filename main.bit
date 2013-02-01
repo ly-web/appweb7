@@ -77,7 +77,7 @@ Bit.load({
         /*
             Always build ejscript for tools
          */
-        ejscript: true,
+        ejscript: false,
 
         http: {
             /* Use PAM (Plugable Authentication Module) to store passwords */
