@@ -12,9 +12,9 @@ Bit.load({
             platforms: [ 'local' ],
         },
 
-        'root-install': {
+        install: {
             home: '${TOP}',
-			action: '',
+            action: "installBinary()",
 			depends: ['compile'],
             'generate-make': "
                 @${BIN}/appman stop disable uninstall >/dev/null 2>&1 ; true
@@ -42,17 +42,9 @@ Bit.load({
             ",
         },
 
-        install: {
+        uninstall: {
             home: '${TOP}',
-            depends: ['compile'],
-            action: "installBinary()",
-            'generate-make': "sudo $(MAKE) -C ${TOP} -f projects/$(PRODUCT)-$(OS)-$(PROFILE).mk $(MAKEFLAGS) root-install",
-            'generate-nmake': "nmake -nologo -f ${TOP}/projects/$(PRODUCT)-$(OS)-$(PROFILE).nmake root-install",
-        },
-
-        'root-uninstall': {
-            home: '${TOP}',
-			action: '',
+            action: "uninstallBinary()"
             'generate-make': "
 				$(BIN)/appman stop disable uninstall
 				rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)
@@ -63,13 +55,6 @@ Bit.load({
                 if exist \"$(BIT_PRD_PREFIX)\" rd /Q /S \"$(BIT_PRD_PREFIX)\"
             ",
 		},
-
-        uninstall: {
-            home: '${TOP}',
-            action: "uninstallBinary()"
-            'generate-make': "sudo $(MAKE) -C ${TOP} -f projects/$(PRODUCT)-$(OS)-$(PROFILE).mk $(MAKEFLAGS) root-uninstall",
-            'generate-nmake': "nmake -nologo -f ${TOP}/projects/$(PRODUCT)-$(OS)-$(PROFILE).nmake root-uninstall",
-        },
 
         package: {
             home: '${TOP}',

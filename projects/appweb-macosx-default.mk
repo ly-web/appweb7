@@ -54,7 +54,6 @@ all compile: prep \
         $(CONFIG)/bin/libpcre.dylib \
         $(CONFIG)/bin/libhttp.dylib \
         $(CONFIG)/bin/http \
-        $(CONFIG)/bin/http-ca.crt \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/bin/libmod_esp.dylib \
         $(CONFIG)/bin/esp \
@@ -62,10 +61,6 @@ all compile: prep \
         src/server/esp.conf \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
-        $(CONFIG)/bin/libejs.dylib \
-        $(CONFIG)/bin/ejs \
-        $(CONFIG)/bin/ejsc \
-        $(CONFIG)/bin/ejs.mod \
         $(CONFIG)/bin/libmod_cgi.dylib \
         $(CONFIG)/bin/libmod_ssl.dylib \
         $(CONFIG)/bin/authpass \
@@ -108,7 +103,6 @@ clean:
 	rm -rf $(CONFIG)/bin/libpcre.dylib
 	rm -rf $(CONFIG)/bin/libhttp.dylib
 	rm -rf $(CONFIG)/bin/http
-	rm -rf $(CONFIG)/bin/http-ca.crt
 	rm -rf $(CONFIG)/bin/libappweb.dylib
 	rm -rf $(CONFIG)/bin/libmod_esp.dylib
 	rm -rf $(CONFIG)/bin/esp
@@ -116,10 +110,6 @@ clean:
 	rm -rf src/server/esp.conf
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
-	rm -rf $(CONFIG)/bin/libejs.dylib
-	rm -rf $(CONFIG)/bin/ejs
-	rm -rf $(CONFIG)/bin/ejsc
-	rm -rf $(CONFIG)/bin/ejs.mod
 	rm -rf $(CONFIG)/bin/libmod_cgi.dylib
 	rm -rf $(CONFIG)/bin/libmod_ssl.dylib
 	rm -rf $(CONFIG)/bin/authpass
@@ -298,10 +288,6 @@ $(CONFIG)/bin/http:  \
         $(CONFIG)/bin/libhttp.dylib \
         $(CONFIG)/obj/http.o
 	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr -lpam
-
-$(CONFIG)/bin/http-ca.crt: src/deps/http/http-ca.crt
-	rm -fr $(CONFIG)/bin/http-ca.crt
-	cp -r src/deps/http/http-ca.crt $(CONFIG)/bin/http-ca.crt
 
 $(CONFIG)/inc/appweb.h: 
 	rm -fr $(CONFIG)/inc/appweb.h
@@ -487,70 +473,6 @@ $(CONFIG)/bin/esp-appweb.conf: src/esp/esp-appweb.conf
 	rm -fr $(CONFIG)/bin/esp-appweb.conf
 	cp -r src/esp/esp-appweb.conf $(CONFIG)/bin/esp-appweb.conf
 
-$(CONFIG)/inc/ejs.h: 
-	rm -fr $(CONFIG)/inc/ejs.h
-	cp -r src/deps/ejs/ejs.h $(CONFIG)/inc/ejs.h
-
-$(CONFIG)/inc/ejs.slots.h: 
-	rm -fr $(CONFIG)/inc/ejs.slots.h
-	cp -r src/deps/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
-
-$(CONFIG)/inc/ejsByteGoto.h: 
-	rm -fr $(CONFIG)/inc/ejsByteGoto.h
-	cp -r src/deps/ejs/ejsByteGoto.h $(CONFIG)/inc/ejsByteGoto.h
-
-$(CONFIG)/inc/sqlite3.h: 
-	rm -fr $(CONFIG)/inc/sqlite3.h
-	cp -r src/deps/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
-
-$(CONFIG)/obj/ejsLib.o: \
-        src/deps/ejs/ejsLib.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/ejs.h \
-        $(CONFIG)/inc/mpr.h \
-        $(CONFIG)/inc/pcre.h \
-        $(CONFIG)/inc/sqlite3.h \
-        $(CONFIG)/inc/bitos.h \
-        $(CONFIG)/inc/http.h \
-        $(CONFIG)/inc/ejs.slots.h
-	$(CC) -c -o $(CONFIG)/obj/ejsLib.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsLib.c
-
-$(CONFIG)/bin/libejs.dylib:  \
-        $(CONFIG)/bin/libhttp.dylib \
-        $(CONFIG)/bin/libpcre.dylib \
-        $(CONFIG)/bin/libmpr.dylib \
-        $(CONFIG)/inc/ejs.h \
-        $(CONFIG)/inc/ejs.slots.h \
-        $(CONFIG)/inc/ejsByteGoto.h \
-        $(CONFIG)/obj/ejsLib.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libejs.dylib $(CONFIG)/obj/ejsLib.o -lmpr -lpcre -lhttp $(LIBS) -lpcre -lmpr -lpam
-
-$(CONFIG)/obj/ejs.o: \
-        src/deps/ejs/ejs.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/ejs.h
-	$(CC) -c -o $(CONFIG)/obj/ejs.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejs.c
-
-$(CONFIG)/bin/ejs:  \
-        $(CONFIG)/bin/libejs.dylib \
-        $(CONFIG)/obj/ejs.o
-	$(CC) -o $(CONFIG)/bin/ejs -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o -lejs $(LIBS) -lmpr -lpcre -lhttp -lpam -ledit
-
-$(CONFIG)/obj/ejsc.o: \
-        src/deps/ejs/ejsc.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/ejs.h
-	$(CC) -c -o $(CONFIG)/obj/ejsc.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsc.c
-
-$(CONFIG)/bin/ejsc:  \
-        $(CONFIG)/bin/libejs.dylib \
-        $(CONFIG)/obj/ejsc.o
-	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o -lejs $(LIBS) -lmpr -lpcre -lhttp -lpam
-
-$(CONFIG)/bin/ejs.mod:  \
-        $(CONFIG)/bin/ejsc
-	cd src/deps/ejs; ../../../$(CONFIG)/bin/ejsc --out ../../../$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; cd ../../..
-
 $(CONFIG)/obj/cgiHandler.o: \
         src/modules/cgiHandler.c \
         $(CONFIG)/inc/bit.h \
@@ -703,7 +625,7 @@ test-run:  \
         compile
 	cd test; /bin/appweb -v ; cd ..
 
-root-install:  \
+install:  \
         compile
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 	rm -f $(BIT_PRD_PREFIX)/latest $(BIT_UBIN_PREFIX)/bit
@@ -717,14 +639,7 @@ root-install:  \
 	for n in appman appweb authpass esp; do 	rm -f $(BIT_UBIN_PREFIX)/$$n ; 	ln -s $(BIT_BIN_PREFIX)/$$n $(BIT_UBIN_PREFIX)/$$n ; 	done
 	./$(CONFIG)/bin/appman install enable start
 
-install:  \
-        compile
-	sudo $(MAKE) -C . -f projects/$(PRODUCT)-$(OS)-$(PROFILE).mk $(MAKEFLAGS) root-install
-
-root-uninstall: 
+uninstall: 
 	$(BIN)/appman stop disable uninstall
 	rm -fr $(BIT_CFG_PREFIX) $(BIT_PRD_PREFIX)
-
-uninstall: 
-	sudo $(MAKE) -C . -f projects/$(PRODUCT)-$(OS)-$(PROFILE).mk $(MAKEFLAGS) root-uninstall
 

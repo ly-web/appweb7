@@ -43,11 +43,14 @@
 #ifndef BIT_EJS_WEB
     #define BIT_EJS_WEB 1
 #endif
+#ifndef BIT_EJS_ZLIB
+    #define BIT_EJS_ZLIB 1
+#endif
 #ifndef BIT_EJS_ONE_MODULE
     #define BIT_EJS_ONE_MODULE 1
 #endif
 #ifndef BIT_EJSCRIPT
-    #define BIT_EJSCRIPT 1
+    #define BIT_EJSCRIPT 0
 #endif
 #ifndef BIT_ESP_MDB
     #define BIT_ESP_MDB 1
