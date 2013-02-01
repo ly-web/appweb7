@@ -3257,7 +3257,7 @@ typedef struct HttpRoute {
     char            *defaultLanguage;       /**< Default language */
     MprHash         *extensions;            /**< Hash of handlers by extensions */
     MprList         *handlers;              /**< List of handlers for this route */
-    MprList         *handlersWithMatch;     /**< List of handlers with match routines */
+    MprList         *handlersByMatch;       /**< List of handlers that match solely by their match routine */
     HttpStage       *connector;             /**< Network connector to use */
     MprHash         *data;                  /**< Hash of extra data configuration */
     MprHash         *vars;                  /**< Route variables. Used to expand Path ${token} refrerences */
@@ -4980,6 +4980,7 @@ PUBLIC void httpProcessWriteEvent(HttpConn *conn);
 #define HTTP_TX_SENDFILE            0x4     /**< Relay output via Send connector */
 #define HTTP_TX_USE_OWN_HEADERS     0x8     /**< Skip adding default headers */
 #define HTTP_TX_NO_LENGTH           0x10    /**< Don't emit a content length (used for TRACE) */
+#define HTTP_TX_MATCHED             0x20    /**< Handler match routine run */
 
 /** 
     Http Tx
