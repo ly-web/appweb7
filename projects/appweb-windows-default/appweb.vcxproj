@@ -105,7 +105,7 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libapp.lib;libmod_cgi.lib;libmod_ssl.lib;libmod_esp.lib;libappweb.lib;libhttp.lib;libpcre.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libapp.lib;libmod_cgi.lib;libmod_ejs.lib;libmod_ssl.lib;libmod_esp.lib;libappweb.lib;libhttp.lib;libpcre.lib;libmpr.lib;libejs.lib;libsqlite3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
@@ -127,6 +127,13 @@
 <ItemGroup>
   <ProjectReference Include="libmod_ssl.vcxproj">
   <Project>37da7898-f554-41da-952b-db4c4d29ba6c</Project>
+  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+  </ProjectReference>
+</ItemGroup>
+
+<ItemGroup>
+  <ProjectReference Include="libmod_ejs.vcxproj">
+  <Project>00223a98-dc4f-4788-9985-b75b627b8d8c</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

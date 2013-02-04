@@ -11,6 +11,7 @@ OS              := macosx
 CC              := /usr/bin/clang
 LD              := /usr/bin/ld
 CONFIG          := $(OS)-$(ARCH)-$(PROFILE)
+LBIN            := $(CONFIG)/bin
 
 BIT_ROOT_PREFIX := /
 BIT_CFG_PREFIX  := $(BIT_ROOT_PREFIX)etc/appweb
@@ -55,6 +56,8 @@ all compile: prep \
         $(CONFIG)/bin/libpcre.dylib \
         $(CONFIG)/bin/libhttp.dylib \
         $(CONFIG)/bin/http \
+        $(CONFIG)/bin/libsqlite3.dylib \
+        $(CONFIG)/bin/sqlite \
         $(CONFIG)/bin/libappweb.dylib \
         $(CONFIG)/bin/libmod_esp.dylib \
         $(CONFIG)/bin/esp \
@@ -62,7 +65,12 @@ all compile: prep \
         src/server/esp.conf \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
+        $(CONFIG)/bin/libejs.dylib \
+        $(CONFIG)/bin/ejs \
+        $(CONFIG)/bin/ejsc \
+        $(CONFIG)/bin/ejs.mod \
         $(CONFIG)/bin/libmod_cgi.dylib \
+        $(CONFIG)/bin/libmod_ejs.dylib \
         $(CONFIG)/bin/libmod_ssl.dylib \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
@@ -102,6 +110,8 @@ clean:
 	rm -rf $(CONFIG)/bin/libpcre.dylib
 	rm -rf $(CONFIG)/bin/libhttp.dylib
 	rm -rf $(CONFIG)/bin/http
+	rm -rf $(CONFIG)/bin/libsqlite3.dylib
+	rm -rf $(CONFIG)/bin/sqlite
 	rm -rf $(CONFIG)/bin/libappweb.dylib
 	rm -rf $(CONFIG)/bin/libmod_esp.dylib
 	rm -rf $(CONFIG)/bin/esp
@@ -109,7 +119,12 @@ clean:
 	rm -rf src/server/esp.conf
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
+	rm -rf $(CONFIG)/bin/libejs.dylib
+	rm -rf $(CONFIG)/bin/ejs
+	rm -rf $(CONFIG)/bin/ejsc
+	rm -rf $(CONFIG)/bin/ejs.mod
 	rm -rf $(CONFIG)/bin/libmod_cgi.dylib
+	rm -rf $(CONFIG)/bin/libmod_ejs.dylib
 	rm -rf $(CONFIG)/bin/libmod_ssl.dylib
 	rm -rf $(CONFIG)/bin/authpass
 	rm -rf $(CONFIG)/bin/cgiProgram
@@ -287,6 +302,32 @@ $(CONFIG)/bin/http: \
     $(CONFIG)/bin/libhttp.dylib \
     $(CONFIG)/obj/http.o
 	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr -lpam
+
+$(CONFIG)/inc/sqlite3.h: 
+	rm -fr $(CONFIG)/inc/sqlite3.h
+	cp -r src/deps/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
+
+$(CONFIG)/obj/sqlite3.o: \
+    src/deps/sqlite/sqlite3.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/sqlite3.h
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -arch x86_64 $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
+
+$(CONFIG)/bin/libsqlite3.dylib: \
+    $(CONFIG)/inc/sqlite3.h \
+    $(CONFIG)/obj/sqlite3.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libsqlite3.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libsqlite3.dylib $(CONFIG)/obj/sqlite3.o $(LIBS)
+
+$(CONFIG)/obj/sqlite.o: \
+    src/deps/sqlite/sqlite.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/sqlite3.h
+	$(CC) -c -o $(CONFIG)/obj/sqlite.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
+
+$(CONFIG)/bin/sqlite: \
+    $(CONFIG)/bin/libsqlite3.dylib \
+    $(CONFIG)/obj/sqlite.o
+	$(CC) -o $(CONFIG)/bin/sqlite -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o -lsqlite3 $(LIBS)
 
 $(CONFIG)/inc/appweb.h: 
 	rm -fr $(CONFIG)/inc/appweb.h
@@ -472,6 +513,65 @@ $(CONFIG)/bin/esp-appweb.conf: src/esp/esp-appweb.conf
 	rm -fr $(CONFIG)/bin/esp-appweb.conf
 	cp -r src/esp/esp-appweb.conf $(CONFIG)/bin/esp-appweb.conf
 
+$(CONFIG)/inc/ejs.h: 
+	rm -fr $(CONFIG)/inc/ejs.h
+	cp -r src/deps/ejs/ejs.h $(CONFIG)/inc/ejs.h
+
+$(CONFIG)/inc/ejs.slots.h: 
+	rm -fr $(CONFIG)/inc/ejs.slots.h
+	cp -r src/deps/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
+
+$(CONFIG)/inc/ejsByteGoto.h: 
+	rm -fr $(CONFIG)/inc/ejsByteGoto.h
+	cp -r src/deps/ejs/ejsByteGoto.h $(CONFIG)/inc/ejsByteGoto.h
+
+$(CONFIG)/obj/ejsLib.o: \
+    src/deps/ejs/ejsLib.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/ejs.h \
+    $(CONFIG)/inc/mpr.h \
+    $(CONFIG)/inc/pcre.h \
+    $(CONFIG)/inc/bitos.h \
+    $(CONFIG)/inc/http.h \
+    $(CONFIG)/inc/ejs.slots.h
+	$(CC) -c -o $(CONFIG)/obj/ejsLib.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsLib.c
+
+$(CONFIG)/bin/libejs.dylib: \
+    $(CONFIG)/bin/libhttp.dylib \
+    $(CONFIG)/bin/libpcre.dylib \
+    $(CONFIG)/bin/libmpr.dylib \
+    $(CONFIG)/bin/libsqlite3.dylib \
+    $(CONFIG)/inc/ejs.h \
+    $(CONFIG)/inc/ejs.slots.h \
+    $(CONFIG)/inc/ejsByteGoto.h \
+    $(CONFIG)/obj/ejsLib.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libejs.dylib $(CONFIG)/obj/ejsLib.o -lsqlite3 -lmpr -lpcre -lhttp $(LIBS) -lpcre -lmpr -lpam
+
+$(CONFIG)/obj/ejs.o: \
+    src/deps/ejs/ejs.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/ejs.h
+	$(CC) -c -o $(CONFIG)/obj/ejs.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejs.c
+
+$(CONFIG)/bin/ejs: \
+    $(CONFIG)/bin/libejs.dylib \
+    $(CONFIG)/obj/ejs.o
+	$(CC) -o $(CONFIG)/bin/ejs -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o -lejs $(LIBS) -lsqlite3 -lmpr -lpcre -lhttp -lpam -ledit
+
+$(CONFIG)/obj/ejsc.o: \
+    src/deps/ejs/ejsc.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/ejs.h
+	$(CC) -c -o $(CONFIG)/obj/ejsc.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsc.c
+
+$(CONFIG)/bin/ejsc: \
+    $(CONFIG)/bin/libejs.dylib \
+    $(CONFIG)/obj/ejsc.o
+	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o -lejs $(LIBS) -lsqlite3 -lmpr -lpcre -lhttp -lpam
+
+$(CONFIG)/bin/ejs.mod: $(CONFIG)/bin/ejsc
+	cd src/deps/ejs; $(LBIN)/ejsc --out ../../../$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; cd ../../..
+
 $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c\
     $(CONFIG)/inc/bit.h \
@@ -482,6 +582,18 @@ $(CONFIG)/bin/libmod_cgi.dylib: \
     $(CONFIG)/bin/libappweb.dylib \
     $(CONFIG)/obj/cgiHandler.o
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+
+$(CONFIG)/obj/ejsHandler.o: \
+    src/modules/ejsHandler.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/ejsHandler.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/ejsHandler.c
+
+$(CONFIG)/bin/libmod_ejs.dylib: \
+    $(CONFIG)/bin/libappweb.dylib \
+    $(CONFIG)/bin/libejs.dylib \
+    $(CONFIG)/obj/ejsHandler.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib $(CONFIG)/obj/ejsHandler.o -lejs -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam -lsqlite3
 
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c\
@@ -552,10 +664,11 @@ $(CONFIG)/bin/appweb: \
     $(CONFIG)/bin/libappweb.dylib \
     $(CONFIG)/bin/libmod_esp.dylib \
     $(CONFIG)/bin/libmod_ssl.dylib \
+    $(CONFIG)/bin/libmod_ejs.dylib \
     $(CONFIG)/bin/libmod_cgi.dylib \
     $(CONFIG)/bin/libapp.dylib \
     $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_ssl -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_ejs -lmod_ssl -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam -lejs -lsqlite3
 
 src/server/cache: 
 	cd src/server; mkdir -p cache ; cd ../..

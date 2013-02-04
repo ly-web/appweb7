@@ -55,19 +55,17 @@ Bit.load({
             Optional packs to automatically discover and configure
             OpenSSL is the default SSL stack. Pre-release EST must be explicitly requested.
          */
-        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'est', 'man', 'man2html', 
-            'pmaker', 'php', 'sqlite', 'utest', 'zip' ],
+        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'est', 'man', 'man2html', 'pmaker', 'php', 'sqlite', 'utest', 'zip' ],
 
         /*
             Packs to disable when using --without all
          */
-        'without-all': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejscript', 'esp', 'man', 'man2html', 
-            'openssl', 'pmaker', 'php', 'sqlite', ],
+        'without-all': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejscript', 'esp', 'man', 'man2html', 'openssl', 'pmaker', 'php', 'sqlite', ],
 
         /*
             Packs to disable when using --without default (generating packages)
          */
-        'without-default': [ 'doxygen', 'dsi', 'ejscript', 'man', 'man2html', 'openssl', 'pmaker', 'php', 'sqlite', ],
+        'without-default': [ 'doxygen', 'dsi', 'man', 'man2html', 'openssl', 'pmaker', 'php' ],
 
         /*
             Set to true for a static (non-shared library) build
@@ -187,5 +185,8 @@ Bit.load({
             See src/libappweb.bit for the appweb library target
             See package/package.bit for the install/package targets
          */
+        projects: {
+            action: "print('XXX'); genProductProjects('-with ejscript --without default')",
+        },
     },
 })

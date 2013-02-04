@@ -18,6 +18,7 @@ ENTRY           = _DllMainCRTStartup@12
 
 OS              = windows
 CONFIG          = $(OS)-$(ARCH)-$(PROFILE)
+LBIN            = $(CONFIG)\bin
 CC              = cl
 LD              = link
 RC              = rc
@@ -29,17 +30,17 @@ LIBPATHS        = -libpath:$(CONFIG)\bin
 LIBS            = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
 BIT_ROOT_PREFIX = C:/
-BIT_PRD_PREFIX  = $(BIT_ROOT_PREFIX)Program Files/Embedthis Appweb
-BIT_VER_PREFIX  = $(BIT_ROOT_PREFIX)Program Files/Embedthis Appweb
+BIT_PRD_PREFIX  = $(BIT_ROOT_PREFIX)Program Files\Embedthis Appweb
+BIT_VER_PREFIX  = $(BIT_ROOT_PREFIX)Program Files\Embedthis Appweb
 BIT_CFG_PREFIX  = $(BIT_VER_PREFIX)
-BIT_BIN_PREFIX  = $(BIT_VER_PREFIX)/bin
-BIT_INC_PREFIX  = $(BIT_VER_PREFIX)/inc
-BIT_LOG_PREFIX  = $(BIT_VER_PREFIX)/logs
-BIT_SPL_PREFIX  = $(BIT_VER_PREFIX)/tmp
-BIT_SRC_PREFIX  = $(BIT_VER_PREFIX)/src
-BIT_WEB_PREFIX  = $(BIT_VER_PREFIX)/web
-BIT_UBIN_PREFIX = $(BIT_VER_PREFIX)/bin
-BIT_MAN_PREFIX  = $(BIT_VER_PREFIX)/man
+BIT_BIN_PREFIX  = $(BIT_VER_PREFIX)\bin
+BIT_INC_PREFIX  = $(BIT_VER_PREFIX)\inc
+BIT_LOG_PREFIX  = $(BIT_VER_PREFIX)\logs
+BIT_SPL_PREFIX  = $(BIT_VER_PREFIX)\tmp
+BIT_SRC_PREFIX  = $(BIT_VER_PREFIX)\src
+BIT_WEB_PREFIX  = $(BIT_VER_PREFIX)\web
+BIT_UBIN_PREFIX = $(BIT_VER_PREFIX)\bin
+BIT_MAN_PREFIX  = $(BIT_VER_PREFIX)\man
 
 all compile: prep \
         $(CONFIG)\bin\libmpr.dll \
@@ -51,6 +52,8 @@ all compile: prep \
         $(CONFIG)\bin\libpcre.dll \
         $(CONFIG)\bin\libhttp.dll \
         $(CONFIG)\bin\http.exe \
+        $(CONFIG)\bin\libsqlite3.dll \
+        $(CONFIG)\bin\sqlite.exe \
         $(CONFIG)\bin\libappweb.dll \
         $(CONFIG)\bin\libmod_esp.dll \
         $(CONFIG)\bin\esp.exe \
@@ -58,7 +61,12 @@ all compile: prep \
         src\server\esp.conf \
         $(CONFIG)\bin\esp-www \
         $(CONFIG)\bin\esp-appweb.conf \
+        $(CONFIG)\bin\libejs.dll \
+        $(CONFIG)\bin\ejs.exe \
+        $(CONFIG)\bin\ejsc.exe \
+        $(CONFIG)\bin\ejs.mod \
         $(CONFIG)\bin\libmod_cgi.dll \
+        $(CONFIG)\bin\libmod_ejs.dll \
         $(CONFIG)\bin\libmod_ssl.dll \
         $(CONFIG)\bin\authpass.exe \
         $(CONFIG)\bin\cgiProgram.exe \
@@ -102,6 +110,8 @@ clean:
 	-if exist $(CONFIG)\bin\libpcre.dll del /Q $(CONFIG)\bin\libpcre.dll
 	-if exist $(CONFIG)\bin\libhttp.dll del /Q $(CONFIG)\bin\libhttp.dll
 	-if exist $(CONFIG)\bin\http.exe del /Q $(CONFIG)\bin\http.exe
+	-if exist $(CONFIG)\bin\libsqlite3.dll del /Q $(CONFIG)\bin\libsqlite3.dll
+	-if exist $(CONFIG)\bin\sqlite.exe del /Q $(CONFIG)\bin\sqlite.exe
 	-if exist $(CONFIG)\bin\libappweb.dll del /Q $(CONFIG)\bin\libappweb.dll
 	-if exist $(CONFIG)\bin\libmod_esp.dll del /Q $(CONFIG)\bin\libmod_esp.dll
 	-if exist $(CONFIG)\bin\esp.exe del /Q $(CONFIG)\bin\esp.exe
@@ -109,7 +119,12 @@ clean:
 	-if exist src\server\esp.conf del /Q src\server\esp.conf
 	-if exist $(CONFIG)\bin\esp-www del /Q $(CONFIG)\bin\esp-www
 	-if exist $(CONFIG)\bin\esp-appweb.conf del /Q $(CONFIG)\bin\esp-appweb.conf
+	-if exist $(CONFIG)\bin\libejs.dll del /Q $(CONFIG)\bin\libejs.dll
+	-if exist $(CONFIG)\bin\ejs.exe del /Q $(CONFIG)\bin\ejs.exe
+	-if exist $(CONFIG)\bin\ejsc.exe del /Q $(CONFIG)\bin\ejsc.exe
+	-if exist $(CONFIG)\bin\ejs.mod del /Q $(CONFIG)\bin\ejs.mod
 	-if exist $(CONFIG)\bin\libmod_cgi.dll del /Q $(CONFIG)\bin\libmod_cgi.dll
+	-if exist $(CONFIG)\bin\libmod_ejs.dll del /Q $(CONFIG)\bin\libmod_ejs.dll
 	-if exist $(CONFIG)\bin\libmod_ssl.dll del /Q $(CONFIG)\bin\libmod_ssl.dll
 	-if exist $(CONFIG)\bin\authpass.exe del /Q $(CONFIG)\bin\authpass.exe
 	-if exist $(CONFIG)\bin\cgiProgram.exe del /Q $(CONFIG)\bin\cgiProgram.exe
@@ -287,6 +302,32 @@ $(CONFIG)\bin\http.exe: \
     $(CONFIG)\bin\libhttp.dll \
     $(CONFIG)\obj\http.obj
 	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
+
+$(CONFIG)\inc\sqlite3.h: 
+	-if exist $(CONFIG)\inc\sqlite3.h del /Q $(CONFIG)\inc\sqlite3.h
+	copy /Y src\deps\sqlite\sqlite3.h $(CONFIG)\inc\sqlite3.h
+
+$(CONFIG)\obj\sqlite3.obj: \
+    src\deps\sqlite\sqlite3.c\
+    $(CONFIG)\inc\bit.h \
+    $(CONFIG)\inc\sqlite3.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\sqlite\sqlite3.c
+
+$(CONFIG)\bin\libsqlite3.dll: \
+    $(CONFIG)\inc\sqlite3.h \
+    $(CONFIG)\obj\sqlite3.obj
+	"$(LD)" -dll -out:$(CONFIG)\bin\libsqlite3.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite3.obj $(LIBS)
+
+$(CONFIG)\obj\sqlite.obj: \
+    src\deps\sqlite\sqlite.c\
+    $(CONFIG)\inc\bit.h \
+    $(CONFIG)\inc\sqlite3.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\sqlite\sqlite.c
+
+$(CONFIG)\bin\sqlite.exe: \
+    $(CONFIG)\bin\libsqlite3.dll \
+    $(CONFIG)\obj\sqlite.obj
+	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj libsqlite3.lib $(LIBS)
 
 $(CONFIG)\inc\appweb.h: 
 	-if exist $(CONFIG)\inc\appweb.h del /Q $(CONFIG)\inc\appweb.h
@@ -473,6 +514,67 @@ $(CONFIG)\bin\esp-appweb.conf: src/esp/esp-appweb.conf
 	-if exist $(CONFIG)\bin\esp-appweb.conf del /Q $(CONFIG)\bin\esp-appweb.conf
 	copy /Y src\esp\esp-appweb.conf $(CONFIG)\bin\esp-appweb.conf
 
+$(CONFIG)\inc\ejs.h: 
+	-if exist $(CONFIG)\inc\ejs.h del /Q $(CONFIG)\inc\ejs.h
+	copy /Y src\deps\ejs\ejs.h $(CONFIG)\inc\ejs.h
+
+$(CONFIG)\inc\ejs.slots.h: 
+	-if exist $(CONFIG)\inc\ejs.slots.h del /Q $(CONFIG)\inc\ejs.slots.h
+	copy /Y src\deps\ejs\ejs.slots.h $(CONFIG)\inc\ejs.slots.h
+
+$(CONFIG)\inc\ejsByteGoto.h: 
+	-if exist $(CONFIG)\inc\ejsByteGoto.h del /Q $(CONFIG)\inc\ejsByteGoto.h
+	copy /Y src\deps\ejs\ejsByteGoto.h $(CONFIG)\inc\ejsByteGoto.h
+
+$(CONFIG)\obj\ejsLib.obj: \
+    src\deps\ejs\ejsLib.c\
+    $(CONFIG)\inc\bit.h \
+    $(CONFIG)\inc\ejs.h \
+    $(CONFIG)\inc\mpr.h \
+    $(CONFIG)\inc\pcre.h \
+    $(CONFIG)\inc\bitos.h \
+    $(CONFIG)\inc\http.h \
+    $(CONFIG)\inc\ejs.slots.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\ejs\ejsLib.c
+
+$(CONFIG)\bin\libejs.dll: \
+    $(CONFIG)\bin\libhttp.dll \
+    $(CONFIG)\bin\libpcre.dll \
+    $(CONFIG)\bin\libmpr.dll \
+    $(CONFIG)\bin\libsqlite3.dll \
+    $(CONFIG)\inc\ejs.h \
+    $(CONFIG)\inc\ejs.slots.h \
+    $(CONFIG)\inc\ejsByteGoto.h \
+    $(CONFIG)\obj\ejsLib.obj
+	"$(LD)" -dll -out:$(CONFIG)\bin\libejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsLib.obj libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib $(LIBS) libpcre.lib libmpr.lib
+
+$(CONFIG)\obj\ejs.obj: \
+    src\deps\ejs\ejs.c\
+    $(CONFIG)\inc\bit.h \
+    $(CONFIG)\inc\ejs.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\ejs\ejs.c
+
+$(CONFIG)\bin\ejs.exe: \
+    $(CONFIG)\bin\libejs.dll \
+    $(CONFIG)\obj\ejs.obj
+	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj libejs.lib $(LIBS) libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib
+
+$(CONFIG)\obj\ejsc.obj: \
+    src\deps\ejs\ejsc.c\
+    $(CONFIG)\inc\bit.h \
+    $(CONFIG)\inc\ejs.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\ejs\ejsc.c
+
+$(CONFIG)\bin\ejsc.exe: \
+    $(CONFIG)\bin\libejs.dll \
+    $(CONFIG)\obj\ejsc.obj
+	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj libejs.lib $(LIBS) libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib
+
+$(CONFIG)\bin\ejs.mod: $(CONFIG)\bin\ejsc.exe
+	cd src\deps\ejs
+	"..\..\..\$(CONFIG)\bin\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null "ejs.es"
+	cd ..\..\..
+
 $(CONFIG)\obj\cgiHandler.obj: \
     src\modules\cgiHandler.c\
     $(CONFIG)\inc\bit.h \
@@ -483,6 +585,18 @@ $(CONFIG)\bin\libmod_cgi.dll: \
     $(CONFIG)\bin\libappweb.dll \
     $(CONFIG)\obj\cgiHandler.obj
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+
+$(CONFIG)\obj\ejsHandler.obj: \
+    src\modules\ejsHandler.c\
+    $(CONFIG)\inc\bit.h \
+    $(CONFIG)\inc\appweb.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsHandler.obj -Fd$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\modules\ejsHandler.c
+
+$(CONFIG)\bin\libmod_ejs.dll: \
+    $(CONFIG)\bin\libappweb.dll \
+    $(CONFIG)\bin\libejs.dll \
+    $(CONFIG)\obj\ejsHandler.obj
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsHandler.obj libejs.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib libsqlite3.lib
 
 $(CONFIG)\obj\sslModule.obj: \
     src\modules\sslModule.c\
@@ -555,10 +669,11 @@ $(CONFIG)\bin\appweb.exe: \
     $(CONFIG)\bin\libappweb.dll \
     $(CONFIG)\bin\libmod_esp.dll \
     $(CONFIG)\bin\libmod_ssl.dll \
+    $(CONFIG)\bin\libmod_ejs.dll \
     $(CONFIG)\bin\libmod_cgi.dll \
     $(CONFIG)\bin\libapp.dll \
     $(CONFIG)\obj\appweb.obj
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_ssl.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_ejs.lib libmod_ssl.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib libejs.lib libsqlite3.lib
 
 $(CONFIG)\inc\appwebMonitor.h: 
 	-if exist $(CONFIG)\inc\appwebMonitor.h del /Q $(CONFIG)\inc\appwebMonitor.h

@@ -11,6 +11,7 @@ OS              := freebsd
 CC              := /usr/bin/gcc
 LD              := /usr/bin/ld
 CONFIG          := $(OS)-$(ARCH)-$(PROFILE)
+LBIN            := $(CONFIG)/bin
 
 BIT_ROOT_PREFIX := /
 BIT_CFG_PREFIX  := $(BIT_ROOT_PREFIX)etc/appweb
@@ -55,6 +56,8 @@ all compile: prep \
         $(CONFIG)/bin/libpcre.so \
         $(CONFIG)/bin/libhttp.so \
         $(CONFIG)/bin/http \
+        $(CONFIG)/bin/libsqlite3.so \
+        $(CONFIG)/bin/sqlite \
         $(CONFIG)/bin/libappweb.so \
         $(CONFIG)/bin/libmod_esp.so \
         $(CONFIG)/bin/esp \
@@ -62,7 +65,12 @@ all compile: prep \
         src/server/esp.conf \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
+        $(CONFIG)/bin/libejs.so \
+        $(CONFIG)/bin/ejs \
+        $(CONFIG)/bin/ejsc \
+        $(CONFIG)/bin/ejs.mod \
         $(CONFIG)/bin/libmod_cgi.so \
+        $(CONFIG)/bin/libmod_ejs.so \
         $(CONFIG)/bin/libmod_ssl.so \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
@@ -102,6 +110,8 @@ clean:
 	rm -rf $(CONFIG)/bin/libpcre.so
 	rm -rf $(CONFIG)/bin/libhttp.so
 	rm -rf $(CONFIG)/bin/http
+	rm -rf $(CONFIG)/bin/libsqlite3.so
+	rm -rf $(CONFIG)/bin/sqlite
 	rm -rf $(CONFIG)/bin/libappweb.so
 	rm -rf $(CONFIG)/bin/libmod_esp.so
 	rm -rf $(CONFIG)/bin/esp
@@ -109,7 +119,12 @@ clean:
 	rm -rf src/server/esp.conf
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
+	rm -rf $(CONFIG)/bin/libejs.so
+	rm -rf $(CONFIG)/bin/ejs
+	rm -rf $(CONFIG)/bin/ejsc
+	rm -rf $(CONFIG)/bin/ejs.mod
 	rm -rf $(CONFIG)/bin/libmod_cgi.so
+	rm -rf $(CONFIG)/bin/libmod_ejs.so
 	rm -rf $(CONFIG)/bin/libmod_ssl.so
 	rm -rf $(CONFIG)/bin/authpass
 	rm -rf $(CONFIG)/bin/cgiProgram
@@ -287,6 +302,32 @@ $(CONFIG)/bin/http: \
     $(CONFIG)/bin/libhttp.so \
     $(CONFIG)/obj/http.o
 	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr -lhttp -lpthread -lm -ldl -lpcre -lmpr $(LDFLAGS)
+
+$(CONFIG)/inc/sqlite3.h: 
+	rm -fr $(CONFIG)/inc/sqlite3.h
+	cp -r src/deps/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
+
+$(CONFIG)/obj/sqlite3.o: \
+    src/deps/sqlite/sqlite3.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/sqlite3.h
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
+
+$(CONFIG)/bin/libsqlite3.so: \
+    $(CONFIG)/inc/sqlite3.h \
+    $(CONFIG)/obj/sqlite3.o
+	$(CC) -shared -o $(CONFIG)/bin/libsqlite3.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite3.o $(LIBS)
+
+$(CONFIG)/obj/sqlite.o: \
+    src/deps/sqlite/sqlite.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/sqlite3.h
+	$(CC) -c -o $(CONFIG)/obj/sqlite.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
+
+$(CONFIG)/bin/sqlite: \
+    $(CONFIG)/bin/libsqlite3.so \
+    $(CONFIG)/obj/sqlite.o
+	$(CC) -o $(CONFIG)/bin/sqlite $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o -lsqlite3 $(LIBS) -lsqlite3 -lpthread -lm -ldl $(LDFLAGS)
 
 $(CONFIG)/inc/appweb.h: 
 	rm -fr $(CONFIG)/inc/appweb.h
@@ -472,6 +513,65 @@ $(CONFIG)/bin/esp-appweb.conf: src/esp/esp-appweb.conf
 	rm -fr $(CONFIG)/bin/esp-appweb.conf
 	cp -r src/esp/esp-appweb.conf $(CONFIG)/bin/esp-appweb.conf
 
+$(CONFIG)/inc/ejs.h: 
+	rm -fr $(CONFIG)/inc/ejs.h
+	cp -r src/deps/ejs/ejs.h $(CONFIG)/inc/ejs.h
+
+$(CONFIG)/inc/ejs.slots.h: 
+	rm -fr $(CONFIG)/inc/ejs.slots.h
+	cp -r src/deps/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
+
+$(CONFIG)/inc/ejsByteGoto.h: 
+	rm -fr $(CONFIG)/inc/ejsByteGoto.h
+	cp -r src/deps/ejs/ejsByteGoto.h $(CONFIG)/inc/ejsByteGoto.h
+
+$(CONFIG)/obj/ejsLib.o: \
+    src/deps/ejs/ejsLib.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/ejs.h \
+    $(CONFIG)/inc/mpr.h \
+    $(CONFIG)/inc/pcre.h \
+    $(CONFIG)/inc/bitos.h \
+    $(CONFIG)/inc/http.h \
+    $(CONFIG)/inc/ejs.slots.h
+	$(CC) -c -o $(CONFIG)/obj/ejsLib.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsLib.c
+
+$(CONFIG)/bin/libejs.so: \
+    $(CONFIG)/bin/libhttp.so \
+    $(CONFIG)/bin/libpcre.so \
+    $(CONFIG)/bin/libmpr.so \
+    $(CONFIG)/bin/libsqlite3.so \
+    $(CONFIG)/inc/ejs.h \
+    $(CONFIG)/inc/ejs.slots.h \
+    $(CONFIG)/inc/ejsByteGoto.h \
+    $(CONFIG)/obj/ejsLib.o
+	$(CC) -shared -o $(CONFIG)/bin/libejs.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsLib.o -lsqlite3 -lmpr -lpcre -lhttp $(LIBS) -lpcre -lmpr
+
+$(CONFIG)/obj/ejs.o: \
+    src/deps/ejs/ejs.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/ejs.h
+	$(CC) -c -o $(CONFIG)/obj/ejs.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejs.c
+
+$(CONFIG)/bin/ejs: \
+    $(CONFIG)/bin/libejs.so \
+    $(CONFIG)/obj/ejs.o
+	$(CC) -o $(CONFIG)/bin/ejs $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o -lejs $(LIBS) -lsqlite3 -lmpr -lpcre -lhttp -lejs -lpthread -lm -ldl -lsqlite3 -lmpr -lpcre -lhttp $(LDFLAGS)
+
+$(CONFIG)/obj/ejsc.o: \
+    src/deps/ejs/ejsc.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/ejs.h
+	$(CC) -c -o $(CONFIG)/obj/ejsc.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsc.c
+
+$(CONFIG)/bin/ejsc: \
+    $(CONFIG)/bin/libejs.so \
+    $(CONFIG)/obj/ejsc.o
+	$(CC) -o $(CONFIG)/bin/ejsc $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o -lejs $(LIBS) -lsqlite3 -lmpr -lpcre -lhttp -lejs -lpthread -lm -ldl -lsqlite3 -lmpr -lpcre -lhttp $(LDFLAGS)
+
+$(CONFIG)/bin/ejs.mod: $(CONFIG)/bin/ejsc
+	cd src/deps/ejs; $(LBIN)/ejsc --out ../../../$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; cd ../../..
+
 $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c\
     $(CONFIG)/inc/bit.h \
@@ -482,6 +582,18 @@ $(CONFIG)/bin/libmod_cgi.so: \
     $(CONFIG)/bin/libappweb.so \
     $(CONFIG)/obj/cgiHandler.o
 	$(CC) -shared -o $(CONFIG)/bin/libmod_cgi.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
+
+$(CONFIG)/obj/ejsHandler.o: \
+    src/modules/ejsHandler.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/appweb.h
+	$(CC) -c -o $(CONFIG)/obj/ejsHandler.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/ejsHandler.c
+
+$(CONFIG)/bin/libmod_ejs.so: \
+    $(CONFIG)/bin/libappweb.so \
+    $(CONFIG)/bin/libejs.so \
+    $(CONFIG)/obj/ejsHandler.o
+	$(CC) -shared -o $(CONFIG)/bin/libmod_ejs.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsHandler.o -lejs -lappweb $(LIBS) -lhttp -lpcre -lmpr -lsqlite3
 
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c\
@@ -552,10 +664,11 @@ $(CONFIG)/bin/appweb: \
     $(CONFIG)/bin/libappweb.so \
     $(CONFIG)/bin/libmod_esp.so \
     $(CONFIG)/bin/libmod_ssl.so \
+    $(CONFIG)/bin/libmod_ejs.so \
     $(CONFIG)/bin/libmod_cgi.so \
     $(CONFIG)/bin/libapp.so \
     $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_ssl -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lapp -lmod_cgi -lmod_ssl -lmod_esp -lappweb -lpthread -lm -ldl -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_ejs -lmod_ssl -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lejs -lsqlite3 -lapp -lmod_cgi -lmod_ejs -lmod_ssl -lmod_esp -lappweb -lpthread -lm -ldl -lhttp -lpcre -lmpr -lejs -lsqlite3 $(LDFLAGS)
 
 src/server/cache: 
 	cd src/server; mkdir -p cache ; cd ../..

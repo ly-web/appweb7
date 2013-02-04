@@ -11,6 +11,7 @@ OS              := vxworks
 CC              := ccpentium
 LD              := /usr/bin/ld
 CONFIG          := $(OS)-$(ARCH)-$(PROFILE)
+LBIN            := $(CONFIG)/bin
 
 BIT_ROOT_PREFIX := /
 BIT_CFG_PREFIX  := $(BIT_VER_PREFIX)
@@ -55,6 +56,8 @@ all compile: prep \
         $(CONFIG)/bin/libpcre.out \
         $(CONFIG)/bin/libhttp.out \
         $(CONFIG)/bin/http.out \
+        $(CONFIG)/bin/libsqlite3.out \
+        $(CONFIG)/bin/sqlite.out \
         $(CONFIG)/bin/libappweb.out \
         $(CONFIG)/bin/libmod_esp.out \
         $(CONFIG)/bin/esp.out \
@@ -62,7 +65,12 @@ all compile: prep \
         src/server/esp.conf \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
+        $(CONFIG)/bin/libejs.out \
+        $(CONFIG)/bin/ejs.out \
+        $(CONFIG)/bin/ejsc.out \
+        $(CONFIG)/bin/ejs.mod \
         $(CONFIG)/bin/libmod_cgi.out \
+        $(CONFIG)/bin/libmod_ejs.out \
         $(CONFIG)/bin/libmod_ssl.out \
         $(CONFIG)/bin/authpass.out \
         $(CONFIG)/bin/cgiProgram.out \
@@ -102,6 +110,8 @@ clean:
 	rm -rf $(CONFIG)/bin/libpcre.out
 	rm -rf $(CONFIG)/bin/libhttp.out
 	rm -rf $(CONFIG)/bin/http.out
+	rm -rf $(CONFIG)/bin/libsqlite3.out
+	rm -rf $(CONFIG)/bin/sqlite.out
 	rm -rf $(CONFIG)/bin/libappweb.out
 	rm -rf $(CONFIG)/bin/libmod_esp.out
 	rm -rf $(CONFIG)/bin/esp.out
@@ -109,7 +119,12 @@ clean:
 	rm -rf src/server/esp.conf
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
+	rm -rf $(CONFIG)/bin/libejs.out
+	rm -rf $(CONFIG)/bin/ejs.out
+	rm -rf $(CONFIG)/bin/ejsc.out
+	rm -rf $(CONFIG)/bin/ejs.mod
 	rm -rf $(CONFIG)/bin/libmod_cgi.out
+	rm -rf $(CONFIG)/bin/libmod_ejs.out
 	rm -rf $(CONFIG)/bin/libmod_ssl.out
 	rm -rf $(CONFIG)/bin/authpass.out
 	rm -rf $(CONFIG)/bin/cgiProgram.out
@@ -287,6 +302,32 @@ $(CONFIG)/bin/http.out: \
     $(CONFIG)/bin/libhttp.out \
     $(CONFIG)/obj/http.o
 	$(LIBS)$(CC) -o $(CONFIG)/bin/http.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LDFLAGS)
+
+$(CONFIG)/inc/sqlite3.h: 
+	rm -fr $(CONFIG)/inc/sqlite3.h
+	cp -r src/deps/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
+
+$(CONFIG)/obj/sqlite3.o: \
+    src/deps/sqlite/sqlite3.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/sqlite3.h
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/sqlite3.o -fno-builtin -fno-defer-pop -fvolatile $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
+
+$(CONFIG)/bin/libsqlite3.out: \
+    $(CONFIG)/inc/sqlite3.h \
+    $(CONFIG)/obj/sqlite3.o
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libsqlite3.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite3.o 
+
+$(CONFIG)/obj/sqlite.o: \
+    src/deps/sqlite/sqlite.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/sqlite3.h
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/sqlite.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
+
+$(CONFIG)/bin/sqlite.out: \
+    $(CONFIG)/bin/libsqlite3.out \
+    $(CONFIG)/obj/sqlite.o
+	$(LIBS)$(CC) -o $(CONFIG)/bin/sqlite.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LDFLAGS)
 
 $(CONFIG)/inc/appweb.h: 
 	rm -fr $(CONFIG)/inc/appweb.h
@@ -472,6 +513,65 @@ $(CONFIG)/bin/esp-appweb.conf: src/esp/esp-appweb.conf
 	rm -fr $(CONFIG)/bin/esp-appweb.conf
 	cp -r src/esp/esp-appweb.conf $(CONFIG)/bin/esp-appweb.conf
 
+$(CONFIG)/inc/ejs.h: 
+	rm -fr $(CONFIG)/inc/ejs.h
+	cp -r src/deps/ejs/ejs.h $(CONFIG)/inc/ejs.h
+
+$(CONFIG)/inc/ejs.slots.h: 
+	rm -fr $(CONFIG)/inc/ejs.slots.h
+	cp -r src/deps/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
+
+$(CONFIG)/inc/ejsByteGoto.h: 
+	rm -fr $(CONFIG)/inc/ejsByteGoto.h
+	cp -r src/deps/ejs/ejsByteGoto.h $(CONFIG)/inc/ejsByteGoto.h
+
+$(CONFIG)/obj/ejsLib.o: \
+    src/deps/ejs/ejsLib.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/ejs.h \
+    $(CONFIG)/inc/mpr.h \
+    $(CONFIG)/inc/pcre.h \
+    $(CONFIG)/inc/bitos.h \
+    $(CONFIG)/inc/http.h \
+    $(CONFIG)/inc/ejs.slots.h
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/ejsLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsLib.c
+
+$(CONFIG)/bin/libejs.out: \
+    $(CONFIG)/bin/libhttp.out \
+    $(CONFIG)/bin/libpcre.out \
+    $(CONFIG)/bin/libmpr.out \
+    $(CONFIG)/bin/libsqlite3.out \
+    $(CONFIG)/inc/ejs.h \
+    $(CONFIG)/inc/ejs.slots.h \
+    $(CONFIG)/inc/ejsByteGoto.h \
+    $(CONFIG)/obj/ejsLib.o
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsLib.o 
+
+$(CONFIG)/obj/ejs.o: \
+    src/deps/ejs/ejs.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/ejs.h
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/ejs.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejs.c
+
+$(CONFIG)/bin/ejs.out: \
+    $(CONFIG)/bin/libejs.out \
+    $(CONFIG)/obj/ejs.o
+	$(LIBS)$(CC) -o $(CONFIG)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o $(LDFLAGS)
+
+$(CONFIG)/obj/ejsc.o: \
+    src/deps/ejs/ejsc.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/ejs.h
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/ejsc.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsc.c
+
+$(CONFIG)/bin/ejsc.out: \
+    $(CONFIG)/bin/libejs.out \
+    $(CONFIG)/obj/ejsc.o
+	$(LIBS)$(CC) -o $(CONFIG)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LDFLAGS)
+
+$(CONFIG)/bin/ejs.mod: $(CONFIG)/bin/ejsc.out
+	cd src/deps/ejs; $(LBIN)/ejsc --out ../../../$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; cd ../../..
+
 $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c\
     $(CONFIG)/inc/bit.h \
@@ -482,6 +582,18 @@ $(CONFIG)/bin/libmod_cgi.out: \
     $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/obj/cgiHandler.o
 	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libmod_cgi.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o 
+
+$(CONFIG)/obj/ejsHandler.o: \
+    src/modules/ejsHandler.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/appweb.h
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/ejsHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/ejsHandler.c
+
+$(CONFIG)/bin/libmod_ejs.out: \
+    $(CONFIG)/bin/libappweb.out \
+    $(CONFIG)/bin/libejs.out \
+    $(CONFIG)/obj/ejsHandler.o
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libmod_ejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsHandler.o 
 
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c\
@@ -552,6 +664,7 @@ $(CONFIG)/bin/appweb.out: \
     $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/bin/libmod_esp.out \
     $(CONFIG)/bin/libmod_ssl.out \
+    $(CONFIG)/bin/libmod_ejs.out \
     $(CONFIG)/bin/libmod_cgi.out \
     $(CONFIG)/bin/libapp.out \
     $(CONFIG)/obj/appweb.o

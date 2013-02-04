@@ -53,12 +53,8 @@ Bit.load({
                 trace('Compile', 'ejs.mod')
                 run('${LBIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null ejs.es')
             ",
-            'generate-nmake': '\
-                "${LBIN}\\ejsc" --out "${BIN}/ejs.mod" --optimize 9 --bind --require null "ejs.es"
-            ',
-            'generate-sh': '\
-                ${LBIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null ejs.es 
-            ',
+            'generate-nmake': '"${LBIN}\\ejsc" --out "${BIN}/ejs.mod" --optimize 9 --bind --require null "ejs.es"',
+            'generate-sh': '${LBIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null ejs.es',
             depends: [ 'ejsc' ],
 		},
 

@@ -119,7 +119,7 @@
     #define BIT_PRODUCT "appweb"
 #endif
 #ifndef BIT_REQUIRED
-    #define BIT_REQUIRED "winsdk,compiler,lib,link,dumpbin,rc,pcre"
+    #define BIT_REQUIRED "ejscript,winsdk,compiler,lib,link,dumpbin,rc,pcre"
 #endif
 #ifndef BIT_SSL
     #define BIT_SSL 1
@@ -143,7 +143,7 @@
     #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
 #endif
 #ifndef BIT_WITHOUT_DEFAULT
-    #define BIT_WITHOUT_DEFAULT "doxygen,dsi,ejscript,man,man2html,openssl,pmaker,php,sqlite"
+    #define BIT_WITHOUT_DEFAULT "doxygen,dsi,man,man2html,openssl,pmaker,php"
 #endif
 
 /* Prefixes */
@@ -200,7 +200,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -without default -configure . -gen vs"
+    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -with ejscript --without default -configure . -gen vs"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -246,7 +246,7 @@
     #define BIT_PACK_DUMPBIN 0
 #endif
 #ifndef BIT_PACK_EJSCRIPT
-    #define BIT_PACK_EJSCRIPT 0
+    #define BIT_PACK_EJSCRIPT 1
 #endif
 #ifndef BIT_PACK_ESP
     #define BIT_PACK_ESP 1
@@ -291,7 +291,7 @@
     #define BIT_PACK_RC 1
 #endif
 #ifndef BIT_PACK_SQLITE
-    #define BIT_PACK_SQLITE 0
+    #define BIT_PACK_SQLITE 1
 #endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1
@@ -310,6 +310,9 @@
 #endif
 #ifndef BIT_PACK_DIR_PATH
     #define BIT_PACK_DIR_PATH "/Users/mob/git/appweb/src/dirHandler.c"
+#endif
+#ifndef BIT_PACK_EJSCRIPT_PATH
+    #define BIT_PACK_EJSCRIPT_PATH "/Users/mob/git/appweb/src/deps/ejs"
 #endif
 #ifndef BIT_PACK_ESP_PATH
     #define BIT_PACK_ESP_PATH "/Users/mob/git/appweb/src/esp/espHandler.c"
@@ -331,6 +334,9 @@
 #endif
 #ifndef BIT_PACK_RC_PATH
     #define BIT_PACK_RC_PATH "rc.exe"
+#endif
+#ifndef BIT_PACK_SQLITE_PATH
+    #define BIT_PACK_SQLITE_PATH "/Users/mob/git/appweb/src/deps/sqlite"
 #endif
 #ifndef BIT_PACK_UTEST_PATH
     #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
