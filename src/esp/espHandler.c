@@ -490,7 +490,7 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     path = mprGetAppDir();
 #else
     path = httpGetRouteVar(route, "CACHE_DIR");
-    if (mprGetPathInfo(path, &info) != 0 || !info.isDir) {
+    if (!path || mprGetPathInfo(path, &info) != 0 || !info.isDir) {
         path = mprJoinPath(route->home, "cache");
     }
     if (mprGetPathInfo(path, &info) != 0 || !info.isDir) {
