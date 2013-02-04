@@ -1945,6 +1945,7 @@ static int updateDirective(MaState *state, cchar *key, cchar *value)
  */
 static int uploadDirDirective(MaState *state, cchar *key, cchar *value)
 {
+    //  MOB - need httpSetUploadDir
     state->route->uploadDir = httpMakePath(state->route, value);
     return 0;
 }
