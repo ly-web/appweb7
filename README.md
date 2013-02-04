@@ -23,10 +23,6 @@ See LICENSE.md for details.
 
 	make help
 
-### To build with nmake on Windows:
-
-    WinMake
-
 ### To build with Bit:
 
     ./configure
