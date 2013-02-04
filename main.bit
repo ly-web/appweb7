@@ -186,7 +186,7 @@ Bit.load({
             See package/package.bit for the install/package targets
          */
         projects: {
-            action: "print('XXX'); genProductProjects('-with ejscript --without default')",
+            action: "genProductProjects('-with ejscript --without default')",
         },
     },
 })

@@ -572,7 +572,7 @@ $(CONFIG)\bin\ejsc.exe: \
 
 $(CONFIG)\bin\ejs.mod: $(CONFIG)\bin\ejsc.exe
 	cd src\deps\ejs
-	"..\..\..\$(CONFIG)\bin\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null "ejs.es"
+	"$(LBIN)\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null "ejs.es"
 	cd ..\..\..
 
 $(CONFIG)\obj\cgiHandler.obj: \
