@@ -175,6 +175,7 @@ Bit.load({
         },
 
         'test-run': {
+            enable: '!bit.platform.cross',
             depends: [ 'compile' ],
             action: "
                 trace('Run', 'From directory src/server')

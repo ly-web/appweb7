@@ -3,29 +3,10 @@
 #
 #	This Makefile is for Unix/Linux and Cygwin. Use WinMake for windows.
 #
-#   You can use this Makefile and build via "make" with a pre-selected configuration. Alternatively,
-#	you can build using the "bit" tool for for a fully configurable build. If you wish to 
-#	cross-compile, you should use "bit".
-#
-#   Modify compiler and linker default definitions here:
-#
-#       export ARCH      = CPU architecture (x86, x64, ppc, ...)
-#       export OS        = Operating system (linux, macosx, windows, vxworks, ...)
-#       export CC        = Compiler to use 
-#       export LD        = Linker to use
-#       export DEBUG     = Set to debug or release for debug or optimized builds
-#       export CONFIG    = Output directory for built items. Defaults to OS-ARCH-PROFILE
-#       export CFLAGS    = Add compiler options. For example: -Wall
-#       export DFLAGS    = Add compiler defines. For example: -DCOLOR=blue
-#       export IFLAGS    = Add compiler include directories. For example: -I/extra/includes
-#       export LDFLAGS   = Add linker options
-#       export LIBPATHS  = Add linker library search directories. For example: -L/libraries
-#       export LIBS      = Add linker libraries. For example: -lpthreads
-#       export PROFILE   = Build profile, used in output products directory name
-#
-#	See projects/$(OS)-$(ARCH)-$(PROFILE)-bit.h for configuration default settings. Can override via
-#	environment variables. For example: make BIT_PACK_SQLITE=0. These are converted to DFLAGS and 
-#	will then override the bit.h default values.
+#	See projects/$(OS)-$(ARCH)-$(PROFILE)-bit.h for configuration default settings. Can override 
+#	via make environment variables. For example: make BIT_PACK_SQLITE=0. These are converted to 
+#	DFLAGS and will then override the bit.h default values. Use "make help" for a list of available 
+#	make variable options.
 #
 NAME    := appweb
 OS      := $(shell uname | sed 's/CYGWIN.*/windows/;s/Darwin/macosx/' | tr '[A-Z]' '[a-z]')
@@ -50,11 +31,14 @@ BIN 	:= $(OS)-$(ARCH)-$(PROFILE)/bin
 .EXPORT_ALL_VARIABLES:
 
 all compile:
+	@if [ ! -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) ] ; then \
+		echo "The build configuration projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) is not supported" ; exit 255 ; \
+	fi
 	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 	@echo ; echo 'You can now install via "sudo make install" or run Appweb via: "sudo make run"'
 	@echo ; echo "To run locally, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path" ; echo
 
-clean clobber install uninstall run:
+clean clobber deploy install uninstall run:
 	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 version:
@@ -62,35 +46,52 @@ version:
 
 help:
 	@echo '' >&2
-	@echo 'With make, the default configuration can be modified by setting make' >&2
-	@echo 'variables. Set to 0 to disable and 1 to enable:' >&2
+	@echo 'usage: make [clean, compile, deploy, install, run, uninstall]' >&2
 	@echo '' >&2
-	@echo '      PROFILE            # Select default or static for static linking'
-	@echo '      BIT_ESP_MDB        # Enable ESP MDB database support'
-	@echo '      BIT_ESP_SDB        # Enable ESP SQLite database support'
-	@echo '      BIT_MPR_LOGGING    # Enable application logging'
-	@echo '      BIT_MPR_TRACING    # Enable debug tracing'
-	@echo '      BIT_PACK_CGI       # Enable the CGI handler'
-	@echo '      BIT_PACK_DIR       # Enable the directory listing handler'
-	@echo '      BIT_PACK_EJSCRIPT  # Enable the Ejscript handler'
-	@echo '      BIT_PACK_ESP       # Enable the ESP web framework'
-	@echo '      BIT_PACK_EST       # Enable the EST SSL stack'
-	@echo '      BIT_PACK_MOCANA    # Enable the Mocana NanoSSL stack'
-	@echo '      BIT_PACK_MATRIXSSL # Enable the MatrixSSL SSL stack'
-	@echo '      BIT_PACK_OPENSSL   # Enable the OpenSSL SSL stack'
-	@echo '      BIT_PACK_PHP       # Enable the PHP framework'
-	@echo '      BIT_PACK_SQLITE    # Enable the SQLite database'
-	@echo '      BIT_ROM            # Build for ROM without a file system'
-	@echo ''
+	@echo 'The default configuration can be modified by setting make variables' >&2
+	@echo 'Set to 0 to disable and 1 to enable:' >&2
+	@echo '' >&2
+	@echo '      PROFILE            # Select default or static for static linking' >&2
+	@echo '      BIT_EJS_DB         # Select default or static for static linking' >&2
+	@echo '      BIT_EJS_DB         # Enable database support, ejs.db' >&2
+	@echo '      BIT_EJS_MAIL       # Enable mail support, ejs.mail' >&2
+	@echo '      BIT_EJS_MAPPER     # Enable database mapper support, ejs.mapper'
+	@echo '      BIT_EJS_TAR        # Enable tar support, ejs.tar' >&2
+	@echo '      BIT_EJS_TEMPLATE   # Enable template support, ejs.template' >&2
+	@echo '      BIT_EJS_WEB        # Enable web support, ejs.web' >&2
+	@echo '      BIT_EJS_ZLIB       # Enable zlib support, ejs.zlib' >&2
+	@echo '      BIT_ESP_MDB        # Enable ESP MDB database support' >&2
+	@echo '      BIT_ESP_SDB        # Enable ESP SQLite database support' >&2
+	@echo '      BIT_MPR_LOGGING    # Enable application logging' >&2
+	@echo '      BIT_MPR_TRACING    # Enable debug tracing' >&2
+	@echo '      BIT_PACK_CGI       # Enable the CGI handler' >&2
+	@echo '      BIT_PACK_DIR       # Enable the directory listing handler' >&2
+	@echo '      BIT_PACK_EJSCRIPT  # Enable the Ejscript handler' >&2
+	@echo '      BIT_PACK_ESP       # Enable the ESP web framework' >&2
+	@echo '      BIT_PACK_EST       # Enable the EST SSL stack' >&2
+	@echo '      BIT_PACK_MOCANA    # Enable the Mocana NanoSSL stack' >&2
+	@echo '      BIT_PACK_MATRIXSSL # Enable the MatrixSSL SSL stack' >&2
+	@echo '      BIT_PACK_OPENSSL   # Enable the OpenSSL SSL stack' >&2
+	@echo '      BIT_PACK_PHP       # Enable the PHP framework' >&2
+	@echo '      BIT_PACK_SQLITE    # Enable the SQLite database' >&2
+	@echo '      BIT_ROM            # Build for ROM without a file system' >&2
+	@echo '' >&2
 	@echo 'For example, to disable CGI:' >&2
 	@echo '' >&2
 	@echo '      make BIT_PACK_CGI=0' >&2
 	@echo '' >&2
-	@echo 'Other make variables include:' >&2
-	@echo '' >&2
-	@echo '      ARCH, CC, CFLAGS, DFLAGS, IFLAGS, LD, LDFLAGS, LIBPATHS, LIBS, OS' >&2
-	@echo '' >&2
-	@echo 'Alternatively, for faster, easier and fully configurable building, install' >&2
-	@echo 'bit from http://embedthis.com/downloads/bit/download.ejs and re-run'>&2
-	@echo 'configure and then build with bit.' >&2
+	@echo 'Other make variables:' >&2
+	@echo '      ARCH               # CPU architecture (x86, x64, ppc, ...)' >&2
+	@echo '      OS                 # Operating system (linux, macosx, windows, vxworks, ...)' >&2
+	@echo '      CC                 # Compiler to use ' >&2
+	@echo '      LD                 # Linker to use' >&2
+	@echo '      DEBUG              # Set to debug or release for debug or optimized builds' >&2
+	@echo '      CONFIG             # Output directory for built items. Defaults to OS-ARCH-PROFILE' >&2
+	@echo '      CFLAGS             # Add compiler options. For example: -Wall' >&2
+	@echo '      DFLAGS             # Add compiler defines. For example: -DCOLOR=blue' >&2
+	@echo '      IFLAGS             # Add compiler include directories. For example: -I/extra/includes' >&2
+	@echo '      LDFLAGS            # Add linker options' >&2
+	@echo '      LIBPATHS           # Add linker library search directories. For example: -L/libraries' >&2
+	@echo '      LIBS               # Add linker libraries. For example: -lpthreads' >&2
+	@echo '      PROFILE            # Build profile, used in output products directory name' >&2
 	@echo '' >&2

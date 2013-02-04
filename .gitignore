@@ -199,3 +199,4 @@ src/server/static.conf
 macosx-x64-default
 macosx-x64-static
 .prefixes
+/*-*-*/

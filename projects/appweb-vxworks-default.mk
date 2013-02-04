@@ -1,5 +1,5 @@
 #
-#   appweb-linux-default.mk -- Makefile to build Embedthis Appweb for linux
+#   appweb-vxworks-default.mk -- Makefile to build Embedthis Appweb for vxworks
 #
 
 PRODUCT         := appweb
@@ -7,30 +7,30 @@ VERSION         := 4.3.0
 BUILD_NUMBER    := 0
 PROFILE         := default
 ARCH            := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
-OS              := linux
-CC              := /usr/bin/gcc
+OS              := vxworks
+CC              := ccpentium
 LD              := /usr/bin/ld
 CONFIG          := $(OS)-$(ARCH)-$(PROFILE)
 
 BIT_ROOT_PREFIX := /
-BIT_CFG_PREFIX  := $(BIT_ROOT_PREFIX)etc/appweb
-BIT_PRD_PREFIX  := $(BIT_ROOT_PREFIX)usr/lib/appweb
-BIT_VER_PREFIX  := $(BIT_ROOT_PREFIX)usr/lib/appweb/4.3.0
-BIT_BIN_PREFIX  := $(BIT_VER_PREFIX)/bin
+BIT_CFG_PREFIX  := $(BIT_VER_PREFIX)
+BIT_PRD_PREFIX  := $(BIT_ROOT_PREFIX)deploy
+BIT_VER_PREFIX  := $(BIT_ROOT_PREFIX)deploy
+BIT_BIN_PREFIX  := $(BIT_VER_PREFIX)
 BIT_INC_PREFIX  := $(BIT_VER_PREFIX)/inc
-BIT_LOG_PREFIX  := $(BIT_ROOT_PREFIX)var/log/appweb
-BIT_SPL_PREFIX  := $(BIT_ROOT_PREFIX)var/spool/appweb
+BIT_LOG_PREFIX  := $(BIT_VER_PREFIX)
+BIT_SPL_PREFIX  := $(BIT_VER_PREFIX)
 BIT_SRC_PREFIX  := $(BIT_ROOT_PREFIX)usr/src/appweb-4.3.0
-BIT_WEB_PREFIX  := $(BIT_ROOT_PREFIX)var/www/appweb-default
-BIT_UBIN_PREFIX := $(BIT_ROOT_PREFIX)usr/local/bin
-BIT_MAN_PREFIX  := $(BIT_ROOT_PREFIX)usr/local/share/man/man1
+BIT_WEB_PREFIX  := $(BIT_VER_PREFIX)/web
+BIT_UBIN_PREFIX := $(BIT_VER_PREFIX)
+BIT_MAN_PREFIX  := $(BIT_VER_PREFIX)
 
-CFLAGS          += -fPIC   -w
-DFLAGS          += -D_REENTRANT -DPIC  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS)))
+CFLAGS          += -fno-builtin -fno-defer-pop -fvolatile  -w
+DFLAGS          += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL  -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS)))
 IFLAGS          += -I$(CONFIG)/inc
-LDFLAGS         += '-Wl,--enable-new-dtags' '-Wl,-rpath,$$ORIGIN/' '-Wl,-rpath,$$ORIGIN/../bin' '-rdynamic'
-LIBPATHS        += -L$(CONFIG)/bin
-LIBS            += -lpthread -lm -lrt -ldl
+LDFLAGS         += '-Wl,-r'
+LIBPATHS        += -L$(CONFIG)/bin -L$(CONFIG)/bin
+LIBS            += 
 
 DEBUG           := debug
 CFLAGS-debug    := -g
@@ -46,36 +46,36 @@ LDFLAGS         += $(LDFLAGS-$(DEBUG))
 unexport CDPATH
 
 all compile: prep \
-        $(CONFIG)/bin/libmpr.so \
-        $(CONFIG)/bin/libmprssl.so \
-        $(CONFIG)/bin/appman \
-        $(CONFIG)/bin/makerom \
-        $(CONFIG)/bin/libest.so \
+        $(CONFIG)/bin/libmpr.out \
+        $(CONFIG)/bin/libmprssl.out \
+        $(CONFIG)/bin/appman.out \
+        $(CONFIG)/bin/makerom.out \
+        $(CONFIG)/bin/libest.out \
         $(CONFIG)/bin/ca.crt \
-        $(CONFIG)/bin/libpcre.so \
-        $(CONFIG)/bin/libhttp.so \
-        $(CONFIG)/bin/http \
-        $(CONFIG)/bin/libappweb.so \
-        $(CONFIG)/bin/libmod_esp.so \
-        $(CONFIG)/bin/esp \
+        $(CONFIG)/bin/libpcre.out \
+        $(CONFIG)/bin/libhttp.out \
+        $(CONFIG)/bin/http.out \
+        $(CONFIG)/bin/libappweb.out \
+        $(CONFIG)/bin/libmod_esp.out \
+        $(CONFIG)/bin/esp.out \
         $(CONFIG)/bin/esp.conf \
         src/server/esp.conf \
         $(CONFIG)/bin/esp-www \
         $(CONFIG)/bin/esp-appweb.conf \
-        $(CONFIG)/bin/libmod_cgi.so \
-        $(CONFIG)/bin/libmod_ssl.so \
-        $(CONFIG)/bin/authpass \
-        $(CONFIG)/bin/cgiProgram \
-        $(CONFIG)/bin/setConfig \
+        $(CONFIG)/bin/libmod_cgi.out \
+        $(CONFIG)/bin/libmod_ssl.out \
+        $(CONFIG)/bin/authpass.out \
+        $(CONFIG)/bin/cgiProgram.out \
+        $(CONFIG)/bin/setConfig.out \
         src/server/slink.c \
-        $(CONFIG)/bin/libapp.so \
-        $(CONFIG)/bin/appweb \
+        $(CONFIG)/bin/libapp.out \
+        $(CONFIG)/bin/appweb.out \
         src/server/cache \
-        $(CONFIG)/bin/testAppweb \
+        $(CONFIG)/bin/testAppweb.out \
         test/cgi-bin/testScript \
         test/web/caching/cache.cgi \
         test/web/auth/basic/basic.cgi \
-        test/cgi-bin/cgiProgram \
+        test/cgi-bin/cgiProgram.out \
         test/web/js
 
 .PHONY: prep
@@ -86,41 +86,41 @@ prep:
 	@[ ! -x $(CONFIG)/bin ] && mkdir -p $(CONFIG)/bin; true
 	@[ ! -x $(CONFIG)/inc ] && mkdir -p $(CONFIG)/inc; true
 	@[ ! -x $(CONFIG)/obj ] && mkdir -p $(CONFIG)/obj; true
-	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/appweb-linux-default-bit.h $(CONFIG)/inc/bit.h ; true
+	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/appweb-vxworks-default-bit.h $(CONFIG)/inc/bit.h ; true
 	@[ ! -f $(CONFIG)/inc/bitos.h ] && cp src/bitos.h $(CONFIG)/inc/bitos.h ; true
-	@if ! diff $(CONFIG)/inc/bit.h projects/appweb-linux-default-bit.h >/dev/null ; then\
-		echo cp projects/appweb-linux-default-bit.h $(CONFIG)/inc/bit.h  ; \
-		cp projects/appweb-linux-default-bit.h $(CONFIG)/inc/bit.h  ; \
+	@if ! diff $(CONFIG)/inc/bit.h projects/appweb-vxworks-default-bit.h >/dev/null ; then\
+		echo cp projects/appweb-vxworks-default-bit.h $(CONFIG)/inc/bit.h  ; \
+		cp projects/appweb-vxworks-default-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
 clean:
-	rm -rf $(CONFIG)/bin/libmpr.so
-	rm -rf $(CONFIG)/bin/libmprssl.so
-	rm -rf $(CONFIG)/bin/appman
-	rm -rf $(CONFIG)/bin/makerom
-	rm -rf $(CONFIG)/bin/libest.so
+	rm -rf $(CONFIG)/bin/libmpr.out
+	rm -rf $(CONFIG)/bin/libmprssl.out
+	rm -rf $(CONFIG)/bin/appman.out
+	rm -rf $(CONFIG)/bin/makerom.out
+	rm -rf $(CONFIG)/bin/libest.out
 	rm -rf $(CONFIG)/bin/ca.crt
-	rm -rf $(CONFIG)/bin/libpcre.so
-	rm -rf $(CONFIG)/bin/libhttp.so
-	rm -rf $(CONFIG)/bin/http
-	rm -rf $(CONFIG)/bin/libappweb.so
-	rm -rf $(CONFIG)/bin/libmod_esp.so
-	rm -rf $(CONFIG)/bin/esp
+	rm -rf $(CONFIG)/bin/libpcre.out
+	rm -rf $(CONFIG)/bin/libhttp.out
+	rm -rf $(CONFIG)/bin/http.out
+	rm -rf $(CONFIG)/bin/libappweb.out
+	rm -rf $(CONFIG)/bin/libmod_esp.out
+	rm -rf $(CONFIG)/bin/esp.out
 	rm -rf $(CONFIG)/bin/esp.conf
 	rm -rf src/server/esp.conf
 	rm -rf $(CONFIG)/bin/esp-www
 	rm -rf $(CONFIG)/bin/esp-appweb.conf
-	rm -rf $(CONFIG)/bin/libmod_cgi.so
-	rm -rf $(CONFIG)/bin/libmod_ssl.so
-	rm -rf $(CONFIG)/bin/authpass
-	rm -rf $(CONFIG)/bin/cgiProgram
-	rm -rf $(CONFIG)/bin/setConfig
-	rm -rf $(CONFIG)/bin/libapp.so
-	rm -rf $(CONFIG)/bin/appweb
-	rm -rf $(CONFIG)/bin/testAppweb
+	rm -rf $(CONFIG)/bin/libmod_cgi.out
+	rm -rf $(CONFIG)/bin/libmod_ssl.out
+	rm -rf $(CONFIG)/bin/authpass.out
+	rm -rf $(CONFIG)/bin/cgiProgram.out
+	rm -rf $(CONFIG)/bin/setConfig.out
+	rm -rf $(CONFIG)/bin/libapp.out
+	rm -rf $(CONFIG)/bin/appweb.out
+	rm -rf $(CONFIG)/bin/testAppweb.out
 	rm -rf test/cgi-bin/testScript
 	rm -rf test/web/caching/cache.cgi
 	rm -rf test/web/auth/basic/basic.cgi
-	rm -rf test/cgi-bin/cgiProgram
+	rm -rf test/cgi-bin/cgiProgram.out
 	rm -rf test/web/js
 	rm -rf $(CONFIG)/obj/mprLib.o
 	rm -rf $(CONFIG)/obj/mprSsl.o
@@ -182,12 +182,12 @@ $(CONFIG)/obj/mprLib.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/bitos.h
-	$(CC) -c -o $(CONFIG)/obj/mprLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/mprLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
 
-$(CONFIG)/bin/libmpr.so: \
+$(CONFIG)/bin/libmpr.out: \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/obj/mprLib.o
-	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprLib.o $(LIBS)
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libmpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprLib.o 
 
 $(CONFIG)/inc/est.h: 
 	rm -fr $(CONFIG)/inc/est.h
@@ -198,47 +198,47 @@ $(CONFIG)/obj/estLib.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/est.h \
     $(CONFIG)/inc/bitos.h
-	$(CC) -c -o $(CONFIG)/obj/estLib.o -fPIC $(DFLAGS) -I$(CONFIG)/inc src/deps/est/estLib.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/estLib.o -fno-builtin -fno-defer-pop -fvolatile $(DFLAGS) -I$(CONFIG)/inc src/deps/est/estLib.c
 
-$(CONFIG)/bin/libest.so: \
+$(CONFIG)/bin/libest.out: \
     $(CONFIG)/inc/est.h \
     $(CONFIG)/obj/estLib.o
-	$(CC) -shared -o $(CONFIG)/bin/libest.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/estLib.o $(LIBS)
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libest.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/estLib.o 
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/est.h
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
 
-$(CONFIG)/bin/libmprssl.so: \
-    $(CONFIG)/bin/libmpr.so \
-    $(CONFIG)/bin/libest.so \
+$(CONFIG)/bin/libmprssl.out: \
+    $(CONFIG)/bin/libmpr.out \
+    $(CONFIG)/bin/libest.out \
     $(CONFIG)/obj/mprSsl.o
-	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprSsl.o -lest -lmpr $(LIBS)
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprSsl.o 
 
 $(CONFIG)/obj/manager.o: \
     src/deps/mpr/manager.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/manager.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/manager.c
 
-$(CONFIG)/bin/appman: \
-    $(CONFIG)/bin/libmpr.so \
+$(CONFIG)/bin/appman.out: \
+    $(CONFIG)/bin/libmpr.out \
     $(CONFIG)/obj/manager.o
-	$(CC) -o $(CONFIG)/bin/appman $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o -lmpr $(LIBS) -lmpr -lpthread -lm -lrt -ldl $(LDFLAGS)
+	$(LIBS)$(CC) -o $(CONFIG)/bin/appman.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LDFLAGS)
 
 $(CONFIG)/obj/makerom.o: \
     src/deps/mpr/makerom.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
 
-$(CONFIG)/bin/makerom: \
-    $(CONFIG)/bin/libmpr.so \
+$(CONFIG)/bin/makerom.out: \
+    $(CONFIG)/bin/libmpr.out \
     $(CONFIG)/obj/makerom.o
-	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS) -lmpr -lpthread -lm -lrt -ldl $(LDFLAGS)
+	$(LIBS)$(CC) -o $(CONFIG)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LDFLAGS)
 
 $(CONFIG)/bin/ca.crt: src/deps/est/ca.crt
 	rm -fr $(CONFIG)/bin/ca.crt
@@ -252,12 +252,12 @@ $(CONFIG)/obj/pcre.o: \
     src/deps/pcre/pcre.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/pcre.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/pcre/pcre.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/pcre.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/pcre/pcre.c
 
-$(CONFIG)/bin/libpcre.so: \
+$(CONFIG)/bin/libpcre.out: \
     $(CONFIG)/inc/pcre.h \
     $(CONFIG)/obj/pcre.o
-	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o $(LIBS)
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libpcre.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o 
 
 $(CONFIG)/inc/http.h: 
 	rm -fr $(CONFIG)/inc/http.h
@@ -268,25 +268,25 @@ $(CONFIG)/obj/httpLib.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/httpLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/httpLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
 
-$(CONFIG)/bin/libhttp.so: \
-    $(CONFIG)/bin/libmpr.so \
-    $(CONFIG)/bin/libpcre.so \
+$(CONFIG)/bin/libhttp.out: \
+    $(CONFIG)/bin/libmpr.out \
+    $(CONFIG)/bin/libpcre.out \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/obj/httpLib.o
-	$(CC) -shared -o $(CONFIG)/bin/libhttp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/httpLib.o -lpcre -lmpr $(LIBS)
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libhttp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/httpLib.o 
 
 $(CONFIG)/obj/http.o: \
     src/deps/http/http.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/http.h
-	$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/http.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/http.c
 
-$(CONFIG)/bin/http: \
-    $(CONFIG)/bin/libhttp.so \
+$(CONFIG)/bin/http.out: \
+    $(CONFIG)/bin/libhttp.out \
     $(CONFIG)/obj/http.o
-	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr -lhttp -lpthread -lm -lrt -ldl -lpcre -lmpr $(LDFLAGS)
+	$(LIBS)$(CC) -o $(CONFIG)/bin/http.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LDFLAGS)
 
 $(CONFIG)/inc/appweb.h: 
 	rm -fr $(CONFIG)/inc/appweb.h
@@ -304,40 +304,40 @@ $(CONFIG)/obj/config.o: \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/inc/customize.h
-	$(CC) -c -o $(CONFIG)/obj/config.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/config.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/config.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/config.c
 
 $(CONFIG)/obj/convenience.o: \
     src/convenience.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/convenience.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/convenience.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/convenience.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/convenience.c
 
 $(CONFIG)/obj/dirHandler.o: \
     src/dirHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/dirHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dirHandler.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/dirHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dirHandler.c
 
 $(CONFIG)/obj/fileHandler.o: \
     src/fileHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/fileHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fileHandler.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/fileHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fileHandler.c
 
 $(CONFIG)/obj/log.o: \
     src/log.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/log.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/log.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
 
 $(CONFIG)/obj/server.o: \
     src/server.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/server.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/server.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server.c
 
-$(CONFIG)/bin/libappweb.so: \
-    $(CONFIG)/bin/libhttp.so \
+$(CONFIG)/bin/libappweb.out: \
+    $(CONFIG)/bin/libhttp.out \
     $(CONFIG)/inc/appweb.h \
     $(CONFIG)/inc/bitos.h \
     $(CONFIG)/inc/customize.h \
@@ -347,7 +347,7 @@ $(CONFIG)/bin/libappweb.so: \
     $(CONFIG)/obj/fileHandler.o \
     $(CONFIG)/obj/log.o \
     $(CONFIG)/obj/server.o
-	$(CC) -shared -o $(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libappweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o 
 
 $(CONFIG)/inc/edi.h: 
 	rm -fr $(CONFIG)/inc/edi.h
@@ -370,19 +370,19 @@ $(CONFIG)/obj/edi.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/edi.h \
     $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/edi.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/edi.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/edi.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/edi.c
 
 $(CONFIG)/obj/espAbbrev.o: \
     src/esp/espAbbrev.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espAbbrev.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/espAbbrev.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espAbbrev.c
 
 $(CONFIG)/obj/espFramework.o: \
     src/esp/espFramework.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espFramework.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espFramework.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/espFramework.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espFramework.c
 
 $(CONFIG)/obj/espHandler.o: \
     src/esp/espHandler.c\
@@ -390,20 +390,20 @@ $(CONFIG)/obj/espHandler.o: \
     $(CONFIG)/inc/appweb.h \
     $(CONFIG)/inc/esp.h \
     $(CONFIG)/inc/edi.h
-	$(CC) -c -o $(CONFIG)/obj/espHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHandler.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/espHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHandler.c
 
 $(CONFIG)/obj/espHtml.o: \
     src/esp/espHtml.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h \
     $(CONFIG)/inc/edi.h
-	$(CC) -c -o $(CONFIG)/obj/espHtml.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/espHtml.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
 
 $(CONFIG)/obj/espTemplate.o: \
     src/esp/espTemplate.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espTemplate.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espTemplate.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/espTemplate.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espTemplate.c
 
 $(CONFIG)/obj/mdb.o: \
     src/esp/mdb.c\
@@ -412,17 +412,17 @@ $(CONFIG)/obj/mdb.o: \
     $(CONFIG)/inc/edi.h \
     $(CONFIG)/inc/mdb.h \
     $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/mdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/mdb.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/mdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/mdb.c
 
 $(CONFIG)/obj/sdb.o: \
     src/esp/sdb.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h \
     $(CONFIG)/inc/edi.h
-	$(CC) -c -o $(CONFIG)/obj/sdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/sdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
 
-$(CONFIG)/bin/libmod_esp.so: \
-    $(CONFIG)/bin/libappweb.so \
+$(CONFIG)/bin/libmod_esp.out: \
+    $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/inc/edi.h \
     $(CONFIG)/inc/esp-app.h \
     $(CONFIG)/inc/esp.h \
@@ -435,16 +435,16 @@ $(CONFIG)/bin/libmod_esp.so: \
     $(CONFIG)/obj/espTemplate.o \
     $(CONFIG)/obj/mdb.o \
     $(CONFIG)/obj/sdb.o
-	$(CC) -shared -o $(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o 
 
 $(CONFIG)/obj/esp.o: \
     src/esp/esp.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/esp.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/esp.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/esp.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/esp.c
 
-$(CONFIG)/bin/esp: \
-    $(CONFIG)/bin/libappweb.so \
+$(CONFIG)/bin/esp.out: \
+    $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/obj/edi.o \
     $(CONFIG)/obj/esp.o \
     $(CONFIG)/obj/espAbbrev.o \
@@ -454,7 +454,7 @@ $(CONFIG)/bin/esp: \
     $(CONFIG)/obj/espTemplate.o \
     $(CONFIG)/obj/mdb.o \
     $(CONFIG)/obj/sdb.o
-	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(LIBS)$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LDFLAGS)
 
 $(CONFIG)/bin/esp.conf: src/esp/esp.conf
 	rm -fr $(CONFIG)/bin/esp.conf
@@ -476,54 +476,54 @@ $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/cgiHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
 
-$(CONFIG)/bin/libmod_cgi.so: \
-    $(CONFIG)/bin/libappweb.so \
+$(CONFIG)/bin/libmod_cgi.out: \
+    $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/obj/cgiHandler.o
-	$(CC) -shared -o $(CONFIG)/bin/libmod_cgi.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libmod_cgi.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o 
 
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/sslModule.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/sslModule.c
 
-$(CONFIG)/bin/libmod_ssl.so: \
-    $(CONFIG)/bin/libappweb.so \
+$(CONFIG)/bin/libmod_ssl.out: \
+    $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/obj/sslModule.o
-	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sslModule.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libmod_ssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sslModule.o 
 
 $(CONFIG)/obj/authpass.o: \
     src/utils/authpass.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/authpass.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/authpass.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/authpass.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/authpass.c
 
-$(CONFIG)/bin/authpass: \
-    $(CONFIG)/bin/libappweb.so \
+$(CONFIG)/bin/authpass.out: \
+    $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/obj/authpass.o
-	$(CC) -o $(CONFIG)/bin/authpass $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(LIBS)$(CC) -o $(CONFIG)/bin/authpass.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LDFLAGS)
 
 $(CONFIG)/obj/cgiProgram.o: \
     src/utils/cgiProgram.c\
     $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/cgiProgram.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/cgiProgram.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/cgiProgram.c
 
-$(CONFIG)/bin/cgiProgram: \
+$(CONFIG)/bin/cgiProgram.out: \
     $(CONFIG)/obj/cgiProgram.o
-	$(CC) -o $(CONFIG)/bin/cgiProgram $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiProgram.o $(LIBS) -lpthread -lm -lrt -ldl $(LDFLAGS)
+	$(LIBS)$(CC) -o $(CONFIG)/bin/cgiProgram.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiProgram.o $(LDFLAGS)
 
 $(CONFIG)/obj/setConfig.o: \
     src/utils/setConfig.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/setConfig.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/setConfig.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/setConfig.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/setConfig.c
 
-$(CONFIG)/bin/setConfig: \
-    $(CONFIG)/bin/libmpr.so \
+$(CONFIG)/bin/setConfig.out: \
+    $(CONFIG)/bin/libmpr.out \
     $(CONFIG)/obj/setConfig.o
-	$(CC) -o $(CONFIG)/bin/setConfig $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o -lmpr $(LIBS) -lmpr -lpthread -lm -lrt -ldl $(LDFLAGS)
+	$(LIBS)$(CC) -o $(CONFIG)/bin/setConfig.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o $(LDFLAGS)
 
 src/server/slink.c: 
 	cd src/server; [ ! -f slink.c ] && cp slink.empty slink.c ; true ; cd ../..
@@ -532,30 +532,30 @@ $(CONFIG)/obj/slink.o: \
     src/server/slink.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/slink.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/slink.c
 
-$(CONFIG)/bin/libapp.so: \
+$(CONFIG)/bin/libapp.out: \
     src/server/slink.c \
-    $(CONFIG)/bin/esp \
-    $(CONFIG)/bin/libmod_esp.so \
+    $(CONFIG)/bin/esp.out \
+    $(CONFIG)/bin/libmod_esp.out \
     $(CONFIG)/obj/slink.o
-	$(CC) -shared -o $(CONFIG)/bin/libapp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o -lmod_esp $(LIBS) -lappweb -lhttp -lpcre -lmpr
+	$(LIBS)$(CC) -r -o $(CONFIG)/bin/libapp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o 
 
 $(CONFIG)/obj/appweb.o: \
     src/server/appweb.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/appweb.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/appweb.c
 
-$(CONFIG)/bin/appweb: \
-    $(CONFIG)/bin/libappweb.so \
-    $(CONFIG)/bin/libmod_esp.so \
-    $(CONFIG)/bin/libmod_ssl.so \
-    $(CONFIG)/bin/libmod_cgi.so \
-    $(CONFIG)/bin/libapp.so \
+$(CONFIG)/bin/appweb.out: \
+    $(CONFIG)/bin/libappweb.out \
+    $(CONFIG)/bin/libmod_esp.out \
+    $(CONFIG)/bin/libmod_ssl.out \
+    $(CONFIG)/bin/libmod_cgi.out \
+    $(CONFIG)/bin/libapp.out \
     $(CONFIG)/obj/appweb.o
-	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lapp -lmod_cgi -lmod_ssl -lmod_esp -lappweb $(LIBS) -lhttp -lpcre -lmpr -lapp -lmod_cgi -lmod_ssl -lmod_esp -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(LIBS)$(CC) -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LDFLAGS)
 
 src/server/cache: 
 	cd src/server; mkdir -p cache ; cd ../..
@@ -570,23 +570,23 @@ $(CONFIG)/obj/testAppweb.o: \
     $(CONFIG)/inc/testAppweb.h \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/http.h
-	$(CC) -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
 
 $(CONFIG)/obj/testHttp.o: \
     test/testHttp.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/testAppweb.h
-	$(CC) -c -o $(CONFIG)/obj/testHttp.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHttp.c
+	$(LIBS)$(CC) -c -o $(CONFIG)/obj/testHttp.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHttp.c
 
-$(CONFIG)/bin/testAppweb: \
-    $(CONFIG)/bin/libappweb.so \
+$(CONFIG)/bin/testAppweb.out: \
+    $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/inc/testAppweb.h \
     $(CONFIG)/obj/testAppweb.o \
     $(CONFIG)/obj/testHttp.o
-	$(CC) -o $(CONFIG)/bin/testAppweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr $(LDFLAGS)
+	$(LIBS)$(CC) -o $(CONFIG)/bin/testAppweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LDFLAGS)
 
-test/cgi-bin/testScript: $(CONFIG)/bin/cgiProgram
-	cd test; echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..
+test/cgi-bin/testScript: $(CONFIG)/bin/cgiProgram.out
+	cd test; echo '#!../$(CONFIG)/bin/cgiProgram.out' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..
 
 test/web/caching/cache.cgi: 
 	cd test; echo "#!`type -p ejs`" >web/caching/cache.cgi ; cd ..
@@ -598,10 +598,10 @@ test/web/auth/basic/basic.cgi:
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; cd ..
 	cd test; chmod +x web/auth/basic/basic.cgi ; cd ..
 
-test/cgi-bin/cgiProgram: $(CONFIG)/bin/cgiProgram
-	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram ; cd ..
-	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram ; cd ..
-	cd test; cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program' ; cd ..
+test/cgi-bin/cgiProgram.out: $(CONFIG)/bin/cgiProgram.out
+	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram.out ; cd ..
+	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram.out ; cd ..
+	cd test; cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program.out' ; cd ..
 	cd test; cp ../$(CONFIG)/bin/cgiProgram web/cgiProgram.cgi ; cd ..
 	cd test; chmod +x cgi-bin/* web/cgiProgram.cgi ; cd ..
 
@@ -614,10 +614,7 @@ version:
 genslink: 
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
-deployService: compile
-	install -m 755 -o root -g bin package/linux/appweb.init /etc/init.d/appweb
-
-deploy: compile deployService
+deploy: compile
 	for n in appman appweb authpass esp; do rm -f $(BIT_UBIN_PREFIX)/$$n ; done
 	mkdir -p '$(BIT_CFG_PREFIX)' '$(BIT_BIN_PREFIX)' '$(BIT_INC_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_VER_PREFIX)/man/man1'
 	cp ./$(CONFIG)/inc/*.h $(BIT_INC_PREFIX)
@@ -630,18 +627,4 @@ deploy: compile deployService
 	for n in appman appweb authpass esp; do rm -f $(BIT_UBIN_PREFIX)/$$n ; ln -s $(BIT_BIN_PREFIX)/$$n $(BIT_UBIN_PREFIX)/$$n ; done
 	for n in appman.1 appweb.1 appwebMonitor.1 authpass.1 esp.1 http.1 makerom.1 ; do rm -f $(BIT_VER_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/$$n ; cp doc/man/$$n $(BIT_VER_PREFIX)/man/man1 ; ln -s $(BIT_VER_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/$$n ; done
 	echo 'Documents "$(BIT_WEB_PREFIX)"\nListen 80"\nset LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_SPL_PREFIX)/cache"' >$(BIT_CFG_PREFIX)/install.conf
-
-stop: compile
-	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
-
-start: compile stop
-	./$(CONFIG)/bin/appman install enable start
-
-install: compile stop deploy start
-	
-
-uninstall: compile stop
-	for n in appman appweb authpass esp; do rm -f $(BIT_UBIN_PREFIX)/$$n ; done
-	for n in $(BIT_VER_PREFIX)/man/man1/*.1; do base=`basename $$n` ; rm -f $(BIT_MAN_PREFIX)/$$base ; done
-	rm -fr '$(BIT_CFG_PREFIX)' '$(BIT_PRD_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_LOG_PREFIX)' '$(BIT_SPL_PREFIX)'
 

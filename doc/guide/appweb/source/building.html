@@ -39,7 +39,7 @@
                 <li><a href="#overview">Build Overview</a></li>
                 <li><a href="#env">Prepare the Environment</a></li>
                 <li><a href="#configuring">Configuring the Build</a></li>
-                <li><a href="#cross">Cross Compilation</a></li>
+                <li><a href="#cross">Cross Compiling</a></li>
                 <li><a href="#building">Building</a></li>
                 <li><a href="#customizing">Customizing</a></li>
                 <li><a href="#installing">Installing</a></li>
@@ -154,14 +154,44 @@
             <pre>nmake -f projects\appweb-windows.nmake</pre>
 
             <h3>Modifying the Makefile defaults</h3>
-            <p>The source code includes a configuration header from projects/appweb-OS-debug-bit.h. This header specifies
+            <p>The configuration default are governed by the projects/appweb-OS-debug-bit.h file. This header specifies
             the featuers and extensions to be used when building Appweb. You can modify this file by hand or override
             values by setting CFLAGS when invoking make. For example, to disable use of SQLite:
 
             <pre>make CFLAGS="-DBIT_PACK_SQLITE=0" </pre>
-            <p>This technique is useful for limited modifications to the build configuration. If you need more 
-            extensive control, please build using the 
-            the <a href="http://embedthis.com/products/bit/index.html">Bit</a> tool.</p>
+            <p>To see the list of configurable options, run:</p>
+            <pre>$ make help
+
+With make, the default configuration can be modified by setting make
+variables. Set to 0 to disable and 1 to enable:
+
+      PROFILE            # Select default or static for static linking
+      BIT_ESP_MDB        # Enable ESP MDB database support
+      BIT_ESP_SDB        # Enable ESP SQLite database support
+      BIT_MPR_LOGGING    # Enable application logging
+      BIT_MPR_TRACING    # Enable debug tracing
+      BIT_PACK_CGI       # Enable the CGI handler
+      BIT_PACK_DIR       # Enable the directory listing handler
+      BIT_PACK_EJSCRIPT  # Enable the Ejscript handler
+      BIT_PACK_ESP       # Enable the ESP web framework
+      BIT_PACK_EST       # Enable the EST SSL stack
+      BIT_PACK_MOCANA    # Enable the Mocana NanoSSL stack
+      BIT_PACK_MATRIXSSL # Enable the MatrixSSL SSL stack
+      BIT_PACK_OPENSSL   # Enable the OpenSSL SSL stack
+      BIT_PACK_PHP       # Enable the PHP framework
+      BIT_PACK_SQLITE    # Enable the SQLite database
+      BIT_ROM            # Build for ROM without a file system
+
+For example, to disable CGI:
+
+      make BIT_PACK_CGI=0
+
+Other make variables include:
+
+      ARCH, CC, CFLAGS, DFLAGS, IFLAGS, LD, LDFLAGS, LIBPATHS, LIBS, OS
+</pre>
+            <p>By defining the make variables such as CC and CFLAGS, you can modify the compiler options. This is the
+            technique used when cross-compiling.  For more details, see <a href="#cross">Cross Compiling</a> below.</p>
 
             <a id="sh"></a>
             <h2 class="section">Building with Shell Scripts</h2>
@@ -263,7 +293,7 @@
                 </tr>
                 </tbody>
             </table>
-            <h3>Cross Building</h3>
+            <h3>Cross Compiling</h3>
             <table title="types">
                 <thead>
                     <tr>
@@ -464,7 +494,7 @@ configure --with openssl=/usr/src/openssl
             </table>
 
             <h3>Environment Variables</h3>
-            <p>When cross-building, certain environment variables may be passed to the configure script and on to 
+            <p>When cross compiling, certain environment variables may be passed to the configure script and on to 
             <em>bit</em> to configure the compiler and linker paths and flags. </p>
             <table title="env">
                 <thead>
@@ -690,11 +720,22 @@ sudo bit uninstall
 
 
             <a id="cross"></a>
-            <h2 class="section">Configuring for Cross-Compilation</h2>
+            <h2 class="section">Cross Compiling</h2>
             <p>To build a product for platform different to that of the local system is called <em>cross compiling</em>.
-            Sometimes this cross compiling is just for a different instruction set (say x64 instead of x86). Other
+            Sometimes this compiling is just for a different instruction set (say x64 instead of x86). Other
             times, it is for a completely different operating system and/or CPU architecture. In such cases a
-            cross-compiler may be required to build for the target platform.</p>
+            cross-compiler is typically required to build for the target platform.</p>
+
+            <p>Cross compiling is supported using Bit or make. When using Bit, the configure command is used to
+            specify the target platform. When using make, the platform and options are provided directly to make.
+            See the relevant section below:</p>
+
+            <h3>Cross compiling with Make</h3>
+            <p>When make is run, it places the output products in a platform-specific output directory. This is named:
+            OS-ARCH-PROFILE. For example: macosx-x64-debug. To cross compile with make you will build the software twice,
+            once for the local system and once for the target system.
+
+            <h3>Cross compiling with Bit</h3>
             <p>Bit supports cross compiling via the <em>-platform PLATFORM</em> bit configure option. This option adds a
             platform to the list of platforms to be made. Multiple platforms may be
             specified and the 'local' platform alias may be used for the local development platform.</p>
@@ -708,6 +749,7 @@ sudo bit uninstall
             one of arm, mips, ppc, x64 or x86. X64 is the AMD/Intel 64-bit instruction set and x86 is the Intel X86
             Pentium instruction set. You may also use i386 or i686 for specific Intel X86 instruction sets.
             The CPU field is optional and specifies a CPU to tune for.</p>
+
             <h3>Environment Variables</h3>
             <p>When cross compiling, you may need to inform <b>configure</b> about your cross-compilation tool chain.
             Bit will do its best to discover the installed cross tool chain and will look in well known

@@ -11,23 +11,23 @@ require ejs.unix
     Copy binary files to package staging area
     This is run for local and cross platforms. The last platform does the packaging
  */
-public function packageBinaryFiles(formats = ['tar', 'native'], minimal = false) {
+public function packageDeploy(minimal = false) {
     let settings = bit.settings
     let bin = bit.dir.pkg.join('bin')
     safeRemove(bit.dir.pkg)
     let vname = settings.product + '-' + settings.version + '-' + settings.buildNumber
     let pkg = bin.join(vname)
-    pkg.makeDir()
-
     let contents = pkg.join('contents')
-
-    let prefixes = bit.prefixes;
+    let prefixes = bit.prefixes
     let p = {}
     for (prefix in bit.prefixes) {
         p[prefix] = Path(contents.portable.name + bit.prefixes[prefix].removeDrive().portable)
         p[prefix].makeDir()
     }
     let strip = bit.platform.profile == 'debug'
+
+    trace('Deploy', bit.settings.title)                                                     
+    pkg.makeDir()
 
     if (!bit.cross) {
         /* These three files are replicated outside the data directory */
@@ -66,14 +66,9 @@ public function packageBinaryFiles(formats = ['tar', 'native'], minimal = false)
         }
         let conf = Path(contents.portable + '' + bit.prefixes.config.removeDrive().portable + '/appweb.conf')
         let user = getWebUser(), group = getWebUser()
-        if (bit.platform.os == 'windows') {
-            run(['setConfig', '--home', '.', '--documents', 'web', '--logs', 'logs', '--port', 80,
-                '--ssl', 443, '--cache', 'cache', '--modules', 'bin', conf])
-        } else {
-            run(['setConfig', '--home', prefixes.config, '--documents', prefixes.web, '--logs', prefixes.log,
-                '--port', 80, '--ssl', 443, '--user', user, '--group', group,
-                '--cache', prefixes.spool.join('cache'), '--modules', prefixes.bin, conf])
-        }
+
+        p.config.join('install.conf').write('set LOG_DIR ' + p.log + '\nset CACHE_DIR ' + p.spool + '/cache\n' +
+            'Documents "' + p.web + '"\nListen 80')
         bit.dir.cfg.join('appweb.conf.bak').remove()
         p.spool.join('cache').makeDir({user: user, group: group})
         let tmp = p.log.join('error.log')
@@ -114,27 +109,14 @@ public function packageBinaryFiles(formats = ['tar', 'native'], minimal = false)
         install(bit.dir.bin.join('ejs*.mod'), p.bin);
     }
     if (!bit.cross) {
-        if (bit.platform.os == 'macosx') {
-            let daemons = contents.join('Library/LaunchDaemons')
-            daemons.makeDir()
-            install('package/MACOSX/com.embedthis.appweb.plist', daemons, {permissions: 0644, expand: true})
-
-        } else if (bit.platform.os == 'linux') {
-            install('package/LINUX/' + settings.product + '.init', 
-                contents.join('etc/init.d', settings.product), 
-                {permissions: 0755, expand: true})
-            install('package/LINUX/' + settings.product + '.upstart', 
-                contents.join('init', settings.product).joinExt('conf'),
-                {permissions: 0644, expand: true})
-
-        } else if (bit.platform.os == 'windows') {
+        if (bit.platform.os == 'windows') {
             let version = bit.packs.compiler.version.replace('.', '')
             if (bit.platform.arch == 'x64') {
-                install(bit.packs.compiler.dir.join('VC/redist/x64/Microsoft.VC' + 
-                    version + '.CRT/msvcr' + version + '.dll'), p.bin)
+                install(bit.packs.compiler.dir.join('VC/redist/x64/Microsoft.VC' + version + '.CRT/msvcr' + 
+                    version + '.dll'), p.bin)
             } else {
-                install(bit.packs.compiler.dir.join('VC/redist/x86/Microsoft.VC' + 
-                    version + '.CRT/msvcr' + version + '.dll'), p.bin)
+                install(bit.packs.compiler.dir.join('VC/redist/x86/Microsoft.VC' + version + '.CRT/msvcr' + 
+                    version + '.dll'), p.bin)
             }
             /*
                 install(bit.packs.compiler.path.join('../../lib/msvcrt.lib'), p.bin)
@@ -153,10 +135,35 @@ public function packageBinaryFiles(formats = ['tar', 'native'], minimal = false)
         files = files.map(function(f) Path("/" + f))
         p.productver.join('files.log').append(files.join('\n') + '\n')
     }
-    if (formats && bit.platform.last) {
-        package(bit.dir.pkg.join('bin'), formats)
+}
+
+
+public function packageDeployService() {
+    let settings = bit.settings
+    let bin = bit.dir.pkg.join('bin')
+    let pkg = bin.join(settings.product + '-' + settings.version + '-' + settings.buildNumber)
+    let contents = pkg.join('contents')
+    let prefixes = bit.prefixes
+    let p = {}
+    for (prefix in bit.prefixes) {
+        p[prefix] = Path(contents.portable.name + bit.prefixes[prefix].removeDrive().portable)
+        p[prefix].makeDir()
+    }
+    if (!bit.cross) {
+        if (bit.platform.os == 'macosx') {
+            let daemons = contents.join('Library/LaunchDaemons')
+            daemons.makeDir()
+            install('package/macosx/com.embedthis.appweb.plist', daemons, {permissions: 0644, expand: true})
+
+        } else if (bit.platform.os == 'linux') {
+            install('package/linux/' + settings.product + '.init', 
+                contents.join('etc/init.d', settings.product), {permissions: 0755, expand: true})
+            install('package/linux/' + settings.product + '.upstart', 
+                contents.join('init', settings.product).joinExt('conf'), {permissions: 0644, expand: true})
+        }
     }
 }
+
 
 public function packageSourceFiles() {
     if (bit.cross) {
@@ -186,6 +193,7 @@ public function packageSourceFiles() {
     install('package', pkg, {})
     package(bit.dir.pkg.join('src'), 'src')
 }
+
 
 public function packageComboFiles() {
     if (bit.cross) {
@@ -233,27 +241,58 @@ public function packageComboFiles() {
     package(bit.dir.pkg.join('src'), ['combo', 'flat'])
 }
 
-public function installBinary() {
+
+public function startService() {
     if (Config.OS != 'windows' && App.uid != 0) {
         throw 'Must run as root. Use \"sudo bit install\"'
     }
-    packageBinaryFiles(null, true)
     if (!bit.cross) {
+        stopService(true)
+        trace('Start', 'appman install enable start')
+        Cmd([bit.prefixes.bin.join('appman' + bit.globals.EXE), 'install', 'enable', 'start'])
         if (bit.platform.os == 'windows') {
-            Cmd([bit.dir.bin.join('appwebMonitor' + bit.globals.EXE), '--stop'])
+            Cmd([bit.prefixes.bin.join('appwebMonitor' + bit.globals.EXE)], {detach: true})
         }
-        Cmd([bit.dir.bin.join('appman'), '--continue', 'stop', 'disable', 'uninstall'])
+    }
+}
+
+
+public function stopService(quiet: Boolean = false) {
+    if (Config.OS != 'windows' && App.uid != 0) {
+        throw 'Must run as root. Use \"sudo bit install\"'
+    }
+    if (!bit.cross) {
+        if (!quiet) {
+            trace('Stop', bit.settings.title)                                                     
+        }
+        if (bit.platform.os == 'windows') {
+            Cmd([bit.prefixes.bin.join('appwebMonitor'), '--stop'])
+        }
+        let appman = Cmd.locate(bit.prefixes.bin.join('appman'))
+        if (appman) {
+            Cmd([appman, '--continue', 'stop', 'disable', 'uninstall'])
+        }
+    }
+}
+
+
+public function packageBinaryFiles(formats = ['tar', 'native'], minimal = false) {
+    packageDeploy(minimal)
+    if (bit.platform.last) {
+        package(bit.dir.pkg.join('bin'), formats)
+    }
+}
+
+
+public function installBinary() {
+    if (Config.OS != 'windows' && App.uid != 0) {
+        throw 'Must run as root. Use \"sudo bit install\"'
     }
     package(bit.dir.pkg.join('bin'), 'install')
     if (!bit.cross) {
         if (Config.OS != 'windows') {
             createLinks()
             updateLatestLink()
-        }
-        trace('Start', 'appman install enable start')
-        Cmd([bit.prefixes.bin.join('appman' + bit.globals.EXE), 'install', 'enable', 'start'])
-        if (bit.platform.os == 'windows') {
-            Cmd([bit.prefixes.bin.join('appwebMonitor' + bit.globals.EXE)], {detach: true})
         }
     }
     if (!bit.options.keep) {
@@ -264,42 +303,41 @@ public function installBinary() {
     trace('Complete', bit.settings.title + ' installed')
 }
 
+
 public function uninstallBinary() {
     if (Config.OS != 'windows' && App.uid != 0) {
         throw 'Must run as root. Use \"sudo bit install\"'
     }
     trace('Uninstall', bit.settings.title)                                                     
-    if (bit.platform.os == 'windows') {
-        Cmd([bit.prefixes.bin.join('appwebMonitor'), '--stop'])
-    }
-    let appman = Cmd.locate(bit.prefixes.bin.join('appman'))
-    if (appman) {
-        Cmd([appman, '--continue', 'stop', 'disable', 'uninstall'])
-    }
     let fileslog = bit.prefixes.productver.join('files.log')
     if (fileslog.exists) {
         for each (let file: Path in fileslog.readLines()) {
-            vtrace('Remove', file)
+            strace('Remove', file)
             file.remove()
         }
     }
     fileslog.remove()
     for each (file in bit.prefixes.log.files('*.log*')) {
+        strace('Remove', file)
         file.remove()
     }
     for each (prefix in bit.prefixes) {
-        if (!prefix.name.contains(bit.settings.product)) {
-            continue
+        if (bit.platform.os == 'windows') {
+            if (!prefix.name.contains(bit.settings.title)) continue
+        } else {
+            if (!prefix.name.contains(bit.settings.product)) continue
         }
         for each (dir in prefix.files('**', {include: /\/$/}).sort().reverse()) {
-            vtrace('Remove', dir)
-            dir.remove()
+            strace('Remove', dir)
+            dir.removeAll()
         }
-        vtrace('Remove', prefix)
-        prefix.remove()
+        strace('Remove', prefix)
+        prefix.removeAll()
     }
     updateLatestLink()
+    trace('Complete', bit.settings.title + ' uninstalled')
 }
+
 
 /*
     Create symlinks for binaries and man pages
@@ -329,6 +367,7 @@ public function createLinks() {
         bit.prefixes.productver.join('files.log').append(log.join('\n') + '\n')
     }
 }
+
 
 function updateLatestLink() {
     let latest = bit.prefixes.product.join('latest')

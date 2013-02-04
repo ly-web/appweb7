@@ -112,13 +112,13 @@ Bit.load({
          */
         est: {
             camellia: false,
-            padlock: false,
-            sslClient: false,
             des: false,
+            genPrime: false,
+            padlock: false,
+            romTables: false,
+            sslClient: false,
             testCerts: false,
             xtea: false,
-            romTables: false,
-            genPrime: false,
         },
 
         mpr: {
@@ -144,11 +144,30 @@ Bit.load({
     },
 
     usage: {
-        'esp.mdb':      'Enable ESP MDB database support (true|false)',
-        'esp.sdb':      'Enable ESP SQLite database support (true|flase)',
-        'http.pam':     'Enable Unix Pluggable Auth Module (true|false)',
-        'mpr.logging':  'Enable application logging (true|false)',
-        'mpr.tracing':  'Enable debug tracing (true|false)',
+        'ejs.db':        'Enable database support, ejs.db (true|false)',
+        'ejs.mail':      'Enable mail support, ejs.mail (true|false)',
+        'ejs.mapper':    'Enable database mapper support, ejs.mapper (true|false)',
+        'ejs.tar':       'Enable tar support, ejs.tar (true|false)',
+        'ejs.template':  'Enable template support, ejs.template (true|false)',
+        'ejs.web':       'Enable web support, ejs.web (true|false)',
+        'ejs.zlib':      'Enable zlib support, ejs.zlib (true|false)',
+
+        'esp.mdb':       'Enable ESP MDB database support (true|false)',
+        'esp.sdb':       'Enable ESP SQLite database support (true|flase)',
+
+        'est.camellia':  'Enable the Camellia cipher (true|false)',
+        'est.des':       'Enable the 3DES cipher (true|false)',
+        'est.genPrime':  'Enable generation of primes (true|false)',
+        'est.padlock':   'Enable VIA Padlock acceleration (true|false)',
+        'est.romTables': 'Enable ROM tables (true|false)',
+        'est.sslClient': 'Enable SSL/TLS client side (true|false)',                                     
+        'est.testCerts': 'Enable generation of test certificates (true|false)',
+        'est.xtea':      'Enable XTEA (true|false)',
+
+        'http.pam':      'Enable Unix Pluggable Auth Module (true|false)',
+
+        'mpr.logging':   'Enable application logging (true|false)',
+        'mpr.tracing':   'Enable debug tracing (true|false)',
     },
 
     packs: {
