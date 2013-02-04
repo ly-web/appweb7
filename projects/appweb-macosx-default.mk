@@ -570,7 +570,7 @@ $(CONFIG)/bin/ejsc: \
 	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o -lejs $(LIBS) -lsqlite3 -lmpr -lpcre -lhttp -lpam
 
 $(CONFIG)/bin/ejs.mod: $(CONFIG)/bin/ejsc
-	cd src/deps/ejs; $(LBIN)/ejsc --out ../../../$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; cd ../../..
+	$(LBIN)/ejsc --out ./$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es
 
 $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c\

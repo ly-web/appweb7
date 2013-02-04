@@ -570,7 +570,7 @@ $(CONFIG)/bin/ejsc.out: \
 	$(LIBS)$(CC) -o $(CONFIG)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LDFLAGS)
 
 $(CONFIG)/bin/ejs.mod: $(CONFIG)/bin/ejsc.out
-	cd src/deps/ejs; $(LBIN)/ejsc --out ../../../$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; cd ../../..
+	$(LBIN)/ejsc --out ./$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es
 
 $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c\
