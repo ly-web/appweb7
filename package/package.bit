@@ -15,7 +15,7 @@ Bit.load({
         deploy: {
             home: '${TOP}',
             action: "packageDeploy()",
-            depends: ['compile', 'deployService'],
+            depends: ['compile'],
             'generate-make': "
                 for n in appman appweb authpass esp; do rm -f $(BIT_UBIN_PREFIX)/$$n ; done
                 mkdir -p '$(BIT_CFG_PREFIX)' '$(BIT_BIN_PREFIX)' '$(BIT_INC_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_VER_PREFIX)/man/man1'
@@ -37,6 +37,10 @@ Bit.load({
                     ln -s $(BIT_VER_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/$$n ; \\
                 done
                 echo 'Documents \"$(BIT_WEB_PREFIX)\"\\nListen 80\"\\nset LOG_DIR \"$(BIT_LOG_PREFIX)\"\\nset CACHE_DIR \"$(BIT_SPL_PREFIX)/cache\"' >$(BIT_CFG_PREFIX)/install.conf
+                if [ '${OS}' = macosx ] ; then \\
+                    install -m 755 -d /Library/LaunchDaemons ; \\
+                    install -m 644 -o root -g wheel package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons ; \\
+                else install -m 755 -o root -g bin package/linux/appweb.init /etc/init.d/appweb ; fi
             ",
             'generate-nmake': "
                 xcopy /I /S /Y /Q $(CONFIG)\\bin \"$(BIT_BIN_PREFIX)\"
@@ -47,18 +51,6 @@ Bit.load({
                 xcopy /I /S /Y /Q src/server/web \"$(BIT_WEB_PREFIX)\"
                 echo 'Documents \"$(BIT_WEB_PREFIX)\"\\nListen 80\"\\nset LOG_DIR \"$(BIT_LOG_PREFIX)\"\\nset CACHE_DIR \"$(BIT_SPL_PREFIX)/cache\"' >$(BIT_CFG_PREFIX)/install.conf
             ",
-        },
-
-        deployService: {
-            enable: "bit.platform.like == 'posix' || bit.platform.like == 'windows'",
-            home: '${TOP}',
-            action: "packageDeployService()",
-            depends: ['compile'],
-            'generate-macosx': "
-                install -m 755 -d /Library/LaunchDaemons
-                install -m 644 -o root -g wheel package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
-            ",
-            'generate-linux': "install -m 755 -o root -g bin package/linux/appweb.init /etc/init.d/appweb",
         },
 
         start: {
