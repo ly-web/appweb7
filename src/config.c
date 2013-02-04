@@ -57,10 +57,14 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     host = server->defaultHost;
     route = host->defaultRoute;
 
+    httpSetRouteVar(route, "LOG_DIR", BIT_LOG_PREFIX);
+    httpSetRouteVar(route, "INC_DIR", BIT_INC_PREFIX);
+    httpSetRouteVar(route, "SPL_DIR", BIT_SPL_PREFIX);
+    httpSetRouteVar(route, "BIN_DIR", mprJoinPath(server->appweb->platformDir, "bin"));
 #if DEPRECATED || 1
     httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
-#endif
     httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
+#endif
 
     state = createState(server, host, route);
     state->flags = flags;
@@ -785,7 +789,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
     
     for (option = gettok(sclone(value), &tok); option; option = gettok(tok, &tok)) {
         if (!path) {
-            path = sclone(option);
+            path = mprJoinPath(httpGetRouteVar(state->route, "LOG_DIR"), httpExpandRouteVars(state->route, option));
         } else {
             option = stok(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
@@ -853,7 +857,7 @@ static int exitTimeoutDirective(MaState *state, cchar *key, cchar *value)
  */
 static int groupAccountDirective(MaState *state, cchar *key, cchar *value)
 {
-    if (!smatch(value, "_unchanged_")) {
+    if (!smatch(value, "_unchanged_") && !mprGetDebugMode()) {
         maSetHttpGroup(state->appweb, value);
     }
     return 0;
@@ -916,6 +920,7 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
             Convert glob style to regexp
          */
         path = mprGetPathDir(mprJoinPath(state->route->home, value));
+        path = stemplate(path, state->route->vars);
         pattern = mprGetPathBase(value);
         pattern = sreplace(pattern, ".", "\\.");
         pattern = sreplace(pattern, "*", ".*");
@@ -1980,7 +1985,7 @@ static int userDirective(MaState *state, cchar *key, cchar *value)
  */
 static int userAccountDirective(MaState *state, cchar *key, cchar *value)
 {
-    if (!smatch(value, "_unchanged_")) {
+    if (!smatch(value, "_unchanged_") && !mprGetDebugMode()) {
         maSetHttpUser(state->appweb, value);
     }
     return 0;

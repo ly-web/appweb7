@@ -344,7 +344,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->source, R_OK)) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find web page %s", req->source);
+            mprLog(3, "Cannot find web page %s", req->source);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find web page for %s", rx->uri);
             return;
         }
         lock(req->esp);
@@ -480,20 +481,23 @@ static EspRoute *allocEspRoute(HttpRoute *route)
 {
     EspRoute    *eroute;
     MprPath     info;
-    char        *path;
+    cchar       *path;
 
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
-    path = mprJoinPath(route->home, "cache");
+#if DEBUG_IDE
+    path = mprGetAppDir();
+#else
+    path = httpGetRouteVar(route, "CACHE_DIR");
+    if (mprGetPathInfo(path, &info) != 0 || !info.isDir) {
+        path = mprJoinPath(route->home, "cache");
+    }
     if (mprGetPathInfo(path, &info) != 0 || !info.isDir) {
         path = route->home;
     }
-#if DEBUG_IDE
-    path = mprGetAppDir();
 #endif
-    eroute->cacheDir = path;
-
+    eroute->cacheDir = (char*) path;
     eroute->update = BIT_DEBUG;
     eroute->showErrors = BIT_DEBUG;
     eroute->keepSource = BIT_DEBUG;

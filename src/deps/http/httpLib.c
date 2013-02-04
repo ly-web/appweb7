@@ -9248,9 +9248,9 @@ PUBLIC void httpSetRouteDir(HttpRoute *route, cchar *path)
     assert(path && *path);
     
     route->dir = httpMakePath(route, path);
-    httpSetRouteVar(route, "DOCUMENTS", route->dir);
-
+    httpSetRouteVar(route, "DOCUMENTS_DIR", route->dir);
     //  DEPRECATE
+    httpSetRouteVar(route, "DOCUMENTS", route->dir);
     httpSetRouteVar(route, "DOCUMENT_ROOT", route->dir);
 }
 
@@ -9261,6 +9261,9 @@ PUBLIC void httpSetRouteHome(HttpRoute *route, cchar *path)
     assert(path && *path);
     
     route->home = httpMakePath(route, path);
+
+    httpSetRouteVar(route, "HOME_DIR", route->home);
+    //  DEPRECATED
     httpSetRouteVar(route, "ROUTE_HOME", route->home);
 }
 
@@ -9959,6 +9962,18 @@ PUBLIC void httpSetRouteVar(HttpRoute *route, cchar *key, cchar *value)
 }
 
 
+PUBLIC cchar *httpGetRouteVar(HttpRoute *route, cchar *key)
+{
+    return mprLookupKey(route->vars, key);
+}
+
+
+PUBLIC cchar *httpExpandRouteVars(HttpRoute *route, cchar *str)
+{
+    return stemplate(str, route->vars);
+}
+
+
 /*
     Make a path name. This replaces $references, converts to an absolute path name, cleans the path and maps delimiters.
     Paths are resolved relative to the route home.
@@ -10640,6 +10655,9 @@ static void definePathVars(HttpRoute *route)
     mprAddKey(route->vars, "PRODUCT", sclone(BIT_PRODUCT));
     mprAddKey(route->vars, "OS", sclone(BIT_OS));
     mprAddKey(route->vars, "VERSION", sclone(BIT_VERSION));
+
+    mprAddKey(route->vars, "BIN_DIR", mprGetAppDir());
+    //  DEPRECATED
     mprAddKey(route->vars, "LIBDIR", mprGetAppDir());
     if (route->host) {
         defineHostVars(route);
@@ -10830,7 +10848,7 @@ static char *expandRequestTokens(HttpConn *conn, char *str)
 }
 
 
-PUBLIC char *httpExpandRouteVars(HttpConn *conn, cchar *str)
+PUBLIC char *httpExpandUri(HttpConn *conn, cchar *str)
 {
     return expandRequestTokens(conn, stemplate(str, conn->rx->route->vars));
 }
@@ -14598,7 +14616,7 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
     tx->status = status;
 
     if (schr(targetUri, '$')) {
-        targetUri = httpExpandRouteVars(conn, targetUri);
+        targetUri = httpExpandUri(conn, targetUri);
     }
     mprLog(3, "redirect %d %s", status, targetUri);
     msg = httpLookupStatus(conn->http, status);

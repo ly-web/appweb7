@@ -400,6 +400,15 @@ PUBLIC void maGetUserGroup(MaAppweb *appweb)
 
 PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
+    if (smatch(newUser, "_default_")) {
+#if MACOSX || FREEBSD
+        newUser = "www";
+#elif LINUX || BIT_UNIX_LIKE
+        newUser = "www-data";
+#elif WINDOWS
+        newUser = "Administrator";
+#endif
+    }
 #if BIT_UNIX_LIKE
     struct passwd   *pp;
 
@@ -427,6 +436,15 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 
 PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
+    if (smatch(newGroup, "_default_")) {
+#if MACOSX || FREEBSD
+        newGroup = "www";
+#elif LINUX || BIT_UNIX_LIKE
+        newGroup = "www-data";
+#elif WINDOWS
+        newGroup = "Administrator";
+#endif
+    }
 #if BIT_UNIX_LIKE
     struct group    *gp;
 

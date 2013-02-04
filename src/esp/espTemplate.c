@@ -147,7 +147,8 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
 
             /*
                 These vars can be also be configured from environment variables.
-                NOTE: the default esp.conf includes "esp->vxworks.conf" which has EspEnv definitions for the configured VxWorks toolchain
+                NOTE: the default esp.conf includes "esp->vxworks.conf" which has EspEnv definitions for the 
+                configured VxWorks toolchain.
              */
             } else if (matchToken(&cp, "${AR}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "AR", getArPath(os, arch)));
