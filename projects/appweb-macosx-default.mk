@@ -209,8 +209,7 @@ $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
-    $(CONFIG)/inc/est.h \
-    $(CONFIG)/inc/bitos.h
+    $(CONFIG)/inc/est.h
 	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.dylib: \
@@ -621,11 +620,7 @@ run: compile
 test-run: compile
 	cd test; ${platform.configuration}/bin/appweb -v ; cd ..
 
-deployService: compile
-	install -m 755 -d /Library/LaunchDaemons
-	install -m 644 -o root -g wheel package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
-
-deploy: compile deployService
+deploy: compile
 	for n in appman appweb authpass esp; do rm -f $(BIT_UBIN_PREFIX)/$$n ; done
 	mkdir -p '$(BIT_CFG_PREFIX)' '$(BIT_BIN_PREFIX)' '$(BIT_INC_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_VER_PREFIX)/man/man1'
 	cp ./$(CONFIG)/inc/*.h $(BIT_INC_PREFIX)
@@ -639,13 +634,20 @@ deploy: compile deployService
 	for n in appman.1 appweb.1 appwebMonitor.1 authpass.1 esp.1 http.1 makerom.1 ; do rm -f $(BIT_VER_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/$$n ; cp doc/man/$$n $(BIT_VER_PREFIX)/man/man1 ; ln -s $(BIT_VER_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/$$n ; done
 	echo 'Documents "$(BIT_WEB_PREFIX)"\nListen 80"\nset LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_SPL_PREFIX)/cache"' >$(BIT_CFG_PREFIX)/install.conf
 
+deployService: compile
+	install -m 755 -d /Library/LaunchDaemons
+	install -m 644 -o root -g wheel package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
+
 stop: compile
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 start: compile stop
 	./$(CONFIG)/bin/appman install enable start
 
-install: compile stop deploy start
+deployPost: 
+	
+
+install: compile stop deploy deployService deployPost start
 	
 
 uninstall: compile stop

@@ -652,10 +652,7 @@ genslink:
 	esp --static --genlink slink.c --flat compile
 	cd ..\..
 
-deployService: compile
-#  Omit build script undefined
-
-deploy: compile deployService
+deploy: compile
 	xcopy /I /S /Y /Q $(CONFIG)\bin "$(BIT_BIN_PREFIX)"
 	del /Q "$(BIT_BIN_PREFIX)\*.pdb"
 	del /Q "$(BIT_BIN_PREFIX)\*.exp"
@@ -670,7 +667,13 @@ stop: compile
 start: compile stop
 	.\$(CONFIG)\bin\appman install enable start
 
-install: compile stop deploy start
+deployService: compile
+#  Omit build script undefined
+
+deployPost: 
+
+
+install: compile stop deploy deployService deployPost start
 
 
 uninstall: compile stop

@@ -24,7 +24,6 @@ public function packageDeploy(minimal = false) {
         p[prefix] = Path(contents.portable.name + bit.prefixes[prefix].removeDrive().portable)
         p[prefix].makeDir()
     }
-
     let strip = bit.platform.profile == 'debug'
 
     trace('Deploy', bit.settings.title)                                                     
@@ -129,6 +128,28 @@ public function packageDeploy(minimal = false) {
         if (bit.platform.like == 'posix' && !minimal) {
             install('doc/man/*.1', p.productver.join('doc/man/man1'), {compress: true})
         }
+    }
+    if (!minimal) {
+        let files = contents.files('**', {exclude: /\/$/, relative: true})
+        files = files.map(function(f) Path("/" + f))
+        p.productver.join('files.log').append(files.join('\n') + '\n')
+    }
+}
+
+
+public function packageDeployService() {
+    let settings = bit.settings
+    let bin = bit.dir.pkg.join('bin')
+    let vname = settings.product + '-' + settings.version + '-' + settings.buildNumber
+    let pkg = bin.join(vname)
+    let contents = pkg.join('contents')
+    let prefixes = bit.prefixes
+    let p = {}
+    for (prefix in bit.prefixes) {
+        p[prefix] = Path(contents.portable.name + bit.prefixes[prefix].removeDrive().portable)
+        p[prefix].makeDir()
+    }
+    if (!bit.cross) {
         if (bit.platform.os == 'macosx') {
             let daemons = contents.join('Library/LaunchDaemons')
             daemons.makeDir()
@@ -140,11 +161,6 @@ public function packageDeploy(minimal = false) {
             install('package/linux/' + settings.product + '.upstart', 
                 contents.join('init', settings.product).joinExt('conf'), {permissions: 0644, expand: true})
         }
-    }
-    if (!minimal) {
-        let files = contents.files('**', {exclude: /\/$/, relative: true})
-        files = files.map(function(f) Path("/" + f))
-        p.productver.join('files.log').append(files.join('\n') + '\n')
     }
 }
 

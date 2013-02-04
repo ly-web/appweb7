@@ -614,10 +614,7 @@ version:
 genslink: 
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
-deployService: compile
-undefined
-
-deploy: compile deployService
+deploy: compile
 	for n in appman appweb authpass esp; do rm -f $(BIT_UBIN_PREFIX)/$$n ; done
 	mkdir -p '$(BIT_CFG_PREFIX)' '$(BIT_BIN_PREFIX)' '$(BIT_INC_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_VER_PREFIX)/man/man1'
 	cp ./$(CONFIG)/inc/*.h $(BIT_INC_PREFIX)
@@ -637,7 +634,13 @@ stop: compile
 start: compile stop
 	./$(CONFIG)/bin/appman install enable start
 
-install: compile stop deploy start
+deployService: compile
+undefined
+
+deployPost: 
+	
+
+install: compile stop deploy deployService deployPost start
 	
 
 uninstall: compile stop
