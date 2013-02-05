@@ -3476,7 +3476,7 @@ PUBLIC int httpStartEndpoint(HttpEndpoint *endpoint)
     }
     if ((rc = mprListenOnSocket(endpoint->sock, endpoint->ip, endpoint->port, MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD)) < 0) {
         if (rc == MPR_ERR_ALREADY_EXISTS) {
-            mprError("Cannot open a socket on %s:%d, socket already bound", *endpoint->ip ? endpoint->ip : "*", endpoint->port);
+            mprError("Cannot open a socket on %s:%d, socket already bound.", *endpoint->ip ? endpoint->ip : "*", endpoint->port);
         } else {
             mprError("Cannot open a socket on %s:%d", *endpoint->ip ? endpoint->ip : "*", endpoint->port);
         }
