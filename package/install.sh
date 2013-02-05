@@ -90,6 +90,7 @@ setup() {
 
 }
 
+
 getAccountDetails() {
 
     local g u
@@ -166,8 +167,8 @@ askUser() {
             runDaemon=`yesno "Start $PRODUCT automatically at system boot" $runDaemon`
             HTTP_PORT=`ask "Enter the HTTP port number" "$HTTP_PORT"`
             # SSL_PORT=`ask "Enter the SSL port number" "$SSL_PORT"`
-            username=`ask "Enter the user account for $PRODUCT" "$username"`
-            groupname=`ask "Enter the user group for $PRODUCT" "$groupname"`
+            # username=`ask "Enter the user account for $PRODUCT" "$username"`
+            # groupname=`ask "Enter the user group for $PRODUCT" "$groupname"`
         else
             runDaemon=N
         fi
@@ -180,8 +181,8 @@ askUser() {
                 echo -e "    Start automatically at system boot: $runDaemon"
                 echo -e "    HTTP port number: $HTTP_PORT"
                 # echo -e "    SSL port number: $SSL_PORT"
-                echo -e "    Username: $username"
-                echo -e "    Groupname: $groupname"
+                # echo -e "    Username: $username"
+                # echo -e "    Groupname: $groupname"
             fi
             echo
         fi
@@ -198,6 +199,7 @@ askUser() {
 createPackageName() {
     echo ${1}-${VERSION}-${NUMBER}-${DIST}-${OS}-${CPU}
 }
+
 
 # 
 #   Get a yes/no answer from the user. Usage: ans=`yesno "prompt" "default"`
@@ -225,6 +227,7 @@ yesno() {
     done
 }
 
+
 # 
 #   Get input from the user. Usage: ans=`ask "prompt" "default"`
 #   Returns the answer or default if <ENTER> is pressed
@@ -245,12 +248,14 @@ ask() {
     echo $ans
 }
 
+
 saveSetup() {
     local firstChar
 
     mkdir -p "$VER_PREFIX"
     echo -e "FMT=$FMT\nbinDir=\"${VER_PREFIX}\"\ninstallbin=$installbin\nrunDaemon=$runDaemon\nhttpPort=$HTTP_PORT\nsslPort=$SSL_PORT\nusername=$username\ngroupname=$groupname\nhostname=$HOSTNAME" >"$VER_PREFIX/install.conf"
 }
+
 
 removeOld() {
     if [ -x /usr/lib/appweb/bin/uninstall ] ; then
@@ -335,20 +340,15 @@ installFiles() {
     [ "$headless" != 1 ] && echo
 }
 
+
 patchConfiguration() {
-    if [ ! -f $PRODUCT.conf -a -f "$CFG_PREFIX/new.conf" ] ; then
-        cp "$CFG_PREFIX/new.conf" "$CFG_PREFIX/$PRODUCT.conf"
-    fi
     if [ $OS = WIN ] ; then
-        "$BIN_PREFIX/setConfig" --port ${HTTP_PORT} --ssl ${SSL_PORT} --home "." --logs "logs" \
-            --documents "web" --modules "bin" --cache "cache" \
-            --user $username --group $groupname "${CFG_PREFIX}/appweb.conf"
+        echo "Documents web\nListen ${HTTP_PORT}\nset LOG_DIR log\nset CACHE_DIR cache" "${CFG_PREFIX}/install.conf"
     else
-        "$BIN_PREFIX/setConfig" --port ${HTTP_PORT} --ssl ${SSL_PORT} --home "${CFG_PREFIX}" \
-            --logs "${LOG_PREFIX}" --documents "${WEB_PREFIX}" --modules "${BIN_PREFIX}" \
-            --cache "${SPL_PREFIX}/cache" --user $username --group $groupname "${CFG_PREFIX}/appweb.conf"
+        echo "Documents ${WEB_PREFIX}\nListen ${HTTP_PORT}\nset LOG_DIR ${LOG_PREFIX}\nset CACHE_DIR ${SPL_PREFIX}/cache" "${CFG_PREFIX}/install.conf"
     fi
 }
+
 
 #
 #   Not currently used

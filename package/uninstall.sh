@@ -27,10 +27,6 @@
 #	from Embedthis Software at http://embedthis.com
 #
 ################################################################################
-#
-#	NOTE: We require a saved setup file exist in $VER_PREFIX/install.conf
-#	This is created by install.
-#
 
 HOME=`pwd`
 FMT=
@@ -192,7 +188,6 @@ postClean() {
     local cdir=`pwd`
 
     rm -f "${VER_PREFIX}/install.conf"
-
     cleanDir "${BIN_PREFIX}"
     cleanDir "${INC_PREFIX}"
     cleanDir "${DOC_PREFIX}"
@@ -295,13 +290,6 @@ setup() {
         fi
         exit 0
     fi
-    #
-    #	Get defaults from the installation configuration file
-    #
-    if [ -f "${VER_PREFIX}/install.conf" ] ; then
-        .  "${VER_PREFIX}/install.conf"
-    fi
-    
     binDir=${binDir:-$PRD_PREFIX}
     [ "$headless" != 1 ] && echo -e "\n$NAME ${VERSION}-${NUMBER} Removal\n"
 }

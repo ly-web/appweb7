@@ -16,27 +16,19 @@ ArchitecturesInstallIn64BitMode=x64
 [Code]
 var
 	PortPage: TInputQueryWizardPage;
-	SSLPortPage: TInputQueryWizardPage;
 	WebDirPage: TInputDirWizardPage;
 
-
 procedure InitializeWizard();
-var
-	conf:	String;
 begin
-
 	WebDirPage := CreateInputDirPage(wpSelectDir, 'Select Web Documents Directory', 'Where should web files be stored?',
 		'Select the folder in which to store web documents, then click Next.', False, '');
 	WebDirPage.Add('');
-	WebDirPage.values[0] := ExpandConstant('{sd}') + '/appweb/web';
+	WebDirPage.values[0] := ExpandConstant('{sd}') + '\appweb\web';
 
 	PortPage := CreateInputQueryPage(wpSelectComponents, 'HTTP Port', 'Primary TCP/IP Listen Port for HTTP Connections',
 		'Please specify the TCP/IP port on which Appweb should listen for HTTP requests.');
 	PortPage.Add('HTTP Port:', False);
 	PortPage.values[0] := '80';
-    conf := 'Documents "' + WebDirPage.values[0] + '"\nListen " + PortPage.values[0] + '\nset LOG_DIR "{app}/log"\nset
-CACHE_DIR "{app}/cache"';
-    SaveStringToFile(ExpandConstant('{app}\install.conf'), cfg, False);
 end;
 
 
@@ -97,22 +89,25 @@ var
   app: String;
   rc: Integer;
 begin
+  app := ExpandConstant('{app}');
   if CurStep = ssInstall then
   begin
-   app := ExpandConstant('{app}');
-   
-   path := app + '/bin/appwebMonitor.exe';
-   if FileExists(path) then
-     Exec(path, '--stop', app, 0, ewWaitUntilTerminated, rc);
 
-   path := app + '/bin/appman.exe';
-   if FileExists(path) then
-     Exec(path, 'stop', app, 0, ewWaitUntilTerminated, rc);
-   end;
-   if CurStep = ssPostInstall then
-     if IsTaskSelected('addpath') then begin
-       bin := ExpandConstant('{app}\bin');      
-       AddPath('Path', bin);
+    path := app + '\bin\appwebMonitor.exe';
+    if FileExists(path) then
+      Exec(path, '--stop', app, 0, ewWaitUntilTerminated, rc);
+
+    path := app + '\bin\appman.exe';
+    if FileExists(path) then
+      Exec(path, 'stop', app, 0, ewWaitUntilTerminated, rc);
+    end;
+
+    if CurStep = ssPostInstall then
+    begin
+      if IsTaskSelected('addpath') then begin
+        bin := ExpandConstant('{app}\bin');      
+        AddPath('Path', bin);
+      end;
     end;
 end;
 
@@ -131,18 +126,29 @@ begin
     end;
 end;
 
+
+procedure SaveConf();
+var
+  app: String;
+  web: String;
+  documents: String;
+  conf: String;
+begin
+  app := ExpandConstant('{app}');
+  web := WebDirPage.values[0];
+  documents := ExtractRelativePath(app + '\', web);
+  conf := 'Documents "' + documents + '"' + Chr(10) + 'Listen ' + PortPage.values[0] + Chr(10) + 'set LOG_DIR "log"' + Chr(10) + 'set CACHE_DIR "cache"' + Chr(10);
+  SaveStringToFile(ExpandConstant('{app}\install.conf'), ExpandConstant(conf), False);
+end;
+
+
 function NextButtonClick(CurPageID: Integer): Boolean;
 begin
   if (CurPageID = 6) then
   begin
-    WebDirPage.values[0] := ExpandConstant('{app}') + '/web';
+    WebDirPage.values[0] := ExpandConstant('{app}') + '\web';
   end;
   Result := true;
-end;
-
-function GetWebDir(Param: String): String;
-begin
-  Result := WebDirPage.Values[0];
 end;
 
 
@@ -150,6 +156,7 @@ function GetPort(Param: String): String;
 begin
   Result := PortPage.Values[0];
 end;
+
 
 function GetSSL(Param: String): String;
 begin
@@ -176,29 +183,28 @@ Name: "{group}\ReadMe"; Filename: "{app}/README.TXT"
 Root: HKLM; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "AppwebMonitor"; ValueData: "{app}\bin\appwebMonitor.exe"
 
 [Dirs]
-Name: "{app}/logs"; Permissions: system-modify;
-Name: "{app}/bin"
+Name: "{app}\log"; Permissions: system-modify;
+Name: "{app}\cache"; Permissions: system-modify;
+Name: "{app}\bin"
 
 [UninstallDelete]
-Type: files; Name: "{app}/appweb.conf";
-Type: files; Name: "{app}/logs/access.log";
-Type: files; Name: "{app}/logs/access.log.old";
-Type: files; Name: "{app}/logs/access.log.*";
-Type: files; Name: "{app}/logs/error.log";
-Type: files; Name: "{app}/logs/error.log.old";
-Type: files; Name: "{app}/logs/error.log.*";
-Type: files; Name: "{app}/cache/*.*";
-Type: filesandordirs; Name: "{app}/*.obj";
+Type: files; Name: "{app}\appweb.conf";
+Type: files; Name: "{app}\log\access.log";
+Type: files; Name: "{app}\log\access.log.old";
+Type: files; Name: "{app}\log\access.log.*";
+Type: files; Name: "{app}\log\error.log";
+Type: files; Name: "{app}\log\error.log.old";
+Type: files; Name: "{app}\log\error.log.*";
+Type: files; Name: "{app}\cache\*.*";
+Type: filesandordirs; Name: "{app}\*.obj";
 
 [Tasks]
 Name: addpath; Description: Add ${settings.title} to the system PATH variable;
 
 [Run]
-Filename: "{app}/bin/${settings.product}Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}/bin"; Check: IsPresent('{app}/bin/${settings.product}Monitor.exe'); StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated;
+Filename: "{app}/bin/${settings.product}Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}/bin"; Check: IsPresent('{app}/bin/${settings.product}Monitor.exe'); StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated; BeforeInstall: SaveConf()
 
 Filename: "{app}/bin/appman.exe"; Parameters: "uninstall"; WorkingDir: "{app}"; Check: IsPresent('{app}/bin/appman.exe'); StatusMsg: "Stopping Appweb"; Flags: waituntilterminated;
-
-Filename: "{app}/bin/setConfig.exe"; Parameters: "--home . --documents ""{code:GetWebDir}"" --logs logs --port {code:GetPort} --ssl {code:GetSSL} --cache cache --modules bin appweb.conf"; WorkingDir: "{app}"; StatusMsg: "Updating Appweb configuration"; Flags: runhidden waituntilterminated; 
 
 Filename: "{app}/bin/appman.exe"; Parameters: "install enable"; WorkingDir: "{app}"; StatusMsg: "Installing Appweb as a Windows Service"; Flags: waituntilterminated;
 

@@ -1501,7 +1501,6 @@ static bool stopService(int cmd)
     if (cmd == SERVICE_CONTROL_SHUTDOWN) {
         return 1;
     }
-
     /*
         Wakeup service event. This will make it exit.
      */

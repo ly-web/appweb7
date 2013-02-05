@@ -67,15 +67,15 @@ public function packageDeploy(minimal = false) {
         let conf = Path(contents.portable + '' + bit.prefixes.config.removeDrive().portable + '/appweb.conf')
         let user = getWebUser(), group = getWebUser()
 
-        p.config.join('install.conf').write('set LOG_DIR ' + bit.prefixes.log + '\nset CACHE_DIR ' + 
-            bit.prefixes.spool + '/cache\n' + 'Documents "' + bit.prefixes.web + '"\nListen 80')
+        p.config.join('install.conf').write('set LOG_DIR "' + bit.prefixes.log + '"\nset CACHE_DIR "' + 
+            bit.prefixes.spool + '/cache"\n' + 'Documents "' + bit.prefixes.web + '"\nListen 80\n')
         bit.dir.cfg.join('appweb.conf.bak').remove()
 
         p.spool.join('cache').makeDir({user: user, group: group})
         p.log.setAttributes({permissions: 0755, user: user, group: group})
     }
     install(bit.dir.bin + '/*', p.bin, {
-        include: /appweb|appman|esp|http|auth|makerom|libappweb|libmpr|setConfig|\.dll/,
+        include: /appweb|appman|esp|http|auth|makerom|libappweb|libmpr|\.dll/,
         exclude: /\.pdb|\.exp|\.lib|\.def|\.suo|\.old/,
         permissions: 0755, 
     })
@@ -123,7 +123,6 @@ public function packageDeploy(minimal = false) {
             if (!minimal) {
                 install(bit.dir.bin.join('removeFiles' + bit.globals.EXE), p.bin)
             }
-            install(bit.dir.bin.join('setConf*'), p.bin)
         }
         if (bit.platform.like == 'posix' && !minimal) {
             install('doc/man/*.1', p.productver.join('doc/man/man1'), {compress: true})
