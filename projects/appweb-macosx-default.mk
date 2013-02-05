@@ -197,12 +197,12 @@ $(CONFIG)/obj/mprLib.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/bitos.h
-	$(CC) -c -o $(CONFIG)/obj/mprLib.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
+	$(CC) -c -o $(CONFIG)/obj/mprLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
 
 $(CONFIG)/bin/libmpr.dylib: \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/obj/mprLib.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmpr.dylib $(CONFIG)/obj/mprLib.o $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmpr.dylib $(CONFIG)/obj/mprLib.o $(LIBS)
 
 $(CONFIG)/inc/est.h: 
 	rm -fr $(CONFIG)/inc/est.h
@@ -213,31 +213,31 @@ $(CONFIG)/obj/estLib.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/est.h \
     $(CONFIG)/inc/bitos.h
-	$(CC) -c -o $(CONFIG)/obj/estLib.o -arch x86_64 $(DFLAGS) -I$(CONFIG)/inc src/deps/est/estLib.c
+	$(CC) -c -o $(CONFIG)/obj/estLib.o $(DFLAGS) -I$(CONFIG)/inc src/deps/est/estLib.c
 
 $(CONFIG)/bin/libest.dylib: \
     $(CONFIG)/inc/est.h \
     $(CONFIG)/obj/estLib.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libest.dylib $(CONFIG)/obj/estLib.o $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libest.dylib $(CONFIG)/obj/estLib.o $(LIBS)
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/est.h
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.dylib: \
     $(CONFIG)/bin/libmpr.dylib \
     $(CONFIG)/bin/libest.dylib \
     $(CONFIG)/obj/mprSsl.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lest -lmpr $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o -lest -lmpr $(LIBS)
 
 $(CONFIG)/obj/manager.o: \
     src/deps/mpr/manager.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/manager.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/manager.c
+	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/manager.c
 
 $(CONFIG)/bin/appman: \
     $(CONFIG)/bin/libmpr.dylib \
@@ -248,7 +248,7 @@ $(CONFIG)/obj/makerom.o: \
     src/deps/mpr/makerom.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
+	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
 
 $(CONFIG)/bin/makerom: \
     $(CONFIG)/bin/libmpr.dylib \
@@ -267,12 +267,12 @@ $(CONFIG)/obj/pcre.o: \
     src/deps/pcre/pcre.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/pcre.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/pcre/pcre.c
+	$(CC) -c -o $(CONFIG)/obj/pcre.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/pcre/pcre.c
 
 $(CONFIG)/bin/libpcre.dylib: \
     $(CONFIG)/inc/pcre.h \
     $(CONFIG)/obj/pcre.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libpcre.dylib $(CONFIG)/obj/pcre.o $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libpcre.dylib $(CONFIG)/obj/pcre.o $(LIBS)
 
 $(CONFIG)/inc/http.h: 
 	rm -fr $(CONFIG)/inc/http.h
@@ -283,20 +283,20 @@ $(CONFIG)/obj/httpLib.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/httpLib.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
+	$(CC) -c -o $(CONFIG)/obj/httpLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
 
 $(CONFIG)/bin/libhttp.dylib: \
     $(CONFIG)/bin/libmpr.dylib \
     $(CONFIG)/bin/libpcre.dylib \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/obj/httpLib.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libhttp.dylib $(CONFIG)/obj/httpLib.o -lpcre -lmpr $(LIBS) -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libhttp.dylib $(CONFIG)/obj/httpLib.o -lpcre -lmpr $(LIBS) -lpam
 
 $(CONFIG)/obj/http.o: \
     src/deps/http/http.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/http.h
-	$(CC) -c -o $(CONFIG)/obj/http.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/http.c
+	$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/http.c
 
 $(CONFIG)/bin/http: \
     $(CONFIG)/bin/libhttp.dylib \
@@ -311,18 +311,18 @@ $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/sqlite3.h
-	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -arch x86_64 $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
 
 $(CONFIG)/bin/libsqlite3.dylib: \
     $(CONFIG)/inc/sqlite3.h \
     $(CONFIG)/obj/sqlite3.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libsqlite3.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libsqlite3.dylib $(CONFIG)/obj/sqlite3.o $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libsqlite3.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libsqlite3.dylib $(CONFIG)/obj/sqlite3.o $(LIBS)
 
 $(CONFIG)/obj/sqlite.o: \
     src/deps/sqlite/sqlite.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/sqlite3.h
-	$(CC) -c -o $(CONFIG)/obj/sqlite.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
 
 $(CONFIG)/bin/sqlite: \
     $(CONFIG)/bin/libsqlite3.dylib \
@@ -345,37 +345,37 @@ $(CONFIG)/obj/config.o: \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/inc/customize.h
-	$(CC) -c -o $(CONFIG)/obj/config.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/config.c
+	$(CC) -c -o $(CONFIG)/obj/config.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/config.c
 
 $(CONFIG)/obj/convenience.o: \
     src/convenience.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/convenience.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/convenience.c
+	$(CC) -c -o $(CONFIG)/obj/convenience.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/convenience.c
 
 $(CONFIG)/obj/dirHandler.o: \
     src/dirHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/dirHandler.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dirHandler.c
+	$(CC) -c -o $(CONFIG)/obj/dirHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dirHandler.c
 
 $(CONFIG)/obj/fileHandler.o: \
     src/fileHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/fileHandler.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fileHandler.c
+	$(CC) -c -o $(CONFIG)/obj/fileHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fileHandler.c
 
 $(CONFIG)/obj/log.o: \
     src/log.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/log.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
+	$(CC) -c -o $(CONFIG)/obj/log.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
 
 $(CONFIG)/obj/server.o: \
     src/server.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/server.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server.c
+	$(CC) -c -o $(CONFIG)/obj/server.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server.c
 
 $(CONFIG)/bin/libappweb.dylib: \
     $(CONFIG)/bin/libhttp.dylib \
@@ -388,7 +388,7 @@ $(CONFIG)/bin/libappweb.dylib: \
     $(CONFIG)/obj/fileHandler.o \
     $(CONFIG)/obj/log.o \
     $(CONFIG)/obj/server.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libappweb.dylib $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libappweb.dylib $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr -lpam
 
 $(CONFIG)/inc/edi.h: 
 	rm -fr $(CONFIG)/inc/edi.h
@@ -411,19 +411,19 @@ $(CONFIG)/obj/edi.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/edi.h \
     $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/edi.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/edi.c
+	$(CC) -c -o $(CONFIG)/obj/edi.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/edi.c
 
 $(CONFIG)/obj/espAbbrev.o: \
     src/esp/espAbbrev.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espAbbrev.c
+	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espAbbrev.c
 
 $(CONFIG)/obj/espFramework.o: \
     src/esp/espFramework.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espFramework.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espFramework.c
+	$(CC) -c -o $(CONFIG)/obj/espFramework.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espFramework.c
 
 $(CONFIG)/obj/espHandler.o: \
     src/esp/espHandler.c\
@@ -431,20 +431,20 @@ $(CONFIG)/obj/espHandler.o: \
     $(CONFIG)/inc/appweb.h \
     $(CONFIG)/inc/esp.h \
     $(CONFIG)/inc/edi.h
-	$(CC) -c -o $(CONFIG)/obj/espHandler.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHandler.c
+	$(CC) -c -o $(CONFIG)/obj/espHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHandler.c
 
 $(CONFIG)/obj/espHtml.o: \
     src/esp/espHtml.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h \
     $(CONFIG)/inc/edi.h
-	$(CC) -c -o $(CONFIG)/obj/espHtml.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
+	$(CC) -c -o $(CONFIG)/obj/espHtml.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
 
 $(CONFIG)/obj/espTemplate.o: \
     src/esp/espTemplate.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/espTemplate.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espTemplate.c
+	$(CC) -c -o $(CONFIG)/obj/espTemplate.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espTemplate.c
 
 $(CONFIG)/obj/mdb.o: \
     src/esp/mdb.c\
@@ -453,14 +453,14 @@ $(CONFIG)/obj/mdb.o: \
     $(CONFIG)/inc/edi.h \
     $(CONFIG)/inc/mdb.h \
     $(CONFIG)/inc/pcre.h
-	$(CC) -c -o $(CONFIG)/obj/mdb.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/mdb.c
+	$(CC) -c -o $(CONFIG)/obj/mdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/mdb.c
 
 $(CONFIG)/obj/sdb.o: \
     src/esp/sdb.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h \
     $(CONFIG)/inc/edi.h
-	$(CC) -c -o $(CONFIG)/obj/sdb.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
+	$(CC) -c -o $(CONFIG)/obj/sdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
 
 $(CONFIG)/bin/libmod_esp.dylib: \
     $(CONFIG)/bin/libappweb.dylib \
@@ -476,13 +476,13 @@ $(CONFIG)/bin/libmod_esp.dylib: \
     $(CONFIG)/obj/espTemplate.o \
     $(CONFIG)/obj/mdb.o \
     $(CONFIG)/obj/sdb.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_esp.dylib $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_esp.dylib $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/esp.o: \
     src/esp/esp.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/esp.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/esp.c
+	$(CC) -c -o $(CONFIG)/obj/esp.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/esp.c
 
 $(CONFIG)/bin/esp: \
     $(CONFIG)/bin/libappweb.dylib \
@@ -534,7 +534,7 @@ $(CONFIG)/obj/ejsLib.o: \
     $(CONFIG)/inc/bitos.h \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/inc/ejs.slots.h
-	$(CC) -c -o $(CONFIG)/obj/ejsLib.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsLib.c
+	$(CC) -c -o $(CONFIG)/obj/ejsLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsLib.c
 
 $(CONFIG)/bin/libejs.dylib: \
     $(CONFIG)/bin/libhttp.dylib \
@@ -545,13 +545,13 @@ $(CONFIG)/bin/libejs.dylib: \
     $(CONFIG)/inc/ejs.slots.h \
     $(CONFIG)/inc/ejsByteGoto.h \
     $(CONFIG)/obj/ejsLib.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libejs.dylib $(CONFIG)/obj/ejsLib.o -lsqlite3 -lmpr -lpcre -lhttp $(LIBS) -lpcre -lmpr -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libejs.dylib $(CONFIG)/obj/ejsLib.o -lsqlite3 -lmpr -lpcre -lhttp $(LIBS) -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/ejs.o: \
     src/deps/ejs/ejs.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/ejs.h
-	$(CC) -c -o $(CONFIG)/obj/ejs.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejs.c
+	$(CC) -c -o $(CONFIG)/obj/ejs.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejs.c
 
 $(CONFIG)/bin/ejs: \
     $(CONFIG)/bin/libejs.dylib \
@@ -562,7 +562,7 @@ $(CONFIG)/obj/ejsc.o: \
     src/deps/ejs/ejsc.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/ejs.h
-	$(CC) -c -o $(CONFIG)/obj/ejsc.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsc.c
+	$(CC) -c -o $(CONFIG)/obj/ejsc.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsc.c
 
 $(CONFIG)/bin/ejsc: \
     $(CONFIG)/bin/libejs.dylib \
@@ -576,41 +576,41 @@ $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
+	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
 
 $(CONFIG)/bin/libmod_cgi.dylib: \
     $(CONFIG)/bin/libappweb.dylib \
     $(CONFIG)/obj/cgiHandler.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib $(CONFIG)/obj/cgiHandler.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/ejsHandler.o: \
     src/modules/ejsHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/ejsHandler.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/ejsHandler.c
+	$(CC) -c -o $(CONFIG)/obj/ejsHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/ejsHandler.c
 
 $(CONFIG)/bin/libmod_ejs.dylib: \
     $(CONFIG)/bin/libappweb.dylib \
     $(CONFIG)/bin/libejs.dylib \
     $(CONFIG)/obj/ejsHandler.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib $(CONFIG)/obj/ejsHandler.o -lejs -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam -lsqlite3
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib $(CONFIG)/obj/ejsHandler.o -lejs -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam -lsqlite3
 
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/sslModule.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/sslModule.c
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/sslModule.c
 
 $(CONFIG)/bin/libmod_ssl.dylib: \
     $(CONFIG)/bin/libappweb.dylib \
     $(CONFIG)/obj/sslModule.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_ssl.dylib $(CONFIG)/obj/sslModule.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmod_ssl.dylib $(CONFIG)/obj/sslModule.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/authpass.o: \
     src/utils/authpass.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	$(CC) -c -o $(CONFIG)/obj/authpass.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/authpass.c
+	$(CC) -c -o $(CONFIG)/obj/authpass.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/authpass.c
 
 $(CONFIG)/bin/authpass: \
     $(CONFIG)/bin/libappweb.dylib \
@@ -620,7 +620,7 @@ $(CONFIG)/bin/authpass: \
 $(CONFIG)/obj/cgiProgram.o: \
     src/utils/cgiProgram.c\
     $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/cgiProgram.c
+	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/cgiProgram.c
 
 $(CONFIG)/bin/cgiProgram: \
     $(CONFIG)/obj/cgiProgram.o
@@ -630,7 +630,7 @@ $(CONFIG)/obj/setConfig.o: \
     src/utils/setConfig.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/setConfig.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/setConfig.c
+	$(CC) -c -o $(CONFIG)/obj/setConfig.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/setConfig.c
 
 $(CONFIG)/bin/setConfig: \
     $(CONFIG)/bin/libmpr.dylib \
@@ -644,21 +644,21 @@ $(CONFIG)/obj/slink.o: \
     src/server/slink.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/slink.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/slink.c
+	$(CC) -c -o $(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/slink.c
 
 $(CONFIG)/bin/libapp.dylib: \
     src/server/slink.c \
     $(CONFIG)/bin/esp \
     $(CONFIG)/bin/libmod_esp.dylib \
     $(CONFIG)/obj/slink.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libapp.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libapp.dylib $(CONFIG)/obj/slink.o -lmod_esp $(LIBS) -lappweb -lhttp -lpcre -lmpr -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libapp.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libapp.dylib $(CONFIG)/obj/slink.o -lmod_esp $(LIBS) -lappweb -lhttp -lpcre -lmpr -lpam
 
 $(CONFIG)/obj/appweb.o: \
     src/server/appweb.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h \
     $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/appweb.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/appweb.c
+	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/appweb.c
 
 $(CONFIG)/bin/appweb: \
     $(CONFIG)/bin/libappweb.dylib \
@@ -683,13 +683,13 @@ $(CONFIG)/obj/testAppweb.o: \
     $(CONFIG)/inc/testAppweb.h \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/http.h
-	$(CC) -c -o $(CONFIG)/obj/testAppweb.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
+	$(CC) -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
 
 $(CONFIG)/obj/testHttp.o: \
     test/testHttp.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/testAppweb.h
-	$(CC) -c -o $(CONFIG)/obj/testHttp.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHttp.c
+	$(CC) -c -o $(CONFIG)/obj/testHttp.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHttp.c
 
 $(CONFIG)/bin/testAppweb: \
     $(CONFIG)/bin/libappweb.dylib \
