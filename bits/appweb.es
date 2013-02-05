@@ -136,7 +136,7 @@ public function packageDeploy(minimal = false) {
 }
 
 
-public function packageDeployService() {
+public function packageDeployService(minimal = false) {
     let settings = bit.settings
     let bin = bit.dir.pkg.join('bin')
     let vname = settings.product + '-' + settings.version + '-' + settings.buildNumber
@@ -277,6 +277,7 @@ public function stopService(quiet: Boolean = false) {
 
 public function packageBinaryFiles(formats = ['tar', 'native'], minimal = false) {
     packageDeploy(minimal)
+    packageDeployService(minimal)
     if (bit.platform.last) {
         package(bit.dir.pkg.join('bin'), formats)
     }
