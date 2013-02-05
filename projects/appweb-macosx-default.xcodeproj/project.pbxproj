@@ -1504,7 +1504,6 @@
 				AB04609AAB0473820000018A /* bit.h */,
 				AB04609AAB0473820000018B /* mpr.h */,
 				AB04609AAB0473820000018D /* est.h */,
-				AB04609AAB0473820000018C /* bitos.h */,
 				AB04609AAB04738200000069 /* mprSsl.c */,
 			);
             name = "libmprssl";

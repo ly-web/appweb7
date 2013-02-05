@@ -71,8 +71,12 @@ public function packageDeploy(minimal = false) {
             bit.prefixes.spool + '/cache"\n' + 'Documents "' + bit.prefixes.web + '"\nListen 80\n')
         bit.dir.cfg.join('appweb.conf.bak').remove()
 
-        p.spool.join('cache').makeDir({user: user, group: group})
-        p.log.setAttributes({permissions: 0755, user: user, group: group})
+        if (App.uid == 0) {
+            p.spool.join('cache').makeDir({user: user, group: group})
+            p.log.setAttributes({permissions: 0755, user: user, group: group})
+        } else {
+            p.spool.join('cache').makeDir()
+        }
     }
     install(bit.dir.bin + '/*', p.bin, {
         include: /appweb|appman|esp|http|auth|makerom|libappweb|libmpr|\.dll/,
