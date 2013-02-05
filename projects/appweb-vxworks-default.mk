@@ -702,10 +702,10 @@ test/web/auth/basic/basic.cgi:
 	cd test; chmod +x web/auth/basic/basic.cgi ; cd ..
 
 test/cgi-bin/cgiProgram.out: $(CONFIG)/bin/cgiProgram.out
-	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram.out ; cd ..
-	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram.out ; cd ..
-	cd test; cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program.out' ; cd ..
-	cd test; cp ../$(CONFIG)/bin/cgiProgram web/cgiProgram.cgi ; cd ..
+	cd test; cp ../$(CONFIG)/bin/cgiProgram.out cgi-bin/cgiProgram.out ; cd ..
+	cd test; cp ../$(CONFIG)/bin/cgiProgram.out cgi-bin/nph-cgiProgram.out ; cd ..
+	cd test; cp ../$(CONFIG)/bin/cgiProgram.out 'cgi-bin/cgi Program.out' ; cd ..
+	cd test; cp ../$(CONFIG)/bin/cgiProgram.out web/cgiProgram.cgi ; cd ..
 	cd test; chmod +x cgi-bin/* web/cgiProgram.cgi ; cd ..
 
 test/web/js: 

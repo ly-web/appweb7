@@ -69,10 +69,10 @@ Bit.load({
                 cp(cgiProgram, Path('web/cgiProgram.cgi'), perms)
             ",
             'generate-sh': "\
-                cp ${BIN}/cgiProgram cgi-bin/cgiProgram${EXE}
-                cp ${BIN}/cgiProgram cgi-bin/nph-cgiProgram${EXE}
-                cp ${BIN}/cgiProgram 'cgi-bin/cgi Program${EXE}'
-                cp ${BIN}/cgiProgram web/cgiProgram.cgi
+                cp ${BIN}/cgiProgram${EXE} cgi-bin/cgiProgram${EXE}
+                cp ${BIN}/cgiProgram${EXE} cgi-bin/nph-cgiProgram${EXE}
+                cp ${BIN}/cgiProgram${EXE} 'cgi-bin/cgi Program${EXE}'
+                cp ${BIN}/cgiProgram${EXE} web/cgiProgram.cgi
                 chmod +x cgi-bin/* web/cgiProgram.cgi
             ",
             depends: ['cgiProgram'],
