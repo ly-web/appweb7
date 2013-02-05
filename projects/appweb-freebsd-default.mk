@@ -74,7 +74,6 @@ all compile: prep \
         $(CONFIG)/bin/libmod_ssl.so \
         $(CONFIG)/bin/authpass \
         $(CONFIG)/bin/cgiProgram \
-        $(CONFIG)/bin/setConfig \
         src/server/slink.c \
         $(CONFIG)/bin/libapp.so \
         $(CONFIG)/bin/appweb \
@@ -128,7 +127,6 @@ clean:
 	rm -rf $(CONFIG)/bin/libmod_ssl.so
 	rm -rf $(CONFIG)/bin/authpass
 	rm -rf $(CONFIG)/bin/cgiProgram
-	rm -rf $(CONFIG)/bin/setConfig
 	rm -rf $(CONFIG)/bin/libapp.so
 	rm -rf $(CONFIG)/bin/appweb
 	rm -rf $(CONFIG)/bin/testAppweb
@@ -625,17 +623,6 @@ $(CONFIG)/obj/cgiProgram.o: \
 $(CONFIG)/bin/cgiProgram: \
     $(CONFIG)/obj/cgiProgram.o
 	$(CC) -o $(CONFIG)/bin/cgiProgram $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiProgram.o $(LIBS) -lpthread -lm -ldl $(LDFLAGS)
-
-$(CONFIG)/obj/setConfig.o: \
-    src/utils/setConfig.c\
-    $(CONFIG)/inc/bit.h \
-    $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/setConfig.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/setConfig.c
-
-$(CONFIG)/bin/setConfig: \
-    $(CONFIG)/bin/libmpr.so \
-    $(CONFIG)/obj/setConfig.o
-	$(CC) -o $(CONFIG)/bin/setConfig $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/setConfig.o -lmpr $(LIBS) -lmpr -lpthread -lm -ldl $(LDFLAGS)
 
 src/server/slink.c: 
 	cd src/server; [ ! -f slink.c ] && cp slink.empty slink.c ; true ; cd ../..

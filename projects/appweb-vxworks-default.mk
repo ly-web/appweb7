@@ -74,7 +74,6 @@ all compile: prep \
         $(CONFIG)/bin/libmod_ssl.out \
         $(CONFIG)/bin/authpass.out \
         $(CONFIG)/bin/cgiProgram.out \
-        $(CONFIG)/bin/setConfig.out \
         src/server/slink.c \
         $(CONFIG)/bin/libapp.out \
         $(CONFIG)/bin/appweb.out \
@@ -128,7 +127,6 @@ clean:
 	rm -rf $(CONFIG)/bin/libmod_ssl.out
 	rm -rf $(CONFIG)/bin/authpass.out
 	rm -rf $(CONFIG)/bin/cgiProgram.out
-	rm -rf $(CONFIG)/bin/setConfig.out
 	rm -rf $(CONFIG)/bin/libapp.out
 	rm -rf $(CONFIG)/bin/appweb.out
 	rm -rf $(CONFIG)/bin/testAppweb.out
@@ -197,12 +195,12 @@ $(CONFIG)/obj/mprLib.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/bitos.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/mprLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprLib.c
 
 $(CONFIG)/bin/libmpr.out: \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/obj/mprLib.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libmpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprLib.o 
 
 $(CONFIG)/inc/est.h: 
 	rm -fr $(CONFIG)/inc/est.h
@@ -213,47 +211,47 @@ $(CONFIG)/obj/estLib.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/est.h \
     $(CONFIG)/inc/bitos.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/estLib.o -fno-builtin -fno-defer-pop -fvolatile $(DFLAGS) -I$(CONFIG)/inc src/deps/est/estLib.c
 
 $(CONFIG)/bin/libest.out: \
     $(CONFIG)/inc/est.h \
     $(CONFIG)/obj/estLib.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libest.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/estLib.o 
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/est.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.out: \
     $(CONFIG)/bin/libmpr.out \
     $(CONFIG)/bin/libest.out \
     $(CONFIG)/obj/mprSsl.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprSsl.o 
 
 $(CONFIG)/obj/manager.o: \
     src/deps/mpr/manager.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/manager.c
 
 $(CONFIG)/bin/appman.out: \
     $(CONFIG)/bin/libmpr.out \
     $(CONFIG)/obj/manager.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/appman.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LDFLAGS)
 
 $(CONFIG)/obj/makerom.o: \
     src/deps/mpr/makerom.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/mpr/makerom.c
 
 $(CONFIG)/bin/makerom.out: \
     $(CONFIG)/bin/libmpr.out \
     $(CONFIG)/obj/makerom.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LDFLAGS)
 
 $(CONFIG)/bin/ca.crt: src/deps/est/ca.crt
 	rm -fr $(CONFIG)/bin/ca.crt
@@ -267,12 +265,12 @@ $(CONFIG)/obj/pcre.o: \
     src/deps/pcre/pcre.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/pcre.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/pcre.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/pcre/pcre.c
 
 $(CONFIG)/bin/libpcre.out: \
     $(CONFIG)/inc/pcre.h \
     $(CONFIG)/obj/pcre.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libpcre.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o 
 
 $(CONFIG)/inc/http.h: 
 	rm -fr $(CONFIG)/inc/http.h
@@ -283,25 +281,25 @@ $(CONFIG)/obj/httpLib.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/inc/mpr.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/httpLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/httpLib.c
 
 $(CONFIG)/bin/libhttp.out: \
     $(CONFIG)/bin/libmpr.out \
     $(CONFIG)/bin/libpcre.out \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/obj/httpLib.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libhttp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/httpLib.o 
 
 $(CONFIG)/obj/http.o: \
     src/deps/http/http.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/http.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/http/http.c
 
 $(CONFIG)/bin/http.out: \
     $(CONFIG)/bin/libhttp.out \
     $(CONFIG)/obj/http.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/http.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LDFLAGS)
 
 $(CONFIG)/inc/sqlite3.h: 
 	rm -fr $(CONFIG)/inc/sqlite3.h
@@ -311,23 +309,23 @@ $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/sqlite3.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -fno-builtin -fno-defer-pop -fvolatile $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite3.c
 
 $(CONFIG)/bin/libsqlite3.out: \
     $(CONFIG)/inc/sqlite3.h \
     $(CONFIG)/obj/sqlite3.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libsqlite3.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite3.o 
 
 $(CONFIG)/obj/sqlite.o: \
     src/deps/sqlite/sqlite.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/sqlite3.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/sqlite.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/sqlite/sqlite.c
 
 $(CONFIG)/bin/sqlite.out: \
     $(CONFIG)/bin/libsqlite3.out \
     $(CONFIG)/obj/sqlite.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/sqlite.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LDFLAGS)
 
 $(CONFIG)/inc/appweb.h: 
 	rm -fr $(CONFIG)/inc/appweb.h
@@ -345,37 +343,37 @@ $(CONFIG)/obj/config.o: \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/inc/customize.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/config.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/config.c
 
 $(CONFIG)/obj/convenience.o: \
     src/convenience.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/convenience.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/convenience.c
 
 $(CONFIG)/obj/dirHandler.o: \
     src/dirHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/dirHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dirHandler.c
 
 $(CONFIG)/obj/fileHandler.o: \
     src/fileHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/fileHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fileHandler.c
 
 $(CONFIG)/obj/log.o: \
     src/log.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/log.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
 
 $(CONFIG)/obj/server.o: \
     src/server.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/server.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server.c
 
 $(CONFIG)/bin/libappweb.out: \
     $(CONFIG)/bin/libhttp.out \
@@ -388,7 +386,7 @@ $(CONFIG)/bin/libappweb.out: \
     $(CONFIG)/obj/fileHandler.o \
     $(CONFIG)/obj/log.o \
     $(CONFIG)/obj/server.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libappweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o 
 
 $(CONFIG)/inc/edi.h: 
 	rm -fr $(CONFIG)/inc/edi.h
@@ -411,19 +409,19 @@ $(CONFIG)/obj/edi.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/edi.h \
     $(CONFIG)/inc/pcre.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/edi.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/edi.c
 
 $(CONFIG)/obj/espAbbrev.o: \
     src/esp/espAbbrev.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espAbbrev.c
 
 $(CONFIG)/obj/espFramework.o: \
     src/esp/espFramework.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/espFramework.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espFramework.c
 
 $(CONFIG)/obj/espHandler.o: \
     src/esp/espHandler.c\
@@ -431,20 +429,20 @@ $(CONFIG)/obj/espHandler.o: \
     $(CONFIG)/inc/appweb.h \
     $(CONFIG)/inc/esp.h \
     $(CONFIG)/inc/edi.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/espHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHandler.c
 
 $(CONFIG)/obj/espHtml.o: \
     src/esp/espHtml.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h \
     $(CONFIG)/inc/edi.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/espHtml.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espHtml.c
 
 $(CONFIG)/obj/espTemplate.o: \
     src/esp/espTemplate.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/espTemplate.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/espTemplate.c
 
 $(CONFIG)/obj/mdb.o: \
     src/esp/mdb.c\
@@ -453,14 +451,14 @@ $(CONFIG)/obj/mdb.o: \
     $(CONFIG)/inc/edi.h \
     $(CONFIG)/inc/mdb.h \
     $(CONFIG)/inc/pcre.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/mdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/mdb.c
 
 $(CONFIG)/obj/sdb.o: \
     src/esp/sdb.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h \
     $(CONFIG)/inc/edi.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/sdb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/sdb.c
 
 $(CONFIG)/bin/libmod_esp.out: \
     $(CONFIG)/bin/libappweb.out \
@@ -476,13 +474,13 @@ $(CONFIG)/bin/libmod_esp.out: \
     $(CONFIG)/obj/espTemplate.o \
     $(CONFIG)/obj/mdb.o \
     $(CONFIG)/obj/sdb.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o 
 
 $(CONFIG)/obj/esp.o: \
     src/esp/esp.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/esp.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/esp/esp.c
 
 $(CONFIG)/bin/esp.out: \
     $(CONFIG)/bin/libappweb.out \
@@ -495,7 +493,7 @@ $(CONFIG)/bin/esp.out: \
     $(CONFIG)/obj/espTemplate.o \
     $(CONFIG)/obj/mdb.o \
     $(CONFIG)/obj/sdb.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LDFLAGS)
 
 $(CONFIG)/bin/esp.conf: src/esp/esp.conf
 	rm -fr $(CONFIG)/bin/esp.conf
@@ -534,7 +532,7 @@ $(CONFIG)/obj/ejsLib.o: \
     $(CONFIG)/inc/bitos.h \
     $(CONFIG)/inc/http.h \
     $(CONFIG)/inc/ejs.slots.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/ejsLib.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsLib.c
 
 $(CONFIG)/bin/libejs.out: \
     $(CONFIG)/bin/libhttp.out \
@@ -545,29 +543,29 @@ $(CONFIG)/bin/libejs.out: \
     $(CONFIG)/inc/ejs.slots.h \
     $(CONFIG)/inc/ejsByteGoto.h \
     $(CONFIG)/obj/ejsLib.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsLib.o 
 
 $(CONFIG)/obj/ejs.o: \
     src/deps/ejs/ejs.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/ejs.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/ejs.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejs.c
 
 $(CONFIG)/bin/ejs.out: \
     $(CONFIG)/bin/libejs.out \
     $(CONFIG)/obj/ejs.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o $(LDFLAGS)
 
 $(CONFIG)/obj/ejsc.o: \
     src/deps/ejs/ejsc.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/ejs.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/ejsc.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/ejs/ejsc.c
 
 $(CONFIG)/bin/ejsc.out: \
     $(CONFIG)/bin/libejs.out \
     $(CONFIG)/obj/ejsc.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LDFLAGS)
 
 $(CONFIG)/bin/ejs.mod: $(CONFIG)/bin/ejsc.out
 	$(LBIN)/ejsc --out ./$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null src/deps/ejs/ejs.es
@@ -576,66 +574,55 @@ $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/cgiHandler.c
 
 $(CONFIG)/bin/libmod_cgi.out: \
     $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/obj/cgiHandler.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libmod_cgi.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o 
 
 $(CONFIG)/obj/ejsHandler.o: \
     src/modules/ejsHandler.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/ejsHandler.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/ejsHandler.c
 
 $(CONFIG)/bin/libmod_ejs.out: \
     $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/bin/libejs.out \
     $(CONFIG)/obj/ejsHandler.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libmod_ejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsHandler.o 
 
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/modules/sslModule.c
 
 $(CONFIG)/bin/libmod_ssl.out: \
     $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/obj/sslModule.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libmod_ssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sslModule.o 
 
 $(CONFIG)/obj/authpass.o: \
     src/utils/authpass.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/authpass.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/authpass.c
 
 $(CONFIG)/bin/authpass.out: \
     $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/obj/authpass.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/authpass.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LDFLAGS)
 
 $(CONFIG)/obj/cgiProgram.o: \
     src/utils/cgiProgram.c\
     $(CONFIG)/inc/bit.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/cgiProgram.c
 
 $(CONFIG)/bin/cgiProgram.out: \
     $(CONFIG)/obj/cgiProgram.o
-	[object Object]
-
-$(CONFIG)/obj/setConfig.o: \
-    src/utils/setConfig.c\
-    $(CONFIG)/inc/bit.h \
-    $(CONFIG)/inc/mpr.h
-	[object Object]
-
-$(CONFIG)/bin/setConfig.out: \
-    $(CONFIG)/bin/libmpr.out \
-    $(CONFIG)/obj/setConfig.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/cgiProgram.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiProgram.o $(LDFLAGS)
 
 src/server/slink.c: 
 	cd src/server; [ ! -f slink.c ] && cp slink.empty slink.c ; true ; cd ../..
@@ -644,21 +631,21 @@ $(CONFIG)/obj/slink.o: \
     src/server/slink.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/esp.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/slink.c
 
 $(CONFIG)/bin/libapp.out: \
     src/server/slink.c \
     $(CONFIG)/bin/esp.out \
     $(CONFIG)/bin/libmod_esp.out \
     $(CONFIG)/obj/slink.o
-	[object Object]
+	$(CC) -r -o $(CONFIG)/bin/libapp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o 
 
 $(CONFIG)/obj/appweb.o: \
     src/server/appweb.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/appweb.h \
     $(CONFIG)/inc/esp.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/server/appweb.c
 
 $(CONFIG)/bin/appweb.out: \
     $(CONFIG)/bin/libappweb.out \
@@ -668,7 +655,7 @@ $(CONFIG)/bin/appweb.out: \
     $(CONFIG)/bin/libmod_cgi.out \
     $(CONFIG)/bin/libapp.out \
     $(CONFIG)/obj/appweb.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LDFLAGS)
 
 src/server/cache: 
 	cd src/server; mkdir -p cache ; cd ../..
@@ -683,20 +670,20 @@ $(CONFIG)/obj/testAppweb.o: \
     $(CONFIG)/inc/testAppweb.h \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/http.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testAppweb.c
 
 $(CONFIG)/obj/testHttp.o: \
     test/testHttp.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/testAppweb.h
-	[object Object]
+	$(CC) -c -o $(CONFIG)/obj/testHttp.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHttp.c
 
 $(CONFIG)/bin/testAppweb.out: \
     $(CONFIG)/bin/libappweb.out \
     $(CONFIG)/inc/testAppweb.h \
     $(CONFIG)/obj/testAppweb.o \
     $(CONFIG)/obj/testHttp.o
-	[object Object]
+	$(CC) -o $(CONFIG)/bin/testAppweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LDFLAGS)
 
 test/cgi-bin/testScript: $(CONFIG)/bin/cgiProgram.out
 	cd test; echo '#!../$(CONFIG)/bin/cgiProgram.out' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..

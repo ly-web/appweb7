@@ -70,7 +70,6 @@ all compile: prep \
         $(CONFIG)\bin\libmod_ssl.dll \
         $(CONFIG)\bin\authpass.exe \
         $(CONFIG)\bin\cgiProgram.exe \
-        $(CONFIG)\bin\setConfig.exe \
         src\server\slink.c \
         $(CONFIG)\bin\libapp.dll \
         $(CONFIG)\bin\appweb.exe \
@@ -128,7 +127,6 @@ clean:
 	-if exist $(CONFIG)\bin\libmod_ssl.dll del /Q $(CONFIG)\bin\libmod_ssl.dll
 	-if exist $(CONFIG)\bin\authpass.exe del /Q $(CONFIG)\bin\authpass.exe
 	-if exist $(CONFIG)\bin\cgiProgram.exe del /Q $(CONFIG)\bin\cgiProgram.exe
-	-if exist $(CONFIG)\bin\setConfig.exe del /Q $(CONFIG)\bin\setConfig.exe
 	-if exist $(CONFIG)\bin\libapp.dll del /Q $(CONFIG)\bin\libapp.dll
 	-if exist $(CONFIG)\bin\appweb.exe del /Q $(CONFIG)\bin\appweb.exe
 	-if exist $(CONFIG)\bin\appwebMonitor.exe del /Q $(CONFIG)\bin\appwebMonitor.exe
@@ -626,17 +624,6 @@ $(CONFIG)\obj\cgiProgram.obj: \
 $(CONFIG)\bin\cgiProgram.exe: \
     $(CONFIG)\obj\cgiProgram.obj
 	"$(LD)" -out:$(CONFIG)\bin\cgiProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiProgram.obj $(LIBS)
-
-$(CONFIG)\obj\setConfig.obj: \
-    src\utils\setConfig.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\setConfig.obj -Fd$(CONFIG)\obj\setConfig.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\utils\setConfig.c
-
-$(CONFIG)\bin\setConfig.exe: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\obj\setConfig.obj
-	"$(LD)" -out:$(CONFIG)\bin\setConfig.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\setConfig.obj libmpr.lib $(LIBS)
 
 src\server\slink.c: 
 	cd src\server
