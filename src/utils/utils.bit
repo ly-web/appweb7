@@ -17,14 +17,5 @@ Bit.load({
             type: 'exe',
             sources: [ 'cgiProgram.c' ],
         },
-
-        setConfig: {
-            enable: false,
-            type: 'exe',
-            rule: 'gui',
-            sources: [ 'setConfig.c' ],
-            depends: [ 'libmpr' ],
-            platforms: [ 'local' ],
-        },
 	},
 })

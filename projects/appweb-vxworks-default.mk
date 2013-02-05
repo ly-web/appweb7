@@ -3,8 +3,8 @@
 #
 
 export WIND_BASE := $(WIND_BASE)
-export WIND_HOME := .
-export WIND_PLATFORM := $(WIND_BASE)
+export WIND_HOME := $(WIND_BASE)/..
+export WIND_PLATFORM := $(WIND_PLATFORM)
 
 PRODUCT         := appweb
 VERSION         := 4.3.0
