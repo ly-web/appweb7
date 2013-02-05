@@ -315,7 +315,7 @@
     #define BIT_PACK_UTEST 1
 #endif
 #ifndef BIT_PACK_VXWORKS
-    #define BIT_PACK_VXWORKS 0
+    #define BIT_PACK_VXWORKS 1
 #endif
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1
@@ -355,6 +355,9 @@
 #endif
 #ifndef BIT_PACK_UTEST_PATH
     #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
+#endif
+#ifndef BIT_PACK_VXWORKS_PATH
+    #define BIT_PACK_VXWORKS_PATH "$(WIND_BASE)"
 #endif
 #ifndef BIT_PACK_ZIP_PATH
     #define BIT_PACK_ZIP_PATH "/usr/bin/zip"

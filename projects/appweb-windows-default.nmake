@@ -195,7 +195,7 @@ $(CONFIG)\obj\mprLib.obj: \
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\mpr.h \
     $(CONFIG)\inc\bitos.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprLib.obj -Fd$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\mpr\mprLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprLib.obj -Fd$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\mprLib.c
 
 $(CONFIG)\bin\libmpr.dll: \
     $(CONFIG)\inc\mpr.h \
@@ -211,7 +211,7 @@ $(CONFIG)\obj\estLib.obj: \
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\est.h \
     $(CONFIG)\inc\bitos.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\est\estLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\est\estLib.c
 
 $(CONFIG)\bin\libest.dll: \
     $(CONFIG)\inc\est.h \
@@ -223,7 +223,7 @@ $(CONFIG)\obj\mprSsl.obj: \
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\mpr.h \
     $(CONFIG)\inc\est.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\mpr\mprSsl.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\mprSsl.c
 
 $(CONFIG)\bin\libmprssl.dll: \
     $(CONFIG)\bin\libmpr.dll \
@@ -235,7 +235,7 @@ $(CONFIG)\obj\manager.obj: \
     src\deps\mpr\manager.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\mpr\manager.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\manager.c
 
 $(CONFIG)\bin\appman.exe: \
     $(CONFIG)\bin\libmpr.dll \
@@ -246,7 +246,7 @@ $(CONFIG)\obj\makerom.obj: \
     src\deps\mpr\makerom.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\mpr\makerom.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\makerom.c
 
 $(CONFIG)\bin\makerom.exe: \
     $(CONFIG)\bin\libmpr.dll \
@@ -265,7 +265,7 @@ $(CONFIG)\obj\pcre.obj: \
     src\deps\pcre\pcre.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\pcre.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\pcre.obj -Fd$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\pcre\pcre.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\pcre.obj -Fd$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\pcre\pcre.c
 
 $(CONFIG)\bin\libpcre.dll: \
     $(CONFIG)\inc\pcre.h \
@@ -281,7 +281,7 @@ $(CONFIG)\obj\httpLib.obj: \
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\http.h \
     $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\http\httpLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\http\httpLib.c
 
 $(CONFIG)\bin\libhttp.dll: \
     $(CONFIG)\bin\libmpr.dll \
@@ -294,7 +294,7 @@ $(CONFIG)\obj\http.obj: \
     src\deps\http\http.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\http.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\http\http.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\http\http.c
 
 $(CONFIG)\bin\http.exe: \
     $(CONFIG)\bin\libhttp.dll \
@@ -309,7 +309,7 @@ $(CONFIG)\obj\sqlite3.obj: \
     src\deps\sqlite\sqlite3.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\sqlite3.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\sqlite\sqlite3.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite3.c
 
 $(CONFIG)\bin\libsqlite3.dll: \
     $(CONFIG)\inc\sqlite3.h \
@@ -320,7 +320,7 @@ $(CONFIG)\obj\sqlite.obj: \
     src\deps\sqlite\sqlite.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\sqlite3.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\sqlite\sqlite.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite.c
 
 $(CONFIG)\bin\sqlite.exe: \
     $(CONFIG)\bin\libsqlite3.dll \
@@ -343,37 +343,37 @@ $(CONFIG)\obj\config.obj: \
     $(CONFIG)\inc\mpr.h \
     $(CONFIG)\inc\http.h \
     $(CONFIG)\inc\customize.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\config.obj -Fd$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\config.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\config.obj -Fd$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\config.c
 
 $(CONFIG)\obj\convenience.obj: \
     src\convenience.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\convenience.obj -Fd$(CONFIG)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\convenience.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\convenience.obj -Fd$(CONFIG)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\convenience.c
 
 $(CONFIG)\obj\dirHandler.obj: \
     src\dirHandler.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\dirHandler.obj -Fd$(CONFIG)\obj\dirHandler.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\dirHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\dirHandler.obj -Fd$(CONFIG)\obj\dirHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\dirHandler.c
 
 $(CONFIG)\obj\fileHandler.obj: \
     src\fileHandler.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\fileHandler.obj -Fd$(CONFIG)\obj\fileHandler.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\fileHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\fileHandler.obj -Fd$(CONFIG)\obj\fileHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\fileHandler.c
 
 $(CONFIG)\obj\log.obj: \
     src\log.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\log.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\log.c
 
 $(CONFIG)\obj\server.obj: \
     src\server.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\server.obj -Fd$(CONFIG)\obj\server.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\server.obj -Fd$(CONFIG)\obj\server.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server.c
 
 $(CONFIG)\bin\libappweb.dll: \
     $(CONFIG)\bin\libhttp.dll \
@@ -409,19 +409,19 @@ $(CONFIG)\obj\edi.obj: \
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\edi.h \
     $(CONFIG)\inc\pcre.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\edi.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\edi.c
 
 $(CONFIG)\obj\espAbbrev.obj: \
     src\esp\espAbbrev.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espAbbrev.obj -Fd$(CONFIG)\obj\espAbbrev.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espAbbrev.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espAbbrev.obj -Fd$(CONFIG)\obj\espAbbrev.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espAbbrev.c
 
 $(CONFIG)\obj\espFramework.obj: \
     src\esp\espFramework.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espFramework.obj -Fd$(CONFIG)\obj\espFramework.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espFramework.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espFramework.obj -Fd$(CONFIG)\obj\espFramework.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espFramework.c
 
 $(CONFIG)\obj\espHandler.obj: \
     src\esp\espHandler.c\
@@ -429,20 +429,20 @@ $(CONFIG)\obj\espHandler.obj: \
     $(CONFIG)\inc\appweb.h \
     $(CONFIG)\inc\esp.h \
     $(CONFIG)\inc\edi.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espHandler.obj -Fd$(CONFIG)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espHandler.obj -Fd$(CONFIG)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHandler.c
 
 $(CONFIG)\obj\espHtml.obj: \
     src\esp\espHtml.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\esp.h \
     $(CONFIG)\inc\edi.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espHtml.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHtml.c
 
 $(CONFIG)\obj\espTemplate.obj: \
     src\esp\espTemplate.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\espTemplate.obj -Fd$(CONFIG)\obj\espTemplate.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\espTemplate.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espTemplate.obj -Fd$(CONFIG)\obj\espTemplate.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espTemplate.c
 
 $(CONFIG)\obj\mdb.obj: \
     src\esp\mdb.c\
@@ -451,14 +451,14 @@ $(CONFIG)\obj\mdb.obj: \
     $(CONFIG)\inc\edi.h \
     $(CONFIG)\inc\mdb.h \
     $(CONFIG)\inc\pcre.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\mdb.obj -Fd$(CONFIG)\obj\mdb.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\mdb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mdb.obj -Fd$(CONFIG)\obj\mdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\mdb.c
 
 $(CONFIG)\obj\sdb.obj: \
     src\esp\sdb.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h \
     $(CONFIG)\inc\edi.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\sdb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\sdb.c
 
 $(CONFIG)\bin\libmod_esp.dll: \
     $(CONFIG)\bin\libappweb.dll \
@@ -480,7 +480,7 @@ $(CONFIG)\obj\esp.obj: \
     src\esp\esp.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\esp\esp.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\esp.c
 
 $(CONFIG)\bin\esp.exe: \
     $(CONFIG)\bin\libappweb.dll \
@@ -533,7 +533,7 @@ $(CONFIG)\obj\ejsLib.obj: \
     $(CONFIG)\inc\bitos.h \
     $(CONFIG)\inc\http.h \
     $(CONFIG)\inc\ejs.slots.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\ejs\ejsLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsLib.c
 
 $(CONFIG)\bin\libejs.dll: \
     $(CONFIG)\bin\libhttp.dll \
@@ -550,7 +550,7 @@ $(CONFIG)\obj\ejs.obj: \
     src\deps\ejs\ejs.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\ejs.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\ejs\ejs.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejs.c
 
 $(CONFIG)\bin\ejs.exe: \
     $(CONFIG)\bin\libejs.dll \
@@ -561,7 +561,7 @@ $(CONFIG)\obj\ejsc.obj: \
     src\deps\ejs\ejsc.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\ejs.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\deps\ejs\ejsc.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsc.c
 
 $(CONFIG)\bin\ejsc.exe: \
     $(CONFIG)\bin\libejs.dll \
@@ -575,7 +575,7 @@ $(CONFIG)\obj\cgiHandler.obj: \
     src\modules\cgiHandler.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\modules\cgiHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\cgiHandler.c
 
 $(CONFIG)\bin\libmod_cgi.dll: \
     $(CONFIG)\bin\libappweb.dll \
@@ -586,7 +586,7 @@ $(CONFIG)\obj\ejsHandler.obj: \
     src\modules\ejsHandler.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsHandler.obj -Fd$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\modules\ejsHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsHandler.obj -Fd$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\ejsHandler.c
 
 $(CONFIG)\bin\libmod_ejs.dll: \
     $(CONFIG)\bin\libappweb.dll \
@@ -598,7 +598,7 @@ $(CONFIG)\obj\sslModule.obj: \
     src\modules\sslModule.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\modules\sslModule.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\sslModule.c
 
 $(CONFIG)\bin\libmod_ssl.dll: \
     $(CONFIG)\bin\libappweb.dll \
@@ -609,7 +609,7 @@ $(CONFIG)\obj\authpass.obj: \
     src\utils\authpass.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\authpass.obj -Fd$(CONFIG)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\utils\authpass.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\authpass.obj -Fd$(CONFIG)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\authpass.c
 
 $(CONFIG)\bin\authpass.exe: \
     $(CONFIG)\bin\libappweb.dll \
@@ -619,7 +619,7 @@ $(CONFIG)\bin\authpass.exe: \
 $(CONFIG)\obj\cgiProgram.obj: \
     src\utils\cgiProgram.c\
     $(CONFIG)\inc\bit.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\cgiProgram.obj -Fd$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\utils\cgiProgram.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\cgiProgram.obj -Fd$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\cgiProgram.c
 
 $(CONFIG)\bin\cgiProgram.exe: \
     $(CONFIG)\obj\cgiProgram.obj
@@ -634,7 +634,7 @@ $(CONFIG)\obj\slink.obj: \
     src\server\slink.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\slink.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\slink.c
 
 $(CONFIG)\bin\libapp.dll: \
     src\server\slink.c \
@@ -648,7 +648,7 @@ $(CONFIG)\obj\appweb.obj: \
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\appweb.h \
     $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\appweb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\appweb.c
 
 $(CONFIG)\bin\appweb.exe: \
     $(CONFIG)\bin\libappweb.dll \
@@ -676,7 +676,7 @@ $(CONFIG)\obj\appwebMonitor.obj: \
     src\server\windows\appwebMonitor.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\appwebMonitor.obj -Fd$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\server\windows\appwebMonitor.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\appwebMonitor.obj -Fd$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\windows\appwebMonitor.c
 
 $(CONFIG)\bin\appwebMonitor.exe: \
     $(CONFIG)\bin\libappweb.dll \
@@ -705,13 +705,13 @@ $(CONFIG)\obj\testAppweb.obj: \
     $(CONFIG)\inc\testAppweb.h \
     $(CONFIG)\inc\mpr.h \
     $(CONFIG)\inc\http.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testAppweb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testAppweb.c
 
 $(CONFIG)\obj\testHttp.obj: \
     test\testHttp.c\
     $(CONFIG)\inc\bit.h \
     $(CONFIG)\inc\testAppweb.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testHttp.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testHttp.c
 
 $(CONFIG)\bin\testAppweb.exe: \
     $(CONFIG)\bin\libappweb.dll \
@@ -738,7 +738,7 @@ test\web\js:
 $(CONFIG)\obj\removeFiles.obj: \
     package\windows\removeFiles.c\
     $(CONFIG)\inc\bit.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc package\windows\removeFiles.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) package\windows\removeFiles.c
 
 $(CONFIG)\bin\removeFiles.exe: \
     $(CONFIG)\obj\removeFiles.obj
