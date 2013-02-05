@@ -21,6 +21,8 @@ var
 
 
 procedure InitializeWizard();
+var
+	conf:	String;
 begin
 
 	WebDirPage := CreateInputDirPage(wpSelectDir, 'Select Web Documents Directory', 'Where should web files be stored?',
@@ -32,12 +34,12 @@ begin
 		'Please specify the TCP/IP port on which Appweb should listen for HTTP requests.');
 	PortPage.Add('HTTP Port:', False);
 	PortPage.values[0] := '80';
+    conf := 'Documents "' + WebDirPage.values[0] + '"\nListen " + PortPage.values[0] + '\nset LOG_DIR "{app}/log"\nset
+CACHE_DIR "{app}/cache"';
+    SaveStringToFile(ExpandConstant('{app}\install.conf'), cfg, False);
 end;
 
 
-//
-//	Initial sample by Jared Breland
-//
 procedure AddPath(keyName: String; dir: String);
 var
 	newPath, oldPath, key: String;
@@ -110,7 +112,6 @@ begin
    if CurStep = ssPostInstall then
      if IsTaskSelected('addpath') then begin
        bin := ExpandConstant('{app}\bin');      
-       // AddPath('EJSPATH', bin);
        AddPath('Path', bin);
     end;
 end;
@@ -122,7 +123,6 @@ var
 begin
 	if CurUninstallStep = usUninstall then begin
 	    bin := ExpandConstant('{app}\bin');			
-		// AddPath('EJSPATH', bin);
 		AddPath('Path', bin);
 	end;
 	if CurUninstallStep = usDone then begin
@@ -153,7 +153,6 @@ end;
 
 function GetSSL(Param: String): String;
 begin
-  // Result := SSLPortPage.Values[0];
   Result := '443';
 end;
 
