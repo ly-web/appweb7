@@ -170,7 +170,6 @@ clean:
 	rm -rf $(CONFIG)/obj/sslModule.o
 	rm -rf $(CONFIG)/obj/authpass.o
 	rm -rf $(CONFIG)/obj/cgiProgram.o
-	rm -rf $(CONFIG)/obj/setConfig.o
 	rm -rf $(CONFIG)/obj/slink.o
 	rm -rf $(CONFIG)/obj/appweb.o
 	rm -rf $(CONFIG)/obj/appwebMonitor.o

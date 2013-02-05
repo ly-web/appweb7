@@ -170,7 +170,6 @@ clean:
 	rm -rf $(CONFIG)/obj/sslModule.o
 	rm -rf $(CONFIG)/obj/authpass.o
 	rm -rf $(CONFIG)/obj/cgiProgram.o
-	rm -rf $(CONFIG)/obj/setConfig.o
 	rm -rf $(CONFIG)/obj/slink.o
 	rm -rf $(CONFIG)/obj/appweb.o
 	rm -rf $(CONFIG)/obj/appwebMonitor.o
@@ -222,7 +221,8 @@ $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
-    $(CONFIG)/inc/est.h
+    $(CONFIG)/inc/est.h \
+    $(CONFIG)/inc/bitos.h
 	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.dylib: \

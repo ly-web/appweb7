@@ -173,7 +173,6 @@ clean:
 	-if exist $(CONFIG)\obj\sslModule.obj del /Q $(CONFIG)\obj\sslModule.obj
 	-if exist $(CONFIG)\obj\authpass.obj del /Q $(CONFIG)\obj\authpass.obj
 	-if exist $(CONFIG)\obj\cgiProgram.obj del /Q $(CONFIG)\obj\cgiProgram.obj
-	-if exist $(CONFIG)\obj\setConfig.obj del /Q $(CONFIG)\obj\setConfig.obj
 	-if exist $(CONFIG)\obj\slink.obj del /Q $(CONFIG)\obj\slink.obj
 	-if exist $(CONFIG)\obj\appweb.obj del /Q $(CONFIG)\obj\appweb.obj
 	-if exist $(CONFIG)\obj\appwebMonitor.obj del /Q $(CONFIG)\obj\appwebMonitor.obj
