@@ -19,6 +19,7 @@ Bit.load({
         },
 
         setConfig: {
+            enable: false,
             type: 'exe',
             rule: 'gui',
             sources: [ 'setConfig.c' ],
