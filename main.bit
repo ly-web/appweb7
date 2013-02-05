@@ -188,5 +188,8 @@ Bit.load({
         projects: {
             action: "genProductProjects('-with ejscript --without default')",
         },
+        mine: {
+            action: "genProductProjects('-with ejscript --without default', 'mine', Config.OS + '-' + Config.CPU)",
+        },
     },
 })
