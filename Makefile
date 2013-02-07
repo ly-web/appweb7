@@ -51,47 +51,47 @@ help:
 	@echo 'The default configuration can be modified by setting make variables' >&2
 	@echo 'Set to 0 to disable and 1 to enable:' >&2
 	@echo '' >&2
-	@echo '      PROFILE            # Select default or static for static linking' >&2
-	@echo '      BIT_EJS_DB         # Select default or static for static linking' >&2
-	@echo '      BIT_EJS_DB         # Enable database support, ejs.db' >&2
-	@echo '      BIT_EJS_MAIL       # Enable mail support, ejs.mail' >&2
-	@echo '      BIT_EJS_MAPPER     # Enable database mapper support, ejs.mapper'
-	@echo '      BIT_EJS_TAR        # Enable tar support, ejs.tar' >&2
-	@echo '      BIT_EJS_TEMPLATE   # Enable template support, ejs.template' >&2
-	@echo '      BIT_EJS_WEB        # Enable web support, ejs.web' >&2
-	@echo '      BIT_EJS_ZLIB       # Enable zlib support, ejs.zlib' >&2
-	@echo '      BIT_ESP_MDB        # Enable ESP MDB database support' >&2
-	@echo '      BIT_ESP_SDB        # Enable ESP SQLite database support' >&2
-	@echo '      BIT_MPR_LOGGING    # Enable application logging' >&2
-	@echo '      BIT_MPR_TRACING    # Enable debug tracing' >&2
-	@echo '      BIT_PACK_CGI       # Enable the CGI handler' >&2
-	@echo '      BIT_PACK_DIR       # Enable the directory listing handler' >&2
-	@echo '      BIT_PACK_EJSCRIPT  # Enable the Ejscript handler' >&2
-	@echo '      BIT_PACK_ESP       # Enable the ESP web framework' >&2
-	@echo '      BIT_PACK_EST       # Enable the EST SSL stack' >&2
-	@echo '      BIT_PACK_MOCANA    # Enable the Mocana NanoSSL stack' >&2
-	@echo '      BIT_PACK_MATRIXSSL # Enable the MatrixSSL SSL stack' >&2
-	@echo '      BIT_PACK_OPENSSL   # Enable the OpenSSL SSL stack' >&2
-	@echo '      BIT_PACK_PHP       # Enable the PHP framework' >&2
-	@echo '      BIT_PACK_SQLITE    # Enable the SQLite database' >&2
-	@echo '      BIT_ROM            # Build for ROM without a file system' >&2
+	@echo '  PROFILE            # Select default or static for static linking' >&2
+	@echo '  BIT_EJS_DB         # Select default or static for static linking' >&2
+	@echo '  BIT_EJS_DB         # Enable database support, ejs.db' >&2
+	@echo '  BIT_EJS_MAIL       # Enable mail support, ejs.mail' >&2
+	@echo '  BIT_EJS_MAPPER     # Enable database mapper support, ejs.mapper'
+	@echo '  BIT_EJS_TAR        # Enable tar support, ejs.tar' >&2
+	@echo '  BIT_EJS_TEMPLATE   # Enable template support, ejs.template' >&2
+	@echo '  BIT_EJS_WEB        # Enable web support, ejs.web' >&2
+	@echo '  BIT_EJS_ZLIB       # Enable zlib support, ejs.zlib' >&2
+	@echo '  BIT_ESP_MDB        # Enable ESP MDB database support' >&2
+	@echo '  BIT_ESP_SDB        # Enable ESP SQLite database support' >&2
+	@echo '  BIT_MPR_LOGGING    # Enable application logging' >&2
+	@echo '  BIT_MPR_TRACING    # Enable debug tracing' >&2
+	@echo '  BIT_PACK_CGI       # Enable the CGI handler' >&2
+	@echo '  BIT_PACK_DIR       # Enable the directory listing handler' >&2
+	@echo '  BIT_PACK_EJSCRIPT  # Enable the Ejscript handler' >&2
+	@echo '  BIT_PACK_ESP       # Enable the ESP web framework' >&2
+	@echo '  BIT_PACK_EST       # Enable the EST SSL stack' >&2
+	@echo '  BIT_PACK_MOCANA    # Enable the Mocana NanoSSL stack' >&2
+	@echo '  BIT_PACK_MATRIXSSL # Enable the MatrixSSL SSL stack' >&2
+	@echo '  BIT_PACK_OPENSSL   # Enable the OpenSSL SSL stack' >&2
+	@echo '  BIT_PACK_PHP       # Enable the PHP framework' >&2
+	@echo '  BIT_PACK_SQLITE    # Enable the SQLite database' >&2
+	@echo '  BIT_ROM            # Build for ROM without a file system' >&2
 	@echo '' >&2
 	@echo 'For example, to disable CGI:' >&2
 	@echo '' >&2
-	@echo '      make BIT_PACK_CGI=0' >&2
+	@echo '  make BIT_PACK_CGI=0' >&2
 	@echo '' >&2
 	@echo 'Other make variables:' >&2
-	@echo '      ARCH               # CPU architecture (x86, x64, ppc, ...)' >&2
-	@echo '      OS                 # Operating system (linux, macosx, windows, vxworks, ...)' >&2
-	@echo '      CC                 # Compiler to use ' >&2
-	@echo '      LD                 # Linker to use' >&2
-	@echo '      DEBUG              # Set to debug or release for debug or optimized builds' >&2
-	@echo '      CONFIG             # Output directory for built items. Defaults to OS-ARCH-PROFILE' >&2
-	@echo '      CFLAGS             # Add compiler options. For example: -Wall' >&2
-	@echo '      DFLAGS             # Add compiler defines. For example: -DCOLOR=blue' >&2
-	@echo '      IFLAGS             # Add compiler include directories. For example: -I/extra/includes' >&2
-	@echo '      LDFLAGS            # Add linker options' >&2
-	@echo '      LIBPATHS           # Add linker library search directories. For example: -L/libraries' >&2
-	@echo '      LIBS               # Add linker libraries. For example: -lpthreads' >&2
-	@echo '      PROFILE            # Build profile, used in output products directory name' >&2
+	@echo '  ARCH               # CPU architecture (x86, x64, ppc, ...)' >&2
+	@echo '  OS                 # Operating system (linux, macosx, windows, vxworks, ...)' >&2
+	@echo '  CC                 # Compiler to use ' >&2
+	@echo '  LD                 # Linker to use' >&2
+	@echo '  DEBUG              # Set to debug or release for debug or optimized builds' >&2
+	@echo '  CONFIG             # Output directory for built items. Defaults to OS-ARCH-PROFILE' >&2
+	@echo '  CFLAGS             # Add compiler options. For example: -Wall' >&2
+	@echo '  DFLAGS             # Add compiler defines. For example: -DCOLOR=blue' >&2
+	@echo '  IFLAGS             # Add compiler include directories. For example: -I/extra/includes' >&2
+	@echo '  LDFLAGS            # Add linker options' >&2
+	@echo '  LIBPATHS           # Add linker library search directories. For example: -L/libraries' >&2
+	@echo '  LIBS               # Add linker libraries. For example: -lpthreads' >&2
+	@echo '  PROFILE            # Build profile, used in output products directory name' >&2
 	@echo '' >&2

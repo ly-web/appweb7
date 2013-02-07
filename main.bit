@@ -139,6 +139,16 @@ Bit.load({
             Tailor the optimization for size|speed
          */
         tune: 'size',
+
+        /*
+            Name and path of the appweb config file. Defaults to "./appweb.conf" if null or empty.
+         */
+        configFile: null,
+
+        /*
+            Initial home directory for the server
+         */
+        serverRoot: '.',
     },
 
     usage: {
@@ -166,6 +176,9 @@ Bit.load({
 
         'mpr.logging':   'Enable application logging (true|false)',
         'mpr.tracing':   'Enable debug tracing (true|false)',
+
+        'configFile':    'Path of the appweb.conf file',
+        'serverRoot':    'Home directory for the server ',
     },
 
     packs: {

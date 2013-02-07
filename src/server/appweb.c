@@ -70,10 +70,6 @@ static void usageError();
     #define BIT_CONFIG_FILE NULL
 #endif
 
-#ifndef BIT_APPWEB_PATH
-    #define BIT_APPWEB_PATH "appweb"
-#endif
-
 /*********************************** Code *************************************/
 
 MAIN(appweb, int argc, char **argv, char **envp)
@@ -86,7 +82,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     jail = 0;
     verbose = 0;
     logSpec = 0;
-    argv[0] = BIT_APPWEB_PATH;
 
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
@@ -106,8 +101,8 @@ MAIN(appweb, int argc, char **argv, char **envp)
 
     app->mpr = mpr;
     app->workers = -1;
-    app->configFile = BIT_CONFIG_FILE;
-    app->home = BIT_SERVER_ROOT;
+    app->configFile = sclone(BIT_CONFIG_FILE);
+    app->home = sclone(BIT_SERVER_ROOT);
     app->documents = app->home;
     argc = mpr->argc;
     argv = (char**) mpr->argv;
@@ -146,7 +141,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
             if (argind >= argc) {
                 usageError();
             }
-            app->home = mprGetAbsPath(argv[++argind]);
+            app->home = sclone(argv[++argind]);
 #if KEEP
             if (chdir(app->home) < 0) {
                 mprError("%s: Cannot change directory to %s", mprGetAppName(), app->home);
@@ -187,6 +182,8 @@ MAIN(appweb, int argc, char **argv, char **envp)
             exit(5);
         }
     }
+    app->home = mprGetAbsPath(app->home);
+
     if (logSpec) {
         mprStartLogging(logSpec, 1);
         mprSetCmdlineLogging(1);
@@ -350,7 +347,7 @@ static int findAppwebConf()
     cchar   *userPath;
 
     userPath = app->configFile;
-    if (app->configFile == 0) {
+    if (!app->configFile || *app->configFile == '\0') {
         app->configFile = mprJoinPathExt(mprGetAppName(), ".conf");
     }
 #if !BIT_ROM
