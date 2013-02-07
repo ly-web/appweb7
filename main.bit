@@ -141,9 +141,9 @@ Bit.load({
         tune: 'size',
 
         /*
-            Name and path of the appweb config file. Defaults to "./appweb.conf" if null or empty.
+            Name and path of the appweb config file. Defaults to "./appweb.conf" if empty.
          */
-        configFile: null,
+        configFile: '',
 
         /*
             Initial home directory for the server
