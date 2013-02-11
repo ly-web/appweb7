@@ -59,7 +59,7 @@ Bit.load({
         appwebMonitor: {
             enable: bit.platform.like == 'windows',
             type: 'exe',
-            rule: 'gui'
+            rule: 'gui',
             depends: [ 'libappweb' ],
             sources: [ 'windows/appwebMonitor.c' ],
             headers: [ 'windows/*.h' ],

@@ -1428,7 +1428,7 @@
 #define ES_Http_contentType                                            6
 #define ES_Http_date                                                   7
 #define ES_Http_encoding                                               8
-#define ES_Http_fetch                                                  9
+#define ES_Http_OLDfetch                                               9
 #define ES_Http_finalize                                               10
 #define ES_Http_finalized                                              11
 #define ES_Http_flush                                                  12
@@ -2590,7 +2590,7 @@
 #define ES_XMLList_NUM_INSTANCE_PROP                                   20
 #define ES_XMLList_NUM_INHERITED_PROP                                  0
 
-#define _ES_CHECKSUM_ejs   1502018
+#define _ES_CHECKSUM_ejs   1502241
 
 #endif
 

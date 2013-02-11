@@ -434,6 +434,10 @@ a:hover {
 	text-decoration: underline; 
 }
 
+a.logo {
+    text-decoration: none;
+}
+
 ul.questions {
 	color: #31699C; 
 	margin: 10px 0px 0px 8px;

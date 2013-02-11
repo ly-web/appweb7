@@ -16,7 +16,6 @@ Bit.load({
             enable: 'bit.packs.ejscript.enable',
             type: 'lib',
             sources: [ 'ejsHandler.c' ],
-            _depends: [ 'libejs' ],
             scripts: {
                 preresolve: "
                     if (bit.packs.ejscript.imports) {

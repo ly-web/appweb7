@@ -5559,7 +5559,7 @@ module ejs {
             @throws IOError if the request cannot be issued to the remote server. Once the connection has been made, 
                 exceptions will not be thrown and $status must be consulted for request status.
          */
-        native function connect(method: String, uri: Uri? = null, ...data): Void
+        native function connect(method: String, uri: Uri? = null, ...data): Http
 
         /** 
             Filename of the certificate used to identify the client.
@@ -5606,7 +5606,7 @@ module ejs {
                 will be finalized. If not set to null, $finalize() must be called after writing all data.
             @param callback Optional function to invoke on completion of the request.
           */
-        function fetch(method: String, uri: Uri, data: *, callback: Function? = null) {
+        function OLDfetch(method: String, uri: Uri, data: *, callback: Function? = null) {
             let xh = XMLHttp(this)
             xh.open(method, uri)
             xh.send(data)
@@ -5659,7 +5659,7 @@ module ejs {
                 the content mime type is set to "application/x-www-form-urlencoded".
             @throws IOError if the request cannot be issued to the remote server.
          */
-        native function form(uri: Uri, data: Object): Void
+        native function form(uri: Uri, data: Object): Http
 
         /**
 FUTURE & KEEP
@@ -5671,10 +5671,10 @@ FUTURE & KEEP
             @throws IOError if the request cannot be issued to the remote server.
             @hide
 
-            function publicForm(uri: Uri, ...data): Void
+            function publicForm(uri: Uri, ...data): Http
                 connect("POST", uri, Uri.encodeObjects(data))
          */
-        native function jsonForm(uri: Uri, ...data): Void
+        native function jsonForm(uri: Uri, ...data): Http
 
         /** 
             Commence a GET request for the current uri. See $connect() for connection details.
@@ -5688,7 +5688,7 @@ FUTURE & KEEP
             @throws IOError if the request cannot be issued to the remote server. Once the connection has been made, 
                 exceptions will not be thrown and $status must be consulted for request status.
          */
-        native function get(uri: Uri? = null, ...data): Void
+        native function get(uri: Uri? = null, ...data): Http
 
         /** 
             Get the (proposed) request headers that will be sent with the request. Use $headers to get the response
@@ -5703,7 +5703,7 @@ FUTURE & KEEP
                 If null, use a previously defined uri.
             @throws IOError if the request cannot be issued to the remote server.
          */
-        native function head(uri: Uri? = null): Void
+        native function head(uri: Uri? = null): Http
 
         /** 
             Get the value of a single response header. This is a higher performance API than using response.headers["key"].
@@ -5802,7 +5802,7 @@ FUTURE & KEEP
             @param data Data objects to send with the post request. Data is written raw and is not encoded or converted. 
             @throws IOError if the request cannot be issued to the remote server.
          */
-        native function post(uri: Uri?, ...data): Void
+        native function post(uri: Uri?, ...data): Http
 
         /** 
             SSL provider to use
@@ -5829,7 +5829,7 @@ FUTURE & KEEP
             @param data Optional object hash of key value pairs to use as the post data.
             @throws IOError if the request cannot be issued to the remote server.
          */
-        native function put(uri: Uri?, ...data): Void
+        native function put(uri: Uri?, ...data): Http
 
         /** 
             @duplicate Stream.read
@@ -6003,7 +6003,7 @@ FUTURE & KEEP
                 files = { file1: "a.txt, file2: "b.txt" }
                 http.upload(URL, files, fields)
          */
-        function upload(uri: String, files: Object, fields: Object? = null): Void {
+        function upload(uri: String, files: Object, fields: Object? = null): Http {
             reset()
             let boundary = "<<Upload Boundary - " + md5(Date.now()) + ">>"
             setHeader("Content-Type", "multipart/form-data; boundary=" + boundary)
@@ -6041,6 +6041,7 @@ FUTURE & KEEP
             }
             write('--' + boundary + "--\r\n\r\n")
             finalize()
+            return this
         }
 
         /** 
@@ -6177,17 +6178,6 @@ FUTURE & KEEP
         # Config.Legacy
         static function mimeType(path: String): String
             Uri(path)..mimeType
-
-        /** 
-            Commence an OPTIONS request for the current uri. See $connect() for connection details.
-            @param uri New uri to use. This overrides any previously defined uri for the Http object.
-                If null, use a previously defined uri.
-            @throws IOError if the request cannot be issued to the remote server.
-            @hide
-            @deprecated 1.0.0
-         */
-        # Config.Legacy
-        native function options(uri: Uri? = null): Void
 
         /**
             @hide
@@ -22325,7 +22315,7 @@ module ejs.web {
      */
     function ScriptBuilder(request: Request): Object {
         if (!request.filename.exists) {
-            request.writeError(Http.NotFound, "Cannot find " + request.pathInfo) 
+            request.writeError(Http.NotFound, "Cannot find " + escapeHtml(request.pathInfo)) 
             //  MOB - should not need throw, just return
             throw true
         }
@@ -22766,7 +22756,7 @@ module ejs.web {
         if (!options.literal) {
             path = request.filename
             if (path && !path.exists) {
-                request.writeError(Http.NotFound, "Cannot find " + path)
+                request.writeError(Http.NotFound, "Cannot find " + escapeHtml(request.pathInfo))
                 //  MOB - is this a generic need for a function like this?
                 return function() {}
             }
