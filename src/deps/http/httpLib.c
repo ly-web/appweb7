@@ -4335,15 +4335,17 @@ static void printRoute(HttpRoute *route, int next, bool full)
         if (route->handler) {
             mprRawLog(0, "    Handler:      %s\n", route->handler->name);
         }
-        if (route->extensions) {
-            for (ITERATE_KEYS(route->extensions, kp)) {
-                handler = (HttpStage*) kp->data;
-                mprRawLog(0, "    Extension:    %s => %s\n", kp->key, handler->name);
+        if (full) {
+            if (route->extensions) {
+                for (ITERATE_KEYS(route->extensions, kp)) {
+                    handler = (HttpStage*) kp->data;
+                    mprRawLog(0, "    Extension:    %s => %s\n", kp->key, handler->name);
+                }
             }
-        }
-        if (route->handlers) {
-            for (ITERATE_ITEMS(route->handlers, handler, nextIndex)) {
-                mprRawLog(0, "    Handler:      %s\n", handler->name);
+            if (route->handlers) {
+                for (ITERATE_ITEMS(route->handlers, handler, nextIndex)) {
+                    mprRawLog(0, "    Handler:      %s\n", handler->name);
+                }
             }
         }
         mprRawLog(0, "\n");

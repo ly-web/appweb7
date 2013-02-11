@@ -16,6 +16,9 @@
 #ifndef BIT_COMPANY
     #define BIT_COMPANY "Embedthis"
 #endif
+#ifndef BIT_CONFIG_FILE
+    #define BIT_CONFIG_FILE ""
+#endif
 #ifndef BIT_DEBUG
     #define BIT_DEBUG 1
 #endif
@@ -120,6 +123,9 @@
 #endif
 #ifndef BIT_REQUIRED
     #define BIT_REQUIRED "ejscript,winsdk,compiler,lib,link,dumpbin,rc,pcre"
+#endif
+#ifndef BIT_SERVER_ROOT
+    #define BIT_SERVER_ROOT "."
 #endif
 #ifndef BIT_SSL
     #define BIT_SSL 1
