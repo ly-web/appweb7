@@ -5521,6 +5521,20 @@ module ejs {
          */
         native function Http(uri: Uri? = null)
 
+        /**
+            Convenience routine to fetch a URI and return the response. 
+            This routine is a simple, one-liner to fetch a remote resource using Http.
+            This routine is deliberatly inconsistent with connect(), in that is accepts the URI to fetch as the
+            first parameter and assumes a default method of GET. 
+            @param uri New uri to use. This overrides any previously defined uri for the Http object.
+            @param method Http method. Defaults to GET.
+            @param data Data objects to send with the request. Data is written raw and is not encoded or converted. 
+                However, the routine intelligently handles arrays such that, each element of the array will be written. 
+            @throws IOError if the Uri is malformed
+         */
+        static function fetch(uri: Uri, method: String = 'GET', ...data): String
+            Http().connect(method, uri, ...data).response
+
         /** 
             @duplicate Stream.async
          */
@@ -5594,34 +5608,6 @@ module ejs {
 
         function set encoding(enc: String): Void {
             throw "Not yet implemented"
-        }
-
-        /** 
-            @hide
-            Fetch a URL. This is a convenience method to asynchronously invoke an Http method without waiting. 
-            It can be useful to wait for completion using App.waitForEvent(http, "close"))
-            @param method Http method. This is typically "GET" or "POST"
-            @param uri URL to fetch
-            @param data Body data to send with the request. Set to null for no data. If set to null, the request
-                will be finalized. If not set to null, $finalize() must be called after writing all data.
-            @param callback Optional function to invoke on completion of the request.
-          */
-        function OLDfetch(method: String, uri: Uri, data: *, callback: Function? = null) {
-            let xh = XMLHttp(this)
-            xh.open(method, uri)
-            xh.send(data)
-            xh.onreadystatechange = function () {
-                if (xh.readyState == XMLHttp.Loaded) {
-                    response = xh.responseText
-                    if (callback) {
-                        if (callback.bound) {
-                            callback()
-                        } else {
-                            callback.call(this)
-                        }
-                    }
-                }
-            }
         }
 
         /** 
@@ -6089,6 +6075,36 @@ FUTURE & KEEP
         # Config.Legacy
         function addHeader(key: String, value: String, overwrite: Boolean = true): Void
             setHeader(key, value, overwrite)
+
+        /** 
+            @hide
+            @deprecated 2.3.0
+            Fetch a URL. This is a convenience method to asynchronously invoke an Http method without waiting. 
+            It can be useful to wait for completion using App.waitForEvent(http, "close"))
+            @param method Http method. This is typically "GET" or "POST"
+            @param uri URL to fetch
+            @param data Body data to send with the request. Set to null for no data. If set to null, the request
+                will be finalized. If not set to null, $finalize() must be called after writing all data.
+            @param callback Optional function to invoke on completion of the request.
+            MOB - reimplement using pure Http and not XMLHttp
+          */
+        function afetch(method: String, uri: Uri, data: *, callback: Function? = null) {
+            let xh = XMLHttp(this)
+            xh.open(method, uri)
+            xh.send(data)
+            xh.onreadystatechange = function () {
+                if (xh.readyState == XMLHttp.Loaded) {
+                    response = xh.responseText
+                    if (callback) {
+                        if (callback.bound) {
+                            callback()
+                        } else {
+                            callback.call(this)
+                        }
+                    }
+                }
+            }
+        }
 
         /** 
             The number of response data bytes that are currently available for reading.

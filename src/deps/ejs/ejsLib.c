@@ -35471,7 +35471,7 @@ static void     prepForm(Ejs *ejs, EjsHttp *hp, cchar *prefix, EjsObj *data);
 static ssize    readHttpData(Ejs *ejs, EjsHttp *hp, ssize count);
 static void     sendHttpCloseEvent(Ejs *ejs, EjsHttp *hp);
 static void     sendHttpErrorEvent(Ejs *ejs, EjsHttp *hp);
-static EjsObj   *startHttpRequest(Ejs *ejs, EjsHttp *hp, char *method, int argc, EjsObj **argv);
+static EjsHttp  *startHttpRequest(Ejs *ejs, EjsHttp *hp, char *method, int argc, EjsObj **argv);
 static bool     waitForResponseHeaders(EjsHttp *hp);
 static bool     waitForState(EjsHttp *hp, int state, MprTicks timeout, int throw);
 static ssize    writeHttpData(Ejs *ejs, EjsHttp *hp);
@@ -35596,7 +35596,7 @@ static EjsObj *http_close(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 /*  
     function connect(method: String, url = null, data ...): Http
  */
-static EjsObj *http_connect(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
+static EjsHttp *http_connect(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 {
     hp->method = ejsToMulti(ejs, argv[0]);
     return startHttpRequest(ejs, hp, NULL, argc - 1, &argv[1]);
@@ -35701,7 +35701,7 @@ static EjsObj *http_flush(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
     function form(uri: String = null, formData: Object = null): Http
     Issue a POST method with form data
  */
-static EjsObj *http_form(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
+static EjsHttp *http_form(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 {
     EjsObj  *data;
 
@@ -35783,7 +35783,7 @@ static EjsPot *http_getRequestHeaders(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **
 /*  
     function head(uri: String = null): Http
  */
-static EjsObj *http_head(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
+static EjsHttp *http_head(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 {
     return startHttpRequest(ejs, hp, "HEAD", argc, argv);
 }
@@ -35979,7 +35979,7 @@ static EjsHttp *http_on(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 /*
     function post(uri: String = null, ...requestContent): Http
  */
-static EjsObj *http_post(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
+static EjsHttp *http_post(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 {
     return startHttpRequest(ejs, hp, "POST", argc, argv);
 }
@@ -36043,7 +36043,7 @@ static EjsArray *http_providers(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 /*  
     function put(uri: String = null, form object): Http
  */
-static EjsObj *http_put(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
+static EjsHttp *http_put(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 {
     return startHttpRequest(ejs, hp, "PUT", argc, argv);
 }
@@ -36498,7 +36498,7 @@ static EjsNumber *http_write(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 /*
     function [get|put|delete|post...](uri = null, ...data): Http
  */
-static EjsObj *startHttpRequest(Ejs *ejs, EjsHttp *hp, char *method, int argc, EjsObj **argv)
+static EjsHttp *startHttpRequest(Ejs *ejs, EjsHttp *hp, char *method, int argc, EjsObj **argv)
 {
     EjsArray        *args;
     EjsByteArray    *data;
@@ -36580,7 +36580,7 @@ static EjsObj *startHttpRequest(Ejs *ejs, EjsHttp *hp, char *method, int argc, E
     if (conn->async) {
         httpEnableConnEvents(hp->conn);
     }
-    return 0;
+    return hp;
 }
 
 

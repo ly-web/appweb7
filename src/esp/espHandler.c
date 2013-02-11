@@ -1148,6 +1148,7 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if ((handler = httpCreateHandler(http, "espHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
+    http->espHandler = handler;
     handler->open = openEsp; 
     handler->close = closeEsp; 
     handler->start = startEsp; 
