@@ -2373,7 +2373,7 @@ cp -r esp-appweb.conf ../${OUT_DIR}/bin/esp-appweb.conf
 			files = (
 			);
 			inputPaths = (
-../ejs.es
+../src/deps/ejs/ejs.es
 			);
 			outputPaths = (
 ../macosx-x64-default/bin/ejs.mod

@@ -69,7 +69,7 @@ public function packageDeploy(minimal = false) {
 
         p.config.join('install.conf').write('set LOG_DIR "' + bit.prefixes.log + '"\nset CACHE_DIR "' + 
             bit.prefixes.spool + '/cache"\n' + 'Documents "' + bit.prefixes.web + '"\nListen 80\n')
-        bit.dir.cfg.join('appweb.conf.bak').remove()
+        bit.dir.out.join('appweb.conf.bak').remove()
 
         if (App.uid == 0) {
             p.spool.join('cache').makeDir({user: user, group: group})
