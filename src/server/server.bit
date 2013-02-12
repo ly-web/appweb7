@@ -71,7 +71,7 @@ Bit.load({
             enable: "bit.platform.like == 'windows'",
             type: 'file',
             files: [ 'windows/appwebMonitor.ico' ],
-            build: "cp('windows/appwebMonitor.ico', ${BIN})",
+            build: "cp('windows/appwebMonitor.ico', '${BIN}')",
             generate: 'cp windows/appwebMonitor.ico ${BIN}',
         },
 
