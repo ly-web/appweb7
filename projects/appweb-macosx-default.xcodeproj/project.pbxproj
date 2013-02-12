@@ -2287,8 +2287,8 @@
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/deps/est
-rm -rf ../../${CFG_DIR}/bin/ca.crt
-cp -r ca.crt ../../${CFG_DIR}/bin/ca.crt
+rm -rf ../../${OUT_DIR}/bin/ca.crt
+cp -r ca.crt ../../${OUT_DIR}/bin/ca.crt
 ";
 		};
 		AB04609AAB0473820000000B /* ShellScript for esp.conf */ = {
@@ -2306,8 +2306,8 @@ cp -r ca.crt ../../${CFG_DIR}/bin/ca.crt
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/esp
-rm -rf ../${CFG_DIR}/bin/esp.conf
-cp -r esp.conf ../${CFG_DIR}/bin/esp.conf
+rm -rf ../${OUT_DIR}/bin/esp.conf
+cp -r esp.conf ../${OUT_DIR}/bin/esp.conf
 ";
 		};
 		AB04609AAB0473820000000F /* ShellScript for esp.conf.server */ = {
@@ -2344,8 +2344,8 @@ cp -r esp.conf ../server/esp.conf
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/esp
-rm -rf ../${CFG_DIR}/bin/esp-www
-cp -r www ../${CFG_DIR}/bin/esp-www
+rm -rf ../${OUT_DIR}/bin/esp-www
+cp -r www ../${OUT_DIR}/bin/esp-www
 ";
 		};
 		AB04609AAB04738200000017 /* ShellScript for esp-appweb.conf */ = {
@@ -2363,8 +2363,8 @@ cp -r www ../${CFG_DIR}/bin/esp-www
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/esp
-rm -rf ../${CFG_DIR}/bin/esp-appweb.conf
-cp -r esp-appweb.conf ../${CFG_DIR}/bin/esp-appweb.conf
+rm -rf ../${OUT_DIR}/bin/esp-appweb.conf
+cp -r esp-appweb.conf ../${OUT_DIR}/bin/esp-appweb.conf
 ";
 		};
 		AB04609AAB0473820000001B /* ShellScript for ejs.mod */ = {
@@ -2531,59 +2531,59 @@ cp -r ../src/esp/www/files/static/js 'web/js'";
 if ! diff ${INC_DIR}/bit.h appweb-macosx-default-bit.h >/dev/null ; then
 cp appweb-macosx-default-bit.h ${INC_DIR}/bit.h
 fi
-if [ ../src/deps/mpr/mpr.h -nt ${CFG_DIR}/inc/mpr.h ] ; then
-cp ../src/deps/mpr/mpr.h ${CFG_DIR}/inc/mpr.h
+if [ ../src/deps/mpr/mpr.h -nt ${OUT_DIR}/inc/mpr.h ] ; then
+cp ../src/deps/mpr/mpr.h ${OUT_DIR}/inc/mpr.h
 fi
-if [ ../src/deps/est/est.h -nt ${CFG_DIR}/inc/est.h ] ; then
-cp ../src/deps/est/est.h ${CFG_DIR}/inc/est.h
+if [ ../src/deps/est/est.h -nt ${OUT_DIR}/inc/est.h ] ; then
+cp ../src/deps/est/est.h ${OUT_DIR}/inc/est.h
 fi
-if [ ../src/deps/pcre/pcre.h -nt ${CFG_DIR}/inc/pcre.h ] ; then
-cp ../src/deps/pcre/pcre.h ${CFG_DIR}/inc/pcre.h
+if [ ../src/deps/pcre/pcre.h -nt ${OUT_DIR}/inc/pcre.h ] ; then
+cp ../src/deps/pcre/pcre.h ${OUT_DIR}/inc/pcre.h
 fi
-if [ ../src/deps/http/http.h -nt ${CFG_DIR}/inc/http.h ] ; then
-cp ../src/deps/http/http.h ${CFG_DIR}/inc/http.h
+if [ ../src/deps/http/http.h -nt ${OUT_DIR}/inc/http.h ] ; then
+cp ../src/deps/http/http.h ${OUT_DIR}/inc/http.h
 fi
-if [ ../src/deps/sqlite/sqlite3.h -nt ${CFG_DIR}/inc/sqlite3.h ] ; then
-cp ../src/deps/sqlite/sqlite3.h ${CFG_DIR}/inc/sqlite3.h
+if [ ../src/deps/sqlite/sqlite3.h -nt ${OUT_DIR}/inc/sqlite3.h ] ; then
+cp ../src/deps/sqlite/sqlite3.h ${OUT_DIR}/inc/sqlite3.h
 fi
-if [ ../src/appweb.h -nt ${CFG_DIR}/inc/appweb.h ] ; then
-cp ../src/appweb.h ${CFG_DIR}/inc/appweb.h
+if [ ../src/appweb.h -nt ${OUT_DIR}/inc/appweb.h ] ; then
+cp ../src/appweb.h ${OUT_DIR}/inc/appweb.h
 fi
-if [ ../src/bitos.h -nt ${CFG_DIR}/inc/bitos.h ] ; then
-cp ../src/bitos.h ${CFG_DIR}/inc/bitos.h
+if [ ../src/bitos.h -nt ${OUT_DIR}/inc/bitos.h ] ; then
+cp ../src/bitos.h ${OUT_DIR}/inc/bitos.h
 fi
-if [ ../src/customize.h -nt ${CFG_DIR}/inc/customize.h ] ; then
-cp ../src/customize.h ${CFG_DIR}/inc/customize.h
+if [ ../src/customize.h -nt ${OUT_DIR}/inc/customize.h ] ; then
+cp ../src/customize.h ${OUT_DIR}/inc/customize.h
 fi
-if [ ../src/esp/edi.h -nt ${CFG_DIR}/inc/edi.h ] ; then
-cp ../src/esp/edi.h ${CFG_DIR}/inc/edi.h
+if [ ../src/esp/edi.h -nt ${OUT_DIR}/inc/edi.h ] ; then
+cp ../src/esp/edi.h ${OUT_DIR}/inc/edi.h
 fi
-if [ ../src/esp/esp-app.h -nt ${CFG_DIR}/inc/esp-app.h ] ; then
-cp ../src/esp/esp-app.h ${CFG_DIR}/inc/esp-app.h
+if [ ../src/esp/esp-app.h -nt ${OUT_DIR}/inc/esp-app.h ] ; then
+cp ../src/esp/esp-app.h ${OUT_DIR}/inc/esp-app.h
 fi
-if [ ../src/esp/esp.h -nt ${CFG_DIR}/inc/esp.h ] ; then
-cp ../src/esp/esp.h ${CFG_DIR}/inc/esp.h
+if [ ../src/esp/esp.h -nt ${OUT_DIR}/inc/esp.h ] ; then
+cp ../src/esp/esp.h ${OUT_DIR}/inc/esp.h
 fi
-if [ ../src/esp/mdb.h -nt ${CFG_DIR}/inc/mdb.h ] ; then
-cp ../src/esp/mdb.h ${CFG_DIR}/inc/mdb.h
+if [ ../src/esp/mdb.h -nt ${OUT_DIR}/inc/mdb.h ] ; then
+cp ../src/esp/mdb.h ${OUT_DIR}/inc/mdb.h
 fi
-if [ ../src/deps/ejs/ejs.h -nt ${CFG_DIR}/inc/ejs.h ] ; then
-cp ../src/deps/ejs/ejs.h ${CFG_DIR}/inc/ejs.h
+if [ ../src/deps/ejs/ejs.h -nt ${OUT_DIR}/inc/ejs.h ] ; then
+cp ../src/deps/ejs/ejs.h ${OUT_DIR}/inc/ejs.h
 fi
-if [ ../src/deps/ejs/ejs.slots.h -nt ${CFG_DIR}/inc/ejs.slots.h ] ; then
-cp ../src/deps/ejs/ejs.slots.h ${CFG_DIR}/inc/ejs.slots.h
+if [ ../src/deps/ejs/ejs.slots.h -nt ${OUT_DIR}/inc/ejs.slots.h ] ; then
+cp ../src/deps/ejs/ejs.slots.h ${OUT_DIR}/inc/ejs.slots.h
 fi
-if [ ../src/deps/ejs/ejsByteGoto.h -nt ${CFG_DIR}/inc/ejsByteGoto.h ] ; then
-cp ../src/deps/ejs/ejsByteGoto.h ${CFG_DIR}/inc/ejsByteGoto.h
+if [ ../src/deps/ejs/ejsByteGoto.h -nt ${OUT_DIR}/inc/ejsByteGoto.h ] ; then
+cp ../src/deps/ejs/ejsByteGoto.h ${OUT_DIR}/inc/ejsByteGoto.h
 fi
-if [ ../src/server/windows/appwebMonitor.h -nt ${CFG_DIR}/inc/appwebMonitor.h ] ; then
-cp ../src/server/windows/appwebMonitor.h ${CFG_DIR}/inc/appwebMonitor.h
+if [ ../src/server/windows/appwebMonitor.h -nt ${OUT_DIR}/inc/appwebMonitor.h ] ; then
+cp ../src/server/windows/appwebMonitor.h ${OUT_DIR}/inc/appwebMonitor.h
 fi
-if [ ../src/server/windows/monitorResources.h -nt ${CFG_DIR}/inc/monitorResources.h ] ; then
-cp ../src/server/windows/monitorResources.h ${CFG_DIR}/inc/monitorResources.h
+if [ ../src/server/windows/monitorResources.h -nt ${OUT_DIR}/inc/monitorResources.h ] ; then
+cp ../src/server/windows/monitorResources.h ${OUT_DIR}/inc/monitorResources.h
 fi
-if [ ../test/testAppweb.h -nt ${CFG_DIR}/inc/testAppweb.h ] ; then
-cp ../test/testAppweb.h ${CFG_DIR}/inc/testAppweb.h
+if [ ../test/testAppweb.h -nt ${OUT_DIR}/inc/testAppweb.h ] ; then
+cp ../test/testAppweb.h ${OUT_DIR}/inc/testAppweb.h
 fi";
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -3432,7 +3432,7 @@ fi";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 
-                CFG_DIR = "../macosx-x64-default";
+                OUT_DIR = "../macosx-x64-default";
                 BIN_DIR = "../macosx-x64-default/bin";
                 LIB_DIR = "../macosx-x64-default/bin";
                 INC_DIR = "../macosx-x64-default/inc";
@@ -3502,7 +3502,7 @@ fi";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 
-                CFG_DIR = "../macosx-x64-default";
+                OUT_DIR = "../macosx-x64-default";
                 BIN_DIR = "../macosx-x64-default/bin";
                 LIB_DIR = "../macosx-x64-default/bin";
                 INC_DIR = "../macosx-x64-default/inc";

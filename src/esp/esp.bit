@@ -5,7 +5,7 @@
 Bit.load({
     targets: {
         libmod_esp: {
-            enable: 'bit.packs.esp.enable',
+            enable: "bit.packs.esp.enable",
             type: 'lib',
             depends: [ 'libappweb' ],
             sources: [ '*.c' ],
@@ -14,7 +14,7 @@ Bit.load({
         },
 
         esp: {
-            enable: 'bit.packs.esp.enable',
+            enable: "bit.packs.esp.enable",
             type: 'exe',
             depends: [ 'libappweb' ],
             sources: [ '*.c' ]

@@ -53,11 +53,11 @@ Bit.load({
                         sources.push(TARGET.home.join('romFiles.c'))
                     }
                 ",
-            }
+            },
         },
 
         appwebMonitor: {
-            enable: bit.platform.like == 'windows',
+            enable: "bit.platform.like == 'windows'",
             type: 'exe',
             rule: 'gui',
             depends: [ 'libappweb' ],
@@ -68,7 +68,7 @@ Bit.load({
         },
 
         'appwebMonitor.ico': {
-            enable: bit.platform.like == 'windows',
+            enable: "bit.platform.like == 'windows'",
             type: 'file',
             files: [ 'windows/appwebMonitor.ico' ],
             build: "cp('windows/appwebMonitor.ico', ${BIN})",
@@ -84,7 +84,7 @@ Bit.load({
         },
 
         run: {
-            enable: '!bit.platform.cross',
+            enable: "!bit.platform.cross",
             depends: [ 'compile' ],
             action: "
                 trace('Run', 'From directory src/server')

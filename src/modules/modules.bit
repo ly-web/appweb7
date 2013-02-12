@@ -8,12 +8,12 @@ Bit.load({
     },
     targets: {
         libmod_cgi: {
-            enable: 'bit.packs.cgi.enable',
+            enable: "bit.packs.cgi.enable",
             type: 'lib',
             sources: [ 'cgiHandler.c' ],
         },
         libmod_ejs: {
-            enable: 'bit.packs.ejscript.enable',
+            enable: "bit.packs.ejscript.enable",
             type: 'lib',
             sources: [ 'ejsHandler.c' ],
             scripts: {
@@ -28,7 +28,7 @@ Bit.load({
             }
         },
         libmod_php: {
-            enable: 'bit.packs.php.enable',
+            enable: "bit.packs.php.enable",
             type: 'lib',
             sources: [ 'phpHandler.c' ],
             depends: [ 'php' ],
@@ -43,7 +43,7 @@ Bit.load({
             sources: [ 'proxyHandler.c' ],
         },
         libmod_ssl: {
-            enable: 'bit.settings.ssl',
+            enable: "bit.settings.ssl",
             type: 'lib',
             sources: [ 'sslModule.c' ],
         },
