@@ -246,7 +246,7 @@ public function packageComboFiles() {
 
 
 public function startService() {
-    if (Config.OS != 'windows' && App.uid != 0) {
+    if (Config.OS != 'windows' && App.uid != 0 && !bit.prefixes.root.same('/')) {
         throw 'Must run as root. Use \"sudo bit install\"'
     }
     if (!bit.cross) {
@@ -261,7 +261,7 @@ public function startService() {
 
 
 public function stopService(quiet: Boolean = false) {
-    if (Config.OS != 'windows' && App.uid != 0) {
+    if (Config.OS != 'windows' && App.uid != 0 && !bit.prefixes.root.same('/')) {
         throw 'Must run as root. Use \"sudo bit install\"'
     }
     if (!bit.cross) {

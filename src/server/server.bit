@@ -29,31 +29,27 @@ Bit.load({
             type: 'lib',
             depends: [ 'slink.c', 'esp', 'libmod_esp' ],
             sources: [ 'slink.c' ],
-            scripts: {
-                postblend: "
-                    if (Path('slink.c').exists) {
-                        /* Dynamically compute the required sources for static linking */
-                        let sources = bit.targets.libapp.sources
-                        for each (file in Path('slink.c').readString().match(/SOURCE [^ ]*/g)) {
-                            sources.push(TARGET.home.join(file.replace(/SOURCE /mg, '')))
-                        }
+            postblend: "
+                if (Path('slink.c').exists) {
+                    /* Dynamically compute the required sources for static linking */
+                    let sources = bit.targets.libapp.sources
+                    for each (file in Path('slink.c').readString().match(/SOURCE [^ ]*/g)) {
+                        sources.push(TARGET.home.join(file.replace(/SOURCE /mg, '')))
                     }
-                ",
-            },
+                }
+            ",
         },
 
         appweb: {
             type: 'exe',
             depends: ['libappweb', 'libmod_esp', 'libmod_ssl', 'libmod_ejs', 'libmod_php', 'libmod_cgi', 'libapp'],
             sources: [ 'appweb.c' ],
-            scripts: {
-                postblend: "
-                    let sources = bit.targets.appweb.sources
-                    if (bit.settings.rom) {
-                        sources.push(TARGET.home.join('romFiles.c'))
-                    }
-                ",
-            },
+            postblend: "
+                let sources = bit.targets.appweb.sources
+                if (bit.settings.rom) {
+                    sources.push(TARGET.home.join('romFiles.c'))
+                }
+            ",
         },
 
         appwebMonitor: {
