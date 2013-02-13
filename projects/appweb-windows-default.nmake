@@ -33,8 +33,8 @@ BIT_ROOT_PREFIX       = /
 BIT_BASE_PREFIX       = $(BIT_ROOT_PREFIX)usr/local
 BIT_DATA_PREFIX       = $(BIT_ROOT_PREFIX)
 BIT_STATE_PREFIX      = $(BIT_ROOT_PREFIX)var
-BIT_PRODUCT_PREFIX    = $(BIT_BASE_PREFIX)/lib/$(PRODUCT)
-BIT_PRODUCTVER_PREFIX = $(BIT_PRD_PREFIX)/$(VERSION)
+BIT_APP_PREFIX        = $(BIT_BASE_PREFIX)/lib/$(PRODUCT)
+BIT_VAPP_PREFIX       = $(BIT_APP_PREFIX)/$(VERSION)
 BIT_BIN_PREFIX        = $(BIT_ROOT_PREFIX)usr/local/bin
 BIT_INC_PREFIX        = $(BIT_ROOT_PREFIX)usr/local/include
 BIT_LIB_PREFIX        = $(BIT_ROOT_PREFIX)usr/local/lib
@@ -96,8 +96,8 @@ prep:
 	echo "Visual Studio vars not set. Run vcvars.bat."
 	exit 255
 !ENDIF
-!IF "$(BIT_PRD_PREFIX)" == ""
-	echo "BIT_PRD_PREFIX not set."
+!IF "$(BIT_APP_PREFIX)" == ""
+	echo "BIT_APP_PREFIX not set."
 	exit 255
 !ENDIF
 	@if not exist $(CONFIG)\bin md $(CONFIG)\bin
@@ -762,13 +762,13 @@ genslink:
 	cd ..\..
 
 deploy: compile
-	xcopy /I /S /Y /Q $(CONFIG)\bin "$(BIT_BIN_PREFIX)"
-	del /Q "$(BIT_BIN_PREFIX)\*.pdb"
-	del /Q "$(BIT_BIN_PREFIX)\*.exp"
-	del /Q "$(BIT_BIN_PREFIX)\*.lib"
-	copy src/server/appweb.conf src/server/esp.conf src/server/install.conf src/server/mine.types "$(BIT_PRD_PREFIX)"
+	xcopy /I /S /Y /Q $(CONFIG)\bin "$(BIT_VAPP_PREFIX)\bin"
+	del /Q "$(BIT_VAPP_PREFIX)\bin\*.pdb"
+	del /Q "$(BIT_VAPP_PREFIX)\bin\*.exp"
+	del /Q "$(BIT_VAPP_PREFIX)\bin\*.lib"
+	copy src/server/appweb.conf src/server/esp.conf src/server/install.conf src/server/mine.types "$(BIT_APP_PREFIX)"
 	xcopy /I /S /Y /Q src/server/web "$(BIT_WEB_PREFIX)"
-	echo 'Documents "$(BIT_WEB_PREFIX)"\nListen 80"\nset LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_SPL_PREFIX)/cache"' >$(BIT_CFG_PREFIX)/install.conf
+	echo 'Documents "$(BIT_WEB_PREFIX)"\nListen 80"\nset LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_SPOOL_PREFIX)/cache"' >$(BIT_ETC_PREFIX)/install.conf
 
 stop: compile
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
@@ -786,5 +786,5 @@ install: compile stop deploy deployService deployPost start
 
 
 uninstall: compile stop
-	if exist "$(BIT_PRD_PREFIX)" rd /Q /S "$(BIT_PRD_PREFIX)"
+	if exist "$(BIT_APP_PREFIX)" rd /Q /S "$(BIT_APP_PREFIX)"
 
