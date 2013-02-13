@@ -57,9 +57,9 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     host = server->defaultHost;
     route = host->defaultRoute;
 
-    httpSetRouteVar(route, "LOG_DIR", BIT_LOG_PREFIX);
-    httpSetRouteVar(route, "INC_DIR", BIT_INC_PREFIX);
-    httpSetRouteVar(route, "SPL_DIR", BIT_SPL_PREFIX);
+    httpSetRouteVar(route, "LOG_DIR", BIT_VAPP_PREFIX "/bin");
+    httpSetRouteVar(route, "INC_DIR", BIT_VAPP_PREFIX "/inc");
+    httpSetRouteVar(route, "SPL_DIR", BIT_SPOOL_PREFIX);
     httpSetRouteVar(route, "BIN_DIR", mprJoinPath(server->appweb->platformDir, "bin"));
 #if DEPRECATED || 1
     httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
@@ -1329,7 +1329,7 @@ static int loadModulePathDirective(MaState *state, cchar *key, cchar *value)
 		 Search path is: USER_SEARCH : exeDir : /usr/lib/appweb/bin
      */
     sep = MPR_SEARCH_SEP;
-    path = sjoin(value, sep, mprGetAppDir(), sep, BIT_BIN_PREFIX, NULL);
+    path = sjoin(value, sep, mprGetAppDir(), sep, BIT_VAPP_PREFIX "/bin", NULL);
     mprSetModuleSearchPath(path);
     return 0;
 }

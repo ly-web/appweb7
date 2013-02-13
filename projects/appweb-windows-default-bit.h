@@ -118,6 +118,9 @@
 #ifndef BIT_PLATFORMS
     #define BIT_PLATFORMS "local"
 #endif
+#ifndef BIT_PREFIXES
+    #define BIT_PREFIXES "embedthis-prefixes"
+#endif
 #ifndef BIT_PRODUCT
     #define BIT_PRODUCT "appweb"
 #endif
@@ -153,38 +156,56 @@
 #endif
 
 /* Prefixes */
-#ifndef BIT_CFG_PREFIX
-    #define BIT_CFG_PREFIX "C:/Program Files/Embedthis Appweb"
+#ifndef BIT_ROOT_PREFIX
+    #define BIT_ROOT_PREFIX "/"
+#endif
+#ifndef BIT_BASE_PREFIX
+    #define BIT_BASE_PREFIX "/usr/local"
+#endif
+#ifndef BIT_DATA_PREFIX
+    #define BIT_DATA_PREFIX "/"
+#endif
+#ifndef BIT_STATE_PREFIX
+    #define BIT_STATE_PREFIX "/var"
+#endif
+#ifndef BIT_PRODUCT_PREFIX
+    #define BIT_PRODUCT_PREFIX "/usr/local/lib/appweb"
+#endif
+#ifndef BIT_PRODUCTVER_PREFIX
+    #define BIT_PRODUCTVER_PREFIX "/usr/local/lib/appweb/4.3.0"
 #endif
 #ifndef BIT_BIN_PREFIX
-    #define BIT_BIN_PREFIX "C:/Program Files/Embedthis Appweb/bin"
+    #define BIT_BIN_PREFIX "/usr/local/bin"
 #endif
 #ifndef BIT_INC_PREFIX
-    #define BIT_INC_PREFIX "C:/Program Files/Embedthis Appweb/inc"
+    #define BIT_INC_PREFIX "/usr/local/include"
 #endif
-#ifndef BIT_LOG_PREFIX
-    #define BIT_LOG_PREFIX "C:/Program Files/Embedthis Appweb/log"
-#endif
-#ifndef BIT_PRD_PREFIX
-    #define BIT_PRD_PREFIX "C:/Program Files/Embedthis Appweb"
-#endif
-#ifndef BIT_SPL_PREFIX
-    #define BIT_SPL_PREFIX "C:/Program Files/Embedthis Appweb/tmp"
-#endif
-#ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "C:/Program Files/Embedthis Appweb/src"
-#endif
-#ifndef BIT_VER_PREFIX
-    #define BIT_VER_PREFIX "C:/Program Files/Embedthis Appweb"
-#endif
-#ifndef BIT_WEB_PREFIX
-    #define BIT_WEB_PREFIX "C:/Program Files/Embedthis Appweb/web"
-#endif
-#ifndef BIT_UBIN_PREFIX
-    #define BIT_UBIN_PREFIX "C:/Program Files/Embedthis Appweb/bin"
+#ifndef BIT_LIB_PREFIX
+    #define BIT_LIB_PREFIX "/usr/local/lib"
 #endif
 #ifndef BIT_MAN_PREFIX
-    #define BIT_MAN_PREFIX "C:/Program Files/Embedthis Appweb/man"
+    #define BIT_MAN_PREFIX "/usr/local/share/man"
+#endif
+#ifndef BIT_SBIN_PREFIX
+    #define BIT_SBIN_PREFIX "/usr/local/sbin"
+#endif
+#ifndef BIT_ETC_PREFIX
+    #define BIT_ETC_PREFIX "/etc/appweb"
+#endif
+#ifndef BIT_WEB_PREFIX
+    #define BIT_WEB_PREFIX "/var/www/appweb-default"
+#endif
+#ifndef BIT_LOG_PREFIX
+    #define BIT_LOG_PREFIX "/var/log/appweb"
+#endif
+#ifndef BIT_SPOOL_PREFIX
+    #define BIT_SPOOL_PREFIX "/var/spool/appweb"
+#endif
+#ifndef BIT_CACHE_PREFIX
+    #define BIT_CACHE_PREFIX "/var/cache/appweb"
+#endif
+#ifndef BIT_SRC_PREFIX
+    #define BIT_SRC_PREFIX "/usr/local/src/appweb-4.3.0"
 #endif
 
 /* Suffixes */

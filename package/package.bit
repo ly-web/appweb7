@@ -17,35 +17,35 @@ Bit.load({
             action: "packageDeploy()",
             depends: ['compile'],
             'generate-make': "
-                for n in appman appweb authpass esp; do rm -f $(BIT_UBIN_PREFIX)/$$n ; done
-                mkdir -p '$(BIT_CFG_PREFIX)' '$(BIT_BIN_PREFIX)' '$(BIT_INC_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_VER_PREFIX)/man/man1'
+                for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; done
+                mkdir -p '$(BIT_ETC_PREFIX)' '$(BIT_VAPP_PREFIX)/bin' '$(BIT_INC_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_VAPP_PREFIX)/man/man1'
                 cp ${INC}/*.h $(BIT_INC_PREFIX)
-                cp src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_CFG_PREFIX)
+                cp src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_ETC_PREFIX)
                 account=`cat /etc/passwd | grep www | sed -e 's/:.*//'` ; \\
-                install -d -m 755 -g $$account -o $$account '$(BIT_SPL_PREFIX)' '$(BIT_LOG_PREFIX)'
-                cp -R -P ${BIN}/* $(BIT_BIN_PREFIX)
+                install -d -m 755 -g $$account -o $$account '$(BIT_SPOOL_PREFIX)' '$(BIT_LOG_PREFIX)'
+                cp -R -P ${BIN}/* $(BIT_VAPP_PREFIX)/bin
                 cp -R -P src/server/web/* $(BIT_WEB_PREFIX)
-                rm -f '$(BIT_PRD_PREFIX)/latest'
-                ln -s $(VERSION) $(BIT_PRD_PREFIX)/latest
+                rm -f '$(BIT_APP_PREFIX)/latest'
+                ln -s $(VERSION) $(BIT_APP_PREFIX)/latest
                 for n in appman appweb authpass esp; do \\
-                    rm -f $(BIT_UBIN_PREFIX)/$$n ; \\
-                    ln -s $(BIT_BIN_PREFIX)/$$n $(BIT_UBIN_PREFIX)/$$n ; \\
+                    rm -f $(BIT_BIN_PREFIX)/$$n ; \\
+                    ln -s $(BIT_VAPP_PREFIX)/bin/$$n $(BIT_BIN_PREFIX)/$$n ; \\
                 done
                 for n in appman.1 appweb.1 appwebMonitor.1 authpass.1 esp.1 http.1 makerom.1 ; do \\
-                    rm -f $(BIT_VER_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/$$n ; \\
-                    cp doc/man/$$n $(BIT_VER_PREFIX)/man/man1 ; \\
-                    ln -s $(BIT_VER_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/$$n ; \\
+                    rm -f $(BIT_VAPP_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/man1/$$n ; \\
+                    cp doc/man/$$n $(BIT_VAPP_PREFIX)/man/man1 ; \\
+                    ln -s $(BIT_VAPP_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/man1/$$n ; \\
                 done
-                echo 'Documents \"$(BIT_WEB_PREFIX)\"\\nListen 80\"\\nset LOG_DIR \"$(BIT_LOG_PREFIX)\"\\nset CACHE_DIR \"$(BIT_SPL_PREFIX)/cache\"' >$(BIT_CFG_PREFIX)/install.conf
+                echo 'Documents \"$(BIT_WEB_PREFIX)\"\\nListen 80\"\\nset LOG_DIR \"$(BIT_LOG_PREFIX)\"\\nset CACHE_DIR \"$(BIT_SPOOL_PREFIX)/cache\"' >$(BIT_ETC_PREFIX)/install.conf
             ",
             'generate-nmake': "
-                xcopy /I /S /Y /Q $(CONFIG)\\bin \"$(BIT_BIN_PREFIX)\"
-                del /Q \"$(BIT_BIN_PREFIX)\\*.pdb\"
-                del /Q \"$(BIT_BIN_PREFIX)\\*.exp\"
-                del /Q \"$(BIT_BIN_PREFIX)\\*.lib\"
-                copy src/server/appweb.conf src/server/esp.conf src/server/install.conf src/server/mine.types \"$(BIT_PRD_PREFIX)\"
+                xcopy /I /S /Y /Q $(CONFIG)\\bin \"$(BIT_VAPP_PREFIX)\\bin\"
+                del /Q \"$(BIT_VAPP_PREFIX)\\bin\\*.pdb\"
+                del /Q \"$(BIT_VAPP_PREFIX)\\bin\\*.exp\"
+                del /Q \"$(BIT_VAPP_PREFIX)\\bin\\*.lib\"
+                copy src/server/appweb.conf src/server/esp.conf src/server/install.conf src/server/mine.types \"$(BIT_APP_PREFIX)\"
                 xcopy /I /S /Y /Q src/server/web \"$(BIT_WEB_PREFIX)\"
-                echo 'Documents \"$(BIT_WEB_PREFIX)\"\\nListen 80\"\\nset LOG_DIR \"$(BIT_LOG_PREFIX)\"\\nset CACHE_DIR \"$(BIT_SPL_PREFIX)/cache\"' >$(BIT_CFG_PREFIX)/install.conf
+                echo 'Documents \"$(BIT_WEB_PREFIX)\"\\nListen 80\"\\nset LOG_DIR \"$(BIT_LOG_PREFIX)\"\\nset CACHE_DIR \"$(BIT_SPOOL_PREFIX)/cache\"' >$(BIT_ETC_PREFIX)/install.conf
             ",
         },
 
@@ -98,14 +98,14 @@ Bit.load({
             action: "uninstallBinary()"
             depends: ['compile', 'stop']
             'generate-make': "
-                for n in appman appweb authpass esp; do rm -f $(BIT_UBIN_PREFIX)/$$n ; done
-                for n in $(BIT_VER_PREFIX)/man/man1/*.1; do \\
+                for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; done
+                for n in $(BIT_VAPP_PREFIX)/man/man1/*.1; do \\
                     base=`basename $$n` ; \\
-                    rm -f $(BIT_MAN_PREFIX)/$$base ; \\
+                    rm -f $(BIT_MAN_PREFIX)/man1/$$base ; \\
                 done
-                rm -fr '$(BIT_CFG_PREFIX)' '$(BIT_PRD_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_LOG_PREFIX)' '$(BIT_SPL_PREFIX)'
+                rm -fr '$(BIT_ETC_PREFIX)' '$(BIT_APP_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_LOG_PREFIX)' '$(BIT_SPOOL_PREFIX)'
             ",
-            'generate-nmake': "if exist \"$(BIT_PRD_PREFIX)\" rd /Q /S \"$(BIT_PRD_PREFIX)\"",
+            'generate-nmake': "if exist \"$(BIT_APP_PREFIX)\" rd /Q /S \"$(BIT_APP_PREFIX)\"",
         },
 
         package: {

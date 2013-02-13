@@ -324,8 +324,8 @@ PUBLIC int maSetPlatform(cchar *platform)
     cchar       *base, *dir, *junk;
 
     appweb = MPR->appwebService;
-    if (mprSamePath(mprGetAppDir(), BIT_BIN_PREFIX)) {
-        /* Installed => /usr/lib/appweb/VER/bin */
+    if (mprSamePath(mprGetAppDir(), BIT_VAPP_PREFIX "/bin")) {
+        /* Installed => /usr/local/lib/appweb/VER/bin */
         base = mprGetPathParent(mprGetAppDir());
         dir = smatch(platform, appweb->localPlatform) ? base : mprJoinPath(base, platform);
     } else {
