@@ -394,20 +394,12 @@ static int authGroupFileDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    AuthStore pam|internal
+    AuthStore NAME
  */
 static int authStoreDirective(MaState *state, cchar *key, cchar *value)
 {
-    if (scaselesscmp(value, "internal") == 0) {
-        httpSetAuthStore(state->auth, "internal");
-    } else if (scaselesscmp(value, "pam") == 0) {
-#if BIT_HAS_PAM && BIT_HTTP_PAM
-        httpSetAuthStore(state->auth, "pam");
-#else
-        mprError("The pam AuthStore is not supported on this platform");
-        return configError(state, key);
-#endif
-    } else {
+    if (httpSetAuthStore(state->auth, value) < 0) {
+        mprError("The %s AuthStore is not available on this platform", value);
         return configError(state, key);
     }
     return 0;
