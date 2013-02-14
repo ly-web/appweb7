@@ -237,7 +237,8 @@ static int runAction(HttpConn *conn)
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->controllerPath, R_OK)) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find controller %s", req->controllerPath);
+            mprError("Cannot find controller %s", req->controllerPath);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find controller to serve request");
             return 0;
         }
         lock(req->esp);
