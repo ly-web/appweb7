@@ -7,18 +7,18 @@
 
 BIT_PRODUCT=${settings.product}
 BIT_NAME="${settings.title}"
-BIT_CFG_PREFIX="${prefixes.config}"
+BIT_ETC_PREFIX="${prefixes.config}"
 BIT_LIB_PREFIX="${prefixes.lib}"
 
 remove() {
 	local cdir=`pwd`
 
-	if [ -x $BIT_CFG_PREFIX ] ; then
-		cd $BIT_CFG_PREFIX
+	if [ -x $BIT_ETC_PREFIX ] ; then
+		cd $BIT_ETC_PREFIX
 		removeIntermediateFiles access.log error.log '*.log.old' .dummy $BIT_PRODUCT.conf .*.log make.log
 		cleanDir
 		cd $cdir 
-		rmdir $BIT_CFG_PREFIX 2>/dev/null || true
+		rmdir $BIT_ETC_PREFIX 2>/dev/null || true
 	fi
 	if [ -x $BIT_LIB_PREFIX ] ; then
 		cd $BIT_LIB_PREFIX
@@ -32,15 +32,15 @@ remove() {
 purge() {
 	local cdir=`pwd`
 	remove
-	if [ -x $BIT_CFG_PREFIX ] ; then
-		cd $BIT_CFG_PREFIX
+	if [ -x $BIT_ETC_PREFIX ] ; then
+		cd $BIT_ETC_PREFIX
 		removeIntermediateFiles access.log error.log '*.log.old' .dummy \
 			$BIT_PRODUCT.conf .appweb_pid.log '.httpClient_pid.log' make.log \
 			appweb.conf groups.db mime.types php.ini server.crt server.key \
 			server.key.pem users.db
 		cleanDir
 		cd $cdir 
-		rmdir $BIT_CFG_PREFIX 2>/dev/null || true
+		rmdir $BIT_ETC_PREFIX 2>/dev/null || true
 	fi
 }
 

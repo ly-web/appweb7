@@ -14,22 +14,22 @@ CONFIG          := $(OS)-$(ARCH)-$(PROFILE)
 LBIN            := $(CONFIG)/bin
 
 BIT_ROOT_PREFIX       := /
-BIT_BASE_PREFIX       := $(BIT_ROOT_PREFIX)usr/local
-BIT_DATA_PREFIX       := $(BIT_ROOT_PREFIX)
-BIT_STATE_PREFIX      := $(BIT_ROOT_PREFIX)var
+BIT_BASE_PREFIX       := $(BIT_ROOT_PREFIX)/usr/local
+BIT_DATA_PREFIX       := $(BIT_ROOT_PREFIX)/
+BIT_STATE_PREFIX      := $(BIT_ROOT_PREFIX)/var
 BIT_APP_PREFIX        := $(BIT_BASE_PREFIX)/lib/$(PRODUCT)
 BIT_VAPP_PREFIX       := $(BIT_APP_PREFIX)/$(VERSION)
-BIT_BIN_PREFIX        := $(BIT_ROOT_PREFIX)usr/local/bin
-BIT_INC_PREFIX        := $(BIT_ROOT_PREFIX)usr/local/include
-BIT_LIB_PREFIX        := $(BIT_ROOT_PREFIX)usr/local/lib
-BIT_MAN_PREFIX        := $(BIT_ROOT_PREFIX)usr/local/share/man
-BIT_SBIN_PREFIX       := $(BIT_ROOT_PREFIX)usr/local/sbin
-BIT_ETC_PREFIX        := $(BIT_ROOT_PREFIX)etc/$(PRODUCT)
-BIT_WEB_PREFIX        := $(BIT_ROOT_PREFIX)var/www/$(PRODUCT)-default
-BIT_LOG_PREFIX        := $(BIT_ROOT_PREFIX)var/log/$(PRODUCT)
-BIT_SPOOL_PREFIX      := $(BIT_ROOT_PREFIX)var/spool/$(PRODUCT)
-BIT_CACHE_PREFIX      := $(BIT_ROOT_PREFIX)var/cache/$(PRODUCT)
-BIT_SRC_PREFIX        := $(BIT_ROOT_PREFIX)usr/local/src/$(PRODUCT)-$(VERSION)
+BIT_BIN_PREFIX        := $(BIT_ROOT_PREFIX)/usr/local/bin
+BIT_INC_PREFIX        := $(BIT_ROOT_PREFIX)/usr/local/include
+BIT_LIB_PREFIX        := $(BIT_ROOT_PREFIX)/usr/local/lib
+BIT_MAN_PREFIX        := $(BIT_ROOT_PREFIX)/usr/local/share/man
+BIT_SBIN_PREFIX       := $(BIT_ROOT_PREFIX)/usr/local/sbin
+BIT_ETC_PREFIX        := $(BIT_ROOT_PREFIX)/etc/$(PRODUCT)
+BIT_WEB_PREFIX        := $(BIT_ROOT_PREFIX)/var/www/$(PRODUCT)-default
+BIT_LOG_PREFIX        := $(BIT_ROOT_PREFIX)/var/log/$(PRODUCT)
+BIT_SPOOL_PREFIX      := $(BIT_ROOT_PREFIX)/var/spool/$(PRODUCT)
+BIT_CACHE_PREFIX      := $(BIT_ROOT_PREFIX)/var/spool/$(PRODUCT)/cache
+BIT_SRC_PREFIX        := $(BIT_ROOT_PREFIX)$(PRODUCT)-$(VERSION)
 
 CFLAGS          += -w
 DFLAGS          +=  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS)))
@@ -140,6 +140,7 @@ clean:
 	rm -rf test/web/auth/basic/basic.cgi
 	rm -rf test/cgi-bin/cgiProgram
 	rm -rf test/web/js
+	rm -rf $(CONFIG)/obj/removeFiles.o
 	rm -rf $(CONFIG)/obj/mprLib.o
 	rm -rf $(CONFIG)/obj/mprSsl.o
 	rm -rf $(CONFIG)/obj/manager.o
@@ -180,7 +181,6 @@ clean:
 	rm -rf $(CONFIG)/obj/appwebMonitor.o
 	rm -rf $(CONFIG)/obj/testAppweb.o
 	rm -rf $(CONFIG)/obj/testHttp.o
-	rm -rf $(CONFIG)/obj/removeFiles.o
 
 clobber: clean
 	rm -fr ./$(CONFIG)
@@ -226,7 +226,8 @@ $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
-    $(CONFIG)/inc/est.h
+    $(CONFIG)/inc/est.h \
+    $(CONFIG)/inc/bitos.h
 	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.dylib: \
@@ -715,6 +716,159 @@ test/web/js:
 version: 
 	@echo 4.3.0-0
 
+stop: 
+	
+
+installBinary: stop
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/appman" "$(BIT_VAPP_PREFIX)/bin/appman"
+	rm -f "$(BIT_BIN_PREFIX)/appman"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/appman" "$(BIT_BIN_PREFIX)/appman"
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/appweb" "$(BIT_VAPP_PREFIX)/bin/appweb"
+	rm -f "$(BIT_BIN_PREFIX)/appweb"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/appweb" "$(BIT_BIN_PREFIX)/appweb"
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/esp" "$(BIT_VAPP_PREFIX)/bin/esp"
+	rm -f "$(BIT_BIN_PREFIX)/esp"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/esp" "$(BIT_BIN_PREFIX)/esp"
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/http" "$(BIT_VAPP_PREFIX)/bin/http"
+	rm -f "$(BIT_BIN_PREFIX)/http"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/http" "$(BIT_BIN_PREFIX)/http"
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/libappweb" "$(BIT_VAPP_PREFIX)/bin/libappweb"
+	rm -f "$(BIT_BIN_PREFIX)/libappweb"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/libappweb" "$(BIT_BIN_PREFIX)/libappweb"
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/libest" "$(BIT_VAPP_PREFIX)/bin/libest"
+	rm -f "$(BIT_BIN_PREFIX)/libest"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/libest" "$(BIT_BIN_PREFIX)/libest"
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/libhttp" "$(BIT_VAPP_PREFIX)/bin/libhttp"
+	rm -f "$(BIT_BIN_PREFIX)/libhttp"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/libhttp" "$(BIT_BIN_PREFIX)/libhttp"
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/libmod*" "$(BIT_VAPP_PREFIX)/bin/libmod*"
+	rm -f "$(BIT_BIN_PREFIX)/libmod*"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/libmod*" "$(BIT_BIN_PREFIX)/libmod*"
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/libmpr*" "$(BIT_VAPP_PREFIX)/bin/libmpr*"
+	rm -f "$(BIT_BIN_PREFIX)/libmpr*"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/libmpr*" "$(BIT_BIN_PREFIX)/libmpr*"
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/libpcre" "$(BIT_VAPP_PREFIX)/bin/libpcre"
+	rm -f "$(BIT_BIN_PREFIX)/libpcre"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/libpcre" "$(BIT_BIN_PREFIX)/libpcre"
+	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
+	install -m 493  "$(CONFIG)/bin/libsqlite3" "$(BIT_VAPP_PREFIX)/bin/libsqlite3"
+	rm -f "$(BIT_BIN_PREFIX)/libsqlite3"
+	install -d "$(BIT_BIN_PREFIX)"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/libsqlite3" "$(BIT_BIN_PREFIX)/libsqlite3"
+	install -d "$(BIT_VAPP_PREFIX)/bin"
+	install  "$(CONFIG)/bin/esp-*" "$(BIT_VAPP_PREFIX)/bin/esp-*"
+	install -d "/etc/appweb"
+	install  "$(CONFIG)/bin/esp.conf" "/etc/appweb/esp.conf"
+	install -d "/var/www/appweb-default"
+	install -d "/var/www/appweb-default/bench"
+	install -d "/var/www/appweb-default/bench"
+	install  "src/server/web/bench/1b.html" "/var/www/appweb-default/bench/1b.html"
+	install -d "/var/www/appweb-default/bench"
+	install  "src/server/web/bench/4k.html" "/var/www/appweb-default/bench/4k.html"
+	install -d "/var/www/appweb-default/bench"
+	install  "src/server/web/bench/64k.html" "/var/www/appweb-default/bench/64k.html"
+	install -d "/var/www/appweb-default"
+	install  "src/server/web/favicon.ico" "/var/www/appweb-default/favicon.ico"
+	install -d "/var/www/appweb-default"
+	install -d "/var/www/appweb-default/icons"
+	install -d "/var/www/appweb-default/icons"
+	install  "src/server/web/icons/back.gif" "/var/www/appweb-default/icons/back.gif"
+	install -d "/var/www/appweb-default/icons"
+	install  "src/server/web/icons/blank.gif" "/var/www/appweb-default/icons/blank.gif"
+	install -d "/var/www/appweb-default/icons"
+	install  "src/server/web/icons/compressed.gif" "/var/www/appweb-default/icons/compressed.gif"
+	install -d "/var/www/appweb-default/icons"
+	install  "src/server/web/icons/folder.gif" "/var/www/appweb-default/icons/folder.gif"
+	install -d "/var/www/appweb-default/icons"
+	install  "src/server/web/icons/parent.gif" "/var/www/appweb-default/icons/parent.gif"
+	install -d "/var/www/appweb-default/icons"
+	install  "src/server/web/icons/space.gif" "/var/www/appweb-default/icons/space.gif"
+	install -d "/var/www/appweb-default/icons"
+	install  "src/server/web/icons/text.gif" "/var/www/appweb-default/icons/text.gif"
+	install -d "/var/www/appweb-default"
+	install  "src/server/web/iehacks.css" "/var/www/appweb-default/iehacks.css"
+	install -d "/var/www/appweb-default"
+	install -d "/var/www/appweb-default/images"
+	install -d "/var/www/appweb-default/images"
+	install  "src/server/web/images/banner.jpg" "/var/www/appweb-default/images/banner.jpg"
+	install -d "/var/www/appweb-default/images"
+	install  "src/server/web/images/bottomShadow.jpg" "/var/www/appweb-default/images/bottomShadow.jpg"
+	install -d "/var/www/appweb-default/images"
+	install  "src/server/web/images/shadow.jpg" "/var/www/appweb-default/images/shadow.jpg"
+	install -d "/var/www/appweb-default"
+	install  "src/server/web/index.html" "/var/www/appweb-default/index.html"
+	install -d "/var/www/appweb-default"
+	install  "src/server/web/min-index.html" "/var/www/appweb-default/min-index.html"
+	install -d "/var/www/appweb-default"
+	install  "src/server/web/print.css" "/var/www/appweb-default/print.css"
+	install -d "/var/www/appweb-default"
+	install  "src/server/web/screen.css" "/var/www/appweb-default/screen.css"
+	install -d "/var/www/appweb-default"
+	install -d "/var/www/appweb-default/test"
+	install -d "/var/www/appweb-default/test"
+	install  "src/server/web/test/bench.html" "/var/www/appweb-default/test/bench.html"
+	install -d "/var/www/appweb-default/test"
+	install  "src/server/web/test/test.cgi" "/var/www/appweb-default/test/test.cgi"
+	install -d "/var/www/appweb-default/test"
+	install  "src/server/web/test/test.ejs" "/var/www/appweb-default/test/test.ejs"
+	install -d "/var/www/appweb-default/test"
+	install  "src/server/web/test/test.esp" "/var/www/appweb-default/test/test.esp"
+	install -d "/var/www/appweb-default/test"
+	install  "src/server/web/test/test.html" "/var/www/appweb-default/test/test.html"
+	install -d "/var/www/appweb-default/test"
+	install  "src/server/web/test/test.php" "/var/www/appweb-default/test/test.php"
+	install -d "/var/www/appweb-default/test"
+	install  "src/server/web/test/test.pl" "/var/www/appweb-default/test/test.pl"
+	install -d "/var/www/appweb-default/test"
+	install  "src/server/web/test/test.py" "/var/www/appweb-default/test/test.py"
+	install -d "/etc/appweb"
+	install  "src/server/mime.types" "/etc/appweb/mime.types"
+	install -d "/etc/appweb"
+	install  "src/server/appweb.conf" "/etc/appweb/appweb.conf"
+	install -d "$(BIT_VAPP_PREFIX)/bin"
+	install  "$(CONFIG)/bin/ejs.mod" "$(BIT_VAPP_PREFIX)/bin/ejs.mod"
+	rm -f "$(BIT_APP_PREFIX)/latest"
+	install -d "$(BIT_APP_PREFIX)"
+	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
+
+
+start: 
+	
+
+install: stop installBinary start
+	
+
+uninstall: stop
+	rm -f "/var/log/appweb/error.log"
+	rm -f "/var/log/appweb/error.log.0"
+	rm -fr "$(BIT_APP_PREFIX)"
+	rm -fr "$(BIT_VAPP_PREFIX)"
+	rm -fr "/etc/appweb"
+	rm -fr "/var/www/appweb-default"
+	rm -fr "/var/log/appweb"
+	rm -fr "/var/spool/appweb"
+
+
 genslink: 
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
@@ -723,39 +877,4 @@ run: compile
 
 test-run: compile
 	cd test; ${platform.configuration}/bin/appweb -v ; cd ..
-
-deploy: compile
-	for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; done
-	mkdir -p '$(BIT_ETC_PREFIX)' '$(BIT_VAPP_PREFIX)/bin' '$(BIT_INC_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_VAPP_PREFIX)/man/man1'
-	cp ./$(CONFIG)/inc/*.h $(BIT_INC_PREFIX)
-	cp src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_ETC_PREFIX)
-	account=`cat /etc/passwd | grep www | sed -e 's/:.*//'` ; install -d -m 755 -g $$account -o $$account '$(BIT_SPOOL_PREFIX)' '$(BIT_LOG_PREFIX)'
-	cp -R -P ./$(CONFIG)/bin/* $(BIT_VAPP_PREFIX)/bin
-	cp -R -P src/server/web/* $(BIT_WEB_PREFIX)
-	rm -f '$(BIT_APP_PREFIX)/latest'
-	ln -s $(VERSION) $(BIT_APP_PREFIX)/latest
-	for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; ln -s $(BIT_VAPP_PREFIX)/bin/$$n $(BIT_BIN_PREFIX)/$$n ; done
-	for n in appman.1 appweb.1 appwebMonitor.1 authpass.1 esp.1 http.1 makerom.1 ; do rm -f $(BIT_VAPP_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/man1/$$n ; cp doc/man/$$n $(BIT_VAPP_PREFIX)/man/man1 ; ln -s $(BIT_VAPP_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/man1/$$n ; done
-	echo 'Documents "$(BIT_WEB_PREFIX)"\nListen 80"\nset LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_SPOOL_PREFIX)/cache"' >$(BIT_ETC_PREFIX)/install.conf
-
-deployService: compile
-	install -m 755 -d /Library/LaunchDaemons
-	install -m 644 -o root -g wheel package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
-
-stop: compile
-	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
-
-start: compile stop
-	./$(CONFIG)/bin/appman install enable start
-
-deployPost: 
-	
-
-install: compile stop deploy deployService deployPost start
-	
-
-uninstall: compile stop
-	for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; done
-	for n in $(BIT_VAPP_PREFIX)/man/man1/*.1; do base=`basename $$n` ; rm -f $(BIT_MAN_PREFIX)/man1/$$base ; done
-	rm -fr '$(BIT_ETC_PREFIX)' '$(BIT_APP_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_LOG_PREFIX)' '$(BIT_SPOOL_PREFIX)'
 

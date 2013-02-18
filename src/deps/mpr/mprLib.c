@@ -7807,7 +7807,7 @@ static int deletePath(MprDiskFileSystem *fs, cchar *path)
 {
     MprPath     info;
 
-    if (getPathInfo(fs, path, &info) == 0 && info.isDir) {
+    if (getPathInfo(fs, path, &info) == 0 && info.isDir && !info.isLink) {
         return rmdir((char*) path);
     }
 #if WINDOWS
@@ -7860,9 +7860,9 @@ static int makeLink(MprDiskFileSystem *fs, cchar *path, cchar *target, int hard)
 {
 #if BIT_UNIX_LIKE
     if (hard) {
-        return link(target, path);
+        return link(path, target);
     } else {
-        return symlink(target, path);
+        return symlink(path, target);
     }
 #else
     return MPR_ERR_BAD_STATE;

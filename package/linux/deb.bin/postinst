@@ -10,7 +10,7 @@ BIT_NAME="${settings.title}"
 BIT_BIN_PREFIX="${prefixes.bin}"
 BIT_LIB_PREFIX="${prefixes.lib}"
 BIT_LOG_PREFIX="${prefixes.log}"
-BIT_SPL_PREFIX="${prefixes.spool}"
+BIT_SPOOL_PREFIX="${prefixes.spool}"
 
 ###############################################################################
 
@@ -35,10 +35,10 @@ setPerms() {
 		echo "Can't find a suitable user/group for $BIT_PRODUCT" 1>&2
 		exit 255
 	fi
-    mkdir -p "$BIT_SPL_PREFIX" "$BIT_SPL_PREFIX/cache" "$BIT_LOG_PREFIX"
-    chown $username "$BIT_SPL_PREFIX" "$BIT_SPL_PREFIX/cache" "$BIT_LOG_PREFIX"
-    chgrp $groupname "$BIT_SPL_PREFIX" "$BIT_SPL_PREFIX/cache" "$BIT_LOG_PREFIX"
-    chmod 755 "$BIT_SPL_PREFIX" "$BIT_SPL_PREFIX/cache" "$BIT_LOG_PREFIX"
+    mkdir -p "$BIT_SPOOL_PREFIX" "$BIT_SPOOL_PREFIX/cache" "$BIT_LOG_PREFIX"
+    chown $username "$BIT_SPOOL_PREFIX" "$BIT_SPOOL_PREFIX/cache" "$BIT_LOG_PREFIX"
+    chgrp $groupname "$BIT_SPOOL_PREFIX" "$BIT_SPOOL_PREFIX/cache" "$BIT_LOG_PREFIX"
+    chmod 755 "$BIT_SPOOL_PREFIX" "$BIT_SPOOL_PREFIX/cache" "$BIT_LOG_PREFIX"
 }
 
 ###############################################################################

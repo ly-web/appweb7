@@ -29,25 +29,25 @@ LDFLAGS         = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS        = -libpath:$(CONFIG)\bin
 LIBS            = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
-BIT_ROOT_PREFIX       = /
-BIT_BASE_PREFIX       = $(BIT_ROOT_PREFIX)usr/local
-BIT_DATA_PREFIX       = $(BIT_ROOT_PREFIX)
-BIT_STATE_PREFIX      = $(BIT_ROOT_PREFIX)var
-BIT_APP_PREFIX        = $(BIT_BASE_PREFIX)/lib/$(PRODUCT)
-BIT_VAPP_PREFIX       = $(BIT_APP_PREFIX)/$(VERSION)
-BIT_BIN_PREFIX        = $(BIT_ROOT_PREFIX)usr/local/bin
-BIT_INC_PREFIX        = $(BIT_ROOT_PREFIX)usr/local/include
-BIT_LIB_PREFIX        = $(BIT_ROOT_PREFIX)usr/local/lib
-BIT_MAN_PREFIX        = $(BIT_ROOT_PREFIX)usr/local/share/man
-BIT_SBIN_PREFIX       = $(BIT_ROOT_PREFIX)usr/local/sbin
-BIT_ETC_PREFIX        = $(BIT_ROOT_PREFIX)etc/$(PRODUCT)
-BIT_WEB_PREFIX        = $(BIT_ROOT_PREFIX)var/www/$(PRODUCT)-default
-BIT_LOG_PREFIX        = $(BIT_ROOT_PREFIX)var/log/$(PRODUCT)
-BIT_SPOOL_PREFIX      = $(BIT_ROOT_PREFIX)var/spool/$(PRODUCT)
-BIT_CACHE_PREFIX      = $(BIT_ROOT_PREFIX)var/cache/$(PRODUCT)
-BIT_SRC_PREFIX        = $(BIT_ROOT_PREFIX)usr/local/src/$(PRODUCT)-$(VERSION)
+BIT_ROOT_PREFIX       = C:
+BIT_BASE_PREFIX       = $(BIT_ROOT_PREFIX)\Program Files
+BIT_APP_PREFIX        = $(BIT_BASE_PREFIX)\Embedthis Appweb
+BIT_VAPP_PREFIX       = $(BIT_APP_PREFIX)
+BIT_DATA_PREFIX       = $(BIT_VAPP_PREFIX)
+BIT_STATE_PREFIX      = $(BIT_VAPP_PREFIX)
+BIT_BIN_PREFIX        = $(BIT_VAPP_PREFIX)\bin
+BIT_INC_PREFIX        = $(BIT_VAPP_PREFIX)\inc
+BIT_LIB_PREFIX        = $(BIT_VAPP_PREFIX)\lib
+BIT_MAN_PREFIX        = $(BIT_VAPP_PREFIX)\man
+BIT_ETC_PREFIX        = $(BIT_VAPP_PREFIX)
+BIT_WEB_PREFIX        = $(BIT_VAPP_PREFIX)\web
+BIT_LOG_PREFIX        = $(BIT_VAPP_PREFIX)\log
+BIT_SPOOL_PREFIX      = $(BIT_VAPP_PREFIX)\tmp
+BIT_CACHE_PREFIX      = $(BIT_VAPP_PREFIX)\cache
+BIT_SRC_PREFIX        = $(BIT_VAPP_PREFIX)\src
 
 all compile: prep \
+        $(CONFIG)\bin\removeFiles.exe \
         $(CONFIG)\bin\libmpr.dll \
         $(CONFIG)\bin\libmprssl.dll \
         $(CONFIG)\bin\appman.exe \
@@ -86,8 +86,7 @@ all compile: prep \
         test\web\caching\cache.cgi \
         test\web\auth\basic\basic.cgi \
         test\cgi-bin\cgiProgram.exe \
-        test\web\js \
-        $(CONFIG)\bin\removeFiles.exe
+        test\web\js
 
 .PHONY: prep
 
@@ -105,6 +104,7 @@ prep:
 	@if not exist $(CONFIG)\obj md $(CONFIG)\obj
 	@if not exist $(CONFIG)\inc\bit.h copy projects\appweb-windows-default-bit.h $(CONFIG)\inc\bit.h
 clean:
+	-if exist $(CONFIG)\bin\removeFiles.exe del /Q $(CONFIG)\bin\removeFiles.exe
 	-if exist $(CONFIG)\bin\libmpr.dll del /Q $(CONFIG)\bin\libmpr.dll
 	-if exist $(CONFIG)\bin\libmprssl.dll del /Q $(CONFIG)\bin\libmprssl.dll
 	-if exist $(CONFIG)\bin\appman.exe del /Q $(CONFIG)\bin\appman.exe
@@ -142,7 +142,7 @@ clean:
 	-if exist test\web\auth\basic\basic.cgi del /Q test\web\auth\basic\basic.cgi
 	-if exist test\cgi-bin\cgiProgram.exe del /Q test\cgi-bin\cgiProgram.exe
 	-if exist test\web\js del /Q test\web\js
-	-if exist $(CONFIG)\bin\removeFiles.exe del /Q $(CONFIG)\bin\removeFiles.exe
+	-if exist $(CONFIG)\obj\removeFiles.obj del /Q $(CONFIG)\obj\removeFiles.obj
 	-if exist $(CONFIG)\obj\mprLib.obj del /Q $(CONFIG)\obj\mprLib.obj
 	-if exist $(CONFIG)\obj\mprSsl.obj del /Q $(CONFIG)\obj\mprSsl.obj
 	-if exist $(CONFIG)\obj\manager.obj del /Q $(CONFIG)\obj\manager.obj
@@ -183,7 +183,15 @@ clean:
 	-if exist $(CONFIG)\obj\appwebMonitor.obj del /Q $(CONFIG)\obj\appwebMonitor.obj
 	-if exist $(CONFIG)\obj\testAppweb.obj del /Q $(CONFIG)\obj\testAppweb.obj
 	-if exist $(CONFIG)\obj\testHttp.obj del /Q $(CONFIG)\obj\testHttp.obj
-	-if exist $(CONFIG)\obj\removeFiles.obj del /Q $(CONFIG)\obj\removeFiles.obj
+
+$(CONFIG)\obj\removeFiles.obj: \
+    ..\bit\macosx-x64-release\bin\package\windows\removeFiles.c\
+    $(CONFIG)\inc\bit.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) ..\bit\macosx-x64-release\bin\package\windows\removeFiles.c
+
+$(CONFIG)\bin\removeFiles.exe: \
+    $(CONFIG)\obj\removeFiles.obj
+	"$(LD)" -out:$(CONFIG)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\removeFiles.obj $(LIBS)
 
 $(CONFIG)\inc\mpr.h: 
 	-if exist $(CONFIG)\inc\mpr.h del /Q $(CONFIG)\inc\mpr.h
@@ -744,47 +752,136 @@ test\cgi-bin\cgiProgram.exe: $(CONFIG)\bin\cgiProgram.exe
 test\web\js: 
 #  Omit build script /Users/mob/git/appweb/test/web/js
 
-$(CONFIG)\obj\removeFiles.obj: \
-    package\windows\removeFiles.c\
-    $(CONFIG)\inc\bit.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) package\windows\removeFiles.c
-
-$(CONFIG)\bin\removeFiles.exe: \
-    $(CONFIG)\obj\removeFiles.obj
-	"$(LD)" -out:$(CONFIG)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\removeFiles.obj $(LIBS)
-
 version: 
 	@echo 4.3.0-0
+
+stop: 
+
+
+installBinary: stop
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	if not exist "$(BIT_VAPP_PREFIX)\inc" md "$(BIT_VAPP_PREFIX)\inc"
+	if not exist "$(BIT_VAPP_PREFIX)\man" md "$(BIT_VAPP_PREFIX)\man"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	if not exist "$(BIT_VAPP_PREFIX)\tmp" md "$(BIT_VAPP_PREFIX)\tmp"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\appman.exe" "$(BIT_VAPP_PREFIX)\bin\appman.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\appweb.exe" "$(BIT_VAPP_PREFIX)\bin\appweb.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\esp.exe" "$(BIT_VAPP_PREFIX)\bin\esp.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\http.exe" "$(BIT_VAPP_PREFIX)\bin\http.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\libappweb.exe" "$(BIT_VAPP_PREFIX)\bin\libappweb.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\libest.exe" "$(BIT_VAPP_PREFIX)\bin\libest.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\libhttp.exe" "$(BIT_VAPP_PREFIX)\bin\libhttp.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\libmod*.exe" "$(BIT_VAPP_PREFIX)\bin\libmod*.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\libmpr*.exe" "$(BIT_VAPP_PREFIX)\bin\libmpr*.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\libpcre.exe" "$(BIT_VAPP_PREFIX)\bin\libpcre.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\libsqlite3.exe" "$(BIT_VAPP_PREFIX)\bin\libsqlite3.exe"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\esp-*" "$(BIT_VAPP_PREFIX)\bin\esp-*"
+	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
+	copy /Y "$(CONFIG)\bin\esp.conf" "$(BIT_VAPP_PREFIX)\esp.conf"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
+	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
+	copy /Y "src\server\web\bench\1b.html" "$(BIT_VAPP_PREFIX)\web\bench\1b.html"
+	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
+	copy /Y "src\server\web\bench\4k.html" "$(BIT_VAPP_PREFIX)\web\bench\4k.html"
+	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
+	copy /Y "src\server\web\bench\64k.html" "$(BIT_VAPP_PREFIX)\web\bench\64k.html"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	copy /Y "src\server\web\favicon.ico" "$(BIT_VAPP_PREFIX)\web\favicon.ico"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
+	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
+	copy /Y "src\server\web\icons\back.gif" "$(BIT_VAPP_PREFIX)\web\icons\back.gif"
+	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
+	copy /Y "src\server\web\icons\blank.gif" "$(BIT_VAPP_PREFIX)\web\icons\blank.gif"
+	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
+	copy /Y "src\server\web\icons\compressed.gif" "$(BIT_VAPP_PREFIX)\web\icons\compressed.gif"
+	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
+	copy /Y "src\server\web\icons\folder.gif" "$(BIT_VAPP_PREFIX)\web\icons\folder.gif"
+	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
+	copy /Y "src\server\web\icons\parent.gif" "$(BIT_VAPP_PREFIX)\web\icons\parent.gif"
+	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
+	copy /Y "src\server\web\icons\space.gif" "$(BIT_VAPP_PREFIX)\web\icons\space.gif"
+	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
+	copy /Y "src\server\web\icons\text.gif" "$(BIT_VAPP_PREFIX)\web\icons\text.gif"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	copy /Y "src\server\web\iehacks.css" "$(BIT_VAPP_PREFIX)\web\iehacks.css"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	if not exist "$(BIT_VAPP_PREFIX)\web\images" md "$(BIT_VAPP_PREFIX)\web\images"
+	if not exist "$(BIT_VAPP_PREFIX)\web\images" md "$(BIT_VAPP_PREFIX)\web\images"
+	copy /Y "src\server\web\images\banner.jpg" "$(BIT_VAPP_PREFIX)\web\images\banner.jpg"
+	if not exist "$(BIT_VAPP_PREFIX)\web\images" md "$(BIT_VAPP_PREFIX)\web\images"
+	copy /Y "src\server\web\images\bottomShadow.jpg" "$(BIT_VAPP_PREFIX)\web\images\bottomShadow.jpg"
+	if not exist "$(BIT_VAPP_PREFIX)\web\images" md "$(BIT_VAPP_PREFIX)\web\images"
+	copy /Y "src\server\web\images\shadow.jpg" "$(BIT_VAPP_PREFIX)\web\images\shadow.jpg"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	copy /Y "src\server\web\index.html" "$(BIT_VAPP_PREFIX)\web\index.html"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	copy /Y "src\server\web\min-index.html" "$(BIT_VAPP_PREFIX)\web\min-index.html"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	copy /Y "src\server\web\print.css" "$(BIT_VAPP_PREFIX)\web\print.css"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	copy /Y "src\server\web\screen.css" "$(BIT_VAPP_PREFIX)\web\screen.css"
+	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
+	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
+	copy /Y "src\server\web\test\bench.html" "$(BIT_VAPP_PREFIX)\web\test\bench.html"
+	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
+	copy /Y "src\server\web\test\test.cgi" "$(BIT_VAPP_PREFIX)\web\test\test.cgi"
+	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
+	copy /Y "src\server\web\test\test.ejs" "$(BIT_VAPP_PREFIX)\web\test\test.ejs"
+	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
+	copy /Y "src\server\web\test\test.esp" "$(BIT_VAPP_PREFIX)\web\test\test.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
+	copy /Y "src\server\web\test\test.html" "$(BIT_VAPP_PREFIX)\web\test\test.html"
+	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
+	copy /Y "src\server\web\test\test.php" "$(BIT_VAPP_PREFIX)\web\test\test.php"
+	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
+	copy /Y "src\server\web\test\test.pl" "$(BIT_VAPP_PREFIX)\web\test\test.pl"
+	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
+	copy /Y "src\server\web\test\test.py" "$(BIT_VAPP_PREFIX)\web\test\test.py"
+	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
+	copy /Y "src\server\mime.types" "$(BIT_VAPP_PREFIX)\mime.types"
+	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
+	copy /Y "src\server\appweb.conf" "$(BIT_VAPP_PREFIX)\appweb.conf"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "$(CONFIG)\bin\ejs.mod" "$(BIT_VAPP_PREFIX)\bin\ejs.mod"
+	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
+	copy /Y "${bit.packs.compiler.dir}\VC\redist\${bit.platform.arch}\Microsoft.VC0.CRT\msvcr0.dll" "$(BIT_VAPP_PREFIX)\bin\msvcr0.dll"
+
+
+start: 
+
+
+install: stop installBinary start
+
+
+uninstall: stop
+	if exist "$(BIT_VAPP_PREFIX)" rd /Q /S "$(BIT_VAPP_PREFIX)"
+	if exist "$(BIT_VAPP_PREFIX)" rd /Q /S "$(BIT_VAPP_PREFIX)"
+	if exist "$(BIT_VAPP_PREFIX)\bin" rd /Q /S "$(BIT_VAPP_PREFIX)\bin"
+	if exist "$(BIT_VAPP_PREFIX)\inc" rd /Q /S "$(BIT_VAPP_PREFIX)\inc"
+	if exist "$(BIT_VAPP_PREFIX)\man" rd /Q /S "$(BIT_VAPP_PREFIX)\man"
+	if exist "$(BIT_VAPP_PREFIX)" rd /Q /S "$(BIT_VAPP_PREFIX)"
+	if exist "$(BIT_VAPP_PREFIX)\web" rd /Q /S "$(BIT_VAPP_PREFIX)\web"
+	if exist "$(BIT_VAPP_PREFIX)\log" rd /Q /S "$(BIT_VAPP_PREFIX)\log"
+	if exist "$(BIT_VAPP_PREFIX)\tmp" rd /Q /S "$(BIT_VAPP_PREFIX)\tmp"
+
 
 genslink: 
 	cd src\server
 	esp --static --genlink slink.c --flat compile
 	cd ..\..
-
-deploy: compile
-	xcopy /I /S /Y /Q $(CONFIG)\bin "$(BIT_VAPP_PREFIX)\bin"
-	del /Q "$(BIT_VAPP_PREFIX)\bin\*.pdb"
-	del /Q "$(BIT_VAPP_PREFIX)\bin\*.exp"
-	del /Q "$(BIT_VAPP_PREFIX)\bin\*.lib"
-	copy src/server/appweb.conf src/server/esp.conf src/server/install.conf src/server/mine.types "$(BIT_APP_PREFIX)"
-	xcopy /I /S /Y /Q src/server/web "$(BIT_WEB_PREFIX)"
-	echo 'Documents "$(BIT_WEB_PREFIX)"\nListen 80"\nset LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_SPOOL_PREFIX)/cache"' >$(BIT_ETC_PREFIX)/install.conf
-
-stop: compile
-	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
-
-start: compile stop
-	.\$(CONFIG)\bin\appman install enable start
-
-deployService: compile
-#  Omit build script undefined
-
-deployPost: 
-
-
-install: compile stop deploy deployService deployPost start
-
-
-uninstall: compile stop
-	if exist "$(BIT_APP_PREFIX)" rd /Q /S "$(BIT_APP_PREFIX)"
 

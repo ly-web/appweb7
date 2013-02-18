@@ -226,10 +226,10 @@
     #define BIT_SPOOL_PREFIX "/var/spool/appweb"
 #endif
 #ifndef BIT_CACHE_PREFIX
-    #define BIT_CACHE_PREFIX "/var/cache/appweb"
+    #define BIT_CACHE_PREFIX "/var/spool/appweb/cache"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/local/src/appweb-4.3.0"
+    #define BIT_SRC_PREFIX "appweb-4.3.0"
 #endif
 
 /* Suffixes */

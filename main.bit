@@ -18,7 +18,7 @@ Bit.load({
         "src/utils/utils.bit",
         "src/server/server.bit",
         "test/test.bit",
-        "package/package.bit",
+        "package/manifest.bit",
         "doc/doc.bit",
     ],
 
@@ -28,10 +28,6 @@ Bit.load({
             thus override any setting. Feel free to create and customize. 
          */
         'custom.bit',
-    ],
-
-    '+modules': [
-        'bits/appweb.es',
     ],
 
     settings: {
@@ -207,10 +203,10 @@ Bit.load({
             See package/package.bit for the install/package targets
          */
         projects: {
-            action: "genProductProjects('-with ejscript --without default')",
+            action: "genProjects('-with ejscript --without default')",
         },
         mine: {
-            action: "genProductProjects('-with ejscript --without default', 'mine', Config.OS + '-' + Config.CPU)",
+            action: "genProjects('-with ejscript --without default', 'mine', Config.OS + '-' + Config.CPU)",
         },
     },
 })

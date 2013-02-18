@@ -33,7 +33,7 @@ BIT_SPOOL_PREFIX      := $(BIT_VAPP_PREFIX)
 BIT_CACHE_PREFIX      := $(BIT_VAPP_PREFIX)
 BIT_APP_PREFIX        := $(BIT_BASE_PREFIX)
 BIT_VAPP_PREFIX       := $(BIT_APP_PREFIX)
-BIT_SRC_PREFIX        := $(BIT_ROOT_PREFIX)usr/src/$(PRODUCT)-$(VERSION)
+BIT_SRC_PREFIX        := $(BIT_ROOT_PREFIX)/usr/src/$(PRODUCT)-$(VERSION)
 
 CFLAGS          += -fno-builtin -fno-defer-pop -fvolatile -w
 DFLAGS          += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS)))
@@ -144,6 +144,7 @@ clean:
 	rm -rf test/web/auth/basic/basic.cgi
 	rm -rf test/cgi-bin/cgiProgram.out
 	rm -rf test/web/js
+	rm -rf $(CONFIG)/obj/removeFiles.o
 	rm -rf $(CONFIG)/obj/mprLib.o
 	rm -rf $(CONFIG)/obj/mprSsl.o
 	rm -rf $(CONFIG)/obj/manager.o
@@ -184,7 +185,6 @@ clean:
 	rm -rf $(CONFIG)/obj/appwebMonitor.o
 	rm -rf $(CONFIG)/obj/testAppweb.o
 	rm -rf $(CONFIG)/obj/testHttp.o
-	rm -rf $(CONFIG)/obj/removeFiles.o
 
 clobber: clean
 	rm -fr ./$(CONFIG)
@@ -719,20 +719,23 @@ test/web/js:
 version: 
 	@echo 4.3.0-0
 
+stop: 
+	
+
+installBinary: stop
+	
+
+
+start: 
+	
+
+install: stop installBinary start
+	
+
+uninstall: stop
+	
+
+
 genslink: 
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
-
-deploy: compile
-	for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; done
-	mkdir -p '$(BIT_ETC_PREFIX)' '$(BIT_VAPP_PREFIX)/bin' '$(BIT_INC_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_VAPP_PREFIX)/man/man1'
-	cp ./$(CONFIG)/inc/*.h $(BIT_INC_PREFIX)
-	cp src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_ETC_PREFIX)
-	account=`cat /etc/passwd | grep www | sed -e 's/:.*//'` ; install -d -m 755 -g $$account -o $$account '$(BIT_SPOOL_PREFIX)' '$(BIT_LOG_PREFIX)'
-	cp -R -P ./$(CONFIG)/bin/* $(BIT_VAPP_PREFIX)/bin
-	cp -R -P src/server/web/* $(BIT_WEB_PREFIX)
-	rm -f '$(BIT_APP_PREFIX)/latest'
-	ln -s $(VERSION) $(BIT_APP_PREFIX)/latest
-	for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; ln -s $(BIT_VAPP_PREFIX)/bin/$$n $(BIT_BIN_PREFIX)/$$n ; done
-	for n in appman.1 appweb.1 appwebMonitor.1 authpass.1 esp.1 http.1 makerom.1 ; do rm -f $(BIT_VAPP_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/man1/$$n ; cp doc/man/$$n $(BIT_VAPP_PREFIX)/man/man1 ; ln -s $(BIT_VAPP_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/man1/$$n ; done
-	echo 'Documents "$(BIT_WEB_PREFIX)"\nListen 80"\nset LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_SPOOL_PREFIX)/cache"' >$(BIT_ETC_PREFIX)/install.conf
 

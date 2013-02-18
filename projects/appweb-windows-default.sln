@@ -2,6 +2,11 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prep", "appweb-windows-default\prep.vcxproj", "{6589CC4A-746D-4282-9076-57CB05F6CAE4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "removeFiles", "appweb-windows-default\removeFiles.vcxproj", "{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmpr", "appweb-windows-default\libmpr.vcxproj", "{9651275B-C035-4265-A696-E2DC0147F040}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
@@ -305,11 +310,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test.js", "appweb-windows-d
 		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "removeFiles", "appweb-windows-default\removeFiles.vcxproj", "{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}"
-	ProjectSection(ProjectDependencies) = postProject
-		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
-	EndProjectSection
-EndProject
 
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -327,6 +327,14 @@ Global
 {6589CC4A-746D-4282-9076-57CB05F6CAE4}.Release|Win32.Build.0 = Release|Win32
 {6589CC4A-746D-4282-9076-57CB05F6CAE4}.Release|x64.ActiveCfg = Release|x64
 {6589CC4A-746D-4282-9076-57CB05F6CAE4}.Release|x64.Build.0 = Release|x64
+{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Debug|Win32.ActiveCfg = Debug|Win32
+{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Debug|Win32.Build.0 = Debug|Win32
+{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Debug|x64.ActiveCfg = Debug|x64
+{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Debug|x64.Build.0 = Debug|x64
+{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Release|Win32.ActiveCfg = Release|Win32
+{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Release|Win32.Build.0 = Release|Win32
+{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Release|x64.ActiveCfg = Release|x64
+{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Release|x64.Build.0 = Release|x64
 {9651275B-C035-4265-A696-E2DC0147F040}.Debug|Win32.ActiveCfg = Debug|Win32
 {9651275B-C035-4265-A696-E2DC0147F040}.Debug|Win32.Build.0 = Debug|Win32
 {9651275B-C035-4265-A696-E2DC0147F040}.Debug|x64.ActiveCfg = Debug|x64
@@ -639,14 +647,6 @@ Global
 {5C6CA8B6-E9EC-4983-9440-EFAC4FA29282}.Release|Win32.Build.0 = Release|Win32
 {5C6CA8B6-E9EC-4983-9440-EFAC4FA29282}.Release|x64.ActiveCfg = Release|x64
 {5C6CA8B6-E9EC-4983-9440-EFAC4FA29282}.Release|x64.Build.0 = Release|x64
-{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Debug|Win32.ActiveCfg = Debug|Win32
-{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Debug|Win32.Build.0 = Debug|Win32
-{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Debug|x64.ActiveCfg = Debug|x64
-{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Debug|x64.Build.0 = Debug|x64
-{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Release|Win32.ActiveCfg = Release|Win32
-{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Release|Win32.Build.0 = Release|Win32
-{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Release|x64.ActiveCfg = Release|x64
-{6BF15ABA-FA94-4EF6-91D1-C47F89BE0522}.Release|x64.Build.0 = Release|x64
 EndGlobalSection
 
   GlobalSection(SolutionProperties) = preSolution
