@@ -515,7 +515,6 @@ src/server/esp.conf: \
 
 $(CONFIG)/bin/esp-www: \
     src/esp/esp-www
-	mkdir -p "$(CONFIG)/bin/esp-www"
 	mkdir -p "$(CONFIG)/bin/esp-www/esp-www"
 	cp "src/esp/esp-www/app.conf" "$(CONFIG)/bin/esp-www/esp-www/app.conf"
 	cp "src/esp/esp-www/appweb.conf" "$(CONFIG)/bin/esp-www/esp-www/appweb.conf"
@@ -746,28 +745,28 @@ stop: compile
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 installBinary: stop
-	mkdir -p "/usr/local/lib/appweb/4.3.0/bin"
-	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www"
-	cp "src/esp/esp-www/app.conf" "/usr/local/lib/appweb/4.3.0/bin/esp-www/app.conf"
-	cp "src/esp/esp-www/appweb.conf" "/usr/local/lib/appweb/4.3.0/bin/esp-www/appweb.conf"
-	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files"
-	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/layouts"
-	cp "src/esp/esp-www/files/layouts/default.esp" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/layouts/default.esp"
-	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static"
-	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/images/splash.jpg"
-	cp "src/esp/esp-www/files/static/index.esp" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/index.esp"
-	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/js/jquery.tablesorter.js"
-	cp "src/esp/esp-www/files/static/layout.css" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/layout.css"
-	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/themes/default.css"
-	cp "src/esp/esp-appweb.conf" "/usr/local/lib/appweb/4.3.0/bin/esp-appweb.conf"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www"
+	cp "src/esp/esp-www/app.conf" "$(BIT_VAPP_PREFIX)/bin/esp-www/app.conf"
+	cp "src/esp/esp-www/appweb.conf" "$(BIT_VAPP_PREFIX)/bin/esp-www/appweb.conf"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/layouts"
+	cp "src/esp/esp-www/files/layouts/default.esp" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/layouts/default.esp"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images"
+	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/banner.jpg"
+	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/favicon.ico"
+	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/splash.jpg"
+	cp "src/esp/esp-www/files/static/index.esp" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/index.esp"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.tablesorter.js"
+	cp "src/esp/esp-www/files/static/layout.css" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/layout.css"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/themes"
+	cp "src/esp/esp-www/files/static/themes/default.css" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/themes/default.css"
+	cp "src/esp/esp-appweb.conf" "$(BIT_VAPP_PREFIX)/bin/esp-appweb.conf"
 	mkdir -p "/var/www/appweb-default"
 	mkdir -p "/var/www/appweb-default/web"
 	mkdir -p "/var/www/appweb-default/web/bench"
@@ -806,9 +805,9 @@ installBinary: stop
 	cp "src/server/appweb.conf" "/etc/appweb/appweb.conf"
 	install -d -m 420 "//Library/LaunchDaemons"
 	install -m 420 "package/macosx/com.embedthis.appweb.plist" "//Library/LaunchDaemons/com.embedthis.appweb.plist"
-	rm -f "/usr/local/lib/appweb/latest"
-	mkdir -p "/usr/local/lib/appweb"
-	ln -s "4.3.0" "/usr/local/lib/appweb/latest"
+	rm -f "$(BIT_APP_PREFIX)/latest"
+	mkdir -p "$(BIT_APP_PREFIX)"
+	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
 
 
 start: compile stop
@@ -818,8 +817,8 @@ install: stop installBinary start
 	
 
 uninstall: stop
-	rmdir -p "/usr/local/lib/appweb"
-	rmdir -p "/usr/local/lib/appweb/4.3.0"
+	rmdir -p "$(BIT_APP_PREFIX)"
+	rmdir -p "$(BIT_VAPP_PREFIX)"
 	rmdir -p "/etc/appweb"
 	rmdir -p "/var/www/appweb-default"
 	rmdir -p "/var/log/appweb"

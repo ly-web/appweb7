@@ -519,7 +519,6 @@ src/server/esp.conf: \
 
 $(CONFIG)/bin/esp-www: \
     src/esp/esp-www
-	mkdir -p "$(CONFIG)/bin/esp-www"
 	mkdir -p "$(CONFIG)/bin/esp-www/esp-www"
 	cp "src/esp/esp-www/app.conf" "$(CONFIG)/bin/esp-www/esp-www/app.conf"
 	cp "src/esp/esp-www/appweb.conf" "$(CONFIG)/bin/esp-www/esp-www/appweb.conf"
