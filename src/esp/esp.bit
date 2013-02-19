@@ -35,7 +35,9 @@ Bit.load({
         'esp.www': {
             type: 'file',
             path: '${BIN}/esp-www',
-            files: [ 'esp-www' ],
+            files: [ 'esp-www/**' ],
+            exclude: /\/$/,
+            subtree: 'esp-www',
             platforms: [ 'local' ],
         },
 
