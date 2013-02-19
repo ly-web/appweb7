@@ -2579,12 +2579,6 @@ fi
 if [ ../src/deps/ejs/ejsByteGoto.h -nt ${OUT_DIR}/inc/ejsByteGoto.h ] ; then
 cp ../src/deps/ejs/ejsByteGoto.h ${OUT_DIR}/inc/ejsByteGoto.h
 fi
-if [ ../src/server/windows/appwebMonitor.h -nt ${OUT_DIR}/inc/appwebMonitor.h ] ; then
-cp ../src/server/windows/appwebMonitor.h ${OUT_DIR}/inc/appwebMonitor.h
-fi
-if [ ../src/server/windows/monitorResources.h -nt ${OUT_DIR}/inc/monitorResources.h ] ; then
-cp ../src/server/windows/monitorResources.h ${OUT_DIR}/inc/monitorResources.h
-fi
 if [ ../test/testAppweb.h -nt ${OUT_DIR}/inc/testAppweb.h ] ; then
 cp ../test/testAppweb.h ${OUT_DIR}/inc/testAppweb.h
 fi";

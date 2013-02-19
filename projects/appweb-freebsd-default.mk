@@ -104,6 +104,7 @@ prep:
 		echo cp projects/appweb-freebsd-default-bit.h $(CONFIG)/inc/bit.h  ; \
 		cp projects/appweb-freebsd-default-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
+
 clean:
 	rm -rf $(CONFIG)/bin/libmpr.so
 	rm -rf $(CONFIG)/bin/libmprssl.so
@@ -140,7 +141,6 @@ clean:
 	rm -rf test/web/auth/basic/basic.cgi
 	rm -rf test/cgi-bin/cgiProgram
 	rm -rf test/web/js
-	rm -rf $(CONFIG)/obj/removeFiles.o
 	rm -rf $(CONFIG)/obj/mprLib.o
 	rm -rf $(CONFIG)/obj/mprSsl.o
 	rm -rf $(CONFIG)/obj/manager.o
@@ -171,14 +171,11 @@ clean:
 	rm -rf $(CONFIG)/obj/ejsc.o
 	rm -rf $(CONFIG)/obj/cgiHandler.o
 	rm -rf $(CONFIG)/obj/ejsHandler.o
-	rm -rf $(CONFIG)/obj/phpHandler.o
-	rm -rf $(CONFIG)/obj/proxyHandler.o
 	rm -rf $(CONFIG)/obj/sslModule.o
 	rm -rf $(CONFIG)/obj/authpass.o
 	rm -rf $(CONFIG)/obj/cgiProgram.o
 	rm -rf $(CONFIG)/obj/slink.o
 	rm -rf $(CONFIG)/obj/appweb.o
-	rm -rf $(CONFIG)/obj/appwebMonitor.o
 	rm -rf $(CONFIG)/obj/testAppweb.o
 	rm -rf $(CONFIG)/obj/testHttp.o
 

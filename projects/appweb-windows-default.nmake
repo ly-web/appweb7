@@ -103,6 +103,7 @@ prep:
 	@if not exist $(CONFIG)\inc md $(CONFIG)\inc
 	@if not exist $(CONFIG)\obj md $(CONFIG)\obj
 	@if not exist $(CONFIG)\inc\bit.h copy projects\appweb-windows-default-bit.h $(CONFIG)\inc\bit.h
+
 clean:
 	-if exist $(CONFIG)\bin\removeFiles.exe del /Q $(CONFIG)\bin\removeFiles.exe
 	-if exist $(CONFIG)\bin\libmpr.dll del /Q $(CONFIG)\bin\libmpr.dll
@@ -173,8 +174,6 @@ clean:
 	-if exist $(CONFIG)\obj\ejsc.obj del /Q $(CONFIG)\obj\ejsc.obj
 	-if exist $(CONFIG)\obj\cgiHandler.obj del /Q $(CONFIG)\obj\cgiHandler.obj
 	-if exist $(CONFIG)\obj\ejsHandler.obj del /Q $(CONFIG)\obj\ejsHandler.obj
-	-if exist $(CONFIG)\obj\phpHandler.obj del /Q $(CONFIG)\obj\phpHandler.obj
-	-if exist $(CONFIG)\obj\proxyHandler.obj del /Q $(CONFIG)\obj\proxyHandler.obj
 	-if exist $(CONFIG)\obj\sslModule.obj del /Q $(CONFIG)\obj\sslModule.obj
 	-if exist $(CONFIG)\obj\authpass.obj del /Q $(CONFIG)\obj\authpass.obj
 	-if exist $(CONFIG)\obj\cgiProgram.obj del /Q $(CONFIG)\obj\cgiProgram.obj
@@ -187,9 +186,9 @@ clean:
 $(CONFIG)\inc\bit.h: 
 
 $(CONFIG)\obj\removeFiles.obj: \
-    ..\bit\macosx-x64-release\bin\package\windows\removeFiles.c\
+    package\windows\removeFiles.c\
     $(CONFIG)\inc\bit.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) ..\bit\macosx-x64-release\bin\package\windows\removeFiles.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) package\windows\removeFiles.c
 
 $(CONFIG)\bin\removeFiles.exe: \
     $(CONFIG)\obj\removeFiles.obj
