@@ -196,13 +196,9 @@ $(CONFIG)\bin\removeFiles.exe: \
 	"$(LD)" -out:$(CONFIG)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\removeFiles.obj $(LIBS)
 
 $(CONFIG)\inc\mpr.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\deps\mpr\mpr.h" "windows-x86-default\inc\mpr.h"
 
 $(CONFIG)\inc\bitos.h: \
     $(CONFIG)\inc\bit.h
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\bitos.h" "windows-x86-default\inc\bitos.h"
 
 $(CONFIG)\obj\mprLib.obj: \
     src\deps\mpr\mprLib.c\
@@ -217,8 +213,6 @@ $(CONFIG)\bin\libmpr.dll: \
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprLib.obj $(LIBS)
 
 $(CONFIG)\inc\est.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\deps\est\est.h" "windows-x86-default\inc\est.h"
 
 $(CONFIG)\obj\estLib.obj: \
     src\deps\est\estLib.c\
@@ -269,12 +263,8 @@ $(CONFIG)\bin\makerom.exe: \
 
 $(CONFIG)\bin\ca.crt: \
     src\deps\est\ca.crt
-	if not exist "windows-x86-default\bin" md "windows-x86-default\bin"
-	copy /Y "src\deps\est\ca.crt" "windows-x86-default\bin\ca.crt"
 
 $(CONFIG)\inc\pcre.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\deps\pcre\pcre.h" "windows-x86-default\inc\pcre.h"
 
 $(CONFIG)\obj\pcre.obj: \
     src\deps\pcre\pcre.c\
@@ -288,8 +278,6 @@ $(CONFIG)\bin\libpcre.dll: \
 	"$(LD)" -dll -out:$(CONFIG)\bin\libpcre.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\pcre.obj $(LIBS)
 
 $(CONFIG)\inc\http.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\deps\http\http.h" "windows-x86-default\inc\http.h"
 
 $(CONFIG)\obj\httpLib.obj: \
     src\deps\http\httpLib.c\
@@ -317,8 +305,6 @@ $(CONFIG)\bin\http.exe: \
 	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
 
 $(CONFIG)\inc\sqlite3.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\deps\sqlite\sqlite3.h" "windows-x86-default\inc\sqlite3.h"
 
 $(CONFIG)\obj\sqlite3.obj: \
     src\deps\sqlite\sqlite3.c\
@@ -343,12 +329,8 @@ $(CONFIG)\bin\sqlite.exe: \
 	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj libsqlite3.lib $(LIBS)
 
 $(CONFIG)\inc\appweb.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\appweb.h" "windows-x86-default\inc\appweb.h"
 
 $(CONFIG)\inc\customize.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\customize.h" "windows-x86-default\inc\customize.h"
 
 $(CONFIG)\obj\config.obj: \
     src\config.c\
@@ -404,20 +386,12 @@ $(CONFIG)\bin\libappweb.dll: \
 	"$(LD)" -dll -out:$(CONFIG)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.obj $(CONFIG)\obj\convenience.obj $(CONFIG)\obj\dirHandler.obj $(CONFIG)\obj\fileHandler.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\server.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
 
 $(CONFIG)\inc\edi.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\esp\edi.h" "windows-x86-default\inc\edi.h"
 
 $(CONFIG)\inc\esp-app.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\esp\esp-app.h" "windows-x86-default\inc\esp-app.h"
 
 $(CONFIG)\inc\esp.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\esp\esp.h" "windows-x86-default\inc\esp.h"
 
 $(CONFIG)\inc\mdb.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\esp\mdb.h" "windows-x86-default\inc\mdb.h"
 
 $(CONFIG)\obj\edi.obj: \
     src\esp\edi.c\
@@ -513,53 +487,21 @@ $(CONFIG)\bin\esp.exe: \
 
 $(CONFIG)\bin\esp.conf: \
     src\esp\esp.conf
-	if not exist "windows-x86-default\bin" md "windows-x86-default\bin"
-	copy /Y "src\esp\esp.conf" "windows-x86-default\bin\esp.conf"
 
 src\server\esp.conf: \
     src\esp\esp.conf
-	if not exist "src\server" md "src\server"
-	copy /Y "src\esp\esp.conf" "src\server\esp.conf"
 
 $(CONFIG)\bin\esp-www: \
     src\esp\esp-www
-	if not exist "windows-x86-default\bin\esp-www\esp-www" md "windows-x86-default\bin\esp-www\esp-www"
-	copy /Y "src\esp\esp-www\app.conf" "windows-x86-default\bin\esp-www\esp-www\app.conf"
-	copy /Y "src\esp\esp-www\appweb.conf" "windows-x86-default\bin\esp-www\esp-www\appweb.conf"
-	if not exist "windows-x86-default\bin\esp-www\esp-www\files" md "windows-x86-default\bin\esp-www\esp-www\files"
-	if not exist "windows-x86-default\bin\esp-www\esp-www\files\layouts" md "windows-x86-default\bin\esp-www\esp-www\files\layouts"
-	copy /Y "src\esp\esp-www\files\layouts\default.esp" "windows-x86-default\bin\esp-www\esp-www\files\layouts\default.esp"
-	if not exist "windows-x86-default\bin\esp-www\esp-www\files\static" md "windows-x86-default\bin\esp-www\esp-www\files\static"
-	if not exist "windows-x86-default\bin\esp-www\esp-www\files\static\images" md "windows-x86-default\bin\esp-www\esp-www\files\static\images"
-	copy /Y "src\esp\esp-www\files\static\images\banner.jpg" "windows-x86-default\bin\esp-www\esp-www\files\static\images\banner.jpg"
-	copy /Y "src\esp\esp-www\files\static\images\favicon.ico" "windows-x86-default\bin\esp-www\esp-www\files\static\images\favicon.ico"
-	copy /Y "src\esp\esp-www\files\static\images\splash.jpg" "windows-x86-default\bin\esp-www\esp-www\files\static\images\splash.jpg"
-	copy /Y "src\esp\esp-www\files\static\index.esp" "windows-x86-default\bin\esp-www\esp-www\files\static\index.esp"
-	if not exist "windows-x86-default\bin\esp-www\esp-www\files\static\js" md "windows-x86-default\bin\esp-www\esp-www\files\static\js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "windows-x86-default\bin\esp-www\esp-www\files\static\js\jquery.esp.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "windows-x86-default\bin\esp-www\esp-www\files\static\js\jquery.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "windows-x86-default\bin\esp-www\esp-www\files\static\js\jquery.simplemodal.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "windows-x86-default\bin\esp-www\esp-www\files\static\js\jquery.tablesorter.js"
-	copy /Y "src\esp\esp-www\files\static\layout.css" "windows-x86-default\bin\esp-www\esp-www\files\static\layout.css"
-	if not exist "windows-x86-default\bin\esp-www\esp-www\files\static\themes" md "windows-x86-default\bin\esp-www\esp-www\files\static\themes"
-	copy /Y "src\esp\esp-www\files\static\themes\default.css" "windows-x86-default\bin\esp-www\esp-www\files\static\themes\default.css"
 
 $(CONFIG)\bin\esp-appweb.conf: \
     src\esp\esp-appweb.conf
-	if not exist "windows-x86-default\bin" md "windows-x86-default\bin"
-	copy /Y "src\esp\esp-appweb.conf" "windows-x86-default\bin\esp-appweb.conf"
 
 $(CONFIG)\inc\ejs.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\deps\ejs\ejs.h" "windows-x86-default\inc\ejs.h"
 
 $(CONFIG)\inc\ejs.slots.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\deps\ejs\ejs.slots.h" "windows-x86-default\inc\ejs.slots.h"
 
 $(CONFIG)\inc\ejsByteGoto.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\deps\ejs\ejsByteGoto.h" "windows-x86-default\inc\ejsByteGoto.h"
 
 $(CONFIG)\obj\ejsLib.obj: \
     src\deps\ejs\ejsLib.c\
@@ -698,12 +640,8 @@ $(CONFIG)\bin\appweb.exe: \
 	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_ejs.lib libmod_ssl.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib libejs.lib libsqlite3.lib
 
 $(CONFIG)\inc\appwebMonitor.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\server\windows\appwebMonitor.h" "windows-x86-default\inc\appwebMonitor.h"
 
 $(CONFIG)\inc\monitorResources.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "src\server\windows\monitorResources.h" "windows-x86-default\inc\monitorResources.h"
 
 $(CONFIG)\obj\appwebMonitor.res: \
         src\server\windows\appwebMonitor.rc
@@ -730,8 +668,6 @@ $(CONFIG)\bin\appwebMonitor.ico: src\server\windows\appwebMonitor.ico
 
 $(CONFIG)\bin\appwebMonitor.ico: \
     src\server\windows\appwebMonitor.ico
-	if not exist "windows-x86-default\bin" md "windows-x86-default\bin"
-	copy /Y "src\server\windows\appwebMonitor.ico" "windows-x86-default\bin\appwebMonitor.ico"
 
 src\server\cache: 
 	cd src\server
@@ -739,8 +675,6 @@ src\server\cache:
 	cd ..\..
 
 $(CONFIG)\inc\testAppweb.h: 
-	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
-	copy /Y "test\testAppweb.h" "windows-x86-default\inc\testAppweb.h"
 
 $(CONFIG)\obj\testAppweb.obj: \
     test\testAppweb.c\

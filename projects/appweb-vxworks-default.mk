@@ -190,15 +190,15 @@ clobber: clean
 	rm -fr ./$(CONFIG)
 
 $(CONFIG)/inc/mpr.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/deps/mpr/mpr.h" "vxworks-x86-default/inc/mpr.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/mpr/mpr.h" "$(CONFIG)/inc/mpr.h"
 
 $(CONFIG)/inc/bit.h: 
 
 $(CONFIG)/inc/bitos.h: \
     $(CONFIG)/inc/bit.h
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/bitos.h" "vxworks-x86-default/inc/bitos.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/bitos.h" "$(CONFIG)/inc/bitos.h"
 
 $(CONFIG)/obj/mprLib.o: \
     src/deps/mpr/mprLib.c\
@@ -213,8 +213,8 @@ $(CONFIG)/bin/libmpr.out: \
 	$(CC) -r -o $(CONFIG)/bin/libmpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprLib.o 
 
 $(CONFIG)/inc/est.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/deps/est/est.h" "vxworks-x86-default/inc/est.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/est/est.h" "$(CONFIG)/inc/est.h"
 
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c\
@@ -265,12 +265,12 @@ $(CONFIG)/bin/makerom.out: \
 
 $(CONFIG)/bin/ca.crt: \
     src/deps/est/ca.crt
-	mkdir -p "vxworks-x86-default/bin"
-	cp "src/deps/est/ca.crt" "vxworks-x86-default/bin/ca.crt"
+	mkdir -p "$(CONFIG)/bin"
+	cp "src/deps/est/ca.crt" "$(CONFIG)/bin/ca.crt"
 
 $(CONFIG)/inc/pcre.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/deps/pcre/pcre.h" "vxworks-x86-default/inc/pcre.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/pcre/pcre.h" "$(CONFIG)/inc/pcre.h"
 
 $(CONFIG)/obj/pcre.o: \
     src/deps/pcre/pcre.c\
@@ -284,8 +284,8 @@ $(CONFIG)/bin/libpcre.out: \
 	$(CC) -r -o $(CONFIG)/bin/libpcre.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o 
 
 $(CONFIG)/inc/http.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/deps/http/http.h" "vxworks-x86-default/inc/http.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/http/http.h" "$(CONFIG)/inc/http.h"
 
 $(CONFIG)/obj/httpLib.o: \
     src/deps/http/httpLib.c\
@@ -313,8 +313,8 @@ $(CONFIG)/bin/http.out: \
 	$(CC) -o $(CONFIG)/bin/http.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LDFLAGS)
 
 $(CONFIG)/inc/sqlite3.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/deps/sqlite/sqlite3.h" "vxworks-x86-default/inc/sqlite3.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/sqlite/sqlite3.h" "$(CONFIG)/inc/sqlite3.h"
 
 $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c\
@@ -339,12 +339,12 @@ $(CONFIG)/bin/sqlite.out: \
 	$(CC) -o $(CONFIG)/bin/sqlite.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LDFLAGS)
 
 $(CONFIG)/inc/appweb.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/appweb.h" "vxworks-x86-default/inc/appweb.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/appweb.h" "$(CONFIG)/inc/appweb.h"
 
 $(CONFIG)/inc/customize.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/customize.h" "vxworks-x86-default/inc/customize.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/customize.h" "$(CONFIG)/inc/customize.h"
 
 $(CONFIG)/obj/config.o: \
     src/config.c\
@@ -400,20 +400,20 @@ $(CONFIG)/bin/libappweb.out: \
 	$(CC) -r -o $(CONFIG)/bin/libappweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o 
 
 $(CONFIG)/inc/edi.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/esp/edi.h" "vxworks-x86-default/inc/edi.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/esp/edi.h" "$(CONFIG)/inc/edi.h"
 
 $(CONFIG)/inc/esp-app.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/esp/esp-app.h" "vxworks-x86-default/inc/esp-app.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/esp/esp-app.h" "$(CONFIG)/inc/esp-app.h"
 
 $(CONFIG)/inc/esp.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/esp/esp.h" "vxworks-x86-default/inc/esp.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/esp/esp.h" "$(CONFIG)/inc/esp.h"
 
 $(CONFIG)/inc/mdb.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/esp/mdb.h" "vxworks-x86-default/inc/mdb.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/esp/mdb.h" "$(CONFIG)/inc/mdb.h"
 
 $(CONFIG)/obj/edi.o: \
     src/esp/edi.c\
@@ -509,8 +509,8 @@ $(CONFIG)/bin/esp.out: \
 
 $(CONFIG)/bin/esp.conf: \
     src/esp/esp.conf
-	mkdir -p "vxworks-x86-default/bin"
-	cp "src/esp/esp.conf" "vxworks-x86-default/bin/esp.conf"
+	mkdir -p "$(CONFIG)/bin"
+	cp "src/esp/esp.conf" "$(CONFIG)/bin/esp.conf"
 
 src/server/esp.conf: \
     src/esp/esp.conf
@@ -519,43 +519,44 @@ src/server/esp.conf: \
 
 $(CONFIG)/bin/esp-www: \
     src/esp/esp-www
-	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www"
-	cp "src/esp/esp-www/app.conf" "vxworks-x86-default/bin/esp-www/esp-www/app.conf"
-	cp "src/esp/esp-www/appweb.conf" "vxworks-x86-default/bin/esp-www/esp-www/appweb.conf"
-	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files"
-	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files/layouts"
-	cp "src/esp/esp-www/files/layouts/default.esp" "vxworks-x86-default/bin/esp-www/esp-www/files/layouts/default.esp"
-	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files/static"
-	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files/static/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "vxworks-x86-default/bin/esp-www/esp-www/files/static/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "vxworks-x86-default/bin/esp-www/esp-www/files/static/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "vxworks-x86-default/bin/esp-www/esp-www/files/static/images/splash.jpg"
-	cp "src/esp/esp-www/files/static/index.esp" "vxworks-x86-default/bin/esp-www/esp-www/files/static/index.esp"
-	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files/static/js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "vxworks-x86-default/bin/esp-www/esp-www/files/static/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "vxworks-x86-default/bin/esp-www/esp-www/files/static/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "vxworks-x86-default/bin/esp-www/esp-www/files/static/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "vxworks-x86-default/bin/esp-www/esp-www/files/static/js/jquery.tablesorter.js"
-	cp "src/esp/esp-www/files/static/layout.css" "vxworks-x86-default/bin/esp-www/esp-www/files/static/layout.css"
-	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files/static/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "vxworks-x86-default/bin/esp-www/esp-www/files/static/themes/default.css"
+	mkdir -p "$(CONFIG)/bin/esp-www"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www"
+	cp "src/esp/esp-www/app.conf" "$(CONFIG)/bin/esp-www/esp-www/app.conf"
+	cp "src/esp/esp-www/appweb.conf" "$(CONFIG)/bin/esp-www/esp-www/appweb.conf"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files/layouts"
+	cp "src/esp/esp-www/files/layouts/default.esp" "$(CONFIG)/bin/esp-www/esp-www/files/layouts/default.esp"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files/static"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files/static/images"
+	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(CONFIG)/bin/esp-www/esp-www/files/static/images/banner.jpg"
+	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(CONFIG)/bin/esp-www/esp-www/files/static/images/favicon.ico"
+	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(CONFIG)/bin/esp-www/esp-www/files/static/images/splash.jpg"
+	cp "src/esp/esp-www/files/static/index.esp" "$(CONFIG)/bin/esp-www/esp-www/files/static/index.esp"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files/static/js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(CONFIG)/bin/esp-www/esp-www/files/static/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "$(CONFIG)/bin/esp-www/esp-www/files/static/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(CONFIG)/bin/esp-www/esp-www/files/static/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(CONFIG)/bin/esp-www/esp-www/files/static/js/jquery.tablesorter.js"
+	cp "src/esp/esp-www/files/static/layout.css" "$(CONFIG)/bin/esp-www/esp-www/files/static/layout.css"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files/static/themes"
+	cp "src/esp/esp-www/files/static/themes/default.css" "$(CONFIG)/bin/esp-www/esp-www/files/static/themes/default.css"
 
 $(CONFIG)/bin/esp-appweb.conf: \
     src/esp/esp-appweb.conf
-	mkdir -p "vxworks-x86-default/bin"
-	cp "src/esp/esp-appweb.conf" "vxworks-x86-default/bin/esp-appweb.conf"
+	mkdir -p "$(CONFIG)/bin"
+	cp "src/esp/esp-appweb.conf" "$(CONFIG)/bin/esp-appweb.conf"
 
 $(CONFIG)/inc/ejs.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/deps/ejs/ejs.h" "vxworks-x86-default/inc/ejs.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/ejs/ejs.h" "$(CONFIG)/inc/ejs.h"
 
 $(CONFIG)/inc/ejs.slots.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/deps/ejs/ejs.slots.h" "vxworks-x86-default/inc/ejs.slots.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/ejs/ejs.slots.h" "$(CONFIG)/inc/ejs.slots.h"
 
 $(CONFIG)/inc/ejsByteGoto.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "src/deps/ejs/ejsByteGoto.h" "vxworks-x86-default/inc/ejsByteGoto.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/ejs/ejsByteGoto.h" "$(CONFIG)/inc/ejsByteGoto.h"
 
 $(CONFIG)/obj/ejsLib.o: \
     src/deps/ejs/ejsLib.c\
@@ -695,8 +696,8 @@ src/server/cache:
 	cd src/server; mkdir -p cache ; cd ../..
 
 $(CONFIG)/inc/testAppweb.h: 
-	mkdir -p "vxworks-x86-default/inc"
-	cp "test/testAppweb.h" "vxworks-x86-default/inc/testAppweb.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "test/testAppweb.h" "$(CONFIG)/inc/testAppweb.h"
 
 $(CONFIG)/obj/testAppweb.o: \
     test/testAppweb.c\

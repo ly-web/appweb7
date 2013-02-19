@@ -186,15 +186,15 @@ clobber: clean
 	rm -fr ./$(CONFIG)
 
 $(CONFIG)/inc/mpr.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/deps/mpr/mpr.h" "macosx-x64-default/inc/mpr.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/mpr/mpr.h" "$(CONFIG)/inc/mpr.h"
 
 $(CONFIG)/inc/bit.h: 
 
 $(CONFIG)/inc/bitos.h: \
     $(CONFIG)/inc/bit.h
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/bitos.h" "macosx-x64-default/inc/bitos.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/bitos.h" "$(CONFIG)/inc/bitos.h"
 
 $(CONFIG)/obj/mprLib.o: \
     src/deps/mpr/mprLib.c\
@@ -209,8 +209,8 @@ $(CONFIG)/bin/libmpr.dylib: \
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmpr.dylib $(CONFIG)/obj/mprLib.o $(LIBS)
 
 $(CONFIG)/inc/est.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/deps/est/est.h" "macosx-x64-default/inc/est.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/est/est.h" "$(CONFIG)/inc/est.h"
 
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c\
@@ -261,12 +261,12 @@ $(CONFIG)/bin/makerom: \
 
 $(CONFIG)/bin/ca.crt: \
     src/deps/est/ca.crt
-	mkdir -p "macosx-x64-default/bin"
-	cp "src/deps/est/ca.crt" "macosx-x64-default/bin/ca.crt"
+	mkdir -p "$(CONFIG)/bin"
+	cp "src/deps/est/ca.crt" "$(CONFIG)/bin/ca.crt"
 
 $(CONFIG)/inc/pcre.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/deps/pcre/pcre.h" "macosx-x64-default/inc/pcre.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/pcre/pcre.h" "$(CONFIG)/inc/pcre.h"
 
 $(CONFIG)/obj/pcre.o: \
     src/deps/pcre/pcre.c\
@@ -280,8 +280,8 @@ $(CONFIG)/bin/libpcre.dylib: \
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libpcre.dylib $(CONFIG)/obj/pcre.o $(LIBS)
 
 $(CONFIG)/inc/http.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/deps/http/http.h" "macosx-x64-default/inc/http.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/http/http.h" "$(CONFIG)/inc/http.h"
 
 $(CONFIG)/obj/httpLib.o: \
     src/deps/http/httpLib.c\
@@ -309,8 +309,8 @@ $(CONFIG)/bin/http: \
 	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr -lpam
 
 $(CONFIG)/inc/sqlite3.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/deps/sqlite/sqlite3.h" "macosx-x64-default/inc/sqlite3.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/sqlite/sqlite3.h" "$(CONFIG)/inc/sqlite3.h"
 
 $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c\
@@ -335,12 +335,12 @@ $(CONFIG)/bin/sqlite: \
 	$(CC) -o $(CONFIG)/bin/sqlite -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o -lsqlite3 $(LIBS)
 
 $(CONFIG)/inc/appweb.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/appweb.h" "macosx-x64-default/inc/appweb.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/appweb.h" "$(CONFIG)/inc/appweb.h"
 
 $(CONFIG)/inc/customize.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/customize.h" "macosx-x64-default/inc/customize.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/customize.h" "$(CONFIG)/inc/customize.h"
 
 $(CONFIG)/obj/config.o: \
     src/config.c\
@@ -396,20 +396,20 @@ $(CONFIG)/bin/libappweb.dylib: \
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libappweb.dylib $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr -lpam
 
 $(CONFIG)/inc/edi.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/esp/edi.h" "macosx-x64-default/inc/edi.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/esp/edi.h" "$(CONFIG)/inc/edi.h"
 
 $(CONFIG)/inc/esp-app.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/esp/esp-app.h" "macosx-x64-default/inc/esp-app.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/esp/esp-app.h" "$(CONFIG)/inc/esp-app.h"
 
 $(CONFIG)/inc/esp.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/esp/esp.h" "macosx-x64-default/inc/esp.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/esp/esp.h" "$(CONFIG)/inc/esp.h"
 
 $(CONFIG)/inc/mdb.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/esp/mdb.h" "macosx-x64-default/inc/mdb.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/esp/mdb.h" "$(CONFIG)/inc/mdb.h"
 
 $(CONFIG)/obj/edi.o: \
     src/esp/edi.c\
@@ -505,8 +505,8 @@ $(CONFIG)/bin/esp: \
 
 $(CONFIG)/bin/esp.conf: \
     src/esp/esp.conf
-	mkdir -p "macosx-x64-default/bin"
-	cp "src/esp/esp.conf" "macosx-x64-default/bin/esp.conf"
+	mkdir -p "$(CONFIG)/bin"
+	cp "src/esp/esp.conf" "$(CONFIG)/bin/esp.conf"
 
 src/server/esp.conf: \
     src/esp/esp.conf
@@ -515,43 +515,44 @@ src/server/esp.conf: \
 
 $(CONFIG)/bin/esp-www: \
     src/esp/esp-www
-	mkdir -p "macosx-x64-default/bin/esp-www/esp-www"
-	cp "src/esp/esp-www/app.conf" "macosx-x64-default/bin/esp-www/esp-www/app.conf"
-	cp "src/esp/esp-www/appweb.conf" "macosx-x64-default/bin/esp-www/esp-www/appweb.conf"
-	mkdir -p "macosx-x64-default/bin/esp-www/esp-www/files"
-	mkdir -p "macosx-x64-default/bin/esp-www/esp-www/files/layouts"
-	cp "src/esp/esp-www/files/layouts/default.esp" "macosx-x64-default/bin/esp-www/esp-www/files/layouts/default.esp"
-	mkdir -p "macosx-x64-default/bin/esp-www/esp-www/files/static"
-	mkdir -p "macosx-x64-default/bin/esp-www/esp-www/files/static/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "macosx-x64-default/bin/esp-www/esp-www/files/static/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "macosx-x64-default/bin/esp-www/esp-www/files/static/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "macosx-x64-default/bin/esp-www/esp-www/files/static/images/splash.jpg"
-	cp "src/esp/esp-www/files/static/index.esp" "macosx-x64-default/bin/esp-www/esp-www/files/static/index.esp"
-	mkdir -p "macosx-x64-default/bin/esp-www/esp-www/files/static/js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "macosx-x64-default/bin/esp-www/esp-www/files/static/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "macosx-x64-default/bin/esp-www/esp-www/files/static/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "macosx-x64-default/bin/esp-www/esp-www/files/static/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "macosx-x64-default/bin/esp-www/esp-www/files/static/js/jquery.tablesorter.js"
-	cp "src/esp/esp-www/files/static/layout.css" "macosx-x64-default/bin/esp-www/esp-www/files/static/layout.css"
-	mkdir -p "macosx-x64-default/bin/esp-www/esp-www/files/static/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "macosx-x64-default/bin/esp-www/esp-www/files/static/themes/default.css"
+	mkdir -p "$(CONFIG)/bin/esp-www"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www"
+	cp "src/esp/esp-www/app.conf" "$(CONFIG)/bin/esp-www/esp-www/app.conf"
+	cp "src/esp/esp-www/appweb.conf" "$(CONFIG)/bin/esp-www/esp-www/appweb.conf"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files/layouts"
+	cp "src/esp/esp-www/files/layouts/default.esp" "$(CONFIG)/bin/esp-www/esp-www/files/layouts/default.esp"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files/static"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files/static/images"
+	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(CONFIG)/bin/esp-www/esp-www/files/static/images/banner.jpg"
+	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(CONFIG)/bin/esp-www/esp-www/files/static/images/favicon.ico"
+	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(CONFIG)/bin/esp-www/esp-www/files/static/images/splash.jpg"
+	cp "src/esp/esp-www/files/static/index.esp" "$(CONFIG)/bin/esp-www/esp-www/files/static/index.esp"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files/static/js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(CONFIG)/bin/esp-www/esp-www/files/static/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "$(CONFIG)/bin/esp-www/esp-www/files/static/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(CONFIG)/bin/esp-www/esp-www/files/static/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(CONFIG)/bin/esp-www/esp-www/files/static/js/jquery.tablesorter.js"
+	cp "src/esp/esp-www/files/static/layout.css" "$(CONFIG)/bin/esp-www/esp-www/files/static/layout.css"
+	mkdir -p "$(CONFIG)/bin/esp-www/esp-www/files/static/themes"
+	cp "src/esp/esp-www/files/static/themes/default.css" "$(CONFIG)/bin/esp-www/esp-www/files/static/themes/default.css"
 
 $(CONFIG)/bin/esp-appweb.conf: \
     src/esp/esp-appweb.conf
-	mkdir -p "macosx-x64-default/bin"
-	cp "src/esp/esp-appweb.conf" "macosx-x64-default/bin/esp-appweb.conf"
+	mkdir -p "$(CONFIG)/bin"
+	cp "src/esp/esp-appweb.conf" "$(CONFIG)/bin/esp-appweb.conf"
 
 $(CONFIG)/inc/ejs.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/deps/ejs/ejs.h" "macosx-x64-default/inc/ejs.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/ejs/ejs.h" "$(CONFIG)/inc/ejs.h"
 
 $(CONFIG)/inc/ejs.slots.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/deps/ejs/ejs.slots.h" "macosx-x64-default/inc/ejs.slots.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/ejs/ejs.slots.h" "$(CONFIG)/inc/ejs.slots.h"
 
 $(CONFIG)/inc/ejsByteGoto.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/deps/ejs/ejsByteGoto.h" "macosx-x64-default/inc/ejsByteGoto.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/ejs/ejsByteGoto.h" "$(CONFIG)/inc/ejsByteGoto.h"
 
 $(CONFIG)/obj/ejsLib.o: \
     src/deps/ejs/ejsLib.c\
@@ -691,8 +692,8 @@ src/server/cache:
 	cd src/server; mkdir -p cache ; cd ../..
 
 $(CONFIG)/inc/testAppweb.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "test/testAppweb.h" "macosx-x64-default/inc/testAppweb.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "test/testAppweb.h" "$(CONFIG)/inc/testAppweb.h"
 
 $(CONFIG)/obj/testAppweb.o: \
     test/testAppweb.c\
