@@ -7,10 +7,13 @@
 
 BIT_PRODUCT=${settings.product}
 BIT_NAME="${settings.title}"
+BIT_APP_PREFIX="${prefixes.app}"
+BIT_VAPP_PREFIX="${prefixes.vapp}"
 BIT_BIN_PREFIX="${prefixes.bin}"
 BIT_LIB_PREFIX="${prefixes.lib}"
 BIT_LOG_PREFIX="${prefixes.log}"
 BIT_SPOOL_PREFIX="${prefixes.spool}"
+BIT_CACHE_PREFIX="${prefixes.cache}"
 
 ###############################################################################
 
@@ -35,10 +38,10 @@ setPerms() {
 		echo "Can't find a suitable user/group for $BIT_PRODUCT" 1>&2
 		exit 255
 	fi
-    mkdir -p "$BIT_SPOOL_PREFIX" "$BIT_SPOOL_PREFIX/cache" "$BIT_LOG_PREFIX"
-    chown $username "$BIT_SPOOL_PREFIX" "$BIT_SPOOL_PREFIX/cache" "$BIT_LOG_PREFIX"
-    chgrp $groupname "$BIT_SPOOL_PREFIX" "$BIT_SPOOL_PREFIX/cache" "$BIT_LOG_PREFIX"
-    chmod 755 "$BIT_SPOOL_PREFIX" "$BIT_SPOOL_PREFIX/cache" "$BIT_LOG_PREFIX"
+    mkdir -p "$BIT_SPOOL_PREFIX" "$BIT_CACHE_PREFIX" "$BIT_LOG_PREFIX"
+    chown $username "$BIT_SPOOL_PREFIX" "$BIT_CACHE_PREFIX" "$BIT_LOG_PREFIX"
+    chgrp $groupname "$BIT_SPOOL_PREFIX" "$BIT_CACHE_PREFIX" "$BIT_LOG_PREFIX"
+    chmod 755 "$BIT_SPOOL_PREFIX" "$BIT_CACHE_PREFIX" "$BIT_LOG_PREFIX"
 }
 
 ###############################################################################
@@ -53,7 +56,7 @@ case $action in
 	configure)							# when new
         setPerms
 		oldVersion=$2
-        "$BIT_BIN_PREFIX/linkup" Install /
+#       "$BIT_BIN_PREFIX/linkup" Install
         appman -v install
         if [ "$APPWEB_DONT_START" != 1 ] ; then
             appman enable

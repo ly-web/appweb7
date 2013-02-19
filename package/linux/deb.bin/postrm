@@ -7,7 +7,7 @@
 
 BIT_PRODUCT=${settings.product}
 BIT_NAME="${settings.title}"
-BIT_ETC_PREFIX="${prefixes.config}"
+BIT_ETC_PREFIX="${prefixes.etc}"
 BIT_LIB_PREFIX="${prefixes.lib}"
 
 remove() {
@@ -20,9 +20,9 @@ remove() {
 		cd $cdir 
 		rmdir $BIT_ETC_PREFIX 2>/dev/null || true
 	fi
-	if [ -x $BIT_LIB_PREFIX ] ; then
-		cd $BIT_LIB_PREFIX
-		removeIntermediateFiles access.log error.log '*.log.old' .dummy $BIT_PRODUCT.conf .*.log make.log
+	if [ -x $BIT_CACHE_PREFIX ] ; then
+		cd $BIT_CACHE_PREFIX
+		removeIntermediateFiles access.log error.log '*.log.old' .dummy $BIT_PRODUCT.conf .*.log make.log *.mod
 		cleanDir
 		cd $cdir 
 		rmdir $BIT_LIB_PREFIX 2>/dev/null || true

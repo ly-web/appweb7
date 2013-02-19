@@ -1,23 +1,10 @@
 #!/bin/bash
 #
-#   install: Installation script
+#   install: Installation script for Appweb
 #
 #   Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 #
-#   Usage: install [configFile]
-#
 ################################################################################
-#
-#   The configFile is of the format:
-#       FMT=[rpm|deb|tar]               # Package format to use
-#       installbin=[YN]                 # Install binary package
-#       runDaemon=[YN]                  # Run the program as a daemon
-#       httpPort=portNumber             # Http port to listen on
-#       sslPort=portNumber              # SSL port to listen on
-#       username=username               # User account for appweb
-#       groupname=groupname             # Group account for appweb
-#       hostname=groupname              # Serving host
-#
 
 HOME=`pwd`
 FMT=
@@ -34,14 +21,24 @@ OS="${platform.os}"
 CPU="${platform.arch}"
 DIST="${platform.dist}"
 
+ROOT_PREFIX="${prefixes.root}"
+BASE_PREFIX="${prefixes.base}"
+STATE_PREFIX="${prefixes.state}"
+APP_PREFIX="${prefixes.app}"
+VAPP_PREFIX="${prefixes.vapp}"
 BIN_PREFIX="${prefixes.bin}"
-CFG_PREFIX="${prefixes.config}"
+SBIN_PREFIX="${prefixes.sbin}"
+ETC_PREFIX="${prefixes.etc}"
 INC_PREFIX="${prefixes.inc}"
-LOG_PREFIX="${prefixes.log}"
-VER_PREFIX="${prefixes.productver}"
-PRD_PREFIX="${prefixes.product}"
-SPL_PREFIX="${prefixes.spool}"
+LIB_PREFIX="${prefixes.lib}"
+MAN_PREFIX="${prefixes.man}"
 WEB_PREFIX="${prefixes.web}"
+LOG_PREFIX="${prefixes.log}"
+SPL_PREFIX="${prefixes.spool}"
+CACHE_PREFIX="${prefixes.cache}"
+
+ABIN="${VAPP_PREFIX}/bin"
+AINC="${VAPP_PREFIX}/in"
 
 installbin=Y
 runDaemon=Y
@@ -252,14 +249,14 @@ ask() {
 saveSetup() {
     local firstChar
 
-    mkdir -p "$VER_PREFIX"
-    echo -e "FMT=$FMT\nbinDir=\"${VER_PREFIX}\"\ninstallbin=$installbin\nrunDaemon=$runDaemon\nhttpPort=$HTTP_PORT\nsslPort=$SSL_PORT\nusername=$username\ngroupname=$groupname\nhostname=$HOSTNAME" >"$VER_PREFIX/install.conf"
+    mkdir -p "$VAPP_PREFIX"
+    echo -e "FMT=$FMT\nbinDir=\"${VAPP_PREFIX}\"\ninstallbin=$installbin\nrunDaemon=$runDaemon\nhttpPort=$HTTP_PORT\nsslPort=$SSL_PORT\nusername=$username\ngroupname=$groupname\nhostname=$HOSTNAME" >"$VAPP_PREFIX/install.conf"
 }
 
 
 removeOld() {
-    if [ -x /usr/lib/appweb/bin/uninstall ] ; then
-        appweb_HEADLESS=1 /usr/lib/appweb/bin/uninstall </dev/null 2>&1 >/dev/null
+    if [ -x "${ABIN}/uninstall" ] ; then
+        appweb_HEADLESS=1 "${ABIN}/uninstall" </dev/null >/dev/null 2>&1
     fi
 }
 
@@ -290,7 +287,7 @@ installFiles() {
                 cp -rp contents/* $target
 
                 cd contents >/dev/null
-                find . -type f >"$VER_PREFIX/files.log"
+                find . -type f >"$VAPP_PREFIX/files.log"
                 cd - >/dev/null
             fi
         fi
@@ -298,44 +295,46 @@ installFiles() {
 
     if [ -f /etc/redhat-release -a -x /usr/bin/chcon ] ; then 
         if sestatus | grep enabled >/dev/nulll ; then
-            for f in $BIN_PREFIX/*.so ; do
+            for f in $ABIN/*.so ; do
                 chcon /usr/bin/chcon -t texrel_shlib_t $f 2>&1 >/dev/null
             done
         fi
     fi
 
-    if [ "$OS" = "FREEBSD" ] ; then
-        LDCONFIG_OPT=-m
-    else
-        LDCONFIG_OPT=-n
-    fi
-    if which ldconfig >/dev/null 2>&1 ; then
-        ldconfig /usr/lib/lib${PRODUCT}.so.?.?.?
-        ldconfig $LDCONFIG_OPT /usr/lib/${PRODUCT}
-        ldconfig $LDCONFIG_OPT /usr/lib/${PRODUCT}/modules
-    fi
-    "$BIN_PREFIX/linkup" Install /
+#   if [ "$OS" = "FREEBSD" ] ; then
+#       LDCONFIG_OPT=-m
+#   else
+#       LDCONFIG_OPT=-n
+#   fi
+#   if which ldconfig >/dev/null 2>&1 ; then
+#       ldconfig /usr/lib/lib${PRODUCT}.so.?.?.?
+#       ldconfig $LDCONFIG_OPT /usr/lib/${PRODUCT}
+#       ldconfig $LDCONFIG_OPT /usr/lib/${PRODUCT}/modules
+#   fi
+
+#   "$ABIN/linkup" Install
 
     [ "$headless" != 1 ] && echo -e "\nSetting file permissions ..."
     if [ $OS = WIN ] ; then
         # Cygwin bug. Chmod fails to stick if not in current directory for paths with spaces
         home=`pwd` >/dev/null
-        mkdir -p "$SPL_PREFIX" "$SPL_PREFIX/cache" "$LOG_PREFIX"
-        chmod 777 "$SPL_PREFIX" "$CFG_PREFIX"
+        mkdir -p "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
+        chmod 777 "$SPL_PREFIX" "$ETC_PREFIX"
         chmod 755 "$WEB_PREFIX"
-        cd "$CFG_PREFIX" ; chmod -R g+r,o+r . ; find . -type d -exec chmod 755 "{}" \;
-        cd "$PRD_PREFIX" ; chmod -R g+r,o+r . ; find . -type d -exec chmod 755 "{}" \;
+        cd "$ETC_PREFIX" ; chmod -R g+r,o+r . ; find . -type d -exec chmod 755 "{}" \;
+        cd "$APP_PREFIX" ; chmod -R g+r,o+r . ; find . -type d -exec chmod 755 "{}" \;
         cd "$WEB_PREFIX" ; chmod -R g+r,o+r . ; find . -type d -exec chmod 755 "{}" \;
-        cd "$BIN_PREFIX" ; chmod 755 *.dll *.exe
-        cd "$SPL_PREFIX" ; chmod 777 . cache ; chown $username . cache
+        cd "$ABIN" ; chmod 755 *.dll *.exe
+        cd "$SPL_PREFIX" ; chmod 777 . ; chown $username .
+        cd "$CACHE_PREFIX" ; chmod 777 . ; chown $username .
         cd "$LOG_PREFIX" ; chmod 777 . ; chown $username .
-        cd "$CFG_PREFIX" ; chmod 777 . ; chown $username .
+        cd "$ETC_PREFIX" ; chmod 777 . ; chown $username .
         cd "${home}" >/dev/null
     else
-        mkdir -p "$SPL_PREFIX" "$SPL_PREFIX/cache" "$LOG_PREFIX"
-        chown $username "$SPL_PREFIX" "$SPL_PREFIX/cache" "$LOG_PREFIX"
-        chgrp $groupname "$SPL_PREFIX" "$SPL_PREFIX/cache" "$LOG_PREFIX"
-        chmod 755 "$SPL_PREFIX" "$SPL_PREFIX/cache" "$LOG_PREFIX"
+        mkdir -p "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
+        chown $username "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
+        chgrp $groupname "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
+        chmod 755 "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
     fi
     [ "$headless" != 1 ] && echo
 }
@@ -343,9 +342,9 @@ installFiles() {
 
 patchConfiguration() {
     if [ $OS = WIN ] ; then
-        echo "Documents web\nListen ${HTTP_PORT}\nset LOG_DIR log\nset CACHE_DIR cache" "${CFG_PREFIX}/install.conf"
+        echo -e "Documents web\nListen ${HTTP_PORT}\nset LOG_DIR log\nset CACHE_DIR cache" >"${ETC_PREFIX}/install.conf"
     else
-        echo "Documents ${WEB_PREFIX}\nListen ${HTTP_PORT}\nset LOG_DIR ${LOG_PREFIX}\nset CACHE_DIR ${SPL_PREFIX}/cache" "${CFG_PREFIX}/install.conf"
+        echo -e "Documents ${WEB_PREFIX}\nListen ${HTTP_PORT}\nset LOG_DIR ${LOG_PREFIX}\nset CACHE_DIR ${CACHE_PREFIX}" >"${ETC_PREFIX}/install.conf"
     fi
 }
 
@@ -387,7 +386,7 @@ if [ "$installbin" = "Y" ] ; then
     [ "$headless" != 1 ] && echo "Disable existing service"
     appman stop disable uninstall >/dev/null 2>&1
     if [ $OS = WIN ] ; then
-        "$BIN_PREFIX/appwebMonitor" --stop >/dev/null 2>&1
+        "$ABIN/appwebMonitor" --stop >/dev/null 2>&1
     fi
 fi
 removeOld
@@ -395,16 +394,24 @@ saveSetup
 installFiles $FMT
 
 if [ "$installbin" = "Y" ] ; then
-    "$BIN_PREFIX/appman" stop disable uninstall >/dev/null 2>&1
+    "$ABIN/appman" stop disable uninstall >/dev/null 2>&1
     patchConfiguration
-    "$BIN_PREFIX/appman" install
+    "$ABIN/appman" install
     if [ "$runDaemon" = "Y" ] ; then
-        "$BIN_PREFIX/appman" enable
-        "$BIN_PREFIX/appman" start
+        "$ABIN/appman" enable
+        "$ABIN/appman" start
     fi
 fi
 if [ $OS = WIN ] ; then
-    "$BIN_PREFIX/appwebMonitor" >/dev/null 2>&1 &
+    "$ABIN/appwebMonitor" >/dev/null 2>&1 &
+else
+    echo "Testing ${NAME} connectivity".
+    sleep 3
+    $ABIN/http -q 127.0.0.1:$HTTP_PORT/index.html >/dev/null 2>&1
+    if [ $? != 0 ] ; then
+        echo -e "\n${NAME} may not have successfully started. Check /var/log/syslog\n".
+        exit 255
+    fi
 fi
 if [ "$headless" != 1 ] ; then
     echo -e "$NAME installation successful."

@@ -7,28 +7,43 @@
 
 TASK=$1
 PRODUCT=appweb
-ROOT_DIR="${2%/}"
+
+ROOT_PREFIX="${prefixes.root}"
+BASE_PREFIX="${prefixes.base}"
+STATE_PREFIX="${prefixes.state}"
+APP_PREFIX="${prefixes.app}"
+VAPP_PREFIX="${prefixes.vapp}"
+
+BIN_PREFIX="${prefixes.bin}"
+SBIN_PREFIX="${prefixes.sbin}"
+ETC_PREFIX="${prefixes.etc}"
+INC_PREFIX="${prefixes.inc}"
+LIB_PREFIX="${prefixes.lib}"
+MAN_PREFIX="${prefixes.man}"
+WEB_PREFIX="${prefixes.web}"
+LOG_PREFIX="${prefixes.log}"
+SPL_PREFIX="${prefixes.spool}"
+CACHE_PREFIX="${prefixes.cache}"
+
+ABIN="${VAPP_PREFIX}/bin"
+AINC="${VAPP_PREFIX}/in"
+
 EXE=
-INC_DIR="${ROOT_DIR}/usr/include"
-MAN_DIR="${ROOT_DIR}/usr/share/man"
 PROGRAMS="appman appweb http auth esp"
-LIBRARIES="libmpr libappweb"
+LIBRARIES=""
 
-if [ -x "${ROOT_DIR}/usr/local/bin" ] ; then
-    BIN_DIR="${ROOT_DIR}/usr/local/bin"
-else 
-    BIN_DIR="${ROOT_DIR}/usr/bin"
+if [ ! -x "${BIN_PREFIX}" ] ; then
+    BIN_PREFIX="${ROOT_PREFIX}/usr/bin"
 fi
-LIB_DIR="${ROOT_DIR}/usr/lib"
 
-prefix="${ROOT_DIR}/usr/lib/${PRODUCT}"
+prefix="${ROOT_PREFIX}/usr/lib/${PRODUCT}"
 version=
 
 if [ "$TASK" = "Remove" ] ; then
     for name in $PROGRAMS ; do
-        rm -f "${BIN_DIR}/$name"
+        rm -f "${BIN_PREFIX}/$name"
     done
-    rm -rf  "${INC_DIR}/${PRODUCT}"
+    rm -rf  "${INC_PREFIX}/${PRODUCT}"
 else
     for v in `ls $prefix 2>/dev/null | egrep -v '[a-zA-Z@!_\-]' | sort -n -r`
     do
@@ -50,35 +65,35 @@ else
     man="${latest}/doc/man/man1"
     lib="${latest}/lib"
 
-    [ ! -x "${BIN_DIR}" ] && mkdir -p "${BIN_DIR}"
+    [ ! -x "${BIN_PREFIX}" ] && mkdir -p "${BIN_PREFIX}"
 
     home=`pwd`
     for name in $PROGRAMS ; do
         name=${name}${EXE}
-        rm -f "${BIN_DIR}/${name}"
+        rm -f "${BIN_PREFIX}/${name}"
         if [ -f "${bin}/${name}" ] ; then
-            ln -s "${bin}/${name}" "${BIN_DIR}/${name}"
+            ln -s "${bin}/${name}" "${BIN_PREFIX}/${name}"
         fi
     done
     for name in $LIBRARIES ; do
         name=${name}
-        rm -f "${LIB_DIR}/${name}*"
+        rm -f "${LIB_PREFIX}/${name}*"
         if [ -f "${lib}/${name}*" ] ; then
-            ln -s "${lib}/${name}*" "${LIB_DIR}/${name}"
+            ln -s "${lib}/${name}*" "${LIB_PREFIX}/${name}"
         fi  
     done
     if [ -d "${inc}" ] ; then
-        [ ! -x "${INC_DIR}" ] && mkdir -p "${INC_DIR}"
-        rm -rf  "${INC_DIR}/${PRODUCT}"
-        ln -s "${inc}" "${INC_DIR}/${PRODUCT}"
+        [ ! -x "${INC_PREFIX}" ] && mkdir -p "${INC_PREFIX}"
+        rm -rf  "${INC_PREFIX}/${PRODUCT}"
+        ln -s "${inc}" "${INC_PREFIX}/${PRODUCT}"
     fi
     if [ -d "${man}" ] ; then
-        [ ! -x "${MAN_DIR}" ] && mkdir -p "${MAN_DIR}/man1"
+        [ ! -x "${MAN_PREFIX}" ] && mkdir -p "${MAN_PREFIX}/man1"
         for f in ${man}/*.1.gz
         do
             name=`basename "$f"`
-            rm -f "${MAN_DIR}/man1/${name}"
-            ln -s "${f}" "${MAN_DIR}/man1/${name}"
+            rm -f "${MAN_PREFIX}/man1/${name}"
+            ln -s "${f}" "${MAN_PREFIX}/man1/${name}"
         done
     fi
 fi

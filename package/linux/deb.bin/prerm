@@ -7,7 +7,7 @@
 
 BIT_PRODUCT=${settings.product}
 BIT_NAME="${settings.title}"
-BIT_CFG_PREFIX="${prefixes.config}"
+BIT_ETC_PREFIX="${prefixes.etc}"
 
 ###############################################################################
 #
