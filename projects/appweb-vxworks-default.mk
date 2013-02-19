@@ -162,6 +162,7 @@ clean:
 	rm -rf $(CONFIG)/obj/log.o
 	rm -rf $(CONFIG)/obj/server.o
 	rm -rf $(CONFIG)/obj/edi.o
+	rm -rf $(CONFIG)/obj/esp.o
 	rm -rf $(CONFIG)/obj/espAbbrev.o
 	rm -rf $(CONFIG)/obj/espFramework.o
 	rm -rf $(CONFIG)/obj/espHandler.o
@@ -169,7 +170,6 @@ clean:
 	rm -rf $(CONFIG)/obj/espTemplate.o
 	rm -rf $(CONFIG)/obj/mdb.o
 	rm -rf $(CONFIG)/obj/sdb.o
-	rm -rf $(CONFIG)/obj/esp.o
 	rm -rf $(CONFIG)/obj/ejsLib.o
 	rm -rf $(CONFIG)/obj/ejs.o
 	rm -rf $(CONFIG)/obj/ejsc.o
@@ -190,13 +190,15 @@ clobber: clean
 	rm -fr ./$(CONFIG)
 
 $(CONFIG)/inc/mpr.h: 
-	rm -fr $(CONFIG)/inc/mpr.h
-	cp -r src/deps/mpr/mpr.h $(CONFIG)/inc/mpr.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/deps/mpr/mpr.h" "vxworks-x86-default/inc/mpr.h"
+
+$(CONFIG)/inc/bit.h: 
 
 $(CONFIG)/inc/bitos.h: \
     $(CONFIG)/inc/bit.h
-	rm -fr $(CONFIG)/inc/bitos.h
-	cp -r src/bitos.h $(CONFIG)/inc/bitos.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/bitos.h" "vxworks-x86-default/inc/bitos.h"
 
 $(CONFIG)/obj/mprLib.o: \
     src/deps/mpr/mprLib.c\
@@ -211,8 +213,8 @@ $(CONFIG)/bin/libmpr.out: \
 	$(CC) -r -o $(CONFIG)/bin/libmpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprLib.o 
 
 $(CONFIG)/inc/est.h: 
-	rm -fr $(CONFIG)/inc/est.h
-	cp -r src/deps/est/est.h $(CONFIG)/inc/est.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/deps/est/est.h" "vxworks-x86-default/inc/est.h"
 
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c\
@@ -261,13 +263,14 @@ $(CONFIG)/bin/makerom.out: \
     $(CONFIG)/obj/makerom.o
 	$(CC) -o $(CONFIG)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LDFLAGS)
 
-$(CONFIG)/bin/ca.crt: src/deps/est/ca.crt
-	rm -fr $(CONFIG)/bin/ca.crt
-	cp -r src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
+$(CONFIG)/bin/ca.crt: \
+    src/deps/est/ca.crt
+	mkdir -p "vxworks-x86-default/bin"
+	cp "src/deps/est/ca.crt" "vxworks-x86-default/bin/ca.crt"
 
 $(CONFIG)/inc/pcre.h: 
-	rm -fr $(CONFIG)/inc/pcre.h
-	cp -r src/deps/pcre/pcre.h $(CONFIG)/inc/pcre.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/deps/pcre/pcre.h" "vxworks-x86-default/inc/pcre.h"
 
 $(CONFIG)/obj/pcre.o: \
     src/deps/pcre/pcre.c\
@@ -281,8 +284,8 @@ $(CONFIG)/bin/libpcre.out: \
 	$(CC) -r -o $(CONFIG)/bin/libpcre.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o 
 
 $(CONFIG)/inc/http.h: 
-	rm -fr $(CONFIG)/inc/http.h
-	cp -r src/deps/http/http.h $(CONFIG)/inc/http.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/deps/http/http.h" "vxworks-x86-default/inc/http.h"
 
 $(CONFIG)/obj/httpLib.o: \
     src/deps/http/httpLib.c\
@@ -310,8 +313,8 @@ $(CONFIG)/bin/http.out: \
 	$(CC) -o $(CONFIG)/bin/http.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LDFLAGS)
 
 $(CONFIG)/inc/sqlite3.h: 
-	rm -fr $(CONFIG)/inc/sqlite3.h
-	cp -r src/deps/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/deps/sqlite/sqlite3.h" "vxworks-x86-default/inc/sqlite3.h"
 
 $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c\
@@ -336,12 +339,12 @@ $(CONFIG)/bin/sqlite.out: \
 	$(CC) -o $(CONFIG)/bin/sqlite.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LDFLAGS)
 
 $(CONFIG)/inc/appweb.h: 
-	rm -fr $(CONFIG)/inc/appweb.h
-	cp -r src/appweb.h $(CONFIG)/inc/appweb.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/appweb.h" "vxworks-x86-default/inc/appweb.h"
 
 $(CONFIG)/inc/customize.h: 
-	rm -fr $(CONFIG)/inc/customize.h
-	cp -r src/customize.h $(CONFIG)/inc/customize.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/customize.h" "vxworks-x86-default/inc/customize.h"
 
 $(CONFIG)/obj/config.o: \
     src/config.c\
@@ -397,20 +400,20 @@ $(CONFIG)/bin/libappweb.out: \
 	$(CC) -r -o $(CONFIG)/bin/libappweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o 
 
 $(CONFIG)/inc/edi.h: 
-	rm -fr $(CONFIG)/inc/edi.h
-	cp -r src/esp/edi.h $(CONFIG)/inc/edi.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/esp/edi.h" "vxworks-x86-default/inc/edi.h"
 
 $(CONFIG)/inc/esp-app.h: 
-	rm -fr $(CONFIG)/inc/esp-app.h
-	cp -r src/esp/esp-app.h $(CONFIG)/inc/esp-app.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/esp/esp-app.h" "vxworks-x86-default/inc/esp-app.h"
 
 $(CONFIG)/inc/esp.h: 
-	rm -fr $(CONFIG)/inc/esp.h
-	cp -r src/esp/esp.h $(CONFIG)/inc/esp.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/esp/esp.h" "vxworks-x86-default/inc/esp.h"
 
 $(CONFIG)/inc/mdb.h: 
-	rm -fr $(CONFIG)/inc/mdb.h
-	cp -r src/esp/mdb.h $(CONFIG)/inc/mdb.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/esp/mdb.h" "vxworks-x86-default/inc/mdb.h"
 
 $(CONFIG)/obj/edi.o: \
     src/esp/edi.c\
@@ -418,6 +421,12 @@ $(CONFIG)/obj/edi.o: \
     $(CONFIG)/inc/edi.h \
     $(CONFIG)/inc/pcre.h
 	$(CC) -c -o $(CONFIG)/obj/edi.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/edi.c
+
+$(CONFIG)/obj/esp.o: \
+    src/esp/esp.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/esp.h
+	$(CC) -c -o $(CONFIG)/obj/esp.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/esp.c
 
 $(CONFIG)/obj/espAbbrev.o: \
     src/esp/espAbbrev.c\
@@ -475,6 +484,7 @@ $(CONFIG)/bin/libmod_esp.out: \
     $(CONFIG)/inc/esp.h \
     $(CONFIG)/inc/mdb.h \
     $(CONFIG)/obj/edi.o \
+    $(CONFIG)/obj/esp.o \
     $(CONFIG)/obj/espAbbrev.o \
     $(CONFIG)/obj/espFramework.o \
     $(CONFIG)/obj/espHandler.o \
@@ -482,13 +492,7 @@ $(CONFIG)/bin/libmod_esp.out: \
     $(CONFIG)/obj/espTemplate.o \
     $(CONFIG)/obj/mdb.o \
     $(CONFIG)/obj/sdb.o
-	$(CC) -r -o $(CONFIG)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o 
-
-$(CONFIG)/obj/esp.o: \
-    src/esp/esp.c\
-    $(CONFIG)/inc/bit.h \
-    $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/esp.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/esp.c
+	$(CC) -r -o $(CONFIG)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o 
 
 $(CONFIG)/bin/esp.out: \
     $(CONFIG)/bin/libappweb.out \
@@ -503,33 +507,55 @@ $(CONFIG)/bin/esp.out: \
     $(CONFIG)/obj/sdb.o
 	$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LDFLAGS)
 
-$(CONFIG)/bin/esp.conf: src/esp/esp.conf
-	rm -fr $(CONFIG)/bin/esp.conf
-	cp -r src/esp/esp.conf $(CONFIG)/bin/esp.conf
+$(CONFIG)/bin/esp.conf: \
+    src/esp/esp.conf
+	mkdir -p "vxworks-x86-default/bin"
+	cp "src/esp/esp.conf" "vxworks-x86-default/bin/esp.conf"
 
-src/server/esp.conf: src/esp/esp.conf
-	rm -fr src/server/esp.conf
-	cp -r src/esp/esp.conf src/server/esp.conf
+src/server/esp.conf: \
+    src/esp/esp.conf
+	mkdir -p "src/server"
+	cp "src/esp/esp.conf" "src/server/esp.conf"
 
-$(CONFIG)/bin/esp-www: src/esp/www
-	rm -fr $(CONFIG)/bin/esp-www
-	cp -r src/esp/www $(CONFIG)/bin/esp-www
+$(CONFIG)/bin/esp-www: \
+    src/esp/esp-www
+	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www"
+	cp "src/esp/esp-www/app.conf" "vxworks-x86-default/bin/esp-www/esp-www/app.conf"
+	cp "src/esp/esp-www/appweb.conf" "vxworks-x86-default/bin/esp-www/esp-www/appweb.conf"
+	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files"
+	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files/layouts"
+	cp "src/esp/esp-www/files/layouts/default.esp" "vxworks-x86-default/bin/esp-www/esp-www/files/layouts/default.esp"
+	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files/static"
+	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files/static/images"
+	cp "src/esp/esp-www/files/static/images/banner.jpg" "vxworks-x86-default/bin/esp-www/esp-www/files/static/images/banner.jpg"
+	cp "src/esp/esp-www/files/static/images/favicon.ico" "vxworks-x86-default/bin/esp-www/esp-www/files/static/images/favicon.ico"
+	cp "src/esp/esp-www/files/static/images/splash.jpg" "vxworks-x86-default/bin/esp-www/esp-www/files/static/images/splash.jpg"
+	cp "src/esp/esp-www/files/static/index.esp" "vxworks-x86-default/bin/esp-www/esp-www/files/static/index.esp"
+	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files/static/js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "vxworks-x86-default/bin/esp-www/esp-www/files/static/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "vxworks-x86-default/bin/esp-www/esp-www/files/static/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "vxworks-x86-default/bin/esp-www/esp-www/files/static/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "vxworks-x86-default/bin/esp-www/esp-www/files/static/js/jquery.tablesorter.js"
+	cp "src/esp/esp-www/files/static/layout.css" "vxworks-x86-default/bin/esp-www/esp-www/files/static/layout.css"
+	mkdir -p "vxworks-x86-default/bin/esp-www/esp-www/files/static/themes"
+	cp "src/esp/esp-www/files/static/themes/default.css" "vxworks-x86-default/bin/esp-www/esp-www/files/static/themes/default.css"
 
-$(CONFIG)/bin/esp-appweb.conf: src/esp/esp-appweb.conf
-	rm -fr $(CONFIG)/bin/esp-appweb.conf
-	cp -r src/esp/esp-appweb.conf $(CONFIG)/bin/esp-appweb.conf
+$(CONFIG)/bin/esp-appweb.conf: \
+    src/esp/esp-appweb.conf
+	mkdir -p "vxworks-x86-default/bin"
+	cp "src/esp/esp-appweb.conf" "vxworks-x86-default/bin/esp-appweb.conf"
 
 $(CONFIG)/inc/ejs.h: 
-	rm -fr $(CONFIG)/inc/ejs.h
-	cp -r src/deps/ejs/ejs.h $(CONFIG)/inc/ejs.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/deps/ejs/ejs.h" "vxworks-x86-default/inc/ejs.h"
 
 $(CONFIG)/inc/ejs.slots.h: 
-	rm -fr $(CONFIG)/inc/ejs.slots.h
-	cp -r src/deps/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/deps/ejs/ejs.slots.h" "vxworks-x86-default/inc/ejs.slots.h"
 
 $(CONFIG)/inc/ejsByteGoto.h: 
-	rm -fr $(CONFIG)/inc/ejsByteGoto.h
-	cp -r src/deps/ejs/ejsByteGoto.h $(CONFIG)/inc/ejsByteGoto.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "src/deps/ejs/ejsByteGoto.h" "vxworks-x86-default/inc/ejsByteGoto.h"
 
 $(CONFIG)/obj/ejsLib.o: \
     src/deps/ejs/ejsLib.c\
@@ -669,8 +695,8 @@ src/server/cache:
 	cd src/server; mkdir -p cache ; cd ../..
 
 $(CONFIG)/inc/testAppweb.h: 
-	rm -fr $(CONFIG)/inc/testAppweb.h
-	cp -r test/testAppweb.h $(CONFIG)/inc/testAppweb.h
+	mkdir -p "vxworks-x86-default/inc"
+	cp "test/testAppweb.h" "vxworks-x86-default/inc/testAppweb.h"
 
 $(CONFIG)/obj/testAppweb.o: \
     test/testAppweb.c\
@@ -714,26 +740,18 @@ test/cgi-bin/cgiProgram.out: $(CONFIG)/bin/cgiProgram.out
 	cd test; chmod +x cgi-bin/* web/cgiProgram.cgi ; cd ..
 
 test/web/js: 
-	cd test; cp -r ../src/esp/www/files/static/js 'web/js' ; cd ..
+	cd test; cp -r ../src/esp/esp-www/files/static/js 'web/js' ; cd ..
 
 version: 
 	@echo 4.3.0-0
 
-stop: 
-	
-
-installBinary: stop
-	
+installBinary: 
 
 
-start: 
+install: installBinary
 	
 
-install: stop installBinary start
-	
-
-uninstall: stop
-	
+uninstall: 
 
 
 genslink: 

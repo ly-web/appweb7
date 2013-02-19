@@ -8,7 +8,7 @@
 
 /* Settings */
 #ifndef BIT_BIT
-    #define BIT_BIT "0.8.1"
+    #define BIT_BIT "0.8.2"
 #endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
@@ -343,43 +343,4 @@
 #endif
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1
-#endif
-#ifndef BIT_PACK_CGI_PATH
-    #define BIT_PACK_CGI_PATH "/Users/mob/git/appweb/src/modules/cgiHandler.c"
-#endif
-#ifndef BIT_PACK_COMPILER_PATH
-    #define BIT_PACK_COMPILER_PATH "/usr/bin/gcc"
-#endif
-#ifndef BIT_PACK_DIR_PATH
-    #define BIT_PACK_DIR_PATH "/Users/mob/git/appweb/src/dirHandler.c"
-#endif
-#ifndef BIT_PACK_EJSCRIPT_PATH
-    #define BIT_PACK_EJSCRIPT_PATH "/Users/mob/git/appweb/src/deps/ejs"
-#endif
-#ifndef BIT_PACK_ESP_PATH
-    #define BIT_PACK_ESP_PATH "/Users/mob/git/appweb/src/esp/espHandler.c"
-#endif
-#ifndef BIT_PACK_EST_PATH
-    #define BIT_PACK_EST_PATH "/Users/mob/git/appweb/src/deps/est"
-#endif
-#ifndef BIT_PACK_HTTP_PATH
-    #define BIT_PACK_HTTP_PATH "${BIN}/http"
-#endif
-#ifndef BIT_PACK_LIB_PATH
-    #define BIT_PACK_LIB_PATH "/usr/bin/ar"
-#endif
-#ifndef BIT_PACK_LINK_PATH
-    #define BIT_PACK_LINK_PATH "/usr/bin/ld"
-#endif
-#ifndef BIT_PACK_PCRE_PATH
-    #define BIT_PACK_PCRE_PATH "/Users/mob/git/appweb/src/deps/pcre"
-#endif
-#ifndef BIT_PACK_SQLITE_PATH
-    #define BIT_PACK_SQLITE_PATH "/Users/mob/git/appweb/src/deps/sqlite"
-#endif
-#ifndef BIT_PACK_UTEST_PATH
-    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
-#endif
-#ifndef BIT_PACK_ZIP_PATH
-    #define BIT_PACK_ZIP_PATH "/usr/bin/zip"
 #endif

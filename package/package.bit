@@ -1,0 +1,95 @@
+/*
+    package.bit
+ */
+
+Bit.load({
+    blend: [
+        'manifest.bit'
+    ],
+
+    targets: {
+        start: {
+            enable: "bit.platform.like == 'posix' || bit.platform.like == 'windows'",
+            home: '${TOP}',
+            action: "startService()",
+            depends: ['compile', 'stop'],
+            generate: "${BIN}/appman install enable start",
+        },
+
+        stop: {
+            enable: "bit.platform.like == 'posix' || bit.platform.like == 'windows'",
+            home: '${TOP}',
+            action: "stopService()",
+            depends: ['compile'],
+            generate: "@${BIN}/appman stop disable uninstall >/dev/null 2>&1 ; true"
+        },
+
+        _deployService: {
+            enable: false,
+            _enable: "bit.platform.like == 'posix' || bit.platform.like == 'windows'",
+            home: '${TOP}',
+            action: "packageDeployService()",
+            depends: ['compile'],
+            'generate-macosx': "
+                install -m 755 -d /Library/LaunchDaemons
+                install -m 644 -o root -g wheel package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
+            ",
+            'generate-linux': "install -m 755 -o root -g bin package/linux/appweb.init /etc/init.d/appweb",
+        },
+
+        _deploy: {
+            enable: false,
+            home: '${TOP}',
+            action: "packageDeploy(bit.manifest)",
+            depends: ['compile'],
+            'generate-make': "
+                for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; done
+                mkdir -p '$(BIT_ETC_PREFIX)' '$(BIT_VAPP_PREFIX)/bin' '$(BIT_INC_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_VAPP_PREFIX)/man/man1'
+                cp ${INC}/*.h $(BIT_INC_PREFIX)
+                cp src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_ETC_PREFIX)
+                account=`cat /etc/passwd | grep www | sed -e 's/:.*//'` ; \\
+                install -d -m 755 -g $$account -o $$account '$(BIT_SPOOL_PREFIX)' '$(BIT_LOG_PREFIX)'
+                cp -R -P ${BIN}/* $(BIT_VAPP_PREFIX)/bin
+                cp -R -P src/server/web/* $(BIT_WEB_PREFIX)
+                rm -f '$(BIT_APP_PREFIX)/latest'
+                ln -s $(VERSION) $(BIT_APP_PREFIX)/latest
+                for n in appman appweb authpass esp; do \\
+                    rm -f $(BIT_BIN_PREFIX)/$$n ; \\
+                    ln -s $(BIT_VAPP_PREFIX)/bin/$$n $(BIT_BIN_PREFIX)/$$n ; \\
+                done
+                for n in appman.1 appweb.1 appwebMonitor.1 authpass.1 esp.1 http.1 makerom.1 ; do \\
+                    rm -f $(BIT_VAPP_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/man1/$$n ; \\
+                    cp doc/man/$$n $(BIT_VAPP_PREFIX)/man/man1 ; \\
+                    ln -s $(BIT_VAPP_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/man1/$$n ; \\
+                done
+                echo 'Documents \"$(BIT_WEB_PREFIX)\"\\nListen 80\"\\nset LOG_DIR \"$(BIT_LOG_PREFIX)\"\\nset CACHE_DIR \"$(BIT_SPOOL_PREFIX)/cache\"' >$(BIT_ETC_PREFIX)/install.conf
+            ",
+            'generate-nmake': "
+                xcopy /I /S /Y /Q $(CONFIG)\\bin \"$(BIT_VAPP_PREFIX)\\bin\"
+                del /Q \"$(BIT_VAPP_PREFIX)\\bin\\*.pdb\"
+                del /Q \"$(BIT_VAPP_PREFIX)\\bin\\*.exp\"
+                del /Q \"$(BIT_VAPP_PREFIX)\\bin\\*.lib\"
+                copy src/server/appweb.conf src/server/esp.conf src/server/install.conf src/server/mine.types \"$(BIT_APP_PREFIX)\"
+                xcopy /I /S /Y /Q src/server/web \"$(BIT_WEB_PREFIX)\"
+                echo 'Documents \"$(BIT_WEB_PREFIX)\"\\nListen 80\"\\nset LOG_DIR \"$(BIT_LOG_PREFIX)\"\\nset CACHE_DIR \"$(BIT_SPOOL_PREFIX)/cache\"' >$(BIT_ETC_PREFIX)/install.conf
+            ",
+        },
+
+        _uninstall: {
+            enable: false,
+            _enable: "bit.platform.like == 'posix' || bit.platform.like == 'windows'",
+            home: '${TOP}',
+            action: "uninstallBinary()"
+            depends: ['compile', 'stop']
+            'generate-make': "
+                for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; done
+                for n in $(BIT_VAPP_PREFIX)/man/man1/*.1; do \\
+                    base=`basename $$n` ; \\
+                    rm -f $(BIT_MAN_PREFIX)/man1/$$base ; \\
+                done
+                rm -fr '$(BIT_ETC_PREFIX)' '$(BIT_APP_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_LOG_PREFIX)' '$(BIT_SPOOL_PREFIX)'
+            ",
+            'generate-nmake': "if exist \"$(BIT_APP_PREFIX)\" rd /Q /S \"$(BIT_APP_PREFIX)\"",
+        },
+    },
+})

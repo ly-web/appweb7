@@ -245,22 +245,23 @@
 		AB04609AAB04738200000082 /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000083 /* log.c */; };
 		AB04609AAB04738200000084 /* server.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000085 /* server.c */; };
 		AB04609AAB04738200000086 /* edi.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000087 /* edi.c */; };
-		AB04609AAB04738200000088 /* espAbbrev.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000089 /* espAbbrev.c */; };
-		AB04609AAB0473820000008A /* espFramework.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008B /* espFramework.c */; };
-		AB04609AAB0473820000008C /* espHandler.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008D /* espHandler.c */; };
-		AB04609AAB0473820000008E /* espHtml.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008F /* espHtml.c */; };
-		AB04609AAB04738200000090 /* espTemplate.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000091 /* espTemplate.c */; };
-		AB04609AAB04738200000092 /* mdb.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000093 /* mdb.c */; };
-		AB04609AAB04738200000094 /* sdb.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000095 /* sdb.c */; };
+		AB04609AAB04738200000088 /* esp.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000089 /* esp.c */; };
+		AB04609AAB0473820000008A /* espAbbrev.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008B /* espAbbrev.c */; };
+		AB04609AAB0473820000008C /* espFramework.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008D /* espFramework.c */; };
+		AB04609AAB0473820000008E /* espHandler.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008F /* espHandler.c */; };
+		AB04609AAB04738200000090 /* espHtml.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000091 /* espHtml.c */; };
+		AB04609AAB04738200000092 /* espTemplate.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000093 /* espTemplate.c */; };
+		AB04609AAB04738200000094 /* mdb.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000095 /* mdb.c */; };
+		AB04609AAB04738200000096 /* sdb.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000097 /* sdb.c */; };
 		AB04609AAB04738200000086 /* edi.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000087 /* edi.c */; };
-		AB04609AAB04738200000096 /* esp.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000097 /* esp.c */; };
-		AB04609AAB04738200000088 /* espAbbrev.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000089 /* espAbbrev.c */; };
-		AB04609AAB0473820000008A /* espFramework.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008B /* espFramework.c */; };
-		AB04609AAB0473820000008C /* espHandler.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008D /* espHandler.c */; };
-		AB04609AAB0473820000008E /* espHtml.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008F /* espHtml.c */; };
-		AB04609AAB04738200000090 /* espTemplate.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000091 /* espTemplate.c */; };
-		AB04609AAB04738200000092 /* mdb.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000093 /* mdb.c */; };
-		AB04609AAB04738200000094 /* sdb.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000095 /* sdb.c */; };
+		AB04609AAB04738200000088 /* esp.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000089 /* esp.c */; };
+		AB04609AAB0473820000008A /* espAbbrev.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008B /* espAbbrev.c */; };
+		AB04609AAB0473820000008C /* espFramework.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008D /* espFramework.c */; };
+		AB04609AAB0473820000008E /* espHandler.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000008F /* espHandler.c */; };
+		AB04609AAB04738200000090 /* espHtml.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000091 /* espHtml.c */; };
+		AB04609AAB04738200000092 /* espTemplate.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000093 /* espTemplate.c */; };
+		AB04609AAB04738200000094 /* mdb.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000095 /* mdb.c */; };
+		AB04609AAB04738200000096 /* sdb.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000097 /* sdb.c */; };
 		AB04609AAB04738200000098 /* ejsLib.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB04738200000099 /* ejsLib.c */; };
 		AB04609AAB0473820000009A /* ejs.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000009B /* ejs.c */; };
 		AB04609AAB0473820000009C /* ejsc.c in Sources */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000009D /* ejsc.c */; };
@@ -1155,25 +1156,26 @@
 		AB04609AAB047382000000C3 /* libappweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libappweb.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB04609AAB04738200000087 /* edi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = edi.c; path = src/esp/edi.c; sourceTree = "<group>"; };
 		AB04609AAB04738200000198 /* edi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = edi.h; path = macosx-x64-default/inc/edi.h; sourceTree = "<group>"; };
-		AB04609AAB04738200000089 /* espAbbrev.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espAbbrev.c; path = src/esp/espAbbrev.c; sourceTree = "<group>"; };
+		AB04609AAB04738200000089 /* esp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esp.c; path = src/esp/esp.c; sourceTree = "<group>"; };
 		AB04609AAB04738200000199 /* esp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = esp.h; path = macosx-x64-default/inc/esp.h; sourceTree = "<group>"; };
-		AB04609AAB0473820000008B /* espFramework.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espFramework.c; path = src/esp/espFramework.c; sourceTree = "<group>"; };
-		AB04609AAB0473820000008D /* espHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espHandler.c; path = src/esp/espHandler.c; sourceTree = "<group>"; };
-		AB04609AAB0473820000008F /* espHtml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espHtml.c; path = src/esp/espHtml.c; sourceTree = "<group>"; };
-		AB04609AAB04738200000091 /* espTemplate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espTemplate.c; path = src/esp/espTemplate.c; sourceTree = "<group>"; };
-		AB04609AAB04738200000093 /* mdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mdb.c; path = src/esp/mdb.c; sourceTree = "<group>"; };
+		AB04609AAB0473820000008B /* espAbbrev.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espAbbrev.c; path = src/esp/espAbbrev.c; sourceTree = "<group>"; };
+		AB04609AAB0473820000008D /* espFramework.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espFramework.c; path = src/esp/espFramework.c; sourceTree = "<group>"; };
+		AB04609AAB0473820000008F /* espHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espHandler.c; path = src/esp/espHandler.c; sourceTree = "<group>"; };
+		AB04609AAB04738200000091 /* espHtml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espHtml.c; path = src/esp/espHtml.c; sourceTree = "<group>"; };
+		AB04609AAB04738200000093 /* espTemplate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espTemplate.c; path = src/esp/espTemplate.c; sourceTree = "<group>"; };
+		AB04609AAB04738200000095 /* mdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mdb.c; path = src/esp/mdb.c; sourceTree = "<group>"; };
 		AB04609AAB0473820000019A /* mdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mdb.h; path = macosx-x64-default/inc/mdb.h; sourceTree = "<group>"; };
-		AB04609AAB04738200000095 /* sdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sdb.c; path = src/esp/sdb.c; sourceTree = "<group>"; };
+		AB04609AAB04738200000097 /* sdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sdb.c; path = src/esp/sdb.c; sourceTree = "<group>"; };
 		AB04609AAB047382000000ED /* libmod_esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_esp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB04609AAB04738200000087 /* edi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = edi.c; path = src/esp/edi.c; sourceTree = "<group>"; };
-		AB04609AAB04738200000097 /* esp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esp.c; path = src/esp/esp.c; sourceTree = "<group>"; };
-		AB04609AAB04738200000089 /* espAbbrev.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espAbbrev.c; path = src/esp/espAbbrev.c; sourceTree = "<group>"; };
-		AB04609AAB0473820000008B /* espFramework.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espFramework.c; path = src/esp/espFramework.c; sourceTree = "<group>"; };
-		AB04609AAB0473820000008D /* espHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espHandler.c; path = src/esp/espHandler.c; sourceTree = "<group>"; };
-		AB04609AAB0473820000008F /* espHtml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espHtml.c; path = src/esp/espHtml.c; sourceTree = "<group>"; };
-		AB04609AAB04738200000091 /* espTemplate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espTemplate.c; path = src/esp/espTemplate.c; sourceTree = "<group>"; };
-		AB04609AAB04738200000093 /* mdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mdb.c; path = src/esp/mdb.c; sourceTree = "<group>"; };
-		AB04609AAB04738200000095 /* sdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sdb.c; path = src/esp/sdb.c; sourceTree = "<group>"; };
+		AB04609AAB04738200000089 /* esp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esp.c; path = src/esp/esp.c; sourceTree = "<group>"; };
+		AB04609AAB0473820000008B /* espAbbrev.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espAbbrev.c; path = src/esp/espAbbrev.c; sourceTree = "<group>"; };
+		AB04609AAB0473820000008D /* espFramework.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espFramework.c; path = src/esp/espFramework.c; sourceTree = "<group>"; };
+		AB04609AAB0473820000008F /* espHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espHandler.c; path = src/esp/espHandler.c; sourceTree = "<group>"; };
+		AB04609AAB04738200000091 /* espHtml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espHtml.c; path = src/esp/espHtml.c; sourceTree = "<group>"; };
+		AB04609AAB04738200000093 /* espTemplate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espTemplate.c; path = src/esp/espTemplate.c; sourceTree = "<group>"; };
+		AB04609AAB04738200000095 /* mdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mdb.c; path = src/esp/mdb.c; sourceTree = "<group>"; };
+		AB04609AAB04738200000097 /* sdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sdb.c; path = src/esp/sdb.c; sourceTree = "<group>"; };
 		AB04609AAB0473820000019B /* esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = esp; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB04609AAB04738200000099 /* ejsLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ejsLib.c; path = src/deps/ejs/ejsLib.c; sourceTree = "<group>"; };
 		AB04609AAB0473820000019C /* ejs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ejs.h; path = macosx-x64-default/inc/ejs.h; sourceTree = "<group>"; };
@@ -1504,7 +1506,6 @@
 				AB04609AAB0473820000018A /* bit.h */,
 				AB04609AAB0473820000018B /* mpr.h */,
 				AB04609AAB0473820000018D /* est.h */,
-				AB04609AAB0473820000018C /* bitos.h */,
 				AB04609AAB04738200000069 /* mprSsl.c */,
 			);
             name = "libmprssl";
@@ -1631,13 +1632,14 @@
 				AB04609AAB04738200000196 /* appweb.h */,
 				AB04609AAB0473820000019A /* mdb.h */,
 				AB04609AAB04738200000087 /* edi.c */,
-				AB04609AAB04738200000089 /* espAbbrev.c */,
-				AB04609AAB0473820000008B /* espFramework.c */,
-				AB04609AAB0473820000008D /* espHandler.c */,
-				AB04609AAB0473820000008F /* espHtml.c */,
-				AB04609AAB04738200000091 /* espTemplate.c */,
-				AB04609AAB04738200000093 /* mdb.c */,
-				AB04609AAB04738200000095 /* sdb.c */,
+				AB04609AAB04738200000089 /* esp.c */,
+				AB04609AAB0473820000008B /* espAbbrev.c */,
+				AB04609AAB0473820000008D /* espFramework.c */,
+				AB04609AAB0473820000008F /* espHandler.c */,
+				AB04609AAB04738200000091 /* espHtml.c */,
+				AB04609AAB04738200000093 /* espTemplate.c */,
+				AB04609AAB04738200000095 /* mdb.c */,
+				AB04609AAB04738200000097 /* sdb.c */,
 			);
             name = "libmod_esp";
             path = ..;
@@ -1653,14 +1655,14 @@
 				AB04609AAB04738200000196 /* appweb.h */,
 				AB04609AAB0473820000019A /* mdb.h */,
 				AB04609AAB04738200000087 /* edi.c */,
-				AB04609AAB04738200000097 /* esp.c */,
-				AB04609AAB04738200000089 /* espAbbrev.c */,
-				AB04609AAB0473820000008B /* espFramework.c */,
-				AB04609AAB0473820000008D /* espHandler.c */,
-				AB04609AAB0473820000008F /* espHtml.c */,
-				AB04609AAB04738200000091 /* espTemplate.c */,
-				AB04609AAB04738200000093 /* mdb.c */,
-				AB04609AAB04738200000095 /* sdb.c */,
+				AB04609AAB04738200000089 /* esp.c */,
+				AB04609AAB0473820000008B /* espAbbrev.c */,
+				AB04609AAB0473820000008D /* espFramework.c */,
+				AB04609AAB0473820000008F /* espHandler.c */,
+				AB04609AAB04738200000091 /* espHtml.c */,
+				AB04609AAB04738200000093 /* espTemplate.c */,
+				AB04609AAB04738200000095 /* mdb.c */,
+				AB04609AAB04738200000097 /* sdb.c */,
 			);
             name = "esp";
             path = ..;
@@ -2336,7 +2338,7 @@ cp -r esp.conf ../server/esp.conf
 			files = (
 			);
 			inputPaths = (
-../src/esp/www
+../src/esp/esp-www
 			);
 			outputPaths = (
 ../macosx-x64-default/bin/esp-www
@@ -2346,7 +2348,7 @@ cp -r esp.conf ../server/esp.conf
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/esp
 rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r www ../${OUT_DIR}/bin/esp-www
+cp -r esp-www ../${OUT_DIR}/bin/esp-www
 ";
 		};
 		AB04609AAB04738200000017 /* ShellScript for esp-appweb.conf */ = {
@@ -2510,7 +2512,7 @@ chmod +x cgi-bin/* web/cgiProgram.cgi";
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../test
-cp -r ../src/esp/www/files/static/js 'web/js'";
+cp -r ../src/esp/esp-www/files/static/js 'web/js'";
 		};
 		AB04609AAB04738200000065 /* ShellScript for Prep */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2750,13 +2752,14 @@ fi";
 			buildActionMask = 2147483647;
 			files = (
 				AB04609AAB04738200000086 /* edi.c in Sources */,
-				AB04609AAB04738200000088 /* espAbbrev.c in Sources */,
-				AB04609AAB0473820000008A /* espFramework.c in Sources */,
-				AB04609AAB0473820000008C /* espHandler.c in Sources */,
-				AB04609AAB0473820000008E /* espHtml.c in Sources */,
-				AB04609AAB04738200000090 /* espTemplate.c in Sources */,
-				AB04609AAB04738200000092 /* mdb.c in Sources */,
-				AB04609AAB04738200000094 /* sdb.c in Sources */,
+				AB04609AAB04738200000088 /* esp.c in Sources */,
+				AB04609AAB0473820000008A /* espAbbrev.c in Sources */,
+				AB04609AAB0473820000008C /* espFramework.c in Sources */,
+				AB04609AAB0473820000008E /* espHandler.c in Sources */,
+				AB04609AAB04738200000090 /* espHtml.c in Sources */,
+				AB04609AAB04738200000092 /* espTemplate.c in Sources */,
+				AB04609AAB04738200000094 /* mdb.c in Sources */,
+				AB04609AAB04738200000096 /* sdb.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2765,14 +2768,14 @@ fi";
 			buildActionMask = 2147483647;
 			files = (
 				AB04609AAB04738200000086 /* edi.c in Sources */,
-				AB04609AAB04738200000096 /* esp.c in Sources */,
-				AB04609AAB04738200000088 /* espAbbrev.c in Sources */,
-				AB04609AAB0473820000008A /* espFramework.c in Sources */,
-				AB04609AAB0473820000008C /* espHandler.c in Sources */,
-				AB04609AAB0473820000008E /* espHtml.c in Sources */,
-				AB04609AAB04738200000090 /* espTemplate.c in Sources */,
-				AB04609AAB04738200000092 /* mdb.c in Sources */,
-				AB04609AAB04738200000094 /* sdb.c in Sources */,
+				AB04609AAB04738200000088 /* esp.c in Sources */,
+				AB04609AAB0473820000008A /* espAbbrev.c in Sources */,
+				AB04609AAB0473820000008C /* espFramework.c in Sources */,
+				AB04609AAB0473820000008E /* espHandler.c in Sources */,
+				AB04609AAB04738200000090 /* espHtml.c in Sources */,
+				AB04609AAB04738200000092 /* espTemplate.c in Sources */,
+				AB04609AAB04738200000094 /* mdb.c in Sources */,
+				AB04609AAB04738200000096 /* sdb.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

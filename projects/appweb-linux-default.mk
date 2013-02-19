@@ -186,15 +186,15 @@ clobber: clean
 	rm -fr ./$(CONFIG)
 
 $(CONFIG)/inc/mpr.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/deps/mpr/mpr.h" "/Users/mob/git/appweb/linux-x86-default/inc/mpr.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/deps/mpr/mpr.h" "linux-x86-default/inc/mpr.h"
 
 $(CONFIG)/inc/bit.h: 
 
 $(CONFIG)/inc/bitos.h: \
     $(CONFIG)/inc/bit.h
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/bitos.h" "/Users/mob/git/appweb/linux-x86-default/inc/bitos.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/bitos.h" "linux-x86-default/inc/bitos.h"
 
 $(CONFIG)/obj/mprLib.o: \
     src/deps/mpr/mprLib.c\
@@ -209,8 +209,8 @@ $(CONFIG)/bin/libmpr.so: \
 	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprLib.o $(LIBS)
 
 $(CONFIG)/inc/est.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/deps/est/est.h" "/Users/mob/git/appweb/linux-x86-default/inc/est.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/deps/est/est.h" "linux-x86-default/inc/est.h"
 
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c\
@@ -261,12 +261,12 @@ $(CONFIG)/bin/makerom: \
 
 $(CONFIG)/bin/ca.crt: \
     src/deps/est/ca.crt
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin"
-	cp "src/deps/est/ca.crt" "/Users/mob/git/appweb/linux-x86-default/bin/ca.crt"
+	mkdir -p "linux-x86-default/bin"
+	cp "src/deps/est/ca.crt" "linux-x86-default/bin/ca.crt"
 
 $(CONFIG)/inc/pcre.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/deps/pcre/pcre.h" "/Users/mob/git/appweb/linux-x86-default/inc/pcre.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/deps/pcre/pcre.h" "linux-x86-default/inc/pcre.h"
 
 $(CONFIG)/obj/pcre.o: \
     src/deps/pcre/pcre.c\
@@ -280,8 +280,8 @@ $(CONFIG)/bin/libpcre.so: \
 	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o $(LIBS)
 
 $(CONFIG)/inc/http.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/deps/http/http.h" "/Users/mob/git/appweb/linux-x86-default/inc/http.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/deps/http/http.h" "linux-x86-default/inc/http.h"
 
 $(CONFIG)/obj/httpLib.o: \
     src/deps/http/httpLib.c\
@@ -309,8 +309,8 @@ $(CONFIG)/bin/http: \
 	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr -lhttp -lpthread -lm -lrt -ldl -lpcre -lmpr $(LDFLAGS)
 
 $(CONFIG)/inc/sqlite3.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/deps/sqlite/sqlite3.h" "/Users/mob/git/appweb/linux-x86-default/inc/sqlite3.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/deps/sqlite/sqlite3.h" "linux-x86-default/inc/sqlite3.h"
 
 $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c\
@@ -335,12 +335,12 @@ $(CONFIG)/bin/sqlite: \
 	$(CC) -o $(CONFIG)/bin/sqlite $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o -lsqlite3 $(LIBS) -lsqlite3 -lpthread -lm -lrt -ldl $(LDFLAGS)
 
 $(CONFIG)/inc/appweb.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/appweb.h" "/Users/mob/git/appweb/linux-x86-default/inc/appweb.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/appweb.h" "linux-x86-default/inc/appweb.h"
 
 $(CONFIG)/inc/customize.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/customize.h" "/Users/mob/git/appweb/linux-x86-default/inc/customize.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/customize.h" "linux-x86-default/inc/customize.h"
 
 $(CONFIG)/obj/config.o: \
     src/config.c\
@@ -396,20 +396,20 @@ $(CONFIG)/bin/libappweb.so: \
 	$(CC) -shared -o $(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr
 
 $(CONFIG)/inc/edi.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/esp/edi.h" "/Users/mob/git/appweb/linux-x86-default/inc/edi.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/esp/edi.h" "linux-x86-default/inc/edi.h"
 
 $(CONFIG)/inc/esp-app.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/esp/esp-app.h" "/Users/mob/git/appweb/linux-x86-default/inc/esp-app.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/esp/esp-app.h" "linux-x86-default/inc/esp-app.h"
 
 $(CONFIG)/inc/esp.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/esp/esp.h" "/Users/mob/git/appweb/linux-x86-default/inc/esp.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/esp/esp.h" "linux-x86-default/inc/esp.h"
 
 $(CONFIG)/inc/mdb.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/esp/mdb.h" "/Users/mob/git/appweb/linux-x86-default/inc/mdb.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/esp/mdb.h" "linux-x86-default/inc/mdb.h"
 
 $(CONFIG)/obj/edi.o: \
     src/esp/edi.c\
@@ -505,53 +505,53 @@ $(CONFIG)/bin/esp: \
 
 $(CONFIG)/bin/esp.conf: \
     src/esp/esp.conf
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin"
-	cp "src/esp/esp.conf" "/Users/mob/git/appweb/linux-x86-default/bin/esp.conf"
+	mkdir -p "linux-x86-default/bin"
+	cp "src/esp/esp.conf" "linux-x86-default/bin/esp.conf"
 
 src/server/esp.conf: \
     src/esp/esp.conf
-	mkdir -p "/Users/mob/git/appweb/src/server"
-	cp "src/esp/esp.conf" "/Users/mob/git/appweb/src/server/esp.conf"
+	mkdir -p "src/server"
+	cp "src/esp/esp.conf" "src/server/esp.conf"
 
 $(CONFIG)/bin/esp-www: \
     src/esp/esp-www
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www"
-	cp "src/esp/esp-www/app.conf" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/app.conf"
-	cp "src/esp/esp-www/appweb.conf" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/appweb.conf"
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files"
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/layouts"
-	cp "src/esp/esp-www/files/layouts/default.esp" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/layouts/default.esp"
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static"
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/images/splash.jpg"
-	cp "src/esp/esp-www/files/static/index.esp" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/index.esp"
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.tablesorter.js"
-	cp "src/esp/esp-www/files/static/layout.css" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/layout.css"
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/themes/default.css"
+	mkdir -p "linux-x86-default/bin/esp-www/esp-www"
+	cp "src/esp/esp-www/app.conf" "linux-x86-default/bin/esp-www/esp-www/app.conf"
+	cp "src/esp/esp-www/appweb.conf" "linux-x86-default/bin/esp-www/esp-www/appweb.conf"
+	mkdir -p "linux-x86-default/bin/esp-www/esp-www/files"
+	mkdir -p "linux-x86-default/bin/esp-www/esp-www/files/layouts"
+	cp "src/esp/esp-www/files/layouts/default.esp" "linux-x86-default/bin/esp-www/esp-www/files/layouts/default.esp"
+	mkdir -p "linux-x86-default/bin/esp-www/esp-www/files/static"
+	mkdir -p "linux-x86-default/bin/esp-www/esp-www/files/static/images"
+	cp "src/esp/esp-www/files/static/images/banner.jpg" "linux-x86-default/bin/esp-www/esp-www/files/static/images/banner.jpg"
+	cp "src/esp/esp-www/files/static/images/favicon.ico" "linux-x86-default/bin/esp-www/esp-www/files/static/images/favicon.ico"
+	cp "src/esp/esp-www/files/static/images/splash.jpg" "linux-x86-default/bin/esp-www/esp-www/files/static/images/splash.jpg"
+	cp "src/esp/esp-www/files/static/index.esp" "linux-x86-default/bin/esp-www/esp-www/files/static/index.esp"
+	mkdir -p "linux-x86-default/bin/esp-www/esp-www/files/static/js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.tablesorter.js"
+	cp "src/esp/esp-www/files/static/layout.css" "linux-x86-default/bin/esp-www/esp-www/files/static/layout.css"
+	mkdir -p "linux-x86-default/bin/esp-www/esp-www/files/static/themes"
+	cp "src/esp/esp-www/files/static/themes/default.css" "linux-x86-default/bin/esp-www/esp-www/files/static/themes/default.css"
 
 $(CONFIG)/bin/esp-appweb.conf: \
     src/esp/esp-appweb.conf
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin"
-	cp "src/esp/esp-appweb.conf" "/Users/mob/git/appweb/linux-x86-default/bin/esp-appweb.conf"
+	mkdir -p "linux-x86-default/bin"
+	cp "src/esp/esp-appweb.conf" "linux-x86-default/bin/esp-appweb.conf"
 
 $(CONFIG)/inc/ejs.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/deps/ejs/ejs.h" "/Users/mob/git/appweb/linux-x86-default/inc/ejs.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/deps/ejs/ejs.h" "linux-x86-default/inc/ejs.h"
 
 $(CONFIG)/inc/ejs.slots.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/deps/ejs/ejs.slots.h" "/Users/mob/git/appweb/linux-x86-default/inc/ejs.slots.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/deps/ejs/ejs.slots.h" "linux-x86-default/inc/ejs.slots.h"
 
 $(CONFIG)/inc/ejsByteGoto.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "src/deps/ejs/ejsByteGoto.h" "/Users/mob/git/appweb/linux-x86-default/inc/ejsByteGoto.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "src/deps/ejs/ejsByteGoto.h" "linux-x86-default/inc/ejsByteGoto.h"
 
 $(CONFIG)/obj/ejsLib.o: \
     src/deps/ejs/ejsLib.c\
@@ -691,8 +691,8 @@ src/server/cache:
 	cd src/server; mkdir -p cache ; cd ../..
 
 $(CONFIG)/inc/testAppweb.h: 
-	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
-	cp "test/testAppweb.h" "/Users/mob/git/appweb/linux-x86-default/inc/testAppweb.h"
+	mkdir -p "linux-x86-default/inc"
+	cp "test/testAppweb.h" "linux-x86-default/inc/testAppweb.h"
 
 $(CONFIG)/obj/testAppweb.o: \
     test/testAppweb.c\
@@ -741,8 +741,8 @@ test/web/js:
 version: 
 	@echo 4.3.0-0
 
-stop: 
-	
+stop: compile
+	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 installBinary: stop
 	mkdir -p "/usr/local/lib/appweb/4.3.0/bin"
@@ -803,3 +803,24 @@ installBinary: stop
 	mkdir -p "/etc/appweb"
 	cp "src/server/mime.types" "/etc/appweb/mime.types"
 	cp "src/server/appweb.conf" "/etc/appweb/appweb.conf"
+	install -d -m 493 "/etc/appweb/init.d"
+	install -m 493 "package/linux/appweb.init" "/etc/appweb/init.d/appweb"
+	install -d -m 420 "//init"
+	install -m 420 "package/linux/appweb.upstart" "//init/appweb.conf"
+	rm -f "/usr/local/lib/appweb/latest"
+	mkdir -p "/usr/local/lib/appweb"
+	ln -s "4.3.0" "/usr/local/lib/appweb/latest"
+
+
+start: compile stop
+	./$(CONFIG)/bin/appman install enable start
+
+install: stop installBinary start
+	
+
+uninstall: stop
+
+
+genslink: 
+	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
+

@@ -160,6 +160,7 @@ clean:
 	-if exist $(CONFIG)\obj\log.obj del /Q $(CONFIG)\obj\log.obj
 	-if exist $(CONFIG)\obj\server.obj del /Q $(CONFIG)\obj\server.obj
 	-if exist $(CONFIG)\obj\edi.obj del /Q $(CONFIG)\obj\edi.obj
+	-if exist $(CONFIG)\obj\esp.obj del /Q $(CONFIG)\obj\esp.obj
 	-if exist $(CONFIG)\obj\espAbbrev.obj del /Q $(CONFIG)\obj\espAbbrev.obj
 	-if exist $(CONFIG)\obj\espFramework.obj del /Q $(CONFIG)\obj\espFramework.obj
 	-if exist $(CONFIG)\obj\espHandler.obj del /Q $(CONFIG)\obj\espHandler.obj
@@ -167,7 +168,6 @@ clean:
 	-if exist $(CONFIG)\obj\espTemplate.obj del /Q $(CONFIG)\obj\espTemplate.obj
 	-if exist $(CONFIG)\obj\mdb.obj del /Q $(CONFIG)\obj\mdb.obj
 	-if exist $(CONFIG)\obj\sdb.obj del /Q $(CONFIG)\obj\sdb.obj
-	-if exist $(CONFIG)\obj\esp.obj del /Q $(CONFIG)\obj\esp.obj
 	-if exist $(CONFIG)\obj\ejsLib.obj del /Q $(CONFIG)\obj\ejsLib.obj
 	-if exist $(CONFIG)\obj\ejs.obj del /Q $(CONFIG)\obj\ejs.obj
 	-if exist $(CONFIG)\obj\ejsc.obj del /Q $(CONFIG)\obj\ejsc.obj
@@ -184,23 +184,25 @@ clean:
 	-if exist $(CONFIG)\obj\testAppweb.obj del /Q $(CONFIG)\obj\testAppweb.obj
 	-if exist $(CONFIG)\obj\testHttp.obj del /Q $(CONFIG)\obj\testHttp.obj
 
+$(CONFIG)\inc\bit.h: 
+
 $(CONFIG)\obj\removeFiles.obj: \
-    ..\bit\macosx-x64-release\bin\package\windows\removeFiles.c\
+    ..\bit\macosx-x64-debug\bin\package\windows\removeFiles.c\
     $(CONFIG)\inc\bit.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) ..\bit\macosx-x64-release\bin\package\windows\removeFiles.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) ..\bit\macosx-x64-debug\bin\package\windows\removeFiles.c
 
 $(CONFIG)\bin\removeFiles.exe: \
     $(CONFIG)\obj\removeFiles.obj
 	"$(LD)" -out:$(CONFIG)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\removeFiles.obj $(LIBS)
 
 $(CONFIG)\inc\mpr.h: 
-	-if exist $(CONFIG)\inc\mpr.h del /Q $(CONFIG)\inc\mpr.h
-	copy /Y src\deps\mpr\mpr.h $(CONFIG)\inc\mpr.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\deps\mpr\mpr.h" "windows-x86-default\inc\mpr.h"
 
 $(CONFIG)\inc\bitos.h: \
     $(CONFIG)\inc\bit.h
-	-if exist $(CONFIG)\inc\bitos.h del /Q $(CONFIG)\inc\bitos.h
-	copy /Y src\bitos.h $(CONFIG)\inc\bitos.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\bitos.h" "windows-x86-default\inc\bitos.h"
 
 $(CONFIG)\obj\mprLib.obj: \
     src\deps\mpr\mprLib.c\
@@ -215,8 +217,8 @@ $(CONFIG)\bin\libmpr.dll: \
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprLib.obj $(LIBS)
 
 $(CONFIG)\inc\est.h: 
-	-if exist $(CONFIG)\inc\est.h del /Q $(CONFIG)\inc\est.h
-	copy /Y src\deps\est\est.h $(CONFIG)\inc\est.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\deps\est\est.h" "windows-x86-default\inc\est.h"
 
 $(CONFIG)\obj\estLib.obj: \
     src\deps\est\estLib.c\
@@ -265,13 +267,14 @@ $(CONFIG)\bin\makerom.exe: \
     $(CONFIG)\obj\makerom.obj
 	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj libmpr.lib $(LIBS)
 
-$(CONFIG)\bin\ca.crt: src/deps/est/ca.crt
-	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
-	copy /Y src\deps\est\ca.crt $(CONFIG)\bin\ca.crt
+$(CONFIG)\bin\ca.crt: \
+    src\deps\est\ca.crt
+	if not exist "windows-x86-default\bin" md "windows-x86-default\bin"
+	copy /Y "src\deps\est\ca.crt" "windows-x86-default\bin\ca.crt"
 
 $(CONFIG)\inc\pcre.h: 
-	-if exist $(CONFIG)\inc\pcre.h del /Q $(CONFIG)\inc\pcre.h
-	copy /Y src\deps\pcre\pcre.h $(CONFIG)\inc\pcre.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\deps\pcre\pcre.h" "windows-x86-default\inc\pcre.h"
 
 $(CONFIG)\obj\pcre.obj: \
     src\deps\pcre\pcre.c\
@@ -285,8 +288,8 @@ $(CONFIG)\bin\libpcre.dll: \
 	"$(LD)" -dll -out:$(CONFIG)\bin\libpcre.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\pcre.obj $(LIBS)
 
 $(CONFIG)\inc\http.h: 
-	-if exist $(CONFIG)\inc\http.h del /Q $(CONFIG)\inc\http.h
-	copy /Y src\deps\http\http.h $(CONFIG)\inc\http.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\deps\http\http.h" "windows-x86-default\inc\http.h"
 
 $(CONFIG)\obj\httpLib.obj: \
     src\deps\http\httpLib.c\
@@ -314,8 +317,8 @@ $(CONFIG)\bin\http.exe: \
 	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
 
 $(CONFIG)\inc\sqlite3.h: 
-	-if exist $(CONFIG)\inc\sqlite3.h del /Q $(CONFIG)\inc\sqlite3.h
-	copy /Y src\deps\sqlite\sqlite3.h $(CONFIG)\inc\sqlite3.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\deps\sqlite\sqlite3.h" "windows-x86-default\inc\sqlite3.h"
 
 $(CONFIG)\obj\sqlite3.obj: \
     src\deps\sqlite\sqlite3.c\
@@ -340,12 +343,12 @@ $(CONFIG)\bin\sqlite.exe: \
 	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj libsqlite3.lib $(LIBS)
 
 $(CONFIG)\inc\appweb.h: 
-	-if exist $(CONFIG)\inc\appweb.h del /Q $(CONFIG)\inc\appweb.h
-	copy /Y src\appweb.h $(CONFIG)\inc\appweb.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\appweb.h" "windows-x86-default\inc\appweb.h"
 
 $(CONFIG)\inc\customize.h: 
-	-if exist $(CONFIG)\inc\customize.h del /Q $(CONFIG)\inc\customize.h
-	copy /Y src\customize.h $(CONFIG)\inc\customize.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\customize.h" "windows-x86-default\inc\customize.h"
 
 $(CONFIG)\obj\config.obj: \
     src\config.c\
@@ -401,20 +404,20 @@ $(CONFIG)\bin\libappweb.dll: \
 	"$(LD)" -dll -out:$(CONFIG)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.obj $(CONFIG)\obj\convenience.obj $(CONFIG)\obj\dirHandler.obj $(CONFIG)\obj\fileHandler.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\server.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
 
 $(CONFIG)\inc\edi.h: 
-	-if exist $(CONFIG)\inc\edi.h del /Q $(CONFIG)\inc\edi.h
-	copy /Y src\esp\edi.h $(CONFIG)\inc\edi.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\esp\edi.h" "windows-x86-default\inc\edi.h"
 
 $(CONFIG)\inc\esp-app.h: 
-	-if exist $(CONFIG)\inc\esp-app.h del /Q $(CONFIG)\inc\esp-app.h
-	copy /Y src\esp\esp-app.h $(CONFIG)\inc\esp-app.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\esp\esp-app.h" "windows-x86-default\inc\esp-app.h"
 
 $(CONFIG)\inc\esp.h: 
-	-if exist $(CONFIG)\inc\esp.h del /Q $(CONFIG)\inc\esp.h
-	copy /Y src\esp\esp.h $(CONFIG)\inc\esp.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\esp\esp.h" "windows-x86-default\inc\esp.h"
 
 $(CONFIG)\inc\mdb.h: 
-	-if exist $(CONFIG)\inc\mdb.h del /Q $(CONFIG)\inc\mdb.h
-	copy /Y src\esp\mdb.h $(CONFIG)\inc\mdb.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\esp\mdb.h" "windows-x86-default\inc\mdb.h"
 
 $(CONFIG)\obj\edi.obj: \
     src\esp\edi.c\
@@ -422,6 +425,12 @@ $(CONFIG)\obj\edi.obj: \
     $(CONFIG)\inc\edi.h \
     $(CONFIG)\inc\pcre.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\edi.c
+
+$(CONFIG)\obj\esp.obj: \
+    src\esp\esp.c\
+    $(CONFIG)\inc\bit.h \
+    $(CONFIG)\inc\esp.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\esp.c
 
 $(CONFIG)\obj\espAbbrev.obj: \
     src\esp\espAbbrev.c\
@@ -479,6 +488,7 @@ $(CONFIG)\bin\libmod_esp.dll: \
     $(CONFIG)\inc\esp.h \
     $(CONFIG)\inc\mdb.h \
     $(CONFIG)\obj\edi.obj \
+    $(CONFIG)\obj\esp.obj \
     $(CONFIG)\obj\espAbbrev.obj \
     $(CONFIG)\obj\espFramework.obj \
     $(CONFIG)\obj\espHandler.obj \
@@ -486,13 +496,7 @@ $(CONFIG)\bin\libmod_esp.dll: \
     $(CONFIG)\obj\espTemplate.obj \
     $(CONFIG)\obj\mdb.obj \
     $(CONFIG)\obj\sdb.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
-
-$(CONFIG)\obj\esp.obj: \
-    src\esp\esp.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\esp.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\esp.c
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 $(CONFIG)\bin\esp.exe: \
     $(CONFIG)\bin\libappweb.dll \
@@ -507,34 +511,55 @@ $(CONFIG)\bin\esp.exe: \
     $(CONFIG)\obj\sdb.obj
 	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
-$(CONFIG)\bin\esp.conf: src/esp/esp.conf
-	-if exist $(CONFIG)\bin\esp.conf del /Q $(CONFIG)\bin\esp.conf
-	copy /Y src\esp\esp.conf $(CONFIG)\bin\esp.conf
+$(CONFIG)\bin\esp.conf: \
+    src\esp\esp.conf
+	if not exist "windows-x86-default\bin" md "windows-x86-default\bin"
+	copy /Y "src\esp\esp.conf" "windows-x86-default\bin\esp.conf"
 
-src\server\esp.conf: src/esp/esp.conf
-	-if exist src\server\esp.conf del /Q src\server\esp.conf
-	copy /Y src\esp\esp.conf src\server\esp.conf
+src\server\esp.conf: \
+    src\esp\esp.conf
+	if not exist "src\server" md "src\server"
+	copy /Y "src\esp\esp.conf" "src\server\esp.conf"
 
-$(CONFIG)\bin\esp-www: src/esp/www
-	-if exist $(CONFIG)\bin\esp-www del /Q $(CONFIG)\bin\esp-www
-	if not exist $(CONFIG)\bin\esp-www md $(CONFIG)\bin\esp-www
-	xcopy /S /Y src\esp\www $(CONFIG)\bin\esp-www
+$(CONFIG)\bin\esp-www: \
+    src\esp\esp-www
+	if not exist "windows-x86-default\bin\esp-www\esp-www" md "windows-x86-default\bin\esp-www\esp-www"
+	copy /Y "src\esp\esp-www\app.conf" "windows-x86-default\bin\esp-www\esp-www\app.conf"
+	copy /Y "src\esp\esp-www\appweb.conf" "windows-x86-default\bin\esp-www\esp-www\appweb.conf"
+	if not exist "windows-x86-default\bin\esp-www\esp-www\files" md "windows-x86-default\bin\esp-www\esp-www\files"
+	if not exist "windows-x86-default\bin\esp-www\esp-www\files\layouts" md "windows-x86-default\bin\esp-www\esp-www\files\layouts"
+	copy /Y "src\esp\esp-www\files\layouts\default.esp" "windows-x86-default\bin\esp-www\esp-www\files\layouts\default.esp"
+	if not exist "windows-x86-default\bin\esp-www\esp-www\files\static" md "windows-x86-default\bin\esp-www\esp-www\files\static"
+	if not exist "windows-x86-default\bin\esp-www\esp-www\files\static\images" md "windows-x86-default\bin\esp-www\esp-www\files\static\images"
+	copy /Y "src\esp\esp-www\files\static\images\banner.jpg" "windows-x86-default\bin\esp-www\esp-www\files\static\images\banner.jpg"
+	copy /Y "src\esp\esp-www\files\static\images\favicon.ico" "windows-x86-default\bin\esp-www\esp-www\files\static\images\favicon.ico"
+	copy /Y "src\esp\esp-www\files\static\images\splash.jpg" "windows-x86-default\bin\esp-www\esp-www\files\static\images\splash.jpg"
+	copy /Y "src\esp\esp-www\files\static\index.esp" "windows-x86-default\bin\esp-www\esp-www\files\static\index.esp"
+	if not exist "windows-x86-default\bin\esp-www\esp-www\files\static\js" md "windows-x86-default\bin\esp-www\esp-www\files\static\js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "windows-x86-default\bin\esp-www\esp-www\files\static\js\jquery.esp.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "windows-x86-default\bin\esp-www\esp-www\files\static\js\jquery.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "windows-x86-default\bin\esp-www\esp-www\files\static\js\jquery.simplemodal.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "windows-x86-default\bin\esp-www\esp-www\files\static\js\jquery.tablesorter.js"
+	copy /Y "src\esp\esp-www\files\static\layout.css" "windows-x86-default\bin\esp-www\esp-www\files\static\layout.css"
+	if not exist "windows-x86-default\bin\esp-www\esp-www\files\static\themes" md "windows-x86-default\bin\esp-www\esp-www\files\static\themes"
+	copy /Y "src\esp\esp-www\files\static\themes\default.css" "windows-x86-default\bin\esp-www\esp-www\files\static\themes\default.css"
 
-$(CONFIG)\bin\esp-appweb.conf: src/esp/esp-appweb.conf
-	-if exist $(CONFIG)\bin\esp-appweb.conf del /Q $(CONFIG)\bin\esp-appweb.conf
-	copy /Y src\esp\esp-appweb.conf $(CONFIG)\bin\esp-appweb.conf
+$(CONFIG)\bin\esp-appweb.conf: \
+    src\esp\esp-appweb.conf
+	if not exist "windows-x86-default\bin" md "windows-x86-default\bin"
+	copy /Y "src\esp\esp-appweb.conf" "windows-x86-default\bin\esp-appweb.conf"
 
 $(CONFIG)\inc\ejs.h: 
-	-if exist $(CONFIG)\inc\ejs.h del /Q $(CONFIG)\inc\ejs.h
-	copy /Y src\deps\ejs\ejs.h $(CONFIG)\inc\ejs.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\deps\ejs\ejs.h" "windows-x86-default\inc\ejs.h"
 
 $(CONFIG)\inc\ejs.slots.h: 
-	-if exist $(CONFIG)\inc\ejs.slots.h del /Q $(CONFIG)\inc\ejs.slots.h
-	copy /Y src\deps\ejs\ejs.slots.h $(CONFIG)\inc\ejs.slots.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\deps\ejs\ejs.slots.h" "windows-x86-default\inc\ejs.slots.h"
 
 $(CONFIG)\inc\ejsByteGoto.h: 
-	-if exist $(CONFIG)\inc\ejsByteGoto.h del /Q $(CONFIG)\inc\ejsByteGoto.h
-	copy /Y src\deps\ejs\ejsByteGoto.h $(CONFIG)\inc\ejsByteGoto.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\deps\ejs\ejsByteGoto.h" "windows-x86-default\inc\ejsByteGoto.h"
 
 $(CONFIG)\obj\ejsLib.obj: \
     src\deps\ejs\ejsLib.c\
@@ -673,12 +698,12 @@ $(CONFIG)\bin\appweb.exe: \
 	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_ejs.lib libmod_ssl.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib libejs.lib libsqlite3.lib
 
 $(CONFIG)\inc\appwebMonitor.h: 
-	-if exist $(CONFIG)\inc\appwebMonitor.h del /Q $(CONFIG)\inc\appwebMonitor.h
-	copy /Y src\server\windows\appwebMonitor.h $(CONFIG)\inc\appwebMonitor.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\server\windows\appwebMonitor.h" "windows-x86-default\inc\appwebMonitor.h"
 
 $(CONFIG)\inc\monitorResources.h: 
-	-if exist $(CONFIG)\inc\monitorResources.h del /Q $(CONFIG)\inc\monitorResources.h
-	copy /Y src\server\windows\monitorResources.h $(CONFIG)\inc\monitorResources.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "src\server\windows\monitorResources.h" "windows-x86-default\inc\monitorResources.h"
 
 $(CONFIG)\obj\appwebMonitor.res: \
         src\server\windows\appwebMonitor.rc
@@ -698,14 +723,15 @@ $(CONFIG)\bin\appwebMonitor.exe: \
     $(CONFIG)\obj\appwebMonitor.obj
 	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appwebMonitor.res $(CONFIG)\obj\appwebMonitor.obj libappweb.lib shell32.lib libhttp.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib libpcre.lib libmpr.lib
 
-$(CONFIG)\bin\appwebMonitor.ico: src/server/windows/appwebMonitor.ico
+$(CONFIG)\bin\appwebMonitor.ico: src\server\windows\appwebMonitor.ico
 	cd src\server
 	copy windows/appwebMonitor.ico ..\..\$(CONFIG)\bin
 	cd ..\..
 
-$(CONFIG)\bin\appwebMonitor.ico: src/server/windows/appwebMonitor.ico
-	-if exist $(CONFIG)\bin\appwebMonitor.ico del /Q $(CONFIG)\bin\appwebMonitor.ico
-	copy /Y src\server\windows\appwebMonitor.ico $(CONFIG)\bin\appwebMonitor.ico
+$(CONFIG)\bin\appwebMonitor.ico: \
+    src\server\windows\appwebMonitor.ico
+	if not exist "windows-x86-default\bin" md "windows-x86-default\bin"
+	copy /Y "src\server\windows\appwebMonitor.ico" "windows-x86-default\bin\appwebMonitor.ico"
 
 src\server\cache: 
 	cd src\server
@@ -713,8 +739,8 @@ src\server\cache:
 	cd ..\..
 
 $(CONFIG)\inc\testAppweb.h: 
-	-if exist $(CONFIG)\inc\testAppweb.h del /Q $(CONFIG)\inc\testAppweb.h
-	copy /Y test\testAppweb.h $(CONFIG)\inc\testAppweb.h
+	if not exist "windows-x86-default\inc" md "windows-x86-default\inc"
+	copy /Y "test\testAppweb.h" "windows-x86-default\inc\testAppweb.h"
 
 $(CONFIG)\obj\testAppweb.obj: \
     test\testAppweb.c\
@@ -738,146 +764,109 @@ $(CONFIG)\bin\testAppweb.exe: \
 	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
 test\cgi-bin\testScript: $(CONFIG)\bin\cgiProgram.exe
-#  Omit build script /Users/mob/git/appweb/test/cgi-bin/testScript
+#  Omit build script test-testScript
 
 test\web\caching\cache.cgi: 
-#  Omit build script /Users/mob/git/appweb/test/web/caching/cache.cgi
+#  Omit build script test-cache.cgi
 
 test\web\auth\basic\basic.cgi: 
-#  Omit build script /Users/mob/git/appweb/test/web/auth/basic/basic.cgi
+#  Omit build script test-basic.cgi
 
 test\cgi-bin\cgiProgram.exe: $(CONFIG)\bin\cgiProgram.exe
-#  Omit build script /Users/mob/git/appweb/test/cgi-bin/cgiProgram.exe
+#  Omit build script test-cgiProgram
 
 test\web\js: 
-#  Omit build script /Users/mob/git/appweb/test/web/js
+#  Omit build script test.js
 
 version: 
 	@echo 4.3.0-0
 
-stop: 
-
+stop: compile
+	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 
 installBinary: stop
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	if not exist "$(BIT_VAPP_PREFIX)\inc" md "$(BIT_VAPP_PREFIX)\inc"
-	if not exist "$(BIT_VAPP_PREFIX)\man" md "$(BIT_VAPP_PREFIX)\man"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	if not exist "$(BIT_VAPP_PREFIX)\tmp" md "$(BIT_VAPP_PREFIX)\tmp"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\appman.exe" "$(BIT_VAPP_PREFIX)\bin\appman.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\appweb.exe" "$(BIT_VAPP_PREFIX)\bin\appweb.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\esp.exe" "$(BIT_VAPP_PREFIX)\bin\esp.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\http.exe" "$(BIT_VAPP_PREFIX)\bin\http.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\libappweb.exe" "$(BIT_VAPP_PREFIX)\bin\libappweb.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\libest.exe" "$(BIT_VAPP_PREFIX)\bin\libest.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\libhttp.exe" "$(BIT_VAPP_PREFIX)\bin\libhttp.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\libmod*.exe" "$(BIT_VAPP_PREFIX)\bin\libmod*.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\libmpr*.exe" "$(BIT_VAPP_PREFIX)\bin\libmpr*.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\libpcre.exe" "$(BIT_VAPP_PREFIX)\bin\libpcre.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\libsqlite3.exe" "$(BIT_VAPP_PREFIX)\bin\libsqlite3.exe"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\esp-*" "$(BIT_VAPP_PREFIX)\bin\esp-*"
-	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
-	copy /Y "$(CONFIG)\bin\esp.conf" "$(BIT_VAPP_PREFIX)\esp.conf"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
-	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
-	copy /Y "src\server\web\bench\1b.html" "$(BIT_VAPP_PREFIX)\web\bench\1b.html"
-	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
-	copy /Y "src\server\web\bench\4k.html" "$(BIT_VAPP_PREFIX)\web\bench\4k.html"
-	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
-	copy /Y "src\server\web\bench\64k.html" "$(BIT_VAPP_PREFIX)\web\bench\64k.html"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	copy /Y "src\server\web\favicon.ico" "$(BIT_VAPP_PREFIX)\web\favicon.ico"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
-	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
-	copy /Y "src\server\web\icons\back.gif" "$(BIT_VAPP_PREFIX)\web\icons\back.gif"
-	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
-	copy /Y "src\server\web\icons\blank.gif" "$(BIT_VAPP_PREFIX)\web\icons\blank.gif"
-	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
-	copy /Y "src\server\web\icons\compressed.gif" "$(BIT_VAPP_PREFIX)\web\icons\compressed.gif"
-	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
-	copy /Y "src\server\web\icons\folder.gif" "$(BIT_VAPP_PREFIX)\web\icons\folder.gif"
-	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
-	copy /Y "src\server\web\icons\parent.gif" "$(BIT_VAPP_PREFIX)\web\icons\parent.gif"
-	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
-	copy /Y "src\server\web\icons\space.gif" "$(BIT_VAPP_PREFIX)\web\icons\space.gif"
-	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
-	copy /Y "src\server\web\icons\text.gif" "$(BIT_VAPP_PREFIX)\web\icons\text.gif"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	copy /Y "src\server\web\iehacks.css" "$(BIT_VAPP_PREFIX)\web\iehacks.css"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	if not exist "$(BIT_VAPP_PREFIX)\web\images" md "$(BIT_VAPP_PREFIX)\web\images"
-	if not exist "$(BIT_VAPP_PREFIX)\web\images" md "$(BIT_VAPP_PREFIX)\web\images"
-	copy /Y "src\server\web\images\banner.jpg" "$(BIT_VAPP_PREFIX)\web\images\banner.jpg"
-	if not exist "$(BIT_VAPP_PREFIX)\web\images" md "$(BIT_VAPP_PREFIX)\web\images"
-	copy /Y "src\server\web\images\bottomShadow.jpg" "$(BIT_VAPP_PREFIX)\web\images\bottomShadow.jpg"
-	if not exist "$(BIT_VAPP_PREFIX)\web\images" md "$(BIT_VAPP_PREFIX)\web\images"
-	copy /Y "src\server\web\images\shadow.jpg" "$(BIT_VAPP_PREFIX)\web\images\shadow.jpg"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	copy /Y "src\server\web\index.html" "$(BIT_VAPP_PREFIX)\web\index.html"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	copy /Y "src\server\web\min-index.html" "$(BIT_VAPP_PREFIX)\web\min-index.html"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	copy /Y "src\server\web\print.css" "$(BIT_VAPP_PREFIX)\web\print.css"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	copy /Y "src\server\web\screen.css" "$(BIT_VAPP_PREFIX)\web\screen.css"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y "src\server\web\test\bench.html" "$(BIT_VAPP_PREFIX)\web\test\bench.html"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y "src\server\web\test\test.cgi" "$(BIT_VAPP_PREFIX)\web\test\test.cgi"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y "src\server\web\test\test.ejs" "$(BIT_VAPP_PREFIX)\web\test\test.ejs"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y "src\server\web\test\test.esp" "$(BIT_VAPP_PREFIX)\web\test\test.esp"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y "src\server\web\test\test.html" "$(BIT_VAPP_PREFIX)\web\test\test.html"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y "src\server\web\test\test.php" "$(BIT_VAPP_PREFIX)\web\test\test.php"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y "src\server\web\test\test.pl" "$(BIT_VAPP_PREFIX)\web\test\test.pl"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y "src\server\web\test\test.py" "$(BIT_VAPP_PREFIX)\web\test\test.py"
-	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
-	copy /Y "src\server\mime.types" "$(BIT_VAPP_PREFIX)\mime.types"
-	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
-	copy /Y "src\server\appweb.conf" "$(BIT_VAPP_PREFIX)\appweb.conf"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\ejs.mod" "$(BIT_VAPP_PREFIX)\bin\ejs.mod"
-	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "${bit.packs.compiler.dir}\VC\redist\${bit.platform.arch}\Microsoft.VC0.CRT\msvcr0.dll" "$(BIT_VAPP_PREFIX)\bin\msvcr0.dll"
+	if not exist "C:\Program Files\Embedthis Appweb\bin" md "C:\Program Files\Embedthis Appweb\bin"
+	if not exist "C:\Program Files\Embedthis Appweb\inc" md "C:\Program Files\Embedthis Appweb\inc"
+	if not exist "C:\Program Files\Embedthis Appweb\man" md "C:\Program Files\Embedthis Appweb\man"
+	if not exist "C:\Program Files\Embedthis Appweb\web" md "C:\Program Files\Embedthis Appweb\web"
+	if not exist "C:\Program Files\Embedthis Appweb\tmp" md "C:\Program Files\Embedthis Appweb\tmp"
+	if not exist "C:\Program Files\Embedthis Appweb\bin" md "C:\Program Files\Embedthis Appweb\bin"
+	if not exist "C:\Program Files\Embedthis Appweb\bin\esp-www" md "C:\Program Files\Embedthis Appweb\bin\esp-www"
+	copy /Y "src\esp\esp-www\app.conf" "C:\Program Files\Embedthis Appweb\bin\esp-www\app.conf"
+	copy /Y "src\esp\esp-www\appweb.conf" "C:\Program Files\Embedthis Appweb\bin\esp-www\appweb.conf"
+	if not exist "C:\Program Files\Embedthis Appweb\bin\esp-www\files" md "C:\Program Files\Embedthis Appweb\bin\esp-www\files"
+	if not exist "C:\Program Files\Embedthis Appweb\bin\esp-www\files\layouts" md "C:\Program Files\Embedthis Appweb\bin\esp-www\files\layouts"
+	copy /Y "src\esp\esp-www\files\layouts\default.esp" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\layouts\default.esp"
+	if not exist "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static" md "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static"
+	if not exist "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\images" md "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\images"
+	copy /Y "src\esp\esp-www\files\static\images\banner.jpg" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\images\banner.jpg"
+	copy /Y "src\esp\esp-www\files\static\images\favicon.ico" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\images\favicon.ico"
+	copy /Y "src\esp\esp-www\files\static\images\splash.jpg" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\images\splash.jpg"
+	copy /Y "src\esp\esp-www\files\static\index.esp" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\index.esp"
+	if not exist "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\js" md "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\js\jquery.esp.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\js\jquery.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\js\jquery.simplemodal.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\js\jquery.tablesorter.js"
+	copy /Y "src\esp\esp-www\files\static\layout.css" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\layout.css"
+	if not exist "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\themes" md "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\themes"
+	copy /Y "src\esp\esp-www\files\static\themes\default.css" "C:\Program Files\Embedthis Appweb\bin\esp-www\files\static\themes\default.css"
+	copy /Y "src\esp\esp-appweb.conf" "C:\Program Files\Embedthis Appweb\bin\esp-appweb.conf"
+	if not exist "C:\Program Files\Embedthis Appweb\web" md "C:\Program Files\Embedthis Appweb\web"
+	if not exist "C:\Program Files\Embedthis Appweb\web\web" md "C:\Program Files\Embedthis Appweb\web\web"
+	if not exist "C:\Program Files\Embedthis Appweb\web\web\bench" md "C:\Program Files\Embedthis Appweb\web\web\bench"
+	copy /Y "src\server\web\bench\1b.html" "C:\Program Files\Embedthis Appweb\web\web\bench\1b.html"
+	copy /Y "src\server\web\bench\4k.html" "C:\Program Files\Embedthis Appweb\web\web\bench\4k.html"
+	copy /Y "src\server\web\bench\64k.html" "C:\Program Files\Embedthis Appweb\web\web\bench\64k.html"
+	copy /Y "src\server\web\favicon.ico" "C:\Program Files\Embedthis Appweb\web\web\favicon.ico"
+	if not exist "C:\Program Files\Embedthis Appweb\web\web\icons" md "C:\Program Files\Embedthis Appweb\web\web\icons"
+	copy /Y "src\server\web\icons\back.gif" "C:\Program Files\Embedthis Appweb\web\web\icons\back.gif"
+	copy /Y "src\server\web\icons\blank.gif" "C:\Program Files\Embedthis Appweb\web\web\icons\blank.gif"
+	copy /Y "src\server\web\icons\compressed.gif" "C:\Program Files\Embedthis Appweb\web\web\icons\compressed.gif"
+	copy /Y "src\server\web\icons\folder.gif" "C:\Program Files\Embedthis Appweb\web\web\icons\folder.gif"
+	copy /Y "src\server\web\icons\parent.gif" "C:\Program Files\Embedthis Appweb\web\web\icons\parent.gif"
+	copy /Y "src\server\web\icons\space.gif" "C:\Program Files\Embedthis Appweb\web\web\icons\space.gif"
+	copy /Y "src\server\web\icons\text.gif" "C:\Program Files\Embedthis Appweb\web\web\icons\text.gif"
+	copy /Y "src\server\web\iehacks.css" "C:\Program Files\Embedthis Appweb\web\web\iehacks.css"
+	if not exist "C:\Program Files\Embedthis Appweb\web\web\images" md "C:\Program Files\Embedthis Appweb\web\web\images"
+	copy /Y "src\server\web\images\banner.jpg" "C:\Program Files\Embedthis Appweb\web\web\images\banner.jpg"
+	copy /Y "src\server\web\images\bottomShadow.jpg" "C:\Program Files\Embedthis Appweb\web\web\images\bottomShadow.jpg"
+	copy /Y "src\server\web\images\shadow.jpg" "C:\Program Files\Embedthis Appweb\web\web\images\shadow.jpg"
+	copy /Y "src\server\web\index.html" "C:\Program Files\Embedthis Appweb\web\web\index.html"
+	copy /Y "src\server\web\min-index.html" "C:\Program Files\Embedthis Appweb\web\web\min-index.html"
+	copy /Y "src\server\web\print.css" "C:\Program Files\Embedthis Appweb\web\web\print.css"
+	copy /Y "src\server\web\screen.css" "C:\Program Files\Embedthis Appweb\web\web\screen.css"
+	if not exist "C:\Program Files\Embedthis Appweb\web\web\test" md "C:\Program Files\Embedthis Appweb\web\web\test"
+	copy /Y "src\server\web\test\bench.html" "C:\Program Files\Embedthis Appweb\web\web\test\bench.html"
+	copy /Y "src\server\web\test\test.cgi" "C:\Program Files\Embedthis Appweb\web\web\test\test.cgi"
+	copy /Y "src\server\web\test\test.ejs" "C:\Program Files\Embedthis Appweb\web\web\test\test.ejs"
+	copy /Y "src\server\web\test\test.esp" "C:\Program Files\Embedthis Appweb\web\web\test\test.esp"
+	copy /Y "src\server\web\test\test.html" "C:\Program Files\Embedthis Appweb\web\web\test\test.html"
+	copy /Y "src\server\web\test\test.php" "C:\Program Files\Embedthis Appweb\web\web\test\test.php"
+	copy /Y "src\server\web\test\test.pl" "C:\Program Files\Embedthis Appweb\web\web\test\test.pl"
+	copy /Y "src\server\web\test\test.py" "C:\Program Files\Embedthis Appweb\web\web\test\test.py"
+	if not exist "C:\Program Files\Embedthis Appweb" md "C:\Program Files\Embedthis Appweb"
+	copy /Y "src\server\mime.types" "C:\Program Files\Embedthis Appweb\mime.types"
+	copy /Y "src\server\appweb.conf" "C:\Program Files\Embedthis Appweb\appweb.conf"
 
 
-start: 
-
+start: compile stop
+	.\$(CONFIG)\bin\appman install enable start
 
 install: stop installBinary start
 
 
 uninstall: stop
-	if exist "$(BIT_VAPP_PREFIX)" rd /Q /S "$(BIT_VAPP_PREFIX)"
-	if exist "$(BIT_VAPP_PREFIX)" rd /Q /S "$(BIT_VAPP_PREFIX)"
-	if exist "$(BIT_VAPP_PREFIX)\bin" rd /Q /S "$(BIT_VAPP_PREFIX)\bin"
-	if exist "$(BIT_VAPP_PREFIX)\inc" rd /Q /S "$(BIT_VAPP_PREFIX)\inc"
-	if exist "$(BIT_VAPP_PREFIX)\man" rd /Q /S "$(BIT_VAPP_PREFIX)\man"
-	if exist "$(BIT_VAPP_PREFIX)" rd /Q /S "$(BIT_VAPP_PREFIX)"
-	if exist "$(BIT_VAPP_PREFIX)\web" rd /Q /S "$(BIT_VAPP_PREFIX)\web"
-	if exist "$(BIT_VAPP_PREFIX)\log" rd /Q /S "$(BIT_VAPP_PREFIX)\log"
-	if exist "$(BIT_VAPP_PREFIX)\tmp" rd /Q /S "$(BIT_VAPP_PREFIX)\tmp"
+	if exist "C:\Program Files\Embedthis Appweb" rd /Q "C:\Program Files\Embedthis Appweb"
+	if exist "C:\Program Files\Embedthis Appweb" rd /Q "C:\Program Files\Embedthis Appweb"
+	if exist "C:\Program Files\Embedthis Appweb\bin" rd /Q "C:\Program Files\Embedthis Appweb\bin"
+	if exist "C:\Program Files\Embedthis Appweb\inc" rd /Q "C:\Program Files\Embedthis Appweb\inc"
+	if exist "C:\Program Files\Embedthis Appweb\man" rd /Q "C:\Program Files\Embedthis Appweb\man"
+	if exist "C:\Program Files\Embedthis Appweb" rd /Q "C:\Program Files\Embedthis Appweb"
+	if exist "C:\Program Files\Embedthis Appweb\web" rd /Q "C:\Program Files\Embedthis Appweb\web"
+	if exist "C:\Program Files\Embedthis Appweb\log" rd /Q "C:\Program Files\Embedthis Appweb\log"
+	if exist "C:\Program Files\Embedthis Appweb\tmp" rd /Q "C:\Program Files\Embedthis Appweb\tmp"
+	if exist "C:\Program Files\Embedthis Appweb\cache" rd /Q "C:\Program Files\Embedthis Appweb\cache"
 
 
 genslink: 
