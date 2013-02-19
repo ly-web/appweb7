@@ -9059,7 +9059,9 @@ static ReservedWord keywords[] =
   { "switch",           G_RESERVED,         T_SWITCH,                   0, },
   { "this",             G_RESERVED,         T_THIS,                     0, },
   { "throw",            G_RESERVED,         T_THROW,                    0, },
+#if UNUSED
   { "to",               G_CONREV,           T_TO,                       0, },
+#endif
   { "true",             G_RESERVED,         T_TRUE,                     0, },
   { "try",              G_RESERVED,         T_TRY,                      0, },
   { "typeof",           G_RESERVED,         T_TYPEOF,                   0, },
@@ -41963,13 +41965,19 @@ PUBLIC EjsArray *ejsGetPathFiles(Ejs *ejs, EjsPath *fp, int argc, EjsObj **argv)
         }
         exclude = ejsGetPropertyByName(ejs, options, EN("exclude"));
         if (exclude && !ejsIs(ejs, exclude, RegExp)) {
-            ejsThrowArgError(ejs, "Exclude option must be a regular expression");
-            return 0;
+            if (ejsIsDefined(ejs, exclude)) {
+                ejsThrowArgError(ejs, "Exclude option must be a regular expression");
+                return 0;
+            }
+            exclude = 0;
         }
         include = ejsGetPropertyByName(ejs, options, EN("include"));
         if (include && !ejsIs(ejs, include, RegExp)) {
-            ejsThrowArgError(ejs, "Include option must be a regular expression");
-            return 0;
+            if (ejsIsDefined(ejs, include)) {
+                ejsThrowArgError(ejs, "Include option must be a regular expression");
+                return 0;
+            }
+            include = 0;
         }
         if ((vp = ejsGetPropertyByName(ejs, options, EN("missing"))) != 0) {
             if (vp == ESV(undefined)) {

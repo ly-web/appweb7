@@ -43,7 +43,6 @@ Bit.load({
                     '${BIN}/appweb${EXE}',
                     '${BIN}/esp${EXE}',
                     '${BIN}/http${EXE}',
-                    '${BIN}/ca.crt',
                 ],
                 to:         '${abin}/',
                 linkin:     '${bin}',
@@ -62,9 +61,9 @@ Bit.load({
                     '${BIN}/libmprSsl${SHOBJ}',
                     '${BIN}/libpcre${SHOBJ}',
                     '${BIN}/libsqlite3${SHOBJ}',
+                    '${BIN}/ca.crt',
                 ],
                 to:         '${abin}/',
-                linkin:     '${bin}',
                 set:        'core',
 
             },{
@@ -122,7 +121,7 @@ Bit.load({
                 from:       '${INC}/*.h',
                 to:         '${app}/inc/',
                 set:        'dev',
-                linkin:     '${inc}',
+                linkin:     '${inc}/appweb',
 
             },{
                 write:      '{ dirs: { cache: "${cache}" } }\n'
@@ -157,7 +156,6 @@ Bit.load({
                 from:        'package/linux/${settings.product}.init',
                 to:          '${etc}/init.d/${settings.product}',
                 permissions: 0755,
-                expand:      true,
                 set:         'service',
                 root:        true,
                 enable:      "bit.platform.os == 'linux'",
@@ -167,7 +165,6 @@ Bit.load({
                 from:        'package/linux/${settings.product}.upstart',
                 to:          '${root}/init/${settings.product}.conf',
                 permissions: 0644,
-                expand:      true,
                 set:         'service',
                 root:        true,
                 enable:      "bit.platform.os == 'linux'",

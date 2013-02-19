@@ -79,13 +79,14 @@ Bit.load({
             platforms: [ 'local' ],
         },
 
+        //  MOB - convert to a file target
         'test.js': {
             path: 'web/js',
             build: "
-                cp('../src/esp/www/files/static/js', 'web/js')
+                cp('../src/esp/esp-www/files/static/js', 'web/js')
             ",
             'generate-sh': "
-                cp -r ../src/esp/www/files/static/js 'web/js'
+                cp -r ../src/esp/esp-www/files/static/js 'web/js'
             ",
         },
 

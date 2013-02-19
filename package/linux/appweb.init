@@ -21,10 +21,10 @@
 #
 ###############################################################################
 
-NAME=${settings.product}
-APPWEB_NAME="${settings.title}"
-APPWEB_CMD=${prefixes.bin}/$NAME
-APPWEB_DIR=${prefixes.config}
+NAME=appweb
+APPWEB_NAME="Embedthis Appweb"
+APPWEB_CMD="${NAME}"
+APPWEB_DIR="/etc/appweb"
 
 PIDFILE=${PIDFILE-/var/run/$NAME.pid}
 LOCKFILE=${LOCKFILE-/var/lock/$NAME}

@@ -158,6 +158,7 @@ clean:
 	rm -rf $(CONFIG)/obj/log.o
 	rm -rf $(CONFIG)/obj/server.o
 	rm -rf $(CONFIG)/obj/edi.o
+	rm -rf $(CONFIG)/obj/esp.o
 	rm -rf $(CONFIG)/obj/espAbbrev.o
 	rm -rf $(CONFIG)/obj/espFramework.o
 	rm -rf $(CONFIG)/obj/espHandler.o
@@ -165,7 +166,6 @@ clean:
 	rm -rf $(CONFIG)/obj/espTemplate.o
 	rm -rf $(CONFIG)/obj/mdb.o
 	rm -rf $(CONFIG)/obj/sdb.o
-	rm -rf $(CONFIG)/obj/esp.o
 	rm -rf $(CONFIG)/obj/ejsLib.o
 	rm -rf $(CONFIG)/obj/ejs.o
 	rm -rf $(CONFIG)/obj/ejsc.o
@@ -186,13 +186,15 @@ clobber: clean
 	rm -fr ./$(CONFIG)
 
 $(CONFIG)/inc/mpr.h: 
-	rm -fr $(CONFIG)/inc/mpr.h
-	cp -r src/deps/mpr/mpr.h $(CONFIG)/inc/mpr.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/deps/mpr/mpr.h" "/Users/mob/git/appweb/linux-x86-default/inc/mpr.h"
+
+$(CONFIG)/inc/bit.h: 
 
 $(CONFIG)/inc/bitos.h: \
     $(CONFIG)/inc/bit.h
-	rm -fr $(CONFIG)/inc/bitos.h
-	cp -r src/bitos.h $(CONFIG)/inc/bitos.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/bitos.h" "/Users/mob/git/appweb/linux-x86-default/inc/bitos.h"
 
 $(CONFIG)/obj/mprLib.o: \
     src/deps/mpr/mprLib.c\
@@ -207,8 +209,8 @@ $(CONFIG)/bin/libmpr.so: \
 	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprLib.o $(LIBS)
 
 $(CONFIG)/inc/est.h: 
-	rm -fr $(CONFIG)/inc/est.h
-	cp -r src/deps/est/est.h $(CONFIG)/inc/est.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/deps/est/est.h" "/Users/mob/git/appweb/linux-x86-default/inc/est.h"
 
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c\
@@ -257,13 +259,14 @@ $(CONFIG)/bin/makerom: \
     $(CONFIG)/obj/makerom.o
 	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS) -lmpr -lpthread -lm -lrt -ldl $(LDFLAGS)
 
-$(CONFIG)/bin/ca.crt: src/deps/est/ca.crt
-	rm -fr $(CONFIG)/bin/ca.crt
-	cp -r src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
+$(CONFIG)/bin/ca.crt: \
+    src/deps/est/ca.crt
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin"
+	cp "src/deps/est/ca.crt" "/Users/mob/git/appweb/linux-x86-default/bin/ca.crt"
 
 $(CONFIG)/inc/pcre.h: 
-	rm -fr $(CONFIG)/inc/pcre.h
-	cp -r src/deps/pcre/pcre.h $(CONFIG)/inc/pcre.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/deps/pcre/pcre.h" "/Users/mob/git/appweb/linux-x86-default/inc/pcre.h"
 
 $(CONFIG)/obj/pcre.o: \
     src/deps/pcre/pcre.c\
@@ -277,8 +280,8 @@ $(CONFIG)/bin/libpcre.so: \
 	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/pcre.o $(LIBS)
 
 $(CONFIG)/inc/http.h: 
-	rm -fr $(CONFIG)/inc/http.h
-	cp -r src/deps/http/http.h $(CONFIG)/inc/http.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/deps/http/http.h" "/Users/mob/git/appweb/linux-x86-default/inc/http.h"
 
 $(CONFIG)/obj/httpLib.o: \
     src/deps/http/httpLib.c\
@@ -306,8 +309,8 @@ $(CONFIG)/bin/http: \
 	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) -lpcre -lmpr -lhttp -lpthread -lm -lrt -ldl -lpcre -lmpr $(LDFLAGS)
 
 $(CONFIG)/inc/sqlite3.h: 
-	rm -fr $(CONFIG)/inc/sqlite3.h
-	cp -r src/deps/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/deps/sqlite/sqlite3.h" "/Users/mob/git/appweb/linux-x86-default/inc/sqlite3.h"
 
 $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c\
@@ -332,12 +335,12 @@ $(CONFIG)/bin/sqlite: \
 	$(CC) -o $(CONFIG)/bin/sqlite $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o -lsqlite3 $(LIBS) -lsqlite3 -lpthread -lm -lrt -ldl $(LDFLAGS)
 
 $(CONFIG)/inc/appweb.h: 
-	rm -fr $(CONFIG)/inc/appweb.h
-	cp -r src/appweb.h $(CONFIG)/inc/appweb.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/appweb.h" "/Users/mob/git/appweb/linux-x86-default/inc/appweb.h"
 
 $(CONFIG)/inc/customize.h: 
-	rm -fr $(CONFIG)/inc/customize.h
-	cp -r src/customize.h $(CONFIG)/inc/customize.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/customize.h" "/Users/mob/git/appweb/linux-x86-default/inc/customize.h"
 
 $(CONFIG)/obj/config.o: \
     src/config.c\
@@ -393,20 +396,20 @@ $(CONFIG)/bin/libappweb.so: \
 	$(CC) -shared -o $(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) -lpcre -lmpr
 
 $(CONFIG)/inc/edi.h: 
-	rm -fr $(CONFIG)/inc/edi.h
-	cp -r src/esp/edi.h $(CONFIG)/inc/edi.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/esp/edi.h" "/Users/mob/git/appweb/linux-x86-default/inc/edi.h"
 
 $(CONFIG)/inc/esp-app.h: 
-	rm -fr $(CONFIG)/inc/esp-app.h
-	cp -r src/esp/esp-app.h $(CONFIG)/inc/esp-app.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/esp/esp-app.h" "/Users/mob/git/appweb/linux-x86-default/inc/esp-app.h"
 
 $(CONFIG)/inc/esp.h: 
-	rm -fr $(CONFIG)/inc/esp.h
-	cp -r src/esp/esp.h $(CONFIG)/inc/esp.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/esp/esp.h" "/Users/mob/git/appweb/linux-x86-default/inc/esp.h"
 
 $(CONFIG)/inc/mdb.h: 
-	rm -fr $(CONFIG)/inc/mdb.h
-	cp -r src/esp/mdb.h $(CONFIG)/inc/mdb.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/esp/mdb.h" "/Users/mob/git/appweb/linux-x86-default/inc/mdb.h"
 
 $(CONFIG)/obj/edi.o: \
     src/esp/edi.c\
@@ -414,6 +417,12 @@ $(CONFIG)/obj/edi.o: \
     $(CONFIG)/inc/edi.h \
     $(CONFIG)/inc/pcre.h
 	$(CC) -c -o $(CONFIG)/obj/edi.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/edi.c
+
+$(CONFIG)/obj/esp.o: \
+    src/esp/esp.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/esp.h
+	$(CC) -c -o $(CONFIG)/obj/esp.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/esp.c
 
 $(CONFIG)/obj/espAbbrev.o: \
     src/esp/espAbbrev.c\
@@ -471,6 +480,7 @@ $(CONFIG)/bin/libmod_esp.so: \
     $(CONFIG)/inc/esp.h \
     $(CONFIG)/inc/mdb.h \
     $(CONFIG)/obj/edi.o \
+    $(CONFIG)/obj/esp.o \
     $(CONFIG)/obj/espAbbrev.o \
     $(CONFIG)/obj/espFramework.o \
     $(CONFIG)/obj/espHandler.o \
@@ -478,13 +488,7 @@ $(CONFIG)/bin/libmod_esp.so: \
     $(CONFIG)/obj/espTemplate.o \
     $(CONFIG)/obj/mdb.o \
     $(CONFIG)/obj/sdb.o
-	$(CC) -shared -o $(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
-
-$(CONFIG)/obj/esp.o: \
-    src/esp/esp.c\
-    $(CONFIG)/inc/bit.h \
-    $(CONFIG)/inc/esp.h
-	$(CC) -c -o $(CONFIG)/obj/esp.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/esp.c
+	$(CC) -shared -o $(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr
 
 $(CONFIG)/bin/esp: \
     $(CONFIG)/bin/libappweb.so \
@@ -499,33 +503,55 @@ $(CONFIG)/bin/esp: \
     $(CONFIG)/obj/sdb.o
 	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lappweb $(LIBS) -lhttp -lpcre -lmpr -lappweb -lpthread -lm -lrt -ldl -lhttp -lpcre -lmpr $(LDFLAGS)
 
-$(CONFIG)/bin/esp.conf: src/esp/esp.conf
-	rm -fr $(CONFIG)/bin/esp.conf
-	cp -r src/esp/esp.conf $(CONFIG)/bin/esp.conf
+$(CONFIG)/bin/esp.conf: \
+    src/esp/esp.conf
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin"
+	cp "src/esp/esp.conf" "/Users/mob/git/appweb/linux-x86-default/bin/esp.conf"
 
-src/server/esp.conf: src/esp/esp.conf
-	rm -fr src/server/esp.conf
-	cp -r src/esp/esp.conf src/server/esp.conf
+src/server/esp.conf: \
+    src/esp/esp.conf
+	mkdir -p "/Users/mob/git/appweb/src/server"
+	cp "src/esp/esp.conf" "/Users/mob/git/appweb/src/server/esp.conf"
 
-$(CONFIG)/bin/esp-www: src/esp/www
-	rm -fr $(CONFIG)/bin/esp-www
-	cp -r src/esp/www $(CONFIG)/bin/esp-www
+$(CONFIG)/bin/esp-www: \
+    src/esp/esp-www
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www"
+	cp "src/esp/esp-www/app.conf" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/app.conf"
+	cp "src/esp/esp-www/appweb.conf" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/appweb.conf"
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files"
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/layouts"
+	cp "src/esp/esp-www/files/layouts/default.esp" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/layouts/default.esp"
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static"
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/images"
+	cp "src/esp/esp-www/files/static/images/banner.jpg" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/images/banner.jpg"
+	cp "src/esp/esp-www/files/static/images/favicon.ico" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/images/favicon.ico"
+	cp "src/esp/esp-www/files/static/images/splash.jpg" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/images/splash.jpg"
+	cp "src/esp/esp-www/files/static/index.esp" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/index.esp"
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/js/jquery.tablesorter.js"
+	cp "src/esp/esp-www/files/static/layout.css" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/layout.css"
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/themes"
+	cp "src/esp/esp-www/files/static/themes/default.css" "/Users/mob/git/appweb/linux-x86-default/bin/esp-www/esp-www/files/static/themes/default.css"
 
-$(CONFIG)/bin/esp-appweb.conf: src/esp/esp-appweb.conf
-	rm -fr $(CONFIG)/bin/esp-appweb.conf
-	cp -r src/esp/esp-appweb.conf $(CONFIG)/bin/esp-appweb.conf
+$(CONFIG)/bin/esp-appweb.conf: \
+    src/esp/esp-appweb.conf
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/bin"
+	cp "src/esp/esp-appweb.conf" "/Users/mob/git/appweb/linux-x86-default/bin/esp-appweb.conf"
 
 $(CONFIG)/inc/ejs.h: 
-	rm -fr $(CONFIG)/inc/ejs.h
-	cp -r src/deps/ejs/ejs.h $(CONFIG)/inc/ejs.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/deps/ejs/ejs.h" "/Users/mob/git/appweb/linux-x86-default/inc/ejs.h"
 
 $(CONFIG)/inc/ejs.slots.h: 
-	rm -fr $(CONFIG)/inc/ejs.slots.h
-	cp -r src/deps/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/deps/ejs/ejs.slots.h" "/Users/mob/git/appweb/linux-x86-default/inc/ejs.slots.h"
 
 $(CONFIG)/inc/ejsByteGoto.h: 
-	rm -fr $(CONFIG)/inc/ejsByteGoto.h
-	cp -r src/deps/ejs/ejsByteGoto.h $(CONFIG)/inc/ejsByteGoto.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "src/deps/ejs/ejsByteGoto.h" "/Users/mob/git/appweb/linux-x86-default/inc/ejsByteGoto.h"
 
 $(CONFIG)/obj/ejsLib.o: \
     src/deps/ejs/ejsLib.c\
@@ -665,8 +691,8 @@ src/server/cache:
 	cd src/server; mkdir -p cache ; cd ../..
 
 $(CONFIG)/inc/testAppweb.h: 
-	rm -fr $(CONFIG)/inc/testAppweb.h
-	cp -r test/testAppweb.h $(CONFIG)/inc/testAppweb.h
+	mkdir -p "/Users/mob/git/appweb/linux-x86-default/inc"
+	cp "test/testAppweb.h" "/Users/mob/git/appweb/linux-x86-default/inc/testAppweb.h"
 
 $(CONFIG)/obj/testAppweb.o: \
     test/testAppweb.c\
@@ -710,7 +736,7 @@ test/cgi-bin/cgiProgram: $(CONFIG)/bin/cgiProgram
 	cd test; chmod +x cgi-bin/* web/cgiProgram.cgi ; cd ..
 
 test/web/js: 
-	cd test; cp -r ../src/esp/www/files/static/js 'web/js' ; cd ..
+	cd test; cp -r ../src/esp/esp-www/files/static/js 'web/js' ; cd ..
 
 version: 
 	@echo 4.3.0-0
@@ -719,150 +745,61 @@ stop:
 	
 
 installBinary: stop
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/appman" "$(BIT_VAPP_PREFIX)/bin/appman"
-	rm -f "$(BIT_BIN_PREFIX)/appman"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/appman" "$(BIT_BIN_PREFIX)/appman"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/appweb" "$(BIT_VAPP_PREFIX)/bin/appweb"
-	rm -f "$(BIT_BIN_PREFIX)/appweb"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/appweb" "$(BIT_BIN_PREFIX)/appweb"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/esp" "$(BIT_VAPP_PREFIX)/bin/esp"
-	rm -f "$(BIT_BIN_PREFIX)/esp"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/esp" "$(BIT_BIN_PREFIX)/esp"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/http" "$(BIT_VAPP_PREFIX)/bin/http"
-	rm -f "$(BIT_BIN_PREFIX)/http"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/http" "$(BIT_BIN_PREFIX)/http"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/libappweb" "$(BIT_VAPP_PREFIX)/bin/libappweb"
-	rm -f "$(BIT_BIN_PREFIX)/libappweb"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/libappweb" "$(BIT_BIN_PREFIX)/libappweb"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/libest" "$(BIT_VAPP_PREFIX)/bin/libest"
-	rm -f "$(BIT_BIN_PREFIX)/libest"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/libest" "$(BIT_BIN_PREFIX)/libest"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/libhttp" "$(BIT_VAPP_PREFIX)/bin/libhttp"
-	rm -f "$(BIT_BIN_PREFIX)/libhttp"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/libhttp" "$(BIT_BIN_PREFIX)/libhttp"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/libmod*" "$(BIT_VAPP_PREFIX)/bin/libmod*"
-	rm -f "$(BIT_BIN_PREFIX)/libmod*"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/libmod*" "$(BIT_BIN_PREFIX)/libmod*"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/libmpr*" "$(BIT_VAPP_PREFIX)/bin/libmpr*"
-	rm -f "$(BIT_BIN_PREFIX)/libmpr*"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/libmpr*" "$(BIT_BIN_PREFIX)/libmpr*"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/libpcre" "$(BIT_VAPP_PREFIX)/bin/libpcre"
-	rm -f "$(BIT_BIN_PREFIX)/libpcre"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/libpcre" "$(BIT_BIN_PREFIX)/libpcre"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/libsqlite3" "$(BIT_VAPP_PREFIX)/bin/libsqlite3"
-	rm -f "$(BIT_BIN_PREFIX)/libsqlite3"
-	install -d "$(BIT_BIN_PREFIX)"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/libsqlite3" "$(BIT_BIN_PREFIX)/libsqlite3"
-	install -d "$(BIT_VAPP_PREFIX)/bin"
-	install  "$(CONFIG)/bin/esp-*" "$(BIT_VAPP_PREFIX)/bin/esp-*"
-	install -d "/etc/appweb"
-	install  "$(CONFIG)/bin/esp.conf" "/etc/appweb/esp.conf"
-	install -d "/var/www/appweb-default"
-	install -d "/var/www/appweb-default/bench"
-	install -d "/var/www/appweb-default/bench"
-	install  "src/server/web/bench/1b.html" "/var/www/appweb-default/bench/1b.html"
-	install -d "/var/www/appweb-default/bench"
-	install  "src/server/web/bench/4k.html" "/var/www/appweb-default/bench/4k.html"
-	install -d "/var/www/appweb-default/bench"
-	install  "src/server/web/bench/64k.html" "/var/www/appweb-default/bench/64k.html"
-	install -d "/var/www/appweb-default"
-	install  "src/server/web/favicon.ico" "/var/www/appweb-default/favicon.ico"
-	install -d "/var/www/appweb-default"
-	install -d "/var/www/appweb-default/icons"
-	install -d "/var/www/appweb-default/icons"
-	install  "src/server/web/icons/back.gif" "/var/www/appweb-default/icons/back.gif"
-	install -d "/var/www/appweb-default/icons"
-	install  "src/server/web/icons/blank.gif" "/var/www/appweb-default/icons/blank.gif"
-	install -d "/var/www/appweb-default/icons"
-	install  "src/server/web/icons/compressed.gif" "/var/www/appweb-default/icons/compressed.gif"
-	install -d "/var/www/appweb-default/icons"
-	install  "src/server/web/icons/folder.gif" "/var/www/appweb-default/icons/folder.gif"
-	install -d "/var/www/appweb-default/icons"
-	install  "src/server/web/icons/parent.gif" "/var/www/appweb-default/icons/parent.gif"
-	install -d "/var/www/appweb-default/icons"
-	install  "src/server/web/icons/space.gif" "/var/www/appweb-default/icons/space.gif"
-	install -d "/var/www/appweb-default/icons"
-	install  "src/server/web/icons/text.gif" "/var/www/appweb-default/icons/text.gif"
-	install -d "/var/www/appweb-default"
-	install  "src/server/web/iehacks.css" "/var/www/appweb-default/iehacks.css"
-	install -d "/var/www/appweb-default"
-	install -d "/var/www/appweb-default/images"
-	install -d "/var/www/appweb-default/images"
-	install  "src/server/web/images/banner.jpg" "/var/www/appweb-default/images/banner.jpg"
-	install -d "/var/www/appweb-default/images"
-	install  "src/server/web/images/bottomShadow.jpg" "/var/www/appweb-default/images/bottomShadow.jpg"
-	install -d "/var/www/appweb-default/images"
-	install  "src/server/web/images/shadow.jpg" "/var/www/appweb-default/images/shadow.jpg"
-	install -d "/var/www/appweb-default"
-	install  "src/server/web/index.html" "/var/www/appweb-default/index.html"
-	install -d "/var/www/appweb-default"
-	install  "src/server/web/min-index.html" "/var/www/appweb-default/min-index.html"
-	install -d "/var/www/appweb-default"
-	install  "src/server/web/print.css" "/var/www/appweb-default/print.css"
-	install -d "/var/www/appweb-default"
-	install  "src/server/web/screen.css" "/var/www/appweb-default/screen.css"
-	install -d "/var/www/appweb-default"
-	install -d "/var/www/appweb-default/test"
-	install -d "/var/www/appweb-default/test"
-	install  "src/server/web/test/bench.html" "/var/www/appweb-default/test/bench.html"
-	install -d "/var/www/appweb-default/test"
-	install  "src/server/web/test/test.cgi" "/var/www/appweb-default/test/test.cgi"
-	install -d "/var/www/appweb-default/test"
-	install  "src/server/web/test/test.ejs" "/var/www/appweb-default/test/test.ejs"
-	install -d "/var/www/appweb-default/test"
-	install  "src/server/web/test/test.esp" "/var/www/appweb-default/test/test.esp"
-	install -d "/var/www/appweb-default/test"
-	install  "src/server/web/test/test.html" "/var/www/appweb-default/test/test.html"
-	install -d "/var/www/appweb-default/test"
-	install  "src/server/web/test/test.php" "/var/www/appweb-default/test/test.php"
-	install -d "/var/www/appweb-default/test"
-	install  "src/server/web/test/test.pl" "/var/www/appweb-default/test/test.pl"
-	install -d "/var/www/appweb-default/test"
-	install  "src/server/web/test/test.py" "/var/www/appweb-default/test/test.py"
-	install -d "/etc/appweb"
-	install  "src/server/mime.types" "/etc/appweb/mime.types"
-	install -d "/etc/appweb"
-	install  "src/server/appweb.conf" "/etc/appweb/appweb.conf"
-	install -d -m 493 "$(BIT_VAPP_PREFIX)/bin"
-	install -m 493  "$(CONFIG)/bin/*.so*" "$(BIT_VAPP_PREFIX)/bin/*.so*"
-	install -d "$(BIT_VAPP_PREFIX)/bin"
-	install  "$(CONFIG)/bin/ejs.mod" "$(BIT_VAPP_PREFIX)/bin/ejs.mod"
-	rm -f "$(BIT_APP_PREFIX)/latest"
-	install -d "$(BIT_APP_PREFIX)"
-	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
-
-
-start: 
-	
-
-install: stop installBinary start
-	
-
-uninstall: stop
-	
-
-
-genslink: 
-	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
-
+	mkdir -p "/usr/local/lib/appweb/4.3.0/bin"
+	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www"
+	cp "src/esp/esp-www/app.conf" "/usr/local/lib/appweb/4.3.0/bin/esp-www/app.conf"
+	cp "src/esp/esp-www/appweb.conf" "/usr/local/lib/appweb/4.3.0/bin/esp-www/appweb.conf"
+	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files"
+	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/layouts"
+	cp "src/esp/esp-www/files/layouts/default.esp" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/layouts/default.esp"
+	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static"
+	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/images"
+	cp "src/esp/esp-www/files/static/images/banner.jpg" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/images/banner.jpg"
+	cp "src/esp/esp-www/files/static/images/favicon.ico" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/images/favicon.ico"
+	cp "src/esp/esp-www/files/static/images/splash.jpg" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/images/splash.jpg"
+	cp "src/esp/esp-www/files/static/index.esp" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/index.esp"
+	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/js/jquery.tablesorter.js"
+	cp "src/esp/esp-www/files/static/layout.css" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/layout.css"
+	mkdir -p "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/themes"
+	cp "src/esp/esp-www/files/static/themes/default.css" "/usr/local/lib/appweb/4.3.0/bin/esp-www/files/static/themes/default.css"
+	cp "src/esp/esp-appweb.conf" "/usr/local/lib/appweb/4.3.0/bin/esp-appweb.conf"
+	mkdir -p "/var/www/appweb-default"
+	mkdir -p "/var/www/appweb-default/web"
+	mkdir -p "/var/www/appweb-default/web/bench"
+	cp "src/server/web/bench/1b.html" "/var/www/appweb-default/web/bench/1b.html"
+	cp "src/server/web/bench/4k.html" "/var/www/appweb-default/web/bench/4k.html"
+	cp "src/server/web/bench/64k.html" "/var/www/appweb-default/web/bench/64k.html"
+	cp "src/server/web/favicon.ico" "/var/www/appweb-default/web/favicon.ico"
+	mkdir -p "/var/www/appweb-default/web/icons"
+	cp "src/server/web/icons/back.gif" "/var/www/appweb-default/web/icons/back.gif"
+	cp "src/server/web/icons/blank.gif" "/var/www/appweb-default/web/icons/blank.gif"
+	cp "src/server/web/icons/compressed.gif" "/var/www/appweb-default/web/icons/compressed.gif"
+	cp "src/server/web/icons/folder.gif" "/var/www/appweb-default/web/icons/folder.gif"
+	cp "src/server/web/icons/parent.gif" "/var/www/appweb-default/web/icons/parent.gif"
+	cp "src/server/web/icons/space.gif" "/var/www/appweb-default/web/icons/space.gif"
+	cp "src/server/web/icons/text.gif" "/var/www/appweb-default/web/icons/text.gif"
+	cp "src/server/web/iehacks.css" "/var/www/appweb-default/web/iehacks.css"
+	mkdir -p "/var/www/appweb-default/web/images"
+	cp "src/server/web/images/banner.jpg" "/var/www/appweb-default/web/images/banner.jpg"
+	cp "src/server/web/images/bottomShadow.jpg" "/var/www/appweb-default/web/images/bottomShadow.jpg"
+	cp "src/server/web/images/shadow.jpg" "/var/www/appweb-default/web/images/shadow.jpg"
+	cp "src/server/web/index.html" "/var/www/appweb-default/web/index.html"
+	cp "src/server/web/min-index.html" "/var/www/appweb-default/web/min-index.html"
+	cp "src/server/web/print.css" "/var/www/appweb-default/web/print.css"
+	cp "src/server/web/screen.css" "/var/www/appweb-default/web/screen.css"
+	mkdir -p "/var/www/appweb-default/web/test"
+	cp "src/server/web/test/bench.html" "/var/www/appweb-default/web/test/bench.html"
+	cp "src/server/web/test/test.cgi" "/var/www/appweb-default/web/test/test.cgi"
+	cp "src/server/web/test/test.ejs" "/var/www/appweb-default/web/test/test.ejs"
+	cp "src/server/web/test/test.esp" "/var/www/appweb-default/web/test/test.esp"
+	cp "src/server/web/test/test.html" "/var/www/appweb-default/web/test/test.html"
+	cp "src/server/web/test/test.php" "/var/www/appweb-default/web/test/test.php"
+	cp "src/server/web/test/test.pl" "/var/www/appweb-default/web/test/test.pl"
+	cp "src/server/web/test/test.py" "/var/www/appweb-default/web/test/test.py"
+	mkdir -p "/etc/appweb"
+	cp "src/server/mime.types" "/etc/appweb/mime.types"
+	cp "src/server/appweb.conf" "/etc/appweb/appweb.conf"
