@@ -97,8 +97,49 @@
   <CustomBuildStep>
     <Command>cd ..\..\src\esp
 if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\app.conf $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\appweb.conf $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
 if not exist $(BinDir)\esp-www md $(BinDir)\esp-www
-xcopy /S /Y esp-www $(BinDir)\esp-www
+xcopy /S /Y esp-www\files $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+if not exist $(BinDir)\esp-www md $(BinDir)\esp-www
+xcopy /S /Y esp-www\files\layouts $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\layouts\default.esp $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+if not exist $(BinDir)\esp-www md $(BinDir)\esp-www
+xcopy /S /Y esp-www\files\static $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+if not exist $(BinDir)\esp-www md $(BinDir)\esp-www
+xcopy /S /Y esp-www\files\static\images $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\static\images\banner.jpg $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\static\images\favicon.ico $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\static\images\splash.jpg $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\static\index.esp $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+if not exist $(BinDir)\esp-www md $(BinDir)\esp-www
+xcopy /S /Y esp-www\files\static\js $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\static\js\jquery.esp.js $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\static\js\jquery.js $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\static\js\jquery.simplemodal.js $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\static\js\jquery.tablesorter.js $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\static\layout.css $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+if not exist $(BinDir)\esp-www md $(BinDir)\esp-www
+xcopy /S /Y esp-www\files\static\themes $(BinDir)\esp-www
+if exist $(BinDir)\esp-www del /Q $(BinDir)\esp-www
+copy /Y esp-www\files\static\themes\default.css $(BinDir)\esp-www
 cd ..\..\projects\appweb-windows-default</Command>
     <Outputs>$(BinDir)\esp-www</Outputs>
   </CustomBuildStep>

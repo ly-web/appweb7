@@ -22,6 +22,10 @@ Bit.load({
         "doc/doc.bit",
     ],
 
+    modules: [
+        'bits/appweb.es',
+    ],
+
     customize: [
         /* 
             The optional custom.bit file is loaded after main.bit is fully processed. It can
