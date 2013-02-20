@@ -2338,25 +2338,7 @@ cp -r esp.conf ../server/esp.conf
 			files = (
 			);
 			inputPaths = (
-../src/esp/esp-www/app.conf,
-../src/esp/esp-www/appweb.conf,
-../src/esp/esp-www/files,
-../src/esp/esp-www/files/layouts,
-../src/esp/esp-www/files/layouts/default.esp,
-../src/esp/esp-www/files/static,
-../src/esp/esp-www/files/static/images,
-../src/esp/esp-www/files/static/images/banner.jpg,
-../src/esp/esp-www/files/static/images/favicon.ico,
-../src/esp/esp-www/files/static/images/splash.jpg,
-../src/esp/esp-www/files/static/index.esp,
-../src/esp/esp-www/files/static/js,
-../src/esp/esp-www/files/static/js/jquery.esp.js,
-../src/esp/esp-www/files/static/js/jquery.js,
-../src/esp/esp-www/files/static/js/jquery.simplemodal.js,
-../src/esp/esp-www/files/static/js/jquery.tablesorter.js,
-../src/esp/esp-www/files/static/layout.css,
-../src/esp/esp-www/files/static/themes,
-../src/esp/esp-www/files/static/themes/default.css
+../src/esp/esp-www
 			);
 			outputPaths = (
 ../macosx-x64-default/bin/esp-www
@@ -2366,43 +2348,7 @@ cp -r esp.conf ../server/esp.conf
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/esp
 rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/app.conf ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/appweb.conf ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/layouts ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/layouts/default.esp ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/images ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/images/banner.jpg ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/images/favicon.ico ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/images/splash.jpg ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/index.esp ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/js ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/js/jquery.esp.js ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/js/jquery.js ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/js/jquery.simplemodal.js ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/js/jquery.tablesorter.js ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/layout.css ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/themes ../${OUT_DIR}/bin/esp-www
-rm -rf ../${OUT_DIR}/bin/esp-www
-cp -r esp-www/files/static/themes/default.css ../${OUT_DIR}/bin/esp-www
+cp -r esp-www ../${OUT_DIR}/bin/esp-www
 ";
 		};
 		AB04609AAB04738200000017 /* ShellScript for esp-appweb.conf */ = {
@@ -2557,7 +2503,7 @@ chmod +x cgi-bin/* web/cgiProgram.cgi";
 			files = (
 			);
 			inputPaths = (
-
+../src/esp/esp-www/files/static/js
 			);
 			outputPaths = (
 ../test/web/js
@@ -2566,7 +2512,9 @@ chmod +x cgi-bin/* web/cgiProgram.cgi";
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../test
-cp -r ../src/esp/esp-www/files/static/js 'web/js'";
+rm -rf web/js
+cp -r ../src/esp/esp-www/files/static/js web/js
+";
 		};
 		AB04609AAB04738200000065 /* ShellScript for Prep */ = {
 			isa = PBXShellScriptBuildPhase;

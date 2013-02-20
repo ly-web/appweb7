@@ -511,25 +511,7 @@ src/server/esp.conf: \
 	cp "src/esp/esp.conf" "src/server/esp.conf"
 
 $(CONFIG)/bin/esp-www: \
-    src/esp/esp-www/app.conf \
-    src/esp/esp-www/appweb.conf \
-    src/esp/esp-www/files \
-    src/esp/esp-www/files/layouts \
-    src/esp/esp-www/files/layouts/default.esp \
-    src/esp/esp-www/files/static \
-    src/esp/esp-www/files/static/images \
-    src/esp/esp-www/files/static/images/banner.jpg \
-    src/esp/esp-www/files/static/images/favicon.ico \
-    src/esp/esp-www/files/static/images/splash.jpg \
-    src/esp/esp-www/files/static/index.esp \
-    src/esp/esp-www/files/static/js \
-    src/esp/esp-www/files/static/js/jquery.esp.js \
-    src/esp/esp-www/files/static/js/jquery.js \
-    src/esp/esp-www/files/static/js/jquery.simplemodal.js \
-    src/esp/esp-www/files/static/js/jquery.tablesorter.js \
-    src/esp/esp-www/files/static/layout.css \
-    src/esp/esp-www/files/static/themes \
-    src/esp/esp-www/files/static/themes/default.css
+    src/esp/esp-www/
 	mkdir -p "$(CONFIG)/bin/esp-www"
 	cp "src/esp/esp-www/app.conf" "$(CONFIG)/bin/esp-www/app.conf"
 	cp "src/esp/esp-www/appweb.conf" "$(CONFIG)/bin/esp-www/appweb.conf"
@@ -547,49 +529,6 @@ $(CONFIG)/bin/esp-www: \
 	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.simplemodal.js"
 	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.tablesorter.js"
 	cp "src/esp/esp-www/files/static/layout.css" "$(CONFIG)/bin/esp-www/files/static/layout.css"
-	mkdir -p "$(CONFIG)/bin/esp-www/files/static/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "$(CONFIG)/bin/esp-www/files/static/themes/default.css"
-	mkdir -p "$(CONFIG)/bin/esp-www/layouts"
-	cp "src/esp/esp-www/files/layouts/default.esp" "$(CONFIG)/bin/esp-www/layouts/default.esp"
-	mkdir -p "$(CONFIG)/bin/esp-www/files/layouts"
-	cp "src/esp/esp-www/files/layouts/default.esp" "$(CONFIG)/bin/esp-www/files/layouts/default.esp"
-	mkdir -p "$(CONFIG)/bin/esp-www/static/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(CONFIG)/bin/esp-www/static/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(CONFIG)/bin/esp-www/static/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(CONFIG)/bin/esp-www/static/images/splash.jpg"
-	mkdir -p "$(CONFIG)/bin/esp-www/static"
-	cp "src/esp/esp-www/files/static/index.esp" "$(CONFIG)/bin/esp-www/static/index.esp"
-	mkdir -p "$(CONFIG)/bin/esp-www/static/js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(CONFIG)/bin/esp-www/static/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "$(CONFIG)/bin/esp-www/static/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(CONFIG)/bin/esp-www/static/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(CONFIG)/bin/esp-www/static/js/jquery.tablesorter.js"
-	cp "src/esp/esp-www/files/static/layout.css" "$(CONFIG)/bin/esp-www/static/layout.css"
-	mkdir -p "$(CONFIG)/bin/esp-www/static/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "$(CONFIG)/bin/esp-www/static/themes/default.css"
-	mkdir -p "$(CONFIG)/bin/esp-www/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(CONFIG)/bin/esp-www/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(CONFIG)/bin/esp-www/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(CONFIG)/bin/esp-www/images/splash.jpg"
-	mkdir -p "$(CONFIG)/bin/esp-www/files/static/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(CONFIG)/bin/esp-www/files/static/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(CONFIG)/bin/esp-www/files/static/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(CONFIG)/bin/esp-www/files/static/images/splash.jpg"
-	mkdir -p "$(CONFIG)/bin/esp-www/files/static"
-	cp "src/esp/esp-www/files/static/index.esp" "$(CONFIG)/bin/esp-www/files/static/index.esp"
-	mkdir -p "$(CONFIG)/bin/esp-www/js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(CONFIG)/bin/esp-www/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "$(CONFIG)/bin/esp-www/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(CONFIG)/bin/esp-www/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(CONFIG)/bin/esp-www/js/jquery.tablesorter.js"
-	mkdir -p "$(CONFIG)/bin/esp-www/files/static/js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.tablesorter.js"
-	cp "src/esp/esp-www/files/static/layout.css" "$(CONFIG)/bin/esp-www/files/static/layout.css"
-	mkdir -p "$(CONFIG)/bin/esp-www/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "$(CONFIG)/bin/esp-www/themes/default.css"
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static/themes"
 	cp "src/esp/esp-www/files/static/themes/default.css" "$(CONFIG)/bin/esp-www/files/static/themes/default.css"
 
@@ -792,8 +731,13 @@ test/cgi-bin/cgiProgram: $(CONFIG)/bin/cgiProgram
 	cd test; cp ../$(CONFIG)/bin/cgiProgram web/cgiProgram.cgi ; cd ..
 	cd test; chmod +x cgi-bin/* web/cgiProgram.cgi ; cd ..
 
-test/web/js: 
-	cd test; cp -r ../src/esp/esp-www/files/static/js 'web/js' ; cd ..
+test/web/js: \
+    src/esp/esp-www/files/static/js/
+	mkdir -p "test/web/js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "test/web/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "test/web/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "test/web/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "test/web/js/jquery.tablesorter.js"
 
 version: 
 	@echo 4.3.0-0
@@ -802,6 +746,9 @@ stop: compile
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 installBinary: stop
+	rm -f "$(BIT_APP_PREFIX)/latest"
+	mkdir -p "$(BIT_APP_PREFIX)"
+	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www"
 	cp "src/esp/esp-www/app.conf" "$(BIT_VAPP_PREFIX)/bin/esp-www/app.conf"
 	cp "src/esp/esp-www/appweb.conf" "$(BIT_VAPP_PREFIX)/bin/esp-www/appweb.conf"
@@ -823,47 +770,44 @@ installBinary: stop
 	cp "src/esp/esp-www/files/static/themes/default.css" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/themes/default.css"
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin"
 	cp "src/esp/esp-appweb.conf" "$(BIT_VAPP_PREFIX)/bin/esp-appweb.conf"
-	mkdir -p "/var/www/appweb-default/web/bench"
-	cp "src/server/web/bench/1b.html" "/var/www/appweb-default/web/bench/1b.html"
-	cp "src/server/web/bench/4k.html" "/var/www/appweb-default/web/bench/4k.html"
-	cp "src/server/web/bench/64k.html" "/var/www/appweb-default/web/bench/64k.html"
-	mkdir -p "/var/www/appweb-default/web"
-	cp "src/server/web/favicon.ico" "/var/www/appweb-default/web/favicon.ico"
-	mkdir -p "/var/www/appweb-default/web/icons"
-	cp "src/server/web/icons/back.gif" "/var/www/appweb-default/web/icons/back.gif"
-	cp "src/server/web/icons/blank.gif" "/var/www/appweb-default/web/icons/blank.gif"
-	cp "src/server/web/icons/compressed.gif" "/var/www/appweb-default/web/icons/compressed.gif"
-	cp "src/server/web/icons/folder.gif" "/var/www/appweb-default/web/icons/folder.gif"
-	cp "src/server/web/icons/parent.gif" "/var/www/appweb-default/web/icons/parent.gif"
-	cp "src/server/web/icons/space.gif" "/var/www/appweb-default/web/icons/space.gif"
-	cp "src/server/web/icons/text.gif" "/var/www/appweb-default/web/icons/text.gif"
-	cp "src/server/web/iehacks.css" "/var/www/appweb-default/web/iehacks.css"
-	mkdir -p "/var/www/appweb-default/web/images"
-	cp "src/server/web/images/banner.jpg" "/var/www/appweb-default/web/images/banner.jpg"
-	cp "src/server/web/images/bottomShadow.jpg" "/var/www/appweb-default/web/images/bottomShadow.jpg"
-	cp "src/server/web/images/shadow.jpg" "/var/www/appweb-default/web/images/shadow.jpg"
-	cp "src/server/web/index.html" "/var/www/appweb-default/web/index.html"
-	cp "src/server/web/min-index.html" "/var/www/appweb-default/web/min-index.html"
-	cp "src/server/web/print.css" "/var/www/appweb-default/web/print.css"
-	cp "src/server/web/screen.css" "/var/www/appweb-default/web/screen.css"
-	mkdir -p "/var/www/appweb-default/web/test"
-	cp "src/server/web/test/bench.html" "/var/www/appweb-default/web/test/bench.html"
-	cp "src/server/web/test/test.cgi" "/var/www/appweb-default/web/test/test.cgi"
-	cp "src/server/web/test/test.ejs" "/var/www/appweb-default/web/test/test.ejs"
-	cp "src/server/web/test/test.esp" "/var/www/appweb-default/web/test/test.esp"
-	cp "src/server/web/test/test.html" "/var/www/appweb-default/web/test/test.html"
-	cp "src/server/web/test/test.php" "/var/www/appweb-default/web/test/test.php"
-	cp "src/server/web/test/test.pl" "/var/www/appweb-default/web/test/test.pl"
-	cp "src/server/web/test/test.py" "/var/www/appweb-default/web/test/test.py"
-	mkdir -p "/etc/appweb"
-	cp "src/server/mime.types" "/etc/appweb/mime.types"
-	cp "src/server/appweb.conf" "/etc/appweb/appweb.conf"
-	install -d -m 420 "//Library/LaunchDaemons"
-	install -m 420 "package/macosx/com.embedthis.appweb.plist" "//Library/LaunchDaemons/com.embedthis.appweb.plist"
-	rm -f "$(BIT_APP_PREFIX)/latest"
-	mkdir -p "$(BIT_APP_PREFIX)"
-	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
-
+	mkdir -p "$(BIT_WEB_PREFIX)/web/bench"
+	cp "src/server/web/bench/1b.html" "$(BIT_WEB_PREFIX)/web/bench/1b.html"
+	cp "src/server/web/bench/4k.html" "$(BIT_WEB_PREFIX)/web/bench/4k.html"
+	cp "src/server/web/bench/64k.html" "$(BIT_WEB_PREFIX)/web/bench/64k.html"
+	mkdir -p "$(BIT_WEB_PREFIX)/web"
+	cp "src/server/web/favicon.ico" "$(BIT_WEB_PREFIX)/web/favicon.ico"
+	mkdir -p "$(BIT_WEB_PREFIX)/web/icons"
+	cp "src/server/web/icons/back.gif" "$(BIT_WEB_PREFIX)/web/icons/back.gif"
+	cp "src/server/web/icons/blank.gif" "$(BIT_WEB_PREFIX)/web/icons/blank.gif"
+	cp "src/server/web/icons/compressed.gif" "$(BIT_WEB_PREFIX)/web/icons/compressed.gif"
+	cp "src/server/web/icons/folder.gif" "$(BIT_WEB_PREFIX)/web/icons/folder.gif"
+	cp "src/server/web/icons/parent.gif" "$(BIT_WEB_PREFIX)/web/icons/parent.gif"
+	cp "src/server/web/icons/space.gif" "$(BIT_WEB_PREFIX)/web/icons/space.gif"
+	cp "src/server/web/icons/text.gif" "$(BIT_WEB_PREFIX)/web/icons/text.gif"
+	cp "src/server/web/iehacks.css" "$(BIT_WEB_PREFIX)/web/iehacks.css"
+	mkdir -p "$(BIT_WEB_PREFIX)/web/images"
+	cp "src/server/web/images/banner.jpg" "$(BIT_WEB_PREFIX)/web/images/banner.jpg"
+	cp "src/server/web/images/bottomShadow.jpg" "$(BIT_WEB_PREFIX)/web/images/bottomShadow.jpg"
+	cp "src/server/web/images/shadow.jpg" "$(BIT_WEB_PREFIX)/web/images/shadow.jpg"
+	cp "src/server/web/index.html" "$(BIT_WEB_PREFIX)/web/index.html"
+	cp "src/server/web/min-index.html" "$(BIT_WEB_PREFIX)/web/min-index.html"
+	cp "src/server/web/print.css" "$(BIT_WEB_PREFIX)/web/print.css"
+	cp "src/server/web/screen.css" "$(BIT_WEB_PREFIX)/web/screen.css"
+	mkdir -p "$(BIT_WEB_PREFIX)/web/test"
+	cp "src/server/web/test/bench.html" "$(BIT_WEB_PREFIX)/web/test/bench.html"
+	cp "src/server/web/test/test.cgi" "$(BIT_WEB_PREFIX)/web/test/test.cgi"
+	cp "src/server/web/test/test.ejs" "$(BIT_WEB_PREFIX)/web/test/test.ejs"
+	cp "src/server/web/test/test.esp" "$(BIT_WEB_PREFIX)/web/test/test.esp"
+	cp "src/server/web/test/test.html" "$(BIT_WEB_PREFIX)/web/test/test.html"
+	cp "src/server/web/test/test.php" "$(BIT_WEB_PREFIX)/web/test/test.php"
+	cp "src/server/web/test/test.pl" "$(BIT_WEB_PREFIX)/web/test/test.pl"
+	cp "src/server/web/test/test.py" "$(BIT_WEB_PREFIX)/web/test/test.py"
+	mkdir -p "$(BIT_ETC_PREFIX)"
+	cp "src/server/mime.types" "$(BIT_ETC_PREFIX)/mime.types"
+	cp "src/server/appweb.conf" "$(BIT_ETC_PREFIX)/appweb.conf"
+	install -d -g wheel -m 644 "//Library/LaunchDaemons"
+	install -g wheel -m 644 "package/macosx/com.embedthis.appweb.plist" "//Library/LaunchDaemons/com.embedthis.appweb.plist"
+	echo 'set LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_CACHE_PREFIX)"\nDocuments "$(BIT_WEB_PREFIX)\nListen 80\n' >$(BIT_ETC_PREFIX)/install.conf
 
 start: compile stop
 	./$(CONFIG)/bin/appman install enable start
@@ -874,11 +818,13 @@ install: stop installBinary start
 uninstall: stop
 	rmdir -p "$(BIT_APP_PREFIX)"
 	rmdir -p "$(BIT_VAPP_PREFIX)"
-	rmdir -p "/etc/appweb"
-	rmdir -p "/var/www/appweb-default"
-	rmdir -p "/var/log/appweb"
-	rmdir -p "/var/spool/appweb"
-	rmdir -p "/var/spool/appweb/cache"
+	rmdir -p "$(BIT_ETC_PREFIX)"
+	rmdir -p "$(BIT_WEB_PREFIX)"
+	rmdir -p "$(BIT_LOG_PREFIX)"
+	rmdir -p "$(BIT_SPOOL_PREFIX)"
+	rmdir -p "$(BIT_CACHE_PREFIX)"
+	rmdir -p "$(BIT_VAPP_PREFIX)"
+	rmdir -p "$(BIT_APP_PREFIX)"
 
 
 genslink: 

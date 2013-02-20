@@ -515,25 +515,7 @@ src/server/esp.conf: \
 	cp "src/esp/esp.conf" "src/server/esp.conf"
 
 $(CONFIG)/bin/esp-www: \
-    src/esp/esp-www/app.conf \
-    src/esp/esp-www/appweb.conf \
-    src/esp/esp-www/files \
-    src/esp/esp-www/files/layouts \
-    src/esp/esp-www/files/layouts/default.esp \
-    src/esp/esp-www/files/static \
-    src/esp/esp-www/files/static/images \
-    src/esp/esp-www/files/static/images/banner.jpg \
-    src/esp/esp-www/files/static/images/favicon.ico \
-    src/esp/esp-www/files/static/images/splash.jpg \
-    src/esp/esp-www/files/static/index.esp \
-    src/esp/esp-www/files/static/js \
-    src/esp/esp-www/files/static/js/jquery.esp.js \
-    src/esp/esp-www/files/static/js/jquery.js \
-    src/esp/esp-www/files/static/js/jquery.simplemodal.js \
-    src/esp/esp-www/files/static/js/jquery.tablesorter.js \
-    src/esp/esp-www/files/static/layout.css \
-    src/esp/esp-www/files/static/themes \
-    src/esp/esp-www/files/static/themes/default.css
+    src/esp/esp-www/
 	mkdir -p "$(CONFIG)/bin/esp-www"
 	cp "src/esp/esp-www/app.conf" "$(CONFIG)/bin/esp-www/app.conf"
 	cp "src/esp/esp-www/appweb.conf" "$(CONFIG)/bin/esp-www/appweb.conf"
@@ -551,49 +533,6 @@ $(CONFIG)/bin/esp-www: \
 	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.simplemodal.js"
 	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.tablesorter.js"
 	cp "src/esp/esp-www/files/static/layout.css" "$(CONFIG)/bin/esp-www/files/static/layout.css"
-	mkdir -p "$(CONFIG)/bin/esp-www/files/static/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "$(CONFIG)/bin/esp-www/files/static/themes/default.css"
-	mkdir -p "$(CONFIG)/bin/esp-www/layouts"
-	cp "src/esp/esp-www/files/layouts/default.esp" "$(CONFIG)/bin/esp-www/layouts/default.esp"
-	mkdir -p "$(CONFIG)/bin/esp-www/files/layouts"
-	cp "src/esp/esp-www/files/layouts/default.esp" "$(CONFIG)/bin/esp-www/files/layouts/default.esp"
-	mkdir -p "$(CONFIG)/bin/esp-www/static/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(CONFIG)/bin/esp-www/static/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(CONFIG)/bin/esp-www/static/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(CONFIG)/bin/esp-www/static/images/splash.jpg"
-	mkdir -p "$(CONFIG)/bin/esp-www/static"
-	cp "src/esp/esp-www/files/static/index.esp" "$(CONFIG)/bin/esp-www/static/index.esp"
-	mkdir -p "$(CONFIG)/bin/esp-www/static/js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(CONFIG)/bin/esp-www/static/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "$(CONFIG)/bin/esp-www/static/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(CONFIG)/bin/esp-www/static/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(CONFIG)/bin/esp-www/static/js/jquery.tablesorter.js"
-	cp "src/esp/esp-www/files/static/layout.css" "$(CONFIG)/bin/esp-www/static/layout.css"
-	mkdir -p "$(CONFIG)/bin/esp-www/static/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "$(CONFIG)/bin/esp-www/static/themes/default.css"
-	mkdir -p "$(CONFIG)/bin/esp-www/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(CONFIG)/bin/esp-www/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(CONFIG)/bin/esp-www/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(CONFIG)/bin/esp-www/images/splash.jpg"
-	mkdir -p "$(CONFIG)/bin/esp-www/files/static/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(CONFIG)/bin/esp-www/files/static/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(CONFIG)/bin/esp-www/files/static/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(CONFIG)/bin/esp-www/files/static/images/splash.jpg"
-	mkdir -p "$(CONFIG)/bin/esp-www/files/static"
-	cp "src/esp/esp-www/files/static/index.esp" "$(CONFIG)/bin/esp-www/files/static/index.esp"
-	mkdir -p "$(CONFIG)/bin/esp-www/js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(CONFIG)/bin/esp-www/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "$(CONFIG)/bin/esp-www/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(CONFIG)/bin/esp-www/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(CONFIG)/bin/esp-www/js/jquery.tablesorter.js"
-	mkdir -p "$(CONFIG)/bin/esp-www/files/static/js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(CONFIG)/bin/esp-www/files/static/js/jquery.tablesorter.js"
-	cp "src/esp/esp-www/files/static/layout.css" "$(CONFIG)/bin/esp-www/files/static/layout.css"
-	mkdir -p "$(CONFIG)/bin/esp-www/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "$(CONFIG)/bin/esp-www/themes/default.css"
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static/themes"
 	cp "src/esp/esp-www/files/static/themes/default.css" "$(CONFIG)/bin/esp-www/files/static/themes/default.css"
 
@@ -796,8 +735,13 @@ test/cgi-bin/cgiProgram.out: $(CONFIG)/bin/cgiProgram.out
 	cd test; cp ../$(CONFIG)/bin/cgiProgram.out web/cgiProgram.cgi ; cd ..
 	cd test; chmod +x cgi-bin/* web/cgiProgram.cgi ; cd ..
 
-test/web/js: 
-	cd test; cp -r ../src/esp/esp-www/files/static/js 'web/js' ; cd ..
+test/web/js: \
+    src/esp/esp-www/files/static/js/
+	mkdir -p "test/web/js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "test/web/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "test/web/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "test/web/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "test/web/js/jquery.tablesorter.js"
 
 version: 
 	@echo 4.3.0-0

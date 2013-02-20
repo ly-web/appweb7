@@ -52,9 +52,11 @@ Bit.load({
                     /* Don't use wild-cards for cross-generation  */
                     '${BIN}/libapp${SHOBJ}',
                     '${BIN}/libappweb${SHOBJ}',
+                    '${BIN}/libejs${SHOBJ}',
                     '${BIN}/libest${SHOBJ}',
                     '${BIN}/libhttp${SHOBJ}',
                     '${BIN}/libmod_cgi${SHOBJ}',
+                    '${BIN}/libmod_ejs${SHOBJ}',
                     '${BIN}/libmod_esp${SHOBJ}',
                     '${BIN}/libmod_php${SHOBJ}',
                     '${BIN}/libmod_ssl${SHOBJ}',
@@ -81,7 +83,6 @@ Bit.load({
             },{ from:       'src/server/web', 
                 to:         '${web}/', 
                 exclude:    /mgmt/, 
-                subtree:    true,
                 set:        'core',
 
             },{ 
@@ -120,16 +121,17 @@ Bit.load({
                 set:        'core',
 
             },{
+                write:      '{ dirs: { cache: "${cache}" } }\n',
+                to:         '${etc}/ejsrc',
+                set:        'core',
+                enable:     false,
+
+            },{
                 from:       '${INC}/*.h',
                 to:         '${vapp}/inc/',
                 set:        'dev',
                 linkin:     '${inc}/appweb',
                 enable:     true,
-
-            },{
-                write:      '{ dirs: { cache: "${cache}" } }\n'
-                to:         '${etc}/ejsrc',
-                set:        'core',
 
             },{
                 from:       '${BIN}/ejs.mod',
@@ -150,6 +152,7 @@ Bit.load({
                 from:        'package/macosx/com.embedthis.appweb.plist',
                 to:          '${root}/Library/LaunchDaemons/com.embedthis.appweb.plist',
                 permissions: 0644,
+                _group:       'wheel',
                 set:         'service',
                 root:        true,
                 enable:      "bit.platform.os == 'macosx'",
