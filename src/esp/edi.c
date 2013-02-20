@@ -134,7 +134,7 @@ PUBLIC EdiRec *ediCreateRec(Edi *edi, cchar *tableName)
 
 PUBLIC int ediDelete(Edi *edi, cchar *path)
 {
-    return edi->provider->delete(path);
+    return edi->provider->deleteDatabase(path);
 }
 
 

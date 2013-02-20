@@ -210,7 +210,7 @@ typedef struct EdiProvider {
     int       (*changeColumn)(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
     void      (*close)(Edi *edi);
     EdiRec    *(*createRec)(Edi *edi, cchar *tableName);
-    int       (*delete)(cchar *path);
+    int       (*deleteDatabase)(cchar *path);
     int       (*deleteRow)(Edi *edi, cchar *tableName, cchar *key);
     MprList   *(*getColumns)(Edi *edi, cchar *tableName);
     int       (*getColumnSchema)(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
