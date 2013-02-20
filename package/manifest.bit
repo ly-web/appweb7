@@ -80,7 +80,15 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                enable:     "bit.packs.php && bit.packs.php.enable",
+                enable:     "bit.packs.php && bit.packs.php.enable && bit.platform.os != 'windows'",
+
+            },{ from:        [
+                    '${BIN}/libmod_php${SHOBJ}',
+                    '${BIN}/php5ts${SHOBJ}',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.packs.php && bit.packs.php.enable && bit.platform.os == 'windows'",
 
             },{
                 from:       ['src/esp/esp-www', 'src/esp/esp-appweb.conf'],
