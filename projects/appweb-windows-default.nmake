@@ -788,11 +788,19 @@ stop: compile
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 
 installBinary: stop
+	if not exist "C:/" md "C:/"
+	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
+	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
 	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
 	if not exist "$(BIT_VAPP_PREFIX)\inc" md "$(BIT_VAPP_PREFIX)\inc"
 	if not exist "$(BIT_VAPP_PREFIX)\man" md "$(BIT_VAPP_PREFIX)\man"
+	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
 	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
+	if not exist "$(BIT_VAPP_PREFIX)\log" md "$(BIT_VAPP_PREFIX)\log"
 	if not exist "$(BIT_VAPP_PREFIX)\tmp" md "$(BIT_VAPP_PREFIX)\tmp"
+	if not exist "$(BIT_VAPP_PREFIX)\cache" md "$(BIT_VAPP_PREFIX)\cache"
+	if not exist "$(BIT_VAPP_PREFIX)\log" md "$(BIT_VAPP_PREFIX)\log"
+	if not exist "$(BIT_VAPP_PREFIX)\cache" md "$(BIT_VAPP_PREFIX)\cache"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www" md "$(BIT_VAPP_PREFIX)\bin\esp-www"
 	copy /Y "src\esp\esp-www\app.conf" "$(BIT_VAPP_PREFIX)\bin\esp-www\app.conf"
 	copy /Y "src\esp\esp-www\appweb.conf" "$(BIT_VAPP_PREFIX)\bin\esp-www\appweb.conf"

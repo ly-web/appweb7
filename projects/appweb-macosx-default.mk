@@ -746,9 +746,16 @@ stop: compile
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 installBinary: stop
+	mkdir -p "$(BIT_APP_PREFIX)"
+	mkdir -p "$(BIT_VAPP_PREFIX)"
+	mkdir -p "$(BIT_WEB_PREFIX)"
+	mkdir -p "$(BIT_SPOOL_PREFIX)"
+	mkdir -p "$(BIT_CACHE_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
+	mkdir -p "$(BIT_LOG_PREFIX)"
+	mkdir -p "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www"
 	cp "src/esp/esp-www/app.conf" "$(BIT_VAPP_PREFIX)/bin/esp-www/app.conf"
 	cp "src/esp/esp-www/appweb.conf" "$(BIT_VAPP_PREFIX)/bin/esp-www/appweb.conf"
@@ -805,8 +812,8 @@ installBinary: stop
 	mkdir -p "$(BIT_ETC_PREFIX)"
 	cp "src/server/mime.types" "$(BIT_ETC_PREFIX)/mime.types"
 	cp "src/server/appweb.conf" "$(BIT_ETC_PREFIX)/appweb.conf"
-	install -d -g wheel -m 644 "//Library/LaunchDaemons"
-	install -g wheel -m 644 "package/macosx/com.embedthis.appweb.plist" "//Library/LaunchDaemons/com.embedthis.appweb.plist"
+	install -d -m 644 "//Library/LaunchDaemons"
+	install -m 644 "package/macosx/com.embedthis.appweb.plist" "//Library/LaunchDaemons/com.embedthis.appweb.plist"
 	echo 'set LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_CACHE_PREFIX)"\nDocuments "$(BIT_WEB_PREFIX)\nListen 80\n' >$(BIT_ETC_PREFIX)/install.conf
 
 start: compile stop
