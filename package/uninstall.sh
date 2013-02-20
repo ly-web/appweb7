@@ -165,7 +165,6 @@ preClean() {
     local f
     local cdir=`pwd`
 
-#   cp "$ABIN/linkup" /tmp/linkup$$
     if [ $OS != WIN ] ; then
         rm -f /var/lock/subsys/$PRODUCT /var/lock/$PRODUCT
         rm -fr "${LOG_PREFIX}"
@@ -216,11 +215,7 @@ postClean() {
     cleanDir "${VAPP_PREFIX}"
     rm -f "${APP_PREFIX}/latest"
     cleanDir "${APP_PREFIX}"
-
-#   if [ -x /tmp/linkup$$ ] ; then
-#       /tmp/linkup$$ Remove
-#       rm -f /tmp/linkup$$
-#   fi
+    cleanDir "${INC_PREFIX}/${PRODUCT}"
 }
 
 

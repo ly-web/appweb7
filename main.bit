@@ -22,7 +22,7 @@ Bit.load({
         "doc/doc.bit",
     ],
 
-    modules: [
+    '+modules': [
         'bits/appweb.es',
     ],
 

@@ -56,7 +56,6 @@ case $action in
 	configure)							# when new
         setPerms
 		oldVersion=$2
-#       "$BIT_BIN_PREFIX/linkup" Install
         appman -v install
         if [ "$APPWEB_DONT_START" != 1 ] ; then
             appman enable

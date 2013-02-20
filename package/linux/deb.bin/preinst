@@ -36,8 +36,8 @@ configureService() {
 
 	case $action in
 	stop)
-        if [ -x "${BIN_PREFIX}/appman ] ; then
-            "${BIN_PREFIX}/appman stop >/dev/null 2>&1 ; true
+        if [ -x "${BIN_PREFIX}/appman" ] ; then
+            "${BIN_PREFIX}/appman" stop >/dev/null 2>&1 ; true
         fi
         #   Keep this for earlier versions without appman
 		if [ -f /etc/rc.d/init.d/$BIT_PRODUCT ] ; then
@@ -69,7 +69,6 @@ configureService() {
         elif [ -f /etc/init.d/$BIT_PRODUCT ] ; then
             ( cd /etc/init.d ; /etc/init.d/$BIT_PRODUCT disable )
 		fi
-#       "$BIT_BIN_PREFIX/linkup" Remove
 		;;
 	esac
 }

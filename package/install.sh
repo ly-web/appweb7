@@ -286,9 +286,9 @@ installFiles() {
                 [ "$headless" != 1 ] && echo cp -rp contents/* $target
                 cp -rp contents/* $target
 
-                cd contents >/dev/null
-                find . -type f >"$VAPP_PREFIX/files.log"
-                cd - >/dev/null
+                # cd contents >/dev/null
+                # find . -type f >"$VAPP_PREFIX/files.log"
+                # cd - >/dev/null
             fi
         fi
     done
