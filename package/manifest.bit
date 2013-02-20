@@ -52,23 +52,35 @@ Bit.load({
                     /* Don't use wild-cards for cross-generation  */
                     '${BIN}/libapp${SHOBJ}',
                     '${BIN}/libappweb${SHOBJ}',
-                    '${BIN}/libejs${SHOBJ}',
                     '${BIN}/libest${SHOBJ}',
                     '${BIN}/libhttp${SHOBJ}',
                     '${BIN}/libmod_cgi${SHOBJ}',
-                    '${BIN}/libmod_ejs${SHOBJ}',
                     '${BIN}/libmod_esp${SHOBJ}',
-                    '${BIN}/libmod_php${SHOBJ}',
                     '${BIN}/libmod_ssl${SHOBJ}',
                     '${BIN}/libmpr${SHOBJ}',
                     '${BIN}/libmprSsl${SHOBJ}',
                     '${BIN}/libpcre${SHOBJ}',
                     '${BIN}/libsqlite3${SHOBJ}',
-                    '${BIN}/libphp5${SHOBJ}',
                     '${BIN}/ca.crt',
                 ],
                 to:         '${abin}/',
                 set:        'core',
+
+            },{ from:        [
+                    '${BIN}/libejs${SHOBJ}',
+                    '${BIN}/libmod_ejs${SHOBJ}',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.packs.ejscript && bit.packs.ejscript.enable",
+
+            },{ from:        [
+                    '${BIN}/libmod_php${SHOBJ}',
+                    '${BIN}/libphp5${SHOBJ}',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.packs.php && bit.packs.php.enable",
 
             },{
                 from:       ['src/esp/esp-www', 'src/esp/esp-appweb.conf'],
