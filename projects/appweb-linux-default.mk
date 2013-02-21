@@ -34,7 +34,7 @@ BIT_SRC_PREFIX        := $(BIT_ROOT_PREFIX)$(PRODUCT)-$(VERSION)
 CFLAGS          += -fPIC   -w
 DFLAGS          += -D_REENTRANT -DPIC  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS)))
 IFLAGS          += -I$(CONFIG)/inc
-LDFLAGS         += '-Wl,--enable-new-dtags' '-Wl,-rpath,$$ORIGIN/' '-Wl,-rpath,$$ORIGIN/../bin' '-rdynamic'
+LDFLAGS         += '-Wl,--enable-new-dtags' '-Wl,-rpath,$$ORIGIN/' '-rdynamic'
 LIBPATHS        += -L$(CONFIG)/bin
 LIBS            += -lpthread -lm -lrt -ldl
 
@@ -746,6 +746,13 @@ stop: compile
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 installBinary: stop
+	mkdir -p "$(BIT_APP_PREFIX)"
+	mkdir -p "$(BIT_VAPP_PREFIX)"
+	mkdir -p "$(BIT_ETC_PREFIX)"
+	mkdir -p "$(BIT_WEB_PREFIX)"
+	mkdir -p "$(BIT_LOG_PREFIX)"
+	mkdir -p "$(BIT_SPOOL_PREFIX)"
+	mkdir -p "$(BIT_CACHE_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
@@ -878,6 +885,8 @@ install: stop installBinary start
 	
 
 uninstall: stop
+	rm -fr "$(BIT_ETC_PREFIX)/install.conf"
+	rm -fr "$(BIT_INC_PREFIX)/appweb"
 	rmdir -p "$(BIT_APP_PREFIX)"
 	rmdir -p "$(BIT_VAPP_PREFIX)"
 	rmdir -p "$(BIT_ETC_PREFIX)"
@@ -887,7 +896,6 @@ uninstall: stop
 	rmdir -p "$(BIT_CACHE_PREFIX)"
 	rmdir -p "$(BIT_VAPP_PREFIX)"
 	rmdir -p "$(BIT_APP_PREFIX)"
-	rm -fr "$(BIT_INC_PREFIX)/appweb"
 
 
 genslink: 

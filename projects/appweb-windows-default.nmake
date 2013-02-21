@@ -893,6 +893,8 @@ install: stop installBinary start
 
 
 uninstall: stop
+	if exist "$(BIT_VAPP_PREFIX)\install.conf" rd /Q /S"$(BIT_VAPP_PREFIX)\install.conf"
+	if exist "$(BIT_VAPP_PREFIX)\inc\appweb" rd /Q /S"$(BIT_VAPP_PREFIX)\inc\appweb"
 	if exist "$(BIT_VAPP_PREFIX)" rd /Q "$(BIT_VAPP_PREFIX)"
 	if exist "$(BIT_VAPP_PREFIX)" rd /Q "$(BIT_VAPP_PREFIX)"
 	if exist "$(BIT_VAPP_PREFIX)\bin" rd /Q "$(BIT_VAPP_PREFIX)\bin"
@@ -905,7 +907,6 @@ uninstall: stop
 	if exist "$(BIT_VAPP_PREFIX)\cache" rd /Q "$(BIT_VAPP_PREFIX)\cache"
 	if exist "$(BIT_VAPP_PREFIX)" rd /Q "$(BIT_VAPP_PREFIX)"
 	if exist "$(BIT_VAPP_PREFIX)" rd /Q "$(BIT_VAPP_PREFIX)"
-	if exist "$(BIT_VAPP_PREFIX)\inc\appweb" rd /Q /S"$(BIT_VAPP_PREFIX)\inc\appweb"
 
 
 genslink: 

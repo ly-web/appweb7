@@ -746,6 +746,13 @@ stop: compile
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 installBinary: stop
+	mkdir -p "$(BIT_APP_PREFIX)"
+	mkdir -p "$(BIT_VAPP_PREFIX)"
+	mkdir -p "$(BIT_ETC_PREFIX)"
+	mkdir -p "$(BIT_WEB_PREFIX)"
+	mkdir -p "$(BIT_LOG_PREFIX)"
+	mkdir -p "$(BIT_SPOOL_PREFIX)"
+	mkdir -p "$(BIT_CACHE_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
