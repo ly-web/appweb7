@@ -106,13 +106,13 @@ Bit.load({
                 from:       ['src/esp/esp-www', 'src/esp/esp-appweb.conf'],
                 to:         '${abin}/',
                 set:        'core',
-                enable:     "bit.packs.esp && bit.packs.esp.enable'",
+                enable:     "bit.packs.esp && bit.packs.esp.enable",
 
             },{
                 from:       '${BIN}/esp.conf',
                 to:         '${etc}/',
                 set:        'core',
-                enable:     "bit.packs.esp && bit.packs.esp.enable'",
+                enable:     "bit.packs.esp && bit.packs.esp.enable",
 
             },{ from:       'src/server/web', 
                 to:         '${web}/', 
