@@ -404,7 +404,7 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 #if MACOSX || FREEBSD
         newUser = "www";
 #elif LINUX || BIT_UNIX_LIKE
-        newUser = "www-data";
+        newUser = "nobody";
 #elif WINDOWS
         newUser = "Administrator";
 #endif
@@ -440,7 +440,7 @@ PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 #if MACOSX || FREEBSD
         newGroup = "www";
 #elif LINUX || BIT_UNIX_LIKE
-        newGroup = "www-data";
+        newGroup = "nobody";
 #elif WINDOWS
         newGroup = "Administrator";
 #endif

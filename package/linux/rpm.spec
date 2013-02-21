@@ -32,6 +32,7 @@ Embedthis Appweb is the fast, little web server.
 %files -f binFiles.txt
 
 %post
+set -x
 if [ -x /usr/bin/chcon ] ; then 
 	sestatus | grep enabled >/dev/null 2>&1
 	if [ $? = 0 ] ; then
@@ -41,6 +42,13 @@ if [ -x /usr/bin/chcon ] ; then
 	fi
 fi
 ldconfig -n ${prefixes.vapp}/bin
+
+mkdir -p "${prefixes.spool}" "${prefixes.cache}" "${prefixes.log}"
+chown nobody "${prefixes.spool}" "${prefixes.cache}" "${prefixes.log}"
+chgrp nobody "${prefixes.spool}" "${prefixes.cache}" "${prefixes.log}"
+chmod 755 "${prefixes.spool}" "${prefixes.cache}" "${prefixes.log}"
+
+${prefixes.bin}/appman install enable start
 
 %preun
 
