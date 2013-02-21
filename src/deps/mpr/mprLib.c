@@ -15324,6 +15324,7 @@ PUBLIC char *mprGetAppPath()
 }
 #elif BIT_UNIX_LIKE 
 {
+    MprPath info;
     char    pbuf[BIT_MAX_PATH], *path;
     int     len;
 #if SOLARIS
