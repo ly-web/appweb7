@@ -753,6 +753,8 @@ install: installBinary
 	
 
 uninstall: 
+	rm -f "$(BIT_VAPP_PREFIX)/install.conf"
+	rm -fr "$(BIT_VAPP_PREFIX)/inc/appweb"
 
 
 genslink: 

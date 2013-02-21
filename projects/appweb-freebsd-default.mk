@@ -883,6 +883,16 @@ install: stop installBinary start
 	
 
 uninstall: stop
+	rm -f "$(BIT_ETC_PREFIX)/install.conf"
+	rm -fr "$(BIT_INC_PREFIX)/appweb"
+	rm -fr "$(BIT_VAPP_PREFIX)"
+	rmdir -p "$(BIT_ETC_PREFIX)"
+	rmdir -p "$(BIT_WEB_PREFIX)"
+	rmdir -p "$(BIT_LOG_PREFIX)"
+	rmdir -p "$(BIT_SPOOL_PREFIX)"
+	rmdir -p "$(BIT_CACHE_PREFIX)"
+	rm -f "$(BIT_APP_PREFIX)/latest"
+	rmdir -p "$(BIT_APP_PREFIX)"
 
 
 genslink: 

@@ -212,5 +212,12 @@ Bit.load({
         mine: {
             action: "genProjects('-with ejscript --without default', 'mine', Config.OS + '-' + Config.CPU)",
         },
+
+        mob: {
+            action: "echo one",
+        }
+        mob: {
+            action: "echo two",
+        }
     },
 })
