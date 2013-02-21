@@ -56,7 +56,7 @@ SPL_PREFIX="${prefixes.spool}"
 CACHE_PREFIX="${prefixes.cache}"
 
 ABIN="${VAPP_PREFIX}/bin"
-AINC="${VAPP_PREFIX}/in"
+AINC="${VAPP_PREFIX}/inc"
 
 removebin=Y
 headless=${HEADLESS:-0}
@@ -93,7 +93,7 @@ yesno() {
 
 deconfigureService() {
     [ "$headless" != 1 ] && echo -e "Stopping $NAME service"
-    if [ $OS = WIN ] ; then
+    if [ $OS = windows ] ; then
         "$ABIN/appwebMonitor" --stop >/dev/null 2>&1
     fi
     # Fedora will indiscriminately kill appman here too
@@ -149,7 +149,7 @@ removeTarFiles() {
     pkg=$1
     [ $pkg = bin ] && prefix="$VAPP_PREFIX"
     if [ -f "$prefix/files.log" ] ; then
-        if [ $OS = WIN ] ; then
+        if [ $OS = windows ] ; then
             cd ${prefix%%:*}:/
         else
             cd /
@@ -165,7 +165,7 @@ preClean() {
     local f
     local cdir=`pwd`
 
-    if [ $OS != WIN ] ; then
+    if [ $OS != windows ] ; then
         rm -f /var/lock/subsys/$PRODUCT /var/lock/$PRODUCT
         rm -fr "${LOG_PREFIX}"
         rm -rf "${SPOOL_PREFIX}"
@@ -206,7 +206,7 @@ postClean() {
     cleanDir "${SPL_PREFIX}"
     cleanDir "${CACHE_PREFIX}"
 
-    if [ $OS != WIN ] ; then
+    if [ $OS != windows ] ; then
         for p in APP VAPP ETC WEB SPL CACHE; do
             eval rmdir "\$${p}_PREFIX" >/dev/null 2>&1
         done
@@ -273,7 +273,7 @@ removeIntermediateFiles() {
 
 
 setup() {
-    if [ `id -u` != "0" -a $OS != WIN ] ; then
+    if [ `id -u` != "0" -a $OS != windows ] ; then
         echo "You must be root to remove this product."
         exit 255
     fi

@@ -47,6 +47,7 @@ HTTP_PORT=80
 SSL_PORT=443
 
 PATH="$PATH:/sbin:/usr/sbin"
+unset CDPATH
 export CYGWIN=nodosfilewarning
 CYGWIN=nodosfilewarning
 
@@ -54,7 +55,7 @@ CYGWIN=nodosfilewarning
 
 setup() {
     umask 022
-    if [ $OS != WIN -a `id -u` != "0" ] ; then
+    if [ $OS != windows -a `id -u` != "0" ] ; then
         echo "You must be root to install this product."
         exit 255
     fi
@@ -258,6 +259,7 @@ removeOld() {
     if [ -x "${ABIN}/uninstall" ] ; then
         appweb_HEADLESS=1 "${ABIN}/uninstall" </dev/null >/dev/null 2>&1
     fi
+    rm -f "${APP_PREFIX}/latest"
 }
 
 installFiles() {
@@ -282,13 +284,9 @@ installFiles() {
                 dpkg -i $HOME/$NAME >/dev/null
             elif [ "$FMT" = "tar" ] ; then
                 target=/
-                [ $OS = WIN ] && target=`cygpath ${HOMEDRIVE}/`
-                [ "$headless" != 1 ] && echo cp -rp contents/* $target
-                cp -rp contents/* $target
-
-                # cd contents >/dev/null
-                # find . -type f >"$VAPP_PREFIX/files.log"
-                # cd - >/dev/null
+                [ $OS = windows ] && target=`cygpath ${HOMEDRIVE}/`
+                [ $OS = windows ] && target=`cygpath ${HOMEDRIVE}/`
+                (cd contents ; tar cf - . | (cd $target && tar xBf -))
             fi
         fi
     done
@@ -300,22 +298,8 @@ installFiles() {
             done
         fi
     fi
-
-#   if [ "$OS" = "FREEBSD" ] ; then
-#       LDCONFIG_OPT=-m
-#   else
-#       LDCONFIG_OPT=-n
-#   fi
-#   if which ldconfig >/dev/null 2>&1 ; then
-#       ldconfig /usr/lib/lib${PRODUCT}.so.?.?.?
-#       ldconfig $LDCONFIG_OPT /usr/lib/${PRODUCT}
-#       ldconfig $LDCONFIG_OPT /usr/lib/${PRODUCT}/modules
-#   fi
-
-#   "$ABIN/linkup" Install
-
     [ "$headless" != 1 ] && echo -e "\nSetting file permissions ..."
-    if [ $OS = WIN ] ; then
+    if [ $OS = windows ] ; then
         # Cygwin bug. Chmod fails to stick if not in current directory for paths with spaces
         home=`pwd` >/dev/null
         mkdir -p "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
@@ -335,13 +319,16 @@ installFiles() {
         chown $username "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
         chgrp $groupname "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
         chmod 755 "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
+        if [ $OS = macosx ] ; then
+            chown root.wheel /Library/LaunchDaemons/com.embedthis.appweb.plist
+        fi
     fi
     [ "$headless" != 1 ] && echo
 }
 
 
 patchConfiguration() {
-    if [ $OS = WIN ] ; then
+    if [ $OS = windows ] ; then
         echo -e "Documents web\nListen ${HTTP_PORT}\nset LOG_DIR log\nset CACHE_DIR cache" >"${ETC_PREFIX}/install.conf"
     else
         echo -e "Documents ${WEB_PREFIX}\nListen ${HTTP_PORT}\nset LOG_DIR ${LOG_PREFIX}\nset CACHE_DIR ${CACHE_PREFIX}" >"${ETC_PREFIX}/install.conf"
@@ -361,9 +348,9 @@ startBrowser() {
     #
     sleep 5
     [ "$headless" != 1 ] && echo -e "Starting browser to view the $NAME Home Page."
-    if [ $OS = WIN ] ; then
+    if [ $OS = windows ] ; then
         cygstart --shownormal http://$SITE:$HTTP_PORT$PAGE 
-    elif [ $OS = MACOSX ] ; then
+    elif [ $OS = macosx ] ; then
         open http://$SITE:$HTTP_PORT$PAGE >/dev/null 2>&1 &
     else
         for f in /usr/bin/htmlview /usr/bin/firefox /usr/bin/mozilla /usr/bin/konqueror 
@@ -385,7 +372,7 @@ askUser
 if [ "$installbin" = "Y" ] ; then
     [ "$headless" != 1 ] && echo "Disable existing service"
     appman stop disable uninstall >/dev/null 2>&1
-    if [ $OS = WIN ] ; then
+    if [ $OS = windows ] ; then
         "$ABIN/appwebMonitor" --stop >/dev/null 2>&1
     fi
 fi
@@ -402,7 +389,7 @@ if [ "$installbin" = "Y" ] ; then
         "$ABIN/appman" start
     fi
 fi
-if [ $OS = WIN ] ; then
+if [ $OS = windows ] ; then
     "$ABIN/appwebMonitor" >/dev/null 2>&1 &
 else
     echo "Testing ${NAME} connectivity".

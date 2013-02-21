@@ -12,7 +12,7 @@ Bit.load({
             install: {
                 inherit:    'embedthis-manifest',
                 prefixes:   [ 'root', 'app', 'vapp', 'bin', 'inc', 'man', 'etc', 'web', 'log', 'spool', 'cache'],
-                sets:       [ 'core', 'service' ],
+                sets:       [ 'core', 'service', 'dev', 'doc' ],
                 platforms:  [ 'posix', 'windows' ],
             },
             binary: {
@@ -90,15 +90,29 @@ Bit.load({
                 set:        'core',
                 enable:     "bit.packs.php && bit.packs.php.enable && bit.platform.os == 'windows'",
 
+            },{ from:        [
+                    /* Windows needs the libs to be able to compile esp programs */
+                    '${BIN}/libmod_esp${SHLIB}',
+                    '${BIN}/libappweb${SHLIB}',
+                    '${BIN}/libpcre${SHLIB}',
+                    '${BIN}/libhttp${SHLIB}',
+                    '${BIN}/libmpr${SHLIB}',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.packs.esp && bit.packs.esp.enable && bit.platform.os == 'windows'",
+
             },{
                 from:       ['src/esp/esp-www', 'src/esp/esp-appweb.conf'],
                 to:         '${abin}/',
                 set:        'core',
+                enable:     "bit.packs.esp && bit.packs.esp.enable'",
 
             },{
                 from:       '${BIN}/esp.conf',
                 to:         '${etc}/',
                 set:        'core',
+                enable:     "bit.packs.esp && bit.packs.esp.enable'",
 
             },{ from:       'src/server/web', 
                 to:         '${web}/', 
@@ -151,7 +165,6 @@ Bit.load({
                 to:         '${vapp}/inc/',
                 set:        'dev',
                 linkin:     '${inc}/appweb',
-                enable:     true,
 
             },{
                 from:       '${BIN}/ejs.mod',
@@ -162,7 +175,6 @@ Bit.load({
             },{
                 from:        'doc/man/*.1',
                 to:          '${adoc}/man1/',
-                compress:    true,
                 set:         'doc',
                 enable:      "bit.platform.like == 'posix'",
                 linkin:     '${man}/man1',
