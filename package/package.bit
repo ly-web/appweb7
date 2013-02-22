@@ -89,7 +89,7 @@ Bit.load({
                     '${BIN}/libmod_esp${SHOBJ}',
                     '${BIN}/libmod_ssl${SHOBJ}',
                     '${BIN}/libmpr${SHOBJ}',
-                    '${BIN}/libmprSsl${SHOBJ}',
+                    '${BIN}/libmprssl${SHOBJ}',
                     '${BIN}/libpcre${SHOBJ}',
                     '${BIN}/libsqlite3${SHOBJ}',
                     '${BIN}/ca.crt',
