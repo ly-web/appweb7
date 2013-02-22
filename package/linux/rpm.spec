@@ -10,7 +10,7 @@ Group: Applications/Internet
 URL: http://appwebserver.org
 Distribution: Embedthis
 Vendor: Embedthis Software
-BuildRoot: ${dir.rpm}/BUILDROOT/${settings.product}-${settings.version}-${settings.buildNumber}.${platform.mappedCpu}
+BuildRoot: ${prefixes.rpm}/BUILDROOT/${settings.product}-${settings.version}-${settings.buildNumber}.${platform.mappedCpu}
 AutoReqProv: no
 
 %description
@@ -24,14 +24,15 @@ Embedthis Appweb is the fast, little web server.
     if [ -x "${prefixes.vapp}/bin/uninstall" ] ; then
         appweb_HEADLESS=1 "${prefixes.vapp}/bin/uninstall" </dev/null 2>&1 >/dev/null
     fi
-    mkdir -p ${dir.rpm}/BUILDROOT/${settings.product}-${settings.version}-${settings.buildNumber}.${platform.mappedCpu}
-    cp -r ${dir.contents}/* ${dir.rpm}/BUILDROOT/${settings.product}-${settings.version}-${settings.buildNumber}.${platform.mappedCpu}
+    mkdir -p ${prefixes.rpm}/BUILDROOT/${settings.product}-${settings.version}-${settings.buildNumber}.${platform.mappedCpu}
+    cp -r ${prefixes.content}/* ${prefixes.rpm}/BUILDROOT/${settings.product}-${settings.version}-${settings.buildNumber}.${platform.mappedCpu}
 
 %clean
 
 %files -f binFiles.txt
 
 %post
+set -x
 if [ -x /usr/bin/chcon ] ; then 
 	sestatus | grep enabled >/dev/null 2>&1
 	if [ $? = 0 ] ; then
@@ -40,11 +41,15 @@ if [ -x /usr/bin/chcon ] ; then
 		done
 	fi
 fi
-#${prefixes.bin}/linkup Install
 ldconfig -n ${prefixes.vapp}/bin
 
+mkdir -p "${prefixes.spool}" "${prefixes.cache}" "${prefixes.log}"
+chown nobody "${prefixes.spool}" "${prefixes.cache}" "${prefixes.log}"
+chgrp nobody "${prefixes.spool}" "${prefixes.cache}" "${prefixes.log}"
+chmod 755 "${prefixes.spool}" "${prefixes.cache}" "${prefixes.log}"
+
+${prefixes.bin}/appman install enable start
+
 %preun
-#rm -f ${prefixes.product}/latest
-#${prefixes.bin}/linkup Remove
 
 %postun

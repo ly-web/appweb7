@@ -16,18 +16,17 @@ BIT_SPOOL_PREFIX="${prefixes.spool}"
 BIT_CACHE_PREFIX="${prefixes.cache}"
 
 ###############################################################################
-
 setPerms() {
 	local g u
 
-	for u in www-data _www nobody Administrator ; do
+	for u in nobody www-data _www Administrator ; do
 		grep "$u" /etc/passwd >/dev/null
 		if [ $? = 0 ] ; then
 			username=$u
 			break
 		fi
 	done
-	for g in www-data _www nobody nogroup Administrator ; do
+	for g in nobody www-data _www nogroup Administrator ; do
 		grep "$g" /etc/group >/dev/null
 		if [ $? = 0 ] ; then
 			groupname=$g

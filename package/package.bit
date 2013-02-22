@@ -3,10 +3,6 @@
  */
 
 Bit.load({
-    blend: [
-        'manifest.bit'
-    ],
-
     targets: {
         start: {
             enable: "bit.platform.like == 'posix' || bit.platform.like == 'windows'",
@@ -23,73 +19,329 @@ Bit.load({
             depends: ['compile'],
             generate: "@${BIN}/appman stop disable uninstall >/dev/null 2>&1 ; true"
         },
-
-        _deployService: {
-            enable: false,
-            _enable: "bit.platform.like == 'posix' || bit.platform.like == 'windows'",
-            home: '${TOP}',
-            action: "packageDeployService()",
-            depends: ['compile'],
-            'generate-macosx': "
-                install -m 755 -d /Library/LaunchDaemons
-                install -m 644 -o root -g wheel package/macosx/com.embedthis.appweb.plist /Library/LaunchDaemons
+        uninstall: {
+            depends: [ 'build', 'stop' ],
+            action: "
+                removeFile(bit.prefixes.etc.join('install.conf'))
+                removeDir(bit.prefixes.inc.join(bit.settings.product))
+                uninstallBinary()
             ",
-            'generate-linux': "install -m 755 -o root -g bin package/linux/appweb.init /etc/init.d/appweb",
+            'generate-action': true,
+        },
+    },
+
+    manifest: {
+        packages:   {
+            install: {
+                inherit:    'embedthis-manifest',
+                prefixes:   [ 'root', 'app', 'vapp', 'bin', 'inc', 'man', 'etc', 'web', 'log', 'spool', 'cache'],
+                sets:       [ 'core', 'service', 'dev', 'doc' ],
+                platforms:  [ 'posix', 'windows' ],
+            },
+            binary: {
+                inherit:    'embedthis-manifest',
+                prefixes:   [ 'root', 'app', 'vapp', 'bin', 'inc', 'man', 'etc', 'web', 'log', 'spool', 'cache'],
+                formats:    [ 'native', 'tar' ],
+                sets:       [ 'core', 'service', 'test', 'doc', 'dev', 'package' ],
+                platforms:  [ 'freebsd', 'linux', 'macosx', 'windows' ]
+            },
+            source: {
+                inherit:    'embedthis-manifest',
+                prefixes:   [ 'root', 'src' ],
+                formats:    [ 'tar' ],
+                sets:       [ 'source' ],
+            },
         },
 
-        _deploy: {
-            enable: false,
-            home: '${TOP}',
-            action: "packageDeploy(bit.manifest)",
-            depends: ['compile'],
-            'generate-make': "
-                for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; done
-                mkdir -p '$(BIT_ETC_PREFIX)' '$(BIT_VAPP_PREFIX)/bin' '$(BIT_INC_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_VAPP_PREFIX)/man/man1'
-                cp ${INC}/*.h $(BIT_INC_PREFIX)
-                cp src/server/appweb.conf src/server/esp.conf src/server/mime.types $(BIT_ETC_PREFIX)
-                account=`cat /etc/passwd | grep www | sed -e 's/:.*//'` ; \\
-                install -d -m 755 -g $$account -o $$account '$(BIT_SPOOL_PREFIX)' '$(BIT_LOG_PREFIX)'
-                cp -R -P ${BIN}/* $(BIT_VAPP_PREFIX)/bin
-                cp -R -P src/server/web/* $(BIT_WEB_PREFIX)
-                rm -f '$(BIT_APP_PREFIX)/latest'
-                ln -s $(VERSION) $(BIT_APP_PREFIX)/latest
-                for n in appman appweb authpass esp; do \\
-                    rm -f $(BIT_BIN_PREFIX)/$$n ; \\
-                    ln -s $(BIT_VAPP_PREFIX)/bin/$$n $(BIT_BIN_PREFIX)/$$n ; \\
-                done
-                for n in appman.1 appweb.1 appwebMonitor.1 authpass.1 esp.1 http.1 makerom.1 ; do \\
-                    rm -f $(BIT_VAPP_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/man1/$$n ; \\
-                    cp doc/man/$$n $(BIT_VAPP_PREFIX)/man/man1 ; \\
-                    ln -s $(BIT_VAPP_PREFIX)/man/man1/$$n $(BIT_MAN_PREFIX)/man1/$$n ; \\
-                done
-                echo 'Documents \"$(BIT_WEB_PREFIX)\"\\nListen 80\"\\nset LOG_DIR \"$(BIT_LOG_PREFIX)\"\\nset CACHE_DIR \"$(BIT_SPOOL_PREFIX)/cache\"' >$(BIT_ETC_PREFIX)/install.conf
-            ",
-            'generate-nmake': "
-                xcopy /I /S /Y /Q $(CONFIG)\\bin \"$(BIT_VAPP_PREFIX)\\bin\"
-                del /Q \"$(BIT_VAPP_PREFIX)\\bin\\*.pdb\"
-                del /Q \"$(BIT_VAPP_PREFIX)\\bin\\*.exp\"
-                del /Q \"$(BIT_VAPP_PREFIX)\\bin\\*.lib\"
-                copy src/server/appweb.conf src/server/esp.conf src/server/install.conf src/server/mine.types \"$(BIT_APP_PREFIX)\"
-                xcopy /I /S /Y /Q src/server/web \"$(BIT_WEB_PREFIX)\"
-                echo 'Documents \"$(BIT_WEB_PREFIX)\"\\nListen 80\"\\nset LOG_DIR \"$(BIT_LOG_PREFIX)\"\\nset CACHE_DIR \"$(BIT_SPOOL_PREFIX)/cache\"' >$(BIT_ETC_PREFIX)/install.conf
-            ",
-        },
+        files:     [
+            /* Binary Set */
+            {   dir:        ['${log}', '${cache}'],
+                user:       'getWebUser()',
+                group:      'getWebGroup()',
+                permissions:0755,
+                set:        'core',
 
-        _uninstall: {
-            enable: false,
-            _enable: "bit.platform.like == 'posix' || bit.platform.like == 'windows'",
-            home: '${TOP}',
-            action: "uninstallBinary()"
-            depends: ['compile', 'stop']
-            'generate-make': "
-                for n in appman appweb authpass esp; do rm -f $(BIT_BIN_PREFIX)/$$n ; done
-                for n in $(BIT_VAPP_PREFIX)/man/man1/*.1; do \\
-                    base=`basename $$n` ; \\
-                    rm -f $(BIT_MAN_PREFIX)/man1/$$base ; \\
-                done
-                rm -fr '$(BIT_ETC_PREFIX)' '$(BIT_APP_PREFIX)' '$(BIT_WEB_PREFIX)' '$(BIT_LOG_PREFIX)' '$(BIT_SPOOL_PREFIX)'
-            ",
-            'generate-nmake': "if exist \"$(BIT_APP_PREFIX)\" rd /Q /S \"$(BIT_APP_PREFIX)\"",
-        },
+            },{ from:        [
+                    '${BIN}/appman${EXE}',
+                    '${BIN}/appweb${EXE}',
+                    '${BIN}/esp${EXE}',
+                    '${BIN}/http${EXE}',
+                ],
+                to:         '${abin}/',
+                linkin:     '${bin}',
+                set:        'core',
+
+            },{ from:        [
+                    /* Don't use wild-cards for cross-generation  */
+                    '${BIN}/libapp${SHOBJ}',
+                    '${BIN}/libappweb${SHOBJ}',
+                    '${BIN}/libest${SHOBJ}',
+                    '${BIN}/libhttp${SHOBJ}',
+                    '${BIN}/libmod_cgi${SHOBJ}',
+                    '${BIN}/libmod_esp${SHOBJ}',
+                    '${BIN}/libmod_ssl${SHOBJ}',
+                    '${BIN}/libmpr${SHOBJ}',
+                    '${BIN}/libmprSsl${SHOBJ}',
+                    '${BIN}/libpcre${SHOBJ}',
+                    '${BIN}/libsqlite3${SHOBJ}',
+                    '${BIN}/ca.crt',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+
+            },{ from:        [
+                    '${BIN}/libejs${SHOBJ}',
+                    '${BIN}/libmod_ejs${SHOBJ}',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.packs.ejscript && bit.packs.ejscript.enable",
+
+            },{ from:        [
+                    '${BIN}/libmod_php${SHOBJ}',
+                    '${BIN}/libphp5${SHOBJ}',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.packs.php && bit.packs.php.enable && bit.platform.os != 'windows'",
+
+            },{ from:        [
+                    '${BIN}/libmod_php${SHOBJ}',
+                    '${BIN}/php5ts${SHOBJ}',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.packs.php && bit.packs.php.enable && bit.platform.os == 'windows'",
+
+            },{ from:        [
+                    /* Windows needs the libs to be able to compile esp programs */
+                    '${BIN}/libmod_esp${SHLIB}',
+                    '${BIN}/libappweb${SHLIB}',
+                    '${BIN}/libpcre${SHLIB}',
+                    '${BIN}/libhttp${SHLIB}',
+                    '${BIN}/libmpr${SHLIB}',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.packs.esp && bit.packs.esp.enable && bit.platform.os == 'windows'",
+
+            },{
+                from:       ['src/esp/esp-www', 'src/esp/esp-appweb.conf'],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.packs.esp && bit.packs.esp.enable",
+
+            },{
+                from:       '${BIN}/esp.conf',
+                to:         '${etc}/',
+                set:        'core',
+                enable:     "bit.packs.esp && bit.packs.esp.enable",
+
+            },{ from:       'src/server/web', 
+                to:         '${web}/', 
+                exclude:    /mgmt/, 
+                set:        'core',
+
+            },{ 
+                from:       'src/server/web/test/*', 
+                to:         '${web}/test/',
+                include:    /.cgi|test.pl|test.py/,
+                permissions:0755,
+                set:        'test',
+
+            },{
+                from:       'src/server/mime.types', 
+                to:         '${etc}/',
+                set:        'core',
+
+            },{
+                from:       'src/server/php.ini',
+                to:         '${etc}/',
+                set:        'core',
+                enable:     "bit.packs.php && bit.packs.php.enable",
+
+            },{
+                from:       'src/server/appweb.local', 
+                to:         '${etc}/appweb.conf',
+                set:        'core',
+                enable:     "Path('src/server/appweb.local').exists"
+
+            },{
+                from:       'src/server/appweb.conf', 
+                to:         '${etc}/appweb.conf',
+                set:        'core',
+                enable:     "!Path('src/server/appweb.local').exists"
+
+            },{
+                write:      'set LOG_DIR "${prefixes.log}"\nset CACHE_DIR "${prefixes.cache}"\nDocuments "${prefixes.web}\nListen 80\n'
+                to:         '${etc}/install.conf'
+                set:        'core',
+
+            },{
+                write:      '{ dirs: { cache: "${cache}" } }\n',
+                to:         '${etc}/ejsrc',
+                set:        'core',
+                enable:     false,
+
+            },{
+                from:       '${INC}/*.h',
+                to:         '${vapp}/inc/',
+                set:        'dev',
+                linkin:     '${inc}/appweb',
+
+            },{
+                from:       '${BIN}/ejs.mod',
+                to:         '${abin}/',
+                set:        'core',
+                enable:     'bit.packs.ejscript.enable',
+
+            },{
+                from:        'doc/man/*.1',
+                to:          '${adoc}/man1/',
+                set:         'doc',
+                enable:      "bit.platform.like == 'posix'",
+                linkin:     '${man}/man1',
+
+            },{
+                name:        'Launch daemon script'
+                from:        'package/macosx/com.embedthis.appweb.plist',
+                to:          '${root}/Library/LaunchDaemons/com.embedthis.appweb.plist',
+                permissions: 0644,
+                _group:       'wheel',
+                set:         'service',
+                root:        true,
+                enable:      "bit.platform.os == 'macosx'",
+
+            },{
+                name:        'Init script'
+                from:        'package/linux/${settings.product}.init',
+                to:          '${root}/etc/init.d/${settings.product}',
+                permissions: 0755,
+                set:         'service',
+                root:        true,
+                enable:      "bit.platform.os == 'linux'",
+
+            },{
+                name:        'Upstart script'
+                from:        'package/linux/${settings.product}.upstart',
+                to:          '${root}/etc/init/${settings.product}.conf',
+                permissions: 0644,
+                set:         'service',
+                root:        true,
+                enable:      "false && bit.platform.os == 'linux'",
+
+            /*
+                Source set
+             */
+            },{
+                from:        ['Makefile', 'make.bat', 'main.bit' ],
+                to:          '${src}/',
+                set:         'source',
+
+            },{
+                from:        ['*.md'],
+                to:          '${src}/',
+                fold:        true,
+                expand:      true,
+                set:         'source',
+
+            },{
+                from:        ['configure'],
+                to:          '${src}/',
+                permissions: 0755,     
+                set:         'source',
+
+            },{
+                from:        ['bits', 'src', 'test', 'doc', 'projects', 'package'],
+                to:          '${src}/',
+                //  MOB - need exclude
+                set:         'source',
+
+            /*
+                Combo set - MOB - not debugged
+             */
+            },{
+                from:        'projects/appweb-${OS}-default-bit.h', 
+                to:          '${src}/src/deps/appweb/bit.h',
+                set:         'combo',
+
+            },{
+                from:        'package/start-flat.bit',
+                to:          '${src}/src/deps/appweb/start.bit',
+                set:         'combo',
+
+            },{
+                from:        'package/Makefile-flat', 
+                to:          '${src}/src/deps/appweb/Makefile',
+                set:         'combo',
+
+            },{
+                from:        [
+                                'src/deps/mpr/mpr.h', 
+                                'src/deps/http/http.h', 
+                                'src/appweb.h', 
+                                'src/server/windows/appwebMonitor.h',
+                                'src/esp/edi.h', 
+                                'src/esp/mdb.h', 
+                                'src/esp/esp.h', 
+                                'src/deps/pcre/pcre.h'
+                ], 
+                to:          '${src}/src/deps/appweb/appweb.h',
+                cat:         true,
+                filter:      /^#inc.*appweb.*$|^#inc.*mpr.*$|^#inc.*http.*$|^#inc.*customize.*$|^#inc.*edi.*$|^#inc.*mdb.*$|^#inc.*esp.*$/mg,
+                title:       bit.settings.title + ' Library Source',
+                set:         'combo',
+
+            },{
+                from:        'src/deps/**.c', 
+                to:          '${src}/src/deps/appweb/deps.c',
+                cat:         true,
+                filter:      /^#inc.*appweb.*$|^#inc.*mpr.*$|^#inc.*http.*$|^#inc.*customize.*$|^#inc.*edi.*$|^#inc.*mdb.*$|^#inc.*esp.*$/mg,
+                exclude:     /pcre|makerom|http\.c|sqlite|manager|ejs/,
+                header:      '#include \"appweb.h\"',
+                title:       bit.settings.title + ' Library Source',
+                set:         'combo',
+
+            },{
+                from:        'src/**.c', 
+                to:          '${src}/src/deps/appweb/appwebLib.c',
+                cat:         true,
+                filter:      /^#inc.*appweb.*$|^#inc.*mpr.*$|^#inc.*http.*$|^#inc.*customize.*$|^#inc.*edi.*$|^#inc.*mdb.*$|^#inc.*esp.*$/mg,
+                exclude:     /deps|server.appweb.c|esp\.c|ejs|samples|romFiles|pcre|appwebMonitor|sqlite|appman|makerom|utils|test|http\.c|sqlite|manager/,
+                header:      '#include \"appweb.h\"',
+                title:       bit.settings.title + ' Library Source',
+                set:         'combo',
+
+            },{
+                from:       'src/server/appweb.c',
+                to:         '${src}/src/deps/appweb/appweb.c',
+                set:         'combo',
+
+            },{
+                from:       'src/server/appweb.conf', 
+                to:         '${src}/src/deps/appweb/appweb.conf',
+                set:         'combo',
+
+            },{
+                write:      "Path('src/server/appweb.conf').readString().replace(/..LIBDIR../, '')",
+                to:         '${src}/src/deps/appweb/appweb.conf',
+                set:         'combo',
+
+            },{
+                from:       'src/esp/esp.conf', 
+                to:         '${src}/src/deps/appweb/esp.conf',
+                set:         'combo',
+
+            },{
+                from:       ['src/deps/pcre/pcre.c', 'src/deps/pcre/pcre.h'], 
+                to:         '${src}/src/deps/appweb/',
+                set:         'combo',
+
+            },{
+                from:       ['src/deps/sqlite/sqlite3.c', 'src/deps/sqlite/sqlite3.h'],
+                to:         '${src}/src/deps/sqlite/',
+                set:         'combo',
+            },
+        ],
     },
 })

@@ -8,7 +8,7 @@
 BIT_PRODUCT=${settings.product}
 BIT_NAME="${settings.title}"
 BIT_ETC_PREFIX="${prefixes.etc}"
-BIT_LIB_PREFIX="${prefixes.lib}"
+BIT_CACHE_PREFIX="${prefixes.cache}"
 
 remove() {
 	local cdir=`pwd`
@@ -25,7 +25,7 @@ remove() {
 		removeIntermediateFiles access.log error.log '*.log.old' .dummy $BIT_PRODUCT.conf .*.log make.log *.mod
 		cleanDir
 		cd $cdir 
-		rmdir $BIT_LIB_PREFIX 2>/dev/null || true
+		rmdir $BIT_CACHE_PREFIX 2>/dev/null || true
 	fi
 }
 
