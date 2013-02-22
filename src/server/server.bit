@@ -80,7 +80,6 @@ Bit.load({
         },
 
         run: {
-            enable: "!bit.platform.cross",
             depends: [ 'compile' ],
             action: "
                 trace('Run', 'From directory src/server')

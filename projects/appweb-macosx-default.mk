@@ -13,7 +13,7 @@ LD              := /usr/bin/ld
 CONFIG          := $(OS)-$(ARCH)-$(PROFILE)
 LBIN            := $(CONFIG)/bin
 
-BIT_ROOT_PREFIX       := /
+BIT_ROOT_PREFIX       := 
 BIT_BASE_PREFIX       := $(BIT_ROOT_PREFIX)/usr/local
 BIT_DATA_PREFIX       := $(BIT_ROOT_PREFIX)/
 BIT_STATE_PREFIX      := $(BIT_ROOT_PREFIX)/var
@@ -225,7 +225,8 @@ $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
-    $(CONFIG)/inc/est.h
+    $(CONFIG)/inc/est.h \
+    $(CONFIG)/inc/bitos.h
 	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/mprSsl.c
 
 $(CONFIG)/bin/libmprssl.dylib: \
@@ -746,13 +747,6 @@ stop: compile
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 installBinary: stop
-	mkdir -p "$(BIT_APP_PREFIX)"
-	mkdir -p "$(BIT_VAPP_PREFIX)"
-	mkdir -p "$(BIT_ETC_PREFIX)"
-	mkdir -p "$(BIT_WEB_PREFIX)"
-	mkdir -p "$(BIT_LOG_PREFIX)"
-	mkdir -p "$(BIT_SPOOL_PREFIX)"
-	mkdir -p "$(BIT_CACHE_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
@@ -780,7 +774,7 @@ installBinary: stop
 	cp "$(CONFIG)/bin/libmod_esp.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_esp.dylib"
 	cp "$(CONFIG)/bin/libmod_ssl.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_ssl.dylib"
 	cp "$(CONFIG)/bin/libmpr.dylib" "$(BIT_VAPP_PREFIX)/bin/libmpr.dylib"
-	cp "$(CONFIG)/bin/libmprSsl.dylib" "$(BIT_VAPP_PREFIX)/bin/libmprSsl.dylib"
+	cp "$(CONFIG)/bin/libmprssl.dylib" "$(BIT_VAPP_PREFIX)/bin/libmprssl.dylib"
 	cp "$(CONFIG)/bin/libpcre.dylib" "$(BIT_VAPP_PREFIX)/bin/libpcre.dylib"
 	cp "$(CONFIG)/bin/libsqlite3.dylib" "$(BIT_VAPP_PREFIX)/bin/libsqlite3.dylib"
 	cp "$(CONFIG)/bin/ca.crt" "$(BIT_VAPP_PREFIX)/bin/ca.crt"
@@ -843,10 +837,58 @@ installBinary: stop
 	cp "src/server/mime.types" "$(BIT_ETC_PREFIX)/mime.types"
 	cp "src/server/appweb.conf" "$(BIT_ETC_PREFIX)/appweb.conf"
 	mkdir -p "$(BIT_VAPP_PREFIX)/inc"
+	cp "$(CONFIG)/inc/appweb.h" "$(BIT_VAPP_PREFIX)/inc/appweb.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/appweb.h"
+	mkdir -p "$(BIT_INC_PREFIX)/appweb"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/appweb.h" "$(BIT_INC_PREFIX)/appweb/appweb.h"
 	cp "$(CONFIG)/inc/bit.h" "$(BIT_VAPP_PREFIX)/inc/bit.h"
 	rm -f "$(BIT_INC_PREFIX)/appweb/bit.h"
-	mkdir -p "$(BIT_INC_PREFIX)/appweb"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/bit.h" "$(BIT_INC_PREFIX)/appweb/bit.h"
+	cp "$(CONFIG)/inc/bitos.h" "$(BIT_VAPP_PREFIX)/inc/bitos.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/bitos.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/bitos.h" "$(BIT_INC_PREFIX)/appweb/bitos.h"
+	cp "$(CONFIG)/inc/customize.h" "$(BIT_VAPP_PREFIX)/inc/customize.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/customize.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/customize.h" "$(BIT_INC_PREFIX)/appweb/customize.h"
+	cp "$(CONFIG)/inc/edi.h" "$(BIT_VAPP_PREFIX)/inc/edi.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/edi.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/edi.h" "$(BIT_INC_PREFIX)/appweb/edi.h"
+	cp "$(CONFIG)/inc/ejs.h" "$(BIT_VAPP_PREFIX)/inc/ejs.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.h" "$(BIT_INC_PREFIX)/appweb/ejs.h"
+	cp "$(CONFIG)/inc/ejs.slots.h" "$(BIT_VAPP_PREFIX)/inc/ejs.slots.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.slots.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.slots.h" "$(BIT_INC_PREFIX)/appweb/ejs.slots.h"
+	cp "$(CONFIG)/inc/ejsByteGoto.h" "$(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h" "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h"
+	cp "$(CONFIG)/inc/esp-app.h" "$(BIT_VAPP_PREFIX)/inc/esp-app.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/esp-app.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/esp-app.h" "$(BIT_INC_PREFIX)/appweb/esp-app.h"
+	cp "$(CONFIG)/inc/esp.h" "$(BIT_VAPP_PREFIX)/inc/esp.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/esp.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/esp.h" "$(BIT_INC_PREFIX)/appweb/esp.h"
+	cp "$(CONFIG)/inc/est.h" "$(BIT_VAPP_PREFIX)/inc/est.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/est.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/est.h" "$(BIT_INC_PREFIX)/appweb/est.h"
+	cp "$(CONFIG)/inc/http.h" "$(BIT_VAPP_PREFIX)/inc/http.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/http.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/http.h" "$(BIT_INC_PREFIX)/appweb/http.h"
+	cp "$(CONFIG)/inc/mdb.h" "$(BIT_VAPP_PREFIX)/inc/mdb.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/mdb.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/mdb.h" "$(BIT_INC_PREFIX)/appweb/mdb.h"
+	cp "$(CONFIG)/inc/mpr.h" "$(BIT_VAPP_PREFIX)/inc/mpr.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/mpr.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/mpr.h" "$(BIT_INC_PREFIX)/appweb/mpr.h"
+	cp "$(CONFIG)/inc/pcre.h" "$(BIT_VAPP_PREFIX)/inc/pcre.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/pcre.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/pcre.h" "$(BIT_INC_PREFIX)/appweb/pcre.h"
+	cp "$(CONFIG)/inc/sqlite3.h" "$(BIT_VAPP_PREFIX)/inc/sqlite3.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/sqlite3.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/sqlite3.h" "$(BIT_INC_PREFIX)/appweb/sqlite3.h"
+	cp "$(CONFIG)/inc/testAppweb.h" "$(BIT_VAPP_PREFIX)/inc/testAppweb.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/testAppweb.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/testAppweb.h" "$(BIT_INC_PREFIX)/appweb/testAppweb.h"
 	cp "$(CONFIG)/bin/ejs.mod" "$(BIT_VAPP_PREFIX)/bin/ejs.mod"
 	mkdir -p "$(BIT_VAPP_PREFIX)/doc/man1"
 	cp "doc/man/appman.1" "$(BIT_VAPP_PREFIX)/doc/man1/appman.1"

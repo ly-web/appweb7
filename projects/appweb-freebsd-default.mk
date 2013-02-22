@@ -13,7 +13,7 @@ LD              := /usr/bin/ld
 CONFIG          := $(OS)-$(ARCH)-$(PROFILE)
 LBIN            := $(CONFIG)/bin
 
-BIT_ROOT_PREFIX       := /
+BIT_ROOT_PREFIX       := 
 BIT_BASE_PREFIX       := $(BIT_ROOT_PREFIX)/usr/local
 BIT_DATA_PREFIX       := $(BIT_ROOT_PREFIX)/
 BIT_STATE_PREFIX      := $(BIT_ROOT_PREFIX)/var
@@ -746,13 +746,6 @@ stop: compile
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 installBinary: stop
-	mkdir -p "$(BIT_APP_PREFIX)"
-	mkdir -p "$(BIT_VAPP_PREFIX)"
-	mkdir -p "$(BIT_ETC_PREFIX)"
-	mkdir -p "$(BIT_WEB_PREFIX)"
-	mkdir -p "$(BIT_LOG_PREFIX)"
-	mkdir -p "$(BIT_SPOOL_PREFIX)"
-	mkdir -p "$(BIT_CACHE_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
@@ -897,4 +890,7 @@ uninstall: stop
 
 genslink: 
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
+
+run: compile
+	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 

@@ -760,3 +760,6 @@ uninstall:
 genslink: 
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
+run: compile
+	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
+
