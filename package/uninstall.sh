@@ -198,7 +198,6 @@ preClean() {
 postClean() {
     local cdir=`pwd`
 
-    rm -f "${VAPP_PREFIX}/install.conf"
     cleanDir "${ABIN}"
     cleanDir "${APP_PREFIX}"
     cleanDir "${ETC_PREFIX}"

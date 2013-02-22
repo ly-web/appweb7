@@ -90,9 +90,7 @@ setup() {
 
 
 getAccountDetails() {
-
     local g u
-
     #
     #   Select default username
     #
@@ -247,14 +245,6 @@ ask() {
 }
 
 
-saveSetup() {
-    local firstChar
-
-    mkdir -p "$VAPP_PREFIX"
-    echo -e "FMT=$FMT\nbinDir=\"${VAPP_PREFIX}\"\ninstallbin=$installbin\nrunDaemon=$runDaemon\nhttpPort=$HTTP_PORT\nsslPort=$SSL_PORT\nusername=$username\ngroupname=$groupname\nhostname=$HOSTNAME" >"$VAPP_PREFIX/install.conf"
-}
-
-
 removeOld() {
     if [ -x "${ABIN}/uninstall" ] ; then
         appweb_HEADLESS=1 "${ABIN}/uninstall" </dev/null >/dev/null 2>&1
@@ -377,7 +367,6 @@ if [ "$installbin" = "Y" ] ; then
     fi
 fi
 removeOld
-saveSetup
 installFiles $FMT
 
 if [ "$installbin" = "Y" ] ; then
