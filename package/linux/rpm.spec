@@ -51,5 +51,6 @@ chmod 755 "${prefixes.spool}" "${prefixes.cache}" "${prefixes.log}"
 ${prefixes.bin}/appman install enable start
 
 %preun
+rm -f ${prefixes.app}/latest
 
 %postun
