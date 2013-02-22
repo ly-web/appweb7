@@ -27,10 +27,9 @@ System Requirements
 Operating System Support
 
     * Windows XP, Vista, Windows-7 (x86,x64)
-    * Mac OS X 10.4, 10.5 (x86,x64)
+    * Mac OS X 10.6+ (x64)
     * Linux 2.4, 2.6 (x86,x64,arm,ppc,sparc,xscale,mips)
     * VxWorks (x86,arm,ppc,sparc,xscale,mips)
-    * Solaris (sparc,x86,x64)
 
 To install Appweb, your development system will need at least the following:
 
@@ -61,7 +60,7 @@ Development Environment Platform Support
 
 If you wish to embed Appweb in your application or build Appweb from source code, you will need to use a C compiler and associated development tools.  Several development environments are supported.  You may choose any of the following:
 
-    * Linux/Unix/Solaris GNU Tools
+    * Linux/Unix GNU Tools
 
     * Windows Visual Studio 2010
 
