@@ -72,6 +72,14 @@ Bit.load({
                 set:        'core',
 
             },{ from:        [
+                    '${BIN}/appwebMonitor${EXE}',
+                    '${BIN}/appwebMonitor.ico',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.platform.os == 'windows'",
+
+            },{ from:        [
                     /* Don't use wild-cards for cross-generation  */
                     '${BIN}/libapp${SHOBJ}',
                     '${BIN}/libappweb${SHOBJ}',
