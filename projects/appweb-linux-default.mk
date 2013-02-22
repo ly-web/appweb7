@@ -773,7 +773,7 @@ installBinary: stop
 	cp "$(CONFIG)/bin/libmod_esp.so" "$(BIT_VAPP_PREFIX)/bin/libmod_esp.so"
 	cp "$(CONFIG)/bin/libmod_ssl.so" "$(BIT_VAPP_PREFIX)/bin/libmod_ssl.so"
 	cp "$(CONFIG)/bin/libmpr.so" "$(BIT_VAPP_PREFIX)/bin/libmpr.so"
-	cp "$(CONFIG)/bin/libmprSsl.so" "$(BIT_VAPP_PREFIX)/bin/libmprSsl.so"
+	cp "$(CONFIG)/bin/libmprssl.so" "$(BIT_VAPP_PREFIX)/bin/libmprssl.so"
 	cp "$(CONFIG)/bin/libpcre.so" "$(BIT_VAPP_PREFIX)/bin/libpcre.so"
 	cp "$(CONFIG)/bin/libsqlite3.so" "$(BIT_VAPP_PREFIX)/bin/libsqlite3.so"
 	cp "$(CONFIG)/bin/ca.crt" "$(BIT_VAPP_PREFIX)/bin/ca.crt"
