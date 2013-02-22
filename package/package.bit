@@ -137,7 +137,7 @@ Bit.load({
                 set:        'core',
                 enable:     "bit.packs.esp && bit.packs.esp.enable",
 
-            },{ from:       'src/server/web', 
+            },{ from:       'src/server/web/',
                 to:         '${web}/', 
                 exclude:    /mgmt/, 
                 set:        'core',
