@@ -3219,4 +3219,11 @@ int main(int argc, char **argv){
   }
   return rc;
 }
+
+#else
+
+int main(int argc, char **argv) {
+    printf("SQLITE not enabled\n");
+    exit(255);
+}
 #endif /* BIT_PACK_SQLITE */

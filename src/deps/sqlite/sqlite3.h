@@ -24,6 +24,7 @@
 
 #include "bit.h"
 
+#if BIT_PACK_SQLITE || BIT_SQLITE_PRODUCT
 #ifndef _h_SQLITE3_
 #define _h_SQLITE3_ 1
 
@@ -5836,3 +5837,4 @@ SQLITE_API int sqlite3_strnicmp(const char *, const char *, int);
 #endif
 
 #endif /* _h_SQLITE3_ */
+#endif /* BIT_PACK_SQLITE */

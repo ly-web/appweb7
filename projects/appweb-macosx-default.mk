@@ -750,7 +750,11 @@ installBinary: stop
 	mkdir -p "$(BIT_APP_PREFIX)"
 	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
+	chmod 755 $(BIT_LOG_PREFIX)
+	[ `id -u` = 0 ] && chown _www:_www "$(BIT_LOG_PREFIX)"
 	mkdir -p "$(BIT_CACHE_PREFIX)"
+	chmod 755 $(BIT_CACHE_PREFIX)
+	[ `id -u` = 0 ] && chown _www:_www "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin"
 	cp "$(CONFIG)/bin/appman" "$(BIT_VAPP_PREFIX)/bin/appman"
 	rm -f "$(BIT_BIN_PREFIX)/appman"
@@ -900,8 +904,10 @@ installBinary: stop
 	cp "doc/man/manager.1" "$(BIT_VAPP_PREFIX)/doc/man1/manager.1"
 	rm -f "$(BIT_MAN_PREFIX)/man1/manager.1"
 	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/manager.1" "$(BIT_MAN_PREFIX)/man1/manager.1"
-	install -d -m 644 "//Library/LaunchDaemons"
-	install -m 644 "package/macosx/com.embedthis.appweb.plist" "//Library/LaunchDaemons/com.embedthis.appweb.plist"
+	mkdir -p "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons"
+	cp "package/macosx/com.embedthis.appweb.plist" "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons/com.embedthis.appweb.plist"
+	[ `id -u` = 0 ] && chown root:wheel "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons/com.embedthis.appweb.plist"
+	chmod 644 $(BIT_ROOT_PREFIX)/Library/LaunchDaemons/com.embedthis.appweb.plist
 	echo 'set LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_CACHE_PREFIX)"\nDocuments "$(BIT_WEB_PREFIX)\nListen 80\n' >$(BIT_ETC_PREFIX)/install.conf
 
 start: compile stop

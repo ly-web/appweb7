@@ -5,6 +5,7 @@
 Bit.load({
     targets: {
         'genslink': {
+            //  MOB - Use run: target
             action: "run('esp --static --genlink slink.c --flat compile')",
             generate: "esp --static --genlink slink.c --flat compile",
         },
@@ -64,6 +65,7 @@ Bit.load({
         },
 
         'appwebMonitor.ico': {
+            //  MOB - convert to a normal file target
             enable: "bit.platform.like == 'windows'",
             type: 'file',
             files: [ 'windows/appwebMonitor.ico' ],

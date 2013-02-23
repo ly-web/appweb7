@@ -750,7 +750,11 @@ installBinary: stop
 	mkdir -p "$(BIT_APP_PREFIX)"
 	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
+	chmod 755 $(BIT_LOG_PREFIX)
+	[ `id -u` = 0 ] && chown nobody:nogroup "$(BIT_LOG_PREFIX)"
 	mkdir -p "$(BIT_CACHE_PREFIX)"
+	chmod 755 $(BIT_CACHE_PREFIX)
+	[ `id -u` = 0 ] && chown nobody:nogroup "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin"
 	cp "$(CONFIG)/bin/appman" "$(BIT_VAPP_PREFIX)/bin/appman"
 	rm -f "$(BIT_BIN_PREFIX)/appman"

@@ -750,7 +750,11 @@ installBinary: stop
 	mkdir -p "$(BIT_APP_PREFIX)"
 	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
+	chmod 755 $(BIT_LOG_PREFIX)
+	[ `id -u` = 0 ] && chown nobody:nogroup "$(BIT_LOG_PREFIX)"
 	mkdir -p "$(BIT_CACHE_PREFIX)"
+	chmod 755 $(BIT_CACHE_PREFIX)
+	[ `id -u` = 0 ] && chown nobody:nogroup "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin"
 	cp "$(CONFIG)/bin/appman" "$(BIT_VAPP_PREFIX)/bin/appman"
 	rm -f "$(BIT_BIN_PREFIX)/appman"
@@ -900,8 +904,10 @@ installBinary: stop
 	cp "doc/man/manager.1" "$(BIT_VAPP_PREFIX)/doc/man1/manager.1"
 	rm -f "$(BIT_MAN_PREFIX)/man1/manager.1"
 	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/manager.1" "$(BIT_MAN_PREFIX)/man1/manager.1"
-	install -d -m 755 "//etc/init.d"
-	install -m 755 "package/linux/appweb.init" "//etc/init.d/appweb"
+	mkdir -p "//etc/init.d"
+	cp "package/linux/appweb.init" "//etc/init.d/appweb"
+	[ `id -u` = 0 ] && chown root:0 "//etc/init.d/appweb"
+	chmod 755 //etc/init.d/appweb
 	echo 'set LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_CACHE_PREFIX)"\nDocuments "$(BIT_WEB_PREFIX)\nListen 80\n' >$(BIT_ETC_PREFIX)/install.conf
 
 start: compile stop

@@ -172,6 +172,12 @@
 #ifndef BIT_WARN_UNUSED
     #define BIT_WARN_UNUSED 1
 #endif
+#ifndef BIT_WEB_GROUP
+    #define BIT_WEB_GROUP "_www"
+#endif
+#ifndef BIT_WEB_USER
+    #define BIT_WEB_USER "_www"
+#endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
 #endif
@@ -251,7 +257,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default -with ejscript --without default -configure . -gen xcode"
+    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default -with ejscript --without default -configure . -gen make"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
