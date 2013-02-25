@@ -1638,7 +1638,7 @@ endif
 	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/manager.1" "$(BIT_MAN_PREFIX)/man1/manager.1"
 	mkdir -p "$(BIT_ROOT_PREFIX)/etc/init.d"
 	cp "package/linux/appweb.init" "$(BIT_ROOT_PREFIX)/etc/init.d/appweb"
-	[ `id -u` = 0 ] && chown root:0 "$(BIT_ROOT_PREFIX)/etc/init.d/appweb"
+	[ `id -u` = 0 ] && chown root:root "$(BIT_ROOT_PREFIX)/etc/init.d/appweb"
 	chmod 755 "$(BIT_ROOT_PREFIX)/etc/init.d/appweb"
 	echo 'set LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_CACHE_PREFIX)"\nDocuments "$(BIT_WEB_PREFIX)\nListen 80\n' >$(BIT_ETC_PREFIX)/install.conf
 
