@@ -142,6 +142,7 @@ Bit.load({
                 to:         '${abin}/',
                 set:        'core',
                 require:    'php',
+                enable:     "bit.platform.os != 'windows'",
 
             },{ from:        [
                     '${BIN}/libmod_php${SHOBJ}',

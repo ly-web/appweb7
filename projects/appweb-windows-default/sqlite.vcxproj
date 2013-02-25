@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5a421e59-8992-40a0-97e4-ea405d64e2d5}</ProjectGuid>
+    <ProjectGuid>{2618aa30-3a5e-4463-a29e-0da56df117cc}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -112,7 +112,7 @@
 
 <ItemGroup>
   <ProjectReference Include="libsqlite3.vcxproj">
-  <Project>eb15eba2-6b6c-4bfb-991a-6802a371bfa2</Project>
+  <Project>5cbc95c5-1893-48a1-b8ed-731af7e89ccb</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
