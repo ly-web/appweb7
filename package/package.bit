@@ -32,8 +32,19 @@ Bit.load({
 
     scripts: {
         loaded: "
-            bit.settings.webUser = getWebUser()
-            bit.settings.webGroup = getWebGroup()
+            if (bit.generating) {
+                bit.settings.webUser = '$(WEB_USER)'
+                bit.settings.webGroup = '$(WEB_GROUP)'
+            } else {
+                bit.settings.webUser = getWebUser()
+                bit.settings.webGroup = getWebGroup()
+            }
+        ",
+        gendefs: "
+            if (bit.platform.os != 'windows') {
+                genWriteLine(\"WEB_USER    = $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$//' |  tail -1)\")
+                genWriteLine(\"WEB_GROUP   = $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$//' |  tail -1)\")
+            }
         ",
     },
 
@@ -292,7 +303,7 @@ Bit.load({
                 to:          '${root}/etc/init.d/${settings.product}',
                 permissions: 0755,
                 user:        'root',
-                group:       '0',
+                group:       'root',
                 set:         'service',
                 root:        true,
                 enable:      "bit.platform.os == 'linux'",
@@ -303,7 +314,7 @@ Bit.load({
                 to:          '${root}/etc/init/${settings.product}.conf',
                 permissions: 0644,
                 user:        'root',
-                group:       '0',
+                group:       'root',
                 set:         'service',
                 root:        true,
                 enable:      "false && bit.platform.os == 'linux'",
