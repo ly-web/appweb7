@@ -411,7 +411,6 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
     }
 #if BIT_UNIX_LIKE
     struct passwd   *pp;
-
     if (snumber(newUser)) {
         appweb->uid = atoi(newUser);
         if ((pp = getpwuid(appweb->uid)) == 0) {
@@ -440,6 +439,7 @@ PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 #if MACOSX || FREEBSD
         newGroup = "www";
 #elif LINUX || BIT_UNIX_LIKE
+        char    *buf;
         newGroup = "nobody";
         /*
             Debian has nogroup, Fedora has nobody. Ugh!
