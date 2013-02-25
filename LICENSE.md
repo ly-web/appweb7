@@ -107,6 +107,7 @@ Embedthis, Appweb, Ejscript, ESP and Embedthis GoAhead are trademarks of Embedth
 
 Third Party Licenses
 ---
-See doc/licenses for other licenses. Contributors have provided portions of the software that are covered by the Embedthis Contributor license that grants Embedthis sufficient rights to execute this license Agreement.
+
+The Software contains licensed third party software components whoes licenses are compatible with the Appweb commercial and open source licenses. See [doc/licenses](https://github.com/embedthis/appweb-4/tree/master/doc/licenses) for the licenses. Contributors have provided portions of the software that are covered by the Embedthis Contributor license that grants Embedthis sufficient rights to execute this license Agreement.
 
 -END-
