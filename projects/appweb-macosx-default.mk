@@ -320,7 +320,6 @@ endif
 DEPS_9 += $(CONFIG)/inc/bit.h
 DEPS_9 += $(CONFIG)/inc/mpr.h
 DEPS_9 += $(CONFIG)/inc/est.h
-DEPS_9 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_9)
