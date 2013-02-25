@@ -58,59 +58,59 @@ TARGETS     = $(TARGETS) $(CONFIG)\bin\libmprssl.dll
 TARGETS     = $(TARGETS) $(CONFIG)\bin\appman.exe
 TARGETS     = $(TARGETS) $(CONFIG)\bin\makerom.exe
 !IF "$(BIT_PACK_EST)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\libest.dll
+TARGETS = $(TARGETS) $(CONFIG)\bin\libest.dll
 !ENDIF
 TARGETS     = $(TARGETS) $(CONFIG)\bin\ca.crt
 TARGETS     = $(TARGETS) $(CONFIG)\bin\libpcre.dll
 TARGETS     = $(TARGETS) $(CONFIG)\bin\libhttp.dll
 TARGETS     = $(TARGETS) $(CONFIG)\bin\http.exe
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\libsqlite3.dll
+TARGETS = $(TARGETS) $(CONFIG)\bin\libsqlite3.dll
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\sqlite.exe
+TARGETS = $(TARGETS) $(CONFIG)\bin\sqlite.exe
 !ENDIF
 TARGETS     = $(TARGETS) $(CONFIG)\bin\libappweb.dll
 !IF "$(BIT_PACK_ESP)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_esp.dll
+TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_esp.dll
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\esp.exe
+TARGETS = $(TARGETS) $(CONFIG)\bin\esp.exe
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\esp.conf
+TARGETS = $(TARGETS) $(CONFIG)\bin\esp.conf
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-    TARGETS = $(TARGETS) src\server\esp.conf
+TARGETS = $(TARGETS) src\server\esp.conf
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\esp-www
+TARGETS = $(TARGETS) $(CONFIG)\bin\esp-www
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\esp-appweb.conf
+TARGETS = $(TARGETS) $(CONFIG)\bin\esp-appweb.conf
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\libejs.dll
+TARGETS = $(TARGETS) $(CONFIG)\bin\libejs.dll
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\ejs.exe
+TARGETS = $(TARGETS) $(CONFIG)\bin\ejs.exe
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\ejsc.exe
+TARGETS = $(TARGETS) $(CONFIG)\bin\ejsc.exe
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\ejs.mod
+TARGETS = $(TARGETS) $(CONFIG)\bin\ejs.mod
 !ENDIF
 !IF "$(BIT_PACK_CGI)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_cgi.dll
+TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_cgi.dll
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_ejs.dll
+TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_ejs.dll
 !ENDIF
 TARGETS     = $(TARGETS) $(CONFIG)\bin\libmod_ssl.dll
 TARGETS     = $(TARGETS) $(CONFIG)\bin\authpass.exe
 !IF "$(BIT_PACK_CGI)" == "1"
-    TARGETS = $(TARGETS) $(CONFIG)\bin\cgiProgram.exe
+TARGETS = $(TARGETS) $(CONFIG)\bin\cgiProgram.exe
 !ENDIF
 TARGETS     = $(TARGETS) src\server\slink.c
 TARGETS     = $(TARGETS) $(CONFIG)\bin\libapp.dll
@@ -120,16 +120,16 @@ TARGETS     = $(TARGETS) $(CONFIG)\bin\appwebMonitor.ico
 TARGETS     = $(TARGETS) src\server\cache
 TARGETS     = $(TARGETS) $(CONFIG)\bin\testAppweb.exe
 !IF "$(BIT_PACK_CGI)" == "1"
-    TARGETS = $(TARGETS) test\cgi-bin\testScript
+TARGETS = $(TARGETS) test\cgi-bin\testScript
 !ENDIF
 !IF "$(BIT_PACK_CGI)" == "1"
-    TARGETS = $(TARGETS) test\web\caching\cache.cgi
+TARGETS = $(TARGETS) test\web\caching\cache.cgi
 !ENDIF
 !IF "$(BIT_PACK_CGI)" == "1"
-    TARGETS = $(TARGETS) test\web\auth\basic\basic.cgi
+TARGETS = $(TARGETS) test\web\auth\basic\basic.cgi
 !ENDIF
 !IF "$(BIT_PACK_CGI)" == "1"
-    TARGETS = $(TARGETS) test\cgi-bin\cgiProgram.exe
+TARGETS = $(TARGETS) test\cgi-bin\cgiProgram.exe
 !ENDIF
 TARGETS     = $(TARGETS) test\web\js
 
@@ -347,12 +347,12 @@ $(CONFIG)\obj\mprSsl.obj: \
 #
 DEPS_12 = $(DEPS_12) $(CONFIG)\bin\libmpr.dll
 !IF "$(BIT_PACK_EST)" == "1"
-    DEPS_12 = $(DEPS_12) $(CONFIG)\bin\libest.dll
+DEPS_12 = $(DEPS_12) $(CONFIG)\bin\libest.dll
 !ENDIF
 DEPS_12 = $(DEPS_12) $(CONFIG)\obj\mprSsl.obj
 
 !IF "$(BIT_PACK_EST)" == "1"
-    LIBS_12 $(LIBS_12) libest.lib
+LIBS_12 $(LIBS_12) libest.lib
 !ENDIF
 LIBS_12 = $(LIBS_12) libmpr.lib
 
@@ -552,12 +552,12 @@ $(CONFIG)\obj\sqlite.obj: \
 #   sqlite
 #
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    DEPS_30 = $(DEPS_30) $(CONFIG)\bin\libsqlite3.dll
+DEPS_30 = $(DEPS_30) $(CONFIG)\bin\libsqlite3.dll
 !ENDIF
 DEPS_30 = $(DEPS_30) $(CONFIG)\obj\sqlite.obj
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_30 $(LIBS_30) libsqlite3.lib
+LIBS_30 $(LIBS_30) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\sqlite.exe: $(DEPS_30)
@@ -979,7 +979,7 @@ DEPS_63 = $(DEPS_63) $(CONFIG)\bin\libhttp.dll
 DEPS_63 = $(DEPS_63) $(CONFIG)\bin\libpcre.dll
 DEPS_63 = $(DEPS_63) $(CONFIG)\bin\libmpr.dll
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    DEPS_63 = $(DEPS_63) $(CONFIG)\bin\libsqlite3.dll
+DEPS_63 = $(DEPS_63) $(CONFIG)\bin\libsqlite3.dll
 !ENDIF
 DEPS_63 = $(DEPS_63) $(CONFIG)\inc\ejs.h
 DEPS_63 = $(DEPS_63) $(CONFIG)\inc\ejs.slots.h
@@ -987,7 +987,7 @@ DEPS_63 = $(DEPS_63) $(CONFIG)\inc\ejsByteGoto.h
 DEPS_63 = $(DEPS_63) $(CONFIG)\obj\ejsLib.obj
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_63 $(LIBS_63) libsqlite3.lib
+LIBS_63 $(LIBS_63) libsqlite3.lib
 !ENDIF
 LIBS_63 = $(LIBS_63) libmpr.lib
 LIBS_63 = $(LIBS_63) libpcre.lib
@@ -1016,15 +1016,15 @@ $(CONFIG)\obj\ejs.obj: \
 #   ejs
 #
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    DEPS_65 = $(DEPS_65) $(CONFIG)\bin\libejs.dll
+DEPS_65 = $(DEPS_65) $(CONFIG)\bin\libejs.dll
 !ENDIF
 DEPS_65 = $(DEPS_65) $(CONFIG)\obj\ejs.obj
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    LIBS_65 $(LIBS_65) libejs.lib
+LIBS_65 $(LIBS_65) libejs.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_65 $(LIBS_65) libsqlite3.lib
+LIBS_65 $(LIBS_65) libsqlite3.lib
 !ENDIF
 LIBS_65 = $(LIBS_65) libmpr.lib
 LIBS_65 = $(LIBS_65) libpcre.lib
@@ -1051,15 +1051,15 @@ $(CONFIG)\obj\ejsc.obj: \
 #   ejsc
 #
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    DEPS_67 = $(DEPS_67) $(CONFIG)\bin\libejs.dll
+DEPS_67 = $(DEPS_67) $(CONFIG)\bin\libejs.dll
 !ENDIF
 DEPS_67 = $(DEPS_67) $(CONFIG)\obj\ejsc.obj
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    LIBS_67 $(LIBS_67) libejs.lib
+LIBS_67 $(LIBS_67) libejs.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_67 $(LIBS_67) libsqlite3.lib
+LIBS_67 $(LIBS_67) libsqlite3.lib
 !ENDIF
 LIBS_67 = $(LIBS_67) libmpr.lib
 LIBS_67 = $(LIBS_67) libpcre.lib
@@ -1075,7 +1075,7 @@ $(CONFIG)\bin\ejsc.exe: $(DEPS_67)
 #   ejs.mod
 #
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    DEPS_68 = $(DEPS_68) $(CONFIG)\bin\ejsc.exe
+DEPS_68 = $(DEPS_68) $(CONFIG)\bin\ejsc.exe
 !ENDIF
 
 $(CONFIG)\bin\ejs.mod: $(DEPS_68)
@@ -1127,19 +1127,19 @@ $(CONFIG)\obj\ejsHandler.obj: \
 #
 DEPS_72 = $(DEPS_72) $(CONFIG)\bin\libappweb.dll
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    DEPS_72 = $(DEPS_72) $(CONFIG)\bin\libejs.dll
+DEPS_72 = $(DEPS_72) $(CONFIG)\bin\libejs.dll
 !ENDIF
 DEPS_72 = $(DEPS_72) $(CONFIG)\obj\ejsHandler.obj
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    LIBS_72 $(LIBS_72) libejs.lib
+LIBS_72 $(LIBS_72) libejs.lib
 !ENDIF
 LIBS_72 = $(LIBS_72) libappweb.lib
 LIBS_72 = $(LIBS_72) libhttp.lib
 LIBS_72 = $(LIBS_72) libpcre.lib
 LIBS_72 = $(LIBS_72) libmpr.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_72 $(LIBS_72) libsqlite3.lib
+LIBS_72 $(LIBS_72) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\libmod_ejs.dll: $(DEPS_72)
@@ -1244,15 +1244,15 @@ $(CONFIG)\obj\slink.obj: \
 #
 DEPS_81 = $(DEPS_81) src\server\slink.c
 !IF "$(BIT_PACK_ESP)" == "1"
-    DEPS_81 = $(DEPS_81) $(CONFIG)\bin\esp.exe
+DEPS_81 = $(DEPS_81) $(CONFIG)\bin\esp.exe
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-    DEPS_81 = $(DEPS_81) $(CONFIG)\bin\libmod_esp.dll
+DEPS_81 = $(DEPS_81) $(CONFIG)\bin\libmod_esp.dll
 !ENDIF
 DEPS_81 = $(DEPS_81) $(CONFIG)\obj\slink.obj
 
 !IF "$(BIT_PACK_ESP)" == "1"
-    LIBS_81 $(LIBS_81) libmod_esp.lib
+LIBS_81 $(LIBS_81) libmod_esp.lib
 !ENDIF
 LIBS_81 = $(LIBS_81) libappweb.lib
 LIBS_81 = $(LIBS_81) libhttp.lib
@@ -1280,38 +1280,38 @@ $(CONFIG)\obj\appweb.obj: \
 #
 DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libappweb.dll
 !IF "$(BIT_PACK_ESP)" == "1"
-    DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_esp.dll
+DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_esp.dll
 !ENDIF
 DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_ssl.dll
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_ejs.dll
+DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_ejs.dll
 !ENDIF
 !IF "$(BIT_PACK_CGI)" == "1"
-    DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_cgi.dll
+DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_cgi.dll
 !ENDIF
 DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libapp.dll
 DEPS_83 = $(DEPS_83) $(CONFIG)\obj\appweb.obj
 
 LIBS_83 = $(LIBS_83) libapp.lib
 !IF "$(BIT_PACK_CGI)" == "1"
-    LIBS_83 $(LIBS_83) libmod_cgi.lib
+LIBS_83 $(LIBS_83) libmod_cgi.lib
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    LIBS_83 $(LIBS_83) libmod_ejs.lib
+LIBS_83 $(LIBS_83) libmod_ejs.lib
 !ENDIF
 LIBS_83 = $(LIBS_83) libmod_ssl.lib
 !IF "$(BIT_PACK_ESP)" == "1"
-    LIBS_83 $(LIBS_83) libmod_esp.lib
+LIBS_83 $(LIBS_83) libmod_esp.lib
 !ENDIF
 LIBS_83 = $(LIBS_83) libappweb.lib
 LIBS_83 = $(LIBS_83) libhttp.lib
 LIBS_83 = $(LIBS_83) libpcre.lib
 LIBS_83 = $(LIBS_83) libmpr.lib
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    LIBS_83 $(LIBS_83) libejs.lib
+LIBS_83 $(LIBS_83) libejs.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_83 $(LIBS_83) libsqlite3.lib
+LIBS_83 $(LIBS_83) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\appweb.exe: $(DEPS_83)
@@ -1452,7 +1452,7 @@ $(CONFIG)\bin\testAppweb.exe: $(DEPS_95)
 #   test-testScript
 #
 !IF "$(BIT_PACK_CGI)" == "1"
-    DEPS_96 = $(DEPS_96) $(CONFIG)\bin\cgiProgram.exe
+DEPS_96 = $(DEPS_96) $(CONFIG)\bin\cgiProgram.exe
 !ENDIF
 
 test\cgi-bin\testScript: $(DEPS_96)
@@ -1480,7 +1480,7 @@ test\web\auth\basic\basic.cgi: $(DEPS_98)
 #   test-cgiProgram
 #
 !IF "$(BIT_PACK_CGI)" == "1"
-    DEPS_99 = $(DEPS_99) $(CONFIG)\bin\cgiProgram.exe
+DEPS_99 = $(DEPS_99) $(CONFIG)\bin\cgiProgram.exe
 !ENDIF
 
 test\cgi-bin\cgiProgram.exe: $(DEPS_99)
