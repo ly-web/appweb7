@@ -445,7 +445,7 @@ PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
             Debian has nogroup, Fedora has nobody. Ugh!
          */
         if ((buf = mprReadPathContents("/etc/passwd", NULL)) != 0) {
-            if (scontains("nogroup:")) {
+            if (scontains(buf, "nogroup:")) {
                 newGroup = "nogroup";
                 break;
             }
