@@ -352,7 +352,7 @@ DEPS_12 = $(DEPS_12) $(CONFIG)\bin\libest.dll
 DEPS_12 = $(DEPS_12) $(CONFIG)\obj\mprSsl.obj
 
 !IF "$(BIT_PACK_EST)" == "1"
-LIBS_12 $(LIBS_12) libest.lib
+LIBS_12 = $(LIBS_12) libest.lib
 !ENDIF
 LIBS_12 = $(LIBS_12) libmpr.lib
 
@@ -557,7 +557,7 @@ DEPS_30 = $(DEPS_30) $(CONFIG)\bin\libsqlite3.dll
 DEPS_30 = $(DEPS_30) $(CONFIG)\obj\sqlite.obj
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_30 $(LIBS_30) libsqlite3.lib
+LIBS_30 = $(LIBS_30) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\sqlite.exe: $(DEPS_30)
@@ -987,7 +987,7 @@ DEPS_63 = $(DEPS_63) $(CONFIG)\inc\ejsByteGoto.h
 DEPS_63 = $(DEPS_63) $(CONFIG)\obj\ejsLib.obj
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_63 $(LIBS_63) libsqlite3.lib
+LIBS_63 = $(LIBS_63) libsqlite3.lib
 !ENDIF
 LIBS_63 = $(LIBS_63) libmpr.lib
 LIBS_63 = $(LIBS_63) libpcre.lib
@@ -1021,10 +1021,10 @@ DEPS_65 = $(DEPS_65) $(CONFIG)\bin\libejs.dll
 DEPS_65 = $(DEPS_65) $(CONFIG)\obj\ejs.obj
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_65 $(LIBS_65) libejs.lib
+LIBS_65 = $(LIBS_65) libejs.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_65 $(LIBS_65) libsqlite3.lib
+LIBS_65 = $(LIBS_65) libsqlite3.lib
 !ENDIF
 LIBS_65 = $(LIBS_65) libmpr.lib
 LIBS_65 = $(LIBS_65) libpcre.lib
@@ -1056,10 +1056,10 @@ DEPS_67 = $(DEPS_67) $(CONFIG)\bin\libejs.dll
 DEPS_67 = $(DEPS_67) $(CONFIG)\obj\ejsc.obj
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_67 $(LIBS_67) libejs.lib
+LIBS_67 = $(LIBS_67) libejs.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_67 $(LIBS_67) libsqlite3.lib
+LIBS_67 = $(LIBS_67) libsqlite3.lib
 !ENDIF
 LIBS_67 = $(LIBS_67) libmpr.lib
 LIBS_67 = $(LIBS_67) libpcre.lib
@@ -1132,14 +1132,14 @@ DEPS_72 = $(DEPS_72) $(CONFIG)\bin\libejs.dll
 DEPS_72 = $(DEPS_72) $(CONFIG)\obj\ejsHandler.obj
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_72 $(LIBS_72) libejs.lib
+LIBS_72 = $(LIBS_72) libejs.lib
 !ENDIF
 LIBS_72 = $(LIBS_72) libappweb.lib
 LIBS_72 = $(LIBS_72) libhttp.lib
 LIBS_72 = $(LIBS_72) libpcre.lib
 LIBS_72 = $(LIBS_72) libmpr.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_72 $(LIBS_72) libsqlite3.lib
+LIBS_72 = $(LIBS_72) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\libmod_ejs.dll: $(DEPS_72)
@@ -1252,7 +1252,7 @@ DEPS_81 = $(DEPS_81) $(CONFIG)\bin\libmod_esp.dll
 DEPS_81 = $(DEPS_81) $(CONFIG)\obj\slink.obj
 
 !IF "$(BIT_PACK_ESP)" == "1"
-LIBS_81 $(LIBS_81) libmod_esp.lib
+LIBS_81 = $(LIBS_81) libmod_esp.lib
 !ENDIF
 LIBS_81 = $(LIBS_81) libappweb.lib
 LIBS_81 = $(LIBS_81) libhttp.lib
@@ -1294,24 +1294,24 @@ DEPS_83 = $(DEPS_83) $(CONFIG)\obj\appweb.obj
 
 LIBS_83 = $(LIBS_83) libapp.lib
 !IF "$(BIT_PACK_CGI)" == "1"
-LIBS_83 $(LIBS_83) libmod_cgi.lib
+LIBS_83 = $(LIBS_83) libmod_cgi.lib
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_83 $(LIBS_83) libmod_ejs.lib
+LIBS_83 = $(LIBS_83) libmod_ejs.lib
 !ENDIF
 LIBS_83 = $(LIBS_83) libmod_ssl.lib
 !IF "$(BIT_PACK_ESP)" == "1"
-LIBS_83 $(LIBS_83) libmod_esp.lib
+LIBS_83 = $(LIBS_83) libmod_esp.lib
 !ENDIF
 LIBS_83 = $(LIBS_83) libappweb.lib
 LIBS_83 = $(LIBS_83) libhttp.lib
 LIBS_83 = $(LIBS_83) libpcre.lib
 LIBS_83 = $(LIBS_83) libmpr.lib
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_83 $(LIBS_83) libejs.lib
+LIBS_83 = $(LIBS_83) libejs.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_83 $(LIBS_83) libsqlite3.lib
+LIBS_83 = $(LIBS_83) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\appweb.exe: $(DEPS_83)
