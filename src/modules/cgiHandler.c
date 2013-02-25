@@ -182,7 +182,7 @@ static void startCgi(HttpQueue *q)
     }
     if ((envv = mprAlloc((varCount + 1) * sizeof(char*))) != 0) {
         count = copyVars(envv, 0, rx->params, "");
-        count = copyVars(envv, 0, rx->svars, "");
+        count = copyVars(envv, count, rx->svars, "");
         count = copyVars(envv, count, rx->headers, "HTTP_");
         assert(count <= varCount);
     }

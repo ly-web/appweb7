@@ -1948,6 +1948,7 @@ static int uploadDirDirective(MaState *state, cchar *key, cchar *value)
  */
 static int uploadAutoDeleteDirective(MaState *state, cchar *key, cchar *value)
 {
+    //  MOB use httpSetRouteAutoDelete
     if (!maTokenize(state, value, "%B", &state->route->autoDelete)) {
         return MPR_ERR_BAD_SYNTAX;
     }
