@@ -447,7 +447,6 @@ PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
         if ((buf = mprReadPathContents("/etc/passwd", NULL)) != 0) {
             if (scontains(buf, "nogroup:")) {
                 newGroup = "nogroup";
-                break;
             }
         }
 #elif WINDOWS
