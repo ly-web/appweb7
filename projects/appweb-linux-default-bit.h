@@ -173,7 +173,7 @@
     #define BIT_WARN_UNUSED 1
 #endif
 #ifndef BIT_WEB_GROUP
-    #define BIT_WEB_GROUP "nobody"
+    #define BIT_WEB_GROUP "nogroup"
 #endif
 #ifndef BIT_WEB_USER
     #define BIT_WEB_USER "nobody"

@@ -1439,6 +1439,7 @@ DEPS_94 += stop
 installBinary: $(DEPS_94)
 	mkdir -p "$(BIT_APP_PREFIX)"
 	mkdir -p "$(BIT_VAPP_PREFIX)"
+	mkdir -p "$(BIT_ETC_PREFIX)"
 	mkdir -p "$(BIT_WEB_PREFIX)"
 	mkdir -p "$(BIT_LOG_PREFIX)"
 	mkdir -p "$(BIT_SPOOL_PREFIX)"
