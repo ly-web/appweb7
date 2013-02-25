@@ -1451,9 +1451,9 @@ installBinary: $(DEPS_103)
 	copy /Y "$(CONFIG)\bin\appman.exe" "$(BIT_VAPP_PREFIX)\bin\appman.exe"
 	copy /Y "$(CONFIG)\bin\appweb.exe" "$(BIT_VAPP_PREFIX)\bin\appweb.exe"
 	copy /Y "$(CONFIG)\bin\http.exe" "$(BIT_VAPP_PREFIX)\bin\http.exe"
-ifeq ($(BIT_PACK_ESP),1)
+!IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y "$(CONFIG)\bin\esp.exe" "$(BIT_VAPP_PREFIX)\bin\esp.exe"
-endif
+!ENDIF
 	copy /Y "$(CONFIG)\bin\appwebMonitor.exe" "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.exe"
 	copy /Y "$(CONFIG)\bin\appwebMonitor.ico" "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.ico"
 	copy /Y "$(CONFIG)\bin\libapp.dll" "$(BIT_VAPP_PREFIX)\bin\libapp.dll"
@@ -1464,30 +1464,30 @@ endif
 	copy /Y "$(CONFIG)\bin\libmprssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmprssl.dll"
 	copy /Y "$(CONFIG)\bin\libpcre.dll" "$(BIT_VAPP_PREFIX)\bin\libpcre.dll"
 	copy /Y "$(CONFIG)\bin\ca.crt" "$(BIT_VAPP_PREFIX)\bin\ca.crt"
-ifeq ($(BIT_PACK_EST),1)
+!IF "$(BIT_PACK_EST)" == "1"
 	copy /Y "$(CONFIG)\bin\libest.dll" "$(BIT_VAPP_PREFIX)\bin\libest.dll"
-endif
-ifeq ($(BIT_PACK_SQLITE),1)
+!ENDIF
+!IF "$(BIT_PACK_SQLITE)" == "1"
 	copy /Y "$(CONFIG)\bin\libsqlite3.dll" "$(BIT_VAPP_PREFIX)\bin\libsqlite3.dll"
-endif
-ifeq ($(BIT_PACK_ESP),1)
+!ENDIF
+!IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y "$(CONFIG)\bin\libmod_esp.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_esp.dll"
-endif
-ifeq ($(BIT_PACK_CGI),1)
+!ENDIF
+!IF "$(BIT_PACK_CGI)" == "1"
 	copy /Y "$(CONFIG)\bin\libmod_cgi.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_cgi.dll"
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
+!ENDIF
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 	copy /Y "$(CONFIG)\bin\libejs.dll" "$(BIT_VAPP_PREFIX)\bin\libejs.dll"
 	copy /Y "$(CONFIG)\bin\libmod_ejs.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_ejs.dll"
-endif
-ifeq ($(BIT_PACK_ESP),1)
+!ENDIF
+!IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y "$(CONFIG)\bin\libmod_esp.lib" "$(BIT_VAPP_PREFIX)\bin\libmod_esp.lib"
 	copy /Y "$(CONFIG)\bin\libappweb.lib" "$(BIT_VAPP_PREFIX)\bin\libappweb.lib"
 	copy /Y "$(CONFIG)\bin\libpcre.lib" "$(BIT_VAPP_PREFIX)\bin\libpcre.lib"
 	copy /Y "$(CONFIG)\bin\libhttp.lib" "$(BIT_VAPP_PREFIX)\bin\libhttp.lib"
 	copy /Y "$(CONFIG)\bin\libmpr.lib" "$(BIT_VAPP_PREFIX)\bin\libmpr.lib"
-endif
-ifeq ($(BIT_PACK_ESP),1)
+!ENDIF
+!IF "$(BIT_PACK_ESP)" == "1"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www" md "$(BIT_VAPP_PREFIX)\bin\esp-www"
 	copy /Y "src\esp\esp-www\app.conf" "$(BIT_VAPP_PREFIX)\bin\esp-www\app.conf"
 	copy /Y "src\esp\esp-www\appweb.conf" "$(BIT_VAPP_PREFIX)\bin\esp-www\appweb.conf"
@@ -1508,11 +1508,11 @@ ifeq ($(BIT_PACK_ESP),1)
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes"
 	copy /Y "src\esp\esp-www\files\static\themes\default.css" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes\default.css"
 	copy /Y "src\esp\esp-appweb.conf" "$(BIT_VAPP_PREFIX)\bin\esp-appweb.conf"
-endif
-ifeq ($(BIT_PACK_ESP),1)
+!ENDIF
+!IF "$(BIT_PACK_ESP)" == "1"
 	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
 	copy /Y "$(CONFIG)\bin\esp.conf" "$(BIT_VAPP_PREFIX)\esp.conf"
-endif
+!ENDIF
 	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
 	copy /Y "src\server\web\bench\1b.html" "$(BIT_VAPP_PREFIX)\web\bench\1b.html"
 	copy /Y "src\server\web\bench\4k.html" "$(BIT_VAPP_PREFIX)\web\bench\4k.html"
@@ -1557,20 +1557,20 @@ endif
 	copy /Y "src\deps\mpr\mpr.h" "$(BIT_VAPP_PREFIX)\inc\mpr.h"
 	copy /Y "src\deps\pcre\pcre.h" "$(BIT_VAPP_PREFIX)\inc\pcre.h"
 	copy /Y "src\deps\sqlite\sqlite3.h" "$(BIT_VAPP_PREFIX)\inc\sqlite3.h"
-ifeq ($(BIT_PACK_ESP),1)
+!IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y "src\esp\edi.h" "$(BIT_VAPP_PREFIX)\inc\edi.h"
 	copy /Y "src\esp\esp-app.h" "$(BIT_VAPP_PREFIX)\inc\esp-app.h"
 	copy /Y "src\esp\esp.h" "$(BIT_VAPP_PREFIX)\inc\esp.h"
 	copy /Y "src\esp\mdb.h" "$(BIT_VAPP_PREFIX)\inc\mdb.h"
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
+!ENDIF
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 	copy /Y "src\deps\ejs\ejs.h" "$(BIT_VAPP_PREFIX)\inc\ejs.h"
 	copy /Y "src\deps\ejs\ejs.slots.h" "$(BIT_VAPP_PREFIX)\inc\ejs.slots.h"
 	copy /Y "src\deps\ejs\ejsByteGoto.h" "$(BIT_VAPP_PREFIX)\inc\ejsByteGoto.h"
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
+!ENDIF
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 	copy /Y "$(CONFIG)\bin\ejs.mod" "$(BIT_VAPP_PREFIX)\bin\ejs.mod"
-endif
+!ENDIF
 	echo 'set LOG_DIR "$(BIT_VAPP_PREFIX)/log"\nset CACHE_DIR "$(BIT_VAPP_PREFIX)/cache"\nDocuments "$(BIT_VAPP_PREFIX)/web\nListen 80\n' >$(BIT_VAPP_PREFIX)/install.conf
 
 #
