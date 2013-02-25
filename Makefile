@@ -82,9 +82,9 @@ help:
 	@echo '' >&2
 	@echo 'For example, to disable CGI:' >&2
 	@echo '' >&2
-	@echo '  make BIT_PACK_CGI=0' >&2
+	@echo '  BIT_PACK_CGI=0 make' >&2
 	@echo '' >&2
-	@echo 'Other make variables:' >&2
+	@echo 'Other make environment variables:' >&2
 	@echo '  ARCH               # CPU architecture (x86, x64, ppc, ...)' >&2
 	@echo '  OS                 # Operating system (linux, macosx, windows, vxworks, ...)' >&2
 	@echo '  CC                 # Compiler to use ' >&2
@@ -99,5 +99,5 @@ help:
 	@echo '  LIBS               # Add linker libraries. For example: -lpthreads' >&2
 	@echo '  PROFILE            # Build profile, used in output products directory name' >&2
 	@echo '' >&2
-	@echo 'Use "make SHOW=1" to show executed commands.' >&2
+	@echo 'Use "SHOW=1 make" to show executed commands.' >&2
 	@echo '' >&2

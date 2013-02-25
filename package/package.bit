@@ -31,9 +31,18 @@ Bit.load({
     },
 
     scripts: {
-        loaded: "
-            bit.settings.webUser = getWebUser()
-            bit.settings.webGroup = getWebGroup()
+        pregen: "
+            if (bit.generating) {
+                bit.settings.webUser = '$(WEB_USER)'
+                bit.settings.webGroup = '$(WEB_GROUP)'
+            } else {
+                bit.settings.webUser = getWebUser()
+                bit.settings.webGroup = getWebGroup()
+            }
+        ",
+        gendefs: "
+            genWriteLine(\"WEB_USER    = $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$//' |  tail -1)\")
+            genWriteLine(\"WEB_GROUP   = $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$//' |  tail -1)\")
         ",
     },
 

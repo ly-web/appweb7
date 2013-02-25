@@ -402,7 +402,7 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
     if (smatch(newUser, "_default_")) {
 #if MACOSX || FREEBSD
-        newUser = "www";
+        newUser = "_www";
 #elif LINUX || BIT_UNIX_LIKE
         newUser = "nobody";
 #elif WINDOWS
@@ -441,6 +441,15 @@ PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
         newGroup = "www";
 #elif LINUX || BIT_UNIX_LIKE
         newGroup = "nobody";
+        /*
+            Debian has nogroup, Fedora has nobody. Ugh!
+         */
+        if ((buf = mprReadPathContents("/etc/passwd")) != 0) {
+            if (scontains("nogroup:")) {
+                newGroup = "nogroup";
+                break;
+            }
+        }
 #elif WINDOWS
         newGroup = "Administrator";
 #endif
