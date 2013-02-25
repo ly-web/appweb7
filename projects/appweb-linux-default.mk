@@ -1437,14 +1437,27 @@ stop: $(DEPS_93)
 DEPS_94 += stop
 
 installBinary: $(DEPS_94)
+	mkdir -p "$(BIT_APP_PREFIX)"
+	mkdir -p "$(BIT_VAPP_PREFIX)"
+	mkdir -p "$(BIT_WEB_PREFIX)"
+	mkdir -p "$(BIT_LOG_PREFIX)"
+	mkdir -p "$(BIT_SPOOL_PREFIX)"
+	mkdir -p "$(BIT_CACHE_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	ln -s "4.3.0" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
+<<<<<<< HEAD
+	chmod 755 $(BIT_LOG_PREFIX)
+	[ `id -u` = 0 ] && chown nobody:nobody "$(BIT_LOG_PREFIX)"
+	mkdir -p "$(BIT_CACHE_PREFIX)"
+	chmod 755 $(BIT_CACHE_PREFIX)
+=======
 	chmod 755 "$(BIT_LOG_PREFIX)"
 	[ `id -u` = 0 ] && chown nobody:nobody "$(BIT_LOG_PREFIX)"
 	mkdir -p "$(BIT_CACHE_PREFIX)"
 	chmod 755 "$(BIT_CACHE_PREFIX)"
+>>>>>>> 8dfa88db3f3a2d1ffb4d391a5f38e5b3e785851c
 	[ `id -u` = 0 ] && chown nobody:nobody "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin"
 	cp "$(CONFIG)/bin/appman" "$(BIT_VAPP_PREFIX)/bin/appman"

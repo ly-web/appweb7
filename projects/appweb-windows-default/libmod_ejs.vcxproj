@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{00223a98-dc4f-4788-9985-b75b627b8d8c}</ProjectGuid>
+    <ProjectGuid>{5ac49231-369e-4ebb-8115-7a89bdad74bc}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -112,14 +112,14 @@
 
 <ItemGroup>
   <ProjectReference Include="libappweb.vcxproj">
-  <Project>66002183-4b43-4751-b3f4-36ad8e08be3c</Project>
+  <Project>b8e1ca78-e6e3-4015-9ca1-a49d1cf6179c</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
 
 <ItemGroup>
   <ProjectReference Include="libejs.vcxproj">
-  <Project>ccd573ac-04b0-4e2b-b801-29ad91ff09c7</Project>
+  <Project>19736cca-ccab-41bf-88c3-d15387a945dd</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
