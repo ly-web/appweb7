@@ -322,7 +322,7 @@ $(CONFIG)\bin\makerom.exe: $(DEPS_16)
 #
 #   ca-crt
 #
-DEPS_17 += src\deps\est\ca.crt
+    DEPS_17 = src\deps\est\ca.crt $(DEPS_17)
 
 $(CONFIG)\bin\ca.crt: $(DEPS_17)
 	echo '      [File] windows-x86-default/bin/ca.crt'
@@ -783,7 +783,7 @@ $(CONFIG)\bin\esp.exe: $(DEPS_54)
 #
 #   esp.conf
 #
-DEPS_55 += src\esp\esp.conf
+    DEPS_55 = src\esp\esp.conf $(DEPS_55)
 
 $(CONFIG)\bin\esp.conf: $(DEPS_55)
 	echo '      [File] windows-x86-default/bin/esp.conf'
@@ -795,7 +795,7 @@ $(CONFIG)\bin\esp.conf: $(DEPS_55)
 #
 #   esp.conf.server
 #
-DEPS_56 += src\esp\esp.conf
+    DEPS_56 = src\esp\esp.conf $(DEPS_56)
 
 src\server\esp.conf: $(DEPS_56)
 	echo '      [File] src/server/esp.conf'
@@ -807,7 +807,7 @@ src\server\esp.conf: $(DEPS_56)
 #
 #   esp.www
 #
-DEPS_57 += src\esp\esp-www
+    DEPS_57 = src\esp\esp-www $(DEPS_57)
 
 $(CONFIG)\bin\esp-www: $(DEPS_57)
 	echo '      [File] windows-x86-default/bin/esp-www'
@@ -836,7 +836,7 @@ $(CONFIG)\bin\esp-www: $(DEPS_57)
 #
 #   esp-appweb.conf
 #
-DEPS_58 += src\esp\esp-appweb.conf
+    DEPS_58 = src\esp\esp-appweb.conf $(DEPS_58)
 
 $(CONFIG)\bin\esp-appweb.conf: $(DEPS_58)
 	echo '      [File] windows-x86-default/bin/esp-appweb.conf'
@@ -1287,7 +1287,7 @@ $(CONFIG)\bin\appwebMonitor.exe: $(DEPS_88)
 #
 #   appwebMonitor.ico
 #
-DEPS_89 += src\server\windows\appwebMonitor.ico
+    DEPS_89 = src\server\windows\appwebMonitor.ico $(DEPS_89)
 
 $(CONFIG)\bin\appwebMonitor.ico: $(DEPS_89)
 	cd src\server
@@ -1296,7 +1296,7 @@ $(CONFIG)\bin\appwebMonitor.ico: $(DEPS_89)
 #
 #   appwebMonitor.ico
 #
-DEPS_90 += src\server\windows\appwebMonitor.ico
+    DEPS_90 = src\server\windows\appwebMonitor.ico $(DEPS_90)
 
 $(CONFIG)\bin\appwebMonitor.ico: $(DEPS_90)
 	echo '      [File] windows-x86-default/bin/appwebMonitor.ico'
@@ -1399,7 +1399,7 @@ test\cgi-bin\cgiProgram.exe: $(DEPS_99)
 #
 #   test.js
 #
-DEPS_100 += src\esp\esp-www\files\static\js
+    DEPS_100 = src\esp\esp-www\files\static\js $(DEPS_100)
 
 test\web\js: $(DEPS_100)
 	echo '      [File] test/web/js'
