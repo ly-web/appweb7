@@ -71,12 +71,19 @@ Bit.load({
             },{ from:        [
                     '${BIN}/appman${EXE}',
                     '${BIN}/appweb${EXE}',
-                    '${BIN}/esp${EXE}',
                     '${BIN}/http${EXE}',
                 ],
                 to:         '${abin}/',
                 linkin:     '${bin}',
                 set:        'core',
+
+            },{ from:        [
+                    '${BIN}/esp${EXE}',
+                ],
+                to:         '${abin}/',
+                linkin:     '${bin}',
+                set:        'core',
+                require:    'esp',
 
             },{ from:        [
                     '${BIN}/appwebMonitor${EXE}',
@@ -90,19 +97,35 @@ Bit.load({
                     /* Don't use wild-cards for cross-generation  */
                     '${BIN}/libapp${SHOBJ}',
                     '${BIN}/libappweb${SHOBJ}',
-                    '${BIN}/libest${SHOBJ}',
                     '${BIN}/libhttp${SHOBJ}',
-                    '${BIN}/libmod_cgi${SHOBJ}',
-                    '${BIN}/libmod_esp${SHOBJ}',
                     '${BIN}/libmod_ssl${SHOBJ}',
                     '${BIN}/libmpr${SHOBJ}',
                     '${BIN}/libmprssl${SHOBJ}',
                     '${BIN}/libpcre${SHOBJ}',
-                    '${BIN}/libsqlite3${SHOBJ}',
                     '${BIN}/ca.crt',
                 ],
                 to:         '${abin}/',
                 set:        'core',
+
+            },{ from:       '${BIN}/libest${SHOBJ}',
+                to:         '${abin}/',
+                set:        'core',
+                require:    'est',
+
+            },{ from:       '${BIN}/libsqlite3${SHOBJ}',
+                to:         '${abin}/',
+                set:        'core',
+                require:    'sqlite'
+
+            },{ from:       '${BIN}/libmod_esp${SHOBJ}',
+                to:         '${abin}/',
+                set:        'core',
+                require:    'esp',
+
+            },{ from:       '${BIN}/libmod_cgi${SHOBJ}',
+                to:         '${abin}/',
+                set:        'core',
+                require:    'cgi',
 
             },{ from:        [
                     '${BIN}/libejs${SHOBJ}',
@@ -110,7 +133,7 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                enable:     "bit.packs.ejscript && bit.packs.ejscript.enable",
+                require:    'ejscript',
 
             },{ from:        [
                     '${BIN}/libmod_php${SHOBJ}',
@@ -118,7 +141,7 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                enable:     "bit.packs.php && bit.packs.php.enable && bit.platform.os != 'windows'",
+                require:    'php',
 
             },{ from:        [
                     '${BIN}/libmod_php${SHOBJ}',
@@ -126,7 +149,8 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                enable:     "bit.packs.php && bit.packs.php.enable && bit.platform.os == 'windows'",
+                require:    'php',
+                enable:     "bit.platform.os == 'windows'",
 
             },{ from:        [
                     /* Windows needs the libs to be able to compile esp programs */
@@ -138,19 +162,19 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                enable:     "bit.packs.esp && bit.packs.esp.enable && bit.platform.os == 'windows'",
+                require:    'esp',
 
             },{
                 from:       ['src/esp/esp-www', 'src/esp/esp-appweb.conf'],
                 to:         '${abin}/',
                 set:        'core',
-                enable:     "bit.packs.esp && bit.packs.esp.enable",
+                require:    'esp',
 
             },{
                 from:       '${BIN}/esp.conf',
                 to:         '${etc}/',
                 set:        'core',
-                enable:     "bit.packs.esp && bit.packs.esp.enable",
+                require:    'esp',
 
             },{ from:       'src/server/web/',
                 to:         '${web}/', 
@@ -173,7 +197,7 @@ Bit.load({
                 from:       'src/server/php.ini',
                 to:         '${etc}/',
                 set:        'core',
-                enable:     "bit.packs.php && bit.packs.php.enable",
+                require:    'php',
 
             },{
                 from:       'src/server/appweb.local', 
@@ -224,7 +248,7 @@ Bit.load({
                 to:         '${vapp}/inc/',
                 set:        'dev',
                 linkin:     '${inc}/appweb',
-                enable:     "bit.packs.esp && bit.packs.esp.enable && bit.platform.os == 'windows'",
+                require:    'esp',
 
             },{
                 from:       [
@@ -235,13 +259,13 @@ Bit.load({
                 to:         '${vapp}/inc/',
                 set:        'dev',
                 linkin:     '${inc}/appweb',
-                enable:     "bit.packs.ejscript && bit.packs.ejscript.enable",
+                require:    'ejscript',
 
             },{
                 from:       '${BIN}/ejs.mod',
                 to:         '${abin}/',
                 set:        'core',
-                enable:     'bit.packs.ejscript.enable',
+                require:    'ejscript',
 
             },{
                 from:        'doc/man/*.1',

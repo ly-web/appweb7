@@ -13,7 +13,6 @@ Bit.load({
         },
 
         'test-testScript': {
-            enable: "bit.packs.cgi.enable",
             path: 'cgi-bin/testScript',
             build: "
                 let path = Path('cgi-bin/testScript')
@@ -23,6 +22,7 @@ Bit.load({
             'generate-sh': "echo '#!${BIN}/cgiProgram${EXE}' >cgi-bin/testScript ; chmod +x cgi-bin/testScript",
             depends: ['cgiProgram'],
             platforms: [ 'local' ],
+            require: 'cgi',
         },
 
         'test-cache.cgi': {
@@ -39,6 +39,7 @@ Bit.load({
                 chmod +x web/caching/cache.cgi
             ",
             platforms: [ 'local' ],
+            require: 'cgi',
         },
 
         'test-basic.cgi': {
@@ -55,10 +56,11 @@ Bit.load({
                 chmod +x web/auth/basic/basic.cgi
             ",
             platforms: [ 'local' ],
+            require: 'cgi',
         },
 
         'test-cgiProgram': {
-            enable: "bit.packs.cgi.enable",
+            require: 'cgi',
             path: 'cgi-bin/cgiProgram${EXE}',
             build: "
                 let perms = { permissions: 0755 }
@@ -77,6 +79,7 @@ Bit.load({
             ",
             depends: ['cgiProgram'],
             platforms: [ 'local' ],
+            require: 'cgi',
         },
 
         'test.js': {
@@ -177,7 +180,7 @@ Bit.load({
                 trace('Run', 'From directory src/server')
                 run('appweb -v', {noio: true})
             ",
-            generate: "${platform.configuration}/bin/appweb -v"
+            generate: "${BIN}/appweb -v"
         },
 
         'clean-test': {
@@ -193,7 +196,7 @@ Bit.load({
                 Path('app/cache/.keep').write()
                 Path('web/caching/cache.cgi').remove()
                 Path('web/auth/basic/basic.cgi').remove()
-            "                                                                                              
+            ",
         },  
     },
 })

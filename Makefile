@@ -34,19 +34,23 @@ all compile:
 	@if [ ! -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) ] ; then \
 		echo "The build configuration projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) is not supported" ; exit 255 ; \
 	fi
-	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
-	@echo ; echo 'You can now install via "sudo make install" or run Appweb via: "sudo make run"'
-	@echo ; echo "To run locally, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path" ; echo
+	@echo '       [Run] $(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@'
+	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
+	@echo '      [Info] You can now install via "sudo make install" or run Appweb via: "sudo make run"'
+	@echo "      [Info] To run locally, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path."
+	@echo "      [Info] To run locally, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path."
+	@echo ''
 
 clean clobber deploy install uninstall run:
-	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
+	@echo '       [Run] $(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@'
+	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 version:
 	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 help:
 	@echo '' >&2
-	@echo 'usage: make [clean, compile, deploy, install, run, uninstall]' >&2
+	@echo 'usage: make [clean, compile, install, run, uninstall]' >&2
 	@echo '' >&2
 	@echo 'The default configuration can be modified by setting make variables' >&2
 	@echo 'Set to 0 to disable and 1 to enable:' >&2
@@ -94,4 +98,6 @@ help:
 	@echo '  LIBPATHS           # Add linker library search directories. For example: -L/libraries' >&2
 	@echo '  LIBS               # Add linker libraries. For example: -lpthreads' >&2
 	@echo '  PROFILE            # Build profile, used in output products directory name' >&2
+	@echo '' >&2
+	@echo 'Use "make SHOW=1" to show executed commands.' >&2
 	@echo '' >&2

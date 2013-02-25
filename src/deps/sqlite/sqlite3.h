@@ -40,11 +40,24 @@
 #define PACKAGE_STRING      "sqlite" VERSION
 #define PACKAGE_BUGREPORT   "http://www.embedthis.com"
 
+#ifndef SQLITE_OMIT_BUILTIN_TEST
 #define SQLITE_OMIT_BUILTIN_TEST        1
+#endif
+#ifndef SQLITE_OMIT_BUILTIN_EXPLAIN
 #define SQLITE_OMIT_BUILTIN_EXPLAIN     1
+#endif
+#ifndef SQLITE_OMIT_LOAD_EXTENSION
 #define SQLITE_OMIT_LOAD_EXTENSION      1
+#endif
+#ifndef SQLITE_ENABLE_COLUMN_METADATA
 #define SQLITE_ENABLE_COLUMN_METADATA   1
+#endif
+#ifndef SQLITE_THREADSAFE
 #define SQLITE_THREADSAFE               1
+#endif
+#ifndef SQLITE_ENABLE_FTS3
+#define SQLITE_ENABLE_FTS3              1
+#endif
 
 #if MACOSX || LINUX || SOLARIS || FREEBSD
 #define STDC_HEADERS        1

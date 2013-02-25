@@ -6,7 +6,6 @@ Bit.load({
 
     targets: {
         libsqlite3: {
-            enable: 'bit.packs.sqlite.enable',
             type: 'lib',
             headers: [ '*.h' ],
             sources: [ 'sqlite3.c' ],
@@ -23,13 +22,14 @@ Bit.load({
                     }
                 ",
             },
+            require: 'sqlite',
         },
         sqlite: {
-            enable: 'bit.packs.sqlite.enable',
             type: 'exe'
             sources: ['sqlite.c'],
             depends: ['libsqlite3'],
             platforms: [ 'local' ],
+            require: 'sqlite',
         },
 	},
 })

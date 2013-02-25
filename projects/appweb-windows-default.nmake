@@ -46,47 +46,11 @@ BIT_SPOOL_PREFIX      = $(BIT_VAPP_PREFIX)\tmp
 BIT_CACHE_PREFIX      = $(BIT_VAPP_PREFIX)\cache
 BIT_SRC_PREFIX        = $(BIT_VAPP_PREFIX)\src
 
-all compile: prep \
-        $(CONFIG)\bin\removeFiles.exe \
-        $(CONFIG)\bin\libmpr.dll \
-        $(CONFIG)\bin\libmprssl.dll \
-        $(CONFIG)\bin\appman.exe \
-        $(CONFIG)\bin\makerom.exe \
-        $(CONFIG)\bin\libest.dll \
-        $(CONFIG)\bin\ca.crt \
-        $(CONFIG)\bin\libpcre.dll \
-        $(CONFIG)\bin\libhttp.dll \
-        $(CONFIG)\bin\http.exe \
-        $(CONFIG)\bin\libsqlite3.dll \
-        $(CONFIG)\bin\sqlite.exe \
-        $(CONFIG)\bin\libappweb.dll \
-        $(CONFIG)\bin\libmod_esp.dll \
-        $(CONFIG)\bin\esp.exe \
-        $(CONFIG)\bin\esp.conf \
-        src\server\esp.conf \
-        $(CONFIG)\bin\esp-www \
-        $(CONFIG)\bin\esp-appweb.conf \
-        $(CONFIG)\bin\libejs.dll \
-        $(CONFIG)\bin\ejs.exe \
-        $(CONFIG)\bin\ejsc.exe \
-        $(CONFIG)\bin\ejs.mod \
-        $(CONFIG)\bin\libmod_cgi.dll \
-        $(CONFIG)\bin\libmod_ejs.dll \
-        $(CONFIG)\bin\libmod_ssl.dll \
-        $(CONFIG)\bin\authpass.exe \
-        $(CONFIG)\bin\cgiProgram.exe \
-        src\server\slink.c \
-        $(CONFIG)\bin\libapp.dll \
-        $(CONFIG)\bin\appweb.exe \
-        $(CONFIG)\bin\appwebMonitor.exe \
-        $(CONFIG)\bin\appwebMonitor.ico \
-        src\server\cache \
-        $(CONFIG)\bin\testAppweb.exe \
-        test\cgi-bin\testScript \
-        test\web\caching\cache.cgi \
-        test\web\auth\basic\basic.cgi \
-        test\cgi-bin\cgiProgram.exe \
-        test\web\js
+!IFNDEF SHOW
+.SILENT:
+!ENDIF
+
+all compile: prep $(TARGETS)
 
 .PHONY: prep
 
@@ -183,345 +147,670 @@ clean:
 	-if exist $(CONFIG)\obj\testAppweb.obj del /Q $(CONFIG)\obj\testAppweb.obj
 	-if exist $(CONFIG)\obj\testHttp.obj del /Q $(CONFIG)\obj\testHttp.obj
 
-$(CONFIG)\inc\bit.h: 
+#
+#   bit.h
+#
+$(CONFIG)\inc\bit.h: $(DEPS_1)
+
+#
+#   removeFiles.obj
+#
+DEPS_2 = $(CONFIG)\inc\bit.h$(DEPS_2)
 
 $(CONFIG)\obj\removeFiles.obj: \
-    package\windows\removeFiles.c\
-    $(CONFIG)\inc\bit.h
+    package\windows\removeFiles.c $(DEPS_2)
+	echo '   [Compile] package/windows/removeFiles.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) package\windows\removeFiles.c
 
-$(CONFIG)\bin\removeFiles.exe: \
-    $(CONFIG)\obj\removeFiles.obj
+#
+#   removeFiles
+#
+DEPS_3 = $(CONFIG)\obj\removeFiles.obj$(DEPS_3)
+
+$(CONFIG)\bin\removeFiles.exe: $(DEPS_3)
+	echo '      [Link] removeFiles'
 	"$(LD)" -out:$(CONFIG)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\removeFiles.obj $(LIBS)
 
-$(CONFIG)\inc\mpr.h: 
+#
+#   mpr.h
+#
+$(CONFIG)\inc\mpr.h: $(DEPS_4)
+	echo '      [File] windows-x86-default/inc/mpr.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\mpr\mpr.h" "$(CONFIG)\inc\mpr.h"
 
-$(CONFIG)\inc\bitos.h: \
-    $(CONFIG)\inc\bit.h
+#
+#   bitos.h
+#
+DEPS_5 = $(CONFIG)\inc\bit.h$(DEPS_5)
+
+$(CONFIG)\inc\bitos.h: $(DEPS_5)
+	echo '      [File] windows-x86-default/inc/bitos.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\bitos.h" "$(CONFIG)\inc\bitos.h"
 
+#
+#   mprLib.obj
+#
+DEPS_6 = $(CONFIG)\inc\bit.h$(DEPS_6)
+DEPS_6 = $(CONFIG)\inc\mpr.h$(DEPS_6)
+DEPS_6 = $(CONFIG)\inc\bitos.h$(DEPS_6)
+
 $(CONFIG)\obj\mprLib.obj: \
-    src\deps\mpr\mprLib.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h \
-    $(CONFIG)\inc\bitos.h
+    src\deps\mpr\mprLib.c $(DEPS_6)
+	echo '   [Compile] src/deps/mpr/mprLib.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mprLib.obj -Fd$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\mprLib.c
 
-$(CONFIG)\bin\libmpr.dll: \
-    $(CONFIG)\inc\mpr.h \
-    $(CONFIG)\obj\mprLib.obj
+#
+#   libmpr
+#
+DEPS_7 = $(CONFIG)\inc\mpr.h$(DEPS_7)
+DEPS_7 = $(CONFIG)\obj\mprLib.obj$(DEPS_7)
+
+$(CONFIG)\bin\libmpr.dll: $(DEPS_7)
+	echo '      [Link] libmpr'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprLib.obj $(LIBS)
 
-$(CONFIG)\inc\est.h: 
+#
+#   est.h
+#
+$(CONFIG)\inc\est.h: $(DEPS_8)
+	echo '      [File] windows-x86-default/inc/est.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\est\est.h" "$(CONFIG)\inc\est.h"
 
+#
+#   estLib.obj
+#
+DEPS_9 = $(CONFIG)\inc\bit.h$(DEPS_9)
+DEPS_9 = $(CONFIG)\inc\est.h$(DEPS_9)
+DEPS_9 = $(CONFIG)\inc\bitos.h$(DEPS_9)
+
 $(CONFIG)\obj\estLib.obj: \
-    src\deps\est\estLib.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\est.h \
-    $(CONFIG)\inc\bitos.h
+    src\deps\est\estLib.c $(DEPS_9)
+	echo '   [Compile] src/deps/est/estLib.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\est\estLib.c
 
-$(CONFIG)\bin\libest.dll: \
-    $(CONFIG)\inc\est.h \
-    $(CONFIG)\obj\estLib.obj
+ifeq ($(BIT_PACK_EST),1)
+#
+#   libest
+#
+DEPS_10 = $(CONFIG)\inc\est.h$(DEPS_10)
+DEPS_10 = $(CONFIG)\obj\estLib.obj$(DEPS_10)
+
+$(CONFIG)\bin\libest.dll: $(DEPS_10)
+	echo '      [Link] libest'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libest.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\estLib.obj $(LIBS)
+endif
+
+#
+#   mprSsl.obj
+#
+DEPS_11 = $(CONFIG)\inc\bit.h$(DEPS_11)
+DEPS_11 = $(CONFIG)\inc\mpr.h$(DEPS_11)
+DEPS_11 = $(CONFIG)\inc\est.h$(DEPS_11)
 
 $(CONFIG)\obj\mprSsl.obj: \
-    src\deps\mpr\mprSsl.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h \
-    $(CONFIG)\inc\est.h
+    src\deps\mpr\mprSsl.c $(DEPS_11)
+	echo '   [Compile] src/deps/mpr/mprSsl.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\mprSsl.c
 
-$(CONFIG)\bin\libmprssl.dll: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\bin\libest.dll \
-    $(CONFIG)\obj\mprSsl.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj libest.lib libmpr.lib $(LIBS)
+#
+#   libmprssl
+#
+DEPS_12 = $(CONFIG)\bin\libmpr.dll$(DEPS_12)
+!IF "$(BIT_PACK_EST)" == "1"
+    DEPS_12 = $(CONFIG)\bin\libest.dll$(DEPS_12)
+!ENDIF
+DEPS_12 = $(CONFIG)\obj\mprSsl.obj$(DEPS_12)
+
+!IF "$(BIT_PACK_EST)" == "1"
+    LIBS_12 = -lest $(LIBS_12)
+!ENDIF
+LIBS_12 = -lmpr $(LIBS_12)
+
+$(CONFIG)\bin\libmprssl.dll: $(DEPS_12)
+	echo '      [Link] libmprssl'
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj libest.lib libmpr.lib $(LIBS_12) $(LIBS_12) $(LIBS)
+
+#
+#   manager.obj
+#
+DEPS_13 = $(CONFIG)\inc\bit.h$(DEPS_13)
+DEPS_13 = $(CONFIG)\inc\mpr.h$(DEPS_13)
 
 $(CONFIG)\obj\manager.obj: \
-    src\deps\mpr\manager.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\deps\mpr\manager.c $(DEPS_13)
+	echo '   [Compile] src/deps/mpr/manager.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\manager.c
 
-$(CONFIG)\bin\appman.exe: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\obj\manager.obj
-	"$(LD)" -out:$(CONFIG)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj libmpr.lib $(LIBS)
+#
+#   manager
+#
+DEPS_14 = $(CONFIG)\bin\libmpr.dll$(DEPS_14)
+DEPS_14 = $(CONFIG)\obj\manager.obj$(DEPS_14)
+
+LIBS_14 = -lmpr $(LIBS_14)
+
+$(CONFIG)\bin\appman.exe: $(DEPS_14)
+	echo '      [Link] manager'
+	"$(LD)" -out:$(CONFIG)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj libmpr.lib $(LIBS_14) $(LIBS_14) $(LIBS)
+
+#
+#   makerom.obj
+#
+DEPS_15 = $(CONFIG)\inc\bit.h$(DEPS_15)
+DEPS_15 = $(CONFIG)\inc\mpr.h$(DEPS_15)
 
 $(CONFIG)\obj\makerom.obj: \
-    src\deps\mpr\makerom.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\deps\mpr\makerom.c $(DEPS_15)
+	echo '   [Compile] src/deps/mpr/makerom.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\makerom.c
 
-$(CONFIG)\bin\makerom.exe: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\obj\makerom.obj
-	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj libmpr.lib $(LIBS)
+#
+#   makerom
+#
+DEPS_16 = $(CONFIG)\bin\libmpr.dll$(DEPS_16)
+DEPS_16 = $(CONFIG)\obj\makerom.obj$(DEPS_16)
 
-$(CONFIG)\bin\ca.crt: \
-    src\deps\est\ca.crt
+LIBS_16 = -lmpr $(LIBS_16)
+
+$(CONFIG)\bin\makerom.exe: $(DEPS_16)
+	echo '      [Link] makerom'
+	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj libmpr.lib $(LIBS_16) $(LIBS_16) $(LIBS)
+
+#
+#   ca-crt
+#
+DEPS_17 += src\deps\est\ca.crt
+
+$(CONFIG)\bin\ca.crt: $(DEPS_17)
+	echo '      [File] windows-x86-default/bin/ca.crt'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\deps\est\ca.crt" "$(CONFIG)\bin\ca.crt"
 
-$(CONFIG)\inc\pcre.h: 
+#
+#   pcre.h
+#
+$(CONFIG)\inc\pcre.h: $(DEPS_18)
+	echo '      [File] windows-x86-default/inc/pcre.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\pcre\pcre.h" "$(CONFIG)\inc\pcre.h"
 
+#
+#   pcre.obj
+#
+DEPS_19 = $(CONFIG)\inc\bit.h$(DEPS_19)
+DEPS_19 = $(CONFIG)\inc\pcre.h$(DEPS_19)
+
 $(CONFIG)\obj\pcre.obj: \
-    src\deps\pcre\pcre.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\pcre.h
+    src\deps\pcre\pcre.c $(DEPS_19)
+	echo '   [Compile] src/deps/pcre/pcre.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\pcre.obj -Fd$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\pcre\pcre.c
 
-$(CONFIG)\bin\libpcre.dll: \
-    $(CONFIG)\inc\pcre.h \
-    $(CONFIG)\obj\pcre.obj
+#
+#   libpcre
+#
+DEPS_20 = $(CONFIG)\inc\pcre.h$(DEPS_20)
+DEPS_20 = $(CONFIG)\obj\pcre.obj$(DEPS_20)
+
+$(CONFIG)\bin\libpcre.dll: $(DEPS_20)
+	echo '      [Link] libpcre'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libpcre.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\pcre.obj $(LIBS)
 
-$(CONFIG)\inc\http.h: 
+#
+#   http.h
+#
+$(CONFIG)\inc\http.h: $(DEPS_21)
+	echo '      [File] windows-x86-default/inc/http.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\http\http.h" "$(CONFIG)\inc\http.h"
 
+#
+#   httpLib.obj
+#
+DEPS_22 = $(CONFIG)\inc\bit.h$(DEPS_22)
+DEPS_22 = $(CONFIG)\inc\http.h$(DEPS_22)
+DEPS_22 = $(CONFIG)\inc\mpr.h$(DEPS_22)
+
 $(CONFIG)\obj\httpLib.obj: \
-    src\deps\http\httpLib.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\http.h \
-    $(CONFIG)\inc\mpr.h
+    src\deps\http\httpLib.c $(DEPS_22)
+	echo '   [Compile] src/deps/http/httpLib.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\http\httpLib.c
 
-$(CONFIG)\bin\libhttp.dll: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\bin\libpcre.dll \
-    $(CONFIG)\inc\http.h \
-    $(CONFIG)\obj\httpLib.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libhttp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\httpLib.obj libpcre.lib libmpr.lib $(LIBS)
+#
+#   libhttp
+#
+DEPS_23 = $(CONFIG)\bin\libmpr.dll$(DEPS_23)
+DEPS_23 = $(CONFIG)\bin\libpcre.dll$(DEPS_23)
+DEPS_23 = $(CONFIG)\inc\http.h$(DEPS_23)
+DEPS_23 = $(CONFIG)\obj\httpLib.obj$(DEPS_23)
+
+LIBS_23 = -lpcre $(LIBS_23)
+LIBS_23 = -lmpr $(LIBS_23)
+
+$(CONFIG)\bin\libhttp.dll: $(DEPS_23)
+	echo '      [Link] libhttp'
+	"$(LD)" -dll -out:$(CONFIG)\bin\libhttp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\httpLib.obj libpcre.lib libmpr.lib $(LIBS_23) $(LIBS_23) $(LIBS)
+
+#
+#   http.obj
+#
+DEPS_24 = $(CONFIG)\inc\bit.h$(DEPS_24)
+DEPS_24 = $(CONFIG)\inc\http.h$(DEPS_24)
 
 $(CONFIG)\obj\http.obj: \
-    src\deps\http\http.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\http.h
+    src\deps\http\http.c $(DEPS_24)
+	echo '   [Compile] src/deps/http/http.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\http\http.c
 
-$(CONFIG)\bin\http.exe: \
-    $(CONFIG)\bin\libhttp.dll \
-    $(CONFIG)\obj\http.obj
-	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
+#
+#   http
+#
+DEPS_25 = $(CONFIG)\bin\libhttp.dll$(DEPS_25)
+DEPS_25 = $(CONFIG)\obj\http.obj$(DEPS_25)
 
-$(CONFIG)\inc\sqlite3.h: 
+LIBS_25 = -lhttp $(LIBS_25)
+LIBS_25 = -lpcre $(LIBS_25)
+LIBS_25 = -lmpr $(LIBS_25)
+
+$(CONFIG)\bin\http.exe: $(DEPS_25)
+	echo '      [Link] http'
+	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.obj libhttp.lib $(LIBS_25) $(LIBS_25) $(LIBS) libpcre.lib libmpr.lib
+
+#
+#   sqlite3.h
+#
+$(CONFIG)\inc\sqlite3.h: $(DEPS_26)
+	echo '      [File] windows-x86-default/inc/sqlite3.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\sqlite\sqlite3.h" "$(CONFIG)\inc\sqlite3.h"
 
+#
+#   sqlite3.obj
+#
+DEPS_27 = $(CONFIG)\inc\bit.h$(DEPS_27)
+DEPS_27 = $(CONFIG)\inc\sqlite3.h$(DEPS_27)
+
 $(CONFIG)\obj\sqlite3.obj: \
-    src\deps\sqlite\sqlite3.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\sqlite3.h
+    src\deps\sqlite\sqlite3.c $(DEPS_27)
+	echo '   [Compile] src/deps/sqlite/sqlite3.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite3.c
 
-$(CONFIG)\bin\libsqlite3.dll: \
-    $(CONFIG)\inc\sqlite3.h \
-    $(CONFIG)\obj\sqlite3.obj
+ifeq ($(BIT_PACK_SQLITE),1)
+#
+#   libsqlite3
+#
+DEPS_28 = $(CONFIG)\inc\sqlite3.h$(DEPS_28)
+DEPS_28 = $(CONFIG)\obj\sqlite3.obj$(DEPS_28)
+
+$(CONFIG)\bin\libsqlite3.dll: $(DEPS_28)
+	echo '      [Link] libsqlite3'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libsqlite3.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite3.obj $(LIBS)
+endif
+
+#
+#   sqlite.obj
+#
+DEPS_29 = $(CONFIG)\inc\bit.h$(DEPS_29)
+DEPS_29 = $(CONFIG)\inc\sqlite3.h$(DEPS_29)
 
 $(CONFIG)\obj\sqlite.obj: \
-    src\deps\sqlite\sqlite.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\sqlite3.h
+    src\deps\sqlite\sqlite.c $(DEPS_29)
+	echo '   [Compile] src/deps/sqlite/sqlite.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite.c
 
-$(CONFIG)\bin\sqlite.exe: \
-    $(CONFIG)\bin\libsqlite3.dll \
-    $(CONFIG)\obj\sqlite.obj
-	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj libsqlite3.lib $(LIBS)
+ifeq ($(BIT_PACK_SQLITE),1)
+#
+#   sqlite
+#
+!IF "$(BIT_PACK_SQLITE)" == "1"
+    DEPS_30 = $(CONFIG)\bin\libsqlite3.dll$(DEPS_30)
+!ENDIF
+DEPS_30 = $(CONFIG)\obj\sqlite.obj$(DEPS_30)
 
-$(CONFIG)\inc\appweb.h: 
+!IF "$(BIT_PACK_SQLITE)" == "1"
+    LIBS_30 = -lsqlite3 $(LIBS_30)
+!ENDIF
+
+$(CONFIG)\bin\sqlite.exe: $(DEPS_30)
+	echo '      [Link] sqlite'
+	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj libsqlite3.lib $(LIBS_30) $(LIBS_30) $(LIBS)
+endif
+
+#
+#   appweb.h
+#
+$(CONFIG)\inc\appweb.h: $(DEPS_31)
+	echo '      [File] windows-x86-default/inc/appweb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\appweb.h" "$(CONFIG)\inc\appweb.h"
 
-$(CONFIG)\inc\customize.h: 
+#
+#   customize.h
+#
+$(CONFIG)\inc\customize.h: $(DEPS_32)
+	echo '      [File] windows-x86-default/inc/customize.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\customize.h" "$(CONFIG)\inc\customize.h"
 
+#
+#   config.obj
+#
+DEPS_33 = $(CONFIG)\inc\bit.h$(DEPS_33)
+DEPS_33 = $(CONFIG)\inc\appweb.h$(DEPS_33)
+DEPS_33 = $(CONFIG)\inc\pcre.h$(DEPS_33)
+DEPS_33 = $(CONFIG)\inc\mpr.h$(DEPS_33)
+DEPS_33 = $(CONFIG)\inc\http.h$(DEPS_33)
+DEPS_33 = $(CONFIG)\inc\customize.h$(DEPS_33)
+
 $(CONFIG)\obj\config.obj: \
-    src\config.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h \
-    $(CONFIG)\inc\pcre.h \
-    $(CONFIG)\inc\mpr.h \
-    $(CONFIG)\inc\http.h \
-    $(CONFIG)\inc\customize.h
+    src\config.c $(DEPS_33)
+	echo '   [Compile] src/config.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\config.obj -Fd$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\config.c
 
+#
+#   convenience.obj
+#
+DEPS_34 = $(CONFIG)\inc\bit.h$(DEPS_34)
+DEPS_34 = $(CONFIG)\inc\appweb.h$(DEPS_34)
+
 $(CONFIG)\obj\convenience.obj: \
-    src\convenience.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h
+    src\convenience.c $(DEPS_34)
+	echo '   [Compile] src/convenience.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\convenience.obj -Fd$(CONFIG)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\convenience.c
 
+#
+#   dirHandler.obj
+#
+DEPS_35 = $(CONFIG)\inc\bit.h$(DEPS_35)
+DEPS_35 = $(CONFIG)\inc\appweb.h$(DEPS_35)
+
 $(CONFIG)\obj\dirHandler.obj: \
-    src\dirHandler.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h
+    src\dirHandler.c $(DEPS_35)
+	echo '   [Compile] src/dirHandler.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\dirHandler.obj -Fd$(CONFIG)\obj\dirHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\dirHandler.c
 
+#
+#   fileHandler.obj
+#
+DEPS_36 = $(CONFIG)\inc\bit.h$(DEPS_36)
+DEPS_36 = $(CONFIG)\inc\appweb.h$(DEPS_36)
+
 $(CONFIG)\obj\fileHandler.obj: \
-    src\fileHandler.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h
+    src\fileHandler.c $(DEPS_36)
+	echo '   [Compile] src/fileHandler.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\fileHandler.obj -Fd$(CONFIG)\obj\fileHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\fileHandler.c
 
+#
+#   log.obj
+#
+DEPS_37 = $(CONFIG)\inc\bit.h$(DEPS_37)
+DEPS_37 = $(CONFIG)\inc\appweb.h$(DEPS_37)
+
 $(CONFIG)\obj\log.obj: \
-    src\log.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h
+    src\log.c $(DEPS_37)
+	echo '   [Compile] src/log.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\log.c
 
+#
+#   server.obj
+#
+DEPS_38 = $(CONFIG)\inc\bit.h$(DEPS_38)
+DEPS_38 = $(CONFIG)\inc\appweb.h$(DEPS_38)
+
 $(CONFIG)\obj\server.obj: \
-    src\server.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h
+    src\server.c $(DEPS_38)
+	echo '   [Compile] src/server.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\server.obj -Fd$(CONFIG)\obj\server.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server.c
 
-$(CONFIG)\bin\libappweb.dll: \
-    $(CONFIG)\bin\libhttp.dll \
-    $(CONFIG)\inc\appweb.h \
-    $(CONFIG)\inc\bitos.h \
-    $(CONFIG)\inc\customize.h \
-    $(CONFIG)\obj\config.obj \
-    $(CONFIG)\obj\convenience.obj \
-    $(CONFIG)\obj\dirHandler.obj \
-    $(CONFIG)\obj\fileHandler.obj \
-    $(CONFIG)\obj\log.obj \
-    $(CONFIG)\obj\server.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.obj $(CONFIG)\obj\convenience.obj $(CONFIG)\obj\dirHandler.obj $(CONFIG)\obj\fileHandler.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\server.obj libhttp.lib $(LIBS) libpcre.lib libmpr.lib
+#
+#   libappweb
+#
+DEPS_39 = $(CONFIG)\bin\libhttp.dll$(DEPS_39)
+DEPS_39 = $(CONFIG)\inc\appweb.h$(DEPS_39)
+DEPS_39 = $(CONFIG)\inc\bitos.h$(DEPS_39)
+DEPS_39 = $(CONFIG)\inc\customize.h$(DEPS_39)
+DEPS_39 = $(CONFIG)\obj\config.obj$(DEPS_39)
+DEPS_39 = $(CONFIG)\obj\convenience.obj$(DEPS_39)
+DEPS_39 = $(CONFIG)\obj\dirHandler.obj$(DEPS_39)
+DEPS_39 = $(CONFIG)\obj\fileHandler.obj$(DEPS_39)
+DEPS_39 = $(CONFIG)\obj\log.obj$(DEPS_39)
+DEPS_39 = $(CONFIG)\obj\server.obj$(DEPS_39)
 
-$(CONFIG)\inc\edi.h: 
+LIBS_39 = -lhttp $(LIBS_39)
+LIBS_39 = -lpcre $(LIBS_39)
+LIBS_39 = -lmpr $(LIBS_39)
+
+$(CONFIG)\bin\libappweb.dll: $(DEPS_39)
+	echo '      [Link] libappweb'
+	"$(LD)" -dll -out:$(CONFIG)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.obj $(CONFIG)\obj\convenience.obj $(CONFIG)\obj\dirHandler.obj $(CONFIG)\obj\fileHandler.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\server.obj libhttp.lib $(LIBS_39) $(LIBS_39) $(LIBS) libpcre.lib libmpr.lib
+
+#
+#   edi.h
+#
+$(CONFIG)\inc\edi.h: $(DEPS_40)
+	echo '      [File] windows-x86-default/inc/edi.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\esp\edi.h" "$(CONFIG)\inc\edi.h"
 
-$(CONFIG)\inc\esp-app.h: 
+#
+#   esp-app.h
+#
+$(CONFIG)\inc\esp-app.h: $(DEPS_41)
+	echo '      [File] windows-x86-default/inc/esp-app.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\esp\esp-app.h" "$(CONFIG)\inc\esp-app.h"
 
-$(CONFIG)\inc\esp.h: 
+#
+#   esp.h
+#
+$(CONFIG)\inc\esp.h: $(DEPS_42)
+	echo '      [File] windows-x86-default/inc/esp.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\esp\esp.h" "$(CONFIG)\inc\esp.h"
 
-$(CONFIG)\inc\mdb.h: 
+#
+#   mdb.h
+#
+$(CONFIG)\inc\mdb.h: $(DEPS_43)
+	echo '      [File] windows-x86-default/inc/mdb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\esp\mdb.h" "$(CONFIG)\inc\mdb.h"
 
+#
+#   edi.obj
+#
+DEPS_44 = $(CONFIG)\inc\bit.h$(DEPS_44)
+DEPS_44 = $(CONFIG)\inc\edi.h$(DEPS_44)
+DEPS_44 = $(CONFIG)\inc\pcre.h$(DEPS_44)
+
 $(CONFIG)\obj\edi.obj: \
-    src\esp\edi.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\edi.h \
-    $(CONFIG)\inc\pcre.h
+    src\esp\edi.c $(DEPS_44)
+	echo '   [Compile] src/esp/edi.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\edi.c
 
+#
+#   esp.obj
+#
+DEPS_45 = $(CONFIG)\inc\bit.h$(DEPS_45)
+DEPS_45 = $(CONFIG)\inc\esp.h$(DEPS_45)
+
 $(CONFIG)\obj\esp.obj: \
-    src\esp\esp.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\esp.h
+    src\esp\esp.c $(DEPS_45)
+	echo '   [Compile] src/esp/esp.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\esp.c
 
+#
+#   espAbbrev.obj
+#
+DEPS_46 = $(CONFIG)\inc\bit.h$(DEPS_46)
+DEPS_46 = $(CONFIG)\inc\esp.h$(DEPS_46)
+
 $(CONFIG)\obj\espAbbrev.obj: \
-    src\esp\espAbbrev.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\esp.h
+    src\esp\espAbbrev.c $(DEPS_46)
+	echo '   [Compile] src/esp/espAbbrev.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espAbbrev.obj -Fd$(CONFIG)\obj\espAbbrev.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espAbbrev.c
 
+#
+#   espFramework.obj
+#
+DEPS_47 = $(CONFIG)\inc\bit.h$(DEPS_47)
+DEPS_47 = $(CONFIG)\inc\esp.h$(DEPS_47)
+
 $(CONFIG)\obj\espFramework.obj: \
-    src\esp\espFramework.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\esp.h
+    src\esp\espFramework.c $(DEPS_47)
+	echo '   [Compile] src/esp/espFramework.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espFramework.obj -Fd$(CONFIG)\obj\espFramework.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espFramework.c
 
+#
+#   espHandler.obj
+#
+DEPS_48 = $(CONFIG)\inc\bit.h$(DEPS_48)
+DEPS_48 = $(CONFIG)\inc\appweb.h$(DEPS_48)
+DEPS_48 = $(CONFIG)\inc\esp.h$(DEPS_48)
+DEPS_48 = $(CONFIG)\inc\edi.h$(DEPS_48)
+
 $(CONFIG)\obj\espHandler.obj: \
-    src\esp\espHandler.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h \
-    $(CONFIG)\inc\esp.h \
-    $(CONFIG)\inc\edi.h
+    src\esp\espHandler.c $(DEPS_48)
+	echo '   [Compile] src/esp/espHandler.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espHandler.obj -Fd$(CONFIG)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHandler.c
 
+#
+#   espHtml.obj
+#
+DEPS_49 = $(CONFIG)\inc\bit.h$(DEPS_49)
+DEPS_49 = $(CONFIG)\inc\esp.h$(DEPS_49)
+DEPS_49 = $(CONFIG)\inc\edi.h$(DEPS_49)
+
 $(CONFIG)\obj\espHtml.obj: \
-    src\esp\espHtml.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\esp.h \
-    $(CONFIG)\inc\edi.h
+    src\esp\espHtml.c $(DEPS_49)
+	echo '   [Compile] src/esp/espHtml.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHtml.c
 
+#
+#   espTemplate.obj
+#
+DEPS_50 = $(CONFIG)\inc\bit.h$(DEPS_50)
+DEPS_50 = $(CONFIG)\inc\esp.h$(DEPS_50)
+
 $(CONFIG)\obj\espTemplate.obj: \
-    src\esp\espTemplate.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\esp.h
+    src\esp\espTemplate.c $(DEPS_50)
+	echo '   [Compile] src/esp/espTemplate.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espTemplate.obj -Fd$(CONFIG)\obj\espTemplate.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espTemplate.c
 
+#
+#   mdb.obj
+#
+DEPS_51 = $(CONFIG)\inc\bit.h$(DEPS_51)
+DEPS_51 = $(CONFIG)\inc\appweb.h$(DEPS_51)
+DEPS_51 = $(CONFIG)\inc\edi.h$(DEPS_51)
+DEPS_51 = $(CONFIG)\inc\mdb.h$(DEPS_51)
+DEPS_51 = $(CONFIG)\inc\pcre.h$(DEPS_51)
+
 $(CONFIG)\obj\mdb.obj: \
-    src\esp\mdb.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h \
-    $(CONFIG)\inc\edi.h \
-    $(CONFIG)\inc\mdb.h \
-    $(CONFIG)\inc\pcre.h
+    src\esp\mdb.c $(DEPS_51)
+	echo '   [Compile] src/esp/mdb.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mdb.obj -Fd$(CONFIG)\obj\mdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\mdb.c
 
+#
+#   sdb.obj
+#
+DEPS_52 = $(CONFIG)\inc\bit.h$(DEPS_52)
+DEPS_52 = $(CONFIG)\inc\appweb.h$(DEPS_52)
+DEPS_52 = $(CONFIG)\inc\edi.h$(DEPS_52)
+
 $(CONFIG)\obj\sdb.obj: \
-    src\esp\sdb.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h \
-    $(CONFIG)\inc\edi.h
+    src\esp\sdb.c $(DEPS_52)
+	echo '   [Compile] src/esp/sdb.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\sdb.c
 
-$(CONFIG)\bin\libmod_esp.dll: \
-    $(CONFIG)\bin\libappweb.dll \
-    $(CONFIG)\inc\edi.h \
-    $(CONFIG)\inc\esp-app.h \
-    $(CONFIG)\inc\esp.h \
-    $(CONFIG)\inc\mdb.h \
-    $(CONFIG)\obj\edi.obj \
-    $(CONFIG)\obj\esp.obj \
-    $(CONFIG)\obj\espAbbrev.obj \
-    $(CONFIG)\obj\espFramework.obj \
-    $(CONFIG)\obj\espHandler.obj \
-    $(CONFIG)\obj\espHtml.obj \
-    $(CONFIG)\obj\espTemplate.obj \
-    $(CONFIG)\obj\mdb.obj \
-    $(CONFIG)\obj\sdb.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+ifeq ($(BIT_PACK_ESP),1)
+#
+#   libmod_esp
+#
+DEPS_53 = $(CONFIG)\bin\libappweb.dll$(DEPS_53)
+DEPS_53 = $(CONFIG)\inc\edi.h$(DEPS_53)
+DEPS_53 = $(CONFIG)\inc\esp-app.h$(DEPS_53)
+DEPS_53 = $(CONFIG)\inc\esp.h$(DEPS_53)
+DEPS_53 = $(CONFIG)\inc\mdb.h$(DEPS_53)
+DEPS_53 = $(CONFIG)\obj\edi.obj$(DEPS_53)
+DEPS_53 = $(CONFIG)\obj\esp.obj$(DEPS_53)
+DEPS_53 = $(CONFIG)\obj\espAbbrev.obj$(DEPS_53)
+DEPS_53 = $(CONFIG)\obj\espFramework.obj$(DEPS_53)
+DEPS_53 = $(CONFIG)\obj\espHandler.obj$(DEPS_53)
+DEPS_53 = $(CONFIG)\obj\espHtml.obj$(DEPS_53)
+DEPS_53 = $(CONFIG)\obj\espTemplate.obj$(DEPS_53)
+DEPS_53 = $(CONFIG)\obj\mdb.obj$(DEPS_53)
+DEPS_53 = $(CONFIG)\obj\sdb.obj$(DEPS_53)
 
-$(CONFIG)\bin\esp.exe: \
-    $(CONFIG)\bin\libappweb.dll \
-    $(CONFIG)\obj\edi.obj \
-    $(CONFIG)\obj\esp.obj \
-    $(CONFIG)\obj\espAbbrev.obj \
-    $(CONFIG)\obj\espFramework.obj \
-    $(CONFIG)\obj\espHandler.obj \
-    $(CONFIG)\obj\espHtml.obj \
-    $(CONFIG)\obj\espTemplate.obj \
-    $(CONFIG)\obj\mdb.obj \
-    $(CONFIG)\obj\sdb.obj
-	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+LIBS_53 = -lappweb $(LIBS_53)
+LIBS_53 = -lhttp $(LIBS_53)
+LIBS_53 = -lpcre $(LIBS_53)
+LIBS_53 = -lmpr $(LIBS_53)
 
-$(CONFIG)\bin\esp.conf: \
-    src\esp\esp.conf
+$(CONFIG)\bin\libmod_esp.dll: $(DEPS_53)
+	echo '      [Link] libmod_esp'
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS_53) $(LIBS_53) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+endif
+
+ifeq ($(BIT_PACK_ESP),1)
+#
+#   esp
+#
+DEPS_54 = $(CONFIG)\bin\libappweb.dll$(DEPS_54)
+DEPS_54 = $(CONFIG)\obj\edi.obj$(DEPS_54)
+DEPS_54 = $(CONFIG)\obj\esp.obj$(DEPS_54)
+DEPS_54 = $(CONFIG)\obj\espAbbrev.obj$(DEPS_54)
+DEPS_54 = $(CONFIG)\obj\espFramework.obj$(DEPS_54)
+DEPS_54 = $(CONFIG)\obj\espHandler.obj$(DEPS_54)
+DEPS_54 = $(CONFIG)\obj\espHtml.obj$(DEPS_54)
+DEPS_54 = $(CONFIG)\obj\espTemplate.obj$(DEPS_54)
+DEPS_54 = $(CONFIG)\obj\mdb.obj$(DEPS_54)
+DEPS_54 = $(CONFIG)\obj\sdb.obj$(DEPS_54)
+
+LIBS_54 = -lappweb $(LIBS_54)
+LIBS_54 = -lhttp $(LIBS_54)
+LIBS_54 = -lpcre $(LIBS_54)
+LIBS_54 = -lmpr $(LIBS_54)
+
+$(CONFIG)\bin\esp.exe: $(DEPS_54)
+	echo '      [Link] esp'
+	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS_54) $(LIBS_54) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+endif
+
+ifeq ($(BIT_PACK_ESP),1)
+#
+#   esp.conf
+#
+DEPS_55 += src\esp\esp.conf
+
+$(CONFIG)\bin\esp.conf: $(DEPS_55)
+	echo '      [File] windows-x86-default/bin/esp.conf'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\esp\esp.conf" "$(CONFIG)\bin\esp.conf"
+endif
 
-src\server\esp.conf: \
-    src\esp\esp.conf
+ifeq ($(BIT_PACK_ESP),1)
+#
+#   esp.conf.server
+#
+DEPS_56 += src\esp\esp.conf
+
+src\server\esp.conf: $(DEPS_56)
+	echo '      [File] src/server/esp.conf'
 	if not exist "src\server" md "src\server"
 	copy /Y "src\esp\esp.conf" "src\server\esp.conf"
+endif
 
-$(CONFIG)\bin\esp-www: \
-    src\esp\esp-www
+ifeq ($(BIT_PACK_ESP),1)
+#
+#   esp.www
+#
+DEPS_57 += src\esp\esp-www
+
+$(CONFIG)\bin\esp-www: $(DEPS_57)
+	echo '      [File] windows-x86-default/bin/esp-www'
 	if not exist "$(CONFIG)\bin\esp-www" md "$(CONFIG)\bin\esp-www"
 	copy /Y "src\esp\esp-www\app.conf" "$(CONFIG)\bin\esp-www\app.conf"
 	copy /Y "src\esp\esp-www\appweb.conf" "$(CONFIG)\bin\esp-www\appweb.conf"
@@ -541,253 +830,606 @@ $(CONFIG)\bin\esp-www: \
 	copy /Y "src\esp\esp-www\files\static\layout.css" "$(CONFIG)\bin\esp-www\files\static\layout.css"
 	if not exist "$(CONFIG)\bin\esp-www\files\static\themes" md "$(CONFIG)\bin\esp-www\files\static\themes"
 	copy /Y "src\esp\esp-www\files\static\themes\default.css" "$(CONFIG)\bin\esp-www\files\static\themes\default.css"
+endif
 
-$(CONFIG)\bin\esp-appweb.conf: \
-    src\esp\esp-appweb.conf
+ifeq ($(BIT_PACK_ESP),1)
+#
+#   esp-appweb.conf
+#
+DEPS_58 += src\esp\esp-appweb.conf
+
+$(CONFIG)\bin\esp-appweb.conf: $(DEPS_58)
+	echo '      [File] windows-x86-default/bin/esp-appweb.conf'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\esp\esp-appweb.conf" "$(CONFIG)\bin\esp-appweb.conf"
+endif
 
-$(CONFIG)\inc\ejs.h: 
+#
+#   ejs.h
+#
+$(CONFIG)\inc\ejs.h: $(DEPS_59)
+	echo '      [File] windows-x86-default/inc/ejs.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\ejs\ejs.h" "$(CONFIG)\inc\ejs.h"
 
-$(CONFIG)\inc\ejs.slots.h: 
+#
+#   ejs.slots.h
+#
+$(CONFIG)\inc\ejs.slots.h: $(DEPS_60)
+	echo '      [File] windows-x86-default/inc/ejs.slots.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\ejs\ejs.slots.h" "$(CONFIG)\inc\ejs.slots.h"
 
-$(CONFIG)\inc\ejsByteGoto.h: 
+#
+#   ejsByteGoto.h
+#
+$(CONFIG)\inc\ejsByteGoto.h: $(DEPS_61)
+	echo '      [File] windows-x86-default/inc/ejsByteGoto.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\ejs\ejsByteGoto.h" "$(CONFIG)\inc\ejsByteGoto.h"
 
+#
+#   ejsLib.obj
+#
+DEPS_62 = $(CONFIG)\inc\bit.h$(DEPS_62)
+DEPS_62 = $(CONFIG)\inc\ejs.h$(DEPS_62)
+DEPS_62 = $(CONFIG)\inc\mpr.h$(DEPS_62)
+DEPS_62 = $(CONFIG)\inc\pcre.h$(DEPS_62)
+DEPS_62 = $(CONFIG)\inc\bitos.h$(DEPS_62)
+DEPS_62 = $(CONFIG)\inc\http.h$(DEPS_62)
+DEPS_62 = $(CONFIG)\inc\ejs.slots.h$(DEPS_62)
+
 $(CONFIG)\obj\ejsLib.obj: \
-    src\deps\ejs\ejsLib.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\ejs.h \
-    $(CONFIG)\inc\mpr.h \
-    $(CONFIG)\inc\pcre.h \
-    $(CONFIG)\inc\bitos.h \
-    $(CONFIG)\inc\http.h \
-    $(CONFIG)\inc\ejs.slots.h
+    src\deps\ejs\ejsLib.c $(DEPS_62)
+	echo '   [Compile] src/deps/ejs/ejsLib.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsLib.c
 
-$(CONFIG)\bin\libejs.dll: \
-    $(CONFIG)\bin\libhttp.dll \
-    $(CONFIG)\bin\libpcre.dll \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\bin\libsqlite3.dll \
-    $(CONFIG)\inc\ejs.h \
-    $(CONFIG)\inc\ejs.slots.h \
-    $(CONFIG)\inc\ejsByteGoto.h \
-    $(CONFIG)\obj\ejsLib.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsLib.obj libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib $(LIBS) libpcre.lib libmpr.lib
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+#
+#   libejs
+#
+DEPS_63 = $(CONFIG)\bin\libhttp.dll$(DEPS_63)
+DEPS_63 = $(CONFIG)\bin\libpcre.dll$(DEPS_63)
+DEPS_63 = $(CONFIG)\bin\libmpr.dll$(DEPS_63)
+!IF "$(BIT_PACK_SQLITE)" == "1"
+    DEPS_63 = $(CONFIG)\bin\libsqlite3.dll$(DEPS_63)
+!ENDIF
+DEPS_63 = $(CONFIG)\inc\ejs.h$(DEPS_63)
+DEPS_63 = $(CONFIG)\inc\ejs.slots.h$(DEPS_63)
+DEPS_63 = $(CONFIG)\inc\ejsByteGoto.h$(DEPS_63)
+DEPS_63 = $(CONFIG)\obj\ejsLib.obj$(DEPS_63)
+
+!IF "$(BIT_PACK_SQLITE)" == "1"
+    LIBS_63 = -lsqlite3 $(LIBS_63)
+!ENDIF
+LIBS_63 = -lmpr $(LIBS_63)
+LIBS_63 = -lpcre $(LIBS_63)
+LIBS_63 = -lhttp $(LIBS_63)
+LIBS_63 = -lpcre $(LIBS_63)
+LIBS_63 = -lmpr $(LIBS_63)
+
+$(CONFIG)\bin\libejs.dll: $(DEPS_63)
+	echo '      [Link] libejs'
+	"$(LD)" -dll -out:$(CONFIG)\bin\libejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsLib.obj libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib $(LIBS_63) $(LIBS_63) $(LIBS) libpcre.lib libmpr.lib
+endif
+
+#
+#   ejs.obj
+#
+DEPS_64 = $(CONFIG)\inc\bit.h$(DEPS_64)
+DEPS_64 = $(CONFIG)\inc\ejs.h$(DEPS_64)
 
 $(CONFIG)\obj\ejs.obj: \
-    src\deps\ejs\ejs.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\ejs.h
+    src\deps\ejs\ejs.c $(DEPS_64)
+	echo '   [Compile] src/deps/ejs/ejs.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejs.c
 
-$(CONFIG)\bin\ejs.exe: \
-    $(CONFIG)\bin\libejs.dll \
-    $(CONFIG)\obj\ejs.obj
-	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj libejs.lib $(LIBS) libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+#
+#   ejs
+#
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+    DEPS_65 = $(CONFIG)\bin\libejs.dll$(DEPS_65)
+!ENDIF
+DEPS_65 = $(CONFIG)\obj\ejs.obj$(DEPS_65)
+
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+    LIBS_65 = -lejs $(LIBS_65)
+!ENDIF
+!IF "$(BIT_PACK_SQLITE)" == "1"
+    LIBS_65 = -lsqlite3 $(LIBS_65)
+!ENDIF
+LIBS_65 = -lmpr $(LIBS_65)
+LIBS_65 = -lpcre $(LIBS_65)
+LIBS_65 = -lhttp $(LIBS_65)
+
+$(CONFIG)\bin\ejs.exe: $(DEPS_65)
+	echo '      [Link] ejs'
+	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj libejs.lib $(LIBS_65) $(LIBS_65) $(LIBS) libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib
+endif
+
+#
+#   ejsc.obj
+#
+DEPS_66 = $(CONFIG)\inc\bit.h$(DEPS_66)
+DEPS_66 = $(CONFIG)\inc\ejs.h$(DEPS_66)
 
 $(CONFIG)\obj\ejsc.obj: \
-    src\deps\ejs\ejsc.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\ejs.h
+    src\deps\ejs\ejsc.c $(DEPS_66)
+	echo '   [Compile] src/deps/ejs/ejsc.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsc.c
 
-$(CONFIG)\bin\ejsc.exe: \
-    $(CONFIG)\bin\libejs.dll \
-    $(CONFIG)\obj\ejsc.obj
-	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj libejs.lib $(LIBS) libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+#
+#   ejsc
+#
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+    DEPS_67 = $(CONFIG)\bin\libejs.dll$(DEPS_67)
+!ENDIF
+DEPS_67 = $(CONFIG)\obj\ejsc.obj$(DEPS_67)
 
-$(CONFIG)\bin\ejs.mod: $(CONFIG)\bin\ejsc.exe
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+    LIBS_67 = -lejs $(LIBS_67)
+!ENDIF
+!IF "$(BIT_PACK_SQLITE)" == "1"
+    LIBS_67 = -lsqlite3 $(LIBS_67)
+!ENDIF
+LIBS_67 = -lmpr $(LIBS_67)
+LIBS_67 = -lpcre $(LIBS_67)
+LIBS_67 = -lhttp $(LIBS_67)
+
+$(CONFIG)\bin\ejsc.exe: $(DEPS_67)
+	echo '      [Link] ejsc'
+	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj libejs.lib $(LIBS_67) $(LIBS_67) $(LIBS) libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib
+endif
+
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+#
+#   ejs.mod
+#
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+    DEPS_68 = $(CONFIG)\bin\ejsc.exe$(DEPS_68)
+!ENDIF
+
+$(CONFIG)\bin\ejs.mod: $(DEPS_68)
 	"$(LBIN)\ejsc" --out ".\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null src/deps/ejs/ejs.es
+endif
+
+#
+#   cgiHandler.obj
+#
+DEPS_69 = $(CONFIG)\inc\bit.h$(DEPS_69)
+DEPS_69 = $(CONFIG)\inc\appweb.h$(DEPS_69)
 
 $(CONFIG)\obj\cgiHandler.obj: \
-    src\modules\cgiHandler.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h
+    src\modules\cgiHandler.c $(DEPS_69)
+	echo '   [Compile] src/modules/cgiHandler.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\cgiHandler.c
 
-$(CONFIG)\bin\libmod_cgi.dll: \
-    $(CONFIG)\bin\libappweb.dll \
-    $(CONFIG)\obj\cgiHandler.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+ifeq ($(BIT_PACK_CGI),1)
+#
+#   libmod_cgi
+#
+DEPS_70 = $(CONFIG)\bin\libappweb.dll$(DEPS_70)
+DEPS_70 = $(CONFIG)\obj\cgiHandler.obj$(DEPS_70)
+
+LIBS_70 = -lappweb $(LIBS_70)
+LIBS_70 = -lhttp $(LIBS_70)
+LIBS_70 = -lpcre $(LIBS_70)
+LIBS_70 = -lmpr $(LIBS_70)
+
+$(CONFIG)\bin\libmod_cgi.dll: $(DEPS_70)
+	echo '      [Link] libmod_cgi'
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj libappweb.lib $(LIBS_70) $(LIBS_70) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+endif
+
+#
+#   ejsHandler.obj
+#
+DEPS_71 = $(CONFIG)\inc\bit.h$(DEPS_71)
+DEPS_71 = $(CONFIG)\inc\appweb.h$(DEPS_71)
 
 $(CONFIG)\obj\ejsHandler.obj: \
-    src\modules\ejsHandler.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h
+    src\modules\ejsHandler.c $(DEPS_71)
+	echo '   [Compile] src/modules/ejsHandler.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejsHandler.obj -Fd$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\ejsHandler.c
 
-$(CONFIG)\bin\libmod_ejs.dll: \
-    $(CONFIG)\bin\libappweb.dll \
-    $(CONFIG)\bin\libejs.dll \
-    $(CONFIG)\obj\ejsHandler.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsHandler.obj libejs.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib libsqlite3.lib
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+#
+#   libmod_ejs
+#
+DEPS_72 = $(CONFIG)\bin\libappweb.dll$(DEPS_72)
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+    DEPS_72 = $(CONFIG)\bin\libejs.dll$(DEPS_72)
+!ENDIF
+DEPS_72 = $(CONFIG)\obj\ejsHandler.obj$(DEPS_72)
+
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+    LIBS_72 = -lejs $(LIBS_72)
+!ENDIF
+LIBS_72 = -lappweb $(LIBS_72)
+LIBS_72 = -lhttp $(LIBS_72)
+LIBS_72 = -lpcre $(LIBS_72)
+LIBS_72 = -lmpr $(LIBS_72)
+!IF "$(BIT_PACK_SQLITE)" == "1"
+    LIBS_72 = -lsqlite3 $(LIBS_72)
+!ENDIF
+
+$(CONFIG)\bin\libmod_ejs.dll: $(DEPS_72)
+	echo '      [Link] libmod_ejs'
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsHandler.obj libejs.lib libappweb.lib $(LIBS_72) $(LIBS_72) $(LIBS) libhttp.lib libpcre.lib libmpr.lib libsqlite3.lib
+endif
+
+#
+#   sslModule.obj
+#
+DEPS_73 = $(CONFIG)\inc\bit.h$(DEPS_73)
+DEPS_73 = $(CONFIG)\inc\appweb.h$(DEPS_73)
 
 $(CONFIG)\obj\sslModule.obj: \
-    src\modules\sslModule.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h
+    src\modules\sslModule.c $(DEPS_73)
+	echo '   [Compile] src/modules/sslModule.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\sslModule.c
 
-$(CONFIG)\bin\libmod_ssl.dll: \
-    $(CONFIG)\bin\libappweb.dll \
-    $(CONFIG)\obj\sslModule.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sslModule.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+#
+#   libmod_ssl
+#
+DEPS_74 = $(CONFIG)\bin\libappweb.dll$(DEPS_74)
+DEPS_74 = $(CONFIG)\obj\sslModule.obj$(DEPS_74)
+
+LIBS_74 = -lappweb $(LIBS_74)
+LIBS_74 = -lhttp $(LIBS_74)
+LIBS_74 = -lpcre $(LIBS_74)
+LIBS_74 = -lmpr $(LIBS_74)
+
+$(CONFIG)\bin\libmod_ssl.dll: $(DEPS_74)
+	echo '      [Link] libmod_ssl'
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sslModule.obj libappweb.lib $(LIBS_74) $(LIBS_74) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+
+#
+#   authpass.obj
+#
+DEPS_75 = $(CONFIG)\inc\bit.h$(DEPS_75)
+DEPS_75 = $(CONFIG)\inc\appweb.h$(DEPS_75)
 
 $(CONFIG)\obj\authpass.obj: \
-    src\utils\authpass.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h
+    src\utils\authpass.c $(DEPS_75)
+	echo '   [Compile] src/utils/authpass.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\authpass.obj -Fd$(CONFIG)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\authpass.c
 
-$(CONFIG)\bin\authpass.exe: \
-    $(CONFIG)\bin\libappweb.dll \
-    $(CONFIG)\obj\authpass.obj
-	"$(LD)" -out:$(CONFIG)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\authpass.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+#
+#   authpass
+#
+DEPS_76 = $(CONFIG)\bin\libappweb.dll$(DEPS_76)
+DEPS_76 = $(CONFIG)\obj\authpass.obj$(DEPS_76)
+
+LIBS_76 = -lappweb $(LIBS_76)
+LIBS_76 = -lhttp $(LIBS_76)
+LIBS_76 = -lpcre $(LIBS_76)
+LIBS_76 = -lmpr $(LIBS_76)
+
+$(CONFIG)\bin\authpass.exe: $(DEPS_76)
+	echo '      [Link] authpass'
+	"$(LD)" -out:$(CONFIG)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\authpass.obj libappweb.lib $(LIBS_76) $(LIBS_76) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+
+#
+#   cgiProgram.obj
+#
+DEPS_77 = $(CONFIG)\inc\bit.h$(DEPS_77)
 
 $(CONFIG)\obj\cgiProgram.obj: \
-    src\utils\cgiProgram.c\
-    $(CONFIG)\inc\bit.h
+    src\utils\cgiProgram.c $(DEPS_77)
+	echo '   [Compile] src/utils/cgiProgram.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\cgiProgram.obj -Fd$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\cgiProgram.c
 
-$(CONFIG)\bin\cgiProgram.exe: \
-    $(CONFIG)\obj\cgiProgram.obj
-	"$(LD)" -out:$(CONFIG)\bin\cgiProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiProgram.obj $(LIBS)
+ifeq ($(BIT_PACK_CGI),1)
+#
+#   cgiProgram
+#
+DEPS_78 = $(CONFIG)\obj\cgiProgram.obj$(DEPS_78)
 
-src\server\slink.c: 
+$(CONFIG)\bin\cgiProgram.exe: $(DEPS_78)
+	echo '      [Link] cgiProgram'
+	"$(LD)" -out:$(CONFIG)\bin\cgiProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiProgram.obj $(LIBS)
+endif
+
+#
+#   slink.c
+#
+src\server\slink.c: $(DEPS_79)
 	cd src\server
 	if not exist slink.c copy slink.empty slink.c
 	cd ..\..
 
+#
+#   slink.obj
+#
+DEPS_80 = $(CONFIG)\inc\bit.h$(DEPS_80)
+DEPS_80 = $(CONFIG)\inc\esp.h$(DEPS_80)
+
 $(CONFIG)\obj\slink.obj: \
-    src\server\slink.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\esp.h
+    src\server\slink.c $(DEPS_80)
+	echo '   [Compile] src/server/slink.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\slink.c
 
-$(CONFIG)\bin\libapp.dll: \
-    src\server\slink.c \
-    $(CONFIG)\bin\esp.exe \
-    $(CONFIG)\bin\libmod_esp.dll \
-    $(CONFIG)\obj\slink.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libapp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj libmod_esp.lib $(LIBS) libappweb.lib libhttp.lib libpcre.lib libmpr.lib
+#
+#   libapp
+#
+DEPS_81 = src\server\slink.c$(DEPS_81)
+!IF "$(BIT_PACK_ESP)" == "1"
+    DEPS_81 = $(CONFIG)\bin\esp.exe$(DEPS_81)
+!ENDIF
+!IF "$(BIT_PACK_ESP)" == "1"
+    DEPS_81 = $(CONFIG)\bin\libmod_esp.dll$(DEPS_81)
+!ENDIF
+DEPS_81 = $(CONFIG)\obj\slink.obj$(DEPS_81)
+
+!IF "$(BIT_PACK_ESP)" == "1"
+    LIBS_81 = -lmod_esp $(LIBS_81)
+!ENDIF
+LIBS_81 = -lappweb $(LIBS_81)
+LIBS_81 = -lhttp $(LIBS_81)
+LIBS_81 = -lpcre $(LIBS_81)
+LIBS_81 = -lmpr $(LIBS_81)
+
+$(CONFIG)\bin\libapp.dll: $(DEPS_81)
+	echo '      [Link] libapp'
+	"$(LD)" -dll -out:$(CONFIG)\bin\libapp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj libmod_esp.lib $(LIBS_81) $(LIBS_81) $(LIBS) libappweb.lib libhttp.lib libpcre.lib libmpr.lib
+
+#
+#   appweb.obj
+#
+DEPS_82 = $(CONFIG)\inc\bit.h$(DEPS_82)
+DEPS_82 = $(CONFIG)\inc\appweb.h$(DEPS_82)
+DEPS_82 = $(CONFIG)\inc\esp.h$(DEPS_82)
 
 $(CONFIG)\obj\appweb.obj: \
-    src\server\appweb.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\appweb.h \
-    $(CONFIG)\inc\esp.h
+    src\server\appweb.c $(DEPS_82)
+	echo '   [Compile] src/server/appweb.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\appweb.c
 
-$(CONFIG)\bin\appweb.exe: \
-    $(CONFIG)\bin\libappweb.dll \
-    $(CONFIG)\bin\libmod_esp.dll \
-    $(CONFIG)\bin\libmod_ssl.dll \
-    $(CONFIG)\bin\libmod_ejs.dll \
-    $(CONFIG)\bin\libmod_cgi.dll \
-    $(CONFIG)\bin\libapp.dll \
-    $(CONFIG)\obj\appweb.obj
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_ejs.lib libmod_ssl.lib libmod_esp.lib libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib libejs.lib libsqlite3.lib
+#
+#   appweb
+#
+DEPS_83 = $(CONFIG)\bin\libappweb.dll$(DEPS_83)
+!IF "$(BIT_PACK_ESP)" == "1"
+    DEPS_83 = $(CONFIG)\bin\libmod_esp.dll$(DEPS_83)
+!ENDIF
+DEPS_83 = $(CONFIG)\bin\libmod_ssl.dll$(DEPS_83)
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+    DEPS_83 = $(CONFIG)\bin\libmod_ejs.dll$(DEPS_83)
+!ENDIF
+!IF "$(BIT_PACK_CGI)" == "1"
+    DEPS_83 = $(CONFIG)\bin\libmod_cgi.dll$(DEPS_83)
+!ENDIF
+DEPS_83 = $(CONFIG)\bin\libapp.dll$(DEPS_83)
+DEPS_83 = $(CONFIG)\obj\appweb.obj$(DEPS_83)
 
-$(CONFIG)\inc\appwebMonitor.h: 
+LIBS_83 = -lapp $(LIBS_83)
+!IF "$(BIT_PACK_CGI)" == "1"
+    LIBS_83 = -lmod_cgi $(LIBS_83)
+!ENDIF
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+    LIBS_83 = -lmod_ejs $(LIBS_83)
+!ENDIF
+LIBS_83 = -lmod_ssl $(LIBS_83)
+!IF "$(BIT_PACK_ESP)" == "1"
+    LIBS_83 = -lmod_esp $(LIBS_83)
+!ENDIF
+LIBS_83 = -lappweb $(LIBS_83)
+LIBS_83 = -lhttp $(LIBS_83)
+LIBS_83 = -lpcre $(LIBS_83)
+LIBS_83 = -lmpr $(LIBS_83)
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+    LIBS_83 = -lejs $(LIBS_83)
+!ENDIF
+!IF "$(BIT_PACK_SQLITE)" == "1"
+    LIBS_83 = -lsqlite3 $(LIBS_83)
+!ENDIF
+
+$(CONFIG)\bin\appweb.exe: $(DEPS_83)
+	echo '      [Link] appweb'
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_ejs.lib libmod_ssl.lib libmod_esp.lib libappweb.lib $(LIBS_83) $(LIBS_83) $(LIBS) libhttp.lib libpcre.lib libmpr.lib libejs.lib libsqlite3.lib
+
+#
+#   appwebMonitor.h
+#
+$(CONFIG)\inc\appwebMonitor.h: $(DEPS_84)
+	echo '      [File] windows-x86-default/inc/appwebMonitor.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\server\windows\appwebMonitor.h" "$(CONFIG)\inc\appwebMonitor.h"
 
-$(CONFIG)\inc\monitorResources.h: 
+#
+#   monitorResources.h
+#
+$(CONFIG)\inc\monitorResources.h: $(DEPS_85)
+	echo '      [File] windows-x86-default/inc/monitorResources.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\server\windows\monitorResources.h" "$(CONFIG)\inc\monitorResources.h"
 
+#
+#   appwebMonitor.res
+#
 $(CONFIG)\obj\appwebMonitor.res: \
-        src\server\windows\appwebMonitor.rc
+        src\server\windows\appwebMonitor.rc $(DEPS_86)
+	echo '   [Compile] src/server/windows/appwebMonitor.rc'
 	"$(RC)" -nologo -Fo $(CONFIG)\obj\appwebMonitor.res src\server\windows\appwebMonitor.rc
 
+#
+#   appwebMonitor.obj
+#
+DEPS_87 = $(CONFIG)\inc\bit.h$(DEPS_87)
+DEPS_87 = $(CONFIG)\inc\mpr.h$(DEPS_87)
+
 $(CONFIG)\obj\appwebMonitor.obj: \
-    src\server\windows\appwebMonitor.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\server\windows\appwebMonitor.c $(DEPS_87)
+	echo '   [Compile] src/server/windows/appwebMonitor.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\appwebMonitor.obj -Fd$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\windows\appwebMonitor.c
 
-$(CONFIG)\bin\appwebMonitor.exe: \
-    $(CONFIG)\bin\libappweb.dll \
-    $(CONFIG)\inc\appwebMonitor.h \
-    $(CONFIG)\inc\monitorResources.h \
-    $(CONFIG)\obj\appwebMonitor.res \
-    $(CONFIG)\obj\appwebMonitor.obj
+#
+#   appwebMonitor
+#
+DEPS_88 = $(CONFIG)\bin\libappweb.dll$(DEPS_88)
+DEPS_88 = $(CONFIG)\inc\appwebMonitor.h$(DEPS_88)
+DEPS_88 = $(CONFIG)\inc\monitorResources.h$(DEPS_88)
+DEPS_88 = $(CONFIG)\obj\appwebMonitor.res$(DEPS_88)
+DEPS_88 = $(CONFIG)\obj\appwebMonitor.obj$(DEPS_88)
+
+LIBS_88 = -lappweb $(LIBS_88)
+LIBS_88 = -lhttp $(LIBS_88)
+LIBS_88 = -lpcre $(LIBS_88)
+LIBS_88 = -lmpr $(LIBS_88)
+
+$(CONFIG)\bin\appwebMonitor.exe: $(DEPS_88)
+	echo '      [Link] appwebMonitor'
 	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appwebMonitor.res $(CONFIG)\obj\appwebMonitor.obj libappweb.lib shell32.lib libhttp.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib libpcre.lib libmpr.lib
 
-$(CONFIG)\bin\appwebMonitor.ico: src\server\windows\appwebMonitor.ico
+#
+#   appwebMonitor.ico
+#
+DEPS_89 += src\server\windows\appwebMonitor.ico
+
+$(CONFIG)\bin\appwebMonitor.ico: $(DEPS_89)
 	cd src\server
 	copy windows/appwebMonitor.ico ..\..\$(CONFIG)\bin
 	cd ..\..
+#
+#   appwebMonitor.ico
+#
+DEPS_90 += src\server\windows\appwebMonitor.ico
 
-$(CONFIG)\bin\appwebMonitor.ico: \
-    src\server\windows\appwebMonitor.ico
+$(CONFIG)\bin\appwebMonitor.ico: $(DEPS_90)
+	echo '      [File] windows-x86-default/bin/appwebMonitor.ico'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\server\windows\appwebMonitor.ico" "$(CONFIG)\bin\appwebMonitor.ico"
 
-src\server\cache: 
+#
+#   server-cache
+#
+src\server\cache: $(DEPS_91)
 	cd src\server
 	md cache
 	cd ..\..
 
-$(CONFIG)\inc\testAppweb.h: 
+#
+#   testAppweb.h
+#
+$(CONFIG)\inc\testAppweb.h: $(DEPS_92)
+	echo '      [File] windows-x86-default/inc/testAppweb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "test\testAppweb.h" "$(CONFIG)\inc\testAppweb.h"
 
+#
+#   testAppweb.obj
+#
+DEPS_93 = $(CONFIG)\inc\bit.h$(DEPS_93)
+DEPS_93 = $(CONFIG)\inc\testAppweb.h$(DEPS_93)
+DEPS_93 = $(CONFIG)\inc\mpr.h$(DEPS_93)
+DEPS_93 = $(CONFIG)\inc\http.h$(DEPS_93)
+
 $(CONFIG)\obj\testAppweb.obj: \
-    test\testAppweb.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\testAppweb.h \
-    $(CONFIG)\inc\mpr.h \
-    $(CONFIG)\inc\http.h
+    test\testAppweb.c $(DEPS_93)
+	echo '   [Compile] test/testAppweb.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testAppweb.c
 
+#
+#   testHttp.obj
+#
+DEPS_94 = $(CONFIG)\inc\bit.h$(DEPS_94)
+DEPS_94 = $(CONFIG)\inc\testAppweb.h$(DEPS_94)
+
 $(CONFIG)\obj\testHttp.obj: \
-    test\testHttp.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\testAppweb.h
+    test\testHttp.c $(DEPS_94)
+	echo '   [Compile] test/testHttp.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testHttp.c
 
-$(CONFIG)\bin\testAppweb.exe: \
-    $(CONFIG)\bin\libappweb.dll \
-    $(CONFIG)\inc\testAppweb.h \
-    $(CONFIG)\obj\testAppweb.obj \
-    $(CONFIG)\obj\testHttp.obj
-	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj libappweb.lib $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+#
+#   testAppweb
+#
+DEPS_95 = $(CONFIG)\bin\libappweb.dll$(DEPS_95)
+DEPS_95 = $(CONFIG)\inc\testAppweb.h$(DEPS_95)
+DEPS_95 = $(CONFIG)\obj\testAppweb.obj$(DEPS_95)
+DEPS_95 = $(CONFIG)\obj\testHttp.obj$(DEPS_95)
 
-test\cgi-bin\testScript: $(CONFIG)\bin\cgiProgram.exe
-#  Omit build script test-testScript
+LIBS_95 = -lappweb $(LIBS_95)
+LIBS_95 = -lhttp $(LIBS_95)
+LIBS_95 = -lpcre $(LIBS_95)
+LIBS_95 = -lmpr $(LIBS_95)
 
-test\web\caching\cache.cgi: 
-#  Omit build script test-cache.cgi
+$(CONFIG)\bin\testAppweb.exe: $(DEPS_95)
+	echo '      [Link] testAppweb'
+	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj libappweb.lib $(LIBS_95) $(LIBS_95) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
 
-test\web\auth\basic\basic.cgi: 
-#  Omit build script test-basic.cgi
+ifeq ($(BIT_PACK_CGI),1)
+#
+#   test-testScript
+#
+!IF "$(BIT_PACK_CGI)" == "1"
+    DEPS_96 = $(CONFIG)\bin\cgiProgram.exe$(DEPS_96)
+!ENDIF
 
-test\cgi-bin\cgiProgram.exe: $(CONFIG)\bin\cgiProgram.exe
-#  Omit build script test-cgiProgram
+test\cgi-bin\testScript: $(DEPS_96)
+#  Omit build script test-testScriptendif
 
-test\web\js: \
-    src\esp\esp-www\files\static\js
+ifeq ($(BIT_PACK_CGI),1)
+#
+#   test-cache.cgi
+#
+test\web\caching\cache.cgi: $(DEPS_97)
+#  Omit build script test-cache.cgiendif
+
+ifeq ($(BIT_PACK_CGI),1)
+#
+#   test-basic.cgi
+#
+test\web\auth\basic\basic.cgi: $(DEPS_98)
+#  Omit build script test-basic.cgiendif
+
+ifeq ($(BIT_PACK_CGI),1)
+#
+#   test-cgiProgram
+#
+!IF "$(BIT_PACK_CGI)" == "1"
+    DEPS_99 = $(CONFIG)\bin\cgiProgram.exe$(DEPS_99)
+!ENDIF
+
+test\cgi-bin\cgiProgram.exe: $(DEPS_99)
+#  Omit build script test-cgiProgramendif
+
+#
+#   test.js
+#
+DEPS_100 += src\esp\esp-www\files\static\js
+
+test\web\js: $(DEPS_100)
+	echo '      [File] test/web/js'
 	if not exist "test\web\js" md "test\web\js"
 	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "test\web\js\jquery.esp.js"
 	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "test\web\js\jquery.js"
 	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "test\web\js\jquery.simplemodal.js"
 	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "test\web\js\jquery.tablesorter.js"
 
-version: 
+#
+#   version
+#
+version: $(DEPS_101)
 	@echo 4.3.0-0
 
-stop: compile
+
+#
+#   stop
+#
+DEPS_102 = compile$(DEPS_102)
+
+stop: $(DEPS_102)
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 
-installBinary: stop
+#
+#   installBinary
+#
+DEPS_103 = stop$(DEPS_103)
+
+installBinary: $(DEPS_103)
 	if not exist "C:/" md "C:/"
 	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
 	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
@@ -804,29 +1446,44 @@ installBinary: stop
 	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
 	copy /Y "$(CONFIG)\bin\appman.exe" "$(BIT_VAPP_PREFIX)\bin\appman.exe"
 	copy /Y "$(CONFIG)\bin\appweb.exe" "$(BIT_VAPP_PREFIX)\bin\appweb.exe"
-	copy /Y "$(CONFIG)\bin\esp.exe" "$(BIT_VAPP_PREFIX)\bin\esp.exe"
 	copy /Y "$(CONFIG)\bin\http.exe" "$(BIT_VAPP_PREFIX)\bin\http.exe"
+ifeq ($(BIT_PACK_ESP),1)
+	copy /Y "$(CONFIG)\bin\esp.exe" "$(BIT_VAPP_PREFIX)\bin\esp.exe"
+endif
 	copy /Y "$(CONFIG)\bin\appwebMonitor.exe" "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.exe"
 	copy /Y "$(CONFIG)\bin\appwebMonitor.ico" "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.ico"
 	copy /Y "$(CONFIG)\bin\libapp.dll" "$(BIT_VAPP_PREFIX)\bin\libapp.dll"
 	copy /Y "$(CONFIG)\bin\libappweb.dll" "$(BIT_VAPP_PREFIX)\bin\libappweb.dll"
-	copy /Y "$(CONFIG)\bin\libest.dll" "$(BIT_VAPP_PREFIX)\bin\libest.dll"
 	copy /Y "$(CONFIG)\bin\libhttp.dll" "$(BIT_VAPP_PREFIX)\bin\libhttp.dll"
-	copy /Y "$(CONFIG)\bin\libmod_cgi.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_cgi.dll"
-	copy /Y "$(CONFIG)\bin\libmod_esp.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_esp.dll"
 	copy /Y "$(CONFIG)\bin\libmod_ssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_ssl.dll"
 	copy /Y "$(CONFIG)\bin\libmpr.dll" "$(BIT_VAPP_PREFIX)\bin\libmpr.dll"
 	copy /Y "$(CONFIG)\bin\libmprssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmprssl.dll"
 	copy /Y "$(CONFIG)\bin\libpcre.dll" "$(BIT_VAPP_PREFIX)\bin\libpcre.dll"
-	copy /Y "$(CONFIG)\bin\libsqlite3.dll" "$(BIT_VAPP_PREFIX)\bin\libsqlite3.dll"
 	copy /Y "$(CONFIG)\bin\ca.crt" "$(BIT_VAPP_PREFIX)\bin\ca.crt"
+ifeq ($(BIT_PACK_EST),1)
+	copy /Y "$(CONFIG)\bin\libest.dll" "$(BIT_VAPP_PREFIX)\bin\libest.dll"
+endif
+ifeq ($(BIT_PACK_SQLITE),1)
+	copy /Y "$(CONFIG)\bin\libsqlite3.dll" "$(BIT_VAPP_PREFIX)\bin\libsqlite3.dll"
+endif
+ifeq ($(BIT_PACK_ESP),1)
+	copy /Y "$(CONFIG)\bin\libmod_esp.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_esp.dll"
+endif
+ifeq ($(BIT_PACK_CGI),1)
+	copy /Y "$(CONFIG)\bin\libmod_cgi.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_cgi.dll"
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
 	copy /Y "$(CONFIG)\bin\libejs.dll" "$(BIT_VAPP_PREFIX)\bin\libejs.dll"
 	copy /Y "$(CONFIG)\bin\libmod_ejs.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_ejs.dll"
+endif
+ifeq ($(BIT_PACK_ESP),1)
 	copy /Y "$(CONFIG)\bin\libmod_esp.lib" "$(BIT_VAPP_PREFIX)\bin\libmod_esp.lib"
 	copy /Y "$(CONFIG)\bin\libappweb.lib" "$(BIT_VAPP_PREFIX)\bin\libappweb.lib"
 	copy /Y "$(CONFIG)\bin\libpcre.lib" "$(BIT_VAPP_PREFIX)\bin\libpcre.lib"
 	copy /Y "$(CONFIG)\bin\libhttp.lib" "$(BIT_VAPP_PREFIX)\bin\libhttp.lib"
 	copy /Y "$(CONFIG)\bin\libmpr.lib" "$(BIT_VAPP_PREFIX)\bin\libmpr.lib"
+endif
+ifeq ($(BIT_PACK_ESP),1)
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www" md "$(BIT_VAPP_PREFIX)\bin\esp-www"
 	copy /Y "src\esp\esp-www\app.conf" "$(BIT_VAPP_PREFIX)\bin\esp-www\app.conf"
 	copy /Y "src\esp\esp-www\appweb.conf" "$(BIT_VAPP_PREFIX)\bin\esp-www\appweb.conf"
@@ -847,8 +1504,11 @@ installBinary: stop
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes"
 	copy /Y "src\esp\esp-www\files\static\themes\default.css" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes\default.css"
 	copy /Y "src\esp\esp-appweb.conf" "$(BIT_VAPP_PREFIX)\bin\esp-appweb.conf"
+endif
+ifeq ($(BIT_PACK_ESP),1)
 	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
 	copy /Y "$(CONFIG)\bin\esp.conf" "$(BIT_VAPP_PREFIX)\esp.conf"
+endif
 	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
 	copy /Y "src\server\web\bench\1b.html" "$(BIT_VAPP_PREFIX)\web\bench\1b.html"
 	copy /Y "src\server\web\bench\4k.html" "$(BIT_VAPP_PREFIX)\web\bench\4k.html"
@@ -893,23 +1553,47 @@ installBinary: stop
 	copy /Y "src\deps\mpr\mpr.h" "$(BIT_VAPP_PREFIX)\inc\mpr.h"
 	copy /Y "src\deps\pcre\pcre.h" "$(BIT_VAPP_PREFIX)\inc\pcre.h"
 	copy /Y "src\deps\sqlite\sqlite3.h" "$(BIT_VAPP_PREFIX)\inc\sqlite3.h"
+ifeq ($(BIT_PACK_ESP),1)
 	copy /Y "src\esp\edi.h" "$(BIT_VAPP_PREFIX)\inc\edi.h"
 	copy /Y "src\esp\esp-app.h" "$(BIT_VAPP_PREFIX)\inc\esp-app.h"
 	copy /Y "src\esp\esp.h" "$(BIT_VAPP_PREFIX)\inc\esp.h"
 	copy /Y "src\esp\mdb.h" "$(BIT_VAPP_PREFIX)\inc\mdb.h"
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
 	copy /Y "src\deps\ejs\ejs.h" "$(BIT_VAPP_PREFIX)\inc\ejs.h"
 	copy /Y "src\deps\ejs\ejs.slots.h" "$(BIT_VAPP_PREFIX)\inc\ejs.slots.h"
 	copy /Y "src\deps\ejs\ejsByteGoto.h" "$(BIT_VAPP_PREFIX)\inc\ejsByteGoto.h"
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
 	copy /Y "$(CONFIG)\bin\ejs.mod" "$(BIT_VAPP_PREFIX)\bin\ejs.mod"
+endif
 	echo 'set LOG_DIR "$(BIT_VAPP_PREFIX)/log"\nset CACHE_DIR "$(BIT_VAPP_PREFIX)/cache"\nDocuments "$(BIT_VAPP_PREFIX)/web\nListen 80\n' >$(BIT_VAPP_PREFIX)/install.conf
 
-start: compile stop
+#
+#   start
+#
+DEPS_104 = compile$(DEPS_104)
+DEPS_104 = stop$(DEPS_104)
+
+start: $(DEPS_104)
 	.\$(CONFIG)\bin\appman install enable start
 
-install: stop installBinary start
+#
+#   install
+#
+DEPS_105 = stop$(DEPS_105)
+DEPS_105 = installBinary$(DEPS_105)
+DEPS_105 = start$(DEPS_105)
+
+install: $(DEPS_105)
 
 
-uninstall: stop
+#
+#   uninstall
+#
+DEPS_106 = stop$(DEPS_106)
+
+uninstall: $(DEPS_106)
 	if exist "$(BIT_VAPP_PREFIX)\install.conf" rd /Q "$(BIT_VAPP_PREFIX)\install.conf"
 	if exist "$(BIT_VAPP_PREFIX)\inc\appweb" rd /Q /S"$(BIT_VAPP_PREFIX)\inc\appweb"
 	if exist "$(BIT_VAPP_PREFIX)" rd /Q /S"$(BIT_VAPP_PREFIX)"
@@ -924,13 +1608,20 @@ uninstall: stop
 	if exist "$(BIT_VAPP_PREFIX)\latest" rd /Q "$(BIT_VAPP_PREFIX)\latest"
 	if exist "$(BIT_VAPP_PREFIX)" rd /Q "$(BIT_VAPP_PREFIX)"
 
-
-genslink: 
+#
+#   genslink
+#
+genslink: $(DEPS_107)
 	cd src\server
 	esp --static --genlink slink.c --flat compile
 	cd ..\..
 
-run: compile
+#
+#   run
+#
+DEPS_108 = compile$(DEPS_108)
+
+run: $(DEPS_108)
 	cd src\server
 	sudo ..\..\$(CONFIG)\bin\appweb -v
 	cd ..\..
