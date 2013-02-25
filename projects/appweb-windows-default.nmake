@@ -346,13 +346,13 @@ DEPS_12 = $(DEPS_12) $(CONFIG)\bin\libmpr.dll
 DEPS_12 = $(DEPS_12) $(CONFIG)\obj\mprSsl.obj
 
 !IF "$(BIT_PACK_EST)" == "1"
-    LIBS_12 $(LIBS_12) -lest
+    LIBS_12 $(LIBS_12) libest.lib
 !ENDIF
-LIBS_12 = $(LIBS_12) -lmpr
+LIBS_12 = $(LIBS_12) libmpr.lib
 
 $(CONFIG)\bin\libmprssl.dll: $(DEPS_12)
 	echo '      [Link] libmprssl'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj libest.lib libmpr.lib $(LIBS_12) $(LIBS_12) $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj $(LIBS_12) $(LIBS_12) $(LIBS)
 
 #
 #   manager.obj
@@ -371,11 +371,11 @@ $(CONFIG)\obj\manager.obj: \
 DEPS_14 = $(DEPS_14) $(CONFIG)\bin\libmpr.dll
 DEPS_14 = $(DEPS_14) $(CONFIG)\obj\manager.obj
 
-LIBS_14 = $(LIBS_14) -lmpr
+LIBS_14 = $(LIBS_14) libmpr.lib
 
 $(CONFIG)\bin\appman.exe: $(DEPS_14)
 	echo '      [Link] manager'
-	"$(LD)" -out:$(CONFIG)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj libmpr.lib $(LIBS_14) $(LIBS_14) $(LIBS)
+	"$(LD)" -out:$(CONFIG)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBS_14) $(LIBS_14) $(LIBS)
 
 #
 #   makerom.obj
@@ -394,11 +394,11 @@ $(CONFIG)\obj\makerom.obj: \
 DEPS_16 = $(DEPS_16) $(CONFIG)\bin\libmpr.dll
 DEPS_16 = $(DEPS_16) $(CONFIG)\obj\makerom.obj
 
-LIBS_16 = $(LIBS_16) -lmpr
+LIBS_16 = $(LIBS_16) libmpr.lib
 
 $(CONFIG)\bin\makerom.exe: $(DEPS_16)
 	echo '      [Link] makerom'
-	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj libmpr.lib $(LIBS_16) $(LIBS_16) $(LIBS)
+	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj $(LIBS_16) $(LIBS_16) $(LIBS)
 
 #
 #   ca-crt
@@ -467,12 +467,12 @@ DEPS_23 = $(DEPS_23) $(CONFIG)\bin\libpcre.dll
 DEPS_23 = $(DEPS_23) $(CONFIG)\inc\http.h
 DEPS_23 = $(DEPS_23) $(CONFIG)\obj\httpLib.obj
 
-LIBS_23 = $(LIBS_23) -lpcre
-LIBS_23 = $(LIBS_23) -lmpr
+LIBS_23 = $(LIBS_23) libpcre.lib
+LIBS_23 = $(LIBS_23) libmpr.lib
 
 $(CONFIG)\bin\libhttp.dll: $(DEPS_23)
 	echo '      [Link] libhttp'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libhttp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\httpLib.obj libpcre.lib libmpr.lib $(LIBS_23) $(LIBS_23) $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libhttp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\httpLib.obj $(LIBS_23) $(LIBS_23) $(LIBS)
 
 #
 #   http.obj
@@ -491,13 +491,13 @@ $(CONFIG)\obj\http.obj: \
 DEPS_25 = $(DEPS_25) $(CONFIG)\bin\libhttp.dll
 DEPS_25 = $(DEPS_25) $(CONFIG)\obj\http.obj
 
-LIBS_25 = $(LIBS_25) -lhttp
-LIBS_25 = $(LIBS_25) -lpcre
-LIBS_25 = $(LIBS_25) -lmpr
+LIBS_25 = $(LIBS_25) libhttp.lib
+LIBS_25 = $(LIBS_25) libpcre.lib
+LIBS_25 = $(LIBS_25) libmpr.lib
 
 $(CONFIG)\bin\http.exe: $(DEPS_25)
 	echo '      [Link] http'
-	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.obj libhttp.lib $(LIBS_25) $(LIBS_25) $(LIBS) libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.obj $(LIBS_25) $(LIBS_25) $(LIBS) libmpr.lib
 
 #
 #   sqlite3.h
@@ -551,12 +551,12 @@ $(CONFIG)\obj\sqlite.obj: \
 DEPS_30 = $(DEPS_30) $(CONFIG)\obj\sqlite.obj
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_30 $(LIBS_30) -lsqlite3
+    LIBS_30 $(LIBS_30) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\sqlite.exe: $(DEPS_30)
 	echo '      [Link] sqlite'
-	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj libsqlite3.lib $(LIBS_30) $(LIBS_30) $(LIBS)
+	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj $(LIBS_30) $(LIBS_30) $(LIBS)
 !ENDIF
 
 #
@@ -659,13 +659,13 @@ DEPS_39 = $(DEPS_39) $(CONFIG)\obj\fileHandler.obj
 DEPS_39 = $(DEPS_39) $(CONFIG)\obj\log.obj
 DEPS_39 = $(DEPS_39) $(CONFIG)\obj\server.obj
 
-LIBS_39 = $(LIBS_39) -lhttp
-LIBS_39 = $(LIBS_39) -lpcre
-LIBS_39 = $(LIBS_39) -lmpr
+LIBS_39 = $(LIBS_39) libhttp.lib
+LIBS_39 = $(LIBS_39) libpcre.lib
+LIBS_39 = $(LIBS_39) libmpr.lib
 
 $(CONFIG)\bin\libappweb.dll: $(DEPS_39)
 	echo '      [Link] libappweb'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.obj $(CONFIG)\obj\convenience.obj $(CONFIG)\obj\dirHandler.obj $(CONFIG)\obj\fileHandler.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\server.obj libhttp.lib $(LIBS_39) $(LIBS_39) $(LIBS) libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\config.obj $(CONFIG)\obj\convenience.obj $(CONFIG)\obj\dirHandler.obj $(CONFIG)\obj\fileHandler.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\server.obj $(LIBS_39) $(LIBS_39) $(LIBS) libmpr.lib
 
 #
 #   edi.h
@@ -825,14 +825,14 @@ DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espTemplate.obj
 DEPS_53 = $(DEPS_53) $(CONFIG)\obj\mdb.obj
 DEPS_53 = $(DEPS_53) $(CONFIG)\obj\sdb.obj
 
-LIBS_53 = $(LIBS_53) -lappweb
-LIBS_53 = $(LIBS_53) -lhttp
-LIBS_53 = $(LIBS_53) -lpcre
-LIBS_53 = $(LIBS_53) -lmpr
+LIBS_53 = $(LIBS_53) libappweb.lib
+LIBS_53 = $(LIBS_53) libhttp.lib
+LIBS_53 = $(LIBS_53) libpcre.lib
+LIBS_53 = $(LIBS_53) libmpr.lib
 
 $(CONFIG)\bin\libmod_esp.dll: $(DEPS_53)
 	echo '      [Link] libmod_esp'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS_53) $(LIBS_53) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_53) $(LIBS_53) $(LIBS) libmpr.lib
 !ENDIF
 
 !IF "$(BIT_PACK_ESP)" == "1"
@@ -850,14 +850,14 @@ DEPS_54 = $(DEPS_54) $(CONFIG)\obj\espTemplate.obj
 DEPS_54 = $(DEPS_54) $(CONFIG)\obj\mdb.obj
 DEPS_54 = $(DEPS_54) $(CONFIG)\obj\sdb.obj
 
-LIBS_54 = $(LIBS_54) -lappweb
-LIBS_54 = $(LIBS_54) -lhttp
-LIBS_54 = $(LIBS_54) -lpcre
-LIBS_54 = $(LIBS_54) -lmpr
+LIBS_54 = $(LIBS_54) libappweb.lib
+LIBS_54 = $(LIBS_54) libhttp.lib
+LIBS_54 = $(LIBS_54) libpcre.lib
+LIBS_54 = $(LIBS_54) libmpr.lib
 
 $(CONFIG)\bin\esp.exe: $(DEPS_54)
 	echo '      [Link] esp'
-	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj libappweb.lib $(LIBS_54) $(LIBS_54) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_54) $(LIBS_54) $(LIBS) libmpr.lib
 !ENDIF
 
 !IF "$(BIT_PACK_ESP)" == "1"
@@ -981,17 +981,17 @@ DEPS_63 = $(DEPS_63) $(CONFIG)\inc\ejsByteGoto.h
 DEPS_63 = $(DEPS_63) $(CONFIG)\obj\ejsLib.obj
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_63 $(LIBS_63) -lsqlite3
+    LIBS_63 $(LIBS_63) libsqlite3.lib
 !ENDIF
-LIBS_63 = $(LIBS_63) -lmpr
-LIBS_63 = $(LIBS_63) -lpcre
-LIBS_63 = $(LIBS_63) -lhttp
-LIBS_63 = $(LIBS_63) -lpcre
-LIBS_63 = $(LIBS_63) -lmpr
+LIBS_63 = $(LIBS_63) libmpr.lib
+LIBS_63 = $(LIBS_63) libpcre.lib
+LIBS_63 = $(LIBS_63) libhttp.lib
+LIBS_63 = $(LIBS_63) libpcre.lib
+LIBS_63 = $(LIBS_63) libmpr.lib
 
 $(CONFIG)\bin\libejs.dll: $(DEPS_63)
 	echo '      [Link] libejs'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsLib.obj libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib $(LIBS_63) $(LIBS_63) $(LIBS) libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsLib.obj $(LIBS_63) $(LIBS_63) $(LIBS) libmpr.lib
 !ENDIF
 
 #
@@ -1015,18 +1015,18 @@ $(CONFIG)\obj\ejs.obj: \
 DEPS_65 = $(DEPS_65) $(CONFIG)\obj\ejs.obj
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    LIBS_65 $(LIBS_65) -lejs
+    LIBS_65 $(LIBS_65) libejs.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_65 $(LIBS_65) -lsqlite3
+    LIBS_65 $(LIBS_65) libsqlite3.lib
 !ENDIF
-LIBS_65 = $(LIBS_65) -lmpr
-LIBS_65 = $(LIBS_65) -lpcre
-LIBS_65 = $(LIBS_65) -lhttp
+LIBS_65 = $(LIBS_65) libmpr.lib
+LIBS_65 = $(LIBS_65) libpcre.lib
+LIBS_65 = $(LIBS_65) libhttp.lib
 
 $(CONFIG)\bin\ejs.exe: $(DEPS_65)
 	echo '      [Link] ejs'
-	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj libejs.lib $(LIBS_65) $(LIBS_65) $(LIBS) libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib
+	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj $(LIBS_65) $(LIBS_65) $(LIBS) libhttp.lib
 !ENDIF
 
 #
@@ -1050,18 +1050,18 @@ $(CONFIG)\obj\ejsc.obj: \
 DEPS_67 = $(DEPS_67) $(CONFIG)\obj\ejsc.obj
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    LIBS_67 $(LIBS_67) -lejs
+    LIBS_67 $(LIBS_67) libejs.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_67 $(LIBS_67) -lsqlite3
+    LIBS_67 $(LIBS_67) libsqlite3.lib
 !ENDIF
-LIBS_67 = $(LIBS_67) -lmpr
-LIBS_67 = $(LIBS_67) -lpcre
-LIBS_67 = $(LIBS_67) -lhttp
+LIBS_67 = $(LIBS_67) libmpr.lib
+LIBS_67 = $(LIBS_67) libpcre.lib
+LIBS_67 = $(LIBS_67) libhttp.lib
 
 $(CONFIG)\bin\ejsc.exe: $(DEPS_67)
 	echo '      [Link] ejsc'
-	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj libejs.lib $(LIBS_67) $(LIBS_67) $(LIBS) libsqlite3.lib libmpr.lib libpcre.lib libhttp.lib
+	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj $(LIBS_67) $(LIBS_67) $(LIBS) libhttp.lib
 !ENDIF
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
@@ -1094,14 +1094,14 @@ $(CONFIG)\obj\cgiHandler.obj: \
 DEPS_70 = $(DEPS_70) $(CONFIG)\bin\libappweb.dll
 DEPS_70 = $(DEPS_70) $(CONFIG)\obj\cgiHandler.obj
 
-LIBS_70 = $(LIBS_70) -lappweb
-LIBS_70 = $(LIBS_70) -lhttp
-LIBS_70 = $(LIBS_70) -lpcre
-LIBS_70 = $(LIBS_70) -lmpr
+LIBS_70 = $(LIBS_70) libappweb.lib
+LIBS_70 = $(LIBS_70) libhttp.lib
+LIBS_70 = $(LIBS_70) libpcre.lib
+LIBS_70 = $(LIBS_70) libmpr.lib
 
 $(CONFIG)\bin\libmod_cgi.dll: $(DEPS_70)
 	echo '      [Link] libmod_cgi'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj libappweb.lib $(LIBS_70) $(LIBS_70) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj $(LIBS_70) $(LIBS_70) $(LIBS) libmpr.lib
 !ENDIF
 
 #
@@ -1126,19 +1126,19 @@ DEPS_72 = $(DEPS_72) $(CONFIG)\bin\libappweb.dll
 DEPS_72 = $(DEPS_72) $(CONFIG)\obj\ejsHandler.obj
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    LIBS_72 $(LIBS_72) -lejs
+    LIBS_72 $(LIBS_72) libejs.lib
 !ENDIF
-LIBS_72 = $(LIBS_72) -lappweb
-LIBS_72 = $(LIBS_72) -lhttp
-LIBS_72 = $(LIBS_72) -lpcre
-LIBS_72 = $(LIBS_72) -lmpr
+LIBS_72 = $(LIBS_72) libappweb.lib
+LIBS_72 = $(LIBS_72) libhttp.lib
+LIBS_72 = $(LIBS_72) libpcre.lib
+LIBS_72 = $(LIBS_72) libmpr.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_72 $(LIBS_72) -lsqlite3
+    LIBS_72 $(LIBS_72) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\libmod_ejs.dll: $(DEPS_72)
 	echo '      [Link] libmod_ejs'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsHandler.obj libejs.lib libappweb.lib $(LIBS_72) $(LIBS_72) $(LIBS) libhttp.lib libpcre.lib libmpr.lib libsqlite3.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsHandler.obj $(LIBS_72) $(LIBS_72) $(LIBS) libsqlite3.lib
 !ENDIF
 
 #
@@ -1158,14 +1158,14 @@ $(CONFIG)\obj\sslModule.obj: \
 DEPS_74 = $(DEPS_74) $(CONFIG)\bin\libappweb.dll
 DEPS_74 = $(DEPS_74) $(CONFIG)\obj\sslModule.obj
 
-LIBS_74 = $(LIBS_74) -lappweb
-LIBS_74 = $(LIBS_74) -lhttp
-LIBS_74 = $(LIBS_74) -lpcre
-LIBS_74 = $(LIBS_74) -lmpr
+LIBS_74 = $(LIBS_74) libappweb.lib
+LIBS_74 = $(LIBS_74) libhttp.lib
+LIBS_74 = $(LIBS_74) libpcre.lib
+LIBS_74 = $(LIBS_74) libmpr.lib
 
 $(CONFIG)\bin\libmod_ssl.dll: $(DEPS_74)
 	echo '      [Link] libmod_ssl'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sslModule.obj libappweb.lib $(LIBS_74) $(LIBS_74) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sslModule.obj $(LIBS_74) $(LIBS_74) $(LIBS) libmpr.lib
 
 #
 #   authpass.obj
@@ -1184,14 +1184,14 @@ $(CONFIG)\obj\authpass.obj: \
 DEPS_76 = $(DEPS_76) $(CONFIG)\bin\libappweb.dll
 DEPS_76 = $(DEPS_76) $(CONFIG)\obj\authpass.obj
 
-LIBS_76 = $(LIBS_76) -lappweb
-LIBS_76 = $(LIBS_76) -lhttp
-LIBS_76 = $(LIBS_76) -lpcre
-LIBS_76 = $(LIBS_76) -lmpr
+LIBS_76 = $(LIBS_76) libappweb.lib
+LIBS_76 = $(LIBS_76) libhttp.lib
+LIBS_76 = $(LIBS_76) libpcre.lib
+LIBS_76 = $(LIBS_76) libmpr.lib
 
 $(CONFIG)\bin\authpass.exe: $(DEPS_76)
 	echo '      [Link] authpass'
-	"$(LD)" -out:$(CONFIG)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\authpass.obj libappweb.lib $(LIBS_76) $(LIBS_76) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\authpass.obj $(LIBS_76) $(LIBS_76) $(LIBS) libmpr.lib
 
 #
 #   cgiProgram.obj
@@ -1246,16 +1246,16 @@ DEPS_81 = $(DEPS_81) src\server\slink.c
 DEPS_81 = $(DEPS_81) $(CONFIG)\obj\slink.obj
 
 !IF "$(BIT_PACK_ESP)" == "1"
-    LIBS_81 $(LIBS_81) -lmod_esp
+    LIBS_81 $(LIBS_81) libmod_esp.lib
 !ENDIF
-LIBS_81 = $(LIBS_81) -lappweb
-LIBS_81 = $(LIBS_81) -lhttp
-LIBS_81 = $(LIBS_81) -lpcre
-LIBS_81 = $(LIBS_81) -lmpr
+LIBS_81 = $(LIBS_81) libappweb.lib
+LIBS_81 = $(LIBS_81) libhttp.lib
+LIBS_81 = $(LIBS_81) libpcre.lib
+LIBS_81 = $(LIBS_81) libmpr.lib
 
 $(CONFIG)\bin\libapp.dll: $(DEPS_81)
 	echo '      [Link] libapp'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libapp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj libmod_esp.lib $(LIBS_81) $(LIBS_81) $(LIBS) libappweb.lib libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libapp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj $(LIBS_81) $(LIBS_81) $(LIBS) libmpr.lib
 
 #
 #   appweb.obj
@@ -1286,31 +1286,31 @@ DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_ssl.dll
 DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libapp.dll
 DEPS_83 = $(DEPS_83) $(CONFIG)\obj\appweb.obj
 
-LIBS_83 = $(LIBS_83) -lapp
+LIBS_83 = $(LIBS_83) libapp.lib
 !IF "$(BIT_PACK_CGI)" == "1"
-    LIBS_83 $(LIBS_83) -lmod_cgi
+    LIBS_83 $(LIBS_83) libmod_cgi.lib
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    LIBS_83 $(LIBS_83) -lmod_ejs
+    LIBS_83 $(LIBS_83) libmod_ejs.lib
 !ENDIF
-LIBS_83 = $(LIBS_83) -lmod_ssl
+LIBS_83 = $(LIBS_83) libmod_ssl.lib
 !IF "$(BIT_PACK_ESP)" == "1"
-    LIBS_83 $(LIBS_83) -lmod_esp
+    LIBS_83 $(LIBS_83) libmod_esp.lib
 !ENDIF
-LIBS_83 = $(LIBS_83) -lappweb
-LIBS_83 = $(LIBS_83) -lhttp
-LIBS_83 = $(LIBS_83) -lpcre
-LIBS_83 = $(LIBS_83) -lmpr
+LIBS_83 = $(LIBS_83) libappweb.lib
+LIBS_83 = $(LIBS_83) libhttp.lib
+LIBS_83 = $(LIBS_83) libpcre.lib
+LIBS_83 = $(LIBS_83) libmpr.lib
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-    LIBS_83 $(LIBS_83) -lejs
+    LIBS_83 $(LIBS_83) libejs.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-    LIBS_83 $(LIBS_83) -lsqlite3
+    LIBS_83 $(LIBS_83) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\appweb.exe: $(DEPS_83)
 	echo '      [Link] appweb'
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj libapp.lib libmod_cgi.lib libmod_ejs.lib libmod_ssl.lib libmod_esp.lib libappweb.lib $(LIBS_83) $(LIBS_83) $(LIBS) libhttp.lib libpcre.lib libmpr.lib libejs.lib libsqlite3.lib
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj $(LIBS_83) $(LIBS_83) $(LIBS) libsqlite3.lib
 
 #
 #   appwebMonitor.h
@@ -1356,14 +1356,14 @@ DEPS_88 = $(DEPS_88) $(CONFIG)\inc\monitorResources.h
 DEPS_88 = $(DEPS_88) $(CONFIG)\obj\appwebMonitor.res
 DEPS_88 = $(DEPS_88) $(CONFIG)\obj\appwebMonitor.obj
 
-LIBS_88 = $(LIBS_88) -lappweb
-LIBS_88 = $(LIBS_88) -lhttp
-LIBS_88 = $(LIBS_88) -lpcre
-LIBS_88 = $(LIBS_88) -lmpr
+LIBS_88 = $(LIBS_88) libappweb.lib
+LIBS_88 = $(LIBS_88) libhttp.lib
+LIBS_88 = $(LIBS_88) libpcre.lib
+LIBS_88 = $(LIBS_88) libmpr.lib
 
 $(CONFIG)\bin\appwebMonitor.exe: $(DEPS_88)
 	echo '      [Link] appwebMonitor'
-	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appwebMonitor.res $(CONFIG)\obj\appwebMonitor.obj libappweb.lib shell32.lib libhttp.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appwebMonitor.res $(CONFIG)\obj\appwebMonitor.obj shell32.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib libmpr.lib
 
 #
 #   appwebMonitor.ico
@@ -1432,14 +1432,14 @@ DEPS_95 = $(DEPS_95) $(CONFIG)\inc\testAppweb.h
 DEPS_95 = $(DEPS_95) $(CONFIG)\obj\testAppweb.obj
 DEPS_95 = $(DEPS_95) $(CONFIG)\obj\testHttp.obj
 
-LIBS_95 = $(LIBS_95) -lappweb
-LIBS_95 = $(LIBS_95) -lhttp
-LIBS_95 = $(LIBS_95) -lpcre
-LIBS_95 = $(LIBS_95) -lmpr
+LIBS_95 = $(LIBS_95) libappweb.lib
+LIBS_95 = $(LIBS_95) libhttp.lib
+LIBS_95 = $(LIBS_95) libpcre.lib
+LIBS_95 = $(LIBS_95) libmpr.lib
 
 $(CONFIG)\bin\testAppweb.exe: $(DEPS_95)
 	echo '      [Link] testAppweb'
-	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj libappweb.lib $(LIBS_95) $(LIBS_95) $(LIBS) libhttp.lib libpcre.lib libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj $(LIBS_95) $(LIBS_95) $(LIBS) libmpr.lib
 
 !IF "$(BIT_PACK_CGI)" == "1"
 #
