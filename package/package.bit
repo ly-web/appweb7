@@ -31,7 +31,7 @@ Bit.load({
     },
 
     scripts: {
-        pregen: "
+        postload: "
             if (bit.generating) {
                 bit.settings.webUser = '$(WEB_USER)'
                 bit.settings.webGroup = '$(WEB_GROUP)'
