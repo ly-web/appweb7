@@ -148,6 +148,12 @@
 #ifndef BIT_VERSION
     #define BIT_VERSION "4.3.0"
 #endif
+#ifndef BIT_WEB_GROUP
+    #define BIT_WEB_GROUP "Administrator"
+#endif
+#ifndef BIT_WEB_USER
+    #define BIT_WEB_USER "Administrator"
+#endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
 #endif
