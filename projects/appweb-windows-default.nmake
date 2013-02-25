@@ -1369,21 +1369,24 @@ $(CONFIG)\bin\testAppweb.exe: $(DEPS_95)
 !ENDIF
 
 test\cgi-bin\testScript: $(DEPS_96)
-#  Omit build script test-testScript!ENDIF
+#  Omit build script test-testScript
+!ENDIF
 
 !IF "$(BIT_PACK_CGI)" == "1"
 #
 #   test-cache.cgi
 #
 test\web\caching\cache.cgi: $(DEPS_97)
-#  Omit build script test-cache.cgi!ENDIF
+#  Omit build script test-cache.cgi
+!ENDIF
 
 !IF "$(BIT_PACK_CGI)" == "1"
 #
 #   test-basic.cgi
 #
 test\web\auth\basic\basic.cgi: $(DEPS_98)
-#  Omit build script test-basic.cgi!ENDIF
+#  Omit build script test-basic.cgi
+!ENDIF
 
 !IF "$(BIT_PACK_CGI)" == "1"
 #
@@ -1394,7 +1397,8 @@ test\web\auth\basic\basic.cgi: $(DEPS_98)
 !ENDIF
 
 test\cgi-bin\cgiProgram.exe: $(DEPS_99)
-#  Omit build script test-cgiProgram!ENDIF
+#  Omit build script test-cgiProgram
+!ENDIF
 
 #
 #   test.js
