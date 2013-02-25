@@ -46,25 +46,25 @@ BIT_SPOOL_PREFIX      = $(BIT_VAPP_PREFIX)\tmp
 BIT_CACHE_PREFIX      = $(BIT_VAPP_PREFIX)\cache
 BIT_SRC_PREFIX        = $(BIT_VAPP_PREFIX)\src
 
-TARGETS     = $(CONFIG)\bin\removeFiles.exe $(TARGETS)
-TARGETS     = $(CONFIG)\bin\libmpr.dll $(TARGETS)
-TARGETS     = $(CONFIG)\bin\libmprssl.dll $(TARGETS)
-TARGETS     = $(CONFIG)\bin\appman.exe $(TARGETS)
-TARGETS     = $(CONFIG)\bin\makerom.exe $(TARGETS)
+TARGETS     = $(TARGETS) $(CONFIG)\bin\removeFiles.exe
+TARGETS     = $(TARGETS) $(CONFIG)\bin\libmpr.dll
+TARGETS     = $(TARGETS) $(CONFIG)\bin\libmprssl.dll
+TARGETS     = $(TARGETS) $(CONFIG)\bin\appman.exe
+TARGETS     = $(TARGETS) $(CONFIG)\bin\makerom.exe
 !IF "$(BIT_PACK_EST)" == "1"
     TARGETS = $(TARGETS) $(CONFIG)\bin\libest.dll
 !ENDIF
-TARGETS     = $(CONFIG)\bin\ca.crt $(TARGETS)
-TARGETS     = $(CONFIG)\bin\libpcre.dll $(TARGETS)
-TARGETS     = $(CONFIG)\bin\libhttp.dll $(TARGETS)
-TARGETS     = $(CONFIG)\bin\http.exe $(TARGETS)
+TARGETS     = $(TARGETS) $(CONFIG)\bin\ca.crt
+TARGETS     = $(TARGETS) $(CONFIG)\bin\libpcre.dll
+TARGETS     = $(TARGETS) $(CONFIG)\bin\libhttp.dll
+TARGETS     = $(TARGETS) $(CONFIG)\bin\http.exe
 !IF "$(BIT_PACK_SQLITE)" == "1"
     TARGETS = $(TARGETS) $(CONFIG)\bin\libsqlite3.dll
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
     TARGETS = $(TARGETS) $(CONFIG)\bin\sqlite.exe
 !ENDIF
-TARGETS     = $(CONFIG)\bin\libappweb.dll $(TARGETS)
+TARGETS     = $(TARGETS) $(CONFIG)\bin\libappweb.dll
 !IF "$(BIT_PACK_ESP)" == "1"
     TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_esp.dll
 !ENDIF
@@ -101,18 +101,18 @@ TARGETS     = $(CONFIG)\bin\libappweb.dll $(TARGETS)
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
     TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_ejs.dll
 !ENDIF
-TARGETS     = $(CONFIG)\bin\libmod_ssl.dll $(TARGETS)
-TARGETS     = $(CONFIG)\bin\authpass.exe $(TARGETS)
+TARGETS     = $(TARGETS) $(CONFIG)\bin\libmod_ssl.dll
+TARGETS     = $(TARGETS) $(CONFIG)\bin\authpass.exe
 !IF "$(BIT_PACK_CGI)" == "1"
     TARGETS = $(TARGETS) $(CONFIG)\bin\cgiProgram.exe
 !ENDIF
-TARGETS     = src\server\slink.c $(TARGETS)
-TARGETS     = $(CONFIG)\bin\libapp.dll $(TARGETS)
-TARGETS     = $(CONFIG)\bin\appweb.exe $(TARGETS)
-TARGETS     = $(CONFIG)\bin\appwebMonitor.exe $(TARGETS)
-TARGETS     = $(CONFIG)\bin\appwebMonitor.ico $(TARGETS)
-TARGETS     = src\server\cache $(TARGETS)
-TARGETS     = $(CONFIG)\bin\testAppweb.exe $(TARGETS)
+TARGETS     = $(TARGETS) src\server\slink.c
+TARGETS     = $(TARGETS) $(CONFIG)\bin\libapp.dll
+TARGETS     = $(TARGETS) $(CONFIG)\bin\appweb.exe
+TARGETS     = $(TARGETS) $(CONFIG)\bin\appwebMonitor.exe
+TARGETS     = $(TARGETS) $(CONFIG)\bin\appwebMonitor.ico
+TARGETS     = $(TARGETS) src\server\cache
+TARGETS     = $(TARGETS) $(CONFIG)\bin\testAppweb.exe
 !IF "$(BIT_PACK_CGI)" == "1"
     TARGETS = $(TARGETS) test\cgi-bin\testScript
 !ENDIF
@@ -125,7 +125,7 @@ TARGETS     = $(CONFIG)\bin\testAppweb.exe $(TARGETS)
 !IF "$(BIT_PACK_CGI)" == "1"
     TARGETS = $(TARGETS) test\cgi-bin\cgiProgram.exe
 !ENDIF
-TARGETS     = test\web\js $(TARGETS)
+TARGETS     = $(TARGETS) test\web\js
 
 !IFNDEF SHOW
 .SILENT:
