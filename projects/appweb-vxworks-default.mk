@@ -38,6 +38,7 @@ LDFLAGS         += $(LDFLAGS-$(DEBUG))
 BIT_PACK_EST          := 0
 BIT_PACK_EJSCRIPT     := 1
 BIT_PACK_PHP          := 0
+BIT_PACK_SSL          := 1
 BIT_PACK_CGI          := 1
 BIT_PACK_ESP          := 1
 BIT_PACK_SQLITE       := 1
@@ -64,7 +65,9 @@ WEB_USER    = $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$//'
 WEB_GROUP   = $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$//' |  tail -1)
 
 TARGETS     += $(CONFIG)/bin/libmpr.out
-TARGETS     += $(CONFIG)/bin/libmprssl.out
+ifeq ($(BIT_PACK_SSL),1)
+TARGETS += $(CONFIG)/bin/libmprssl.out
+endif
 TARGETS     += $(CONFIG)/bin/appman.out
 TARGETS     += $(CONFIG)/bin/makerom.out
 ifeq ($(BIT_PACK_EST),1)
@@ -117,7 +120,9 @@ endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 TARGETS += $(CONFIG)/bin/libmod_ejs.out
 endif
-TARGETS     += $(CONFIG)/bin/libmod_ssl.out
+ifeq ($(BIT_PACK_SSL),1)
+TARGETS += $(CONFIG)/bin/libmod_ssl.out
+endif
 TARGETS     += $(CONFIG)/bin/authpass.out
 ifeq ($(BIT_PACK_CGI),1)
 TARGETS += $(CONFIG)/bin/cgiProgram.out
@@ -331,6 +336,7 @@ $(CONFIG)/obj/mprSsl.o: \
 	@echo '   [Compile] src/deps/mpr/mprSsl.c'
 	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/mprSsl.c
 
+ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmprssl
 #
@@ -348,6 +354,7 @@ LIBS_10 += -lmpr
 $(CONFIG)/bin/libmprssl.out: $(DEPS_10)
 	@echo '      [Link] libmprssl'
 	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprSsl.o 
+endif
 
 #
 #   manager.o
@@ -1147,6 +1154,7 @@ $(CONFIG)/obj/sslModule.o: \
 	@echo '   [Compile] src/modules/sslModule.c'
 	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/modules/sslModule.c
 
+ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmod_ssl
 #
@@ -1161,6 +1169,7 @@ LIBS_72 += -lmpr
 $(CONFIG)/bin/libmod_ssl.out: $(DEPS_72)
 	@echo '      [Link] libmod_ssl'
 	$(CC) -r -o $(CONFIG)/bin/libmod_ssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sslModule.o 
+endif
 
 #
 #   authpass.o
@@ -1269,7 +1278,9 @@ DEPS_81 += $(CONFIG)/bin/libappweb.out
 ifeq ($(BIT_PACK_ESP),1)
     DEPS_81 += $(CONFIG)/bin/libmod_esp.out
 endif
-DEPS_81 += $(CONFIG)/bin/libmod_ssl.out
+ifeq ($(BIT_PACK_SSL),1)
+    DEPS_81 += $(CONFIG)/bin/libmod_ssl.out
+endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
     DEPS_81 += $(CONFIG)/bin/libmod_ejs.out
 endif
@@ -1286,7 +1297,9 @@ endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
     LIBS_81 += -lmod_ejs
 endif
-LIBS_81 += -lmod_ssl
+ifeq ($(BIT_PACK_SSL),1)
+    LIBS_81 += -lmod_ssl
+endif
 ifeq ($(BIT_PACK_ESP),1)
     LIBS_81 += -lmod_esp
 endif

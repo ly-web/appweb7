@@ -41,6 +41,7 @@
 #define BIT_CPU_PPC         6           /**< Power PC */
 #define BIT_CPU_SPARC       7           /**< Sparc */
 #define BIT_CPU_TIDSP       8           /**< TI DSP */
+#define BIT_CPU_SH          9           /**< SuperH */
 
 /*
     Byte orderings
@@ -96,6 +97,11 @@
     #define TIDSP 1
     #define BIT_CPU "tidsp"
     #define BIT_CPU_ARCH BIT_CPU_SPARC
+    #define CPU_ENDIAN BIT_LITTLE_ENDIAN
+
+#elif defined(__sh__)
+    #define BIT_CPU "sh"
+    #define BIT_CPU_ARCH BIT_CPU_SH
     #define CPU_ENDIAN BIT_LITTLE_ENDIAN
 
 #else

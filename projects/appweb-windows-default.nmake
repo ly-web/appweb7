@@ -23,7 +23,7 @@ CC              = cl
 LD              = link
 RC              = rc
 CFLAGS          = -nologo -GR- -W3 -Zi -Od -MDd
-DFLAGS          = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
+DFLAGS          = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
 IFLAGS          = -I$(CONFIG)\inc
 LDFLAGS         = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS        = -libpath:$(CONFIG)\bin
@@ -32,6 +32,7 @@ LIBS            = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib m
 BIT_PACK_EST          = 0
 BIT_PACK_EJSCRIPT     = 1
 BIT_PACK_PHP          = 0
+BIT_PACK_SSL          = 1
 BIT_PACK_CGI          = 1
 BIT_PACK_ESP          = 1
 BIT_PACK_SQLITE       = 1
@@ -56,7 +57,9 @@ BIT_SRC_PREFIX        = $(BIT_VAPP_PREFIX)\src
 
 TARGETS     = $(TARGETS) $(CONFIG)\bin\removeFiles.exe
 TARGETS     = $(TARGETS) $(CONFIG)\bin\libmpr.dll
-TARGETS     = $(TARGETS) $(CONFIG)\bin\libmprssl.dll
+!IF "$(BIT_PACK_SSL)" == "1"
+TARGETS = $(TARGETS) $(CONFIG)\bin\libmprssl.dll
+!ENDIF
 TARGETS     = $(TARGETS) $(CONFIG)\bin\appman.exe
 TARGETS     = $(TARGETS) $(CONFIG)\bin\makerom.exe
 !IF "$(BIT_PACK_EST)" == "1"
@@ -109,7 +112,9 @@ TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_cgi.dll
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_ejs.dll
 !ENDIF
-TARGETS     = $(TARGETS) $(CONFIG)\bin\libmod_ssl.dll
+!IF "$(BIT_PACK_SSL)" == "1"
+TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_ssl.dll
+!ENDIF
 TARGETS     = $(TARGETS) $(CONFIG)\bin\authpass.exe
 !IF "$(BIT_PACK_CGI)" == "1"
 TARGETS = $(TARGETS) $(CONFIG)\bin\cgiProgram.exe
@@ -344,6 +349,7 @@ $(CONFIG)\obj\mprSsl.obj: \
 	@echo '   [Compile] src/deps/mpr/mprSsl.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\mprSsl.c
 
+!IF "$(BIT_PACK_SSL)" == "1"
 #
 #   libmprssl
 #
@@ -361,6 +367,7 @@ LIBS_12 = $(LIBS_12) libmpr.lib
 $(CONFIG)\bin\libmprssl.dll: $(DEPS_12)
 	@echo '      [Link] libmprssl'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj $(LIBS_12) $(LIBS_12) $(LIBS)
+!ENDIF
 
 #
 #   manager.obj
@@ -1160,6 +1167,7 @@ $(CONFIG)\obj\sslModule.obj: \
 	@echo '   [Compile] src/modules/sslModule.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\sslModule.c
 
+!IF "$(BIT_PACK_SSL)" == "1"
 #
 #   libmod_ssl
 #
@@ -1174,6 +1182,7 @@ LIBS_74 = $(LIBS_74) libmpr.lib
 $(CONFIG)\bin\libmod_ssl.dll: $(DEPS_74)
 	@echo '      [Link] libmod_ssl'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sslModule.obj $(LIBS_74) $(LIBS_74) $(LIBS) libmpr.lib
+!ENDIF
 
 #
 #   authpass.obj
@@ -1284,7 +1293,9 @@ DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libappweb.dll
 !IF "$(BIT_PACK_ESP)" == "1"
 DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_esp.dll
 !ENDIF
+!IF "$(BIT_PACK_SSL)" == "1"
 DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_ssl.dll
+!ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_ejs.dll
 !ENDIF
@@ -1301,7 +1312,9 @@ LIBS_83 = $(LIBS_83) libmod_cgi.lib
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 LIBS_83 = $(LIBS_83) libmod_ejs.lib
 !ENDIF
+!IF "$(BIT_PACK_SSL)" == "1"
 LIBS_83 = $(LIBS_83) libmod_ssl.lib
+!ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 LIBS_83 = $(LIBS_83) libmod_esp.lib
 !ENDIF
@@ -1531,6 +1544,10 @@ installBinary: $(DEPS_102)
 	copy /Y "$(CONFIG)\bin\libmpr.dll" "$(BIT_VAPP_PREFIX)\bin\libmpr.dll"
 	copy /Y "$(CONFIG)\bin\libmprssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmprssl.dll"
 	copy /Y "$(CONFIG)\bin\libpcre.dll" "$(BIT_VAPP_PREFIX)\bin\libpcre.dll"
+!IF "$(BIT_PACK_SSL)" == "1"
+	copy /Y "$(CONFIG)\bin\libmod_ssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_ssl.dll"
+	copy /Y "$(CONFIG)\bin\ca.crt" "$(BIT_VAPP_PREFIX)\bin\ca.crt"
+!ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
 	copy /Y "$(CONFIG)\bin\libsqlite3.dll" "$(BIT_VAPP_PREFIX)\bin\libsqlite3.dll"
 !ENDIF

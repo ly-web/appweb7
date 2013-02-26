@@ -34,6 +34,7 @@ LDFLAGS         += $(LDFLAGS-$(DEBUG))
 BIT_PACK_EST          := 0
 BIT_PACK_EJSCRIPT     := 1
 BIT_PACK_PHP          := 0
+BIT_PACK_SSL          := 1
 BIT_PACK_CGI          := 1
 BIT_PACK_ESP          := 1
 BIT_PACK_SQLITE       := 1
@@ -60,7 +61,9 @@ WEB_USER    = $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$//'
 WEB_GROUP   = $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$//' |  tail -1)
 
 TARGETS     += $(CONFIG)/bin/libmpr.so
-TARGETS     += $(CONFIG)/bin/libmprssl.so
+ifeq ($(BIT_PACK_SSL),1)
+TARGETS += $(CONFIG)/bin/libmprssl.so
+endif
 TARGETS     += $(CONFIG)/bin/appman
 TARGETS     += $(CONFIG)/bin/makerom
 ifeq ($(BIT_PACK_EST),1)
@@ -113,7 +116,9 @@ endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 TARGETS += $(CONFIG)/bin/libmod_ejs.so
 endif
-TARGETS     += $(CONFIG)/bin/libmod_ssl.so
+ifeq ($(BIT_PACK_SSL),1)
+TARGETS += $(CONFIG)/bin/libmod_ssl.so
+endif
 TARGETS     += $(CONFIG)/bin/authpass
 ifeq ($(BIT_PACK_CGI),1)
 TARGETS += $(CONFIG)/bin/cgiProgram
@@ -327,6 +332,7 @@ $(CONFIG)/obj/mprSsl.o: \
 	@echo '   [Compile] src/deps/mpr/mprSsl.c'
 	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/mprSsl.c
 
+ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmprssl
 #
@@ -344,6 +350,7 @@ LIBS_10 += -lmpr
 $(CONFIG)/bin/libmprssl.so: $(DEPS_10)
 	@echo '      [Link] libmprssl'
 	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/mprSsl.o $(LIBS_10) $(LIBS_10) $(LIBS)
+endif
 
 #
 #   manager.o
@@ -1143,6 +1150,7 @@ $(CONFIG)/obj/sslModule.o: \
 	@echo '   [Compile] src/modules/sslModule.c'
 	$(CC) -c -o $(CONFIG)/obj/sslModule.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/modules/sslModule.c
 
+ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmod_ssl
 #
@@ -1157,6 +1165,7 @@ LIBS_72 += -lmpr
 $(CONFIG)/bin/libmod_ssl.so: $(DEPS_72)
 	@echo '      [Link] libmod_ssl'
 	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sslModule.o $(LIBS_72) $(LIBS_72) $(LIBS) -lmpr
+endif
 
 #
 #   authpass.o
@@ -1265,7 +1274,9 @@ DEPS_81 += $(CONFIG)/bin/libappweb.so
 ifeq ($(BIT_PACK_ESP),1)
     DEPS_81 += $(CONFIG)/bin/libmod_esp.so
 endif
-DEPS_81 += $(CONFIG)/bin/libmod_ssl.so
+ifeq ($(BIT_PACK_SSL),1)
+    DEPS_81 += $(CONFIG)/bin/libmod_ssl.so
+endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
     DEPS_81 += $(CONFIG)/bin/libmod_ejs.so
 endif
@@ -1282,7 +1293,9 @@ endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
     LIBS_81 += -lmod_ejs
 endif
-LIBS_81 += -lmod_ssl
+ifeq ($(BIT_PACK_SSL),1)
+    LIBS_81 += -lmod_ssl
+endif
 ifeq ($(BIT_PACK_ESP),1)
     LIBS_81 += -lmod_esp
 endif
@@ -1476,6 +1489,10 @@ endif
 	cp "$(CONFIG)/bin/libmpr.so" "$(BIT_VAPP_PREFIX)/bin/libmpr.so"
 	cp "$(CONFIG)/bin/libmprssl.so" "$(BIT_VAPP_PREFIX)/bin/libmprssl.so"
 	cp "$(CONFIG)/bin/libpcre.so" "$(BIT_VAPP_PREFIX)/bin/libpcre.so"
+ifeq ($(BIT_PACK_SSL),1)
+	cp "$(CONFIG)/bin/libmod_ssl.so" "$(BIT_VAPP_PREFIX)/bin/libmod_ssl.so"
+	cp "$(CONFIG)/bin/ca.crt" "$(BIT_VAPP_PREFIX)/bin/ca.crt"
+endif
 ifeq ($(BIT_PACK_SQLITE),1)
 	cp "$(CONFIG)/bin/libsqlite3.so" "$(BIT_VAPP_PREFIX)/bin/libsqlite3.so"
 endif

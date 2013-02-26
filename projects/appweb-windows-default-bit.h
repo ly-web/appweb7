@@ -130,9 +130,6 @@
 #ifndef BIT_SERVER_ROOT
     #define BIT_SERVER_ROOT "."
 #endif
-#ifndef BIT_SSL
-    #define BIT_SSL 1
-#endif
 #ifndef BIT_STATIC
     #define BIT_STATIC 0
 #endif
@@ -328,6 +325,9 @@
 #endif
 #ifndef BIT_PACK_SQLITE
     #define BIT_PACK_SQLITE 1
+#endif
+#ifndef BIT_PACK_SSL
+    #define BIT_PACK_SSL 1
 #endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1
