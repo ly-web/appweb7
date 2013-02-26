@@ -12,12 +12,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmpr", "appweb-windows-de
 		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libest", "appweb-windows-default\libest.vcxproj", "{0A2AF31D-99F1-4EC6-BC7A-75B81337DA57}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmprssl", "appweb-windows-default\libmprssl.vcxproj", "{D1614B75-B3F7-44A0-AC53-C81DDFDC00D6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{9651275B-C035-4265-A696-E2DC0147F040} = {9651275B-C035-4265-A696-E2DC0147F040}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{0A2AF31D-99F1-4EC6-BC7A-75B81337DA57} = {0A2AF31D-99F1-4EC6-BC7A-75B81337DA57}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "manager", "appweb-windows-default\manager.vcxproj", "{30C881EA-D69B-4B01-93C2-09EBBE0E9608}"
@@ -182,6 +190,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmod_ejs", "appweb-window
 		{CCD573AC-04B0-4E2B-B801-29AD91FF09C7} = {CCD573AC-04B0-4E2B-B801-29AD91FF09C7}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmod_ssl", "appweb-windows-default\libmod_ssl.vcxproj", "{37DA7898-F554-41DA-952B-DB4C4D29BA6C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{66002183-4B43-4751-B3F4-36AD8E08BE3C} = {66002183-4B43-4751-B3F4-36AD8E08BE3C}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "authpass", "appweb-windows-default\authpass.vcxproj", "{79D02969-E06A-4BCC-B95E-AAF298E32C9A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
@@ -223,6 +239,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appweb", "appweb-windows-de
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{F86F4757-A3B0-4561-86AB-D9C18115067F} = {F86F4757-A3B0-4561-86AB-D9C18115067F}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{37DA7898-F554-41DA-952B-DB4C4D29BA6C} = {37DA7898-F554-41DA-952B-DB4C4D29BA6C}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{00223A98-DC4F-4788-9985-B75B627B8D8C} = {00223A98-DC4F-4788-9985-B75B627B8D8C}
@@ -324,6 +343,14 @@ Global
 {9651275B-C035-4265-A696-E2DC0147F040}.Release|Win32.Build.0 = Release|Win32
 {9651275B-C035-4265-A696-E2DC0147F040}.Release|x64.ActiveCfg = Release|x64
 {9651275B-C035-4265-A696-E2DC0147F040}.Release|x64.Build.0 = Release|x64
+{0A2AF31D-99F1-4EC6-BC7A-75B81337DA57}.Debug|Win32.ActiveCfg = Debug|Win32
+{0A2AF31D-99F1-4EC6-BC7A-75B81337DA57}.Debug|Win32.Build.0 = Debug|Win32
+{0A2AF31D-99F1-4EC6-BC7A-75B81337DA57}.Debug|x64.ActiveCfg = Debug|x64
+{0A2AF31D-99F1-4EC6-BC7A-75B81337DA57}.Debug|x64.Build.0 = Debug|x64
+{0A2AF31D-99F1-4EC6-BC7A-75B81337DA57}.Release|Win32.ActiveCfg = Release|Win32
+{0A2AF31D-99F1-4EC6-BC7A-75B81337DA57}.Release|Win32.Build.0 = Release|Win32
+{0A2AF31D-99F1-4EC6-BC7A-75B81337DA57}.Release|x64.ActiveCfg = Release|x64
+{0A2AF31D-99F1-4EC6-BC7A-75B81337DA57}.Release|x64.Build.0 = Release|x64
 {D1614B75-B3F7-44A0-AC53-C81DDFDC00D6}.Debug|Win32.ActiveCfg = Debug|Win32
 {D1614B75-B3F7-44A0-AC53-C81DDFDC00D6}.Debug|Win32.Build.0 = Debug|Win32
 {D1614B75-B3F7-44A0-AC53-C81DDFDC00D6}.Debug|x64.ActiveCfg = Debug|x64
@@ -500,6 +527,14 @@ Global
 {00223A98-DC4F-4788-9985-B75B627B8D8C}.Release|Win32.Build.0 = Release|Win32
 {00223A98-DC4F-4788-9985-B75B627B8D8C}.Release|x64.ActiveCfg = Release|x64
 {00223A98-DC4F-4788-9985-B75B627B8D8C}.Release|x64.Build.0 = Release|x64
+{37DA7898-F554-41DA-952B-DB4C4D29BA6C}.Debug|Win32.ActiveCfg = Debug|Win32
+{37DA7898-F554-41DA-952B-DB4C4D29BA6C}.Debug|Win32.Build.0 = Debug|Win32
+{37DA7898-F554-41DA-952B-DB4C4D29BA6C}.Debug|x64.ActiveCfg = Debug|x64
+{37DA7898-F554-41DA-952B-DB4C4D29BA6C}.Debug|x64.Build.0 = Debug|x64
+{37DA7898-F554-41DA-952B-DB4C4D29BA6C}.Release|Win32.ActiveCfg = Release|Win32
+{37DA7898-F554-41DA-952B-DB4C4D29BA6C}.Release|Win32.Build.0 = Release|Win32
+{37DA7898-F554-41DA-952B-DB4C4D29BA6C}.Release|x64.ActiveCfg = Release|x64
+{37DA7898-F554-41DA-952B-DB4C4D29BA6C}.Release|x64.Build.0 = Release|x64
 {79D02969-E06A-4BCC-B95E-AAF298E32C9A}.Debug|Win32.ActiveCfg = Debug|Win32
 {79D02969-E06A-4BCC-B95E-AAF298E32C9A}.Debug|Win32.Build.0 = Debug|Win32
 {79D02969-E06A-4BCC-B95E-AAF298E32C9A}.Debug|x64.ActiveCfg = Debug|x64

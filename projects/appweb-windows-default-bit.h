@@ -125,10 +125,13 @@
     #define BIT_PRODUCT "appweb"
 #endif
 #ifndef BIT_REQUIRED
-    #define BIT_REQUIRED "ejscript,winsdk,compiler,lib,link,dumpbin,rc,pcre"
+    #define BIT_REQUIRED "ejscript,est,winsdk,compiler,lib,link,dumpbin,rc,pcre"
 #endif
 #ifndef BIT_SERVER_ROOT
     #define BIT_SERVER_ROOT "."
+#endif
+#ifndef BIT_SSL
+    #define BIT_SSL 1
 #endif
 #ifndef BIT_STATIC
     #define BIT_STATIC 0
@@ -155,7 +158,7 @@
     #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
 #endif
 #ifndef BIT_WITHOUT_DEFAULT
-    #define BIT_WITHOUT_DEFAULT "doxygen,dsi,est,man,man2html,pmaker,php"
+    #define BIT_WITHOUT_DEFAULT "doxygen,dsi,man,man2html,pmaker,php"
 #endif
 
 /* Prefixes */
@@ -233,7 +236,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -with ejscript --without default -configure . -gen vs"
+    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -configure . -without default -with ejscript -with est -gen vs"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -285,7 +288,7 @@
     #define BIT_PACK_ESP 1
 #endif
 #ifndef BIT_PACK_EST
-    #define BIT_PACK_EST 0
+    #define BIT_PACK_EST 1
 #endif
 #ifndef BIT_PACK_HTTP
     #define BIT_PACK_HTTP 1

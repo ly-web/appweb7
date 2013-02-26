@@ -72,7 +72,7 @@ Bit.load({
         /*
             Packs to disable when using --without default (generating packages)
          */
-        'without-default': [ 'doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker', 'php' ],
+        'without-default': [ 'doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'php' ],
 
         /*
             Set to true for a static (non-shared library) build
@@ -206,17 +206,15 @@ Bit.load({
             See package/package.bit for the install/package targets
          */
         projects: {
-            action: "genProjects('-with ejscript --without default')",
+            action: "genProjects('-without default -with ejscript -with est')",
         },
         mine: {
-            action: "genProjects('-with ejscript --without default', 'mine', Config.OS + '-' + Config.CPU)",
+            action: "genProjects('--without default -with ejscript -with est', 'mine', Config.OS + '-' + Config.CPU)",
         },
+    },
 
-        mob: {
-            action: "echo one",
-        }
-        mob: {
-            action: "echo two",
-        }
+    scripts: {
+        /* Want est support included, but disabled */
+        pregen: "bit.packs.est.enable = 0",
     },
 })
