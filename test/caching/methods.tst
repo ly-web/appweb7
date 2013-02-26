@@ -12,6 +12,7 @@ function cached(method, uri): Boolean {
 
     //  Clear cache
     http.setHeader("Cache-Control", "no-cache")
+    // print('CLEAR', method, HTTP + uri)
     http.connect(method, HTTP + uri)
     http.wait()
 
@@ -20,11 +21,13 @@ function cached(method, uri): Boolean {
     assert(http.status == 200)
     let resp = deserialize(http.response)
     let first = resp.number
+    // print('FIRST', method, HTTP + uri, http.response)
 
     //  Second fetch
     http.connect(method, HTTP + uri)
     assert(http.status == 200)
     resp = deserialize(http.response)
+    // print('SECOND', method, HTTP + uri, http.response)
     http.close()
     return (resp.number == first)
 }
