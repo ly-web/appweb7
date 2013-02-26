@@ -5,7 +5,9 @@
 if (!Config.SSL) {
     test.skip("SSL not enabled in ejs")
 
-} else if (App.config.bit_ssl) {
+} else if (!App.config.bit_ssl) {
+    test.skip("SSL not enabled")
+} else {
     const HTTPS = App.config.test.http_port || "https://localhost:4443"
     var WS = HTTPS.replace('https', 'wss') + '/websockets/basic/ssl'
     const TIMEOUT = 5000
