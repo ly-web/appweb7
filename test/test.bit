@@ -159,6 +159,7 @@ Bit.load({
                         assert(Cmd.ps(/appweb/))
                         let http = new Http
                         trace('Test', 'GET /index.html')
+                        App.sleep(3000)
                         http.get('/index.html')
                         assert(http.response.contains('Embedthis Appweb'))
                         uninstallPackage()
