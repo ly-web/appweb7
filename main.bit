@@ -61,9 +61,8 @@ Bit.load({
 
         /*
             Optional packs to automatically discover and configure
-            OpenSSL is the default SSL stack. Pre-release EST must be explicitly requested.
          */
-        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'est', 'man', 'man2html', 'pmaker', 'php', 'sqlite', 'utest', 'zip' ],
+        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'man', 'man2html', 'pmaker', 'php', 'sqlite', 'utest', 'zip' ],
 
         /*
             Packs to disable when using --without all
@@ -73,7 +72,7 @@ Bit.load({
         /*
             Packs to disable when using --without default (generating packages)
          */
-        'without-default': [ 'doxygen', 'dsi', 'man', 'man2html', 'openssl', 'pmaker', 'php' ],
+        'without-default': [ 'doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker', 'php' ],
 
         /*
             Set to true for a static (non-shared library) build

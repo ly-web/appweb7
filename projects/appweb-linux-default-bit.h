@@ -26,7 +26,7 @@
     #define BIT_DEPTH 1
 #endif
 #ifndef BIT_DISCOVER
-    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,est,man,man2html,pmaker,php,sqlite,utest,zip"
+    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,man,man2html,pmaker,php,sqlite,utest,zip"
 #endif
 #ifndef BIT_EJS_DB
     #define BIT_EJS_DB 1
@@ -148,9 +148,6 @@
 #ifndef BIT_SERVER_ROOT
     #define BIT_SERVER_ROOT "."
 #endif
-#ifndef BIT_SSL
-    #define BIT_SSL 1
-#endif
 #ifndef BIT_STATIC
     #define BIT_STATIC 0
 #endif
@@ -182,7 +179,7 @@
     #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
 #endif
 #ifndef BIT_WITHOUT_DEFAULT
-    #define BIT_WITHOUT_DEFAULT "doxygen,dsi,man,man2html,openssl,pmaker,php"
+    #define BIT_WITHOUT_DEFAULT "doxygen,dsi,est,man,man2html,pmaker,php"
 #endif
 
 /* Prefixes */
@@ -306,7 +303,7 @@
     #define BIT_PACK_ESP 1
 #endif
 #ifndef BIT_PACK_EST
-    #define BIT_PACK_EST 1
+    #define BIT_PACK_EST 0
 #endif
 #ifndef BIT_PACK_HTTP
     #define BIT_PACK_HTTP 1

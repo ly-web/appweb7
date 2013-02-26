@@ -5,7 +5,7 @@
 if (!Config.SSL) {
     test.skip("SSL not enabled in ejs")
 
-} else if (App.config.bit_ssl !== 0) {
+} else if (App.config.bit_ssl) {
     let http: Http
 
     for each (let provider in Http.providers) {
