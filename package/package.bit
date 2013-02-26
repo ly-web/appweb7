@@ -109,14 +109,20 @@ Bit.load({
                     '${BIN}/libapp${SHOBJ}',
                     '${BIN}/libappweb${SHOBJ}',
                     '${BIN}/libhttp${SHOBJ}',
-                    '${BIN}/libmod_ssl${SHOBJ}',
                     '${BIN}/libmpr${SHOBJ}',
                     '${BIN}/libmprssl${SHOBJ}',
                     '${BIN}/libpcre${SHOBJ}',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+
+            },{ from:        [
+                    '${BIN}/libmod_ssl${SHOBJ}',
                     '${BIN}/ca.crt',
                 ],
                 to:         '${abin}/',
                 set:        'core',
+                require:    'ssl',
 
             },{ from:       '${BIN}/libest${SHOBJ}',
                 to:         '${abin}/',
