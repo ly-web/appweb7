@@ -236,7 +236,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -configure . -without default -with ejscript -with est -gen nmake"
+    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -configure . -without default -with ejscript -with est -gen vs"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
