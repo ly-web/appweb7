@@ -65,12 +65,9 @@ Bit.load({
         },
 
         'appwebMonitor.ico': {
-            //  MOB - convert to a normal file target
-            enable: "bit.platform.like == 'windows'",
             type: 'file',
             files: [ 'windows/appwebMonitor.ico' ],
-            build: "cp('windows/appwebMonitor.ico', '${BIN}')",
-            generate: 'cp windows/appwebMonitor.ico ${BIN}',
+            enable: "bit.platform.like == 'windows'",
         },
 
         'server-cache': {

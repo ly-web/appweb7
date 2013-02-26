@@ -1379,15 +1379,6 @@ $(CONFIG)\bin\appwebMonitor.exe: $(DEPS_88)
 DEPS_89 = $(DEPS_89) src\server\windows\appwebMonitor.ico
 
 $(CONFIG)\bin\appwebMonitor.ico: $(DEPS_89)
-	cd src\server
-	copy windows/appwebMonitor.ico ..\..\$(CONFIG)\bin
-	cd ..\..
-#
-#   appwebMonitor.ico
-#
-DEPS_90 = $(DEPS_90) src\server\windows\appwebMonitor.ico
-
-$(CONFIG)\bin\appwebMonitor.ico: $(DEPS_90)
 	@echo '      [File] $(CONFIG)/bin/appwebMonitor.ico'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\server\windows\appwebMonitor.ico" "$(CONFIG)\bin\appwebMonitor.ico"
@@ -1395,7 +1386,7 @@ $(CONFIG)\bin\appwebMonitor.ico: $(DEPS_90)
 #
 #   server-cache
 #
-src\server\cache: $(DEPS_91)
+src\server\cache: $(DEPS_90)
 	cd src\server
 	md cache
 	cd ..\..
@@ -1403,7 +1394,7 @@ src\server\cache: $(DEPS_91)
 #
 #   testAppweb.h
 #
-$(CONFIG)\inc\testAppweb.h: $(DEPS_92)
+$(CONFIG)\inc\testAppweb.h: $(DEPS_91)
 	@echo '      [File] $(CONFIG)/inc/testAppweb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "test\testAppweb.h" "$(CONFIG)\inc\testAppweb.h"
@@ -1411,53 +1402,53 @@ $(CONFIG)\inc\testAppweb.h: $(DEPS_92)
 #
 #   testAppweb.obj
 #
-DEPS_93 = $(DEPS_93) $(CONFIG)\inc\bit.h
-DEPS_93 = $(DEPS_93) $(CONFIG)\inc\testAppweb.h
-DEPS_93 = $(DEPS_93) $(CONFIG)\inc\mpr.h
-DEPS_93 = $(DEPS_93) $(CONFIG)\inc\http.h
+DEPS_92 = $(DEPS_92) $(CONFIG)\inc\bit.h
+DEPS_92 = $(DEPS_92) $(CONFIG)\inc\testAppweb.h
+DEPS_92 = $(DEPS_92) $(CONFIG)\inc\mpr.h
+DEPS_92 = $(DEPS_92) $(CONFIG)\inc\http.h
 
 $(CONFIG)\obj\testAppweb.obj: \
-    test\testAppweb.c $(DEPS_93)
+    test\testAppweb.c $(DEPS_92)
 	@echo '   [Compile] test/testAppweb.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testAppweb.c
 
 #
 #   testHttp.obj
 #
-DEPS_94 = $(DEPS_94) $(CONFIG)\inc\bit.h
-DEPS_94 = $(DEPS_94) $(CONFIG)\inc\testAppweb.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\bit.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\testAppweb.h
 
 $(CONFIG)\obj\testHttp.obj: \
-    test\testHttp.c $(DEPS_94)
+    test\testHttp.c $(DEPS_93)
 	@echo '   [Compile] test/testHttp.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testHttp.c
 
 #
 #   testAppweb
 #
-DEPS_95 = $(DEPS_95) $(CONFIG)\bin\libappweb.dll
-DEPS_95 = $(DEPS_95) $(CONFIG)\inc\testAppweb.h
-DEPS_95 = $(DEPS_95) $(CONFIG)\obj\testAppweb.obj
-DEPS_95 = $(DEPS_95) $(CONFIG)\obj\testHttp.obj
+DEPS_94 = $(DEPS_94) $(CONFIG)\bin\libappweb.dll
+DEPS_94 = $(DEPS_94) $(CONFIG)\inc\testAppweb.h
+DEPS_94 = $(DEPS_94) $(CONFIG)\obj\testAppweb.obj
+DEPS_94 = $(DEPS_94) $(CONFIG)\obj\testHttp.obj
 
-LIBS_95 = $(LIBS_95) libappweb.lib
-LIBS_95 = $(LIBS_95) libhttp.lib
-LIBS_95 = $(LIBS_95) libpcre.lib
-LIBS_95 = $(LIBS_95) libmpr.lib
+LIBS_94 = $(LIBS_94) libappweb.lib
+LIBS_94 = $(LIBS_94) libhttp.lib
+LIBS_94 = $(LIBS_94) libpcre.lib
+LIBS_94 = $(LIBS_94) libmpr.lib
 
-$(CONFIG)\bin\testAppweb.exe: $(DEPS_95)
+$(CONFIG)\bin\testAppweb.exe: $(DEPS_94)
 	@echo '      [Link] testAppweb'
-	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj $(LIBS_95) $(LIBS_95) $(LIBS) libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj $(LIBS_94) $(LIBS_94) $(LIBS) libmpr.lib
 
 !IF "$(BIT_PACK_CGI)" == "1"
 #
 #   test-testScript
 #
 !IF "$(BIT_PACK_CGI)" == "1"
-DEPS_96 = $(DEPS_96) $(CONFIG)\bin\cgiProgram.exe
+DEPS_95 = $(DEPS_95) $(CONFIG)\bin\cgiProgram.exe
 !ENDIF
 
-test\cgi-bin\testScript: $(DEPS_96)
+test\cgi-bin\testScript: $(DEPS_95)
 #  Omit build script test-testScript
 !ENDIF
 
@@ -1465,7 +1456,7 @@ test\cgi-bin\testScript: $(DEPS_96)
 #
 #   test-cache.cgi
 #
-test\web\caching\cache.cgi: $(DEPS_97)
+test\web\caching\cache.cgi: $(DEPS_96)
 #  Omit build script test-cache.cgi
 !ENDIF
 
@@ -1473,7 +1464,7 @@ test\web\caching\cache.cgi: $(DEPS_97)
 #
 #   test-basic.cgi
 #
-test\web\auth\basic\basic.cgi: $(DEPS_98)
+test\web\auth\basic\basic.cgi: $(DEPS_97)
 #  Omit build script test-basic.cgi
 !ENDIF
 
@@ -1482,19 +1473,19 @@ test\web\auth\basic\basic.cgi: $(DEPS_98)
 #   test-cgiProgram
 #
 !IF "$(BIT_PACK_CGI)" == "1"
-DEPS_99 = $(DEPS_99) $(CONFIG)\bin\cgiProgram.exe
+DEPS_98 = $(DEPS_98) $(CONFIG)\bin\cgiProgram.exe
 !ENDIF
 
-test\cgi-bin\cgiProgram.exe: $(DEPS_99)
+test\cgi-bin\cgiProgram.exe: $(DEPS_98)
 #  Omit build script test-cgiProgram
 !ENDIF
 
 #
 #   test.js
 #
-DEPS_100 = $(DEPS_100) src\esp\esp-www\files\static\js
+DEPS_99 = $(DEPS_99) src\esp\esp-www\files\static\js
 
-test\web\js: $(DEPS_100)
+test\web\js: $(DEPS_99)
 	@echo '      [File] test/web/js'
 	if not exist "test\web\js" md "test\web\js"
 	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "test\web\js\jquery.esp.js"
@@ -1505,24 +1496,24 @@ test\web\js: $(DEPS_100)
 #
 #   version
 #
-version: $(DEPS_101)
+version: $(DEPS_100)
 	@echo 4.3.0-0
 
 
 #
 #   stop
 #
-DEPS_102 = $(DEPS_102) compile
+DEPS_101 = $(DEPS_101) compile
 
-stop: $(DEPS_102)
+stop: $(DEPS_101)
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
-DEPS_103 = $(DEPS_103) stop
+DEPS_102 = $(DEPS_102) stop
 
-installBinary: $(DEPS_103)
+installBinary: $(DEPS_102)
 	if not exist "$(BIT_VAPP_PREFIX)\log" md "$(BIT_VAPP_PREFIX)\log"
 	if not exist "$(BIT_VAPP_PREFIX)\cache" md "$(BIT_VAPP_PREFIX)\cache"
 	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
@@ -1649,28 +1640,28 @@ installBinary: $(DEPS_103)
 #
 #   start
 #
-DEPS_104 = $(DEPS_104) compile
-DEPS_104 = $(DEPS_104) stop
+DEPS_103 = $(DEPS_103) compile
+DEPS_103 = $(DEPS_103) stop
 
-start: $(DEPS_104)
+start: $(DEPS_103)
 	.\$(CONFIG)\bin\appman install enable start
 
 #
 #   install
 #
-DEPS_105 = $(DEPS_105) stop
-DEPS_105 = $(DEPS_105) installBinary
-DEPS_105 = $(DEPS_105) start
+DEPS_104 = $(DEPS_104) stop
+DEPS_104 = $(DEPS_104) installBinary
+DEPS_104 = $(DEPS_104) start
 
-install: $(DEPS_105)
+install: $(DEPS_104)
 
 
 #
 #   uninstall
 #
-DEPS_106 = $(DEPS_106) stop
+DEPS_105 = $(DEPS_105) stop
 
-uninstall: $(DEPS_106)
+uninstall: $(DEPS_105)
 	if exist "$(BIT_VAPP_PREFIX)\install.conf" rd /Q "$(BIT_VAPP_PREFIX)\install.conf"
 	if exist "$(BIT_VAPP_PREFIX)\inc\appweb" rd /Q /S"$(BIT_VAPP_PREFIX)\inc\appweb"
 	if exist "$(BIT_VAPP_PREFIX)" rd /Q /S"$(BIT_VAPP_PREFIX)"
@@ -1688,7 +1679,7 @@ uninstall: $(DEPS_106)
 #
 #   genslink
 #
-genslink: $(DEPS_107)
+genslink: $(DEPS_106)
 	cd src\server
 	esp --static --genlink slink.c --flat compile
 	cd ..\..
@@ -1696,9 +1687,9 @@ genslink: $(DEPS_107)
 #
 #   run
 #
-DEPS_108 = $(DEPS_108) compile
+DEPS_107 = $(DEPS_107) compile
 
-run: $(DEPS_108)
+run: $(DEPS_107)
 	cd src\server
 	sudo ..\..\$(CONFIG)\bin\appweb -v
 	cd ..\..
