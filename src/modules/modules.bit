@@ -45,7 +45,7 @@ Bit.load({
         libmod_ssl: {
             type: 'lib',
             sources: [ 'sslModule.c' ],
-            enable: "bit.settings.ssl",
+            require: 'ssl',
         },
 	},
 })
