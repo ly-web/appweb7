@@ -232,7 +232,7 @@ clobber: clean
 #   mpr.h
 #
 $(CONFIG)/inc/mpr.h: $(DEPS_1)
-	@echo '      [File] macosx-x64-default/inc/mpr.h'
+	@echo '      [File] $(CONFIG)/inc/mpr.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/mpr/mpr.h" "$(CONFIG)/inc/mpr.h"
 
@@ -247,7 +247,7 @@ $(CONFIG)/inc/bit.h: $(DEPS_2)
 DEPS_3 += $(CONFIG)/inc/bit.h
 
 $(CONFIG)/inc/bitos.h: $(DEPS_3)
-	@echo '      [File] macosx-x64-default/inc/bitos.h'
+	@echo '      [File] $(CONFIG)/inc/bitos.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/bitos.h" "$(CONFIG)/inc/bitos.h"
 
@@ -354,7 +354,7 @@ $(CONFIG)/bin/makerom: $(DEPS_12)
 DEPS_13 += src/deps/est/ca.crt
 
 $(CONFIG)/bin/ca.crt: $(DEPS_13)
-	@echo '      [File] macosx-x64-default/bin/ca.crt'
+	@echo '      [File] $(CONFIG)/bin/ca.crt'
 	mkdir -p "$(CONFIG)/bin"
 	cp "src/deps/est/ca.crt" "$(CONFIG)/bin/ca.crt"
 
@@ -362,7 +362,7 @@ $(CONFIG)/bin/ca.crt: $(DEPS_13)
 #   pcre.h
 #
 $(CONFIG)/inc/pcre.h: $(DEPS_14)
-	@echo '      [File] macosx-x64-default/inc/pcre.h'
+	@echo '      [File] $(CONFIG)/inc/pcre.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/pcre/pcre.h" "$(CONFIG)/inc/pcre.h"
 
@@ -391,7 +391,7 @@ $(CONFIG)/bin/libpcre.dylib: $(DEPS_16)
 #   http.h
 #
 $(CONFIG)/inc/http.h: $(DEPS_17)
-	@echo '      [File] macosx-x64-default/inc/http.h'
+	@echo '      [File] $(CONFIG)/inc/http.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/http/http.h" "$(CONFIG)/inc/http.h"
 
@@ -451,7 +451,7 @@ $(CONFIG)/bin/http: $(DEPS_21)
 #   sqlite3.h
 #
 $(CONFIG)/inc/sqlite3.h: $(DEPS_22)
-	@echo '      [File] macosx-x64-default/inc/sqlite3.h'
+	@echo '      [File] $(CONFIG)/inc/sqlite3.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/sqlite/sqlite3.h" "$(CONFIG)/inc/sqlite3.h"
 
@@ -511,7 +511,7 @@ endif
 #   appweb.h
 #
 $(CONFIG)/inc/appweb.h: $(DEPS_27)
-	@echo '      [File] macosx-x64-default/inc/appweb.h'
+	@echo '      [File] $(CONFIG)/inc/appweb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/appweb.h" "$(CONFIG)/inc/appweb.h"
 
@@ -519,7 +519,7 @@ $(CONFIG)/inc/appweb.h: $(DEPS_27)
 #   customize.h
 #
 $(CONFIG)/inc/customize.h: $(DEPS_28)
-	@echo '      [File] macosx-x64-default/inc/customize.h'
+	@echo '      [File] $(CONFIG)/inc/customize.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/customize.h" "$(CONFIG)/inc/customize.h"
 
@@ -619,7 +619,7 @@ $(CONFIG)/bin/libappweb.dylib: $(DEPS_35)
 #   edi.h
 #
 $(CONFIG)/inc/edi.h: $(DEPS_36)
-	@echo '      [File] macosx-x64-default/inc/edi.h'
+	@echo '      [File] $(CONFIG)/inc/edi.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/esp/edi.h" "$(CONFIG)/inc/edi.h"
 
@@ -627,7 +627,7 @@ $(CONFIG)/inc/edi.h: $(DEPS_36)
 #   esp-app.h
 #
 $(CONFIG)/inc/esp-app.h: $(DEPS_37)
-	@echo '      [File] macosx-x64-default/inc/esp-app.h'
+	@echo '      [File] $(CONFIG)/inc/esp-app.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/esp/esp-app.h" "$(CONFIG)/inc/esp-app.h"
 
@@ -635,7 +635,7 @@ $(CONFIG)/inc/esp-app.h: $(DEPS_37)
 #   esp.h
 #
 $(CONFIG)/inc/esp.h: $(DEPS_38)
-	@echo '      [File] macosx-x64-default/inc/esp.h'
+	@echo '      [File] $(CONFIG)/inc/esp.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/esp/esp.h" "$(CONFIG)/inc/esp.h"
 
@@ -643,7 +643,7 @@ $(CONFIG)/inc/esp.h: $(DEPS_38)
 #   mdb.h
 #
 $(CONFIG)/inc/mdb.h: $(DEPS_39)
-	@echo '      [File] macosx-x64-default/inc/mdb.h'
+	@echo '      [File] $(CONFIG)/inc/mdb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/esp/mdb.h" "$(CONFIG)/inc/mdb.h"
 
@@ -815,7 +815,7 @@ ifeq ($(BIT_PACK_ESP),1)
 DEPS_51 += src/esp/esp.conf
 
 $(CONFIG)/bin/esp.conf: $(DEPS_51)
-	@echo '      [File] macosx-x64-default/bin/esp.conf'
+	@echo '      [File] $(CONFIG)/bin/esp.conf'
 	mkdir -p "$(CONFIG)/bin"
 	cp "src/esp/esp.conf" "$(CONFIG)/bin/esp.conf"
 endif
@@ -839,7 +839,7 @@ ifeq ($(BIT_PACK_ESP),1)
 DEPS_53 += src/esp/esp-www
 
 $(CONFIG)/bin/esp-www: $(DEPS_53)
-	@echo '      [File] macosx-x64-default/bin/esp-www'
+	@echo '      [File] $(CONFIG)/bin/esp-www'
 	mkdir -p "$(CONFIG)/bin/esp-www"
 	cp "src/esp/esp-www/app.conf" "$(CONFIG)/bin/esp-www/app.conf"
 	cp "src/esp/esp-www/appweb.conf" "$(CONFIG)/bin/esp-www/appweb.conf"
@@ -868,7 +868,7 @@ ifeq ($(BIT_PACK_ESP),1)
 DEPS_54 += src/esp/esp-appweb.conf
 
 $(CONFIG)/bin/esp-appweb.conf: $(DEPS_54)
-	@echo '      [File] macosx-x64-default/bin/esp-appweb.conf'
+	@echo '      [File] $(CONFIG)/bin/esp-appweb.conf'
 	mkdir -p "$(CONFIG)/bin"
 	cp "src/esp/esp-appweb.conf" "$(CONFIG)/bin/esp-appweb.conf"
 endif
@@ -877,7 +877,7 @@ endif
 #   ejs.h
 #
 $(CONFIG)/inc/ejs.h: $(DEPS_55)
-	@echo '      [File] macosx-x64-default/inc/ejs.h'
+	@echo '      [File] $(CONFIG)/inc/ejs.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/ejs/ejs.h" "$(CONFIG)/inc/ejs.h"
 
@@ -885,7 +885,7 @@ $(CONFIG)/inc/ejs.h: $(DEPS_55)
 #   ejs.slots.h
 #
 $(CONFIG)/inc/ejs.slots.h: $(DEPS_56)
-	@echo '      [File] macosx-x64-default/inc/ejs.slots.h'
+	@echo '      [File] $(CONFIG)/inc/ejs.slots.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/ejs/ejs.slots.h" "$(CONFIG)/inc/ejs.slots.h"
 
@@ -893,7 +893,7 @@ $(CONFIG)/inc/ejs.slots.h: $(DEPS_56)
 #   ejsByteGoto.h
 #
 $(CONFIG)/inc/ejsByteGoto.h: $(DEPS_57)
-	@echo '      [File] macosx-x64-default/inc/ejsByteGoto.h'
+	@echo '      [File] $(CONFIG)/inc/ejsByteGoto.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/ejs/ejsByteGoto.h" "$(CONFIG)/inc/ejsByteGoto.h"
 
@@ -1240,7 +1240,7 @@ src/server/cache: $(DEPS_78)
 #   testAppweb.h
 #
 $(CONFIG)/inc/testAppweb.h: $(DEPS_79)
-	@echo '      [File] macosx-x64-default/inc/testAppweb.h'
+	@echo '      [File] $(CONFIG)/inc/testAppweb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "test/testAppweb.h" "$(CONFIG)/inc/testAppweb.h"
 
