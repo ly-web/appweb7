@@ -139,7 +139,7 @@ TARGETS     = $(TARGETS) test\web\js
 .SILENT:
 !ENDIF
 
-all compile: prep $(TARGETS)
+all build compile: prep $(TARGETS)
 
 .PHONY: prep
 

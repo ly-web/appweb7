@@ -306,7 +306,7 @@
     #define BIT_PACK_ESP 1
 #endif
 #ifndef BIT_PACK_EST
-    #define BIT_PACK_EST 1
+    #define BIT_PACK_EST 0
 #endif
 #ifndef BIT_PACK_HTTP
     #define BIT_PACK_HTTP 1

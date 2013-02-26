@@ -215,6 +215,7 @@ Bit.load({
 
     scripts: {
         /* Want est support included, but disabled */
+        pregenheader: "bit.packs.est.enable = 0",
         pregen: "bit.packs.est.enable = 0",
     },
 })
