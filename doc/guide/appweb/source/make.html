@@ -77,10 +77,8 @@
             <p>Appweb provides a suite of generated, pre-configured Makefiles for common platforms. 
             These are simple flat makefiles that build a default configuration of Appweb for a specific operating
             system. These makefiles are provided under the <em>./projects</em> directory.</p>
-
             <p> A top level Makefile is also provided that detects your operating system and CPU architecture and
             then invokes the appropriate project Makefile for your system. For example:</p>
-
 <pre>$ <b>make</b>
 make --no-print-directory -f projects/appweb-macosx-default.mk all
 ...
@@ -90,28 +88,23 @@ make --no-print-directory -f projects/appweb-macosx-default.mk all
             <p>On Windows, a <em>make.bat</em> file is provided to to invoke nmake. The make.bat file first invokes
             <em>projects/windows.bat</em> which runs the Visual Studio <em>vcvarsall.bat</em> procedure
             to setup the necessary Visual Studio environment variables for compiling.</p>
-
             <p>To build on Windows with nmake, type:
             <pre>$ <b>make</b>
 nmake -f projects\appweb-windows.nmake
 ...
 </pre>
-
             <a name="modifying"></a>
             <h3>Modifying the Makefile Defaults</h3>
             <p>You do not use the configure program when building via Make, that is used only for building with Bit. 
             Rather, you supply configuration options directly to Make. These options override default values defined by the
             projects/appweb-OS-default.mk makefile and by the projects/appweb-OS-debug-bit.h file. For example, to disable
             use of SQLite:</p>
-
             <pre>$ make <b>BIT_PACK_SQLITE=0</b> </pre>
             <p>To see the list of configurable options, run:</p>
             <pre>$ <b>make help</b>
 usage: make [clean, compile, deploy, install, run, uninstall]
-
 The default configuration can be modified by setting make variables
 Set to 0 to disable and 1 to enable:
-
   PROFILE            # Select default or static for static linking
   BIT_EJS_DB         # Select default or static for static linking
   BIT_EJS_DB         # Enable database support, ejs.db
@@ -136,11 +129,8 @@ Set to 0 to disable and 1 to enable:
   BIT_PACK_PHP       # Enable the PHP framework
   BIT_PACK_SQLITE    # Enable the SQLite database
   BIT_ROM            # Build for ROM without a file system
-
 For example, to disable CGI:
-
   make BIT_PACK_CGI=0
-
 Other make variables:
   ARCH               # CPU architecture (x86, x64, ppc, ...)
   OS                 # Operating system (linux, macosx, windows, vxworks, ...)
@@ -158,26 +148,22 @@ Other make variables:
 </pre>
             <p>By defining the make variables such as CC and CFLAGS, you can modify the compiler options. This is the
             technique used when cross-compiling. For more details, see <a href="#cross">Cross Compiling</a> below.</p>
-
             <a name="installing"></a>
             <h2 class="section">Installing with Make</h2>
             <p>You can install the newly built software via:</p>
             <pre>sudo make install</pre>
-
             <p>You can remove by:</p>
             <pre>
 sudo make uninstall
 </pre>
             <p>If you need to capture the build products only, you can deploy to a specific directory via:
             <pre>make BIT_ROOT_DIR=/tmp/output deploy</pre>
-
             <a id="cross"></a>
             <h2 class="section">Cross Compiling with Make</h2>
             <p>Building a product for platform different to that of the local system is called <em>cross compiling</em>.
             Sometimes this compiling is just for a different instruction set (say x64 instead of x86). Other
             times, it is for a completely different operating system and/or CPU architecture. In such cases, a
             cross-compiler is typically required to build for the target platform.</p>
-
             <p>Appweb supplies makefiles for Linux, Windows, FreeBSD, MAC OSX and VxWorks. To cross compile, you invoke 
             the relevant project makefile and pass the required CPU architecture as a make variable. For example, to 
             cross compile for VxWorks on ARM:
@@ -189,10 +175,8 @@ make -f projects/appweb-vxworks-default.mk ARCH=arm PROFILE=debug
             manner, make can be invoked multiple times, once for each target platform and the results will be captured
             in separate platform output directories. Some of the supported architectures for the ARCH field are:
             arm, mips, ppc, x64 and x86. The PROFILE is a descriptive name chosen by you for your configuration.</p>
-
             <p>If there is not a makefile for your  target operating system, copy the closest makefile and edit to 
             suit your target platform.</p>
-
             <a name="toolchain"></a>
             <h3>Specifying a Toolchain</h3>
             <p>You may need to specify where Make can locate your cross-compiler and other tools.
@@ -202,7 +186,6 @@ make -f projects/appweb-vxworks-default.mk ARCH=arm PROFILE=debug
 make CC=/opt/bin/ccarm.exe LD=/opt/bin/ccarm.exe ARCH=arm PROFILE=release
     -f projects/appweb-vxworks-default.mk 
 </pre>
-
             <a name="ejs"></a>
             <h3>Supporting Ejscript</h3>
             <p>If Ejscript is required, you must also build Appweb for the local system as the Ejscript compiler 
@@ -214,7 +197,6 @@ make LBIN=linux-x86-debug/bin -f projects/appweb-vxworks-default.mk
 </pre>
             <p>The first make will compile the software for the local development system. The second make will do
             the cross compilation using tools from the directory specified by the LBIN variable.
-
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->

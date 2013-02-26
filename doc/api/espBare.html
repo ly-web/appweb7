@@ -111,6 +111,7 @@
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_req_1gaa50588be6fe69e04738fc0276d7afbbb" class="nameRef">espAppendHeader</a>(<a href="httpBare.html#group___http_conn" class="ref">HttpConn</a> *conn, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *key, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *fmt, ...)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Append a transmission header.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_req_1gacb696dcdff91355fc9df37f5c7171a01" class="nameRef">espAppendHeaderString</a>(<a href="httpBare.html#group___http_conn" class="ref">HttpConn</a> *conn, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *key, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *value)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Append a transmission header string.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_req_1gab6aeea9bb5cb500eabf3e1cfd1745f03" class="nameRef">espAutoFinalize</a>(<a href="httpBare.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Auto-finalize transmission of the http request.</td></tr>
+<tr class="apiDef"><td class="apiType">int</td><td><a href="#group___esp_route_1ga804619b07e0154a48875770f041a08b6" class="nameRef">espBindProc</a>(<a href="httpBare.html#group___http_route" class="ref">HttpRoute</a> *parent, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *pattern, void *actionProc)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Define an action for a URI pattern.</td></tr>
 <tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___esp_route_1gac9c9e0843eba723790fa16c8fd508a8b" class="nameRef">espBuildScript</a>(<a href="httpBare.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *page, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *path, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *cacheName, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *layout, char **err)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Convert an ESP web page into compilable C code.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_control_1ga5bf9787cd0cd13684a7e8ffa55aba884" class="nameRef">espButton</a>(<a href="httpBare.html#group___http_conn" class="ref">HttpConn</a> *conn, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *text, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *value, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *options)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Render an HTML button to use inside a form.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_control_1gae7c01afaa7ef62fce8c378a0864eee84" class="nameRef">espButtonLink</a>(<a href="httpBare.html#group___http_conn" class="ref">HttpConn</a> *conn, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *text, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *uri, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *options)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Render an HTML button to use outside a form.</td></tr>
@@ -313,7 +314,7 @@
 <tr class="apiDef"><td class="apiName"><a href="#struct_edi_validation" class="nameRef">EdiValidation</a></td><td class="apiBrief">Validation structure.</td></tr>
 <tr class="apiDef"><td class="apiName"><a href="#group___edi_service_1ga3cf21d57a02f250570e2beafc05befd9" class="nameRef">EdiValidationProc</a></td><td class="apiBrief">Field validation callback procedure.</td></tr>
 <tr class="apiDef"><td class="apiName"><a href="#struct_esp" class="nameRef">Esp</a></td><td class="apiBrief">Top level ESP structure.</td></tr>
-<tr class="apiDef"><td class="apiName"><a href="#struct_esp_action" class="nameRef">EspAction</a></td><td class="apiBrief">ESP Action.</td></tr>
+<tr class="apiDef"><td class="apiName"><a href="#esp_8h_1a60cdb8438d2c59c8014fe550129fbc0d" class="nameRef">EspAction</a></td><td class="apiBrief">Action procedure to run to respond to the request.</td></tr>
 <tr class="apiDef"><td class="apiName"><a href="#group___esp_route_1gaf56d656b4e4b27a101b8c032aa522b84" class="nameRef">EspModuleEntry</a></td><td class="apiBrief">Entry point for a loadable ESP module.</td></tr>
 <tr class="apiDef"><td class="apiName"><a href="#esp_8h_1aa0c56d9f50902eb9cf16889d3d95c129" class="nameRef">EspProc</a></td><td class="apiBrief">Procedure callback.</td></tr>
 <tr class="apiDef"><td class="apiName"><a href="#group___esp_req_1ga4645d40178e3548fd0e6ad13fec1b5ed" class="nameRef">EspViewProc</a></td><td class="apiBrief">View procedure callback.</td></tr>
@@ -3606,7 +3607,7 @@ The tab control can manage a set of panes and will selectively show and hide or 
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>Http connection object.</td>
     <tr><td class="param">kinds</td><td>Space separated list of flash messages types. Typical types are: &quot;error&quot;, &quot;inform&quot;, &quot;warning&quot;.</td>
-    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>retain <ndash/> Number of seconds to retain the message. If &lt;= 0, the message is retained until another message is displayed. Default is 0. MOB - this default implies it is displayed for zero seconds </li></ul></td>
+    <tr><td class="param">options</td><td>Extra options. See <a class="ref" href="#group___esp_control">EspControl</a> for a list of the standard options. <ul><li>retain <ndash/> Number of seconds to retain the message. If &lt;= 0, the message is retained until another message is displayed. Default is 0. </li></ul></td>
     </table></dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a>, <a href="#group___esp_control_1ga603c454b5dce3691e3ca7b0c1e7d860e" class="ref">espAnchor</a></dd></dl>
@@ -3965,9 +3966,6 @@ Storage buffer for token.
     </dd></dl>
     <dl><dt>Fields:</dt><dd>
     <table class="parameters" title="Parameters">
-    <tr><td class="param"><a class="ref" href="#struct_esp_action">EspAction</a> *</td><td><td>action</td><td>
-Action to invoke.
-</td>
     <tr><td class="param">int</td><td><td>appLoaded</td><td>
 App module already probed.
 </td>
@@ -5755,6 +5753,26 @@ Directory for views.
     </table></dd></dl>
   </div>
 </div>
+<a name="group___esp_route_1ga804619b07e0154a48875770f041a08b6"></a>
+<div class="api">
+  <div class="prototype">
+    int
+    espBindProc
+(<a href="httpBare.html#group___http_route" class="ref">HttpRoute</a> *parent, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *pattern, void *actionProc)
+  </div>
+  <div class="apiDetail">
+<p>Define an action for a URI pattern.</p>
+    <dl><dt><b>Description</b>:</dt><dd>This defines an action routine for the route that is responsible for the given URI pattern.</dd></dl>
+    <dl><dt>Parameters:</dt><dd>
+    <table class="parameters" title="Parameters">
+    <tr><td class="param">route</td><td>HttpRoute object.</td>
+    <tr><td class="param">pattern</td><td>URI pattern to use to find the releavant route.</td>
+    <tr><td class="param">actionProc</td><td>EspProc callback procedure to invoke when the action is requested.</td>
+    </table></dd></dl>
+    <dl><dt>See Also:</dt><dd>
+    </dd></dl>
+  </div>
+</div>
 <a name="group___esp_route_1gac9c9e0843eba723790fa16c8fd508a8b"></a>
 <div class="api">
   <div class="prototype">
@@ -5954,6 +5972,15 @@ Directory for views.
   </div>
 </div>
 <h2>Typedefs</h2>
+<a name="esp_8h_1a60cdb8438d2c59c8014fe550129fbc0d"></a>
+<div class="api">
+  <div class="prototype">
+    typedef EspProc EspAction.
+  </div>
+  <div class="apiDetail">
+<p>Action procedure to run to respond to the request.</p>
+  </div>
+</div>
 <a name="esp_8h_1aa0c56d9f50902eb9cf16889d3d95c129"></a>
 <div class="api">
   <div class="prototype">
@@ -6074,21 +6101,5 @@ Multithread lock.
 Table of views.
 </td>
     </table></dd></dl>
-  </div>
-</div>
-<a name="struct_esp_action"></a>
-<div class="api">
-  <div class="prototype">EspAction</div>
-  <div class="apiDetail">
-<p>ESP Action.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Actions are run after a request URI is routed to a controller.</dd></dl>
-    <dl><dt>Fields:</dt><dd>
-    <table class="parameters" title="Parameters">
-    <tr><td class="param">EspProc</td><td><td>actionProc</td><td>
-Action procedure to run to respond to the request.
-</td>
-    </table></dd></dl>
-    <dl><dt>See Also:</dt><dd>
-    </dd></dl>
   </div>
 </div>

@@ -99,7 +99,6 @@
             <p>The <em>--release</em> switch instructs bit to build an optimized production release. This will disable
             debugging code and non-essential logging. The <em>--without all</em> switch will disable non-essential
             features to create a minimal build.</p>
-
             <p>During configuration, <em>bit</em> will create:</p>
             <ul>
                 <li>A bit file that specifies the platforms to build named: start.bit</li>
@@ -112,7 +111,6 @@
             <p>The generated Bit files are readable Javascript files that contain the settings to control the build
             when Bit is run. When compiling, source code may include the <em>bit.h</em> header to read the 
             Appweb configuration.</p>
-
             <a id="options"></a>
             <h2 class="section">Configure Options</h2>
             <p>The tables below describe the key configuration options.
@@ -224,7 +222,6 @@
             <pre>
 configure --with openssl=/usr/src/openssl
 </pre>
-
             <h3>Packages</h3>
             <p>The following table describes the packages that can extend the Appweb configuration. 
             The use of the Integrated field states whether the package is shipped internally with the Appweb source
@@ -290,7 +287,6 @@ configure --with openssl=/usr/src/openssl
                 </tr>
                 </tbody>
             </table>
-
             <p>The following table describes the tool packages that can be used when building, running and 
             managing Appweb. 
             The use of the Internal/External field documents whether the package is shipped internally with the Appweb source
@@ -351,7 +347,6 @@ configure --with openssl=/usr/src/openssl
                 </tr>
                 </tbody>
             </table>
-
             <h3>Environment Variables</h3>
             <p>When cross compiling, certain environment variables may be passed to the configure script and on to 
             <em>bit</em> to configure the compiler and linker paths and flags. </p>
@@ -413,7 +408,6 @@ CC=/opt/bin/ccarm configure
             
             <p>To display all configure options:
 <pre class="paper">configure --help
-
 Usage: bit [options] [targets|actions] ...
   Options:
   --benchmark                              # Measure elapsed time
@@ -452,12 +446,10 @@ Usage: bit [options] [targets|actions] ...
   --verbose                                # Trace operations
   --with PACK[=PATH]                       # Build with package at PATH
   --without PACK                           # Build without a package
-
 Feature Selection:
     --set http.pam=value                   # Enable Unix Pluggable Auth Module (true|false)
     --set mpr.logging=value                # Enable application logging (true|false)
     --set mpr.tracing=value                # Enable debug tracing (true|false)
-
 Extension Packages (--with PACK):
     doxygen                                # Doxygen Documentation Generator
     dsi                                    # Developer Server Side Include Tool
@@ -477,7 +469,6 @@ Extension Packages (--with PACK):
                 such as OpenSSL and PHP. By default, Appweb can locate these packages if the source
                 distributions are installed in standard locations. Otherwise, the packages can be identified by using
                 <em>configure --with PACKAGE=PATH</em> switch. This specifies the path to the package source directory.</p>
-
             <p>For example, to build with MatrixSSL, follow these steps:</p>
             <ol>
                 <li>Download MatrixSSL from
@@ -489,7 +480,6 @@ Extension Packages (--with PACK):
             </ol>
             <p>During configuration, the required Matrixssl libraries and headers will be copied into
             the Appweb source tree. </p>
-
             <a id="building"></a>
             <h2 class="section">Building Appweb with Bit</h2>
             <p>After configuring, you may proceed to build the source code by typing:</p>
@@ -499,7 +489,6 @@ bit
             <p>This will fully build the software. If cross compiling and depending on your configuration, 
             it may build twice: once for the local system and once for the target platform. This may be necessary
             to build required tools. If Ejscript is enabled, this is required.</p>
-
             <h3>Useful Bit options and targets</h3>
             <p>Here are some useful bit examples:</p>
             <pre>bit --show     # Show actual commands while building
@@ -510,7 +499,6 @@ bit clean      # Clean all built targets
 bit rebuild    # Rebuild all targets
 bit install    # Install the built software locally
 bit help       # Show bit usage</pre>
-
             <a name="static"></a>
             <h2 class="section">Static Linking</h2>
             <p>On some platforms, it is desirable to statically link the Appweb web server. The default Appweb Bit files
@@ -518,7 +506,6 @@ bit help       # Show bit usage</pre>
             It is best to use dynamic linking if using ESP so that it can dynamically reload applications to update them.
             This is ideal when developing so that you can quickly reload applications by simply clicking reload in your
             browser.</p>
-
             <p>However, if you want to statically link Appweb and the modules together, run configure with the
             <i>--static</i> option and then rebuild.</p>
 <pre>
@@ -531,7 +518,6 @@ bit
                 <li>Pre-compile your ESP pages and applications.</li>
                 <li>Link the ESP initializer code into appweb.</li>
             </ol>
-
             <h3>Pre-compile ESP</h3>
             <p>You can pre-compile ESP pages and applications for static linking and create a static library that
             can be linked with appweb when rebuilding appweb. Use the following command to compile all ESP pages and
@@ -544,7 +530,6 @@ esp --static --flat --genlink slink.c compile</pre>
             function <em>appwebStaticInitialize()</em> that will invoke the
             ESP initializers for the ESP pages and applications. Appweb contains a reference to this function in 
             src/server/appweb.c. When rebuilt, it will then resolve and link with the ESP static libraries.</p>
-
             <a name="rom"></a>
             <h2 class="section">Serving from ROM</h2>
             <p>Appweb supports systems without a file system where web documents are compiled into C code and served from
@@ -558,46 +543,37 @@ bit
                     <li>Modules cannot be dynamically loaded and must be statically linked</li>
                     <li>Reloading ESP applications without restarting the server is not possible</li>
                 </ul>
-
             <p>See <a href="../programmers/rom.html">Serving Pages from ROM</a> for more information.</p>
             <a id="installing"></a>
-
             <h2 class="section">Installing</h2>
             <p>You can install the newly built software via bit:</p>
             <pre>sudo bit install</pre>
-
             <p>You can remove by:</p>
             <pre>
 sudo bit uninstall
 </pre>
-
             <a id="cross"></a>
             <h2 class="section">Cross Compiling</h2>
             <p>To build a product for platform different to that of the local system is called <em>cross compiling</em>.
             Sometimes this compiling is just for a different instruction set (say x64 instead of x86). Other
             times, it is for a completely different operating system and/or CPU architecture. In such cases a
             cross-compiler is typically required to build for the target platform.</p>
-
             <p>Bit supports cross compiling via the <em>-platform PLATFORM</em> bit configure option. This option adds a
             platform to the list of platforms to be made. Multiple platforms may be
             specified and the 'local' platform alias may be used for the local development platform.</p>
             <pre>bit -platform linux-arm -configure . </pre>
             <p>This will create a windows-x64.bit configuration file and a start.es that references it. The
             platform switch does not need to be restated after configuration.</p>
-
             <h3>Platforms</h3>
             <p>A platform specification is of the form OS-ARCH, where the
             supported operating systems are: freebsd, linux, macosx, solaris, vxworks and windows. The ARCH field is
             one of arm, mips, ppc, x64 or x86. X64 is the AMD/Intel 64-bit instruction set and x86 is the Intel X86
             Pentium instruction set. You may also use i386 or i686 for specific Intel X86 instruction sets.
             The CPU field is optional and specifies a CPU to tune for.</p>
-
             <p>Configuration options apply to the preceeding platform. If not preceeding platform, the option applies
             to the local platform.
-
             <pre>configure -with ejscript -platform linux-arm -without ejscript</pre>
             <p>This will build Ejscript for the local development system, and without Ejscript for the target.</p>
-
             <h3>Environment Variables</h3>
             <p>When cross compiling, you may need to inform <b>configure</b> about your cross-compilation tool chain.
             Bit will do its best to discover the installed cross tool chain and will look in well known
@@ -612,7 +588,6 @@ LD=/opt/bin/cc.exe \
 CFLAGS=-I/opt/include \
 configure --debug --platform linux-arm-arm7
 </pre>
-
             <h2 class="section">Create an Installable Release</h2>
             <p>After building, bit can create installable packages of the software:</p>
             <pre>bit package</pre>
