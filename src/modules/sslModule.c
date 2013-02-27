@@ -7,7 +7,7 @@
 
 #include    "appweb.h"
 
-#if BIT_SSL
+#if BIT_PACK_SSL
 /*********************************** Code *************************************/
 
 static void checkSsl(MaState *state)
@@ -40,7 +40,7 @@ static void checkSsl(MaState *state)
  */
 static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
 {
-#if BIT_SSL
+#if BIT_PACK_SSL
     HttpEndpoint    *endpoint;
     char            *ip;
     int             port;
@@ -307,7 +307,7 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *mp)
 {
     return 0;
 }
-#endif /* BIT_SSL */
+#endif /* BIT_PACK_SSL */
 
 /*
     @copy   default

@@ -37,8 +37,8 @@ LDFLAGS         += $(LDFLAGS-$(DEBUG))
 
 BIT_PACK_EST          := 0
 BIT_PACK_EJSCRIPT     := 1
-BIT_PACK_PHP          := 0
 BIT_PACK_SSL          := 1
+BIT_PACK_PHP          := 0
 BIT_PACK_CGI          := 1
 BIT_PACK_ESP          := 1
 BIT_PACK_SQLITE       := 1

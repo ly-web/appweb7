@@ -23,7 +23,7 @@ CC              = cl
 LD              = link
 RC              = rc
 CFLAGS          = -nologo -GR- -W3 -Zi -Od -MDd
-DFLAGS          = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
+DFLAGS          = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
 IFLAGS          = -I$(CONFIG)\inc
 LDFLAGS         = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS        = -libpath:$(CONFIG)\bin
@@ -31,8 +31,8 @@ LIBS            = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib m
 
 BIT_PACK_EST          = 0
 BIT_PACK_EJSCRIPT     = 1
-BIT_PACK_PHP          = 0
 BIT_PACK_SSL          = 1
+BIT_PACK_PHP          = 0
 BIT_PACK_CGI          = 1
 BIT_PACK_ESP          = 1
 BIT_PACK_SQLITE       = 1
@@ -1542,9 +1542,9 @@ installBinary: $(DEPS_102)
 	copy /Y "$(CONFIG)\bin\libappweb.dll" "$(BIT_VAPP_PREFIX)\bin\libappweb.dll"
 	copy /Y "$(CONFIG)\bin\libhttp.dll" "$(BIT_VAPP_PREFIX)\bin\libhttp.dll"
 	copy /Y "$(CONFIG)\bin\libmpr.dll" "$(BIT_VAPP_PREFIX)\bin\libmpr.dll"
-	copy /Y "$(CONFIG)\bin\libmprssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmprssl.dll"
 	copy /Y "$(CONFIG)\bin\libpcre.dll" "$(BIT_VAPP_PREFIX)\bin\libpcre.dll"
 !IF "$(BIT_PACK_SSL)" == "1"
+	copy /Y "$(CONFIG)\bin\libmprssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmprssl.dll"
 	copy /Y "$(CONFIG)\bin\libmod_ssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_ssl.dll"
 	copy /Y "$(CONFIG)\bin\ca.crt" "$(BIT_VAPP_PREFIX)\bin\ca.crt"
 !ENDIF

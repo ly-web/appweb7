@@ -33,8 +33,8 @@ LDFLAGS         += $(LDFLAGS-$(DEBUG))
 
 BIT_PACK_EST          := 0
 BIT_PACK_EJSCRIPT     := 1
-BIT_PACK_PHP          := 0
 BIT_PACK_SSL          := 1
+BIT_PACK_PHP          := 0
 BIT_PACK_CGI          := 1
 BIT_PACK_ESP          := 1
 BIT_PACK_SQLITE       := 1
@@ -1487,9 +1487,9 @@ endif
 	cp "$(CONFIG)/bin/libappweb.so" "$(BIT_VAPP_PREFIX)/bin/libappweb.so"
 	cp "$(CONFIG)/bin/libhttp.so" "$(BIT_VAPP_PREFIX)/bin/libhttp.so"
 	cp "$(CONFIG)/bin/libmpr.so" "$(BIT_VAPP_PREFIX)/bin/libmpr.so"
-	cp "$(CONFIG)/bin/libmprssl.so" "$(BIT_VAPP_PREFIX)/bin/libmprssl.so"
 	cp "$(CONFIG)/bin/libpcre.so" "$(BIT_VAPP_PREFIX)/bin/libpcre.so"
 ifeq ($(BIT_PACK_SSL),1)
+	cp "$(CONFIG)/bin/libmprssl.so" "$(BIT_VAPP_PREFIX)/bin/libmprssl.so"
 	cp "$(CONFIG)/bin/libmod_ssl.so" "$(BIT_VAPP_PREFIX)/bin/libmod_ssl.so"
 	cp "$(CONFIG)/bin/ca.crt" "$(BIT_VAPP_PREFIX)/bin/ca.crt"
 endif

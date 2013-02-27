@@ -2210,7 +2210,7 @@ static bool conditionalDefinition(MaState *state, cchar *key)
             result = BIT_PACK_PHP;
 
         } else if (scaselessmatch(key, "SSL_MODULE")) {
-            result = BIT_SSL;
+            result = BIT_PACK_SSL;
         }
     }
     return (not) ? !result : result;

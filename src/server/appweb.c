@@ -280,7 +280,7 @@ static void loadStaticModules()
 #if BIT_PACK_PHP
     mprNop(maPhpHandlerInit);
 #endif
-#if BIT_SSL
+#if BIT_PACK_SSL
     mprNop(maSslModuleInit);
 #endif
 #endif /* BIT_STATIC */
