@@ -1,5 +1,7 @@
 The PHP License, version 3.01
-Not part of the source product. Only shipped in the binary demo.
+===
+
+PHP is provided only in binary products as an optional external shared library.
 
 Copyright (c) 1999 - 2012 The PHP Group. All rights reserved.
 

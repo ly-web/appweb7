@@ -1,5 +1,7 @@
 JQuery License
-Used by the ESP web framework in the client side only.
+===
+
+JQuery is by the ESP and Ejscript web frameworks in the client side only.
 
 Copyright (c) 2012 John Resig, http://jquery.com/
 
