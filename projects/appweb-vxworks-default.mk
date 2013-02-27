@@ -17,8 +17,16 @@ LD              := /usr/bin/ld
 CONFIG          := $(OS)-$(ARCH)-$(PROFILE)
 LBIN            := $(CONFIG)/bin
 
+BIT_PACK_EST          := 0
+BIT_PACK_EJSCRIPT     := 1
+BIT_PACK_SSL          := 1
+BIT_PACK_PHP          := 0
+BIT_PACK_CGI          := 1
+BIT_PACK_ESP          := 1
+BIT_PACK_SQLITE       := 1
+
 CFLAGS          += -fno-builtin -fno-defer-pop -fvolatile -w
-DFLAGS          += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS)))
+DFLAGS          += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
 IFLAGS          += -I$(CONFIG)/inc -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip
 LDFLAGS         += '-Wl,-r'
 LIBPATHS        += -L$(CONFIG)/bin
@@ -34,14 +42,6 @@ LDFLAGS-release :=
 CFLAGS          += $(CFLAGS-$(DEBUG))
 DFLAGS          += $(DFLAGS-$(DEBUG))
 LDFLAGS         += $(LDFLAGS-$(DEBUG))
-
-BIT_PACK_EST          := 0
-BIT_PACK_EJSCRIPT     := 1
-BIT_PACK_SSL          := 1
-BIT_PACK_PHP          := 0
-BIT_PACK_CGI          := 1
-BIT_PACK_ESP          := 1
-BIT_PACK_SQLITE       := 1
 
 BIT_ROOT_PREFIX       := deploy
 BIT_BASE_PREFIX       := $(BIT_ROOT_PREFIX)
