@@ -1,4 +1,5 @@
-Embedthis Appweb License
+Embedthis Open Source Software License
+===
 
 This software is distributed under commercial and open source licenses. You may use the GPLv2 License below License or
 you may acquire a commercial license from Embedthis Software. You agree to be fully bound by the terms of either
@@ -8,11 +9,14 @@ are unable to comply with the GPLv2, you must acquire a commercial license to us
 Commercial licenses for this software and support services are available from Embedthis Software at: http://embedthis.com/licensing/index.html
 
 GNU GENERAL PUBLIC LICENSE, Version 2, June 1991.
+===
+
 Copyright (C) 1989, 1991 Free Software Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed.
 
 PREAMBLE
+---
 
 The licenses for most software are designed to take away your freedom to share and change it. By contrast, the GNU General Public License is intended to guarantee your freedom to share and change free software--to make sure the software is free for all its users. This General Public License applies to most of the Free Software Foundation's software and to any other program whose authors commit to using it. (Some other Free Software Foundation software is covered by the GNU Library General Public License instead.) You can apply it to your programs, too.
 
@@ -32,6 +36,7 @@ The precise terms and conditions for copying, distribution and modification foll
 
 
 GNU GENERAL PUBLIC LICENSE TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+---
 
 0. This License applies to any program or other work which contains a notice placed by the copyright holder saying it may be distributed under the terms of this General Public License. The "Program", below, refers to any such program or work, and a "work based on the Program" means either the Program or any derivative work under copyright law: that is to say, a work containing the Program or a portion of it, either verbatim or with modifications and/or translated into another language. (Hereinafter, translation is included without limitation in the term "modification".) Each licensee is addressed as "you".
 
@@ -93,6 +98,14 @@ NO WARRANTY
 
 12. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
-Embedthis Trademarks and Copyrights
+- END OF TERMS AND CONDITIONS -
+
+Trademarks and Copyrights
+---
 Copyright (c) 2003-2013 Embedthis Software, LLC. All Rights Reserved.
-Embedthis, Appweb, Ejscript and ESP are trademarks of Embedthis Software, LLC. Other brands and their products are trademarks of their respective holders.
+Embedthis, Appweb, Ejscript, ESP, Embedthis GoAhead and Embedthis Bit are trademarks of Embedthis Software, LLC. Other brands and their products are trademarks of their respective holders.
+
+Third Party Licenses
+---
+
+The Software contains licensed third party software under these the agreements that follow.
