@@ -197,6 +197,7 @@ Bit.load({
         },
         matrixssl: {},
         openssl: {},
+        ssl: {},
     },
 
     targets: {

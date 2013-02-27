@@ -20,12 +20,9 @@
 #ifndef BIT_ROM
     #define BIT_ROM 0                   /**< Build for execute from ROM */
 #endif
-#ifndef BIT_SSL
-    #if BIT_PACK_EST || BIT_PACK_OPENSSL || BIT_PACK_MATRIXSSL || BIT_PACK_MOCANA
-        #define BIT_SSL 1               /**< Build with SSL support */
-    #else
-        #define BIT_SSL 0               /**< Build without SSL support */
-    #endif
+
+#ifndef BIT_PACK_SSL
+    #define BIT_PACK_SSL 0              /**< Build without SSL support */
 #endif
 
 /********************************* CPU Families *******************************/
