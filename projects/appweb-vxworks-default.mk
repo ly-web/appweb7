@@ -6,145 +6,145 @@ export WIND_BASE := $(WIND_BASE)
 export WIND_HOME := $(WIND_BASE)/..
 export WIND_PLATFORM := $(WIND_PLATFORM)
 
-PRODUCT         := appweb
-VERSION         := 4.3.0
-BUILD_NUMBER    := 0
-PROFILE         := default
-ARCH            := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
-OS              := vxworks
-CC              := ccpentium
-LD              := /usr/bin/ld
-CONFIG          := $(OS)-$(ARCH)-$(PROFILE)
-LBIN            := $(CONFIG)/bin
+PRODUCT           := appweb
+VERSION           := 4.3.0
+BUILD_NUMBER      := 0
+PROFILE           := default
+ARCH              := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
+OS                := vxworks
+CC                := ccpentium
+LD                := /usr/bin/ld
+CONFIG            := $(OS)-$(ARCH)-$(PROFILE)
+LBIN              := $(CONFIG)/bin
 
-BIT_PACK_EST          := 0
-BIT_PACK_EJSCRIPT     := 1
-BIT_PACK_SSL          := 1
-BIT_PACK_PHP          := 0
-BIT_PACK_CGI          := 1
-BIT_PACK_ESP          := 1
-BIT_PACK_SQLITE       := 1
+BIT_PACK_EST      := 0
+BIT_PACK_EJSCRIPT := 1
+BIT_PACK_SSL      := 1
+BIT_PACK_PHP      := 0
+BIT_PACK_CGI      := 1
+BIT_PACK_ESP      := 1
+BIT_PACK_SQLITE   := 1
 
-CFLAGS          += -fno-builtin -fno-defer-pop -fvolatile -w
-DFLAGS          += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
-IFLAGS          += -I$(CONFIG)/inc -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip
-LDFLAGS         += '-Wl,-r'
-LIBPATHS        += -L$(CONFIG)/bin
-LIBS            += 
+CFLAGS            += -fno-builtin -fno-defer-pop -fvolatile -w
+DFLAGS            += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
+IFLAGS            += -I$(CONFIG)/inc -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip
+LDFLAGS           += '-Wl,-r'
+LIBPATHS          += -L$(CONFIG)/bin
+LIBS              += 
 
-DEBUG           := debug
-CFLAGS-debug    := -g
-DFLAGS-debug    := -DBIT_DEBUG
-LDFLAGS-debug   := -g
-DFLAGS-release  := 
-CFLAGS-release  := -O2
-LDFLAGS-release := 
-CFLAGS          += $(CFLAGS-$(DEBUG))
-DFLAGS          += $(DFLAGS-$(DEBUG))
-LDFLAGS         += $(LDFLAGS-$(DEBUG))
+DEBUG             := debug
+CFLAGS-debug      := -g
+DFLAGS-debug      := -DBIT_DEBUG
+LDFLAGS-debug     := -g
+DFLAGS-release    := 
+CFLAGS-release    := -O2
+LDFLAGS-release   := 
+CFLAGS            += $(CFLAGS-$(DEBUG))
+DFLAGS            += $(DFLAGS-$(DEBUG))
+LDFLAGS           += $(LDFLAGS-$(DEBUG))
 
-BIT_ROOT_PREFIX       := deploy
-BIT_BASE_PREFIX       := $(BIT_ROOT_PREFIX)
-BIT_DATA_PREFIX       := $(BIT_VAPP_PREFIX)
-BIT_STATE_PREFIX      := $(BIT_VAPP_PREFIX)
-BIT_BIN_PREFIX        := $(BIT_VAPP_PREFIX)
-BIT_INC_PREFIX        := $(BIT_VAPP_PREFIX)/inc
-BIT_LIB_PREFIX        := $(BIT_VAPP_PREFIX)
-BIT_MAN_PREFIX        := $(BIT_VAPP_PREFIX)
-BIT_SBIN_PREFIX       := $(BIT_VAPP_PREFIX)
-BIT_ETC_PREFIX        := $(BIT_VAPP_PREFIX)
-BIT_WEB_PREFIX        := $(BIT_VAPP_PREFIX)/web
-BIT_LOG_PREFIX        := $(BIT_VAPP_PREFIX)
-BIT_SPOOL_PREFIX      := $(BIT_VAPP_PREFIX)
-BIT_CACHE_PREFIX      := $(BIT_VAPP_PREFIX)
-BIT_APP_PREFIX        := $(BIT_BASE_PREFIX)
-BIT_VAPP_PREFIX       := $(BIT_APP_PREFIX)
-BIT_SRC_PREFIX        := $(BIT_ROOT_PREFIX)/usr/src/$(PRODUCT)-$(VERSION)
+BIT_ROOT_PREFIX   := deploy
+BIT_BASE_PREFIX   := $(BIT_ROOT_PREFIX)
+BIT_DATA_PREFIX   := $(BIT_VAPP_PREFIX)
+BIT_STATE_PREFIX  := $(BIT_VAPP_PREFIX)
+BIT_BIN_PREFIX    := $(BIT_VAPP_PREFIX)
+BIT_INC_PREFIX    := $(BIT_VAPP_PREFIX)/inc
+BIT_LIB_PREFIX    := $(BIT_VAPP_PREFIX)
+BIT_MAN_PREFIX    := $(BIT_VAPP_PREFIX)
+BIT_SBIN_PREFIX   := $(BIT_VAPP_PREFIX)
+BIT_ETC_PREFIX    := $(BIT_VAPP_PREFIX)
+BIT_WEB_PREFIX    := $(BIT_VAPP_PREFIX)/web
+BIT_LOG_PREFIX    := $(BIT_VAPP_PREFIX)
+BIT_SPOOL_PREFIX  := $(BIT_VAPP_PREFIX)
+BIT_CACHE_PREFIX  := $(BIT_VAPP_PREFIX)
+BIT_APP_PREFIX    := $(BIT_BASE_PREFIX)
+BIT_VAPP_PREFIX   := $(BIT_APP_PREFIX)
+BIT_SRC_PREFIX    := $(BIT_ROOT_PREFIX)/usr/src/$(PRODUCT)-$(VERSION)
 
 WEB_USER    = $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$//' |  tail -1)
 WEB_GROUP   = $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$//' |  tail -1)
 
-TARGETS     += $(CONFIG)/bin/libmpr.out
+TARGETS           += $(CONFIG)/bin/libmpr.out
 ifeq ($(BIT_PACK_SSL),1)
-TARGETS += $(CONFIG)/bin/libmprssl.out
+TARGETS           += $(CONFIG)/bin/libmprssl.out
 endif
-TARGETS     += $(CONFIG)/bin/appman.out
-TARGETS     += $(CONFIG)/bin/makerom.out
+TARGETS           += $(CONFIG)/bin/appman.out
+TARGETS           += $(CONFIG)/bin/makerom.out
 ifeq ($(BIT_PACK_EST),1)
-TARGETS += $(CONFIG)/bin/libest.out
+TARGETS           += $(CONFIG)/bin/libest.out
 endif
-TARGETS     += $(CONFIG)/bin/ca.crt
-TARGETS     += $(CONFIG)/bin/libpcre.out
-TARGETS     += $(CONFIG)/bin/libhttp.out
-TARGETS     += $(CONFIG)/bin/http.out
+TARGETS           += $(CONFIG)/bin/ca.crt
+TARGETS           += $(CONFIG)/bin/libpcre.out
+TARGETS           += $(CONFIG)/bin/libhttp.out
+TARGETS           += $(CONFIG)/bin/http.out
 ifeq ($(BIT_PACK_SQLITE),1)
-TARGETS += $(CONFIG)/bin/libsqlite3.out
+TARGETS           += $(CONFIG)/bin/libsqlite3.out
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-TARGETS += $(CONFIG)/bin/sqlite.out
+TARGETS           += $(CONFIG)/bin/sqlite.out
 endif
-TARGETS     += $(CONFIG)/bin/libappweb.out
+TARGETS           += $(CONFIG)/bin/libappweb.out
 ifeq ($(BIT_PACK_ESP),1)
-TARGETS += $(CONFIG)/bin/libmod_esp.out
-endif
-ifeq ($(BIT_PACK_ESP),1)
-TARGETS += $(CONFIG)/bin/esp.out
+TARGETS           += $(CONFIG)/bin/libmod_esp.out
 endif
 ifeq ($(BIT_PACK_ESP),1)
-TARGETS += $(CONFIG)/bin/esp.conf
+TARGETS           += $(CONFIG)/bin/esp.out
 endif
 ifeq ($(BIT_PACK_ESP),1)
-TARGETS += src/server/esp.conf
+TARGETS           += $(CONFIG)/bin/esp.conf
 endif
 ifeq ($(BIT_PACK_ESP),1)
-TARGETS += $(CONFIG)/bin/esp-www
+TARGETS           += src/server/esp.conf
 endif
 ifeq ($(BIT_PACK_ESP),1)
-TARGETS += $(CONFIG)/bin/esp-appweb.conf
+TARGETS           += $(CONFIG)/bin/esp-www
+endif
+ifeq ($(BIT_PACK_ESP),1)
+TARGETS           += $(CONFIG)/bin/esp-appweb.conf
 endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
-TARGETS += $(CONFIG)/bin/libejs.out
+TARGETS           += $(CONFIG)/bin/libejs.out
 endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
-TARGETS += $(CONFIG)/bin/ejs.out
+TARGETS           += $(CONFIG)/bin/ejs.out
 endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
-TARGETS += $(CONFIG)/bin/ejsc.out
+TARGETS           += $(CONFIG)/bin/ejsc.out
 endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
-TARGETS += $(CONFIG)/bin/ejs.mod
+TARGETS           += $(CONFIG)/bin/ejs.mod
 endif
 ifeq ($(BIT_PACK_CGI),1)
-TARGETS += $(CONFIG)/bin/libmod_cgi.out
+TARGETS           += $(CONFIG)/bin/libmod_cgi.out
 endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
-TARGETS += $(CONFIG)/bin/libmod_ejs.out
+TARGETS           += $(CONFIG)/bin/libmod_ejs.out
 endif
 ifeq ($(BIT_PACK_SSL),1)
-TARGETS += $(CONFIG)/bin/libmod_ssl.out
+TARGETS           += $(CONFIG)/bin/libmod_ssl.out
 endif
-TARGETS     += $(CONFIG)/bin/authpass.out
+TARGETS           += $(CONFIG)/bin/authpass.out
 ifeq ($(BIT_PACK_CGI),1)
-TARGETS += $(CONFIG)/bin/cgiProgram.out
+TARGETS           += $(CONFIG)/bin/cgiProgram.out
 endif
-TARGETS     += src/server/slink.c
-TARGETS     += $(CONFIG)/bin/libapp.out
-TARGETS     += $(CONFIG)/bin/appweb.out
-TARGETS     += src/server/cache
-TARGETS     += $(CONFIG)/bin/testAppweb.out
+TARGETS           += src/server/slink.c
+TARGETS           += $(CONFIG)/bin/libapp.out
+TARGETS           += $(CONFIG)/bin/appweb.out
+TARGETS           += src/server/cache
+TARGETS           += $(CONFIG)/bin/testAppweb.out
 ifeq ($(BIT_PACK_CGI),1)
-TARGETS += test/cgi-bin/testScript
-endif
-ifeq ($(BIT_PACK_CGI),1)
-TARGETS += test/web/caching/cache.cgi
+TARGETS           += test/cgi-bin/testScript
 endif
 ifeq ($(BIT_PACK_CGI),1)
-TARGETS += test/web/auth/basic/basic.cgi
+TARGETS           += test/web/caching/cache.cgi
 endif
 ifeq ($(BIT_PACK_CGI),1)
-TARGETS += test/cgi-bin/cgiProgram.out
+TARGETS           += test/web/auth/basic/basic.cgi
 endif
-TARGETS     += test/web/js
+ifeq ($(BIT_PACK_CGI),1)
+TARGETS           += test/cgi-bin/cgiProgram.out
+endif
+TARGETS           += test/web/js
 
 unexport CDPATH
 

@@ -2,143 +2,143 @@
 #   appweb-windows-default.nmake -- Makefile to build Embedthis Appweb for windows
 #
 
-PRODUCT         = appweb
-VERSION         = 4.3.0
-BUILD_NUMBER    = 0
-PROFILE         = default
-PA              = $(PROCESSOR_ARCHITECTURE)
+PRODUCT           = appweb
+VERSION           = 4.3.0
+BUILD_NUMBER      = 0
+PROFILE           = default
+PA                = $(PROCESSOR_ARCHITECTURE)
 
 !IF "$(PA)" == "AMD64"
-ARCH            = x64
-ENTRY           = _DllMainCRTStartup
+ARCH              = x64
+ENTRY             = _DllMainCRTStartup
 !ELSE
-ARCH            = x86
-ENTRY           = _DllMainCRTStartup@12
+ARCH              = x86
+ENTRY             = _DllMainCRTStartup@12
 !ENDIF
 
-OS              = windows
-CONFIG          = $(OS)-$(ARCH)-$(PROFILE)
-LBIN            = $(CONFIG)\bin
-CC              = cl
-LD              = link
-RC              = rc
-CFLAGS          = -nologo -GR- -W3 -Zi -Od -MDd
-DFLAGS          = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
-IFLAGS          = -I$(CONFIG)\inc
-LDFLAGS         = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
-LIBPATHS        = -libpath:$(CONFIG)\bin
-LIBS            = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
+OS                = windows
+CONFIG            = $(OS)-$(ARCH)-$(PROFILE)
+LBIN              = $(CONFIG)\bin
+BIT_PACK_EST      = 0
+BIT_PACK_EJSCRIPT = 1
+BIT_PACK_SSL      = 1
+BIT_PACK_PHP      = 0
+BIT_PACK_CGI      = 1
+BIT_PACK_ESP      = 1
+BIT_PACK_SQLITE   = 1
 
-BIT_PACK_EST          = 0
-BIT_PACK_EJSCRIPT     = 1
-BIT_PACK_SSL          = 1
-BIT_PACK_PHP          = 0
-BIT_PACK_CGI          = 1
-BIT_PACK_ESP          = 1
-BIT_PACK_SQLITE       = 1
+CC                = cl
+LD                = link
+RC                = rc
+CFLAGS            = -nologo -GR- -W3 -Zi -Od -MDd
+DFLAGS            = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
+IFLAGS            = -I$(CONFIG)\inc
+LDFLAGS           = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
+LIBPATHS          = -libpath:$(CONFIG)\bin
+LIBS              = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
-BIT_ROOT_PREFIX       = C:
-BIT_BASE_PREFIX       = $(BIT_ROOT_PREFIX)\Program Files
-BIT_APP_PREFIX        = $(BIT_BASE_PREFIX)\Embedthis Appweb
-BIT_VAPP_PREFIX       = $(BIT_APP_PREFIX)
-BIT_DATA_PREFIX       = $(BIT_VAPP_PREFIX)
-BIT_STATE_PREFIX      = $(BIT_VAPP_PREFIX)
-BIT_BIN_PREFIX        = $(BIT_VAPP_PREFIX)\bin
-BIT_INC_PREFIX        = $(BIT_VAPP_PREFIX)\inc
-BIT_LIB_PREFIX        = $(BIT_VAPP_PREFIX)\lib
-BIT_MAN_PREFIX        = $(BIT_VAPP_PREFIX)\man
-BIT_ETC_PREFIX        = $(BIT_VAPP_PREFIX)
-BIT_WEB_PREFIX        = $(BIT_VAPP_PREFIX)\web
-BIT_LOG_PREFIX        = $(BIT_VAPP_PREFIX)\log
-BIT_SPOOL_PREFIX      = $(BIT_VAPP_PREFIX)\tmp
-BIT_CACHE_PREFIX      = $(BIT_VAPP_PREFIX)\cache
-BIT_SRC_PREFIX        = $(BIT_VAPP_PREFIX)\src
+BIT_ROOT_PREFIX   = C:
+BIT_BASE_PREFIX   = $(BIT_ROOT_PREFIX)\Program Files
+BIT_APP_PREFIX    = $(BIT_BASE_PREFIX)\Embedthis Appweb
+BIT_VAPP_PREFIX   = $(BIT_APP_PREFIX)
+BIT_DATA_PREFIX   = $(BIT_VAPP_PREFIX)
+BIT_STATE_PREFIX  = $(BIT_VAPP_PREFIX)
+BIT_BIN_PREFIX    = $(BIT_VAPP_PREFIX)\bin
+BIT_INC_PREFIX    = $(BIT_VAPP_PREFIX)\inc
+BIT_LIB_PREFIX    = $(BIT_VAPP_PREFIX)\lib
+BIT_MAN_PREFIX    = $(BIT_VAPP_PREFIX)\man
+BIT_ETC_PREFIX    = $(BIT_VAPP_PREFIX)
+BIT_WEB_PREFIX    = $(BIT_VAPP_PREFIX)\web
+BIT_LOG_PREFIX    = $(BIT_VAPP_PREFIX)\log
+BIT_SPOOL_PREFIX  = $(BIT_VAPP_PREFIX)\tmp
+BIT_CACHE_PREFIX  = $(BIT_VAPP_PREFIX)\cache
+BIT_SRC_PREFIX    = $(BIT_VAPP_PREFIX)\src
 
 
-TARGETS     = $(TARGETS) $(CONFIG)\bin\removeFiles.exe
-TARGETS     = $(TARGETS) $(CONFIG)\bin\libmpr.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\removeFiles.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libmpr.dll
 !IF "$(BIT_PACK_SSL)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\libmprssl.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libmprssl.dll
 !ENDIF
-TARGETS     = $(TARGETS) $(CONFIG)\bin\appman.exe
-TARGETS     = $(TARGETS) $(CONFIG)\bin\makerom.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\appman.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\makerom.exe
 !IF "$(BIT_PACK_EST)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\libest.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libest.dll
 !ENDIF
-TARGETS     = $(TARGETS) $(CONFIG)\bin\ca.crt
-TARGETS     = $(TARGETS) $(CONFIG)\bin\libpcre.dll
-TARGETS     = $(TARGETS) $(CONFIG)\bin\libhttp.dll
-TARGETS     = $(TARGETS) $(CONFIG)\bin\http.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\ca.crt
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libpcre.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libhttp.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\http.exe
 !IF "$(BIT_PACK_SQLITE)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\libsqlite3.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libsqlite3.dll
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\sqlite.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\sqlite.exe
 !ENDIF
-TARGETS     = $(TARGETS) $(CONFIG)\bin\libappweb.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libappweb.dll
 !IF "$(BIT_PACK_ESP)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_esp.dll
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\esp.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_esp.dll
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\esp.conf
+TARGETS           = $(TARGETS) $(CONFIG)\bin\esp.exe
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-TARGETS = $(TARGETS) src\server\esp.conf
+TARGETS           = $(TARGETS) $(CONFIG)\bin\esp.conf
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\esp-www
+TARGETS           = $(TARGETS) src\server\esp.conf
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\esp-appweb.conf
+TARGETS           = $(TARGETS) $(CONFIG)\bin\esp-www
+!ENDIF
+!IF "$(BIT_PACK_ESP)" == "1"
+TARGETS           = $(TARGETS) $(CONFIG)\bin\esp-appweb.conf
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\libejs.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libejs.dll
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\ejs.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\ejs.exe
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\ejsc.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\ejsc.exe
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\ejs.mod
+TARGETS           = $(TARGETS) $(CONFIG)\bin\ejs.mod
 !ENDIF
 !IF "$(BIT_PACK_CGI)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_cgi.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_cgi.dll
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_ejs.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_ejs.dll
 !ENDIF
 !IF "$(BIT_PACK_SSL)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\libmod_ssl.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_ssl.dll
 !ENDIF
-TARGETS     = $(TARGETS) $(CONFIG)\bin\authpass.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\authpass.exe
 !IF "$(BIT_PACK_CGI)" == "1"
-TARGETS = $(TARGETS) $(CONFIG)\bin\cgiProgram.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\cgiProgram.exe
 !ENDIF
-TARGETS     = $(TARGETS) src\server\slink.c
-TARGETS     = $(TARGETS) $(CONFIG)\bin\libapp.dll
-TARGETS     = $(TARGETS) $(CONFIG)\bin\appweb.exe
-TARGETS     = $(TARGETS) $(CONFIG)\bin\appwebMonitor.exe
-TARGETS     = $(TARGETS) $(CONFIG)\bin\appwebMonitor.ico
-TARGETS     = $(TARGETS) src\server\cache
-TARGETS     = $(TARGETS) $(CONFIG)\bin\testAppweb.exe
+TARGETS           = $(TARGETS) src\server\slink.c
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libapp.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\appweb.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\appwebMonitor.exe
+TARGETS           = $(TARGETS) $(CONFIG)\bin\appwebMonitor.ico
+TARGETS           = $(TARGETS) src\server\cache
+TARGETS           = $(TARGETS) $(CONFIG)\bin\testAppweb.exe
 !IF "$(BIT_PACK_CGI)" == "1"
-TARGETS = $(TARGETS) test\cgi-bin\testScript
-!ENDIF
-!IF "$(BIT_PACK_CGI)" == "1"
-TARGETS = $(TARGETS) test\web\caching\cache.cgi
+TARGETS           = $(TARGETS) test\cgi-bin\testScript
 !ENDIF
 !IF "$(BIT_PACK_CGI)" == "1"
-TARGETS = $(TARGETS) test\web\auth\basic\basic.cgi
+TARGETS           = $(TARGETS) test\web\caching\cache.cgi
 !ENDIF
 !IF "$(BIT_PACK_CGI)" == "1"
-TARGETS = $(TARGETS) test\cgi-bin\cgiProgram.exe
+TARGETS           = $(TARGETS) test\web\auth\basic\basic.cgi
 !ENDIF
-TARGETS     = $(TARGETS) test\web\js
+!IF "$(BIT_PACK_CGI)" == "1"
+TARGETS           = $(TARGETS) test\cgi-bin\cgiProgram.exe
+!ENDIF
+TARGETS           = $(TARGETS) test\web\js
 
 !IFNDEF SHOW
 .SILENT:
