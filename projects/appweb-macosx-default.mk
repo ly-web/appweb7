@@ -326,6 +326,7 @@ endif
 DEPS_9 += $(CONFIG)/inc/bit.h
 DEPS_9 += $(CONFIG)/inc/mpr.h
 DEPS_9 += $(CONFIG)/inc/est.h
+DEPS_9 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_9)
@@ -1690,13 +1691,13 @@ uninstall: $(DEPS_97)
 	rm -f "$(BIT_ETC_PREFIX)/install.conf"
 	rm -fr "$(BIT_INC_PREFIX)/appweb"
 	rm -fr "$(BIT_VAPP_PREFIX)"
-	rmdir -p "$(BIT_ETC_PREFIX)"
-	rmdir -p "$(BIT_WEB_PREFIX)"
-	rmdir -p "$(BIT_LOG_PREFIX)"
-	rmdir -p "$(BIT_SPOOL_PREFIX)"
-	rmdir -p "$(BIT_CACHE_PREFIX)"
+	rmdir -p "$(BIT_ETC_PREFIX)" 2>/dev/null ; true
+	rmdir -p "$(BIT_WEB_PREFIX)" 2>/dev/null ; true
+	rmdir -p "$(BIT_LOG_PREFIX)" 2>/dev/null ; true
+	rmdir -p "$(BIT_SPOOL_PREFIX)" 2>/dev/null ; true
+	rmdir -p "$(BIT_CACHE_PREFIX)" 2>/dev/null ; true
 	rm -f "$(BIT_APP_PREFIX)/latest"
-	rmdir -p "$(BIT_APP_PREFIX)"
+	rmdir -p "$(BIT_APP_PREFIX)" 2>/dev/null ; true
 
 #
 #   genslink
