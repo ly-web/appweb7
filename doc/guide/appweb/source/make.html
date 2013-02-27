@@ -102,7 +102,7 @@ nmake -f projects\appweb-windows.nmake
             <pre>$ make <b>BIT_PACK_SQLITE=0</b> </pre>
             <p>To see the list of configurable options, run:</p>
             <pre>$ <b>make help</b>
-usage: make [clean, compile, deploy, install, run, uninstall]
+usage: make [clean, compile, install, run, uninstall]
 The default configuration can be modified by setting make variables
 Set to 0 to disable and 1 to enable:
   PROFILE            # Select default or static for static linking
@@ -133,7 +133,7 @@ For example, to disable CGI:
   make BIT_PACK_CGI=0
 Other make variables:
   ARCH               # CPU architecture (x86, x64, ppc, ...)
-  OS                 # Operating system (linux, macosx, windows, vxworks, ...)
+  OS                 # Operating system (linux, macosx, windows, vxworks)
   CC                 # Compiler to use 
   LD                 # Linker to use
   DEBUG              # Set to debug or release for debug or optimized builds
@@ -156,8 +156,8 @@ Other make variables:
             <pre>
 sudo make uninstall
 </pre>
-            <p>If you need to capture the build products only, you can deploy to a specific directory via:
-            <pre>make BIT_ROOT_DIR=/tmp/output deploy</pre>
+            <p>If you need to capture the build products only, you can install to a specific directory via:
+            <pre>make BIT_ROOT_PREFIX=/tmp/output installBinary</pre>
             <a id="cross"></a>
             <h2 class="section">Cross Compiling with Make</h2>
             <p>Building a product for platform different to that of the local system is called <em>cross compiling</em>.
