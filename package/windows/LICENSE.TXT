@@ -97,10 +97,9 @@ NO WARRANTY
 
 - END OF TERMS AND CONDITIONS -
 
-
 Third Party Components
 
-See doc/licenses for other licenses. Contributors have provided portions of the software that are covered by the Embedthis
+See LICENSE.md for other licenses. Contributors have provided portions of the software that are covered by the Embedthis
 Contributor license that grants Embedthis sufficient rights to execute this license Agreement.
 
 Trademarks and Copyrights
