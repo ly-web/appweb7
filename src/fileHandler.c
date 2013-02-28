@@ -193,6 +193,9 @@ static void openFileHandler(HttpQueue *q)
             } else {
                 httpHandleOptionsTrace(q->conn, "GET,HEAD,POST");
             }
+
+        } else {
+            httpError(conn, HTTP_CODE_BAD_METHOD, "Bad method");
         }
     }
 }
