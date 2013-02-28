@@ -495,7 +495,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
 {
     HttpConn    *conn;
     MprBuf      *buf;
-    char        *endHeaders, *headers, *key, *value;
+    char        *endHeaders, *headers, *key, *value, *junk;
     ssize       blen;
     int         len;
 
@@ -571,7 +571,8 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
                 /*
                     Now pass all other headers back to the client
                  */
-                httpSetHeader(conn, key, "%s", value);
+                key = stok(key, ":\r\n\t ", &junk);
+                httpSetHeaderString(conn, key, value);
             }
         }
         buf->start = endHeaders;
@@ -586,7 +587,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
 static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet)
 {
     MprBuf      *buf;
-    char        *protocol, *status;
+    char        *protocol, *status, *msg;
     
     buf = packet->content;
     protocol = getCgiToken(buf, " ");
@@ -603,7 +604,8 @@ static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet)
         httpError(cgi->conn, HTTP_CODE_BAD_GATEWAY, "Bad CGI header response");
         return 0;
     }
-    mprTrace(4, "CGI: Status line: %s %s %s", protocol, status, getCgiToken(buf, "\n"));
+    msg = getCgiToken(buf, "\n");
+    mprTrace(4, "CGI: Status line: %s %s %s", protocol, status, msg);
     return 1;
 }
 
