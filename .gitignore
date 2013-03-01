@@ -200,3 +200,5 @@ macosx-x64-default
 macosx-x64-static
 .prefixes
 /*-*-*/
+test/t.es
+test/40.es
