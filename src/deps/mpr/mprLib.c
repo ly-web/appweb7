@@ -5509,6 +5509,7 @@ PUBLIC ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
  */
 PUBLIC ssize mprWriteCmdBlock(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 {
+#if BIT_UNIX_LIKE
     MprCmdFile  *file;
     ssize       wrote;
 
@@ -5517,6 +5518,9 @@ PUBLIC ssize mprWriteCmdBlock(MprCmd *cmd, int channel, char *buf, ssize bufsize
     wrote = mprWriteCmd(cmd, channel, buf, bufsize);
     fcntl(file->fd, F_SETFL, fcntl(file->fd, F_GETFL) | O_NONBLOCK);
     return wrote;
+#else
+    return mprWriteCmd(cmd, channel, buf, bufsize);
+#endif
 }
 
 
