@@ -24003,10 +24003,16 @@ PUBLIC int mprAvailableWorkers()
     int             activeWorkers, spareThreads, spareCores, result;
 
     mprGetWorkerStats(&wstats);
+    /*
+        SpareThreads    == Threads that can be created up to max threads
+        ActiveWorkers   == Worker threads actively servicing requests
+        SpareCores      == Cores available on the system
+        Result          == Idle workers + lesser of SpareCores|SpareThreads
+     */
     spareThreads = wstats.max - wstats.busy - wstats.idle;
     activeWorkers = wstats.busy - wstats.yielded;
     spareCores = MPR->heap->stats.numCpu - activeWorkers;
-    if (spareCores <= 0 || spareThreads <= 0) {
+    if (spareCores <= 0 /* UNUSED || spareThreads <= 0 */) {
         return 0;
     }
     result = wstats.idle + min(spareThreads, spareCores);
