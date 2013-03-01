@@ -1679,8 +1679,15 @@ install: $(DEPS_104)
 DEPS_105 = $(DEPS_105) stop
 
 uninstall: $(DEPS_105)
+	if exist "$(BIT_VAPP_PREFIX)\appweb.conf" rd /Q "$(BIT_VAPP_PREFIX)\appweb.conf"
+	if exist "$(BIT_VAPP_PREFIX)\esp.conf" rd /Q "$(BIT_VAPP_PREFIX)\esp.conf"
+	if exist "$(BIT_VAPP_PREFIX)\mine.types" rd /Q "$(BIT_VAPP_PREFIX)\mine.types"
 	if exist "$(BIT_VAPP_PREFIX)\install.conf" rd /Q "$(BIT_VAPP_PREFIX)\install.conf"
 	if exist "$(BIT_VAPP_PREFIX)\inc\appweb" rd /Q /S"$(BIT_VAPP_PREFIX)\inc\appweb"
+	if exist "$(BIT_VAPP_PREFIX)\web" rd /Q /S"$(BIT_VAPP_PREFIX)\web"
+	if exist "$(BIT_VAPP_PREFIX)\tmp" rd /Q /S"$(BIT_VAPP_PREFIX)\tmp"
+	if exist "$(BIT_VAPP_PREFIX)\cache" rd /Q /S"$(BIT_VAPP_PREFIX)\cache"
+	if exist "$(BIT_VAPP_PREFIX)\log" rd /Q /S"$(BIT_VAPP_PREFIX)\log"
 	if exist "$(BIT_VAPP_PREFIX)" rd /Q /S"$(BIT_VAPP_PREFIX)"
 	if exist "$(BIT_VAPP_PREFIX)\bin" rd /Q "$(BIT_VAPP_PREFIX)\bin"
 	if exist "$(BIT_VAPP_PREFIX)\inc" rd /Q "$(BIT_VAPP_PREFIX)\inc"
