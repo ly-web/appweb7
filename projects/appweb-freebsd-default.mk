@@ -1676,35 +1676,3 @@ DEPS_96 += start
 
 install: $(DEPS_96)
 	
-
-#
-#   uninstall
-#
-DEPS_97 += stop
-
-uninstall: $(DEPS_97)
-	rm -f "$(BIT_ETC_PREFIX)/install.conf"
-	rm -fr "$(BIT_INC_PREFIX)/appweb"
-	rm -fr "$(BIT_VAPP_PREFIX)"
-	rmdir -p "$(BIT_ETC_PREFIX)" 2>/dev/null ; true
-	rmdir -p "$(BIT_WEB_PREFIX)" 2>/dev/null ; true
-	rmdir -p "$(BIT_LOG_PREFIX)" 2>/dev/null ; true
-	rmdir -p "$(BIT_SPOOL_PREFIX)" 2>/dev/null ; true
-	rmdir -p "$(BIT_CACHE_PREFIX)" 2>/dev/null ; true
-	rm -f "$(BIT_APP_PREFIX)/latest"
-	rmdir -p "$(BIT_APP_PREFIX)" 2>/dev/null ; true
-
-#
-#   genslink
-#
-genslink: $(DEPS_98)
-	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
-
-#
-#   run
-#
-DEPS_99 += compile
-
-run: $(DEPS_99)
-	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
-

@@ -22,6 +22,9 @@ Bit.load({
         uninstall: {
             depends: [ 'build', 'stop' ],
             action: "
+                removeFile(bit.prefixes.etc.join('appweb.conf'))
+                removeFile(bit.prefixes.etc.join('esp.conf'))
+                removeFile(bit.prefixes.etc.join('mine.types'))
                 removeFile(bit.prefixes.etc.join('install.conf'))
                 removeDir(bit.prefixes.inc.join(bit.settings.product))
                 uninstallBinary()

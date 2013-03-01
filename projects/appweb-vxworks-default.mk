@@ -1457,6 +1457,9 @@ install: $(DEPS_94)
 #   uninstall
 #
 uninstall: $(DEPS_95)
+	rm -f "$(BIT_VAPP_PREFIX)/appweb.conf"
+	rm -f "$(BIT_VAPP_PREFIX)/esp.conf"
+	rm -f "$(BIT_VAPP_PREFIX)/mine.types"
 	rm -f "$(BIT_VAPP_PREFIX)/install.conf"
 	rm -fr "$(BIT_VAPP_PREFIX)/inc/appweb"
 
