@@ -98,6 +98,10 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/122">[issue 122].</a></li>
                 <li>Add full text search (FTS3) in SQLite
                     <a href="https://github.com/embedthis/appweb-4/issues/128">[issue 128].</a></li>
+                <li>Optimize memory allocation for large form requests
+                    <a href="https://github.com/embedthis/appweb-4/issues/131">[issue 131].</a></li>
+                <li>Optimize memory garbage collection when appweb is idle
+                    <a href="https://github.com/embedthis/appweb-4/issues/132">[issue 132].</a></li>
             </ul>
             <h3>Fixes</h3>
             <ul>
@@ -129,14 +133,16 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/124">[issue 124].</a></li>
                 <li>ESP now uses the file handler to serve static content.
                     <a href="https://github.com/embedthis/appweb-4/issues/126">[issue 126].</a></li>
+                <li>Form request with Content-Length of zero.
+                    <a href="https://github.com/embedthis/appweb-4/issues/129">[issue 129].</a></li>
+                <li>Improve CGI response header parsing
+                    <a href="https://github.com/embedthis/appweb-4/issues/130">[issue 130].</a></li>
             </ul>
             <h3>API Changes</h3>
             <ul>
-                <li>The Listen directive will now listen on both IPv4 and IPv6 by default if no network interface
-                is supplied. Previously it only listened on IPv4. If a network interface is supplied, only that
-                interface will be listened on.</li>
                 <li>The installation prefixe names have been refactored to work with Bit.</p>
             </ul>
+
             <a id="r4.2.0"></a>
             <h2 class="section">Changes in 4.2.0</h2>
             <h3>Minor Features</h3>
