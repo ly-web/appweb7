@@ -4,7 +4,7 @@
 
 PRODUCT           := appweb
 VERSION           := 4.3.0
-BUILD_NUMBER      := 0
+BUILD_NUMBER      := 1
 PROFILE           := default
 ARCH              := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 OS                := macosx
@@ -326,7 +326,6 @@ endif
 DEPS_9 += $(CONFIG)/inc/bit.h
 DEPS_9 += $(CONFIG)/inc/mpr.h
 DEPS_9 += $(CONFIG)/inc/est.h
-DEPS_9 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_9)
@@ -1435,7 +1434,7 @@ test/web/js: $(DEPS_91)
 #   version
 #
 version: $(DEPS_92)
-	@echo 4.3.0-0
+	@echo 4.3.0-1
 
 
 #

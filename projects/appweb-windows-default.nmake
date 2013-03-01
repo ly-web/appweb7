@@ -4,7 +4,7 @@
 
 PRODUCT           = appweb
 VERSION           = 4.3.0
-BUILD_NUMBER      = 0
+BUILD_NUMBER      = 1
 PROFILE           = default
 PA                = $(PROCESSOR_ARCHITECTURE)
 
@@ -1510,7 +1510,7 @@ test\web\js: $(DEPS_99)
 #   version
 #
 version: $(DEPS_100)
-	@echo 4.3.0-0
+	@echo 4.3.0-1
 
 
 #
