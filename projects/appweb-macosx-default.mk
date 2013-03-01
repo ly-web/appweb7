@@ -1537,8 +1537,7 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp "src/esp/esp-appweb.conf" "$(BIT_VAPP_PREFIX)/bin/esp-appweb.conf"
 endif
 ifeq ($(BIT_PACK_ESP),1)
-	mkdir -p "$(BIT_ETC_PREFIX)"
-	cp "$(CONFIG)/bin/esp.conf" "$(BIT_ETC_PREFIX)/esp.conf"
+	cp "$(CONFIG)/bin/esp.conf" "$(BIT_VAPP_PREFIX)/bin/esp.conf"
 endif
 	mkdir -p "$(BIT_WEB_PREFIX)/bench"
 	cp "src/server/web/bench/1b.html" "$(BIT_WEB_PREFIX)/bench/1b.html"
@@ -1572,6 +1571,7 @@ endif
 	cp "src/server/web/test/test.php" "$(BIT_WEB_PREFIX)/test/test.php"
 	cp "src/server/web/test/test.pl" "$(BIT_WEB_PREFIX)/test/test.pl"
 	cp "src/server/web/test/test.py" "$(BIT_WEB_PREFIX)/test/test.py"
+	mkdir -p "$(BIT_ETC_PREFIX)"
 	cp "src/server/mime.types" "$(BIT_ETC_PREFIX)/mime.types"
 	cp "src/server/appweb.conf" "$(BIT_ETC_PREFIX)/appweb.conf"
 	mkdir -p "$(BIT_VAPP_PREFIX)/inc"

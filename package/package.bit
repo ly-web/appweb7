@@ -193,7 +193,7 @@ Bit.load({
 
             },{
                 from:       '${BIN}/esp.conf',
-                to:         '${etc}/',
+                to:         '${abin}/',
                 set:        'core',
                 require:    'esp',
 

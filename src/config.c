@@ -62,8 +62,8 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     httpSetRouteVar(route, "SPL_DIR", BIT_SPOOL_PREFIX);
     httpSetRouteVar(route, "BIN_DIR", mprJoinPath(server->appweb->platformDir, "bin"));
 #if DEPRECATED || 1
-    httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
-    httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
+    /* DEPRECATED */ httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
+    /* DEPRECATED */ httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
 #endif
 
     state = createState(server, host, route);

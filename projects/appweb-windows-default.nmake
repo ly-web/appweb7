@@ -1591,8 +1591,7 @@ installBinary: $(DEPS_102)
 	copy /Y "src\esp\esp-appweb.conf" "$(BIT_VAPP_PREFIX)\bin\esp-appweb.conf"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
-	copy /Y "$(CONFIG)\bin\esp.conf" "$(BIT_VAPP_PREFIX)\esp.conf"
+	copy /Y "$(CONFIG)\bin\esp.conf" "$(BIT_VAPP_PREFIX)\bin\esp.conf"
 !ENDIF
 	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
 	copy /Y "src\server\web\bench\1b.html" "$(BIT_VAPP_PREFIX)\web\bench\1b.html"
@@ -1626,6 +1625,7 @@ installBinary: $(DEPS_102)
 	copy /Y "src\server\web\test\test.php" "$(BIT_VAPP_PREFIX)\web\test\test.php"
 	copy /Y "src\server\web\test\test.pl" "$(BIT_VAPP_PREFIX)\web\test\test.pl"
 	copy /Y "src\server\web\test\test.py" "$(BIT_VAPP_PREFIX)\web\test\test.py"
+	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
 	copy /Y "src\server\mime.types" "$(BIT_VAPP_PREFIX)\mime.types"
 	copy /Y "src\server\appweb.conf" "$(BIT_VAPP_PREFIX)\appweb.conf"
 	if not exist "$(BIT_VAPP_PREFIX)\inc" md "$(BIT_VAPP_PREFIX)\inc"
