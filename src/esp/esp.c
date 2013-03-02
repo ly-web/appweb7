@@ -1328,7 +1328,10 @@ static void generateApp(cchar *name)
     if (smatch(name, ".")) {
         dir = mprGetCurrentPath();
         name = mprGetPathBase(dir);
-        chdir(mprGetPathParent(dir));
+        if (chdir(mprGetPathParent(dir)) < 0) {
+            fail("Cannot change directory to %s", mprGetPathParent(dir));
+            return;
+        }
     }
     if (!findDefaultConfigFile()) {
         return;
@@ -2069,7 +2072,9 @@ static bool findConfigFile(bool mvc)
         }
         for (path = mprGetCurrentPath(); path; path = nextPath) {
             if (mprPathExists(mprJoinPath(path, name), R_OK)) {
-                chdir(path);
+                if (chdir(path) < 0) {
+                    fail("Cannot change directory to %s", path);
+                }
                 app->configFile = name;
                 break;
             }
