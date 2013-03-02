@@ -1410,6 +1410,76 @@
                 </tbody>
             </table>
             
+            <a id="uploadAutoDelete"></a>
+            <h2>UploadAutoDelete</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Set the directory to store uploaded files.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>UploadAutoDelete [on|off]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>UploadAutoDelete off</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>Once an uploaded file is fully received and processed by the handler, Appweb will
+                            either delete or preserve the temporary file depending on the UploadAutoDelete setting.
+                            If set to <em>on</em>, the uploaded file will be deleted when the handler completes the
+                            request. If set to <em>off</em> the temporary file will be preserved in the Upload directory.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            
+            <a id="uploadDir"></a>
+            <h2>UploadDir</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Set the directory to store uploaded files.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>UploadDir path</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>UploadDir /tmp</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The UploadDir directive defines the directory used to store the
+                                temporary files holding uploaded files. These files are temporarily used while the
+                                file is being uploaded. Once fully received, the handler responsible for responding
+                                to the request must copy, move or process the uploaded file. The uploadedHandler
+                                will delete the tempoary (subject to the value of UploadAutoDelete).</td>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
