@@ -516,17 +516,19 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                 if (token == 0) { 
                     token = "";
                 }
+                /* If users want a format and safe, use %S or renderSafe() */
+                token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
+                body = sjoin(body, "  espRender(conn, \"", fmt, "\", ", token, ");\n", NULL);
             } else {
-                fmt = "%s";
+                token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
+                body = sjoin(body, "  espRenderSafeString(conn, ", token, ");\n", NULL);
             }
-            token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-            body = sjoin(body, "  espRenderSafe(conn, \"", fmt, "\", ", token, ");\n", NULL);
             break;
 
         case ESP_TOK_FIELD:
             /* @#field -- field in the current record */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-            body = sjoin(body, "  espRenderSafe(conn, getField(\"", token, "\"));\n", NULL);
+            body = sjoin(body, "  espRenderSafeString(conn, getField(\"", token, "\"));\n", NULL);
             break;
 
         case ESP_TOK_LITERAL:
