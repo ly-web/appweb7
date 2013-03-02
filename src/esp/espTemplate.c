@@ -579,9 +579,11 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         dir = mprGetRelPath(route->dir, NULL);
         path = mprGetRelPath(path, NULL);
         assert(slen(path) > slen(dir));
-        assert(sncmp(path, dir, slen(dir)) == 0);
-        if (sncmp(path, dir, slen(dir)) == 0) {
-            path = &path[slen(dir) + 1];
+        if (!smatch(dir, ".")) {
+            assert(sncmp(path, dir, slen(dir)) == 0);
+            if (sncmp(path, dir, slen(dir)) == 0) {
+                path = &path[slen(dir) + 1];
+            }
         }
         body = sfmt(\
             "/*\n   Generated from %s\n */\n"\

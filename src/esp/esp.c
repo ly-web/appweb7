@@ -2051,7 +2051,7 @@ static void generateAppDb(HttpRoute *route)
 /*
     Search strategy is:
 
-    [--config dir] : ./appweb.conf : [parent]/appweb.conf : /usr/lib/appweb/VER/bin/esp-appweb.conf
+    [--config dir] : ./appweb.conf : [parent]/appweb.conf : /usr/local/lib/appweb/VER/bin/esp-appweb.conf
  */
 static bool findConfigFile(bool mvc)
 {
