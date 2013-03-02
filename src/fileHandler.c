@@ -150,7 +150,9 @@ static void openFileHandler(HttpQueue *q)
                 }
             }
         }
-        if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST) && !conn->error) {
+        if (conn->error) {
+            ;
+        } else if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
             if (tx->fileInfo.valid && tx->fileInfo.mtime) {
                 //  TODO - OPT could cache this
                 date = httpGetDateString(&tx->fileInfo);
