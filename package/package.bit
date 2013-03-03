@@ -109,11 +109,11 @@ Bit.load({
 
             },{ from:        [
                     /* Don't use wild-cards for cross-generation  */
-                    '${BIN}/libapp${SHOBJ}',
                     '${BIN}/libappweb${SHOBJ}',
                     '${BIN}/libhttp${SHOBJ}',
                     '${BIN}/libmpr${SHOBJ}',
                     '${BIN}/libpcre${SHOBJ}',
+                    '${BIN}/libslink${SHOBJ}',
                 ],
                 to:         '${abin}/',
                 set:        'core',
