@@ -157,7 +157,7 @@ Include conf/applications/*.conf
             <h2 class="section">Conditional Directives</h2>
             <p>The configuration file supports conditional processing via the <b>&lt;if&gt;</b> directive. The
             <b>if</b> directive tests a symbolic value and if true, it enables parsing the nested directives. If the
-            value is values, the nested directives are ignored.</p>
+            value is false, the nested directives are ignored.</p>
             <pre>
 &lt;if FILE_MODULE&gt;
     LoadModule fileHandler mod_file
