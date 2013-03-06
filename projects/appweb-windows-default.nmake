@@ -120,7 +120,7 @@ TARGETS           = $(TARGETS) $(CONFIG)\bin\authpass.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\cgiProgram.exe
 !ENDIF
 TARGETS           = $(TARGETS) src\server\slink.c
-TARGETS           = $(TARGETS) $(CONFIG)\bin\libapp.dll
+TARGETS           = $(TARGETS) $(CONFIG)\bin\libslink.dll
 TARGETS           = $(TARGETS) $(CONFIG)\bin\appweb.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\appwebMonitor.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\appwebMonitor.ico
@@ -191,7 +191,7 @@ clean:
 	-if exist $(CONFIG)\bin\libmod_ssl.dll del /Q $(CONFIG)\bin\libmod_ssl.dll
 	-if exist $(CONFIG)\bin\authpass.exe del /Q $(CONFIG)\bin\authpass.exe
 	-if exist $(CONFIG)\bin\cgiProgram.exe del /Q $(CONFIG)\bin\cgiProgram.exe
-	-if exist $(CONFIG)\bin\libapp.dll del /Q $(CONFIG)\bin\libapp.dll
+	-if exist $(CONFIG)\bin\libslink.dll del /Q $(CONFIG)\bin\libslink.dll
 	-if exist $(CONFIG)\bin\appweb.exe del /Q $(CONFIG)\bin\appweb.exe
 	-if exist $(CONFIG)\bin\appwebMonitor.exe del /Q $(CONFIG)\bin\appwebMonitor.exe
 	-if exist $(CONFIG)\bin\appwebMonitor.ico del /Q $(CONFIG)\bin\appwebMonitor.ico
@@ -245,6 +245,7 @@ clean:
 #   bit.h
 #
 $(CONFIG)\inc\bit.h: $(DEPS_1)
+	@echo '      [Copy] $(CONFIG)/inc/bit.h'
 
 #
 #   removeFiles.obj
@@ -269,7 +270,7 @@ $(CONFIG)\bin\removeFiles.exe: $(DEPS_3)
 #   mpr.h
 #
 $(CONFIG)\inc\mpr.h: $(DEPS_4)
-	@echo '      [File] $(CONFIG)/inc/mpr.h'
+	@echo '      [Copy] $(CONFIG)/inc/mpr.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\mpr\mpr.h" "$(CONFIG)\inc\mpr.h"
 
@@ -279,7 +280,7 @@ $(CONFIG)\inc\mpr.h: $(DEPS_4)
 DEPS_5 = $(DEPS_5) $(CONFIG)\inc\bit.h
 
 $(CONFIG)\inc\bitos.h: $(DEPS_5)
-	@echo '      [File] $(CONFIG)/inc/bitos.h'
+	@echo '      [Copy] $(CONFIG)/inc/bitos.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\bitos.h" "$(CONFIG)\inc\bitos.h"
 
@@ -309,7 +310,7 @@ $(CONFIG)\bin\libmpr.dll: $(DEPS_7)
 #   est.h
 #
 $(CONFIG)\inc\est.h: $(DEPS_8)
-	@echo '      [File] $(CONFIG)/inc/est.h'
+	@echo '      [Copy] $(CONFIG)/inc/est.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\est\est.h" "$(CONFIG)\inc\est.h"
 
@@ -421,7 +422,7 @@ $(CONFIG)\bin\makerom.exe: $(DEPS_16)
 DEPS_17 = $(DEPS_17) src\deps\est\ca.crt
 
 $(CONFIG)\bin\ca.crt: $(DEPS_17)
-	@echo '      [File] $(CONFIG)/bin/ca.crt'
+	@echo '      [Copy] $(CONFIG)/bin/ca.crt'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\deps\est\ca.crt" "$(CONFIG)\bin\ca.crt"
 
@@ -429,7 +430,7 @@ $(CONFIG)\bin\ca.crt: $(DEPS_17)
 #   pcre.h
 #
 $(CONFIG)\inc\pcre.h: $(DEPS_18)
-	@echo '      [File] $(CONFIG)/inc/pcre.h'
+	@echo '      [Copy] $(CONFIG)/inc/pcre.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\pcre\pcre.h" "$(CONFIG)\inc\pcre.h"
 
@@ -458,7 +459,7 @@ $(CONFIG)\bin\libpcre.dll: $(DEPS_20)
 #   http.h
 #
 $(CONFIG)\inc\http.h: $(DEPS_21)
-	@echo '      [File] $(CONFIG)/inc/http.h'
+	@echo '      [Copy] $(CONFIG)/inc/http.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\http\http.h" "$(CONFIG)\inc\http.h"
 
@@ -518,7 +519,7 @@ $(CONFIG)\bin\http.exe: $(DEPS_25)
 #   sqlite3.h
 #
 $(CONFIG)\inc\sqlite3.h: $(DEPS_26)
-	@echo '      [File] $(CONFIG)/inc/sqlite3.h'
+	@echo '      [Copy] $(CONFIG)/inc/sqlite3.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\sqlite\sqlite3.h" "$(CONFIG)\inc\sqlite3.h"
 
@@ -578,7 +579,7 @@ $(CONFIG)\bin\sqlite.exe: $(DEPS_30)
 #   appweb.h
 #
 $(CONFIG)\inc\appweb.h: $(DEPS_31)
-	@echo '      [File] $(CONFIG)/inc/appweb.h'
+	@echo '      [Copy] $(CONFIG)/inc/appweb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\appweb.h" "$(CONFIG)\inc\appweb.h"
 
@@ -586,7 +587,7 @@ $(CONFIG)\inc\appweb.h: $(DEPS_31)
 #   customize.h
 #
 $(CONFIG)\inc\customize.h: $(DEPS_32)
-	@echo '      [File] $(CONFIG)/inc/customize.h'
+	@echo '      [Copy] $(CONFIG)/inc/customize.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\customize.h" "$(CONFIG)\inc\customize.h"
 
@@ -686,7 +687,7 @@ $(CONFIG)\bin\libappweb.dll: $(DEPS_39)
 #   edi.h
 #
 $(CONFIG)\inc\edi.h: $(DEPS_40)
-	@echo '      [File] $(CONFIG)/inc/edi.h'
+	@echo '      [Copy] $(CONFIG)/inc/edi.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\esp\edi.h" "$(CONFIG)\inc\edi.h"
 
@@ -694,7 +695,7 @@ $(CONFIG)\inc\edi.h: $(DEPS_40)
 #   esp-app.h
 #
 $(CONFIG)\inc\esp-app.h: $(DEPS_41)
-	@echo '      [File] $(CONFIG)/inc/esp-app.h'
+	@echo '      [Copy] $(CONFIG)/inc/esp-app.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\esp\esp-app.h" "$(CONFIG)\inc\esp-app.h"
 
@@ -702,7 +703,7 @@ $(CONFIG)\inc\esp-app.h: $(DEPS_41)
 #   esp.h
 #
 $(CONFIG)\inc\esp.h: $(DEPS_42)
-	@echo '      [File] $(CONFIG)/inc/esp.h'
+	@echo '      [Copy] $(CONFIG)/inc/esp.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\esp\esp.h" "$(CONFIG)\inc\esp.h"
 
@@ -710,7 +711,7 @@ $(CONFIG)\inc\esp.h: $(DEPS_42)
 #   mdb.h
 #
 $(CONFIG)\inc\mdb.h: $(DEPS_43)
-	@echo '      [File] $(CONFIG)/inc/mdb.h'
+	@echo '      [Copy] $(CONFIG)/inc/mdb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\esp\mdb.h" "$(CONFIG)\inc\mdb.h"
 
@@ -882,7 +883,7 @@ $(CONFIG)\bin\esp.exe: $(DEPS_54)
 DEPS_55 = $(DEPS_55) src\esp\esp.conf
 
 $(CONFIG)\bin\esp.conf: $(DEPS_55)
-	@echo '      [File] $(CONFIG)/bin/esp.conf'
+	@echo '      [Copy] $(CONFIG)/bin/esp.conf'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\esp\esp.conf" "$(CONFIG)\bin\esp.conf"
 !ENDIF
@@ -894,7 +895,7 @@ $(CONFIG)\bin\esp.conf: $(DEPS_55)
 DEPS_56 = $(DEPS_56) src\esp\esp.conf
 
 src\server\esp.conf: $(DEPS_56)
-	@echo '      [File] src/server/esp.conf'
+	@echo '      [Copy] src/server/esp.conf'
 	if not exist "src\server" md "src\server"
 	copy /Y "src\esp\esp.conf" "src\server\esp.conf"
 !ENDIF
@@ -906,7 +907,7 @@ src\server\esp.conf: $(DEPS_56)
 DEPS_57 = $(DEPS_57) src\esp\esp-www
 
 $(CONFIG)\bin\esp-www: $(DEPS_57)
-	@echo '      [File] $(CONFIG)/bin/esp-www'
+	@echo '      [Copy] $(CONFIG)/bin/esp-www'
 	if not exist "$(CONFIG)\bin\esp-www" md "$(CONFIG)\bin\esp-www"
 	copy /Y "src\esp\esp-www\app.conf" "$(CONFIG)\bin\esp-www\app.conf"
 	copy /Y "src\esp\esp-www\appweb.conf" "$(CONFIG)\bin\esp-www\appweb.conf"
@@ -935,7 +936,7 @@ $(CONFIG)\bin\esp-www: $(DEPS_57)
 DEPS_58 = $(DEPS_58) src\esp\esp-appweb.conf
 
 $(CONFIG)\bin\esp-appweb.conf: $(DEPS_58)
-	@echo '      [File] $(CONFIG)/bin/esp-appweb.conf'
+	@echo '      [Copy] $(CONFIG)/bin/esp-appweb.conf'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\esp\esp-appweb.conf" "$(CONFIG)\bin\esp-appweb.conf"
 !ENDIF
@@ -944,7 +945,7 @@ $(CONFIG)\bin\esp-appweb.conf: $(DEPS_58)
 #   ejs.h
 #
 $(CONFIG)\inc\ejs.h: $(DEPS_59)
-	@echo '      [File] $(CONFIG)/inc/ejs.h'
+	@echo '      [Copy] $(CONFIG)/inc/ejs.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\ejs\ejs.h" "$(CONFIG)\inc\ejs.h"
 
@@ -952,7 +953,7 @@ $(CONFIG)\inc\ejs.h: $(DEPS_59)
 #   ejs.slots.h
 #
 $(CONFIG)\inc\ejs.slots.h: $(DEPS_60)
-	@echo '      [File] $(CONFIG)/inc/ejs.slots.h'
+	@echo '      [Copy] $(CONFIG)/inc/ejs.slots.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\ejs\ejs.slots.h" "$(CONFIG)\inc\ejs.slots.h"
 
@@ -960,7 +961,7 @@ $(CONFIG)\inc\ejs.slots.h: $(DEPS_60)
 #   ejsByteGoto.h
 #
 $(CONFIG)\inc\ejsByteGoto.h: $(DEPS_61)
-	@echo '      [File] $(CONFIG)/inc/ejsByteGoto.h'
+	@echo '      [Copy] $(CONFIG)/inc/ejsByteGoto.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\ejs\ejsByteGoto.h" "$(CONFIG)\inc\ejsByteGoto.h"
 
@@ -1251,7 +1252,7 @@ $(CONFIG)\obj\slink.obj: \
 	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\slink.c
 
 #
-#   libapp
+#   libslink
 #
 DEPS_81 = $(DEPS_81) src\server\slink.c
 !IF "$(BIT_PACK_ESP)" == "1"
@@ -1270,9 +1271,9 @@ LIBS_81 = $(LIBS_81) libhttp.lib
 LIBS_81 = $(LIBS_81) libpcre.lib
 LIBS_81 = $(LIBS_81) libmpr.lib
 
-$(CONFIG)\bin\libapp.dll: $(DEPS_81)
-	@echo '      [Link] libapp'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libapp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj $(LIBS_81) $(LIBS_81) $(LIBS) libmpr.lib
+$(CONFIG)\bin\libslink.dll: $(DEPS_81)
+	@echo '      [Link] libslink'
+	"$(LD)" -dll -out:$(CONFIG)\bin\libslink.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj $(LIBS_81) $(LIBS_81) $(LIBS) libmpr.lib
 
 #
 #   appweb.obj
@@ -1302,10 +1303,10 @@ DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_ejs.dll
 !IF "$(BIT_PACK_CGI)" == "1"
 DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_cgi.dll
 !ENDIF
-DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libapp.dll
+DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libslink.dll
 DEPS_83 = $(DEPS_83) $(CONFIG)\obj\appweb.obj
 
-LIBS_83 = $(LIBS_83) libapp.lib
+LIBS_83 = $(LIBS_83) libslink.lib
 !IF "$(BIT_PACK_CGI)" == "1"
 LIBS_83 = $(LIBS_83) libmod_cgi.lib
 !ENDIF
@@ -1337,7 +1338,7 @@ $(CONFIG)\bin\appweb.exe: $(DEPS_83)
 #   appwebMonitor.h
 #
 $(CONFIG)\inc\appwebMonitor.h: $(DEPS_84)
-	@echo '      [File] $(CONFIG)/inc/appwebMonitor.h'
+	@echo '      [Copy] $(CONFIG)/inc/appwebMonitor.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\server\windows\appwebMonitor.h" "$(CONFIG)\inc\appwebMonitor.h"
 
@@ -1345,7 +1346,7 @@ $(CONFIG)\inc\appwebMonitor.h: $(DEPS_84)
 #   monitorResources.h
 #
 $(CONFIG)\inc\monitorResources.h: $(DEPS_85)
-	@echo '      [File] $(CONFIG)/inc/monitorResources.h'
+	@echo '      [Copy] $(CONFIG)/inc/monitorResources.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\server\windows\monitorResources.h" "$(CONFIG)\inc\monitorResources.h"
 
@@ -1392,7 +1393,7 @@ $(CONFIG)\bin\appwebMonitor.exe: $(DEPS_88)
 DEPS_89 = $(DEPS_89) src\server\windows\appwebMonitor.ico
 
 $(CONFIG)\bin\appwebMonitor.ico: $(DEPS_89)
-	@echo '      [File] $(CONFIG)/bin/appwebMonitor.ico'
+	@echo '      [Copy] $(CONFIG)/bin/appwebMonitor.ico'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\server\windows\appwebMonitor.ico" "$(CONFIG)\bin\appwebMonitor.ico"
 
@@ -1408,7 +1409,7 @@ src\server\cache: $(DEPS_90)
 #   testAppweb.h
 #
 $(CONFIG)\inc\testAppweb.h: $(DEPS_91)
-	@echo '      [File] $(CONFIG)/inc/testAppweb.h'
+	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "test\testAppweb.h" "$(CONFIG)\inc\testAppweb.h"
 
@@ -1499,7 +1500,7 @@ test\cgi-bin\cgiProgram.exe: $(DEPS_98)
 DEPS_99 = $(DEPS_99) src\esp\esp-www\files\static\js
 
 test\web\js: $(DEPS_99)
-	@echo '      [File] test/web/js'
+	@echo '      [Copy] test/web/js'
 	if not exist "test\web\js" md "test\web\js"
 	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "test\web\js\jquery.esp.js"
 	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "test\web\js\jquery.js"
@@ -1538,11 +1539,11 @@ installBinary: $(DEPS_102)
 !ENDIF
 	copy /Y "$(CONFIG)\bin\appwebMonitor.exe" "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.exe"
 	copy /Y "$(CONFIG)\bin\appwebMonitor.ico" "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.ico"
-	copy /Y "$(CONFIG)\bin\libapp.dll" "$(BIT_VAPP_PREFIX)\bin\libapp.dll"
 	copy /Y "$(CONFIG)\bin\libappweb.dll" "$(BIT_VAPP_PREFIX)\bin\libappweb.dll"
 	copy /Y "$(CONFIG)\bin\libhttp.dll" "$(BIT_VAPP_PREFIX)\bin\libhttp.dll"
 	copy /Y "$(CONFIG)\bin\libmpr.dll" "$(BIT_VAPP_PREFIX)\bin\libmpr.dll"
 	copy /Y "$(CONFIG)\bin\libpcre.dll" "$(BIT_VAPP_PREFIX)\bin\libpcre.dll"
+	copy /Y "$(CONFIG)\bin\libslink.dll" "$(BIT_VAPP_PREFIX)\bin\libslink.dll"
 !IF "$(BIT_PACK_SSL)" == "1"
 	copy /Y "$(CONFIG)\bin\libmprssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmprssl.dll"
 	copy /Y "$(CONFIG)\bin\libmod_ssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_ssl.dll"

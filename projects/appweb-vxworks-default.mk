@@ -128,7 +128,7 @@ ifeq ($(BIT_PACK_CGI),1)
 TARGETS           += $(CONFIG)/bin/cgiProgram.out
 endif
 TARGETS           += src/server/slink.c
-TARGETS           += $(CONFIG)/bin/libapp.out
+TARGETS           += $(CONFIG)/bin/libslink.out
 TARGETS           += $(CONFIG)/bin/appweb.out
 TARGETS           += src/server/cache
 TARGETS           += $(CONFIG)/bin/testAppweb.out
@@ -198,7 +198,7 @@ clean:
 	rm -rf $(CONFIG)/bin/libmod_ssl.out
 	rm -rf $(CONFIG)/bin/authpass.out
 	rm -rf $(CONFIG)/bin/cgiProgram.out
-	rm -rf $(CONFIG)/bin/libapp.out
+	rm -rf $(CONFIG)/bin/libslink.out
 	rm -rf $(CONFIG)/bin/appweb.out
 	rm -rf $(CONFIG)/bin/testAppweb.out
 	rm -rf test/cgi-bin/testScript
@@ -251,7 +251,7 @@ clobber: clean
 #   mpr.h
 #
 $(CONFIG)/inc/mpr.h: $(DEPS_1)
-	@echo '      [File] $(CONFIG)/inc/mpr.h'
+	@echo '      [Copy] $(CONFIG)/inc/mpr.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/mpr/mpr.h" "$(CONFIG)/inc/mpr.h"
 
@@ -259,6 +259,7 @@ $(CONFIG)/inc/mpr.h: $(DEPS_1)
 #   bit.h
 #
 $(CONFIG)/inc/bit.h: $(DEPS_2)
+	@echo '      [Copy] $(CONFIG)/inc/bit.h'
 
 #
 #   bitos.h
@@ -266,7 +267,7 @@ $(CONFIG)/inc/bit.h: $(DEPS_2)
 DEPS_3 += $(CONFIG)/inc/bit.h
 
 $(CONFIG)/inc/bitos.h: $(DEPS_3)
-	@echo '      [File] $(CONFIG)/inc/bitos.h'
+	@echo '      [Copy] $(CONFIG)/inc/bitos.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/bitos.h" "$(CONFIG)/inc/bitos.h"
 
@@ -296,7 +297,7 @@ $(CONFIG)/bin/libmpr.out: $(DEPS_5)
 #   est.h
 #
 $(CONFIG)/inc/est.h: $(DEPS_6)
-	@echo '      [File] $(CONFIG)/inc/est.h'
+	@echo '      [Copy] $(CONFIG)/inc/est.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/est/est.h" "$(CONFIG)/inc/est.h"
 
@@ -408,7 +409,7 @@ $(CONFIG)/bin/makerom.out: $(DEPS_14)
 DEPS_15 += src/deps/est/ca.crt
 
 $(CONFIG)/bin/ca.crt: $(DEPS_15)
-	@echo '      [File] $(CONFIG)/bin/ca.crt'
+	@echo '      [Copy] $(CONFIG)/bin/ca.crt'
 	mkdir -p "$(CONFIG)/bin"
 	cp "src/deps/est/ca.crt" "$(CONFIG)/bin/ca.crt"
 
@@ -416,7 +417,7 @@ $(CONFIG)/bin/ca.crt: $(DEPS_15)
 #   pcre.h
 #
 $(CONFIG)/inc/pcre.h: $(DEPS_16)
-	@echo '      [File] $(CONFIG)/inc/pcre.h'
+	@echo '      [Copy] $(CONFIG)/inc/pcre.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/pcre/pcre.h" "$(CONFIG)/inc/pcre.h"
 
@@ -445,7 +446,7 @@ $(CONFIG)/bin/libpcre.out: $(DEPS_18)
 #   http.h
 #
 $(CONFIG)/inc/http.h: $(DEPS_19)
-	@echo '      [File] $(CONFIG)/inc/http.h'
+	@echo '      [Copy] $(CONFIG)/inc/http.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/http/http.h" "$(CONFIG)/inc/http.h"
 
@@ -505,7 +506,7 @@ $(CONFIG)/bin/http.out: $(DEPS_23)
 #   sqlite3.h
 #
 $(CONFIG)/inc/sqlite3.h: $(DEPS_24)
-	@echo '      [File] $(CONFIG)/inc/sqlite3.h'
+	@echo '      [Copy] $(CONFIG)/inc/sqlite3.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/sqlite/sqlite3.h" "$(CONFIG)/inc/sqlite3.h"
 
@@ -565,7 +566,7 @@ endif
 #   appweb.h
 #
 $(CONFIG)/inc/appweb.h: $(DEPS_29)
-	@echo '      [File] $(CONFIG)/inc/appweb.h'
+	@echo '      [Copy] $(CONFIG)/inc/appweb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/appweb.h" "$(CONFIG)/inc/appweb.h"
 
@@ -573,7 +574,7 @@ $(CONFIG)/inc/appweb.h: $(DEPS_29)
 #   customize.h
 #
 $(CONFIG)/inc/customize.h: $(DEPS_30)
-	@echo '      [File] $(CONFIG)/inc/customize.h'
+	@echo '      [Copy] $(CONFIG)/inc/customize.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/customize.h" "$(CONFIG)/inc/customize.h"
 
@@ -673,7 +674,7 @@ $(CONFIG)/bin/libappweb.out: $(DEPS_37)
 #   edi.h
 #
 $(CONFIG)/inc/edi.h: $(DEPS_38)
-	@echo '      [File] $(CONFIG)/inc/edi.h'
+	@echo '      [Copy] $(CONFIG)/inc/edi.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/esp/edi.h" "$(CONFIG)/inc/edi.h"
 
@@ -681,7 +682,7 @@ $(CONFIG)/inc/edi.h: $(DEPS_38)
 #   esp-app.h
 #
 $(CONFIG)/inc/esp-app.h: $(DEPS_39)
-	@echo '      [File] $(CONFIG)/inc/esp-app.h'
+	@echo '      [Copy] $(CONFIG)/inc/esp-app.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/esp/esp-app.h" "$(CONFIG)/inc/esp-app.h"
 
@@ -689,7 +690,7 @@ $(CONFIG)/inc/esp-app.h: $(DEPS_39)
 #   esp.h
 #
 $(CONFIG)/inc/esp.h: $(DEPS_40)
-	@echo '      [File] $(CONFIG)/inc/esp.h'
+	@echo '      [Copy] $(CONFIG)/inc/esp.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/esp/esp.h" "$(CONFIG)/inc/esp.h"
 
@@ -697,7 +698,7 @@ $(CONFIG)/inc/esp.h: $(DEPS_40)
 #   mdb.h
 #
 $(CONFIG)/inc/mdb.h: $(DEPS_41)
-	@echo '      [File] $(CONFIG)/inc/mdb.h'
+	@echo '      [Copy] $(CONFIG)/inc/mdb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/esp/mdb.h" "$(CONFIG)/inc/mdb.h"
 
@@ -869,7 +870,7 @@ ifeq ($(BIT_PACK_ESP),1)
 DEPS_53 += src/esp/esp.conf
 
 $(CONFIG)/bin/esp.conf: $(DEPS_53)
-	@echo '      [File] $(CONFIG)/bin/esp.conf'
+	@echo '      [Copy] $(CONFIG)/bin/esp.conf'
 	mkdir -p "$(CONFIG)/bin"
 	cp "src/esp/esp.conf" "$(CONFIG)/bin/esp.conf"
 endif
@@ -881,7 +882,7 @@ ifeq ($(BIT_PACK_ESP),1)
 DEPS_54 += src/esp/esp.conf
 
 src/server/esp.conf: $(DEPS_54)
-	@echo '      [File] src/server/esp.conf'
+	@echo '      [Copy] src/server/esp.conf'
 	mkdir -p "src/server"
 	cp "src/esp/esp.conf" "src/server/esp.conf"
 endif
@@ -893,7 +894,7 @@ ifeq ($(BIT_PACK_ESP),1)
 DEPS_55 += src/esp/esp-www
 
 $(CONFIG)/bin/esp-www: $(DEPS_55)
-	@echo '      [File] $(CONFIG)/bin/esp-www'
+	@echo '      [Copy] $(CONFIG)/bin/esp-www'
 	mkdir -p "$(CONFIG)/bin/esp-www"
 	cp "src/esp/esp-www/app.conf" "$(CONFIG)/bin/esp-www/app.conf"
 	cp "src/esp/esp-www/appweb.conf" "$(CONFIG)/bin/esp-www/appweb.conf"
@@ -922,7 +923,7 @@ ifeq ($(BIT_PACK_ESP),1)
 DEPS_56 += src/esp/esp-appweb.conf
 
 $(CONFIG)/bin/esp-appweb.conf: $(DEPS_56)
-	@echo '      [File] $(CONFIG)/bin/esp-appweb.conf'
+	@echo '      [Copy] $(CONFIG)/bin/esp-appweb.conf'
 	mkdir -p "$(CONFIG)/bin"
 	cp "src/esp/esp-appweb.conf" "$(CONFIG)/bin/esp-appweb.conf"
 endif
@@ -931,7 +932,7 @@ endif
 #   ejs.h
 #
 $(CONFIG)/inc/ejs.h: $(DEPS_57)
-	@echo '      [File] $(CONFIG)/inc/ejs.h'
+	@echo '      [Copy] $(CONFIG)/inc/ejs.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/ejs/ejs.h" "$(CONFIG)/inc/ejs.h"
 
@@ -939,7 +940,7 @@ $(CONFIG)/inc/ejs.h: $(DEPS_57)
 #   ejs.slots.h
 #
 $(CONFIG)/inc/ejs.slots.h: $(DEPS_58)
-	@echo '      [File] $(CONFIG)/inc/ejs.slots.h'
+	@echo '      [Copy] $(CONFIG)/inc/ejs.slots.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/ejs/ejs.slots.h" "$(CONFIG)/inc/ejs.slots.h"
 
@@ -947,7 +948,7 @@ $(CONFIG)/inc/ejs.slots.h: $(DEPS_58)
 #   ejsByteGoto.h
 #
 $(CONFIG)/inc/ejsByteGoto.h: $(DEPS_59)
-	@echo '      [File] $(CONFIG)/inc/ejsByteGoto.h'
+	@echo '      [Copy] $(CONFIG)/inc/ejsByteGoto.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/ejs/ejsByteGoto.h" "$(CONFIG)/inc/ejsByteGoto.h"
 
@@ -1236,7 +1237,7 @@ $(CONFIG)/obj/slink.o: \
 	$(CC) -c -o $(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/server/slink.c
 
 #
-#   libapp
+#   libslink
 #
 DEPS_79 += src/server/slink.c
 ifeq ($(BIT_PACK_ESP),1)
@@ -1255,9 +1256,9 @@ LIBS_79 += -lhttp
 LIBS_79 += -lpcre
 LIBS_79 += -lmpr
 
-$(CONFIG)/bin/libapp.out: $(DEPS_79)
-	@echo '      [Link] libapp'
-	$(CC) -r -o $(CONFIG)/bin/libapp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o 
+$(CONFIG)/bin/libslink.out: $(DEPS_79)
+	@echo '      [Link] libslink'
+	$(CC) -r -o $(CONFIG)/bin/libslink.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o 
 
 #
 #   appweb.o
@@ -1287,10 +1288,10 @@ endif
 ifeq ($(BIT_PACK_CGI),1)
     DEPS_81 += $(CONFIG)/bin/libmod_cgi.out
 endif
-DEPS_81 += $(CONFIG)/bin/libapp.out
+DEPS_81 += $(CONFIG)/bin/libslink.out
 DEPS_81 += $(CONFIG)/obj/appweb.o
 
-LIBS_81 += -lapp
+LIBS_81 += -lslink
 ifeq ($(BIT_PACK_CGI),1)
     LIBS_81 += -lmod_cgi
 endif
@@ -1328,7 +1329,7 @@ src/server/cache: $(DEPS_82)
 #   testAppweb.h
 #
 $(CONFIG)/inc/testAppweb.h: $(DEPS_83)
-	@echo '      [File] $(CONFIG)/inc/testAppweb.h'
+	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "test/testAppweb.h" "$(CONFIG)/inc/testAppweb.h"
 
@@ -1427,7 +1428,7 @@ endif
 DEPS_91 += src/esp/esp-www/files/static/js
 
 test/web/js: $(DEPS_91)
-	@echo '      [File] test/web/js'
+	@echo '      [Copy] test/web/js'
 	mkdir -p "test/web/js"
 	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "test/web/js/jquery.esp.js"
 	cp "src/esp/esp-www/files/static/js/jquery.js" "test/web/js/jquery.js"

@@ -8,7 +8,7 @@
 
 /* Settings */
 #ifndef BIT_BIT
-    #define BIT_BIT "0.8.2"
+    #define BIT_BIT "0.8.4"
 #endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "1"

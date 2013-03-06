@@ -148,7 +148,11 @@ openssl req -new -key server.key -out server.csr
                     "https://mocana.com/nanossl.html">https://mocana.com/nanossl.html</a>.</li>
                 <li>EST SSL -- included with Appweb and designed for embedding.</li>
             </ul>
-            <p>The binary installation will use the EST SSL provider by default.</p>
+            <p>If building an SSL provider from source, please consult the 
+            <a href="../source/ssl.html">Building SSL Providers</a> for the suggested SSL provider compilation flags
+            to work with Appweb.</p>
+
+            <p>The binary installation will use the OpenSSL provider by default.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
