@@ -70,12 +70,12 @@
             <ul>
                 <li>Fixed listening on Windows 64 with IPv6 and IPv4 on a single socket.
                     <a href="https://github.com/embedthis/appweb-4/issues/98">[issue 98].</a></li>
-                <li>Change tunable defines to be overridable via configure. These are now all named: BIT_*.
+                <li>Change tunable defines to be override via configure. These are now all named: BIT_*.
                     <a href="https://github.com/embedthis/appweb-4/issues/99">[issue 99].</a></li>
                 <li>Update to PHP5.4
                     <a href="https://github.com/embedthis/appweb-4/issues/100">[issue 100].</a></li>
                 <!--
-                <li>Add support for the Mocana SSL stack:
+                <li>Add support for the Mocana NanoSSL stack:
                     <a href="https://github.com/embedthis/appweb-4/issues/102">[issue 102].</a></li>
                 -->
                 <li>Add prototype support for the EST SSL stack:
@@ -150,7 +150,7 @@
             </ul>
             <h3>API Changes</h3>
             <ul>
-                <li>The installation prefixe names have been refactored to work with Bit.</p>
+                <li>The installation prefix names have been refactored to work with Bit.</p>
             </ul>
 
             <a id="r4.2.0"></a>
@@ -196,7 +196,7 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/87">[issue 87].</a></li>
                 <li>mprWriteSocketVector was returning incorrect status transmitting bad output
                     <a href="https://github.com/embedthis/appweb-4/issues/88">[issue 88].</a></li>
-                <li>Linux epoll waiting now detects hangup on writable sockets.
+                <li>Linux epoll waiting now detects hang-up on writable sockets.
                     <a href="https://github.com/embedthis/appweb-4/issues/89">[issue 89].</a></li>
                 <li>Improve WebSockets error handling.
                     <a href="https://github.com/embedthis/appweb-4/issues/91">[issue 91].</a></li>
@@ -341,16 +341,16 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/53">[issue 53].</a>
                     <a href="https://github.com/embedthis/appweb-4/issues/54">[issue 54].</a>
                 </li>
-                <li>Optimize memory usage under severe load </li>
+                <li>Optimize memory usage under severe load 
                     <a href="https://github.com/embedthis/appweb-4/issues/55">[issue 55].</a>
+                </li>
                 <li>Premature timer expiry when time-warping
                     <a href="https://github.com/embedthis/appweb-4/issues/56">[issue 56].</a>
                 </li>
             </ul>
             <h3>API Changes</h3>
             <ul>
-                <li>Refactor scase => scaseless
-                </li>
+                <li>Refactor scase => scaseless</li>
                 <li>Changed name of ESP module entry point. Renamed "controller" to "module".
                 Existing controllers will need to be modified. 
                 </li>
@@ -414,7 +414,6 @@
                     <a href="https://github.com/embedthis/appweb-3/issues/38">[issue 38].</a>
                 </li>
             </ul>
-            </ul>
             
             <a id="r3.4.0"></a>
             <h2 class="section">Changes in 3.4.0</h2>
@@ -442,7 +441,7 @@
                 <li>Fixes for building for VxWorks on linux</li>
                 <li>Fix httpPassword parsing</li>
                 <li>Add SSL_OP_NO_TICKET and SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION to force
-                    renegotiaion of sessions.</li>
+                    renegotiation of sessions.</li>
                 <li>Enable no free threads message to continually be emitted</li>
             </ul>
             <a id="r3.3.2"></a>
@@ -746,7 +745,7 @@
             <h2 class="section">Changes in 2.4.4</h2>
             <h3>Fixes</h3>
             <ul>
-                <li>Add session resumption work-around for OpenSSL module. Not required if using OpenSSL >= 1.0.0</li>
+                <li>Add session resumption work-around for OpenSSL module. Not required if using OpenSSL &gt;= 1.0.0</li>
                 <li>Linux compilation switches</li>
                 <li>Thread race in CGI/CMD</li>
                 <li>Sign extension assert in ctype routines on windows</li>
