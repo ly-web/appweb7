@@ -69,11 +69,11 @@
             <h2>Overview</h2>
             <p>Appweb includes a powerful request routing engine that processes client HTTP requests. The engine
             is configured with a set of routes and when a request is received, it tests various routes and selects
-            the best route to handle the request.  In the process, routes may redirect or rewrite the request 
+            the best one to handle the request.  In the process, routes may redirect or rewrite the request 
             as required.</p>
             <img src="../../../images/routing.jpg" alt="routing"/>
             <p>An Appweb configuration will typically have many routes. The configured routes 
-            are tested in-order by matching the route pattern against the request URI. 
+            are tested in order by matching the route pattern against the request URI. 
             A route may require that further preconditions be met before it is suitable to process the
             request. If the required conditions are not met, the next route in the configuration will be tested. There 
             is always a catch-all route that will process the request if all prior routes fail to qualify.</p>
@@ -135,7 +135,7 @@
             request extension matches one of the AddHandler extension arguments.  The <em>SetHandler</em> directive
             defines the Appweb handler to be used for the route regardless of the URI extension.</p>
             <h3><a href="dir/route.html#condition">Condition</a></h3>
-            <p>The condition directive can define condition test that must be true for the route to be selected. 
+            <p>The condition directive can define a condition test that must be true for the route to be selected. 
             Conditions have three test rules: <em>exists</em>, <em>directory</em> and <em>match</em>. The 
             <em>exists</em> rule evaluates if the condition filename argument exists in the file system. 
             The <em>directory</em> rule evaluates if the filename is a directory. The <em>match</em> rule
@@ -209,7 +209,7 @@
             <h4>Request Tokens</h4>
             <p>Request tokens are of the form: <em>"${family:name=defaultValue}"</em> where the family 
             defines a set of values. 
-            If the named tokens is not present, an optional default value "=defaultValue" will be used instead.
+            If the named tokens are not present, an optional default value "=defaultValue" will be used instead.
             These supported request token families are:</p>
             <ul>  
                 <li>header &mdash; for request HTTP header values</li>
