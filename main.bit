@@ -196,6 +196,7 @@ Bit.load({
             path: '${BIN}/http',
         },
         matrixssl: {},
+        nanossl: {},
         openssl: {},
         ssl: {},
     },
