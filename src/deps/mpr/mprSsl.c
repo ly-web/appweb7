@@ -134,8 +134,6 @@ static void manageMatrixConfig(MatrixConfig *cfg, int flags)
 
 static void manageMatrixSocket(MatrixSocket *msp, int flags)
 {
-    MprSocketService    *ss;
-
     if (flags & MPR_MANAGE_MARK) {
         mprMark(msp->sock);
         mprMark(msp->peerName);
@@ -145,8 +143,6 @@ static void manageMatrixSocket(MatrixSocket *msp, int flags)
         if (msp->ctx) {
             matrixSslDeleteSession(msp->ctx);
         }
-        ss = MPR->socketService;
-        mprRemoveItem(ss->secureSockets, msp->sock);
     }
 }
 
@@ -177,6 +173,7 @@ static void closeMss(MprSocket *sp, bool gracefully)
         }
     }
     sp->service->standardProvider->closeSocket(sp, gracefully);
+    mprRemoveItem(sp->service->secureSockets, msp->sock);
     unlock(sp);
 }
 
