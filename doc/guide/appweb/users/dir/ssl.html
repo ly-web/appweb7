@@ -197,11 +197,13 @@
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
-                        <td>Default Server, Virtual Host, Route</td>
+                        <td>Default Server, Virtual Host, Route (with EST and OpenSSL stacks only)</td>
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>CipherSuite TLS_RSA_WITH_AES_128_CBC_SHA<br/>
+                        <td>
+                        #<br/># For EST<br/>#<br/>
+                            CipherSuite TLS_RSA_WITH_AES_128_CBC_SHA<br/>
                             CipherSuite TLS_RSA_WITH_RC4_128_SHA<br/><br/>
                         #<br/># For OpenSSL<br/>#<br/>
                         CipherSuite HIGH:RC4+SHA</td>
@@ -212,16 +214,16 @@
                             <p>The SSLCipherSuite directive specifies the permissible set of cipher algorithms to use when 
                             communicating with the client. If unspecified, the cipher suite is defined by the SSL
                             protocol stack and negotiated with the client. You may use this directive multiple times or
-                            may specify multiple ciphers separated by commas.
-                            </p>
+                            may specify multiple ciphers separated by commas. This directive is only supported with the
+                            EST and OpenSSL statcks.</p>
                             
                             <p>The format of this directive varies depending on the SSL protocol stack. The EST, 
-                            MatrixSSL and Mocana SSL stacks use the standard 
+                            stack use the standard 
                             <a href="http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-3">IANA
                                 Cipher Suite Registry</a> names. The OpenSSL stack uses its own proprietary cipher
                             naming. If using OpenSSL, please consult
                             the <a href="http://www.openssl.org/docs/apps/ciphers.html">OpenSSL</a> documentation for
-                            how to format the cipher suite argument. 
+                            how to format the cipher suite argument. </p>
                         </td>
                     </tr>
                 </tbody>
