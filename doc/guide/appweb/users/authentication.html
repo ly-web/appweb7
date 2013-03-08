@@ -37,7 +37,6 @@
             <ul class="nav">
                 <li><a href="#basicAuthentication">Basic Authentication</a></li>
                 <li><a href="#digestAuthentication">Digest Authentication</a></li>
-                <li><a href="#beltAndSuspenders">Belt and Suspenders</a></li>
             </ul>
 <!-- BeginDsi "dsi/usersGuideSeeAlso.html" -->
             <h1>See Also</h1>
@@ -114,7 +113,7 @@
             each authorization section.</p>
             <p>The <a href="dir/auth.html#user">User</a> directive defines a user by name with encrypted password and
             zero or more roles for the user. Typically, User and Role directives are placed in a separate configuration 
-            file called <tt>auth.conf</tt> and are included via an <tt>"include auth.conf"</tt> directive.
+            file called <em>auth.conf</em> and are included via an <em>"include auth.conf"</em> directive.
             To create passwords, see the section
             below that describes the <a href="#authpass">authpass</a> utility.</p>
             <h3>Require Directive</h3>
@@ -127,13 +126,13 @@
                 <li>Require ability name...</li>
                 <li>Require secure</li>
             </ul>
-            <p>When using <tt>Require ability</tt>, the abilities may be roles defined via the 
+            <p>When using <em>Require ability</em>, the abilities may be roles defined via the 
             <a href="dir/auth.html#role">Role</a> directive, or they may be simple words which represent a discrete
             ability that is explicitly specified in the <a href="dir/auth.html#user">User</a> directive.
-            <p>The <tt>require secure</tt> directive specifies that the SSL/TLS protocol must be used for the
+            <p>The <em>require secure</em> directive specifies that the SSL/TLS protocol must be used for the
             request to permit access.</p>
             <p>Note: These three require directives alternatives may be used in combination. However, multiple
-            <tt>Require user</tt> or multiple <tt>Require ability</tt> directives are not supported. The last 
+            <em>Require user</em> or multiple <em>Require ability</em> directives are not supported. The last 
             directive will take precedence.</p>
             <p><b>SECURITY WARNING</b>: it is essential that the authentication file be stored outside
             the Documents directory or any directory serving content.</p>
@@ -174,17 +173,17 @@
 &lt;/Route&gt; 
 </pre>
             <p>This directive enables Form authentication for all requests and will redirect the client browser to
-            <tt>/auth/login.html</tt> to prompt for the username and password. This example uses a plain HTML web page, but 
+            <em>/auth/login.html</em> to prompt for the username and password. This example uses a plain HTML web page, but 
             the web page can be created in ESP, PHP, CGI or any other web framework. The web page should submit the username
-            and password to the <tt>/auth/login</tt> login service. When logout is required, the client should submit
-            a HTTP POST request to the logout service URI <tt>/auth/logout</tt>. The last field in the AuthType
+            and password to the <em>/auth/login</em> login service. When logout is required, the client should submit
+            a HTTP POST request to the logout service URI <em>/auth/logout</em>. The last field in the AuthType
             directive is the destination URI to which the client's browser will be redirected once logged in. </p>
             <h3>Login Service</h3>
-            <p>The Login-Service is URI that is bound to an internal service to receive the <tt>username</tt> and 
-            <tt>password</tt> and authenticate the user. This service expects the username/password to be submitted 
+            <p>The Login-Service is URI that is bound to an internal service to receive the <em>username</em> and 
+            <em>password</em> and authenticate the user. This service expects the username/password to be submitted 
             via POST data using the form input fields "username" and "password". You can supply your own login and
-            logout service by specifying the empty string <tt>""</tt> for the Login-Service in the AuthType directive.
-            If using your own Login Service, you should call <tt>httpLogin</tt> to validate the user against the
+            logout service by specifying the empty string <em>""</em> for the Login-Service in the AuthType directive.
+            If using your own Login Service, you should call <em>httpLogin</em> to validate the user against the
             configured password store.</p> 
             
             <h3>Web Form</h3>
@@ -201,14 +200,14 @@
 &lt;/body&gt;
 &lt;/html&gt;
 </pre>
-            <p>The two submitted fields must be named <tt>username</tt> and <tt>password</tt>. 
+            <p>The two submitted fields must be named <em>username</em> and <em>password</em>. 
             <p>If the login attempt succeeds, the client will receive a response including a session cookie and 
-            will be redirected to the Destination URI. If the destination URI includes a <tt>referrer:</tt> prefix and
-            the login form request contatained a referrer URI in the HTTP header, then that referrer URI will be used
+            will be redirected to the Destination URI. If the destination URI includes a <em>referrer:</em> prefix and
+            the login form request contained a referrer URI in the HTTP header, then that referrer URI will be used
             as the destination instead of the hard-wired destination.</p>
             <h3>Securing the Password</h3>
-            <p><b>SECURITY WARNING:</b> The Form authentication scheme submits the user password as plain text. To secure
-            communications, the Form authentication schem should be used over a secure connection using TLS/SSL.
+            <p><b>SECURITY WARNING:</b> The Form authentication mechanism submits the user password as plain text. To secure
+            communications, the Form authentication scheme should be used over a secure connection using TLS/SSL.
             To achieve this, you should create a route which redirects the client to the secure login form.  For
             example: </p>
             <pre>
@@ -236,17 +235,18 @@ AuthStore internal
 User julie 9d8873a123eb506e7f8e84d1f2a26916 view
 </pre>
             <p>The Unix system password database is managed via the <a href="http://kb.iu.edu/data/anpn.html">PAM</a> 
-            interface. Appweb uses this interface when the <tt>AuthStore pam</tt> directive is used.</p>
-            <p>The <tt>AuthStore internal</tt> option specifies that passwords will be defined by the
+            interface. Appweb uses this interface when the <em>AuthStore pam</em> directive is used.</p>
+            <p>The <em>AuthStore internal</em> option specifies that passwords will be defined by the
             <a href="dir/auth.html#user">User</a> directive and will be stored internally in Appweb.
             The default password store for Appweb is internal. Typically, User directives are kept in a separate
-            passwords are stored in a separate configuration file that is included from the <tt>appweb.conf</tt>
+            passwords are stored in a separate configuration file that is included from the <em>appweb.conf</em>
             master configuration file.</p>
 <pre>
 include auth.conf
 </pre>
+            <a name="authpass"></a>
             <h2 class="section">Password Program</h2>
-            <p>The <tt>authpass</tt> program supports the <tt>internal</tt> AuthStore and is used to create user
+            <p>The <em>authpass</em> program supports the <em>internal</em> AuthStore and is used to create user
             passwords in an authentication file. Appweb uses the same authorization file and format for Basic, Digest
             and Form authentication types. This simplifies administration. The file simply contains User and Role
             directives and may be edited by hand if desired.</p> 
@@ -262,7 +262,7 @@ User peter 7cdba57892649fd95a540683fdf8fba6 user
 User joshua 2fd6e47ff9bb70c0465fd2f5c8e5305e user administrator purchase
 User mary 5b90553bea8ba3686f4239d62801f0f3 user executive
 </pre>
-            <p>The <tt>authpass</tt> program will create and modify User directives in the authentication file.</p>
+            <p>The <em>authpass</em> program will create and modify User directives in the authentication file.</p>
             <p>The command line syntax for authpass is:</p>
             <pre>
 authpass [-c] [-p passWord] authFile realm username roles...

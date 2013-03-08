@@ -65,6 +65,9 @@
                 <li><a href="#target">Target</a></li>
                 <li><a href="#traceMethod">TraceMethod</a></li>
                 <li><a href="#update">Update</a></li>
+                <li><a href="#uploadAutoDelete">UploadAutoDelete</a></li>
+                <li><a href="#uploadDir">UploadDir</a></li>
+                <li><a href="#webSocketsPing">WebSocketsPing</a></li>
             </ul>
             <h1>See Also</h1>
             <ul>
@@ -657,6 +660,37 @@
                 </tbody>
             </table>
             
+            <a id="ignoreEncodingErrors"></a>
+            <h2>ignoreEncodingErrors</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Ignore UTF-8 encoding errors</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>ignoreEncodingErrors on|off</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>ignoreEncodingErrors on</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This directive controls whether UTF-8 encoding errors will be ignored for WebSockets communications. The default is off.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
             <a id="inactivityTimeout"></a>
             <h2>InactivityTimeout</h2>
             <table class="directive" title="details">
@@ -696,7 +730,7 @@
                     </tr>
                 </tbody>
             </table>
-            
+
             <a id="logRoutes"></a>
             <h2>LogRoutes</h2>
             <table class="directive" title="details">
@@ -1474,12 +1508,43 @@
                                 temporary files holding uploaded files. These files are temporarily used while the
                                 file is being uploaded. Once fully received, the handler responsible for responding
                                 to the request must copy, move or process the uploaded file. The uploadedHandler
-                                will delete the tempoary (subject to the value of UploadAutoDelete).</td>
+                                will delete the temporary (subject to the value of UploadAutoDelete).</p>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            
+                       
+            <a id="webSocketsPing"></a>
+            <h2>WebSocketsPing</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Define the period for a Web Sockets Ping message.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>WebSocketsPing time</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>WebSocketsPing 30secs</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The WebSocketsPing directive defines the time period for a regular, keep-alive
+                                ping message to be sent to the peer so that the connection is not closed.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table> 
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->

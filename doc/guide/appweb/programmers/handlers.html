@@ -380,12 +380,12 @@ int maMyModuleInit(Http *http, MprModule *mp)
         <h2>Connection State</h2>
         <p>As a handler progresses in its service of a request, it is often necessary to examine the state of the
             request or underlying connection. Appweb provides a set of object fields that can be examined.
-            <table>
+            <table title="fields">
                 <thead>
                     <tr><th>Field</th><th>Purpose</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>HttpConn.error</td><td>Is set whenever there is an error with the request. ie. httpError is
+                    <tr><td>HttpConn.error</td><td>Is set whenever there is an error with the request. i.e. httpError is
                             called.</td></tr>
                     <tr><td>HttpConn.connError</td><td>Is set whenever HTTP_ABORT is supplied to httpError. This is
                         used when the HTTP/1.1 protocol is compromised, corrupted or otherwise unlikely to be

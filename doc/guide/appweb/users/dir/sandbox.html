@@ -55,6 +55,9 @@
                 <li><a href="#limitResponseBody">LimitResponseBody</a></li>
                 <li><a href="#limitUpload">LimitUpload</a></li>
                 <li><a href="#limitUri">LimitUri</a></li>
+                <li><a href="#limitWebSocketsMessage">LimitWebSocketsMessage</a></li>
+                <li><a href="#limitWebSocketsPacket">LimitWebSocketsPacket</a></li>
+                <li><a href="#limitWebSocketsFrame">LimitWebSocketsFrame</a></li>
                 <li><a href="#limitWorkers">LimitWorkers</a></li>
                 <li><a href="#minWorkers">MinWorkers</a></li>
                 <li><a href="#threadStack">ThreadStack</a></li>
@@ -882,8 +885,97 @@
                     </tr>
                 </tbody>
             </table>
-            <a id="limitWorkers"></a>
+            
+            <a id="limitWebSocketsMessage"></a>
+            <h2>LimitWebSocketsMessage</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>pool.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>LimitWebSocketsMessage number</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>LimitWebSocketsMessage 64K</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The LimitWebSocketsMessage directive defines the maximum size of a
+                                Web Sockets message.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>            
+
+            <a id="limitWebSocketsPacket"></a>
             <h2>WorkerLimit</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Maximum size of a packet containing a portion of a Web Sockets message.</td>
+
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>LimitWebSocketsPacket size</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>LimitWebSocketsPacket 8K</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This defines the maximum packet size for a portion of a Web Sockets message.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>            
+            <a id="limitWebSocketsFrame"></a>
+            <h2>LimitWebSocketsFrame</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Maximum size of a Web Sockets message frame.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>LimitWebSocketsFrame size</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Server, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>LimitWebSocketsFrame 4K</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This specifies the maximum frame size used for Web Sockets messages when
+                                sent over the wire.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>            
+            <a id="limitWorkers"></a>
+            <h2>LimitWorkers</h2>
             <table class="directive" title="directive">
                 <tbody>
                     <tr>
@@ -892,7 +984,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>WorkerLimit number</td>
+                        <td>LimitWorkers number</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -900,12 +992,12 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>WorkerLimit 8</td>
+                        <td>LimitWorkers 8</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>The WorkerLimit directive defines a maximum number of threads for the Appweb thread
+                            <p>The LimitWorkers directive defines a maximum number of threads for the Appweb thread
                             pool. When running in multithreaded mode, Appweb will use a pool thread to service each
                             request and then will return the thread to the pool. This results in a highly responsive
                             and scalable architecture with excellent throughput characteristics. Each thread requires a

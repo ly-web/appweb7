@@ -84,7 +84,7 @@
                             incoming SSL/TLS HTTP requests. If you specify only the port number and omit the IP address,
                             Appweb will listen on all network interfaces including the loop-back adaptor. Multiple Listen
                             directives may be given and Appweb will listen on all the specified endpoints for SSL/TLS.</p>
-                            <p>In Appweb 4 and later, you do not need to use a Virutal Host to use SSL/TLS.</p>
+                            <p>In Appweb 4 and later, you do not need to use a Virtual Host to use SSL/TLS.</p>
                             <p>For IPv6 endpoints, enclose the IP address in square brackets. For example:
                                 Listen [2001:05c0:9168:0000:0000:0000:0000:0001]
                         </td>
@@ -215,7 +215,7 @@
                             communicating with the client. If unspecified, the cipher suite is defined by the SSL
                             protocol stack and negotiated with the client. You may use this directive multiple times or
                             may specify multiple ciphers separated by commas. This directive is only supported with the
-                            EST and OpenSSL statcks.</p>
+                            EST and OpenSSL stacks.</p>
                             
                             <p>The format of this directive varies depending on the SSL protocol stack. The EST, 
                             stack use the standard 
