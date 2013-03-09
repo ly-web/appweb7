@@ -631,7 +631,8 @@ static MprList *getRoutes()
         } else if (routePrefix) {
             fail("Cannot find usable ESP configuration in %s for route prefix %s", app->configFile, routePrefix);
         } else {
-            fail("Cannot find usable ESP configuration in %s", app->configFile);
+            kp = mprGetFirstKey(app->targets);
+            fail("Cannot find ESP configuration in %s for %s", app->configFile, kp->key);
         }
         return 0;
     }
@@ -903,8 +904,8 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
 static void compileFile(HttpRoute *route, cchar *source, int kind)
 {
     EspRoute    *eroute;
-    cchar       *defaultLayout, *script, *page, *layout, *data, *prefix, *lpath;
-    char        *err, *quote;
+    cchar       *defaultLayout, *page, *layout, *data, *prefix, *lpath;
+    char        *err, *quote, *script;
     ssize       len;
     int         recompile;
 
@@ -980,7 +981,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
             return;
         }
         /* No yield here */
-        if ((script = espBuildScript(route, page, source, app->cacheName, defaultLayout, &err)) == 0) {
+        if (espBuildScript(route, page, source, app->cacheName, defaultLayout, &script, NULL, &err) < 0) {
             fail("Cannot build %s, error %s", source, err);
             return;
         }

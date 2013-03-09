@@ -286,7 +286,7 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
         if (eroute->layoutsDir) {
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }
-        if ((script = espBuildScript(route, page, source, cacheName, layout, &err)) == 0) {
+        if (espBuildScript(route, page, source, cacheName, layout, &script, NULL, &err) < 0) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot build %s, error %s", source, err);
             return 0;
         }
@@ -398,19 +398,23 @@ static char *joinLine(cchar *str, ssize *lenp)
         @#field             Lookup the current record for the value of the field.
 
  */
-PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, char **err)
+PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
+    char **script, char **global, char **err)
 {
     EspParse    parse;
     EspRoute    *eroute;
-    char        *control, *incBuf, *incText, *global, *token, *body, *where, *dir;
-    char        *rest, *start, *end, *include, *line, *fmt, *layoutPage, *layoutBuf;
+    char        *control, *incBuf, *incText, *token, *body, *where, *dir;
+    char        *rest, *start, *end, *include, *line, *fmt, *layoutPage, *layoutBuf, *globalRef;
     ssize       len;
-    int         tid;
+    int         tid, rc;
 
     assert(page);
 
     eroute = route->eroute;
-    body = start = end = global = "";
+    body = start = end = globalRef = "";
+    if (!global) {
+        global = &globalRef;
+    }
     *err = 0;
 
     memset(&parse, 0, sizeof(parse));
@@ -418,7 +422,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
     parse.next = parse.data;
 
     if ((parse.token = mprCreateBuf(-1, -1)) == 0) {
-        return 0;
+        return MPR_ERR_MEMORY;
     }
     tid = getEspToken(&parse);
     while (tid != ESP_TOK_EOF) {
@@ -436,7 +440,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                 if (rest == 0) {
                     ;
                 } else if (scmp(where, "global") == 0) {
-                    global = sjoin(global, rest, NULL);
+                    *global = sjoin(*global, rest, NULL);
 
                 } else if (scmp(where, "start") == 0) {
                     if (*start == '\0') {
@@ -474,12 +478,12 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                 }
                 if ((incText = mprReadPathContents(include, &len)) == 0) {
                     *err = sfmt("Cannot read include file: %s", include);
-                    return 0;
+                    return MPR_ERR_CANT_READ;
                 }
                 /* Recurse and process the include script */
                 incBuf = 0;
-                if ((incBuf = espBuildScript(route, incText, include, NULL, NULL, err)) == 0) {
-                    return 0;
+                if ((rc = espBuildScript(route, incText, include, NULL, NULL, &incBuf, global, err)) < 0) {
+                    return rc;
                 }
                 body = sjoin(body, incBuf, NULL);
 
@@ -496,18 +500,18 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                     }
                     if (!mprPathExists(layout, F_OK)) {
                         *err = sfmt("Cannot access layout page %s", layout);
-                        return 0;
+                        return MPR_ERR_CANT_READ;
                     }
                 }
 
             } else {
                 *err = sfmt("Unknown control %s at line %d", control, parse.lineNumber);
-                return 0;                
+                return MPR_ERR_BAD_STATE;
             }
             break;
 
         case ESP_TOK_ERR:
-            return 0;
+            return MPR_ERR_BAD_STATE;
 
         case ESP_TOK_EXPR:
             /* <%= expr %> */
@@ -544,7 +548,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             break;
 
         default:
-            return 0;
+            return MPR_ERR_BAD_STATE;
         }
         tid = getEspToken(&parse);
     }
@@ -552,20 +556,19 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
     if (layout && mprPathExists(layout, R_OK)) {
         if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
             *err = sfmt("Cannot read layout page: %s", layout);
-            return 0;
+            return MPR_ERR_CANT_READ;
         }
         layoutBuf = 0;
-        if ((layoutBuf = espBuildScript(route, layoutPage, layout, NULL, NULL, err)) == 0) {
-            return 0;
+        if ((rc = espBuildScript(route, layoutPage, layout, NULL, NULL, &layoutBuf, NULL, err)) < 0) {
+            return rc;
         }
 #if BIT_DEBUG
         if (!scontains(layoutBuf, CONTENT_MARKER)) {
             *err = sfmt("Layout page is missing content marker: %s", layout);
-            return 0;
+            return MPR_ERR_BAD_STATE;
         }
 #endif
         body = sreplace(layoutBuf, CONTENT_MARKER, body);
-
         if (start && start[slen(start) - 1] != '\n') {
             start = sjoin(start, "\n", NULL);
         }
@@ -574,10 +577,10 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         }
     }
 
-    /*
-        CacheName will only be set for the outermost invocation
-     */
     if (cacheName) {
+        /*
+            CacheName will only be set for the outermost invocation
+         */
         dir = mprGetRelPath(route->dir, NULL);
         path = mprGetRelPath(path, NULL);
         assert(slen(path) > slen(dir));
@@ -598,10 +601,11 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             "   espDefineView(route, \"%s\", %s);\n"\
             "   return 0;\n"\
             "}\n",
-            path, global, cacheName, start, body, end, ESP_EXPORT_STRING, cacheName, mprGetPortablePath(path), cacheName);
+            path, *global, cacheName, start, body, end, ESP_EXPORT_STRING, cacheName, mprGetPortablePath(path), cacheName);
         mprTrace(6, "Create ESP script: \n%s\n", body);
     }
-    return body;
+    *script = body;
+    return 0;
 }
 
 

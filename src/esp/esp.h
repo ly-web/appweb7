@@ -228,7 +228,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
 PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, int isView);
 
 /**
-    Convert an ESP web page into compilable C code
+    Convert an ESP web page into C code
     @description This parses an ESP web page into an equivalent C source view.
     @param route EspRoute object
     @param page ESP web page script.
@@ -236,11 +236,14 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
         to this path.
     @param cacheName MD5 cache name. Not a full path.
     @param layout Default layout page.
+    @param script Output parameter to hold generated script.
+    @param global Output parameter to hold generated global level script.
     @param err Output parameter to hold any relevant error message.
-    @return C language code string for the web page
+    @return Zero if successful, otherwise a negative MPR error code.
     @ingroup EspRoute
  */
-PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, char **err);
+PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
+    char **script, char **global, char **err);
 
 /**
     Define an action
