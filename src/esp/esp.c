@@ -981,7 +981,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
             return;
         }
         /* No yield here */
-        if (espBuildScript(route, page, source, app->cacheName, defaultLayout, &script, NULL, &err) < 0) {
+        if ((script = espBuildScript(route, page, source, app->cacheName, defaultLayout, NULL, &err)) == 0) {
             fail("Cannot build %s, error %s", source, err);
             return;
         }

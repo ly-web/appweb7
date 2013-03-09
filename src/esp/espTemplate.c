@@ -286,7 +286,7 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
         if (eroute->layoutsDir) {
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }
-        if (espBuildScript(route, page, source, cacheName, layout, &script, NULL, &err) < 0) {
+        if ((script = espBuildScript(route, page, source, cacheName, layout, NULL, &err)) == 0) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot build %s, error %s", source, err);
             return 0;
         }
@@ -398,38 +398,41 @@ static char *joinLine(cchar *str, ssize *lenp)
         @#field             Lookup the current record for the value of the field.
 
  */
-PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
-    char **script, char **global, char **err)
+PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
+        EspParse *state, char **err)
 {
-    EspParse    parse;
     EspRoute    *eroute;
-    char        *control, *incBuf, *incText, *token, *body, *where, *dir;
-    char        *rest, *start, *end, *include, *line, *fmt, *layoutPage, *layoutBuf, *globalRef;
+    EspParse    top;
+    MprBuf      *body;
+    char        *control, *incText, *token, *where, *dir, *layoutCode, *bodyCode;
+    char        *rest, *include, *line, *fmt, *layoutPage, *incCode;
     ssize       len;
-    int         tid, rc;
+    int         tid;
 
     assert(page);
 
-    eroute = route->eroute;
-    body = start = end = globalRef = "";
-    if (!global) {
-        global = &globalRef;
-    }
     *err = 0;
-
-    memset(&parse, 0, sizeof(parse));
-    parse.data = (char*) page;
-    parse.next = parse.data;
-
-    if ((parse.token = mprCreateBuf(-1, -1)) == 0) {
-        return MPR_ERR_MEMORY;
+    eroute = route->eroute;
+    if (!state) {
+        assert(cacheName);
+        state = &top;
+        memset(state, 0, sizeof(EspParse));
+        state->global = mprCreateBuf(0, 0);
+        state->start = mprCreateBuf(0, 0);
+        state->end = mprCreateBuf(0, 0);
     }
-    tid = getEspToken(&parse);
+    state->data = (char*) page;
+    state->next = state->data;
+    state->lineNumber = 0;
+    body = mprCreateBuf(0, 0);
+    state->token = mprCreateBuf(-1, -1);
+    tid = getEspToken(state);
+
     while (tid != ESP_TOK_EOF) {
-        token = mprGetBufStart(parse.token);
+        token = mprGetBufStart(state->token);
 #if FUTURE
-        if (parse.lineNumber != lastLine) {
-            body = sfmt("\n# %d \"%s\"\n", parse.lineNumber, path);
+        if (state->lineNumber != lastLine) {
+            mprPutToBuf(script, "\n# %d \"%s\"\n", state->lineNumber, path);
         }
 #endif
         switch (tid) {
@@ -440,22 +443,16 @@ PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cac
                 if (rest == 0) {
                     ;
                 } else if (scmp(where, "global") == 0) {
-                    *global = sjoin(*global, rest, NULL);
+                    mprPutStringToBuf(state->global, rest);
 
                 } else if (scmp(where, "start") == 0) {
-                    if (*start == '\0') {
-                        start = "  ";
-                    }
-                    start = sjoin(start, rest, NULL);
+                    mprPutToBuf(state->start, "%s  ", rest);
 
                 } else if (scmp(where, "end") == 0) {
-                    if (*end == '\0') {
-                        end = "  ";
-                    }
-                    end = sjoin(end, rest, NULL);
+                    mprPutToBuf(state->end, "%s  ", rest);
                 }
             } else {
-                body = sjoin(body, token, NULL);
+                mprPutStringToBuf(body, token);
             }
             break;
 
@@ -463,7 +460,7 @@ PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cac
             /* NOTE: layout parsing not supported */
             control = stok(token, " \t\r\n", &token);
             if (scmp(control, "content") == 0) {
-                body = sjoin(body, CONTENT_MARKER, NULL);
+                mprPutStringToBuf(body, CONTENT_MARKER);
 
             } else if (scmp(control, "include") == 0) {
                 if (token == 0) {
@@ -478,14 +475,13 @@ PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cac
                 }
                 if ((incText = mprReadPathContents(include, &len)) == 0) {
                     *err = sfmt("Cannot read include file: %s", include);
-                    return MPR_ERR_CANT_READ;
+                    return 0;
                 }
                 /* Recurse and process the include script */
-                incBuf = 0;
-                if ((rc = espBuildScript(route, incText, include, NULL, NULL, &incBuf, global, err)) < 0) {
-                    return rc;
+                if ((incCode = espBuildScript(route, incText, include, NULL, NULL, state, err)) == 0) {
+                    return 0;
                 }
-                body = sjoin(body, incBuf, NULL);
+                mprPutStringToBuf(body, incCode);
 
             } else if (scmp(control, "layout") == 0) {
                 token = strim(token, " \t\r\n\"", MPR_TRIM_BOTH);
@@ -500,18 +496,18 @@ PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cac
                     }
                     if (!mprPathExists(layout, F_OK)) {
                         *err = sfmt("Cannot access layout page %s", layout);
-                        return MPR_ERR_CANT_READ;
+                        return 0;
                     }
                 }
 
             } else {
-                *err = sfmt("Unknown control %s at line %d", control, parse.lineNumber);
-                return MPR_ERR_BAD_STATE;
+                *err = sfmt("Unknown control %s at line %d", control, state->lineNumber);
+                return 0;
             }
             break;
 
         case ESP_TOK_ERR:
-            return MPR_ERR_BAD_STATE;
+            return 0;
 
         case ESP_TOK_EXPR:
             /* <%= expr %> */
@@ -522,65 +518,61 @@ PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cac
                 }
                 /* If users want a format and safe, use %S or renderSafe() */
                 token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-                body = sjoin(body, "  espRender(conn, \"", fmt, "\", ", token, ");\n", NULL);
+                mprPutToBuf(body, "  espRender(conn, \"%s\", %s);\n", fmt, token);
+                // mprPutToBuf(body = sjoin(body, "  espRender(conn, \"", fmt, "\", ", token, ");\n", NULL);
             } else {
                 token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-                body = sjoin(body, "  espRenderSafeString(conn, ", token, ");\n", NULL);
+                mprPutToBuf(body, "  espRenderSafeString(conn, %s);\n", token);
+                // body = sjoin(body, "  espRenderSafeString(conn, ", token, ");\n", NULL);
             }
             break;
 
         case ESP_TOK_FIELD:
             /* @#field -- field in the current record */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-            body = sjoin(body, "  espRenderSafeString(conn, getField(\"", token, "\"));\n", NULL);
+            mprPutToBuf(body, "  espRenderSafeString(conn, getField(\"%s\"));\n", token);
+            // body = sjoin(body, "  espRenderSafeString(conn, getField(\"", token, "\"));\n", NULL);
             break;
 
         case ESP_TOK_LITERAL:
             line = joinLine(token, &len);
-            body = sfmt("%s  espRenderBlock(conn, \"%s\", %d);\n", body, line, len);
+            mprPutToBuf(body, "  espRenderBlock(conn, \"%s\", %d);\n", line, len);
+            // body = sfmt("%s  espRenderBlock(conn, \"%s\", %d);\n", body, line, len);
             break;
 
         case ESP_TOK_VAR:
             /* @@var -- variable in (param || session) */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
             /* espRenderVar renders (param || session). It uses espRenderSafeString */
-            body = sjoin(body, "  espRenderVar(conn, \"", token, "\");\n", NULL);
+            mprPutToBuf(body, "  espRenderVar(conn, \"%s\");\n", token);
+            // body = sjoin(body, "  espRenderVar(conn, \"", token, "\");\n", NULL);
             break;
 
         default:
-            return MPR_ERR_BAD_STATE;
+            return 0;
         }
-        tid = getEspToken(&parse);
+        tid = getEspToken(state);
     }
 
     if (layout && mprPathExists(layout, R_OK)) {
         if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
             *err = sfmt("Cannot read layout page: %s", layout);
-            return MPR_ERR_CANT_READ;
+            return 0;
         }
-        layoutBuf = 0;
-        if ((rc = espBuildScript(route, layoutPage, layout, NULL, NULL, &layoutBuf, NULL, err)) < 0) {
-            return rc;
+        if ((layoutCode = espBuildScript(route, layoutPage, layout, NULL, NULL, state, err)) == 0) {
+            return 0;
         }
 #if BIT_DEBUG
-        if (!scontains(layoutBuf, CONTENT_MARKER)) {
+        if (!scontains(layoutCode, CONTENT_MARKER)) {
             *err = sfmt("Layout page is missing content marker: %s", layout);
-            return MPR_ERR_BAD_STATE;
+            return 0;
         }
 #endif
-        body = sreplace(layoutBuf, CONTENT_MARKER, body);
-        if (start && start[slen(start) - 1] != '\n') {
-            start = sjoin(start, "\n", NULL);
-        }
-        if (end && end[slen(end) - 1] != '\n') {
-            end = sjoin(end, "\n", NULL);
-        }
+        bodyCode = sreplace(layoutCode, CONTENT_MARKER, mprGetBufStart(body));
+    } else {
+        bodyCode = mprGetBufStart(body);
     }
-
-    if (cacheName) {
-        /*
-            CacheName will only be set for the outermost invocation
-         */
+    if (state == &top) {
         dir = mprGetRelPath(route->dir, NULL);
         path = mprGetRelPath(path, NULL);
         assert(slen(path) > slen(dir));
@@ -590,7 +582,13 @@ PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cac
                 path = &path[slen(dir) + 1];
             }
         }
-        body = sfmt(\
+        if (mprGetBufLength(state->start) > 0) {
+            mprPutCharToBuf(state->start, '\n');
+        }
+        if (mprGetBufLength(state->end) > 0) {
+            mprPutCharToBuf(state->end, '\n');
+        }
+        bodyCode = sfmt(\
             "/*\n   Generated from %s\n */\n"\
             "#include \"esp-app.h\"\n"\
             "%s\n"\
@@ -601,11 +599,11 @@ PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cac
             "   espDefineView(route, \"%s\", %s);\n"\
             "   return 0;\n"\
             "}\n",
-            path, *global, cacheName, start, body, end, ESP_EXPORT_STRING, cacheName, mprGetPortablePath(path), cacheName);
-        mprTrace(6, "Create ESP script: \n%s\n", body);
+            path, mprGetBufStart(state->global), cacheName, mprGetBufStart(state->start), bodyCode, mprGetBufStart(state->end),
+            ESP_EXPORT_STRING, cacheName, mprGetPortablePath(path), cacheName);
+        mprTrace(6, "Create ESP script: \n%s\n", bodyCode);
     }
-    *script = body;
-    return 0;
+    return bodyCode;
 }
 
 

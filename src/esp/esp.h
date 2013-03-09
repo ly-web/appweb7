@@ -19,11 +19,6 @@
 extern "C" {
 #endif
 
-/****************************** Forward Declarations **************************/
-
-#if !DOXYGEN
-#endif
-
 /********************************** Tunables **********************************/
 
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
@@ -84,8 +79,11 @@ typedef void (*EspProc)(HttpConn *conn);
 typedef struct EspParse {
     char    *data;                          /**< Input data to parse */
     char    *next;                          /**< Next character in input */
-    MprBuf  *token;                         /**< Storage buffer for token */
     int     lineNumber;                     /**< Line number for error reporting */
+    MprBuf  *token;                         /**< Current token */
+    MprBuf  *global;                        /**< Accumulated compiled esp global code */
+    MprBuf  *start;                         /**< Accumulated compiled esp start of function code */
+    MprBuf  *end;                           /**< Accumulated compiled esp end of function code */
 } EspParse;
 
 /**
@@ -236,14 +234,13 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
         to this path.
     @param cacheName MD5 cache name. Not a full path.
     @param layout Default layout page.
-    @param script Output parameter to hold generated script.
-    @param global Output parameter to hold generated global level script.
+    @param state Reserved. Must set to NULL.
     @param err Output parameter to hold any relevant error message.
-    @return Zero if successful, otherwise a negative MPR error code.
+    @return Compiled script. Return NULL on errors.
     @ingroup EspRoute
  */
-PUBLIC int espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
-    char **script, char **global, char **err);
+PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
+    EspParse *state, char **err);
 
 /**
     Define an action
