@@ -76,7 +76,7 @@ typedef void (*EspProc)(HttpConn *conn);
     @defgroup EspParse EspParse
     @see
  */
-typedef struct EspParse {
+typedef struct EspState {
     char    *data;                          /**< Input data to parse */
     char    *next;                          /**< Next character in input */
     int     lineNumber;                     /**< Line number for error reporting */
@@ -84,7 +84,7 @@ typedef struct EspParse {
     MprBuf  *global;                        /**< Accumulated compiled esp global code */
     MprBuf  *start;                         /**< Accumulated compiled esp start of function code */
     MprBuf  *end;                           /**< Accumulated compiled esp end of function code */
-} EspParse;
+} EspState;
 
 /**
     Top level ESP structure. This is a singleton.
@@ -240,7 +240,7 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
     @ingroup EspRoute
  */
 PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
-    EspParse *state, char **err);
+    EspState *state, char **err);
 
 /**
     Define an action

@@ -23,6 +23,18 @@
 #define ESP_TOK_EXPR            5            /* <%= expression %> */
 #define ESP_TOK_CONTROL         6            /* <%@ control */
 
+/**
+    ESP page parser structure
+    @defgroup EspParse EspParse
+    @see
+ */
+typedef struct EspParse {
+    int     lineNumber;                     /**< Line number for error reporting */
+    char    *data;                          /**< Input data to parse */
+    char    *next;                          /**< Next character in input */
+    MprBuf  *token;                         /**< Input token */
+} EspParse;
+
 /************************************ Forwards ********************************/
 
 static int getEspToken(EspParse *parse);
@@ -399,13 +411,14 @@ static char *joinLine(cchar *str, ssize *lenp)
 
  */
 PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
-        EspParse *state, char **err)
+        EspState *state, char **err)
 {
     EspRoute    *eroute;
-    EspParse    top;
+    EspState    top;
+    EspParse    parse;
     MprBuf      *body;
-    char        *control, *incText, *token, *where, *dir, *layoutCode, *bodyCode;
-    char        *rest, *include, *line, *fmt, *layoutPage, *incCode;
+    char        *control, *incText, *where, *dir, *layoutCode, *bodyCode;
+    char        *rest, *include, *line, *fmt, *layoutPage, *incCode, *token;
     ssize       len;
     int         tid;
 
@@ -421,15 +434,15 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         state->start = mprCreateBuf(0, 0);
         state->end = mprCreateBuf(0, 0);
     }
-    state->data = (char*) page;
-    state->next = state->data;
-    state->lineNumber = 0;
     body = mprCreateBuf(0, 0);
-    state->token = mprCreateBuf(-1, -1);
-    tid = getEspToken(state);
+    parse.data = (char*) page;
+    parse.next = parse.data;
+    parse.lineNumber = 0;
+    parse.token = mprCreateBuf(0, 0);
+    tid = getEspToken(&parse);
 
     while (tid != ESP_TOK_EOF) {
-        token = mprGetBufStart(state->token);
+        token = mprGetBufStart(parse.token);
 #if FUTURE
         if (state->lineNumber != lastLine) {
             mprPutToBuf(script, "\n# %d \"%s\"\n", state->lineNumber, path);
@@ -551,7 +564,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         default:
             return 0;
         }
-        tid = getEspToken(state);
+        tid = getEspToken(&parse);
     }
 
     if (layout && mprPathExists(layout, R_OK)) {
