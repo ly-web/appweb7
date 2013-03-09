@@ -28,7 +28,9 @@
         <div class="crumbs">
             <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
-             &gt; <a href="index.html">Users Guide</a> &gt; <b>Authentication</b>
+             &gt; <a href="index.html">Users Guide</a> &gt; <b>
+             	
+             </b>
         </div>
     </div>
     <div class="content">
@@ -64,7 +66,7 @@
             <p>Authentication is the process by which a client's identity and abilities are verified before granting
             access to server resources. Authentication is essential when you have content that you wish to protect and
             provide only to specific, approved clients.</p>
-            <p>Appweb implements a powerful and flexible authorization mechanism that supports Basic, Digest and
+            <p>Appweb implements a powerful and flexible authentication mechanism that supports Basic, Digest and
             Form authentication schemes. Appweb employs unified and flexible authentication front and back ends
             that can be mixed and matched to meet most authentication needs.</p>
             
@@ -93,7 +95,7 @@
             Authentication instead if it is supported by your clients. If you must use Basic Authentication, use it over
             TLS/SSL which will encrypt the password over the wire.</p>
             <h2>Basic Authentication Directives</h2>
-            <p>Appweb basic authorization is controlled by configuration file directives that may be used inside a
+            <p>Appweb basic authentication is controlled by configuration file directives that may be used inside a
             Route or VirtualHost block, or within the Default server configuration.</p>
             <pre>
 &lt;Route /private/&gt;
@@ -105,13 +107,13 @@
 </pre>
             <p>This example restricts access to URIs beginning with "/private". It permits access to the user
             "julie" once authenticated.</p>
-            <p>The <a href="dir/auth.html#authType">AuthType</a> directive specifies that basic authorization is being
+            <p>The <a href="dir/auth.html#authType">AuthType</a> directive specifies that basic authentication is being
             used. The <a href="dir/auth.html#authName">AuthRealm</a> directive specifies the realm of access to Appweb.
             The realm is used in combination with the username and password to encrypt the password.
             The <a href="dir/auth.html#User">AuthUserFile</a> directive specifies the location of the user
-            password file. You may use a single password file for all authorization, or you can use different files for
-            each authorization section.</p>
-            <p>The <a href="dir/auth.html#user">User</a> directive defines a user by name with encrypted password and
+            password file. You may use a single password file for all authentication, or you can use different files for
+            each authentication section.</p>
+            <p>The <a href="dir/auth.html#user">User</a> directive defines a user by name with an encrypted password and
             zero or more roles for the user. Typically, User and Role directives are placed in a separate configuration 
             file called <em>auth.conf</em> and are included via an <em>"include auth.conf"</em> directive.
             To create passwords, see the section
@@ -139,10 +141,10 @@
             
             <a id="digestAuthentication"></a>
             <h2 class="section">Digest Authentication</h2>
-            <p>The Digest authentication scheme is a modern replacement for the Basic authorization scheme. It uses
+            <p>The Digest authentication scheme is a modern replacement for the Basic authentication scheme. It uses
             cryptographic techniques to encode passwords and does not transmit sensitive information in clear-text.</p>
             <h2>Digest Authentication Directives</h2>
-            <p>Appweb digest authorization is controlled by configuration file directives that may be used within any
+            <p>Appweb digest authentication is controlled by configuration file directives that may be used within any
             Route, VirtualHost block or within the Default server configuration.</p>
             <pre>
 &lt;Route /private/&gt;
@@ -247,7 +249,7 @@ include auth.conf
             <a name="authpass"></a>
             <h2 class="section">Password Program</h2>
             <p>The <em>authpass</em> program supports the <em>internal</em> AuthStore and is used to create user
-            passwords in an authentication file. Appweb uses the same authorization file and format for Basic, Digest
+            passwords in an authentication file. Appweb uses the same authentication file and format for Basic, Digest
             and Form authentication types. This simplifies administration. The file simply contains User and Role
             directives and may be edited by hand if desired.</p> 
 <pre>
