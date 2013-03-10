@@ -1388,7 +1388,7 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
         The refresh option may use the "\@Controller/action" form.
     @arg size (Number|String) Size of the element.
     @arg style String CSS Style to use for the element.
-    @arg value Object Override value to display if used without a form control record.
+@arg value Object Override value to display if used without a form control record.
     @arg width (Number|String) Width of the control. Can be a number of pixels or a percentage string. Defaults to
         unlimited.
 
@@ -2302,6 +2302,9 @@ PUBLIC cchar *getReferrer();
     @ingroup EspAbbrev
  */
 PUBLIC cchar *getSessionVar(cchar *name);
+#if MOB || NEW || 1
+PUBLIC cchar *session(cchar *name);
+#endif
 
 //  MOB - should this be called top?
 /**

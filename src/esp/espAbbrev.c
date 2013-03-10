@@ -302,6 +302,7 @@ PUBLIC cchar *getHeader(cchar *key)
 }
 
 
+//  MOB - why not method()
 PUBLIC cchar *getMethod()
 {
     return espGetMethod(getConn());
@@ -326,10 +327,19 @@ PUBLIC cchar *getReferrer()
 }
 
 
+//  MOB - should have session() just like params
 PUBLIC cchar *getSessionVar(cchar *key)
 {
     return httpGetSessionVar(getConn(), key, "");
 }
+
+
+#if FUTURE
+PUBLIC cchar *session(cchar *key)
+{
+    return httpGetSessionVar(getConn(), key, "");
+}
+#endif
 
 
 PUBLIC cchar *getTop()

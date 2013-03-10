@@ -41,6 +41,7 @@
                 <li><a href="#installing">Installing</a></li>
                 <li><a href="#cross">Cross Compiling</a></li>
                 <li><a href="#toolchain">Specifying a Tool chain</a></li>
+                <li><a href="#ejs">Supporting OpenSSL</a></li>
                 <li><a href="#ejs">Supporting Ejscript</a></li>
                 <li><a href="bit.html">Building with Bit</a></li>
                 <li><a href="ide.html">Building with an IDE</a></li>
@@ -186,6 +187,14 @@ make -f projects/appweb-vxworks-default.mk ARCH=arm PROFILE=debug
 make CC=/opt/bin/ccarm.exe LD=/opt/bin/ccarm.exe ARCH=arm PROFILE=release
     -f projects/appweb-vxworks-default.mk 
 </pre>
+            <a name="openssl"></a>
+            <h3>Supporting OpenSSL</h3>
+            <p>If OpenSSL is required to provide SSL support, you must specify the OpenSSL libraries and path to 
+              those libraries when you invoke make. For example:</p>
+            <pre>make BIT_PACK_OPENSSL=1 \
+    LDFLAGS="-L/path/to/libs -lcrypto -lssl -Wl,-rpath,/path/to/libs" \
+    SHOW=1 make clean compile</pre>
+
             <a name="ejs"></a>
             <h3>Supporting Ejscript</h3>
             <p>If Ejscript is required, you must also build Appweb for the local system as the Ejscript compiler 
