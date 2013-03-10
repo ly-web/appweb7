@@ -28,7 +28,7 @@
         <div class="crumbs">
             <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
-             &gt; <a href="index.html">Users Guide</a> &gt; <b>Web Frameworks</b>
+             &gt; <a href="index.html">Users Guide</a> &gt; <b>Uploading</b>
         </div>
     </div>
     <div class="content">
@@ -126,10 +126,19 @@ typedef HttpUploadFile {
     ssize size;             /* Uploaded file size */
 } HttpUploadFile;
 </pre>
-            <p>You can access an uploaded file via:
-            <pre>
-HttpUploadFile *fp = <a
-href="../../../api/mpr.html#group___mpr_hash_1ga28eaf688ae47d09abd9552fe003cedbb">mprLookupKey</a>(conn->rx->files, "0");
+            <p>You can access uploaded files via:</p>
+<pre>
+HttpConn        *conn;
+HttpUploadFile  *file;
+MprKey          *kp;
+
+conn = getConn();
+for (ITERATE_KEY_DATA(conn->rx->files, kp, file)) {
+    render("FILENAME %s\n", file->filename);
+    render("CLIENT_NAME %s\n", file->clientFilename);
+    render("TYPE %s\n", file->contentType);
+    render("SIZE %d\n", file->size);
+}
 </pre>
 
             <h3>Ejscript Uploads</h3>
