@@ -53,8 +53,8 @@
 #ifndef SQLITE_THREADSAFE
 #define SQLITE_THREADSAFE               1
 #endif
-#ifndef SQLITE_ENABLE_FTS3
-#define SQLITE_ENABLE_FTS3              1
+#ifndef SQLITE_ENABLE_FTS4
+#define SQLITE_ENABLE_FTS4              1
 #endif
 
 #if MACOSX || LINUX || SOLARIS || FREEBSD
