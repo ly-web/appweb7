@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.2.0 Documentation</title>
+    <title>Embedthis Appweb 4.3.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.2.0</div>
+                <div class="version">Embedthis Appweb 4.3.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -68,12 +68,12 @@
             <a id="overview"></a>
             <h2>Overview</h2>
             <p>Appweb includes a powerful request routing engine that processes client HTTP requests. The engine
-            is configured with a set of routes and when a request is received, it tests various routes and selects
-            the best route to handle the request.  In the process, routes may redirect or rewrite the request 
+            is configured with a set of routes and, when a request is received, it tests various routes and selects
+            the best one to handle the request.  In the process, routes may redirect or rewrite the request 
             as required.</p>
             <img src="../../../images/routing.jpg" alt="routing"/>
             <p>An Appweb configuration will typically have many routes. The configured routes 
-            are tested in-order by matching the route pattern against the request URI. 
+            are tested in order by matching the route pattern against the request URI. 
             A route may require that further preconditions be met before it is suitable to process the
             request. If the required conditions are not met, the next route in the configuration will be tested. There 
             is always a catch-all route that will process the request if all prior routes fail to qualify.</p>
@@ -83,7 +83,7 @@
             <h2 class="section">Route Configuration</h2>
             <p>Routes are defined in the appweb.conf configuration file or via an API and are processed at run-time when 
             client HTTP requests are received.</p>
-            <p>The most fundamental directive is the Route block directive which declares a new route block and defines the
+            <p>The most fundamental directive is the Route Block directive which declares a new route block and defines the
                 route matching pattern:</p>
 <pre>
 &lt;Route /info/ &gt;
@@ -135,7 +135,7 @@
             request extension matches one of the AddHandler extension arguments.  The <em>SetHandler</em> directive
             defines the Appweb handler to be used for the route regardless of the URI extension.</p>
             <h3><a href="dir/route.html#condition">Condition</a></h3>
-            <p>The condition directive can define condition test that must be true for the route to be selected. 
+            <p>The condition directive can define a condition test that must be true for the route to be selected. 
             Conditions have three test rules: <em>exists</em>, <em>directory</em> and <em>match</em>. The 
             <em>exists</em> rule evaluates if the condition filename argument exists in the file system. 
             The <em>directory</em> rule evaluates if the filename is a directory. The <em>match</em> rule
@@ -201,6 +201,7 @@
                 <li>System/Route variables &mdash; DOCUMENTS, LIBDIR, PRODUCT, OS, ROUTE_HOME, VERSION.</li>
                 <li>Route URI tokens &mdash; these are the braced tokens in the route pattern.</li>
                 <li>Request tokens &mdash; these are request state and property values.</li>
+                <li>SSL tokens &mdash; these are the SSL connection state.</li>
             </ul>
             <h4>System and URI Tokens</h4>
             <p>System and URI tokens are of the form: <em>"${token}"</em> where "token" is the name of the variable or 
@@ -208,36 +209,82 @@
             <h4>Request Tokens</h4>
             <p>Request tokens are of the form: <em>"${family:name=defaultValue}"</em> where the family 
             defines a set of values. 
-            If the named tokens is not present, an optional default value "=defaultValue" will be used instead.
+            If the named tokens are not present, an optional default value "=defaultValue" will be used instead.
             These supported request token families are:</p>
             <ul>  
                 <li>header &mdash; for request HTTP header values</li>
                 <li>form &mdash; for request form values</li>
                 <li>request &mdash; for request details</li>
+                <li>ssl &mdash; for SSL state details</li>
             </ul>
+            <h4>Request Family Tokens</h4>
             <p>The supported request key names are:</p>
             <ul>
-                <li>clientAddress &mdash; The client IP address</li>
-                <li>clientPort &mdash; The client port number</li>
-                <li>error &mdash; Any request or connection error message</li>
-                <li>ext &mdash; The request extension</li>
-                <li>extraPath &mdash; The request extra path after the script extension</li>
-                <li>filename &mdash; The mapped request filename in physical storage</li>
-                <li>language &mdash; The selected language for the request</li>
-                <li>languageRoot &mdash; The langauge root directory</li>
-                <li>host &mdash; The host name owning the route for the request</li>
-                <li>method &mdash; The request HTTP method</li>
-                <li>originalUri &mdash; The original, pre-decoded URI</li>
-                <li>pathInfo &mdash; The path portion of the URI after the host and port information</li>
-                <li>prefix &mdash; The route prefix</li>
-                <li>query &mdash; The request query string</li>
-                <li>reference &mdash; The request reference fragment. This is the URI portion after "#"</li>
-                <li>scheme &mdash; The request protocol scheme. E.g. "http"</li>
-                <li>scriptName &mdash; The request script or application name</li>
-                <li>serverAddress &mdash; The server IP address</li>
-                <li>serverPort &mdash; The server port number</li>
-                <li>uri &mdash; The full request URI. May be modified by routes, handlers and filters</li>
+                <li>clientAddress &mdash; the client IP address</li>
+                <li>clientPort &mdash; the client port number</li>
+                <li>error &mdash; any request or connection error message</li>
+                <li>ext &mdash; the request extension</li>
+                <li>extraPath &mdash; the request extra path after the script extension</li>
+                <li>filename &mdash; the mapped request filename in physical storage</li>
+                <li>language &mdash; the selected language for the request</li>
+                <li>languageRoot &mdash; the langauge root directory</li>
+                <li>host &mdash; the host name owning the route for the request</li>
+                <li>method &mdash; the request HTTP method</li>
+                <li>originalUri &mdash; the original, pre-decoded URI</li>
+                <li>pathInfo &mdash; the path portion of the URI after the host and port information</li>
+                <li>prefix &mdash; the route prefix</li>
+                <li>query &mdash; the request query string</li>
+                <li>reference &mdash; the request reference fragment. This is the URI portion after "#"</li>
+                <li>scheme &mdash; the request protocol scheme. E.g. "http"</li>
+                <li>scriptName &mdash; the request script or application name</li>
+                <li>serverAddress &mdash; the server IP address</li>
+                <li>serverPort &mdash; the server port number</li>
+                <li>uri &mdash; the full request URI. May be modified by routes, handlers and filters</li>
             </ul>
+            <h4>SSL Family Tokens</h4>
+                <p>The supported ssl key names are listed below:</p>
+                <table title="keys">
+                    <thead>
+                        <tr><th>Key</th><th>Example Value</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>state</td><td>CIPHER=TLS_DHE_RSA_WITH_AES_256_CBC_SHA, CIPHER_IANA=39, CLIENT_VERSION=3,...
+                            </td><td>All the keys values below and the certificate values
+                            in single KEY=VALUE, ... string</td></tr>
+                        <tr><td>CIPHER</td><td>TLS_DHE_RSA_WITH_AES_256_CBC_SHA</td><td>Encryption cipher suite</td></tr>
+                        <tr><td>CIPHER_IANA</td><td>0x39</td><td>IANA cipher code</td></tr>
+                    </tbody>
+                </table>
+                <h4>SSL Certificate Key Tokens</h4>
+                    <p>The keys below pertain to the client or server side certificate and are prefixed with either 
+                        "CLIENT_" or "SERVER_".</p>
+                <table title="certificates">
+                    <thead>
+                        <tr><th>Key</th><th>Example Value</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>VERSION</td><td>3</td><td>Certificate version</td></tr>
+                        <tr><td>SERIAL</td><td>00:89:89:4C:64:02:32:E9:8A</td><td>Certificate serial number</td></tr>
+                        <tr><td>S_C</td><td>US</td><td>Subject country</td></tr>
+                        <tr><td>S_ST</td><td>Washington</td><td>Subject state</td></tr>
+                        <tr><td>S_L</td><td>Seattle</td><td>Subject locality</td></tr>
+                        <tr><td>S_O</td><td>Example Inc.</td><td>Subject organization</td></tr>
+                        <tr><td>S_OU</td><td>Development</td><td>Subject organizational unit</td></tr>
+                        <tr><td>S_CN</td><td>localhost</td><td>Subject common name</td></tr>
+                        <tr><td>S_EMAIL</td><td>dev@example.com</td><td>Subject email address</td></tr>
+                        <tr><td>I_C</td><td>US</td><td>Issuer country</td></tr>
+                        <tr><td>I_ST</td><td>Washington</td><td>Issuer state</td></tr>
+                        <tr><td>I_L</td><td>Seattle</td><td>Issuer locality</td></tr>
+                        <tr><td>I_O</td><td>Example Inc.</td><td>Issuer organization</td></tr>
+                        <tr><td>I_OU</td><td>Development</td><td>Issuer organizational unit</td></tr>
+                        <tr><td>I_CN</td><td>localhost</td><td>Issuer common name</td></tr>
+                        <tr><td>I_EMAIL</td><td>dev@example.com</td><td>Issuer email</td></tr>
+                        <tr><td>START</td><td>2012-06-25 12:51:01</td><td>Certificate valid 'not before' date</td></tr>
+                        <tr><td>END</td><td>2013-06-25 12:51:01</td><td>Certificate valid 'not after' date</td></tr>
+                        <tr><td>CIPHER</td><td>RSA_SHA1</td><td>Certificate encoding cipher</td></tr>
+                    </tbody>
+                </table>
+            <h4>Example</h4>
             <p>For example, to select the client's browser string passed in the HTTP headers:</p>
 <pre>Target run ${header:User-Agent}</pre>
             <p>To select a form field value, consider if the URI <em>/info/Mary</em> matched the pattern:
@@ -246,7 +293,7 @@
             <a id="processing"></a>
             <h2 class="section">Route Processing</h2>
             <p>To process a request, The Appweb route engine examines each of the configured routes to determine the 
-            best matching route for a request.  It does this by considering each route in the order they are defined in
+            best matching route for a request.  It does this by considering each route in the order it is defined in
             the configuration file. Each route is tested over a sequence of steps. 
             Not all steps are required. However, the selected route will always perform pattern match, param definition and 
             target execution.  If a route fails to match at a step, the route is discarded and the next configured route 
@@ -401,7 +448,7 @@ Target write 200 "Running controller ${controller} action ${action}\n\n"
             <p>Note: to be more secure, the <em>write</em> rule will escape embedded HTML sequences. If you need to emit
             HTML, use the <em>-r</em> switch for raw write output.</p>
             <h3>Prefix Removal</h3>
-            <p>If Appweb is running several applications, Appweb will need to be able to route and distinguish 
+            <p>If Appweb is running several applications, it will need to be able to route and distinguish 
             requests for each application. There are two primary ways to achieve this: run each application
             in a separate virtual host or uniquely prefix the URIs for each application. If using the latter approach,
             routes can be defined for each application that specify the URI prefix for each application. However, it is
@@ -450,7 +497,7 @@ Target write 200 "Running controller ${controller} action ${action}\n\n"
             <h3>Multi-Language Content</h3>
             <p>This example stores English content under the <em>"english-docs"</em> directory and French under the 
             <em>"french-docs"</em> directory. The client's browser should include an <em>Accept-Language</em> 
-            header which stipulates what language is preferred.
+            header which stipulates which language is preferred.
             If the accept header is missing or the requested language is not English or French, then the DefaultLanguage
             directive indicates that english content should be returned.</p>
 <pre>
@@ -504,7 +551,7 @@ Target write 200 "Running controller ${controller} action ${action}\n\n"
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

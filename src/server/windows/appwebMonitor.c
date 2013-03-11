@@ -9,8 +9,9 @@
 /********************************* Includes ***********************************/
 
 #include    "mpr.h"
-#include    "appwebMonitor.h"
-#include    "resource.h"
+
+    #include    "appwebMonitor.h"
+    #include    "monitorResources.h"
 
 #include    <winUser.h>
 
@@ -71,10 +72,10 @@ static void     updateMenu(int id, char *text, int enable, int check);
 
 APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
 {
-    char    *argv[MPR_MAX_ARGC], *argp;
+    char    *argv[BIT_MAX_ARGC], *argp;
     int     argc, err, nextArg, manage, stop;
 
-    argc = mprParseArgs(command, &argv[1], MPR_MAX_ARGC - 1) + 1;
+    argc = mprParseArgs(command, &argv[1], BIT_MAX_ARGC - 1) + 1;
     if (mprCreate(argc, argv, MPR_USER_EVENTS_THREAD | MPR_NO_WINDOW) == NULL) {
         exit(1);
     }
@@ -112,7 +113,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
             err++;
         }
         if (err) {
-            mprUserError("Bad command line: %s\n"
+            mprError("Bad command line: %s\n"
                 "  Usage: %s [options]\n"
                 "  Switches:\n"
                 "    --manage             # Launch browser to manage",
@@ -126,11 +127,11 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         return 0;
     }
     if (findInstance()) {
-        mprUserError("Application %s is already active.", mprGetAppTitle());
+        mprError("Application %s is already active.", mprGetAppTitle());
         return MPR_ERR_BUSY;
     }
     if (mprInitWindow() < 0) {
-        mprUserError("Can't initialize application Window");
+        mprError("Can't initialize application Window");
         return MPR_ERR_CANT_INITIALIZE;
     }
     app->appHwnd = mprGetHwnd();
@@ -147,7 +148,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
 
     } else {
         if (openMonitorIcon() < 0) {
-            mprUserError("Can't open %s tray", mprGetAppName());
+            mprError("Can't open %s tray", mprGetAppName());
         } else {
             eventLoop();
             closeMonitorIcon();
@@ -280,7 +281,7 @@ BOOL CALLBACK dialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 static long msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp)
 {
     MprThread   *tp;
-    char        buf[MPR_MAX_FNAME];
+    char        buf[BIT_MAX_FNAME];
 
     switch (msg) {
     case WM_DESTROY:
@@ -566,7 +567,7 @@ static int runBrowser(char *page)
 {
     PROCESS_INFORMATION procInfo;
     STARTUPINFO         startInfo;
-    char                cmdBuf[MPR_MAX_STRING];
+    char                cmdBuf[BIT_MAX_BUFFER];
     char                *path;
     char                *pathArg;
     int                 port;
@@ -576,7 +577,7 @@ static int runBrowser(char *page)
         mprError("Can't get Appweb listening port");
         return -1;
     }
-    path = getBrowserPath(MPR_MAX_STRING);
+    path = getBrowserPath(BIT_MAX_BUFFER);
     if (path == 0) {
         mprError("Can't get browser startup command");
         return -1;
@@ -586,14 +587,14 @@ static int runBrowser(char *page)
         page++;
     }
     if (pathArg == 0) {
-        fmt(cmdBuf, MPR_MAX_STRING, "%s http://localhost:%d/%s", path, port, page);
+        fmt(cmdBuf, BIT_MAX_BUFFER, "%s http://localhost:%d/%s", path, port, page);
 
     } else {
         /*
             Patch out the "%1"
          */
         *pathArg = '\0';
-        fmt(cmdBuf, MPR_MAX_STRING, "%s \"http://localhost:%d/%s\"", path, port, page);
+        fmt(cmdBuf, BIT_MAX_BUFFER, "%s \"http://localhost:%d/%s\"", path, port, page);
     }
 
     mprLog(4, "Running %s\n", cmdBuf);
@@ -614,13 +615,13 @@ static int runBrowser(char *page)
  */ 
 static char *getBrowserPath(int size)
 {
-    char    cmd[MPR_MAX_STRING];
+    char    cmd[BIT_MAX_BUFFER];
     char    *type, *cp, *path;
 
     if ((type = mprReadRegistry("HKEY_CLASSES_ROOT\\.htm", "")) == 0) {
         return 0;
     }
-    fmt(cmd, MPR_MAX_STRING, "HKEY_CLASSES_ROOT\\%s\\shell\\open\\command", type);
+    fmt(cmd, BIT_MAX_BUFFER, "HKEY_CLASSES_ROOT\\%s\\shell\\open\\command", type);
     if ((path = mprReadRegistry(cmd, "")) == 0) {
         return 0;
     }
@@ -739,8 +740,8 @@ static uint queryService()
 /*
     @copy   default
   
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2013. All Rights Reserved.
   
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

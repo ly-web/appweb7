@@ -1,0 +1,231 @@
+<!-- BeginDsi "dsi/head.html" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Embedthis Appweb 4.3.0 Documentation</title>
+    <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
+        embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
+    <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
+        devices and applications." />
+	<meta name="robots" content="index,follow" />
+	<link href="../../../doc.css" rel="stylesheet" type="text/css" />
+	<link href="../../../print.css" rel="stylesheet" type="text/css" media="print"/>
+    <!--[if IE]>
+    <link href="../../../iehacks.css" rel="stylesheet" type="text/css" />
+    <![endif]-->
+    <link href="http://www.google.com/cse/style/look/default.css" type="text/css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="top">
+        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
+        <div class="topRight">
+            <div class="search">
+                <div id="cse-search-form"></div>
+                <div class="version">Embedthis Appweb 4.3.0</div>
+            </div>
+        </div>
+        <div class="crumbs">
+            <a href="../../../index.html">Home</a>
+<!-- EndDsi -->
+             &gt;<a href="index.html">Source Code</a>&gt; <b>Building with Make</b>
+        </div>
+    </div>
+    <div class="content">
+        <div class="contentRight">
+            <h1>Quick Nav</h1>
+            <ul>
+                <li><a href="#makefiles">Platform Makefile</a></li>
+                <li><a href="#nmake">Windows Nmake</a></li>
+                <li><a href="#modifying">Modifying Defaults</a></li>
+                <li><a href="#installing">Installing</a></li>
+                <li><a href="#cross">Cross Compiling</a></li>
+                <li><a href="#toolchain">Specifying a Tool chain</a></li>
+                <li><a href="#ejs">Supporting OpenSSL</a></li>
+                <li><a href="#ejs">Supporting Ejscript</a></li>
+                <li><a href="bit.html">Building with Bit</a></li>
+                <li><a href="ide.html">Building with an IDE</a></li>
+            </ul>
+<!-- BeginDsi "dsi/sourceSeeAlso.html" -->
+            <h1>See Also</h1>
+            <ul class="nav">
+                <li><a href="../../../guide/appweb/source/index.html">Working with Source</a></li>
+                <li><a href="../../../guide/appweb/source/building.html">Building From Source</a></li>
+                <li><a href="../../../guide/appweb/source/porting.html">Porting Guide</a></li>
+
+                <li><a href="../../../ref/appweb/index.html">Programmers Reference</a></li>
+                <li><a href="../../../ref/appweb/architecture.html">Appweb Architecture</a></li>
+                <li><a href="../../../api/native.html">Native APIs</a></li>
+
+                <li><a href="../../../guide/appweb/programmers/embedding.html">Embedding Appweb</a></li>
+                <li><a href="../../../guide/appweb/programmers/modules.html">Appweb Modules</a></li>
+                <li><a href="../../../guide/appweb/programmers/handlers.html">Appweb Handlers</a></li>
+                <li><a href="../../../guide/appweb/programmers/stages.html">Pipeline Stages</a></li>
+                <li><a href="../../../guide/appweb/programmers/migrating.html">Migrating to Appweb 4</a></li>
+                <li><a href="../../../guide/appweb/users/index.html">Users Guide</a></li>
+                <li><a href="../../../product/changeLog.html">Change Log</a></li>
+            </ul>
+<!-- EndDsi -->
+        </div>
+        <div class="contentLeft">
+            <h1>Building with Make or Nmake</h1>
+            <p>This document describes the process to build the software from source using Make or Nmake on Windows.
+                First make sure you have read <a href="building.html">Building from Source</a> to prepare your build
+                environment. </p>
+            
+            <a name="makefiles"></a>
+            <h2>Platform Makefiles</h2>
+            <p>Appweb provides a suite of generated, pre-configured Makefiles for common platforms. 
+            These are simple flat makefiles that build a default configuration of Appweb for a specific operating
+            system. These makefiles are provided under the <em>./projects</em> directory.</p>
+            <p> A top level Makefile is also provided that detects your operating system and CPU architecture and
+            then invokes the appropriate project Makefile for your system. For example:</p>
+<pre>$ <b>make</b>
+make --no-print-directory -f projects/appweb-macosx-default.mk all
+...
+</pre>
+            <a name="nmake"></a>
+            <h3>Windows Nmake</h3>
+            <p>On Windows, a <em>make.bat</em> file is provided to to invoke nmake. The make.bat file first invokes
+            <em>projects/windows.bat</em> which runs the Visual Studio <em>vcvarsall.bat</em> procedure
+            to setup the necessary Visual Studio environment variables for compiling.</p>
+            <p>To build on Windows with nmake, type:
+            <pre>$ <b>make</b>
+nmake -f projects\appweb-windows.nmake
+...
+</pre>
+            <a name="modifying"></a>
+            <h3>Modifying the Makefile Defaults</h3>
+            <p>You do not use the configure program when building via Make, that is used only for building with Bit. 
+            Rather, you supply configuration options directly to Make. These options override default values defined by the
+            projects/appweb-OS-default.mk makefile and by the projects/appweb-OS-debug-bit.h file. For example, to disable
+            use of SQLite:</p>
+            <pre>$ make <b>BIT_PACK_SQLITE=0</b> </pre>
+            <p>To see the list of configurable options, run:</p>
+            <pre>$ <b>make help</b>
+usage: make [clean, compile, install, run, uninstall]
+The default configuration can be modified by setting make variables
+Set to 0 to disable and 1 to enable:
+  PROFILE            # Select default or static for static linking
+  BIT_EJS_DB         # Select default or static for static linking
+  BIT_EJS_DB         # Enable database support, ejs.db
+  BIT_EJS_MAIL       # Enable mail support, ejs.mail
+  BIT_EJS_MAPPER     # Enable database mapper support, ejs.mapper
+  BIT_EJS_TAR        # Enable tar support, ejs.tar
+  BIT_EJS_TEMPLATE   # Enable template support, ejs.template
+  BIT_EJS_WEB        # Enable web support, ejs.web
+  BIT_EJS_ZLIB       # Enable zlib support, ejs.zlib
+  BIT_ESP_MDB        # Enable ESP MDB database support
+  BIT_ESP_SDB        # Enable ESP SQLite database support
+  BIT_MPR_LOGGING    # Enable application logging
+  BIT_MPR_TRACING    # Enable debug tracing
+  BIT_PACK_CGI       # Enable the CGI handler
+  BIT_PACK_DIR       # Enable the directory listing handler
+  BIT_PACK_EJSCRIPT  # Enable the Ejscript handler
+  BIT_PACK_ESP       # Enable the ESP web framework
+  BIT_PACK_EST       # Enable the EST SSL stack
+  BIT_PACK_MOCANA    # Enable the Mocana NanoSSL stack
+  BIT_PACK_MATRIXSSL # Enable the MatrixSSL SSL stack
+  BIT_PACK_OPENSSL   # Enable the OpenSSL SSL stack
+  BIT_PACK_PHP       # Enable the PHP framework
+  BIT_PACK_SQLITE    # Enable the SQLite database
+  BIT_ROM            # Build for ROM without a file system
+For example, to disable CGI:
+  make BIT_PACK_CGI=0
+Other make variables:
+  ARCH               # CPU architecture (x86, x64, ppc, ...)
+  OS                 # Operating system (linux, macosx, windows, vxworks)
+  CC                 # Compiler to use 
+  LD                 # Linker to use
+  DEBUG              # Set to debug or release for debug or optimized builds
+  CONFIG             # Output directory for built items.
+  CFLAGS             # Add compiler options. For example: -Wall
+  DFLAGS             # Add compiler defines. For example: -DCOLOR=blue
+  IFLAGS             # Add compiler include directories.
+  LDFLAGS            # Add linker options
+  LIBPATHS           # Add linker library search directories.
+  LIBS               # Add linker libraries. For example: -lpthreads
+  PROFILE            # Build profile, used in output products directory name
+</pre>
+            <p>By defining the make variables such as CC and CFLAGS, you can modify the compiler options. This is the
+            technique used when cross-compiling. For more details, see <a href="#cross">Cross Compiling</a> below.</p>
+            <a name="installing"></a>
+            <h2 class="section">Installing with Make</h2>
+            <p>You can install the newly built software via:</p>
+            <pre>sudo make install</pre>
+            <p>You can remove by:</p>
+            <pre>
+sudo make uninstall
+</pre>
+            <p>If you need to capture the build products only, you can install to a specific directory via:
+            <pre>make BIT_ROOT_PREFIX=/tmp/output installBinary</pre>
+            <a id="cross"></a>
+            <h2 class="section">Cross Compiling with Make</h2>
+            <p>Building a product for platform different to that of the local system is called <em>cross compiling</em>.
+            Sometimes this compiling is just for a different instruction set (say x64 instead of x86). Other
+            times, it is for a completely different operating system and/or CPU architecture. In such cases, a
+            cross-compiler is typically required to build for the target platform.</p>
+            <p>Appweb supplies makefiles for Linux, Windows, FreeBSD, MAC OSX and VxWorks. To cross compile, you invoke 
+            the relevant project makefile and pass the required CPU architecture as a make variable. For example, to 
+            cross compile for VxWorks on ARM:
+            <pre>
+make -f projects/appweb-vxworks-default.mk ARCH=arm PROFILE=debug
+</pre>
+            <p>When make runs, it places the output products (executables, libraries and objects) in a platform-specific 
+            output directory. This is named using the form: OS-ARCH-PROFILE. For example: vxworks-arm-debug. In this 
+            manner, make can be invoked multiple times, once for each target platform and the results will be captured
+            in separate platform output directories. Some of the supported architectures for the ARCH field are:
+            arm, mips, ppc, x64 and x86. The PROFILE is a descriptive name chosen by you for your configuration.</p>
+            <p>If there is not a makefile for your  target operating system, copy the closest makefile and edit to 
+            suit your target platform.</p>
+            <a name="toolchain"></a>
+            <h3>Specifying a Tool Chain</h3>
+            <p>You may need to specify where Make can locate your cross-compiler and other tools.
+            You can supply these via the make variables: CC, CFLAGS, DFLAGS, IFLAGS, LD and LDFLAGS. 
+            <p>For example:</p>
+            <pre>
+make CC=/opt/bin/ccarm.exe LD=/opt/bin/ccarm.exe ARCH=arm PROFILE=release
+    -f projects/appweb-vxworks-default.mk 
+</pre>
+            <a name="openssl"></a>
+            <h3>Supporting OpenSSL</h3>
+            <p>If OpenSSL is required to provide SSL support, you must specify the OpenSSL libraries and path to 
+              those libraries when you invoke make. For example:</p>
+            <pre>make BIT_PACK_OPENSSL=1 \
+    LDFLAGS="-L/path/to/libs -lcrypto -lssl -Wl,-rpath,/path/to/libs" \
+    SHOW=1 make clean compile</pre>
+
+            <a name="ejs"></a>
+            <h3>Supporting Ejscript</h3>
+            <p>If Ejscript is required, you must also build Appweb for the local system as the Ejscript compiler 
+            is a necessary tool when compiling the Ejscript library for the target. To do this, run make for the local
+            development system first and then pass the binary output directory for the local system
+            to the cross make. For example, if developing on a Linux X86 system:
+            <pre>make
+make LBIN=linux-x86-debug/bin -f projects/appweb-vxworks-default.mk
+</pre>
+            <p>The first make will compile the software for the local development system. The second make will do
+            the cross compilation using tools from the directory specified by the LBIN variable.
+        </div>
+    </div>
+<!-- BeginDsi "dsi/bottom.html" -->
+	<div class="bottom">
+		<p class="footnote"> 
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
+            All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
+		</p>
+	</div>
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript"> 
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+        var customSearchControl = new google.search.CustomSearchControl(
+          '000262706376373952077:1hs0lhenihk');
+        customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+        var options = new google.search.DrawOptions();
+        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        customSearchControl.draw('cse-search-form', options);
+      }, true);
+    </script>
+</body>
+</html>

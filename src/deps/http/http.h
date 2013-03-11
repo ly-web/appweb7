@@ -14,7 +14,7 @@
 /****************************** Forward Declarations **************************/
 
 #ifdef __cplusplus
-PUBLIC "C" {
+extern "C" {
 #endif
 
 #if !DOXYGEN
@@ -38,118 +38,110 @@ struct HttpWebSocket;
 
 /********************************** Tunables **********************************/
 
-#define HTTP_DEFAULT_PORT 80
-
-#ifndef HTTP_NAME
-#define HTTP_NAME "Embedthis-http"                          /**< Default Http protocol name used in Http Server header */
+#ifndef BIT_HTTP_PORT
+    #define BIT_HTTP_PORT           80
+#endif
+#ifndef BIT_HTTP_SOFTWARE
+    #define BIT_HTTP_SOFTWARE       "Embedthis-http"    /**< Default Http protocol name used in Http Server header */
+#endif
+#ifndef BIT_MAX_URI
+    #define BIT_MAX_URI             256                 /**< Reasonable filename size */
+#endif
+#ifndef BIT_MAX_IOVEC
+    #define BIT_MAX_IOVEC           16                  /**< Number of fragments in a single socket write */
+#endif
+#ifndef BIT_MAX_ROUTE_MATCHES
+    #define BIT_MAX_ROUTE_MATCHES   32                  /**< Maximum number of submatches in routes */
+#endif
+#ifndef BIT_MAX_CLIENTS_HASH
+    #define BIT_MAX_CLIENTS_HASH    131                 /**< Hash table for client IP addresses */
+#endif
+#ifndef  BIT_MAX_CACHE_ITEM
+    #define BIT_MAX_CACHE_ITEM      (256 * 1024)        /**< Maximum cachable item size */
+#endif
+#ifndef BIT_MAX_CHUNK
+    #define BIT_MAX_CHUNK           (8 * 1024)          /**< Maximum chunk size for transfer chunk encoding */
+#endif
+#ifndef BIT_MAX_CLIENTS
+    #define BIT_MAX_CLIENTS         10                  /**< Maximum concurrent client endpoints */
+#endif
+#ifndef BIT_MAX_HEADERS
+    #define BIT_MAX_HEADERS         4096                /**< Maximum size of the headers */
+#endif
+#ifndef BIT_MAX_KEEP_ALIVE
+    #define BIT_MAX_KEEP_ALIVE      200                 /**< Maximum requests per connection */
+#endif
+#ifndef BIT_MAX_NUM_HEADERS
+    #define BIT_MAX_NUM_HEADERS     20                  /**< Maximum number of header lines */
+#endif
+#ifndef BIT_MAX_RECEIVE_BODY
+    #define BIT_MAX_RECEIVE_BODY    (128 * 1024 * 1024) /**< Maximum incoming body size */
+#endif
+#ifndef BIT_MAX_RECEIVE_FORM
+    #define BIT_MAX_RECEIVE_FORM    (1024 * 1024)       /**< Maximum incoming form size */
+#endif
+#ifndef BIT_MAX_REQUESTS
+    #define BIT_MAX_REQUESTS        20                  /**< Maximum concurrent requests */
+#endif
+#ifndef BIT_MAX_REQUESTS_PER_CLIENT
+    #define BIT_MAX_REQUESTS_PER_CLIENT 20              /**< Maximum concurrent requests */
+#endif
+#ifndef BIT_MAX_REWRITE
+    #define BIT_MAX_REWRITE         20                  /**< Maximum URI rewrites */
+#endif
+#ifndef BIT_MAX_SESSIONS
+    #define BIT_MAX_SESSIONS        100                 /**< Maximum concurrent sessions */
+#endif
+#ifndef BIT_MAX_QBUFFER
+    #define BIT_MAX_QBUFFER         (32 * 1024)         /**< Maximum buffer for any pipeline queue */
+#endif
+#ifndef BIT_MAX_TX_BODY
+    #define BIT_MAX_TX_BODY         (INT_MAX)           /**< Maximum buffer for response data */
+#endif
+#ifndef BIT_MAX_UPLOAD
+    #define BIT_MAX_UPLOAD          (INT_MAX)
+#endif
+#ifndef BIT_MAX_WSS_FRAME
+    #define BIT_MAX_WSS_FRAME       (8 * 1024)          /**< Default max WebSockets message frame size */
+#endif
+#ifndef BIT_MAX_WSS_PACKET
+    #define BIT_MAX_WSS_PACKET      (8 * 1024)          /**< Default size to provide to application in one packet */
+#endif
+#ifndef BIT_MAX_WSS_SOCKETS
+    #define BIT_MAX_WSS_SOCKETS     200                 /**< Default max WebSockets */
 #endif
 
-#if BIT_TUNE == MPR_TUNE_SIZE || DOXYGEN
-    /*  
-        Tune for size
-     */
-    #define HTTP_BUFSIZE                 (4 * 1024)           /**< Default I/O buffer size */
-    #define HTTP_MAX_CACHE_ITEM          (256 * 1024)         /**< Maximum cachable item size */
-    #define HTTP_MAX_CHUNK               (8 * 1024)           /**< Maximum chunk size for transfer chunk encoding */
-    #define HTTP_MAX_HEADERS             4096                 /**< Maximum size of the headers */
-    #define HTTP_MAX_IOVEC               16                   /**< Number of fragments in a single socket write */
-    #define HTTP_MAX_NUM_HEADERS         20                   /**< Maximum number of header lines */
-    #define HTTP_MAX_RECEIVE_FORM        (1024 * 1024)        /**< Maximum incoming form size */
-    #define HTTP_MAX_RECEIVE_BODY        (128 * 1024 * 1024)  /**< Maximum incoming body size */
-    #define HTTP_MAX_REQUESTS            20                   /**< Maximum concurrent requests */
-    #define HTTP_MAX_REQUESTS_PER_CLIENT 20                   /**< Maximum concurrent requests */
-    #define HTTP_MAX_CLIENTS             10                   /**< Maximum concurrent client endpoints */
-    #define HTTP_MAX_SESSIONS            100                  /**< Maximum concurrent sessions */
-    #define HTTP_MAX_STAGE_BUFFER        (32 * 1024)          /**< Maximum buffer for any stage */
-    #define HTTP_CLIENTS_HASH            (131)                /**< Hash table for client IP addresses */
-    #define HTTP_MAX_ROUTE_MATCHES       32                   /**< Maximum number of submatches in routes */
-    #define HTTP_MAX_WSS_SOCKETS         200                  /**< Default max WebSockets */
-    #define HTTP_MAX_WSS_MESSAGE         (2147483647)         /**< Default max WebSockets message size (2GB) */
-    #define HTTP_MAX_WSS_FRAME           (8 * 1024)           /**< Default max WebSockets message frame size */
-    #define HTTP_MAX_WSS_PACKET          (8 * 1024)           /**< Default size to provide to application in one packet */
-    #define HTTP_WSS_PING_PERIOD         (30 * 1000)          /**< Ping defeat Keep-Alive timeouts (30 sec) */
-
-#elif BIT_TUNE == MPR_TUNE_BALANCED
-    /*  
-        Tune balancing speed and size
-     */
-    #define HTTP_BUFSIZE                 (16 * 1024)
-    #define HTTP_MAX_CACHE_ITEM          (512 * 1024)
-    #define HTTP_MAX_CHUNK               (8 * 1024)
-    #define HTTP_MAX_HEADERS             (8 * 1024)
-    #define HTTP_MAX_IOVEC               24
-    #define HTTP_MAX_NUM_HEADERS         40
-    #define HTTP_MAX_RECEIVE_FORM        (8 * 1024 * 1024)
-    #define HTTP_MAX_RECEIVE_BODY        (128 * 1024 * 1024)
-    #define HTTP_MAX_REQUESTS            50
-    #define HTTP_MAX_REQUESTS_PER_CLIENT 20
-    #define HTTP_MAX_CLIENTS             25
-    #define HTTP_MAX_SESSIONS            500
-    #define HTTP_MAX_STAGE_BUFFER        (64 * 1024)
-    #define HTTP_CLIENTS_HASH            (257)
-    #define HTTP_MAX_ROUTE_MATCHES       64
-    #define HTTP_MAX_WSS_SOCKETS         200
-    #define HTTP_MAX_WSS_MESSAGE         (2147483648)
-    #define HTTP_MAX_WSS_FRAME           (8 * 1024)
-    #define HTTP_MAX_WSS_PACKET          (8 * 1024)
-    #define HTTP_WSS_PING_PERIOD         (30 * 1000)
-#else
-    /*  
-        Tune for speed and scale
-     */
-    #define HTTP_BUFSIZE                 (32 * 1024)
-    #define HTTP_MAX_CACHE_ITEM          (1024 * 1024)
-    #define HTTP_MAX_CHUNK               (16 * 1024) 
-    #define HTTP_MAX_HEADERS             (8 * 1024)
-    #define HTTP_MAX_IOVEC               32
-    #define HTTP_MAX_NUM_HEADERS         256
-    #define HTTP_MAX_RECEIVE_FORM        (16 * 1024 * 1024)
-    #define HTTP_MAX_RECEIVE_BODY        (256 * 1024 * 1024)
-    #define HTTP_MAX_REQUESTS            1000
-    #define HTTP_MAX_REQUESTS_PER_CLIENT 20
-    #define HTTP_MAX_CLIENTS             500
-    #define HTTP_MAX_SESSIONS            5000
-    #define HTTP_MAX_STAGE_BUFFER        (128 * 1024)
-    #define HTTP_CLIENTS_HASH            (1009)
-    #define HTTP_MAX_ROUTE_MATCHES       128
-    #define HTTP_MAX_WSS_SOCKETS         200
-    #define HTTP_MAX_WSS_MESSAGE         (2147483648)
-    #define HTTP_MAX_WSS_FRAME           (8 * 1024)
-    #define HTTP_MAX_WSS_PACKET          (8 * 1024)
-    #define HTTP_WSS_PING_PERIOD         (30 * 1000)
+#ifndef BIT_MAX_CACHE_DURATION
+    #define BIT_MAX_CACHE_DURATION  (86400 * 1000)      /**< Default cache lifespan to 1 day */
+#endif
+#ifndef BIT_MAX_INACTIVITY_DURATION
+    #define BIT_MAX_INACTIVITY_DURATION (60  * 1000)    /**< Default keep connection alive between requests timeout */
+#endif
+#ifndef BIT_MAX_PARSE_DURATION
+    #define BIT_MAX_PARSE_DURATION  (30  * 1000)        /**< Default request parse header timeout */
+#endif
+#ifndef BIT_MAX_REQUEST_DURATION
+    #define BIT_MAX_REQUEST_DURATION MAXINT             /**< Default request timeout (unlimited) */
+#endif
+#ifndef BIT_MAX_SESSION_DURATION
+    #define BIT_MAX_SESSION_DURATION (3600 * 1000)      /**< Default session timeout (one hour) */
+#endif
+#ifndef BIT_MAX_PING_DURATION
+    #define BIT_MAX_PING_DURATION (30 * 1000)           /**< WSS ping defeat Keep-Alive timeouts (30 sec) */
 #endif
 
-#define HTTP_MAX_TX_BODY           (INT_MAX)        /**< Maximum buffer for response data */
-#define HTTP_MAX_UPLOAD            (INT_MAX)
+#ifndef BIT_HTTP_LOG
+    #define BIT_HTTP_LOG_FORMAT     "%h %l %u %t \"%r\" %>s %b %n"
+#endif
 
-/*  
-    Other constants
- */
-#define HTTP_DEFAULT_MAX_THREADS  10                /**< Default number of threads */
-#define HTTP_MAX_KEEP_ALIVE       200               /**< Maximum requests per connection */
-#define HTTP_MAX_PASS             64                /**< Size of password */
-#define HTTP_MAX_SECRET           16                /**< Size of secret data for auth */
-#define HTTP_PACKET_ALIGN(x)      (((x) + 0x3FF) & ~0x3FF)
-#define HTTP_RANGE_BUFSIZE        128               /**< Size of a range boundary */
-#define HTTP_RETRIES              3                 /**< Default number of retries for client requests */
-#define HTTP_TIMER_PERIOD         1000              /**< HttpTimer checks ever 1 second */
-#define HTTP_MAX_REWRITE          20                /**< Maximum URI rewrites */
+#define HTTP_RETRIES                3                   /**< Default number of retries for client requests */
+#define HTTP_DATE_FORMAT            "%a, %d %b %Y %T GMT"
+#define HTTP_MAX_SECRET             16                  /**< Size of secret data for auth */
+#define HTTP_MAX_WSS_MESSAGE        (2147483647)        /**< Default max WebSockets message size (2GB) */
+#define HTTP_SMALL_HASH_SIZE        31                  /* Small hash (less than the alphabet) */
+#define HTTP_TIMER_PERIOD           1000                /**< HttpTimer checks ever 1 second */
 
-#define HTTP_INACTIVITY_TIMEOUT   (60  * 1000)      /**< Default keep connection alive between requests timeout */
-#define HTTP_PARSE_TIMEOUT        (30  * 1000)      /**< Default request parse header timeout */
-#define HTTP_SESSION_TIMEOUT      (3600 * 1000)     /**< Default session timeout (one hour) */
-#define HTTP_REQUEST_TIMEOUT      MAXINT            /**< Default request timeout (unlimited) */
-#define HTTP_CACHE_LIFESPAN       (86400 * 1000)    /**< Default cache lifespan to 1 day */
-
-#define HTTP_DATE_FORMAT          "%a, %d %b %Y %T GMT"
-#define HTTP_LOG_FORMAT           "%h %l %u %t \"%r\" %>s %b %n"
-
-/*  
-    Hash sizes (primes work best)
- */
-#define HTTP_SMALL_HASH_SIZE      31                /* Small hash (less than the alphabet) */
-#define HTTP_MED_HASH_SIZE        61                /* Medium */
-#define HTTP_LARGE_HASH_SIZE      101               /* Large */
+#define HTTP_PACKET_ALIGN(x)        (((x) + 0x3FF) & ~0x3FF)
 
 /********************************** Defines ***********************************/
 /*
@@ -316,6 +308,7 @@ typedef struct Http {
     struct HttpStage *dirHandler;           /**< Directory listing handler */
     struct HttpStage *egiHandler;           /**< Embedded Gateway Interface (EGI) handler */
     struct HttpStage *ejsHandler;           /**< Ejscript Web Framework handler */
+    struct HttpStage *espHandler;           /**< ESP Web Framework handler */
     struct HttpStage *fileHandler;          /**< Static file handler */
     struct HttpStage *netConnector;         /**< Default network connector */
     struct HttpStage *passHandler;          /**< Pass through handler */
@@ -1146,7 +1139,7 @@ typedef struct HttpQueue {
     /*  
         Connector instance data
      */
-    MprIOVec            iovec[HTTP_MAX_IOVEC];
+    MprIOVec            iovec[BIT_MAX_IOVEC];
     int                 ioIndex;                /**< Next index into iovec */
     int                 ioFile;                 /**< Sending a file */
     MprOff              ioCount;                /**< Count of bytes in iovec including file I/O */
@@ -1251,9 +1244,9 @@ PUBLIC bool httpIsQueueEmpty(HttpQueue *q);
 PUBLIC bool httpIsQueueSuspended(HttpQueue *q);
 
 /**
-    Join the packets together
-    @description This call joins data packets (on the given queue) together - up to the designated maximum size.
-        The maximum size is also limited by the downstream queue maximum packet size.
+    Join packets together
+    @description This call joins data packets on the given queue into a single packet. The given size specifies the
+    maximum size of data to be joined. The maximum size may also limited by the downstream queue maximum packet size.
     @param q Queue to examine
     @param size The maximum-sized packet that will be created by joining queue packets is the minimum of the given size
         and the downstream queues maximum packet size.
@@ -1858,7 +1851,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q);
 #define HTTP_EVENT_READABLE         2       /**< The request has data available for reading */
 #define HTTP_EVENT_WRITABLE         3       /**< The request is now writable (post / put data) */
 #define HTTP_EVENT_ERROR            4       /**< The request has an error */
-#define HTTP_EVENT_DESTROY          5       /**< The request is being destroyed */
+#define HTTP_EVENT_DESTROY          5       /**< The connection is being closed and destroyed */
 
 /*
     Application level events 
@@ -1977,7 +1970,7 @@ PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
         httpCreateConn httpCreateRxPipeline httpCreateTxPipeline httpDestroyConn httpDestroyPipeline httpDiscardData
         httpDisconnect httpEnableUpload httpError httpEvent httpGetAsync httpGetChunkSize httpGetConnContext httpGetConnHost
         httpGetError httpGetExt httpGetKeepAliveCount httpGetMoreOutput httpGetWriteQueueCount httpMatchHost httpMemoryError
-        httpPostEvent httpPrepClientConn httpResetCredentials httpRouteRequest httpRunHandlerReady httpServiceQueues
+        httpAfterEvent httpPrepClientConn httpResetCredentials httpRouteRequest httpRunHandlerReady httpServiceQueues
         httpSetAsync httpSetChunkSize httpSetConnContext httpSetConnHost httpSetConnNotifier httpSetCredentials
         httpSetKeepAliveCount httpSetProtocol httpSetRetries httpSetSendConnector httpSetState httpSetTimeout
         httpSetTimestamp httpShouldTrace httpStartPipeline
@@ -2010,6 +2003,7 @@ typedef struct HttpConn {
     struct HttpHost *host;                  /**< Host object (if relevant) */
 
     HttpPacket      *input;                 /**< Header packet */
+    ssize           newData;                /**< Length of new data last read into the input packet */
     HttpQueue       *connectorq;            /**< Connector write queue */
     MprTicks        started;                /**< When the connection started (ticks) */
     MprTicks        lastActivity;           /**< Last activity on the connection */
@@ -2323,7 +2317,8 @@ PUBLIC void httpMatchHost(HttpConn *conn);
 PUBLIC void httpMemoryError(HttpConn *conn);
 
 /**
-    Inform notifiers of a connection event or state chagne
+    Inform notifiers of a connection event or state change.
+    @description This is an internal API and should not be called by handler or user code.
     @param conn HttpConn object created via #httpCreateConn
     @param event Event to issue
     @param arg Argument to event
@@ -2340,12 +2335,12 @@ PUBLIC void httpNotify(HttpConn *conn, int event, int arg);
     } else
 
 /**
-    Do post I/O event setup.
+    Do setup after an I/O event to receive future events.
     @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
     @stability Internal
  */
-PUBLIC void httpPostEvent(HttpConn *conn);
+PUBLIC void httpAfterEvent(HttpConn *conn);
 
 /**
     Prepare a client connection for a new request. 
@@ -2441,7 +2436,7 @@ PUBLIC void httpSetConnHost(HttpConn *conn, void *host);
     <li>HTTP_EVENT_READABLE &mdash; There is data available to read</li>
     <li>HTTP_EVENT_WRITABLE &mdash; The outgoing pipeline can absorb more data</li>
     <li>HTTP_EVENT_ERROR &mdash; The request has encountered an error</li>
-    <li>HTTP_EVENT_DESTROY &mdash; The request structure is about to be destoyed</li>
+    <li>HTTP_EVENT_DESTROY &mdash; The connection structure is about to be destoyed</li>
     <li>HTTP_EVENT_OPEN &mdash; The application layer is now open</li>
     <li>HTTP_EVENT_CLOSE &mdash; The application layer is now closed</li>
     </ul>
@@ -2500,6 +2495,7 @@ PUBLIC void httpSetProtocol(HttpConn *conn, cchar *protocol);
  */
 PUBLIC void httpSetRetries(HttpConn *conn, int retries);
 
+#if !BIT_ROM
 /**
     Set the "Send" connector to process the request
     @description If the net connection has been selected, but the response content is a file, the pipeline connector
@@ -2510,6 +2506,7 @@ PUBLIC void httpSetRetries(HttpConn *conn, int retries);
     @stability Stable
  */
 PUBLIC void httpSetSendConnector(HttpConn *conn, cchar *path);
+#endif
 
 /**
     Set the connection state and invoke notifiers.
@@ -2737,7 +2734,7 @@ typedef struct HttpAuth {
 
 
 /**
-    Add an authorization type. The standard types are 'basic', 'digest' and 'post'.
+    Add an authorization type. The pre-supplied types are 'basic', 'digest' and 'post'.
     @description This creates an AuthType object with the defined name and callbacks.
     @param http Http service object.
     @param name Unique authorization type name
@@ -2751,7 +2748,7 @@ typedef struct HttpAuth {
 PUBLIC int httpAddAuthType(Http *http, cchar *name, HttpAskLogin askLogin, HttpParseAuth parse, HttpSetAuth setAuth);
 
 /**
-    Add an authorization store for password validation. The standard types are 'pam' and 'internal'
+    Add an authorization store for password validation. The pre-supplied types are 'pam' and 'internal'
     @description This creates an AuthType object with the defined name and callbacks.
     @param http Http service object.
     @param name Unique authorization type name
@@ -3229,6 +3226,7 @@ PUBLIC void httpDefineAction(cchar *uri, HttpAction fun);
  */
 typedef struct HttpRoute {
     /* Ordered for debugging */
+    struct HttpRoute *parent;               /**< Parent route */
     char            *name;                  /**< Route name */
     char            *pattern;               /**< Original matching URI pattern for the route (includes prefix) */
     char            *startSegment;          /**< Starting literal segment of pattern (includes prefix) */
@@ -3257,13 +3255,12 @@ typedef struct HttpRoute {
     HttpAuth        *auth;                  /**< Per route block authentication */
     Http            *http;                  /**< Http service object (copy of appweb->http) */
     struct HttpHost *host;                  /**< Owning host */
-    struct HttpRoute *parent;               /**< Parent route */
     int             flags;                  /**< Route flags */
 
     char            *defaultLanguage;       /**< Default language */
     MprHash         *extensions;            /**< Hash of handlers by extensions */
     MprList         *handlers;              /**< List of handlers for this route */
-    MprList         *handlersWithMatch;     /**< List of handlers with match routines */
+    MprList         *handlersByMatch;       /**< List of handlers that match solely by their match routine */
     HttpStage       *connector;             /**< Network connector to use */
     MprHash         *data;                  /**< Hash of extra data configuration */
     MprHash         *vars;                  /**< Route variables. Used to expand Path ${token} refrerences */
@@ -3747,6 +3744,15 @@ PUBLIC void httpEnableTraceMethod(HttpRoute *route, bool on);
 PUBLIC void httpEnablePutMethod(HttpRoute *route, bool on);
 
 /**
+    Expand route variables in a string
+    @param route Route to modify
+    @param str String to expand
+    @ingroup HttpRoute
+    @stability Evolving
+ */
+PUBLIC cchar *httpExpandRouteVars(HttpRoute *route, cchar *str);
+
+/**
     Finalize a route
     @description A route must be finalized to add it to its owning hosts list of routes.
     @param route Route to modify
@@ -3787,6 +3793,15 @@ PUBLIC cchar *httpGetRouteDir(HttpRoute *route);
     @stability Evolving
  */
 PUBLIC cchar *httpGetRouteMethods(HttpRoute *route);
+
+/**
+    Get a path token variable
+    @param route Route to get
+    @param key Token key value
+    @ingroup HttpRoute
+    @stability Evolving
+ */
+PUBLIC cchar *httpGetRouteVar(HttpRoute *route, cchar *key);
 
 /**
     Graduate the limits from the parent route.
@@ -3883,9 +3898,9 @@ PUBLIC cchar *httpLookupRouteErrorDocument(HttpRoute *route, int status);
     @description This makes a filename by expanding the tokens "${token}" and then normalizing the path and converting
         to an absolute path name. The supported tokens are:
         <ul>  
-            <li>DOCUMENTS - for the default directory containing documents to serve</li>
-            <li>HOME - for the directory containing the web server configuration files</li>
-            <li>LIBDIR - for the shared library directory. E.g. /usr/lib/appweb/bin </li>
+            <li>DOCUMENTS_DIR - for the default directory containing documents to serve</li>
+            <li>HOME_DIR - for the directory containing the web server configuration files</li>
+            <li>BIN_DIR - for the shared library directory. E.g. /usr/lib/appweb/bin </li>
             <li>OS - for the operating system name. E.g. LINUX, MACOSX, VXWORKS, or WIN</li>
             <li>PRODUCT - for the product name</li>
             <li>VERSION - for the product version. E.g. 4.0.2</li>
@@ -4144,7 +4159,7 @@ PUBLIC void httpSetRouteSource(HttpRoute *route, cchar *source);
         Route targets can contain symbolic tokens that are expanded at run-time with their corresponding values. There are 
         three classes of tokens:
         <ul>  
-            <li>System and Route varibles - such as DOCUMENTS, HOME, LIBDIR, PRODUCT, OS, VERSION.</li>
+            <li>System and Route varibles - such as DOCUMENTS_DIR, HOME_DIR, BIN_DIR, PRODUCT, OS, VERSION.</li>
             <li>Route URI tokens - these are the braced tokens in the route pattern.</li>
             <li>Request fields - these are request state and property values.</li>
         </ul>
@@ -4186,7 +4201,7 @@ PUBLIC void httpSetRouteSource(HttpRoute *route, cchar *source);
             <li>serverPort - The server port number</li>
             <li>uri - The full request URI. May be modified by routes, handlers and filters</li>
         </ul>
-        Also see #httpMakePath for additional tokens (DOCUMENTS, HOME, LIBDIR, PRODUCT, OS, VERSION).
+        Also see #httpMakePath for additional tokens (DOCUMENTS_DIR, HOME_DIR, BIN_DIR, PRODUCT, OS, VERSION).
     @param route Route to modify
     @param name Target rule to add. Supported update rules include:
         "close", "redirect", "run" and "write". 
@@ -4334,7 +4349,7 @@ PUBLIC void httpLogRequest(HttpConn *conn);
 PUBLIC MprFile *httpOpenRouteLog(HttpRoute *route);
 PUBLIC int httpStartRoute(HttpRoute *route);
 PUBLIC void httpStopRoute(HttpRoute *route);
-PUBLIC char *httpExpandRouteVars(HttpConn *conn, cchar *str);
+PUBLIC char *httpExpandUri(HttpConn *conn, cchar *str);
 
 /*********************************** Session ***************************************/
 
@@ -4532,6 +4547,10 @@ PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 #define HTTP_EXPECT_CONTINUE    0x2000      /**< Client expects an HTTP 100 Continue response */
 #define HTTP_AUTH_CHECKED       0x4000      /**< User authentication has been checked */
 
+#if UNUSED && KEEP
+#define HTTP_DIRECT_INPUT       0x8000      /**< Read data directly into a content packet */
+#endif
+
 /*  
     Incoming chunk encoding states
  */
@@ -4582,6 +4601,8 @@ typedef struct HttpRx {
     int             flags;                  /**< Rx modifiers */
     int             form;                   /**< Using mime-type application/x-www-form-urlencoded */
     int             needInputPipeline;      /**< Input pipeline required to process received data */
+    int             ownParams;              /**< Do own parameter handling */
+    int             streaming;              /**< Stream incoming content. Forms typically buffer and dont stream */
     int             traceLevel;             /**< General trace level for header level info */
     int             upload;                 /**< Request is using file upload */
 
@@ -4640,7 +4661,7 @@ typedef struct HttpRx {
         Routing info
      */
     char            *target;                /**< Route target */
-    int             matches[HTTP_MAX_ROUTE_MATCHES * 2];
+    int             matches[BIT_MAX_ROUTE_MATCHES * 2];
     int             matchCount;
 } HttpRx;
 
@@ -4986,6 +5007,7 @@ PUBLIC void httpProcessWriteEvent(HttpConn *conn);
 #define HTTP_TX_SENDFILE            0x4     /**< Relay output via Send connector */
 #define HTTP_TX_USE_OWN_HEADERS     0x8     /**< Skip adding default headers */
 #define HTTP_TX_NO_LENGTH           0x10    /**< Don't emit a content length (used for TRACE) */
+#define HTTP_TX_MATCHED             0x20    /**< Handler match routine run */
 
 /** 
     Http Tx
@@ -6213,7 +6235,7 @@ PUBLIC void httpSetOption(MprHash *options, cchar *field, cchar *value);
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -1,12 +1,12 @@
 /*
-    repeat.tst - Repeated SSL http tests
+    repeat.tst - Repeated SSL http tests using the default SSL provider (EST)
  */
 
 if (!Config.SSL) {
     test.skip("SSL not enabled in ejs")
 
 } else if (App.config.bit_ssl) {
-    const HTTPS = App.config.uris.ssl || "https://127.0.0.1:4110"
+    const HTTPS = App.config.uris.ssl || "https://127.0.0.1:4443"
     let http: Http = new Http
 
     /*

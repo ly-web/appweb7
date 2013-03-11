@@ -12,7 +12,7 @@
 #include    "appweb.h"
 #include    "edi.h"
 
-#if BIT_MDB
+#if BIT_PACK_ESP && BIT_ESP_MDB
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,7 +45,7 @@ typedef struct MdbCol {
 typedef struct MdbSchema {
     int             ncols;              /* Number of columns in table */
     int             capacity;           /* Capacity of cols */
-    MdbCol          cols[MPR_FLEX];     /* Array of columns */
+    MdbCol          cols[ARRAY_FLEX];   /* Array of columns */
 } MdbSchema;
 
 /*
@@ -55,7 +55,7 @@ typedef struct MdbRow {
     struct MdbTable *table;             /* Reference to MdbTable */
     int             rid;                /* Table index in MdbTable.row */
     int             nfields;            /* Number of fields in fields */
-    cchar           *fields[MPR_FLEX];
+    cchar           *fields[ARRAY_FLEX];
 } MdbRow;
 
 /*
@@ -100,13 +100,13 @@ typedef struct Mdb {
 } /* extern C */
 #endif
 
-#endif /* BIT_MDB */
+#endif /* BIT_ESP_MDB */
 #endif /* _h_MDB */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

@@ -2,12 +2,31 @@
 #
 # 	preinst -- Pre install script for appweb
 #
-#	Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+#	Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 #
 
 BIT_PRODUCT=${settings.product}
 BIT_NAME="${settings.title}"
-BIT_CFG_PREFIX="${prefixes.config}"
+
+ROOT_PREFIX="${prefixes.root}"
+BASE_PREFIX="${prefixes.base}"
+STATE_PREFIX="${prefixes.state}"
+APP_PREFIX="${prefixes.app}"
+VAPP_PREFIX="${prefixes.vapp}"
+
+BIN_PREFIX="${prefixes.bin}"
+SBIN_PREFIX="${prefixes.sbin}"
+ETC_PREFIX="${prefixes.etc}"
+INC_PREFIX="${prefixes.inc}"
+LIB_PREFIX="${prefixes.lib}"
+MAN_PREFIX="${prefixes.man}"
+WEB_PREFIX="${prefixes.web}"
+LOG_PREFIX="${prefixes.log}"
+SPL_PREFIX="${prefixes.spool}"
+CACHE_PREFIX="${prefixes.cache}"
+
+ABIN="${VAPP_PREFIX}/bin"
+AINC="${VAPP_PREFIX}/in"
 
 #
 #	Modify service. Usage:configureService stop|remove
@@ -17,8 +36,8 @@ configureService() {
 
 	case $action in
 	stop)
-        if [ -x /usr/local/bin/appman ] ; then
-            appman stop >/dev/null 2>&1 ; true
+        if [ -x "${BIN_PREFIX}/appman" ] ; then
+            "${BIN_PREFIX}/appman" stop >/dev/null 2>&1 ; true
         fi
         #   Keep this for earlier versions without appman
 		if [ -f /etc/rc.d/init.d/$BIT_PRODUCT ] ; then
@@ -33,12 +52,12 @@ configureService() {
 		if [ "`/bin/pidof ${prefixes.bin}/$BIT_PRODUCT`" != "" ] ; then
             kill -9 `/bin/pidof ${prefixes.bin}/$BIT_PRODUCT`
         fi
-		rm -rf /var/lock/subsys/$BIT_PRODUCT /var/lock/$BIT_PRODUCT /var/log/$BIT_PRODUCT /var/run/$BIT_PRODUCT
+		rm -rf /var/lock/subsys/$BIT_PRODUCT /var/lock/$BIT_PRODUCT "${LOG_PREFIX}" /var/run/$BIT_PRODUCT
 		;;
 
 	remove)
-        if [ -x /usr/local/bin/appman ] ; then
-            appman uninstall
+        if [ -x "${BIN_PREFIX}/appman" ] ; then
+            "${BIN_PREFIX}/appman" uninstall >/dev/null 2>&1
         fi
         #   Keep this for earlier versions without appman
 		if which chkconfig >/dev/null 2>&1 ; then
@@ -50,7 +69,6 @@ configureService() {
         elif [ -f /etc/init.d/$BIT_PRODUCT ] ; then
             ( cd /etc/init.d ; /etc/init.d/$BIT_PRODUCT disable )
 		fi
-        "$BIT_BIN_PREFIX/linkup" Remove /
 		;;
 	esac
 }

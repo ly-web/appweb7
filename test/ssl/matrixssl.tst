@@ -1,36 +1,29 @@
 /*
-    matrixssl.tst - Matrixssl tests
+    matrixssl.tst - Test MatrixSSL
  */
 
 if (!Config.SSL) {
     test.skip("SSL not enabled in ejs")
 
-} else if (App.config.bit_matrixssl) {
-    const HTTPS = App.config.uris.matrixssl || "https://127.0.0.1:4210"
+} else if (App.config.bit_matrixssl !== 0) {
+dump(App.config)
     let http: Http = new Http
 
-    /*
-        With keep alive
-     */
-    http.verify = false
-    for (i in 110) {
-        http.get(HTTPS + "/index.html")
-        assert(http.status == 200)
-        assert(http.response)
-        http.reset()
-    }
+    http.retries = 0
+    http.ca = '../sslconf/ca.crt'
+    assert(http.verify == true)
+ 
+    //  Verify the server cert and send a client cert 
+    endpoint = App.config.uris.matrixssl || "https://127.0.0.1:8443"
+    http.key = '../sslconf/test.key'
+    http.certificate = '../sslconf/test.crt'
+    http.get(endpoint + '/index.html')
+    assert(http.status == 200) 
+    assert(http.info.CLIENT_S_CN == 'localhost')
+    assert(http.info.SERVER_S_CN == 'localhost')
+    assert(http.info.SERVER_I_OU != http.info.SERVER_S_OU)
+    assert(http.info.SERVER_I_EMAIL == 'licensing@example.com')
     http.close()
-
-    /*
-        With-out keep alive
-     */
-    for (i in 50) {
-        http.verify = false
-        http.get(HTTPS + "/index.html")
-        assert(http.status == 200)
-        assert(http.response)
-        http.close()
-    }
 
 } else {
     test.skip("SSL not enabled")

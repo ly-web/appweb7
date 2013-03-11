@@ -22,6 +22,7 @@ Bit.load({
             'generate-sh': "echo '#!${BIN}/cgiProgram${EXE}' >cgi-bin/testScript ; chmod +x cgi-bin/testScript",
             depends: ['cgiProgram'],
             platforms: [ 'local' ],
+            require: 'cgi',
         },
 
         'test-cache.cgi': {
@@ -38,6 +39,7 @@ Bit.load({
                 chmod +x web/caching/cache.cgi
             ",
             platforms: [ 'local' ],
+            require: 'cgi',
         },
 
         'test-basic.cgi': {
@@ -54,9 +56,11 @@ Bit.load({
                 chmod +x web/auth/basic/basic.cgi
             ",
             platforms: [ 'local' ],
+            require: 'cgi',
         },
 
         'test-cgiProgram': {
+            require: 'cgi',
             path: 'cgi-bin/cgiProgram${EXE}',
             build: "
                 let perms = { permissions: 0755 }
@@ -67,25 +71,21 @@ Bit.load({
                 cp(cgiProgram, Path('web/cgiProgram.cgi'), perms)
             ",
             'generate-sh': "\
-                cp ${BIN}/cgiProgram cgi-bin/cgiProgram${EXE}
-                cp ${BIN}/cgiProgram cgi-bin/nph-cgiProgram${EXE}
-                cp ${BIN}/cgiProgram 'cgi-bin/cgi Program${EXE}'
-                cp ${BIN}/cgiProgram web/cgiProgram.cgi
+                cp ${BIN}/cgiProgram${EXE} cgi-bin/cgiProgram${EXE}
+                cp ${BIN}/cgiProgram${EXE} cgi-bin/nph-cgiProgram${EXE}
+                cp ${BIN}/cgiProgram${EXE} 'cgi-bin/cgi Program${EXE}'
+                cp ${BIN}/cgiProgram${EXE} web/cgiProgram.cgi
                 chmod +x cgi-bin/* web/cgiProgram.cgi
             ",
             depends: ['cgiProgram'],
             platforms: [ 'local' ],
+            require: 'cgi',
         },
 
         'test.js': {
-            path: 'web/js',
-            build: "
-                trace('Copy', 'ESP JS files')
-                cp('../src/esp/www/files/static/js', 'web/js')
-            ",
-            'generate-sh': "
-                cp -r ../src/esp/www/files/static/js 'web/js'
-            ",
+            type:   'file',
+            path:   'web/js',
+            files:  ['${TOP}/src/esp/esp-www/files/static/js/'],
         },
 
         test: {
@@ -159,6 +159,7 @@ Bit.load({
                         assert(Cmd.ps(/appweb/))
                         let http = new Http
                         trace('Test', 'GET /index.html')
+                        App.sleep(3000)
                         http.get('/index.html')
                         assert(http.response.contains('Embedthis Appweb'))
                         uninstallPackage()
@@ -171,6 +172,16 @@ Bit.load({
                     }
                 }
             ",
+        },
+
+        'test-run': {
+            enable: "!bit.platform.cross",
+            depends: [ 'compile' ],
+            action: "
+                trace('Run', 'From directory src/server')
+                run('appweb -v', {noio: true})
+            ",
+            generate: "${BIN}/appweb -v"
         },
 
         'clean-test': {
@@ -186,7 +197,7 @@ Bit.load({
                 Path('app/cache/.keep').write()
                 Path('web/caching/cache.cgi').remove()
                 Path('web/auth/basic/basic.cgi').remove()
-            "                                                                                              
+            ",
         },  
     },
 })

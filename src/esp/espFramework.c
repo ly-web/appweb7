@@ -18,8 +18,8 @@ PUBLIC void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    assure(key && *key);
-    assure(fmt && *fmt);
+    assert(key && *key);
+    assert(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpAddHeaderString(conn, key, sfmt(fmt, vargs));
@@ -44,8 +44,8 @@ PUBLIC void espAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    assure(key && *key);
-    assure(fmt && *fmt);
+    assert(key && *key);
+    assert(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpAppendHeaderString(conn, key, sfmt(fmt, vargs));
@@ -74,12 +74,6 @@ PUBLIC void espAutoFinalize(HttpConn *conn)
 }
 
 
-//  MOB
-PUBLIC void espManageAction(EspAction *ap, int flags)
-{
-}
-
-
 PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags)
 {
     httpAddCache(route, NULL, uri, NULL, NULL, 0, lifesecs * MPR_TICKS_PER_SEC, flags);
@@ -104,7 +98,7 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
         securityToken = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, "");
         if (!smatch(sessionToken, securityToken)) {
             httpError(conn, HTTP_CODE_NOT_ACCEPTABLE, 
-                "Security token does not match. Potential CSRF attack. Denying request");
+                "Security token does not match. Potential CSRF attack. Denying request.");
             return 0;
         }
     }
@@ -126,21 +120,16 @@ PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *params)
 }
 
 
-PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *actionProc)
+PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 {
-    EspAction   *action;
     EspRoute    *eroute;
     Esp         *esp;
 
-    assure(route);
-    assure(target && *target);
-    assure(actionProc);
+    assert(route);
+    assert(target && *target);
+    assert(action);
 
     esp = MPR->espService;
-    if ((action = mprAllocObj(EspAction, espManageAction)) == 0) {
-        return;
-    }
-    action->actionProc = actionProc;
     if (target) {
         eroute = route->eroute;
         mprAddKey(esp->actions, mprJoinPath(eroute->controllersDir, target), action);
@@ -167,9 +156,13 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
 {
     Esp         *esp;
 
-    assure(path && *path);
-    assure(view);
+    assert(path && *path);
+    assert(view);
 
+    if (!route) {
+        mprError("Route not defined for view %s", path);
+        return;
+    }
     esp = MPR->espService;
 	path = mprGetPortablePath(mprJoinPath(route->dir, path));
     mprAddKey(esp->views, path, view);
@@ -189,6 +182,7 @@ PUBLIC void espFlush(HttpConn *conn)
 
 
 //  MOB - confusing vs ediGetColumns
+
 PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
 {
     if (rec == 0) {
@@ -626,7 +620,7 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
             httpSetHeader(conn, "Content-Type", "text/html");
             written += espRenderString(conn, text);
             espFinalize(conn);
-            mprLog(4, "Request error (%d) for: \"%s\"", status, rx->pathInfo);
+            mprTrace(4, "Request error (%d) for: \"%s\"", status, rx->pathInfo);
         }
     }
     va_end(args);    
@@ -638,7 +632,7 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 {
     MprFile     *from;
     ssize       count, written, nbytes;
-    char        buf[MPR_BUFSIZE];
+    char        buf[BIT_MAX_BUFFER];
 
     if ((from = mprOpenFile(path, O_RDONLY | O_BINARY, 0)) == 0) {
         return MPR_ERR_CANT_OPEN;
@@ -684,7 +678,7 @@ PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name)
 
 PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key)
 {
-    assure(key && *key);
+    assert(key && *key);
     if (conn->tx == 0) {
         return MPR_ERR_CANT_ACCESS;
     }
@@ -786,8 +780,8 @@ PUBLIC void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 {
     va_list     vargs;
 
-    assure(key && *key);
-    assure(fmt && *fmt);
+    assert(key && *key);
+    assert(fmt && *fmt);
 
     va_start(vargs, fmt);
     httpSetHeader(conn, key, sfmt(fmt, vargs));
@@ -888,7 +882,7 @@ PUBLIC void espShowRequest(HttpConn *conn)
     HttpRx      *rx;
     HttpQueue   *q;
     cchar       *query;
-    char        qbuf[MPR_MAX_STRING], **keys, *value;
+    char        qbuf[BIT_MAX_URI], **keys, *value;
     int         i, numKeys;
 
     rx = conn->rx;
@@ -1045,7 +1039,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

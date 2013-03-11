@@ -8,5 +8,5 @@ start on runlevel [2345]
 stop on runlevel [!2345]
 
 respawn
-exec /usr/lib/appweb/bin/appweb --home /etc/appweb
+exec /usr/local/lib/appweb/bin/appweb --home /etc/appweb
 

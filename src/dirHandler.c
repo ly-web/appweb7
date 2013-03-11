@@ -13,6 +13,7 @@
 
 #include    "appweb.h"
 
+#if BIT_PACK_DIR
 /********************************** Defines ***********************************/
 /*
     Handler configuration
@@ -60,8 +61,8 @@ PUBLIC bool maRenderDirListing(HttpConn *conn)
 
     tx = conn->tx;
     rx = conn->rx;
-    assure(tx->filename);
-    assure(tx->fileInfo.checked);
+    assert(tx->filename);
+    assert(tx->fileInfo.checked);
 
     if ((dir = httpGetRouteData(rx->route, DIR_NAME)) == 0) {
         return 0;
@@ -92,7 +93,7 @@ static void startDir(HttpQueue *q)
     rx = conn->rx;
     tx = conn->tx;
     dir = conn->data;
-    assure(tx->filename);
+    assert(tx->filename);
 
     if (!(rx->flags & (HTTP_GET | HTTP_HEAD))) {
         httpError(conn, HTTP_CODE_BAD_METHOD, "Bad method");
@@ -649,7 +650,7 @@ static Dir *getDirObj(MaState *state)
             dir = allocDir(route);
         }
     }
-    assure(dir);
+    assert(dir);
     return dir;
 }
 
@@ -712,12 +713,13 @@ PUBLIC int maOpenDirHandler(Http *http)
     maAddDirective(appweb, "Options", optionsDirective);
     return 0;
 }
+#endif /* BIT_PACK_DIR */
 
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

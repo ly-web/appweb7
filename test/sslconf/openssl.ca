@@ -6,8 +6,8 @@ dir						= .						# Where everything is kept
 certificate				= ca.crt				# The CA certificate
 database				= ca.db					# database index file.
 new_certs_dir			= .						# default place for new certs.
-private_key				= ca.key.pem			# The private key
-serial					= ca.serial 			# The current serial number
+private_key				= ca.key    			# The private key
+serial					= ca.srl 			    # The current serial number
 default_crl_days		= 7						# how long before next CRL
 default_days			= 365					# how long to certify for
 default_md				= md5					# which md to use.
@@ -24,10 +24,10 @@ commonName				= supplied
 emailAddress			= supplied
 
 [ userCert ]
-basicConstraints		=CA:FALSE
+basicConstraints		= CA:FALSE
 
 [ req ]
-default_bits			= 1024
+default_bits			= 2048
 default_keyfile 		= ca.key
 default_md				= md5
 prompt					= no
@@ -37,11 +37,12 @@ X509_extensions			= rootCaExtensions
 [ rootCaDistinguishedName ]
 countryName				= US
 stateOrProvinceName		= Washington
-localityName			= Bellevue
-0.organizationName		= Example Inc.
-organizationalUnitName	= Production
+localityName			= Seattle
+0.organizationName		= Example.com
+organizationalUnitName	= Licensing
 commonName				= www.example.com
-emailAddress			= admin@example.com
+emailAddress			= licensing@example.com
 
 [ rootCaExtensions]
 basicConstraints 		= CA:true
+

@@ -13,7 +13,7 @@
 #include    "mdb.h"
 #include    "pcre.h"
 
-#if BIT_PACK_ESP && BIT_MDB
+#if BIT_PACK_ESP && BIT_ESP_MDB
 /************************************* Local **********************************/
 
 #define MDB_LOAD_BEGIN   1      /* Initial state */
@@ -220,10 +220,10 @@ static int mdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
     MdbTable    *table;
     MdbCol      *col;
 
-    assure(edi);
-    assure(tableName && *tableName);
-    assure(columnName && *columnName);
-    assure(type);
+    assert(edi);
+    assert(tableName && *tableName);
+    assert(columnName && *columnName);
+    assert(type);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -265,9 +265,9 @@ static int mdbAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *ind
     MdbTable    *table;
     MdbCol      *col;
 
-    assure(edi);
-    assure(tableName && *tableName);
-    assure(columnName && *columnName);
+    assert(edi);
+    assert(tableName && *tableName);
+    assert(columnName && *columnName);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -296,8 +296,8 @@ static int mdbAddTable(Edi *edi, cchar *tableName)
     Mdb         *mdb;
     MdbTable    *table;
 
-    assure(edi);
-    assure(tableName && *tableName);
+    assert(edi);
+    assert(tableName && *tableName);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -334,9 +334,9 @@ static int mdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
     MdbTable        *table;
     MdbCol          *col;
 
-    assure(edi);
-    assure(tableName && *tableName);
-    assure(columnName && *columnName);
+    assert(edi);
+    assert(tableName && *tableName);
+    assert(columnName && *columnName);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -363,10 +363,10 @@ static int mdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int ty
     MdbTable    *table;
     MdbCol      *col;
 
-    assure(edi);
-    assure(tableName && *tableName);
-    assure(columnName && *columnName);
-    assure(type);
+    assert(edi);
+    assert(tableName && *tableName);
+    assert(columnName && *columnName);
+    assert(type);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -392,9 +392,9 @@ static int mdbDeleteRow(Edi *edi, cchar *tableName, cchar *key)
     MdbTable    *table;
     int         r, rc;
 
-    assure(edi);
-    assure(tableName && *tableName);
-    assure(key && *key);
+    assert(edi);
+    assert(tableName && *tableName);
+    assert(key && *key);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -427,8 +427,8 @@ static MprList *mdbGetColumns(Edi *edi, cchar *tableName)
     MprList     *list;
     int         i;
 
-    assure(edi);
-    assure(tableName && *tableName);
+    assert(edi);
+    assert(tableName && *tableName);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -437,7 +437,7 @@ static MprList *mdbGetColumns(Edi *edi, cchar *tableName)
         return 0;
     }
     schema = table->schema;
-    assure(schema);
+    assert(schema);
     list = mprCreateList(schema->ncols, 0);
     for (i = 0; i < schema->ncols; i++) {
         /* No need to clone */
@@ -579,7 +579,7 @@ static int mdbLookupField(Edi *edi, cchar *tableName, cchar *fieldName)
 static EdiGrid *mdbQuery(Edi *edi, cchar *cmd)
 {
     //  TODO MOB
-    assure(0);
+    assert(0);
     return 0;
 }
 
@@ -624,6 +624,8 @@ static EdiRec *mdbReadRec(Edi *edi, cchar *tableName, cchar *key)
     int         r;
 
     mdb = (Mdb*) edi;
+    rec = 0;
+
     lock(mdb);
     if ((table = lookupTable(mdb, tableName)) == 0) {
         unlock(mdb);
@@ -633,8 +635,9 @@ static EdiRec *mdbReadRec(Edi *edi, cchar *tableName, cchar *key)
         unlock(mdb);
         return 0;
     }
-    row = mprGetItem(table->rows, r);
-    rec = createRecFromRow(edi, row);
+    if ((row = mprGetItem(table->rows, r)) != 0) {
+        rec = createRecFromRow(edi, row);
+    }
     unlock(mdb);
     return rec;
 }
@@ -665,7 +668,7 @@ static bool matchRow(MdbCol *col, cchar *existing, int op, cchar *value)
     case OP_GTE:
 #endif
     default:
-        assure(0);
+        assert(0);
     }
     return 0;
 }
@@ -680,8 +683,8 @@ static EdiGrid *mdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
     MdbRow      *row;
     int         nrows, next, op, r, count;
 
-    assure(edi);
-    assure(tableName && *tableName);
+    assert(edi);
+    assert(tableName && *tableName);
 
     mdb = (Mdb*) edi;
     lock(mdb);
@@ -757,13 +760,13 @@ static int mdbRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName)
         table->keyCol = 0;
     }
     schema = table->schema;
-    assure(schema);
+    assert(schema);
     for (c = col->cid; c < schema->ncols; c++) {
         schema->cols[c] = schema->cols[c + 1];
     }
     schema->ncols--;
     schema->cols[schema->ncols].name = 0;
-    assure(schema->ncols >= 0);
+    assert(schema->ncols >= 0);
     autoSave(mdb, table);
     unlock(mdb);
     return 0;
@@ -932,7 +935,7 @@ static int mdbUpdateFields(Edi *edi, cchar *tableName, MprHash *params)
     if ((table = lookupTable(mdb, tableName)) == 0) {
         return MPR_ERR_CANT_FIND;
     }
-    assure(table->keyCol);
+    assert(table->keyCol);
 
     if ((key = mprLookupKey(params, table->keyCol->name)) == 0) {
         return MPR_ERR_CANT_FIND;
@@ -1150,7 +1153,7 @@ static int setMdbValue(MprJson *jp, MprObj *obj, int cid, cchar *name, cchar *va
             return MPR_ERR_BAD_FORMAT;
         }
         col = getCol(mdb->loadTable, cid);
-        assure(col);
+        assert(col);
         if (col) {
             updateFieldValue(mdb->loadRow, col, value);
         }
@@ -1206,11 +1209,12 @@ static int mdbLoadFromString(Edi *edi, cchar *str)
 
 static void autoSave(Mdb *mdb, MdbTable *table)
 {
-    assure(mdb);
-    assure(table);
+    assert(mdb);
+    assert(table);
 
     if (mdb->edi.flags & EDI_AUTO_SAVE && !(mdb->edi.flags & EDI_SUPPRESS_SAVE)) {
         //  MOB - should have dirty bit
+        //  MOB - need error handling. If save fails, need to fail all subsequent operations.
         mdbSave((Edi*) mdb);
     }
 }
@@ -1242,6 +1246,7 @@ static int mdbSave(Edi *edi)
     }
     npath = mprReplacePathExt(path, "new");
     if ((out = mprOpenFile(npath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
+        mprError("Can't open database %s", npath);
         return 0;
     }
     mprWriteFileFmt(out, "{\n");
@@ -1250,7 +1255,7 @@ static int mdbSave(Edi *edi)
     for (tid = 0; tid < ntables; tid++) {
         table = getTable(mdb, tid);
         schema = table->schema;
-        assure(schema);
+        assert(schema);
         mprWriteFileFmt(out, "    '%s': {\n", table->name);
         mprWriteFileFmt(out, "        hints: {\n            ncols: %d\n        },\n", schema->ncols);
         mprWriteFileString(out, "        schema: {\n");
@@ -1526,7 +1531,7 @@ static EdiField readField(MdbRow *row, int fid)
 {
     EdiField    field;
     MdbCol      *col;
-    assure(0 <= fid  && fid < row->nfields);
+    assert(0 <= fid  && fid < row->nfields);
 
     col = &row->table->schema->cols[fid];
     field.value = row->fields[fid];
@@ -1542,8 +1547,8 @@ static int updateFieldValue(MdbRow *row, MdbCol *col, cchar *value)
     MdbTable    *table;
     cchar       *key;
     
-    assure(row);
-    assure(col);
+    assert(row);
+    assert(col);
 
     table = row->table;
     if (col->flags & EDI_INDEX) {
@@ -1583,7 +1588,7 @@ static bool validateField(EdiRec *rec, MdbTable *table, MdbCol *col, cchar *valu
     int             next;
     bool            pass;
 
-    assure(rec);
+    assert(rec);
 
     pass = 1;
     if (col->validations) {
@@ -1660,11 +1665,11 @@ static int parseOperation(cchar *operation)
 }
 
 
-#endif /* BIT_PACK_ESP && BIT_MDB */
+#endif /* BIT_PACK_ESP && BIT_ESP_MDB */
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

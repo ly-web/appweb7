@@ -23,13 +23,27 @@
 #define ESP_TOK_EXPR            5            /* <%= expression %> */
 #define ESP_TOK_CONTROL         6            /* <%@ control */
 
+/**
+    ESP page parser structure
+    @defgroup EspParse EspParse
+    @see
+ */
+typedef struct EspParse {
+    int     lineNumber;                     /**< Line number for error reporting */
+    char    *data;                          /**< Input data to parse */
+    char    *next;                          /**< Next character in input */
+    MprBuf  *token;                         /**< Input token */
+} EspParse;
+
 /************************************ Forwards ********************************/
 
 static int getEspToken(EspParse *parse);
 static cchar *getDebug();
 static cchar *getEnvString(EspRoute *eroute, cchar *key, cchar *defaultValue);
+static cchar *getArExt(cchar *os);
 static cchar *getShlibExt(cchar *os);
 static cchar *getShobjExt(cchar *os);
+static cchar *getArPath(cchar *os, cchar *arch);
 static cchar *getCompilerName(cchar *os, cchar *arch);
 static cchar *getCompilerPath(cchar *os, cchar *arch);
 static cchar *getLibs(cchar *os);
@@ -43,15 +57,17 @@ static bool matchToken(cchar **str, cchar *token);
 /************************************* Code ***********************************/
 /*
     Tokens:
+    AR          Library archiver (ar)   
+    ARLIB       Archive library extension (.a, .lib)
     ARCH        Build architecture (64)
-    GCC_ARCH    ARCH mapped to gcc -arch switches (x86_64)
     CC          Compiler (cc)
     DEBUG       Debug compilation options (-g, -Zi -Od)
+    GCC_ARCH    ARCH mapped to gcc -arch switches (x86_64)
     INC         Include directory out/inc
-    LIB         Library directory (out/lib, xcode/VS: out/bin)
+    LIBPATH     Library search path
     LIBS        Libraries required to link with ESP
     OBJ         Name of compiled source (out/lib/view-MD5.o)
-    MOD         Output module (view_MD5.dylib)
+    MOD         Output module (view_MD5)
     SHLIB       Host Shared library (.lib, .so)
     SHOBJ       Host Shared Object (.dll, .so)
     SRC         Source code for view or controller (already templated)
@@ -79,6 +95,10 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
             if (matchToken(&cp, "${ARCH}")) {
                 /* Target architecture (x86|mips|arm|x64) */
                 mprPutStringToBuf(buf, arch);
+
+            } else if (matchToken(&cp, "${ARLIB}")) {
+                /* .a, .lib */
+                mprPutStringToBuf(buf, getArExt(os));
 
             } else if (matchToken(&cp, "${GCC_ARCH}")) {
                 /* Target architecture mapped to GCC mtune|mcpu values */
@@ -138,33 +158,49 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
                 mprPutStringToBuf(buf, getWinSDK());
 
             /*
-                These vars can be configured from environment variables.
-                NOTE: the default esp.conf includes "esp->vxworks.conf" which has EspEnv definitions for the configured 
-                VxWorks toolchain
+                These vars can be also be configured from environment variables.
+                NOTE: the default esp.conf includes "esp->vxworks.conf" which has EspEnv definitions for the 
+                configured VxWorks toolchain.
              */
+            } else if (matchToken(&cp, "${AR}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "AR", getArPath(os, arch)));
+
             } else if (matchToken(&cp, "${CC}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "CC", getCompilerPath(os, arch)));
-            } else if (matchToken(&cp, "${LINK}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "LINK", ""));
+
             } else if (matchToken(&cp, "${CFLAGS}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "CFLAGS", ""));
+
             } else if (matchToken(&cp, "${DEBUG}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "DEBUG", getDebug()));
+
             } else if (matchToken(&cp, "${LDFLAGS}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "LDFLAGS", ""));
 
+            } else if (matchToken(&cp, "${LIB}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "LIB", ""));
+
+            } else if (matchToken(&cp, "${LINK}")) {
+                mprPutStringToBuf(buf, getEnvString(eroute, "LINK", ""));
+
             } else if (matchToken(&cp, "${WIND_BASE}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_BASE", WIND_BASE));
+
             } else if (matchToken(&cp, "${WIND_HOME}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_HOME", WIND_HOME));
+
             } else if (matchToken(&cp, "${WIND_HOST_TYPE}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_HOST_TYPE", WIND_HOST_TYPE));
+
             } else if (matchToken(&cp, "${WIND_PLATFORM}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_PLATFORM", WIND_PLATFORM));
+
             } else if (matchToken(&cp, "${WIND_GNU_PATH}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_GNU_PATH", WIND_GNU_PATH));
+
             } else if (matchToken(&cp, "${WIND_CCNAME}")) {
                 mprPutStringToBuf(buf, getEnvString(eroute, "WIND_CCNAME", getCompilerName(os, arch)));
+
             } else {
                 mprPutCharToBuf(buf, *cp++);
             }
@@ -195,7 +231,7 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
-    mprLog(4, "ESP command: %s\n", req->commandLine);
+    mprTrace(4, "ESP command: %s\n", req->commandLine);
     if (eroute->env) {
         elist = mprCreateList(0, 0);
         for (ITERATE_KEYS(eroute->env, var)) {
@@ -262,7 +298,7 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
         if (eroute->layoutsDir) {
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }
-        if ((script = espBuildScript(route, page, source, cacheName, layout, &err)) == 0) {
+        if ((script = espBuildScript(route, page, source, cacheName, layout, NULL, &err)) == 0) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot build %s, error %s", source, err);
             return 0;
         }
@@ -357,7 +393,7 @@ static char *joinLine(cchar *str, ssize *lenp)
 
         <%@ include "file"  Include an esp file
         <%@ layout "file"   Specify a layout page to use. Use layout "" to disable layout management
-        <%@ content         Mark the location to substitute content in a layout pag
+        <%@ content         Mark the location to substitute content in a layout page
 
         <%                  Begin esp section containing C code
         <%^ global          Put esp code at the global level
@@ -374,34 +410,42 @@ static char *joinLine(cchar *str, ssize *lenp)
         @#field             Lookup the current record for the value of the field.
 
  */
-PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, char **err)
+PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
+        EspState *state, char **err)
 {
-    EspParse    parse;
     EspRoute    *eroute;
-    char        *control, *incBuf, *incText, *global, *token, *body, *where;
-    char        *rest, *start, *end, *include, *line, *fmt, *layoutPage, *layoutBuf;
+    EspState    top;
+    EspParse    parse;
+    MprBuf      *body;
+    char        *control, *incText, *where, *dir, *layoutCode, *bodyCode;
+    char        *rest, *include, *line, *fmt, *layoutPage, *incCode, *token;
     ssize       len;
     int         tid;
 
-    assure(page);
+    assert(page);
 
-    eroute = route->eroute;
-    body = start = end = global = "";
     *err = 0;
-
-    memset(&parse, 0, sizeof(parse));
+    eroute = route->eroute;
+    if (!state) {
+        assert(cacheName);
+        state = &top;
+        memset(state, 0, sizeof(EspParse));
+        state->global = mprCreateBuf(0, 0);
+        state->start = mprCreateBuf(0, 0);
+        state->end = mprCreateBuf(0, 0);
+    }
+    body = mprCreateBuf(0, 0);
     parse.data = (char*) page;
     parse.next = parse.data;
-
-    if ((parse.token = mprCreateBuf(-1, -1)) == 0) {
-        return 0;
-    }
+    parse.lineNumber = 0;
+    parse.token = mprCreateBuf(0, 0);
     tid = getEspToken(&parse);
+
     while (tid != ESP_TOK_EOF) {
         token = mprGetBufStart(parse.token);
 #if FUTURE
-        if (parse.lineNumber != lastLine) {
-            body = sfmt("\n# %d \"%s\"\n", parse.lineNumber, path);
+        if (state->lineNumber != lastLine) {
+            mprPutToBuf(script, "\n# %d \"%s\"\n", state->lineNumber, path);
         }
 #endif
         switch (tid) {
@@ -412,22 +456,16 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                 if (rest == 0) {
                     ;
                 } else if (scmp(where, "global") == 0) {
-                    global = sjoin(global, rest, NULL);
+                    mprPutStringToBuf(state->global, rest);
 
                 } else if (scmp(where, "start") == 0) {
-                    if (*start == '\0') {
-                        start = "  ";
-                    }
-                    start = sjoin(start, rest, NULL);
+                    mprPutToBuf(state->start, "%s  ", rest);
 
                 } else if (scmp(where, "end") == 0) {
-                    if (*end == '\0') {
-                        end = "  ";
-                    }
-                    end = sjoin(end, rest, NULL);
+                    mprPutToBuf(state->end, "%s  ", rest);
                 }
             } else {
-                body = sjoin(body, token, NULL);
+                mprPutStringToBuf(body, token);
             }
             break;
 
@@ -435,7 +473,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             /* NOTE: layout parsing not supported */
             control = stok(token, " \t\r\n", &token);
             if (scmp(control, "content") == 0) {
-                body = sjoin(body, CONTENT_MARKER, NULL);
+                mprPutStringToBuf(body, CONTENT_MARKER);
 
             } else if (scmp(control, "include") == 0) {
                 if (token == 0) {
@@ -453,11 +491,10 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                     return 0;
                 }
                 /* Recurse and process the include script */
-                incBuf = 0;
-                if ((incBuf = espBuildScript(route, incText, include, NULL, NULL, err)) == 0) {
+                if ((incCode = espBuildScript(route, incText, include, NULL, NULL, state, err)) == 0) {
                     return 0;
                 }
-                body = sjoin(body, incBuf, NULL);
+                mprPutStringToBuf(body, incCode);
 
             } else if (scmp(control, "layout") == 0) {
                 token = strim(token, " \t\r\n\"", MPR_TRIM_BOTH);
@@ -477,8 +514,8 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                 }
 
             } else {
-                *err = sfmt("Unknown control %s at line %d", control, parse.lineNumber);
-                return 0;                
+                *err = sfmt("Unknown control %s at line %d", control, state->lineNumber);
+                return 0;
             }
             break;
 
@@ -492,29 +529,36 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                 if (token == 0) { 
                     token = "";
                 }
+                /* If users want a format and safe, use %S or renderSafe() */
+                token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
+                mprPutToBuf(body, "  espRender(conn, \"%s\", %s);\n", fmt, token);
+                // mprPutToBuf(body = sjoin(body, "  espRender(conn, \"", fmt, "\", ", token, ");\n", NULL);
             } else {
-                fmt = "%s";
+                token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
+                mprPutToBuf(body, "  espRenderSafeString(conn, %s);\n", token);
+                // body = sjoin(body, "  espRenderSafeString(conn, ", token, ");\n", NULL);
             }
-            token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-            body = sjoin(body, "  espRender(conn, \"", fmt, "\", ", token, ");\n", NULL);
             break;
 
         case ESP_TOK_FIELD:
             /* @#field -- field in the current record */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-            body = sjoin(body, "  espRender(conn, getField(\"", token, "\"));\n", NULL);
+            mprPutToBuf(body, "  espRenderSafeString(conn, getField(\"%s\"));\n", token);
+            // body = sjoin(body, "  espRenderSafeString(conn, getField(\"", token, "\"));\n", NULL);
             break;
 
         case ESP_TOK_LITERAL:
             line = joinLine(token, &len);
-            body = sfmt("%s  espRenderBlock(conn, \"%s\", %d);\n", body, line, len);
+            mprPutToBuf(body, "  espRenderBlock(conn, \"%s\", %d);\n", line, len);
+            // body = sfmt("%s  espRenderBlock(conn, \"%s\", %d);\n", body, line, len);
             break;
 
         case ESP_TOK_VAR:
             /* @@var -- variable in (param || session) */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
             /* espRenderVar renders (param || session). It uses espRenderSafeString */
-            body = sjoin(body, "  espRenderVar(conn, \"", token, "\");\n", NULL);
+            mprPutToBuf(body, "  espRenderVar(conn, \"%s\");\n", token);
+            // body = sjoin(body, "  espRenderVar(conn, \"", token, "\");\n", NULL);
             break;
 
         default:
@@ -522,39 +566,42 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         }
         tid = getEspToken(&parse);
     }
-    if (cacheName) {
-        /*
-            CacheName will only be set for the outermost invocation
-         */
-        if (layout && mprPathExists(layout, R_OK)) {
-            if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
-                *err = sfmt("Cannot read layout page: %s", layout);
-                return 0;
-            }
-            layoutBuf = 0;
-            if ((layoutBuf = espBuildScript(route, layoutPage, layout, NULL, NULL, err)) == 0) {
-                return 0;
-            }
+
+    if (layout && mprPathExists(layout, R_OK)) {
+        if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
+            *err = sfmt("Cannot read layout page: %s", layout);
+            return 0;
+        }
+        if ((layoutCode = espBuildScript(route, layoutPage, layout, NULL, NULL, state, err)) == 0) {
+            return 0;
+        }
 #if BIT_DEBUG
-            if (!scontains(layoutBuf, CONTENT_MARKER)) {
-                *err = sfmt("Layout page is missing content marker: %s", layout);
-                return 0;
-            }
+        if (!scontains(layoutCode, CONTENT_MARKER)) {
+            *err = sfmt("Layout page is missing content marker: %s", layout);
+            return 0;
+        }
 #endif
-            body = sreplace(layoutBuf, CONTENT_MARKER, body);
+        bodyCode = sreplace(layoutCode, CONTENT_MARKER, mprGetBufStart(body));
+    } else {
+        bodyCode = mprGetBufStart(body);
+    }
+    if (state == &top) {
+        dir = mprGetRelPath(route->dir, NULL);
+        path = mprGetRelPath(path, NULL);
+        assert(slen(path) > slen(dir));
+        if (!smatch(dir, ".")) {
+            assert(sncmp(path, dir, slen(dir)) == 0);
+            if (sncmp(path, dir, slen(dir)) == 0) {
+                path = &path[slen(dir) + 1];
+            }
         }
-        if (start && start[slen(start) - 1] != '\n') {
-            start = sjoin(start, "\n", NULL);
+        if (mprGetBufLength(state->start) > 0) {
+            mprPutCharToBuf(state->start, '\n');
         }
-        if (end && end[slen(end) - 1] != '\n') {
-            end = sjoin(end, "\n", NULL);
+        if (mprGetBufLength(state->end) > 0) {
+            mprPutCharToBuf(state->end, '\n');
         }
-        assure(slen(path) > slen(route->dir));
-        assure(sncmp(path, route->dir, slen(route->dir)) == 0);
-        if (sncmp(path, route->dir, slen(route->dir)) == 0) {
-            path = &path[slen(route->dir) + 1];
-        }
-        body = sfmt(\
+        bodyCode = sfmt(\
             "/*\n   Generated from %s\n */\n"\
             "#include \"esp-app.h\"\n"\
             "%s\n"\
@@ -565,10 +612,11 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             "   espDefineView(route, \"%s\", %s);\n"\
             "   return 0;\n"\
             "}\n",
-            path, global, cacheName, start, body, end, ESP_EXPORT_STRING, cacheName, mprGetPortablePath(path), cacheName);
-        mprLog(6, "Create ESP script: \n%s\n", body);
+            path, mprGetBufStart(state->global), cacheName, mprGetBufStart(state->start), bodyCode, mprGetBufStart(state->end),
+            ESP_EXPORT_STRING, cacheName, mprGetPortablePath(path), cacheName);
+        mprTrace(6, "Create ESP script: \n%s\n", bodyCode);
     }
-    return body;
+    return bodyCode;
 }
 
 
@@ -780,6 +828,15 @@ static cchar *getObjExt(cchar *os)
 }
 
 
+static cchar *getArExt(cchar *os)
+{
+    if (smatch(os, "windows")) {
+        return ".lib";
+    }
+    return ".a";
+}
+
+
 static cchar *getCompilerName(cchar *os, cchar *arch)
 {
     cchar       *name;
@@ -827,10 +884,10 @@ static cchar *getDebug()
     int         debug;
 
     appweb = MPR->appwebService;
-    //  MOB -- should be able to do release builds from xcode?
-    debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode") || sends(appweb->platform, "-mine");
+    debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode") || 
+        sends(appweb->platform, "-mine") || sends(appweb->platform, "-vsdebug");
     if (scontains(appweb->platform, "windows-")) {
-        return (debug) ? "-DBIT_DEBUG -Zi -Od" : "-O";
+        return (debug) ? "-DBIT_DEBUG -Zi -Od" : "-Os";
     }
     return (debug) ? "-DBIT_DEBUG -g" : "-O2";
 }
@@ -843,7 +900,7 @@ static cchar *getLibs(cchar *os)
     if (smatch(os, "windows")) {
         libs = "\"${LIBPATH}\\libmod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\"";
     } else {
-        libs = "${LIBPATH}/libmod_esp${SHOBJ} -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
+        libs = "-lmod_esp -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
     }
     return libs;
 }
@@ -862,7 +919,6 @@ static bool matchToken(cchar **str, cchar *token)
 }
 
 
-//  MOB order
 static cchar *getMappedArch(cchar *arch)
 {
     if (smatch(arch, "x64")) {
@@ -873,21 +929,35 @@ static cchar *getMappedArch(cchar *arch)
     return arch;
 }
 
+//  UNUSED
+#ifndef BIT_64
+#define BIT_64 0
+#endif
 
 static cchar *getWinSDK()
 {
-#if UNUSED && defined(XXBIT_PACK_WINSDK_PATH)
-    /* 
-        Can't use this as we want to use the current installed winsdk which may be different to that installed 
-        on the build system.
-     */
-    return mprGetNativePath(BIT_PACK_WINSDK_PATH);
-#endif
-
 #if WINDOWS
-    cchar   *path;
+    char *versions[] = { "8.0", "7.1", "7.0A", "7.0", 0 };
+    /*
+        MS has made a big mess of where and how the windows SDKs are installed. The registry key at 
+        HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted and often
+        points to the old 7.X SDKs even when 8.X is installed and active. MS have also moved the 8.X
+        SDK to Windows Kits, while still using the old folder for some bits. So the old-reliable
+        CurrentInstallFolder registry key is now unusable. So we must scan for explicit SDK versions 
+        listed above. Ugh!
+     */
+    cchar   *path, *key, **vp;
 
-    path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows", "CurrentInstallFolder");
+    for (vp = versions; *vp; vp++) {
+        key = sfmt("HKLM\\SOFTWARE%s\\Microsoft\\Microsoft SDKs\\Windows\\v%s", (BIT_64) ? "\\Wow6432Node" : "", *vp);
+        if ((path = mprReadRegistry(key, "InstallationFolder")) != 0) {
+            break;
+        }
+    }
+    if (!path) {
+        /* Old Windows SDK 7 registry location */
+        path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows", "CurrentInstallFolder");
+    }
     if (!path) {
         path = "${WINSDK}";
     }
@@ -915,6 +985,32 @@ static cchar *getVisualStudio()
     return path;
 #else
     return "";
+#endif
+}
+
+
+static cchar *getArPath(cchar *os, cchar *arch)
+{
+#if WINDOWS
+    /* 
+        Get the real system architecture (32 or 64 bit)
+     */
+    MaAppweb *appweb = MPR->appwebService;
+    cchar *path = getVisualStudio();
+    if (scontains(appweb->platform, "-x64-")) {
+        int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
+        if (is64BitSystem) {
+            path = mprJoinPath(path, "VC/bin/amd64/lib.exe");
+        } else {
+            /* Cross building on a 32-bit system */
+            path = mprJoinPath(path, "VC/bin/x86_amd64/lib.exe");
+        }
+    } else {
+        path = mprJoinPath(path, "VC/bin/lib.exe");
+    }
+    return path;
+#else
+    return "ar";
 #endif
 }
 
@@ -948,7 +1044,7 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

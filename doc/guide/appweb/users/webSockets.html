@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.2.0 Documentation</title>
+    <title>Embedthis Appweb 4.3.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.2.0</div>
+                <div class="version">Embedthis Appweb 4.3.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -62,7 +62,7 @@
                 href="http://tools.ietf.org/html/rfc6455">RFC 6455</a>.</p>
             <p>Normal HTML connections follow a request / response paradigm and do not easily support asynchronous
             communications or unsolicited data pushed from the server to the client. WebSockets solves this 
-            by supporting bi-directional, full-duplex communications over persistent connections. A WebSocket
+            by supporting bidirectional, full-duplex communications over persistent connections. A WebSocket
             connection is established over a standard HTTP connection and is then upgraded without impacting the
             original connection. This means it will work with existing networking infrastructure including firewalls and
             proxies.</p>
@@ -73,7 +73,7 @@
             The filter implements the WebSockets protocol, handshaking and provides a C language API. The 
             webSock filter observes the WebSockets HTTP headers and manages the connection handshaking with the
             client. It also manages the framing and encoding/decoding of message data.</p>
-            <p>The webSock filter is configured into the pipeline using the <a href="MOB">AddFilter</a> directive.</p>
+            <p>The webSock filter is configured into the pipeline using the <a href="dir/route.html#addFilter">AddFilter</a> directive.</p>
             <h2>WebSocket Handshake</h2>
             <p>A WebSocket connection begins life as a normal HTTP request and is upgraded to the WebSocket protocol. 
             The WebSocketFilter is activated by a set of WebSocket HTTP headers from the client that describes 
@@ -93,7 +93,7 @@ Origin: http://example.com</b>
 <pre>
 HTTP/1.1 101 Switching Protocols
 Server: Embedthis-http/4.1.0
-Date: Sat, 06 Oct 2012 05:10:15 GMT
+Date: Sat, 06 Oct 2013 05:10:15 GMT
 <b>Connection: Upgrade
 Upgrade: WebSocket
 Sec-WebSocket-Accept: 58ij/Yod1NTjzqcyjkZbZk6V6v0=
@@ -115,38 +115,38 @@ X-Request-Timeout: 600
             <h3>Text Messages</h3>
             <p>Text messages must be valid UTF-8 strings. The receiving peer will validate and reject non-conforming
             strings. However, Appweb can be configured to accept invalid UTF-8 strings via the
-                <a href="MOB">ignoreEncodingErrors</a> appweb directive.</p>
+                <a href="dir/route.html#ignoreEncodingErrors">ignoreEncodingErrors</a> appweb directive.</p>
             <h3>Binary Messages</h3>
             <p>Binary message allow the transmission of any content. Messages can be an arbitrary length up to the maximum
-            specified by the <a href="MOB">LimitWebSocketsMessage</a> appweb.conf directive. Messages are broken into frames
-            of no more than then length specified by the <a href="MOB">LimitWebSocketsFrame</a> directive. 
-            The <a href="MOB">LimitWebSocketsPacket</a> directive defines what is largest packet that will be
+            specified by the <a href="dir/sandbox.html#limitWebSocketsMessage">LimitWebSocketsMessage</a> appweb.conf directive. Messages are broken into frames
+            of no more than then length specified by the <a href="dir/sandbox.html#limitWebSocketsFrame">LimitWebSocketsFrame</a> directive. 
+            The <a href="dir/sandbox.html#limitWebSocketsPacket">LimitWebSocketsPacket</a> directive defines what is largest packet that will be
             passed on a single read to the user callback receiving incoming WebSocket messages.</p>
             <h3>Close Message</h3>
             <p>Ordinarily, WebSocket communications are terminated by sending a <i>Close</i> message. The close
-            message includes a status code and optional </i>reason</i> string for why the connection is being closed. The
+            message includes a status code and optional <i>reason</i> string for why the connection is being closed. The
             <i>reason</i> string must be less than 124 bytes in length so as to fit into a single WebSocket frame.</p>
             <h3>Ping / Pong Messages</h3>
             <p>To keep a communications channel alive, it is sometimes necessary to send regular messages to indicate
-            the channel is still being used. Some servers, browsers, proxies and other itermediaries may close an
+            the channel is still being used. Some servers, browsers or proxies may close an
             idle connection. The Ping / Pong WebSockets messages are designed to send non-application level traffic
             that will prevent the channel from being prematurely closed.<p>
             <p>A ping message may be sent by either side and the peer will reply with <i>pong</i>
             message response. The pong message is generated internally by the WebSockets layer and is similarly
             consumed by the WebSockets layer at the peer. The application layer may initiate the peer message, but
             it will never see the pong response.</p>
-            <p>Appweb has a <a href="MOB">WebSocketsPing</a> appweb.conf directive that can be used to automatically
+            <p>Appweb has a <a href="dir/route.html#webSocketsPing">WebSocketsPing</a> appweb.conf directive that can be used to automatically
             send ping messages at a specified interval. Note: use of this directive defeats all Appweb timeouts 
             for an idle WebSockets connection.</p>
             <h2>Timeouts</h2>
             <p>The standard Appweb request and inactivity timeouts can be used for WebSocket communications.
             Typically, a route will be defined in the appweb.conf file for WebSockets and it will include
             appropriate request and inactivity timeout directives. 
-            The <a href="MOB">RequestTimeout</a> gives the total time a WebSocket connection may remain open. 
-            The <a href="MOB">InactivityTimeout</a> specifies the maximim time a WebSocket connection may be 
+            The <a href="dir/sandbox.html#requestTimeout">RequestTimeout</a> gives the total time a WebSocket connection may remain open. 
+            The <a href="dir/sandbox.html#requestTimeout">InactivityTimeout</a> specifies the maximum time a WebSocket connection may be 
             completely idle. Note that ping/pong messages will reset an inactivity timeout.</p>
             <h2>Configuration</h2>
-            <p>It is necesary to create a dedicated <a href="MOB">Route</a> for WebSockets communications. 
+            <p>It is necessary to create a dedicated <a href="dir/route.html#route">Route</a> for WebSockets communications. 
             This will define a unique URI prefix for WebSocket communications and configure the WebSocket filter.
             Any number of WebSocket routes can be defined. For example:</p>
 <pre>
@@ -160,14 +160,14 @@ X-Request-Timeout: 600
     InactivityTimeout   5mins           # Maximum idle time
 &lt;/Route&gt;
 </pre>
-            <p>This creates a route for URIs begining with <i>"/websock"</i> for WebSockets communications.
+            <p>This creates a route for URIs beginning with <i>"/websock"</i> for WebSockets communications.
                 It uses an ESP controller to respond to incoming messages. See below for sample ESP
                 WebSocket code.</p>
                 
             <h2>WebSockets Directives</h2>
             <p>The following directives are supported for controlling WebSocket communications within a route.</p>
-            <table>
-                <thead><tr><td>Directive</td><td>Purpose</td></tr>
+            <table title="directives">
+                <thead><tr><th>Directive</th><th>Purpose</th></tr>
                 <tbody>
                     <tr><td>IgnoreEncodingErrors</td><td>Ignore UTF-8 text message encoding errors</td></tr>
                     <tr><td>InactivityTimeout</td><td>Maximum idle time before closing a connection</td></tr>
@@ -183,8 +183,8 @@ X-Request-Timeout: 600
             </table>
             <h2>WebSockets APIs</h2>
             <p>Appweb provides a simple but powerful API for interactive with WebSockets.
-            <table>
-                <thead><tr><td>Directive</td><td>Purpose</td></tr></thread>
+            <table title="API">
+                <thead><tr><th>Directive</th><th>Purpose</th></tr></thead>
                 <tbody>
                     <tr><td><a href="../../../api/http.html#http_8h_1a53cc0c3dcaf6e6da30c0975064d6bcbc">httpGetReadCount</a></td><td>Get the size of the next WebSockets 
                         message to read</td></tr>
@@ -217,11 +217,11 @@ static void testCallback(HttpConn *conn, int event, int arg)
 {
     if (event == <b>HTTP_EVENT_READABLE</b>) {
         /* Incoming web sockets message */
-        HttpPacket *packet = <b>httpGetPacket</b>(conn->readq);
-        printf("Message %s\n", mprGetBufStart(packet->content));
+        HttpPacket *packet = <b>httpGetPacket</b>(conn-&gt;readq);
+        printf("Message %s\n", mprGetBufStart(packet-&gt;content));
         /* Send a reply message */
         <b>httpSend</b>(conn, "Reply message at %s", mprGetDate(0));
-        /* No need to free buf, the garbage collector will free */
+        /* No need to free buffer, the garbage collector will free */
     } else if (event == HTTP_EVENT_APP_CLOSE) {
     } else if (event == HTTP_EVENT_ERROR) {
     }
@@ -300,7 +300,7 @@ ESP_EXPORT int esp_controller_websock(HttpRoute *route, MprModule *module) {
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

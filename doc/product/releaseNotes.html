@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.2.0 Documentation</title>
+    <title>Embedthis Appweb 4.3.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.2.0</div>
+                <div class="version">Embedthis Appweb 4.3.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -38,9 +38,8 @@
                 <li><a href="#licensing">License</a></li>
                 <li><a href="#requirements">System Requirements</a></li>
                 <li><a href="#features">Features</a></li>
-                <li><a href="#releaseBuild">Release Build</a></li>
+                <li><a href="#issues">Known Issues</a></li>
                 <li><a href="#hints">Helpful Hints</a></li>
-                <li><a href="#resolvedIssues">Resolved Issues</a></li>
             </ul>
 <!-- BeginDsi "dsi/genSeeAlso.html" -->
             <h1>See Also</h1>
@@ -116,11 +115,26 @@
             compile and build samples and source code.</p>
             <ul>
                 <li>Linux GNU tools</li>
-                <li>Windows Visual Studio (Visual Studio 2008 and Visual Studio 2008 Express).</li>
-                <li>Windows XP with Cygwin UNIX emulation tools. See <a href=
-                "http://www.cygwin.com/">www.cygwin.com</a>.</li>
+                <li>Windows Visual Studio (Visual Studio 2010 and Visual Studio 2010 Express).</li>
                 <li>WindRiver Tornado Development Tools.</li>
-            </ul><a id="releaseBuild"></a> <a id="hints"></a>
+            </ul>
+            <a id="issues"></a> 
+            <h2 class="section">Known Issues</h2>
+            <ol><li>The Mocana NanoSSL does not support:
+                    <ul>
+                        <li>Client mode SSL</li>
+                        <li>Run-time cipher selection via SSLCipherSuite</li>
+                        <li>Client certificate mutual authentication</li>
+                        <li>Routing based on client certificate fields</li>
+                    </ul>
+                </li>
+                <li>The MatrixSSL does not support:
+                <ul>
+                    <li>Run-time cipher selection via SSLCipherSuite</li>
+                </ul>
+            </ol>
+            
+            <a id="hints"></a>
             <h2 class="section">Helpful Hints</h2>
             <h3>Debug Trace and Logging</h3>
             <p>Appweb has a debug logging and trace facility that can help when debugging configuration issues or
@@ -134,16 +148,13 @@ appweb --log logFile:logLevel
             <pre>
 appweb -v
 </pre>
-            <p>The log level can be from 0 to 9, with 9 being the most verbose level.</p><a id="limitations"></a>
-            <h2 class="section">Limitations and Special Notes</h2><a id="resolvedIssues"></a>
-            <h3>Resolved Issues</h3>
-            <p>See the new features and fixes in the <a href="changeLog.html">Change Log</a> document.</p>
+            <p>The log level can be from 0 to 9, with 9 being the most verbose level.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
+            <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

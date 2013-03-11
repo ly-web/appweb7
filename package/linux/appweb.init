@@ -6,8 +6,8 @@
 # Required-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:
-# Short-Description: Embedthis Appweb Embeddable Web Server
-# Description:       Embedthis Appweb Embeddable Web Server
+# Short-Description: Appweb Embedded Web Server
+# Description:       Appweb Embedded Web Server
 ### END INIT INFO
 
 #
@@ -21,15 +21,15 @@
 #
 ###############################################################################
 
-NAME=${settings.product}
-APPWEB_NAME="${settings.title}"
-APPWEB_CMD=${prefixes.bin}/$NAME
-APPWEB_DIR=${prefixes.config}
+NAME=appweb
+APPWEB_NAME="Embedthis Appweb"
+APPWEB_CMD="/usr/local/bin/${NAME}"
+APPWEB_DIR="/etc/appweb"
 
 PIDFILE=${PIDFILE-/var/run/$NAME.pid}
 LOCKFILE=${LOCKFILE-/var/lock/$NAME}
 
-MANAGER_CMD=${prefixes.bin}/appman
+MANAGER_CMD=/usr/local/bin/appman
 MANAGER_SWITCHES="--daemon --program $APPWEB_CMD --home $APPWEB_DIR --pidfile $PIDFILE run"
 MANAGER_TIMEOUT=10
 
@@ -125,7 +125,7 @@ exit $?
 
 ################################################################################
 #
-#   Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+#   Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 #   The latest version of this code is available at http://embedthis.com
 #
 #   This software is open source; you can redistribute it and/or modify it 

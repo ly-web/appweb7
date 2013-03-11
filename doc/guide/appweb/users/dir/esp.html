@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.2.0 Documentation</title>
+    <title>Embedthis Appweb 4.3.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.2.0</div>
+                <div class="version">Embedthis Appweb 4.3.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -427,6 +427,9 @@ EspDir static ./web</pre>
                             include for <em>esp.conf</em>.
                             <p>Some platforms can do the compile and link phases in one command. Others require a 
                             separate link.</p>
+                            <p>If appweb is built with static linking or if the esp command is invoked with the --static 
+                            switch, the EspLink command should perform static linking. The default esp.conf configuration
+                            file has separate commands for dynamic and static linking.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -467,6 +470,9 @@ EspLoad blog cache/app.dylib
                             application provides the ultimate in performance and eliminates any per-request overhead
                             in checking for changed modules or source code.</p>
                             <p>The Name argument to the directive should be a unique, descriptive name for the application.
+                            By default, when esp compiles an application, this name is the folder name of the application, 
+                            though this can be overridden by the esp --name switch.</p>
+                            <p>
                             The second argument is a path to the compiled, flat application. This by default is called
                             <em>cache/app.so</em> where <em>.so</em> may vary depending on the O/S platform. The path
                             may be specified with or without an extension. Omitting the extension will allow a common
@@ -747,7 +753,7 @@ Name            Method  Pattern                      Target
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
+            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

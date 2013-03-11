@@ -1,4 +1,4 @@
-.TH HTTP "1" "July 2012" "http" "User Commands"
+.TH HTTP "1" "July 2013" "http" "User Commands"
 .SH NAME
 http \- HTTP Client program
 .SH SYNOPSIS
@@ -39,7 +39,7 @@ http \- HTTP Client program
 [\fI--timeout seconds\fR]
 [\fI--upload\fR]
 [\fI--user name\fR]
-[\fI--validate\fR]
+[\fI--verify\fR]
 [\fI--verbose\fR]
 [\fI--workers count\fR]
 [\fI--zero\fR] 
@@ -55,8 +55,11 @@ Set the type of authentication to use. Defaults to basic.
 Output timing results after retrieving URLs.
 .TP
 \fB\--cert file\fR 
-Certificate authority file to validate server certificatess.
+Certificate to send to the server to identify the client.
 If using --cert, you will need to use --key to specify the private key file.
+.TP
+\fB\--cacert bundle\fR 
+Certificate bundle to use when validating the server certificate.
 .TP
 \fB\--chunk size\fR 
 Request that web server use use transfer encoding for the response and break the response data into 
@@ -93,7 +96,7 @@ then http will retrieve http://www.myHost.com:8888.
 Retrieve the URLs iterations times. Useful for load testing. This switch can also be abbreviated as \fB\-i\fR.
 .TP
 \fB\--key file\fR 
-Private key file to use with the certificate file specified via --cert..
+Private key file to use with the certificate file specified via --cert.
 .TP
 \fB\--log logSpec\fR 
 Specify a file to log messages.  The syntax is: \fB"--log logFile[:logLevel]"\fR.
@@ -176,8 +179,9 @@ Specify a user name to send with the request. If a password is not specified via
 prompt for a password (which will not be echoed). The username and password will be sent with the request
 according to the authentication protocol required by the requested web server and requested document.
 .TP
-\fB\--validate\fR 
-Validate server certificates when using SSL
+\fB\--verify\fR 
+Verify the server presented certificate when using SSL. This will verify the certificate has not expired, is validly
+issued and that the certificate common name corresponds to the host name.
 .TP
 \fB\--verbose\fR 
 Verbose mode. Trace activity to stdout. Can by specified multiple times for more verbose tracing.  
@@ -193,4 +197,4 @@ code is not a 2XX or 3XX series response code.
 .SH "REPORTING BUGS"
 Report bugs to dev@embedthis.com.
 .SH COPYRIGHT
-Copyright \(co 2003-2012 Embedthis Software.
+Copyright \(co 2003-2013 Embedthis Software.

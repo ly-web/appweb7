@@ -10,16 +10,24 @@
 #if BIT_PACK_SSL
 /*********************************** Code *************************************/
 
-static bool checkSsl(MaState *state)
+static void checkSsl(MaState *state)
 {
-    if (state->route->ssl == 0) {
-        if (state->route->parent && state->route->parent->ssl) {
-            state->route->ssl = mprCloneSsl(state->route->parent->ssl);
+    HttpRoute   *route, *parent;
+    
+    route = state->route;
+    parent = route->parent;
+
+    if (route->ssl == 0) {
+        if (parent && parent->ssl) {
+            route->ssl = mprCloneSsl(parent->ssl);
         } else {
-            state->route->ssl = mprCreateSsl(1);
+            route->ssl = mprCreateSsl(1);
+        }
+    } else {
+        if (parent && route->ssl == parent->ssl) {
+            route->ssl = mprCloneSsl(parent->ssl);
         }
     }
-    return 1;
 }
 
 
@@ -37,7 +45,8 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
     char            *ip;
     int             port;
 
-    mprParseSocketAddress(value, &ip, &port, HTTP_DEFAULT_PORT);
+
+    mprParseSocketAddress(value, &ip, &port, NULL, 443);
     if (port == 0) {
         mprError("Bad or missing port %d in ListenSecure directive", port);
         return -1;
@@ -55,17 +64,15 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
     if (!state->host->secureEndpoint) {
         httpSetHostSecureEndpoint(state->host, endpoint);
     }
-#if defined(BIT_HAS_SINGLE_STACK) || VXWORKS || (WINDOWS && _WIN32_WINNT < 0x0600)
     /*
         Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
      */
-    if (!schr(value, ':')) {
+    if (!schr(value, ':') && !mprHasDualNetworkStack()) {
         endpoint = httpCreateEndpoint("::", port, NULL);
         mprAddItem(state->server->endpoints, endpoint);
         httpSecureEndpoint(endpoint, state->route->ssl);
     }
-#endif
     return 0;
 #else
     mprError("Configuration lacks SSL support");
@@ -80,7 +87,6 @@ static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *valu
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-
     checkSsl(state);
     mprSetSslCaPath(state->route->ssl, path);
     return 0;
@@ -93,7 +99,6 @@ static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *valu
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-
     checkSsl(state);
     mprSetSslCaFile(state->route->ssl, path);
     return 0;
@@ -106,7 +111,6 @@ static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-
     checkSsl(state);
     mprSetSslCertFile(state->route->ssl, path);
     return 0;
@@ -119,7 +123,6 @@ static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *val
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-
     checkSsl(state);
     mprSetSslKeyFile(state->route->ssl, path);
     return 0;
@@ -129,7 +132,7 @@ static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *val
 static int sslCipherSuiteDirective(MaState *state, cchar *key, cchar *value)
 {
     checkSsl(state);
-    mprSetSslCiphers(state->route->ssl, value);
+    mprAddSslCiphers(state->route->ssl, value);
     return 0;
 }
 
@@ -175,23 +178,35 @@ static int sslEngineDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+/*
+    SSLVerifyClient [on|off]
+    DEPRECATED: SSLVerifyClient [none|require]
+ */
 static int sslVerifyClientDirective(MaState *state, cchar *key, cchar *value)
 {
+    bool    on;
+
+    on = 0;
     checkSsl(state);
     if (scaselesscmp(value, "require") == 0) {
-        mprVerifySslPeer(state->route->ssl, 1);
+        on = 1;
 
     } else if (scaselesscmp(value, "none") == 0) {
-        mprVerifySslPeer(state->route->ssl, 0);
+        on = 0;
 
     } else {
-        mprError("Unknown verify client option");
-        return MPR_ERR_BAD_STATE;
+        if (!maTokenize(state, value, "%B", &on)) {
+            return MPR_ERR_BAD_SYNTAX;
+        }
     }
+    mprVerifySslPeer(state->route->ssl, on);
     return 0;
 }
 
 
+/*
+    SSLVerifyDepth N
+ */
 static int sslVerifyDepthDirective(MaState *state, cchar *key, cchar *value)
 {
     checkSsl(state);
@@ -200,6 +215,9 @@ static int sslVerifyDepthDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+/*
+    SSLVerifyIssuer [on|off]
+ */
 static int sslVerifyIssuerDirective(MaState *state, cchar *key, cchar *value)
 {
     bool    on;
@@ -213,6 +231,9 @@ static int sslVerifyIssuerDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+/*
+    SSLProtocol [+|-] protocol
+ */
 static int sslProtocolDirective(MaState *state, cchar *key, cchar *value)
 {
     char    *word, *tok;
@@ -274,9 +295,10 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *module)
     maAddDirective(appweb, "SSLProtocol", sslProtocolDirective);
     maAddDirective(appweb, "SSLProvider", sslProviderDirective);
     maAddDirective(appweb, "SSLVerifyClient", sslVerifyClientDirective);
-    maAddDirective(appweb, "SSLVerifyDepth", sslVerifyDepthDirective);
     maAddDirective(appweb, "SSLVerifyIssuer", sslVerifyIssuerDirective);
 
+    //  This is undocumented
+    maAddDirective(appweb, "SSLVerifyDepth", sslVerifyDepthDirective);
     return 0;
 }
 #else
@@ -290,7 +312,7 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *mp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -121,7 +121,7 @@ PUBLIC void progress(cchar *data, cchar *optionString)
 
 /*
     radio("priority", "{low: 0, med: 1, high: 2}", NULL)
-    radio("priority", "{low: 0, med: 1, high: 2}", "{value:'2'}")  //  MOB - without a record
+    radio("priority", "{low: 0, med: 1, high: 2}", "{value:'2'}")
  */
 PUBLIC void radio(cchar *name, void *choices, cchar *optionString)
 {
@@ -302,6 +302,7 @@ PUBLIC cchar *getHeader(cchar *key)
 }
 
 
+//  MOB - why not method()
 PUBLIC cchar *getMethod()
 {
     return espGetMethod(getConn());
@@ -326,10 +327,19 @@ PUBLIC cchar *getReferrer()
 }
 
 
+//  MOB - should have session() just like params
 PUBLIC cchar *getSessionVar(cchar *key)
 {
     return httpGetSessionVar(getConn(), key, "");
 }
+
+
+#if FUTURE
+PUBLIC cchar *session(cchar *key)
+{
+    return httpGetSessionVar(getConn(), key, "");
+}
+#endif
 
 
 PUBLIC cchar *getTop()
@@ -671,7 +681,7 @@ PUBLIC bool updateRec(EdiRec *rec)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

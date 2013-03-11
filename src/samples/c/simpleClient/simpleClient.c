@@ -47,7 +47,7 @@ MAIN(simpleClient, int argc, char **argv, char **envp)
     /* 
        Create an Http service object
      */
-    app->http = httpCreate(mpr);
+    app->http = httpCreate(HTTP_CLIENT_SIDE);
 
     /* 
        Get a client http object to work with. We can issue multiple requests with this one object.
@@ -97,8 +97,8 @@ static void manageApp(App *app, int flags)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2013. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

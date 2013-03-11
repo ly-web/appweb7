@@ -6,7 +6,7 @@ This document contains details regarding the installation procedure for the bina
 
 http://embedthis.com/products/appweb/doc/index.html
 
-This software is copyrighted and distributed under license. Please read the LICENSE.md for details.
+This software is copyrighted and distributed under license. Please read the LICENSE.TXT for details.
 
 
 Table of Contents
@@ -14,10 +14,9 @@ Table of Contents
 * System Requirements
 * Installation Package Formats
 * Development Environment Platform Support
-* Installating the Tar Self-Install Image
-* Removing Embedthis Appweb
 * Apple MAC OS X  Release Details
 * Windows Release Details
+* Removing Appweb
 * Running Appweb
 * Building from the Source Code
 * License and Copyright Information
@@ -27,11 +26,10 @@ System Requirements
 
 Operating System Support
 
-    * Windows XP, Vista, Windows-7 (x86,x86_64)
-    * Mac OS X 10.4, 10.5 (x86,x86_64)
-    * Linux 2.4, 2.6 (x86,,x86_64arm,ppc,sparc,xscale,mips)
+    * Windows XP, Vista, Windows-7 (x86,x64)
+    * Mac OS X 10.6+ (x64)
+    * Linux 2.4, 2.6 (x86,x64,arm,ppc,sparc,xscale,mips)
     * VxWorks (x86,arm,ppc,sparc,xscale,mips)
-    * Solaris (sparc,x86,x86_64)
 
 To install Appweb, your development system will need at least the following:
 
@@ -62,10 +60,9 @@ Development Environment Platform Support
 
 If you wish to embed Appweb in your application or build Appweb from source code, you will need to use a C compiler and associated development tools.  Several development environments are supported.  You may choose any of the following:
 
-    * Linux/Unix/Solaris GNU Tools
+    * Linux/Unix GNU Tools
 
-    * Windows Visual Studio (Visual Studio 2008 (Express) or the Cygwin UNIX 
-      emulation tools. See www.cygwin.com.
+    * Windows Visual Studio 2010
 
     * WindRiver Tornado Development Tools
 
@@ -145,9 +142,9 @@ If you wish to rebuild the Appweb product from the distributed source code, plea
 
 License and Copyright Information
 
-This software is supplied under license. Both a GNU and commercial license are available. Please read LICENSE.md for details. This documentation and the software described in this document may be used and copied only in accordance with the terms of the accompanying license agreement. Product and technical information in this document is subject to change without notice and does not represent a commitment on the part of Embedthis Software LLC.
+This software is supplied under license. Both a GNU and commercial license are available. Please read LICENSE.TXT for details. This documentation and the software described in this document may be used and copied only in accordance with the terms of the accompanying license agreement. Product and technical information in this document is subject to change without notice and does not represent a commitment on the part of Embedthis Software LLC.
 
-Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
 Embedthis is a trademark of Embedthis Software LLC. Embedthis, Appweb and Ejscript are trademarks of Embedthis Software. All other brand or product names are the trademarks or registered trademarks of their respective holders.
 

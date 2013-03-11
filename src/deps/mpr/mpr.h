@@ -30,1185 +30,9 @@
 /********************************** Includes **********************************/
 
 #include "bit.h"
+#include "bitos.h"
 
-/******************************* Default Features *****************************/
-
-#ifndef BIT_DEBUG
-    #define BIT_DEBUG 0
-#endif
-#ifndef BIT_ASSERT
-    #if BIT_DEBUG
-        #define BIT_ASSERT 1
-    #else
-        #define BIT_ASSERT 0
-    #endif
-#endif
-#ifndef BIT_FLOAT
-    #define BIT_FLOAT 1
-#endif
-#ifndef BIT_ROM
-    #define BIT_ROM 0
-#endif
-#ifndef BIT_TUNE
-    #define BIT_TUNE MPR_TUNE_SIZE
-#endif
-
-/********************************* CPU Families *******************************/
-/*
-    CPU Architectures
- */
-#define MPR_CPU_UNKNOWN     0
-#define MPR_CPU_ARM         1           /**< Arm */
-#define MPR_CPU_ITANIUM     2           /**< Intel Itanium */
-#define MPR_CPU_X86         3           /**< X86 */
-#define MPR_CPU_X64         4           /**< AMD64 or EMT64 */
-#define MPR_CPU_MIPS        5           /**< Mips */
-#define MPR_CPU_PPC         6           /**< Power PC */
-#define MPR_CPU_SPARC       7           /**< Sparc */
-
-/*
-    Byte orderings
- */
-#define MPR_LITTLE_ENDIAN   1           /**< Little endian byte ordering */
-#define MPR_BIG_ENDIAN      2           /**< Big endian byte ordering */
-
-/*
-    Use compiler definitions to determine the CPU type. 
-    The default endianness can be overridden by configure --endian big|little.
- */
-#if defined(__alpha__)
-    #define BIT_CPU "ALPHA"
-    #define BIT_CPU_ARCH MPR_CPU_ALPHA
-    #define CPU_ENDIAN MPR_LITTLE_ENDIAN
-
-#elif defined(__arm__)
-    #define BIT_CPU "ARM"
-    #define BIT_CPU_ARCH MPR_CPU_ARM
-    #define CPU_ENDIAN MPR_LITTLE_ENDIAN
-
-#elif defined(__x86_64__) || defined(_M_AMD64)
-    #define BIT_CPU "x64"
-    #define BIT_CPU_ARCH MPR_CPU_X64
-    #define CPU_ENDIAN MPR_LITTLE_ENDIAN
-
-#elif defined(__i386__) || defined(__i486__) || defined(__i585__) || defined(__i686__) || defined(_M_IX86)
-    #define BIT_CPU "x86"
-    #define BIT_CPU_ARCH MPR_CPU_X86
-    #define CPU_ENDIAN MPR_LITTLE_ENDIAN
-
-#elif defined(_M_IA64)
-    #define BIT_CPU "IA64"
-    #define BIT_CPU_ARCH MPR_CPU_ITANIUM
-    #define CPU_ENDIAN MPR_LITTLE_ENDIAN
-
-#elif defined(__mips__)
-    #define BIT_CPU "MIPS"
-    #define BIT_CPU_ARCH MPR_CPU_MIPS
-    #define CPU_ENDIAN MPR_BIG_ENDIAN
-
-#elif defined(__ppc__) || defined(__powerpc__) || defined(__ppc64__) || defined(__ppc)
-    #define BIT_CPU "PPC"
-    #define BIT_CPU_ARCH MPR_CPU_PPC
-    #define CPU_ENDIAN MPR_BIG_ENDIAN
-
-#elif defined(__sparc__)
-    #define BIT_CPU "SPARC"
-    #define BIT_CPU_ARCH MPR_CPU_SPARC
-    #define CPU_ENDIAN MPR_BIG_ENDIAN
-
-#else
-    #error "Cannot determine CPU type in mpr.h"
-#endif
-
-/*
-    Set the default endian if bit.h does not define it explicitly
- */
-#ifndef BIT_ENDIAN
-    #define BIT_ENDIAN CPU_ENDIAN
-#endif
-
-/*
-    Operating system defines. Use compiler standard defintions to sleuth. 
-    Works for all except VxWorks which does not define any special symbol.
-    NOTE: Support for SCOV Unix, LynxOS and UnixWare is deprecated.
- */
-#if defined(__APPLE__)
-    #define BIT_OS "macosx"
-    #define MACOSX 1
-    #define BIT_UNIX_LIKE 1
-    #define BIT_WIN_LIKE 0
-
-#elif defined(__linux__)
-    #define BIT_OS "linux"
-    #define LINUX 1
-    #define BIT_UNIX_LIKE 1
-    #define BIT_WIN_LIKE 0
-
-#elif defined(__FreeBSD__)
-    #define BIT_OS "freebsd"
-    #define FREEBSD 1
-    #define BIT_UNIX_LIKE 1
-    #define BIT_WIN_LIKE 0
-
-#elif defined(_WIN32)
-    #define BIT_OS "windows"
-    #define WINDOWS 1
-    #define BIT_UNIX_LIKE 0
-    #define BIT_WIN_LIKE 1
-
-#elif defined(__OS2__)
-    #define BIT_OS "os2"
-    #define OS2 0
-    #define BIT_UNIX_LIKE 0
-    #define BIT_WIN_LIKE 0
-
-#elif defined(MSDOS) || defined(__DOS__)
-    #define BIT_OS "msdos"
-    #define WINDOWS 0
-    #define BIT_UNIX_LIKE 0
-    #define BIT_WIN_LIKE 0
-
-#elif defined(__NETWARE_386__)
-    #define BIT_OS "netware"
-    #define NETWARE 0
-    #define BIT_UNIX_LIKE 0
-    #define BIT_WIN_LIKE 0
-
-#elif defined(__bsdi__)
-    #define BIT_OS "bsdi"
-    #define BSDI 1
-    #define BIT_UNIX_LIKE 1
-    #define BIT_WIN_LIKE 0
-
-#elif defined(__NetBSD__)
-    #define BIT_OS "netbsd"
-    #define NETBSD 1
-    #define BIT_UNIX_LIKE 1
-    #define BIT_WIN_LIKE 0
-
-#elif defined(__QNX__)
-    #define BIT_OS "qnx"
-    #define QNX 0
-    #define BIT_UNIX_LIKE 0
-    #define BIT_WIN_LIKE 0
-
-#elif defined(__hpux)
-    #define BIT_OS "hpux"
-    #define HPUX 1
-    #define BIT_UNIX_LIKE 1
-    #define BIT_WIN_LIKE 0
-
-#elif defined(_AIX)
-    #define BIT_OS "aix"
-    #define AIX 1
-    #define BIT_UNIX_LIKE 1
-    #define BIT_WIN_LIKE 0
-
-#elif defined(__CYGWIN__)
-    #define BIT_OS "cygwin"
-    #define CYGWIN 1
-    #define BIT_UNIX_LIKE 1
-    #define BIT_WIN_LIKE 0
-
-#elif defined(__VMS)
-    #define BIT_OS "vms"
-    #define VMS 1
-    #define BIT_UNIX_LIKE 0
-    #define BIT_WIN_LIKE 0
-
-#elif defined(VXWORKS)
-    /* VxWorks does not have a pre-defined symbol */
-    #define BIT_OS "vxworks"
-    #define BIT_UNIX_LIKE 0
-    #define BIT_WIN_LIKE 0
-#endif
-
-#if __WORDSIZE == 64 || __amd64 || __x86_64 || __x86_64__ || _WIN64
-    #define BIT_64 1
-    #define BIT_WORDSIZE 64
-#else
-    #define BIT_WORDSIZE 32
-#endif
-
-/*
-    Foundational types
- */
-#ifndef BIT_CHAR_LEN
-    #define BIT_CHAR_LEN 1
-#endif
-#if BIT_CHAR_LEN == 4
-    typedef int wchar;
-    #define UT(s) L ## s
-    #define UNICODE 1
-#elif BIT_CHAR_LEN == 2
-    typedef short wchar;
-    #define UT(s) L ## s
-    #define UNICODE 1
-#else
-    typedef char wchar;
-    #define UT(s) s
-#endif
-    #define TSZ(b) (sizeof(b) / sizeof(wchar))
-
-/********************************* O/S Includes *******************************/
-/*
-    Out-of-order definitions and includes. Order really matters in this section.
- */
-#if WINDOWS
-    #undef      _CRT_SECURE_NO_DEPRECATE
-    #define     _CRT_SECURE_NO_DEPRECATE 1
-    #undef      _CRT_SECURE_NO_WARNINGS
-    #define     _CRT_SECURE_NO_WARNINGS 1
-    #ifndef     _WIN32_WINNT
-        #define _WIN32_WINNT 0x501
-    #endif
-#endif
-
-/*
-    Use GNU extensions for:
-        RTLD_DEFAULT for dlsym()
- */
-#if LINUX
-    #define _GNU_SOURCE 1
-    #if !BIT_64
-        #define _LARGEFILE64_SOURCE 1
-        #define _FILE_OFFSET_BITS 64
-    #endif
-#endif
-
-#if VXWORKS
-    #ifndef _VSB_CONFIG_FILE
-        #define _VSB_CONFIG_FILE "vsbConfig.h"
-    #endif
-    #include    <vxWorks.h>
-    #define     HAS_USHORT 1
-#endif
-
-#if MACSOX
-    #define     HAS_USHORT 1
-    #define     HAS_UINT 1
-#endif
-
-#if WINDOWS
-    /* 
-        Work-around to allow the windows 7.* SDK to be used with VS 2012 
-     */
-    #if _MSC_VER >= 1700
-        #define SAL_SUPP_H
-        #define SPECSTRING_SUPP_H
-    #endif
-#endif
-
-#if BIT_WIN_LIKE
-    #include    <winsock2.h>
-    #include    <windows.h>
-    #include    <winbase.h>
-    #include    <winuser.h>
-    #include    <shlobj.h>
-    #include    <shellapi.h>
-    #include    <wincrypt.h>
-#endif
-
-#if WINDOWS
-    #include    <ws2tcpip.h>
-    #include    <conio.h>
-    #include    <process.h>
-    #include    <windows.h>
-    #include    <shlobj.h>
-    #if BIT_DEBUG
-        #include <crtdbg.h>
-    #endif
-#endif
-
-/*
-    Includes in alphabetic order
- */
-#if CYGWIN
-    #include    <arpa/inet.h>
-#endif
-
-    #include    <ctype.h>
-
-#if BIT_WIN_LIKE
-    #include    <direct.h>
-#else
-    #include    <dirent.h>
-#if !VXWORKS
-    #include    <dlfcn.h>
-#endif
-#endif
-
-    #include    <fcntl.h>
-    #include    <errno.h>
-
-#if BIT_FLOAT
-    #include    <float.h>
-    #define __USE_ISOC99 1
-    #include    <math.h>
-#endif
-
-#if BIT_UNIX_LIKE
-    #include    <grp.h> 
-#endif
-
-#if BIT_WIN_LIKE
-    #include    <io.h>
-#endif
-
-#if MACOSX || LINUX
-    #include    <libgen.h>
-#endif
-
-    #include    <limits.h>
-
-#if BIT_UNIX_LIKE || VXWORKS
-    #include    <netdb.h>
-    #include    <net/if.h>
-    #include    <netinet/in.h>
-    #include    <netinet/tcp.h>
-    #include    <netinet/ip.h>
-#endif
-
-#if BIT_UNIX_LIKE
-    #include    <pthread.h> 
-    #include    <pwd.h> 
-#if !CYGWIN
-    #include    <resolv.h>
-#endif
-#endif
-
-    #include    <setjmp.h>
-    #include    <signal.h>
-    #include    <stdarg.h>
-
-#if BIT_UNIX_LIKE
-    #include    <stdint.h>
-#endif
-
-    #include    <stdio.h>
-    #include    <stdlib.h>
-    #include    <string.h>
-
-#if BIT_UNIX_LIKE
-    #include    <syslog.h>
-#endif
-
-#if LINUX
-    #include    <sys/epoll.h>
-#endif
-
-#if BIT_UNIX_LIKE
-    #include    <sys/ioctl.h>
-    #include    <sys/mman.h>
-    #include    <sys/poll.h>
-#endif
-
-    #include    <sys/stat.h>
-
-#if LINUX
-    #include    <sys/prctl.h>
-#endif
-
-    #include    <sys/types.h>
-
-#if BIT_UNIX_LIKE
-    #include    <sys/resource.h>
-    #include    <sys/sem.h>
-    #include    <sys/socket.h>
-    #include    <sys/select.h>
-    #include    <sys/time.h>
-    #include    <sys/times.h>
-    #include    <sys/utsname.h>
-    #include    <sys/uio.h>
-    #include    <sys/wait.h>
-#endif
-
-    #include    <time.h>
-
-#if BIT_UNIX_LIKE
-    #include    <unistd.h>
-#endif
-
-#if !VXWORKS
-    #include    <wchar.h>
-#endif
-
-/*
-    Extra includes per O/S
- */
-#if CYGWIN
-    #include    "w32api/windows.h"
-    #include    "sys/cygwin.h"
-#endif
-
-#if LINUX && !__UCLIBC__
-    #include    <sys/sendfile.h>
-#endif
-
-#if MACOSX
-    #include    <stdbool.h>
-    #include    <mach-o/dyld.h>
-    #include    <mach-o/dyld.h>
-    #include    <mach/mach_init.h>
-    #include    <mach/mach_time.h>
-    #include    <mach/task.h>
-    #include    <sys/sysctl.h>
-    #include    <libkern/OSAtomic.h>
-#endif
-
-#if VXWORKS
-    #include    <vxWorks.h>
-    #include    <envLib.h>
-    #include    <iosLib.h>
-    #include    <loadLib.h>
-    #include    <selectLib.h>
-    #include    <sockLib.h>
-    #include    <inetLib.h>
-    #include    <ioLib.h>
-    #include    <pipeDrv.h>
-    #include    <hostLib.h>
-    #include    <sysSymTbl.h>
-    #include    <sys/fcntlcom.h>
-    #include    <tickLib.h>
-    #include    <taskHookLib.h>
-    #include    <unldLib.h>
-#if _WRS_VXWORKS_MAJOR >= 6
-    #include    <wait.h>
-#endif
-#if _WRS_VXWORKS_MAJOR > 6 || (_WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR >= 8)
-    #include    <symSync.h>
-    #include    <vxAtomicLib.h>
-#endif
-#endif
-
-/************************************** Defines *******************************/
-/*
-    Standard types
- */
-#ifndef HAS_BOOL
-    #ifndef __cplusplus
-        #if !MACOSX
-            #define HAS_BOOL 1
-            /**
-                Boolean data type.
-             */
-            typedef char bool;
-        #endif
-    #endif
-#endif
-
-#ifndef HAS_UCHAR
-    #define HAS_UCHAR 1
-    /**
-        Unsigned char data type.
-     */
-    typedef unsigned char uchar;
-#endif
-
-#ifndef HAS_SCHAR
-    #define HAS_SCHAR 1
-    /**
-        Signed char data type.
-     */
-    typedef signed char schar;
-#endif
-
-#ifndef HAS_CCHAR
-    #define HAS_CCHAR 1
-    /**
-        Constant char data type.
-     */
-    typedef const char cchar;
-#endif
-
-#ifndef HAS_CUCHAR
-    #define HAS_CUCHAR 1
-    /**
-        Unsigned char data type.
-     */
-    typedef const unsigned char cuchar;
-#endif
-
-#ifndef HAS_USHORT
-    #define HAS_USHORT 1
-    /**
-        Unsigned short data type.
-     */
-    typedef unsigned short ushort;
-#endif
-
-#ifndef HAS_CUSHORT
-    #define HAS_CUSHORT 1
-    /**
-        Constant unsigned short data type.
-     */
-    typedef const unsigned short cushort;
-#endif
-
-#ifndef HAS_CVOID
-    #define HAS_CVOID 1
-    /**
-        Constant void data type.
-     */
-    typedef const void cvoid;
-#endif
-
-#ifndef HAS_INT32
-    #define HAS_INT32 1
-    /**
-        Integer 32 bits data type.
-     */
-    typedef int int32;
-#endif
-
-#ifndef HAS_UINT32
-    #define HAS_UINT32 1
-    /**
-        Unsigned integer 32 bits data type.
-     */
-    typedef unsigned int uint32;
-#endif
-
-#ifndef HAS_UINT
-    #define HAS_UINT 1
-    /**
-        Unsigned integer (machine dependent bit size) data type.
-     */
-    typedef unsigned int uint;
-#endif
-
-#ifndef HAS_ULONG
-    #define HAS_ULONG 1
-    /**
-        Unsigned long (machine dependent bit size) data type.
-     */
-    typedef unsigned long ulong;
-#endif
-
-#ifndef HAS_SSIZE
-    #define HAS_SSIZE 1
-    #if BIT_UNIX_LIKE || VXWORKS || DOXYGEN
-        /**
-            Signed integer size field large enough to hold a pointer offset.
-         */
-        typedef ssize_t ssize;
-    #else
-        typedef SSIZE_T ssize;
-    #endif
-#endif
-
-#ifdef __USE_FILE_OFFSET64
-    #define BIT_HAS_OFF64 1
-#else
-    #define BIT_HAS_OFF64 0
-#endif
-
-/*
-    Windows uses uint for write/read counts (Ugh!)
- */
-#if BIT_WIN_LIKE
-    typedef uint wsize;
-#else
-    typedef ssize wsize;
-#endif
-
-#ifndef HAS_INT64
-    #if BIT_UNIX_LIKE
-        __extension__ typedef long long int int64;
-    #elif VXWORKS || DOXYGEN
-        /**
-            Integer 64 bit data type.
-         */
-        typedef long long int int64;
-    #elif BIT_WIN_LIKE
-        typedef __int64 int64;
-    #else
-        typedef long long int int64;
-    #endif
-#endif
-
-#ifndef HAS_UINT64
-    #if BIT_UNIX_LIKE
-        __extension__ typedef unsigned long long int uint64;
-    #elif VXWORKS || DOXYGEN
-        /**
-            Unsigned integer 64 bit data type.
-         */
-        typedef unsigned long long int uint64;
-    #elif BIT_WIN_LIKE
-        typedef unsigned __int64 uint64;
-    #else
-        typedef unsigned long long int uint64;
-    #endif
-#endif
-
-/**
-    Signed file offset data type. Supports large files greater than 4GB in size on all systems.
- */
-typedef int64 MprOff;
-
-#if DOXYGEN
-    typedef int MprSocklen;
-#elif VXWORKS
-    typedef int MprSocklen;
-#else
-    typedef socklen_t MprSocklen;
-#endif
-
-/**
-    Date and Time Service
-    @stability Stable
-    @see MprTime mprCompareTime mprCreateTimeService mprDecodeLocalTime mprDecodeUniversalTime mprFormatLocalTime 
-        mprFormatTm mprGetDate mprGetElapsedTicks mprGetRemainingTicks mprGetHiResTicks mprGetTimeZoneOffset mprMakeTime 
-        mprMakeUniversalTime mprParseTime 
-    @defgroup MprTime MprTime
- */
-typedef int64 MprTime;
-
-/**
-    Elapsed time data type. Stores time in milliseconds from some arbitrary start epoch.
- */
-typedef int64 MprTicks;
-
-#ifndef BITSPERBYTE
-    #define BITSPERBYTE     (8 * sizeof(char))
-#endif
-
-#ifndef BITS
-    #define BITS(type)      (BITSPERBYTE * (int) sizeof(type))
-#endif
-
-#if BIT_FLOAT
-    #ifndef MAXFLOAT
-        #if BIT_WIN_LIKE
-            #define MAXFLOAT        DBL_MAX
-        #else
-            #define MAXFLOAT        FLT_MAX
-        #endif
-    #endif
-    #if VXWORKS
-        #define isnan(n)  ((n) != (n))
-        #define isnanf(n) ((n) != (n))
-        #define isinf(n)  ((n) == (1.0 / 0.0) || (n) == (-1.0 / 0.0))
-        #define isinff(n) ((n) == (1.0 / 0.0) || (n) == (-1.0 / 0.0))
-    #endif
-    #if BIT_WIN_LIKE
-        #define isNan(f) (_isnan(f))
-    #elif VXWORKS || MACOSX || LINUX
-        #define isNan(f) (isnan(f))
-    #else
-        #define isNan(f) (fpclassify(f) == FP_NAN)
-    #endif
-#endif
-
-
-#ifndef MAXINT
-#if INT_MAX
-    #define MAXINT      INT_MAX
-#else
-    #define MAXINT      0x7fffffff
-#endif
-#endif
-
-#ifndef MAXINT64
-    #define MAXINT64    INT64(0x7fffffffffffffff)
-#endif
-
-#if SIZE_T_MAX
-    #define MAXSIZE     SIZE_T_MAX
-#elif BIT_64
-    #define MAXSIZE     INT64(0xffffffffffffffff)
-#else
-    #define MAXSIZE     MAXINT
-#endif
-
-#if SSIZE_T_MAX
-    #define MAXSSIZE     SSIZE_T_MAX
-#elif BIT_64
-    #define MAXSSIZE     INT64(0x7fffffffffffffff)
-#else
-    #define MAXSSIZE     MAXINT
-#endif
-
-#if OFF_T_MAX
-    #define MAXOFF       OFF_T_MAX
-#else
-    #define MAXOFF       INT64(0x7fffffffffffffff)
-#endif
-
-/*
-    Word size and conversions between integer and pointer.
- */
-#if BIT_64
-    #define ITOP(i)     ((void*) ((int64) i))
-    #define PTOI(i)     ((int) ((int64) i))
-    #define LTOP(i)     ((void*) ((int64) i))
-    #define PTOL(i)     ((int64) i)
-#else
-    #define ITOP(i)     ((void*) ((int) i))
-    #define PTOI(i)     ((int) i)
-    #define LTOP(i)     ((void*) ((int) i))
-    #define PTOL(i)     ((int64) (int) i)
-#endif
-
-#if BIT_WIN_LIKE
-    #define INT64(x)    (x##i64)
-    #define UINT64(x)   (x##Ui64)
-#else
-    #define INT64(x)    (x##LL)
-    #define UINT64(x)   (x##ULL)
-#endif
-
-#if BIT_WIN_LIKE
-    /*
-        This is the same for static and shared builds so *.exe on windows will have export symbols and
-        GetProcAddress can locate for dynmaic resolution of modules
-     */
-    #define PUBLIC      __declspec(dllexport)
-    #define PRIVATE     static
-#else
-    #define PUBLIC
-    #define PRIVATE     static
-#endif
-
-#ifndef max
-    #define max(a,b)  (((a) > (b)) ? (a) : (b))
-#endif
-#ifndef min
-    #define min(a,b)  (((a) < (b)) ? (a) : (b))
-#endif
-
-#ifndef PRINTF_ATTRIBUTE
-    #if (__GNUC__ >= 3) && !DOXYGEN && BIT_DEBUG && KEEP
-        /** 
-            Use gcc attribute to check printf fns.  a1 is the 1-based index of the parameter containing the format, 
-            and a2 the index of the first argument. Note that some gcc 2.x versions don't handle this properly 
-         */     
-        #define PRINTF_ATTRIBUTE(a1, a2) __attribute__ ((format (__printf__, a1, a2)))
-    #else
-        #define PRINTF_ATTRIBUTE(a1, a2)
-    #endif
-#endif
-
-/*
-    Optimize expression evaluation code depending if the value is likely or not
- */
-#undef likely
-#undef unlikely
-#if (__GNUC__ >= 3)
-    #define likely(x)   __builtin_expect(!!(x), 1)
-    #define unlikely(x) __builtin_expect(!!(x), 0)
-#else
-    #define likely(x)   (x)
-    #define unlikely(x) (x)
-#endif
-
-#if !__UCLIBC__ && !CYGWIN && __USE_XOPEN2K
-    #define BIT_HAS_SPINLOCK    1
-#endif
-
-#if BIT_HAS_DOUBLE_BRACES
-    #define  NULL_INIT    {{0}}
-#else
-    #define  NULL_INIT    {0}
-#endif
-
-#ifndef R_OK
-    #define R_OK    4
-    #define W_OK    2
-#if BIT_WIN_LIKE
-    #define X_OK    R_OK
-#else
-    #define X_OK    1
-#endif
-    #define F_OK    0
-#endif
-
-#if MACSOX
-    #define LD_LIBRARY_PATH "DYLD_LIBRARY_PATH"
-#else
-    #define LD_LIBRARY_PATH "LD_LIBRARY_PATH"
-#endif
-
-#if VXWORKS
-/*
-    Old VxWorks can't do array[]
- */
-#define MPR_FLEX 0
-#else
-#define MPR_FLEX
-#endif
-
-/*********************************** Fixups ***********************************/
-
-#if BIT_UNIX_LIKE || VXWORKS
-    #define MPR_TEXT        ""
-    #define MPR_BINARY      ""
-#endif
-
-#if BIT_UNIX_LIKE
-    #define closesocket(x)  close(x)
-    #define SOCKET_ERROR    -1
-    #ifndef PTHREAD_MUTEX_RECURSIVE_NP
-        #define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
-    #endif
-    #ifndef PTHREAD_MUTEX_RECURSIVE
-        #define PTHREAD_MUTEX_RECURSIVE PTHREAD_MUTEX_RECURSIVE_NP
-    #endif
-#endif
-
-#if !BIT_WIN_LIKE && !CYGWIN
-    #ifndef O_BINARY
-        #define O_BINARY    0
-    #endif
-    #ifndef O_TEXT
-        #define O_TEXT      0
-    #endif
-#endif
-
-#if !LINUX
-    #define __WALL          0
-#if !CYGWIN
-    #define MSG_NOSIGNAL    0
-#endif
-#endif
-
-#if MACOSX
-    /*
-        Fix for MAC OS X - getenv
-     */
-    #if !HAVE_DECL_ENVIRON
-        #ifdef __APPLE__
-            #include <crt_externs.h>
-            #define environ (*_NSGetEnviron())
-        #else
-            extern char **environ;
-        #endif
-    #endif
-#endif
-
-#if SOLARIS
-    #define INADDR_NONE     ((in_addr_t) 0xffffffff)
-#endif
-
-#if VXWORKS
-    #ifndef SHUT_RDWR
-        #define SHUT_RDWR 2
-    #endif
-
-    #define HAVE_SOCKLEN_T
-    #define getpid mprGetpid
-
-    #if _DIAB_TOOL
-        #define inline __inline__
-    #endif
-    #ifndef closesocket
-        #define closesocket(x)  close(x)
-    #endif
-    #ifndef va_copy
-        #define va_copy(d, s) ((d) = (s))
-    #endif
-    #ifndef strcasecmp
-        #define strcasecmp scaselesscmp
-    #endif
-    #ifndef strncasecmp
-        #define strncasecmp sncaselesscmp
-    #endif
-#endif
-
-#if BIT_WIN_LIKE
-    typedef int     uid_t;
-    typedef void    *handle;
-    typedef char    *caddr_t;
-    typedef long    pid_t;
-    typedef int     gid_t;
-    typedef ushort  mode_t;
-    typedef void    *siginfo_t;
-    typedef int     socklen_t;
-
-    #define HAVE_SOCKLEN_T
-    #define MSG_NOSIGNAL    0
-    #define MPR_BINARY      "b"
-    #define MPR_TEXT        "t"
-
-    /*
-        Error codes 
-     */
-    #define EPERM           1
-    #define ENOENT          2
-    #define ESRCH           3
-    #define EINTR           4
-    #define EIO             5
-    #define ENXIO           6
-    #define E2BIG           7
-    #define ENOEXEC         8
-    #define EBADF           9
-    #define ECHILD          10
-    #define EAGAIN          11
-    #define ENOMEM          12
-    #define EACCES          13
-    #define EFAULT          14
-    #define EOSERR          15
-    #define EBUSY           16
-    #define EEXIST          17
-    #define EXDEV           18
-    #define ENODEV          19
-    #define ENOTDIR         20
-    #define EISDIR          21
-    #define EINVAL          22
-    #define ENFILE          23
-    #define EMFILE          24
-    #define ENOTTY          25
-    #define EFBIG           27
-    #define ENOSPC          28
-    #define ESPIPE          29
-    #define EROFS           30
-    #define EMLINK          31
-    #define EPIPE           32
-    #define EDOM            33
-    #define ERANGE          34
-
-    #ifndef EWOULDBLOCK
-    #define EWOULDBLOCK     EAGAIN
-    #define EINPROGRESS     36
-    #define EALREADY        37
-    #define ENETDOWN        43
-    #define ECONNRESET      44
-    #define ECONNREFUSED    45
-    #define EADDRNOTAVAIL   49
-    #define EISCONN         56
-    #define EADDRINUSE      46
-    #define ENETUNREACH     51
-    #define ECONNABORTED    53
-    #endif
-
-    #undef SHUT_RDWR
-    #define SHUT_RDWR       2
-    
-    #define TIME_GENESIS UINT64(11644473600000000)
-    #define va_copy(d, s) ((d) = (s))
-
-    #if !WINCE
-    #define access      _access
-    #define chdir       _chdir
-    #define chmod       _chmod
-    #define close       _close
-    #define fileno      _fileno
-    #define fstat       _fstat
-    #define getcwd      _getcwd
-    #define getpid      _getpid
-    #define gettimezone _gettimezone
-    #define lseek       _lseek
-    #define mkdir(a,b)  _mkdir(a)
-    #define open        _open
-    #define putenv      _putenv
-    #define read        _read
-    #define rmdir(a)    _rmdir(a)
-    #define stat        _stat
-    #define strdup      _strdup
-    #define umask       _umask
-    #define unlink      _unlink
-    #define write       _write
-    #endif
-    #define strcasecmp scaselesscmp
-    #define strncasecmp sncaselesscmp
-#endif /* WIN_LIKE */
-
-#if WINCE
-    typedef void FILE;
-    typedef int off_t;
-
-    #ifndef EOF
-        #define EOF        -1
-    #endif
-
-    #define O_RDONLY        0
-    #define O_WRONLY        1
-    #define O_RDWR          2
-    #define O_NDELAY        0x4
-    #define O_NONBLOCK      0x4
-    #define O_APPEND        0x8
-    #define O_CREAT         0x100
-    #define O_TRUNC         0x200
-    #define O_TEXT          0x400
-    #define O_EXCL          0x800
-    #define O_BINARY        0x1000
-
-    /*
-        stat flags
-     */
-    #define S_IFMT          0170000 
-    #define S_IFDIR         0040000
-    #define S_IFCHR         0020000         /* character special */
-    #define S_IFIFO         0010000
-    #define S_IFREG         0100000
-    #define S_IREAD         0000400
-    #define S_IWRITE        0000200
-    #define S_IEXEC         0000100
-
-    #ifndef S_ISDIR
-        #define S_ISDIR(X) (((X) & S_IFMT) == S_IFDIR)
-    #endif
-    #ifndef S_ISREG
-        #define S_ISREG(X) (((X) & S_IFMT) == S_IFREG)
-    #endif
-
-    #define STARTF_USESHOWWINDOW 0
-    #define STARTF_USESTDHANDLES 0
-
-    #define BUFSIZ   MPR_BUFSIZE
-    #define PATHSIZE MPR_MAX_PATH
-    #define gethostbyname2(a,b) gethostbyname(a)
-#endif /* WINCE */
-
-/*********************************** Externs **********************************/
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#if LINUX
-    /*
-        For some reason it is removed from fedora 6 pthreads.h and only comes in for UNIX96
-     */
-    extern int pthread_mutexattr_gettype (__const pthread_mutexattr_t *__restrict
-        __attr, int *__restrict __kind) __THROW;
-    extern int pthread_mutexattr_settype (pthread_mutexattr_t *__attr, int __kind) __THROW;
-    extern char **environ;
-#endif
-
-#if VXWORKS
-    PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz);
-    PUBLIC uint mprGetpid();
-    PUBLIC char *strdup(const char *);
-    PUBLIC int sysClkRateGet();
-
-    #if _WRS_VXWORKS_MAJOR < 6
-        #define NI_MAXHOST      128
-        extern STATUS access(cchar *path, int mode);
-        typedef int     socklen_t;
-        struct sockaddr_storage {
-            char        pad[1024];
-        };
-    #else
-        /*
-            This may or may not be necessary - let us know dev@embedthis.com if your system needs this (and why).
-         */
-        #if _DIAB_TOOL
-            #if BIT_CPU_ARCH == MPR_CPU_PPC
-                #define __va_copy(dest, src) memcpy((dest), (src), sizeof(va_list))
-            #endif
-        #endif
-        #define HAVE_SOCKLEN_T
-    #endif
-#endif  /* VXWORKS */
-
-#if BIT_WIN_LIKE
-    struct timezone {
-      int  tz_minuteswest;      /* minutes W of Greenwich */
-      int  tz_dsttime;          /* type of dst correction */
-    };
-    PUBLIC int  getuid(void);
-    PUBLIC int  geteuid(void);
-    PUBLIC int  gettimeofday(struct timeval *tv, struct timezone *tz);
-    PUBLIC long lrand48(void);
-    PUBLIC long nap(long);
-    PUBLIC void srand48(long);
-    PUBLIC long ulimit(int, ...);
-#endif
-
-#if WINCE
-    struct stat {
-        int     st_dev;
-        int     st_ino;
-        ushort  st_mode;
-        short   st_nlink;
-        short   st_uid;
-        short   st_gid;
-        int     st_rdev;
-        long    st_size;
-        time_t  st_atime;
-        time_t  st_mtime;
-        time_t  st_ctime;
-    };
-
-    extern int access(cchar *filename, int flags);
-    extern int chdir(cchar   dirname);
-    extern int chmod(cchar *path, int mode);
-    extern int close(int handle);
-    extern void exit(int status);
-    extern long _get_osfhandle(int handle);
-    extern char *getcwd(char* buffer, int maxlen);
-    extern char *getenv(cchar *charstuff);
-    extern uint getpid();
-    extern long lseek(int handle, long offset, int origin);
-    extern int mkdir(cchar *dir, int mode);
-    extern time_t mktime(struct tm *pt);
-    extern int _open_osfhandle(int *handle, int flags);
-    extern uint open(cchar *file, int mode,...);
-    extern int read(int handle, void *buffer, uint count);
-    extern int rename(cchar *from, cchar *to);
-    extern int rmdir(cchar   dir);
-    extern uint sleep(uint secs);
-    extern int stat(cchar *path, struct stat *stat);
-    extern char *strdup(char *s);
-    extern int write(int handle, cvoid *buffer, uint count);
-    extern int umask(int mode);
-    extern int unlink(cchar *path);
-    extern int errno;
-
-    #undef CreateFile
-    #define CreateFile CreateFileA
-    WINBASEAPI HANDLE WINAPI CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
-        LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
-        HANDLE hTemplateFile);
-
-    #undef CreateProcess
-    #define CreateProcess CreateProcessA
-
-    #undef FindFirstFile
-    #define FindFirstFile FindFirstFileA
-    WINBASEAPI HANDLE WINAPI FindFirstFileA(LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData);
-
-    #undef FindNextFile
-    #define FindNextFile FindNextFileA
-    WINBASEAPI BOOL WINAPI FindNextFileA(HANDLE hFindFile, LPWIN32_FIND_DATAA lpFindFileData);
-
-    #undef GetModuleFileName
-    #define GetModuleFileName GetModuleFileNameA
-    WINBASEAPI DWORD WINAPI GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
-
-    #undef GetModuleHandle
-    #define GetModuleHandle GetModuleHandleA
-    WINBASEAPI HMODULE WINAPI GetModuleHandleA(LPCSTR lpModuleName);
-
-    #undef GetProcAddress
-    #define GetProcAddress GetProcAddressA
-
-    #undef GetFileAttributes
-    #define GetFileAttributes GetFileAttributesA
-    extern DWORD GetFileAttributesA(cchar *path);
-
-    extern void GetSystemTimeAsFileTime(FILETIME *ft);
-
-    #undef LoadLibrary
-    #define LoadLibrary LoadLibraryA
-    HINSTANCE WINAPI LoadLibraryA(LPCSTR lpLibFileName);
-
-    #define WSAGetLastError GetLastError
-
-    #define _get_timezone getTimezone
-    extern int getTimezone(int *secs);
-
-    extern struct tm *localtime_r(const time_t *when, struct tm *tp);
-    extern struct tm *gmtime_r(const time_t *t, struct tm *tp);
-#endif /* WINCE */
-
-#ifdef __cplusplus
-}
-#endif
-
-/*********************************** Forwards *********************************/
+/*********************************** Defines **********************************/
 
 #ifdef __cplusplus
 extern "C" {
@@ -1245,102 +69,55 @@ struct  MprWorker;
 struct  MprWorkerService;
 struct  MprXml;
 
-/******************************* Tunable Constants ****************************/
+#ifndef BIT_MPR_LOGGING
+    #define BIT_MPR_LOGGING 1           /**< Default for logging is "on" */
+#endif
+#ifndef BIT_MPR_TRACING
+    #if BIT_DEBUG
+        #define BIT_MPR_TRACING 1       /**< Tracing is on in debug builds */
+    #else
+        #define BIT_MPR_TRACING 0
+    #endif
+#endif
 /*
-    Build tuning
+    Reduce size allocations to reduce memory usage
  */
-#define MPR_TUNE_SIZE       1       /**< Tune for size */
-#define MPR_TUNE_BALANCED   2       /**< Tune balancing speed and size */
-#define MPR_TUNE_SPEED      3       /**< Tune for speed, program will use memory more aggressively */
+#ifndef BIT_MAX_FNAME
+    #define BIT_MAX_FNAME      256          /**< Reasonable filename size */
+#endif
+#ifndef BIT_MAX_PATH
+    #define BIT_MAX_PATH       1024         /**< Reasonable filename size */
+#endif
+#ifndef BIT_MAX_BUFFER
+    #define BIT_MAX_BUFFER     4096         /**< Reasonable size for buffers */
+#endif
+#ifndef BIT_MAX_ARGC
+    #define BIT_MAX_ARGC       32           /**< Maximum number of command line args if using MAIN()*/
+#endif
 
+
+#ifndef BIT_MPR_THREAD_STACK
 #if BIT_HAS_MMU
     /* 
         If the system supports virtual memory, then stack size should use system default. Only used pages will
         actually consume memory 
      */
-    #define MPR_DEFAULT_STACK       (0)           /**< Default thread stack size (0 means use system default) */
+    #define BIT_MPR_THREAD_STACK    0               /**< Default thread stack size (0 means use system default) */
 #else
     /* 
         No MMU, so the stack size actually consumes memory. Set this as low as possible. 
         NOTE: php and ejs use stack heavily.
      */
-    #define MPR_DEFAULT_STACK       (128 * 1024)   /**< Default thread stack size (0 means use system default) */
+    #define BIT_MPR_THREAD_STACK    (128 * 1024)    /**< Default thread stack size (0 means use system default) */
+#endif
 #endif
 
-#if BIT_TUNE == MPR_TUNE_SIZE || DOXYGEN
-    /*
-        Reduce size allocations to reduce memory usage
-     */
-    #define MPR_MAX_FNAME           256           /**< Reasonable filename size */
-    #define MPR_MAX_PATH            512           /**< Reasonable path name size */
-    #define MPR_MAX_URL             512           /**< Max URL size. Also request URL size. */
-    #define MPR_MAX_STRING          1024          /**< Maximum (stack) string size */
-    #define MPR_MAX_LOG             (8 * 1024)    /**< Maximum log message size (impacts stack) */
-    #define MPR_SMALL_ALLOC         256           /**< Default small. Used in printf. */
-    #define MPR_DEFAULT_HASH_SIZE   23            /**< Default size of hash table */ 
-    #define MPR_BUFSIZE             4096          /**< Reasonable size for buffers */
-    #define MPR_BUF_INCR            4096          /**< Default buffer growth inc */
-    #define MPR_EPOLL_SIZE          32            /**< Epoll backlog */
-    #define MPR_MAX_BUF             4194304       /**< Max buffer size */
-    #define MPR_XML_BUFSIZE         4096          /**< XML read buffer size */
-    #define MPR_SSL_BUFSIZE         4096          /**< SSL has 16K max*/
-    #define MPR_LIST_INCR           8             /**< Default list growth inc */
-    #define MPR_FILES_HASH_SIZE     29            /**< Hash size for rom file system */
-    #define MPR_TIME_HASH_SIZE      67            /**< Hash size for time token lookup */
-    #define MPR_MEM_REGION_SIZE     (128 * 1024)  /**< Memory allocation chunk size */
-    #define MPR_GC_LOW_MEM          (32 * 1024)   /**< Free memory low water mark before invoking GC */
-    #define MPR_NEW_QUOTA           (4 * 1024)    /**< Number of new allocations before a GC is worthwhile */
-    #define MPR_GC_WORKERS          0             /**< Run garbage collection non-concurrently */
-    
-#elif BIT_TUNE == MPR_TUNE_BALANCED
-    /*
-        Tune balancing speed and size
-     */
-    #define MPR_MAX_FNAME           256
-    #define MPR_MAX_PATH            1024
-    #define MPR_MAX_URL             2048
-    #define MPR_MAX_STRING          2048
-    #define MPR_MAX_LOG             (32 * 1024)
-    #define MPR_SMALL_ALLOC         512
-    #define MPR_DEFAULT_HASH_SIZE   43
-    #define MPR_BUFSIZE             4096
-    #define MPR_BUF_INCR            4096
-    #define MPR_MAX_BUF             -1
-    #define MPR_EPOLL_SIZE          64
-    #define MPR_XML_BUFSIZE         4096
-    #define MPR_SSL_BUFSIZE         4096
-    #define MPR_LIST_INCR           16
-    #define MPR_FILES_HASH_SIZE     61
-    #define MPR_TIME_HASH_SIZE      89
-    #define MPR_MEM_REGION_SIZE     (256 * 1024)
-    #define MPR_GC_LOW_MEM          (64 * 1024)
-    #define MPR_NEW_QUOTA           (16 * 1024) 
-    #define MPR_GC_WORKERS          1
-    
-#else
-    /*
-        Tune for speed
-     */
-    #define MPR_MAX_FNAME           1024
-    #define MPR_MAX_PATH            2048
-    #define MPR_MAX_URL             4096
-    #define MPR_MAX_LOG             (64 * 1024)
-    #define MPR_MAX_STRING          4096
-    #define MPR_SMALL_ALLOC         1024
-    #define MPR_DEFAULT_HASH_SIZE   97
-    #define MPR_BUFSIZE             8192
-    #define MPR_MAX_BUF             -1
-    #define MPR_EPOLL_SIZE          128
-    #define MPR_XML_BUFSIZE         4096
-    #define MPR_SSL_BUFSIZE         8192
-    #define MPR_LIST_INCR           16
-    #define MPR_BUF_INCR            1024
-    #define MPR_FILES_HASH_SIZE     61
-    #define MPR_TIME_HASH_SIZE      97
-    #define MPR_MEM_REGION_SIZE     (1024 * 1024)
-    #define MPR_GC_LOW_MEM          (512 * 1024)
-    #define MPR_NEW_QUOTA           (32 * 1024) 
-    #define MPR_GC_WORKERS          2
+#if DEPRECATED || 1
+    /* Remove in 4.4 */
+    #define MPR_MAX_STRING      BIT_MAX_BUFFER
+    #define MPR_MAX_PATH        BIT_MAX_PATH
+    #define MPR_MAX_FNAME       BIT_MAX_FNAME
+    #define MPR_BUFSIZE         BIT_MAX_BUFFER
 #endif
 
 /*
@@ -1362,16 +139,10 @@ struct  MprXml;
 /*
     Select wakeup port. Port can be any free port number. If this is not free, the MPR will use the next free port.
  */
-#define MPR_DEFAULT_BREAK_PORT  9473
+#ifndef BIT_WAKEUP_PORT
+    #define BIT_WAKEUP_PORT     9473
+#endif
 #define MPR_FD_MIN              32
-
-/* 
-    Longest IPv6 is XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX (40 bytes with null) 
- */ 
-#define MPR_MAX_IP_NAME         1024
-#define MPR_MAX_IP_ADDR         1024
-#define MPR_MAX_IP_PORT         8
-#define MPR_MAX_IP_ADDR_PORT    1024
 
 /*
     Signal sent on Unix to break out of a select call.
@@ -1420,7 +191,6 @@ struct  MprXml;
 #define MPR_TICKS_PER_SEC       1000        /**< Time ticks per second */
 #define MPR_MAX_TIMEOUT         MAXINT
 
-
 /*
     Default thread counts
  */
@@ -1441,7 +211,6 @@ struct  MprXml;
 /*
     Other tunable constants
  */
-#define MPR_MAX_ARGC            32           /**< Reasonable max of args for MAIN */
 #define MPR_TEST_POLL_NAP       25
 #define MPR_TEST_SLEEP          (60 * 1000)
 #define MPR_TEST_MAX_STACK      16
@@ -1463,10 +232,10 @@ struct  MprXml;
 /*
     Event notification mechanism
  */
-#if LINUX || FREEBSD
-    #define MPR_EVENT_EPOLL     1
-#elif MACOSX || SOLARIS
+#if MACOSX || SOLARIS
     #define MPR_EVENT_KQUEUE    1
+#elif LINUX || BIT_BSD_LIKE
+    #define MPR_EVENT_EPOLL     1
 #elif VXWORKS || WINCE || CYGWIN
     #define MPR_EVENT_SELECT    1
 #elif WINDOWS
@@ -1533,33 +302,30 @@ struct  MprXml;
 #define MPR_ERROR           1           /**< Hard error trace level */
 #define MPR_WARN            2           /**< Soft warning trace level */
 #define MPR_CONFIG          2           /**< Configuration settings trace level. */
-#define MPR_INFO            3           /**< Informational trace only */
-#define MPR_DEBUG           4           /**< Debug information trace level */
 #define MPR_VERBOSE         9           /**< Highest level of trace */
 #define MPR_LEVEL_MASK      0xf         /**< Level mask */
 
-/*
-    Error source flags
- */
-#define MPR_ERROR_SRC       0x10        /**< Originated from mprError */
-#define MPR_WARN_SRC        0x20        /**< Originated from mprWarn */
-#define MPR_LOG_SRC         0x40        /**< Originated from mprLog */
-#define MPR_ASSURE_SRC      0x80        /**< Originated from assure / mprAssure  */
-#define MPR_FATAL_SRC       0x100       /**< Fatal error. Log and exit */
+//  Removed in 4.3
+#if DEPRECATED
+#define MPR_INFO            3           /**< Informational trace only */
+#define MPR_DEBUG           4           /**< Debug information trace level */
+#endif
 
 /*
-    Log message type flags. Specify what kind of log / error message it is. Listener handlers examine this flag
-    to determine if they should process the message. Assert messages are trapped when in DEV mode. Otherwise ignored.
+    Log message flags
  */
-#define MPR_LOG_MSG         0x1000      /* Log trace message - not an error */
-#define MPR_ERROR_MSG       0x2000      /* General error */
-#define MPR_ASSERT_MSG      0x4000      /* Assert flags -- trap in debugger */
-#define MPR_USER_MSG        0x8000      /* User message */
+#define MPR_ASSERT_MSG      0x10        /**< Originated from assert */
+#define MPR_ERROR_MSG       0x20        /**< Originated from mprError */
+#define MPR_INFO_MSG        0x40        /**< Originated from mprInfo */
+#define MPR_LOG_MSG         0x80        /**< Originated from mprLog */
+#define MPR_RAW_MSG         0x100       /**< Raw message output */
+#define MPR_TRACE_MSG       0x200       /**< Originated from mprTrace */
+#define MPR_WARN_MSG        0x400       /**< Originated from mprWarn */
 
-/*
-    Log output modifiers
- */
-#define MPR_RAW             0x1000      /**< Raw trace output */
+//  Removed in 4.3
+#if DEPRECATED || 1
+#define MPR_FATAL_MSG       0x800       /**< Fatal error, log and exit */
+#endif
 
 /*
     Error line number information.
@@ -1580,14 +346,14 @@ struct  MprXml;
         static int innerMain(int argc, char **argv, char **envp); \
         int name(char *arg0, ...) { \
             va_list args; \
-            char *argp, *largv[MPR_MAX_ARGC]; \
+            char *argp, *largv[BIT_MAX_ARGC]; \
             int largc = 0; \
             va_start(args, arg0); \
             largv[largc++] = #name; \
             if (arg0) { \
                 largv[largc++] = arg0; \
             } \
-            for (argp = va_arg(args, char*); argp && largc < MPR_MAX_ARGC; argp = va_arg(args, char*)) { \
+            for (argp = va_arg(args, char*); argp && largc < BIT_MAX_ARGC; argp = va_arg(args, char*)) { \
                 largv[largc++] = argp; \
             } \
             return innerMain(largc, largv, NULL); \
@@ -1596,10 +362,10 @@ struct  MprXml;
 #elif BIT_WIN_LIKE
     #define MAIN(name, _argc, _argv, _envp)  \
         APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2) { \
-            extern int main(); \
-            char *largv[MPR_MAX_ARGC]; \
+            PUBLIC int main(); \
+            char *largv[BIT_MAX_ARGC]; \
             int largc; \
-            largc = mprParseArgs(command, &largv[1], MPR_MAX_ARGC - 1); \
+            largc = mprParseArgs(command, &largv[1], BIT_MAX_ARGC - 1); \
             largv[0] = #name; \
             main(largc, largv, NULL); \
         } \
@@ -1622,6 +388,11 @@ struct  MprXml;
     #define MPR_INLINE inline
 #endif
 
+/**
+    Elapsed time data type. Stores time in milliseconds from some arbitrary start epoch.
+ */
+typedef Ticks MprTicks;
+
 /************************************** Debug *********************************/
 /**
     Trigger a breakpoint.
@@ -1632,21 +403,28 @@ struct  MprXml;
 PUBLIC void mprBreakpoint();
 
 #if DOXYGEN
+#undef assert
 /**
-    Assure that an assert condition is true
+    Assert that a condition is true
     @param cond Boolean result of a conditional test
     @ingroup Mpr
     @stability evolving
  */
-PUBLIC void assure(bool cond);
-#elif BIT_ASSERT
-    //  mprAssert is DEPRECATED
-    #define mprAssert(C)    if (C) ; else mprAssure(MPR_LOC, #C)
-    #define assure(C)       if (C) ; else mprAssure(MPR_LOC, #C)
+PUBLIC void assert(bool cond);
+#elif BIT_MPR_TRACING
+    #undef assert
+    //  Removed in 4.3
+    #if DEPRECATED || 1
+        #define mprAssure(C)    if (C) ; else mprAssert(MPR_LOC, #C)
+    #endif
+    #define assert(C)       if (C) ; else mprAssert(MPR_LOC, #C)
 #else
-    //  mprAssert is DEPRECATED
-    #define mprAssert(C)    if (C) ; else
-    #define assure(C)       if (1) ; else
+    #undef assert
+    //  Removed in 4.3
+    #if DEPRECATED || 1
+        #define mprAssure(C)    if (C) ; else
+    #endif
+    #define assert(C)       if (1) ; else
 #endif
 
 /*********************************** Thread Sync ******************************/
@@ -2049,7 +827,7 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     Alignment bit sizes for the allocator. Blocks are aligned on 4 byte boundaries for 32 bits systems and 8 byte 
     boundaries for 64 bit systems and those systems that require doubles to be 8 byte aligned.
  */
-#if !BIT_64 && !(MPR_CPU_MIPS)
+#if !BIT_64 && !(BIT_CPU_MIPS)
     #define MPR_ALIGN               4
     #define MPR_ALIGN_SHIFT         2
 #else
@@ -2847,7 +1625,7 @@ PUBLIC int  mprSyncThreads(MprTicks timeout);
     @description The MPR provides a suite of safe ascii string manipulation routines to help prevent buffer overflows
         and other potential security traps.
     @defgroup MprString MprString
-    @see MprString itos itosradix itosbuf mprPrintf mprPrintfError scamel scaselesscmp scaselessmatch schr 
+    @see MprString itos itosradix itosbuf mprEprintf mprPrintf scamel scaselesscmp scaselessmatch schr 
         sclone scmp scontains scopy sends sfmt sfmtv shash shashlower sjoin sjoinv slen slower smatch sncaselesscmp snclone
         sncmp sncopy snumber spascal spbrk srchr srejoin srejoinv sreplace sspn sstarts ssub stemplate stoi stoiradix
         stok strim supper sncontains mprFprintf fmtv fmt
@@ -3257,8 +2035,8 @@ PUBLIC char *srejoinv(char *buf, va_list args);
 /*
     Replace a pattern in a string
     @param str String to examine
-    @param pattern Pattern to search for
-    @param replacmenet Replacement pattern
+    @param pattern Pattern to search for. Can be null in which case the str is cloned.
+    @param replacement Replacement pattern. If replacement is null, the pattern is removed.
     @return A new allocated string
     @ingroup MprString
     @stability Evolving
@@ -3322,7 +2100,7 @@ PUBLIC int64 stoiradix(cchar *str, int radix, int *err);
     Tokenize a string
     @description Split a string into tokens.
     @param str String to tokenize.
-    @param delim String of characters to use as token separators.
+    @param delim Set of characters that are used as token separators.
     @param last Last token pointer.
     @return Returns a pointer to the next token.
     @ingroup MprString
@@ -3408,6 +2186,7 @@ PUBLIC uint     whashlower(wchar *name, ssize len);
 PUBLIC wchar    *wjoin(wchar *sep, ...);
 PUBLIC wchar    *wjoinv(wchar *sep, va_list args);
 PUBLIC ssize    wlen(wchar *s);
+#endif
 
 PUBLIC wchar    *wlower(wchar *s);
 PUBLIC int      wncaselesscmp(wchar *s1, wchar *s2, ssize len);
@@ -3425,7 +2204,6 @@ PUBLIC int64    wtoiradix(wchar *str, int radix, int *err);
 PUBLIC wchar    *wtok(wchar *str, wchar *delim, wchar **last);
 PUBLIC wchar    *wtrim(wchar *str, wchar *set, int where);
 PUBLIC wchar    *wupper(wchar *s);
-#endif
 
 #else
 
@@ -3497,7 +2275,7 @@ PUBLIC wchar    *mtok(wchar *str, cchar *delim, wchar **last);
 PUBLIC wchar    *mtrim(wchar *str, cchar *set, int where);
 #endif
 
-#else
+#else /* BIT_CHAR_LEN <= 1 */
 
 #define mcaselesscmp(s1, s2)            scaselesscmp(s1, s2)
 #define mcmp(s1, s2)                    scmp(s1, s2)
@@ -3520,7 +2298,7 @@ PUBLIC wchar    *mtrim(wchar *str, cchar *set, int where);
 #define mtok(str, delim, last)          stok(str, delim, last)
 #define mtrim(str, set, where)          strim(str, set, where)
 
-#endif /* BIT_CHAR_LEN > 1 */
+#endif /* BIT_CHAR_LEN <= 1 */
 
 /************************************ Formatting ******************************/
 /**
@@ -3532,18 +2310,7 @@ PUBLIC wchar    *mtrim(wchar *str, cchar *set, int where);
     @ingroup MprString
     @stability Evolving
  */
-PUBLIC ssize mprPrintfError(cchar *fmt, ...);
-
-/**
-    Formatted print. This is a secure verion of printf that can handle null args.
-    @description This is a secure replacement for printf. It can handle null arguments without crashes.
-    @param fmt Printf style format string
-    @param ... Variable arguments to format
-    @return Returns the number of bytes written
-    @ingroup MprString
-    @stability Evolving
- */
-PUBLIC ssize mprPrintf(cchar *fmt, ...);
+PUBLIC ssize mprEprintf(cchar *fmt, ...);
 
 /**
     Print a formatted message to a file descriptor
@@ -3558,13 +2325,23 @@ PUBLIC ssize mprPrintf(cchar *fmt, ...);
  */
 PUBLIC ssize mprFprintf(struct MprFile *file, cchar *fmt, ...);
 
-//  DEPRECATED
+/**
+    Formatted print. This is a secure verion of printf that can handle null args.
+    @description This is a secure replacement for printf. It can handle null arguments without crashes.
+    @param fmt Printf style format string
+    @param ... Variable arguments to format
+    @return Returns the number of bytes written
+    @ingroup MprString
+    @stability Evolving
+ */
+PUBLIC ssize mprPrintf(cchar *fmt, ...);
+
+#if DEPRECATED
 /**
     Format a string into an allocated buffer.
     @description This call will dynamically allocate a buffer up to the specified maximum size and will format the 
         supplied arguments into the buffer.  A trailing null will always be appended. The call returns
-        the size of the allocated string excluding the null.
-        This call is deprecated. Use #sfmt instead.
+        the allocated string. This call is deprecated. Use #sfmt instead.
     @param fmt Printf style format string
     @param ... Variable arguments to format
     @return Returns the number of characters in the string.
@@ -3574,13 +2351,11 @@ PUBLIC ssize mprFprintf(struct MprFile *file, cchar *fmt, ...);
  */
 PUBLIC char *mprAsprintf(cchar *fmt, ...);
 
-//  DEPRECATED
 /**
     Allocate a buffer of sufficient length to hold the formatted string.
     @description This call will dynamically allocate a buffer up to the specified maximum size and will format 
-        the supplied arguments into the buffer. A trailing null will always be appended. The call returns
-        the size of the allocated string excluding the null.
-        This call is deprecated. Use #sfmtv instead.
+        the supplied arguments into the buffer. A trailing null will always be appended. The call returns the
+        allocated string. This call is deprecated. Use #sfmtv instead.
     @param fmt Printf style format string
     @param arg Varargs argument obtained from va_start.
     @return Returns the number of characters in the string.
@@ -3589,6 +2364,30 @@ PUBLIC char *mprAsprintf(cchar *fmt, ...);
     @stability Deprecated
  */
 PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg);
+#else
+    //  Removed in 4.3
+    #define mprAsprintf sfmt
+    #define mprAsprintfv sfmtv
+#endif
+
+/*
+    Internal
+ */
+/**
+    Format a string into a buffer.
+    @description This routine will format the arguments into a result. If a buffer is supplied, it will be used. Otherwise
+        if the buf argument is NULL, a buffer will be allocated. The arguments will be formatted up to the maximum
+        size supplied by the maxsize argument.  A trailing null will always be appended. 
+    @param buf Optional buffer to contain the formatted result
+    @param maxsize Maximum size of the result
+    @param fmt Printf style format string
+    @param args Variable arguments to format
+    @return Returns the number of characters in the string.
+    @ingroup MprString
+    @internal
+    @stability Deprecated
+ */
+PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *fmt, va_list args);
 
 /********************************* Floating Point *****************************/
 #if BIT_FLOAT
@@ -3919,7 +2718,6 @@ PUBLIC ssize mprPutBlockToBuf(MprBuf *buf, cchar *ptr, ssize size);
  */
 PUBLIC int mprPutCharToBuf(MprBuf *buf, int c);
 
-//  MOB - rename mprPutBuf
 /**
     Put a formatted string to the buffer.
     @description Format a string and append to the buffer at the end position and increment the end pointer.
@@ -3930,7 +2728,12 @@ PUBLIC int mprPutCharToBuf(MprBuf *buf, int c);
     @ingroup MprBuf
     @stability Evolving.
  */
-PUBLIC ssize mprPutFmtToBuf(MprBuf *buf, cchar *fmt, ...);
+PUBLIC ssize mprPutToBuf(MprBuf *buf, cchar *fmt, ...);
+
+//  Renamed in 4.3
+#if DEPRECATED
+    #define mprPutFmtToBuf mprPutToBuf
+#endif
 
 /**
     Put an integer to the buffer.
@@ -4036,8 +2839,8 @@ PUBLIC void mprSetBufRefillProc(MprBuf *buf, MprBufProc fn, void *arg);
  */
 PUBLIC int mprSetBufSize(MprBuf *buf, ssize size, ssize maxSize);
 
-#if KEEP
 #if DOXYGEN || BIT_CHAR_LEN > 1
+#if KEEP
 /**
     Add a wide null character to the buffer contents.
     @description Add a null character but do not change the buffer content lengths. The null is added outside the
@@ -4082,8 +2885,8 @@ PUBLIC ssize mprPutStringToWideBuf(MprBuf *buf, cchar *str);
     @stability prototype
  */
 PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
-#endif
 
+#endif /* KEEP */
 #else /* BIT_CHAR_LEN == 1 */
 
 #define mprAddNullToWideBuf     mprAddNullToBuf
@@ -4117,6 +2920,17 @@ PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
     Date format for use in HTTP (headers)
  */
 #define MPR_HTTP_DATE       "%a, %d %b %Y %T GMT"
+
+/********************************** Defines ***********************************/
+/**
+    Date and Time Service
+    @stability Stable
+    @see MprTime mprCompareTime mprCreateTimeService mprDecodeLocalTime mprDecodeUniversalTime mprFormatLocalTime 
+        mprFormatTm mprGetDate mprGetElapsedTicks mprGetRemainingTicks mprGetHiResTicks mprGetTimeZoneOffset mprMakeTime 
+        mprMakeUniversalTime mprParseTime 
+    @defgroup MprTime MprTime
+ */
+typedef Time MprTime;
 
 /**
     Mpr time structure.
@@ -4233,13 +3047,13 @@ PUBLIC char *mprGetDate(char *fmt);
  */
 PUBLIC uint64 mprGetHiResTicks();
 
-#if (LINUX || MACOSX || WINDOWS) && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
+#if (LINUX || MACOSX || WINDOWS) && (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
     #define MPR_HIGH_RES_TIMER 1
 #else
     #define MPR_HIGH_RES_TIMER 0
 #endif
 
-#if BIT_DEBUG
+#if BIT_LOGGING
     #if MPR_HIGH_RES_TIMER
         #define MPR_MEASURE(level, tag1, tag2, op) \
             if (1) { \
@@ -4459,7 +3273,9 @@ PUBLIC int mprCopyListContents(MprList *dest, MprList *src);
     Create a list.
     @description Creates an empty list. MprList's can store generic pointers. They automatically grow as 
         required when items are added to the list.
-    @param size Initial capacity of the list.
+    @param size Initial capacity of the list. Set to < 0 to get a growable list with a default initial size.
+        Set to 0 to to create the list but without any initial list storage. Then call mprSetListLimits to define
+        the initial and maximum list size.
     @param flags Control flags. Possible values are: MPR_LIST_STATIC_VALUES to indicate list items are static
         and should not be marked for GC. MPR_LIST_STABLE to create an optimized list for private use that is not thread-safe.
     @return Returns a pointer to the list. 
@@ -4768,9 +3584,8 @@ PUBLIC int mprPushItem(MprList *list, cvoid *item);
 /**
     Logging Services
     @defgroup MprLog MprLog
-    @see MprLogHandler mprAssure mprError mprFatalError mprGetLogFile mprGetLogHandler mprLog mprMemoryError 
-        mprRawLog mprSetLogFile mprSetLogHandler mprSetLogLevel mprStaticError mprUserError mprUsingDefaultLogHandler 
-        mprWarn 
+    @see MprLogHandler mprAssert mprError mprGetLogFile mprGetLogHandler mprInfo mprLog mprRawLog mprTrace
+        mprSetLogFile mprSetLogHandler mprSetLogLevel mprStaticError mprUsingDefaultLogHandler mprWarn 
     @stability Stable
  */
 typedef struct MprLog { int dummy; } MprLog;
@@ -4799,7 +3614,7 @@ typedef void (*MprLogHandler)(int flags, int level, cchar *msg);
     @ingroup MprLog
     @stability Evolving
  */
-PUBLIC void mprAssure(cchar *loc, cchar *msg);
+PUBLIC void mprAssert(cchar *loc, cchar *msg);
 
 /**
     Initialize the log service
@@ -4829,6 +3644,7 @@ PUBLIC int mprBackupLog(cchar *path, int count);
  */
 PUBLIC void mprError(cchar *fmt, ...);
 
+#if DEPRECATED
 /**
     Log a fatal error message and exit.
     @description Send a fatal error message to the MPR debug logging subsystem and then exit the application by
@@ -4839,7 +3655,10 @@ PUBLIC void mprError(cchar *fmt, ...);
     @ingroup MprLog
     @stability Stable
  */
-PUBLIC void mprFatalError(cchar *fmt, ...);
+PUBLIC void mprFatal(cchar *fmt, ...);
+#else
+#define mprFatalError mprFatal
+#endif
 
 /**
     Get the log file object
@@ -4860,8 +3679,24 @@ PUBLIC struct MprFile *mprGetLogFile();
 PUBLIC MprLogHandler mprGetLogHandler();
 
 /**
-    Write a message to the diagnostic log file.
-    @description Send a message to the MPR logging subsystem.
+    Log an informational message.
+    @description Send an informational message to the MPR debug logging subsystem. The 
+        message will be to the log handler defined by #mprSetLogHandler. It 
+        is up to the log handler to respond appropriately and log the message.
+    @param fmt Printf style format string. Variable number of arguments to 
+    @param ... Variable number of arguments for printf data
+    @ingroup MprLog
+    @stability Evolving
+ */
+PUBLIC void mprInfo(cchar *fmt, ...);
+
+#if DOXYGEN
+/**
+    Write a message to the log file.
+    @description Send a message to the MPR logging subsystem. Logging support is enabled via the BIT_MPR_LOGGING
+        define which is typically set via the Bit setting "logging: true".
+        Logging typically is enabled in both debug and release builds.
+        The mprLog function is a macro which translates into the mprLogProc function.
     @param level Logging level for this message. The level is 0-9 with zero being the most verbose.
     @param fmt Printf style format string. Variable number of arguments to 
     @param ... Variable number of arguments for printf data
@@ -4870,6 +3705,8 @@ PUBLIC MprLogHandler mprGetLogHandler();
     @stability Stable
  */
 PUBLIC void mprLog(int level, cchar *fmt, ...);
+#endif
+PUBLIC void mprLogProc(int level, cchar *fmt, ...);
 
 /**
     Emit a descriptive log header
@@ -4878,6 +3715,7 @@ PUBLIC void mprLog(int level, cchar *fmt, ...);
  */
 PUBLIC void mprLogHeader();
 
+#if DEPRECATED
 /**
     Log a memory error message.
     @description Send a memory error message to the MPR debug logging subsystem. The message will be 
@@ -4891,6 +3729,9 @@ PUBLIC void mprLogHeader();
     @stability Stable
  */
 PUBLIC void mprMemoryError(cchar *fmt, ...);
+#else
+#define mprMemoryError mprError
+#endif
 
 /**
     Write a raw log message to the diagnostic log file.
@@ -4952,17 +3793,26 @@ PUBLIC void mprSetLogHandler(MprLogHandler handler);
 */
 PUBLIC int mprStartLogging(cchar *logSpec, int showConfig);
 
+#if DOXYGEN
 /**
-    Display an error message to the console without allocating any memory.
-    @description Display an error message to the console. This will bypass the MPR logging subsystem.
-        It will not allocated any memory and is used by low level memory allocating and garbage collection routines.
+    Write a trace message to the diagnostic log file.
+    @description Send a trace message to the MPR logging subsystem. Debug tracing support is enabled via the BIT_MPR_TRACING
+        define which is typically set via the Bit setting "tracing: true".
+        Tracing is typically is enabled in only debug builds.
+        The mprTrace function is a macro which translates into the mprTraceProc function.
+    @description Sends a debug trace message to the MPR logging subsystem. 
+    @param level Logging level for this message. The level is 0-9 with zero being the most verbose.
     @param fmt Printf style format string. Variable number of arguments to 
     @param ... Variable number of arguments for printf data
+    @remarks mprTrace is highly useful as a debugging aid when integrating or when developing new modules. 
     @ingroup MprLog
     @stability Stable
  */
-PUBLIC void mprStaticError(cchar *fmt, ...);
+PUBLIC void mprTrace(int level, cchar *fmt, ...);
+#endif
+PUBLIC void mprTraceProc(int level, cchar *fmt, ...);
 
+#if DEPRECATED
 /**
     Display an error message to the user.
     @description Display an error message to the user and then send it to the 
@@ -4975,6 +3825,9 @@ PUBLIC void mprStaticError(cchar *fmt, ...);
     @stability Stable
  */
 PUBLIC void mprUserError(cchar *fmt, ...);
+#else
+#define mprUserError mprError
+#endif
 
 /**
     Determine if the app is using the default MPR log handler.
@@ -4997,21 +3850,26 @@ PUBLIC int mprUsingDefaultLogHandler();
  */
 PUBLIC void mprWarn(cchar *fmt, ...);
 
-/*
-    Optimized logging calling sequence. This compiles out for release mode.
- */
-#if BIT_DEBUG
-    #define LOG(l, ...) if (l <= MPR->logLevel) mprLog(l, __VA_ARGS__)
+#if BIT_MPR_TRACING
+    #define mprTrace(l, ...) if ((l) <= MPR->logLevel) { mprTraceProc(l, __VA_ARGS__); } else
 #else
-    #define LOG(l, ...) 
+    #define mprTrace(l, ...) if (1) ; else
 #endif
 
-/*
-    Just for easy debugging. Adds a "\n" automatically.
-    @internal
-    @stability Internal
- */
-PUBLIC int print(cchar *fmt, ...);
+#if BIT_MPR_LOGGING
+    #define mprLog(l, ...) if ((l) <= MPR->logLevel) { mprLogProc(l, __VA_ARGS__); } else
+#else
+    #define mprLog(l, ...) if (1) ; else
+#endif
+
+#if DEPRECATED
+#define LOG mprTrace
+#define mprFatalError mprError
+#define mprUserError mprError
+#define mprMemoryError mprError
+#define mprPrintfError mprEprintf
+#define assure assert
+#endif
 
 /************************************ Hash ************************************/
 /**
@@ -5127,7 +3985,8 @@ PUBLIC MprHash *mprCloneHash(MprHash *table);
 /**
     Create a hash table
     @description Creates a hash table that can store arbitrary objects associated with string key values.
-    @param hashSize Size of the hash table for the symbol table. Should be a prime number.
+    @param hashSize Size of the hash table for the symbol table. Should be a prime number. Set to 0 or -1 to get
+        a default (small) hash table.
     @param flags Table control flags. Use MPR_HASH_CASELESS for case insensitive comparisions, MPR_HASH_UNICODE
         if the hash keys are unicode strings, MPR_HASH_STATIC_KEYS if the keys are permanent and should not be
         managed for Garbage collection, and MPR_HASH_STATIC_VALUES if the values are permanent.
@@ -5227,6 +4086,11 @@ PUBLIC int mprRemoveKey(MprHash *table, cvoid *key);
 PUBLIC MprHash *mprBlendHash(MprHash *target, MprHash *other);
 
 /*********************************** Files ************************************/
+/**
+    Signed file offset data type. Supports large files greater than 4GB in size on all systems.
+ */
+typedef Offset MprOff;
+
 /*
     Prototypes for file system switch methods
     All internal.
@@ -5285,6 +4149,15 @@ typedef struct MprFileSystem {
 #endif
 } MprFileSystem;
 
+/**
+    Create and initialize the FileSystem subsystem. 
+    @description This is an internal routine called by the MPR during initialization.
+    @param path Path name to the root of the file system.
+    @return Returns a new file system object
+    @ingroup MprFileSystem
+    @stability Internal
+ */
+PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path);
 
 #if BIT_ROM
 /**
@@ -5305,23 +4178,7 @@ typedef struct MprRomFileSystem {
     MprRomInode     *romInodes;
     int             rootLen;
 } MprRomFileSystem;
-#else /* !BIT_ROM */
 
-typedef MprFileSystem MprDiskFileSystem;
-#endif
-
-/**
-    Create and initialize the FileSystem subsystem. 
-    @description This is an internal routine called by the MPR during initialization.
-    @param path Path name to the root of the file system.
-    @return Returns a new file system object
-    @ingroup MprFileSystem
-    @stability Internal
- */
-PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path);
-
-
-#if BIT_ROM
 /**
     Create and initialize the ROM FileSystem. 
     @description This is an internal routine called by the MPR during initialization.
@@ -5341,8 +4198,9 @@ PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path);
     @stability Stable
  */
 PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList);
-#else
+#else /* BIT_ROM */
 
+typedef MprFileSystem MprDiskFileSystem;
 /**
     Create and initialize the disk FileSystem. 
     @description This is an internal routine called by the MPR during initialization.
@@ -5352,7 +4210,7 @@ PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList);
     @stability Internal
  */
 PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path);
-#endif
+#endif /* !BIT_ROM */
 
 /**
     Create and initialize the disk FileSystem. 
@@ -6062,10 +4920,10 @@ PUBLIC int mprMakeDir(cchar *path, int perms, int owner, int group, bool makeMis
 
 /**
     Make a link
-    @description Make a link to the specified target path. This will make symbolic or hard links depending on the value
-        of the hard parameter
-    @param path String containing the directory pathname to create.
-    @param target String containing the target file or directory to link to.
+    @description Make a link at the target to the specified path. This will make symbolic or hard links 
+        depending on the value of the hard parameter
+    @param path String containing the path to link to
+    @param target String containing the new link path to be created.
     @param hard If true, make a hard link, otherwise make a soft link.
     @return Returns zero if successful, otherwise a negative MPR error code is returned.
     @ingroup MprPath
@@ -7566,14 +6424,17 @@ typedef int (*MprSocketProc)(void *data, int mask);
     @stability Stable
  */
 typedef struct MprSocketProvider {
+    char    *name;
     void    *data;
+    //  MOB - document these APIs
     void    (*closeSocket)(struct MprSocket *socket, bool gracefully);
     void    (*disconnectSocket)(struct MprSocket *socket);
     ssize   (*flushSocket)(struct MprSocket *socket);
-    int     (*listenSocket)(struct MprSocket *socket, cchar *host, int port, int flags);
+    Socket  (*listenSocket)(struct MprSocket *socket, cchar *host, int port, int flags);
     ssize   (*readSocket)(struct MprSocket *socket, void *buf, ssize len);
     ssize   (*writeSocket)(struct MprSocket *socket, cvoid *buf, ssize len);
-    int     (*upgradeSocket)(struct MprSocket *socket, struct MprSsl *ssl, int server);
+    int     (*upgradeSocket)(struct MprSocket *socket, struct MprSsl *ssl, cchar *peerName);
+    char    *(*socketState)(struct MprSocket *socket);
 } MprSocketProvider;
 
 /**
@@ -7590,16 +6451,20 @@ typedef int (*MprSocketPrebind)(struct MprSocket *sock);
     @stability Internal
  */
 typedef struct MprSocketService {
-    int             maxAccept;                  /**< Maximum number of accepted client socket connections */
-    int             numAccept;                  /**< Count of client socket connections */
     MprSocketProvider *standardProvider;        /**< Socket provider for non-SSL connections */
     char            *defaultProvider;           /**< Default secure provider for SSL connections */
     MprHash         *providers;                 /**< Secure socket providers */         
     MprSocketPrebind prebind;                   /**< Prebind callback */
     MprList         *secureSockets;             /**< List of secured (matrixssl) sockets */
     MprMutex        *mutex;                     /**< Multithread locking */
+    int             maxAccept;                  /**< Maximum number of accepted client socket connections */
+    int             numAccept;                  /**< Count of client socket connections */
+    int             hasIPv6;                    /**< System has supoprt for IPv6 */
 } MprSocketService;
 
+#if DOXYGEN
+typedef int Socklen;
+#endif
 
 /*
     Internal
@@ -7645,20 +6510,22 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
 /*
     Socket Flags
  */
-#define MPR_SOCKET_BLOCK        0x1         /**< Use blocking I/O */
-#define MPR_SOCKET_BROADCAST    0x2         /**< Broadcast mode */
-#define MPR_SOCKET_CLOSED       0x4         /**< MprSocket has been closed */
-#define MPR_SOCKET_CONNECTING   0x8         /**< MprSocket is connecting */
-#define MPR_SOCKET_DATAGRAM     0x10        /**< Use datagrams */
-#define MPR_SOCKET_EOF          0x20        /**< Seen end of file */
-#define MPR_SOCKET_LISTENER     0x40        /**< MprSocket is server listener */
-#define MPR_SOCKET_NOREUSE      0x80        /**< Don't set SO_REUSEADDR option */
-#define MPR_SOCKET_NODELAY      0x100       /**< Disable Nagle algorithm */
-#define MPR_SOCKET_THREAD       0x200       /**< Process callbacks on a worker thread */
-#define MPR_SOCKET_CLIENT       0x400       /**< Socket is a client */
-#define MPR_SOCKET_PENDING      0x800       /**< Pending buffered read data */
-#define MPR_SOCKET_TRACED       0x1000      /**< Socket has been traced to the log */
-#define MPR_SOCKET_DISCONNECTED 0x2000      /**< The mprDisconnectSocket has been called */
+#define MPR_SOCKET_BLOCK            0x1     /**< Use blocking I/O */
+#define MPR_SOCKET_BROADCAST        0x2     /**< Broadcast mode */
+#define MPR_SOCKET_CLOSED           0x4     /**< MprSocket has been closed */
+#define MPR_SOCKET_CONNECTING       0x8     /**< MprSocket is connecting */
+#define MPR_SOCKET_DATAGRAM         0x10    /**< Use datagrams */
+#define MPR_SOCKET_EOF              0x20    /**< Seen end of file */
+#define MPR_SOCKET_LISTENER         0x40    /**< MprSocket is server listener */
+#define MPR_SOCKET_NOREUSE          0x80    /**< Don't set SO_REUSEADDR option */
+#define MPR_SOCKET_NODELAY          0x100   /**< Disable Nagle algorithm */
+#define MPR_SOCKET_THREAD           0x200   /**< Process callbacks on a worker thread */
+#define MPR_SOCKET_SERVER           0x400   /**< Socket is on the server-side */
+#define MPR_SOCKET_BUFFERED_READ    0x800   /**< Socket has buffered read data (in SSL stack) */
+#define MPR_SOCKET_BUFFERED_WRITE   0x1000  /**< Socket has buffered write data (in SSL stack) */
+#define MPR_SOCKET_CHECKED          0x2000  /**< Peer certificate has been checked */
+#define MPR_SOCKET_DISCONNECTED     0x4000  /**< The mprDisconnectSocket has been called */
+#define MPR_SOCKET_HANDSHAKING      0x8000  /**< Doing an SSL handshake */
 
 /**
     Socket Service
@@ -7672,12 +6539,12 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
     @see MprSocket MprSocketPrebind MprSocketProc MprSocketProvider MprSocketService mprAddSocketHandler 
         mprCloseSocket mprConnectSocket mprCreateSocket mprCreateSocketService mprCreateSsl mprCloneSsl
         mprDisconnectSocket mprEnableSocketEvents mprFlushSocket mprGetSocketBlockingMode mprGetSocketError 
-        mprGetSocketFd mprGetSocketInfo mprGetSocketPort mprHasSecureSockets mprIsSocketEof mprIsSocketSecure 
-        mprListenOnSocket mprLoadSsl mprParseIp mprReadSocket mprSendFileToSocket mprSetSecureProvider 
-        mprSetSocketBlockingMode mprSetSocketCallback mprSetSocketEof mprSetSocketNoDelay mprSetSslCaFile 
-        mprSetSslCaPath mprSetSslCertFile mprSetSslCiphers mprSetSslKeyFile mprSetSslSslProtocols 
-        mprSetSslVerifySslClients mprWriteSocket mprWriteSocketString mprWriteSocketVector 
-        mprSocketHasPendingData mprUpgradeSocket
+        mprGetSocketFd mprGetSocketInfo mprGetSocketPort mprGetSocketState mprHasSecureSockets mprIsSocketEof
+        mprIsSocketSecure mprListenOnSocket mprLoadSsl mprParseIp mprReadSocket mprSendFileToSocket mprSetSecureProvider
+        mprSetSocketBlockingMode mprSetSocketCallback mprSetSocketEof mprSetSocketNoDelay mprSetSslCaFile mprSetSslCaPath
+        mprSetSslCertFile mprSetSslCiphers mprSetSslKeyFile mprSetSslSslProtocols mprSetSslVerifySslClients mprWriteSocket
+        mprWriteSocketString mprWriteSocketVector mprSocketHandshaking mprSocketHasBufferedRead mprSocketHasBufferedWrite
+        mprUpgradeSocket 
     @defgroup MprSocket MprSocket
     @stability Stable
  */
@@ -7689,7 +6556,7 @@ typedef struct MprSocket {
     char            *errorMsg;          /**< Connection related error messages */
     int             acceptPort;         /**< Server port doing the listening */
     int             port;               /**< Port to listen or connect on */
-    int             fd;                 /**< Actual socket file handle */
+    Socket          fd;                 /**< Actual socket file handle */
     int             flags;              /**< Current state flags */
     MprSocketProvider *provider;        /**< Socket implementation provider */
     struct MprSocket *listenSock;       /**< Listening socket */
@@ -7827,11 +6694,11 @@ PUBLIC int mprGetSocketError(MprSocket *sp);
     Get the socket file descriptor.
     @description Get the file descriptor associated with a socket.
     @param sp Socket object returned from #mprCreateSocket
-    @return The integer file descriptor used by the O/S for the socket.
+    @return The Socket file descriptor used by the O/S for the socket.
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC int mprGetSocketFd(MprSocket *sp);
+PUBLIC Socket mprGetSocketFd(MprSocket *sp);
 
 /**
     Get the socket for an IP:Port address
@@ -7845,7 +6712,7 @@ PUBLIC int mprGetSocketFd(MprSocket *sp);
     @ingroup MprSocket
     @stability Stable
   */
-PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, MprSocklen *addrlen);
+PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, Socklen *addrlen);
 
 /**
     Get the port used by a socket
@@ -7858,12 +6725,40 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
 PUBLIC int mprGetSocketPort(MprSocket *sp);
 
 /**
+    Get the socket state
+    @description Get the socket state as a parseable string description
+    @param sp Socket object returned from #mprCreateSocket
+    @return The an allocated string
+    @ingroup MprSocket
+    @stability Stable
+ */
+PUBLIC char *mprGetSocketState(MprSocket *sp);
+
+/**
     has the system got a dual IPv4 + IPv6 network stack
     @return True if the network can listen on IPv4 and IPv6 on a single socket
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC bool mprHasDualNetworkStack() ;
+PUBLIC bool mprHasDualNetworkStack();
+
+/**
+    Determine if the system support IPv6
+    @return True if the address system supports IPv6 networking.
+    @ingroup MprSocket
+    @stability Prototype
+    @internal
+ */
+PUBLIC bool mprHasIPv6();
+
+/**
+    Indicate that the application layer has buffered data for the socket. 
+    @description This is used by SSL and other network stacks that buffer pending data
+    @param sp Socket object returned from #mprCreateSocket
+    @param len Length of buffered data in bytes
+    @param dir Buffer direction. Set to MPR_READABLE for buffered read data and MPR_WRITABLE for buffered write data.
+ */
+PUBLIC void mprHiddenSocketData(MprSocket *sp, ssize len, int dir);
 
 /**
     Determine if the IP address is an IPv6 address
@@ -7924,23 +6819,24 @@ PUBLIC bool mprIsSocketEof(MprSocket *sp);
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags);
+PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags);
 
 /**
     Parse an socket address IP address. 
     @description This parses a string containing an IP:PORT specification and returns the IP address and port 
     components. Handles ipv4 and ipv6 addresses. 
-    @param ipSpec An IP:PORT specification. The :PORT is optional. When an IP address contains an ipv6 port it should be 
+    @param address An IP:PORT specification. The :PORT is optional. When an IP address contains an ipv6 port it should be 
     written as
         aaaa:bbbb:cccc:dddd:eeee:ffff:gggg:hhhh:iiii    or
        [aaaa:bbbb:cccc:dddd:eeee:ffff:gggg:hhhh:iiii]:port
     @param ip Pointer to receive a dynamically allocated IP string.
     @param port Pointer to an integer to receive the port value.
-    @param defaultPort The default port number to use if the ipSpec does not contain a port
+    @param secure Pointer to an integer to receive true if the address requires SSL.
+    @param defaultPort The default port number to use if the address does not contain a port
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC int mprParseSocketAddress(cchar *ipSpec, char **ip, int *port, int defaultPort);
+PUBLIC int mprParseSocketAddress(cchar *address, char **ip, int *port, int *secure, int defaultPort);
 
 /**
     Read from a socket
@@ -7950,6 +6846,8 @@ PUBLIC int mprParseSocketAddress(cchar *ipSpec, char **ip, int *port, int defaul
     @param buf Pointer to a buffer to hold the read data. 
     @param size Size of the buffer.
     @return A count of bytes actually read. Return a negative MPR error code on errors.
+    @return Return -1 for EOF and errors. On success, return the number of bytes read. Use  mprIsSocketEof to 
+        distinguision between EOF and errors.
     @ingroup MprSocket
     @stability Stable
  */
@@ -8021,6 +6919,15 @@ PUBLIC void mprSetSocketEof(MprSocket *sp, bool eof);
 PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on);
 
 /**
+    Test if the socket is doing an SSL handshake
+    @param sp Socket object returned from #mprCreateSocket
+    @return True if the SSL stack is handshaking
+    @ingroup MprSocket
+    @stability Stable
+ */
+PUBLIC bool mprSocketHandshaking(MprSocket *sp);
+
+/**
     Test if the socket has buffered read data.
     @description Use this function to avoid waiting for incoming I/O if data is already buffered.
     @param sp Socket object returned from #mprCreateSocket
@@ -8028,18 +6935,28 @@ PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on);
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC bool mprSocketHasPendingData(MprSocket *sp);
+PUBLIC bool mprSocketHasBufferedRead(MprSocket *sp);
+
+/**
+    Test if the socket has buffered write data.
+    @description Use this function to detect that there is buffer data to write in a SSL stack.
+    @param sp Socket object returned from #mprCreateSocket
+    @return True if the socket has pending write data.
+    @ingroup MprSocket
+    @stability Stable
+ */
+PUBLIC bool mprSocketHasBufferedWrite(MprSocket *sp);
 
 /**
     Upgrade a socket to use SSL/TLS
     @param sp Socket to upgrade
     @param ssl SSL configuration to use. Set to NULL to use the default.
-    @param server Set to one for server-side, set to zero for client side.
+    @param peerName Required peer name in handshake with peer. Used by clients to verify the server hostname.
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup MprSocket
     @stability Evolving
  */
-PUBLIC int mprUpgradeSocket(MprSocket *sp, struct MprSsl *ssl, int server);
+PUBLIC int mprUpgradeSocket(MprSocket *sp, struct MprSsl *ssl, cchar *peerName);
 
 /**
     Write to a socket
@@ -8081,10 +6998,7 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count);
 
 /************************************ SSL *************************************/
 
-#define MPR_DEFAULT_SERVER_CERT_FILE    "server.crt"
-#define MPR_DEFAULT_SERVER_KEY_FILE     "server.key.pem"
-#define MPR_DEFAULT_CLIENT_CERT_FILE    "client.crt"
-#define MPR_DEFAULT_CLIENT_CERT_PATH    "certs"
+#define MPR_CA_CERT "ca.crt"
 
 /**
     SSL control structure
@@ -8095,18 +7009,19 @@ typedef struct MprSsl {
     char            *providerName;      /**< SSL provider to use - null if default */
     struct MprSocketProvider *provider; /**< Cached SSL provider to use */
     char            *key;               /**< Key string */
-    char            *cert;              /**< Cert string */
     char            *keyFile;           /**< Alternatively, locate the key in a file */
     char            *certFile;          /**< Alternatively, locate the cert in a file */
     char            *caFile;            /**< Certificate verification cert file or bundle */
-    char            *caPath;            /**< Certificate verification cert directory */
+    char            *caPath;            /**< Certificate verification cert directory (OpenSSL only) */
     char            *ciphers;           /**< Candidate ciphers to use */
     int             configured;         /**< Set if this SSL configuration has been processed */
-    void            *pconfig;           /**< Extended provider SSL configuration */
+    void            *config;            /**< Extended provider SSL configuration */
     int             verifyPeer;         /**< Verify the peer verificate */
     int             verifyIssuer;       /**< Set if the certificate issuer should be also verified */
     int             verifyDepth;        /**< Set if the cert chain depth should be verified */
     int             protocols;          /**< SSL protocols */
+    int             changed;            /**< Set if there is a change in the SSL config. Reset by providers */
+    MprMutex        *mutex;             /**< Multithread sync */
 } MprSsl;
 
 /*
@@ -8116,25 +7031,17 @@ typedef struct MprSsl {
 #define MPR_PROTO_SSLV3    0x2              /**< SSL V3 protocol */
 #define MPR_PROTO_TLSV1    0x4              /**< TLS V1 protocol */
 #define MPR_PROTO_TLSV11   0x8              /**< TLS V1.1 protocol */
-#define MPR_PROTO_ALL      0xf              /**< All SSL protocols */
-
-/*
-    Default SSL configuration
-    Other cipher options
-
-        #define BIT_CIPHERS "HIGH:RC4+SHA"
-        #define BIT_CIPHERS "AES128-SHA"
- */
-#ifndef BIT_CIPHERS
-    #define BIT_CIPHERS "HIGH:MEDIUM"  /**< Default cipher suite */
-#endif
+#define MPR_PROTO_TLSV12   0x10             /**< TLS V1.2 protocol */
+#define MPR_PROTO_ALL      0x1F             /**< All SSL protocols */
 
 /**
-    Load the SSL module.
+    Add the ciphers to use for SSL
+    @param ssl SSL instance returned from #mprCreateSsl
+    @param ciphers Cipher string to add to any existing ciphers
     @ingroup MprSsl
     @stability Evolving
  */
-PUBLIC int mprLoadSsl();
+PUBLIC void mprAddSslCiphers(struct MprSsl *ssl, cchar *ciphers);
 
 /**
     Create the SSL control structure
@@ -8153,13 +7060,29 @@ PUBLIC struct MprSsl *mprCreateSsl(int server);
 PUBLIC struct MprSsl *mprCloneSsl(MprSsl *src);
 
 /**
-    Set the ciphers to use for SSL
-    @param ssl SSL instance returned from #mprCreateSsl
-    @param ciphers Cipher string
+    Lookup an SSL cipher by its IANA code and return the string name
+    @param cipher Cipher IANA code
+    @return String cipher name. For example: given 0x35, return "TLS_RSA_WITH_AES_256_CBC_SHA".
+    @stability Evolving
+    @ingroup MprSsl
+ */
+PUBLIC cchar *mprGetSslCipherName(int cipher);
+
+/**
+    Lookup an SSL cipher by its IANA name and return the cipher IANA code
+    @param cipher Cipher IANA name
+    @return String cipher code. For example: given "TLS_RSA_WITH_AES_256_CBC_SHA" return 0x35.
+    @stability Evolving
+    @ingroup MprSsl
+ */
+PUBLIC int mprGetSslCipherCode(cchar *cipher); 
+
+ /**
+    Load the SSL module.
     @ingroup MprSsl
     @stability Evolving
  */
-PUBLIC void mprSetSslCiphers(struct MprSsl *ssl, cchar *ciphers);
+PUBLIC int mprLoadSsl();
 
 /**
     Set the key file to use for SSL
@@ -8190,12 +7113,22 @@ PUBLIC void mprSetSslCaFile(struct MprSsl *ssl, cchar *caFile);
 
 /**
     Set the path for the client certificate directory
+    @description This is supported for OpenSSL only.
     @param ssl SSL instance returned from #mprCreateSsl
     @param caPath Path to the SSL client certificate directory
     @ingroup MprSsl
     @stability Evolving
  */
 PUBLIC void mprSetSslCaPath(struct MprSsl *ssl, cchar *caPath);
+
+/**
+    Set the ciphers to use
+    @param ssl SSL instance returned from #mprCreateSsl
+    @param ciphers String of suitable ciphers
+    @ingroup MprSsl
+    @stability Evolving
+ */
+PUBLIC void mprSetSslCiphers(MprSsl *ssl, cchar *ciphers);
 
 /**
     Set the SSL protocol to use
@@ -8209,7 +7142,7 @@ PUBLIC void mprSetSslProtocols(struct MprSsl *ssl, int protocols);
 /**
     Set the SSL provider to use
     @param ssl SSL instance returned from #mprCreateSsl
-    @param provider SSL provider name (openssl | matrixssl)
+    @param provider SSL provider name (openssl | matrixssl | est | nanossl)
     @ingroup MprSsl
     @stability Evolving
  */
@@ -8242,12 +7175,25 @@ PUBLIC void mprVerifySslIssuer(struct MprSsl *ssl, bool on);
  */
 PUBLIC void mprVerifySslDepth(struct MprSsl *ssl, int depth);
 
+#if BIT_PACK_EST
+    PUBLIC int mprCreateEstModule();
+#endif
 #if BIT_PACK_MATRIXSSL
     PUBLIC int mprCreateMatrixSslModule();
+#endif
+#if BIT_PACK_NANOSSL
+    PUBLIC int mprCreateNanoSslModule();
 #endif
 #if BIT_PACK_OPENSSL
     PUBLIC int mprCreateOpenSslModule();
 #endif
+
+typedef struct MprCipher {
+    int     code;
+    cchar   *name;
+} MprCipher;
+
+PUBLIC_DATA MprCipher mprCiphers[];
 
 /******************************* Worker Threads *******************************/
 /**
@@ -8582,6 +7528,17 @@ PUBLIC char *mprUriEncode(cchar *uri, int map);
  */
 PUBLIC char *mprUriDecode(cchar *uri);
 
+/** 
+    Decode a URI string by de-scaping URI characters
+    @description Decode a string with www-encoded characters that have meaning for URIs.
+        This routines operates in-situ and modifies the buffer. 
+    @param uri URI to decode
+    @return A reference to the buf argument.
+    @ingroup Mpr
+    @stability Stable
+ */
+PUBLIC char *mprUriDecodeInSitu(char *uri);
+
 /********************************* Signals ************************************/
 
 #if MACOSX
@@ -8757,7 +7714,7 @@ typedef struct MprCmdFile {
     @see mprCloseCmdFd mprCreateCmd mprDestroyCmd mprDisableCmdEvents mprDisconnectCmd mprEnableCmdEvents 
         mprFinalizeCmd mprGetCmdBuf mprGetCmdExitStatus mprGetCmdFd mprIsCmdComplete mprIsCmdRunning mprPollCmd 
         mprReadCmd mprReapCmd mprRunCmd mprRunCmdV mprSetCmdCallback mprSetCmdDir mprSetCmdEnv mprSetCmdSearchPath 
-        mprStartCmd mprStopCmd mprWaitForCmd mprWriteCmd 
+        mprStartCmd mprStopCmd mprWaitForCmd mprWriteCmd mprWriteCmdBlock
     @defgroup MprCmd MprCmd
     @stability Stable
  */
@@ -9099,14 +8056,30 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout);
 
 /**
     Write data to an I/O channel
+    @description This is a non-blocking write and may return having written less than requested.
     @param cmd MprCmd object created via mprCreateCmd
     @param channel Channel number to read from. Should be either MPR_CMD_STDIN, MPR_CMD_STDOUT or MPR_CMD_STDERR.
     @param buf Buffer to read into
     @param bufsize Size of buffer
+    @return Count of bytes written
     @ingroup MprCmd
     @stability Evolving
  */
 PUBLIC ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize);
+
+/**
+    Write data to an I/O channel
+    @description This is a blocking write.
+    @param cmd MprCmd object created via mprCreateCmd
+    @param channel Channel number to read from. Should be either MPR_CMD_STDIN, MPR_CMD_STDOUT or MPR_CMD_STDERR.
+    @param buf Buffer to read into
+    @param bufsize Size of buffer
+    @return Count of bytes written
+    @ingroup MprCmd
+    @stability Prototype
+    @internal
+ */
+PUBLIC ssize mprWriteCmdBlock(MprCmd *cmd, int channel, char *buf, ssize bufsize);
 
 /********************************** Cache *************************************/
 
@@ -9347,7 +8320,7 @@ typedef void (*MprTerminator)(int how, int status);
     mprSetDebugMode mprSetDomainName mprSetExitStrategy mprSetHostName mprSetHwnd mprSetIdleCallback mprSetInst
     mprSetIpAddr mprSetLogLevel mprSetServerName mprSetSocketMessage mprShouldAbortRequests mprShouldDenyNewRequests
     mprSignalExit mprSleep mprStart mprStartEventsThread mprStartOsService mprStopOsService mprTerminate mprUriDecode
-    mprUriEncode mprWaitTillIdle mprWriteRegistry 
+    mprUriDecodeBuf mprUriEncode mprWaitTillIdle mprWriteRegistry 
     @defgroup Mpr Mpr
     @stability Stable.
  */
@@ -9433,18 +8406,18 @@ typedef struct Mpr {
 PUBLIC void mprNop(void *ptr);
 
 #if DOXYGEN || BIT_WIN_LIKE
-/**
-    Return the MPR control instance.
-    @description Return the MPR singleton control object. 
-    @return Returns the MPR control object.
-    @ingroup Mpr
-    @stability Stable.
- */
-PUBLIC Mpr *mprGetMpr();
-#define MPR mprGetMpr()
+    /**
+        Return the MPR control instance.
+        @description Return the MPR singleton control object. 
+        @return Returns the MPR control object.
+        @ingroup Mpr
+        @stability Stable.
+     */
+    PUBLIC Mpr *mprGetMpr();
+    #define MPR mprGetMpr()
 #else
     #define mprGetMpr() MPR
-    extern Mpr *MPR;
+    PUBLIC_DATA Mpr *MPR;
 #endif
 
 #define MPR_DISABLE_GC          0x1         /**< Disable GC */
@@ -9452,15 +8425,7 @@ PUBLIC Mpr *mprGetMpr();
 #define MPR_SWEEP_THREAD        0x8         /**< Start a dedicated sweeper thread for garbage collection (unsupported) */
 #define MPR_USER_EVENTS_THREAD  0x10        /**< User will explicitly manage own mprServiceEvents calls */
 #define MPR_NO_WINDOW           0x20        /**< Don't create a windows Window */
-
-/*
-    Parallel sweep thread is not yet operational
- */
-#if BIT_TUNE == MPR_TUNE_SPEED
-    #define MPR_THREAD_PATTERN (MPR_MARK_THREAD)
-#else
-    #define MPR_THREAD_PATTERN (MPR_MARK_THREAD)
-#endif
+#define MPR_THREAD_PATTERN      (MPR_MARK_THREAD)
 
 /**
     Add a terminator callback
@@ -9879,6 +8844,14 @@ PUBLIC MprIdleCallback mprSetIdleCallback(MprIdleCallback idleCallback);
 PUBLIC void mprSetIpAddr(cchar *ip);
 
 /**
+    Set the O/S error code.
+    @description Set errno or equivalent.
+    @ingroup Mpr
+    @stability Stable.
+ */
+PUBLIC void mprSetOsError(int error);
+
+/**
     Set the application server name string
     @param s New application server name to use within the application.
     @ingroup Mpr
@@ -10071,13 +9044,12 @@ typedef struct MprTestDef {
 } MprTestDef;
 
 
-#undef  assert
 /**
     Assert macro for use by unit tests
     @ingroup MprTestService
     @stability Internal
  */
-#define assert(C)   assertTrue(gp, MPR_LOC, C, #C)
+#define tassert(C)   assertTrue(gp, MPR_LOC, C, #C)
 
 #define MPR_TEST(level, functionName) { #functionName, level, functionName, 0, 0 }
 
@@ -10213,7 +9185,7 @@ PUBLIC MprTestGroup *mprAddTestGroup(MprTestService *ts, MprTestDef *def);
 PUBLIC void mprResetTestGroup(MprTestGroup *gp);
 
 /**
-    Assert test
+    Test assert
     @description This is the primary assertion test routine for unit tests. This is typically invoked by using the
         #assert macro. 
     @param gp Test group reference
@@ -10289,7 +9261,7 @@ typedef struct MprTestFailure {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

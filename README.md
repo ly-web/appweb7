@@ -7,43 +7,62 @@ Licensing
 ---
 See LICENSE.md for details.
 
-### To Read Documentation:
+### To read documentation:
 
   See http://appwebserver.org/products/appweb/doc/product/index.html
 
-### Prerequisites:
+### Building
+    You can build with make or with Bit. Bit is quicker and more flexible.
+    To install Bit, download Bit from http://embedthis.com/downloads/bit/download.ejs
 
-    Ejscript (http://www.ejscript.org/downloads/ejs/download.ejs) for the Bit and Utest tools to configure and build.
+### To build with make:
 
-### To Build:
+    make
+
+    You can pass make variables to tailor the build. For a list of variables:
+
+	make help
+
+### To build with Bit:
 
     ./configure
     bit
 
-    Alternatively to build without Ejscript:
+	For a list of configure options:
 
-    make
+	./configure --help
 
-Images are built into */bin. The build configuration is saved in */inc/bit.h.
+### To run
 
-### To Test:
+	make run
 
-    bit test
+    or
 
-### To Run:
+    bit run
 
-    sudo bit run
+### To install:
 
-This will run appweb in the src/server directory using the src/server/appweb.conf configuration file.
-To run appweb manually, you will need to put the target bin directory (OS-ARCH-PROFILE/bin) in your PATH.
+    sudo make install
 
-### To Install:
+	or 
 
     sudo bit install
+
+### To uninstall
+
+    sudo make uninstall
+
+	or 
+
+    sudo bit uninstall
+
+### To test:
+
+    bit test
 
 Resources
 ---
   - [Appweb web site](http://appwebserver.org/)
-  - [Embedthis web site](http://embedthis.com/)
   - [Appweb GitHub repository](http://github.com/embedthis/appweb-4)
   - [Appweb Mailing list](http://groups.google.com/groups/appweb)
+  - [Embedthis web site](http://embedthis.com/)

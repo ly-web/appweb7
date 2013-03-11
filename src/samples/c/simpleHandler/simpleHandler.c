@@ -42,7 +42,7 @@ static void readySimple(HttpQueue *q)
 
 
 
-static void incomingSimpleData(HttpQueue *q, HttpPacket *packet)
+static void incomingSimple(HttpQueue *q, HttpPacket *packet)
 {
     /*
         Do something with the incoming data in packet and then free the packet.
@@ -58,11 +58,11 @@ int maSimpleHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *stage;
 
-    if ((stage = httpCreateHandler(http, "simpleHandler", 0, module)) == 0) {
+    if ((stage = httpCreateHandler(http, "simpleHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     stage->ready = readySimple;
-    stage->incomingData = incomingSimpleData;
+    stage->incoming = incomingSimple;
     return 0;
 }
 
@@ -70,8 +70,8 @@ int maSimpleHandlerInit(Http *http, MprModule *module)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2013. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

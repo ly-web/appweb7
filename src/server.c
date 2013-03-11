@@ -103,7 +103,7 @@ PUBLIC int maStartAppweb(MaAppweb *appweb)
         }
     }
     timeText = mprGetDate(0);
-    mprLog(1, "HTTP services Started at %s with max %d threads", timeText, mprGetMaxWorkers(appweb));
+    mprLog(1, "Started at %s with max %d threads", timeText, mprGetMaxWorkers(appweb));
     return 0;
 }
 
@@ -128,9 +128,6 @@ static void manageServer(MaServer *server, int flags)
         mprMark(server->http);
         mprMark(server->limits);
         mprMark(server->endpoints);
-#if UNUSED
-        mprMark(server->home);
-#endif
 
     } else if (flags & MPR_MANAGE_FREE) {
         maStopServer(server);
@@ -149,7 +146,7 @@ PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
     HttpHost    *host;
     HttpRoute   *route;
 
-    assure(appweb);
+    assert(appweb);
 
     if ((server = mprAllocObj(MaServer, manageServer)) == NULL) {
         return 0;
@@ -197,21 +194,20 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
     if (configFile) {
         path = mprGetAbsPath(configFile);
         if (maParseConfig(server, path, 0) < 0) {
-            /* mprUserError("Cannot configure server using %s", path); */
+            /* mprError("Cannot configure server using %s", path); */
             return MPR_ERR_CANT_INITIALIZE;
         }
         return 0;
 
     } else {
-        mprLog(2, "DocumentRoot %s", documents);
         if ((endpoint = httpCreateConfiguredEndpoint(home, documents, ip, port)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
         maAddEndpoint(server, endpoint);
         host = mprGetFirstItem(endpoint->hosts);
-        assure(host);
+        assert(host);
         route = mprGetFirstItem(host->routes);
-        assure(route);
+        assert(route);
 
 #if BIT_PACK_CGI
         maLoadModule(appweb, "cgiHandler", "mod_cgi");
@@ -224,7 +220,7 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
             if (mprPathExists(path, X_OK)) {
                 HttpRoute *cgiRoute;
                 cgiRoute = httpCreateAliasRoute(route, "/cgi-bin/", path, 0);
-                mprLog(4, "ScriptAlias \"/cgi-bin/\":\"%s\"", path);
+                mprTrace(4, "ScriptAlias \"/cgi-bin/\":\"%s\"", path);
                 httpSetRouteHandler(cgiRoute, "cgiHandler");
                 httpFinalizeRoute(cgiRoute);
             }
@@ -250,16 +246,9 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
 #endif
         httpAddRouteHandler(route, "fileHandler", "");
         httpFinalizeRoute(route);
-    }
-    if (home) {
-#if UNUSED
-        maSetServerHome(server, home);
-#else
-        httpSetRouteHome(route, home);
-#endif
-    }
-    if (ip || port > 0) {
-        maSetServerAddress(server, ip, port);
+        if (home) {
+            httpSetRouteHome(route, home);
+        }
     }
     return 0;
 }
@@ -285,6 +274,9 @@ PUBLIC int maStartServer(MaServer *server)
             mprError("Server is not listening on any addresses");
         }
         return MPR_ERR_CANT_OPEN;
+    }
+    if (warned) {
+        return MPR_ERR_CANT_OPEN;        
     }
 #if BIT_UNIX_LIKE
     MaAppweb    *appweb = server->appweb;
@@ -328,22 +320,23 @@ PUBLIC void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
 
 PUBLIC int maSetPlatform(cchar *platform)
 {
-    MprDirEntry *dp;
     MaAppweb    *appweb;
     cchar       *base, *dir, *junk;
-    int         next;
 
     appweb = MPR->appwebService;
-    if (mprSamePath(mprGetAppDir(), BIT_BIN_PREFIX)) {
-        /* Installed */
+    if (mprSamePath(mprGetAppDir(), BIT_VAPP_PREFIX "/bin")) {
+        /* Installed => /usr/local/lib/appweb/VER/bin */
         base = mprGetPathParent(mprGetAppDir());
         dir = smatch(platform, appweb->localPlatform) ? base : mprJoinPath(base, platform);
     } else {
-        /* Local Dev */
+        /* Local Dev =>  ../../OS-ARCH */
         base = mprGetPathParent(mprGetPathParent(mprGetAppDir()));
         dir = mprJoinPath(base, platform);
     }
+#if !BIT_ROM
     if (!mprIsPathDir(dir)) {
+        MprDirEntry *dp;
+        int         next;
         for (ITERATE_ITEMS(mprGetPathFiles(base, 0), dp, next)) {
             if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
                 platform = mprGetPathBase(dp->name);
@@ -357,6 +350,7 @@ PUBLIC int maSetPlatform(cchar *platform)
             return MPR_ERR_BAD_ARGS;
         }
     }
+#endif
     if (maParsePlatform(platform, &junk, &junk, &junk) < 0) {
         return MPR_ERR_BAD_ARGS;
     }
@@ -364,30 +358,6 @@ PUBLIC int maSetPlatform(cchar *platform)
     appweb->platform = platform;
     return 0;
 }
-
-
-#if UNUSED
-/*  
-    Set the home directory (Server Root). We convert path into an absolute path.
- */
-PUBLIC void maSetServerHome(MaServer *server, cchar *path)
-{
-    if (path == 0 || BIT_ROM) {
-        path = ".";
-    }
-#if !VXWORKS
-    /*
-        VxWorks stat() is broken if using a network FTP server.
-     */
-    if (! mprPathExists(path, R_OK)) {
-        mprError("Cannot access ServerRoot directory %s", path);
-        return;
-    }
-#endif
-    server->home = mprGetAbsPath(path);
-    mprLog(MPR_CONFIG, "Set server root to: \"%s\"", server->home);
-}
-#endif
 
 
 /*
@@ -430,9 +400,17 @@ PUBLIC void maGetUserGroup(MaAppweb *appweb)
 
 PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
+    if (smatch(newUser, "_default_")) {
+#if MACOSX || FREEBSD
+        newUser = "_www";
+#elif LINUX || BIT_UNIX_LIKE
+        newUser = "nobody";
+#elif WINDOWS
+        newUser = "Administrator";
+#endif
+    }
 #if BIT_UNIX_LIKE
     struct passwd   *pp;
-
     if (snumber(newUser)) {
         appweb->uid = atoi(newUser);
         if ((pp = getpwuid(appweb->uid)) == 0) {
@@ -457,6 +435,24 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 
 PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
+    if (smatch(newGroup, "_default_")) {
+#if MACOSX || FREEBSD
+        newGroup = "www";
+#elif LINUX || BIT_UNIX_LIKE
+        char    *buf;
+        newGroup = "nobody";
+        /*
+            Debian has nogroup, Fedora has nobody. Ugh!
+         */
+        if ((buf = mprReadPathContents("/etc/passwd", NULL)) != 0) {
+            if (scontains(buf, "nogroup:")) {
+                newGroup = "nogroup";
+            }
+        }
+#elif WINDOWS
+        newGroup = "Administrator";
+#endif
+    }
 #if BIT_UNIX_LIKE
     struct group    *gp;
 
@@ -528,7 +524,7 @@ PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
 PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
 {
     MprModule   *module;
-    char        entryPoint[MPR_MAX_FNAME];
+    char        entryPoint[BIT_MAX_FNAME];
     char        *path;
 
     if (strcmp(name, "authFilter") == 0 || strcmp(name, "rangeFilter") == 0 || strcmp(name, "uploadFilter") == 0 ||
@@ -566,7 +562,7 @@ PUBLIC HttpAuth *maGetDefaultAuth(MaServer *server)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

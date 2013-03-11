@@ -134,7 +134,7 @@ PUBLIC EdiRec *ediCreateRec(Edi *edi, cchar *tableName)
 
 PUBLIC int ediDelete(Edi *edi, cchar *path)
 {
-    return edi->provider->delete(path);
+    return edi->provider->deleteDatabase(path);
 }
 
 
@@ -411,7 +411,7 @@ PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec)
 
 PUBLIC bool ediValidateRec(EdiRec *rec)
 {
-    assure(rec->edi);
+    assert(rec->edi);
     if (rec->edi == 0) {
         return 0;
     }
@@ -590,7 +590,7 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
 
     for (r = 0; r < primary->nrecords; r++) {
         if ((rec = ediCreateBareRec(edi, NULL, nfields)) == 0) {
-            assure(0);
+            assert(0);
             return 0;
         }
         result->records[r] = rec;
@@ -605,7 +605,7 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
                     keyValue = primary->records[r]->fields[col->joinField].value;
                     rec = ediReadOneWhere(edi, col->grid->tableName, "id", "==", keyValue);
                 }
-                assure(rec);
+                assert(rec);
                 fp = &rec->fields[col->field];
                 *dest = *fp;
                 dest->name = sfmt("%s.%s", col->grid->tableName, fp->name);
@@ -666,16 +666,16 @@ PUBLIC EdiGrid *ediMakeGrid(cchar *json)
     int         r, nrows, nfields;
 
     if ((obj = mprDeserialize(json)) == 0) {
-        assure(0);
+        assert(0);
         return 0;
     }
     if (!(obj->flags & MPR_HASH_LIST)) {
-        assure(obj->flags & MPR_HASH_LIST);
+        assert(obj->flags & MPR_HASH_LIST);
         return 0;
     }
     nrows = mprGetHashLength(obj);
     if ((grid = ediCreateBareGrid(NULL, "", nrows)) == 0) {
-        assure(0);
+        assert(0);
         return 0;
     }
     if (nrows <= 0) {
@@ -717,7 +717,7 @@ PUBLIC EdiGrid *ediMakeGrid(cchar *json)
                 fp++;
             }
             if (ediSetFields(rec, row) == 0) {
-                assure(0);
+                assert(0);
                 return 0;
             }
         }
@@ -862,6 +862,7 @@ PUBLIC EdiGrid *ediCloneGrid(EdiGrid *grid)
     for (r = 0; r < grid->nrecords; r++) {
         rec = ediCreateBareRec(grid->edi, grid->tableName, grid->records[r]->nfields);
         result->records[r] = rec;
+        rec->id = grid->records[r]->id;
         src = grid->records[r]->fields;
         dest = rec->fields;
         for (c = 0; c < rec->nfields; c++) {
@@ -993,7 +994,7 @@ static cchar *checkDate(EdiValidation *vp, EdiRec *rec, cchar *fieldName, cchar 
 
 static cchar *checkFormat(EdiValidation *vp, EdiRec *rec, cchar *fieldName, cchar *value)
 {
-    int     matched[HTTP_MAX_ROUTE_MATCHES * 2];
+    int     matched[BIT_MAX_ROUTE_MATCHES * 2];
 
     if (pcre_exec(vp->mdata, NULL, value, (int) slen(value), 0, 0, matched, sizeof(matched) / sizeof(int)) > 0) {
         return 0;
@@ -1084,7 +1085,7 @@ static void addValidations()
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

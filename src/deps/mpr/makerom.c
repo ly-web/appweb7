@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 
     err = 0;
     prefix = "";
-    romName = "defaultRomFiles";
+    romName = "romFiles";
     files = mprCreateList(-1, 0);
 
     for (nextArg = 1; nextArg < argc; nextArg++) {
@@ -73,10 +73,10 @@ int main(int argc, char **argv)
 
 static void printUsage(Mpr *mpr)
 {
-    mprPrintfError("usage: makerom [options] files... >output.c\n");
-    mprPrintfError("  Makerom options:\n");
-    mprPrintfError("  --prefix prefix       # File prefix to remove\n");
-    mprPrintfError("  --name structName     # Name of top level C struct\n");
+    mprEprintf("usage: makerom [options] files... >output.c\n");
+    mprEprintf("  Makerom options:\n");
+    mprEprintf("  --prefix prefix       # File prefix to remove\n");
+    mprEprintf("  --name structName     # Name of top level C struct\n");
 }
 
 
@@ -85,12 +85,11 @@ static void printUsage(Mpr *mpr)
  */
 static int binToC(MprList *files, char *romName, char *prefix)
 {
-    MprPath         info;
-    MprFile         *file;
+    struct stat     sbuf;
     char            buf[512];
     char            *filename, *cp, *sl, *p;
     ssize           len;
-    int             next, i, j;
+    int             fd, next, i, j;
 
     mprPrintf("/*\n    %s -- Compiled Files\n */\n", romName);
 
@@ -101,34 +100,34 @@ static int binToC(MprList *files, char *romName, char *prefix)
         Open each input file and compile
      */
     for (next = 0; (filename = mprGetNextItem(files, &next)) != 0; ) {
-        if (mprGetPathInfo(filename, &info) == 0 && info.isDir) {
+        if (stat(filename, &sbuf) == 0 && sbuf.st_mode & S_IFDIR) {
             continue;
         } 
-        if ((file = mprOpenFile(filename, O_RDONLY | O_BINARY, 0666)) == 0) {
+        if ((fd = open(filename, O_RDONLY | O_BINARY, 0666)) < 0) {
             mprError("Cannot open file %s\n", filename);
             return -1;
         }
         mprPrintf("static uchar _file_%d[] = {\n", next);
 
-        while ((len = mprReadFile(file, buf, sizeof(buf))) > 0) {
+        while ((len = read(fd, buf, sizeof(buf))) > 0) {
             p = buf;
             for (i = 0; i < len; ) {
                 mprPrintf("    ");
                 for (j = 0; p < &buf[len] && j < 16; j++, p++) {
-                    mprPrintf("%3d,", (unsigned char) *p);
+                    mprPrintf("%4d,", (unsigned char) *p);
                 }
                 i += j;
                 mprPrintf("\n");
             }
         }
         mprPrintf("    0 };\n\n");
-        mprCloseFile(file);
+        close(fd);
     }
 
     /*
         Now output the page index
      */ 
-    mprPrintf("MprRomInode %s[] = {\n", romName);
+    mprPrintf("PUBLIC MprRomInode %s[] = {\n", romName);
 
     for (next = 0; (filename = mprGetNextItem(files, &next)) != 0; ) {
         /*
@@ -148,13 +147,12 @@ static int binToC(MprList *files, char *romName, char *prefix)
         if (*cp == '.' && cp[1] == '\0') {
             cp++;
         }
-        if (mprGetPathInfo(filename, &info) == 0 && info.isDir) {
+        if (stat(filename, &sbuf) == 0 && sbuf.st_mode & S_IFDIR) {
             mprPrintf("    { \"%s\", 0, 0, 0 },\n", cp);
             continue;
         }
-        mprPrintf("    { \"%s\", _file_%d, %d, %d },\n", cp, next, (int) info.size, next);
+        mprPrintf("    { \"%s\", _file_%d, %d, %d },\n", cp, next, (int) sbuf.st_size, next);
     }
-    
     mprPrintf("    { 0, 0, 0, 0 },\n");
     mprPrintf("};\n");
     mprPrintf("#endif /* BIT_ROM */\n");
@@ -164,7 +162,7 @@ static int binToC(MprList *files, char *romName, char *prefix)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

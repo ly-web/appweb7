@@ -4,45 +4,100 @@
 
 Bit.load({
     targets: {
+        'genslink': {
+            //  MOB - Use run: target
+            action: "run('esp --static --genlink slink.c --flat compile')",
+            generate: "esp --static --genlink slink.c --flat compile",
+        },
+
+        'slink.c': {
+            path: 'slink.c',
+            precious: true,
+            build: "
+                if (!Path('slink.c').exists) {
+                    trace('Generate', 'slink.c')
+                    cp('slink.empty', 'slink.c')
+                }
+            ",
+            'generate-nmake': 'if not exist slink.c copy slink.empty slink.c',
+            'generate-sh': '[ ! -f slink.c ] && cp slink.empty slink.c ; true',
+        },
+
+        /*
+            Static library for esp applications. Always built but only contains code if static linking.
+         */
+        libslink: {
+            type: 'lib',
+            depends: [ 'slink.c', 'esp', 'libmod_esp' ],
+            sources: [ 'slink.c' ],
+            postblend: "
+                if (Path('slink.c').exists) {
+                    /* Dynamically compute the required sources for static linking */
+                    let sources = bit.targets.libslink.sources
+                    for each (file in Path('slink.c').readString().match(/SOURCE [^ ]*/g)) {
+                        sources.push(TARGET.home.join(file.replace(/SOURCE /mg, '')))
+                    }
+                }
+            ",
+        },
+
         appweb: {
             type: 'exe',
-            /* 
-                When linking shared, the modules are not really required. But when doing a static build they are.
-             */
-            depends: ['libappweb', 'libmod_esp', 'libmod_ssl', 'libmod_ejs', 'libmod_php', 'libmod_cgi'],
+            depends: ['libappweb', 'libmod_esp', 'libmod_ssl', 'libmod_ejs', 'libmod_php', 'libmod_cgi', 'libslink'],
             sources: [ 'appweb.c' ],
+            postblend: "
+                let sources = bit.targets.appweb.sources
+                if (bit.settings.rom) {
+                    sources.push(TARGET.home.join('romFiles.c'))
+                }
+            ",
         },
 
         appwebMonitor: {
-            enable: bit.platform.like == 'windows',
+            enable: "bit.platform.like == 'windows'",
             type: 'exe',
-            rule: 'gui'
+            rule: 'gui',
             depends: [ 'libappweb' ],
             sources: [ 'windows/appwebMonitor.c' ],
-            headers: [ ],
+            headers: [ 'windows/*.h' ],
             libraries: [ 'shell32.lib' ],
             resources: [ 'windows/appwebMonitor.rc' ],
         },
 
         'appwebMonitor.ico': {
-            enable: bit.platform.like == 'windows',
             type: 'file',
             files: [ 'windows/appwebMonitor.ico' ],
-            build: "cp('windows/appwebMonitor.ico', ${BIN})",
-            generate: 'cp windows/appwebMonitor.ico ${BIN}',
+            enable: "bit.platform.like == 'windows'",
         },
 
         'server-cache': {
             path: 'cache',
+            precious: true,
             build: "Path('cache').makeDir()",
-            'generate-nmake': "md cache",
             generate: "mkdir -p cache",
+            'generate-nmake': "md cache",
         },
 
         run: {
+            depends: [ 'compile' ],
             action: "
                 trace('Run', 'From directory src/server')
                 run('appweb -v', {noio: true})
+            ",
+            generate: "sudo ${BIN}/appweb -v"
+        },
+
+        rom: {
+            action: "
+                let files = [ '.' ]
+                files += Path('web').files('**')
+                files += Path('junk/static').files('**')
+                files += Path('junk/db').files('*.mdb')
+                files.push('appweb.conf')
+                files.push('mob.conf')
+                files.push('auth.conf')
+                files.push('esp.conf')
+                Path('romFiles.c').write(Cmd.run(['makerom', '--prefix', '/'] + files))
             ",
         },
     },

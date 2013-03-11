@@ -11,73 +11,54 @@
 
 #include    "http.h"
 
-#if BLD_FEATURE_SAMPLES || 1
 /*********************************** Code *************************************/
 
-static bool matchSpy(MaConn *conn, MaStage *handler, cchar *url)
+static int matchSpy(HttpConn *conn, HttpRoute *route, int dir)
 {
-    return (conn->request->form && strncmp(url, "/", 1) == 0);
+    return (conn->rx->form && strncmp(conn->rx->pathInfo, "/", 1) == 0);
 }
 
 
-static void incomingSpyData(MaQueue *q, MaPacket *packet)
+static void incomingSpy(HttpQueue *q, HttpPacket *packet)
 {
-    MprHashTable    *table;
-    cchar       *name, *password;
+    cchar   *name, *password;
     
     if (packet->content == 0) {
         /*
             Create form vars for all the input data
          */
-        table = mprCreateHash(q, -1);
-        maAddVarsFromQueue(table, q);
-        name = mprLookupHash(table, "name");
-        password = mprLookupHash(table, "password");
-        if (name && password && strcmp(name, "admin") == 0 && strcmp(password, "secret") == 0) {
-            maSetHeader(q->conn, 0, "AUTH", "authorized");
+        name = httpGetParam(q->conn, "name", 0);
+        password = httpGetParam(q->conn, "password", 0);
+        if (name && password && smatch(name, "admin") && smatch(password, "secret")) {
+            httpSetHeader(q->conn, "AUTH", "authorized");
         }
-        mprFree(table);
         if (q->first) {
-            maPutNext(q, q->first);
+            httpPutPacketToNext(q, q->first);
         }
-        maPutNext(q, packet);
+        httpPutPacketToNext(q, packet);
     } else {
-        maJoinForService(q, packet, 0);
+        httpJoinPacketForService(q, packet, 0);
     }
 }
 
 
-MprModule *maSpyFilterInit(MaHttp *http, cchar *path)
+MprModule *SpyFilterInit(Http *http, MprModule *module)
 {
-    MprModule   *module;
-    MaStage     *filter;
+    HttpStage     *filter;
 
-    if ((module = mprCreateModule(http, "spyFilter", BLD_VERSION, NULL, NULL, NULL)) == 0) {
-        return 0;
-    }
-    if ((filter = maCreateFilter(http, "spyFilter", MA_STAGE_ALL)) == 0) {
-        mprFree(module);
+    if ((filter = httpCreateFilter(http, "spyFilter", module)) == 0) {
         return 0;
     }
     filter->match = matchSpy; 
-    filter->incomingData = incomingSpyData; 
+    filter->incoming = incomingSpy; 
     return module;
 }
-
-
-#else
-
-MprModule *maSpyFilterInit(MaHttp *http, cchar *path)
-{
-    return 0;
-}
-#endif /* BLD_FEATURE_SAMPLES */
 
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2013. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

@@ -6,7 +6,7 @@
 static void common() {
 }
 
-static void create() { 
+static void post_create() { 
     if (updateRec(createRec("post", params()))) {
         inform("New post created");
         redirect("@");
@@ -15,30 +15,30 @@ static void create() {
     }
 }
 
-static void destroy() { 
+static void post_destroy() { 
     if (removeRec("post", param("id"))) {
         inform("Post removed");
     }
     redirect("@");
 }
 
-static void edit() { 
+static void post_edit() { 
     readRec("post");
 }
 
-static void list() { }
+static void post_list() { }
 
-static void init() { 
+static void post_init() { 
     createRec("post", 0);
     renderView("post-edit");
 }
 
-static void show() { 
+static void post_show() { 
     readRec("post");
     renderView("post-edit");
 }
 
-static void update() { 
+static void post_update() { 
     if (updateFields("post", params())) {
         inform("Post updated successfully.");
         redirect("@");
@@ -52,13 +52,13 @@ ESP_EXPORT int esp_module_post(HttpRoute *route, MprModule *module)
     Edi     *edi;
 
     espDefineBase(route, common);
-    espDefineAction(route, "post-create", create);
-    espDefineAction(route, "post-destroy", destroy);
-    espDefineAction(route, "post-edit", edit);
-    espDefineAction(route, "post-init", init);
-    espDefineAction(route, "post-list", list);
-    espDefineAction(route, "post-show", show);
-    espDefineAction(route, "post-update", update);
+    espDefineAction(route, "post-create", post_create);
+    espDefineAction(route, "post-destroy", post_destroy);
+    espDefineAction(route, "post-edit", post_edit);
+    espDefineAction(route, "post-init", post_init);
+    espDefineAction(route, "post-list", post_list);
+    espDefineAction(route, "post-show", post_show);
+    espDefineAction(route, "post-update", post_update);
 
     /*
         Add model validations

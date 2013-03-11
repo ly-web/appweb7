@@ -1,5 +1,5 @@
 /**
-    manager.c -- Manager program 
+    manger.c -- Manager program 
 
     The manager watches over daemon programs.
     Key commands:
@@ -14,7 +14,7 @@
     Idempotent. "appweb start" returns 0 if already started.
 
     Typical use:
-        manager --program /usr/lib/bin/ejs --args "/usr/src/farm/farm-client" --home /usr/src/farm/client \
+        manager --program /usr/local/bin/ejs --args "/usr/src/farm/farm-client" --home /usr/src/farm/client \
             --pidfile /var/run/farm-client.pid run
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
@@ -24,7 +24,7 @@
 #include    "mpr.h"
 
 #ifndef SERVICE_PROGRAM
-    #define SERVICE_PROGRAM BIT_BIN_PREFIX "/" BIT_PRODUCT
+    #define SERVICE_PROGRAM BIT_APP_PREFIX "/bin/" BIT_PRODUCT
 #endif
 #ifndef SERVICE_NAME
     #define SERVICE_NAME BIT_PRODUCT
@@ -215,7 +215,7 @@ PUBLIC int main(int argc, char *argv[])
         err++;
     }
     if (err) {
-        mprUserError("Bad command line: \n"
+        mprEprintf("Bad command line: \n"
             "  Usage: %s [commands]\n"
             "  Switches:\n"
             "    --args               # Args to pass to service\n"
@@ -252,11 +252,11 @@ PUBLIC int main(int argc, char *argv[])
     }
     status = 0;
     if (getuid() != 0) {
-        mprUserError("Must run with administrator privilege. Use sudo.");
+        mprError("Must run with administrator privilege. Use sudo.");
         status = 1;                                                                    
 
     } else if (mprStart() < 0) {
-        mprUserError("Cannot start MPR for %s", mprGetAppName());                                           
+        mprError("Cannot start MPR for %s", mprGetAppName());                                           
         status = 2;                                                                    
 
     } else {
@@ -342,7 +342,6 @@ static bool run(cchar *fmt, ...)
     va_start(args, fmt);
     app->command = sfmtv(fmt, args);
     mprLog(1, "Run: %s", app->command);
-
     cmd = mprCreateCmd(NULL);
     rc = mprRunCmd(cmd, app->command, NULL, &out, &err, MANAGE_TIMEOUT, 0);
     app->error = sclone(err);
@@ -970,7 +969,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
             err++;
         }
         if (err) {
-            mprUserError("Bad command line: %s\n"
+            mprEprintf("Bad command line: %s\n"
                 "  Usage: %s [options] [program args]\n"
                 "  Switches:\n"
                 "    --args               # Args to pass to service\n"
@@ -993,7 +992,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
         }
     }
     if (mprStart() < 0) {
-        mprUserError("Cannot start MPR for %s", mprGetAppName());                                           
+        mprError("Cannot start MPR for %s", mprGetAppName());                                           
     } else {
         mprStartEventsThread();
         if (nextArg >= argc) {
@@ -1316,12 +1315,12 @@ static void WINAPI serviceCallback(ulong cmd)
 static bool installService()
 {
     SC_HANDLE   svc, mgr;
-    char        cmd[MPR_MAX_FNAME], key[MPR_MAX_FNAME];
+    char        cmd[BIT_MAX_FNAME], key[BIT_MAX_FNAME];
     int         serviceType;
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprUserError("Cannot open service manager");
+        mprError("Cannot open service manager");
         return 0;
     }
     /*
@@ -1337,7 +1336,7 @@ static bool installService()
         svc = CreateService(mgr, app->serviceName, app->serviceTitle, SERVICE_ALL_ACCESS, serviceType, SERVICE_DISABLED, 
             SERVICE_ERROR_NORMAL, cmd, NULL, NULL, "", NULL, NULL);
         if (! svc) {
-            mprUserError("Cannot create service: 0x%x == %d", GetLastError(), GetLastError());
+            mprError("Cannot create service: 0x%x == %d", GetLastError(), GetLastError());
             CloseServiceHandle(mgr);
             return 0;
         }
@@ -1437,20 +1436,20 @@ static bool enableService(int enable)
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprUserError("Cannot open service manager");
+        mprError("Cannot open service manager");
         return 0;
     }
     svc = OpenService(mgr, app->serviceName, SERVICE_ALL_ACCESS);
     if (svc == NULL) {
         if (enable) {
-            mprUserError("Cannot access service");
+            mprError("Cannot access service");
         }
         CloseServiceHandle(mgr);
         return 0;
     }
     flag = (enable) ? SERVICE_AUTO_START : SERVICE_DISABLED;
     if (!ChangeServiceConfig(svc, SERVICE_NO_CHANGE, flag, SERVICE_NO_CHANGE, NULL, NULL, NULL, NULL, NULL, NULL, NULL)) {
-        mprUserError("Cannot change service: 0x%x == %d", GetLastError(), GetLastError());
+        mprError("Cannot change service: 0x%x == %d", GetLastError(), GetLastError());
         CloseServiceHandle(svc);
         CloseServiceHandle(mgr);
         return 0;
@@ -1589,9 +1588,11 @@ static LRESULT msgProc(HWND hwnd, uint msg, uint wp, long lp)
  */
 static void logHandler(int flags, int level, cchar *msg)
 {
+#if KEEP
     if (flags & MPR_USER_MSG) {
         MessageBoxEx(NULL, msg, mprGetAppTitle(), MB_OK, 0);
     }
+#endif
     mprWriteToOsLog(msg, 0, 0);
 }
 
@@ -1637,7 +1638,7 @@ PUBLIC void stubManager() {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

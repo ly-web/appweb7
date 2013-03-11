@@ -131,7 +131,7 @@ typedef struct EdiRec {
     cchar           *tableName;         /**< Base table name for record */
     cchar           *id;                /**< Record key ID */
     int             nfields;            /**< Number of fields in record */
-    EdiField        fields[MPR_FLEX];   /**< Field records */
+    EdiField        fields[ARRAY_FLEX]; /**< Field records */
 } EdiRec;
 
 
@@ -148,7 +148,7 @@ typedef struct EdiGrid {
     cchar           *tableName;         /**< Base table name for grid */
     int             nrecords;           /**< Number of records in grid */
     int             flags;              /**< Grid flags */
-    EdiRec          *records[MPR_FLEX]; /**< Grid records */
+    EdiRec          *records[ARRAY_FLEX];/**< Grid records */
 } EdiGrid;
 
 /*
@@ -210,7 +210,7 @@ typedef struct EdiProvider {
     int       (*changeColumn)(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
     void      (*close)(Edi *edi);
     EdiRec    *(*createRec)(Edi *edi, cchar *tableName);
-    int       (*delete)(cchar *path);
+    int       (*deleteDatabase)(cchar *path);
     int       (*deleteRow)(Edi *edi, cchar *tableName, cchar *key);
     MprList   *(*getColumns)(Edi *edi, cchar *tableName);
     int       (*getColumnSchema)(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
@@ -848,11 +848,11 @@ PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags);
   */
 PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder);
 
-#if BIT_MDB
+#if BIT_ESP_MDB
 PUBLIC void mdbInit();
 #endif
 
-#if BIT_SDB
+#if BIT_ESP_SDB
 PUBLIC void sdbInit();
 #endif
 
@@ -866,7 +866,7 @@ PUBLIC void sdbInit();
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

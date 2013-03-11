@@ -554,9 +554,8 @@ PUBLIC void espSecurityToken(HttpConn *conn)
      */
     securityToken = espGetSecurityToken(conn);
     espAddHeaderString(conn, "X-Security-Token", securityToken);
-#if UNUSED && KEEP
+    //  MOB - just until jquery.esp.js is updated to not require this
     espRender(conn, "<meta name='SecurityTokenName' content='%s' />\r\n", ESP_SECURITY_TOKEN_NAME);
-#endif
     espRender(conn, "<meta name='%s' content='%s' />", ESP_SECURITY_TOKEN_NAME, securityToken);
 }
 
@@ -643,7 +642,7 @@ static void filterCols(EdiGrid *grid, MprHash *options, MprHash *colOptions)
                 return;
             }
             pos = mprLookupStringItem(gridCols, columnName);
-            assure(pos >= 0);
+            assert(pos >= 0);
             desired[c] = pos;
             location[c] = c;
         }
@@ -767,7 +766,7 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
     char        index[8];
     int         c, r, ncols;
    
-    assure(grid);
+    assert(grid);
     if (grid->nrecords == 0) {
         espRender(conn, "<p>No Data</p>\r\n");
         return;
@@ -794,7 +793,7 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
         espRender(conn, "        <tr class='-esp-table-header'>\r\n");
         rec = grid->records[0];
         for (r = 0; r < ncols; r++) {
-            assure(r <= grid->nrecords);
+            assert(r <= grid->nrecords);
             width = ((o = httpGetOption(options, "width", 0)) != 0) ? sfmt(" width='%s'", o) : "";
             thisCol = mprLookupKey(colOptions, itosbuf(index, sizeof(index), r, 10));
             header = httpGetOption(thisCol, "header", spascal(rec->id));
@@ -867,7 +866,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
     char        index[8];
     int         c, r, ncols, sortOrder;
    
-    assure(grid);
+    assert(grid);
     if (grid == 0) {
         return;
     }
@@ -912,7 +911,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
         espRender(conn, "        <tr class='-esp-table-header'>\r\n");
         rec = grid->records[0];
         for (c = 0; c < ncols; c++) {
-            assure(c <= rec->nfields);
+            assert(c <= rec->nfields);
             fp = &rec->fields[c];
             width = ((o = httpGetOption(options, "width", 0)) != 0) ? sfmt(" width='%s'", o) : "";
             thisCol = mprLookupKey(colOptions, itosbuf(index, sizeof(index), c, 10));
@@ -1144,7 +1143,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
                         /* Trim last "&" */
                         pstr[strlen(pstr) - 1] = '\0';
                     }
-                    mprPutFmtToBuf(buf, "%s-params='%s", params);
+                    mprPutToBuf(buf, "%s-params='%s", params);
                 }
             }
             mprPutStringToBuf(buf, kp->key);
@@ -1172,7 +1171,7 @@ PUBLIC void espInitHtmlOptions(Esp *esp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

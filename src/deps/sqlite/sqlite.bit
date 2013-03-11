@@ -22,12 +22,14 @@ Bit.load({
                     }
                 ",
             },
+            require: 'sqlite',
         },
         sqlite: {
             type: 'exe'
             sources: ['sqlite.c'],
             depends: ['libsqlite3'],
             platforms: [ 'local' ],
+            require: 'sqlite',
         },
 	},
 })

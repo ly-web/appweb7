@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.2.0 Documentation</title>
+    <title>Embedthis Appweb 4.3.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.2.0</div>
+                <div class="version">Embedthis Appweb 4.3.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -58,7 +58,7 @@
         </div>
         <div class="contentLeft">
             <h1>Serving Pages from ROM</h1>
-            <p>To enable Appweb to be used on embedded systems without file systems, Appweb supports the compilation of
+            <p>To enable Appweb to be used on an embedded system without a file system, Appweb supports the compilation of
             web pages and configuration files into C code that can be stored in Read Only Memory (ROM) and fetched by
             Appweb to respond to relevant requests.</p>
             <p>Appweb has a virtual file system interface that allows the run-time switching between serving web pages
@@ -73,12 +73,10 @@
             application.</p>
             <p>For example:</p>
             <pre>
-find web -type f -print &gt;fileList
-makerom --files filelist &gt;romFiles.c
-cc -o romFiles.o romFiles.c
+makerom `find web -print` &gt;romFiles.c
 </pre>
             <p>This will create a list of all the web files and then convert these files into C structures in the file
-            romFiles.cpp.</p>
+            romFiles.c.</p>
             <p>The <b>makerom</b> program takes two options:</p>
             <table title="Switches" class="width">
                 <thead>
@@ -90,7 +88,9 @@ cc -o romFiles.o romFiles.c
                 <tbody>
                     <tr>
                         <td>--prefix</td>
-                        <td>Specifies a prefix to remove from each of the compiled file names.</td>
+                        <td>Specifies a leading string prefix to remove from each of the compiled file names. Filenames
+                            should be relative paths and not start with "./".
+                        </td>
                     </tr>
                     <tr>
                         <td class="nowrap">-- name</td>
@@ -104,11 +104,7 @@ cc -o romFiles.o romFiles.c
             Appweb configuration file, the mime.types file, and any authorization database files. The following script
             is used to compile the web pages in three web directories ("sslWeb", "vhostWeb", and "web") and to also
             compile the essential configuration files.</p>
-            <pre>
-find sslWeb vhostWeb web -print &gt;rom.files \
-echo -e '.\nappweb.conf\nmime.types\nusers.db\ngroups.db' &gt;&gt;rom.files
-makerom rom.files &gt;romFiles.cpp
-</pre><a id="php"></a>
+<a id="php"></a>
             <h2 class="section">Using ROM with PHP</h2>
             <p>The ROM facility is supported by the following Appweb modules and handlers: fileHandler,
             espHandler and the sslModule.</p>
@@ -118,7 +114,7 @@ makerom rom.files &gt;romFiles.cpp
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

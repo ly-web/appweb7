@@ -34,7 +34,6 @@ if (path) {
             http.close()
             trace('Prepare', 'Ejscript distribution')
             ejs.removeAll()
-            ejs.makeDir()
             Zlib.uncompress(tgz, tar)
             Tar(tar, {chdir: deps}).extract()
             let dir = deps.files('ejs-*').sort().reverse()[0]
@@ -103,7 +102,7 @@ if (Path('src/deps/ejs/ejsLib.c').exists) {
 if (bit.packs.sqlite && bit.packs.sqlite.enable) {
     cfg.libraries.push('sqlite3')
 }
-if (bit.packs.ssl && bit.packs.ssl.enable) {
+if (bit.ssl) {
     cfg.libraries.push('mprssl')
 }
 Bit.load({packs: { ejscript: cfg }})

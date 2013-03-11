@@ -1,3 +1,0 @@
-Qsort Routine License
-
-(c) Michael Ringgaard. BSD license.

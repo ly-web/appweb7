@@ -28,31 +28,31 @@ static void setup(MprTestGroup *gp)
 
 static void validateUri(MprTestGroup *gp)
 {
-    assert(normalize(gp, "", ""));
-    assert(normalize(gp, "/", "/"));
-    assert(normalize(gp, "/index.html", "/index.html"));
-    assert(normalize(gp, "/a/index.html", "/a/index.html"));
+    tassert(normalize(gp, "", ""));
+    tassert(normalize(gp, "/", "/"));
+    tassert(normalize(gp, "/index.html", "/index.html"));
+    tassert(normalize(gp, "/a/index.html", "/a/index.html"));
 
-    assert(normalize(gp, "..", ""));
-    assert(normalize(gp, "../", ""));
-    assert(normalize(gp, "/..", "/"));
-    assert(normalize(gp, "/a/..", "/"));
-    assert(normalize(gp, "/a/../", "/"));
-    assert(normalize(gp, "/a/../b/..", "/"));
-    assert(normalize(gp, "../a/b/..", "a/"));
+    tassert(normalize(gp, "..", ""));
+    tassert(normalize(gp, "../", ""));
+    tassert(normalize(gp, "/..", "/"));
+    tassert(normalize(gp, "/a/..", "/"));
+    tassert(normalize(gp, "/a/../", "/"));
+    tassert(normalize(gp, "/a/../b/..", "/"));
+    tassert(normalize(gp, "../a/b/..", "a/"));
 
-    assert(normalize(gp, "./", ""));
-    assert(normalize(gp, "./.", ""));
-    assert(normalize(gp, "././", ""));
-    assert(normalize(gp, "/a/./", "/a/"));
-    assert(normalize(gp, "/a/./.", "/a/"));
-    assert(normalize(gp, "/a/././", "/a/"));
-    assert(normalize(gp, "/a/.", "/a/"));
+    tassert(normalize(gp, "./", ""));
+    tassert(normalize(gp, "./.", ""));
+    tassert(normalize(gp, "././", ""));
+    tassert(normalize(gp, "/a/./", "/a/"));
+    tassert(normalize(gp, "/a/./.", "/a/"));
+    tassert(normalize(gp, "/a/././", "/a/"));
+    tassert(normalize(gp, "/a/.", "/a/"));
 
-    assert(normalize(gp, "/*a////b/", "/*a/b/"));
-    assert(normalize(gp, "/*a/////b/", "/*a/b/"));
+    tassert(normalize(gp, "/*a////b/", "/*a/b/"));
+    tassert(normalize(gp, "/*a/////b/", "/*a/b/"));
 
-    assert(normalize(gp, "\\a\\b\\", "\\a\\b\\"));
+    tassert(normalize(gp, "\\a\\b\\", "\\a\\b\\"));
 }
 
 
@@ -67,15 +67,15 @@ static void escape(MprTestGroup *gp)
             FUTURE -- should we not allow "'~"
             FUTURE -- shold we not allow ";?" but allow "/?:@=&"
      */
-    assert(okEscapeUri(gp, " \t\r\n\x01\x7f\xff?<>\"#%{}|\\^[]?;", 
+    tassert(okEscapeUri(gp, " \t\r\n\x01\x7f\xff?<>\"#%{}|\\^[]?;", 
         "+%09%0D%0A%01%7F%FF%3F%3C%3E%22%23%25%7B%7D%7C%5C%5E%5B%5D%3F%3B", MPR_ENCODE_URI_COMPONENT));
-    assert(okEscapeUri(gp, " \t\r\n\x01\x7f\xff?<>\"#%{}|\\^[]?;", 
+    tassert(okEscapeUri(gp, " \t\r\n\x01\x7f\xff?<>\"#%{}|\\^[]?;", 
         "%20%09%0D%0A%01%7F%FF?%3C%3E%22#%25%7B%7D%7C%5C%5E[]?;", MPR_ENCODE_URI));
    
-    assert(okEscapeCmd(gp, "&;`'\"|*?~<>^()[]{}$\\\n", 
+    tassert(okEscapeCmd(gp, "&;`'\"|*?~<>^()[]{}$\\\n", 
         "\\&\\;\\`\\\'\\\"\\|\\*\\\?\\~\\<\\>\\^\\(\\)\\[\\]\\{\\}\\$\\\\\\\n"));
-    assert(okEscapeHtml(gp, "<>&", "&lt;&gt;&amp;"));
-    assert(okEscapeHtml(gp, "#()", "#()"));
+    tassert(okEscapeHtml(gp, "<>&", "&lt;&gt;&amp;"));
+    tassert(okEscapeHtml(gp, "#()", "#()"));
 }
 
 
@@ -96,7 +96,7 @@ static void descape(MprTestGroup *gp)
             mprLog(0, "Chr[%d] descaped %x, uri %x\n", i, descaped[i], uri[i]);
         }
     }
-    assert(match);
+    tassert(match);
 }
 
 
@@ -172,8 +172,8 @@ MprTestDef testHttp = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

@@ -9,7 +9,7 @@
 #include    "appweb.h"
 #include    "edi.h"
 
-#if BIT_PACK_ESP && BIT_SDB
+#if BIT_PACK_ESP && BIT_ESP_SDB
  #include    "sqlite3.h"
 
 /************************************* Local **********************************/
@@ -22,9 +22,9 @@
 #define THREAD_STYLE SQLITE_CONFIG_MULTITHREAD
 
 typedef struct Sdb {
-    Edi             edi;            /**< */
-    sqlite3         *db;
-    MprMutex        *mutex;
+    Edi             edi;            /**< EDI database interface structure */
+    sqlite3         *db;            /**< SQLite database handle */
+    MprMutex        *mutex;         /**< Multithread lock */
 } Sdb;
 
 static int sqliteInitialized;
@@ -47,7 +47,6 @@ static var DataTypeToSqlType: Object = {
     "timestamp":    "datetime",
 };
 #endif
-
 
 /************************************ Forwards ********************************/
 
@@ -109,7 +108,7 @@ static Sdb *sdbCreate(cchar *path, int flags)
 {
     Sdb      *sdb;
 
-    assure(path && *path);
+    assert(path && *path);
 
     initSqlite();
     if ((sdb = mprAllocObj(Sdb, manageSdb)) == 0) {
@@ -138,7 +137,7 @@ static void sdbClose(Edi *edi)
 {
     Sdb     *sdb;
 
-    assure(edi);
+    assert(edi);
 
     sdb = (Sdb*) edi;
     if (sdb->db) {
@@ -250,9 +249,9 @@ static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
     SdbTable        *table;
     SdbCol          *col;
 
-    assure(edi);
-    assure(tableName && *tableName);
-    assure(columnName && *columnName);
+    assert(edi);
+    assert(tableName && *tableName);
+    assert(columnName && *columnName);
 
     sdb = (Sdb*) edi;
     lock(sdb);
@@ -447,7 +446,7 @@ static int query(Edi *edi, cchar *cmd, EdiGrid *gridp)
     ssize           len;
     int             r, nrows, i, ncol, rc, retries;
 
-    assure(db);
+    assert(db);
     sdb = (Sdb*) edi;
     retries = 0;
 
@@ -611,8 +610,8 @@ static EdiGrid *sdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
     SdbRow      *row;
     int         nrows, next, op;
 
-    assure(edi);
-    assure(tableName && *tableName);
+    assert(edi);
+    assert(tableName && *tableName);
 
     sdb = (Sdb*) edi;
     lock(sdb);
@@ -979,13 +978,13 @@ static void leaveMutex(sqlite3_mutex *mutex)
 
 
 static int mutexIsHeld(sqlite3_mutex *mutex) { 
-    assure(0); 
+    assert(0); 
     return 0; 
 }
 
 
 static int mutexIsNotHeld(sqlite3_mutex *mutex) { 
-    assure(0); 
+    assert(0); 
     return 0; 
 }
 
@@ -1018,12 +1017,12 @@ static void initSqlite()
     mprGlobalUnlock();
 }
 
-#endif /* BIT_PACK_ESP && BIT_SDB */
+#endif /* BIT_PACK_ESP && BIT_ESP_SDB */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

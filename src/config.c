@@ -29,16 +29,16 @@ static int setTarget(MaState *state, cchar *name, cchar *details);
 
 PUBLIC int maOpenConfig(MaState *state, cchar *path)
 {
-    assure(state);
-    assure(path && *path);
+    assert(state);
+    assert(path && *path);
 
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
-    if ((state->file = mprOpenFile(path, O_RDONLY | O_TEXT, 0444)) == 0) {
+    if ((state->file = mprOpenFile(mprGetRelPath(path, NULL), O_RDONLY | O_TEXT, 0444)) == 0) {
         mprError("Cannot open %s for config directives", path);
         return MPR_ERR_CANT_OPEN;
     }
-    mprLog(5, "Parsing config file: %s", state->filename);
+    mprTrace(5, "Parsing config file: %s", state->filename);
     return 0;
 }
 
@@ -49,15 +49,22 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     HttpHost    *host;
     HttpRoute   *route;
 
-    assure(server);
-    assure(path && *path);
+    assert(server);
+    assert(path && *path);
 
     mprLog(2, "Config File %s", path);
 
     host = server->defaultHost;
     route = host->defaultRoute;
 
-    httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
+    httpSetRouteVar(route, "LOG_DIR", BIT_VAPP_PREFIX "/bin");
+    httpSetRouteVar(route, "INC_DIR", BIT_VAPP_PREFIX "/inc");
+    httpSetRouteVar(route, "SPL_DIR", BIT_SPOOL_PREFIX);
+    httpSetRouteVar(route, "BIN_DIR", mprJoinPath(server->appweb->platformDir, "bin"));
+#if DEPRECATED || 1
+    /* DEPRECATED */ httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
+    /* DEPRECATED */ httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
+#endif
 
     state = createState(server, host, route);
     state->flags = flags;
@@ -80,18 +87,18 @@ static int parseFile(MaState *state, cchar *path)
 {
     int     rc;
 
-    assure(state);
-    assure(path && *path);
+    assert(state);
+    assert(path && *path);
 
     if ((state = maPushState(state)) == 0) {
         return 0;
     }
-    assure(state == state->top->current);
+    assert(state == state->top->current);
     
     rc = parseFileInner(state, path);
     state->lineNumber = state->prev->lineNumber;
     state = maPopState(state);
-    assure(state->top->current == state);
+    assert(state->top->current == state);
     return rc;
 }
 
@@ -101,8 +108,8 @@ static int parseFileInner(MaState *state, cchar *path)
     MaDirective *directive;
     char        *tok, *key, *line, *value;
     
-    assure(state);
-    assure(path && *path);
+    assert(state);
+    assert(path && *path);
 
     if (maOpenConfig(state, path) < 0) {
         return MPR_ERR_CANT_OPEN;
@@ -116,7 +123,7 @@ static int parseFileInner(MaState *state, cchar *path)
         key = getDirective(line, &value);
         if (!state->enabled) {
             if (key[0] != '<') {
-                mprLog(8, "Skip: %s %s", key, value);
+                mprTrace(8, "Skip: %s %s", key, value);
                 continue;
             }
         }
@@ -125,7 +132,7 @@ static int parseFileInner(MaState *state, cchar *path)
             return MPR_ERR_BAD_SYNTAX;
         }
         state->key = key;
-        mprLog(8, "Line %d, Parse %s %s", state->lineNumber, key, value ? value : "");
+        mprTrace(8, "Line %d, Parse %s %s", state->lineNumber, key, value ? value : "");
         if ((*directive)(state, key, value) < 0) {
             mprError("Error with directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
@@ -191,7 +198,7 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
         mprError("Missing filename");
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpSetRouteLog(state->route, httpMakePath(state->route, path), size, backup, HTTP_LOG_FORMAT, flags);
+    httpSetRouteLog(state->route, httpMakePath(state->route, path), size, backup, BIT_HTTP_LOG_FORMAT, flags);
     return 0;
 }
 #endif
@@ -387,20 +394,12 @@ static int authGroupFileDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    AuthStore pam|internal
+    AuthStore NAME
  */
 static int authStoreDirective(MaState *state, cchar *key, cchar *value)
 {
-    if (scaselesscmp(value, "internal") == 0) {
-        httpSetAuthStore(state->auth, "internal");
-    } else if (scaselesscmp(value, "pam") == 0) {
-#if BIT_HAS_PAM && BIT_PAM
-        httpSetAuthStore(state->auth, "pam");
-#else
-        mprError("The pam AuthStore is not supported on this platform");
-        return configError(state, key);
-#endif
-    } else {
+    if (httpSetAuthStore(state->auth, value) < 0) {
+        mprError("The %s AuthStore is not available on this platform", value);
         return configError(state, key);
     }
     return 0;
@@ -782,7 +781,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
     
     for (option = gettok(sclone(value), &tok); option; option = gettok(tok, &tok)) {
         if (!path) {
-            path = sclone(option);
+            path = mprJoinPath(httpGetRouteVar(state->route, "LOG_DIR"), httpExpandRouteVars(state->route, option));
         } else {
             option = stok(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
@@ -850,7 +849,7 @@ static int exitTimeoutDirective(MaState *state, cchar *key, cchar *value)
  */
 static int groupAccountDirective(MaState *state, cchar *key, cchar *value)
 {
-    if (!smatch(value, "_unchanged_")) {
+    if (!smatch(value, "_unchanged_") && !mprGetDebugMode()) {
         maSetHttpGroup(state->appweb, value);
     }
     return 0;
@@ -883,10 +882,6 @@ static int homeDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%T", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-#if UNUSED
-    maSetServerHome(state->server, path);
-    httpSetHostHome(state->host, path);
-#endif
     httpSetRouteHome(state->route, path);
     mprLog(MPR_CONFIG, "Server Root \"%s\"", path);
     return 0;
@@ -917,6 +912,7 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
             Convert glob style to regexp
          */
         path = mprGetPathDir(mprJoinPath(state->route->home, value));
+        path = stemplate(path, state->route->vars);
         pattern = mprGetPathBase(value);
         pattern = sreplace(pattern, ".", "\\.");
         pattern = sreplace(pattern, "*", ".*");
@@ -951,7 +947,7 @@ static int ifDirective(MaState *state, cchar *key, cchar *value)
     if (state->enabled) {
         state->enabled = conditionalDefinition(state, value);
         if (!state->enabled) {
-            mprLog(7, "If \"%s\" conditional is false at %s:%d", value, state->filename, state->lineNumber);
+            mprTrace(7, "If \"%s\" conditional is false at %s:%d", value, state->filename, state->lineNumber);
         }
     }
     return 0;
@@ -1171,10 +1167,11 @@ static int limitUploadDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     Listen ip:port      Listens only on the specified interface
-    Listen ip           Listens only on the specified interface with the default port (80, 443)
+    Listen ip           Listens only on the specified interface with the default port
     Listen port         Listens on both IPv4 and IPv6
 
     Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[::]" if appending a port.
+    Can provide http:// and https:// prefixes.
  */
 static int listenDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1182,7 +1179,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     char            *ip;
     int             port;
 
-    mprParseSocketAddress(value, &ip, &port, HTTP_DEFAULT_PORT);
+    mprParseSocketAddress(value, &ip, &port, NULL, 80);
     if (port == 0) {
         mprError("Bad or missing port %d in Listen directive", port);
         return -1;
@@ -1196,7 +1193,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
         Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
      */
-    if (!schr(value, ':') && !mprHasDualNetworkStack()) {
+    if (!schr(value, ':') && mprHasIPv6() && !mprHasDualNetworkStack()) {
         mprAddItem(state->server->endpoints, httpCreateEndpoint("::", port, NULL));
     }
     return 0;
@@ -1324,7 +1321,7 @@ static int loadModulePathDirective(MaState *state, cchar *key, cchar *value)
 		 Search path is: USER_SEARCH : exeDir : /usr/lib/appweb/bin
      */
     sep = MPR_SEARCH_SEP;
-    path = sjoin(value, sep, mprGetAppDir(), sep, BIT_BIN_PREFIX, NULL);
+    path = sjoin(value, sep, mprGetAppDir(), sep, BIT_VAPP_PREFIX "/bin", NULL);
     mprSetModuleSearchPath(path);
     return 0;
 }
@@ -1434,8 +1431,8 @@ static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
     char    *ip;
     int     port;
 
-    mprLog(4, "NameVirtual Host: %s ", value);
-    mprParseSocketAddress(value, &ip, &port, -1);
+    mprTrace(4, "NameVirtual Host: %s ", value);
+    mprParseSocketAddress(value, &ip, &port, NULL, -1);
     httpConfigureNamedVirtualEndpoints(state->http, ip, port);
     return 0;
 }
@@ -1602,7 +1599,8 @@ static int requestTimeoutDirective(MaState *state, cchar *key, cchar *value)
  */
 static int requireDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *type, *rest;
+    char    *age, *type, *rest, *option, *ovalue, *tok;
+    int     domains;
 
     if (!maTokenize(state, value, "%S ?*", &type, &rest)) {
         return MPR_ERR_BAD_SYNTAX;
@@ -1615,7 +1613,23 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
         httpSetAuthRequiredAbilities(state->auth, rest);
 
     } else if (scaselesscmp(type, "secure") == 0) {
-        addCondition(state, "secure", 0, 0);
+        domains = 0;
+        age = 0;
+        for (option = stok(sclone(rest), " \t", &tok); option; option = stok(0, " \t", &tok)) {
+            option = stok(option, " =\t,", &ovalue);
+            ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
+            if (smatch(option, "age")) {
+                age = sfmt("%Ld", (int64) getticks(ovalue));
+            } else if (smatch(option, "domains")) {
+                domains = 1;
+            }
+        }
+        if (age) {
+            if (domains) {
+                age = sjoin("-1", age, NULL);
+            }
+        }
+        addCondition(state, "secure", age, 0);
 
     } else if (scaselesscmp(type, "user") == 0) {
         httpSetAuthPermittedUsers(state->auth, rest);
@@ -1738,29 +1752,6 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
     httpSetHostName(state->host, strim(value, "http://", MPR_TRIM_START));
     return 0;
 }
-
-
-#if UNUSED
-/*
-    ServerRoot path
- */
-static int serverRootDirective(MaState *state, cchar *key, cchar *value)
-{
-    char    *path;
-
-    if (!maTokenize(state, value, "%T", &path)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-#if UNUSED
-    maSetServerHome(state->server, path);
-#endif
-    httpSetHostRoot(state->host, path);
-    httpSetRouteHome(state->route, path);
-    httpSetRouteVar(state->route, "SERVER_ROOT", path);
-    mprLog(MPR_CONFIG, "Server Root \"%s\"", path);
-    return 0;
-}
-#endif
 
 
 /*
@@ -1946,6 +1937,7 @@ static int updateDirective(MaState *state, cchar *key, cchar *value)
  */
 static int uploadDirDirective(MaState *state, cchar *key, cchar *value)
 {
+    //  MOB - need httpSetUploadDir
     state->route->uploadDir = httpMakePath(state->route, value);
     return 0;
 }
@@ -1956,6 +1948,7 @@ static int uploadDirDirective(MaState *state, cchar *key, cchar *value)
  */
 static int uploadAutoDeleteDirective(MaState *state, cchar *key, cchar *value)
 {
+    //  MOB use httpSetRouteAutoDelete
     if (!maTokenize(state, value, "%B", &state->route->autoDelete)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -1986,7 +1979,7 @@ static int userDirective(MaState *state, cchar *key, cchar *value)
  */
 static int userAccountDirective(MaState *state, cchar *key, cchar *value)
 {
-    if (!smatch(value, "_unchanged_")) {
+    if (!smatch(value, "_unchanged_") && !mprGetDebugMode()) {
         maSetHttpUser(state->appweb, value);
     }
     return 0;
@@ -1998,13 +1991,12 @@ static int userAccountDirective(MaState *state, cchar *key, cchar *value)
  */
 static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
 {
-    HttpEndpoint    *endpoint;
     char            *ip;
     int             port;
 
     state = maPushState(state);
     if (state->enabled) {
-        mprParseSocketAddress(value, &ip, &port, -1);
+        mprParseSocketAddress(value, &ip, &port, NULL, -1);
         /*
             Inherit the current default route configuration (only)
             Other routes are not inherited due to the reset routes below
@@ -2018,15 +2010,30 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
         httpSetHostIpAddr(state->host, ip, port);
         httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
         state->auth = state->route->auth;
-        if ((endpoint = httpLookupEndpoint(state->http, ip, port)) == 0) {
-            mprError("Cannot find listen directive for virtual host %s", value);
+    }
+    return 0;
+}
+
+
+/*
+    </VirtualHost>
+ */
+static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
+{
+    HttpEndpoint    *endpoint;
+
+    if (state->enabled) {
+        if ((endpoint = httpLookupEndpoint(state->http, state->host->ip, state->host->port)) == 0) {
+            mprError("Cannot find listen directive for virtual host %s", state->host->name);
             return MPR_ERR_BAD_SYNTAX;
         } else {
             httpAddHostToEndpoint(endpoint, state->host);
         }
     }
+    closeDirective(state, key, value);
     return 0;
 }
+
 
 static int ignoreEncodingErrors(MaState *state, cchar *key, cchar *value)
 {
@@ -2098,7 +2105,7 @@ PUBLIC bool maValidateServer(MaServer *server)
     appweb = server->appweb;
     http = appweb->http;
     defaultHost = server->defaultHost;
-    assure(defaultHost);
+    assert(defaultHost);
 
     /*
         Add the default host to the endpoints
@@ -2116,12 +2123,6 @@ PUBLIC bool maValidateServer(MaServer *server)
         Ensure the host home directory is set and the file handler is defined
      */
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
-#if UNUSED
-        //  MOB - remove
-        if (host->root == 0) {
-            httpSetHostRoot(host, defaultHost->home);
-        }
-#endif
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(route->extensions, "")) {
                 mprError("Route %s in host %s is missing a catch-all handler\n"
@@ -2179,6 +2180,12 @@ static bool conditionalDefinition(MaState *state, cchar *key)
     } else if (scaselessmatch(key, "BIT_DEBUG")) {
         result = BIT_DEBUG;
 #endif
+
+    } else if (scaselessmatch(key, "dynamic")) {
+        result = !state->appweb->staticLink;
+
+    } else if (scaselessmatch(key, "static")) {
+        result = state->appweb->staticLink;
 
     } else if (state->appweb->skipModules) {
         /* ESP utility needs to be able to load mod_esp */
@@ -2423,8 +2430,8 @@ static char *getDirective(char *line, char **valuep)
     char    *key, *value;
     ssize   len;
     
-    assure(line);
-    assure(valuep);
+    assert(line);
+    assert(valuep);
 
     *valuep = 0;
     key = stok(line, " \t", &value);
@@ -2632,7 +2639,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "UserAccount", userAccountDirective);
 
     maAddDirective(appweb, "<VirtualHost", virtualHostDirective);
-    maAddDirective(appweb, "</VirtualHost", closeDirective);
+    maAddDirective(appweb, "</VirtualHost", closeVirtualHostDirective);
 
     maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrors);
     maAddDirective(appweb, "LimitWebSockets", limitWebSocketsDirective);
@@ -2689,7 +2696,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -102,11 +102,11 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
 }
 
 
-//  BLOG
+//  MOB BLOG
 /*
-    This will restart the default server on a new IP:PORT. It will stop listening on the default endpoint on the default
-    server, optionally modify the IP:PORT and resume listening. NOTE: running requests will be unaffected.
-    WARNING: this is demonstration code and has no error checking.
+    This will restart the default server on a new IP:PORT. It will stop listening on the default endpoint on 
+    the default server, optionally modify the IP:PORT and resume listening. NOTE: running requests will be
+    unaffected.  WARNING: this is demonstration code and has no error checking.
  */
 PUBLIC void maRestartServer(cchar *ip, int port)
 {
@@ -143,7 +143,7 @@ PUBLIC void maRestartServer(cchar *ip, int port)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

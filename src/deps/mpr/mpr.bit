@@ -13,20 +13,24 @@ Bit.load({
 
         libmprssl: {
             type: 'lib',
-            depends: [ 'libmpr', 'openssl', 'matrixssl' ],
+            depends: [ 'libmpr', 'libest', 'openssl', 'matrixssl', 'nanossl' ],
             sources: [ 'mprSsl.c' ],
+            require: 'ssl',
         },
 
         manager: {
-            enable: 'bit.settings.manager',
+            enable: 'bit.settings.mpr && bit.settings.mpr.manager',
             type: 'exe',
-            path: '${BIN}/${settings.manager}${EXE}'
+            path: '${BIN}/${settings.mpr.manager}${EXE}'
             rule: 'gui',
             depends: [ 'libmpr' ],
             sources: [ 'manager.c' ],
-            scripts: { prebuild: "bit.settings.manager ||= 'manager'" },
+            scripts: { prebuild: "if (bit.settings.mpr) { bit.settings.mpr.manager ||= 'manager'}" },
         },
 
+        /*
+            Always build makerom because if cross-compiling, the dev system will be !BIT_ROM, but needs it for the target
+         */
         makerom: {
             type: 'exe',
             depends: [ 'libmpr', ],
@@ -34,4 +38,11 @@ Bit.load({
             platforms: [ 'local' ],
         },
 	},
+
+    packs: {
+        est: {},
+        matrixssl: {},
+        openssl: {},
+        nanossl: {},
+    },
 })

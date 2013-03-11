@@ -2,13 +2,13 @@
 #
 #	uninstall: Appweb uninstall script
 #
-#	Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+#	Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 #
 #	Usage: uninstall [configFile]
 #
 ################################################################################
 #
-#	Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+#	Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 #	The latest version of this code is available at http://embedthis.com
 #
 #	This software is open source; you can redistribute it and/or modify it 
@@ -27,10 +27,6 @@
 #	from Embedthis Software at http://embedthis.com
 #
 ################################################################################
-#
-#	NOTE: We require a saved setup file exist in $VER_PREFIX/install.conf
-#	This is created by install.
-#
 
 HOME=`pwd`
 FMT=
@@ -42,13 +38,25 @@ VERSION="${settings.version}"
 NUMBER="${settings.buildNumber}"
 OS="${platform.os}"
 
+ROOT_PREFIX="${prefixes.root}"
+BASE_PREFIX="${prefixes.base}"
+STATE_PREFIX="${prefixes.state}"
+APP_PREFIX="${prefixes.app}"
+VAPP_PREFIX="${prefixes.vapp}"
+
 BIN_PREFIX="${prefixes.bin}"
-CFG_PREFIX="${prefixes.config}"
+SBIN_PREFIX="${prefixes.sbin}"
+ETC_PREFIX="${prefixes.etc}"
 INC_PREFIX="${prefixes.inc}"
-PRD_PREFIX="${prefixes.product}"
-VER_PREFIX="${prefixes.productver}"
-SPL_PREFIX="${prefixes.spool}"
+LIB_PREFIX="${prefixes.lib}"
+MAN_PREFIX="${prefixes.man}"
 WEB_PREFIX="${prefixes.web}"
+LOG_PREFIX="${prefixes.log}"
+SPL_PREFIX="${prefixes.spool}"
+CACHE_PREFIX="${prefixes.cache}"
+
+ABIN="${VAPP_PREFIX}/bin"
+AINC="${VAPP_PREFIX}/inc"
 
 removebin=Y
 headless=${HEADLESS:-0}
@@ -85,8 +93,8 @@ yesno() {
 
 deconfigureService() {
     [ "$headless" != 1 ] && echo -e "Stopping $NAME service"
-    if [ $OS = WIN ] ; then
-        "$BIN_PREFIX/appwebMonitor" --stop >/dev/null 2>&1
+    if [ $OS = windows ] ; then
+        "$ABIN/appwebMonitor" --stop >/dev/null 2>&1
     fi
     # Fedora will indiscriminately kill appman here too
     # Need this ( ; true) to suppress the Killed message
@@ -94,11 +102,11 @@ deconfigureService() {
     [ "$headless" != 1 ] && echo -e "Removing $NAME service"
     appman disable 
     appman uninstall
-    if [ -f "$BIN_PREFIX/$PRODUCT" ] ; then
+    if [ -f "$ABIN/$PRODUCT" ] ; then
         if which pidof >/dev/null 2>&1 ; then
-            pid=`pidof $BIN_PREFIX/$PRODUCT`
+            pid=`pidof $ABIN/$PRODUCT`
         else
-            pid=`ps -ef | grep $BIN_PREFIX/$PRODUCT | grep -v 'grep' | awk '{print $2}'`
+            pid=`ps -ef | grep $ABIN/$PRODUCT | grep -v 'grep' | awk '{print $2}'`
         fi
         [ "$pid" != "" ] && kill -9 $pid >/dev/null 2>&1
     fi
@@ -139,9 +147,9 @@ removeTarFiles() {
     local cdir=`pwd`
 
     pkg=$1
-    [ $pkg = bin ] && prefix="$VER_PREFIX"
+    [ $pkg = bin ] && prefix="$VAPP_PREFIX"
     if [ -f "$prefix/files.log" ] ; then
-        if [ $OS = WIN ] ; then
+        if [ $OS = windows ] ; then
             cd ${prefix%%:*}:/
         else
             cd /
@@ -157,19 +165,18 @@ preClean() {
     local f
     local cdir=`pwd`
 
-    cp "$BIN_PREFIX/linkup" /tmp/linkup$$
-    if [ $OS != WIN ] ; then
+    if [ $OS != windows ] ; then
         rm -f /var/lock/subsys/$PRODUCT /var/lock/$PRODUCT
-        rm -fr /var/log/$PRODUCT
+        rm -fr "${LOG_PREFIX}"
+        rm -rf "${SPOOL_PREFIX}"
         rm -rf /var/run/$PRODUCT
-        rm -rf /var/spool/$PRODUCT
     fi
-    if [ -x "$PRD_PREFIX" ] ; then
-        cd "$PRD_PREFIX"
+    if [ -x "$APP_PREFIX" ] ; then
+        cd "$APP_PREFIX"
         removeIntermediateFiles *.dylib *.dll *.exp *.lib
     fi
-    if [ -x "$CFG_PREFIX" ] ; then
-        cd "$CFG_PREFIX"
+    if [ -x "$ETC_PREFIX" ] ; then
+        cd "$ETC_PREFIX"
         removeIntermediateFiles access.log* error.log* '*.log.old' .dummy $PRODUCT.conf make.log $PRODUCT.conf.bak
     fi
     if [ -x "$WEB_PREFIX" ] ; then
@@ -180,9 +187,9 @@ preClean() {
         cd "$SPL_PREFIX"
         removeIntermediateFiles *.mod *.c *.dll *.exp *.lib *.obj *.o *.dylib *.so
     fi
-    if [ -d "$INC_PREFIX" ] ; then
-        cd "$INC_PREFIX"
-        removeIntermediateFiles '*.o' '*.lo' '*.so' '*.a' make.rules .config.h.sav make.log .changes
+    if [ -x "$CACHE_PREFIX" ] ; then
+        cd "$CACHE_PREFIX"
+        removeIntermediateFiles *.mod *.c *.dll *.exp *.lib *.obj *.o *.dylib *.so
     fi
     cd "$cdir"
 }
@@ -191,36 +198,23 @@ preClean() {
 postClean() {
     local cdir=`pwd`
 
-    rm -f "${VER_PREFIX}/install.conf"
-
-    cleanDir "${BIN_PREFIX}"
-    cleanDir "${INC_PREFIX}"
-    cleanDir "${DOC_PREFIX}"
-    cleanDir "${PRD_PREFIX}"
-    cleanDir "${CFG_PREFIX}"
+    cleanDir "${ABIN}"
+    cleanDir "${APP_PREFIX}"
+    cleanDir "${ETC_PREFIX}"
     cleanDir "${WEB_PREFIX}"
     cleanDir "${SPL_PREFIX}"
+    cleanDir "${CACHE_PREFIX}"
 
-    if [ $OS != WIN ] ; then
-        if [ -x /usr/share/$PRODUCT ] ; then
-            cleanDir /usr/share/$PRODUCT
-        fi
-        if [ -d /var/$PRODUCT ] ; then
-            cleanDir /var/$PRODUCT
-        fi
-        rmdir /usr/share/${PRODUCT} >/dev/null 2>&1
-        for p in MAN INC DOC PRD CFG LIB WEB SPL ; do
+    if [ $OS != windows ] ; then
+        for p in APP VAPP ETC WEB SPL CACHE; do
             eval rmdir "\$${p}_PREFIX" >/dev/null 2>&1
         done
     fi
-    rm -f "${PRD_PREFIX}/.port.log"
-    cleanDir "${VER_PREFIX}"
-    rm -f "${PRD_PREFIX}/latest"
-    cleanDir "${PRD_PREFIX}"
-    if [ -x /tmp/linkup$$ ] ; then
-        /tmp/linkup$$ Remove /
-        rm -f /tmp/linkup$$
-    fi
+    rm -f "${APP_PREFIX}/.port.log"
+    cleanDir "${VAPP_PREFIX}"
+    rm -f "${APP_PREFIX}/latest"
+    cleanDir "${APP_PREFIX}"
+    cleanDir "${INC_PREFIX}/${PRODUCT}"
 }
 
 
@@ -278,7 +272,7 @@ removeIntermediateFiles() {
 
 
 setup() {
-    if [ `id -u` != "0" -a $OS != WIN ] ; then
+    if [ `id -u` != "0" -a $OS != windows ] ; then
         echo "You must be root to remove this product."
         exit 255
     fi
@@ -295,14 +289,7 @@ setup() {
         fi
         exit 0
     fi
-    #
-    #	Get defaults from the installation configuration file
-    #
-    if [ -f "${VER_PREFIX}/install.conf" ] ; then
-        .  "${VER_PREFIX}/install.conf"
-    fi
-    
-    binDir=${binDir:-$PRD_PREFIX}
+    binDir=${binDir:-$APP_PREFIX}
     [ "$headless" != 1 ] && echo -e "\n$NAME ${VERSION}-${NUMBER} Removal\n"
 }
 

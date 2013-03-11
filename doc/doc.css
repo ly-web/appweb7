@@ -115,12 +115,11 @@ div.content {
 	padding: 0 10px 40px 40px;
 	color: #000000;
 	background-color: #FFFFFF;
-	text-decoration: none;
 }
 
 div.content a {
 	color: #284898; 
-	text-decoration: none; 
+	text-decoration: underline; 
 }
 
 div.content a:hover { 
@@ -144,16 +143,20 @@ div.content ol li {
 
 div.content ul.nav li {
 	font-size: 100%;
-	line-height: 140%; 
+	line-height: 180%; 
 	margin: 0;
     padding: 0;
+}
+
+div.contentRight a {
+    text-decoration: none
 }
 
 /*
     Home page
  */
 div.homeLeft {
-	width: 33%;
+	width: 31%;
 	float: left;
 	padding-right: 10px;
 }
@@ -165,19 +168,30 @@ div.contentHome h1 {
 	font-weight: bold;
 }
 
+div.contentHome a {
+    text-decoration: none;
+}
+
 div.homeMiddle {
+	width: 32%;
 	min-height: 300px;
+	float: left;
 }
 
 div.homeRight { 
 	width: 31%;
-	float: right;
+	float: left;
 	margin: 0 0 0 10px;
 	padding: 0 10px 0 20px;
 	text-decoration: none;
 	min-height: 300px;
 	min-width: 150px;
     background-color: #FFFFFF;
+}
+
+footer {
+    clear: both;
+    height: 5px;
 }
 
 
@@ -407,16 +421,21 @@ p.finePrint {
 
 a:link { 
 	color: #284898; 
-	text-decoration: none; 
+	text-decoration: underline; 
 }
 
 a:visited { 
 	color: #000000;
-	text-decoration: none; 
+	text-decoration: underline; 
 }
 
 a:hover { 
 	color: #CC4477; 
+	text-decoration: underline; 
+}
+
+a.logo {
+    text-decoration: none;
 }
 
 ul.questions {
@@ -544,11 +563,13 @@ tt,em,i {
 }
 
 #latestVersion {
+    maring: 0;
     border: none;
-    padding-bottom: 0;
-    margin: 0;
-    width: 60px;
-    height: 13px;
+    padding: 0;
+    width: 80px;
+    height: 16px;
+    vertical-align: text-bottom;
+    display: inline;
 }
 
 .nowrap {

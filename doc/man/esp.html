@@ -6,9 +6,10 @@ ESP(1)                           User Commands                          ESP(1)
 
 <B>SYNOPSIS</B>
        <B>esp  </B>[<I>--apply]</I>]  [<I>--chdir dir]</I>] [<I>--config configFile]</I>] [<I>--database DB]</I>]
-       [<I>--flat</I>] [<I>--keep</I>] [<I>--listen [ip:]port</I>] [<I>--log  logFile:level</I>]  [<I>--over-</I>
-       <I>write</I>]  [<I>--quiet</I>] [<I>--platform os-arch-profile</I>] [<I>--rebuild</I>] [<I>--routeName</I>
-       <I>name</I>] [<I>--routePrefix prefix</I>] [<I>--verbose</I>] [<I>--why</I>] commands ...
+       [<I>--flat</I>] [<I>--genlink slink.c</I>] [<I>--keep</I>] [<I>--listen [ip:]port</I>] [<I>--log  log-</I>
+       <I>File:level</I>]   [<I>--overwrite</I>]   [<I>--quiet</I>]   [<I>--platform  os-arch-profile</I>]
+       [<I>--rebuild</I>]  [<I>--static</I>]  [<I>--routeName  name</I>]   [<I>--routePrefix   prefix</I>]
+       [<I>--verbose</I>] [<I>--why</I>] commands ...
 
        <B>Commands:</B>
         esp clean
@@ -16,7 +17,7 @@ ESP(1)                           User Commands                          ESP(1)
         esp compile [pathFilters...]
         esp generate app name
         esp generate controller name [action [, action] ...]
-        esp generate migration description model  [field:type  [,  field:type]
+        esp  generate  migration  description model [field:type [, field:type]
        ...]
         esp generate scaffold model [field:type [, field:type] ...]
         esp generate table name model [field:type [, field:type] ...]
@@ -24,26 +25,26 @@ ESP(1)                           User Commands                          ESP(1)
         esp run
 
 <B>DESCRIPTION</B>
-       The  <B>esp  </B>command generates, manages and runs ESP web applications.  It
-       can generate ESP web applications, controllers,  database  tables,  and
+       The <B>esp </B>command generates, manages and runs ESP web  applications.   It
+       can  generate  ESP  web applications, controllers, database tables, and
        scaffolds.
 
-       The  esp command will create directories and generate configuration and
+       The esp command will create directories and generate configuration  and
        source code files that can then be manually edited as required.  Esp is
-       intelligent  and  will  not overwrite existing files, so you can safely
+       intelligent and will not overwrite existing files, so  you  can  safely
        edit and regenerate without losing your changes. You can overwrite your
        changes if you wish to by using the <B>--overwrite </B>switch.
 
        Esp can run your application by invoking a configured web server.
 
 <B>GENERATING APPLICATIONS</B>
-       To  start  a  new  web  application,  run <B>esp </B>to create the application
-       directory and generate  the  application  configuration  and  essential
+       To start a new web application,  run  <B>esp  </B>to  create  the  application
+       directory  and  generate  the  application  configuration and essential
        script files. For example:
 
              <B>esp generate app blog</B>
 
-       This  will  will  create  a set of directories which have the following
+       This will will create a set of directories  which  have  the  following
        meaning:
 
              cache          - Cache directory for compiled content
@@ -57,8 +58,8 @@ ESP(1)                           User Commands                          ESP(1)
              static/themes  - Application HTML themes
              views          - View source files
 
-       Most of these directories are initially empty, but  may  be  used  over
-       time.  ESP  follows  conventions  where specific files are stored. This
+       Most  of  these  directories  are initially empty, but may be used over
+       time. ESP follows conventions where specific  files  are  stored.  This
        greatly simplifies configuring a web application.
 
        Esp will also create some files which have the following meaning:
@@ -73,23 +74,23 @@ ESP(1)                           User Commands                          ESP(1)
 
 <B>GENERATING MIGRATIONS</B>
        Migrations are generated code modules that manage portions of the data-
-       base.  Migrations  are used to create tables, initialize with test data
-       and optionally destroy tables. Migrations are typically  generated  and
-       then  hand-edited  to  include  relevant  initialization  or test data.
-       Migrations are  useful  to  quickly  recreate  the  database  with  the
+       base. Migrations are used to create tables, initialize with  test  data
+       and  optionally  destroy tables. Migrations are typically generated and
+       then hand-edited to  include  relevant  initialization  or  test  data.
+       Migrations  are  useful  to  quickly  recreate  the  database  with the
        required tables and data.
 
              <B>esp generate migration DESCRIPTION TABLE [field:type ...]</B>
 
-       The  DESCRIPTION  is used to name the migration which is created in the
+       The DESCRIPTION is used to name the migration which is created  in  the
        <B>db/migrations </B>directory. A migration is given a unique ordered sequence
-       number  and the description is appended to this number. The description
-       is mapped where spaces are changed to "_" characters.  When  migrations
+       number and the description is appended to this number. The  description
+       is  mapped  where spaces are changed to "_" characters. When migrations
        are run, they are run in sequence number order.
 
-       If  field:type values are supplied, the database migration will include
+       If field:type values are supplied, the database migration will  include
        code to create a column for each specified field of the requested type.
-       The  valid  database  types  are:  blob, boolean, date, float, integer,
+       The valid database types are:  blob,  boolean,  date,  float,  integer,
        string, and text.
 
 <B>GENERATING TABLES</B>
@@ -98,49 +99,49 @@ ESP(1)                           User Commands                          ESP(1)
              <B>esp generate table TABLE [field:type ...]</B>
 
 <B>GENERATING CONTROLLERS</B>
-       Controllers  are  the  primary  mechanism  for  responding  to   client
+       Controllers   are  the  primary  mechanism  for  responding  to  client
        requests. To generate a controller, run:
 
              <B>esp generate controller NAME [actions...]</B>
 
-       This  will  create a controller of the requested name. It will create a
-       controller source file in the <B>controllers </B>directory.  If  action  names
-       are  requested,  the controller source will define an action method for
+       This will create a controller of the requested name. It will  create  a
+       controller  source  file  in the <B>controllers </B>directory. If action names
+       are requested, the controller source will define an action  method  for
        each name. If not action names are requested, esp will define a default
-       action  named  <B>index</B>.   You can edit the controller source to meet your
+       action named <B>index</B>.  You can edit the controller source  to  meet  your
        needs.
 
 <B>GENERATING SCAFFOLDS</B>
-       A scaffold is a generated controller, database migration,  and  set  of
-       views  that  provides add, edit and list functionality for the database
+       A  scaffold  is  a generated controller, database migration, and set of
+       views that provides add, edit and list functionality for  the  database
        table.  Scaffolds are useful to quickly generate chunks of the applica-
        tion and prototype web pages and actions for managing a database table.
        To generate a scaffold:
 
              <B>esp generate scaffold TABLE [field:type ...]</B>
 
-       This will create a scaffold for the specified database table  and  will
+       This  will  create a scaffold for the specified database table and will
        generate a controller of the same name.
 
        If field:type values are supplied, a database migration will be created
-       with code to create a column for each specified field of the  requested
-       type.  The  valid database types are: blob, boolean, date, float, inte-
-       ger, string, and text. The migration will use  the  name  "create_scaf-
+       with  code to create a column for each specified field of the requested
+       type. The valid database types are: blob, boolean, date,  float,  inte-
+       ger,  string,  and  text. The migration will use the name "create_scaf-
        fold_TABLE" and will be created under the <B>db/migrations </B>direcvtory.
 
-       The  scaffold  will  include an edit action and view page that provides
+       The scaffold will include an edit action and view  page  that  provides
        add and edit capability. The list action and view, provides the ability
        to list the table rows and select an entry to edit.
 
 <B>COMPILING</B>
-       Esp  compiles  controllers  and ESP pages native code shared libraries.
-       These are then loaded and run by ESP in  response  to  incoming  client
-       requests.  Code is compiled only once but can be run many times to ser-
+       Esp compiles controllers and ESP pages native  code  shared  libraries.
+       These  are  then  loaded  and run by ESP in response to incoming client
+       requests. Code is compiled only once but can be run many times to  ser-
        vice incoming requests.
 
-       In development mode, ESP will automatically compile the  relevant  por-
-       tions  of the application if the source code is modified. It can intel-
-       ligently recompile controllers and ESP pages.  However,  you  can  also
+       In  development  mode, ESP will automatically compile the relevant por-
+       tions of the application if the source code is modified. It can  intel-
+       ligently  recompile  controllers  and  ESP pages. However, you can also
        explicilty recompile portions or the complete appliction.
 
        Esp can recompile everything via:
@@ -149,14 +150,14 @@ ESP(1)                           User Commands                          ESP(1)
 
        This will re-compile each controller and ESP page.
 
-       Esp  also  provides options for you to individually compile controllers
+       Esp also provides options for you to individually  compile  controllers
        and ESP pages. To recompile named pages or controllers:
 
              <B>esp compile path/*.esp...</B>.
 
              <B>esp compile controller NAMES...</B>.
 
-       To compile the entire application and produce a single  shared  library
+       To  compile  the entire application and produce a single shared library
        file:
 
              <B>esp --flat compile </B>.
@@ -171,12 +172,12 @@ ESP(1)                           User Commands                          ESP(1)
              <B>esp clean</B>
 
 <B>MIGRATIONS</B>
-       Migration  files  can be run via the <B>esp migrate </B>command. With no other
-       parameters, the command will run all migrations that have not yet  been
-       applied  to the database. You can also use <B>esp migrate forward </B>to apply
+       Migration files can be run via the <B>esp migrate </B>command. With  no  other
+       parameters,  the command will run all migrations that have not yet been
+       applied to the database. You can also use <B>esp migrate forward </B>to  apply
        apply the next unapplied migration. Similarly <B>esp migrate backward </B>will
        reverse the last applied migration. You can also use <B>esp migrate NNN </B>to
-       migrate forward or backward to a specific migration, where NNN  is  the
+       migrate  forward  or backward to a specific migration, where NNN is the
        migration sequence number at the start of the migration file name.
 
 <B>COMMANDS</B>
@@ -200,10 +201,18 @@ ESP(1)                           User Commands                          ESP(1)
              Use the specified config file instead of appweb.conf
 
        <B>--database Database provider</B>
-             Use the specified database provider. Set to "mdb" or "sqlite".
+             Use  the  specified  database provider. Set to "mdb" or "sdb" for
+             SQLite.
 
        <B>--flat</B>
              Compile the application flat into a single shared library file.
+
+       <B>--genlink slink.c</B>
+             Generate a static link initialization  file  for  ESP  pages  and
+             applications.   This  is used with --static to generate a appweb-
+             StaticInitialize() function that will invoke all  ESP  initializ-
+             ers.    By   default,   appweb   expects   this   to  be  in  the
+             src/server/slink.c file.
 
        <B>--keep</B>
              Keep intermediate source files in the cache directory. This over-
@@ -252,6 +261,10 @@ ESP(1)                           User Commands                          ESP(1)
              specified route. The default is the first route with the ESP han-
              dler defined in appweb.conf.
 
+       <B>--static</B>
+             Use  static linking when building ESP components. This causes esp
+             to create archive libraries instead of shared libraries.
+
        <B>--verbose </B>or <B>-v</B>
              Run in verbose mode and trace actions to the console.
 
@@ -262,11 +275,11 @@ ESP(1)                           User Commands                          ESP(1)
        Report bugs to dev@embedthis.com.
 
 <B>COPYRIGHT</B>
-       Copyright  (C)  2004-2012  Embedthis  Software.   ESP is a trademark of
+       Copyright (C) 2004-2013 Embedthis Software.   ESP  is  a  trademark  of
        Embedthis Software.
 
 <B>SEE ALSO</B>
        appweb
 
-esp                              November 2012                          ESP(1)
+esp                              November 2013                          ESP(1)
 </PRE></BODY>

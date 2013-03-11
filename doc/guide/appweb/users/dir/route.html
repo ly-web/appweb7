@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.2.0 Documentation</title>
+    <title>Embedthis Appweb 4.3.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.2.0</div>
+                <div class="version">Embedthis Appweb 4.3.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -65,6 +65,9 @@
                 <li><a href="#target">Target</a></li>
                 <li><a href="#traceMethod">TraceMethod</a></li>
                 <li><a href="#update">Update</a></li>
+                <li><a href="#uploadAutoDelete">UploadAutoDelete</a></li>
+                <li><a href="#uploadDir">UploadDir</a></li>
+                <li><a href="#webSocketsPing">WebSocketsPing</a></li>
             </ul>
             <h1>See Also</h1>
             <ul>
@@ -492,7 +495,7 @@
                             Condition [!] missing<br/>
                             Condition [!] directory string<br/>
                             Condition [!] exists string<br/>
-                            Condition [!] match string pattern<br/>
+                            Condition [!] match string regular-expression-pattern<br/>
                         </td>
                     </tr>
                     <tr>
@@ -515,7 +518,7 @@
                                 <li>missing &mdash; True if the default request filename is missing.</li>
                                 <li>directory &mdash; True the if rule argument evaluates to a directory</li>
                                 <li>exists &mdash; True if the rule argument evaluates to an existing file</li>
-                                <li>match &mdash; True if the regular expression matches the argument</li>
+                                <li>match &mdash; True if the regular expression pattern matches the string argument</li>
                             </ul>
                             <p>The rule result can be negated by prefixing with "<em>!</em>".</p>
                             <p>For information about embedded {tokens}, see <a href="../routing.html#tokens">Tokens</a>
@@ -537,7 +540,7 @@
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>DefaultLanguage languageNmenonic</td>
+                        <td>DefaultLanguage language</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -551,7 +554,8 @@
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The DefaultLanguage directive defines the default language to use when the
-                                the client Accept-Language HTTP header is either absent or requests a non-supported language.</p>
+                                the client Accept-Language HTTP header is either absent or requests a non-supported
+                                language.</p> 
                         </td>
                     </tr>
                 </tbody>
@@ -656,6 +660,37 @@
                 </tbody>
             </table>
             
+            <a id="ignoreEncodingErrors"></a>
+            <h2>ignoreEncodingErrors</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Ignore UTF-8 encoding errors</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>ignoreEncodingErrors on|off</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>ignoreEncodingErrors on</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This directive controls whether UTF-8 encoding errors will be ignored for WebSockets communications. The default is off.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
             <a id="inactivityTimeout"></a>
             <h2>InactivityTimeout</h2>
             <table class="directive" title="details">
@@ -695,7 +730,7 @@
                     </tr>
                 </tbody>
             </table>
-            
+
             <a id="logRoutes"></a>
             <h2>LogRoutes</h2>
             <table class="directive" title="details">
@@ -1409,12 +1444,113 @@
                 </tbody>
             </table>
             
+            <a id="uploadAutoDelete"></a>
+            <h2>UploadAutoDelete</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Set the directory to store uploaded files.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>UploadAutoDelete [on|off]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>UploadAutoDelete off</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>Once an uploaded file is fully received and processed by the handler, Appweb will
+                            either delete or preserve the temporary file depending on the UploadAutoDelete setting.
+                            If set to <em>on</em>, the uploaded file will be deleted when the handler completes the
+                            request. If set to <em>off</em> the temporary file will be preserved in the Upload directory.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            
+            <a id="uploadDir"></a>
+            <h2>UploadDir</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Set the directory to store uploaded files.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>UploadDir path</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>UploadDir /tmp</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The UploadDir directive defines the directory used to store the
+                                temporary files holding uploaded files. These files are temporarily used while the
+                                file is being uploaded. Once fully received, the handler responsible for responding
+                                to the request must copy, move or process the uploaded file. The uploadedHandler
+                                will delete the temporary (subject to the value of UploadAutoDelete).</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+                       
+            <a id="webSocketsPing"></a>
+            <h2>WebSocketsPing</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Define the period for a Web Sockets Ping message.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>WebSocketsPing time</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>WebSocketsPing 30secs</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The WebSocketsPing directive defines the time period for a regular, keep-alive
+                                ping message to be sent to the peer so that the connection is not closed.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table> 
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
+            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

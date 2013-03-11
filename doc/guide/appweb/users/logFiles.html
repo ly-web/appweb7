@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.2.0 Documentation</title>
+    <title>Embedthis Appweb 4.3.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.2.0</div>
+                <div class="version">Embedthis Appweb 4.3.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -78,7 +78,7 @@
             the number of backup log files to keep and whether to append or truncate the log file when Appweb is
             restarted. </p>
             <p>The ErrorLog directive can also specify the verbosity level with which to write to the log. 
-            The log level is a digit ranging from 0, the least verbose to 9 being the most verbose. For example, if you
+            The log level is a digit ranging from 0 (the least verbose) to 9  (the most verbose). For example, if you
             set the log level to 2, messages at levels 0 and 1 will be output to the log. Level 0 will only record
             errors. Level 2 is the default and will record denied accesses. Levels 3-9 will record various internal
             Appweb activities. You should be careful with levels above 4 as the error log can grow very large with high
@@ -89,11 +89,11 @@
             <a href="dir/log.html#log">Log</a> directive controls which parts of a request will be traced to the error
             log.</p>
             <pre>Log rx conn=5 first=2 headers=3 body=5 size=10K exclude="jpg,gif,png"</pre>
-            <p>These directive will cause requests to be traced to the error log. New connections will be emitted
+            <p>This directive will cause requests to be traced to the error log. New connections will be emitted
             at level 5, the first line of the request at level 2, request headers at level 3 and the request body
             data at level 5. Trace will be a maximum of 10K per request and graphic requests will be excluded.</p>
 <pre>Log tx first=3 headers=3 body=5 time=6 size=10K exclude="jpg,gif,png"</pre>
-            <p>These directive will cause responses to be traced to the error log.</p>
+            <p>This directive will cause responses to be traced to the error log.</p>
             <h3>Sample Output</h3>
             <p>Here is a sample error log. Some lines have been manually wrapped to fit on the page.</p>
             <pre>
@@ -115,7 +115,8 @@ appweb: 2: Loading native module espHandler
 appweb: 2: Loading native module phpHandler
 appweb: 2: Loading native module sslModule
 appweb: 2: Started HTTP  service on "*:80"
-appweb: 1: HTTP services Started at Wed May 23 17:39:10 2012 PDT with max 10 threads
+appweb: 1: HTTP services Started at Wed May 23 17:39:10 2013 PDT with max 10
+           threads
 </pre>
             <p>Each line in the error log is prefixed with source information. This follows the format:</p>
             <pre>
@@ -169,7 +170,7 @@ localhost - - [Fri Dec 19 16:08:24 2003] "GET /doc/images/backRight.png
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

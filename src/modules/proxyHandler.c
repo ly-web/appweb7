@@ -181,7 +181,7 @@ static void incomingProxyService(HttpQueue *q)
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
         if (packet->flags & HTTP_PACKET_DATA) {
             if (!httpWillNextQueueAcceptPacket(q, packet)) {
-                mprLog(7, "IncomingProxyService downstream full, putback");
+                mprTrace(7, "IncomingProxyService downstream full, putback");
                 httpPutBackPacket(q, packet);
                 return;
             }
@@ -206,7 +206,7 @@ static void outgoingProxyService(HttpQueue *q)
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
         if (packet->flags & HTTP_PACKET_DATA) {
             if (!httpWillNextQueueAcceptPacket(q, packet)) {
-                mprLog(7, "OutgoingProxyService downstream full, putback");
+                mprTrace(7, "OutgoingProxyService downstream full, putback");
                 httpPutBackPacket(q, packet);
                 return;
             }
@@ -278,7 +278,7 @@ PUBLIC int maProxyHandlerInit(Http *http, MprModule *mp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

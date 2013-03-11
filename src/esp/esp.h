@@ -19,11 +19,6 @@
 extern "C" {
 #endif
 
-/****************************** Forward Declarations **************************/
-
-#if !DOXYGEN
-#endif
-
 /********************************** Tunables **********************************/
 
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
@@ -51,7 +46,7 @@ typedef void (*EspProc)(HttpConn *conn);
 #else
     #define ESP_EXPORT
 #endif
-    #define ESP_EXPORT_STRING MPR_STRINGIFY(ESP_EXPORT)
+#define ESP_EXPORT_STRING MPR_STRINGIFY(ESP_EXPORT)
 
 #define ESP_SECURITY_TOKEN_NAME "__esp_security_token__"
 #define ESP_FLASH_VAR           "__flash__"
@@ -81,12 +76,15 @@ typedef void (*EspProc)(HttpConn *conn);
     @defgroup EspParse EspParse
     @see
  */
-typedef struct EspParse {
+typedef struct EspState {
     char    *data;                          /**< Input data to parse */
     char    *next;                          /**< Next character in input */
-    MprBuf  *token;                         /**< Storage buffer for token */
     int     lineNumber;                     /**< Line number for error reporting */
-} EspParse;
+    MprBuf  *token;                         /**< Current token */
+    MprBuf  *global;                        /**< Accumulated compiled esp global code */
+    MprBuf  *start;                         /**< Accumulated compiled esp start of function code */
+    MprBuf  *end;                           /**< Accumulated compiled esp end of function code */
+} EspState;
 
 /**
     Top level ESP structure. This is a singleton.
@@ -138,6 +136,15 @@ typedef struct EspRoute {
 
     Edi             *edi;                   /**< Default database for this route */
 } EspRoute;
+
+/**
+    Entry point for a loadable ESP module
+    @param route HttpRoute object
+    @param module Mpr module object
+    @return Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+  */
+typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
 
 /**
     Add caching for response content.
@@ -219,7 +226,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
 PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, int isView);
 
 /**
-    Convert an ESP web page into compilable C code
+    Convert an ESP web page into C code
     @description This parses an ESP web page into an equivalent C source view.
     @param route EspRoute object
     @param page ESP web page script.
@@ -227,11 +234,13 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
         to this path.
     @param cacheName MD5 cache name. Not a full path.
     @param layout Default layout page.
+    @param state Reserved. Must set to NULL.
     @param err Output parameter to hold any relevant error message.
-    @return C language code string for the web page
+    @return Compiled script. Return NULL on errors.
     @ingroup EspRoute
  */
-PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, char **err);
+PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
+    EspState *state, char **err);
 
 /**
     Define an action
@@ -243,9 +252,15 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
  */
 PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc);
 
-//  MOB
-PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *proc);
-
+/**
+    Define an action for a URI pattern.
+    @description This defines an action routine for the route that is responsible for the given URI pattern. 
+    @param route HttpRoute object
+    @param pattern URI pattern to use to find the releavant route.
+    @param actionProc EspProc callback procedure to invoke when the action is requested.
+    @ingroup EspRoute
+ */
+PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *actionProc);
 
 /**
     Define a base function to invoke for all controller actions.
@@ -296,6 +311,16 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
  */
 PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module);
 
+/**
+    Initialize a static library ESP module
+    @description This invokes the ESP initializers for the required pre-compiled ESP shared library.
+    @param entry ESP initialization function.
+    @param appName Name of the ESP application
+    @param routeName Name of the route in the appweb.conf file for this ESP application or page
+    @return Zero if successful, otherwise a negative MPR error code. 
+  */
+PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *routeName);
+
 /*
     Internal
  */
@@ -311,7 +336,7 @@ PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
  */
 typedef void (*EspViewProc)(HttpConn *conn);
 
-//  MOB - simplify EspAction to just EspProc
+#if UNUSED
 /**
     ESP Action
     @description Actions are run after a request URI is routed to a controller.
@@ -321,6 +346,9 @@ typedef void (*EspViewProc)(HttpConn *conn);
 typedef struct EspAction {
     EspProc         actionProc;             /**< Action procedure to run to respond to the request */
 } EspAction;
+#else
+typedef EspProc EspAction;                  /**< Action procedure to run to respond to the request */
+#endif
 
 PUBLIC void espManageAction(EspAction *ap, int flags);
 
@@ -332,7 +360,9 @@ PUBLIC void espManageAction(EspAction *ap, int flags);
 typedef struct EspReq {
     HttpRoute       *route;                 /**< Route reference */
     EspRoute        *eroute;                /**< Extended route info */
+#if UNUSED
     EspAction       *action;                /**< Action to invoke */
+#endif
     Esp             *esp;                   /**< Convenient esp reference */
     MprHash         *flash;                 /**< New flash messages */
     MprHash         *lastFlash;             /**< Flash messages from the last request */
@@ -1358,7 +1388,7 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
         The refresh option may use the "\@Controller/action" form.
     @arg size (Number|String) Size of the element.
     @arg style String CSS Style to use for the element.
-    @arg value Object Override value to display if used without a form control record.
+@arg value Object Override value to display if used without a form control record.
     @arg width (Number|String) Width of the control. Can be a number of pixels or a percentage string. Defaults to
         unlimited.
 
@@ -1470,6 +1500,7 @@ PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
  */
 PUBLIC void espEndform(HttpConn *conn);
 
+// MOB - this retain default implies it is displayed for zero seconds
 /**
     Render flash messages.
     @description Flash messages are one-time messages that are displayed to the client on the next request (only).
@@ -1480,7 +1511,6 @@ PUBLIC void espEndform(HttpConn *conn);
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg retain -- Number of seconds to retain the message. If <= 0, the message is retained until another
         message is displayed. Default is 0.
-    MOB - this default implies it is displayed for zero seconds
     @ingroup EspControl
  */
 PUBLIC void espFlash(HttpConn *conn, cchar *kinds, cchar *options);
@@ -2272,6 +2302,9 @@ PUBLIC cchar *getReferrer();
     @ingroup EspAbbrev
  */
 PUBLIC cchar *getSessionVar(cchar *name);
+#if MOB || NEW || 1
+PUBLIC cchar *session(cchar *name);
+#endif
 
 //  MOB - should this be called top?
 /**
@@ -2833,7 +2866,7 @@ PUBLIC cchar *uri(cchar *target);
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

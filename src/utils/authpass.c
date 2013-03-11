@@ -192,7 +192,7 @@ static char *getpass(char *prompt)
 
 static void printUsage(cchar *programName)
 {
-    mprPrintfError("usage: %s [-c] [-p password] authFile realm user roles...\n"
+    mprEprintf("usage: %s [-c] [-p password] authFile realm user roles...\n"
         "Options:\n"
         "    -c              Create the password file\n"
         "    -p passWord     Use the specified password\n"
@@ -204,7 +204,7 @@ static void printUsage(cchar *programName)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

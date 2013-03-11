@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.2.0 Documentation</title>
+    <title>Embedthis Appweb 4.3.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.2.0</div>
+                <div class="version">Embedthis Appweb 4.3.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -235,7 +235,7 @@
             which are required. It may also place requirements upon the field contents, as may users of certificates.
             As an example, a Netscape browser requires that the Common Name for a certificate representing a server has
             a name which matches a wildcard pattern for the domain name of that server, such as
-            <code>*.snakeoil.com</code>.</p>
+            <code>*.snakeoil.com</code></p>
             <p>The binary format of a certificate is defined using the ASN.1 notation. This notation defines how to
             specify the contents, and encoding rules define how this information is translated into binary form. The
             binary encoding of the certificate is defined using Distinguished Encoding Rules (DER), which are based on
@@ -339,9 +339,19 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
                 </tr>
                 <tr>
                     <td>TLS v1.0</td>
-                    <td>Proposed Internet Standard (from IETF)</td>
-                    <td>Revision of SSL 3.0 to update the MAC layer to HMAC, add block padding for block ciphers,
-                    message order standardization and more alert messages.</td>
+                    <td>Internet Standard (from IETF)</td>
+                    <td>TLSv1.0 is a revision of SSL 3.0 to update the MAC layer to HMAC, add block padding for 
+                        block ciphers, message order standardization and more alert messages.</td>
+                </tr>
+                <tr>
+                    <td>TLS v1.1</td>
+                    <td>Internet Standard (from IETF)</td>
+                    <td>TLSv1.1 adds protection against Cipher block chaining attacks.</td>
+                </tr>
+                <tr>
+                    <td>TLS v1.2</td>
+                    <td>Internet Standard (from IETF)</td>
+                    <td>TLSv1.2 deprecates using MD5 as a hash and deprecates SSLv2.</td>
                 </tr>
             </tbody>
         </table>
@@ -420,7 +430,7 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
         following:</p>
         <ul>
             <li>No digest (Null choice)</li>
-            <li>MD5, a 128-bit hash</li>
+            <li>MD5, a 128-bit hash (deprecated in TLS/1.2)</li>
             <li>Secure Hash Algorithm (SHA-1), a 160-bit hash</li>
         </ul>
         <p>The message digest is used to create a Message Authentication Code (MAC) which is encrypted with the message
@@ -457,7 +467,7 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

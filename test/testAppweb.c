@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
         exit(2);
     }
     if (mprParseTestArgs(ts, argc, argv, parseArgs) < 0) {
-        mprPrintfError("\n"
+        mprEprintf("\n"
             "  Commands specifically for %s\n"
             "    --host ip:port      # Set the default host address for testing\n\n",
             mprGetAppName(mpr));
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         exit(4);
     }
 
-#if BIT_FEATURE_SSL
+#if BIT_PACK_SSL
     if (!mprLoadSsl(0)) {
         return 0;
     }
@@ -106,9 +106,8 @@ static int parseArgs(int argc, char **argv)
     char    *argp, *ip, *cp;
     int     nextArg;
 
-    mprAssert(app);
+    assert(app);
     nextArg = 0;
-
     argp = argv[nextArg++];
 
     if (scmp(argp, "--host") == 0 || scmp(argp, "-h") == 0) {
@@ -169,14 +168,14 @@ bool simpleGet(MprTestGroup *gp, cchar *uri, int expectStatus)
     }
     status = httpGetStatus(gp->conn);
 
-    assert(status == expectStatus);
+    tassert(status == expectStatus);
     if (status != expectStatus) {
         mprLog(0, "simpleGet: HTTP response code %d, expected %d", status, expectStatus);
         return 0;
     }
-    assert(httpGetError(gp->conn) != 0);
+    tassert(httpGetError(gp->conn) != 0);
     gp->content = httpReadString(gp->conn);
-    assert(gp->content != NULL);
+    tassert(gp->content != NULL);
     mprLog(4, "Response content %s", gp->content);
     httpDestroyConn(gp->conn);
     gp->conn = 0;
@@ -219,7 +218,7 @@ bool simpleForm(MprTestGroup *gp, char *uri, char *formData, int expectStatus)
     }
     gp->content = httpReadString(conn);
     contentLen = httpGetContentLength(conn);
-    if (! assert(gp->content != 0 && contentLen > 0)) {
+    if (! tassert(gp->content != 0 && contentLen > 0)) {
         return 0;
     }
     mprLog(4, "Response content %s", gp->content);
@@ -259,7 +258,7 @@ bool simplePost(MprTestGroup *gp, char *uri, char *bodyData, ssize len, int expe
     }
     gp->content = httpReadString(conn);
     contentLen = httpGetContentLength(conn);
-    if (! assert(gp->content != 0 && contentLen > 0)) {
+    if (! tassert(gp->content != 0 && contentLen > 0)) {
         return 0;
     }
     mprLog(4, "Response content %s", gp->content);
@@ -274,7 +273,7 @@ bool bulkPost(MprTestGroup *gp, char *url, int size, int expectStatus)
     bool    success;
 
     app->postData = post = (char*) mprAlloc(size + 1);
-    assert(post != 0);
+    tassert(post != 0);
 
     for (i = 0; i < size; i++) {
         if (i > 0) {
@@ -291,7 +290,7 @@ bool bulkPost(MprTestGroup *gp, char *url, int size, int expectStatus)
     post[i] = '\0';
 
     success = simplePost(gp, url, post, slen(post), expectStatus);
-    assert(success);
+    tassert(success);
     app->postData = 0;
     return success;
 }
@@ -437,8 +436,8 @@ char *getDefaultHost(MprTestGroup *gp)
 /*
     @copy   default
  
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

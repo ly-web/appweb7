@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.2.0 Documentation</title>
+    <title>Embedthis Appweb 4.3.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.2.0</div>
+                <div class="version">Embedthis Appweb 4.3.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -163,7 +163,7 @@
                             For Basic and Digest authentication types, the realm is displayed by the user's browser when
                             prompting for a user name and password. For consistency, Appweb requires a realm to be
                             specified even if Basic and Digest authentication types are not employed. When creating
-                            internal passwords via the <tt>authpass</tt> utility, the realm is combined with the
+                            internal passwords via the <em>authpass</em> utility, the realm is combined with the
                             username and password when encrypting the password.</p>
                         </td>
                     </tr>
@@ -201,7 +201,7 @@
                             <p>The Internal authentication method utilizes users credentials defined via the 
                             <a href="#user">User</a> directive and then stored internally in Appweb. These User 
                             directives are typically stored in a separate authentication configuration file that is
-                            included by <tt>appweb.conf</tt>. The <tt>authpass</tt> program can be used to create
+                            included by <em>appweb.conf</em>. The <em>authpass</em> program can be used to create
                             encrypted User passwords in the authentication file.</p>
                             <P>The Plugable Authentication Modules (PAM) method is available on Linux and Mac OS
                             X only. The PAM method provides access to user credentials stored in the standard 
@@ -385,10 +385,10 @@ Deny from www.myCompetitor.com
                         <td>
                             <p>The Require directive defines which users can access a set of resources. The directive
                             may specify a set of users by name, or a set of abilities that users must possess
-                            before being granted access. In the absense of a require directive, any valid user
+                            before being granted access. In the absence of a require directive, any valid user
                             will be permitted access.  The Require ability directive specifies a list of ability words.
                             These are typically verbs such as "view", "manage", "edit", and the like. </p>
-                            <p>The <tt>Require secure</tt> directive specifies that access must be performed over
+                            <p>The <em>Require secure</em> directive specifies that access must be performed over
                             a secure protocol using SSL/TLS.</p>
                             <p>The Require directive is inherited from outer hosts and blocks in the config file.</p>
                         </td>
@@ -429,7 +429,7 @@ Deny from www.myCompetitor.com
                         <td class="security">Security</td>
                         <td>
                             <p>Role directives are typically kept in a separate authentication configuration file 
-                            with User directives that is included from the main <tt>appweb.conf</tt> file. 
+                            with User directives that is included from the main <em>appweb.conf</em> file. 
                             It is essential that any configuration file containing Role or User directives be stored 
                             outside the DocumentRoot or any directory serving content.</p>
                         </td>
@@ -461,7 +461,7 @@ Deny from www.myCompetitor.com
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>The User directive defines a user for use with the <tt>internal</tt> AuthType. 
+                            <p>The User directive defines a user for use with the <em>internal</em> AuthType. 
                             The user definition includes an encrypted password and a set of abilities. Multiple users
                             can be defined.</p>
                             <p>The user abilities are words that may
@@ -473,7 +473,7 @@ Deny from www.myCompetitor.com
                         <td class="security">Security</td>
                         <td>
                             <p>User directives are typically kept in a separate authentication configuration file that
-                            is included from the main <tt>appweb.conf</tt> file. 
+                            is included from the main <em>appweb.conf</em> file. 
                             It is essential that any configuration file containing User directives be stored 
                             outside the DocumentRoot or any directory serving content.</p>
                         </td>
@@ -485,7 +485,7 @@ Deny from www.myCompetitor.com
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2012.
+            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

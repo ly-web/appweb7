@@ -1265,9 +1265,8 @@ PREDEFINED             = WIN=1 \
                          BIT_WIN_LIKE=1 \
                          BIT_ASSERT=1 \
                          BIT_FLOAT=1 \
-                         BIT_PACK_SSL=1 \
-                         BIT_PACK_OPENSSL=1 \
-                         BIT_PACK_MATRIXSSL=1 \
+                         BIT_SSL=1 \
+                         BIT_PACK_EST=1 \
                          BIT_PACK_PCRE=1 \
                          BIT_PACK_SQLITE=1 \
                          BIT_PACK_CGI=1 \

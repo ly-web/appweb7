@@ -427,6 +427,20 @@
     <name>EspRoute</name>
     <title>EspRoute</title>
     <filename>group___esp_route.html</filename>
+    <member kind="typedef">
+      <type>int(*</type>
+      <name>EspModuleEntry</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>gaf56d656b4e4b27a101b8c032aa522b84</anchor>
+      <arglist>)(HttpRoute *route, MprModule *module)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>espBindProc</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>ga804619b07e0154a48875770f041a08b6</anchor>
+      <arglist>(HttpRoute *parent, cchar *pattern, void *actionProc)</arglist>
+    </member>
     <member kind="function">
       <type>char *</type>
       <name>espBuildScript</name>
@@ -481,7 +495,6 @@
     <name>EspReq</name>
     <title>EspReq</title>
     <filename>group___esp_req.html</filename>
-    <class kind="struct">EspAction</class>
     <member kind="typedef">
       <type>void(*</type>
       <name>EspViewProc</name>
@@ -2042,17 +2055,6 @@
       <name>views</name>
       <anchorfile>struct_esp.html</anchorfile>
       <anchor>a23a21d717ba1e7b1f2ce7bf4b759e3bf</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>EspAction</name>
-    <filename>struct_esp_action.html</filename>
-    <member kind="variable">
-      <type>EspProc</type>
-      <name>actionProc</name>
-      <anchorfile>struct_esp_action.html</anchorfile>
-      <anchor>a075f4267e47ee8b869370325a22fa274</anchor>
       <arglist></arglist>
     </member>
   </compound>

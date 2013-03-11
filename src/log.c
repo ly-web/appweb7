@@ -44,7 +44,7 @@ PUBLIC void maLogRequest(HttpConn *conn)
     if (rx->method == 0) {
         return;
     }
-    len = MPR_MAX_URL + 256;
+    len = BIT_MAX_URI + 256;
     buf = mprCreateBuf(len, len);
 
     while ((c = *fmt++) != '\0') {
@@ -87,7 +87,7 @@ PUBLIC void maLogRequest(HttpConn *conn)
             break;
 
         case 'r':                           /* First line of request */
-            mprPutFmtToBuf(buf, "%s %s %s", rx->method, rx->uri, conn->protocol);
+            mprPutToBuf(buf, "%s %s %s", rx->method, rx->uri, conn->protocol);
             break;
 
         case 's':                           /* Response code */
@@ -149,7 +149,7 @@ PUBLIC void maLogRequest(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
