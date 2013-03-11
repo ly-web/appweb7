@@ -11,7 +11,7 @@
     #define BIT_BIT "0.8.4"
 #endif
 #ifndef BIT_BUILD_NUMBER
-    #define BIT_BUILD_NUMBER "1"
+    #define BIT_BUILD_NUMBER "0"
 #endif
 #ifndef BIT_COMPANY
     #define BIT_COMPANY "Embedthis"
@@ -143,7 +143,7 @@
     #define BIT_TUNE "size"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.3.0"
+    #define BIT_VERSION "4.4.0"
 #endif
 #ifndef BIT_WEB_GROUP
     #define BIT_WEB_GROUP "Administrator"
@@ -247,13 +247,13 @@
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 3
+    #define BIT_MINOR_VERSION 4
 #endif
 #ifndef BIT_PATCH_VERSION
     #define BIT_PATCH_VERSION 0
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400030000
+    #define BIT_VNUM 400040000
 #endif
 
 /* Packs */
