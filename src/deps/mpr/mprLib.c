@@ -1363,7 +1363,9 @@ void *palloc(ssize size)
  */
 void pfree(void *ptr)
 {
-    mprRelease(ptr);
+    if (ptr) {
+        mprRelease(ptr);
+    }
 }
 
 
