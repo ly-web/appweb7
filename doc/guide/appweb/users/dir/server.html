@@ -96,10 +96,8 @@
                             <p>The mime type may be added via the AddType directive or you may edit the mime.types file
                             to add the mime type. Mime type entries associate a mime type with a given URL extension.
                             For example, the following mime entry specifies that any URL with a ".php" extension should
-                            will have the&nbsp; application/x-appweb-php mime type:</p>
-                            <pre>
-application/x-appweb-php php
-</pre>
+                            will have the application/x-appweb-php mime type:</p>
+                            <p><em>application/x-appweb-php php</em></p>
                         </td>
                     </tr>
                 </tbody>
@@ -203,6 +201,8 @@ application/x-appweb-php php
                             user account defined in the Appweb configuration file by the User directive. As installed,
                             Appweb will be configured to run using the nobody account on Linux and in the guest account
                             on Windows.</p>
+                            <p>If logged in as root or administrator, the fake name of _default_ will change group to www on
+                            Mac, nogroup on Linux and Administrator on Windows.</p>
                         </td>
                     </tr>
                     <tr>
@@ -380,9 +380,7 @@ application/x-appweb-php php
                             IANA.</p>
                             <p>The directory path may be an absolute path or it may be relative to the Home directory.</p>
                             <p>The MIME types file has lines of the format:</p>
-                            <pre>
-ApplicationType [extensions]...
-</pre>
+                            <pre>ApplicationType [extensions]...</pre>
                             <p>Feel free to modify the default mime types file, but be careful to save it as it will be
                             overwritten should you upgrade Appweb.</p>
                         </td>
@@ -422,6 +420,9 @@ ApplicationType [extensions]...
                             <p>The account name chosen for the UserAccount directive should have minimal privilege and should
                             not be able to read or modify any files outside the DocumentRoot or specified Alias
                             directories.</p>
+
+                            <p>If logged in as root or administrator, the fake name of _default_ will change user to www on
+                            Mac, nobody on Linux and Administrator on Windows.</p>
                         </td>
                     </tr>
                     <tr>

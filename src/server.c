@@ -403,7 +403,7 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
     if (smatch(newUser, "_default_")) {
         /* Only change user if root */
         if (getuid() != 0) {
-            mprLog(2, "Running as user %s", appweb->user);
+            mprLog(2, "Running as user account \"%s\"", appweb->user);
             return 0;
         }
 #if MACOSX || FREEBSD
