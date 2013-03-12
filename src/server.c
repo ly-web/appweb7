@@ -401,11 +401,13 @@ PUBLIC void maGetUserGroup(MaAppweb *appweb)
 PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
     if (smatch(newUser, "_default_")) {
+#if BIT_UNIX_LIKE
         /* Only change user if root */
         if (getuid() != 0) {
             mprLog(2, "Running as user account \"%s\"", appweb->user);
             return 0;
         }
+#endif
 #if MACOSX || FREEBSD
         newUser = "_www";
 #elif LINUX || BIT_UNIX_LIKE
@@ -443,10 +445,12 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
     if (smatch(newGroup, "_default_")) {
+#if BIT_UNIX_LIKE
         /* Only change group if root */
         if (getuid() != 0) {
             return 0;
         }
+#endif
 #if MACOSX || FREEBSD
         newGroup = "_www";
 #elif LINUX || BIT_UNIX_LIKE
