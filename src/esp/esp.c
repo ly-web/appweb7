@@ -1718,7 +1718,6 @@ static void migrate(HttpRoute *route, int argc, char **argv)
         //  MOB - rc
         //  MOB - autosave is on
         //  MOB - must unlink if either of these fail
-        //  MOB - should AddTable return the table?
         ediAddTable(edi, ESP_MIGRATIONS);
         ediAddColumn(edi, ESP_MIGRATIONS, "id", EDI_TYPE_INT, EDI_AUTO_INC | EDI_INDEX | EDI_KEY);
         ediAddColumn(edi, ESP_MIGRATIONS, "version", EDI_TYPE_STRING, 0);
@@ -1820,6 +1819,7 @@ static void migrate(HttpRoute *route, int argc, char **argv)
                 assert(mig);
                 ediDeleteRow(edi, ESP_MIGRATIONS, ediGetFieldValue(mig, "id"));
             } else {
+                //  MOB - must test return codes
                 mig = ediCreateRec(edi, ESP_MIGRATIONS);
                 ediSetField(mig, "version", itos(seq));
                 ediUpdateRec(edi, mig);

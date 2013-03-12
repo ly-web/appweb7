@@ -71,6 +71,8 @@ typedef cchar *(*EdiValidationProc)(struct EdiValidation *vp, struct EdiRec *rec
 typedef struct EdiValidation {
     cchar               *name;          /**< Validation name */
     EdiValidationProc   vfn;            /**< Validation callback procedure */
+
+    //  MOB - why non-gc?
     cvoid               *mdata;         /**< Non-GC (malloc) data */
     cvoid               *data;          /**< Allocated data that must be marked for GC */
 } EdiValidation;
@@ -95,10 +97,12 @@ PUBLIC void ediDefineValidation(cchar *name, EdiValidationProc vfn);
 #define EDI_TYPE_INT        5           /**< Integer number */
 #define EDI_TYPE_STRING     6           /**< String */
 #define EDI_TYPE_TEXT       7           /**< Multi-line text */
+#define EDI_TYPE_MAX        8           /**< Max type + 1 */
 
 /*
     Field flags
-    MOB _ need a separate flag for EDI_ID
+    MOB - need a separate flag for EDI_ID?
+    MOB - what about NOT_NULL
  */
 #define EDI_AUTO_INC        0x1         /**< Field flag -- Automatic increments on new row */
 #define EDI_KEY             0x2         /**< Field flag -- Column is the key */
@@ -158,10 +162,9 @@ typedef struct EdiGrid {
 #define EDI_AUTO_SAVE       0x2         /**< Auto-save database if modified in memory */
 #define EDI_NO_SAVE         0x4         /**< Prevent saving to disk */
 #define EDI_LITERAL         0x8         /**< Literal schema in ediOpen source parameter */
-
 #define EDI_SUPPRESS_SAVE   0x10        /**< Temporarily suppress auto-save */
 
-#if UNUSED
+#if UNUSED && MOB
 /*
     Database flags
  */
@@ -195,6 +198,7 @@ typedef struct Edi {
     int             flags;              /**< Database flags */
     EdiMigration    forw;               /**< Forward migration callback */
     EdiMigration    back;               /**< Backward migration callback */
+    char            *errMsg;            /**< Last error message */
 } Edi;
 
 /**
@@ -311,7 +315,7 @@ PUBLIC int ediChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int ty
  */
 PUBLIC void ediClose(Edi *edi);
 
-//  MOB
+//  MOB - DOC
 PUBLIC EdiGrid *ediCloneGrid(EdiGrid *grid);
 
 /**

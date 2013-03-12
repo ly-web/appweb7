@@ -1580,6 +1580,7 @@ static int updateFieldValue(MdbRow *row, MdbCol *col, cchar *value)
 /********************************* Validations *****************************/
 
 //  MOB - try to hoist these to EDI (if no loss of performance)
+//  MOB - table not used
 
 static bool validateField(EdiRec *rec, MdbTable *table, MdbCol *col, cchar *value)
 {

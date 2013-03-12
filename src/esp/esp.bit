@@ -7,7 +7,7 @@ Bit.load({
         libmod_esp: {
             enable: "bit.packs.esp.enable",
             type: 'lib',
-            depends: [ 'libappweb' ],
+            depends: [ 'libappweb', 'libsqlite3' ],
             sources: [ '*.c' ],
             headers: [ '*.h' ],
             exclude: [ 'esp.c' ],
@@ -17,7 +17,7 @@ Bit.load({
         esp: {
             enable: "bit.packs.esp.enable",
             type: 'exe',
-            depends: [ 'libappweb' ],
+            depends: [ 'libappweb', 'libsqlite3' ],
             sources: [ '*.c' ]
             platforms: [ 'local' ],
             require: 'esp',
