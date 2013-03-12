@@ -149,7 +149,7 @@
             <h3>Manual Verification</h3>
             <p>In Manual Verification mode, the Appweb request handler is always invoked, so it can determine if any
             server state has changed that would require regenerating the response. The handler will manually send the cached
-            response if it is current by using the 
+            response (if it is current) by using the 
             
             <a href="../../../api/esp.html#group___esp_req_1ga94594750521ce6621691dcec43a2d670"><em>espRenderCached</em></a>
             API. If the response is stale, it will generate a new response. In both cases, the
