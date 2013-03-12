@@ -3,6 +3,8 @@
  */
 #include "esp.h"
 
+static void *workMem;
+
 #if UNUSED
 static void common() {
     setParam("page-title", "MVC Title");
@@ -69,6 +71,19 @@ static void stream() {
     }
 }
 
+
+/*
+    Test allocating permanent memory. This will not be reclaimed by the GC
+    Alternatively, use mprAddRoot() for objects that contain memory references that must be managed by the GC.
+ */
+static void work() {
+    render("Mem was %s\n", workMem);
+    pfree(workMem);
+    workMem = palloc(1024);
+    strcpy(workMem, mprGetDate(0));
+}
+
+
 static void missing() {
     renderError(HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action");
 }
@@ -79,5 +94,6 @@ ESP_EXPORT int esp_module_test(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "test-cmd-details", details);
     espDefineAction(route, "test-cmd-login", login);
     espDefineAction(route, "test-cmd-stream", stream);
+    espDefineAction(route, "test-cmd-work", work);
     return 0;
 }
