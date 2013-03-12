@@ -36,7 +36,7 @@ struct MaAppweb;
     @see Http maAddServer maApplyChangedGroup maApplyChangedUser maCreateAppweb maGetUserGroup maLoadModule 
         maLookupServer maParseInit maParsePlatform maRenderDirListing maSetDefaultServer maSetHttpGroup maSetHttpUser 
         maStartAppweb maStopAppweb 
-    @stability Stable
+    @stability Internal
  */
 typedef struct MaAppweb {
     struct MaServer     *defaultServer;         /**< Default server object */
@@ -238,7 +238,7 @@ PUBLIC void appwebStaticInitialize();
     @see MaServer maAddEndpoint maConfigureServer maCreateServer maParseConfig maRunSimpleWebServer 
         maRunWebServer maServiceWebServer maSetServerAddress maSetServerHome maStartServer maStopServer 
         maValidateServer maWriteAuthFile
-    @stability Stable
+    @stability Internal
  */
 typedef struct MaServer {
     char            *name;                  /**< Unique name for this server */
@@ -403,7 +403,7 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path);
     @defgroup MaState MaState
     @see MaDirective MaState maAddDirective maArchiveLog maPopState maPushState maSetAccessLog maStartAccessLogging 
         maStartLogging maStopAccessLogging maStopLogging maTokenize 
-    @stability Stable
+    @stability Internal
  */
 typedef struct MaState {
     MaAppweb    *appweb;
