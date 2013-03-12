@@ -124,7 +124,7 @@ X-Request-Timeout: 600
             passed on a single read to the user callback receiving incoming WebSocket messages.</p>
             <h3>Close Message</h3>
             <p>Ordinarily, WebSocket communications are terminated by sending a <i>Close</i> message. The close
-            message includes a status code and optional <i>reason</i> string for why the connection is being closed. The
+            message includes a status code and an optional <i>reason</i> string to explain why the connection is being closed. The
             <i>reason</i> string must be less than 124 bytes in length so as to fit into a single WebSocket frame.</p>
             <h3>Ping / Pong Messages</h3>
             <p>To keep a communications channel alive, it is sometimes necessary to send regular messages to indicate
