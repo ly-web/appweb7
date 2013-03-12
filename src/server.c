@@ -401,6 +401,11 @@ PUBLIC void maGetUserGroup(MaAppweb *appweb)
 PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
     if (smatch(newUser, "_default_")) {
+        /* Only change user if root */
+        if (getuid() != 0) {
+            mprLog(2, "Running as user %s", appweb->user);
+            return 0;
+        }
 #if MACOSX || FREEBSD
         newUser = "_www";
 #elif LINUX || BIT_UNIX_LIKE
@@ -410,6 +415,7 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 #endif
     }
 #if BIT_UNIX_LIKE
+{
     struct passwd   *pp;
     if (snumber(newUser)) {
         appweb->uid = atoi(newUser);
@@ -427,6 +433,7 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
         appweb->uid = pp->pw_uid;
     }
     appweb->userChanged = 1;
+}
 #endif
     appweb->user = sclone(newUser);
     return 0;
@@ -436,19 +443,25 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
     if (smatch(newGroup, "_default_")) {
+        /* Only change group if root */
+        if (getuid() != 0) {
+            return 0;
+        }
 #if MACOSX || FREEBSD
-        newGroup = "www";
+        newGroup = "_www";
 #elif LINUX || BIT_UNIX_LIKE
+{
         char    *buf;
         newGroup = "nobody";
         /*
             Debian has nogroup, Fedora has nobody. Ugh!
          */
-        if ((buf = mprReadPathContents("/etc/passwd", NULL)) != 0) {
+        if ((buf = mprReadPathContents("/etc/group", NULL)) != 0) {
             if (scontains(buf, "nogroup:")) {
                 newGroup = "nogroup";
             }
         }
+}
 #elif WINDOWS
         newGroup = "Administrator";
 #endif
@@ -485,13 +498,16 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb)
         if ((setuid(appweb->uid)) != 0) {
             mprError("Cannot change user to: %s: %d\n"
                 "WARNING: This is a major security exposure", appweb->user, appweb->uid);
+            if (getuid() != 0) {
+                mprError("Log in as administrator/root and retry");
+            }
             return MPR_ERR_BAD_STATE;
 #if LINUX && PR_SET_DUMPABLE
         } else {
             prctl(PR_SET_DUMPABLE, 1);
 #endif
         }
-        mprLog(MPR_CONFIG, "Changing user ID to %s: %d", appweb->user, appweb->uid);
+        mprLog(MPR_CONFIG, "Changing user to %s (%d)", appweb->user, appweb->uid);
     }
 #endif
     return 0;
@@ -505,13 +521,16 @@ PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
         if (setgid(appweb->gid) != 0) {
             mprError("Cannot change group to %s: %d\n"
                 "WARNING: This is a major security exposure", appweb->group, appweb->gid);
+            if (getuid() != 0) {
+                mprError("Log in as administrator/root and retry");
+            }
             return MPR_ERR_BAD_STATE;
 #if LINUX && PR_SET_DUMPABLE
         } else {
             prctl(PR_SET_DUMPABLE, 1);
 #endif
         }
-        mprLog(MPR_CONFIG, "Changing group ID to %s: %d", appweb->group, appweb->gid);
+        mprLog(MPR_CONFIG, "Changing group to %s (%d)", appweb->group, appweb->gid);
     }
 #endif
     return 0;
