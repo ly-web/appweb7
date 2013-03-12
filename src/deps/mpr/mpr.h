@@ -418,7 +418,7 @@ PUBLIC void assert(bool cond);
         mprAtomicListInsert mprCreateCond mprCreateLock mprCreateSpinLock mprGlobalLock mprGlobalUnlock mprInitLock 
         mprInitSpinLock mprLock mprResetCond mprSignalCond mprSignalMultiCond mprSpinLock mprSpinUnlock mprTryLock 
         mprTrySpinLock mprUnlock mprWaitForCond mprWaitForMultiCond 
-    @stability Stable.
+    @stability Internal.
     @defgroup MprSynch MprSynch
  */
 typedef struct MprSynch { int dummy; } MprSynch;
@@ -429,7 +429,7 @@ typedef struct MprSynch { int dummy; } MprSynch;
     waiting. Condition variables can be used when single threaded but mprServiceEvents should be called to pump events
     until another callback invokes mprWaitForCond.
     @ingroup MprSynch
-    @stability Stable.
+    @stability Internal.
  */
 typedef struct MprCond {
     #if BIT_UNIX_LIKE
@@ -514,7 +514,7 @@ PUBLIC int mprWaitForMultiCond(MprCond *cond, MprTicks timeout);
     Multithreading lock control structure
     @description MprMutex is used for multithread locking in multithreaded applications.
     @ingroup MprSynch
-    @stability Stable.
+    @stability Internal.
  */
 typedef struct MprMutex {
     #if BIT_WIN_LIKE
@@ -536,7 +536,7 @@ typedef struct MprMutex {
     Multithreading spin lock control structure
     @description MprSpin is used for multithread locking in multithreaded applications.
     @ingroup MprSynch
-    @stability Stable.
+    @stability Internal.
  */
 typedef struct MprSpin {
     #if USE_MPR_LOCK
@@ -873,7 +873,7 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     their manager routines to run and so on, until all active blocks have been marked. Non-marked blocks can then safely
     be reclaimed as garbage. A block may alternatively be permanently marked as active by calling #mprHold.
 
-    @stability Stable
+    @stability Internal
     @defgroup MprMem MprMem
     @see MprFreeMem MprHeap MprManager MprMemNotifier MprRegion mprAddRoot mprAlloc mprAllocMem mprAllocObj 
         mprAllocZeroed mprCreateMemService mprDestroyMemService mprEnableGC mprGetBlockSize mprGetMem 
@@ -1002,7 +1002,7 @@ typedef void (*MprManager)(void *ptr, int flags);
     Block structure when on a free list. This overlays MprMem and replaces sibling and children with forw/back
     The implies a minimum memory block size of 8 bytes in 32 bits and 16 bytes in 64 bits.
     @ingroup MemMem
-    @stability Stable.
+    @stability Internal.
  */
 typedef struct MprFreeMem {
     union {
@@ -1636,7 +1636,7 @@ PUBLIC int  mprSyncThreads(MprTicks timeout);
         sclone scmp scontains scopy sends sfmt sfmtv shash shashlower sjoin sjoinv slen slower smatch sncaselesscmp snclone
         sncmp sncopy snumber spascal spbrk srchr srejoin srejoinv sreplace sspn sstarts ssub stemplate stoi stoiradix
         stok strim supper sncontains mprFprintf fmtv fmt
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprString { void *dummy; } MprString;
 
@@ -2339,7 +2339,7 @@ PUBLIC ssize mprFprintf(struct MprFile *file, cchar *fmt, ...);
     @param ... Variable arguments to format
     @return Returns the number of bytes written
     @ingroup MprString
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC ssize mprPrintf(cchar *fmt, ...);
 
@@ -2403,7 +2403,7 @@ PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *fmt, va_list args);
     @stability Stable
     @see mprDota mprIsInfinite mprIsNan mprIsZero 
     @defgroup MprFloat MprFloat
-    @stability Stable
+    @stability Internal
   */
 typedef struct MprFloat { int dummy; } MprFloat;
 
@@ -2465,7 +2465,7 @@ typedef int (*MprBufProc)(struct MprBuf* bp, void *arg);
         mprPutStringToWideBuf mprPutSubStringToBuf mprRefillBuf mprResetBufIfEmpty mprSetBufMax mprSetBufRefillProc 
         mprSetBufSize 
     @defgroup MprBuf MprBuf
-    @stability Stable.
+    @stability Internal.
  */
 typedef struct MprBuf {
     char            *data;              /**< Actual buffer for data */
@@ -3190,7 +3190,7 @@ PUBLIC int mprGetTimeZoneOffset(MprTime when);
         mprPushItem mprRemoveItem mprRemoveItemAtPos mprRemoveRangeOfItems mprRemoveStringItem mprSetItem
         mprSetListLimits mprSortList 
     @defgroup MprList MprList
-    @stability Stable.
+    @stability Internal.
  */
 typedef struct MprList {
     int         flags;                  /**< Control flags */
@@ -3593,7 +3593,7 @@ PUBLIC int mprPushItem(MprList *list, cvoid *item);
     @defgroup MprLog MprLog
     @see MprLogHandler mprAssert mprError mprGetLogFile mprGetLogHandler mprInfo mprLog mprRawLog mprTrace
         mprSetLogFile mprSetLogHandler mprSetLogLevel mprStaticError mprUsingDefaultLogHandler mprWarn 
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprLog { int dummy; } MprLog;
 
@@ -3887,7 +3887,7 @@ PUBLIC void mprWarn(cchar *fmt, ...);
         mprGetFirstKey mprGetHashLength mprGetKeyBits mprGetNextKey mprLookupKey mprLookupKeyEntry mprRemoveKey 
         mprSetKeyBits mprBlendHash
     @defgroup MprHash MprHash
-    @stability Stable.
+    @stability Internal.
  */
 typedef struct MprKey {
     struct MprKey   *next;              /**< Next symbol in hash chain */
@@ -3923,7 +3923,7 @@ typedef uint (*MprHashProc)(cvoid *name, ssize len);
 /**
     Hash table control structure
     @see MprHash
-    @stability Stable.
+    @stability Internal.
  */
 typedef struct MprHash {
     int             flags;              /**< Hash control flags */
@@ -4170,7 +4170,7 @@ PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path);
 /**
     A RomInode is created for each file in the Rom file system.
     @ingroup FileSystem
-    @stability Stable
+    @stability Internal
  */
 typedef struct  MprRomInode {
     char            *path;              /**< File path */
@@ -4242,7 +4242,7 @@ PUBLIC MprFileSystem *mprLookupFileSystem(cchar *path);
     @param path Path representing a file in the file system.
     @param separators String containing the directory path separators. Defaults to "/". Windows uses "/\/".
     @ingroup MprFileSystem
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators);
 
@@ -4251,7 +4251,7 @@ PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators);
     @param path Path representing a file in the file system.
     @param newline String containing the newline character(s). "\\n". Windows uses "\\r\\n".
     @ingroup MprFileSystem
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC void mprSetPathNewline(cchar *path, cchar *newline);
 
@@ -4266,7 +4266,7 @@ PUBLIC void mprSetPathNewline(cchar *path, cchar *newline);
         mprWriteFormat mprWriteString 
         mprGetFileFd
     @defgroup MprFile MprFile
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprFile {
     char            *path;              /**< Filename */
@@ -4557,7 +4557,7 @@ PUBLIC ssize mprWriteFileString(MprFile *file, cchar *str);
 /**
     Path (filename) Information
     @description MprPath is the cross platform Path (filename) information structure.
-    @stability Stable.
+    @stability Internal.
     @see MprDirEntry MprFile MprPath mprCopyPath mprDeletePath mprGetAbsPath mprGetCurrentPath 
         mprGetFirstPathSeparator mprGetLastPathSeparator mprGetNativePath mprGetPathBase 
         mprGetPathDir mprGetPathExt mprGetPathFiles mprGetPathLink mprGetPathNewline mprGetPathParent 
@@ -4588,7 +4588,7 @@ typedef struct MprPath {
     Directory entry description
     @description The MprGetDirList will create a list of directory entries.
     @ingroup MprPath
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprDirEntry {
     char            *name;              /**< Name of the file */
@@ -5201,7 +5201,7 @@ typedef int (*MprModuleProc)(struct MprModule *mp);
         mprSetModuleTimeout mprStartModule mprStopModule mprUnloadModule mprUnloadNativeModule 
     @stability Stable.
     @defgroup MprModule MprModule
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprModule {
     char            *name;              /**< Unique module name */
@@ -5407,7 +5407,7 @@ typedef void (*MprEventProc)(void *data, struct MprEvent *event);
         mprQueueEvent mprRemoveEvent mprRescheduleEvent mprRestartContinuousEvent mprServiceEvents 
         mprSignalDispatcher mprStopContinuousEvent mprWaitForEvent mprCreateEventOutside
     @defgroup MprEvent MprEvent
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprEvent {
     //  MOB - UNUSED remove
@@ -5445,7 +5445,7 @@ typedef struct MprEvent {
 /**
     Event Dispatcher
     @defgroup MprDispatcher MprDispatcher
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprDispatcher {
     int             magic;
@@ -5759,7 +5759,7 @@ typedef ssize (*MprXmlInputStream)(struct MprXml *xp, void *arg, char *buf, ssiz
     @defgroup MprXml MprXml
     @see MprXml MprXmlHandler MprXmlInputStream mprXmlGetErrorMsg mprXmlGetLineNumber mprXmlGetParseArg mprXmlOpen 
         mprXmlParse mprXmlSetInputStraem mprXmlSetParseArg mprXmlSetParseHandler 
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprXml {
     MprXmlHandler       handler;            /**< Callback function */
@@ -5874,7 +5874,7 @@ typedef void MprObj;
 /**
     JSON callbacks
     @ingroup MprJson
-    @stability Evolving
+    @stability Internal
  */
 typedef struct MprJsonCallback {
     /**
@@ -5905,7 +5905,7 @@ typedef struct MprJsonCallback {
     JSON parser
     @see MprObj MprCheckState MprSetValue MprMakeObj mprSerialize mprDeserialize mprJsonParseError
     @defgroup MprJson MprJson
-    @stability Evolving
+    @stability Internal
  */
 typedef struct MprJson {
     cchar           *path;          /* Optional JSON filename */
@@ -5923,7 +5923,7 @@ typedef struct MprJson {
     @param flags Serialization flags. Supported flags include MPR_JSON_PRETTY.
     @return Returns a serialized JSON character string.
     @ingroup MprJson
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC cchar *mprSerialize(MprObj *obj, int flags);
 
@@ -5949,7 +5949,7 @@ PUBLIC MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *
         hash table (MprHash). The hash table key entry will store the property type in the MprKey.type field. This will
         be set to MPR_JSON_STRING, MPR_JSON_OBJ or MPR_JSON_ARRAY.
     @ingroup MprJson
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC MprObj *mprDeserialize(cchar *str);
 
@@ -6002,7 +6002,7 @@ PUBLIC void mprStopThreadService();
         mprGetCurrentThreadName mprGetThreadName mprGetThreadPriority mprResetYield mprSetCurrentThreadPriority 
         mprSetThreadPriority mprStartThread mprYield 
     @defgroup MprThread MprThread
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprThread {
     MprOsThread     osThread;           /**< O/S thread id */
@@ -6157,14 +6157,14 @@ PUBLIC int mprStartThread(MprThread *thread);
     @param flags Set to MPR_YIELD_BLOCK to wait until the garbage collection is complete. This is not normally required.
     Set to MPR_YIELD_STICKY to remain in the yielded state. This is useful when sleeping or blocking waiting for I/O.
     #mprResetYield must be called after setting a sticky yield.
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC void mprYield(int flags);
 
 /**
     Reset a sticky yield
     @description This call resets a sticky yield established with #mprYield.
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC void mprResetYield();
 
@@ -6310,7 +6310,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout);
     @see MprEvent MprWaitHandler mprCreateWaitHandler mprQueueIOEvent mprRecallWaitHandler mprRecallWaitHandlerByFd 
         mprRemoveWaitHandler mprWaitOn 
     @defgroup MprWaitHandler MprWaitHandler
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprWaitHandler {
     int             desiredMask;        /**< Mask of desired events */
@@ -6428,7 +6428,7 @@ typedef int (*MprSocketProc)(void *data, int mask);
 /**
     Socket service provider interface.
     @ingroup MprSocket
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprSocketProvider {
     char    *name;
@@ -6553,7 +6553,7 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
         mprWriteSocketString mprWriteSocketVector mprSocketHandshaking mprSocketHasBufferedRead mprSocketHasBufferedWrite
         mprUpgradeSocket 
     @defgroup MprSocket MprSocket
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprSocket {
     MprSocketService *service;          /**< Socket service */
@@ -6753,7 +6753,7 @@ PUBLIC bool mprHasDualNetworkStack();
     Determine if the system support IPv6
     @return True if the address system supports IPv6 networking.
     @ingroup MprSocket
-    @stability Evolving
+    @stability Stable
     @internal
  */
 PUBLIC bool mprHasIPv6();
@@ -6772,7 +6772,7 @@ PUBLIC void mprHiddenSocketData(MprSocket *sp, ssize len, int dir);
     @param ip IP address
     @return True if the address is an IPv6 address, otherwise zero.
     @ingroup MprSocket
-    @stability Evolving
+    @stability Stable
     @internal
  */
 PUBLIC bool mprIsIPv6(cchar *ip);
@@ -6794,7 +6794,7 @@ PUBLIC bool mprIsSocketSecure(MprSocket *sp);
     @return True if the socket is using IPv6, otherwise zero.
     @internal
     @ingroup MprSocket
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC bool mprIsSocketV6(MprSocket *sp);
 
@@ -6961,7 +6961,7 @@ PUBLIC bool mprSocketHasBufferedWrite(MprSocket *sp);
     @param peerName Required peer name in handshake with peer. Used by clients to verify the server hostname.
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup MprSocket
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC int mprUpgradeSocket(MprSocket *sp, struct MprSsl *ssl, cchar *peerName);
 
@@ -7010,7 +7010,7 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count);
 /**
     SSL control structure
     @defgroup MprSsl MprSsl
-    @stability Evolving
+    @stability Internal
  */
 typedef struct MprSsl {
     char            *providerName;      /**< SSL provider to use - null if default */
@@ -7196,6 +7196,9 @@ PUBLIC void mprVerifySslDepth(struct MprSsl *ssl, int depth);
     PUBLIC int mprCreateOpenSslModule();
 #endif
 
+/**
+    @internal
+ */
 typedef struct MprCipher {
     int     code;
     cchar   *name;
@@ -7269,7 +7272,7 @@ PUBLIC void mprSetWorkerStartCallback(MprWorkerProc start);
     Return the count of free threads in the worker thread pool.
     @returns An integer count of worker threads.
     @ingroup MprWorker
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC int mprAvailableWorkers();
 
@@ -7324,7 +7327,7 @@ PUBLIC int mprGetMaxWorkers();
     @see MPrWorkerProc MprWorkerService MprWorkerStats mprActivateWorker mprDedicateWorker mprGetCurrentWorker 
         mprGetMaxWorkers mprGetWorkerServiceStats mprReleaseWorker mprSetMaxWorkers mprSetMinWorkers 
         mprSetWorkerStackSize mprStartWorker 
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprWorker {
     MprWorkerProc   proc;                   /**< Procedure to run */
@@ -7723,7 +7726,7 @@ typedef struct MprCmdFile {
         mprReadCmd mprReapCmd mprRunCmd mprRunCmdV mprSetCmdCallback mprSetCmdDir mprSetCmdEnv mprSetCmdSearchPath 
         mprStartCmd mprStopCmd mprWaitForCmd mprWriteCmd mprWriteCmdBlock
     @defgroup MprCmd MprCmd
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprCmd {
     /*  Ordered for debugging */
@@ -8103,7 +8106,7 @@ PUBLIC ssize mprWriteCmdBlock(MprCmd *cmd, int channel, char *buf, ssize bufsize
     @defgroup MprCache MprCache
     @see mprCreateCache mprDestroyCache mprExpireCache mprIncCache mprReadCache mprRemoveCache mprSetCacheLimits 
         mprWriteCache 
-    @stability Evolving
+    @stability Internal
  */
 typedef struct MprCache {
     MprHash         *store;             /**< Key/value store */
@@ -8237,7 +8240,7 @@ PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime mo
     @stability Stable
     @defgroup MprMime MprMime
     @see MprMime mprAddMime mprCreateMimeTypes mprGetMimeProgram mprLookupMime mprSetMimeProgram
-    @stability Stable
+    @stability Internal
  */
 typedef struct MprMime {
     char    *type;                          /**< Mime type string */
@@ -8329,7 +8332,7 @@ typedef void (*MprTerminator)(int how, int status);
     mprSignalExit mprSleep mprStart mprStartEventsThread mprStartOsService mprStopOsService mprTerminate mprUriDecode
     mprUriDecodeBuf mprUriEncode mprWaitTillIdle mprWriteRegistry 
     @defgroup Mpr Mpr
-    @stability Stable.
+    @stability Internal.
  */
 typedef struct Mpr {
     MprHeap         *heap;                  /**< Memory heap control */

@@ -1361,7 +1361,7 @@ void *palloc(ssize size)
     Normal free. Note: this must not be called with a block allocated via "malloc"
     No harm in calling this on a block allocated with mprAlloc and not "palloc"
  */
-void nfree(void *ptr)
+void pfree(void *ptr)
 {
     mprRelease(ptr);
 }
@@ -19519,7 +19519,7 @@ PUBLIC MprSocketService *mprCreateSocketService()
         ss->hasIPv6 = 1;
         closesocket(fd);
     } else {
-        mprInfo("System has only IPv4 support");
+        mprLog(2, "System has only IPv4 support");
     }
     return ss;
 }
