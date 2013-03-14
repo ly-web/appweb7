@@ -16,13 +16,13 @@ LBIN              := $(CONFIG)/bin
 BIT_PACK_EST      := 0
 BIT_PACK_EJSCRIPT := 1
 BIT_PACK_SSL      := 1
+BIT_PACK_SQLITE   := 1
 BIT_PACK_PHP      := 0
 BIT_PACK_CGI      := 1
 BIT_PACK_ESP      := 1
-BIT_PACK_SQLITE   := 1
 
 CFLAGS            += -w
-DFLAGS            +=  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
+DFLAGS            +=  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_ESP=$(BIT_PACK_ESP) 
 IFLAGS            += -I$(CONFIG)/inc
 LDFLAGS           += '-Wl,-rpath,@executable_path/' '-Wl,-rpath,@loader_path/'
 LIBPATHS          += -L$(CONFIG)/bin
@@ -57,8 +57,6 @@ BIT_SPOOL_PREFIX  := $(BIT_ROOT_PREFIX)/var/spool/$(PRODUCT)
 BIT_CACHE_PREFIX  := $(BIT_ROOT_PREFIX)/var/spool/$(PRODUCT)/cache
 BIT_SRC_PREFIX    := $(BIT_ROOT_PREFIX)$(PRODUCT)-$(VERSION)
 
-WEB_USER    = $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$//' |  tail -1)
-WEB_GROUP   = $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$//' |  tail -1)
 
 TARGETS           += $(CONFIG)/bin/libmpr.dylib
 ifeq ($(BIT_PACK_SSL),1)
@@ -66,9 +64,6 @@ TARGETS           += $(CONFIG)/bin/libmprssl.dylib
 endif
 TARGETS           += $(CONFIG)/bin/appman
 TARGETS           += $(CONFIG)/bin/makerom
-ifeq ($(BIT_PACK_EST),1)
-TARGETS           += $(CONFIG)/bin/libest.dylib
-endif
 TARGETS           += $(CONFIG)/bin/ca.crt
 TARGETS           += $(CONFIG)/bin/libpcre.dylib
 TARGETS           += $(CONFIG)/bin/libhttp.dylib
@@ -188,7 +183,6 @@ clean:
 	rm -rf $(CONFIG)/bin/libejs.dylib
 	rm -rf $(CONFIG)/bin/ejs
 	rm -rf $(CONFIG)/bin/ejsc
-	rm -rf $(CONFIG)/bin/ejs.mod
 	rm -rf $(CONFIG)/bin/libmod_cgi.dylib
 	rm -rf $(CONFIG)/bin/libmod_ejs.dylib
 	rm -rf $(CONFIG)/bin/libmod_ssl.dylib
@@ -197,10 +191,6 @@ clean:
 	rm -rf $(CONFIG)/bin/libslink.dylib
 	rm -rf $(CONFIG)/bin/appweb
 	rm -rf $(CONFIG)/bin/testAppweb
-	rm -rf test/cgi-bin/testScript
-	rm -rf test/web/caching/cache.cgi
-	rm -rf test/web/auth/basic/basic.cgi
-	rm -rf test/cgi-bin/cgiProgram
 	rm -rf test/web/js
 	rm -rf $(CONFIG)/obj/mprLib.o
 	rm -rf $(CONFIG)/obj/mprSsl.o
@@ -243,10 +233,18 @@ clean:
 clobber: clean
 	rm -fr ./$(CONFIG)
 
+
+
+#
+#   version
+#
+version: $(DEPS_1)
+	@echo NN 4.4.0-0
+
 #
 #   mpr.h
 #
-$(CONFIG)/inc/mpr.h: $(DEPS_1)
+$(CONFIG)/inc/mpr.h: $(DEPS_2)
 	@echo '      [Copy] $(CONFIG)/inc/mpr.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/mpr/mpr.h" "$(CONFIG)/inc/mpr.h"
@@ -254,15 +252,15 @@ $(CONFIG)/inc/mpr.h: $(DEPS_1)
 #
 #   bit.h
 #
-$(CONFIG)/inc/bit.h: $(DEPS_2)
+$(CONFIG)/inc/bit.h: $(DEPS_3)
 	@echo '      [Copy] $(CONFIG)/inc/bit.h'
 
 #
 #   bitos.h
 #
-DEPS_3 += $(CONFIG)/inc/bit.h
+DEPS_4 += $(CONFIG)/inc/bit.h
 
-$(CONFIG)/inc/bitos.h: $(DEPS_3)
+$(CONFIG)/inc/bitos.h: $(DEPS_4)
 	@echo '      [Copy] $(CONFIG)/inc/bitos.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/bitos.h" "$(CONFIG)/inc/bitos.h"
@@ -270,29 +268,29 @@ $(CONFIG)/inc/bitos.h: $(DEPS_3)
 #
 #   mprLib.o
 #
-DEPS_4 += $(CONFIG)/inc/bit.h
-DEPS_4 += $(CONFIG)/inc/mpr.h
-DEPS_4 += $(CONFIG)/inc/bitos.h
+DEPS_5 += $(CONFIG)/inc/bit.h
+DEPS_5 += $(CONFIG)/inc/mpr.h
+DEPS_5 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprLib.o: \
-    src/deps/mpr/mprLib.c $(DEPS_4)
+    src/deps/mpr/mprLib.c $(DEPS_5)
 	@echo '   [Compile] src/deps/mpr/mprLib.c'
 	$(CC) -c -o $(CONFIG)/obj/mprLib.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/mprLib.c
 
 #
 #   libmpr
 #
-DEPS_5 += $(CONFIG)/inc/mpr.h
-DEPS_5 += $(CONFIG)/obj/mprLib.o
+DEPS_6 += $(CONFIG)/inc/mpr.h
+DEPS_6 += $(CONFIG)/obj/mprLib.o
 
-$(CONFIG)/bin/libmpr.dylib: $(DEPS_5)
+$(CONFIG)/bin/libmpr.dylib: $(DEPS_6)
 	@echo '      [Link] libmpr'
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib $(LDFLAGS) -compatibility_version 4.4.0 -current_version 4.4.0 $(LIBPATHS) -install_name @rpath/libmpr.dylib $(CONFIG)/obj/mprLib.o $(LIBS)
 
 #
 #   est.h
 #
-$(CONFIG)/inc/est.h: $(DEPS_6)
+$(CONFIG)/inc/est.h: $(DEPS_7)
 	@echo '      [Copy] $(CONFIG)/inc/est.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/est/est.h" "$(CONFIG)/inc/est.h"
@@ -300,12 +298,12 @@ $(CONFIG)/inc/est.h: $(DEPS_6)
 #
 #   estLib.o
 #
-DEPS_7 += $(CONFIG)/inc/bit.h
-DEPS_7 += $(CONFIG)/inc/est.h
-DEPS_7 += $(CONFIG)/inc/bitos.h
+DEPS_8 += $(CONFIG)/inc/bit.h
+DEPS_8 += $(CONFIG)/inc/est.h
+DEPS_8 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/estLib.o: \
-    src/deps/est/estLib.c $(DEPS_7)
+    src/deps/est/estLib.c $(DEPS_8)
 	@echo '   [Compile] src/deps/est/estLib.c'
 	$(CC) -c -o $(CONFIG)/obj/estLib.o $(DFLAGS) $(IFLAGS) src/deps/est/estLib.c
 
@@ -313,10 +311,10 @@ ifeq ($(BIT_PACK_EST),1)
 #
 #   libest
 #
-DEPS_8 += $(CONFIG)/inc/est.h
-DEPS_8 += $(CONFIG)/obj/estLib.o
+DEPS_9 += $(CONFIG)/inc/est.h
+DEPS_9 += $(CONFIG)/obj/estLib.o
 
-$(CONFIG)/bin/libest.dylib: $(DEPS_8)
+$(CONFIG)/bin/libest.dylib: $(DEPS_9)
 	@echo '      [Link] libest'
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib $(LDFLAGS) -compatibility_version 4.4.0 -current_version 4.4.0 $(LIBPATHS) -install_name @rpath/libest.dylib $(CONFIG)/obj/estLib.o $(LIBS)
 endif
@@ -324,12 +322,12 @@ endif
 #
 #   mprSsl.o
 #
-DEPS_9 += $(CONFIG)/inc/bit.h
-DEPS_9 += $(CONFIG)/inc/mpr.h
-DEPS_9 += $(CONFIG)/inc/est.h
+DEPS_10 += $(CONFIG)/inc/bit.h
+DEPS_10 += $(CONFIG)/inc/mpr.h
+DEPS_10 += $(CONFIG)/inc/est.h
 
 $(CONFIG)/obj/mprSsl.o: \
-    src/deps/mpr/mprSsl.c $(DEPS_9)
+    src/deps/mpr/mprSsl.c $(DEPS_10)
 	@echo '   [Compile] src/deps/mpr/mprSsl.c'
 	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/mprSsl.c
 
@@ -337,74 +335,74 @@ ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmprssl
 #
-DEPS_10 += $(CONFIG)/bin/libmpr.dylib
+DEPS_11 += $(CONFIG)/bin/libmpr.dylib
 ifeq ($(BIT_PACK_EST),1)
-    DEPS_10 += $(CONFIG)/bin/libest.dylib
+    DEPS_11 += $(CONFIG)/bin/libest.dylib
 endif
-DEPS_10 += $(CONFIG)/obj/mprSsl.o
+DEPS_11 += $(CONFIG)/obj/mprSsl.o
 
 ifeq ($(BIT_PACK_EST),1)
-    LIBS_10 += -lest
+    LIBS_11 += -lest
 endif
-LIBS_10 += -lmpr
+LIBS_11 += -lmpr
 
-$(CONFIG)/bin/libmprssl.dylib: $(DEPS_10)
+$(CONFIG)/bin/libmprssl.dylib: $(DEPS_11)
 	@echo '      [Link] libmprssl'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib $(LDFLAGS) -compatibility_version 4.4.0 -current_version 4.4.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o $(LIBS_10) $(LIBS_10) $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib $(LDFLAGS) -compatibility_version 4.4.0 -current_version 4.4.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprSsl.o $(LIBS_11) $(LIBS_11) $(LIBS)
 endif
 
 #
 #   manager.o
 #
-DEPS_11 += $(CONFIG)/inc/bit.h
-DEPS_11 += $(CONFIG)/inc/mpr.h
+DEPS_12 += $(CONFIG)/inc/bit.h
+DEPS_12 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/manager.o: \
-    src/deps/mpr/manager.c $(DEPS_11)
+    src/deps/mpr/manager.c $(DEPS_12)
 	@echo '   [Compile] src/deps/mpr/manager.c'
 	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/manager.c
 
 #
 #   manager
 #
-DEPS_12 += $(CONFIG)/bin/libmpr.dylib
-DEPS_12 += $(CONFIG)/obj/manager.o
+DEPS_13 += $(CONFIG)/bin/libmpr.dylib
+DEPS_13 += $(CONFIG)/obj/manager.o
 
-LIBS_12 += -lmpr
+LIBS_13 += -lmpr
 
-$(CONFIG)/bin/appman: $(DEPS_12)
+$(CONFIG)/bin/appman: $(DEPS_13)
 	@echo '      [Link] manager'
-	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS_12) $(LIBS_12) $(LIBS)
+	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS_13) $(LIBS_13) $(LIBS)
 
 #
 #   makerom.o
 #
-DEPS_13 += $(CONFIG)/inc/bit.h
-DEPS_13 += $(CONFIG)/inc/mpr.h
+DEPS_14 += $(CONFIG)/inc/bit.h
+DEPS_14 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/makerom.o: \
-    src/deps/mpr/makerom.c $(DEPS_13)
+    src/deps/mpr/makerom.c $(DEPS_14)
 	@echo '   [Compile] src/deps/mpr/makerom.c'
 	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/makerom.c
 
 #
 #   makerom
 #
-DEPS_14 += $(CONFIG)/bin/libmpr.dylib
-DEPS_14 += $(CONFIG)/obj/makerom.o
+DEPS_15 += $(CONFIG)/bin/libmpr.dylib
+DEPS_15 += $(CONFIG)/obj/makerom.o
 
-LIBS_14 += -lmpr
+LIBS_15 += -lmpr
 
-$(CONFIG)/bin/makerom: $(DEPS_14)
+$(CONFIG)/bin/makerom: $(DEPS_15)
 	@echo '      [Link] makerom'
-	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS_14) $(LIBS_14) $(LIBS)
+	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS_15) $(LIBS_15) $(LIBS)
 
 #
 #   ca-crt
 #
-DEPS_15 += src/deps/est/ca.crt
+DEPS_16 += src/deps/est/ca.crt
 
-$(CONFIG)/bin/ca.crt: $(DEPS_15)
+$(CONFIG)/bin/ca.crt: $(DEPS_16)
 	@echo '      [Copy] $(CONFIG)/bin/ca.crt'
 	mkdir -p "$(CONFIG)/bin"
 	cp "src/deps/est/ca.crt" "$(CONFIG)/bin/ca.crt"
@@ -412,7 +410,7 @@ $(CONFIG)/bin/ca.crt: $(DEPS_15)
 #
 #   pcre.h
 #
-$(CONFIG)/inc/pcre.h: $(DEPS_16)
+$(CONFIG)/inc/pcre.h: $(DEPS_17)
 	@echo '      [Copy] $(CONFIG)/inc/pcre.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/pcre/pcre.h" "$(CONFIG)/inc/pcre.h"
@@ -420,28 +418,28 @@ $(CONFIG)/inc/pcre.h: $(DEPS_16)
 #
 #   pcre.o
 #
-DEPS_17 += $(CONFIG)/inc/bit.h
-DEPS_17 += $(CONFIG)/inc/pcre.h
+DEPS_18 += $(CONFIG)/inc/bit.h
+DEPS_18 += $(CONFIG)/inc/pcre.h
 
 $(CONFIG)/obj/pcre.o: \
-    src/deps/pcre/pcre.c $(DEPS_17)
+    src/deps/pcre/pcre.c $(DEPS_18)
 	@echo '   [Compile] src/deps/pcre/pcre.c'
 	$(CC) -c -o $(CONFIG)/obj/pcre.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/pcre/pcre.c
 
 #
 #   libpcre
 #
-DEPS_18 += $(CONFIG)/inc/pcre.h
-DEPS_18 += $(CONFIG)/obj/pcre.o
+DEPS_19 += $(CONFIG)/inc/pcre.h
+DEPS_19 += $(CONFIG)/obj/pcre.o
 
-$(CONFIG)/bin/libpcre.dylib: $(DEPS_18)
+$(CONFIG)/bin/libpcre.dylib: $(DEPS_19)
 	@echo '      [Link] libpcre'
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib $(LDFLAGS) -compatibility_version 4.4.0 -current_version 4.4.0 $(LIBPATHS) -install_name @rpath/libpcre.dylib $(CONFIG)/obj/pcre.o $(LIBS)
 
 #
 #   http.h
 #
-$(CONFIG)/inc/http.h: $(DEPS_19)
+$(CONFIG)/inc/http.h: $(DEPS_20)
 	@echo '      [Copy] $(CONFIG)/inc/http.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/http/http.h" "$(CONFIG)/inc/http.h"
@@ -449,75 +447,68 @@ $(CONFIG)/inc/http.h: $(DEPS_19)
 #
 #   httpLib.o
 #
-DEPS_20 += $(CONFIG)/inc/bit.h
-DEPS_20 += $(CONFIG)/inc/http.h
-DEPS_20 += $(CONFIG)/inc/mpr.h
+DEPS_21 += $(CONFIG)/inc/bit.h
+DEPS_21 += $(CONFIG)/inc/http.h
+DEPS_21 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/httpLib.o: \
-    src/deps/http/httpLib.c $(DEPS_20)
+    src/deps/http/httpLib.c $(DEPS_21)
 	@echo '   [Compile] src/deps/http/httpLib.c'
 	$(CC) -c -o $(CONFIG)/obj/httpLib.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/http/httpLib.c
 
 #
 #   libhttp
 #
-DEPS_21 += $(CONFIG)/bin/libmpr.dylib
-DEPS_21 += $(CONFIG)/bin/libpcre.dylib
-DEPS_21 += $(CONFIG)/inc/http.h
-DEPS_21 += $(CONFIG)/obj/httpLib.o
+DEPS_22 += $(CONFIG)/bin/libmpr.dylib
+DEPS_22 += $(CONFIG)/bin/libpcre.dylib
+DEPS_22 += $(CONFIG)/inc/http.h
+DEPS_22 += $(CONFIG)/obj/httpLib.o
 
-LIBS_21 += -lpcre
-LIBS_21 += -lmpr
+LIBS_22 += -lpcre
+LIBS_22 += -lmpr
 
-$(CONFIG)/bin/libhttp.dylib: $(DEPS_21)
+$(CONFIG)/bin/libhttp.dylib: $(DEPS_22)
 	@echo '      [Link] libhttp'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib $(LDFLAGS) -compatibility_version 4.4.0 -current_version 4.4.0 $(LIBPATHS) -install_name @rpath/libhttp.dylib $(CONFIG)/obj/httpLib.o $(LIBS_21) $(LIBS_21) $(LIBS) -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib $(LDFLAGS) -compatibility_version 4.4.0 -current_version 4.4.0 $(LIBPATHS) -install_name @rpath/libhttp.dylib $(CONFIG)/obj/httpLib.o $(LIBS_22) $(LIBS_22) $(LIBS) -lpam
 
 #
 #   http.o
 #
-DEPS_22 += $(CONFIG)/inc/bit.h
-DEPS_22 += $(CONFIG)/inc/http.h
+DEPS_23 += $(CONFIG)/inc/bit.h
+DEPS_23 += $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/http.o: \
-    src/deps/http/http.c $(DEPS_22)
+    src/deps/http/http.c $(DEPS_23)
 	@echo '   [Compile] src/deps/http/http.c'
 	$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/http/http.c
 
 #
 #   http
 #
-DEPS_23 += $(CONFIG)/bin/libhttp.dylib
-DEPS_23 += $(CONFIG)/obj/http.o
+DEPS_24 += $(CONFIG)/bin/libhttp.dylib
+DEPS_24 += $(CONFIG)/obj/http.o
 
-LIBS_23 += -lhttp
-LIBS_23 += -lpcre
-LIBS_23 += -lmpr
+LIBS_24 += -lhttp
+LIBS_24 += -lpcre
+LIBS_24 += -lmpr
 
-$(CONFIG)/bin/http: $(DEPS_23)
+$(CONFIG)/bin/http: $(DEPS_24)
 	@echo '      [Link] http'
-	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBS_23) $(LIBS_23) $(LIBS) -lpam
+	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBS_24) $(LIBS_24) $(LIBS) -lpam
 
 #
 #   sqlite3.h
 #
-$(CONFIG)/inc/sqlite3.h: $(DEPS_24)
+$(CONFIG)/inc/sqlite3.h: $(DEPS_25)
 	@echo '      [Copy] $(CONFIG)/inc/sqlite3.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/sqlite/sqlite3.h" "$(CONFIG)/inc/sqlite3.h"
-
-#
-#   config.h
-#
-$(CONFIG)/inc/config.h: $(DEPS_25)
-	@echo '      [Copy] $(CONFIG)/inc/config.h'
 
 #
 #   sqlite3.o
 #
 DEPS_26 += $(CONFIG)/inc/bit.h
 DEPS_26 += $(CONFIG)/inc/sqlite3.h
-DEPS_26 += $(CONFIG)/inc/config.h
 
 $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c $(DEPS_26)
@@ -805,7 +796,6 @@ $(CONFIG)/obj/mdb.o: \
 #
 DEPS_51 += $(CONFIG)/inc/bit.h
 DEPS_51 += $(CONFIG)/inc/appweb.h
-DEPS_51 += $(CONFIG)/inc/edi.h
 
 $(CONFIG)/obj/sdb.o: \
     src/esp/sdb.c $(DEPS_51)
@@ -817,6 +807,9 @@ ifeq ($(BIT_PACK_ESP),1)
 #   libmod_esp
 #
 DEPS_52 += $(CONFIG)/bin/libappweb.dylib
+ifeq ($(BIT_PACK_SQLITE),1)
+    DEPS_52 += $(CONFIG)/bin/libsqlite3.dylib
+endif
 DEPS_52 += $(CONFIG)/inc/edi.h
 DEPS_52 += $(CONFIG)/inc/esp-app.h
 DEPS_52 += $(CONFIG)/inc/esp.h
@@ -831,6 +824,9 @@ DEPS_52 += $(CONFIG)/obj/espTemplate.o
 DEPS_52 += $(CONFIG)/obj/mdb.o
 DEPS_52 += $(CONFIG)/obj/sdb.o
 
+ifeq ($(BIT_PACK_SQLITE),1)
+    LIBS_52 += -lsqlite3
+endif
 LIBS_52 += -lappweb
 LIBS_52 += -lhttp
 LIBS_52 += -lpcre
@@ -846,6 +842,9 @@ ifeq ($(BIT_PACK_ESP),1)
 #   esp
 #
 DEPS_53 += $(CONFIG)/bin/libappweb.dylib
+ifeq ($(BIT_PACK_SQLITE),1)
+    DEPS_53 += $(CONFIG)/bin/libsqlite3.dylib
+endif
 DEPS_53 += $(CONFIG)/obj/edi.o
 DEPS_53 += $(CONFIG)/obj/esp.o
 DEPS_53 += $(CONFIG)/obj/espAbbrev.o
@@ -856,6 +855,9 @@ DEPS_53 += $(CONFIG)/obj/espTemplate.o
 DEPS_53 += $(CONFIG)/obj/mdb.o
 DEPS_53 += $(CONFIG)/obj/sdb.o
 
+ifeq ($(BIT_PACK_SQLITE),1)
+    LIBS_53 += -lsqlite3
+endif
 LIBS_53 += -lappweb
 LIBS_53 += -lhttp
 LIBS_53 += -lpcre
@@ -1076,6 +1078,7 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
 #   ejs.mod
 #
+DEPS_67 += src/deps/ejs/ejs.es
 ifeq ($(BIT_PACK_EJSCRIPT),1)
     DEPS_67 += $(CONFIG)/bin/ejsc
 endif
@@ -1256,6 +1259,9 @@ DEPS_80 += $(CONFIG)/obj/slink.o
 ifeq ($(BIT_PACK_ESP),1)
     LIBS_80 += -lmod_esp
 endif
+ifeq ($(BIT_PACK_SQLITE),1)
+    LIBS_80 += -lsqlite3
+endif
 LIBS_80 += -lappweb
 LIBS_80 += -lhttp
 LIBS_80 += -lpcre
@@ -1313,16 +1319,16 @@ LIBS_82 += -lappweb
 LIBS_82 += -lhttp
 LIBS_82 += -lpcre
 LIBS_82 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_82 += -lejs
-endif
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_82 += -lsqlite3
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+    LIBS_82 += -lejs
 endif
 
 $(CONFIG)/bin/appweb: $(DEPS_82)
 	@echo '      [Link] appweb'
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBS_82) $(LIBS_82) $(LIBS) -lsqlite3
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBS_82) $(LIBS_82) $(LIBS) -lejs
 
 #
 #   server-cache
@@ -1442,303 +1448,68 @@ test/web/js: $(DEPS_92)
 	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "test/web/js/jquery.simplemodal.js"
 	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "test/web/js/jquery.tablesorter.js"
 
-#
-#   version
-#
-version: $(DEPS_93)
-	@echo 4.4.0-0
-
 
 #
 #   stop
 #
-DEPS_94 += compile
+DEPS_93 += compile
 
-stop: $(DEPS_94)
-	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
+stop: $(DEPS_93)
 
 #
 #   installBinary
 #
-DEPS_95 += stop
+DEPS_94 += stop
 
-installBinary: $(DEPS_95)
-	mkdir -p "$(BIT_APP_PREFIX)"
-	mkdir -p "$(BIT_VAPP_PREFIX)"
-	mkdir -p "$(BIT_ETC_PREFIX)"
-	mkdir -p "$(BIT_WEB_PREFIX)"
-	mkdir -p "$(BIT_LOG_PREFIX)"
-	mkdir -p "$(BIT_SPOOL_PREFIX)"
-	rm -fr "$(BIT_CACHE_PREFIX)"
-	mkdir -p "$(BIT_CACHE_PREFIX)"
-	mkdir -p "$(BIT_APP_PREFIX)"
-	rm -f "$(BIT_APP_PREFIX)/latest"
-	ln -s "4.4.0" "$(BIT_APP_PREFIX)/latest"
-	mkdir -p "$(BIT_LOG_PREFIX)"
-	chmod 755 "$(BIT_LOG_PREFIX)"
-	[ `id -u` = 0 ] && chown _www:_www "$(BIT_LOG_PREFIX)"
-	mkdir -p "$(BIT_CACHE_PREFIX)"
-	chmod 755 "$(BIT_CACHE_PREFIX)"
-	[ `id -u` = 0 ] && chown _www:_www "$(BIT_CACHE_PREFIX)"
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin"
-	cp "$(CONFIG)/bin/appman" "$(BIT_VAPP_PREFIX)/bin/appman"
-	mkdir -p "$(BIT_BIN_PREFIX)"
-	rm -f "$(BIT_BIN_PREFIX)/appman"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/appman" "$(BIT_BIN_PREFIX)/appman"
-	cp "$(CONFIG)/bin/appweb" "$(BIT_VAPP_PREFIX)/bin/appweb"
-	rm -f "$(BIT_BIN_PREFIX)/appweb"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/appweb" "$(BIT_BIN_PREFIX)/appweb"
-	cp "$(CONFIG)/bin/http" "$(BIT_VAPP_PREFIX)/bin/http"
-	rm -f "$(BIT_BIN_PREFIX)/http"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/http" "$(BIT_BIN_PREFIX)/http"
-ifeq ($(BIT_PACK_ESP),1)
-	cp "$(CONFIG)/bin/esp" "$(BIT_VAPP_PREFIX)/bin/esp"
-	rm -f "$(BIT_BIN_PREFIX)/esp"
-	ln -s "$(BIT_VAPP_PREFIX)/bin/esp" "$(BIT_BIN_PREFIX)/esp"
-endif
-	cp "$(CONFIG)/bin/libappweb.dylib" "$(BIT_VAPP_PREFIX)/bin/libappweb.dylib"
-	cp "$(CONFIG)/bin/libhttp.dylib" "$(BIT_VAPP_PREFIX)/bin/libhttp.dylib"
-	cp "$(CONFIG)/bin/libmpr.dylib" "$(BIT_VAPP_PREFIX)/bin/libmpr.dylib"
-	cp "$(CONFIG)/bin/libpcre.dylib" "$(BIT_VAPP_PREFIX)/bin/libpcre.dylib"
-	cp "$(CONFIG)/bin/libslink.dylib" "$(BIT_VAPP_PREFIX)/bin/libslink.dylib"
-ifeq ($(BIT_PACK_SSL),1)
-	cp "$(CONFIG)/bin/libmprssl.dylib" "$(BIT_VAPP_PREFIX)/bin/libmprssl.dylib"
-	cp "$(CONFIG)/bin/libmod_ssl.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_ssl.dylib"
-	cp "$(CONFIG)/bin/ca.crt" "$(BIT_VAPP_PREFIX)/bin/ca.crt"
-endif
-ifeq ($(BIT_PACK_SQLITE),1)
-	cp "$(CONFIG)/bin/libsqlite3.dylib" "$(BIT_VAPP_PREFIX)/bin/libsqlite3.dylib"
-endif
-ifeq ($(BIT_PACK_ESP),1)
-	cp "$(CONFIG)/bin/libmod_esp.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_esp.dylib"
-endif
-ifeq ($(BIT_PACK_CGI),1)
-	cp "$(CONFIG)/bin/libmod_cgi.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_cgi.dylib"
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-	cp "$(CONFIG)/bin/libejs.dylib" "$(BIT_VAPP_PREFIX)/bin/libejs.dylib"
-	cp "$(CONFIG)/bin/libmod_ejs.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_ejs.dylib"
-endif
-ifeq ($(BIT_PACK_ESP),1)
-	cp "$(CONFIG)/bin/libmod_esp.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_esp.dylib"
-	cp "$(CONFIG)/bin/libappweb.dylib" "$(BIT_VAPP_PREFIX)/bin/libappweb.dylib"
-	cp "$(CONFIG)/bin/libpcre.dylib" "$(BIT_VAPP_PREFIX)/bin/libpcre.dylib"
-	cp "$(CONFIG)/bin/libhttp.dylib" "$(BIT_VAPP_PREFIX)/bin/libhttp.dylib"
-	cp "$(CONFIG)/bin/libmpr.dylib" "$(BIT_VAPP_PREFIX)/bin/libmpr.dylib"
-endif
-ifeq ($(BIT_PACK_ESP),1)
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www"
-	cp "src/esp/esp-www/app.conf" "$(BIT_VAPP_PREFIX)/bin/esp-www/app.conf"
-	cp "src/esp/esp-www/appweb.conf" "$(BIT_VAPP_PREFIX)/bin/esp-www/appweb.conf"
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/layouts"
-	cp "src/esp/esp-www/files/layouts/default.esp" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/layouts/default.esp"
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images"
-	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/banner.jpg"
-	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/favicon.ico"
-	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/splash.jpg"
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static"
-	cp "src/esp/esp-www/files/static/index.esp" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/index.esp"
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js"
-	cp "src/esp/esp-www/files/static/js/jquery-1.9.1.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery-1.9.1.js"
-	cp "src/esp/esp-www/files/static/js/jquery-1.9.1.min.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery-1.9.1.min.js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.tablesorter.js"
-	cp "src/esp/esp-www/files/static/layout.css" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/layout.css"
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/themes"
-	cp "src/esp/esp-www/files/static/themes/default.css" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/themes/default.css"
-	cp "src/esp/esp-appweb.conf" "$(BIT_VAPP_PREFIX)/bin/esp-appweb.conf"
-endif
-ifeq ($(BIT_PACK_ESP),1)
-	cp "$(CONFIG)/bin/esp.conf" "$(BIT_VAPP_PREFIX)/bin/esp.conf"
-endif
-	mkdir -p "$(BIT_WEB_PREFIX)/bench"
-	cp "src/server/web/bench/1b.html" "$(BIT_WEB_PREFIX)/bench/1b.html"
-	cp "src/server/web/bench/4k.html" "$(BIT_WEB_PREFIX)/bench/4k.html"
-	cp "src/server/web/bench/64k.html" "$(BIT_WEB_PREFIX)/bench/64k.html"
-	mkdir -p "$(BIT_WEB_PREFIX)"
-	cp "src/server/web/favicon.ico" "$(BIT_WEB_PREFIX)/favicon.ico"
-	mkdir -p "$(BIT_WEB_PREFIX)/icons"
-	cp "src/server/web/icons/back.gif" "$(BIT_WEB_PREFIX)/icons/back.gif"
-	cp "src/server/web/icons/blank.gif" "$(BIT_WEB_PREFIX)/icons/blank.gif"
-	cp "src/server/web/icons/compressed.gif" "$(BIT_WEB_PREFIX)/icons/compressed.gif"
-	cp "src/server/web/icons/folder.gif" "$(BIT_WEB_PREFIX)/icons/folder.gif"
-	cp "src/server/web/icons/parent.gif" "$(BIT_WEB_PREFIX)/icons/parent.gif"
-	cp "src/server/web/icons/space.gif" "$(BIT_WEB_PREFIX)/icons/space.gif"
-	cp "src/server/web/icons/text.gif" "$(BIT_WEB_PREFIX)/icons/text.gif"
-	cp "src/server/web/iehacks.css" "$(BIT_WEB_PREFIX)/iehacks.css"
-	mkdir -p "$(BIT_WEB_PREFIX)/images"
-	cp "src/server/web/images/banner.jpg" "$(BIT_WEB_PREFIX)/images/banner.jpg"
-	cp "src/server/web/images/bottomShadow.jpg" "$(BIT_WEB_PREFIX)/images/bottomShadow.jpg"
-	cp "src/server/web/images/shadow.jpg" "$(BIT_WEB_PREFIX)/images/shadow.jpg"
-	cp "src/server/web/index.html" "$(BIT_WEB_PREFIX)/index.html"
-	cp "src/server/web/min-index.html" "$(BIT_WEB_PREFIX)/min-index.html"
-	cp "src/server/web/print.css" "$(BIT_WEB_PREFIX)/print.css"
-	cp "src/server/web/screen.css" "$(BIT_WEB_PREFIX)/screen.css"
-	mkdir -p "$(BIT_WEB_PREFIX)/test"
-	cp "src/server/web/test/bench.html" "$(BIT_WEB_PREFIX)/test/bench.html"
-	cp "src/server/web/test/test.cgi" "$(BIT_WEB_PREFIX)/test/test.cgi"
-	cp "src/server/web/test/test.ejs" "$(BIT_WEB_PREFIX)/test/test.ejs"
-	cp "src/server/web/test/test.esp" "$(BIT_WEB_PREFIX)/test/test.esp"
-	cp "src/server/web/test/test.html" "$(BIT_WEB_PREFIX)/test/test.html"
-	cp "src/server/web/test/test.php" "$(BIT_WEB_PREFIX)/test/test.php"
-	cp "src/server/web/test/test.pl" "$(BIT_WEB_PREFIX)/test/test.pl"
-	cp "src/server/web/test/test.py" "$(BIT_WEB_PREFIX)/test/test.py"
-	mkdir -p "$(BIT_ETC_PREFIX)"
-	cp "src/server/mime.types" "$(BIT_ETC_PREFIX)/mime.types"
-	cp "src/server/appweb.conf" "$(BIT_ETC_PREFIX)/appweb.conf"
-	mkdir -p "$(BIT_VAPP_PREFIX)/inc"
-	cp "$(CONFIG)/inc/bit.h" "$(BIT_VAPP_PREFIX)/inc/bit.h"
-	mkdir -p "$(BIT_INC_PREFIX)/appweb"
-	rm -f "$(BIT_INC_PREFIX)/appweb/bit.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/bit.h" "$(BIT_INC_PREFIX)/appweb/bit.h"
-	cp "src/bitos.h" "$(BIT_VAPP_PREFIX)/inc/bitos.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/bitos.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/bitos.h" "$(BIT_INC_PREFIX)/appweb/bitos.h"
-	cp "src/appweb.h" "$(BIT_VAPP_PREFIX)/inc/appweb.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/appweb.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/appweb.h" "$(BIT_INC_PREFIX)/appweb/appweb.h"
-	cp "src/customize.h" "$(BIT_VAPP_PREFIX)/inc/customize.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/customize.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/customize.h" "$(BIT_INC_PREFIX)/appweb/customize.h"
-	cp "src/deps/est/est.h" "$(BIT_VAPP_PREFIX)/inc/est.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/est.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/est.h" "$(BIT_INC_PREFIX)/appweb/est.h"
-	cp "src/deps/http/http.h" "$(BIT_VAPP_PREFIX)/inc/http.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/http.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/http.h" "$(BIT_INC_PREFIX)/appweb/http.h"
-	cp "src/deps/mpr/mpr.h" "$(BIT_VAPP_PREFIX)/inc/mpr.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/mpr.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/mpr.h" "$(BIT_INC_PREFIX)/appweb/mpr.h"
-	cp "src/deps/pcre/pcre.h" "$(BIT_VAPP_PREFIX)/inc/pcre.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/pcre.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/pcre.h" "$(BIT_INC_PREFIX)/appweb/pcre.h"
-	cp "src/deps/sqlite/sqlite3.h" "$(BIT_VAPP_PREFIX)/inc/sqlite3.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/sqlite3.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/sqlite3.h" "$(BIT_INC_PREFIX)/appweb/sqlite3.h"
-ifeq ($(BIT_PACK_ESP),1)
-	cp "src/esp/edi.h" "$(BIT_VAPP_PREFIX)/inc/edi.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/edi.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/edi.h" "$(BIT_INC_PREFIX)/appweb/edi.h"
-	cp "src/esp/esp-app.h" "$(BIT_VAPP_PREFIX)/inc/esp-app.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/esp-app.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/esp-app.h" "$(BIT_INC_PREFIX)/appweb/esp-app.h"
-	cp "src/esp/esp.h" "$(BIT_VAPP_PREFIX)/inc/esp.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/esp.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/esp.h" "$(BIT_INC_PREFIX)/appweb/esp.h"
-	cp "src/esp/mdb.h" "$(BIT_VAPP_PREFIX)/inc/mdb.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/mdb.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/mdb.h" "$(BIT_INC_PREFIX)/appweb/mdb.h"
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-	cp "src/deps/ejs/ejs.h" "$(BIT_VAPP_PREFIX)/inc/ejs.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.h" "$(BIT_INC_PREFIX)/appweb/ejs.h"
-	cp "src/deps/ejs/ejs.slots.h" "$(BIT_VAPP_PREFIX)/inc/ejs.slots.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.slots.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.slots.h" "$(BIT_INC_PREFIX)/appweb/ejs.slots.h"
-	cp "src/deps/ejs/ejsByteGoto.h" "$(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h"
-	rm -f "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h"
-	ln -s "$(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h" "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h"
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-	cp "$(CONFIG)/bin/ejs.mod" "$(BIT_VAPP_PREFIX)/bin/ejs.mod"
-endif
-	mkdir -p "$(BIT_VAPP_PREFIX)/doc/man1"
-	cp "doc/man/appman.1" "$(BIT_VAPP_PREFIX)/doc/man1/appman.1"
-	mkdir -p "$(BIT_MAN_PREFIX)/man1"
-	rm -f "$(BIT_MAN_PREFIX)/man1/appman.1"
-	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/appman.1" "$(BIT_MAN_PREFIX)/man1/appman.1"
-	cp "doc/man/appweb.1" "$(BIT_VAPP_PREFIX)/doc/man1/appweb.1"
-	rm -f "$(BIT_MAN_PREFIX)/man1/appweb.1"
-	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/appweb.1" "$(BIT_MAN_PREFIX)/man1/appweb.1"
-	cp "doc/man/appwebMonitor.1" "$(BIT_VAPP_PREFIX)/doc/man1/appwebMonitor.1"
-	rm -f "$(BIT_MAN_PREFIX)/man1/appwebMonitor.1"
-	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/appwebMonitor.1" "$(BIT_MAN_PREFIX)/man1/appwebMonitor.1"
-	cp "doc/man/authpass.1" "$(BIT_VAPP_PREFIX)/doc/man1/authpass.1"
-	rm -f "$(BIT_MAN_PREFIX)/man1/authpass.1"
-	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/authpass.1" "$(BIT_MAN_PREFIX)/man1/authpass.1"
-	cp "doc/man/esp.1" "$(BIT_VAPP_PREFIX)/doc/man1/esp.1"
-	rm -f "$(BIT_MAN_PREFIX)/man1/esp.1"
-	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/esp.1" "$(BIT_MAN_PREFIX)/man1/esp.1"
-	cp "doc/man/http.1" "$(BIT_VAPP_PREFIX)/doc/man1/http.1"
-	rm -f "$(BIT_MAN_PREFIX)/man1/http.1"
-	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/http.1" "$(BIT_MAN_PREFIX)/man1/http.1"
-	cp "doc/man/makerom.1" "$(BIT_VAPP_PREFIX)/doc/man1/makerom.1"
-	rm -f "$(BIT_MAN_PREFIX)/man1/makerom.1"
-	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/makerom.1" "$(BIT_MAN_PREFIX)/man1/makerom.1"
-	cp "doc/man/manager.1" "$(BIT_VAPP_PREFIX)/doc/man1/manager.1"
-	rm -f "$(BIT_MAN_PREFIX)/man1/manager.1"
-	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/manager.1" "$(BIT_MAN_PREFIX)/man1/manager.1"
-	mkdir -p "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons"
-	cp "package/macosx/com.embedthis.appweb.plist" "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons/com.embedthis.appweb.plist"
-	[ `id -u` = 0 ] && chown root:wheel "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons/com.embedthis.appweb.plist"
-	chmod 644 "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons/com.embedthis.appweb.plist"
-	echo 'set LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_CACHE_PREFIX)"\nDocuments "$(BIT_WEB_PREFIX)\nListen 80\n' >$(BIT_ETC_PREFIX)/install.conf
+installBinary: $(DEPS_94)
 
 #
 #   start
 #
-DEPS_96 += compile
-DEPS_96 += stop
+DEPS_95 += compile
+DEPS_95 += stop
 
-start: $(DEPS_96)
-	./$(CONFIG)/bin/appman install enable start
+start: $(DEPS_95)
 
 #
 #   install
 #
-DEPS_97 += stop
-DEPS_97 += installBinary
-DEPS_97 += start
+DEPS_96 += stop
+DEPS_96 += installBinary
+DEPS_96 += start
 
-install: $(DEPS_97)
+install: $(DEPS_96)
 	
+
 
 #
 #   uninstall
 #
-DEPS_98 += stop
+DEPS_97 += build
+DEPS_97 += stop
 
-uninstall: $(DEPS_98)
-	rm -f "$(BIT_ETC_PREFIX)/appweb.conf"
-	rm -f "$(BIT_ETC_PREFIX)/esp.conf"
-	rm -f "$(BIT_ETC_PREFIX)/mine.types"
-	rm -f "$(BIT_ETC_PREFIX)/install.conf"
-	rm -fr "$(BIT_INC_PREFIX)/appweb"
-	rm -fr "$(BIT_WEB_PREFIX)"
-	rm -fr "$(BIT_SPOOL_PREFIX)"
-	rm -fr "$(BIT_CACHE_PREFIX)"
-	rm -fr "$(BIT_LOG_PREFIX)"
-	rm -fr "$(BIT_VAPP_PREFIX)"
-	rmdir -p "$(BIT_ETC_PREFIX)" 2>/dev/null ; true
-	rmdir -p "$(BIT_WEB_PREFIX)" 2>/dev/null ; true
-	rmdir -p "$(BIT_LOG_PREFIX)" 2>/dev/null ; true
-	rmdir -p "$(BIT_SPOOL_PREFIX)" 2>/dev/null ; true
-	rmdir -p "$(BIT_CACHE_PREFIX)" 2>/dev/null ; true
-	rm -f "$(BIT_APP_PREFIX)/latest"
-	rmdir -p "$(BIT_APP_PREFIX)" 2>/dev/null ; true
+uninstall: $(DEPS_97)
+	
 
 #
 #   genslink
 #
-genslink: $(DEPS_99)
+genslink: $(DEPS_98)
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
 #
 #   run
 #
-DEPS_100 += compile
+DEPS_99 += compile
 
-run: $(DEPS_100)
+run: $(DEPS_99)
 	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 
 #
 #   test-run
 #
-DEPS_101 += compile
+DEPS_100 += compile
 
-test-run: $(DEPS_101)
+test-run: $(DEPS_100)
 	cd test; ../$(CONFIG)/bin/appweb -v ; cd ..
 
