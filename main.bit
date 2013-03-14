@@ -46,6 +46,7 @@ Bit.load({
             Installation prefix set
          */
         prefixes: 'embedthis-prefixes',
+        manifest: 'package/manifest.bit',
 
         /*
             Enable a debug build with debug symbols and without optimization
@@ -109,7 +110,7 @@ Bit.load({
             mdb: true,
 
             /* Support the SQLite database */ 
-            sdb: false,
+            sdb: true,
         },
 
         /*
@@ -199,6 +200,7 @@ Bit.load({
         nanossl: {},
         openssl: {},
         ssl: {},
+        sqlite: {},
     },
 
     targets: {
@@ -217,7 +219,25 @@ Bit.load({
 
     scripts: {
         /* Want est support included, but disabled */
-        pregenheader: "if (bit.generating) bit.packs.est.enable = 0",
-        pregen: "if (bit.generating) bit.packs.est.enable = 0",
+        prebitheader: "
+            if (bit.generating) bit.packs.est.enable = 0
+        ",
+        pregen: "
+            if (bit.generating) bit.packs.est.enable = 0
+        ",
+        mob: "
+            if (bit.settings.esp.mdb) {
+                if (forced witout) {
+                    throw 'something'
+                }
+                bit.packs.sqlite.enable = true
+            }
+            if (bit.settings.esp.sdb) {
+                if (forced witout) {
+                    throw
+                }
+                bit.packs.sqlite.enable = true
+            }
+        ",
     },
 })
