@@ -106,6 +106,9 @@
 #ifndef BIT_HTTP_STEALTH
     #define BIT_HTTP_STEALTH 1
 #endif
+#ifndef BIT_MANIFEST
+    #define BIT_MANIFEST "package/manifest.bit"
+#endif
 #ifndef BIT_MPR_LOGGING
     #define BIT_MPR_LOGGING 1
 #endif
@@ -144,12 +147,6 @@
 #endif
 #ifndef BIT_VERSION
     #define BIT_VERSION "4.4.0"
-#endif
-#ifndef BIT_WEB_GROUP
-    #define BIT_WEB_GROUP "Administrator"
-#endif
-#ifndef BIT_WEB_USER
-    #define BIT_WEB_USER "Administrator"
 #endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
