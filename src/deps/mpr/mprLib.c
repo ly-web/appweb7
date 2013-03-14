@@ -49,6 +49,9 @@ static MprMem *stopAlloc = 0;
 static int stopSeqno = -1;
 #endif
 
+#undef GET_SIZE
+#undef GET_MEM
+#undef GET_PTR
 #define GET_MEM(ptr)                ((MprMem*) (((char*) (ptr)) - sizeof(MprMem)))
 #define GET_PTR(mp)                 ((char*) (((char*) mp) + sizeof(MprMem)))
 #define GET_USIZE(mp)               ((ssize) (GET_SIZE(mp) - sizeof(MprMem) - (HAS_MANAGER(mp) * sizeof(void*))))
@@ -1368,6 +1371,15 @@ void pfree(void *ptr)
     }
 }
 
+
+void *prealloc(void *ptr, ssize size)
+{
+    mprRelease(ptr);
+    if ((ptr =  mprRealloc(ptr, size)) != 0) {
+        mprHold(ptr);
+    }
+    return ptr;
+}
 
 
 /* 
@@ -24256,7 +24268,7 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     worker->thread = 0;
     ws->numThreads--;
     unlock(ws);
-    mprLog(4, "Worker exiting. There are %d workers remaining in the pool.", ws->numThreads);
+    mprLog(6, "Worker exiting. There are %d workers remaining in the pool.", ws->numThreads);
 }
 
 
@@ -27871,8 +27883,8 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mp->path = at;
         mprGetPathInfo(mp->path, &info);
         mp->modified = info.mtime;
-        mprLog(2, "Loading native module %s", mp->path);
         baseName = mprGetPathBase(mp->path);
+        mprLog(2, "Loading native module %s", baseName);
         if ((handle = GetModuleHandle(wide(baseName))) == 0 && (handle = LoadLibrary(wide(mp->path))) == 0) {
             mprError("Cannot load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
             return MPR_ERR_CANT_READ;
