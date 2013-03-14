@@ -6254,7 +6254,7 @@ PUBLIC void httpJoinPackets(HttpQueue *q, ssize size)
 
 
 /*
-    Join queue packets. The maximum size is advisory only and may be exceeded.
+    Join queue packets. Packets will not be split so the maximum size is advisory and may be exceeded.
     NOTE: this will not update the queue count.
  */
 PUBLIC void httpJoinPackets(HttpQueue *q, ssize size)
@@ -6271,7 +6271,7 @@ PUBLIC void httpJoinPackets(HttpQueue *q, ssize size)
          */
         count = 0;
         for (p = q->first; p; p = p->next) {
-            if (!(q->first->flags & HTTP_PACKET_HEADER)) {
+            if (!(p->flags & HTTP_PACKET_HEADER)) {
                 count += httpGetPacketLength(p);
             }
         }
