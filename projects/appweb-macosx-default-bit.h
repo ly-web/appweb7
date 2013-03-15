@@ -245,7 +245,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default -configure . -without default -with ejscript -with est --with mdb --with sdb -gen make"
+    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default -configure . -without default -with ejscript -with est --with mdb --with sdb -gen xcode"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
