@@ -33,11 +33,9 @@ Bit.pack({
                 let names = { Release_TS: 'php5ts.dll', Release: 'php5.dll', Debug_TS: 'php5ts_debug.dll', Debug: 'php5.dll' }
                 let lib = probe(names[reldir.basename], {fullpath: true, search: search}).absolute
                 let incdir = probe('main/php.h', {search: [path]}).absolute
-                cfg = {
-                    includes: [ incdir, incdir.join('main'), incdir.join('Zend'), incdir.join('TSRM') ],
-                    libraries: [ 'php5ts.lib' ],
-                    linker: [ '-libpath:' + lib.parent ],
-                }
+                pack.includes = [ incdir, incdir.join('main'), incdir.join('Zend'), incdir.join('TSRM') ],
+                pack.libraries = [ 'php5ts.lib' ],
+                pack.linker = [ '-libpath:' + lib.parent ],
                 pack.imports = lib.parent.files('php5ts.*')
 
             } else {
