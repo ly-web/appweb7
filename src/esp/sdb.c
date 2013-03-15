@@ -464,6 +464,7 @@ static EdiGrid *query(Edi *edi, cchar *cmd)
     }
     defaultTableName = 0;
     rc = SQLITE_OK;
+    nrows = 0;
 
     while (cmd && *cmd && (rc == SQLITE_OK || (rc == SQLITE_SCHEMA && ++retries < 2))) {
         stmt = 0;

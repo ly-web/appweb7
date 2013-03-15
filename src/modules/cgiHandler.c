@@ -605,6 +605,7 @@ static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet)
         return 0;
     }
     msg = getCgiToken(buf, "\n");
+    mprNop(msg);
     mprTrace(4, "CGI: Status line: %s %s %s", protocol, status, msg);
     return 1;
 }
