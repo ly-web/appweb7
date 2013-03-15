@@ -1,0 +1,10 @@
+/*
+    esp.bit - ESP package for Bit
+ */
+
+Bit.pack({
+    esp: {
+        description: 'Embedded Server Pages Web Framework',
+        path: bit.dir.src.join('src/esp/espHandler.c'),
+    },
+})

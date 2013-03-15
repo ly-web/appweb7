@@ -310,9 +310,9 @@ PUBLIC int main(int argc, char **argv)
     app->mpr = mpr;
     app->configFile = 0;
     app->listen = sclone(ESP_LISTEN);
-#if BIT_ESP_SDB && BIT_PACK_SQLITE
+#if BIT_PACK_SDB
     app->database = sclone("sqlite");
-#elif BIT_ESP_MDB 
+#elif BIT_PACK_MDB 
     app->database = sclone("mdb");
 #else
     mprError("No database provider defined");

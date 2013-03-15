@@ -40,7 +40,7 @@ Bit.load({
         company: 'Embedthis',
         version: '4.4.0',
         buildNumber: '0',
-        bit: '0.8.4',
+        bit: '0.8.5',
 
         /*
             Installation prefix set
@@ -63,12 +63,14 @@ Bit.load({
         /*
             Optional packs to automatically discover and configure
          */
-        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'man', 'man2html', 'pmaker', 'php', 'sqlite', 'utest', 'zip' ],
+        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'man', 'man2html', 'mdb', 'pmaker', 'php', 
+            'sqlite', 'sdb', 'ssl', 'utest', 'zip' ],
 
         /*
             Packs to disable when using --without all
          */
-        'without-all': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejscript', 'esp', 'man', 'man2html', 'openssl', 'pmaker', 'php', 'sqlite', ],
+        'without-all': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejscript', 'esp', 'man', 'man2html', 'pmaker', 'php', 
+            'sqlite', 'ssl'],
 
         /*
             Packs to disable when using --without default (generating packages)
@@ -103,14 +105,6 @@ Bit.load({
             template: true,                                                                               
             web: true,                                                                                    
             zlib: true,
-        },
-
-        esp: {
-            /* Support the MDB database */ 
-            mdb: true,
-
-            /* Support the SQLite database */ 
-            sdb: true,
         },
 
         /*
@@ -168,8 +162,8 @@ Bit.load({
         'ejs.web':       'Enable web support, ejs.web (true|false)',
         'ejs.zlib':      'Enable zlib support, ejs.zlib (true|false)',
 
-        'esp.mdb':       'Enable ESP MDB database support (true|false)',
-        'esp.sdb':       'Enable ESP SQLite database support (true|flase)',
+        // 'esp.mdb':       'Enable ESP MDB database support (true|false)',
+        // 'esp.sdb':       'Enable ESP SQLite database support (true|flase)',
 
         'est.camellia':  'Enable the Camellia cipher (true|false)',
         'est.des':       'Enable the 3DES cipher (true|false)',
@@ -189,20 +183,6 @@ Bit.load({
         'serverRoot':    'Home directory for the server ',
     },
 
-    packs: {
-        ejscript: {},
-        est: {},
-        http: {
-            enable: true,
-            path: '${BIN}/http',
-        },
-        matrixssl: {},
-        nanossl: {},
-        openssl: {},
-        ssl: {},
-        sqlite: {},
-    },
-
     targets: {
         /*
             See src/server/server.bit for the appweb targets
@@ -218,26 +198,16 @@ Bit.load({
     },
 
     scripts: {
-        /* Want est support included, but disabled */
+        /* Want est,ssl and sqlite support included, but disabled */
         prebitheader: "
             if (bit.generating) bit.packs.est.enable = 0
+            if (bit.generating) bit.packs.ssl.enable = 0
+            if (bit.generating) bit.packs.sqlite.enable = 0
         ",
         pregen: "
             if (bit.generating) bit.packs.est.enable = 0
-        ",
-        mob: "
-            if (bit.settings.esp.mdb) {
-                if (forced witout) {
-                    throw 'something'
-                }
-                bit.packs.sqlite.enable = true
-            }
-            if (bit.settings.esp.sdb) {
-                if (forced witout) {
-                    throw
-                }
-                bit.packs.sqlite.enable = true
-            }
+            if (bit.generating) bit.packs.ssl.enable = 0
+            if (bit.generating) bit.packs.sqlite.enable = 0
         ",
     },
 })

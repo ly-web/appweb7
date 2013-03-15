@@ -1,0 +1,10 @@
+/*
+    mdb.pak - MDB Database package for Appweb
+ */
+
+Bit.pack({
+    mdb: {
+        description: 'MDB Database',
+        path: bit.dir.src.join('src/esp/mdb.c'),
+    },
+})

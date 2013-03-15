@@ -2201,7 +2201,11 @@ static bool conditionalDefinition(MaState *state, cchar *key)
             result = BIT_PACK_DIR;
 
         } else if (scaselessmatch(key, "EJS_MODULE")) {
+#if BIT_PACK_EJSCRIPT
             result = BIT_PACK_EJSCRIPT;
+#else
+            result = 0;
+#endif
 
         } else if (scaselessmatch(key, "ESP_MODULE")) {
             result = BIT_PACK_ESP;

@@ -1,0 +1,10 @@
+/*
+    cgi.bit - CGI package for Appweb
+ */
+
+Bit.pack({
+    cgi: {
+        description: 'Common Gateway Interface Module',
+        path: bit.dir.src.join('src/modules/cgiHandler.c'),
+    },
+})

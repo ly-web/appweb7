@@ -1196,11 +1196,11 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if ((esp->ediService = ediCreateService()) == 0) {
         return 0;
     }
-#if BIT_ESP_MDB
+#if BIT_PACK_MDB
     /* Memory database */
     mdbInit();
 #endif
-#if BIT_ESP_SDB
+#if BIT_PACK_SDB
     /* Sqlite */
     sdbInit();
 #endif

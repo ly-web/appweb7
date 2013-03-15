@@ -8,7 +8,7 @@
 
 #include    "appweb.h"
 
-#if BIT_PACK_ESP && BIT_PACK_SQLITE && BIT_ESP_SDB
+#if BIT_PACK_ESP && BIT_PACK_SDB
  #include    "edi.h"
  #include    "sqlite3.h"
 
@@ -882,7 +882,7 @@ static void initSqlite()
     mprGlobalUnlock();
 }
 
-#endif /* BIT_PACK_ESP && BIT_PACK_SQLITE && BIT_ESP_SDB */
+#endif /* BIT_PACK_ESP && BIT_PACK_SDB */
 
 /*
     @copy   default

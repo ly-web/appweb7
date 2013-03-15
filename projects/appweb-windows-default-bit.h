@@ -8,7 +8,7 @@
 
 /* Settings */
 #ifndef BIT_BIT
-    #define BIT_BIT "0.8.4"
+    #define BIT_BIT "0.8.5"
 #endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
@@ -26,7 +26,7 @@
     #define BIT_DEPTH 1
 #endif
 #ifndef BIT_DISCOVER
-    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,man,man2html,pmaker,php,sqlite,utest,zip"
+    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,man,man2html,mdb,pmaker,php,sqlite,sdb,ssl,utest,zip"
 #endif
 #ifndef BIT_EJS_DB
     #define BIT_EJS_DB 1
@@ -54,12 +54,6 @@
 #endif
 #ifndef BIT_EJSCRIPT
     #define BIT_EJSCRIPT 0
-#endif
-#ifndef BIT_ESP_MDB
-    #define BIT_ESP_MDB 1
-#endif
-#ifndef BIT_ESP_SDB
-    #define BIT_ESP_SDB 1
 #endif
 #ifndef BIT_EST_CAMELLIA
     #define BIT_EST_CAMELLIA 0
@@ -149,7 +143,7 @@
     #define BIT_VERSION "4.4.0"
 #endif
 #ifndef BIT_WITHOUT_ALL
-    #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,openssl,pmaker,php,sqlite"
+    #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,pmaker,php,sqlite,ssl"
 #endif
 #ifndef BIT_WITHOUT_DEFAULT
     #define BIT_WITHOUT_DEFAULT "doxygen,dsi,man,man2html,pmaker,php"
@@ -281,9 +275,6 @@
 #ifndef BIT_PACK_EST
     #define BIT_PACK_EST 1
 #endif
-#ifndef BIT_PACK_HTTP
-    #define BIT_PACK_HTTP 1
-#endif
 #ifndef BIT_PACK_LIB
     #define BIT_PACK_LIB 1
 #endif
@@ -298,6 +289,9 @@
 #endif
 #ifndef BIT_PACK_MATRIXSSL
     #define BIT_PACK_MATRIXSSL 0
+#endif
+#ifndef BIT_PACK_MDB
+    #define BIT_PACK_MDB 1
 #endif
 #ifndef BIT_PACK_NANOSSL
     #define BIT_PACK_NANOSSL 0
@@ -317,6 +311,9 @@
 #ifndef BIT_PACK_RC
     #define BIT_PACK_RC 1
 #endif
+#ifndef BIT_PACK_SDB
+    #define BIT_PACK_SDB 1
+#endif
 #ifndef BIT_PACK_SQLITE
     #define BIT_PACK_SQLITE 1
 #endif
@@ -326,8 +323,11 @@
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1
 #endif
+#ifndef BIT_PACK_VXWORKS
+    #define BIT_PACK_VXWORKS 0
+#endif
 #ifndef BIT_PACK_WINSDK
-    #define BIT_PACK_WINSDK 1
+    #define BIT_PACK_WINSDK 0
 #endif
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1
