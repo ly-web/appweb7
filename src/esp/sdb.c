@@ -620,7 +620,7 @@ static int sdbSave(Edi *edi)
 }
 
 
-PUBLIC bool sdbValidateRec(Edi *edi, EdiRec *rec)
+static bool sdbValidateRec(Edi *edi, EdiRec *rec)
 {
     Sdb         *sdb;
     EdiField    *fp;
@@ -745,7 +745,7 @@ static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *column
 /*
     Optimized record creation
  */
-PUBLIC EdiRec *createRec(Edi *edi, cchar *tableName, int nfields)
+static EdiRec *createRec(Edi *edi, cchar *tableName, int nfields)
 {
     EdiRec  *rec;
 
