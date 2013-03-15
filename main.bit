@@ -190,7 +190,7 @@ Bit.load({
             See package/package.bit for the install/package targets
          */
         projects: {
-            action: "genProjects('-without default -with ejscript -with est')",
+            action: "genProjects('-without default -with ejscript -with est --with mdb --with sdb')",
         },
         mine: {
             action: "genProjects('--without default -with ejscript -with est', 'mine', Config.OS + '-' + Config.CPU)",
@@ -203,11 +203,13 @@ Bit.load({
             if (bit.generating) bit.packs.est.enable = 0
             if (bit.generating) bit.packs.ssl.enable = 0
             if (bit.generating) bit.packs.sqlite.enable = 0
+            if (bit.generating) bit.packs.sdb.enable = 0
         ",
         pregen: "
             if (bit.generating) bit.packs.est.enable = 0
             if (bit.generating) bit.packs.ssl.enable = 0
             if (bit.generating) bit.packs.sqlite.enable = 0
+            if (bit.generating) bit.packs.sdb.enable = 0
         ",
     },
 })

@@ -122,7 +122,7 @@
     #define BIT_PRODUCT "appweb"
 #endif
 #ifndef BIT_REQUIRED
-    #define BIT_REQUIRED "ejscript,est,winsdk,compiler,lib,link,dumpbin,rc,pcre"
+    #define BIT_REQUIRED "ejscript,est,winsdk,compiler,lib,link,rc,pcre"
 #endif
 #ifndef BIT_SERVER_ROOT
     #define BIT_SERVER_ROOT "."
@@ -221,7 +221,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -configure . -without default -with ejscript -with est -gen vs"
+    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -configure . -without default -with ejscript -with est --with mdb --with sdb -gen vs"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -262,9 +262,6 @@
 #endif
 #ifndef BIT_PACK_DSI
     #define BIT_PACK_DSI 0
-#endif
-#ifndef BIT_PACK_DUMPBIN
-    #define BIT_PACK_DUMPBIN 0
 #endif
 #ifndef BIT_PACK_EJSCRIPT
     #define BIT_PACK_EJSCRIPT 1

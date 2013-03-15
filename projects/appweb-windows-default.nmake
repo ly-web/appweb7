@@ -23,7 +23,9 @@ BIT_PACK_EST      = 0
 BIT_PACK_CGI      = 1
 BIT_PACK_EJSCRIPT = 1
 BIT_PACK_ESP      = 1
+BIT_PACK_MDB      = 1
 BIT_PACK_PHP      = 0
+BIT_PACK_SDB      = 0
 BIT_PACK_SQLITE   = 0
 BIT_PACK_SSL      = 0
 
@@ -31,7 +33,7 @@ CC                = cl
 LD                = link
 RC                = rc
 CFLAGS            = -nologo -GR- -W3 -Zi -Od -MDd
-DFLAGS            = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
+DFLAGS            = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
 IFLAGS            = -I$(CONFIG)\inc
 LDFLAGS           = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS          = -libpath:$(CONFIG)\bin
@@ -75,7 +77,11 @@ TARGETS           = $(TARGETS) $(CONFIG)\bin\sqlite.exe
 !ENDIF
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libappweb.dll
 !IF "$(BIT_PACK_ESP)" == "1"
+!IF "$(BIT_PACK_MDB)" == "1"
+!IF "$(BIT_PACK_SDB)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_esp.dll
+!ENDIF
+!ENDIF
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\esp.exe
@@ -823,6 +829,8 @@ $(CONFIG)\obj\sdb.obj: \
 	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\sdb.c
 
 !IF "$(BIT_PACK_ESP)" == "1"
+!IF "$(BIT_PACK_MDB)" == "1"
+!IF "$(BIT_PACK_SDB)" == "1"
 #
 #   libmod_esp
 #
@@ -855,6 +863,8 @@ LIBS_54 = $(LIBS_54) libmpr.lib
 $(CONFIG)\bin\libmod_esp.dll: $(DEPS_54)
 	@echo '      [Link] libmod_esp'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_54) $(LIBS_54) $(LIBS) libmpr.lib
+!ENDIF
+!ENDIF
 !ENDIF
 
 !IF "$(BIT_PACK_ESP)" == "1"
@@ -1274,12 +1284,20 @@ DEPS_82 = $(DEPS_82) src\server\slink.c
 DEPS_82 = $(DEPS_82) $(CONFIG)\bin\esp.exe
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
+!IF "$(BIT_PACK_MDB)" == "1"
+!IF "$(BIT_PACK_SDB)" == "1"
 DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libmod_esp.dll
+!ENDIF
+!ENDIF
 !ENDIF
 DEPS_82 = $(DEPS_82) $(CONFIG)\obj\slink.obj
 
 !IF "$(BIT_PACK_ESP)" == "1"
+!IF "$(BIT_PACK_MDB)" == "1"
+!IF "$(BIT_PACK_SDB)" == "1"
 LIBS_82 = $(LIBS_82) libmod_esp.lib
+!ENDIF
+!ENDIF
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_82 = $(LIBS_82) libsqlite3.lib
@@ -1310,7 +1328,11 @@ $(CONFIG)\obj\appweb.obj: \
 #
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libappweb.dll
 !IF "$(BIT_PACK_ESP)" == "1"
+!IF "$(BIT_PACK_MDB)" == "1"
+!IF "$(BIT_PACK_SDB)" == "1"
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libmod_esp.dll
+!ENDIF
+!ENDIF
 !ENDIF
 !IF "$(BIT_PACK_SSL)" == "1"
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libmod_ssl.dll
@@ -1335,7 +1357,11 @@ LIBS_84 = $(LIBS_84) libmod_ejs.lib
 LIBS_84 = $(LIBS_84) libmod_ssl.lib
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
+!IF "$(BIT_PACK_MDB)" == "1"
+!IF "$(BIT_PACK_SDB)" == "1"
 LIBS_84 = $(LIBS_84) libmod_esp.lib
+!ENDIF
+!ENDIF
 !ENDIF
 LIBS_84 = $(LIBS_84) libappweb.lib
 LIBS_84 = $(LIBS_84) libhttp.lib

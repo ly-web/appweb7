@@ -21,12 +21,14 @@ BIT_PACK_EST      := 0
 BIT_PACK_CGI      := 1
 BIT_PACK_EJSCRIPT := 1
 BIT_PACK_ESP      := 1
+BIT_PACK_MDB      := 1
 BIT_PACK_PHP      := 0
+BIT_PACK_SDB      := 0
 BIT_PACK_SQLITE   := 0
 BIT_PACK_SSL      := 0
 
 CFLAGS            += -fno-builtin -fno-defer-pop -fvolatile  -w
-DFLAGS            += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL  -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
+DFLAGS            += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL  -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
 IFLAGS            += -I$(CONFIG)/inc -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip
 LDFLAGS           += '-Wl,-r'
 LIBPATHS          += -L$(CONFIG)/bin -L$(CONFIG)/bin
@@ -80,7 +82,11 @@ TARGETS           += $(CONFIG)/bin/sqlite.out
 endif
 TARGETS           += $(CONFIG)/bin/libappweb.out
 ifeq ($(BIT_PACK_ESP),1)
+ifeq ($(BIT_PACK_MDB),1)
+ifeq ($(BIT_PACK_SDB),1)
 TARGETS           += $(CONFIG)/bin/libmod_esp.out
+endif
+endif
 endif
 ifeq ($(BIT_PACK_ESP),1)
 TARGETS           += $(CONFIG)/bin/esp.out
@@ -161,7 +167,6 @@ prep:
 	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/appweb-vxworks-default-bit.h $(CONFIG)/inc/bit.h ; true
 	@[ ! -f $(CONFIG)/inc/bitos.h ] && cp src/bitos.h $(CONFIG)/inc/bitos.h ; true
 	@if ! diff $(CONFIG)/inc/bit.h projects/appweb-vxworks-default-bit.h >/dev/null ; then\
-		echo cp projects/appweb-vxworks-default-bit.h $(CONFIG)/inc/bit.h  ; \
 		cp projects/appweb-vxworks-default-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
 
@@ -807,6 +812,8 @@ $(CONFIG)/obj/sdb.o: \
 	$(CC) -c -o $(CONFIG)/obj/sdb.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/sdb.c
 
 ifeq ($(BIT_PACK_ESP),1)
+ifeq ($(BIT_PACK_MDB),1)
+ifeq ($(BIT_PACK_SDB),1)
 #
 #   libmod_esp
 #
@@ -839,6 +846,8 @@ LIBS_52 += -lmpr
 $(CONFIG)/bin/libmod_esp.out: $(DEPS_52)
 	@echo '      [Link] libmod_esp'
 	$(CC) -r -o $(CONFIG)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o 
+endif
+endif
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -1256,12 +1265,20 @@ ifeq ($(BIT_PACK_ESP),1)
     DEPS_80 += $(CONFIG)/bin/esp.out
 endif
 ifeq ($(BIT_PACK_ESP),1)
+ifeq ($(BIT_PACK_MDB),1)
+ifeq ($(BIT_PACK_SDB),1)
     DEPS_80 += $(CONFIG)/bin/libmod_esp.out
+endif
+endif
 endif
 DEPS_80 += $(CONFIG)/obj/slink.o
 
 ifeq ($(BIT_PACK_ESP),1)
+ifeq ($(BIT_PACK_MDB),1)
+ifeq ($(BIT_PACK_SDB),1)
     LIBS_80 += -lmod_esp
+endif
+endif
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_80 += -lsqlite3
@@ -1292,7 +1309,11 @@ $(CONFIG)/obj/appweb.o: \
 #
 DEPS_82 += $(CONFIG)/bin/libappweb.out
 ifeq ($(BIT_PACK_ESP),1)
+ifeq ($(BIT_PACK_MDB),1)
+ifeq ($(BIT_PACK_SDB),1)
     DEPS_82 += $(CONFIG)/bin/libmod_esp.out
+endif
+endif
 endif
 ifeq ($(BIT_PACK_SSL),1)
     DEPS_82 += $(CONFIG)/bin/libmod_ssl.out
@@ -1317,7 +1338,11 @@ ifeq ($(BIT_PACK_SSL),1)
     LIBS_82 += -lmod_ssl
 endif
 ifeq ($(BIT_PACK_ESP),1)
+ifeq ($(BIT_PACK_MDB),1)
+ifeq ($(BIT_PACK_SDB),1)
     LIBS_82 += -lmod_esp
+endif
+endif
 endif
 LIBS_82 += -lappweb
 LIBS_82 += -lhttp

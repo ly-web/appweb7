@@ -11,7 +11,7 @@ Bit.load({
             sources: [ '*.c' ],
             headers: [ '*.h' ],
             exclude: [ 'esp.c' ],
-            require: 'esp',
+            require: [ 'esp', 'mdb', 'sdb' ],
         },
 
         esp: {
