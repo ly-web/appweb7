@@ -136,7 +136,7 @@ git clone http://github.com/embedthis/packages
                 <p>In the php sub-directory you will find a Makefile which has configure settings for PHP on various
                 platforms. This Makefile disables most features to build a minimal PHP configuration. Edit this to suit
                 your configuration.</p>
-                <p>On <b>Linux</b>, we use the following configuration:</p>
+                <p>On <b>Linux</b>, use the following configuration:</p>
                 <pre>
 ./configure --disable-debug --disable-rpath --disable-cli \
   --enable-bcmath --enable-calendar --enable-maintainer-zts \
@@ -148,7 +148,7 @@ git clone http://github.com/embedthis/packages
   --with-db --with-regex=system --with-pear --with-xml --with-xmlrpc \
   --with-zlib
 </pre>
-                <p>For <b>Windows</b>, we use:</p>
+                <p>For <b>Windows</b>, use the following configuration:</p>
                 <pre>
 cscript /nologo configure.js \
   --without-gd --disable-bcmath --disable-calendar --disable-com-dotnet \
@@ -156,7 +156,7 @@ cscript /nologo configure.js \
   --disable-reflection --disable-tokenizer --disable-zlib --disable-ftp \
   --enable-embed --enable-zts --without-dom --without-libxml
 </pre>
-                <p>On <b>MAC OS X</b>, we use the following configuration:</p>
+                <p>On <b>MAC OS X</b>, use the following configuration:</p>
                 <pre>
 ./configure --disable-debug --disable-rpath --enable-bcmath \
   --enable-calendar --enable-maintainer-zts --enable-embed=shared \
