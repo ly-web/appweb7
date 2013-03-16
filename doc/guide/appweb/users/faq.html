@@ -199,10 +199,10 @@ appweb --log logName[:logLevel]
                 <pre>
 AddHandler cgiHandler cgi bat cmd pl
 </pre>
-                <p>This instructs Appweb to run the CGI handler for specified file extensions. You can also have CGI be
-                used for URLs that begin with a given prefix. By default, there is already a Location block defined for
+                <p>This instructs Appweb to run the CGI handler for specified file extensions. You can also use CGI 
+                for URLs that begin with a given prefix. By default, there is already a Location block defined for
                 /cgi-bin in the default appweb.conf. Any files under this URL (http://host/cgi-bin/scriptName) will
-                also run as CGI scripts. To run a given interpreter (for example Perl), you can either just include</p>
+                also run as CGI scripts. To run a given interpreter (for example Perl), you can just include</p>
                 <pre>
 #!/bin/perl 
 </pre>in the first line of your script (replace the /bin/perl path to point to your interpreter), and make sure your
