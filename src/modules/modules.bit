@@ -10,7 +10,7 @@ Bit.load({
         libmod_cgi: {
             type:   'lib',
             sources: [ 'cgiHandler.c' ],
-            require: 'cgi',
+            requires: 'cgi',
         },
         libmod_ejs: {
             type:   'lib',
@@ -25,7 +25,7 @@ Bit.load({
                     }
                 ",
             }
-            require: 'ejscript',
+            requires: 'ejscript',
         },
         libmod_php: {
             type: 'lib',
@@ -35,7 +35,7 @@ Bit.load({
                 '-Wall',
                 '-Wshorten-64-to-32',
             ],
-            require: 'php',
+            requires: 'php',
         },
         libmod_proxy: {
             enable: false,
@@ -45,7 +45,7 @@ Bit.load({
         libmod_ssl: {
             type: 'lib',
             sources: [ 'sslModule.c' ],
-            require: 'ssl',
+            requires: 'ssl',
         },
 	},
 })

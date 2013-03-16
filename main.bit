@@ -58,7 +58,7 @@ Bit.load({
         packs: [ 'bits/packs' ]
         sync: [ 'bitos', 'est', 'http', 'mpr', 'pcre', 'sqlite', 'ejs' ],
 
-        '+required': [ 'compiler', 'pcre'],
+        '+requires': [ 'compiler', 'pcre'],
 
         /*
             Optional packs to automatically discover and configure

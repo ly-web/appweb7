@@ -67,7 +67,7 @@ Bit.load({
                 to:         '${abin}/',
                 linkin:     '${bin}',
                 set:        'core',
-                require:    'esp',
+                requires:   'esp',
 
             },{ from:        [
                     '${BIN}/appwebMonitor${EXE}',
@@ -95,27 +95,27 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                require:    'ssl',
+                requires:   'ssl',
 
             },{ from:       '${BIN}/libest${SHOBJ}',
                 to:         '${abin}/',
                 set:        'core',
-                require:    'est',
+                requires:   'est',
 
             },{ from:       '${BIN}/libsqlite3${SHOBJ}',
                 to:         '${abin}/',
                 set:        'core',
-                require:    'sqlite'
+                requires:   'sqlite'
 
             },{ from:       '${BIN}/libmod_esp${SHOBJ}',
                 to:         '${abin}/',
                 set:        'core',
-                require:    'esp',
+                requires:   'esp',
 
             },{ from:       '${BIN}/libmod_cgi${SHOBJ}',
                 to:         '${abin}/',
                 set:        'core',
-                require:    'cgi',
+                requires:   'cgi',
 
             },{ from:        [
                     '${BIN}/libejs${SHOBJ}',
@@ -123,7 +123,7 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                require:    'ejscript',
+                requires:   'ejscript',
 
             },{ from:        [
                     '${BIN}/libmod_php${SHOBJ}',
@@ -131,7 +131,7 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                require:    'php',
+                requires:   'php',
                 enable:     "bit.platform.os != 'windows'",
 
             },{ from:        [
@@ -140,7 +140,7 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                require:    'php',
+                requires:   'php',
                 enable:     "bit.platform.os == 'windows'",
 
             },{ from:        [
@@ -153,19 +153,19 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                require:    'esp',
+                requires:   'esp',
 
             },{
                 from:       ['src/esp/esp-www', 'src/esp/esp-appweb.conf'],
                 to:         '${abin}/',
                 set:        'core',
-                require:    'esp',
+                requires:   'esp',
 
             },{
                 from:       '${BIN}/esp.conf',
                 to:         '${abin}/',
                 set:        'core',
-                require:    'esp',
+                requires:   'esp',
 
             },{ from:       'src/server/web/',
                 to:         '${web}/', 
@@ -188,7 +188,7 @@ Bit.load({
                 from:       'src/server/php.ini',
                 to:         '${etc}/',
                 set:        'core',
-                require:    'php',
+                requires:   'php',
 
             },{
                 from:       'src/server/appweb.local', 
@@ -239,7 +239,7 @@ Bit.load({
                 to:         '${vapp}/inc/',
                 set:        'dev',
                 linkin:     '${inc}/appweb',
-                require:    'esp',
+                requires:   'esp',
 
             },{
                 from:       [
@@ -250,13 +250,13 @@ Bit.load({
                 to:         '${vapp}/inc/',
                 set:        'dev',
                 linkin:     '${inc}/appweb',
-                require:    'ejscript',
+                requires:   'ejscript',
 
             },{
                 from:       '${BIN}/ejs.mod',
                 to:         '${abin}/',
                 set:        'core',
-                require:    'ejscript',
+                requires:   'ejscript',
 
             },{
                 from:        'doc/man/*.1',

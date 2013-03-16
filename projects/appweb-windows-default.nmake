@@ -19,130 +19,74 @@ ENTRY             = _DllMainCRTStartup@12
 OS                = windows
 CONFIG            = $(OS)-$(ARCH)-$(PROFILE)
 LBIN              = $(CONFIG)\bin
-BIT_PACK_EST      = 0
-BIT_PACK_CGI      = 1
-BIT_PACK_EJSCRIPT = 1
-BIT_PACK_ESP      = 1
-BIT_PACK_MDB      = 1
-BIT_PACK_PHP      = 0
-BIT_PACK_SDB      = 0
-BIT_PACK_SQLITE   = 0
-BIT_PACK_SSL      = 0
 
 CC                = cl
 LD                = link
 RC                = rc
 CFLAGS            = -nologo -GR- -W3 -Zi -Od -MDd
-DFLAGS            = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
+DFLAGS            = -D_REENTRANT -D_MT -DBIT_DEBUG 
 IFLAGS            = -I$(CONFIG)\inc
 LDFLAGS           = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS          = -libpath:$(CONFIG)\bin
 LIBS              = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
-BIT_ROOT_PREFIX   = 
-BIT_BASE_PREFIX   = $(BIT_ROOT_PREFIX)\usr\local
-BIT_DATA_PREFIX   = $(BIT_ROOT_PREFIX)\
-BIT_STATE_PREFIX  = $(BIT_ROOT_PREFIX)\var
-BIT_APP_PREFIX    = \usr\local\lib\$(PRODUCT)
-BIT_VAPP_PREFIX   = \usr\local\lib\$(PRODUCT)\$(VERSION)
-BIT_BIN_PREFIX    = $(BIT_ROOT_PREFIX)\usr\local\bin
-BIT_INC_PREFIX    = $(BIT_ROOT_PREFIX)\usr\local\include
-BIT_LIB_PREFIX    = $(BIT_ROOT_PREFIX)\usr\local\lib
-BIT_MAN_PREFIX    = $(BIT_ROOT_PREFIX)\usr\local\share\man
-BIT_SBIN_PREFIX   = $(BIT_ROOT_PREFIX)\usr\local\sbin
-BIT_ETC_PREFIX    = $(BIT_ROOT_PREFIX)\etc\$(PRODUCT)
-BIT_WEB_PREFIX    = $(BIT_ROOT_PREFIX)\var\www\$(PRODUCT)-default
-BIT_LOG_PREFIX    = $(BIT_ROOT_PREFIX)\var\log\$(PRODUCT)
-BIT_SPOOL_PREFIX  = $(BIT_ROOT_PREFIX)\var\spool\$(PRODUCT)
-BIT_CACHE_PREFIX  = $(BIT_ROOT_PREFIX)\var\spool\$(PRODUCT)\cache
-BIT_SRC_PREFIX    = $(BIT_ROOT_PREFIX)$(PRODUCT)-$(VERSION)
+BIT_ROOT_PREFIX   = C:
+BIT_BASE_PREFIX   = $(BIT_ROOT_PREFIX)\Program Files
+BIT_APP_PREFIX    = $(BIT_BASE_PREFIX)\Embedthis Appweb
+BIT_VAPP_PREFIX   = $(BIT_APP_PREFIX)
+BIT_DATA_PREFIX   = $(BIT_VAPP_PREFIX)
+BIT_STATE_PREFIX  = $(BIT_VAPP_PREFIX)
+BIT_BIN_PREFIX    = $(BIT_VAPP_PREFIX)\bin
+BIT_INC_PREFIX    = $(BIT_VAPP_PREFIX)\inc
+BIT_LIB_PREFIX    = $(BIT_VAPP_PREFIX)\lib
+BIT_MAN_PREFIX    = $(BIT_VAPP_PREFIX)\man
+BIT_ETC_PREFIX    = $(BIT_VAPP_PREFIX)
+BIT_WEB_PREFIX    = $(BIT_VAPP_PREFIX)\web
+BIT_LOG_PREFIX    = $(BIT_VAPP_PREFIX)\log
+BIT_SPOOL_PREFIX  = $(BIT_VAPP_PREFIX)\tmp
+BIT_CACHE_PREFIX  = $(BIT_VAPP_PREFIX)\cache
+BIT_SRC_PREFIX    = $(BIT_VAPP_PREFIX)\src
 
 
 TARGETS           = $(TARGETS) $(CONFIG)\bin\removeFiles.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libmpr.dll
-!IF "$(BIT_PACK_SSL)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libmprssl.dll
-!ENDIF
 TARGETS           = $(TARGETS) $(CONFIG)\bin\appman.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\makerom.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\ca.crt
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libpcre.dll
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libhttp.dll
 TARGETS           = $(TARGETS) $(CONFIG)\bin\http.exe
-!IF "$(BIT_PACK_SQLITE)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libsqlite3.dll
-!ENDIF
-!IF "$(BIT_PACK_SQLITE)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\sqlite.exe
-!ENDIF
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libappweb.dll
-!IF "$(BIT_PACK_ESP)" == "1"
-!IF "$(BIT_PACK_MDB)" == "1"
-!IF "$(BIT_PACK_SDB)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_esp.dll
-!ENDIF
-!ENDIF
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\esp.exe
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\esp.conf
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
-TARGETS           = $(TARGETS) src\server\esp.conf
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
+TARGETS           = $(TARGETS) ..\server\esp.conf
 TARGETS           = $(TARGETS) $(CONFIG)\bin\esp-www
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\esp-appweb.conf
-!ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libejs.dll
-!ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\ejs.exe
-!ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\ejsc.exe
-!ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\ejs.mod
-!ENDIF
-!IF "$(BIT_PACK_CGI)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_cgi.dll
-!ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_ejs.dll
-!ENDIF
-!IF "$(BIT_PACK_SSL)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_ssl.dll
-!ENDIF
 TARGETS           = $(TARGETS) $(CONFIG)\bin\authpass.exe
-!IF "$(BIT_PACK_CGI)" == "1"
 TARGETS           = $(TARGETS) $(CONFIG)\bin\cgiProgram.exe
-!ENDIF
-TARGETS           = $(TARGETS) src\server\slink.c
+TARGETS           = $(TARGETS) slink.c
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libslink.dll
 TARGETS           = $(TARGETS) $(CONFIG)\bin\appweb.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\appwebMonitor.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\appwebMonitor.ico
-TARGETS           = $(TARGETS) src\server\cache
+TARGETS           = $(TARGETS) cache
 TARGETS           = $(TARGETS) $(CONFIG)\bin\testAppweb.exe
-!IF "$(BIT_PACK_CGI)" == "1"
-TARGETS           = $(TARGETS) test\cgi-bin\testScript
-!ENDIF
-!IF "$(BIT_PACK_CGI)" == "1"
-TARGETS           = $(TARGETS) test\web\caching\cache.cgi
-!ENDIF
-!IF "$(BIT_PACK_CGI)" == "1"
-TARGETS           = $(TARGETS) test\web\auth\basic\basic.cgi
-!ENDIF
-!IF "$(BIT_PACK_CGI)" == "1"
-TARGETS           = $(TARGETS) test\cgi-bin\cgiProgram.exe
-!ENDIF
-TARGETS           = $(TARGETS) test\web\js
+TARGETS           = $(TARGETS) cgi-bin\testScript
+TARGETS           = $(TARGETS) web\caching\cache.cgi
+TARGETS           = $(TARGETS) web\auth\basic\basic.cgi
+TARGETS           = $(TARGETS) cgi-bin\cgiProgram.exe
+TARGETS           = $(TARGETS) web\js
 
 !IFNDEF SHOW
 .SILENT:
@@ -183,7 +127,7 @@ clean:
 	if exist "$(CONFIG)\bin\libmod_esp.dll" rd /Q "$(CONFIG)\bin\libmod_esp.dll"
 	if exist "$(CONFIG)\bin\esp.exe" rd /Q "$(CONFIG)\bin\esp.exe"
 	if exist "$(CONFIG)\bin\esp.conf" rd /Q "$(CONFIG)\bin\esp.conf"
-	if exist "src\server\esp.conf" rd /Q "src\server\esp.conf"
+	if exist "..\server\esp.conf" rd /Q "..\server\esp.conf"
 	if exist "$(CONFIG)\bin\esp-www" rd /Q "$(CONFIG)\bin\esp-www"
 	if exist "$(CONFIG)\bin\esp-appweb.conf" rd /Q "$(CONFIG)\bin\esp-appweb.conf"
 	if exist "$(CONFIG)\bin\libejs.dll" rd /Q "$(CONFIG)\bin\libejs.dll"
@@ -199,7 +143,7 @@ clean:
 	if exist "$(CONFIG)\bin\appwebMonitor.exe" rd /Q "$(CONFIG)\bin\appwebMonitor.exe"
 	if exist "$(CONFIG)\bin\appwebMonitor.ico" rd /Q "$(CONFIG)\bin\appwebMonitor.ico"
 	if exist "$(CONFIG)\bin\testAppweb.exe" rd /Q "$(CONFIG)\bin\testAppweb.exe"
-	if exist "test\web\js" rd /Q "test\web\js"
+	if exist "web\js" rd /Q "web\js"
 	if exist "$(CONFIG)\obj\removeFiles.obj" rd /Q "$(CONFIG)\obj\removeFiles.obj"
 	if exist "$(CONFIG)\obj\mprLib.obj" rd /Q "$(CONFIG)\obj\mprLib.obj"
 	if exist "$(CONFIG)\obj\mprSsl.obj" rd /Q "$(CONFIG)\obj\mprSsl.obj"
@@ -333,7 +277,6 @@ $(CONFIG)\obj\estLib.obj: \
 	@echo '   [Compile] src/deps/est/estLib.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\est\estLib.c
 
-!IF "$(BIT_PACK_EST)" == "1"
 #
 #   libest
 #
@@ -343,7 +286,6 @@ DEPS_11 = $(DEPS_11) $(CONFIG)\obj\estLib.obj
 $(CONFIG)\bin\libest.dll: $(DEPS_11)
 	@echo '      [Link] libest'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libest.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\estLib.obj $(LIBS)
-!ENDIF
 
 #
 #   mprSsl.obj
@@ -357,25 +299,19 @@ $(CONFIG)\obj\mprSsl.obj: \
 	@echo '   [Compile] src/deps/mpr/mprSsl.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\mprSsl.c
 
-!IF "$(BIT_PACK_SSL)" == "1"
 #
 #   libmprssl
 #
 DEPS_13 = $(DEPS_13) $(CONFIG)\bin\libmpr.dll
-!IF "$(BIT_PACK_EST)" == "1"
 DEPS_13 = $(DEPS_13) $(CONFIG)\bin\libest.dll
-!ENDIF
 DEPS_13 = $(DEPS_13) $(CONFIG)\obj\mprSsl.obj
 
-!IF "$(BIT_PACK_EST)" == "1"
 LIBS_13 = $(LIBS_13) libest.lib
-!ENDIF
 LIBS_13 = $(LIBS_13) libmpr.lib
 
 $(CONFIG)\bin\libmprssl.dll: $(DEPS_13)
 	@echo '      [Link] libmprssl'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj $(LIBS_13) $(LIBS_13) $(LIBS)
-!ENDIF
 
 #
 #   manager.obj
@@ -541,7 +477,6 @@ $(CONFIG)\obj\sqlite3.obj: \
 	@echo '   [Compile] src/deps/sqlite/sqlite3.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite3.c
 
-!IF "$(BIT_PACK_SQLITE)" == "1"
 #
 #   libsqlite3
 #
@@ -551,7 +486,6 @@ DEPS_29 = $(DEPS_29) $(CONFIG)\obj\sqlite3.obj
 $(CONFIG)\bin\libsqlite3.dll: $(DEPS_29)
 	@echo '      [Link] libsqlite3'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libsqlite3.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite3.obj $(LIBS)
-!ENDIF
 
 #
 #   sqlite.obj
@@ -564,23 +498,17 @@ $(CONFIG)\obj\sqlite.obj: \
 	@echo '   [Compile] src/deps/sqlite/sqlite.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite.c
 
-!IF "$(BIT_PACK_SQLITE)" == "1"
 #
 #   sqlite
 #
-!IF "$(BIT_PACK_SQLITE)" == "1"
 DEPS_31 = $(DEPS_31) $(CONFIG)\bin\libsqlite3.dll
-!ENDIF
 DEPS_31 = $(DEPS_31) $(CONFIG)\obj\sqlite.obj
 
-!IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_31 = $(LIBS_31) libsqlite3.lib
-!ENDIF
 
 $(CONFIG)\bin\sqlite.exe: $(DEPS_31)
 	@echo '      [Link] sqlite'
 	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj $(LIBS_31) $(LIBS_31) $(LIBS)
-!ENDIF
 
 #
 #   appweb.h
@@ -828,16 +756,11 @@ $(CONFIG)\obj\sdb.obj: \
 	@echo '   [Compile] src/esp/sdb.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\sdb.c
 
-!IF "$(BIT_PACK_ESP)" == "1"
-!IF "$(BIT_PACK_MDB)" == "1"
-!IF "$(BIT_PACK_SDB)" == "1"
 #
 #   libmod_esp
 #
 DEPS_54 = $(DEPS_54) $(CONFIG)\bin\libappweb.dll
-!IF "$(BIT_PACK_SQLITE)" == "1"
 DEPS_54 = $(DEPS_54) $(CONFIG)\bin\libsqlite3.dll
-!ENDIF
 DEPS_54 = $(DEPS_54) $(CONFIG)\inc\edi.h
 DEPS_54 = $(DEPS_54) $(CONFIG)\inc\esp-app.h
 DEPS_54 = $(DEPS_54) $(CONFIG)\inc\esp.h
@@ -852,9 +775,7 @@ DEPS_54 = $(DEPS_54) $(CONFIG)\obj\espTemplate.obj
 DEPS_54 = $(DEPS_54) $(CONFIG)\obj\mdb.obj
 DEPS_54 = $(DEPS_54) $(CONFIG)\obj\sdb.obj
 
-!IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_54 = $(LIBS_54) libsqlite3.lib
-!ENDIF
 LIBS_54 = $(LIBS_54) libappweb.lib
 LIBS_54 = $(LIBS_54) libhttp.lib
 LIBS_54 = $(LIBS_54) libpcre.lib
@@ -863,18 +784,12 @@ LIBS_54 = $(LIBS_54) libmpr.lib
 $(CONFIG)\bin\libmod_esp.dll: $(DEPS_54)
 	@echo '      [Link] libmod_esp'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_54) $(LIBS_54) $(LIBS) libmpr.lib
-!ENDIF
-!ENDIF
-!ENDIF
 
-!IF "$(BIT_PACK_ESP)" == "1"
 #
 #   esp
 #
 DEPS_55 = $(DEPS_55) $(CONFIG)\bin\libappweb.dll
-!IF "$(BIT_PACK_SQLITE)" == "1"
 DEPS_55 = $(DEPS_55) $(CONFIG)\bin\libsqlite3.dll
-!ENDIF
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\edi.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\esp.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espAbbrev.obj
@@ -885,9 +800,7 @@ DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espTemplate.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\mdb.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\sdb.obj
 
-!IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_55 = $(LIBS_55) libsqlite3.lib
-!ENDIF
 LIBS_55 = $(LIBS_55) libappweb.lib
 LIBS_55 = $(LIBS_55) libhttp.lib
 LIBS_55 = $(LIBS_55) libpcre.lib
@@ -896,9 +809,7 @@ LIBS_55 = $(LIBS_55) libmpr.lib
 $(CONFIG)\bin\esp.exe: $(DEPS_55)
 	@echo '      [Link] esp'
 	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_55) $(LIBS_55) $(LIBS) libmpr.lib
-!ENDIF
 
-!IF "$(BIT_PACK_ESP)" == "1"
 #
 #   esp.conf
 #
@@ -908,21 +819,17 @@ $(CONFIG)\bin\esp.conf: $(DEPS_56)
 	@echo '      [Copy] $(CONFIG)/bin/esp.conf'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\esp\esp.conf" "$(CONFIG)\bin\esp.conf"
-!ENDIF
 
-!IF "$(BIT_PACK_ESP)" == "1"
 #
 #   esp.conf.server
 #
 DEPS_57 = $(DEPS_57) src\esp\esp.conf
 
-src\server\esp.conf: $(DEPS_57)
-	@echo '      [Copy] src/server/esp.conf'
-	if not exist "src\server" md "src\server"
-	copy /Y "src\esp\esp.conf" "src\server\esp.conf"
-!ENDIF
+..\server\esp.conf: $(DEPS_57)
+	@echo '      [Copy] ../server/esp.conf'
+	if not exist "\Users\mob\git\server" md "\Users\mob\git\server"
+	copy /Y "src\esp\esp.conf" "\Users\mob\git\server\esp.conf"
 
-!IF "$(BIT_PACK_ESP)" == "1"
 #
 #   esp.www
 #
@@ -951,9 +858,7 @@ $(CONFIG)\bin\esp-www: $(DEPS_58)
 	copy /Y "src\esp\esp-www\files\static\layout.css" "$(CONFIG)\bin\esp-www\files\static\layout.css"
 	if not exist "$(CONFIG)\bin\esp-www\files\static\themes" md "$(CONFIG)\bin\esp-www\files\static\themes"
 	copy /Y "src\esp\esp-www\files\static\themes\default.css" "$(CONFIG)\bin\esp-www\files\static\themes\default.css"
-!ENDIF
 
-!IF "$(BIT_PACK_ESP)" == "1"
 #
 #   esp-appweb.conf
 #
@@ -963,7 +868,6 @@ $(CONFIG)\bin\esp-appweb.conf: $(DEPS_59)
 	@echo '      [Copy] $(CONFIG)/bin/esp-appweb.conf'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y "src\esp\esp-appweb.conf" "$(CONFIG)\bin\esp-appweb.conf"
-!ENDIF
 
 #
 #   ejs.h
@@ -1005,24 +909,19 @@ $(CONFIG)\obj\ejsLib.obj: \
 	@echo '   [Compile] src/deps/ejs/ejsLib.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsLib.c
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
 #   libejs
 #
 DEPS_64 = $(DEPS_64) $(CONFIG)\bin\libhttp.dll
 DEPS_64 = $(DEPS_64) $(CONFIG)\bin\libpcre.dll
 DEPS_64 = $(DEPS_64) $(CONFIG)\bin\libmpr.dll
-!IF "$(BIT_PACK_SQLITE)" == "1"
 DEPS_64 = $(DEPS_64) $(CONFIG)\bin\libsqlite3.dll
-!ENDIF
 DEPS_64 = $(DEPS_64) $(CONFIG)\inc\ejs.h
 DEPS_64 = $(DEPS_64) $(CONFIG)\inc\ejs.slots.h
 DEPS_64 = $(DEPS_64) $(CONFIG)\inc\ejsByteGoto.h
 DEPS_64 = $(DEPS_64) $(CONFIG)\obj\ejsLib.obj
 
-!IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_64 = $(LIBS_64) libsqlite3.lib
-!ENDIF
 LIBS_64 = $(LIBS_64) libmpr.lib
 LIBS_64 = $(LIBS_64) libpcre.lib
 LIBS_64 = $(LIBS_64) libhttp.lib
@@ -1032,7 +931,6 @@ LIBS_64 = $(LIBS_64) libmpr.lib
 $(CONFIG)\bin\libejs.dll: $(DEPS_64)
 	@echo '      [Link] libejs'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsLib.obj $(LIBS_64) $(LIBS_64) $(LIBS) libmpr.lib
-!ENDIF
 
 #
 #   ejs.obj
@@ -1045,21 +943,14 @@ $(CONFIG)\obj\ejs.obj: \
 	@echo '   [Compile] src/deps/ejs/ejs.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejs.c
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
 #   ejs
 #
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 DEPS_66 = $(DEPS_66) $(CONFIG)\bin\libejs.dll
-!ENDIF
 DEPS_66 = $(DEPS_66) $(CONFIG)\obj\ejs.obj
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 LIBS_66 = $(LIBS_66) libejs.lib
-!ENDIF
-!IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_66 = $(LIBS_66) libsqlite3.lib
-!ENDIF
 LIBS_66 = $(LIBS_66) libmpr.lib
 LIBS_66 = $(LIBS_66) libpcre.lib
 LIBS_66 = $(LIBS_66) libhttp.lib
@@ -1067,7 +958,6 @@ LIBS_66 = $(LIBS_66) libhttp.lib
 $(CONFIG)\bin\ejs.exe: $(DEPS_66)
 	@echo '      [Link] ejs'
 	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj $(LIBS_66) $(LIBS_66) $(LIBS) libhttp.lib
-!ENDIF
 
 #
 #   ejsc.obj
@@ -1080,21 +970,14 @@ $(CONFIG)\obj\ejsc.obj: \
 	@echo '   [Compile] src/deps/ejs/ejsc.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsc.c
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
 #   ejsc
 #
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 DEPS_68 = $(DEPS_68) $(CONFIG)\bin\libejs.dll
-!ENDIF
 DEPS_68 = $(DEPS_68) $(CONFIG)\obj\ejsc.obj
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 LIBS_68 = $(LIBS_68) libejs.lib
-!ENDIF
-!IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_68 = $(LIBS_68) libsqlite3.lib
-!ENDIF
 LIBS_68 = $(LIBS_68) libmpr.lib
 LIBS_68 = $(LIBS_68) libpcre.lib
 LIBS_68 = $(LIBS_68) libhttp.lib
@@ -1102,20 +985,15 @@ LIBS_68 = $(LIBS_68) libhttp.lib
 $(CONFIG)\bin\ejsc.exe: $(DEPS_68)
 	@echo '      [Link] ejsc'
 	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj $(LIBS_68) $(LIBS_68) $(LIBS) libhttp.lib
-!ENDIF
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
 #   ejs.mod
 #
 DEPS_69 = $(DEPS_69) src\deps\ejs\ejs.es
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 DEPS_69 = $(DEPS_69) $(CONFIG)\bin\ejsc.exe
-!ENDIF
 
 $(CONFIG)\bin\ejs.mod: $(DEPS_69)
 	"$(LBIN)\ejsc" --out ".\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null src/deps/ejs/ejs.es
-!ENDIF
 
 #
 #   cgiHandler.obj
@@ -1128,7 +1006,6 @@ $(CONFIG)\obj\cgiHandler.obj: \
 	@echo '   [Compile] src/modules/cgiHandler.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\cgiHandler.c
 
-!IF "$(BIT_PACK_CGI)" == "1"
 #
 #   libmod_cgi
 #
@@ -1143,7 +1020,6 @@ LIBS_71 = $(LIBS_71) libmpr.lib
 $(CONFIG)\bin\libmod_cgi.dll: $(DEPS_71)
 	@echo '      [Link] libmod_cgi'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_cgi.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiHandler.obj $(LIBS_71) $(LIBS_71) $(LIBS) libmpr.lib
-!ENDIF
 
 #
 #   ejsHandler.obj
@@ -1156,31 +1032,23 @@ $(CONFIG)\obj\ejsHandler.obj: \
 	@echo '   [Compile] src/modules/ejsHandler.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejsHandler.obj -Fd$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\ejsHandler.c
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
 #   libmod_ejs
 #
 DEPS_73 = $(DEPS_73) $(CONFIG)\bin\libappweb.dll
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 DEPS_73 = $(DEPS_73) $(CONFIG)\bin\libejs.dll
-!ENDIF
 DEPS_73 = $(DEPS_73) $(CONFIG)\obj\ejsHandler.obj
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 LIBS_73 = $(LIBS_73) libejs.lib
-!ENDIF
 LIBS_73 = $(LIBS_73) libappweb.lib
 LIBS_73 = $(LIBS_73) libhttp.lib
 LIBS_73 = $(LIBS_73) libpcre.lib
 LIBS_73 = $(LIBS_73) libmpr.lib
-!IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_73 = $(LIBS_73) libsqlite3.lib
-!ENDIF
 
 $(CONFIG)\bin\libmod_ejs.dll: $(DEPS_73)
 	@echo '      [Link] libmod_ejs'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsHandler.obj $(LIBS_73) $(LIBS_73) $(LIBS) libsqlite3.lib
-!ENDIF
 
 #
 #   sslModule.obj
@@ -1193,7 +1061,6 @@ $(CONFIG)\obj\sslModule.obj: \
 	@echo '   [Compile] src/modules/sslModule.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\sslModule.c
 
-!IF "$(BIT_PACK_SSL)" == "1"
 #
 #   libmod_ssl
 #
@@ -1208,7 +1075,6 @@ LIBS_75 = $(LIBS_75) libmpr.lib
 $(CONFIG)\bin\libmod_ssl.dll: $(DEPS_75)
 	@echo '      [Link] libmod_ssl'
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sslModule.obj $(LIBS_75) $(LIBS_75) $(LIBS) libmpr.lib
-!ENDIF
 
 #
 #   authpass.obj
@@ -1246,7 +1112,6 @@ $(CONFIG)\obj\cgiProgram.obj: \
 	@echo '   [Compile] src/utils/cgiProgram.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\cgiProgram.obj -Fd$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\cgiProgram.c
 
-!IF "$(BIT_PACK_CGI)" == "1"
 #
 #   cgiProgram
 #
@@ -1255,12 +1120,11 @@ DEPS_79 = $(DEPS_79) $(CONFIG)\obj\cgiProgram.obj
 $(CONFIG)\bin\cgiProgram.exe: $(DEPS_79)
 	@echo '      [Link] cgiProgram'
 	"$(LD)" -out:$(CONFIG)\bin\cgiProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiProgram.obj $(LIBS)
-!ENDIF
 
 #
 #   slink.c
 #
-src\server\slink.c: $(DEPS_80)
+slink.c: $(DEPS_80)
 	cd src\server
 	if not exist slink.c copy slink.empty slink.c
 	cd ..\..
@@ -1279,29 +1143,13 @@ $(CONFIG)\obj\slink.obj: \
 #
 #   libslink
 #
-DEPS_82 = $(DEPS_82) src\server\slink.c
-!IF "$(BIT_PACK_ESP)" == "1"
+DEPS_82 = $(DEPS_82) slink.c
 DEPS_82 = $(DEPS_82) $(CONFIG)\bin\esp.exe
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
-!IF "$(BIT_PACK_MDB)" == "1"
-!IF "$(BIT_PACK_SDB)" == "1"
 DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libmod_esp.dll
-!ENDIF
-!ENDIF
-!ENDIF
 DEPS_82 = $(DEPS_82) $(CONFIG)\obj\slink.obj
 
-!IF "$(BIT_PACK_ESP)" == "1"
-!IF "$(BIT_PACK_MDB)" == "1"
-!IF "$(BIT_PACK_SDB)" == "1"
 LIBS_82 = $(LIBS_82) libmod_esp.lib
-!ENDIF
-!ENDIF
-!ENDIF
-!IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_82 = $(LIBS_82) libsqlite3.lib
-!ENDIF
 LIBS_82 = $(LIBS_82) libappweb.lib
 LIBS_82 = $(LIBS_82) libhttp.lib
 LIBS_82 = $(LIBS_82) libpcre.lib
@@ -1327,52 +1175,24 @@ $(CONFIG)\obj\appweb.obj: \
 #   appweb
 #
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libappweb.dll
-!IF "$(BIT_PACK_ESP)" == "1"
-!IF "$(BIT_PACK_MDB)" == "1"
-!IF "$(BIT_PACK_SDB)" == "1"
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libmod_esp.dll
-!ENDIF
-!ENDIF
-!ENDIF
-!IF "$(BIT_PACK_SSL)" == "1"
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libmod_ssl.dll
-!ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libmod_ejs.dll
-!ENDIF
-!IF "$(BIT_PACK_CGI)" == "1"
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libmod_cgi.dll
-!ENDIF
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libslink.dll
 DEPS_84 = $(DEPS_84) $(CONFIG)\obj\appweb.obj
 
 LIBS_84 = $(LIBS_84) libslink.lib
-!IF "$(BIT_PACK_CGI)" == "1"
 LIBS_84 = $(LIBS_84) libmod_cgi.lib
-!ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 LIBS_84 = $(LIBS_84) libmod_ejs.lib
-!ENDIF
-!IF "$(BIT_PACK_SSL)" == "1"
 LIBS_84 = $(LIBS_84) libmod_ssl.lib
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
-!IF "$(BIT_PACK_MDB)" == "1"
-!IF "$(BIT_PACK_SDB)" == "1"
 LIBS_84 = $(LIBS_84) libmod_esp.lib
-!ENDIF
-!ENDIF
-!ENDIF
 LIBS_84 = $(LIBS_84) libappweb.lib
 LIBS_84 = $(LIBS_84) libhttp.lib
 LIBS_84 = $(LIBS_84) libpcre.lib
 LIBS_84 = $(LIBS_84) libmpr.lib
-!IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_84 = $(LIBS_84) libsqlite3.lib
-!ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 LIBS_84 = $(LIBS_84) libejs.lib
-!ENDIF
 
 $(CONFIG)\bin\appweb.exe: $(DEPS_84)
 	@echo '      [Link] appweb'
@@ -1444,7 +1264,7 @@ $(CONFIG)\bin\appwebMonitor.ico: $(DEPS_90)
 #
 #   server-cache
 #
-src\server\cache: $(DEPS_91)
+cache: $(DEPS_91)
 	cd src\server
 	md cache
 	cd ..\..
@@ -1498,60 +1318,48 @@ $(CONFIG)\bin\testAppweb.exe: $(DEPS_95)
 	@echo '      [Link] testAppweb'
 	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj $(LIBS_95) $(LIBS_95) $(LIBS) libmpr.lib
 
-!IF "$(BIT_PACK_CGI)" == "1"
 #
 #   test-testScript
 #
-!IF "$(BIT_PACK_CGI)" == "1"
 DEPS_96 = $(DEPS_96) $(CONFIG)\bin\cgiProgram.exe
-!ENDIF
 
-test\cgi-bin\testScript: $(DEPS_96)
+cgi-bin\testScript: $(DEPS_96)
 #  Omit build script test-testScript
-!ENDIF
 
-!IF "$(BIT_PACK_CGI)" == "1"
 #
 #   test-cache.cgi
 #
-test\web\caching\cache.cgi: $(DEPS_97)
+web\caching\cache.cgi: $(DEPS_97)
 #  Omit build script test-cache.cgi
-!ENDIF
 
-!IF "$(BIT_PACK_CGI)" == "1"
 #
 #   test-basic.cgi
 #
-test\web\auth\basic\basic.cgi: $(DEPS_98)
+web\auth\basic\basic.cgi: $(DEPS_98)
 #  Omit build script test-basic.cgi
-!ENDIF
 
-!IF "$(BIT_PACK_CGI)" == "1"
 #
 #   test-cgiProgram
 #
-!IF "$(BIT_PACK_CGI)" == "1"
 DEPS_99 = $(DEPS_99) $(CONFIG)\bin\cgiProgram.exe
-!ENDIF
 
-test\cgi-bin\cgiProgram.exe: $(DEPS_99)
+cgi-bin\cgiProgram.exe: $(DEPS_99)
 #  Omit build script test-cgiProgram
-!ENDIF
 
 #
 #   test.js
 #
 DEPS_100 = $(DEPS_100) src\esp\esp-www\files\static\js
 
-test\web\js: $(DEPS_100)
-	@echo '      [Copy] test/web/js'
-	if not exist "test\web\js" md "test\web\js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.js" "test\web\js\jquery-1.9.1.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.min.js" "test\web\js\jquery-1.9.1.min.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "test\web\js\jquery.esp.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "test\web\js\jquery.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "test\web\js\jquery.simplemodal.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "test\web\js\jquery.tablesorter.js"
+web\js: $(DEPS_100)
+	@echo '      [Copy] web/js'
+	if not exist "web\js" md "web\js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.js" "web\js\jquery-1.9.1.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.min.js" "web\js\jquery-1.9.1.min.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "web\js\jquery.esp.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "web\js\jquery.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "web\js\jquery.simplemodal.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "web\js\jquery.tablesorter.js"
 
 
 #
@@ -1595,7 +1403,9 @@ DEPS_105 = $(DEPS_105) build
 DEPS_105 = $(DEPS_105) stop
 
 uninstall: $(DEPS_105)
-
+	cd package
+	
+	cd ..
 
 #
 #   genslink

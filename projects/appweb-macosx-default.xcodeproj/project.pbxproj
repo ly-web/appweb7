@@ -1306,7 +1306,6 @@
 				AB04609AAB04738200000157 /* bit.h */,
 				AB04609AAB04738200000158 /* mpr.h */,
 				AB04609AAB0473820000015A /* est.h */,
-				AB04609AAB04738200000159 /* bitos.h */,
 				AB04609AAB04738200000043 /* mprSsl.c */,
 			);
             name = "libmprssl";
@@ -2124,14 +2123,14 @@ cp -r esp.conf ../${OUT_DIR}/bin/esp.conf
 ../src/esp/esp.conf
 			);
 			outputPaths = (
-../src/server/esp.conf
+../../server/esp.conf
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/esp
-rm -rf ../server/esp.conf
-cp -r esp.conf ../server/esp.conf
+rm -rf ../../../server/esp.conf
+cp -r esp.conf ../../../server/esp.conf
 ";
 		};
 		AB04609AAB04738200000013 /* ShellScript for esp.www */ = {
@@ -2181,14 +2180,14 @@ cp -r esp-appweb.conf ../${OUT_DIR}/bin/esp-appweb.conf
 ../src/esp/esp-www/files/static/js
 			);
 			outputPaths = (
-../test/web/js
+../web/js
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../test
-rm -rf web/js
-cp -r ../src/esp/esp-www/files/static/js web/js
+rm -rf ../web/js
+cp -r ../src/esp/esp-www/files/static/js ../web/js
 ";
 		};
 		AB04609AAB0473820000003F /* ShellScript for Prep */ = {

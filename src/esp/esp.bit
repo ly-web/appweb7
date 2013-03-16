@@ -11,7 +11,7 @@ Bit.load({
             sources: [ '*.c' ],
             headers: [ '*.h' ],
             exclude: [ 'esp.c' ],
-            require: [ 'esp', 'mdb', 'sdb' ],
+            requires: [ 'esp', 'mdb', 'sdb' ],
         },
 
         esp: {
@@ -20,20 +20,20 @@ Bit.load({
             depends: [ 'libappweb', 'libsqlite3' ],
             sources: [ '*.c' ]
             platforms: [ 'local' ],
-            require: 'esp',
+            requires: 'esp',
         },
 
         'esp.conf': {
             type: 'file',
             files: [ 'esp.conf' ],
-            require: 'esp',
+            requires: 'esp',
         },
 
         'esp.conf.server': {
             type: 'file',
             path: '../server/esp.conf',
             files: [ 'esp.conf' ],
-            require: 'esp',
+            requires: 'esp',
         },
 
         'esp.www': {
@@ -41,7 +41,7 @@ Bit.load({
             path: '${BIN}/esp-www',
             files: [ 'esp-www/' ],
             platforms: [ 'local' ],
-            require: 'esp',
+            requires: 'esp',
         },
 
         'esp-appweb.conf': {
@@ -49,7 +49,7 @@ Bit.load({
             path: '${BIN}/esp-appweb.conf',
             files: [ 'esp-appweb.conf' ],
             platforms: [ 'local' ],
-            require: 'esp',
+            requires: 'esp',
         },
 
         'esp-configure': {

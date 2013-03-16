@@ -15,7 +15,7 @@ Bit.load({
         cgiProgram: {
             type:   'exe',
             sources: [ 'cgiProgram.c' ],
-            require: 'cgi'
+            requires: 'cgi'
         },
 	},
 })

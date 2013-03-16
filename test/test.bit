@@ -22,7 +22,7 @@ Bit.load({
             'generate-sh': "echo '#!${BIN}/cgiProgram${EXE}' >cgi-bin/testScript ; chmod +x cgi-bin/testScript",
             depends: ['cgiProgram'],
             platforms: [ 'local' ],
-            require: 'cgi',
+            requires: 'cgi',
         },
 
         'test-cache.cgi': {
@@ -39,7 +39,7 @@ Bit.load({
                 chmod +x web/caching/cache.cgi
             ",
             platforms: [ 'local' ],
-            require: 'cgi',
+            requires: 'cgi',
         },
 
         'test-basic.cgi': {
@@ -56,11 +56,11 @@ Bit.load({
                 chmod +x web/auth/basic/basic.cgi
             ",
             platforms: [ 'local' ],
-            require: 'cgi',
+            requires: 'cgi',
         },
 
         'test-cgiProgram': {
-            require: 'cgi',
+            requires: 'cgi',
             path: 'cgi-bin/cgiProgram${EXE}',
             build: "
                 let perms = { permissions: 0755 }
@@ -79,7 +79,7 @@ Bit.load({
             ",
             depends: ['cgiProgram'],
             platforms: [ 'local' ],
-            require: 'cgi',
+            requires: 'cgi',
         },
 
         'test.js': {

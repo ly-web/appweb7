@@ -139,8 +139,8 @@
 #ifndef BIT_PRODUCT
     #define BIT_PRODUCT "appweb"
 #endif
-#ifndef BIT_REQUIRED
-    #define BIT_REQUIRED "ejscript,est,compiler,lib,link,pcre"
+#ifndef BIT_REQUIRES
+    #define BIT_REQUIRES "ejscript,est,compiler,lib,link,pcre"
 #endif
 #ifndef BIT_SERVER_ROOT
     #define BIT_SERVER_ROOT "."

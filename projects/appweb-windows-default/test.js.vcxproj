@@ -96,11 +96,11 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\test
-if exist ..\..\test\web\js del /Q ..\..\test\web\js
-if not exist ..\..\test\web\js md ..\..\test\web\js
-xcopy /S /Y ..\src\esp\esp-www\files\static\js ..\..\test\web\js
+if exist ..\..\web\js del /Q ..\..\web\js
+if not exist ..\..\web\js md ..\..\web\js
+xcopy /S /Y ..\src\esp\esp-www\files\static\js ..\..\web\js
 cd ..\projects\appweb-windows-default</Command>
-    <Outputs>..\..\test\web\js</Outputs>
+    <Outputs>..\..\web\js</Outputs>
   </CustomBuildStep>
   </ItemDefinitionGroup>
 
