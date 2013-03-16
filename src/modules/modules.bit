@@ -30,7 +30,7 @@ Bit.load({
         libmod_php: {
             type: 'lib',
             sources: [ 'phpHandler.c' ],
-            depends: [ 'php' ],
+            '+depends': [ 'php' ],
             '-compiler': [
                 '-Wall',
                 '-Wshorten-64-to-32',
