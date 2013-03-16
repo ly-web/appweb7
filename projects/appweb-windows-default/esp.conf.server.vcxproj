@@ -96,10 +96,10 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\esp
-if exist ..\..\..\server\esp.conf del /Q ..\..\..\server\esp.conf
-copy /Y esp.conf ..\..\..\server\esp.conf
+if exist ..\..\src\server\esp.conf del /Q ..\..\src\server\esp.conf
+copy /Y esp.conf ..\..\src\server\esp.conf
 cd ..\..\projects\appweb-windows-default</Command>
-    <Outputs>..\..\..\server\esp.conf</Outputs>
+    <Outputs>..\..\src\server\esp.conf</Outputs>
   </CustomBuildStep>
   </ItemDefinitionGroup>
 

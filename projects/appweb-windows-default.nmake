@@ -63,7 +63,7 @@ TARGETS           = $(TARGETS) $(CONFIG)\bin\libappweb.dll
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_esp.dll
 TARGETS           = $(TARGETS) $(CONFIG)\bin\esp.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\esp.conf
-TARGETS           = $(TARGETS) ..\server\esp.conf
+TARGETS           = $(TARGETS) src\server\esp.conf
 TARGETS           = $(TARGETS) $(CONFIG)\bin\esp-www
 TARGETS           = $(TARGETS) $(CONFIG)\bin\esp-appweb.conf
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libejs.dll
@@ -75,18 +75,18 @@ TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_ejs.dll
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libmod_ssl.dll
 TARGETS           = $(TARGETS) $(CONFIG)\bin\authpass.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\cgiProgram.exe
-TARGETS           = $(TARGETS) slink.c
+TARGETS           = $(TARGETS) src\server\slink.c
 TARGETS           = $(TARGETS) $(CONFIG)\bin\libslink.dll
 TARGETS           = $(TARGETS) $(CONFIG)\bin\appweb.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\appwebMonitor.exe
 TARGETS           = $(TARGETS) $(CONFIG)\bin\appwebMonitor.ico
-TARGETS           = $(TARGETS) cache
+TARGETS           = $(TARGETS) src\server\cache
 TARGETS           = $(TARGETS) $(CONFIG)\bin\testAppweb.exe
-TARGETS           = $(TARGETS) cgi-bin\testScript
-TARGETS           = $(TARGETS) web\caching\cache.cgi
-TARGETS           = $(TARGETS) web\auth\basic\basic.cgi
-TARGETS           = $(TARGETS) cgi-bin\cgiProgram.exe
-TARGETS           = $(TARGETS) web\js
+TARGETS           = $(TARGETS) test\cgi-bin\testScript
+TARGETS           = $(TARGETS) test\web\caching\cache.cgi
+TARGETS           = $(TARGETS) test\web\auth\basic\basic.cgi
+TARGETS           = $(TARGETS) test\cgi-bin\cgiProgram.exe
+TARGETS           = $(TARGETS) test\web\js
 
 !IFNDEF SHOW
 .SILENT:
@@ -127,7 +127,7 @@ clean:
 	if exist "$(CONFIG)\bin\libmod_esp.dll" rd /Q "$(CONFIG)\bin\libmod_esp.dll"
 	if exist "$(CONFIG)\bin\esp.exe" rd /Q "$(CONFIG)\bin\esp.exe"
 	if exist "$(CONFIG)\bin\esp.conf" rd /Q "$(CONFIG)\bin\esp.conf"
-	if exist "..\server\esp.conf" rd /Q "..\server\esp.conf"
+	if exist "src\server\esp.conf" rd /Q "src\server\esp.conf"
 	if exist "$(CONFIG)\bin\esp-www" rd /Q "$(CONFIG)\bin\esp-www"
 	if exist "$(CONFIG)\bin\esp-appweb.conf" rd /Q "$(CONFIG)\bin\esp-appweb.conf"
 	if exist "$(CONFIG)\bin\libejs.dll" rd /Q "$(CONFIG)\bin\libejs.dll"
@@ -143,7 +143,7 @@ clean:
 	if exist "$(CONFIG)\bin\appwebMonitor.exe" rd /Q "$(CONFIG)\bin\appwebMonitor.exe"
 	if exist "$(CONFIG)\bin\appwebMonitor.ico" rd /Q "$(CONFIG)\bin\appwebMonitor.ico"
 	if exist "$(CONFIG)\bin\testAppweb.exe" rd /Q "$(CONFIG)\bin\testAppweb.exe"
-	if exist "web\js" rd /Q "web\js"
+	if exist "test\web\js" rd /Q "test\web\js"
 	if exist "$(CONFIG)\obj\removeFiles.obj" rd /Q "$(CONFIG)\obj\removeFiles.obj"
 	if exist "$(CONFIG)\obj\mprLib.obj" rd /Q "$(CONFIG)\obj\mprLib.obj"
 	if exist "$(CONFIG)\obj\mprSsl.obj" rd /Q "$(CONFIG)\obj\mprSsl.obj"
@@ -825,10 +825,10 @@ $(CONFIG)\bin\esp.conf: $(DEPS_56)
 #
 DEPS_57 = $(DEPS_57) src\esp\esp.conf
 
-..\server\esp.conf: $(DEPS_57)
-	@echo '      [Copy] ../server/esp.conf'
-	if not exist "\Users\mob\git\server" md "\Users\mob\git\server"
-	copy /Y "src\esp\esp.conf" "\Users\mob\git\server\esp.conf"
+src\server\esp.conf: $(DEPS_57)
+	@echo '      [Copy] src/server/esp.conf'
+	if not exist "src\server" md "src\server"
+	copy /Y "src\esp\esp.conf" "src\server\esp.conf"
 
 #
 #   esp.www
@@ -1124,7 +1124,7 @@ $(CONFIG)\bin\cgiProgram.exe: $(DEPS_79)
 #
 #   slink.c
 #
-slink.c: $(DEPS_80)
+src\server\slink.c: $(DEPS_80)
 	cd src\server
 	if not exist slink.c copy slink.empty slink.c
 	cd ..\..
@@ -1143,7 +1143,7 @@ $(CONFIG)\obj\slink.obj: \
 #
 #   libslink
 #
-DEPS_82 = $(DEPS_82) slink.c
+DEPS_82 = $(DEPS_82) src\server\slink.c
 DEPS_82 = $(DEPS_82) $(CONFIG)\bin\esp.exe
 DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libmod_esp.dll
 DEPS_82 = $(DEPS_82) $(CONFIG)\obj\slink.obj
@@ -1264,7 +1264,7 @@ $(CONFIG)\bin\appwebMonitor.ico: $(DEPS_90)
 #
 #   server-cache
 #
-cache: $(DEPS_91)
+src\server\cache: $(DEPS_91)
 	cd src\server
 	md cache
 	cd ..\..
@@ -1323,19 +1323,19 @@ $(CONFIG)\bin\testAppweb.exe: $(DEPS_95)
 #
 DEPS_96 = $(DEPS_96) $(CONFIG)\bin\cgiProgram.exe
 
-cgi-bin\testScript: $(DEPS_96)
+test\cgi-bin\testScript: $(DEPS_96)
 #  Omit build script test-testScript
 
 #
 #   test-cache.cgi
 #
-web\caching\cache.cgi: $(DEPS_97)
+test\web\caching\cache.cgi: $(DEPS_97)
 #  Omit build script test-cache.cgi
 
 #
 #   test-basic.cgi
 #
-web\auth\basic\basic.cgi: $(DEPS_98)
+test\web\auth\basic\basic.cgi: $(DEPS_98)
 #  Omit build script test-basic.cgi
 
 #
@@ -1343,7 +1343,7 @@ web\auth\basic\basic.cgi: $(DEPS_98)
 #
 DEPS_99 = $(DEPS_99) $(CONFIG)\bin\cgiProgram.exe
 
-cgi-bin\cgiProgram.exe: $(DEPS_99)
+test\cgi-bin\cgiProgram.exe: $(DEPS_99)
 #  Omit build script test-cgiProgram
 
 #
@@ -1351,15 +1351,15 @@ cgi-bin\cgiProgram.exe: $(DEPS_99)
 #
 DEPS_100 = $(DEPS_100) src\esp\esp-www\files\static\js
 
-web\js: $(DEPS_100)
-	@echo '      [Copy] web/js'
-	if not exist "web\js" md "web\js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.js" "web\js\jquery-1.9.1.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.min.js" "web\js\jquery-1.9.1.min.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "web\js\jquery.esp.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "web\js\jquery.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "web\js\jquery.simplemodal.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "web\js\jquery.tablesorter.js"
+test\web\js: $(DEPS_100)
+	@echo '      [Copy] test/web/js'
+	if not exist "test\web\js" md "test\web\js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.js" "test\web\js\jquery-1.9.1.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.min.js" "test\web\js\jquery-1.9.1.min.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "test\web\js\jquery.esp.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "test\web\js\jquery.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "test\web\js\jquery.simplemodal.js"
+	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "test\web\js\jquery.tablesorter.js"
 
 
 #

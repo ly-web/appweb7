@@ -65,7 +65,7 @@ TARGETS           += $(CONFIG)/bin/libappweb.dylib
 TARGETS           += $(CONFIG)/bin/libmod_esp.dylib
 TARGETS           += $(CONFIG)/bin/esp
 TARGETS           += $(CONFIG)/bin/esp.conf
-TARGETS           += ../server/esp.conf
+TARGETS           += src/server/esp.conf
 TARGETS           += $(CONFIG)/bin/esp-www
 TARGETS           += $(CONFIG)/bin/esp-appweb.conf
 TARGETS           += $(CONFIG)/bin/libejs.dylib
@@ -77,16 +77,16 @@ TARGETS           += $(CONFIG)/bin/libmod_ejs.dylib
 TARGETS           += $(CONFIG)/bin/libmod_ssl.dylib
 TARGETS           += $(CONFIG)/bin/authpass
 TARGETS           += $(CONFIG)/bin/cgiProgram
-TARGETS           += slink.c
+TARGETS           += src/server/slink.c
 TARGETS           += $(CONFIG)/bin/libslink.dylib
 TARGETS           += $(CONFIG)/bin/appweb
-TARGETS           += cache
+TARGETS           += src/server/cache
 TARGETS           += $(CONFIG)/bin/testAppweb
-TARGETS           += cgi-bin/testScript
-TARGETS           += web/caching/cache.cgi
-TARGETS           += web/auth/basic/basic.cgi
-TARGETS           += cgi-bin/cgiProgram
-TARGETS           += web/js
+TARGETS           += test/cgi-bin/testScript
+TARGETS           += test/web/caching/cache.cgi
+TARGETS           += test/web/auth/basic/basic.cgi
+TARGETS           += test/cgi-bin/cgiProgram
+TARGETS           += test/web/js
 
 unexport CDPATH
 
@@ -127,7 +127,7 @@ clean:
 	rm -f "$(CONFIG)/bin/libmod_esp.dylib"
 	rm -f "$(CONFIG)/bin/esp"
 	rm -f "$(CONFIG)/bin/esp.conf"
-	rm -f "../server/esp.conf"
+	rm -f "src/server/esp.conf"
 	rm -f "$(CONFIG)/bin/esp-www"
 	rm -f "$(CONFIG)/bin/esp-appweb.conf"
 	rm -f "$(CONFIG)/bin/libejs.dylib"
@@ -141,7 +141,7 @@ clean:
 	rm -f "$(CONFIG)/bin/libslink.dylib"
 	rm -f "$(CONFIG)/bin/appweb"
 	rm -f "$(CONFIG)/bin/testAppweb"
-	rm -f "web/js"
+	rm -f "test/web/js"
 	rm -f "$(CONFIG)/obj/mprLib.o"
 	rm -f "$(CONFIG)/obj/mprSsl.o"
 	rm -f "$(CONFIG)/obj/manager.o"
@@ -805,10 +805,10 @@ $(CONFIG)/bin/esp.conf: $(DEPS_54)
 #
 DEPS_55 += src/esp/esp.conf
 
-../server/esp.conf: $(DEPS_55)
-	@echo '      [Copy] ../server/esp.conf'
-	mkdir -p "/Users/mob/git/server"
-	cp "src/esp/esp.conf" "/Users/mob/git/server/esp.conf"
+src/server/esp.conf: $(DEPS_55)
+	@echo '      [Copy] src/server/esp.conf'
+	mkdir -p "src/server"
+	cp "src/esp/esp.conf" "src/server/esp.conf"
 
 #
 #   esp.www
@@ -1104,7 +1104,7 @@ $(CONFIG)/bin/cgiProgram: $(DEPS_77)
 #
 #   slink.c
 #
-slink.c: $(DEPS_78)
+src/server/slink.c: $(DEPS_78)
 	cd src/server; [ ! -f slink.c ] && cp slink.empty slink.c ; true ; cd ../..
 
 #
@@ -1121,7 +1121,7 @@ $(CONFIG)/obj/slink.o: \
 #
 #   libslink
 #
-DEPS_80 += slink.c
+DEPS_80 += src/server/slink.c
 DEPS_80 += $(CONFIG)/bin/esp
 DEPS_80 += $(CONFIG)/bin/libmod_esp.dylib
 DEPS_80 += $(CONFIG)/obj/slink.o
@@ -1179,7 +1179,7 @@ $(CONFIG)/bin/appweb: $(DEPS_82)
 #
 #   server-cache
 #
-cache: $(DEPS_83)
+src/server/cache: $(DEPS_83)
 	cd src/server; mkdir -p cache ; cd ../..
 
 #
@@ -1236,13 +1236,13 @@ $(CONFIG)/bin/testAppweb: $(DEPS_87)
 #
 DEPS_88 += $(CONFIG)/bin/cgiProgram
 
-cgi-bin/testScript: $(DEPS_88)
+test/cgi-bin/testScript: $(DEPS_88)
 	cd test; echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..
 
 #
 #   test-cache.cgi
 #
-web/caching/cache.cgi: $(DEPS_89)
+test/web/caching/cache.cgi: $(DEPS_89)
 	cd test; echo "#!`type -p ejs`" >web/caching/cache.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; cd ..
 	cd test; chmod +x web/caching/cache.cgi ; cd ..
@@ -1250,7 +1250,7 @@ web/caching/cache.cgi: $(DEPS_89)
 #
 #   test-basic.cgi
 #
-web/auth/basic/basic.cgi: $(DEPS_90)
+test/web/auth/basic/basic.cgi: $(DEPS_90)
 	cd test; echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; cd ..
 	cd test; chmod +x web/auth/basic/basic.cgi ; cd ..
@@ -1260,7 +1260,7 @@ web/auth/basic/basic.cgi: $(DEPS_90)
 #
 DEPS_91 += $(CONFIG)/bin/cgiProgram
 
-cgi-bin/cgiProgram: $(DEPS_91)
+test/cgi-bin/cgiProgram: $(DEPS_91)
 	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram ; cd ..
 	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram ; cd ..
 	cd test; cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program' ; cd ..
@@ -1272,15 +1272,15 @@ cgi-bin/cgiProgram: $(DEPS_91)
 #
 DEPS_92 += src/esp/esp-www/files/static/js
 
-web/js: $(DEPS_92)
-	@echo '      [Copy] web/js'
-	mkdir -p "web/js"
-	cp "src/esp/esp-www/files/static/js/jquery-1.9.1.js" "web/js/jquery-1.9.1.js"
-	cp "src/esp/esp-www/files/static/js/jquery-1.9.1.min.js" "web/js/jquery-1.9.1.min.js"
-	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "web/js/jquery.esp.js"
-	cp "src/esp/esp-www/files/static/js/jquery.js" "web/js/jquery.js"
-	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "web/js/jquery.simplemodal.js"
-	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "web/js/jquery.tablesorter.js"
+test/web/js: $(DEPS_92)
+	@echo '      [Copy] test/web/js'
+	mkdir -p "test/web/js"
+	cp "src/esp/esp-www/files/static/js/jquery-1.9.1.js" "test/web/js/jquery-1.9.1.js"
+	cp "src/esp/esp-www/files/static/js/jquery-1.9.1.min.js" "test/web/js/jquery-1.9.1.min.js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "test/web/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "test/web/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "test/web/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "test/web/js/jquery.tablesorter.js"
 
 
 #
