@@ -22,7 +22,7 @@ typedef struct App {
     cchar       *serverRoot;            /* Root directory for server config */
     cchar       *configFile;            /* Arg to --config */
     cchar       *currentDir;            /* Initial starting current directory */
-    cchar       *database;              /* Database provider "mdb" | "sqlite" */
+    cchar       *database;              /* Database provider "mdb" | "sdb" */
     cchar       *flatPath;              /* Output filename for flat compilations */
 
     cchar       *binDir;                /* Appweb bin directory */
@@ -311,7 +311,7 @@ PUBLIC int main(int argc, char **argv)
     app->configFile = 0;
     app->listen = sclone(ESP_LISTEN);
 #if BIT_PACK_SDB
-    app->database = sclone("sqlite");
+    app->database = sclone("sdb");
 #elif BIT_PACK_MDB 
     app->database = sclone("mdb");
 #else
@@ -2066,12 +2066,14 @@ static bool findConfigFile(bool mvc)
     if (app->configFile == 0) {
         app->configFile = name;
     }
+    mprLog(1, "Probe for %s", app->configFile);
     if (!mprPathExists(app->configFile, R_OK)) {
         if (userPath) {
             fail("Cannot open config file %s", app->configFile);
             return 0;
         }
         for (path = mprGetCurrentPath(); path; path = nextPath) {
+            mprLog(1, "Probe for %s", path);
             if (mprPathExists(mprJoinPath(path, name), R_OK)) {
                 if (chdir(path) < 0) {
                     fail("Cannot change directory to %s", path);
@@ -2088,6 +2090,7 @@ static bool findConfigFile(bool mvc)
         if (!mvc) {
             if (!app->configFile) {
                 app->configFile = mprJoinPath(mprGetAppDir(), sfmt("esp-%s.conf", BIT_PRODUCT));
+                mprLog(1, "Probe for %s", app->configFile);
                 if (!mprPathExists(app->configFile, R_OK)) {
                     fail("Cannot open config file %s", app->configFile);
                     return 0;
@@ -2165,7 +2168,7 @@ static void usageError(Mpr *mpr)
     "  Options:\n"
     "    --chdir dir                # Change to the named directory first\n"
     "    --config configFile        # Use named config file instead appweb.conf\n"
-    "    --database name            # Database provider 'mdb|sqlite' \n"
+    "    --database name            # Database provider 'mdb|sdb' \n"
     "    --flat                     # Compile into a single module\n"
     "    --genlink                  # Generate a static link module for flat compilations\n"
     "    --keep                     # Keep intermediate source\n"
