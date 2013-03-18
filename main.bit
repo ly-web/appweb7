@@ -63,8 +63,7 @@ Bit.load({
         /*
             Optional packs to automatically discover and configure
          */
-        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'man', 'man2html', 'mdb', 'pmaker', 'php', 
-            'sqlite', 'sdb', 'ssl', 'utest', 'zip' ],
+        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'man', 'man2html', 'mdb', 'pmaker', 'ssl', 'utest', 'zip' ],
 
         /*
             Packs to disable when using --without all
@@ -81,11 +80,6 @@ Bit.load({
             Set to true for a static (non-shared library) build
          */
         static: false,
-
-        /*
-            Always build ejscript for tools
-         */
-        ejscript: false,
 
         http: {
             /* Use PAM (Plugable Authentication Module) to store passwords */
@@ -190,10 +184,10 @@ Bit.load({
             See package/package.bit for the install/package targets
          */
         projects: {
-            action: "genProjects('-without default -with ejscript -with est --with mdb --with sdb')",
+            action: "genProjects('-without default -with ejscript -with est --with sdb')",
         },
         mine: {
-            action: "genProjects('--without default -with ejscript -with est', 'mine', Config.OS + '-' + Config.CPU)",
+            action: "genProjects('--without default -with ejscript -with est --with sdb', 'mine', Config.OS + '-' + Config.CPU)",
         },
     },
 
@@ -211,5 +205,13 @@ Bit.load({
             if (bit.generating) bit.packs.sqlite.enable = 0
             if (bit.generating) bit.packs.sdb.enable = 0
         ",
+    },
+    packs: {
+        cgi: {},
+        dir: {},
+        ejscript: {},
+        esp: {},
+        php: {},
+        ssl: {},
     },
 })

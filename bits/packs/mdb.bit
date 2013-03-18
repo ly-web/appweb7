@@ -6,5 +6,6 @@ Bit.pack({
     mdb: {
         description: 'MDB Database',
         path: bit.dir.src.join('src/esp/mdb.c'),
+        requires: [ 'esp' ],
     },
 })

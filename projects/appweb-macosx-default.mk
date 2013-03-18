@@ -740,7 +740,7 @@ $(CONFIG)/obj/sdb.o: \
 #   libmod_esp
 #
 DEPS_52 += $(CONFIG)/bin/libappweb.dylib
-DEPS_52 += $(CONFIG)/bin/libsqlite3.dylib
+DEPS_52 += $(CONFIG)/bin/sqlite
 DEPS_52 += $(CONFIG)/inc/edi.h
 DEPS_52 += $(CONFIG)/inc/esp-app.h
 DEPS_52 += $(CONFIG)/inc/esp.h
@@ -755,21 +755,21 @@ DEPS_52 += $(CONFIG)/obj/espTemplate.o
 DEPS_52 += $(CONFIG)/obj/mdb.o
 DEPS_52 += $(CONFIG)/obj/sdb.o
 
-LIBS_52 += -lsqlite3
 LIBS_52 += -lappweb
 LIBS_52 += -lhttp
 LIBS_52 += -lpcre
 LIBS_52 += -lmpr
+LIBS_52 += -lsqlite3
 
 $(CONFIG)/bin/libmod_esp.dylib: $(DEPS_52)
 	@echo '      [Link] libmod_esp'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS_52) $(LIBS_52) $(LIBS) -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS_52) $(LIBS_52) $(LIBS) -lsqlite3
 
 #
 #   esp
 #
 DEPS_53 += $(CONFIG)/bin/libappweb.dylib
-DEPS_53 += $(CONFIG)/bin/libsqlite3.dylib
+DEPS_53 += $(CONFIG)/bin/sqlite
 DEPS_53 += $(CONFIG)/obj/edi.o
 DEPS_53 += $(CONFIG)/obj/esp.o
 DEPS_53 += $(CONFIG)/obj/espAbbrev.o
@@ -780,15 +780,15 @@ DEPS_53 += $(CONFIG)/obj/espTemplate.o
 DEPS_53 += $(CONFIG)/obj/mdb.o
 DEPS_53 += $(CONFIG)/obj/sdb.o
 
-LIBS_53 += -lsqlite3
 LIBS_53 += -lappweb
 LIBS_53 += -lhttp
 LIBS_53 += -lpcre
 LIBS_53 += -lmpr
+LIBS_53 += -lsqlite3
 
 $(CONFIG)/bin/esp: $(DEPS_53)
 	@echo '      [Link] esp'
-	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS_53) $(LIBS_53) $(LIBS) -lpam
+	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS_53) $(LIBS_53) $(LIBS) -lsqlite3
 
 #
 #   esp.conf
@@ -895,22 +895,22 @@ $(CONFIG)/obj/ejsLib.o: \
 DEPS_62 += $(CONFIG)/bin/libhttp.dylib
 DEPS_62 += $(CONFIG)/bin/libpcre.dylib
 DEPS_62 += $(CONFIG)/bin/libmpr.dylib
-DEPS_62 += $(CONFIG)/bin/libsqlite3.dylib
 DEPS_62 += $(CONFIG)/inc/ejs.h
 DEPS_62 += $(CONFIG)/inc/ejs.slots.h
 DEPS_62 += $(CONFIG)/inc/ejsByteGoto.h
 DEPS_62 += $(CONFIG)/obj/ejsLib.o
 
-LIBS_62 += -lsqlite3
 LIBS_62 += -lmpr
 LIBS_62 += -lpcre
 LIBS_62 += -lhttp
 LIBS_62 += -lpcre
 LIBS_62 += -lmpr
+LIBS_62 += -lsqlite3
+LIBS_62 += -lest
 
 $(CONFIG)/bin/libejs.dylib: $(DEPS_62)
 	@echo '      [Link] libejs'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/ejsLib.o $(LIBS_62) $(LIBS_62) $(LIBS) -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/ejsLib.o $(LIBS_62) $(LIBS_62) $(LIBS) -lest
 
 #
 #   ejs.o
@@ -930,10 +930,11 @@ DEPS_64 += $(CONFIG)/bin/libejs.dylib
 DEPS_64 += $(CONFIG)/obj/ejs.o
 
 LIBS_64 += -lejs
-LIBS_64 += -lsqlite3
 LIBS_64 += -lmpr
 LIBS_64 += -lpcre
 LIBS_64 += -lhttp
+LIBS_64 += -lsqlite3
+LIBS_64 += -lest
 
 $(CONFIG)/bin/ejs: $(DEPS_64)
 	@echo '      [Link] ejs'
@@ -957,14 +958,15 @@ DEPS_66 += $(CONFIG)/bin/libejs.dylib
 DEPS_66 += $(CONFIG)/obj/ejsc.o
 
 LIBS_66 += -lejs
-LIBS_66 += -lsqlite3
 LIBS_66 += -lmpr
 LIBS_66 += -lpcre
 LIBS_66 += -lhttp
+LIBS_66 += -lsqlite3
+LIBS_66 += -lest
 
 $(CONFIG)/bin/ejsc: $(DEPS_66)
 	@echo '      [Link] ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LIBS_66) $(LIBS_66) $(LIBS) -lpam
+	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LIBS_66) $(LIBS_66) $(LIBS) -lest
 
 #
 #   ejs.mod
@@ -1025,10 +1027,11 @@ LIBS_71 += -lhttp
 LIBS_71 += -lpcre
 LIBS_71 += -lmpr
 LIBS_71 += -lsqlite3
+LIBS_71 += -lest
 
 $(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_71)
 	@echo '      [Link] libmod_ejs'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/ejsHandler.o $(LIBS_71) $(LIBS_71) $(LIBS) -lsqlite3
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/ejsHandler.o $(LIBS_71) $(LIBS_71) $(LIBS) -lest
 
 #
 #   sslModule.o
@@ -1127,15 +1130,15 @@ DEPS_80 += $(CONFIG)/bin/libmod_esp.dylib
 DEPS_80 += $(CONFIG)/obj/slink.o
 
 LIBS_80 += -lmod_esp
-LIBS_80 += -lsqlite3
 LIBS_80 += -lappweb
 LIBS_80 += -lhttp
 LIBS_80 += -lpcre
 LIBS_80 += -lmpr
+LIBS_80 += -lsqlite3
 
 $(CONFIG)/bin/libslink.dylib: $(DEPS_80)
 	@echo '      [Link] libslink'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/slink.o $(LIBS_80) $(LIBS_80) $(LIBS) -lpam
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/slink.o $(LIBS_80) $(LIBS_80) $(LIBS) -lsqlite3
 
 #
 #   appweb.o
@@ -1171,10 +1174,11 @@ LIBS_82 += -lpcre
 LIBS_82 += -lmpr
 LIBS_82 += -lsqlite3
 LIBS_82 += -lejs
+LIBS_82 += -lest
 
 $(CONFIG)/bin/appweb: $(DEPS_82)
 	@echo '      [Link] appweb'
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBS_82) $(LIBS_82) $(LIBS) -lejs
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBS_82) $(LIBS_82) $(LIBS) -lest
 
 #
 #   server-cache

@@ -26,7 +26,7 @@
     #define BIT_DEPTH 1
 #endif
 #ifndef BIT_DISCOVER
-    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,man,man2html,mdb,pmaker,php,sqlite,sdb,ssl,utest,zip"
+    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,man,man2html,mdb,pmaker,ssl,utest,zip"
 #endif
 #ifndef BIT_EJS_DB
     #define BIT_EJS_DB 1
@@ -51,9 +51,6 @@
 #endif
 #ifndef BIT_EJS_ONE_MODULE
     #define BIT_EJS_ONE_MODULE 1
-#endif
-#ifndef BIT_EJSCRIPT
-    #define BIT_EJSCRIPT 0
 #endif
 #ifndef BIT_EST_CAMELLIA
     #define BIT_EST_CAMELLIA 0
@@ -122,7 +119,7 @@
     #define BIT_PRODUCT "appweb"
 #endif
 #ifndef BIT_REQUIRES
-    #define BIT_REQUIRES "ejscript,est,winsdk,compiler,lib,link,rc,pcre"
+    #define BIT_REQUIRES "ejscript,est,sdb,winsdk,compiler,lib,link,rc,pcre"
 #endif
 #ifndef BIT_SERVER_ROOT
     #define BIT_SERVER_ROOT "."
@@ -224,7 +221,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -configure . -without default -with ejscript -with est --with mdb --with sdb -gen vs"
+    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -configure . -without default -with ejscript -with est --with sdb -gen vs"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -309,7 +306,7 @@
     #define BIT_PACK_PMAKER 0
 #endif
 #ifndef BIT_PACK_RC
-    #define BIT_PACK_RC 1
+    #define BIT_PACK_RC 0
 #endif
 #ifndef BIT_PACK_SDB
     #define BIT_PACK_SDB 1

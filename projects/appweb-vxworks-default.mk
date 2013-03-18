@@ -744,7 +744,7 @@ $(CONFIG)/obj/sdb.o: \
 #   libmod_esp
 #
 DEPS_52 += $(CONFIG)/bin/libappweb.out
-DEPS_52 += $(CONFIG)/bin/libsqlite3.out
+DEPS_52 += $(CONFIG)/bin/sqlite.out
 DEPS_52 += $(CONFIG)/inc/edi.h
 DEPS_52 += $(CONFIG)/inc/esp-app.h
 DEPS_52 += $(CONFIG)/inc/esp.h
@@ -759,11 +759,11 @@ DEPS_52 += $(CONFIG)/obj/espTemplate.o
 DEPS_52 += $(CONFIG)/obj/mdb.o
 DEPS_52 += $(CONFIG)/obj/sdb.o
 
-LIBS_52 += -lsqlite3
 LIBS_52 += -lappweb
 LIBS_52 += -lhttp
 LIBS_52 += -lpcre
 LIBS_52 += -lmpr
+LIBS_52 += -lsqlite3
 
 $(CONFIG)/bin/libmod_esp.out: $(DEPS_52)
 	@echo '      [Link] libmod_esp'
@@ -773,7 +773,7 @@ $(CONFIG)/bin/libmod_esp.out: $(DEPS_52)
 #   esp
 #
 DEPS_53 += $(CONFIG)/bin/libappweb.out
-DEPS_53 += $(CONFIG)/bin/libsqlite3.out
+DEPS_53 += $(CONFIG)/bin/sqlite.out
 DEPS_53 += $(CONFIG)/obj/edi.o
 DEPS_53 += $(CONFIG)/obj/esp.o
 DEPS_53 += $(CONFIG)/obj/espAbbrev.o
@@ -784,11 +784,11 @@ DEPS_53 += $(CONFIG)/obj/espTemplate.o
 DEPS_53 += $(CONFIG)/obj/mdb.o
 DEPS_53 += $(CONFIG)/obj/sdb.o
 
-LIBS_53 += -lsqlite3
 LIBS_53 += -lappweb
 LIBS_53 += -lhttp
 LIBS_53 += -lpcre
 LIBS_53 += -lmpr
+LIBS_53 += -lsqlite3
 
 $(CONFIG)/bin/esp.out: $(DEPS_53)
 	@echo '      [Link] esp'
@@ -899,18 +899,18 @@ $(CONFIG)/obj/ejsLib.o: \
 DEPS_62 += $(CONFIG)/bin/libhttp.out
 DEPS_62 += $(CONFIG)/bin/libpcre.out
 DEPS_62 += $(CONFIG)/bin/libmpr.out
-DEPS_62 += $(CONFIG)/bin/libsqlite3.out
 DEPS_62 += $(CONFIG)/inc/ejs.h
 DEPS_62 += $(CONFIG)/inc/ejs.slots.h
 DEPS_62 += $(CONFIG)/inc/ejsByteGoto.h
 DEPS_62 += $(CONFIG)/obj/ejsLib.o
 
-LIBS_62 += -lsqlite3
 LIBS_62 += -lmpr
 LIBS_62 += -lpcre
 LIBS_62 += -lhttp
 LIBS_62 += -lpcre
 LIBS_62 += -lmpr
+LIBS_62 += -lsqlite3
+LIBS_62 += -lest
 
 $(CONFIG)/bin/libejs.out: $(DEPS_62)
 	@echo '      [Link] libejs'
@@ -934,10 +934,11 @@ DEPS_64 += $(CONFIG)/bin/libejs.out
 DEPS_64 += $(CONFIG)/obj/ejs.o
 
 LIBS_64 += -lejs
-LIBS_64 += -lsqlite3
 LIBS_64 += -lmpr
 LIBS_64 += -lpcre
 LIBS_64 += -lhttp
+LIBS_64 += -lsqlite3
+LIBS_64 += -lest
 
 $(CONFIG)/bin/ejs.out: $(DEPS_64)
 	@echo '      [Link] ejs'
@@ -961,10 +962,11 @@ DEPS_66 += $(CONFIG)/bin/libejs.out
 DEPS_66 += $(CONFIG)/obj/ejsc.o
 
 LIBS_66 += -lejs
-LIBS_66 += -lsqlite3
 LIBS_66 += -lmpr
 LIBS_66 += -lpcre
 LIBS_66 += -lhttp
+LIBS_66 += -lsqlite3
+LIBS_66 += -lest
 
 $(CONFIG)/bin/ejsc.out: $(DEPS_66)
 	@echo '      [Link] ejsc'
@@ -1029,6 +1031,7 @@ LIBS_71 += -lhttp
 LIBS_71 += -lpcre
 LIBS_71 += -lmpr
 LIBS_71 += -lsqlite3
+LIBS_71 += -lest
 
 $(CONFIG)/bin/libmod_ejs.out: $(DEPS_71)
 	@echo '      [Link] libmod_ejs'
@@ -1131,11 +1134,11 @@ DEPS_80 += $(CONFIG)/bin/libmod_esp.out
 DEPS_80 += $(CONFIG)/obj/slink.o
 
 LIBS_80 += -lmod_esp
-LIBS_80 += -lsqlite3
 LIBS_80 += -lappweb
 LIBS_80 += -lhttp
 LIBS_80 += -lpcre
 LIBS_80 += -lmpr
+LIBS_80 += -lsqlite3
 
 $(CONFIG)/bin/libslink.out: $(DEPS_80)
 	@echo '      [Link] libslink'
@@ -1175,6 +1178,7 @@ LIBS_82 += -lpcre
 LIBS_82 += -lmpr
 LIBS_82 += -lsqlite3
 LIBS_82 += -lejs
+LIBS_82 += -lest
 
 $(CONFIG)/bin/appweb.out: $(DEPS_82)
 	@echo '      [Link] appweb'

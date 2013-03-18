@@ -105,7 +105,7 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libslink.lib;libmod_cgi.lib;libmod_ejs.lib;libmod_ssl.lib;libmod_esp.lib;libappweb.lib;libhttp.lib;libpcre.lib;libmpr.lib;libsqlite3.lib;libejs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libslink.lib;libmod_cgi.lib;libmod_ejs.lib;libmod_ssl.lib;libmod_esp.lib;libappweb.lib;libhttp.lib;libpcre.lib;libmpr.lib;libsqlite3.lib;libejs.lib;libest.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>

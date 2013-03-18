@@ -760,7 +760,7 @@ $(CONFIG)\obj\sdb.obj: \
 #   libmod_esp
 #
 DEPS_54 = $(DEPS_54) $(CONFIG)\bin\libappweb.dll
-DEPS_54 = $(DEPS_54) $(CONFIG)\bin\libsqlite3.dll
+DEPS_54 = $(DEPS_54) $(CONFIG)\bin\sqlite.exe
 DEPS_54 = $(DEPS_54) $(CONFIG)\inc\edi.h
 DEPS_54 = $(DEPS_54) $(CONFIG)\inc\esp-app.h
 DEPS_54 = $(DEPS_54) $(CONFIG)\inc\esp.h
@@ -775,21 +775,21 @@ DEPS_54 = $(DEPS_54) $(CONFIG)\obj\espTemplate.obj
 DEPS_54 = $(DEPS_54) $(CONFIG)\obj\mdb.obj
 DEPS_54 = $(DEPS_54) $(CONFIG)\obj\sdb.obj
 
-LIBS_54 = $(LIBS_54) libsqlite3.lib
 LIBS_54 = $(LIBS_54) libappweb.lib
 LIBS_54 = $(LIBS_54) libhttp.lib
 LIBS_54 = $(LIBS_54) libpcre.lib
 LIBS_54 = $(LIBS_54) libmpr.lib
+LIBS_54 = $(LIBS_54) libsqlite3.lib
 
 $(CONFIG)\bin\libmod_esp.dll: $(DEPS_54)
 	@echo '      [Link] libmod_esp'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_54) $(LIBS_54) $(LIBS) libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_54) $(LIBS_54) $(LIBS) libsqlite3.lib
 
 #
 #   esp
 #
 DEPS_55 = $(DEPS_55) $(CONFIG)\bin\libappweb.dll
-DEPS_55 = $(DEPS_55) $(CONFIG)\bin\libsqlite3.dll
+DEPS_55 = $(DEPS_55) $(CONFIG)\bin\sqlite.exe
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\edi.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\esp.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espAbbrev.obj
@@ -800,15 +800,15 @@ DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espTemplate.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\mdb.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\sdb.obj
 
-LIBS_55 = $(LIBS_55) libsqlite3.lib
 LIBS_55 = $(LIBS_55) libappweb.lib
 LIBS_55 = $(LIBS_55) libhttp.lib
 LIBS_55 = $(LIBS_55) libpcre.lib
 LIBS_55 = $(LIBS_55) libmpr.lib
+LIBS_55 = $(LIBS_55) libsqlite3.lib
 
 $(CONFIG)\bin\esp.exe: $(DEPS_55)
 	@echo '      [Link] esp'
-	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_55) $(LIBS_55) $(LIBS) libmpr.lib
+	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_55) $(LIBS_55) $(LIBS) libsqlite3.lib
 
 #
 #   esp.conf
@@ -915,22 +915,22 @@ $(CONFIG)\obj\ejsLib.obj: \
 DEPS_64 = $(DEPS_64) $(CONFIG)\bin\libhttp.dll
 DEPS_64 = $(DEPS_64) $(CONFIG)\bin\libpcre.dll
 DEPS_64 = $(DEPS_64) $(CONFIG)\bin\libmpr.dll
-DEPS_64 = $(DEPS_64) $(CONFIG)\bin\libsqlite3.dll
 DEPS_64 = $(DEPS_64) $(CONFIG)\inc\ejs.h
 DEPS_64 = $(DEPS_64) $(CONFIG)\inc\ejs.slots.h
 DEPS_64 = $(DEPS_64) $(CONFIG)\inc\ejsByteGoto.h
 DEPS_64 = $(DEPS_64) $(CONFIG)\obj\ejsLib.obj
 
-LIBS_64 = $(LIBS_64) libsqlite3.lib
 LIBS_64 = $(LIBS_64) libmpr.lib
 LIBS_64 = $(LIBS_64) libpcre.lib
 LIBS_64 = $(LIBS_64) libhttp.lib
 LIBS_64 = $(LIBS_64) libpcre.lib
 LIBS_64 = $(LIBS_64) libmpr.lib
+LIBS_64 = $(LIBS_64) libsqlite3.lib
+LIBS_64 = $(LIBS_64) libest.lib
 
 $(CONFIG)\bin\libejs.dll: $(DEPS_64)
 	@echo '      [Link] libejs'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsLib.obj $(LIBS_64) $(LIBS_64) $(LIBS) libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsLib.obj $(LIBS_64) $(LIBS_64) $(LIBS) libest.lib
 
 #
 #   ejs.obj
@@ -950,14 +950,15 @@ DEPS_66 = $(DEPS_66) $(CONFIG)\bin\libejs.dll
 DEPS_66 = $(DEPS_66) $(CONFIG)\obj\ejs.obj
 
 LIBS_66 = $(LIBS_66) libejs.lib
-LIBS_66 = $(LIBS_66) libsqlite3.lib
 LIBS_66 = $(LIBS_66) libmpr.lib
 LIBS_66 = $(LIBS_66) libpcre.lib
 LIBS_66 = $(LIBS_66) libhttp.lib
+LIBS_66 = $(LIBS_66) libsqlite3.lib
+LIBS_66 = $(LIBS_66) libest.lib
 
 $(CONFIG)\bin\ejs.exe: $(DEPS_66)
 	@echo '      [Link] ejs'
-	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj $(LIBS_66) $(LIBS_66) $(LIBS) libhttp.lib
+	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj $(LIBS_66) $(LIBS_66) $(LIBS) libest.lib
 
 #
 #   ejsc.obj
@@ -977,14 +978,15 @@ DEPS_68 = $(DEPS_68) $(CONFIG)\bin\libejs.dll
 DEPS_68 = $(DEPS_68) $(CONFIG)\obj\ejsc.obj
 
 LIBS_68 = $(LIBS_68) libejs.lib
-LIBS_68 = $(LIBS_68) libsqlite3.lib
 LIBS_68 = $(LIBS_68) libmpr.lib
 LIBS_68 = $(LIBS_68) libpcre.lib
 LIBS_68 = $(LIBS_68) libhttp.lib
+LIBS_68 = $(LIBS_68) libsqlite3.lib
+LIBS_68 = $(LIBS_68) libest.lib
 
 $(CONFIG)\bin\ejsc.exe: $(DEPS_68)
 	@echo '      [Link] ejsc'
-	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj $(LIBS_68) $(LIBS_68) $(LIBS) libhttp.lib
+	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj $(LIBS_68) $(LIBS_68) $(LIBS) libest.lib
 
 #
 #   ejs.mod
@@ -1045,10 +1047,11 @@ LIBS_73 = $(LIBS_73) libhttp.lib
 LIBS_73 = $(LIBS_73) libpcre.lib
 LIBS_73 = $(LIBS_73) libmpr.lib
 LIBS_73 = $(LIBS_73) libsqlite3.lib
+LIBS_73 = $(LIBS_73) libest.lib
 
 $(CONFIG)\bin\libmod_ejs.dll: $(DEPS_73)
 	@echo '      [Link] libmod_ejs'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsHandler.obj $(LIBS_73) $(LIBS_73) $(LIBS) libsqlite3.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_ejs.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsHandler.obj $(LIBS_73) $(LIBS_73) $(LIBS) libest.lib
 
 #
 #   sslModule.obj
@@ -1149,15 +1152,15 @@ DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libmod_esp.dll
 DEPS_82 = $(DEPS_82) $(CONFIG)\obj\slink.obj
 
 LIBS_82 = $(LIBS_82) libmod_esp.lib
-LIBS_82 = $(LIBS_82) libsqlite3.lib
 LIBS_82 = $(LIBS_82) libappweb.lib
 LIBS_82 = $(LIBS_82) libhttp.lib
 LIBS_82 = $(LIBS_82) libpcre.lib
 LIBS_82 = $(LIBS_82) libmpr.lib
+LIBS_82 = $(LIBS_82) libsqlite3.lib
 
 $(CONFIG)\bin\libslink.dll: $(DEPS_82)
 	@echo '      [Link] libslink'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libslink.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj $(LIBS_82) $(LIBS_82) $(LIBS) libmpr.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libslink.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\slink.obj $(LIBS_82) $(LIBS_82) $(LIBS) libsqlite3.lib
 
 #
 #   appweb.obj
@@ -1193,10 +1196,11 @@ LIBS_84 = $(LIBS_84) libpcre.lib
 LIBS_84 = $(LIBS_84) libmpr.lib
 LIBS_84 = $(LIBS_84) libsqlite3.lib
 LIBS_84 = $(LIBS_84) libejs.lib
+LIBS_84 = $(LIBS_84) libest.lib
 
 $(CONFIG)\bin\appweb.exe: $(DEPS_84)
 	@echo '      [Link] appweb'
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj $(LIBS_84) $(LIBS_84) $(LIBS) libejs.lib
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appweb.obj $(LIBS_84) $(LIBS_84) $(LIBS) libest.lib
 
 #
 #   appwebMonitor.h

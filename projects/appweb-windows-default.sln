@@ -102,7 +102,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmod_esp", "appweb-window
 		{66002183-4B43-4751-B3F4-36AD8E08BE3C} = {66002183-4B43-4751-B3F4-36AD8E08BE3C}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
-		{EB15EBA2-6B6C-4BFB-991A-6802A371BFA2} = {EB15EBA2-6B6C-4BFB-991A-6802A371BFA2}
+		{5A421E59-8992-40A0-97E4-EA405D64E2D5} = {5A421E59-8992-40A0-97E4-EA405D64E2D5}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "esp", "appweb-windows-default\esp.vcxproj", "{4B41C5F1-A9D9-4DD2-896A-B6C2D5CEDFD7}"
@@ -113,7 +113,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "esp", "appweb-windows-defau
 		{66002183-4B43-4751-B3F4-36AD8E08BE3C} = {66002183-4B43-4751-B3F4-36AD8E08BE3C}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
-		{EB15EBA2-6B6C-4BFB-991A-6802A371BFA2} = {EB15EBA2-6B6C-4BFB-991A-6802A371BFA2}
+		{5A421E59-8992-40A0-97E4-EA405D64E2D5} = {5A421E59-8992-40A0-97E4-EA405D64E2D5}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "esp.conf", "appweb-windows-default\esp.conf.vcxproj", "{4BC8CBE4-70BD-405B-AE01-DCEE4654C66C}"
@@ -148,9 +148,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libejs", "appweb-windows-de
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{9651275B-C035-4265-A696-E2DC0147F040} = {9651275B-C035-4265-A696-E2DC0147F040}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{EB15EBA2-6B6C-4BFB-991A-6802A371BFA2} = {EB15EBA2-6B6C-4BFB-991A-6802A371BFA2}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ejs", "appweb-windows-default\ejs.vcxproj", "{F9DC614B-CD2D-4B46-8B61-3D01F3DA62EE}"

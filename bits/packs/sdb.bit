@@ -6,6 +6,7 @@ Bit.pack({
     sdb: {
         description: 'SDB Database',
         path: bit.dir.src.join('src/esp/sdb.c'),
-        requires: [ 'sqlite' ],
+        depends:  [ 'sqlite' ],
+        requires: [ 'esp', 'sqlite' ],
     },
 })

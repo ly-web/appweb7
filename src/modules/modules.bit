@@ -6,42 +6,38 @@ Bit.load({
     internal: {
         '+depends': [ 'libappweb' ],
     },
+
     targets: {
         libmod_cgi: {
             type:   'lib',
             sources: [ 'cgiHandler.c' ],
             requires: 'cgi',
         },
+
         libmod_ejs: {
             type:   'lib',
             sources: [ 'ejsHandler.c' ],
-            scripts: {
-                preresolve: "
-                    if (bit.packs.ejscript.imports) {
-                        /* Building with external ejscript */
-                        bit.targets['libmod_ejs'].libraries += ['ejs']
-                    } else {
-                        bit.targets['libmod_ejs'].depends += ['libejs']
-                    }
-                ",
-            }
+            '+depends': [ 'libejs' ],
             requires: 'ejscript',
         },
+
         libmod_php: {
             type: 'lib',
             sources: [ 'phpHandler.c' ],
-            '+depends': [ 'php' ],
             '-compiler': [
                 '-Wall',
                 '-Wshorten-64-to-32',
             ],
+            '+depends': [ 'php' ],
             requires: 'php',
         },
+
         libmod_proxy: {
             enable: false,
             type: 'lib',
             sources: [ 'proxyHandler.c' ],
         },
+
         libmod_ssl: {
             type: 'lib',
             sources: [ 'sslModule.c' ],
