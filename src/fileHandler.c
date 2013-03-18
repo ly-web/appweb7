@@ -131,7 +131,7 @@ static void openFileHandler(HttpQueue *q)
 
     if (rx->flags & (HTTP_PUT | HTTP_DELETE)) {
         if (!(route->flags & HTTP_ROUTE_PUT_DELETE_METHODS)) {
-            httpError(q->conn, HTTP_CODE_BAD_METHOD, "The \"%s\" method is not supported by file handler", rx->method);
+            httpError(q->conn, HTTP_CODE_BAD_METHOD, "The \"%s\" method is not supported by this route", rx->method);
         }
     } else {
         if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
