@@ -13,9 +13,15 @@ LD                := /usr/bin/ld
 CONFIG            := $(OS)-$(ARCH)-$(PROFILE)
 LBIN              := $(CONFIG)/bin
 
+BIT_PACK_CGI      := 1
+BIT_PACK_EJSCRIPT := 1
+BIT_PACK_ESP      := 1
+BIT_PACK_PHP      := 0
+BIT_PACK_SSL      := 0
+BIT_PACK_SQLITE   := 0
 
 CFLAGS            += -w
-DFLAGS            +=  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) 
+DFLAGS            +=  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) 
 IFLAGS            += -I$(CONFIG)/inc
 LDFLAGS           += '-Wl,-rpath,@executable_path/' '-Wl,-rpath,@loader_path/'
 LIBPATHS          += -L$(CONFIG)/bin
@@ -1300,6 +1306,211 @@ stop: $(DEPS_93)
 DEPS_94 += stop
 
 installBinary: $(DEPS_94)
+	mkdir -p "$(BIT_APP_PREFIX)"
+	mkdir -p "$(BIT_VAPP_PREFIX)"
+	mkdir -p "$(BIT_ETC_PREFIX)"
+	mkdir -p "$(BIT_WEB_PREFIX)"
+	mkdir -p "$(BIT_LOG_PREFIX)"
+	mkdir -p "$(BIT_SPOOL_PREFIX)"
+	rm -fr "$(BIT_CACHE_PREFIX)"
+	mkdir -p "$(BIT_CACHE_PREFIX)"
+	mkdir -p "$(BIT_APP_PREFIX)"
+	rm -f "$(BIT_APP_PREFIX)/latest"
+	ln -s "4.4.0" "$(BIT_APP_PREFIX)/latest"
+	mkdir -p "$(BIT_LOG_PREFIX)"
+	chmod 755 "$(BIT_LOG_PREFIX)"
+	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(BIT_LOG_PREFIX)"
+	mkdir -p "$(BIT_CACHE_PREFIX)"
+	chmod 755 "$(BIT_CACHE_PREFIX)"
+	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(BIT_CACHE_PREFIX)"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin"
+	cp "$(CONFIG)/bin/appman" "$(BIT_VAPP_PREFIX)/bin/appman"
+	mkdir -p "$(BIT_BIN_PREFIX)"
+	rm -f "$(BIT_BIN_PREFIX)/appman"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/appman" "$(BIT_BIN_PREFIX)/appman"
+	cp "$(CONFIG)/bin/appweb" "$(BIT_VAPP_PREFIX)/bin/appweb"
+	rm -f "$(BIT_BIN_PREFIX)/appweb"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/appweb" "$(BIT_BIN_PREFIX)/appweb"
+	cp "$(CONFIG)/bin/http" "$(BIT_VAPP_PREFIX)/bin/http"
+	rm -f "$(BIT_BIN_PREFIX)/http"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/http" "$(BIT_BIN_PREFIX)/http"
+ifeq ($(BIT_PACK_ESP),1)
+	cp "$(CONFIG)/bin/esp" "$(BIT_VAPP_PREFIX)/bin/esp"
+	rm -f "$(BIT_BIN_PREFIX)/esp"
+	ln -s "$(BIT_VAPP_PREFIX)/bin/esp" "$(BIT_BIN_PREFIX)/esp"
+endif
+	cp "$(CONFIG)/bin/libappweb.dylib" "$(BIT_VAPP_PREFIX)/bin/libappweb.dylib"
+	cp "$(CONFIG)/bin/libhttp.dylib" "$(BIT_VAPP_PREFIX)/bin/libhttp.dylib"
+	cp "$(CONFIG)/bin/libmpr.dylib" "$(BIT_VAPP_PREFIX)/bin/libmpr.dylib"
+	cp "$(CONFIG)/bin/libpcre.dylib" "$(BIT_VAPP_PREFIX)/bin/libpcre.dylib"
+	cp "$(CONFIG)/bin/libslink.dylib" "$(BIT_VAPP_PREFIX)/bin/libslink.dylib"
+ifeq ($(BIT_PACK_ESP),1)
+	cp "$(CONFIG)/bin/libmod_esp.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_esp.dylib"
+endif
+ifeq ($(BIT_PACK_CGI),1)
+	cp "$(CONFIG)/bin/libmod_cgi.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_cgi.dylib"
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+	cp "$(CONFIG)/bin/libejs.dylib" "$(BIT_VAPP_PREFIX)/bin/libejs.dylib"
+	cp "$(CONFIG)/bin/libmod_ejs.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_ejs.dylib"
+endif
+ifeq ($(BIT_PACK_ESP),1)
+	cp "$(CONFIG)/bin/libmod_esp.dylib" "$(BIT_VAPP_PREFIX)/bin/libmod_esp.dylib"
+	cp "$(CONFIG)/bin/libappweb.dylib" "$(BIT_VAPP_PREFIX)/bin/libappweb.dylib"
+	cp "$(CONFIG)/bin/libpcre.dylib" "$(BIT_VAPP_PREFIX)/bin/libpcre.dylib"
+	cp "$(CONFIG)/bin/libhttp.dylib" "$(BIT_VAPP_PREFIX)/bin/libhttp.dylib"
+	cp "$(CONFIG)/bin/libmpr.dylib" "$(BIT_VAPP_PREFIX)/bin/libmpr.dylib"
+endif
+ifeq ($(BIT_PACK_ESP),1)
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www"
+	cp "src/esp/esp-www/app.conf" "$(BIT_VAPP_PREFIX)/bin/esp-www/app.conf"
+	cp "src/esp/esp-www/appweb.conf" "$(BIT_VAPP_PREFIX)/bin/esp-www/appweb.conf"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/layouts"
+	cp "src/esp/esp-www/files/layouts/default.esp" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/layouts/default.esp"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images"
+	cp "src/esp/esp-www/files/static/images/banner.jpg" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/banner.jpg"
+	cp "src/esp/esp-www/files/static/images/favicon.ico" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/favicon.ico"
+	cp "src/esp/esp-www/files/static/images/splash.jpg" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/splash.jpg"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static"
+	cp "src/esp/esp-www/files/static/index.esp" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/index.esp"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js"
+	cp "src/esp/esp-www/files/static/js/jquery-1.9.1.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery-1.9.1.js"
+	cp "src/esp/esp-www/files/static/js/jquery-1.9.1.min.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery-1.9.1.min.js"
+	cp "src/esp/esp-www/files/static/js/jquery.esp.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.esp.js"
+	cp "src/esp/esp-www/files/static/js/jquery.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.js"
+	cp "src/esp/esp-www/files/static/js/jquery.simplemodal.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.simplemodal.js"
+	cp "src/esp/esp-www/files/static/js/jquery.tablesorter.js" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/js/jquery.tablesorter.js"
+	cp "src/esp/esp-www/files/static/layout.css" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/layout.css"
+	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/themes"
+	cp "src/esp/esp-www/files/static/themes/default.css" "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/themes/default.css"
+	cp "src/esp/esp-appweb.conf" "$(BIT_VAPP_PREFIX)/bin/esp-appweb.conf"
+endif
+ifeq ($(BIT_PACK_ESP),1)
+	cp "$(CONFIG)/bin/esp.conf" "$(BIT_VAPP_PREFIX)/bin/esp.conf"
+endif
+	mkdir -p "$(BIT_WEB_PREFIX)/bench"
+	cp "src/server/web/bench/1b.html" "$(BIT_WEB_PREFIX)/bench/1b.html"
+	cp "src/server/web/bench/4k.html" "$(BIT_WEB_PREFIX)/bench/4k.html"
+	cp "src/server/web/bench/64k.html" "$(BIT_WEB_PREFIX)/bench/64k.html"
+	mkdir -p "$(BIT_WEB_PREFIX)"
+	cp "src/server/web/favicon.ico" "$(BIT_WEB_PREFIX)/favicon.ico"
+	mkdir -p "$(BIT_WEB_PREFIX)/icons"
+	cp "src/server/web/icons/back.gif" "$(BIT_WEB_PREFIX)/icons/back.gif"
+	cp "src/server/web/icons/blank.gif" "$(BIT_WEB_PREFIX)/icons/blank.gif"
+	cp "src/server/web/icons/compressed.gif" "$(BIT_WEB_PREFIX)/icons/compressed.gif"
+	cp "src/server/web/icons/folder.gif" "$(BIT_WEB_PREFIX)/icons/folder.gif"
+	cp "src/server/web/icons/parent.gif" "$(BIT_WEB_PREFIX)/icons/parent.gif"
+	cp "src/server/web/icons/space.gif" "$(BIT_WEB_PREFIX)/icons/space.gif"
+	cp "src/server/web/icons/text.gif" "$(BIT_WEB_PREFIX)/icons/text.gif"
+	cp "src/server/web/iehacks.css" "$(BIT_WEB_PREFIX)/iehacks.css"
+	mkdir -p "$(BIT_WEB_PREFIX)/images"
+	cp "src/server/web/images/banner.jpg" "$(BIT_WEB_PREFIX)/images/banner.jpg"
+	cp "src/server/web/images/bottomShadow.jpg" "$(BIT_WEB_PREFIX)/images/bottomShadow.jpg"
+	cp "src/server/web/images/shadow.jpg" "$(BIT_WEB_PREFIX)/images/shadow.jpg"
+	cp "src/server/web/index.html" "$(BIT_WEB_PREFIX)/index.html"
+	cp "src/server/web/min-index.html" "$(BIT_WEB_PREFIX)/min-index.html"
+	cp "src/server/web/print.css" "$(BIT_WEB_PREFIX)/print.css"
+	cp "src/server/web/screen.css" "$(BIT_WEB_PREFIX)/screen.css"
+	mkdir -p "$(BIT_WEB_PREFIX)/test"
+	cp "src/server/web/test/bench.html" "$(BIT_WEB_PREFIX)/test/bench.html"
+	cp "src/server/web/test/test.cgi" "$(BIT_WEB_PREFIX)/test/test.cgi"
+	cp "src/server/web/test/test.ejs" "$(BIT_WEB_PREFIX)/test/test.ejs"
+	cp "src/server/web/test/test.esp" "$(BIT_WEB_PREFIX)/test/test.esp"
+	cp "src/server/web/test/test.html" "$(BIT_WEB_PREFIX)/test/test.html"
+	cp "src/server/web/test/test.php" "$(BIT_WEB_PREFIX)/test/test.php"
+	cp "src/server/web/test/test.pl" "$(BIT_WEB_PREFIX)/test/test.pl"
+	cp "src/server/web/test/test.py" "$(BIT_WEB_PREFIX)/test/test.py"
+	mkdir -p "$(BIT_ETC_PREFIX)"
+	cp "src/server/mime.types" "$(BIT_ETC_PREFIX)/mime.types"
+	cp "src/server/appweb.conf" "$(BIT_ETC_PREFIX)/appweb.conf"
+	mkdir -p "$(BIT_VAPP_PREFIX)/inc"
+	cp "$(CONFIG)/inc/bit.h" "$(BIT_VAPP_PREFIX)/inc/bit.h"
+	mkdir -p "$(BIT_INC_PREFIX)/appweb"
+	rm -f "$(BIT_INC_PREFIX)/appweb/bit.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/bit.h" "$(BIT_INC_PREFIX)/appweb/bit.h"
+	cp "src/bitos.h" "$(BIT_VAPP_PREFIX)/inc/bitos.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/bitos.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/bitos.h" "$(BIT_INC_PREFIX)/appweb/bitos.h"
+	cp "src/appweb.h" "$(BIT_VAPP_PREFIX)/inc/appweb.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/appweb.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/appweb.h" "$(BIT_INC_PREFIX)/appweb/appweb.h"
+	cp "src/customize.h" "$(BIT_VAPP_PREFIX)/inc/customize.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/customize.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/customize.h" "$(BIT_INC_PREFIX)/appweb/customize.h"
+	cp "src/deps/est/est.h" "$(BIT_VAPP_PREFIX)/inc/est.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/est.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/est.h" "$(BIT_INC_PREFIX)/appweb/est.h"
+	cp "src/deps/http/http.h" "$(BIT_VAPP_PREFIX)/inc/http.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/http.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/http.h" "$(BIT_INC_PREFIX)/appweb/http.h"
+	cp "src/deps/mpr/mpr.h" "$(BIT_VAPP_PREFIX)/inc/mpr.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/mpr.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/mpr.h" "$(BIT_INC_PREFIX)/appweb/mpr.h"
+	cp "src/deps/pcre/pcre.h" "$(BIT_VAPP_PREFIX)/inc/pcre.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/pcre.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/pcre.h" "$(BIT_INC_PREFIX)/appweb/pcre.h"
+	cp "src/deps/sqlite/sqlite3.h" "$(BIT_VAPP_PREFIX)/inc/sqlite3.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/sqlite3.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/sqlite3.h" "$(BIT_INC_PREFIX)/appweb/sqlite3.h"
+ifeq ($(BIT_PACK_ESP),1)
+	cp "src/esp/edi.h" "$(BIT_VAPP_PREFIX)/inc/edi.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/edi.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/edi.h" "$(BIT_INC_PREFIX)/appweb/edi.h"
+	cp "src/esp/esp-app.h" "$(BIT_VAPP_PREFIX)/inc/esp-app.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/esp-app.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/esp-app.h" "$(BIT_INC_PREFIX)/appweb/esp-app.h"
+	cp "src/esp/esp.h" "$(BIT_VAPP_PREFIX)/inc/esp.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/esp.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/esp.h" "$(BIT_INC_PREFIX)/appweb/esp.h"
+	cp "src/esp/mdb.h" "$(BIT_VAPP_PREFIX)/inc/mdb.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/mdb.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/mdb.h" "$(BIT_INC_PREFIX)/appweb/mdb.h"
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+	cp "src/deps/ejs/ejs.h" "$(BIT_VAPP_PREFIX)/inc/ejs.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.h" "$(BIT_INC_PREFIX)/appweb/ejs.h"
+	cp "src/deps/ejs/ejs.slots.h" "$(BIT_VAPP_PREFIX)/inc/ejs.slots.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.slots.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.slots.h" "$(BIT_INC_PREFIX)/appweb/ejs.slots.h"
+	cp "src/deps/ejs/ejsByteGoto.h" "$(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h" "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h"
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+	cp "$(CONFIG)/bin/ejs.mod" "$(BIT_VAPP_PREFIX)/bin/ejs.mod"
+endif
+	mkdir -p "$(BIT_VAPP_PREFIX)/doc/man1"
+	cp "doc/man/appman.1" "$(BIT_VAPP_PREFIX)/doc/man1/appman.1"
+	mkdir -p "$(BIT_MAN_PREFIX)/man1"
+	rm -f "$(BIT_MAN_PREFIX)/man1/appman.1"
+	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/appman.1" "$(BIT_MAN_PREFIX)/man1/appman.1"
+	cp "doc/man/appweb.1" "$(BIT_VAPP_PREFIX)/doc/man1/appweb.1"
+	rm -f "$(BIT_MAN_PREFIX)/man1/appweb.1"
+	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/appweb.1" "$(BIT_MAN_PREFIX)/man1/appweb.1"
+	cp "doc/man/appwebMonitor.1" "$(BIT_VAPP_PREFIX)/doc/man1/appwebMonitor.1"
+	rm -f "$(BIT_MAN_PREFIX)/man1/appwebMonitor.1"
+	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/appwebMonitor.1" "$(BIT_MAN_PREFIX)/man1/appwebMonitor.1"
+	cp "doc/man/authpass.1" "$(BIT_VAPP_PREFIX)/doc/man1/authpass.1"
+	rm -f "$(BIT_MAN_PREFIX)/man1/authpass.1"
+	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/authpass.1" "$(BIT_MAN_PREFIX)/man1/authpass.1"
+	cp "doc/man/esp.1" "$(BIT_VAPP_PREFIX)/doc/man1/esp.1"
+	rm -f "$(BIT_MAN_PREFIX)/man1/esp.1"
+	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/esp.1" "$(BIT_MAN_PREFIX)/man1/esp.1"
+	cp "doc/man/http.1" "$(BIT_VAPP_PREFIX)/doc/man1/http.1"
+	rm -f "$(BIT_MAN_PREFIX)/man1/http.1"
+	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/http.1" "$(BIT_MAN_PREFIX)/man1/http.1"
+	cp "doc/man/makerom.1" "$(BIT_VAPP_PREFIX)/doc/man1/makerom.1"
+	rm -f "$(BIT_MAN_PREFIX)/man1/makerom.1"
+	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/makerom.1" "$(BIT_MAN_PREFIX)/man1/makerom.1"
+	cp "doc/man/manager.1" "$(BIT_VAPP_PREFIX)/doc/man1/manager.1"
+	rm -f "$(BIT_MAN_PREFIX)/man1/manager.1"
+	ln -s "$(BIT_VAPP_PREFIX)/doc/man1/manager.1" "$(BIT_MAN_PREFIX)/man1/manager.1"
+	mkdir -p "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons"
+	cp "package/macosx/com.embedthis.appweb.plist" "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons/com.embedthis.appweb.plist"
+	[ `id -u` = 0 ] && chown root:wheel "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons/com.embedthis.appweb.plist"
+	chmod 644 "$(BIT_ROOT_PREFIX)/Library/LaunchDaemons/com.embedthis.appweb.plist"
+	echo 'set LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_CACHE_PREFIX)"\nDocuments "$(BIT_WEB_PREFIX)\nListen 80\n' >$(BIT_ETC_PREFIX)/install.conf
 
 #
 #   start
@@ -1327,7 +1538,23 @@ DEPS_97 += build
 DEPS_97 += stop
 
 uninstall: $(DEPS_97)
-	cd package;  ; cd ..
+	rm -f "$(BIT_ETC_PREFIX)/appweb.conf"
+	rm -f "$(BIT_ETC_PREFIX)/esp.conf"
+	rm -f "$(BIT_ETC_PREFIX)/mine.types"
+	rm -f "$(BIT_ETC_PREFIX)/install.conf"
+	rm -fr "$(BIT_INC_PREFIX)/appweb"
+	rm -fr "$(BIT_WEB_PREFIX)"
+	rm -fr "$(BIT_SPOOL_PREFIX)"
+	rm -fr "$(BIT_CACHE_PREFIX)"
+	rm -fr "$(BIT_LOG_PREFIX)"
+	rm -fr "$(BIT_VAPP_PREFIX)"
+	rmdir -p "$(BIT_ETC_PREFIX)" 2>/dev/null ; true
+	rmdir -p "$(BIT_WEB_PREFIX)" 2>/dev/null ; true
+	rmdir -p "$(BIT_LOG_PREFIX)" 2>/dev/null ; true
+	rmdir -p "$(BIT_SPOOL_PREFIX)" 2>/dev/null ; true
+	rmdir -p "$(BIT_CACHE_PREFIX)" 2>/dev/null ; true
+	rm -f "$(BIT_APP_PREFIX)/latest"
+	rmdir -p "$(BIT_APP_PREFIX)" 2>/dev/null ; true
 
 #
 #   genslink

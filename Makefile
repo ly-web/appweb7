@@ -38,8 +38,7 @@ all compile:
 	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 	@echo '      [Info] You can now install via "sudo make install" or run Appweb via: "sudo make run"'
 	@echo "      [Info] To run locally, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path."
-	@echo "      [Info] To run locally, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path."
-	@echo ''
+	@echo ""
 
 clean clobber install installBinary uninstall run:
 	@echo '       [Run] $(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@'
