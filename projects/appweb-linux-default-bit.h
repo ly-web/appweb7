@@ -136,6 +136,39 @@
 #ifndef BIT_PRODUCT
     #define BIT_PRODUCT "appweb"
 #endif
+#ifndef BIT_PROJECTS_CGI
+    #define BIT_PROJECTS_CGI 1
+#endif
+#ifndef BIT_PROJECTS_EJSCRIPT
+    #define BIT_PROJECTS_EJSCRIPT 0
+#endif
+#ifndef BIT_PROJECTS_ESP
+    #define BIT_PROJECTS_ESP 1
+#endif
+#ifndef BIT_PROJECTS_EST
+    #define BIT_PROJECTS_EST 0
+#endif
+#ifndef BIT_PROJECTS_MATRIXSSL
+    #define BIT_PROJECTS_MATRIXSSL 0
+#endif
+#ifndef BIT_PROJECTS_MDB
+    #define BIT_PROJECTS_MDB 1
+#endif
+#ifndef BIT_PROJECTS_OPENSSL
+    #define BIT_PROJECTS_OPENSSL 0
+#endif
+#ifndef BIT_PROJECTS_PHP
+    #define BIT_PROJECTS_PHP 0
+#endif
+#ifndef BIT_PROJECTS_SDB
+    #define BIT_PROJECTS_SDB 0
+#endif
+#ifndef BIT_PROJECTS_SQLITE
+    #define BIT_PROJECTS_SQLITE 0
+#endif
+#ifndef BIT_PROJECTS_SSL
+    #define BIT_PROJECTS_SSL 0
+#endif
 #ifndef BIT_REQUIRES
     #define BIT_REQUIRES "ejscript,est,sdb,compiler,lib,link,pcre"
 #endif
@@ -321,13 +354,13 @@
     #define BIT_PACK_PCRE 1
 #endif
 #ifndef BIT_PACK_PHP
-    #define BIT_PACK_PHP 0
+    #define BIT_PACK_PHP 1
 #endif
 #ifndef BIT_PACK_PMAKER
     #define BIT_PACK_PMAKER 0
 #endif
 #ifndef BIT_PACK_SDB
-    #define BIT_PACK_SDB 1
+    #define BIT_PACK_SDB 0
 #endif
 #ifndef BIT_PACK_SQLITE
     #define BIT_PACK_SQLITE 1

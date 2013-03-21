@@ -49,6 +49,11 @@ Bit.load({
         manifest: 'package/manifest.bit',
 
         /*
+            Name and path of the appweb config file. Defaults to "./appweb.conf" if empty.
+         */
+        configFile: '',
+
+        /*
             Enable a debug build with debug symbols and without optimization
          */
         debug: true,
@@ -132,14 +137,26 @@ Bit.load({
         },
 
         /*
+            Pack settings for when generating projects
+         */
+        projects: {
+            cgi: true,
+            ejscript: false,
+            esp: true,
+            est: false,
+            matrixssl: false,
+            mdb: true,
+            openssl: false,
+            php: false,
+            sdb: false,
+            sqlite: false,
+            ssl: false,
+        },
+
+        /*
             Tailor the optimization for size|speed
          */
         tune: 'size',
-
-        /*
-            Name and path of the appweb config file. Defaults to "./appweb.conf" if empty.
-         */
-        configFile: '',
 
         /*
             Initial home directory for the server
@@ -191,19 +208,19 @@ Bit.load({
         },
     },
 
-    scripts: {
+    __scripts: {
         /* Want est,ssl and sqlite support included, but disabled */
         prebitheader: "
-            if (bit.generating) bit.packs.est.enable = 0
-            if (bit.generating) bit.packs.ssl.enable = 0
-            if (bit.generating) bit.packs.sqlite.enable = 0
-            if (bit.generating) bit.packs.sdb.enable = 0
+            if (bit.generating && bit.packs.est) bit.packs.est.enable = 0
+            if (bit.generating && bit.packs.ssl) bit.packs.ssl.enable = 0
+            if (bit.generating && bit.packs.sqlite) bit.packs.sqlite.enable = 0
+            if (bit.generating && bit.packs.sdb) bit.packs.sdb.enable = 0
         ",
         pregen: "
-            if (bit.generating) bit.packs.est.enable = 0
-            if (bit.generating) bit.packs.ssl.enable = 0
-            if (bit.generating) bit.packs.sqlite.enable = 0
-            if (bit.generating) bit.packs.sdb.enable = 0
+            if (bit.generating && bit.packs.est) bit.packs.est.enable = 0
+            if (bit.generating && bit.packs.ssl) bit.packs.ssl.enable = 0
+            if (bit.generating && bit.packs.sqlite) bit.packs.sqlite.enable = 0
+            if (bit.generating && bit.packs.sdb) bit.packs.sdb.enable = 0
         ",
     },
     packs: {
