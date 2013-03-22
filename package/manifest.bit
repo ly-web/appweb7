@@ -97,6 +97,24 @@ Bit.load({
                 set:        'core',
                 requires:   'ssl',
 
+            },{ from:        [
+                    '${BIN}/libssl*${SHOBJ}*',
+                    '${BIN}/libcrypto*${SHOBJ}*',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.platform.os != 'windows'",
+                requires:   'openssl',
+
+            },{ from:        [
+                    '${BIN}/libeay32${SHOBJ}',
+                    '${BIN}/ssleay32${SHOBJ}',
+                ],
+                to:         '${abin}/',
+                set:        'core',
+                enable:     "bit.platform.os == 'windows'",
+                requires:   'openssl',
+
             },{ from:       '${BIN}/libest${SHOBJ}',
                 to:         '${abin}/',
                 set:        'core',
