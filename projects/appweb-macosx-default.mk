@@ -138,6 +138,9 @@ endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 TARGETS            += $(CONFIG)/bin/libmod_ejs.dylib
 endif
+ifeq ($(BIT_PACK_PHP),1)
+TARGETS            += $(CONFIG)/bin/libmod_php.dylib
+endif
 ifeq ($(BIT_PACK_SSL),1)
 TARGETS            += $(CONFIG)/bin/libmod_ssl.dylib
 endif
@@ -188,73 +191,75 @@ prep:
 	fi; true
 
 clean:
-	rm -f "$(CONFIG)/bin/libmpr.dylib"
-	rm -f "$(CONFIG)/bin/libmprssl.dylib"
-	rm -f "$(CONFIG)/bin/appman"
-	rm -f "$(CONFIG)/bin/makerom"
-	rm -f "$(CONFIG)/bin/libest.dylib"
-	rm -f "$(CONFIG)/bin/ca.crt"
-	rm -f "$(CONFIG)/bin/libpcre.dylib"
-	rm -f "$(CONFIG)/bin/libhttp.dylib"
-	rm -f "$(CONFIG)/bin/http"
-	rm -f "$(CONFIG)/bin/libsqlite3.dylib"
-	rm -f "$(CONFIG)/bin/sqlite"
-	rm -f "$(CONFIG)/bin/libappweb.dylib"
-	rm -f "$(CONFIG)/bin/libmod_esp.dylib"
-	rm -f "$(CONFIG)/bin/esp"
-	rm -f "$(CONFIG)/bin/esp.conf"
-	rm -f "src/server/esp.conf"
-	rm -f "$(CONFIG)/bin/esp-www"
-	rm -f "$(CONFIG)/bin/esp-appweb.conf"
-	rm -f "$(CONFIG)/bin/libejs.dylib"
-	rm -f "$(CONFIG)/bin/ejs"
-	rm -f "$(CONFIG)/bin/ejsc"
-	rm -f "$(CONFIG)/bin/libmod_cgi.dylib"
-	rm -f "$(CONFIG)/bin/libmod_ejs.dylib"
-	rm -f "$(CONFIG)/bin/libmod_ssl.dylib"
-	rm -f "$(CONFIG)/bin/authpass"
-	rm -f "$(CONFIG)/bin/cgiProgram"
-	rm -f "$(CONFIG)/bin/libslink.dylib"
-	rm -f "$(CONFIG)/bin/appweb"
-	rm -f "$(CONFIG)/bin/testAppweb"
-	rm -f "test/web/js"
-	rm -f "$(CONFIG)/obj/mprLib.o"
-	rm -f "$(CONFIG)/obj/mprSsl.o"
-	rm -f "$(CONFIG)/obj/manager.o"
-	rm -f "$(CONFIG)/obj/makerom.o"
-	rm -f "$(CONFIG)/obj/estLib.o"
-	rm -f "$(CONFIG)/obj/pcre.o"
-	rm -f "$(CONFIG)/obj/httpLib.o"
-	rm -f "$(CONFIG)/obj/http.o"
-	rm -f "$(CONFIG)/obj/sqlite3.o"
-	rm -f "$(CONFIG)/obj/sqlite.o"
-	rm -f "$(CONFIG)/obj/config.o"
-	rm -f "$(CONFIG)/obj/convenience.o"
-	rm -f "$(CONFIG)/obj/dirHandler.o"
-	rm -f "$(CONFIG)/obj/fileHandler.o"
-	rm -f "$(CONFIG)/obj/log.o"
-	rm -f "$(CONFIG)/obj/server.o"
-	rm -f "$(CONFIG)/obj/edi.o"
-	rm -f "$(CONFIG)/obj/esp.o"
-	rm -f "$(CONFIG)/obj/espAbbrev.o"
-	rm -f "$(CONFIG)/obj/espFramework.o"
-	rm -f "$(CONFIG)/obj/espHandler.o"
-	rm -f "$(CONFIG)/obj/espHtml.o"
-	rm -f "$(CONFIG)/obj/espTemplate.o"
-	rm -f "$(CONFIG)/obj/mdb.o"
-	rm -f "$(CONFIG)/obj/sdb.o"
-	rm -f "$(CONFIG)/obj/ejsLib.o"
-	rm -f "$(CONFIG)/obj/ejs.o"
-	rm -f "$(CONFIG)/obj/ejsc.o"
-	rm -f "$(CONFIG)/obj/cgiHandler.o"
-	rm -f "$(CONFIG)/obj/ejsHandler.o"
-	rm -f "$(CONFIG)/obj/sslModule.o"
-	rm -f "$(CONFIG)/obj/authpass.o"
-	rm -f "$(CONFIG)/obj/cgiProgram.o"
-	rm -f "$(CONFIG)/obj/slink.o"
-	rm -f "$(CONFIG)/obj/appweb.o"
-	rm -f "$(CONFIG)/obj/testAppweb.o"
-	rm -f "$(CONFIG)/obj/testHttp.o"
+	rm -fr "$(CONFIG)/bin/libmpr.dylib"
+	rm -fr "$(CONFIG)/bin/libmprssl.dylib"
+	rm -fr "$(CONFIG)/bin/appman"
+	rm -fr "$(CONFIG)/bin/makerom"
+	rm -fr "$(CONFIG)/bin/libest.dylib"
+	rm -fr "$(CONFIG)/bin/ca.crt"
+	rm -fr "$(CONFIG)/bin/libpcre.dylib"
+	rm -fr "$(CONFIG)/bin/libhttp.dylib"
+	rm -fr "$(CONFIG)/bin/http"
+	rm -fr "$(CONFIG)/bin/libsqlite3.dylib"
+	rm -fr "$(CONFIG)/bin/sqlite"
+	rm -fr "$(CONFIG)/bin/libappweb.dylib"
+	rm -fr "$(CONFIG)/bin/libmod_esp.dylib"
+	rm -fr "$(CONFIG)/bin/esp"
+	rm -fr "$(CONFIG)/bin/esp.conf"
+	rm -fr "src/server/esp.conf"
+	rm -fr "$(CONFIG)/bin/esp-www"
+	rm -fr "$(CONFIG)/bin/esp-appweb.conf"
+	rm -fr "$(CONFIG)/bin/libejs.dylib"
+	rm -fr "$(CONFIG)/bin/ejs"
+	rm -fr "$(CONFIG)/bin/ejsc"
+	rm -fr "$(CONFIG)/bin/libmod_cgi.dylib"
+	rm -fr "$(CONFIG)/bin/libmod_ejs.dylib"
+	rm -fr "$(CONFIG)/bin/libmod_php.dylib"
+	rm -fr "$(CONFIG)/bin/libmod_ssl.dylib"
+	rm -fr "$(CONFIG)/bin/authpass"
+	rm -fr "$(CONFIG)/bin/cgiProgram"
+	rm -fr "$(CONFIG)/bin/libslink.dylib"
+	rm -fr "$(CONFIG)/bin/appweb"
+	rm -fr "$(CONFIG)/bin/testAppweb"
+	rm -fr "test/web/js"
+	rm -fr "$(CONFIG)/obj/mprLib.o"
+	rm -fr "$(CONFIG)/obj/mprSsl.o"
+	rm -fr "$(CONFIG)/obj/manager.o"
+	rm -fr "$(CONFIG)/obj/makerom.o"
+	rm -fr "$(CONFIG)/obj/estLib.o"
+	rm -fr "$(CONFIG)/obj/pcre.o"
+	rm -fr "$(CONFIG)/obj/httpLib.o"
+	rm -fr "$(CONFIG)/obj/http.o"
+	rm -fr "$(CONFIG)/obj/sqlite3.o"
+	rm -fr "$(CONFIG)/obj/sqlite.o"
+	rm -fr "$(CONFIG)/obj/config.o"
+	rm -fr "$(CONFIG)/obj/convenience.o"
+	rm -fr "$(CONFIG)/obj/dirHandler.o"
+	rm -fr "$(CONFIG)/obj/fileHandler.o"
+	rm -fr "$(CONFIG)/obj/log.o"
+	rm -fr "$(CONFIG)/obj/server.o"
+	rm -fr "$(CONFIG)/obj/edi.o"
+	rm -fr "$(CONFIG)/obj/esp.o"
+	rm -fr "$(CONFIG)/obj/espAbbrev.o"
+	rm -fr "$(CONFIG)/obj/espFramework.o"
+	rm -fr "$(CONFIG)/obj/espHandler.o"
+	rm -fr "$(CONFIG)/obj/espHtml.o"
+	rm -fr "$(CONFIG)/obj/espTemplate.o"
+	rm -fr "$(CONFIG)/obj/mdb.o"
+	rm -fr "$(CONFIG)/obj/sdb.o"
+	rm -fr "$(CONFIG)/obj/ejsLib.o"
+	rm -fr "$(CONFIG)/obj/ejs.o"
+	rm -fr "$(CONFIG)/obj/ejsc.o"
+	rm -fr "$(CONFIG)/obj/cgiHandler.o"
+	rm -fr "$(CONFIG)/obj/ejsHandler.o"
+	rm -fr "$(CONFIG)/obj/phpHandler.o"
+	rm -fr "$(CONFIG)/obj/sslModule.o"
+	rm -fr "$(CONFIG)/obj/authpass.o"
+	rm -fr "$(CONFIG)/obj/cgiProgram.o"
+	rm -fr "$(CONFIG)/obj/slink.o"
+	rm -fr "$(CONFIG)/obj/appweb.o"
+	rm -fr "$(CONFIG)/obj/testAppweb.o"
+	rm -fr "$(CONFIG)/obj/testHttp.o"
 
 clobber: clean
 	rm -fr ./$(CONFIG)
@@ -495,7 +500,7 @@ LIBS_22 += -lmpr
 
 $(CONFIG)/bin/libhttp.dylib: $(DEPS_22)
 	@echo '      [Link] libhttp'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/httpLib.o $(LIBS_22) $(LIBS_22) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/httpLib.o $(LIBS_22) $(LIBS_22) $(LIBS) -lpam 
 
 #
 #   http.o
@@ -520,7 +525,7 @@ LIBS_24 += -lmpr
 
 $(CONFIG)/bin/http: $(DEPS_24)
 	@echo '      [Link] http'
-	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBS_24) $(LIBS_24) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBS_24) $(LIBS_24) $(LIBS) -lpam 
 
 #
 #   sqlite3.h
@@ -688,7 +693,7 @@ LIBS_38 += -lmpr
 
 $(CONFIG)/bin/libappweb.dylib: $(DEPS_38)
 	@echo '      [Link] libappweb'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o $(LIBS_38) $(LIBS_38) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o $(LIBS_38) $(LIBS_38) $(LIBS) -lpam 
 
 #
 #   edi.h
@@ -860,7 +865,7 @@ endif
 
 $(CONFIG)/bin/libmod_esp.dylib: $(DEPS_52)
 	@echo '      [Link] libmod_esp'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS_52) $(LIBS_52) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS_52) $(LIBS_52) $(LIBS) -lpam 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -891,7 +896,7 @@ endif
 
 $(CONFIG)/bin/esp: $(DEPS_53)
 	@echo '      [Link] esp'
-	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS_53) $(LIBS_53) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS_53) $(LIBS_53) $(LIBS) -lpam 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -1027,7 +1032,7 @@ endif
 
 $(CONFIG)/bin/libejs.dylib: $(DEPS_62)
 	@echo '      [Link] libejs'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/ejsLib.o $(LIBS_62) $(LIBS_62) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/ejsLib.o $(LIBS_62) $(LIBS_62) $(LIBS) -lpam 
 endif
 
 #
@@ -1065,7 +1070,7 @@ endif
 
 $(CONFIG)/bin/ejs: $(DEPS_64)
 	@echo '      [Link] ejs'
-	$(CC) -o $(CONFIG)/bin/ejs -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o $(LIBS_64) $(LIBS_64) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/ejs -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o $(LIBS_64) $(LIBS_64) $(LIBS) -lpam -ledit 
 endif
 
 #
@@ -1103,7 +1108,7 @@ endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_66)
 	@echo '      [Link] ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LIBS_66) $(LIBS_66) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LIBS_66) $(LIBS_66) $(LIBS) -lpam 
 endif
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
@@ -1144,7 +1149,7 @@ LIBS_69 += -lmpr
 
 $(CONFIG)/bin/libmod_cgi.dylib: $(DEPS_69)
 	@echo '      [Link] libmod_cgi'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/cgiHandler.o $(LIBS_69) $(LIBS_69) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/cgiHandler.o $(LIBS_69) $(LIBS_69) $(LIBS) -lpam 
 endif
 
 #
@@ -1184,17 +1189,45 @@ endif
 
 $(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_71)
 	@echo '      [Link] libmod_ejs'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/ejsHandler.o $(LIBS_71) $(LIBS_71) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/ejsHandler.o $(LIBS_71) $(LIBS_71) $(LIBS) -lpam 
+endif
+
+#
+#   phpHandler.o
+#
+DEPS_72 += $(CONFIG)/inc/bit.h
+DEPS_72 += $(CONFIG)/inc/appweb.h
+
+$(CONFIG)/obj/phpHandler.o: \
+    src/modules/phpHandler.c $(DEPS_72)
+	@echo '   [Compile] src/modules/phpHandler.c'
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(DFLAGS) $(IFLAGS) -I/Users/mob/git/packages-macosx-x64/php/latest -I/Users/mob/git/packages-macosx-x64/php/latest/main -I/Users/mob/git/packages-macosx-x64/php/latest/Zend -I/Users/mob/git/packages-macosx-x64/php/latest/TSRM src/modules/phpHandler.c
+
+ifeq ($(BIT_PACK_PHP),1)
+#
+#   libmod_php
+#
+DEPS_73 += $(CONFIG)/bin/libappweb.dylib
+DEPS_73 += $(CONFIG)/obj/phpHandler.o
+
+LIBS_73 += -lappweb
+LIBS_73 += -lhttp
+LIBS_73 += -lpcre
+LIBS_73 += -lmpr
+
+$(CONFIG)/bin/libmod_php.dylib: $(DEPS_73)
+	@echo '      [Link] libmod_php'
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib $(LDFLAGS) -L/Users/mob/git/packages-macosx-x64/php/latest/.libs $(LIBPATHS) -install_name @rpath/libmod_php.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/phpHandler.o $(LIBS_73) $(LIBS_73) $(LIBS) -lpam -lphp5 
 endif
 
 #
 #   sslModule.o
 #
-DEPS_72 += $(CONFIG)/inc/bit.h
-DEPS_72 += $(CONFIG)/inc/appweb.h
+DEPS_74 += $(CONFIG)/inc/bit.h
+DEPS_74 += $(CONFIG)/inc/appweb.h
 
 $(CONFIG)/obj/sslModule.o: \
-    src/modules/sslModule.c $(DEPS_72)
+    src/modules/sslModule.c $(DEPS_74)
 	@echo '   [Compile] src/modules/sslModule.c'
 	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/modules/sslModule.c
 
@@ -1202,52 +1235,52 @@ ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmod_ssl
 #
-DEPS_73 += $(CONFIG)/bin/libappweb.dylib
-DEPS_73 += $(CONFIG)/obj/sslModule.o
-
-LIBS_73 += -lappweb
-LIBS_73 += -lhttp
-LIBS_73 += -lpcre
-LIBS_73 += -lmpr
-
-$(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_73)
-	@echo '      [Link] libmod_ssl'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ssl.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/sslModule.o $(LIBS_73) $(LIBS_73) $(LIBS) 
-endif
-
-#
-#   authpass.o
-#
-DEPS_74 += $(CONFIG)/inc/bit.h
-DEPS_74 += $(CONFIG)/inc/appweb.h
-
-$(CONFIG)/obj/authpass.o: \
-    src/utils/authpass.c $(DEPS_74)
-	@echo '   [Compile] src/utils/authpass.c'
-	$(CC) -c -o $(CONFIG)/obj/authpass.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/authpass.c
-
-#
-#   authpass
-#
 DEPS_75 += $(CONFIG)/bin/libappweb.dylib
-DEPS_75 += $(CONFIG)/obj/authpass.o
+DEPS_75 += $(CONFIG)/obj/sslModule.o
 
 LIBS_75 += -lappweb
 LIBS_75 += -lhttp
 LIBS_75 += -lpcre
 LIBS_75 += -lmpr
 
-$(CONFIG)/bin/authpass: $(DEPS_75)
+$(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_75)
+	@echo '      [Link] libmod_ssl'
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ssl.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/sslModule.o $(LIBS_75) $(LIBS_75) $(LIBS) -lpam 
+endif
+
+#
+#   authpass.o
+#
+DEPS_76 += $(CONFIG)/inc/bit.h
+DEPS_76 += $(CONFIG)/inc/appweb.h
+
+$(CONFIG)/obj/authpass.o: \
+    src/utils/authpass.c $(DEPS_76)
+	@echo '   [Compile] src/utils/authpass.c'
+	$(CC) -c -o $(CONFIG)/obj/authpass.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/authpass.c
+
+#
+#   authpass
+#
+DEPS_77 += $(CONFIG)/bin/libappweb.dylib
+DEPS_77 += $(CONFIG)/obj/authpass.o
+
+LIBS_77 += -lappweb
+LIBS_77 += -lhttp
+LIBS_77 += -lpcre
+LIBS_77 += -lmpr
+
+$(CONFIG)/bin/authpass: $(DEPS_77)
 	@echo '      [Link] authpass'
-	$(CC) -o $(CONFIG)/bin/authpass -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LIBS_75) $(LIBS_75) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/authpass -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LIBS_77) $(LIBS_77) $(LIBS) -lpam 
 
 #
 #   cgiProgram.o
 #
-DEPS_76 += $(CONFIG)/inc/bit.h
+DEPS_78 += $(CONFIG)/inc/bit.h
 
 $(CONFIG)/obj/cgiProgram.o: \
-    src/utils/cgiProgram.c $(DEPS_76)
+    src/utils/cgiProgram.c $(DEPS_78)
 	@echo '   [Compile] src/utils/cgiProgram.c'
 	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/cgiProgram.c
 
@@ -1255,9 +1288,9 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   cgiProgram
 #
-DEPS_77 += $(CONFIG)/obj/cgiProgram.o
+DEPS_79 += $(CONFIG)/obj/cgiProgram.o
 
-$(CONFIG)/bin/cgiProgram: $(DEPS_77)
+$(CONFIG)/bin/cgiProgram: $(DEPS_79)
 	@echo '      [Link] cgiProgram'
 	$(CC) -o $(CONFIG)/bin/cgiProgram -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiProgram.o $(LIBS) 
 endif
@@ -1265,88 +1298,32 @@ endif
 #
 #   slink.c
 #
-src/server/slink.c: $(DEPS_78)
+src/server/slink.c: $(DEPS_80)
 	cd src/server; [ ! -f slink.c ] && cp slink.empty slink.c ; true ; cd ../..
 
 #
 #   slink.o
 #
-DEPS_79 += $(CONFIG)/inc/bit.h
-DEPS_79 += $(CONFIG)/inc/esp.h
+DEPS_81 += $(CONFIG)/inc/bit.h
+DEPS_81 += $(CONFIG)/inc/esp.h
 
 $(CONFIG)/obj/slink.o: \
-    src/server/slink.c $(DEPS_79)
+    src/server/slink.c $(DEPS_81)
 	@echo '   [Compile] src/server/slink.c'
 	$(CC) -c -o $(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/server/slink.c
 
 #
 #   libslink
 #
-DEPS_80 += src/server/slink.c
+DEPS_82 += src/server/slink.c
 ifeq ($(BIT_PACK_ESP),1)
-    DEPS_80 += $(CONFIG)/bin/esp
+    DEPS_82 += $(CONFIG)/bin/esp
 endif
-ifeq ($(BIT_PACK_ESP),1)
-    DEPS_80 += $(CONFIG)/bin/libmod_esp.dylib
-endif
-DEPS_80 += $(CONFIG)/obj/slink.o
-
-ifeq ($(BIT_PACK_ESP),1)
-    LIBS_80 += -lmod_esp
-endif
-LIBS_80 += -lappweb
-LIBS_80 += -lhttp
-LIBS_80 += -lpcre
-LIBS_80 += -lmpr
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_80 += -lsqlite3
-endif
-
-$(CONFIG)/bin/libslink.dylib: $(DEPS_80)
-	@echo '      [Link] libslink'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/slink.o $(LIBS_80) $(LIBS_80) $(LIBS) 
-
-#
-#   appweb.o
-#
-DEPS_81 += $(CONFIG)/inc/bit.h
-DEPS_81 += $(CONFIG)/inc/appweb.h
-DEPS_81 += $(CONFIG)/inc/esp.h
-
-$(CONFIG)/obj/appweb.o: \
-    src/server/appweb.c $(DEPS_81)
-	@echo '   [Compile] src/server/appweb.c'
-	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/server/appweb.c
-
-#
-#   appweb
-#
-DEPS_82 += $(CONFIG)/bin/libappweb.dylib
 ifeq ($(BIT_PACK_ESP),1)
     DEPS_82 += $(CONFIG)/bin/libmod_esp.dylib
 endif
-ifeq ($(BIT_PACK_SSL),1)
-    DEPS_82 += $(CONFIG)/bin/libmod_ssl.dylib
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    DEPS_82 += $(CONFIG)/bin/libmod_ejs.dylib
-endif
-ifeq ($(BIT_PACK_CGI),1)
-    DEPS_82 += $(CONFIG)/bin/libmod_cgi.dylib
-endif
-DEPS_82 += $(CONFIG)/bin/libslink.dylib
-DEPS_82 += $(CONFIG)/obj/appweb.o
+DEPS_82 += $(CONFIG)/obj/slink.o
 
-LIBS_82 += -lslink
-ifeq ($(BIT_PACK_CGI),1)
-    LIBS_82 += -lmod_cgi
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_82 += -lmod_ejs
-endif
-ifeq ($(BIT_PACK_SSL),1)
-    LIBS_82 += -lmod_ssl
-endif
 ifeq ($(BIT_PACK_ESP),1)
     LIBS_82 += -lmod_esp
 endif
@@ -1357,27 +1334,89 @@ LIBS_82 += -lmpr
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_82 += -lsqlite3
 endif
+
+$(CONFIG)/bin/libslink.dylib: $(DEPS_82)
+	@echo '      [Link] libslink'
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.4.0 -current_version 4.4.0 $(CONFIG)/obj/slink.o $(LIBS_82) $(LIBS_82) $(LIBS) -lpam 
+
+#
+#   appweb.o
+#
+DEPS_83 += $(CONFIG)/inc/bit.h
+DEPS_83 += $(CONFIG)/inc/appweb.h
+DEPS_83 += $(CONFIG)/inc/esp.h
+
+$(CONFIG)/obj/appweb.o: \
+    src/server/appweb.c $(DEPS_83)
+	@echo '   [Compile] src/server/appweb.c'
+	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I/Users/mob/git/packages-macosx-x64/php/latest -I/Users/mob/git/packages-macosx-x64/php/latest/main -I/Users/mob/git/packages-macosx-x64/php/latest/Zend -I/Users/mob/git/packages-macosx-x64/php/latest/TSRM src/server/appweb.c
+
+#
+#   appweb
+#
+DEPS_84 += $(CONFIG)/bin/libappweb.dylib
+ifeq ($(BIT_PACK_ESP),1)
+    DEPS_84 += $(CONFIG)/bin/libmod_esp.dylib
+endif
+ifeq ($(BIT_PACK_SSL),1)
+    DEPS_84 += $(CONFIG)/bin/libmod_ssl.dylib
+endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_82 += -lejs
+    DEPS_84 += $(CONFIG)/bin/libmod_ejs.dylib
+endif
+ifeq ($(BIT_PACK_PHP),1)
+    DEPS_84 += $(CONFIG)/bin/libmod_php.dylib
+endif
+ifeq ($(BIT_PACK_CGI),1)
+    DEPS_84 += $(CONFIG)/bin/libmod_cgi.dylib
+endif
+DEPS_84 += $(CONFIG)/bin/libslink.dylib
+DEPS_84 += $(CONFIG)/obj/appweb.o
+
+LIBS_84 += -lslink
+ifeq ($(BIT_PACK_CGI),1)
+    LIBS_84 += -lmod_cgi
+endif
+ifeq ($(BIT_PACK_PHP),1)
+    LIBS_84 += -lmod_php
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+    LIBS_84 += -lmod_ejs
+endif
+ifeq ($(BIT_PACK_SSL),1)
+    LIBS_84 += -lmod_ssl
+endif
+ifeq ($(BIT_PACK_ESP),1)
+    LIBS_84 += -lmod_esp
+endif
+LIBS_84 += -lappweb
+LIBS_84 += -lhttp
+LIBS_84 += -lpcre
+LIBS_84 += -lmpr
+ifeq ($(BIT_PACK_SQLITE),1)
+    LIBS_84 += -lsqlite3
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+    LIBS_84 += -lejs
 endif
 ifeq ($(BIT_PACK_EST),1)
-    LIBS_82 += -lest
+    LIBS_84 += -lest
 endif
 
-$(CONFIG)/bin/appweb: $(DEPS_82)
+$(CONFIG)/bin/appweb: $(DEPS_84)
 	@echo '      [Link] appweb'
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBS_82) $(LIBS_82) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) -L/Users/mob/git/packages-macosx-x64/php/latest/.libs $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBS_84) $(LIBS_84) $(LIBS) -lpam -lphp5 
 
 #
 #   server-cache
 #
-src/server/cache: $(DEPS_83)
+src/server/cache: $(DEPS_85)
 	cd src/server; mkdir -p cache ; cd ../..
 
 #
 #   testAppweb.h
 #
-$(CONFIG)/inc/testAppweb.h: $(DEPS_84)
+$(CONFIG)/inc/testAppweb.h: $(DEPS_86)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "test/testAppweb.h" "$(CONFIG)/inc/testAppweb.h"
@@ -1385,53 +1424,53 @@ $(CONFIG)/inc/testAppweb.h: $(DEPS_84)
 #
 #   testAppweb.o
 #
-DEPS_85 += $(CONFIG)/inc/bit.h
-DEPS_85 += $(CONFIG)/inc/testAppweb.h
-DEPS_85 += $(CONFIG)/inc/mpr.h
-DEPS_85 += $(CONFIG)/inc/http.h
+DEPS_87 += $(CONFIG)/inc/bit.h
+DEPS_87 += $(CONFIG)/inc/testAppweb.h
+DEPS_87 += $(CONFIG)/inc/mpr.h
+DEPS_87 += $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/testAppweb.o: \
-    test/testAppweb.c $(DEPS_85)
+    test/testAppweb.c $(DEPS_87)
 	@echo '   [Compile] test/testAppweb.c'
 	$(CC) -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testAppweb.c
 
 #
 #   testHttp.o
 #
-DEPS_86 += $(CONFIG)/inc/bit.h
-DEPS_86 += $(CONFIG)/inc/testAppweb.h
+DEPS_88 += $(CONFIG)/inc/bit.h
+DEPS_88 += $(CONFIG)/inc/testAppweb.h
 
 $(CONFIG)/obj/testHttp.o: \
-    test/testHttp.c $(DEPS_86)
+    test/testHttp.c $(DEPS_88)
 	@echo '   [Compile] test/testHttp.c'
 	$(CC) -c -o $(CONFIG)/obj/testHttp.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testHttp.c
 
 #
 #   testAppweb
 #
-DEPS_87 += $(CONFIG)/bin/libappweb.dylib
-DEPS_87 += $(CONFIG)/inc/testAppweb.h
-DEPS_87 += $(CONFIG)/obj/testAppweb.o
-DEPS_87 += $(CONFIG)/obj/testHttp.o
+DEPS_89 += $(CONFIG)/bin/libappweb.dylib
+DEPS_89 += $(CONFIG)/inc/testAppweb.h
+DEPS_89 += $(CONFIG)/obj/testAppweb.o
+DEPS_89 += $(CONFIG)/obj/testHttp.o
 
-LIBS_87 += -lappweb
-LIBS_87 += -lhttp
-LIBS_87 += -lpcre
-LIBS_87 += -lmpr
+LIBS_89 += -lappweb
+LIBS_89 += -lhttp
+LIBS_89 += -lpcre
+LIBS_89 += -lmpr
 
-$(CONFIG)/bin/testAppweb: $(DEPS_87)
+$(CONFIG)/bin/testAppweb: $(DEPS_89)
 	@echo '      [Link] testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBS_87) $(LIBS_87) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/testAppweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBS_89) $(LIBS_89) $(LIBS) -lpam 
 
 ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-testScript
 #
 ifeq ($(BIT_PACK_CGI),1)
-    DEPS_88 += $(CONFIG)/bin/cgiProgram
+    DEPS_90 += $(CONFIG)/bin/cgiProgram
 endif
 
-test/cgi-bin/testScript: $(DEPS_88)
+test/cgi-bin/testScript: $(DEPS_90)
 	cd test; echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..
 endif
 
@@ -1439,7 +1478,7 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-cache.cgi
 #
-test/web/caching/cache.cgi: $(DEPS_89)
+test/web/caching/cache.cgi: $(DEPS_91)
 	cd test; echo "#!`type -p ejs`" >web/caching/cache.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; cd ..
 	cd test; chmod +x web/caching/cache.cgi ; cd ..
@@ -1449,7 +1488,7 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-basic.cgi
 #
-test/web/auth/basic/basic.cgi: $(DEPS_90)
+test/web/auth/basic/basic.cgi: $(DEPS_92)
 	cd test; echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; cd ..
 	cd test; chmod +x web/auth/basic/basic.cgi ; cd ..
@@ -1460,10 +1499,10 @@ ifeq ($(BIT_PACK_CGI),1)
 #   test-cgiProgram
 #
 ifeq ($(BIT_PACK_CGI),1)
-    DEPS_91 += $(CONFIG)/bin/cgiProgram
+    DEPS_93 += $(CONFIG)/bin/cgiProgram
 endif
 
-test/cgi-bin/cgiProgram: $(DEPS_91)
+test/cgi-bin/cgiProgram: $(DEPS_93)
 	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram ; cd ..
 	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram ; cd ..
 	cd test; cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program' ; cd ..
@@ -1474,9 +1513,9 @@ endif
 #
 #   test.js
 #
-DEPS_92 += src/esp/esp-www/files/static/js
+DEPS_94 += src/esp/esp-www/files/static/js
 
-test/web/js: $(DEPS_92)
+test/web/js: $(DEPS_94)
 	@echo '      [Copy] test/web/js'
 	mkdir -p "test/web/js"
 	cp "src/esp/esp-www/files/static/js/jquery-1.9.1.js" "test/web/js/jquery-1.9.1.js"
@@ -1490,16 +1529,16 @@ test/web/js: $(DEPS_92)
 #
 #   stop
 #
-DEPS_93 += compile
+DEPS_95 += compile
 
-stop: $(DEPS_93)
+stop: $(DEPS_95)
 
 #
 #   installBinary
 #
-DEPS_94 += stop
+DEPS_96 += stop
 
-installBinary: $(DEPS_94)
+installBinary: $(DEPS_96)
 	mkdir -p "$(BIT_APP_PREFIX)"
 	mkdir -p "$(BIT_VAPP_PREFIX)"
 	mkdir -p "$(BIT_ETC_PREFIX)"
@@ -1691,29 +1730,29 @@ endif
 #
 #   start
 #
-DEPS_95 += compile
-DEPS_95 += stop
+DEPS_97 += compile
+DEPS_97 += stop
 
-start: $(DEPS_95)
+start: $(DEPS_97)
 
 #
 #   install
 #
-DEPS_96 += stop
-DEPS_96 += installBinary
-DEPS_96 += start
+DEPS_98 += stop
+DEPS_98 += installBinary
+DEPS_98 += start
 
-install: $(DEPS_96)
+install: $(DEPS_98)
 	
 
 
 #
 #   uninstall
 #
-DEPS_97 += build
-DEPS_97 += stop
+DEPS_99 += build
+DEPS_99 += stop
 
-uninstall: $(DEPS_97)
+uninstall: $(DEPS_99)
 	rm -f "$(BIT_ETC_PREFIX)/appweb.conf"
 	rm -f "$(BIT_ETC_PREFIX)/esp.conf"
 	rm -f "$(BIT_ETC_PREFIX)/mine.types"
@@ -1735,22 +1774,22 @@ uninstall: $(DEPS_97)
 #
 #   genslink
 #
-genslink: $(DEPS_98)
+genslink: $(DEPS_100)
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
 #
 #   run
 #
-DEPS_99 += compile
+DEPS_101 += compile
 
-run: $(DEPS_99)
+run: $(DEPS_101)
 	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 
 #
 #   test-run
 #
-DEPS_100 += compile
+DEPS_102 += compile
 
-test-run: $(DEPS_100)
+test-run: $(DEPS_102)
 	cd test; ../$(CONFIG)/bin/appweb -v ; cd ..
 

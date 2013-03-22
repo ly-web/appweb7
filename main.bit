@@ -201,10 +201,10 @@ Bit.load({
             See package/package.bit for the install/package targets
          */
         projects: {
-            action: "genProjects('-without default -with ejscript -with est --with sdb')",
+            action: "genProjects('')",
         },
         mine: {
-            action: "genProjects('--without default -with ejscript -with est --with sdb', 'mine', Config.OS + '-' + Config.CPU)",
+            action: "genProjects('-with ejscript -with est -with sdb', 'mine', Config.OS + '-' + Config.CPU)",
         },
     },
 
