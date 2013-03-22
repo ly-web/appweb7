@@ -107,7 +107,7 @@
             manage state and respond to data packets. A queue can respond immediately to an incoming packet by
             processing or forwarding a packet in its put() method.  Alternatively, the queue can defer processing by
             queueing the packet on it's service queue and then waiting for it's service() method to be invoked.</p>
-            <p>If a queue does not define a put() method, the default put() method will be used which queues data onto the
+            <p>If a queue does not define a put() method, the default put() method will be used. This puts data onto the
             service queue. The default incoming put() method joins incoming packets into a single packet on the service
             queue.</p>
             <a id="packets"></a>
