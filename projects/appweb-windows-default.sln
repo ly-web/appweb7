@@ -249,21 +249,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appweb", "appweb-windows-de
 		{66002183-4B43-4751-B3F4-36AD8E08BE3C} = {66002183-4B43-4751-B3F4-36AD8E08BE3C}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
-		{F86F4757-A3B0-4561-86AB-D9C18115067F} = {F86F4757-A3B0-4561-86AB-D9C18115067F}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{37DA7898-F554-41DA-952B-DB4C4D29BA6C} = {37DA7898-F554-41DA-952B-DB4C4D29BA6C}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{00223A98-DC4F-4788-9985-B75B627B8D8C} = {00223A98-DC4F-4788-9985-B75B627B8D8C}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{F74783BD-C330-4790-9C56-FFB2435F1ECC} = {F74783BD-C330-4790-9C56-FFB2435F1ECC}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{F3B1DE60-C082-4CEA-801A-723DA98DC4B4} = {F3B1DE60-C082-4CEA-801A-723DA98DC4B4}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
 		{DFAA7C76-5A0A-4C3A-BFE0-892C7317630E} = {DFAA7C76-5A0A-4C3A-BFE0-892C7317630E}
 	EndProjectSection
 EndProject

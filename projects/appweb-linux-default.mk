@@ -270,6 +270,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
+	@echo NN 4.3.1-0
 
 #
 #   mpr.h
@@ -1354,52 +1355,19 @@ $(CONFIG)/obj/appweb.o: \
 #   appweb
 #
 DEPS_84 += $(CONFIG)/bin/libappweb.so
-ifeq ($(BIT_PACK_ESP),1)
-    DEPS_84 += $(CONFIG)/bin/libmod_esp.so
-endif
-ifeq ($(BIT_PACK_SSL),1)
-    DEPS_84 += $(CONFIG)/bin/libmod_ssl.so
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    DEPS_84 += $(CONFIG)/bin/libmod_ejs.so
-endif
-ifeq ($(BIT_PACK_PHP),1)
-    DEPS_84 += $(CONFIG)/bin/libmod_php.so
-endif
-ifeq ($(BIT_PACK_CGI),1)
-    DEPS_84 += $(CONFIG)/bin/libmod_cgi.so
-endif
 DEPS_84 += $(CONFIG)/bin/libslink.so
 DEPS_84 += $(CONFIG)/obj/appweb.o
 
 LIBS_84 += -lslink
-ifeq ($(BIT_PACK_CGI),1)
-    LIBS_84 += -lmod_cgi
-endif
-ifeq ($(BIT_PACK_PHP),1)
-    LIBS_84 += -lmod_php
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_84 += -lmod_ejs
-endif
-ifeq ($(BIT_PACK_SSL),1)
-    LIBS_84 += -lmod_ssl
-endif
-ifeq ($(BIT_PACK_ESP),1)
-    LIBS_84 += -lmod_esp
-endif
 LIBS_84 += -lappweb
 LIBS_84 += -lhttp
 LIBS_84 += -lpcre
 LIBS_84 += -lmpr
+ifeq ($(BIT_PACK_ESP),1)
+    LIBS_84 += -lmod_esp
+endif
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_84 += -lsqlite3
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_84 += -lejs
-endif
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_84 += -lest
 endif
 
 $(CONFIG)/bin/appweb: $(DEPS_84)
@@ -1410,6 +1378,7 @@ $(CONFIG)/bin/appweb: $(DEPS_84)
 #   server-cache
 #
 src/server/cache: $(DEPS_85)
+	cd src/server; mkdir -p cache ; cd ../..
 
 #
 #   testAppweb.h
@@ -1530,6 +1499,7 @@ test/web/js: $(DEPS_94)
 DEPS_95 += compile
 
 stop: $(DEPS_95)
+	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
@@ -1575,11 +1545,30 @@ endif
 	cp "$(CONFIG)/bin/libmpr.so" "$(BIT_VAPP_PREFIX)/bin/libmpr.so"
 	cp "$(CONFIG)/bin/libpcre.so" "$(BIT_VAPP_PREFIX)/bin/libpcre.so"
 	cp "$(CONFIG)/bin/libslink.so" "$(BIT_VAPP_PREFIX)/bin/libslink.so"
+ifeq ($(BIT_PACK_SSL),1)
+	cp "$(CONFIG)/bin/libmprssl.so" "$(BIT_VAPP_PREFIX)/bin/libmprssl.so"
+	cp "$(CONFIG)/bin/libmod_ssl.so" "$(BIT_VAPP_PREFIX)/bin/libmod_ssl.so"
+	cp "$(CONFIG)/bin/ca.crt" "$(BIT_VAPP_PREFIX)/bin/ca.crt"
+endif
+ifeq ($(BIT_PACK_EST),1)
+	cp "$(CONFIG)/bin/libest.so" "$(BIT_VAPP_PREFIX)/bin/libest.so"
+endif
+ifeq ($(BIT_PACK_SQLITE),1)
+	cp "$(CONFIG)/bin/libsqlite3.so" "$(BIT_VAPP_PREFIX)/bin/libsqlite3.so"
+endif
 ifeq ($(BIT_PACK_ESP),1)
 	cp "$(CONFIG)/bin/libmod_esp.so" "$(BIT_VAPP_PREFIX)/bin/libmod_esp.so"
 endif
 ifeq ($(BIT_PACK_CGI),1)
 	cp "$(CONFIG)/bin/libmod_cgi.so" "$(BIT_VAPP_PREFIX)/bin/libmod_cgi.so"
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+	cp "$(CONFIG)/bin/libejs.so" "$(BIT_VAPP_PREFIX)/bin/libejs.so"
+	cp "$(CONFIG)/bin/libmod_ejs.so" "$(BIT_VAPP_PREFIX)/bin/libmod_ejs.so"
+endif
+ifeq ($(BIT_PACK_PHP),1)
+	cp "$(CONFIG)/bin/libmod_php.so" "$(BIT_VAPP_PREFIX)/bin/libmod_php.so"
+	cp "$(CONFIG)/bin/libphp5.so" "$(BIT_VAPP_PREFIX)/bin/libphp5.so"
 endif
 ifeq ($(BIT_PACK_ESP),1)
 	cp "$(CONFIG)/bin/libmod_esp.so" "$(BIT_VAPP_PREFIX)/bin/libmod_esp.so"
@@ -1649,6 +1638,9 @@ endif
 	cp "src/server/web/test/test.py" "$(BIT_WEB_PREFIX)/test/test.py"
 	mkdir -p "$(BIT_ETC_PREFIX)"
 	cp "src/server/mime.types" "$(BIT_ETC_PREFIX)/mime.types"
+ifeq ($(BIT_PACK_PHP),1)
+	cp "src/server/php.ini" "$(BIT_ETC_PREFIX)/php.ini"
+endif
 	cp "src/server/appweb.conf" "$(BIT_ETC_PREFIX)/appweb.conf"
 	mkdir -p "$(BIT_VAPP_PREFIX)/inc"
 	cp "$(CONFIG)/inc/bit.h" "$(BIT_VAPP_PREFIX)/inc/bit.h"
@@ -1693,6 +1685,20 @@ ifeq ($(BIT_PACK_ESP),1)
 	rm -f "$(BIT_INC_PREFIX)/appweb/mdb.h"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/mdb.h" "$(BIT_INC_PREFIX)/appweb/mdb.h"
 endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+	cp "src/deps/ejs/ejs.h" "$(BIT_VAPP_PREFIX)/inc/ejs.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.h" "$(BIT_INC_PREFIX)/appweb/ejs.h"
+	cp "src/deps/ejs/ejs.slots.h" "$(BIT_VAPP_PREFIX)/inc/ejs.slots.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.slots.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.slots.h" "$(BIT_INC_PREFIX)/appweb/ejs.slots.h"
+	cp "src/deps/ejs/ejsByteGoto.h" "$(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h"
+	rm -f "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h"
+	ln -s "$(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h" "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h"
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+	cp "$(CONFIG)/bin/ejs.mod" "$(BIT_VAPP_PREFIX)/bin/ejs.mod"
+endif
 	mkdir -p "$(BIT_VAPP_PREFIX)/doc/man1"
 	cp "doc/man/appman.1" "$(BIT_VAPP_PREFIX)/doc/man1/appman.1"
 	mkdir -p "$(BIT_MAN_PREFIX)/man1"
@@ -1732,6 +1738,7 @@ DEPS_97 += compile
 DEPS_97 += stop
 
 start: $(DEPS_97)
+	./$(CONFIG)/bin/appman install enable start
 
 #
 #   install
@@ -1741,6 +1748,7 @@ DEPS_98 += installBinary
 DEPS_98 += start
 
 install: $(DEPS_98)
+	
 
 
 #
@@ -1772,6 +1780,7 @@ uninstall: $(DEPS_99)
 #   genslink
 #
 genslink: $(DEPS_100)
+	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
 #
 #   run
@@ -1779,4 +1788,5 @@ genslink: $(DEPS_100)
 DEPS_101 += compile
 
 run: $(DEPS_101)
+	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 

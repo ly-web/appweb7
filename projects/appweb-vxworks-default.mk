@@ -274,6 +274,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
+	@echo NN 4.3.1-0
 
 #
 #   mpr.h
@@ -1358,52 +1359,19 @@ $(CONFIG)/obj/appweb.o: \
 #   appweb
 #
 DEPS_84 += $(CONFIG)/bin/libappweb.out
-ifeq ($(BIT_PACK_ESP),1)
-    DEPS_84 += $(CONFIG)/bin/libmod_esp.out
-endif
-ifeq ($(BIT_PACK_SSL),1)
-    DEPS_84 += $(CONFIG)/bin/libmod_ssl.out
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    DEPS_84 += $(CONFIG)/bin/libmod_ejs.out
-endif
-ifeq ($(BIT_PACK_PHP),1)
-    DEPS_84 += $(CONFIG)/bin/libmod_php.out
-endif
-ifeq ($(BIT_PACK_CGI),1)
-    DEPS_84 += $(CONFIG)/bin/libmod_cgi.out
-endif
 DEPS_84 += $(CONFIG)/bin/libslink.out
 DEPS_84 += $(CONFIG)/obj/appweb.o
 
 LIBS_84 += -lslink
-ifeq ($(BIT_PACK_CGI),1)
-    LIBS_84 += -lmod_cgi
-endif
-ifeq ($(BIT_PACK_PHP),1)
-    LIBS_84 += -lmod_php
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_84 += -lmod_ejs
-endif
-ifeq ($(BIT_PACK_SSL),1)
-    LIBS_84 += -lmod_ssl
-endif
-ifeq ($(BIT_PACK_ESP),1)
-    LIBS_84 += -lmod_esp
-endif
 LIBS_84 += -lappweb
 LIBS_84 += -lhttp
 LIBS_84 += -lpcre
 LIBS_84 += -lmpr
+ifeq ($(BIT_PACK_ESP),1)
+    LIBS_84 += -lmod_esp
+endif
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_84 += -lsqlite3
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_84 += -lejs
-endif
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_84 += -lest
 endif
 
 $(CONFIG)/bin/appweb.out: $(DEPS_84)
@@ -1414,6 +1382,7 @@ $(CONFIG)/bin/appweb.out: $(DEPS_84)
 #   server-cache
 #
 src/server/cache: $(DEPS_85)
+	cd src/server; mkdir -p cache ; cd ../..
 
 #
 #   testAppweb.h
@@ -1538,6 +1507,7 @@ installBinary: $(DEPS_95)
 DEPS_96 += installBinary
 
 install: $(DEPS_96)
+	
 
 
 #
@@ -1556,6 +1526,7 @@ uninstall: $(DEPS_97)
 #   genslink
 #
 genslink: $(DEPS_98)
+	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
 
 #
@@ -1564,4 +1535,5 @@ genslink: $(DEPS_98)
 DEPS_99 += compile
 
 run: $(DEPS_99)
+	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 

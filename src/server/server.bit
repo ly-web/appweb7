@@ -43,14 +43,17 @@ Bit.load({
 
         appweb: {
             type: 'exe',
-            depends: ['libappweb', 'libmod_esp', 'libmod_ssl', 'libmod_ejs', 'libmod_php', 'libmod_cgi', 'libslink'],
+            depends: [ 'libappweb', 'libslink' ],
             sources: [ 'appweb.c' ],
-            postblend: "
-                let sources = bit.targets.appweb.sources
+            postblend: function (target) {
+                let sources = target.sources
                 if (bit.settings.rom) {
-                    sources.push(TARGET.home.join('romFiles.c'))
+                    sources.push(target.home.join('romFiles.c'))
                 }
-            ",
+                if (target.static) {
+                    target.depends += ['libmod_esp', 'libmod_ssl', 'libmod_ejs', 'libmod_php', 'libmod_cgi']
+                }
+            },
         },
 
         appwebMonitor: {
