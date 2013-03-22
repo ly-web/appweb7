@@ -189,7 +189,10 @@ prep:
 	@if ! diff $(CONFIG)/inc/bit.h projects/appweb-freebsd-default-bit.h >/dev/null ; then\
 		cp projects/appweb-freebsd-default-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
-
+	@if [ -f "$(CONFIG)/.makeflags" -a "$(MAKEFLAGS)" != " `cat $(CONFIG)/.makeflags`" ] ; then \
+		echo "   [Warning] Make flags have changed since the last build: "`cat $(CONFIG)/.makeflags`"" ; \
+	fi
+	@echo $(MAKEFLAGS) >$(CONFIG)/.makeflags
 clean:
 	rm -fr "$(CONFIG)/bin/libmpr.so"
 	rm -fr "$(CONFIG)/bin/libmprssl.so"
