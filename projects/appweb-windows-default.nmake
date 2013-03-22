@@ -31,6 +31,32 @@ BIT_PACK_SDB       = 0
 BIT_PACK_SQLITE    = 0
 BIT_PACK_SSL       = 0
 
+ifeq ($(BIT_PACK_EST),1)
+    BIT_PACK_SSL := 1
+endif
+ifeq ($(BIT_PACK_LIB),1)
+    BIT_PACK_COMPILER := 1
+endif
+ifeq ($(BIT_PACK_MATRIXSSL),1)
+    BIT_PACK_SSL := 1
+endif
+ifeq ($(BIT_PACK_MDB),1)
+    BIT_PACK_ESP := 1
+endif
+ifeq ($(BIT_PACK_NANOSSL),1)
+    BIT_PACK_SSL := 1
+endif
+ifeq ($(BIT_PACK_OPENSSL),1)
+    BIT_PACK_SSL := 1
+endif
+ifeq ($(BIT_PACK_RC),1)
+    BIT_PACK_WINSDK := 1
+endif
+ifeq ($(BIT_PACK_SDB),1)
+    BIT_PACK_ESP := 1
+    BIT_PACK_SQLITE := 1
+endif
+
 CC                = cl
 LD                = link
 RC                = rc
