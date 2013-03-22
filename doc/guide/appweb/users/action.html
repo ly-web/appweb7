@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.3.0 Documentation</title>
+    <title>Embedthis Appweb 4.3.1 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.3.0</div>
+                <div class="version">Embedthis Appweb 4.3.1</div>
             </div>
         </div>
         <div class="crumbs">
@@ -70,7 +70,6 @@
             functions. The action handler is ideal for situations when you want to generate a simple response using
             C code. The action handler employs a direct mapping from URIs to C functions with no further parsing or 
             analysis of the URI than that provided by the Appweb router.</p>
-
             <a name="registering"></a>
             <h2>Registering Actions</h2>
             <p>Actions are registered by calling 
@@ -85,7 +84,6 @@ static void hello(HttpConn *conn)
 httpDefineAction("/action/hello", hello);</pre>
             <p>The httpDefineAction call registers the hello C function to be invoked whenever the
             /action/hello URI is requested.</p>
-
             <a name="actions"></a>
             <h2>Actions</h2>
             <p>An action routine is responsible for rendering a complete response to the client. A response is
@@ -97,7 +95,6 @@ httpDefineAction("/action/hello", hello);</pre>
             Note: that the Appweb RequestTimeout and InactivityTimeout in appweb.conf may terminate a long running
             request. If you need to extend these timeouts for a request, call
             <a href="../../../api/http.html#group___http_conn_1gaa4b4def5658e51af56d186e0b35ace55">httpSetTimeout</a>.</p>
-
             <a name="api"></a>
             <h2>Appweb API</h2>
             <p>The Appweb Native APIs consist of C language headers, function prototypes, structure definitions and

@@ -260,7 +260,7 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc
     @param actionProc EspProc callback procedure to invoke when the action is requested.
     @ingroup EspRoute
  */
-PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *actionProc);
+PUBLIC int espBindProc(HttpRoute *route, cchar *pattern, void *actionProc);
 
 /**
     Define a base function to invoke for all controller actions.

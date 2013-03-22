@@ -38,7 +38,7 @@ Bit.load({
         product: 'appweb',
         title: 'Embedthis Appweb',
         company: 'Embedthis',
-        version: '4.4.0',
+        version: '4.3.1',
         buildNumber: '0',
         bit: '0.8.5',
 
@@ -75,11 +75,6 @@ Bit.load({
          */
         'without-all': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejscript', 'esp', 'man', 'man2html', 'pmaker', 'php', 
             'sqlite', 'ssl'],
-
-        /*
-            Packs to disable when using --without default (generating packages)
-         */
-        'without-default': [ 'doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'php' ],
 
         /*
             Set to true for a static (non-shared library) build

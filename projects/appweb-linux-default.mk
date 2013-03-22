@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.0
+VERSION            := 4.3.1
 BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
@@ -270,7 +270,6 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo NN 4.4.0-0
 
 #
 #   mpr.h
@@ -1411,7 +1410,6 @@ $(CONFIG)/bin/appweb: $(DEPS_84)
 #   server-cache
 #
 src/server/cache: $(DEPS_85)
-	cd src/server; mkdir -p cache ; cd ../..
 
 #
 #   testAppweb.h
@@ -1549,7 +1547,7 @@ installBinary: $(DEPS_96)
 	mkdir -p "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
-	ln -s "4.4.0" "$(BIT_APP_PREFIX)/latest"
+	ln -s "4.3.1" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
 	chmod 755 "$(BIT_LOG_PREFIX)"
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(BIT_LOG_PREFIX)"
@@ -1743,7 +1741,6 @@ DEPS_98 += installBinary
 DEPS_98 += start
 
 install: $(DEPS_98)
-	
 
 
 #
@@ -1775,7 +1772,6 @@ uninstall: $(DEPS_99)
 #   genslink
 #
 genslink: $(DEPS_100)
-	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
 #
 #   run
@@ -1783,5 +1779,4 @@ genslink: $(DEPS_100)
 DEPS_101 += compile
 
 run: $(DEPS_101)
-	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 

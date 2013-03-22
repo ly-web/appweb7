@@ -438,15 +438,15 @@
       <type>int</type>
       <name>espBindProc</name>
       <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>ga804619b07e0154a48875770f041a08b6</anchor>
-      <arglist>(HttpRoute *parent, cchar *pattern, void *actionProc)</arglist>
+      <anchor>ga0d812aed0ff96f0ffa281860270e8910</anchor>
+      <arglist>(HttpRoute *route, cchar *pattern, void *actionProc)</arglist>
     </member>
     <member kind="function">
       <type>char *</type>
       <name>espBuildScript</name>
       <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>gac9c9e0843eba723790fa16c8fd508a8b</anchor>
-      <arglist>(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, char **err)</arglist>
+      <anchor>ga359fc00970449817245c5759a1ad8c4c</anchor>
+      <arglist>(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, EspState *state, char **err)</arglist>
     </member>
     <member kind="function">
       <type>int</type>

@@ -7,7 +7,7 @@ export WIND_HOME := $(WIND_BASE)/..
 export WIND_PLATFORM := $(WIND_PLATFORM)
 
 PRODUCT            := appweb
-VERSION            := 4.4.0
+VERSION            := 4.3.1
 BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
@@ -274,7 +274,6 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo NN 4.4.0-0
 
 #
 #   mpr.h
@@ -1415,7 +1414,6 @@ $(CONFIG)/bin/appweb.out: $(DEPS_84)
 #   server-cache
 #
 src/server/cache: $(DEPS_85)
-	cd src/server; mkdir -p cache ; cd ../..
 
 #
 #   testAppweb.h
@@ -1540,7 +1538,6 @@ installBinary: $(DEPS_95)
 DEPS_96 += installBinary
 
 install: $(DEPS_96)
-	
 
 
 #
@@ -1559,7 +1556,6 @@ uninstall: $(DEPS_97)
 #   genslink
 #
 genslink: $(DEPS_98)
-	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
 
 #
@@ -1568,5 +1564,4 @@ genslink: $(DEPS_98)
 DEPS_99 += compile
 
 run: $(DEPS_99)
-	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 

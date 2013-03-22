@@ -3,7 +3,7 @@
 #
 
 PRODUCT           = appweb
-VERSION           = 4.4.0
+VERSION           = 4.3.1
 BUILD_NUMBER      = 0
 PROFILE           = default
 PA                = $(PROCESSOR_ARCHITECTURE)
@@ -274,7 +274,7 @@ clean:
 #   version
 #
 version: $(DEPS_1)
-	@echo NN 4.4.0-0
+	@echo NN 4.3.1-0
 
 #
 #   bit.h
@@ -1614,6 +1614,7 @@ test\web\js: $(DEPS_102)
 DEPS_103 = $(DEPS_103) compile
 
 stop: $(DEPS_103)
+	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
@@ -1737,6 +1738,7 @@ DEPS_105 = $(DEPS_105) compile
 DEPS_105 = $(DEPS_105) stop
 
 start: $(DEPS_105)
+	.\$(CONFIG)\bin\appman install enable start
 
 #
 #   install
