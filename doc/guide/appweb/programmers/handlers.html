@@ -97,7 +97,7 @@
             data stream in which request data flows upstream from the client and response data to the client flows
             downstream.</p>
             <img src="../../../images/pipeline.jpg" alt="pipeline"/>
-            <p>The request pipeline consists of a sequence of processing stages. There is one stage that is the handler,
+            <p>The request pipeline consists of a sequence of processing stages. The first stage is the handler followed by
             zero or more filters and a network connector stage. Each stage has two queues, one for outgoing data and one
             for incoming. A queue also has two links to refer to the upstream and downstream queues in the pipeline.</p>
            
