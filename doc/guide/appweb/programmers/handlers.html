@@ -311,7 +311,7 @@ static void writable(HttpQueue *q)
         <p>A handler can asynchronously generate response data outside of the typical handler callbacks. This may be in
         response to an application or device vent. Consequently, care must be taken to ensure thread safety. Appweb
         serializes request activity on a <em>connection dispatcher</em> and does not use thread locking for handlers or
-        pipeline processing. This is highly efficient, but requires that all interaction with Appweb data structures 
+        pipeline processing. This is highly efficient but requires that all interaction with Appweb data structures 
         be done from Appweb events via Appweb dispatchers. To run code from the connection dispatcher, use: 
         <a href="../../../api/mpr.html#group___mpr_event_1ga6154e34c582e39cd64b4505a6afb39c4">mprCreateEvent</a>.
         <pre>
