@@ -149,7 +149,7 @@
             callback will be invoked for each packet of data. The end of the input stream is signified by a zero length
             packet. The handler may choose to aggregate body data on its read service queue until the entire body is
             received.</p>
-            <p>A handler will generate output response data and send downstream. This may be done by calling 
+            <p>A handler will generate output response data and send it downstream. This may be done by calling 
             <a href="../../../api/http.html#group___http_queue_1ga5599a178a2bab73929795952231d6e6a">httpWrite</a>
             which buffers output and creates packets as required and queues the packets on the handlers output queue. 
             These packets will be flushed downstream if the queue becomes full or if 
