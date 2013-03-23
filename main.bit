@@ -203,21 +203,7 @@ Bit.load({
         },
     },
 
-    __scripts: {
-        /* Want est,ssl and sqlite support included, but disabled */
-        prebitheader: "
-            if (bit.generating && bit.packs.est) bit.packs.est.enable = 0
-            if (bit.generating && bit.packs.ssl) bit.packs.ssl.enable = 0
-            if (bit.generating && bit.packs.sqlite) bit.packs.sqlite.enable = 0
-            if (bit.generating && bit.packs.sdb) bit.packs.sdb.enable = 0
-        ",
-        pregen: "
-            if (bit.generating && bit.packs.est) bit.packs.est.enable = 0
-            if (bit.generating && bit.packs.ssl) bit.packs.ssl.enable = 0
-            if (bit.generating && bit.packs.sqlite) bit.packs.sqlite.enable = 0
-            if (bit.generating && bit.packs.sdb) bit.packs.sdb.enable = 0
-        ",
-    },
+    //  MOB - remove
     packs: {
         cgi: {},
         dir: {},

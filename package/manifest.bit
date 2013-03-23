@@ -26,14 +26,14 @@ Bit.load({
             install: {
                 inherit:    'embedthis-manifest',
                 prefixes:   [ 'root', 'app', 'vapp', 'bin', 'inc', 'man', 'etc', 'web', 'log', 'spool', 'cache'],
-                sets:       [ 'core', 'service', 'dev', 'doc' ],
+                sets:       [ 'core', 'web', 'service', 'esp', 'php', 'utils', 'test', 'dev', 'doc' ],
                 platforms:  [ 'unix', 'windows' ],
             },
             binary: {
                 inherit:    'embedthis-manifest',
                 prefixes:   [ 'root', 'app', 'vapp', 'bin', 'inc', 'man', 'etc', 'web', 'log', 'spool', 'cache'],
                 formats:    [ 'native', 'tar' ],
-                sets:       [ 'core', 'service', 'test', 'doc', 'dev', 'package' ],
+                sets:       [ 'core', 'web', 'service', 'esp', 'php', 'utils', 'test', 'dev', 'doc', 'package' ],
                 platforms:  [ 'freebsd', 'linux', 'macosx', 'windows' ]
             },
             source: {
@@ -53,20 +53,32 @@ Bit.load({
                 set:        'core',
 
             },{ from:        [
-                    '${BIN}/appman${EXE}',
                     '${BIN}/appweb${EXE}',
-                    '${BIN}/http${EXE}',
                 ],
                 to:         '${abin}/',
                 linkin:     '${bin}',
                 set:        'core',
 
             },{ from:        [
+                    '${BIN}/appman${EXE}',
+                ],
+                to:         '${abin}/',
+                linkin:     '${bin}',
+                set:        'service',
+
+            },{ from:        [
+                    '${BIN}/http${EXE}',
+                ],
+                to:         '${abin}/',
+                linkin:     '${bin}',
+                set:        'utils',
+
+            },{ from:        [
                     '${BIN}/esp${EXE}',
                 ],
                 to:         '${abin}/',
                 linkin:     '${bin}',
-                set:        'core',
+                set:        'esp',
                 requires:   'esp',
 
             },{ from:        [
@@ -74,7 +86,7 @@ Bit.load({
                     '${BIN}/appwebMonitor.ico',
                 ],
                 to:         '${abin}/',
-                set:        'core',
+                set:        'service',
                 enable:     "bit.platform.os == 'windows'",
 
             },{ from:        [
@@ -176,7 +188,7 @@ Bit.load({
             },{
                 from:       ['src/esp/esp-www', 'src/esp/esp-appweb.conf'],
                 to:         '${abin}/',
-                set:        'core',
+                set:        'esp',
                 requires:   'esp',
 
             },{
@@ -188,14 +200,14 @@ Bit.load({
             },{ from:       'src/server/web/',
                 to:         '${web}/', 
                 exclude:    /mgmt/, 
-                set:        'core',
+                set:        'web',
 
             },{ 
                 from:       'src/server/web/test/*', 
                 to:         '${web}/test/',
                 include:    /.cgi|test.pl|test.py/,
                 permissions:0755,
-                set:        'test',
+                set:        'web',
 
             },{
                 from:       'src/server/mime.types', 
@@ -205,7 +217,7 @@ Bit.load({
             },{
                 from:       'src/server/php.ini',
                 to:         '${etc}/',
-                set:        'core',
+                set:        'php',
                 requires:   'php',
 
             },{
