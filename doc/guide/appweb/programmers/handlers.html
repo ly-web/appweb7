@@ -300,7 +300,7 @@ static void writable(HttpQueue *q)
         <p>If the response is larger than available buffering, the Appweb worker thread will have to pause for data to
         drain to the client as there is more data than the pipeline can absorb. This will consume a worker thread while the request
         completes, and so is more costly in terms of Appweb resources. Use care when using this paradigm for larger
-        responses. Ensure you provided you have sufficient worker threads and/or this kind of request is infrequent.
+        responses. Ensure you have provided sufficient worker threads and/or this kind of request is infrequent.
         Otherwise this can lead to a denial-of-service vulnerability.</p>
         <h3>Non-Blocking</h3>
         <p>A more advanced technique is to write data in portions from the writable() callback. The callback will be
