@@ -296,7 +296,7 @@ static void writable(HttpQueue *q)
         output drains to the client. In this paradigm, httpWrite is typically used and Appweb will automatically buffer
         the response if required.  If the response is shorter than available buffering (typically 64K), the request
         should not block. After the handler has written all the data, it will return immediately and Appweb will use its event
-        mechanism to manage completing the request. For such short requests, this is highly efficient.</p>
+        mechanism to manage completing the request. This is a highly efficient method for such short requests.</p>
         <p>If the response is larger than available buffering, the Appweb worker thread will have to pause for data to
         drain to the client as there is more data than the pipeline can absorb. This will consume a worker thread while the request
         completes, and so is more costly in terms of Appweb resources. Use care when using this paradigm for larger
