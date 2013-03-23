@@ -85,7 +85,7 @@ Bit.load({
         'test.js': {
             type:   'file',
             path:   'web/js',
-            files:  ['${TOP}/src/esp/esp-www/files/static/js/'],
+            files:  ['../src/esp/esp-www/files/static/js/'],
         },
 
         test: {
