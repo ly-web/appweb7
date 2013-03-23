@@ -347,7 +347,7 @@ mprCreateEvent(q-&gt;conn-&gt;dispatcher, "deviceEvent", 0, doMoreOutput, q, 0);
         <p>If a handler blocks, it will consume a worker thread. But more importantly, when a thread blocks, it must
         yield to the garbage collector. Appweb uses a cooperative garbage collector where worker thread yield to the 
         collector at designated control points. This provides workers with a guarantee that temporary memory will not be
-        prematurely collected. All MPR functions that wait implicitly also yield to the garbage collector. Handlers can
+        prematurely collected. All MPR functions that wait implicitly also yield to the garbage collector. Handlers
         should call <a href="../../../api/mpr.html#mpr_8h_1af140a2fda18b2e8461236cc44c0a2cc4">mprYield</a> directly whenever
         they block and are not calling an MPR function that blocks. This ensures that the garbage collector can work and
         collect memory while the worker thread is asleep. Handlers do not need to call mprYield when executing on
