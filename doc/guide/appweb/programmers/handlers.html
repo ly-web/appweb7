@@ -341,7 +341,7 @@ mprCreateEvent(q-&gt;conn-&gt;dispatcher, "deviceEvent", 0, doMoreOutput, q, 0);
         or completing the request, httpPump() should be called to perform pipeline processing on the request.</p>
         <a id="coding"></a>
         <h2>Coding Issues</h2>
-        <p>There are a few coding issues to keep in mind when creating handlers. Appweb is a multithreaded, event loop
+        <p>There are a few coding issues to keep in mind when creating handlers. Appweb is a multithreaded event loop
         server. As such, handlers must cooperate and take care when using resources.</p>
         <h3>Blocking</h3>
         <p>If a handler blocks, it will consume a worker thread. But more importantly, when a thread blocks, it must
