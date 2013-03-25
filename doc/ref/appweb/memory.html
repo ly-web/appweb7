@@ -75,6 +75,16 @@
             as it eliminates most memory leaks. Unlike traditional memory allocation where <em>free</em> must be called
             to release memory, Appweb uses the opposite approach. Memory that must be retained, must be actively managed to 
             prevent garbage collection. This means that a <em>managed reference</em> must be held for all active memory.</p>
+
+            <p>In practice there are thus two kinds of memory:</p>
+            <ul>
+                <li>Managed memory &mdash; This is memory allocated via the MPR which is actively managed by the 
+                garbage collector. The user is responsible for marking the memory as being active via the mprMark API. 
+                The collector will automatically reclaim the memory when it is no longer marked as being actively used.</li>
+                <li>Malloc memory &mdash; This is memory allocated directly or indirectly by malloc, and is not managed
+                by the garbage collector. The user is responsible for explicitly calling free() when the memory is 
+                no longer required. You must not call mprMark() on such memory.</li>
+            </ul>
             <a id="allocator"></a>
             <h2>Allocator</h2>
             <p>The allocator is optimized for frequent allocations of small blocks (&lt; 4K). It 
@@ -91,11 +101,11 @@
             asprintf are often assumed to succeed, but they can, and do fail when memory is depleted.</p>
             <p>A better approach is to proactively detect and handle memory allocation errors in one place.
             The MPR allocator handles memory allocation errors globally. It has
-            has a configurable memory redline limit and memory depletion policy handler. 
+            has a configurable memory redline limit and a memory depletion policy handler. 
             Appweb configures this memory limit so that memory depletion can be proactively detected and 
             handled before memory allocations actually fail.
             When memory usage exceeds a pre-configured redline value, the depletion handler is invoked. 
-            The application can then determine what action to take. Appweb will restart automatically in such 
+            The application can then determine what action to take. Typically, Appweb will restart in such 
             circumstances.</p>
             <a id="collector"></a>
             <h2>Garbage Collection</h2>
@@ -106,11 +116,15 @@
             by calling the <em>mprYield</em> API.
             This strategy permits worker threads to allocate temporary memory without fear. The memory will not be 
             prematurely collected until the worker explicitly acknowledges and yields to the collector by 
-            calling <em>mprYield</em>.</p>
+            calling <em>mprYield</em>. Appweb will ensure threads call mprYield when waiting for I/O or when a request
+            is complete. Users only need to explicitly call mprYield when they are doing a long-blocking operation.</p>
+
             <p>To prevent collection of a memory block and retain the block over a yield point, the application must 
             hold a managed reference for the block. A managed reference, is a reference to an allocated block that 
-            will be marked as active during a collection cycle by the Owning Blocks manager function. Manager functions
-            are defined when allocating blocks that will hold managed references.</p>
+            will be marked as active by mprMark() during a collection cycle by the parent block's manager function. 
+            Manager functions are defined when allocating blocks that will hold managed references. See below for more
+            details.</p>
+
             <a id="phases"></a>
             <h3>Collection Phases</h3>
             <p>The collector reclaims memory in three phases: Wait, Mark and Sweep. The Wait phase waits for all
@@ -132,34 +146,78 @@
             <a id="alloc"></a>
             <h3>Allocating Memory</h3>
             <p>Managers are defined when allocating a block of memory. For example, this code will allocate a block
-            that will contain a managed reference to an allocated string:</p>
+            that will contain a reference to a managed string and a reference to an un-managed malloc block.</p>
 <pre>
-char **block = mprAllocObj(char*, manageBlock);
-*block = sclone("Hello World");
+typedef struct MyBlock
+    char    *managedString;
+    void    *privateMalloc;
+} MyBlock;
+
+MyBlock *blk = mprAllocObj(MyBlock, manageBlock);
+blk->managedString = sclone("Hello World");
+blk->privateMalloc = malloc(1024);
 </pre>
-            <p>This will allocate a block sufficient to store one character pointer and will define the manageBlock 
-            function as the manager for managed references in that block. The sclone function allocates a string block
-            and copies the string argument. The mprAllocObj function is used to allocate structures with managers. Use
-            mprAllocMem to allocate a block of memory and reserve room for a manager function. Then use mprSetManager to
-            define a manager function.</p>
+            <p>This will allocate a new structure and define manageBlock as the manager function for the structure. 
+
+            If you need to keep the allocated structure, you must ensure the <em>blk</em> reference will be marked
+            during the garbage collector mark phase. To do this, you must ensure the reference is marked via mprMark
+            during some other object's manager function. Alternatively, you can call mprAddRoot to specify that this
+            reference is a top level root of a new memory tree. You should do this sparingly. It is more effective
+            to mark the reference from another manager routine.</p>
+            <p>If you only require the allocated structure temporarily, you do not need to retain a reference or call
+            mprAddRoot. In this manner, the memory will be automatically collected during the next garbage collection
+            sweep because there will not be a managed (marked) reference to the block.</p>
+
+            <p>the mprAllocMem may be used to allocate a block of memory and reserve room for a manager function. Then use
+            mprSetManager to define a manager function.</p>
+
             <a id="managers"></a>
             <h3>Managers</h3>
             <p>A manager function is invoked by the collector during each collector Mark phase of the collection cycle.
             The manager is passed a reference to the block and a flags word. The flags are set to either MPR_MANAGE_MARK
             during the Mark phase and to MPR_MANAGE_FREE if the collector determines the block is to be freed.</p> 
 <pre>
-void manageBlock(char *ptr, int flags) 
+void manageBlock(MyBlock *blk, int flags) 
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(*ptr);
+        mprMark(blk->managedString);
+        /* Don't mark privateMalloc */
     } else if (flags & MPR_MANAGE_FREE) {
         /* Custom code when the block is freed */
     }
 }
 </pre>
-            <p>A common technique it to define a top level application structure which will be the root memory block
+            <p>Note that it is safe to call mprMark with NULL reference. This is a convenient patter so you do not
+            need to test if the element is null or not.
+
+            <h2>Convenient References</h2>
+            <p>Appweb defines two empty fields that can be used by request handlers to hold managed references. The
+            <em>HttpConn.data</em> field is marked by the HttpConn manager. A handler can store a managed-memory reference
+            in this field. The HttpConn manager will then call mprMark(conn->data) to mark the reference as active and 
+            required.</p>
+            <p>Similarly, <em>HttpQueue.queueData</em> field is marked by the HttpQueue manager. A queue stage 
+            (filter or handler) can store a managed-memory reference
+            in this field. The HttpQueue manager will then call mprMark(q->queueData) to mark the reference as active and 
+            required.</p>
+
+            <p>Another common technique it to define a top level application structure which will be the root memory block
             for the entire application. Store top level managed references in this block and call mprAddRoot to define
             it as a root block.</p>
+
+            <h2>Simple Rules</h2>
+            <p>Here are some simple rules for allocating memory with Appweb and using the Garbage Collector.</p>
+            <h3>Must Mark to Retain Managed Memory</h3>
+            <p>Any memory allocated from the MPR must be marked to retain past the next garbage collection cycle.</p>
+
+            <h3>Don't Mix Memory</h3>
+            <p>You must not mix MPR allocated memory and non-managed memory. This means don't mark un-managed memory
+            that has been allocated via malloc(). And you must not call free() on managed memory allocated from
+            the MPR.</h3>
+
+            <h3>Define a Manager</h3>
+            <p>If you allocate a managed structure that has references to managed memory, you should define a manager
+            function that invokes mprMark on the structure elements that are managed references.</p>
+            </ul>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
