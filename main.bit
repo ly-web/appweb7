@@ -141,6 +141,7 @@ Bit.load({
             est: false,
             matrixssl: false,
             mdb: true,
+            nanossl: false,
             openssl: false,
             php: false,
             sdb: false,

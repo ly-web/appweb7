@@ -136,6 +136,9 @@
 #ifndef BIT_PROJECTS_MDB
     #define BIT_PROJECTS_MDB 1
 #endif
+#ifndef BIT_PROJECTS_NANOSSL
+    #define BIT_PROJECTS_NANOSSL 0
+#endif
 #ifndef BIT_PROJECTS_OPENSSL
     #define BIT_PROJECTS_OPENSSL 0
 #endif
@@ -330,10 +333,10 @@
     #define BIT_PACK_PHP 1
 #endif
 #ifndef BIT_PACK_PMAKER
-    #define BIT_PACK_PMAKER 0
+    #define BIT_PACK_PMAKER 1
 #endif
 #ifndef BIT_PACK_RC
-    #define BIT_PACK_RC 0
+    #define BIT_PACK_RC 1
 #endif
 #ifndef BIT_PACK_SDB
     #define BIT_PACK_SDB 0
@@ -351,7 +354,7 @@
     #define BIT_PACK_VXWORKS 0
 #endif
 #ifndef BIT_PACK_WINSDK
-    #define BIT_PACK_WINSDK 0
+    #define BIT_PACK_WINSDK 1
 #endif
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1

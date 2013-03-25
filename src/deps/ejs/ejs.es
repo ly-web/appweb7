@@ -9882,7 +9882,9 @@ module ejs {
         native function test(str: String): Boolean
 
         /**
-            Convert the regular expression to a string
+            Convert the regular expression to a string.
+            This form will wrap the expression with slash delimiters and append the regular expression flags.
+            For example: "/pattern/g"
             @returns a string representation of the regular expression.
          */
         override native function toString(): String

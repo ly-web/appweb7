@@ -5,6 +5,21 @@
 Bit.pack({
     php: {
         description: 'PHP Web Framework',
+        generate: function (pack) {
+            pack.path = '/usr/src/php'
+            pack.includes = [ 
+                '$(BIT_PACK_PHP_PATH)', 
+                '$(BIT_PACK_PHP_PATH)/main', 
+                '$(BIT_PACK_PHP_PATH)/Zend',
+                '$(BIT_PACK_PHP_PATH)/TSRM'
+            ]
+            pack.libpaths = [ '$(BIT_PACK_PHP_PATH)/.libs' ]
+            if (bit.platform.os == 'windows') {
+                pack.libraries = [ 'php5ts.lib' ]
+            } else {
+                pack.libraries = [ 'php5' ]
+            }
+        },
         path: function (pack) {
             let cfg
             let path: Path? = pack.withpath

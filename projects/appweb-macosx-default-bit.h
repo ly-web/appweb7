@@ -154,6 +154,9 @@
 #ifndef BIT_PROJECTS_MDB
     #define BIT_PROJECTS_MDB 1
 #endif
+#ifndef BIT_PROJECTS_NANOSSL
+    #define BIT_PROJECTS_NANOSSL 0
+#endif
 #ifndef BIT_PROJECTS_OPENSSL
     #define BIT_PROJECTS_OPENSSL 0
 #endif

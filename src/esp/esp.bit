@@ -10,7 +10,7 @@ Bit.load({
             depends: [ 'libappweb', 'sqlite' ],
             sources: [ '*.c' ],
             headers: [ '*.h' ],
-            exclude: [ 'esp.c' ],
+            exclude: /esp\.c/,
             requires: [ 'esp' ],
         },
 

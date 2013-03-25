@@ -101,7 +101,6 @@
   
   <ItemGroup>
     <ClCompile Include="..\..\src\esp\edi.c" />
-    <ClCompile Include="..\..\src\esp\esp.c" />
     <ClCompile Include="..\..\src\esp\espAbbrev.c" />
     <ClCompile Include="..\..\src\esp\espFramework.c" />
     <ClCompile Include="..\..\src\esp\espHandler.c" />
@@ -129,7 +128,7 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libappweb.lib;libhttp.lib;libpcre.lib;libmpr.lib;libsqlite3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libsqlite3.lib;libhttp.lib;libpcre.lib;libmpr.lib;libappweb.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
 

@@ -117,7 +117,7 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libmpr.lib;libpcre.lib;libhttp.lib;libpcre.lib;libmpr.lib;libsqlite3.lib;libest.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libest.lib;libsqlite3.lib;libmpr.lib;libpcre.lib;libhttp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
 

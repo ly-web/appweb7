@@ -26,6 +26,7 @@ BIT_PACK_ESP       = 1
 BIT_PACK_EST       = 0
 BIT_PACK_MATRIXSSL = 0
 BIT_PACK_MDB       = 1
+BIT_PACK_NANOSSL   = 0
 BIT_PACK_OPENSSL   = 0
 BIT_PACK_PHP       = 0
 BIT_PACK_SDB       = 0
@@ -66,11 +67,38 @@ BIT_PACK_SQLITE = 1
 !ENDIF
 
 
+BIT_PACK_CGI_PATH         = cgi
+BIT_PACK_COMPILER_PATH    = cl
+BIT_PACK_DIR_PATH         = dir
+BIT_PACK_DOXYGEN_PATH     = doxygen
+BIT_PACK_DSI_PATH         = dsi
+BIT_PACK_EJSCRIPT_PATH    = ejscript
+BIT_PACK_ESP_PATH         = esp
+BIT_PACK_EST_PATH         = est
+BIT_PACK_LIB_PATH         = lib.exe
+BIT_PACK_LINK_PATH        = link
+BIT_PACK_MAN_PATH         = man
+BIT_PACK_MAN2HTML_PATH    = man2html
+BIT_PACK_MATRIXSSL_PATH   = /usr/src/matrixssl
+BIT_PACK_MDB_PATH         = mdb
+BIT_PACK_NANOSSL_PATH     = /usr/src/nanossl
+BIT_PACK_OPENSSL_PATH     = /usr/src/openssl
+BIT_PACK_PCRE_PATH        = pcre
+BIT_PACK_PHP_PATH         = /usr/src/php
+BIT_PACK_PMAKER_PATH      = pmaker
+BIT_PACK_RC_PATH          = rc
+BIT_PACK_SDB_PATH         = sdb
+BIT_PACK_SQLITE_PATH      = sqlite
+BIT_PACK_SSL_PATH         = ssl
+BIT_PACK_UTEST_PATH       = utest
+BIT_PACK_WINSDK_PATH      = winsdk
+BIT_PACK_ZIP_PATH         = zip
+
 CC                 = cl
 LD                 = link
 RC                 = rc
 CFLAGS             = -nologo -GR- -W3 -Zi -Od -MDd
-DFLAGS             = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
+DFLAGS             = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
 IFLAGS             = -I$(CONFIG)\inc
 LDFLAGS            = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS           = -libpath:$(CONFIG)\bin
@@ -254,7 +282,6 @@ clean:
 	if exist "$(CONFIG)\obj\log.obj" rd /Q /S"$(CONFIG)\obj\log.obj"
 	if exist "$(CONFIG)\obj\server.obj" rd /Q /S"$(CONFIG)\obj\server.obj"
 	if exist "$(CONFIG)\obj\edi.obj" rd /Q /S"$(CONFIG)\obj\edi.obj"
-	if exist "$(CONFIG)\obj\esp.obj" rd /Q /S"$(CONFIG)\obj\esp.obj"
 	if exist "$(CONFIG)\obj\espAbbrev.obj" rd /Q /S"$(CONFIG)\obj\espAbbrev.obj"
 	if exist "$(CONFIG)\obj\espFramework.obj" rd /Q /S"$(CONFIG)\obj\espFramework.obj"
 	if exist "$(CONFIG)\obj\espHandler.obj" rd /Q /S"$(CONFIG)\obj\espHandler.obj"
@@ -262,6 +289,7 @@ clean:
 	if exist "$(CONFIG)\obj\espTemplate.obj" rd /Q /S"$(CONFIG)\obj\espTemplate.obj"
 	if exist "$(CONFIG)\obj\mdb.obj" rd /Q /S"$(CONFIG)\obj\mdb.obj"
 	if exist "$(CONFIG)\obj\sdb.obj" rd /Q /S"$(CONFIG)\obj\sdb.obj"
+	if exist "$(CONFIG)\obj\esp.obj" rd /Q /S"$(CONFIG)\obj\esp.obj"
 	if exist "$(CONFIG)\obj\ejsLib.obj" rd /Q /S"$(CONFIG)\obj\ejsLib.obj"
 	if exist "$(CONFIG)\obj\ejs.obj" rd /Q /S"$(CONFIG)\obj\ejs.obj"
 	if exist "$(CONFIG)\obj\ejsc.obj" rd /Q /S"$(CONFIG)\obj\ejsc.obj"
@@ -283,7 +311,7 @@ clean:
 #   version
 #
 version: $(DEPS_1)
-	@echo NN 4.3.1-0
+	@echo 4.3.1-0
 
 #
 #   bit.h
@@ -316,7 +344,7 @@ $(CONFIG)\bin\removeFiles.exe: $(DEPS_4)
 $(CONFIG)\inc\mpr.h: $(DEPS_5)
 	@echo '      [Copy] $(CONFIG)/inc/mpr.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\deps\mpr\mpr.h" "$(CONFIG)\inc\mpr.h"
+	copy /Y src\deps\mpr\mpr.h $(CONFIG)\inc\mpr.h
 
 #
 #   bitos.h
@@ -326,7 +354,7 @@ DEPS_6 = $(DEPS_6) $(CONFIG)\inc\bit.h
 $(CONFIG)\inc\bitos.h: $(DEPS_6)
 	@echo '      [Copy] $(CONFIG)/inc/bitos.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\bitos.h" "$(CONFIG)\inc\bitos.h"
+	copy /Y src\bitos.h $(CONFIG)\inc\bitos.h
 
 #
 #   mprLib.obj
@@ -356,7 +384,7 @@ $(CONFIG)\bin\libmpr.dll: $(DEPS_8)
 $(CONFIG)\inc\est.h: $(DEPS_9)
 	@echo '      [Copy] $(CONFIG)/inc/est.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\deps\est\est.h" "$(CONFIG)\inc\est.h"
+	copy /Y src\deps\est\est.h $(CONFIG)\inc\est.h
 
 #
 #   estLib.obj
@@ -392,7 +420,7 @@ DEPS_12 = $(DEPS_12) $(CONFIG)\inc\est.h
 $(CONFIG)\obj\mprSsl.obj: \
     src\deps\mpr\mprSsl.c $(DEPS_12)
 	@echo '   [Compile] src/deps/mpr/mprSsl.c'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\mprSsl.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_OPENSSL_PATH)\include -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl -I$(BIT_PACK_NANOSSL_PATH)\src src\deps\mpr\mprSsl.c
 
 !IF "$(BIT_PACK_SSL)" == "1"
 #
@@ -404,6 +432,26 @@ DEPS_13 = $(DEPS_13) $(CONFIG)\bin\libest.dll
 !ENDIF
 DEPS_13 = $(DEPS_13) $(CONFIG)\obj\mprSsl.obj
 
+!IF "$(BIT_PACK_SSL)" == "1"
+!IF "$(BIT_PACK_NANOSSL)" == "1"
+LIBS_13 = $(LIBS_13) libssls.lib
+!ENDIF
+!ENDIF
+!IF "$(BIT_PACK_SSL)" == "1"
+!IF "$(BIT_PACK_MATRIXSSL)" == "1"
+LIBS_13 = $(LIBS_13) libmatrixssl.lib.lib
+!ENDIF
+!ENDIF
+!IF "$(BIT_PACK_SSL)" == "1"
+!IF "$(BIT_PACK_OPENSSL)" == "1"
+LIBS_13 = $(LIBS_13) libssleay32.lib.lib
+!ENDIF
+!ENDIF
+!IF "$(BIT_PACK_SSL)" == "1"
+!IF "$(BIT_PACK_OPENSSL)" == "1"
+LIBS_13 = $(LIBS_13) liblibeay32.lib.lib
+!ENDIF
+!ENDIF
 !IF "$(BIT_PACK_EST)" == "1"
 LIBS_13 = $(LIBS_13) libest.lib
 !ENDIF
@@ -411,7 +459,7 @@ LIBS_13 = $(LIBS_13) libmpr.lib
 
 $(CONFIG)\bin\libmprssl.dll: $(DEPS_13)
 	@echo '      [Link] libmprssl'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\mprSsl.obj $(LIBS_13) $(LIBS_13) $(LIBS) 
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) -libpath:$(BIT_PACK_OPENSSL_PATH) -libpath:$(BIT_PACK_MATRIXSSL_PATH) -libpath:$(BIT_PACK_NANOSSL_PATH)\bin $(CONFIG)\obj\mprSsl.obj ssls matrixssl.lib ssleay32.lib libeay32.lib $(LIBS_13) $(LIBS_13) $(LIBS) 
 !ENDIF
 
 #
@@ -468,7 +516,7 @@ DEPS_18 = $(DEPS_18) src\deps\est\ca.crt
 $(CONFIG)\bin\ca.crt: $(DEPS_18)
 	@echo '      [Copy] $(CONFIG)/bin/ca.crt'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
-	copy /Y "src\deps\est\ca.crt" "$(CONFIG)\bin\ca.crt"
+	copy /Y src\deps\est\ca.crt $(CONFIG)\bin\ca.crt
 
 #
 #   pcre.h
@@ -476,7 +524,7 @@ $(CONFIG)\bin\ca.crt: $(DEPS_18)
 $(CONFIG)\inc\pcre.h: $(DEPS_19)
 	@echo '      [Copy] $(CONFIG)/inc/pcre.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\deps\pcre\pcre.h" "$(CONFIG)\inc\pcre.h"
+	copy /Y src\deps\pcre\pcre.h $(CONFIG)\inc\pcre.h
 
 #
 #   pcre.obj
@@ -505,7 +553,7 @@ $(CONFIG)\bin\libpcre.dll: $(DEPS_21)
 $(CONFIG)\inc\http.h: $(DEPS_22)
 	@echo '      [Copy] $(CONFIG)/inc/http.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\deps\http\http.h" "$(CONFIG)\inc\http.h"
+	copy /Y src\deps\http\http.h $(CONFIG)\inc\http.h
 
 #
 #   httpLib.obj
@@ -551,9 +599,9 @@ $(CONFIG)\obj\http.obj: \
 DEPS_26 = $(DEPS_26) $(CONFIG)\bin\libhttp.dll
 DEPS_26 = $(DEPS_26) $(CONFIG)\obj\http.obj
 
-LIBS_26 = $(LIBS_26) libhttp.lib
-LIBS_26 = $(LIBS_26) libpcre.lib
 LIBS_26 = $(LIBS_26) libmpr.lib
+LIBS_26 = $(LIBS_26) libpcre.lib
+LIBS_26 = $(LIBS_26) libhttp.lib
 
 $(CONFIG)\bin\http.exe: $(DEPS_26)
 	@echo '      [Link] http'
@@ -565,7 +613,7 @@ $(CONFIG)\bin\http.exe: $(DEPS_26)
 $(CONFIG)\inc\sqlite3.h: $(DEPS_27)
 	@echo '      [Copy] $(CONFIG)/inc/sqlite3.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\deps\sqlite\sqlite3.h" "$(CONFIG)\inc\sqlite3.h"
+	copy /Y src\deps\sqlite\sqlite3.h $(CONFIG)\inc\sqlite3.h
 
 #
 #   sqlite3.obj
@@ -625,7 +673,7 @@ $(CONFIG)\bin\sqlite.exe: $(DEPS_31)
 $(CONFIG)\inc\appweb.h: $(DEPS_32)
 	@echo '      [Copy] $(CONFIG)/inc/appweb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\appweb.h" "$(CONFIG)\inc\appweb.h"
+	copy /Y src\appweb.h $(CONFIG)\inc\appweb.h
 
 #
 #   customize.h
@@ -633,7 +681,7 @@ $(CONFIG)\inc\appweb.h: $(DEPS_32)
 $(CONFIG)\inc\customize.h: $(DEPS_33)
 	@echo '      [Copy] $(CONFIG)/inc/customize.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\customize.h" "$(CONFIG)\inc\customize.h"
+	copy /Y src\customize.h $(CONFIG)\inc\customize.h
 
 #
 #   config.obj
@@ -719,9 +767,9 @@ DEPS_40 = $(DEPS_40) $(CONFIG)\obj\fileHandler.obj
 DEPS_40 = $(DEPS_40) $(CONFIG)\obj\log.obj
 DEPS_40 = $(DEPS_40) $(CONFIG)\obj\server.obj
 
-LIBS_40 = $(LIBS_40) libhttp.lib
-LIBS_40 = $(LIBS_40) libpcre.lib
 LIBS_40 = $(LIBS_40) libmpr.lib
+LIBS_40 = $(LIBS_40) libpcre.lib
+LIBS_40 = $(LIBS_40) libhttp.lib
 
 $(CONFIG)\bin\libappweb.dll: $(DEPS_40)
 	@echo '      [Link] libappweb'
@@ -733,7 +781,7 @@ $(CONFIG)\bin\libappweb.dll: $(DEPS_40)
 $(CONFIG)\inc\edi.h: $(DEPS_41)
 	@echo '      [Copy] $(CONFIG)/inc/edi.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\esp\edi.h" "$(CONFIG)\inc\edi.h"
+	copy /Y src\esp\edi.h $(CONFIG)\inc\edi.h
 
 #
 #   esp-app.h
@@ -741,7 +789,7 @@ $(CONFIG)\inc\edi.h: $(DEPS_41)
 $(CONFIG)\inc\esp-app.h: $(DEPS_42)
 	@echo '      [Copy] $(CONFIG)/inc/esp-app.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\esp\esp-app.h" "$(CONFIG)\inc\esp-app.h"
+	copy /Y src\esp\esp-app.h $(CONFIG)\inc\esp-app.h
 
 #
 #   esp.h
@@ -749,7 +797,7 @@ $(CONFIG)\inc\esp-app.h: $(DEPS_42)
 $(CONFIG)\inc\esp.h: $(DEPS_43)
 	@echo '      [Copy] $(CONFIG)/inc/esp.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\esp\esp.h" "$(CONFIG)\inc\esp.h"
+	copy /Y src\esp\esp.h $(CONFIG)\inc\esp.h
 
 #
 #   mdb.h
@@ -757,7 +805,7 @@ $(CONFIG)\inc\esp.h: $(DEPS_43)
 $(CONFIG)\inc\mdb.h: $(DEPS_44)
 	@echo '      [Copy] $(CONFIG)/inc/mdb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\esp\mdb.h" "$(CONFIG)\inc\mdb.h"
+	copy /Y src\esp\mdb.h $(CONFIG)\inc\mdb.h
 
 #
 #   edi.obj
@@ -772,96 +820,85 @@ $(CONFIG)\obj\edi.obj: \
 	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\edi.c
 
 #
-#   esp.obj
+#   espAbbrev.obj
 #
 DEPS_46 = $(DEPS_46) $(CONFIG)\inc\bit.h
 DEPS_46 = $(DEPS_46) $(CONFIG)\inc\esp.h
 
-$(CONFIG)\obj\esp.obj: \
-    src\esp\esp.c $(DEPS_46)
-	@echo '   [Compile] src/esp/esp.c'
-	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\esp.c
-
-#
-#   espAbbrev.obj
-#
-DEPS_47 = $(DEPS_47) $(CONFIG)\inc\bit.h
-DEPS_47 = $(DEPS_47) $(CONFIG)\inc\esp.h
-
 $(CONFIG)\obj\espAbbrev.obj: \
-    src\esp\espAbbrev.c $(DEPS_47)
+    src\esp\espAbbrev.c $(DEPS_46)
 	@echo '   [Compile] src/esp/espAbbrev.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espAbbrev.obj -Fd$(CONFIG)\obj\espAbbrev.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espAbbrev.c
 
 #
 #   espFramework.obj
 #
-DEPS_48 = $(DEPS_48) $(CONFIG)\inc\bit.h
-DEPS_48 = $(DEPS_48) $(CONFIG)\inc\esp.h
+DEPS_47 = $(DEPS_47) $(CONFIG)\inc\bit.h
+DEPS_47 = $(DEPS_47) $(CONFIG)\inc\esp.h
 
 $(CONFIG)\obj\espFramework.obj: \
-    src\esp\espFramework.c $(DEPS_48)
+    src\esp\espFramework.c $(DEPS_47)
 	@echo '   [Compile] src/esp/espFramework.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espFramework.obj -Fd$(CONFIG)\obj\espFramework.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espFramework.c
 
 #
 #   espHandler.obj
 #
-DEPS_49 = $(DEPS_49) $(CONFIG)\inc\bit.h
-DEPS_49 = $(DEPS_49) $(CONFIG)\inc\appweb.h
-DEPS_49 = $(DEPS_49) $(CONFIG)\inc\esp.h
-DEPS_49 = $(DEPS_49) $(CONFIG)\inc\edi.h
+DEPS_48 = $(DEPS_48) $(CONFIG)\inc\bit.h
+DEPS_48 = $(DEPS_48) $(CONFIG)\inc\appweb.h
+DEPS_48 = $(DEPS_48) $(CONFIG)\inc\esp.h
+DEPS_48 = $(DEPS_48) $(CONFIG)\inc\edi.h
 
 $(CONFIG)\obj\espHandler.obj: \
-    src\esp\espHandler.c $(DEPS_49)
+    src\esp\espHandler.c $(DEPS_48)
 	@echo '   [Compile] src/esp/espHandler.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espHandler.obj -Fd$(CONFIG)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHandler.c
 
 #
 #   espHtml.obj
 #
-DEPS_50 = $(DEPS_50) $(CONFIG)\inc\bit.h
-DEPS_50 = $(DEPS_50) $(CONFIG)\inc\esp.h
-DEPS_50 = $(DEPS_50) $(CONFIG)\inc\edi.h
+DEPS_49 = $(DEPS_49) $(CONFIG)\inc\bit.h
+DEPS_49 = $(DEPS_49) $(CONFIG)\inc\esp.h
+DEPS_49 = $(DEPS_49) $(CONFIG)\inc\edi.h
 
 $(CONFIG)\obj\espHtml.obj: \
-    src\esp\espHtml.c $(DEPS_50)
+    src\esp\espHtml.c $(DEPS_49)
 	@echo '   [Compile] src/esp/espHtml.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHtml.c
 
 #
 #   espTemplate.obj
 #
-DEPS_51 = $(DEPS_51) $(CONFIG)\inc\bit.h
-DEPS_51 = $(DEPS_51) $(CONFIG)\inc\esp.h
+DEPS_50 = $(DEPS_50) $(CONFIG)\inc\bit.h
+DEPS_50 = $(DEPS_50) $(CONFIG)\inc\esp.h
 
 $(CONFIG)\obj\espTemplate.obj: \
-    src\esp\espTemplate.c $(DEPS_51)
+    src\esp\espTemplate.c $(DEPS_50)
 	@echo '   [Compile] src/esp/espTemplate.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espTemplate.obj -Fd$(CONFIG)\obj\espTemplate.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espTemplate.c
 
 #
 #   mdb.obj
 #
-DEPS_52 = $(DEPS_52) $(CONFIG)\inc\bit.h
-DEPS_52 = $(DEPS_52) $(CONFIG)\inc\appweb.h
-DEPS_52 = $(DEPS_52) $(CONFIG)\inc\edi.h
-DEPS_52 = $(DEPS_52) $(CONFIG)\inc\mdb.h
-DEPS_52 = $(DEPS_52) $(CONFIG)\inc\pcre.h
+DEPS_51 = $(DEPS_51) $(CONFIG)\inc\bit.h
+DEPS_51 = $(DEPS_51) $(CONFIG)\inc\appweb.h
+DEPS_51 = $(DEPS_51) $(CONFIG)\inc\edi.h
+DEPS_51 = $(DEPS_51) $(CONFIG)\inc\mdb.h
+DEPS_51 = $(DEPS_51) $(CONFIG)\inc\pcre.h
 
 $(CONFIG)\obj\mdb.obj: \
-    src\esp\mdb.c $(DEPS_52)
+    src\esp\mdb.c $(DEPS_51)
 	@echo '   [Compile] src/esp/mdb.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mdb.obj -Fd$(CONFIG)\obj\mdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\mdb.c
 
 #
 #   sdb.obj
 #
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\bit.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\appweb.h
+DEPS_52 = $(DEPS_52) $(CONFIG)\inc\bit.h
+DEPS_52 = $(DEPS_52) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\sdb.obj: \
-    src\esp\sdb.c $(DEPS_53)
+    src\esp\sdb.c $(DEPS_52)
 	@echo '   [Compile] src/esp/sdb.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\sdb.c
 
@@ -869,36 +906,46 @@ $(CONFIG)\obj\sdb.obj: \
 #
 #   libmod_esp
 #
-DEPS_54 = $(DEPS_54) $(CONFIG)\bin\libappweb.dll
+DEPS_53 = $(DEPS_53) $(CONFIG)\bin\libappweb.dll
 !IF "$(BIT_PACK_SQLITE)" == "1"
-DEPS_54 = $(DEPS_54) $(CONFIG)\bin\sqlite.exe
+DEPS_53 = $(DEPS_53) $(CONFIG)\bin\sqlite.exe
 !ENDIF
-DEPS_54 = $(DEPS_54) $(CONFIG)\inc\edi.h
-DEPS_54 = $(DEPS_54) $(CONFIG)\inc\esp-app.h
-DEPS_54 = $(DEPS_54) $(CONFIG)\inc\esp.h
-DEPS_54 = $(DEPS_54) $(CONFIG)\inc\mdb.h
-DEPS_54 = $(DEPS_54) $(CONFIG)\obj\edi.obj
-DEPS_54 = $(DEPS_54) $(CONFIG)\obj\esp.obj
-DEPS_54 = $(DEPS_54) $(CONFIG)\obj\espAbbrev.obj
-DEPS_54 = $(DEPS_54) $(CONFIG)\obj\espFramework.obj
-DEPS_54 = $(DEPS_54) $(CONFIG)\obj\espHandler.obj
-DEPS_54 = $(DEPS_54) $(CONFIG)\obj\espHtml.obj
-DEPS_54 = $(DEPS_54) $(CONFIG)\obj\espTemplate.obj
-DEPS_54 = $(DEPS_54) $(CONFIG)\obj\mdb.obj
-DEPS_54 = $(DEPS_54) $(CONFIG)\obj\sdb.obj
+DEPS_53 = $(DEPS_53) $(CONFIG)\inc\edi.h
+DEPS_53 = $(DEPS_53) $(CONFIG)\inc\esp-app.h
+DEPS_53 = $(DEPS_53) $(CONFIG)\inc\esp.h
+DEPS_53 = $(DEPS_53) $(CONFIG)\inc\mdb.h
+DEPS_53 = $(DEPS_53) $(CONFIG)\obj\edi.obj
+DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espAbbrev.obj
+DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espFramework.obj
+DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espHandler.obj
+DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espHtml.obj
+DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espTemplate.obj
+DEPS_53 = $(DEPS_53) $(CONFIG)\obj\mdb.obj
+DEPS_53 = $(DEPS_53) $(CONFIG)\obj\sdb.obj
 
-LIBS_54 = $(LIBS_54) libappweb.lib
-LIBS_54 = $(LIBS_54) libhttp.lib
-LIBS_54 = $(LIBS_54) libpcre.lib
-LIBS_54 = $(LIBS_54) libmpr.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_54 = $(LIBS_54) libsqlite3.lib
+LIBS_53 = $(LIBS_53) libsqlite3.lib
 !ENDIF
+LIBS_53 = $(LIBS_53) libhttp.lib
+LIBS_53 = $(LIBS_53) libpcre.lib
+LIBS_53 = $(LIBS_53) libmpr.lib
+LIBS_53 = $(LIBS_53) libappweb.lib
 
-$(CONFIG)\bin\libmod_esp.dll: $(DEPS_54)
+$(CONFIG)\bin\libmod_esp.dll: $(DEPS_53)
 	@echo '      [Link] libmod_esp'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_54) $(LIBS_54) $(LIBS) 
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_esp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBS_53) $(LIBS_53) $(LIBS) 
 !ENDIF
+
+#
+#   esp.obj
+#
+DEPS_54 = $(DEPS_54) $(CONFIG)\inc\bit.h
+DEPS_54 = $(DEPS_54) $(CONFIG)\inc\esp.h
+
+$(CONFIG)\obj\esp.obj: \
+    src\esp\esp.c $(DEPS_54)
+	@echo '   [Compile] src/esp/esp.c'
+	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\esp.c
 
 !IF "$(BIT_PACK_ESP)" == "1"
 #
@@ -918,13 +965,13 @@ DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espTemplate.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\mdb.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\sdb.obj
 
-LIBS_55 = $(LIBS_55) libappweb.lib
-LIBS_55 = $(LIBS_55) libhttp.lib
-LIBS_55 = $(LIBS_55) libpcre.lib
-LIBS_55 = $(LIBS_55) libmpr.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_55 = $(LIBS_55) libsqlite3.lib
 !ENDIF
+LIBS_55 = $(LIBS_55) libhttp.lib
+LIBS_55 = $(LIBS_55) libpcre.lib
+LIBS_55 = $(LIBS_55) libmpr.lib
+LIBS_55 = $(LIBS_55) libappweb.lib
 
 $(CONFIG)\bin\esp.exe: $(DEPS_55)
 	@echo '      [Link] esp'
@@ -940,7 +987,7 @@ DEPS_56 = $(DEPS_56) src\esp\esp.conf
 $(CONFIG)\bin\esp.conf: $(DEPS_56)
 	@echo '      [Copy] $(CONFIG)/bin/esp.conf'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
-	copy /Y "src\esp\esp.conf" "$(CONFIG)\bin\esp.conf"
+	copy /Y src\esp\esp.conf $(CONFIG)\bin\esp.conf
 !ENDIF
 
 !IF "$(BIT_PACK_ESP)" == "1"
@@ -952,7 +999,7 @@ DEPS_57 = $(DEPS_57) src\esp\esp.conf
 src\server\esp.conf: $(DEPS_57)
 	@echo '      [Copy] src/server/esp.conf'
 	if not exist "src\server" md "src\server"
-	copy /Y "src\esp\esp.conf" "src\server\esp.conf"
+	copy /Y src\esp\esp.conf src\server\esp.conf
 !ENDIF
 
 !IF "$(BIT_PACK_ESP)" == "1"
@@ -964,26 +1011,26 @@ DEPS_58 = $(DEPS_58) src\esp\esp-www
 $(CONFIG)\bin\esp-www: $(DEPS_58)
 	@echo '      [Copy] $(CONFIG)/bin/esp-www'
 	if not exist "$(CONFIG)\bin\esp-www" md "$(CONFIG)\bin\esp-www"
-	copy /Y "src\esp\esp-www\app.conf" "$(CONFIG)\bin\esp-www\app.conf"
-	copy /Y "src\esp\esp-www\appweb.conf" "$(CONFIG)\bin\esp-www\appweb.conf"
+	copy /Y src\esp\esp-www\app.conf $(CONFIG)\bin\esp-www\app.conf
+	copy /Y src\esp\esp-www\appweb.conf $(CONFIG)\bin\esp-www\appweb.conf
 	if not exist "$(CONFIG)\bin\esp-www\files\layouts" md "$(CONFIG)\bin\esp-www\files\layouts"
-	copy /Y "src\esp\esp-www\files\layouts\default.esp" "$(CONFIG)\bin\esp-www\files\layouts\default.esp"
+	copy /Y src\esp\esp-www\files\layouts\default.esp $(CONFIG)\bin\esp-www\files\layouts\default.esp
 	if not exist "$(CONFIG)\bin\esp-www\files\static\images" md "$(CONFIG)\bin\esp-www\files\static\images"
-	copy /Y "src\esp\esp-www\files\static\images\banner.jpg" "$(CONFIG)\bin\esp-www\files\static\images\banner.jpg"
-	copy /Y "src\esp\esp-www\files\static\images\favicon.ico" "$(CONFIG)\bin\esp-www\files\static\images\favicon.ico"
-	copy /Y "src\esp\esp-www\files\static\images\splash.jpg" "$(CONFIG)\bin\esp-www\files\static\images\splash.jpg"
+	copy /Y src\esp\esp-www\files\static\images\banner.jpg $(CONFIG)\bin\esp-www\files\static\images\banner.jpg
+	copy /Y src\esp\esp-www\files\static\images\favicon.ico $(CONFIG)\bin\esp-www\files\static\images\favicon.ico
+	copy /Y src\esp\esp-www\files\static\images\splash.jpg $(CONFIG)\bin\esp-www\files\static\images\splash.jpg
 	if not exist "$(CONFIG)\bin\esp-www\files\static" md "$(CONFIG)\bin\esp-www\files\static"
-	copy /Y "src\esp\esp-www\files\static\index.esp" "$(CONFIG)\bin\esp-www\files\static\index.esp"
+	copy /Y src\esp\esp-www\files\static\index.esp $(CONFIG)\bin\esp-www\files\static\index.esp
 	if not exist "$(CONFIG)\bin\esp-www\files\static\js" md "$(CONFIG)\bin\esp-www\files\static\js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.js" "$(CONFIG)\bin\esp-www\files\static\js\jquery-1.9.1.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.min.js" "$(CONFIG)\bin\esp-www\files\static\js\jquery-1.9.1.min.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "$(CONFIG)\bin\esp-www\files\static\js\jquery.esp.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "$(CONFIG)\bin\esp-www\files\static\js\jquery.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "$(CONFIG)\bin\esp-www\files\static\js\jquery.simplemodal.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "$(CONFIG)\bin\esp-www\files\static\js\jquery.tablesorter.js"
-	copy /Y "src\esp\esp-www\files\static\layout.css" "$(CONFIG)\bin\esp-www\files\static\layout.css"
+	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.js $(CONFIG)\bin\esp-www\files\static\js\jquery-1.9.1.js
+	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.min.js $(CONFIG)\bin\esp-www\files\static\js\jquery-1.9.1.min.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.esp.js $(CONFIG)\bin\esp-www\files\static\js\jquery.esp.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.js $(CONFIG)\bin\esp-www\files\static\js\jquery.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.js $(CONFIG)\bin\esp-www\files\static\js\jquery.simplemodal.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.js $(CONFIG)\bin\esp-www\files\static\js\jquery.tablesorter.js
+	copy /Y src\esp\esp-www\files\static\layout.css $(CONFIG)\bin\esp-www\files\static\layout.css
 	if not exist "$(CONFIG)\bin\esp-www\files\static\themes" md "$(CONFIG)\bin\esp-www\files\static\themes"
-	copy /Y "src\esp\esp-www\files\static\themes\default.css" "$(CONFIG)\bin\esp-www\files\static\themes\default.css"
+	copy /Y src\esp\esp-www\files\static\themes\default.css $(CONFIG)\bin\esp-www\files\static\themes\default.css
 !ENDIF
 
 !IF "$(BIT_PACK_ESP)" == "1"
@@ -995,7 +1042,7 @@ DEPS_59 = $(DEPS_59) src\esp\esp-appweb.conf
 $(CONFIG)\bin\esp-appweb.conf: $(DEPS_59)
 	@echo '      [Copy] $(CONFIG)/bin/esp-appweb.conf'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
-	copy /Y "src\esp\esp-appweb.conf" "$(CONFIG)\bin\esp-appweb.conf"
+	copy /Y src\esp\esp-appweb.conf $(CONFIG)\bin\esp-appweb.conf
 !ENDIF
 
 #
@@ -1004,7 +1051,7 @@ $(CONFIG)\bin\esp-appweb.conf: $(DEPS_59)
 $(CONFIG)\inc\ejs.h: $(DEPS_60)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\deps\ejs\ejs.h" "$(CONFIG)\inc\ejs.h"
+	copy /Y src\deps\ejs\ejs.h $(CONFIG)\inc\ejs.h
 
 #
 #   ejs.slots.h
@@ -1012,7 +1059,7 @@ $(CONFIG)\inc\ejs.h: $(DEPS_60)
 $(CONFIG)\inc\ejs.slots.h: $(DEPS_61)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.slots.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\deps\ejs\ejs.slots.h" "$(CONFIG)\inc\ejs.slots.h"
+	copy /Y src\deps\ejs\ejs.slots.h $(CONFIG)\inc\ejs.slots.h
 
 #
 #   ejsByteGoto.h
@@ -1020,7 +1067,7 @@ $(CONFIG)\inc\ejs.slots.h: $(DEPS_61)
 $(CONFIG)\inc\ejsByteGoto.h: $(DEPS_62)
 	@echo '      [Copy] $(CONFIG)/inc/ejsByteGoto.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\deps\ejs\ejsByteGoto.h" "$(CONFIG)\inc\ejsByteGoto.h"
+	copy /Y src\deps\ejs\ejsByteGoto.h $(CONFIG)\inc\ejsByteGoto.h
 
 #
 #   ejsLib.obj
@@ -1050,17 +1097,15 @@ DEPS_64 = $(DEPS_64) $(CONFIG)\inc\ejs.slots.h
 DEPS_64 = $(DEPS_64) $(CONFIG)\inc\ejsByteGoto.h
 DEPS_64 = $(DEPS_64) $(CONFIG)\obj\ejsLib.obj
 
-LIBS_64 = $(LIBS_64) libmpr.lib
-LIBS_64 = $(LIBS_64) libpcre.lib
-LIBS_64 = $(LIBS_64) libhttp.lib
-LIBS_64 = $(LIBS_64) libpcre.lib
-LIBS_64 = $(LIBS_64) libmpr.lib
-!IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_64 = $(LIBS_64) libsqlite3.lib
-!ENDIF
 !IF "$(BIT_PACK_EST)" == "1"
 LIBS_64 = $(LIBS_64) libest.lib
 !ENDIF
+!IF "$(BIT_PACK_SQLITE)" == "1"
+LIBS_64 = $(LIBS_64) libsqlite3.lib
+!ENDIF
+LIBS_64 = $(LIBS_64) libmpr.lib
+LIBS_64 = $(LIBS_64) libpcre.lib
+LIBS_64 = $(LIBS_64) libhttp.lib
 
 $(CONFIG)\bin\libejs.dll: $(DEPS_64)
 	@echo '      [Link] libejs'
@@ -1087,17 +1132,17 @@ DEPS_66 = $(DEPS_66) $(CONFIG)\bin\libejs.dll
 !ENDIF
 DEPS_66 = $(DEPS_66) $(CONFIG)\obj\ejs.obj
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_66 = $(LIBS_66) libejs.lib
-!ENDIF
-LIBS_66 = $(LIBS_66) libmpr.lib
-LIBS_66 = $(LIBS_66) libpcre.lib
 LIBS_66 = $(LIBS_66) libhttp.lib
+LIBS_66 = $(LIBS_66) libpcre.lib
+LIBS_66 = $(LIBS_66) libmpr.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_66 = $(LIBS_66) libsqlite3.lib
 !ENDIF
 !IF "$(BIT_PACK_EST)" == "1"
 LIBS_66 = $(LIBS_66) libest.lib
+!ENDIF
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+LIBS_66 = $(LIBS_66) libejs.lib
 !ENDIF
 
 $(CONFIG)\bin\ejs.exe: $(DEPS_66)
@@ -1125,17 +1170,17 @@ DEPS_68 = $(DEPS_68) $(CONFIG)\bin\libejs.dll
 !ENDIF
 DEPS_68 = $(DEPS_68) $(CONFIG)\obj\ejsc.obj
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_68 = $(LIBS_68) libejs.lib
-!ENDIF
-LIBS_68 = $(LIBS_68) libmpr.lib
-LIBS_68 = $(LIBS_68) libpcre.lib
 LIBS_68 = $(LIBS_68) libhttp.lib
+LIBS_68 = $(LIBS_68) libpcre.lib
+LIBS_68 = $(LIBS_68) libmpr.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_68 = $(LIBS_68) libsqlite3.lib
 !ENDIF
 !IF "$(BIT_PACK_EST)" == "1"
 LIBS_68 = $(LIBS_68) libest.lib
+!ENDIF
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+LIBS_68 = $(LIBS_68) libejs.lib
 !ENDIF
 
 $(CONFIG)\bin\ejsc.exe: $(DEPS_68)
@@ -1174,10 +1219,10 @@ $(CONFIG)\obj\cgiHandler.obj: \
 DEPS_71 = $(DEPS_71) $(CONFIG)\bin\libappweb.dll
 DEPS_71 = $(DEPS_71) $(CONFIG)\obj\cgiHandler.obj
 
-LIBS_71 = $(LIBS_71) libappweb.lib
 LIBS_71 = $(LIBS_71) libhttp.lib
 LIBS_71 = $(LIBS_71) libpcre.lib
 LIBS_71 = $(LIBS_71) libmpr.lib
+LIBS_71 = $(LIBS_71) libappweb.lib
 
 $(CONFIG)\bin\libmod_cgi.dll: $(DEPS_71)
 	@echo '      [Link] libmod_cgi'
@@ -1205,19 +1250,19 @@ DEPS_73 = $(DEPS_73) $(CONFIG)\bin\libejs.dll
 !ENDIF
 DEPS_73 = $(DEPS_73) $(CONFIG)\obj\ejsHandler.obj
 
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_73 = $(LIBS_73) libejs.lib
-!ENDIF
-LIBS_73 = $(LIBS_73) libappweb.lib
-LIBS_73 = $(LIBS_73) libhttp.lib
-LIBS_73 = $(LIBS_73) libpcre.lib
-LIBS_73 = $(LIBS_73) libmpr.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_73 = $(LIBS_73) libsqlite3.lib
 !ENDIF
 !IF "$(BIT_PACK_EST)" == "1"
 LIBS_73 = $(LIBS_73) libest.lib
 !ENDIF
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+LIBS_73 = $(LIBS_73) libejs.lib
+!ENDIF
+LIBS_73 = $(LIBS_73) libhttp.lib
+LIBS_73 = $(LIBS_73) libpcre.lib
+LIBS_73 = $(LIBS_73) libmpr.lib
+LIBS_73 = $(LIBS_73) libappweb.lib
 
 $(CONFIG)\bin\libmod_ejs.dll: $(DEPS_73)
 	@echo '      [Link] libmod_ejs'
@@ -1233,7 +1278,7 @@ DEPS_74 = $(DEPS_74) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\phpHandler.obj: \
     src\modules\phpHandler.c $(DEPS_74)
 	@echo '   [Compile] src/modules/phpHandler.c'
-	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\phpHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_PHP_PATH) -I$(BIT_PACK_PHP_PATH)\main -I$(BIT_PACK_PHP_PATH)\Zend -I$(BIT_PACK_PHP_PATH)\TSRM src\modules\phpHandler.c
 
 !IF "$(BIT_PACK_PHP)" == "1"
 #
@@ -1242,14 +1287,17 @@ $(CONFIG)\obj\phpHandler.obj: \
 DEPS_75 = $(DEPS_75) $(CONFIG)\bin\libappweb.dll
 DEPS_75 = $(DEPS_75) $(CONFIG)\obj\phpHandler.obj
 
-LIBS_75 = $(LIBS_75) libappweb.lib
+!IF "$(BIT_PACK_PHP)" == "1"
+LIBS_75 = $(LIBS_75) libphp5ts.lib.lib
+!ENDIF
 LIBS_75 = $(LIBS_75) libhttp.lib
 LIBS_75 = $(LIBS_75) libpcre.lib
 LIBS_75 = $(LIBS_75) libmpr.lib
+LIBS_75 = $(LIBS_75) libappweb.lib
 
 $(CONFIG)\bin\libmod_php.dll: $(DEPS_75)
 	@echo '      [Link] libmod_php'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_php.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\phpHandler.obj $(LIBS_75) $(LIBS_75) $(LIBS) 
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmod_php.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) -libpath:$(BIT_PACK_PHP_PATH)\.libs $(CONFIG)\obj\phpHandler.obj php5ts.lib $(LIBS_75) $(LIBS_75) $(LIBS) 
 !ENDIF
 
 #
@@ -1270,10 +1318,10 @@ $(CONFIG)\obj\sslModule.obj: \
 DEPS_77 = $(DEPS_77) $(CONFIG)\bin\libappweb.dll
 DEPS_77 = $(DEPS_77) $(CONFIG)\obj\sslModule.obj
 
-LIBS_77 = $(LIBS_77) libappweb.lib
 LIBS_77 = $(LIBS_77) libhttp.lib
 LIBS_77 = $(LIBS_77) libpcre.lib
 LIBS_77 = $(LIBS_77) libmpr.lib
+LIBS_77 = $(LIBS_77) libappweb.lib
 
 $(CONFIG)\bin\libmod_ssl.dll: $(DEPS_77)
 	@echo '      [Link] libmod_ssl'
@@ -1297,10 +1345,10 @@ $(CONFIG)\obj\authpass.obj: \
 DEPS_79 = $(DEPS_79) $(CONFIG)\bin\libappweb.dll
 DEPS_79 = $(DEPS_79) $(CONFIG)\obj\authpass.obj
 
-LIBS_79 = $(LIBS_79) libappweb.lib
 LIBS_79 = $(LIBS_79) libhttp.lib
 LIBS_79 = $(LIBS_79) libpcre.lib
 LIBS_79 = $(LIBS_79) libmpr.lib
+LIBS_79 = $(LIBS_79) libappweb.lib
 
 $(CONFIG)\bin\authpass.exe: $(DEPS_79)
 	@echo '      [Link] authpass'
@@ -1362,9 +1410,9 @@ DEPS_84 = $(DEPS_84) $(CONFIG)\obj\slink.obj
 LIBS_84 = $(LIBS_84) libmod_esp.lib
 !ENDIF
 LIBS_84 = $(LIBS_84) libappweb.lib
-LIBS_84 = $(LIBS_84) libhttp.lib
-LIBS_84 = $(LIBS_84) libpcre.lib
 LIBS_84 = $(LIBS_84) libmpr.lib
+LIBS_84 = $(LIBS_84) libpcre.lib
+LIBS_84 = $(LIBS_84) libhttp.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_84 = $(LIBS_84) libsqlite3.lib
 !ENDIF
@@ -1392,17 +1440,17 @@ DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libappweb.dll
 DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libslink.dll
 DEPS_86 = $(DEPS_86) $(CONFIG)\obj\appweb.obj
 
-LIBS_86 = $(LIBS_86) libslink.lib
-LIBS_86 = $(LIBS_86) libappweb.lib
-LIBS_86 = $(LIBS_86) libhttp.lib
-LIBS_86 = $(LIBS_86) libpcre.lib
-LIBS_86 = $(LIBS_86) libmpr.lib
-!IF "$(BIT_PACK_ESP)" == "1"
-LIBS_86 = $(LIBS_86) libmod_esp.lib
-!ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_86 = $(LIBS_86) libsqlite3.lib
 !ENDIF
+!IF "$(BIT_PACK_ESP)" == "1"
+LIBS_86 = $(LIBS_86) libmod_esp.lib
+!ENDIF
+LIBS_86 = $(LIBS_86) libslink.lib
+LIBS_86 = $(LIBS_86) libhttp.lib
+LIBS_86 = $(LIBS_86) libpcre.lib
+LIBS_86 = $(LIBS_86) libmpr.lib
+LIBS_86 = $(LIBS_86) libappweb.lib
 
 $(CONFIG)\bin\appweb.exe: $(DEPS_86)
 	@echo '      [Link] appweb'
@@ -1414,7 +1462,7 @@ $(CONFIG)\bin\appweb.exe: $(DEPS_86)
 $(CONFIG)\inc\appwebMonitor.h: $(DEPS_87)
 	@echo '      [Copy] $(CONFIG)/inc/appwebMonitor.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\server\windows\appwebMonitor.h" "$(CONFIG)\inc\appwebMonitor.h"
+	copy /Y src\server\windows\appwebMonitor.h $(CONFIG)\inc\appwebMonitor.h
 
 #
 #   monitorResources.h
@@ -1422,7 +1470,7 @@ $(CONFIG)\inc\appwebMonitor.h: $(DEPS_87)
 $(CONFIG)\inc\monitorResources.h: $(DEPS_88)
 	@echo '      [Copy] $(CONFIG)/inc/monitorResources.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "src\server\windows\monitorResources.h" "$(CONFIG)\inc\monitorResources.h"
+	copy /Y src\server\windows\monitorResources.h $(CONFIG)\inc\monitorResources.h
 
 #
 #   appwebMonitor.res
@@ -1452,14 +1500,14 @@ DEPS_91 = $(DEPS_91) $(CONFIG)\inc\monitorResources.h
 DEPS_91 = $(DEPS_91) $(CONFIG)\obj\appwebMonitor.res
 DEPS_91 = $(DEPS_91) $(CONFIG)\obj\appwebMonitor.obj
 
-LIBS_91 = $(LIBS_91) libappweb.lib
 LIBS_91 = $(LIBS_91) libhttp.lib
 LIBS_91 = $(LIBS_91) libpcre.lib
 LIBS_91 = $(LIBS_91) libmpr.lib
+LIBS_91 = $(LIBS_91) libappweb.lib
 
 $(CONFIG)\bin\appwebMonitor.exe: $(DEPS_91)
 	@echo '      [Link] appwebMonitor'
-	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appwebMonitor.res $(CONFIG)\obj\appwebMonitor.obj shell32.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib  $(LIBS_91) $(LIBS_91)
+	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appwebMonitor.res $(CONFIG)\obj\appwebMonitor.obj msvcrt.lib oldnames.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib shell32.lib  $(LIBS_91) $(LIBS_91)
 
 #
 #   appwebMonitor.ico
@@ -1469,7 +1517,7 @@ DEPS_92 = $(DEPS_92) src\server\windows\appwebMonitor.ico
 $(CONFIG)\bin\appwebMonitor.ico: $(DEPS_92)
 	@echo '      [Copy] $(CONFIG)/bin/appwebMonitor.ico'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
-	copy /Y "src\server\windows\appwebMonitor.ico" "$(CONFIG)\bin\appwebMonitor.ico"
+	copy /Y src\server\windows\appwebMonitor.ico $(CONFIG)\bin\appwebMonitor.ico
 
 #
 #   server-cache
@@ -1485,7 +1533,7 @@ src\server\cache: $(DEPS_93)
 $(CONFIG)\inc\testAppweb.h: $(DEPS_94)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y "test\testAppweb.h" "$(CONFIG)\inc\testAppweb.h"
+	copy /Y test\testAppweb.h $(CONFIG)\inc\testAppweb.h
 
 #
 #   testAppweb.obj
@@ -1519,10 +1567,10 @@ DEPS_97 = $(DEPS_97) $(CONFIG)\inc\testAppweb.h
 DEPS_97 = $(DEPS_97) $(CONFIG)\obj\testAppweb.obj
 DEPS_97 = $(DEPS_97) $(CONFIG)\obj\testHttp.obj
 
-LIBS_97 = $(LIBS_97) libappweb.lib
 LIBS_97 = $(LIBS_97) libhttp.lib
 LIBS_97 = $(LIBS_97) libpcre.lib
 LIBS_97 = $(LIBS_97) libmpr.lib
+LIBS_97 = $(LIBS_97) libappweb.lib
 
 $(CONFIG)\bin\testAppweb.exe: $(DEPS_97)
 	@echo '      [Link] testAppweb'
@@ -1576,12 +1624,12 @@ DEPS_102 = $(DEPS_102) src\esp\esp-www\files\static\js
 test\web\js: $(DEPS_102)
 	@echo '      [Copy] test/web/js'
 	if not exist "test\web\js" md "test\web\js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.js" "test\web\js\jquery-1.9.1.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.min.js" "test\web\js\jquery-1.9.1.min.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "test\web\js\jquery.esp.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "test\web\js\jquery.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "test\web\js\jquery.simplemodal.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "test\web\js\jquery.tablesorter.js"
+	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.js test\web\js\jquery-1.9.1.js
+	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.min.js test\web\js\jquery-1.9.1.min.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.esp.js test\web\js\jquery.esp.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.js test\web\js\jquery.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.js test\web\js\jquery.simplemodal.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.js test\web\js\jquery.tablesorter.js
 
 
 #
@@ -1595,149 +1643,151 @@ stop: $(DEPS_103)
 #
 #   installBinary
 #
-DEPS_104 = $(DEPS_104) stop
-
 installBinary: $(DEPS_104)
 	if not exist "$(BIT_VAPP_PREFIX)\log" md "$(BIT_VAPP_PREFIX)\log"
 	if not exist "$(BIT_VAPP_PREFIX)\cache" md "$(BIT_VAPP_PREFIX)\cache"
 	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
-	copy /Y "$(CONFIG)\bin\appman.exe" "$(BIT_VAPP_PREFIX)\bin\appman.exe"
-	copy /Y "$(CONFIG)\bin\appweb.exe" "$(BIT_VAPP_PREFIX)\bin\appweb.exe"
-	copy /Y "$(CONFIG)\bin\http.exe" "$(BIT_VAPP_PREFIX)\bin\http.exe"
+	copy /Y $(CONFIG)\bin\appweb.exe "$(BIT_VAPP_PREFIX)\bin\appweb.exe"
+	copy /Y $(CONFIG)\bin\appman.exe "$(BIT_VAPP_PREFIX)\bin\appman.exe"
+	copy /Y $(CONFIG)\bin\http.exe "$(BIT_VAPP_PREFIX)\bin\http.exe"
 !IF "$(BIT_PACK_ESP)" == "1"
-	copy /Y "$(CONFIG)\bin\esp.exe" "$(BIT_VAPP_PREFIX)\bin\esp.exe"
+	copy /Y $(CONFIG)\bin\esp.exe "$(BIT_VAPP_PREFIX)\bin\esp.exe"
 !ENDIF
-	copy /Y "$(CONFIG)\bin\appwebMonitor.exe" "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.exe"
-	copy /Y "$(CONFIG)\bin\appwebMonitor.ico" "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.ico"
-	copy /Y "$(CONFIG)\bin\libappweb.dll" "$(BIT_VAPP_PREFIX)\bin\libappweb.dll"
-	copy /Y "$(CONFIG)\bin\libhttp.dll" "$(BIT_VAPP_PREFIX)\bin\libhttp.dll"
-	copy /Y "$(CONFIG)\bin\libmpr.dll" "$(BIT_VAPP_PREFIX)\bin\libmpr.dll"
-	copy /Y "$(CONFIG)\bin\libpcre.dll" "$(BIT_VAPP_PREFIX)\bin\libpcre.dll"
-	copy /Y "$(CONFIG)\bin\libslink.dll" "$(BIT_VAPP_PREFIX)\bin\libslink.dll"
+	copy /Y $(CONFIG)\bin\appwebMonitor.exe "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.exe"
+	copy /Y $(CONFIG)\bin\appwebMonitor.ico "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.ico"
+	copy /Y $(CONFIG)\bin\libappweb.dll "$(BIT_VAPP_PREFIX)\bin\libappweb.dll"
+	copy /Y $(CONFIG)\bin\libhttp.dll "$(BIT_VAPP_PREFIX)\bin\libhttp.dll"
+	copy /Y $(CONFIG)\bin\libmpr.dll "$(BIT_VAPP_PREFIX)\bin\libmpr.dll"
+	copy /Y $(CONFIG)\bin\libpcre.dll "$(BIT_VAPP_PREFIX)\bin\libpcre.dll"
+	copy /Y $(CONFIG)\bin\libslink.dll "$(BIT_VAPP_PREFIX)\bin\libslink.dll"
 !IF "$(BIT_PACK_SSL)" == "1"
-	copy /Y "$(CONFIG)\bin\libmprssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmprssl.dll"
-	copy /Y "$(CONFIG)\bin\libmod_ssl.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_ssl.dll"
-	copy /Y "$(CONFIG)\bin\ca.crt" "$(BIT_VAPP_PREFIX)\bin\ca.crt"
+	copy /Y $(CONFIG)\bin\libmprssl.dll "$(BIT_VAPP_PREFIX)\bin\libmprssl.dll"
+	copy /Y $(CONFIG)\bin\libmod_ssl.dll "$(BIT_VAPP_PREFIX)\bin\libmod_ssl.dll"
+	copy /Y $(CONFIG)\bin\ca.crt "$(BIT_VAPP_PREFIX)\bin\ca.crt"
 !ENDIF
 !IF "$(BIT_PACK_OPENSSL)" == "1"
-	copy /Y "$(CONFIG)\bin\libeay32.dll" "$(BIT_VAPP_PREFIX)\bin\libeay32.dll"
-	copy /Y "$(CONFIG)\bin\ssleay32.dll" "$(BIT_VAPP_PREFIX)\bin\ssleay32.dll"
+	copy /Y $(CONFIG)\bin\libeay32.dll "$(BIT_VAPP_PREFIX)\bin\libeay32.dll"
+	copy /Y $(CONFIG)\bin\ssleay32.dll "$(BIT_VAPP_PREFIX)\bin\ssleay32.dll"
 !ENDIF
 !IF "$(BIT_PACK_EST)" == "1"
-	copy /Y "$(CONFIG)\bin\libest.dll" "$(BIT_VAPP_PREFIX)\bin\libest.dll"
+	copy /Y $(CONFIG)\bin\libest.dll "$(BIT_VAPP_PREFIX)\bin\libest.dll"
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-	copy /Y "$(CONFIG)\bin\libsqlite3.dll" "$(BIT_VAPP_PREFIX)\bin\libsqlite3.dll"
+	copy /Y $(CONFIG)\bin\libsqlite3.dll "$(BIT_VAPP_PREFIX)\bin\libsqlite3.dll"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-	copy /Y "$(CONFIG)\bin\libmod_esp.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_esp.dll"
+	copy /Y $(CONFIG)\bin\libmod_esp.dll "$(BIT_VAPP_PREFIX)\bin\libmod_esp.dll"
 !ENDIF
 !IF "$(BIT_PACK_CGI)" == "1"
-	copy /Y "$(CONFIG)\bin\libmod_cgi.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_cgi.dll"
+	copy /Y $(CONFIG)\bin\libmod_cgi.dll "$(BIT_VAPP_PREFIX)\bin\libmod_cgi.dll"
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-	copy /Y "$(CONFIG)\bin\libejs.dll" "$(BIT_VAPP_PREFIX)\bin\libejs.dll"
-	copy /Y "$(CONFIG)\bin\libmod_ejs.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_ejs.dll"
+	copy /Y $(CONFIG)\bin\libejs.dll "$(BIT_VAPP_PREFIX)\bin\libejs.dll"
+	copy /Y $(CONFIG)\bin\libmod_ejs.dll "$(BIT_VAPP_PREFIX)\bin\libmod_ejs.dll"
 !ENDIF
 !IF "$(BIT_PACK_PHP)" == "1"
-	copy /Y "$(CONFIG)\bin\libmod_php.dll" "$(BIT_VAPP_PREFIX)\bin\libmod_php.dll"
-	copy /Y "$(CONFIG)\bin\php5ts.dll" "$(BIT_VAPP_PREFIX)\bin\php5ts.dll"
+	copy /Y $(CONFIG)\bin\libmod_php.dll "$(BIT_VAPP_PREFIX)\bin\libmod_php.dll"
+	copy /Y $(CONFIG)\bin\php5ts.dll "$(BIT_VAPP_PREFIX)\bin\php5ts.dll"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-	copy /Y "$(CONFIG)\bin\libmod_esp.lib" "$(BIT_VAPP_PREFIX)\bin\libmod_esp.lib"
-	copy /Y "$(CONFIG)\bin\libappweb.lib" "$(BIT_VAPP_PREFIX)\bin\libappweb.lib"
-	copy /Y "$(CONFIG)\bin\libpcre.lib" "$(BIT_VAPP_PREFIX)\bin\libpcre.lib"
-	copy /Y "$(CONFIG)\bin\libhttp.lib" "$(BIT_VAPP_PREFIX)\bin\libhttp.lib"
-	copy /Y "$(CONFIG)\bin\libmpr.lib" "$(BIT_VAPP_PREFIX)\bin\libmpr.lib"
+	copy /Y $(CONFIG)\bin\libmod_esp.lib "$(BIT_VAPP_PREFIX)\bin\libmod_esp.lib"
+	copy /Y $(CONFIG)\bin\libappweb.lib "$(BIT_VAPP_PREFIX)\bin\libappweb.lib"
+	copy /Y $(CONFIG)\bin\libpcre.lib "$(BIT_VAPP_PREFIX)\bin\libpcre.lib"
+	copy /Y $(CONFIG)\bin\libhttp.lib "$(BIT_VAPP_PREFIX)\bin\libhttp.lib"
+	copy /Y $(CONFIG)\bin\libmpr.lib "$(BIT_VAPP_PREFIX)\bin\libmpr.lib"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www" md "$(BIT_VAPP_PREFIX)\bin\esp-www"
-	copy /Y "src\esp\esp-www\app.conf" "$(BIT_VAPP_PREFIX)\bin\esp-www\app.conf"
-	copy /Y "src\esp\esp-www\appweb.conf" "$(BIT_VAPP_PREFIX)\bin\esp-www\appweb.conf"
+	copy /Y src\esp\esp-www\app.conf "$(BIT_VAPP_PREFIX)\bin\esp-www\app.conf"
+	copy /Y src\esp\esp-www\appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-www\appweb.conf"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts"
-	copy /Y "src\esp\esp-www\files\layouts\default.esp" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts\default.esp"
+	copy /Y src\esp\esp-www\files\layouts\default.esp "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts\default.esp"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images"
-	copy /Y "src\esp\esp-www\files\static\images\banner.jpg" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images\banner.jpg"
-	copy /Y "src\esp\esp-www\files\static\images\favicon.ico" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images\favicon.ico"
-	copy /Y "src\esp\esp-www\files\static\images\splash.jpg" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images\splash.jpg"
+	copy /Y src\esp\esp-www\files\static\images\banner.jpg "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images\banner.jpg"
+	copy /Y src\esp\esp-www\files\static\images\favicon.ico "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images\favicon.ico"
+	copy /Y src\esp\esp-www\files\static\images\splash.jpg "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images\splash.jpg"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static"
-	copy /Y "src\esp\esp-www\files\static\index.esp" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\index.esp"
+	copy /Y src\esp\esp-www\files\static\index.esp "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\index.esp"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.js" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery-1.9.1.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery-1.9.1.min.js" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery-1.9.1.min.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.esp.js" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.esp.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.js" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.simplemodal.js" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.simplemodal.js"
-	copy /Y "src\esp\esp-www\files\static\js\jquery.tablesorter.js" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.tablesorter.js"
-	copy /Y "src\esp\esp-www\files\static\layout.css" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\layout.css"
+	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery-1.9.1.js"
+	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery-1.9.1.min.js"
+	copy /Y src\esp\esp-www\files\static\js\jquery.esp.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.esp.js"
+	copy /Y src\esp\esp-www\files\static\js\jquery.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.js"
+	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.simplemodal.js"
+	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.tablesorter.js"
+	copy /Y src\esp\esp-www\files\static\layout.css "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\layout.css"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes"
-	copy /Y "src\esp\esp-www\files\static\themes\default.css" "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes\default.css"
-	copy /Y "src\esp\esp-appweb.conf" "$(BIT_VAPP_PREFIX)\bin\esp-appweb.conf"
+	copy /Y src\esp\esp-www\files\static\themes\default.css "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes\default.css"
+	copy /Y src\esp\esp-appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-appweb.conf"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-	copy /Y "$(CONFIG)\bin\esp.conf" "$(BIT_VAPP_PREFIX)\bin\esp.conf"
+	copy /Y $(CONFIG)\bin\esp.conf "$(BIT_VAPP_PREFIX)\bin\esp.conf"
 !ENDIF
 	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
-	copy /Y "src\server\web\bench\1b.html" "$(BIT_VAPP_PREFIX)\web\bench\1b.html"
-	copy /Y "src\server\web\bench\4k.html" "$(BIT_VAPP_PREFIX)\web\bench\4k.html"
-	copy /Y "src\server\web\bench\64k.html" "$(BIT_VAPP_PREFIX)\web\bench\64k.html"
+	copy /Y src\server\web\bench\1b.html "$(BIT_VAPP_PREFIX)\web\bench\1b.html"
+	copy /Y src\server\web\bench\4k.html "$(BIT_VAPP_PREFIX)\web\bench\4k.html"
+	copy /Y src\server\web\bench\64k.html "$(BIT_VAPP_PREFIX)\web\bench\64k.html"
 	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	copy /Y "src\server\web\favicon.ico" "$(BIT_VAPP_PREFIX)\web\favicon.ico"
+	copy /Y src\server\web\favicon.ico "$(BIT_VAPP_PREFIX)\web\favicon.ico"
 	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
-	copy /Y "src\server\web\icons\back.gif" "$(BIT_VAPP_PREFIX)\web\icons\back.gif"
-	copy /Y "src\server\web\icons\blank.gif" "$(BIT_VAPP_PREFIX)\web\icons\blank.gif"
-	copy /Y "src\server\web\icons\compressed.gif" "$(BIT_VAPP_PREFIX)\web\icons\compressed.gif"
-	copy /Y "src\server\web\icons\folder.gif" "$(BIT_VAPP_PREFIX)\web\icons\folder.gif"
-	copy /Y "src\server\web\icons\parent.gif" "$(BIT_VAPP_PREFIX)\web\icons\parent.gif"
-	copy /Y "src\server\web\icons\space.gif" "$(BIT_VAPP_PREFIX)\web\icons\space.gif"
-	copy /Y "src\server\web\icons\text.gif" "$(BIT_VAPP_PREFIX)\web\icons\text.gif"
-	copy /Y "src\server\web\iehacks.css" "$(BIT_VAPP_PREFIX)\web\iehacks.css"
+	copy /Y src\server\web\icons\back.gif "$(BIT_VAPP_PREFIX)\web\icons\back.gif"
+	copy /Y src\server\web\icons\blank.gif "$(BIT_VAPP_PREFIX)\web\icons\blank.gif"
+	copy /Y src\server\web\icons\compressed.gif "$(BIT_VAPP_PREFIX)\web\icons\compressed.gif"
+	copy /Y src\server\web\icons\folder.gif "$(BIT_VAPP_PREFIX)\web\icons\folder.gif"
+	copy /Y src\server\web\icons\parent.gif "$(BIT_VAPP_PREFIX)\web\icons\parent.gif"
+	copy /Y src\server\web\icons\space.gif "$(BIT_VAPP_PREFIX)\web\icons\space.gif"
+	copy /Y src\server\web\icons\text.gif "$(BIT_VAPP_PREFIX)\web\icons\text.gif"
+	copy /Y src\server\web\iehacks.css "$(BIT_VAPP_PREFIX)\web\iehacks.css"
 	if not exist "$(BIT_VAPP_PREFIX)\web\images" md "$(BIT_VAPP_PREFIX)\web\images"
-	copy /Y "src\server\web\images\banner.jpg" "$(BIT_VAPP_PREFIX)\web\images\banner.jpg"
-	copy /Y "src\server\web\images\bottomShadow.jpg" "$(BIT_VAPP_PREFIX)\web\images\bottomShadow.jpg"
-	copy /Y "src\server\web\images\shadow.jpg" "$(BIT_VAPP_PREFIX)\web\images\shadow.jpg"
-	copy /Y "src\server\web\index.html" "$(BIT_VAPP_PREFIX)\web\index.html"
-	copy /Y "src\server\web\min-index.html" "$(BIT_VAPP_PREFIX)\web\min-index.html"
-	copy /Y "src\server\web\print.css" "$(BIT_VAPP_PREFIX)\web\print.css"
-	copy /Y "src\server\web\screen.css" "$(BIT_VAPP_PREFIX)\web\screen.css"
+	copy /Y src\server\web\images\banner.jpg "$(BIT_VAPP_PREFIX)\web\images\banner.jpg"
+	copy /Y src\server\web\images\bottomShadow.jpg "$(BIT_VAPP_PREFIX)\web\images\bottomShadow.jpg"
+	copy /Y src\server\web\images\shadow.jpg "$(BIT_VAPP_PREFIX)\web\images\shadow.jpg"
+	copy /Y src\server\web\index.html "$(BIT_VAPP_PREFIX)\web\index.html"
+	copy /Y src\server\web\min-index.html "$(BIT_VAPP_PREFIX)\web\min-index.html"
+	copy /Y src\server\web\print.css "$(BIT_VAPP_PREFIX)\web\print.css"
+	copy /Y src\server\web\screen.css "$(BIT_VAPP_PREFIX)\web\screen.css"
 	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y "src\server\web\test\bench.html" "$(BIT_VAPP_PREFIX)\web\test\bench.html"
-	copy /Y "src\server\web\test\test.cgi" "$(BIT_VAPP_PREFIX)\web\test\test.cgi"
-	copy /Y "src\server\web\test\test.ejs" "$(BIT_VAPP_PREFIX)\web\test\test.ejs"
-	copy /Y "src\server\web\test\test.esp" "$(BIT_VAPP_PREFIX)\web\test\test.esp"
-	copy /Y "src\server\web\test\test.html" "$(BIT_VAPP_PREFIX)\web\test\test.html"
-	copy /Y "src\server\web\test\test.php" "$(BIT_VAPP_PREFIX)\web\test\test.php"
-	copy /Y "src\server\web\test\test.pl" "$(BIT_VAPP_PREFIX)\web\test\test.pl"
-	copy /Y "src\server\web\test\test.py" "$(BIT_VAPP_PREFIX)\web\test\test.py"
+	copy /Y src\server\web\test\bench.html "$(BIT_VAPP_PREFIX)\web\test\bench.html"
+	copy /Y src\server\web\test\test.cgi "$(BIT_VAPP_PREFIX)\web\test\test.cgi"
+	copy /Y src\server\web\test\test.ejs "$(BIT_VAPP_PREFIX)\web\test\test.ejs"
+	copy /Y src\server\web\test\test.esp "$(BIT_VAPP_PREFIX)\web\test\test.esp"
+	copy /Y src\server\web\test\test.html "$(BIT_VAPP_PREFIX)\web\test\test.html"
+	copy /Y src\server\web\test\test.php "$(BIT_VAPP_PREFIX)\web\test\test.php"
+	copy /Y src\server\web\test\test.pl "$(BIT_VAPP_PREFIX)\web\test\test.pl"
+	copy /Y src\server\web\test\test.py "$(BIT_VAPP_PREFIX)\web\test\test.py"
+	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
+	copy /Y src\server\web\test\test.cgi "$(BIT_VAPP_PREFIX)\web\test\test.cgi"
+	copy /Y src\server\web\test\test.pl "$(BIT_VAPP_PREFIX)\web\test\test.pl"
+	copy /Y src\server\web\test\test.py "$(BIT_VAPP_PREFIX)\web\test\test.py"
 	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
-	copy /Y "src\server\mime.types" "$(BIT_VAPP_PREFIX)\mime.types"
+	copy /Y src\server\mime.types "$(BIT_VAPP_PREFIX)\mime.types"
 !IF "$(BIT_PACK_PHP)" == "1"
-	copy /Y "src\server\php.ini" "$(BIT_VAPP_PREFIX)\php.ini"
+	copy /Y src\server\php.ini "$(BIT_VAPP_PREFIX)\php.ini"
 !ENDIF
-	copy /Y "src\server\appweb.conf" "$(BIT_VAPP_PREFIX)\appweb.conf"
+	copy /Y src\server\appweb.conf "$(BIT_VAPP_PREFIX)\appweb.conf"
 	if not exist "$(BIT_VAPP_PREFIX)\inc" md "$(BIT_VAPP_PREFIX)\inc"
-	copy /Y "$(CONFIG)\inc\bit.h" "$(BIT_VAPP_PREFIX)\inc\bit.h"
-	copy /Y "src\bitos.h" "$(BIT_VAPP_PREFIX)\inc\bitos.h"
-	copy /Y "src\appweb.h" "$(BIT_VAPP_PREFIX)\inc\appweb.h"
-	copy /Y "src\customize.h" "$(BIT_VAPP_PREFIX)\inc\customize.h"
-	copy /Y "src\deps\est\est.h" "$(BIT_VAPP_PREFIX)\inc\est.h"
-	copy /Y "src\deps\http\http.h" "$(BIT_VAPP_PREFIX)\inc\http.h"
-	copy /Y "src\deps\mpr\mpr.h" "$(BIT_VAPP_PREFIX)\inc\mpr.h"
-	copy /Y "src\deps\pcre\pcre.h" "$(BIT_VAPP_PREFIX)\inc\pcre.h"
-	copy /Y "src\deps\sqlite\sqlite3.h" "$(BIT_VAPP_PREFIX)\inc\sqlite3.h"
+	copy /Y $(CONFIG)\inc\bit.h "$(BIT_VAPP_PREFIX)\inc\bit.h"
+	copy /Y src\bitos.h "$(BIT_VAPP_PREFIX)\inc\bitos.h"
+	copy /Y src\appweb.h "$(BIT_VAPP_PREFIX)\inc\appweb.h"
+	copy /Y src\customize.h "$(BIT_VAPP_PREFIX)\inc\customize.h"
+	copy /Y src\deps\est\est.h "$(BIT_VAPP_PREFIX)\inc\est.h"
+	copy /Y src\deps\http\http.h "$(BIT_VAPP_PREFIX)\inc\http.h"
+	copy /Y src\deps\mpr\mpr.h "$(BIT_VAPP_PREFIX)\inc\mpr.h"
+	copy /Y src\deps\pcre\pcre.h "$(BIT_VAPP_PREFIX)\inc\pcre.h"
+	copy /Y src\deps\sqlite\sqlite3.h "$(BIT_VAPP_PREFIX)\inc\sqlite3.h"
 !IF "$(BIT_PACK_ESP)" == "1"
-	copy /Y "src\esp\edi.h" "$(BIT_VAPP_PREFIX)\inc\edi.h"
-	copy /Y "src\esp\esp-app.h" "$(BIT_VAPP_PREFIX)\inc\esp-app.h"
-	copy /Y "src\esp\esp.h" "$(BIT_VAPP_PREFIX)\inc\esp.h"
-	copy /Y "src\esp\mdb.h" "$(BIT_VAPP_PREFIX)\inc\mdb.h"
+	copy /Y src\esp\edi.h "$(BIT_VAPP_PREFIX)\inc\edi.h"
+	copy /Y src\esp\esp-app.h "$(BIT_VAPP_PREFIX)\inc\esp-app.h"
+	copy /Y src\esp\esp.h "$(BIT_VAPP_PREFIX)\inc\esp.h"
+	copy /Y src\esp\mdb.h "$(BIT_VAPP_PREFIX)\inc\mdb.h"
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-	copy /Y "src\deps\ejs\ejs.h" "$(BIT_VAPP_PREFIX)\inc\ejs.h"
-	copy /Y "src\deps\ejs\ejs.slots.h" "$(BIT_VAPP_PREFIX)\inc\ejs.slots.h"
-	copy /Y "src\deps\ejs\ejsByteGoto.h" "$(BIT_VAPP_PREFIX)\inc\ejsByteGoto.h"
+	copy /Y src\deps\ejs\ejs.h "$(BIT_VAPP_PREFIX)\inc\ejs.h"
+	copy /Y src\deps\ejs\ejs.slots.h "$(BIT_VAPP_PREFIX)\inc\ejs.slots.h"
+	copy /Y src\deps\ejs\ejsByteGoto.h "$(BIT_VAPP_PREFIX)\inc\ejsByteGoto.h"
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-	copy /Y "$(CONFIG)\bin\ejs.mod" "$(BIT_VAPP_PREFIX)\bin\ejs.mod"
+	copy /Y $(CONFIG)\bin\ejs.mod "$(BIT_VAPP_PREFIX)\bin\ejs.mod"
 !ENDIF
 	echo 'set LOG_DIR "$(BIT_VAPP_PREFIX)/log"\nset CACHE_DIR "$(BIT_VAPP_PREFIX)/cache"\nDocuments "$(BIT_VAPP_PREFIX)/web\nListen 80\n' >$(BIT_VAPP_PREFIX)/install.conf
 
