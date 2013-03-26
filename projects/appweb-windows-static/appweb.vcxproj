@@ -3,7 +3,7 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(IncDir);..\..\$(BIT_PACK_PHP_PATH);..\..\$(BIT_PACK_PHP_PATH)\main;..\..\$(BIT_PACK_PHP_PATH)\Zend;..\..\$(BIT_PACK_PHP_PATH)\TSRM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IncDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -105,8 +105,8 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libmod_cgi.lib;php5ts.lib;libmod_php.lib;libejs.lib;libest.lib;libmod_ejs.lib;libmod_ssl.lib;libsqlite3.lib;libmod_esp.lib;libslink.lib;libhttp.lib;libpcre.lib;libmpr.lib;libappweb.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;$(BIT_PACK_PHP_PATH)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    <AdditionalDependencies>libmod_cgi.lib;libmod_ssl.lib;libmod_esp.lib;libslink.lib;libhttp.lib;libpcre.lib;libmpr.lib;libappweb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
 
@@ -134,20 +134,6 @@
 <ItemGroup>
   <ProjectReference Include="libmod_ssl.vcxproj">
   <Project>37da7898-f554-41da-952b-db4c4d29ba6c</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
-
-<ItemGroup>
-  <ProjectReference Include="libmod_ejs.vcxproj">
-  <Project>00223a98-dc4f-4788-9985-b75b627b8d8c</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
-
-<ItemGroup>
-  <ProjectReference Include="libmod_php.vcxproj">
-  <Project>f74783bd-c330-4790-9c56-ffb2435f1ecc</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

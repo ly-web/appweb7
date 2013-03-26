@@ -205,7 +205,7 @@ Bit.load({
     },
 
     //  MOB - remove
-    packs: {
+    __packs: {
         cgi: {},
         dir: {},
         ejscript: {},
