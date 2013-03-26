@@ -75,12 +75,13 @@ help:
 	@echo '  BIT_PACK_EJSCRIPT  # Enable the Ejscript handler' >&2
 	@echo '  BIT_PACK_ESP       # Enable the ESP web framework' >&2
 	@echo '  BIT_PACK_EST       # Enable the EST SSL stack' >&2
-	@echo '  BIT_PACK_MOCANA    # Enable the Mocana NanoSSL stack' >&2
+	@echo '  BIT_PACK_NANOSSL   # Enable the Mocana NanoSSL stack' >&2
 	@echo '  BIT_PACK_MATRIXSSL # Enable the MatrixSSL SSL stack' >&2
 	@echo '  BIT_PACK_OPENSSL   # Enable the OpenSSL SSL stack' >&2
 	@echo '  BIT_PACK_PHP       # Enable the PHP framework' >&2
 	@echo '  BIT_PACK_SQLITE    # Enable the SQLite database' >&2
 	@echo '  BIT_ROM            # Build for ROM without a file system' >&2
+	@echo '  BIT_STACK_SIZE     # Define the VxWorks stack size' >&2
 	@echo '' >&2
 	@echo 'For example, to disable CGI:' >&2
 	@echo '' >&2
