@@ -132,24 +132,6 @@ Bit.load({
         },
 
         /*
-            Pack settings for when generating projects
-         */
-        projects: {
-            cgi: true,
-            ejscript: false,
-            esp: true,
-            est: false,
-            matrixssl: false,
-            mdb: true,
-            nanossl: false,
-            openssl: false,
-            php: false,
-            sdb: false,
-            sqlite: false,
-            ssl: false,
-        },
-
-        /*
             Tailor the optimization for size|speed
          */
         tune: 'size',
@@ -204,13 +186,18 @@ Bit.load({
         },
     },
 
-    //  MOB - remove
-    __packs: {
-        cgi: {},
-        dir: {},
-        ejscript: {},
-        esp: {},
-        php: {},
-        ssl: {},
+    packDefaults: {
+        cgi: true,
+        ejscript: false,
+        esp: true,
+        est: false,
+        matrixssl: false,
+        mdb: true,
+        nanossl: false,
+        openssl: false,
+        php: false,
+        sdb: false,
+        sqlite: false,
+        ssl: false,
     },
 })
