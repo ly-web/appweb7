@@ -101,13 +101,11 @@ nmake -f projects\appweb-windows.nmake
             projects/appweb-OS-default.mk makefile and by the projects/appweb-OS-debug-bit.h file. For example, to disable
             use of SQLite:</p>
             <pre>$ make <b>BIT_PACK_SQLITE=0</b> </pre>
-
             <p>Extension packs are enabled by setting their corresponing BIT_PACK_NAME option to 1. Disable by setting
             to zero. Some packs requires a path to locate libraries and headers. Use BIT_PACK_NAME_PATH to define
             the path to the extension pack.</p>
             <p>By defining make variables such as CC and CFLAGS, you can modify the compiler options. This is the
                 also the technique used when cross-compiling.</p>
-
             <p>To see the list of configurable options, run:</p>
             <pre>$ <b>make help</b>
 usage: make [clean, compile, install, run, uninstall]
@@ -170,8 +168,6 @@ sudo make uninstall
             <p>For example, to build and install PHP:</p>
                 <pre>$ make <b>BIT_PACK_PHP=1 BIT_PACK_PHP_PATH=/usr/src/php</b> compile
 $ sudo make <b>BIT_PACK_PHP=1 BIT_PACK_PHP_PATH=/usr/src/php</b> install</pre>
-
-
             <a id="cross"></a>
             <h2 class="section">Cross Compiling with Make</h2>
             <p>Building a product for platform different to that of the local system is called <em>cross compiling</em>.
@@ -200,31 +196,26 @@ make -f projects/appweb-vxworks-default.mk ARCH=arm PROFILE=debug
 make CC=/opt/bin/ccarm.exe LD=/opt/bin/ccarm.exe ARCH=arm PROFILE=release
     -f projects/appweb-vxworks-default.mk 
 </pre>
-
             <a name="openssl"></a>
             <h2>Supporting OpenSSL</h2>
             <p>If OpenSSL is required to provide SSL support, you must specify the path to the OpenSSL source
               directory. For example:</p>
             <pre>make BIT_PACK_OPENSSL=1 BIT_PACK_OPENSSL_PATH=/path/to/openssl compile</pre>
-
             <p>If you are using a binary OpenSSL distribution, provide the path where the OpenSSL libraries are located
               (typically /usr/lib).</p>
             <pre>make BIT_PACK_OPENSSL=1 BIT_PACK_OPENSSL_PATH=/usr/lib compile</pre>
-
             <a name="deploy"></a>
             <h2>Deploying</h2>
             <p>If you need to deploy to a different system or capture the build products, you can install to a specific
             directory via: </p>
             <pre>make deploy</pre>
             <p>This will install to the <em>deploy</em> directory under the output platform directory.</p>
-
             <a name="static"></a>
             <h2>Static Building</h2>
             <p>If you require a static build without the ability to dynamically load modules, use the <em>static</em>
                 makefile profile. For example:</p>
                 <pre>make PROFILE=static</pre>
             <p>Some web frameworks such as ESP and Ejscript may have reduced functionality in static builds.</p>
-
             <a name="ejs"></a>
             <h2>Supporting Ejscript</h2>
             <p>If Ejscript is required, you must also build Appweb for the local system as the Ejscript compiler 

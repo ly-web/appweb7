@@ -158,11 +158,12 @@
                 href="../../../api/http.html#group___http_packet_1gad491733e89bee8b1b64b47fa0e798931">httpCreateDataPacket</a>,
             fill with data and then send downstream by calling <a
                 href="../../../api/http.html#group___http_queue_1ga15c957cd47313affb413d681767a4763">httpPutPackToNext</a>.</p>
-            <p>The httpWrite routine will always accept and buffer the data. But it will limit the amount of
-            buffering by flushing data as required. Handlers that create their own packets should take create to test if
-            the output queue is full. If the output queue is full, the handler should pause generating the response
-            and wait until the queue has drained sufficiently. When that occurs, the <em>writable</em> callback will be
-            invoked.</p>
+            <p>The httpWrite routine will always accept and buffer the data so callers must take care not to overflow
+                the queue which will grow the process memory heap to buffer the data. 
+                Rather handlers should take create to test if the output queue is full. 
+                If the output queue is full, the handler should pause generating the response
+                and wait until the queue has drained sufficiently. When that occurs, the <em>writable</em> callback will be
+                invoked. Handlers can test if the queue is full by comparing HttpQueue.count with HttpQueue.max.</p>
             <a id="pipelineLifecycle"></a>
             <h2>Pipeline Life Cycle</h2>
             <p>When a request is received from the client, the Appweb Http engine parses the Http request headers and
@@ -179,16 +180,20 @@
             At this point, request body data may not have been received. Depending on the request, generating a response
             may or may not be appropriate until all body data has been received. If there is no body data, the handler
             can process and maybe generate the entire response for the request during this callback.</p>
+            <h3>Receiving Input &mdash; <em>incomingData</em></h3>
+            <p>If the request has body data (POST|PUT), the input data will be passed in packets to the handlers incomingData callback. The handler should process as required.</p>
             <h3>Ready to Respond &mdash; <em>ready</em></h3>
             <p>Once all body data has been received, the handler <em>ready</em> callback is invoked. At this stage, 
             the handler has all the request information and can fully process the request. The handler may start or
             fully generate the response to the request.</p>
+            <h3>Sending Responses &mdash; <em>outgingService</em></h3>
+            <p>A handler can write a response directly via httpWrite. Alternatively, it can create packets and queue them on its own outgoingService queue. Thereafter, the outgoingService callback is invoked to process these packets. This pattern is useful for handlers that need to accumulate response data before flushing to the client.</p>
             <h3>Pipeline Writable &mdash; <em>writable</em></h3>
-            <p>Some requests may generate more response data than can be efficiently buffered by Appweb. If the output
-            TCP/IP socket to the client is full, a handler may not be able to continue processing until this data
+            <p>Some handlers may generate more response data than can be efficiently buffered without consuming too much 
+                memory. If the output TCP/IP socket to the client is full, a handler may not be able to continue processing until this data
             drains. In these cases, the <em>writable</em> callback will be invoked whenever the output service queue
-            can absorb more data. As such, it may be used to efficiently generate the response in chunks without
-            blocking.</p>
+            has drained sufficiently and can absorb more data. As such, it may be used to efficiently generate the response 
+            in chunks without blocking the server.</p>
             
             <a id="responses"></a>
             <h2>Generating Responses</h2>
@@ -288,6 +293,8 @@ static void writable(HttpQueue *q)
             <p>If a handler puts data onto a service queue, it should call 
             <a href="../../../api/http.html#group___http_rx_1gaf5503f75323ec0c6df1b3ee5615ad496">httpPump</a> to enable
             the pipeline to advance and potentially invoke the handler's <em>writable</em> callback.</p>
+            <h3>Flushing Data</h3>
+            <p>Calling httpWrite will not automatically send the data to the client. Appweb buffers such output data to aggregate data into more efficient larger packets. If you wish to send buffered data to the client immediately, call httpFlush. When the request is complete, calling httpFinalize call automatically call httpFlush.</p>
         <a id="paradigms"></a>
         <h2>Response Paradigms</h2>
         <p>In summary, a handler may use one of several paradigms to implement how it responds to requests.</p>
@@ -352,6 +359,17 @@ mprCreateEvent(q-&gt;conn-&gt;dispatcher, "deviceEvent", 0, doMoreOutput, q, 0);
         they block and are not calling an MPR function that blocks. This ensures that the garbage collector can work and
         collect memory while the worker thread is asleep. Handlers do not need to call mprYield when executing on
         threads that were created outside of the MPR (i.e. not MPR worker threads).</p>
+        <h3>Handler and Queue State</h3>
+        <p>Sometimes a handler needs to store state information. 
+            Appweb defines two empty fields that can be used by handlers to hold managed references. The HttpConn.data 
+            field is available for use by handlers and can store a managed-memory reference. Managed-memory is memory allocated
+            by the MPR layer APIs. See
+            <a href="../../../ref/appweb/memory.html"</a> for details about memory allocation</a>. 
+            <p>Similarly, HttpQueue.queueData field available for queue stages. This field is available for use by
+                either handlers or filters. Both these fields must only be used for managed memory and not for 
+                memory allocated by malloc. </p>
+            <p>Appweb defines two fields that can be used to store unmanaged memory references: HttpConn.staticData and
+                HttpQueue.staticData. Use these to store references to memory allocated by malloc.</p>
         <a id="defining"></a>
         <h2>Defining a Handler</h2>
         <p>To define an Appweb handler, you must do three things:
