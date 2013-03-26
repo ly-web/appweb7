@@ -44,18 +44,21 @@ clean clobber install installBinary uninstall run:
 	@echo '       [Run] $(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@'
 	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
+deploy:
+	@echo '       [Deploy] $(MAKE) BIT_ROOT_PREFIX=$(OS)-$(ARCH)-$(PROFILE)/deploy -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) installBinary'
+	@$(MAKE) BIT_ROOT_PREFIX=$(OS)-$(ARCH)-$(PROFILE)/deploy -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) installBinary
+
 version:
 	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 help:
 	@echo '' >&2
-	@echo 'usage: make [clean, compile, install, run, uninstall]' >&2
+	@echo 'usage: make [clean, compile, deploy, install, run, uninstall]' >&2
 	@echo '' >&2
 	@echo 'The default configuration can be modified by setting make variables' >&2
 	@echo 'Set to 0 to disable and 1 to enable:' >&2
 	@echo '' >&2
 	@echo '  PROFILE            # Select default or static for static linking' >&2
-	@echo '  BIT_EJS_DB         # Select default or static for static linking' >&2
 	@echo '  BIT_EJS_DB         # Enable database support, ejs.db' >&2
 	@echo '  BIT_EJS_MAIL       # Enable mail support, ejs.mail' >&2
 	@echo '  BIT_EJS_MAPPER     # Enable database mapper support, ejs.mapper'

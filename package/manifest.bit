@@ -22,6 +22,7 @@ Bit.load({
     },
 
     manifest: {
+        home: bit.dir.src,
         packages:   {
             install: {
                 inherit:    'embedthis-manifest',
