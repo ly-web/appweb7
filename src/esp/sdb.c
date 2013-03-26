@@ -883,6 +883,9 @@ static void initSqlite()
     mprGlobalUnlock();
 }
 
+#else
+/* To prevent ar/ranlib warnings */
+PUBLIC void sdbDummy() {}
 #endif /* BIT_PACK_ESP && BIT_PACK_SDB */
 
 /*

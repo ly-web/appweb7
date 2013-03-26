@@ -1665,6 +1665,9 @@ static int parseOperation(cchar *operation)
     return OP_ERR;
 }
 
+#else
+/* To prevent ar/ranlib warnings */
+PUBLIC void mdbDummy() {}
 
 #endif /* BIT_PACK_ESP && BIT_PACK_MDB */
 /*
