@@ -1597,14 +1597,11 @@ ifeq ($(BIT_PACK_ESP),1)
 	rm -f "$(BIT_BIN_PREFIX)/esp"
 	ln -s "$(BIT_VAPP_PREFIX)/bin/esp" "$(BIT_BIN_PREFIX)/esp"
 endif
-	cp $(CONFIG)/bin/libappweb.dylib $(BIT_VAPP_PREFIX)/bin/libappweb.dylib
-	cp $(CONFIG)/bin/libhttp.dylib $(BIT_VAPP_PREFIX)/bin/libhttp.dylib
-	cp $(CONFIG)/bin/libmpr.dylib $(BIT_VAPP_PREFIX)/bin/libmpr.dylib
-	cp $(CONFIG)/bin/libpcre.dylib $(BIT_VAPP_PREFIX)/bin/libpcre.dylib
-	cp $(CONFIG)/bin/libslink.dylib $(BIT_VAPP_PREFIX)/bin/libslink.dylib
 ifeq ($(BIT_PACK_SSL),1)
 	cp $(CONFIG)/bin/libmprssl.dylib $(BIT_VAPP_PREFIX)/bin/libmprssl.dylib
 	cp $(CONFIG)/bin/libmod_ssl.dylib $(BIT_VAPP_PREFIX)/bin/libmod_ssl.dylib
+endif
+ifeq ($(BIT_PACK_SSL),1)
 	cp $(CONFIG)/bin/ca.crt $(BIT_VAPP_PREFIX)/bin/ca.crt
 endif
 ifeq ($(BIT_PACK_OPENSSL),1)
@@ -1629,14 +1626,9 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 endif
 ifeq ($(BIT_PACK_PHP),1)
 	cp $(CONFIG)/bin/libmod_php.dylib $(BIT_VAPP_PREFIX)/bin/libmod_php.dylib
-	cp $(CONFIG)/bin/libphp5.dylib $(BIT_VAPP_PREFIX)/bin/libphp5.dylib
 endif
-ifeq ($(BIT_PACK_ESP),1)
-	cp $(CONFIG)/bin/libmod_esp.dylib $(BIT_VAPP_PREFIX)/bin/libmod_esp.dylib
-	cp $(CONFIG)/bin/libappweb.dylib $(BIT_VAPP_PREFIX)/bin/libappweb.dylib
-	cp $(CONFIG)/bin/libpcre.dylib $(BIT_VAPP_PREFIX)/bin/libpcre.dylib
-	cp $(CONFIG)/bin/libhttp.dylib $(BIT_VAPP_PREFIX)/bin/libhttp.dylib
-	cp $(CONFIG)/bin/libmpr.dylib $(BIT_VAPP_PREFIX)/bin/libmpr.dylib
+ifeq ($(BIT_PACK_PHP),1)
+	cp $(CONFIG)/bin/libphp5.dylib $(BIT_VAPP_PREFIX)/bin/libphp5.dylib
 endif
 ifeq ($(BIT_PACK_ESP),1)
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www"

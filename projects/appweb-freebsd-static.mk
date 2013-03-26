@@ -1536,46 +1536,15 @@ ifeq ($(BIT_PACK_ESP),1)
 	rm -f "$(BIT_BIN_PREFIX)/esp"
 	ln -s "$(BIT_VAPP_PREFIX)/bin/esp" "$(BIT_BIN_PREFIX)/esp"
 endif
-	cp $(CONFIG)/bin/libappweb.so $(BIT_VAPP_PREFIX)/bin/libappweb.so
-	cp $(CONFIG)/bin/libhttp.so $(BIT_VAPP_PREFIX)/bin/libhttp.so
-	cp $(CONFIG)/bin/libmpr.so $(BIT_VAPP_PREFIX)/bin/libmpr.so
-	cp $(CONFIG)/bin/libpcre.so $(BIT_VAPP_PREFIX)/bin/libpcre.so
-	cp $(CONFIG)/bin/libslink.so $(BIT_VAPP_PREFIX)/bin/libslink.so
 ifeq ($(BIT_PACK_SSL),1)
-	cp $(CONFIG)/bin/libmprssl.so $(BIT_VAPP_PREFIX)/bin/libmprssl.so
-	cp $(CONFIG)/bin/libmod_ssl.so $(BIT_VAPP_PREFIX)/bin/libmod_ssl.so
 	cp $(CONFIG)/bin/ca.crt $(BIT_VAPP_PREFIX)/bin/ca.crt
 endif
 ifeq ($(BIT_PACK_OPENSSL),1)
 	cp $(CONFIG)/bin/libssl*.so* $(BIT_VAPP_PREFIX)/bin/libssl*.so*
 	cp $(CONFIG)/bin/libcrypto*.so* $(BIT_VAPP_PREFIX)/bin/libcrypto*.so*
 endif
-ifeq ($(BIT_PACK_EST),1)
-	cp $(CONFIG)/bin/libest.so $(BIT_VAPP_PREFIX)/bin/libest.so
-endif
-ifeq ($(BIT_PACK_SQLITE),1)
-	cp $(CONFIG)/bin/libsqlite3.so $(BIT_VAPP_PREFIX)/bin/libsqlite3.so
-endif
-ifeq ($(BIT_PACK_ESP),1)
-	cp $(CONFIG)/bin/libmod_esp.so $(BIT_VAPP_PREFIX)/bin/libmod_esp.so
-endif
-ifeq ($(BIT_PACK_CGI),1)
-	cp $(CONFIG)/bin/libmod_cgi.so $(BIT_VAPP_PREFIX)/bin/libmod_cgi.so
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-	cp $(CONFIG)/bin/libejs.so $(BIT_VAPP_PREFIX)/bin/libejs.so
-	cp $(CONFIG)/bin/libmod_ejs.so $(BIT_VAPP_PREFIX)/bin/libmod_ejs.so
-endif
 ifeq ($(BIT_PACK_PHP),1)
-	cp $(CONFIG)/bin/libmod_php.so $(BIT_VAPP_PREFIX)/bin/libmod_php.so
 	cp $(CONFIG)/bin/libphp5.so $(BIT_VAPP_PREFIX)/bin/libphp5.so
-endif
-ifeq ($(BIT_PACK_ESP),1)
-	cp $(CONFIG)/bin/libmod_esp.so $(BIT_VAPP_PREFIX)/bin/libmod_esp.so
-	cp $(CONFIG)/bin/libappweb.so $(BIT_VAPP_PREFIX)/bin/libappweb.so
-	cp $(CONFIG)/bin/libpcre.so $(BIT_VAPP_PREFIX)/bin/libpcre.so
-	cp $(CONFIG)/bin/libhttp.so $(BIT_VAPP_PREFIX)/bin/libhttp.so
-	cp $(CONFIG)/bin/libmpr.so $(BIT_VAPP_PREFIX)/bin/libmpr.so
 endif
 ifeq ($(BIT_PACK_ESP),1)
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www"

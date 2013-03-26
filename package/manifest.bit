@@ -27,14 +27,14 @@ Bit.load({
             install: {
                 inherit:    'embedthis-manifest',
                 prefixes:   [ 'root', 'app', 'vapp', 'bin', 'inc', 'man', 'etc', 'web', 'log', 'spool', 'cache'],
-                sets:       [ 'core', 'web', 'service', 'esp', 'php', 'utils', 'test', 'dev', 'doc' ],
+                sets:       [ 'core', 'libs', 'web', 'service', 'esp', 'php', 'utils', 'test', 'dev', 'doc' ],
                 platforms:  [ 'unix', 'windows' ],
             },
             binary: {
                 inherit:    'embedthis-manifest',
                 prefixes:   [ 'root', 'app', 'vapp', 'bin', 'inc', 'man', 'etc', 'web', 'log', 'spool', 'cache'],
                 formats:    [ 'native', 'tar' ],
-                sets:       [ 'core', 'web', 'service', 'esp', 'php', 'utils', 'test', 'dev', 'doc', 'package' ],
+                sets:       [ 'core', 'libs', 'web', 'service', 'esp', 'php', 'utils', 'test', 'dev', 'doc', 'package' ],
                 platforms:  [ 'freebsd', 'linux', 'macosx', 'windows' ]
             },
             source: {
@@ -99,11 +99,19 @@ Bit.load({
                     '${BIN}/libslink${SHOBJ}',
                 ],
                 to:         '${abin}/',
-                set:        'core',
+                set:        'libs',
+                enable:     "bit.platform.os == 'windows' && !bit.settings.static",
 
             },{ from:        [
                     '${BIN}/libmprssl${SHOBJ}',
                     '${BIN}/libmod_ssl${SHOBJ}',
+                ],
+                to:         '${abin}/',
+                set:        'libs',
+                requires:   'ssl',
+                enable:     "!bit.settings.static",
+
+           },{ from:        [
                     '${BIN}/ca.crt',
                 ],
                 to:         '${abin}/',
@@ -130,34 +138,46 @@ Bit.load({
 
             },{ from:       '${BIN}/libest${SHOBJ}',
                 to:         '${abin}/',
-                set:        'core',
+                set:        'libs',
                 requires:   'est',
+                enable:     "!bit.settings.static",
 
             },{ from:       '${BIN}/libsqlite3${SHOBJ}',
                 to:         '${abin}/',
-                set:        'core',
+                set:        'libs',
                 requires:   'sqlite'
+                enable:     "!bit.settings.static",
 
             },{ from:       '${BIN}/libmod_esp${SHOBJ}',
                 to:         '${abin}/',
-                set:        'core',
+                set:        'libs',
                 requires:   'esp',
+                enable:     "!bit.settings.static",
 
             },{ from:       '${BIN}/libmod_cgi${SHOBJ}',
                 to:         '${abin}/',
-                set:        'core',
+                set:        'libs',
                 requires:   'cgi',
+                enable:     "!bit.settings.static",
 
             },{ from:        [
                     '${BIN}/libejs${SHOBJ}',
                     '${BIN}/libmod_ejs${SHOBJ}',
                 ],
                 to:         '${abin}/',
-                set:        'core',
+                set:        'libs',
                 requires:   'ejscript',
+                enable:     "!bit.settings.static",
 
             },{ from:        [
                     '${BIN}/libmod_php${SHOBJ}',
+                ],
+                to:         '${abin}/',
+                set:        'libs',
+                requires:   'php',
+                enable:     "!bit.settings.static",
+
+            },{ from:        [
                     '${BIN}/libphp5${SHOBJ}',
                 ],
                 to:         '${abin}/',
@@ -166,7 +186,6 @@ Bit.load({
                 enable:     "bit.platform.os != 'windows'",
 
             },{ from:        [
-                    '${BIN}/libmod_php${SHOBJ}',
                     '${BIN}/php5ts${SHOBJ}',
                 ],
                 to:         '${abin}/',
@@ -183,8 +202,9 @@ Bit.load({
                     '${BIN}/libmpr${SHLIB}',
                 ],
                 to:         '${abin}/',
-                set:        'core',
+                set:        'libs',
                 requires:   'esp',
+                enable:     "bit.platform.os == 'windows' && !bit.settings.static",
 
             },{
                 from:       ['src/esp/esp-www', 'src/esp/esp-appweb.conf'],

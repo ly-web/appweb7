@@ -1668,6 +1668,8 @@ installBinary: $(DEPS_104)
 !IF "$(BIT_PACK_SSL)" == "1"
 	copy /Y $(CONFIG)\bin\libmprssl.dll "$(BIT_VAPP_PREFIX)\bin\libmprssl.dll"
 	copy /Y $(CONFIG)\bin\libmod_ssl.dll "$(BIT_VAPP_PREFIX)\bin\libmod_ssl.dll"
+!ENDIF
+!IF "$(BIT_PACK_SSL)" == "1"
 	copy /Y $(CONFIG)\bin\ca.crt "$(BIT_VAPP_PREFIX)\bin\ca.crt"
 !ENDIF
 !IF "$(BIT_PACK_OPENSSL)" == "1"
@@ -1692,6 +1694,8 @@ installBinary: $(DEPS_104)
 !ENDIF
 !IF "$(BIT_PACK_PHP)" == "1"
 	copy /Y $(CONFIG)\bin\libmod_php.dll "$(BIT_VAPP_PREFIX)\bin\libmod_php.dll"
+!ENDIF
+!IF "$(BIT_PACK_PHP)" == "1"
 	copy /Y $(CONFIG)\bin\php5ts.dll "$(BIT_VAPP_PREFIX)\bin\php5ts.dll"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"

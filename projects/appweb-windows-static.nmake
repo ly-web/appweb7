@@ -1599,46 +1599,15 @@ installBinary: $(DEPS_104)
 !ENDIF
 	copy /Y $(CONFIG)\bin\appwebMonitor.exe "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.exe"
 	copy /Y $(CONFIG)\bin\appwebMonitor.ico "$(BIT_VAPP_PREFIX)\bin\appwebMonitor.ico"
-	copy /Y $(CONFIG)\bin\libappweb.dll "$(BIT_VAPP_PREFIX)\bin\libappweb.dll"
-	copy /Y $(CONFIG)\bin\libhttp.dll "$(BIT_VAPP_PREFIX)\bin\libhttp.dll"
-	copy /Y $(CONFIG)\bin\libmpr.dll "$(BIT_VAPP_PREFIX)\bin\libmpr.dll"
-	copy /Y $(CONFIG)\bin\libpcre.dll "$(BIT_VAPP_PREFIX)\bin\libpcre.dll"
-	copy /Y $(CONFIG)\bin\libslink.dll "$(BIT_VAPP_PREFIX)\bin\libslink.dll"
 !IF "$(BIT_PACK_SSL)" == "1"
-	copy /Y $(CONFIG)\bin\libmprssl.dll "$(BIT_VAPP_PREFIX)\bin\libmprssl.dll"
-	copy /Y $(CONFIG)\bin\libmod_ssl.dll "$(BIT_VAPP_PREFIX)\bin\libmod_ssl.dll"
 	copy /Y $(CONFIG)\bin\ca.crt "$(BIT_VAPP_PREFIX)\bin\ca.crt"
 !ENDIF
 !IF "$(BIT_PACK_OPENSSL)" == "1"
 	copy /Y $(CONFIG)\bin\libeay32.dll "$(BIT_VAPP_PREFIX)\bin\libeay32.dll"
 	copy /Y $(CONFIG)\bin\ssleay32.dll "$(BIT_VAPP_PREFIX)\bin\ssleay32.dll"
 !ENDIF
-!IF "$(BIT_PACK_EST)" == "1"
-	copy /Y $(CONFIG)\bin\libest.dll "$(BIT_VAPP_PREFIX)\bin\libest.dll"
-!ENDIF
-!IF "$(BIT_PACK_SQLITE)" == "1"
-	copy /Y $(CONFIG)\bin\libsqlite3.dll "$(BIT_VAPP_PREFIX)\bin\libsqlite3.dll"
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
-	copy /Y $(CONFIG)\bin\libmod_esp.dll "$(BIT_VAPP_PREFIX)\bin\libmod_esp.dll"
-!ENDIF
-!IF "$(BIT_PACK_CGI)" == "1"
-	copy /Y $(CONFIG)\bin\libmod_cgi.dll "$(BIT_VAPP_PREFIX)\bin\libmod_cgi.dll"
-!ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
-	copy /Y $(CONFIG)\bin\libejs.dll "$(BIT_VAPP_PREFIX)\bin\libejs.dll"
-	copy /Y $(CONFIG)\bin\libmod_ejs.dll "$(BIT_VAPP_PREFIX)\bin\libmod_ejs.dll"
-!ENDIF
 !IF "$(BIT_PACK_PHP)" == "1"
-	copy /Y $(CONFIG)\bin\libmod_php.dll "$(BIT_VAPP_PREFIX)\bin\libmod_php.dll"
 	copy /Y $(CONFIG)\bin\php5ts.dll "$(BIT_VAPP_PREFIX)\bin\php5ts.dll"
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
-	copy /Y $(CONFIG)\bin\libmod_esp.lib "$(BIT_VAPP_PREFIX)\bin\libmod_esp.lib"
-	copy /Y $(CONFIG)\bin\libappweb.lib "$(BIT_VAPP_PREFIX)\bin\libappweb.lib"
-	copy /Y $(CONFIG)\bin\libpcre.lib "$(BIT_VAPP_PREFIX)\bin\libpcre.lib"
-	copy /Y $(CONFIG)\bin\libhttp.lib "$(BIT_VAPP_PREFIX)\bin\libhttp.lib"
-	copy /Y $(CONFIG)\bin\libmpr.lib "$(BIT_VAPP_PREFIX)\bin\libmpr.lib"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www" md "$(BIT_VAPP_PREFIX)\bin\esp-www"
