@@ -106,7 +106,7 @@
   <ItemDefinitionGroup>
   <Link>
     <AdditionalDependencies>libmod_cgi.lib;php5ts.lib;libmod_php.lib;libejs.lib;libest.lib;libmod_ejs.lib;libmod_ssl.lib;libsqlite3.lib;libmod_esp.lib;libslink.lib;libhttp.lib;libpcre.lib;libmpr.lib;libappweb.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;$(BIT_PACK_PHP_PATH)\.libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;$(BIT_PACK_PHP_PATH)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
 

@@ -432,7 +432,7 @@ LIBS_13 += -lmpr
 
 $(CONFIG)/bin/appman: $(DEPS_13)
 	@echo '      [Link] manager'
-	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS_13) $(LIBS_13) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBPATHS_13) $(LIBS_13) $(LIBS_13) $(LIBS) 
 
 #
 #   makerom.o
@@ -455,7 +455,7 @@ LIBS_15 += -lmpr
 
 $(CONFIG)/bin/makerom: $(DEPS_15)
 	@echo '      [Link] makerom'
-	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS_15) $(LIBS_15) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) 
 
 #
 #   ca-crt
@@ -551,7 +551,7 @@ LIBS_24 += -lhttp
 
 $(CONFIG)/bin/http: $(DEPS_24)
 	@echo '      [Link] http'
-	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lpam $(LIBS_24) $(LIBS_24) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lpam $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) 
 
 #
 #   sqlite3.h
@@ -610,7 +610,7 @@ endif
 
 $(CONFIG)/bin/sqlite: $(DEPS_29)
 	@echo '      [Link] sqlite'
-	$(CC) -o $(CONFIG)/bin/sqlite -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LIBS_29) $(LIBS_29) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/sqlite -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LIBPATHS_29) $(LIBS_29) $(LIBS_29) $(LIBS) 
 endif
 
 #
@@ -909,7 +909,7 @@ LIBS_53 += -lappweb
 
 $(CONFIG)/bin/esp: $(DEPS_53)
 	@echo '      [Link] esp'
-	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lpam $(LIBS_53) $(LIBS_53) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lpam $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -1071,7 +1071,7 @@ endif
 
 $(CONFIG)/bin/ejs: $(DEPS_64)
 	@echo '      [Link] ejs'
-	$(CC) -o $(CONFIG)/bin/ejs -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o -lpam $(LIBS_64) $(LIBS_64) $(LIBS) -ledit 
+	$(CC) -o $(CONFIG)/bin/ejs -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o -lpam $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS) -ledit 
 endif
 
 #
@@ -1109,7 +1109,7 @@ endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_66)
 	@echo '      [Link] ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o -lpam $(LIBS_66) $(LIBS_66) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o -lpam $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) 
 endif
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
@@ -1244,7 +1244,7 @@ LIBS_77 += -lappweb
 
 $(CONFIG)/bin/authpass: $(DEPS_77)
 	@echo '      [Link] authpass'
-	$(CC) -o $(CONFIG)/bin/authpass -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o -lpam $(LIBS_77) $(LIBS_77) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/authpass -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o -lpam $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) 
 
 #
 #   cgiProgram.o
@@ -1339,6 +1339,7 @@ ifeq ($(BIT_PACK_CGI),1)
 endif
 ifeq ($(BIT_PACK_PHP),1)
     LIBS_84 += -lphp5
+    LIBPATHS_84 += -L$(BIT_PACK_PHP_PATH)/libs
 endif
 ifeq ($(BIT_PACK_PHP),1)
     LIBS_84 += -lmod_php
@@ -1369,7 +1370,7 @@ LIBS_84 += -lappweb
 
 $(CONFIG)/bin/appweb: $(DEPS_84)
 	@echo '      [Link] appweb'
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) -L$(BIT_PACK_PHP_PATH)/.libs $(CONFIG)/obj/appweb.o -lpam $(LIBS_84) $(LIBS_84) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS)  $(CONFIG)/obj/appweb.o -lpam $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) 
 
 #
 #   server-cache
@@ -1424,7 +1425,7 @@ LIBS_89 += -lappweb
 
 $(CONFIG)/bin/testAppweb: $(DEPS_89)
 	@echo '      [Link] testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o -lpam $(LIBS_89) $(LIBS_89) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/testAppweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o -lpam $(LIBPATHS_89) $(LIBS_89) $(LIBS_89) $(LIBS) 
 
 ifeq ($(BIT_PACK_CGI),1)
 #

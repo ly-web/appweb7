@@ -4488,7 +4488,7 @@ fi";
 					"$(inherited)"
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"../$(BIT_PACK_PHP_PATH)/.libs",
+					"../$(BIT_PACK_PHP_PATH)/libs",
 					"$(inherited)"
 				);
 				OTHER_LDFLAGS = (
@@ -4516,7 +4516,7 @@ fi";
 				);
 
 				LIBRARY_SEARCH_PATHS = (
-					"../$(BIT_PACK_PHP_PATH)/.libs",
+					"../$(BIT_PACK_PHP_PATH)/libs",
 					"$(inherited)"
 				);
 				OTHER_LDFLAGS = (
@@ -4702,7 +4702,7 @@ fi";
 					"$(inherited)"
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"../$(BIT_PACK_PHP_PATH)/.libs",
+					"../$(BIT_PACK_PHP_PATH)/libs",
 					"$(inherited)"
 				);
 				OTHER_LDFLAGS = (
@@ -4729,7 +4729,7 @@ fi";
 				);
 
 				LIBRARY_SEARCH_PATHS = (
-					"../$(BIT_PACK_PHP_PATH)/.libs",
+					"../$(BIT_PACK_PHP_PATH)/libs",
 					"$(inherited)"
 				);
 				OTHER_LDFLAGS = (

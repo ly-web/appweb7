@@ -409,21 +409,25 @@ DEPS_11 += $(CONFIG)/obj/mprSsl.o
 ifeq ($(BIT_PACK_SSL),1)
 ifeq ($(BIT_PACK_NANOSSL),1)
     LIBS_11 += -lssls
+    LIBPATHS_11 += -L$(BIT_PACK_NANOSSL_PATH)/bin
 endif
 endif
 ifeq ($(BIT_PACK_SSL),1)
 ifeq ($(BIT_PACK_MATRIXSSL),1)
     LIBS_11 += -lmatrixssl
+    LIBPATHS_11 += -L$(BIT_PACK_MATRIXSSL_PATH)
 endif
 endif
 ifeq ($(BIT_PACK_SSL),1)
 ifeq ($(BIT_PACK_OPENSSL),1)
     LIBS_11 += -lcrypto
+    LIBPATHS_11 += -L$(BIT_PACK_OPENSSL_PATH)
 endif
 endif
 ifeq ($(BIT_PACK_SSL),1)
 ifeq ($(BIT_PACK_OPENSSL),1)
     LIBS_11 += -lssl
+    LIBPATHS_11 += -L$(BIT_PACK_OPENSSL_PATH)
 endif
 endif
 ifeq ($(BIT_PACK_EST),1)
@@ -433,7 +437,7 @@ LIBS_11 += -lmpr
 
 $(CONFIG)/bin/libmprssl.so: $(DEPS_11)
 	@echo '      [Link] libmprssl'
-	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS) -L$(BIT_PACK_OPENSSL_PATH) -L$(BIT_PACK_MATRIXSSL_PATH) -L$(BIT_PACK_NANOSSL_PATH)/bin $(CONFIG)/obj/mprSsl.o $(LIBS_11) $(LIBS_11) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS)    $(CONFIG)/obj/mprSsl.o $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) 
 endif
 
 #
@@ -457,7 +461,7 @@ LIBS_13 += -lmpr
 
 $(CONFIG)/bin/appman: $(DEPS_13)
 	@echo '      [Link] manager'
-	$(CC) -o $(CONFIG)/bin/appman $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS_13) $(LIBS_13) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/appman $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBPATHS_13) $(LIBS_13) $(LIBS_13) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   makerom.o
@@ -480,7 +484,7 @@ LIBS_15 += -lmpr
 
 $(CONFIG)/bin/makerom: $(DEPS_15)
 	@echo '      [Link] makerom'
-	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS_15) $(LIBS_15) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   ca-crt
@@ -554,7 +558,7 @@ LIBS_22 += -lmpr
 
 $(CONFIG)/bin/libhttp.so: $(DEPS_22)
 	@echo '      [Link] libhttp'
-	$(CC) -shared -o $(CONFIG)/bin/libhttp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/httpLib.o $(LIBS_22) $(LIBS_22) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libhttp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/httpLib.o $(LIBPATHS_22) $(LIBS_22) $(LIBS_22) $(LIBS) 
 
 #
 #   http.o
@@ -579,7 +583,7 @@ LIBS_24 += -lhttp
 
 $(CONFIG)/bin/http: $(DEPS_24)
 	@echo '      [Link] http'
-	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBS_24) $(LIBS_24) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   sqlite3.h
@@ -638,7 +642,7 @@ endif
 
 $(CONFIG)/bin/sqlite: $(DEPS_29)
 	@echo '      [Link] sqlite'
-	$(CC) -o $(CONFIG)/bin/sqlite $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LIBS_29) $(LIBS_29) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/sqlite $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LIBPATHS_29) $(LIBS_29) $(LIBS_29) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 endif
 
 #
@@ -747,7 +751,7 @@ LIBS_38 += -lhttp
 
 $(CONFIG)/bin/libappweb.so: $(DEPS_38)
 	@echo '      [Link] libappweb'
-	$(CC) -shared -o $(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o $(LIBS_38) $(LIBS_38) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o $(LIBPATHS_38) $(LIBS_38) $(LIBS_38) $(LIBS) 
 
 #
 #   edi.h
@@ -907,7 +911,7 @@ LIBS_51 += -lappweb
 
 $(CONFIG)/bin/libmod_esp.so: $(DEPS_51)
 	@echo '      [Link] libmod_esp'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS_51) $(LIBS_51) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_51) $(LIBS_51) $(LIBS_51) $(LIBS) 
 endif
 
 #
@@ -949,7 +953,7 @@ LIBS_53 += -lappweb
 
 $(CONFIG)/bin/esp: $(DEPS_53)
 	@echo '      [Link] esp'
-	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS_53) $(LIBS_53) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -1083,7 +1087,7 @@ LIBS_62 += -lhttp
 
 $(CONFIG)/bin/libejs.so: $(DEPS_62)
 	@echo '      [Link] libejs'
-	$(CC) -shared -o $(CONFIG)/bin/libejs.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsLib.o $(LIBS_62) $(LIBS_62) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libejs.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsLib.o $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) 
 endif
 
 #
@@ -1121,7 +1125,7 @@ endif
 
 $(CONFIG)/bin/ejs: $(DEPS_64)
 	@echo '      [Link] ejs'
-	$(CC) -o $(CONFIG)/bin/ejs $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o $(LIBS_64) $(LIBS_64) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/ejs $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 endif
 
 #
@@ -1159,7 +1163,7 @@ endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_66)
 	@echo '      [Link] ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LIBS_66) $(LIBS_66) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/ejsc $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 endif
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
@@ -1200,7 +1204,7 @@ LIBS_69 += -lappweb
 
 $(CONFIG)/bin/libmod_cgi.so: $(DEPS_69)
 	@echo '      [Link] libmod_cgi'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_cgi.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o $(LIBS_69) $(LIBS_69) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_cgi.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) 
 endif
 
 #
@@ -1240,7 +1244,7 @@ LIBS_71 += -lappweb
 
 $(CONFIG)/bin/libmod_ejs.so: $(DEPS_71)
 	@echo '      [Link] libmod_ejs'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_ejs.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsHandler.o $(LIBS_71) $(LIBS_71) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_ejs.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsHandler.o $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) 
 endif
 
 #
@@ -1263,6 +1267,7 @@ DEPS_73 += $(CONFIG)/obj/phpHandler.o
 
 ifeq ($(BIT_PACK_PHP),1)
     LIBS_73 += -lphp5
+    LIBPATHS_73 += -L$(BIT_PACK_PHP_PATH)/libs
 endif
 LIBS_73 += -lhttp
 LIBS_73 += -lpcre
@@ -1271,7 +1276,7 @@ LIBS_73 += -lappweb
 
 $(CONFIG)/bin/libmod_php.so: $(DEPS_73)
 	@echo '      [Link] libmod_php'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_php.so $(LDFLAGS) $(LIBPATHS) -L$(BIT_PACK_PHP_PATH)/.libs $(CONFIG)/obj/phpHandler.o $(LIBS_73) $(LIBS_73) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_php.so $(LDFLAGS) $(LIBPATHS)  $(CONFIG)/obj/phpHandler.o $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) 
 endif
 
 #
@@ -1299,7 +1304,7 @@ LIBS_75 += -lappweb
 
 $(CONFIG)/bin/libmod_ssl.so: $(DEPS_75)
 	@echo '      [Link] libmod_ssl'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sslModule.o $(LIBS_75) $(LIBS_75) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sslModule.o $(LIBPATHS_75) $(LIBS_75) $(LIBS_75) $(LIBS) 
 endif
 
 #
@@ -1326,7 +1331,7 @@ LIBS_77 += -lappweb
 
 $(CONFIG)/bin/authpass: $(DEPS_77)
 	@echo '      [Link] authpass'
-	$(CC) -o $(CONFIG)/bin/authpass $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LIBS_77) $(LIBS_77) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/authpass $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   cgiProgram.o
@@ -1391,7 +1396,7 @@ endif
 
 $(CONFIG)/bin/libslink.so: $(DEPS_82)
 	@echo '      [Link] libslink'
-	$(CC) -shared -o $(CONFIG)/bin/libslink.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o $(LIBS_82) $(LIBS_82) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libslink.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
 
 #
 #   appweb.o
@@ -1426,7 +1431,7 @@ LIBS_84 += -lappweb
 
 $(CONFIG)/bin/appweb: $(DEPS_84)
 	@echo '      [Link] appweb'
-	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBS_84) $(LIBS_84) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   server-cache
@@ -1481,7 +1486,7 @@ LIBS_89 += -lappweb
 
 $(CONFIG)/bin/testAppweb: $(DEPS_89)
 	@echo '      [Link] testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBS_89) $(LIBS_89) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/testAppweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBPATHS_89) $(LIBS_89) $(LIBS_89) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 ifeq ($(BIT_PACK_CGI),1)
 #
