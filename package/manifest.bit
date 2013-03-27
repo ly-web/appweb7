@@ -100,7 +100,7 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'libs',
-                enable:     "bit.platform.os == 'windows' && !bit.settings.static",
+                enable:     "!bit.settings.static",
 
             },{ from:        [
                     '${BIN}/libmprssl${SHOBJ}',
