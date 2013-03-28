@@ -576,7 +576,7 @@ DEPS_24 += $(CONFIG)/obj/http.o
 
 $(CONFIG)/bin/http.out: $(DEPS_24)
 	@echo '      [Link] http'
-	$(CC) -o $(CONFIG)/bin/http.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lhttp $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/http.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBS) $(LDFLAGS) 
 
 #
 #   sqlite3.h
@@ -736,7 +736,7 @@ DEPS_38 += $(CONFIG)/obj/server.o
 
 $(CONFIG)/bin/libappweb.out: $(DEPS_38)
 	@echo '      [Link] libappweb'
-	$(CC) -r -o $(CONFIG)/bin/libappweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lhttp $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libappweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o $(LIBS) 
 
 #
 #   edi.h
@@ -888,7 +888,7 @@ DEPS_51 += $(CONFIG)/obj/sdb.o
 
 $(CONFIG)/bin/libmod_esp.out: $(DEPS_51)
 	@echo '      [Link] libmod_esp'
-	$(CC) -r -o $(CONFIG)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lhttp -lappweb $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS) 
 endif
 
 #
@@ -922,7 +922,7 @@ DEPS_53 += $(CONFIG)/obj/sdb.o
 
 $(CONFIG)/bin/esp.out: $(DEPS_53)
 	@echo '      [Link] esp'
-	$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lhttp -lappweb $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBS) $(LDFLAGS) 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -1046,7 +1046,7 @@ DEPS_62 += $(CONFIG)/obj/ejsLib.o
 
 $(CONFIG)/bin/libejs.out: $(DEPS_62)
 	@echo '      [Link] libejs'
-	$(CC) -r -o $(CONFIG)/bin/libejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsLib.o -lhttp $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsLib.o $(LIBS) 
 endif
 
 #
@@ -1071,7 +1071,7 @@ DEPS_64 += $(CONFIG)/obj/ejs.o
 
 $(CONFIG)/bin/ejs.out: $(DEPS_64)
 	@echo '      [Link] ejs'
-	$(CC) -o $(CONFIG)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o -lhttp -lejs $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o $(LIBS) $(LDFLAGS) 
 endif
 
 #
@@ -1096,7 +1096,7 @@ DEPS_66 += $(CONFIG)/obj/ejsc.o
 
 $(CONFIG)/bin/ejsc.out: $(DEPS_66)
 	@echo '      [Link] ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o -lhttp -lejs $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LIBS) $(LDFLAGS) 
 endif
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
@@ -1132,7 +1132,7 @@ DEPS_69 += $(CONFIG)/obj/cgiHandler.o
 
 $(CONFIG)/bin/libmod_cgi.out: $(DEPS_69)
 	@echo '      [Link] libmod_cgi'
-	$(CC) -r -o $(CONFIG)/bin/libmod_cgi.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o -lhttp -lappweb $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libmod_cgi.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiHandler.o $(LIBS) 
 endif
 
 #
@@ -1158,7 +1158,7 @@ DEPS_71 += $(CONFIG)/obj/ejsHandler.o
 
 $(CONFIG)/bin/libmod_ejs.out: $(DEPS_71)
 	@echo '      [Link] libmod_ejs'
-	$(CC) -r -o $(CONFIG)/bin/libmod_ejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsHandler.o -lejs -lhttp -lappweb $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libmod_ejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsHandler.o $(LIBS) 
 endif
 
 #
@@ -1186,7 +1186,7 @@ endif
 
 $(CONFIG)/bin/libmod_php.out: $(DEPS_73)
 	@echo '      [Link] libmod_php'
-	$(CC) -r -o $(CONFIG)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS)  $(CONFIG)/obj/phpHandler.o -lhttp -lappweb $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS)  $(CONFIG)/obj/phpHandler.o $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) 
 endif
 
 #
@@ -1209,7 +1209,7 @@ DEPS_75 += $(CONFIG)/obj/sslModule.o
 
 $(CONFIG)/bin/libmod_ssl.out: $(DEPS_75)
 	@echo '      [Link] libmod_ssl'
-	$(CC) -r -o $(CONFIG)/bin/libmod_ssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sslModule.o -lhttp -lappweb $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libmod_ssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sslModule.o $(LIBS) 
 endif
 
 #
@@ -1231,7 +1231,7 @@ DEPS_77 += $(CONFIG)/obj/authpass.o
 
 $(CONFIG)/bin/authpass.out: $(DEPS_77)
 	@echo '      [Link] authpass'
-	$(CC) -o $(CONFIG)/bin/authpass.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o -lhttp -lappweb $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/authpass.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LIBS) $(LDFLAGS) 
 
 #
 #   cgiProgram.o
@@ -1285,7 +1285,7 @@ DEPS_82 += $(CONFIG)/obj/slink.o
 
 $(CONFIG)/bin/libslink.out: $(DEPS_82)
 	@echo '      [Link] libslink'
-	$(CC) -r -o $(CONFIG)/bin/libslink.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o -lappweb -lhttp $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libslink.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o $(LIBS) 
 
 #
 #   appweb.o
@@ -1308,7 +1308,7 @@ DEPS_84 += $(CONFIG)/obj/appweb.o
 
 $(CONFIG)/bin/appweb.out: $(DEPS_84)
 	@echo '      [Link] appweb'
-	$(CC) -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lhttp -lappweb $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBS) $(LDFLAGS) 
 
 #
 #   server-cache
@@ -1358,7 +1358,7 @@ DEPS_89 += $(CONFIG)/obj/testHttp.o
 
 $(CONFIG)/bin/testAppweb.out: $(DEPS_89)
 	@echo '      [Link] testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o -lhttp -lappweb $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/testAppweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBS) $(LDFLAGS) 
 
 ifeq ($(BIT_PACK_CGI),1)
 #
