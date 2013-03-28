@@ -125,7 +125,7 @@ ifeq ($(BIT_PACK_SQLITE),1)
 TARGETS            += $(CONFIG)/bin/libsqlite3.dylib
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-TARGETS            += $(CONFIG)/bin/sqlite
+TARGETS            += $(CONFIG)/bin/sqliteshell
 endif
 TARGETS            += $(CONFIG)/bin/libappweb.dylib
 ifeq ($(BIT_PACK_ESP),1)
@@ -235,7 +235,7 @@ clean:
 	rm -fr "$(CONFIG)/bin/libhttp.dylib"
 	rm -fr "$(CONFIG)/bin/http"
 	rm -fr "$(CONFIG)/bin/libsqlite3.dylib"
-	rm -fr "$(CONFIG)/bin/sqlite"
+	rm -fr "$(CONFIG)/bin/sqliteshell"
 	rm -fr "$(CONFIG)/bin/libappweb.dylib"
 	rm -fr "$(CONFIG)/bin/libmod_esp.dylib"
 	rm -fr "$(CONFIG)/bin/esp"
@@ -629,7 +629,7 @@ $(CONFIG)/obj/sqlite.o: \
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
-#   sqlite
+#   sqliteshell
 #
 ifeq ($(BIT_PACK_SQLITE),1)
     DEPS_29 += $(CONFIG)/bin/libsqlite3.dylib
@@ -640,9 +640,9 @@ ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_29 += -lsqlite3
 endif
 
-$(CONFIG)/bin/sqlite: $(DEPS_29)
-	@echo '      [Link] sqlite'
-	$(CC) -o $(CONFIG)/bin/sqlite -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LIBPATHS_29) $(LIBS_29) $(LIBS_29) $(LIBS) 
+$(CONFIG)/bin/sqliteshell: $(DEPS_29)
+	@echo '      [Link] sqliteshell'
+	$(CC) -o $(CONFIG)/bin/sqliteshell -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LIBPATHS_29) $(LIBS_29) $(LIBS_29) $(LIBS) 
 endif
 
 #
@@ -885,9 +885,6 @@ ifeq ($(BIT_PACK_ESP),1)
 #   libmod_esp
 #
 DEPS_51 += $(CONFIG)/bin/libappweb.dylib
-ifeq ($(BIT_PACK_SQLITE),1)
-    DEPS_51 += $(CONFIG)/bin/sqlite
-endif
 DEPS_51 += $(CONFIG)/inc/edi.h
 DEPS_51 += $(CONFIG)/inc/esp-app.h
 DEPS_51 += $(CONFIG)/inc/esp.h
@@ -930,9 +927,6 @@ ifeq ($(BIT_PACK_ESP),1)
 #   esp
 #
 DEPS_53 += $(CONFIG)/bin/libappweb.dylib
-ifeq ($(BIT_PACK_SQLITE),1)
-    DEPS_53 += $(CONFIG)/bin/sqlite
-endif
 DEPS_53 += $(CONFIG)/obj/edi.o
 DEPS_53 += $(CONFIG)/obj/esp.o
 DEPS_53 += $(CONFIG)/obj/espAbbrev.o

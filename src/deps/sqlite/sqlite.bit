@@ -25,10 +25,10 @@ Bit.load({
             requires: 'sqlite',
         },
 
-        sqlite: {
+        sqliteshell: {
             type: 'exe'
-            sources: ['sqlite.c'],
-            depends: ['libsqlite3'],
+            sources: [ 'sqlite.c' ],
+            depends: [ 'libsqlite3' ],
             platforms: [ 'local' ],
             requires: 'sqlite',
         },
