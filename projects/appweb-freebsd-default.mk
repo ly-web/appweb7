@@ -1597,6 +1597,11 @@ ifeq ($(BIT_PACK_ESP),1)
 	rm -f "$(BIT_BIN_PREFIX)/esp"
 	ln -s "$(BIT_VAPP_PREFIX)/bin/esp" "$(BIT_BIN_PREFIX)/esp"
 endif
+	cp $(CONFIG)/bin/libappweb.so $(BIT_VAPP_PREFIX)/bin/libappweb.so
+	cp $(CONFIG)/bin/libhttp.so $(BIT_VAPP_PREFIX)/bin/libhttp.so
+	cp $(CONFIG)/bin/libmpr.so $(BIT_VAPP_PREFIX)/bin/libmpr.so
+	cp $(CONFIG)/bin/libpcre.so $(BIT_VAPP_PREFIX)/bin/libpcre.so
+	cp $(CONFIG)/bin/libslink.so $(BIT_VAPP_PREFIX)/bin/libslink.so
 ifeq ($(BIT_PACK_SSL),1)
 	cp $(CONFIG)/bin/libmprssl.so $(BIT_VAPP_PREFIX)/bin/libmprssl.so
 	cp $(CONFIG)/bin/libmod_ssl.so $(BIT_VAPP_PREFIX)/bin/libmod_ssl.so
