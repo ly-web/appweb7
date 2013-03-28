@@ -144,7 +144,7 @@ TARGETS            = $(TARGETS) $(CONFIG)\bin\libappweb.dll
 TARGETS            = $(TARGETS) $(CONFIG)\bin\libmod_esp.dll
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-TARGETS            = $(TARGETS) $(CONFIG)\bin\esp.exe
+TARGETS            = $(TARGETS) $(CONFIG)\bin\esp
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 TARGETS            = $(TARGETS) $(CONFIG)\bin\esp.conf
@@ -244,7 +244,7 @@ clean:
 	if exist "$(CONFIG)\bin\sqliteshell.exe" rd /Q /S"$(CONFIG)\bin\sqliteshell.exe"
 	if exist "$(CONFIG)\bin\libappweb.dll" rd /Q /S"$(CONFIG)\bin\libappweb.dll"
 	if exist "$(CONFIG)\bin\libmod_esp.dll" rd /Q /S"$(CONFIG)\bin\libmod_esp.dll"
-	if exist "$(CONFIG)\bin\esp.exe" rd /Q /S"$(CONFIG)\bin\esp.exe"
+	if exist "$(CONFIG)\bin\esp" rd /Q /S"$(CONFIG)\bin\esp"
 	if exist "$(CONFIG)\bin\esp.conf" rd /Q /S"$(CONFIG)\bin\esp.conf"
 	if exist "src\server\esp.conf" rd /Q /S"src\server\esp.conf"
 	if exist "$(CONFIG)\bin\esp-www" rd /Q /S"$(CONFIG)\bin\esp-www"
@@ -950,7 +950,7 @@ $(CONFIG)\obj\esp.obj: \
 
 !IF "$(BIT_PACK_ESP)" == "1"
 #
-#   esp
+#   espcmd
 #
 DEPS_55 = $(DEPS_55) $(CONFIG)\bin\libappweb.dll
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\edi.obj
@@ -971,9 +971,9 @@ LIBS_55 = $(LIBS_55) libpcre.lib
 LIBS_55 = $(LIBS_55) libmpr.lib
 LIBS_55 = $(LIBS_55) libappweb.lib
 
-$(CONFIG)\bin\esp.exe: $(DEPS_55)
-	@echo '      [Link] esp'
-	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBPATHS_55) $(LIBS_55) $(LIBS_55) $(LIBS) 
+$(CONFIG)\bin\esp: $(DEPS_55)
+	@echo '      [Link] espcmd'
+	"$(LD)" -out:$(CONFIG)\bin\esp -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBPATHS_55) $(LIBS_55) $(LIBS_55) $(LIBS) 
 !ENDIF
 
 !IF "$(BIT_PACK_ESP)" == "1"
@@ -1398,22 +1398,19 @@ $(CONFIG)\obj\slink.obj: \
 #
 DEPS_84 = $(DEPS_84) src\server\slink.c
 !IF "$(BIT_PACK_ESP)" == "1"
-DEPS_84 = $(DEPS_84) $(CONFIG)\bin\esp.exe
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libmod_esp.dll
 !ENDIF
 DEPS_84 = $(DEPS_84) $(CONFIG)\obj\slink.obj
 
-!IF "$(BIT_PACK_ESP)" == "1"
-LIBS_84 = $(LIBS_84) libmod_esp.lib
-!ENDIF
 LIBS_84 = $(LIBS_84) libappweb.lib
 LIBS_84 = $(LIBS_84) libmpr.lib
 LIBS_84 = $(LIBS_84) libpcre.lib
 LIBS_84 = $(LIBS_84) libhttp.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_84 = $(LIBS_84) libsqlite3.lib
+!ENDIF
+!IF "$(BIT_PACK_ESP)" == "1"
+LIBS_84 = $(LIBS_84) libmod_esp.lib
 !ENDIF
 
 $(CONFIG)\bin\libslink.dll: $(DEPS_84)
@@ -1439,11 +1436,11 @@ DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libappweb.dll
 DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libslink.dll
 DEPS_86 = $(DEPS_86) $(CONFIG)\obj\appweb.obj
 
-!IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_86 = $(LIBS_86) libsqlite3.lib
-!ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 LIBS_86 = $(LIBS_86) libmod_esp.lib
+!ENDIF
+!IF "$(BIT_PACK_SQLITE)" == "1"
+LIBS_86 = $(LIBS_86) libsqlite3.lib
 !ENDIF
 LIBS_86 = $(LIBS_86) libslink.lib
 LIBS_86 = $(LIBS_86) libhttp.lib

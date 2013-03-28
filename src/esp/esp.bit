@@ -14,7 +14,8 @@ Bit.load({
             requires: [ 'esp' ],
         },
 
-        esp: {
+        espcmd: {
+            path: '${BIN}/esp',
             enable: "bit.packs.esp.enable",
             type: 'exe',
             depends: [ 'libappweb', 'sqlite' ],

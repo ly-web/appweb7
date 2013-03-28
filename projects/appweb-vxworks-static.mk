@@ -137,7 +137,7 @@ ifeq ($(BIT_PACK_ESP),1)
 TARGETS            += $(CONFIG)/bin/libmod_esp.a
 endif
 ifeq ($(BIT_PACK_ESP),1)
-TARGETS            += $(CONFIG)/bin/esp.out
+TARGETS            += $(CONFIG)/bin/esp
 endif
 ifeq ($(BIT_PACK_ESP),1)
 TARGETS            += $(CONFIG)/bin/esp.conf
@@ -246,7 +246,7 @@ clean:
 	rm -fr "$(CONFIG)/bin/sqliteshell.out"
 	rm -fr "$(CONFIG)/bin/libappweb.a"
 	rm -fr "$(CONFIG)/bin/libmod_esp.a"
-	rm -fr "$(CONFIG)/bin/esp.out"
+	rm -fr "$(CONFIG)/bin/esp"
 	rm -fr "$(CONFIG)/bin/esp.conf"
 	rm -fr "src/server/esp.conf"
 	rm -fr "$(CONFIG)/bin/esp-www"
@@ -888,7 +888,7 @@ $(CONFIG)/obj/esp.o: \
 
 ifeq ($(BIT_PACK_ESP),1)
 #
-#   esp
+#   espcmd
 #
 DEPS_53 += $(CONFIG)/bin/libappweb.a
 DEPS_53 += $(CONFIG)/obj/edi.o
@@ -909,9 +909,9 @@ LIBS_53 += -lpcre
 LIBS_53 += -lmpr
 LIBS_53 += -lappweb
 
-$(CONFIG)/bin/esp.out: $(DEPS_53)
-	@echo '      [Link] esp'
-	$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) $(LDFLAGS) 
+$(CONFIG)/bin/esp: $(DEPS_53)
+	@echo '      [Link] espcmd'
+	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) $(LDFLAGS) 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -1291,9 +1291,6 @@ $(CONFIG)/obj/slink.o: \
 #
 DEPS_82 += src/server/slink.c
 ifeq ($(BIT_PACK_ESP),1)
-    DEPS_82 += $(CONFIG)/bin/esp.out
-endif
-ifeq ($(BIT_PACK_ESP),1)
     DEPS_82 += $(CONFIG)/bin/libmod_esp.a
 endif
 DEPS_82 += $(CONFIG)/obj/slink.o
@@ -1358,11 +1355,11 @@ endif
 ifeq ($(BIT_PACK_SSL),1)
     LIBS_84 += -lmod_ssl
 endif
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_84 += -lsqlite3
-endif
 ifeq ($(BIT_PACK_ESP),1)
     LIBS_84 += -lmod_esp
+endif
+ifeq ($(BIT_PACK_SQLITE),1)
+    LIBS_84 += -lsqlite3
 endif
 LIBS_84 += -lslink
 LIBS_84 += -lhttp

@@ -924,7 +924,7 @@ $(CONFIG)/obj/esp.o: \
 
 ifeq ($(BIT_PACK_ESP),1)
 #
-#   esp
+#   espcmd
 #
 DEPS_53 += $(CONFIG)/bin/libappweb.so
 DEPS_53 += $(CONFIG)/obj/edi.o
@@ -946,7 +946,7 @@ LIBS_53 += -lmpr
 LIBS_53 += -lappweb
 
 $(CONFIG)/bin/esp: $(DEPS_53)
-	@echo '      [Link] esp'
+	@echo '      [Link] espcmd'
 	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 endif
 
@@ -1370,22 +1370,19 @@ $(CONFIG)/obj/slink.o: \
 #
 DEPS_82 += src/server/slink.c
 ifeq ($(BIT_PACK_ESP),1)
-    DEPS_82 += $(CONFIG)/bin/esp
-endif
-ifeq ($(BIT_PACK_ESP),1)
     DEPS_82 += $(CONFIG)/bin/libmod_esp.so
 endif
 DEPS_82 += $(CONFIG)/obj/slink.o
 
-ifeq ($(BIT_PACK_ESP),1)
-    LIBS_82 += -lmod_esp
-endif
 LIBS_82 += -lappweb
 LIBS_82 += -lmpr
 LIBS_82 += -lpcre
 LIBS_82 += -lhttp
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_82 += -lsqlite3
+endif
+ifeq ($(BIT_PACK_ESP),1)
+    LIBS_82 += -lmod_esp
 endif
 
 $(CONFIG)/bin/libslink.so: $(DEPS_82)
@@ -1411,11 +1408,11 @@ DEPS_84 += $(CONFIG)/bin/libappweb.so
 DEPS_84 += $(CONFIG)/bin/libslink.so
 DEPS_84 += $(CONFIG)/obj/appweb.o
 
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_84 += -lsqlite3
-endif
 ifeq ($(BIT_PACK_ESP),1)
     LIBS_84 += -lmod_esp
+endif
+ifeq ($(BIT_PACK_SQLITE),1)
+    LIBS_84 += -lsqlite3
 endif
 LIBS_84 += -lslink
 LIBS_84 += -lhttp
