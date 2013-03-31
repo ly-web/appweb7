@@ -125,9 +125,7 @@ BIT_SRC_PREFIX     = $(BIT_VAPP_PREFIX)\src
 
 TARGETS            = $(TARGETS) $(CONFIG)\bin\removeFiles.exe
 TARGETS            = $(TARGETS) $(CONFIG)\bin\libmpr.lib
-!IF "$(BIT_PACK_SSL)" == "1"
 TARGETS            = $(TARGETS) $(CONFIG)\bin\libmprssl.lib
-!ENDIF
 TARGETS            = $(TARGETS) $(CONFIG)\bin\appman.exe
 TARGETS            = $(TARGETS) $(CONFIG)\bin\makerom.exe
 TARGETS            = $(TARGETS) $(CONFIG)\bin\ca.crt
@@ -437,7 +435,6 @@ $(CONFIG)\obj\mprSsl.obj: \
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl -I$(BIT_PACK_NANOSSL_PATH)\src -I$(BIT_PACK_OPENSSL_PATH)\include src\deps\mpr\mprSsl.c
 
-!IF "$(BIT_PACK_SSL)" == "1"
 #
 #   libmprssl
 #
@@ -447,7 +444,6 @@ DEPS_11 = $(DEPS_11) $(CONFIG)\obj\mprSsl.obj
 $(CONFIG)\bin\libmprssl.lib: $(DEPS_11)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libmprssl.lib $(CONFIG)\obj\mprSsl.obj
-!ENDIF
 
 #
 #   manager.obj

@@ -113,9 +113,7 @@ BIT_SRC_PREFIX     := $(BIT_ROOT_PREFIX)$(PRODUCT)-$(VERSION)
 
 
 TARGETS            += $(CONFIG)/bin/libmpr.dylib
-ifeq ($(BIT_PACK_SSL),1)
 TARGETS            += $(CONFIG)/bin/libmprssl.dylib
-endif
 TARGETS            += $(CONFIG)/bin/appman
 TARGETS            += $(CONFIG)/bin/makerom
 TARGETS            += $(CONFIG)/bin/ca.crt
@@ -375,7 +373,6 @@ $(CONFIG)/obj/mprSsl.o: \
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
 	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl -I$(BIT_PACK_NANOSSL_PATH)/src -I$(BIT_PACK_OPENSSL_PATH)/include src/deps/mpr/mprSsl.c
 
-ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmprssl
 #
@@ -406,7 +403,6 @@ LIBS_9 += -lmpr
 $(CONFIG)/bin/libmprssl.dylib: $(DEPS_9)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.dylib'
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/mprSsl.o $(LIBPATHS_9) $(LIBS_9) $(LIBS_9) $(LIBS) 
-endif
 
 #
 #   manager.o

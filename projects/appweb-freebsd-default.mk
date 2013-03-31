@@ -113,9 +113,7 @@ BIT_SRC_PREFIX     := $(BIT_ROOT_PREFIX)$(PRODUCT)-$(VERSION)
 
 
 TARGETS            += $(CONFIG)/bin/libmpr.so
-ifeq ($(BIT_PACK_SSL),1)
 TARGETS            += $(CONFIG)/bin/libmprssl.so
-endif
 TARGETS            += $(CONFIG)/bin/appman
 TARGETS            += $(CONFIG)/bin/makerom
 TARGETS            += $(CONFIG)/bin/ca.crt
@@ -375,7 +373,6 @@ $(CONFIG)/obj/mprSsl.o: \
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
 	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl -I$(BIT_PACK_NANOSSL_PATH)/src -I$(BIT_PACK_OPENSSL_PATH)/include src/deps/mpr/mprSsl.c
 
-ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmprssl
 #
@@ -406,7 +403,6 @@ LIBS_9 += -lmpr
 $(CONFIG)/bin/libmprssl.so: $(DEPS_9)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.so'
 	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS)    $(CONFIG)/obj/mprSsl.o $(LIBPATHS_9) $(LIBS_9) $(LIBS_9) $(LIBS) 
-endif
 
 #
 #   manager.o

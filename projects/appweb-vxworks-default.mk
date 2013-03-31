@@ -118,9 +118,7 @@ BIT_SRC_PREFIX     := $(BIT_ROOT_PREFIX)/usr/src/$(PRODUCT)-$(VERSION)
 
 
 TARGETS            += $(CONFIG)/bin/libmpr.out
-ifeq ($(BIT_PACK_SSL),1)
 TARGETS            += $(CONFIG)/bin/libmprssl.out
-endif
 TARGETS            += $(CONFIG)/bin/appman.out
 TARGETS            += $(CONFIG)/bin/makerom.out
 TARGETS            += $(CONFIG)/bin/ca.crt
@@ -383,7 +381,6 @@ $(CONFIG)/obj/mprSsl.o: \
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
 	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl -I$(BIT_PACK_NANOSSL_PATH)/src -I$(BIT_PACK_OPENSSL_PATH)/include src/deps/mpr/mprSsl.c
 
-ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmprssl
 #
@@ -413,7 +410,6 @@ endif
 $(CONFIG)/bin/libmprssl.out: $(DEPS_9)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.out'
 	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS)    $(CONFIG)/obj/mprSsl.o $(LIBPATHS_9) $(LIBS_9) $(LIBS_9) $(LIBS) 
-endif
 
 #
 #   manager.o
