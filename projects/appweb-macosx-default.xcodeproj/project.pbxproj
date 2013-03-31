@@ -279,12 +279,12 @@
 		AB04609AAB047382000000BA /* libpcre.dylib for authpass */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000009F; };
 		AB04609AAB047382000000BB /* libmpr.dylib for authpass */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000009B; };
 		AB04609AAB047382000000BC /* libappweb.dylib for authpass */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000AC; };
-		AB04609AAB047382000000BD /* libappweb.dylib for libslink */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000AC; };
-		AB04609AAB047382000000BE /* libmpr.dylib for libslink */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000009B; };
-		AB04609AAB047382000000BF /* libpcre.dylib for libslink */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000009F; };
-		AB04609AAB047382000000C0 /* libhttp.dylib for libslink */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000A4; };
-		AB04609AAB047382000000C1 /* libmod_esp.dylib for libslink */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000C2; };
-		AB04609AAB047382000000C3 /* libmod_esp.dylib for appweb */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000C2; };
+		AB04609AAB047382000000BD /* libmod_esp.dylib for libslink */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000BE; };
+		AB04609AAB047382000000BF /* libhttp.dylib for libslink */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000A4; };
+		AB04609AAB047382000000C0 /* libpcre.dylib for libslink */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000009F; };
+		AB04609AAB047382000000C1 /* libmpr.dylib for libslink */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000009B; };
+		AB04609AAB047382000000C2 /* libappweb.dylib for libslink */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000AC; };
+		AB04609AAB047382000000C3 /* libmod_esp.dylib for appweb */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000BE; };
 		AB04609AAB047382000000C4 /* libslink.dylib for appweb */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000C5; };
 		AB04609AAB047382000000C6 /* libhttp.dylib for appweb */ = {isa = PBXBuildFile; fileRef = AB04609AAB047382000000A4; };
 		AB04609AAB047382000000C7 /* libpcre.dylib for appweb */ = {isa = PBXBuildFile; fileRef = AB04609AAB0473820000009F; };
@@ -902,7 +902,7 @@
 		AB04609AAB04738200000083 /* mdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mdb.c; path = src/esp/mdb.c; sourceTree = "<group>"; };
 		AB04609AAB0473820000013E /* mdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mdb.h; path = macosx-x64-default/inc/mdb.h; sourceTree = "<group>"; };
 		AB04609AAB04738200000085 /* sdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sdb.c; path = src/esp/sdb.c; sourceTree = "<group>"; };
-		AB04609AAB047382000000C2 /* libmod_esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_esp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB04609AAB047382000000BE /* libmod_esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_esp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB04609AAB04738200000077 /* edi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = edi.c; path = src/esp/edi.c; sourceTree = "<group>"; };
 		AB04609AAB04738200000087 /* esp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esp.c; path = src/esp/esp.c; sourceTree = "<group>"; };
 		AB04609AAB04738200000079 /* espAbbrev.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espAbbrev.c; path = src/esp/espAbbrev.c; sourceTree = "<group>"; };
@@ -1077,11 +1077,11 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				AB04609AAB047382000000BD /* libappweb */,
-				AB04609AAB047382000000BE /* libmpr */,
-				AB04609AAB047382000000BF /* libpcre */,
-				AB04609AAB047382000000C0 /* libhttp */,
-				AB04609AAB047382000000C1 /* libmod_esp */,				
+				AB04609AAB047382000000BD /* libmod_esp */,
+				AB04609AAB047382000000BF /* libhttp */,
+				AB04609AAB047382000000C0 /* libpcre */,
+				AB04609AAB047382000000C1 /* libmpr */,
+				AB04609AAB047382000000C2 /* libappweb */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1386,7 +1386,7 @@
 				AB04609AAB047382000000A4 /* libhttp */,
 				AB04609AAB04738200000139 /* http */,
 				AB04609AAB047382000000AC /* libappweb */,
-				AB04609AAB047382000000C2 /* libmod_esp */,
+				AB04609AAB047382000000BE /* libmod_esp */,
 				AB04609AAB0473820000013F /* espcmd */,
 				AB04609AAB04738200000140 /* libmod_cgi */,
 				AB04609AAB04738200000141 /* libmod_ssl */,
@@ -1579,7 +1579,7 @@
 			);
 			name = libmod_esp;
 			productName = appweb;
-			productReference = AB04609AAB047382000000C2 /* libmod_esp */;
+			productReference = AB04609AAB047382000000BE /* libmod_esp */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		AB04609AAB04738200000118 /* espcmd */ = {

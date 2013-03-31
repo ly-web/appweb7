@@ -321,7 +321,7 @@
     #define BIT_PACK_PMAKER 1
 #endif
 #ifndef BIT_PACK_SDB
-    #define BIT_PACK_SDB 0
+    #define BIT_PACK_SDB 1
 #endif
 #ifndef BIT_PACK_SQLITE
     #define BIT_PACK_SQLITE 1

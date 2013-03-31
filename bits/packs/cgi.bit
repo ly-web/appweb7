@@ -6,5 +6,6 @@ Bit.pack({
     cgi: {
         description: 'Common Gateway Interface Module',
         path: bit.dir.src.join('src/modules/cgiHandler.c'),
+        depends: [ 'libmod_cgi' ],
     },
 })

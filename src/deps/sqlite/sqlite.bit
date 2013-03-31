@@ -22,7 +22,7 @@ Bit.load({
                     }
                 ",
             },
-            requires: 'sqlite',
+            packs: 'sqlite',
         },
 
         sqliteshell: {
@@ -30,7 +30,7 @@ Bit.load({
             sources: [ 'sqlite.c' ],
             depends: [ 'libsqlite3' ],
             platforms: [ 'local' ],
-            requires: 'sqlite',
+            packs: 'sqlite',
         },
 	},
 })
