@@ -197,7 +197,7 @@ static int runAction(HttpConn *conn)
     EspReq      *req;
     EspAction   action;
     char        *key;
-    int         updated, recompile;
+    int         updated;
 
     rx = conn->rx;
     req = conn->data;
@@ -205,7 +205,6 @@ static int runAction(HttpConn *conn)
     eroute = req->eroute;
     assert(eroute);
     updated = 0;
-    recompile = 0;
 
     if (route->sourceName == 0 || *route->sourceName == '\0') {
         return 1;
@@ -227,6 +226,7 @@ static int runAction(HttpConn *conn)
 #if !BIT_STATIC
     } else if (eroute->update) {
         char    *source;
+        int     recompile = 0;
 
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
         source = req->controllerPath;
@@ -309,12 +309,12 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     EspRoute    *eroute;
     EspReq      *req;
     EspViewProc view;
-    int         recompile, updated;
+    int         updated;
     
     rx = conn->rx;
     req = conn->data;
     eroute = req->eroute;
-    recompile = updated = 0;
+    updated = 0;
     
     if (name && *name) {
         req->view = mprJoinPath(eroute->viewsDir, name);
@@ -335,7 +335,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         }
 #if !BIT_STATIC
     } else if (eroute->update) {
-        cchar *source;
+        cchar   *source;
+        int     recompile = 0;
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
         source = req->source;
 #if VXWORKS
