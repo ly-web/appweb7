@@ -367,7 +367,6 @@ $(CONFIG)/inc/est.h: $(DEPS_7)
 DEPS_8 += $(CONFIG)/inc/bit.h
 DEPS_8 += $(CONFIG)/inc/mpr.h
 DEPS_8 += $(CONFIG)/inc/est.h
-DEPS_8 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_8)
