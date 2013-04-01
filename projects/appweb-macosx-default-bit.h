@@ -239,7 +239,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default -configure . -gen xcode"
+    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default -configure . -gen make"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
@@ -279,7 +279,7 @@
     #define BIT_PACK_DSI 1
 #endif
 #ifndef BIT_PACK_EJSCRIPT
-    #define BIT_PACK_EJSCRIPT 0
+    #define BIT_PACK_EJSCRIPT 1
 #endif
 #ifndef BIT_PACK_ESP
     #define BIT_PACK_ESP 1
@@ -315,16 +315,16 @@
     #define BIT_PACK_PCRE 1
 #endif
 #ifndef BIT_PACK_PHP
-    #define BIT_PACK_PHP 0
+    #define BIT_PACK_PHP 1
 #endif
 #ifndef BIT_PACK_PMAKER
     #define BIT_PACK_PMAKER 1
 #endif
 #ifndef BIT_PACK_SDB
-    #define BIT_PACK_SDB 0
+    #define BIT_PACK_SDB 1
 #endif
 #ifndef BIT_PACK_SQLITE
-    #define BIT_PACK_SQLITE 0
+    #define BIT_PACK_SQLITE 1
 #endif
 #ifndef BIT_PACK_SSL
     #define BIT_PACK_SSL 1
