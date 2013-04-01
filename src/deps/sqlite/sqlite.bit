@@ -26,6 +26,7 @@ Bit.load({
         },
 
         sqliteshell: {
+            path: "${BIN}/sqlite${EXE}",
             type: 'exe'
             sources: [ 'sqlite.c' ],
             depends: [ 'libsqlite3' ],
