@@ -367,7 +367,6 @@ $(CONFIG)/inc/est.h: $(DEPS_7)
 DEPS_8 += $(CONFIG)/inc/bit.h
 DEPS_8 += $(CONFIG)/inc/mpr.h
 DEPS_8 += $(CONFIG)/inc/est.h
-DEPS_8 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_8)
@@ -550,13 +549,10 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_22 += -lpcre
 endif
 LIBS_22 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_22 += -lpam
-endif
 
 $(CONFIG)/bin/libhttp.dylib: $(DEPS_22)
 	@echo '      [Link] $(CONFIG)/bin/libhttp.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/httpLib.o $(LIBPATHS_22) $(LIBS_22) $(LIBS_22) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/httpLib.o $(LIBPATHS_22) $(LIBS_22) $(LIBS_22) $(LIBS) -lpam 
 
 #
 #   http.o
@@ -575,9 +571,6 @@ $(CONFIG)/obj/http.o: \
 DEPS_24 += $(CONFIG)/bin/libhttp.dylib
 DEPS_24 += $(CONFIG)/obj/http.o
 
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_24 += -lpam
-endif
 LIBS_24 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_24 += -lpcre
@@ -586,7 +579,7 @@ LIBS_24 += -lhttp
 
 $(CONFIG)/bin/http: $(DEPS_24)
 	@echo '      [Link] $(CONFIG)/bin/http'
-	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o -lpam $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) 
 
 #
 #   sqlite3.h
@@ -744,9 +737,6 @@ DEPS_38 += $(CONFIG)/obj/fileHandler.o
 DEPS_38 += $(CONFIG)/obj/log.o
 DEPS_38 += $(CONFIG)/obj/server.o
 
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_38 += -lpam
-endif
 LIBS_38 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_38 += -lpcre
@@ -755,7 +745,7 @@ LIBS_38 += -lhttp
 
 $(CONFIG)/bin/libappweb.dylib: $(DEPS_38)
 	@echo '      [Link] $(CONFIG)/bin/libappweb.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o $(LIBPATHS_38) $(LIBS_38) $(LIBS_38) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/config.o $(CONFIG)/obj/convenience.o $(CONFIG)/obj/dirHandler.o $(CONFIG)/obj/fileHandler.o $(CONFIG)/obj/log.o $(CONFIG)/obj/server.o -lpam $(LIBPATHS_38) $(LIBS_38) $(LIBS_38) $(LIBS) 
 
 #
 #   edi.h
@@ -910,14 +900,11 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_51 += -lpcre
 endif
 LIBS_51 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_51 += -lpam
-endif
 LIBS_51 += -lappweb
 
 $(CONFIG)/bin/libmod_esp.dylib: $(DEPS_51)
 	@echo '      [Link] $(CONFIG)/bin/libmod_esp.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_51) $(LIBS_51) $(LIBS_51) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/edi.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lpam $(LIBPATHS_51) $(LIBS_51) $(LIBS_51) $(LIBS) 
 endif
 
 #
@@ -954,14 +941,11 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_53 += -lpcre
 endif
 LIBS_53 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_53 += -lpam
-endif
 LIBS_53 += -lappweb
 
 $(CONFIG)/bin/esp: $(DEPS_53)
 	@echo '      [Link] $(CONFIG)/bin/esp'
-	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o -lpam $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -1088,7 +1072,6 @@ DEPS_62 += $(CONFIG)/obj/ejsLib.o
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_62 += -lsqlite3
 endif
-LIBS_62 += -lpam
 LIBS_62 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_62 += -lpcre
@@ -1097,7 +1080,7 @@ LIBS_62 += -lhttp
 
 $(CONFIG)/bin/libejs.dylib: $(DEPS_62)
 	@echo '      [Link] $(CONFIG)/bin/libejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/ejsLib.o $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/ejsLib.o -lpam $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) 
 endif
 
 #
@@ -1123,7 +1106,6 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_64 += -lpcre
 endif
 LIBS_64 += -lmpr
-LIBS_64 += -lpam
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_64 += -lsqlite3
 endif
@@ -1131,7 +1113,7 @@ LIBS_64 += -lejs
 
 $(CONFIG)/bin/ejs: $(DEPS_64)
 	@echo '      [Link] $(CONFIG)/bin/ejs'
-	$(CC) -o $(CONFIG)/bin/ejs -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS) -ledit 
+	$(CC) -o $(CONFIG)/bin/ejs -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o -lpam $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS) -ledit 
 endif
 
 #
@@ -1157,7 +1139,6 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_66 += -lpcre
 endif
 LIBS_66 += -lmpr
-LIBS_66 += -lpam
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_66 += -lsqlite3
 endif
@@ -1165,7 +1146,7 @@ LIBS_66 += -lejs
 
 $(CONFIG)/bin/ejsc: $(DEPS_66)
 	@echo '      [Link] $(CONFIG)/bin/ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o -lpam $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) 
 endif
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
@@ -1202,14 +1183,11 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_69 += -lpcre
 endif
 LIBS_69 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_69 += -lpam
-endif
 LIBS_69 += -lappweb
 
 $(CONFIG)/bin/libmod_cgi.dylib: $(DEPS_69)
 	@echo '      [Link] $(CONFIG)/bin/libmod_cgi.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/cgiHandler.o $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/cgiHandler.o -lpam $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) 
 endif
 
 #
@@ -1240,12 +1218,11 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_71 += -lpcre
 endif
 LIBS_71 += -lmpr
-LIBS_71 += -lpam
 LIBS_71 += -lappweb
 
 $(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_71)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/ejsHandler.o $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/ejsHandler.o -lpam $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) 
 endif
 
 #
@@ -1273,14 +1250,11 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_73 += -lpcre
 endif
 LIBS_73 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_73 += -lpam
-endif
 LIBS_73 += -lappweb
 
 $(CONFIG)/bin/libmod_php.dylib: $(DEPS_73)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/phpHandler.o $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/phpHandler.o -lpam $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) 
 endif
 
 #
@@ -1306,14 +1280,11 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_75 += -lpcre
 endif
 LIBS_75 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_75 += -lpam
-endif
 LIBS_75 += -lappweb
 
 $(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_75)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ssl.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/sslModule.o $(LIBPATHS_75) $(LIBS_75) $(LIBS_75) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ssl.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/sslModule.o -lpam $(LIBPATHS_75) $(LIBS_75) $(LIBS_75) $(LIBS) 
 endif
 
 #
@@ -1338,14 +1309,11 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_77 += -lpcre
 endif
 LIBS_77 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_77 += -lpam
-endif
 LIBS_77 += -lappweb
 
 $(CONFIG)/bin/authpass: $(DEPS_77)
 	@echo '      [Link] $(CONFIG)/bin/authpass'
-	$(CC) -o $(CONFIG)/bin/authpass -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/authpass -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o -lpam $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) 
 
 #
 #   cgiProgram.o
@@ -1415,14 +1383,11 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_83 += -lpcre
 endif
 LIBS_83 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_83 += -lpam
-endif
 LIBS_83 += -lappweb
 
 $(CONFIG)/bin/libslink.dylib: $(DEPS_83)
 	@echo '      [Link] $(CONFIG)/bin/libslink.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/slink.o $(LIBPATHS_83) $(LIBS_83) $(LIBS_83) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/slink.o -lpam $(LIBPATHS_83) $(LIBS_83) $(LIBS_83) $(LIBS) 
 
 #
 #   appweb.o
@@ -1455,14 +1420,11 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_85 += -lpcre
 endif
 LIBS_85 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_85 += -lpam
-endif
 LIBS_85 += -lappweb
 
 $(CONFIG)/bin/appweb: $(DEPS_85)
 	@echo '      [Link] $(CONFIG)/bin/appweb'
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBPATHS_85) $(LIBS_85) $(LIBS_85) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o -lpam $(LIBPATHS_85) $(LIBS_85) $(LIBS_85) $(LIBS) 
 
 #
 #   server-cache
@@ -1515,14 +1477,11 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_90 += -lpcre
 endif
 LIBS_90 += -lmpr
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_90 += -lpam
-endif
 LIBS_90 += -lappweb
 
 $(CONFIG)/bin/testAppweb: $(DEPS_90)
 	@echo '      [Link] $(CONFIG)/bin/testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBPATHS_90) $(LIBS_90) $(LIBS_90) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/testAppweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o -lpam $(LIBPATHS_90) $(LIBS_90) $(LIBS_90) $(LIBS) 
 
 ifeq ($(BIT_PACK_CGI),1)
 #

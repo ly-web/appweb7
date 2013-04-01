@@ -138,7 +138,7 @@ ifeq ($(BIT_PACK_ESP),1)
 TARGETS            += $(CONFIG)/bin/libmod_esp.a
 endif
 ifeq ($(BIT_PACK_ESP),1)
-TARGETS            += $(CONFIG)/bin/esp
+TARGETS            += $(CONFIG)/bin/esp.out
 endif
 ifeq ($(BIT_PACK_ESP),1)
 TARGETS            += $(CONFIG)/bin/esp.conf
@@ -247,7 +247,7 @@ clean:
 	rm -f "$(CONFIG)/bin/sqliteshell.out"
 	rm -f "$(CONFIG)/bin/libappweb.a"
 	rm -f "$(CONFIG)/bin/libmod_esp.a"
-	rm -f "$(CONFIG)/bin/esp"
+	rm -f "$(CONFIG)/bin/esp.out"
 	rm -f "$(CONFIG)/bin/esp.conf"
 	rm -f "src/server/esp.conf"
 	rm -f "$(CONFIG)/bin/esp-www"
@@ -909,9 +909,9 @@ endif
 LIBS_53 += -lmpr
 LIBS_53 += -lappweb
 
-$(CONFIG)/bin/esp: $(DEPS_53)
-	@echo '      [Link] $(CONFIG)/bin/esp'
-	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) $(LDFLAGS) 
+$(CONFIG)/bin/esp.out: $(DEPS_53)
+	@echo '      [Link] $(CONFIG)/bin/esp.out'
+	$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) $(LDFLAGS) 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
