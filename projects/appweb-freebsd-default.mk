@@ -347,6 +347,8 @@ $(CONFIG)/obj/mprLib.o: \
 #   libmpr
 #
 DEPS_6 += $(CONFIG)/inc/mpr.h
+DEPS_6 += $(CONFIG)/inc/bit.h
+DEPS_6 += $(CONFIG)/inc/bitos.h
 DEPS_6 += $(CONFIG)/obj/mprLib.o
 
 $(CONFIG)/bin/libmpr.so: $(DEPS_6)
@@ -376,7 +378,12 @@ $(CONFIG)/obj/mprSsl.o: \
 #
 #   libmprssl
 #
+DEPS_9 += $(CONFIG)/inc/mpr.h
+DEPS_9 += $(CONFIG)/inc/bit.h
+DEPS_9 += $(CONFIG)/inc/bitos.h
+DEPS_9 += $(CONFIG)/obj/mprLib.o
 DEPS_9 += $(CONFIG)/bin/libmpr.so
+DEPS_9 += $(CONFIG)/inc/est.h
 DEPS_9 += $(CONFIG)/obj/mprSsl.o
 
 ifeq ($(BIT_PACK_EST),1)
@@ -418,6 +425,10 @@ $(CONFIG)/obj/manager.o: \
 #
 #   manager
 #
+DEPS_11 += $(CONFIG)/inc/mpr.h
+DEPS_11 += $(CONFIG)/inc/bit.h
+DEPS_11 += $(CONFIG)/inc/bitos.h
+DEPS_11 += $(CONFIG)/obj/mprLib.o
 DEPS_11 += $(CONFIG)/bin/libmpr.so
 DEPS_11 += $(CONFIG)/obj/manager.o
 
@@ -441,6 +452,10 @@ $(CONFIG)/obj/makerom.o: \
 #
 #   makerom
 #
+DEPS_13 += $(CONFIG)/inc/mpr.h
+DEPS_13 += $(CONFIG)/inc/bit.h
+DEPS_13 += $(CONFIG)/inc/bitos.h
+DEPS_13 += $(CONFIG)/obj/mprLib.o
 DEPS_13 += $(CONFIG)/bin/libmpr.so
 DEPS_13 += $(CONFIG)/obj/makerom.o
 
@@ -467,6 +482,8 @@ ifeq ($(BIT_PACK_EST),1)
 #   libest
 #
 DEPS_15 += $(CONFIG)/inc/est.h
+DEPS_15 += $(CONFIG)/inc/bit.h
+DEPS_15 += $(CONFIG)/inc/bitos.h
 DEPS_15 += $(CONFIG)/obj/estLib.o
 
 $(CONFIG)/bin/libest.so: $(DEPS_15)
@@ -508,6 +525,7 @@ ifeq ($(BIT_PACK_PCRE),1)
 #   libpcre
 #
 DEPS_19 += $(CONFIG)/inc/pcre.h
+DEPS_19 += $(CONFIG)/inc/bit.h
 DEPS_19 += $(CONFIG)/obj/pcre.o
 
 $(CONFIG)/bin/libpcre.so: $(DEPS_19)
@@ -538,7 +556,13 @@ $(CONFIG)/obj/httpLib.o: \
 #
 #   libhttp
 #
+DEPS_22 += $(CONFIG)/inc/mpr.h
+DEPS_22 += $(CONFIG)/inc/bit.h
+DEPS_22 += $(CONFIG)/inc/bitos.h
+DEPS_22 += $(CONFIG)/obj/mprLib.o
 DEPS_22 += $(CONFIG)/bin/libmpr.so
+DEPS_22 += $(CONFIG)/inc/pcre.h
+DEPS_22 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
     DEPS_22 += $(CONFIG)/bin/libpcre.so
 endif
@@ -568,6 +592,18 @@ $(CONFIG)/obj/http.o: \
 #
 #   http
 #
+DEPS_24 += $(CONFIG)/inc/mpr.h
+DEPS_24 += $(CONFIG)/inc/bit.h
+DEPS_24 += $(CONFIG)/inc/bitos.h
+DEPS_24 += $(CONFIG)/obj/mprLib.o
+DEPS_24 += $(CONFIG)/bin/libmpr.so
+DEPS_24 += $(CONFIG)/inc/pcre.h
+DEPS_24 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_24 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_24 += $(CONFIG)/inc/http.h
+DEPS_24 += $(CONFIG)/obj/httpLib.o
 DEPS_24 += $(CONFIG)/bin/libhttp.so
 DEPS_24 += $(CONFIG)/obj/http.o
 
@@ -605,6 +641,7 @@ ifeq ($(BIT_PACK_SQLITE),1)
 #   libsqlite3
 #
 DEPS_27 += $(CONFIG)/inc/sqlite3.h
+DEPS_27 += $(CONFIG)/inc/bit.h
 DEPS_27 += $(CONFIG)/obj/sqlite3.o
 
 $(CONFIG)/bin/libsqlite3.so: $(DEPS_27)
@@ -627,6 +664,9 @@ ifeq ($(BIT_PACK_SQLITE),1)
 #
 #   sqliteshell
 #
+DEPS_29 += $(CONFIG)/inc/sqlite3.h
+DEPS_29 += $(CONFIG)/inc/bit.h
+DEPS_29 += $(CONFIG)/obj/sqlite3.o
 DEPS_29 += $(CONFIG)/bin/libsqlite3.so
 DEPS_29 += $(CONFIG)/obj/sqlite.o
 
@@ -726,9 +766,20 @@ $(CONFIG)/obj/server.o: \
 #
 #   libappweb
 #
+DEPS_38 += $(CONFIG)/inc/mpr.h
+DEPS_38 += $(CONFIG)/inc/bit.h
+DEPS_38 += $(CONFIG)/inc/bitos.h
+DEPS_38 += $(CONFIG)/obj/mprLib.o
+DEPS_38 += $(CONFIG)/bin/libmpr.so
+DEPS_38 += $(CONFIG)/inc/pcre.h
+DEPS_38 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_38 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_38 += $(CONFIG)/inc/http.h
+DEPS_38 += $(CONFIG)/obj/httpLib.o
 DEPS_38 += $(CONFIG)/bin/libhttp.so
 DEPS_38 += $(CONFIG)/inc/appweb.h
-DEPS_38 += $(CONFIG)/inc/bitos.h
 DEPS_38 += $(CONFIG)/inc/customize.h
 DEPS_38 += $(CONFIG)/obj/config.o
 DEPS_38 += $(CONFIG)/obj/convenience.o
@@ -878,6 +929,27 @@ ifeq ($(BIT_PACK_ESP),1)
 #
 #   libmod_esp
 #
+DEPS_51 += $(CONFIG)/inc/mpr.h
+DEPS_51 += $(CONFIG)/inc/bit.h
+DEPS_51 += $(CONFIG)/inc/bitos.h
+DEPS_51 += $(CONFIG)/obj/mprLib.o
+DEPS_51 += $(CONFIG)/bin/libmpr.so
+DEPS_51 += $(CONFIG)/inc/pcre.h
+DEPS_51 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_51 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_51 += $(CONFIG)/inc/http.h
+DEPS_51 += $(CONFIG)/obj/httpLib.o
+DEPS_51 += $(CONFIG)/bin/libhttp.so
+DEPS_51 += $(CONFIG)/inc/appweb.h
+DEPS_51 += $(CONFIG)/inc/customize.h
+DEPS_51 += $(CONFIG)/obj/config.o
+DEPS_51 += $(CONFIG)/obj/convenience.o
+DEPS_51 += $(CONFIG)/obj/dirHandler.o
+DEPS_51 += $(CONFIG)/obj/fileHandler.o
+DEPS_51 += $(CONFIG)/obj/log.o
+DEPS_51 += $(CONFIG)/obj/server.o
 DEPS_51 += $(CONFIG)/bin/libappweb.so
 DEPS_51 += $(CONFIG)/inc/edi.h
 DEPS_51 += $(CONFIG)/inc/esp-app.h
@@ -922,14 +994,38 @@ ifeq ($(BIT_PACK_ESP),1)
 #
 #   espcmd
 #
+DEPS_53 += $(CONFIG)/inc/mpr.h
+DEPS_53 += $(CONFIG)/inc/bit.h
+DEPS_53 += $(CONFIG)/inc/bitos.h
+DEPS_53 += $(CONFIG)/obj/mprLib.o
+DEPS_53 += $(CONFIG)/bin/libmpr.so
+DEPS_53 += $(CONFIG)/inc/pcre.h
+DEPS_53 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_53 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_53 += $(CONFIG)/inc/http.h
+DEPS_53 += $(CONFIG)/obj/httpLib.o
+DEPS_53 += $(CONFIG)/bin/libhttp.so
+DEPS_53 += $(CONFIG)/inc/appweb.h
+DEPS_53 += $(CONFIG)/inc/customize.h
+DEPS_53 += $(CONFIG)/obj/config.o
+DEPS_53 += $(CONFIG)/obj/convenience.o
+DEPS_53 += $(CONFIG)/obj/dirHandler.o
+DEPS_53 += $(CONFIG)/obj/fileHandler.o
+DEPS_53 += $(CONFIG)/obj/log.o
+DEPS_53 += $(CONFIG)/obj/server.o
 DEPS_53 += $(CONFIG)/bin/libappweb.so
+DEPS_53 += $(CONFIG)/inc/edi.h
 DEPS_53 += $(CONFIG)/obj/edi.o
+DEPS_53 += $(CONFIG)/inc/esp.h
 DEPS_53 += $(CONFIG)/obj/esp.o
 DEPS_53 += $(CONFIG)/obj/espAbbrev.o
 DEPS_53 += $(CONFIG)/obj/espFramework.o
 DEPS_53 += $(CONFIG)/obj/espHandler.o
 DEPS_53 += $(CONFIG)/obj/espHtml.o
 DEPS_53 += $(CONFIG)/obj/espTemplate.o
+DEPS_53 += $(CONFIG)/inc/mdb.h
 DEPS_53 += $(CONFIG)/obj/mdb.o
 DEPS_53 += $(CONFIG)/obj/sdb.o
 
@@ -1059,11 +1155,19 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
 #   libejs
 #
-DEPS_62 += $(CONFIG)/bin/libhttp.so
+DEPS_62 += $(CONFIG)/inc/mpr.h
+DEPS_62 += $(CONFIG)/inc/bit.h
+DEPS_62 += $(CONFIG)/inc/bitos.h
+DEPS_62 += $(CONFIG)/obj/mprLib.o
+DEPS_62 += $(CONFIG)/bin/libmpr.so
+DEPS_62 += $(CONFIG)/inc/pcre.h
+DEPS_62 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
     DEPS_62 += $(CONFIG)/bin/libpcre.so
 endif
-DEPS_62 += $(CONFIG)/bin/libmpr.so
+DEPS_62 += $(CONFIG)/inc/http.h
+DEPS_62 += $(CONFIG)/obj/httpLib.o
+DEPS_62 += $(CONFIG)/bin/libhttp.so
 DEPS_62 += $(CONFIG)/inc/ejs.h
 DEPS_62 += $(CONFIG)/inc/ejs.slots.h
 DEPS_62 += $(CONFIG)/inc/ejsByteGoto.h
@@ -1098,6 +1202,23 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
 #   ejs
 #
+DEPS_64 += $(CONFIG)/inc/mpr.h
+DEPS_64 += $(CONFIG)/inc/bit.h
+DEPS_64 += $(CONFIG)/inc/bitos.h
+DEPS_64 += $(CONFIG)/obj/mprLib.o
+DEPS_64 += $(CONFIG)/bin/libmpr.so
+DEPS_64 += $(CONFIG)/inc/pcre.h
+DEPS_64 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_64 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_64 += $(CONFIG)/inc/http.h
+DEPS_64 += $(CONFIG)/obj/httpLib.o
+DEPS_64 += $(CONFIG)/bin/libhttp.so
+DEPS_64 += $(CONFIG)/inc/ejs.h
+DEPS_64 += $(CONFIG)/inc/ejs.slots.h
+DEPS_64 += $(CONFIG)/inc/ejsByteGoto.h
+DEPS_64 += $(CONFIG)/obj/ejsLib.o
 DEPS_64 += $(CONFIG)/bin/libejs.so
 DEPS_64 += $(CONFIG)/obj/ejs.o
 
@@ -1131,6 +1252,23 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
 #   ejsc
 #
+DEPS_66 += $(CONFIG)/inc/mpr.h
+DEPS_66 += $(CONFIG)/inc/bit.h
+DEPS_66 += $(CONFIG)/inc/bitos.h
+DEPS_66 += $(CONFIG)/obj/mprLib.o
+DEPS_66 += $(CONFIG)/bin/libmpr.so
+DEPS_66 += $(CONFIG)/inc/pcre.h
+DEPS_66 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_66 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_66 += $(CONFIG)/inc/http.h
+DEPS_66 += $(CONFIG)/obj/httpLib.o
+DEPS_66 += $(CONFIG)/bin/libhttp.so
+DEPS_66 += $(CONFIG)/inc/ejs.h
+DEPS_66 += $(CONFIG)/inc/ejs.slots.h
+DEPS_66 += $(CONFIG)/inc/ejsByteGoto.h
+DEPS_66 += $(CONFIG)/obj/ejsLib.o
 DEPS_66 += $(CONFIG)/bin/libejs.so
 DEPS_66 += $(CONFIG)/obj/ejsc.o
 
@@ -1154,6 +1292,25 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #   ejs.mod
 #
 DEPS_67 += src/deps/ejs/ejs.es
+DEPS_67 += $(CONFIG)/inc/mpr.h
+DEPS_67 += $(CONFIG)/inc/bit.h
+DEPS_67 += $(CONFIG)/inc/bitos.h
+DEPS_67 += $(CONFIG)/obj/mprLib.o
+DEPS_67 += $(CONFIG)/bin/libmpr.so
+DEPS_67 += $(CONFIG)/inc/pcre.h
+DEPS_67 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_67 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_67 += $(CONFIG)/inc/http.h
+DEPS_67 += $(CONFIG)/obj/httpLib.o
+DEPS_67 += $(CONFIG)/bin/libhttp.so
+DEPS_67 += $(CONFIG)/inc/ejs.h
+DEPS_67 += $(CONFIG)/inc/ejs.slots.h
+DEPS_67 += $(CONFIG)/inc/ejsByteGoto.h
+DEPS_67 += $(CONFIG)/obj/ejsLib.o
+DEPS_67 += $(CONFIG)/bin/libejs.so
+DEPS_67 += $(CONFIG)/obj/ejsc.o
 DEPS_67 += $(CONFIG)/bin/ejsc
 
 $(CONFIG)/bin/ejs.mod: $(DEPS_67)
@@ -1175,6 +1332,27 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   libmod_cgi
 #
+DEPS_69 += $(CONFIG)/inc/mpr.h
+DEPS_69 += $(CONFIG)/inc/bit.h
+DEPS_69 += $(CONFIG)/inc/bitos.h
+DEPS_69 += $(CONFIG)/obj/mprLib.o
+DEPS_69 += $(CONFIG)/bin/libmpr.so
+DEPS_69 += $(CONFIG)/inc/pcre.h
+DEPS_69 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_69 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_69 += $(CONFIG)/inc/http.h
+DEPS_69 += $(CONFIG)/obj/httpLib.o
+DEPS_69 += $(CONFIG)/bin/libhttp.so
+DEPS_69 += $(CONFIG)/inc/appweb.h
+DEPS_69 += $(CONFIG)/inc/customize.h
+DEPS_69 += $(CONFIG)/obj/config.o
+DEPS_69 += $(CONFIG)/obj/convenience.o
+DEPS_69 += $(CONFIG)/obj/dirHandler.o
+DEPS_69 += $(CONFIG)/obj/fileHandler.o
+DEPS_69 += $(CONFIG)/obj/log.o
+DEPS_69 += $(CONFIG)/obj/server.o
 DEPS_69 += $(CONFIG)/bin/libappweb.so
 DEPS_69 += $(CONFIG)/obj/cgiHandler.o
 
@@ -1205,7 +1383,32 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
 #   libmod_ejs
 #
+DEPS_71 += $(CONFIG)/inc/mpr.h
+DEPS_71 += $(CONFIG)/inc/bit.h
+DEPS_71 += $(CONFIG)/inc/bitos.h
+DEPS_71 += $(CONFIG)/obj/mprLib.o
+DEPS_71 += $(CONFIG)/bin/libmpr.so
+DEPS_71 += $(CONFIG)/inc/pcre.h
+DEPS_71 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_71 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_71 += $(CONFIG)/inc/http.h
+DEPS_71 += $(CONFIG)/obj/httpLib.o
+DEPS_71 += $(CONFIG)/bin/libhttp.so
+DEPS_71 += $(CONFIG)/inc/appweb.h
+DEPS_71 += $(CONFIG)/inc/customize.h
+DEPS_71 += $(CONFIG)/obj/config.o
+DEPS_71 += $(CONFIG)/obj/convenience.o
+DEPS_71 += $(CONFIG)/obj/dirHandler.o
+DEPS_71 += $(CONFIG)/obj/fileHandler.o
+DEPS_71 += $(CONFIG)/obj/log.o
+DEPS_71 += $(CONFIG)/obj/server.o
 DEPS_71 += $(CONFIG)/bin/libappweb.so
+DEPS_71 += $(CONFIG)/inc/ejs.h
+DEPS_71 += $(CONFIG)/inc/ejs.slots.h
+DEPS_71 += $(CONFIG)/inc/ejsByteGoto.h
+DEPS_71 += $(CONFIG)/obj/ejsLib.o
 DEPS_71 += $(CONFIG)/bin/libejs.so
 DEPS_71 += $(CONFIG)/obj/ejsHandler.o
 
@@ -1240,6 +1443,27 @@ ifeq ($(BIT_PACK_PHP),1)
 #
 #   libmod_php
 #
+DEPS_73 += $(CONFIG)/inc/mpr.h
+DEPS_73 += $(CONFIG)/inc/bit.h
+DEPS_73 += $(CONFIG)/inc/bitos.h
+DEPS_73 += $(CONFIG)/obj/mprLib.o
+DEPS_73 += $(CONFIG)/bin/libmpr.so
+DEPS_73 += $(CONFIG)/inc/pcre.h
+DEPS_73 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_73 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_73 += $(CONFIG)/inc/http.h
+DEPS_73 += $(CONFIG)/obj/httpLib.o
+DEPS_73 += $(CONFIG)/bin/libhttp.so
+DEPS_73 += $(CONFIG)/inc/appweb.h
+DEPS_73 += $(CONFIG)/inc/customize.h
+DEPS_73 += $(CONFIG)/obj/config.o
+DEPS_73 += $(CONFIG)/obj/convenience.o
+DEPS_73 += $(CONFIG)/obj/dirHandler.o
+DEPS_73 += $(CONFIG)/obj/fileHandler.o
+DEPS_73 += $(CONFIG)/obj/log.o
+DEPS_73 += $(CONFIG)/obj/server.o
 DEPS_73 += $(CONFIG)/bin/libappweb.so
 DEPS_73 += $(CONFIG)/obj/phpHandler.o
 
@@ -1272,6 +1496,27 @@ ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmod_ssl
 #
+DEPS_75 += $(CONFIG)/inc/mpr.h
+DEPS_75 += $(CONFIG)/inc/bit.h
+DEPS_75 += $(CONFIG)/inc/bitos.h
+DEPS_75 += $(CONFIG)/obj/mprLib.o
+DEPS_75 += $(CONFIG)/bin/libmpr.so
+DEPS_75 += $(CONFIG)/inc/pcre.h
+DEPS_75 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_75 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_75 += $(CONFIG)/inc/http.h
+DEPS_75 += $(CONFIG)/obj/httpLib.o
+DEPS_75 += $(CONFIG)/bin/libhttp.so
+DEPS_75 += $(CONFIG)/inc/appweb.h
+DEPS_75 += $(CONFIG)/inc/customize.h
+DEPS_75 += $(CONFIG)/obj/config.o
+DEPS_75 += $(CONFIG)/obj/convenience.o
+DEPS_75 += $(CONFIG)/obj/dirHandler.o
+DEPS_75 += $(CONFIG)/obj/fileHandler.o
+DEPS_75 += $(CONFIG)/obj/log.o
+DEPS_75 += $(CONFIG)/obj/server.o
 DEPS_75 += $(CONFIG)/bin/libappweb.so
 DEPS_75 += $(CONFIG)/obj/sslModule.o
 
@@ -1301,6 +1546,27 @@ $(CONFIG)/obj/authpass.o: \
 #
 #   authpass
 #
+DEPS_77 += $(CONFIG)/inc/mpr.h
+DEPS_77 += $(CONFIG)/inc/bit.h
+DEPS_77 += $(CONFIG)/inc/bitos.h
+DEPS_77 += $(CONFIG)/obj/mprLib.o
+DEPS_77 += $(CONFIG)/bin/libmpr.so
+DEPS_77 += $(CONFIG)/inc/pcre.h
+DEPS_77 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_77 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_77 += $(CONFIG)/inc/http.h
+DEPS_77 += $(CONFIG)/obj/httpLib.o
+DEPS_77 += $(CONFIG)/bin/libhttp.so
+DEPS_77 += $(CONFIG)/inc/appweb.h
+DEPS_77 += $(CONFIG)/inc/customize.h
+DEPS_77 += $(CONFIG)/obj/config.o
+DEPS_77 += $(CONFIG)/obj/convenience.o
+DEPS_77 += $(CONFIG)/obj/dirHandler.o
+DEPS_77 += $(CONFIG)/obj/fileHandler.o
+DEPS_77 += $(CONFIG)/obj/log.o
+DEPS_77 += $(CONFIG)/obj/server.o
 DEPS_77 += $(CONFIG)/bin/libappweb.so
 DEPS_77 += $(CONFIG)/obj/authpass.o
 
@@ -1329,6 +1595,7 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   cgiProgram
 #
+DEPS_79 += $(CONFIG)/inc/bit.h
 DEPS_79 += $(CONFIG)/obj/cgiProgram.o
 
 $(CONFIG)/bin/cgiProgram: $(DEPS_79)
@@ -1343,99 +1610,161 @@ src/server/slink.c: $(DEPS_80)
 	cd src/server; [ ! -f slink.c ] && cp slink.empty slink.c ; true ; cd ../..
 
 #
-#   esp
-#
-ifeq ($(BIT_PACK_ESP),1)
-    DEPS_81 += $(CONFIG)/bin/libmod_esp.so
-endif
-
-esp: $(DEPS_81)
-
-#
 #   slink.o
 #
-DEPS_82 += $(CONFIG)/inc/bit.h
-DEPS_82 += $(CONFIG)/inc/esp.h
+DEPS_81 += $(CONFIG)/inc/bit.h
+DEPS_81 += $(CONFIG)/inc/esp.h
 
 $(CONFIG)/obj/slink.o: \
-    src/server/slink.c $(DEPS_82)
+    src/server/slink.c $(DEPS_81)
 	@echo '   [Compile] $(CONFIG)/obj/slink.o'
 	$(CC) -c -o $(CONFIG)/obj/slink.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/server/slink.c
 
 #
 #   libslink
 #
-DEPS_83 += src/server/slink.c
-DEPS_83 += esp
-ifeq ($(BIT_PACK_ESP),1)
-    DEPS_83 += $(CONFIG)/bin/libmod_esp.so
+DEPS_82 += src/server/slink.c
+DEPS_82 += $(CONFIG)/inc/mpr.h
+DEPS_82 += $(CONFIG)/inc/bit.h
+DEPS_82 += $(CONFIG)/inc/bitos.h
+DEPS_82 += $(CONFIG)/obj/mprLib.o
+DEPS_82 += $(CONFIG)/bin/libmpr.so
+DEPS_82 += $(CONFIG)/inc/pcre.h
+DEPS_82 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_82 += $(CONFIG)/bin/libpcre.so
 endif
-DEPS_83 += $(CONFIG)/obj/slink.o
+DEPS_82 += $(CONFIG)/inc/http.h
+DEPS_82 += $(CONFIG)/obj/httpLib.o
+DEPS_82 += $(CONFIG)/bin/libhttp.so
+DEPS_82 += $(CONFIG)/inc/appweb.h
+DEPS_82 += $(CONFIG)/inc/customize.h
+DEPS_82 += $(CONFIG)/obj/config.o
+DEPS_82 += $(CONFIG)/obj/convenience.o
+DEPS_82 += $(CONFIG)/obj/dirHandler.o
+DEPS_82 += $(CONFIG)/obj/fileHandler.o
+DEPS_82 += $(CONFIG)/obj/log.o
+DEPS_82 += $(CONFIG)/obj/server.o
+DEPS_82 += $(CONFIG)/bin/libappweb.so
+DEPS_82 += $(CONFIG)/inc/edi.h
+DEPS_82 += $(CONFIG)/inc/esp-app.h
+DEPS_82 += $(CONFIG)/inc/esp.h
+DEPS_82 += $(CONFIG)/inc/mdb.h
+DEPS_82 += $(CONFIG)/obj/edi.o
+DEPS_82 += $(CONFIG)/obj/espAbbrev.o
+DEPS_82 += $(CONFIG)/obj/espFramework.o
+DEPS_82 += $(CONFIG)/obj/espHandler.o
+DEPS_82 += $(CONFIG)/obj/espHtml.o
+DEPS_82 += $(CONFIG)/obj/espTemplate.o
+DEPS_82 += $(CONFIG)/obj/mdb.o
+DEPS_82 += $(CONFIG)/obj/sdb.o
+ifeq ($(BIT_PACK_ESP),1)
+    DEPS_82 += $(CONFIG)/bin/libmod_esp.so
+endif
+DEPS_82 += $(CONFIG)/obj/slink.o
 
 ifeq ($(BIT_PACK_ESP),1)
-    LIBS_83 += -lmod_esp
+    LIBS_82 += -lmod_esp
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_83 += -lsqlite3
+    LIBS_82 += -lsqlite3
 endif
-LIBS_83 += -lhttp
+LIBS_82 += -lhttp
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_83 += -lpcre
+    LIBS_82 += -lpcre
 endif
-LIBS_83 += -lmpr
-LIBS_83 += -lappweb
+LIBS_82 += -lmpr
+LIBS_82 += -lappweb
 
-$(CONFIG)/bin/libslink.so: $(DEPS_83)
+$(CONFIG)/bin/libslink.so: $(DEPS_82)
 	@echo '      [Link] $(CONFIG)/bin/libslink.so'
-	$(CC) -shared -o $(CONFIG)/bin/libslink.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o $(LIBPATHS_83) $(LIBS_83) $(LIBS_83) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libslink.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/slink.o $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
 
 #
 #   appweb.o
 #
-DEPS_84 += $(CONFIG)/inc/bit.h
-DEPS_84 += $(CONFIG)/inc/appweb.h
-DEPS_84 += $(CONFIG)/inc/esp.h
+DEPS_83 += $(CONFIG)/inc/bit.h
+DEPS_83 += $(CONFIG)/inc/appweb.h
+DEPS_83 += $(CONFIG)/inc/esp.h
 
 $(CONFIG)/obj/appweb.o: \
-    src/server/appweb.c $(DEPS_84)
+    src/server/appweb.c $(DEPS_83)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.o'
 	$(CC) -c -o $(CONFIG)/obj/appweb.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/server/appweb.c
 
 #
 #   appweb
 #
-DEPS_85 += $(CONFIG)/bin/libappweb.so
-DEPS_85 += $(CONFIG)/bin/libslink.so
-DEPS_85 += $(CONFIG)/obj/appweb.o
+DEPS_84 += $(CONFIG)/inc/mpr.h
+DEPS_84 += $(CONFIG)/inc/bit.h
+DEPS_84 += $(CONFIG)/inc/bitos.h
+DEPS_84 += $(CONFIG)/obj/mprLib.o
+DEPS_84 += $(CONFIG)/bin/libmpr.so
+DEPS_84 += $(CONFIG)/inc/pcre.h
+DEPS_84 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_84 += $(CONFIG)/bin/libpcre.so
+endif
+DEPS_84 += $(CONFIG)/inc/http.h
+DEPS_84 += $(CONFIG)/obj/httpLib.o
+DEPS_84 += $(CONFIG)/bin/libhttp.so
+DEPS_84 += $(CONFIG)/inc/appweb.h
+DEPS_84 += $(CONFIG)/inc/customize.h
+DEPS_84 += $(CONFIG)/obj/config.o
+DEPS_84 += $(CONFIG)/obj/convenience.o
+DEPS_84 += $(CONFIG)/obj/dirHandler.o
+DEPS_84 += $(CONFIG)/obj/fileHandler.o
+DEPS_84 += $(CONFIG)/obj/log.o
+DEPS_84 += $(CONFIG)/obj/server.o
+DEPS_84 += $(CONFIG)/bin/libappweb.so
+DEPS_84 += src/server/slink.c
+DEPS_84 += $(CONFIG)/inc/edi.h
+DEPS_84 += $(CONFIG)/inc/esp-app.h
+DEPS_84 += $(CONFIG)/inc/esp.h
+DEPS_84 += $(CONFIG)/inc/mdb.h
+DEPS_84 += $(CONFIG)/obj/edi.o
+DEPS_84 += $(CONFIG)/obj/espAbbrev.o
+DEPS_84 += $(CONFIG)/obj/espFramework.o
+DEPS_84 += $(CONFIG)/obj/espHandler.o
+DEPS_84 += $(CONFIG)/obj/espHtml.o
+DEPS_84 += $(CONFIG)/obj/espTemplate.o
+DEPS_84 += $(CONFIG)/obj/mdb.o
+DEPS_84 += $(CONFIG)/obj/sdb.o
+ifeq ($(BIT_PACK_ESP),1)
+    DEPS_84 += $(CONFIG)/bin/libmod_esp.so
+endif
+DEPS_84 += $(CONFIG)/obj/slink.o
+DEPS_84 += $(CONFIG)/bin/libslink.so
+DEPS_84 += $(CONFIG)/obj/appweb.o
 
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_85 += -lsqlite3
+    LIBS_84 += -lsqlite3
 endif
 ifeq ($(BIT_PACK_ESP),1)
-    LIBS_85 += -lmod_esp
+    LIBS_84 += -lmod_esp
 endif
-LIBS_85 += -lslink
-LIBS_85 += -lhttp
+LIBS_84 += -lslink
+LIBS_84 += -lhttp
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_85 += -lpcre
+    LIBS_84 += -lpcre
 endif
-LIBS_85 += -lmpr
-LIBS_85 += -lappweb
+LIBS_84 += -lmpr
+LIBS_84 += -lappweb
 
-$(CONFIG)/bin/appweb: $(DEPS_85)
+$(CONFIG)/bin/appweb: $(DEPS_84)
 	@echo '      [Link] $(CONFIG)/bin/appweb'
-	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBPATHS_85) $(LIBS_85) $(LIBS_85) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/appweb.o $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   server-cache
 #
-src/server/cache: $(DEPS_86)
+src/server/cache: $(DEPS_85)
 	cd src/server; mkdir -p cache ; cd ../..
 
 #
 #   testAppweb.h
 #
-$(CONFIG)/inc/testAppweb.h: $(DEPS_87)
+$(CONFIG)/inc/testAppweb.h: $(DEPS_86)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp test/testAppweb.h $(CONFIG)/inc/testAppweb.h
@@ -1443,53 +1772,76 @@ $(CONFIG)/inc/testAppweb.h: $(DEPS_87)
 #
 #   testAppweb.o
 #
-DEPS_88 += $(CONFIG)/inc/bit.h
-DEPS_88 += $(CONFIG)/inc/testAppweb.h
-DEPS_88 += $(CONFIG)/inc/mpr.h
-DEPS_88 += $(CONFIG)/inc/http.h
+DEPS_87 += $(CONFIG)/inc/bit.h
+DEPS_87 += $(CONFIG)/inc/testAppweb.h
+DEPS_87 += $(CONFIG)/inc/mpr.h
+DEPS_87 += $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/testAppweb.o: \
-    test/testAppweb.c $(DEPS_88)
+    test/testAppweb.c $(DEPS_87)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.o'
 	$(CC) -c -o $(CONFIG)/obj/testAppweb.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testAppweb.c
 
 #
 #   testHttp.o
 #
-DEPS_89 += $(CONFIG)/inc/bit.h
-DEPS_89 += $(CONFIG)/inc/testAppweb.h
+DEPS_88 += $(CONFIG)/inc/bit.h
+DEPS_88 += $(CONFIG)/inc/testAppweb.h
 
 $(CONFIG)/obj/testHttp.o: \
-    test/testHttp.c $(DEPS_89)
+    test/testHttp.c $(DEPS_88)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.o'
 	$(CC) -c -o $(CONFIG)/obj/testHttp.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testHttp.c
 
 #
 #   testAppweb
 #
-DEPS_90 += $(CONFIG)/bin/libappweb.so
-DEPS_90 += $(CONFIG)/inc/testAppweb.h
-DEPS_90 += $(CONFIG)/obj/testAppweb.o
-DEPS_90 += $(CONFIG)/obj/testHttp.o
-
-LIBS_90 += -lhttp
+DEPS_89 += $(CONFIG)/inc/mpr.h
+DEPS_89 += $(CONFIG)/inc/bit.h
+DEPS_89 += $(CONFIG)/inc/bitos.h
+DEPS_89 += $(CONFIG)/obj/mprLib.o
+DEPS_89 += $(CONFIG)/bin/libmpr.so
+DEPS_89 += $(CONFIG)/inc/pcre.h
+DEPS_89 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_90 += -lpcre
+    DEPS_89 += $(CONFIG)/bin/libpcre.so
 endif
-LIBS_90 += -lmpr
-LIBS_90 += -lappweb
+DEPS_89 += $(CONFIG)/inc/http.h
+DEPS_89 += $(CONFIG)/obj/httpLib.o
+DEPS_89 += $(CONFIG)/bin/libhttp.so
+DEPS_89 += $(CONFIG)/inc/appweb.h
+DEPS_89 += $(CONFIG)/inc/customize.h
+DEPS_89 += $(CONFIG)/obj/config.o
+DEPS_89 += $(CONFIG)/obj/convenience.o
+DEPS_89 += $(CONFIG)/obj/dirHandler.o
+DEPS_89 += $(CONFIG)/obj/fileHandler.o
+DEPS_89 += $(CONFIG)/obj/log.o
+DEPS_89 += $(CONFIG)/obj/server.o
+DEPS_89 += $(CONFIG)/bin/libappweb.so
+DEPS_89 += $(CONFIG)/inc/testAppweb.h
+DEPS_89 += $(CONFIG)/obj/testAppweb.o
+DEPS_89 += $(CONFIG)/obj/testHttp.o
 
-$(CONFIG)/bin/testAppweb: $(DEPS_90)
+LIBS_89 += -lhttp
+ifeq ($(BIT_PACK_PCRE),1)
+    LIBS_89 += -lpcre
+endif
+LIBS_89 += -lmpr
+LIBS_89 += -lappweb
+
+$(CONFIG)/bin/testAppweb: $(DEPS_89)
 	@echo '      [Link] $(CONFIG)/bin/testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBPATHS_90) $(LIBS_90) $(LIBS_90) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/testAppweb $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBPATHS_89) $(LIBS_89) $(LIBS_89) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-testScript
 #
-DEPS_91 += $(CONFIG)/bin/cgiProgram
+DEPS_90 += $(CONFIG)/inc/bit.h
+DEPS_90 += $(CONFIG)/obj/cgiProgram.o
+DEPS_90 += $(CONFIG)/bin/cgiProgram
 
-test/cgi-bin/testScript: $(DEPS_91)
+test/cgi-bin/testScript: $(DEPS_90)
 	cd test; echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..
 endif
 
@@ -1497,7 +1849,7 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-cache.cgi
 #
-test/web/caching/cache.cgi: $(DEPS_92)
+test/web/caching/cache.cgi: $(DEPS_91)
 	cd test; echo "#!`type -p ejs`" >web/caching/cache.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; cd ..
 	cd test; chmod +x web/caching/cache.cgi ; cd ..
@@ -1507,7 +1859,7 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-basic.cgi
 #
-test/web/auth/basic/basic.cgi: $(DEPS_93)
+test/web/auth/basic/basic.cgi: $(DEPS_92)
 	cd test; echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; cd ..
 	cd test; chmod +x web/auth/basic/basic.cgi ; cd ..
@@ -1517,9 +1869,11 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-cgiProgram
 #
-DEPS_94 += $(CONFIG)/bin/cgiProgram
+DEPS_93 += $(CONFIG)/inc/bit.h
+DEPS_93 += $(CONFIG)/obj/cgiProgram.o
+DEPS_93 += $(CONFIG)/bin/cgiProgram
 
-test/cgi-bin/cgiProgram: $(DEPS_94)
+test/cgi-bin/cgiProgram: $(DEPS_93)
 	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram ; cd ..
 	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram ; cd ..
 	cd test; cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program' ; cd ..
@@ -1530,9 +1884,9 @@ endif
 #
 #   test.js
 #
-DEPS_95 += src/esp/esp-www/files/static/js
+DEPS_94 += src/esp/esp-www/files/static/js
 
-test/web/js: $(DEPS_95)
+test/web/js: $(DEPS_94)
 	@echo '      [Copy] test/web/js'
 	mkdir -p "test/web/js"
 	cp src/esp/esp-www/files/static/js/jquery-1.9.1.js test/web/js/jquery-1.9.1.js
@@ -1546,15 +1900,15 @@ test/web/js: $(DEPS_95)
 #
 #   stop
 #
-DEPS_96 += compile
+DEPS_95 += compile
 
-stop: $(DEPS_96)
+stop: $(DEPS_95)
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_97)
+installBinary: $(DEPS_96)
 	mkdir -p "$(BIT_APP_PREFIX)"
 	mkdir -p "$(BIT_VAPP_PREFIX)"
 	mkdir -p "$(BIT_ETC_PREFIX)"
@@ -1786,30 +2140,32 @@ endif
 #
 #   start
 #
-DEPS_98 += compile
-DEPS_98 += stop
+DEPS_97 += compile
+DEPS_97 += stop
 
-start: $(DEPS_98)
+start: $(DEPS_97)
 	./$(CONFIG)/bin/appman install enable start
 
 #
 #   install
 #
-DEPS_99 += stop
-DEPS_99 += installBinary
-DEPS_99 += start
+DEPS_98 += compile
+DEPS_98 += stop
+DEPS_98 += installBinary
+DEPS_98 += start
 
-install: $(DEPS_99)
+install: $(DEPS_98)
 	
 
 
 #
 #   uninstall
 #
-DEPS_100 += build
-DEPS_100 += stop
+DEPS_99 += build
+DEPS_99 += compile
+DEPS_99 += stop
 
-uninstall: $(DEPS_100)
+uninstall: $(DEPS_99)
 	rm -f "$(BIT_ETC_PREFIX)/appweb.conf"
 	rm -f "$(BIT_ETC_PREFIX)/esp.conf"
 	rm -f "$(BIT_ETC_PREFIX)/mine.types"
@@ -1831,14 +2187,14 @@ uninstall: $(DEPS_100)
 #
 #   genslink
 #
-genslink: $(DEPS_101)
+genslink: $(DEPS_100)
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
 #
 #   run
 #
-DEPS_102 += compile
+DEPS_101 += compile
 
-run: $(DEPS_102)
+run: $(DEPS_101)
 	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 
