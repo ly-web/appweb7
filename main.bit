@@ -62,7 +62,6 @@ Bit.load({
         platforms: [ 'local' ],
         packs: [ 'bits/packs' ]
         sync: [ 'bitos', 'est', 'http', 'mpr', 'pcre', 'sqlite', 'ejs' ],
-
         '+requires': [ 'compiler', 'pcre'],
 
         /*
@@ -74,7 +73,7 @@ Bit.load({
             Packs to disable when using --without all
          */
         'without-all': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejscript', 'esp', 'man', 'man2html', 'pmaker', 'php', 
-            'sqlite', 'ssl'],
+            'sqlite', 'ssl' ],
 
         /*
             Set to true for a static (non-shared library) build
