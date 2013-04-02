@@ -225,6 +225,7 @@ prep:
 		fi ; \
 	fi
 	@echo $(MAKEFLAGS) >$(CONFIG)/.makeflags
+
 clean:
 	rm -f "$(CONFIG)/bin/libmpr.dylib"
 	rm -f "$(CONFIG)/bin/libmprssl.dylib"
@@ -242,7 +243,7 @@ clean:
 	rm -f "$(CONFIG)/bin/esp"
 	rm -f "$(CONFIG)/bin/esp.conf"
 	rm -f "src/server/esp.conf"
-	rm -f "$(CONFIG)/bin/esp-www"
+	rm -fr "$(CONFIG)/bin/esp-www"
 	rm -f "$(CONFIG)/bin/esp-appweb.conf"
 	rm -f "$(CONFIG)/bin/libejs.dylib"
 	rm -f "$(CONFIG)/bin/ejs"
@@ -256,7 +257,7 @@ clean:
 	rm -f "$(CONFIG)/bin/libslink.dylib"
 	rm -f "$(CONFIG)/bin/appweb"
 	rm -f "$(CONFIG)/bin/testAppweb"
-	rm -f "test/web/js"
+	rm -fr "test/web/js"
 	rm -f "$(CONFIG)/obj/mprLib.o"
 	rm -f "$(CONFIG)/obj/mprSsl.o"
 	rm -f "$(CONFIG)/obj/manager.o"
@@ -369,6 +370,7 @@ $(CONFIG)/inc/est.h: $(DEPS_7)
 DEPS_8 += $(CONFIG)/inc/bit.h
 DEPS_8 += $(CONFIG)/inc/mpr.h
 DEPS_8 += $(CONFIG)/inc/est.h
+DEPS_8 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_8)

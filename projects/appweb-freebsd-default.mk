@@ -225,6 +225,7 @@ prep:
 		fi ; \
 	fi
 	@echo $(MAKEFLAGS) >$(CONFIG)/.makeflags
+
 clean:
 	rm -f "$(CONFIG)/bin/libmpr.so"
 	rm -f "$(CONFIG)/bin/libmprssl.so"
@@ -242,7 +243,7 @@ clean:
 	rm -f "$(CONFIG)/bin/esp"
 	rm -f "$(CONFIG)/bin/esp.conf"
 	rm -f "src/server/esp.conf"
-	rm -f "$(CONFIG)/bin/esp-www"
+	rm -fr "$(CONFIG)/bin/esp-www"
 	rm -f "$(CONFIG)/bin/esp-appweb.conf"
 	rm -f "$(CONFIG)/bin/libejs.so"
 	rm -f "$(CONFIG)/bin/ejs"
@@ -256,7 +257,7 @@ clean:
 	rm -f "$(CONFIG)/bin/libslink.so"
 	rm -f "$(CONFIG)/bin/appweb"
 	rm -f "$(CONFIG)/bin/testAppweb"
-	rm -f "test/web/js"
+	rm -fr "test/web/js"
 	rm -f "$(CONFIG)/obj/mprLib.o"
 	rm -f "$(CONFIG)/obj/mprSsl.o"
 	rm -f "$(CONFIG)/obj/manager.o"

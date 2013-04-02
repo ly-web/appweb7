@@ -5,23 +5,23 @@
 Bit.load({
     targets: {
         libmod_esp: {
-            enable: "bit.packs.esp.enable",
             type: 'lib',
             depends: [ 'libappweb', 'sqlite' ],
             sources: [ '*.c' ],
             headers: [ '*.h' ],
             exclude: /esp\.c/,
             packs: [ 'esp' ],
+            _UNUSED_enable: "bit.packs.esp.enable",
         },
 
         espcmd: {
             path: '${BIN}/esp${EXE}',
-            enable: "bit.packs.esp.enable",
             type: 'exe',
             depends: [ 'libappweb', 'sqlite' ],
             sources: [ '*.c' ]
             platforms: [ 'local' ],
             packs: 'esp',
+            _UNUSED_enable: "bit.packs.esp.enable",
         },
 
         'esp.conf': {
@@ -39,7 +39,7 @@ Bit.load({
 
         'esp.www': {
             type: 'file',
-            path: '${BIN}/esp-www',
+            path: '${BIN}/esp-www/',
             files: [ 'esp-www/' ],
             platforms: [ 'local' ],
             packs: 'esp',
