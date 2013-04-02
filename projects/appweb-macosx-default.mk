@@ -370,7 +370,6 @@ $(CONFIG)/inc/est.h: $(DEPS_7)
 DEPS_8 += $(CONFIG)/inc/bit.h
 DEPS_8 += $(CONFIG)/inc/mpr.h
 DEPS_8 += $(CONFIG)/inc/est.h
-DEPS_8 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_8)
@@ -386,6 +385,10 @@ DEPS_9 += $(CONFIG)/inc/bitos.h
 DEPS_9 += $(CONFIG)/obj/mprLib.o
 DEPS_9 += $(CONFIG)/bin/libmpr.dylib
 DEPS_9 += $(CONFIG)/inc/est.h
+DEPS_9 += $(CONFIG)/obj/estLib.o
+ifeq ($(BIT_PACK_EST),1)
+    DEPS_9 += $(CONFIG)/bin/libest.dylib
+endif
 DEPS_9 += $(CONFIG)/obj/mprSsl.o
 
 ifeq ($(BIT_PACK_EST),1)

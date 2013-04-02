@@ -385,6 +385,10 @@ DEPS_9 += $(CONFIG)/inc/bitos.h
 DEPS_9 += $(CONFIG)/obj/mprLib.o
 DEPS_9 += $(CONFIG)/bin/libmpr.a
 DEPS_9 += $(CONFIG)/inc/est.h
+DEPS_9 += $(CONFIG)/obj/estLib.o
+ifeq ($(BIT_PACK_EST),1)
+    DEPS_9 += $(CONFIG)/bin/libest.a
+endif
 DEPS_9 += $(CONFIG)/obj/mprSsl.o
 
 $(CONFIG)/bin/libmprssl.a: $(DEPS_9)

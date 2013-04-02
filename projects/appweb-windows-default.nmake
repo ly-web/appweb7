@@ -492,6 +492,10 @@ DEPS_11 = $(DEPS_11) $(CONFIG)\inc\bitos.h
 DEPS_11 = $(DEPS_11) $(CONFIG)\obj\mprLib.obj
 DEPS_11 = $(DEPS_11) $(CONFIG)\bin\libmpr.dll
 DEPS_11 = $(DEPS_11) $(CONFIG)\inc\est.h
+DEPS_11 = $(DEPS_11) $(CONFIG)\obj\estLib.obj
+!IF "$(BIT_PACK_EST)" == "1"
+DEPS_11 = $(DEPS_11) $(CONFIG)\bin\libest.dll
+!ENDIF
 DEPS_11 = $(DEPS_11) $(CONFIG)\obj\mprSsl.obj
 
 !IF "$(BIT_PACK_EST)" == "1"

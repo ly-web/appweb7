@@ -393,6 +393,10 @@ DEPS_9 += $(CONFIG)/inc/bitos.h
 DEPS_9 += $(CONFIG)/obj/mprLib.o
 DEPS_9 += $(CONFIG)/bin/libmpr.out
 DEPS_9 += $(CONFIG)/inc/est.h
+DEPS_9 += $(CONFIG)/obj/estLib.o
+ifeq ($(BIT_PACK_EST),1)
+    DEPS_9 += $(CONFIG)/bin/libest.out
+endif
 DEPS_9 += $(CONFIG)/obj/mprSsl.o
 
 ifeq ($(BIT_PACK_EST),1)
@@ -1768,6 +1772,7 @@ installBinary: $(DEPS_95)
 #
 #   install
 #
+DEPS_96 += compile
 DEPS_96 += installBinary
 
 install: $(DEPS_96)
@@ -1778,6 +1783,7 @@ install: $(DEPS_96)
 #   uninstall
 #
 DEPS_97 += build
+DEPS_97 += compile
 
 uninstall: $(DEPS_97)
 	rm -f "$(BIT_VAPP_PREFIX)/appweb.conf"
