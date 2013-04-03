@@ -430,99 +430,14 @@ $(CONFIG)\inc\est.h: $(DEPS_9)
 	copy /Y src\deps\est\est.h $(CONFIG)\inc\est.h
 
 #
-#   mprSsl.obj
-#
-DEPS_10 = $(DEPS_10) $(CONFIG)\inc\bit.h
-DEPS_10 = $(DEPS_10) $(CONFIG)\inc\mpr.h
-DEPS_10 = $(DEPS_10) $(CONFIG)\inc\est.h
-
-$(CONFIG)\obj\mprSsl.obj: \
-    src\deps\mpr\mprSsl.c $(DEPS_10)
-	@echo '   [Compile] $(CONFIG)/obj/mprSsl.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl -I$(BIT_PACK_NANOSSL_PATH)\src -I$(BIT_PACK_OPENSSL_PATH)\include src\deps\mpr\mprSsl.c
-
-#
-#   libmprssl
-#
-DEPS_11 = $(DEPS_11) $(CONFIG)\inc\mpr.h
-DEPS_11 = $(DEPS_11) $(CONFIG)\inc\bit.h
-DEPS_11 = $(DEPS_11) $(CONFIG)\inc\bitos.h
-DEPS_11 = $(DEPS_11) $(CONFIG)\obj\mprLib.obj
-DEPS_11 = $(DEPS_11) $(CONFIG)\bin\libmpr.lib
-DEPS_11 = $(DEPS_11) $(CONFIG)\inc\est.h
-DEPS_11 = $(DEPS_11) $(CONFIG)\obj\estLib.obj
-!IF "$(BIT_PACK_EST)" == "1"
-DEPS_11 = $(DEPS_11) $(CONFIG)\bin\libest.lib
-!ENDIF
-DEPS_11 = $(DEPS_11) $(CONFIG)\obj\mprSsl.obj
-
-$(CONFIG)\bin\libmprssl.lib: $(DEPS_11)
-	@echo '      [Link] $(CONFIG)/bin/libmprssl.lib'
-	"lib.exe" -nologo -out:$(CONFIG)\bin\libmprssl.lib $(CONFIG)\obj\mprSsl.obj
-
-#
-#   manager.obj
-#
-DEPS_12 = $(DEPS_12) $(CONFIG)\inc\bit.h
-DEPS_12 = $(DEPS_12) $(CONFIG)\inc\mpr.h
-
-$(CONFIG)\obj\manager.obj: \
-    src\deps\mpr\manager.c $(DEPS_12)
-	@echo '   [Compile] $(CONFIG)/obj/manager.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\manager.c
-
-#
-#   manager
-#
-DEPS_13 = $(DEPS_13) $(CONFIG)\inc\mpr.h
-DEPS_13 = $(DEPS_13) $(CONFIG)\inc\bit.h
-DEPS_13 = $(DEPS_13) $(CONFIG)\inc\bitos.h
-DEPS_13 = $(DEPS_13) $(CONFIG)\obj\mprLib.obj
-DEPS_13 = $(DEPS_13) $(CONFIG)\bin\libmpr.lib
-DEPS_13 = $(DEPS_13) $(CONFIG)\obj\manager.obj
-
-LIBS_13 = $(LIBS_13) libmpr.lib
-
-$(CONFIG)\bin\appman.exe: $(DEPS_13)
-	@echo '      [Link] $(CONFIG)/bin/appman.exe'
-	"$(LD)" -out:$(CONFIG)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBPATHS_13) $(LIBS_13) $(LIBS_13) $(LIBS) 
-
-#
-#   makerom.obj
-#
-DEPS_14 = $(DEPS_14) $(CONFIG)\inc\bit.h
-DEPS_14 = $(DEPS_14) $(CONFIG)\inc\mpr.h
-
-$(CONFIG)\obj\makerom.obj: \
-    src\deps\mpr\makerom.c $(DEPS_14)
-	@echo '   [Compile] $(CONFIG)/obj/makerom.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\makerom.c
-
-#
-#   makerom
-#
-DEPS_15 = $(DEPS_15) $(CONFIG)\inc\mpr.h
-DEPS_15 = $(DEPS_15) $(CONFIG)\inc\bit.h
-DEPS_15 = $(DEPS_15) $(CONFIG)\inc\bitos.h
-DEPS_15 = $(DEPS_15) $(CONFIG)\obj\mprLib.obj
-DEPS_15 = $(DEPS_15) $(CONFIG)\bin\libmpr.lib
-DEPS_15 = $(DEPS_15) $(CONFIG)\obj\makerom.obj
-
-LIBS_15 = $(LIBS_15) libmpr.lib
-
-$(CONFIG)\bin\makerom.exe: $(DEPS_15)
-	@echo '      [Link] $(CONFIG)/bin/makerom.exe'
-	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) 
-
-#
 #   estLib.obj
 #
-DEPS_16 = $(DEPS_16) $(CONFIG)\inc\bit.h
-DEPS_16 = $(DEPS_16) $(CONFIG)\inc\est.h
-DEPS_16 = $(DEPS_16) $(CONFIG)\inc\bitos.h
+DEPS_10 = $(DEPS_10) $(CONFIG)\inc\bit.h
+DEPS_10 = $(DEPS_10) $(CONFIG)\inc\est.h
+DEPS_10 = $(DEPS_10) $(CONFIG)\inc\bitos.h
 
 $(CONFIG)\obj\estLib.obj: \
-    src\deps\est\estLib.c $(DEPS_16)
+    src\deps\est\estLib.c $(DEPS_10)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\est\estLib.c
 
@@ -530,15 +445,100 @@ $(CONFIG)\obj\estLib.obj: \
 #
 #   libest
 #
-DEPS_17 = $(DEPS_17) $(CONFIG)\inc\est.h
-DEPS_17 = $(DEPS_17) $(CONFIG)\inc\bit.h
-DEPS_17 = $(DEPS_17) $(CONFIG)\inc\bitos.h
-DEPS_17 = $(DEPS_17) $(CONFIG)\obj\estLib.obj
+DEPS_11 = $(DEPS_11) $(CONFIG)\inc\est.h
+DEPS_11 = $(DEPS_11) $(CONFIG)\inc\bit.h
+DEPS_11 = $(DEPS_11) $(CONFIG)\inc\bitos.h
+DEPS_11 = $(DEPS_11) $(CONFIG)\obj\estLib.obj
 
-$(CONFIG)\bin\libest.lib: $(DEPS_17)
+$(CONFIG)\bin\libest.lib: $(DEPS_11)
 	@echo '      [Link] $(CONFIG)/bin/libest.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libest.lib $(CONFIG)\obj\estLib.obj
 !ENDIF
+
+#
+#   mprSsl.obj
+#
+DEPS_12 = $(DEPS_12) $(CONFIG)\inc\bit.h
+DEPS_12 = $(DEPS_12) $(CONFIG)\inc\mpr.h
+DEPS_12 = $(DEPS_12) $(CONFIG)\inc\est.h
+
+$(CONFIG)\obj\mprSsl.obj: \
+    src\deps\mpr\mprSsl.c $(DEPS_12)
+	@echo '   [Compile] $(CONFIG)/obj/mprSsl.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl -I$(BIT_PACK_NANOSSL_PATH)\src -I$(BIT_PACK_OPENSSL_PATH)\include src\deps\mpr\mprSsl.c
+
+#
+#   libmprssl
+#
+DEPS_13 = $(DEPS_13) $(CONFIG)\inc\mpr.h
+DEPS_13 = $(DEPS_13) $(CONFIG)\inc\bit.h
+DEPS_13 = $(DEPS_13) $(CONFIG)\inc\bitos.h
+DEPS_13 = $(DEPS_13) $(CONFIG)\obj\mprLib.obj
+DEPS_13 = $(DEPS_13) $(CONFIG)\bin\libmpr.lib
+DEPS_13 = $(DEPS_13) $(CONFIG)\inc\est.h
+DEPS_13 = $(DEPS_13) $(CONFIG)\obj\estLib.obj
+!IF "$(BIT_PACK_EST)" == "1"
+DEPS_13 = $(DEPS_13) $(CONFIG)\bin\libest.lib
+!ENDIF
+DEPS_13 = $(DEPS_13) $(CONFIG)\obj\mprSsl.obj
+
+$(CONFIG)\bin\libmprssl.lib: $(DEPS_13)
+	@echo '      [Link] $(CONFIG)/bin/libmprssl.lib'
+	"lib.exe" -nologo -out:$(CONFIG)\bin\libmprssl.lib $(CONFIG)\obj\mprSsl.obj
+
+#
+#   manager.obj
+#
+DEPS_14 = $(DEPS_14) $(CONFIG)\inc\bit.h
+DEPS_14 = $(DEPS_14) $(CONFIG)\inc\mpr.h
+
+$(CONFIG)\obj\manager.obj: \
+    src\deps\mpr\manager.c $(DEPS_14)
+	@echo '   [Compile] $(CONFIG)/obj/manager.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\manager.c
+
+#
+#   manager
+#
+DEPS_15 = $(DEPS_15) $(CONFIG)\inc\mpr.h
+DEPS_15 = $(DEPS_15) $(CONFIG)\inc\bit.h
+DEPS_15 = $(DEPS_15) $(CONFIG)\inc\bitos.h
+DEPS_15 = $(DEPS_15) $(CONFIG)\obj\mprLib.obj
+DEPS_15 = $(DEPS_15) $(CONFIG)\bin\libmpr.lib
+DEPS_15 = $(DEPS_15) $(CONFIG)\obj\manager.obj
+
+LIBS_15 = $(LIBS_15) libmpr.lib
+
+$(CONFIG)\bin\appman.exe: $(DEPS_15)
+	@echo '      [Link] $(CONFIG)/bin/appman.exe'
+	"$(LD)" -out:$(CONFIG)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) 
+
+#
+#   makerom.obj
+#
+DEPS_16 = $(DEPS_16) $(CONFIG)\inc\bit.h
+DEPS_16 = $(DEPS_16) $(CONFIG)\inc\mpr.h
+
+$(CONFIG)\obj\makerom.obj: \
+    src\deps\mpr\makerom.c $(DEPS_16)
+	@echo '   [Compile] $(CONFIG)/obj/makerom.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\makerom.c
+
+#
+#   makerom
+#
+DEPS_17 = $(DEPS_17) $(CONFIG)\inc\mpr.h
+DEPS_17 = $(DEPS_17) $(CONFIG)\inc\bit.h
+DEPS_17 = $(DEPS_17) $(CONFIG)\inc\bitos.h
+DEPS_17 = $(DEPS_17) $(CONFIG)\obj\mprLib.obj
+DEPS_17 = $(DEPS_17) $(CONFIG)\bin\libmpr.lib
+DEPS_17 = $(DEPS_17) $(CONFIG)\obj\makerom.obj
+
+LIBS_17 = $(LIBS_17) libmpr.lib
+
+$(CONFIG)\bin\makerom.exe: $(DEPS_17)
+	@echo '      [Link] $(CONFIG)/bin/makerom.exe'
+	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj $(LIBPATHS_17) $(LIBS_17) $(LIBS_17) $(LIBS) 
 
 #
 #   ca-crt

@@ -365,121 +365,14 @@ $(CONFIG)/inc/est.h: $(DEPS_7)
 	cp src/deps/est/est.h $(CONFIG)/inc/est.h
 
 #
-#   mprSsl.o
+#   estLib.o
 #
 DEPS_8 += $(CONFIG)/inc/bit.h
-DEPS_8 += $(CONFIG)/inc/mpr.h
 DEPS_8 += $(CONFIG)/inc/est.h
 DEPS_8 += $(CONFIG)/inc/bitos.h
 
-$(CONFIG)/obj/mprSsl.o: \
-    src/deps/mpr/mprSsl.c $(DEPS_8)
-	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl -I$(BIT_PACK_NANOSSL_PATH)/src -I$(BIT_PACK_OPENSSL_PATH)/include src/deps/mpr/mprSsl.c
-
-#
-#   libmprssl
-#
-DEPS_9 += $(CONFIG)/inc/mpr.h
-DEPS_9 += $(CONFIG)/inc/bit.h
-DEPS_9 += $(CONFIG)/inc/bitos.h
-DEPS_9 += $(CONFIG)/obj/mprLib.o
-DEPS_9 += $(CONFIG)/bin/libmpr.dylib
-DEPS_9 += $(CONFIG)/inc/est.h
-DEPS_9 += $(CONFIG)/obj/estLib.o
-ifeq ($(BIT_PACK_EST),1)
-    DEPS_9 += $(CONFIG)/bin/libest.dylib
-endif
-DEPS_9 += $(CONFIG)/obj/mprSsl.o
-
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_9 += -lest
-endif
-ifeq ($(BIT_PACK_MATRIXSSL),1)
-    LIBS_9 += -lmatrixssl
-    LIBPATHS_9 += -L$(BIT_PACK_MATRIXSSL_PATH)
-endif
-ifeq ($(BIT_PACK_NANOSSL),1)
-    LIBS_9 += -lssls
-    LIBPATHS_9 += -L$(BIT_PACK_NANOSSL_PATH)/bin
-endif
-ifeq ($(BIT_PACK_OPENSSL),1)
-    LIBS_9 += -lssl
-    LIBPATHS_9 += -L$(BIT_PACK_OPENSSL_PATH)
-endif
-ifeq ($(BIT_PACK_OPENSSL),1)
-    LIBS_9 += -lcrypto
-    LIBPATHS_9 += -L$(BIT_PACK_OPENSSL_PATH)
-endif
-LIBS_9 += -lmpr
-
-$(CONFIG)/bin/libmprssl.dylib: $(DEPS_9)
-	@echo '      [Link] $(CONFIG)/bin/libmprssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/mprSsl.o $(LIBPATHS_9) $(LIBS_9) $(LIBS_9) $(LIBS) 
-
-#
-#   manager.o
-#
-DEPS_10 += $(CONFIG)/inc/bit.h
-DEPS_10 += $(CONFIG)/inc/mpr.h
-
-$(CONFIG)/obj/manager.o: \
-    src/deps/mpr/manager.c $(DEPS_10)
-	@echo '   [Compile] $(CONFIG)/obj/manager.o'
-	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/manager.c
-
-#
-#   manager
-#
-DEPS_11 += $(CONFIG)/inc/mpr.h
-DEPS_11 += $(CONFIG)/inc/bit.h
-DEPS_11 += $(CONFIG)/inc/bitos.h
-DEPS_11 += $(CONFIG)/obj/mprLib.o
-DEPS_11 += $(CONFIG)/bin/libmpr.dylib
-DEPS_11 += $(CONFIG)/obj/manager.o
-
-LIBS_11 += -lmpr
-
-$(CONFIG)/bin/appman: $(DEPS_11)
-	@echo '      [Link] $(CONFIG)/bin/appman'
-	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) 
-
-#
-#   makerom.o
-#
-DEPS_12 += $(CONFIG)/inc/bit.h
-DEPS_12 += $(CONFIG)/inc/mpr.h
-
-$(CONFIG)/obj/makerom.o: \
-    src/deps/mpr/makerom.c $(DEPS_12)
-	@echo '   [Compile] $(CONFIG)/obj/makerom.o'
-	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/makerom.c
-
-#
-#   makerom
-#
-DEPS_13 += $(CONFIG)/inc/mpr.h
-DEPS_13 += $(CONFIG)/inc/bit.h
-DEPS_13 += $(CONFIG)/inc/bitos.h
-DEPS_13 += $(CONFIG)/obj/mprLib.o
-DEPS_13 += $(CONFIG)/bin/libmpr.dylib
-DEPS_13 += $(CONFIG)/obj/makerom.o
-
-LIBS_13 += -lmpr
-
-$(CONFIG)/bin/makerom: $(DEPS_13)
-	@echo '      [Link] $(CONFIG)/bin/makerom'
-	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBPATHS_13) $(LIBS_13) $(LIBS_13) $(LIBS) 
-
-#
-#   estLib.o
-#
-DEPS_14 += $(CONFIG)/inc/bit.h
-DEPS_14 += $(CONFIG)/inc/est.h
-DEPS_14 += $(CONFIG)/inc/bitos.h
-
 $(CONFIG)/obj/estLib.o: \
-    src/deps/est/estLib.c $(DEPS_14)
+    src/deps/est/estLib.c $(DEPS_8)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.o'
 	$(CC) -c -o $(CONFIG)/obj/estLib.o $(DFLAGS) $(IFLAGS) src/deps/est/estLib.c
 
@@ -487,15 +380,121 @@ ifeq ($(BIT_PACK_EST),1)
 #
 #   libest
 #
-DEPS_15 += $(CONFIG)/inc/est.h
-DEPS_15 += $(CONFIG)/inc/bit.h
-DEPS_15 += $(CONFIG)/inc/bitos.h
-DEPS_15 += $(CONFIG)/obj/estLib.o
+DEPS_9 += $(CONFIG)/inc/est.h
+DEPS_9 += $(CONFIG)/inc/bit.h
+DEPS_9 += $(CONFIG)/inc/bitos.h
+DEPS_9 += $(CONFIG)/obj/estLib.o
 
-$(CONFIG)/bin/libest.dylib: $(DEPS_15)
+$(CONFIG)/bin/libest.dylib: $(DEPS_9)
 	@echo '      [Link] $(CONFIG)/bin/libest.dylib'
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/estLib.o $(LIBS) 
 endif
+
+#
+#   mprSsl.o
+#
+DEPS_10 += $(CONFIG)/inc/bit.h
+DEPS_10 += $(CONFIG)/inc/mpr.h
+DEPS_10 += $(CONFIG)/inc/est.h
+
+$(CONFIG)/obj/mprSsl.o: \
+    src/deps/mpr/mprSsl.c $(DEPS_10)
+	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl -I$(BIT_PACK_NANOSSL_PATH)/src -I$(BIT_PACK_OPENSSL_PATH)/include src/deps/mpr/mprSsl.c
+
+#
+#   libmprssl
+#
+DEPS_11 += $(CONFIG)/inc/mpr.h
+DEPS_11 += $(CONFIG)/inc/bit.h
+DEPS_11 += $(CONFIG)/inc/bitos.h
+DEPS_11 += $(CONFIG)/obj/mprLib.o
+DEPS_11 += $(CONFIG)/bin/libmpr.dylib
+DEPS_11 += $(CONFIG)/inc/est.h
+DEPS_11 += $(CONFIG)/obj/estLib.o
+ifeq ($(BIT_PACK_EST),1)
+    DEPS_11 += $(CONFIG)/bin/libest.dylib
+endif
+DEPS_11 += $(CONFIG)/obj/mprSsl.o
+
+ifeq ($(BIT_PACK_EST),1)
+    LIBS_11 += -lest
+endif
+ifeq ($(BIT_PACK_MATRIXSSL),1)
+    LIBS_11 += -lmatrixssl
+    LIBPATHS_11 += -L$(BIT_PACK_MATRIXSSL_PATH)
+endif
+ifeq ($(BIT_PACK_NANOSSL),1)
+    LIBS_11 += -lssls
+    LIBPATHS_11 += -L$(BIT_PACK_NANOSSL_PATH)/bin
+endif
+ifeq ($(BIT_PACK_OPENSSL),1)
+    LIBS_11 += -lssl
+    LIBPATHS_11 += -L$(BIT_PACK_OPENSSL_PATH)
+endif
+ifeq ($(BIT_PACK_OPENSSL),1)
+    LIBS_11 += -lcrypto
+    LIBPATHS_11 += -L$(BIT_PACK_OPENSSL_PATH)
+endif
+LIBS_11 += -lmpr
+
+$(CONFIG)/bin/libmprssl.dylib: $(DEPS_11)
+	@echo '      [Link] $(CONFIG)/bin/libmprssl.dylib'
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 4.3.1 -current_version 4.3.1 $(CONFIG)/obj/mprSsl.o $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) 
+
+#
+#   manager.o
+#
+DEPS_12 += $(CONFIG)/inc/bit.h
+DEPS_12 += $(CONFIG)/inc/mpr.h
+
+$(CONFIG)/obj/manager.o: \
+    src/deps/mpr/manager.c $(DEPS_12)
+	@echo '   [Compile] $(CONFIG)/obj/manager.o'
+	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/manager.c
+
+#
+#   manager
+#
+DEPS_13 += $(CONFIG)/inc/mpr.h
+DEPS_13 += $(CONFIG)/inc/bit.h
+DEPS_13 += $(CONFIG)/inc/bitos.h
+DEPS_13 += $(CONFIG)/obj/mprLib.o
+DEPS_13 += $(CONFIG)/bin/libmpr.dylib
+DEPS_13 += $(CONFIG)/obj/manager.o
+
+LIBS_13 += -lmpr
+
+$(CONFIG)/bin/appman: $(DEPS_13)
+	@echo '      [Link] $(CONFIG)/bin/appman'
+	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBPATHS_13) $(LIBS_13) $(LIBS_13) $(LIBS) 
+
+#
+#   makerom.o
+#
+DEPS_14 += $(CONFIG)/inc/bit.h
+DEPS_14 += $(CONFIG)/inc/mpr.h
+
+$(CONFIG)/obj/makerom.o: \
+    src/deps/mpr/makerom.c $(DEPS_14)
+	@echo '   [Compile] $(CONFIG)/obj/makerom.o'
+	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/makerom.c
+
+#
+#   makerom
+#
+DEPS_15 += $(CONFIG)/inc/mpr.h
+DEPS_15 += $(CONFIG)/inc/bit.h
+DEPS_15 += $(CONFIG)/inc/bitos.h
+DEPS_15 += $(CONFIG)/obj/mprLib.o
+DEPS_15 += $(CONFIG)/bin/libmpr.dylib
+DEPS_15 += $(CONFIG)/obj/makerom.o
+
+LIBS_15 += -lmpr
+
+$(CONFIG)/bin/makerom: $(DEPS_15)
+	@echo '      [Link] $(CONFIG)/bin/makerom'
+	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) 
 
 #
 #   ca-crt
