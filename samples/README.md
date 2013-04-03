@@ -11,17 +11,17 @@ appweb.h header and libappweb library at /usr/local/lib/apppweb.
 
 The following samples are available:
 
-. simpleClient        Http client
-. simpleEsp           Simple ESP  web framework sample
-. simpleHandler       Simple Appweb URL handler
-. simpleModule        Simple Appweb loadable module
-. simpleServer        Simple Http server
-. spyFilter           Simple Http server
-. typicalServer       A more fully featured server main program
+* simpleClient        Http client
+* simpleEsp           Simple ESP  web framework sample
+* simpleHandler       Simple Appweb URL handler
+* simpleModule        Simple Appweb loadable module
+* simpleServer        Simple Http server
+* spyFilter           Simple Http server
+* typicalServer       A more fully featured server main program
 
 ### C++ Samples
-. cppHandler          Simple Appweb URL handler in C++
-. cppModule           Simple Appweb loadable module in C++
+* cppHandler          Simple Appweb URL handler in C++
+* cppModule           Simple Appweb loadable module in C++
 
 Licensing
 ---
