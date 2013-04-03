@@ -28,7 +28,7 @@ Licensing
 
 Please see: 
 
-    http://embedthis.com/downloads/licensing.html
+http://embedthis.com/downloads/licensing.html
 
 
 Support
@@ -38,7 +38,7 @@ avail yourself of free support via our Online Forum. This is a community based
 forum where users can share ideas and ask questions. You can also search the
 forum for answers to past questions. To visit the Appweb forum, go to:
 
-    https://groups.google.com/group/appweb
+https://groups.google.com/group/appweb
 
 You also have the option of purchasing support with the Embedthis Commercial
 License. It includes paid support as part of the license benefits.
