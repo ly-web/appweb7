@@ -28,7 +28,7 @@ Licensing
 
 Please see: 
 
-http://embedthis.com/downloads/licensing.html
+http://embedthis.com/licensing/index.html
 
 
 Support
