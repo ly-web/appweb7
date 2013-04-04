@@ -247,55 +247,55 @@
 		2E49FCC02E4A136600000092 /* appweb.c in Sources */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000093 /* appweb.c */; };
 		2E49FCC02E4A136600000094 /* testAppweb.c in Sources */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000095 /* testAppweb.c */; };
 		2E49FCC02E4A136600000096 /* testHttp.c in Sources */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000097 /* testHttp.c */; };
-		2E49FCC02E4A136600000098 /* libest.a for libmprssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
-		2E49FCC02E4A13660000009A /* libmpr.a for libmprssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A13660000009C /* libmpr.a for manager */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A13660000009D /* libmpr.a for makerom */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A13660000009E /* libpcre.a for libhttp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000A0 /* libmpr.a for libhttp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000A1 /* libmpr.a for http */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000A2 /* libpcre.a for http */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000A3 /* libhttp.a for http */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A4; };
-		2E49FCC02E4A1366000000A5 /* libmpr.a for libappweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000A6 /* libpcre.a for libappweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000A7 /* libhttp.a for libappweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A4; };
-		2E49FCC02E4A1366000000A8 /* libhttp.a for libmod_esp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A4; };
-		2E49FCC02E4A1366000000A9 /* libpcre.a for libmod_esp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000AA /* libmpr.a for libmod_esp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000AB /* libappweb.a for libmod_esp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000AC; };
-		2E49FCC02E4A1366000000AD /* libhttp.a for espcmd */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A4; };
-		2E49FCC02E4A1366000000AE /* libpcre.a for espcmd */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000AF /* libmpr.a for espcmd */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000B0 /* libappweb.a for espcmd */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000AC; };
-		2E49FCC02E4A1366000000B1 /* libhttp.a for libmod_cgi */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A4; };
-		2E49FCC02E4A1366000000B2 /* libpcre.a for libmod_cgi */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000B3 /* libmpr.a for libmod_cgi */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000B4 /* libappweb.a for libmod_cgi */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000AC; };
-		2E49FCC02E4A1366000000B5 /* libhttp.a for libmod_ssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A4; };
-		2E49FCC02E4A1366000000B6 /* libpcre.a for libmod_ssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000B7 /* libmpr.a for libmod_ssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000B8 /* libappweb.a for libmod_ssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000AC; };
-		2E49FCC02E4A1366000000B9 /* libhttp.a for authpass */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A4; };
-		2E49FCC02E4A1366000000BA /* libpcre.a for authpass */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000BB /* libmpr.a for authpass */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000BC /* libappweb.a for authpass */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000AC; };
+		2E49FCC02E4A136600000098 /* libmpr.a for libmprssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A13660000009A /* libest.a for libmprssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
+		2E49FCC02E4A13660000009C /* libmpr.a for manager */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A13660000009D /* libmpr.a for makerom */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A13660000009E /* libmpr.a for libhttp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A13660000009F /* libpcre.a for libhttp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
+		2E49FCC02E4A1366000000A1 /* libhttp.a for http */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A2; };
+		2E49FCC02E4A1366000000A3 /* libmpr.a for http */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A1366000000A4 /* libpcre.a for http */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
+		2E49FCC02E4A1366000000A5 /* libhttp.a for libappweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A2; };
+		2E49FCC02E4A1366000000A6 /* libmpr.a for libappweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A1366000000A7 /* libpcre.a for libappweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
+		2E49FCC02E4A1366000000A8 /* libappweb.a for libmod_esp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A9; };
+		2E49FCC02E4A1366000000AA /* libhttp.a for libmod_esp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A2; };
+		2E49FCC02E4A1366000000AB /* libmpr.a for libmod_esp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A1366000000AC /* libpcre.a for libmod_esp */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
+		2E49FCC02E4A1366000000AD /* libappweb.a for espcmd */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A9; };
+		2E49FCC02E4A1366000000AE /* libhttp.a for espcmd */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A2; };
+		2E49FCC02E4A1366000000AF /* libmpr.a for espcmd */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A1366000000B0 /* libpcre.a for espcmd */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
+		2E49FCC02E4A1366000000B1 /* libappweb.a for libmod_cgi */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A9; };
+		2E49FCC02E4A1366000000B2 /* libhttp.a for libmod_cgi */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A2; };
+		2E49FCC02E4A1366000000B3 /* libmpr.a for libmod_cgi */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A1366000000B4 /* libpcre.a for libmod_cgi */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
+		2E49FCC02E4A1366000000B5 /* libappweb.a for libmod_ssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A9; };
+		2E49FCC02E4A1366000000B6 /* libhttp.a for libmod_ssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A2; };
+		2E49FCC02E4A1366000000B7 /* libmpr.a for libmod_ssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A1366000000B8 /* libpcre.a for libmod_ssl */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
+		2E49FCC02E4A1366000000B9 /* libappweb.a for authpass */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A9; };
+		2E49FCC02E4A1366000000BA /* libhttp.a for authpass */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A2; };
+		2E49FCC02E4A1366000000BB /* libmpr.a for authpass */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A1366000000BC /* libpcre.a for authpass */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
 		2E49FCC02E4A1366000000BD /* libmod_esp.a for libslink */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000BE; };
-		2E49FCC02E4A1366000000BF /* libhttp.a for libslink */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A4; };
-		2E49FCC02E4A1366000000C0 /* libpcre.a for libslink */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000C1 /* libmpr.a for libslink */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000C2 /* libappweb.a for libslink */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000AC; };
-		2E49FCC02E4A1366000000C3 /* libmod_cgi.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000C4; };
-		2E49FCC02E4A1366000000C5 /* libmod_ssl.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000C6; };
-		2E49FCC02E4A1366000000C7 /* libmod_esp.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000BE; };
-		2E49FCC02E4A1366000000C8 /* libslink.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000C9; };
-		2E49FCC02E4A1366000000CA /* libhttp.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A4; };
-		2E49FCC02E4A1366000000CB /* libpcre.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000CC /* libmpr.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000CD /* libappweb.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000AC; };
-		2E49FCC02E4A1366000000CE /* libhttp.a for testAppweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A4; };
-		2E49FCC02E4A1366000000CF /* libpcre.a for testAppweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009F; };
-		2E49FCC02E4A1366000000D0 /* libmpr.a for testAppweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A13660000009B; };
-		2E49FCC02E4A1366000000D1 /* libappweb.a for testAppweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000AC; };
+		2E49FCC02E4A1366000000BF /* libappweb.a for libslink */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A9; };
+		2E49FCC02E4A1366000000C0 /* libhttp.a for libslink */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A2; };
+		2E49FCC02E4A1366000000C1 /* libmpr.a for libslink */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A1366000000C2 /* libpcre.a for libslink */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
+		2E49FCC02E4A1366000000C3 /* libappweb.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A9; };
+		2E49FCC02E4A1366000000C4 /* libhttp.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A2; };
+		2E49FCC02E4A1366000000C5 /* libmpr.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A1366000000C6 /* libpcre.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
+		2E49FCC02E4A1366000000C7 /* libslink.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000C8; };
+		2E49FCC02E4A1366000000C9 /* libmod_esp.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000BE; };
+		2E49FCC02E4A1366000000CA /* libmod_ssl.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000CB; };
+		2E49FCC02E4A1366000000CC /* libmod_cgi.a for appweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000CD; };
+		2E49FCC02E4A1366000000CE /* libappweb.a for testAppweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A9; };
+		2E49FCC02E4A1366000000CF /* libhttp.a for testAppweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A2; };
+		2E49FCC02E4A1366000000D0 /* libmpr.a for testAppweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A136600000099; };
+		2E49FCC02E4A1366000000D1 /* libpcre.a for testAppweb */ = {isa = PBXBuildFile; fileRef = 2E49FCC02E4A1366000000A0; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1104,7 +1104,7 @@
 		2E49FCC02E4A136600000156 /* bit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bit.h; path = macosx-x64-static/inc/bit.h; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000157 /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = macosx-x64-static/inc/mpr.h; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000158 /* bitos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitos.h; path = macosx-x64-static/inc/bitos.h; sourceTree = "<group>"; };
-		2E49FCC02E4A13660000009B /* libmpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmpr.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E49FCC02E4A136600000099 /* libmpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmpr.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A13660000005D /* mprSsl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprSsl.c; path = src/deps/mpr/mprSsl.c; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000159 /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = macosx-x64-static/inc/est.h; sourceTree = "<group>"; };
 		2E49FCC02E4A13660000015A /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1113,13 +1113,13 @@
 		2E49FCC02E4A136600000061 /* makerom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = makerom.c; path = src/deps/mpr/makerom.c; sourceTree = "<group>"; };
 		2E49FCC02E4A13660000015C /* makerom */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makerom; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A136600000063 /* estLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = estLib.c; path = src/deps/est/estLib.c; sourceTree = "<group>"; };
-		2E49FCC02E4A136600000099 /* libest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libest.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E49FCC02E4A13660000009B /* libest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libest.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A136600000065 /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = src/deps/pcre/pcre.c; sourceTree = "<group>"; };
 		2E49FCC02E4A13660000015D /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = macosx-x64-static/inc/pcre.h; sourceTree = "<group>"; };
-		2E49FCC02E4A13660000009F /* libpcre */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpcre.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E49FCC02E4A1366000000A0 /* libpcre */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpcre.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A136600000067 /* httpLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = httpLib.c; path = src/deps/http/httpLib.c; sourceTree = "<group>"; };
 		2E49FCC02E4A13660000015E /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = http.h; path = macosx-x64-static/inc/http.h; sourceTree = "<group>"; };
-		2E49FCC02E4A1366000000A4 /* libhttp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libhttp.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E49FCC02E4A1366000000A2 /* libhttp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libhttp.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A136600000069 /* http.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = http.c; path = src/deps/http/http.c; sourceTree = "<group>"; };
 		2E49FCC02E4A13660000015F /* http */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = http; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A13660000006B /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = config.c; path = src/config.c; sourceTree = "<group>"; };
@@ -1130,7 +1130,7 @@
 		2E49FCC02E4A136600000071 /* fileHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fileHandler.c; path = src/fileHandler.c; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000073 /* log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = log.c; path = src/log.c; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000075 /* server.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = server.c; path = src/server.c; sourceTree = "<group>"; };
-		2E49FCC02E4A1366000000AC /* libappweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libappweb.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E49FCC02E4A1366000000A9 /* libappweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libappweb.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A136600000077 /* edi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = edi.c; path = src/esp/edi.c; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000162 /* edi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = edi.h; path = macosx-x64-static/inc/edi.h; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000079 /* espAbbrev.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espAbbrev.c; path = src/esp/espAbbrev.c; sourceTree = "<group>"; };
@@ -1154,15 +1154,15 @@
 		2E49FCC02E4A136600000085 /* sdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sdb.c; path = src/esp/sdb.c; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000165 /* espcmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = esp; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A136600000089 /* cgiHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cgiHandler.c; path = src/modules/cgiHandler.c; sourceTree = "<group>"; };
-		2E49FCC02E4A1366000000C4 /* libmod_cgi */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_cgi.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E49FCC02E4A1366000000CD /* libmod_cgi */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_cgi.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A13660000008B /* sslModule.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sslModule.c; path = src/modules/sslModule.c; sourceTree = "<group>"; };
-		2E49FCC02E4A1366000000C6 /* libmod_ssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_ssl.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E49FCC02E4A1366000000CB /* libmod_ssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_ssl.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A13660000008D /* authpass.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = authpass.c; path = src/utils/authpass.c; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000166 /* authpass */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = authpass; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A13660000008F /* cgiProgram.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cgiProgram.c; path = src/utils/cgiProgram.c; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000167 /* cgiProgram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cgiProgram; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A136600000091 /* slink.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = slink.c; path = src/server/slink.c; sourceTree = "<group>"; };
-		2E49FCC02E4A1366000000C9 /* libslink */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libslink.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E49FCC02E4A1366000000C8 /* libslink */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libslink.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A136600000093 /* appweb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = appweb.c; path = src/server/appweb.c; sourceTree = "<group>"; };
 		2E49FCC02E4A136600000168 /* appweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = appweb; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E49FCC02E4A136600000095 /* testAppweb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testAppweb.c; path = test/testAppweb.c; sourceTree = "<group>"; };
@@ -1184,8 +1184,8 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A136600000098 /* libest */,
-				2E49FCC02E4A13660000009A /* libmpr */,				
+				2E49FCC02E4A136600000098 /* libmpr */,
+				2E49FCC02E4A13660000009A /* libest */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1225,8 +1225,8 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A13660000009E /* libpcre */,
-				2E49FCC02E4A1366000000A0 /* libmpr */,				
+				2E49FCC02E4A13660000009E /* libmpr */,
+				2E49FCC02E4A13660000009F /* libpcre */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1234,9 +1234,9 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A1366000000A1 /* libmpr */,
-				2E49FCC02E4A1366000000A2 /* libpcre */,
-				2E49FCC02E4A1366000000A3 /* libhttp */,				
+				2E49FCC02E4A1366000000A1 /* libhttp */,
+				2E49FCC02E4A1366000000A3 /* libmpr */,
+				2E49FCC02E4A1366000000A4 /* libpcre */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1244,9 +1244,9 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A1366000000A5 /* libmpr */,
-				2E49FCC02E4A1366000000A6 /* libpcre */,
-				2E49FCC02E4A1366000000A7 /* libhttp */,				
+				2E49FCC02E4A1366000000A5 /* libhttp */,
+				2E49FCC02E4A1366000000A6 /* libmpr */,
+				2E49FCC02E4A1366000000A7 /* libpcre */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1254,10 +1254,10 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A1366000000A8 /* libhttp */,
-				2E49FCC02E4A1366000000A9 /* libpcre */,
-				2E49FCC02E4A1366000000AA /* libmpr */,
-				2E49FCC02E4A1366000000AB /* libappweb */,				
+				2E49FCC02E4A1366000000A8 /* libappweb */,
+				2E49FCC02E4A1366000000AA /* libhttp */,
+				2E49FCC02E4A1366000000AB /* libmpr */,
+				2E49FCC02E4A1366000000AC /* libpcre */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1265,10 +1265,10 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A1366000000AD /* libhttp */,
-				2E49FCC02E4A1366000000AE /* libpcre */,
+				2E49FCC02E4A1366000000AD /* libappweb */,
+				2E49FCC02E4A1366000000AE /* libhttp */,
 				2E49FCC02E4A1366000000AF /* libmpr */,
-				2E49FCC02E4A1366000000B0 /* libappweb */,				
+				2E49FCC02E4A1366000000B0 /* libpcre */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1276,10 +1276,10 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A1366000000B1 /* libhttp */,
-				2E49FCC02E4A1366000000B2 /* libpcre */,
+				2E49FCC02E4A1366000000B1 /* libappweb */,
+				2E49FCC02E4A1366000000B2 /* libhttp */,
 				2E49FCC02E4A1366000000B3 /* libmpr */,
-				2E49FCC02E4A1366000000B4 /* libappweb */,				
+				2E49FCC02E4A1366000000B4 /* libpcre */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1287,10 +1287,10 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A1366000000B5 /* libhttp */,
-				2E49FCC02E4A1366000000B6 /* libpcre */,
+				2E49FCC02E4A1366000000B5 /* libappweb */,
+				2E49FCC02E4A1366000000B6 /* libhttp */,
 				2E49FCC02E4A1366000000B7 /* libmpr */,
-				2E49FCC02E4A1366000000B8 /* libappweb */,				
+				2E49FCC02E4A1366000000B8 /* libpcre */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1298,10 +1298,10 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A1366000000B9 /* libhttp */,
-				2E49FCC02E4A1366000000BA /* libpcre */,
+				2E49FCC02E4A1366000000B9 /* libappweb */,
+				2E49FCC02E4A1366000000BA /* libhttp */,
 				2E49FCC02E4A1366000000BB /* libmpr */,
-				2E49FCC02E4A1366000000BC /* libappweb */,				
+				2E49FCC02E4A1366000000BC /* libpcre */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1318,10 +1318,10 @@
             buildActionMask = 2147483647;
             files = (
 				2E49FCC02E4A1366000000BD /* libmod_esp */,
-				2E49FCC02E4A1366000000BF /* libhttp */,
-				2E49FCC02E4A1366000000C0 /* libpcre */,
+				2E49FCC02E4A1366000000BF /* libappweb */,
+				2E49FCC02E4A1366000000C0 /* libhttp */,
 				2E49FCC02E4A1366000000C1 /* libmpr */,
-				2E49FCC02E4A1366000000C2 /* libappweb */,				
+				2E49FCC02E4A1366000000C2 /* libpcre */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1329,14 +1329,14 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A1366000000C3 /* libmod_cgi */,
-				2E49FCC02E4A1366000000C5 /* libmod_ssl */,
-				2E49FCC02E4A1366000000C7 /* libmod_esp */,
-				2E49FCC02E4A1366000000C8 /* libslink */,
-				2E49FCC02E4A1366000000CA /* libhttp */,
-				2E49FCC02E4A1366000000CB /* libpcre */,
-				2E49FCC02E4A1366000000CC /* libmpr */,
-				2E49FCC02E4A1366000000CD /* libappweb */,				
+				2E49FCC02E4A1366000000C3 /* libappweb */,
+				2E49FCC02E4A1366000000C4 /* libhttp */,
+				2E49FCC02E4A1366000000C5 /* libmpr */,
+				2E49FCC02E4A1366000000C6 /* libpcre */,
+				2E49FCC02E4A1366000000C7 /* libslink */,
+				2E49FCC02E4A1366000000C9 /* libmod_esp */,
+				2E49FCC02E4A1366000000CA /* libmod_ssl */,
+				2E49FCC02E4A1366000000CC /* libmod_cgi */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1344,10 +1344,10 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				2E49FCC02E4A1366000000CE /* libhttp */,
-				2E49FCC02E4A1366000000CF /* libpcre */,
+				2E49FCC02E4A1366000000CE /* libappweb */,
+				2E49FCC02E4A1366000000CF /* libhttp */,
 				2E49FCC02E4A1366000000D0 /* libmpr */,
-				2E49FCC02E4A1366000000D1 /* libappweb */,				
+				2E49FCC02E4A1366000000D1 /* libpcre */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -1619,22 +1619,22 @@
 		2E49FCC02E4A136600000190 /* Products */ = {
             isa = PBXGroup;
             children = (
-				2E49FCC02E4A13660000009B /* libmpr */,
+				2E49FCC02E4A136600000099 /* libmpr */,
 				2E49FCC02E4A13660000015A /* libmprssl */,
 				2E49FCC02E4A13660000015B /* manager */,
 				2E49FCC02E4A13660000015C /* makerom */,
-				2E49FCC02E4A136600000099 /* libest */,
-				2E49FCC02E4A13660000009F /* libpcre */,
-				2E49FCC02E4A1366000000A4 /* libhttp */,
+				2E49FCC02E4A13660000009B /* libest */,
+				2E49FCC02E4A1366000000A0 /* libpcre */,
+				2E49FCC02E4A1366000000A2 /* libhttp */,
 				2E49FCC02E4A13660000015F /* http */,
-				2E49FCC02E4A1366000000AC /* libappweb */,
+				2E49FCC02E4A1366000000A9 /* libappweb */,
 				2E49FCC02E4A1366000000BE /* libmod_esp */,
 				2E49FCC02E4A136600000165 /* espcmd */,
-				2E49FCC02E4A1366000000C4 /* libmod_cgi */,
-				2E49FCC02E4A1366000000C6 /* libmod_ssl */,
+				2E49FCC02E4A1366000000CD /* libmod_cgi */,
+				2E49FCC02E4A1366000000CB /* libmod_ssl */,
 				2E49FCC02E4A136600000166 /* authpass */,
 				2E49FCC02E4A136600000167 /* cgiProgram */,
-				2E49FCC02E4A1366000000C9 /* libslink */,
+				2E49FCC02E4A1366000000C8 /* libslink */,
 				2E49FCC02E4A136600000168 /* appweb */,
 				2E49FCC02E4A13660000016A /* testAppweb */,
 			);
@@ -1659,7 +1659,7 @@
 			);
 			name = libmpr;
 			productName = appweb;
-			productReference = 2E49FCC02E4A13660000009B /* libmpr */;
+			productReference = 2E49FCC02E4A136600000099 /* libmpr */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		2E49FCC02E4A136600000133 /* libmprssl */ = {
@@ -1731,7 +1731,7 @@
 			);
 			name = libest;
 			productName = appweb;
-			productReference = 2E49FCC02E4A136600000099 /* libest */;
+			productReference = 2E49FCC02E4A13660000009B /* libest */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		2E49FCC02E4A1366000000E2 /* libpcre */ = {
@@ -1748,7 +1748,7 @@
 			);
 			name = libpcre;
 			productName = appweb;
-			productReference = 2E49FCC02E4A13660000009F /* libpcre */;
+			productReference = 2E49FCC02E4A1366000000A0 /* libpcre */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		2E49FCC02E4A1366000000E7 /* libhttp */ = {
@@ -1767,7 +1767,7 @@
 			);
 			name = libhttp;
 			productName = appweb;
-			productReference = 2E49FCC02E4A1366000000A4 /* libhttp */;
+			productReference = 2E49FCC02E4A1366000000A2 /* libhttp */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		2E49FCC02E4A13660000013C /* http */ = {
@@ -1807,7 +1807,7 @@
 			);
 			name = libappweb;
 			productName = appweb;
-			productReference = 2E49FCC02E4A1366000000AC /* libappweb */;
+			productReference = 2E49FCC02E4A1366000000A9 /* libappweb */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		2E49FCC02E4A136600000113 /* libmod_esp */ = {
@@ -1870,7 +1870,7 @@
 			);
 			name = libmod_cgi;
 			productName = appweb;
-			productReference = 2E49FCC02E4A1366000000C4 /* libmod_cgi */;
+			productReference = 2E49FCC02E4A1366000000CD /* libmod_cgi */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		2E49FCC02E4A13660000011E /* libmod_ssl */ = {
@@ -1891,7 +1891,7 @@
 			);
 			name = libmod_ssl;
 			productName = appweb;
-			productReference = 2E49FCC02E4A1366000000C6 /* libmod_ssl */;
+			productReference = 2E49FCC02E4A1366000000CB /* libmod_ssl */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		2E49FCC02E4A136600000148 /* authpass */ = {
@@ -1952,7 +1952,7 @@
 			);
 			name = libslink;
 			productName = appweb;
-			productReference = 2E49FCC02E4A1366000000C9 /* libslink */;
+			productReference = 2E49FCC02E4A1366000000C8 /* libslink */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		2E49FCC02E4A13660000014D /* appweb */ = {
@@ -3092,7 +3092,7 @@ fi";
                 /* Common Settings */
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-                CURRENT_PROJECT_VERSION = 4.3.1;
+                CURRENT_PROJECT_VERSION = 4.3.2;
                 DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                 DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -3146,9 +3146,9 @@ fi";
 				OTHER_LDFLAGS = (
 					"-Wl,-rpath,@executable_path/",
 					"-Wl,-rpath,@loader_path/",
+					"-ldl",
 					"-lpthread",
 					"-lm",
-					"-ldl",
 					"$(inherited)"
 				);
 
@@ -3162,7 +3162,7 @@ fi";
                 /* Common Settings */
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-                CURRENT_PROJECT_VERSION = 4.3.1;
+                CURRENT_PROJECT_VERSION = 4.3.2;
                 DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                 DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -3216,9 +3216,9 @@ fi";
 				OTHER_LDFLAGS = (
 					"-Wl,-rpath,@executable_path/",
 					"-Wl,-rpath,@loader_path/",
+					"-ldl",
 					"-lpthread",
 					"-lm",
-					"-ldl",
 					"$(inherited)"
 				);
 

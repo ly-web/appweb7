@@ -3,7 +3,7 @@
 #
 
 PRODUCT            = appweb
-VERSION            = 4.3.1
+VERSION            = 4.3.2
 BUILD_NUMBER       = 0
 PROFILE            = static
 PA                 = $(PROCESSOR_ARCHITECTURE)
@@ -99,11 +99,11 @@ CC                 = cl
 LD                 = link
 RC                 = rc
 CFLAGS             = -nologo -GR- -W3 -Zi -Od -MDd
-DFLAGS             = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
+DFLAGS             = -DBIT_DEBUG -D_REENTRANT -D_MT -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
 IFLAGS             = -I$(CONFIG)\inc
 LDFLAGS            = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS           = -libpath:$(CONFIG)\bin
-LIBS               = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
+LIBS               = dl ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
 BIT_ROOT_PREFIX    = C:
 BIT_BASE_PREFIX    = $(BIT_ROOT_PREFIX)\Program Files
@@ -351,7 +351,7 @@ clean:
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.1-0
+	@echo 4.3.2-0
 
 #
 #   bit.h
@@ -377,7 +377,7 @@ DEPS_4 = $(DEPS_4) $(CONFIG)\obj\removeFiles.obj
 
 $(CONFIG)\bin\removeFiles.exe: $(DEPS_4)
 	@echo '      [Link] $(CONFIG)/bin/removeFiles.exe'
-	"$(LD)" -out:$(CONFIG)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\removeFiles.obj $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\removeFiles.exe -entry: -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\removeFiles.obj $(LIBS) 
 
 #
 #   mpr.h
@@ -511,7 +511,7 @@ LIBS_15 = $(LIBS_15) libmpr.lib
 
 $(CONFIG)\bin\appman.exe: $(DEPS_15)
 	@echo '      [Link] $(CONFIG)/bin/appman.exe'
-	"$(LD)" -out:$(CONFIG)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\appman.exe -entry: -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) 
 
 #
 #   makerom.obj
@@ -538,7 +538,7 @@ LIBS_17 = $(LIBS_17) libmpr.lib
 
 $(CONFIG)\bin\makerom.exe: $(DEPS_17)
 	@echo '      [Link] $(CONFIG)/bin/makerom.exe'
-	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj $(LIBPATHS_17) $(LIBS_17) $(LIBS_17) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj $(LIBPATHS_17) $(LIBS_17) $(LIBS_17) $(LIBS) 
 
 #
 #   ca-crt
@@ -651,15 +651,15 @@ DEPS_26 = $(DEPS_26) $(CONFIG)\obj\httpLib.obj
 DEPS_26 = $(DEPS_26) $(CONFIG)\bin\libhttp.lib
 DEPS_26 = $(DEPS_26) $(CONFIG)\obj\http.obj
 
+LIBS_26 = $(LIBS_26) libhttp.lib
 LIBS_26 = $(LIBS_26) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
 LIBS_26 = $(LIBS_26) libpcre.lib
 !ENDIF
-LIBS_26 = $(LIBS_26) libhttp.lib
 
 $(CONFIG)\bin\http.exe: $(DEPS_26)
 	@echo '      [Link] $(CONFIG)/bin/http.exe'
-	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.obj $(LIBPATHS_26) $(LIBS_26) $(LIBS_26) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\http.obj $(LIBPATHS_26) $(LIBS_26) $(LIBS_26) $(LIBS) 
 
 #
 #   sqlite3.h
@@ -718,7 +718,7 @@ LIBS_31 = $(LIBS_31) libsqlite3.lib
 
 $(CONFIG)\bin\sqlite.exe: $(DEPS_31)
 	@echo '      [Link] $(CONFIG)/bin/sqlite.exe'
-	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj $(LIBPATHS_31) $(LIBS_31) $(LIBS_31) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\sqlite.obj $(LIBPATHS_31) $(LIBS_31) $(LIBS_31) $(LIBS) 
 !ENDIF
 
 #
@@ -1057,19 +1057,19 @@ DEPS_55 = $(DEPS_55) $(CONFIG)\inc\mdb.h
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\mdb.obj
 DEPS_55 = $(DEPS_55) $(CONFIG)\obj\sdb.obj
 
-!IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_55 = $(LIBS_55) libsqlite3.lib
-!ENDIF
+LIBS_55 = $(LIBS_55) libappweb.lib
 LIBS_55 = $(LIBS_55) libhttp.lib
+LIBS_55 = $(LIBS_55) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
 LIBS_55 = $(LIBS_55) libpcre.lib
 !ENDIF
-LIBS_55 = $(LIBS_55) libmpr.lib
-LIBS_55 = $(LIBS_55) libappweb.lib
+!IF "$(BIT_PACK_SQLITE)" == "1"
+LIBS_55 = $(LIBS_55) libsqlite3.lib
+!ENDIF
 
 $(CONFIG)\bin\esp.exe: $(DEPS_55)
 	@echo '      [Link] $(CONFIG)/bin/esp.exe'
-	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBPATHS_55) $(LIBS_55) $(LIBS_55) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\edi.obj $(CONFIG)\obj\esp.obj $(CONFIG)\obj\espAbbrev.obj $(CONFIG)\obj\espFramework.obj $(CONFIG)\obj\espHandler.obj $(CONFIG)\obj\espHtml.obj $(CONFIG)\obj\espTemplate.obj $(CONFIG)\obj\mdb.obj $(CONFIG)\obj\sdb.obj $(LIBPATHS_55) $(LIBS_55) $(LIBS_55) $(LIBS) 
 !ENDIF
 
 !IF "$(BIT_PACK_ESP)" == "1"
@@ -1241,19 +1241,19 @@ DEPS_66 = $(DEPS_66) $(CONFIG)\obj\ejsLib.obj
 DEPS_66 = $(DEPS_66) $(CONFIG)\bin\libejs.lib
 DEPS_66 = $(DEPS_66) $(CONFIG)\obj\ejs.obj
 
+LIBS_66 = $(LIBS_66) libejs.lib
 LIBS_66 = $(LIBS_66) libhttp.lib
+LIBS_66 = $(LIBS_66) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
 LIBS_66 = $(LIBS_66) libpcre.lib
 !ENDIF
-LIBS_66 = $(LIBS_66) libmpr.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_66 = $(LIBS_66) libsqlite3.lib
 !ENDIF
-LIBS_66 = $(LIBS_66) libejs.lib
 
 $(CONFIG)\bin\ejs.exe: $(DEPS_66)
 	@echo '      [Link] $(CONFIG)/bin/ejs.exe'
-	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejs.obj $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) 
 !ENDIF
 
 #
@@ -1291,19 +1291,19 @@ DEPS_68 = $(DEPS_68) $(CONFIG)\obj\ejsLib.obj
 DEPS_68 = $(DEPS_68) $(CONFIG)\bin\libejs.lib
 DEPS_68 = $(DEPS_68) $(CONFIG)\obj\ejsc.obj
 
+LIBS_68 = $(LIBS_68) libejs.lib
 LIBS_68 = $(LIBS_68) libhttp.lib
+LIBS_68 = $(LIBS_68) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
 LIBS_68 = $(LIBS_68) libpcre.lib
 !ENDIF
-LIBS_68 = $(LIBS_68) libmpr.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
 LIBS_68 = $(LIBS_68) libsqlite3.lib
 !ENDIF
-LIBS_68 = $(LIBS_68) libejs.lib
 
 $(CONFIG)\bin\ejsc.exe: $(DEPS_68)
 	@echo '      [Link] $(CONFIG)/bin/ejsc.exe'
-	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj $(LIBPATHS_68) $(LIBS_68) $(LIBS_68) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\ejsc.obj $(LIBPATHS_68) $(LIBS_68) $(LIBS_68) $(LIBS) 
 !ENDIF
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
@@ -1555,16 +1555,16 @@ DEPS_79 = $(DEPS_79) $(CONFIG)\obj\server.obj
 DEPS_79 = $(DEPS_79) $(CONFIG)\bin\libappweb.lib
 DEPS_79 = $(DEPS_79) $(CONFIG)\obj\authpass.obj
 
+LIBS_79 = $(LIBS_79) libappweb.lib
 LIBS_79 = $(LIBS_79) libhttp.lib
+LIBS_79 = $(LIBS_79) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
 LIBS_79 = $(LIBS_79) libpcre.lib
 !ENDIF
-LIBS_79 = $(LIBS_79) libmpr.lib
-LIBS_79 = $(LIBS_79) libappweb.lib
 
 $(CONFIG)\bin\authpass.exe: $(DEPS_79)
 	@echo '      [Link] $(CONFIG)/bin/authpass.exe'
-	"$(LD)" -out:$(CONFIG)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\authpass.obj $(LIBPATHS_79) $(LIBS_79) $(LIBS_79) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\authpass.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\authpass.obj $(LIBPATHS_79) $(LIBS_79) $(LIBS_79) $(LIBS) 
 
 #
 #   cgiProgram.obj
@@ -1585,7 +1585,7 @@ DEPS_81 = $(DEPS_81) $(CONFIG)\obj\cgiProgram.obj
 
 $(CONFIG)\bin\cgiProgram.exe: $(DEPS_81)
 	@echo '      [Link] $(CONFIG)/bin/cgiProgram.exe'
-	"$(LD)" -out:$(CONFIG)\bin\cgiProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiProgram.obj $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\cgiProgram.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\cgiProgram.obj $(LIBS) 
 !ENDIF
 
 #
@@ -1734,42 +1734,42 @@ DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libmod_cgi.lib
 !ENDIF
 DEPS_86 = $(DEPS_86) $(CONFIG)\obj\appweb.obj
 
-!IF "$(BIT_PACK_CGI)" == "1"
-LIBS_86 = $(LIBS_86) libmod_cgi.lib
+LIBS_86 = $(LIBS_86) libappweb.lib
+LIBS_86 = $(LIBS_86) libhttp.lib
+LIBS_86 = $(LIBS_86) libmpr.lib
+!IF "$(BIT_PACK_PCRE)" == "1"
+LIBS_86 = $(LIBS_86) libpcre.lib
+!ENDIF
+LIBS_86 = $(LIBS_86) libslink.lib
+!IF "$(BIT_PACK_ESP)" == "1"
+LIBS_86 = $(LIBS_86) libmod_esp.lib
+!ENDIF
+!IF "$(BIT_PACK_SQLITE)" == "1"
+LIBS_86 = $(LIBS_86) libsqlite3.lib
+!ENDIF
+!IF "$(BIT_PACK_SSL)" == "1"
+LIBS_86 = $(LIBS_86) libmod_ssl.lib
+!ENDIF
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+LIBS_86 = $(LIBS_86) libmod_ejs.lib
+!ENDIF
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+LIBS_86 = $(LIBS_86) libejs.lib
+!ENDIF
+!IF "$(BIT_PACK_PHP)" == "1"
+LIBS_86 = $(LIBS_86) libmod_php.lib
 !ENDIF
 !IF "$(BIT_PACK_PHP)" == "1"
 LIBS_86 = $(LIBS_86) libphp5ts.lib
 LIBPATHS_86 = $(LIBPATHS_86) -libpath:$(BIT_PACK_PHP_PATH)/libs
 !ENDIF
-!IF "$(BIT_PACK_PHP)" == "1"
-LIBS_86 = $(LIBS_86) libmod_php.lib
+!IF "$(BIT_PACK_CGI)" == "1"
+LIBS_86 = $(LIBS_86) libmod_cgi.lib
 !ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_86 = $(LIBS_86) libejs.lib
-!ENDIF
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_86 = $(LIBS_86) libmod_ejs.lib
-!ENDIF
-!IF "$(BIT_PACK_SSL)" == "1"
-LIBS_86 = $(LIBS_86) libmod_ssl.lib
-!ENDIF
-!IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_86 = $(LIBS_86) libsqlite3.lib
-!ENDIF
-!IF "$(BIT_PACK_ESP)" == "1"
-LIBS_86 = $(LIBS_86) libmod_esp.lib
-!ENDIF
-LIBS_86 = $(LIBS_86) libslink.lib
-LIBS_86 = $(LIBS_86) libhttp.lib
-!IF "$(BIT_PACK_PCRE)" == "1"
-LIBS_86 = $(LIBS_86) libpcre.lib
-!ENDIF
-LIBS_86 = $(LIBS_86) libmpr.lib
-LIBS_86 = $(LIBS_86) libappweb.lib
 
 $(CONFIG)\bin\appweb.exe: $(DEPS_86)
 	@echo '      [Link] $(CONFIG)/bin/appweb.exe'
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)  $(CONFIG)\obj\appweb.obj $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS)  $(CONFIG)\obj\appweb.obj $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) 
 
 #
 #   appwebMonitor.h
@@ -1836,16 +1836,16 @@ DEPS_91 = $(DEPS_91) $(CONFIG)\inc\monitorResources.h
 DEPS_91 = $(DEPS_91) $(CONFIG)\obj\appwebMonitor.res
 DEPS_91 = $(DEPS_91) $(CONFIG)\obj\appwebMonitor.obj
 
+LIBS_91 = $(LIBS_91) libappweb.lib
 LIBS_91 = $(LIBS_91) libhttp.lib
+LIBS_91 = $(LIBS_91) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
 LIBS_91 = $(LIBS_91) libpcre.lib
 !ENDIF
-LIBS_91 = $(LIBS_91) libmpr.lib
-LIBS_91 = $(LIBS_91) libappweb.lib
 
 $(CONFIG)\bin\appwebMonitor.exe: $(DEPS_91)
 	@echo '      [Link] $(CONFIG)/bin/appwebMonitor.exe'
-	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appwebMonitor.res $(CONFIG)\obj\appwebMonitor.obj msvcrt.lib oldnames.lib kernel32.lib user32.lib advapi32.lib ws2_32.lib shell32.lib  $(LIBPATHS_91) $(LIBS_91) $(LIBS_91)
+	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry: -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\appwebMonitor.res $(CONFIG)\obj\appwebMonitor.obj shell32.lib dl ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib  $(LIBPATHS_91) $(LIBS_91) $(LIBS_91)
 
 #
 #   appwebMonitor.ico
@@ -1926,16 +1926,16 @@ DEPS_97 = $(DEPS_97) $(CONFIG)\inc\testAppweb.h
 DEPS_97 = $(DEPS_97) $(CONFIG)\obj\testAppweb.obj
 DEPS_97 = $(DEPS_97) $(CONFIG)\obj\testHttp.obj
 
+LIBS_97 = $(LIBS_97) libappweb.lib
 LIBS_97 = $(LIBS_97) libhttp.lib
+LIBS_97 = $(LIBS_97) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
 LIBS_97 = $(LIBS_97) libpcre.lib
 !ENDIF
-LIBS_97 = $(LIBS_97) libmpr.lib
-LIBS_97 = $(LIBS_97) libappweb.lib
 
 $(CONFIG)\bin\testAppweb.exe: $(DEPS_97)
 	@echo '      [Link] $(CONFIG)/bin/testAppweb.exe'
-	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj $(LIBPATHS_97) $(LIBS_97) $(LIBS_97) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testAppweb.obj $(CONFIG)\obj\testHttp.obj $(LIBPATHS_97) $(LIBS_97) $(LIBS_97) $(LIBS) 
 
 !IF "$(BIT_PACK_CGI)" == "1"
 #
@@ -2095,6 +2095,8 @@ installBinary: $(DEPS_104)
 	copy /Y src\server\php.ini "$(BIT_VAPP_PREFIX)\php.ini"
 !ENDIF
 	copy /Y src\server\appweb.conf "$(BIT_VAPP_PREFIX)\appweb.conf"
+	copy /Y src\server\self.crt "$(BIT_VAPP_PREFIX)\self.crt"
+	copy /Y src\server\self.key "$(BIT_VAPP_PREFIX)\self.key"
 	if not exist "$(BIT_VAPP_PREFIX)\inc" md "$(BIT_VAPP_PREFIX)\inc"
 	copy /Y $(CONFIG)\inc\bit.h "$(BIT_VAPP_PREFIX)\inc\bit.h"
 	copy /Y src\bitos.h "$(BIT_VAPP_PREFIX)\inc\bitos.h"
@@ -2119,7 +2121,7 @@ installBinary: $(DEPS_104)
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 	copy /Y $(CONFIG)\bin\ejs.mod "$(BIT_VAPP_PREFIX)\bin\ejs.mod"
 !ENDIF
-	echo 'set LOG_DIR "$(BIT_VAPP_PREFIX)/log"\nset CACHE_DIR "$(BIT_VAPP_PREFIX)/cache"\nDocuments "$(BIT_VAPP_PREFIX)/web\nListen 80\n' >$(BIT_VAPP_PREFIX)/install.conf
+	echo 'set LOG_DIR "$(BIT_VAPP_PREFIX)/log"\nset CACHE_DIR "$(BIT_VAPP_PREFIX)/cache"\nDocuments "$(BIT_VAPP_PREFIX)/web\nListen 80\nListenSecure 443\n' >$(BIT_VAPP_PREFIX)/install.conf
 
 #
 #   start

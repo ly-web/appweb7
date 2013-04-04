@@ -105,7 +105,7 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libmod_esp.lib;libslink.lib;libhttp.lib;libpcre.lib;libmpr.lib;libappweb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;libslink.lib;libmod_esp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>

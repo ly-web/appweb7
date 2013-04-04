@@ -159,19 +159,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libslink", "appweb-windows-
 		{06404242-D2D1-4289-8E84-79AC0F2E7121} = {06404242-D2D1-4289-8E84-79AC0F2E7121}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{F86F4757-A3B0-4561-86AB-D9C18115067F} = {F86F4757-A3B0-4561-86AB-D9C18115067F}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{66002183-4B43-4751-B3F4-36AD8E08BE3C} = {66002183-4B43-4751-B3F4-36AD8E08BE3C}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{1AFC1B00-A132-4507-8810-D12A6B0C8DA7} = {1AFC1B00-A132-4507-8810-D12A6B0C8DA7}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{9651275B-C035-4265-A696-E2DC0147F040} = {9651275B-C035-4265-A696-E2DC0147F040}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{40A6AB0D-04C1-4486-97B2-3B6D4FEE198F} = {40A6AB0D-04C1-4486-97B2-3B6D4FEE198F}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{1AFC1B00-A132-4507-8810-D12A6B0C8DA7} = {1AFC1B00-A132-4507-8810-D12A6B0C8DA7}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{F86F4757-A3B0-4561-86AB-D9C18115067F} = {F86F4757-A3B0-4561-86AB-D9C18115067F}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{F86F4757-A3B0-4561-86AB-D9C18115067F} = {F86F4757-A3B0-4561-86AB-D9C18115067F}

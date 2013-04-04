@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.3.1
+VERSION            := 4.3.2
 BUILD_NUMBER       := 0
 PROFILE            := static
 ARCH               := $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*//')
@@ -81,7 +81,7 @@ export WIND_HOME          := $(WIND_BASE)/..
 export PATH               := $(WIND_GNU_PATH)/$(WIND_HOST_TYPE)/bin:$(PATH)
 
 CFLAGS             += -fno-builtin -fno-defer-pop -fvolatile -w
-DFLAGS             += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=$(CPU) $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
+DFLAGS             += -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
 IFLAGS             += -I$(CONFIG)/inc -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip
 LDFLAGS            += '-Wl,-r'
 LIBPATHS           += -L$(CONFIG)/bin
@@ -314,7 +314,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.1-0
+	@echo 4.3.2-0
 
 #
 #   mpr.h
@@ -382,7 +382,7 @@ DEPS_8 += $(CONFIG)/inc/bitos.h
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c $(DEPS_8)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.o'
-	$(CC) -c -o $(CONFIG)/obj/estLib.o -fno-builtin -fno-defer-pop -fvolatile $(DFLAGS) $(IFLAGS) src/deps/est/estLib.c
+	$(CC) -c -o $(CONFIG)/obj/estLib.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/est/estLib.c
 
 ifeq ($(BIT_PACK_EST),1)
 #
@@ -454,7 +454,7 @@ LIBS_13 += -lmpr
 
 $(CONFIG)/bin/appman.out: $(DEPS_13)
 	@echo '      [Link] $(CONFIG)/bin/appman.out'
-	$(CC) -o $(CONFIG)/bin/appman.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBPATHS_13) $(LIBS_13) $(LIBS_13) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/appman.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBPATHS_13) $(LIBS_13) $(LIBS_13) $(LIBS) -Wl,-r 
 
 #
 #   makerom.o
@@ -481,7 +481,7 @@ LIBS_15 += -lmpr
 
 $(CONFIG)/bin/makerom.out: $(DEPS_15)
 	@echo '      [Link] $(CONFIG)/bin/makerom.out'
-	$(CC) -o $(CONFIG)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) -Wl,-r 
 
 #
 #   ca-crt
@@ -594,15 +594,15 @@ DEPS_24 += $(CONFIG)/obj/httpLib.o
 DEPS_24 += $(CONFIG)/bin/libhttp.a
 DEPS_24 += $(CONFIG)/obj/http.o
 
+LIBS_24 += -lhttp
 LIBS_24 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_24 += -lpcre
 endif
-LIBS_24 += -lhttp
 
 $(CONFIG)/bin/http.out: $(DEPS_24)
 	@echo '      [Link] $(CONFIG)/bin/http.out'
-	$(CC) -o $(CONFIG)/bin/http.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/http.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/http.o $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) -Wl,-r 
 
 #
 #   sqlite3.h
@@ -621,7 +621,7 @@ DEPS_26 += $(CONFIG)/inc/sqlite3.h
 $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c $(DEPS_26)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.o'
-	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -fno-builtin -fno-defer-pop -fvolatile $(DFLAGS) $(IFLAGS) src/deps/sqlite/sqlite3.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/sqlite/sqlite3.c
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
@@ -661,7 +661,7 @@ LIBS_29 += -lsqlite3
 
 $(CONFIG)/bin/sqlite.out: $(DEPS_29)
 	@echo '      [Link] $(CONFIG)/bin/sqlite.out'
-	$(CC) -o $(CONFIG)/bin/sqlite.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LIBPATHS_29) $(LIBS_29) $(LIBS_29) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/sqlite.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/sqlite.o $(LIBPATHS_29) $(LIBS_29) $(LIBS_29) $(LIBS) -Wl,-r 
 endif
 
 #
@@ -1000,19 +1000,19 @@ DEPS_53 += $(CONFIG)/inc/mdb.h
 DEPS_53 += $(CONFIG)/obj/mdb.o
 DEPS_53 += $(CONFIG)/obj/sdb.o
 
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_53 += -lsqlite3
-endif
+LIBS_53 += -lappweb
 LIBS_53 += -lhttp
+LIBS_53 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_53 += -lpcre
 endif
-LIBS_53 += -lmpr
-LIBS_53 += -lappweb
+ifeq ($(BIT_PACK_SQLITE),1)
+    LIBS_53 += -lsqlite3
+endif
 
 $(CONFIG)/bin/esp.out: $(DEPS_53)
 	@echo '      [Link] $(CONFIG)/bin/esp.out'
-	$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/edi.o $(CONFIG)/obj/esp.o $(CONFIG)/obj/espAbbrev.o $(CONFIG)/obj/espFramework.o $(CONFIG)/obj/espHandler.o $(CONFIG)/obj/espHtml.o $(CONFIG)/obj/espTemplate.o $(CONFIG)/obj/mdb.o $(CONFIG)/obj/sdb.o $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -1184,19 +1184,19 @@ DEPS_64 += $(CONFIG)/obj/ejsLib.o
 DEPS_64 += $(CONFIG)/bin/libejs.a
 DEPS_64 += $(CONFIG)/obj/ejs.o
 
+LIBS_64 += -lejs
 LIBS_64 += -lhttp
+LIBS_64 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_64 += -lpcre
 endif
-LIBS_64 += -lmpr
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_64 += -lsqlite3
 endif
-LIBS_64 += -lejs
 
 $(CONFIG)/bin/ejs.out: $(DEPS_64)
 	@echo '      [Link] $(CONFIG)/bin/ejs.out'
-	$(CC) -o $(CONFIG)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejs.o $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS) -Wl,-r 
 endif
 
 #
@@ -1234,19 +1234,19 @@ DEPS_66 += $(CONFIG)/obj/ejsLib.o
 DEPS_66 += $(CONFIG)/bin/libejs.a
 DEPS_66 += $(CONFIG)/obj/ejsc.o
 
+LIBS_66 += -lejs
 LIBS_66 += -lhttp
+LIBS_66 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_66 += -lpcre
 endif
-LIBS_66 += -lmpr
 ifeq ($(BIT_PACK_SQLITE),1)
     LIBS_66 += -lsqlite3
 endif
-LIBS_66 += -lejs
 
 $(CONFIG)/bin/ejsc.out: $(DEPS_66)
 	@echo '      [Link] $(CONFIG)/bin/ejsc.out'
-	$(CC) -o $(CONFIG)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/ejsc.o $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
@@ -1381,7 +1381,7 @@ DEPS_72 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_72)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/phpHandler.o -fno-builtin -fno-defer-pop -fvolatile $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_PHP_PATH) -I$(BIT_PACK_PHP_PATH)/main -I$(BIT_PACK_PHP_PATH)/Zend -I$(BIT_PACK_PHP_PATH)/TSRM src/modules/phpHandler.c
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_PHP_PATH) -I$(BIT_PACK_PHP_PATH)/main -I$(BIT_PACK_PHP_PATH)/Zend -I$(BIT_PACK_PHP_PATH)/TSRM src/modules/phpHandler.c
 
 ifeq ($(BIT_PACK_PHP),1)
 #
@@ -1498,16 +1498,16 @@ DEPS_77 += $(CONFIG)/obj/server.o
 DEPS_77 += $(CONFIG)/bin/libappweb.a
 DEPS_77 += $(CONFIG)/obj/authpass.o
 
+LIBS_77 += -lappweb
 LIBS_77 += -lhttp
+LIBS_77 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_77 += -lpcre
 endif
-LIBS_77 += -lmpr
-LIBS_77 += -lappweb
 
 $(CONFIG)/bin/authpass.out: $(DEPS_77)
 	@echo '      [Link] $(CONFIG)/bin/authpass.out'
-	$(CC) -o $(CONFIG)/bin/authpass.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/authpass.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/authpass.o $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) -Wl,-r 
 
 #
 #   cgiProgram.o
@@ -1528,7 +1528,7 @@ DEPS_79 += $(CONFIG)/obj/cgiProgram.o
 
 $(CONFIG)/bin/cgiProgram.out: $(DEPS_79)
 	@echo '      [Link] $(CONFIG)/bin/cgiProgram.out'
-	$(CC) -o $(CONFIG)/bin/cgiProgram.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiProgram.o $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/cgiProgram.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/cgiProgram.o $(LIBS) -Wl,-r 
 endif
 
 #
@@ -1675,42 +1675,42 @@ ifeq ($(BIT_PACK_CGI),1)
 endif
 DEPS_84 += $(CONFIG)/obj/appweb.o
 
-ifeq ($(BIT_PACK_CGI),1)
-    LIBS_84 += -lmod_cgi
+LIBS_84 += -lappweb
+LIBS_84 += -lhttp
+LIBS_84 += -lmpr
+ifeq ($(BIT_PACK_PCRE),1)
+    LIBS_84 += -lpcre
+endif
+LIBS_84 += -lslink
+ifeq ($(BIT_PACK_ESP),1)
+    LIBS_84 += -lmod_esp
+endif
+ifeq ($(BIT_PACK_SQLITE),1)
+    LIBS_84 += -lsqlite3
+endif
+ifeq ($(BIT_PACK_SSL),1)
+    LIBS_84 += -lmod_ssl
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+    LIBS_84 += -lmod_ejs
+endif
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+    LIBS_84 += -lejs
+endif
+ifeq ($(BIT_PACK_PHP),1)
+    LIBS_84 += -lmod_php
 endif
 ifeq ($(BIT_PACK_PHP),1)
     LIBS_84 += -lphp5
     LIBPATHS_84 += -L$(BIT_PACK_PHP_PATH)/libs
 endif
-ifeq ($(BIT_PACK_PHP),1)
-    LIBS_84 += -lmod_php
+ifeq ($(BIT_PACK_CGI),1)
+    LIBS_84 += -lmod_cgi
 endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_84 += -lejs
-endif
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-    LIBS_84 += -lmod_ejs
-endif
-ifeq ($(BIT_PACK_SSL),1)
-    LIBS_84 += -lmod_ssl
-endif
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_84 += -lsqlite3
-endif
-ifeq ($(BIT_PACK_ESP),1)
-    LIBS_84 += -lmod_esp
-endif
-LIBS_84 += -lslink
-LIBS_84 += -lhttp
-ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_84 += -lpcre
-endif
-LIBS_84 += -lmpr
-LIBS_84 += -lappweb
 
 $(CONFIG)/bin/appweb.out: $(DEPS_84)
 	@echo '      [Link] $(CONFIG)/bin/appweb.out'
-	$(CC) -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS)  $(CONFIG)/obj/appweb.o $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS)  $(CONFIG)/obj/appweb.o $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) -Wl,-r 
 
 #
 #   server-cache
@@ -1779,16 +1779,16 @@ DEPS_89 += $(CONFIG)/inc/testAppweb.h
 DEPS_89 += $(CONFIG)/obj/testAppweb.o
 DEPS_89 += $(CONFIG)/obj/testHttp.o
 
+LIBS_89 += -lappweb
 LIBS_89 += -lhttp
+LIBS_89 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_89 += -lpcre
 endif
-LIBS_89 += -lmpr
-LIBS_89 += -lappweb
 
 $(CONFIG)/bin/testAppweb.out: $(DEPS_89)
 	@echo '      [Link] $(CONFIG)/bin/testAppweb.out'
-	$(CC) -o $(CONFIG)/bin/testAppweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBPATHS_89) $(LIBS_89) $(LIBS_89) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/testAppweb.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testAppweb.o $(CONFIG)/obj/testHttp.o $(LIBPATHS_89) $(LIBS_89) $(LIBS_89) $(LIBS) -Wl,-r 
 
 ifeq ($(BIT_PACK_CGI),1)
 #
