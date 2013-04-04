@@ -17,10 +17,8 @@
 static void readySimple(HttpQueue *q)
 {
     HttpConn    *conn;
-    HttpRx      *rx;
 
     conn = q->conn;
-    rx = conn->rx;
     httpSetHeader(conn, "Custom-Date", conn->http->currentDate);
 
     /*
