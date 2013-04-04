@@ -10,13 +10,13 @@ dump(App.config)
     let http: Http = new Http
 
     http.retries = 0
-    http.ca = '../sslconf/ca.crt'
+    http.ca = '../crt/ca.crt'
     assert(http.verify == true)
  
     //  Verify the server cert and send a client cert 
     endpoint = App.config.uris.matrixssl || "https://127.0.0.1:8443"
-    http.key = '../sslconf/test.key'
-    http.certificate = '../sslconf/test.crt'
+    http.key = '../crt/test.key'
+    http.certificate = '../crt/test.crt'
     http.get(endpoint + '/index.html')
     assert(http.status == 200) 
     assert(http.info.CLIENT_S_CN == 'localhost')

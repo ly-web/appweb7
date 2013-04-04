@@ -15,7 +15,7 @@ if (!Config.SSL) {
         }
         http = new Http
         http.provider = provider;
-        // http.ca = '../sslconf/ca.crt'
+        // http.ca = '../crt/ca.crt'
         http.verify = false
 
         //  Should fail if no cert is provided
@@ -33,8 +33,8 @@ if (!Config.SSL) {
 
         //  Should pass with a cert
         endpoint = App.config.uris.clientcert || "https://127.0.0.1:6443"
-        http.key = '../sslconf/test.key'
-        http.certificate = '../sslconf/test.crt'
+        http.key = '../crt/test.key'
+        http.certificate = '../crt/test.crt'
         http.get(endpoint + '/ssl-match/index.html')
         assert(http.status == 200) 
         http.close()
