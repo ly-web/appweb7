@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.3.1 Documentation</title>
+    <title>Embedthis Appweb 4.3.2 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.3.1</div>
+                <div class="version">Embedthis Appweb 4.3.2</div>
             </div>
         </div>
         <div class="crumbs">
@@ -168,14 +168,12 @@ sudo make uninstall
             <p>For example, to build and install PHP:</p>
                 <pre>$ make <b>BIT_PACK_PHP=1 BIT_PACK_PHP_PATH=/usr/src/php</b> compile
 $ sudo make <b>BIT_PACK_PHP=1 BIT_PACK_PHP_PATH=/usr/src/php</b> install</pre>
-
             <a name="deploy"></a>
             <h3>Deploying</h3>
             <p>If you need to deploy to a different system or capture the build products, you can install to a specific
             directory via: </p>
             <pre>make deploy</pre>
             <p>This will install to the <em>deploy</em> directory under the output platform directory.</p>
-
             <a id="cross"></a>
             <h2 class="section">Cross Compiling with Make</h2>
             <p>Building a product for platform different to that of the local system is called <em>cross compiling</em>.
@@ -195,13 +193,11 @@ make -f projects/appweb-vxworks-default.mk ARCH=arm PROFILE=debug
             arm, mips, ppc, x64 and x86. The PROFILE is a descriptive name chosen by you for your configuration.</p>
             <p>If there is not a makefile for your  target operating system, copy the closest makefile and edit to 
             suit your target platform.</p>
-
             <h3>Specifying the CPU</h3>
             <p>The build will generic CPU type within the specified  architecture.
             To override the default choice and specify a CPU type within an architecture, use the CPU variable.
             For example:/p>
             <pre>make OS=vxworks ARCH=arm CPU=arm7tdmi</pre>
-
             <a name="toolchain"></a>
             <h3>Specifying a Tool Chain</h3>
             <p>You may need to specify where Make can locate your cross-compiler and other tools.
@@ -211,7 +207,6 @@ make -f projects/appweb-vxworks-default.mk ARCH=arm PROFILE=debug
 make CC=/opt/bin/ccarm.exe LD=/opt/bin/ccarm.exe ARCH=arm PROFILE=release
     -f projects/appweb-vxworks-default.mk 
 </pre>
-
             <a name="openssl"></a>
             <h2>Supporting OpenSSL</h2>
             <p>If OpenSSL is required to provide SSL support, you must specify the path to the OpenSSL source
@@ -220,16 +215,12 @@ make CC=/opt/bin/ccarm.exe LD=/opt/bin/ccarm.exe ARCH=arm PROFILE=release
             <p>If you are using a binary OpenSSL distribution, provide the path where the OpenSSL libraries are located
               (typically /usr/lib).</p>
             <pre>make BIT_PACK_OPENSSL=1 BIT_PACK_OPENSSL_PATH=/usr/lib compile</pre>
-
-
-
             <a name="static"></a>
             <h2>Static Building</h2>
             <p>If you require a static build without the ability to dynamically load modules, use the <em>static</em>
                 makefile profile. For example:</p>
                 <pre>make PROFILE=static</pre>
             <p>Some web frameworks such as ESP and Ejscript may have reduced functionality in static builds.</p>
-
             <a name="vxworks"></a>
             <h2>Building for VxWorks</h2>
             <p>Before building for VxWorks, you must define the WIND_* environment variables via the 
@@ -240,10 +231,8 @@ make CC=/opt/bin/ccarm.exe LD=/opt/bin/ccarm.exe ARCH=arm PROFILE=release
             <pre>eval `/WindRiver/wrenv.sh -p vxworks-6.8 -o print_env -f sh`</pre>
             <p>Once defined, you can invoke make.</p>
             <pre>make OS=vxworks</pre>
-
             <p>If you require a static build, set the profile to "static".</p>
 <pre>make OS=vxworks PROFILE=static</pre>
-
             <a name="ejs"></a>
             <h2>Supporting Ejscript</h2>
             <p>If Ejscript is required, you must also build Appweb for the local system as the Ejscript compiler 
