@@ -1202,6 +1202,56 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    ListenSecure ip:port
+    ListenSecure ip
+    ListenSecure port
+
+    Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[]" if appending a port.
+ */
+static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
+{
+#if BIT_PACK_SSL
+    HttpEndpoint    *endpoint;
+    char            *ip;
+    int             port;
+
+
+    mprParseSocketAddress(value, &ip, &port, NULL, 443);
+    if (port == 0) {
+        mprError("Bad or missing port %d in ListenSecure directive", port);
+        return -1;
+    }
+    endpoint = httpCreateEndpoint(ip, port, NULL);
+    mprAddItem(state->server->endpoints, endpoint);
+    if (state->route->ssl == 0) {
+        if (state->route->parent && state->route->parent->ssl) {
+            state->route->ssl = mprCloneSsl(state->route->parent->ssl);
+        } else {
+            state->route->ssl = mprCreateSsl(1);
+        }
+    }
+    httpSecureEndpoint(endpoint, state->route->ssl);
+    if (!state->host->secureEndpoint) {
+        httpSetHostSecureEndpoint(state->host, endpoint);
+    }
+    /*
+        Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
+        This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
+     */
+    if (!schr(value, ':') && !mprHasDualNetworkStack()) {
+        endpoint = httpCreateEndpoint("::", port, NULL);
+        mprAddItem(state->server->endpoints, endpoint);
+        httpSecureEndpoint(endpoint, state->route->ssl);
+    }
+    return 0;
+#else
+    mprError("Configuration lacks SSL support");
+    return -1;
+#endif
+}
+
+
+/*
     Load name path
  */
 static int loadDirective(MaState *state, cchar *key, cchar *value)
@@ -2592,6 +2642,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitWorkers", limitWorkersDirective);
 
     maAddDirective(appweb, "Listen", listenDirective);
+    maAddDirective(appweb, "ListenSecure", listenSecureDirective);
 
     maAddDirective(appweb, "Load", loadDirective);
     maAddDirective(appweb, "Log", logDirective);

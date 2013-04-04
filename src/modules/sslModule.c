@@ -31,6 +31,7 @@ static void checkSsl(MaState *state)
 }
 
 
+#if UNUSED && MOVED
 /*
     ListenSecure ip:port
     ListenSecure ip
@@ -79,6 +80,7 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
     return -1;
 #endif
 }
+#endif /* UNUSED */
 
 
 static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *value)
@@ -285,7 +287,9 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *module)
         return MPR_ERR_CANT_CREATE;
     }
     appweb = httpGetContext(http);
+#if UNUSED && MOVED
     maAddDirective(appweb, "ListenSecure", listenSecureDirective);
+#endif
     maAddDirective(appweb, "SSLEngine", sslEngineDirective);
     maAddDirective(appweb, "SSLCACertificateFile", sslCaCertificateFileDirective);
     maAddDirective(appweb, "SSLCACertificatePath", sslCaCertificatePathDirective);
