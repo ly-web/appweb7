@@ -162,7 +162,7 @@ askUser() {
         if [ "$installbin" = "Y" ] ; then
             runDaemon=`yesno "Start $PRODUCT automatically at system boot" $runDaemon`
             HTTP_PORT=`ask "Enter the HTTP port number" "$HTTP_PORT"`
-            # SSL_PORT=`ask "Enter the SSL port number" "$SSL_PORT"`
+            SSL_PORT=`ask "Enter the SSL port number" "$SSL_PORT"`
             # username=`ask "Enter the user account for $PRODUCT" "$username"`
             # groupname=`ask "Enter the user group for $PRODUCT" "$groupname"`
         else
@@ -176,7 +176,7 @@ askUser() {
             if [ "$installbin" = "Y" ] ; then
                 echo -e "    Start automatically at system boot: $runDaemon"
                 echo -e "    HTTP port number: $HTTP_PORT"
-                # echo -e "    SSL port number: $SSL_PORT"
+                echo -e "    SSL port number: $SSL_PORT"
                 # echo -e "    Username: $username"
                 # echo -e "    Groupname: $groupname"
             fi
@@ -319,9 +319,9 @@ installFiles() {
 
 patchConfiguration() {
     if [ $OS = windows ] ; then
-        echo -e "Documents web\nListen ${HTTP_PORT}\nset LOG_DIR log\nset CACHE_DIR cache" >"${ETC_PREFIX}/install.conf"
+        echo -e "Documents web\nListen ${HTTP_PORT}\nListenSecure ${SSL_PORT}\nset LOG_DIR log\nset CACHE_DIR cache" >"${ETC_PREFIX}/install.conf"
     else
-        echo -e "Documents ${WEB_PREFIX}\nListen ${HTTP_PORT}\nset LOG_DIR ${LOG_PREFIX}\nset CACHE_DIR ${CACHE_PREFIX}" >"${ETC_PREFIX}/install.conf"
+        echo -e "Documents ${WEB_PREFIX}\nListen ${HTTP_PORT}\nListenSecure ${SSL_PORT}\nset LOG_DIR ${LOG_PREFIX}\nset CACHE_DIR ${CACHE_PREFIX}" >"${ETC_PREFIX}/install.conf"
     fi
 }
 

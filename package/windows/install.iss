@@ -15,7 +15,8 @@ ArchitecturesInstallIn64BitMode=x64
 
 [Code]
 var
-	PortPage: TInputQueryWizardPage;
+	HttpPage: TInputQueryWizardPage;
+	SslPage: TInputQueryWizardPage;
 	WebDirPage: TInputDirWizardPage;
 
 procedure InitializeWizard();
@@ -25,10 +26,15 @@ begin
 	WebDirPage.Add('');
 	WebDirPage.values[0] := ExpandConstant('{sd}') + '\appweb\web';
 
-	PortPage := CreateInputQueryPage(wpSelectComponents, 'HTTP Port', 'Primary TCP/IP Listen Port for HTTP Connections',
+	HttpPage := CreateInputQueryPage(wpSelectComponents, 'HTTP Port', 'Primary TCP/IP Listen Port for HTTP Connections',
 		'Please specify the TCP/IP port on which Appweb should listen for HTTP requests.');
-	PortPage.Add('HTTP Port:', False);
-	PortPage.values[0] := '80';
+	HttpPage.Add('HTTP Port:', False);
+	HttpPage.values[0] := '80';
+
+	SslPage := CreateInputQueryPage(wpSelectComponents, 'SSL Port', 'Primary TCP/IP Listen Port for HTTP Connections',
+		'Please specify the TCP/IP port on which Appweb should listen for HTTPS (SSL) requests.');
+	SslPage.Add('HTTP Port:', False);
+	SslPage.values[0] := '443';
 end;
 
 
@@ -137,7 +143,7 @@ begin
   app := ExpandConstant('{app}');
   web := WebDirPage.values[0];
   documents := ExtractRelativePath(app + '\', web);
-  conf := 'Documents "' + documents + '"' + Chr(10) + 'Listen ' + PortPage.values[0] + Chr(10) + 'set LOG_DIR "log"' + Chr(10) + 'set CACHE_DIR "cache"' + Chr(10);
+  conf := 'Documents "' + documents + '"' + Chr(10) + 'Listen ' + HttpPage.values[0] + Chr(10) + 'ListenSecure ' + SslPage.values[0] + Chr(10) + 'set LOG_DIR "log"' + Chr(10) + 'set CACHE_DIR "cache"' + Chr(10);
   SaveStringToFile(ExpandConstant('{app}\install.conf'), ExpandConstant(conf), False);
 end;
 
@@ -154,13 +160,13 @@ end;
 
 function GetPort(Param: String): String;
 begin
-  Result := PortPage.Values[0];
+  Result := HttpPage.Values[0];
 end;
 
 
 function GetSSL(Param: String): String;
 begin
-  Result := '443';
+  Result := SslPage.Values[0];
 end;
 
 
