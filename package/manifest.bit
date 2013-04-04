@@ -235,6 +235,11 @@ Bit.load({
                 set:        'core',
 
             },{
+                from:       [ 'src/server/self.crt', 'src/server/self.key' ], 
+                to:         '${etc}/',
+                set:        'core',
+
+            },{
                 from:       'src/server/php.ini',
                 to:         '${etc}/',
                 set:        'php',
