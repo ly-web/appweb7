@@ -15,8 +15,8 @@ ArchitecturesInstallIn64BitMode=x64
 
 [Code]
 var
-	HttpPage: TInputQueryWizardPage;
 	SslPage: TInputQueryWizardPage;
+	HttpPage: TInputQueryWizardPage;
 	WebDirPage: TInputDirWizardPage;
 
 procedure InitializeWizard();
