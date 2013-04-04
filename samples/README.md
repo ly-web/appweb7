@@ -1,27 +1,31 @@
-Embedthis Appweb Samples.
+Embedthis Appweb Samples
 ===
-
-The full product documentation is supplied in HTML format under the doc
-directory. This is also available online at:
-
-  http://embedthis.com/products/appweb/doc/index.html
 
 These samples are configured to use an installed Appweb to provide the
 appweb.h header and libappweb library at /usr/local/lib/apppweb.
 
 The following samples are available:
 
-* simpleClient        Http client
-* simpleEsp           Simple ESP  web framework sample
-* simpleHandler       Simple Appweb URL handler
-* simpleModule        Simple Appweb loadable module
-* simpleServer        Simple Http server
-* spyFilter           Simple Http server
-* typicalServer       A more fully featured server main program
+* chroot-config     Configuring a secure chroot jail for the server
+* simple-action     Action callback. Binding C function to URI.
+* simple-client     Http client
+* simple-esp        Simple ESP web framework sample
+* simple-handler    Simple Appweb URL handler
+* simple-module     Simple Appweb loadable module
+* simple-server     Simple Http server
+* spy-fliter        Simple HTTP pipeline filter
+* typical-server    A more fully featured server main program
 
 ### C++ Samples
-* cppHandler          Simple Appweb URL handler in C++
-* cppModule           Simple Appweb loadable module in C++
+* cpp-handler       Simple Appweb handler in C++
+* cpp-module        Simple Appweb loadable module in C++
+
+### Documentation
+
+The full product documentation is supplied in HTML format under the doc
+directory. This is also available online at:
+
+  http://embedthis.com/products/appweb/doc/index.html
 
 Licensing
 ---
