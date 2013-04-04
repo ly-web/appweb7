@@ -69,17 +69,17 @@
             <p>This document provides step-by-step instructions for configuring SSL in Appweb. If you are unfamiliar
             with SSL, please read the <a href="sslOverview.html">SSL Overview</a> first.</p><a id="sslQuickStart"></a>
             <h2 class="section">SSL Quick Start</h2>
-            <p>The default binary installation of Appweb will support SSL on port 4443 for all network interfaces. You
-            can immediately test SSL access to documents by using the <b>https://</b> scheme and <b>4443</b> as the
-            port. For example, to access the home page using SSL, use this URL in your browser:</p>
+            <p>The default binary installation of Appweb will support SSL for all network interfaces. You
+            can immediately test SSL access to documents by using the <b>https://</b> scheme. 
+            For example, to access the home page using SSL, use this URL in your browser:</p>
             <pre>
-https://127.0.0.1:4443/index.html
+https://localhost/index.html
 </pre>
             <h3>Self-Signed Certificate</h3>
-            <p>Appweb is shipped with a self-signed certificate to identify the web server. This certificate is
-            suitable for testing purposes only and your browser will issue a warning when you access the server. For
-            production use, you should obtain your own service certificate from signing authorities such as <a href=
-            "http://www.verisign.com">Verisign</a>.</p><a id="sslConfigurationDirectives"></a>
+            <p>Appweb is shipped with a self-signed certificate to identify the web server.</p>
+            <p><b>SECURITY WARNING</b>: This certificate is suitable for testing purposes only and 
+            your browser will issue a warning when you access the server. For
+            production use, you should obtain your own service certificate from signing authorities such as <a href="http://www.verisign.com">Verisign</a>.</p><a id="sslConfigurationDirectives"></a>
             <h2 class="section">SSL Configuration Directives</h2>
             <p>Appweb uses several configuration file directives to control SSL and manage secure access to the server.
             These directives can be specified in the Default Server section or in a Virtual Host section. </p>
@@ -100,18 +100,18 @@ https://127.0.0.1:4443/index.html
             <h2 class="section">SSL Configuration Example</h2>
             <p>Consider the default Appweb SSL configuration in the appweb.conf configuration file:</p>
             <pre>
-SSLCertificateFile "server.crt"
-SSLCertificateKeyFile "server.key.pem"
+SSLCertificateFile "self.crt"
+SSLCertificateKeyFile "self.key"
 ListenSecure 443
 </pre>
-            <p>This set of directives enables SSL on port 4443 for all network interfaces and uses the default supplied
+            <p>This set of directives enables SSL on port 443 for all network interfaces and uses the default supplied
                 self-signed certificate to identify the server.</p>
             <p>The <a href="dir/ssl.html#listenSecure">ListenSecure</a> directive instructs Appweb to process requests
-                from all interfaces on port 4443 using current SSL configuration.</p>
+                from all interfaces on port 443 using current SSL configuration.</p>
             <p>The <a href="dir/ssl.html#sslCertificateFile">SSLCertificateFile</a> directive specifies the server
             certificate to use and the <a href="dir/ssl.html#sslCertificateKeyFile">SSLCertificateKeyFile</a> directive
             specifies the server private key for signing.</p>
-            <p><b>SECURITY WARNING</b>: You must regenerate the server certificate and server key before using this
+            <p><b>SECURITY WARNING</b>: You must obtain or generate a SSL certificate before using this
             example in a production environment.</p>
             <p>The server key file is a PEM encoded private key. You may supply either an encrypted private key or a
             decrypted private key. If you use an encrypted private key, the server will prompt you for a pass-phrase to
