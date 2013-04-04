@@ -2053,6 +2053,8 @@ endif
 	chmod 755 "$(BIT_WEB_PREFIX)/test/test.py"
 	mkdir -p "$(BIT_ETC_PREFIX)"
 	cp src/server/mime.types $(BIT_ETC_PREFIX)/mime.types
+	cp src/server/self.crt $(BIT_ETC_PREFIX)/self.crt
+	cp src/server/self.key $(BIT_ETC_PREFIX)/self.key
 ifeq ($(BIT_PACK_PHP),1)
 	cp src/server/php.ini $(BIT_ETC_PREFIX)/php.ini
 endif
