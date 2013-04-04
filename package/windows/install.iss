@@ -31,9 +31,9 @@ begin
 	HttpPage.Add('HTTP Port:', False);
 	HttpPage.values[0] := '80';
 
-	SslPage := CreateInputQueryPage(wpSelectComponents, 'SSL Port', 'Primary TCP/IP Listen Port for HTTP Connections',
+	SslPage := CreateInputQueryPage(wpSelectComponents, 'SSL Port', 'SSL TCP/IP Listen Port for Secure Connections',
 		'Please specify the TCP/IP port on which Appweb should listen for HTTPS (SSL) requests.');
-	SslPage.Add('HTTP Port:', False);
+	SslPage.Add('SSL Port:', False);
 	SslPage.values[0] := '443';
 end;
 
@@ -139,11 +139,15 @@ var
   web: String;
   documents: String;
   conf: String;
+  http: String;
+  ssl: String;
 begin
   app := ExpandConstant('{app}');
+  http := HttpPage.values[0];
+  ssl := SslPage.values[0];
   web := WebDirPage.values[0];
   documents := ExtractRelativePath(app + '\', web);
-  conf := 'Documents "' + documents + '"' + Chr(10) + 'Listen ' + HttpPage.values[0] + Chr(10) + 'ListenSecure ' + SslPage.values[0] + Chr(10) + 'set LOG_DIR "log"' + Chr(10) + 'set CACHE_DIR "cache"' + Chr(10);
+  conf := 'Documents "' + documents + '"' + Chr(10) + 'Listen ' + http + Chr(10) + 'ListenSecure ' + ssl + Chr(10) + 'set LOG_DIR "log"' + Chr(10) + 'set CACHE_DIR "cache"' + Chr(10);
   SaveStringToFile(ExpandConstant('{app}\install.conf'), ExpandConstant(conf), False);
 end;
 
