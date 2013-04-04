@@ -8,7 +8,7 @@
 AppName=${settings.title}
 AppVerName=${settings.title} ${settings.version}-${settings.buildNumber}
 DefaultDirName={pf}\${settings.title}
-DefaultGroupName=${settings.product}
+DefaultGroupName=${settings.title}
 UninstallDisplayIcon={app}/${settings.product}.exe
 LicenseFile=LICENSE.TXT
 ArchitecturesInstallIn64BitMode=x64
