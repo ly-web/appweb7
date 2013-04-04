@@ -34,6 +34,7 @@ PUBLIC int maOpenConfig(MaState *state, cchar *path)
 
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
+    mprLog(2, "Open config file \"%s\"", mprGetAbsPath(state->filename));
     if ((state->file = mprOpenFile(mprGetRelPath(path, NULL), O_RDONLY | O_TEXT, 0444)) == 0) {
         mprError("Cannot open %s for config directives", path);
         return MPR_ERR_CANT_OPEN;
@@ -52,7 +53,7 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     assert(server);
     assert(path && *path);
 
-    mprLog(2, "Config File %s", path);
+    mprLog(2, "Using config file: \"%s\"", mprGetAbsPath(path));
 
     host = server->defaultHost;
     route = host->defaultRoute;

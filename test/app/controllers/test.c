@@ -46,7 +46,6 @@ static void login() {
 static void streamCallback(HttpConn *conn, int event, int arg)
 {
     HttpPacket      *packet;
-    cchar           *data;
 
     if (event == HTTP_EVENT_READABLE) {
         while ((packet = httpGetPacket(conn->readq)) != 0) {

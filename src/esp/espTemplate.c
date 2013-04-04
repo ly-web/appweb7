@@ -867,14 +867,27 @@ static cchar *getCompilerName(cchar *os, cchar *arch)
 
 static cchar *getVxCPU(cchar *arch)
 {
-    if (smatch(arch, "i386")) {
-        return "I80386";
-    } else if (smatch(arch, "i486")) {
-        return "I80486";
-    } else if (smatch(arch, "x86") | sends(arch, "86")) {
-        return "PENTIUM";
-    } 
-    return supper(arch);
+    char   *cpu, *family;
+
+    family = stok(sclone(arch), ":", &cpu);
+    if (!cpu || *cpu == '\0') {
+        if (smatch(family, "i386")) {
+            cpu = "I80386";
+        } else if (smatch(family, "i486")) {
+            cpu = "I80486";
+        } else if (smatch(family, "x86") | sends(family, "86")) {
+            cpu = "PENTIUM";
+        } else if (scaselessmatch(family, "mips")) {
+            cpu = "MIPS32";
+        } else if (scaselessmatch(family, "arm")) {
+            cpu = "ARM7TDMI";
+        } else if (scaselessmatch(family, "ppc")) {
+            cpu = "PPC";
+        } else {
+            cpu = (char*) arch;
+        }
+    }
+    return supper(cpu);
 }
 
 

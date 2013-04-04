@@ -2066,14 +2066,14 @@ static bool findConfigFile(bool mvc)
     if (app->configFile == 0) {
         app->configFile = name;
     }
-    mprLog(1, "Probe for %s", app->configFile);
+    mprLog(1, "Probe for \"%s\"", app->configFile);
     if (!mprPathExists(app->configFile, R_OK)) {
         if (userPath) {
             fail("Cannot open config file %s", app->configFile);
             return 0;
         }
         for (path = mprGetCurrentPath(); path; path = nextPath) {
-            mprLog(1, "Probe for %s", path);
+            mprLog(1, "Probe for \"%s\"", path);
             if (mprPathExists(mprJoinPath(path, name), R_OK)) {
                 if (chdir(path) < 0) {
                     fail("Cannot change directory to %s", path);
@@ -2090,7 +2090,7 @@ static bool findConfigFile(bool mvc)
         if (!mvc) {
             if (!app->configFile) {
                 app->configFile = mprJoinPath(mprGetAppDir(), sfmt("esp-%s.conf", BIT_PRODUCT));
-                mprLog(1, "Probe for %s", app->configFile);
+                mprLog(1, "Probe for \"%s\"", app->configFile);
                 if (!mprPathExists(app->configFile, R_OK)) {
                     fail("Cannot open config file %s", app->configFile);
                     return 0;

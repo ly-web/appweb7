@@ -354,6 +354,7 @@ PUBLIC int maSetPlatform(cchar *platform)
     if (maParsePlatform(platform, &junk, &junk, &junk) < 0) {
         return MPR_ERR_BAD_ARGS;
     }
+    mprLog(1, "Using platform \"%s\"", platform);
     appweb->platformDir = dir;
     appweb->platform = platform;
     return 0;
