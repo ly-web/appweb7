@@ -1,5 +1,5 @@
 /*
-    simpleServer.c - Embed the AppWeb server in a simple multi-threaded C language application.
+    simple-server.c - Embed the AppWeb server in a simple multi-threaded C language application.
   
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
@@ -14,9 +14,9 @@ MAIN(simpleServer, int argc, char** argv, char **envp)
 {
     /*
         This will create and run the web server described by the 
-        simpleServer.conf configuration file.
+        appweb.conf configuration file.
      */
-    return maRunWebServer("simpleServer.conf");
+    return maRunWebServer("appweb.conf");
 }
 
 /*

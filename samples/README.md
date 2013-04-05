@@ -2,23 +2,26 @@ Embedthis Appweb Samples
 ===
 
 These samples are configured to use an installed Appweb to provide the
-appweb.h header and libappweb library at /usr/local/lib/apppweb.
+appweb.h header and libappweb library at /usr/local/lib/apppweb. To build
+the samples, you will need to install the Bit build tool from:
+
+    http://embedthis.com/downloads/bit/download.ejs
 
 The following samples are available:
 
-* chroot-config     Configuring a secure chroot jail for the server
+* chroot-config     Configuring a secure chroot jail for the server.
 * simple-action     Action callback. Binding C function to URI.
-* simple-client     Http client
-* simple-esp        Simple ESP web framework sample
-* simple-handler    Simple Appweb URL handler
-* simple-module     Simple Appweb loadable module
-* simple-server     Simple Http server
-* spy-fliter        Simple HTTP pipeline filter
-* typical-server    A more fully featured server main program
+* simple-client     Http client.
+* simple-esp        Simple ESP web framework sample.
+* simple-handler    Simple Appweb URL handler.
+* simple-module     Simple Appweb loadable module.
+* simple-server     Simple Http server.
+* spy-fliter        Simple HTTP pipeline filter.
+* typical-server    A more fully featured server main program.
 
 ### C++ Samples
-* cpp-handler       Simple Appweb handler in C++
-* cpp-module        Simple Appweb loadable module in C++
+* cpp-handler       Simple Appweb handler in C++.
+* cpp-module        Simple Appweb loadable module in C++.
 
 ### Documentation
 
