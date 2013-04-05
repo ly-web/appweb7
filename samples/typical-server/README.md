@@ -1,7 +1,7 @@
-Simple Server Sample
+Tyical Server Sample
 ===
 
-This sample shows how to embed Appweb into a main program using a one-line embedding API.
+This sample shows how to embed Appweb using the full embedding API.
 
 Requirements
 ---
@@ -20,9 +20,12 @@ Code:
 ---
 * server.c - Main program
 * appweb.conf - Appweb server configuration file
+* auth.conf - User/Password/Role authorization file
+* esp.conf - ESP compiler rules
 * index.html - web page to serve
-* start.bit - Bit build instructions
+* cache - Cached content directory
+* web - Web content to serve
 
 See Also:
 ---
-* [typical-server - Full embedding API](../typical-server/README.md)
+* [simple-server - Simple one-line embedding API](../simple-server/README.md)
