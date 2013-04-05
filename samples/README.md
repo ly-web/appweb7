@@ -15,7 +15,7 @@ The following samples are available:
 * simple-esp        Simple ESP web framework sample.
 * simple-handler    Simple Appweb URL handler.
 * simple-module     Simple Appweb loadable module.
-* [simple-server](simple-handler/README.md)     Simple Http server.
+* [simple-server](simple-server/README.md)     Simple Http server.
 * spy-fliter        Simple HTTP pipeline filter.
 * typical-server    A more fully featured server main program.
 
