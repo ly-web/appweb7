@@ -1,7 +1,7 @@
 Simple Server Sample
 ===
 
-This sample shows how to create a simple web server using a one-line embedding API.
+This sample shows how to embed Appweb into a main program using a one-line embedding API.
 
 Requirements
 ---
@@ -18,6 +18,11 @@ To run:
 
 Code:
 ---
-* source.c - Main program
+* server.c - Main program
 * appweb.conf - Appweb server configuration file
 * index.html - web page to serve
+* start.bit - Bit build instructions
+
+See Also:
+---
+* [typical-server Full embedding API](../typical-server/README.md)

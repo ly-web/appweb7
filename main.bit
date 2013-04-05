@@ -51,7 +51,7 @@ Bit.load({
         /*
             Name and path of the appweb config file. Defaults to "./appweb.conf" if empty.
          */
-        configFile: '',
+        configFile: 'appweb.conf',
 
         /*
             Enable a debug build with debug symbols and without optimization

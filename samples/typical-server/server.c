@@ -1,5 +1,5 @@
 /**
-    typicalServer.c  -- AppWeb main program
+    typical-server.c  -- AppWeb main program
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
 
@@ -66,7 +66,7 @@ static void usageError();
     #define BIT_SERVER_ROOT mprGetCurrentPath()
 #endif
 #ifndef BIT_CONFIG_FILE
-    #define BIT_CONFIG_FILE NULL
+    #define BIT_CONFIG_FILE "appweb.conf"
 #endif
 
 #ifndef BIT_APPWEB_PATH
@@ -348,7 +348,7 @@ static int findAppwebConf()
             }
         }
         if (!mprPathExists(app->configFile, R_OK)) {
-            mprError("Cannot open config file %s", app->configFile);
+            mprError("Cannot open config file \"%s\"", app->configFile);
             return MPR_ERR_CANT_OPEN;
         }
     }
