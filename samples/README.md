@@ -9,19 +9,19 @@ the samples, you will need to install the Bit build tool from:
 
 The following samples are available:
 
-* chroot-config     Configuring a secure chroot jail for the server.
-* simple-action     Action callback. Binding C function to URI.
-* simple-client     Http client.
-* simple-esp        Simple ESP web framework sample.
-* simple-handler    Simple Appweb URL handler.
-* simple-module     Simple Appweb loadable module.
-* [simple-server](simple-server/README.md)     Simple Http server.
-* spy-fliter        Simple HTTP pipeline filter.
-* typical-server    A more fully featured server main program.
+* [chroot-config](chroot-config/README.md)      Configuring a secure chroot jail for the server.
+* [simple-action](simple-action/README.md)      Action callback. Binding C function to URI.
+* [simple-client](simple-client/README.md)      Http client.
+* [simple-esp](simple-esp/README.md)            Simple ESP web framework sample.
+* [simple-handler](simple-handler/README.md)    Simple Appweb URL handler.
+* [simple-module](simple-module/README.md)      Simple Appweb loadable module.
+* [simple-server](simple-server/README.md)      Simple Http server.
+* [spy-fliter](spy-filter/README.md)            Simple HTTP pipeline filter.
+* [typical-server](typical-server/README.md)    A more fully featured server main program.
 
 ### C++ Samples
-* cpp-handler       Simple Appweb handler in C++.
-* cpp-module        Simple Appweb loadable module in C++.
+* [cpp-handler](cpp-handler/README.md)          Simple Appweb handler in C++.
+* [cpp-module](cpp-module/README.md)            Simple Appweb loadable module in C++.
 
 ### Documentation
 
