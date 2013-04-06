@@ -5,8 +5,8 @@ These samples are configured to use an installed Appweb to provide the
 appweb.h header and libappweb library at /usr/local/lib/apppweb. To build
 the samples, you will need to install Appweb and the Bit build tool from:
 
-    Appweb - [http://embedthis.com/downloads/appweb/download.ejs](http://embedthis.com/downloads/appweb/download.ejs)
-    Bit - [http://embedthis.com/downloads/bit/download.ejs](http://embedthis.com/downloads/bit/download.ejs)
+* Appweb - [http://embedthis.com/downloads/appweb/download.ejs](http://embedthis.com/downloads/appweb/download.ejs)
+* Bit - [http://embedthis.com/downloads/bit/download.ejs](http://embedthis.com/downloads/bit/download.ejs)
 
 The following samples are available:
 
@@ -29,7 +29,7 @@ The following samples are available:
 The full product documentation is supplied in HTML format under the doc
 directory. This is also available online at:
 
-  http://embedthis.com/products/appweb/doc/index.html
+* http://embedthis.com/products/appweb/doc/index.html
 
 Licensing
 ---
