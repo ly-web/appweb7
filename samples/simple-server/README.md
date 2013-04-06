@@ -20,9 +20,9 @@ Code:
 ---
 * [server.c](server.c) - Main program
 * [appweb.conf](appweb.conf) - Appweb server configuration file
-* [index.html](index.html) - web page to serve
+* [index.html](index.html) - Web page to serve
 * [start.bit](start.bit) - Bit build instructions
 
 See Also:
 ---
-* [typical-server - Full embedding API](../typical-server/README.md)
+* [typical-server - Fully featured server and embedding API](../typical-server/README.md)
