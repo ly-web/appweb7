@@ -22,7 +22,7 @@
 
 /********************************** Locals ************************************/
 /*
-    Global application object. Provides the top level roots of all data objects for the GC.
+    Global application object. Provides the top level roots of all data objects for the Garbage collector.
  */
 typedef struct AppwebApp {
     Mpr         *mpr;
@@ -59,20 +59,6 @@ static void usageError();
     static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
 #endif
 
-/*
-    If customize.h does not define, set reasonable defaults.
- */
-#ifndef BIT_SERVER_ROOT
-    #define BIT_SERVER_ROOT mprGetCurrentPath()
-#endif
-#ifndef BIT_CONFIG_FILE
-    #define BIT_CONFIG_FILE "appweb.conf"
-#endif
-
-#ifndef BIT_APPWEB_PATH
-    #define BIT_APPWEB_PATH "appweb"
-#endif
-
 /*********************************** Code *************************************/
 
 MAIN(appweb, int argc, char **argv, char **envp)
@@ -85,7 +71,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     jail = 0;
     verbose = 0;
     logSpec = 0;
-    argv[0] = BIT_APPWEB_PATH;
 
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
@@ -100,8 +85,8 @@ MAIN(appweb, int argc, char **argv, char **envp)
 
     app->mpr = mpr;
     app->workers = -1;
-    app->configFile = BIT_CONFIG_FILE;
-    app->home = BIT_SERVER_ROOT;
+    app->configFile = "appweb.conf";;
+    app->home = mprGetCurrentPath();
     app->documents = app->home;
     argc = mpr->argc;
     argv = (char**) mpr->argv;
@@ -141,12 +126,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
                 usageError();
             }
             app->home = mprGetAbsPath(argv[++argind]);
-#if KEEP
             if (chdir(app->home) < 0) {
                 mprError("%s: Cannot change directory to %s", mprGetAppName(), app->home);
                 exit(4);
             }
-#endif
 
         } else if (smatch(argp, "--log") || smatch(argp, "-l")) {
             if (argind >= argc) {
@@ -478,7 +461,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
     }
     return 0;
 }
-#endif /* BIT_HOST_UNIX */
+#endif /* BIT_UNIX_LIKE */
 
 
 /*

@@ -142,12 +142,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
                 usageError();
             }
             app->home = sclone(argv[++argind]);
-#if KEEP
             if (chdir(app->home) < 0) {
                 mprError("%s: Cannot change directory to %s", mprGetAppName(), app->home);
                 exit(4);
             }
-#endif
 
         } else if (smatch(argp, "--log") || smatch(argp, "-l")) {
             if (argind >= argc) {
@@ -492,7 +490,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
 #endif /* !BIT_ROM */
     return 0;
 }
-#endif /* BIT_HOST_UNIX */
+#endif /* BIT_UNIX_LIKE */
 
 
 #if BIT_WIN_LIKE
