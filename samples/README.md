@@ -3,9 +3,10 @@ Embedthis Appweb Samples
 
 These samples are configured to use an installed Appweb to provide the
 appweb.h header and libappweb library at /usr/local/lib/apppweb. To build
-the samples, you will need to install the Bit build tool from:
+the samples, you will need to install Appweb and the Bit build tool from:
 
-    http://embedthis.com/downloads/bit/download.ejs
+    Appweb - http://embedthis.com/downloads/appweb/download.ejs
+    Bit - http://embedthis.com/downloads/bit/download.ejs
 
 The following samples are available:
 
