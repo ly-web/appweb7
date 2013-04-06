@@ -18,10 +18,10 @@ To run:
 
 Code:
 ---
-* server.c - Main program
-* appweb.conf - Appweb server configuration file
-* index.html - web page to serve
-* start.bit - Bit build instructions
+* [server.c](server.c) - Main program
+* [appweb.conf](appweb.conf) - Appweb server configuration file
+* [index.html](index.html) - web page to serve
+* [start.bit](start.bit) - Bit build instructions
 
 See Also:
 ---
