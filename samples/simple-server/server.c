@@ -7,14 +7,16 @@
 /******************************* Includes *****************************/
 
 #include    "appweb.h"
+#include    "MacTypes.h"
 
 /********************************* Code *******************************/
-
-MAIN(simpleServer, int argc, char** argv, char **envp)
+/*
+    MAIN is used to compile on platforms like VxWorks that have different calling conventions
+ */
+MAIN(simpleServer, int argc, char **argv, char **envp)
 {
     /*
-        This will create and run the web server described by the 
-        appweb.conf configuration file.
+        This will create and run the web server described by the appweb.conf configuration file.
      */
     return maRunWebServer("appweb.conf");
 }

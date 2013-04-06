@@ -1,5 +1,5 @@
 /*
-    simpleModule.c - Create a simple AppWeb dynamically loadable module
+    cppModule.cpp - Create a simple AppWeb dynamically loadable module in C++
   
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
@@ -13,11 +13,12 @@
     Parse any module specific configuration directives from the appweb.conf config file.
  */
 
-static int customConfigKey(MaState *state, cchar *key, cchar *value)
+static int customConfig(MaState *state, cchar *key, cchar *value)
 {
     /*
         Do something with value.
      */
+    printf("%s = %s\n", key, value);
     return 0;
 }
 
@@ -37,11 +38,14 @@ int maSimpleModuleInit(Http *http, MprModule *mp)
     /*
         Create a stage so we can process configuration file data
      */
-    if ((stage = httpCreateStage(http, "simpleModule", 0, mp)) == 0) {
+    if ((stage = httpCreateStage(http, "simpleModule", HTTP_STAGE_MODULE, mp)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
+    /*
+        Create an appweb.conf custom directive
+    */
     appweb = (MaAppweb*) httpGetContext(http);
-    maAddDirective(appweb, "CustomConfigKey", customConfigKey);
+    maAddDirective(appweb, "CustomConfig", customConfig);
     return 0;
 }
 

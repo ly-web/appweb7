@@ -1,5 +1,5 @@
 /*
-    simpleHandler.cpp - Create a simple AppWeb request handler
+    cppHandler.cpp - Create a simple AppWeb request handler in C++
   
     This sample demonstrates creating a request handler to process requests.
   
@@ -21,24 +21,19 @@ static void readySimple(HttpQueue *q)
 
     conn = q->conn;
     rx = conn->rx;
-    
-    httpSetHeader(conn, 0, "Last-Modified", conn->http->currentDate);
-
-    /*
-        Create the empty header packet. This will be filled in by the downstream network connector stage.
-     */
-    httpPutForService(q, httpCreateHeaderPacket(), 0);
+    httpSetHeader(conn, "Custom-Date", conn->http->currentDate);
 
     /*
         Generate some dynamic data. If you generate a lot, this will buffer up to a configured maximum. 
         If that limit is exceeded, the packet will be sent downstream and the response headers will be created.
      */
-    httpWrite(q, "Hello World");
+    httpWrite(q, "Hello World\n");
 
     /*
-        Send an end of data packet
+        Call finalize when the response to the client is complete. Call httpFlushOutput if the response is 
+        incomplete and you wish to immediately send any buffered output.
      */
-    httpPutForService(q, httpCreateEndPacket(), 1);
+    httpFinalizeOutput(conn);
 }
 
 

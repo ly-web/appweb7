@@ -1,7 +1,8 @@
-Simple Server Sample
+cppHandler Sample
 ===
 
-This sample shows how to embed Appweb into a main program using a one-line embedding API.
+This sample shows how to create an Appweb handler module. Handlers receive to client requests and
+generate responses.
 
 Requirements
 ---
@@ -10,7 +11,7 @@ Requirements
 
 To build:
 ---
-    bit 
+    bit
 
 To run:
 ---
@@ -23,10 +24,10 @@ The server listens on port 8080. Browse to:
 Code:
 ---
 * [server.c](server.c) - Main program
+* [cppHandler.c](cppHandler.c) - Simple handler
 * [appweb.conf](appweb.conf) - Appweb server configuration file
-* [index.html](index.html) - Web page to serve
 * [start.bit](start.bit) - Bit build instructions
 
 See Also:
 ---
-* [typical-server - Fully featured server and embedding API](../typical-server/README.md)
+* [simple-handler - C-Language handler](../simple-handler/README.md)

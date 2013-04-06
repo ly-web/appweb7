@@ -1,5 +1,5 @@
 /*
-    simpleHandler.c - Create a simple AppWeb request handler
+    simple.c - Create a simple AppWeb request handler
   
     This sample demonstrates creating a request handler to process requests.
   
@@ -19,25 +19,19 @@ static void readySimple(HttpQueue *q)
     HttpConn    *conn;
 
     conn = q->conn;
-
-    httpSetHeader(conn, 0, "Last-Modified", conn->http->currentDate);
+    httpSetHeader(conn, "Custom-Date", conn->http->currentDate);
     httpSetStatus(conn, 200);
-
-    /*
-        Create the empty header packet. This will be filled in by the downstream network connector stage.
-     */
-    httpPutForService(q, httpCreateHeaderPacket(conn), 0);
 
     /*
         Generate some dynamic data. If you generate a lot, this will buffer up to a configured maximum. 
         If that limit is exceeded, the packet will be sent downstream and the response headers will be created.
      */
-    httpWrite(q, "Hello World");
-
+    httpWrite(q, "Hello World\n");
     /*
-        Send an end of data packet
-     */
-    httpPutForService(q, httpCreateEndPacket(conn), 1);
+        Call finalize when the response to the client is complete. Call httpFlushOutput if the response is 
+        incomplete and you wish to immediately send any buffered output.
+    */
+    httpFinalizeOutput(conn);
 }
 
 
@@ -45,14 +39,14 @@ static void readySimple(HttpQueue *q)
 static void incomingSimple(HttpQueue *q, HttpPacket *packet)
 {
     /*
-        Do something with the incoming data in packet and then free the packet.
+        Do something with the incoming data packet
      */
-    mprLog(0, "Data in packet is %s", mprGetBufStart(packet->content));
+    printf("Data in packet is %s\n", mprGetBufStart(packet->content));
 }
 
 
 /*
-    Module load initialization. This is called when the module is first loaded. The module name is "Simple".
+    Module load initialization. This is called when the module is first loaded.
  */
 int maSimpleHandlerInit(Http *http, MprModule *module)
 {

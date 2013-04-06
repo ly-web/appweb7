@@ -1,17 +1,16 @@
 /*
-	start.bit - Bit file for the simple-module sample
+    start.bit - Bit file for the simple-module sample
  */
 Bit.load({
     settings: {
         requires: ['appweb'],
-        version: '1.0.0',
     },
     targets: {
-		libmod_simple: {
-			type: 'lib',
-			sources: ['simple.c'],
+        libmod_simple: {
+            type: 'lib',
+            sources: ['simpleModule.c'],
             depends: ['appweb'],
-		}
+        }
         server: {
             type:    'exe',
             sources: 'server.c',

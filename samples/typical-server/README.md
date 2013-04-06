@@ -16,6 +16,10 @@ To run:
 ---
     bit run
 
+The server listens on port 80. Browse to: 
+ 
+     http://localhost/
+
 Code:
 ---
 * [server.c](server.c) - Main program

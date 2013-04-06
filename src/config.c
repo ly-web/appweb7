@@ -58,10 +58,11 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     host = server->defaultHost;
     route = host->defaultRoute;
 
-    httpSetRouteVar(route, "LOG_DIR", BIT_VAPP_PREFIX "/bin");
+    httpSetRouteVar(route, "LOG_DIR", ".");
     httpSetRouteVar(route, "INC_DIR", BIT_VAPP_PREFIX "/inc");
     httpSetRouteVar(route, "SPL_DIR", BIT_SPOOL_PREFIX);
     httpSetRouteVar(route, "BIN_DIR", mprJoinPath(server->appweb->platformDir, "bin"));
+
 #if DEPRECATED || 1
     /* DEPRECATED */ httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
     /* DEPRECATED */ httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
@@ -779,7 +780,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
     backup = 0;
     path = 0;
     flags = 0;
-    
+
     for (option = gettok(sclone(value), &tok); option; option = gettok(tok, &tok)) {
         if (!path) {
             path = mprJoinPath(httpGetRouteVar(state->route, "LOG_DIR"), httpExpandRouteVars(state->route, option));

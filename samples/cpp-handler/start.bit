@@ -1,20 +1,23 @@
 /*
-	start.bit - Bit file for the cppHandler sample
+    start.bit - Bit file for the cpp-handler sample
  */
-
 Bit.load({
-    defaults: {
-        '+includes': [ '/usr/lib/appweb/latest/inc' ],
-        '+libpaths': [ '/usr/lib/appweb/latest/bin' ],
-        '+linker':   [ '-Wl,-rpath,/usr/lib/appweb/latest/bin' ],
+    settings: {
+        requires: ['appweb'],
     },
-	targets: {
-		cppHandler: {
-			type: 'lib',
-            path: 'cppModule${SHOBJ}',
-			sources: ['*.cpp'],
-            '+libraries': [ 'appweb', 'http', 'mpr', 'mprssl' ],
-		}
-	},
+    targets: {
+        libmod_simple: {
+            type: 'lib',
+            sources: ['cppHandler.cpp'],
+            depends: ['appweb'],
+        }
+        server: {
+            type:    'exe',
+            sources: 'server.c',
+            depends: ['appweb'],
+        },
+        run: {
+            run: './server',
+        },
+    },
 })
-
