@@ -1,5 +1,5 @@
 /*
-    simpleModule.c - Create a simple AppWeb dynamically loadable module
+    simple-server.c - Embed the AppWeb server in a simple multi-threaded C language application.
   
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
@@ -9,38 +9,15 @@
 #include    "appweb.h"
 
 /********************************* Code *******************************/
-/* 
-    Parse any module specific configuration directives from the appweb.conf config file.
- */
 
-static int customConfigKey(MaState *state, cchar *key, cchar *value)
+MAIN(simpleServer, int argc, char** argv, char **envp)
 {
     /*
-        Do something with value.
+        This will create and run the web server described by the 
+        appweb.conf configuration file.
      */
-    return 0;
+    return maRunWebServer("appweb.conf");
 }
-
-
-/*
-    Module load initialization. This is called when the module is first loaded.
- */
-int maSimpleModuleInit(Http *http, MprModule *mp)
-{
-    HttpStage   *stage;
-    MaAppweb    *appweb;
-
-    /*
-        Create a stage so we can process configuration file data
-     */
-    if ((stage = httpCreateStage(http, "simpleModule", HTTP_STAGE_MODULE, mp)) == 0) {
-        return MPR_ERR_CANT_CREATE;
-    }
-    appweb = httpGetContext(http);
-    maAddDirective(appweb, "CustomConfigKey", customConfigKey);
-    return 0;
-}
-
 
 /*
     @copy   default

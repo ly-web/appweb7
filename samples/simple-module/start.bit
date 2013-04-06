@@ -1,18 +1,24 @@
 /*
-	start.bit - Bit file for the simpleModule sample
+	start.bit - Bit file for the simple-module sample
  */
-
 Bit.load({
-    defaults: {
-        '+includes': [ '/usr/lib/appweb/latest/inc' ],
-        '+libpaths': [ '/usr/lib/appweb/latest/bin' ],
-        '+linker':   [ '-Wl,-rpath,/usr/lib/appweb/latest/bin' ],
+    settings: {
+        requires: ['appweb'],
+        version: '1.0.0',
     },
-	targets: {
-		simpleModule: {
+    targets: {
+		libmod_simple: {
 			type: 'lib',
-			sources: ['*.c'],
-            '+libraries': [ 'appweb', 'http', 'mpr', 'mprssl' ],
+			sources: ['simple.c'],
+            depends: ['appweb'],
 		}
-	},
+        server: {
+            type:    'exe',
+            sources: 'server.c',
+            depends: ['appweb'],
+        },
+        run: {
+            run: './server',
+        },
+    },
 })

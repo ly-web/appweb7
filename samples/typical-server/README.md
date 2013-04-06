@@ -24,6 +24,8 @@ Code:
 * [esp.conf](esp.conf) - ESP compiler rules
 * [index.html](index.html) - web page to serve
 * [web](web) - Web content to serve
+* [start.bit](start.bit) - Bit build instructions
+
 
 See Also:
 ---

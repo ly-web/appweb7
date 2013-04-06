@@ -10,7 +10,6 @@
             --home path             # Set the home working directory
             --log logFile:level     # Log to file file at verbosity level
             --name uniqueName       # Name for this instance
-            --threads maxThreads    # Set maximum worker threads
             --version               # Output version information
             -v                      # Same as --log stderr:2
  */
@@ -23,18 +22,16 @@
 /********************************** Locals ************************************/
 /*
     Global application object. Provides the top level roots of all data objects for the Garbage collector.
+    Appweb uses garbage collection and all memory must have a reference to stop being reclaimed by the GC.
  */
 typedef struct AppwebApp {
     Mpr         *mpr;
     MaAppweb    *appweb;
     MaServer    *server;
-    MprSignal   *traceToggle;
-    MprSignal   *statusCheck;
     char        *documents;
     char        *home;
     char        *configFile;
     char        *pathVar;
-    int         workers;
 } AppwebApp;
 
 static AppwebApp *app;
@@ -49,11 +46,6 @@ static int createEndpoints(int argc, char **argv);
 static void usageError();
 
 #if BIT_UNIX_LIKE
-    #if defined(SIGINFO) || defined(SIGRTMIN)
-        static void statusCheck(void *ignored, MprSignal *sp);
-        static void addSignals();
-    #endif
-    static void traceHandler(void *ignored, MprSignal *sp);
     static int  unixSecurityChecks(cchar *program, cchar *home);
 #elif BIT_WIN_LIKE
     static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
@@ -77,6 +69,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
     }
     mprSetAppName(BIT_PRODUCT, BIT_TITLE, BIT_VERSION);
 
+    /*
+        Allocate the top level application object. ManageApp is the GC manager function and is called
+        by the GC to mark references in the app object.
+     */
     if ((app = mprAllocObj(AppwebApp, manageApp)) == NULL) {
         exit(2);
     }
@@ -84,7 +80,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     mprAddStandardSignals();
 
     app->mpr = mpr;
-    app->workers = -1;
     app->configFile = "appweb.conf";;
     app->home = mprGetCurrentPath();
     app->documents = app->home;
@@ -143,12 +138,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
             }
             mprSetAppName(argv[++argind], 0, 0);
 
-        } else if (smatch(argp, "--threads")) {
-            if (argind >= argc) {
-                usageError();
-            }
-            app->workers = atoi(argv[++argind]);
-
         } else if (smatch(argp, "--verbose") || smatch(argp, "-v")) {
             verbose++;
 
@@ -167,10 +156,14 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (logSpec) {
         mprStartLogging(logSpec, 1);
         mprSetCmdlineLogging(1);
+
     } else if (verbose) {
         mprStartLogging(sfmt("stderr:%d", verbose + 1), 1);
         mprSetCmdlineLogging(1);
     }
+    /*
+        Start the multithreaded portable runtime (MPR)
+     */
     if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
         mprDestroy(MPR_EXIT_DEFAULT);
@@ -185,9 +178,15 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (jail && changeRoot(jail) < 0) {
         exit(8);
     }
+    /*
+        Open the sockets to listen on
+     */
     if (createEndpoints(argc - argind, &argv[argind]) < 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
+    /*
+        Start HTTP services
+     */
     if (maStartAppweb(app->appweb) < 0) {
         mprError("Cannot start HTTP service, exiting.");
         exit(9);
@@ -211,8 +210,6 @@ static void manageApp(AppwebApp *app, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(app->appweb);
         mprMark(app->server);
-        mprMark(app->traceToggle);
-        mprMark(app->statusCheck);
         mprMark(app->documents);
         mprMark(app->configFile);
         mprMark(app->pathVar);
@@ -244,13 +241,13 @@ static int changeRoot(cchar *jail)
 }
 
 
+/*
+    If doing a static build, must now reference required modules to force the linker to include them.
+    Don't actually call init routines here. They will be called via maConfigureServer.
+ */
 static void loadStaticModules()
 {
 #if BIT_STATIC
-    /*
-        If doing a static build, must now reference required modules to force the linker to include them.
-        Don't actually call init routines here. They will be called via maConfigureServer.
-     */
 #if BIT_PACK_CGI
     mprNop(maCgiHandlerInit);
 #endif
@@ -267,6 +264,9 @@ static void loadStaticModules()
 }
 
 
+/*
+    Create the listening endoints
+ */
 static int createEndpoints(int argc, char **argv)
 {
     cchar   *endpoint;
@@ -305,16 +305,13 @@ static int createEndpoints(int argc, char **argv)
             }
         }
     }
-    if (app->workers >= 0) {
-        mprSetMaxWorkers(app->workers);
-    }
-#if BIT_UNIX_LIKE
-    addSignals();
-#endif
     return 0;
 }
 
 
+/*
+    Find the appweb.conf file
+ */
 static int findAppwebConf()
 {
     cchar   *userPath;
@@ -357,7 +354,6 @@ static void usageError(Mpr *mpr)
         "    --home directory       # Change to directory to run\n"
         "    --log logFile:level    # Log to file file at verbosity level\n"
         "    --name uniqueName      # Unique name for this instance\n"
-        "    --threads maxThreads   # Set maximum worker threads\n"
         "    --verbose              # Same as --log stderr:2\n"
         "    --version              # Output version information\n\n",
         mprGetAppTitle(), name, name, name);
@@ -384,48 +380,6 @@ static int checkEnvironment(cchar *program)
 
 
 #if BIT_UNIX_LIKE
-static void addSignals()
-{
-    app->traceToggle = mprAddSignalHandler(SIGUSR2, traceHandler, 0, 0, MPR_SIGNAL_AFTER);
-
-    /*
-        Signal to dump memory stats. Must configure with ./configure --set memoryCheck=true
-     */
-#if defined(SIGINFO)
-    app->statusCheck = mprAddSignalHandler(SIGINFO, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
-#elif defined(SIGRTMIN)
-    app->statusCheck = mprAddSignalHandler(SIGRTMIN, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
-#endif
-}
-
-
-/*
-    SIGUSR2 will toggle trace from level 2 to 6
- */
-static void traceHandler(void *ignored, MprSignal *sp)
-{
-    int     level;
-
-    level = mprGetLogLevel() > 2 ? 2 : 6;
-    mprLog(0, "Change log level to %d", level);
-    mprSetLogLevel(level);
-}
-
-
-/*
-    SIGINFO will dump memory stats
-    For detailed memory stats, use: ./configure --set memoryCheck=true
- */
-static void statusCheck(void *ignored, MprSignal *sp)
-{
-    mprRequestGC(MPR_GC_COMPLETE);
-    mprRawLog(0, "%s", httpStatsReport(0));
-    if (MPR->heap->track) {
-        mprPrintMem("", 1);
-    }
-}
-
-
 /*
     Security checks. Make sure we are staring with a safe environment
  */
