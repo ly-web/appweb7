@@ -17,7 +17,7 @@
     #define BIT_COMPANY "Embedthis"
 #endif
 #ifndef BIT_CONFIG_FILE
-    #define BIT_CONFIG_FILE ""
+    #define BIT_CONFIG_FILE "appweb.conf"
 #endif
 #ifndef BIT_DEBUG
     #define BIT_DEBUG 1
