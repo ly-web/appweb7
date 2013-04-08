@@ -80,7 +80,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     mprAddStandardSignals();
 
     app->mpr = mpr;
-    app->configFile = "appweb.conf";;
+    app->configFile = sclone("appweb.conf");
     app->home = mprGetCurrentPath();
     app->documents = app->home;
     argc = mpr->argc;

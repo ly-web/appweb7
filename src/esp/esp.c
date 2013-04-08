@@ -538,7 +538,7 @@ static void initialize()
     app->currentDir = mprGetCurrentPath();
     app->binDir = mprGetAppDir();
     app->wwwDir = mprJoinPath(app->binDir, "esp-www");
-    httpCreate(HTTP_SERVER_SIDE);
+    httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
 }
 
 

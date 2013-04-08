@@ -1,0 +1,30 @@
+/*
+    start.bit - Bit file for the simple-server sample
+ */
+
+Bit.load({
+    settings: {
+        requires: ['appweb'],
+    },
+    targets: {
+        server: {
+            type:    'exe',
+            sources: '*.c',
+            depends: [ 'appweb', 'precompile'],
+        },
+        /* 
+            Pre-compile the esp pages so the compiler is not required inside the jail
+         */
+        precompile: {
+            run: "esp -q compile",
+        },
+        run: {
+            depends: ['server'],
+            run: 'sudo ./server',
+        },
+        cleanCache: {
+            type: 'clean',
+            action: "rm('cache/*')",
+        },
+    },
+})

@@ -5,6 +5,7 @@
 
     usage: appweb [options] 
     or:    appweb [options] [documents] [[ip][:port] ...]
+            --chroot dir            # Change root to dir (unix only)
             --config configFile     # Use given config file instead 
             --debugger              # Disable timeouts to make debugging easier
             --home path             # Set the home working directory
@@ -256,6 +257,8 @@ static int changeRoot(cchar *jail)
             mprError("%s: Cannot change change root directory to %s, errno %d", mprGetAppName(), jail, errno);
         }
         return MPR_ERR_CANT_INITIALIZE;
+    } else {
+        mprLog(MPR_CONFIG, "Chroot to: \"%s\"", jail);
     }
 #endif
     return 0;

@@ -337,6 +337,7 @@ typedef struct Http {
     uint64          totalRequests;          /**< Total requests served */
 
     int             activeVMs;              /**< Number of ejs VMs */
+    int             flags;                  /**< Open flags */
     int             underAttack;            /**< Under DOS attack */
     void            *context;               /**< Embedding context */
     MprTicks        currentTime;            /**< When currentDate was last calculated (ticks) */
@@ -365,6 +366,7 @@ typedef struct Http {
  */
 #define HTTP_CLIENT_SIDE    0x1             /**< Initialize the client-side support */
 #define HTTP_SERVER_SIDE    0x2             /**< Initialize the server-side support */
+#define HTTP_UTILITY        0x4             /**< Http engine for utilities (esp) */
 
 /**
     Create a Http service object
