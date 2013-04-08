@@ -733,7 +733,8 @@ Name            Method  Pattern                      Target
                     <tr>
                         <td class="pivot">Example</td>
                         <td>
-<pre>EspUpdate on</pre>
+                            <pre>EspUpdate on</pre>
+                        </td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -741,6 +742,8 @@ Name            Method  Pattern                      Target
                             <p>The EspUpdate directive controls whether to reload updated content. If EspUpdate is 
                             <em>on</em>, then ESP will reload any updated module. It will also recompile updated
                             controller source files, web pages and views.</p>
+                            <p>If EspUpdate is <em>off</em>, ESP will load content from cache once but will not reload
+                            or compile ESP source.</p>
                             <p>When reloading, ESP first waits for all active ESP requests to complete before unloading
                             old versions of the module being updated. When all is quiet, it reloads the new module
                             &mdash; recompiling if required.</p>

@@ -446,7 +446,7 @@ PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value)
 
 /*
     Test if a module has been updated (is stale).
-    This will unload the module if it is stale and loaded 
+    This will unload the module if it loaded but stale.
  */
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
 {

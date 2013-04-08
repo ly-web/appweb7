@@ -376,6 +376,10 @@ static char *joinLine(cchar *str, ssize *lenp)
             *bp++ = '\\';
             *bp++ = 'n';
             *bp++ = '\\';
+        } else if (*cp == '\r') {
+            *bp++ = '\\';
+            *bp++ = 'r';
+            continue;
         } else if (*cp == '\\' && cp[1] != '\\') {
             bquote++;
         }
@@ -942,10 +946,6 @@ static cchar *getMappedArch(cchar *arch)
     return arch;
 }
 
-//  UNUSED
-#ifndef BIT_64
-#define BIT_64 0
-#endif
 
 static cchar *getWinSDK()
 {

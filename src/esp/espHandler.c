@@ -196,7 +196,7 @@ static int runAction(HttpConn *conn)
     EspRoute    *eroute;
     EspReq      *req;
     EspAction   action;
-    char        *key;
+    char        *key, *canonical;
     int         updated;
 
     rx = conn->rx;
@@ -218,13 +218,14 @@ static int runAction(HttpConn *conn)
         req->controllerName = route->sourceName;
     }
     req->controllerPath = mprJoinPath(eroute->controllersDir, req->controllerName);
+    key = mprJoinPath(eroute->controllersDir, rx->target);
 
     if (eroute->appModuleName) {
         if (!loadApp(conn, &updated)) {
             return 0;
         }
 #if !BIT_STATIC
-    } else if (eroute->update) {
+    } else if (eroute->update || !mprLookupKey(esp->actions, key)) {
         char    *source;
         int     recompile = 0;
 
@@ -233,7 +234,8 @@ static int runAction(HttpConn *conn)
 #if VXWORKS
         source = mprTrimPathDrive(source);
 #endif
-        req->cacheName = mprGetMD5WithPrefix(source, slen(source), "controller_");
+        canonical = mprGetRelPath(source, route->dir);
+        req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "controller_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->controllerPath, R_OK)) {
@@ -242,11 +244,16 @@ static int runAction(HttpConn *conn)
             return 0;
         }
         lock(req->esp);
-        if (espModuleIsStale(req->controllerPath, req->module, &recompile)) {
-            /*  WARNING: GC yield here */
-            if (recompile && !espCompile(conn, req->controllerPath, req->module, req->cacheName, 0)) {
-                unlock(req->esp);
-                return 0;
+        if (eroute->update) {
+            /*
+                Test if the source has been updated. This will unload prior modules if stale
+             */ 
+            if (espModuleIsStale(req->controllerPath, req->module, &recompile)) {
+                /*  WARNING: GC yield here */
+                if (recompile && !espCompile(conn, req->controllerPath, req->module, req->cacheName, 0)) {
+                    unlock(req->esp);
+                    return 0;
+                }
             }
         }
         if (mprLookupModule(req->controllerPath) == 0) {
@@ -260,8 +267,7 @@ static int runAction(HttpConn *conn)
             mprSetThreadData(esp->local, conn);
             if (mprLoadModule(mp) < 0) {
                 unlock(req->esp);
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, 
-                    "Cannot load compiled esp module for %s", req->controllerPath);
+                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", req->controllerPath);
                 return 0;
             }
             updated = 1;
@@ -269,7 +275,6 @@ static int runAction(HttpConn *conn)
         unlock(req->esp);
 #endif
     }
-    key = mprJoinPath(eroute->controllersDir, rx->target);
     if ((action = mprLookupKey(esp->actions, key)) == 0) {
         req->controllerPath = mprJoinPath(eroute->controllersDir, req->controllerName);
         key = sfmt("%s/missing", mprGetPathDir(req->controllerPath));
@@ -282,10 +287,6 @@ static int runAction(HttpConn *conn)
             }
         }
     }
-#if UNUSED
-    req->action = action;
-#endif
-    
     if (rx->flags & HTTP_POST) {
         if (!espCheckSecurityToken(conn)) {
             return 1;
@@ -309,6 +310,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     EspRoute    *eroute;
     EspReq      *req;
     EspViewProc view;
+    char        *canonical;
     int         updated;
     
     rx = conn->rx;
@@ -334,7 +336,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             return;
         }
 #if !BIT_STATIC
-    } else if (eroute->update) {
+    } else if (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(req->source))) {
         cchar   *source;
         int     recompile = 0;
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
@@ -342,7 +344,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 #if VXWORKS
         source = mprTrimPathDrive(source);
 #endif
-        req->cacheName = mprGetMD5WithPrefix(source, slen(source), "view_");
+        canonical = mprGetRelPath(source, req->route->dir);
+        req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "view_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->source, R_OK)) {
@@ -351,23 +354,23 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             return;
         }
         lock(req->esp);
-        if (espModuleIsStale(req->source, req->module, &recompile)) {
-            /* WARNING: this will allow GC */
-            if (recompile && !espCompile(conn, req->source, req->module, req->cacheName, 1)) {
-                unlock(req->esp);
-                return;
+        if (eroute->update) {
+            if (espModuleIsStale(req->source, req->module, &recompile)) {
+                /* WARNING: this will allow GC */
+                if (recompile && !espCompile(conn, req->source, req->module, req->cacheName, 1)) {
+                    unlock(req->esp);
+                    return;
+                }
             }
         }
         if (mprLookupModule(req->source) == 0) {
             MprModule   *mp;
             req->entry = sfmt("esp_%s", req->cacheName);
-            //  MOB - who keeps reference to module?
             if ((mp = mprCreateModule(req->source, req->module, req->entry, req->route)) == 0) {
                 unlock(req->esp);
                 httpMemoryError(conn);
                 return;
             }
-            //  MOB - this should return an error msg
             mprSetThreadData(esp->local, conn);
             if (mprLoadModule(mp) < 0) {
                 unlock(req->esp);
@@ -383,7 +386,6 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         return;
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
-    //  MOB - does this need a lock
     mprSetThreadData(esp->local, conn);
     (view)(conn);
 }
@@ -586,9 +588,6 @@ static void setMvcDirs(EspRoute *eroute, HttpRoute *route)
 static void manageReq(EspReq *req, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-#if UNUSED
-        mprMark(req->action);
-#endif
         mprMark(req->cacheName);
         mprMark(req->commandLine);
         mprMark(req->controllerName);
