@@ -275,6 +275,7 @@ static int runAction(HttpConn *conn)
         unlock(req->esp);
 #endif
     }
+    key = mprJoinPath(eroute->controllersDir, rx->target);
     if ((action = mprLookupKey(esp->actions, key)) == 0) {
         req->controllerPath = mprJoinPath(eroute->controllersDir, req->controllerName);
         key = sfmt("%s/missing", mprGetPathDir(req->controllerPath));
