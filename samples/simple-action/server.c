@@ -18,18 +18,32 @@ static void myaction(HttpConn *conn)
     HttpQueue   *q;
 
     q = conn->writeq;
+    /*
+        Set the HTTP response status
+     */
+    httpSetStatus(conn, 200);
+
+    /*
+        Add desired headers. "Set" will overwrite, add will create if not already defined.
+     */
+    httpAddHeaderString(conn, "Content-Type", "text/plain");
+    httpSetHeaderString(conn, "Cache-Control", "no-cache");
+
     httpWrite(q, "<html><title>simpleAction</title><body>\r\n");
     httpWrite(q, "<p>Name: %s</p>\n", httpGetParam(conn, "name", "-"));
     httpWrite(q, "<p>Address: %s</p>\n", httpGetParam(conn, "address", "-"));
     httpWrite(q, "</body></html>\r\n");
 
+    /*
+        Call finalize output and close the request.
+        Delay closing if you want to do asynchronous output and close later.
+     */
+    httpFinalize(conn);
+
 #if POSSIBLE
     /*
         Useful things to do in actions
      */
-    httpSetStatus(conn, 200);
-    httpAddHeaderString(conn, "Content-Type", "text/plain");
-    httpSetHeaderString(conn, "Cache-Control", "no-cache");
     httpRedirect(conn, 302, "/other-uri");
     httpError(conn, 409, "My message : %d", 5);
 #endif
@@ -56,11 +70,11 @@ int main(int argc, char **argv, char **envp)
     mprAddRoot(appweb);
 
     server = maCreateServer(appweb, 0);
-    if (maParseConfig(server, "simpleAction.conf", 0) < 0) {
-        mprError("Cannot parse the config file %s", "simpleAction.conf");
+    if (maParseConfig(server, "appweb.conf", 0) < 0) {
+        mprError("Cannot parse the config file %s", "appweb.conf");
         return -1;
     }
-    httpDefineAction("/myaction", myaction);
+    httpDefineAction("/action/myaction", myaction);
 
     if (maStartServer(server) < 0) {
         mprError("Cannot start the web server");
