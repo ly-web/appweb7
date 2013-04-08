@@ -132,7 +132,7 @@ typedef struct EspRoute {
     MprTicks        lifespan;               /**< Default cache lifespan */
     int             update;                 /**< Auto-update modified ESP source */
     int             keepSource;             /**< Preserve generated source */
-	int				showErrors;				/**< Send server errors back to client */
+    int             showErrors;             /**< Send server errors back to client */
 
     Edi             *edi;                   /**< Default database for this route */
 } EspRoute;

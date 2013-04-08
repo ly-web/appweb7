@@ -164,7 +164,7 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
         return;
     }
     esp = MPR->espService;
-	path = mprGetPortablePath(mprJoinPath(route->dir, path));
+    path = mprGetPortablePath(mprJoinPath(route->dir, path));
     mprAddKey(esp->views, path, view);
 }
 

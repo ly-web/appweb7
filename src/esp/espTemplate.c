@@ -91,7 +91,7 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
     buf = mprCreateBuf(-1, -1);
 
     for (cp = command; *cp; ) {
-		if (*cp == '$') {
+        if (*cp == '$') {
             if (matchToken(&cp, "${ARCH}")) {
                 /* Target architecture (x86|mips|arm|x64) */
                 mprPutStringToBuf(buf, arch);
@@ -246,17 +246,17 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
         mprSetCmdSearchPath(cmd, eroute->searchPath);
     }
     //  WARNING: GC will run here
-	if (mprRunCmd(cmd, req->commandLine, env, &out, &err, -1, 0) != 0) {
-		if (err == 0 || *err == '\0') {
-			/* Windows puts errors to stdout Ugh! */
-			err = out;
-		}
-		if (eroute->showErrors) {
-			httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot run command %s, error %s", req->commandLine, err);
-		} else {
-			mprError("ESP: Cannot run command %s, error %s", req->commandLine, err);
-			httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot compile view");
-		}
+    if (mprRunCmd(cmd, req->commandLine, env, &out, &err, -1, 0) != 0) {
+        if (err == 0 || *err == '\0') {
+            /* Windows puts errors to stdout Ugh! */
+            err = out;
+        }
+        mprError("ESP: Cannot run command %s, error %s", req->commandLine, err);
+        if (eroute->showErrors) {
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot run command %s, error %s", req->commandLine, err);
+        } else {
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot compile view");
+        }
         return MPR_ERR_CANT_COMPLETE;
     }
     return 0;

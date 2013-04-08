@@ -883,11 +883,11 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
         trace("Run", app->command);
     }
     //  WARNING: GC will run here
-	if (mprRunCmd(cmd, app->command, env, &out, &err, -1, 0) != 0) {
-		if (err == 0 || *err == '\0') {
-			/* Windows puts errors to stdout Ugh! */
-			err = out;
-		}
+    if (mprRunCmd(cmd, app->command, env, &out, &err, -1, 0) != 0) {
+        if (err == 0 || *err == '\0') {
+            /* Windows puts errors to stdout Ugh! */
+            err = out;
+        }
         fail("Cannot run command: \n%s\nError: %s", app->command, err);
         return MPR_ERR_CANT_COMPLETE;
     }

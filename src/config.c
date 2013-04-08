@@ -1370,7 +1370,7 @@ static int loadModulePathDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     /*
-		 Search path is: USER_SEARCH : exeDir : /usr/lib/appweb/bin
+         Search path is: USER_SEARCH : exeDir : /usr/lib/appweb/bin
      */
     sep = MPR_SEARCH_SEP;
     path = sjoin(value, sep, mprGetAppDir(), sep, BIT_VAPP_PREFIX "/bin", NULL);
@@ -2395,20 +2395,20 @@ PUBLIC MaState *maPopState(MaState *state)
 static void manageState(MaState *state, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-		mprMark(state->appweb);
-		mprMark(state->http);
-		mprMark(state->server);
-		mprMark(state->host);
-		mprMark(state->auth);
-		mprMark(state->route);
-		mprMark(state->file);
-		mprMark(state->limits);
-		mprMark(state->key);
-		mprMark(state->configDir);
-		mprMark(state->filename);
-		mprMark(state->prev);
-		mprMark(state->top);
-		mprMark(state->current);
+        mprMark(state->appweb);
+        mprMark(state->http);
+        mprMark(state->server);
+        mprMark(state->host);
+        mprMark(state->auth);
+        mprMark(state->route);
+        mprMark(state->file);
+        mprMark(state->limits);
+        mprMark(state->key);
+        mprMark(state->configDir);
+        mprMark(state->filename);
+        mprMark(state->prev);
+        mprMark(state->top);
+        mprMark(state->current);
     }
 }
 
@@ -2531,7 +2531,7 @@ static char *gettok(char *s, char **tok)
         etok = NULL;
     } else {
         *etok++ = '\0';
-	    for (; isspace((uchar) *etok); etok++);  
+        for (; isspace((uchar) *etok); etok++);  
     }
     *tok = etok;
     return s;
