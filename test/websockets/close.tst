@@ -11,6 +11,9 @@ let ws = new WebSocket(WS)
 assert(ws)
 assert(ws.readyState == WebSocket.CONNECTING)
 ws.wait(WebSocket.OPEN, TIMEOUT)
+if (ws.readyState != WebSocket.OPEN) {
+    print("READY STATE", ws.readyState)
+}
 assert(ws.readyState == WebSocket.OPEN)
 
 ws.close()
