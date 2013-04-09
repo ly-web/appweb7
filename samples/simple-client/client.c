@@ -13,59 +13,15 @@
 
 MAIN(simpleClient, int argc, char **argv, char **envp)
 {
-    Http        *http;
-    HttpConn    *conn;
-    cchar       *content;
-    int         code;
+    int     code;
+    char    *response;
 
-    /* 
-       Create the Multithreaded Portable Runtime and start it.
-     */
-    mprCreate(argc, argv, 0);
-    mprStart();
-
-    /* 
-       Get a client http object to work with. We can issue multiple requests with this one object.
-       Add the conn as a root object so the GC won't collect it while we are using it.
-     */
-    http = httpCreate(HTTP_CLIENT_SIDE);
-    conn = httpCreateConn(http, NULL, NULL);
-    mprAddRoot(conn);
-
-    /* 
-       Open a connection to issue the GET. Then finalize the request output - this forces the request out.
-     */
-    if (httpConnect(conn, "GET", "http://www.embedthis.com/index.html", NULL) < 0) {
-        mprError("Can't get URL");
-        exit(2);
-    }
-    httpFinalizeOutput(conn);
-
-    /*
-        Wait for a response
-     */
-    if (httpWait(conn, HTTP_STATE_PARSED, 10000) < 0) {
-        mprError("No response");
-        exit(2);
-    }
-
-    /* 
-       Examine the HTTP response HTTP code. 200 is success.
-     */
-    code = httpGetStatus(conn);
+    code = maRunWebClient("GET", "http://www.embedthis.com/index.html", &response);
     if (code != 200) {
-        mprError("Server responded with code %d\n", code);
-        exit(1);
-    } 
-
-    /* 
-       Get the actual response content
-     */
-    content = httpReadString(conn);
-    if (content) {
-        mprPrintf("Server responded with: %s\n", content);
+        mprPrintf("Server error code %d\n", code);
+        return 255;
     }
-    mprDestroy(MPR_EXIT_DEFAULT);
+    printf("Server responded with: %s\n", response);
     return 0;
 }
 

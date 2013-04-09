@@ -68,7 +68,7 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
         Initialize and start the portable runtime services.
      */
     rc = MPR_ERR_CANT_CREATE;
-    if ((mpr = mprCreate(0, NULL, 0)) == 0) {
+    if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
         mprError("Cannot create the web server runtime");
     } else {
         if (mprStart(mpr) < 0) {
@@ -138,6 +138,58 @@ PUBLIC void maRestartServer(cchar *ip, int port)
     }
     httpStartEndpoint(endpoint);
     unlock(appweb->servers);
+}
+
+
+/*  
+    Run the web client to retrieve a URI
+    This will create the MPR and Http service on demand. As such, it is not the most
+    efficient way to run a web request.
+    @return HTTP status code or negative MPR error code. Returns a malloc string in response.
+ */
+PUBLIC int maRunWebClient(cchar *method, cchar *uri, char **response)
+{
+    Mpr         *mpr;
+    Http        *http;
+    HttpConn    *conn;
+    int         code;
+
+    if (response) {
+        *response = 0;
+    }
+    if ((mpr = mprCreate(0, NULL, 0)) == 0) {
+        mprError("Cannot create the MPR runtime");
+        return MPR_ERR_CANT_CREATE;
+    }
+    if (mprStart() < 0) {
+        mprError("Cannot start the web server runtime");
+        return MPR_ERR_CANT_INITIALIZE;
+    }
+    http = httpCreate(HTTP_CLIENT_SIDE);
+    conn = httpCreateConn(http, NULL, NULL);
+    mprAddRoot(conn);
+
+    /* 
+       Open a connection to issue the GET. Then finalize the request output - this forces the request out.
+     */
+    if (httpConnect(conn, method, uri, NULL) < 0) {
+        mprError("Can't get URL");
+        return MPR_ERR_CANT_CONNECT;
+    } else {
+        httpFinalizeOutput(conn);
+        if (httpWait(conn, HTTP_STATE_PARSED, 10000) < 0) {
+            mprError("No response");
+            return MPR_ERR_BAD_STATE;
+        } else {
+            code = httpGetStatus(conn);
+            *response = httpReadString(conn);
+            if (*response) {
+                *response = strdup(*response);
+            }
+        }
+    }
+    mprDestroy(MPR_EXIT_DEFAULT);
+    return code;
 }
 
 /*

@@ -329,6 +329,20 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags);
 PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents);
 
 /** 
+    Run a web client request
+    @description Create a web server configuration based on the supplied config file. This routine provides 
+        a one-line embedding of Appweb. If you don't want to use a config file, try the #maRunSimpleWebServer 
+        instead. 
+    @param method HTTP method to use. GET, POST, PUT, DELETE etc.
+    @param uri HTTP URI to request
+    @param response String reference to receive the response body.
+    @return Positive HTTP response code if the request completes. Otherwise a negative MPR error code.
+    @ingroup MaServer
+    @stability Prototype
+ */
+PUBLIC int maRunWebClient(cchar *method, cchar *uri, char **response);
+
+/** 
     Create and run a web server based on a configuration file
     @description Create a web server configuration based on the supplied config file. This routine provides 
         a one-line embedding of Appweb. If you don't want to use a config file, try the #maRunSimpleWebServer 
