@@ -72,6 +72,10 @@ static void openEsp(HttpQueue *q)
                 break;
             }
         }
+        if (!route) {
+            httpError(conn, 0, "Cannot find a suitable ESP route configuration in appweb.conf");
+            return;
+        }
         if (!eroute) {
             //  MOB - should be saved for future similar requests (locking too)
             eroute = allocEspRoute(route);

@@ -1,18 +1,19 @@
 /*
-	start.bit - Bit file for the simpleEsp sample
+    start.bit - Bit file for the simple-esp sample
  */
 
 Bit.load({
-    defaults: {
-        '+includes': [ '/usr/lib/appweb/latest/inc' ],
-        '+libpaths': [ '/usr/lib/appweb/latest/bin' ],
-        '+linker':   [ '-Wl,-rpath,/usr/lib/appweb/latest/bin' ],
+    settings: {
+        requires: ['appweb'],
     },
-	targets: {
-		simpleEsp: {
-			type: 'exe',
-			sources: ['*.c'],
-            '+libraries': [ 'appweb', 'http', 'mpr', 'mprssl', '/usr/lib/appweb/latest/lib/mod_esp${SHLIB}' ],
-		},
-	},
+    targets: {
+        server: {
+            type:    'exe',
+            sources: '*.c',
+            depends: ['appweb'],
+        },
+        run: {
+            run: 'sudo ./server',
+        },
+    },
 })

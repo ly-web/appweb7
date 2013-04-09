@@ -5,12 +5,13 @@
 Bit.load({
     targets: {
         samples: {
-            action: function () {
+            build: function () {
                 for each (sample in Path('.').files('**/start.bit')) {
                     trace('Sample', sample.dirname)
                     run('bit', {dir: sample.dirname, noio: true})
                 }
             }
+            enable: 'App.getenv("BUILD_KEY")',
         },
     },
 })
