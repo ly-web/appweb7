@@ -1,0 +1,20 @@
+/*
+    start.bit - Bit file for the typical-client sample
+ */
+
+Bit.load({
+    settings: {
+        requires: ['appweb'],
+        debug: false,
+    },
+    targets: {
+        client: {
+            type:    'exe',
+            sources: '*.c',
+            depends: ['appweb'],
+        },
+        run: {
+            run: './client',
+        },
+    },
+})

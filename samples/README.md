@@ -9,7 +9,9 @@ at /usr/local/lib/apppweb. To build the samples, you will need to install Appweb
 
 The following samples are available:
 
-* [chroot-config](chroot-config/README.md)      Configuring a secure chroot jail for the server.
+* [chroot-server](chroot-server/README.md)      Configuring a secure chroot jail for the server.
+* [max-server](max-server/README.md)            Maximum configuration in appweb.conf.
+* [min-server](min-server/README.md)            Minimum configuration in appweb.conf.
 * [simple-action](simple-action/README.md)      Action callback. Binding C function to URI.
 * [simple-client](simple-client/README.md)      Http client.
 * [simple-esp](simple-esp/README.md)            Simple ESP web framework sample.

@@ -1,0 +1,23 @@
+/*
+    start.bit - Bit file for the typical-server sample
+ */
+
+Bit.load({
+    settings: {
+        requires: ['appweb'],
+    },
+    targets: {
+        server: {
+            type:    'exe',
+            sources: '*.c',
+            depends: ['appweb'],
+        },
+        cleanup: {
+            type: 'clean',
+            action: "rm('error.log*')",
+        },
+        run: {
+            run: 'sudo ./server',
+        },
+    },
+})
