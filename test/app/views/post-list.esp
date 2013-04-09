@@ -1,6 +1,7 @@
 <h1>Post List</h1>
 
 <% 
+{
     EdiGrid *grid = readTable("post");
     table(grid, "{ \
     data-click: '@edit', \
@@ -9,5 +10,6 @@
         title: { header: 'TITLE' }, \
         body: { header: 'BODY' }, \
     } \
-"); %>
+"); 
+} %>
 <% buttonLink("New Post", "@init", 0); %>

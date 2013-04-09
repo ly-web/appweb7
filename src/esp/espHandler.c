@@ -238,7 +238,7 @@ static int runAction(HttpConn *conn)
 #if VXWORKS
         source = mprTrimPathDrive(source);
 #endif
-        canonical = mprGetRelPath(source, route->dir);
+        canonical = mprGetPortablePath(mprGetRelPath(source, route->dir));
         req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "controller_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
@@ -349,7 +349,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 #if VXWORKS
         source = mprTrimPathDrive(source);
 #endif
-        canonical = mprGetRelPath(source, req->route->dir);
+        canonical = mprGetPortablePath(mprGetRelPath(source, req->route->dir));
         req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "view_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 

@@ -921,7 +921,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     } else {
         prefix = "view_";
     }
-    canonical = mprGetRelPath(source, route->dir);
+    canonical = mprGetPortablePath(mprGetRelPath(source, route->dir));
     app->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), prefix);
     app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, app->cacheName, BIT_SHOBJ));
     defaultLayout = (eroute->layoutsDir) ? mprJoinPath(eroute->layoutsDir, "default.esp") : 0;

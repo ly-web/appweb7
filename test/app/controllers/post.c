@@ -3,7 +3,7 @@
  */
 #include "esp.h"
 
-static void common() {
+static void common(HttpConn *conn) {
 }
 
 static void post_create() { 
