@@ -202,7 +202,14 @@ Bit.load({
                 ],
                 to:         '${abin}/',
                 set:        'libs',
-                packs:      'esp',
+                enable:     "bit.platform.os == 'windows' && !bit.settings.static",
+
+            },{ from:        [
+                    '${BIN}/libmprssl${SHLIB}',
+                ],
+                to:         '${abin}/',
+                set:        'libs',
+                packs:      'ssl',
                 enable:     "bit.platform.os == 'windows' && !bit.settings.static",
 
             },{

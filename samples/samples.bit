@@ -7,6 +7,9 @@ Bit.load({
         samples: {
             action: function () {
                 for each (sample in Path('.').files('**/start.bit')) {
+                    if (bit.platform.os == 'windows' && sample.contains('chroot-server')) {
+                        continue
+                    }
                     trace('Sample', sample.dirname)
                     run('bit', {dir: sample.dirname, noio: true})
                 }
