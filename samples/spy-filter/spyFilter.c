@@ -1,8 +1,7 @@
 /*
     spyFilter.c - Eavesdrop on input data
 
-    This sample filter examines form data for name/password fields. If the name and password match
-    an AUTH variable is defined. Form data is passed onto the handler.
+    This sample filter peeks at input data and sets a response header if the word "hello" is found.
   
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -15,34 +14,34 @@
 
 static int matchSpy(HttpConn *conn, HttpRoute *route, int dir)
 {
-    return (conn->rx->form && strncmp(conn->rx->pathInfo, "/", 1) == 0);
+    if (conn->rx->form && smatch(conn->rx->pathInfo, "/index.html")) {
+        return HTTP_ROUTE_OK;
+    }
+    return HTTP_ROUTE_REJECT;
 }
 
 
 static void incomingSpy(HttpQueue *q, HttpPacket *packet)
 {
-    cchar   *name, *password;
-    
     if (packet->content == 0) {
         /*
-            Create form vars for all the input data
+            End of input
          */
-        name = httpGetParam(q->conn, "name", 0);
-        password = httpGetParam(q->conn, "password", 0);
-        if (name && password && smatch(name, "admin") && smatch(password, "secret")) {
-            httpSetHeader(q->conn, "AUTH", "authorized");
-        }
-        if (q->first) {
-            httpPutPacketToNext(q, q->first);
+        if (q->first && q->first->content && scontains(q->first->content->start, "hello")) {
+            httpSetHeader(q->conn, "X-Greeting", "found");
+        } else {
+            httpSetHeader(q->conn, "X-Greeting", "missing");
         }
         httpPutPacketToNext(q, packet);
+
     } else {
+        /* Join all input together to make scanning easier */
         httpJoinPacketForService(q, packet, 0);
     }
 }
 
 
-MprModule *SpyFilterInit(Http *http, MprModule *module)
+MprModule *maSpyFilterInit(Http *http, MprModule *module)
 {
     HttpStage     *filter;
 

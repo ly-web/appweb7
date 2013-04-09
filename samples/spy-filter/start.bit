@@ -1,0 +1,23 @@
+/*
+    start.bit - Bit file for the spyFilter sample
+ */
+Bit.load({
+    settings: {
+        requires: ['appweb'],
+    },
+    targets: {
+        libmod_spy: {
+            type: 'lib',
+            sources: ['spyFilter.c'],
+            depends: ['appweb'],
+        }
+        server: {
+            type:    'exe',
+            sources: 'server.c',
+            depends: ['appweb'],
+        },
+        run: {
+            run: './server',
+        },
+    },
+})
