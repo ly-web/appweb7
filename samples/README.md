@@ -19,6 +19,7 @@ The following samples are available:
 * [simple-module](simple-module/README.md)      Simple Appweb loadable module.
 * [simple-server](simple-server/README.md)      Simple Http server.
 * [spy-fliter](spy-filter/README.md)            Simple HTTP pipeline filter.
+* [tiny-server](tiny-server/README.md)          Configure Appweb to be tiny.
 * [typical-server](typical-server/README.md)    A more fully featured server main program.
 
 ### C++ Samples

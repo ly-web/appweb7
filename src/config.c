@@ -2442,6 +2442,8 @@ static int64 getnum(cchar *value)
         num = stoi(value) * 1024 * 1024;
     } else if (sends(value, "gb") || sends(value, "g")) {
         num = stoi(value) * 1024 * 1024 * 1024;
+    } else if (sends(value, "byte") || sends(value, "bytes")) {
+        num = stoi(value);
     } else {
         num = stoi(value);
     }
