@@ -208,3 +208,5 @@ test/sslconf/server.key
 error.log
 samples/*/server
 .pidfile
+samples/simple-client/client
+samples/cpp-handler/server
