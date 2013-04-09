@@ -20,9 +20,9 @@ To run:
 ---
     bit run
 
-The server listens on port 80. Browse to: 
+The server listens on port 8080. Browse to: 
  
-     http://localhost/
+     http://localhost:8080/
 
 Code:
 ---

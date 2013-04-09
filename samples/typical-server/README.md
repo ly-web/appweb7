@@ -16,15 +16,16 @@ To run:
 ---
     bit run
 
-The server listens on port 80. Browse to: 
+The server listens on port 8080. Browse to: 
  
-     http://localhost/
+     http://localhost:8080/
 
 Code:
 ---
 * [server.c](server.c) - Main program
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [auth.conf](auth.conf) - User/Password/Role authorization file
+* [cgi-bin](cgi-bin) - Directory for CGI programs
 * [esp.conf](esp.conf) - ESP compiler rules
 * [index.html](index.html) - web page to serve
 * [web](web) - Web content to serve
@@ -33,4 +34,5 @@ Code:
 
 See Also:
 ---
+* [min-server - Minimal server configuration](../min-server/README.md)
 * [simple-server - Simple one-line embedding API](../simple-server/README.md)
