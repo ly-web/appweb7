@@ -207,3 +207,4 @@ test/sslconf/server.csr
 test/sslconf/server.key
 error.log
 samples/*/server
+.pidfile
