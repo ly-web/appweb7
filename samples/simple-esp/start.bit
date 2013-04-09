@@ -13,7 +13,7 @@ Bit.load({
             depends: ['appweb'],
         },
         run: {
-            run: 'sudo ./server',
+            run: './server',
         },
     },
 })

@@ -20,7 +20,7 @@ Bit.load({
         },
         run: {
             depends: ['server'],
-            run: 'sudo ./server',
+            run: './server',
         },
         cleanCache: {
             type: 'clean',

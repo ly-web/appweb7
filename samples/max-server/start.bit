@@ -17,7 +17,7 @@ Bit.load({
             action: "rm('error.log*')",
         },
         run: {
-            run: 'sudo ./server',
+            run: './server',
         },
     },
 })
