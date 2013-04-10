@@ -225,22 +225,22 @@ Listen 443
 </pre>
             <a id="authStores"></a>
             <h2 class="section">Password Stores</h2>
-            <p>Appweb can retrieve passwords from the Unix system password database or from password text configuration 
+            <p>Appweb can retrieve passwords from the default system password database or from a text password configuration 
             file. Selection of the password store is controlled by the <a href="dir/auth.html#authStore">AuthStore</a>
-            directive.</p>
+            directive. For example:</p>
 <pre>
-AuthStore pam
+AuthStore system
 </pre>
-or 
+This selects the Unix system PAM password database.
 <pre>
-AuthStore internal
+AuthStore file
 User julie 9d8873a123eb506e7f8e84d1f2a26916 view
 </pre>
             <p>The Unix system password database is managed via the <a href="http://kb.iu.edu/data/anpn.html">PAM</a> 
-            interface. Appweb uses this interface when the <em>AuthStore pam</em> directive is used.</p>
-            <p>The <em>AuthStore internal</em> option specifies that passwords will be defined by the
+            interface. The Windows ActiveDirectory password store is not currently supported.</p>
+            <p>The <em>AuthStore file</em> option specifies that passwords will be defined by the
             <a href="dir/auth.html#user">User</a> directive and will be stored internally in Appweb.
-            The default password store for Appweb is internal. Typically, User directives are kept in a separate
+            The default password store for Appweb is "file". Typically, User directives are kept in a separate
             passwords are stored in a separate configuration file that is included from the <em>appweb.conf</em>
             master configuration file.</p>
 <pre>

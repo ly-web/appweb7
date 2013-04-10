@@ -183,7 +183,7 @@
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>AuthStore [internal | pam]</td>
+                        <td>AuthStore [file | system]</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -191,21 +191,21 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>AuthStore pam</td>
+                        <td>AuthStore system</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The AuthStore directive defines where Appweb can access user credentials for 
                             authenticating users and their passwords.</p>
-                            <p>The Internal authentication method utilizes users credentials defined via the 
+                            <p>The "file" authentication method uses users credentials defined via the 
                             <a href="#user">User</a> directive and then stored internally in Appweb. These User 
                             directives are typically stored in a separate authentication configuration file that is
                             included by <em>appweb.conf</em>. The <em>authpass</em> program can be used to create
                             encrypted User passwords in the authentication file.</p>
-                            <P>The Plugable Authentication Modules (PAM) method is available on Linux and Mac OS
-                            X only. The PAM method provides access to user credentials stored in the standard 
-                            operating systems password database.</p>
+                            <P>The "system" option selects the default system password database. On Unix, the 
+                            Plugable Authentication Modules (PAM) method is used. Windows ActiveDirectory is not yet 
+                            supported. </p>
                         </td>
                     </tr>
                 </tbody>
