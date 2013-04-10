@@ -41,7 +41,7 @@ Bit.load({
         company: 'Embedthis',
         version: '4.3.2',
         buildNumber: '0',
-        bit: '0.8.5',
+        bit: '0.8.6',
 
         /*
             Installation prefix set
