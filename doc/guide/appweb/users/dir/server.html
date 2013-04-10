@@ -39,13 +39,13 @@
                 <li><a href="#action">Action</a></li>
                 <li><a href="#addType">AddType</a></li>
                 <li><a href="#chroot">Chroot</a></li>
-                <li><a href="#group">GroupAccount</a></li>
+                <li><a href="#groupAccount">GroupAccount</a></li>
                 <li><a href="#home">Home</a></li>
                 <li><a href="#listen">Listen</a></li>
                 <li><a href="#protocol">Protocol</a></li>
                 <li><a href="#serverName">ServerName</a></li>
                 <li><a href="#typesConfig">TypesConfig</a></li>
-                <li><a href="#user">UserAccount</a></li>
+                <li><a href="#userAccount">UserAccount</a></li>
             </ul>
             <h1>See Also</h1>
             <ul>
@@ -164,12 +164,12 @@
                     <tr>
                         <td class="security">Security</td>
                         <td>A chroot jail enhances security by limiting system access should Appweb ever be compromised.
-                            When coupled with lowering the privilege for the <a href="#user">User</a> and 
-                            <a href="#group">Group</a> potential security exposures can be minimized.</td>
+                            When coupled with lowering the privilege for the <a href="#userAccount">UserAccount</a> and 
+                            <a href="#groupAccount">GroupAccount</a> potential security exposures can be minimized.</td>
                     </tr>
                 </tbody>
             </table>
-            <a name="group"></a>
+            <a name="groupAccount"></a>
             <h2>GroupAccount</h2>
             <table class="directive" title="directive">
                 <tbody>
@@ -187,7 +187,8 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>GroupAccount nobody</td>
+                        <td>GroupAccount nobody<br/>
+                        GroupAccount APPWEB</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -197,12 +198,10 @@
                             <p>It is important that you run Appweb with the lowest system privilege that will get the
                             job done. If any application is compromised, including Appweb, then the system will be
                             safest if the compromised application has as few privileges as possible.</p>
-                            <p>When Appweb starts it initially runs as root or administrator and then changes to the
-                            user account defined in the Appweb configuration file by the User directive. As installed,
-                            Appweb will be configured to run using the nobody account on Linux and in the guest account
-                            on Windows.</p>
-                            <p>If logged in as root or administrator, the fake name of _default_ will change group to www on
-                            Mac, nogroup on Linux and Administrator on Windows.</p>
+                            <p>When Appweb starts it initially runs as root or administrator and then changes account if a
+                            group account is defined in the Appweb configuration file by the GroupAccount directive.  </p>
+                            <p>If logged in as root or administrator, the pseudo name of APPWEB will change group to 
+                            _www on Mac, nogroup/nobody on Unix and Administrator on Windows.</p>
                         </td>
                     </tr>
                     <tr>
@@ -388,7 +387,7 @@
                 </tbody>
             </table>
             
-            <a id="user"></a>
+            <a id="userAccount"></a>
             <h2>UserAccount</h2>
             <table class="directive" title="directive">
                 <thead>
@@ -408,7 +407,8 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>UserAccount nobody</td>
+                        <td>UserAccount nobody<br/>
+                        UserAccount APPWEB</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -420,8 +420,8 @@
                             <p>The account name chosen for the UserAccount directive should have minimal privilege and should
                             not be able to read or modify any files outside the DocumentRoot or specified Alias
                             directories.</p>
-                            <p>If logged in as root or administrator, the fake name of _default_ will change user to www on
-                            Mac, nobody on Linux and Administrator on Windows.</p>
+                            <p>If logged in as root or administrator, the pseudo name of APPWEB will change user to _www on
+                            Mac OSX, nobody on Unix and Administrator on Windows.</p>
                         </td>
                     </tr>
                     <tr>

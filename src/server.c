@@ -401,7 +401,8 @@ PUBLIC void maGetUserGroup(MaAppweb *appweb)
 
 PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
-    if (smatch(newUser, "_default_")) {
+    //  DEPRECATE _default_
+    if (smatch(newUser, "APPWEB") || smatch(newUser, "_default_")) {
 #if BIT_UNIX_LIKE
         /* Only change user if root */
         if (getuid() != 0) {
@@ -445,7 +446,8 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 
 PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
-    if (smatch(newGroup, "_default_")) {
+    //  DEPRECATE _default_
+    if (smatch(newGroup, "APPWEB") || smatch(newGroup, "_default_")) {
 #if BIT_UNIX_LIKE
         /* Only change group if root */
         if (getuid() != 0) {

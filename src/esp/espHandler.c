@@ -53,6 +53,13 @@ static void openEsp(HttpQueue *q)
     conn = q->conn;
     rx = conn->rx;
 
+    /*
+        If unloading a module, this lock will cause a wait here while ESP applications are reloaded.
+     */
+    lock(esp);
+    esp->inUse++;
+    unlock(esp);
+
     if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
         /*
             ESP accepts all methods if there is a registered route. However, we only advertise the standard methods.
@@ -87,12 +94,6 @@ static void openEsp(HttpQueue *q)
         req->eroute = eroute;
         req->autoFinalize = 1;
     }
-    /*
-        If unloading a module, this lock will cause a wait here while ESP applications are reloaded
-     */
-    lock(esp);
-    esp->inUse++;
-    unlock(esp);
 }
 
 

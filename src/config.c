@@ -1582,6 +1582,7 @@ static int putMethodDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     Redirect [status|permanent|temp|seeother|gone] from to
+    Redirect secure
  */
 static int redirectDirective(MaState *state, cchar *key, cchar *value)
 {
