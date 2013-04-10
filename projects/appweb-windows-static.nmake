@@ -1769,7 +1769,7 @@ LIBS_86 = $(LIBS_86) libmod_cgi.lib
 
 $(CONFIG)\bin\appweb.exe: $(DEPS_86)
 	@echo '      [Link] $(CONFIG)/bin/appweb.exe'
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "" "$(CONFIG)\obj\appweb.obj" $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)  "$(CONFIG)\obj\appweb.obj" $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) 
 
 #
 #   appwebMonitor.h
