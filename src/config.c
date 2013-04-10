@@ -311,7 +311,8 @@ static int addOutputFilterDirective(MaState *state, cchar *key, cchar *value)
  */
 static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *handler, *extensions;
+    char        *handler, *extensions, *path;
+    static int  espLoaded = 0;
 
     if (!maTokenize(state, value, "%S ?*", &handler, &extensions)) {
         return MPR_ERR_BAD_SYNTAX;
@@ -322,6 +323,15 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
     if (httpAddRouteHandler(state->route, handler, extensions) < 0) {
         mprError("Cannot add handler %s", handler);
         return MPR_ERR_CANT_CREATE;
+    }
+    if (smatch(handler, "espHandler") && !espLoaded) {
+        path = httpMakePath(state->route, "${BIN_DIR}/esp.conf");
+        if (mprPathExists(path, R_OK)) {
+            espLoaded = 1;
+            if (parseFile(state, path) < 0) {
+                return MPR_ERR_CANT_OPEN;
+            }
+        }
     }
     return 0;
 }

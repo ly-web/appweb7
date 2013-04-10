@@ -321,42 +321,54 @@ PUBLIC void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
 PUBLIC int maSetPlatform(cchar *platform)
 {
     MaAppweb    *appweb;
-    cchar       *base, *dir, *junk;
+    cchar       *appDir, *dir, *junk, *appwebExe;
 
-    appweb = MPR->appwebService;
-    if (mprSamePath(mprGetAppDir(), BIT_VAPP_PREFIX "/bin")) {
-        /* Installed => /usr/local/lib/appweb/VER/bin */
-        base = mprGetPathParent(mprGetAppDir());
-        dir = smatch(platform, appweb->localPlatform) ? base : mprJoinPath(base, platform);
-    } else {
-        /* Local Dev =>  ../../OS-ARCH */
-        base = mprGetPathParent(mprGetPathParent(mprGetAppDir()));
-        dir = mprJoinPath(base, platform);
-    }
-#if !BIT_ROM
-    if (!mprIsPathDir(dir)) {
-        MprDirEntry *dp;
-        int         next;
-        for (ITERATE_ITEMS(mprGetPathFiles(base, 0), dp, next)) {
-            if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
-                platform = mprGetPathBase(dp->name);
-                dir = dp->name;
-                if (maParsePlatform(platform, &junk, &junk, &junk) == 0) {
-                    break;
-                }
-            }
-        }
-        if (!dp) {
-            return MPR_ERR_BAD_ARGS;
-        }
-    }
-#endif
     if (maParsePlatform(platform, &junk, &junk, &junk) < 0) {
         return MPR_ERR_BAD_ARGS;
     }
+    appweb = MPR->appwebService;
+    appDir = mprGetAppDir();
+    
     mprLog(1, "Using platform \"%s\"", platform);
-    appweb->platformDir = dir;
     appweb->platform = platform;
+    
+    if (smatch(platform, appweb->localPlatform)) {
+        appwebExe = mprJoinPath(appDir, "appweb" BIT_EXE);
+        if (mprPathExists(appwebExe, R_OK)) {
+            appweb->platformDir = mprGetPathParent(appDir);
+            return 0;
+        }
+        appwebExe = BIT_VAPP_PREFIX "/bin/appweb" BIT_EXE;
+        if (mprPathExists(appwebExe, R_OK)) {
+            appweb->platformDir = sclone(BIT_VAPP_PREFIX);
+            return 0;
+        }
+        /*
+            Appweb is not installed and we're not running a program from an Appweb bin directory
+         */
+    }
+    
+    /*
+        Search up the tree for a platform directory
+     */
+#if !BIT_ROM
+{
+    MprDirEntry *dp;
+    int         next;
+    
+    dir = mprGetCurrentPath();
+    for (ITERATE_ITEMS(mprGetPathFiles(dir, 0), dp, next)) {
+        if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
+            appweb->platform = mprGetPathBase(dp->name);
+            appweb->platformDir = mprJoinPath(dir, dp->name);
+            break;
+        }
+    }
+    if (!dp) {
+        return MPR_ERR_BAD_ARGS;
+    }
+}
+#endif
     return 0;
 }
 

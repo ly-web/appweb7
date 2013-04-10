@@ -565,6 +565,9 @@ static MprList *getRoutes()
     cchar       *routeName, *routePrefix;
     int         prev, nextRoute;
 
+    if (app->error) {
+        return 0;
+    }
     if ((host = mprGetFirstItem(http->hosts)) == 0) {
         fail("Cannot find default host");
         return 0;
