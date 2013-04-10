@@ -332,9 +332,6 @@ PUBLIC int maSetPlatform(cchar *platformPath)
     }
     appweb->platform = appweb->platformDir = 0;
     
-    if (maParsePlatform(platformPath, &junk, &junk, &junk) < 0) {
-        return MPR_ERR_BAD_ARGS;
-    }
     platform = mprGetPathBase(platformPath);
 
     if (mprPathExists(platformPath, X_OK) && mprIsPathDir(platformPath)) {
@@ -373,7 +370,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
                 if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
                     appweb->platform = mprGetPathBase(dp->name);
                     appweb->platformDir = mprJoinPath(dir, dp->name);
-                    return 0;
+                    break;
                 }
             }
             dir = mprGetPathParent(dir);
@@ -381,6 +378,9 @@ PUBLIC int maSetPlatform(cchar *platformPath)
     }
     if (!appweb->platform) {
         return MPR_ERR_CANT_FIND;
+    }
+    if (maParsePlatform(appweb->platform, &junk, &junk, &junk) < 0) {
+        return MPR_ERR_BAD_ARGS;
     }
     if (!notrace) {
         mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
