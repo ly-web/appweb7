@@ -1,7 +1,7 @@
-Tyical Server Sample
+SSL Server Sample
 ===
 
-This sample shows how to embed Appweb using the full embedding API.
+This sample shows how to configure Appweb to use SSL.
 
 Requirements
 ---
@@ -16,17 +16,16 @@ To run:
 ---
     bit run
 
-The server listens on port 8080. Browse to: 
+The server listens on port 4443 for SSL requests. Browse to: 
  
-     http://localhost:8080/
+     https://localhost:4443/
 
 Code:
 ---
 * [server.c](server.c) - Main program
 * [appweb.conf](appweb.conf) - Appweb server configuration file
-* [auth.conf](auth.conf) - User/Password/Role authorization file
-* [cgi-bin](cgi-bin) - Directory for CGI programs
-* [esp.conf](esp.conf) - ESP compiler rules
+* [self.crt](self.crt) - Self-signed test certificate
+* [self.key](self.key) - Test private key
 * [web](web) - Web content to serve
 * [start.bit](start.bit) - Bit build instructions
 
@@ -34,4 +33,5 @@ Code:
 See Also:
 ---
 * [min-server - Minimal server configuration](../min-server/README.md)
+* [secure-server - Secure server configuration](../secure-server/README.md)
 * [simple-server - Simple one-line embedding API](../simple-server/README.md)
