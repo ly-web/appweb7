@@ -1,0 +1,51 @@
+Secure Server Sample
+===
+
+This sample shows how to configure a secure Appweb server. This configuration uses:
+
+* SSL for encryption of traffic
+* Redirection of all traffic over SSL
+* Chroot
+* Login authentication 
+* Sandbox resource limits
+
+This sample uses a self-signed certificate. In your application, you will need a real certificate.
+
+Requirements
+---
+* [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
+* [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
+
+To build:
+---
+    bit 
+
+To run:
+---
+    bit run
+
+The server listens on port 8080 for HTTP traffice and 4443 for SSL. Browse to: 
+ 
+     http://localhost:8080/
+
+This will redirect to SSL (you will get a warning due to the self-signed certificate).
+Continue and you will be prompted to login. The test username/password is joshua/pass1.
+
+Code:
+---
+* [server.c](server.c) - Main program
+* [appweb.conf](appweb.conf) - Appweb server configuration file
+* [self.crt](self.crt) - Self-signed test certificate
+* [self.key](self.key) - Test private key
+* [web](web) - Web content to serve
+* [start.bit](start.bit) - Bit build instructions
+* [cache](cache) - Directory for cached ESP pages
+
+
+See Also:
+---
+* [min-server - Minimal server configuration](../min-server/README.md)
+* [secure-server - Secure server configuration](../secure-server/README.md)
+* [simple-server - Simple one-line embedding API](../simple-server/README.md)
+* [ssl-server - SSL server](../ssl-server/README.md)
+* [typical-server - Typical server configuration](../typical-server/README.md)

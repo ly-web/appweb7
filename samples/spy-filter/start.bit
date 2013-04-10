@@ -4,6 +4,7 @@
 Bit.load({
     settings: {
         requires: ['appweb'],
+        bit: '0.8.6',
     },
     targets: {
         libmod_spy: {

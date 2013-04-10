@@ -1,24 +1,24 @@
 /*
-    start.bit - Bit file for the cpp-module sample
+    start.bit - Bit file for the typical-server sample
  */
+
 Bit.load({
     settings: {
         requires: ['appweb'],
         bit: '0.8.6',
     },
     targets: {
-        libmod_simple: {
-            type: 'lib',
-            sources: ['cppModule.cpp'],
-            depends: ['appweb'],
-        }
         server: {
             type:    'exe',
-            sources: 'server.c',
+            sources: '*.c',
             depends: ['appweb'],
         },
         run: {
             run: './server',
+        },
+        cleanup: {
+            type: 'clean',
+            action: "rm('error.log*')",
         },
     },
 })

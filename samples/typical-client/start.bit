@@ -5,7 +5,7 @@
 Bit.load({
     settings: {
         requires: ['appweb'],
-        debug: false,
+        bit: '0.8.6',
     },
     targets: {
         client: {
