@@ -11,6 +11,7 @@ The following samples are available:
 
 * [chroot-server](chroot-server/README.md)      Configuring a secure chroot jail for the server.
 * [esp-page](esp-page/README.md)                Serving ESP web pages.
+* [esp-controller](esp-controller/README.md)    Creating ESP controllers.
 * [max-server](max-server/README.md)            Maximum configuration in appweb.conf.
 * [min-server](min-server/README.md)            Minimum configuration in appweb.conf.
 * [simple-action](simple-action/README.md)      Action callback. Binding C function to URI.
