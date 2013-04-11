@@ -32,7 +32,7 @@ PUBLIC MaAppweb *maCreateAppweb()
     httpSetContext(http, appweb);
     appweb->servers = mprCreateList(-1, 0);
     appweb->localPlatform = slower(sfmt("%s-%s-%s", BIT_OS, BIT_CPU, BIT_PROFILE));
-    maSetPlatform(appweb->localPlatform);
+    maSetPlatform(NULL);
     maGetUserGroup(appweb);
     maParseInit(appweb);
     /* 
@@ -318,57 +318,73 @@ PUBLIC void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
 }
 
 
-PUBLIC int maSetPlatform(cchar *platform)
+PUBLIC int maSetPlatform(cchar *platformPath)
 {
-    MaAppweb    *appweb;
-    cchar       *appDir, *dir, *junk, *appwebExe;
+    MaAppweb        *appweb;
+    MprDirEntry     *dp;
+    cchar           *platform, *dir, *junk, *appwebExe;
+    int             next, i, notrace;
 
-    if (maParsePlatform(platform, &junk, &junk, &junk) < 0) {
+    appweb = MPR->appwebService;
+    notrace = !platformPath;
+    if (!platformPath) {
+        platformPath = appweb->localPlatform;
+    }
+    appweb->platform = appweb->platformDir = 0;
+    
+    if (maParsePlatform(platformPath, &junk, &junk, &junk) < 0) {
         return MPR_ERR_BAD_ARGS;
     }
-    appweb = MPR->appwebService;
-    appDir = mprGetAppDir();
-    
-    mprLog(1, "Using platform \"%s\"", platform);
-    appweb->platform = platform;
-    
-    if (smatch(platform, appweb->localPlatform)) {
-        appwebExe = mprJoinPath(appDir, "appweb" BIT_EXE);
-        if (mprPathExists(appwebExe, R_OK)) {
-            appweb->platformDir = mprGetPathParent(appDir);
-            return 0;
-        }
-        appwebExe = BIT_VAPP_PREFIX "/bin/appweb" BIT_EXE;
-        if (mprPathExists(appwebExe, R_OK)) {
-            appweb->platformDir = sclone(BIT_VAPP_PREFIX);
-            return 0;
-        }
+    platform = mprGetPathBase(platformPath);
+
+    if (mprPathExists(platformPath, X_OK) && mprIsPathDir(platformPath)) {
+        appweb->platform = platform;
+        appweb->platformDir = sclone(platformPath);
+
+    } else if (smatch(platform, appweb->localPlatform)) {
         /*
-            Appweb is not installed and we're not running a program from an Appweb bin directory
+            If running inside an appweb source tree, locate the platform directory 
          */
+        appwebExe = mprJoinPath(mprGetAppDir(), "appweb" BIT_EXE);
+        if (mprPathExists(appwebExe, R_OK)) {
+            appweb->platform = appweb->localPlatform;
+            appweb->platformDir = mprGetPathParent(mprGetAppDir());
+
+        } else {
+            /*
+                Check installed appweb
+             */
+            appwebExe = BIT_VAPP_PREFIX "/bin/appweb" BIT_EXE;
+            if (mprPathExists(appwebExe, R_OK)) {
+                appweb->platform = appweb->localPlatform;
+                appweb->platformDir = sclone(BIT_VAPP_PREFIX);
+            }
+        }
     }
     
     /*
-        Search up the tree for a platform directory
+        Last chance. Search up the tree for a similar platform directory.
+        This permits specifying a partial platform like "vxworks" without architecture and profile.
      */
-#if !BIT_ROM
-{
-    MprDirEntry *dp;
-    int         next;
-    
-    dir = mprGetCurrentPath();
-    for (ITERATE_ITEMS(mprGetPathFiles(dir, 0), dp, next)) {
-        if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
-            appweb->platform = mprGetPathBase(dp->name);
-            appweb->platformDir = mprJoinPath(dir, dp->name);
-            break;
+    if (!appweb->platformDir) {
+        dir = mprGetCurrentPath();
+        for (i = 0; !mprSamePath(dir, "/") && i < 64; i++) {
+            for (ITERATE_ITEMS(mprGetPathFiles(dir, 0), dp, next)) {
+                if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
+                    appweb->platform = mprGetPathBase(dp->name);
+                    appweb->platformDir = mprJoinPath(dir, dp->name);
+                    return 0;
+                }
+            }
+            dir = mprGetPathParent(dir);
         }
     }
-    if (!dp) {
-        return MPR_ERR_BAD_ARGS;
+    if (!appweb->platform) {
+        return MPR_ERR_CANT_FIND;
     }
-}
-#endif
+    if (!notrace) {
+        mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
+    }
     return 0;
 }
 

@@ -727,8 +727,9 @@ static bool readConfig(bool mvc)
     appweb = MPR->appwebService = app->appweb;
     appweb->skipModules = 1;
     http = app->appweb->http;
-    if (app->platform) {
-        appweb->platform = app->platform;
+    if (maSetPlatform(app->platform) < 0) {
+        fail("Cannot find platform %s", app->platform);
+        return 0;
     }
     appweb->staticLink = app->staticLink;
 
@@ -738,12 +739,6 @@ static bool readConfig(bool mvc)
     if ((app->server = maCreateServer(appweb, "default")) == 0) {
         fail("Cannot create HTTP server for %s", mprGetAppName());
         return 0;
-    }
-    if (app->platform) {
-        if (maSetPlatform(app->platform) < 0) {
-            fail("Cannot find platform %s", app->platform);
-            return 0;
-        }
     }
     if (maParseConfig(app->server, app->configFile, MA_PARSE_NON_SERVER) < 0) {
         fail("Cannot configure the server, exiting.");
@@ -2079,9 +2074,11 @@ static bool findConfigFile(bool mvc)
         for (path = mprGetCurrentPath(); path; path = nextPath) {
             mprLog(1, "Probe for \"%s\"", path);
             if (mprPathExists(mprJoinPath(path, name), R_OK)) {
+#if UNUSED
                 if (chdir(path) < 0) {
                     fail("Cannot change directory to %s", path);
                 }
+#endif
                 app->configFile = name;
                 break;
             }

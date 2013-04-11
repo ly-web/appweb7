@@ -1,0 +1,24 @@
+/*
+    start.bit - Bit file for the simple-esp sample
+ */
+
+Bit.load({
+    settings: {
+        requires: ['appweb'],
+        bit: '0.8.6',
+    },
+    targets: {
+        server: {
+            type:    'exe',
+            sources: 'server.c',
+            depends: ['appweb'],
+        },
+        cleanup: {
+            type: 'clean',
+            action: "rm('*.o', 'cache/*')",
+        },
+        run: {
+            run: './server',
+        },
+    },
+})

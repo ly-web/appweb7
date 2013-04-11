@@ -2262,7 +2262,7 @@ static bool conditionalDefinition(MaState *state, cchar *key)
 
     } else if (state->appweb->skipModules) {
         /* ESP utility needs to be able to load mod_esp */
-        if (smatch(mprGetAppName(), "esp") && scaselessmatch(key, "ESP_MODULE")) {
+        if (sstarts(mprGetAppName(), "esp") && scaselessmatch(key, "ESP_MODULE")) {
             result = BIT_PACK_ESP;
         }
 
