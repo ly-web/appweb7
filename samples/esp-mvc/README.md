@@ -27,12 +27,14 @@ To build:
 ---
     bit 
 or
+
     esp compile
 
 To run:
 ---
     bit run
 or
+
     esp run
 
 The server listens on port 8080. Browse to: 
