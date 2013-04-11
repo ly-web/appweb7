@@ -10,6 +10,7 @@ at /usr/local/lib/apppweb. To build the samples, you will need to install Appweb
 The following samples are available:
 
 * [chroot-server](chroot-server/README.md)      Configuring a secure chroot jail for the server.
+* [deploy-server](deploy-server/README.md)      Deploy Appweb files for copying to a target.
 * [esp-page](esp-page/README.md)                Serving ESP web pages.
 * [esp-controller](esp-controller/README.md)    Creating ESP controllers.
 * [max-server](max-server/README.md)            Maximum configuration in appweb.conf.
