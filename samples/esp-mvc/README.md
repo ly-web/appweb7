@@ -1,13 +1,22 @@
 ESP MVC Sample
 ===
 
-This sample demonstrates an ESP MVC application. This app was generated via:
+This sample demonstrates an ESP MVC application. The app is a trivial blogging
+application. Posts with a title and body can be created, listed and deleted.
+
+The app contains:
+* blog database with post table
+* post controller to manage posts
+* post views to create, list and display posts
+* master view layout under the layouts directory
+
+This app was generated via:
 
     esp generate app blog
     cd blog
     esp generate scaffold post title:string body:text
-    mv * ..
-    rmdir blog
+    cd ..
+    cp -r blog/* esp-mvc
 
 Requirements
 ---
@@ -17,6 +26,8 @@ Requirements
 To build:
 ---
     bit 
+or
+    esp compile
 
 To run:
 ---
@@ -24,21 +35,26 @@ To run:
 or
     esp run
 
-The server listens on port 4000. Browse to: 
+The server listens on port 8080. Browse to: 
  
-     http://localhost:4000/
+     http://localhost:8080/post/
 
-This then returns "Hello World" to the client.
-
-If you modify the controller.c it will be automatically recompiled and reloaded when 
-next accessed.
+Notes:
+---
+If you modify the controller.c it will be automatically recompiled and reloaded when next accessed.
 
 Code:
 ---
-* [server.c](server.c) - Web server program
-* [controller.c](controller.c) - ESP controller source
+* [controllers](controllers/post.c) - Post controller
 * [appweb.conf](appweb.conf) - Appweb server configuration file
+* [cache](cache) - Directory of compiled ESP modules
+* [db](db) - Database directory for the blog application
+* [db/blog.mdb](db/blog.mdb) - Blog database 
+* [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema
+* [layouts](layouts) - Master view layout templates 
+* [static](static) - Static web content
 * [start.bit](start.bit) - Bit build instructions
+* [views](views) - Web views
 
 Documentation:
 ---

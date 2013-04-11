@@ -8,14 +8,15 @@ Bit.load({
         bit: '0.8.6',
     },
     targets: {
-        server: {
-            type:    'exe',
-            sources: 'server.c',
-            depends: ['appweb'],
+        sample: {
+            build: "run('esp compile')",
         },
         cleanup: {
             type: 'clean',
-            action: "rm('*.o', 'cache/*')",
+            action: "
+                run('esp clean')
+                rm('*.o', 'cache/*')
+            ",
         },
         run: {
             run: 'esp run',

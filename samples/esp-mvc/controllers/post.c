@@ -1,8 +1,11 @@
 /*
-    post controller
+    Blog post controller
  */
  #include "esp-app.h"
 
+/*
+    Create a post
+ */
 static void create() { 
     if (updateRec(createRec("post", params()))) {
         inform("New post created");
@@ -44,6 +47,9 @@ static void update() {
     }
 }
 
+/*
+    Define controller actions. This bind each RESTful URI route to the C function.
+ */
 ESP_EXPORT int esp_module_post(HttpRoute *route, MprModule *module) 
 {
     espDefineAction(route, "post-create", create);
