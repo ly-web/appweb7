@@ -22,4 +22,5 @@ Bit.load({
             action: "rm('error.log*')",
         }
     },
+    packDefaults: { appweb: true },
 })

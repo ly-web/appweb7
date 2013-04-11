@@ -28,4 +28,5 @@ Bit.load({
             action: "rm('cache/*')",
         },
     },
+    packDefaults: { appweb: true },
 })

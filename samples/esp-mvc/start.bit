@@ -22,4 +22,5 @@ Bit.load({
             run: 'esp run',
         },
     },
+    packDefaults: { appweb: true },
 })

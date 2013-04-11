@@ -17,4 +17,5 @@ Bit.load({
             run: './client',
         },
     },
+    packDefaults: { appweb: true },
 })

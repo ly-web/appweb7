@@ -17,4 +17,5 @@ Bit.load({
             run: './server',
         },
     },
+    packDefaults: { appweb: true },
 })
