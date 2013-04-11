@@ -34,6 +34,12 @@ Code:
 * [index.html](index.html) - Web page to serve
 * [start.bit](start.bit) - Bit build instructions
 
+Documentation:
+---
+* [Appweb Documentation](http://embedthis.com/products/appweb/doc/index.html)
+* [Chroot Directive](http://embedthis.com/products/appweb/doc/guide/appweb/users/dir/server.html#chroot)
+* [Security Considerations](http://embedthis.com/products/appweb/doc/guide/appweb/users/security.html)
+
 See Also:
 ---
 * [typical-server - Fully featured server and embedding API](../typical-server/README.md)

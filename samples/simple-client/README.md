@@ -25,6 +25,12 @@ Code:
 * [client.c](client.c) - Main program
 * [start.bit](start.bit) - Bit build instructions
 
+Documentation:
+---
+* [Appweb Documentation](http://embedthis.com/products/appweb/doc/index.html)
+* [Http Client](http://embedthis.com/products/appweb/doc/guide/appweb/users/client.html)
+* [Http API](http://embedthis.com/products/appweb/doc/api/http.html)
+
 See Also:
 ---
 * [simple-server - Simple server and embedding API](../simple-server/README.md)
