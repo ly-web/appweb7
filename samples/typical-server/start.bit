@@ -16,6 +16,10 @@ Bit.load({
         run: {
             run: './server',
         },
+        cleanup: {
+            type: 'clean',
+            action: "rm(['error.log*', 'cache/*'])",
+        },
     },
     packDefaults: { appweb: true },
 })

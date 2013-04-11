@@ -2229,7 +2229,7 @@ static void trace(cchar *tag, cchar *fmt, ...)
         va_start(args, fmt);
         msg = sfmtv(fmt, args);
         tag = sfmt("[%s]", tag);
-        mprRawLog(0, "%14s %s\n", tag, msg);
+        mprRawLog(0, "%12s %s\n", tag, msg);
         va_end(args);
     }
 }
@@ -2244,7 +2244,7 @@ static void vtrace(cchar *tag, cchar *fmt, ...)
         va_start(args, fmt);
         msg = sfmtv(fmt, args);
         tag = sfmt("[%s]", tag);
-        mprRawLog(0, "%14s %s\n", tag, msg);
+        mprRawLog(0, "%12s %s\n", tag, msg);
         va_end(args);
     }
 }
