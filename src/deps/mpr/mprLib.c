@@ -6496,7 +6496,10 @@ PUBLIC int startProcess(MprCmd *cmd)
         program = mprTrimPathExt(program);
         entryPoint = program;
     }
-#if BLD_HOST_CPU_ARCH == MPR_CPU_IX86 || BLD_HOST_CPU_ARCH == MPR_CPU_IX64
+#if BIT_CPU_ARCH == MPR_CPU_IX86 || BIT_CPU_ARCH == MPR_CPU_IX64 || BIT_CPU_ARCH == MPR_CPU_SH
+    /*
+        A leading underscore is required on some architectures
+     */
     entryPoint = sjoin("_", entryPoint, NULL);
 #endif
     if (symFindByName(sysSymTbl, entryPoint, (char**) (void*) &entryFn, &symType) < 0) {
@@ -16198,6 +16201,7 @@ PUBLIC bool mprIsPathAbs(cchar *path)
 }
 
 
+//  MOB - should be mprPathIsDir
 PUBLIC bool mprIsPathDir(cchar *path)
 {
     MprPath     info;
@@ -16206,6 +16210,7 @@ PUBLIC bool mprIsPathDir(cchar *path)
 }
 
 
+//  MOB - should be mprPathIsRel
 PUBLIC bool mprIsPathRel(cchar *path)
 {
     MprFileSystem   *fs;
@@ -26257,10 +26262,9 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     handle = 0;
 
     entry = mp->entry;
-#if BLD_HOST_CPU_ARCH == MPR_CPU_IX86 || BLD_HOST_CPU_ARCH == MPR_CPU_IX64
+#if BIT_CPU_ARCH == MPR_CPU_IX86 || BIT_CPU_ARCH == MPR_CPU_IX64 || BIT_CPU_ARCH == MPR_CPU_SH
     entry = sjoin("_", entry, NULL);
 #endif
-
     if (!mp->entry || symFindByName(sysSymTbl, entry, (char**) (void*) &fn, &symType) == -1) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
             mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
