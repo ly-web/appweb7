@@ -1871,7 +1871,7 @@ src\server\cache: $(DEPS_93)
 $(CONFIG)\inc\testAppweb.h: $(DEPS_94)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y test\testAppweb.h $(CONFIG)\inc\testAppweb.h
+	copy /Y test\src\testAppweb.h $(CONFIG)\inc\testAppweb.h
 
 #
 #   testAppweb.obj
@@ -1882,9 +1882,9 @@ DEPS_95 = $(DEPS_95) $(CONFIG)\inc\mpr.h
 DEPS_95 = $(DEPS_95) $(CONFIG)\inc\http.h
 
 $(CONFIG)\obj\testAppweb.obj: \
-    test\testAppweb.c $(DEPS_95)
+    test\src\testAppweb.c $(DEPS_95)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test\testAppweb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test\src\testAppweb.c
 
 #
 #   testHttp.obj
@@ -1893,9 +1893,9 @@ DEPS_96 = $(DEPS_96) $(CONFIG)\inc\bit.h
 DEPS_96 = $(DEPS_96) $(CONFIG)\inc\testAppweb.h
 
 $(CONFIG)\obj\testHttp.obj: \
-    test\testHttp.c $(DEPS_96)
+    test\src\testHttp.c $(DEPS_96)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test\testHttp.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test\src\testHttp.c
 
 #
 #   testAppweb

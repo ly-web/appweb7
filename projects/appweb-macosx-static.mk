@@ -211,11 +211,11 @@ prep:
 	@[ ! -x $(CONFIG)/bin ] && mkdir -p $(CONFIG)/bin; true
 	@[ ! -x $(CONFIG)/inc ] && mkdir -p $(CONFIG)/inc; true
 	@[ ! -x $(CONFIG)/obj ] && mkdir -p $(CONFIG)/obj; true
-	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/appweb-macosx-static-bit.h $(CONFIG)/inc/bit.h ; true
 	@[ ! -f $(CONFIG)/inc/bitos.h ] && cp src/bitos.h $(CONFIG)/inc/bitos.h ; true
 	@if ! diff $(CONFIG)/inc/bitos.h src/bitos.h >/dev/null ; then\
 		cp src/bitos.h $(CONFIG)/inc/bitos.h  ; \
 	fi; true
+	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/appweb-macosx-static-bit.h $(CONFIG)/inc/bit.h ; true
 	@if ! diff $(CONFIG)/inc/bit.h projects/appweb-macosx-static-bit.h >/dev/null ; then\
 		cp projects/appweb-macosx-static-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
@@ -1716,7 +1716,7 @@ src/server/cache: $(DEPS_85)
 $(CONFIG)/inc/testAppweb.h: $(DEPS_86)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
 	mkdir -p "$(CONFIG)/inc"
-	cp test/testAppweb.h $(CONFIG)/inc/testAppweb.h
+	cp test/src/testAppweb.h $(CONFIG)/inc/testAppweb.h
 
 #
 #   testAppweb.o
@@ -1727,9 +1727,9 @@ DEPS_87 += $(CONFIG)/inc/mpr.h
 DEPS_87 += $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/testAppweb.o: \
-    test/testAppweb.c $(DEPS_87)
+    test/src/testAppweb.c $(DEPS_87)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.o'
-	$(CC) -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testAppweb.c
+	$(CC) -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/src/testAppweb.c
 
 #
 #   testHttp.o
@@ -1738,9 +1738,9 @@ DEPS_88 += $(CONFIG)/inc/bit.h
 DEPS_88 += $(CONFIG)/inc/testAppweb.h
 
 $(CONFIG)/obj/testHttp.o: \
-    test/testHttp.c $(DEPS_88)
+    test/src/testHttp.c $(DEPS_88)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.o'
-	$(CC) -c -o $(CONFIG)/obj/testHttp.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testHttp.c
+	$(CC) -c -o $(CONFIG)/obj/testHttp.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/src/testHttp.c
 
 #
 #   testAppweb

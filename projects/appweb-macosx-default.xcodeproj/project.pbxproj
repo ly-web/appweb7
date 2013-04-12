@@ -1149,9 +1149,9 @@
 		E5F6AD7CE5F6C276000000C8 /* libslink */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libslink.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5F6AD7CE5F6C27600000093 /* appweb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = appweb.c; path = src/server/appweb.c; sourceTree = "<group>"; };
 		E5F6AD7CE5F6C27600000164 /* appweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = appweb; sourceTree = BUILT_PRODUCTS_DIR; };
-		E5F6AD7CE5F6C27600000095 /* testAppweb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testAppweb.c; path = test/testAppweb.c; sourceTree = "<group>"; };
+		E5F6AD7CE5F6C27600000095 /* testAppweb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testAppweb.c; path = test/src/testAppweb.c; sourceTree = "<group>"; };
 		E5F6AD7CE5F6C27600000165 /* testAppweb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = testAppweb.h; path = macosx-x64-default/inc/testAppweb.h; sourceTree = "<group>"; };
-		E5F6AD7CE5F6C27600000097 /* testHttp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testHttp.c; path = test/testHttp.c; sourceTree = "<group>"; };
+		E5F6AD7CE5F6C27600000097 /* testHttp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testHttp.c; path = test/src/testHttp.c; sourceTree = "<group>"; };
 		E5F6AD7CE5F6C27600000166 /* testAppweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testAppweb; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -2262,8 +2262,8 @@ fi
 if [ ../src/esp/mdb.h -nt ${OUT_DIR}/inc/mdb.h ] ; then
 cp ../src/esp/mdb.h ${OUT_DIR}/inc/mdb.h
 fi
-if [ ../test/testAppweb.h -nt ${OUT_DIR}/inc/testAppweb.h ] ; then
-cp ../test/testAppweb.h ${OUT_DIR}/inc/testAppweb.h
+if [ ../test/src/testAppweb.h -nt ${OUT_DIR}/inc/testAppweb.h ] ; then
+cp ../test/src/testAppweb.h ${OUT_DIR}/inc/testAppweb.h
 fi";
 		};
 /* End PBXShellScriptBuildPhase section */

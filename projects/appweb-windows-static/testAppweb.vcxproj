@@ -100,8 +100,8 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\test\testAppweb.c" />
-    <ClCompile Include="..\..\test\testHttp.c" />
+    <ClCompile Include="..\..\test\src\testAppweb.c" />
+    <ClCompile Include="..\..\test\src\testHttp.c" />
   </ItemGroup>
 
   <ItemGroup>
@@ -116,7 +116,7 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\test
-copy /Y testAppweb.h $(IncDir)
+copy /Y src\testAppweb.h $(IncDir)
 cd ..\projects\appweb-windows-static</Command>
     <Outputs>$(BinDir)\testAppweb.exe</Outputs>
   </CustomBuildStep>
