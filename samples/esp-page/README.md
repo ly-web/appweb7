@@ -38,5 +38,6 @@ Documentation:
 
 See Also:
 ---
+* [secure-server - Secure server](../secure-server/README.md)
 * [simple-server - Simple server and embedding API](../simple-server/README.md)
 * [typical-server - Fully featured server and embedding API](../typical-server/README.md)

@@ -19,6 +19,7 @@ The following samples are available:
 * [esp-websockets](esp-websockets/README.md)    WebSockets using an ESP controller.
 * [max-server](max-server/README.md)            Maximum configuration in appweb.conf.
 * [min-server](min-server/README.md)            Minimum configuration in appweb.conf.
+* [secure-server](secure-server/README.md)      Secure server using SSL, secure login, chroot and sandbox limits.
 * [simple-action](simple-action/README.md)      Action callback. Binding C function to URI.
 * [simple-client](simple-client/README.md)      Http client.
 * [simple-handler](simple-handler/README.md)    Simple Appweb URL handler.

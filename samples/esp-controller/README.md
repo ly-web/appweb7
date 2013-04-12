@@ -48,4 +48,5 @@ See Also:
 ---
 * [esp-page - Serving ESP pages](../esp-page/README.md)
 * [simple-server - Simple server and embedding API](../simple-server/README.md)
+* [secure-server - Secure server](../secure-server/README.md)
 * [typical-server - Fully featured server and embedding API](../typical-server/README.md)
