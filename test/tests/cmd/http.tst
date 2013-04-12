@@ -131,6 +131,6 @@ if (test.depth > 2) {
     run("-i 2000 /big.txt")
 }
 //  Cleanup
-for each (f in Path("../web/tmp").files()) {
+for each (f in Path("../../web/tmp").files()) {
     Path(f).remove()
 }

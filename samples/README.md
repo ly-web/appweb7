@@ -11,8 +11,11 @@ The following samples are available:
 
 * [chroot-server](chroot-server/README.md)      Configuring a secure chroot jail for the server.
 * [deploy-server](deploy-server/README.md)      Deploy Appweb files for copying to a target.
-* [esp-page](esp-page/README.md)                Serving ESP web pages.
 * [esp-controller](esp-controller/README.md)    Creating ESP controllers.
+* [esp-hosted-mvc](esp-hosted-mvc/README.md)    ESP MVC application hosted in Appweb.
+* [esp-mvc](esp-mvc/README.md)                  ESP MVC application (stand-alone).
+* [esp-page](esp-page/README.md)                Serving ESP web pages.
+* [esp-websockets](esp-websockets/README.md)    WebSockets using an ESP controller.
 * [max-server](max-server/README.md)            Maximum configuration in appweb.conf.
 * [min-server](min-server/README.md)            Minimum configuration in appweb.conf.
 * [simple-action](simple-action/README.md)      Action callback. Binding C function to URI.

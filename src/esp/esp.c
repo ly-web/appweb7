@@ -280,10 +280,11 @@ static void manageApp(App *app, int flags);
 static void migrate(HttpRoute *route, int argc, char **argv);
 static void process(int argc, char **argv);
 static bool readConfig(bool mvc);
+static bool requiredRoute(HttpRoute *route);
 static void run(int argc, char **argv);
+static bool selectResource(cchar *path, cchar *kind);
 static void trace(cchar *tag, cchar *fmt, ...);
 static void usageError();
-static bool validTarget(cchar *target);
 static void vtrace(cchar *tag, cchar *fmt, ...);
 static void why(cchar *path, cchar *fmt, ...);
 
@@ -603,7 +604,7 @@ static MprList *getRoutes()
              */
             continue;
         }
-        if (!validTarget(route->dir)) {
+        if (!requiredRoute(route)) {
             continue;
         }
         /*
@@ -696,7 +697,7 @@ static HttpRoute *getMvcRoute()
              */
             continue;
         }
-        if (!validTarget(route->dir)) {
+        if (!requiredRoute(route)) {
             continue;
         }
         break;
@@ -1125,18 +1126,44 @@ static void compile(MprList *routes)
 
 
 /* 
-    Allow a target that is a parent directory of a route directory or
-    Allow a target that is contained within a route directory 
+    Allow a route that is responsible for a target
  */
-static bool validTarget(cchar *target)
+static bool requiredRoute(HttpRoute *route)
 {
     MprKey  *kp;
+    char    *dir;
 
     if (app->targets == 0 || mprGetHashLength(app->targets) == 0) {
         return 1;
     }
+    dir = sjoin(route->dir, "/", NULL);
     for (ITERATE_KEYS(app->targets, kp)) {
-        if (sstarts(target, kp->key) || sstarts(kp->key, target)) {
+        if (sstarts(kp->key, dir)) {
+            kp->type = ESP_FOUND_TARGET;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+/* 
+    Select a resource that matches specified targets
+ */
+static bool selectResource(cchar *path, cchar *kind)
+{
+    MprKey  *kp;
+    cchar   *ext;
+
+    ext = mprGetPathExt(path);
+    if (kind && !smatch(ext, kind)) {
+        return 0;
+    }
+    if (app->targets == 0 || mprGetHashLength(app->targets) == 0) {
+        return 1;
+    }
+    for (ITERATE_KEYS(app->targets, kp)) {
+        if (sstarts(path, kp->key)) {
             kp->type = ESP_FOUND_TARGET;
             return 1;
         }
@@ -1159,10 +1186,7 @@ static void compileItems(HttpRoute *route)
         app->files = mprGetPathFiles(eroute->controllersDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
-            if (!validTarget(path)) {
-                continue;
-            }
-            if (smatch(mprGetPathExt(path), "c")) {
+            if (selectResource(path, "c")) {
                 compileFile(route, path, ESP_CONTROLLER);
             }
         }
@@ -1171,10 +1195,7 @@ static void compileItems(HttpRoute *route)
         app->files = mprGetPathFiles(eroute->viewsDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
-            if (!validTarget(path)) {
-                continue;
-            }
-            if (smatch(mprGetPathExt(path), "esp")) {
+            if (selectResource(path, "esp")) {
                 compileFile(route, path, ESP_VIEW);
             }
         }
@@ -1183,10 +1204,7 @@ static void compileItems(HttpRoute *route)
         app->files = mprGetPathFiles(eroute->staticDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
-            if (!validTarget(path)) {
-                continue;
-            }
-            if (smatch(mprGetPathExt(path), "esp")) {
+            if (selectResource(path, "esp")) {
                 compileFile(route, path, ESP_PAGE);
             }
         }
@@ -1196,12 +1214,16 @@ static void compileItems(HttpRoute *route)
         app->files = mprGetPathFiles(route->dir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
-            if (!validTarget(path)) {
-                continue;
-            }
-            if (smatch(mprGetPathExt(path), "esp")) {
+            if (selectResource(path, "esp")) {
                 compileFile(route, path, ESP_PAGE);
             }
+        }
+        /*
+            Stand-alone controllers
+         */
+        if (route->sourceName) {
+            path = mprJoinPath(route->dir, route->sourceName);
+            compileFile(route, path, ESP_CONTROLLER);
         }
     }
 }

@@ -1272,6 +1272,8 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if UNUSED
+//  MOB - is this used?
 /*
     Load name path
  */
@@ -1286,6 +1288,7 @@ static int loadDirective(MaState *state, cchar *key, cchar *value)
     state->route->sourcePath = sclone(path);
     return 0;
 }
+#endif
 
 
 /*
@@ -2668,7 +2671,9 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Listen", listenDirective);
     maAddDirective(appweb, "ListenSecure", listenSecureDirective);
 
+#if UNUSED
     maAddDirective(appweb, "Load", loadDirective);
+#endif
     maAddDirective(appweb, "Log", logDirective);
     maAddDirective(appweb, "LogRoutes", logRoutesDirective);
     maAddDirective(appweb, "LoadModulePath", loadModulePathDirective);

@@ -222,7 +222,11 @@ static int runAction(HttpConn *conn)
     } else {
         req->controllerName = route->sourceName;
     }
-    req->controllerPath = mprJoinPath(eroute->controllersDir, req->controllerName);
+    if (eroute->controllersDir) {
+        req->controllerPath = mprJoinPath(eroute->controllersDir, req->controllerName);
+    } else {
+        req->controllerPath = mprJoinPath(route->dir, req->controllerName);
+    }
     key = mprJoinPath(eroute->controllersDir, rx->target);
 
     if (eroute->appModuleName) {
@@ -703,6 +707,7 @@ static int appDirective(MaState *state, cchar *key, cchar *value)
     if (route->pattern == 0) {
         httpSetRoutePattern(route, sjoin("/", appName, NULL), 0);
     }
+    //  MOB - why?
     httpSetRouteSource(route, "");
     if (path == 0) {
         path = route->dir;
