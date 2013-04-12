@@ -1,5 +1,5 @@
 /**
-    typical-server.c  -- AppWeb main program
+    server.c  -- AppWeb main program
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
 

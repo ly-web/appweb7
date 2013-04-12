@@ -1,8 +1,17 @@
-ESP MVC Sample
+Hosted ESP MVC Sample
 ===
 
-This sample demonstrates an ESP MVC application. The app is a trivial blogging
-application. Posts with a title and body can be created, listed and deleted.
+This sample demonstrates an ESP MVC application hosted inside Appweb. 
+The app is a trivial blogging application. Posts with a title and body 
+can be created, listed and deleted.
+
+This sample creates a simple web server to load the appweb.conf. However, you
+can use this appweb.conf with the full "appweb" program if you wish.
+
+If you want to run an application stand-alone using the web server integrated
+into the esp command, see the esp-mvc sample
+
+* [esp-mvc](../esp-mvc/README.md)
 
 The app contains:
 * blog database with post table
@@ -10,17 +19,13 @@ The app contains:
 * post views to create, list and display posts
 * master view layout under the layouts directory
 
-This app was generated, then edited for simplicity via:
+This app was generated then edited via:
 
     esp generate app blog
     cd blog
     esp generate scaffold post title:string body:text
     cd ..
     cp -r blog/* esp-mvc
-
-If you require an ESP MVC application hosted inside Appweb, see the esp-hosted-mvc sample:
-
-* [esp-hosted-mvc](esp-hosted-mvc)
 
 Requirements
 ---
@@ -30,16 +35,10 @@ Requirements
 To build:
 ---
     bit 
-or
-
-    esp compile
 
 To run:
 ---
     bit run
-or
-
-    esp run
 
 The server listens on port 8080. Browse to: 
  
@@ -58,6 +57,7 @@ Code:
 * [db/blog.mdb](db/blog.mdb) - Blog database 
 * [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema
 * [layouts](layouts) - Master view layout templates 
+* [server.c](server.c) - Web server main program
 * [static](static) - Static web content
 * [start.bit](start.bit) - Bit build instructions
 * [views](views) - Web views
@@ -75,7 +75,7 @@ Documentation:
 See Also:
 ---
 * [esp-controller - Creating ESP controllers](../esp-controller/README.md)
-* [esp-hosted-mvc - Appweb hosted MVC sample](../esp-hosted-mvc/README.md)
+* [esp-mvc - Stand-alone ESP MVC sample](../esp-mvc/README.md)
 * [esp-page - Serving ESP pages](../esp-page/README.md)
 * [simple-server - Simple server and embedding API](../simple-server/README.md)
 * [typical-server - Fully featured server and embedding API](../typical-server/README.md)

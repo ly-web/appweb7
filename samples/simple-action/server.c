@@ -1,5 +1,5 @@
 /*
-    simpleAction.c - Demonstrate the use of the Action handler
+    server.c - Appweb server to demonstrate actions
   
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
