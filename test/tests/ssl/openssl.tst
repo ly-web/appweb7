@@ -9,13 +9,13 @@ if (!Config.SSL) {
     let http: Http = new Http
 
     http.retries = 0
-    http.ca = '../crt/ca.crt'
+    http.ca = '../../crt/ca.crt'
     assert(http.verify == true)
  
     //  Verify the server cert and send a client cert 
     endpoint = App.config.uris.openssl || "https://127.0.0.1:7443"
-    http.key = '../crt/test.key'
-    http.certificate = '../crt/test.crt'
+    http.key = '../../crt/test.key'
+    http.certificate = '../../crt/test.crt'
     http.get(endpoint + '/index.html')
     assert(http.status == 200) 
     assert(http.info.CLIENT_S_CN == 'localhost')
