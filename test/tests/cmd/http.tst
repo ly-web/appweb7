@@ -106,7 +106,7 @@ if (App.config.bit_ejscript) {
     data = run("--upload " + files + " /upload.ejs")
     assert(data.contains('"clientFilename": "http.tst"'))
     if (test.threads == 1) {
-        assert(Path("../web/tmp/http.tst").exists)
+        assert(Path("../../web/tmp/http.tst").exists)
     }
 
     let files = Path(".").files().join(" ")
