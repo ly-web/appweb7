@@ -7,7 +7,7 @@ let http: Http = new Http
 
 if (App.config.bit_debug && !test.cross) {
     //  First get
-    let path = new Path("../web/reload.esp")
+    let path = new Path("../../web/reload.esp")
     path.write('<html><body><% espRender(conn, "First", -1); %></body></html>')
     http.get(HTTP + "/reload.esp")
     assert(http.status == 200)

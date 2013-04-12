@@ -14,7 +14,7 @@ const SELFCERT   = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <SE
 const CLIENTCERT = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <CLIENTCERT>.*/ms, "$1")
 const OPENSSL    = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <OPENSSL>.*/ms, "$1")
 const MATRIXSSL  = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <MATRIXSSL>.*/ms, "$1")
-const MOCANA     = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <MOCANA>.*/ms, "$1")
+const NANOSSL    = "https://" + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <NANOSSL>.*/ms, "$1")
 const NAMED      = "http://"  + conf.replace(/.*Listen *([\.:0-9]+) *# <NAMED>.*/ms, "$1")
 const VIP        = "http://"  + conf.replace(/.*Listen *([\.:0-9]+) *# <IPHOST>.*/ms, "$1")
 
@@ -30,7 +30,7 @@ shareUri("selfcert", SELFCERT)
 shareUri("clientcert", CLIENTCERT)
 shareUri("openssl", OPENSSL)
 shareUri("matrixssl", MATRIXSSL)
-shareUri("mocana", MOCANA)
+shareUri("nanossl", NANOSSL)
 shareUri("named", NAMED)
 shareUri("virt", VIP)
 

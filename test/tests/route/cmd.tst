@@ -5,10 +5,10 @@
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 let http: Http = new Http
 
-//  Run a command that creates ../route-update-cmd.tmp
+//  Run a command that creates ../../route-update-cmd.tmp
   
 if (test.hostOs != "VXWORKS" && test.hostOs != "WIN") { 
-    let path = Path("../route-update-cmd.tmp")
+    let path = Path("../../route-update-cmd.tmp")
     path.remove()
     assert(!path.exists)
 

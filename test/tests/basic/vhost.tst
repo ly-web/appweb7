@@ -4,8 +4,8 @@
 
 blend(App.config.uris, {
   http: "http://127.0.0.1:4100",
-  named:"http://127.0.0.1:4111",
-  virt: "http://127.0.0.1:4112",
+  named:"http://127.0.0.1:4200",
+  virt: "http://127.0.0.1:4300",
 }, {overwrite: false})
 
 const HTTP = App.config.uris.http
