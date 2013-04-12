@@ -35,7 +35,7 @@ if (App.config.bit_ejscript) {
         assert(http.status == 200)
         http.close()
 
-        let uploaded = Path("../web/tmp").join(Path(TESTFILE).basename)
+        let uploaded = Path("../../web/tmp").join(Path(TESTFILE).basename)
         assert(uploaded.size == size)
         //  MOB - remove need for diff
         Cmd.sh("diff " + uploaded + " " + TESTFILE)
