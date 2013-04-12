@@ -249,6 +249,13 @@
     </member>
     <member kind="function">
       <type>int</type>
+      <name>maRunWebClient</name>
+      <anchorfile>group___ma_server.html</anchorfile>
+      <anchor>gac4eeca2a263aa924aa89f50b9dc10914</anchor>
+      <arglist>(cchar *method, cchar *uri, char **response)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
       <name>maRunWebServer</name>
       <anchorfile>group___ma_server.html</anchorfile>
       <anchor>ga4994c273e87409b094418dd7bd370ee4</anchor>

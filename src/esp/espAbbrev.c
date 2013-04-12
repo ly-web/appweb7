@@ -334,7 +334,7 @@ PUBLIC cchar *getSessionVar(cchar *key)
 }
 
 
-#if FUTURE
+#if FUTURE || MOB || 1
 PUBLIC cchar *session(cchar *key)
 {
     return httpGetSessionVar(getConn(), key, "");
