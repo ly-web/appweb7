@@ -1,13 +1,11 @@
-Secure Server Sample
+Esp-login Sample
 ===
 
-This sample shows how to configure a secure Appweb server. This configuration uses:
+This sample shows how to configure form-based login using ESP. This configuration uses:
 
 * SSL for encryption of traffic
 * Redirection of all traffic over SSL
-* Chroot
 * Login authentication 
-* Sandbox resource limits
 
 This sample uses a self-signed certificate. In your application, you will need a real certificate.
 
@@ -53,7 +51,6 @@ Documentation:
 
 See Also:
 ---
-* [esp-login - ESP form-login](../esp-login/README.md)
 * [min-server - Minimal server configuration](../min-server/README.md)
 * [secure-server - Secure server configuration](../secure-server/README.md)
 * [simple-server - Simple one-line embedding API](../simple-server/README.md)
