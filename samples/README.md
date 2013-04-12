@@ -15,6 +15,7 @@ The following samples are available:
 * [esp-hosted-mvc](esp-hosted-mvc/README.md)    ESP MVC application hosted in Appweb.
 * [esp-mvc](esp-mvc/README.md)                  ESP MVC application (stand-alone).
 * [esp-page](esp-page/README.md)                Serving ESP web pages.
+* [esp-upload](esp-upload/README.md)            ESP file upload.
 * [esp-websockets](esp-websockets/README.md)    WebSockets using an ESP controller.
 * [max-server](max-server/README.md)            Maximum configuration in appweb.conf.
 * [min-server](min-server/README.md)            Minimum configuration in appweb.conf.

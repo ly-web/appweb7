@@ -1,5 +1,5 @@
 /*
-    start.bit - Bit file for the esp-page sample
+    start.bit - Bit file for the esp-upload sample
  */
 
 Bit.load({
@@ -15,6 +15,10 @@ Bit.load({
         },
         run: {
             run: './server',
+        },
+        cleanup: {
+            type: 'clean',
+            action: "rm(['cache/*', 'server.o'])",
         },
     },
     packDefaults: { appweb: true },
