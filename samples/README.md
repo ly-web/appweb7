@@ -13,6 +13,7 @@ The following samples are available:
 * [deploy-server](deploy-server/README.md)      Deploy Appweb files for copying to a target.
 * [esp-controller](esp-controller/README.md)    Creating ESP controllers.
 * [esp-hosted-mvc](esp-hosted-mvc/README.md)    ESP MVC application hosted in Appweb.
+* [esp-layout](esp-layout/README.md)            ESP layout templates.
 * [esp-login](esp-login/README.md)              ESP form-based login.
 * [esp-mvc](esp-mvc/README.md)                  ESP MVC application (stand-alone).
 * [esp-page](esp-page/README.md)                Serving ESP web pages.
