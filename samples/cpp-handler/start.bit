@@ -1,5 +1,5 @@
 /*
-    start.bit - Bit file for the cpp-handler sample
+    start.bit - Bit build file
  */
 Bit.load({
     settings: {

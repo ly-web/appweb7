@@ -1,5 +1,5 @@
 /*
-    start.bit - Bit file for the typical-server sample
+    start.bit - Bit build file
  */
 Bit.load({
     settings: {

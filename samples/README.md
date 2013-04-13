@@ -17,6 +17,7 @@ The following samples are available:
 * [esp-login](esp-login/README.md)              ESP form-based login.
 * [esp-mvc](esp-mvc/README.md)                  ESP MVC application (stand-alone).
 * [esp-page](esp-page/README.md)                Serving ESP web pages.
+* [esp-session](esp-session/README.md)          Using ESP session state storage.
 * [esp-upload](esp-upload/README.md)            ESP file upload.
 * [esp-websockets](esp-websockets/README.md)    WebSockets using an ESP controller.
 * [max-server](max-server/README.md)            Maximum configuration in appweb.conf.
