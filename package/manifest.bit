@@ -387,7 +387,7 @@ Bit.load({
                 set:         'source',
 
             },{
-                from:        ['bits', 'src', 'test', 'doc', 'projects', 'package'],
+                from:        ['bits', 'src', 'test', 'doc', 'projects', 'package', 'samples'],
                 to:          '${src}/',
                 set:         'source',
 
