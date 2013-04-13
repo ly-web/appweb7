@@ -886,7 +886,7 @@ PUBLIC void espShowRequest(HttpConn *conn)
     int         i, numKeys;
 
     rx = conn->rx;
-    httpSetHeaderString(conn, "Cache-Control", "no-cache");
+    httpAddHeaderString(conn, "Cache-Control", "no-cache");
     httpCreateCGIParams(conn);
     espRender(conn, "\r\n");
 

@@ -94,7 +94,7 @@
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_abbrev_1ga4fbfd9bc0d38ff85e5a20461189a812e" class="nameRef">chart</a>(<a href="#group___edi_grid" class="ref">EdiGrid</a> *grid, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *options)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Render a graphic chart.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_abbrev_1gaef38c9b3cd6c1db7b951a5e0587e16c9" class="nameRef">checkbox</a>(<a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *field, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *checkedValue, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *options)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Render an input checkbox.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___edi_rec" class="ref">EdiRec*</a></td><td><a href="#group___esp_abbrev_1gabc52230088c078fdeafb1e8d6a941185" class="nameRef">createRec</a>(<a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *tableName, <a href="mpr.html#struct_mpr_hash" class="ref">MprHash</a> *data)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a record and initialize field values.</td></tr>
-<tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_abbrev_1gab7b4049b554576b57f8cc49efc9e3a95" class="nameRef">createSession</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a session state object.</td></tr>
+<tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_abbrev_1gaa0c7f407af0140b15091227e9a8e839f" class="nameRef">createSession</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a session state object.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_abbrev_1ga35677b9aa8d61543db5ea80377e823a6" class="nameRef">destroySession</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Destroy a session state object.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_abbrev_1ga6d64e8f3ca52318774994ead312772fd" class="nameRef">division</a>(<a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *body, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *options)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Render an HTML division.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_abbrev_1ga9db9b8b7e2c750f6f942da0478866de2" class="nameRef">dontAutoFinalize</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Don&apos;t auto-finalize this request.</td></tr>
@@ -1858,16 +1858,17 @@ Base table name for record.
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a></dd></dl>
   </div>
 </div>
-<a name="group___esp_abbrev_1gab7b4049b554576b57f8cc49efc9e3a95"></a>
+<a name="group___esp_abbrev_1gaa0c7f407af0140b15091227e9a8e839f"></a>
 <div class="api">
   <div class="prototype">
-    void
+    <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *
     createSession
 ()
   </div>
   <div class="apiDetail">
 <p>Create a session state object.</p>
     <dl><dt><b>Description</b>:</dt><dd>The session state object can be used to share state between requests. If a session has not already been created, this call will create a new session. It will create a response cookie containing a session ID that will be sent to the client with the response. Note: Objects are stored in the session state using JSON serialization.</dd></dl>
+    <dl><dt>Returns:</dt><dd>Session ID string.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a></dd></dl>
   </div>
@@ -1881,7 +1882,7 @@ Base table name for record.
   </div>
   <div class="apiDetail">
 <p>Destroy a session state object.</p>
-    <dl><dt><b>Description</b>:</dt><dd></dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This will emit an expired cookie to the client to force it to erase the session cookie.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a></dd></dl>
   </div>

@@ -1353,10 +1353,10 @@
       <arglist>(cchar *tableName, MprHash *data)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
+      <type>cchar *</type>
       <name>createSession</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>gab7b4049b554576b57f8cc49efc9e3a95</anchor>
+      <anchor>gaa0c7f407af0140b15091227e9a8e839f</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">

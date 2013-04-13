@@ -2135,13 +2135,15 @@ PUBLIC EdiRec *createRec(cchar *tableName, MprHash *data);
     If a session has not already been created, this call will create a new session.
     It will create a response cookie containing a session ID that will be sent to the client 
     with the response. Note: Objects are stored in the session state using JSON serialization.
+    @return Session ID string
     @ingroup EspAbbrev
  */
-PUBLIC void createSession();
+PUBLIC cchar *createSession();
 
 /**
-    Destroy a session state object
-    @description
+    Destroy a session state object. 
+    @description This will emit an expired cookie to the client to force it to erase the
+        session cookie.
     @ingroup EspAbbrev
  */
 PUBLIC void destroySession();
@@ -2302,6 +2304,8 @@ PUBLIC cchar *getReferrer();
     @ingroup EspAbbrev
  */
 PUBLIC cchar *getSessionVar(cchar *name);
+
+PUBLIC cchar *getSession();
 #if MOB || NEW || 1
 PUBLIC cchar *session(cchar *name);
 #endif

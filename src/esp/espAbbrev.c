@@ -200,21 +200,28 @@ PUBLIC EdiRec *createRec(cchar *tableName, MprHash *params)
 }
 
 
-PUBLIC void createSession()
+/*
+    Create a new session. Always returns with a fresh session
+    Use getSession() to use an existing session.
+ */
+PUBLIC cchar *createSession()
 {
-    httpCreateSession(getConn());
+    HttpSession *session;
+
+    if ((session = httpCreateSession(getConn())) != 0) {
+        return session->id;
+    }
+    return 0;
 }
 
 
+/*
+    Destroy a session and erase the session state data.
+    This emits an expired Set-Cookie header to the browser to force it to erase the cookie.
+ */
 PUBLIC void destroySession()
 {
-    HttpSession *sp;
-    HttpConn    *conn;
-
-    conn = getConn();
-    if ((sp = httpGetSession(conn, 0)) != 0) {
-        httpDestroySession(sp);
-    }
+    httpDestroySession(getConn());
 }
 
 
@@ -324,6 +331,20 @@ PUBLIC EdiRec *getRec()
 PUBLIC cchar *getReferrer()
 {
     return espGetReferrer(getConn());
+}
+
+
+/*
+    Get a session and return the session ID. Creates a session if one does not already exist.
+ */
+PUBLIC cchar *getSession()
+{
+    HttpSession *session;
+
+    if ((session = httpGetSession(getConn(), 1)) != 0) {
+        return session->id;
+    }
+    return 0;
 }
 
 

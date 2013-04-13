@@ -154,6 +154,10 @@ static void finalizeFlash(HttpConn *conn)
             }
         }
         if (mprGetHashLength(req->flash) > 0) {
+            /*  
+                If the session does not exist, this will create one. However, must not have
+                emitted the headers, otherwise cannot inform the client of the session cookie.
+            */
             httpSetSessionObj(conn, ESP_FLASH_VAR, req->flash);
         }
     }
