@@ -2065,6 +2065,11 @@ static void generateAppDb(HttpRoute *route)
     }
     eroute = route->eroute;
     ext = app->database;
+    if ((smatch(app->database, "sdb") && !BIT_PACK_SDB) || (smatch(app->database, "mdb") && !BIT_PACK_MDB)) {
+        fail("Cannot find database provider: \"%s\". Ensure Appweb is configured to support \"%s\"", 
+                app->database, app->database);
+        return;
+    }
     dbpath = sfmt("%s/%s.%s", eroute->dbDir, app->appName, ext);
     if (mprWritePathContents(dbpath, buf, 0, 0664) < 0) {
         return;

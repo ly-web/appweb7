@@ -419,6 +419,15 @@ PUBLIC int ediLoad(Edi *edi, cchar *path);
 PUBLIC int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
 
 /**
+    Lookup an EDI provider name
+    @param providerName Name of the EDI provider
+    @return The EDI provider object
+    @ingroup Edi
+    @internal
+ */
+PUBLIC EdiProvider *ediLookupProvider(cchar *providerName);
+
+/**
     Open a database.
     @description This opens a database using the specified database provider.
     @param source Database path name. If using the "mdb" provider with the EDI_LITERAL flag, then the source argument can

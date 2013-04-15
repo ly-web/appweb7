@@ -292,6 +292,12 @@ PUBLIC int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName)
 }
 
 
+PUBLIC EdiProvider *ediLookupProvider(cchar *providerName)
+{
+    return lookupProvider(providerName);
+}
+
+
 PUBLIC Edi *ediOpen(cchar *path, cchar *providerName, int flags)
 {
     EdiProvider     *provider;
