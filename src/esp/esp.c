@@ -293,7 +293,7 @@ static void why(cchar *path, cchar *fmt, ...);
 PUBLIC int main(int argc, char **argv)
 {
     Mpr     *mpr;
-    cchar   *argp, *logSpec, *path;
+    cchar   *argp, *logSpec;
     int     argind, rc;
 
     if ((mpr = mprCreate(argc, argv, 0)) == NULL) {
@@ -341,11 +341,15 @@ PUBLIC int main(int argc, char **argv)
             if (argind >= argc) {
                 usageError();
             } else {
+#if UNUSED
                 path = argv[++argind];
                 if (chdir((char*) mprGetPathDir(path)) < 0) {
                     mprError("Cannot change directory to %s", mprGetPathDir(path));
                 }
                 app->configFile = mprGetPathBase(path);
+#else
+                app->configFile = sclone(argv[++argind]);
+#endif
             }
 
         } else if (smatch(argp, "database")) {
@@ -636,7 +640,7 @@ static MprList *getRoutes()
             fail("Cannot find usable ESP configuration in %s for route prefix %s", app->configFile, routePrefix);
         } else {
             kp = mprGetFirstKey(app->targets);
-            fail("Cannot find ESP configuration in %s for %s", app->configFile, kp->key);
+            fail("Cannot find usable ESP configuration in %s for %s", app->configFile, kp->key);
         }
         return 0;
     }
@@ -2096,11 +2100,6 @@ static bool findConfigFile(bool mvc)
         for (path = mprGetCurrentPath(); path; path = nextPath) {
             mprLog(1, "Probe for \"%s\"", path);
             if (mprPathExists(mprJoinPath(path, name), R_OK)) {
-#if UNUSED
-                if (chdir(path) < 0) {
-                    fail("Cannot change directory to %s", path);
-                }
-#endif
                 app->configFile = name;
                 break;
             }
