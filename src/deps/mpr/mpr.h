@@ -1695,6 +1695,8 @@ PUBLIC char *itosbuf(char *buf, ssize size, int64 value, int radix);
  */
 PUBLIC int scaselesscmp(cchar *s1, cchar *s2);
 
+//  MOB need scaselessncmp
+
 /**
     Compare strings ignoring case. This is similar to scaselesscmp but it returns a boolean.
     @description Compare two strings ignoring case differences.
@@ -4848,6 +4850,15 @@ PUBLIC char *mprGetTempPath(cchar *tmpDir);
     @stability Stable
  */
 PUBLIC char *mprGetWinPath(cchar *path);
+
+/**
+    Determine if a directory is the same as or a parent of a path.
+    @param path Path name to examine
+    @returns True if directory is a parent of the path or is the same as the given path.
+    @ingroup MprPath
+    @stability Prototype
+ */ 
+PUBLIC bool mprIsParentPathOf(cchar *dir, cchar *path);
 
 /**
     Determine if a path is absolute

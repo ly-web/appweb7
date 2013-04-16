@@ -636,6 +636,7 @@ PUBLIC void ediManageEdiRec(EdiRec *rec, int flags)
 
         for (fid = 0; fid < rec->nfields; fid++) {
             mprMark(rec->fields[fid].value);
+            mprMark(rec->fields[fid].name);
         }
     }
 }

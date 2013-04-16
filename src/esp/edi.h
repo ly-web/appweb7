@@ -97,7 +97,8 @@ PUBLIC void ediDefineValidation(cchar *name, EdiValidationProc vfn);
 #define EDI_TYPE_INT        5           /**< Integer number */
 #define EDI_TYPE_STRING     6           /**< String */
 #define EDI_TYPE_TEXT       7           /**< Multi-line text */
-#define EDI_TYPE_MAX        8           /**< Max type + 1 */
+#define EDI_TYPE_NULL       8           /**< No value */
+#define EDI_TYPE_MAX        9           /**< Max type + 1 */
 
 /*
     Field flags
@@ -117,7 +118,7 @@ PUBLIC void ediDefineValidation(cchar *name, EdiValidationProc vfn);
   */
 typedef struct EdiField {
     cchar           *value;             /**< Field data value */
-    cchar           *name;              /**< Field name. Sourced from the database column name  */
+    cchar           *name;              /**< Field name. Sourced from the database column name */
     int             type:  8;           /**< Field data type. Set to one of EDI_TYPE_BINARY, EDI_TYPE_BOOL, EDI_TYPE_DATE
                                              EDI_TYPE_FLOAT, EDI_TYPE_INT, EDI_TYPE_STRING, EDI_TYPE_TEXT  */
     int             valid: 8;           /**< Field validity. Set to true if valid */

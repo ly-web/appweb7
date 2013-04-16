@@ -1132,24 +1132,6 @@ static void compile(MprList *routes)
 }
 
 
-static bool mprIsParentPathOf(cchar *dir, cchar *path)
-{
-    ssize   len;
-    char    *base;
-
-    len = slen(dir);
-    if (len <= slen(path)) {
-        base = sclone(path);
-        base[len] = '\0';
-        if (mprSamePath(dir, base)) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-
-
 /* 
     Allow a route that is responsible for a target
  */

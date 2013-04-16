@@ -1002,6 +1002,7 @@ PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *params)
 }
 
 
+//  MOB - inconsistent with ediUpdateRec
 PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec)
 {
     return ediUpdateRec(rec->edi, rec) == 0;

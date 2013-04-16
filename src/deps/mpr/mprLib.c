@@ -16209,6 +16209,23 @@ PUBLIC char *mprGetWinPath(cchar *path)
 }
 
 
+PUBLIC bool mprIsParentPathOf(cchar *dir, cchar *path)
+{
+    ssize   len;
+    char    *base;
+
+    len = slen(dir);
+    if (len <= slen(path)) {
+        base = sclone(path);
+        base[len] = '\0';
+        if (mprSamePath(dir, base)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
 PUBLIC bool mprIsPathAbs(cchar *path)
 {
     MprFileSystem   *fs;
