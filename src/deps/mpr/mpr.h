@@ -4794,6 +4794,17 @@ PUBLIC char *mprGetPathParent(cchar *path);
 PUBLIC cchar *mprGetPathSeparators(cchar *path);
 
 /**
+    Get the default path directory separator.
+    Return the default directory separator character used to separate directories on a given file system. 
+        Typically "/" or "\".
+    @param path Use this path to specify either the root of the file system or a file on the file system.
+    @returns Character path separator
+    @ingroup MprPath
+    @stability Stable
+ */
+PUBLIC char mprGetPathSeparator(cchar *path);
+
+/**
     Get a portable path 
     @description Get an equivalent absolute path that is somewhat portable. 
         This means it will use forward slashes ("/") as the directory separator. This call will not remove drive specifiers.
