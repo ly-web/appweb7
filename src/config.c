@@ -200,7 +200,7 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
         mprError("Missing filename");
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpSetRouteLog(state->route, httpMakePath(state->route, path), size, backup, BIT_HTTP_LOG_FORMAT, flags);
+    httpSetRouteLog(state->route, httpMakePath(state->route, state->configDir, path), size, backup, BIT_HTTP_LOG_FORMAT, flags);
     return 0;
 }
 #endif
@@ -325,7 +325,7 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_CANT_CREATE;
     }
     if (smatch(handler, "espHandler") && !espLoaded) {
-        path = httpMakePath(state->route, "${BIN_DIR}/esp.conf");
+        path = httpMakePath(state->route, state->configDir, "${BIN_DIR}/esp.conf");
         if (mprPathExists(path, R_OK)) {
             espLoaded = 1;
             if (parseFile(state, path) < 0) {
@@ -598,7 +598,7 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
 #if BIT_UNIX_LIKE
     char    *path;
     
-    path = httpMakePath(state->route, value);
+    path = httpMakePath(state->route, state->configDir, value);
     if (chdir(path) < 0) {
         mprError("Cannot change working directory to %s", path);
         return MPR_ERR_CANT_OPEN;
@@ -743,6 +743,7 @@ static int documentsDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%T", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
+    path = mprGetAbsPath(mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path)));
     httpSetRouteDir(state->route, path);
     return 0;
 }
@@ -841,7 +842,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
     mprSetLogBackup(size, backup, flags);
 
     if (sncmp(path, "stdout", 6) != 0 && sncmp(path, "stderr", 6) != 0) {
-        path = httpMakePath(state->route, path);
+        path = httpMakePath(state->route, state->configDir, path);
     }
     if (mprStartLogging(path, 0) < 0) {
         mprError("Cannot write to ErrorLog: %s", path);
@@ -922,9 +923,14 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
     char            *path, *pattern;
     int             matches[4 * 3], next, count, column;
 
-    if (!maTokenize(state, value, "%P", &value)) {
+    /*
+        Must use %S and not %P because the path is relative to the appweb.conf file and not to the route home
+     */
+    if (!maTokenize(state, value, "%S", &value)) {
         return MPR_ERR_BAD_SYNTAX;
     }
+    value = mprGetAbsPath(mprJoinPath(state->configDir, httpExpandRouteVars(state->route, value)));
+
     if (strpbrk(value, "^$*+?([|{") == 0) {
         if (parseFile(state, value) < 0) {
             return MPR_ERR_CANT_OPEN;
@@ -1956,7 +1962,7 @@ static int typesConfigDirective(MaState *state, cchar *key, cchar *value)
 {
     char    *path;
 
-    path = httpMakePath(state->route, value);
+    path = httpMakePath(state->route, state->configDir, value);
     if ((state->route->mimeTypes = mprCreateMimeTypes(path)) == 0) {
         mprError("Cannot open TypesConfig mime file %s", path);
         state->route->mimeTypes = mprCreateMimeTypes(NULL);
@@ -2014,7 +2020,7 @@ static int updateDirective(MaState *state, cchar *key, cchar *value)
 static int uploadDirDirective(MaState *state, cchar *key, cchar *value)
 {
     //  MOB - need httpSetUploadDir
-    state->route->uploadDir = httpMakePath(state->route, value);
+    state->route->uploadDir = httpMakePath(state->route, state->configDir, value);
     return 0;
 }
 

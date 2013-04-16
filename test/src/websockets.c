@@ -34,7 +34,6 @@ static void echo_callback(HttpConn *conn, int event, int arg)
 {
     HttpPacket      *packet;
     HttpWebSocket   *ws;
-    cchar           *data;
 
     traceEvent(conn, event, arg);
     if (event == HTTP_EVENT_READABLE) {
