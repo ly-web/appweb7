@@ -58,6 +58,7 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     host = server->defaultHost;
     route = host->defaultRoute;
 
+    httpSetRouteHome(route, mprGetAbsPath(mprGetPathDir(path)));
     httpSetRouteVar(route, "LOG_DIR", ".");
     httpSetRouteVar(route, "INC_DIR", BIT_VAPP_PREFIX "/inc");
     httpSetRouteVar(route, "SPL_DIR", BIT_SPOOL_PREFIX);
@@ -2402,6 +2403,7 @@ PUBLIC MaState *maPushState(MaState *prev)
     state->lineNumber = prev->lineNumber;
     state->enabled = prev->enabled;
     state->filename = prev->filename;
+    state->configDir = prev->configDir;
     state->file = prev->file;
     state->limits = prev->limits;
     state->auth = state->route->auth;
