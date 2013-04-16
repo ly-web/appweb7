@@ -339,6 +339,7 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
     {
         /*
             Windows leaves intermediate object in the current directory
+            MOB - Could use -Fo to prevent this
          */
         cchar   *obj;
         obj = mprReplacePathExt(mprGetPathBase(csource), "obj");

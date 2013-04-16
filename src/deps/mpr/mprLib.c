@@ -15358,7 +15358,9 @@ PUBLIC char *mprGetAbsPath(cchar *path)
     fs = mprLookupFileSystem(path);
     if (isFullPath(fs, path)) {
         /* Already absolute. On windows, must contain a drive specifier */
-        return mprNormalizePath(path);
+        result = mprNormalizePath(path);
+        mprMapSeparators(result, defaultSep(fs));
+        return result;
     }
 
 #if BIT_WIN_LIKE && !WINCE

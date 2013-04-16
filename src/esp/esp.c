@@ -895,6 +895,9 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
         return MPR_ERR_CANT_COMPLETE;
     }
     if (out && *out) {
+#if BIT_WIN_LIKE
+        if (!scontains(out, "Creating library "))
+#endif
         mprRawLog(0, "%s\n", out);
     }
     if (err && *err) {
@@ -1129,20 +1132,36 @@ static void compile(MprList *routes)
 }
 
 
+static bool mprIsParentPathOf(cchar *dir, cchar *path)
+{
+    ssize   len;
+    char    *base;
+
+    len = slen(dir);
+    if (len <= slen(path)) {
+        base = sclone(path);
+        base[len] = '\0';
+        if (mprSamePath(dir, base)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+
 /* 
     Allow a route that is responsible for a target
  */
 static bool requiredRoute(HttpRoute *route)
 {
     MprKey  *kp;
-    char    *dir;
 
     if (app->targets == 0 || mprGetHashLength(app->targets) == 0) {
         return 1;
     }
-    dir = sjoin(route->dir, "/", NULL);
     for (ITERATE_KEYS(app->targets, kp)) {
-        if (sstarts(kp->key, dir)) {
+        if (mprIsParentPathOf(route->dir, kp->key)) {
             kp->type = ESP_FOUND_TARGET;
             return 1;
         }
@@ -2100,7 +2119,7 @@ static bool findConfigFile(bool mvc)
         for (path = mprGetCurrentPath(); path; path = nextPath) {
             mprLog(1, "Probe for \"%s\"", path);
             if (mprPathExists(mprJoinPath(path, name), R_OK)) {
-                app->configFile = name;
+                app->configFile = mprJoinPath(path, name);
                 break;
             }
             app->configFile = 0;
