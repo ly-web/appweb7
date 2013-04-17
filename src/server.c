@@ -382,6 +382,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
     if (maParsePlatform(appweb->platform, &junk, &junk, &junk) < 0) {
         return MPR_ERR_BAD_ARGS;
     }
+    appweb->platformDir = mprGetAbsPath(appweb->platformDir);
     if (!notrace) {
         mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
     }
