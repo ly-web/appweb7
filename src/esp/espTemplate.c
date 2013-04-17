@@ -422,7 +422,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
     EspState    top;
     EspParse    parse;
     MprBuf      *body;
-    char        *control, *incText, *where, *dir, *layoutCode, *bodyCode;
+    char        *control, *incText, *where, *layoutCode, *bodyCode;
     char        *rest, *include, *line, *fmt, *layoutPage, *incCode, *token;
     ssize       len;
     int         tid;
@@ -591,6 +591,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         bodyCode = mprGetBufStart(body);
     }
     if (state == &top) {
+#if UNUSED
         dir = mprGetRelPath(route->dir, NULL);
         path = mprGetRelPath(path, NULL);
         assert(slen(path) > slen(dir));
@@ -600,6 +601,9 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                 path = &path[slen(dir) + 1];
             }
         }
+#else
+        path = mprGetRelPath(path, route->dir);
+#endif
         if (mprGetBufLength(state->start) > 0) {
             mprPutCharToBuf(state->start, '\n');
         }

@@ -896,9 +896,14 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
     }
     if (out && *out) {
 #if BIT_WIN_LIKE
-        if (!scontains(out, "Creating library "))
-#endif
+        if (!scontains(out, "Creating library ")) {
+            if (!smatch(mprGetPathBase(csource), strim(out, " \t\r\n", MPR_TRIM_BOTH))) {
+                mprRawLog(0, "%s\n", out);
+            }
+        }
+#else
         mprRawLog(0, "%s\n", out);
+#endif
     }
     if (err && *err) {
         mprRawLog(0, "%s\n", err);
@@ -1168,7 +1173,7 @@ static bool selectResource(cchar *path, cchar *kind)
         return 1;
     }
     for (ITERATE_KEYS(app->targets, kp)) {
-        if (sstarts(path, kp->key)) {
+        if (mprIsParentPathOf(kp->key, path)) {
             kp->type = ESP_FOUND_TARGET;
             return 1;
         }
