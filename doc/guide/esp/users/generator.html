@@ -272,7 +272,6 @@ esp compile
             <p>If you are using static linking, use the <em>--static</em> switch to generate archive libraries instead of
                 shared libraries. If you are doing this, you must manually call the ESP initializers. See the --genlink
                 option for how to generate the code to call the ESP initializers.</p>
-
             <h3>Routes</h3>
             <p>When <em>esp</em> is invoked it, loads the <em>appweb.conf</em> configuration file from the current
             directory. If not found, esp will search up the parent directories for an appweb.conf file to use. The
@@ -281,7 +280,6 @@ esp compile
             It will usually contain many routes for various URIs. When <em>esp compile</em> is invoked,
             esp will compile the resources managed by each of the ESP routes specified in the Appweb configuration 
             file. </p>
-
             <h3>Filtering</h3>
             <p>If <em>esp compile</em> is invoked with one or more paths on the command line, these paths will act as 
             filters such that only the designated paths will be compiled. For example:
@@ -297,10 +295,8 @@ esp compile /directory/of/apps
             a directory that is part of an MVC application is provided, then all resources under that directory will
             be compiled. If a directory that is a parent directory of ESP applications or web pages, then all those
             resources contained by that directory will be compiled.</p>
-
             <p>You may also use the <em>--routeName</em> or <em>--routePrefix</em> switches to select a specific route
             in the appweb.conf configuration file. Then only the resources managed by that route will be compiled.</p>
-
             <h3>Keep Source</h3>
             <p>When compiling views or web pages, the <em>EspKeepSource</em> configuration file directive will control
             if the intermediate C source code generated from the ESP will be preserved.  This can sometimes be helpful
@@ -344,7 +340,6 @@ esp --platform vxworks-arm-debug
             
             <p>Note: You may need to modify the esp.conf configuration file
             to add rules for your operating system and CPU architecture or to customize for your application.</p>
-
             <a id="running"></a>
             <h2 class="section">Running</h2>
             <p>To run your application:</p>

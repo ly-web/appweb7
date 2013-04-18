@@ -503,6 +503,13 @@
     <title>EspReq</title>
     <filename>group___esp_req.html</filename>
     <member kind="typedef">
+      <type>EspProc</type>
+      <name>EspAction</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga60cdb8438d2c59c8014fe550129fbc0d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
       <type>void(*</type>
       <name>EspViewProc</name>
       <anchorfile>group___esp_req.html</anchorfile>
@@ -718,6 +725,13 @@
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga7f388bf60aa16e46a40dd7607f80c552</anchor>
       <arglist>(EspRoute *eroute)</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
+      <name>espGetSecurityToken</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>gae84ca6c41153894754c0bb48a8ce865d</anchor>
+      <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
       <type>int</type>

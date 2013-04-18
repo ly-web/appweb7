@@ -36,6 +36,7 @@ extern "C" {
 /**
     Procedure callback
     @ingroup Esp
+    @stability Stable
  */
 typedef void (*EspProc)(HttpConn *conn);
 
@@ -74,7 +75,8 @@ typedef void (*EspProc)(HttpConn *conn);
 /**
     ESP page parser structure
     @defgroup EspParse EspParse
-    @see
+    @see Esp
+    @internal
  */
 typedef struct EspState {
     char    *data;                          /**< Input data to parse */
@@ -99,8 +101,9 @@ typedef struct Esp {
     int             inUse;                  /**< Active ESP request counter */
 } Esp;
 
-/*
+/**
     Add HTLM internal options to the Esp.options hash
+    @internal
  */
 PUBLIC void espInitHtmlOptions(Esp *esp);
 
@@ -108,7 +111,7 @@ PUBLIC void espInitHtmlOptions(Esp *esp);
 /**
     EspRoute extended route configuration.
     @defgroup EspRoute EspRoute
-    @see
+    @see Esp
  */
 typedef struct EspRoute {
     HttpRoute       *route;                 /**< Back link to the owning route */
@@ -143,6 +146,7 @@ typedef struct EspRoute {
     @param module Mpr module object
     @return Zero if successful, otherwise a negative MPR error code.
     @ingroup EspRoute
+    @stability Stable
   */
 typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
 
@@ -208,6 +212,7 @@ typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
         in sorted www-urlencoded format. For example: /example.esp?hobby=sailing&name=john.
     @return A count of the bytes actually written
     @ingroup EspRoute
+    @stability Evolving
  */
 PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
 
@@ -222,6 +227,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
     @return "True" if the compilation is successful. Errors are logged and sent back to the client if EspRoute.showErrors
         is true.
     @ingroup EspRoute
+    @stability Evolving
  */
 PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, int isView);
 
@@ -238,6 +244,7 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
     @param err Output parameter to hold any relevant error message.
     @return Compiled script. Return NULL on errors.
     @ingroup EspRoute
+    @stability Evolving
  */
 PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
     EspState *state, char **err);
@@ -249,6 +256,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
     @param targetKey Target key used to select the action in a HttpRoute target. This is typically a URI prefix.
     @param actionProc EspProc callback procedure to invoke when the action is requested.
     @ingroup EspRoute
+    @stability Evolving
  */
 PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc);
 
@@ -259,6 +267,7 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc
     @param pattern URI pattern to use to find the releavant route.
     @param actionProc EspProc callback procedure to invoke when the action is requested.
     @ingroup EspRoute
+    @stability Evolving
  */
 PUBLIC int espBindProc(HttpRoute *route, cchar *pattern, void *actionProc);
 
@@ -269,6 +278,7 @@ PUBLIC int espBindProc(HttpRoute *route, cchar *pattern, void *actionProc);
     @param route HttpRoute object
     @param baseProc Function to call just prior to invoking a controller action.
     @ingroup EspRoute
+    @stability Stable
  */
 PUBLIC void espDefineBase(HttpRoute *route, EspProc baseProc);
 
@@ -279,6 +289,7 @@ PUBLIC void espDefineBase(HttpRoute *route, EspProc baseProc);
     @param path Path to the ESP view source code.
     @param viewProc EspViewPrococ callback procedure to invoke when the view is requested.
     @ingroup EspRoute
+    @stability Stable
  */
 PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
 
@@ -308,6 +319,7 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
     @param module Output module pathname
     @return An expanded command line
     @ingroup EspRoute
+    @stability Evolving
  */
 PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module);
 
@@ -318,6 +330,8 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
     @param appName Name of the ESP application
     @param routeName Name of the route in the appweb.conf file for this ESP application or page
     @return Zero if successful, otherwise a negative MPR error code. 
+    @ingroup Esp
+    @stability Evolving
   */
 PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *routeName);
 
@@ -333,36 +347,29 @@ PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
     View procedure callback.
     @param conn Http connection object
     @ingroup EspReq
+    @stability Stable
  */
 typedef void (*EspViewProc)(HttpConn *conn);
 
-#if UNUSED
 /**
     ESP Action
     @description Actions are run after a request URI is routed to a controller.
     @ingroup EspReq
-    @see
+    @stability Evolving
  */
-typedef struct EspAction {
-    EspProc         actionProc;             /**< Action procedure to run to respond to the request */
-} EspAction;
-#else
-typedef EspProc EspAction;                  /**< Action procedure to run to respond to the request */
-#endif
+typedef EspProc EspAction;
 
 PUBLIC void espManageAction(EspAction *ap, int flags);
 
 /**
     ESP request structure
     @defgroup EspReq EspReq
-    @see
+    @stability Internal
+    @see Esp
  */
 typedef struct EspReq {
     HttpRoute       *route;                 /**< Route reference */
     EspRoute        *eroute;                /**< Extended route info */
-#if UNUSED
-    EspAction       *action;                /**< Action to invoke */
-#endif
     Esp             *esp;                   /**< Convenient esp reference */
     MprHash         *flash;                 /**< New flash messages */
     MprHash         *lastFlash;             /**< Flash messages from the last request */
@@ -391,6 +398,7 @@ typedef struct EspReq {
     @return Zero if successful, otherwise a negative MPR error code. Returns MPR_ERR_ALREADY_EXISTS if the header already
         exists.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 
@@ -403,6 +411,7 @@ PUBLIC void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
     @return Zero if successful, otherwise a negative MPR error code. Returns MPR_ERR_ALREADY_EXISTS if the header already
         exists.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espAddHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
@@ -414,6 +423,7 @@ PUBLIC void espAddHeaderString(HttpConn *conn, cchar *key, cchar *value);
     @param fmt Printf style formatted string to use as the header key value
     @param ... Arguments for fmt
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 
@@ -424,6 +434,7 @@ PUBLIC void espAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
     @param key Http response header key
     @param value Value to set for the header
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
@@ -434,6 +445,7 @@ PUBLIC void espAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
     to signify the end of write data.  If the request is already finalized, this call does nothing.
     @param conn HttpConn connection object
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espAutoFinalize(HttpConn *conn);
 
@@ -449,6 +461,7 @@ PUBLIC void espAutoFinalize(HttpConn *conn);
     @return False if the request is a POST request and the security token does not match the session held token.
         Otherwise return "true".
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espCheckSecurityToken(HttpConn *conn);
 
@@ -461,6 +474,7 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn);
     @param data Hash of field values
     @return EdRec instance
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *data);
 
@@ -471,6 +485,7 @@ PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *data);
     If the request is already finalized, this call does nothing.
     @param conn HttpConn connection object
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espFinalize(HttpConn *conn);
 
@@ -479,6 +494,7 @@ PUBLIC void espFinalize(HttpConn *conn);
     @description This writes any buffered data.
     @param conn HttpConn connection object
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espFlush(HttpConn *conn);
 
@@ -488,6 +504,7 @@ PUBLIC void espFlush(HttpConn *conn);
     @param rec Database record. If set to NULL, the current database record defined via #form() is used.
     @return An MprList of column names in the given table. If there is no record defined, an empty list is returned.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec);
 
@@ -495,6 +512,7 @@ PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec);
     Get the current request connection.
     @return The HttpConn connection object
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC HttpConn *espGetConn();
 
@@ -505,6 +523,7 @@ PUBLIC HttpConn *espGetConn();
     @param conn HttpConn connection object
     @return A count of the response content data in bytes.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC MprOff espGetContentLength(HttpConn *conn);
 
@@ -514,6 +533,7 @@ PUBLIC MprOff espGetContentLength(HttpConn *conn);
     @param conn HttpConn connection object
     @return Mime type of any receive content. Set to NULL if not posted data.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espGetContentType(HttpConn *conn);
 
@@ -523,6 +543,7 @@ PUBLIC cchar *espGetContentType(HttpConn *conn);
     @param conn HttpConn connection object
     @return Return a string containing the cookies sent in the Http header of the last request
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espGetCookies(HttpConn *conn);
 
@@ -532,6 +553,7 @@ PUBLIC cchar *espGetCookies(HttpConn *conn);
     The database will be opened when the web server initializes and will be shared between all requests using the route. 
     @return Edi EDI database handle
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC Edi *espGetDatabase(HttpConn *conn);
 
@@ -539,6 +561,7 @@ PUBLIC Edi *espGetDatabase(HttpConn *conn);
     Get the current extended route information.
     @return EspRoute instance
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EspRoute *espGetEspRoute(HttpConn *conn);
 
@@ -547,6 +570,7 @@ PUBLIC EspRoute *espGetEspRoute(HttpConn *conn);
     @param conn HttpConn connection object
     @return A directory path name 
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espGetDir(HttpConn *conn);
 
@@ -557,6 +581,7 @@ PUBLIC cchar *espGetDir(HttpConn *conn);
     @param conn HttpConn connection object
     @param type Type of flash message to retrieve. Possible types include: "error", "inform", "warning", "all".
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espGetFlashMessage(HttpConn *conn, cchar *type);
 
@@ -565,6 +590,7 @@ PUBLIC cchar *espGetFlashMessage(HttpConn *conn, cchar *type);
     @description The current grid is defined via #setGrid
     @return EdiGrid instance
     @ingroup EspReq
+    @stability Evolving
     @internal
  */
 PUBLIC EdiGrid *espGetGrid(HttpConn *conn);
@@ -576,6 +602,7 @@ PUBLIC EdiGrid *espGetGrid(HttpConn *conn);
     @param key Name of the header to retrieve. This should be a lower case header name. For example: "Connection"
     @return Value associated with the header key or null if the key did not exist in the response.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espGetHeader(HttpConn *conn, cchar *key);
 
@@ -585,6 +612,7 @@ PUBLIC cchar *espGetHeader(HttpConn *conn, cchar *key);
     @param conn HttpConn connection object
     @return Hash table. See MprHash for how to access the hash table.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC MprHash *espGetHeaderHash(HttpConn *conn);
 
@@ -595,6 +623,7 @@ PUBLIC MprHash *espGetHeaderHash(HttpConn *conn);
     @param conn HttpConn connection object
     @return String containing all the headers. The caller must free this returned string.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC char *espGetHeaders(HttpConn *conn);
 
@@ -607,6 +636,7 @@ PUBLIC char *espGetHeaders(HttpConn *conn);
     @param defaultValue Default value to return if the variable is not defined. Can be null.
     @return Integer containing the request parameter's value
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC int espGetIntParam(HttpConn *conn, cchar *var, int defaultValue);
 
@@ -615,6 +645,7 @@ PUBLIC int espGetIntParam(HttpConn *conn, cchar *var, int defaultValue);
     @description This is a convenience API to return the Http method 
     @return The HttpConn.rx.method property
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espGetMethod(HttpConn *conn);
 
@@ -627,6 +658,7 @@ PUBLIC cchar *espGetMethod(HttpConn *conn);
     @param defaultValue Default value to return if the variable is not defined. Can be null.
     @return String containing the request parameter's value. Caller should not free.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue);
 
@@ -638,6 +670,7 @@ PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue);
     @param conn HttpConn connection object
     @return #MprHash instance containing the request parameters
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC MprHash *espGetParams(HttpConn *conn);
 
@@ -647,6 +680,7 @@ PUBLIC MprHash *espGetParams(HttpConn *conn);
     @param conn HttpConn connection object
     @return String containing the request query string. Caller should not free.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espGetQueryString(HttpConn *conn);
 
@@ -658,6 +692,7 @@ PUBLIC cchar *espGetQueryString(HttpConn *conn);
     @param conn HttpConn connection object
     @return String URI back to the referring URI. If no referrer is defined, refers to the home URI.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC char *espGetReferrer(HttpConn *conn);
 
@@ -666,6 +701,7 @@ PUBLIC char *espGetReferrer(HttpConn *conn);
     @param eroute EspRoute object
     @return Database instance object
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC Edi *espGetRouteDatabase(EspRoute *eroute);
 
@@ -675,6 +711,8 @@ PUBLIC Edi *espGetRouteDatabase(EspRoute *eroute);
         and in the session store.
     @param conn HttpConn connection object
     @return The security token string
+    @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espGetSecurityToken(HttpConn *conn);
 
@@ -683,6 +721,7 @@ PUBLIC cchar *espGetSecurityToken(HttpConn *conn);
     @param conn HttpConn connection object
     @return An integer Http response code. Typically 200 is success.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC int espGetStatus(HttpConn *conn);
 
@@ -692,6 +731,7 @@ PUBLIC int espGetStatus(HttpConn *conn);
     @param conn HttpConn connection object
     @returns A Http status message.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC char *espGetStatusMessage(HttpConn *conn);
 
@@ -702,6 +742,7 @@ PUBLIC char *espGetStatusMessage(HttpConn *conn);
     @param conn HttpConn connection object
     @return String Absolute URI to the top of the application
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC char *espGetTop(HttpConn *conn);
 
@@ -713,6 +754,7 @@ PUBLIC char *espGetTop(HttpConn *conn);
     @param conn HttpConn connection object
     @return A hash of HttpUploadFile objects.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC MprHash *espGetUploads(HttpConn *conn);
 
@@ -721,6 +763,7 @@ PUBLIC MprHash *espGetUploads(HttpConn *conn);
     @description This is a convenience API to return the request URI.
     @return The espGetConn()->rx->uri
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espGetUri(HttpConn *conn);
 
@@ -729,6 +772,7 @@ PUBLIC cchar *espGetUri(HttpConn *conn);
     @description The current grid is defined via #setRec
     @return "True" if a current grid has been defined
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espHasGrid(HttpConn *conn);
 
@@ -738,6 +782,7 @@ PUBLIC bool espHasGrid(HttpConn *conn);
         valid "id" field.
     @return "True" if a current record with a valid "id" is defined.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espHasRec(HttpConn *conn);
 
@@ -746,6 +791,7 @@ PUBLIC bool espHasRec(HttpConn *conn);
     @param conn HttpConn connection object
     @return "True" if there is no more receive data to read
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espIsEof(HttpConn *conn);
 
@@ -754,6 +800,7 @@ PUBLIC bool espIsEof(HttpConn *conn);
     @param conn HttpConn connection object
     @return "True" if the connection is using SSL.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espIsSecure(HttpConn *conn);
 
@@ -763,6 +810,7 @@ PUBLIC bool espIsSecure(HttpConn *conn);
     @param conn HttpConn connection object
     @return "True" if the request has been finalized.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espIsFinalized(HttpConn *conn);
 
@@ -779,6 +827,7 @@ grid = ediMakeGrid("[ \\ \n
     { id: '2', country: 'China' }, \ \n
     ]");
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EdiGrid *espMakeGrid(cchar *content);
 
@@ -791,6 +840,7 @@ PUBLIC EdiGrid *espMakeGrid(cchar *content);
     @param ... arguments
     @return MprHash instance
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC MprHash *espMakeHash(cchar *fmt, ...);
 
@@ -802,6 +852,7 @@ PUBLIC MprHash *espMakeHash(cchar *fmt, ...);
     @return An EdiRec instance
     @example: rec = ediMakeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EdiRec *espMakeRec(cchar *content);
 
@@ -813,6 +864,7 @@ PUBLIC EdiRec *espMakeRec(cchar *content);
     @param value Expected value to match
     @return "True" if the value matches
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value);
 
@@ -824,6 +876,7 @@ PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value);
     @param tableName Database table name
     @return A grid containing all table rows. Returns NULL if the table cannot be found.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EdiGrid *espReadAllRecs(HttpConn *conn, cchar *tableName);
 
@@ -834,6 +887,7 @@ PUBLIC EdiGrid *espReadAllRecs(HttpConn *conn, cchar *tableName);
     @param tableName Database table name
     @return The identified record. Returns NULL if the table or record cannot be found.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EdiRec *espReadRec(HttpConn *conn, cchar *tableName);
 
@@ -848,6 +902,7 @@ PUBLIC EdiRec *espReadRec(HttpConn *conn, cchar *tableName);
     @param value Data value to compare with the field values.
     @return A grid containing all matching records. Returns NULL if no matching records.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EdiGrid *espReadRecsWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
@@ -862,6 +917,7 @@ PUBLIC EdiGrid *espReadRecsWhere(HttpConn *conn, cchar *tableName, cchar *fieldN
     @param value Data value to compare with the field values.
     @return First matching record. Returns NULL if no matching records.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EdiRec *espReadRecWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
@@ -872,6 +928,7 @@ PUBLIC EdiRec *espReadRecWhere(HttpConn *conn, cchar *tableName, cchar *fieldNam
     @param key Key value of the record to read 
     @return Record instance of EdiRec.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EdiRec *eReadRecByKey(cchar *tableName, cchar *key);
 
@@ -883,6 +940,7 @@ PUBLIC EdiRec *eReadRecByKey(cchar *tableName, cchar *key);
     @param size Size of the buffer
     @return A count of bytes read into the buffer
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC ssize espReceive(HttpConn *conn, char *buf, ssize size);
 
@@ -893,6 +951,7 @@ PUBLIC ssize espReceive(HttpConn *conn, char *buf, ssize size);
     @param status Http status code to send with the response
     @param target New target uri for the client
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espRedirect(HttpConn *conn, int status, cchar *target);
 
@@ -901,6 +960,7 @@ PUBLIC void espRedirect(HttpConn *conn, int status, cchar *target);
     @description Redirect the client to the referring URI.
     @param conn HttpConn connection object
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espRedirectBack(HttpConn *conn);
 
@@ -911,6 +971,7 @@ PUBLIC void espRedirectBack(HttpConn *conn);
     @param key Http response header key
     @return Zero if successful, otherwise a negative MPR error code.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key);
 
@@ -922,6 +983,7 @@ PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key);
     @param key Key value of the record to remove 
     @return Record instance of EdiRec.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key);
 
@@ -934,6 +996,7 @@ PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key);
     @param ... Arguments for fmt
     @return A count of the bytes actually written
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...);
 
@@ -946,6 +1009,7 @@ PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...);
     @param size Size of the data in buf
     @return A count of the bytes actually written
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size);
 
@@ -956,6 +1020,7 @@ PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size);
     @param conn HttpConn connection object
     @return A count of the bytes actually written
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC ssize espRenderCached(HttpConn *conn);
 
@@ -966,6 +1031,7 @@ PUBLIC ssize espRenderCached(HttpConn *conn);
     @param fmt Printf style message format
     @return A count of the bytes actually written
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...);
 
@@ -975,6 +1041,7 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...);
     @param path File path name
     @return A count of the bytes actually written
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path);
 
@@ -987,6 +1054,7 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path);
     @param s String containing the data to write
     @return A count of the bytes actually written
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s);
 
@@ -998,6 +1066,7 @@ PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s);
     @param s String containing the data to write
     @return A count of the bytes actually written
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC ssize espRenderString(HttpConn *conn, cchar *s);
 
@@ -1009,6 +1078,7 @@ PUBLIC ssize espRenderString(HttpConn *conn, cchar *s);
     @param name Form variable name
     @return A count of the bytes actually written
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name);
 
@@ -1018,6 +1088,7 @@ PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name);
     @param conn Http connection object
     @param name view name
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espRenderView(HttpConn *conn, cchar *name);
 
@@ -1027,6 +1098,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name);
     @param on Set to "true" to enable auto-finalizing.
     @return "True" if auto-finalizing was enabled prior to this call
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espSetAutoFinalizing(HttpConn *conn, bool on);
 
@@ -1034,6 +1106,7 @@ PUBLIC bool espSetAutoFinalizing(HttpConn *conn, bool on);
     Set the current request connection.
     @param conn The HttpConn connection object to define
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espSetConn(HttpConn *conn);
 
@@ -1043,6 +1116,7 @@ PUBLIC void espSetConn(HttpConn *conn);
     @param conn HttpConn connection object
     @param length Numeric value for the content length header.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espSetContentLength(HttpConn *conn, MprOff length);
 
@@ -1059,6 +1133,7 @@ PUBLIC void espSetContentLength(HttpConn *conn, MprOff length);
     @param lifespan Duration for the cookie to persist in msec
     @param isSecure Set to "true" if the cookie only applies for SSL based connections
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan,
         bool isSecure);
@@ -1069,6 +1144,7 @@ PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path,
     @param conn HttpConn connection object
     @param mimeType Mime type string
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espSetContentType(HttpConn *conn, cchar *mimeType);
 
@@ -1081,6 +1157,7 @@ PUBLIC void espSetContentType(HttpConn *conn, cchar *mimeType);
     @param value Value to update
     @return The record instance if successful, otherwise NULL.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value);
 
@@ -1096,6 +1173,7 @@ PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value);
     @param data Hash of field names and values to use for the update
     @return The record instance if successful, otherwise NULL.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *data);
 
@@ -1106,6 +1184,7 @@ PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *data);
     @param kind Kind of flash message
     @param fmt Printf style formatted string to use as the message
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...);
 
@@ -1117,6 +1196,7 @@ PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...);
     @param fmt Printf style formatted string to use as the message
     @param args Varargs style list
     @ingroup EspReq
+    @stability Internal
     @internal
  */
 PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args);
@@ -1125,6 +1205,7 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args);
     Set the current database grid
     @return The grid instance. This permits chaining.
     @ingroup EspReq
+    @stability Internal
     @internal
  */
 PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid);
@@ -1137,6 +1218,7 @@ PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid);
     @param fmt Printf style formatted string to use as the header key value
     @param ... Arguments for fmt
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 
@@ -1147,6 +1229,7 @@ PUBLIC void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
     @param key Http response header key
     @param value String value for the key
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espSetHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
@@ -1158,6 +1241,7 @@ PUBLIC void espSetHeaderString(HttpConn *conn, cchar *key, cchar *value);
     @param var Name of the request parameter to set
     @param value Value to set.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value);
 
@@ -1167,6 +1251,7 @@ PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value);
     @param conn HttpConn connection object
     @param status Http status code.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espSetStatus(HttpConn *conn, int status);
 
@@ -1178,6 +1263,7 @@ PUBLIC void espSetStatus(HttpConn *conn, int status);
     @param var Name of the request parameter to set
     @param value Value to set.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value);
 
@@ -1189,6 +1275,7 @@ PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value);
     @param rec Record object to define as the current record.
     @return The grid instance. This permits chaining.
     @ingroup EspReq
+    @stability Evolving
     @internal
  */
 PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec);
@@ -1198,6 +1285,7 @@ PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec);
     @description This e request details back to the client. This is useful as a debugging tool.
     @param conn HttpConn connection object
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espShowRequest(HttpConn *conn);
 
@@ -1209,6 +1297,7 @@ PUBLIC void espShowRequest(HttpConn *conn);
     @param data Data to cache
     @param lifesecs Time in seconds to cache the data
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs);
 
@@ -1222,6 +1311,7 @@ PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs
     @param value Value to write to the database field
     @return "true" if the field  can be successfully written.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espUpdateField(HttpConn *conn, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
 
@@ -1238,6 +1328,7 @@ PUBLIC bool espUpdateField(HttpConn *conn, cchar *tableName, cchar *key, cchar *
     @param data Hash of field names and values to use for the update
     @return "true" if the field  can be successfully written. Returns false if field validations fail.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *data);
 
@@ -1251,6 +1342,7 @@ PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *data);
     @param rec Record to write to the database.
     @return "true" if the record can be successfully written.
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
 
@@ -1317,6 +1409,7 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
     espUri(conn, "{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0); \n
     espUri(conn, "{ template: '~/static/images/${theme}/background.jpg', theme: 'blue' }", 0); 
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
 
@@ -1412,6 +1505,7 @@ typedef struct EspControl { int dummy; } EspControl;
     updates. If this is not specifed, the connection to the server will be kept open. This permits the 
     server to "push" alerts to the console, but will consume a connection at the server for each client.
     @ingroup EspControl
+    @stability Evolving
     @internal
  */
 PUBLIC void espAlert(HttpConn *conn, cchar *text, cchar *options);
@@ -1424,6 +1518,7 @@ PUBLIC void espAlert(HttpConn *conn, cchar *text, cchar *options);
     @param uri URI link for the anchor
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espAnchor(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
 
@@ -1436,6 +1531,7 @@ PUBLIC void espAnchor(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
     @param value Form input value to submit when the button is clicked
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espButton(HttpConn *conn, cchar *text, cchar *value, cchar *options);
 
@@ -1446,6 +1542,7 @@ PUBLIC void espButton(HttpConn *conn, cchar *text, cchar *value, cchar *options)
     @param uri URI to invoke when the button is clicked.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
 
@@ -1463,6 +1560,7 @@ PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *option
         motionchart, areachart, intensitymap, imageareachart, barchart, imagebarchart, bioheatmap, columnchart, 
         linechart, imagelinechart, imagepiechart, scatterchart (and more).
     @ingroup EspControl
+    @stability Evolving
     @internal
  */
 PUBLIC void espChart(HttpConn *conn, EdiGrid *grid, cchar *options);
@@ -1478,6 +1576,7 @@ PUBLIC void espChart(HttpConn *conn, EdiGrid *grid, cchar *options);
     @param checkedValue Value for which the checkbox will be checked.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espCheckbox(HttpConn *conn, cchar *name, cchar *checkedValue, cchar *options);
 
@@ -1489,6 +1588,7 @@ PUBLIC void espCheckbox(HttpConn *conn, cchar *name, cchar *checkedValue, cchar 
     @param body HTML body to render
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
 
@@ -1497,6 +1597,7 @@ PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
     @description This emits a HTML closing form tag.
     @param conn Http connection object
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espEndform(HttpConn *conn);
 
@@ -1512,6 +1613,7 @@ PUBLIC void espEndform(HttpConn *conn);
     @arg retain -- Number of seconds to retain the message. If <= 0, the message is retained until another
         message is displayed. Default is 0.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espFlash(HttpConn *conn, cchar *kinds, cchar *options);
 
@@ -1532,6 +1634,7 @@ PUBLIC void espFlash(HttpConn *conn, cchar *kinds, cchar *options);
         security token will always be generated unless options.nosecurity is defined to be true.
         Security tokens are used by ESP to mitigate cross-site scripting errors.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *options);
 
@@ -1541,6 +1644,7 @@ PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *options);
     @param uri URI reference for the icon resource
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *options);
 
@@ -1550,6 +1654,7 @@ PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *options);
     @param uri URI reference for the image resource
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *options);
 
@@ -1565,6 +1670,7 @@ PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *options);
         options.value property.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espInput(HttpConn *conn, cchar *field, cchar *options);
 
@@ -1574,6 +1680,7 @@ PUBLIC void espInput(HttpConn *conn, cchar *field, cchar *options);
     @param text Label text to display.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *options);
 
@@ -1592,6 +1699,7 @@ PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *options);
         espDropdown(conn, "priority", makeGrid("[0, 10, 100]"), 0)
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espDropdown(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *options);
 
@@ -1602,6 +1710,7 @@ PUBLIC void espDropdown(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *o
     @param address Mail recipient address link
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *options);
 
@@ -1611,6 +1720,7 @@ PUBLIC void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *options)
     @param progress Progress percentage (0-100) 
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espProgress(HttpConn *conn, cchar *progress, cchar *options);
 
@@ -1625,6 +1735,7 @@ PUBLIC void espProgress(HttpConn *conn, cchar *progress, cchar *options);
         espRadio(conn, "priority", "{ low: 0, med: 1, high: 2, }", NULL)
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choices, cchar *options);
 
@@ -1636,6 +1747,7 @@ PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choices, cchar *option
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg minified -- Set to "true" to select a minified (compressed) version of the script.
     @ingroup EspControl
+    @stability Evolving
     @internal
  */
 PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *options);
@@ -1647,6 +1759,7 @@ PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *options);
     @param conn Http connection object
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
 
@@ -1660,6 +1773,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
     requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @param conn Http connection object
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espSecurityToken(HttpConn *conn);
 
@@ -1670,6 +1784,7 @@ PUBLIC void espSecurityToken(HttpConn *conn);
     @param conn Http connection object
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
 
@@ -1710,6 +1825,7 @@ PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
     @arg styleRows Array of styles to use for the table body rows
     @arg title String Table title.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
 
@@ -1730,6 +1846,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
     @arg remote Set to "true" to invoke the selected pane via a background click.
     @arg toggle Set to "true" to show the selected pane and hide other panes.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espTabs(HttpConn *conn, EdiRec *rec, cchar *options);
 
@@ -1747,6 +1864,7 @@ PUBLIC void espTabs(HttpConn *conn, EdiRec *rec, cchar *options);
     @arg rows Number number of text rows
     @arg password Boolean The data to display is a password and should be obfuscated.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void espText(HttpConn *conn, cchar *field, cchar *options);
 
@@ -1758,6 +1876,7 @@ PUBLIC void espText(HttpConn *conn, cchar *field, cchar *options);
           dynamically refresh the data. The tree data is typically an XML document.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
+    @stability Evolving
     @internal
  */
 PUBLIC void espTree(HttpConn *conn, EdiGrid *grid, cchar *options);
@@ -1770,6 +1889,7 @@ PUBLIC void espTree(HttpConn *conn, EdiGrid *grid, cchar *options);
     @stability Prototype
     @see espAlert
     @defgroup EspAbbrev EspAbbrev
+    @stability Evolving
   */
 typedef struct EspAbbrev { int dummy; } EspAbbrev;
 
@@ -1781,6 +1901,7 @@ typedef struct EspAbbrev { int dummy; } EspAbbrev;
     updates. If this is not specifed, the connection to the server will be kept open. This permits the 
     server to "push" alerts to the console, but will consume a connection at the server for each client.
     @ingroup EspAbbrev
+    @stability Evolving
     @internal
  */
 PUBLIC void alert(cchar *text, cchar *options);
@@ -1792,6 +1913,7 @@ PUBLIC void alert(cchar *text, cchar *options);
     @param uri URI link for the anchor
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void anchor(cchar *text, cchar *uri, cchar *options);
 
@@ -1803,6 +1925,7 @@ PUBLIC void anchor(cchar *text, cchar *uri, cchar *options);
     @param value Form input value to submit when the button is clicked
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void button(cchar *text, cchar *value, cchar *options);
 
@@ -1812,6 +1935,7 @@ PUBLIC void button(cchar *text, cchar *value, cchar *options);
     @param uri URI to invoke when the button is clicked.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *options);
 
@@ -1828,6 +1952,7 @@ PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *options);
         motionchart, areachart, intensitymap, imageareachart, barchart, imagebarchart, bioheatmap, columnchart, 
         linechart, imagelinechart, imagepiechart, scatterchart (and more)
     @ingroup EspAbbrev
+    @stability Evolving
     @internal
  */
 PUBLIC void chart(EdiGrid *grid, cchar *options);
@@ -1842,6 +1967,7 @@ PUBLIC void chart(EdiGrid *grid, cchar *options);
     @param checkedValue Value for which the checkbox will be checked.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *options);
 
@@ -1852,6 +1978,7 @@ PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *options);
     @param body HTML body to render
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void division(cchar *body, cchar *options);
 
@@ -1868,6 +1995,7 @@ PUBLIC void division(cchar *body, cchar *options);
         espDropdown(conn, "priority", makeGrid("[0, 10, 100]"), 0)
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
 
@@ -1875,6 +2003,7 @@ PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
     Signify the end of an HTML form. 
     @description This emits a HTML closing form tag.
     @ingroup EspControl
+    @stability Evolving
  */
 PUBLIC void endform();
 
@@ -1888,6 +2017,7 @@ PUBLIC void endform();
         message is displayed. Default is 0.
     MOB - this default implies it is displayed for zero seconds
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void flash(cchar *kinds, cchar *options);
 
@@ -1908,6 +2038,7 @@ PUBLIC void flash(cchar *kinds, cchar *options);
         security token will always be generated unless options.insecure is defined to be true.
         Security tokens are used by ESP to mitigate cross site scripting errors.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void form(void *record, cchar *options);
 
@@ -1916,6 +2047,7 @@ PUBLIC void form(void *record, cchar *options);
     @param uri URI reference for the icon resource
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void icon(cchar *uri, cchar *options);
 
@@ -1924,6 +2056,7 @@ PUBLIC void icon(cchar *uri, cchar *options);
     @param uri URI reference for the image resource
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void image(cchar *uri, cchar *options);
 
@@ -1936,6 +2069,7 @@ PUBLIC void image(cchar *uri, cchar *options);
         options.value property.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void input(cchar *field, cchar *options);
 
@@ -1944,6 +2078,7 @@ PUBLIC void input(cchar *field, cchar *options);
     @param text Label text to display.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void label(cchar *text, cchar *options);
 
@@ -1953,6 +2088,7 @@ PUBLIC void label(cchar *text, cchar *options);
     @param address Mail recipient address link
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void mail(cchar *name, cchar *address, cchar *options);
 
@@ -1961,6 +2097,7 @@ PUBLIC void mail(cchar *name, cchar *address, cchar *options);
     @param progress Progress percentage (0-100) 
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void progress(cchar *progress, cchar *options);
 
@@ -1974,6 +2111,7 @@ PUBLIC void progress(cchar *progress, cchar *options);
         radio("priority", "{ low: 0, med: 1, high: 2, }", NULL)
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void radio(cchar *field, void *choices, cchar *options);
 
@@ -1984,6 +2122,7 @@ PUBLIC void radio(cchar *field, void *choices, cchar *options);
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg minified Set to "ture" to select a minified (compressed) version of the script.
     @ingroup EspAbbrev
+    @stability Evolving
     @internal
  */
 PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
@@ -1994,6 +2133,7 @@ PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
         URI formats.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void script(cchar *uri, cchar *options);
 
@@ -2006,6 +2146,7 @@ PUBLIC void script(cchar *uri, cchar *options);
     calling this routine is not required unless a security token is required for non-form requests such as AJAX
     requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void securityToken();
 
@@ -2015,6 +2156,7 @@ PUBLIC void securityToken();
         See #httpLink for a list of possible URI formats.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void stylesheet(cchar *uri, cchar *options);
 
@@ -2054,6 +2196,7 @@ PUBLIC void stylesheet(cchar *uri, cchar *options);
     @arg styleRows Array of styles to use for the table body rows
     @arg title String Table title.
     @ingroup EspAbbrev
+    @stability Evolving
 */
 PUBLIC void table(EdiGrid *grid, cchar *options);
 
@@ -2074,6 +2217,7 @@ PUBLIC void table(EdiGrid *grid, cchar *options);
     @arg remote Set to "true" to invoke the selected pane via a background click.
     @arg toggle Set to "true" to show the selected pane and hide other panes.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void tabs(EdiRec *rec, cchar *options);
 
@@ -2090,6 +2234,7 @@ PUBLIC void tabs(EdiRec *rec, cchar *options);
     @arg rows Number number of text rows
     @arg password Boolean The data to display is a password and should be obfuscated.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void text(cchar *field, cchar *options);
 
@@ -2100,6 +2245,7 @@ PUBLIC void text(cchar *field, cchar *options);
           dynamically refresh the data. The tree data is typically an XML document.
     @param options Optional extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
+    @stability Evolving
     @internal
  */
 PUBLIC void tree(EdiGrid *grid, cchar *options);
@@ -2115,6 +2261,7 @@ PUBLIC void tree(EdiGrid *grid, cchar *options);
     @return Zero if successful, otherwise a negative MPR error code. Returns MPR_ERR_ALREADY_EXISTS if the header already
         exists.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void addHeader(cchar *key, cchar *fmt, ...);
 
@@ -2126,6 +2273,7 @@ PUBLIC void addHeader(cchar *key, cchar *fmt, ...);
     @param data Hash of field values
     @return EdRec instance
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiRec *createRec(cchar *tableName, MprHash *data);
 
@@ -2137,20 +2285,22 @@ PUBLIC EdiRec *createRec(cchar *tableName, MprHash *data);
     with the response. Note: Objects are stored in the session state using JSON serialization.
     @return Session ID string
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *createSession();
 
 /**
     Destroy a session state object. 
-    @description This will emit an expired cookie to the client to force it to erase the
-        session cookie.
+    @description This will emit an expired cookie to the client to force it to erase the session cookie.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void destroySession();
 
 /**
     Don't auto-finalize this request
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void dontAutoFinalize();
 
@@ -2160,6 +2310,7 @@ PUBLIC void dontAutoFinalize();
     If the request has already been finalized, this call has no additional effect.
     This routine calls #espFinalize.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void finalize();
 
@@ -2167,6 +2318,7 @@ PUBLIC void finalize();
     Flush transmit data. 
     @description This writes any buffered data.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void flush();
 
@@ -2175,6 +2327,7 @@ PUBLIC void flush();
     @param rec Database record. If set to NULL, the current database record defined via #form() is used.
     @return An MprList of column names in the given table. If there is no record defined, an empty list is returned.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC MprList *getColumns(EdiRec *rec);
 
@@ -2183,6 +2336,7 @@ PUBLIC MprList *getColumns(EdiRec *rec);
     @description Get the cookies defined in the current request.
     @return Return a string containing the cookies sent in the Http header of the last request.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *getCookies();
 
@@ -2192,6 +2346,7 @@ PUBLIC cchar *getCookies();
     local data. Most EspControl APIs take an HttpConn object as an argument.
     @return HttpConn connection instance object.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC HttpConn *getConn();
 
@@ -2201,6 +2356,7 @@ PUBLIC HttpConn *getConn();
         data and in clients to get the response body length.
     @return A count of the response content data in bytes.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC MprOff getContentLength();
 
@@ -2209,6 +2365,7 @@ PUBLIC MprOff getContentLength();
     @description Get the content mime type of the receive body content (if any).
     @return Mime type of any receive content. Set to NULL if not posted data.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *getContentType();
 
@@ -2218,6 +2375,7 @@ PUBLIC cchar *getContentType();
     The database will be opened when the web server initializes and will be shared between all requests using the route. 
     @return Edi EDI database handle
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC Edi *getDatabase();
 
@@ -2225,6 +2383,7 @@ PUBLIC Edi *getDatabase();
     Get the extended route EspRoute structure
     @return EspRoute instance
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EspRoute *getEspRoute();
 
@@ -2232,6 +2391,7 @@ PUBLIC EspRoute *getEspRoute();
     Get the default document root directory for the request route.
     @return A directory path name 
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *getDir();
 
@@ -2241,6 +2401,7 @@ PUBLIC cchar *getDir();
     @param field Field name to return
     @return String value for "field" in the current record.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *getField(cchar *field);
 
@@ -2249,6 +2410,7 @@ PUBLIC cchar *getField(cchar *field);
     @description The current grid is defined via #setGrid
     @return EdiGrid instance
     @ingroup EspAbbrev
+    @stability Evolving
     @internal
  */
 PUBLIC EdiGrid *getGrid();
@@ -2259,6 +2421,7 @@ PUBLIC EdiGrid *getGrid();
     @param key Name of the header to retrieve. This should be a lower case header name. For example: "Connection"
     @return Value associated with the header key or null if the key did not exist in the response.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *getHeader(cchar *key);
 
@@ -2267,6 +2430,7 @@ PUBLIC cchar *getHeader(cchar *key);
     @description This is a convenience API to return the Http method 
     @return The HttpConn.rx.method property
     @ingroup EspReq
+    @stability Evolving
  */
 PUBLIC cchar *getMethod();
 
@@ -2275,6 +2439,7 @@ PUBLIC cchar *getMethod();
     @description This is a convenience API to return the query string for the current request.
     @return The espGetConn()->rx->parsedUri->query property
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *getQuery();
 
@@ -2283,6 +2448,7 @@ PUBLIC cchar *getQuery();
     @description The current record is defined via #setRec
     @return EdiRec instance
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiRec *getRec();
 
@@ -2293,6 +2459,7 @@ PUBLIC EdiRec *getRec();
         by #espGetTop.
     @return String URI back to the referring URI. If no referrer is defined, refers to the home URI.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *getReferrer();
 
@@ -2302,6 +2469,7 @@ PUBLIC cchar *getReferrer();
     @param name Variable name to get
     @return The session variable value. Returns NULL if not set.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *getSessionVar(cchar *name);
 
@@ -2318,6 +2486,7 @@ PUBLIC cchar *session(cchar *name);
         Alternatively, this can be constructed via uri("~")
     @return String Absolute URI to the top of the application
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *getTop();
 
@@ -2328,6 +2497,7 @@ PUBLIC cchar *getTop();
         objects.
     @return A hash of HttpUploadFile objects.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC MprHash *getUploads();
 
@@ -2336,6 +2506,7 @@ PUBLIC MprHash *getUploads();
     @description This is a convenience API to return the request URI.
     @return The espGetConn()->rx->uri
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *getUri();
 
@@ -2344,6 +2515,7 @@ PUBLIC cchar *getUri();
     @description The current grid is defined via #setRec
     @return "true" if a current grid has been defined
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC bool hasGrid();
 
@@ -2353,6 +2525,7 @@ PUBLIC bool hasGrid();
         valid "id" field.
     @return "true" if a current record with a valid "id" is defined.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC bool hasRec();
 
@@ -2360,6 +2533,7 @@ PUBLIC bool hasRec();
     Test if the receive input stream is at end-of-file
     @return "true" if there is no more receive data to read
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC bool isEof();
 
@@ -2368,6 +2542,7 @@ PUBLIC bool isEof();
     @description This tests if #espFinalize or #httpFinalize has been called for a request.
     @return "true" if the request has been finalized.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC bool isFinalized();
 
@@ -2377,6 +2552,7 @@ PUBLIC bool isFinalized();
     feedback messages to the next request. 
     @param fmt Printf style message format
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void inform(cchar *fmt, ...);
 
@@ -2384,6 +2560,7 @@ PUBLIC void inform(cchar *fmt, ...);
     Test if the connection is using SSL and is secure
     @return "true" if the connection is using SSL.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC bool isSecure();
 
@@ -2400,6 +2577,7 @@ grid = ediMakeGrid("[ \\ \n
     { id: '2', country: 'China' }, \ \n
     ]");
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiGrid *makeGrid(cchar *content);
 
@@ -2412,6 +2590,7 @@ PUBLIC EdiGrid *makeGrid(cchar *content);
     @param ... arguments
     @return MprHash instance
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC MprHash *makeHash(cchar *fmt, ...);
 
@@ -2423,6 +2602,7 @@ PUBLIC MprHash *makeHash(cchar *fmt, ...);
     @return An EdiRec instance
     @example: rec = ediMakeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiRec *makeRec(cchar *content);
 
@@ -2432,6 +2612,7 @@ PUBLIC EdiRec *makeRec(cchar *content);
     feedback messages to the next request. 
     @param fmt Printf style message format
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void notice(cchar *fmt, ...);
 
@@ -2443,6 +2624,7 @@ PUBLIC void notice(cchar *fmt, ...);
     @param name Name of the request parameter to retrieve
     @return String containing the request parameter's value. Caller should not free.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *param(cchar *name);
 
@@ -2454,6 +2636,7 @@ PUBLIC cchar *param(cchar *name);
         This routine calls #espGetParams
     @return #MprHash instance containing the request parameters
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC MprHash *params();
 
@@ -2463,6 +2646,7 @@ PUBLIC MprHash *params();
     @param tableName Database table name
     @return The identified record. Returns NULL if the table or record cannot be found.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiRec *readRec(cchar *tableName);
 
@@ -2476,6 +2660,7 @@ PUBLIC EdiRec *readRec(cchar *tableName);
     @param value Data value to compare with the field values.
     @return A grid containing all matching records. Returns NULL if no matching records.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
@@ -2489,6 +2674,7 @@ PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operati
     @param value Data value to compare with the field values.
     @return First matching record. Returns NULL if no matching records.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
@@ -2499,6 +2685,7 @@ PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation
     @param key Key value of the record to read 
     @return Record instance of EdiRec.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key);
 
@@ -2509,6 +2696,7 @@ PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key);
     @param tableName Database table name
     @return A grid containing all table rows. Returns NULL if the table cannot be found.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiGrid *readTable(cchar *tableName);
 
@@ -2519,6 +2707,7 @@ PUBLIC EdiGrid *readTable(cchar *tableName);
     @param size Size of the buffer
     @return A count of bytes read into the buffer
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC ssize receive(char *buf, ssize size);
 
@@ -2528,6 +2717,7 @@ PUBLIC ssize receive(char *buf, ssize size);
     code is required, use #espRedirect.
     @param target New target uri for the client
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void redirect(cchar *target);
 
@@ -2535,6 +2725,7 @@ PUBLIC void redirect(cchar *target);
     Redirect the client back to the referrer
     @description Redirect the client to the referring URI.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void redirectBack();
 
@@ -2545,6 +2736,7 @@ PUBLIC void redirectBack();
     @param key Key value of the record to remove 
     @return Record instance of EdiRec.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC bool removeRec(cchar *tableName, cchar *key);
 
@@ -2556,6 +2748,7 @@ PUBLIC bool removeRec(cchar *tableName, cchar *key);
     @param ... Arguments for fmt
     @return A count of the bytes actually written
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC ssize render(cchar *fmt, ...);
 
@@ -2565,6 +2758,7 @@ PUBLIC ssize render(cchar *fmt, ...);
         mode has been set to "manual".
     @return A count of the bytes actually written
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC ssize renderCached();
 
@@ -2574,6 +2768,7 @@ PUBLIC ssize renderCached();
     @param fmt Printf style message format
     @return A count of the bytes actually written
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void renderError(int status, cchar *fmt, ...);
 
@@ -2585,6 +2780,7 @@ PUBLIC void renderError(int status, cchar *fmt, ...);
     @param ... Arguments for fmt
     @return A count of the bytes actually written
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC ssize renderFile(cchar *path);
 
@@ -2596,6 +2792,7 @@ PUBLIC ssize renderFile(cchar *path);
     @param ... Arguments for fmt
     @return A count of the bytes actually written
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC ssize renderSafe(cchar *fmt, ...);
 
@@ -2604,6 +2801,7 @@ PUBLIC ssize renderSafe(cchar *fmt, ...);
     @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
     @param view view name
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void renderView(cchar *view);
 
@@ -2619,6 +2817,7 @@ PUBLIC void renderView(cchar *view);
     @param lifespan Lifespan of the cookie. (MOB units?)
     @param isSecure Boolean Set to "true" if the cookie only applies for SSL based connections
     @ingroup EspAbbrev
+    @stability Evolving
 */
 PUBLIC void setCookie(cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan, bool isSecure);
 
@@ -2626,6 +2825,7 @@ PUBLIC void setCookie(cchar *name, cchar *value, cchar *path, cchar *domain, Mpr
     Set the current request connection.
     @param conn The HttpConn connection object to define
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void setConn(HttpConn *conn);
 
@@ -2634,6 +2834,7 @@ PUBLIC void setConn(HttpConn *conn);
     @description Set the mime type Http header in the transmission
     @param mimeType Mime type string
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void setContentType(cchar *mimeType);
 
@@ -2646,6 +2847,7 @@ PUBLIC void setContentType(cchar *mimeType);
     @param value Value to update
     @return The record instance if successful, otherwise NULL.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value);
 
@@ -2661,6 +2863,7 @@ PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value);
     @param data Hash of field names and values to use for the update
     @return The record instance if successful, otherwise NULL.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *data);
 
@@ -2673,6 +2876,7 @@ PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *data);
     @param kind Kind of flash message.
     @param fmt Printf style message format
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void setFlash(cchar *kind, cchar *fmt, ...);
 
@@ -2680,6 +2884,7 @@ PUBLIC void setFlash(cchar *kind, cchar *fmt, ...);
     Set the current database grid
     @return The grid instance. This permits chaining.
     @ingroup EspAbbrev
+    @stability Evolving
     @internal
  */
 PUBLIC EdiGrid *setGrid(EdiGrid *grid);
@@ -2691,6 +2896,7 @@ PUBLIC EdiGrid *setGrid(EdiGrid *grid);
     @param fmt Printf style formatted string to use as the header key value
     @param ... Arguments for fmt
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void setHeader(cchar *key, cchar *fmt, ...);
 
@@ -2701,6 +2907,7 @@ PUBLIC void setHeader(cchar *key, cchar *fmt, ...);
     @param name Name of the request parameter to set
     @param value Value to set.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void setParam(cchar *name, cchar *value);
 
@@ -2710,6 +2917,7 @@ PUBLIC void setParam(cchar *name, cchar *value);
         checkbox and dropdown()
     @return The grid instance. This permits chaining.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC EdiRec *setRec(EdiRec *rec);
 
@@ -2719,6 +2927,7 @@ PUBLIC EdiRec *setRec(EdiRec *rec);
     @param name Variable name to set
     @param value Value to set
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void setSessionVar(cchar *name, cchar *value);
 
@@ -2727,6 +2936,7 @@ PUBLIC void setSessionVar(cchar *name, cchar *value);
     @description Set the Http response status for the request. This defaults to 200 (OK).
     @param status Http status code.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void setStatus(int status);
 
@@ -2737,6 +2947,7 @@ PUBLIC void setStatus(int status);
     @param timeout Time in milliseconds to elapse before invoking the timeout
     @param data Argument to pass to proc
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void setTimeout(void *proc, MprTicks timeout, void *data);
 
@@ -2744,6 +2955,7 @@ PUBLIC void setTimeout(void *proc, MprTicks timeout, void *data);
     Show request details
     @description This echoes request details back to the client. This is useful as a debugging tool.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void showRequest();
 
@@ -2754,6 +2966,7 @@ PUBLIC void showRequest();
     @param data Data to cache
     @param lifesecs Time in seconds to cache the data
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs);
 
@@ -2766,6 +2979,7 @@ PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs);
     @param value Value to write to the database field
     @return "true" if the field  can be successfully written.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
 
@@ -2781,6 +2995,7 @@ PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *v
     @param data Hash of field names and values to use for the update
     @return "true" if the field  can be successfully written. Returns false if field validations fail.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC bool updateFields(cchar *tableName, MprHash *data);
 
@@ -2793,6 +3008,7 @@ PUBLIC bool updateFields(cchar *tableName, MprHash *data);
     @param rec Record to write to the database.
     @return "true" if the record can be successfully written.
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC bool updateRec(EdiRec *rec);
 
@@ -2858,6 +3074,7 @@ PUBLIC bool updateRec(EdiRec *rec);
     uri("{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0); \n
     uri("{ template: '~/static/images/${theme}/background.jpg', theme: 'blue' }", 0); 
     @ingroup EspAbbrev
+    @stability Evolving
  */
 PUBLIC cchar *uri(cchar *target);
 
@@ -2873,25 +3090,10 @@ PUBLIC cchar *uri(cchar *target);
     Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http: *www.embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http: *www.embedthis.com
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -2901,4 +3103,3 @@ PUBLIC cchar *uri(cchar *target);
 
     @end
  */
-
