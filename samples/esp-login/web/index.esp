@@ -4,6 +4,8 @@
     <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">  
 </head>
 <body>
-    <p>Hello SSL</p>
+    <h1>Welcome</h1>
+   
+    <p>Click to <a href="/logout">Logout</a> and you will be redirected back to the login form.</p>
 </body>
 </html>
