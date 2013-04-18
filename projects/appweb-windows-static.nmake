@@ -3,7 +3,7 @@
 #
 
 PRODUCT            = appweb
-VERSION            = 4.3.2
+VERSION            = 4.3.3
 BUILD_NUMBER       = 0
 PROFILE            = static
 PA                 = $(PROCESSOR_ARCHITECTURE)
@@ -351,7 +351,7 @@ clean:
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.2-0
+	@echo 4.3.3-0
 
 #
 #   bit.h
