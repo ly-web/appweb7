@@ -272,28 +272,35 @@ esp compile
             <p>If you are using static linking, use the <em>--static</em> switch to generate archive libraries instead of
                 shared libraries. If you are doing this, you must manually call the ESP initializers. See the --genlink
                 option for how to generate the code to call the ESP initializers.</p>
+
             <h3>Routes</h3>
             <p>When <em>esp</em> is invoked it, loads the <em>appweb.conf</em> configuration file from the current
-            directory, unless <em>esp</em> is invoked with the <em>--config</em> switch to select an alternative 
-            appweb.conf configuration file.. An appweb.conf file may contain directives or a single or multiple
-            applications. It may also contain many routes for various URIs. When <em>esp compile</em> is invoked,
-            it will compile each of the ESP routes specified in the Appweb configuration file. </p>
+            directory. If not found, esp will search up the parent directories for an appweb.conf file to use. The
+            --config option may also contain a full path to an appweb.conf file. </p>
+            <p>An appweb.conf file may contain directives for one more more applications.
+            It will usually contain many routes for various URIs. When <em>esp compile</em> is invoked,
+            esp will compile the resources managed by each of the ESP routes specified in the Appweb configuration 
+            file. </p>
+
             <h3>Filtering</h3>
             <p>If <em>esp compile</em> is invoked with one or more paths on the command line, these paths will act as 
             filters such that only the designated paths will be compiled. For example:
             <pre>
 esp compile web/test.esp
-esp compile ./myapp
+esp compile myapp
 esp compile views
 esp compile /path/to/my/app
 esp compile /directory/of/apps
 </pre>
-            <p>If a controller, view or web page filename is provided, only that resource will be compiled. If
+            <p>These paths are interpreted as filenames relative to the current directory.
+            If a controller, view or web page filename is provided, only that resource will be compiled. If
             a directory that is part of an MVC application is provided, then all resources under that directory will
             be compiled. If a directory that is a parent directory of ESP applications or web pages, then all those
             resources contained by that directory will be compiled.</p>
+
             <p>You may also use the <em>--routeName</em> or <em>--routePrefix</em> switches to select a specific route
             in the appweb.conf configuration file. Then only the resources managed by that route will be compiled.</p>
+
             <h3>Keep Source</h3>
             <p>When compiling views or web pages, the <em>EspKeepSource</em> configuration file directive will control
             if the intermediate C source code generated from the ESP will be preserved.  This can sometimes be helpful
@@ -319,17 +326,25 @@ esp --flat --static --genlink slink.c
             <h3>Cross Compiling</h3>
             <p>When <em>esp compile</em> is invoked, it selects its compile and link rules from the <em>esp.conf</em>
             configuration file. This file, which may be customized, contains the rules for various operating systems
-            and CPU architectures. By default, the current system configuration is selected if not cross compiling.
+            and CPU architectures. The esp.conf file is included automatically when the ESP handler is added.</p>
+            <p>By default, the current system configuration is selected if not cross compiling.
             If cross-compiling, the configuration for the target host specified via the Appweb configure program is
             utilized.</p>
             <p>The <em>esp</em> command can select alternate compile and link configurations via the 
-            <em>--host</em> and <em>--arch</em> switches. For example:
+            <em>--platform</em> switch. For example:
             <pre>
-esp --arch ppc --host vxworks
+esp --platform vxworks-arm-debug
 </pre>
-            <p>This will compile the application for VxWorks on ppc. Of course, the resulting module cannot be 
-            run on the development system if cross-compiling. You may need to modify the esp.conf configuration file
+            <p>This will compile the application for VxWorks on arm. Of course, the resulting module cannot be 
+            run on the development system if cross-compiling. 
+            
+            <p>The --platform option will search current directory and parent directories for an Appweb platform directory
+            of the same name. You can provide a full path name as an argument to the --platform switch if your application
+            is outside the Appweb source tree.</p>
+            
+            <p>Note: You may need to modify the esp.conf configuration file
             to add rules for your operating system and CPU architecture or to customize for your application.</p>
+
             <a id="running"></a>
             <h2 class="section">Running</h2>
             <p>To run your application:</p>
@@ -360,7 +375,7 @@ ESP Usage:
     --log logFile:level        # Log to file file at verbosity level
     --overwrite                # Overwrite existing files 
     --quiet                    # Don't emit trace 
-    --platform os-arch-profile # Target platform
+    --platform os-arch-profile # Target platform. May be a full path.
     --rebuild                  # Force a rebuild
     --reverse                  # Reverse migrations
     --routeName name           # Route name in appweb.conf to use 
@@ -438,7 +453,8 @@ ESP Usage:
                     </tr>
                     <tr>
                         <td class="nowrap">--platform os-arch-profile</td>
-                        <td>Target platform.</td>
+                        <td>Target platform. This may be a full path to an Appweb platform directory in an
+                            Appweb source tree.</td>
                     </tr>
                     <tr>
                         <td>--rebuild</td>
