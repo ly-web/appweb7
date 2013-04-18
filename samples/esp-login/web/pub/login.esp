@@ -1,6 +1,6 @@
 <html><head><title>login.esp</title></head>
 <body>
-    <p>Please log in</p>
+    <h1>Please log in</h1>
     <form name="details" method="post" action="/login">
         Username <input type="text" name="username" value='<%= param("username") %>'><br/>
         Password <input type="password" name="password" value='<%= param("password") %>'><br/>
