@@ -1919,11 +1919,12 @@ static void setDefaultHeaders(HttpConn *conn)
             }
         }
     }
-    if (conn->port != 80) {
+    if (conn->port != 80 && conn->port != 443) {
         httpAddHeader(conn, "Host", "%s:%d", conn->ip, conn->port);
     } else {
         httpAddHeaderString(conn, "Host", conn->ip);
     }
+    httpAddHeaderString(conn, "Accept", "*/*");
     if (conn->keepAliveCount > 0) {
         httpSetHeaderString(conn, "Connection", "Keep-Alive");
     } else {
