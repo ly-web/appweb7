@@ -1397,7 +1397,7 @@ static void generateMigration(HttpRoute *route, int argc, char **argv)
     stem = sfmt("Migration %s", argv[0]);
     /* Migration name used in the filename and in the exported load symbol */
     name = sreplace(slower(stem), " ", "_");
-    createMigration(route, name, table, stem, argc - 1, &argv[1]);
+    createMigration(route, name, table, stem, argc - 2, &argv[2]);
 }
 
 

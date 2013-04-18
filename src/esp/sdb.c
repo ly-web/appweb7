@@ -255,7 +255,10 @@ static int sdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
     }
     removeSchema(edi, tableName);
     //  MOB - what about autinc, notnul, index, foreign flags?
-    return query(edi, sfmt("ALTER TABLE %s ADD %s %s", tableName, columnName, mapToSqlType(type))) != 0;
+    if (query(edi, sfmt("ALTER TABLE %s ADD %s %s", tableName, columnName, mapToSqlType(type))) == 0) {
+        return MPR_ERR_CANT_CREATE;
+    }
+    return 0;
 }
 
 
