@@ -149,13 +149,15 @@ COMPILING
        In  development  mode, ESP will automatically compile the relevant por-
        tions of the application if the source code is modified. It can  intel-
        ligently  recompile  controllers  and  ESP pages. However, you can also
-       explicilty recompile portions or the complete appliction.
+       explicilty recompile portions or the complete appliction  via  the  esp
+       command.
 
        Esp can recompile everything via:
 
              esp compile ....
 
-       This will re-compile each controller and ESP page.
+       This  will  re-compile  all  ESP  pages and MVC applications for routes
+       defined in the appweb.conf file.
 
        Esp also provides options for you to individually  compile  controllers
        and ESP pages. To recompile named pages or controllers:
@@ -163,6 +165,10 @@ COMPILING
              esp compile path/*.esp....
 
              esp compile controller NAMES....
+
+            The  arguments  after  "compile"  are  pathname filters. These are
+            resolved relative to the current directory.  Only  items  matching
+            the filter pathnames are compiled.
 
 
        To  compile  the entire application and produce a single shared library

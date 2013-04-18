@@ -149,7 +149,7 @@ service incoming requests.
 .PP
 In development mode, ESP will automatically compile the relevant portions of the application if the source code
 is modified. It can intelligently recompile controllers and ESP pages. However, you can also explicilty recompile 
-portions or the complete appliction.
+portions or the complete appliction via the esp command.
 .PP
 Esp can recompile everything via:
 
@@ -157,7 +157,7 @@ Esp can recompile everything via:
  \fBesp compile ...\fR.
 .RE
 
-This will re-compile each controller and ESP page.
+This will re-compile all ESP pages and MVC applications for routes defined in the appweb.conf file.
 .PP
 Esp also provides options for you to individually compile controllers and ESP pages. To recompile named pages or controllers:
 .RS 5
@@ -165,6 +165,9 @@ Esp also provides options for you to individually compile controllers and ESP pa
  \fBesp compile path/*.esp...\fR.
 
  \fBesp compile controller NAMES...\fR.
+
+The arguments after "compile" are pathname filters. These are resolved relative to the current directory. Only items
+matching the filter pathnames are compiled.
 
 .RE
 .PP
