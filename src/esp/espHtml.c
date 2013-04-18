@@ -362,6 +362,7 @@ PUBLIC void espInput(HttpConn *conn, cchar *fieldName, cchar *optionString)
         break;
     case EDI_TYPE_DATE:
         /* MOB - could do calendar control */
+        espText(conn, fieldName, optionString);
         break;
     case EDI_TYPE_FLOAT:
     case EDI_TYPE_INT:

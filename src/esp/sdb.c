@@ -65,7 +65,6 @@ static char *dataTypeToSqlType[] = {
 /************************************ Forwards ********************************/
 
 static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields);
-static EdiRec *createRec(Edi *edi, cchar *tableName);
 static EdiField makeRecField(cchar *value, cchar *name, int type);
 static void manageSdb(Sdb *sdb, int flags);
 static int mapQueryToEdiType(int type);
@@ -209,7 +208,23 @@ static EdiRec *getSchema(Edi *edi, cchar *tableName)
 
 static EdiRec *sdbCreateRec(Edi *edi, cchar *tableName)
 {
-    return createRec(edi, tableName);
+    EdiRec  *rec, *schema;
+    int     i;
+
+    schema = getSchema(edi, tableName);
+    if ((rec = mprAllocMem(sizeof(EdiRec) + sizeof(EdiField) * schema->nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
+        return 0;
+    }
+    mprSetManager(rec, (MprManager) ediManageEdiRec);
+    rec->edi = edi;
+    rec->tableName = sclone(tableName);
+    rec->nfields = schema->nfields;
+    for (i = 0; i < schema->nfields; i++) {
+        rec->fields[i].name = schema->fields[i].name;
+        rec->fields[i].type = schema->fields[i].type;
+        rec->fields[i].flags = schema->fields[i].flags;
+    }
+    return rec;
 }
 
 
@@ -500,12 +515,12 @@ static EdiGrid *query(Edi *edi, cchar *cmd)
         for (nrows = 0; ; nrows++) {
             if (sqlite3_step(stmt) == SQLITE_ROW) {
                 tableName = (char*) sqlite3_column_table_name(stmt, 0);
-                if (defaultTableName == 0) {
-                    defaultTableName = tableName;
-                }
                 if ((rec = createBareRec(edi, tableName, ncol)) == 0) {
                     sqlite3_finalize(stmt);
                     return 0;
+                }
+                if (defaultTableName == 0) {
+                    defaultTableName = rec->tableName;
                 }
                 mprAddItem(result, rec);
                 for (i = 0; i < ncol; i++) {
@@ -518,7 +533,12 @@ static EdiGrid *query(Edi *edi, cchar *cmd)
                         tableName = sjoin("_", tableName, colName, NULL);
                         tableName[len] = toupper((uchar) tableName[len]);
                     }
+                    //  MOB - what about flags
                     rec->fields[i] = makeRecField(value, colName, mapQueryToEdiType(type));
+                    if (smatch(colName, "id")) {
+                        rec->fields[i].flags |= EDI_KEY;
+                        rec->id = rec->fields[i].value;
+                    }
                 }
             } else {
                 rc = sqlite3_finalize(stmt);
@@ -579,7 +599,7 @@ static EdiRec *sdbReadRec(Edi *edi, cchar *tableName, cchar *key)
 {
     EdiGrid     *grid;
 
-    if ((grid = query(edi, sfmt("SELECT * FROM %s WHERE 'id' = %s;", tableName, key))) == 0) {
+    if ((grid = query(edi, sfmt("SELECT * FROM %s WHERE id = %s;", tableName, key))) == 0) {
         return 0;
     }
     return grid->records[0];
@@ -701,10 +721,11 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
         mprPutToBuf(buf, "UPDATE %s SET ", rec->tableName);
         for (f = 0; f < rec->nfields; f++) {
             fp = &rec->fields[f];
-            mprPutToBuf(buf, "%s = %s ", fp->name, prepareValue(fp));
+            mprPutToBuf(buf, "%s = '%s'", fp->name, prepareValue(fp));
+            mprPutStringToBuf(buf, ", ");
         }
-        //  MOB - should we hard code "id"?
-        mprPutToBuf(buf, "WHERE id = %s;", rec->id);
+        mprAdjustBufEnd(buf, -2);
+        mprPutToBuf(buf, " WHERE id = %s;", rec->id);
     } else {
         mprPutToBuf(buf, "INSERT INTO %s (", rec->tableName);
         for (f = 1; f < rec->nfields; f++) {
@@ -780,28 +801,6 @@ static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields)
     rec->edi = edi;
     rec->tableName = sclone(tableName);
     rec->nfields = nfields;
-    return rec;
-}
-
-
-static EdiRec *createRec(Edi *edi, cchar *tableName)
-{
-    EdiRec  *rec, *schema;
-    int     i;
-
-    schema = getSchema(edi, tableName);
-    if ((rec = mprAllocMem(sizeof(EdiRec) + sizeof(EdiField) * schema->nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
-        return 0;
-    }
-    mprSetManager(rec, (MprManager) ediManageEdiRec);
-    rec->edi = edi;
-    rec->tableName = sclone(tableName);
-    rec->nfields = schema->nfields;
-    for (i = 0; i < schema->nfields; i++) {
-        rec->fields[i].name = schema->fields[i].name;
-        rec->fields[i].type = schema->fields[i].type;
-        rec->fields[i].flags = schema->fields[i].flags;
-    }
     return rec;
 }
 
