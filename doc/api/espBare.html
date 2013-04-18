@@ -79,6 +79,7 @@
 <tr class="apiDef"><td class="apiType"><a href="#group___edi_grid" class="ref">EdiGrid*</a></td><td><a href="#group___edi_1ga64b3d4293374b0c0ebeb7aa4a8729ccd" class="nameRef">ediJoin</a>(<a href="#group___edi" class="ref">Edi</a> *edi, ...)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Join grids.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___edi_1ga7dec1de01e90319b1ff0fe351f83f49e" class="nameRef">ediLoad</a>(<a href="#group___edi" class="ref">Edi</a> *edi, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *path)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>MOB - remove this API Load the database file.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___edi_1gaa88adbb2470a05da45d468fd9d578672" class="nameRef">ediLookupField</a>(<a href="#group___edi" class="ref">Edi</a> *edi, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *tableName, <a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *fieldName)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Lookup a field by name.</td></tr>
+<tr class="apiDef"><td class="apiType"><a href="#struct_edi_provider" class="ref">EdiProvider*</a></td><td><a href="#group___edi_1ga042cf084b2e3c1487644cdf7f9a0257d" class="nameRef">ediLookupProvider</a>(<a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *providerName)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Lookup an EDI provider name.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___edi_grid" class="ref">EdiGrid*</a></td><td><a href="#group___edi_1ga92df88662a9be066b5e3eff35b8954b1" class="nameRef">ediMakeGrid</a>(<a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *content)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Make a grid.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mprBare.html#struct_mpr_hash" class="ref">MprHash*</a></td><td><a href="#group___edi_1gac8ba9b4a0cdc2d2f30de7d915a4c51c1" class="nameRef">ediMakeHash</a>(<a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *fmt, ...)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Make a hash container of property values.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___edi_rec" class="ref">EdiRec*</a></td><td><a href="#group___edi_1ga5bf685fd34ebd962218f900361ada49b" class="nameRef">ediMakeRec</a>(<a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *content)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Make a record.</td></tr>
@@ -382,9 +383,13 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Integer number.</td></tr>
 <tr class="apiDef">
-<td>#define</td><td><a href="#esp_8h_1a68172d98d38832146258813c3db750d1" class="nameRef">EDI_TYPE_MAX</a>&nbsp;&nbsp;&nbsp;8</td>
+<td>#define</td><td><a href="#esp_8h_1a68172d98d38832146258813c3db750d1" class="nameRef">EDI_TYPE_MAX</a>&nbsp;&nbsp;&nbsp;9</td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Max type + 1.</td></tr>
+<tr class="apiDef">
+<td>#define</td><td><a href="#esp_8h_1a54fb21bfe0401d7bb411fb4fd877d4dc" class="nameRef">EDI_TYPE_NULL</a>&nbsp;&nbsp;&nbsp;8</td>
+</tr>
+<tr class="apiBrief"><td>&nbsp;</td><td>No value.</td></tr>
 <tr class="apiDef">
 <td>#define</td><td><a href="#esp_8h_1adaf7fc17c98589a64fd985cebcef3f00" class="nameRef">EDI_TYPE_STRING</a>&nbsp;&nbsp;&nbsp;6</td>
 </tr>
@@ -951,6 +956,24 @@ Database provider.
     <tr><td class="param">fieldName</td><td>Database column name.</td>
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>The ordinal field (column) index in the table.</dd></dl>
+    <dl><dt>See Also:</dt><dd>
+    </dd></dl>
+  </div>
+</div>
+<a name="group___edi_1ga042cf084b2e3c1487644cdf7f9a0257d"></a>
+<div class="api">
+  <div class="prototype">
+    <a href="#struct_edi_provider" class="ref">EdiProvider</a> *
+    ediLookupProvider
+(<a href="mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mprBare.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *providerName)
+  </div>
+  <div class="apiDetail">
+<p>Lookup an EDI provider name.</p>
+    <dl><dt>Parameters:</dt><dd>
+    <table class="parameters" title="Parameters">
+    <tr><td class="param">providerName</td><td>Name of the EDI provider.</td>
+    </table></dd></dl>
+    <dl><dt>Returns:</dt><dd>The EDI provider object.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     </dd></dl>
   </div>
