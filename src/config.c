@@ -318,7 +318,7 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S ?*", &handler, &extensions)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (smatch(handler, "fileHandler") && extensions == 0) {
+    if (!extensions) {
         extensions = "";
     }
     if (httpAddRouteHandler(state->route, handler, extensions) < 0) {
@@ -1277,25 +1277,6 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
     return -1;
 #endif
 }
-
-
-#if UNUSED
-//  MOB - is this used?
-/*
-    Load name path
- */
-static int loadDirective(MaState *state, cchar *key, cchar *value)
-{
-    char    *name, *path;
-
-    if (!maTokenize(state, value, "%S %P", &name, &path)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    state->route->sourceName = sclone(name);
-    state->route->sourcePath = sclone(path);
-    return 0;
-}
-#endif
 
 
 /*
@@ -2675,18 +2656,12 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitUri", limitUriDirective);
     maAddDirective(appweb, "LimitUpload", limitUploadDirective);
     maAddDirective(appweb, "LimitWorkers", limitWorkersDirective);
-
     maAddDirective(appweb, "Listen", listenDirective);
     maAddDirective(appweb, "ListenSecure", listenSecureDirective);
-
-#if UNUSED
-    maAddDirective(appweb, "Load", loadDirective);
-#endif
     maAddDirective(appweb, "Log", logDirective);
     maAddDirective(appweb, "LogRoutes", logRoutesDirective);
     maAddDirective(appweb, "LoadModulePath", loadModulePathDirective);
     maAddDirective(appweb, "LoadModule", loadModuleDirective);
-
     maAddDirective(appweb, "MemoryPolicy", memoryPolicyDirective);
     maAddDirective(appweb, "Methods", methodsDirective);
     maAddDirective(appweb, "Name", nameDirective);

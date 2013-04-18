@@ -702,6 +702,7 @@ static int appDirective(MaState *state, cchar *key, cchar *value)
     appName = stemplate(appName, route->vars);
     if (appName == 0 || *appName == '\0' || scmp(appName, "/") == 0) {
         appName = MPR->emptyString;
+        httpSetRouteName(route, "EspApp");
     } else {
         httpSetRoutePrefix(route, appName);
         if (route->name == 0 || *route->name == '\0') {

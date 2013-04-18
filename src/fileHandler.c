@@ -22,13 +22,14 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
 
 /*********************************** Code *************************************/
 /*
-    Test if the request matches. This may delegate the request to the dirHandler if a directory listing is required.
+    Rewrite the request for directories, indexes and compressed content. 
  */
-static int matchFileHandler(HttpConn *conn, HttpRoute *route, int dir)
+static int rewriteFileHandler(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpTx      *tx;
     HttpUri     *prior;
+    HttpRoute   *route;
     MprPath     *info, zipInfo;
     cchar       *index;
     char        *path, *pathInfo, *uri, *zipfile;
@@ -36,7 +37,7 @@ static int matchFileHandler(HttpConn *conn, HttpRoute *route, int dir)
     
     rx = conn->rx;
     tx = conn->tx;
-    rx = conn->rx;
+    route = rx->route;
     prior = rx->parsedUri;
     info = &tx->fileInfo;
 
@@ -493,7 +494,7 @@ PUBLIC int maOpenFileHandler(Http *http)
     if ((handler = httpCreateHandler(http, "fileHandler", NULL)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
-    handler->match = matchFileHandler;
+    handler->rewrite = rewriteFileHandler;
     handler->open = openFileHandler;
     handler->close = closeFileHandler;
     handler->start = startFileHandler;
