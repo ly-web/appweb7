@@ -649,6 +649,8 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 }
 
 
+//  MOB - inconsistent with renderSafe
+
 PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s)
 {
     s = mprEscapeHtml(s);

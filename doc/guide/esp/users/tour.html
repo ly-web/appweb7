@@ -209,7 +209,7 @@ sudo appweb -v
             <h2>Sessions and Flash</h2>
             <p>ESP provides an integrated session store so that state can be shared across requests. Session variables
             can be accessed using the <em>@@variable</em> directive in ESP pages or via the
-            <em>getSessionVar()</em> API.</p>
+            <em>renderVar()</em> and <em>getSessionVar()</em> APIs.</p>
             <p>Flash storage is a portion of the session storage used to pass messages and state to the next request 
             only. This is useful after a form, to add feedback messages to the next web page. Messages can be added
             to flash storage via the <em>error</em>, <em>inform</em>, or <em>warn</em> APIs. </p>

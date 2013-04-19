@@ -219,7 +219,8 @@ EspApp /store/ /Directory/to/storeApp  restful sqlite://app/db/store.sdb
 &lt;%= "C" string expression %&gt;
 &lt;%@ include "filename" %&gt;
 &lt;%@ layout "file" %&gt;
-@@variable
+@!variable
+@@param
 @#field
 </pre>
             <p>The &lt;% "C" code %&gt; directive will insert the given code at this location. At run-time, this 
@@ -228,7 +229,9 @@ EspApp /store/ /Directory/to/storeApp  restful sqlite://app/db/store.sdb
             data back to the client at this position in the web page.</p>
             <p>The &lt;%= "C" expression %&gt; directive will evaluate the expression and substitute the resulting
             string value into the web page.</p>
-            <p>The @@variable directive is a shortcut for &lt;%= expression %&gt;.</p>
+            <p>The @!variable directive is a shortcut for &lt;%= expression %&gt;.</p>
+            <p>The @@param directive substitutes the value of a request parameter or session variable of the same 
+                name after HTML escaping the value.</p>
             <p>The &lt;% include "filename" %&gt; directive will include the given file name at the location of the
             directive when parsing the web page. Included files may contain ESP directives and
             include directives can be nested.</p>

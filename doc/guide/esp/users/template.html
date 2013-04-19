@@ -323,7 +323,11 @@ views/CONTROLLER-VIEW.esp
                     </tr>
                     <tr>
                         <td>@@variable</td>
-                        <td>Request parameter variable. This is equivalent to "<em>param(variable)</em>"</td>
+                        <td>Request parameter or session variable. This is equivalent to "<em>renderVar(variable)</em>"</td>
+                    </tr>
+                    <tr>
+                        <td>@!variable</td>
+                        <td>C string variable</td>
                     </tr>
                     <tr>
                         <td>@#field</td>
@@ -391,8 +395,7 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
             <h3>@@variables</h3>
             <p>ESP provides a shorthand for accessing request parameters. Request parameters are a collection of
             query variables, posted form fields, routing tokens, session variables and any explicitly set parameters. 
-            These are stored
-            in a params table and in session data stores and are accessible via the
+            These are stored in a params table and in session data stores and are accessible via the
             <a href="../../../api/esp.html#group___esp_abbrev_1gad638c34898123293ebc120c1f9396a9c">param</a>,
             <a href="../../../api/esp.html#group___esp_req_1ga98e63a9a924ec667a3c1b540e56792d3">espGetParam</a> and
             <a href="../../../api/esp.html#group___esp_session_1ga60a5effb2a9ef53fdb02dbe865bf6093">espGetSession</a>
@@ -405,6 +408,20 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
 &lt;h2&gt;My name is <b>@@name</b>&lt;/h2&gt;
 </pre>
             <p>This directive is very useful for accessing any request, form, query or session data.</p>
+
+            <h3>@!variables</h3>
+            <p>ESP provides a shorthand for accessing C string variables inline.
+<pre>
+<%^start
+    char *weather = "fine";
+%>
+&lt;h2&gt;Current weather is <b>@!fine</b>&lt;/h2&gt;
+</pre>
+            <p>This is equivalent to:</p>
+            <pre>
+&lt;%= fine %&gt;
+</pre>
+
             <h3>@#field</h3>
             <p>ESP provides a shorthand for accessing field data in the current database record. Controllers will
             often setup the environment for a view by defining a "current" database record.

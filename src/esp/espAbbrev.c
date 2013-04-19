@@ -573,6 +573,12 @@ PUBLIC ssize renderSafe(cchar *fmt, ...)
 }
 
 
+PUBLIC ssize renderString(cchar *s)
+{
+    return espRenderString(getConn(), s);
+}
+
+
 PUBLIC void renderView(cchar *view)
 {
     espRenderView(getConn(), view);

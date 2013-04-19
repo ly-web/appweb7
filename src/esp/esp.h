@@ -2809,6 +2809,28 @@ PUBLIC ssize renderFile(cchar *path);
 PUBLIC ssize renderSafe(cchar *fmt, ...);
 
 /**
+    Render a string of data to the client
+    @description Render a string of data to the client. Data packets will be created
+        as required to store the write data. This call may block waiting for data to drain to the client.
+    @param s String containing the data to write
+    @return A count of the bytes actually written
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC ssize renderString(cchar *s);
+
+/**
+    Render the value of a request variable to the client.
+    If a request parameter is not found by the given name, consult the session store for a variable the same name.
+    @description This writes the value of a request variable after HTML escaping its value.
+    @param name Form variable name
+    @return A count of the bytes actually written
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC ssize renderVar(cchar *name);
+
+/**
     Render a view template to the client
     @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
     @param view view name
