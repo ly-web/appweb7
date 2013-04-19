@@ -17,11 +17,12 @@
 #define ESP_TOK_ERR            -1            /* Any input error */
 #define ESP_TOK_EOF             0            /* End of file */
 #define ESP_TOK_CODE            1            /* <% text %> */
-#define ESP_TOK_VAR             2            /* @@var */
+#define ESP_TOK_PARAM           2            /* @@param */
 #define ESP_TOK_FIELD           3            /* @#field */
-#define ESP_TOK_LITERAL         4            /* literal HTML */
-#define ESP_TOK_EXPR            5            /* <%= expression %> */
-#define ESP_TOK_CONTROL         6            /* <%@ control */
+#define ESP_TOK_VAR             4            /* @!var */
+#define ESP_TOK_LITERAL         5            /* literal HTML */
+#define ESP_TOK_EXPR            6            /* <%= expression %> */
+#define ESP_TOK_CONTROL         7            /* <%@ control */
 
 /**
     ESP page parser structure
@@ -537,11 +538,9 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                 /* If users want a format and safe, use %S or renderSafe() */
                 token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
                 mprPutToBuf(body, "  espRender(conn, \"%s\", %s);\n", fmt, token);
-                // mprPutToBuf(body = sjoin(body, "  espRender(conn, \"", fmt, "\", ", token, ");\n", NULL);
             } else {
                 token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
                 mprPutToBuf(body, "  espRenderSafeString(conn, %s);\n", token);
-                // body = sjoin(body, "  espRenderSafeString(conn, ", token, ");\n", NULL);
             }
             break;
 
@@ -549,21 +548,23 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             /* @#field -- field in the current record */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
             mprPutToBuf(body, "  espRenderSafeString(conn, getField(\"%s\"));\n", token);
-            // body = sjoin(body, "  espRenderSafeString(conn, getField(\"", token, "\"));\n", NULL);
+            break;
+
+        case ESP_TOK_PARAM:
+            /* @@var -- variable in (param || session) - Safe render */
+            token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
+            mprPutToBuf(body, "  espRenderVar(conn, \"%s\");\n", token);
+            break;
+
+        case ESP_TOK_VAR:
+            /* @!var -- string variable */
+            token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
+            mprPutToBuf(body, "  espRenderString(conn, %s);\n", token);
             break;
 
         case ESP_TOK_LITERAL:
             line = joinLine(token, &len);
             mprPutToBuf(body, "  espRenderBlock(conn, \"%s\", %d);\n", line, len);
-            // body = sfmt("%s  espRenderBlock(conn, \"%s\", %d);\n", body, line, len);
-            break;
-
-        case ESP_TOK_VAR:
-            /* @@var -- variable in (param || session) */
-            token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-            /* espRenderVar renders (param || session). It uses espRenderSafeString */
-            mprPutToBuf(body, "  espRenderVar(conn, \"%s\");\n", token);
-            // body = sjoin(body, "  espRenderVar(conn, \"", token, "\");\n", NULL);
             break;
 
         default:
@@ -591,19 +592,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         bodyCode = mprGetBufStart(body);
     }
     if (state == &top) {
-#if UNUSED
-        dir = mprGetRelPath(route->dir, NULL);
-        path = mprGetRelPath(path, NULL);
-        assert(slen(path) > slen(dir));
-        if (!smatch(dir, ".")) {
-            assert(sncmp(path, dir, slen(dir)) == 0);
-            if (sncmp(path, dir, slen(dir)) == 0) {
-                path = &path[slen(dir) + 1];
-            }
-        }
-#else
         path = mprGetRelPath(path, route->dir);
-#endif
         if (mprGetBufLength(state->start) > 0) {
             mprPutCharToBuf(state->start, '\n');
         }
@@ -670,7 +659,7 @@ static char *eatNewLine(EspParse *parse, char *next)
 static int getEspToken(EspParse *parse)
 {
     char    *start, *end, *next;
-    int     tid, done, c;
+    int     tid, done, c, t;
 
     start = next = parse->next;
     end = &start[slen(start)];
@@ -738,12 +727,19 @@ static int getEspToken(EspParse *parse)
 
         case '@':
             if ((next == start) || next[-1] != '\\') {
-                if (next[1] == '@' || next[1] == '#') {
+                t = next[1];
+                if (t == '@' || t == '#' || t == '!') {
                     next += 2;
                     if (mprGetBufLength(parse->token) > 0) {
                         next -= 3;
                     } else {
-                        tid = next[-1] == '@' ? ESP_TOK_VAR : ESP_TOK_FIELD;
+                        if (t == '!') {
+                           tid = ESP_TOK_VAR;
+                        } else if (t == '#') {
+                            tid = ESP_TOK_FIELD;
+                        } else {
+                            tid = ESP_TOK_PARAM;
+                        }
                         next = eatSpace(parse, next);
                         while (isalnum((uchar) *next) || *next == '_') {
                             if (*next == '\n') parse->lineNumber++;

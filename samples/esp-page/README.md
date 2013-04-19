@@ -3,6 +3,14 @@ ESP Page Sample
 
 This sample shows how to configure Appweb to serve ESP pages.
 
+The ESP test page, index.esp, demonstrates the various ESP directives. These include:
+
+* @@ to access request parameters/session variables
+* @! to access local C variables
+* <%= %> to emit the result of a C expression
+* <%^start %> to emit code at the start of the generated page function
+* <%^end %> to emit code at the end of the generated page function
+
 Requirements
 ---
 * [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
