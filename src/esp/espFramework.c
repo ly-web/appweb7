@@ -816,6 +816,12 @@ PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
 }
 
 
+PUBLIC int espSetSessionVar(HttpConn *conn, cchar *var, cchar *value) 
+{
+    return httpSetSessionVar(conn, var, value);
+}
+
+
 PUBLIC void espSetStatus(HttpConn *conn, int status)
 {
     httpSetStatus(conn, status);

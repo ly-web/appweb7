@@ -13802,8 +13802,7 @@ PUBLIC cchar *httpGetSessionVar(HttpConn *conn, cchar *key, cchar *defaultValue)
 
 PUBLIC int httpSetSessionObj(HttpConn *conn, cchar *key, MprHash *obj)
 {
-    httpSetSessionVar(conn, key, mprSerialize(obj, 0));
-    return 0;
+    return httpSetSessionVar(conn, key, mprSerialize(obj, 0));
 }
 
 

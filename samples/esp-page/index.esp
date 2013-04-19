@@ -13,9 +13,9 @@
         Manually set some session values and parameters. 
         Parameters normally come from query and form request data.
      */
-    httpSetSessionVar(conn, "color", "yellow");
-    espSetParam(conn, "message", "Hello World");
-    espSetIntParam(conn, "number", 42);
+    setSessionVar("color", "yellow");
+    setParam("message", "Hello World");
+    setIntParam("number", 42);
 -%>
 
 <pre>

@@ -644,6 +644,12 @@ PUBLIC void setParam(cchar *key, cchar *value)
 }
 
 
+PUBLIC void setIntParam(cchar *key, int value)
+{
+    espSetIntParam(getConn(), key, value);
+}
+
+
 PUBLIC EdiRec *setRec(EdiRec *rec)
 {
     return espSetRec(getConn(), rec);

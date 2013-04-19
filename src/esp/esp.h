@@ -1281,6 +1281,18 @@ PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value);
 PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec);
 
 /**
+    Set a session variable.
+    @description
+    @param conn Http connection object
+    @param name Variable name to set
+    @param value Variable value to use
+    @return Zero if successful. Otherwise a negative MPR error code.
+    @ingroup HttpSession
+    @stability Evolving
+ */
+PUBLIC int espSetSessionVar(HttpConn *conn, cchar *name, cchar *value);
+
+/**
     Show request details
     @description This e request details back to the client. This is useful as a debugging tool.
     @param conn HttpConn connection object
@@ -2901,6 +2913,17 @@ PUBLIC EdiGrid *setGrid(EdiGrid *grid);
 PUBLIC void setHeader(cchar *key, cchar *fmt, ...);
 
 /**
+    Set an integer request parameter value
+    @description Set the value of a named request parameter to an integer value. Form variables are defined via
+        www-urlencoded query or post data contained in the request.
+    @param name Name of the request parameter to set
+    @param value Integer value to set.
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC void setIntParam(cchar *name, int value);
+
+/**
     Set a request parameter value
     @description Set the value of a named request parameter to a string value. Form variables are defined via
         www-urlencoded query or post data contained in the request.
@@ -2923,7 +2946,6 @@ PUBLIC EdiRec *setRec(EdiRec *rec);
 
 /**
     Set a session state variable
-    @description See also #httpSetSessionVar and #httpSetSessionObj for alternate ways to set session data.
     @param name Variable name to set
     @param value Value to set
     @ingroup EspAbbrev
