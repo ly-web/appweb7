@@ -86,13 +86,13 @@
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The EspApp directive defines an ESP application at the given directory that
-                            will receive all requests that begin with specified URI prefix. It defines a new Route
-                            block, inheriting the existing configuration and then tailors it for the ESP application.
-                            This one-line directive 
-                            is typically all you need to do to define an ESP application. It is loosely equivalent to the
-                            following directive sequence:</p>
+                            will receive all requests that begin with specified URI prefix. 
+
+                            This one-line directive is often all you need to do to define an ESP application. It is
+loosely equivalent to the following directive sequence:</p>
                             <pre class="dir">
 &lt;Route UriPrefix&gt;
+    <a href="route.html#name">Name</a> UriPrefix
     <a href="route.html#prefix">Prefix</a> UriPrefix
     <a href="route.html#documentRoot">DocumentRoot</a> Directory
     <a href="route.html#addHandler">AddHandler</a> espHandler
@@ -101,18 +101,24 @@
     <a href="#espDb">EspDb</a> Database
 &lt;/Route&gt;
 </pre>
-                            <p>The EspApp directive will create a route for the given URI prefix and will create 
-                                sub-routes if required by the RouteSet argument.</p>
+                            <p>If the URI prefix for the EspApp directive is the same as the the prefix for the outer
+                            route, EspApp will use the existing route. Otherwise, it will create a new route for 
+                            the URI prefix. Sub-routes are created for the RouteSet argument.</p>
+
                             <p>The UriPrefix argument is mandatory, all others are optional.
                             The Directory argument is used to define the DocumentRoot for the defined route.</p>
                             <p>The RouteSet argument specifies a set of routes to add for the applications. Permissable
                                 values for the RouteSet are: 
                                 <ul>
-                                    <li>simple &mdash; Adds a route for the home page URI ("/") and a route for
+                                    <li>simple &mdash; Adds a route for the home page URI ("/").</li>
+
+                                    <li>mvc-simple &mdash; Adds a route for the home page URI ("/") and a route for
                                         static content under the "<em>static</em>" directory.</li>
+
                                     <li>mvc &mdash; Adds a home route, a static route and a generic route mapping URIs
                                     of the form: <em>^/{controller}(~/{action}~)</em>. This means a URI with a 
                                     controller component followed by an optional slash and action.</li>
+
                                     <li>restful &mdash; Adds a home route, a static route and resource group routes 
                                     mapping URIs. See <a href="#espResourceGroup">EspResourceGroup</a> for details.</li>
                                 </ul>
@@ -123,9 +129,7 @@
                             configuration file to or from this directory.</p>
                             <p>The EspApp directive does the following actions:</p>
                             <ul>
-                                <li>Creates a new Route block for the URI prefix</li>
-                                <li>Creates a new directory block if required for the directory</li>
-                                <li>Creates an alias for the URI prefix to the directory</li>
+                                <li>Creates a new Route block for the URI prefix if required.</li>
                                 <li>Adds the <b>esp</b> handler as the handler for the URI prefix. Note that
                                     previously defined handlers such as the fileHandler will still match by extensions
                                     such as <em>.html</em>.</li>

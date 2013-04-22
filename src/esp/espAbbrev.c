@@ -349,18 +349,20 @@ PUBLIC cchar *getSession()
 
 
 //  MOB - should have session() just like params
+//  MOB - resolve vs session
 PUBLIC cchar *getSessionVar(cchar *key)
 {
-    return httpGetSessionVar(getConn(), key, "");
+    //  XYZ
+    return httpGetSessionVar(getConn(), key, 0);
 }
 
 
-#if FUTURE || MOB || 1
+//  MOB - resolve vs getSessionVar
 PUBLIC cchar *session(cchar *key)
 {
-    return httpGetSessionVar(getConn(), key, "");
+    //  XYZ
+    return httpGetSessionVar(getConn(), key, 0);
 }
-#endif
 
 
 PUBLIC cchar *getTop()
@@ -453,13 +455,20 @@ PUBLIC cchar *makeUri(cchar *target)
 
 PUBLIC cchar *param(cchar *key)
 {
-    return espGetParam(getConn(), key, "");
+    //  XYZ
+    return espGetParam(getConn(), key, 0);
 }
 
 
 PUBLIC MprHash *params()
 {
     return espGetParams(getConn());
+}
+
+
+PUBLIC bool pmatch(cchar *key)
+{
+    return smatch(espGetParam(getConn(), key, 0), getField(key));
 }
 
 
@@ -692,12 +701,14 @@ PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs)
 }
 
 
+//  MOB - seems inconsistent that this takes a key and update fields does not
 PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
 {
     return espUpdateField(getConn(), tableName, key, fieldName, value);
 }
 
 
+//  MOB - seems inconsistent that this and update field takes a key
 PUBLIC bool updateFields(cchar *tableName, MprHash *params)
 {
     return espUpdateFields(getConn(), tableName, params);

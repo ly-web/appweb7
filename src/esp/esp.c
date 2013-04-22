@@ -128,7 +128,7 @@ static cchar *ControllerTemplateHeader = "\
 
 
 static cchar *ControllerTemplateFooter = "\
-ESP_EXPORT int esp_module_${NAME}(EspRoute *eroute, MprModule *module) \n\
+ESP_EXPORT int esp_module_${NAME}(HttpRoute *route, MprModule *module) \n\
 {\n\
 ${DEFINE_ACTIONS}    return 0;\n\
 }\n";
@@ -341,15 +341,7 @@ PUBLIC int main(int argc, char **argv)
             if (argind >= argc) {
                 usageError();
             } else {
-#if UNUSED
-                path = argv[++argind];
-                if (chdir((char*) mprGetPathDir(path)) < 0) {
-                    mprError("Cannot change directory to %s", mprGetPathDir(path));
-                }
-                app->configFile = mprGetPathBase(path);
-#else
                 app->configFile = sclone(argv[++argind]);
-#endif
             }
 
         } else if (smatch(argp, "database")) {
@@ -601,7 +593,8 @@ static MprList *getRoutes()
             }
         } 
         parent = route->parent;
-        if (parent && ((EspRoute*) parent->eroute)->compile && smatch(route->dir, parent->dir) && parent->startWith) {
+        if (parent && parent->eroute &&
+            ((EspRoute*) parent->eroute)->compile && smatch(route->dir, parent->dir) && parent->startWith) {
             /* 
                 Use the parent instead if it has the same directory and is not the default route 
                 This is for MVC apps with a prefix of "/" and a directory the same as the default route.
@@ -640,7 +633,11 @@ static MprList *getRoutes()
             fail("Cannot find usable ESP configuration in %s for route prefix %s", app->configFile, routePrefix);
         } else {
             kp = mprGetFirstKey(app->targets);
-            fail("Cannot find usable ESP configuration in %s for %s", app->configFile, kp->key);
+            if (kp) {
+                fail("Cannot find usable ESP configuration in %s for %s", app->configFile, kp->key);
+            } else {
+                fail("Cannot find usable ESP configuration", app->configFile);                
+            }
         }
         return 0;
     }
@@ -724,7 +721,7 @@ static HttpRoute *getMvcRoute()
 static bool readConfig(bool mvc)
 {
     HttpStage   *stage;
-
+    
     if ((app->appweb = maCreateAppweb()) == 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
         return 0;
@@ -2091,7 +2088,7 @@ static void generateAppDb(HttpRoute *route)
 /*
     Search strategy is:
 
-    [--config dir] : ./appweb.conf : [parent]/appweb.conf : /usr/local/lib/appweb/VER/bin/esp-appweb.conf
+    [--config path] : ./appweb.conf : [parent]/appweb.conf 
  */
 static bool findConfigFile(bool mvc)
 {
@@ -2120,18 +2117,8 @@ static bool findConfigFile(bool mvc)
                 break;
             }
         }
-        if (!mvc) {
-            if (!app->configFile) {
-                app->configFile = mprJoinPath(mprGetAppDir(), sfmt("esp-%s.conf", BIT_PRODUCT));
-                mprLog(1, "Probe for \"%s\"", app->configFile);
-                if (!mprPathExists(app->configFile, R_OK)) {
-                    fail("Cannot open config file %s", app->configFile);
-                    return 0;
-                }
-            }
-        }
         if (!app->configFile) {
-            fail("Not an ESP application directory. Cannot find Appweb config file %s.", name);
+            fail("Cannot find appweb.config");
             return 0;
         }
     }
@@ -2142,7 +2129,7 @@ static bool findConfigFile(bool mvc)
 
 static bool findDefaultConfigFile()
 {
-    app->configFile = mprJoinPath(mprGetAppDir(), sfmt("esp-%s.conf", BIT_PRODUCT));
+    app->configFile = mprJoinPath(mprGetAppDir(), "esp.conf");
     if (!mprPathExists(app->configFile, R_OK)) {
         fail("Cannot open config file %s", app->configFile);
         return 0;

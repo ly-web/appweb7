@@ -2361,7 +2361,9 @@ static MaState *createState(MaServer *server, HttpHost *host, HttpRoute *route)
     state->enabled = 1;
     state->lineNumber = 0;
     state->auth = state->route->auth;
+#if UNUSED
     httpSetRouteName(state->route, "default");
+#endif
     return state;
 }
 

@@ -45,14 +45,6 @@ Bit.load({
             packs: 'esp',
         },
 
-        'esp-appweb.conf': {
-            type: 'file',
-            path: '${BIN}/esp-appweb.conf',
-            files: [ 'esp-appweb.conf' ],
-            platforms: [ 'local' ],
-            packs: 'esp',
-        },
-
         'esp-configure': {
             scripts: {
                 postconfig: "

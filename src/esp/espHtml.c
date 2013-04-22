@@ -307,7 +307,7 @@ PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *optionString)
     if (smatch(httpGetOption(options, "remote", 0), "true")) {
         espRender(conn, "<form method='%s' data-remote='%s'%s >\r\n", method, uri, map(conn, options));
     } else {
-        espRender(conn, "<form method='%s'  action='%s'%s >\r\n", method, uri, map(conn, options));
+        espRender(conn, "<form method='%s' action='%s'%s >\r\n", method, uri, map(conn, options));
     }
     if (recid) {
         espRender(conn, "    <input name='recid' type='hidden' value='%s' />\r\n", recid);
@@ -328,6 +328,9 @@ PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *optionString)
 
     options = httpGetOptions(optionString);
     if (uri == 0) {
+        /* Suppress favicon */
+        uri = "data:image/x-icon;,";
+    } else if (*uri == 0) {
         req = conn->data;
         uri = sjoin("~/", mprGetPathBase(req->eroute->staticDir), "/images/favicon.ico", NULL);
     }

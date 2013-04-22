@@ -165,6 +165,8 @@ PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
         httpSetDefaultHost(host);
     }
     route = httpCreateRoute(host);
+    httpSetRouteName(route, "default");
+    //UNUSED httpSetRoutePrefix(route, "");
     httpSetHostDefaultRoute(host, route);
     route->limits = server->limits;
 

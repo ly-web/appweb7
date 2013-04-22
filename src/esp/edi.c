@@ -200,6 +200,9 @@ PUBLIC cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName)
 {
     EdiField    *fp;
 
+    if (rec == 0) {
+        return 0;
+    }
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
         if (smatch(fp->name, fieldName)) {
             return fp->value;

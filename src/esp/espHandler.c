@@ -205,7 +205,7 @@ static int runAction(HttpConn *conn)
     EspRoute    *eroute;
     EspReq      *req;
     EspAction   action;
-    char        *key, *canonical;
+    char        *key, *canonical, *controllerName, *actionName;
     int         updated;
 
     rx = conn->rx;
@@ -307,6 +307,10 @@ static int runAction(HttpConn *conn)
         }
     }
     if (action) {
+        controllerName = stok(sclone(rx->target), "-", &actionName);
+        httpSetParam(conn, "controller", controllerName);
+        httpSetParam(conn, "action", actionName);
+
         //  MOB - does this need a lock
         mprSetThreadData(esp->local, conn);
         if (eroute->controllerBase) {
@@ -672,92 +676,75 @@ static void setRouteDirs(MaState *state, cchar *kind)
 
 /*********************************** Directives *******************************/
 /*
-    NOTE: This is not a public directive. Internal use only.
-    WARNING: this modifies the route prefix and pattern. Only suitable to be used by EspApp
-
-    Used by the: EspApp Prefix [Dir [RouteSet [Database]]]
-        Prefix       appName
-        DocumentRoot path
-        AddHandler   espHandler
-        EspDir       routeSet
-        EspRouteSet  routeSet
- */
-static int appDirective(MaState *state, cchar *key, cchar *value)
-{
-    HttpRoute   *route;
-    EspRoute    *eroute;
-    char        *appName, *path, *routeSet, *database;
-
-    route = state->route;
-    if (!maTokenize(state, value, "%S ?S ?S ?S", &appName, &path, &routeSet, &database)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    if ((eroute = getEroute(route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    if (*appName != '/') {
-        mprError("Script name should start with a \"/\"");
-        appName = sjoin("/", appName, NULL);
-    }
-    appName = stemplate(appName, route->vars);
-    if (appName == 0 || *appName == '\0' || scmp(appName, "/") == 0) {
-        appName = MPR->emptyString;
-        httpSetRouteName(route, "EspApp");
-    } else {
-        httpSetRoutePrefix(route, appName);
-        if (route->name == 0 || *route->name == '\0') {
-            route->name = appName;
-        }
-    }
-    if (route->pattern == 0) {
-        httpSetRoutePattern(route, sjoin("/", appName, NULL), 0);
-    }
-    //  MOB - why?
-    httpSetRouteSource(route, "");
-    if (path == 0) {
-        path = route->dir;
-    }
-    if (path == 0) {
-        path = sclone(".");
-    }
-    httpSetRouteDir(route, path);
-    httpAddRouteHandler(route, "espHandler", "");
-    
-    /* Must set dirs first before defining route set */
-    if (routeSet) {
-        setRouteDirs(state, routeSet);
-        httpAddRouteSet(state->route, routeSet);
-    }
-    if (database) {
-        if (espDbDirective(state, key, database) < 0) {
-            return MPR_ERR_BAD_STATE;
-        }
-    }
-    /* NOTE: this route is not finalized */
-#if BIT_STATIC
-    setupEspApp(state->route, appName, eroute->cacheDir);
-#endif
-    return 0;
-}
-
-
-/*
     EspApp Prefix [Dir [RouteSet [Database]]]
  */
 static int espAppDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
-    int         rc;
+    EspRoute    *eroute;
+    char        *prefix, *path, *routeSet, *database;
+    bool        createRoute;
 
-    if ((route = httpCreateInheritedRoute(state->route)) == 0) {
+    createRoute = 0;
+
+    if (!maTokenize(state, value, "%S ?S ?S ?S", &prefix, &path, &routeSet, &database)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    if (smatch(prefix, "/")) {
+        prefix = 0;
+    }
+    if (smatch(prefix, state->route->prefix) && mprSamePath(state->route->dir, path)) {
+        /* Can use existing route as it has the same prefix and documents directory */
+        route = state->route;
+    } else if ((route = httpCreateInheritedRoute(state->route)) == 0) {
+        return MPR_ERR_MEMORY;
+        createRoute = 1;
+    }
+    if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
     }
     state = maPushState(state);
     state->route = route;
-    rc = appDirective(state, key, value);
-    httpFinalizeRoute(route);
+
+    if (prefix) {
+        if (*prefix != '/') {
+            mprError("Prefix name should start with a \"/\"");
+            prefix = sjoin("/", prefix, NULL);
+        }
+        prefix = stemplate(prefix, route->vars);
+    }
+    if (createRoute) {
+        if (prefix) {
+            httpSetRouteName(route, prefix);
+            httpSetRoutePattern(route, prefix, 0);
+            httpSetRoutePrefix(route, prefix);
+        }
+        if (path) {
+            httpSetRouteDir(route, path);
+        }
+    }
+    httpAddRouteHandler(route, "espHandler", "");
+
+#if UNUSED
+    //  MOB - why?
+    httpSetRouteSource(route, "");
+#endif
+    if (routeSet) {
+        setRouteDirs(state, routeSet);
+        httpAddRouteSet(state->route, routeSet);
+    }
+    if (database && espDbDirective(state, key, database) < 0) {
+        maPopState(state);
+        return MPR_ERR_BAD_STATE;
+    }
+#if BIT_STATIC
+    setupEspApp(state->route, appName, eroute->cacheDir);
+#endif
+    if (createRoute) {
+        httpFinalizeRoute(route);
+    }
     maPopState(state);
-    return rc;
+    return 0;
 }
 
 
@@ -1070,6 +1057,7 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S %S %S %S ?S", &name, &methods, &pattern, &target, &source)) {
         return MPR_ERR_BAD_SYNTAX;
     }
+    target = stemplate(target, state->route->vars);
     httpDefineRoute(state->route, name, methods, pattern, target, source);
     return 0;
 }

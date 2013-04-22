@@ -1493,7 +1493,7 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
         The refresh option may use the "\@Controller/action" form.
     @arg size (Number|String) Size of the element.
     @arg style String CSS Style to use for the element.
-@arg value Object Override value to display if used without a form control record.
+    @arg value Object Override value to display if used without a form control record.
     @arg width (Number|String) Width of the control. Can be a number of pixels or a percentage string. Defaults to
         unlimited.
 
@@ -2651,6 +2651,14 @@ PUBLIC cchar *param(cchar *name);
     @stability Evolving
  */
 PUBLIC MprHash *params();
+
+/**
+    Match the request parameter against a field of the same name in the current record.
+    @return True if the param matches the field
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC bool pmatch(cchar *key);
 
 /**
     Read the identified record 
