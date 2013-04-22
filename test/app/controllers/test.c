@@ -24,7 +24,7 @@ static void details() {
 
 static void login() { 
     // mprLog(0, "SESSION VAR %s", getSessionVar("id"));
-    if (getSessionVar("id")[0]) {
+    if (getSessionVar("id")) {
         render("Logged in");
         finalize();
 
