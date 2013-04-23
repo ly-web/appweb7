@@ -10611,8 +10611,6 @@ PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set)
     } else if (scaselessmatch(set, "mvc-simple")) {
         httpAddHomeRoute(parent);
         httpAddStaticRoute(parent);
-        httpDefineRoute(parent, "default", NULL, "^/{controller}(~/{action}~)", "${controller}-${action}", 
-            "${controller}.c");
 
     } else if (scaselessmatch(set, "mvc")) {
         httpAddHomeRoute(parent);
