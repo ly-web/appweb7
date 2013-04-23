@@ -993,13 +993,13 @@ static void textInner(HttpConn *conn, cchar *field, MprHash *options)
     if (value == 0 || *value == '\0') {
         value = espGetParam(conn, field, "");
     }
+    if (httpGetOption(options, "password", 0)) {
+        type = "password";
+    } else if (httpGetOption(options, "hidden", 0)) {
+        type = "hidden";
+    }
     if ((rows = httpGetOption(options, "rows", 0)) != 0) {
         cols = httpGetOption(options, "cols", "60");
-        if (httpGetOption(options, "password", 0)) {
-            type = "password";
-        } else if (httpGetOption(options, "hidden", 0)) {
-            type = "hidden";
-        }
         espRender(conn, "<textarea name='%s' type='%s' cols='%s' rows='%s'%s>%s</textarea>", field, type, 
             cols, rows, map(conn, options), value);
     } else {
