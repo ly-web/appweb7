@@ -11,7 +11,7 @@
 
 <body>
     <div class="top">
-        <h1><% label("${TITLE} Application", "{data-click: '~'}"); %></h1>
+        <h1><% label("${TITLE} Application", "{data-esp-click: '~'}"); %></h1>
     </div>
     <div id="logo">Appweb&trade;</div>
     <% flash("all", NULL); %>
