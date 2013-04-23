@@ -1425,7 +1425,7 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
  */
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
 
-/********************************** Controls **********************************/
+/* ******************************** Controls ******************************** */
 
 /**
     Suite of high-level controls that generate dynamic HTML5.
@@ -1496,16 +1496,16 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
     @arg value Object Override value to display if used without a form control record.
     @arg width (Number|String) Width of the control. Can be a number of pixels or a percentage string. Defaults to
         unlimited.
-
     <h4>Dynamic Data</h4>
     <p>Most controls can perform background updates of their data after the initial presentation. This is done via
     the refresh and period options.</p>
-
     @stability Prototype
     @see espAlert espAnchor
     @defgroup EspControl EspControl
   */
-typedef struct EspControl { int dummy; } EspControl;
+typedef struct EspControl { 
+    int dummy;  /**< Unused */
+} EspControl;
 
 // MOB - does this do an alert popup or is this a console status widget?
 /**

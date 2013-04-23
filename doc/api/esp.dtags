@@ -1682,6 +1682,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>pmatch</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga0125d468b4b42038535a426cc27b9af9</anchor>
+      <arglist>(cchar *key)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>progress</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1801,6 +1808,20 @@
       <arglist>(cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
+      <type>ssize</type>
+      <name>renderString</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gaaafafb9657167c8093d9015733dd15e2</anchor>
+      <arglist>(cchar *s)</arglist>
+    </member>
+    <member kind="function">
+      <type>ssize</type>
+      <name>renderVar</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga688f12fa155a796f2f35f33cc52d5abb</anchor>
+      <arglist>(cchar *name)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>renderView</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1876,6 +1897,13 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>gaf4cbdf3eef410884ed0928066d0503f2</anchor>
       <arglist>(cchar *key, cchar *fmt,...)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>setIntParam</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gad58993583c3513dc5ad97e1a8e93e30a</anchor>
+      <arglist>(cchar *name, int value)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
