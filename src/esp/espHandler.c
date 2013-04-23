@@ -295,7 +295,7 @@ static int runAction(HttpConn *conn)
         if ((action = mprLookupKey(esp->actions, key)) == 0) {
             if (!viewExists(conn)) {
                 if ((action = mprLookupKey(esp->actions, "missing")) == 0) {
-                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action for %s", rx->target);
+                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action for %s in %s", rx->target, req->controllerPath);
                     return 0;
                 }
             }
@@ -668,7 +668,7 @@ static void setRouteDirs(MaState *state, cchar *kind)
     if ((eroute = getEroute(state->route)) == 0) {
         return;
     }
-    if (smatch(kind, "mvc") || smatch(kind, "restful")) {
+    if (smatch(kind, "mvc") || smatch(kind, "mvc-simple") || smatch(kind, "restful")) {
         setMvcDirs(eroute, state->route);
     }
 }

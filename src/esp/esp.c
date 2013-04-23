@@ -200,7 +200,7 @@ ${DEFINE_ACTIONS}    return 0;\n\
 static cchar *ScaffoldListView = "\
 <h1>${TITLE} List</h1>\n\
 \n\
-<% table(readTable(\"${NAME}\"), \"{data-click: '@edit'}\"); %>\n\
+<% table(readTable(\"${NAME}\"), \"{data-esp-click: '@edit'}\"); %>\n\
 <% buttonLink(\"New ${TITLE}\", \"@init\", 0); %>\n\
 ";
 
