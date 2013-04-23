@@ -1907,7 +1907,6 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/esp-www/files/static/layout.css $(BIT_VAPP_PREFIX)/bin/esp-www/files/static/layout.css
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/themes"
 	cp src/esp/esp-www/files/static/themes/default.css $(BIT_VAPP_PREFIX)/bin/esp-www/files/static/themes/default.css
-	cp src/esp/esp-appweb.conf $(BIT_VAPP_PREFIX)/bin/esp-appweb.conf
 endif
 ifeq ($(BIT_PACK_ESP),1)
 	cp $(CONFIG)/bin/esp.conf $(BIT_VAPP_PREFIX)/bin/esp.conf

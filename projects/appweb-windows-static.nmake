@@ -2032,7 +2032,6 @@ installBinary: $(DEPS_103)
 	copy /Y src\esp\esp-www\files\static\layout.css "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\layout.css"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes"
 	copy /Y src\esp\esp-www\files\static\themes\default.css "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes\default.css"
-	copy /Y src\esp\esp-appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-appweb.conf"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y $(CONFIG)\bin\esp.conf "$(BIT_VAPP_PREFIX)\bin\esp.conf"
