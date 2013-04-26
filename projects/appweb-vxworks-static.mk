@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.3.3
+VERSION            := 4.3.4
 BUILD_NUMBER       := 0
 PROFILE            := static
 ARCH               := $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*//')
@@ -310,7 +310,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.3-0
+	@echo 4.3.4-0
 
 #
 #   mpr.h
@@ -1048,6 +1048,7 @@ $(CONFIG)/bin/esp-www: $(DEPS_56)
 	cp src/esp/esp-www/appweb.conf $(CONFIG)/bin/esp-www/appweb.conf
 	mkdir -p "$(CONFIG)/bin/esp-www/files/layouts"
 	cp src/esp/esp-www/files/layouts/default.esp $(CONFIG)/bin/esp-www/files/layouts/default.esp
+	cp src/esp/esp-www/files/layouts/default.sav $(CONFIG)/bin/esp-www/files/layouts/default.sav
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static/images"
 	cp src/esp/esp-www/files/static/images/banner.jpg $(CONFIG)/bin/esp-www/files/static/images/banner.jpg
 	cp src/esp/esp-www/files/static/images/favicon.ico $(CONFIG)/bin/esp-www/files/static/images/favicon.ico
