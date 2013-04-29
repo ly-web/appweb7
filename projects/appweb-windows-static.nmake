@@ -1105,7 +1105,6 @@ $(CONFIG)\bin\esp-www: $(DEPS_58)
 	copy /Y src\esp\esp-www\appweb.conf $(CONFIG)\bin\esp-www\appweb.conf
 	if not exist "$(CONFIG)\bin\esp-www\files\layouts" md "$(CONFIG)\bin\esp-www\files\layouts"
 	copy /Y src\esp\esp-www\files\layouts\default.esp $(CONFIG)\bin\esp-www\files\layouts\default.esp
-	copy /Y src\esp\esp-www\files\layouts\default.sav $(CONFIG)\bin\esp-www\files\layouts\default.sav
 	if not exist "$(CONFIG)\bin\esp-www\files\static\images" md "$(CONFIG)\bin\esp-www\files\static\images"
 	copy /Y src\esp\esp-www\files\static\images\banner.jpg $(CONFIG)\bin\esp-www\files\static\images\banner.jpg
 	copy /Y src\esp\esp-www\files\static\images\favicon.ico $(CONFIG)\bin\esp-www\files\static\images\favicon.ico
@@ -2017,7 +2016,6 @@ installBinary: $(DEPS_103)
 	copy /Y src\esp\esp-www\appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-www\appweb.conf"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts"
 	copy /Y src\esp\esp-www\files\layouts\default.esp "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts\default.esp"
-	copy /Y src\esp\esp-www\files\layouts\default.sav "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts\default.sav"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images"
 	copy /Y src\esp\esp-www\files\static\images\banner.jpg "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images\banner.jpg"
 	copy /Y src\esp\esp-www\files\static\images\favicon.ico "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images\favicon.ico"

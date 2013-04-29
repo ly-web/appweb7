@@ -1043,7 +1043,6 @@ $(CONFIG)/bin/esp-www: $(DEPS_56)
 	cp src/esp/esp-www/appweb.conf $(CONFIG)/bin/esp-www/appweb.conf
 	mkdir -p "$(CONFIG)/bin/esp-www/files/layouts"
 	cp src/esp/esp-www/files/layouts/default.esp $(CONFIG)/bin/esp-www/files/layouts/default.esp
-	cp src/esp/esp-www/files/layouts/default.sav $(CONFIG)/bin/esp-www/files/layouts/default.sav
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static/images"
 	cp src/esp/esp-www/files/static/images/banner.jpg $(CONFIG)/bin/esp-www/files/static/images/banner.jpg
 	cp src/esp/esp-www/files/static/images/favicon.ico $(CONFIG)/bin/esp-www/files/static/images/favicon.ico
