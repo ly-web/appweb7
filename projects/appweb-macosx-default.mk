@@ -1084,8 +1084,11 @@ $(CONFIG)/bin/esp-www: $(DEPS_56)
 	cp src/esp/esp-www/appweb.conf $(CONFIG)/bin/esp-www/appweb.conf
 	mkdir -p "$(CONFIG)/bin/esp-www/files/layouts"
 	cp src/esp/esp-www/files/layouts/default.esp $(CONFIG)/bin/esp-www/files/layouts/default.esp
+<<<<<<< HEAD
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static/css"
 	cp src/esp/esp-www/files/static/css/all.css $(CONFIG)/bin/esp-www/files/static/css/all.css
+=======
+>>>>>>> 0f961b5076ce7ebffab0c9fc21f7a5cea61dbb03
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static/images"
 	cp src/esp/esp-www/files/static/images/banner.jpg $(CONFIG)/bin/esp-www/files/static/images/banner.jpg
 	cp src/esp/esp-www/files/static/images/favicon.ico $(CONFIG)/bin/esp-www/files/static/images/favicon.ico
@@ -2000,8 +2003,11 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/esp-www/appweb.conf $(BIT_VAPP_PREFIX)/bin/esp-www/appweb.conf
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/layouts"
 	cp src/esp/esp-www/files/layouts/default.esp $(BIT_VAPP_PREFIX)/bin/esp-www/files/layouts/default.esp
+<<<<<<< HEAD
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/css"
 	cp src/esp/esp-www/files/static/css/all.css $(BIT_VAPP_PREFIX)/bin/esp-www/files/static/css/all.css
+=======
+>>>>>>> 0f961b5076ce7ebffab0c9fc21f7a5cea61dbb03
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images"
 	cp src/esp/esp-www/files/static/images/banner.jpg $(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/banner.jpg
 	cp src/esp/esp-www/files/static/images/favicon.ico $(BIT_VAPP_PREFIX)/bin/esp-www/files/static/images/favicon.ico
