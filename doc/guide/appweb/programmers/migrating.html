@@ -101,7 +101,7 @@
             <ul>
                 <li>The core Appweb Http engine has been extracted, enhanced and is now a separate library. All the
                 APIs have a "http" prefix instead of an "ma" prefix.</li>
-                <li>Appweb 4 supports the Ejscript 2.X Web Framework. Is is a major upgrade with new integration APIs.</li>
+                <li>Appweb 4 supports the Ejscript 2.X Web Framework. It is a major upgrade with new integration APIs.</li>
                 <li>The stand-alone Appweb command line program is upgraded with new switches and options.</li>
                 <li>The build system is upgraded and simplified. It now uses the Ejscript Bit build system.
                     New configure options and cross compiling capabilities have been added.</li>
@@ -118,7 +118,7 @@
             <h3>Memory Allocator</h3>
             <p>Appweb 4 includes a high performance memory allocator and generational garbage collector. The allocator 
             is a fast and immediate coalescing allocator. It is optimized for frequent allocations of small blocks and 
-            uses a background collector for freeing unused memory.</p>
+            uses a background collector to free unused memory.</p>
             <p>The garbage collector is somewhat unusual in a C program. However, garbage collection 
             is especially well suited for long running applications like a web server since it virtually eliminates
             memory leaks. Unlike traditional memory allocation where <em>free</em> must be called, Appweb 4 uses the
