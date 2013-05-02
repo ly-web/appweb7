@@ -212,5 +212,4 @@ samples/simple-client/client
 samples/cpp-handler/server
 *.so
 samples/typical-client/client
-static
 ^/static/
