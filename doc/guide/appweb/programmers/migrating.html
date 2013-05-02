@@ -120,14 +120,14 @@
             is a fast and immediate coalescing allocator. It is optimized for frequent allocations of small blocks and 
             uses a background collector to free unused memory.</p>
             <p>The garbage collector is somewhat unusual in a C program. However, garbage collection 
-            is especially well suited for long running applications like a web server since it virtually eliminates
+            is especially well suited to long running applications like a web server since it virtually eliminates
             memory leaks. Unlike traditional memory allocation where <em>free</em> must be called, Appweb 4 uses the
-            opposite approach where memory that must be retained needs to be actively managed to prevent garbage 
+            opposite approach: memory that must be retained needs to be actively managed to prevent garbage 
             collection. This means that a <em>managed reference</em> must be held for all active memory.
             See <a href="../../../ref/appweb/memory.html">Memory Allocation</a> for more details.</p>
             <a id="config"></a>
             <h2 class="section">Migrating Appweb Configuration Files</h2>
-            <p>The Appweb 4 configuration file is substantially the same as the Appweb 3. Include directives can now
+            <p>The Appweb 4 configuration file is substantially the same as the Appweb 3. 'Include' directives can now
             contain wild cards and there are several new directives supporting Routing, Multi-language support and the
             Embedded Server Pages web framework. The big change is that Route directives replace the Directory and Location
             directives. </p>
