@@ -47,9 +47,11 @@ Bit.load({
             path: 'esp-www/files/static/css/all.css',
             files: [ 'esp-www/files/static/less/*.less'],
             build: "
-                trace('Compile', TARGET.path)
-                let result = Cmd.run('recess -compress -compile esp-www/files/static/less/all.less')
-                Path(TARGET.path).write(result)
+                if (Cmd.locate('recess')) {
+                    trace('Compile', TARGET.path)
+                    let result = Cmd.run('recess -compress -compile esp-www/files/static/less/all.less')
+                    Path(TARGET.path).write(result)
+                }
             ",
         },
 
