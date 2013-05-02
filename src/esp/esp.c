@@ -55,7 +55,9 @@ typedef struct App {
     int         error;                  /* Any processing error */
     int         flat;                   /* Combine all inputs into one, flat output */ 
     int         keep;                   /* Keep source */ 
+#if UNUSED
     int         minified;               /* Use minified JS files */
+#endif
     int         overwrite;              /* Overwrite existing files if required */
     int         quiet;                  /* Don't trace progress */
     int         rebuild;                /* Force a rebuild */
@@ -79,6 +81,7 @@ static int       nextMigration;         /* Sequence number for next migration */
 #define ESP_VIEW        0x2
 #define ESP_PAGE        0x4
 #define ESP_MIGRATION   0x8
+#define ESP_SRC         0x10
 
 #define ESP_FOUND_TARGET 1
 
@@ -115,6 +118,28 @@ extern \"C\" {\n\
 } /* extern C */\n\
 #endif\n\
 #endif /* _h_ESP_APP */\n\
+";
+
+
+static cchar *AppSrc = "\
+/*\n\
+    app.c -- ${TITLE} Module Source\n\
+\n\
+    This module is loaded when Appweb starts up.\n\
+ */\n\
+ #include \"esp-app.h\"\n\
+\n\
+/*\n\
+    This base for controllers is called before processing each request\n\
+ */\n\
+static void base(HttpConn *conn) {\n\
+}\n\
+\n\
+ESP_EXPORT int esp_app_${NAME}(HttpRoute *route, MprModule *module)\n\
+{\n\
+    espDefineBase(route, base);\n\
+    return 0;\n\
+}\n\
 ";
 
 
@@ -224,7 +249,7 @@ static cchar *ScaffoldEditView =  "\
     </table>\n\
     <% button(\"commit\", \"OK\", 0); %>\n\
     <% buttonLink(\"Cancel\", \"@\", 0); %>\n\
-    <% if (hasRec()) buttonLink(\"Delete\", \"@destroy\", \"{data-method: 'DELETE'}\"); %>\n\
+    <% if (hasRec()) buttonLink(\"Delete\", \"@destroy\", \"{data-esp-method: 'DELETE'}\"); %>\n\
 <% endform(); %>\n\
 ";
 
@@ -272,6 +297,7 @@ static void generateAppDirs(HttpRoute *route);
 static void generateAppFiles(HttpRoute *route);
 static void generateAppConfigFile(HttpRoute *route);
 static void generateAppHeader(HttpRoute *route);
+static void generateAppSrc(HttpRoute *route);
 static void generateMigration(HttpRoute *route, int argc, char **argv);
 static void initialize();
 static void makeEspDir(HttpRoute *route, cchar *dir);
@@ -382,8 +408,10 @@ PUBLIC int main(int argc, char **argv)
                 logSpec = argv[++argind];
             }
 
+#if UNUSED
         } else if (smatch(argp, "min")) {
             app->minified = 1;
+#endif
 
         } else if (smatch(argp, "name")) {
             if (argind >= argc) {
@@ -524,6 +552,7 @@ static HttpRoute *createRoute(cchar *dir)
     eroute->dbDir = mprJoinPath(dir, "db");
     eroute->migrationsDir = mprJoinPath(dir, "db/migrations");
     eroute->layoutsDir = mprJoinPath(dir, "layouts");
+    eroute->srcDir = mprJoinPath(dir, "src");
     eroute->staticDir = mprJoinPath(dir, "static");
     eroute->viewsDir = mprJoinPath(dir, "views");
     return route;
@@ -922,7 +951,9 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     }
     eroute = route->eroute;
     defaultLayout = 0;
-    if (kind == ESP_CONTROLLER) {
+    if (kind == ESP_SRC) {
+        prefix = "app_";
+    } else if (kind == ESP_CONTROLLER) {
         prefix = "controller_";
     } else if (kind == ESP_MIGRATION) {
         prefix = "migration_";
@@ -969,7 +1000,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     if (app->flatFile) {
         mprWriteFileFmt(app->flatFile, "/*\n    Source from %s\n */\n", source);
     }
-    if (kind & (ESP_CONTROLLER | ESP_MIGRATION)) {
+    if (kind & (ESP_CONTROLLER | ESP_MIGRATION | ESP_SRC)) {
         app->csource = source;
         if (app->flatFile) {
             if ((data = mprReadPathContents(source, &len)) == 0) {
@@ -1207,6 +1238,12 @@ static void compileItems(HttpRoute *route)
             }
         }
     }
+    if (eroute->srcDir) {
+        path = mprJoinPath(eroute->srcDir, "app.c");
+        if (selectResource(path, "c")) {
+            compileFile(route, path, ESP_SRC);
+        }
+    }
     if (eroute->staticDir) {
         app->files = mprGetPathFiles(eroute->staticDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
@@ -1370,6 +1407,7 @@ static void generateApp(cchar *name)
     generateAppDirs(route);
     generateAppFiles(route);
     generateAppConfigFile(route);
+    generateAppSrc(route);
     generateAppHeader(route);
     generateAppDb(route);
 }
@@ -1874,6 +1912,7 @@ static void generateAppDirs(HttpRoute *route)
     makeEspDir(route, "cache");
     makeEspDir(route, "controllers");
     makeEspDir(route, "layouts");
+    makeEspDir(route, "src");
     makeEspDir(route, "static");
     makeEspDir(route, "static/images");
     makeEspDir(route, "static/js");
@@ -1923,6 +1962,7 @@ static void generateAppFiles(HttpRoute *route)
 
 static bool checkEspPath(cchar *path)
 {
+#if UNUSED
     if (scontains(path, "jquery.")) {
         if (app->minified) {
             if (!scontains(path, ".min.js")) {
@@ -1933,9 +1973,8 @@ static bool checkEspPath(cchar *path)
                 return 0;
             }
         }
-    } else if (scontains(path, "treeview")) {
-        return 0;
     }
+#endif
     return 1;
 }
 
@@ -2061,6 +2100,20 @@ static void generateAppHeader(HttpRoute *route)
 }
 
 
+static void generateAppSrc(HttpRoute *route)
+{
+    EspRoute    *eroute;
+    MprHash     *tokens;
+    char        *path, *data;
+
+    eroute = route->eroute;
+    path = mprJoinPath(eroute->srcDir, "app.c");
+    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s }", app->appName, spascal(app->appName)));
+    data = stemplate(AppSrc, tokens);
+    makeEspFile(path, data, "Header");
+}
+
+
 static void generateAppDb(HttpRoute *route)
 {
     EspRoute    *eroute;
@@ -2155,6 +2208,7 @@ static void makeEspDir(HttpRoute *route, cchar *dir)
 }
 
 
+//  MOB msg UNUSED
 static void makeEspFile(cchar *path, cchar *data, cchar *msg)
 {
     bool    exists;
@@ -2168,6 +2222,7 @@ static void makeEspFile(cchar *path, cchar *data, cchar *msg)
         fail("Cannot write %s", path);
         return;
     }
+    //  MOB - msg UNUSED
     msg = sfmt("%s: %s", msg, path);
     if (!exists) {
         trace("Create", mprGetRelPath(path, 0));

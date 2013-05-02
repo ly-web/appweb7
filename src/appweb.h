@@ -564,6 +564,18 @@ PUBLIC void maStopAccessLogging(HttpRoute *route);
  */
 PUBLIC bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
 
+
+/**
+    Get the next token in a string.
+    @description Break into tokens separated by spaces or commas. Supports quoted args and backquotes.
+    @param s String to examine
+    @param tok Next token reference
+    @return Reference to the next token. (Not allocate
+    @ingroup MaAppweb
+    @stability Prototype
+*/
+PUBLIC char *maGetNextToken(char *s, char **tok);
+
 #ifdef __cplusplus
 } /* extern C */
 #endif

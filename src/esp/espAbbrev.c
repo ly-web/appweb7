@@ -163,9 +163,9 @@ PUBLIC void table(EdiGrid *grid, cchar *optionString)
 }
 
 
-PUBLIC void tabs(EdiRec *rec, cchar *optionString)
+PUBLIC void tabs(EdiGrid *grid, cchar *optionString)
 {
-    espTabs(getConn(), rec, optionString);
+    espTabs(getConn(), grid, optionString);
 }
 
 

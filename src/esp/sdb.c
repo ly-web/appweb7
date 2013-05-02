@@ -306,9 +306,11 @@ static int sdbAddTable(Edi *edi, cchar *tableName)
 
 static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiValidation *vp)
 {
-    Sdb         *sdb;
-    MprList     *validations;
-    cchar       *vkey;
+    Sdb             *sdb;
+    MprList         *validations;
+    EdiValidation   *prior;
+    cchar           *vkey;
+    int             next;
 
     assert(edi);
     assert(tableName && *tableName);
@@ -321,7 +323,14 @@ static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
         validations = mprCreateList(0, 0);
         mprAddKey(sdb->validations, vkey, validations);
     }
-    mprAddItem(validations, vp);
+    for (ITERATE_ITEMS(validations, prior, next)) {
+        if (prior->vfn == vp->vfn) {
+            break;
+        }
+    }
+    if (!prior) {
+        mprAddItem(validations, vp);
+    }
     return 0;
 }
 
@@ -613,8 +622,8 @@ static EdiGrid *sdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
     if (columnName) {
         assert(columnName && *columnName);
         assert(operation && *operation);
-        assert(value && *value);
-        return query(edi, sfmt("SELECT * FROM %s WHERE %s %s %s;", tableName, columnName, operation, value));
+        assert(value);
+        return query(edi, sfmt("SELECT * FROM %s WHERE %s %s '%s';", tableName, columnName, operation, value));
     } else {
         return query(edi, sfmt("SELECT * FROM %s;", tableName));
     }

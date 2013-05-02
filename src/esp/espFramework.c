@@ -138,14 +138,20 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 
 
 /*
-    The base procedure is invoked prior to calling any and all actions
+    The base procedure is invoked prior to calling any and all actions on this route
  */
 PUBLIC void espDefineBase(HttpRoute *route, EspProc baseProc)
 {
-    EspRoute    *eroute;
+    HttpRoute   *rp;
+    EspRoute    *eroute, *er;
+    int         next;
 
     eroute = route->eroute;
-    eroute->controllerBase = baseProc;
+    for (ITERATE_ITEMS(route->host->routes, rp, next)) {
+        if ((er = route->eroute) != 0 && smatch(er->controllersDir, eroute->controllersDir)) {
+            er->controllerBase = baseProc;
+        }
+    }
 }
 
 
@@ -1038,6 +1044,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->layoutsDir);
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
+        mprMark(eroute->srcDir);
         mprMark(eroute->staticDir);
         mprMark(eroute->viewsDir);
     }

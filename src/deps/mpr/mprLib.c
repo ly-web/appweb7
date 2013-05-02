@@ -24246,7 +24246,7 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
         }
     }
     if (pruned) {
-        mprLog(2, "Pruned %d workers, pool has %d workers. Limits %d-%d.", 
+        mprLog(4, "Pruned %d workers, pool has %d workers. Limits %d-%d.", 
             pruned, ws->numThreads - pruned, ws->minThreads, ws->maxThreads);
     }
     unlock(ws);
@@ -24289,7 +24289,7 @@ static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize)
     worker->idleCond = mprCreateCond();
 
     fmt(name, sizeof(name), "worker.%u", getNextThreadNum(ws));
-    mprLog(2, "Create %s, pool has %d workers. Limits %d-%d.", name, ws->numThreads + 1, ws->minThreads, ws->maxThreads);
+    mprLog(4, "Create %s, pool has %d workers. Limits %d-%d.", name, ws->numThreads + 1, ws->minThreads, ws->maxThreads);
     worker->thread = mprCreateThread(name, (MprThreadProc) workerMain, worker, stackSize);
     return worker;
 }

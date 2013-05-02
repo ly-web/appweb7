@@ -149,6 +149,7 @@ endif
 ifeq ($(BIT_PACK_ESP),1)
 TARGETS            += $(CONFIG)/bin/esp-www
 endif
+TARGETS            += src/esp/esp-www/files/static/css/all.css
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 TARGETS            += $(CONFIG)/bin/libejs.a
 endif
@@ -1048,7 +1049,8 @@ $(CONFIG)/bin/esp-www: $(DEPS_56)
 	cp src/esp/esp-www/appweb.conf $(CONFIG)/bin/esp-www/appweb.conf
 	mkdir -p "$(CONFIG)/bin/esp-www/files/layouts"
 	cp src/esp/esp-www/files/layouts/default.esp $(CONFIG)/bin/esp-www/files/layouts/default.esp
-	cp src/esp/esp-www/files/layouts/default.sav $(CONFIG)/bin/esp-www/files/layouts/default.sav
+	mkdir -p "$(CONFIG)/bin/esp-www/files/static/css"
+	cp src/esp/esp-www/files/static/css/all.css $(CONFIG)/bin/esp-www/files/static/css/all.css
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static/images"
 	cp src/esp/esp-www/files/static/images/banner.jpg $(CONFIG)/bin/esp-www/files/static/images/banner.jpg
 	cp src/esp/esp-www/files/static/images/favicon.ico $(CONFIG)/bin/esp-www/files/static/images/favicon.ico
@@ -1056,16 +1058,29 @@ $(CONFIG)/bin/esp-www: $(DEPS_56)
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static"
 	cp src/esp/esp-www/files/static/index.esp $(CONFIG)/bin/esp-www/files/static/index.esp
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static/js"
-	cp src/esp/esp-www/files/static/js/jquery-1.9.1.js $(CONFIG)/bin/esp-www/files/static/js/jquery-1.9.1.js
-	cp src/esp/esp-www/files/static/js/jquery-1.9.1.min.js $(CONFIG)/bin/esp-www/files/static/js/jquery-1.9.1.min.js
+	cp src/esp/esp-www/files/static/js/html5shiv.js $(CONFIG)/bin/esp-www/files/static/js/html5shiv.js
+	cp src/esp/esp-www/files/static/js/html5shiv.min.js $(CONFIG)/bin/esp-www/files/static/js/html5shiv.min.js
 	cp src/esp/esp-www/files/static/js/jquery.esp.js $(CONFIG)/bin/esp-www/files/static/js/jquery.esp.js
+	cp src/esp/esp-www/files/static/js/jquery.esp.min.js $(CONFIG)/bin/esp-www/files/static/js/jquery.esp.min.js
 	cp src/esp/esp-www/files/static/js/jquery.js $(CONFIG)/bin/esp-www/files/static/js/jquery.js
+	cp src/esp/esp-www/files/static/js/jquery.min.js $(CONFIG)/bin/esp-www/files/static/js/jquery.min.js
 	cp src/esp/esp-www/files/static/js/jquery.simplemodal.js $(CONFIG)/bin/esp-www/files/static/js/jquery.simplemodal.js
+	cp src/esp/esp-www/files/static/js/jquery.simplemodal.min.js $(CONFIG)/bin/esp-www/files/static/js/jquery.simplemodal.min.js
 	cp src/esp/esp-www/files/static/js/jquery.tablesorter.js $(CONFIG)/bin/esp-www/files/static/js/jquery.tablesorter.js
-	cp src/esp/esp-www/files/static/layout.css $(CONFIG)/bin/esp-www/files/static/layout.css
-	mkdir -p "$(CONFIG)/bin/esp-www/files/static/themes"
-	cp src/esp/esp-www/files/static/themes/default.css $(CONFIG)/bin/esp-www/files/static/themes/default.css
+	cp src/esp/esp-www/files/static/js/jquery.tablesorter.min.js $(CONFIG)/bin/esp-www/files/static/js/jquery.tablesorter.min.js
+	cp src/esp/esp-www/files/static/js/less.js $(CONFIG)/bin/esp-www/files/static/js/less.js
+	cp src/esp/esp-www/files/static/js/less.min.js $(CONFIG)/bin/esp-www/files/static/js/less.min.js
+	cp src/esp/esp-www/files/static/js/respond.js $(CONFIG)/bin/esp-www/files/static/js/respond.js
+	cp src/esp/esp-www/files/static/js/respond.min.js $(CONFIG)/bin/esp-www/files/static/js/respond.min.js
+	mkdir -p "$(CONFIG)/bin/esp-www/files/static/less"
+	cp src/esp/esp-www/files/static/less/all.less $(CONFIG)/bin/esp-www/files/static/less/all.less
+	cp src/esp/esp-www/files/static/less/app.less $(CONFIG)/bin/esp-www/files/static/less/app.less
+	cp src/esp/esp-www/files/static/less/esp.less $(CONFIG)/bin/esp-www/files/static/less/esp.less
+	cp src/esp/esp-www/files/static/less/more.less $(CONFIG)/bin/esp-www/files/static/less/more.less
+	cp src/esp/esp-www/files/static/less/normalize.less $(CONFIG)/bin/esp-www/files/static/less/normalize.less
+	cp src/esp/esp-www/files/static/less/theme.less $(CONFIG)/bin/esp-www/files/static/less/theme.less
 endif
+
 
 #
 #   ejs.h
@@ -1831,12 +1846,20 @@ DEPS_93 += src/esp/esp-www/files/static/js
 test/web/js: $(DEPS_93)
 	@echo '      [Copy] test/web/js'
 	mkdir -p "test/web/js"
-	cp src/esp/esp-www/files/static/js/jquery-1.9.1.js test/web/js/jquery-1.9.1.js
-	cp src/esp/esp-www/files/static/js/jquery-1.9.1.min.js test/web/js/jquery-1.9.1.min.js
+	cp src/esp/esp-www/files/static/js/html5shiv.js test/web/js/html5shiv.js
+	cp src/esp/esp-www/files/static/js/html5shiv.min.js test/web/js/html5shiv.min.js
 	cp src/esp/esp-www/files/static/js/jquery.esp.js test/web/js/jquery.esp.js
+	cp src/esp/esp-www/files/static/js/jquery.esp.min.js test/web/js/jquery.esp.min.js
 	cp src/esp/esp-www/files/static/js/jquery.js test/web/js/jquery.js
+	cp src/esp/esp-www/files/static/js/jquery.min.js test/web/js/jquery.min.js
 	cp src/esp/esp-www/files/static/js/jquery.simplemodal.js test/web/js/jquery.simplemodal.js
+	cp src/esp/esp-www/files/static/js/jquery.simplemodal.min.js test/web/js/jquery.simplemodal.min.js
 	cp src/esp/esp-www/files/static/js/jquery.tablesorter.js test/web/js/jquery.tablesorter.js
+	cp src/esp/esp-www/files/static/js/jquery.tablesorter.min.js test/web/js/jquery.tablesorter.min.js
+	cp src/esp/esp-www/files/static/js/less.js test/web/js/less.js
+	cp src/esp/esp-www/files/static/js/less.min.js test/web/js/less.min.js
+	cp src/esp/esp-www/files/static/js/respond.js test/web/js/respond.js
+	cp src/esp/esp-www/files/static/js/respond.min.js test/web/js/respond.min.js
 
 #
 #   installBinary

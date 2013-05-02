@@ -156,6 +156,7 @@ TARGETS            = $(TARGETS) src\server\esp.conf
 !IF "$(BIT_PACK_ESP)" == "1"
 TARGETS            = $(TARGETS) $(CONFIG)\bin\esp-www
 !ENDIF
+TARGETS            = $(TARGETS) src\esp\esp-www\files\static\css\all.css
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 TARGETS            = $(TARGETS) $(CONFIG)\bin\libejs.lib
 !ENDIF
@@ -1105,7 +1106,8 @@ $(CONFIG)\bin\esp-www: $(DEPS_58)
 	copy /Y src\esp\esp-www\appweb.conf $(CONFIG)\bin\esp-www\appweb.conf
 	if not exist "$(CONFIG)\bin\esp-www\files\layouts" md "$(CONFIG)\bin\esp-www\files\layouts"
 	copy /Y src\esp\esp-www\files\layouts\default.esp $(CONFIG)\bin\esp-www\files\layouts\default.esp
-	copy /Y src\esp\esp-www\files\layouts\default.sav $(CONFIG)\bin\esp-www\files\layouts\default.sav
+	if not exist "$(CONFIG)\bin\esp-www\files\static\css" md "$(CONFIG)\bin\esp-www\files\static\css"
+	copy /Y src\esp\esp-www\files\static\css\all.css $(CONFIG)\bin\esp-www\files\static\css\all.css
 	if not exist "$(CONFIG)\bin\esp-www\files\static\images" md "$(CONFIG)\bin\esp-www\files\static\images"
 	copy /Y src\esp\esp-www\files\static\images\banner.jpg $(CONFIG)\bin\esp-www\files\static\images\banner.jpg
 	copy /Y src\esp\esp-www\files\static\images\favicon.ico $(CONFIG)\bin\esp-www\files\static\images\favicon.ico
@@ -1113,16 +1115,29 @@ $(CONFIG)\bin\esp-www: $(DEPS_58)
 	if not exist "$(CONFIG)\bin\esp-www\files\static" md "$(CONFIG)\bin\esp-www\files\static"
 	copy /Y src\esp\esp-www\files\static\index.esp $(CONFIG)\bin\esp-www\files\static\index.esp
 	if not exist "$(CONFIG)\bin\esp-www\files\static\js" md "$(CONFIG)\bin\esp-www\files\static\js"
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.js $(CONFIG)\bin\esp-www\files\static\js\jquery-1.9.1.js
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.min.js $(CONFIG)\bin\esp-www\files\static\js\jquery-1.9.1.min.js
+	copy /Y src\esp\esp-www\files\static\js\html5shiv.js $(CONFIG)\bin\esp-www\files\static\js\html5shiv.js
+	copy /Y src\esp\esp-www\files\static\js\html5shiv.min.js $(CONFIG)\bin\esp-www\files\static\js\html5shiv.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.esp.js $(CONFIG)\bin\esp-www\files\static\js\jquery.esp.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.esp.min.js $(CONFIG)\bin\esp-www\files\static\js\jquery.esp.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.js $(CONFIG)\bin\esp-www\files\static\js\jquery.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.min.js $(CONFIG)\bin\esp-www\files\static\js\jquery.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.js $(CONFIG)\bin\esp-www\files\static\js\jquery.simplemodal.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.min.js $(CONFIG)\bin\esp-www\files\static\js\jquery.simplemodal.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.js $(CONFIG)\bin\esp-www\files\static\js\jquery.tablesorter.js
-	copy /Y src\esp\esp-www\files\static\layout.css $(CONFIG)\bin\esp-www\files\static\layout.css
-	if not exist "$(CONFIG)\bin\esp-www\files\static\themes" md "$(CONFIG)\bin\esp-www\files\static\themes"
-	copy /Y src\esp\esp-www\files\static\themes\default.css $(CONFIG)\bin\esp-www\files\static\themes\default.css
+	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.min.js $(CONFIG)\bin\esp-www\files\static\js\jquery.tablesorter.min.js
+	copy /Y src\esp\esp-www\files\static\js\less.js $(CONFIG)\bin\esp-www\files\static\js\less.js
+	copy /Y src\esp\esp-www\files\static\js\less.min.js $(CONFIG)\bin\esp-www\files\static\js\less.min.js
+	copy /Y src\esp\esp-www\files\static\js\respond.js $(CONFIG)\bin\esp-www\files\static\js\respond.js
+	copy /Y src\esp\esp-www\files\static\js\respond.min.js $(CONFIG)\bin\esp-www\files\static\js\respond.min.js
+	if not exist "$(CONFIG)\bin\esp-www\files\static\less" md "$(CONFIG)\bin\esp-www\files\static\less"
+	copy /Y src\esp\esp-www\files\static\less\all.less $(CONFIG)\bin\esp-www\files\static\less\all.less
+	copy /Y src\esp\esp-www\files\static\less\app.less $(CONFIG)\bin\esp-www\files\static\less\app.less
+	copy /Y src\esp\esp-www\files\static\less\esp.less $(CONFIG)\bin\esp-www\files\static\less\esp.less
+	copy /Y src\esp\esp-www\files\static\less\more.less $(CONFIG)\bin\esp-www\files\static\less\more.less
+	copy /Y src\esp\esp-www\files\static\less\normalize.less $(CONFIG)\bin\esp-www\files\static\less\normalize.less
+	copy /Y src\esp\esp-www\files\static\less\theme.less $(CONFIG)\bin\esp-www\files\static\less\theme.less
 !ENDIF
+
 
 #
 #   ejs.h
@@ -1970,12 +1985,20 @@ DEPS_101 = $(DEPS_101) src\esp\esp-www\files\static\js
 test\web\js: $(DEPS_101)
 	@echo '      [Copy] test/web/js'
 	if not exist "test\web\js" md "test\web\js"
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.js test\web\js\jquery-1.9.1.js
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.min.js test\web\js\jquery-1.9.1.min.js
+	copy /Y src\esp\esp-www\files\static\js\html5shiv.js test\web\js\html5shiv.js
+	copy /Y src\esp\esp-www\files\static\js\html5shiv.min.js test\web\js\html5shiv.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.esp.js test\web\js\jquery.esp.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.esp.min.js test\web\js\jquery.esp.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.js test\web\js\jquery.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.min.js test\web\js\jquery.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.js test\web\js\jquery.simplemodal.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.min.js test\web\js\jquery.simplemodal.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.js test\web\js\jquery.tablesorter.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.min.js test\web\js\jquery.tablesorter.min.js
+	copy /Y src\esp\esp-www\files\static\js\less.js test\web\js\less.js
+	copy /Y src\esp\esp-www\files\static\js\less.min.js test\web\js\less.min.js
+	copy /Y src\esp\esp-www\files\static\js\respond.js test\web\js\respond.js
+	copy /Y src\esp\esp-www\files\static\js\respond.min.js test\web\js\respond.min.js
 
 
 #
@@ -2017,7 +2040,8 @@ installBinary: $(DEPS_103)
 	copy /Y src\esp\esp-www\appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-www\appweb.conf"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts"
 	copy /Y src\esp\esp-www\files\layouts\default.esp "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts\default.esp"
-	copy /Y src\esp\esp-www\files\layouts\default.sav "$(BIT_VAPP_PREFIX)\bin\esp-www\files\layouts\default.sav"
+	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\css" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\css"
+	copy /Y src\esp\esp-www\files\static\css\all.css "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\css\all.css"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images"
 	copy /Y src\esp\esp-www\files\static\images\banner.jpg "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images\banner.jpg"
 	copy /Y src\esp\esp-www\files\static\images\favicon.ico "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\images\favicon.ico"
@@ -2025,15 +2049,27 @@ installBinary: $(DEPS_103)
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static"
 	copy /Y src\esp\esp-www\files\static\index.esp "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\index.esp"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js"
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery-1.9.1.js"
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery-1.9.1.min.js"
+	copy /Y src\esp\esp-www\files\static\js\html5shiv.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\html5shiv.js"
+	copy /Y src\esp\esp-www\files\static\js\html5shiv.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\html5shiv.min.js"
 	copy /Y src\esp\esp-www\files\static\js\jquery.esp.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.esp.js"
+	copy /Y src\esp\esp-www\files\static\js\jquery.esp.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.esp.min.js"
 	copy /Y src\esp\esp-www\files\static\js\jquery.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.js"
+	copy /Y src\esp\esp-www\files\static\js\jquery.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.min.js"
 	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.simplemodal.js"
+	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.simplemodal.min.js"
 	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.tablesorter.js"
-	copy /Y src\esp\esp-www\files\static\layout.css "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\layout.css"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes"
-	copy /Y src\esp\esp-www\files\static\themes\default.css "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\themes\default.css"
+	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.tablesorter.min.js"
+	copy /Y src\esp\esp-www\files\static\js\less.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\less.js"
+	copy /Y src\esp\esp-www\files\static\js\less.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\less.min.js"
+	copy /Y src\esp\esp-www\files\static\js\respond.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\respond.js"
+	copy /Y src\esp\esp-www\files\static\js\respond.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\respond.min.js"
+	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\less" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\less"
+	copy /Y src\esp\esp-www\files\static\less\all.less "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\less\all.less"
+	copy /Y src\esp\esp-www\files\static\less\app.less "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\less\app.less"
+	copy /Y src\esp\esp-www\files\static\less\esp.less "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\less\esp.less"
+	copy /Y src\esp\esp-www\files\static\less\more.less "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\less\more.less"
+	copy /Y src\esp\esp-www\files\static\less\normalize.less "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\less\normalize.less"
+	copy /Y src\esp\esp-www\files\static\less\theme.less "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\less\theme.less"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y $(CONFIG)\bin\esp.conf "$(BIT_VAPP_PREFIX)\bin\esp.conf"

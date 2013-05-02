@@ -9988,6 +9988,8 @@ PUBLIC char *httpTemplate(HttpConn *conn, cchar *tplate, MprHash *options)
         if (*cp == '~' && (cp == tplate || cp[-1] != '\\')) {
             if (route->prefix) {
                 mprPutStringToBuf(buf, route->prefix);
+            } else {
+                mprPutStringToBuf(buf, "/");
             }
 
         } else if (*cp == '$' && cp[1] == '{' && (cp == tplate || cp[-1] != '\\')) {
@@ -13693,24 +13695,24 @@ PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTicks lifespa
     assert(conn);
     http = conn->http;
 
-    lock(http);
-    http->activeSessions++;
-    if (http->activeSessions >= conn->limits->sessionMax) {
-        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE,
-            "Too many sessions %d/%d", http->activeSessions, conn->limits->sessionMax);
+    if (id == 0) {
+        id = makeSessionID(conn);
+#if UNUSED
+        lock(http);
+        http->activeSessions++;
+        if (http->activeSessions >= conn->limits->sessionMax) {
+            httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Too many sessions %d/%d", http->activeSessions, conn->limits->sessionMax);
+            unlock(http);
+            return 0;
+        }
         unlock(http);
-        return 0;
+#endif
     }
-    unlock(http);
-
     if ((sp = mprAllocObj(HttpSession, manageSession)) == 0) {
         return 0;
     }
     mprSetName(sp, "session");
     sp->lifespan = lifespan;
-    if (id == 0) {
-        id = makeSessionID(conn);
-    }
     sp->id = sclone(id);
     sp->cache = conn->http->sessionCache;
     sp->conn = conn;
@@ -13744,8 +13746,10 @@ PUBLIC void httpDestroySession(HttpConn *conn)
         /* Can't do this as we can only expire individual items in the cache as the cache is shared */
         mprExpireCache(sp->cache, makeKey(sp, key), 0);
 #endif
+#if UNUSED
         http->activeSessions--;
         assert(http->activeSessions >= 0);
+#endif
         sp->id = 0;
         conn->rx->session = 0;
     }
@@ -14978,9 +14982,9 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
         if (tx->outputRanges->next == 0) {
             range = tx->outputRanges;
             if (tx->entityLength > 0) {
-                httpSetHeader(conn, "Content-Range", "bytes %Ld-%Ld/%Ld", range->start, range->end, tx->entityLength);
+                httpSetHeader(conn, "Content-Range", "bytes %Ld-%Ld/%Ld", range->start, range->end - 1, tx->entityLength);
             } else {
-                httpSetHeader(conn, "Content-Range", "bytes %Ld-%Ld/*", range->start, range->end);
+                httpSetHeader(conn, "Content-Range", "bytes %Ld-%Ld/*", range->start, range->end - 1);
             }
         } else {
             httpSetHeader(conn, "Content-Type", "multipart/byteranges; boundary=%s", tx->rangeBoundary);

@@ -356,6 +356,46 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
 }
 
 
+/* MOB - could this be merged with joinLine */
+static char *fixMultiStrings(cchar *str)
+{
+    cchar   *cp;
+    char    *buf, *bp;
+    ssize   len;
+    int     count, bquote, quoted;
+
+    for (count = 0, cp = str; *cp; cp++) {
+        if (*cp == '\n' || *cp == '"') {
+            count++;
+        }
+    }
+    len = slen(str);
+    if ((buf = mprAlloc(len + (count * 3) + 1)) == 0) {
+        return 0;
+    }
+    bquote = quoted = 0;
+    for (cp = str, bp = buf; *cp; cp++) {
+        if (*cp == '`') {
+            *bp++ = '"';
+            quoted = !quoted;
+        } else if (quoted) {
+            if (*cp == '\n') {
+                *bp++ = '\\';
+            } else if (*cp == '"') {
+                *bp++ = '\\';
+            } else if (*cp == '\\' && cp[1] != '\\') {
+                bquote++;
+            }
+            *bp++ = *cp;
+        } else {
+            *bp++ = *cp;
+        }
+    }
+    *bp = '\0';
+    return buf;
+}
+
+
 static char *joinLine(cchar *str, ssize *lenp)
 {
     cchar   *cp;
@@ -471,7 +511,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                     mprPutToBuf(state->end, "%s  ", rest);
                 }
             } else {
-                mprPutStringToBuf(body, token);
+                mprPutStringToBuf(body, fixMultiStrings(token));
             }
             break;
 
@@ -572,6 +612,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         }
         tid = getEspToken(&parse);
     }
+    mprAddNullToBuf(body);
 
     if (layout && mprPathExists(layout, R_OK)) {
         if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {

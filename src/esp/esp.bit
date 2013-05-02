@@ -11,7 +11,6 @@ Bit.load({
             headers: [ '*.h' ],
             exclude: /esp\.c/,
             packs: [ 'esp' ],
-            _UNUSED_enable: "bit.packs.esp.enable",
         },
 
         espcmd: {
@@ -21,7 +20,6 @@ Bit.load({
             sources: [ '*.c' ]
             platforms: [ 'local' ],
             packs: 'esp',
-            _UNUSED_enable: "bit.packs.esp.enable",
         },
 
         'esp.conf': {
@@ -43,6 +41,16 @@ Bit.load({
             files: [ 'esp-www/' ],
             platforms: [ 'local' ],
             packs: 'esp',
+        },
+
+        'all.css': {
+            path: 'esp-www/files/static/css/all.css',
+            files: [ 'esp-www/files/static/less/*.less'],
+            build: "
+                trace('Compile', TARGET.path)
+                let result = Cmd.run('recess -compress -compile esp-www/files/static/less/all.less')
+                Path(TARGET.path).write(result)
+            ",
         },
 
         'esp-configure': {

@@ -19,7 +19,6 @@ static char *getDirective(char *line, char **valuep);
 static int getint(cchar *value);
 static int64 getnum(cchar *value);
 static MprTicks getticks(cchar *value);
-static char *gettok(char *s, char **tok);
 static void manageState(MaState *state, int flags);
 static int parseFile(MaState *state, cchar *path);
 static int parseFileInner(MaState *state, cchar *path);
@@ -49,6 +48,7 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     MaState     *state;
     HttpHost    *host;
     HttpRoute   *route;
+    cchar       *dir;
 
     assert(server);
     assert(path && *path);
@@ -57,8 +57,11 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
 
     host = server->defaultHost;
     route = host->defaultRoute;
+    
+    dir = mprGetAbsPath(mprGetPathDir(path));
 
-    httpSetRouteHome(route, mprGetAbsPath(mprGetPathDir(path)));
+    httpSetRouteHome(route, dir);
+    httpSetRouteDir(route, dir);
     httpSetRouteVar(route, "LOG_DIR", ".");
     httpSetRouteVar(route, "INC_DIR", BIT_VAPP_PREFIX "/inc");
     httpSetRouteVar(route, "SPL_DIR", BIT_SPOOL_PREFIX);
@@ -170,7 +173,7 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
     flags = 0;
     path = 0;
     
-    for (option = gettok(sclone(value), &tok); option; option = gettok(tok, &tok)) {
+    for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
         if (!path) {
             path = sclone(option);
         } else {
@@ -189,7 +192,7 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
                 flags |= MPR_LOG_ANEW;
 
             } else {
-                mprError("Unknown option %s", option);
+                mprError("Unknown AccessLog option %s", option);
             }
         }
     }
@@ -803,7 +806,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
     path = 0;
     flags = 0;
 
-    for (option = gettok(sclone(value), &tok); option; option = gettok(tok, &tok)) {
+    for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
         if (!path) {
             path = mprJoinPath(httpGetRouteVar(state->route, "LOG_DIR"), httpExpandRouteVars(state->route, option));
         } else {
@@ -828,7 +831,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
                 stamp = getticks(ovalue);
 
             } else {
-                mprError("Unknown option %s", option);
+                mprError("Unknown ErrorLog option %s", option);
             }
         }
     }
@@ -2528,7 +2531,7 @@ static char *getDirective(char *line, char **valuep)
 /*
     Break into tokens separated by spaces or commas. Supports quoted args and backquotes.
  */
-static char *gettok(char *s, char **tok)
+PUBLIC char *maGetNextToken(char *s, char **tok)
 {
     char    *etok;
     int     quote;

@@ -4,22 +4,26 @@
     <meta charset="utf-8" />
     <% securityToken(); %>
     <% icon(0, 0); %>
-    <% stylesheet(0, 0); %>
-    <% script(0, 0); %>
-    <title>${TITLE} Application</title>
+    <% stylesheet(0, "{type: 'less'}"); %>
+    <% script(0, "{minified: false, less: true}"); %>
+    <title>${TITLE}</title>
 </head>
 
 <body>
-    <div class="top">
-        <h1><% label("${TITLE} Application", "{data-esp-click: '~'}"); %></h1>
-    </div>
-    <div id="logo">Appweb&trade;</div>
-    <% flash("all", NULL); %>
-    <div class="content">
-        <%@ content %>
-    </div>
-    <div class="bottom">
-        <p class="footnote">Powered by Appweb ESP&trade;</p>
-    </div>
+    <header>
+        <h1><% label("${TITLE}", "{data-esp-click: '~'}"); %></h1>
+        <span class="logo">Appweb&trade;</span>
+        <nav>
+            <!-- User navigation here -->
+        </nav>
+    </header>
+    <main>
+        <section>
+            <%@ content %>
+        </section>
+        <aside>
+            <% flash("all", NULL); %>
+        </aside>
+    </main>
 </body>
 </html>

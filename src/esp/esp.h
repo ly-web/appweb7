@@ -120,22 +120,22 @@ typedef struct EspRoute {
     char            *link;                  /**< Link template */
     char            *searchPath;            /**< Search path to use when locating compiler/linker */
     EspProc         controllerBase;         /**< Initialize base for a controller */
-
     char            *appModuleName;         /**< App module name when compiled flat */
     char            *appModulePath;         /**< App module path when compiled flat */
-
     char            *cacheDir;              /**< Directory for cached compiled controllers and views */
     char            *controllersDir;        /**< Directory for controllers */
     char            *dbDir;                 /**< Directory for databases */
     char            *migrationsDir;         /**< Directory for migrations */
     char            *layoutsDir;            /**< Directory for layouts */
+    char            *srcDir;                /**< Directory for application source */
     char            *staticDir;             /**< Directory for static web content */
     char            *viewsDir;              /**< Directory for views */
 
     MprTicks        lifespan;               /**< Default cache lifespan */
-    int             update;                 /**< Auto-update modified ESP source */
+    int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
     int             showErrors;             /**< Send server errors back to client */
+    int             update;                 /**< Auto-update modified ESP source */
 
     Edi             *edi;                   /**< Default database for this route */
 } EspRoute;
@@ -383,7 +383,6 @@ typedef struct EspReq {
     char            *commandLine;           /**< Command line for compile/link */
     int             autoFinalize;           /**< Request is or will be auto-finalized */
     int             sessionProbed;          /**< Already probed for session store */
-    int             appLoaded;              /**< App module already probed */
     int             lastDomID;              /**< Last generated DOM ID */
     EdiRec          *record;                /**< Current data record */
 } EspReq;
@@ -1860,7 +1859,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
     @ingroup EspControl
     @stability Evolving
  */
-PUBLIC void espTabs(HttpConn *conn, EdiRec *rec, cchar *options);
+PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *options);
 
 /**
     Render a text input field as part of a form.
@@ -2231,7 +2230,7 @@ PUBLIC void table(EdiGrid *grid, cchar *options);
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC void tabs(EdiRec *rec, cchar *options);
+PUBLIC void tabs(EdiGrid *grid, cchar *options);
 
 /**
     Render a text input field as part of a form.

@@ -1,0 +1,128 @@
+/*
+    app.less - Application stylesheet
+ */
+
+body {
+    font-family: @font-family;
+    font-size: @font-size;
+    color: @content-color;
+    background-color: @background-color;
+}
+
+body > header {
+    height: 90px;
+    background-color: #880000;
+    background-repeat: no-repeat;
+    background-image: url("../images/banner.jpg");
+    background-position: top right;
+    .logo {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        font-weight: bold;
+    }
+    h1 {
+        position: absolute;
+        margin-left: 20px;
+    }
+}
+
+body > header > nav {
+    position: absolute;
+    top: 54px;
+    margin-left: 20px;
+}
+
+main {
+    margin: 0 10px 10px 30px;
+    color: @content-color;
+    ol li {
+        margin: 20px;
+    }
+}
+
+main section aside { 
+    float: right;
+    margin: 20px 40px;
+    line-height: 140%;
+    &:empty {
+        display: none;
+    }
+}
+
+section {
+    padding-bottom: 10px;
+    clear: both;
+}
+
+article {
+    float: left;
+    width: 70%;
+}
+
+.shadow {
+    .drop-shadow();
+}
+
+.wrapLeft {
+    float: left;
+    margin: 0 30px 12px 0;
+}
+
+.wrapRight {
+    float: right;
+    margin: 0 0 12px 30px;
+}
+
+a {
+    color: @link-color;
+    text-decoration: none;
+    &:hover {
+        color: @link-hover-color;
+    }
+}
+
+pre { 
+    padding: 10px 15px 10px 15px;
+    margin: 10px 0 20px 0;
+    font-size: 110%;
+    line-height: 140%;
+    color: white;
+    background-color: @pre-background;
+    .drop-shadow();
+}
+
+table {
+    margin-bottom: 15px;
+    border: 1px solid @border-color;
+    border-collapse: collapse;
+    border-spacing: 0;
+    .drop-shadow();
+    th {
+        padding: 6px 10px 6px 6px;
+        font-weight: bold;
+        color: @table-header-color;
+        text-align: left;
+        .gradient(@table-header-background, from(rgba(90,80,210,.75)), color-stop(1, #cff));
+        border: 1px solid @border-color;
+    }
+    td {
+        padding: 4px 8px 4px 8px;
+        border: 1px solid @border-color;
+        border-collapse: collapse;
+        border-spacing: 0;
+        a {
+            text-decoration: none;
+        }
+    }
+}
+
+form table {
+    padding: 10px;
+    border: 1px solid @border-color;
+    border-collapse: separate;
+    td {
+        padding: 2px;
+        border-style: none;
+    }
+}

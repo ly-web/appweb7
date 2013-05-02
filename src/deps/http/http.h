@@ -90,7 +90,8 @@ struct HttpWebSocket;
     #define BIT_MAX_REWRITE         20                  /**< Maximum URI rewrites */
 #endif
 #ifndef BIT_MAX_SESSIONS
-    #define BIT_MAX_SESSIONS        100                 /**< Maximum concurrent sessions */
+    //  MOB TEMP
+    #define BIT_MAX_SESSIONS        1000                /**< Maximum concurrent sessions */
 #endif
 #ifndef BIT_MAX_QBUFFER
     #define BIT_MAX_QBUFFER         (32 * 1024)         /**< Maximum buffer for any pipeline queue */
