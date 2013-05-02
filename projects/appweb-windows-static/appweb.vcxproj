@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9b0651f3-bf57-4703-8646-1e12fed88603}</ProjectGuid>
+    <ProjectGuid>{524c7b68-e9ad-4c16-a2d8-f10c11bc755b}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -112,35 +112,35 @@
 
 <ItemGroup>
   <ProjectReference Include="libappweb.vcxproj">
-  <Project>6ba91fbc-9386-4695-a418-37f65994d101</Project>
+  <Project>66002183-4b43-4751-b3f4-36ad8e08be3c</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
 
 <ItemGroup>
   <ProjectReference Include="libslink.vcxproj">
-  <Project>d0d37b8c-b7a3-4dc2-9387-35b8fa943d11</Project>
+  <Project>dfaa7c76-5a0a-4c3a-bfe0-892c7317630e</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
 
 <ItemGroup>
   <ProjectReference Include="libmod_esp.vcxproj">
-  <Project>c366eb3d-19d9-4257-b3ce-68b450793dc9</Project>
+  <Project>f86f4757-a3b0-4561-86ab-d9c18115067f</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
 
 <ItemGroup>
   <ProjectReference Include="libmod_ssl.vcxproj">
-  <Project>ab07ce99-c322-411a-834a-bdca0d46718d</Project>
+  <Project>37da7898-f554-41da-952b-db4c4d29ba6c</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
 
 <ItemGroup>
   <ProjectReference Include="libmod_cgi.vcxproj">
-  <Project>3b524449-157c-4221-9f85-66a834d984bc</Project>
+  <Project>f3b1de60-c082-4cea-801a-723da98dc4b4</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
