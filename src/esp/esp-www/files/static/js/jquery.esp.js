@@ -1,12 +1,10 @@
 /*
     jquery.esp.js - ESP jQuery support
-
     version: 1.1
   
     Copyright (c) 2013 Embedthis Software
     Dual licensed under GPL licenses and the Embedthis commercial license.
     See http://embedthis.com/ for further licensing details.
-
  */
 
 ;(function($) {
@@ -22,12 +20,29 @@
             $.extend(defaults, options || {});
             $('[data-esp-sort-order]').each(sort);
             $('[data-esp-refresh]').each(refresh);
-            $('div[class~=esp-flash-inform]').animate({opacity: 1.0}, 2000).hide("slow");
+            $('span[class~=esp-flash-inform]').animate({opacity: 1.0}, 1000).hide("slow");
 
-//  MOB - Should these be $(document).on(event, selector, fn)
+            /*
+                Attach event handlers
+             */
+            $(document).on('submit', 'form', function (e) {
+                var method = $(this).attr('data-esp-method');
+                if (method) {
+                    $(this).append('<input name="-http-method-" value="' + method + '" type="hidden" />');
+                }
+            });
+
+            $(document).on('submit', '[data-esp-feedback]', function (e) {
+                var o = getDataAttributes($(this))
+                var msg = o["data-esp-feedback"];
+                var info = $('<div>' + msg + '</div>').addClass('esp-feedback');
+                $('main').append(info);
+                anim.call(info, "bold");
+                return true;
+            });
 
             /* Click with data-esp-confirm */
-            $('a[data-esp-confirm],input[data-esp-confirm]').on('click', function () {
+            $(document).on('click', 'a[data-esp-confirm],input[data-esp-confirm]', function () {
                 var elt = $(this);
                 elt.bind('confirm', function (evt) {
                     return confirm(elt.attr('data-esp-confirm'));
@@ -36,31 +51,27 @@
             });
 
             /* Click in form. Ensure submit buttons are added for remote calls */
-            $('input[type=submit]').on('click', function (e) {
+            $(document).on('click', 'input[type=submit]', function (e) {
                 $(this).attr("checked", true);
             });
 
-            /* Click on link foreground with data-esp-method */
-            $('a[data-esp-method]:not([data-esp-remote])').on('click', function (e) {
+            /*
+                Remote (background) requests
+             */
+            /* Click on link foreground with data-esp-method to override method */
+            $(document).on('click', 'a[data-esp-method]:not([data-esp-remote])', function (e) {
                 request.apply(this)
                 e.preventDefault();
             });
 
             /* Button click data-esp-remote */
-            $('button[data-esp-remote]').on('click', function(e) {
+            $(document).on('click', 'button[data-esp-remote]', function(e) {
                 remote.apply(this);
                 e.preventDefault();
             });
 
-            $('form').on('submit', function (e) {
-                var method = $(this).attr('data-esp-method');
-                if (method) {
-                    $(this).append('<input name="-http-method-" value="' + method + '" type="hidden" />');
-                }
-            });
-
             /* Click on form with data-esp-remote (background) */
-            $('form[data-esp-remote]').on('submit', function (e) {
+            $(document).on('submit', 'form[data-esp-remote]', function (e) {
                 var method = $(this).attr('data-esp-method');
                 if (method) {
                     $(this).append('<input name="-http-method-" value="' + method + '" type="hidden" />');
@@ -70,25 +81,37 @@
             });
 
             /* Click on link with data-esp-remote (background) */
-            $('a[data-esp-remote],input[data-esp-remote]').on('click', function (e) {
+            $(document).on('click', 'a[data-esp-remote],input[data-esp-remote]', function (e) {
                 remote.apply(this);
                 e.preventDefault();
             });
+            /* Click on table row data-esp-remote */
+            $(document).on('click', 'tr[data-esp-remote]', function(e) {
+                var table = $(this).parents("table");
+                var url = $(this).attr('data-esp-remote');
+                remote.call(table, url);
+                e.preventDefault();
+            });
 
-            $('[data-esp-click] a').on('click', function (e) {
-                // window.location = $(this).attr('href');
+//  MOB check this one
+            $(document).on('click', '[data-esp-click] a', function (e) {
+                //MOB window.location = $(this).attr('href');
+alert('EVER USED?');
                 request.apply(this);
                 return false;
             });
 
             /* Click on anything with data-esp-click */
-            $('[data-esp-click]').on('click', function (e) {
+            $(document).on('click', '[data-esp-click]', function (e) {
                 request.apply(this);
                 e.preventDefault();
             });
 
+            /*
+                Window Status updates for mouseover
+             */
             /* Update status with the URI for data-esp-click */
-            $('[data-esp-click]').on('mouseover', function (e) {
+            $(document).on('mouseover', '[data-esp-click]', function (e) {
                 var click = $(this).attr("data-esp-click");
                 if (click.indexOf("http://") == 0) {
                     window.status = click;
@@ -98,13 +121,12 @@
                 }
             });
 
-            $('[data-esp-click]').on('mouseout', function (e) {
+            $(document).on('mouseout', '[data-esp-click]', function (e) {
                 window.status = "";
             });
 
-            //  MOB - is this needed?
             /* Update status with the URI for data-esp-remote */
-            $('[data-esp-remote]').on('mouseover', function (e) {
+            $(document).on('mouseover', '[data-esp-remote]', function (e) {
                 var remote = $(this).attr("data-esp-remote");
                 if (remote.indexOf("http://") == 0) {
                     window.status = remote;
@@ -114,41 +136,16 @@
                 }
             });
 
-            $('[data-esp-remote]').on('mouseout', function (e) {
+            $(document).on('mouseout', '[data-esp-remote]', function (e) {
                 window.status = "";
             });
 
-            /* Click on table row data-esp-remote */
-            $('tr[data-esp-remote]').on('click', function(e) {
-                var table = $(this).parents("table");
-                var url = $(this).attr('data-esp-remote');
-                remote.call(table, url);
-                e.preventDefault();
-            });
-
-            /*
-                Rounded corners, shadow
-
-                data-esp-feedback="message"
-                data-esp-feedback-style="override-style""
-                data-esp-feedback-effect="highlight"
-                
-             */
-            $('[data-esp-feedback] a').on('click', function (e) {
-                e = $('<div><p>' + msg + '</p></div>').addClass('esp-feedback');
-                e.center();
-                e.anim("highlight");
-                return false;
-            });
-
-            //  MOB - what does this do?
             /* Click data-esp-toggle */
-            $('li[data-esp-toggle]').on('click', function(e) {
+            $(document).on('click', 'li[data-esp-toggle]', function(e) {
                 var next = $(this).attr('data-esp-toggle');
                 $('div[id|=pane]').hide();
                 var pane = $('div#' + next);
                 pane.fadeIn(500);
-                //  MOB - this is being used
                 pane.addClass('esp-pane-visible');
                 pane.removeClass('esp-pane-hidden');
                 e.preventDefault();
@@ -159,13 +156,14 @@
                 Refresh control indicators with class esp-refresh
                 <img src="green.png" data-on="green.png" data-off="red.png" class="ejs-refresh" />
              */
-            $("[class~=esp-refresh]").on('click', function (e) {
+            $(document).on('click', '[class~=esp-refresh]', function (e) {
                 $('[data-esp-refresh]').each(function() {
-                    toggleUpdating.call(this);
+                    refreshToggle.call(this);
                 });
-                toggleRefreshControl();
+                refreshKeyEvent();
                 return false;
             });
+
             $('[data-esp-modal]').each(function() {
                 $(this).modal({
                     escClose: false, 
@@ -173,11 +171,12 @@
                     containerId: "esp-modal-foreground"
                 });
             });
-
-            //  MOB - move 
         }
     });
 
+    /*
+        Define the defaults property
+     */
     $.fn.esp.defaults = defaults;
 
     /************************************************* Support ***********************************************/
@@ -185,9 +184,9 @@
         Background request using data-esp-remote attributes. Apply the result to the data-esp-apply (or current element).
      */
     function remote(url) {
-        var elt         = $(this),
-            data        = elt.is('form') ? elt.serializeArray() : [],
-            method      = elt.attr('data-esp-remote-method') || elt.attr('method') || 'GET';
+        var elt    = $(this),
+            data   = elt.is('form') ? elt.serializeArray() : [],
+            method = elt.attr('data-esp-remote-method') || elt.attr('method') || 'GET';
 
         if (url === undefined) {
             url = elt.attr('data-esp-remote') || elt.attr('action') || elt.attr('href');
@@ -196,7 +195,6 @@
             }
         }
         elt.trigger('http:before');
-        // MOB changeUrl(url);
         $.ajax({
             url: url,
             data: data,
@@ -221,6 +219,7 @@
         elt.trigger('http:after');
     }
 
+    /* UNUSED
     function copyDataAttributes(from) {
         this.each(function() {
             var e = $(this);
@@ -233,6 +232,7 @@
             });
         });
     }
+    */
 
     /*
         Get an object containing all data-esp-attributes
@@ -249,29 +249,16 @@
     }
 
     /*
-        Debug logging
-        MOB - move
-     */
-    function log(msg) {
-        if (window.console) {
-            console.debug(msg);
-        } else {
-            alert(msg);
-        }
-    }
-
-    /*
         Foreground request using data-esp-* element attributes. This makes all elements clickable and supports 
         non-GET methods with security tokens to aleviate CSRF.
      */
     function request() {
-        var el          = $(this);
-
         //  MOB - when is data-esp-click-method used and when data-esp-method
         //  MOB -- really should pair these. If method uses data-esp-click-method, then params must be data-esp-click-params
-        var method      = el.attr('data-esp-click-method') || el.attr('data-esp-method') || 'GET';
-        var url         = el.attr('data-esp-click') || el.attr('action') || el.attr('href');
-        var params      = el.attr('data-esp-click-params') || el.attr('data-esp-params');
+        var el      = $(this);
+        var method  = el.attr('data-esp-click-method') || el.attr('data-esp-method') || 'GET';
+        var url     = el.attr('data-esp-click') || el.attr('action') || el.attr('href');
+        var params  = el.attr('data-esp-click-params') || el.attr('data-esp-params');
 
         if (url === undefined) {
             alert("No URL specified");
@@ -305,76 +292,11 @@
     }
 
     /*
-        Apply table sorting. Uses tablesorter plugin.
-     */
-    function sort(options) {
-        var elt = $(this);
-        var o = $.extend({}, defaults, options, elt.data("esp-options") || {}, getDataAttributes(elt));
-        if (!o.sortConfig) {
-            if (o.sort != "false") {
-                var items = $("th", elt).filter(':contains("' + o.sort + '")');
-                var sortColumn = $("th", elt).filter(':contains("' + o.sort + '")').get(0);
-                if (sortColumn) {
-                    var order = (o["sort-order"].indexOf("asc") >= 0) ? 0 : 1;
-                    o.sortConfig = {sortList: [[sortColumn.cellIndex, order]]};
-                } else {
-                    o.sortConfig = {sortList: [[0, 0]]};
-                }
-            }
-            elt.tablesorter(o.sortConfig);
-        }
-        elt.data("esp-options", o);
-        return this;
-    }
-
-    function anim(effects) {
-        e = $(this);
-        if (effects == "highlight") {
-            e.fadeTo(0, 0.5);
-            e.fadeTo(500, 1);
-        } else if (effects == "fadein") {
-            e.fadeTo(0, 0);
-            e.fadeTo(1000, 1);
-        } else if (effects == "fadeout") {
-            e.fadeTo(0, 1);
-            e.fadeTo(1000, 0);
-        } else if (effects == "bold") {
-            /* MOB Broken */
-            e.css("font-weight", 100);
-            // e.animate({"opacity": 0.1, "font-weight": 900}, 1000);
-            e.animate({"font-weight": 900}, 1000);
-        }
-    }
-
-    /*
         Refresh dynamic elements using a data-esp-refresh attributes
      */
     function refresh(options) {
-        function anim() {
-            var e = $(this);
-            var o = e.data("esp-options")
-            var effects = o.effects;
-            if (effects == "highlight") {
-                e.fadeTo(0, 0.5);
-                e.fadeTo(500, 1);
-            } else if (effects == "fadein") {
-                e.fadeTo(0, 0);
-                e.fadeTo(1000, 1);
-            } else if (effects == "fadeout") {
-                e.fadeTo(0, 1);
-                e.fadeTo(1000, 0);
-            } else if (effects == "bold") {
-                /* MOB Broken */
-                e.css("font-weight", 100);
-                // e.animate({"opacity": 0.1, "font-weight": 900}, 1000);
-                e.animate({"font-weight": 900}, 1000);
-            }
-        }
-
-
         function applyData(data, http) {
             var d, id, oldID, newElt;
-
             var id = this.attr("id");
             var apply = this.attr('data-esp-apply') || id;
             var e = (apply) ? $('#' + apply) : $(this);
@@ -459,7 +381,7 @@
                 $(document).bind('keyup.refresh', function (event) {
                     if (event.keyCode == o["toggle-updating"]) {
                         /* Need to refetch as the elements has probably been replaced */
-                        toggleUpdating.call($('[id=' + id + ']'));
+                        refreshToggle.call($('[id=' + id + ']'));
                     }
                 });
                 o.bound = true;
@@ -476,11 +398,9 @@
             update.call(elt, refreshCfg); 
         }, period, elt);
         return this;
-
     } /* end of refresh() */
 
-    /* Used for keyboard on the refresh control */
-    function toggleUpdating() {
+    function refreshToggle() {
         elt = $(this);
         var o = elt.data("esp-options");
         if (o) {
@@ -489,7 +409,8 @@
         }
     }
 
-    function toggleRefreshControl(event) {
+    /* Used for keyboard on the refresh control */
+    function refreshKeyEvent(event) {
         if (event == null || event.keyCode == defaults["toggle-updating"]) {
             var e = $("[class~=esp-refresh]");
             if (e.attr("src") == e.attr("data-esp-off")) {
@@ -500,39 +421,58 @@
         }
     }
 
-    //  MOB -?
-    $(document).bind('keyup.refresh', toggleRefreshControl);
-
-    /***************************************** Live Attach to Elements ***************************************/
-
-
-/////////////////////////////////////////
-/*  MOB -- TODO - fix location 
-    //  MOB -- rename change Address
-    function changeUrl(i) {
-        console.log("CHANGE " + i);
-        $.address.title(i);
+    /*
+        Apply table sorting. Uses tablesorter plugin.
+     */
+    function sort(options) {
+        var elt = $(this);
+        var o = $.extend({}, defaults, options, elt.data("esp-options") || {}, getDataAttributes(elt));
+        if (!o.sortConfig) {
+            if (o.sort != "false") {
+                var items = $("th", elt).filter(':contains("' + o.sort + '")');
+                var sortColumn = $("th", elt).filter(':contains("' + o.sort + '")').get(0);
+                if (sortColumn) {
+                    var order = (o["sort-order"].indexOf("asc") >= 0) ? 0 : 1;
+                    o.sortConfig = {sortList: [[sortColumn.cellIndex, order]]};
+                } else {
+                    o.sortConfig = {sortList: [[0, 0]]};
+                }
+            }
+            elt.tablesorter(o.sortConfig);
+        }
+        elt.data("esp-options", o);
+        return this;
     }
-    $.address.strict(false);
-    $.address.externalChange(function(e) {
-        console.log("EXT CHANGE " + e.value);
-        changeUrl(e.value);
-    });
-    $.address.change(function(e) {
-        console.log("INT CHANGE " + e.value);
-        $.address.title(e.value);
-    });
-    $.address.init(function(e) {
-        console.log("INIT CALLBACK");
-    });
-    $.address.title("SOMETHING");
-    $.address.value("ABC");
-*/
+
+    function anim(effects) {
+        e = $(this);
+        if (effects == "highlight") {
+            e.fadeTo(0, 0.5);
+            e.fadeTo(500, 1);
+        } else if (effects == "fadein") {
+            e.fadeTo(0, 0);
+            e.fadeTo(1000, 1);
+        } else if (effects == "fadeout") {
+            e.fadeTo(0, 1);
+            e.fadeTo(1000, 0);
+        } else if (effects == "bold") {
+            e.animate({"opacity": 1.0}, 1000);
+        }
+    }
+
+    function log(msg) {
+        if (window.console) {
+            console.debug(msg);
+        } else {
+            alert(msg);
+        }
+    }
 
     /**************************** Initialization ************************/
 
     $(document).ready(function() {
         $(document).esp();
+        $(document).bind('keyup.refresh', refreshKeyEvent);
     });
 
 })(jQuery);
