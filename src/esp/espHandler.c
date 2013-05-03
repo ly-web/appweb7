@@ -455,6 +455,9 @@ static int loadApp(EspRoute *eroute)
     MprModule   *mp;
     char        *canonical, *source, *cacheName, *entry;
 
+    if (!eroute->appModuleName) {
+        return 0;
+    }
     source = mprJoinPath(eroute->srcDir, "app.c");
     canonical = mprGetPortablePath(mprGetRelPath(source, eroute->route->dir));
     cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "app_");
