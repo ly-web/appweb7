@@ -1914,9 +1914,9 @@ static void generateAppDirs(HttpRoute *route)
     makeEspDir(route, "layouts");
     makeEspDir(route, "src");
     makeEspDir(route, "static");
+    makeEspDir(route, "static/css");
     makeEspDir(route, "static/images");
     makeEspDir(route, "static/js");
-    makeEspDir(route, "static/themes");
     makeEspDir(route, "views");
     if (app->database) {
         makeEspDir(route, "db");
