@@ -72,7 +72,14 @@
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>EspApp UriPrefix [Directory [RouteSet [Database]]]</td>
+                        <td>EspApp <br/>
+                            &nbsp; &rarr; name=NAME <br/>
+                            &nbsp; &rarr; prefix=URI <br/>
+                            &nbsp; &rarr; [dir=PATH] <br/>
+                            &nbsp; &rarr; [routes=ROUTES] <br/>
+                            &nbsp; &rarr; [database=DATABASE]<br/>
+                            &nbsp; &rarr; [flat=false|true]</td>
+
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -88,25 +95,29 @@
                             <p>The EspApp directive defines an ESP application at the given directory that
                             will receive all requests that begin with specified URI prefix. 
                             This one-line directive is often all you need to do to define an ESP application. It is
-loosely equivalent to the following directive sequence:</p>
+                            loosely equivalent to the following directive sequence:</p>
                             <pre class="dir">
 &lt;Route UriPrefix&gt;
     <a href="route.html#name">Name</a> UriPrefix
     <a href="route.html#prefix">Prefix</a> UriPrefix
     <a href="route.html#documentRoot">DocumentRoot</a> Directory
     <a href="route.html#addHandler">AddHandler</a> espHandler
-    <a href="#espDir">EspDir</a> RouteSet
-    <a href="#espRouteSet">EspRouteSet</a> RouteSet
+    <a href="#espDir">EspDir</a> mvc
+    <a href="#espRouteSet">EspRouteSet</a> Routes
     <a href="#espDb">EspDb</a> Database
 &lt;/Route&gt;
 </pre>
                             <p>If the URI prefix for the EspApp directive is the same as the the prefix for the outer
                             route, EspApp will use the existing route. Otherwise, it will create a new route for 
-                            the URI prefix. Sub-routes are created for the RouteSet argument.</p>
-                            <p>The UriPrefix argument is mandatory, all others are optional.
-                            The Directory argument is used to define the DocumentRoot for the defined route.</p>
-                            <p>The RouteSet argument specifies a set of routes to add for the applications. Permissable
-                                values for the RouteSet are: 
+                            the URI prefix. Sub-routes are created for the Routes argument.</p>
+
+                            <p>The Prefix argument is mandatory, all others are optional and will take default values
+                            if omitted.
+                            The Directory argument is used to define the Documents directory for the application. It 
+                            defaults to ".".</p>
+
+                            <p>The Routes argument specifies a set of routes to add for the applications. Permissable
+                                values for the Routes are: 
                                 <ul>
                                     <li>simple &mdash; Adds a route for the home page URI ("/").</li>
                                     <li>mvc-simple &mdash; Adds a route for the home page URI ("/") and a route for
@@ -134,7 +145,7 @@ loosely equivalent to the following directive sequence:</p>
                                 <li>Optionally opens a database</li>
                             </ul>
                             <p>Note: use a trailing "/" on the prefix to prevent matching URIs that have the prefix
-                            as part of the first (non-directory) portion of their URI.</p>.
+                            as part of the first (non-directory) portion of their URI.</p>
                         </td>
                     </tr>
                 </tbody>
