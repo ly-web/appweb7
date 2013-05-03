@@ -462,7 +462,9 @@ static int loadApp(EspRoute *eroute)
     canonical = mprGetPortablePath(mprGetRelPath(source, eroute->route->dir));
     cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "app_");
     eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));
-
+    if (!mprPathExists(eroute->appModulePath, R_OK)) {
+        return 0;
+    }
     if ((mp = mprLookupModule(eroute->appModuleName)) != 0) {
 #if !BIT_STATIC
         if (eroute->update) {
