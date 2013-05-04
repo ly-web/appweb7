@@ -71,7 +71,7 @@
             coalescing.</p>
             <p>The allocator uses a garbage collector for locating unused memory. The collector is a generational, 
             cooperative and non-compacting collector.  The use of a garbage collector is somewhat unusual in a C program. 
-            However, garbage collection it is especially well suited for long running applications like a web server,
+            However, garbage collection is especially well suited for long running applications like a web server,
             as it eliminates most memory leaks. Unlike traditional memory allocation where <em>free</em> must be called
             to release memory, Appweb uses the opposite approach. Memory that must be retained, must be actively managed to 
             prevent garbage collection. This means that a <em>managed reference</em> must be held for all active memory.</p>
