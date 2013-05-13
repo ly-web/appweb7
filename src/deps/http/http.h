@@ -90,8 +90,7 @@ struct HttpWebSocket;
     #define BIT_MAX_REWRITE         20                  /**< Maximum URI rewrites */
 #endif
 #ifndef BIT_MAX_SESSIONS
-    //  MOB TEMP
-    #define BIT_MAX_SESSIONS        1000                /**< Maximum concurrent sessions */
+    #define BIT_MAX_SESSIONS        100                 /**< Maximum concurrent sessions */
 #endif
 #ifndef BIT_MAX_QBUFFER
     #define BIT_MAX_QBUFFER         (32 * 1024)         /**< Maximum buffer for any pipeline queue */
@@ -3286,6 +3285,7 @@ typedef struct HttpRoute {
     ssize           logSize;                /**< Max log size */
     HttpLimits      *limits;                /**< Host resource limits */
     MprHash         *mimeTypes;             /**< Hash table of mime types (key is extension) */
+    MprHash         *streaming;             /**< Hash table of mime types to control input streaming */
 
     HttpTrace       trace[2];               /**< Default route request tracing */
     int             traceMask;              /**< Request/response trace mask */
@@ -3579,18 +3579,19 @@ PUBLIC void httpAddRouteParam(HttpRoute *route, cchar *field, cchar *value, int 
 PUBLIC int httpAddRouteUpdate(HttpRoute *route, cchar *name, cchar *details, int flags);
 
 /**
-    Add a route for static content under a "static" directory. This can be used for ESP applications. Use the EspDir
-        appweb configuration file directive to modify the "static" directory.
+    Add a route for static content. This can be used for ESP applications. Use the EspDir
+        appweb configuration file directive to modify the directory.
     @description This will add a route for static content. This will add the following route:
     <table>
         <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
         <tr><td>static</td><td>GET</td><td>^/static(/(.)*$</td><td>$1</td></tr>
     </table>
     @param parent Parent route from which to inherit configuration.
+    @param name Name to use for the directory basename. Defaults to "static" if set to null.
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC void httpAddStaticRoute(HttpRoute *parent);
+PUBLIC void httpAddStaticRoute(HttpRoute *parent, cchar *name);
 
 /**
     Backup the route log if required
@@ -3788,6 +3789,17 @@ PUBLIC void *httpGetRouteData(HttpRoute *route, cchar *key);
     @stability Evolving
  */
 PUBLIC cchar *httpGetRouteDir(HttpRoute *route);
+
+/*
+    Determine if input body content should be streamed or buffered for requests with content of a given mime type 
+    @param route Route to modify
+    @param mimeType Mime type to configure
+    @return True if input should be streamed. False if it should be buffered.
+    @ingroup HttpRoute
+    @stability Prototype
+    @internal
+ */
+PUBLIC bool httpGetRouteStreaming(HttpRoute *route, cchar *mimeType);
 
 /**
     Get the route method list
@@ -4073,6 +4085,17 @@ PUBLIC void httpSetRouteHome(HttpRoute *route, cchar *home);
     @internal
  */
 PUBLIC void httpSetRouteHost(HttpRoute *route, struct HttpHost *host);
+
+/*
+    Control if input body content should be streamed or buffered for requests with content of a given mime type 
+    @param route Route to modify
+    @param mimeType Mime type to configure
+    @param enable Set to true to enable streaming for this mime type.
+    @ingroup HttpRoute
+    @stability Prototype
+    @internal
+ */
+PUBLIC void httpSetRouteStreaming(HttpRoute *route, cchar *mimeType, bool enable);
 
 /**
     Define the methods for the route
@@ -4680,6 +4703,16 @@ typedef struct HttpRx {
 PUBLIC void httpAddParams(HttpConn *conn);
 
 /**
+    Add parameters from a JSON body.
+    @description This adds query data and posted body data to the request params
+    @param conn HttpConn connection object
+    @ingroup HttpRx
+    @stability Internal
+    @internal
+ */
+PUBLIC void httpAddParamsFromJsonBody(HttpConn *conn);
+
+/**
     Test if the content has not been modified
     @description This call tests if the file content to be served has been modified since the client last
         requested this resource. The client must provide an Etag and Since or If-Modified headers.
@@ -4887,7 +4920,8 @@ PUBLIC char *httpGetStatusMessage(HttpConn *conn);
 PUBLIC bool httpMatchParam(HttpConn *conn, cchar *var, cchar *expected);
 
 /** 
-    Read rx body data. This will read available body data. If in sync mode, this call may block. If in async
+    Read rx body data. 
+    @description This will read available body data. If in sync mode, this call may block. If in async
     mode, the call will not block and will return with whatever data is available.
     @param conn HttpConn connection object created via #httpCreateConn
     @param buffer Buffer to receive read data
@@ -4897,6 +4931,16 @@ PUBLIC bool httpMatchParam(HttpConn *conn, cchar *var, cchar *expected);
     @stability Stable
  */
 PUBLIC ssize httpRead(HttpConn *conn, char *buffer, ssize size);
+
+/**
+    Get the receive body input
+    @description This will return all the body input. The request must have received all input (rx->eof == 1) and
+    must not be streaming (rx->streaming). 
+    @param conn HttpConn connection object created via #httpCreateConn
+    @return A string containing the body input.
+    @stability Prototype
+ */
+PUBLIC cchar *httpGetBodyInput(HttpConn *conn);
 
 /** 
     Read response data as a string. This will read all rx body and return a string that the caller should free. 
