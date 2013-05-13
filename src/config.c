@@ -323,6 +323,8 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
     }
     if (!extensions) {
         extensions = "";
+    } else if (smatch(extensions, "*")) {
+        extensions = "";
     }
     if (httpAddRouteHandler(state->route, handler, extensions) < 0) {
         mprError("Cannot add handler %s", handler);
@@ -1888,6 +1890,22 @@ static int sourceDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    StreamInput [!] mimeType
+ */
+static int streamInputDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *mimeType;
+    int     disable;
+
+    if (!maTokenize(state, value, "%! ?S", &disable, &mimeType)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteStreaming(state->route, mimeType, !disable);
+    return 0;
+}
+
+
+/*
     Target close [immediate]
     Target redirect status URI
     Target run ${DOCUMENT_ROOT}/${request:uri}
@@ -2691,6 +2709,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "SetConnector", setConnectorDirective);
     maAddDirective(appweb, "SetHandler", setHandlerDirective);
     maAddDirective(appweb, "Source", sourceDirective);
+    maAddDirective(appweb, "StreamInput", streamInputDirective);
 
     maAddDirective(appweb, "MinWorkers", minWorkersDirective);
     maAddDirective(appweb, "Target", targetDirective);
