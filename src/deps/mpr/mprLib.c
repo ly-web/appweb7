@@ -2684,6 +2684,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     mpr->start = mprGetTime(); 
     mpr->exitStrategy = MPR_EXIT_NORMAL;
     mpr->emptyString = sclone("");
+    mpr->oneString = sclone("1");
     mpr->exitTimeout = MPR_TIMEOUT_STOP;
     mpr->title = sclone(BIT_TITLE);
     mpr->version = sclone(BIT_VERSION);
@@ -2802,6 +2803,7 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->spin);
         mprMark(mpr->cond);
         mprMark(mpr->emptyString);
+        mprMark(mpr->oneString);
         mprMark(mpr->argBuf);
     }
 }
@@ -21748,13 +21750,17 @@ static int loadProviders()
     MprSocketService    *ss;
 
     ss = MPR->socketService;
+    mprGlobalLock();
     if (!ss->providers && mprLoadSsl() < 0) {
+        mprGlobalUnlock();
         return MPR_ERR_CANT_READ;
     }
     if (!ss->providers) {
         mprError("Cannot load SSL provider");
+        mprGlobalUnlock();
         return MPR_ERR_CANT_INITIALIZE;
     }
+    mprGlobalUnlock();
     return 0;
 }
 

@@ -8430,7 +8430,8 @@ typedef struct Mpr {
     MprSpin         *spin;                  /**< Quick thread synchronization */
     MprCond         *cond;                  /**< Sync after starting events thread */
 
-    char            *emptyString;           /**< Empty string */
+    char            *emptyString;           /**< "" string */
+    char            *oneString;             /**< "1" string */
 #if BIT_WIN_LIKE
     HINSTANCE       appInstance;            /**< Application instance (windows) */
 #endif
