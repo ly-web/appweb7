@@ -126,22 +126,23 @@ static bool fileVerifyUser(HttpConn *conn);
 
 PUBLIC void httpInitAuth(Http *http)
 {
-    httpAddAuthType(http, "basic", httpBasicLogin, httpBasicParse, httpBasicSetHeaders);
-    httpAddAuthType(http, "digest", httpDigestLogin, httpDigestParse, httpDigestSetHeaders);
-    httpAddAuthType(http, "form", formLogin, NULL, NULL);
+    httpAddAuthType("basic", httpBasicLogin, httpBasicParse, httpBasicSetHeaders);
+    httpAddAuthType("digest", httpDigestLogin, httpDigestParse, httpDigestSetHeaders);
+    httpAddAuthType("form", formLogin, NULL, NULL);
 
 #if BIT_HAS_PAM && BIT_HTTP_PAM
     /*
         Pam must be actively selected during configuration
         TODO - should support Windows ActiveDirectory
      */
-    httpAddAuthStore(http, "system", httpPamVerifyUser);
+    httpAddAuthStore("system", httpPamVerifyUser);
     //  DEPRECATED
-    httpAddAuthStore(http, "pam", httpPamVerifyUser);
+    httpAddAuthStore("pam", httpPamVerifyUser);
 #endif
+    httpAddAuthStore("internal", fileVerifyUser);
     //  DEPRECATED
-    httpAddAuthStore(http, "file", fileVerifyUser);
-    httpAddAuthStore(http, "internal", fileVerifyUser);
+    httpAddAuthStore("file", fileVerifyUser);
+    httpAddAuthStore("app", NULL);
 }
 
 
@@ -203,9 +204,10 @@ PUBLIC int httpAuthenticate(HttpConn *conn)
 }
 
 
-PUBLIC bool httpCanUser(HttpConn *conn)
+PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities)
 {
     HttpAuth    *auth;
+    char        *ability, *tok;
     MprKey      *kp;
 
     auth = conn->rx->route->auth;
@@ -227,11 +229,21 @@ PUBLIC bool httpCanUser(HttpConn *conn)
             return 0;
         }
     }
-    for (ITERATE_KEYS(auth->requiredAbilities, kp)) {
-        if (!mprLookupKey(conn->user->abilities, kp->key)) {
-            mprLog(2, "User \"%s\" does not possess the required ability: \"%s\" to access %s", 
-                conn->username, kp->key, conn->rx->pathInfo);
-            return 0;
+    if (abilities) {
+        for (ability = stok(sclone(abilities), " \t,", &tok); abilities; abilities = stok(NULL, " \t,", &tok)) {
+            if (!mprLookupKey(conn->user->abilities, ability)) {
+                mprLog(2, "User \"%s\" does not possess the required ability: \"%s\" to access %s", 
+                    conn->username, ability, conn->rx->pathInfo);
+                return 0;
+            }
+        }
+    } else {
+        for (ITERATE_KEYS(auth->requiredAbilities, kp)) {
+            if (!mprLookupKey(conn->user->abilities, kp->key)) {
+                mprLog(2, "User \"%s\" does not possess the required ability: \"%s\" to access %s", 
+                    conn->username, kp->key, conn->rx->pathInfo);
+                return 0;
+            }
         }
     }
     return 1;
@@ -261,6 +273,13 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         httpSetSessionVar(conn, HTTP_SESSION_USERNAME, conn->username);
     }
     return 1;
+}
+
+
+PUBLIC void httpLogout(HttpConn *conn) 
+{
+    httpRemoveSessionVar(conn, HTTP_SESSION_USERNAME);
+    httpRemoveSessionVar(conn, HTTP_SESSION_AUTHVER);
 }
 
 
@@ -338,10 +357,12 @@ static void manageAuthType(HttpAuthType *type, int flags)
 }
 
 
-PUBLIC int httpAddAuthType(Http *http, cchar *name, HttpAskLogin askLogin, HttpParseAuth parseAuth, HttpSetAuth setAuth)
+PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpParseAuth parseAuth, HttpSetAuth setAuth)
 {
+    Http            *http;
     HttpAuthType    *type;
 
+    http = MPR->httpService;
     if ((type = mprAllocObj(HttpAuthType, manageAuthType)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
@@ -368,18 +389,34 @@ static void manageAuthStore(HttpAuthStore *store, int flags)
 /*
     Add a password store backend
  */
-PUBLIC int httpAddAuthStore(Http *http, cchar *name, HttpVerifyUser verifyUser)
+PUBLIC int httpAddAuthStore(cchar *name, HttpVerifyUser verifyUser)
 {
-    HttpAuthStore    *store;
+    Http            *http;
+    HttpAuthStore   *store;
 
     if ((store = mprAllocObj(HttpAuthStore, manageAuthStore)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     store->name = sclone(name);
     store->verifyUser = verifyUser;
+    http = MPR->httpService;
     if (mprAddKey(http->authStores, name, store) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
+    return 0;
+}
+
+
+PUBLIC int httpSetAuthStoreVerify(cchar *name, HttpVerifyUser verifyUser)
+{
+    Http            *http;
+    HttpAuthStore   *store;
+
+    http = MPR->httpService;
+    if ((store = mprLookupKey(http->authStores, name)) == 0) {
+        return MPR_ERR_CANT_FIND;
+    }
+    store->verifyUser = verifyUser;
     return 0;
 }
 
@@ -437,7 +474,8 @@ PUBLIC void httpSetAuthOrder(HttpAuth *auth, int order)
 
 
 /*
-    Internal login service routine. Called in response to a form-based login request.
+    Form login service routine. Called in response to a form-based login request.
+    The password is clear-text so this must be used over SSL to be secure.
  */
 static void loginServiceProc(HttpConn *conn)
 {
@@ -472,11 +510,8 @@ static void loginServiceProc(HttpConn *conn)
 
 static void logoutServiceProc(HttpConn *conn)
 {
-    HttpAuth    *auth;
-
-    auth = conn->rx->route->auth;
     httpRemoveSessionVar(conn, HTTP_SESSION_USERNAME);
-    httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, auth->loginPage);
+    httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, conn->rx->route->auth->loginPage);
 }
 
 
@@ -746,12 +781,12 @@ static void computeAbilities(HttpAuth *auth, MprHash *abilities, cchar *role)
         /* Interpret as a role */
         for (ITERATE_KEYS(rp->abilities, ap)) {
             if (!mprLookupKey(abilities, ap->key)) {
-                mprAddKey(abilities, ap->key, MPR->emptyString);
+                mprAddKey(abilities, ap->key, MPR->oneString);
             }
         }
     } else {
         /* Not found as a role: Interpret role as an ability */
-        mprAddKey(abilities, role, MPR->emptyString);
+        mprAddKey(abilities, role, MPR->oneString);
     }
 }
 
@@ -812,9 +847,9 @@ static bool fileVerifyUser(HttpConn *conn)
         mprLog(5, "fileVerifyUser: Unknown user \"%s\" for route %s", conn->username, rx->route->name);
         return 0;
     }
-    if (rx->passDigest) {
+    if (rx->passwordDigest) {
         /* Digest authentication computes a digest using the password as one ingredient */
-        success = smatch(conn->password, rx->passDigest);
+        success = smatch(conn->password, rx->passwordDigest);
     } else {
         success = smatch(conn->password, conn->user->password);
     }
@@ -3143,7 +3178,7 @@ PUBLIC int httpDigestParse(HttpConn *conn)
             mprTrace(2, "Access denied: Nonce is stale\n");
             return MPR_ERR_BAD_STATE;
         }
-        rx->passDigest = calcDigest(conn, dp);
+        rx->passwordDigest = calcDigest(conn, dp);
     } else {
         if (dp->domain == 0 || dp->opaque == 0 || dp->algorithm == 0 || dp->stale == 0) {
             return MPR_ERR_BAD_FORMAT;
@@ -10267,7 +10302,7 @@ static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
         /* Request has been denied and fully handled */
         return HTTP_ROUTE_OK;
     }
-    if (!httpCanUser(conn)) {
+    if (!httpCanUser(conn, NULL)) {
         httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied. User is not authorized for access.");
     }
     return HTTP_ROUTE_OK;
@@ -11550,7 +11585,7 @@ static void manageRx(HttpRx *rx, int flags)
         mprMark(rx->params);
         mprMark(rx->svars);
         mprMark(rx->inputRange);
-        mprMark(rx->passDigest);
+        mprMark(rx->passwordDigest);
         mprMark(rx->files);
         mprMark(rx->uploadDir);
         mprMark(rx->paramString);
@@ -12447,13 +12482,10 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
         httpTraceContent(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, packet, nbytes, rx->bytesRead);
     }
     if (rx->eof) {
+#if OLD
         if (rx->length > 0) {
             conn->input = httpSplitPacket(packet, (ssize) rx->length);
             *more = 1;
-        }
-#if HTTP_DIRECT_INPUT
-        if (rx->flags & HTTP_DIRECT_INPUT) {
-            rx->flags &= ~HTTP_DIRECT_INPUT;
         }
 #endif
         if (rx->remainingContent > 0 && !conn->http10) {
@@ -12461,6 +12493,15 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
             httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Connection lost");
             return 0;
         }
+        if (nbytes > 0 && httpGetPacketLength(packet) > nbytes) {
+            conn->input = httpSplitPacket(packet, nbytes);
+            *more = 1;
+        }
+#if HTTP_DIRECT_INPUT
+        if (rx->flags & HTTP_DIRECT_INPUT) {
+            rx->flags &= ~HTTP_DIRECT_INPUT;
+        }
+#endif
     } else {
         if (rx->chunkState && nbytes > 0 && httpGetPacketLength(packet) > nbytes) {
             /* Split data for next chunk */
@@ -12512,6 +12553,9 @@ static bool processContent(HttpConn *conn)
             httpPutPacketToNext(q, packet);
         }
         httpPutPacketToNext(q, httpCreateEndPacket());
+        if (conn->endpoint) {
+            httpAddParams(conn);
+        }
         if (!tx->started) {
             httpStartPipeline(conn);
         }
@@ -13812,7 +13856,11 @@ PUBLIC void httpDestroySession(HttpConn *conn)
     http = conn->http;
     lock(http);
     if ((sp = httpGetSession(conn, 0)) != 0) {
+#if UNUSED
         httpSetCookie(conn, HTTP_SESSION_COOKIE, conn->rx->session->id, "/", NULL, -1, 0);
+#else
+        httpRemoveCookie(conn, HTTP_SESSION_COOKIE);
+#endif
 #if UNUSED
         /* Can't do this as we can only expire individual items in the cache as the cache is shared */
         mprExpireCache(sp->cache, makeKey(sp, key), 0);
@@ -13862,7 +13910,7 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
             /*
                 Define the cookie in the browser if creating a new session
              */
-            httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, 0, 0);
+            httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, conn->limits->sessionTimeout, 0);
         }
     }
     return rx->session;
@@ -14944,7 +14992,8 @@ PUBLIC void httpSetContentLength(HttpConn *conn, MprOff length)
 
 
 /*
-    Set lifespan < 0 to delete the cookie in the clinet
+    Set lifespan < 0 to delete the cookie in the client
+    Set lifespan == 0 to get a session cookie in the client.
  */
 PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, 
     MprTicks lifespan, int flags)
@@ -14982,13 +15031,19 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
         expires = expiresAtt = "";
     }
     /* 
-       Allow multiple cookie headers. Even if the same name. Later definitions take precedence
+       Allow multiple cookie headers. Even if the same name. Later definitions take precedence.
      */
     secure = (flags & HTTP_COOKIE_SECURE) ? "; secure" : "";
     httponly = (flags & HTTP_COOKIE_HTTP) ?  "; httponly" : "";
     httpAppendHeader(conn, "Set-Cookie", 
         sjoin(name, "=", value, "; path=", path, domainAtt, domain, expiresAtt, expires, secure, httponly, NULL));
     httpAppendHeader(conn, "Cache-Control", "no-cache=\"set-cookie\"");
+}
+
+
+PUBLIC void httpRemoveCookie(HttpConn *conn, cchar *name)
+{
+    httpSetCookie(conn, name, "", NULL, NULL, -1, 0);
 }
 
 
@@ -16850,25 +16905,6 @@ static void addParamsFromBufInsitu(HttpConn *conn, char *buf, ssize len)
 #endif
 
 
-static void addParamsFromQueue(HttpQueue *q)
-{
-    HttpConn    *conn;
-    HttpRx      *rx;
-    MprBuf      *content;
-
-    assert(q);
-    
-    conn = q->conn;
-    rx = conn->rx;
-
-    if ((rx->form || rx->upload) && q->first && q->first->content) {
-        httpJoinPackets(q, -1);
-        content = q->first->content;
-        mprAddNullToBuf(content);
-        mprTrace(6, "Form body data: length %d, \"%s\"", mprGetBufLength(content), mprGetBufStart(content));
-        addParamsFromBuf(conn, mprGetBufStart(content), mprGetBufLength(content));
-    }
-}
 
 
 static void addQueryParams(HttpConn *conn) 
@@ -16886,11 +16922,21 @@ static void addQueryParams(HttpConn *conn)
 static void addBodyParams(HttpConn *conn)
 {
     HttpRx      *rx;
+    HttpQueue   *q;
+    MprBuf      *content;
 
     rx = conn->rx;
-    if (rx->form && !(rx->flags & HTTP_ADDED_FORM_PARAMS)) {
-        addParamsFromQueue(conn->readq);
-        rx->flags |= HTTP_ADDED_FORM_PARAMS;
+    q = conn->readq;
+
+    if ((rx->form || rx->upload) && !(rx->flags & HTTP_ADDED_FORM_PARAMS)) {
+        if (q->first && q->first->content) {
+            httpJoinPackets(q, -1);
+            content = q->first->content;
+            mprAddNullToBuf(content);
+            mprTrace(6, "Form body data: length %d, \"%s\"", mprGetBufLength(content), mprGetBufStart(content));
+            addParamsFromBuf(conn, mprGetBufStart(content), mprGetBufLength(content));
+            rx->flags |= HTTP_ADDED_FORM_PARAMS;
+        }
     }
 }
 

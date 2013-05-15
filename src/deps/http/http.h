@@ -2742,7 +2742,6 @@ typedef struct HttpAuth {
 /**
     Add an authorization type. The pre-supplied types are 'basic', 'digest' and 'post'.
     @description This creates an AuthType object with the defined name and callbacks.
-    @param http Http service object.
     @param name Unique authorization type name
     @param askLogin Callback to generate a client login response
     @param parse Callback to parse the HTTP authentication headers
@@ -2751,19 +2750,21 @@ typedef struct HttpAuth {
     @ingroup HttpAuth
     @stability Evolving
  */
-PUBLIC int httpAddAuthType(Http *http, cchar *name, HttpAskLogin askLogin, HttpParseAuth parse, HttpSetAuth setAuth);
+PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpParseAuth parse, HttpSetAuth setAuth);
 
 /**
     Add an authorization store for password validation. The pre-supplied types are 'system' and 'file'
     @description This creates an AuthType object with the defined name and callbacks.
-    @param http Http service object.
     @param name Unique authorization type name
     @param verifyUser Callback to verify the username and password contained in the HttpConn object passed to the callback.
     @return Zero if successful, otherwise a negative MPR error code
     @ingroup HttpAuth
     @stability Evolving
  */
-PUBLIC int httpAddAuthStore(Http *http, cchar *name, HttpVerifyUser verifyUser);
+PUBLIC int httpAddAuthStore(cchar *name, HttpVerifyUser verifyUser);
+
+//MOB DOC
+PUBLIC int httpSetAuthStoreVerify(cchar *name, HttpVerifyUser verifyUser);
 
 /**
     Add a role
@@ -2793,11 +2794,13 @@ PUBLIC int httpAddUser(HttpAuth *auth, cchar *user, cchar *password, cchar *abil
 /**
     Test if a user has the required abilities
     @param conn HttpConn connection object created via #httpCreateConn object.
+    @param abilities Comma separated list of abilities to test for. If null, then use the required abilities defined
+        for the current request route.
     @return True if the user has all the required abilities
     @ingroup HttpAuth
     @stability Evolving
  */
-PUBLIC bool httpCanUser(HttpConn *conn);
+PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities);
 
 /**
     Compute all the user abilities for a route using the given auth
@@ -2873,6 +2876,8 @@ PUBLIC bool httpIsAuthenticated(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password);
+//  MOB DOC
+PUBLIC void httpLogout(HttpConn *conn);
 
 /**
     Remove a role
@@ -4671,7 +4676,7 @@ typedef struct HttpRx {
     MprHash         *params;                /**< Request params (Query and post data variables) */
     MprHash         *svars;                 /**< Server variables */
     HttpRange       *inputRange;            /**< Specified range for rx (post) data */
-    char            *passDigest;            /**< User password digest for authentication */
+    char            *passwordDigest;        /**< User password digest for authentication */
     char            *paramString;           /**< Cached param data as a string */
 
     /*  
@@ -5423,14 +5428,17 @@ PUBLIC void httpSetContentType(HttpConn *conn, cchar *mimeType);
     @param domain Domain in which the cookie applies. Must have 2-3 dots.
     @param lifespan Duration for the cookie to persist in msec
     @param flags Cookie options mask. The following options are supported:
-        @li HTTP_COOKIE_SECURE    - Set the 'Secure' attribute on the cookie.
-        @li HTTP_COOKIE_HTTP      - Set the 'HttpOnly' attribute on the cookie.
+        @li HTTP_COOKIE_SECURE   - Set the 'Secure' attribute on the cookie.
+        @li HTTP_COOKIE_HTTP     - Set the 'HttpOnly' attribute on the cookie.
         See RFC 6265 for details about the 'Secure' and 'HttpOnly' cookie attributes.
     @ingroup HttpTx
     @stability Evolving
  */
 PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, 
         MprTicks lifespan, int flags);
+
+//  MOB - DOC
+PUBLIC void httpRemoveCookie(HttpConn *conn, cchar *name);
 
 /**
     Define the length of the transmission content. When static content is used for the transmission body, defining
