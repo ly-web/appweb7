@@ -16,7 +16,7 @@ Bit.load({
         espcmd: {
             path: '${BIN}/esp${EXE}',
             type: 'exe',
-            depends: [ 'libappweb', 'sqlite' ],
+            depends: [ 'libappweb', 'sqlite', 'libmod_esp' ],
             sources: [ '*.c' ]
             platforms: [ 'local' ],
             packs: 'esp',
@@ -35,21 +35,33 @@ Bit.load({
             packs: 'esp',
         },
 
-        'esp.www': {
+        'proto': {
             type: 'file',
-            path: '${BIN}/esp-www/',
-            files: [ 'esp-www/' ],
+            path: '${BIN}/esp-proto/',
+            files: [ 'proto/' ],
             platforms: [ 'local' ],
             packs: 'esp',
         },
 
-        'all.css': {
-            path: 'esp-www/files/static/css/all.css',
-            files: [ 'esp-www/files/static/less/*.less'],
+        'all-legacy.css': {
+            path: 'proto/legacy/static/css/all.css',
+            files: [ 'proto/legacy/static/less/*.less'],
             build: "
                 if (Cmd.locate('recess')) {
                     trace('Compile', TARGET.path)
-                    let result = Cmd.run('recess -compress -compile esp-www/files/static/less/all.less')
+                    let result = Cmd.run('recess -compress -compile proto/legacy/static/less/all.less')
+                    Path(TARGET.path).write(result)
+                }
+            ",
+        },
+
+        'all-ng.css': {
+            path: 'proto/angular/client/css/all.css',
+            files: [ 'proto/angular/client/less/*.less'],
+            build: "
+                if (Cmd.locate('recess')) {
+                    trace('Compile', TARGET.path)
+                    let result = Cmd.run('recess -compress -compile proto/angular/client/less/all.less')
                     Path(TARGET.path).write(result)
                 }
             ",

@@ -10,6 +10,7 @@
 
 #if BIT_PACK_ESP
 /******************************* Abbreviated Controls *************************/ 
+#if DEPRECATED || 1
 
 PUBLIC void alert(cchar *text, cchar *optionString)
 {
@@ -129,7 +130,6 @@ PUBLIC void radio(cchar *name, void *choices, cchar *optionString)
 }
 
 
-//  MOB - add calling sequence comment to all APIs
 PUBLIC void refresh(cchar *on, cchar *off, cchar *optionString)
 {
     espRefresh(getConn(), on, off, optionString);
@@ -139,12 +139,6 @@ PUBLIC void refresh(cchar *on, cchar *off, cchar *optionString)
 PUBLIC void script(cchar *uri, cchar *optionString)
 {
     espScript(getConn(), uri, optionString);
-}
-
-
-PUBLIC void securityToken()
-{
-    espSecurityToken(getConn());
 }
 
 
@@ -174,11 +168,18 @@ PUBLIC void text(cchar *field, cchar *optionString)
     espText(getConn(), field, optionString);
 }
 
+#endif /* DEPRECATED */
 
-PUBLIC void tree(EdiGrid *grid, cchar *optionString)
+PUBLIC void scripts(cchar *optionString)
 {
-    espTree(getConn(), grid, optionString);
+    espScripts(getConn(), optionString);
 }
+
+PUBLIC void securityToken()
+{
+    espSecurityToken(getConn());
+}
+
 
 /******************************* Abbreviated API ******************************/
 
@@ -202,7 +203,6 @@ PUBLIC EdiRec *createRec(cchar *tableName, MprHash *params)
 
 /*
     Create a new session. Always returns with a fresh session
-    Use getSession() to use an existing session.
  */
 PUBLIC cchar *createSession()
 {
@@ -291,16 +291,18 @@ PUBLIC cchar *getDir()
 }
 
 
-PUBLIC cchar *getField(cchar *field)
+PUBLIC cchar *getField(EdiRec *rec, cchar *field)
 {
-    return ediGetFieldValue(getRec(), field);
+    return ediGetFieldValue(rec, field);
 }
 
 
+#if DEPRECATED || 1
 PUBLIC EdiGrid *getGrid()
 {
     return getConn()->grid;
 }
+#endif
 
 
 PUBLIC cchar *getHeader(cchar *key)
@@ -309,7 +311,6 @@ PUBLIC cchar *getHeader(cchar *key)
 }
 
 
-//  MOB - why not method()
 PUBLIC cchar *getMethod()
 {
     return espGetMethod(getConn());
@@ -322,10 +323,12 @@ PUBLIC cchar *getQuery()
 }
 
 
+#if DEPRECATED || 1
 PUBLIC EdiRec *getRec()
 {
     return getConn()->record;
 }
+#endif
 
 
 PUBLIC cchar *getReferrer()
@@ -337,7 +340,7 @@ PUBLIC cchar *getReferrer()
 /*
     Get a session and return the session ID. Creates a session if one does not already exist.
  */
-PUBLIC cchar *getSession()
+PUBLIC cchar *getSessionID()
 {
     HttpSession *session;
 
@@ -348,20 +351,15 @@ PUBLIC cchar *getSession()
 }
 
 
-//  MOB - should have session() just like params
-//  MOB - resolve vs session
 PUBLIC cchar *getSessionVar(cchar *key)
 {
-    //  XYZ
     return httpGetSessionVar(getConn(), key, 0);
 }
 
 
-//  MOB - resolve vs getSessionVar
 PUBLIC cchar *session(cchar *key)
 {
-    //  XYZ
-    return httpGetSessionVar(getConn(), key, 0);
+    return getSessionVar(key);
 }
 
 
@@ -383,6 +381,7 @@ PUBLIC cchar *getUri()
 }
 
 
+#if DEPRECATED || 1
 PUBLIC bool hasGrid()
 {
     return espHasGrid(getConn());
@@ -393,6 +392,7 @@ PUBLIC bool hasRec()
 {
     return espHasRec(getConn());
 }
+#endif
 
 
 PUBLIC void inform(cchar *fmt, ...)
@@ -455,7 +455,6 @@ PUBLIC cchar *makeUri(cchar *target)
 
 PUBLIC cchar *param(cchar *key)
 {
-    //  XYZ
     return espGetParam(getConn(), key, 0);
 }
 
@@ -466,10 +465,13 @@ PUBLIC MprHash *params()
 }
 
 
+#if UNUSED
+//  MOB - rethink
 PUBLIC bool pmatch(cchar *key)
 {
-    return smatch(espGetParam(getConn(), key, 0), getField(key));
+    return smatch(espGetParam(getConn(), key, 0), getField(getRec(), key));
 }
+#endif
 
 
 PUBLIC ssize receive(char *buf, ssize len)
@@ -484,9 +486,9 @@ PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation
 }
 
 
-PUBLIC EdiRec *readRec(cchar *tableName)
+PUBLIC EdiRec *readRec(cchar *tableName, cchar *key)
 {
-    return setRec(ediReadRec(getDatabase(), tableName, param("id")));
+    return setRec(ediReadRec(getDatabase(), tableName, key));
 }
 
 
@@ -504,12 +506,20 @@ PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operati
 
 PUBLIC EdiGrid *readTable(cchar *tableName)
 {
+    return setGrid(espReadTable(getConn(), tableName));
+}
+
+
+#if UNUSED
+PUBLIC EdiGrid *readTable(cchar *tableName)
+{
     EdiGrid *grid;
     
     grid = ediReadWhere(getDatabase(), tableName, 0, 0, 0);
     setGrid(grid);
     return grid;
 }
+#endif
 
 
 PUBLIC void redirect(cchar *target)
@@ -521,6 +531,12 @@ PUBLIC void redirect(cchar *target)
 PUBLIC void redirectBack()
 {
     espRedirectBack(getConn());
+}
+
+
+PUBLIC void removeCookie(cchar *name)
+{
+    espSetCookie(getConn(), name, "", "/", NULL, -1, 0);
 }
 
 
@@ -562,9 +578,35 @@ PUBLIC void renderError(int status, cchar *fmt, ...)
 }
 
 
+#if UNUSED
+PUBLIC void renderFailure(cchar *fmt, ...)
+{
+    va_list     args;
+    cchar       *msg;
+
+    va_start(args, fmt);
+    msg = sfmtv(fmt, args);
+    va_end(args);
+    espRenderFailure(getConn(), "%s", msg);
+}
+#endif
+
+
 PUBLIC ssize renderFile(cchar *path)
 {
     return espRenderFile(getConn(), path);
+}
+
+
+PUBLIC ssize renderGrid(EdiGrid *grid)
+{
+    return espRenderGrid(getConn(), grid, 0);
+}
+
+
+PUBLIC ssize renderRec(EdiRec *rec)
+{
+    return espRenderRec(getConn(), rec, 0);
 }
 
 
@@ -585,6 +627,26 @@ PUBLIC ssize renderSafe(cchar *fmt, ...)
 PUBLIC ssize renderString(cchar *s)
 {
     return espRenderString(getConn(), s);
+}
+
+
+#if UNUSED
+PUBLIC void renderSuccess(cchar *fmt, ...)
+{
+    va_list     args;
+    cchar       *msg;
+
+    va_start(args, fmt);
+    msg = sfmtv(fmt, args);
+    va_end(args);
+    espRenderSuccess(getConn(), "%s", msg);
+}
+#endif
+
+
+PUBLIC void renderResult(int status)
+{
+    espRenderResult(getConn(), status);
 }
 
 
@@ -634,11 +696,13 @@ PUBLIC void setFlash(cchar *kind, cchar *fmt, ...)
 }
 
 
+#if DEPRECATED || 1
 PUBLIC EdiGrid *setGrid(EdiGrid *grid)
 {
     getConn()->grid = grid;
     return grid;
 }
+#endif
 
 
 PUBLIC void setHeader(cchar *key, cchar *fmt, ...)
@@ -665,10 +729,12 @@ PUBLIC void setIntParam(cchar *key, int value)
 }
 
 
+#if DEPRECATED || 1
 PUBLIC EdiRec *setRec(EdiRec *rec)
 {
     return espSetRec(getConn(), rec);
 }
+#endif
 
 
 PUBLIC void setSessionVar(cchar *key, cchar *value)
@@ -701,14 +767,12 @@ PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs)
 }
 
 
-//  MOB - seems inconsistent that this takes a key and update fields does not
 PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
 {
     return espUpdateField(getConn(), tableName, key, fieldName, value);
 }
 
 
-//  MOB - seems inconsistent that this and update field takes a key
 PUBLIC bool updateFields(cchar *tableName, MprHash *params)
 {
     return espUpdateFields(getConn(), tableName, params);

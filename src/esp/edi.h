@@ -90,6 +90,16 @@ typedef struct EdiValidation {
  */
 PUBLIC void ediDefineValidation(cchar *name, EdiValidationProc vfn);
 
+/**
+    Add a field error message
+    @param rec Record to update
+    @param field Field name for the error message
+    @param fmt Message format string
+    @ingroup EdiService
+    @stability Prototype
+ */
+PUBLIC void ediAddFieldError(struct EdiRec *rec, cchar *field, cchar *fmt, ...);
+
 /*
    Field data type hints
  */
@@ -137,7 +147,7 @@ typedef struct EdiField {
  */
 typedef struct EdiRec {
     struct Edi      *edi;               /**< Database handle */
-    MprList         *errors;            /**< List of record errors */
+    MprHash         *errors;            /**< Hash of record errors */
     cchar           *tableName;         /**< Base table name for record */
     cchar           *id;                /**< Record key ID */
     int             nfields;            /**< Number of fields in record */
@@ -742,6 +752,7 @@ PUBLIC bool ediValidateRec(EdiRec *rec);
  */
 PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp);
 
+//  MOB - DOC
 PUBLIC EdiField *ediGetField(EdiRec *rec, cchar *fieldName);
 
 /**
@@ -790,11 +801,11 @@ PUBLIC int ediGetFieldType(EdiRec *rec, cchar *fieldName);
 /**
     Get record validation errors.
     @param rec Database record
-    @return A list of validation errors. If validation passed, then this call returns NULL.
+    @return A hash of validation errors. If validation passed, then this call returns NULL.
     @ingroup Edi
     @stability Evolving
  */
-PUBLIC MprList *ediGetRecErrors(EdiRec *rec);
+PUBLIC MprHash *ediGetRecErrors(EdiRec *rec);
 
 /**
     Get a list of grid column names.

@@ -866,6 +866,9 @@ static bool mdbValidateRec(Edi *edi, EdiRec *rec)
     bool        pass;
     int         c;
 
+    if (!rec) {
+        return 0;
+    }
     mdb = (Mdb*) edi;
     lock(mdb);
     if ((table = lookupTable(mdb, rec->tableName)) == 0) {
@@ -980,15 +983,14 @@ static int mdbUpdateRec(Edi *edi, EdiRec *rec)
     MdbCol      *col;
     int         f, r;
 
+    if (!mdbValidateRec(edi, rec)) {
+        return MPR_ERR_CANT_WRITE;
+    }
     mdb = (Mdb*) edi;
     lock(mdb);
     if ((table = lookupTable(mdb, rec->tableName)) == 0) {
         unlock(mdb);
         return MPR_ERR_CANT_FIND;
-    }
-    if (!mdbValidateRec(edi, rec)) {
-        unlock(mdb);
-        return MPR_ERR_CANT_WRITE;
     }
     if (rec->id == 0 || (r = lookupRow(table, rec->id)) < 0) {
         row = createRow(mdb, table);
@@ -1194,7 +1196,7 @@ static int mdbLoadFromString(Edi *edi, cchar *str)
     cb.setValue = setMdbValue;
     cb.parseError = parseMdbError;
 
-    obj = mprDeserializeCustom(str, cb, mdb);
+    obj = mprDeserializeCustom(str, cb, mdb, NULL);
     mdb->edi.flags &= ~MDB_LOADING;
     mdb->edi.flags &= ~EDI_SUPPRESS_SAVE;
     mdb->loadStack = 0;
@@ -1595,10 +1597,11 @@ static bool validateField(EdiRec *rec, MdbTable *table, MdbCol *col, cchar *valu
     if (col->validations) {
         for (ITERATE_ITEMS(col->validations, vp, next)) {
             if ((error = (*vp->vfn)(vp, rec, col->name, value)) != 0) {
+                //  MOB - functionalize ediAddFieldError
                 if (rec->errors == 0) {
-                    rec->errors = mprCreateList(0, 0);
+                    rec->errors = mprCreateHash(0, 0);
                 }
-                mprAddItem(rec->errors, mprCreateKeyPair(col->name, error));
+                mprAddKey(rec->errors, col->name, sfmt("%s %s", col->name, error));
                 pass = 0;
             }
         }

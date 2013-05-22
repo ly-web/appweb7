@@ -26,7 +26,6 @@ typedef struct Sdb {
     sqlite3         *db;            /**< SQLite database handle */
     MprHash         *validations;   /**< Validations */
     MprHash         *schemas;       /**< Table schemas */
-    EdiGrid         *empty;         /**< Empty grid */
 } Sdb;
 
 static int sqliteInitialized;
@@ -132,7 +131,6 @@ static Sdb *sdbCreate(cchar *path, int flags)
     sdb->edi.path = sclone(path);
     sdb->schemas = mprCreateHash(0, 0);
     sdb->validations = mprCreateHash(0, 0);
-    sdb->empty = ediCreateBareGrid((Edi*) sdb, 0, 0);
     return sdb;
 }
 
@@ -143,7 +141,6 @@ static void manageSdb(Sdb *sdb, int flags)
         mprMark(sdb->edi.path);
         mprMark(sdb->schemas);
         mprMark(sdb->validations);
-        mprMark(sdb->empty);
     } else if (flags & MPR_MANAGE_FREE) {
         sdbClose((Edi*) sdb);
     }
@@ -572,9 +569,6 @@ static EdiGrid *query(Edi *edi, cchar *cmd)
         mprLog(1, "SQL error: %s", sdb->edi.errMsg);
         return 0;
     }
-    if (nrows == 0) {
-        return sdb->empty;
-    }
     if ((grid = ediCreateBareGrid(edi, defaultTableName, nrows)) == 0) {
         return 0;
     }
@@ -615,18 +609,30 @@ static EdiRec *sdbReadRec(Edi *edi, cchar *tableName, cchar *key)
 }
 
 
+static EdiGrid *setTableName(EdiGrid *grid, cchar *tableName)
+{
+    if (!grid->tableName) {
+        grid->tableName = sclone(tableName);
+    }
+    return grid;
+}
+
+
 static EdiGrid *sdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, cchar *operation, cchar *value)
 {
+    EdiGrid     *grid;
+    
     assert(tableName && *tableName);
 
     if (columnName) {
         assert(columnName && *columnName);
         assert(operation && *operation);
         assert(value);
-        return query(edi, sfmt("SELECT * FROM %s WHERE %s %s '%s';", tableName, columnName, operation, value));
+        grid = query(edi, sfmt("SELECT * FROM %s WHERE %s %s '%s';", tableName, columnName, operation, value));
     } else {
-        return query(edi, sfmt("SELECT * FROM %s;", tableName));
+        grid = query(edi, sfmt("SELECT * FROM %s;", tableName));
     }
+    return setTableName(grid, tableName);
 }
 
 
@@ -677,6 +683,9 @@ static bool sdbValidateRec(Edi *edi, EdiRec *rec)
     bool        pass;
     int         c;
 
+    if (!rec) {
+        return 0;
+    }
     sdb = (Sdb*) edi;
     pass = 1;
     for (c = 0; c < rec->nfields; c++) {
@@ -788,9 +797,9 @@ static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *column
         for (ITERATE_ITEMS(validations, vp, next)) {
             if ((error = (*vp->vfn)(vp, rec, columnName, value)) != 0) {
                 if (rec->errors == 0) {
-                    rec->errors = mprCreateList(0, 0);
+                    rec->errors = mprCreateHash(0, 0);
                 }
-                mprAddItem(rec->errors, mprCreateKeyPair(columnName, error));
+                mprAddKey(rec->errors, columnName, sfmt("%s %s", columnName, error));
                 pass = 0;
             }
         }

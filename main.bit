@@ -12,7 +12,6 @@ Bit.load({
         "src/deps/sqlite/sqlite.bit",
         "src/libappweb.bit",
         "src/esp/esp.bit",
-        /* The ejs.bit file is optional */
         "?src/deps/ejs/ejs.bit",
         "src/modules/modules.bit",
         "src/utils/utils.bit",

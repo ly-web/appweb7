@@ -1,0 +1,8 @@
+{
+	"app": {
+		"timeouts": {
+			"session": 1800
+		}
+	}
+}
+

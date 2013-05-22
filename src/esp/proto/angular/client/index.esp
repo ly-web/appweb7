@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="${TITLE}">
+<head>
+    <title>${TITLE}</title>
+    <meta charset="utf-8" />
+    <% securityToken(); %>
+    <link href='http://data/x-icon;,' rel='shortcut icon' />
+    <link rel='stylesheet/less' type='text/css' href='less/all.less' />
+    <link rel='stylesheet' type='text/css' href='css/bootstrap.css' />
+    <% scripts(); %>
+</head>
+
+<body ng-controller="AppCtrl">
+    <header>
+        <h1><a href="/">${TITLE}</a></h1>
+    </header>
+    <main>
+        <section>
+            <div ng-view></div>   
+        </section>
+    </main>
+</body>
+</html>

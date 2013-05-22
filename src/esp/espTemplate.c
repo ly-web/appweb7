@@ -71,7 +71,7 @@ static bool matchToken(cchar **str, cchar *token);
     MOD         Output module (view_MD5)
     SHLIB       Host Shared library (.lib, .so)
     SHOBJ       Host Shared Object (.dll, .so)
-    SRC         Source code for view or controller (already templated)
+    SRC         Source code for view or service (already templated)
     TMP         Temp directory
     VS          Visual Studio directory
     WINSDK      Windows SDK directory
@@ -138,7 +138,7 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
                 mprPutStringToBuf(buf, getShobjExt(os));
 
             } else if (matchToken(&cp, "${SRC}")) {
-                /* View (already parsed into C code) or controller source */
+                /* View (already parsed into C code) or service source */
                 mprPutStringToBuf(buf, source);
 
             } else if (matchToken(&cp, "${TMP}")) {
@@ -265,7 +265,7 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
 
 
 /*
-    Compile a view or controller
+    Compile a view or service
 
     cacheName   MD5 cache name (not a full path)
     source      ESP source file name
@@ -294,7 +294,7 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
             return 0;
         }
         /*
-            Use layouts iff there is a source defined on the route. Only MVC/controllers based apps do this.
+            Use layouts iff there is a source defined on the route. Only MVC/services based apps do this.
          */
         if (eroute->layoutsDir) {
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
@@ -304,6 +304,7 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
             return 0;
         }
         csource = mprJoinPathExt(mprTrimPathExt(module), ".c");
+        mprMakeDir(mprGetPathDir(csource), 0775, 0, -1, 1);
         if ((fp = mprOpenFile(csource, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot open compiled script file %s", csource);
             return 0;
@@ -642,7 +643,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         }
         bodyCode = sfmt(\
             "/*\n   Generated from %s\n */\n"\
-            "#include \"esp-app.h\"\n"\
+            "#include \"esp.h\"\n"\
             "%s\n"\
             "static void %s(HttpConn *conn) {\n"\
             "%s%s%s"\

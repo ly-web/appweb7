@@ -1,7 +1,7 @@
 /*
     Blog post controller
  */
- #include "esp-app.h"
+ #include "esp.h"
 
 /*
     Create a post

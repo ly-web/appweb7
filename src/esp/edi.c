@@ -156,7 +156,7 @@ PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
 }
 
 
-PUBLIC MprList *ediGetRecErrors(EdiRec *rec)
+PUBLIC MprHash *ediGetRecErrors(EdiRec *rec)
 {
     return rec->errors;
 }
@@ -1056,6 +1056,19 @@ static cchar *checkUnique(EdiValidation *vp, EdiRec *rec, cchar *fieldName, ccha
         return 0;
     }
     return "is not unique";
+}
+
+
+PUBLIC void ediAddFieldError(EdiRec *rec, cchar *field, cchar *fmt, ...)
+{
+    va_list     args;
+
+    va_start(args, fmt);
+    if (rec->errors == 0) {
+        rec->errors = mprCreateHash(0, 0);
+    }
+    mprAddKey(rec->errors, field, sfmtv(fmt, args));
+    va_end(args);
 }
 
 

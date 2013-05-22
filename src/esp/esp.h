@@ -119,17 +119,25 @@ typedef struct EspRoute {
     char            *compile;               /**< Compile template */
     char            *link;                  /**< Link template */
     char            *searchPath;            /**< Search path to use when locating compiler/linker */
-    EspProc         controllerBase;         /**< Initialize base for a controller */
+    EspProc         commonService;          /**< Common code for all services */
     char            *appModuleName;         /**< App module name when compiled flat */
     char            *appModulePath;         /**< App module path when compiled flat */
-    char            *cacheDir;              /**< Directory for cached compiled controllers and views */
-    char            *controllersDir;        /**< Directory for controllers */
+    char            *cacheDir;              /**< Directory for cached compiled services and views */
+
+    char            *clientDir;             /**< Directory for client-side web content */
+    char            *controllersDir;        /**< Directory for client-side controllers */
     char            *dbDir;                 /**< Directory for databases */
     char            *migrationsDir;         /**< Directory for migrations */
-    char            *layoutsDir;            /**< Directory for layouts */
+    char            *modelsDir;             /**< Directory for client models*/
+    char            *partialsDir;           /**< Directory for service views */
+    char            *servicesDir;           /**< Directory for services */
     char            *srcDir;                /**< Directory for application source */
-    char            *staticDir;             /**< Directory for static web content */
-    char            *viewsDir;              /**< Directory for views */
+    char            *viewsDir;              /**< Directory for service views */
+
+#if DEPRECATED || 1
+    /* Not used by Angular style */
+    char            *layoutsDir;            /**< Directory for service view layouts */
+#endif
 
     MprTicks        lifespan;               /**< Default cache lifespan */
     int             flat;                   /**< Compile the application flat */
@@ -217,8 +225,8 @@ typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
 PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
 
 /**
-    Compile a view or controller
-    @description This compiles ESP controllers and views into loadable, cached modules
+    Compile an ESP page, service or view
+    @description This compiles ESP components into loadable, cached modules
     @param conn Http connection object
     @param source ESP source file name
     @param module Output module file name
@@ -251,7 +259,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
 
 /**
     Define an action
-    @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
+    @description Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.
     @param route HttpRoute object
     @param targetKey Target key used to select the action in a HttpRoute target. This is typically a URI prefix.
     @param actionProc EspProc callback procedure to invoke when the action is requested.
@@ -272,11 +280,11 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc
 PUBLIC int espBindProc(HttpRoute *route, cchar *pattern, void *actionProc);
 
 /**
-    Define a base function to invoke for all controller actions.
-    @description A base function can be defined that will be called before calling any controller action. This
+    Define a base function to invoke for all service actions.
+    @description A base function can be defined that will be called before calling any service action. This
         emulates a super class constructor.
     @param route HttpRoute object
-    @param baseProc Function to call just prior to invoking a controller action.
+    @param baseProc Function to call just prior to invoking a service action.
     @ingroup EspRoute
     @stability Stable
  */
@@ -308,7 +316,7 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
             <li>OUT - Output module (view_MD5.dylib)</li>
             <li>SHLIB - Shared library extension (.lib, .so)</li>
             <li>SHOBJ - Shared object extension (.dll, .so)</li>
-            <li>SRC - Path to source code for view or controller (already templated)</li>
+            <li>SRC - Path to source code for view or service (already templated)</li>
             <li>TMP - System temporary directory</li>
             <li>WINSDK - Path to the Windows SDK</li>
             <li>VS - Path to Visual Studio</li>
@@ -341,6 +349,7 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags);
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile);
 PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
+PUBLIC void espSetMvcDirs(EspRoute *eroute);
 
 /********************************** Requests **********************************/
 /**
@@ -353,7 +362,7 @@ typedef void (*EspViewProc)(HttpConn *conn);
 
 /**
     ESP Action
-    @description Actions are run after a request URI is routed to a controller.
+    @description Actions are run after a request URI is routed to a service.
     @ingroup EspReq
     @stability Evolving
  */
@@ -374,8 +383,8 @@ typedef struct EspReq {
     MprHash         *flash;                 /**< New flash messages */
     MprHash         *lastFlash;             /**< Flash messages from the last request */
     char            *cacheName;             /**< Base name of intermediate compiled file */
-    char            *controllerName;        /**< Controller name */
-    char            *controllerPath;        /**< Path to controller source */
+    char            *serviceName;           /**< Service name */
+    char            *servicePath;           /**< Path to service source */
     char            *module;                /**< Name of compiled module */
     char            *source;                /**< Name of ESP source */
     char            *view;                  /**< Path to view */
@@ -500,7 +509,7 @@ PUBLIC void espFlush(HttpConn *conn);
 /**
     Get a list of column names.
     @param conn HttpConn connection object
-    @param rec Database record. If set to NULL, the current database record defined via #form() is used.
+    @param rec Database record. 
     @return An MprList of column names in the given table. If there is no record defined, an empty list is returned.
     @ingroup EspReq
     @stability Evolving
@@ -589,7 +598,7 @@ PUBLIC cchar *espGetFlashMessage(HttpConn *conn, cchar *type);
     @description The current grid is defined via #setGrid
     @return EdiGrid instance
     @ingroup EspReq
-    @stability Evolving
+    @stability Deprecated
     @internal
  */
 PUBLIC EdiGrid *espGetGrid(HttpConn *conn);
@@ -771,7 +780,8 @@ PUBLIC cchar *espGetUri(HttpConn *conn);
     @description The current grid is defined via #setRec
     @return "True" if a current grid has been defined
     @ingroup EspReq
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC bool espHasGrid(HttpConn *conn);
 
@@ -781,7 +791,8 @@ PUBLIC bool espHasGrid(HttpConn *conn);
         valid "id" field.
     @return "True" if a current record with a valid "id" is defined.
     @ingroup EspReq
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC bool espHasRec(HttpConn *conn);
 
@@ -867,7 +878,7 @@ PUBLIC EdiRec *espMakeRec(cchar *content);
  */
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value);
 
-//  MOB - rethink name. Inconsistent vs readTable() and ediReadWhere
+#if UNUSED
 /**
     Read all the records in table from the database.
     @description This reads a table and returns a grid containing the table data.
@@ -878,17 +889,19 @@ PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value);
     @stability Evolving
  */
 PUBLIC EdiGrid *espReadAllRecs(HttpConn *conn, cchar *tableName);
+#endif
 
 /**
     Read the identified record. 
-    @description Read the record identified by the request params("id") from the nominated table.
+    @description Read the record identified by the request param("id") from the nominated table.
     @param conn HttpConn connection object
     @param tableName Database table name
+    @param key Key value of the record to remove 
     @return The identified record. Returns NULL if the table or record cannot be found.
     @ingroup EspReq
     @stability Evolving
  */
-PUBLIC EdiRec *espReadRec(HttpConn *conn, cchar *tableName);
+PUBLIC EdiRec *espReadRec(HttpConn *conn, cchar *tableName, cchar *key);
 
 /**
     Read matching records
@@ -1044,6 +1057,21 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...);
  */
 PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path);
 
+//MOB DOC
+PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags);
+PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags);
+PUBLIC cchar *espRecToJson(EdiRec *rec, int flags);
+PUBLIC cchar *espGridToJson(EdiGrid *grid, int flags);
+PUBLIC EdiGrid *espReadTable(HttpConn *conn, cchar *tableName);
+
+#if UNUSED
+PUBLIC void espRenderFail(HttpConn *conn, cchar *fmt, ...);
+PUBLIC void espRenderSuccess(HttpConn *conn, cchar *fmt, ...);
+PUBLIC void renderFailure(cchar *fmt, ...);
+PUBLIC void renderSuccess(cchar *fmt, ...);
+#endif
+
+
 /**
     Render a safe string of data to the client.
     @description HTML escape a string and then write the string of data to the client.
@@ -1056,6 +1084,10 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path);
     @stability Evolving
  */
 PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s);
+
+//  MOB - DOC
+//  MOB - consider name
+PUBLIC void espRenderResult(HttpConn *conn, bool status);
 
 /**
     Render a string of data to the client
@@ -1083,7 +1115,7 @@ PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name);
 
 /**
     Render a view template to the client
-    @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
+    @description Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.
     @param conn Http connection object
     @param name view name
     @ingroup EspReq
@@ -1204,7 +1236,7 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args);
     Set the current database grid
     @return The grid instance. This permits chaining.
     @ingroup EspReq
-    @stability Internal
+    @stability Deprecated
     @internal
  */
 PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid);
@@ -1274,7 +1306,7 @@ PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value);
     @param rec Record object to define as the current record.
     @return The grid instance. This permits chaining.
     @ingroup EspReq
-    @stability Evolving
+    @stability Deprecated
     @internal
  */
 PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec);
@@ -1372,10 +1404,10 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
         "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
         top-level relative links.
         \n\n
-        If the target is a string that begins with "{AT}" it will be interpreted as a controller/action pair of the 
-        form "{AT}Controller/action". If the "controller/" portion is absent, the current controller is used. If 
+        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the 
+        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If 
         the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
-        of the current controller.
+        of the current service.
         \n\n
         If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
         If the target is a relative URI path, it is appended to the current request URI path.  
@@ -1383,7 +1415,7 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
         If the target is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
         query. If these component properties are supplied, these will be combined to create a URI.
         \n\n
-        If the target specifies either a controller/action or a JSON set of options, The URI will be created according 
+        If the target specifies either a service/action or a JSON set of options, The URI will be created according 
         to the route URI template. The template may be explicitly specified
         via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
         name will be used. If these don't result in a usable route, the "default" route will be used. 
@@ -1396,36 +1428,36 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
             <li>path String URI path portion</li>
             <li>reference String URI path reference. Does not include "#"</li>
             <li>query String URI query parameters. Does not include "?"</li>
-            <li>controller String Controller name if using a Controller-based route. This can also be specified via
+            <li>service String Service name if using a Service-based route. This can also be specified via
                 the action option.</li>
-            <li>action String Action to invoke. This can be a URI string or a Controller action of the form
-                {AT}Controller/action.</li>
+            <li>action String Action to invoke. This can be a URI string or a service action of the form
+                {AT}Service/action.</li>
             <li>route String Route name to use for the URI template</li>
         </ul>
     @return A normalized, server-local Uri string.
     @example espUri(conn, "http://example.com/index.html", 0); \n
     espUri(conn, "/path/to/index.html", 0); \n
     espUri(conn, "../images/splash.png", 0); \n
-    espUri(conn, "~/static/images/splash.png", 0); \n
-    espUri(conn, "${app}/static/images/splash.png", 0); \n
-    espUri(conn, "@controller/checkout", 0); \n
-    espUri(conn, "@controller/") \n
+    espUri(conn, "~/client/images/splash.png", 0); \n
+    espUri(conn, "${app}/client/images/splash.png", 0); \n
+    espUri(conn, "@service/checkout", 0); \n
+    espUri(conn, "@service/") \n
     espUri(conn, "@init") \n
     espUri(conn, "@") \n
     espUri(conn, "{ action: '@post/create' }", 0); \n
     espUri(conn, "{ action: 'checkout' }", 0); \n
-    espUri(conn, "{ action: 'logout', controller: 'admin' }", 0); \n
+    espUri(conn, "{ action: 'logout', service: 'admin' }", 0); \n
     espUri(conn, "{ action: 'admin/logout'", 0); \n
     espUri(conn, "{ product: 'candy', quantity: '10', template: '/cart/${product}/${quantity}' }", 0); \n
     espUri(conn, "{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0); \n
-    espUri(conn, "{ template: '~/static/images/${theme}/background.jpg', theme: 'blue' }", 0); 
+    espUri(conn, "{ template: '~/client/images/${theme}/background.jpg', theme: 'blue' }", 0); 
     @ingroup EspReq
     @stability Evolving
  */
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
 
 /* ******************************** Controls ******************************** */
-
+#if DEPRECATED || 1
 /**
     Suite of high-level controls that generate dynamic HTML5.
     @description There are two forms of the ESP control APIs.
@@ -1433,8 +1465,7 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
     HttpConn request connection object as the first parameter and the function names are prefixed with "esp". 
     The "abbreviated" form APIs are shorter and more convenient. They do not have a connection argument and 
     determine the request connection using Thread-Local storage. They do not have any function prefix. Ocassionally,
-    an ESP control name may clash with a function name in another library. If this happens, rename the ESP function
-    in the esp-app.h header.
+    an ESP control name may clash with a function name in another library. 
     \n\n
     ESP Controls are grouped into two families: input form controls and general output controls. Input controls
     are typically located inside a form/endform control pair that defines a current database record from which data
@@ -1445,15 +1476,15 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
     how the control will render. The options hash is a JSON string, which is interpreted as a set of property values.
     \n\n
     Various controls have custom options, but most share the following common set of option properties:
-    @arg action String Action to invoke. This can be a URI string or a Controller/Action pair of the form
-        \@Controller/action. If only the controller is provided (\@Controller/), the "list" action assumed.
+    @arg action String Action to invoke. This can be a URI string or a Service/Action pair of the form
+        \@Service/action. If only the service is provided (\@Service/), the "list" action assumed.
     @arg apply String Client JQuery selector identifying the element to apply the remote update.
         Typically "div.ID" where ID is the DOM ID for the element.
     @arg background String Background color. This is a CSS RGB color specification. For example "FF0000" for red.
     @arg click (Boolean|Uri|String) URI to invoke if the control is clicked.
     @arg color String Foreground color. This is a CSS RGB color specification. For example "FF0000" for red.
     @arg confirm String Message to prompt the user to request confirmation before submitting a form or request.
-    @arg controller Controller owning the action to invoke when clicked. Defaults to the current controller.
+    @arg service Service owning the action to invoke when clicked. Defaults to the current service.
     @arg data-* All data-* names are passed through to the HTML unmodified.
     @arg domid String Client-side DOM-ID to use for the control
     @arg effects String Transition effects to apply when updating a control. Select from: "fadein", "fadeout",
@@ -1463,7 +1494,7 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
     @arg height (Number|String) Height of the control. Can be a number of pixels or a percentage string. 
         Defaults to unlimited.
     @arg key Array List of fields to set as the key values to uniquely identify the clicked or edited element. 
-        The key will be rendered as a "data-key" HTML attribute and will be passed to the receiving controller 
+        The key will be rendered as a "data-key" HTML attribute and will be passed to the receiving service 
         when the entry is clicked or edited. Each entry of the key option can be a simple
         string field name or it can be an Object with a single property, where the property name is a simple
         string field name and the property value is the mapped field name to use as the actual key name. This 
@@ -1489,7 +1520,7 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
     @arg remote (String|URI|Object) Perform the request in the background without changing the browser location.
     @arg refresh (String|URI|Object) URI to invoke in the background to refresh the control's data every period.
         milliseconds. If period is undefined or zero, a persistent connection may be used to refresh data.
-        The refresh option may use the "\@Controller/action" form.
+        The refresh option may use the "\@Service/action" form.
     @arg size (Number|String) Size of the element.
     @arg style String CSS Style to use for the element.
     @arg value Object Override value to display if used without a form control record.
@@ -1498,15 +1529,15 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
     <h4>Dynamic Data</h4>
     <p>Most controls can perform background updates of their data after the initial presentation. This is done via
     the refresh and period options.</p>
-    @stability Prototype
+    @stability Deprecated
     @see espAlert espAnchor
     @defgroup EspControl EspControl
+    @internal
   */
 typedef struct EspControl { 
     int dummy;  /**< Unused */
 } EspControl;
 
-// MOB - does this do an alert popup or is this a console status widget?
 /**
     Display a popup alert message in the client's browser when the web page is displayed.
     @param conn Http connection object
@@ -1529,7 +1560,8 @@ PUBLIC void espAlert(HttpConn *conn, cchar *text, cchar *options);
     @param uri URI link for the anchor
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espAnchor(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
 
@@ -1542,7 +1574,8 @@ PUBLIC void espAnchor(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
     @param value Form input value to submit when the button is clicked
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espButton(HttpConn *conn, cchar *text, cchar *value, cchar *options);
 
@@ -1553,7 +1586,8 @@ PUBLIC void espButton(HttpConn *conn, cchar *text, cchar *value, cchar *options)
     @param uri URI to invoke when the button is clicked.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
 
@@ -1571,7 +1605,8 @@ PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *option
         motionchart, areachart, intensitymap, imageareachart, barchart, imagebarchart, bioheatmap, columnchart, 
         linechart, imagelinechart, imagepiechart, scatterchart (and more).
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
     @internal
  */
 PUBLIC void espChart(HttpConn *conn, EdiGrid *grid, cchar *options);
@@ -1587,7 +1622,8 @@ PUBLIC void espChart(HttpConn *conn, EdiGrid *grid, cchar *options);
     @param checkedValue Value for which the checkbox will be checked.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espCheckbox(HttpConn *conn, cchar *name, cchar *checkedValue, cchar *options);
 
@@ -1599,7 +1635,8 @@ PUBLIC void espCheckbox(HttpConn *conn, cchar *name, cchar *checkedValue, cchar 
     @param body HTML body to render
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
 
@@ -1608,7 +1645,8 @@ PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
     @description This emits a HTML closing form tag.
     @param conn Http connection object
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espEndform(HttpConn *conn);
 
@@ -1624,7 +1662,8 @@ PUBLIC void espEndform(HttpConn *conn);
     @arg retain -- Number of seconds to retain the message. If <= 0, the message is retained until another
         message is displayed. Default is 0.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espFlash(HttpConn *conn, cchar *kinds, cchar *options);
 
@@ -1645,7 +1684,8 @@ PUBLIC void espFlash(HttpConn *conn, cchar *kinds, cchar *options);
         security token will always be generated unless options.nosecurity is defined to be true.
         Security tokens are used by ESP to mitigate cross-site scripting errors.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *options);
 
@@ -1655,7 +1695,8 @@ PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *options);
     @param uri URI reference for the icon resource
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *options);
 
@@ -1665,7 +1706,8 @@ PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *options);
     @param uri URI reference for the image resource
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *options);
 
@@ -1681,7 +1723,8 @@ PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *options);
         options.value property.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espInput(HttpConn *conn, cchar *field, cchar *options);
 
@@ -1691,7 +1734,8 @@ PUBLIC void espInput(HttpConn *conn, cchar *field, cchar *options);
     @param text Label text to display.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *options);
 
@@ -1710,7 +1754,8 @@ PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *options);
         espDropdown(conn, "priority", makeGrid("[0, 10, 100]"), 0)
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espDropdown(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *options);
 
@@ -1721,7 +1766,8 @@ PUBLIC void espDropdown(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *o
     @param address Mail recipient address link
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *options);
 
@@ -1731,7 +1777,8 @@ PUBLIC void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *options)
     @param progress Progress percentage (0-100) 
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espProgress(HttpConn *conn, cchar *progress, cchar *options);
 
@@ -1746,7 +1793,8 @@ PUBLIC void espProgress(HttpConn *conn, cchar *progress, cchar *options);
         espRadio(conn, "priority", "{ low: 0, med: 1, high: 2, }", NULL)
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choices, cchar *options);
 
@@ -1758,7 +1806,8 @@ PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choices, cchar *option
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg minified -- Set to "true" to select a minified (compressed) version of the script.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
     @internal
  */
 PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *options);
@@ -1770,23 +1819,13 @@ PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *options);
     @param conn Http connection object
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
 
-/**
-    Generate a security token.
-    @description Security tokens are used to help guard against CSRF threats.
-    This call will generate a security token for the page, and emit an HTML meta element for the security token.
-    The token will automatically be included whenever forms are submitted and the token is validated by the 
-    receiving Controller. Typically, forms will automatically generate the security token. Note that explicitly
-    calling this routine is not necessary unless a security token is required for non-form requests such as AJAX
-    requests. The #securityToken control should be called inside the &lt;head section of the web page.
-    @param conn Http connection object
-    @ingroup EspControl
-    @stability Evolving
- */
-PUBLIC void espSecurityToken(HttpConn *conn);
+//  MOB DOC
+PUBLIC void espScripts(HttpConn *conn, cchar *options);
 
 /**
     Render a stylesheet link
@@ -1795,7 +1834,8 @@ PUBLIC void espSecurityToken(HttpConn *conn);
     @param conn Http connection object
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
 
@@ -1836,7 +1876,8 @@ PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
     @arg styleRows Array of styles to use for the table body rows
     @arg title String Table title.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
 
@@ -1857,7 +1898,8 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
     @arg remote Set to "true" to invoke the selected pane via a background click.
     @arg toggle Set to "true" to show the selected pane and hide other panes.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *options);
 
@@ -1875,7 +1917,8 @@ PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *options);
     @arg rows Number number of text rows
     @arg password Boolean The data to display is a password and should be obfuscated.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void espText(HttpConn *conn, cchar *field, cchar *options);
 
@@ -1887,20 +1930,36 @@ PUBLIC void espText(HttpConn *conn, cchar *field, cchar *options);
           dynamically refresh the data. The tree data is typically an XML document.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
     @internal
  */
 PUBLIC void espTree(HttpConn *conn, EdiGrid *grid, cchar *options);
+#endif
+
+/**
+    Generate a security token.
+    @description Security tokens are used to help guard against CSRF threats.
+    This call will generate a security token for the page, and emit an HTML meta element for the security token.
+    The token will automatically be included whenever forms are submitted and the token is validated by the 
+    receiving Service. Typically, forms will automatically generate the security token. Note that explicitly
+    calling this routine is not necessary unless a security token is required for non-form requests such as AJAX
+    requests. The #securityToken control should be called inside the &lt;head section of the web page.
+    @param conn Http connection object
+    @ingroup EspControl
+    @stability Deprecated
+    @internal
+ */
+PUBLIC void espSecurityToken(HttpConn *conn);
 
 /***************************** Abbreviated Controls ***************************/
+#if DEPRECATED || 1
 /**
     Abbreviated ESP Controls.
     @description These controls do not take a HttpConn argument and determine the connection object from
         thread-local storage.
-    @stability Prototype
     @see espAlert
     @defgroup EspAbbrev EspAbbrev
-    @stability Evolving
+    @stability Deprecated
   */
 typedef struct EspAbbrev { int dummy; } EspAbbrev;
 
@@ -1912,7 +1971,7 @@ typedef struct EspAbbrev { int dummy; } EspAbbrev;
     updates. If this is not specifed, the connection to the server will be kept open. This permits the 
     server to "push" alerts to the console, but will consume a connection at the server for each client.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
     @internal
  */
 PUBLIC void alert(cchar *text, cchar *options);
@@ -1924,7 +1983,8 @@ PUBLIC void alert(cchar *text, cchar *options);
     @param uri URI link for the anchor
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void anchor(cchar *text, cchar *uri, cchar *options);
 
@@ -1936,7 +1996,8 @@ PUBLIC void anchor(cchar *text, cchar *uri, cchar *options);
     @param value Form input value to submit when the button is clicked
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void button(cchar *text, cchar *value, cchar *options);
 
@@ -1946,7 +2007,8 @@ PUBLIC void button(cchar *text, cchar *value, cchar *options);
     @param uri URI to invoke when the button is clicked.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *options);
 
@@ -1963,7 +2025,7 @@ PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *options);
         motionchart, areachart, intensitymap, imageareachart, barchart, imagebarchart, bioheatmap, columnchart, 
         linechart, imagelinechart, imagepiechart, scatterchart (and more)
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
     @internal
  */
 PUBLIC void chart(EdiGrid *grid, cchar *options);
@@ -1978,7 +2040,8 @@ PUBLIC void chart(EdiGrid *grid, cchar *options);
     @param checkedValue Value for which the checkbox will be checked.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *options);
 
@@ -1989,7 +2052,8 @@ PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *options);
     @param body HTML body to render
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void division(cchar *body, cchar *options);
 
@@ -2006,7 +2070,8 @@ PUBLIC void division(cchar *body, cchar *options);
         espDropdown(conn, "priority", makeGrid("[0, 10, 100]"), 0)
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
 
@@ -2014,7 +2079,8 @@ PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
     Signify the end of an HTML form. 
     @description This emits a HTML closing form tag.
     @ingroup EspControl
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void endform();
 
@@ -2028,7 +2094,8 @@ PUBLIC void endform();
         message is displayed. Default is 0.
     MOB - this default implies it is displayed for zero seconds
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void flash(cchar *kinds, cchar *options);
 
@@ -2049,7 +2116,8 @@ PUBLIC void flash(cchar *kinds, cchar *options);
         security token will always be generated unless options.insecure is defined to be true.
         Security tokens are used by ESP to mitigate cross site scripting errors.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void form(void *record, cchar *options);
 
@@ -2058,7 +2126,8 @@ PUBLIC void form(void *record, cchar *options);
     @param uri URI reference for the icon resource
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void icon(cchar *uri, cchar *options);
 
@@ -2067,7 +2136,8 @@ PUBLIC void icon(cchar *uri, cchar *options);
     @param uri URI reference for the image resource
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void image(cchar *uri, cchar *options);
 
@@ -2080,7 +2150,8 @@ PUBLIC void image(cchar *uri, cchar *options);
         options.value property.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void input(cchar *field, cchar *options);
 
@@ -2089,7 +2160,8 @@ PUBLIC void input(cchar *field, cchar *options);
     @param text Label text to display.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void label(cchar *text, cchar *options);
 
@@ -2099,7 +2171,8 @@ PUBLIC void label(cchar *text, cchar *options);
     @param address Mail recipient address link
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void mail(cchar *name, cchar *address, cchar *options);
 
@@ -2108,7 +2181,8 @@ PUBLIC void mail(cchar *name, cchar *address, cchar *options);
     @param progress Progress percentage (0-100) 
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void progress(cchar *progress, cchar *options);
 
@@ -2122,7 +2196,8 @@ PUBLIC void progress(cchar *progress, cchar *options);
         radio("priority", "{ low: 0, med: 1, high: 2, }", NULL)
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void radio(cchar *field, void *choices, cchar *options);
 
@@ -2133,7 +2208,7 @@ PUBLIC void radio(cchar *field, void *choices, cchar *options);
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg minified Set to "ture" to select a minified (compressed) version of the script.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
     @internal
  */
 PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
@@ -2144,22 +2219,13 @@ PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
         URI formats.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void script(cchar *uri, cchar *options);
 
-/**
-    Generate a security token.
-    @description Security tokens are used to help guard against CSRF threats.
-    This call will generate a security token for the page and emit an HTML meta element for the security token.
-    The token will automatically be included whenever forms are submitted and the token be validated by the 
-    receiving Controller. Forms will normally automatically generate the security token and that explicitly
-    calling this routine is not required unless a security token is required for non-form requests such as AJAX
-    requests. The #securityToken control should be called inside the &lt;head section of the web page.
-    @ingroup EspAbbrev
-    @stability Evolving
- */
-PUBLIC void securityToken();
+//  MOB DOC
+PUBLIC void scripts(cchar *options);
 
 /**
     Render a stylesheet link
@@ -2167,7 +2233,8 @@ PUBLIC void securityToken();
         See #httpLink for a list of possible URI formats.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void stylesheet(cchar *uri, cchar *options);
 
@@ -2207,7 +2274,8 @@ PUBLIC void stylesheet(cchar *uri, cchar *options);
     @arg styleRows Array of styles to use for the table body rows
     @arg title String Table title.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
 */
 PUBLIC void table(EdiGrid *grid, cchar *options);
 
@@ -2228,7 +2296,8 @@ PUBLIC void table(EdiGrid *grid, cchar *options);
     @arg remote Set to "true" to invoke the selected pane via a background click.
     @arg toggle Set to "true" to show the selected pane and hide other panes.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void tabs(EdiGrid *grid, cchar *options);
 
@@ -2245,21 +2314,25 @@ PUBLIC void tabs(EdiGrid *grid, cchar *options);
     @arg rows Number number of text rows
     @arg password Boolean The data to display is a password and should be obfuscated.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC void text(cchar *field, cchar *options);
 
+#endif
+
 /**
-    Render a tree control. 
-    @description The tree control can display static or dynamic tree data.
-    @param grid Optional initial data for the control. The data option may be used with the refresh option to 
-          dynamically refresh the data. The tree data is typically an XML document.
-    @param options Optional extra options. See \l EspControl \el for a list of the standard options.
+    Generate a security token.
+    @description Security tokens are used to help guard against CSRF threats.
+    This call will generate a security token for the page and emit an HTML meta element for the security token.
+    The token will automatically be included whenever forms are submitted and the token be validated by the 
+    receiving Service. Forms will normally automatically generate the security token and that explicitly
+    calling this routine is not required unless a security token is required for non-form requests such as AJAX
+    requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @ingroup EspAbbrev
     @stability Evolving
-    @internal
  */
-PUBLIC void tree(EdiGrid *grid, cchar *options);
+PUBLIC void securityToken();
 
 /******************************* Abbreviated API ******************************/
 
@@ -2335,7 +2408,7 @@ PUBLIC void flush();
 
 /**
     Get a list of column names.
-    @param rec Database record. If set to NULL, the current database record defined via #form() is used.
+    @param rec Database record. 
     @return An MprList of column names in the given table. If there is no record defined, an empty list is returned.
     @ingroup EspAbbrev
     @stability Evolving
@@ -2353,7 +2426,7 @@ PUBLIC cchar *getCookies();
 
 /**
     Get the connection object
-    @description Before a view or controller is run, the current connection object for the request is saved in thread
+    @description Before a view or service is run, the current connection object for the request is saved in thread
     local data. Most EspControl APIs take an HttpConn object as an argument.
     @return HttpConn connection instance object.
     @ingroup EspAbbrev
@@ -2409,19 +2482,20 @@ PUBLIC cchar *getDir();
 /**
     Get a field from the current database record
     @description The current grid is defined via #setRec
+    @param rec Database record. 
     @param field Field name to return
     @return String value for "field" in the current record.
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC cchar *getField(cchar *field);
+PUBLIC cchar *getField(EdiRec *rec, cchar *field);
 
 /**
     Get the current database grid
     @description The current grid is defined via #setGrid
     @return EdiGrid instance
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
     @internal
  */
 PUBLIC EdiGrid *getGrid();
@@ -2459,7 +2533,8 @@ PUBLIC cchar *getQuery();
     @description The current record is defined via #setRec
     @return EdiRec instance
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC EdiRec *getRec();
 
@@ -2484,12 +2559,12 @@ PUBLIC cchar *getReferrer();
  */
 PUBLIC cchar *getSessionVar(cchar *name);
 
-PUBLIC cchar *getSession();
-#if MOB || NEW || 1
+//  MOB - DOC
+PUBLIC cchar *getSessionID();
+//  MOB - alias to getSessionVar
 PUBLIC cchar *session(cchar *name);
-#endif
 
-//  MOB - should this be called top?
+//  MOB - Better name: getAppUri
 /**
     Get a relative URI to the top of the application.
     @description This will return an absolute URI for the top of the application. This will be "/" if there is no
@@ -2526,7 +2601,8 @@ PUBLIC cchar *getUri();
     @description The current grid is defined via #setRec
     @return "true" if a current grid has been defined
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC bool hasGrid();
 
@@ -2536,7 +2612,8 @@ PUBLIC bool hasGrid();
         valid "id" field.
     @return "true" if a current record with a valid "id" is defined.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC bool hasRec();
 
@@ -2639,6 +2716,7 @@ PUBLIC void notice(cchar *fmt, ...);
  */
 PUBLIC cchar *param(cchar *name);
 
+//  MOB - too close to param()
 /**
     Get the request parameter hash table
     @description This call gets the params hash table for the current request.
@@ -2651,6 +2729,7 @@ PUBLIC cchar *param(cchar *name);
  */
 PUBLIC MprHash *params();
 
+#if UNUSED && RETHINK
 /**
     Match the request parameter against a field of the same name in the current record.
     @return True if the param matches the field
@@ -2658,16 +2737,18 @@ PUBLIC MprHash *params();
     @stability Prototype
  */
 PUBLIC bool pmatch(cchar *key);
+#endif
 
 /**
     Read the identified record 
-    @description Read the record identified by the request params("id") from the nominated table.
+    @description Read the record identified by the request param("id") from the nominated table.
     @param tableName Database table name
+    @param key Key value of the record to remove 
     @return The identified record. Returns NULL if the table or record cannot be found.
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC EdiRec *readRec(cchar *tableName);
+PUBLIC EdiRec *readRec(cchar *tableName, cchar *key);
 
 /**
     Read matching records
@@ -2708,7 +2789,6 @@ PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation
  */
 PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key);
 
-//  MOB - inconsistent vs espReadAllRecs
 /**
     Read all the records in table from the database
     @description This reads a table and returns a grid containing the table data.
@@ -2747,6 +2827,14 @@ PUBLIC void redirect(cchar *target);
     @stability Evolving
  */
 PUBLIC void redirectBack();
+
+/** 
+    Remove a cookie
+    @param name Cookie name
+    @ingroup EspAbbrev
+    @stability Prototype
+*/
+PUBLIC void removeCookie(cchar *name);
 
 /**
     Remove a record from a database table
@@ -2803,6 +2891,10 @@ PUBLIC void renderError(int status, cchar *fmt, ...);
  */
 PUBLIC ssize renderFile(cchar *path);
 
+//  MOB - DOC (angular format)
+PUBLIC ssize renderRec(EdiRec *rec);
+PUBLIC ssize renderGrid(EdiGrid *grid);
+
 /**
     Render a formatted string after HTML escaping
     @description Render a formatted string of data and then HTML escape. Data packets will be created
@@ -2814,6 +2906,9 @@ PUBLIC ssize renderFile(cchar *path);
     @stability Evolving
  */
 PUBLIC ssize renderSafe(cchar *fmt, ...);
+
+//MOB DOC
+PUBLIC void renderResult(int status);
 
 /**
     Render a string of data to the client
@@ -2839,7 +2934,7 @@ PUBLIC ssize renderVar(cchar *name);
 
 /**
     Render a view template to the client
-    @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
+    @description Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.
     @param view view name
     @ingroup EspAbbrev
     @stability Evolving
@@ -2898,8 +2993,7 @@ PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value);
         a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: updateFields(rec, hash("{ name: '%s', address: '%s' }", name, address))
-        The record will not be written
-        to the database. To write to the database, use #ediUpdateRec.
+        The record will not be written to the database. To write to the database, use #ediUpdateRec.
     @param rec Record to update
     @param data Hash of field names and values to use for the update
     @return The record instance if successful, otherwise NULL.
@@ -2907,6 +3001,9 @@ PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value);
     @stability Evolving
  */
 PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *data);
+
+//  MOB - rename setFeedback
+//  What about sendError, sendInform, send...
 
 /**
     Set a flash notification message.
@@ -2925,7 +3022,7 @@ PUBLIC void setFlash(cchar *kind, cchar *fmt, ...);
     Set the current database grid
     @return The grid instance. This permits chaining.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
     @internal
  */
 PUBLIC EdiGrid *setGrid(EdiGrid *grid);
@@ -2969,7 +3066,8 @@ PUBLIC void setParam(cchar *name, cchar *value);
         checkbox and dropdown()
     @return The grid instance. This permits chaining.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Deprecated
+    @internal
  */
 PUBLIC EdiRec *setRec(EdiRec *rec);
 
@@ -2981,6 +3079,8 @@ PUBLIC EdiRec *setRec(EdiRec *rec);
     @stability Evolving
  */
 PUBLIC void setSessionVar(cchar *name, cchar *value);
+
+//  MOB - removeSessionVar(name);
 
 /**
     Set a Http response status.
@@ -3077,10 +3177,10 @@ PUBLIC bool updateRec(EdiRec *rec);
         "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
         top-level relative links.
         \n\n
-        If the target is a string that begins with "{AT}" it will be interpreted as a controller/action pair of the 
-        form "{AT}Controller/action". If the "controller/" portion is absent, the current controller is used. If 
+        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the 
+        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If 
         the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
-        of the current controller.
+        of the current service.
         \n\n
         If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
         If the target is a relative URI path, it is appended to the current request URI path.  
@@ -3088,7 +3188,7 @@ PUBLIC bool updateRec(EdiRec *rec);
         If the target is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
         query. If these component properties are supplied, these will be combined to create a URI.
         \n\n
-        If the target specifies either a controller/action or a JSON set of options, The URI will be created according 
+        If the target specifies either a service/action or a JSON set of options, The URI will be created according 
         to the route URI template. The template may be explicitly specified
         via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
         name will be used. If these don't result in a usable route, the "default" route will be used. 
@@ -3101,29 +3201,29 @@ PUBLIC bool updateRec(EdiRec *rec);
             <li>path String URI path portion</li>
             <li>reference String URI path reference. Does not include "#"</li>
             <li>query String URI query parameters. Does not include "?"</li>
-            <li>controller String Controller name if using a Controller-based route. This can also be specified via
+            <li>service String Service name if using a Service-based route. This can also be specified via
                 the action option.</li>
-            <li>action String Action to invoke. This can be a URI string or a Controller action of the form
-                {AT}Controller/action.</li>
+            <li>action String Action to invoke. This can be a URI string or a Service action of the form
+                {AT}Service/action.</li>
             <li>route String Route name to use for the URI template</li>
         </ul>
     @return A normalized, server-local Uri string.
     @example uri("http://example.com/index.html", 0); \n
     uri("/path/to/index.html", 0); \n
     uri("../images/splash.png", 0); \n
-    uri("~/static/images/splash.png", 0); \n
-    uri("${app}/static/images/splash.png", 0); \n
-    uri("@controller/checkout", 0); \n
-    uri("@controller/") \n
+    uri("~/client/images/splash.png", 0); \n
+    uri("${app}/client/images/splash.png", 0); \n
+    uri("@service/checkout", 0); \n
+    uri("@service/") \n
     uri("@init") \n
     uri("@") \n
     uri("{ action: '@post/create' }", 0); \n
     uri("{ action: 'checkout' }", 0); \n
-    uri("{ action: 'logout', controller: 'admin' }", 0); \n
+    uri("{ action: 'logout', service: 'admin' }", 0); \n
     uri("{ action: 'admin/logout'", 0); \n
     uri("{ product: 'candy', quantity: '10', template: '/cart/${product}/${quantity}' }", 0); \n
     uri("{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0); \n
-    uri("{ template: '~/static/images/${theme}/background.jpg', theme: 'blue' }", 0); 
+    uri("{ template: '~/client/images/${theme}/background.jpg', theme: 'blue' }", 0); 
     @ingroup EspAbbrev
     @stability Evolving
  */

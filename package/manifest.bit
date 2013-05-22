@@ -213,7 +213,13 @@ Bit.load({
                 enable:     "bit.platform.os == 'windows' && !bit.settings.static",
 
             },{
-                from:       ['src/esp/esp-www'],
+                from:       ['src/esp/esp-legacy'],
+                to:         '${abin}/',
+                set:        'esp',
+                packs:      'esp',
+
+            },{
+                from:       ['src/esp/esp-ng'],
                 to:         '${abin}/',
                 set:        'esp',
                 packs:      'esp',

@@ -13586,6 +13586,26 @@ recurse:
 }
 
 
+PUBLIC char *mprListToString(MprList *list, cchar *join)
+{
+    MprBuf  *buf;
+    cchar   *s;
+    int     next;
+
+    if (!join) {
+        join = ",";
+    }
+    buf = mprCreateBuf(0, 0);
+    for (ITERATE_ITEMS(list, s, next)) {
+        mprPutStringToBuf(buf, s);
+        mprPutStringToBuf(buf, join);
+    }
+    mprAdjustBufEnd(buf, -1);
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
+}
+
+
 /*
     @copy   default
 
@@ -14615,6 +14635,7 @@ static char *standardMimeTypes[] = {
     "jpg",   "image/jpeg",
     "js",    "application/javascript",
     "json",  "application/json",
+    "less",  "text/css",
     "mp3",   "audio/mpeg",
     "mpg",   "video/mpeg",
     "mpeg",  "video/mpeg",

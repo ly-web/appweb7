@@ -94,18 +94,14 @@
             <p>Ejscript offers three possible hosting paradigms:</p>
             <ul>
                 <li>CGI</li>
-                <li>FastCGI</li>
                 <li>Custom in-memory module</li>
             </ul>
             <p>The <a href="http://en.wikipedia.org/wiki/Common_Gateway_Interface">Common Gateway Interface</a> (CGI)
             is a standard protocol for hosting applications in a web server. CGI offers good stability but low
             performance.</p>
-            <p><a href="http://www.fastcgi.com/">FastCGI</a> is a replacement for CGI. It provides higher performance
-            than CGI by supporting multiple Http requests per FastCGI instance. It also offers improved stability by
-            isolating application instances.</p>
             <p>Custom in-memory modules offer the highest performance. Ejscript provides modules for <a href=
             "http://www.appwebserver.org/">Appweb</a> and <a href="http://www.apache.org/">Apache</a>. The custom
-            module, <b>mod_ejs</b>, provides excellent performance but less application isolation than FastCGI.</p>
+            module, <b>mod_ejs</b>, provides excellent performance but less application isolation than CGI.</p>
             <p>When using a custom in-memory module, each Ejscript application will typically define a URL alias using
             the EjsAppAlias directive. For example:</p>
             <pre>

@@ -1965,6 +1965,7 @@ PUBLIC ssize sncopy(char *dest, ssize destMax, cchar *src, ssize len);
  */
 PUBLIC bool snumber(cchar *s);
 
+//  MOB DEPRECATE and call title case. stitle()
 /**
     Create a Pascal case version of the string
     @description Copy a string into a newly allocated block and make the first character upper case
@@ -3574,6 +3575,9 @@ PUBLIC int mprPushItem(MprList *list, cvoid *item);
 #define ITERATE_ITEMS(list, item, next) next = 0, item = 0; list && (item = mprGetNextItem(list, &next)) != 0; 
 #define ITERATE_STABLE_ITEMS(list, item, next) next = 0, item = 0; list && (item = mprGetNextStableItem(list, &next)) != 0; 
 #define mprGetListLength(lp) ((lp) ? (lp)->length : 0)
+
+//  MOB DOC
+PUBLIC char *mprListToString(MprList *list, cchar *join);
 
 /********************************** Logging ***********************************/
 /**

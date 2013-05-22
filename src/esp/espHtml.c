@@ -24,6 +24,16 @@ typedef struct EspScript {
     int     flags;                              /* Conditional generation flags */
 } EspScript;
 
+static EspScript angularScripts[] = {
+    { "/js/html5shiv",           0,              SCRIPT_IE },
+    { "/lib/angular",            0,              0 },
+    { "/lib/angular-resource",   0,              0 },
+    { "/lib/ui-bootstrap-tpls",  0,              0 },
+    { "/lib/less",               0,              0 },
+    { "/app",                    0,              0,},
+    { 0,                         0,              0 },
+};
+
 static EspScript defaultScripts[] = {
     { "/js/jquery",              0,              0 },
     { "/js/jquery.tablesorter",  "tablesorter",  0 },
@@ -45,135 +55,44 @@ static char *defaultCss[] = {
     0,
 };
 
-#if MOB
-    - Which internal options need to have data- appended and then passed to client.
-
-    Principles
-        - All unknown options are passed through to the client
-        - Internal options are filtered or mapped to data-*
-        - Remote only takes a "true" value
-
-    - Support flash as modal, transparent box
-    - Support "feedback" transparent overlay
-
-    Kinds of click requests:
-        - Click   (remote: true|false)  data-click-*
-        - Refresh                       data-refresh-*
-        - Both take
-            URI:        data-click
-            Method:     data-click-method
-            Params:     Data to pass to Uri construction. Or is this just general options.
-                            (Should not pass all options as names could clash:
-                                 scheme, host, port, path, ref, query
-                                 route, action, controller, uri, template,
-            KeyFormat   How to apply keys: "params" | "path" | "query"
-            keys        Set of keys to pass with the request
-
-    - Action/Controller are they needed?
-        => But they must be needed for click|refresh
-#endif
-
-/*
-    MOB - must document styles and themes with "esp" prefix
-    MOB - document the various click, refresh, remote events
-    MOB - How is data for click, remote, refresh etc handled
-    MOB - which of these should be data-*
-    MOB - could make these pairs and map from one to the other
-//  MOB - should use "apply" or "data-apply"
-*/
 static char *internalOptions[] = {
-    "action",                       /* Controller/Action to invoke */
+    "action",                       /* Service/Action to invoke */
     "cell",                         /* table(): If set, table clicks apply to the cell and not to the row */
-
-//  MOB data-click
     "click",                        /* general: URI to invoke if the control is clicked */
-
     "columns",                      /* table(): Column options */
-    "controller",                   /* general: Controller to use for click events */
+    "controller",                   /* general: Service to use for click events */
     "escape",                       /* general: Html escape the data */
     "feedback",                     /* general: User feedback overlay after a clickable event */
-//  MOB - left aligned field seem to not be used
-"field",
-
-//  MOB - not implemented. Change to format
+    "field",
     "formatter",                    /* general: Printf style format string to apply to data */
-
     "header",                       /* table(): Column options header */
     "hidden",                       /* text(): Field should be hidden */
     "hideErrors",                   /* form(): Hide record validation errors */
     "insecure",                     /* form(): Don't generate a CSRF security token */
-
-//  MOB - rename keys
     "key",                          /* general: key property/value data to provide for clickable events */
-//  MOB - not implemented yet
     "keyFormat",                    /* General: How keys are handled for click events: "params" | "path" | "query" */
-"kind",
+    "kind",
     "minified",                     /* script(): Use minified script variants */
     "name",                         /* table(): Column options name */
-"params",                           /* general: Parms to pass on click events */
-"pass",
+    "params",                       /* general: Parms to pass on click events */
+    "pass",
     "password",                     /* text(): Text input is a password */
     "pivot",                        /* table(): Pivot the table data */
     "remote",                       /* general: Set to true to make click event operate in the background */
-"retain",
+    "retain",
     "securityToken",                /* form(): Name of security token to use */
     "showHeader",                   /* table(): Show table column names header  */
     "showId",                       /* table(): Show the ID column */
-
     "sort",                         /* table(): Column to sort rows by */
     "sortOrder",                    /* table(): Row sort order */
     "styleCells",                   /* table(): Styles to use for table cells */
     "styleColumns",                 /* table(): Styles to use for table columns */
     "styleRows",                    /* table(): Styles to use for table rows */
     "title",                        /* table(): Table title to display */
-//  MOB - is data-toggle
     "toggle",                       /* tabs(): Toggle tabbed panes */
     "value",                        /* general: Value to use instead of record-bound data */
     0
 };
-
-#if DOC_ONLY
-//  MOB - what to do with these?
-static char *htmlOptions[] = {
-    "background",
-    "class",
-    "color",
-    "cols",
-    "rows",
-    "id",
-    "height",
-    "rel",
-    "size",
-    "width",
-    0
-};
-
-//  MOB - what are thse
-//  MOB -check against jquery.esp.js
-//  MOB - UNUSED
-static char *dataOptions[] = {
-    //  MOB - Comment each one 
-    "data-esp-apply",
-    "data-esp-click",
-    "data-esp-click-method",
-    "data-esp-click-params",
-    "data-esp-confirm",
-//  MOB - what is this "edit"?
-    "data-esp-edit",
-//  MOB - jquery uses esp-pptions
-    "data-esp-effects",
-    "data-esp-method",
-    "data-esp-modal",
-    "data-esp-period",
-    "data-esp-pivot",
-    "data-esp-refresh",
-    "data-esp-remote",
-    "data-esp-remote-method",
-    "data-esp-sort",
-    "data-esp-sort-order",
-    0
-};
-#endif
 
 static void emitFormErrors(HttpConn *conn, EdiRec *record, MprHash *options);
 static cchar *escapeValue(cchar *value, MprHash *options);
@@ -184,7 +103,6 @@ static void textInner(HttpConn *conn, cchar *field, MprHash *options);
 
 /************************************* Code ***********************************/
 
-//  MOB - what is this really doing?
 PUBLIC void espAlert(HttpConn *conn, cchar *text, cchar *optionString)
 {
     MprHash     *options;
@@ -192,7 +110,6 @@ PUBLIC void espAlert(HttpConn *conn, cchar *text, cchar *optionString)
     options = httpGetOptions(optionString);
     httpInsertOption(options, "class", ESTYLE("alert"));
     text = escapeValue(text, options);
-    //  MOB - should be span
     espRender(conn, "<div%s>%s</div>", map(conn, options), text);
 }
 
@@ -274,7 +191,6 @@ PUBLIC void espFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
     MprKey      *kp;
     cchar       *msg;
    
-    //  MOB -- need APIs to get messages into flash
     req = conn->data;
     options = httpGetOptions(optionString);
     if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
@@ -323,7 +239,6 @@ PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *optionString)
         action = (recid) ? "@update" : "@create";
     }
     uri = httpLink(conn, action, NULL);
-    //  MOB - refactor
     if (smatch(httpGetOption(options, "remote", 0), "true")) {
         espRender(conn, "<form method='%s' " EDATA("remote") "='%s'%s >\r\n", method, uri, map(conn, options));
     } else {
@@ -352,7 +267,7 @@ PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *optionString)
         uri = "data:image/x-icon;,";
     } else if (*uri == 0) {
         req = conn->data;
-        uri = sjoin("~/", mprGetPathBase(req->eroute->staticDir), "/images/favicon.ico", NULL);
+        uri = sjoin("~/", mprGetPathBase(req->eroute->clientDir), "/images/favicon.ico", NULL);
     }
     espRender(conn, "<link href='%s' rel='shortcut icon'%s />", httpLink(conn, uri, NULL), map(conn, options));
 }
@@ -384,17 +299,10 @@ PUBLIC void espInput(HttpConn *conn, cchar *fieldName, cchar *optionString)
         espRadio(conn, fieldName, "{off: 0, on: 1}", optionString);
         break;
     case EDI_TYPE_DATE:
-        /* MOB - could do calendar control */
         espText(conn, fieldName, optionString);
         break;
     case EDI_TYPE_FLOAT:
     case EDI_TYPE_INT:
-#if FUTURE
-        if (flags & EDI_FOREIGN && send(fieldName, "Id")) {
-            espDropdown(conn, fieldName, EdiGrid *choices, optionString);
-            break;
-        }
-#endif
         /* Fall through */
     case EDI_TYPE_STRING:
         espText(conn, fieldName, optionString);
@@ -479,7 +387,6 @@ PUBLIC void espProgress(HttpConn *conn, cchar *percent, cchar *optionString)
    
     options = httpGetOptions(optionString);
     httpAddOption(options, EDATA("progress"), percent);
-    //  MOB - should be span
     espRender(conn, "<div class='" ESTYLE("progress") "'>\r\n");
     espRender(conn, "    <div class='" ESTYLE("progress-inner") "'%s>%s %%</div>\r\n</div>", map(conn, options), percent);
 }
@@ -487,7 +394,7 @@ PUBLIC void espProgress(HttpConn *conn, cchar *percent, cchar *optionString)
 
 /*
     radio("priority", "{low: 0, med: 1, high: 2}", NULL)
-    radio("priority", "{low: 0, med: 1, high: 2}", "{value:'2'}")  //  MOB - without a record
+    radio("priority", "{low: 0, med: 1, high: 2}", "{value:'2'}")
  */
 PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choicesString, cchar *optionsString)
 {
@@ -531,7 +438,6 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
         espRender(conn, "<script src='%s' type='text/javascript'></script>", httpLink(conn, uri, NULL));
     } else {
         req = conn->data;
-        //  MOB - convenience function for this
         minified = smatch(httpGetOption(options, "minified", 0), "true");
         indent = "";
         for (sp = defaultScripts; sp->name; sp++) {
@@ -541,7 +447,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
             if (sp->flags & SCRIPT_IE) {
                 espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
             }
-            path = sjoin("~/", mprGetPathBase(req->eroute->staticDir), sp->name, minified ? ".min.js" : ".js", NULL);
+            path = sjoin("~/", mprGetPathBase(req->eroute->clientDir), sp->name, minified ? ".min.js" : ".js", NULL);
             uri = httpLink(conn, path, NULL);
             newline = sp[1].name ? "\r\n" :  "";
             espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
@@ -553,6 +459,56 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
     }
 }
 
+
+PUBLIC void espScripts(HttpConn *conn, cchar *optionString)
+{
+    EspReq      *req;
+    MprHash     *options;
+    MprList     *files;
+    MprDirEntry *dp;
+    EspScript   *sp;
+    cchar       *indent, *newline, *path, *uri;
+    bool        minified;
+    int         next;
+   
+    options = httpGetOptions(optionString);
+    req = conn->data;
+    minified = smatch(httpGetOption(options, "minified", 0), "true");
+    indent = "";
+    for (sp = angularScripts; sp->name; sp++) {
+        if (sp->flags & SCRIPT_IE) {
+            espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
+        }
+        path = sjoin(sp->name, minified ? ".min.js" : ".js", NULL);
+        uri = httpLink(conn, path, NULL);
+        newline = sp[1].name ? "\r\n" :  "";
+        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
+        if (sp->flags & SCRIPT_IE) {
+            espRender(conn, "%s<![endif]-->\n", indent);
+        }
+        indent = "    ";
+    }
+    //  MOB REFACTOR
+    //  MOB factoriesDir
+    files = mprGetPathFiles(mprJoinPath(req->eroute->clientDir, "factories"), MPR_PATH_REL);
+    for (ITERATE_ITEMS(files, dp, next)) {
+        path = mprGetRelPath(dp->name, req->eroute->clientDir);
+        uri = httpLink(conn, path, NULL);
+        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
+    }
+    files = mprGetPathFiles(req->eroute->modelsDir, MPR_PATH_REL);
+    for (ITERATE_ITEMS(files, dp, next)) {
+        path = mprGetRelPath(dp->name, req->eroute->clientDir);
+        uri = httpLink(conn, path, NULL);
+        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
+    }
+    files = mprGetPathFiles(req->eroute->controllersDir, MPR_PATH_REL);
+    for (ITERATE_ITEMS(files, dp, next)) {
+        path = mprGetRelPath(dp->name, req->eroute->clientDir);
+        uri = httpLink(conn, path, NULL);
+        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
+    }
+}
 
 /*
     Get a security token. This will use and existing token or create if not present. It will store in the session store.
@@ -589,7 +545,6 @@ PUBLIC void espSecurityToken(HttpConn *conn)
      */
     securityToken = espGetSecurityToken(conn);
     espAddHeaderString(conn, "X-Security-Token", securityToken);
-    //  MOB - just until jquery.esp.js is updated to not require this
     espRender(conn, "<meta name='SecurityTokenName' content='%s' />\r\n", ESP_SECURITY_TOKEN_NAME);
     espRender(conn, "    <meta name='%s' content='%s' />", ESP_SECURITY_TOKEN_NAME, securityToken);
 }
@@ -618,31 +573,13 @@ PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *optionString)
         less = smatch(httpGetOption(options, "type", "css"), "less");
         up = less ? defaultLess : defaultCss;
         for (; *up; up++) {
-            uri = httpLink(conn, sjoin("~/", mprGetPathBase(req->eroute->staticDir), *up, NULL), NULL);
+            uri = httpLink(conn, sjoin("~/", mprGetPathBase(req->eroute->clientDir), *up, NULL), NULL);
             newline = up[1] ? "\r\n" :  "";
             espRender(conn, "%s<link rel='stylesheet%s' type='text/css' href='%s' />%s", indent, less ? "/less" : "", uri, newline);
             indent = "    ";
         }
     }
 }
-
-
-#if UNUSED
-static int findCol(MprHash *columns, cchar *columnName)
-{
-    char    key[8];
-    int     i;
-
-    len = mprGetHashLength(columns);
-    for (i = 0; i < len; i++) {
-        itosbuf(key, sizeof(key), i);
-        if (mprLookupKey(columns, key)) {
-            return i;
-        }
-    }
-    return MPR_ERR_CANT_FIND;
-}
-#endif
 
 
 /*
@@ -687,7 +624,6 @@ static void filterCols(EdiGrid *grid, MprHash *options, MprHash *colOptions)
             location[c] = c;
         }
         for (c = 0; c < ncols; c++) {
-            //  MOB - what should fnum be initialized to for outside the lower loop
             fnum = c;
             for (r = 0; r < grid->nrecords; r++) {
                 rec = grid->records[r];
@@ -823,7 +759,6 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
     /*
         Table header
      */
-//  MOB -- debug if pivot
     if (httpOption(options, "showHeader", "true", 1)) {
         espRender(conn, "    <thead>\r\n");
         if ((title = httpGetOption(options, "title", 0)) != 0) {
@@ -845,8 +780,6 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
 
     /*
         Table body data
-        TODO OPT
-        MOB implement rowOptions: edit, key, params, remote
      */
     for (r = 0; r < grid->nrecords; r++) {
         rec = grid->records[r];
@@ -855,7 +788,7 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
         for (c = 0; c < ncols; c++) {
             fp = &rec->fields[c];
             thisCol = mprLookupKey(colOptions, itosbuf(index, sizeof(index), r, 10));
-            if (httpGetOption(thisCol, "align", 0) == 0) { // MOB OPT
+            if (httpGetOption(thisCol, "align", 0) == 0) {
                 if (fp->type == EDI_TYPE_INT || fp->type == EDI_TYPE_FLOAT) {
                     if (!thisCol) {
                         thisCol = mprCreateHash(0, 0);
@@ -868,8 +801,6 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
                     Render column name
                  */
                 name = httpGetOption(thisCol, "header", spascal(rec->id));
-                //  MOB - need httpGetOptionAsGrid, httpGetOptionAsString
-                //  MOB - converting back via hashToString is very inefficient. Perhaps inline Dropdown, Radio and checkbox here
                 if (httpOption(options, "edit", "true", 0) && httpOption(thisCol, "edit", "true", 1)) {
                     espRender(conn, "            <td%s>%s</td><td>", map(conn, thisCol), name);
                     if ((dropdown = httpGetOption(thisCol, "dropdown", 0)) != 0) {
@@ -877,7 +808,6 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
                     } else if ((radio = httpGetOption(thisCol, "radio", 0)) != 0) {
                         espRadio(conn, fp->name, hashToString(radio, 0), 0);
                     } else if ((checkbox = httpGetOption(thisCol, "checkbox", 0)) != 0) {
-                        /* MOB - but need to type check. What if checkbox is not a string? */
                         espCheckbox(conn, fp->name, checkbox, 0);
                     } else {
                         espInput(conn, fp->name, 0);
@@ -924,7 +854,6 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
     }
     colOptions = httpGetOptionHash(options, "columns");
 
-    //  MOB - this modifies the grid. Need to ensure it is not a database grid.
     filterCols(grid, options, colOptions);
 
     if (httpOption(options, "pivot", "true", 0) != 0) {
@@ -935,8 +864,6 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
     ncols = mprGetListLength(cols);
     rowOptions = mprCreateHash(0, 0);
 
-    //  MOB - convenience for this
-    //  MOB - what other elements apply to rows - verify these
     httpSetOption(rowOptions, EDATA("click"), httpGetOption(options, EDATA("click"), 0));
     httpRemoveOption(options, EDATA("click"));
     httpSetOption(rowOptions, EDATA("remote"), httpGetOption(options, EDATA("remote"), 0));
@@ -973,8 +900,6 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
 
     /*
         Table body data
-        TODO OPT
-        MOB implement rowOptions: edit, key, params, remote
      */
     for (r = 0; r < grid->nrecords; r++) {
         rec = grid->records[r];
@@ -984,7 +909,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
             fp = &rec->fields[c];
             thisCol = mprLookupKey(colOptions, itosbuf(index, sizeof(index), c, 10));
 
-            if (httpGetOption(thisCol, "align", 0) == 0) { // MOB OPT
+            if (httpGetOption(thisCol, "align", 0) == 0) {
                 if (fp->type == EDI_TYPE_INT || fp->type == EDI_TYPE_FLOAT) {
                     if (!thisCol) {
                         thisCol = mprCreateHash(0, 0);
@@ -1017,25 +942,18 @@ PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *optionString)
     int         r, toggle;
 
     options = httpGetOptions(optionString);
-
-    //  MOB - what is this?
     httpInsertOption(options, "class", ESTYLE("tabs"));
 
-    //  MOB - what is this?
     attr = httpGetOption(options, "toggle", EDATA("click"));
     if ((toggle = smatch(attr, "true")) != 0) {
         attr = EDATA("toggle");
     }
-    //  MOB - what about selected
-    //  MOB - what about other per-tab options
-
     espRender(conn, "<div%s>\r\n    <ul>\r\n", map(conn, options));
     for (r = 0; r < grid->nrecords; r++) {
         rec = grid->records[r];
         name = ediGetFieldValue(rec, "name");
         uri = ediGetFieldValue(rec, "uri");
         uri = toggle ? uri : httpLink(conn, uri, 0);
-        //  MOB - but users need to be able to provide their own class via options
         if ((r == 0 && toggle) || smatch(uri, conn->rx->pathInfo)) {
             klass = smatch(uri, conn->rx->pathInfo) ? " class='esp-selected'" : "";
         } else {
@@ -1077,34 +995,27 @@ PUBLIC void espText(HttpConn *conn, cchar *field, cchar *optionString)
 }
 
 
-PUBLIC void espTree(HttpConn *conn, EdiGrid *grid, cchar *optionString)
-{
-    //  MOB - implement
-}
-
-//  MOB - need control to render a partial view
-
 /**************************************** Support *************************************/ 
 
 static void emitFormErrors(HttpConn *conn, EdiRec *rec, MprHash *options)
 {
-    MprList         *errors;
-    MprKeyValue     *error;
-    int             count, next;
+    MprHash         *errors;
+    MprKey          *field;
+    char            *msg;
+    int             count;
    
     if (!rec->errors || httpGetOption(options, "hideErrors", 0)) {
         return;
     }
     errors = ediGetRecErrors(rec);
     if (errors) {
-        count = mprGetListLength(errors);
-        //  MOB - should this be section?
+        count = mprGetHashLength(errors);
         espRender(conn, "<div class='" ESTYLE("form-error") "'><h2>The %s has %s it being saved.</h2>\r\n",
             spascal(rec->tableName), count <= 1 ? "an error that prevents" : "errors that prevent");
         espRender(conn, "    <p>There were problems with the following fields:</p>\r\n");
         espRender(conn, "    <ul>\r\n");
-        for (next = 0; (error = mprGetNextItem(errors, &next)) != 0; ) {
-            espRender(conn, "        <li>%s %s</li>\r\n", error->key, error->value);
+        for (ITERATE_KEY_DATA(errors, field, msg)) {
+            espRender(conn, "        <li>%s %s</li>\r\n", field->key, msg);
         }
         espRender(conn, "    </ul>\r\n");
         espRender(conn, "</div>");
@@ -1131,9 +1042,8 @@ static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
 {
     EspReq      *req;
     EdiRec      *record;
-    MprKeyValue *error;
-    cchar       *value;
-    int         next;
+    MprKey      *field;
+    cchar       *value, *msg;
 
     req = conn->data;
     record = req->record;
@@ -1142,8 +1052,8 @@ static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
     if (record) {
         value = ediGetFieldValue(record, fieldName);
         if (record->errors) {
-            for (next = 0; (error = mprGetNextItem(record->errors, &next)) != 0; ) {
-                if (smatch(error->key, fieldName)) {
+            for (ITERATE_KEY_DATA(record->errors, field, msg)) {
+                if (smatch(field->key, fieldName)) {
                     httpInsertOption(options, "class", ESTYLE("field-error"));
                 }
             }
