@@ -71,7 +71,7 @@
             coalescing.</p>
             <p>The allocator uses a garbage collector for locating unused memory. The collector is a generational, 
             cooperative and non-compacting collector.  The use of a garbage collector is somewhat unusual in a C program. 
-            However, garbage collection it is especially well suited for long running applications like a web server,
+            However, garbage collection is especially well suited for long running applications like a web server,
             as it eliminates most memory leaks. Unlike traditional memory allocation where <em>free</em> must be called
             to release memory, Appweb uses the opposite approach. Memory that must be retained, must be actively managed to 
             prevent garbage collection. This means that a <em>managed reference</em> must be held for all active memory.</p>
@@ -99,7 +99,7 @@
             check the result of every API call that can fail due to memory allocation errors. Calls such as strdup and 
             asprintf are often assumed to succeed, but they can, and do fail when memory is depleted.</p>
             <p>A better approach is to proactively detect and handle memory allocation errors in one place.
-            The MPR allocator handles memory allocation errors globally. It has
+            The MPR allocator handles memory allocation errors globally. It 
             has a configurable memory redline limit and a memory depletion policy handler. 
             Appweb configures this memory limit so that memory depletion can be proactively detected and 
             handled before memory allocations actually fail.
@@ -110,7 +110,7 @@
             <h2>Garbage Collection</h2>
             <p>The MPR garbage collector will run periodically to reclaim unused memory and potentially return 
             that memory to the
-            Operating System. The collector runs in its own thread, but is cooperative, in that each other thread must 
+            Operating System. The collector runs in its own thread, but is cooperative, in that each thread must 
             yield to the collector before memory can be reclaimed. Worker threads yield to the collector
             by calling the <em>mprYield</em> API.
             This strategy permits worker threads to allocate temporary memory without fear. The memory will not be 
@@ -162,7 +162,7 @@ blk->privateMalloc = malloc(1024);
             <p>If you only require the allocated structure temporarily, you do not need to retain a reference or call
             mprAddRoot. In this manner, the memory will be automatically collected during the next garbage collection
             sweep because there will not be a managed (marked) reference to the block.</p>
-            <p>the mprAllocMem may be used to allocate a block of memory and reserve room for a manager function. Then use
+            <p>The mprAllocMem may be used to allocate a block of memory and reserve room for a manager function. Then use
             mprSetManager to define a manager function.</p>
             <a id="managers"></a>
             <h3>Managers</h3>
@@ -198,7 +198,7 @@ void manageBlock(MyBlock *blk, int flags)
             <h2>Simple Rules</h2>
             <p>Here are some simple rules for allocating memory with Appweb and using the Garbage Collector.</p>
             <h3>Must Mark to Retain Managed Memory</h3>
-            <p>Any memory allocated from the MPR must be marked to retain past the next garbage collection cycle.</p>
+            <p>Any memory allocated from the MPR must be marked to be retained past the next garbage collection cycle.</p>
             <h3>Don't Mix Memory</h3>
             <p>You must not mix MPR allocated memory and non-managed memory. This means don't mark un-managed memory
             that has been allocated via malloc(). And you must not call free() on managed memory allocated from

@@ -67,7 +67,7 @@
             enable the benefits of a multi-threaded core, Appweb provides a suite of facilities to make multithreaded
             programming easier, more reliable, and more efficient.</p>
             <h3>The Problem of Multithreaded I/O Events</h3>
-            <p>A particular thorny issue in multithreaded servers, is how to handle I/O without consuming a thread for
+            <p>A particularly thorny issue in multithreaded servers is how to handle I/O without consuming a thread for
             each request. It is not practical to dedicate a thread to each HTTP request. A single browser will often
             send 6-10 simultaneous requests. If each request consumed a thread for the duration, the web server would
             quickly consume too many threads and system performance would greatly suffer. </p>
@@ -101,7 +101,7 @@
             <h3>Multithreaded Appweb</h3>
             <p>By using request dispatchers, Appweb serializes all request activity, yet it can support many 
             simultaneous requests due to its multithreaded core. Appweb efficiently utilizes thread resources by using
-            a thread pool and not dedicating threads permanently to requests. Threads are temporarily assigned
+            a thread pool and not permanently dedicating threads to requests. Threads are temporarily assigned
             only as required by active requests.</p>
             <a id="modules"></a>
             <h3>Modules</h3>
