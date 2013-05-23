@@ -1415,7 +1415,6 @@
 				E5F6AD7CE5F6C27600000159 /* bit.h */,
 				E5F6AD7CE5F6C2760000015A /* mpr.h */,
 				E5F6AD7CE5F6C2760000015C /* est.h */,
-				E5F6AD7CE5F6C2760000015B /* bitos.h */,
 				E5F6AD7CE5F6C27600000062 /* mprSsl.c */,
 			);
             name = "libmprssl";
