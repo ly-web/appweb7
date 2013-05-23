@@ -611,7 +611,7 @@ static EdiRec *sdbReadRec(Edi *edi, cchar *tableName, cchar *key)
 
 static EdiGrid *setTableName(EdiGrid *grid, cchar *tableName)
 {
-    if (!grid->tableName) {
+    if (grid && !grid->tableName) {
         grid->tableName = sclone(tableName);
     }
     return grid;
