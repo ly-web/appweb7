@@ -526,14 +526,13 @@ static bool viewExists(HttpConn *conn)
 
 static EspRoute *allocEspRoute(HttpRoute *route)
 {
+    cchar       *path;
+    MprPath     info;
     EspRoute    *eroute;
-
+    
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
-#if UNUSED
-    cchar       *path;
-    MprPath     info;
 #if DEBUG_IDE
     path = mprGetAppDir();
 #else
@@ -546,7 +545,6 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     }
 #endif
     eroute->cacheDir = (char*) path;
-#endif
     eroute->update = BIT_DEBUG;
     eroute->showErrors = BIT_DEBUG;
     eroute->keepSource = BIT_DEBUG;
@@ -758,7 +756,8 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     if (smatch(prefix, "/")) {
         prefix = 0;
     }
-    if (smatch(prefix, state->route->prefix) && mprSamePath(state->route->dir, dir)) {
+    //  MOB - need to always create inherited routes. 
+    if (0 && smatch(prefix, state->route->prefix) && mprSamePath(state->route->dir, dir)) {
         /* Can use existing route as it has the same prefix and documents directory */
         route = state->route;
     } else {
@@ -782,6 +781,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         prefix = stemplate(prefix, route->vars);
     }
     if (createRoute) {
+        httpAddRouteHandler(route, "espHandler", "");
         if (prefix) {
             httpSetRouteName(route, prefix);
             httpSetRoutePattern(route, sjoin("^", prefix, NULL), 0);

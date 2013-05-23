@@ -11,7 +11,6 @@ http.post(HTTP + "/cgi-bin/cgiProgram", "Some data")
 assert(http.status == 200)
 match(http, "CONTENT_LENGTH", "9")
 
-
 //  Simple form
 http.form(HTTP + "/cgi-bin/cgiProgram", {name: "John", address: "700 Park Ave"})
 assert(http.status == 200)

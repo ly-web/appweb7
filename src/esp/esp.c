@@ -404,7 +404,6 @@ static MprList *getRoutes();
 static void generate(int argc, char **argv);
 static void generateApp(cchar *name);
 static void generateAppDb(HttpRoute *route);
-static void generateAppDirs(HttpRoute *route);
 static void generateAppFiles(HttpRoute *route);
 static void generateAppConfigFile(HttpRoute *route);
 static void generateAppSrc(HttpRoute *route);
@@ -1532,7 +1531,7 @@ static void generateApp(cchar *name)
     }
     route = createRoute(name);
     app->appName = sclone(name);
-    generateAppDirs(route);
+    makeEspDir(route->dir);
     generateAppFiles(route);
     generateAppConfigFile(route);
     generateAppSrc(route);
@@ -2074,48 +2073,6 @@ static void migrate(HttpRoute *route, int argc, char **argv)
         trace("Task", "All migrations %s", backward ? "reversed" : "applied");
     }
     app->migrations = 0;
-}
-
-
-static void generateAppDirs(HttpRoute *route)
-{
-    EspRoute    *eroute;
-
-    eroute = route->eroute;
-
-    makeEspDir(route->dir);
-#if ON_DEMAND
-    makeEspDir(eroute->cacheDir);
-    makeEspDir(route, "src");
-    if (app->database) {
-        makeEspDir(route, "db");
-        makeEspDir(route, "migrations");
-    }
-    if (app->angular) {
-        makeEspDir(route, "client");
-        makeEspDir(route, "client/css");
-        makeEspDir(route, "client/directives");
-        makeEspDir(route, "client/factory");
-        makeEspDir(route, "client/filters");
-        makeEspDir(route, "client/images");
-        makeEspDir(route, "client/less");
-        makeEspDir(route, "client/lib");
-        makeEspDir(route, "client/models");
-        makeEspDir(route, "client/pages");
-        makeEspDir(route, "client/partials");
-#if DEPRECATED || 1
-    } else {
-        makeEspDir(route, "controllers");
-        makeEspDir(route, "layouts");
-        makeEspDir(route, "static");
-        makeEspDir(route, "static/css");
-        makeEspDir(route, "static/images");
-        makeEspDir(route, "static/js");
-        makeEspDir(route, "static/less");
-        makeEspDir(route, "views");
-#endif
-    }
-#endif
 }
 
 

@@ -7083,8 +7083,13 @@ PUBLIC void httpStartPipeline(HttpConn *conn)
     HttpRx      *rx;
     
     tx = conn->tx;
-    tx->started = 1;
     rx = conn->rx;
+
+    if (conn->endpoint) {
+        httpCreateRxPipeline(conn, rx->route);
+        httpCreateTxPipeline(conn, rx->route);
+    }
+    tx->started = 1;
     if (rx->needInputPipeline) {
         qhead = tx->queue[HTTP_QUEUE_RX];
         for (q = qhead->nextQ; !tx->finalized && q->nextQ != qhead; q = nextQ) {
@@ -8353,6 +8358,7 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     route->handlers = mprCreateList(-1, MPR_LIST_STABLE);
     route->host = host;
     route->http = MPR->httpService;
+    route->errorDocuments = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
     route->indicies = mprCreateList(-1, 0);
     route->inputStages = mprCreateList(-1, 0);
     route->lifespan = BIT_MAX_CACHE_DURATION;
@@ -10711,7 +10717,7 @@ PUBLIC void httpAddHomeRoute(HttpRoute *parent)
     source = parent->sourceName;
     name = qualifyName(parent, NULL, "home");
     path = stemplate("${CLIENT_DIR}/index.esp", parent->vars);
-    pattern = sfmt("^%s/$", prefix);
+    pattern = sfmt("^%s(/)$", prefix);
     httpDefineRoute(parent, name, "GET,POST", pattern, path, source);
 }
 
@@ -10722,7 +10728,7 @@ PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *prefix)
     cchar       *path, *pattern;
 
     if (parent->prefix) {
-        prefix = sjoin(parent->prefix, "/", prefix);
+        prefix = sjoin(parent->prefix, prefix, NULL);
     }
     pattern = sfmt("^%s/(.*)", prefix);
     path = stemplate("${CLIENT_DIR}/$1", parent->vars);
@@ -11546,7 +11552,6 @@ static void parseMethod(HttpConn *conn);
 static bool processParsed(HttpConn *conn);
 static bool processReady(HttpConn *conn);
 static bool processRunning(HttpConn *conn);
-static void routeRequest(HttpConn *conn);
 static int setParsedUri(HttpConn *conn);
 
 /*********************************** Code *************************************/
@@ -11779,29 +11784,12 @@ static void mapMethod(HttpConn *conn)
     cchar       *method;
 
     rx = conn->rx;
-    if (rx->flags & HTTP_POST) {
-        if ((method = httpGetParam(conn, "-http-method-", 0)) != 0) {
-            if (!scaselessmatch(method, rx->method)) {
-                mprLog(3, "Change method from %s to %s for %s", rx->method, method, rx->uri);
-                httpSetMethod(conn, method);
-            }
+    if (rx->flags & HTTP_POST && (method = httpGetParam(conn, "-http-method-", 0)) != 0) {
+        if (!scaselessmatch(method, rx->method)) {
+            mprLog(3, "Change method from %s to %s for %s", rx->method, method, rx->uri);
+            httpSetMethod(conn, method);
         }
     }
-}
-
-
-static void routeRequest(HttpConn *conn)
-{
-    HttpRx  *rx;
-
-    assert(conn->endpoint);
-
-    rx = conn->rx;
-    httpAddParams(conn);
-    mapMethod(conn);
-    httpRouteRequest(conn);  
-    httpCreateRxPipeline(conn, rx->route);
-    httpCreateTxPipeline(conn, rx->route);
 }
 
 
@@ -12420,7 +12408,8 @@ static bool processParsed(HttpConn *conn)
 
     rx = conn->rx;
     if (conn->endpoint) {
-        routeRequest(conn);
+        httpAddParams(conn);
+        httpRouteRequest(conn);  
         rx->streaming = rx->streaming || httpGetRouteStreaming(rx->route, rx->mimeType);
     }
     /*
@@ -12506,12 +12495,6 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
         httpTraceContent(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, packet, nbytes, rx->bytesRead);
     }
     if (rx->eof) {
-#if OLD
-        if (rx->length > 0) {
-            conn->input = httpSplitPacket(packet, (ssize) rx->length);
-            *more = 1;
-        }
-#endif
         if (rx->remainingContent > 0 && !conn->http10) {
             /* Closing is the only way for HTTP/1.0 to signify the end of data */
             httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Connection lost");
@@ -12573,21 +12556,24 @@ static bool processContent(HttpConn *conn)
         }
     }
     if (rx->eof) {
-        while ((packet = httpGetPacket(q)) != 0) {
-            httpPutPacketToNext(q, packet);
-        }
-        httpPutPacketToNext(q, httpCreateEndPacket());
         if (conn->endpoint) {
+            httpAddParams(conn);
             if (rx->form && !rx->streaming) {
                 /* Re-route to enable routing on body parameters */
-                routeRequest(conn);
-            } else {
-                httpAddParams(conn);
+                if (rx->scriptName && rx->scriptName) {
+                    rx->pathInfo = sjoin(rx->scriptName, rx->pathInfo, NULL);
+                }
+                mapMethod(conn);
+                httpRouteRequest(conn);
             }
         }
         if (!tx->started) {
             httpStartPipeline(conn);
         }
+        while ((packet = httpGetPacket(q)) != 0) {
+            httpPutPacketToNext(q, packet);
+        }
+        httpPutPacketToNext(q, httpCreateEndPacket());
         httpSetState(conn, HTTP_STATE_READY);
         return conn->workerEvent ? 0 : 1;
     }

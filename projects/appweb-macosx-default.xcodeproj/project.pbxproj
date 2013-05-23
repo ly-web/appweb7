@@ -2098,49 +2098,6 @@ rm -rf ../${OUT_DIR}/bin/esp-proto
 cp -r proto ../${OUT_DIR}/bin/esp-proto
 ";
 		};
-		E5F6AD7CE5F6C27600000017 /* ShellScript for all-legacy.css */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-../src/esp/proto/legacy/static/less/all.less,
-../src/esp/proto/legacy/static/less/app.less,
-../src/esp/proto/legacy/static/less/esp.less,
-../src/esp/proto/legacy/static/less/more.less,
-../src/esp/proto/legacy/static/less/normalize.less,
-../src/esp/proto/legacy/static/less/theme.less
-			);
-			outputPaths = (
-../src/esp/proto/legacy/static/css/all.css
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "PATH=$PATH:/usr/local/bin
-cd ../src/esp
-undefined";
-		};
-		E5F6AD7CE5F6C2760000001B /* ShellScript for all-ng.css */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-../src/esp/proto/angular/client/less/all.less,
-../src/esp/proto/angular/client/less/app.less,
-../src/esp/proto/angular/client/less/more.less,
-../src/esp/proto/angular/client/less/normalize.less,
-../src/esp/proto/angular/client/less/theme.less
-			);
-			outputPaths = (
-../src/esp/proto/angular/client/css/all.css
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "PATH=$PATH:/usr/local/bin
-cd ../src/esp
-undefined";
-		};
 		E5F6AD7CE5F6C2760000001F /* ShellScript for slink.c */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
