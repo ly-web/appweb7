@@ -97,14 +97,12 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
 #endif
         securityToken = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, "");
         if (!smatch(sessionToken, securityToken)) {
-#if MOB
-            /* MOB should be runtime configurable to disable. Easier for debugging */
-            httpError(conn, HTTP_CODE_NOT_ACCEPTABLE,
-                "Security token does not match. Potential CSRF attack. Denying request.");
+            /*
+                Potential CSRF attack. Deny request.
+             */
+            httpError(conn, HTTP_CODE_NOT_ACCEPTABLE, 
+                    "Security token does not match. Please reload the page and retry.");
             return 0;
-#else
-            mprLog(0, "MUST UPDATE SECURITY TOKEN CODE");
-#endif
         }
     }
     return 1;

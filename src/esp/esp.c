@@ -183,7 +183,7 @@ static void destroy() { \n\
 }\n\
 \n\
 static void edit() { \n\
-    readRec(\"${NAME}\");\n\
+    readRec(\"${NAME}\", param(\"id\"));\n\
 }\n\
 \n\
 static void list() { }\n\
@@ -194,7 +194,7 @@ static void init() { \n\
 }\n\
 \n\
 static void show() { \n\
-    readRec(\"${NAME}\");\n\
+    readRec(\"${NAME}\", param(\"id\"));\n\
     renderView(\"${NAME}-edit\");\n\
 }\n\
 \n\
@@ -2128,12 +2128,18 @@ static void fixupFile(HttpRoute *route, cchar *path)
         fail("Cannot read %s", path);
         return;
     }
+    //  MOB - Use stemplate and tokens.
     data = sreplace(data, "${NAME}", app->appName);
     data = sreplace(data, "${TITLE}", spascal(app->appName));
     data = sreplace(data, "${DATABASE}", app->database);
     data = sreplace(data, "${DIR}", route->dir);
     data = sreplace(data, "${LISTEN}", app->listen);
     data = sreplace(data, "${BINDIR}", app->binDir);
+    if (app->angular) {
+        data = sreplace(data, "${ROUTESET}", "angular");
+    } else {
+        data = sreplace(data, "${ROUTESET}", "restful");
+    }
 
     tmp = mprGetTempPath(route->dir);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
@@ -2150,12 +2156,16 @@ static void fixupFile(HttpRoute *route, cchar *path)
 static void generateAppFiles(HttpRoute *route)
 {
     EspRoute    *eroute;
+    MprHash     *tokens;
 
     eroute = route->eroute;
     copyEspDir(app->proto, route->dir);
+    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s }", app->appName, spascal(app->appName)));
     fixupFile(route, mprJoinPath(eroute->clientDir, "index.esp"));
     if (app->angular) {
         fixupFile(route, mprJoinPath(eroute->clientDir, "app.js"));
+    } else {
+        fixupFile(route, mprJoinPath(eroute->layoutsDir, "default.esp"));
     }
 }
 
