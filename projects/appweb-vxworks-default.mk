@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.3.4
+VERSION            := 4.4.0
 BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*//')
@@ -312,7 +312,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.4-0
+	@echo 4.4.0-0
 
 #
 #   mpr.h
@@ -1039,32 +1039,28 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	cp src/esp/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.c $(CONFIG)/bin/esp-proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.c
 	cp src/esp/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.dylib $(CONFIG)/bin/esp-proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.dylib
 	cp src/esp/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.o $(CONFIG)/bin/esp-proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.o
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/app"
+	cp src/esp/proto/angular/client/app/app.js $(CONFIG)/bin/esp-proto/angular/client/app/app.js
+	cp src/esp/proto/angular/client/app/AppControl.js $(CONFIG)/bin/esp-proto/angular/client/app/AppControl.js
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/assets"
+	cp src/esp/proto/angular/client/assets/banner.jpg $(CONFIG)/bin/esp-proto/angular/client/assets/banner.jpg
+	cp src/esp/proto/angular/client/assets/favicon.ico $(CONFIG)/bin/esp-proto/angular/client/assets/favicon.ico
+	cp src/esp/proto/angular/client/assets/splash.jpg $(CONFIG)/bin/esp-proto/angular/client/assets/splash.jpg
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/components/Esp"
+	cp src/esp/proto/angular/client/components/Esp/Esp.js $(CONFIG)/bin/esp-proto/angular/client/components/Esp/Esp.js
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client"
-	cp src/esp/proto/angular/client/app.js $(CONFIG)/bin/esp-proto/angular/client/app.js
 	cp src/esp/proto/angular/client/config.json $(CONFIG)/bin/esp-proto/angular/client/config.json
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/controllers"
-	cp src/esp/proto/angular/client/controllers/AppCtlr.js $(CONFIG)/bin/esp-proto/angular/client/controllers/AppCtlr.js
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/css"
 	cp src/esp/proto/angular/client/css/all.css $(CONFIG)/bin/esp-proto/angular/client/css/all.css
+	cp src/esp/proto/angular/client/css/all.less $(CONFIG)/bin/esp-proto/angular/client/css/all.less
+	cp src/esp/proto/angular/client/css/app.less $(CONFIG)/bin/esp-proto/angular/client/css/app.less
 	cp src/esp/proto/angular/client/css/bootstrap.css $(CONFIG)/bin/esp-proto/angular/client/css/bootstrap.css
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/directives"
-	cp src/esp/proto/angular/client/directives/directives.js $(CONFIG)/bin/esp-proto/angular/client/directives/directives.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/factories"
-	cp src/esp/proto/angular/client/factories/Esp.js $(CONFIG)/bin/esp-proto/angular/client/factories/Esp.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/filters"
-	cp src/esp/proto/angular/client/filters/filters.js $(CONFIG)/bin/esp-proto/angular/client/filters/filters.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/images"
-	cp src/esp/proto/angular/client/images/banner.jpg $(CONFIG)/bin/esp-proto/angular/client/images/banner.jpg
-	cp src/esp/proto/angular/client/images/favicon.ico $(CONFIG)/bin/esp-proto/angular/client/images/favicon.ico
-	cp src/esp/proto/angular/client/images/splash.jpg $(CONFIG)/bin/esp-proto/angular/client/images/splash.jpg
+	cp src/esp/proto/angular/client/css/more.less $(CONFIG)/bin/esp-proto/angular/client/css/more.less
+	cp src/esp/proto/angular/client/css/normalize.less $(CONFIG)/bin/esp-proto/angular/client/css/normalize.less
+	cp src/esp/proto/angular/client/css/theme.less $(CONFIG)/bin/esp-proto/angular/client/css/theme.less
 	cp src/esp/proto/angular/client/index.esp $(CONFIG)/bin/esp-proto/angular/client/index.esp
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/less"
-	cp src/esp/proto/angular/client/less/all.less $(CONFIG)/bin/esp-proto/angular/client/less/all.less
-	cp src/esp/proto/angular/client/less/app.less $(CONFIG)/bin/esp-proto/angular/client/less/app.less
-	cp src/esp/proto/angular/client/less/more.less $(CONFIG)/bin/esp-proto/angular/client/less/more.less
-	cp src/esp/proto/angular/client/less/normalize.less $(CONFIG)/bin/esp-proto/angular/client/less/normalize.less
-	cp src/esp/proto/angular/client/less/theme.less $(CONFIG)/bin/esp-proto/angular/client/less/theme.less
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/lib"
+	cp src/esp/proto/angular/client/lib/all.js $(CONFIG)/bin/esp-proto/angular/client/lib/all.js
 	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap-prettify.js
 	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap-prettify.min.js
 	cp src/esp/proto/angular/client/lib/angular-bootstrap.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap.js
@@ -1094,8 +1090,8 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	cp src/esp/proto/angular/client/lib/respond.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/respond.min.js
 	cp src/esp/proto/angular/client/lib/ui-bootstrap-tpls.js $(CONFIG)/bin/esp-proto/angular/client/lib/ui-bootstrap-tpls.js
 	cp src/esp/proto/angular/client/lib/ui-bootstrap-tpls.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/ui-bootstrap-tpls.min.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/partials"
-	cp src/esp/proto/angular/client/partials/splash.html $(CONFIG)/bin/esp-proto/angular/client/partials/splash.html
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/templates"
+	cp src/esp/proto/angular/client/templates/splash.html $(CONFIG)/bin/esp-proto/angular/client/templates/splash.html
 	cp src/esp/proto/angular/start.bit $(CONFIG)/bin/esp-proto/angular/start.bit
 	mkdir -p "$(CONFIG)/bin/esp-proto/legacy"
 	cp src/esp/proto/legacy/app.conf $(CONFIG)/bin/esp-proto/legacy/app.conf
@@ -1811,6 +1807,7 @@ DEPS_92 += src/esp/proto/angular/client/lib
 test/web/js: $(DEPS_92)
 	@echo '      [Copy] test/web/js'
 	mkdir -p "test/web/js"
+	cp src/esp/proto/angular/client/lib/all.js test/web/js/all.js
 	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.js test/web/js/angular-bootstrap-prettify.js
 	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.min.js test/web/js/angular-bootstrap-prettify.min.js
 	cp src/esp/proto/angular/client/lib/angular-bootstrap.js test/web/js/angular-bootstrap.js
