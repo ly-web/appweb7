@@ -160,7 +160,9 @@ static void update${TITLE}() { \n\
 ";
 
 #if DEPRECATED || 1
-
+/*
+    Deprecated in 4.4
+ */
 static cchar *LegacyScaffoldServiceHeader = "\
 /*\n\
     ${NAME} service\n\
@@ -168,7 +170,7 @@ static cchar *LegacyScaffoldServiceHeader = "\
 \n\
 static void create() { \n\
     if (updateRec(createRec(\"${NAME}\", params()))) {\n\
-        inform(\"New ${NAME} created\");\n\
+        flash(\"inform\", \"New ${NAME} created\");\n\
         renderView(\"${NAME}-list\");\n\
     } else {\n\
         renderView(\"${NAME}-edit\");\n\
@@ -177,7 +179,7 @@ static void create() { \n\
 \n\
 static void destroy() { \n\
     if (removeRec(\"${NAME}\", param(\"id\"))) {\n\
-        inform(\"${TITLE} removed\");\n\
+        flash(\"inform\", \"${TITLE} removed\");\n\
     }\n\
     renderView(\"${NAME}-list\");\n\
 }\n\
@@ -200,7 +202,7 @@ static void show() { \n\
 \n\
 static void update() { \n\
     if (updateFields(\"${NAME}\", params())) {\n\
-        inform(\"${TITLE} updated successfully.\");\n\
+        flash(\"inform\", \"${TITLE} updated successfully.\");\n\
         renderView(\"${NAME}-list\");\n\
     } else {\n\
         renderView(\"${NAME}-edit\");\n\
@@ -226,10 +228,10 @@ static cchar *ScaffoldListView = "\
 <h2>${TITLE} List</h2>\n\
     <div class=\"span4\">\n\
     <table class=\"table table-striped table-bordered table-hover table-condensed\">\n\
-        <thead><tr><th ng-repeat=\"header in list.schema.headers\" ng-click=\"click($index)\">{{header}}</th></tr></thead>\n\
+        <thead><tr><th ng-repeat=\"header in ${NAME}s.schema.headers\" ng-click=\"click($index)\">{{header}}</th></tr></thead>\n\
         <tbody>\n\
-            <tr ng-repeat=\"${NAME} in list.data\" ng-click=\"click($index)\">\n\
-                <td ng-repeat=\"column in list.schema.columns\">{{${NAME}[column]}}</td>\n\
+            <tr ng-repeat=\"${NAME} in ${NAME}s.data\" ng-click=\"click($index)\">\n\
+                <td ng-repeat=\"column in ${NAME}s.schema.columns\">{{${NAME}[column]}}</td>\n\
             </tr>\n\
         </tbody>\n\
     </table>\n\
@@ -253,6 +255,9 @@ static cchar *ScaffoldEditView =  "\
 
 
 #if DEPRECATED || 1
+/*
+    Deprecated in 4.4
+ */
 static cchar *LegacyScaffoldServiceFooter = "\
 ESP_EXPORT int esp_module_${NAME}(HttpRoute *route, MprModule *module) \n\
 {\n\
@@ -337,17 +342,17 @@ app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $rout
     };\n\
 \n\
     $scope.click = function(index) {\n\
-        $location.path('/service/${NAME}/' + $scope.list.data[index].id);\n\
+        $location.path('/service/${NAME}/' + $scope.${NAME}s.data[index].id);\n\
     };\n\
 });\n\
 \n\
 app.config(function($routeProvider) {\n\
     $routeProvider.when('/', {\n\
-        templateUrl: '/partials/${NAME}-list.html',\n\
+        templateUrl: '/app/${NAME}/list.html',\n\
         controller: '${TITLE}Control',\n\
     });\n\
     $routeProvider.when('/service/${NAME}/:id', {\n\
-        templateUrl: '/partials/${NAME}-edit.html',\n\
+        templateUrl: '/app/${NAME}/edit.html',\n\
         controller: '${TITLE}Control',\n\
     });\n\
 });\n\
@@ -1703,7 +1708,7 @@ static void generateScaffoldController(HttpRoute *route, int argc, char **argv)
     name = sclone(argv[0]);
     title = spascal(name);
 
-    path = mprJoinPathExt(mprJoinPath(eroute->controllersDir, sfmt("%sControl", title)), "js");
+    path = mprJoinPathExt(mprJoinPath(eroute->clientDir, sfmt("app/%s/%sControl", name, title)), "js");
     defines = sclone("");
     tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", name, title, defines));
 
@@ -1744,7 +1749,11 @@ static void generateScaffoldModel(HttpRoute *route, int argc, char **argv)
     name = sclone(argv[0]);
     title = spascal(name);
 
-    path = sfmt("%s/%s.js", eroute->modelsDir, title);
+    if (app->angular) {
+        path = sfmt("%s/app/%s/%s.js", eroute->clientDir, name, title);
+    } else {
+        path = sfmt("%s/%s.js", eroute->modelsDir, title);
+    }
     tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s}", name, title));
     data = stemplate(ModelTemplate, tokens);
     makeEspFile(path, data, "Scaffold Model");
@@ -1819,11 +1828,12 @@ static void generateScaffoldViews(HttpRoute *route, int argc, char **argv)
 
     if (app->angular) {
         tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s}", name, title));
-        path = sfmt("%s/%s-list.html", eroute->partialsDir, name);
+        //  MOB - should have definition for appDir
+        path = sfmt("%s/app/%s/list.html", eroute->clientDir, name);
         data = stemplate(ScaffoldListView, tokens);
         makeEspFile(path, data, "Scaffold List Partial");
 
-        path = sfmt("%s/%s-edit.html", eroute->partialsDir, name);
+        path = sfmt("%s/app/%s/edit.html", eroute->clientDir, name);
         data = stemplate(ScaffoldEditView, tokens);
         makeEspFile(path, data, "Scaffold Edit Partial");
 
@@ -2120,7 +2130,7 @@ static void generateAppFiles(HttpRoute *route)
     tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s }", app->appName, spascal(app->appName)));
     fixupFile(route, mprJoinPath(eroute->clientDir, "index.esp"));
     if (app->angular) {
-        fixupFile(route, mprJoinPath(eroute->clientDir, "app.js"));
+        fixupFile(route, mprJoinPath(eroute->clientDir, "app/app.js"));
     } else {
         fixupFile(route, mprJoinPath(eroute->layoutsDir, "default.esp"));
     }
@@ -2335,7 +2345,7 @@ static bool findDefaultConfigFile()
 static void makeEspDir(cchar *path)
 {
     if (mprPathExists(path, X_OK)) {
-        trace("Exists",  "Directory: %s", path);
+        // trace("Exists",  "Directory: %s", path);
     } else {
         if (mprMakeDir(path, 0755, -1, -1, 1) < 0) {
             app->error++;

@@ -18,6 +18,7 @@
 
 static void handleDeleteRequest(HttpQueue *q);
 static void handlePutRequest(HttpQueue *q);
+static int manageDir(HttpConn *conn);
 static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize size);
 
 /*********************************** Code *************************************/
@@ -28,91 +29,37 @@ static int rewriteFileHandler(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpTx      *tx;
-    HttpUri     *prior;
-    HttpRoute   *route;
-    MprPath     *info, zipInfo;
-    cchar       *index;
-    char        *path, *pathInfo, *uri, *zipfile;
-    int         next;
-    
+    MprPath     *info;
+
     rx = conn->rx;
     tx = conn->tx;
-    route = rx->route;
-    prior = rx->parsedUri;
     info = &tx->fileInfo;
 
-    httpMapFile(conn, route);
+    httpMapFile(conn, rx->route);
     assert(info->checked);
 
     if (rx->flags & (HTTP_DELETE | HTTP_PUT)) {
         return HTTP_ROUTE_OK;
     }
     if (info->isDir) {
-        /*
-            Manage requests for directories
-         */
-        if (!sends(rx->pathInfo, "/")) {
-            /* 
-               Append "/" and do an external redirect 
-             */
-            pathInfo = sjoin(rx->pathInfo, "/", NULL);
-            uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, prior->query, 0);
-            httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
-            return HTTP_ROUTE_OK;
-        } 
-        if (route->indicies) {
-            /*
-                Ends with a "/" so do internal redirection to an index file
-             */
-            for (ITERATE_ITEMS(route->indicies, index, next)) {
-                /*  
-                    Internal directory redirections. Transparently append index. Test indicies in order.
-                 */
-                path = mprJoinPath(tx->filename, index);
-                if (mprPathExists(path, R_OK)) {
-                    pathInfo = sjoin(rx->scriptName, rx->pathInfo, index, NULL);
-                    uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, 
-                        prior->query, 0);
-                    httpSetUri(conn, uri);
-                    tx->filename = path;
-                    tx->ext = httpGetExt(conn);
-                    mprGetPathInfo(tx->filename, info);
-                    return HTTP_ROUTE_REROUTE;
-                }
-            }
-        }
-#if BIT_PACK_DIR
-        /*
-            If a directory, test if a directory listing should be rendered. If so, delegate to the dirHandler.
-            Cannot use the sendFile handler and must use the netConnector.
-         */
-        if (info->isDir && maRenderDirListing(conn)) {
-            tx->handler = conn->http->dirHandler;
-            tx->connector = conn->http->netConnector;
-            return HTTP_ROUTE_OK;
-        }
+        return manageDir(conn);
+    }
+#if UNUSED
+    if (!info->valid) {
+        tryAlternate(conn);
+    }
 #endif
-    }
-    if (!info->valid && (route->flags & HTTP_ROUTE_GZIP) && rx->acceptEncoding && strstr(rx->acceptEncoding, "gzip") != 0) {
-        /*
-            If the route accepts zipped data and a zipped file exists, then transparently respond with it.
-         */
-        zipfile = sfmt("%s.gz", tx->filename);
-        if (mprGetPathInfo(zipfile, &zipInfo) == 0) {
-            tx->filename = zipfile;
-            tx->fileInfo = zipInfo;
-            httpSetHeader(conn, "Content-Encoding", "gzip");
-        }
-    }
-    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST) && info->valid && !info->isDir && tx->length < 0) {
+    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST) && info->valid && tx->length < 0) {
         /*
             The sendFile connector is optimized on some platforms to use the sendfile() system call.
             Set the entity length for the sendFile connector to utilize.
+            TODO - why here?
          */
         httpSetEntityLength(conn, tx->fileInfo.size);
     }
     return HTTP_ROUTE_OK;
 }
+
 
 
 static void openFileHandler(HttpQueue *q)
@@ -479,6 +426,122 @@ static void handleDeleteRequest(HttpQueue *q)
     }
     httpSetStatus(conn, HTTP_CODE_NO_CONTENT);
 }
+
+
+static int manageDir(HttpConn *conn)
+{
+    HttpRx      *rx;
+    HttpTx      *tx;
+    HttpRoute   *route;
+    HttpUri     *prior;
+    MprPath     *info;
+    cchar       *index, *pathInfo, *uri;
+    char        *path;
+    int         next;
+
+    rx = conn->rx;
+    tx = conn->tx;
+    prior = rx->parsedUri;
+    route = rx->route;
+    info = &tx->fileInfo;
+
+    /*
+        Manage requests for directories
+     */
+    if (!sends(rx->pathInfo, "/")) {
+        /*
+           Append "/" and do an external redirect
+         */
+        pathInfo = sjoin(rx->pathInfo, "/", NULL);
+        uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, prior->query, 0);
+        httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
+        return HTTP_ROUTE_OK;
+    }
+    if (route->indicies) {
+        /*
+            Ends with a "/" so do internal redirection to an index file
+         */
+        for (ITERATE_ITEMS(route->indicies, index, next)) {
+            /*
+                Internal directory redirections. Transparently append index. Test indicies in order.
+             */
+            path = mprJoinPath(tx->filename, index);
+            if (mprPathExists(path, R_OK)) {
+                pathInfo = sjoin(rx->scriptName, rx->pathInfo, index, NULL);
+                uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference,
+                    prior->query, 0);
+                httpSetUri(conn, uri);
+                tx->filename = path;
+                tx->ext = httpGetExt(conn);
+                mprGetPathInfo(tx->filename, info);
+                return HTTP_ROUTE_REROUTE;
+            }
+        }
+    }
+#if BIT_PACK_DIR
+    /*
+        Directory Listing. If a directory, test if a directory listing should be rendered. If so, delegate to the
+        dirHandler. Cannot use the sendFile handler and must use the netConnector.
+     */
+    if (info->isDir && maRenderDirListing(conn)) {
+        tx->handler = conn->http->dirHandler;
+        tx->connector = conn->http->netConnector;
+        return HTTP_ROUTE_OK;
+    }
+#endif
+    return HTTP_ROUTE_OK;
+}
+
+
+#if UNUSED
+static void addAlternate(HttpConn *conn, char *alternate, MprPath *info)
+{
+    assert(alternate && *alternate);
+    assert(info);
+
+    mprAddKey(conn->rx->route->alternates, conn->tx->filename, alternate);
+    conn->tx->filename = alternate;
+    conn->tx->fileInfo = *info;
+}
+
+
+static void tryAlternate(HttpConn *conn)
+{
+    HttpRx      *rx;
+    HttpTx      *tx;
+    HttpRoute   *route;
+    MprPath     info;
+    cchar       *alternate;
+
+    rx = conn->rx;
+    tx = conn->tx;
+    route = rx->route;
+
+    /*
+        If the route accepts minified or zipped data and a suitable file exists, then transparently respond with it.
+     */
+    if ((route->flags & HTTP_ROUTE_GZIP) && rx->acceptEncoding && strstr(rx->acceptEncoding, "gzip") != 0) {
+        if (route->flags & HTTP_ROUTE_MINIFY && smatch(tx->ext, "js")) {
+            alternate = sfmt("%s.min.js.gz", tx->filename);
+            if (mprGetPathInfo(alternate, &info) == 0) {
+                httpSetHeader(conn, "Content-Encoding", "gzip");
+                addAlternate(route, alternate, &info);
+            }
+        } else {
+            alternate = sfmt("%s.gz", tx->filename);
+            if (mprGetPathInfo(alternate, &info) == 0) {
+                httpSetHeader(conn, "Content-Encoding", "gzip");
+                addAlternate(route, alternate, &info);
+            }
+        }
+    } else if (route->flags & HTTP_ROUTE_MINIFY && smatch(tx->ext, "js")) {
+        alternate = sfmt("%s.min", tx->filename);
+        if (mprGetPathInfo(alternate, &info) == 0) {
+            addAlternate(route, alternate, &info);
+        }
+    }
+}
+#endif
 
 
 /*  

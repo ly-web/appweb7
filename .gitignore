@@ -212,3 +212,4 @@ samples/cpp-handler/server
 *.so
 samples/typical-client/client
 ^/static/
+.idea

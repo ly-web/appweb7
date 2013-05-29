@@ -10,6 +10,43 @@
 
 #if BIT_PACK_ESP
 
+#define EDATA(s)        "data-esp-" s           /* Prefix for data attributes */
+#define ESTYLE(s)       "esp-" s                /* Prefix for ESP styles */
+
+#define SCRIPT_IE       0x1
+#define SCRIPT_LESS     0x2
+
+typedef struct EspScript {
+    cchar   *name;                              /* Script name */
+    cchar   *option;                            /* Esp control option that must be present to trigger emitting script */
+    int     flags;                              /* Conditional generation flags */
+} EspScript;
+
+#if UNUSED
+static EspScript angularScripts[] = {
+    { "/js/html5shiv",           0,              SCRIPT_IE },
+    { "/lib/angular",            0,              0 },
+    { "/lib/angular-resource",   0,              0 },
+    { "/lib/ui-bootstrap-tpls",  0,              0 },
+    { "/lib/less",               0,              0 },
+    { "/app",                    0,              0,},
+    { 0,                         0,              0 },
+};
+#endif
+
+#if UNUSED
+static EspScript defaultScripts[] = {
+    { "/js/jquery",              0,              0 },
+    { "/js/jquery.tablesorter",  "tablesorter",  0 },
+    { "/js/jquery.simplemodal",  "simplemodal",  0 },
+    { "/js/jquery.esp",          0,              0 },
+    { "/js/html5shiv",           0,              SCRIPT_IE },
+    { "/js/respond",             "respond",      SCRIPT_IE },
+    { "/js/less",                "less",         SCRIPT_LESS },
+    { 0,                         0,              0 },
+};
+#endif
+
 /************************************* Code ***********************************/
 /*  
     Add a http header if not already defined
@@ -84,26 +121,31 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags)
 PUBLIC bool espCheckSecurityToken(HttpConn *conn) 
 {
     HttpRx  *rx;
-    cchar   *securityToken, *sessionToken;
+    cchar   *requestToken, *sessionToken;
 
     rx = conn->rx;
     if (!(rx->flags & HTTP_POST)) {
         return 1;
     }
-    if (rx->securityToken == 0) {
-        sessionToken = rx->securityToken = sclone(httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, ""));
-#if UNUSED && KEEP
-        securityTokenName = espGetParam(conn, "SecurityTokenName", "");
+    if ((sessionToken = httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, "")) != 0) {
+        requestToken = httpGetHeader(conn, "X-XSRF-TOKEN");
+#if DEPRECATED || 1
+        /*
+            Deprecated in 4.4
+         */
+        if (!requestToken) {
+            requestToken = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, 0);
+        }
 #endif
-        securityToken = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, "");
-        if (!smatch(sessionToken, securityToken)) {
+        #if DISABLED &&  MOB
+        if (!smatch(sessionToken, requestToken)) {
             /*
                 Potential CSRF attack. Deny request.
              */
-            httpError(conn, HTTP_CODE_NOT_ACCEPTABLE, 
-                    "Security token does not match. Please reload the page and retry.");
+            httpError(conn, HTTP_CODE_NOT_ACCEPTABLE, "Security token is stale. Please reload the page and retry.");
             return 0;
         }
+        #endif
     }
     return 1;
 }
@@ -189,8 +231,6 @@ PUBLIC void espFlush(HttpConn *conn)
 }
 
 
-//  MOB - confusing vs ediGetColumns
-
 PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
 {
     if (rec == 0) {
@@ -257,8 +297,7 @@ PUBLIC cchar *espGetDir(HttpConn *conn)
 }
 
 
-//  MOB - rethink name espGetFlash
-PUBLIC cchar *espGetFlashMessage(HttpConn *conn, cchar *kind)
+PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *kind)
 {
     EspReq      *req;
     MprKey      *kp;
@@ -633,6 +672,7 @@ PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key)
     return 1;
 }
 
+
 PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...)
 {
     va_list     vargs;
@@ -746,7 +786,168 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 }
 
 
-//  MOB - refactor. Fix name too.
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
+{
+    EspReq      *req;
+    MprHash     *options;
+    MprKey      *kp;
+    cchar       *msg;
+   
+    req = conn->data;
+    options = httpGetOptions(optionString);
+    if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
+        return;
+    }
+    for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
+        msg = kp->data;
+        if (strstr(kinds, kp->key) || strstr(kinds, "all")) {
+            espRender(conn, "<span class='flash-%s'>%s</span>", kp->key, msg);
+        }
+    }
+}
+
+
+#if UNUSED
+PUBLIC void espScripts(HttpConn *conn, cchar *optionString)
+{
+    EspReq      *req;
+    MprList     *files;
+    MprDirEntry *dp;
+    cchar       *indent, *uri;
+    int         next;
+   
+    req = conn->data;
+#if UNUSED
+    MprHash     *options;
+    EspScript   *sp;
+    bool        minified;
+    options = httpGetOptions(optionString);
+    req = conn->data;
+    minified = smatch(httpGetOption(options, "minified", 0), "true");
+    indent = "";
+    for (sp = angularScripts; sp->name; sp++) {
+        if (sp->flags & SCRIPT_IE) {
+            espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
+        }
+        path = sjoin(sp->name, minified ? ".min.js" : ".js", NULL);
+        uri = httpLink(conn, path, NULL);
+        newline = sp[1].name ? "\r\n" :  "";
+        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
+        if (sp->flags & SCRIPT_IE) {
+            espRender(conn, "%s<![endif]-->\n", indent);
+        }
+        indent = "    ";
+    }
+    files = mprGetPathFiles(mprJoinPath(req->eroute->clientDir, "factories"), MPR_PATH_REL);
+    for (ITERATE_ITEMS(files, dp, next)) {
+        path = mprGetRelPath(dp->name, req->eroute->clientDir);
+        uri = httpLink(conn, path, NULL);
+        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
+    }
+    files = mprGetPathFiles(req->eroute->modelsDir, MPR_PATH_REL);
+    for (ITERATE_ITEMS(files, dp, next)) {
+        path = mprGetRelPath(dp->name, req->eroute->clientDir);
+        uri = httpLink(conn, path, NULL);
+        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
+    }
+    files = mprGetPathFiles(req->eroute->controllersDir, MPR_PATH_REL);
+    for (ITERATE_ITEMS(files, dp, next)) {
+        path = mprGetRelPath(dp->name, req->eroute->clientDir);
+        uri = httpLink(conn, path, NULL);
+        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
+    }
+#endif
+
+#if UNUSED
+    MprHash *processed;
+    processed = mprCreateHash(0, 0);
+
+    files = mprGetPathFiles(req->eroute->clientDir, MPR_PATH_REL | MPR_PATH_DESCEND);
+    indent = "";
+    for (ITERATE_ITEMS(files, dp, next)) {
+        if (req->route->flags & HTTP_ROUTE_MINIFY) {
+            if (req->route->flags & HTTP_ROUTE_GZIP) {
+            }
+        } else if (req->route->flags & HTTP_ROUTE_GZIP) {
+        }
+        if (sends(dp->name, ".min.js.gz")) {
+            if ((req->route->flags & (HTTP_ROUTE_MINIFY | HTTP_ROUTE_GZIP)) != (HTTP_ROUTE_MINIFY | HTTP_ROUTE_GZIP)) {
+                continue;
+            }
+        } else if (sends(dp->name, ".js.gz")) {
+            if (!(req->route->flags & HTTP_ROUTE_GZIP)) {
+                continue;
+            }
+        } else if (sends(dp->name, ".min.js")) {
+            if (!(req->route->flags & HTTP_ROUTE_MINIFY)) {
+                continue;
+            }
+        }
+        uri = httpLink(conn, dp->name, NULL);
+        espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
+        indent = "    ";
+    }
+#endif
+    mprGlobPathFiles(req->eroute->clientDircchar *path, cchar *patterns, int flags);
+    //  MOB - what about IE conditionals
+
+
+}
+#endif
+
+//  MOB MOVE
+/*
+    Get a security token to use to mitiate CSRF threats. Security tokens are expected to be sent with 
+    POST form requests to verify the authenticity of the issuer.
+    This routine will use an existing token or create if not present. It will store in the session store.
+ */
+PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
+{
+    HttpRx      *rx;
+
+    rx = conn->rx;
+
+    if (rx->securityToken == 0) {
+        rx->securityToken = (char*) httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, 0);
+        if (rx->securityToken == 0) {
+            rx->securityToken = mprGetRandomString(32);
+            httpSetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, rx->securityToken);
+        }
+    }
+    return rx->securityToken;
+}
+
+
+/*
+    Generate a security token
+    Security tokens are used to minimize the CSRF threat.
+    Note: the HttpSession API prevents session hijacking by pairing with the client IP
+ */
+PUBLIC void espSecurityToken(HttpConn *conn) 
+{
+    cchar   *securityToken;
+
+    securityToken = espGetSecurityToken(conn);
+    if (conn->rx->route->flags & HTTP_ROUTE_ANGULAR) {
+        espSetCookie(conn, "XSRF-TOKEN", securityToken, "/", NULL,  0, 0);
+#if DEPRECATED || 1
+    /*
+        Deprecated in 4.4
+     */
+    } else {
+        espAddHeaderString(conn, "X-Security-Token", securityToken);
+        espRender(conn, "<meta name='SecurityTokenName' content='%s' />\r\n", ESP_SECURITY_TOKEN_NAME);
+        espRender(conn, "    <meta name='%s' content='%s' />", ESP_SECURITY_TOKEN_NAME, securityToken);
+#endif
+    }
+}
+
+
+PUBLIC void espSetConn(HttpConn *conn)
+{
+    mprSetThreadData(((Esp*) MPR->espService)->local, conn);
+}
+
 static cchar *getGridSchema(EdiGrid *grid)
 {
     Edi         *edi;
@@ -826,11 +1027,11 @@ PUBLIC void espRenderResult(HttpConn *conn, bool status)
     rec = getRec();
     if (rec && rec->errors) {
         espRender(conn, "{\"success\": %d, \"feedback\": %s, \"fieldErrors\": %s}", status, 
-            req->flash ? mprSerialize(req->flash, MPR_JSON_QUOTES) : "{}",
+            req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}",
             mprSerialize(rec->errors, MPR_JSON_QUOTES));
     } else {
         espRender(conn, "{\"success\": %d, \"feedback\": %s}", status, 
-            req->flash ? mprSerialize(req->flash, MPR_JSON_QUOTES) : "{}");
+            req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}");
     }
     espFinalize(conn);
 
@@ -921,6 +1122,39 @@ PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *params)
 }
 
 
+PUBLIC void espSetFeedback(HttpConn *conn, cchar *kind, cchar *fmt, ...)
+{
+    va_list     args;
+
+    va_start(args, fmt);
+    espSetFeedbackv(conn, kind, fmt, args);
+    va_end(args);
+}
+
+
+PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
+{
+    EspReq      *req;
+    MprKey      *kp;
+    cchar       *prior, *msg;
+
+    req = conn->data;
+    msg = sfmtv(fmt, args);
+
+    if (req->feedback == 0) {
+        req->feedback = mprCreateHash(0, 0);
+    }
+    if ((prior = mprLookupKey(req->feedback, kind)) != 0) {
+        kp = mprAddKey(req->feedback, kind, sjoin(prior, "\n", msg, NULL));
+    } else {
+        kp = mprAddKey(req->feedback, kind, sclone(msg));
+    }
+    if (kp) {
+        kp->type = MPR_JSON_STRING;
+    }
+}
+
+
 PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...)
 {
     va_list     args;
@@ -942,7 +1176,6 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 
     if (req->flash == 0) {
         req->flash = mprCreateHash(0, 0);
-        httpGetSession(conn, 1);
     }
     if ((prior = mprLookupKey(req->flash, kind)) != 0) {
         kp = mprAddKey(req->flash, kind, sjoin(prior, "\n", msg, NULL));
@@ -952,6 +1185,10 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
     if (kp) {
         kp->type = MPR_JSON_STRING;
     }
+    /*
+        Create a session as early as possible so a Set-Cookie header can be omitted.
+     */
+    httpGetSession(conn, 1);
 }
 
 
@@ -1156,7 +1393,6 @@ PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout)
     MprTicks    mark;
     Esp         *esp;
 
-    /* MOB - should this suspend new requests */
     if ((mp = mprLookupModule(module)) != 0) {
         esp = MPR->espService;
         mark = mprGetTicks();
@@ -1202,7 +1438,6 @@ PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *params)
 }
 
 
-//  MOB - inconsistent with ediUpdateRec
 PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec)
 {
     return ediUpdateRec(rec->edi, rec) == 0;
@@ -1218,10 +1453,11 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(eroute->appModuleName);
+        mprMark(eroute->appName);
         mprMark(eroute->appModulePath);
         mprMark(eroute->cacheDir);
         mprMark(eroute->clientDir);
+        mprMark(eroute->config);
         mprMark(eroute->controllersDir);
         mprMark(eroute->compile);
         mprMark(eroute->dbDir);
@@ -1231,7 +1467,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->link);
         mprMark(eroute->migrationsDir);
         mprMark(eroute->modelsDir);
-        mprMark(eroute->partialsDir);
+        mprMark(eroute->templatesDir);
         mprMark(eroute->searchPath);
         mprMark(eroute->servicesDir);
         mprMark(eroute->srcDir);

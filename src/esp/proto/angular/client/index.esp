@@ -5,12 +5,18 @@
     <meta charset="utf-8" />
     <% securityToken(); %>
     <link href='http://data/x-icon;,' rel='shortcut icon' />
-    <link rel='stylesheet/less' type='text/css' href='less/all.less' />
+    <!-- [if lt IE 9]>
+    <script src='lib/html5shiv.js'></script>
+    <![endif]-->
+    <% if (mode("debug")) { %>
+    <link rel='stylesheet/less' type='text/css' href='css/all.less' />
     <link rel='stylesheet' type='text/css' href='css/bootstrap.css' />
-    <% scripts(); %>
+    <% } else {
+    %> <link rel='stylesheet' type='text/css' href='css/all.min.css.gz' />
+    <% } %>
 </head>
 
-<body ng-controller="AppCtrl">
+<body ng-controller="AppControl">
     <header>
         <h1><a href="/">${TITLE}</a></h1>
     </header>
@@ -19,5 +25,22 @@
             <div ng-view></div>   
         </section>
     </main>
+
+    <!-- [if lt IE 9]>
+    <script src='lib/html5shiv.js'></script>
+    <![endif]-->
+    <% if (mode("debug")) { %>
+    <script src='lib/angular.js'></script>
+    <script src='lib/angular-resource.js'></script>
+    <script src='lib/angular-bootstrap.js'></script>
+    <script src='lib/ui-bootstrap-tpls.js'></script>
+    <script src="lib/esp.js"></script>
+    <script src='lib/less.js'></script>
+    <%
+    scripts("app/**.js,components/**.js");
+    } else {
+    %> <script src='lib/all.min.js.gz'></script>
+    <% } %>
+
 </body>
 </html>

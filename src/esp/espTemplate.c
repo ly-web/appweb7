@@ -437,6 +437,7 @@ static char *joinLine(cchar *str, ssize *lenp)
 /*
     Convert an ESP web page into C code
     Directives:
+        MOB - should support <@ .... @>
 
         <%@ include "file"  Include an esp file
         <%@ layout "file"   Specify a layout page to use. Use layout "" to disable layout management
@@ -585,10 +586,11 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             }
             break;
 
+        //  MOB - DEPRECATED as we now don't have a current field
         case ESP_TOK_FIELD:
             /* @#field -- field in the current record */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-            mprPutToBuf(body, "  espRenderSafeString(conn, getField(\"%s\"));\n", token);
+            mprPutToBuf(body, "  espRenderSafeString(conn, getField(getRec(), \"%s\"));\n", token);
             break;
 
         case ESP_TOK_PARAM:

@@ -1,8 +1,30 @@
 {
-	"app": {
-		"timeouts": {
-			"session": 1800
-		}
-	}
+    "mode": "debug",
+    "modes": {
+        "debug": {
+            "map": null,
+            "showErrors": true,
+            "update": true,
+            "keepSource": true,
+            "autoLogin": false
+        },
+        "release": {
+            "xmap": {
+                "js,css,less": "min.${1}.gz, min.${1}, ${1}.gz",
+                "html,xml":    "${1}.gz"
+            },
+            "showErrors": false,
+            "update": false,
+            "keepSource": false,
+            "autoLogin": false
+        }
+    },
+    "settings": {
+        "map": "compressed",
+        "redirect": "secure",
+        "authStore": "app",
+        "timeouts": {
+            "session": 1800
+        }
+    }
 }
-

@@ -213,14 +213,8 @@ Bit.load({
                 enable:     "bit.platform.os == 'windows' && !bit.settings.static",
 
             },{
-                from:       ['src/esp/esp-legacy'],
-                to:         '${abin}/',
-                set:        'esp',
-                packs:      'esp',
-
-            },{
-                from:       ['src/esp/esp-ng'],
-                to:         '${abin}/',
+                from:       ['src/esp/proto'],
+                to:         '${abin}/esp-proto',
                 set:        'esp',
                 packs:      'esp',
 
@@ -305,7 +299,6 @@ Bit.load({
             },{
                 from:       [
                     'src/esp/edi.h',
-                    'src/esp/esp-app.h',
                     'src/esp/esp.h',
                     'src/esp/mdb.h',
                 ],

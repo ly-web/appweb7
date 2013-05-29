@@ -18,23 +18,59 @@ Bit.load({
             type: 'clean',
             action: "rm('cache/*')",
         },
-        'static/css/all.css': {
-            path: 'static/css/all.css',
-            files: [ 'static/less/*.less'],
+        'all.css': {
+            path: 'client/css/all.min.css.gz',
+            files: [ 'client/css/*.less' ],
             build: "
-                trace('Compile', 'static/less/all.less')
-                // let result = Cmd.run('recess -compress -compile static/less/all.less')
-                let result = Cmd.run('recess -compile static/less/all.less')
-                Path('static/css/all.css').write(result)
+                trace('Compile', 'client/css/all.css.min.gz')
+                rm('client/css/all.min.css.gz')
+                let result = Cmd.run('recess -compress -compile client/css/all.less')
+                for each (f in Path('client/css').files('*.css')) {
+                    result += f.readString()
+                }
+                Path('client/css/all.min.css').write(result)
+                run('gzip client/css/all.min.css')
             ",
         },
 
-    /*
-        Targets to:
-        - minify
-        - compress
-        - convert to all-in-one css
-        - convert to all-in-one js
-     */
+        'all.js': {
+            path: 'client/lib/all.js',
+            files: [ '**.js' ],
+            exclude: /client\/lib\/all.js|client\/lib\/spare\/|client\/lib\/html5shiv/,
+            build: "
+                trace('Compile', 'client/lib/all.js.gz')
+                if (false) {
+                    /* Minify. Disabled for now until Angular gets a better minifier */
+                    for each (f in Path('client').files('**.js')) {
+                        let minified = f.replaceExt('min.js')
+                        if (minified.exists && minified.modified < f.modified) {
+                            let result = Cmd.run('minify ' + f)
+                            minified.write(result)
+                        }
+                    }
+                }
+                rm('client/lib/all.js.gz')
+                let list = [
+                    'client/lib/angular.min.js',
+                    'client/lib/angular-resource.min.js',
+                    'client/lib/angular-bootstrap.min.js',
+                    'client/lib/ui-bootstrap-tpls.min.js',
+                    'client/lib/esp.min.js',
+                    'client/lib/less.min.js',
+                ]
+                list += Path('client').files('app/**.js')
+                list += Path('client').files('components/**.js')
+                let all = Path('client/lib/all.js')
+                strace('Files', list.join('\n'))
+                for each (let f:Path in list) {
+                    let minified = f.replaceExt('min.js')
+                    if (f != minified && minified.exists) {
+                        continue
+                    }
+                    all.append(';' + f.readString())
+                }
+                run('gzip client/lib/all.js')
+            ",
+        },
     },
 })

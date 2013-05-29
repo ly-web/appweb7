@@ -114,22 +114,28 @@ PUBLIC void espInitHtmlOptions(Esp *esp);
     @see Esp
  */
 typedef struct EspRoute {
+    //  MOB - should most of these be cchar?
+    char            *appName;               /**< App module name when compiled flat */
+    struct EspRoute *top;                   /**< Top-level route for this application */
     HttpRoute       *route;                 /**< Back link to the owning route */
+    EspProc         commonService;          /**< Common code for all services */
     MprHash         *env;                   /**< Environment variables for route */
+    MprHash         *config;                /**< App configuration from config.json */
+    //  MOB - should most of these be cchar?
     char            *compile;               /**< Compile template */
     char            *link;                  /**< Link template */
     char            *searchPath;            /**< Search path to use when locating compiler/linker */
-    EspProc         commonService;          /**< Common code for all services */
-    char            *appModuleName;         /**< App module name when compiled flat */
     char            *appModulePath;         /**< App module path when compiled flat */
     char            *cacheDir;              /**< Directory for cached compiled services and views */
+    cchar           *mode;                  /**< Application run mode (debug|release) */
+    bool            autoLogin;              /**< Bypass user login */
 
     char            *clientDir;             /**< Directory for client-side web content */
     char            *controllersDir;        /**< Directory for client-side controllers */
     char            *dbDir;                 /**< Directory for databases */
     char            *migrationsDir;         /**< Directory for migrations */
     char            *modelsDir;             /**< Directory for client models*/
-    char            *partialsDir;           /**< Directory for service views */
+    char            *templatesDir;          /**< Directory for client templates */
     char            *servicesDir;           /**< Directory for services */
     char            *srcDir;                /**< Directory for application source */
     char            *viewsDir;              /**< Directory for service views */
@@ -380,6 +386,7 @@ typedef struct EspReq {
     HttpRoute       *route;                 /**< Route reference */
     EspRoute        *eroute;                /**< Extended route info */
     Esp             *esp;                   /**< Convenient esp reference */
+    MprHash         *feedback;              /**< Feedback messages */
     MprHash         *flash;                 /**< New flash messages */
     MprHash         *lastFlash;             /**< Flash messages from the last request */
     char            *cacheName;             /**< Base name of intermediate compiled file */
@@ -462,7 +469,7 @@ PUBLIC void espAutoFinalize(HttpConn *conn);
     @description Check the request security token. If a required security token is defined in the session state, the
     request must supply the same token with all POST requests. This helps mitigate potential CSRF threats.
     Security tokens are used to help guard against CSRF threats. If a template web page includes the
-        securityToken() control, a security token will be added to the meta section of the generated HTML. When a 
+        renderSecurityToken() control, a security token will be added to the meta section of the generated HTML. When a 
         form is posted from this page, the ESP jQuery script will add the security token to the form parameters.
         This call validates the security token to ensure it matches the security token stored in session state.
     @param conn Http connection object
@@ -585,13 +592,14 @@ PUBLIC cchar *espGetDir(HttpConn *conn);
 /**
     Get a flash message.
     @description This retrieves a flash message of a specified type.
-        Flash messages are special session state messages that are passed to the next request (only). 
+        Flash messages are messages kept in session storage messages that are passed to the next request (only). 
+        The message is cleared after the service action completes.
     @param conn HttpConn connection object
     @param type Type of flash message to retrieve. Possible types include: "error", "inform", "warning", "all".
     @ingroup EspReq
-    @stability Evolving
+    @stability Prototype
  */
-PUBLIC cchar *espGetFlashMessage(HttpConn *conn, cchar *type);
+PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *type);
 
 /**
     Get the current database grid.
@@ -1159,15 +1167,19 @@ PUBLIC void espSetContentLength(HttpConn *conn, MprOff length);
     @param value Cookie value
     @param path URI path to which the cookie applies
     @param domain String Domain in which the cookie applies. Must have 2-3 "." and begin with a leading ".". 
-        For example: domain: .example.com.
+        For example: domain: .example.com. Set to NULL to use the current connection's client domain.
     Some browsers will accept cookies without the initial ".", but the spec: (RFC 2109) requires it.
-    @param lifespan Duration for the cookie to persist in msec
+    @param lifespan Duration for the cookie to persist in msec. Set to a negative number to delete a cookie. Set to
+        zero for a "session" cookie that lives only for the user's session.
     @param isSecure Set to "true" if the cookie only applies for SSL based connections
     @ingroup EspReq
     @stability Evolving
  */
 PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan,
         bool isSecure);
+
+
+//  MOB need espRemoveCookie.
 
 /**
     Set the transmission (response) content mime type
@@ -1219,6 +1231,9 @@ PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *data);
  */
 PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...);
 
+//  MOB - DOC
+PUBLIC void espSetFeedback(HttpConn *conn, cchar *kind, cchar *fmt, ...);
+
 //  MOB - improve doc. Should be set not send
 /**
     Send a flash message
@@ -1231,6 +1246,9 @@ PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...);
     @internal
  */
 PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args);
+
+//  MOB - DOC
+PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args);
 
 /**
     Set the current database grid
@@ -1592,26 +1610,6 @@ PUBLIC void espButton(HttpConn *conn, cchar *text, cchar *value, cchar *options)
 PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
 
 /**
-    Render a graphic chart.
-    @description The chart control can display static or dynamic tabular data. The client chart control manages
-        sorting by column, dynamic data refreshes, pagination, and clicking on rows.
-    TODO. This is incomplete.
-    @param conn Http connection object
-    @param grid Data to display. The data is a grid of data. Use ediMakeGrid or ediReadGrid.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg columns Object hash of column entries. Each column entry is (in turn) an object hash of options. If unset, 
-        all columns are displayed using defaults.
-    @arg kind String Type of chart. Select from: piechart, table, linechart, annotatedtimeline, guage, map, 
-        motionchart, areachart, intensitymap, imageareachart, barchart, imagebarchart, bioheatmap, columnchart, 
-        linechart, imagelinechart, imagepiechart, scatterchart (and more).
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
-    @internal
- */
-PUBLIC void espChart(HttpConn *conn, EdiGrid *grid, cchar *options);
-
-/**
     Render an input checkbox. 
     @description This creates a checkbox suitable for use within an input form. 
     @param conn Http connection object
@@ -1650,22 +1648,6 @@ PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
  */
 PUBLIC void espEndform(HttpConn *conn);
 
-// MOB - this retain default implies it is displayed for zero seconds
-/**
-    Render flash messages.
-    @description Flash messages are one-time messages that are displayed to the client on the next request (only).
-    Flash messages use the session state store but persist for only one request.
-        See #espSetFlash for how to define flash messages. 
-    @param conn Http connection object
-    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg retain -- Number of seconds to retain the message. If <= 0, the message is retained until another
-        message is displayed. Default is 0.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espFlash(HttpConn *conn, cchar *kinds, cchar *options);
 
 /**
     Render an HTML form .
@@ -1921,20 +1903,26 @@ PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *options);
     @internal
  */
 PUBLIC void espText(HttpConn *conn, cchar *field, cchar *options);
+#endif /* DEPRECATED */
 
 /**
-    Render a tree control. 
+    Render flash messages.
+    @description Flash messages are one-time messages that are displayed to the client on the next request (only).
+    Flash messages use the session state store but persist for only one request.
+        See #espSetFlash for how to define flash messages. 
     @param conn Http connection object
-    @description The tree control can display static or dynamic tree data.
-    @param grid Optional initial data for the control. The data option may be used with the refresh option to 
-          dynamically refresh the data. The tree data is typically an XML document.
+    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
     @param options Extra options. See \l EspControl \el for a list of the standard options.
+    @arg retain -- Number of seconds to retain the message. If <= 0, the message is retained until another
+        message is displayed. Default is 0.
     @ingroup EspControl
     @stability Deprecated
     @internal
  */
-PUBLIC void espTree(HttpConn *conn, EdiGrid *grid, cchar *options);
-#endif
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *options);
+
+//  MOB - DOC
+PUBLIC void espRenderFeedback(HttpConn *conn, cchar *kinds, cchar *options);
 
 /**
     Generate a security token.
@@ -2084,20 +2072,6 @@ PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
  */
 PUBLIC void endform();
 
-/**
-    Render flash notices.
-    @description Flash notices are one-time messages that are displayed to the client on the next request (only).
-        See #espSetFlash for how to define flash messages. 
-    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg retain -- Number of seconds to retain the message. If <= 0, the message is retained until another
-        message is displayed. Default is 0.
-    MOB - this default implies it is displayed for zero seconds
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void flash(cchar *kinds, cchar *options);
 
 //  MOB - seems inconsistent that form takes a record?
 /**
@@ -2225,7 +2199,9 @@ PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
 PUBLIC void script(cchar *uri, cchar *options);
 
 //  MOB DOC
-PUBLIC void scripts(cchar *options);
+PUBLIC void scripts(cchar *pattern);
+
+PUBLIC void securityToken();
 
 /**
     Render a stylesheet link
@@ -2321,6 +2297,26 @@ PUBLIC void text(cchar *field, cchar *options);
 
 #endif
 
+
+/**
+    Render flash notices.
+    @description Flash notices are one-time messages that are displayed to the client on the next request (only).
+        See #espSetFlash for how to define flash messages. 
+    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
+    @param options Extra options. See \l EspControl \el for a list of the standard options.
+    @arg retain -- Number of seconds to retain the message. If <= 0, the message is retained until another
+        message is displayed. Default is 0.
+    MOB - this default implies it is displayed for zero seconds
+    @ingroup EspAbbrev
+    @stability Deprecated
+    @internal
+ */
+PUBLIC void renderFlash(cchar *kinds, cchar *options);
+
+//  MOB - DOC
+PUBLIC void renderFeedback(cchar *kinds, cchar *options);
+
+
 /**
     Generate a security token.
     @description Security tokens are used to help guard against CSRF threats.
@@ -2332,7 +2328,7 @@ PUBLIC void text(cchar *field, cchar *options);
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC void securityToken();
+PUBLIC void renderSecurityToken();
 
 /******************************* Abbreviated API ******************************/
 
@@ -2397,6 +2393,22 @@ PUBLIC void dontAutoFinalize();
     @stability Evolving
  */
 PUBLIC void finalize();
+
+/**
+    Set a flash notification message.
+    @description Flash messages persist for only one request and are a convenient way to pass state information or 
+    feedback messages to the next request. 
+    Flash messages use the session state store, but persist only for one request.
+    This routine calls #espSetFlash.
+    @param kind Kind of flash message.
+    @param fmt Printf style message format
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC void flash(cchar *kind, cchar *fmt, ...);
+
+//  MOB DOC
+PUBLIC void feedback(cchar *kind, cchar *fmt, ...);
 
 /**
     Flush transmit data. 
@@ -2634,6 +2646,7 @@ PUBLIC bool isEof();
  */
 PUBLIC bool isFinalized();
 
+#if DEPRECATE || 1
 /**
     Set an informational flash notification message.
     @description Flash messages persist for only one request and are a convenient way to pass state information or 
@@ -2643,6 +2656,7 @@ PUBLIC bool isFinalized();
     @stability Evolving
  */
 PUBLIC void inform(cchar *fmt, ...);
+#endif
 
 /**
     Test if the connection is using SSL and is secure
@@ -2694,15 +2708,9 @@ PUBLIC MprHash *makeHash(cchar *fmt, ...);
  */
 PUBLIC EdiRec *makeRec(cchar *content);
 
-/**
-    Set an error flash notification message.
-    @description Flash messages persist for only one request and are a convenient way to pass state information or 
-    feedback messages to the next request. 
-    @param fmt Printf style message format
-    @ingroup EspAbbrev
-    @stability Evolving
- */
-PUBLIC void notice(cchar *fmt, ...);
+// MOB DOC
+PUBLIC bool mode(cchar *kind);
+PUBLIC cchar *makeUri(cchar *target);
 
 /**
     Get a request parameter
@@ -3001,22 +3009,6 @@ PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value);
     @stability Evolving
  */
 PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *data);
-
-//  MOB - rename setFeedback
-//  What about sendError, sendInform, send...
-
-/**
-    Set a flash notification message.
-    @description Flash messages persist for only one request and are a convenient way to pass state information or 
-    feedback messages to the next request. 
-    Flash messages use the session state store, but persist only for one request.
-    This routine calls #espSetFlash.
-    @param kind Kind of flash message.
-    @param fmt Printf style message format
-    @ingroup EspAbbrev
-    @stability Evolving
- */
-PUBLIC void setFlash(cchar *kind, cchar *fmt, ...);
 
 /**
     Set the current database grid

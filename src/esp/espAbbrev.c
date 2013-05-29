@@ -9,8 +9,631 @@
 #include    "esp.h"
 
 #if BIT_PACK_ESP
-/******************************* Abbreviated Controls *************************/ 
+
+/*************************************** Code *********************************/
+
+PUBLIC void addHeader(cchar *key, cchar *fmt, ...)
+{
+    va_list     args;
+    cchar       *value;
+
+    va_start(args, fmt);
+    value = sfmtv(fmt, args);
+    espAddHeaderString(getConn(), key, value);
+    va_end(args);
+}
+
+
+PUBLIC EdiRec *createRec(cchar *tableName, MprHash *params)
+{
+    return espCreateRec(getConn(), tableName, params);
+}
+
+
+/*
+    Create a new session. Always returns with a fresh session
+ */
+PUBLIC cchar *createSession()
+{
+    HttpSession *session;
+
+    if ((session = httpCreateSession(getConn())) != 0) {
+        return session->id;
+    }
+    return 0;
+}
+
+
+/*
+    Destroy a session and erase the session state data.
+    This emits an expired Set-Cookie header to the browser to force it to erase the cookie.
+ */
+PUBLIC void destroySession()
+{
+    httpDestroySession(getConn());
+}
+
+
+PUBLIC void dontAutoFinalize()
+{
+    espSetAutoFinalizing(getConn(), 0);
+}
+
+
+PUBLIC void feedback(cchar *kind, cchar *fmt, ...)
+{
+    va_list     args;
+
+    va_start(args, fmt);
+    espSetFeedbackv(getConn(), kind, fmt, args);
+    va_end(args);
+}
+
+
+PUBLIC void finalize()
+{
+    espFinalize(getConn());
+}
+
+
+PUBLIC void flash(cchar *kind, cchar *fmt, ...)
+{
+    va_list     args;
+
+    va_start(args, fmt);
+    espSetFlashv(getConn(), kind, fmt, args);
+    va_end(args);
+}
+
+
+PUBLIC void flush()
+{
+    espFlush(getConn());
+}
+
+
+PUBLIC MprList *getColumns(EdiRec *rec)
+{
+    return espGetColumns(getConn(), rec);
+}
+
+
+PUBLIC HttpConn *getConn()
+{
+    return mprGetThreadData(((Esp*) MPR->espService)->local);
+}
+
+
+PUBLIC cchar *getCookies()
+{
+    return espGetCookies(getConn());
+}
+
+
+PUBLIC MprOff getContentLength()
+{
+    return espGetContentLength(getConn());
+}
+
+
+PUBLIC cchar *getContentType()
+{
+    return getConn()->rx->mimeType;
+}
+
+
+PUBLIC Edi *getDatabase()
+{
+    return espGetDatabase(getConn());
+}
+
+
+PUBLIC EspRoute *getEspRoute()
+{
+    return espGetEspRoute(getConn());
+}
+
+
+PUBLIC cchar *getDir()
+{
+    return getConn()->rx->route->dir;
+}
+
+
+PUBLIC cchar *getField(EdiRec *rec, cchar *field)
+{
+    return ediGetFieldValue(rec, field);
+}
+
+
+PUBLIC cchar *getHeader(cchar *key)
+{
+    return espGetHeader(getConn(), key);
+}
+
+
+PUBLIC cchar *getMethod()
+{
+    return espGetMethod(getConn());
+}
+
+
+PUBLIC cchar *getQuery()
+{
+    return getConn()->rx->parsedUri->query;
+}
+
+
+PUBLIC cchar *getReferrer()
+{
+    return espGetReferrer(getConn());
+}
+
+
+/*
+    Get a session and return the session ID. Creates a session if one does not already exist.
+ */
+PUBLIC cchar *getSessionID()
+{
+    HttpSession *session;
+
+    if ((session = httpGetSession(getConn(), 1)) != 0) {
+        return session->id;
+    }
+    return 0;
+}
+
+
+PUBLIC cchar *getSessionVar(cchar *key)
+{
+    return httpGetSessionVar(getConn(), key, 0);
+}
+
+
+PUBLIC cchar *session(cchar *key)
+{
+    return getSessionVar(key);
+}
+
+
+PUBLIC cchar *getTop()
+{
+    return espGetTop(getConn());
+}
+
+
+PUBLIC MprHash *getUploads()
+{
+    return espGetUploads(getConn());
+}
+
+
+PUBLIC cchar *getUri()
+{
+    return espGetUri(getConn());
+}
+
+
+PUBLIC bool isEof()
+{
+    return httpIsEof(getConn());
+}
+
+
+PUBLIC bool isFinalized()
+{
+    return espIsFinalized(getConn());
+}
+
+
+PUBLIC bool isSecure()
+{
+    return espIsSecure(getConn());
+}
+
+
+PUBLIC EdiGrid *makeGrid(cchar *contents)
+{
+    return espMakeGrid(contents);
+}
+
+
+PUBLIC MprHash *makeHash(cchar *fmt, ...)
+{
+    va_list     args;
+    cchar       *str;
+
+    va_start(args, fmt);
+    str = sfmtv(fmt, args);
+    va_end(args);
+    return espMakeHash("%s", str);
+}
+
+
+PUBLIC EdiRec *makeRec(cchar *contents)
+{
+    return ediMakeRec(contents);
+}
+
+
+PUBLIC cchar *makeUri(cchar *target)
+{
+    return espUri(getConn(), target);
+}
+
+
+PUBLIC bool mode(cchar *kind)
+{
+    EspRoute    *eroute;
+
+    eroute = getConn()->rx->route->eroute;
+    return smatch(eroute->mode, kind);
+}
+
+
+PUBLIC cchar *param(cchar *key)
+{
+    return espGetParam(getConn(), key, 0);
+}
+
+
+PUBLIC MprHash *params()
+{
+    return espGetParams(getConn());
+}
+
+
+PUBLIC ssize receive(char *buf, ssize len)
+{
+    return httpRead(getConn(), buf, len);
+}
+
+
+PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+{
+    return setRec(ediReadOneWhere(getDatabase(), tableName, fieldName, operation, value));
+}
+
+
+PUBLIC EdiRec *readRec(cchar *tableName, cchar *key)
+{
+    return setRec(ediReadRec(getDatabase(), tableName, key));
+}
+
+
+PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key)
+{
+    return setRec(ediReadRec(getDatabase(), tableName, key));
+}
+
+
+PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+{
+    return setGrid(ediReadWhere(getDatabase(), tableName, fieldName, operation, value));
+}
+
+
+PUBLIC EdiGrid *readTable(cchar *tableName)
+{
+    return setGrid(espReadTable(getConn(), tableName));
+}
+
+
+PUBLIC void redirect(cchar *target)
+{
+    espRedirect(getConn(), 302, target);
+}
+
+
+PUBLIC void redirectBack()
+{
+    espRedirectBack(getConn());
+}
+
+
+PUBLIC void removeCookie(cchar *name)
+{
+    espSetCookie(getConn(), name, "", "/", NULL, -1, 0);
+}
+
+
+PUBLIC bool removeRec(cchar *tableName, cchar *key)
+{
+    return espRemoveRec(getConn(), tableName, key);
+}
+
+
+PUBLIC ssize render(cchar *fmt, ...)
+{
+    va_list     args;
+    ssize       count;
+    cchar       *msg;
+
+    va_start(args, fmt);
+    msg = sfmtv(fmt, args);
+    count = espRenderString(getConn(), msg);
+    va_end(args);
+    return count;
+}
+
+
+PUBLIC ssize renderCached()
+{
+    return espRenderCached(getConn());;
+}
+
+
+PUBLIC void renderError(int status, cchar *fmt, ...)
+{
+    va_list     args;
+    cchar       *msg;
+
+    va_start(args, fmt);
+    msg = sfmt(fmt, args);
+    espRenderError(getConn(), status, "%s", msg);
+    va_end(args);
+}
+
+
+PUBLIC ssize renderFile(cchar *path)
+{
+    return espRenderFile(getConn(), path);
+}
+
+
+PUBLIC void renderFlash(cchar *kind, cchar *optionString)
+{
+    espRenderFlash(getConn(), kind, optionString);
+}
+
+
+PUBLIC ssize renderGrid(EdiGrid *grid)
+{
+    return espRenderGrid(getConn(), grid, 0);
+}
+
+
+PUBLIC ssize renderRec(EdiRec *rec)
+{
+    return espRenderRec(getConn(), rec, 0);
+}
+
+
+PUBLIC void renderResult(int status)
+{
+    espRenderResult(getConn(), status);
+}
+
+
+PUBLIC ssize renderSafe(cchar *fmt, ...)
+{
+    va_list     args;
+    ssize       count;
+    cchar       *msg;
+
+    va_start(args, fmt);
+    msg = sfmtv(fmt, args);
+    count = espRenderSafeString(getConn(), msg);
+    va_end(args);
+    return count;
+}
+
+
+PUBLIC ssize renderString(cchar *s)
+{
+    return espRenderString(getConn(), s);
+}
+
+
+PUBLIC void renderView(cchar *view)
+{
+    espRenderView(getConn(), view);
+}
+
+
+PUBLIC void renderSecurityToken()
+{
+    espSecurityToken(getConn());
+}
+
+
+#if UNUSED
+/*
+    <% scripts("debug=patterns", release="patterns" %>
+
+    Where patterns may contain *, ** and !pattern for exclusion
+ */
+PUBLIC void scripts(cchar *spec, ...)
+{
+    HttpConn    *conn;
+    EspRoute    *eroute;
+    EspReq      *req;
+    va_list     args;
+    MprList     *files;
+    cchar       *indent, *uri, *appMode, *mode, *path;
+    char        *arg, *patterns;
+    int         next;
+
+    conn = getConn();
+    req = conn->data;
+    eroute = req->eroute;
+
+    va_start(args, spec);
+    arg = sclone(spec);
+    files = 0;
+    appMode = mprQueryJson(eroute->top->config, "mode");
+    do {
+        mode = stok(arg, "=", &patterns);
+        if (smatch(appMode, mode)) {
+            files = mprGlobPathFiles(req->eroute->clientDir, patterns, MPR_PATH_RELATIVE);
+            break;
+        }
+        arg = va_arg(args, char*);
+    } while (arg);
+    va_end(args);
+
+    if (!files) {
+        mprError("No scripts defined for current application mode");
+    } else {
+        indent = "";
+        for (ITERATE_ITEMS(files, path, next)) {
+            print("PATH %s", path);
+            uri = httpLink(conn, path, NULL);
+            if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
+                espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
+                espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
+                espRender(conn, "%s<![endif]-->\n", indent);
+            } else {
+                espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
+            }
+            indent = "    ";
+        }
+    }
+}
+#else
+/*
+    <% scripts("debug=patterns", release="patterns" %>
+
+    Where patterns may contain *, ** and !pattern for exclusion
+ */
+PUBLIC void scripts(cchar *patterns)
+{
+    HttpConn    *conn;
+    EspReq      *req;
+    MprList     *files;
+    cchar       *indent, *uri, *path;
+    int         next;
+
+    conn = getConn();
+    req = conn->data;
+
+    if ((files = mprGlobPathFiles(req->eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
+        mprError("No scripts defined for current application mode");
+    } else {
+        indent = "";
+        for (ITERATE_ITEMS(files, path, next)) {
+            uri = httpLink(conn, path, NULL);
+            if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
+                espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
+                espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
+                espRender(conn, "%s<![endif]-->\n", indent);
+            } else {
+                espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
+            }
+            indent = "    ";
+        }
+    }
+}
+#endif
+
+
+PUBLIC void setConn(HttpConn *conn)
+{
+    espSetConn(conn);
+}
+
+
+PUBLIC void setContentType(cchar *mimeType)
+{
+    espSetContentType(getConn(), mimeType);
+}
+
+
+PUBLIC void setCookie(cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTicks lifespan, bool isSecure)
+{
+    espSetCookie(getConn(), name, value, path, cookieDomain, lifespan, isSecure);
+}
+
+
+PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value)
+{
+    return espSetField(rec, fieldName, value);
+}
+
+
+PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *params)
+{
+    return espSetFields(rec, params);
+}
+
+
+PUBLIC void setHeader(cchar *key, cchar *fmt, ...)
+{
+    va_list     args;
+    cchar       *value;
+
+    va_start(args, fmt);
+    value = sfmtv(fmt, args);
+    espSetHeaderString(getConn(), key, value);
+    va_end(args);
+}
+
+
+PUBLIC void setParam(cchar *key, cchar *value)
+{
+    espSetParam(getConn(), key, value);
+}
+
+
+PUBLIC void setIntParam(cchar *key, int value)
+{
+    espSetIntParam(getConn(), key, value);
+}
+
+
+PUBLIC void setSessionVar(cchar *key, cchar *value)
+{
+    httpSetSessionVar(getConn(), key, value);
+}
+
+
+PUBLIC void setStatus(int status)
+{
+    espSetStatus(getConn(), status);
+}
+
+
+PUBLIC void setTimeout(void *proc, MprTicks timeout, void *data)
+{
+    mprCreateEvent(getConn()->dispatcher, "setTimeout", (int) timeout, proc, data, 0);
+}
+
+
+PUBLIC void showRequest()
+{
+    espShowRequest(getConn());
+}
+
+
+PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs)
+{
+    espUpdateCache(getConn(), uri, data, lifesecs);
+}
+
+
+PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
+{
+    return espUpdateField(getConn(), tableName, key, fieldName, value);
+}
+
+
+PUBLIC bool updateFields(cchar *tableName, MprHash *params)
+{
+    return espUpdateFields(getConn(), tableName, params);
+}
+
+
+PUBLIC bool updateRec(EdiRec *rec)
+{
+    return espUpdateRec(getConn(), rec);
+}
+
+
+/************************************ Deprecated ****************************/
 #if DEPRECATED || 1
+/*
+    Deprecated in 4.4
+ */
 
 PUBLIC void alert(cchar *text, cchar *optionString)
 {
@@ -36,12 +659,6 @@ PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *optionString)
 }
 
 
-PUBLIC void chart(EdiGrid *grid, cchar *optionString)
-{
-    espChart(getConn(), grid, optionString);
-}
-
-
 PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *optionString) 
 {
     espCheckbox(getConn(), field, checkedValue, optionString);
@@ -57,12 +674,6 @@ PUBLIC void division(cchar *body, cchar *optionString)
 PUBLIC void endform() 
 {
     espEndform(getConn());
-}
-
-
-PUBLIC void flash(cchar *kind, cchar *optionString)
-{
-    espFlash(getConn(), kind, optionString);
 }
 
 
@@ -168,220 +779,19 @@ PUBLIC void text(cchar *field, cchar *optionString)
     espText(getConn(), field, optionString);
 }
 
-#endif /* DEPRECATED */
 
-PUBLIC void scripts(cchar *optionString)
-{
-    espScripts(getConn(), optionString);
-}
-
-PUBLIC void securityToken()
-{
-    espSecurityToken(getConn());
-}
-
-
-/******************************* Abbreviated API ******************************/
-
-PUBLIC void addHeader(cchar *key, cchar *fmt, ...)
-{
-    va_list     args;
-    cchar       *value;
-
-    va_start(args, fmt);
-    value = sfmtv(fmt, args);
-    espAddHeaderString(getConn(), key, value);
-    va_end(args);
-}
-
-
-PUBLIC EdiRec *createRec(cchar *tableName, MprHash *params)
-{
-    return espCreateRec(getConn(), tableName, params);
-}
-
-
-/*
-    Create a new session. Always returns with a fresh session
- */
-PUBLIC cchar *createSession()
-{
-    HttpSession *session;
-
-    if ((session = httpCreateSession(getConn())) != 0) {
-        return session->id;
-    }
-    return 0;
-}
-
-
-/*
-    Destroy a session and erase the session state data.
-    This emits an expired Set-Cookie header to the browser to force it to erase the cookie.
- */
-PUBLIC void destroySession()
-{
-    httpDestroySession(getConn());
-}
-
-
-PUBLIC void dontAutoFinalize()
-{
-    espSetAutoFinalizing(getConn(), 0);
-}
-
-
-PUBLIC void finalize()
-{
-    espFinalize(getConn());
-}
-
-
-PUBLIC void flush()
-{
-    espFlush(getConn());
-}
-
-
-PUBLIC MprList *getColumns(EdiRec *rec)
-{
-    return espGetColumns(getConn(), rec);
-}
-
-
-PUBLIC HttpConn *getConn()
-{
-    return mprGetThreadData(((Esp*) MPR->espService)->local);
-}
-
-
-PUBLIC cchar *getCookies()
-{
-    return espGetCookies(getConn());
-}
-
-
-PUBLIC MprOff getContentLength()
-{
-    return espGetContentLength(getConn());
-}
-
-
-PUBLIC cchar *getContentType()
-{
-    return getConn()->rx->mimeType;
-}
-
-
-PUBLIC Edi *getDatabase()
-{
-    return espGetDatabase(getConn());
-}
-
-
-PUBLIC EspRoute *getEspRoute()
-{
-    return espGetEspRoute(getConn());
-}
-
-
-PUBLIC cchar *getDir()
-{
-    return getConn()->rx->route->dir;
-}
-
-
-PUBLIC cchar *getField(EdiRec *rec, cchar *field)
-{
-    return ediGetFieldValue(rec, field);
-}
-
-
-#if DEPRECATED || 1
 PUBLIC EdiGrid *getGrid()
 {
     return getConn()->grid;
 }
-#endif
 
 
-PUBLIC cchar *getHeader(cchar *key)
-{
-    return espGetHeader(getConn(), key);
-}
-
-
-PUBLIC cchar *getMethod()
-{
-    return espGetMethod(getConn());
-}
-
-
-PUBLIC cchar *getQuery()
-{
-    return getConn()->rx->parsedUri->query;
-}
-
-
-#if DEPRECATED || 1
 PUBLIC EdiRec *getRec()
 {
     return getConn()->record;
 }
-#endif
 
 
-PUBLIC cchar *getReferrer()
-{
-    return espGetReferrer(getConn());
-}
-
-
-/*
-    Get a session and return the session ID. Creates a session if one does not already exist.
- */
-PUBLIC cchar *getSessionID()
-{
-    HttpSession *session;
-
-    if ((session = httpGetSession(getConn(), 1)) != 0) {
-        return session->id;
-    }
-    return 0;
-}
-
-
-PUBLIC cchar *getSessionVar(cchar *key)
-{
-    return httpGetSessionVar(getConn(), key, 0);
-}
-
-
-PUBLIC cchar *session(cchar *key)
-{
-    return getSessionVar(key);
-}
-
-
-PUBLIC cchar *getTop()
-{
-    return espGetTop(getConn());
-}
-
-
-PUBLIC MprHash *getUploads()
-{
-    return espGetUploads(getConn());
-}
-
-
-PUBLIC cchar *getUri()
-{
-    return espGetUri(getConn());
-}
-
-
-#if DEPRECATED || 1
 PUBLIC bool hasGrid()
 {
     return espHasGrid(getConn());
@@ -392,7 +802,6 @@ PUBLIC bool hasRec()
 {
     return espHasRec(getConn());
 }
-#endif
 
 
 PUBLIC void inform(cchar *fmt, ...)
@@ -405,386 +814,24 @@ PUBLIC void inform(cchar *fmt, ...)
 }
 
 
-PUBLIC bool isEof()
+PUBLIC void securityToken()
 {
-    return httpIsEof(getConn());
+    espSecurityToken(getConn());
 }
 
 
-PUBLIC bool isFinalized()
-{
-    return espIsFinalized(getConn());
-}
-
-
-PUBLIC bool isSecure()
-{
-    return espIsSecure(getConn());
-}
-
-
-PUBLIC EdiGrid *makeGrid(cchar *contents)
-{
-    return espMakeGrid(contents);
-}
-
-
-PUBLIC MprHash *makeHash(cchar *fmt, ...)
-{
-    va_list     args;
-    cchar       *str;
-
-    va_start(args, fmt);
-    str = sfmtv(fmt, args);
-    va_end(args);
-    return espMakeHash("%s", str);
-}
-
-
-PUBLIC EdiRec *makeRec(cchar *contents)
-{
-    return ediMakeRec(contents);
-}
-
-
-PUBLIC cchar *makeUri(cchar *target)
-{
-    return espUri(getConn(), target);
-}
-
-
-PUBLIC cchar *param(cchar *key)
-{
-    return espGetParam(getConn(), key, 0);
-}
-
-
-PUBLIC MprHash *params()
-{
-    return espGetParams(getConn());
-}
-
-
-#if UNUSED
-//  MOB - rethink
-PUBLIC bool pmatch(cchar *key)
-{
-    return smatch(espGetParam(getConn(), key, 0), getField(getRec(), key));
-}
-#endif
-
-
-PUBLIC ssize receive(char *buf, ssize len)
-{
-    return httpRead(getConn(), buf, len);
-}
-
-
-PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
-{
-    return setRec(ediReadOneWhere(getDatabase(), tableName, fieldName, operation, value));
-}
-
-
-PUBLIC EdiRec *readRec(cchar *tableName, cchar *key)
-{
-    return setRec(ediReadRec(getDatabase(), tableName, key));
-}
-
-
-PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key)
-{
-    return setRec(ediReadRec(getDatabase(), tableName, key));
-}
-
-
-PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
-{
-    return setGrid(ediReadWhere(getDatabase(), tableName, fieldName, operation, value));
-}
-
-
-PUBLIC EdiGrid *readTable(cchar *tableName)
-{
-    return setGrid(espReadTable(getConn(), tableName));
-}
-
-
-#if UNUSED
-PUBLIC EdiGrid *readTable(cchar *tableName)
-{
-    EdiGrid *grid;
-    
-    grid = ediReadWhere(getDatabase(), tableName, 0, 0, 0);
-    setGrid(grid);
-    return grid;
-}
-#endif
-
-
-PUBLIC void redirect(cchar *target)
-{
-    espRedirect(getConn(), 302, target);
-}
-
-
-PUBLIC void redirectBack()
-{
-    espRedirectBack(getConn());
-}
-
-
-PUBLIC void removeCookie(cchar *name)
-{
-    espSetCookie(getConn(), name, "", "/", NULL, -1, 0);
-}
-
-
-PUBLIC bool removeRec(cchar *tableName, cchar *key)
-{
-    return espRemoveRec(getConn(), tableName, key);
-}
-
-
-PUBLIC ssize render(cchar *fmt, ...)
-{
-    va_list     args;
-    ssize       count;
-    cchar       *msg;
-
-    va_start(args, fmt);
-    msg = sfmtv(fmt, args);
-    count = espRenderString(getConn(), msg);
-    va_end(args);
-    return count;
-}
-
-
-PUBLIC ssize renderCached()
-{
-    return espRenderCached(getConn());;
-}
-
-
-PUBLIC void renderError(int status, cchar *fmt, ...)
-{
-    va_list     args;
-    cchar       *msg;
-
-    va_start(args, fmt);
-    msg = sfmt(fmt, args);
-    espRenderError(getConn(), status, "%s", msg);
-    va_end(args);
-}
-
-
-#if UNUSED
-PUBLIC void renderFailure(cchar *fmt, ...)
-{
-    va_list     args;
-    cchar       *msg;
-
-    va_start(args, fmt);
-    msg = sfmtv(fmt, args);
-    va_end(args);
-    espRenderFailure(getConn(), "%s", msg);
-}
-#endif
-
-
-PUBLIC ssize renderFile(cchar *path)
-{
-    return espRenderFile(getConn(), path);
-}
-
-
-PUBLIC ssize renderGrid(EdiGrid *grid)
-{
-    return espRenderGrid(getConn(), grid, 0);
-}
-
-
-PUBLIC ssize renderRec(EdiRec *rec)
-{
-    return espRenderRec(getConn(), rec, 0);
-}
-
-
-PUBLIC ssize renderSafe(cchar *fmt, ...)
-{
-    va_list     args;
-    ssize       count;
-    cchar       *msg;
-
-    va_start(args, fmt);
-    msg = sfmtv(fmt, args);
-    count = espRenderSafeString(getConn(), msg);
-    va_end(args);
-    return count;
-}
-
-
-PUBLIC ssize renderString(cchar *s)
-{
-    return espRenderString(getConn(), s);
-}
-
-
-#if UNUSED
-PUBLIC void renderSuccess(cchar *fmt, ...)
-{
-    va_list     args;
-    cchar       *msg;
-
-    va_start(args, fmt);
-    msg = sfmtv(fmt, args);
-    va_end(args);
-    espRenderSuccess(getConn(), "%s", msg);
-}
-#endif
-
-
-PUBLIC void renderResult(int status)
-{
-    espRenderResult(getConn(), status);
-}
-
-
-PUBLIC void renderView(cchar *view)
-{
-    espRenderView(getConn(), view);
-}
-
-
-PUBLIC void setConn(HttpConn *conn)
-{
-    espSetConn(conn);
-}
-
-
-PUBLIC void setContentType(cchar *mimeType)
-{
-    espSetContentType(getConn(), mimeType);
-}
-
-
-PUBLIC void setCookie(cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTicks lifespan, bool isSecure)
-{
-    espSetCookie(getConn(), name, value, path, cookieDomain, lifespan, isSecure);
-}
-
-
-PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value)
-{
-    return espSetField(rec, fieldName, value);
-}
-
-
-PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *params)
-{
-    return espSetFields(rec, params);
-}
-
-
-PUBLIC void setFlash(cchar *kind, cchar *fmt, ...)
-{
-    va_list     args;
-
-    va_start(args, fmt);
-    espSetFlashv(getConn(), kind, fmt, args);
-    va_end(args);
-}
-
-
-#if DEPRECATED || 1
 PUBLIC EdiGrid *setGrid(EdiGrid *grid)
 {
     getConn()->grid = grid;
     return grid;
 }
-#endif
 
 
-PUBLIC void setHeader(cchar *key, cchar *fmt, ...)
-{
-    va_list     args;
-    cchar       *value;
-
-    va_start(args, fmt);
-    value = sfmtv(fmt, args);
-    espSetHeaderString(getConn(), key, value);
-    va_end(args);
-}
-
-
-PUBLIC void setParam(cchar *key, cchar *value)
-{
-    espSetParam(getConn(), key, value);
-}
-
-
-PUBLIC void setIntParam(cchar *key, int value)
-{
-    espSetIntParam(getConn(), key, value);
-}
-
-
-#if DEPRECATED || 1
 PUBLIC EdiRec *setRec(EdiRec *rec)
 {
     return espSetRec(getConn(), rec);
 }
-#endif
-
-
-PUBLIC void setSessionVar(cchar *key, cchar *value)
-{
-    httpSetSessionVar(getConn(), key, value);
-}
-
-
-PUBLIC void setStatus(int status)
-{
-    espSetStatus(getConn(), status);
-}
-
-
-PUBLIC void setTimeout(void *proc, MprTicks timeout, void *data)
-{
-    mprCreateEvent(getConn()->dispatcher, "setTimeout", (int) timeout, proc, data, 0);
-}
-
-
-PUBLIC void showRequest()
-{
-    espShowRequest(getConn());
-}
-
-
-PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs)
-{
-    espUpdateCache(getConn(), uri, data, lifesecs);
-}
-
-
-PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
-{
-    return espUpdateField(getConn(), tableName, key, fieldName, value);
-}
-
-
-PUBLIC bool updateFields(cchar *tableName, MprHash *params)
-{
-    return espUpdateFields(getConn(), tableName, params);
-}
-
-
-PUBLIC bool updateRec(EdiRec *rec)
-{
-    return espUpdateRec(getConn(), rec);
-}
-
-
+#endif /* DEPRECATED */
 #endif /* BIT_PACK_ESP */
 /*
     @copy   default

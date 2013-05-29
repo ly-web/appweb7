@@ -10,6 +10,10 @@
 #include    "edi.h"
 
 #if BIT_PACK_ESP
+#if DEPRECATE || 1
+/*
+    Deprecated in 4.4
+ */
 /************************************* Local **********************************/
 
 #define EDATA(s)        "data-esp-" s           /* Prefix for data attributes */
@@ -23,16 +27,6 @@ typedef struct EspScript {
     cchar   *option;                            /* Esp control option that must be present to trigger emitting script */
     int     flags;                              /* Conditional generation flags */
 } EspScript;
-
-static EspScript angularScripts[] = {
-    { "/js/html5shiv",           0,              SCRIPT_IE },
-    { "/lib/angular",            0,              0 },
-    { "/lib/angular-resource",   0,              0 },
-    { "/lib/ui-bootstrap-tpls",  0,              0 },
-    { "/lib/less",               0,              0 },
-    { "/app",                    0,              0,},
-    { 0,                         0,              0 },
-};
 
 static EspScript defaultScripts[] = {
     { "/js/jquery",              0,              0 },
@@ -143,12 +137,6 @@ PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *option
 }
 
 
-PUBLIC void espChart(HttpConn *conn, EdiGrid *grid, cchar *optionString)
-{
-    //  TODO
-}
-
-
 /*
     checkbox field 
 
@@ -164,7 +152,8 @@ PUBLIC void espCheckbox(HttpConn *conn, cchar *field, cchar *checkedValue, cchar
     options = httpGetOptions(optionString);
     value = getValue(conn, field, options);
     checked = scaselessmatch(value, checkedValue) ? " checked='yes'" : "";
-    espRender(conn, "<input name='%s' type='checkbox'%s%s value='%s' />\r\n", field, map(conn, options), checked, checkedValue);
+    espRender(conn, "<input name='%s' type='checkbox'%s%s value='%s' />\r\n", field, map(conn, options), 
+        checked, checkedValue);
     espRender(conn, "    <input name='%s' type='hidden'%s value='' />", field, map(conn, options));
 }
 
@@ -181,28 +170,6 @@ PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *optionString)
 PUBLIC void espEndform(HttpConn *conn) 
 {
     espRenderString(conn, "</form>");
-}
-
-
-PUBLIC void espFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
-{
-    EspReq      *req;
-    MprHash     *options;
-    MprKey      *kp;
-    cchar       *msg;
-   
-    req = conn->data;
-    options = httpGetOptions(optionString);
-    if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
-        return;
-    }
-    for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
-        msg = kp->data;
-        if (strstr(kinds, kp->key) || strstr(kinds, "all")) {
-            httpInsertOption(options, "class", sfmt(ESTYLE("flash") "-%s", kp->key));
-            espRender(conn, "<span%s>%s</span>", map(conn, options), msg);
-        }
-    }
 }
 
 
@@ -457,102 +424,6 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
             indent = "    ";
         }
     }
-}
-
-
-PUBLIC void espScripts(HttpConn *conn, cchar *optionString)
-{
-    EspReq      *req;
-    MprHash     *options;
-    MprList     *files;
-    MprDirEntry *dp;
-    EspScript   *sp;
-    cchar       *indent, *newline, *path, *uri;
-    bool        minified;
-    int         next;
-   
-    options = httpGetOptions(optionString);
-    req = conn->data;
-    minified = smatch(httpGetOption(options, "minified", 0), "true");
-    indent = "";
-    for (sp = angularScripts; sp->name; sp++) {
-        if (sp->flags & SCRIPT_IE) {
-            espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
-        }
-        path = sjoin(sp->name, minified ? ".min.js" : ".js", NULL);
-        uri = httpLink(conn, path, NULL);
-        newline = sp[1].name ? "\r\n" :  "";
-        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
-        if (sp->flags & SCRIPT_IE) {
-            espRender(conn, "%s<![endif]-->\n", indent);
-        }
-        indent = "    ";
-    }
-    //  MOB REFACTOR
-    //  MOB factoriesDir
-    files = mprGetPathFiles(mprJoinPath(req->eroute->clientDir, "factories"), MPR_PATH_REL);
-    for (ITERATE_ITEMS(files, dp, next)) {
-        path = mprGetRelPath(dp->name, req->eroute->clientDir);
-        uri = httpLink(conn, path, NULL);
-        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
-    }
-    files = mprGetPathFiles(req->eroute->modelsDir, MPR_PATH_REL);
-    for (ITERATE_ITEMS(files, dp, next)) {
-        path = mprGetRelPath(dp->name, req->eroute->clientDir);
-        uri = httpLink(conn, path, NULL);
-        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
-    }
-    files = mprGetPathFiles(req->eroute->controllersDir, MPR_PATH_REL);
-    for (ITERATE_ITEMS(files, dp, next)) {
-        path = mprGetRelPath(dp->name, req->eroute->clientDir);
-        uri = httpLink(conn, path, NULL);
-        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
-    }
-}
-
-/*
-    Get a security token. This will use and existing token or create if not present. It will store in the session store.
-    Security tokens are used to prevent session capture and replay.
- */
-PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
-{
-    HttpRx      *rx;
-
-    rx = conn->rx;
-
-    if (rx->securityToken == 0) {
-        rx->securityToken = (char*) httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, 0);
-        if (rx->securityToken == 0) {
-            rx->securityToken = mprGetMD5(sfmt("%d-%p", mprGetTicks(), conn->rx));
-            httpSetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, rx->securityToken);
-        }
-    }
-    return rx->securityToken;
-}
-
-
-/*
-    Generate a security token
-    Security tokens are used to prevent session capture and replay.
-    Note: the HttpSession API prevents session hijacking by pairing with the client IP
- */
-PUBLIC void espSecurityToken(HttpConn *conn) 
-{
-    cchar   *securityToken;
-
-    /*
-        Add the token to headers for an alternative easy access via header APIs
-     */
-    securityToken = espGetSecurityToken(conn);
-    espAddHeaderString(conn, "X-Security-Token", securityToken);
-    espRender(conn, "<meta name='SecurityTokenName' content='%s' />\r\n", ESP_SECURITY_TOKEN_NAME);
-    espRender(conn, "    <meta name='%s' content='%s' />", ESP_SECURITY_TOKEN_NAME, securityToken);
-}
-
-
-PUBLIC void espSetConn(HttpConn *conn)
-{
-    mprSetThreadData(((Esp*) MPR->espService)->local, conn);
 }
 
 
@@ -1147,7 +1018,7 @@ PUBLIC void espInitHtmlOptions(Esp *esp)
     }
 }
 
-
+#endif /* DEPRECATE */
 #endif /* BIT_PACK_ESP */
 /*
     @copy   default

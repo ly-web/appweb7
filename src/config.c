@@ -659,7 +659,7 @@ static int compressDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S", &format)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (scaselessmatch(format, "gzip")) {
+    if (scaselessmatch(format, "gzip") || scaselessmatch(format, "on")) {
         httpSetRouteCompression(state->route, HTTP_ROUTE_GZIP);
 
     } else if (scaselessmatch(format, "none") || scaselessmatch(format, "off")) {
@@ -1441,6 +1441,28 @@ static int limitWorkersDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    Map "ext,ext,..." "newext, newext, newext"
+    Map compressed
+    Example: Map "js,css,less" min.${1}.gz, min.${1}, ${1}.gz
+ */
+static int mapDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *extensions, *mappings;
+
+    if (!maTokenize(state, value, "%S ?*", &extensions, &mappings)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    if (smatch(extensions, "compressed")) {
+        httpAddRouteMapping(state->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
+        httpAddRouteMapping(state->route, "html,xml", "${1}.gz");
+    } else {
+        httpAddRouteMapping(state->route, extensions, mappings);
+    }
+    return 0;
+}
+
+
+/*
     MemoryPolicy prune|restart|exit
  */
 static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
@@ -1479,6 +1501,23 @@ static int methodsDirective(MaState *state, cchar *key, cchar *value)
     httpSetRouteMethods(state->route, value);
     return 0;
 }
+
+
+#if UNUSED
+/*
+    Minify [on|off]
+ */
+static int minifyDirective(MaState *state, cchar *key, cchar *value)
+{
+    bool    on;
+
+    if (!maTokenize(state, value, "%B", &on)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteMinify(state->route, on);
+    return 0;
+}
+#endif
 
 
 /*
@@ -2640,7 +2679,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "AuthStore", authStoreDirective);
     maAddDirective(appweb, "Cache", cacheDirective);
     maAddDirective(appweb, "Chroot", chrootDirective);
-    maAddDirective(appweb, "Compress", compressDirective);
     maAddDirective(appweb, "Condition", conditionDirective);
     maAddDirective(appweb, "DefaultLanguage", defaultLanguageDirective);
     maAddDirective(appweb, "Deny", denyDirective);
@@ -2685,6 +2723,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LogRoutes", logRoutesDirective);
     maAddDirective(appweb, "LoadModulePath", loadModulePathDirective);
     maAddDirective(appweb, "LoadModule", loadModuleDirective);
+    maAddDirective(appweb, "Map", mapDirective);
     maAddDirective(appweb, "MemoryPolicy", memoryPolicyDirective);
     maAddDirective(appweb, "Methods", methodsDirective);
     maAddDirective(appweb, "Name", nameDirective);
@@ -2748,6 +2787,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "AuthUserFile", authUserFileDirective);
     /* Use AuthRealm */
     maAddDirective(appweb, "AuthName", authRealmDirective);
+    /* Use Map */
+    maAddDirective(appweb, "Compress", compressDirective);
     /* Use Documents */
     maAddDirective(appweb, "DocumentRoot", documentsDirective);
     /* Use LimitKeepAlive */

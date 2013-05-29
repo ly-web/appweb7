@@ -7,7 +7,7 @@ var app = angular.module('${TITLE}', ['ngResource', 'ui.bootstrap']);
  */
 app.config(function($routeProvider) {
     $routeProvider.when('/', { 
-        templateUrl: '/partials/splash.html',
+        templateUrl: '/templates/splash.html',
     });
     $routeProvider.otherwise({ redirectTo: '/' });
 });
