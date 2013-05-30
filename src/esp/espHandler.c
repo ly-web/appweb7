@@ -497,7 +497,7 @@ static int loadApp(EspRoute *eroute)
 
     if (mprPathExists(eroute->appModulePath, R_OK)) {
         if ((mp = mprLookupModule(eroute->appName)) != 0) {
-    #if !BIT_STATIC
+#if !BIT_STATIC
             if (eroute->update) {
                 MprPath minfo;
                 mprGetPathInfo(mp->path, &minfo);
@@ -512,7 +512,7 @@ static int loadApp(EspRoute *eroute)
                     mp = 0;
                 }
             }
-    #endif
+#endif
         }
         if (!mp) {
             entry = sfmt("esp_app_%s", eroute->appName);
@@ -524,41 +524,41 @@ static int loadApp(EspRoute *eroute)
                 mprError("Cannot load esp module for %s", eroute->appName);
                 return MPR_ERR_CANT_LOAD;
             }
-            if (eroute->route->flags & HTTP_ROUTE_ANGULAR) {
-                if ((config = mprReadPathContents(mprJoinPath(eroute->clientDir, "config.json"), NULL)) != 0) {
-                    eroute->config = mprDeserialize(config);
-                    /*
-                        Blend the mode properties into settings
-                     */
-                    if ((settings = mprQueryJsonValue(eroute->config, "settings", MPR_JSON_OBJ)) != 0) {
-                        eroute->mode = mprQueryJsonString(eroute->config, "mode");
-                        if ((msettings = mprQueryJsonValue(eroute->config, sfmt("modes.%s", eroute->mode), MPR_JSON_OBJ)) != 0) {
-                            for (ITERATE_KEYS(msettings, kp)) {
-                                mprAddKeyWithType(settings, kp->key, kp->data, kp->type);
-                            }
-                        }
-                    }
-                    if ((value = mprQueryJsonString(eroute->config, "settings.showErrors")) != 0) {
-                        eroute->showErrors = smatch(value, "true");
-                    }
-                    if ((value = mprQueryJsonString(eroute->config, "settings.update")) != 0) {
-                        eroute->update = smatch(value, "true");
-                    }
-                    if ((value = mprQueryJsonString(eroute->config, "settings.keepSource")) != 0) {
-                        eroute->keepSource = smatch(value, "true");
-                    }
-                    if ((value = mprQueryJsonString(eroute->config, "settings.autoLogin")) != 0) {
-                        eroute->autoLogin = smatch(value, "true");
-                    }
-                    if ((value = mprQueryJsonString(eroute->config, "settings.map")) != 0) {
-                        if (smatch(value, "compressed")) {
-                            httpAddRouteMapping(eroute->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
-                            httpAddRouteMapping(eroute->route, "html,xml", "${1}.gz");
-                        }
-                        // httpAddRouteMapping(state->route, extensions, mappings);
-                    }
+        }
+    }
+    //  MOB - should only do if config.json has been modified
+
+    if ((config = mprReadPathContents(mprJoinPath(eroute->clientDir, "config.json"), NULL)) != 0) {
+        eroute->config = mprDeserialize(config);
+        /*
+            Blend the mode properties into settings
+         */
+        if ((settings = mprQueryJsonValue(eroute->config, "settings", MPR_JSON_OBJ)) != 0) {
+            eroute->mode = mprQueryJsonString(eroute->config, "mode");
+            if ((msettings = mprQueryJsonValue(eroute->config, sfmt("modes.%s", eroute->mode), MPR_JSON_OBJ)) != 0) {
+                for (ITERATE_KEYS(msettings, kp)) {
+                    mprAddKeyWithType(settings, kp->key, kp->data, kp->type);
                 }
             }
+        }
+        if ((value = mprQueryJsonString(eroute->config, "settings.showErrors")) != 0) {
+            eroute->showErrors = smatch(value, "true");
+        }
+        if ((value = mprQueryJsonString(eroute->config, "settings.update")) != 0) {
+            eroute->update = smatch(value, "true");
+        }
+        if ((value = mprQueryJsonString(eroute->config, "settings.keepSource")) != 0) {
+            eroute->keepSource = smatch(value, "true");
+        }
+        if ((value = mprQueryJsonString(eroute->config, "settings.autoLogin")) != 0) {
+            eroute->autoLogin = smatch(value, "true");
+        }
+        if ((value = mprQueryJsonString(eroute->config, "settings.map")) != 0) {
+            if (smatch(value, "compressed")) {
+                httpAddRouteMapping(eroute->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
+                httpAddRouteMapping(eroute->route, "html,xml", "${1}.gz");
+            }
+            // httpAddRouteMapping(state->route, extensions, mappings);
         }
     }
     return 0;
@@ -677,52 +677,34 @@ PUBLIC void espSetMvcDirs(EspRoute *eroute)
     route = eroute->route;
     dir = eroute->route->dir;
 
-    eroute->dbDir = mprJoinPath(dir, "db");
-    eroute->cacheDir = mprJoinPath(dir, "cache");
-
-    if (route->flags & HTTP_ROUTE_ANGULAR) {
-        eroute->clientDir = mprJoinPath(dir, "client");
-        eroute->servicesDir = mprJoinPath(dir, "services");
-        eroute->srcDir = mprJoinPath(dir, "src");
-        eroute->appDir = mprJoinPath(eroute->clientDir, "app");
-#if UNUSED
-        eroute->templatesDir = mprJoinPath(eroute->clientDir, "templates");
-        eroute->modelsDir = mprJoinPath(eroute->clientDir, "models");
-        eroute->migrationsDir = mprJoinPath(eroute->dbDir, "migrations");
-        eroute->controllersDir = mprJoinPath(eroute->clientDir, "controllers");
-        eroute->viewsDir = mprJoinPath(eroute->servicesDir, "views");
-        eroute->layoutsDir = mprJoinPath(eroute->viewsDir, "layouts");
-#endif
-
-#if DEPRECATED || 1
-    /*
-        Deprecated in 4.4
-     */
-    } else {
+    eroute->dbDir       = mprJoinPath(dir, "db");
+    eroute->cacheDir    = mprJoinPath(dir, "cache");
+    eroute->clientDir   = mprJoinPath(dir, "client");
+    eroute->servicesDir = mprJoinPath(dir, "services");
+    eroute->srcDir      = mprJoinPath(dir, "src");
+    eroute->appDir      = mprJoinPath(dir, "client/app");
+    
+    //  MOB - how are these used now?
+    eroute->layoutsDir  = mprJoinPath(dir, "layouts");
+    eroute->viewsDir    = mprJoinPath(dir, "views");
+    
+#if DEPRECATE || 1
+    if (route->flags & HTTP_ROUTE_LEGACY_MVC) {
+        /*
+            Deprecated in 4.4
+         */
         eroute->clientDir = mprJoinPath(dir, "static");
-        eroute->layoutsDir = mprJoinPath(dir, "layouts");
-#if UNUSED
-        eroute->migrationsDir = mprJoinPath(eroute->dbDir, "migrations");
-#endif
         eroute->servicesDir = mprJoinPath(dir, "controllers");
-        eroute->srcDir = mprJoinPath(dir, "src");
-        eroute->viewsDir = mprJoinPath(dir, "views");
-#endif
+        httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->servicesDir);
     }
+#endif
     httpSetRouteVar(route, "CACHE_DIR", eroute->cacheDir);
     httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
     httpSetRouteVar(route, "DB_DIR", eroute->dbDir);
     httpSetRouteVar(route, "LAYOUTS_DIR", eroute->layoutsDir);
     httpSetRouteVar(route, "SERVICES_DIR", eroute->servicesDir);
-#if DEPRECATED || 1
-    httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->servicesDir);
-#endif
     httpSetRouteVar(route, "SRC_DIR", eroute->srcDir);
     httpSetRouteVar(route, "VIEWS_DIR", eroute->viewsDir);
-#if UNUSED
-    httpSetRouteVar(route, "MIGRATIONS_DIR", eroute->migrationsDir);
-    httpSetRouteVar(route, "MODELS_DIR", eroute->modelsDir);
-#endif
 }
 
 
@@ -788,26 +770,32 @@ static EspRoute *getEroute(HttpRoute *route)
 
 /*********************************** Directives *******************************/
 /*
-    EspApp name=NAME prefix=PREFIX dir=DIR routes=ROUTES database=DATABASE flat=true|false
+    EspApp name=NAME prefix=PREFIX dir=DIR routes=ROUTES database=DATABASE auth=STORE flat=true|false
+
     DEPRECATED in 4.4: EspApp Prefix [Dir [RouteSet [Database]]]
  */
 static int espAppDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
     EspRoute    *eroute;
-    char        *name, *option, *ovalue, *prefix, *dir, *routeSet, *database, *tok, *flat;
+    char        *auth, *name, *option, *ovalue, *prefix, *dir, *routeSet, *database, *tok, *flat;
+    bool        legacy;
 
     dir = ".";
-    routeSet = "restful";
+    routeSet = "angular";
     flat = "false";
     prefix = "/";
     database = 0;
+    legacy = 0;
+    auth = 0;
 
     if (scontains(value, "=")) {
         for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
             option = stok(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
-            if (smatch(option, "name")) {
+            if (smatch(option, "auth")) {
+                auth = ovalue;
+            } else if (smatch(option, "name")) {
                 name = ovalue;
             } else if (smatch(option, "prefix")) {
                 prefix = ovalue;
@@ -824,20 +812,36 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
             }
         }
 
+#if DEPRECATED || 1
     } else {
-        //  DEPRECATED SYNTAX
+        /* 
+            Deprecated in 4.4.0
+         */
+        routeSet = "restful";
         if (!maTokenize(state, value, "%S ?S ?S ?S", &prefix, &dir, &routeSet, &database)) {
             return MPR_ERR_BAD_SYNTAX;
         }
         name = "app";
-    }
-    if (smatch(prefix, "/")) {
-        prefix = 0;
+        legacy = 1;
+#endif
     }
     /*
         Always create an application route so all resources can inherit (share) handler definitions
      */
-    route = httpCreateInheritedRoute(state->route);
+    if ((route = httpCreateInheritedRoute(state->route)) == 0) {
+        return MPR_ERR_MEMORY;
+    }
+    if (smatch(routeSet, "angular")) {
+        route->flags |= HTTP_ROUTE_JSON;
+#if DEPRECATE || 1
+    } else if (mprPathExists(mprJoinPath(route->dir, "static"), X_OK) &&
+               !mprPathExists(mprJoinPath(route->dir, "client"), X_OK)) {
+        legacy = 1;
+    }
+    if (legacy) {
+        route->flags |= HTTP_ROUTE_LEGACY_MVC;
+    }
+#endif
     httpSetRouteName(route, name);
     if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
@@ -845,18 +849,24 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     eroute->top = eroute;
     eroute->flat = scaselessmatch(flat, "true") || smatch(flat, "1");
     eroute->appName = sclone(name);
-
     state = maPushState(state);
     state->route = route;
 
-    if (prefix) {
+    if (auth) {
+        if (httpSetAuthStore(route->auth, auth) < 0) {
+            mprError("The %s AuthStore is not available on this platform", auth);
+            return MPR_ERR_BAD_STATE;
+        }
+    }
+
+    if (smatch(prefix, "/")) {
+        prefix = 0;
+    } else {
         if (*prefix != '/') {
             mprError("Prefix name should start with a \"/\"");
             prefix = sjoin("/", prefix, NULL);
         }
         prefix = stemplate(prefix, route->vars);
-    }
-    if (prefix) {
         httpSetRouteName(route, prefix);
         httpSetRoutePrefix(route, prefix);
     }
@@ -866,13 +876,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     httpAddRouteHandler(route, "espHandler", "esp");
 
     if (routeSet) {
-        if (smatch(routeSet, "angular")) {
-            route->flags |= HTTP_ROUTE_ANGULAR;
-        }
-        //  MOB - RATIONALIZE
-        if (smatch(routeSet, "mvc") || smatch(routeSet, "mvc-fixed") || smatch(routeSet, "restful") || smatch(routeSet, "angular")) {
-            espSetMvcDirs(eroute);
-        }
+        espSetMvcDirs(eroute);
         httpAddRouteSet(state->route, routeSet);
     }
     if (database && espDbDirective(state, key, database) < 0) {
@@ -959,23 +963,15 @@ static int espDirDirective(MaState *state, cchar *key, cchar *value)
             eroute->clientDir = path;
         } else if (smatch(name, "db")) {
             eroute->dbDir = path;
-#if UNUSED
-        } else if (smatch(name, "migrations")) {
-            eroute->migrationsDir = path;
-        } else if (smatch(name, "models")) {
-            eroute->modelsDir = path;
-        } else if (smatch(name, "templates")) {
-            eroute->templatesDir = path;
-#endif
+        } else if (smatch(name, "layouts")) {
+            eroute->layoutsDir = path;
         } else if (smatch(name, "src")) {
             eroute->srcDir = path;
         } else if (smatch(name, "services")) {
             eroute->servicesDir = path;
-#if DEPRECATED || 1
         } else if (smatch(name, "views")) {
             eroute->viewsDir = path;
-        } else if (smatch(name, "layouts")) {
-            eroute->layoutsDir = path;
+#if DEPRECATED || 1
         } else if (smatch(name, "controllers")) {
             eroute->servicesDir = path;
         } else if (smatch(name, "static")) {
@@ -1164,7 +1160,7 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     target = stemplate(target, state->route->vars);
-    httpDefineRoute(state->route, name, methods, pattern, target, source);
+    httpDefineRoute(state->route, name, methods, pattern, target, source, 0);
     return 0;
 }
 
@@ -1174,7 +1170,7 @@ PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *proc)
     EspRoute    *eroute;
     HttpRoute   *route;
 
-    if ((route = httpDefineRoute(parent, pattern, "ALL", pattern, "$&", "unused")) == 0) {
+    if ((route = httpDefineRoute(parent, pattern, "ALL", pattern, "$&", "unused", 0)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     httpSetRouteHandler(route, "espHandler");

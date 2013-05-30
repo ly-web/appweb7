@@ -839,17 +839,18 @@ PUBLIC void espSecurityToken(HttpConn *conn)
     cchar   *securityToken;
 
     securityToken = espGetSecurityToken(conn);
-    if (conn->rx->route->flags & HTTP_ROUTE_ANGULAR) {
-        espSetCookie(conn, "XSRF-TOKEN", securityToken, "/", NULL,  0, 0);
 #if DEPRECATED || 1
-    /*
-        Deprecated in 4.4
-     */
-    } else {
+    if (conn->rx->route->flags & HTTP_ROUTE_LEGACY_MVC) {
+        /*
+            MOB - is this really required or can we migrate to XSRF cookie?
+            Deprecated in 4.4.0
+         */
         espAddHeaderString(conn, "X-Security-Token", securityToken);
         espRender(conn, "<meta name='SecurityTokenName' content='%s' />\r\n", ESP_SECURITY_TOKEN_NAME);
         espRender(conn, "    <meta name='%s' content='%s' />", ESP_SECURITY_TOKEN_NAME, securityToken);
 #endif
+    } else {
+        espSetCookie(conn, "XSRF-TOKEN", securityToken, "/", NULL,  0, 0);
     }
 }
 

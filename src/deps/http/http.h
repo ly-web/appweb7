@@ -3227,11 +3227,9 @@ PUBLIC void httpDefineAction(cchar *uri, HttpAction fun);
 #define HTTP_ROUTE_STARTED              0x2000      /**< Route initialized */
 #define HTTP_ROUTE_PUT_DELETE_METHODS   0x4000      /**< Support PUT|DELETE on this route */
 #define HTTP_ROUTE_TRACE_METHOD         0x8000      /**< Enable the trace method for handlers supporting it */
-//  TODO - remove ANGULAR from route
-#define HTTP_ROUTE_ANGULAR              0x10000     /**< Angular style MVC app */
-#define HTTP_ROUTE_JSON                 0x20000     /**< Route expects params in JSON body */
-#if UNUSED
-#define HTTP_ROUTE_MINIFY               0x40000     /**< Support minified content on this route */
+#define HTTP_ROUTE_JSON                 0x10000     /**< Route expects params in JSON body */
+#if DEPRECATED || 1
+#define HTTP_ROUTE_LEGACY_MVC           0x40000     /**< Legacy MVC app. Using "static" instead of "client". Deprecated in 4.4 */
 #endif
 
 /**
@@ -3728,12 +3726,13 @@ PUBLIC HttpRoute *httpCreateRoute(struct HttpHost *host);
     @param target Route target string expression. This is used by handlers to determine the physical or virtual resource
         to serve.
     @param source Source file pattern containing the resource to activate or serve. 
+    @param flags Route flags.
     @return Created route.
     @ingroup HttpRoute
     @stability Evolving
  */
 PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, 
-    cchar *target, cchar *source);
+    cchar *target, cchar *source, int flags);
 
 /**
     Define a route condition rule
@@ -4143,18 +4142,6 @@ PUBLIC void httpSetRouteStreaming(HttpRoute *route, cchar *mimeType, bool enable
  */
 PUBLIC void httpSetRouteMethods(HttpRoute *route, cchar *methods);
 
-#if UNUSED
-/**
-    Contol client javascript minification for the route
-    @description Routes will be created by default with minification enabled.
-    @param route Route to modify
-    @param on Set to true to use minified content if available.
-    @ingroup HttpRoute
-    @stability Evolving
- */
-PUBLIC void httpSetRouteMinify(HttpRoute *route, bool on);
-#endif
-
 /**
     Set the route name
     @description Symbolic route names are used by httpLink and when displaying route tables.
@@ -4442,9 +4429,6 @@ PUBLIC char *httpExpandUri(HttpConn *conn, cchar *str);
  */
 typedef struct HttpSession {
     char            *id;                        /**< Session ID key */
-#if UNUSED
-    HttpConn        *conn;                      /**< Owning connection */
-#endif
     MprCache        *cache;                     /**< Cache store reference */
     MprTicks        lifespan;                   /**< Session inactivity timeout (msecs) */
     MprHash         *data;                      /**< Session data */

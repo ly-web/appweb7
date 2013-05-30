@@ -1103,8 +1103,7 @@ $(CONFIG)\bin\esp-proto: $(DEPS_57)
 	copy /Y src\esp\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.dylib $(CONFIG)\bin\esp-proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.dylib
 	copy /Y src\esp\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.o $(CONFIG)\bin\esp-proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.o
 	if not exist "$(CONFIG)\bin\esp-proto\angular\client\app" md "$(CONFIG)\bin\esp-proto\angular\client\app"
-	copy /Y src\esp\proto\angular\client\app\app.js $(CONFIG)\bin\esp-proto\angular\client\app\app.js
-	copy /Y src\esp\proto\angular\client\app\AppControl.js $(CONFIG)\bin\esp-proto\angular\client\app\AppControl.js
+	copy /Y src\esp\proto\angular\client\app\main.js $(CONFIG)\bin\esp-proto\angular\client\app\main.js
 	if not exist "$(CONFIG)\bin\esp-proto\angular\client\assets" md "$(CONFIG)\bin\esp-proto\angular\client\assets"
 	copy /Y src\esp\proto\angular\client\assets\banner.jpg $(CONFIG)\bin\esp-proto\angular\client\assets\banner.jpg
 	copy /Y src\esp\proto\angular\client\assets\favicon.ico $(CONFIG)\bin\esp-proto\angular\client\assets\favicon.ico
@@ -1142,7 +1141,6 @@ $(CONFIG)\bin\esp-proto: $(DEPS_57)
 	copy /Y src\esp\proto\angular\client\lib\angular-scenario.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-scenario.js
 	copy /Y src\esp\proto\angular\client\lib\angular.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular.js
 	copy /Y src\esp\proto\angular\client\lib\angular.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular.min.js
-	copy /Y src\esp\proto\angular\client\lib\esp.js $(CONFIG)\bin\esp-proto\angular\client\lib\esp.js
 	copy /Y src\esp\proto\angular\client\lib\html5shiv.js $(CONFIG)\bin\esp-proto\angular\client\lib\html5shiv.js
 	copy /Y src\esp\proto\angular\client\lib\html5shiv.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\html5shiv.min.js
 	copy /Y src\esp\proto\angular\client\lib\jquery.js $(CONFIG)\bin\esp-proto\angular\client\lib\jquery.js
@@ -2058,7 +2056,6 @@ test\web\js: $(DEPS_100)
 	copy /Y src\esp\proto\angular\client\lib\angular-scenario.js test\web\js\angular-scenario.js
 	copy /Y src\esp\proto\angular\client\lib\angular.js test\web\js\angular.js
 	copy /Y src\esp\proto\angular\client\lib\angular.min.js test\web\js\angular.min.js
-	copy /Y src\esp\proto\angular\client\lib\esp.js test\web\js\esp.js
 	copy /Y src\esp\proto\angular\client\lib\html5shiv.js test\web\js\html5shiv.js
 	copy /Y src\esp\proto\angular\client\lib\html5shiv.min.js test\web\js\html5shiv.min.js
 	copy /Y src\esp\proto\angular\client\lib\jquery.js test\web\js\jquery.js
@@ -2113,8 +2110,7 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.dylib "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.dylib"
 	copy /Y src\esp\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.o "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.o"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app"
-	copy /Y src\esp\proto\angular\client\app\app.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app\app.js"
-	copy /Y src\esp\proto\angular\client\app\AppControl.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app\AppControl.js"
+	copy /Y src\esp\proto\angular\client\app\main.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app\main.js"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets"
 	copy /Y src\esp\proto\angular\client\assets\banner.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\banner.jpg"
 	copy /Y src\esp\proto\angular\client\assets\favicon.ico "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\favicon.ico"
@@ -2152,7 +2148,6 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\angular\client\lib\angular-scenario.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-scenario.js"
 	copy /Y src\esp\proto\angular\client\lib\angular.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular.js"
 	copy /Y src\esp\proto\angular\client\lib\angular.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular.min.js"
-	copy /Y src\esp\proto\angular\client\lib\esp.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\esp.js"
 	copy /Y src\esp\proto\angular\client\lib\html5shiv.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\html5shiv.js"
 	copy /Y src\esp\proto\angular\client\lib\html5shiv.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\html5shiv.min.js"
 	copy /Y src\esp\proto\angular\client\lib\jquery.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\jquery.js"

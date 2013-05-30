@@ -1039,8 +1039,7 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	cp src/esp/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.dylib $(CONFIG)/bin/esp-proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.dylib
 	cp src/esp/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.o $(CONFIG)/bin/esp-proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.o
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/app"
-	cp src/esp/proto/angular/client/app/app.js $(CONFIG)/bin/esp-proto/angular/client/app/app.js
-	cp src/esp/proto/angular/client/app/AppControl.js $(CONFIG)/bin/esp-proto/angular/client/app/AppControl.js
+	cp src/esp/proto/angular/client/app/main.js $(CONFIG)/bin/esp-proto/angular/client/app/main.js
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/assets"
 	cp src/esp/proto/angular/client/assets/banner.jpg $(CONFIG)/bin/esp-proto/angular/client/assets/banner.jpg
 	cp src/esp/proto/angular/client/assets/favicon.ico $(CONFIG)/bin/esp-proto/angular/client/assets/favicon.ico
@@ -1078,7 +1077,6 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	cp src/esp/proto/angular/client/lib/angular-scenario.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-scenario.js
 	cp src/esp/proto/angular/client/lib/angular.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular.js
 	cp src/esp/proto/angular/client/lib/angular.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular.min.js
-	cp src/esp/proto/angular/client/lib/esp.js $(CONFIG)/bin/esp-proto/angular/client/lib/esp.js
 	cp src/esp/proto/angular/client/lib/html5shiv.js $(CONFIG)/bin/esp-proto/angular/client/lib/html5shiv.js
 	cp src/esp/proto/angular/client/lib/html5shiv.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/html5shiv.min.js
 	cp src/esp/proto/angular/client/lib/jquery.js $(CONFIG)/bin/esp-proto/angular/client/lib/jquery.js
@@ -1912,7 +1910,6 @@ test/web/js: $(DEPS_92)
 	cp src/esp/proto/angular/client/lib/angular-scenario.js test/web/js/angular-scenario.js
 	cp src/esp/proto/angular/client/lib/angular.js test/web/js/angular.js
 	cp src/esp/proto/angular/client/lib/angular.min.js test/web/js/angular.min.js
-	cp src/esp/proto/angular/client/lib/esp.js test/web/js/esp.js
 	cp src/esp/proto/angular/client/lib/html5shiv.js test/web/js/html5shiv.js
 	cp src/esp/proto/angular/client/lib/html5shiv.min.js test/web/js/html5shiv.min.js
 	cp src/esp/proto/angular/client/lib/jquery.js test/web/js/jquery.js
@@ -1989,8 +1986,7 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.dylib $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.dylib
 	cp src/esp/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.o $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.o
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/app"
-	cp src/esp/proto/angular/client/app/app.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/app/app.js
-	cp src/esp/proto/angular/client/app/AppControl.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/app/AppControl.js
+	cp src/esp/proto/angular/client/app/main.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/app/main.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets"
 	cp src/esp/proto/angular/client/assets/banner.jpg $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/banner.jpg
 	cp src/esp/proto/angular/client/assets/favicon.ico $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/favicon.ico
@@ -2028,7 +2024,6 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/angular/client/lib/angular-scenario.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-scenario.js
 	cp src/esp/proto/angular/client/lib/angular.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular.js
 	cp src/esp/proto/angular/client/lib/angular.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular.min.js
-	cp src/esp/proto/angular/client/lib/esp.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/esp.js
 	cp src/esp/proto/angular/client/lib/html5shiv.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/html5shiv.js
 	cp src/esp/proto/angular/client/lib/html5shiv.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/html5shiv.min.js
 	cp src/esp/proto/angular/client/lib/jquery.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/jquery.js

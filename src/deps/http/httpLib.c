@@ -8316,7 +8316,7 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     route->home = route->dir;
     route->streaming = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STATIC_VALUES);
     route->extensions = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS);
-    route->flags = HTTP_ROUTE_GZIP;
+    route->flags = 0;
     route->handlers = mprCreateList(-1, MPR_LIST_STABLE);
     route->host = host;
     route->http = MPR->httpService;
@@ -10623,7 +10623,7 @@ static int writeTarget(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 /************************************************** Route Convenience ****************************************************/
 
 PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, cchar *target, 
-        cchar *source)
+        cchar *source, int flags)
 {
     HttpRoute   *route;
 
@@ -10633,6 +10633,7 @@ PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods
     if ((route = httpCreateInheritedRoute(parent)) == 0) {
         return 0;
     }
+    route->flags = flags;
     httpSetRouteName(route, name);
     httpSetRoutePattern(route, pattern, 0);
     if (methods) {
@@ -10670,28 +10671,27 @@ static char *qualifyName(HttpRoute *route, cchar *service, cchar *action)
 /*
     Add a restful route. The parent route may supply a route prefix. If defined, the route name will prepend the prefix.
  */
-static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *pattern, cchar *target, 
-        cchar *resource, int flags)
+static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *pattern, cchar *target, cchar *resource, int flags)
 {
     HttpRoute   *route;
-    cchar       *name, *nameResource, *prefix, *source;
+    cchar       *name, *nameResource, *prefix, *source, *token;
 
-    //  TODO - remove ANGULAR from route
-    if (parent->flags & HTTP_ROUTE_ANGULAR) {
-        nameResource = smatch(resource, "{service}") ? "*" : resource;
-        if (parent->prefix) {
-            prefix = sfmt("/service/%s", parent->prefix);
-        } else {
-            prefix = "/service";
-        }
+    token = (parent->flags & HTTP_ROUTE_LEGACY_MVC) ? "{controller}" : "{service}";
+    nameResource = smatch(resource, token) ? "*" : resource;
+
+    if (!(parent->flags & HTTP_ROUTE_LEGACY_MVC)) {
+        prefix = parent->prefix ? sfmt("/service/%s", parent->prefix) : "/service";
         name = sfmt("%s/%s/%s", prefix, nameResource, action);
         if (*resource == '{') {
             pattern = sfmt("^%s/%s%s", prefix, resource, pattern);
         } else {
             pattern = sfmt("^%s/{service=%s}%s", prefix, resource, pattern);
         }
+#if DEPRECATED || 1
     } else {
-        nameResource = smatch(resource, "{controller}") ? "*" : resource;
+        /*
+            Deprecated in 4.4
+         */
         if (parent->prefix) {
             name = sfmt("%s/%s/%s", parent->prefix, nameResource, action);
             pattern = sfmt("^%s/%s%s", parent->prefix, resource, pattern);
@@ -10700,9 +10700,10 @@ static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, c
             if (*resource == '{') {
                 pattern = sfmt("^/%s%s", resource, pattern);
             } else {
-                pattern = sfmt("^/{service=%s}%s", resource, pattern);
+                pattern = sfmt("^/{controller=%s}%s", resource, pattern);
             }
         }
+#endif
     }
     if (*resource == '{') {
         target = sfmt("$%s-%s", resource, target);
@@ -10711,32 +10712,48 @@ static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, c
         target = sfmt("%s-%s", resource, target);
         source = sfmt("%s.c", resource);
     }
-    route = httpDefineRoute(parent, name, methods, pattern, target, source);
-    route->flags |= flags;
+    route = httpDefineRoute(parent, name, methods, pattern, target, source, flags);
     return route;
 }
 
 
-PUBLIC void httpAddAngularResourceGroup(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
 {
-    /*
-        Angular changes to map closely to the Angular RESTful verb defaults.
-        Split angular save into create and save
-        Removed "edit", changed "show" to "get", "destroy" to "remove".
-        Changed Angular "query" to "index"
-     */
-    addRestful(parent, "create",    "POST",   "(/)*$",                   "create",        resource, HTTP_ROUTE_JSON);
-    addRestful(parent, "get",       "GET",    "/{id=[0-9]+}$",           "get",           resource, 0);
-    addRestful(parent, "remove",    "DELETE", "/{id=[0-9]+}$",           "remove",        resource, 0);
-    addRestful(parent, "index",     "GET",    "(/)*$",                   "index",         resource, 0);
-    addRestful(parent, "init",      "GET",    "/init$",                  "init",          resource, 0);
-    addRestful(parent, "update",    "POST",   "(/{id=[0-9]+})*$",        "update",        resource, HTTP_ROUTE_JSON);
-    addRestful(parent, "action",    "POST",   "/{action}/{id=[0-9]+}$",  "${action}",     resource, 0);
-    addRestful(parent, "cmd",       "*",      "/{action}$",              "cmd-${action}", resource, HTTP_ROUTE_JSON);
+    int     flags;
+
+    flags = parent->flags & HTTP_ROUTE_JSON;
+    addRestful(parent, "create",    "POST",   "(/)*$",                   "create",          resource, flags);
+    addRestful(parent, "edit",      "GET",    "/{id=[0-9]+}/edit$",      "edit",            resource, 0);
+    addRestful(parent, "get",       "GET",    "/{id=[0-9]+}$",           "get",             resource, 0);
+    addRestful(parent, "index",     "GET",    "(/)*$",                   "index",           resource, 0);
+    addRestful(parent, "init",      "GET",    "/init$",                  "init",            resource, 0);
+    addRestful(parent, "remove",    "DELETE", "/{id=[0-9]+}$",           "remove",          resource, 0);
+    addRestful(parent, "update",    "POST",   "(/{id=[0-9]+})*$",        "update",          resource, flags);
+    addRestful(parent, "action",    "POST",   "/{action}/{id=[0-9]+}$",  "${action}",       resource, 0);
+    addRestful(parent, "cmd",       "*",      "/{action}$",              "cmd-${action}",   resource, flags);
 }
 
 
-PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource)
+{
+    int     flags;
+
+    flags = parent->flags & HTTP_ROUTE_JSON;
+    addRestful(parent, "create",    "POST",   "(/)*$",        "create",     resource, flags);
+    addRestful(parent, "edit",      "GET",    "/edit$",       "edit",       resource, 0);
+    addRestful(parent, "get",       "GET",    "(/)*$",        "get",        resource, 0);
+    addRestful(parent, "init",      "GET",    "/init$",       "init",       resource, 0);
+    addRestful(parent, "update",    "POST",   "(/)*$",        "update",     resource, flags);
+    addRestful(parent, "remove",    "DELETE", "(/)*$",        "remove",     resource, 0);
+    addRestful(parent, "action",    "*",      "/{action}$",   "${action}",  resource, flags);
+}
+
+
+#if DEPRECATED || 1
+/*
+    Deprecated in 4.4.0
+ */
+PUBLIC void httpAddLegacyResourceGroup(HttpRoute *parent, cchar *resource)
 {
     addRestful(parent, "list",      "GET",    "(/)*$",                   "list",          resource, 0);
     addRestful(parent, "init",      "GET",    "/init$",                  "init",          resource, 0);
@@ -10745,12 +10762,12 @@ PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
     addRestful(parent, "show",      "GET",    "/{id=[0-9]+}$",           "show",          resource, 0);
     addRestful(parent, "update",    "PUT",    "/{id=[0-9]+}$",           "update",        resource, 0);
     addRestful(parent, "destroy",   "DELETE", "/{id=[0-9]+}$",           "destroy",       resource, 0);
-    addRestful(parent, "custom",    "POST",   "/{action}/{id=[0-9]+}$",  "${action}",     resource, 0);
-    addRestful(parent, "default",   "*",      "/{action}$",              "cmd-${action}", resource, 0);
+    addRestful(parent, "action",    "POST",   "/{action}/{id=[0-9]+}$",  "${action}",     resource, 0);
+    addRestful(parent, "cmd",       "*",      "/{action}$",              "cmd-${action}", resource, 0);
 }
 
 
-PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *resource)
 {
     addRestful(parent, "init",      "GET",    "/init$",       "init",          resource, 0);
     addRestful(parent, "create",    "POST",   "(/)*$",        "create",        resource, 0);
@@ -10758,8 +10775,9 @@ PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource)
     addRestful(parent, "show",      "GET",    "(/)*$",        "show",          resource, 0);
     addRestful(parent, "update",    "PUT",    "(/)*$",        "update",        resource, 0);
     addRestful(parent, "destroy",   "DELETE", "(/)*$",        "destroy",       resource, 0);
-    addRestful(parent, "default",   "*",      "/{action}$",   "cmd-${action}", resource, 0);
+    addRestful(parent, "cmd",       "*",      "/{action}$",   "cmd-${action}", resource, 0);
 }
+#endif
 
 
 PUBLIC void httpAddHomeRoute(HttpRoute *parent)
@@ -10771,7 +10789,7 @@ PUBLIC void httpAddHomeRoute(HttpRoute *parent)
     name = qualifyName(parent, NULL, "home");
     path = stemplate("${CLIENT_DIR}/index.esp", parent->vars);
     pattern = sfmt("^%s(/)$", prefix);
-    httpDefineRoute(parent, name, "GET,POST", pattern, path, source);
+    httpDefineRoute(parent, name, "GET,POST", pattern, path, source, 0);
 }
 
 
@@ -10785,7 +10803,7 @@ PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *name, cchar *prefix)
     }
     pattern = sfmt("^%s/(.*)", prefix);
     path = stemplate("${CLIENT_DIR}/$1", parent->vars);
-    route = httpDefineRoute(parent, name, "GET", pattern, path, parent->sourceName);
+    route = httpDefineRoute(parent, name, "GET", pattern, path, parent->sourceName, 0);
     httpAddRouteHandler(route, "fileHandler", "");
 }
 
@@ -10794,30 +10812,38 @@ PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set)
 {
     if (scaselessmatch(set, "simple")) {
         httpAddHomeRoute(parent);
+    }
+    if (!(parent->flags & HTTP_ROUTE_LEGACY_MVC)) {
+        if (scaselessmatch(set, "angular") || scaselessmatch(set, "restful")) {
+            httpAddResourceGroup(parent, "{service}");
+            httpAddClientRoute(parent, sfmt("%s-client", parent->name), "");
 
-    } else if (scaselessmatch(set, "angular")) {
-        httpAddAngularResourceGroup(parent, "{service}");
-        httpAddClientRoute(parent, sfmt("%s-client", parent->name), "");
-
+        } else if (!scaselessmatch(set, "none")) {
+            mprError("Unknown route set %s", set);
+        }
 #if DEPRECATE || 1
-    } else if (scaselessmatch(set, "mvc")) {
-        httpAddHomeRoute(parent);
-        httpAddClientRoute(parent, "/static", "/static");
+    } else {
+        /*
+            Deprecated in 4.4
+         */
+        if (scaselessmatch(set, "mvc")) {
+            httpAddHomeRoute(parent);
+            httpAddClientRoute(parent, "/static", "/static");
 
-    } else if (scaselessmatch(set, "restful")) {
-        httpAddHomeRoute(parent);
-        httpAddClientRoute(parent, "/static", "/static");
-        httpAddResourceGroup(parent, "{controller}");
+        } else if (scaselessmatch(set, "mvc-fixed")) {
+            httpAddHomeRoute(parent);
+            httpAddClientRoute(parent, "/static", "/static");
+            httpDefineRoute(parent, "default", NULL, "^/{controller}(~/{action}~)", "${controller}-${action}", "${controller}.c", 0);
+
+        } else if (scaselessmatch(set, "restful")) {
+            httpAddHomeRoute(parent);
+            httpAddClientRoute(parent, "/static", "/static");
+            httpAddLegacyResourceGroup(parent, "{controller}");
+
+        } else if (!scaselessmatch(set, "none")) {
+            mprError("Unknown route set %s", set);
+        }
 #endif
-#if UNUSED
-    } else if (scaselessmatch(set, "mvc-fixed")) {
-        httpAddHomeRoute(parent);
-        httpAddClientRoute(parent, "/static", "/static");
-        httpDefineRoute(parent, "default", NULL, "^/{controller}(~/{action}~)", "${controller}-${action}", 
-            "${controller}.c");
-#endif
-    } else if (!scaselessmatch(set, "none")) {
-        mprError("Unknown route set %s", set);
     }
 }
 

@@ -28,7 +28,6 @@ typedef struct App {
     cchar       *binDir;                /* Appweb bin directory */
     cchar       *listen;                /* Listen endpoint for "esp run" */
     cchar       *platform;              /* Target platform os-arch-profile (lower) */
-    cchar       *proto;                 /* Prototype files for apps */
     MprFile     *flatFile;              /* Output file for flat compilations */
     MprList     *flatItems;             /* Items to invoke from Init */
 
@@ -48,6 +47,7 @@ typedef struct App {
     cchar       *genlink;               /* Static link resolution file */
     cchar       *routeName;             /* Name of route to use for ESP configuration */
     cchar       *routePrefix;           /* Route prefix to use for ESP configuration */
+    cchar       *routeSet;              /* Desired route set package */
     cchar       *module;                /* Compiled module name */
     cchar       *base;                  /* Base filename */
     cchar       *entry;                 /* Module entry point */
@@ -55,12 +55,6 @@ typedef struct App {
     int         error;                  /* Any processing error */
     int         flat;                   /* Combine all inputs into one, flat output */ 
     int         keep;                   /* Keep source */ 
-    int         angular;                /* Generate angular style apps */
-    int         legacy;                 /* Force legacy mode */
-#if UNUSED
-    int         minified;               /* Use minified JS files */
-    int         compress;               /* Use compressed files */
-#endif
     int         overwrite;              /* Overwrite existing files if required */
     int         quiet;                  /* Don't trace progress */
     int         rebuild;                /* Force a rebuild */
@@ -69,6 +63,9 @@ typedef struct App {
     int         staticLink;             /* Use static linking */
     int         verbose;                /* Verbose mode */
     int         why;                    /* Why rebuild */
+#if DEPRECATE || 1
+    int         legacy;                 /* Legacy MVC mode - pre 4.4.0 */
+#endif
 } App;
 
 static App       *app;                  /* Top level application object */
@@ -159,7 +156,7 @@ static void update${TITLE}() { \n\
 \n\
 ";
 
-#if DEPRECATED || 1
+#if DEPRECATE || 1
 /*
     Deprecated in 4.4
  */
@@ -254,7 +251,7 @@ static cchar *ScaffoldEditView =  "\
 ";
 
 
-#if DEPRECATED || 1
+#if DEPRECATE || 1
 /*
     Deprecated in 4.4
  */
@@ -407,9 +404,9 @@ static MprHash *getTargets(int argc, char **argv);
 static HttpRoute *getMvcRoute();
 static MprList *getRoutes();
 static void generate(int argc, char **argv);
-static void generateApp(cchar *name);
+static void generateApp(int argc, char **argv);
 static void generateAppDb(HttpRoute *route);
-static void generateAppFiles(HttpRoute *route);
+static void generateAppFiles(HttpRoute *route, int argc, char **argv);
 static void generateAppConfigFile(HttpRoute *route);
 static void generateAppSrc(HttpRoute *route);
 static void generateMigration(HttpRoute *route, int argc, char **argv);
@@ -444,7 +441,7 @@ PUBLIC int main(int argc, char **argv)
     }
     mprAddRoot(app);
     mprAddStandardSignals();
-    
+
     logSpec = "stderr:0";
     argc = mpr->argc;
     argv = (char**) mpr->argv;
@@ -453,7 +450,7 @@ PUBLIC int main(int argc, char **argv)
     app->listen = sclone(ESP_LISTEN);
 #if BIT_PACK_SDB
     app->database = sclone("sdb");
-#elif BIT_PACK_MDB 
+#elif BIT_PACK_MDB
     app->database = sclone("mdb");
 #else
     mprError("No database provider defined");
@@ -467,10 +464,7 @@ PUBLIC int main(int argc, char **argv)
         if (*argp == '-') {
             argp++;
         }
-        if (smatch(argp, "angular")) {
-            app->angular = 1;
-
-        } else if (smatch(argp, "chdir")) {
+        if (smatch(argp, "chdir")) {
             if (argind >= argc) {
                 usageError();
             } else {
@@ -518,9 +512,13 @@ PUBLIC int main(int argc, char **argv)
                 app->listen = sclone(argv[++argind]);
             }
 
+#if DEPRECATE || 1
         } else if (smatch(argp, "legacy")) {
+            /*
+                Old style MVC directory layout using "static" instead of "client". Deprecated in 4.4.0.
+             */
             app->legacy = 1;
-            app->angular = 0;
+#endif
 
         } else if (smatch(argp, "log") || smatch(argp, "l")) {
             if (argind >= argc) {
@@ -528,12 +526,6 @@ PUBLIC int main(int argc, char **argv)
             } else {
                 logSpec = argv[++argind];
             }
-
-//  MOB - what about gzip too
-#if UNUSED
-        } else if (smatch(argp, "min")) {
-            app->minified = 1;
-#endif
 
         } else if (smatch(argp, "name")) {
             if (argind >= argc) {
@@ -643,11 +635,11 @@ static void manageApp(App *app, int flags)
         mprMark(app->entry);
         mprMark(app->platform);
         mprMark(app->build);
-        mprMark(app->proto);
         mprMark(app->slink);
         mprMark(app->routes);
         mprMark(app->routeName);
         mprMark(app->routePrefix);
+        mprMark(app->routeSet);
         mprMark(app->server);
         mprMark(app->serverRoot);
         mprMark(app->targets);
@@ -659,13 +651,15 @@ static HttpRoute *createRoute(cchar *dir)
 {
     HttpRoute   *route;
     EspRoute    *eroute;
-    
+
     if ((route = httpCreateRoute(NULL)) == 0) {
         return 0;
     }
-    if (app->angular) {
-        route->flags |= HTTP_ROUTE_ANGULAR;
+#if DEPRECATE || 1
+    if (app->legacy) {
+        route->flags |= HTTP_ROUTE_LEGACY_MVC;
     }
+#endif
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
@@ -677,21 +671,15 @@ static HttpRoute *createRoute(cchar *dir)
 }
 
 
-//  MOB - rationalize with readConfig()
 static void initialize()
 {
     app->currentDir = mprGetCurrentPath();
     app->binDir = mprGetAppDir();
-
-    //  MOB - temp. Need better way to do this. Really need a ejsrc style config
-    if (!app->legacy && mprPathExists("client", X_OK)) {
-        app->angular = 1;
+#if DEPRECATE || 1
+    if (mprPathExists("static", X_OK) && !mprPathExists("client", X_OK)) {
+        app->legacy = 1;
     }
-    if (app->angular) {
-        app->proto = mprJoinPath(app->binDir, "esp-proto/angular");
-    } else {
-        app->proto = mprJoinPath(app->binDir, "esp-proto/legacy");
-    }
+#endif
     httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
 }
 
@@ -748,12 +736,12 @@ static MprList *getRoutes()
             if (route->startWith == 0 || !smatch(routePrefix, route->startWith)) {
                 continue;
             }
-        } 
+        }
         parent = route->parent;
         if (parent && parent->eroute &&
             ((EspRoute*) parent->eroute)->compile && smatch(route->dir, parent->dir) && parent->startWith) {
-            /* 
-                Use the parent instead if it has the same directory and is not the default route 
+            /*
+                Use the parent instead if it has the same directory and is not the default route
                 This is for MVC apps with a prefix of "/" and a directory the same as the default route.
              */
             continue;
@@ -793,7 +781,7 @@ static MprList *getRoutes()
             if (kp) {
                 fail("Cannot find usable ESP configuration in %s for %s", app->configFile, kp->key);
             } else {
-                fail("Cannot find usable ESP configuration", app->configFile);                
+                fail("Cannot find usable ESP configuration", app->configFile);
             }
         }
         return 0;
@@ -847,11 +835,11 @@ static HttpRoute *getMvcRoute()
             if (route->startWith == 0 || !smatch(routePrefix, route->startWith)) {
                 continue;
             }
-        } 
+        }
         parent = route->parent;
         if (parent && ((EspRoute*) parent->eroute)->compile && smatch(route->dir, parent->dir) && parent->startWith) {
-            /* 
-                Use the parent instead if it has the same directory and is not the default route 
+            /*
+                Use the parent instead if it has the same directory and is not the default route
                 This is for MVC apps with a prefix of "/" and a directory the same as the default route.
              */
             continue;
@@ -879,7 +867,7 @@ static HttpRoute *getMvcRoute()
 static bool readConfig(bool mvc)
 {
     HttpStage   *stage;
-    
+
     if ((app->appweb = maCreateAppweb()) == 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
         return 0;
@@ -921,7 +909,7 @@ static void process(int argc, char **argv)
     assert(argc >= 1);
 
     initialize();
-    
+
     cmd = argv[0];
     if (smatch(cmd, "generate")) {
         if (smatch(argv[1], "app")) {
@@ -929,8 +917,7 @@ static void process(int argc, char **argv)
                 usageError();
                 return;
             }
-            /* Special case when generating an app. Don't need a config file */
-            generateApp(argv[2]);
+            generateApp(argc - 2, &argv[2]);
             return;
         }
         readConfig(1);
@@ -1206,7 +1193,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
              */
             mprDeletePath(mprJoinPathExt(mprTrimPathExt(app->module), BIT_OBJ));
 #endif
-        } else 
+        } else
 #endif
         if (eroute->link) {
             vtrace("Link", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
@@ -1248,7 +1235,7 @@ static void compile(MprList *routes)
     MprKey      *kp;
     cchar       *name;
     int         next;
- 
+
     if (app->error) {
         return;
     }
@@ -1288,7 +1275,7 @@ static void compile(MprList *routes)
             name = app->appName ? app->appName : mprGetPathBase(route->dir);
             mprWriteFileFmt(file, "extern int esp_app_%s(HttpRoute *route, MprModule *module);", name);
             eroute = route->eroute;
-            mprWriteFileFmt(file, "    /* SOURCE %s */\n", 
+            mprWriteFileFmt(file, "    /* SOURCE %s */\n",
                 mprGetRelPath(mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL)), NULL));
         }
         mprWriteFileFmt(file, "\nPUBLIC void appwebStaticInitialize()\n{\n");
@@ -1306,7 +1293,7 @@ static void compile(MprList *routes)
 }
 
 
-/* 
+/*
     Allow a route that is responsible for a target
  */
 static bool requiredRoute(HttpRoute *route)
@@ -1326,7 +1313,7 @@ static bool requiredRoute(HttpRoute *route)
 }
 
 
-/* 
+/*
     Select a resource that matches specified targets
  */
 static bool selectResource(cchar *path, cchar *kind)
@@ -1351,7 +1338,7 @@ static bool selectResource(cchar *path, cchar *kind)
 }
 
 
-static void compileItems(HttpRoute *route) 
+static void compileItems(HttpRoute *route)
 {
     EspRoute    *eroute;
     MprDirEntry *dp;
@@ -1425,10 +1412,10 @@ static void compileFlat(HttpRoute *route)
     cchar       *name;
     char        *path, *line;
     int         next, kind;
-    
+
     eroute = route->eroute;
     name = app->appName ? app->appName : mprGetPathBase(route->dir);
-    
+
     /*
         Flat ... Catenate all source
      */
@@ -1517,12 +1504,13 @@ static void compileFlat(HttpRoute *route)
     app->build = 0;
 }
 
-    
-static void generateApp(cchar *name)
+
+static void generateApp(int argc, char **argv)
 {
     HttpRoute   *route;
-    cchar       *dir;
+    cchar       *dir, *name;
 
+    name = argv[0];
     if (smatch(name, ".")) {
         dir = mprGetCurrentPath();
         name = mprGetPathBase(dir);
@@ -1537,7 +1525,7 @@ static void generateApp(cchar *name)
     route = createRoute(name);
     app->appName = sclone(name);
     makeEspDir(route->dir);
-    generateAppFiles(route);
+    generateAppFiles(route, argc - 1, &argv[1]);
     generateAppConfigFile(route);
     generateAppSrc(route);
     generateAppDb(route);
@@ -1605,10 +1593,10 @@ static void createMigration(HttpRoute *route, cchar *name, cchar *table, cchar *
 
     path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
 
-    tokens = mprDeserialize(sfmt("{ NAME: %s, COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", 
+    tokens = mprDeserialize(sfmt("{ NAME: %s, COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }",
         name, comment, forward, backward));
     data = stemplate(MigrationTemplate, tokens);
-    
+
     files = mprGetPathFiles("db/migrations", MPR_PATH_RELATIVE);
     tail = sfmt("%s.c", name);
     for (ITERATE_ITEMS(files, dp, next)) {
@@ -1679,15 +1667,14 @@ static void generateScaffoldService(HttpRoute *route, int argc, char **argv)
     defines = sclone("");
     tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", name, title, defines));
 
-    if (app->angular) {
+    if (!app->legacy) {
         data = stemplate(ScaffoldServiceHeader, tokens);
+        data = sjoin(data, stemplate(ScaffoldServiceFooter, tokens), NULL);
+#if DEPRECATE || 1
     } else {
         data = stemplate(LegacyScaffoldServiceHeader, tokens);
-    }
-    if (app->angular) {
-        data = sjoin(data, stemplate(ScaffoldServiceFooter, tokens), NULL);
-    } else {
         data = sjoin(data, stemplate(LegacyScaffoldServiceFooter, tokens), NULL);
+#endif
     }
     makeEspFile(path, data, "Scaffold");
 }
@@ -1711,7 +1698,7 @@ static void generateScaffoldController(HttpRoute *route, int argc, char **argv)
 
     path = mprJoinPathExt(mprJoinPath(eroute->appDir, sfmt("%s/%sControl", name, title)), "js");
     defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ APPDIR: %s, NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", 
+    tokens = mprDeserialize(sfmt("{ APPDIR: %s, NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }",
         eroute->appDir, name, title, defines));
     data = stemplate(ScaffoldController, tokens);
     makeEspFile(path, data, "Controller Scaffold");
@@ -1826,7 +1813,7 @@ static void generateScaffoldViews(HttpRoute *route, int argc, char **argv)
     name = sclone(argv[0]);
     title = spascal(name);
 
-    if (app->angular) {
+    if (!app->legacy) {
         tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s}", name, title));
         //  MOB - should have definition for appDir
         path = sfmt("%s/%s/list.html", eroute->appDir, name);
@@ -1837,6 +1824,7 @@ static void generateScaffoldViews(HttpRoute *route, int argc, char **argv)
         data = stemplate(ScaffoldEditView, tokens);
         makeEspFile(path, data, "Scaffold Edit Partial");
 
+#if DEPRECATE || 1
     } else {
         tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, }", name, title));
         path = sfmt("%s/%s-list.esp", eroute->viewsDir, name);
@@ -1846,6 +1834,7 @@ static void generateScaffoldViews(HttpRoute *route, int argc, char **argv)
         path = sfmt("%s/%s-edit.esp", eroute->viewsDir, name);
         data = stemplate(LegacyScaffoldEditView, tokens);
         makeEspFile(path, data, "Scaffold Edit View");
+#endif
     }
 }
 
@@ -1862,7 +1851,7 @@ static void generateScaffold(HttpRoute *route, int argc, char **argv)
     if (app->error) {
         return;
     }
-    if (app->angular) {
+    if (!app->legacy) {
         generateScaffoldModel(route, argc, argv);
         generateScaffoldController(route, argc, argv);
     }
@@ -1891,7 +1880,7 @@ static void generate(int argc, char **argv)
     } else if (smatch(kind, "migration")) {
         route = getMvcRoute();
         generateMigration(route, argc - 1, &argv[1]);
-        
+
     } else if (smatch(kind, "scaffold")) {
         route = getMvcRoute();
         generateScaffold(route, argc - 1, &argv[1]);
@@ -1926,7 +1915,7 @@ static int sortFiles(MprDirEntry **d1, MprDirEntry **d2)
 /*
     esp migrate [forward|backward|NNN]
  */
-static void migrate(HttpRoute *route, int argc, char **argv) 
+static void migrate(HttpRoute *route, int argc, char **argv)
 {
     MprModule   *mp;
     MprDirEntry *dp;
@@ -2092,7 +2081,7 @@ static void fixupFile(HttpRoute *route, cchar *path)
     char    *data, *tmp;
 
     if ((data = mprReadPathContents(path, &len)) == 0) {
-        fail("Cannot read %s", path);
+        /* Fail silently */
         return;
     }
     //  MOB - Use stemplate and tokens.
@@ -2102,12 +2091,7 @@ static void fixupFile(HttpRoute *route, cchar *path)
     data = sreplace(data, "${DIR}", route->dir);
     data = sreplace(data, "${LISTEN}", app->listen);
     data = sreplace(data, "${BINDIR}", app->binDir);
-    if (app->angular) {
-        data = sreplace(data, "${ROUTESET}", "angular");
-    } else {
-        data = sreplace(data, "${ROUTESET}", "restful");
-    }
-
+    data = sreplace(data, "${ROUTESET}", app->routeSet);
     tmp = mprGetTempPath(route->dir);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
         fail("Cannot write %s", path);
@@ -2120,20 +2104,41 @@ static void fixupFile(HttpRoute *route, cchar *path)
 }
 
 
-static void generateAppFiles(HttpRoute *route)
+/*
+    esp generate app NAME|. kind compponents
+ */
+static void generateAppFiles(HttpRoute *route, int argc, char **argv)
 {
     EspRoute    *eroute;
-    MprHash     *tokens;
+    cchar       *proto, *path;
+    char        *argvbuf[1];
+    int         i;
 
     eroute = route->eroute;
-    copyEspDir(app->proto, route->dir);
-    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s }", app->appName, spascal(app->appName)));
-    fixupFile(route, mprJoinPath(eroute->clientDir, "index.esp"));
-    if (app->angular) {
-        fixupFile(route, mprJoinPath(eroute->appDir, "main.js"));
-    } else {
-        fixupFile(route, mprJoinPath(eroute->layoutsDir, "default.esp"));
+#if DEPRECATE || 1
+    if (argc > 0 && smatch(argv[0], "legacy")) {
+        app->legacy = 1;
     }
+#endif
+    if (argc == 0) {
+        /* Default kind is Angular */
+        argvbuf[0] = "angular";
+        argv = argvbuf;
+        argc = 1;
+    }
+    app->routeSet = sclone("restful");
+
+    /*
+        The first component is the primary application component. There should be a route-set for it.
+     */
+    proto = mprJoinPath(app->binDir, "esp-proto");
+    for (i = 0; i < argc; i++) {
+        path = mprJoinPath(proto, argv[i]);
+        copyEspDir(path, route->dir);
+    }
+    fixupFile(route, mprJoinPath(eroute->clientDir, "index.esp"));
+    fixupFile(route, mprJoinPath(eroute->appDir, "main.js"));
+    fixupFile(route, mprJoinPath(eroute->layoutsDir, "default.esp"));
 }
 
 
@@ -2165,72 +2170,8 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
 }
 
 
-#if UNUSED && KEEP
-static void installAppConf()
-{
-    char    *from, *to, *conf;
-
-    if (0) {
-        from = mprJoinPath(app->proto, "app.conf");
-    } else {
-        from = mprJoinPath(app->proto, "appweb.conf");
-    }
-    if ((conf = mprReadPathContents(from)) == 0) {
-        fail("Cannot read %s", from);
-        return;
-    }
-    to = sfmt("%s/conf/%s.conf", app->serverRoot, mprGetPathBase(app->appName));
-    if (mprPathExists(to, R_OK) && !app->overwrite) {
-        trace("Exists",  "Config file: %s", to);
-        return;
-
-    } else if (mprWritePathContents(to, conf, slen(conf), 0644) < 0) {
-        fail("Cannot write %s", to);
-        return;
-    }
-    fixupFile(route, to);
-    trace("Create",  "Config file: %s", to);
-}
-#endif
-
-
-#if UNUSED
-static void copyFile(HttpRoute *route, cchar *from, cchar *to)
-{
-    char    *data;
-    ssize   len;
-
-    if ((data = mprReadPathContents(from, &len)) == 0) {
-        fail("Cannot read %s", from);
-        return;
-    }
-    if (mprPathExists(to, R_OK) && !app->overwrite) {
-        trace("Exists",  "Config file: %s", to);
-        return;
-
-    } else if (mprWritePathContents(to, data, slen(data), 0644) < 0) {
-        fail("Cannot write %s", to);
-        return;
-    }
-    fixupFile(route, mprGetAbsPath(to));
-    trace("Create",  "File: %s", mprGetRelPath(to, 0));
-}
-#endif
-
-
 static void generateAppConfigFile(HttpRoute *route)
 {
-#if UNUSED
-    char    *from, *to;
-    
-    from = mprJoinPath(app->proto, "appweb.conf");
-    to = mprJoinPath(route->dir, "appweb.conf");
-    copyFile(route, from, to);
-
-    from = mprJoinPath(app->proto, "app.conf");
-    to = mprJoinPath(route->dir, "app.conf");
-    copyFile(route, from, to);
-#endif
     fixupFile(route, mprJoinPath(route->dir, "appweb.conf"));
     fixupFile(route, mprJoinPath(route->dir, "app.conf"));
 }
@@ -2276,7 +2217,7 @@ static void generateAppDb(HttpRoute *route)
     eroute = route->eroute;
     ext = app->database;
     if ((smatch(app->database, "sdb") && !BIT_PACK_SDB) || (smatch(app->database, "mdb") && !BIT_PACK_MDB)) {
-        fail("Cannot find database provider: \"%s\". Ensure Appweb is configured to support \"%s\"", 
+        fail("Cannot find database provider: \"%s\". Ensure Appweb is configured to support \"%s\"",
                 app->database, app->database);
         return;
     }
@@ -2292,7 +2233,7 @@ static void generateAppDb(HttpRoute *route)
 /*
     Search strategy is:
 
-    [--config path] : ./appweb.conf : [parent]/appweb.conf 
+    [--config path] : ./appweb.conf : [parent]/appweb.conf
  */
 static bool findConfigFile(bool mvc)
 {
@@ -2390,14 +2331,15 @@ static void usageError(Mpr *mpr)
     mprEprintf("\nESP Usage:\n\n"
     "  %s [options] [commands]\n\n"
     "  Options:\n"
-    "    --angular                  # Generate Angular style apps\n"
     "    --chdir dir                # Change to the named directory first\n"
     "    --config configFile        # Use named config file instead appweb.conf\n"
     "    --database name            # Database provider 'mdb|sdb' \n"
     "    --flat                     # Compile into a single module\n"
     "    --genlink                  # Generate a static link module for flat compilations\n"
     "    --keep                     # Keep intermediate source\n"
+#if DEPRECATE || 1
     "    --legacy                   # Generate legacy style apps (default)\n"
+#endif
     "    --listen [ip:]port         # Listen on specified address \n"
     "    --log logFile:level        # Log to file file at verbosity level\n"
     "    --name appName             # Name for the app when compiling flat\n"
@@ -2418,8 +2360,7 @@ static void usageError(Mpr *mpr)
     "    esp compile\n"
     "    esp compile [pathFilters ...]\n"
     "    esp migrate [forward|backward|NNN]\n"
-    "    esp -angular generate app name\n"
-    "    esp generate app name\n"
+    "    esp generate app name [components...]\n"
     "    esp generate service name [action [, action] ...\n"
     "    esp generate migration description model [field:type [, field:type] ...]\n"
     "    esp generate scaffold model [field:type [, field:type] ...]\n"

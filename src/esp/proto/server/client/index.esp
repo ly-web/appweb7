@@ -2,7 +2,7 @@
     <h1>Welcome to Embedded Server Pages</h1>
 
     <section>
-        <% image("~/static/images/splash.jpg", "{ class: 'wrapLeft shadow' }"); %>
+        <% image("~/client/images/splash.jpg", "{ class: 'wrapLeft shadow' }"); %>
         <p>ESP is a powerful web framework to create blazingly fast dynamic web applications.
 
         <p>ESP has an page templating engine, layout pages, a Model,View,Controller framework,
@@ -14,7 +14,7 @@
         <ol>
             <li><b><a href="http://appwebserver.org/products/appweb/doc/guide/appweb/users/esp/web/views.html">Create Views</b></a>
                 <p>Create views under the <b>views</b> directory. Modify the layout in "layouts/default.esp" and 
-                   customize the style sheet in the "static/css" directory.</p>
+                   customize the less style sheets in the "css" directory.</p>
             </li>
             <li><b><a href="http://appwebserver.org/products/appweb/doc/guide/appweb/users/esp/controllers.html">Generate 
                 Models and Controllers</a></b>:

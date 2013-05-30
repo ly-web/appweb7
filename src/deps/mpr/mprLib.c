@@ -17369,7 +17369,6 @@ PUBLIC char *mprReadPathContents(cchar *path, ssize *lenp)
     char        *buf;
 
     if ((file = mprOpenFile(path, O_RDONLY | O_BINARY, 0)) == 0) {
-        mprError("Cannot open %s", path);
         return 0;
     }
     if (mprGetPathInfo(path, &info) < 0) {

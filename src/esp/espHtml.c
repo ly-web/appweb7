@@ -40,7 +40,7 @@ static EspScript defaultScripts[] = {
 };
 
 static char *defaultLess[] = {
-    "/less/all.less", 
+    "/css/all.less", 
     0,
 };
 
