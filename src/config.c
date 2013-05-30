@@ -1002,6 +1002,24 @@ static int inactivityTimeoutDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    LimitBuffer bytes
+    DEPRECATED: LimitStageBuffer bytes
+ */
+static int limitBufferDirective(MaState *state, cchar *key, cchar *value)
+{
+    int     size;
+
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    size = getint(value);
+    if (size > (1024 * 1024)) {
+        size = (1024 * 1024);
+    }
+    state->limits->bufferSize = size;
+    return 0;
+}
+
+
+/*
     LimitCache bytes
  */
 static int limitCacheDirective(MaState *state, cchar *key, cchar *value)
@@ -1159,20 +1177,15 @@ static int limitResponseBodyDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-/*
-    LimitBuffer bytes
-    DEPRECATED: LimitStageBuffer bytes
- */
-static int limitBufferDirective(MaState *state, cchar *key, cchar *value)
-{
-    int     size;
 
+
+/*
+    LimitSessions count
+ */
+static int limitSessionDirective(MaState *state, cchar *key, cchar *value)
+{
     state->limits = httpGraduateLimits(state->route, state->server->limits);
-    size = getint(value);
-    if (size > (1024 * 1024)) {
-        size = (1024 * 1024);
-    }
-    state->limits->bufferSize = size;
+    state->limits->sessionMax = getint(value);
     return 0;
 }
 
@@ -2714,6 +2727,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitRequestHeaderLines", limitRequestHeaderLinesDirective);
     maAddDirective(appweb, "LimitRequestHeader", limitRequestHeaderDirective);
     maAddDirective(appweb, "LimitResponseBody", limitResponseBodyDirective);
+    maAddDirective(appweb, "LimitSessions", limitSessionDirective);
     maAddDirective(appweb, "LimitUri", limitUriDirective);
     maAddDirective(appweb, "LimitUpload", limitUploadDirective);
     maAddDirective(appweb, "LimitWorkers", limitWorkersDirective);

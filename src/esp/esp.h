@@ -114,43 +114,45 @@ PUBLIC void espInitHtmlOptions(Esp *esp);
     @see Esp
  */
 typedef struct EspRoute {
-    //  MOB - should most of these be cchar?
     char            *appName;               /**< App module name when compiled flat */
     struct EspRoute *top;                   /**< Top-level route for this application */
     HttpRoute       *route;                 /**< Back link to the owning route */
     EspProc         commonService;          /**< Common code for all services */
     MprHash         *env;                   /**< Environment variables for route */
     MprHash         *config;                /**< App configuration from config.json */
-    //  MOB - should most of these be cchar?
-    char            *compile;               /**< Compile template */
-    char            *link;                  /**< Link template */
-    char            *searchPath;            /**< Search path to use when locating compiler/linker */
-    char            *appModulePath;         /**< App module path when compiled flat */
-    char            *cacheDir;              /**< Directory for cached compiled services and views */
-    cchar           *mode;                  /**< Application run mode (debug|release) */
-    bool            autoLogin;              /**< Bypass user login */
 
-    char            *clientDir;             /**< Directory for client-side web content */
-    char            *controllersDir;        /**< Directory for client-side controllers */
-    char            *dbDir;                 /**< Directory for databases */
-    char            *migrationsDir;         /**< Directory for migrations */
-    char            *modelsDir;             /**< Directory for client models*/
-    char            *templatesDir;          /**< Directory for client templates */
-    char            *servicesDir;           /**< Directory for services */
-    char            *srcDir;                /**< Directory for application source */
-    char            *viewsDir;              /**< Directory for service views */
+    cchar           *appModulePath;         /**< App module path when compiled flat */
+    cchar           *cacheDir;              /**< Directory for cached compiled services and views */
+    cchar           *clientDir;             /**< Directory for client-side public web content */
+    cchar           *appDir;                /**< Directory for client-side application content "app" */
+    cchar           *dbDir;                 /**< Directory for databases */
+    cchar           *servicesDir;           /**< Directory for services */
+    cchar           *srcDir;                /**< Directory for server-side source */
+    cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
+
+    cchar           *compile;               /**< Compile template */
+    cchar           *link;                  /**< Link template */
+    cchar           *mode;                  /**< Application run mode (debug|release) */
 
 #if DEPRECATED || 1
     /* Not used by Angular style */
     char            *layoutsDir;            /**< Directory for service view layouts */
+    char            *viewsDir;              /**< Directory for server-side views */
+#endif
+#if UNUSED
+    char            *controllersDir;        /**< Directory for client-side controllers */
+    char            *migrationsDir;         /**< Directory for migrations */
+    char            *modelsDir;             /**< Directory for client models */
+    char            *templatesDir;          /**< Directory for client templates */
 #endif
 
-    MprTicks        lifespan;               /**< Default cache lifespan */
+    bool            autoLogin;              /**< Bypass user login */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
     int             showErrors;             /**< Send server errors back to client */
     int             update;                 /**< Auto-update modified ESP source */
 
+    MprTicks        lifespan;               /**< Default cache lifespan */
     Edi             *edi;                   /**< Default database for this route */
 } EspRoute;
 

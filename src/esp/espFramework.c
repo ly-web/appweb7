@@ -807,95 +807,6 @@ PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
 }
 
 
-#if UNUSED
-PUBLIC void espScripts(HttpConn *conn, cchar *optionString)
-{
-    EspReq      *req;
-    MprList     *files;
-    MprDirEntry *dp;
-    cchar       *indent, *uri;
-    int         next;
-   
-    req = conn->data;
-#if UNUSED
-    MprHash     *options;
-    EspScript   *sp;
-    bool        minified;
-    options = httpGetOptions(optionString);
-    req = conn->data;
-    minified = smatch(httpGetOption(options, "minified", 0), "true");
-    indent = "";
-    for (sp = angularScripts; sp->name; sp++) {
-        if (sp->flags & SCRIPT_IE) {
-            espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
-        }
-        path = sjoin(sp->name, minified ? ".min.js" : ".js", NULL);
-        uri = httpLink(conn, path, NULL);
-        newline = sp[1].name ? "\r\n" :  "";
-        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
-        if (sp->flags & SCRIPT_IE) {
-            espRender(conn, "%s<![endif]-->\n", indent);
-        }
-        indent = "    ";
-    }
-    files = mprGetPathFiles(mprJoinPath(req->eroute->clientDir, "factories"), MPR_PATH_REL);
-    for (ITERATE_ITEMS(files, dp, next)) {
-        path = mprGetRelPath(dp->name, req->eroute->clientDir);
-        uri = httpLink(conn, path, NULL);
-        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
-    }
-    files = mprGetPathFiles(req->eroute->modelsDir, MPR_PATH_REL);
-    for (ITERATE_ITEMS(files, dp, next)) {
-        path = mprGetRelPath(dp->name, req->eroute->clientDir);
-        uri = httpLink(conn, path, NULL);
-        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
-    }
-    files = mprGetPathFiles(req->eroute->controllersDir, MPR_PATH_REL);
-    for (ITERATE_ITEMS(files, dp, next)) {
-        path = mprGetRelPath(dp->name, req->eroute->clientDir);
-        uri = httpLink(conn, path, NULL);
-        espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
-    }
-#endif
-
-#if UNUSED
-    MprHash *processed;
-    processed = mprCreateHash(0, 0);
-
-    files = mprGetPathFiles(req->eroute->clientDir, MPR_PATH_REL | MPR_PATH_DESCEND);
-    indent = "";
-    for (ITERATE_ITEMS(files, dp, next)) {
-        if (req->route->flags & HTTP_ROUTE_MINIFY) {
-            if (req->route->flags & HTTP_ROUTE_GZIP) {
-            }
-        } else if (req->route->flags & HTTP_ROUTE_GZIP) {
-        }
-        if (sends(dp->name, ".min.js.gz")) {
-            if ((req->route->flags & (HTTP_ROUTE_MINIFY | HTTP_ROUTE_GZIP)) != (HTTP_ROUTE_MINIFY | HTTP_ROUTE_GZIP)) {
-                continue;
-            }
-        } else if (sends(dp->name, ".js.gz")) {
-            if (!(req->route->flags & HTTP_ROUTE_GZIP)) {
-                continue;
-            }
-        } else if (sends(dp->name, ".min.js")) {
-            if (!(req->route->flags & HTTP_ROUTE_MINIFY)) {
-                continue;
-            }
-        }
-        uri = httpLink(conn, dp->name, NULL);
-        espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
-        indent = "    ";
-    }
-#endif
-    mprGlobPathFiles(req->eroute->clientDircchar *path, cchar *patterns, int flags);
-    //  MOB - what about IE conditionals
-
-
-}
-#endif
-
-//  MOB MOVE
 /*
     Get a security token to use to mitiate CSRF threats. Security tokens are expected to be sent with 
     POST form requests to verify the authenticity of the issuer.
@@ -1453,25 +1364,30 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(eroute->appDir);
         mprMark(eroute->appName);
         mprMark(eroute->appModulePath);
         mprMark(eroute->cacheDir);
         mprMark(eroute->clientDir);
         mprMark(eroute->config);
-        mprMark(eroute->controllersDir);
         mprMark(eroute->compile);
         mprMark(eroute->dbDir);
         mprMark(eroute->edi);
         mprMark(eroute->env);
-        mprMark(eroute->layoutsDir);
         mprMark(eroute->link);
-        mprMark(eroute->migrationsDir);
-        mprMark(eroute->modelsDir);
-        mprMark(eroute->templatesDir);
         mprMark(eroute->searchPath);
         mprMark(eroute->servicesDir);
         mprMark(eroute->srcDir);
+#if DEPRECATED || 1
+        mprMark(eroute->layoutsDir);
         mprMark(eroute->viewsDir);
+#endif
+#if UNUSED
+        mprMark(eroute->controllersDir);
+        mprMark(eroute->migrationsDir);
+        mprMark(eroute->modelsDir);
+        mprMark(eroute->templatesDir);
+#endif
     }
 }
 

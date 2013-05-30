@@ -348,11 +348,11 @@ app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $rout
 \n\
 app.config(function($routeProvider) {\n\
     $routeProvider.when('/', {\n\
-        templateUrl: '/app/${NAME}/list.html',\n\
+        templateUrl: '/${APPDIR}/${NAME}/list.html',\n\
         controller: '${TITLE}Control',\n\
     });\n\
     $routeProvider.when('/service/${NAME}/:id', {\n\
-        templateUrl: '/app/${NAME}/edit.html',\n\
+        templateUrl: '/${APPDIR}/${NAME}/edit.html',\n\
         controller: '${TITLE}Control',\n\
     });\n\
 });\n\
@@ -1575,7 +1575,7 @@ static void createMigration(HttpRoute *route, cchar *name, cchar *table, cchar *
     MprHash     *tokens;
     MprList     *files;
     MprDirEntry *dp;
-    cchar       *seq, *forward, *backward, *data, *path, *def, *field, *tail, *typeDefine;
+    cchar       *dir, *seq, *forward, *backward, *data, *path, *def, *field, *tail, *typeDefine;
     char        *typeString;
     int         i, type, next;
 
@@ -1600,9 +1600,10 @@ static void createMigration(HttpRoute *route, cchar *name, cchar *table, cchar *
         def = sfmt("    ediAddColumn(db, \"%s\", \"%s\", %s, 0);\n", table, field, typeDefine);
         forward = sjoin(forward, def, NULL);
     }
-    makeEspDir(eroute->migrationsDir);
+    dir = mprJoinPath(eroute->dbDir, "migrations");
+    makeEspDir(dir);
 
-    path = sfmt("%s/%s_%s.c", eroute->migrationsDir, seq, name, ".c");
+    path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
 
     tokens = mprDeserialize(sfmt("{ NAME: %s, COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", 
         name, comment, forward, backward));
@@ -1708,10 +1709,10 @@ static void generateScaffoldController(HttpRoute *route, int argc, char **argv)
     name = sclone(argv[0]);
     title = spascal(name);
 
-    path = mprJoinPathExt(mprJoinPath(eroute->clientDir, sfmt("app/%s/%sControl", name, title)), "js");
+    path = mprJoinPathExt(mprJoinPath(eroute->appDir, sfmt("%s/%sControl", name, title)), "js");
     defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", name, title, defines));
-
+    tokens = mprDeserialize(sfmt("{ APPDIR: %s, NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", 
+        eroute->appDir, name, title, defines));
     data = stemplate(ScaffoldController, tokens);
     makeEspFile(path, data, "Controller Scaffold");
 }
@@ -1736,6 +1737,9 @@ static void generateScaffoldMigration(HttpRoute *route, int argc, char **argv)
 }
 
 
+/*
+    Angular only
+ */
 static void generateScaffoldModel(HttpRoute *route, int argc, char **argv)
 {
     EspRoute    *eroute;
@@ -1749,11 +1753,7 @@ static void generateScaffoldModel(HttpRoute *route, int argc, char **argv)
     name = sclone(argv[0]);
     title = spascal(name);
 
-    if (app->angular) {
-        path = sfmt("%s/app/%s/%s.js", eroute->clientDir, name, title);
-    } else {
-        path = sfmt("%s/%s.js", eroute->modelsDir, title);
-    }
+    path = sfmt("%s/%s/%s.js", eroute->appDir, name, title);
     tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s}", name, title));
     data = stemplate(ModelTemplate, tokens);
     makeEspFile(path, data, "Scaffold Model");
@@ -1829,11 +1829,11 @@ static void generateScaffoldViews(HttpRoute *route, int argc, char **argv)
     if (app->angular) {
         tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s}", name, title));
         //  MOB - should have definition for appDir
-        path = sfmt("%s/app/%s/list.html", eroute->clientDir, name);
+        path = sfmt("%s/%s/list.html", eroute->appDir, name);
         data = stemplate(ScaffoldListView, tokens);
         makeEspFile(path, data, "Scaffold List Partial");
 
-        path = sfmt("%s/app/%s/edit.html", eroute->clientDir, name);
+        path = sfmt("%s/%s/edit.html", eroute->appDir, name);
         data = stemplate(ScaffoldEditView, tokens);
         makeEspFile(path, data, "Scaffold Edit Partial");
 
@@ -2130,7 +2130,7 @@ static void generateAppFiles(HttpRoute *route)
     tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s }", app->appName, spascal(app->appName)));
     fixupFile(route, mprJoinPath(eroute->clientDir, "index.esp"));
     if (app->angular) {
-        fixupFile(route, mprJoinPath(eroute->clientDir, "app/app.js"));
+        fixupFile(route, mprJoinPath(eroute->appDir, "app.js"));
     } else {
         fixupFile(route, mprJoinPath(eroute->layoutsDir, "default.esp"));
     }

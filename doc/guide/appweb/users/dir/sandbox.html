@@ -53,6 +53,7 @@
                 <li><a href="#limitRequestHeader">LimitRequestHeader</a></li>
                 <li><a href="#limitRequestHeaderLines">LimitRequestHeaderLines</a></li>
                 <li><a href="#limitResponseBody">LimitResponseBody</a></li>
+                <li><a href="#limitSessions">LimitSessions</a></li>
                 <li><a href="#limitUpload">LimitUpload</a></li>
                 <li><a href="#limitUri">LimitUri</a></li>
                 <li><a href="#limitWebSocketsMessage">LimitWebSocketsMessage</a></li>
@@ -100,6 +101,40 @@
                         <td>
                             <p>This directive defines the maximum time to wait for existing requests to complete
                             before exiting or restarting Appweb. </p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="limitBuffer"></a>
+            <h2>LimitBuffer</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the pipeline stage buffer size</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>LimitBuffer size</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>LimitBuffer 8192</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This directive defines the maximum buffer size in bytes for each stage in the request
+                            pipeline. This directive places a limit on the amount of memory consumed by pipeline stages.
+                            <p>NOTE: this does not imply a maximum response size (See LimitResponseBody for that
+                            functionality). It merely limits the memory consumed when trying to buffer the response data. 
+                            Appweb handlers will flush the buffers and use HTTP/1.1 chunked output if the amount of 
+                            response data exceeds the output buffer size.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -367,41 +402,6 @@
                 </tbody>
             </table>
             
-            <a id="limitRequests"></a>
-            <h2>LimitRequests</h2>
-            <table class="directive" title="directive">
-                <tbody>
-                    <tr>
-                        <td class="pivot">Description</td>
-                        <td>Sets the maximum number of simultaneous HTTP requests</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Synopsis</td>
-                        <td>LimitRequests count</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Context</td>
-                        <td>Default server, VirtualHost, Route</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Example</td>
-                        <td>LimitRequests 40</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Notes</td>
-                        <td>
-                            <p>The LimitRequests directive defines the maximum number of simultaneous 
-                            incoming HTTP requests that are permitted. Requests in excess of this count will 
-                            be rejected. A limit of '0' means unlimited.</p>
-                            <p>This directive limits the number of HTTP requests, whereas the LimitClients directive
-                            limits the number of connected client systems.</p>
-                            <p>NOTE: that many browsers can and will initiate multiple requests when requesting a
-                            page. Some browsers will initiate up to six requests at a time for a single tab.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            
             <a id="limitRequestsPerClient"></a>
             <h2>LimitRequestsPerClient</h2>
             <table class="directive" title="directive">
@@ -646,35 +646,38 @@
                 </tbody>
             </table>
             
-            <a id="limitBuffer"></a>
-            <h2>LimitBuffer</h2>
+            <a id="limitSessions"></a>
+            <h2>LimitSessions</h2>
             <table class="directive" title="directive">
                 <tbody>
                     <tr>
                         <td class="pivot">Description</td>
-                        <td>Defines the pipeline stage buffer size</td>
+                        <td>Sets the maximum number of simultaneous client sessions</td>
                     </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>LimitBuffer size</td>
+                        <td>LimitSessions count</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
-                        <td>Default server, VirtualHost</td>
+                        <td>Default server, VirtualHost, Route</td>
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>LimitBuffer 8192</td>
+                        <td>LimitSessions 40</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>This directive defines the maximum buffer size in bytes for each stage in the request
-                            pipeline. This directive places a limit on the amount of memory consumed by pipeline stages.
-                            <p>NOTE: this does not imply a maximum response size (See LimitResponseBody for that
-                            functionality). It merely limits the memory consumed when trying to buffer the response data. 
-                            Appweb handlers will flush the buffers and use HTTP/1.1 chunked output if the amount of 
-                            response data exceeds the output buffer size.</p>
+                            <p>The LimitSessions directive defines the maximum number of simultaneous 
+                            client sessions that utilize server-side session state storage. Requests in excess of this 
+                            count will be rejected. A limit of '0' means unlimited.</p>
+
+                            <p>This directive limits the number of session states, whereas the LimitClients directive
+                            limits the number of connected client systems.</p>
+                            <p>NOTE: that many browsers can and will initiate multiple requests when requesting a
+                            page. These will share the same session state storage. Some browsers will initiate up to six
+                            requests at a time for a single tab.</p> 
                         </td>
                     </tr>
                 </tbody>

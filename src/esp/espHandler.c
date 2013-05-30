@@ -456,6 +456,7 @@ static char *getServiceEntry(cchar *serviceName)
 #endif
 
 
+#if FUTURE && KEEP
 static bool getConfig(EspRoute *eroute, cchar *key, cchar *defaultValue)
 {
     cchar   *value;
@@ -476,6 +477,7 @@ static bool testConfig(EspRoute *eroute, cchar *key, cchar *desired)
     }
     return 0;
 }
+#endif
 
 
 static int loadApp(EspRoute *eroute)
@@ -502,7 +504,8 @@ static int loadApp(EspRoute *eroute)
                 if (minfo.valid && mp->modified < minfo.mtime) {
                     //  MOB - but should only do if nobody running
                     if (!espUnloadModule(eroute->appName, 0)) {
-                        mprError("Cannot unload module %s. Connections still open. Continue using old version.",  eroute->appName);
+                        mprError("Cannot unload module %s. Connections still open. Continue using old version.",  
+                            eroute->appName);
                         /* Cannot unload - so keep using old module */
                         return 0;
                     }
@@ -641,23 +644,27 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     if (parent->env) {
         eroute->env = mprCloneHash(parent->env);
     }
+    eroute->appDir = parent->appDir;
     eroute->appName = parent->appName;
     eroute->appModulePath = parent->appModulePath;
     eroute->cacheDir = parent->cacheDir;
     eroute->clientDir = parent->clientDir;
     eroute->config = parent->config;
-    eroute->controllersDir = parent->controllersDir;
     eroute->dbDir = parent->dbDir;
-    eroute->layoutsDir = parent->layoutsDir;
-    eroute->modelsDir = parent->modelsDir;
-    eroute->migrationsDir = parent->migrationsDir;
-    eroute->modelsDir = parent->modelsDir;
-    eroute->templatesDir = parent->templatesDir;
     eroute->route = route;
     eroute->srcDir = parent->srcDir;
     eroute->servicesDir = parent->servicesDir;
+#if DEPRECATED || 1
+    eroute->layoutsDir = parent->layoutsDir;
     eroute->viewsDir = parent->viewsDir;
+#endif
     route->eroute = eroute;
+#if UNUSED
+    eroute->modelsDir = parent->modelsDir;
+    eroute->controllersDir = parent->controllersDir;
+    eroute->templatesDir = parent->templatesDir;
+    eroute->migrationsDir = parent->migrationsDir;
+#endif
     return eroute;
 }
 
@@ -675,14 +682,17 @@ PUBLIC void espSetMvcDirs(EspRoute *eroute)
 
     if (route->flags & HTTP_ROUTE_ANGULAR) {
         eroute->clientDir = mprJoinPath(dir, "client");
-        eroute->controllersDir = mprJoinPath(eroute->clientDir, "controllers");
+        eroute->servicesDir = mprJoinPath(dir, "services");
+        eroute->srcDir = mprJoinPath(eroute->servicesDir, "src");
+        eroute->appDir = mprJoinPath(eroute->clientDir, "app");
+#if UNUSED
         eroute->templatesDir = mprJoinPath(eroute->clientDir, "templates");
         eroute->modelsDir = mprJoinPath(eroute->clientDir, "models");
         eroute->migrationsDir = mprJoinPath(eroute->dbDir, "migrations");
-        eroute->servicesDir = mprJoinPath(dir, "services");
+        eroute->controllersDir = mprJoinPath(eroute->clientDir, "controllers");
         eroute->viewsDir = mprJoinPath(eroute->servicesDir, "views");
         eroute->layoutsDir = mprJoinPath(eroute->viewsDir, "layouts");
-        eroute->srcDir = mprJoinPath(eroute->servicesDir, "src");
+#endif
 
 #if DEPRECATED || 1
     /*
@@ -691,7 +701,9 @@ PUBLIC void espSetMvcDirs(EspRoute *eroute)
     } else {
         eroute->clientDir = mprJoinPath(dir, "static");
         eroute->layoutsDir = mprJoinPath(dir, "layouts");
+#if UNUSED
         eroute->migrationsDir = mprJoinPath(eroute->dbDir, "migrations");
+#endif
         eroute->servicesDir = mprJoinPath(dir, "controllers");
         eroute->srcDir = mprJoinPath(dir, "src");
         eroute->viewsDir = mprJoinPath(dir, "views");
@@ -699,14 +711,18 @@ PUBLIC void espSetMvcDirs(EspRoute *eroute)
     }
     httpSetRouteVar(route, "CACHE_DIR", eroute->cacheDir);
     httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
-    httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->controllersDir);
     httpSetRouteVar(route, "DB_DIR", eroute->dbDir);
     httpSetRouteVar(route, "LAYOUTS_DIR", eroute->layoutsDir);
-    httpSetRouteVar(route, "MIGRATIONS_DIR", eroute->migrationsDir);
-    httpSetRouteVar(route, "MODELS_DIR", eroute->modelsDir);
     httpSetRouteVar(route, "SERVICES_DIR", eroute->servicesDir);
+#if DEPRECATED || 1
+    httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->servicesDir);
+#endif
     httpSetRouteVar(route, "SRC_DIR", eroute->srcDir);
     httpSetRouteVar(route, "VIEWS_DIR", eroute->viewsDir);
+#if UNUSED
+    httpSetRouteVar(route, "MIGRATIONS_DIR", eroute->migrationsDir);
+    httpSetRouteVar(route, "MODELS_DIR", eroute->modelsDir);
+#endif
 }
 
 
@@ -780,9 +796,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     HttpRoute   *route;
     EspRoute    *eroute;
     char        *name, *option, *ovalue, *prefix, *dir, *routeSet, *database, *tok, *flat;
-    bool        createRoute;
 
-    createRoute = 0;
     dir = ".";
     routeSet = "restful";
     flat = "false";
@@ -820,15 +834,11 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     if (smatch(prefix, "/")) {
         prefix = 0;
     }
-    //  MOB - need to always create inherited routes so can define espHandler for ""
-    if (0 && smatch(prefix, state->route->prefix) && mprSamePath(state->route->dir, dir)) {
-        /* Can use existing route as it has the same prefix and documents directory */
-        route = state->route;
-    } else {
-        route = httpCreateInheritedRoute(state->route);
-        httpSetRouteName(route, name);
-        createRoute = 1;
-    }
+    /*
+        Always create an application route so all resources can inherit (share) handler definitions
+     */
+    route = httpCreateInheritedRoute(state->route);
+    httpSetRouteName(route, name);
     if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
     }
@@ -846,25 +856,21 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         }
         prefix = stemplate(prefix, route->vars);
     }
-    if (createRoute) {
-        httpAddRouteHandler(route, "espHandler", "");
-        if (prefix) {
-            httpSetRouteName(route, prefix);
-            httpSetRoutePattern(route, sjoin("^", prefix, NULL), 0);
-            httpSetRoutePrefix(route, prefix);
-        }
-        if (dir) {
-            httpSetRouteDir(route, dir);
-        }
+    if (prefix) {
+        httpSetRouteName(route, prefix);
+        httpSetRoutePrefix(route, prefix);
     }
+    httpSetRouteDir(route, dir);
+    httpSetRouteTarget(route, "run", "unused");
+    httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
+
     if (routeSet) {
         if (smatch(routeSet, "angular")) {
             route->flags |= HTTP_ROUTE_ANGULAR;
         }
-        //  MOB - DEPRECATE mvc-fixed
-        if (smatch(routeSet, "mvc") || smatch(routeSet, "mvc-fixed") || smatch(routeSet, "restful") || 
-                smatch(routeSet, "angular")) {
+        //  MOB - RATIONALIZE
+        if (smatch(routeSet, "mvc") || smatch(routeSet, "mvc-fixed") || smatch(routeSet, "restful") || smatch(routeSet, "angular")) {
             espSetMvcDirs(eroute);
         }
         httpAddRouteSet(state->route, routeSet);
@@ -873,9 +879,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         maPopState(state);
         return MPR_ERR_BAD_STATE;
     }
-    if (createRoute) {
-        httpFinalizeRoute(route);
-    }
+    httpFinalizeRoute(route);
     maPopState(state);
 
     if (!state->appweb->skipModules && loadApp(eroute) < 0) {
@@ -955,29 +959,25 @@ static int espDirDirective(MaState *state, cchar *key, cchar *value)
             eroute->clientDir = path;
         } else if (smatch(name, "db")) {
             eroute->dbDir = path;
+#if UNUSED
         } else if (smatch(name, "migrations")) {
             eroute->migrationsDir = path;
         } else if (smatch(name, "models")) {
             eroute->modelsDir = path;
         } else if (smatch(name, "templates")) {
             eroute->templatesDir = path;
+#endif
         } else if (smatch(name, "src")) {
             eroute->srcDir = path;
         } else if (smatch(name, "services")) {
             eroute->servicesDir = path;
+#if DEPRECATED || 1
         } else if (smatch(name, "views")) {
             eroute->viewsDir = path;
         } else if (smatch(name, "layouts")) {
             eroute->layoutsDir = path;
         } else if (smatch(name, "controllers")) {
-            if (state->route->flags & HTTP_ROUTE_ANGULAR) {
-                eroute->controllersDir = path;
-#if DEPRECATED || 1
-            } else {
-                eroute->servicesDir = path;
-#endif
-            }
-#if DEPRECATED || 1
+            eroute->servicesDir = path;
         } else if (smatch(name, "static")) {
             eroute->clientDir = path;
 #endif
