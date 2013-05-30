@@ -13693,6 +13693,7 @@ PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTicks lifespa
     assert(conn);
     http = conn->http;
 
+#if UNUSED
     lock(http);
     http->activeSessions++;
     if (http->activeSessions >= conn->limits->sessionMax) {
@@ -13702,6 +13703,7 @@ PUBLIC HttpSession *httpAllocSession(HttpConn *conn, cchar *id, MprTicks lifespa
         return 0;
     }
     unlock(http);
+#endif
 
     if ((sp = mprAllocObj(HttpSession, manageSession)) == 0) {
         return 0;
@@ -13744,8 +13746,10 @@ PUBLIC void httpDestroySession(HttpConn *conn)
         /* Can't do this as we can only expire individual items in the cache as the cache is shared */
         mprExpireCache(sp->cache, makeKey(sp, key), 0);
 #endif
+#if UNUSED
         http->activeSessions--;
         assert(http->activeSessions >= 0);
+#endif
         sp->id = 0;
         conn->rx->session = 0;
     }
