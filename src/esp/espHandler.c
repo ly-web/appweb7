@@ -205,7 +205,7 @@ static int runAction(HttpConn *conn)
     EspRoute    *eroute;
     EspReq      *req;
     EspAction   action;
-    char        *key, *canonical, *controllerName, *actionName;
+    char        *key, *controllerName, *actionName;
     int         updated;
 
     rx = conn->rx;
@@ -239,6 +239,7 @@ static int runAction(HttpConn *conn)
         }
 #if !BIT_STATIC
     } else if (eroute->update || !mprLookupKey(esp->actions, key)) {
+        char    *canonical;
         char    *source;
         int     recompile = 0;
 
@@ -328,7 +329,6 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     EspRoute    *eroute;
     EspReq      *req;
     EspViewProc view;
-    char        *canonical;
     int         updated;
     
     rx = conn->rx;
@@ -356,6 +356,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 #if !BIT_STATIC
     } else if (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(req->source))) {
         cchar   *source;
+        char    *canonical;
         int     recompile = 0;
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
         source = req->source;
@@ -682,7 +683,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
     EspRoute    *eroute;
-    char        *prefix, *path, *routeSet, *database;
+    char        *name, *prefix, *path, *routeSet, *database;
     bool        createRoute;
 
     createRoute = 0;
@@ -690,6 +691,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S ?S ?S ?S", &prefix, &path, &routeSet, &database)) {
         return MPR_ERR_BAD_SYNTAX;
     }
+    name = prefix;
     if (smatch(prefix, "/")) {
         prefix = 0;
     }
@@ -724,11 +726,6 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         }
     }
     httpAddRouteHandler(route, "espHandler", "");
-
-#if UNUSED
-    //  MOB - why?
-    httpSetRouteSource(route, "");
-#endif
     if (routeSet) {
         setRouteDirs(state, routeSet);
         httpAddRouteSet(state->route, routeSet);
@@ -738,7 +735,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_STATE;
     }
 #if BIT_STATIC
-    setupEspApp(state->route, appName, eroute->cacheDir);
+    setupEspApp(state->route, name, eroute->cacheDir);
 #endif
     if (createRoute) {
         httpFinalizeRoute(route);
