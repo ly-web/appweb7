@@ -3,10 +3,11 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.3.3
+VERSION            := 4.3.4
 BUILD_NUMBER       := 0
 PROFILE            := static
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
+CC_ARCH            := $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
 OS                 := macosx
 CC                 := clang
 LD                 := link
@@ -302,7 +303,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.3-0
+	@echo 4.3.4-0
 
 #
 #   mpr.h
@@ -338,7 +339,7 @@ DEPS_5 += $(CONFIG)/inc/bitos.h
 $(CONFIG)/obj/mprLib.o: \
     src/deps/mpr/mprLib.c $(DEPS_5)
 	@echo '   [Compile] $(CONFIG)/obj/mprLib.o'
-	$(CC) -c -o $(CONFIG)/obj/mprLib.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/mpr/mprLib.c
+	$(CC) -c -o $(CONFIG)/obj/mprLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/mpr/mprLib.c
 
 #
 #   libmpr
@@ -370,7 +371,7 @@ DEPS_8 += $(CONFIG)/inc/bitos.h
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c $(DEPS_8)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.o'
-	$(CC) -c -o $(CONFIG)/obj/estLib.o $(DFLAGS) "$(IFLAGS)" src/deps/est/estLib.c
+	$(CC) -c -o $(CONFIG)/obj/estLib.o -arch $(CC_ARCH) $(DFLAGS) "$(IFLAGS)" src/deps/est/estLib.c
 
 ifeq ($(BIT_PACK_EST),1)
 #
@@ -396,7 +397,7 @@ DEPS_10 += $(CONFIG)/inc/est.h
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_10)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/deps/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/deps/mpr/mprSsl.c
 
 #
 #   libmprssl
@@ -426,7 +427,7 @@ DEPS_12 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/manager.o: \
     src/deps/mpr/manager.c $(DEPS_12)
 	@echo '   [Compile] $(CONFIG)/obj/manager.o'
-	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/mpr/manager.c
+	$(CC) -c -o $(CONFIG)/obj/manager.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/mpr/manager.c
 
 #
 #   manager
@@ -442,7 +443,7 @@ LIBS_13 += -lmpr
 
 $(CONFIG)/bin/appman: $(DEPS_13)
 	@echo '      [Link] $(CONFIG)/bin/appman'
-	$(CC) -o $(CONFIG)/bin/appman -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_13) $(LIBS_13) $(LIBS_13) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/appman -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_13) $(LIBS_13) $(LIBS_13) $(LIBS) 
 
 #
 #   makerom.o
@@ -453,7 +454,7 @@ DEPS_14 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/makerom.o: \
     src/deps/mpr/makerom.c $(DEPS_14)
 	@echo '   [Compile] $(CONFIG)/obj/makerom.o'
-	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/mpr/makerom.c
+	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/mpr/makerom.c
 
 #
 #   makerom
@@ -469,7 +470,7 @@ LIBS_15 += -lmpr
 
 $(CONFIG)/bin/makerom: $(DEPS_15)
 	@echo '      [Link] $(CONFIG)/bin/makerom'
-	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/makerom.o" $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/makerom -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/makerom.o" $(LIBPATHS_15) $(LIBS_15) $(LIBS_15) $(LIBS) 
 
 #
 #   ca-crt
@@ -498,7 +499,7 @@ DEPS_18 += $(CONFIG)/inc/pcre.h
 $(CONFIG)/obj/pcre.o: \
     src/deps/pcre/pcre.c $(DEPS_18)
 	@echo '   [Compile] $(CONFIG)/obj/pcre.o'
-	$(CC) -c -o $(CONFIG)/obj/pcre.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/pcre/pcre.c
+	$(CC) -c -o $(CONFIG)/obj/pcre.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/pcre/pcre.c
 
 ifeq ($(BIT_PACK_PCRE),1)
 #
@@ -531,7 +532,7 @@ DEPS_21 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/httpLib.o: \
     src/deps/http/httpLib.c $(DEPS_21)
 	@echo '   [Compile] $(CONFIG)/obj/httpLib.o'
-	$(CC) -c -o $(CONFIG)/obj/httpLib.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/http/httpLib.c
+	$(CC) -c -o $(CONFIG)/obj/httpLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/http/httpLib.c
 
 #
 #   libhttp
@@ -562,7 +563,7 @@ DEPS_23 += $(CONFIG)/inc/http.h
 $(CONFIG)/obj/http.o: \
     src/deps/http/http.c $(DEPS_23)
 	@echo '   [Compile] $(CONFIG)/obj/http.o'
-	$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/http/http.c
+	$(CC) -c -o $(CONFIG)/obj/http.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/http/http.c
 
 #
 #   http
@@ -590,7 +591,7 @@ endif
 
 $(CONFIG)/bin/http: $(DEPS_24)
 	@echo '      [Link] $(CONFIG)/bin/http'
-	$(CC) -o $(CONFIG)/bin/http -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/http.o" $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/http -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/http.o" $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) -lpam 
 
 #
 #   sqlite3.h
@@ -609,7 +610,7 @@ DEPS_26 += $(CONFIG)/inc/sqlite3.h
 $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c $(DEPS_26)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.o'
-	$(CC) -c -o $(CONFIG)/obj/sqlite3.o $(DFLAGS) "$(IFLAGS)" src/deps/sqlite/sqlite3.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -arch $(CC_ARCH) $(DFLAGS) "$(IFLAGS)" src/deps/sqlite/sqlite3.c
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
@@ -633,7 +634,7 @@ DEPS_28 += $(CONFIG)/inc/sqlite3.h
 $(CONFIG)/obj/sqlite.o: \
     src/deps/sqlite/sqlite.c $(DEPS_28)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite.o'
-	$(CC) -c -o $(CONFIG)/obj/sqlite.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/sqlite/sqlite.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/sqlite/sqlite.c
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
@@ -649,7 +650,7 @@ LIBS_29 += -lsqlite3
 
 $(CONFIG)/bin/sqlite: $(DEPS_29)
 	@echo '      [Link] $(CONFIG)/bin/sqlite'
-	$(CC) -o $(CONFIG)/bin/sqlite -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sqlite.o" $(LIBPATHS_29) $(LIBS_29) $(LIBS_29) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/sqlite -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sqlite.o" $(LIBPATHS_29) $(LIBS_29) $(LIBS_29) $(LIBS) 
 endif
 
 #
@@ -681,7 +682,7 @@ DEPS_32 += $(CONFIG)/inc/customize.h
 $(CONFIG)/obj/config.o: \
     src/config.c $(DEPS_32)
 	@echo '   [Compile] $(CONFIG)/obj/config.o'
-	$(CC) -c -o $(CONFIG)/obj/config.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/config.c
+	$(CC) -c -o $(CONFIG)/obj/config.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/config.c
 
 #
 #   convenience.o
@@ -692,7 +693,7 @@ DEPS_33 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/convenience.o: \
     src/convenience.c $(DEPS_33)
 	@echo '   [Compile] $(CONFIG)/obj/convenience.o'
-	$(CC) -c -o $(CONFIG)/obj/convenience.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/convenience.c
+	$(CC) -c -o $(CONFIG)/obj/convenience.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/convenience.c
 
 #
 #   dirHandler.o
@@ -703,7 +704,7 @@ DEPS_34 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/dirHandler.o: \
     src/dirHandler.c $(DEPS_34)
 	@echo '   [Compile] $(CONFIG)/obj/dirHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/dirHandler.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/dirHandler.c
+	$(CC) -c -o $(CONFIG)/obj/dirHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/dirHandler.c
 
 #
 #   fileHandler.o
@@ -714,7 +715,7 @@ DEPS_35 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/fileHandler.o: \
     src/fileHandler.c $(DEPS_35)
 	@echo '   [Compile] $(CONFIG)/obj/fileHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/fileHandler.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/fileHandler.c
+	$(CC) -c -o $(CONFIG)/obj/fileHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/fileHandler.c
 
 #
 #   log.o
@@ -725,7 +726,7 @@ DEPS_36 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/log.o: \
     src/log.c $(DEPS_36)
 	@echo '   [Compile] $(CONFIG)/obj/log.o'
-	$(CC) -c -o $(CONFIG)/obj/log.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/log.c
+	$(CC) -c -o $(CONFIG)/obj/log.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/log.c
 
 #
 #   server.o
@@ -736,7 +737,7 @@ DEPS_37 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/server.o: \
     src/server.c $(DEPS_37)
 	@echo '   [Compile] $(CONFIG)/obj/server.o'
-	$(CC) -c -o $(CONFIG)/obj/server.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/server.c
+	$(CC) -c -o $(CONFIG)/obj/server.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/server.c
 
 #
 #   libappweb
@@ -809,7 +810,7 @@ DEPS_43 += $(CONFIG)/inc/pcre.h
 $(CONFIG)/obj/edi.o: \
     src/esp/edi.c $(DEPS_43)
 	@echo '   [Compile] $(CONFIG)/obj/edi.o'
-	$(CC) -c -o $(CONFIG)/obj/edi.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/edi.c
+	$(CC) -c -o $(CONFIG)/obj/edi.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/edi.c
 
 #
 #   espAbbrev.o
@@ -820,7 +821,7 @@ DEPS_44 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/espAbbrev.o: \
     src/esp/espAbbrev.c $(DEPS_44)
 	@echo '   [Compile] $(CONFIG)/obj/espAbbrev.o'
-	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espAbbrev.c
+	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espAbbrev.c
 
 #
 #   espFramework.o
@@ -831,7 +832,7 @@ DEPS_45 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/espFramework.o: \
     src/esp/espFramework.c $(DEPS_45)
 	@echo '   [Compile] $(CONFIG)/obj/espFramework.o'
-	$(CC) -c -o $(CONFIG)/obj/espFramework.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espFramework.c
+	$(CC) -c -o $(CONFIG)/obj/espFramework.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espFramework.c
 
 #
 #   espHandler.o
@@ -844,7 +845,7 @@ DEPS_46 += $(CONFIG)/inc/edi.h
 $(CONFIG)/obj/espHandler.o: \
     src/esp/espHandler.c $(DEPS_46)
 	@echo '   [Compile] $(CONFIG)/obj/espHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/espHandler.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espHandler.c
+	$(CC) -c -o $(CONFIG)/obj/espHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espHandler.c
 
 #
 #   espHtml.o
@@ -856,7 +857,7 @@ DEPS_47 += $(CONFIG)/inc/edi.h
 $(CONFIG)/obj/espHtml.o: \
     src/esp/espHtml.c $(DEPS_47)
 	@echo '   [Compile] $(CONFIG)/obj/espHtml.o'
-	$(CC) -c -o $(CONFIG)/obj/espHtml.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espHtml.c
+	$(CC) -c -o $(CONFIG)/obj/espHtml.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espHtml.c
 
 #
 #   espTemplate.o
@@ -867,7 +868,7 @@ DEPS_48 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/espTemplate.o: \
     src/esp/espTemplate.c $(DEPS_48)
 	@echo '   [Compile] $(CONFIG)/obj/espTemplate.o'
-	$(CC) -c -o $(CONFIG)/obj/espTemplate.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espTemplate.c
+	$(CC) -c -o $(CONFIG)/obj/espTemplate.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espTemplate.c
 
 #
 #   mdb.o
@@ -881,7 +882,7 @@ DEPS_49 += $(CONFIG)/inc/pcre.h
 $(CONFIG)/obj/mdb.o: \
     src/esp/mdb.c $(DEPS_49)
 	@echo '   [Compile] $(CONFIG)/obj/mdb.o'
-	$(CC) -c -o $(CONFIG)/obj/mdb.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/mdb.c
+	$(CC) -c -o $(CONFIG)/obj/mdb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/mdb.c
 
 #
 #   sdb.o
@@ -892,7 +893,7 @@ DEPS_50 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sdb.o: \
     src/esp/sdb.c $(DEPS_50)
 	@echo '   [Compile] $(CONFIG)/obj/sdb.o'
-	$(CC) -c -o $(CONFIG)/obj/sdb.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/sdb.c
+	$(CC) -c -o $(CONFIG)/obj/sdb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/sdb.c
 
 ifeq ($(BIT_PACK_ESP),1)
 #
@@ -947,7 +948,7 @@ DEPS_52 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/esp.o: \
     src/esp/esp.c $(DEPS_52)
 	@echo '   [Compile] $(CONFIG)/obj/esp.o'
-	$(CC) -c -o $(CONFIG)/obj/esp.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/esp.c
+	$(CC) -c -o $(CONFIG)/obj/esp.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/esp.c
 
 ifeq ($(BIT_PACK_ESP),1)
 #
@@ -1000,7 +1001,7 @@ endif
 
 $(CONFIG)/bin/esp: $(DEPS_53)
 	@echo '      [Link] $(CONFIG)/bin/esp'
-	$(CC) -o $(CONFIG)/bin/esp -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/edi.o" "$(CONFIG)/obj/esp.o" "$(CONFIG)/obj/espAbbrev.o" "$(CONFIG)/obj/espFramework.o" "$(CONFIG)/obj/espHandler.o" "$(CONFIG)/obj/espHtml.o" "$(CONFIG)/obj/espTemplate.o" "$(CONFIG)/obj/mdb.o" "$(CONFIG)/obj/sdb.o" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/esp -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/edi.o" "$(CONFIG)/obj/esp.o" "$(CONFIG)/obj/espAbbrev.o" "$(CONFIG)/obj/espFramework.o" "$(CONFIG)/obj/espHandler.o" "$(CONFIG)/obj/espHtml.o" "$(CONFIG)/obj/espTemplate.o" "$(CONFIG)/obj/mdb.o" "$(CONFIG)/obj/sdb.o" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) -lpam 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -1096,7 +1097,7 @@ DEPS_60 += $(CONFIG)/inc/ejs.slots.h
 $(CONFIG)/obj/ejsLib.o: \
     src/deps/ejs/ejsLib.c $(DEPS_60)
 	@echo '   [Compile] $(CONFIG)/obj/ejsLib.o'
-	$(CC) -c -o $(CONFIG)/obj/ejsLib.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/ejs/ejsLib.c
+	$(CC) -c -o $(CONFIG)/obj/ejsLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/ejs/ejsLib.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1134,7 +1135,7 @@ DEPS_62 += $(CONFIG)/inc/ejs.h
 $(CONFIG)/obj/ejs.o: \
     src/deps/ejs/ejs.c $(DEPS_62)
 	@echo '   [Compile] $(CONFIG)/obj/ejs.o'
-	$(CC) -c -o $(CONFIG)/obj/ejs.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/ejs/ejs.c
+	$(CC) -c -o $(CONFIG)/obj/ejs.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/ejs/ejs.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1172,7 +1173,7 @@ endif
 
 $(CONFIG)/bin/ejs: $(DEPS_63)
 	@echo '      [Link] $(CONFIG)/bin/ejs'
-	$(CC) -o $(CONFIG)/bin/ejs -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS) -lpam -ledit 
+	$(CC) -o $(CONFIG)/bin/ejs -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS) -lpam -ledit 
 endif
 
 #
@@ -1184,7 +1185,7 @@ DEPS_64 += $(CONFIG)/inc/ejs.h
 $(CONFIG)/obj/ejsc.o: \
     src/deps/ejs/ejsc.c $(DEPS_64)
 	@echo '   [Compile] $(CONFIG)/obj/ejsc.o'
-	$(CC) -c -o $(CONFIG)/obj/ejsc.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/ejs/ejsc.c
+	$(CC) -c -o $(CONFIG)/obj/ejsc.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/ejs/ejsc.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1222,7 +1223,7 @@ endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_65)
 	@echo '      [Link] $(CONFIG)/bin/ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/ejsc -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) -lpam 
 endif
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
@@ -1264,7 +1265,7 @@ DEPS_67 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c $(DEPS_67)
 	@echo '   [Compile] $(CONFIG)/obj/cgiHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/modules/cgiHandler.c
+	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/modules/cgiHandler.c
 
 ifeq ($(BIT_PACK_CGI),1)
 #
@@ -1308,7 +1309,7 @@ DEPS_69 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/ejsHandler.o: \
     src/modules/ejsHandler.c $(DEPS_69)
 	@echo '   [Compile] $(CONFIG)/obj/ejsHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/ejsHandler.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/modules/ejsHandler.c
+	$(CC) -c -o $(CONFIG)/obj/ejsHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/modules/ejsHandler.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1357,7 +1358,7 @@ DEPS_71 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_71)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o -arch $(CC_ARCH) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 ifeq ($(BIT_PACK_PHP),1)
 #
@@ -1401,7 +1402,7 @@ DEPS_73 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c $(DEPS_73)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
-	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/modules/sslModule.c
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/modules/sslModule.c
 
 ifeq ($(BIT_PACK_SSL),1)
 #
@@ -1445,7 +1446,7 @@ DEPS_75 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/authpass.o: \
     src/utils/authpass.c $(DEPS_75)
 	@echo '   [Compile] $(CONFIG)/obj/authpass.o'
-	$(CC) -c -o $(CONFIG)/obj/authpass.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/utils/authpass.c
+	$(CC) -c -o $(CONFIG)/obj/authpass.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/utils/authpass.c
 
 #
 #   authpass
@@ -1483,7 +1484,7 @@ endif
 
 $(CONFIG)/bin/authpass: $(DEPS_76)
 	@echo '      [Link] $(CONFIG)/bin/authpass'
-	$(CC) -o $(CONFIG)/bin/authpass -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBPATHS_76) $(LIBS_76) $(LIBS_76) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/authpass -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBPATHS_76) $(LIBS_76) $(LIBS_76) $(LIBS) -lpam 
 
 #
 #   cgiProgram.o
@@ -1493,7 +1494,7 @@ DEPS_77 += $(CONFIG)/inc/bit.h
 $(CONFIG)/obj/cgiProgram.o: \
     src/utils/cgiProgram.c $(DEPS_77)
 	@echo '   [Compile] $(CONFIG)/obj/cgiProgram.o'
-	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/utils/cgiProgram.c
+	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/utils/cgiProgram.c
 
 ifeq ($(BIT_PACK_CGI),1)
 #
@@ -1504,7 +1505,7 @@ DEPS_78 += $(CONFIG)/obj/cgiProgram.o
 
 $(CONFIG)/bin/cgiProgram: $(DEPS_78)
 	@echo '      [Link] $(CONFIG)/bin/cgiProgram'
-	$(CC) -o $(CONFIG)/bin/cgiProgram -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/cgiProgram.o" $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/cgiProgram -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/cgiProgram.o" $(LIBS) 
 endif
 
 #
@@ -1522,7 +1523,7 @@ DEPS_80 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/slink.o: \
     src/server/slink.c $(DEPS_80)
 	@echo '   [Compile] $(CONFIG)/obj/slink.o'
-	$(CC) -c -o $(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/server/slink.c
+	$(CC) -c -o $(CONFIG)/obj/slink.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/server/slink.c
 
 #
 #   libslink
@@ -1581,7 +1582,7 @@ DEPS_82 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_82)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.o'
-	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/server/appweb.c
+	$(CC) -c -o $(CONFIG)/obj/appweb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/server/appweb.c
 
 #
 #   appweb
@@ -1686,7 +1687,7 @@ endif
 
 $(CONFIG)/bin/appweb: $(DEPS_83)
 	@echo '      [Link] $(CONFIG)/bin/appweb'
-	$(CC) -o $(CONFIG)/bin/appweb -arch x86_64 $(LDFLAGS) $(LIBPATHS)  "$(CONFIG)/obj/appweb.o" $(LIBPATHS_83) $(LIBS_83) $(LIBS_83) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/appweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  "$(CONFIG)/obj/appweb.o" $(LIBPATHS_83) $(LIBS_83) $(LIBS_83) $(LIBS) -lpam 
 
 #
 #   server-cache
@@ -1713,7 +1714,7 @@ DEPS_86 += $(CONFIG)/inc/http.h
 $(CONFIG)/obj/testAppweb.o: \
     test/src/testAppweb.c $(DEPS_86)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.o'
-	$(CC) -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/src/testAppweb.c
+	$(CC) -c -o $(CONFIG)/obj/testAppweb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/src/testAppweb.c
 
 #
 #   testHttp.o
@@ -1724,7 +1725,7 @@ DEPS_87 += $(CONFIG)/inc/testAppweb.h
 $(CONFIG)/obj/testHttp.o: \
     test/src/testHttp.c $(DEPS_87)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.o'
-	$(CC) -c -o $(CONFIG)/obj/testHttp.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/src/testHttp.c
+	$(CC) -c -o $(CONFIG)/obj/testHttp.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/src/testHttp.c
 
 #
 #   testAppweb
@@ -1764,7 +1765,7 @@ endif
 
 $(CONFIG)/bin/testAppweb: $(DEPS_88)
 	@echo '      [Link] $(CONFIG)/bin/testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_88) $(LIBS_88) $(LIBS_88) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/testAppweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_88) $(LIBS_88) $(LIBS_88) $(LIBS) -lpam 
 
 ifeq ($(BIT_PACK_CGI),1)
 #
@@ -1852,7 +1853,7 @@ installBinary: $(DEPS_95)
 	mkdir -p "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
-	ln -s "4.3.3" "$(BIT_APP_PREFIX)/latest"
+	ln -s "4.3.4" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
 	chmod 755 "$(BIT_LOG_PREFIX)"
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(BIT_LOG_PREFIX)"; true

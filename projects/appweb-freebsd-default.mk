@@ -3,10 +3,11 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.3.3
+VERSION            := 4.3.4
 BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
+CC_ARCH            := $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
 OS                 := freebsd
 CC                 := gcc
 LD                 := link
@@ -302,7 +303,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.3-0
+	@echo 4.3.4-0
 
 #
 #   mpr.h
@@ -1908,7 +1909,7 @@ installBinary: $(DEPS_95)
 	mkdir -p "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
-	ln -s "4.3.3" "$(BIT_APP_PREFIX)/latest"
+	ln -s "4.3.4" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
 	chmod 755 "$(BIT_LOG_PREFIX)"
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(BIT_LOG_PREFIX)"; true
