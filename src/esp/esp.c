@@ -2130,7 +2130,7 @@ static void generateAppFiles(HttpRoute *route)
     tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s }", app->appName, spascal(app->appName)));
     fixupFile(route, mprJoinPath(eroute->clientDir, "index.esp"));
     if (app->angular) {
-        fixupFile(route, mprJoinPath(eroute->appDir, "app.js"));
+        fixupFile(route, mprJoinPath(eroute->appDir, "main.js"));
     } else {
         fixupFile(route, mprJoinPath(eroute->layoutsDir, "default.esp"));
     }

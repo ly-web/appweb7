@@ -205,7 +205,7 @@ static int runAction(HttpConn *conn)
     EspRoute    *eroute;
     EspReq      *req;
     EspAction   action;
-    char        *key, *canonical, *serviceName, *actionName;
+    char        *actionName, *key, *serviceName;
 
     rx = conn->rx;
     req = conn->data;
@@ -240,8 +240,8 @@ static int runAction(HttpConn *conn)
     }
 #if !BIT_STATIC
     if (!eroute->flat && (eroute->update || !mprLookupKey(esp->actions, key))) {
-        char    *source;
-        int     recompile = 0;
+        char        *canonical, *source;
+        int         recompile = 0;
 
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
         source = req->servicePath;
@@ -285,8 +285,8 @@ static int runAction(HttpConn *conn)
             }
         }
         unlock(req->esp);
-#endif
     }
+#endif
     key = mprJoinPath(eroute->servicesDir, rx->target);
     if ((action = mprLookupKey(esp->actions, key)) == 0) {
         req->servicePath = mprJoinPath(eroute->servicesDir, req->serviceName);
@@ -329,7 +329,6 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     EspRoute    *eroute;
     EspReq      *req;
     EspViewProc view;
-    char        *canonical;
     
     rx = conn->rx;
     req = conn->data;
@@ -354,8 +353,9 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     }
 #if !BIT_STATIC
     if (!eroute->flat && (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(req->source)))) {
-        cchar   *source;
-        int     recompile = 0;
+        cchar       *source;
+        char        *canonical;
+        int         recompile = 0;
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
         source = req->source;
 #if VXWORKS
@@ -426,8 +426,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             }
         }
         unlock(req->esp);
-#endif
     }
+#endif
     if ((view = mprLookupKey(esp->views, mprGetPortablePath(req->source))) == 0) {
         httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find defined view for %s", req->view);
         return;
@@ -683,7 +683,7 @@ PUBLIC void espSetMvcDirs(EspRoute *eroute)
     if (route->flags & HTTP_ROUTE_ANGULAR) {
         eroute->clientDir = mprJoinPath(dir, "client");
         eroute->servicesDir = mprJoinPath(dir, "services");
-        eroute->srcDir = mprJoinPath(eroute->servicesDir, "src");
+        eroute->srcDir = mprJoinPath(dir, "src");
         eroute->appDir = mprJoinPath(eroute->clientDir, "app");
 #if UNUSED
         eroute->templatesDir = mprJoinPath(eroute->clientDir, "templates");

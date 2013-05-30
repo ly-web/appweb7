@@ -13937,8 +13937,6 @@ PUBLIC void httpDestroySession(HttpConn *conn)
         httpRemoveCookie(conn, HTTP_SESSION_COOKIE);
         mprExpireCacheItem(sp->cache, sp->id, 0);
         sp->id = 0;
-        http->activeSessions--;
-        assert(http->activeSessions >= 0);
         conn->rx->session = 0;
     }
     conn->rx->sessionProbed = 0;

@@ -15,8 +15,7 @@
     %> <link rel='stylesheet' type='text/css' href='css/all.min.css.gz' />
     <% } %>
 </head>
-
-<body ng-controller="AppControl">
+<body>
     <header>
         <h1><a href="/">${TITLE}</a></h1>
     </header>
@@ -25,7 +24,6 @@
             <div ng-view></div>   
         </section>
     </main>
-
     <!-- [if lt IE 9]>
     <script src='lib/html5shiv.js'></script>
     <![endif]-->
@@ -36,11 +34,11 @@
     <script src='lib/ui-bootstrap-tpls.js'></script>
     <script src="lib/esp.js"></script>
     <script src='lib/less.js'></script>
+    <script src='app/main.js'></script>
     <%
-    scripts("app/**.js,components/**.js");
+    scripts("app/*/**.js,components/**.js");
     } else {
     %> <script src='lib/all.min.js.gz'></script>
     <% } %>
-
 </body>
 </html>
