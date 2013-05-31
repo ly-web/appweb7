@@ -3228,7 +3228,8 @@ PUBLIC void httpDefineAction(cchar *uri, HttpAction fun);
 #define HTTP_ROUTE_PUT_DELETE_METHODS   0x4000      /**< Support PUT|DELETE on this route */
 #define HTTP_ROUTE_TRACE_METHOD         0x8000      /**< Enable the trace method for handlers supporting it */
 #define HTTP_ROUTE_JSON                 0x10000     /**< Route expects params in JSON body */
-#if DEPRECATED || 1
+
+#if (DEPRECATED || 1) && !DOXYGEN
 #define HTTP_ROUTE_LEGACY_MVC           0x40000     /**< Legacy MVC app. Using "static" instead of "client". Deprecated in 4.4 */
 #endif
 

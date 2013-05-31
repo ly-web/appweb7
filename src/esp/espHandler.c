@@ -770,7 +770,15 @@ static EspRoute *getEroute(HttpRoute *route)
 
 /*********************************** Directives *******************************/
 /*
-    EspApp name=NAME prefix=PREFIX dir=DIR routes=ROUTES database=DATABASE auth=STORE flat=true|false
+    EspApp 
+        auth=STORE 
+        database=DATABASE 
+        dir=DIR 
+        flat=true|false
+        name=NAME 
+        prefix=PREFIX 
+        routes=ROUTES 
+        type=angular|server|legacy 
 
     DEPRECATED in 4.4: EspApp Prefix [Dir [RouteSet [Database]]]
  */
@@ -778,15 +786,14 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
     EspRoute    *eroute;
-    char        *auth, *name, *option, *ovalue, *prefix, *dir, *routeSet, *database, *tok, *flat;
-    bool        legacy;
+    char        *auth, *name, *option, *ovalue, *prefix, *dir, *routeSet, *database, *tok, *flat, *type;
 
     dir = ".";
-    routeSet = "angular";
+    routeSet = 0;
+    type = 0;
     flat = "false";
     prefix = "/";
     database = 0;
-    legacy = 0;
     auth = 0;
 
     if (scontains(value, "=")) {
@@ -795,18 +802,20 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "auth")) {
                 auth = ovalue;
+            } else if (smatch(option, "database")) {
+                database = ovalue;
+            } else if (smatch(option, "dir")) {
+                dir = ovalue;
+            } else if (smatch(option, "flat")) {
+                flat = ovalue;
             } else if (smatch(option, "name")) {
                 name = ovalue;
             } else if (smatch(option, "prefix")) {
                 prefix = ovalue;
-            } else if (smatch(option, "dir")) {
-                dir = ovalue;
             } else if (smatch(option, "routes")) {
                 routeSet = ovalue;
-            } else if (smatch(option, "database")) {
-                database = ovalue;
-            } else if (smatch(option, "flat")) {
-                flat = ovalue;
+            } else if (smatch(option, "type")) {
+                type = ovalue;
             } else {
                 mprError("Unknown EspApp option %s", option);
             }
@@ -822,7 +831,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_SYNTAX;
         }
         name = "app";
-        legacy = 1;
+        type = "legacy";
 #endif
     }
     /*
@@ -831,23 +840,34 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     if ((route = httpCreateInheritedRoute(state->route)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    if (smatch(routeSet, "angular")) {
-        route->flags |= HTTP_ROUTE_JSON;
+    if (!type) {
+        if (mprPathExists(mprJoinPath(route->dir, "client/app/main.js"), X_OK)) {
+            type = "angular";
 #if DEPRECATE || 1
-    } else if (mprPathExists(mprJoinPath(route->dir, "static"), X_OK) &&
+        } else if (mprPathExists(mprJoinPath(route->dir, "static"), X_OK) &&
                !mprPathExists(mprJoinPath(route->dir, "client"), X_OK)) {
-        legacy = 1;
+            type = "legacy";
+        }
     }
-    if (legacy) {
+    if (smatch(type, "legacy")) {
         route->flags |= HTTP_ROUTE_LEGACY_MVC;
     }
 #endif
+    if (smatch(type, "angular")) {
+        route->flags |= HTTP_ROUTE_JSON;
+    }
+    if (!routeSet) {
+        if (smatch(type, "angular")) {
+            routeSet = "restful";
+        }
+    }
     httpSetRouteName(route, name);
     if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
     }
     eroute->top = eroute;
     eroute->flat = scaselessmatch(flat, "true") || smatch(flat, "1");
+    eroute->appType = sclone(type);
     eroute->appName = sclone(name);
     state = maPushState(state);
     state->route = route;

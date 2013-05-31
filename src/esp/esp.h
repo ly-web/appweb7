@@ -129,21 +129,16 @@ typedef struct EspRoute {
     cchar           *servicesDir;           /**< Directory for services */
     cchar           *srcDir;                /**< Directory for server-side source */
     cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
+    cchar           *appType;               /**< Type of application: "angular", "server", "legacy" */
 
     cchar           *compile;               /**< Compile template */
     cchar           *link;                  /**< Link template */
     cchar           *mode;                  /**< Application run mode (debug|release) */
 
-#if DEPRECATED || 1
+#if (DEPRECATE || 1) && !DOXYGEN
     /* Not used by Angular style */
     char            *layoutsDir;            /**< Directory for service view layouts */
     char            *viewsDir;              /**< Directory for server-side views */
-#endif
-#if UNUSED
-    char            *controllersDir;        /**< Directory for client-side controllers */
-    char            *migrationsDir;         /**< Directory for migrations */
-    char            *modelsDir;             /**< Directory for client models */
-    char            *templatesDir;          /**< Directory for client templates */
 #endif
 
     bool            autoLogin;              /**< Bypass user login */
@@ -1477,7 +1472,7 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
 
 /* ******************************** Controls ******************************** */
-#if DEPRECATED || 1
+#if (DEPRECATE || 1) && !DOXYGEN
 /**
     Suite of high-level controls that generate dynamic HTML5.
     @description There are two forms of the ESP control APIs.
@@ -1905,7 +1900,7 @@ PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *options);
     @internal
  */
 PUBLIC void espText(HttpConn *conn, cchar *field, cchar *options);
-#endif /* DEPRECATED */
+#endif /* (DEPRECATE || 1) && !DOXYGEN */
 
 /**
     Render flash messages.
@@ -1942,7 +1937,7 @@ PUBLIC void espRenderFeedback(HttpConn *conn, cchar *kinds, cchar *options);
 PUBLIC void espSecurityToken(HttpConn *conn);
 
 /***************************** Abbreviated Controls ***************************/
-#if DEPRECATED || 1
+#if (DEPRECATE || 1) && !DOXYGEN
 /**
     Abbreviated ESP Controls.
     @description These controls do not take a HttpConn argument and determine the connection object from
@@ -2296,9 +2291,7 @@ PUBLIC void tabs(EdiGrid *grid, cchar *options);
     @internal
  */
 PUBLIC void text(cchar *field, cchar *options);
-
-#endif
-
+#endif /* (DEPRECATE || 1) && !DOXYGEN */
 
 /**
     Render flash notices.
@@ -2648,7 +2641,7 @@ PUBLIC bool isEof();
  */
 PUBLIC bool isFinalized();
 
-#if DEPRECATE || 1
+#if (DEPRECATE || 1) && !DOXYGEN
 /**
     Set an informational flash notification message.
     @description Flash messages persist for only one request and are a convenient way to pass state information or 

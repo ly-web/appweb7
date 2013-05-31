@@ -43,19 +43,7 @@ Bit.load({
             packs: 'esp',
         },
 
-        'all-server.css': {
-            path: 'proto/server/client/css/all.css',
-            files: [ 'proto/server/client/less/*.less'],
-            build: "
-                if (Cmd.locate('recess')) {
-                    trace('Compile', TARGET.path)
-                    let result = Cmd.run('recess -compress -compile proto/server/client/less/all.less')
-                    Path(TARGET.path).write(result)
-                }
-            ",
-        },
-
-        'all-ng.css': {
+        'all-angular.css': {
             path: 'proto/angular/client/css/all.css',
             files: [ 'proto/angular/client/less/*.less'],
             build: "

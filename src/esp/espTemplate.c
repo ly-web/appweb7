@@ -518,7 +518,6 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             break;
 
         case ESP_TOK_CONTROL:
-            /* NOTE: layout parsing not supported */
             control = stok(token, " \t\r\n", &token);
             if (scmp(control, "content") == 0) {
                 mprPutStringToBuf(body, CONTENT_MARKER);

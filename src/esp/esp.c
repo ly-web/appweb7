@@ -19,6 +19,7 @@ typedef struct App {
     MaServer    *server;
 
     cchar       *appName;               /* Application name */
+    cchar       *appType;               /* Application type */
     cchar       *serverRoot;            /* Root directory for server config */
     cchar       *configFile;            /* Arg to --config */
     cchar       *currentDir;            /* Initial starting current directory */
@@ -401,7 +402,7 @@ static void fail(cchar *fmt, ...);
 static bool findConfigFile(bool mvc);
 static bool findDefaultConfigFile();
 static MprHash *getTargets(int argc, char **argv);
-static HttpRoute *getMvcRoute();
+static HttpRoute *getRoute();
 static MprList *getRoutes();
 static void generate(int argc, char **argv);
 static void generateApp(int argc, char **argv);
@@ -798,8 +799,7 @@ static MprList *getRoutes()
 }
 
 
-//  MOB - rename
-static HttpRoute *getMvcRoute()
+static HttpRoute *getRoute()
 {
     HttpHost    *host;
     HttpRoute   *route, *parent;
@@ -926,7 +926,7 @@ static void process(int argc, char **argv)
     } else {
         if (smatch(cmd, "migrate")) {
             readConfig(1);
-            route = getMvcRoute();
+            route = getRoute();
             migrate(route, argc - 1, &argv[1]);
 
         } else if (smatch(cmd, "clean")) {
@@ -1508,6 +1508,7 @@ static void compileFlat(HttpRoute *route)
 static void generateApp(int argc, char **argv)
 {
     HttpRoute   *route;
+    EspRoute    *eroute;
     cchar       *dir, *name;
 
     name = argv[0];
@@ -1523,7 +1524,11 @@ static void generateApp(int argc, char **argv)
         return;
     }
     route = createRoute(name);
+    eroute = route->eroute;
+
     app->appName = sclone(name);
+    app->appType = eroute->appType = sclone((argc > 1) ? argv[0] : "angular");
+
     makeEspDir(route->dir);
     generateAppFiles(route, argc - 1, &argv[1]);
     generateAppConfigFile(route);
@@ -1636,7 +1641,7 @@ static void generateService(HttpRoute *route, int argc, char **argv)
     defines = sclone("");
     for (i = 1; i < argc; i++) {
         action = argv[i];
-        defines = sjoin(defines, sfmt("    espDefineAction(route, \"%s-%s\", %s);\n", name, action, action), NULL);
+        defines = sjoin(defines, sfmt("    espDefineAction(route, \"%s-cmd-%s\", %s);\n", name, action, action), NULL);
     }
     tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", name, title, defines));
 
@@ -1815,7 +1820,6 @@ static void generateScaffoldViews(HttpRoute *route, int argc, char **argv)
 
     if (!app->legacy) {
         tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s}", name, title));
-        //  MOB - should have definition for appDir
         path = sfmt("%s/%s/list.html", eroute->appDir, name);
         data = stemplate(ScaffoldListView, tokens);
         makeEspFile(path, data, "Scaffold List Partial");
@@ -1844,11 +1848,18 @@ static void generateScaffoldViews(HttpRoute *route, int argc, char **argv)
  */
 static void generateScaffold(HttpRoute *route, int argc, char **argv)
 {
+    EspRoute    *eroute;
+
     if (argc < 1) {
         usageError();
         return;
     }
     if (app->error) {
+        return;
+    }
+    eroute = route->eroute;
+    if (smatch(eroute->appType, "server")) {
+        fail("Can only generate scafolds for an Angular application");
         return;
     }
     if (!app->legacy) {
@@ -1874,19 +1885,19 @@ static void generate(int argc, char **argv)
     kind = argv[0];
 
     if (smatch(kind, "service") || smatch(kind, "controller")) {
-        route = getMvcRoute();
+        route = getRoute();
         generateService(route, argc - 1, &argv[1]);
 
     } else if (smatch(kind, "migration")) {
-        route = getMvcRoute();
+        route = getRoute();
         generateMigration(route, argc - 1, &argv[1]);
 
     } else if (smatch(kind, "scaffold")) {
-        route = getMvcRoute();
+        route = getRoute();
         generateScaffold(route, argc - 1, &argv[1]);
 
     } else if (smatch(kind, "table")) {
-        route = getMvcRoute();
+        route = getRoute();
         generateTable(route, argc - 1, &argv[1]);
 
     } else {
@@ -2085,6 +2096,7 @@ static void fixupFile(HttpRoute *route, cchar *path)
         return;
     }
     //  MOB - Use stemplate and tokens.
+    data = sreplace(data, "${APPTYPE}", app->appType);
     data = sreplace(data, "${NAME}", app->appName);
     data = sreplace(data, "${TITLE}", spascal(app->appName));
     data = sreplace(data, "${DATABASE}", app->database);
@@ -2134,6 +2146,10 @@ static void generateAppFiles(HttpRoute *route, int argc, char **argv)
     proto = mprJoinPath(app->binDir, "esp-proto");
     for (i = 0; i < argc; i++) {
         path = mprJoinPath(proto, argv[i]);
+        if (!mprPathExists(path, X_OK)) {
+            fail("Cannot find component %s", argv[i]);
+            return;
+        }
         copyEspDir(path, route->dir);
     }
     fixupFile(route, mprJoinPath(eroute->clientDir, "index.esp"));
@@ -2361,9 +2377,9 @@ static void usageError(Mpr *mpr)
     "    esp compile [pathFilters ...]\n"
     "    esp migrate [forward|backward|NNN]\n"
     "    esp generate app name [components...]\n"
-    "    esp generate service name [action [, action] ...\n"
     "    esp generate migration description model [field:type [, field:type] ...]\n"
     "    esp generate scaffold model [field:type [, field:type] ...]\n"
+    "    esp generate service name [action [, action] ...\n"
     "    esp generate table name [field:type [, field:type] ...]\n"
     "    esp run\n"
     "", name);

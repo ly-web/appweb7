@@ -4490,7 +4490,6 @@ PUBLIC int httpAddRoute(HttpHost *host, HttpRoute *route)
     if (mprLookupItem(host->routes, route) < 0) {
         if (route->pattern[0] && (lastRoute = mprGetLastItem(host->routes)) && lastRoute->pattern[0] == '\0') {
             /* Insert non-default route before last default route */
-mprLog(0, "httpAddRoute UNUSED");
             thisRoute = mprInsertItemAtPos(host->routes, mprGetListLength(host->routes) - 1, route);
         } else {
             thisRoute = mprAddItem(host->routes, route);
@@ -10671,7 +10670,8 @@ static char *qualifyName(HttpRoute *route, cchar *service, cchar *action)
 /*
     Add a restful route. The parent route may supply a route prefix. If defined, the route name will prepend the prefix.
  */
-static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *pattern, cchar *target, cchar *resource, int flags)
+static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *pattern, cchar *target, 
+        cchar *resource, int flags)
 {
     HttpRoute   *route;
     cchar       *name, *nameResource, *prefix, *source, *token;
@@ -10680,7 +10680,7 @@ static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, c
     nameResource = smatch(resource, token) ? "*" : resource;
 
     if (!(parent->flags & HTTP_ROUTE_LEGACY_MVC)) {
-        prefix = parent->prefix ? sfmt("/service/%s", parent->prefix) : "/service";
+        prefix = parent->prefix ? sfmt("%s/service", parent->prefix) : "/service";
         name = sfmt("%s/%s/%s", prefix, nameResource, action);
         if (*resource == '{') {
             pattern = sfmt("^%s/%s%s", prefix, resource, pattern);
@@ -10814,7 +10814,7 @@ PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set)
         httpAddHomeRoute(parent);
     }
     if (!(parent->flags & HTTP_ROUTE_LEGACY_MVC)) {
-        if (scaselessmatch(set, "angular") || scaselessmatch(set, "restful")) {
+        if (scaselessmatch(set, "restful")) {
             httpAddResourceGroup(parent, "{service}");
             httpAddClientRoute(parent, sfmt("%s-client", parent->name), "");
 
