@@ -149,7 +149,6 @@ endif
 ifeq ($(BIT_PACK_ESP),1)
 TARGETS            += $(CONFIG)/bin/esp-proto
 endif
-TARGETS            += src/esp/proto/legacy/static/css/all.css
 TARGETS            += src/esp/proto/angular/client/css/all.css
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 TARGETS            += $(CONFIG)/bin/libejs.a
@@ -1041,10 +1040,6 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular"
 	cp src/esp/proto/angular/app.conf $(CONFIG)/bin/esp-proto/angular/app.conf
 	cp src/esp/proto/angular/appweb.conf $(CONFIG)/bin/esp-proto/angular/appweb.conf
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/cache"
-	cp src/esp/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.c $(CONFIG)/bin/esp-proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.c
-	cp src/esp/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.dylib $(CONFIG)/bin/esp-proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.dylib
-	cp src/esp/proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.o $(CONFIG)/bin/esp-proto/angular/cache/view_f4478e9e3025f86f93399a51c77596bf.o
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/app"
 	cp src/esp/proto/angular/client/app/main.js $(CONFIG)/bin/esp-proto/angular/client/app/main.js
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/assets"
@@ -1104,36 +1099,41 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	cp src/esp/proto/legacy/layouts/default.esp $(CONFIG)/bin/esp-proto/legacy/layouts/default.esp
 	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static/css"
 	cp src/esp/proto/legacy/static/css/all.css $(CONFIG)/bin/esp-proto/legacy/static/css/all.css
+	cp src/esp/proto/legacy/static/css/all.less $(CONFIG)/bin/esp-proto/legacy/static/css/all.less
+	cp src/esp/proto/legacy/static/css/app.less $(CONFIG)/bin/esp-proto/legacy/static/css/app.less
+	cp src/esp/proto/legacy/static/css/esp.less $(CONFIG)/bin/esp-proto/legacy/static/css/esp.less
+	cp src/esp/proto/legacy/static/css/more.less $(CONFIG)/bin/esp-proto/legacy/static/css/more.less
+	cp src/esp/proto/legacy/static/css/normalize.less $(CONFIG)/bin/esp-proto/legacy/static/css/normalize.less
+	cp src/esp/proto/legacy/static/css/theme.less $(CONFIG)/bin/esp-proto/legacy/static/css/theme.less
 	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static/images"
 	cp src/esp/proto/legacy/static/images/banner.jpg $(CONFIG)/bin/esp-proto/legacy/static/images/banner.jpg
 	cp src/esp/proto/legacy/static/images/favicon.ico $(CONFIG)/bin/esp-proto/legacy/static/images/favicon.ico
 	cp src/esp/proto/legacy/static/images/splash.jpg $(CONFIG)/bin/esp-proto/legacy/static/images/splash.jpg
 	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static"
 	cp src/esp/proto/legacy/static/index.esp $(CONFIG)/bin/esp-proto/legacy/static/index.esp
-	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static/js"
-	cp src/esp/proto/legacy/static/js/html5shiv.js $(CONFIG)/bin/esp-proto/legacy/static/js/html5shiv.js
-	cp src/esp/proto/legacy/static/js/html5shiv.min.js $(CONFIG)/bin/esp-proto/legacy/static/js/html5shiv.min.js
-	cp src/esp/proto/legacy/static/js/jquery.esp.js $(CONFIG)/bin/esp-proto/legacy/static/js/jquery.esp.js
-	cp src/esp/proto/legacy/static/js/jquery.esp.min.js $(CONFIG)/bin/esp-proto/legacy/static/js/jquery.esp.min.js
-	cp src/esp/proto/legacy/static/js/jquery.js $(CONFIG)/bin/esp-proto/legacy/static/js/jquery.js
-	cp src/esp/proto/legacy/static/js/jquery.min.js $(CONFIG)/bin/esp-proto/legacy/static/js/jquery.min.js
-	cp src/esp/proto/legacy/static/js/jquery.simplemodal.js $(CONFIG)/bin/esp-proto/legacy/static/js/jquery.simplemodal.js
-	cp src/esp/proto/legacy/static/js/jquery.simplemodal.min.js $(CONFIG)/bin/esp-proto/legacy/static/js/jquery.simplemodal.min.js
-	cp src/esp/proto/legacy/static/js/jquery.tablesorter.js $(CONFIG)/bin/esp-proto/legacy/static/js/jquery.tablesorter.js
-	cp src/esp/proto/legacy/static/js/jquery.tablesorter.min.js $(CONFIG)/bin/esp-proto/legacy/static/js/jquery.tablesorter.min.js
-	cp src/esp/proto/legacy/static/js/less.js $(CONFIG)/bin/esp-proto/legacy/static/js/less.js
-	cp src/esp/proto/legacy/static/js/less.min.js $(CONFIG)/bin/esp-proto/legacy/static/js/less.min.js
-	cp src/esp/proto/legacy/static/js/respond.js $(CONFIG)/bin/esp-proto/legacy/static/js/respond.js
-	cp src/esp/proto/legacy/static/js/respond.min.js $(CONFIG)/bin/esp-proto/legacy/static/js/respond.min.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static/less"
-	cp src/esp/proto/legacy/static/less/all.less $(CONFIG)/bin/esp-proto/legacy/static/less/all.less
-	cp src/esp/proto/legacy/static/less/app.less $(CONFIG)/bin/esp-proto/legacy/static/less/app.less
-	cp src/esp/proto/legacy/static/less/esp.less $(CONFIG)/bin/esp-proto/legacy/static/less/esp.less
-	cp src/esp/proto/legacy/static/less/more.less $(CONFIG)/bin/esp-proto/legacy/static/less/more.less
-	cp src/esp/proto/legacy/static/less/normalize.less $(CONFIG)/bin/esp-proto/legacy/static/less/normalize.less
-	cp src/esp/proto/legacy/static/less/theme.less $(CONFIG)/bin/esp-proto/legacy/static/less/theme.less
+	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static/lib"
+	cp src/esp/proto/legacy/static/lib/html5shiv.js $(CONFIG)/bin/esp-proto/legacy/static/lib/html5shiv.js
+	cp src/esp/proto/legacy/static/lib/html5shiv.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/html5shiv.min.js
+	cp src/esp/proto/legacy/static/lib/jquery.esp.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.esp.js
+	cp src/esp/proto/legacy/static/lib/jquery.esp.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.esp.min.js
+	cp src/esp/proto/legacy/static/lib/jquery.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.js
+	cp src/esp/proto/legacy/static/lib/jquery.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.min.js
+	cp src/esp/proto/legacy/static/lib/jquery.simplemodal.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.simplemodal.js
+	cp src/esp/proto/legacy/static/lib/jquery.simplemodal.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.simplemodal.min.js
+	cp src/esp/proto/legacy/static/lib/jquery.tablesorter.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.tablesorter.js
+	cp src/esp/proto/legacy/static/lib/jquery.tablesorter.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.tablesorter.min.js
+	cp src/esp/proto/legacy/static/lib/less.js $(CONFIG)/bin/esp-proto/legacy/static/lib/less.js
+	cp src/esp/proto/legacy/static/lib/less.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/less.min.js
+	cp src/esp/proto/legacy/static/lib/respond.js $(CONFIG)/bin/esp-proto/legacy/static/lib/respond.js
+	cp src/esp/proto/legacy/static/lib/respond.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/respond.min.js
+	mkdir -p "$(CONFIG)/bin/esp-proto/LocalStore"
+	cp src/esp/proto/LocalStore/LocalStore.js $(CONFIG)/bin/esp-proto/LocalStore/LocalStore.js
+	mkdir -p "$(CONFIG)/bin/esp-proto/server"
+	cp src/esp/proto/server/app.conf $(CONFIG)/bin/esp-proto/server/app.conf
+	cp src/esp/proto/server/appweb.conf $(CONFIG)/bin/esp-proto/server/appweb.conf
+	mkdir -p "$(CONFIG)/bin/esp-proto/SessionStore/client/components/SessionStore"
+	cp src/esp/proto/SessionStore/client/components/SessionStore/SessionStore.js $(CONFIG)/bin/esp-proto/SessionStore/client/components/SessionStore/SessionStore.js
 endif
-
 
 
 #

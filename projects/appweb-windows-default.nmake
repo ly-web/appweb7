@@ -156,7 +156,6 @@ TARGETS            = $(TARGETS) src\server\esp.conf
 !IF "$(BIT_PACK_ESP)" == "1"
 TARGETS            = $(TARGETS) $(CONFIG)\bin\esp-proto
 !ENDIF
-TARGETS            = $(TARGETS) src\esp\proto\legacy\static\css\all.css
 TARGETS            = $(TARGETS) src\esp\proto\angular\client\css\all.css
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 TARGETS            = $(TARGETS) $(CONFIG)\bin\libejs.dll
@@ -1182,10 +1181,6 @@ $(CONFIG)\bin\esp-proto: $(DEPS_57)
 	if not exist "$(CONFIG)\bin\esp-proto\angular" md "$(CONFIG)\bin\esp-proto\angular"
 	copy /Y src\esp\proto\angular\app.conf $(CONFIG)\bin\esp-proto\angular\app.conf
 	copy /Y src\esp\proto\angular\appweb.conf $(CONFIG)\bin\esp-proto\angular\appweb.conf
-	if not exist "$(CONFIG)\bin\esp-proto\angular\cache" md "$(CONFIG)\bin\esp-proto\angular\cache"
-	copy /Y src\esp\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.c $(CONFIG)\bin\esp-proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.c
-	copy /Y src\esp\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.dylib $(CONFIG)\bin\esp-proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.dylib
-	copy /Y src\esp\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.o $(CONFIG)\bin\esp-proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.o
 	if not exist "$(CONFIG)\bin\esp-proto\angular\client\app" md "$(CONFIG)\bin\esp-proto\angular\client\app"
 	copy /Y src\esp\proto\angular\client\app\main.js $(CONFIG)\bin\esp-proto\angular\client\app\main.js
 	if not exist "$(CONFIG)\bin\esp-proto\angular\client\assets" md "$(CONFIG)\bin\esp-proto\angular\client\assets"
@@ -1245,36 +1240,41 @@ $(CONFIG)\bin\esp-proto: $(DEPS_57)
 	copy /Y src\esp\proto\legacy\layouts\default.esp $(CONFIG)\bin\esp-proto\legacy\layouts\default.esp
 	if not exist "$(CONFIG)\bin\esp-proto\legacy\static\css" md "$(CONFIG)\bin\esp-proto\legacy\static\css"
 	copy /Y src\esp\proto\legacy\static\css\all.css $(CONFIG)\bin\esp-proto\legacy\static\css\all.css
+	copy /Y src\esp\proto\legacy\static\css\all.less $(CONFIG)\bin\esp-proto\legacy\static\css\all.less
+	copy /Y src\esp\proto\legacy\static\css\app.less $(CONFIG)\bin\esp-proto\legacy\static\css\app.less
+	copy /Y src\esp\proto\legacy\static\css\esp.less $(CONFIG)\bin\esp-proto\legacy\static\css\esp.less
+	copy /Y src\esp\proto\legacy\static\css\more.less $(CONFIG)\bin\esp-proto\legacy\static\css\more.less
+	copy /Y src\esp\proto\legacy\static\css\normalize.less $(CONFIG)\bin\esp-proto\legacy\static\css\normalize.less
+	copy /Y src\esp\proto\legacy\static\css\theme.less $(CONFIG)\bin\esp-proto\legacy\static\css\theme.less
 	if not exist "$(CONFIG)\bin\esp-proto\legacy\static\images" md "$(CONFIG)\bin\esp-proto\legacy\static\images"
 	copy /Y src\esp\proto\legacy\static\images\banner.jpg $(CONFIG)\bin\esp-proto\legacy\static\images\banner.jpg
 	copy /Y src\esp\proto\legacy\static\images\favicon.ico $(CONFIG)\bin\esp-proto\legacy\static\images\favicon.ico
 	copy /Y src\esp\proto\legacy\static\images\splash.jpg $(CONFIG)\bin\esp-proto\legacy\static\images\splash.jpg
 	if not exist "$(CONFIG)\bin\esp-proto\legacy\static" md "$(CONFIG)\bin\esp-proto\legacy\static"
 	copy /Y src\esp\proto\legacy\static\index.esp $(CONFIG)\bin\esp-proto\legacy\static\index.esp
-	if not exist "$(CONFIG)\bin\esp-proto\legacy\static\js" md "$(CONFIG)\bin\esp-proto\legacy\static\js"
-	copy /Y src\esp\proto\legacy\static\js\html5shiv.js $(CONFIG)\bin\esp-proto\legacy\static\js\html5shiv.js
-	copy /Y src\esp\proto\legacy\static\js\html5shiv.min.js $(CONFIG)\bin\esp-proto\legacy\static\js\html5shiv.min.js
-	copy /Y src\esp\proto\legacy\static\js\jquery.esp.js $(CONFIG)\bin\esp-proto\legacy\static\js\jquery.esp.js
-	copy /Y src\esp\proto\legacy\static\js\jquery.esp.min.js $(CONFIG)\bin\esp-proto\legacy\static\js\jquery.esp.min.js
-	copy /Y src\esp\proto\legacy\static\js\jquery.js $(CONFIG)\bin\esp-proto\legacy\static\js\jquery.js
-	copy /Y src\esp\proto\legacy\static\js\jquery.min.js $(CONFIG)\bin\esp-proto\legacy\static\js\jquery.min.js
-	copy /Y src\esp\proto\legacy\static\js\jquery.simplemodal.js $(CONFIG)\bin\esp-proto\legacy\static\js\jquery.simplemodal.js
-	copy /Y src\esp\proto\legacy\static\js\jquery.simplemodal.min.js $(CONFIG)\bin\esp-proto\legacy\static\js\jquery.simplemodal.min.js
-	copy /Y src\esp\proto\legacy\static\js\jquery.tablesorter.js $(CONFIG)\bin\esp-proto\legacy\static\js\jquery.tablesorter.js
-	copy /Y src\esp\proto\legacy\static\js\jquery.tablesorter.min.js $(CONFIG)\bin\esp-proto\legacy\static\js\jquery.tablesorter.min.js
-	copy /Y src\esp\proto\legacy\static\js\less.js $(CONFIG)\bin\esp-proto\legacy\static\js\less.js
-	copy /Y src\esp\proto\legacy\static\js\less.min.js $(CONFIG)\bin\esp-proto\legacy\static\js\less.min.js
-	copy /Y src\esp\proto\legacy\static\js\respond.js $(CONFIG)\bin\esp-proto\legacy\static\js\respond.js
-	copy /Y src\esp\proto\legacy\static\js\respond.min.js $(CONFIG)\bin\esp-proto\legacy\static\js\respond.min.js
-	if not exist "$(CONFIG)\bin\esp-proto\legacy\static\less" md "$(CONFIG)\bin\esp-proto\legacy\static\less"
-	copy /Y src\esp\proto\legacy\static\less\all.less $(CONFIG)\bin\esp-proto\legacy\static\less\all.less
-	copy /Y src\esp\proto\legacy\static\less\app.less $(CONFIG)\bin\esp-proto\legacy\static\less\app.less
-	copy /Y src\esp\proto\legacy\static\less\esp.less $(CONFIG)\bin\esp-proto\legacy\static\less\esp.less
-	copy /Y src\esp\proto\legacy\static\less\more.less $(CONFIG)\bin\esp-proto\legacy\static\less\more.less
-	copy /Y src\esp\proto\legacy\static\less\normalize.less $(CONFIG)\bin\esp-proto\legacy\static\less\normalize.less
-	copy /Y src\esp\proto\legacy\static\less\theme.less $(CONFIG)\bin\esp-proto\legacy\static\less\theme.less
+	if not exist "$(CONFIG)\bin\esp-proto\legacy\static\lib" md "$(CONFIG)\bin\esp-proto\legacy\static\lib"
+	copy /Y src\esp\proto\legacy\static\lib\html5shiv.js $(CONFIG)\bin\esp-proto\legacy\static\lib\html5shiv.js
+	copy /Y src\esp\proto\legacy\static\lib\html5shiv.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\html5shiv.min.js
+	copy /Y src\esp\proto\legacy\static\lib\jquery.esp.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.esp.js
+	copy /Y src\esp\proto\legacy\static\lib\jquery.esp.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.esp.min.js
+	copy /Y src\esp\proto\legacy\static\lib\jquery.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.js
+	copy /Y src\esp\proto\legacy\static\lib\jquery.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.min.js
+	copy /Y src\esp\proto\legacy\static\lib\jquery.simplemodal.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.simplemodal.js
+	copy /Y src\esp\proto\legacy\static\lib\jquery.simplemodal.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.simplemodal.min.js
+	copy /Y src\esp\proto\legacy\static\lib\jquery.tablesorter.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.tablesorter.js
+	copy /Y src\esp\proto\legacy\static\lib\jquery.tablesorter.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.tablesorter.min.js
+	copy /Y src\esp\proto\legacy\static\lib\less.js $(CONFIG)\bin\esp-proto\legacy\static\lib\less.js
+	copy /Y src\esp\proto\legacy\static\lib\less.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\less.min.js
+	copy /Y src\esp\proto\legacy\static\lib\respond.js $(CONFIG)\bin\esp-proto\legacy\static\lib\respond.js
+	copy /Y src\esp\proto\legacy\static\lib\respond.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\respond.min.js
+	if not exist "$(CONFIG)\bin\esp-proto\LocalStore" md "$(CONFIG)\bin\esp-proto\LocalStore"
+	copy /Y src\esp\proto\LocalStore\LocalStore.js $(CONFIG)\bin\esp-proto\LocalStore\LocalStore.js
+	if not exist "$(CONFIG)\bin\esp-proto\server" md "$(CONFIG)\bin\esp-proto\server"
+	copy /Y src\esp\proto\server\app.conf $(CONFIG)\bin\esp-proto\server\app.conf
+	copy /Y src\esp\proto\server\appweb.conf $(CONFIG)\bin\esp-proto\server\appweb.conf
+	if not exist "$(CONFIG)\bin\esp-proto\SessionStore\client\components\SessionStore" md "$(CONFIG)\bin\esp-proto\SessionStore\client\components\SessionStore"
+	copy /Y src\esp\proto\SessionStore\client\components\SessionStore\SessionStore.js $(CONFIG)\bin\esp-proto\SessionStore\client\components\SessionStore\SessionStore.js
 !ENDIF
-
 
 
 #
@@ -2239,10 +2239,6 @@ installBinary: $(DEPS_102)
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular"
 	copy /Y src\esp\proto\angular\app.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\app.conf"
 	copy /Y src\esp\proto\angular\appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\appweb.conf"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\cache" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\cache"
-	copy /Y src\esp\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.c "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.c"
-	copy /Y src\esp\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.dylib "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.dylib"
-	copy /Y src\esp\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.o "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\cache\view_f4478e9e3025f86f93399a51c77596bf.o"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app"
 	copy /Y src\esp\proto\angular\client\app\main.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app\main.js"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets"
@@ -2302,34 +2298,40 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\legacy\layouts\default.esp "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\layouts\default.esp"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css"
 	copy /Y src\esp\proto\legacy\static\css\all.css "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\all.css"
+	copy /Y src\esp\proto\legacy\static\css\all.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\all.less"
+	copy /Y src\esp\proto\legacy\static\css\app.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\app.less"
+	copy /Y src\esp\proto\legacy\static\css\esp.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\esp.less"
+	copy /Y src\esp\proto\legacy\static\css\more.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\more.less"
+	copy /Y src\esp\proto\legacy\static\css\normalize.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\normalize.less"
+	copy /Y src\esp\proto\legacy\static\css\theme.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\theme.less"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\images" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\images"
 	copy /Y src\esp\proto\legacy\static\images\banner.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\images\banner.jpg"
 	copy /Y src\esp\proto\legacy\static\images\favicon.ico "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\images\favicon.ico"
 	copy /Y src\esp\proto\legacy\static\images\splash.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\images\splash.jpg"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static"
 	copy /Y src\esp\proto\legacy\static\index.esp "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\index.esp"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js"
-	copy /Y src\esp\proto\legacy\static\js\html5shiv.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\html5shiv.js"
-	copy /Y src\esp\proto\legacy\static\js\html5shiv.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\html5shiv.min.js"
-	copy /Y src\esp\proto\legacy\static\js\jquery.esp.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\jquery.esp.js"
-	copy /Y src\esp\proto\legacy\static\js\jquery.esp.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\jquery.esp.min.js"
-	copy /Y src\esp\proto\legacy\static\js\jquery.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\jquery.js"
-	copy /Y src\esp\proto\legacy\static\js\jquery.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\jquery.min.js"
-	copy /Y src\esp\proto\legacy\static\js\jquery.simplemodal.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\jquery.simplemodal.js"
-	copy /Y src\esp\proto\legacy\static\js\jquery.simplemodal.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\jquery.simplemodal.min.js"
-	copy /Y src\esp\proto\legacy\static\js\jquery.tablesorter.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\jquery.tablesorter.js"
-	copy /Y src\esp\proto\legacy\static\js\jquery.tablesorter.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\jquery.tablesorter.min.js"
-	copy /Y src\esp\proto\legacy\static\js\less.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\less.js"
-	copy /Y src\esp\proto\legacy\static\js\less.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\less.min.js"
-	copy /Y src\esp\proto\legacy\static\js\respond.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\respond.js"
-	copy /Y src\esp\proto\legacy\static\js\respond.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\js\respond.min.js"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\less" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\less"
-	copy /Y src\esp\proto\legacy\static\less\all.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\less\all.less"
-	copy /Y src\esp\proto\legacy\static\less\app.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\less\app.less"
-	copy /Y src\esp\proto\legacy\static\less\esp.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\less\esp.less"
-	copy /Y src\esp\proto\legacy\static\less\more.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\less\more.less"
-	copy /Y src\esp\proto\legacy\static\less\normalize.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\less\normalize.less"
-	copy /Y src\esp\proto\legacy\static\less\theme.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\less\theme.less"
+	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib"
+	copy /Y src\esp\proto\legacy\static\lib\html5shiv.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\html5shiv.js"
+	copy /Y src\esp\proto\legacy\static\lib\html5shiv.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\html5shiv.min.js"
+	copy /Y src\esp\proto\legacy\static\lib\jquery.esp.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.esp.js"
+	copy /Y src\esp\proto\legacy\static\lib\jquery.esp.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.esp.min.js"
+	copy /Y src\esp\proto\legacy\static\lib\jquery.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.js"
+	copy /Y src\esp\proto\legacy\static\lib\jquery.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.min.js"
+	copy /Y src\esp\proto\legacy\static\lib\jquery.simplemodal.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.simplemodal.js"
+	copy /Y src\esp\proto\legacy\static\lib\jquery.simplemodal.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.simplemodal.min.js"
+	copy /Y src\esp\proto\legacy\static\lib\jquery.tablesorter.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.tablesorter.js"
+	copy /Y src\esp\proto\legacy\static\lib\jquery.tablesorter.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.tablesorter.min.js"
+	copy /Y src\esp\proto\legacy\static\lib\less.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\less.js"
+	copy /Y src\esp\proto\legacy\static\lib\less.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\less.min.js"
+	copy /Y src\esp\proto\legacy\static\lib\respond.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\respond.js"
+	copy /Y src\esp\proto\legacy\static\lib\respond.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\respond.min.js"
+	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\LocalStore" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\LocalStore"
+	copy /Y src\esp\proto\LocalStore\LocalStore.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\LocalStore\LocalStore.js"
+	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server"
+	copy /Y src\esp\proto\server\app.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server\app.conf"
+	copy /Y src\esp\proto\server\appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server\appweb.conf"
+	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\SessionStore\client\components\SessionStore" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\SessionStore\client\components\SessionStore"
+	copy /Y src\esp\proto\SessionStore\client\components\SessionStore\SessionStore.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\SessionStore\client\components\SessionStore\SessionStore.js"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y $(CONFIG)\bin\esp.conf "$(BIT_VAPP_PREFIX)\bin\esp.conf"
