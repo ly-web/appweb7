@@ -784,7 +784,7 @@ static EspRoute *getEroute(HttpRoute *route)
  */
 static int espAppDirective(MaState *state, cchar *key, cchar *value)
 {
-    HttpRoute   *route;
+    HttpRoute   *route, *intermediate;
     EspRoute    *eroute;
     char        *auth, *name, *option, *ovalue, *prefix, *dir, *routeSet, *database, *tok, *flat, *type;
 
@@ -792,7 +792,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     routeSet = 0;
     type = 0;
     flat = "false";
-    prefix = "/";
+    prefix = 0;
     database = 0;
     auth = 0;
 
@@ -834,18 +834,24 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         type = "legacy";
 #endif
     }
-    /*
-        Always create an application route so all resources can inherit (share) handler definitions
-     */
-    if ((route = httpCreateInheritedRoute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
+    if (smatch(prefix, "/")) {
+        prefix = 0;
+    }
+    if (smatch(prefix, state->route->prefix) && mprSamePath(state->route->dir, dir)) {
+        /* 
+            Can use existing route as it has the same prefix and documents directory. 
+            But create an intermediate route from which all children routes inherit.
+         */
+        route = state->route;
+    } else {
+        route = httpCreateInheritedRoute(state->route);
     }
     if (!type) {
-        if (mprPathExists(mprJoinPath(route->dir, "client/app/main.js"), X_OK)) {
+        if (mprPathExists(mprJoinPath(dir, "client/app/main.js"), X_OK)) {
             type = "angular";
 #if DEPRECATE || 1
-        } else if (mprPathExists(mprJoinPath(route->dir, "static"), X_OK) &&
-               !mprPathExists(mprJoinPath(route->dir, "client"), X_OK)) {
+        } else if (mprPathExists(mprJoinPath(dir, "static"), X_OK) &&
+               !mprPathExists(mprJoinPath(dir, "client"), X_OK)) {
             type = "legacy";
         }
     }
@@ -854,14 +860,13 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     }
 #endif
     if (smatch(type, "angular")) {
-        route->flags |= HTTP_ROUTE_JSON;
+        route->flags |= HTTP_ROUTE_JSON_RESOURCES;
     }
     if (!routeSet) {
         if (smatch(type, "angular")) {
             routeSet = "restful";
         }
     }
-    httpSetRouteName(route, name);
     if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
     }
@@ -878,10 +883,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_STATE;
         }
     }
-
-    if (smatch(prefix, "/")) {
-        prefix = 0;
-    } else {
+    if (prefix) {
         if (*prefix != '/') {
             mprError("Prefix name should start with a \"/\"");
             prefix = sjoin("/", prefix, NULL);
@@ -889,9 +891,11 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         prefix = stemplate(prefix, route->vars);
         httpSetRouteName(route, prefix);
         httpSetRoutePrefix(route, prefix);
+    } else {
+        httpSetRouteName(route, prefix ? prefix : sfmt("/%s", name));
     }
     httpSetRouteDir(route, dir);
-    httpSetRouteTarget(route, "run", "unused");
+    httpSetRouteTarget(route, "run", "$&");
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
 

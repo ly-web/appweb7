@@ -789,12 +789,14 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
 {
     EspReq      *req;
-    MprHash     *options;
     MprKey      *kp;
     cchar       *msg;
    
     req = conn->data;
+#if UNUSED
+    MprHash     *options;
     options = httpGetOptions(optionString);
+#endif
     if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
         return;
     }
@@ -828,6 +830,8 @@ PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
     return rx->securityToken;
 }
 
+
+//  MOB - rename espRenderSecurityToken
 
 /*
     Generate a security token

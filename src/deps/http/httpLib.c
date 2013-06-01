@@ -4366,6 +4366,9 @@ static void printRoute(HttpRoute *route, int next, bool full)
     cchar       *methods, *pattern, *target, *index;
     int         nextIndex;
 
+    if (smatch(route->name, "unused")) {
+        return;
+    }
     methods = httpGetRouteMethods(route);
     methods = methods ? methods : "*";
     pattern = (route->pattern && *route->pattern) ? route->pattern : "^/";
@@ -8908,7 +8911,7 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
         if (route->mappings && (mapped = mprLookupKey(route->mappings, tx->filename)) != 0) {
             tx->filename = mapped;
         } else if ((extensions = mprLookupKey(route->map, tx->ext)) != 0) {
-            acceptGzip = scontains(rx->acceptEncoding, "gzip");
+            acceptGzip = scontains(rx->acceptEncoding, "gzip") != 0;
             for (ITERATE_ITEMS(extensions, ext, next)) {
                 zipped = sends(ext, "gz");
                 if (zipped && !acceptGzip) {
@@ -9516,12 +9519,20 @@ PUBLIC void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags)
 PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix)
 {
     assert(route);
+    //  MOB - must put code to map "/" to NULL
+    assert(!smatch(prefix, "/"));
     
     if (prefix && *prefix) {
-        route->prefix = sclone(prefix);
-        route->prefixLen = slen(prefix);
+        if (smatch(prefix, "/")) {
+            route->prefix = 0;
+            route->prefixLen = 0;
+        } else {
+            route->prefix = sclone(prefix);
+            route->prefixLen = slen(prefix);
+        }
     } else {
         route->prefix = 0;
+        route->prefixLen = 0;
     }
     if (route->pattern) {
         finalizePattern(route);
@@ -10721,7 +10732,7 @@ PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
 {
     int     flags;
 
-    flags = parent->flags & HTTP_ROUTE_JSON;
+    flags = (parent->flags & HTTP_ROUTE_JSON_RESOURCES) ? HTTP_ROUTE_JSON : 0;
     addRestful(parent, "create",    "POST",   "(/)*$",                   "create",          resource, flags);
     addRestful(parent, "edit",      "GET",    "/{id=[0-9]+}/edit$",      "edit",            resource, 0);
     addRestful(parent, "get",       "GET",    "/{id=[0-9]+}$",           "get",             resource, 0);
@@ -10738,7 +10749,7 @@ PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource)
 {
     int     flags;
 
-    flags = parent->flags & HTTP_ROUTE_JSON;
+    flags = (parent->flags & HTTP_ROUTE_JSON_RESOURCES) ? HTTP_ROUTE_JSON : 0;
     addRestful(parent, "create",    "POST",   "(/)*$",        "create",     resource, flags);
     addRestful(parent, "edit",      "GET",    "/edit$",       "edit",       resource, 0);
     addRestful(parent, "get",       "GET",    "(/)*$",        "get",        resource, 0);
@@ -10755,27 +10766,35 @@ PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource)
  */
 PUBLIC void httpAddLegacyResourceGroup(HttpRoute *parent, cchar *resource)
 {
-    addRestful(parent, "list",      "GET",    "(/)*$",                   "list",          resource, 0);
-    addRestful(parent, "init",      "GET",    "/init$",                  "init",          resource, 0);
-    addRestful(parent, "create",    "POST",   "(/)*$",                   "create",        resource, 0);
-    addRestful(parent, "edit",      "GET",    "/{id=[0-9]+}/edit$",      "edit",          resource, 0);
-    addRestful(parent, "show",      "GET",    "/{id=[0-9]+}$",           "show",          resource, 0);
-    addRestful(parent, "update",    "PUT",    "/{id=[0-9]+}$",           "update",        resource, 0);
-    addRestful(parent, "destroy",   "DELETE", "/{id=[0-9]+}$",           "destroy",       resource, 0);
-    addRestful(parent, "action",    "POST",   "/{action}/{id=[0-9]+}$",  "${action}",     resource, 0);
-    addRestful(parent, "cmd",       "*",      "/{action}$",              "cmd-${action}", resource, 0);
+    int     flags;
+
+    //  MOB - can remove this if legacy switches to XSRF
+    flags = parent->flags & HTTP_ROUTE_LEGACY_MVC;
+    addRestful(parent, "list",      "GET",    "(/)*$",                   "list",          resource, flags);
+    addRestful(parent, "init",      "GET",    "/init$",                  "init",          resource, flags);
+    addRestful(parent, "create",    "POST",   "(/)*$",                   "create",        resource, flags);
+    addRestful(parent, "edit",      "GET",    "/{id=[0-9]+}/edit$",      "edit",          resource, flags);
+    addRestful(parent, "show",      "GET",    "/{id=[0-9]+}$",           "show",          resource, flags);
+    addRestful(parent, "update",    "PUT",    "/{id=[0-9]+}$",           "update",        resource, flags);
+    addRestful(parent, "destroy",   "DELETE", "/{id=[0-9]+}$",           "destroy",       resource, flags);
+    addRestful(parent, "action",    "POST",   "/{action}/{id=[0-9]+}$",  "${action}",     resource, flags);
+    addRestful(parent, "cmd",       "*",      "/{action}$",              "cmd-${action}", resource, flags);
 }
 
 
 PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *resource)
 {
-    addRestful(parent, "init",      "GET",    "/init$",       "init",          resource, 0);
-    addRestful(parent, "create",    "POST",   "(/)*$",        "create",        resource, 0);
-    addRestful(parent, "edit",      "GET",    "/edit$",       "edit",          resource, 0);
-    addRestful(parent, "show",      "GET",    "(/)*$",        "show",          resource, 0);
-    addRestful(parent, "update",    "PUT",    "(/)*$",        "update",        resource, 0);
-    addRestful(parent, "destroy",   "DELETE", "(/)*$",        "destroy",       resource, 0);
-    addRestful(parent, "cmd",       "*",      "/{action}$",   "cmd-${action}", resource, 0);
+    int     flags;
+
+    //  MOB - can remove this if legacy switches to XSRF
+    flags = parent->flags & HTTP_ROUTE_LEGACY_MVC;
+    addRestful(parent, "init",      "GET",    "/init$",       "init",          resource, flags);
+    addRestful(parent, "create",    "POST",   "(/)*$",        "create",        resource, flags);
+    addRestful(parent, "edit",      "GET",    "/edit$",       "edit",          resource, flags);
+    addRestful(parent, "show",      "GET",    "(/)*$",        "show",          resource, flags);
+    addRestful(parent, "update",    "PUT",    "(/)*$",        "update",        resource, flags);
+    addRestful(parent, "destroy",   "DELETE", "(/)*$",        "destroy",       resource, flags);
+    addRestful(parent, "cmd",       "*",      "/{action}$",   "cmd-${action}", resource, flags);
 }
 #endif
 
@@ -10800,6 +10819,7 @@ PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *name, cchar *prefix)
 
     if (parent->prefix) {
         prefix = sjoin(parent->prefix, prefix, NULL);
+        name = sjoin(parent->prefix, name, NULL);
     }
     pattern = sfmt("^%s/(.*)", prefix);
     path = stemplate("${CLIENT_DIR}/$1", parent->vars);
@@ -10816,7 +10836,7 @@ PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set)
     if (!(parent->flags & HTTP_ROUTE_LEGACY_MVC)) {
         if (scaselessmatch(set, "restful")) {
             httpAddResourceGroup(parent, "{service}");
-            httpAddClientRoute(parent, sfmt("%s-client", parent->name), "");
+            httpAddClientRoute(parent, "/client", "");
 
         } else if (!scaselessmatch(set, "none")) {
             mprError("Unknown route set %s", set);
