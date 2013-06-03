@@ -1942,17 +1942,17 @@ static int sourceDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    StreamInput [!] mimeType
+    StreamInput [!] mimeType [uri]
  */
 static int streamInputDirective(MaState *state, cchar *key, cchar *value)
 {
-    cchar   *mimeType;
+    cchar   *mime, *uri;
     int     disable;
 
-    if (!maTokenize(state, value, "%! ?S", &disable, &mimeType)) {
+    if (!maTokenize(state, value, "%! ?S ?S", &disable, &mime, &uri)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpSetRouteStreaming(state->route, mimeType, !disable);
+    httpSetStreaming(state->host, mime, uri, !disable);
     return 0;
 }
 

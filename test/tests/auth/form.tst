@@ -27,7 +27,6 @@ if (App.config.bit_ssl) {
 
     //  Login. The response should redirct to /auth/form
     http.reset()
-    // http.setCookie(cookie)
     http.form(HTTPS + "/auth/form/login", {username: "joshua", password: "pass1"})
     assert(http.status == 302)
     location = http.header('location')

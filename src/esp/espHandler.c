@@ -784,7 +784,7 @@ static EspRoute *getEroute(HttpRoute *route)
  */
 static int espAppDirective(MaState *state, cchar *key, cchar *value)
 {
-    HttpRoute   *route, *intermediate;
+    HttpRoute   *route;
     EspRoute    *eroute;
     char        *auth, *name, *option, *ovalue, *prefix, *dir, *routeSet, *database, *tok, *flat, *type;
 
@@ -840,7 +840,6 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     if (smatch(prefix, state->route->prefix) && mprSamePath(state->route->dir, dir)) {
         /* 
             Can use existing route as it has the same prefix and documents directory. 
-            But create an intermediate route from which all children routes inherit.
          */
         route = state->route;
     } else {

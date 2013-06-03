@@ -8188,11 +8188,11 @@ PUBLIC char *mprMakePassword(cchar *password, int saltLength, int rounds)
 
 PUBLIC bool mprCheckPassword(cchar *plainTextPassword, cchar *passwordHash)
 {
-    cchar   *algorithm, *given, *rounds, *salt, *s1, *s2;
+    cchar   *given, *rounds, *salt, *s1, *s2;
     char    *tok, *hash;
     ssize   match;
 
-    algorithm = stok(sclone(passwordHash), ":", &tok);
+    stok(sclone(passwordHash), ":", &tok);
     rounds = stok(NULL, ":", &tok);
     salt = stok(NULL, ":", &tok);
     hash = stok(NULL, ":", &tok);
