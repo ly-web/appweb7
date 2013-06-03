@@ -651,20 +651,12 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->clientDir = parent->clientDir;
     eroute->config = parent->config;
     eroute->dbDir = parent->dbDir;
+    eroute->layoutsDir = parent->layoutsDir;
     eroute->route = route;
     eroute->srcDir = parent->srcDir;
     eroute->servicesDir = parent->servicesDir;
-#if DEPRECATED || 1
-    eroute->layoutsDir = parent->layoutsDir;
     eroute->viewsDir = parent->viewsDir;
-#endif
     route->eroute = eroute;
-#if UNUSED
-    eroute->modelsDir = parent->modelsDir;
-    eroute->controllersDir = parent->controllersDir;
-    eroute->templatesDir = parent->templatesDir;
-    eroute->migrationsDir = parent->migrationsDir;
-#endif
     return eroute;
 }
 

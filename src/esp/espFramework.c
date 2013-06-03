@@ -10,6 +10,7 @@
 
 #if BIT_PACK_ESP
 
+#if UNUSED
 #define EDATA(s)        "data-esp-" s           /* Prefix for data attributes */
 #define ESTYLE(s)       "esp-" s                /* Prefix for ESP styles */
 
@@ -21,30 +22,6 @@ typedef struct EspScript {
     cchar   *option;                            /* Esp control option that must be present to trigger emitting script */
     int     flags;                              /* Conditional generation flags */
 } EspScript;
-
-#if UNUSED
-static EspScript angularScripts[] = {
-    { "/js/html5shiv",           0,              SCRIPT_IE },
-    { "/lib/angular",            0,              0 },
-    { "/lib/angular-resource",   0,              0 },
-    { "/lib/ui-bootstrap-tpls",  0,              0 },
-    { "/lib/less",               0,              0 },
-    { "/app",                    0,              0,},
-    { 0,                         0,              0 },
-};
-#endif
-
-#if UNUSED
-static EspScript defaultScripts[] = {
-    { "/js/jquery",              0,              0 },
-    { "/js/jquery.tablesorter",  "tablesorter",  0 },
-    { "/js/jquery.simplemodal",  "simplemodal",  0 },
-    { "/js/jquery.esp",          0,              0 },
-    { "/js/html5shiv",           0,              SCRIPT_IE },
-    { "/js/respond",             "respond",      SCRIPT_IE },
-    { "/js/less",                "less",         SCRIPT_LESS },
-    { 0,                         0,              0 },
-};
 #endif
 
 /************************************* Code ***********************************/
@@ -129,7 +106,7 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
     }
     if ((sessionToken = httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, "")) != 0) {
         requestToken = httpGetHeader(conn, "X-XSRF-TOKEN");
-#if DEPRECATED || 1
+#if DEPRECATE || 1
         /*
             Deprecated in 4.4
          */
@@ -137,7 +114,7 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
             requestToken = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, 0);
         }
 #endif
-        #if DISABLED &&  MOB
+#if DISABLED && MOB
         if (!smatch(sessionToken, requestToken)) {
             /*
                 Potential CSRF attack. Deny request.
@@ -145,7 +122,7 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
             httpError(conn, HTTP_CODE_NOT_ACCEPTABLE, "Security token is stale. Please reload the page and retry.");
             return 0;
         }
-        #endif
+#endif
     }
     return 1;
 }
@@ -233,9 +210,11 @@ PUBLIC void espFlush(HttpConn *conn)
 
 PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
 {
+#if DEPRECATE || 1
     if (rec == 0) {
         rec = conn->record;
     }
+#endif
     if (rec) {
         return ediGetColumns(espGetDatabase(conn), rec->tableName);
     }
@@ -317,12 +296,6 @@ PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *kind)
 }
 
 
-PUBLIC EdiGrid *espGetGrid(HttpConn *conn)
-{           
-    return conn->grid;
-}
-
-    
 PUBLIC cchar *espGetHeader(HttpConn *conn, cchar *key)
 {
     return httpGetHeader(conn, key);
@@ -386,6 +359,28 @@ PUBLIC Edi *espGetRouteDatabase(EspRoute *eroute)
         return 0;
     }
     return eroute->edi;
+}
+
+
+/*
+    Get a security token to use to mitiate CSRF threats. Security tokens are expected to be sent with 
+    POST form requests to verify the authenticity of the issuer.
+    This routine will use an existing token or create if not present. It will store in the session store.
+ */
+PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
+{
+    HttpRx      *rx;
+
+    rx = conn->rx;
+
+    if (rx->securityToken == 0) {
+        rx->securityToken = (char*) httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, 0);
+        if (rx->securityToken == 0) {
+            rx->securityToken = mprGetRandomString(32);
+            httpSetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, rx->securityToken);
+        }
+    }
+    return rx->securityToken;
 }
 
 
@@ -456,21 +451,6 @@ PUBLIC cchar *espGridToJson(EdiGrid *grid, int flags)
 }
 
 
-PUBLIC bool espHasGrid(HttpConn *conn)
-{
-    return conn->grid != 0;
-}
-
-
-PUBLIC bool espHasRec(HttpConn *conn)
-{
-    EdiRec  *rec;
-
-    rec = conn->record;
-    return (rec && rec->id) ? 1 : 0;
-}
-
-
 PUBLIC bool espIsEof(HttpConn *conn)
 {
     return httpIsEof(conn);
@@ -522,6 +502,7 @@ PUBLIC EdiRec *espMakeRec(cchar *contents)
 }
 
 
+//  MOB - reconsider API
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value)
 {
     return httpMatchParam(conn, var, value);
@@ -604,18 +585,13 @@ PUBLIC EdiRec *espReadRecByKey(HttpConn *conn, cchar *tableName, cchar *key)
 
 PUBLIC EdiGrid *espReadRecsWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
-    //  MOB - where else should call espSetGrid
     return espSetGrid(conn, ediReadWhere(espGetDatabase(conn), tableName, fieldName, operation, value));
 }
 
 
 PUBLIC EdiGrid *espReadTable(HttpConn *conn, cchar *tableName)
 {
-    EdiGrid *grid;
-    
-    grid = ediReadWhere(espGetDatabase(conn), tableName, 0, 0, 0);
-    espSetGrid(conn, grid);
-    return grid;
+    return espSetGrid(conn, ediReadWhere(espGetDatabase(conn), tableName, 0, 0, 0));
 }
 
 
@@ -743,28 +719,6 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
 }
 
 
-#if UNUSED
-PUBLIC void espRenderFailure(HttpConn *conn, cchar *fmt, ...) 
-{
-    va_list     args;
-    EspReq      *req;
-    cchar       *feedback,  *fieldErrors;
-    EdiRec      *rec;
-
-    req = conn->data;
-    va_start(args, fmt);
-    espSetFlashv(conn, "error", fmt, args);
-    va_end(args);
-    
-    rec = getRec();
-    feedback = req->flash ? mprSerialize(req->flash, MPR_JSON_QUOTES) : "{}";
-    fieldErrors = (rec && rec->errors) ? mprSerialize(rec->errors, MPR_JSON_QUOTES) : "{}";
-    espRender(conn, "{\"error\": 1, \"feedback\": %s, \"fieldErrors\": %s}", feedback, fieldErrors);
-    espFinalize(conn);
-}
-#endif
-
-
 PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 {
     MprFile     *from;
@@ -786,59 +740,12 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 }
 
 
-PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
-{
-    EspReq      *req;
-    MprKey      *kp;
-    cchar       *msg;
-   
-    req = conn->data;
-#if UNUSED
-    MprHash     *options;
-    options = httpGetOptions(optionString);
-#endif
-    if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
-        return;
-    }
-    for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
-        msg = kp->data;
-        if (strstr(kinds, kp->key) || strstr(kinds, "all")) {
-            espRender(conn, "<span class='flash-%s'>%s</span>", kp->key, msg);
-        }
-    }
-}
-
-
 /*
-    Get a security token to use to mitiate CSRF threats. Security tokens are expected to be sent with 
-    POST form requests to verify the authenticity of the issuer.
-    This routine will use an existing token or create if not present. It will store in the session store.
- */
-PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
-{
-    HttpRx      *rx;
-
-    rx = conn->rx;
-
-    if (rx->securityToken == 0) {
-        rx->securityToken = (char*) httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, 0);
-        if (rx->securityToken == 0) {
-            rx->securityToken = mprGetRandomString(32);
-            httpSetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, rx->securityToken);
-        }
-    }
-    return rx->securityToken;
-}
-
-
-//  MOB - rename espRenderSecurityToken
-
-/*
-    Generate a security token
+    Render a security token
     Security tokens are used to minimize the CSRF threat.
     Note: the HttpSession API prevents session hijacking by pairing with the client IP
  */
-PUBLIC void espSecurityToken(HttpConn *conn) 
+PUBLIC void espRenderSecurityToken(HttpConn *conn) 
 {
     cchar   *securityToken;
 
@@ -856,6 +763,12 @@ PUBLIC void espSecurityToken(HttpConn *conn)
     } else {
         espSetCookie(conn, "XSRF-TOKEN", securityToken, "/", NULL,  0, 0);
     }
+}
+
+
+PUBLIC void espRemoveCookie(HttpConn *conn, cchar *name)
+{
+    httpSetCookie(conn, name, "", "/", NULL, -1, 0);
 }
 
 
@@ -900,6 +813,7 @@ static cchar *getGridSchema(EdiGrid *grid)
     return mprGetBufStart(buf);
 }
 
+
 /*
     MOB - support PRETTY, QUOTES PLAIN flag
     MOB - support flags to ask or not for the schema
@@ -907,8 +821,7 @@ static cchar *getGridSchema(EdiGrid *grid)
 PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags)
 {
     httpAddHeaderString(conn, "Content-Type", "application/json");
-    return espRender(conn, "{\n  \"schema\": %s,\n  \"data\": %s}\n", 
-        getGridSchema(grid), espGridToJson(grid, flags));
+    return espRender(conn, "{\n  \"schema\": %s,\n  \"data\": %s}\n", getGridSchema(grid), espGridToJson(grid, flags));
 }
 
 
@@ -954,23 +867,6 @@ PUBLIC void espRenderResult(HttpConn *conn, bool status)
 }
 
 
-#if UNUSED
-PUBLIC void espRenderSuccess(HttpConn *conn, cchar *fmt, ...)
-{
-    va_list     args;
-    EspReq      *req;
-
-    req = conn->data;
-    va_start(args, fmt);
-    espSetFlashv(conn, "inform", fmt, args);
-    
-    va_end(args);
-    espRender(conn, "{\"error\": 0, \"feedback\": %s}", req->flash ? mprSerialize(req->flash, MPR_JSON_QUOTES) : "{}");
-    espFinalize(conn);
-}
-#endif
-
-
 /*
     Render a request variable. If a param by the given name is not found, consult the session.
  */
@@ -992,6 +888,12 @@ PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key)
         return MPR_ERR_CANT_ACCESS;
     }
     return mprRemoveKey(conn->tx->headers, key);
+}
+
+
+PUBLIC void espRemoveSessionVar(HttpConn *conn, cchar *var) 
+{
+    httpRemoveSessionVar(conn, var);
 }
 
 
@@ -1108,16 +1010,6 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 }
 
 
-/*
-    Set the default grid for a request
- */
-PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
-{
-    conn->grid = grid;
-    return grid;
-}
-
-
 /*  
     Set a http header. Overwrite if present.
  */
@@ -1149,15 +1041,6 @@ PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value)
 PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value) 
 {
     httpSetParam(conn, var, value);
-}
-
-
-/*
-    Set the default record for a request
- */
-PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
-{
-    return conn->record = rec;
 }
 
 
@@ -1379,22 +1262,76 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->dbDir);
         mprMark(eroute->edi);
         mprMark(eroute->env);
+        mprMark(eroute->layoutsDir);
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
         mprMark(eroute->servicesDir);
         mprMark(eroute->srcDir);
-#if DEPRECATED || 1
-        mprMark(eroute->layoutsDir);
         mprMark(eroute->viewsDir);
-#endif
-#if UNUSED
-        mprMark(eroute->controllersDir);
-        mprMark(eroute->migrationsDir);
-        mprMark(eroute->modelsDir);
-        mprMark(eroute->templatesDir);
-#endif
     }
 }
+
+
+#if DEPRECATE || 1
+PUBLIC EdiGrid *espGetGrid(HttpConn *conn)
+{           
+    return conn->grid;
+}
+
+
+PUBLIC bool espHasGrid(HttpConn *conn)
+{
+    return conn->grid != 0;
+}
+
+
+PUBLIC bool espHasRec(HttpConn *conn)
+{
+    EdiRec  *rec;
+
+    rec = conn->record;
+    return (rec && rec->id) ? 1 : 0;
+}
+
+
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
+{
+    EspReq      *req;
+    MprKey      *kp;
+    cchar       *msg;
+   
+    req = conn->data;
+    if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
+        return;
+    }
+    for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
+        msg = kp->data;
+        if (strstr(kinds, kp->key) || strstr(kinds, "all")) {
+            espRender(conn, "<span class='flash-%s'>%s</span>", kp->key, msg);
+        }
+    }
+}
+
+
+PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
+{
+    conn->grid = grid;
+    return grid;
+}
+
+
+PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
+{
+    return conn->record = rec;
+}
+
+
+PUBLIC void espSecurityToken(HttpConn *conn) 
+{
+    espRenderSecurityToken(conn);
+}
+#endif
+
 
 
 #endif /* BIT_PACK_ESP */

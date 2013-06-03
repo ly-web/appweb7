@@ -8,7 +8,7 @@ NAME
 SYNOPSIS
        esp  [--apply]]  [--chdir dir]] [--config configFile]] [--database DB]]
        [--flat] [--genlink slink.c] [--keep] [--listen [ip:]port] [--log  log-
-       File:level]   [--overwrite]   [--quiet]   [--platform  os-arch-profile]
+       File:level] [--overwrite] [--quiet] [--platform [path/]os-arch-profile]
        [--rebuild]  [--static]  [--routeName  name]   [--routePrefix   prefix]
        [--verbose] [--why] commands ...
 
@@ -17,19 +17,19 @@ SYNOPSIS
         esp clean
         esp compile
         esp compile [pathFilters...]
-        esp generate app name
-        esp generate controller name [action [, action] ...]
+        esp generate app name [components]
         esp  generate  migration  description model [field:type [, field:type]
        ...]
         esp generate scaffold model [field:type [, field:type] ...]
+        esp generate service name [action [, action] ...]
         esp generate table name model [field:type [, field:type] ...]
         esp migrate [forward|backward|NNN]
         esp run
 
 DESCRIPTION
        The esp command generates, manages and runs ESP web  applications.   It
-       can  generate  ESP  web applications, controllers, database tables, and
-       scaffolds.
+       can generate ESP web applications, services, database tables, and scaf-
+       folds.
 
        The esp command will create directories and generate configuration  and
        source code files that can then be manually edited as required.  Esp is
@@ -49,16 +49,18 @@ GENERATING APPLICATIONS
        This will will create a set of directories  which  have  the  following
        meaning:
 
-             cache          - Cache directory for compiled content
-             controllers    - Controller source
+             client         - Public client web content
+             client/assets  - Images and assets
+             client/css     - Client CSS and Less style sheets
+             client/lib     - Client side Javascript libraries
              db             - Databases and scripts
+             src            - Application source code
+
+       Other directories will be created as needed:
+             cache          - Cache directory for compiled content
              db/migrations  - Databases migration modules
-             layouts        - Web page layout files
-             static         - Static web directory
-             static/images  - Public images
-             static/js      - Client side JavaScripts
-             static/themes  - Application HTML themes
-             views          - View source files
+             services       - Server side service controllers
+             src            - Server side main source code
 
        Most  of  these  directories  are initially empty, but may be used over
        time. ESP follows conventions where specific  files  are  stored.  This
@@ -66,13 +68,28 @@ GENERATING APPLICATIONS
 
        Esp will also create some files which have the following meaning:
 
-             appweb.config             - Appweb configuration file
-             app.config                - Appweb configuration file
-             esp-app.h                 - Application header file
-             layouts/default.esp       - Default layout web page
-             static/layout.css         - Default layout CSS file
-             static/themes/default.css - Default theme CSS file
-             static/js/jquery.js       - jQuery client side script
+             app.config                - Appweb configuration file for hosting
+            app
+             appweb.config             - Stand-alone Appweb configuration file
+             index.esp                 - Home web page
+             start.bit                 - Bit build file
+
+       The  esp command can generate various components by specifying the com-
+       ponents on the command line.
+
+             esp generate app NAME components
+
+       The first component is the primary component and specifies the style of
+       application  to  generate.  Supported styles are "angular" for an Angu-
+       larjs client and "server" for  a  server-side  only  application.   The
+       default is "angular".
+
+       Other components are:
+
+             SessionStore  - Client-side session state store for Angular
+             LocalStore    - Client-side local file system store for Angular
+
+
 
 GENERATING MIGRATIONS
        Migrations are generated code modules that manage portions of the data-
@@ -102,31 +119,31 @@ GENERATING TABLES
              esp generate table TABLE [field:type ...]
 
 
-GENERATING CONTROLLERS
-       Controllers   are  the  primary  mechanism  for  responding  to  client
-       requests. To generate a controller, run:
+GENERATING SERVICES
+       Services are the primary mechanism for responding to client requests. A
+       service is a server-side controller in the MVC paradigm. To generate  a
+       service, run:
 
-             esp generate controller NAME [actions...]
+             esp generate service NAME [actions...]
 
-       This will create a controller of the requested name. It will  create  a
-       controller  source  file  in the controllers directory. If action names
-       are requested, the controller source will define an action  method  for
-       each name. If not action names are requested, esp will define a default
-       action named index.  You can edit the controller source  to  meet  your
-       needs.
+       This will create a service of the requested name. It will create a ser-
+       vice source file  in  the  services  directory.  If  action  names  are
+       requested,  the  service  source  will define an action method for each
+       name. You can edit the service source to meet your needs. It  will  not
+       be overwritten unless you specify the --overwrite switch.
 
 
 GENERATING SCAFFOLDS
-       A  scaffold  is  a generated controller, database migration, and set of
-       views that provides add, edit and list functionality for  the  database
-       table.  Scaffolds are useful to quickly generate chunks of the applica-
-       tion and prototype web pages and actions for managing a database table.
-       To generate a scaffold:
+       A scaffold is a generated service, database migration, client-side con-
+       troller and set of views that provides add, edit and list functionality
+       for  the  database  table.   Scaffolds  are  useful to quickly generate
+       chunks of the application and prototype web pages and actions for  man-
+       aging a database table.  To generate a scaffold:
 
              esp generate scaffold TABLE [field:type ...]
 
        This  will  create a scaffold for the specified database table and will
-       generate a controller of the same name.
+       generate a service of the same name.
 
        If field:type values are supplied, a database migration will be created
        with  code to create a column for each specified field of the requested
@@ -141,16 +158,16 @@ GENERATING SCAFFOLDS
 
 
 COMPILING
-       Esp compiles controllers and ESP pages native  code  shared  libraries.
-       These  are  then  loaded  and run by ESP in response to incoming client
-       requests. Code is compiled only once but can be run many times to  ser-
-       vice incoming requests.
+       Esp compiles services and ESP pages native code shared libraries. These
+       are then loaded and run by ESP in response to incoming client requests.
+       Code is compiled only once but can be run many times to service  incom-
+       ing requests.
 
        In  development  mode, ESP will automatically compile the relevant por-
        tions of the application if the source code is modified. It can  intel-
-       ligently  recompile  controllers  and  ESP pages. However, you can also
-       explicilty recompile portions or the complete appliction  via  the  esp
-       command.
+       ligently recompile services and ESP pages. However, you can also expli-
+       cilty recompile portions or the complete appliction via  the  esp  com-
+       mand.
 
        Esp can recompile everything via:
 
@@ -159,12 +176,10 @@ COMPILING
        This  will  re-compile  all  ESP  pages and MVC applications for routes
        defined in the appweb.conf file.
 
-       Esp also provides options for you to individually  compile  controllers
-       and ESP pages. To recompile named pages or controllers:
+       Esp also provides options for you to individually compile services  and
+       ESP pages. To recompile named pages or services:
 
              esp compile path/*.esp....
-
-             esp compile controller NAMES....
 
             The  arguments  after  "compile"  are  pathname filters. These are
             resolved relative to the current directory.  Only  items  matching
@@ -175,6 +190,19 @@ COMPILING
        file:
 
              esp --flat compile .
+
+            If using this option, you need  to  specify  "flat=true"  on  your
+            EspApp directive in the appweb.conf configuration file.
+
+
+CROSS-COMPILING
+       To  compile  for  a target system of a different architecture, you must
+       specify the target.  To do this, use the -platform  switch  to  specify
+       the  target architecture. Specify the path to the platform directory in
+       the Appweb source code built for that platform.
+
+            esp -platform /home/dev/linux-arm-debug compile
+
 
 RUNNING
        To run your application:
@@ -201,10 +229,10 @@ COMMANDS
 
              esp clean
              esp compile
-             esp compile controller name
+             esp compile service name
              esp compile path/*.esp
              esp generate app name
-             esp generate controller name [action [, action] ...]
+             esp generate service name [action [, action] ...]
              esp generate scaffold model [field:type [, field:type] ...]
              esp generate table name model [field:type [, field:type] ...]
              esp run
@@ -253,8 +281,12 @@ OPTIONS
        --quiet
              Suppress diagnostic trace to the console.
 
-       --platform os-arch-profile
-             Target platform configuration to build for.
+       --platform [path/]os-arch-profile
+             Target platform configuration to build for and directory contain-
+             ing appweb objects and libraries for the target platform.   If  a
+             path is supplied, the specified platform directory is used.  Oth-
+             erwise, esp searches from the current  directory  upwards  for  a
+             parent platform directory.
 
        --rebuild
              Force  a  recompile  of all items when used with the compile com-

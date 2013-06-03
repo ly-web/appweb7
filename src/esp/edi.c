@@ -168,12 +168,6 @@ PUBLIC MprList *ediGetGridColumns(EdiGrid *grid)
     EdiRec      *rec;
     EdiField    *fp;
 
-#if UNUSED
-    // Won't work for pivots
-    if (grid->tableName && grid->tableName) {
-        return ediGetColumns(grid->edi, grid->tableName);
-    }
-#endif
     cols = mprCreateList(0, 0);
     rec = grid->records[0];
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
@@ -821,29 +815,11 @@ PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags)
     first = grid->records[0];
     nrows = first->nfields;
     nfields = grid->nrecords;
-#if UNUSED
-    if (flags & EDI_PIVOT_FIELD_NAMES) {
-        /* One more field in result */
-        nfields++;
-        name = sclone("name");
-    }
-#endif
     result = ediCreateBareGrid(grid->edi, grid->tableName, nrows);
     
     for (c = 0; c < nrows; c++) {
         result->records[c] = rec = ediCreateBareRec(grid->edi, grid->tableName, nfields);
         fp = rec->fields;
-#if UNUSED
-        if (flags & EDI_PIVOT_FIELD_NAMES) {
-            /* Add the field names as the first column */
-            fp->valid = 1;
-            fp->name = name;
-            fp->value = first->fields[c].name;
-            fp->type = EDI_TYPE_STRING;
-            fp->flags = 0;
-            fp++;
-        }
-#endif
         rec->id = first->fields[c].name;
         for (r = 0; r < grid->nrecords; r++) {
             src = &grid->records[r]->fields[c];

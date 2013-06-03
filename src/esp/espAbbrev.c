@@ -196,7 +196,7 @@ PUBLIC cchar *session(cchar *key)
 }
 
 
-PUBLIC cchar *getTop()
+PUBLIC cchar *getAppUri()
 {
     return espGetTop(getConn());
 }
@@ -262,7 +262,7 @@ PUBLIC cchar *makeUri(cchar *target)
 }
 
 
-PUBLIC bool mode(cchar *kind)
+PUBLIC bool modeIs(cchar *kind)
 {
     EspRoute    *eroute;
 
@@ -333,13 +333,19 @@ PUBLIC void redirectBack()
 
 PUBLIC void removeCookie(cchar *name)
 {
-    espSetCookie(getConn(), name, "", "/", NULL, -1, 0);
+    espRemoveCookie(getConn(), name);
 }
 
 
 PUBLIC bool removeRec(cchar *tableName, cchar *key)
 {
     return espRemoveRec(getConn(), tableName, key);
+}
+
+
+PUBLIC void removeSessionVar(cchar *key)
+{
+    httpRemoveSessionVar(getConn(), key);
 }
 
 
@@ -378,12 +384,6 @@ PUBLIC void renderError(int status, cchar *fmt, ...)
 PUBLIC ssize renderFile(cchar *path)
 {
     return espRenderFile(getConn(), path);
-}
-
-
-PUBLIC void renderFlash(cchar *kind, cchar *optionString)
-{
-    espRenderFlash(getConn(), kind, optionString);
 }
 
 
@@ -437,62 +437,8 @@ PUBLIC void renderSecurityToken()
 }
 
 
-#if UNUSED
 /*
-    <% scripts("debug=patterns", release="patterns" %>
-
-    Where patterns may contain *, ** and !pattern for exclusion
- */
-PUBLIC void scripts(cchar *spec, ...)
-{
-    HttpConn    *conn;
-    EspRoute    *eroute;
-    EspReq      *req;
-    va_list     args;
-    MprList     *files;
-    cchar       *indent, *uri, *appMode, *mode, *path;
-    char        *arg, *patterns;
-    int         next;
-
-    conn = getConn();
-    req = conn->data;
-    eroute = req->eroute;
-
-    va_start(args, spec);
-    arg = sclone(spec);
-    files = 0;
-    appMode = mprQueryJson(eroute->top->config, "mode");
-    do {
-        mode = stok(arg, "=", &patterns);
-        if (smatch(appMode, mode)) {
-            files = mprGlobPathFiles(req->eroute->clientDir, patterns, MPR_PATH_RELATIVE);
-            break;
-        }
-        arg = va_arg(args, char*);
-    } while (arg);
-    va_end(args);
-
-    if (!files) {
-        mprError("No scripts defined for current application mode");
-    } else {
-        indent = "";
-        for (ITERATE_ITEMS(files, path, next)) {
-            print("PATH %s", path);
-            uri = httpLink(conn, path, NULL);
-            if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
-                espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
-                espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
-                espRender(conn, "%s<![endif]-->\n", indent);
-            } else {
-                espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
-            }
-            indent = "    ";
-        }
-    }
-}
-#else
-/*
-    <% scripts("debug=patterns", release="patterns" %>
+    <% scripts(patterns); %>
 
     Where patterns may contain *, ** and !pattern for exclusion
  */
@@ -509,22 +455,21 @@ PUBLIC void scripts(cchar *patterns)
 
     if ((files = mprGlobPathFiles(req->eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
         mprError("No scripts defined for current application mode");
-    } else {
-        indent = "";
-        for (ITERATE_ITEMS(files, path, next)) {
-            uri = httpLink(conn, path, NULL);
-            if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
-                espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
-                espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
-                espRender(conn, "%s<![endif]-->\n", indent);
-            } else {
-                espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
-            }
-            indent = "    ";
+        return;
+    }
+    indent = "";
+    for (ITERATE_ITEMS(files, path, next)) {
+        uri = httpLink(conn, path, NULL);
+        if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
+            espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
+            espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
+            espRender(conn, "%s<![endif]-->\n", indent);
+        } else {
+            espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
         }
+        indent = "    ";
     }
 }
-#endif
 
 
 PUBLIC void setConn(HttpConn *conn)
@@ -792,6 +737,12 @@ PUBLIC EdiRec *getRec()
 }
 
 
+PUBLIC cchar *getTop()
+{
+    return getAppUri();
+}
+
+
 PUBLIC bool hasGrid()
 {
     return espHasGrid(getConn());
@@ -814,6 +765,12 @@ PUBLIC void inform(cchar *fmt, ...)
 }
 
 
+PUBLIC void renderFlash(cchar *kind, cchar *optionString)
+{
+    espRenderFlash(getConn(), kind, optionString);
+}
+
+
 PUBLIC void securityToken()
 {
     espSecurityToken(getConn());
@@ -833,6 +790,7 @@ PUBLIC EdiRec *setRec(EdiRec *rec)
 }
 #endif /* DEPRECATED */
 #endif /* BIT_PACK_ESP */
+
 /*
     @copy   default
 

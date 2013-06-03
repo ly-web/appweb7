@@ -61,6 +61,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>char *</type>
+      <name>maGetNextToken</name>
+      <anchorfile>group___ma_appweb.html</anchorfile>
+      <anchor>gaea685e4068bee9c8b2d115c20a3620fb</anchor>
+      <arglist>(char *s, char **tok)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>maGetUserGroup</name>
       <anchorfile>group___ma_appweb.html</anchorfile>

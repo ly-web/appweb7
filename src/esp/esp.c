@@ -1181,20 +1181,6 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         if (runEspCommand(route, eroute->compile, app->csource, app->module) < 0) {
             return;
         }
-#if UNUSED
-        if (eroute->archive) {
-            vtrace("Archive", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
-            if (runEspCommand(route, eroute->archive, app->csource, app->module) < 0) {
-                return;
-            }
-#if !(BIT_DEBUG && MACOSX)
-            /*
-                MAC needs the object for debug information
-             */
-            mprDeletePath(mprJoinPathExt(mprTrimPathExt(app->module), BIT_OBJ));
-#endif
-        } else
-#endif
         if (eroute->link) {
             vtrace("Link", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
             if (runEspCommand(route, eroute->link, app->csource, app->module) < 0) {
@@ -2193,20 +2179,6 @@ static void generateAppConfigFile(HttpRoute *route)
 }
 
 
-#if UNUSED
-static void generateAppHeader(HttpRoute *route)
-{
-    MprHash *tokens;
-    char    *path, *data;
-
-    path = mprJoinPath(route->dir, mprJoinPathExt("esp-app", "h"));
-    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s }", app->appName, spascal(app->appName)));
-    data = stemplate(AppHeader, tokens);
-    makeEspFile(path, data, "Header");
-}
-#endif
-
-
 static void generateAppSrc(HttpRoute *route)
 {
     EspRoute    *eroute;
@@ -2313,7 +2285,6 @@ static void makeEspDir(cchar *path)
 }
 
 
-//  MOB msg UNUSED
 static void makeEspFile(cchar *path, cchar *data, cchar *msg)
 {
     bool    exists;
@@ -2328,8 +2299,6 @@ static void makeEspFile(cchar *path, cchar *data, cchar *msg)
         fail("Cannot write %s", path);
         return;
     }
-    //  MOB - msg UNUSED
-    msg = sfmt("%s: %s", msg, path);
     if (!exists) {
         trace("Create", mprGetRelPath(path, 0));
     } else {

@@ -180,7 +180,7 @@ typedef struct EdiGrid {
 #define EDI_LITERAL         0x8         /**< Literal schema in ediOpen source parameter */
 #define EDI_SUPPRESS_SAVE   0x10        /**< Temporarily suppress auto-save */
 
-#if UNUSED && MOB
+#if UNUSED && KEEP
 /*
     Database flags
  */
