@@ -1239,6 +1239,9 @@ PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *params)
 
 PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec)
 {
+    if (!rec) {
+        return 0;
+    }
     return ediUpdateRec(rec->edi, rec) == 0;
 }
 

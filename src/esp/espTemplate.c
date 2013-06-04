@@ -214,25 +214,22 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
 }
 
 
-static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *module)
+static int runCommand(EspRoute *eroute, cchar *command, cchar *csource, cchar *module, char **errMsg)
 {
-    EspReq      *req;
-    EspRoute    *eroute;
     MprCmd      *cmd;
     MprKey      *var;
     MprList     *elist;
-    cchar       **env;
+    cchar       **env, *commandLine;
     char        *err, *out;
+    int         rc;
 
-    req = conn->data;
-    eroute = req->route->eroute;
-
-    cmd = mprCreateCmd(conn->dispatcher);
-    if ((req->commandLine = espExpandCommand(eroute, command, csource, module)) == 0) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing EspCompile directive for %s", csource);
+    *errMsg = 0;
+    cmd = mprCreateCmd(NULL);
+    if ((commandLine = espExpandCommand(eroute, command, csource, module)) == 0) {
+        *errMsg = sfmt("Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
-    mprTrace(4, "ESP command: %s\n", req->commandLine);
+    mprTrace(4, "ESP command: %s\n", commandLine);
     if (eroute->env) {
         elist = mprCreateList(0, 0);
         for (ITERATE_KEYS(eroute->env, var)) {
@@ -246,17 +243,23 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
     if (eroute->searchPath) {
         mprSetCmdSearchPath(cmd, eroute->searchPath);
     }
-    //  WARNING: GC will run here
-    if (mprRunCmd(cmd, req->commandLine, env, &out, &err, -1, 0) != 0) {
+    /*
+        WARNING: GC will run here
+     */
+    mprHold((void*) commandLine);
+    rc = mprRunCmd(cmd, commandLine, env, &out, &err, -1, 0);
+    mprRelease((void*) commandLine);
+
+    if (rc < 0) {
         if (err == 0 || *err == '\0') {
             /* Windows puts errors to stdout Ugh! */
             err = out;
         }
-        mprError("ESP: Cannot run command %s, error %s", req->commandLine, err);
+        mprError("ESP: Cannot run command %s, error %s", commandLine, err);
         if (eroute->showErrors) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot run command %s, error %s", req->commandLine, err);
+            *errMsg = sfmt("Cannot run command %s, error %s", commandLine, err);
         } else {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot compile view");
+            *errMsg = "Cannot compile view";
         }
         return MPR_ERR_CANT_COMPLETE;
     }
@@ -270,27 +273,24 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
     cacheName   MD5 cache name (not a full path)
     source      ESP source file name
     module      Module file name
+
+WARNING: this routine blocks and runs GC. All parameters must be retained.
  */
-PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, int isView)
+PUBLIC bool espCompile(EspRoute *eroute, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg)
 {
     MprFile     *fp;
-    HttpRx      *rx;
     HttpRoute   *route;
-    EspRoute    *eroute;
-    EspReq      *req;
     cchar       *csource;
     char        *layout, *script, *page, *err;
     ssize       len;
 
-    rx = conn->rx;
-    route = rx->route;
-    req = conn->data;
-    eroute = req->eroute;
+    route = eroute->route;
     layout = 0;
+    *errMsg = 0;
 
     if (isView) {
         if ((page = mprReadPathContents(source, &len)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot read %s", source);
+            *errMsg = sfmt("Cannot read %s", source);
             return 0;
         }
         /*
@@ -299,19 +299,19 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
         if (eroute->layoutsDir) {
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }
-        if ((script = espBuildScript(route, page, source, cacheName, layout, NULL, &err)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot build %s, error %s", source, err);
+        if ((script = espBuildScript(eroute, page, source, cacheName, layout, NULL, &err)) == 0) {
+            *errMsg = sfmt("Cannot build %s, error %s", source, err);
             return 0;
         }
         csource = mprJoinPathExt(mprTrimPathExt(module), ".c");
         mprMakeDir(mprGetPathDir(csource), 0775, 0, -1, 1);
         if ((fp = mprOpenFile(csource, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot open compiled script file %s", csource);
+            *errMsg = sfmt("Cannot open compiled script file %s", csource);
             return 0;
         }
         len = slen(script);
         if (mprWriteFile(fp, script, len) != len) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot write compiled script file %s", csource);
+            *errMsg = sfmt("Cannot write compiled script file %s", csource);
             mprCloseFile(fp);
             return 0;
         }
@@ -322,12 +322,12 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
     mprMakeDir(eroute->cacheDir, 0775, -1, -1, 1);
 
     /* WARNING: GC yield here */
-    if (runCommand(conn, eroute->compile, csource, module) < 0) {
+    if (runCommand(eroute, eroute->compile, csource, module, errMsg) < 0) {
         return 0;
     }
     if (eroute->link) {
         /* WARNING: GC yield here */
-        if (runCommand(conn, eroute->link, csource, module) < 0) {
+        if (runCommand(eroute, eroute->link, csource, module, errMsg) < 0) {
             return 0;
         }
 #if !(BIT_DEBUG && MACOSX)
@@ -458,10 +458,10 @@ static char *joinLine(cchar *str, ssize *lenp)
         @#field             Lookup the current record for the value of the field.
 
  */
-PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
+PUBLIC char *espBuildScript(EspRoute *eroute, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
         EspState *state, char **err)
 {
-    EspRoute    *eroute;
+    HttpRoute   *route;
     EspState    top;
     EspParse    parse;
     MprBuf      *body;
@@ -473,7 +473,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
     assert(page);
 
     *err = 0;
-    eroute = route->eroute;
+    route = eroute->route;
     if (!state) {
         assert(cacheName);
         state = &top;
@@ -538,7 +538,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                     return 0;
                 }
                 /* Recurse and process the include script */
-                if ((incCode = espBuildScript(route, incText, include, NULL, NULL, state, err)) == 0) {
+                if ((incCode = espBuildScript(eroute, incText, include, NULL, NULL, state, err)) == 0) {
                     return 0;
                 }
                 mprPutStringToBuf(body, incCode);
@@ -621,7 +621,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             *err = sfmt("Cannot read layout page: %s", layout);
             return 0;
         }
-        if ((layoutCode = espBuildScript(route, layoutPage, layout, NULL, NULL, state, err)) == 0) {
+        if ((layoutCode = espBuildScript(eroute, layoutPage, layout, NULL, NULL, state, err)) == 0) {
             return 0;
         }
 #if BIT_DEBUG

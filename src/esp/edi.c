@@ -415,7 +415,7 @@ PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec)
 PUBLIC bool ediValidateRec(EdiRec *rec)
 {
     assert(rec->edi);
-    if (rec->edi == 0) {
+    if (rec == 0 || rec->edi == 0) {
         return 0;
     }
     return rec->edi->provider->validateRec(rec->edi, rec);

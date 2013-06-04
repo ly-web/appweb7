@@ -1716,7 +1716,7 @@ static int requestTimeoutDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Require ability|role|secure|user|valid-user names...
+    Require ability|role|secure|user|valid-user
  */
 static int requireDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1752,15 +1752,22 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
         }
         addCondition(state, "secure", age, 0);
 
+#if DEPRECATE || 1 
     } else if (scaselesscmp(type, "user") == 0) {
+        /*
+            Achieve this via abilities
+         */
         httpSetAuthPermittedUsers(state->auth, rest);
 
     } else if (scaselesscmp(type, "valid-user") == 0) {
-        /* DEPRECATED */
+        /*
+            Achieve this via abilities
+         */
         httpSetAuthAnyValidUser(state->auth);
 
     } else if (scaselesscmp(type, "acl") == 0) {
         mprError("The Require acl directive is deprecated. Use Require ability instead.");
+#endif
     } else {
         return configError(state, key);
     }
@@ -2628,6 +2635,7 @@ PUBLIC char *maGetNextToken(char *s, char **tok)
 }
 
 
+//  MOB - move to http
 PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
 {
     MprFile         *file;
@@ -2651,7 +2659,7 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
         mprPutFileChar(file, '\n');
     }
     mprPutFileChar(file, '\n');
-    for (ITERATE_KEY_DATA(auth->users, kp, user)) {
+    for (ITERATE_KEY_DATA(auth->userCache, kp, user)) {
         mprWriteFileFmt(file, "User %s %s %s", user->name, user->password, user->roles);
         mprPutFileChar(file, '\n');
     }

@@ -115,12 +115,22 @@ PUBLIC int httpOpenActionHandler(Http *http)
 
 /********************************* Forwards ***********************************/
 
+#undef  GRADUATE_HASH
+#define GRADUATE_HASH(auth, field) \
+    if (1) { \
+        if (auth->parent && auth->field && auth->field == auth->parent->field) { \
+            auth->field = mprCloneHash(auth->parent->field); \
+        } else { \
+            auth->field = mprCreateHash(0, -1); \
+        } \
+    }
+
 static void computeAbilities(HttpAuth *auth, MprHash *abilities, cchar *role);
 static void manageAuth(HttpAuth *auth, int flags);
 static void manageRole(HttpRole *role, int flags);
 static void manageUser(HttpUser *user, int flags);
 static void formLogin(HttpConn *conn);
-static bool fileVerifyUser(HttpConn *conn);
+static bool fileVerifyUser(HttpConn *conn, cchar *username, cchar *password);
 
 /*********************************** Code *************************************/
 
@@ -131,79 +141,108 @@ PUBLIC void httpInitAuth(Http *http)
     httpAddAuthType("form", formLogin, NULL, NULL);
 
 #if BIT_HAS_PAM && BIT_HTTP_PAM
-    /*
-        Pam must be actively selected during configuration
-        TODO - should support Windows ActiveDirectory
-     */
+    httpAddAuthStore("app", NULL);
     httpAddAuthStore("system", httpPamVerifyUser);
-    //  DEPRECATED
-    httpAddAuthStore("pam", httpPamVerifyUser);
 #endif
     httpAddAuthStore("internal", fileVerifyUser);
-    //  DEPRECATED
+#if DEPRECATE || 1
+    /*
+        Deprecated in 4.4
+     */
     httpAddAuthStore("file", fileVerifyUser);
-    httpAddAuthStore("app", NULL);
+    httpAddAuthStore("pam", httpPamVerifyUser);
+#endif
 }
 
 
-PUBLIC int httpAuthenticate(HttpConn *conn)
+PUBLIC bool httpLoggedIn(HttpConn *conn)
 {
     HttpRx      *rx;
-    HttpAuth    *auth;
-    HttpRoute   *route;
-    HttpSession *session;
-    cchar       *version;
-    bool        cached;
+    cchar       *username;
 
     rx = conn->rx;
-    if (rx->flags & HTTP_AUTH_CHECKED) {
-        return rx->authenticated;
+    if (!rx->authenticated) {
+        if ((username = httpGetSessionVar(conn, HTTP_SESSION_USERNAME, 0)) == 0) {
+            return 0;
+        }
+        mprLog(5, "Using cached authentication data for user %s", username);
+        conn->username = username;
+        rx->authenticated = 1;
     }
-    rx->flags |= HTTP_AUTH_CHECKED;
-
-    route = rx->route;
-    auth = route->auth;
-    assert(auth);
-    mprLog(5, "Checking user authentication user %s on route %s", conn->username, route->name);
-
-    cached = 0;
-    if (rx->cookie && (session = httpGetSession(conn, 0)) != 0) {
-        if ((conn->username = (char*) httpGetSessionVar(conn, HTTP_SESSION_USERNAME, 0)) != 0) {
-            version = httpGetSessionVar(conn, HTTP_SESSION_AUTHVER, 0);
-            if (stoi(version) == auth->version) {
-                mprLog(5, "Using cached authentication data for user %s", conn->username);
-                cached = 1;
-            }
-        }
-    }
-    if (!cached) {
-        if (conn->authType && !smatch(conn->authType, auth->type->name)) {
-            httpError(conn, HTTP_CODE_BAD_REQUEST, "Access denied. Wrong authentication protocol type.");
-            return 0;
-        }
-        if (rx->authDetails && (auth->type->parseAuth)(conn) < 0) {
-            httpError(conn, HTTP_CODE_BAD_REQUEST, "Access denied. Bad authentication data.");
-            return 0;
-        }
-        if (!conn->username) {
-            return 0;
-        }
-        if (!(auth->store->verifyUser)(conn)) {
-            return 0;
-        }
-        /*
-            Store authentication state and user in session storage
-         */
-        if ((session = httpCreateSession(conn)) != 0) {
-            httpSetSessionVar(conn, HTTP_SESSION_AUTHVER, itos(auth->version));
-            httpSetSessionVar(conn, HTTP_SESSION_USERNAME, conn->username);
-        }
-    }
-    rx->authenticated = 1;
     return 1;
 }
 
 
+/*
+    Get the username and password credentials. If using an in-protocol auth scheme like basic|digest, the
+    rx->authDetails will contain the credentials and the getCredentials callback will be invoked to parse.
+    Otherwise, it is expected that "username" and "password" fields are present in the request parameters.
+ */
+PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **password)
+{
+    HttpAuth    *auth;
+
+    auth = conn->rx->route->auth;
+    if (auth->type) {
+        if (conn->authType && !smatch(conn->authType, auth->type->name)) {
+            httpError(conn, HTTP_CODE_BAD_REQUEST, "Access denied. Wrong authentication protocol type.");
+            return 0;
+        }
+        if ((auth->type->getCredentials)(conn, username, password) < 0) {
+            httpError(conn, HTTP_CODE_BAD_REQUEST, "Access denied. Bad authentication data.");
+            return 0;
+        }
+    } else {
+        *username = httpGetParam(conn, "username", 0);
+        *password = httpGetParam(conn, "password", 0);
+    }
+    return 1;
+}
+
+
+/*
+    Login the user and create an authenticated session state store
+ */
+PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
+{
+    HttpRx      *rx;
+    HttpAuth    *auth;
+    HttpSession *session;
+
+    rx = conn->rx;
+    auth = rx->route->auth;
+    if (!username || !*username) {
+        mprTrace(5, "httpLogin missing username");
+        return 0;
+    }
+    if (!(auth->store->verifyUser)(conn, username, password)) {
+        return 0;
+    }
+    if ((session = httpCreateSession(conn)) == 0) {
+        return 0;
+    }
+    httpSetSessionVar(conn, HTTP_SESSION_USERNAME, username);
+    rx->authenticated = 1;
+    conn->username = sclone(username);
+    conn->encoded = 0;
+    return 1;
+}
+
+
+/*
+    Log the user out and remove the authentication username from the session state
+ */
+PUBLIC void httpLogout(HttpConn *conn) 
+{
+    conn->rx->authenticated = 0;
+    httpRemoveSessionVar(conn, HTTP_SESSION_USERNAME);
+}
+
+
+/*
+    Test if the user has the requisite abilities to perform an action. Abilities may be explicitly defined or if NULL,
+    the abilities specified by the route are used.
+ */
 PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities)
 {
     HttpAuth    *auth;
@@ -211,11 +250,13 @@ PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities)
     MprKey      *kp;
 
     auth = conn->rx->route->auth;
+#if DEPRECATE || 1
     if (auth->permittedUsers && !mprLookupKey(auth->permittedUsers, conn->username)) {
         mprLog(2, "User \"%s\" is not specified as a permitted user to access %s", conn->username, conn->rx->pathInfo);
         return 0;
     }
-    if (!auth->requiredAbilities) {
+#endif
+    if (!auth->abilities && !abilities) {
         /* No abilities are required */
         return 1;
     }
@@ -223,11 +264,9 @@ PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities)
         /* User not authenticated */
         return 0;
     }
-    if (!conn->user) {
-        if (auth->users == 0 || (conn->user = mprLookupKey(auth->users, conn->username)) == 0) {
-            mprLog(2, "Cannot find user %s", conn->username);
-            return 0;
-        }
+    if (!conn->user && (conn->user = mprLookupKey(auth->userCache, conn->username)) == 0) {
+        mprLog(2, "Cannot find user %s", conn->username);
+        return 0;
     }
     if (abilities) {
         for (ability = stok(sclone(abilities), " \t,", &tok); abilities; abilities = stok(NULL, " \t,", &tok)) {
@@ -238,7 +277,7 @@ PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities)
             }
         }
     } else {
-        for (ITERATE_KEYS(auth->requiredAbilities, kp)) {
+        for (ITERATE_KEYS(auth->abilities, kp)) {
             if (!mprLookupKey(conn->user->abilities, kp->key)) {
                 mprLog(2, "User \"%s\" does not possess the required ability: \"%s\" to access %s", 
                     conn->username, kp->key, conn->rx->pathInfo);
@@ -247,39 +286,6 @@ PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities)
         }
     }
     return 1;
-}
-
-
-PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
-{
-    HttpAuth    *auth;
-    HttpSession *session;
-
-    auth = conn->rx->route->auth;
-    if (!username || !*username) {
-        mprTrace(5, "httpLogin missing username");
-        return 0;
-    }
-    conn->username = sclone(username);
-    conn->password = sclone(password);
-    conn->encoded = 0;
-    if (!(auth->store->verifyUser)(conn)) {
-        return 0;
-    }
-    if ((session = httpCreateSession(conn)) == 0) {
-        return 0;
-    } else {
-        httpSetSessionVar(conn, HTTP_SESSION_AUTHVER, itos(auth->version));
-        httpSetSessionVar(conn, HTTP_SESSION_USERNAME, conn->username);
-    }
-    return 1;
-}
-
-
-PUBLIC void httpLogout(HttpConn *conn) 
-{
-    httpRemoveSessionVar(conn, HTTP_SESSION_USERNAME);
-    httpRemoveSessionVar(conn, HTTP_SESSION_AUTHVER);
 }
 
 
@@ -296,7 +302,9 @@ PUBLIC HttpAuth *httpCreateAuth()
     if ((auth = mprAllocObj(HttpAuth, manageAuth)) == 0) {
         return 0;
     }
+#if UNUSED
     httpSetAuthStore(auth, "internal");
+#endif
     return auth;
 }
 
@@ -317,11 +325,12 @@ PUBLIC HttpAuth *httpCreateInheritedAuth(HttpAuth *parent)
         auth->flags = parent->flags;
         auth->qop = parent->qop;
         auth->realm = parent->realm;
+#if DEPRECATE || 1
         auth->permittedUsers = parent->permittedUsers;
-        auth->requiredAbilities = parent->requiredAbilities;
-        auth->users = parent->users;
+#endif
+        auth->abilities = parent->abilities;
+        auth->userCache = parent->userCache;
         auth->roles = parent->roles;
-        auth->version = parent->version;
         auth->loggedIn = parent->loggedIn;
         auth->loginPage = parent->loginPage;
         auth->parent = parent;
@@ -337,13 +346,15 @@ static void manageAuth(HttpAuth *auth, int flags)
         mprMark(auth->deny);
         mprMark(auth->loggedIn);
         mprMark(auth->loginPage);
+#if DEPRECATE || 1
         mprMark(auth->permittedUsers);
+#endif
         mprMark(auth->qop);
         mprMark(auth->realm);
-        mprMark(auth->requiredAbilities);
+        mprMark(auth->abilities);
         mprMark(auth->store);
         mprMark(auth->type);
-        mprMark(auth->users);
+        mprMark(auth->userCache);
         mprMark(auth->roles);
     }
 }
@@ -357,7 +368,7 @@ static void manageAuthType(HttpAuthType *type, int flags)
 }
 
 
-PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpParseAuth parseAuth, HttpSetAuth setAuth)
+PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpGetCredentials getCredentials, HttpSetAuth setAuth)
 {
     Http            *http;
     HttpAuthType    *type;
@@ -368,7 +379,7 @@ PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpParseAuth par
     }
     type->name = sclone(name);
     type->askLogin = askLogin;
-    type->parseAuth = parseAuth;
+    type->getCredentials = getCredentials;
     type->setAuth = setAuth;
 
     if (mprAddKey(http->authTypes, name, type) == 0) {
@@ -386,9 +397,6 @@ static void manageAuthStore(HttpAuthStore *store, int flags)
 }
 
 
-/*
-    Add a password store backend
- */
 PUBLIC int httpAddAuthStore(cchar *name, HttpVerifyUser verifyUser)
 {
     Http            *http;
@@ -423,17 +431,17 @@ PUBLIC int httpSetAuthStoreVerify(cchar *name, HttpVerifyUser verifyUser)
 
 PUBLIC void httpSetAuthAllow(HttpAuth *auth, cchar *allow)
 {
-    if (auth->allow == 0 || (auth->parent && auth->parent->allow == auth->allow)) {
-        auth->allow = mprCreateHash(-1, MPR_HASH_STATIC_VALUES);
-    }
+    GRADUATE_HASH(auth, allow);
     mprAddKey(auth->allow, sclone(allow), auth);
 }
 
 
+#if DEPRECATE || 1
 PUBLIC void httpSetAuthAnyValidUser(HttpAuth *auth)
 {
     auth->permittedUsers = 0;
 }
+#endif
 
 
 PUBLIC void httpSetAuthAutoLogin(HttpAuth *auth, bool on)
@@ -450,18 +458,16 @@ PUBLIC void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities)
 {
     char    *ability, *tok;
 
-    auth->requiredAbilities = mprCreateHash(0, 0);
+    GRADUATE_HASH(auth, abilities);
     for (ability = stok(sclone(abilities), " \t,", &tok); abilities; abilities = stok(NULL, " \t,", &tok)) {
-        computeAbilities(auth, auth->requiredAbilities, ability);
+        computeAbilities(auth, auth->abilities, ability);
     }
 }
 
 
 PUBLIC void httpSetAuthDeny(HttpAuth *auth, cchar *client)
 {
-    if (auth->deny == 0 || (auth->parent && auth->parent->deny == auth->deny)) {
-        auth->deny = mprCreateHash(-1, MPR_HASH_STATIC_VALUES);
-    }
+    GRADUATE_HASH(auth, deny);
     mprAddKey(auth->deny, sclone(client), auth);
 }
 
@@ -510,7 +516,7 @@ static void loginServiceProc(HttpConn *conn)
 
 static void logoutServiceProc(HttpConn *conn)
 {
-    httpRemoveSessionVar(conn, HTTP_SESSION_USERNAME);
+    httpLogout(conn);
     httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, conn->rx->route->auth->loginPage);
 }
 
@@ -579,19 +585,23 @@ PUBLIC void httpSetAuthQop(HttpAuth *auth, cchar *qop)
 PUBLIC void httpSetAuthRealm(HttpAuth *auth, cchar *realm)
 {
     auth->realm = sclone(realm);
-    auth->version = ((Http*) MPR->httpService)->nextAuth++;
 }
 
 
+#if DEPRECATED || 1
+/*
+    Can achieve this via abilities
+ */
 PUBLIC void httpSetAuthPermittedUsers(HttpAuth *auth, cchar *users)
 {
     char    *user, *tok;
 
-    auth->permittedUsers = mprCreateHash(0, 0);
+    GRADUATE_HASH(auth, permittedUsers);
     for (user = stok(sclone(users), " \t,", &tok); users; users = stok(NULL, " \t,", &tok)) {
         mprAddKey(auth->permittedUsers, user, user);
     }
 }
+#endif
 
 
 PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store)
@@ -614,7 +624,7 @@ PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store)
         return MPR_ERR_BAD_ARGS;
 #endif
     }
-    auth->version = ((Http*) MPR->httpService)->nextAuth++;
+    GRADUATE_HASH(auth, userCache);
     return 0;
 }
 
@@ -628,7 +638,6 @@ PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *type, cchar *details)
         mprError("Cannot find auth type %s", type);
         return MPR_ERR_CANT_FIND;
     }
-    auth->version = ((Http*) MPR->httpService)->nextAuth++;
     return 0;
 }
 
@@ -672,15 +681,7 @@ PUBLIC int httpAddRole(HttpAuth *auth, cchar *name, cchar *abilities)
 {
     HttpRole    *role;
 
-    if (auth->roles == 0) {
-        auth->roles = mprCreateHash(0, 0);
-        auth->version = ((Http*) MPR->httpService)->nextAuth++;
-
-    } else if (auth->parent && auth->parent->roles == auth->roles) {
-        /* Inherit parent roles */
-        auth->roles = mprCloneHash(auth->parent->roles);
-        auth->version = ((Http*) MPR->httpService)->nextAuth++;
-    }
+    GRADUATE_HASH(auth, roles);
     if (mprLookupKey(auth->roles, name)) {
         return MPR_ERR_ALREADY_EXISTS;
     }
@@ -705,7 +706,7 @@ PUBLIC int httpRemoveRole(HttpAuth *auth, cchar *role)
 }
 
 
-PUBLIC HttpUser *httpCreateUser(HttpAuth *auth, cchar *name, cchar *password, cchar *roles)
+static HttpUser *createUser(HttpAuth *auth, cchar *name, cchar *password, cchar *roles)
 {
     HttpUser    *user;
 
@@ -733,37 +734,38 @@ static void manageUser(HttpUser *user, int flags)
 }
 
 
-PUBLIC int httpAddUser(HttpAuth *auth, cchar *name, cchar *password, cchar *roles)
+PUBLIC HttpUser *httpAddUser(HttpAuth *auth, cchar *name, cchar *password, cchar *roles)
 {
     HttpUser    *user;
 
-    if (auth->users == 0) {
-        auth->users = mprCreateHash(-1, 0);
-        auth->version = ((Http*) MPR->httpService)->nextAuth++;
-
-    } else if (auth->parent && auth->parent->users == auth->users) {
-        auth->users = mprCloneHash(auth->parent->users);
-        auth->version = ((Http*) MPR->httpService)->nextAuth++;
+    if (!auth->userCache) {
+        auth->userCache = mprCreateHash(0, -1);
     }
-    if (mprLookupKey(auth->users, name)) {
-        return MPR_ERR_ALREADY_EXISTS;
+    if (mprLookupKey(auth->userCache, name)) {
+        return 0;
     }
-    if ((user = httpCreateUser(auth, name, password, roles)) == 0) {
-        return MPR_ERR_MEMORY;
+    if ((user = createUser(auth, name, password, roles)) == 0) {
+        return 0;
     }
-    if (mprAddKey(auth->users, name, user) == 0) {
-        return MPR_ERR_MEMORY;
+    if (mprAddKey(auth->userCache, name, user) == 0) {
+        return 0;
     }
-    return 0;
+    return user;
 }
 
 
-PUBLIC int httpRemoveUser(HttpAuth *auth, cchar *user)
+PUBLIC HttpUser *httpLookupUser(HttpAuth *auth, cchar *name)
 {
-    if (auth->users == 0 || !mprLookupKey(auth->users, user)) {
+    return mprLookupKey(auth->userCache, name);
+}
+
+
+PUBLIC int httpRemoveUser(HttpAuth *auth, cchar *name)
+{
+    if (!mprLookupKey(auth->userCache, name)) {
         return MPR_ERR_CANT_ACCESS;
     }
-    mprRemoveKey(auth->users, user);
+    mprRemoveKey(auth->userCache, name);
     return 0;
 }
 
@@ -822,7 +824,7 @@ PUBLIC void httpComputeAllUserAbilities(HttpAuth *auth)
     MprKey      *kp;
     HttpUser    *user;
 
-    for (ITERATE_KEY_DATA(auth->users, kp, user)) {
+    for (ITERATE_KEY_DATA(auth->userCache, kp, user)) {
         httpComputeUserAbilities(auth, user);
     }
 }
@@ -831,7 +833,7 @@ PUBLIC void httpComputeAllUserAbilities(HttpAuth *auth)
 /*
     Verify the user password based on the internal users set. This is used when not using PAM or custom verification.
  */
-static bool fileVerifyUser(HttpConn *conn)
+static bool fileVerifyUser(HttpConn *conn, cchar *username, cchar *password)
 {
     HttpRx      *rx;
     HttpAuth    *auth;
@@ -840,23 +842,23 @@ static bool fileVerifyUser(HttpConn *conn)
     rx = conn->rx;
     auth = rx->route->auth;
     if (!conn->encoded) {
-        conn->password = mprGetMD5(sfmt("%s:%s:%s", conn->username, auth->realm, conn->password));
+        password = mprGetMD5(sfmt("%s:%s:%s", username, auth->realm, password));
         conn->encoded = 1;
     }
-    if (!conn->user && (conn->user = mprLookupKey(auth->users, conn->username)) == 0) {
-        mprLog(5, "fileVerifyUser: Unknown user \"%s\" for route %s", conn->username, rx->route->name);
+    if (!conn->user && (conn->user = mprLookupKey(auth->userCache, username)) == 0) {
+        mprLog(5, "fileVerifyUser: Unknown user \"%s\" for route %s", username, rx->route->name);
         return 0;
     }
     if (rx->passwordDigest) {
         /* Digest authentication computes a digest using the password as one ingredient */
-        success = smatch(conn->password, rx->passwordDigest);
+        success = smatch(password, rx->passwordDigest);
     } else {
-        success = smatch(conn->password, conn->user->password);
+        success = smatch(password, conn->user->password);
     }
     if (success) {
-        mprLog(5, "User \"%s\" authenticated for route %s", conn->username, rx->route->name);
+        mprLog(5, "User \"%s\" authenticated for route %s", username, rx->route->name);
     } else {
-        mprLog(5, "Password for user \"%s\" failed to authenticate for route %s", conn->username, rx->route->name);
+        mprLog(5, "Password for user \"%s\" failed to authenticate for route %s", username, rx->route->name);
     }
     return success;
 }
@@ -870,6 +872,13 @@ static void formLogin(HttpConn *conn)
     httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, conn->rx->route->auth->loginPage);
 }
 
+
+PUBLIC void httpSetConnUser(HttpConn *conn, HttpUser *user)
+{
+    conn->user = user;
+}
+
+#undef  GRADUATE_HASH
 
 /*
     @copy   default
@@ -911,23 +920,23 @@ static void formLogin(HttpConn *conn)
 /*
     Parse the client 'Authorization' header and the server 'Www-Authenticate' header
  */
-PUBLIC int httpBasicParse(HttpConn *conn)
+PUBLIC int httpBasicParse(HttpConn *conn, cchar **username, cchar **password)
 {
     HttpRx  *rx;
     char    *decoded, *cp;
 
-    if (conn->endpoint) {
-        rx = conn->rx;
-        if ((decoded = mprDecode64(rx->authDetails)) == 0) {
-            return MPR_ERR_BAD_FORMAT;
-        }
-        if ((cp = strchr(decoded, ':')) != 0) {
-            *cp++ = '\0';
-        }
-        conn->username = sclone(decoded);
-        conn->password = sclone(cp);
-        conn->encoded = 0;
+    assert(conn->endpoint);
+
+    rx = conn->rx;
+    if ((decoded = mprDecode64(rx->authDetails)) == 0) {
+        return MPR_ERR_BAD_FORMAT;
     }
+    if ((cp = strchr(decoded, ':')) != 0) {
+        *cp++ = '\0';
+    }
+    conn->encoded = 0;
+    *username = sclone(decoded);
+    *password = sclone(cp);
     return 0;
 }
 
@@ -949,9 +958,9 @@ PUBLIC void httpBasicLogin(HttpConn *conn)
     Add the client 'Authorization' header for authenticated requests
     NOTE: Can do this without first getting a 401 response
  */
-PUBLIC bool httpBasicSetHeaders(HttpConn *conn)
+PUBLIC bool httpBasicSetHeaders(HttpConn *conn, cchar *username, cchar *password)
 {
-    httpAddHeader(conn, "Authorization", "basic %s", mprEncode64(sfmt("%s:%s", conn->username, conn->password)));
+    httpAddHeader(conn, "Authorization", "basic %s", mprEncode64(sfmt("%s:%s", username, password)));
     return 1;
 }
 
@@ -1949,7 +1958,7 @@ static void setDefaultHeaders(HttpConn *conn)
     }
     if (conn->username && conn->authType) {
         if ((ap = httpLookupAuthType(conn->authType)) != 0) {
-            if ((ap->setAuth)(conn)) {
+            if ((ap->setAuth)(conn, conn->username, conn->password)) {
                 conn->authRequested = 1;
             }
         }
@@ -2031,12 +2040,11 @@ PUBLIC bool httpNeedRetry(HttpConn *conn, char **url)
             httpFormatError(conn, rx->status, "Authentication failed");
         } else {
             if (conn->authType && (authType = httpLookupAuthType(conn->authType)) != 0) {
-                (authType->parseAuth)(conn);
+                (authType->getCredentials)(conn, NULL, NULL);
             }
             return 1;
         }
-    } else if (HTTP_CODE_MOVED_PERMANENTLY <= rx->status && rx->status <= HTTP_CODE_MOVED_TEMPORARILY && 
-            conn->followRedirects) {
+    } else if (HTTP_CODE_MOVED_PERMANENTLY <= rx->status && rx->status <= HTTP_CODE_MOVED_TEMPORARILY && conn->followRedirects) {
         if (rx->redirect) {
             *url = rx->redirect;
             return 1;
@@ -2799,12 +2807,14 @@ PUBLIC void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier)
  */
 PUBLIC void httpSetCredentials(HttpConn *conn, cchar *username, cchar *password, cchar *authType)
 {
+    char    *ptok;
+
     httpResetCredentials(conn);
-    conn->username = sclone(username);
     if (password == NULL && strchr(username, ':') != 0) {
-        conn->username = stok(conn->username, ":", &conn->password);
-        conn->password = sclone(conn->password);
+        conn->username = stok(sclone(username), ":", &ptok);
+        conn->password = sclone(ptok);
     } else {
+        conn->username = sclone(username);
         conn->password = sclone(password);
     }
     if (authType) {
@@ -3012,7 +3022,7 @@ static int parseDigestNonce(char *nonce, cchar **secret, cchar **realm, MprTime 
 /*
     Parse the client 'Authorization' header and the server 'Www-Authenticate' header
  */
-PUBLIC int httpDigestParse(HttpConn *conn)
+PUBLIC int httpDigestParse(HttpConn *conn, cchar **username, cchar **password)
 {
     HttpRx      *rx;
     DigestData  *dp;
@@ -3024,6 +3034,8 @@ PUBLIC int httpDigestParse(HttpConn *conn)
     dp = conn->authData = mprAllocObj(DigestData, manageDigestData);
     rx = conn->rx;
     key = sclone(rx->authDetails);
+    *password = 0;
+    *username = 0;
 
     while (*key) {
         while (*key && isspace((uchar) *key)) {
@@ -3117,7 +3129,9 @@ PUBLIC int httpDigestParse(HttpConn *conn)
                 dp->realm = sclone(value);
             } else if (scaselesscmp(key, "response") == 0) {
                 /* Store the response digest in the password field. This is MD5(user:realm:password) */
-                conn->password = sclone(value);
+                if (password) {
+                    *password = sclone(value);
+                }
                 conn->encoded = 1;
             }
             break;
@@ -3131,7 +3145,9 @@ PUBLIC int httpDigestParse(HttpConn *conn)
             if (scaselesscmp(key, "uri") == 0) {
                 dp->uri = sclone(value);
             } else if (scaselesscmp(key, "username") == 0 || scaselesscmp(key, "user") == 0) {
-                conn->username = sclone(value);
+                if (username) {
+                    *username = sclone(value);
+                }
             }
             break;
 
@@ -3149,7 +3165,10 @@ PUBLIC int httpDigestParse(HttpConn *conn)
             }
         }
     }
-    if (conn->username == 0 || conn->password == 0) {
+    if (username && *username == 0) {
+        return MPR_ERR_BAD_FORMAT;
+    }
+    if (password && *password == 0) {
         return MPR_ERR_BAD_FORMAT;
     }
     if (dp->realm == 0 || dp->nonce == 0 || dp->uri == 0) {
@@ -3236,7 +3255,7 @@ PUBLIC void httpDigestLogin(HttpConn *conn)
     Add the client 'Authorization' header for authenticated requests
     Must first get a 401 response to get the authData.
  */
-PUBLIC bool httpDigestSetHeaders(HttpConn *conn)
+PUBLIC bool httpDigestSetHeaders(HttpConn *conn, cchar *username, cchar *password)
 { 
     Http        *http;
     HttpTx      *tx;
@@ -3250,18 +3269,18 @@ PUBLIC bool httpDigestSetHeaders(HttpConn *conn)
         return 0;
     }
     cnonce = sfmt("%s:%s:%x", http->secret, dp->realm, (int) http->now);
-    ha1 = mprGetMD5(sfmt("%s:%s:%s", conn->username, dp->realm, conn->password));
+    ha1 = mprGetMD5(sfmt("%s:%s:%s", username, dp->realm, password));
     ha2 = mprGetMD5(sfmt("%s:%s", tx->method, tx->parsedUri->path));
     if (smatch(dp->qop, "auth")) {
         digest = mprGetMD5(sfmt("%s:%s:%08x:%s:%s:%s", ha1, dp->nonce, dp->nc, cnonce, dp->qop, ha2));
         httpAddHeader(conn, "Authorization", "Digest username=\"%s\", realm=\"%s\", domain=\"%s\", "
             "algorithm=\"MD5\", qop=\"%s\", cnonce=\"%s\", nc=\"%08x\", nonce=\"%s\", opaque=\"%s\", "
-            "stale=\"FALSE\", uri=\"%s\", response=\"%s\"", conn->username, dp->realm, dp->domain, dp->qop, 
+            "stale=\"FALSE\", uri=\"%s\", response=\"%s\"", username, dp->realm, dp->domain, dp->qop, 
             cnonce, dp->nc, dp->nonce, dp->opaque, tx->parsedUri->path, digest);
     } else {
         digest = mprGetMD5(sfmt("%s:%s:%s", ha1, dp->nonce, ha2));
         httpAddHeader(conn, "Authorization", "Digest username=\"%s\", realm=\"%s\", nonce=\"%s\", "
-            "uri=\"%s\", response=\"%s\"", conn->username, dp->realm, dp->nonce, tx->parsedUri->path, digest);
+            "uri=\"%s\", response=\"%s\"", username, dp->realm, dp->nonce, tx->parsedUri->path, digest);
     }
     return 1;
 }
@@ -3304,7 +3323,7 @@ static char *calcDigest(HttpConn *conn, DigestData *dp)
 
     auth = conn->rx->route->auth;
     if (!conn->user) {
-        conn->user = mprLookupKey(auth->users, conn->username);
+        conn->user = mprLookupKey(auth->userCache, conn->username);
     }
     assert(conn->user && conn->user->password);
     if (conn->user == 0 || conn->user->password == 0) {
@@ -6558,7 +6577,7 @@ static int pamChat(int msgCount, const struct pam_message **msg, struct pam_resp
 
 /*********************************** Code *************************************/
 
-PUBLIC bool httpPamVerifyUser(HttpConn *conn)
+PUBLIC bool httpPamVerifyUser(HttpConn *conn, cchar *username, cchar *password)
 {
     MprBuf              *abilities;
     pam_handle_t        *pamh;
@@ -6567,26 +6586,26 @@ PUBLIC bool httpPamVerifyUser(HttpConn *conn)
     struct group        *gp;
     int                 res, i;
    
-    assert(conn->username);
-    assert(conn->password);
+    assert(username);
+    assert(password);
     assert(!conn->encoded);
 
-    info.name = (char*) conn->username;
-    info.password = (char*) conn->password;
+    info.name = (char*) username;
+    info.password = (char*) password;
     pamh = NULL;
     if ((res = pam_start("login", info.name, &conv, &pamh)) != PAM_SUCCESS) {
         return 0;
     }
     if ((res = pam_authenticate(pamh, PAM_DISALLOW_NULL_AUTHTOK)) != PAM_SUCCESS) {
         pam_end(pamh, PAM_SUCCESS);
-        mprTrace(5, "httpPamVerifyUser failed to verify %s", conn->username);
+        mprTrace(5, "httpPamVerifyUser failed to verify %s", username);
         return 0;
     }
     pam_end(pamh, PAM_SUCCESS);
-    mprTrace(5, "httpPamVerifyUser verified %s", conn->username);
+    mprTrace(5, "httpPamVerifyUser verified %s", username);
 
     if (!conn->user) {
-        conn->user = mprLookupKey(conn->rx->route->auth->users, conn->username);
+        conn->user = mprLookupKey(conn->rx->route->auth->userCache, username);
     }
     if (!conn->user) {
         Gid     groups[32];
@@ -6595,7 +6614,7 @@ PUBLIC bool httpPamVerifyUser(HttpConn *conn)
             Create a temporary user with a abilities set to the groups 
          */
         ngroups = sizeof(groups) / sizeof(Gid);
-        if ((i = getgrouplist(conn->username, 99999, groups, &ngroups)) >= 0) {
+        if ((i = getgrouplist(username, 99999, groups, &ngroups)) >= 0) {
             abilities = mprCreateBuf(0, 0);
             for (i = 0; i < ngroups; i++) {
                 if ((gp = getgrgid(groups[i])) != 0) {
@@ -6603,11 +6622,11 @@ PUBLIC bool httpPamVerifyUser(HttpConn *conn)
                 }
             }
             mprAddNullToBuf(abilities);
-            mprTrace(5, "Create temp user \"%s\" with abilities: %s", conn->username, mprGetBufStart(abilities));
+            mprTrace(5, "Create temp user \"%s\" with abilities: %s", username, mprGetBufStart(abilities));
             /*
                 Create a user and map groups to roles and expand to abilities
              */
-            conn->user = httpCreateUser(conn->rx->route->auth, conn->username, 0, mprGetBufStart(abilities));
+            conn->user = httpAddUser(conn->rx->route->auth, username, 0, mprGetBufStart(abilities));
         }
     }
     return 1;
@@ -8307,6 +8326,7 @@ static bool fixRangeLength(HttpConn *conn)
 
 /********************************** Forwards **********************************/
 
+#undef  GRADUATE_LIST
 #define GRADUATE_LIST(route, field) \
     if (route->field == 0) { \
         route->field = mprCreateList(-1, 0); \
@@ -8314,6 +8334,7 @@ static bool fixRangeLength(HttpConn *conn)
         route->field = mprCloneList(route->parent->field); \
     }
 
+#undef  GRADUATE_HASH
 #define GRADUATE_HASH(route, field) \
     assert(route->field) ; \
     if (route->parent && route->field == route->parent->field) { \
@@ -8681,7 +8702,6 @@ PUBLIC void httpRouteRequest(HttpConn *conn)
             next = 0;
             route = 0;
             rewrites++;
-            rx->flags &= ~HTTP_AUTH_CHECKED;
 
         } else if (match == HTTP_ROUTE_OK) {
             break;
@@ -9555,7 +9575,6 @@ PUBLIC void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags)
 PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix)
 {
     assert(route);
-    //  MOB - must put code to map "/" to NULL
     assert(!smatch(prefix, "/"));
     
     if (prefix && *prefix) {
@@ -10365,6 +10384,7 @@ static int allowDenyCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 {
     HttpAuth    *auth;
+    cchar       *username, *password;
 
     assert(conn);
     assert(route);
@@ -10374,12 +10394,15 @@ static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
         /* Authentication not required */
         return HTTP_ROUTE_OK;
     }
-    if (!httpAuthenticate(conn)) {
-        if (!conn->tx->finalized && route->auth && route->auth->type) {
-            (route->auth->type->askLogin)(conn);
+    if (!httpLoggedIn(conn)) {
+        httpGetCredentials(conn, &username, &password);
+        if (!httpLogin(conn, username, password)) {
+            if (!conn->tx->finalized && route->auth && route->auth->type) {
+                (route->auth->type->askLogin)(conn);
+            }
+            /* Request has been denied and fully handled */
+            return HTTP_ROUTE_OK;
         }
-        /* Request has been denied and fully handled */
-        return HTTP_ROUTE_OK;
     }
     if (!httpCanUser(conn, NULL)) {
         httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied. User is not authorized for access.");
@@ -10394,12 +10417,20 @@ static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 static int unauthorizedCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 {
     HttpAuth    *auth;
+    cchar       *username, *password;
 
     auth = route->auth;
     if (!auth || !auth->type || auth->flags & HTTP_AUTO_LOGIN) {
         return HTTP_ROUTE_REJECT;
     }
-    return httpAuthenticate(conn) ? HTTP_ROUTE_REJECT : HTTP_ROUTE_OK;
+    if (httpLoggedIn(conn)) {
+        return HTTP_ROUTE_REJECT;
+    }
+    httpGetCredentials(conn, &username, &password);
+    if (httpLogin(conn, username, password)) {
+        return HTTP_ROUTE_REJECT;
+    }
+    return HTTP_ROUTE_OK;
 }
 
 
@@ -10751,7 +10782,7 @@ PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
     addRestful(parent, "index",     "GET",    "(/)*$",                   "index",           resource, 0);
     addRestful(parent, "init",      "GET",    "/init$",                  "init",            resource, 0);
     addRestful(parent, "remove",    "DELETE", "/{id=[0-9]+}$",           "remove",          resource, 0);
-    addRestful(parent, "update",    "POST",   "(/{id=[0-9]+})*$",        "update",          resource, flags);
+    addRestful(parent, "update",    "POST",   "/{id=[0-9]+}*$",          "update",          resource, flags);
     addRestful(parent, "action",    "POST",   "/{action}/{id=[0-9]+}$",  "${action}",       resource, 0);
     addRestful(parent, "cmd",       "*",      "/{action}$",              "cmd-${action}",   resource, flags);
 }
@@ -11610,6 +11641,8 @@ PUBLIC HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits)
     return route->limits;
 }
 
+#undef  GRADUATE_HASH
+#undef  GRADUATE_LIST
 
 /*
     @copy   default
@@ -12608,7 +12641,7 @@ static bool processContent(HttpConn *conn)
     /* Packet may be null */
 
     if ((nbytes = filterPacket(conn, packet, &more)) > 0) {
-        if (!tx->finalized) {
+        if (!(conn->endpoint && tx->finalized)) {
             if (rx->inputPipeline) {
                 httpPutPacketToNext(q, packet);
             } else {
@@ -12619,9 +12652,7 @@ static bool processContent(HttpConn *conn)
             conn->input = 0;
         }
     }
-    //  MOB - what of all this does the client do?
     if (rx->eof) {
-        //  MOB - is the endpoint test needed?
         if (conn->endpoint) {
             if (!rx->route) {
                 httpAddBodyParams(conn);
@@ -14127,7 +14158,7 @@ PUBLIC int httpWriteSession(HttpConn *conn)
 PUBLIC char *httpGetSessionID(HttpConn *conn)
 {
     HttpRx  *rx;
-    cchar   *cookies, *cookie;
+    cchar   *cookie;
     char    *cp, *value;
     int     quoted;
 
@@ -14142,8 +14173,7 @@ PUBLIC char *httpGetSessionID(HttpConn *conn)
         return 0;
     }
     rx->sessionProbed = 1;
-    cookies = httpGetCookies(conn);
-    for (cookie = cookies; cookie && (value = strstr(cookie, HTTP_SESSION_COOKIE)) != 0; cookie = value) {
+    for (cookie = rx->cookie; cookie && (value = strstr(cookie, HTTP_SESSION_COOKIE)) != 0; cookie = value) {
         value += strlen(HTTP_SESSION_COOKIE);
         while (isspace((uchar) *value) || *value == '=') {
             value++;
@@ -17052,7 +17082,8 @@ PUBLIC void httpAddBodyParams(HttpConn *conn)
             if (rx->form || rx->upload) {
                 mprTrace(6, "Form body data: length %d, \"%s\"", mprGetBufLength(content), mprGetBufStart(content));
                 addParamsFromBuf(conn, mprGetBufStart(content), mprGetBufLength(content));
-            } else if (rx->route->flags & HTTP_ROUTE_JSON && sstarts(rx->mimeType, "application/json")) {
+
+            } else if (sstarts(rx->mimeType, "application/json")) {
                 mprDeserializeInto(httpGetBodyInput(conn), httpGetParams(conn));
             }
         }

@@ -1146,7 +1146,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
             return;
         }
         /* No yield here */
-        if ((script = espBuildScript(route, page, source, app->cacheName, defaultLayout, NULL, &err)) == 0) {
+        if ((script = espBuildScript(eroute, page, source, app->cacheName, defaultLayout, NULL, &err)) == 0) {
             fail("Cannot build %s, error %s", source, err);
             return;
         }
@@ -1435,7 +1435,6 @@ static void compileFlat(HttpRoute *route)
         }
     }
     if (!eroute->servicesDir && !eroute->clientDir) {
-        /* MOB - better way to detect MV apps */
         app->files = mprGetPathFiles(route->dir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
@@ -1545,8 +1544,6 @@ static void generateMigration(HttpRoute *route, int argc, char **argv)
     createMigration(route, name, table, stem, argc - 2, &argv[2]);
 }
 
-
-//  MOB - what if table already exists?
 
 static void createMigration(HttpRoute *route, cchar *name, cchar *table, cchar *comment, int fieldCount, char **fields)
 {

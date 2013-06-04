@@ -120,6 +120,7 @@ typedef struct EspRoute {
     EspProc         commonService;          /**< Common code for all services */
     MprHash         *env;                   /**< Environment variables for route */
     MprHash         *config;                /**< App configuration from config.json */
+    MprTime         configLoaded;           /**< When config.json was last loaded */
 
     cchar           *appModulePath;         /**< App module path when compiled flat */
     cchar           *appType;               /**< Type of application: "angular", "server", "legacy" */
@@ -237,12 +238,12 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
     @ingroup EspRoute
     @stability Evolving
  */
-PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, int isView);
+PUBLIC bool espCompile(EspRoute *eroute, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg);
 
 /**
     Convert an ESP web page into C code
     @description This parses an ESP web page into an equivalent C source view.
-    @param route EspRoute object
+    @param eroute EspRoute object
     @param page ESP web page script.
     @param path Pathname for the ESP web page. This is used to process include directives which are resolved relative
         to this path.
@@ -254,7 +255,7 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
     @ingroup EspRoute
     @stability Evolving
  */
-PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
+PUBLIC char *espBuildScript(EspRoute *eroute, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
     EspState *state, char **err);
 
 /**
