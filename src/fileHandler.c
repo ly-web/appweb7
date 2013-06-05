@@ -44,11 +44,6 @@ static int rewriteFileHandler(HttpConn *conn)
     if (info->isDir) {
         return manageDir(conn);
     }
-#if UNUSED
-    if (!info->valid) {
-        tryAlternate(conn);
-    }
-#endif
     if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST) && info->valid && tx->length < 0) {
         /*
             The sendFile connector is optimized on some platforms to use the sendfile() system call.
@@ -491,57 +486,6 @@ static int manageDir(HttpConn *conn)
 #endif
     return HTTP_ROUTE_OK;
 }
-
-
-#if UNUSED
-static void addAlternate(HttpConn *conn, char *alternate, MprPath *info)
-{
-    assert(alternate && *alternate);
-    assert(info);
-
-    mprAddKey(conn->rx->route->alternates, conn->tx->filename, alternate);
-    conn->tx->filename = alternate;
-    conn->tx->fileInfo = *info;
-}
-
-
-static void tryAlternate(HttpConn *conn)
-{
-    HttpRx      *rx;
-    HttpTx      *tx;
-    HttpRoute   *route;
-    MprPath     info;
-    cchar       *alternate;
-
-    rx = conn->rx;
-    tx = conn->tx;
-    route = rx->route;
-
-    /*
-        If the route accepts minified or zipped data and a suitable file exists, then transparently respond with it.
-     */
-    if ((route->flags & HTTP_ROUTE_GZIP) && rx->acceptEncoding && strstr(rx->acceptEncoding, "gzip") != 0) {
-        if (route->flags & HTTP_ROUTE_MINIFY && smatch(tx->ext, "js")) {
-            alternate = sfmt("%s.min.js.gz", tx->filename);
-            if (mprGetPathInfo(alternate, &info) == 0) {
-                httpSetHeader(conn, "Content-Encoding", "gzip");
-                addAlternate(route, alternate, &info);
-            }
-        } else {
-            alternate = sfmt("%s.gz", tx->filename);
-            if (mprGetPathInfo(alternate, &info) == 0) {
-                httpSetHeader(conn, "Content-Encoding", "gzip");
-                addAlternate(route, alternate, &info);
-            }
-        }
-    } else if (route->flags & HTTP_ROUTE_MINIFY && smatch(tx->ext, "js")) {
-        alternate = sfmt("%s.min", tx->filename);
-        if (mprGetPathInfo(alternate, &info) == 0) {
-            addAlternate(route, alternate, &info);
-        }
-    }
-}
-#endif
 
 
 /*  

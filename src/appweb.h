@@ -23,9 +23,10 @@ extern "C" {
 /********************************** Defines ***********************************/
 
 #if !DOXYGEN
-struct MaSsl;
-struct MaServer;
 struct MaAppweb;
+struct MaServer;
+struct MaSsl;
+struct MaState;
 #endif
 
 /**
@@ -247,6 +248,7 @@ typedef struct MaServer {
     HttpLimits      *limits;                /**< Limits for this server */
     MprList         *endpoints;             /**< List of HttpEndpoints */
     HttpHost        *defaultHost;           /**< Default host for this server */
+    struct MaState  *state;                 /**< Top of appweb.conf parse tree */
 } MaServer;
 
 /**

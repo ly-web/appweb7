@@ -121,7 +121,7 @@ PUBLIC int httpOpenActionHandler(Http *http)
         if (auth->parent && auth->field && auth->field == auth->parent->field) { \
             auth->field = mprCloneHash(auth->parent->field); \
         } else { \
-            auth->field = mprCreateHash(0, -1); \
+            auth->field = mprCreateHash(0, 0); \
         } \
     }
 
@@ -150,7 +150,9 @@ PUBLIC void httpInitAuth(Http *http)
         Deprecated in 4.4
      */
     httpAddAuthStore("file", fileVerifyUser);
+#if BIT_HAS_PAM && BIT_HTTP_PAM
     httpAddAuthStore("pam", httpPamVerifyUser);
+#endif
 #endif
 }
 
@@ -175,7 +177,7 @@ PUBLIC bool httpLoggedIn(HttpConn *conn)
 
 /*
     Get the username and password credentials. If using an in-protocol auth scheme like basic|digest, the
-    rx->authDetails will contain the credentials and the getCredentials callback will be invoked to parse.
+    rx->authDetails will contain the credentials and the parseAuth callback will be invoked to parse.
     Otherwise, it is expected that "username" and "password" fields are present in the request parameters.
  */
 PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **password)
@@ -188,7 +190,7 @@ PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **passwor
             httpError(conn, HTTP_CODE_BAD_REQUEST, "Access denied. Wrong authentication protocol type.");
             return 0;
         }
-        if ((auth->type->getCredentials)(conn, username, password) < 0) {
+        if (auth->type->parseAuth && (auth->type->parseAuth)(conn, username, password) < 0) {
             httpError(conn, HTTP_CODE_BAD_REQUEST, "Access denied. Bad authentication data.");
             return 0;
         }
@@ -213,6 +215,10 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
     auth = rx->route->auth;
     if (!username || !*username) {
         mprTrace(5, "httpLogin missing username");
+        return 0;
+    }
+    assert(auth->store);
+    if (!auth->store) {
         return 0;
     }
     if (!(auth->store->verifyUser)(conn, username, password)) {
@@ -368,7 +374,7 @@ static void manageAuthType(HttpAuthType *type, int flags)
 }
 
 
-PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpGetCredentials getCredentials, HttpSetAuth setAuth)
+PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpParseAuth parseAuth, HttpSetAuth setAuth)
 {
     Http            *http;
     HttpAuthType    *type;
@@ -379,7 +385,7 @@ PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpGetCredential
     }
     type->name = sclone(name);
     type->askLogin = askLogin;
-    type->getCredentials = getCredentials;
+    type->parseAuth = parseAuth;
     type->setAuth = setAuth;
 
     if (mprAddKey(http->authTypes, name, type) == 0) {
@@ -638,6 +644,9 @@ PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *type, cchar *details)
         mprError("Cannot find auth type %s", type);
         return MPR_ERR_CANT_FIND;
     }
+    if (!auth->store) {
+        httpSetAuthStore(auth, "internal");
+    }
     return 0;
 }
 
@@ -739,7 +748,7 @@ PUBLIC HttpUser *httpAddUser(HttpAuth *auth, cchar *name, cchar *password, cchar
     HttpUser    *user;
 
     if (!auth->userCache) {
-        auth->userCache = mprCreateHash(0, -1);
+        auth->userCache = mprCreateHash(0, 0);
     }
     if (mprLookupKey(auth->userCache, name)) {
         return 0;
@@ -925,9 +934,16 @@ PUBLIC int httpBasicParse(HttpConn *conn, cchar **username, cchar **password)
     HttpRx  *rx;
     char    *decoded, *cp;
 
-    assert(conn->endpoint);
-
     rx = conn->rx;
+    if (password) {
+        *password = NULL;
+    }
+    if (username) {
+        *username = NULL;
+    }
+    if (!rx->authDetails) {
+        return 0;
+    }
     if ((decoded = mprDecode64(rx->authDetails)) == 0) {
         return MPR_ERR_BAD_FORMAT;
     }
@@ -935,8 +951,12 @@ PUBLIC int httpBasicParse(HttpConn *conn, cchar **username, cchar **password)
         *cp++ = '\0';
     }
     conn->encoded = 0;
-    *username = sclone(decoded);
-    *password = sclone(cp);
+    if (username) {
+        *username = sclone(decoded);
+    }
+    if (password) {
+        *password = sclone(cp);
+    }
     return 0;
 }
 
@@ -2022,8 +2042,8 @@ PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl 
  */
 PUBLIC bool httpNeedRetry(HttpConn *conn, char **url)
 {
-    HttpAuthType    *authType;
     HttpRx          *rx;
+    HttpAuthType    *authType;
 
     assert(conn->rx);
 
@@ -2036,11 +2056,13 @@ PUBLIC bool httpNeedRetry(HttpConn *conn, char **url)
     if (rx->status == HTTP_CODE_UNAUTHORIZED) {
         if (conn->username == 0 || conn->authType == 0) {
             httpFormatError(conn, rx->status, "Authentication required");
+
         } else if (conn->authRequested) {
             httpFormatError(conn, rx->status, "Authentication failed");
         } else {
+            assert(!conn->endpoint);
             if (conn->authType && (authType = httpLookupAuthType(conn->authType)) != 0) {
-                (authType->getCredentials)(conn, NULL, NULL);
+                (authType->parseAuth)(conn, NULL, NULL);
             }
             return 1;
         }
@@ -3013,7 +3035,7 @@ typedef struct DigestData
 
 /********************************** Forwards **********************************/
 
-static char *calcDigest(HttpConn *conn, DigestData *dp);
+static char *calcDigest(HttpConn *conn, DigestData *dp, cchar *username);
 static char *createDigestNonce(HttpConn *conn, cchar *secret, cchar *realm);
 static void manageDigestData(DigestData *dp, int flags);
 static int parseDigestNonce(char *nonce, cchar **secret, cchar **realm, MprTime *when);
@@ -3031,11 +3053,18 @@ PUBLIC int httpDigestParse(HttpConn *conn, cchar **username, cchar **password)
     cchar       *secret, *realm;
     int         seenComma;
 
-    dp = conn->authData = mprAllocObj(DigestData, manageDigestData);
     rx = conn->rx;
+    if (password) {
+        *password = NULL;
+    }
+    if (username) {
+        *username = NULL;
+    }
+    if (!rx->authDetails) {
+        return 0;
+    }
+    dp = conn->authData = mprAllocObj(DigestData, manageDigestData);
     key = sclone(rx->authDetails);
-    *password = 0;
-    *username = 0;
 
     while (*key) {
         while (*key && isspace((uchar) *key)) {
@@ -3198,7 +3227,7 @@ PUBLIC int httpDigestParse(HttpConn *conn, cchar **username, cchar **password)
             mprTrace(2, "Access denied: Nonce is stale\n");
             return MPR_ERR_BAD_STATE;
         }
-        rx->passwordDigest = calcDigest(conn, dp);
+        rx->passwordDigest = calcDigest(conn, dp, *username);
     } else {
         if (dp->domain == 0 || dp->opaque == 0 || dp->algorithm == 0 || dp->stale == 0) {
             return MPR_ERR_BAD_FORMAT;
@@ -3314,16 +3343,16 @@ static int parseDigestNonce(char *nonce, cchar **secret, cchar **realm, MprTime 
 
 
 /*
-    Get a Digest value using the MD5 algorithm -- See RFC 2617 to understand this code.
+    Get a password digest using the MD5 algorithm -- See RFC 2617 to understand this code.
  */ 
-static char *calcDigest(HttpConn *conn, DigestData *dp)
+static char *calcDigest(HttpConn *conn, DigestData *dp, cchar *username)
 {
     HttpAuth    *auth;
     char        *digestBuf, *ha1, *ha2;
 
     auth = conn->rx->route->auth;
     if (!conn->user) {
-        conn->user = mprLookupKey(auth->userCache, conn->username);
+        conn->user = mprLookupKey(auth->userCache, username);
     }
     assert(conn->user && conn->user->password);
     if (conn->user == 0 || conn->user->password == 0) {
@@ -4323,6 +4352,7 @@ PUBLIC HttpHost *httpCloneHost(HttpHost *parent)
     host->routes = parent->routes;
     host->flags = parent->flags | HTTP_HOST_VHOST;
     host->protocol = parent->protocol;
+    host->streams = parent->streams;
     httpAddHost(http, host);
     return host;
 }
@@ -10400,7 +10430,7 @@ static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
             if (!conn->tx->finalized && route->auth && route->auth->type) {
                 (route->auth->type->askLogin)(conn);
             }
-            /* Request has been denied and fully handled */
+            /* Request has been denied and a response generated. So OK to accept this route. */
             return HTTP_ROUTE_OK;
         }
     }

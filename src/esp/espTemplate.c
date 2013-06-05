@@ -274,17 +274,17 @@ static int runCommand(EspRoute *eroute, cchar *command, cchar *csource, cchar *m
     source      ESP source file name
     module      Module file name
 
-WARNING: this routine blocks and runs GC. All parameters must be retained.
+    WARNING: this routine blocks and runs GC. All parameters must be retained.
  */
-PUBLIC bool espCompile(EspRoute *eroute, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg)
+PUBLIC bool espCompile(HttpRoute *route, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg)
 {
     MprFile     *fp;
-    HttpRoute   *route;
+    EspRoute    *eroute;
     cchar       *csource;
     char        *layout, *script, *page, *err;
     ssize       len;
 
-    route = eroute->route;
+    eroute = route->eroute;
     layout = 0;
     *errMsg = 0;
 
@@ -299,7 +299,7 @@ PUBLIC bool espCompile(EspRoute *eroute, cchar *source, cchar *module, cchar *ca
         if (eroute->layoutsDir) {
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }
-        if ((script = espBuildScript(eroute, page, source, cacheName, layout, NULL, &err)) == 0) {
+        if ((script = espBuildScript(route, page, source, cacheName, layout, NULL, &err)) == 0) {
             *errMsg = sfmt("Cannot build %s, error %s", source, err);
             return 0;
         }
@@ -458,10 +458,10 @@ static char *joinLine(cchar *str, ssize *lenp)
         @#field             Lookup the current record for the value of the field.
 
  */
-PUBLIC char *espBuildScript(EspRoute *eroute, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
+PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
         EspState *state, char **err)
 {
-    HttpRoute   *route;
+    EspRoute    *eroute;
     EspState    top;
     EspParse    parse;
     MprBuf      *body;
@@ -473,7 +473,7 @@ PUBLIC char *espBuildScript(EspRoute *eroute, cchar *page, cchar *path, cchar *c
     assert(page);
 
     *err = 0;
-    route = eroute->route;
+    eroute = route->eroute;
     if (!state) {
         assert(cacheName);
         state = &top;
@@ -538,7 +538,7 @@ PUBLIC char *espBuildScript(EspRoute *eroute, cchar *page, cchar *path, cchar *c
                     return 0;
                 }
                 /* Recurse and process the include script */
-                if ((incCode = espBuildScript(eroute, incText, include, NULL, NULL, state, err)) == 0) {
+                if ((incCode = espBuildScript(route, incText, include, NULL, NULL, state, err)) == 0) {
                     return 0;
                 }
                 mprPutStringToBuf(body, incCode);
@@ -621,7 +621,7 @@ PUBLIC char *espBuildScript(EspRoute *eroute, cchar *page, cchar *path, cchar *c
             *err = sfmt("Cannot read layout page: %s", layout);
             return 0;
         }
-        if ((layoutCode = espBuildScript(eroute, layoutPage, layout, NULL, NULL, state, err)) == 0) {
+        if ((layoutCode = espBuildScript(route, layoutPage, layout, NULL, NULL, state, err)) == 0) {
             return 0;
         }
 #if BIT_DEBUG

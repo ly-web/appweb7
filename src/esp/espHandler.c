@@ -264,7 +264,7 @@ static int runAction(HttpConn *conn)
              */ 
             if (espModuleIsStale(req->servicePath, req->module, &recompile)) {
                 /*  WARNING: GC yield here */
-                if (recompile && !espCompile(eroute, req->servicePath, req->module, req->cacheName, 0, &errMsg)) {
+                if (recompile && !espCompile(route, req->servicePath, req->module, req->cacheName, 0, &errMsg)) {
                     compileError(conn, errMsg);
                     unlock(req->esp);
                     return 0;
@@ -405,7 +405,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 #endif
             if (recompile) {
                 /* WARNING: this will allow GC */
-                if (recompile && !espCompile(eroute, req->source, req->module, req->cacheName, 1, &errMsg)) {
+                if (recompile && !espCompile(rx->route, req->source, req->module, req->cacheName, 1, &errMsg)) {
                     compileError(conn, errMsg);
                     unlock(req->esp);
                     return;
@@ -503,7 +503,7 @@ static int loadApp(EspRoute *eroute)
 #if !BIT_STATIC
     if (espModuleIsStale(source, eroute->appModulePath, &recompile)) {
         /*  WARNING: GC yield here */
-        if (recompile && !espCompile(eroute, source, eroute->appModulePath, cacheName, 0, &errMsg)) {
+        if (recompile && !espCompile(eroute->route, source, eroute->appModulePath, cacheName, 0, &errMsg)) {
             mprError("Cannot compile %s/app.c", eroute->srcDir);
             return MPR_ERR_CANT_INITIALIZE;
         }

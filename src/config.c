@@ -72,15 +72,18 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     /* DEPRECATED */ httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
 #endif
 
-    state = createState(server, host, route);
+    server->state = state = createState(server, host, route);
     state->flags = flags;
     if (parseFile(state, path) < 0) {
+        server->state = 0;
         return MPR_ERR_BAD_SYNTAX;
     }
     if (!maValidateServer(server)) {
+        server->state = 0;
         return MPR_ERR_BAD_ARGS;
     }
     httpFinalizeRoute(state->route);
+    server->state = 0;
     if (mprHasMemError()) {
         mprError("Memory allocation error when initializing");
         return MPR_ERR_MEMORY;
@@ -1516,23 +1519,6 @@ static int methodsDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if UNUSED
-/*
-    Minify [on|off]
- */
-static int minifyDirective(MaState *state, cchar *key, cchar *value)
-{
-    bool    on;
-
-    if (!maTokenize(state, value, "%B", &on)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    httpSetRouteMinify(state->route, on);
-    return 0;
-}
-#endif
-
-
 /*
     MinWorkers count
  */
@@ -2441,9 +2427,6 @@ static MaState *createState(MaServer *server, HttpHost *host, HttpRoute *route)
     state->enabled = 1;
     state->lineNumber = 0;
     state->auth = state->route->auth;
-#if UNUSED
-    httpSetRouteName(state->route, "default");
-#endif
     return state;
 }
 

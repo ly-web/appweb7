@@ -228,17 +228,18 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
 /**
     Compile an ESP page, service or view
     @description This compiles ESP components into loadable, cached modules
-    @param conn Http connection object
+    @param route HttpRoute object
     @param source ESP source file name
     @param module Output module file name
     @param cacheName MD5 cache name. Not a full path
     @param isView Set to "true" if the source is a view
+    @param errMsg Reference to receive an error message if the routine fails.
     @return "True" if the compilation is successful. Errors are logged and sent back to the client if EspRoute.showErrors
         is true.
     @ingroup EspRoute
     @stability Evolving
  */
-PUBLIC bool espCompile(EspRoute *eroute, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg);
+PUBLIC bool espCompile(HttpRoute *route, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg);
 
 /**
     Convert an ESP web page into C code
@@ -255,8 +256,7 @@ PUBLIC bool espCompile(EspRoute *eroute, cchar *source, cchar *module, cchar *ca
     @ingroup EspRoute
     @stability Evolving
  */
-PUBLIC char *espBuildScript(EspRoute *eroute, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
-    EspState *state, char **err);
+PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, EspState *state, char **err);
 
 /**
     Define an action

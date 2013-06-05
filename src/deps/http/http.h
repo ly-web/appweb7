@@ -2654,7 +2654,7 @@ typedef void (*HttpAskLogin)(HttpConn *conn);
     @ingroup HttpAuth
     @stability Evolving
  */
-typedef int (*HttpGetCredentials)(HttpConn *conn, cchar **username, cchar **password);
+typedef int (*HttpParseAuth)(HttpConn *conn, cchar **username, cchar **password);
 
 /**
     AuthType callback to set the necessary HTTP authorization headers for a client request
@@ -2685,7 +2685,7 @@ typedef bool (*HttpVerifyUser)(HttpConn *conn, cchar *username, cchar *password)
 typedef struct HttpAuthType {
     char                *name;          /**< Authentication protocol name: 'basic', 'digest', 'form' */
     HttpAskLogin        askLogin;       /**< Callback to generate a client login response */
-    HttpGetCredentials  getCredentials; /**< Callback to get the user credentials */
+    HttpParseAuth       parseAuth;      /**< Callback to parse request auth details */
     HttpSetAuth         setAuth;        /**< Callback to set the HTTP response authentication headers */
 } HttpAuthType;
 
@@ -2769,7 +2769,7 @@ typedef struct HttpAuth {
     @ingroup HttpAuth
     @stability Evolving
  */
-PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpGetCredentials parse, HttpSetAuth setAuth);
+PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpParseAuth parse, HttpSetAuth setAuth);
 
 /**
     Add an authorization store for password validation. The pre-supplied types are 'system' and 'file'
