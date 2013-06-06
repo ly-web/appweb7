@@ -122,7 +122,7 @@ static void setupFlash(HttpConn *conn)
         req->flash = httpGetSessionObj(conn, ESP_FLASH_VAR);
         req->lastFlash = 0;
         if (req->flash) {
-            httpSetSessionVar(conn, ESP_FLASH_VAR, "");
+            httpRemoveSessionVar(conn, ESP_FLASH_VAR);
             req->lastFlash = mprCloneHash(req->flash);
         } else {
             req->flash = 0;
@@ -496,6 +496,9 @@ static int loadApp(EspRoute *eroute)
         return 0;
     }
     source = mprJoinPath(eroute->srcDir, "app.c");
+    if (!mprPathExists(source, R_OK)) {
+        return 0;
+    };
     canonical = mprGetPortablePath(mprGetRelPath(source, eroute->route->dir));
     cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "app_");
     eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));

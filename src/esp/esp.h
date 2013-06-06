@@ -2438,6 +2438,10 @@ PUBLIC bool updateFields(cchar *tableName, MprHash *data);
  */
 PUBLIC bool updateRec(EdiRec *rec);
 
+//  MOB - DOC
+PUBLIC bool updateRecFromParams(cchar *table);
+PUBLIC bool createRecFromParams(cchar *table);
+
 /* ******************************** DEPRECATED ****************************** */
 #if (DEPRECATE || 1) && !DOXYGEN
 /**

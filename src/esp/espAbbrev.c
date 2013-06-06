@@ -574,6 +574,17 @@ PUBLIC bool updateRec(EdiRec *rec)
 }
 
 
+PUBLIC bool updateRecFromParams(cchar *table)
+{
+    return updateRec(setFields(readRec(table, param("id")), params()));
+}
+
+PUBLIC bool createRecFromParams(cchar *table)
+{
+    return updateRec(createRec(table, params()));
+}
+
+
 /************************************ Deprecated ****************************/
 #if DEPRECATED || 1
 /*

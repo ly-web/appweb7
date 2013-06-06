@@ -1275,6 +1275,8 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 }
 
 
+/************************************* Deprecated ******************************/
+
 #if DEPRECATE || 1
 PUBLIC EdiGrid *espGetGrid(HttpConn *conn)
 {           

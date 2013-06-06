@@ -93,10 +93,7 @@
                 e.preventDefault();
             });
 
-//  MOB check this one
             $(document).on('click', '[data-esp-click] a', function (e) {
-                //MOB window.location = $(this).attr('href');
-alert('EVER USED?');
                 request.apply(this);
                 return false;
             });
@@ -253,8 +250,6 @@ alert('EVER USED?');
         non-GET methods with security tokens to aleviate CSRF.
      */
     function request() {
-        //  MOB - when is data-esp-click-method used and when data-esp-method
-        //  MOB -- really should pair these. If method uses data-esp-click-method, then params must be data-esp-click-params
         var el      = $(this);
         var method  = el.attr('data-esp-click-method') || el.attr('data-esp-method') || 'GET';
         var url     = el.attr('data-esp-click') || el.attr('action') || el.attr('href');
@@ -322,7 +317,6 @@ alert('EVER USED?');
                             e.removeAttr("checked")
                         }
                     } else if (d.type == "radio") {
-                        //  MOB BROKEN
                         if (data == e.val()) {
                             e.attr("checked", "yes")
                         } else {
@@ -346,13 +340,11 @@ alert('EVER USED?');
         function update(options) {
             var elt = $(this);
             var id = elt.attr("id");
-            //  MOB - what about defaults?
             var o = $.extend({}, options, elt.data("esp-options") || {}, getDataAttributes(elt));
             elt.data("esp-options", o);
             if (o.updating) {
                 var method = o["data-esp-method"] || "GET";
 
-                //  MOB - consider firing events - elt.trigger('http:complete', http);
                 $.ajax({
                     url: o['data-esp-refresh'],
                     type: method,
