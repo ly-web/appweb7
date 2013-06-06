@@ -184,6 +184,10 @@ PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **passwor
 {
     HttpAuth    *auth;
 
+    assert(username);
+    assert(password);
+    *username = *password = NULL;
+
     auth = conn->rx->route->auth;
     if (auth->type) {
         if (conn->authType && !smatch(conn->authType, auth->type->name)) {
