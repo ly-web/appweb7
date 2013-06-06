@@ -1050,10 +1050,9 @@ $(CONFIG)/bin/esp-www: $(DEPS_56)
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static"
 	cp src/esp/esp-www/files/static/index.esp $(CONFIG)/bin/esp-www/files/static/index.esp
 	mkdir -p "$(CONFIG)/bin/esp-www/files/static/js"
-	cp src/esp/esp-www/files/static/js/jquery-1.9.1.js $(CONFIG)/bin/esp-www/files/static/js/jquery-1.9.1.js
-	cp src/esp/esp-www/files/static/js/jquery-1.9.1.min.js $(CONFIG)/bin/esp-www/files/static/js/jquery-1.9.1.min.js
 	cp src/esp/esp-www/files/static/js/jquery.esp.js $(CONFIG)/bin/esp-www/files/static/js/jquery.esp.js
 	cp src/esp/esp-www/files/static/js/jquery.js $(CONFIG)/bin/esp-www/files/static/js/jquery.js
+	cp src/esp/esp-www/files/static/js/jquery.min.js $(CONFIG)/bin/esp-www/files/static/js/jquery.min.js
 	cp src/esp/esp-www/files/static/js/jquery.simplemodal.js $(CONFIG)/bin/esp-www/files/static/js/jquery.simplemodal.js
 	cp src/esp/esp-www/files/static/js/jquery.tablesorter.js $(CONFIG)/bin/esp-www/files/static/js/jquery.tablesorter.js
 	cp src/esp/esp-www/files/static/layout.css $(CONFIG)/bin/esp-www/files/static/layout.css
@@ -1738,10 +1737,9 @@ DEPS_93 += src/esp/esp-www/files/static/js
 test/web/js: $(DEPS_93)
 	@echo '      [Copy] test/web/js'
 	mkdir -p "test/web/js"
-	cp src/esp/esp-www/files/static/js/jquery-1.9.1.js test/web/js/jquery-1.9.1.js
-	cp src/esp/esp-www/files/static/js/jquery-1.9.1.min.js test/web/js/jquery-1.9.1.min.js
 	cp src/esp/esp-www/files/static/js/jquery.esp.js test/web/js/jquery.esp.js
 	cp src/esp/esp-www/files/static/js/jquery.js test/web/js/jquery.js
+	cp src/esp/esp-www/files/static/js/jquery.min.js test/web/js/jquery.min.js
 	cp src/esp/esp-www/files/static/js/jquery.simplemodal.js test/web/js/jquery.simplemodal.js
 	cp src/esp/esp-www/files/static/js/jquery.tablesorter.js test/web/js/jquery.tablesorter.js
 
