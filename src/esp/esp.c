@@ -224,7 +224,7 @@ static cchar *ScaffoldEditView =  "\
     </table>\n\
     <% button(\"commit\", \"OK\", 0); %>\n\
     <% buttonLink(\"Cancel\", \"@\", 0); %>\n\
-    <% if (hasRec()) buttonLink(\"Delete\", \"@destroy\", \"{data-method: 'DELETE'}\"); %>\n\
+    <% if (hasRec()) buttonLink(\"Delete\", \"@destroy\", \"{data-esp-method: 'DELETE'}\"); %>\n\
 <% endform(); %>\n\
 ";
 
