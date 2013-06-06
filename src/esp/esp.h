@@ -868,7 +868,6 @@ PUBLIC EdiRec *espMakeRec(cchar *content);
  */
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value);
 
-//  MOB - rethink name. Inconsistent vs readTable() and ediReadWhere
 /**
     Read all the records in table from the database.
     @description This reads a table and returns a grid containing the table data.
@@ -1000,7 +999,6 @@ PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key);
  */
 PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...);
 
-//  MOB - need a render that uses HTTP_BLOCK
 /**
     Render a block of data to the client.
     @description Render a block of data to the client. Data packets will be created as required to store the write data.
@@ -1177,7 +1175,6 @@ PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value);
  */
 PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *data);
 
-//  MOB - improve doc. Should be set not send
 /**
     Send a flash message
     @param conn Http connection object
@@ -1188,7 +1185,6 @@ PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *data);
  */
 PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...);
 
-//  MOB - improve doc. Should be set not send
 /**
     Send a flash message
     @param conn Http connection object
@@ -1358,7 +1354,6 @@ PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *data);
  */
 PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
 
-//  MOB - should httpLink be renamed to httpUri and espLink to httpUri
 /**
     Create a URI. 
     @description Create a URI link by expansions tokens based on the current request and route state.
@@ -1483,22 +1478,14 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
     @arg method String HTTP method to invoke.
     @arg pass String attributes to pass through unaltered to the client
     @arg params Request parameters to include with a click or remote request
-    @arg period Number Period in milliseconds to invoke the #refresh URI to update the control data. If period
-        is zero (or undefined), then refresh will be done using a perisistent connection.
     @arg query URI query string to add to click URIs.
     @arg rel String HTML rel attribute. Can be used to generate "rel=nofollow" on links.
     @arg remote (String|URI|Object) Perform the request in the background without changing the browser location.
-    @arg refresh (String|URI|Object) URI to invoke in the background to refresh the control's data every period.
-        milliseconds. If period is undefined or zero, a persistent connection may be used to refresh data.
-        The refresh option may use the "\@Controller/action" form.
     @arg size (Number|String) Size of the element.
     @arg style String CSS Style to use for the element.
     @arg value Object Override value to display if used without a form control record.
     @arg width (Number|String) Width of the control. Can be a number of pixels or a percentage string. Defaults to
         unlimited.
-    <h4>Dynamic Data</h4>
-    <p>Most controls can perform background updates of their data after the initial presentation. This is done via
-    the refresh and period options.</p>
     @stability Prototype
     @see espAlert espAnchor
     @defgroup EspControl EspControl
@@ -1507,7 +1494,6 @@ typedef struct EspControl {
     int dummy;  /**< Unused */
 } EspControl;
 
-// MOB - does this do an alert popup or is this a console status widget?
 /**
     Display a popup alert message in the client's browser when the web page is displayed.
     @param conn Http connection object
@@ -1613,7 +1599,6 @@ PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
  */
 PUBLIC void espEndform(HttpConn *conn);
 
-// MOB - this retain default implies it is displayed for zero seconds
 /**
     Render flash messages.
     @description Flash messages are one-time messages that are displayed to the client on the next request (only).
@@ -1670,8 +1655,6 @@ PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *options);
  */
 PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *options);
 
-//  MOB DB
-//  MOB should be consistent with "name" vs "field"
 /**
     Render an input field as part of a form. This is a smart input control that will call the appropriate
         input control based on the database record field data type.
@@ -1696,7 +1679,6 @@ PUBLIC void espInput(HttpConn *conn, cchar *field, cchar *options);
  */
 PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *options);
 
-//  MOB - how to get a choices list from a database
 /**
     Render a selection list.
     @param conn Http connection object
@@ -1800,7 +1782,6 @@ PUBLIC void espSecurityToken(HttpConn *conn);
  */
 PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
 
-// MOB - review which of these are supported currently
 /**
     Render a table.
     @description The table control can display static or dynamic tabular data. The client table control 
@@ -1815,7 +1796,6 @@ PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
     <ul>
         <li>align - Will right-align numbers by default</li>
         <li>click - URI to invoke if the cell is clicked</li>
-        <li>edit - MOB </li>
         <li>formatter - Function to invoke to format the value to display</li>
         <li>header - Header text for the column</li>
         <li>style - Cell styles</li>
@@ -2027,13 +2007,11 @@ PUBLIC void endform();
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg retain -- Number of seconds to retain the message. If <= 0, the message is retained until another
         message is displayed. Default is 0.
-    MOB - this default implies it is displayed for zero seconds
     @ingroup EspAbbrev
     @stability Evolving
  */
 PUBLIC void flash(cchar *kinds, cchar *options);
 
-//  MOB - seems inconsistent that form takes a record?
 /**
     Render an HTML form 
     @description This will render an HTML form tag and optionally associate the given record as the current record for
@@ -2186,7 +2164,6 @@ PUBLIC void stylesheet(cchar *uri, cchar *options);
     <ul>
         <li>align - Will right-align numbers by default</li>
         <li>click - URI to invoke if the cell is clicked</li>
-        <li>edit - MOB </li>
         <li>formatter - Function to invoke to format the value to display</li>
         <li>header - Header text for the column</li>
         <li>style - Cell styles</li>
@@ -2212,7 +2189,6 @@ PUBLIC void stylesheet(cchar *uri, cchar *options);
 */
 PUBLIC void table(EdiGrid *grid, cchar *options);
 
-//  MOB - need examples in each of these abbreviated controls -- see ejs.web
 /**
     Render a tab control. 
     The tab control can manage a set of panes and will selectively show and hide or invoke the selected panes. 
@@ -2486,11 +2462,8 @@ PUBLIC cchar *getReferrer();
 PUBLIC cchar *getSessionVar(cchar *name);
 
 PUBLIC cchar *getSession();
-#if MOB || NEW || 1
 PUBLIC cchar *session(cchar *name);
-#endif
 
-//  MOB - should this be called top?
 /**
     Get a relative URI to the top of the application.
     @description This will return an absolute URI for the top of the application. This will be "/" if there is no
@@ -2709,7 +2682,6 @@ PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation
  */
 PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key);
 
-//  MOB - inconsistent vs espReadAllRecs
 /**
     Read all the records in table from the database
     @description This reads a table and returns a grid containing the table data.
@@ -2856,7 +2828,7 @@ PUBLIC void renderView(cchar *view);
     @param domain String Domain in which the cookie applies. Must have 2-3 "." and begin with a leading ".". 
         For example: domain: .example.com
         Some browsers will accept cookies without the initial ".", but the spec: (RFC 2109) requires it.
-    @param lifespan Lifespan of the cookie. (MOB units?)
+    @param lifespan Lifespan of the cookie.
     @param isSecure Boolean Set to "true" if the cookie only applies for SSL based connections
     @ingroup EspAbbrev
     @stability Evolving
@@ -3064,7 +3036,6 @@ PUBLIC bool updateFields(cchar *tableName, MprHash *data);
  */
 PUBLIC bool updateRec(EdiRec *rec);
 
-//  MOB - should httpLink be renamed to httpUri and espLink to httpUri
 /**
     Create a URI. 
     @description Create a URI link by expansions tokens based on the current request and route state.
