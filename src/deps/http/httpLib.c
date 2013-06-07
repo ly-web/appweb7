@@ -10128,7 +10128,7 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
             }
 #endif
             if (action == 0 || *action == '\0') {
-                action = (route->flags & HTTP_ROUTE_LEGACY_MVC) ? "list" : "index";
+                action = "list";
             }
             if (action != originalAction) {
                 httpSetOption(options, "action", action);
@@ -10820,7 +10820,7 @@ PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
     addRestful(parent, "create",    "POST",   "(/)*$",                   "create",          resource, flags);
     addRestful(parent, "edit",      "GET",    "/{id=[0-9]+}/edit$",      "edit",            resource, 0);
     addRestful(parent, "get",       "GET",    "/{id=[0-9]+}$",           "get",             resource, 0);
-    addRestful(parent, "index",     "GET",    "(/)*$",                   "index",           resource, 0);
+    addRestful(parent, "list",      "GET",    "/list$",                  "list",            resource, 0);
     addRestful(parent, "init",      "GET",    "/init$",                  "init",            resource, 0);
     addRestful(parent, "remove",    "DELETE", "/{id=[0-9]+}$",           "remove",          resource, 0);
     addRestful(parent, "update",    "POST",   "/{id=[0-9]+}*$",          "update",          resource, flags);
