@@ -1112,10 +1112,9 @@ $(CONFIG)\bin\esp-www: $(DEPS_58)
 	if not exist "$(CONFIG)\bin\esp-www\files\static" md "$(CONFIG)\bin\esp-www\files\static"
 	copy /Y src\esp\esp-www\files\static\index.esp $(CONFIG)\bin\esp-www\files\static\index.esp
 	if not exist "$(CONFIG)\bin\esp-www\files\static\js" md "$(CONFIG)\bin\esp-www\files\static\js"
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.js $(CONFIG)\bin\esp-www\files\static\js\jquery-1.9.1.js
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.min.js $(CONFIG)\bin\esp-www\files\static\js\jquery-1.9.1.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.esp.js $(CONFIG)\bin\esp-www\files\static\js\jquery.esp.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.js $(CONFIG)\bin\esp-www\files\static\js\jquery.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.min.js $(CONFIG)\bin\esp-www\files\static\js\jquery.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.js $(CONFIG)\bin\esp-www\files\static\js\jquery.simplemodal.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.js $(CONFIG)\bin\esp-www\files\static\js\jquery.tablesorter.js
 	copy /Y src\esp\esp-www\files\static\layout.css $(CONFIG)\bin\esp-www\files\static\layout.css
@@ -1969,10 +1968,9 @@ DEPS_101 = $(DEPS_101) src\esp\esp-www\files\static\js
 test\web\js: $(DEPS_101)
 	@echo '      [Copy] test/web/js'
 	if not exist "test\web\js" md "test\web\js"
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.js test\web\js\jquery-1.9.1.js
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.min.js test\web\js\jquery-1.9.1.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.esp.js test\web\js\jquery.esp.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.js test\web\js\jquery.js
+	copy /Y src\esp\esp-www\files\static\js\jquery.min.js test\web\js\jquery.min.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.js test\web\js\jquery.simplemodal.js
 	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.js test\web\js\jquery.tablesorter.js
 
@@ -2023,10 +2021,9 @@ installBinary: $(DEPS_103)
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static"
 	copy /Y src\esp\esp-www\files\static\index.esp "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\index.esp"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js" md "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js"
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery-1.9.1.js"
-	copy /Y src\esp\esp-www\files\static\js\jquery-1.9.1.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery-1.9.1.min.js"
 	copy /Y src\esp\esp-www\files\static\js\jquery.esp.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.esp.js"
 	copy /Y src\esp\esp-www\files\static\js\jquery.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.js"
+	copy /Y src\esp\esp-www\files\static\js\jquery.min.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.min.js"
 	copy /Y src\esp\esp-www\files\static\js\jquery.simplemodal.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.simplemodal.js"
 	copy /Y src\esp\esp-www\files\static\js\jquery.tablesorter.js "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\js\jquery.tablesorter.js"
 	copy /Y src\esp\esp-www\files\static\layout.css "$(BIT_VAPP_PREFIX)\bin\esp-www\files\static\layout.css"
