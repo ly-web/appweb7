@@ -296,6 +296,21 @@ static int addLanguageDirDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    AddMethods method, method,...
+ */
+static int addMethodsDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *methods;
+
+    if (!maTokenize(state, value, "%*", &methods)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpAddRouteMethods(state->route, methods);
+    return 0;
+}
+
+
+/*
     AddOutputFilter filter [ext ext ...]
  */
 static int addOutputFilterDirective(MaState *state, cchar *key, cchar *value)
@@ -652,6 +667,7 @@ static int closeDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if DEPRECATE || 1
 /*
     Compress [gzip|none]
  */
@@ -670,6 +686,7 @@ static int compressDirective(MaState *state, cchar *key, cchar *value)
     }
     return 0;
 }
+#endif
 
 
 /*
@@ -695,6 +712,52 @@ static int conditionDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+/*
+    CrossOrigin  origin=[client|all|*|NAME] [credentials=[yes|no]] [headers=HDR,...] [age=NN]
+ */
+static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
+{
+    HttpRoute   *route;
+    char        *option, *ovalue, *tok;
+
+    route = state->route;
+    tok = sclone(value);
+    while ((option = maGetNextToken(tok, &tok)) != 0) {
+        option = stok(option, " =\t,", &ovalue);
+        ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
+        if (scaselessmatch(option, "origin")) {
+            route->corsOrigin = sclone(ovalue);
+
+        } else if (scaselessmatch(option, "credentials")) {
+            route->corsCredentials = httpGetBoolToken(ovalue);
+
+        } else if (scaselessmatch(option, "headers")) {
+            route->corsHeaders = sclone(ovalue);
+
+        } else if (scaselessmatch(option, "age")) {
+            route->corsAge = atoi(ovalue);
+
+        } else {
+            mprError("Unknown CrossOrigin option %s", option);
+            return MPR_ERR_BAD_SYNTAX;
+        }
+    }
+#if UNUSED
+    if (smatch(route->corsOrigin, "*") && route->corsCredentials) {
+        mprError("CrossOrigin: Cannot use wildcard Origin if allowing credentials");
+        return MPR_ERR_BAD_STATE;
+    }
+#endif
+    /*
+        Need the options method for pre-flight requests
+     */
+    httpAddRouteMethods(route, "OPTIONS");
+    route->flags |= HTTP_ROUTE_CORS;
+    return 0;
+}
+
+
+
 static int defaultLanguageDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetRouteDefaultLanguage(state->route, value);
@@ -707,7 +770,7 @@ static int defaultLanguageDirective(MaState *state, cchar *key, cchar *value)
  */
 static int denyDirective(MaState *state, cchar *key, cchar *value)
 {
-    char *from, *spec;
+    char    *from, *spec;
 
     if (!maTokenize(state, value, "%S %S", &from, &spec)) {
         return MPR_ERR_BAD_SYNTAX;
@@ -715,6 +778,18 @@ static int denyDirective(MaState *state, cchar *key, cchar *value)
     httpSetAuthDeny(state->auth, spec);
     return addCondition(state, "allowDeny", 0, 0);
 }
+
+
+#if UNUSED
+/*
+    DelegateOptions
+ */
+static int delegateOptionsDirective(MaState *state, cchar *key, cchar *value)
+{
+    httpSetRouteDelegateOptions(state->route);
+    return 0;
+}
+#endif
 
 
 /*
@@ -1510,16 +1585,6 @@ static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Methods method method ...
- */
-static int methodsDirective(MaState *state, cchar *key, cchar *value)
-{
-    httpSetRouteMethods(state->route, value);
-    return 0;
-}
-
-
-/*
     MinWorkers count
  */
 static int minWorkersDirective(MaState *state, cchar *key, cchar *value)
@@ -1604,7 +1669,7 @@ static int protocolDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-//  MOB - this should be renamed to be: FileModify on|off
+#if DEPRECATE || 1
 /*
     PutMethod on|off
  */
@@ -1616,12 +1681,13 @@ static int putMethodDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (on) {
-        state->route->flags |= HTTP_ROUTE_PUT_DELETE_METHODS;
+        httpAddRouteMethods(state->route, "DELETE, PUT");
     } else {
-        state->route->flags &= ~HTTP_ROUTE_PUT_DELETE_METHODS;
+        httpRemoveRouteMethods(state->route, "DELETE, PUT");
     }
     return 0;
 }
+#endif
 
 
 /*
@@ -1677,6 +1743,21 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
         httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
     }
     httpFinalizeRoute(alias);
+    return 0;
+}
+
+
+/*
+    RemoveMethods method, method,...
+ */
+static int removeMethodsDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *methods;
+
+    if (!maTokenize(state, value, "%*", &methods)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpRemoveRouteMethods(state->route, methods);
     return 0;
 }
 
@@ -1821,7 +1902,7 @@ static int roleDirective(MaState *state, cchar *key, cchar *value)
 static int routeDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
-    char        *pattern, *name;
+    char        *pattern;
     int         not;
 
     state = maPushState(state);
@@ -1832,9 +1913,11 @@ static int routeDirective(MaState *state, cchar *key, cchar *value)
         if (strstr(pattern, "${")) {
             pattern = sreplace(pattern, "${inherit}", state->route->pattern);
         }
+#if UNUSED
         name = (*pattern == '^') ? &pattern[1] : pattern;
+#endif
         
-        if ((route = httpLookupRoute(state->host, name)) != 0) {
+        if ((route = httpLookupRouteByPattern(state->host, pattern)) != 0) {
             state->route = route;
         } else {
             state->route = httpCreateInheritedRoute(state->route);
@@ -1925,6 +2008,21 @@ static int setHandlerDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    SetMethods method, method,...
+ */
+static int setMethodsDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *methods;
+
+    if (!maTokenize(state, value, "%*", &methods)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteMethods(state->route, methods);
+    return 0;
+}
+
+
+/*
     Source path
  */
 static int sourceDirective(MaState *state, cchar *key, cchar *value)
@@ -1988,6 +2086,7 @@ static int threadStackDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if DEPRECATE || 1
 /*
     TraceMethod on|off
  */
@@ -1998,9 +2097,14 @@ static int traceMethodDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%B", &on)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpEnableTraceMethod(state->route, on);
+    if (on) {
+        httpAddRouteMethods(state->route, "TRACE");
+    } else {
+        httpRemoveRouteMethods(state->route, "TRACE");
+    }
     return 0;
 }
+#endif
 
 
 /*  
@@ -2671,8 +2775,9 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "AddLanguageDir", addLanguageDirDirective);
     maAddDirective(appweb, "AddFilter", addFilterDirective);
     maAddDirective(appweb, "AddInputFilter", addInputFilterDirective);
-    maAddDirective(appweb, "AddOutputFilter", addOutputFilterDirective);
     maAddDirective(appweb, "AddHandler", addHandlerDirective);
+    maAddDirective(appweb, "AddMethods", addMethodsDirective);
+    maAddDirective(appweb, "AddOutputFilter", addOutputFilterDirective);
     maAddDirective(appweb, "AddType", addTypeDirective);
     maAddDirective(appweb, "Alias", aliasDirective);
     maAddDirective(appweb, "Allow", allowDirective);
@@ -2684,7 +2789,11 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Cache", cacheDirective);
     maAddDirective(appweb, "Chroot", chrootDirective);
     maAddDirective(appweb, "Condition", conditionDirective);
+    maAddDirective(appweb, "CrossOrigin", crossOriginDirective);
     maAddDirective(appweb, "DefaultLanguage", defaultLanguageDirective);
+#if UNUSED
+    maAddDirective(appweb, "DelegateOptions", delegateOptionsDirective);
+#endif
     maAddDirective(appweb, "Deny", denyDirective);
     maAddDirective(appweb, "DirectoryIndex", directoryIndexDirective);
     maAddDirective(appweb, "Documents", documentsDirective);
@@ -2730,15 +2839,14 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LoadModule", loadModuleDirective);
     maAddDirective(appweb, "Map", mapDirective);
     maAddDirective(appweb, "MemoryPolicy", memoryPolicyDirective);
-    maAddDirective(appweb, "Methods", methodsDirective);
     maAddDirective(appweb, "Name", nameDirective);
     maAddDirective(appweb, "NameVirtualHost", nameVirtualHostDirective);
     maAddDirective(appweb, "Order", orderDirective);
     maAddDirective(appweb, "Param", paramDirective);
     maAddDirective(appweb, "Prefix", prefixDirective);
     maAddDirective(appweb, "Protocol", protocolDirective);
-    maAddDirective(appweb, "PutMethod", putMethodDirective);
     maAddDirective(appweb, "Redirect", redirectDirective);
+    maAddDirective(appweb, "RemoveMethods", removeMethodsDirective);
     maAddDirective(appweb, "RequestParseTimeout", requestParseTimeoutDirective);
     maAddDirective(appweb, "RequestTimeout", requestTimeoutDirective);
     maAddDirective(appweb, "Require", requireDirective);
@@ -2752,6 +2860,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Set", setDirective);
     maAddDirective(appweb, "SetConnector", setConnectorDirective);
     maAddDirective(appweb, "SetHandler", setHandlerDirective);
+    maAddDirective(appweb, "SetMethods", setMethodsDirective);
     maAddDirective(appweb, "Source", sourceDirective);
     maAddDirective(appweb, "StreamInput", streamInputDirective);
 
@@ -2760,8 +2869,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Template", templateDirective);
 
     maAddDirective(appweb, "ThreadStack", threadStackDirective);
-    maAddDirective(appweb, "TraceMethod", traceMethodDirective);
-    maAddDirective(appweb, "TraceMethod", traceMethodDirective);
     maAddDirective(appweb, "TypesConfig", typesConfigDirective);
     maAddDirective(appweb, "Update", updateDirective);
     maAddDirective(appweb, "UnloadModule", unloadModuleDirective);
@@ -2796,12 +2903,16 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Compress", compressDirective);
     /* Use Documents */
     maAddDirective(appweb, "DocumentRoot", documentsDirective);
-    /* Use LimitKeepAlive */
-    maAddDirective(appweb, "MaxKeepAliveRequests", limitKeepAliveDirective);
     /* Use LimitBuffer */
     maAddDirective(appweb, "LimitStageBuffer", limitBufferDirective);
     /* Use LimitUri */
     maAddDirective(appweb, "LimitUrl", limitUriDirective);
+    /* Use LimitKeepAlive */
+    maAddDirective(appweb, "MaxKeepAliveRequests", limitKeepAliveDirective);
+    /* Use SetMethods */
+    maAddDirective(appweb, "Methods", setMethodsDirective);
+    /* Use Methods */
+    maAddDirective(appweb, "PutMethod", putMethodDirective);
     maAddDirective(appweb, "ResetPipeline", resetPipelineDirective);
     /* Use MinWorkers */
     maAddDirective(appweb, "StartWorkers", minWorkersDirective);
@@ -2809,6 +2920,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     /* Use requestTimeout */
     maAddDirective(appweb, "Timeout", requestTimeoutDirective);
     maAddDirective(appweb, "ThreadLimit", limitWorkersDirective);
+    /* Use Methods */
+    maAddDirective(appweb, "TraceMethod", traceMethodDirective);
     maAddDirective(appweb, "WorkerLimit", limitWorkersDirective);
     /* Use LimitRequestHeaderLines */
     maAddDirective(appweb, "LimitRequestFields", limitRequestHeaderLinesDirective);
