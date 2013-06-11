@@ -69,13 +69,9 @@ static void openCgi(HttpQueue *q)
         /* Too many active CGI processes */
         return;
     }
-    if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
-    } else {
-        httpTrimExtraPath(q->conn);
-        httpMapFile(q->conn, rx->route);
-        httpCreateCGIParams(q->conn);
-    }
+    httpTrimExtraPath(q->conn);
+    httpMapFile(q->conn, rx->route);
+    httpCreateCGIParams(q->conn);
     if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
         return;
     }
