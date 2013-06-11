@@ -506,6 +506,9 @@ typedef struct Col {
 } Col;
 
 
+/*
+    Create a list of columns to use for a joined table
+ */
 static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int joinField, int follow)
 {
     EdiGrid     *foreignGrid;
@@ -550,28 +553,26 @@ static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int jo
 
 /*
     List of grids to join must be null terminated
+    MOB - what kind of join is this?
  */
 PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
 {
     EdiGrid     *primary, *grid, *result, *current;
     EdiRec      *rec;
     EdiField    *dest, *fp;
-    MprList     *cols;
+    MprList     *cols, *rows;
     MprHash     *grids;
     Col         *col;
     va_list     vgrids;
     cchar       *keyValue;
-    int         nfields, r, next;
+    int         r, next, nfields, nrows;
 
     va_start(vgrids, edi);
     if ((primary = va_arg(vgrids, EdiGrid*)) == 0) {
         return 0;
     }
-    if ((result = ediCreateBareGrid(edi, NULL, 0)) == 0) {
-        return 0;
-    }
     if (primary->nrecords == 0) {
-        return result;
+        return ediCreateBareGrid(edi, NULL, 0);
     }
     /*
         Build list of grids to join
@@ -590,13 +591,14 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
      */
     cols = joinColumns(mprCreateList(0, 0), primary, grids, -1, 1);
     nfields = mprGetListLength(cols);
+    rows = mprCreateList(0, 0);
 
     for (r = 0; r < primary->nrecords; r++) {
         if ((rec = ediCreateBareRec(edi, NULL, nfields)) == 0) {
             assert(0);
             return 0;
         }
-        result->records[r] = rec;
+        mprAddItem(rows, rec);
         dest = rec->fields;
         current = 0;
         for (ITERATE_ITEMS(cols, col, next)) { 
@@ -616,7 +618,14 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
             dest++;
         }
     }
-    result->nrecords = r;
+    nrows = mprGetListLength(rows);
+    if ((result = ediCreateBareGrid(edi, NULL, nrows)) == 0) {
+        return 0;
+    }
+    for (r = 0; r < nrows; r++) {
+        result->records[r] = mprGetItem(rows, r);
+    }
+    result->nrecords = nrows;
     return result;
 }
 
