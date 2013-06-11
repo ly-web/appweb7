@@ -72,76 +72,61 @@ static void openFileHandler(HttpQueue *q)
     route = rx->route;
     info = &tx->fileInfo;
 
-    if (rx->flags & (HTTP_PUT | HTTP_DELETE)) {
-        if (!(route->flags & HTTP_ROUTE_PUT_DELETE_METHODS)) {
-            httpError(q->conn, HTTP_CODE_BAD_METHOD, "The \"%s\" method is not supported by this route", rx->method);
+    if (conn->error) {
+        return;
+    }
+    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
+        if (!(info->valid || info->isDir)) {
+            if (rx->referrer) {
+                mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
+            } else {
+                mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
+            }
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find %s", rx->uri);
+            return;
+        } 
+        if (!tx->etag) {
+            /* Set the etag for caching in the client */
+            tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
         }
-    } else {
-        if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
-            if (!(info->valid || info->isDir)) {
-                if (rx->referrer) {
-                    mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
-                } else {
-                    mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
-                }
-                httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find %s", rx->uri);
-
-            } else if (info->valid) {
-                if (!tx->etag) {
-                    /* Set the etag for caching in the client */
-                    tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
-                }
-            }
+        if (info->mtime) {
+            //  TODO - OPT could cache this
+            date = httpGetDateString(&tx->fileInfo);
+            httpSetHeader(conn, "Last-Modified", date);
         }
-        if (conn->error) {
-            ;
-        } else if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
-            if (tx->fileInfo.valid && tx->fileInfo.mtime) {
-                //  TODO - OPT could cache this
-                date = httpGetDateString(&tx->fileInfo);
-                httpSetHeader(conn, "Last-Modified", date);
-            }
-            if (httpContentNotModified(conn)) {
-                httpSetStatus(conn, HTTP_CODE_NOT_MODIFIED);
-                httpOmitBody(conn);
-                tx->length = -1;
-            }
-            if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-                httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot locate document: %s", rx->uri);
-                
-            } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
-                httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
-                    "Http transmission aborted. File size exceeds max body of %,Ld bytes", 
-                        conn->limits->transmissionBodySize);
-                
-            } else if (!(tx->connector == conn->http->sendConnector)) {
-                /*
-                    If using the net connector, open the file if a body must be sent with the response. The file will be
-                    automatically closed when the request completes.
-                 */
-                if (!(tx->flags & HTTP_TX_NO_BODY)) {
-                    tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
-                    if (tx->file == 0) {
-                        if (rx->referrer) {
-                            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", 
-                                tx->filename, rx->referrer);
-                        } else {
-                            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", tx->filename);
-                        }
+        if (httpContentNotModified(conn)) {
+            httpSetStatus(conn, HTTP_CODE_NOT_MODIFIED);
+            httpOmitBody(conn);
+            tx->length = -1;
+        }
+        if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot locate document: %s", rx->uri);
+            
+        } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
+            httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
+                "Http transmission aborted. File size exceeds max body of %,Ld bytes", 
+                    conn->limits->transmissionBodySize);
+            
+        } else if (!(tx->connector == conn->http->sendConnector)) {
+            /*
+                If using the net connector, open the file if a body must be sent with the response. The file will be
+                automatically closed when the request completes.
+             */
+            if (!(tx->flags & HTTP_TX_NO_BODY)) {
+                tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
+                if (tx->file == 0) {
+                    if (rx->referrer) {
+                        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", 
+                            tx->filename, rx->referrer);
+                    } else {
+                        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", tx->filename);
                     }
                 }
             }
-
-        } else if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-            if (route->flags & HTTP_ROUTE_PUT_DELETE_METHODS) {
-                httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
-            } else {
-                httpHandleOptionsTrace(q->conn, "GET,HEAD,POST");
-            }
-
-        } else {
-            httpError(conn, HTTP_CODE_BAD_METHOD, "Bad method");
         }
+
+    } else if (rx->flags & HTTP_OPTIONS) {
+        httpHandleOptions(q->conn);
     }
 }
 
