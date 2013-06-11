@@ -1803,11 +1803,11 @@ static void generateScaffoldViews(HttpRoute *route, int argc, char **argv)
 
     if (!app->legacy) {
         tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s}", name, title));
-        path = sfmt("%s/%s/list.html", eroute->appDir, name);
+        path = sfmt("%s/%s/%s-list.html", eroute->appDir, name, name);
         data = stemplate(ScaffoldListView, tokens);
         makeEspFile(path, data, "Scaffold List Partial");
 
-        path = sfmt("%s/%s/edit.html", eroute->appDir, name);
+        path = sfmt("%s/%s/%s-edit.html", eroute->appDir, name, name);
         data = stemplate(ScaffoldEditView, tokens);
         makeEspFile(path, data, "Scaffold Edit Partial");
 
