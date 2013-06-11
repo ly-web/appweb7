@@ -9,7 +9,8 @@ let http: Http = new Http
 http.get(HTTP + "/app/test/login")
 assert(http.status == 200)
 assert(http.response.contains("Please Login"))
-let securityToken = http.header("X-Security-Token")
+// dump(http.headers)
+let securityToken = http.header("X-XSRF-TOKEN")
 let cookie = http.header("Set-Cookie")
 if (cookie) {
     cookie = cookie.match(/(-http-session-=.*);/)[1]
@@ -23,7 +24,8 @@ http.close()
 
 //  POST /app/test/login
 http.setCookie(cookie)
-http.setHeader("__esp_security_token__", securityToken)
+// http.setHeader("__esp_security_token__", securityToken)
+http.setHeader("X-XSRF-TOKEN", securityToken)
 http.form(HTTP + "/app/test/login", { 
     __esp_security_token__: securityToken,
     username: "admin", 
