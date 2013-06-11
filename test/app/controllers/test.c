@@ -5,12 +5,6 @@
 
 static void *workMem;
 
-#if UNUSED
-static void common() {
-    setParam("page-title", "MVC Title");
-}
-#endif
-
 static void check() { 
     render("Check: OK\r\n");
     finalize();
@@ -82,6 +76,9 @@ static void work() {
     strcpy(workMem, mprGetDate(0));
 }
 
+static void cors() {
+    render("CORS OK\n");
+}
 
 static void missing() {
     renderError(HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action");
@@ -94,5 +91,6 @@ ESP_EXPORT int esp_module_test(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "test-cmd-login", login);
     espDefineAction(route, "test-cmd-stream", stream);
     espDefineAction(route, "test-cmd-work", work);
+    espDefineAction(route, "test-cmd-cors", cors);
     return 0;
 }
