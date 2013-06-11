@@ -89,13 +89,13 @@ app.config(function($httpProvider, $routeProvider) {
         function error(response) {
             if (response.status === 401) {
                 $location.path($routeProvider.login);
-            } else if (response.status === 406) {
-                //  MOB - must re-enable XSRF
-                $rootScope.feedback = { warning: "Security token is stale. Please reload and retry." };
-                var uri = $location.absUrl().split("#")[0];
-                $window.location.href = uri;
-            } else if (response.status === 500) {
+                $rootScope.feedback = response.data.feedback;
+
+            } else if (response.status >= 500) {
                 $rootScope.feedback = { warning: "Server Error. Please Retry." };
+
+            } else if (response.status >= 400) {
+                $rootScope.feedback = { warning: "Request Error: " + response.status + ". Please Retry." };
             }
             return $q.reject(response);
         }

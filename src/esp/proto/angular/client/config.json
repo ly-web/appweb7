@@ -25,6 +25,7 @@
         "authStore": "app",
         "timeouts": {
             "session": 1800
-        }
+        },
+        "xsrf": true
     }
 }
