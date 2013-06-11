@@ -4104,6 +4104,10 @@ PUBLIC int mprRemoveKey(MprHash *table, cvoid *key);
  */
 PUBLIC MprHash *mprBlendHash(MprHash *target, MprHash *other);
 
+//  MOB DOC
+PUBLIC char *mprHashToString(MprHash *hash, cchar *join);
+PUBLIC char *mprHashKeysToString(MprHash *hash, cchar *join);
+
 /*********************************** Files ************************************/
 /**
     Signed file offset data type. Supports large files greater than 4GB in size on all systems.

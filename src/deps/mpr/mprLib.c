@@ -5459,7 +5459,7 @@ PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int fl
         cmd->requiredEof++;
     }
     if (addCmdHandlers(cmd) < 0) {
-        mprError("Cannot open command handlers - insufficient handles");
+        mprError("Cannot open command handlers - insufficient I/O handles");
         return MPR_ERR_CANT_OPEN;
     }
     rc = startProcess(cmd);
@@ -12038,6 +12038,45 @@ PUBLIC MprHash *mprCreateHashFromWords(cchar *str)
         word = stok(NULL, " \t\n\r", &next);
     }
     return hash;
+}
+
+
+PUBLIC char *mprHashToString(MprHash *hash, cchar *join)
+{
+    MprBuf  *buf;
+    MprKey  *kp;
+    cchar   *item;
+
+    if (!join) {
+        join = ",";
+    }
+    buf = mprCreateBuf(0, 0);
+    for (ITERATE_KEY_DATA(hash, kp, item)) {
+        mprPutStringToBuf(buf, item);
+        mprPutStringToBuf(buf, join);
+    }
+    mprAdjustBufEnd(buf, -1);
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
+}
+
+
+PUBLIC char *mprHashKeysToString(MprHash *hash, cchar *join)
+{
+    MprBuf  *buf;
+    MprKey  *kp;
+
+    if (!join) {
+        join = ",";
+    }
+    buf = mprCreateBuf(0, 0);
+    for (ITERATE_KEYS(hash, kp)) {
+        mprPutStringToBuf(buf, kp->key);
+        mprPutStringToBuf(buf, join);
+    }
+    mprAdjustBufEnd(buf, -1);
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
 }
 
 
