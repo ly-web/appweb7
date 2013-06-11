@@ -1038,6 +1038,8 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/assets"
 	cp src/esp/proto/angular/client/assets/banner.jpg $(CONFIG)/bin/esp-proto/angular/client/assets/banner.jpg
 	cp src/esp/proto/angular/client/assets/favicon.ico $(CONFIG)/bin/esp-proto/angular/client/assets/favicon.ico
+	cp src/esp/proto/angular/client/assets/glyphicons-halflings-white.png $(CONFIG)/bin/esp-proto/angular/client/assets/glyphicons-halflings-white.png
+	cp src/esp/proto/angular/client/assets/glyphicons-halflings.png $(CONFIG)/bin/esp-proto/angular/client/assets/glyphicons-halflings.png
 	cp src/esp/proto/angular/client/assets/splash.jpg $(CONFIG)/bin/esp-proto/angular/client/assets/splash.jpg
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/components/Esp"
 	cp src/esp/proto/angular/client/components/Esp/Esp.js $(CONFIG)/bin/esp-proto/angular/client/components/Esp/Esp.js
@@ -1986,6 +1988,8 @@ ifeq ($(BIT_PACK_ESP),1)
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets"
 	cp src/esp/proto/angular/client/assets/banner.jpg $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/banner.jpg
 	cp src/esp/proto/angular/client/assets/favicon.ico $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/favicon.ico
+	cp src/esp/proto/angular/client/assets/glyphicons-halflings-white.png $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/glyphicons-halflings-white.png
+	cp src/esp/proto/angular/client/assets/glyphicons-halflings.png $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/glyphicons-halflings.png
 	cp src/esp/proto/angular/client/assets/splash.jpg $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/splash.jpg
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/components/Esp"
 	cp src/esp/proto/angular/client/components/Esp/Esp.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/components/Esp/Esp.js

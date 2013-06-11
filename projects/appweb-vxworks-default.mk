@@ -1039,6 +1039,8 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/assets"
 	cp src/esp/proto/angular/client/assets/banner.jpg $(CONFIG)/bin/esp-proto/angular/client/assets/banner.jpg
 	cp src/esp/proto/angular/client/assets/favicon.ico $(CONFIG)/bin/esp-proto/angular/client/assets/favicon.ico
+	cp src/esp/proto/angular/client/assets/glyphicons-halflings-white.png $(CONFIG)/bin/esp-proto/angular/client/assets/glyphicons-halflings-white.png
+	cp src/esp/proto/angular/client/assets/glyphicons-halflings.png $(CONFIG)/bin/esp-proto/angular/client/assets/glyphicons-halflings.png
 	cp src/esp/proto/angular/client/assets/splash.jpg $(CONFIG)/bin/esp-proto/angular/client/assets/splash.jpg
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/components/Esp"
 	cp src/esp/proto/angular/client/components/Esp/Esp.js $(CONFIG)/bin/esp-proto/angular/client/components/Esp/Esp.js

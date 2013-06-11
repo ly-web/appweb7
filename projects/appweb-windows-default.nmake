@@ -1186,6 +1186,8 @@ $(CONFIG)\bin\esp-proto: $(DEPS_57)
 	if not exist "$(CONFIG)\bin\esp-proto\angular\client\assets" md "$(CONFIG)\bin\esp-proto\angular\client\assets"
 	copy /Y src\esp\proto\angular\client\assets\banner.jpg $(CONFIG)\bin\esp-proto\angular\client\assets\banner.jpg
 	copy /Y src\esp\proto\angular\client\assets\favicon.ico $(CONFIG)\bin\esp-proto\angular\client\assets\favicon.ico
+	copy /Y src\esp\proto\angular\client\assets\glyphicons-halflings-white.png $(CONFIG)\bin\esp-proto\angular\client\assets\glyphicons-halflings-white.png
+	copy /Y src\esp\proto\angular\client\assets\glyphicons-halflings.png $(CONFIG)\bin\esp-proto\angular\client\assets\glyphicons-halflings.png
 	copy /Y src\esp\proto\angular\client\assets\splash.jpg $(CONFIG)\bin\esp-proto\angular\client\assets\splash.jpg
 	if not exist "$(CONFIG)\bin\esp-proto\angular\client\components\Esp" md "$(CONFIG)\bin\esp-proto\angular\client\components\Esp"
 	copy /Y src\esp\proto\angular\client\components\Esp\Esp.js $(CONFIG)\bin\esp-proto\angular\client\components\Esp\Esp.js
@@ -2244,6 +2246,8 @@ installBinary: $(DEPS_102)
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets"
 	copy /Y src\esp\proto\angular\client\assets\banner.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\banner.jpg"
 	copy /Y src\esp\proto\angular\client\assets\favicon.ico "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\favicon.ico"
+	copy /Y src\esp\proto\angular\client\assets\glyphicons-halflings-white.png "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\glyphicons-halflings-white.png"
+	copy /Y src\esp\proto\angular\client\assets\glyphicons-halflings.png "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\glyphicons-halflings.png"
 	copy /Y src\esp\proto\angular\client\assets\splash.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\splash.jpg"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\components\Esp" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\components\Esp"
 	copy /Y src\esp\proto\angular\client\components\Esp\Esp.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\components\Esp\Esp.js"
