@@ -390,7 +390,8 @@ static int mdbDeleteRow(Edi *edi, cchar *tableName, cchar *key)
 {
     Mdb         *mdb;
     MdbTable    *table;
-    int         r, rc;
+    MprKey      *kp;
+    int         r, rc, value;
 
     assert(edi);
     assert(tableName && *tableName);
@@ -409,6 +410,12 @@ static int mdbDeleteRow(Edi *edi, cchar *tableName, cchar *key)
     rc = mprRemoveItemAtPos(table->rows, r);
     if (table->index) {
         mprRemoveKey(table->index, key);
+        for (ITERATE_KEYS(table->index, kp)) {
+            value = (int) PTOL(kp->data);
+            if (value >= r) {
+                mprAddKey(table->index, kp->key, LTOP(value - 1));
+            }
+        }
     }
     autoSave(mdb, table);
     unlock(mdb);

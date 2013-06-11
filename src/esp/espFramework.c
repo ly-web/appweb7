@@ -97,34 +97,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags)
 
 PUBLIC bool espCheckSecurityToken(HttpConn *conn) 
 {
-    HttpRx  *rx;
-    cchar   *requestToken, *sessionToken;
-
-    rx = conn->rx;
-    if (!(rx->flags & HTTP_POST)) {
-        return 1;
-    }
-    if ((sessionToken = httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, "")) != 0) {
-        requestToken = httpGetHeader(conn, "X-XSRF-TOKEN");
-#if DEPRECATE || 1
-        /*
-            Deprecated in 4.4
-         */
-        if (!requestToken) {
-            requestToken = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, 0);
-        }
-#endif
-#if DISABLED && MOB
-        if (!smatch(sessionToken, requestToken)) {
-            /*
-                Potential CSRF attack. Deny request.
-             */
-            httpError(conn, HTTP_CODE_NOT_ACCEPTABLE, "Security token is stale. Please reload the page and retry.");
-            return 0;
-        }
-#endif
-    }
-    return 1;
+    return httpCheckSecurityToken(conn);
 }
 
 
@@ -362,25 +335,9 @@ PUBLIC Edi *espGetRouteDatabase(EspRoute *eroute)
 }
 
 
-/*
-    Get a security token to use to mitiate CSRF threats. Security tokens are expected to be sent with 
-    POST form requests to verify the authenticity of the issuer.
-    This routine will use an existing token or create if not present. It will store in the session store.
- */
 PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
 {
-    HttpRx      *rx;
-
-    rx = conn->rx;
-
-    if (rx->securityToken == 0) {
-        rx->securityToken = (char*) httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, 0);
-        if (rx->securityToken == 0) {
-            rx->securityToken = mprGetRandomString(32);
-            httpSetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, rx->securityToken);
-        }
-    }
-    return rx->securityToken;
+    return httpGetSecurityToken(conn);
 }
 
 
@@ -747,6 +704,7 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
  */
 PUBLIC void espRenderSecurityToken(HttpConn *conn) 
 {
+#if UNUSED
     cchar   *securityToken;
 
     securityToken = espGetSecurityToken(conn);
@@ -763,6 +721,8 @@ PUBLIC void espRenderSecurityToken(HttpConn *conn)
     } else {
         espSetCookie(conn, "XSRF-TOKEN", securityToken, "/", NULL,  0, 0);
     }
+#endif
+    httpRenderSecurityToken(conn);
 }
 
 
@@ -785,6 +745,9 @@ static cchar *getGridSchema(EdiGrid *grid)
     char        *s;
     int         c, type, flags, cid, ncols, next;
 
+    if (grid->tableName == 0) {
+        return 0;
+    }
     edi = grid->edi;
     buf = mprCreateBuf(0, 0);
     ediGetTableSchema(edi, grid->tableName, NULL, &ncols);

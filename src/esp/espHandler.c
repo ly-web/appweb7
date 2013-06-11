@@ -28,7 +28,7 @@ static int loadApp(EspRoute *eroute);
 static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
 static int runAction(HttpConn *conn);
-static void compileError(HttpConn *conn, cchar *errMsg);
+static void showError(HttpConn *conn, cchar *fmt, ...);
 static int unloadEsp(MprModule *mp);
 static bool viewExists(HttpConn *conn);
 
@@ -58,39 +58,32 @@ static void openEsp(HttpQueue *q)
     esp->inUse++;
     unlock(esp);
 
-    if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        /*
-            ESP accepts all methods if there is a registered route. However, we only advertise the standard methods.
-         */
-        httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
-    } else {
-        if ((req = mprAllocObj(EspReq, manageReq)) == 0) {
-            httpMemoryError(conn);
-            return;
-        }
-        /*
-            Find the ESP route configuration. Search up the route parent chain
-         */
-        for (eroute = 0, route = rx->route; route; route = route->parent) {
-            if (route->eroute) {
-                eroute = route->eroute;
-                break;
-            }
-        }
-        if (!route) {
-            httpError(conn, 0, "Cannot find a suitable ESP route configuration in appweb.conf");
-            return;
-        }
-        if (!eroute) {
-            eroute = allocEspRoute(route);
-            return;
-        }
-        conn->data = req;
-        req->esp = esp;
-        req->route = route;
-        req->eroute = eroute;
-        req->autoFinalize = 1;
+    if ((req = mprAllocObj(EspReq, manageReq)) == 0) {
+        httpMemoryError(conn);
+        return;
     }
+    /*
+        Find the ESP route configuration. Search up the route parent chain
+     */
+    for (eroute = 0, route = rx->route; route; route = route->parent) {
+        if (route->eroute) {
+            eroute = route->eroute;
+            break;
+        }
+    }
+    if (!route) {
+        httpError(conn, 0, "Cannot find a suitable ESP route configuration in appweb.conf");
+        return;
+    }
+    if (!eroute) {
+        eroute = allocEspRoute(route);
+        return;
+    }
+    conn->data = req;
+    req->esp = esp;
+    req->route = route;
+    req->eroute = eroute;
+    req->autoFinalize = 1;
 }
 
 
@@ -235,7 +228,7 @@ static int runAction(HttpConn *conn)
     key = mprJoinPath(eroute->servicesDir, rx->target);
 
     if (loadApp(eroute) < 0) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
+        showError(conn, "Cannot load esp module for %s", eroute->appName);
         return 0;
     }
 #if !BIT_STATIC
@@ -253,8 +246,7 @@ static int runAction(HttpConn *conn)
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->servicePath, R_OK)) {
-            mprError("Cannot find service %s", req->servicePath);
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find service to serve request");
+            showError(conn, "Cannot find service %s to serve request", req->servicePath);
             return 0;
         }
         lock(req->esp);
@@ -265,7 +257,7 @@ static int runAction(HttpConn *conn)
             if (espModuleIsStale(req->servicePath, req->module, &recompile)) {
                 /*  WARNING: GC yield here */
                 if (recompile && !espCompile(route, req->servicePath, req->module, req->cacheName, 0, &errMsg)) {
-                    compileError(conn, errMsg);
+                    showError(conn, errMsg);
                     unlock(req->esp);
                     return 0;
                 }
@@ -281,7 +273,7 @@ static int runAction(HttpConn *conn)
             }
             if (mprLoadModule(mp) < 0) {
                 unlock(req->esp);
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", req->servicePath);
+                showError(conn, "Cannot load compiled esp module for %s", req->servicePath);
                 return 0;
             }
         }
@@ -294,13 +286,24 @@ static int runAction(HttpConn *conn)
         key = sfmt("%s/missing", mprGetPathDir(req->servicePath));
         if ((action = mprLookupKey(esp->actions, key)) == 0) {
             if (!viewExists(conn) && (action = mprLookupKey(esp->actions, "missing")) == 0) {
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action for %s in %s", rx->target, req->servicePath);
+                showError(conn, "Missing action for %s in %s", rx->target, req->servicePath);
                 return 0;
             }
         }
     }
-    if (rx->flags & HTTP_POST && !espCheckSecurityToken(conn)) {
-        return 0;
+    if (rx->flags & HTTP_POST && rx->authenticated && (route->flags & HTTP_ROUTE_XSRF)) {
+        if (!httpCheckSecurityToken(conn)) {
+            httpCreateSecurityToken(conn);
+            httpRenderSecurityToken(conn);
+            httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
+            if (route->flags & HTTP_ROUTE_JSON) {
+                espRenderString(conn, "{\"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
+                espFinalize(conn);
+            } else {
+                httpError(conn, HTTP_CODE_UNAUTHORIZED, "Security token is stale. Please retry.");
+            }
+            return 0;
+        }
     }
     if (action) {
         serviceName = stok(sclone(rx->target), "-", &actionName);
@@ -349,7 +352,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         req->source = req->view;
     }
     if (loadApp(eroute) < 0) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
+        showError(conn, "Cannot load esp module for %s", eroute->appName);
         return;
     }
 #if !BIT_STATIC
@@ -367,8 +370,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->source, R_OK)) {
-            mprLog(3, "Cannot find web page %s", req->source);
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find web page for %s", rx->uri);
+            mprLog(3, "Cannot find ESP source %s", req->source);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find resource for %s", rx->uri);
             return;
         }
         lock(req->esp);
@@ -406,7 +409,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             if (recompile) {
                 /* WARNING: this will allow GC */
                 if (recompile && !espCompile(rx->route, req->source, req->module, req->cacheName, 1, &errMsg)) {
-                    compileError(conn, errMsg);
+                    showError(conn, errMsg);
                     unlock(req->esp);
                     return;
                 }
@@ -423,7 +426,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             mprSetThreadData(esp->local, conn);
             if (mprLoadModule(mp) < 0) {
                 unlock(req->esp);
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", req->source);
+                showError(conn, "Cannot load compiled esp module for %s", req->source);
                 return;
             }
         }
@@ -431,7 +434,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     }
 #endif
     if ((view = mprLookupKey(esp->views, mprGetPortablePath(req->source))) == 0) {
-        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find defined view for %s", req->view);
+        showError(conn, "Cannot find defined view for %s", req->view);
         return;
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
@@ -559,6 +562,9 @@ static int loadApp(EspRoute *eroute)
             if ((value = mprQueryJsonString(eroute->config, "settings.autoLogin")) != 0) {
                 eroute->autoLogin = smatch(value, "true");
             }
+            if (smatch("false", mprQueryJsonString(eroute->config, "settings.xsrf"))) {
+                eroute->route->flags &= ~HTTP_ROUTE_XSRF;
+            }
             if ((value = mprQueryJsonString(eroute->config, "settings.map")) != 0) {
                 if (smatch(value, "compressed")) {
                     httpAddRouteMapping(eroute->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
@@ -620,6 +626,7 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     eroute->lifespan = 0;
     eroute->route = route;
     route->eroute = eroute;
+    route->flags |= HTTP_ROUTE_XSRF;
     return eroute;
 }
 
@@ -856,7 +863,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     }
 #endif
     if (smatch(type, "angular")) {
-        route->flags |= HTTP_ROUTE_JSON_RESOURCES;
+        route->flags |= HTTP_ROUTE_JSON;
     }
     if (!routeSet) {
         if (smatch(type, "angular")) {
@@ -1177,7 +1184,7 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     target = stemplate(target, state->route->vars);
-    httpDefineRoute(state->route, name, methods, pattern, target, source, 0);
+    httpDefineRoute(state->route, name, methods, pattern, target, source);
     return 0;
 }
 
@@ -1187,7 +1194,7 @@ PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *proc)
     EspRoute    *eroute;
     HttpRoute   *route;
 
-    if ((route = httpDefineRoute(parent, pattern, "ALL", pattern, "$&", "unused", 0)) == 0) {
+    if ((route = httpDefineRoute(parent, pattern, "ALL", pattern, "$&", "unused")) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     httpSetRouteHandler(route, "espHandler");
@@ -1344,18 +1351,25 @@ static int unloadEsp(MprModule *mp)
 }
 
 
-static void compileError(HttpConn *conn, cchar *errMsg)
+static void showError(HttpConn *conn, cchar *fmt, ...)
 {
+    va_list     args;
     EspReq      *req;
     EspRoute    *eroute;
+    cchar       *msg;
 
+    va_start(args, fmt);
     req = conn->data;
     eroute = req->eroute;
+    msg = sfmtv(fmt, args);
+
     if (eroute->showErrors) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", errMsg);
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", msg);
     } else {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot compile resource");
+        mprError("%s", msg);
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Internal Server Error");
     }
+    va_end(args);
 }
 #else /* BIT_PACK_ESP */
 

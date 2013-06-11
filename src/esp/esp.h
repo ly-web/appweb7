@@ -49,7 +49,13 @@ typedef void (*EspProc)(HttpConn *conn);
 #endif
 #define ESP_EXPORT_STRING MPR_STRINGIFY(ESP_EXPORT)
 
+#if DEPRECATE || 1
+/*
+    Deprecate in 4.4
+ */
 #define ESP_SECURITY_TOKEN_NAME "__esp_security_token__"
+#endif
+
 #define ESP_FLASH_VAR           "__flash__"
 
 /*
