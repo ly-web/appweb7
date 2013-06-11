@@ -9241,7 +9241,7 @@ PUBLIC void httpSetRouteAutoDelete(HttpRoute *route, bool enable)
 PUBLIC void httpSetRouteCompression(HttpRoute *route, int flags)
 {
     assert(route);
-    route->flags &= (HTTP_ROUTE_GZIP);
+    route->flags &= ~(HTTP_ROUTE_GZIP);
     route->flags |= (HTTP_ROUTE_GZIP & flags);
 }
 
