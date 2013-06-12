@@ -1248,8 +1248,12 @@ static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
             mprLog(7, "EST: write: len %d, written %d, total %d", len, rc, totalWritten);
         }
     } while (len > 0);
-
     mprHiddenSocketData(sp, est->ctx.out_left, MPR_WRITABLE);
+
+    if (totalWritten == 0 && rc == EST_ERR_NET_TRY_AGAIN) {
+        mprSetOsError(EAGAIN);
+        return -1;
+    }
     return totalWritten;
 }
 
@@ -2063,19 +2067,11 @@ static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
         rc = SSL_write(osp->handle, buf, (int) len);
         mprLog(7, "OpenSSL: written %d, requested len %d", rc, len);
         if (rc <= 0) {
-            rc = SSL_get_error(osp->handle, rc);
-            if (rc == SSL_ERROR_WANT_WRITE) {
-                mprNap(10);
-                continue;
-            } else if (rc == SSL_ERROR_WANT_READ) {
-                //  AUTO-RETRY should stop this
-                assert(0);
-                unlock(sp);
-                return -1;
-            } else {
-                unlock(sp);
-                return -1;
+            if (SSL_get_error(osp->handle, rc) == SSL_ERROR_WANT_WRITE) {
+                break;
             }
+            unlock(sp);
+            return -1;
         }
         totalWritten += rc;
         buf = (void*) ((char*) buf + rc);
@@ -2085,6 +2081,11 @@ static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
 
     } while (len > 0);
     unlock(sp);
+
+    if (totalWritten == 0 && rc == SSL_ERROR_WANT_WRITE) {
+        mprSetOsError(EAGAIN);
+        return -1;
+    }
     return totalWritten;
 }
 
@@ -2854,8 +2855,7 @@ static ssize nanoWrite(MprSocket *sp, cvoid *buf, ssize len)
         rc = sent = SSL_send(np->handle, (sbyte*) buf, (int) len);
         mprLog(7, "NanoSSL: written %d, requested len %d", sent, len);
         if (rc <= 0) {
-            mprLog(0, "NanoSSL: SSL_send failed sent %d", rc);
-            return -1;
+            break;
         }
         totalWritten += sent;
         buf = (void*) ((char*) buf + sent);
@@ -2865,6 +2865,9 @@ static ssize nanoWrite(MprSocket *sp, cvoid *buf, ssize len)
 
     SSL_sendPending(np->handle, &count);
     mprHiddenSocketData(sp, count, MPR_WRITABLE);
+    if (totalWritten == 0 && rc < 0 && errno == EAGAIN) {
+        return -1;
+    }
     return totalWritten;
 }
 
