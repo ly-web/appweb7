@@ -148,7 +148,6 @@ typedef struct EspRoute {
     bool            autoLogin;              /**< Bypass user login */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
-    int             showErrors;             /**< Send server errors back to client */
     int             update;                 /**< Auto-update modified ESP source */
 
     MprTicks        lifespan;               /**< Default cache lifespan */
@@ -240,8 +239,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
     @param cacheName MD5 cache name. Not a full path
     @param isView Set to "true" if the source is a view
     @param errMsg Reference to receive an error message if the routine fails.
-    @return "True" if the compilation is successful. Errors are logged and sent back to the client if EspRoute.showErrors
-        is true.
+    @return "True" if the compilation is successful. Errors are logged and sent back to the client if ShowErrors is true.
     @ingroup EspRoute
     @stability Evolving
  */
@@ -1117,6 +1115,19 @@ PUBLIC void espRenderFeedback(HttpConn *conn, cchar *kinds, cchar *options);
     @stability Prototype
   */
 PUBLIC void espRenderResult(HttpConn *conn, bool status);
+
+/**
+    Render a formatted string after HTML escaping
+    @description Render a formatted string of data and then HTML escape. Data packets will be created
+        as required to store the write data. This call may block waiting for data to drain to the client.
+    @param conn HttpConn connection object
+    @param fmt Printf style formatted string
+    @param ... Arguments for fmt
+    @return A count of the bytes actually written
+    @ingroup EspReq
+    @stability Prototype
+*/
+PUBLIC ssize espRenderSafe(HttpConn *conn, cchar *fmt, ...);
 
 /**
     Render a safe string of data to the client.

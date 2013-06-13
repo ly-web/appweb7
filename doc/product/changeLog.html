@@ -74,11 +74,11 @@
             <h3>Major Features</h3>
             <ul>
                 <li>Add Angularjs support in ESP.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/196">[issue 196]</a></li>
                 <li>Enhance "esp" generator application to generate Angular applications.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
-                <li>Change password hashing algorithm to use blowfish
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/197">[issue 197]</a></li>
+                <li>Change password hashing algorithm to use Blowfish encryption
+                    <a href="https://github.com/embedthis/appweb-4/issues/198">[issue 198]</a></li>
             </ul>
             <h3>Minor Features</h3>
             <ul>
@@ -94,24 +94,24 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/183">[issue 183]</a></li>
                 <li>Add support for multiline strings in ESP templates via back-tick.
                     <a href="https://github.com/embedthis/appweb-4/issues/185">[issue 185]</a></li>
-                <li>Add StreamInput directive.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                <li>Add StreamInput directive to control request body input streaming or buffering.
+                    <a href="https://github.com/embedthis/appweb-4/issues/199">[issue 199]</a></li>
                 <li>Add Map directive for transparent content extension mapping. Deprecate Compress directive.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/200">[issue 200]</a></li>
                 <li>Add httpLogout API.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/201">[issue 201]</a></li>
                 <li>Add httpAddAuthStore and HttpAddAuthType APIs to permit overriding the password verification scheme.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/202">[issue 202]</a></li>
                 <li>Add httpAddParamsFromJsonBody API.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/203">[issue 203]</a></li>
                 <li>Enhanced MPR APIs for: mprGetRandomString, mprGetCacheStats, mprCryptPassword, mprMakeSalt,
                         mprAddKeyWithType, mprQueryJsonString, mprQueryJsonValue, stitle, mprGlobPathFiles.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/204">[issue 204]</a></li>
+                <li>Replace Method, PutMethod and TraceMethod directives with AddMethods, RemoveMethods and SetMethods. 
+                    <a href="https://github.com/embedthis/appweb-4/issues/208">[issue 208]</a></li>
             </ul>
             <h3>Fixes</h3>
             <ul>
-                <li>Fix Content-Range. End byte value was +1.
-                    <a href="https://github.com/embedthis/appweb-4/issues/178">[issue 178]</a></li>
                 <li>Fixes for ESP controls.
                     <a href="https://github.com/embedthis/appweb-4/issues/184">[issue 184]</a></li>
                 <li>Update ESP tabs to fix tab order
@@ -123,11 +123,13 @@
                 <li>Remove leading "-" from all ESP CSS classes.
                     <a href="https://github.com/embedthis/appweb-4/issues/189">[issue 189]</a></li>
                 <li>Fix HTTP streaming request body input in http core engine.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/205">[issue 205]</a></li>
                 <li>Fix Http sessions. Aggregate all session state data in one object.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/206">[issue 206]</a></li>
                 <li>Make loading SSL provider thread-safe.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/207">[issue 207]</a></li>
+                <li>Make loading SSL provider thread-safe.
+                    <a href="https://github.com/embedthis/appweb-4/issues/207">[issue 207]</a></li>
             </ul>
 
             <a id="r4.3.5"></a>
@@ -135,7 +137,14 @@
             <h3>Fixes</h3>
             <ul>
                 <li>Fix recalculating MDB index after deleting items.
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/194">[issue 194]</a></li>
+                <li>Fix SSL write blocking with OpenSSL. Caused increased memory consumption for 
+                    large file downloads over SSL.
+                    <a href="https://github.com/embedthis/appweb-4/issues/195">[issue 195]</a></li>
+                <li>Fix Content-Range. End byte value was +1.
+                    <a href="https://github.com/embedthis/appweb-4/issues/178">[issue 178]</a></li>
+                <li>Fix parsing range header.
+                    <a href="https://github.com/embedthis/appweb-4/issues/209">[issue 209]</a></li>
             </ul>
 
             <a id="r4.3.4"></a>
@@ -146,6 +155,8 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/191">[issue 191]</a></li>
                 <li>Fix static compilation error in espHandler.
                     <a href="https://github.com/embedthis/appweb-4/issues/192">[issue 192]</a></li>
+                <li>Update jquery and jquery.esp to support jQuery 1.9 
+                    <a href="https://github.com/embedthis/appweb-4/issues/193">[issue 193]</a></li>
             </ul>
 
             <a id="r4.3.3"></a>
@@ -186,6 +197,7 @@
                 <li>Fix the ESP text password attributes
                     <a href="https://github.com/embedthis/appweb-4/issues/177">[issue 177]</a></li>
             </ul>
+
             <a id="r4.3.2"></a>
             <h2 class="section">Changes in 4.3.2</h2>
             <h3>Minor Features</h3>

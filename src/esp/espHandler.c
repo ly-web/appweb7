@@ -28,7 +28,6 @@ static int loadApp(EspRoute *eroute);
 static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
 static int runAction(HttpConn *conn);
-static void showError(HttpConn *conn, cchar *fmt, ...);
 static int unloadEsp(MprModule *mp);
 static bool viewExists(HttpConn *conn);
 
@@ -228,7 +227,7 @@ static int runAction(HttpConn *conn)
     key = mprJoinPath(eroute->servicesDir, rx->target);
 
     if (loadApp(eroute) < 0) {
-        showError(conn, "Cannot load esp module for %s", eroute->appName);
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
         return 0;
     }
 #if !BIT_STATIC
@@ -246,7 +245,7 @@ static int runAction(HttpConn *conn)
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->servicePath, R_OK)) {
-            showError(conn, "Cannot find service %s to serve request", req->servicePath);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find service %s to serve request", req->servicePath);
             return 0;
         }
         lock(req->esp);
@@ -257,7 +256,7 @@ static int runAction(HttpConn *conn)
             if (espModuleIsStale(req->servicePath, req->module, &recompile)) {
                 /*  WARNING: GC yield here */
                 if (recompile && !espCompile(route, req->servicePath, req->module, req->cacheName, 0, &errMsg)) {
-                    showError(conn, errMsg);
+                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
                     unlock(req->esp);
                     return 0;
                 }
@@ -273,7 +272,7 @@ static int runAction(HttpConn *conn)
             }
             if (mprLoadModule(mp) < 0) {
                 unlock(req->esp);
-                showError(conn, "Cannot load compiled esp module for %s", req->servicePath);
+                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", req->servicePath);
                 return 0;
             }
         }
@@ -286,7 +285,7 @@ static int runAction(HttpConn *conn)
         key = sfmt("%s/missing", mprGetPathDir(req->servicePath));
         if ((action = mprLookupKey(esp->actions, key)) == 0) {
             if (!viewExists(conn) && (action = mprLookupKey(esp->actions, "missing")) == 0) {
-                showError(conn, "Missing action for %s in %s", rx->target, req->servicePath);
+                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action for %s in %s", rx->target, req->servicePath);
                 return 0;
             }
         }
@@ -352,7 +351,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         req->source = req->view;
     }
     if (loadApp(eroute) < 0) {
-        showError(conn, "Cannot load esp module for %s", eroute->appName);
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
         return;
     }
 #if !BIT_STATIC
@@ -409,7 +408,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             if (recompile) {
                 /* WARNING: this will allow GC */
                 if (recompile && !espCompile(rx->route, req->source, req->module, req->cacheName, 1, &errMsg)) {
-                    showError(conn, errMsg);
+                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
                     unlock(req->esp);
                     return;
                 }
@@ -426,7 +425,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             mprSetThreadData(esp->local, conn);
             if (mprLoadModule(mp) < 0) {
                 unlock(req->esp);
-                showError(conn, "Cannot load compiled esp module for %s", req->source);
+                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", req->source);
                 return;
             }
         }
@@ -434,7 +433,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     }
 #endif
     if ((view = mprLookupKey(esp->views, mprGetPortablePath(req->source))) == 0) {
-        showError(conn, "Cannot find defined view for %s", req->view);
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find defined view for %s", req->view);
         return;
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
@@ -551,7 +550,7 @@ static int loadApp(EspRoute *eroute)
                 }
             }
             if ((value = mprQueryJsonString(eroute->config, "settings.showErrors")) != 0) {
-                eroute->showErrors = smatch(value, "true");
+                httpSetRouteShowErrors(eroute->route, smatch(value, "true"));
             }
             if ((value = mprQueryJsonString(eroute->config, "settings.update")) != 0) {
                 eroute->update = smatch(value, "true");
@@ -621,7 +620,6 @@ static EspRoute *allocEspRoute(HttpRoute *route)
 #endif
     eroute->cacheDir = (char*) path;
     eroute->update = BIT_DEBUG;
-    eroute->showErrors = BIT_DEBUG;
     eroute->keepSource = BIT_DEBUG;
     eroute->lifespan = 0;
     eroute->route = route;
@@ -647,7 +645,6 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->commonService = parent->commonService;
     eroute->update = parent->update;
     eroute->keepSource = parent->keepSource;
-    eroute->showErrors = parent->showErrors;
     eroute->lifespan = parent->lifespan;
     if (parent->compile) {
         eroute->compile = sclone(parent->compile);
@@ -1227,23 +1224,21 @@ static int espRouteSetDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if DEPRECATE || 1
 /*
     EspShowErrors on|off
  */
 static int espShowErrorsDirective(MaState *state, cchar *key, cchar *value)
 {
-    EspRoute    *eroute;
-    bool        on;
+    bool    on;
 
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
     if (!maTokenize(state, value, "%B", &on)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    eroute->showErrors = on;
+    httpSetRouteShowErrors(state->route, on);
     return 0;
 }
+#endif
 
 
 /*
@@ -1319,9 +1314,10 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     maAddDirective(appweb, "EspResourceGroup", espResourceGroupDirective);
     maAddDirective(appweb, "EspRoute", espRouteDirective);
     maAddDirective(appweb, "EspRouteSet", espRouteSetDirective);
-    maAddDirective(appweb, "EspShowErrors", espShowErrorsDirective);
     maAddDirective(appweb, "EspUpdate", espUpdateDirective);
-
+#if DEPRECATE || 1
+    maAddDirective(appweb, "EspShowErrors", espShowErrorsDirective);
+#endif
     if ((esp->ediService = ediCreateService()) == 0) {
         return 0;
     }
@@ -1351,26 +1347,6 @@ static int unloadEsp(MprModule *mp)
 }
 
 
-static void showError(HttpConn *conn, cchar *fmt, ...)
-{
-    va_list     args;
-    EspReq      *req;
-    EspRoute    *eroute;
-    cchar       *msg;
-
-    va_start(args, fmt);
-    req = conn->data;
-    eroute = req->eroute;
-    msg = sfmtv(fmt, args);
-
-    if (eroute->showErrors) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", msg);
-    } else {
-        mprError("%s", msg);
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Internal Server Error");
-    }
-    va_end(args);
-}
 #else /* BIT_PACK_ESP */
 
 PUBLIC int maEspHandlerInit(Http *http, MprModule *mp)

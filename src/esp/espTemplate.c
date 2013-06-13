@@ -256,7 +256,7 @@ static int runCommand(EspRoute *eroute, cchar *command, cchar *csource, cchar *m
             err = out;
         }
         mprError("ESP: Cannot run command %s, error %s", commandLine, err);
-        if (eroute->showErrors) {
+        if (eroute->route->flags & HTTP_ROUTE_SHOW_ERRORS) {
             *errMsg = sfmt("Cannot run command %s, error %s", commandLine, err);
         } else {
             *errMsg = "Cannot compile view";

@@ -657,13 +657,13 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
         }
         title = sfmt("Request Error for \"%s\"", rx->pathInfo);
         msg = mprEscapeHtml(sfmtv(fmt, args));
-        if (eroute->showErrors) {
+        if (eroute->route->flags & HTTP_ROUTE_SHOW_ERRORS) {
             text = sfmt(\
                 "<!DOCTYPE html>\r\n<html>\r\n<head><title>%s</title></head>\r\n" \
                 "<body>\r\n<h1>%s</h1>\r\n" \
                 "    <pre>%s</pre>\r\n" \
                 "    <p>To prevent errors being displayed in the browser, " \
-                "       set <b>log.showErrors</b> to false in the ejsrc file.</p>\r\n", \
+                "       set <b>ShowErrors off</b> in the appweb.conf file.</p>\r\n", \
                 "</body>\r\n</html>\r\n", title, title, msg);
             httpSetHeader(conn, "Content-Type", "text/html");
             written += espRenderString(conn, text);
@@ -708,16 +708,10 @@ PUBLIC void espRenderSecurityToken(HttpConn *conn)
     cchar   *securityToken;
 
     securityToken = espGetSecurityToken(conn);
-#if DEPRECATED || 1
     if (conn->rx->route->flags & HTTP_ROUTE_LEGACY_MVC) {
-        /*
-            MOB - is this really required or can we migrate to XSRF cookie?
-            Deprecated in 4.4.0
-         */
         espAddHeaderString(conn, "X-Security-Token", securityToken);
         espRender(conn, "<meta name='SecurityTokenName' content='%s' />\r\n", ESP_SECURITY_TOKEN_NAME);
         espRender(conn, "    <meta name='%s' content='%s' />", ESP_SECURITY_TOKEN_NAME, securityToken);
-#endif
     } else {
         espSetCookie(conn, "XSRF-TOKEN", securityToken, "/", NULL,  0, 0);
     }
@@ -795,7 +789,17 @@ PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags)
 }
 
 
-//  MOB - inconsistent with renderSafe
+PUBLIC ssize espRenderSafe(HttpConn *conn, cchar *fmt, ...)
+{
+    va_list     args;
+    cchar       *s;
+
+    va_start(args, fmt);
+    s = mprEscapeHtml(sfmtv(fmt, args));
+    va_end(args);
+    return espRenderBlock(conn, s, slen(s));
+}
+
 
 PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s)
 {
