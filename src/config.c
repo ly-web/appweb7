@@ -758,6 +758,21 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
 
 
 
+/*
+    Defense Policy Action [Token=Value]...
+ */
+static int defenseDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *policy, *action, *args; 
+
+    if (!maTokenize(state, value, "%S %S %*", &policy, &action, &args)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteDefense(state->route, policy, action, args);
+    return 0;
+}
+
+
 static int defaultLanguageDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetRouteDefaultLanguage(state->route, value);
@@ -778,18 +793,6 @@ static int denyDirective(MaState *state, cchar *key, cchar *value)
     httpSetAuthDeny(state->auth, spec);
     return addCondition(state, "allowDeny", 0, 0);
 }
-
-
-#if UNUSED
-/*
-    DelegateOptions
- */
-static int delegateOptionsDirective(MaState *state, cchar *key, cchar *value)
-{
-    httpSetRouteDelegateOptions(state->route);
-    return 0;
-}
-#endif
 
 
 /*
@@ -1595,6 +1598,21 @@ static int minWorkersDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    Monitor Resource Expr Policies.
+ */
+static int monitorDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *resource, *expr, *policies;
+
+    if (!maTokenize(state, value, "%S %*", &resource, &expr, &policies)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteMonitor(state->route, resource, expr, policies);
+    return 0;
+}
+
+
+/*
     NameVirtualHost ip[:port]
  */
 static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
@@ -2023,6 +2041,21 @@ static int setMethodsDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    ShowErrors on|off
+ */
+static int showErrorsDirective(MaState *state, cchar *key, cchar *value)
+{
+    bool    on;
+
+    if (!maTokenize(state, value, "%B", &on)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteShowErrors(state->route, on);
+    return 0;
+}
+
+
+/*
     Source path
  */
 static int sourceDirective(MaState *state, cchar *key, cchar *value)
@@ -2030,6 +2063,22 @@ static int sourceDirective(MaState *state, cchar *key, cchar *value)
     httpSetRouteSource(state->route, value);
     return 0;
 }
+
+
+/*
+    Stealth on|off
+ */
+static int stealthDirective(MaState *state, cchar *key, cchar *value)
+{
+    bool    on;
+
+    if (!maTokenize(state, value, "%B", &on)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteStealth(state->route, on);
+    return 0;
+}
+
 
 
 /*
@@ -2791,9 +2840,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Condition", conditionDirective);
     maAddDirective(appweb, "CrossOrigin", crossOriginDirective);
     maAddDirective(appweb, "DefaultLanguage", defaultLanguageDirective);
-#if UNUSED
-    maAddDirective(appweb, "DelegateOptions", delegateOptionsDirective);
-#endif
+    maAddDirective(appweb, "Defense", defenseDirective);
     maAddDirective(appweb, "Deny", denyDirective);
     maAddDirective(appweb, "DirectoryIndex", directoryIndexDirective);
     maAddDirective(appweb, "Documents", documentsDirective);
@@ -2839,6 +2886,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LoadModule", loadModuleDirective);
     maAddDirective(appweb, "Map", mapDirective);
     maAddDirective(appweb, "MemoryPolicy", memoryPolicyDirective);
+    maAddDirective(appweb, "Monitor", monitorDirective);
     maAddDirective(appweb, "Name", nameDirective);
     maAddDirective(appweb, "NameVirtualHost", nameVirtualHostDirective);
     maAddDirective(appweb, "Order", orderDirective);
@@ -2861,7 +2909,9 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "SetConnector", setConnectorDirective);
     maAddDirective(appweb, "SetHandler", setHandlerDirective);
     maAddDirective(appweb, "SetMethods", setMethodsDirective);
+    maAddDirective(appweb, "ShowErrors", showErrorsDirective);
     maAddDirective(appweb, "Source", sourceDirective);
+    maAddDirective(appweb, "Stealth", stealthDirective);
     maAddDirective(appweb, "StreamInput", streamInputDirective);
 
     maAddDirective(appweb, "MinWorkers", minWorkersDirective);
