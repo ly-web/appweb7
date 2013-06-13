@@ -2017,9 +2017,9 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
  */
 static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
 {
-    OpenSocket       *osp;
-    ssize           totalWritten;
-    int             rc;
+    OpenSocket  *osp;
+    ssize       totalWritten;
+    int         rc;
 
     //  OPT - should not need these locks
     lock(sp);
@@ -2038,12 +2038,9 @@ static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
         rc = SSL_write(osp->handle, buf, (int) len);
         mprLog(7, "OpenSSL: written %d, requested len %d", rc, len);
         if (rc <= 0) {
-printf("RC %d, errno %d\n", rc, errno);
             if (SSL_get_error(osp->handle, rc) == SSL_ERROR_WANT_WRITE) {
-printf("    WANT WRITE SSL_error %d\n", SSL_get_error(osp->handle, rc));
                 break;
             }
-printf("    SSL_error %d\n", SSL_get_error(osp->handle, rc));
             unlock(sp);
             return -1;
         }

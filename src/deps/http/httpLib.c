@@ -4145,7 +4145,7 @@ static void makeAltBody(HttpConn *conn, int status)
     rx = conn->rx;
 
     statusMsg = httpLookupStatus(conn->http, status);
-    msg = (rx->route && rx->route->flags & HTTP_ROUTE_SHOW_ERRORS) ? conn->errorMsg : "";
+    msg = (!rx->route || rx->route->flags & HTTP_ROUTE_SHOW_ERRORS) ? conn->errorMsg : "";
 
     if (scmp(conn->rx->accept, "text/plain") == 0) {
         tx->altBody = sfmt("Access Error: %d -- %s\r\n%s\r\n", status, statusMsg, conn->errorMsg);
@@ -4171,7 +4171,6 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
 {
     HttpRx      *rx;
     HttpTx      *tx;
-    HttpRoute   *route;
     cchar       *uri;
     int         status;
 
@@ -4212,10 +4211,7 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
                  */
                 flags |= HTTP_ABORT;
             } else {
-                if ((route = rx->route) == 0) {
-                    route = httpGetDefaultHost()->defaultRoute;
-                }
-                if ((uri = httpLookupRouteErrorDocument(route, tx->status)) && !smatch(uri, rx->uri)) {
+                if (rx->route && (uri = httpLookupRouteErrorDocument(rx->route, tx->status)) && !smatch(uri, rx->uri)) {
                     errorRedirect(conn, uri);
                 } else {
                     makeAltBody(conn, status);
@@ -9548,6 +9544,15 @@ PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name)
 }
 
 
+PUBLIC void httpSetRouteCookieVisibility(HttpRoute *route, bool visible)
+{
+    route->flags &= ~HTTP_ROUTE_VISIBLE_COOKIE;
+    if (visible) {
+        route->flags |= HTTP_ROUTE_VISIBLE_COOKIE;
+    }
+}
+
+
 PUBLIC void httpSetRouteData(HttpRoute *route, cchar *key, void *data)
 {
     assert(route);
@@ -14172,6 +14177,7 @@ static void manageSession(HttpSession *sp, int flags)
 PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
 {
     HttpRx      *rx;
+    int         flags;
 
     assert(conn);
     rx = conn->rx;
@@ -14184,7 +14190,8 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
                 NOTE: the session state for this ID may already exist if data has been written to the session.
              */
             if ((rx->session = createSession(conn)) != 0) {
-                httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, 0, 0);
+                flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_COOKIE) ? 0 : HTTP_COOKIE_HTTP;
+                httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, rx->session->lifespan, flags);
             }
         }
     }
@@ -14391,6 +14398,9 @@ PUBLIC int httpRenderSecurityToken(HttpConn *conn)
     cchar   *securityToken;
 
     securityToken = httpGetSecurityToken(conn);
+    /*
+        This cookie must be visible to Angular - so don't use HTTP_COOKIE_HTTP for "httponly".
+     */
     httpSetCookie(conn, BIT_XSRF_COOKIE, securityToken, "/", NULL,  0, 0);
     httpSetHeader(conn, BIT_XSRF_HEADER, securityToken);
     return 0;
@@ -15364,8 +15374,9 @@ PUBLIC void httpSetContentLength(HttpConn *conn, MprOff length)
 
 
 /*
-    Set lifespan < 0 to delete the cookie in the client
-    Set lifespan == 0 to get a session cookie in the client.
+    Set lifespan < 0 to delete the cookie in the client.
+    Set lifespan == 0 for no expiry.
+    WARNING: Some browsers (Chrome, Firefox) do not delete session cookies when you exit the browser.
  */
 PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTicks lifespan, int flags)
 {
@@ -15397,7 +15408,6 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
     if (lifespan) {
         expiresAtt = "; expires=";
         expires = mprFormatUniversalTime(MPR_HTTP_DATE, mprGetTime() + lifespan);
-
     } else {
         expires = expiresAtt = "";
     }

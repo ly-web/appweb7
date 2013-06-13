@@ -3317,6 +3317,7 @@ PUBLIC void httpSetStreaming(struct HttpHost *host, cchar *mime, cchar *uri, boo
 #define HTTP_ROUTE_CORS                 0x80        /**< Cross-Origin resource sharing */
 #define HTTP_ROUTE_STEALTH              0x100       /**< Stealth mode */
 #define HTTP_ROUTE_SHOW_ERRORS          0x200       /**< Show errors to the client */
+#define HTTP_ROUTE_VISIBLE_COOKIE       0x400       /**< Create cookies visible to client Javascript (not httponly) */
 #if (DEPRECATED || 1) && !DOXYGEN
 #define HTTP_ROUTE_GZIP                 0x800       /**< Support gzipped content on this route */
 #define HTTP_ROUTE_LEGACY_MVC           0x1000      /**< Legacy MVC app. Using "static" instead of "client". Deprecated in 4.4 */
@@ -4115,6 +4116,17 @@ PUBLIC void httpSetRouteCompression(HttpRoute *route, int flags);
 PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name);
 
 /**
+    Make session cookies that are visible to javascript.
+    @description If not visible, cookies will be created with httponly. This helps reduce the XSS risk as Javascripts cannot
+        read the session cookie.
+    @param route Route to modify
+    @param visible Set to true to create session cookies that are visible to Javascript.
+    @ingroup HttpRoute
+    @stability Prototype
+  */
+PUBLIC void httpSetRouteCookieVisibility(HttpRoute *route, bool visible);
+
+/**
     Set route data
     @description Routes can store extra configuration information indexed by key. This is used by handlers, filters,
         connectors and updates to store additional information on a per-route basis.
@@ -4125,6 +4137,8 @@ PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name);
     @stability Evolving
  */
 PUBLIC void httpSetRouteData(HttpRoute *route, cchar *key, void *data);
+
+
 
 /**
     Set the default language for the route
@@ -5598,8 +5612,8 @@ PUBLIC void httpSetContentType(HttpConn *conn, cchar *mimeType);
 /*
     Flags for httpSetCookie
  */
-#define HTTP_COOKIE_SECURE   0x1         /**< Flag for httpSetCookie for secure cookies (https only) */
-#define HTTP_COOKIE_HTTP     0x2         /**< Flag for httpSetCookie for http cookies (http only) */
+#define HTTP_COOKIE_SECURE   0x1         /**< Flag for Set-Cookie for SSL only */
+#define HTTP_COOKIE_HTTP     0x2         /**< Flag for Set-Cookie httponly. Not visible to Javascript */
 
 /** 
     Set a transmission cookie

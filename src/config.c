@@ -1970,6 +1970,16 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    SessionCookie [visible]
+ */
+static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
+{
+    httpSetRouteCookieVisibility(state->route, scaselessmatch(value, "visible"));
+    return 0;
+}
+
+
+/*
     SessionTimeout secs
  */
 static int sessionTimeoutDirective(MaState *state, cchar *key, cchar *value)
@@ -2904,6 +2914,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "<Route", routeDirective);
     maAddDirective(appweb, "</Route", closeDirective);
     maAddDirective(appweb, "ServerName", serverNameDirective);
+    maAddDirective(appweb, "SessionCookie", sessionCookieDirective);
     maAddDirective(appweb, "SessionTimeout", sessionTimeoutDirective);
     maAddDirective(appweb, "Set", setDirective);
     maAddDirective(appweb, "SetConnector", setConnectorDirective);
