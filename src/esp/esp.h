@@ -234,6 +234,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
     Compile an ESP page, service or view
     @description This compiles ESP components into loadable, cached modules
     @param route HttpRoute object
+    @param dispatcher Optional dispatcher to use when waiting for the compilation command.
     @param source ESP source file name
     @param module Output module file name
     @param cacheName MD5 cache name. Not a full path
@@ -243,7 +244,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
     @ingroup EspRoute
     @stability Evolving
  */
-PUBLIC bool espCompile(HttpRoute *route, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg);
+PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg);
 
 /**
     Convert an ESP web page into C code

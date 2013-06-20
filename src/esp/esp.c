@@ -1414,7 +1414,7 @@ static void compileFlat(HttpRoute *route)
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (smatch(mprGetPathExt(path), "c")) {
-                mprAddItem(app->build, mprCreateKeyPair(path, "service"));
+                mprAddItem(app->build, mprCreateKeyPair(path, "service", 0));
             }
         }
     }
@@ -1422,7 +1422,7 @@ static void compileFlat(HttpRoute *route)
         app->files = mprGetPathFiles(eroute->viewsDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
-            mprAddItem(app->build, mprCreateKeyPair(path, "view"));
+            mprAddItem(app->build, mprCreateKeyPair(path, "view", 0));
         }
     }
     if (eroute->clientDir) {
@@ -1430,7 +1430,7 @@ static void compileFlat(HttpRoute *route)
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (smatch(mprGetPathExt(path), "esp")) {
-                mprAddItem(app->build, mprCreateKeyPair(path, "page"));
+                mprAddItem(app->build, mprCreateKeyPair(path, "page", 0));
             }
         }
     }
@@ -1439,7 +1439,7 @@ static void compileFlat(HttpRoute *route)
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (smatch(mprGetPathExt(path), "esp")) {
-                mprAddItem(app->build, mprCreateKeyPair(path, "page"));
+                mprAddItem(app->build, mprCreateKeyPair(path, "page", 0));
             }
         }
     }

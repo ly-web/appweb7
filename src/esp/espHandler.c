@@ -24,7 +24,7 @@ static EspRoute *allocEspRoute(HttpRoute *loc);
 static int espDbDirective(MaState *state, cchar *key, cchar *value);
 static int espEnvDirective(MaState *state, cchar *key, cchar *value);
 static EspRoute *getEroute(HttpRoute *route);
-static int loadApp(EspRoute *eroute);
+static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher);
 static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
 static int runAction(HttpConn *conn);
@@ -226,7 +226,7 @@ static int runAction(HttpConn *conn)
     }
     key = mprJoinPath(eroute->servicesDir, rx->target);
 
-    if (loadApp(eroute) < 0) {
+    if (loadApp(eroute, conn->dispatcher) < 0) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
         return 0;
     }
@@ -255,7 +255,7 @@ static int runAction(HttpConn *conn)
              */ 
             if (espModuleIsStale(req->servicePath, req->module, &recompile)) {
                 /*  WARNING: GC yield here */
-                if (recompile && !espCompile(route, req->servicePath, req->module, req->cacheName, 0, &errMsg)) {
+                if (recompile && !espCompile(route, conn->dispatcher, req->servicePath, req->module, req->cacheName, 0, &errMsg)) {
                     httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
                     unlock(req->esp);
                     return 0;
@@ -350,7 +350,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         req->view = conn->tx->filename;
         req->source = req->view;
     }
-    if (loadApp(eroute) < 0) {
+    if (loadApp(eroute, conn->dispatcher) < 0) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
         return;
     }
@@ -407,7 +407,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 #endif
             if (recompile) {
                 /* WARNING: this will allow GC */
-                if (recompile && !espCompile(rx->route, req->source, req->module, req->cacheName, 1, &errMsg)) {
+                if (recompile && !espCompile(rx->route, conn->dispatcher, req->source, req->module, req->cacheName, 1, &errMsg)) {
                     httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
                     unlock(req->esp);
                     return;
@@ -484,7 +484,7 @@ static bool testConfig(EspRoute *eroute, cchar *key, cchar *desired)
 #endif
 
 
-static int loadApp(EspRoute *eroute)
+static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
 {
     MprModule   *mp;
     MprHash     *settings, *msettings;
@@ -508,7 +508,7 @@ static int loadApp(EspRoute *eroute)
 #if !BIT_STATIC
     if (espModuleIsStale(source, eroute->appModulePath, &recompile)) {
         /*  WARNING: GC yield here */
-        if (recompile && !espCompile(eroute->route, source, eroute->appModulePath, cacheName, 0, &errMsg)) {
+        if (recompile && !espCompile(eroute->route, dispatcher, source, eroute->appModulePath, cacheName, 0, &errMsg)) {
             mprError("Cannot compile %s/app.c", eroute->srcDir);
             return MPR_ERR_CANT_INITIALIZE;
         }
@@ -910,7 +910,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     httpFinalizeRoute(route);
     maPopState(state);
 
-    if (!state->appweb->skipModules && loadApp(eroute) < 0) {
+    if (!state->appweb->skipModules && loadApp(eroute, NULL) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
     return 0;

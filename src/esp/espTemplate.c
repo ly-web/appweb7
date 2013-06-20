@@ -214,7 +214,7 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
 }
 
 
-static int runCommand(EspRoute *eroute, cchar *command, cchar *csource, cchar *module, char **errMsg)
+static int runCommand(EspRoute *eroute, MprDispatcher *dispatcher, cchar *command, cchar *csource, cchar *module, char **errMsg)
 {
     MprCmd      *cmd;
     MprKey      *var;
@@ -224,7 +224,7 @@ static int runCommand(EspRoute *eroute, cchar *command, cchar *csource, cchar *m
     int         rc;
 
     *errMsg = 0;
-    cmd = mprCreateCmd(NULL);
+    cmd = mprCreateCmd(dispatcher);
     if ((commandLine = espExpandCommand(eroute, command, csource, module)) == 0) {
         *errMsg = sfmt("Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
@@ -276,7 +276,7 @@ static int runCommand(EspRoute *eroute, cchar *command, cchar *csource, cchar *m
 
     WARNING: this routine blocks and runs GC. All parameters must be retained.
  */
-PUBLIC bool espCompile(HttpRoute *route, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg)
+PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg)
 {
     MprFile     *fp;
     EspRoute    *eroute;
@@ -322,12 +322,12 @@ PUBLIC bool espCompile(HttpRoute *route, cchar *source, cchar *module, cchar *ca
     mprMakeDir(eroute->cacheDir, 0775, -1, -1, 1);
 
     /* WARNING: GC yield here */
-    if (runCommand(eroute, eroute->compile, csource, module, errMsg) < 0) {
+    if (runCommand(eroute, dispatcher, eroute->compile, csource, module, errMsg) < 0) {
         return 0;
     }
     if (eroute->link) {
         /* WARNING: GC yield here */
-        if (runCommand(eroute, eroute->link, csource, module, errMsg) < 0) {
+        if (runCommand(eroute, dispatcher, eroute->link, csource, module, errMsg) < 0) {
             return 0;
         }
 #if !(BIT_DEBUG && MACOSX)

@@ -65,13 +65,13 @@ static void openCgi(HttpQueue *q)
     conn = q->conn;
     rx = conn->rx;
     mprTrace(5, "Open CGI handler");
-    if (!httpValidateLimits(conn->endpoint, HTTP_VALIDATE_OPEN_PROCESS, q->conn)) {
+    if (httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_PROCESSES, 1) < 0) {
         /* Too many active CGI processes */
         return;
     }
-    httpTrimExtraPath(q->conn);
-    httpMapFile(q->conn, rx->route);
-    httpCreateCGIParams(q->conn);
+    httpTrimExtraPath(conn);
+    httpMapFile(conn, rx->route);
+    httpCreateCGIParams(conn);
     if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
         return;
     }
@@ -115,7 +115,7 @@ static void closeCgi(HttpQueue *q)
         mprSetCmdCallback(cmd, NULL, NULL);
         mprDestroyCmd(cmd);
     }
-    httpValidateLimits(q->conn->endpoint, HTTP_VALIDATE_CLOSE_PROCESS, q->conn);
+    httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
 }
 
 

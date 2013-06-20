@@ -18,7 +18,6 @@ static MaState *createState(MaServer *server, HttpHost *host, HttpRoute *route);
 static char *getDirective(char *line, char **valuep);
 static int getint(cchar *value);
 static int64 getnum(cchar *value);
-static MprTicks getticks(cchar *value);
 static void manageState(MaState *state, int flags);
 static int parseFile(MaState *state, cchar *path);
 static int parseFileInner(MaState *state, cchar *path);
@@ -559,18 +558,18 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
         option = stok(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if ((int) isdigit((uchar) *option)) {
-            lifespan = getticks(option);
+            lifespan = httpGetTicks(option);
 
         } else if (smatch(option, "client")) {
             flags |= HTTP_CACHE_CLIENT;
             if (ovalue) {
-                clientLifespan = getticks(ovalue);
+                clientLifespan = httpGetTicks(ovalue);
             }
 
         } else if (smatch(option, "server")) {
             flags |= HTTP_CACHE_SERVER;
             if (ovalue) {
-                serverLifespan = getticks(ovalue);
+                serverLifespan = httpGetTicks(ovalue);
             }
 
         } else if (smatch(option, "extensions")) {
@@ -768,7 +767,7 @@ static int defenseDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S %S %*", &policy, &action, &args)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpSetRouteDefense(state->route, policy, action, args);
+    httpAddDefense(policy, action, args);
     return 0;
 }
 
@@ -911,7 +910,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
                 flags |= MPR_LOG_ANEW;
 
             } else if (smatch(option, "stamp")) {
-                stamp = getticks(ovalue);
+                stamp = httpGetTicks(ovalue);
 
             } else {
                 mprError("Unknown ErrorLog option %s", option);
@@ -949,7 +948,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
  */
 static int exitTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprSetExitTimeout(getticks(value));
+    mprSetExitTimeout(httpGetTicks(value));
     return 0;
 }
 
@@ -967,17 +966,29 @@ static int groupAccountDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Header [!] name valuePattern
+    Header [add|append|remove|set] name value
  */
 static int headerDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *header;
-    int     not;
+    char    *cmd, *header, *hvalue;
+    int     op;
 
-    if (!maTokenize(state, value, "?! %S %*", &not, &header, &value)) {
+    if (!maTokenize(state, value, "%S %S %*", &cmd, &header, &hvalue)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpAddRouteHeader(state->route, header, value, not ? HTTP_ROUTE_NOT : 0);
+    if (scaselessmatch(cmd, "add")) {
+        op = HTTP_ROUTE_ADD_HEADER;
+    } else if (scaselessmatch(cmd, "append")) {
+        op = HTTP_ROUTE_APPEND_HEADER;
+    } else if (scaselessmatch(cmd, "remove")) {
+        op = HTTP_ROUTE_REMOVE_HEADER;
+    } else if (scaselessmatch(cmd, "set")) {
+        op = HTTP_ROUTE_SET_HEADER;
+    } else {
+        mprError("Unknown Header directive operation: %s", cmd);
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpAddRouteResponseHeader(state->route, op, header, hvalue);
     return 0;
 }
 
@@ -1076,7 +1087,7 @@ static int inactivityTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
     if (! mprGetDebugMode()) {
         state->limits = httpGraduateLimits(state->route, state->server->limits);
-        state->limits->inactivityTimeout = getticks(value);
+        state->limits->inactivityTimeout = httpGetTicks(value);
     }
     return 0;
 }
@@ -1602,12 +1613,12 @@ static int minWorkersDirective(MaState *state, cchar *key, cchar *value)
  */
 static int monitorDirective(MaState *state, cchar *key, cchar *value)
 {
-    cchar   *resource, *expr, *policies;
+    cchar   *counter, *expr, *limit, *period, *defenses;
 
-    if (!maTokenize(state, value, "%S %*", &resource, &expr, &policies)) {
+    if (!maTokenize(state, value, "%S %S %S %S %*", &counter, &expr, &limit, &period, &defenses)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpSetRouteMonitor(state->route, resource, expr, policies);
+    httpAddMonitor(counter, expr, stoi(limit), httpGetTicks(period), defenses);
     return 0;
 }
 
@@ -1785,7 +1796,7 @@ static int removeMethodsDirective(MaState *state, cchar *key, cchar *value)
  */
 static int requestParseTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
-    state->limits->requestParseTimeout = getticks(value);
+    state->limits->requestParseTimeout = httpGetTicks(value);
     return 0;
 }
 
@@ -1795,7 +1806,7 @@ static int requestParseTimeoutDirective(MaState *state, cchar *key, cchar *value
  */
 static int requestTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
-    state->limits->requestTimeout = getticks(value);
+    state->limits->requestTimeout = httpGetTicks(value);
     return 0;
 }
 
@@ -1825,7 +1836,7 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
             option = stok(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "age")) {
-                age = sfmt("%Ld", (int64) getticks(ovalue));
+                age = sfmt("%Ld", (int64) httpGetTicks(ovalue));
             } else if (smatch(option, "domains")) {
                 domains = 1;
             }
@@ -1960,6 +1971,24 @@ static int nameDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    RequestHeader [!] name valuePattern
+
+    The given header must [not] be present for the route to match
+ */
+static int requestHeaderDirective(MaState *state, cchar *key, cchar *value)
+{
+    char    *header;
+    int     not;
+
+    if (!maTokenize(state, value, "?! %S %*", &not, &header, &value)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpAddRouteRequestHeaderCheck(state->route, header, value, not ? HTTP_ROUTE_NOT : 0);
+    return 0;
+}
+
+
+/*
     ServerName URI
  */
 static int serverNameDirective(MaState *state, cchar *key, cchar *value)
@@ -1984,7 +2013,7 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
  */
 static int sessionTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
-    state->limits->sessionTimeout = getticks(value);
+    state->limits->sessionTimeout = httpGetTicks(value);
     return 0;
 }
 
@@ -2204,7 +2233,7 @@ static int unloadModuleDirective(MaState *state, cchar *key, cchar *value)
         mprError("Cannot unload module %s due to match routine", module->name);
         return MPR_ERR_BAD_SYNTAX;
     } else {
-        module->timeout = getticks(timeout);
+        module->timeout = httpGetTicks(timeout);
     }
     return 0;
 }
@@ -2381,7 +2410,7 @@ static int webSocketsProtocolDirective(MaState *state, cchar *key, cchar *value)
 
 static int webSocketsPingDirective(MaState *state, cchar *key, cchar *value)
 {
-    state->route->webSocketsPingPeriod = getticks(value);
+    state->route->webSocketsPingPeriod = httpGetTicks(value);
     return 0;
 }
 
@@ -2697,26 +2726,6 @@ static int getint(cchar *value)
 }
 
 
-static MprTicks getticks(cchar *value)
-{
-    MprTicks     when;
-
-    value = strim(slower(value), " \t", MPR_TRIM_BOTH);
-    if (sends(value, "sec") || sends(value, "secs") || sends(value, "seconds") || sends(value, "seconds")) {
-        when = stoi(value);
-    } else if (sends(value, "min") || sends(value, "mins") || sends(value, "minute") || sends(value, "minutes")) {
-        when = stoi(value) * 60;
-    } else if (sends(value, "hr") || sends(value, "hrs") || sends(value, "hour") || sends(value, "hours")) {
-        when = stoi(value) * 60 * 60;
-    } else if (sends(value, "day") || sends(value, "days")) {
-        when = stoi(value) * 60 * 60 * 24;
-    } else {
-        when = stoi(value);
-    }
-    return when * MPR_TICKS_PER_SEC;
-}
-
-
 /*
     Get the directive and value details. Return key and *valuep.
  */
@@ -2905,6 +2914,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Protocol", protocolDirective);
     maAddDirective(appweb, "Redirect", redirectDirective);
     maAddDirective(appweb, "RemoveMethods", removeMethodsDirective);
+    maAddDirective(appweb, "RequestHeader", requestHeaderDirective);
     maAddDirective(appweb, "RequestParseTimeout", requestParseTimeoutDirective);
     maAddDirective(appweb, "RequestTimeout", requestTimeoutDirective);
     maAddDirective(appweb, "Require", requireDirective);
