@@ -365,11 +365,11 @@ typedef struct HttpDefense {
     @param endpoint The endpoint on which the server was listening
     @param counter The counter to adjust.
     @param conn HttpConn connection object
-    @return Monitor event status code.
+    @return Monitor value after applying the adjustment.
     @ingroup HttpMonitor
     @stability Prototype
  */
-PUBLIC int httpMonitorEvent(struct HttpConn *conn, int counter, int64 adj);
+PUBLIC int64 httpMonitorEvent(struct HttpConn *conn, int counter, int64 adj);
 
 /**
     Add a monitor
