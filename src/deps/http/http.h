@@ -4944,6 +4944,7 @@ PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 #define HTTP_ADDED_QUERY_PARAMS 0x400       /**< Query added to params */
 #define HTTP_ADDED_BODY_PARAMS  0x800       /**< Body data added to params */
 #define HTTP_EXPECT_CONTINUE    0x1000      /**< Client expects an HTTP 100 Continue response */
+#define HTTP_COMPLETED          0x2000      /**< Request completed */
 
 /*  
     Incoming chunk encoding states

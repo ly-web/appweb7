@@ -13479,8 +13479,9 @@ static bool processFinalized(HttpConn *conn)
 
 static bool processCompletion(HttpConn *conn)
 {
-    if (conn->endpoint && conn->rx->uri) {
+    if (conn->endpoint && !(conn->rx->flags & HTTP_COMPLETED)) {
         httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_REQUESTS, -1);
+        conn->rx->flags |= HTTP_COMPLETED;
     }
     return 0;
 }
