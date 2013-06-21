@@ -12634,7 +12634,7 @@ static bool parseRequestLine(HttpConn *conn, HttpPacket *packet)
     conn->started = conn->http->now;
 
     if (conn->endpoint) {
-        if (httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_REQUESTS, 1) > limits->requestsPerClientMax) {
+        if (httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_REQUESTS, 1) >= limits->requestsPerClientMax) {
             httpError(conn, HTTP_ABORT | HTTP_CODE_SERVICE_UNAVAILABLE, "Too many concurrent requests");
             return 0;
         } else {
