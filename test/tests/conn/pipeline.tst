@@ -15,6 +15,10 @@ while ((n = s.read(response, -1)) != null) {
     if (response.toString().contains("END")) break
 }
 let r = response.toString()
+if (!r.contains('ALIVE')) {
+    print("TEST DIAGNOSTIC")
+    print("RESPONSE: \"" + response.toString() + '"')
+}
 assert(r.contains('ALIVE'))
 assert(r.contains('END'))
 assert(r.match(/^HTTP\/1.1 200 OK/mg).length == 2)
