@@ -111,13 +111,14 @@ static void closeCgi(HttpQueue *q)
     MprCmd  *cmd;
 
     mprTrace(5, "CGI: close");
-    cgi = q->queueData;
-    cmd = cgi->cmd;
-    if (cmd) {
-        mprSetCmdCallback(cmd, NULL, NULL);
-        mprDestroyCmd(cmd);
+    if ((cgi = q->queueData) != 0) {
+        cmd = cgi->cmd;
+        if (cmd) {
+            mprSetCmdCallback(cmd, NULL, NULL);
+            mprDestroyCmd(cmd);
+        }
+        httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
     }
-    httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
 }
 
 
