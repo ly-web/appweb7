@@ -4050,7 +4050,7 @@ static void makeAltBody(HttpConn *conn, int status)
     msg = (!rx->route || rx->route->flags & HTTP_ROUTE_SHOW_ERRORS) ? conn->errorMsg : "";
 
     if (scmp(conn->rx->accept, "text/plain") == 0) {
-        tx->altBody = sfmt("Access Error: %d -- %s\r\n%s\r\n", status, statusMsg, conn->errorMsg);
+        tx->altBody = sfmt("Access Error: %d -- %s\r\n%s\r\n", status, statusMsg, msg);
     } else {
         tx->altBody = sfmt("<!DOCTYPE html>\r\n"
             "<head>\r\n"
@@ -4058,7 +4058,7 @@ static void makeAltBody(HttpConn *conn, int status)
             "    <link rel=\"shortcut icon\" href=\"data:image/x-icon;,\" type=\"image/x-icon\">\r\n"
             "</head>\r\n"
             "<body>\r\n<h2>Access Error: %d -- %s</h2>\r\n<pre>%s</pre>\r\n</body>\r\n</html>\r\n",
-            statusMsg, status, statusMsg, mprEscapeHtml(conn->errorMsg));
+            statusMsg, status, statusMsg, mprEscapeHtml(msg));
     }
     tx->length = slen(tx->altBody);
 }
@@ -5910,14 +5910,12 @@ PUBLIC int httpAddMonitor(cchar *counterName, cchar *expr, uint64 limit, MprTick
 PUBLIC int64 httpMonitorEvent(HttpConn *conn, int counterIndex, int64 adj)
 {
     Http            *http;
-    HttpRx          *rx;
     HttpCounter     *counter;
     HttpAddress     *address;
     int64           result;
     int             ncounters;
 
     assert(conn->endpoint);
-    rx = conn->rx;
     http = conn->http;
 
     lock(http->addresses);
@@ -6149,9 +6147,6 @@ PUBLIC int httpAddRemedy(cchar *name, HttpRemedyProc remedy)
 
 PUBLIC int httpAddRemedies()
 {
-    Http    *http;
-
-    http = MPR->httpService;
     httpAddRemedy("ban", banRemedy);
     httpAddRemedy("cmd", cmdRemedy);
     httpAddRemedy("delay", delayRemedy);
@@ -7230,18 +7225,15 @@ PUBLIC void httpHandleOptions(HttpConn *conn)
 
 static void handleTrace(HttpConn *conn)
 {
-    HttpRx      *rx;
     HttpTx      *tx;
     HttpQueue   *q;
     HttpPacket  *traceData, *headers;
-
-    tx = conn->tx;
-    rx = conn->rx;
 
     /*
         Create a dummy set of headers to use as the response body. Then reset so the connector will create 
         the headers in the normal fashion. Need to be careful not to have a content length in the headers in the body.
      */
+    tx = conn->tx;
     q = conn->writeq;
     headers = q->first;
     tx->flags |= HTTP_TX_NO_LENGTH;
@@ -8809,7 +8801,7 @@ static bool fixRangeLength(HttpConn *conn)
 
 #undef  GRADUATE_HASH
 #define GRADUATE_HASH(route, field) \
-    if (!route->field || route->parent && route->field == route->parent->field) { \
+    if (!route->field || (route->parent && route->field == route->parent->field)) { \
         route->field = mprCloneHash(route->parent->field); \
     }
 
