@@ -5769,7 +5769,7 @@ static void invokeDefenses(HttpMonitor *monitor, MprHash *args)
 static void checkCounter(HttpMonitor *monitor, HttpCounter *counter, cchar *ip)
 {
     MprHash     *args;
-    cchar       *address, *fmt, *msg;
+    cchar       *address, *fmt, *msg, *subject;
     uint64      value, period;
 
     fmt = 0;
@@ -5791,8 +5791,10 @@ static void checkCounter(HttpMonitor *monitor, HttpCounter *counter, cchar *ip)
         address = ip ? sfmt(" %s", ip) : "";
         counter->name = mprGetItem(monitor->http->counters, monitor->counterIndex);
         msg = sfmt(fmt, address, counter->name, value, period, monitor->limit);
-        args = mprDeserialize(sfmt("{ COUNTER: '%s', DATE: '%s', IP: '%s', LIMIT: %d, MSG: '%s', PERIOD: %d, VALUE: %d }", 
-            counter->name, mprGetDate(NULL), ip, monitor->limit, msg, period, value));
+        subject = sfmt("Monitor %s Alert", counter->name);
+        args = mprDeserialize(
+            sfmt("{ COUNTER: '%s', DATE: '%s', IP: '%s', LIMIT: %d, MSG: '%s', PERIOD: %d, SUBJECT: '%s', VALUE: %d }", 
+            counter->name, mprGetDate(NULL), ip, monitor->limit, msg, period, subject, value));
         invokeDefenses(monitor, args);
     }
     monitor->prior = counter->value;
@@ -6001,7 +6003,6 @@ static void banRemedy(MprHash *args)
     cchar           *ip;
 
     http = MPR->httpService;
-    //  MOB locking
     if ((ip = mprLookupKey(args, "IP")) != 0) {
         if ((address = mprLookupKey(http->addresses, ip)) != 0) {
             banPeriod = lookupTicks(args, "PERIOD", BIT_HTTP_BAN_PERIOD);
@@ -6021,7 +6022,7 @@ static void cmdRemedy(MprHash *args)
     char        *command, *data;
     int         rc, status, argc, background;
 
-#if DEBUG_IDE || 1
+#if DEBUG_IDE && BIT_UNIX_LIKE
     unsetenv("DYLD_LIBRARY_PATH");
     unsetenv("DYLD_FRAMEWORK_PATH");
 #endif
@@ -6071,7 +6072,6 @@ static void delayRemedy(MprHash *args)
     int             delay;
 
     http = MPR->httpService;
-    //  MOB locking
     if ((ip = mprLookupKey(args, "IP")) != 0) {
         if ((address = mprLookupKey(http->addresses, ip)) != 0) {
             delayUntil = http->now + lookupTicks(args, "PERIOD", BIT_HTTP_DELAY_PERIOD);
@@ -6087,6 +6087,9 @@ static void delayRemedy(MprHash *args)
 
 static void emailRemedy(MprHash *args)
 {
+    if (!mprLookupKey(args, "FROM")) {
+        mprAddKey(args, "FROM", "admin");
+    }
     mprAddKey(args, "CMD", "To: ${TO}\nFrom: ${FROM}\nSubject: ${SUBJECT}\n${MSG}\n\n| sendmail -t");
     cmdRemedy(args);
 }

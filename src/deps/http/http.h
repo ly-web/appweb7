@@ -339,9 +339,6 @@ typedef struct HttpAddress {
 } HttpAddress;
 
 typedef struct HttpMonitor {
-#if UNUSED
-    cchar       *name;                          /**< Monitor name */
-#endif
     int         counterIndex;                   /**< Counter item index to monitor */
     int         expr;                           /**< Expression. Set to '<' or '>' */
     int64       limit;                          /**< Comparison limit value */
@@ -370,12 +367,9 @@ typedef struct HttpDefense {
     @param conn HttpConn connection object
     @return Monitor event status code.
     @ingroup HttpMonitor
-    @stability Stable
+    @stability Prototype
  */
 PUBLIC int httpMonitorEvent(struct HttpConn *conn, int counter, int64 adj);
-
-/*
-*/
 
 /**
     Add a monitor
@@ -388,7 +382,7 @@ PUBLIC int httpMonitorEvent(struct HttpConn *conn, int counter, int64 adj);
     @param defenses List of defenses to invoke if the counter exceeds the limit value over the designated period.
     @return Zero if successful, otherwise a negative MPR error code.
     @ingroup HttpMonitor
-    @stability Stable
+    @stability Prototype
  */
 PUBLIC int httpAddMonitor(cchar *counter, cchar *expr, uint64 limit, MprTicks period, cchar *defenses);
 
@@ -399,16 +393,27 @@ PUBLIC int httpAddMonitor(cchar *counter, cchar *expr, uint64 limit, MprTicks pe
     @param args Arguments to pass to the remedy. These may include ${tokens}.
     @return Zero if successful, otherwise a negative MPR error code.
     @ingroup HttpMonitor
-    @stability Stable
+    @stability Prototype
  */
 PUBLIC int httpAddDefense(cchar *name, cchar *action, cchar *args);
 
 /**
     Add a counter to be monitored
+    @param name Name of the counter 
+    @return The counter index in HttpAddress.counters[] to use
+    @ingroup HttpMonitor
+    @stability Prototype
  */
-//  MOB DOC
 PUBLIC int httpAddCounter(cchar *name);
 
+/**
+    Add a remedy
+    @param name Name of the remedy 
+    @param remedy Remedy callback function
+    @return Zero if successful, otherwise a negative MPR error code.
+    @ingroup HttpMonitor
+    @stability Prototype
+ */
 PUBLIC int httpAddRemedy(cchar *name, HttpRemedyProc remedy);
 
 /*

@@ -307,6 +307,7 @@ static void browserToCgiService(HttpQueue *q)
     } else {
         mprDisableCmdEvents(cmd, MPR_CMD_STDIN);
     }
+    mprYield(0);
 }
 
 
@@ -344,6 +345,7 @@ static void cgiToBrowserService(HttpQueue *q)
     }
     mprTrace(6, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
         cmd->pid, q->count, q->flags, conn->tx->writeBlocked);
+    mprYield(0);
 }
 
 
