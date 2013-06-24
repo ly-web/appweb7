@@ -40,30 +40,33 @@
                 <li><a href="#addInputFilter">AddInputFilter</a></li>
                 <li><a href="#addLanguageDir">AddLanguageDir</a></li>
                 <li><a href="#addLanguageSuffix">AddLanguageSuffix</a></li>
+                <li><a href="#addMethods">AddMethods</a></li>
                 <li><a href="#addOutputFilter">AddOutputFilter</a></li>
                 <li><a href="#alias">Alias</a></li>
                 <li><a href="#cache">Cache</a></li>
-                <li><a href="#compress">Compress</a></li>
                 <li><a href="#condition">Condition</a></li>
                 <li><a href="#defaultLanguage">DefaultLanguage</a></li>
                 <li><a href="#documentRoot">DocumentRoot</a></li>
                 <li><a href="#errorDocument">ErrorDocument</a></li>
                 <li><a href="#header">Header</a></li>
                 <li><a href="#logRoutes">LogRoutes</a></li>
-                <li><a href="#methods">Methods</a></li>
+                <li><a href="#map">Map</a></li>
                 <li><a href="#name">Name</a></li>
                 <li><a href="#param">Param</a></li>
                 <li><a href="#prefix">Prefix</a></li>
-                <li><a href="#putMethod">PutMethod</a></li>
                 <li><a href="#redirect">Redirect</a></li>
+                <li><a href="#removeMethods">RemoveMethods</a></li>
+                <li><a href="#requestHeader">RequestHeader</a></li>
+                <li><a href="#requestParseTimeout">RequestParseTimeout</a></li>
+                <li><a href="#requestTimeout">RequestTimeout</a></li>
                 <li><a href="#reset">Reset</a></li>
                 <li><a href="#route">Route</a></li>
                 <li><a href="#scriptAlias">ScriptAlias</a></li>
                 <li><a href="#setConnector">SetConnector</a></li>
                 <li><a href="#setHandler">SetHandler</a></li>
+                <li><a href="#setMethods">SetMethods</a></li>
                 <li><a href="#source">Source</a></li>
                 <li><a href="#target">Target</a></li>
-                <li><a href="#traceMethod">TraceMethod</a></li>
                 <li><a href="#update">Update</a></li>
                 <li><a href="#uploadAutoDelete">UploadAutoDelete</a></li>
                 <li><a href="#uploadDir">UploadDir</a></li>
@@ -155,6 +158,41 @@
                 </tbody>
             </table>
             
+            <a id="addMethods"></a>
+            <h2>AddMethods</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Add valid HTTP Methods for the route</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>AddMethods MethodSet</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>AddMethods GET POST</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The AddMethods directive adds additional HTTP methods to the route set for the route. 
+                            The standard HTTP methods are: <em>DELETE, GET, OPTIONS, POST, PUT and TRACE</em>. The 
+                            MethodSet argument can also be set to "<em>ALL</em>" or "<em>*</em>" to indicate any
+                            possible HTTP method. Also see the <a href="removeMethods">RemoveMethods</a> and 
+                            <a href="#setMethods">SetMethods</a> directives.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
             <a id="addOutputFilter"></a>
             <h2>AddOutputFilter</h2>
             <table class="directive" title="details">
@@ -443,42 +481,7 @@
                     </tr>
                 </tbody>
             </table>
-            
-            <a id="compress"></a>
-            <h2>Compress</h2>
-            <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control serving of compressed documents.</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="pivot">Synopsis</td>
-                        <td>Compress [gzip|none]</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Context</td>
-                        <td>Default server, VirtualHost, Route</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Example</td>
-                        <td>Compress gzip</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Notes</td>
-                        <td>
-                            <p>The <em>"Compress gzip"</em> directive enables the serving of compressed content by
-                            the fileHandler and other supported handlers. If a document is not present, but a compressed
-                            version of the document exists, then the compressed version will be served. The filename
-                            for compressed content is assumed to be the normal filename with a ".gz" extension added.</p>
-                            <p>The <em>"Compress none"</em> directive can be used to turn compression off.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            
+
             <a id="condition"></a>
             <h2>Condition</h2>
             <table class="directive" title="details">
@@ -625,20 +628,20 @@
                     </tr>
                 </tbody>
             </table>
-            
-            <a id="header"></a>
+
+            <a id="Header"></a>
             <h2>Header</h2>
             <table class="directive" title="details">
                 <thead>
                     <tr>
                         <th class="pivot">Description</th>
-                        <th>Define a header value must match a value for the route to be selected.</th>
+                        <th>Define a request HTTP header value must match a value for the route to be selected.</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>Header [!] field pattern</td>
+                        <td>Header [add|append|remove|set] field value</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -646,15 +649,15 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>Header User-Agent (Chrome|Safari)</td>
+                        <td>Header set X-Frame-Options deny</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>The Header directive tests if the specified request HTTP header value matches the
-                            required value. The rule result can be negated by prefixing with "<em>!</em>".</p>
-                            <p>For information about embedded {tokens}, see <a href="../routing.html#tokens">Tokens</a>
-                            in the <a href="../routing.html">Routing Guide</a>.</p>
+                            <p>The Header directive manages the response headers. Headers can be added, appended, removed or set.
+                            The <i>add</i> option will add the header if it is not already present. The <i>append</i> option will
+                            add or append to an existing header of the same name. The <i>remove</i> option will remove the header if
+                            it exists. The <i>set</i> option will set the header overwriting any prior value.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -730,6 +733,7 @@
                     </tr>
                 </tbody>
             </table>
+
             <a id="logRoutes"></a>
             <h2>LogRoutes</h2>
             <table class="directive" title="details">
@@ -761,21 +765,22 @@
                     </tr>
                 </tbody>
             </table>
-            
-            
-            <a id="methods"></a>
-            <h2>Methods</h2>
+
+            <a id="map"></a>
+            <h2>Map</h2>
             <table class="directive" title="details">
                 <thead>
                     <tr>
                         <th class="pivot">Description</th>
-                        <th>Define the valid HTTP Methods for the route</th>
+                        <th>Control mapping of requests by extension.</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>Methods MethodSet</td>
+                        <td>Map compressed</br>
+                        Map "ext,ext,..." "newext, newext, newext"
+                        </td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -783,15 +788,26 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>Methods GET POST</td>
+                        <td>Map compressed</br>
+                        Map "js,css,less" min.${1}.gz, min.${1}, ${1}.gz</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>The Methods directive defines the valid HTTP methods for the route. The standard HTTP
-                            methods are: <em>DELETE, GET, OPTIONS, POST, PUT and TRACE</em>. The 
-                            MethodSet argument can also be set to "<em>ALL</em>" or "<em>*</em>" to indicate any
-                            possible HTTP method.</p>
+                            <p>The Map directive controls the mapping of requests by extension to alternative resources. Most
+                            frequently, this is used to transparently serve compressed content instead of uncompressed content.</p>
+                            <p>The Map directive will cause Appweb to serve alternate content if the alternate is present
+                            and the client will accept the specified encoding. To use this feature, just compress the required 
+                            documents with the new extensions and optionally remove the originals.</p>
+
+                            <p>The new extension pattern may reference the original filename as <i>${1}</i>.</p>
+
+                            <p>The short form <i>"Map compressed"</i> directive configures Appweb to serve compressed content 
+                            for Html, XML, Javascript, CSS or Less docuements. It is equivalent to:</br>
+                            </br>
+                            Map "js,css,less" "min.${1}.gz, min.${1}, ${1}.gz"</br>
+                            Map "html,xml", "${1}.gz"</p>
+
                         </td>
                     </tr>
                 </tbody>
@@ -902,6 +918,7 @@
             </table>
             
             
+            <!-- DEPRECATED 4.4. Use SetMethods instead
             <a id="putMethod"></a>
             <h2>PutMethod</h2>
             <table class="directive" title="details">
@@ -935,6 +952,7 @@
                     </tr>
                 </tbody>
             </table>
+            -->
             
             <a id="redirect"></a>
             <h2>Redirect</h2>
@@ -983,6 +1001,73 @@
                     </tr>
                 </tbody>
             </table>
+
+            <a id="removeMethods"></a>
+            <h2>RemoveMethods</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Remove HTTP Methods from the route</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>RemoveMethods MethodSet</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>RemoveMethods PUT</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The RemoveMethods directive removes HTTP methods from the valid method set for the route. 
+                            Also see the <a href="addMethods">AddMethods</a> and 
+                            <a href="#setMethods">SetMethods</a> directives.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <a id="requestHeader"></a>
+            <h2>RequestHeader</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Define a request HTTP header value must match a value for the route to be selected.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>RequestHeader [!] field pattern</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>RequestHeader User-Agent (Chrome|Safari)</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The RequestHeader directive tests if the specified request HTTP header value matches the
+                            required value. The rule result can be negated by prefixing with "<em>!</em>".</p>
+                            <p>For information about embedded {tokens}, see <a href="../routing.html#tokens">Tokens</a>
+                            in the <a href="../routing.html">Routing Guide</a>.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
             
             <a id="requestParseTimeout"></a>
             <h2>RequestParseTimeout</h2>
@@ -1024,6 +1109,7 @@
                     </tr>
                 </tbody>
             </table>
+
             <a id="requestTimeout"></a>
             <h2>RequestTimeout</h2>
             <table class="directive" title="details">
@@ -1058,6 +1144,7 @@
                     </tr>
                 </tbody>
             </table>
+
             <a id="reset"></a>
             <h2>Reset [routes|pipeline]</h2>
             <table class="directive" title="details">
@@ -1179,6 +1266,40 @@
                 </tbody>
             </table>
             
+            <a id="sessionCookie"></a>
+            <h2>SessionCookie</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Controls the visibility of the session cookie in the browser.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SessionCookie [visible|invisible]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>SessionCookie visible</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This directive controls whether the session cookie is readable by Javascript in the browser.
+                            By default, the session cookie is not visible to Javascript. It is desirable to keep the session
+                            cookie invisible to minimize XSS security vulnerabilities.</p>
+                            <p>Appweb implements this by adding the <i>"httpOnly"</i> option on the "Set-Cookie" response header.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
             <a id="sessionTimeout"></a>
             <h2>SessionTimeout</h2>
             <table class="directive" title="details">
@@ -1211,6 +1332,7 @@
                     </tr>
                 </tbody>
             </table>
+
             <a id="setConnector"></a>
             <h2>SetConnector</h2>
             <table class="directive" title="details">
@@ -1274,6 +1396,42 @@
                     </tr>
                 </tbody>
             </table>
+
+            <a id="setMethods"></a>
+            <h2>SetMethods</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Define the valid HTTP Methods for the route</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SetMethods MethodSet</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>SetMethods GET POST</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The SetMethods directive defines the valid HTTP methods for the route. The standard HTTP
+                            methods are: <em>DELETE, GET, OPTIONS, POST, PUT and TRACE</em>. The 
+                            MethodSet argument can also be set to "<em>ALL</em>" or "<em>*</em>" to indicate any
+                            possible HTTP method. Also see the <a href="addMethods">AddMethods</a> and 
+                            <a href="#removeMethods">RemoveMethods</a> directives.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
             <a id="source"></a>
             <h2>Source</h2>
             <table class="directive" title="details">
@@ -1302,6 +1460,39 @@
                             the file path to a source script or code file to be used by the handler when servicing the
                             request. For example: ESP uses this to specify the name of the controller to load 
                             when invoking an action.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <a id="stealth"></a>
+            <h2>Stealth</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Control stealth mode.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>Stealth [on|off]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>Stealth on</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>When Stealth mode is enabled, Appweb will emit less information about its configuration.
+                            Specifically, appweb will not emit a "Server" HTTP response header. While this does not
+                            provide security, it may increase the workload of those attempting to hack the server, and
+                            this may make the target less attractive.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -1364,6 +1555,7 @@
                 </tbody>
             </table>
             
+            <!-- DEPRECATED 4.4. Use SetMethods instead
             <a id="traceMethod"></a>
             <h2>TraceMethod</h2>
             <table class="directive" title="details">
@@ -1400,6 +1592,7 @@
                     </tr>
                 </tbody>
             </table>
+            -->
             
             <a id="update"></a>
             <h2>Update</h2>

@@ -139,6 +139,22 @@
                 <li>Make loading SSL provider thread-safe.
                     <a href="https://github.com/embedthis/appweb-4/issues/207">[issue 207]</a></li>
             </ul>
+            <h3>Incompatible Changes</h3>
+            <ul>
+                <li>The Header directive is renamed RequestHeader</li>
+                <li>The Compress directive is present but deprecated. Use "Map compressed" instead.</li>
+                <li>The EspApp directive now has a new format. See the ESP documentation for details. The old format 
+                    is enabled but deprecated.</li>
+                <li>The ESP flash mechanism now preserves flash messages into the next controller and they are then erased before
+                    the view after that. Flash should not be used for feedback into the view.</li>
+                <li>The ESP setFlash() function is renamed flash()</li>
+                <li>The ESP flash() function is renamed renderFlash()</li>
+                <li>The ESP espGetFlashMessage() function is renamed espGetFlash()</li>
+                <li>The ESP src/*.c files must now be named src/app.c</li>
+                <li>The pattern in a route directive now looks for an existing route pattern. Previously it interpreted
+                    the pattern as a route name.</li>
+                <li>The httpHandleOptionsTrace() function is deprecated. The API is present but deprecated.</li>
+            </ul>
 
             <a id="r4.3.5"></a>
             <h2 class="section">Changes in 4.3.5</h2>

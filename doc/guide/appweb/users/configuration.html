@@ -225,6 +225,10 @@ Include conf/applications/*.conf
                         <td>Add a per-language content directory.</td>
                     </tr>
                     <tr>
+                        <td><a href="dir/route.html#addMethods">AddMethods</a></td>
+                        <td>Add acceptable HTTP method verbs.</td>
+                    </tr>
+                    <tr>
                         <td><a href="dir/route.html#addOutputFilter">AddOutputFilter</a></td>
                         <td>Add an output filter to the processing pipeline.</td>
                     </tr>
@@ -271,10 +275,6 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/server.html#chroot">Chroot</a></td>
                         <td>Define the directory for a "chroot jail" in which Appweb will execute.</td>
-                    </tr>
-                    <tr>
-                        <td><a href="dir/route.html#compress">Compress</a></td>
-                        <td>Control the use of compressed content.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#condition">Condition</a></td>
@@ -350,7 +350,7 @@ Include conf/applications/*.conf
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#header">Header</a></td>
-                        <td>Define a HTTP header test for a route.</td>
+                        <td>Manage the response headers.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/server.html#groupAcount">GroupAccount</a></td>
@@ -489,12 +489,12 @@ Include conf/applications/*.conf
                         <td>Control the tracing of HTTP events.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/sandbox.html#memoryPolicy">MemoryPolicy</a></td>
-                        <td>Define the action to take when memory is depleted.</td>
+                        <td><a href="dir/route.html#map">Map</a></td>
+                        <td>Control the mapping of requests by extension.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/route.html#methods">Methods</a></td>
-                        <td>The acceptable HTTP method verbs.</td>
+                        <td><a href="dir/sandbox.html#memoryPolicy">MemoryPolicy</a></td>
+                        <td>Define the action to take when memory is depleted.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/vhost.html#namedVirtualHost">NameVirtualHost</a></td>
@@ -521,12 +521,16 @@ Include conf/applications/*.conf
                         <td>Define the HTTP protocol to use.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/route.html#putMethod">PutMethod</a></td>
-                        <td>Control use of the HTTP PUT method.</td>
-                    </tr>
-                    <tr>
                         <td><a href="dir/route.html#redirect">Redirect</a></td>
                         <td>Redirect requests to a new target.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/route.html#removeMethods">RemoveMethods</a></td>
+                        <td>Remove acceptable HTTP method verbs.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/route.html#requestHeader">RequestHeader</a></td>
+                        <td>Define a HTTP requeset header test for a route.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#requestParseTimeout">RequestParseTimeout</a></td>
@@ -565,12 +569,20 @@ Include conf/applications/*.conf
                         <td>Set the handler to process requests.</td>
                     </tr>
                     <tr>
+                        <td><a href="dir/route.html#setMethods">SetMethods</a></td>
+                        <td>Set the acceptable HTTP method verbs.</td>
+                    </tr>
+                    <tr>
                         <td><a href="dir/route.html#source">Source</a></td>
                         <td>Define source code for the handler to use.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/sandbox.html#startWorkers">StartWorkers</a></td>
                         <td>Number of worker threads to pre-allocate and preserve.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/route.html#stealth">Stealth</a></td>
+                        <td>Control stealth mode.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#target">Target</a></td>
@@ -583,6 +595,10 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/server.html#serverName">ServerName</a></td>
                         <td>Define a name for the server to use for itself.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/route.html#sessionCookie">SessionCookie</a></td>
+                        <td>Control the visibility of the session cookie in the browser.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#sessionTimeout">SessionTimeout</a></td>
@@ -627,16 +643,12 @@ Include conf/applications/*.conf
                         <td>Verify the identity of the issuer or the client certificate.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/route.html#stream">StreamInput</a></td>
+                        <td><a href="dir/server.html#streamInput">StreamInput</a></td>
                         <td>Control if request body content is buffered or streamed to the handler.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#target">Target</a></td>
                         <td>Define a route target.</td>
-                    </tr>
-                    <tr>
-                        <td><a href="dir/server.html#traceMethod">TraceMethod</a></td>
-                        <td>Control whether the HTTP Trace method is enabled.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/server.html#typesConfig">TypesConfig</a></td>
