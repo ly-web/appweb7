@@ -5728,18 +5728,18 @@ PUBLIC void httpAddCounters()
     Http    *http;
 
     http = MPR->httpService;
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_ACTIVE_CLIENTS, sclone("ActiveClients"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_ACTIVE_CONNECTIONS, sclone("ActiveConnections"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_ACTIVE_REQUESTS, sclone("ActiveRequests"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_ACTIVE_PROCESSES, sclone("ActiveProcesses"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_BAD_REQUEST_ERRORS, sclone("BadRequestErrors"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_ERRORS, sclone("Errors"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_LIMIT_ERRORS, sclone("LimitErrors"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_MEMORY, sclone("Memory"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_NOT_FOUND_ERRORS, sclone("NotFoundErrors"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_NETWORK_IO, sclone("NetworkIO"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_REQUESTS, sclone("Requests"));
-    mprInsertItemAtPos(http->counters, HTTP_COUNTER_SSL_ERRORS, sclone("SSLErrors"));
+    mprSetItem(http->counters, HTTP_COUNTER_ACTIVE_CLIENTS, sclone("ActiveClients"));
+    mprSetItem(http->counters, HTTP_COUNTER_ACTIVE_CONNECTIONS, sclone("ActiveConnections"));
+    mprSetItem(http->counters, HTTP_COUNTER_ACTIVE_REQUESTS, sclone("ActiveRequests"));
+    mprSetItem(http->counters, HTTP_COUNTER_ACTIVE_PROCESSES, sclone("ActiveProcesses"));
+    mprSetItem(http->counters, HTTP_COUNTER_BAD_REQUEST_ERRORS, sclone("BadRequestErrors"));
+    mprSetItem(http->counters, HTTP_COUNTER_ERRORS, sclone("Errors"));
+    mprSetItem(http->counters, HTTP_COUNTER_LIMIT_ERRORS, sclone("LimitErrors"));
+    mprSetItem(http->counters, HTTP_COUNTER_MEMORY, sclone("Memory"));
+    mprSetItem(http->counters, HTTP_COUNTER_NOT_FOUND_ERRORS, sclone("NotFoundErrors"));
+    mprSetItem(http->counters, HTTP_COUNTER_NETWORK_IO, sclone("NetworkIO"));
+    mprSetItem(http->counters, HTTP_COUNTER_REQUESTS, sclone("Requests"));
+    mprSetItem(http->counters, HTTP_COUNTER_SSL_ERRORS, sclone("SSLErrors"));
 }
 
 
@@ -6179,6 +6179,13 @@ static void logRemedy(MprHash *args)
 }
 
 
+static void restartRemedy(MprHash *args)
+{
+    mprError("RestartRemedy: Restarting ...");
+    mprRestart();
+}
+
+
 PUBLIC int httpAddRemedy(cchar *name, HttpRemedyProc remedy)
 {
     Http    *http;
@@ -6197,6 +6204,7 @@ PUBLIC int httpAddRemedies()
     httpAddRemedy("email", emailRemedy);
     httpAddRemedy("http", httpRemedy);
     httpAddRemedy("log", logRemedy);
+    httpAddRemedy("restart", restartRemedy);
     return 0;
 } 
 
