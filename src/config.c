@@ -21,6 +21,7 @@ static int64 getnum(cchar *value);
 static void manageState(MaState *state, int flags);
 static int parseFile(MaState *state, cchar *path);
 static int parseFileInner(MaState *state, cchar *path);
+
 static int setTarget(MaState *state, cchar *name, cchar *details);
 
 /******************************************************************************/
@@ -1618,7 +1619,7 @@ static int monitorDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S %S %S %S %*", &counter, &expr, &limit, &period, &defenses)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpAddMonitor(counter, expr, stoi(limit), httpGetTicks(period), defenses);
+    httpAddMonitor(counter, expr, getnum(limit), httpGetTicks(period), defenses);
     return 0;
 }
 
