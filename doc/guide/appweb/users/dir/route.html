@@ -40,7 +40,6 @@
                 <li><a href="#addInputFilter">AddInputFilter</a></li>
                 <li><a href="#addLanguageDir">AddLanguageDir</a></li>
                 <li><a href="#addLanguageSuffix">AddLanguageSuffix</a></li>
-                <li><a href="#addMethods">AddMethods</a></li>
                 <li><a href="#addOutputFilter">AddOutputFilter</a></li>
                 <li><a href="#alias">Alias</a></li>
                 <li><a href="#cache">Cache</a></li>
@@ -51,11 +50,11 @@
                 <li><a href="#header">Header</a></li>
                 <li><a href="#logRoutes">LogRoutes</a></li>
                 <li><a href="#map">Map</a></li>
+                <li><a href="#methods">Methods</a></li>
                 <li><a href="#name">Name</a></li>
                 <li><a href="#param">Param</a></li>
                 <li><a href="#prefix">Prefix</a></li>
                 <li><a href="#redirect">Redirect</a></li>
-                <li><a href="#removeMethods">RemoveMethods</a></li>
                 <li><a href="#requestHeader">RequestHeader</a></li>
                 <li><a href="#requestParseTimeout">RequestParseTimeout</a></li>
                 <li><a href="#requestTimeout">RequestTimeout</a></li>
@@ -64,7 +63,6 @@
                 <li><a href="#scriptAlias">ScriptAlias</a></li>
                 <li><a href="#setConnector">SetConnector</a></li>
                 <li><a href="#setHandler">SetHandler</a></li>
-                <li><a href="#setMethods">SetMethods</a></li>
                 <li><a href="#source">Source</a></li>
                 <li><a href="#target">Target</a></li>
                 <li><a href="#update">Update</a></li>
@@ -158,41 +156,6 @@
                 </tbody>
             </table>
             
-            <a id="addMethods"></a>
-            <h2>AddMethods</h2>
-            <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Add valid HTTP Methods for the route</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="pivot">Synopsis</td>
-                        <td>AddMethods MethodSet</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Context</td>
-                        <td>Default server, VirtualHost, Route</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Example</td>
-                        <td>AddMethods GET POST</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Notes</td>
-                        <td>
-                            <p>The AddMethods directive adds additional HTTP methods to the route set for the route. 
-                            The standard HTTP methods are: <em>DELETE, GET, OPTIONS, POST, PUT and TRACE</em>. The 
-                            MethodSet argument can also be set to "<em>ALL</em>" or "<em>*</em>" to indicate any
-                            possible HTTP method. Also see the <a href="removeMethods">RemoveMethods</a> and 
-                            <a href="#setMethods">SetMethods</a> directives.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
             <a id="addOutputFilter"></a>
             <h2>AddOutputFilter</h2>
             <table class="directive" title="details">
@@ -803,11 +766,49 @@
                             <p>The new extension pattern may reference the original filename as <i>${1}</i>.</p>
 
                             <p>The short form <i>"Map compressed"</i> directive configures Appweb to serve compressed content 
-                            for Html, XML, Javascript, CSS or Less docuements. It is equivalent to:</br>
+                            for Html, Text, XML, Javascript, CSS or Less docuements. It is equivalent to:</br>
                             </br>
                             Map "js,css,less" "min.${1}.gz, min.${1}, ${1}.gz"</br>
-                            Map "html,xml", "${1}.gz"</p>
+                            Map "html,txt,xml", "${1}.gz"</p>
 
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+            <a id="methods"></a>
+            <h2>Methods</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Define the valid HTTP Methods for the route</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>Methods [add|remove|set] MethodSet</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>Methods set GET POST</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The Methods directive controls the valid HTTP methods for the route. The method set is inherited from
+                            the parent routes. The "add" command may be used to add methods to the current method set. The "remove"
+                            command will remove methods and the "set" command will define a new method set.</p>
+
+                            <p>The standard HTTP methods are: <em>DELETE, GET, OPTIONS, POST, PUT and TRACE</em>. The 
+                            MethodSet argument can also be set to "<em>ALL</em>" or "<em>*</em>" to indicate any
+                            possible HTTP method. </p>
                         </td>
                     </tr>
                 </tbody>
@@ -997,39 +998,6 @@
                             both cases, the user will receive a HTTP redirection response informing them of the new
                             location of the document. The new URI may be omitted for non-3XX status arguments, in which
                             case, a default response page will be generated by Appweb.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <a id="removeMethods"></a>
-            <h2>RemoveMethods</h2>
-            <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Remove HTTP Methods from the route</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="pivot">Synopsis</td>
-                        <td>RemoveMethods MethodSet</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Context</td>
-                        <td>Default server, VirtualHost, Route</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Example</td>
-                        <td>RemoveMethods PUT</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Notes</td>
-                        <td>
-                            <p>The RemoveMethods directive removes HTTP methods from the valid method set for the route. 
-                            Also see the <a href="addMethods">AddMethods</a> and 
-                            <a href="#setMethods">SetMethods</a> directives.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -1392,41 +1360,6 @@
                         <td>
                             <p>The SetHandler directive defines the request handler that will service a request
                             matching the enclosing block.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <a id="setMethods"></a>
-            <h2>SetMethods</h2>
-            <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define the valid HTTP Methods for the route</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="pivot">Synopsis</td>
-                        <td>SetMethods MethodSet</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Context</td>
-                        <td>Default server, VirtualHost, Route</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Example</td>
-                        <td>SetMethods GET POST</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Notes</td>
-                        <td>
-                            <p>The SetMethods directive defines the valid HTTP methods for the route. The standard HTTP
-                            methods are: <em>DELETE, GET, OPTIONS, POST, PUT and TRACE</em>. The 
-                            MethodSet argument can also be set to "<em>ALL</em>" or "<em>*</em>" to indicate any
-                            possible HTTP method. Also see the <a href="addMethods">AddMethods</a> and 
-                            <a href="#removeMethods">RemoveMethods</a> directives.</p>
                         </td>
                     </tr>
                 </tbody>

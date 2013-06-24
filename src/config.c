@@ -295,6 +295,7 @@ static int addLanguageDirDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if UNUSED
 /*
     AddMethods method, method,...
  */
@@ -308,6 +309,7 @@ static int addMethodsDirective(MaState *state, cchar *key, cchar *value)
     httpAddRouteMethods(state->route, methods);
     return 0;
 }
+#endif
 
 
 /*
@@ -1560,7 +1562,7 @@ static int mapDirective(MaState *state, cchar *key, cchar *value)
     }
     if (smatch(extensions, "compressed")) {
         httpAddRouteMapping(state->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
-        httpAddRouteMapping(state->route, "html,xml", "${1}.gz");
+        httpAddRouteMapping(state->route, "html,txt,xml", "${1}.gz");
     } else {
         httpAddRouteMapping(state->route, extensions, mappings);
     }
@@ -1595,6 +1597,27 @@ static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     mprSetMemPolicy(flags);
+    return 0;
+}
+
+
+/*
+    Methods [add|remove|set] method, ...
+ */
+static int methodsDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *cmd, *methods;
+
+    if (!maTokenize(state, value, "%S %*", &cmd, &methods)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    if (smatch(cmd, "add")) {
+        httpAddRouteMethods(state->route, methods);
+    } else if (smatch(cmd, "remove")) {
+        httpRemoveRouteMethods(state->route, methods);
+    } else if (smatch(cmd, "set")) {
+        httpSetRouteMethods(state->route, methods);
+    }
     return 0;
 }
 
@@ -1777,6 +1800,7 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if UNUSED
 /*
     RemoveMethods method, method,...
  */
@@ -1790,6 +1814,7 @@ static int removeMethodsDirective(MaState *state, cchar *key, cchar *value)
     httpRemoveRouteMethods(state->route, methods);
     return 0;
 }
+#endif
 
 
 /*
@@ -2065,6 +2090,7 @@ static int setHandlerDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if UNUSED
 /*
     SetMethods method, method,...
  */
@@ -2078,6 +2104,7 @@ static int setMethodsDirective(MaState *state, cchar *key, cchar *value)
     httpSetRouteMethods(state->route, methods);
     return 0;
 }
+#endif
 
 
 /*
@@ -2845,7 +2872,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "AddFilter", addFilterDirective);
     maAddDirective(appweb, "AddInputFilter", addInputFilterDirective);
     maAddDirective(appweb, "AddHandler", addHandlerDirective);
-    maAddDirective(appweb, "AddMethods", addMethodsDirective);
     maAddDirective(appweb, "AddOutputFilter", addOutputFilterDirective);
     maAddDirective(appweb, "AddType", addTypeDirective);
     maAddDirective(appweb, "Alias", aliasDirective);
@@ -2906,6 +2932,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LoadModule", loadModuleDirective);
     maAddDirective(appweb, "Map", mapDirective);
     maAddDirective(appweb, "MemoryPolicy", memoryPolicyDirective);
+    maAddDirective(appweb, "Methods", methodsDirective);
     maAddDirective(appweb, "Monitor", monitorDirective);
     maAddDirective(appweb, "Name", nameDirective);
     maAddDirective(appweb, "NameVirtualHost", nameVirtualHostDirective);
@@ -2914,7 +2941,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Prefix", prefixDirective);
     maAddDirective(appweb, "Protocol", protocolDirective);
     maAddDirective(appweb, "Redirect", redirectDirective);
-    maAddDirective(appweb, "RemoveMethods", removeMethodsDirective);
     maAddDirective(appweb, "RequestHeader", requestHeaderDirective);
     maAddDirective(appweb, "RequestParseTimeout", requestParseTimeoutDirective);
     maAddDirective(appweb, "RequestTimeout", requestTimeoutDirective);
@@ -2930,7 +2956,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Set", setDirective);
     maAddDirective(appweb, "SetConnector", setConnectorDirective);
     maAddDirective(appweb, "SetHandler", setHandlerDirective);
-    maAddDirective(appweb, "SetMethods", setMethodsDirective);
     maAddDirective(appweb, "ShowErrors", showErrorsDirective);
     maAddDirective(appweb, "Source", sourceDirective);
     maAddDirective(appweb, "Stealth", stealthDirective);
@@ -2981,8 +3006,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitUrl", limitUriDirective);
     /* Use LimitKeepAlive */
     maAddDirective(appweb, "MaxKeepAliveRequests", limitKeepAliveDirective);
-    /* Use SetMethods */
-    maAddDirective(appweb, "Methods", setMethodsDirective);
     /* Use Methods */
     maAddDirective(appweb, "PutMethod", putMethodDirective);
     maAddDirective(appweb, "ResetPipeline", resetPipelineDirective);
