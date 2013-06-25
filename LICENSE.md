@@ -1,13 +1,18 @@
-Embedthis Open Source Software License
+LICENSE.md - Embedthis Appweb Licenses
 ===
 
-This software is distributed under commercial and open source licenses. You may use the GPLv2 License below License or you may acquire a commercial license from Embedthis Software. You agree to be fully bound by the terms of either license. The GPLv2 License does NOT generally permit incorporating this software into non-open source programs. If you are unable to comply with the GPLv2, you must acquire a commercial license to use this software.
+This file documents the Embedthis Software Licenses. It includes the Embedthis Appweb Open Source License and licenses for third-party components within Appweb.
+
+This software is distributed under commercial and open source licenses. You may use the GPLv2 Open Source License below or you may acquire a commercial license from Embedthis Software. You agree to be fully bound by the terms of either license. The GPLv2 License does NOT generally permit incorporating this software into non-open source programs. If you are unable to comply with the GPLv2, you must acquire a commercial license to use this software.
 
 Commercial licenses for this software and support services are available from Embedthis Software at: http://embedthis.com/licensing/index.html
 
-GNU GENERAL PUBLIC LICENSE, Version 2, June 1991.
+See third-party licenses after the open source license.
+
+Embedthis Appweb Open Source License
 ===
 
+GNU GENERAL PUBLIC LICENSE, Version 2, June 1991.
 Copyright (C) 1989, 1991 Free Software Foundation, Inc. 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed.
@@ -97,19 +102,15 @@ NO WARRANTY
 
 - END OF TERMS AND CONDITIONS -
 
-Trademarks and Copyrights
----
-Copyright (c) 2003-2013 Embedthis Software, LLC. All Rights Reserved.
-Embedthis, Appweb, Ejscript, ESP, Embedthis GoAhead and Embedthis Bit are trademarks of Embedthis Software, LLC. Other brands and their products are trademarks of their respective holders.
-
 Third Party Licenses
----
-
-The Software contains licensed third party software under the agreements that follow.
-Dtoa License
 ===
 
-The Dtoa module is Used in the Ejscript Number class.
+The Software contains licensed third party software under the agreements that follow.
+
+Dtoa License
+---
+
+The Dtoa module is used in the Ejscript Number class.  It is included in the Appweb binary via the Ejscript module.
 
 The author of this software is David M. Gay. Copyright (c) 1991, 2000, 2001 by Lucent Technologies.
 
@@ -118,9 +119,9 @@ Permission to use, copy, modify, and distribute this software for any purpose wi
 THIS SOFTWARE IS BEING PROVIDED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED WARRANTY. IN PARTICULAR, NEITHER THE AUTHOR NOR LUCENT MAKES ANY REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
 
 JQuery License
-===
+---
 
-JQuery is by the ESP and Ejscript web frameworks in the client side only.
+JQuery is used by the ESP and Ejscript web frameworks in the client side browser only. It is not included in the Appweb binary.
 
 Copyright (c) 2012 John Resig, http://jquery.com/
 
@@ -129,9 +130,9 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 
 Perl Regular Expressions License
-===
+---
 
-The Perl regular expression library is used in the the Http router and Ejscript language
+The Perl regular expression library is used in the the Http router and Ejscript language. It is included in the Appweb binary.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -144,9 +145,10 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 The PHP License, version 3.01
-===
+---
 
 PHP is provided only in binary products as an optional external shared library.
+It may be included in the Appweb binary at the user's choice and discretion. It is not required if PHP is not used.
 
 Copyright (c) 1999 - 2012 The PHP Group. All rights reserved.
 
@@ -167,16 +169,27 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE PHP DEVELOPMENT TEAM ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE PHP DEVELOPMENT TEAM OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Qsort Routine License
-===
+---
 
-The MprList qsort uses this algorithm.
+The MprList qsort uses this algorithm.  It is included in the Appweb binary.
 
-(c) Michael Ringgaard. BSD license.
+(c) Michael Ringgaard.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: 
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. 
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those of the authors and should not be interpreted as representing official policies, either expressed or implied, of the FreeBSD Project.
+
 
 RSA MD5 License
-===
+---
 
-Used in the MPR MD5 algorithm.
+Used in the MPR MD5 algorithm.  It is included in the Appweb binary.
 
 Copyright (C) 1991-2, RSA Data Security, Inc. All rights reserved. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -197,16 +210,18 @@ RSA Data Security, Inc. makes no representations concerning either the merchanta
 These notices must be retained in any copies of any part of this documentation and/or software. 
 
 SQLite License.
-===
+---
 
 SQLite is used by the Appweb ESP and Ejscript web frameworks
+It may included in the Appweb binary at the user's choice and discretion if the user selects the ESP SDB database or SQLITE database in Ejscript.
 
 The author or authors of this code dedicate any and all copyright interest in this code to the public domain. We make this dedication for the benefit of the public at large and to the detriment of our heirs and successors. We intend this dedication to be an overt act of relinquishment in perpetuity of all present and future rights to this code under copyright law.
 
 TropicSSL License
-===
+---
 
 The Embedthis EST SSL stack includes code from TropicSSL.
+It may included in the Appweb binary at the user's choice and discretion if the user selects the EST SSL stack.
 
 Copyright (c) 2009, StackFoundry LLC
 Copyright (c) 2009, Paul Bakker
@@ -221,9 +236,10 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Zlib License
-===
+---
 
 The Ejscript web framework uses Zlib.
+It may included in the Appweb binary at the user's choice and discretion if the user selects the Ejscript module.
 
 Copyright (C) 1995-2012 Jean-loup Gailly and Mark Adler
 
@@ -234,4 +250,9 @@ Permission is granted to anyone to use this software for any purpose, including 
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
+
+Trademarks and Copyrights
+---
+Copyright (c) 2003-2013 Embedthis Software, LLC. All Rights Reserved.
+Embedthis, Appweb, Ejscript, ESP, Embedthis GoAhead and Embedthis Bit are trademarks of Embedthis Software, LLC. Other brands and their products are trademarks of their respective holders.
 
