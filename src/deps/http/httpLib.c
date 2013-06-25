@@ -11993,13 +11993,13 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
                     start = stoi(sp);
                     if ((sp = strchr(sp, '-')) != 0) {
                         end = stoi(++sp);
-                    }
-                    if ((sp = strchr(sp, '/')) != 0) {
-                        /*
-                            Note this is not the content length transmitted, but the original size of the input of which
-                            the client is transmitting only a portion.
-                         */
-                        size = stoi(++sp);
+                        if ((sp = strchr(sp, '/')) != 0) {
+                            /*
+                                Note this is not the content length transmitted, but the original size of the input of which
+                                the client is transmitting only a portion.
+                             */
+                            size = stoi(++sp);
+                        }
                     }
                 }
                 if (start < 0 || end < 0 || size < 0 || end <= start) {
