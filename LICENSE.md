@@ -3,9 +3,11 @@ LICENSE.md - Embedthis Appweb Licenses
 
 This file documents the Embedthis Software Licenses. It includes the Embedthis Appweb Open Source License and licenses for third-party components within Appweb.
 
-This software is distributed under commercial and open source licenses. You may use the GPLv2 Open Source License below License or you may acquire a commercial license from Embedthis Software. You agree to be fully bound by the terms of either license. The GPLv2 License does NOT generally permit incorporating this software into non-open source programs. If you are unable to comply with the GPLv2, you must acquire a commercial license to use this software.
+This software is distributed under commercial and open source licenses. You may use the GPLv2 Open Source License below or you may acquire a commercial license from Embedthis Software. You agree to be fully bound by the terms of either license. The GPLv2 License does NOT generally permit incorporating this software into non-open source programs. If you are unable to comply with the GPLv2, you must acquire a commercial license to use this software.
 
 Commercial licenses for this software and support services are available from Embedthis Software at: http://embedthis.com/licensing/index.html
+
+See third-party licenses after the open source license.
 
 Embedthis Appweb Open Source License
 ===
@@ -119,7 +121,7 @@ THIS SOFTWARE IS BEING PROVIDED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED WARRANTY
 JQuery License
 ---
 
-JQuery is by the ESP and Ejscript web frameworks in the client side only. It is not included in the Appweb binary.
+JQuery is used by the ESP and Ejscript web frameworks in the client side browser only. It is not included in the Appweb binary.
 
 Copyright (c) 2012 John Resig, http://jquery.com/
 
@@ -130,7 +132,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Perl Regular Expressions License
 ---
 
-The Perl regular expression library is used in the the Http router and Ejscript language It is included in the Appweb binary.
+The Perl regular expression library is used in the the Http router and Ejscript language. It is included in the Appweb binary.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -171,7 +173,18 @@ Qsort Routine License
 
 The MprList qsort uses this algorithm.  It is included in the Appweb binary.
 
-(c) Michael Ringgaard. BSD license.
+(c) Michael Ringgaard.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: 
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. 
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those of the authors and should not be interpreted as representing official policies, either expressed or implied, of the FreeBSD Project.
+
 
 RSA MD5 License
 ---
