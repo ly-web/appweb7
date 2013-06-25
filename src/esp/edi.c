@@ -522,7 +522,12 @@ static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int jo
     }
     rec = grid->records[0];
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
-        if (fp->flags & EDI_FOREIGN && follow) {
+#if FUTURE
+        if (fp->flags & EDI_FOREIGN && follow)
+#else
+        if (sends(fp->name, "Id") && follow) 
+#endif
+        {
             tableName = strim(fp->name, "Id", MPR_TRIM_END);
             if (!(foreignGrid = mprLookupKey(grids, tableName))) {
                 col = mprAllocObj(Col, 0);
@@ -610,10 +615,13 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
                     keyValue = primary->records[r]->fields[col->joinField].value;
                     rec = ediReadOneWhere(edi, col->grid->tableName, "id", "==", keyValue);
                 }
-                assert(rec);
-                fp = &rec->fields[col->field];
-                *dest = *fp;
-                dest->name = sfmt("%s.%s", col->grid->tableName, fp->name);
+                if (rec) {
+                    fp = &rec->fields[col->field];
+                    *dest = *fp;
+                    dest->name = sfmt("%s.%s", col->grid->tableName, fp->name);
+                } else {
+                    dest->name = sclone("UNKNOWN");
+                }
             }
             dest++;
         }

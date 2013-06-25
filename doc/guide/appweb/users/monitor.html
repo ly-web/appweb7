@@ -201,6 +201,7 @@ KEYWORD=VALUE
                     <tr><td>email</td><td>Send an email message.</td></tr>
                     <tr><td>http</td><td>Invoke a HTTP request.</td></tr>
                     <tr><td>log</td><td>Write to the Appweb error log.</td></tr>
+                    <tr><td>reboot</td><td>Reboot Appweb</td></tr>
                 </tbody>
             </table>
 
@@ -263,6 +264,10 @@ KEYWORD=VALUE
             <pre>Defense report log</pre>
             <pre>Defense report log MESSAGE="Report ${MESSAGE}"</pre>
 
+            <h3>Reboot Remedy</h3>
+            <p>The reboot remedy will immediately reboot Appweb. This may be useful if the Memory utilization exceeds the
+            defined limit. This should not be used in production as any memory growth should be diagnosed and eliminated. </p>
+            
             <h3>Generatel Notes</h3>
             <p>All remedies have access the following KEYWORDS. These are also used in the message:</p>
             <table>

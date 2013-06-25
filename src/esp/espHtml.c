@@ -490,9 +490,12 @@ static void filterCols(EdiGrid *grid, MprHash *options, MprHash *colOptions)
                 return;
             }
             pos = mprLookupStringItem(gridCols, columnName);
-            assert(pos >= 0);
-            desired[c] = pos;
-            location[c] = c;
+            if (pos < 0) {
+                mprError("Cannot find column \"%s\", columns: %s", columnName, mprListToString(gridCols, ", "));
+            } else {
+                desired[c] = pos;
+                location[c] = c;
+            }
         }
         for (c = 0; c < ncols; c++) {
             fnum = c;

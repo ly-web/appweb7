@@ -2731,6 +2731,8 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
         mpr->argc = argc;
         if (!mprIsPathAbs(mpr->argv[0])) {
             mpr->argv[0] = mprGetAppPath();
+        } else {
+            mpr->argv[0] = sclone(mprGetAppPath());
         }
     } else {
         mpr->name = sclone(BIT_PRODUCT);
