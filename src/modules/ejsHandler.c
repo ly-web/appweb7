@@ -101,7 +101,7 @@ static int ejsAliasDirective(MaState *state, cchar *key, cchar *value)
     httpSetRoutePrefix(route, prefix);
     httpSetRouteScript(route, 0, script);
     httpSetRouteSource(route, "");
-    httpSetRouteDir(route, path);
+    httpSetRouteDocuments(route, path);
     if (workers) {
         httpSetRouteWorkers(route, workers);
     }
