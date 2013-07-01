@@ -42,11 +42,11 @@
                 <li><a href="#limitCacheItem">LimitCacheItem</a></li>
                 <li><a href="#limitChunk">LimitChunk</a></li>
                 <li><a href="#limitClients">LimitClients</a></li>
+                <li><a href="#limitConnections">LimitConnections</a></li>
                 <li><a href="#limitFiles">LimitFiles</a></li>
                 <li><a href="#limitKeepAlive">LimitKeepAlive</a></li>
                 <li><a href="#limitMemory">LimitMemory</a></li>
                 <li><a href="#limitProcesses">LimitProcesses</a></li>
-                <li><a href="#limitRequests">LimitRequests</a></li>
                 <li><a href="#limitRequestsPerClient">LimitRequestsPerClient</a></li>
                 <li><a href="#limitRequestBody">LimitRequestBody</a></li>
                 <li><a href="#limitRequestForm">LimitRequestForm</a></li>
@@ -258,8 +258,41 @@
                             <p>The LimitClients directive defines the maximum number of simultaneous 
                             client systems that can connect to the server. Connections in excess of this count will 
                             be rejected. A limit of '0' means unlimited.</p>
-                            <p>This directive counts the number of client systems. A system with many users all using
+                            <p>This directive counts the number of unique client systems. A system with many users all using
                             the same IP address will be counted as one client.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="limitConnections"></a>
+            <h2>LimitConnections</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Sets the maximum number of simultaneous client endpoint connections</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>LimitConnections count</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>LimitConnections 50</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The LimitConnections directive defines the maximum number of simultaneous 
+                            client connections to the server. Connections in excess of this count will 
+                            be rejected. A limit of '0' means unlimited.</p>
+                            <p>This directive counts the number of client socket connections. A single browser may open
+                            many separate connections (typically up to 6). </p>
                         </td>
                     </tr>
                 </tbody>
