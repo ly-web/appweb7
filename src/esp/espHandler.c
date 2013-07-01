@@ -25,6 +25,7 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value);
 static int espEnvDirective(MaState *state, cchar *key, cchar *value);
 static EspRoute *getEroute(HttpRoute *route);
 static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher);
+static int loadConfig(EspRoute *eroute);
 static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
 static int runAction(HttpConn *conn);
@@ -226,10 +227,18 @@ static int runAction(HttpConn *conn)
     }
     key = mprJoinPath(eroute->servicesDir, rx->target);
 
+#if BIT_DEBUG
+    /*
+        See if the config.json or app needs to be reloaded.
+     */
+    if (loadConfig(eroute) < 0) {
+        return MPR_ERR_CANT_LOAD;
+    }
     if (loadApp(eroute, conn->dispatcher) < 0) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
         return 0;
     }
+#endif
 #if !BIT_STATIC
     if (!eroute->flat && (eroute->update || !mprLookupKey(esp->actions, key))) {
         char        *canonical, *source;
@@ -487,10 +496,7 @@ static bool testConfig(EspRoute *eroute, cchar *key, cchar *desired)
 static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
 {
     MprModule   *mp;
-    MprHash     *settings, *msettings;
-    MprKey      *kp;
-    MprPath     cinfo;
-    cchar       *canonical, *config, *cpath, *source, *cacheName, *entry, *value;
+    cchar       *canonical, *source, *cacheName, *entry;
     char        *errMsg;
     int         recompile;
 
@@ -525,6 +531,17 @@ static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
         }
     }
 #endif
+    return 0;
+}
+
+
+static int loadConfig(EspRoute *eroute)
+{
+    MprKey      *kp;
+    MprHash     *settings, *msettings;
+    MprPath     cinfo;
+    cchar       *cpath, *config, *value;
+
     /*
         Load the config.json
      */
@@ -558,18 +575,17 @@ static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
             if ((value = mprQueryJsonString(eroute->config, "settings.keepSource")) != 0) {
                 eroute->keepSource = smatch(value, "true");
             }
-            if ((value = mprQueryJsonString(eroute->config, "settings.autoLogin")) != 0) {
-                eroute->autoLogin = smatch(value, "true");
+            if ((value = mprQueryJsonString(eroute->config, "settings.username")) != 0 && value[0]) {
+                httpSetAuthUsername(eroute->route->auth, value);
             }
-            if (smatch("false", mprQueryJsonString(eroute->config, "settings.xsrf"))) {
-                eroute->route->flags &= ~HTTP_ROUTE_XSRF;
+            if ((value = mprQueryJsonString(eroute->config, "settings.xsrf"))) {
+                httpSetRouteXsrf(eroute->route, smatch(value, "true"));
             }
             if ((value = mprQueryJsonString(eroute->config, "settings.map")) != 0) {
                 if (smatch(value, "compressed")) {
                     httpAddRouteMapping(eroute->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
                     httpAddRouteMapping(eroute->route, "html,xml", "${1}.gz");
                 }
-                // httpAddRouteMapping(state->route, extensions, mappings);
             }
         }
     }
@@ -894,13 +910,18 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     } else {
         httpSetRouteName(route, prefix ? prefix : sfmt("/%s", name));
     }
-    httpSetRouteDir(route, dir);
+    httpSetRouteDocuments(route, dir);
     httpSetRouteTarget(route, "run", "$&");
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
 
     if (routeSet) {
         espSetMvcDirs(eroute);
+    }
+    if (loadConfig(eroute) < 0) {
+        return MPR_ERR_CANT_LOAD;
+    }
+    if (routeSet) {
         httpAddRouteSet(state->route, routeSet);
     }
     if (database && espDbDirective(state, key, database) < 0) {
@@ -910,8 +931,10 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     httpFinalizeRoute(route);
     maPopState(state);
 
-    if (!state->appweb->skipModules && loadApp(eroute, NULL) < 0) {
-        return MPR_ERR_CANT_LOAD;
+    if (!state->appweb->skipModules) {
+        if (loadApp(eroute, NULL) < 0) {
+            return MPR_ERR_CANT_LOAD;
+        }
     }
     return 0;
 }

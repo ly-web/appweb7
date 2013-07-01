@@ -9,21 +9,6 @@
 #include    "esp.h"
 
 #if BIT_PACK_ESP
-
-#if UNUSED
-#define EDATA(s)        "data-esp-" s           /* Prefix for data attributes */
-#define ESTYLE(s)       "esp-" s                /* Prefix for ESP styles */
-
-#define SCRIPT_IE       0x1
-#define SCRIPT_LESS     0x2
-
-typedef struct EspScript {
-    cchar   *name;                              /* Script name */
-    cchar   *option;                            /* Esp control option that must be present to trigger emitting script */
-    int     flags;                              /* Conditional generation flags */
-} EspScript;
-#endif
-
 /************************************* Code ***********************************/
 /*  
     Add a http header if not already defined
@@ -704,18 +689,6 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
  */
 PUBLIC void espRenderSecurityToken(HttpConn *conn) 
 {
-#if UNUSED
-    cchar   *securityToken;
-
-    securityToken = espGetSecurityToken(conn);
-    if (conn->rx->route->flags & HTTP_ROUTE_LEGACY_MVC) {
-        espAddHeaderString(conn, "X-Security-Token", securityToken);
-        espRender(conn, "<meta name='SecurityTokenName' content='%s' />\r\n", ESP_SECURITY_TOKEN_NAME);
-        espRender(conn, "    <meta name='%s' content='%s' />", ESP_SECURITY_TOKEN_NAME, securityToken);
-    } else {
-        espSetCookie(conn, "XSRF-TOKEN", securityToken, "/", NULL,  0, 0);
-    }
-#endif
     httpRenderSecurityToken(conn);
 }
 
@@ -782,6 +755,12 @@ PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags)
 }
 
 
+PUBLIC void espDumpGrid(EdiGrid *grid)
+{
+    mprLog(0, "Grid: %s\nschema: %s,\ndata: %s", grid->tableName, getGridSchema(grid), espGridToJson(grid, MPR_JSON_PRETTY));
+}
+
+
 PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags)
 {
     httpAddHeaderString(conn, "Content-Type", "application/json");
@@ -814,7 +793,7 @@ PUBLIC ssize espRenderString(HttpConn *conn, cchar *s)
 }
 
 
-PUBLIC void espRenderResult(HttpConn *conn, bool status)
+PUBLIC void espRenderResult(HttpConn *conn, bool success)
 {
     EspReq      *req;
     EdiRec      *rec;
@@ -822,11 +801,11 @@ PUBLIC void espRenderResult(HttpConn *conn, bool status)
     req = conn->data;
     rec = getRec();
     if (rec && rec->errors) {
-        espRender(conn, "{\"success\": %d, \"feedback\": %s, \"fieldErrors\": %s}", status, 
+        espRender(conn, "{\"error\": %d, \"feedback\": %s, \"fieldErrors\": %s}", !success, 
             req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}",
             mprSerialize(rec->errors, MPR_JSON_QUOTES));
     } else {
-        espRender(conn, "{\"success\": %d, \"feedback\": %s}", status, 
+        espRender(conn, "{\"error\": %d, \"feedback\": %s}", !success, 
             req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}");
     }
     espFinalize(conn);

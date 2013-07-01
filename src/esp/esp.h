@@ -145,7 +145,7 @@ typedef struct EspRoute {
     cchar           *link;                  /**< Link template */
     cchar           *mode;                  /**< Application run mode (debug|release) */
 
-    bool            autoLogin;              /**< Bypass user login */
+    cchar           *login;                 /**< Automatic login name - bypass login dialog */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
     int             update;                 /**< Auto-update modified ESP source */
@@ -1111,11 +1111,11 @@ PUBLIC void espRenderFeedback(HttpConn *conn, cchar *kinds, cchar *options);
     is rendered as part of an enclosing "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
     The messages are created via the espSetFeedback API. Field errors are created by ESP validations.
     @param conn HttpConn connection object
-    @param status Request success status.
+    @param success True if the operation was a success.
     @ingroup EspReq
     @stability Prototype
   */
-PUBLIC void espRenderResult(HttpConn *conn, bool status);
+PUBLIC void espRenderResult(HttpConn *conn, bool success);
 
 /**
     Render a formatted string after HTML escaping
@@ -3116,6 +3116,7 @@ PUBLIC EdiGrid *getGrid();
  */
 PUBLIC EdiRec *getRec();
 
+//  MOB DOC
 PUBLIC cchar *getTop();
 
 /**

@@ -24,19 +24,19 @@ app.factory('Esp', function($rootScope, $location, SessionStore) {
     };
 
     /*
-     Is this user authorized to perform the given task
+        Is this user authorized to perform the given task
+        Note: this is advisory only to provide hints in the UI. It is the server's repsonsibility to
+        restrict user abilities as appropriate. We allow !user because auto-long will not set these.
      */
     Esp.can = function(task) {
         var user = Esp.user
-        return (user && user.abilities && user.abilities[task]);
+        return !user || !user.abilities || user.abilities[task];
     };
 
     /*
      Return enabled|disabled depending on if the user is authorized for a given task
      */
     Esp.canClass = function(task) {
-        var c = Esp.can(task);
-        //  MOB - bootstrap classes
         return Esp.can(task) ? "enabled" : "disabled";
     };
 
@@ -63,11 +63,15 @@ app.factory('Esp', function($rootScope, $location, SessionStore) {
         return classes.join(' ');
     };
 
+    $rootScope.$on("$routeChangeSuccess", function(scope, current, previous) {
+        $rootScope.referrer = previous;
+    });
+
     return Esp;
 });
 
 /*
- Startup initialization. Fetch the application settings file config.json.
+    Startup initialization. Fetch the application settings file config.json.
  */
 app.run(function($rootScope, $http, Esp) {
     $http.get('config.json').success(function(data) {
@@ -95,7 +99,7 @@ app.config(function($httpProvider, $routeProvider) {
                 $rootScope.feedback = { warning: "Server Error. Please Retry." };
 
             } else if (response.status >= 400) {
-                $rootScope.feedback = { warning: "Request Error: " + response.status + ". Please Retry." };
+                $rootScope.feedback = { warning: "Request Error: " + response.status + ", for " + response.config.url};
             }
             return $q.reject(response);
         }
@@ -106,6 +110,7 @@ app.config(function($httpProvider, $routeProvider) {
     $httpProvider.responseInterceptors.push(interceptor);
 });
 
+
 /*
     Route resolve function for routes to verify the user's defined abilities
  */
@@ -113,7 +118,7 @@ function checkAuth($q, $location, $rootScope, $route, Esp) {
     var requiredAbilities = $route.current.$$route.abilities;
     var user = Esp.user
     for (var ability in requiredAbilities) {
-        if (!user || !user.abilities || user.abilities[ability] == null) {
+        if (user && user.abilities && user.abilities[ability] == null) {
             if ($location.path() != "/") {
                 $rootScope.feedback = { inform: "Insufficient Privilege"};
                 $location.path(Esp.lastLocation || "/");

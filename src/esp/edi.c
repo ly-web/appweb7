@@ -103,6 +103,10 @@ PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
         return MPR_ERR_CANT_FIND;
     }
     if (smatch(name, "format")) {
+        if (!data || ((char*) data)[0] == '\0') {
+            mprError("Bad validation format pattern for %s", name);
+            return MPR_ERR_BAD_SYNTAX;
+        }
         if ((vp->mdata = pcre_compile2(data, 0, 0, &errMsg, &column, NULL)) == 0) {
             mprError("Cannot compile validation pattern. Error %s at column %d", errMsg, column); 
             return MPR_ERR_BAD_SYNTAX;
@@ -540,10 +544,12 @@ static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int jo
                 cols = joinColumns(cols, foreignGrid, grids, (int) (fp - rec->fields), 0);
             }
         } else {
+#if 0
             if (fp->flags & EDI_KEY && joinField >= 0) {
                 /* Don't include ID fields from joined tables */
                 continue;
             }
+#endif
             col = mprAllocObj(Col, 0);
             col->grid = grid;
             col->field = (int) (fp - rec->fields);

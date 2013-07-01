@@ -666,7 +666,7 @@ static HttpRoute *createRoute(cchar *dir)
     }
     route->eroute = eroute;
     eroute->route = route;
-    httpSetRouteDir(route, dir);
+    httpSetRouteDocuments(route, dir);
     espSetMvcDirs(eroute);
     return route;
 }
