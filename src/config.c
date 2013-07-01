@@ -61,7 +61,7 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     dir = mprGetAbsPath(mprGetPathDir(path));
 
     httpSetRouteHome(route, dir);
-    httpSetRouteDir(route, dir);
+    httpSetRouteDocuments(route, dir);
     httpSetRouteVar(route, "LOG_DIR", ".");
     httpSetRouteVar(route, "INC_DIR", BIT_VAPP_PREFIX "/inc");
     httpSetRouteVar(route, "SPL_DIR", BIT_SPOOL_PREFIX);
@@ -499,16 +499,16 @@ static int authUserFileDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    AuthAutoLogin on|off
+    AuthAutoLogin username
  */
 static int authAutoLogin(MaState *state, cchar *key, cchar *value)
 {
-    bool    on;
+    cchar   *username;
 
-    if (!maTokenize(state, value, "%B", &on)) {
+    if (!maTokenize(state, value, "%S", &username)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpSetAuthAutoLogin(state->auth, on);
+    httpSetAuthUsername(state->auth, username);
     return 0;
 }
 
@@ -833,7 +833,7 @@ static int documentsDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     path = mprGetAbsPath(mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path)));
-    httpSetRouteDir(state->route, path);
+    httpSetRouteDocuments(state->route, path);
     return 0;
 }
 
@@ -1158,6 +1158,17 @@ static int limitClientsDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    LimitConnections count
+ */
+static int limitConnectionsDirective(MaState *state, cchar *key, cchar *value)
+{
+    state->limits = httpGraduateLimits(state->route, state->server->limits);
+    state->limits->connectionsMax = getint(value);
+    return 0;
+}
+
+
+/*
     LimitFiles count
  */
 static int limitFilesDirective(MaState *state, cchar *key, cchar *value)
@@ -1197,11 +1208,15 @@ static int limitProcessesDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     LimitRequests count
+    DEPRECATED 4.4
  */
 static int limitRequestsDirective(MaState *state, cchar *key, cchar *value)
 {
+    mprError("The LimitRequests directive is deprecated. Use LimitConnections or LimitRequestsPerClient instead.");
+#if UNUSED
     state->limits = httpGraduateLimits(state->route, state->server->limits);
     state->limits->requestMax = getint(value);
+#endif
     return 0;
 }
 
@@ -2909,11 +2924,11 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitCacheItem", limitCacheItemDirective);
     maAddDirective(appweb, "LimitChunk", limitChunkDirective);
     maAddDirective(appweb, "LimitClients", limitClientsDirective);
+    maAddDirective(appweb, "LimitConnections", limitConnectionsDirective);
     maAddDirective(appweb, "LimitFiles", limitFilesDirective);
     maAddDirective(appweb, "LimitKeepAlive", limitKeepAliveDirective);
     maAddDirective(appweb, "LimitMemory", limitMemoryDirective);
     maAddDirective(appweb, "LimitProcesses", limitProcessesDirective);
-    maAddDirective(appweb, "LimitRequests", limitRequestsDirective);
     maAddDirective(appweb, "LimitRequestsPerClient", limitRequestsPerClientDirective);
     maAddDirective(appweb, "LimitRequestBody", limitRequestBodyDirective);
     maAddDirective(appweb, "LimitRequestForm", limitRequestFormDirective);
@@ -3000,6 +3015,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Compress", compressDirective);
     /* Use Documents */
     maAddDirective(appweb, "DocumentRoot", documentsDirective);
+    /* Use LimitConnections or LimitRequestsPerClient instead */
+    maAddDirective(appweb, "LimitRequests", limitRequestsDirective);
     /* Use LimitBuffer */
     maAddDirective(appweb, "LimitStageBuffer", limitBufferDirective);
     /* Use LimitUri */
