@@ -37,6 +37,7 @@
             <h1>Quick Nav</h1>
             <ul>
                 <li><a href="#allow">Allow</a></li>
+                <li><a href="#authAutoLogin">AuthAutoLogin</a></li>
                 <li><a href="#authDigestQop">AuthDigestQop</a></li>
                 <li><a href="#authStore">AuthStore</a></li>
                 <li><a href="#authType">AuthType</a></li>
@@ -87,6 +88,39 @@
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>The Allow directive is currently not implemented.</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="authAutoLogin"></a>
+            <h2>AuthAutoLogin</h2>
+            <table class="directive" title="directive">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Automatically login as the designated user</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>AuthAutoLogin username</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>AuthAutoLogin peter</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The AuthAutoLogin directive automatically logs in as the specified user.
+                            This is useful for development to avoid having to enter the user credentials for each debug 
+                            session.</p>
+                        </td>
                     </tr>
                 </tbody>
             </table>
