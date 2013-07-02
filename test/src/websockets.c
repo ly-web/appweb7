@@ -89,20 +89,20 @@ static void big_response()
     count = 10000;
 
     /*
-        First message is big, but in a single send. The middleware should break this into frames.
+        First message is big, but in a single send. The middleware should break this into frames unless you call:
+            httpSetWebSocketPreserveFrames(conn, 1);
+        This will regard each call to httpSendBlock as a frame.
      */
     buf = mprCreateBuf(0, 0);
     for (i = 0; i < count; i++) {
         mprPutToBuf(buf, "%8d:01234567890123456789012345678901234567890\n", i);
     }
     mprAddNullToBuf(buf);
-    mprHold(buf);
+
     if (httpSendBlock(conn, WS_MSG_TEXT, mprGetBufStart(buf), mprGetBufLength(buf), 0) < 0) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot send big message");
-        mprRelease(buf);
         return;
     }
-    mprRelease(buf);
     httpSendClose(conn, WS_STATUS_OK, "OK");
 }
 
@@ -110,7 +110,6 @@ static void big_response()
     Multiple-frame response message with explicit continuations.
     The WebSockets filter will encode each call to httpSendBlock into a frame. 
     Even if large blocks are written, HTTP_MORE assures that the block will be encoded as a single frame.
-    Alternatively, call httpSetWebSocketPreserveFrames so that all calls to httpSend and httpSendBlock are sent as single frames.
  */
 static void frames_response() 
 {
