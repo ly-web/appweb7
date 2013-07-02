@@ -1,5 +1,5 @@
 /*
-    len-256K.tst - Test a big single frame message
+    len-256K.tst - Test a big single frame message to the server
 
     WebSockets uses one byte for a length <= 125 bytes
  */

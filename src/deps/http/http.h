@@ -2047,9 +2047,15 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q);
 /*
     Application level events 
  */
-#define HTTP_EVENT_APP_OPEN         6       /**< The request is now open */
-#define HTTP_EVENT_APP_CLOSE        7       /**< The request is now closed */
-#define HTTP_EVENT_MAX              8
+
+#define HTTP_EVENT_APP_CLOSE        6       /**< The request is now closed */
+
+/*
+    Internal hidden events. Not exposed by the Http notifier.
+ */
+#define HTTP_EVENT_APP_OPEN         7       /* The request is now open */
+
+#define HTTP_EVENT_MAX              8       /**< Maximum event plus one */
 
 /*  
     Connection / Request states
@@ -6415,10 +6421,12 @@ typedef struct HttpWebSocket {
     char            *subProtocol;           /**< Application level sub-protocol */
     HttpPacket      *currentFrame;          /**< Pending message frame */
     HttpPacket      *currentMessage;        /**< Pending message frame */
+    HttpPacket      *tailMessage;           /**< Subsequent message frames */
     MprEvent        *pingEvent;             /**< Ping timer event */
     char            *closeReason;           /**< Reason for closure */
     uchar           dataMask[4];            /**< Mask for data */
     int             maskOffset;             /**< Offset in dataMask */
+    int             preserveFrames;         /**< Do not join frames */
 } HttpWebSocket;
 
 #define WS_VERSION     13
@@ -6545,9 +6553,10 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
     @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
         MPR error code.
     @ingroup HttpWebSocket
+    @return Number of data message bytes written. Otherwise returns a negative MPR error code.
     @stability Evolving
  */
-PUBLIC void httpSendClose(HttpConn *conn, int status, cchar *reason);
+PUBLIC ssize httpSendClose(HttpConn *conn, int status, cchar *reason);
 
 /**
     Set a list of application-level protocols supported by the client
@@ -6579,6 +6588,17 @@ PUBLIC int httpUpgradeWebSocket(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC bool httpWebSocketOrderlyClosed(HttpConn *conn);
+
+/**
+    Preserve frames for incoming messages
+    @param conn HttpConn connection object created via #httpCreateConn
+    @param on Set to true to preserve frames
+    @return True if the web socket was orderly closed.
+    @ingroup HttpWebSocket
+    @stability Evolving
+*/
+PUBLIC void httpSetWebSocketPreserveFrames(HttpConn *conn, bool on);
+
 
 /************************************ Misc *****************************************/
 /**
