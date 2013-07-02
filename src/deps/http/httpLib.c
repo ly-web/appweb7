@@ -18782,7 +18782,8 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
     if (!(HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_FINALIZED) || !conn->upgraded) {
         return MPR_ERR_BAD_STATE;
     }
-    if (type < 0 || type > WS_MSG_PONG) {
+    if (type != WS_MSG_CONT && type != WS_MSG_TEXT && type != WS_MSG_BINARY && type != WS_MSG_CLOSE && type != WS_MSG_PING &&
+            type != WS_MSG_PONG) {
         mprError("webSocketFilter: httpSendBlock: bad message type %d", type);
         return MPR_ERR_BAD_ARGS;
     }

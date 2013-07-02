@@ -6514,6 +6514,7 @@ PUBLIC ssize httpGetWebSocketState(HttpConn *conn);
 
 /**
     Send a UTF-8 text message to the web socket peer
+    @description This call invokes httpSend with a type of WS_MSG_TEXT and flags of HTTP_BUFFER.
     @param conn HttpConn connection object created via #httpCreateConn
     @param fmt Printf style formatted string
     @param ... Arguments for the format
@@ -6527,26 +6528,46 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
 
 /**
     Send a message of a given type to the web socket peer
-    @description This call operates in blocking mode by default unless the HTTP_NON_BLOCK flag is specified. When blocking,
-    the call will either accept and write all the data or it will fail, it will never return "short" with a partial write.
-    The call may block for up to the inactivity timeout specified in the conn->limits->inactivityTimeout value.
+    @description This is the lower-level message send routine. It permits control of message types and message framing .
+    
+    This routine can operate in a blocking, non-blocking or buffered mode. Blocking mode is specified via the 
+    HTTP_BLOCK flag.  When blocking, the call will wait until it has written all the data. The call will either accept and write 
+    all the data or it will fail, it will never return "short" with a partial write.
+    If in blocking mode, the call may block for up to the inactivity timeout specified in the conn->limits->inactivityTimeout value.
+
+    Non-blocking mode is specified via the HTTP_NON_BLOCK flag. In this mode, the call will consume that amount of data
+    that will fit within the outgoing web socket queues. Consequently, it may return "short" with a partial write.
+
+    Buffered mode is the default and may be explicitly specified via the HTTP_BUFFER flag. In buffered mode, the entire message 
+    will be accepted and will be buffered if required. 
+
+    This API may split the message into frames such that no frame is larger than the limit conn->limits->webSocketsFrameSize.
+    However, if the HTTP_MORE flag is specified to indicate there is more data to complete this entire message, the data provided 
+    to this call will not be split into frames and will not be aggregated with previous or subsequent messages. i.e. frame
+    boundaries will be presserved and sent as-is to the peer.
+
     @param conn HttpConn connection object created via #httpCreateConn
     @param type Web socket message type. Choose from WS_MSG_TEXT, WS_MSG_BINARY or WS_MSG_PING. 
         Use httpSendClose to send a close message. Do not send a WS_MSG_PONG message as it is generated internally
         by the Web Sockets module.
-    @param buf Data buffer to send
-    @param len Length of buf
-    @param flags Set to HTTP_BLOCK for blocking operation or HTTP_NON_BLOCK for non-blocking. Set to HTTP_BUFFER to
+    @param msg Message data buffer to send
+    @param len Length of msg
+    @param flags Include the flag HTTP_BLOCK for blocking operation or HTTP_NON_BLOCK for non-blocking. Set to HTTP_BUFFER to
         buffer the data if required and never block. Set to zero will default to HTTP_BUFFER.
+        Include the flag HTTP_MORE to indicate there is more data to come to complete this message. This will set 
+        frame continuation bit. Setting HTTP_MORE preserve the frame boundaries. i.e. it will ensure the data written is 
+        not split into frames or aggregated with other data.
     @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
         MPR error code.
     @ingroup HttpWebSocket
     @stability Evolving
  */
-PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int flags);
+PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *msg, ssize len, int flags);
 
 /**
     Send a close message to the web socket peer
+    @description This call invokes httpSendBlock with a type of WS_MSG_CLOSE and flags of HTTP_BUFFER. 
+        The status and reason are encoded in the message.
     @param conn HttpConn connection object created via #httpCreateConn
     @param status Web socket status
     @param reason Optional reason text message. The reason must be less than 124 bytes in length.
@@ -6557,6 +6578,19 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
     @stability Evolving
  */
 PUBLIC ssize httpSendClose(HttpConn *conn, int status, cchar *reason);
+
+/**
+    Preserve frames for incoming messages
+    @description This routine enables user control of message framing.
+    When preserving frames, all sent messages will not be split into frames or aggregated with other data. Received messages
+        will similarly have their frame boundaries preserved and will be stored one frame per HttpPacket.
+    @param conn HttpConn connection object created via #httpCreateConn
+    @param on Set to true to preserve frames
+    @return True if the web socket was orderly closed.
+    @ingroup HttpWebSocket
+    @stability Evolving
+*/
+PUBLIC void httpSetWebSocketPreserveFrames(HttpConn *conn, bool on);
 
 /**
     Set a list of application-level protocols supported by the client
@@ -6588,17 +6622,6 @@ PUBLIC int httpUpgradeWebSocket(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC bool httpWebSocketOrderlyClosed(HttpConn *conn);
-
-/**
-    Preserve frames for incoming messages
-    @param conn HttpConn connection object created via #httpCreateConn
-    @param on Set to true to preserve frames
-    @return True if the web socket was orderly closed.
-    @ingroup HttpWebSocket
-    @stability Evolving
-*/
-PUBLIC void httpSetWebSocketPreserveFrames(HttpConn *conn, bool on);
-
 
 /************************************ Misc *****************************************/
 /**
