@@ -249,7 +249,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
 /**
     Convert an ESP web page into C code
     @description This parses an ESP web page into an equivalent C source view.
-    @param eroute EspRoute object
+    @param route HttpRoute object
     @param page ESP web page script.
     @param path Pathname for the ESP web page. This is used to process include directives which are resolved relative
         to this path.
@@ -1710,7 +1710,6 @@ PUBLIC cchar *getDir();
 
 /**
     Get a field from the current database record
-    @description The current grid is defined via #setRec
     @param rec Database record. 
     @param field Field name to return
     @return String value for "field" in the current record.
@@ -1894,7 +1893,6 @@ PUBLIC EdiRec *makeRec(cchar *content);
     are supplied using the current request and route tables. The resulting URI is a normalized, server-local 
     URI (that begins with "/"). The URI will include any defined route prefix, but will not include scheme, host or 
     port components.
-    @param conn HttpConn connection object
     @param target The URI target. The target parameter can be a URI string or JSON style set of options. 
         The target will have any embedded "{tokens}" expanded by using token values from the request parameters.
         If the target has an absolute URI path, that path is used directly after tokenization. If the target begins with
@@ -1956,7 +1954,7 @@ PUBLIC cchar *makeUri(cchar *target);
 /**
     Test the the application mode
     @description This is typically set to "debug" or "release". The mode is defined by the "mode" property in the config.json.
-    @param checkMode Mode to compare with the current application mode.
+    @param check Mode to compare with the current application mode.
     @return True if the current app mode matches the check mode
     @ingroup EspAbbrev
     @stability Prototype
@@ -2162,7 +2160,6 @@ PUBLIC ssize renderFile(cchar *path);
     Render an EDI database grid as a JSON string
     @description The JSON string is rendered as part of an enclosing "{ data: JSON }" wrapper.
     @param grid EDI grid
-    @param flags Reserved. Set to zero.
     @return Number of bytes rendered
     @ingroup EspReq
     @stability Prototype
@@ -2173,7 +2170,6 @@ PUBLIC ssize renderGrid(EdiGrid *grid);
     Render an EDI database record as a JSON string
     @description The JSON string is rendered as part of an enclosing "{ data: JSON }" wrapper.
     @param rec EDI record
-    @param flags Reserved. Set to zero.
     @return Number of bytes rendered
     @ingroup EspReq
     @stability Prototype
@@ -2250,7 +2246,7 @@ PUBLIC void renderView(cchar *view);
 /**
     Render scripts elements 
     @description This renders script elements for all matching filenames on the server.
-    @param pattern An enhanced glob-style expression pattern. The format is is a comma separated string of filename
+    @param patterns An enhanced glob-style expression pattern. The format is is a comma separated string of filename
     expressions. Each expression may contain the wildcard tokens: "*" which matches any filename portion, "**" which matches
     any filename portion in any subdirectory. An expression may be prefixed with "!" to exclude files of that expression.
     @ingroup EspAbbrev
@@ -2668,7 +2664,6 @@ PUBLIC EdiGrid *espGetGrid(HttpConn *conn);
 
 /**
     Test if a current grid has been defined.
-    @description The current grid is defined via #setRec
     @return "True" if a current grid has been defined
     @ingroup EspReq
     @stability Deprecated
@@ -3108,7 +3103,6 @@ PUBLIC EdiGrid *getGrid();
 
 /**
     Get the current database record
-    @description The current record is defined via #setRec
     @return EdiRec instance
     @ingroup EspAbbrev
     @stability Deprecated
@@ -3121,7 +3115,6 @@ PUBLIC cchar *getTop();
 
 /**
     Test if a current grid has been defined
-    @description The current grid is defined via #setRec
     @return "true" if a current grid has been defined
     @ingroup EspAbbrev
     @stability Deprecated
