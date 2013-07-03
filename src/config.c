@@ -295,23 +295,6 @@ static int addLanguageDirDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if UNUSED
-/*
-    AddMethods method, method,...
- */
-static int addMethodsDirective(MaState *state, cchar *key, cchar *value)
-{
-    cchar   *methods;
-
-    if (!maTokenize(state, value, "%*", &methods)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    httpAddRouteMethods(state->route, methods);
-    return 0;
-}
-#endif
-
-
 /*
     AddOutputFilter filter [ext ext ...]
  */
@@ -1213,10 +1196,6 @@ static int limitProcessesDirective(MaState *state, cchar *key, cchar *value)
 static int limitRequestsDirective(MaState *state, cchar *key, cchar *value)
 {
     mprError("The LimitRequests directive is deprecated. Use LimitConnections or LimitRequestsPerClient instead.");
-#if UNUSED
-    state->limits = httpGraduateLimits(state->route, state->server->limits);
-    state->limits->requestMax = getint(value);
-#endif
     return 0;
 }
 
@@ -1815,23 +1794,6 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if UNUSED
-/*
-    RemoveMethods method, method,...
- */
-static int removeMethodsDirective(MaState *state, cchar *key, cchar *value)
-{
-    cchar   *methods;
-
-    if (!maTokenize(state, value, "%*", &methods)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    httpRemoveRouteMethods(state->route, methods);
-    return 0;
-}
-#endif
-
-
 /*
     RequestParseTimeout secs
  */
@@ -1983,10 +1945,6 @@ static int routeDirective(MaState *state, cchar *key, cchar *value)
         if (strstr(pattern, "${")) {
             pattern = sreplace(pattern, "${inherit}", state->route->pattern);
         }
-#if UNUSED
-        name = (*pattern == '^') ? &pattern[1] : pattern;
-#endif
-        
         if ((route = httpLookupRouteByPattern(state->host, pattern)) != 0) {
             state->route = route;
         } else {
@@ -2103,23 +2061,6 @@ static int setHandlerDirective(MaState *state, cchar *key, cchar *value)
     }
     return 0;
 }
-
-
-#if UNUSED
-/*
-    SetMethods method, method,...
- */
-static int setMethodsDirective(MaState *state, cchar *key, cchar *value)
-{
-    cchar   *methods;
-
-    if (!maTokenize(state, value, "%*", &methods)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    httpSetRouteMethods(state->route, methods);
-    return 0;
-}
-#endif
 
 
 /*
@@ -2302,8 +2243,7 @@ static int updateDirective(MaState *state, cchar *key, cchar *value)
  */
 static int uploadDirDirective(MaState *state, cchar *key, cchar *value)
 {
-    //  MOB - need httpSetUploadDir
-    state->route->uploadDir = httpMakePath(state->route, state->configDir, value);
+    httpSetRouteUploadDir(state->route, httpMakePath(state->route, state->configDir, value));
     return 0;
 }
 
@@ -2313,10 +2253,12 @@ static int uploadDirDirective(MaState *state, cchar *key, cchar *value)
  */
 static int uploadAutoDeleteDirective(MaState *state, cchar *key, cchar *value)
 {
-    //  MOB use httpSetRouteAutoDelete
-    if (!maTokenize(state, value, "%B", &state->route->autoDelete)) {
+    bool    on;
+
+    if (!maTokenize(state, value, "%B", &on)) {
         return MPR_ERR_BAD_SYNTAX;
     }
+    httpSetRouteAutoDelete(state->route, on);
     return 0;
 }
 
@@ -2833,7 +2775,6 @@ PUBLIC char *maGetNextToken(char *s, char **tok)
 }
 
 
-//  MOB - move to http
 PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
 {
     MprFile         *file;
