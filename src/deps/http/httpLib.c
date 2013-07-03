@@ -1395,8 +1395,9 @@ static void saveCachedResponse(HttpConn *conn)
     assert(tx->finalizedOutput && tx->cacheBuffer);
 
     buf = tx->cacheBuffer;
-    //  MOB - is this really required?
+#if UNUSED
     mprAddNullToBuf(buf);
+#endif
     tx->cacheBuffer = 0;
     /* 
         Truncate modified time to get a 1 sec resolution. This is the resolution for If-Modified headers.  
@@ -2300,6 +2301,9 @@ PUBLIC void httpDestroyConn(HttpConn *conn)
         httpRemoveConn(conn->http, conn);
         if (conn->endpoint) {
             httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_CONNECTIONS, -1);
+            if (conn->rx && !(conn->rx->flags & HTTP_COMPLETED)) {
+                httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_REQUESTS, -1);
+            }
         }
         conn->input = 0;
         if (conn->tx) {
@@ -2381,7 +2385,7 @@ PUBLIC void httpCloseConn(HttpConn *conn)
     assert(conn);
 
     if (conn->sock) {
-        mprLog(5, "Closing connection");
+        mprLog(4, "Closing connection");
         mprCloseSocket(conn->sock, 0);
         conn->sock = 0;
     }
@@ -2462,6 +2466,10 @@ static bool prepForNext(HttpConn *conn)
 {
     assert(conn->endpoint);
     assert(conn->state == HTTP_STATE_COMPLETE);
+
+    if (conn->keepAliveCount < 0) {
+        return 0;
+    }
     if (conn->tx) {
         assert(conn->tx->finalized && conn->tx->finalizedConnector && conn->tx->finalizedOutput);
         conn->tx->conn = 0;
@@ -2535,7 +2543,6 @@ PUBLIC void httpPrepClientConn(HttpConn *conn, bool keepHeaders)
     Accept a new client connection on a new socket. 
     This will come in on a worker thread with a new dispatcher dedicated to this connection. 
  */
-//  MOB - return value not needed
 PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
 {
     Http        *http;
@@ -3743,9 +3750,10 @@ static void acceptConn(HttpEndpoint *endpoint)
     event->sock = sock;
     event->handler = wp;
     /*
-        MOB - NEED API
+        Optimization to wake the event service in this amount of time. This ensures that when the HttpTimer is scheduled,
+        it won't need to awaken the notifier.
      */
-    MPR->eventService->nap = HTTP_TIMER_PERIOD;
+    mprSetEventServiceSleep(HTTP_TIMER_PERIOD);
     mprQueueEvent(dispatcher, event);
 }
 
@@ -5341,9 +5349,11 @@ PUBLIC void httpSetProxy(Http *http, cchar *host, int port)
 
 static void updateCurrentDate(Http *http)
 {
+    MprTicks    diff;
+
     http->now = mprGetTicks();
-    assert(http->now >= 0);
-    if (http->now > (http->currentTime + MPR_TICKS_PER_SEC - 1)) {
+    diff = http->now - http->currentTime;
+    if (diff <= MPR_TICKS_PER_SEC || diff >= MPR_TICKS_PER_SEC) {
         /*
             Optimize and only update the string date representation once per second
          */
@@ -6984,9 +6994,9 @@ PUBLIC void httpPutForService(HttpQueue *q, HttpPacket *packet, bool serviceQ)
 /*  
     Resize and possibly split a packet so it fits in the downstream queue. Put back the 2nd portion of the split packet 
     on the queue. Ensure that the packet is not larger than "size" if it is greater than zero. If size < 0, then
-    use the default packet size. 
+    use the default packet size. Return the tail packet.
  */
-PUBLIC int httpResizePacket(HttpQueue *q, HttpPacket *packet, ssize size)
+PUBLIC HttpPacket *httpResizePacket(HttpQueue *q, HttpPacket *packet, ssize size)
 {
     HttpPacket  *tail;
     ssize       len;
@@ -6996,7 +7006,7 @@ PUBLIC int httpResizePacket(HttpQueue *q, HttpPacket *packet, ssize size)
     }
     if (packet->esize > size) {
         if ((tail = httpSplitPacket(packet, size)) == 0) {
-            return MPR_ERR_MEMORY;
+            return 0;
         }
     } else {
         /*  
@@ -7010,28 +7020,31 @@ PUBLIC int httpResizePacket(HttpQueue *q, HttpPacket *packet, ssize size)
             return 0;
         }
         if ((tail = httpSplitPacket(packet, size)) == 0) {
-            return MPR_ERR_MEMORY;
+            return 0;
         }
     }
     httpPutBackPacket(q, tail);
-    return 0;
+    return tail;
 }
 
 
 /*
-    Split a packet at a given offset and return a new packet containing the data after the offset.
+    Split a packet at a given offset and return the tail packet containing the data after the offset.
     The prefix data remains with the original packet. 
  */
 PUBLIC HttpPacket *httpSplitPacket(HttpPacket *orig, ssize offset)
 {
-    HttpPacket  *packet;
+    HttpPacket  *tail;
     ssize       count, size;
 
     /* Must not be in a queue */
     assert(orig->next == 0);
 
     if (orig->esize) {
-        if ((packet = httpCreateEntityPacket(orig->epos + offset, orig->esize - offset, orig->fill)) == 0) {
+        if (offset >= orig->esize) {
+            return 0;
+        }
+        if ((tail = httpCreateEntityPacket(orig->epos + offset, orig->esize - offset, orig->fill)) == 0) {
             return 0;
         }
         orig->esize = offset;
@@ -7054,21 +7067,40 @@ PUBLIC HttpPacket *httpSplitPacket(HttpPacket *orig, ssize offset)
                         copy from packet
                 Adjust the content->start
          */
-        count = httpGetPacketLength(orig) - offset;
-        size = max(count, BIT_MAX_BUFFER);
-        size = HTTP_PACKET_ALIGN(size);
-        if ((packet = httpCreateDataPacket(size)) == 0) {
-            return 0;
-        }
-        httpAdjustPacketEnd(orig, (ssize) -count);
-        if (mprPutBlockToBuf(packet->content, mprGetBufEnd(orig->content), (ssize) count) != count) {
-            return 0;
+        if (offset < (httpGetPacketLength(orig) / 2)) {
+            /*
+                A large packet will often be resized by splitting into chunks that the downstream queues will accept. 
+                To optimize, we allocate a new packet content buffer and the tail packet keeps the trimmed original packet buffer.
+             */
+            if ((tail = httpCreateDataPacket(0)) == 0) {
+                return 0;
+            }
+            tail->content = orig->content;
+            if ((orig->content = mprCreateBuf(offset, 0)) == 0) {
+                return 0;
+            }
+            if (mprPutBlockToBuf(orig->content, mprGetBufStart(tail->content), offset) != offset) {
+                return 0;
+            }
+            mprAdjustBufStart(tail->content, offset);
+
+        } else {
+            count = httpGetPacketLength(orig) - offset;
+            size = max(count, BIT_MAX_BUFFER);
+            size = HTTP_PACKET_ALIGN(size);
+            if ((tail = httpCreateDataPacket(size)) == 0) {
+                return 0;
+            }
+            httpAdjustPacketEnd(orig, -count);
+            if (mprPutBlockToBuf(tail->content, mprGetBufEnd(orig->content), count) != count) {
+                return 0;
+            }
         }
     }
-    packet->flags = orig->flags;
-    packet->type = orig->type;
-    packet->last = orig->last;
-    return packet;
+    tail->flags = orig->flags;
+    tail->type = orig->type;
+    tail->last = orig->last;
+    return tail;
 }
 
 
@@ -10336,6 +10368,13 @@ PUBLIC void httpSetRouteTemplate(HttpRoute *route, cchar *tplate)
 }
 
 
+PUBLIC void httpSetRouteUploadDir(HttpRoute *route, cchar *dir)
+{
+    assert(route);
+    route->uploadDir = sclone(dir);
+}
+
+
 PUBLIC void httpSetRouteWorkers(HttpRoute *route, int workers)
 {
     assert(route);
@@ -13308,7 +13347,7 @@ static bool processContent(HttpConn *conn)
     HttpQueue   *q;
     HttpPacket  *packet;
     ssize       nbytes;
-    int         more;
+    int         moreData;
 
     assert(conn);
     rx = conn->rx;
@@ -13318,7 +13357,7 @@ static bool processContent(HttpConn *conn)
     packet = conn->input;
     /* Packet may be null */
 
-    if ((nbytes = filterPacket(conn, packet, &more)) > 0) {
+    if ((nbytes = filterPacket(conn, packet, &moreData)) > 0) {
         if (conn->state < HTTP_STATE_COMPLETE) {
             if (rx->inputPipeline) {
                 httpPutPacketToNext(q, packet);
@@ -13330,34 +13369,36 @@ static bool processContent(HttpConn *conn)
             conn->input = 0;
         }
     }
-    if (rx->eof && conn->state < HTTP_STATE_FINALIZED) {
-        if (conn->endpoint) {
-            if (!rx->route) {
-                httpAddBodyParams(conn);
-                mapMethod(conn);
-                httpRouteRequest(conn);
-                httpCreatePipeline(conn);
-                /*
-                    Transfer buffered input body data into the pipeline
-                 */
-                while ((packet = httpGetPacket(q)) != 0) {
-                    httpPutPacketToNext(q, packet);
+    if (rx->eof) {
+        if (conn->state < HTTP_STATE_FINALIZED) {
+            if (conn->endpoint) {
+                if (!rx->route) {
+                    httpAddBodyParams(conn);
+                    mapMethod(conn);
+                    httpRouteRequest(conn);
+                    httpCreatePipeline(conn);
+                    /*
+                        Transfer buffered input body data into the pipeline
+                     */
+                    while ((packet = httpGetPacket(q)) != 0) {
+                        httpPutPacketToNext(q, packet);
+                    }
                 }
+                httpPutPacketToNext(q, httpCreateEndPacket());
+                if (!tx->started) {
+                    httpStartPipeline(conn);
+                }
+            } else {
+                httpPutPacketToNext(q, httpCreateEndPacket());
             }
-            httpPutPacketToNext(q, httpCreateEndPacket());
-            if (!tx->started) {
-                httpStartPipeline(conn);
-            }
-        } else {
-            httpPutPacketToNext(q, httpCreateEndPacket());
+            httpSetState(conn, HTTP_STATE_READY);
         }
-        httpSetState(conn, HTTP_STATE_READY);
         return conn->workerEvent ? 0 : 1;
     }
     if (tx->started) {
         httpServiceQueues(conn);
     }
-    return (conn->connError || more);
+    return (conn->connError || moreData);
 }
 
 
@@ -18176,12 +18217,10 @@ PUBLIC void httpRemoveAllUploadedFiles(HttpConn *conn)
 #define WS_MSG         2
 #define WS_CLOSED      3
 
-#if BIT_MPR_TRACING
 static char *codetxt[16] = {
-    "continuation", "text", "binary", "reserved", "reserved", "reserved", "reserved", "reserved",
+    "cont", "text", "binary", "reserved", "reserved", "reserved", "reserved", "reserved",
     "close", "ping", "pong", "reserved", "reserved", "reserved", "reserved", "reserved",
 };
-#endif
 
 /*
     Frame format
@@ -18228,6 +18267,30 @@ static char *codetxt[16] = {
 #define SET_CODE(v)             ((v) & 0xf)
 #define SET_LEN(len, n)         ((uchar)(((len) >> ((n) * 8)) & 0xff))
 
+/*
+    Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
+    See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
+ */
+#define UTF8_ACCEPT 0
+#define UTF8_REJECT 1
+
+static const uchar utfTable[] = {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 00..1f
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 20..3f
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 40..5f
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 60..7f
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9, // 80..9f
+    7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7, // a0..bf
+    8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, // c0..df
+    0xa,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x4,0x3,0x3, // e0..ef
+    0xb,0x6,0x6,0x6,0x5,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8, // f0..ff
+    0x0,0x1,0x2,0x3,0x5,0x8,0x7,0x1,0x1,0x1,0x4,0x6,0x1,0x1,0x1,0x1, // s0..s0
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,1, // s1..s2
+    1,2,1,1,1,1,1,2,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1, // s3..s4
+    1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,3,1,1,1,1,1,1, // s5..s6
+    1,3,1,1,1,1,1,3,1,3,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // s7..s8
+};
+
 /********************************** Forwards **********************************/
 
 static void closeWebSock(HttpQueue *q);
@@ -18236,8 +18299,10 @@ static void manageWebSocket(HttpWebSocket *ws, int flags);
 static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir);
 static void openWebSock(HttpQueue *q);
 static void outgoingWebSockService(HttpQueue *q);
+static int processFrame(HttpQueue *q, HttpPacket *packet);
 static void readyWebSock(HttpQueue *q);
-static bool validUTF8(cchar *str, ssize len);
+static int validUTF8(cchar *str, ssize len);
+static bool validateText(HttpConn *conn, HttpPacket *packet);
 static void webSockPing(HttpConn *conn);
 static void webSockTimeout(HttpConn *conn);
 
@@ -18404,6 +18469,7 @@ static void manageWebSocket(HttpWebSocket *ws, int flags)
         mprMark(ws->pingEvent);
         mprMark(ws->subProtocol);
         mprMark(ws->closeReason);
+        mprMark(ws->data);
     }
 }
 
@@ -18428,118 +18494,6 @@ static void readyWebSock(HttpQueue *q)
     if (q->conn->endpoint) {
         HTTP_NOTIFY(q->conn, HTTP_EVENT_APP_OPEN, 0);
     }
-}
-
-
-static int processFrame(HttpQueue *q, HttpPacket *packet)
-{
-    HttpConn        *conn;
-    HttpRx          *rx;
-    HttpWebSocket   *ws;
-    HttpLimits      *limits;
-    MprBuf          *content;
-    char            *cp;
-
-    conn = q->conn;
-    limits = conn->limits;
-    ws = conn->rx->webSocket;
-    assert(ws);
-    rx = conn->rx;
-    assert(packet);
-    content = packet->content;
-    assert(content);
-
-    if (3 <= MPR->logLevel) {
-        mprAddNullToBuf(content);
-        mprLog(3, "webSocketFilter: receive \"%s\" (%d) frame, last %d, length %d", 
-            codetxt[packet->type], packet->type, packet->last, mprGetBufLength(content));
-    }
-    switch (packet->type) {
-    case WS_MSG_BINARY:
-    case WS_MSG_TEXT:
-        if (ws->closing) {
-            break;
-        }
-        if (packet->type == WS_MSG_TEXT && !validUTF8(content->start, mprGetBufLength(content))) {
-            if (!rx->route->ignoreEncodingErrors) {
-                mprError("webSocketFilter: Text packet has invalid UTF8");
-                return WS_STATUS_INVALID_UTF8;
-            }
-        }
-        if (packet->type == WS_MSG_TEXT) {
-            mprLog(4, "webSocketFilter: Receive text \"%s\"", content->start);
-        }
-        if (ws->currentMessage) {
-            assert(!ws->preserveFrames);
-            httpJoinPacket(ws->currentMessage, packet);
-            ws->currentMessage->last = packet->last;
-            packet = ws->currentMessage;
-        }
-        for (ws->tailMessage = 0; packet; packet = ws->tailMessage, ws->tailMessage = 0) {
-            if (httpGetPacketLength(packet) > limits->webSocketsPacketSize && !ws->preserveFrames) {
-                ws->tailMessage = httpSplitPacket(packet, limits->webSocketsPacketSize);
-                packet->last = 0;
-            }
-            if (packet->last || ws->tailMessage || ws->preserveFrames) {
-                packet->flags |= HTTP_PACKET_SOLO;
-                ws->messageLength += httpGetPacketLength(packet);
-                /*
-                    WARNING: this can run GC due to ejs script from httpNotify. So must retain tailMessage.
-                 */
-                httpPutPacketToNext(q, packet);
-                ws->currentMessage = 0;
-            } else {
-                ws->currentMessage = packet;
-                break;
-            }
-        } 
-        break;
-
-    case WS_MSG_CLOSE:
-        cp = content->start;
-        if (httpGetPacketLength(packet) >= 2) {
-            ws->closeStatus = ((uchar) cp[0]) << 8 | (uchar) cp[1];
-            if (httpGetPacketLength(packet) >= 4) {
-                if (ws->maskOffset >= 0) {
-                    for (cp = content->start; cp < content->end; cp++) {
-                        *cp = *cp ^ ws->dataMask[ws->maskOffset++ & 0x3];
-                    }
-                }
-                ws->closeReason = sclone(&content->start[2]);
-            }
-        }
-        mprLog(4, "webSocketFilter: receive close packet, status %d, reason \"%s\", closing %d", ws->closeStatus, 
-            ws->closeReason, ws->closing);
-        if (ws->closing) {
-            httpDisconnect(conn);
-        } else {
-            /* Acknowledge the close. Echo the received status */
-            httpSendClose(conn, WS_STATUS_OK, NULL);
-            rx->eof = 1;
-            rx->remainingContent = 0;
-        }
-#if UNUSED
-        /* Advance from the content state */
-        httpSetState(conn, HTTP_STATE_READY);
-#endif
-        ws->state = WS_STATE_CLOSED;
-        break;
-
-    case WS_MSG_PING:
-        /* Respond with the same content as specified in the ping message */
-        httpSendBlock(conn, WS_MSG_PONG, mprGetBufStart(content), mprGetBufLength(content), HTTP_BUFFER);
-        break;
-
-    case WS_MSG_PONG:
-        /* Do nothing */
-        break;
-
-    default:
-        mprError("webSocketFilter: Bad message type %d", packet->type);
-        ws->state = WS_STATE_CLOSED;
-        return WS_STATUS_PROTOCOL_ERROR;
-    }
-    return 0;
 }
 
 
@@ -18573,7 +18527,9 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
         ws->state, ws->frameState, httpGetPacketLength(packet));
 
     if (packet->flags & HTTP_PACKET_END) {
-        /* EOF packet means the socket has been abortively closed */
+        /* 
+            EOF packet means the socket has been abortively closed 
+         */
         if (ws->state != WS_STATE_CLOSED) {
             ws->closing = 1;
             ws->frameState = WS_CLOSED;
@@ -18592,6 +18548,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 mprLog(4, "webSocketFilter: closed, ignore incoming packet");
             }
             httpFinalize(conn);
+            httpSetState(conn, HTTP_STATE_FINALIZED);
             break;
 
         case WS_BEGIN:
@@ -18607,17 +18564,24 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             }
             packet->last = GET_FIN(*fp);
             opcode = GET_CODE(*fp);
-            if (opcode) {
-                if (opcode > WS_MSG_PONG) {
+            if (opcode == WS_MSG_CONT) {
+                if (!ws->currentMessage) {
                     error = WS_STATUS_PROTOCOL_ERROR;
                     break;
                 }
-                packet->type = opcode;
-                if (opcode >= WS_MSG_CONTROL && !packet->last) {
-                    /* Control frame, must not be fragmented */
-                    error = WS_STATUS_PROTOCOL_ERROR;
-                    break;
-                }
+            } else if (opcode < WS_MSG_CONTROL && ws->currentMessage) {
+                error = WS_STATUS_PROTOCOL_ERROR;
+                break;
+            }
+            if (opcode > WS_MSG_PONG) {
+                error = WS_STATUS_PROTOCOL_ERROR;
+                break;
+            }
+            packet->type = opcode;
+            if (opcode >= WS_MSG_CONTROL && !packet->last) {
+                /* Control frame, must not be fragmented */
+                error = WS_STATUS_PROTOCOL_ERROR;
+                break;
             }
             fp++;
             len = GET_LEN(*fp);
@@ -18630,7 +18594,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 lenBytes += 8;
                 len = 0;
             }
-            if (httpGetPacketLength(packet) < (lenBytes + (mask * 4))) {
+            if (httpGetPacketLength(packet) < (lenBytes + 1 + (mask * 4))) {
                 /* Return if we don't have the required packet control fields */
                 httpPutBackPacket(q, packet);
                 return;
@@ -18639,6 +18603,11 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             while (--lenBytes > 0) {
                 len <<= 8;
                 len += (uchar) *fp++;
+            }
+            if (packet->type >= WS_MSG_CONTROL && len > WS_MAX_CONTROL) {
+                /* Too big */
+                error = WS_STATUS_PROTOCOL_ERROR;
+                break;
             }
             ws->frameLength = len;
             ws->frameState = WS_MSG;
@@ -18652,9 +18621,11 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             assert(fp >= content->start);
             mprAdjustBufStart(content, fp - content->start);
             assert(q->count >= 0);
-            ws->frameState = WS_MSG;
-            /* Keep packet on queue as we need the packet->type */
+            /*
+                Put packet onto the service queue
+             */
             httpPutBackPacket(q, packet);
+            ws->frameState = WS_MSG;
             break;
 
         case WS_MSG:
@@ -18662,12 +18633,11 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             len = httpGetPacketLength(packet);
             if ((currentFrameLen + len) > ws->frameLength) {
                 /*
-                    Split packet if it contains data for the next frame
+                    Split packet if it contains data for the next frame. Do this even if this frame has no data.
                  */
                 offset = ws->frameLength - currentFrameLen;
                 if ((tail = httpSplitPacket(packet, offset)) != 0) {
-                    tail->last = 0;
-                    tail->type = 0;
+                    content = packet->content;
                     httpPutBackPacket(q, tail);
                     mprTrace(5, "webSocketFilter: Split data packet, %d/%d", ws->frameLength, httpGetPacketLength(tail));
                     len = httpGetPacketLength(packet);
@@ -18693,7 +18663,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 /*
                     Got a complete frame 
                  */
-                assert(packet->type);
                 if (ws->maskOffset >= 0) {
                     for (cp = content->start; cp < content->end; cp++) {
                         *cp = *cp ^ ws->dataMask[ws->maskOffset++ & 0x3];
@@ -18716,14 +18685,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             }
             break;
 
-#if KEEP
-        case WS_EXT_DATA:
-            assert(packet);
-            mprTrace(4, "webSocketFilter: EXT DATA - RESERVED");
-            ws->frameState = WS_MSG;
-            break;
-#endif
-
         default:
             error = WS_STATUS_PROTOCOL_ERROR;
             break;
@@ -18738,9 +18699,171 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             httpSendClose(conn, error, NULL);
             ws->frameState = WS_CLOSED;
             ws->state = WS_STATE_CLOSED;
+            conn->rx->eof = 1;
+            httpFinalize(conn);
+            httpSetState(conn, HTTP_STATE_FINALIZED);
             return;
         }
     }
+}
+
+
+static int processFrame(HttpQueue *q, HttpPacket *packet)
+{
+    HttpConn        *conn;
+    HttpRx          *rx;
+    HttpWebSocket   *ws;
+    HttpLimits      *limits;
+    MprBuf          *content;
+    ssize           len;
+    char            *cp;
+    int             validated;
+
+    conn = q->conn;
+    limits = conn->limits;
+    ws = conn->rx->webSocket;
+    assert(ws);
+    rx = conn->rx;
+    assert(packet);
+    content = packet->content;
+    assert(content);
+
+    if (3 <= MPR->logLevel) {
+        mprAddNullToBuf(content);
+        mprLog(3, "webSocketFilter: receive \"%s\" (%d) frame, last %d, length %d", 
+            codetxt[packet->type], packet->type, packet->last, mprGetBufLength(content));
+    }
+    switch (packet->type) {
+    case WS_MSG_CONT:
+        if (ws->currentMessage) {
+            packet->type = ws->currentMessage->type;
+        } else {
+            mprError("webSocketFilter: Bad continuation packet");
+            return WS_STATUS_PROTOCOL_ERROR;
+        }
+        /* Fall through */
+    case WS_MSG_BINARY:
+    case WS_MSG_TEXT:
+        if (ws->closing) {
+            break;
+        }
+        validated = 0;
+        if (packet->type == WS_MSG_TEXT) {
+            mprLog(4, "webSocketFilter: Receive text \"%s\"", content->start);
+            /*
+                Validate this frame if we don't have a partial codepoint from a prior frame. This permits fast-fail.
+             */
+            if (!ws->partialUTF) {
+                if (!validateText(conn, packet)) {
+                    return WS_STATUS_INVALID_UTF8;
+                }
+                validated++;
+            }
+        }
+        if (ws->currentMessage) {
+            if (packet->type != ws->currentMessage->type) {
+                mprError("webSocketFilter: Bad message type in multipart message");
+                return WS_STATUS_PROTOCOL_ERROR;
+            }
+            assert(!ws->preserveFrames);
+            httpJoinPacket(ws->currentMessage, packet);
+            ws->currentMessage->last = packet->last;
+            packet = ws->currentMessage;
+            content = packet->content;
+            if (packet->type == WS_MSG_TEXT && !validated) {
+                if (!validateText(conn, packet)) {
+                    return WS_STATUS_INVALID_UTF8;
+                }
+            }
+        }
+        /*
+            Send what we have if preserving frames or the current messages is over the packet limit size. Otherwise, keep buffering.
+         */
+        for (ws->tailMessage = 0; packet; packet = ws->tailMessage, ws->tailMessage = 0) {
+            if (!ws->preserveFrames && (httpGetPacketLength(packet) > limits->webSocketsPacketSize)) {
+                ws->tailMessage = httpSplitPacket(packet, limits->webSocketsPacketSize);
+                content = packet->content;
+                packet->last = 0;
+            }
+            if (packet->last || ws->tailMessage || ws->preserveFrames) {
+                packet->flags |= HTTP_PACKET_SOLO;
+                ws->messageLength += httpGetPacketLength(packet);
+                /*
+                    WARNING: this can run GC due to ejs script from httpNotify. So must retain tailMessage.
+                 */
+                httpPutPacketToNext(q, packet);
+                ws->currentMessage = 0;
+            } else {
+                ws->currentMessage = packet;
+                break;
+            }
+            mprYield(0);
+        } 
+        break;
+
+    case WS_MSG_CLOSE:
+        cp = content->start;
+        if (httpGetPacketLength(packet) == 0) {
+            ws->closeStatus = WS_STATUS_OK;
+        } else if (httpGetPacketLength(packet) < 2) {
+            mprError("webSocketFilter: Missing close status");
+            return WS_STATUS_PROTOCOL_ERROR;
+        } else {
+            ws->closeStatus = ((uchar) cp[0]) << 8 | (uchar) cp[1];
+
+            /* 
+                This is a hideous spec! 
+                Invalid codes: 104, 105, 106, 1012-1016, 2000-2999
+             */
+            if (ws->closeStatus < 1000 || ws->closeStatus >= 5000 ||
+                (1004 <= ws->closeStatus && ws->closeStatus <= 1006) ||
+                (1012 <= ws->closeStatus && ws->closeStatus <= 1016) ||
+                (1100 <= ws->closeStatus && ws->closeStatus <= 2999)) {
+                mprError("webSocketFilter: Bad close status %d", ws->closeStatus);
+                return WS_STATUS_PROTOCOL_ERROR;
+            }
+            mprAdjustBufStart(content, 2);
+            if (httpGetPacketLength(packet) > 0) {
+                ws->closeReason = mprCloneBufMem(content);
+                if (!rx->route->ignoreEncodingErrors) {
+                    if (validUTF8(ws->closeReason, slen(ws->closeReason)) != UTF8_ACCEPT) {
+                        mprError("webSocketFilter: Text packet has invalid UTF8");
+                        return WS_STATUS_INVALID_UTF8;
+                    }
+                }
+            }
+        }
+        mprLog(4, "webSocketFilter: receive close packet, status %d, reason \"%s\", closing %d", ws->closeStatus, 
+            ws->closeReason, ws->closing);
+        if (ws->closing) {
+            httpDisconnect(conn);
+        } else {
+            /* Acknowledge the close. Echo the received status */
+            httpSendClose(conn, WS_STATUS_OK, "OK");
+            rx->eof = 1;
+            rx->remainingContent = 0;
+            conn->keepAliveCount = -1;
+        }
+        ws->state = WS_STATE_CLOSED;
+        break;
+
+    case WS_MSG_PING:
+        /* Respond with the same content as specified in the ping message */
+        len = mprGetBufLength(content);
+        len = min(len, WS_MAX_CONTROL);
+        httpSendBlock(conn, WS_MSG_PONG, mprGetBufStart(content), mprGetBufLength(content), HTTP_BUFFER);
+        break;
+
+    case WS_MSG_PONG:
+        /* Do nothing */
+        break;
+
+    default:
+        mprError("webSocketFilter: Bad message type %d", packet->type);
+        ws->state = WS_STATE_CLOSED;
+        return WS_STATUS_PROTOCOL_ERROR;
+    }
+    return 0;
 }
 
 
@@ -18820,7 +18943,14 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
         if ((packet = httpCreateDataPacket(thisWrite)) == 0) {
             return MPR_ERR_MEMORY;
         }
+        /*
+            Spec requires type to be set only on the first frame
+         */
         packet->type = type;
+        type = 0;
+        if (ws->preserveFrames || (flags & HTTP_MORE)) {
+            packet->flags |= HTTP_PACKET_SOLO;
+        }
         if (thisWrite > 0) {
             if (mprPutBlockToBuf(packet->content, buf, thisWrite) != thisWrite) {
                 return MPR_ERR_MEMORY;
@@ -18900,7 +19030,7 @@ static void outgoingWebSockService(HttpQueue *q)
 {
     HttpWebSocket   *ws;
     HttpConn        *conn;
-    HttpPacket      *packet;
+    HttpPacket      *packet, *tail;
     char            *ep, *fp, *prefix, dataMask[4];
     ssize           len;
     int             i, mask;
@@ -18911,8 +19041,13 @@ static void outgoingWebSockService(HttpQueue *q)
 
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
         if (!(packet->flags & (HTTP_PACKET_END | HTTP_PACKET_HEADER))) {
-            if (!ws->preserveFrames) {
-                httpResizePacket(q, packet, conn->limits->bufferSize);
+            if (!(packet->flags & HTTP_PACKET_SOLO)) {
+                if (packet->esize > conn->limits->bufferSize) {
+                    if ((tail = httpResizePacket(q, packet, conn->limits->bufferSize)) != 0) {
+                        assert(tail->last == packet->last);
+                        packet->last = 0;
+                    }
+                }
                 if (!httpWillNextQueueAcceptPacket(q, packet)) {
                     httpPutBackPacket(q, packet);
                     return;
@@ -18930,7 +19065,7 @@ static void outgoingWebSockService(HttpQueue *q)
              */
             mask = conn->endpoint ? 0 : 1;
             *prefix++ = SET_FIN(packet->last) | SET_CODE(packet->type);
-            if (len <= 125) {
+            if (len <= WS_MAX_CONTROL) {
                 *prefix++ = SET_MASK(mask) | SET_LEN(len, 0);
             } else if (len <= 65535) {
                 *prefix++ = SET_MASK(mask) | 126;
@@ -18959,6 +19094,7 @@ static void outgoingWebSockService(HttpQueue *q)
                 codetxt[packet->type], packet->type, packet->last, httpGetPacketLength(packet));
         }
         httpPutPacketToNext(q, packet);
+        mprYield(0);
     }
 }
 
@@ -19056,40 +19192,65 @@ PUBLIC void httpSetWebSocketPreserveFrames(HttpConn *conn, bool on)
 }
 
 
-static bool validUTF8(cchar *str, ssize len)
+/*
+    Test if a string is a valid unicode string. 
+    The return state may be UTF8_ACCEPT if all codepoints validate and are complete.
+    Return UTF8_REJECT if an invalid codepoint was found.
+    Otherwise, return the state for a partial codepoint.
+ */
+static int validUTF8(cchar *str, ssize len)
 {
-    cuchar      *cp, *end;
-    int         nbytes, i;
-  
-    assert(str);
-    cp = (cuchar*) str;
-    end = (cuchar*) &str[len];
-    for (; cp < end && *cp; cp += nbytes) {
-        if (!(*cp & 0x80)) {
-            nbytes = 1;
-        } else if ((*cp & 0xc0) == 0x80) {
-            return 0;
-        } else if ((*cp & 0xe0) == 0xc0) {
-            nbytes = 2;
-        } else if ((*cp & 0xf0) == 0xe0) {
-            nbytes = 3;
-        } else if ((*cp & 0xf8) == 0xf0) {
-            nbytes = 4;
-        } else if ((*cp & 0xfc) == 0xf8) {
-            nbytes = 5;
-        } else if ((*cp & 0xfe) == 0xfc) {
-            nbytes = 6;
-        } else {
-            nbytes = 1;
+    uchar   *cp, c;
+    uint    state;
+
+    state = UTF8_ACCEPT;
+    for (cp = (uchar*) str; cp < (uchar*) &str[len]; cp++) {
+        c = *cp;
+        uint type = utfTable[c];
+        /*
+            KEEP. codepoint = (*state != UTF8_ACCEPT) ? (byte & 0x3fu) | (*codep << 6) : (0xff >> type) & (byte);
+         */
+        state = utfTable[256 + (state * 16) + type];
+        if (state == UTF8_REJECT) {
+            mprTrace(0, "Invalid UTF8 at offset %d", cp - (uchar*) str);
+            break;
         }
-        for (i = 1; i < nbytes; i++) {
-            if ((cp[i] & 0xc0) != 0x80) {
-                return 0;
-            }
-        }
-        assert(nbytes >= 1);
-    } 
-    return 1;
+    }
+    return state;
+}
+
+
+/*
+    Validate a UTF8 packet. Return false if an invalid codepoint is found.
+    Set ws->partialUTF if the last codepoint was incomplete.
+ */
+static bool validateText(HttpConn *conn, HttpPacket *packet)
+{
+    HttpWebSocket   *ws;
+    MprBuf          *content;
+    int             state;
+    bool            valid;
+
+    ws = conn->rx->webSocket;
+    /*
+        Skip validation if ignoring errors or some frames have already been sent to the callback
+     */
+    if (conn->rx->route->ignoreEncodingErrors || ws->messageLength > 0) {
+        return 1;
+    }
+    content = packet->content;
+    state = validUTF8(content->start, mprGetBufLength(content));
+    ws->partialUTF = state != UTF8_ACCEPT;
+
+    if (packet->last) {
+        valid =  state == UTF8_ACCEPT;
+    } else {
+        valid = state != UTF8_REJECT;
+    }
+    if (!valid) {
+        mprError("webSocketFilter: Text packet has invalid UTF8");
+    }
+    return valid;
 }
 
 
