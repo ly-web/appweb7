@@ -5,7 +5,6 @@
 Bit.load({
     targets: {
         'genslink': {
-            //  MOB - Use run: target
             action: "run('esp --static --genlink slink.c --flat compile')",
             generate: "esp --static --genlink slink.c --flat compile",
         },
