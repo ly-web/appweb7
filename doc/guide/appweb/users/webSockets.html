@@ -71,9 +71,9 @@
             <h2>Appweb Implementation</h2>
             <p>Appweb implements WebSockets as an optional pipeline filter called <i>WebSockFilter</i>. 
             The filter implements the WebSockets protocol, handshaking and provides a C language API. The 
-            webSock filter observes the WebSockets HTTP headers and manages the connection handshaking with the
+            WebSock filter observes the WebSockets HTTP headers and manages the connection handshaking with the
             client. It also manages the framing and encoding/decoding of message data.</p>
-            <p>The webSock filter is configured into the pipeline using the <a href="dir/route.html#addFilter">AddFilter</a> directive.</p>
+            <p>The WebSock filter is configured into the pipeline using the <a href="dir/route.html#addFilter">AddFilter</a> directive.</p>
             <h2>WebSocket Handshake</h2>
             <p>A WebSocket connection begins life as a normal HTTP request and is upgraded to the WebSocket protocol. 
             The WebSocketFilter is activated by a set of WebSocket HTTP headers from the client that describes 
@@ -118,9 +118,11 @@ X-Request-Timeout: 600
                 <a href="dir/route.html#ignoreEncodingErrors">ignoreEncodingErrors</a> appweb directive.</p>
             <h3>Binary Messages</h3>
             <p>Binary message allow the transmission of any content. Messages can be an arbitrary length up to the maximum
-            specified by the <a href="dir/sandbox.html#limitWebSocketsMessage">LimitWebSocketsMessage</a> appweb.conf directive. Messages are broken into frames
-            of no more than the length specified by the <a href="dir/sandbox.html#limitWebSocketsFrame">LimitWebSocketsFrame</a> directive. 
-            The <a href="dir/sandbox.html#limitWebSocketsPacket">LimitWebSocketsPacket</a> directive defines what is the largest packet that will be
+            specified by the <a href="dir/sandbox.html#limitWebSocketsMessage">LimitWebSocketsMessage</a> appweb.conf 
+            directive. Messages are broken into frames of no more than the length specified by the 
+            <a href="dir/sandbox.html#limitWebSocketsFrame">LimitWebSocketsFrame</a> directive. 
+            The <a href="dir/sandbox.html#limitWebSocketsPacket">LimitWebSocketsPacket</a> directive defines what 
+            is the largest packet that will be
             passed on a single read to the user callback receiving incoming WebSocket messages.</p>
             <h3>Close Message</h3>
             <p>Ordinarily, WebSocket communications are terminated by sending a <i>Close</i> message. The close
@@ -169,16 +171,16 @@ X-Request-Timeout: 600
             <table title="directives">
                 <thead><tr><th>Directive</th><th>Purpose</th></tr>
                 <tbody>
-                    <tr><td>IgnoreEncodingErrors</td><td>Ignore UTF-8 text message encoding errors</td></tr>
-                    <tr><td>InactivityTimeout</td><td>Maximum idle time before closing a connection</td></tr>
-                    <tr><td>RequestTimeout</td><td>Maximum duration before closing a connection</td></tr>
-                    <tr><td>LimitWebSockets</td><td>Maximum number of simultaneous WebSocket sessions</td></tr>
-                    <tr><td>LimitWebSocketsFrame</td><td>Maximum WebSockets message frame size</td></tr>
+                    <tr><td>IgnoreEncodingErrors</td><td>Ignore UTF-8 text message encoding errors.</td></tr>
+                    <tr><td>InactivityTimeout</td><td>Maximum idle time before closing a connection.</td></tr>
+                    <tr><td>RequestTimeout</td><td>Maximum duration before closing a connection.</td></tr>
+                    <tr><td>LimitWebSockets</td><td>Maximum number of simultaneous WebSocket sessions.</td></tr>
+                    <tr><td>LimitWebSocketsFrame</td><td>Maximum WebSockets message frame size for sent messages.</td></tr>
                     <tr><td>LimitWebSocketsMessage</td><td>Maximum WebSockets message size </td></tr>
                     <tr><td>LimitWebSocketsPacket</td><td>Maximum WebSockets message size passed to the
                             callback in one transaction.</td></tr>
-                    <tr><td>WebSocketsProtocol</td><td>Application level protocol supported by this route</td></tr>
-                    <tr><td>WebSocketsPing</td><td>Frequency to generate a ping message </td></tr>
+                    <tr><td>WebSocketsProtocol</td><td>Application level protocol supported by this route.</td></tr>
+                    <tr><td>WebSocketsPing</td><td>Frequency to generate a ping message.</td></tr>
                 </tbody>
             </table>
             <h2>WebSockets APIs</h2>
@@ -200,6 +202,9 @@ X-Request-Timeout: 600
                     <tr><td><a href="../../../api/http.html#http_8h_1adb22d418a67109b699890888ca66053a">httpSendClose</a></td><td>Send a close message to the web 
                         socket peer</td></tr>
                     <tr><td><a href="../../../api/http.html#group___http_conn_1ga6c39eab8e8b50e632f7e5620fce05318">httpSetConnNotifier</a></td><td>Define a connection callback notifier function</td></tr>
+                    <tr><td><a
+                                href="../../../api/http.html#http_8h_1a96f8cb3db541d8a1340caf0d2afbbb1f">httpSetWebSocketPreserveFrames</a></td><td>Preserve
+                            frame boundaries and do not split or aggregate frames. </td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1a96f8cb3db541d8a1340caf0d2afbbb1f">httpSetWebSocketProtocols</a></td><td>Set the list of 
                         application-level protocols supported by the client. This is a client-only API. </td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1acb7184072bfb15ebf2c95f9ef6d0ba8c">httpWebSocketOrderlyClosed</a></td><td>Test if a close was orderly</td></tr>
