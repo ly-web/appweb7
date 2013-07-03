@@ -37,7 +37,7 @@ static void dummy_action() {
     httpSetConnNotifier(getConn(), dummy_callback);
 }
 
-static void echo_callback(HttpConn *conn, int event, int arg)
+static void len_callback(HttpConn *conn, int event, int arg)
 {
     HttpPacket      *packet;
     HttpWebSocket   *ws;
@@ -60,9 +60,44 @@ static void echo_callback(HttpConn *conn, int event, int arg)
     }
 }
 
-static void echo_action() { 
+static void len_action() { 
     dontAutoFinalize();
-    httpSetConnNotifier(getConn(), echo_callback);
+    httpSetConnNotifier(getConn(), len_callback);
+}
+
+
+/*
+    Autobahn test echo server
+ */
+static void echo_callback(HttpConn *conn, int event, int arg)
+{
+    HttpPacket  *packet;
+    MprBuf      *buf;
+
+    if (event == HTTP_EVENT_READABLE) {
+        packet = httpGetPacket(conn->readq);
+
+        buf = conn->rx->webSocket->data;
+        if (packet->type == WS_MSG_TEXT || packet->type == WS_MSG_BINARY) {
+            mprPutBlockToBuf(buf, mprGetBufStart(packet->content), mprGetBufLength(packet->content));
+        }
+        if (packet->last) {
+            mprAddNullToBuf(buf);
+            mprTrace(5, "Echo %d bytes: %s", mprGetBufLength(buf), mprGetBufStart(buf));
+            httpSendBlock(conn, packet->type, mprGetBufStart(buf), mprGetBufLength(buf), 0);
+            mprFlushBuf(buf);
+        }
+    }
+}
+
+static void echo_action() { 
+    HttpConn    *conn;
+
+    conn = getConn();
+    dontAutoFinalize();
+    //  MOB - API
+    conn->rx->webSocket->data = mprCreateBuf(0, 0);
+    httpSetConnNotifier(conn, echo_callback);
 }
 
 
@@ -137,8 +172,9 @@ ESP_EXPORT int esp_module_websockets(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "basic-open", dummy_action);
     espDefineAction(route, "basic-send", dummy_action);
     espDefineAction(route, "basic-echo", echo_action);
-    espDefineAction(route, "basic-ssl", echo_action);
-    espDefineAction(route, "basic-len", echo_action);
+    espDefineAction(route, "basic-ssl", len_action);
+    espDefineAction(route, "basic-len", len_action);
+    espDefineAction(route, "basic-echo", echo_action);
     espDefineAction(route, "basic-empty", empty_response);
     espDefineAction(route, "basic-big", big_response);
     espDefineAction(route, "basic-frames", frames_response);
