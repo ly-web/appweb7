@@ -133,7 +133,8 @@ static void big_response()
         mprPutToBuf(buf, "%8d:01234567890123456789012345678901234567890\n", i);
     }
     mprAddNullToBuf(buf);
-
+    conn->rx->webSocket->data = buf;
+    
     if (httpSendBlock(conn, WS_MSG_TEXT, mprGetBufStart(buf), mprGetBufLength(buf), 0) < 0) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot send big message");
         return;

@@ -890,10 +890,6 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Complete missing URI path.</td></tr>
 <tr class="apiDef">
-<td>#define</td><td><a href="#http_8h_1a3f7392705f1a82edf3d957d87dfa67f5" class="nameRef">HTTP_COMPLETED</a>&nbsp;&nbsp;&nbsp;0x2000</td>
-</tr>
-<tr class="apiBrief"><td>&nbsp;</td><td>Request completed.</td></tr>
-<tr class="apiDef">
 <td>#define</td><td><a href="#http_8h_1ac862059ba5178f3aac9b4b5420aa9ecf" class="nameRef">HTTP_COOKIE_HTTP</a>&nbsp;&nbsp;&nbsp;0x2</td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Flag for Set-Cookie httponly.</td></tr>
@@ -2772,6 +2768,9 @@ URIs to cache.
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>Fields:</dt><dd>
     <table class="parameters" title="Parameters">
+    <tr><td class="param">int</td><td><td>activeRequest</td><td>
+Actively servicing a request.
+</td>
     <tr><td class="param">HttpAddress *</td><td><td>address</td><td>
 Per-client IP address reference.
 </td>

@@ -1475,6 +1475,10 @@ PUBLIC void httpPutForService(struct HttpQueue *q, HttpPacket *packet, bool serv
     @description The packet is passed to the queue by invoking its put() callback. 
         Note the receiving queue may immediately process the packet or it may choose to defer processing by putting to
         its service queue.  @param q Queue reference
+
+    Note: the garbage collector may run while calling httpSendBlock to reclaim unused packets. It is essential that all
+        required memory be retained by a relevant manager calling mprMark as required.
+
     @param packet Packet to put
     @ingroup HttpQueue
     @stability Stable
@@ -1486,6 +1490,10 @@ PUBLIC void httpPutPacket(struct HttpQueue *q, HttpPacket *packet);
     @description Put a packet onto the next downstream queue by calling the downstream queue's put() method. 
         Note the receiving queue may immediately process the packet or it may choose to defer processing by putting to
         its service queue.  @param q Queue reference
+
+    Note: the garbage collector may run while calling httpSendBlock to reclaim unused packets. It is essential that all
+        required memory be retained by a relevant manager calling mprMark as required.
+
     @param q Queue reference. The packet will not be queued on this queue, but rather on the queue downstream.
     @param packet Packet to put
     @ingroup HttpQueue
@@ -2181,6 +2189,7 @@ typedef struct HttpConn {
     int             error;                  /**< A request error has occurred */
     int             connError;              /**< A connection error has occurred */
     int             pumping;                /**< Rre-entrancy prevention for httpPumpRequest() */
+    int             activeRequest;          /**< Actively servicing a request */
 
     struct HttpRx   *rx;                    /**< Rx object */
     struct HttpTx   *tx;                    /**< Tx object */
@@ -4989,7 +4998,6 @@ PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 #define HTTP_ADDED_QUERY_PARAMS 0x400       /**< Query added to params */
 #define HTTP_ADDED_BODY_PARAMS  0x800       /**< Body data added to params */
 #define HTTP_EXPECT_CONTINUE    0x1000      /**< Client expects an HTTP 100 Continue response */
-#define HTTP_COMPLETED          0x2000      /**< Request completed */
 
 /*  
     Incoming chunk encoding states
@@ -6575,6 +6583,9 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
     However, if the HTTP_MORE flag is specified to indicate there is more data to complete this entire message, the data provided 
     to this call will not be split into frames and will not be aggregated with previous or subsequent messages. i.e. frame
     boundaries will be presserved and sent as-is to the peer.
+
+    Note: the garbage collector may run while calling httpSendBlock to reclaim unused packets. It is essential that all
+        required memory be retained by a relevant manager calling mprMark on the message.
 
     @param conn HttpConn connection object created via #httpCreateConn
     @param type Web socket message type. Choose from WS_MSG_TEXT, WS_MSG_BINARY or WS_MSG_PING. 
