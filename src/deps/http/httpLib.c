@@ -10108,7 +10108,7 @@ PUBLIC void httpSetRouteDocuments(HttpRoute *route, cchar *path)
 #if DEPRECATE || 1
 PUBLIC void httpSetRouteDir(HttpRoute *route, cchar *path)
 {
-    return httpSetRouteDocuments(route, path);
+    httpSetRouteDocuments(route, path);
 }
 #endif
 
