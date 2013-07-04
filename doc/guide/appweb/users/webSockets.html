@@ -119,11 +119,24 @@ X-Request-Timeout: 600
             <h3>Binary Messages</h3>
             <p>Binary message allow the transmission of any content. Messages can be an arbitrary length up to the maximum
             specified by the <a href="dir/sandbox.html#limitWebSocketsMessage">LimitWebSocketsMessage</a> appweb.conf 
-            directive. Messages are broken into frames of no more than the length specified by the 
-            <a href="dir/sandbox.html#limitWebSocketsFrame">LimitWebSocketsFrame</a> directive. 
-            The <a href="dir/sandbox.html#limitWebSocketsPacket">LimitWebSocketsPacket</a> directive defines what 
-            is the largest packet that will be
-            passed on a single read to the user callback receiving incoming WebSocket messages.</p>
+            directive.</p>
+            <p>When messages are transmitted, they are broken into frames of no more than the length specified by the 
+            <a href="dir/sandbox.html#limitWebSocketsFrame">LimitWebSocketsFrame</a> directive. Incoming message frames
+            are not subject to this limit. The WebSockets filter will aggregate message frames into complete messages
+            before passing to the user callback.</p>
+
+            <p>The <a href="dir/sandbox.html#limitWebSocketsPacket">LimitWebSocketsPacket</a> directive defines what 
+            is the largest packet size that will be passed to the user callback receiving incoming WebSocket 
+            messages. If this is set to a value as large as the largest message, then complete messages will be passed
+            to the user callback. If it is smaller than the message size, the message will be broken into packets
+            and the last packet will have the HttpPacket.last field set to true. Note these packet boundaries do not
+            correspond to frame boundaries.</p>
+
+            <p>Frame boundaries can be preserved by setting PreserveFrames directive or by calling
+            the httpSetWebSocketPreserveFrames API. If enabled, each frame is passed as-is to the user callback without
+            splitting or aggregating with other frames. Note that if enabled, some text messages may not have their UTF-8
+            fully validated if UTF codepoints span message frames.</p>
+
             <h3>Close Message</h3>
             <p>Ordinarily, WebSocket communications are terminated by sending a <i>Close</i> message. The close
             message includes a status code and an optional <i>reason</i> string to explain why the connection is being closed. The
@@ -137,16 +150,19 @@ X-Request-Timeout: 600
             message response. The pong message is generated internally by the WebSockets layer and is similarly
             consumed by the WebSockets layer at the peer. The application layer may initiate the peer message, but
             it will never see the pong response.</p>
-            <p>Appweb has a <a href="dir/route.html#webSocketsPing">WebSocketsPing</a> appweb.conf directive that can be used to automatically
-            send ping messages at a specified interval. Note: use of this directive defeats all Appweb timeouts 
-            for an idle WebSockets connection.</p>
+            <p>Appweb has a <a href="dir/route.html#webSocketsPing">WebSocketsPing</a> appweb.conf directive that can be 
+            used to automatically send ping messages at a specified interval. Note: use of this directive defeats all Appweb 
+            timeouts for an idle WebSockets connection.</p>
+
             <h2>Timeouts</h2>
             <p>The standard Appweb request and inactivity timeouts can be used for WebSocket communications.
             Typically, a route will be defined in the appweb.conf file for WebSockets and it will include
             appropriate request and inactivity timeout directives. 
-            The <a href="dir/sandbox.html#requestTimeout">RequestTimeout</a> gives the total time a WebSocket connection may remain open. 
-            The <a href="dir/sandbox.html#requestTimeout">InactivityTimeout</a> specifies the maximum time a WebSocket connection may be 
-            completely idle. Note that ping/pong messages will reset an inactivity timeout.</p>
+            The <a href="dir/sandbox.html#requestTimeout">RequestTimeout</a> gives the total time a WebSocket connection 
+            may remain open.  The <a href="dir/sandbox.html#requestTimeout">InactivityTimeout</a> specifies the 
+            maximum time a WebSocket connection may be completely idle. Note that ping/pong messages will reset an 
+            inactivity timeout.</p>
+
             <h2>Configuration</h2>
             <p>It is necessary to create a dedicated <a href="dir/route.html#route">Route</a> for WebSockets communications. 
             This will define a unique URI prefix for WebSocket communications and configure the WebSocket filter.
@@ -188,13 +204,11 @@ X-Request-Timeout: 600
             <table title="API">
                 <thead><tr><th>Directive</th><th>Purpose</th></tr></thead>
                 <tbody>
-                    <tr><td><a href="../../../api/http.html#http_8h_1a53cc0c3dcaf6e6da30c0975064d6bcbc">httpGetReadCount</a></td><td>Get the size of the next WebSockets 
-                        message to read</td></tr>
+                    <tr><td><a href="../../../api/http.html#group___http_queue_1ga289893521c40788edc06280530167a85">httpGetPacket</a></td><td>Get the next message</td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1a6c1a4a4b4d9cfc2ce626bb5fd005e6ac">httpGetWebSocketCloseReason</a></td><td>Get the close reason supplied 
                         by the peer</td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1ad908e15f337a359e0f90258621d1329b">httpGetWebSocketProtocol</a></td><td> Get the selected web 
                         socket protocol selected by the server</td></tr>
-                    <tr><td><a href="../../../api/http.html#group___http_rx_1gad0b2d6713dd793d832e822fa9f9852ff">httpRead</a></td><td>Read a message</td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1a038d5c42a1ef5bce910dc617987a222c">httpSend</a></td><td>Send a UTF-8 text message to 
                         the web socket peer</td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1ae7ef3ebbb7bbbbd701bdf84ab10cb6c1">httpSendBlock</a></td><td>Send a message of a given type to 
@@ -202,11 +216,13 @@ X-Request-Timeout: 600
                     <tr><td><a href="../../../api/http.html#http_8h_1adb22d418a67109b699890888ca66053a">httpSendClose</a></td><td>Send a close message to the web 
                         socket peer</td></tr>
                     <tr><td><a href="../../../api/http.html#group___http_conn_1ga6c39eab8e8b50e632f7e5620fce05318">httpSetConnNotifier</a></td><td>Define a connection callback notifier function</td></tr>
+
                     <tr><td><a
-                                href="../../../api/http.html#http_8h_1a96f8cb3db541d8a1340caf0d2afbbb1f">httpSetWebSocketPreserveFrames</a></td><td>Preserve
+                                href="../../../api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1 ">httpSetWebSocketPreserveFrames</a></td><td>Preserve
                             frame boundaries and do not split or aggregate frames. </td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1a96f8cb3db541d8a1340caf0d2afbbb1f">httpSetWebSocketProtocols</a></td><td>Set the list of 
                         application-level protocols supported by the client. This is a client-only API. </td></tr>
+
                     <tr><td><a href="../../../api/http.html#http_8h_1acb7184072bfb15ebf2c95f9ef6d0ba8c">httpWebSocketOrderlyClosed</a></td><td>Test if a close was orderly</td></tr>
                 </tbody>
             </table>
@@ -221,8 +237,8 @@ X-Request-Timeout: 600
 static void testCallback(HttpConn *conn, int event, int arg)
 {
     if (event == <b>HTTP_EVENT_READABLE</b>) {
-        /* Incoming web sockets message */
         HttpPacket *packet = <b>httpGetPacket</b>(conn-&gt;readq);
+        mprAddNullToBuf(packet-&gt;content);
         printf("Message %s\n", mprGetBufStart(packet-&gt;content));
         /* Send a reply message */
         <b>httpSend</b>(conn, "Reply message at %s", mprGetDate(0));

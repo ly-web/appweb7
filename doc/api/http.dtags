@@ -346,9 +346,23 @@
     </member>
     <member kind="function">
       <type>ssize</type>
+      <name>httpGetPacketContents</name>
+      <anchorfile>group___http_packet.html</anchorfile>
+      <anchor>ga6d8b5d773cc8e68d9c336dc0c0bf1a99</anchor>
+      <arglist>(HttpPacket *packet)</arglist>
+    </member>
+    <member kind="function">
+      <type>ssize</type>
       <name>httpGetPacketLength</name>
       <anchorfile>group___http_packet.html</anchorfile>
       <anchor>ga76c32ea617916aed4174ef232df26fc3</anchor>
+      <arglist>(HttpPacket *packet)</arglist>
+    </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>httpGetPacketStart</name>
+      <anchorfile>group___http_packet.html</anchorfile>
+      <anchor>gacc35153065b5f3a417507c5b52cdf75c</anchor>
       <arglist>(HttpPacket *packet)</arglist>
     </member>
     <member kind="function">
@@ -2926,6 +2940,13 @@
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
+      <type>void *</type>
+      <name>httpGetWebSocketData</name>
+      <anchorfile>group___http_web_socket.html</anchorfile>
+      <anchor>gaaa1ccb4dd42abb966748c0f3f307d944</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
       <type>ssize</type>
       <name>httpGetWebSocketMessageLength</name>
       <anchorfile>group___http_web_socket.html</anchorfile>
@@ -2966,6 +2987,13 @@
       <anchorfile>group___http_web_socket.html</anchorfile>
       <anchor>gaeb26ae6f106f8a83f83758130e7062f4</anchor>
       <arglist>(HttpConn *conn, int status, cchar *reason)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetWebSocketData</name>
+      <anchorfile>group___http_web_socket.html</anchorfile>
+      <anchor>gab852c5e75a611738f34a491d03c2c538</anchor>
+      <arglist>(HttpConn *conn, void *data)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

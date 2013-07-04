@@ -1173,6 +1173,20 @@ PUBLIC HttpPacket *httpGetPacket(struct HttpQueue *q);
 
 #if DOXYGEN
 /** 
+    Get the packet data contents.
+    @description Get the packet content reference. This is an MprBuf object.
+    @param packet Packet to examine.
+    @return MprBuf reference or zero if there are not contents.
+    @ingroup HttpPacket
+    @stability Prototype
+ */
+PUBLIC ssize httpGetPacketContents(HttpPacket *packet);
+#else
+    #define httpGetPacketContents(p) ((p && p->content) ? p->content : 0)
+#endif
+
+#if DOXYGEN
+/** 
     Get the length of the packet data contents.
     @description Get the content length of a packet. This does not include the prefix or virtual data length -- just
     the pure buffered data contents. 
@@ -1184,6 +1198,20 @@ PUBLIC HttpPacket *httpGetPacket(struct HttpQueue *q);
 PUBLIC ssize httpGetPacketLength(HttpPacket *packet);
 #else
     #define httpGetPacketLength(p) ((p && p->content) ? mprGetBufLength(p->content) : 0)
+#endif
+
+#if DOXYGEN
+/** 
+    Get the start of the packet data contents.
+    @description Get the packet content reference.
+    @param packet Packet to examine.
+    @return A reference to the start of the packet contents.
+    @ingroup HttpPacket
+    @stability Prototype
+ */
+PUBLIC char *httpGetPacketStart(HttpPacket *packet);
+#else
+    #define httpGetPacketStart(p) ((p && p->content) ? mprGetBufStart(p->content) : 0)
 #endif
 
 /**
@@ -6436,9 +6464,9 @@ PUBLIC void httpStopHost(HttpHost *host);
     then upgraded without impacting the original connection. This means it will work with existing networking infrastructure
     including firewalls and proxies.
     @defgroup HttpWebSocket HttpWebSocket
-    @see httpGetWebSocketCloseReason httpGetWebSocketMessageLength httpGetWebSocketProtocol 
+    @see httpGetWebSocketCloseReason httpGetWebSocketData httpGetWebSocketMessageLength httpGetWebSocketProtocol 
         httpGetWebSocketState httpGetWriteQueueCount httpIsLastPacket httpSend httpSendBlock httpSendClose 
-        httpSetWebSocketPreserveFrames httpSetWebSocketProtocols httpWebSocketOrderlyClosed
+        httpSetWebSocketPreserveFrames httpSetWebSocketData httpSetWebSocketProtocols httpWebSocketOrderlyClosed
     @stability Internal
  */
 typedef struct HttpWebSocket {
@@ -6457,7 +6485,7 @@ typedef struct HttpWebSocket {
     uchar           dataMask[4];            /**< Mask for data */
     int             maskOffset;             /**< Offset in dataMask */
     int             preserveFrames;         /**< Do not join frames */
-    int             partialUTF;             /**< Last packet had a partial UTF codepoint */ 
+    int             partialUTF;             /**< Last frame had a partial UTF codepoint */ 
     void            *data;                  /**< Custom data for applications (marked) */
 } HttpWebSocket;
 
@@ -6517,6 +6545,16 @@ typedef struct HttpWebSocket {
     @stability Evolving
  */
 PUBLIC char *httpGetWebSocketCloseReason(HttpConn *conn);
+
+/**
+    Get the web socket private data
+    @description Get the private data defined with #httpSetWebSocketData
+    @param conn HttpConn connection object created via #httpCreateConn
+    @return The private data reference
+    @ingroup HttpWebSocket
+    @stability Prototype
+ */
+PUBLIC void *httpGetWebSocketData(HttpConn *conn);
 
 /**
     Get the message length for the current message
@@ -6618,6 +6656,16 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *msg, ssize len, int 
     @stability Evolving
  */
 PUBLIC ssize httpSendClose(HttpConn *conn, int status, cchar *reason);
+
+/**
+    Set the web socket private data
+    @description Set private data to be retained by the garbage collector
+    @param conn HttpConn connection object created via #httpCreateConn
+    @param data Managed data reference. 
+    @ingroup HttpWebSocket
+    @stability Prototype
+ */
+PUBLIC void httpSetWebSocketData(HttpConn *conn, void *data);
 
 /**
     Preserve frames for incoming messages

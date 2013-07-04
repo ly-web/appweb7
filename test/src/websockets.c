@@ -69,35 +69,46 @@ static void len_action() {
 /*
     Autobahn test echo server
  */
+#if OLD
 static void echo_callback(HttpConn *conn, int event, int arg)
 {
-    HttpPacket  *packet;
-    MprBuf      *buf;
+    HttpPacket  *message, *packet;
 
     if (event == HTTP_EVENT_READABLE) {
         packet = httpGetPacket(conn->readq);
-
-        buf = conn->rx->webSocket->data;
         if (packet->type == WS_MSG_TEXT || packet->type == WS_MSG_BINARY) {
-            mprPutBlockToBuf(buf, mprGetBufStart(packet->content), mprGetBufLength(packet->content));
-        }
-        if (packet->last) {
-            mprAddNullToBuf(buf);
-            mprTrace(5, "Echo %d bytes: %s", mprGetBufLength(buf), mprGetBufStart(buf));
-            httpSendBlock(conn, packet->type, mprGetBufStart(buf), mprGetBufLength(buf), 0);
-            mprFlushBuf(buf);
+            message = httpGetWebSocketData(conn);
+            httpJoinPacket(message, packet);
+            if (packet->last) {
+                httpSendBlock(conn, packet->type, httpGetPacketStart(message), httpGetPacketLength(message), 0);
+                message = 0;
+            }
+            httpSetWebSocketData(conn, message);
         }
     }
 }
+#else
+/*
+    Must configure LimitWebSocketsPacket to be larger than the biggest expected message so we receive complete messages.
+    Otherwise, we need to buffer and aggregate messages here.
+ */
+static void echo_callback(HttpConn *conn, int event, int arg)
+{
+    HttpPacket  *packet;
+
+    if (event == HTTP_EVENT_READABLE) {
+        packet = httpGetPacket(conn->readq);
+        if (packet->type == WS_MSG_TEXT || packet->type == WS_MSG_BINARY) {
+            assert(packet->last);
+            httpSendBlock(conn, packet->type, httpGetPacketStart(packet), httpGetPacketLength(packet), 0);
+        }
+    }
+}
+#endif
 
 static void echo_action() { 
-    HttpConn    *conn;
-
-    conn = getConn();
     dontAutoFinalize();
-    //  MOB - API
-    conn->rx->webSocket->data = mprCreateBuf(0, 0);
-    httpSetConnNotifier(conn, echo_callback);
+    httpSetConnNotifier(getConn(), echo_callback);
 }
 
 
