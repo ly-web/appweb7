@@ -6523,7 +6523,7 @@ PUBLIC void mprRecallWaitHandler(MprWaitHandler *wp);
     @ingroup MprWaitHandler
     @stability Stable
  */
-PUBLIC void mprRecallWaitHandlerByFd(int fd);
+PUBLIC void mprRecallWaitHandlerByFd(Socket fd);
 
 /**
     Disconnect a wait handler from its underlying file descriptor. This is used to prevent further I/O wait events while

@@ -27718,7 +27718,7 @@ PUBLIC void mprWaitOn(MprWaitHandler *wp, int mask)
 /*
     Set a handler to be recalled without further I/O
  */
-PUBLIC void mprRecallWaitHandlerByFd(int fd)
+PUBLIC void mprRecallWaitHandlerByFd(Socket fd)
 {
     MprWaitService  *ws;
     MprWaitHandler  *wp;
