@@ -625,7 +625,7 @@
             </table>
             
             <a id="ignoreEncodingErrors"></a>
-            <h2>ignoreEncodingErrors</h2>
+            <h2>IgnoreEncodingErrors</h2>
             <table class="directive" title="details">
                 <thead>
                     <tr>
@@ -636,7 +636,7 @@
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>ignoreEncodingErrors on|off</td>
+                        <td>IgnoreEncodingErrors on|off</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -644,7 +644,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>ignoreEncodingErrors on</td>
+                        <td>IgnoreEncodingErrors on</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -908,6 +908,40 @@
                 </tbody>
             </table>
             
+            
+            <a id="preserveFrames"></a>
+            <h2>PreserveFrames</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Preserve WebSocket frame boundaries</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>PreserveFrames on|off</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>PreserveFrames on</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This directive controls whether to preserve WebSocket frames. If enabled, frames will not be
+                                aggregated or split. i.e. frame boundaries will be preserved to the user callback.
+                                Note: using HTTP_MORE to httpSendBlock achieves the same effect on a per-API call basis.
+                                The default is off.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
             
             <!-- DEPRECATED 4.4. Use SetMethods instead
             <a id="putMethod"></a>
