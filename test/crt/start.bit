@@ -48,7 +48,7 @@ Bit.load({
             shell: "
                 umask 77
                 openssl genrsa -out self.key 2048
-                openssl req -new -x509 -days 1095 -key self.key -out self.crt < self.ans
+                openssl req -new -x509 -days 365 -key self.key -out self.crt < self.ans
             ",
         },
 
@@ -76,7 +76,7 @@ Bit.load({
                 rm -f test.crt test.key
                 openssl genrsa -out test.key 2048
                 openssl req -new -key test.key -out test.csr < test.ans
-                OPENSSL_CONF=openssl.ca openssl x509 -req -in test.csr -CA ca.crt -CAkey ca.key -out test.crt
+                OPENSSL_CONF=openssl.ca openssl x509 -req -days 365 -in test.csr -CA ca.crt -CAkey ca.key -out test.crt
             ",
         },
 
