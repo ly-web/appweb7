@@ -996,6 +996,21 @@ static int homeDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    IgnoreEncodingErrors [on|off]
+ */
+static int ignoreEncodingErrorsDirective(MaState *state, cchar *key, cchar *value)
+{
+    bool    on;
+
+    if (!maTokenize(state, value, "%B", &on)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteIgnoreEncodingErrors(state->route, on);
+    return 0;
+}
+
+
+/*
     <Include pattern>
  */
 static int includeDirective(MaState *state, cchar *key, cchar *value)
@@ -2342,14 +2357,17 @@ static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-static int ignoreEncodingErrors(MaState *state, cchar *key, cchar *value)
+/*
+    PreserveFrames [on|off]
+ */
+static int preserveFramesDirective(MaState *state, cchar *key, cchar *value)
 {
     bool    on;
 
     if (!maTokenize(state, value, "%B", &on)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    state->route->ignoreEncodingErrors = on;
+    httpSetRoutePreserveFrames(state->route, on);
     return 0;
 }
 
@@ -2933,7 +2951,9 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "<VirtualHost", virtualHostDirective);
     maAddDirective(appweb, "</VirtualHost", closeVirtualHostDirective);
 
-    maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrors);
+    maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrorsDirective);
+    maAddDirective(appweb, "PreserveFrames", preserveFramesDirective);
+
     maAddDirective(appweb, "LimitWebSockets", limitWebSocketsDirective);
     maAddDirective(appweb, "LimitWebSocketsMessage", limitWebSocketsMessageDirective);
     maAddDirective(appweb, "LimitWebSocketsFrame", limitWebSocketsFrameDirective);

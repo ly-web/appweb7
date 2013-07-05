@@ -6801,6 +6801,16 @@ PUBLIC HttpPacket *httpGetPacket(HttpQueue *q)
 }
 
 
+PUBLIC char *httpGetPacketString(HttpPacket *packet)
+{
+    if (!packet && !packet->content) {
+        return 0;
+    }
+    mprAddNullToBuf(packet->content);
+    return mprGetBufStart(packet->content);
+}
+
+
 /*  
     Test if the packet is too too large to be accepted by the downstream queue.
  */
@@ -10113,6 +10123,12 @@ PUBLIC void httpSetRouteDir(HttpRoute *route, cchar *path)
 #endif
 
 
+PUBLIC void httpSetRouteIgnoreEncodingErrors(HttpRoute *route, bool on)
+{
+    route->ignoreEncodingErrors = on;
+}
+
+
 PUBLIC void httpSetRouteFlags(HttpRoute *route, int flags)
 {
     assert(route);
@@ -10261,6 +10277,15 @@ PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix)
     }
     if (route->pattern) {
         finalizePattern(route);
+    }
+}
+
+
+PUBLIC void httpSetRoutePreserveFrames(HttpRoute *route, bool on)
+{
+    route->flags &= ~HTTP_ROUTE_PRESERVE_FRAMES;
+    if (on) {
+        route->flags |= HTTP_ROUTE_PRESERVE_FRAMES;
     }
 }
 
