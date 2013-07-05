@@ -6801,6 +6801,15 @@ PUBLIC HttpPacket *httpGetPacket(HttpQueue *q)
 }
 
 
+PUBLIC char *httpGetPacketStart(HttpPacket *packet)
+{
+    if (!packet && !packet->content) {
+        return 0;
+    }
+    return mprGetBufStart(packet->content);
+}
+
+
 PUBLIC char *httpGetPacketString(HttpPacket *packet)
 {
     if (!packet && !packet->content) {
@@ -10123,12 +10132,6 @@ PUBLIC void httpSetRouteDir(HttpRoute *route, cchar *path)
 #endif
 
 
-PUBLIC void httpSetRouteIgnoreEncodingErrors(HttpRoute *route, bool on)
-{
-    route->ignoreEncodingErrors = on;
-}
-
-
 PUBLIC void httpSetRouteFlags(HttpRoute *route, int flags)
 {
     assert(route);
@@ -10175,6 +10178,12 @@ PUBLIC void httpSetRouteHost(HttpRoute *route, HttpHost *host)
     
     route->host = host;
     defineHostVars(route);
+}
+
+
+PUBLIC void httpSetRouteIgnoreEncodingErrors(HttpRoute *route, bool on)
+{
+    route->ignoreEncodingErrors = on;
 }
 
 
@@ -11704,7 +11713,7 @@ static void definePathVars(HttpRoute *route)
     mprAddKey(route->vars, "PRODUCT", sclone(BIT_PRODUCT));
     mprAddKey(route->vars, "OS", sclone(BIT_OS));
     mprAddKey(route->vars, "VERSION", sclone(BIT_VERSION));
-
+    mprAddKey(route->vars, "PLATFORM", sclone(BIT_PLATFORM));
     mprAddKey(route->vars, "BIN_DIR", mprGetAppDir());
     //  DEPRECATED
     mprAddKey(route->vars, "LIBDIR", mprGetAppDir());
@@ -18422,6 +18431,8 @@ static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir)
         }
         rx->webSocket = ws;
         ws->state = WS_STATE_OPEN;
+        ws->preserveFrames = (rx->route->flags & HTTP_ROUTE_PRESERVE_FRAMES) ? 1 : 0;
+
         /* Just select the first protocol */
         if (route->webSocketsProtocol) {
             for (kind = stok(sclone(protocols), " \t,", &tok); kind; kind = stok(NULL, " \t,", &tok)) {
@@ -19066,7 +19077,6 @@ PUBLIC ssize httpSendClose(HttpConn *conn, int status, cchar *reason)
  */
 static void outgoingWebSockService(HttpQueue *q)
 {
-    HttpWebSocket   *ws;
     HttpConn        *conn;
     HttpPacket      *packet, *tail;
     char            *ep, *fp, *prefix, dataMask[4];
@@ -19074,7 +19084,6 @@ static void outgoingWebSockService(HttpQueue *q)
     int             i, mask;
 
     conn = q->conn;
-    ws = conn->rx->webSocket;
     mprTrace(5, "webSocketFilter: outgoing service");
 
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {

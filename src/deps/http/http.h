@@ -1201,6 +1201,15 @@ PUBLIC ssize httpGetPacketLength(HttpPacket *packet);
 #endif
 
 /** 
+    Get the start of the packet data contents.
+    @param packet Packet to examine.
+    @return A reference to the start of the packet contents.
+    @ingroup HttpPacket
+    @stability Prototype
+ */
+PUBLIC char *httpGetPacketStart(HttpPacket *packet);
+
+/** 
     Get the packet data contents as a string.
     @description Get the packet content reference. The packet contents will be null terminated.
     @param packet Packet to examine.
@@ -4477,16 +4486,6 @@ PUBLIC void httpSetRouteMethods(HttpRoute *route, cchar *methods);
 PUBLIC void httpSetRouteName(HttpRoute *route, cchar *name);
 
 /**
-    Set the route to preserve WebSocket frames boundaries
-    @description When enabled, the WebSocketFilter will not merge or fragment frames.
-    @param route Route to modify
-    @param on Set to true perserve frame boundaries
-    @ingroup HttpRoute
-    @stability Prototype
- */
-PUBLIC void httpSetRoutePreserveFrames(HttpRoute *route, bool on);
-
-/**
     Set the route pattern
     @description This call defines the route regular expression pattern that is used to match against the request URI.
         The route pattern is an enhanced JavaScript-compatibile regular expression. It is enhanced by optionally 
@@ -4513,6 +4512,16 @@ PUBLIC void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags);
     @stability Evolving
  */
 PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix);
+
+/**
+    Set the route to preserve WebSocket frames boundaries
+    @description When enabled, the WebSocketFilter will not merge or fragment frames.
+    @param route Route to modify
+    @param on Set to true perserve frame boundaries
+    @ingroup HttpRoute
+    @stability Prototype
+ */
+PUBLIC void httpSetRoutePreserveFrames(HttpRoute *route, bool on);
 
 /**
     Set the script to service the route.

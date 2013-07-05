@@ -1506,6 +1506,7 @@ static int loadModulePathDirective(MaState *state, cchar *key, cchar *value)
          Search path is: USER_SEARCH : exeDir : /usr/lib/appweb/bin
      */
     sep = MPR_SEARCH_SEP;
+    value = stemplate(value, state->route->vars);
     path = sjoin(value, sep, mprGetAppDir(), sep, BIT_VAPP_PREFIX "/bin", NULL);
     mprSetModuleSearchPath(path);
     return 0;
