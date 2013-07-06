@@ -43,6 +43,7 @@ postTest("/index.html")
 
 if (App.config.bit_esp) {
     postTest("/stream.esp")
+    postTest("/solo/stream")
 }
 
 if (App.config.bit_cgi) {

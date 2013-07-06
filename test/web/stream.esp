@@ -4,7 +4,7 @@
 </head>
 <body>
     <%^global 
-        static void streamCallback(HttpConn *conn, int event, int arg)
+        static void streamPageCallback(HttpConn *conn, int event, int arg)
         {
             HttpPacket      *packet;
             if (event == HTTP_EVENT_READABLE) {
@@ -19,7 +19,7 @@
     %>
     <%
         dontAutoFinalize();
-        httpSetConnNotifier(getConn(), streamCallback);
+        httpSetConnNotifier(getConn(), streamPageCallback);
     %>
 </body>
 </html>
