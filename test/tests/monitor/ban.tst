@@ -5,7 +5,7 @@
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 let http: Http = new Http
 
-if (!global.test || test.depth >= 3) {
+if (!global.test || test.depth >= 5) {
     /*
         Trigger the ban with > 190 requests in a 5 sec period
      */

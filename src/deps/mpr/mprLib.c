@@ -12972,16 +12972,20 @@ static void serviceIO(MprWaitService *ws, int count)
                 /* File descriptor was closed and re-opened */
                 mask = wp->desiredMask;
                 mprNotifyOn(ws, wp, 0);
+#if UNUSED
                 wp->desiredMask = 0;
                 mprNotifyOn(ws, wp, mask);
+#endif
                 mprTrace(7, "kqueue: file descriptor may have been closed and reopened, fd %d", wp->fd);
 
             } else if (err == EBADF) {
                 /* File descriptor was closed */
                 mask = wp->desiredMask;
                 mprNotifyOn(ws, wp, 0);
+#if UNUSED
                 wp->desiredMask = 0;
                 mprNotifyOn(ws, wp, mask);
+#endif
                 mprTrace(7, "kqueue: invalid file descriptor %d, fd %d", wp->fd);
             }
             continue;

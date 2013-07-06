@@ -2575,7 +2575,7 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     conn->ip = sclone(sock->ip);
 
     if (httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_CONNECTIONS, 1) > conn->limits->connectionsMax) {
-        mprError("Too many concurrent clients");
+        mprError("Too many concurrent connections");
         httpDestroyConn(conn);
         return 0;
     }
@@ -2584,7 +2584,6 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
         httpDestroyConn(conn);
         return 0;
     }
-
     address = conn->address;
     if (address && address->banUntil > http->now) {
         if (address->banStatus) {
@@ -4293,7 +4292,7 @@ PUBLIC HttpHost *httpCreateHost()
     host->routes = mprCreateList(-1, 0);
     host->flags = HTTP_HOST_NO_TRACE;
     host->protocol = sclone("HTTP/1.1");
-    host->streams = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STATIC_VALUES);
+    host->streams = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
     httpSetStreaming(host, "application/x-www-form-urlencoded", NULL, 0);
     httpSetStreaming(host, "application/json", NULL, 0);
     httpAddHost(http, host);
@@ -4656,10 +4655,10 @@ PUBLIC void httpSetStreaming(HttpHost *host, cchar *mime, cchar *uri, bool enabl
     MprKey  *kp;
 
     assert(host);
-    /*
-        We store the enable value in the key type to save an allocation
-     */
     if ((kp = mprAddKey(host->streams, mime, uri)) != 0) {
+        /*
+            We store the enable value in the key type to save an allocation
+         */
         kp->type = enable;
     }
 }
