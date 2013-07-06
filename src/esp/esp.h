@@ -494,6 +494,14 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn);
 PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *data);
 
 /**
+    Display the grid to the debug log
+    @param grid EDI grid
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC void espDumpGrid(EdiGrid *grid);
+
+/**
     Finalize processing of the http request.
     @description Finalize the response by writing buffered HTTP data and by writing the final chunk trailer if required. If
     using chunked transfers, a null chunk trailer is required to signify the end of write data.

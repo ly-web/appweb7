@@ -701,7 +701,7 @@ static MprHash *getTargets(int argc, char **argv)
 static MprList *getRoutes()
 {
     HttpHost    *host;
-    HttpRoute   *route, *rp, *parent;
+    HttpRoute   *route, *parent, *rp;
     EspRoute    *eroute;
     MprList     *routes;
     MprKey      *kp;
@@ -723,20 +723,22 @@ static MprList *getRoutes()
         Filter ESP routes. Go in reverse order to locate outermost routes first.
      */
     for (prev = -1; (route = mprGetPrevItem(host->routes, &prev)) != 0; ) {
-        mprTrace(3, "Check route name %s, prefix %s", route->name, route->startWith);
-
         if ((eroute = route->eroute) == 0 || !eroute->compile) {
             /* No ESP configuration for compiling */
             continue;
         }
         if (routeName) {
+            mprTrace(3, "Check route name %s, prefix %s with %s", route->name, route->startWith, routeName);
             if (!smatch(routeName, route->name)) {
                 continue;
             }
         } else if (routePrefix) {
+            mprTrace(3, "Check route name %s, prefix %s with %s", route->name, route->startWith, routePrefix);
             if (route->startWith == 0 || !smatch(routePrefix, route->startWith)) {
                 continue;
             }
+        } else {
+            mprTrace(3, "Check route name %s, prefix %s", route->name, route->startWith);
         }
         parent = route->parent;
         if (parent && parent->eroute &&
@@ -750,22 +752,30 @@ static MprList *getRoutes()
         if (!requiredRoute(route)) {
             continue;
         }
+        //  MOB - removed to permit stream.c and websockets.c to be compiled in the same directory
         /*
             Check for routes with a duplicate base directory
          */
         rp = 0;
         for (ITERATE_ITEMS(routes, rp, nextRoute)) {
             if (sstarts(route->dir, rp->dir)) {
-                if (!rp->startWith && route->sourceName) {
-                    /* Replace the default route with this route. This is for MVC Apps with prefix of "/" */
-                    mprRemoveItem(routes, rp);
-                    rp = 0;
-                }
                 break;
             }
         }
         if (rp) {
-            continue;
+            if (rp->startWith == NULL && route->sourceName) {
+                /* 
+                    Replace the default route with this route. This is for MVC Apps with prefix of "/" 
+                 */
+                mprRemoveItem(routes, rp);
+            } else {
+                if (smatch(route->sourceName, rp->sourceName)) {
+                    /* 
+                        Same directory with same source. No need to consider redundant route.
+                     */
+                    continue;
+                }
+            }
         }
         if (mprLookupItem(routes, route) < 0) {
             mprTrace(2, "Compiling route dir: %s name: %s prefix: %s", route->dir, route->name, route->startWith);
