@@ -13,7 +13,7 @@ http.reset()
 
 //  This request should hang because we don't write any data and finalize. Wait with a timeout.
 http.setHeader("Content-Length", 1000)
-http.put(HTTP + "/tmp/a.tmp")
+http.put(HTTP + "/tmp/test.dat")
 assert(http.wait(250) == false)
 http.close()
 
