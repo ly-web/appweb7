@@ -1400,7 +1400,8 @@ static void compileItems(HttpRoute *route)
             Stand-alone services
          */
         if (route->sourceName) {
-            path = mprJoinPath(route->dir, route->sourceName);
+            //  MOB - was route->dir
+            path = mprJoinPath(route->home, route->sourceName);
             compileFile(route, path, ESP_SERVICE);
         }
     }

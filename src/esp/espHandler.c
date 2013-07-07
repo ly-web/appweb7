@@ -223,7 +223,8 @@ static int runAction(HttpConn *conn)
     if (eroute->servicesDir) {
         req->servicePath = mprJoinPath(eroute->servicesDir, req->serviceName);
     } else {
-        req->servicePath = mprJoinPath(route->dir, req->serviceName);
+        //  MOB - was route->dir
+        req->servicePath = mprJoinPath(route->home, req->serviceName);
     }
     key = mprJoinPath(eroute->servicesDir, rx->target);
 
