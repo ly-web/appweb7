@@ -6057,6 +6057,37 @@ PUBLIC int httpAddDefense(cchar *name, cchar *remedy, cchar *remedyArgs)
 }
 
 
+PUBLIC void httpDumpCounters()
+{
+    Http            *http;
+    HttpAddress     *address;
+    HttpCounter     *counter;
+    MprKey          *kp;
+    cchar           *name;
+    int             i;
+
+    http = MPR->httpService;
+    mprRawLog(0, "Monitor Counters:\n");
+    mprRawLog(0, "Memory counter     %,Ld\n", mprGetMem());
+    mprRawLog(0, "Active processes   %,Ld\n", mprGetListLength(MPR->cmdService->cmds));
+    mprRawLog(0, "Active clients     %,Ld\n", mprGetHashLength(http->addresses));
+
+    lock(http->addresses);
+    for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
+        mprRawLog(0, "Client             %s\n", kp->key);
+        for (i = 0; i < address->ncounters; i++) {
+            counter = &address->counters[i];
+            name = mprGetItem(http->counters, i);
+            if (name == NULL) {
+                break;
+            }
+            mprRawLog(0, "  Counter          %s = %,Ld\n", name, counter->value);
+        }
+    }
+    unlock(http->addresses);
+}
+
+
 /************************************ Remedies ********************************/
 
 PUBLIC int httpBanClient(cchar *ip, MprTicks period, int status, cchar *msg)

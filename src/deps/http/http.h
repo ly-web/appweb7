@@ -437,6 +437,9 @@ PUBLIC int httpAddRemedy(cchar *name, HttpRemedyProc remedy);
  */
 PUBLIC int httpBanClient(cchar *ip, MprTicks period, int status, cchar *msg);
 
+//  MOB DOC
+PUBLIC void httpDumpCounters();
+
 /*
     Internal
  */

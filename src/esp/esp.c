@@ -734,9 +734,16 @@ static MprList *getRoutes()
             }
         } else if (routePrefix) {
             mprTrace(3, "Check route name %s, prefix %s with %s", route->name, route->startWith, routePrefix);
-            if (route->startWith == 0 || !smatch(routePrefix, route->startWith)) {
+            if (!smatch(routePrefix, route->prefix) && !smatch(routePrefix, route->startWith)) {
                 continue;
             }
+#if UNUSED
+            if (!route->startWith == 0 && smatch(routePrefix, route->startWith) {
+                continue;
+            }
+            if (route->startWith == 0 || !smatch(routePrefix, route->startWith)) {
+            }
+#endif
         } else {
             mprTrace(3, "Check route name %s, prefix %s", route->name, route->startWith);
         }

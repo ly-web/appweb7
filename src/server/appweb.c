@@ -453,6 +453,8 @@ static void statusCheck(void *ignored, MprSignal *sp)
     if (MPR->heap->track) {
         mprPrintMem("", 1);
     }
+    //  MOB
+    httpDumpCounters();
 }
 
 
