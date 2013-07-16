@@ -804,7 +804,7 @@ typedef int64 Ticks;
         /** 
             Use gcc attribute to check printf fns.  a1 is the 1-based index of the parameter containing the format, 
             and a2 the index of the first argument. Note that some gcc 2.x versions don't handle this properly 
-         */     
+         */
         #define PRINTF_ATTRIBUTE(a1, a2) __attribute__ ((format (__printf__, a1, a2)))
     #else
         #define PRINTF_ATTRIBUTE(a1, a2)
@@ -1059,7 +1059,7 @@ typedef int64 Ticks;
 
     #undef SHUT_RDWR
     #define SHUT_RDWR       2
-    
+
     #define TIME_GENESIS UINT64(11644473600000000)
     #define va_copy(d, s) ((d) = (s))
 
@@ -1148,7 +1148,7 @@ typedef int64 Ticks;
     #define NFDBITS (sizeof(fd_mask) * NBBY)
     typedef long fd_mask;
     typedef int Socklen;
-    struct sockaddr_storage { char pad[1024]; };                                                               
+    struct sockaddr_storage { char pad[1024]; };
 #endif /* TIDSP */
 
 /*********************************** Externs **********************************/

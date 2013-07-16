@@ -171,15 +171,21 @@ struct  MprXml;
 #define MPR_TEST_SHORT_TIMEOUT  200         /* 1/5 sec */
 #define MPR_TEST_NAP            50          /* Short timeout to prevent busy waiting */
 
-/*
+/**
     Events
  */
 #define MPR_EVENT_TIME_SLICE    20          /* 20 msec */
 
-/*
-    Maximum number of files
+/**
+    Maximum number of files to close when forking
  */
 #define MPR_MAX_FILE            256
+
+/**
+    Maximum number of kernel events
+ */
+#define MPR_MAX_KEVENTS         32
+
 
 /*
     Event notification mechanism
@@ -200,7 +206,7 @@ struct  MprXml;
     Garbage collector tuning
  */
 #define MPR_MIN_TIME_FOR_GC     2       /**< Wait till 2 milliseconds of idle time possible */
-    
+
 /************************************ Error Codes *****************************/
 
 /* Prevent collisions with 3rd party software */
@@ -831,7 +837,7 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     To mark a block as active, #mprMarkBlock must be called for each garbage collection cycle. When allocating non-temporal
     memroy blocks, a manager callback can be specified via #mprAllocObj. This manager routine will be called by the 
     collector so that dependant memory blocks can be marked as active.
-    
+
     The collector performs the marking phase by invoking the manager routines for a set of root blocks. A block can be 
     added to the set of roots by calling #mprAddRoot. Each root's manager routine will mark other blocks which will cause
     their manager routines to run and so on, until all active blocks have been marked. Non-marked blocks can then safely
@@ -922,7 +928,7 @@ typedef struct MprMem {
     #define MPR_VERIFY_MEM()        if (MPR->heap->verify) { mprVerifyMem(); } else
 #else
     #define MPR_CHECK_BLOCK(bp) 
-    #define MPR_VERIFY_MEM()        
+    #define MPR_VERIFY_MEM()
 #endif
 
 /*
@@ -1456,7 +1462,7 @@ PUBLIC void *mprAlloc(ssize size);
     Allocate an object of a given type.
     @description Allocates a zeroed block of memory large enough to hold an instance of the specified type with a 
         manager callback. This call associates a manager function with an object that will be invoked when the 
-        object is freed or the garbage collector needs the object to mark internal properties as being used.  
+        object is freed or the garbage collector needs the object to mark internal properties as being used.
         This call is implemented as a macro.
     @param type Type of the object to allocate
     @param manager Manager function to invoke when the allocation is managed.
@@ -3103,7 +3109,7 @@ PUBLIC uint64 mprGetHiResTicks();
     Return the time remaining until a timeout has elapsed
     @param mark Starting time stamp 
     @param timeout Time in milliseconds
-    @return Time in milliseconds until the timeout elapses  
+    @return Time in milliseconds until the timeout elapses
     @ingroup MprTime
     @stability Stable
  */
@@ -3388,7 +3394,7 @@ PUBLIC void *mprGetPrevItem(MprList *list, int *lastIndex);
     @param list Reference to the MprList struct.
     @param flags Control flags. Possible values are: MPR_LIST_STATIC_VALUES to indicate list items are static
         and should not be marked for GC.  MPR_LIST_STABLE to create an optimized list for private use that is not
-        thread-safe.  
+        thread-safe.
     @ingroup MprList
     @stability Stable.
  */
@@ -3948,7 +3954,7 @@ typedef struct MprHash {
     int             size;               /**< Size of the buckets array */
     int             length;             /**< Number of symbols in the table */
     MprKey          **buckets;          /**< Hash collision bucket table */
-    MprHashProc     fn;                 /**< Hash function */             
+    MprHashProc     fn;                 /**< Hash function */
     MprMutex        *mutex;             /**< GC marker sync */
 } MprHash;
 
@@ -6360,14 +6366,7 @@ typedef struct MprWaitService {
     int             breakPipe[2];           /* Pipe to wakeup select */
 #elif MPR_EVENT_KQUEUE
     int             kq;                     /* Kqueue() return descriptor */
-    struct kevent   *interest;              /* Events of interest */
-    int             interestMax;            /* Size of the interest array */
-    int             interestCount;          /* Last used entry in the interest array */
-    struct kevent   *events;                /* Events triggered */
-    int             eventsMax;              /* Max size of events/interest */
-    struct MprWaitHandler **handlerMap;     /* Map of fds to handlers */
-    int             handlerMax;             /* Size of the handlers array */
-    int             breakPipe[2];           /* Pipe to wakeup select */
+    MprList         *handlerMap;            /* Map of fds to handlers */
 #elif MPR_EVENT_POLL
     struct MprWaitHandler **handlerMap;     /* Map of fds to handlers (indexed by fd) */
     int             handlerMax;             /* Size of the handlers array */
@@ -6676,7 +6675,7 @@ typedef int (*MprSocketPrebind)(struct MprSocket *sock);
 typedef struct MprSocketService {
     MprSocketProvider *standardProvider;        /**< Socket provider for non-SSL connections */
     char            *sslProvider;               /**< Default secure provider for SSL connections */
-    MprHash         *providers;                 /**< Secure socket providers */         
+    MprHash         *providers;                 /**< Secure socket providers */
     MprSocketPrebind prebind;                   /**< Prebind callback */
     MprList         *secureSockets;             /**< List of secured (matrixssl) sockets */
     MprMutex        *mutex;                     /**< Multithread locking */
@@ -7745,7 +7744,7 @@ PUBLIC char *mprMakePassword(cchar *password, int saltLength, int rounds);
 PUBLIC bool mprCheckPassword(cchar *plainTextPassword, cchar *passwordHash);
 
 /********************************* Encoding ***********************************/
-/*  
+/*
     Character encoding masks
  */
 #define MPR_ENCODE_HTML             0x1
@@ -8022,8 +8021,8 @@ typedef struct MprCmd {
 #if BIT_WIN_LIKE
     HANDLE          thread;             /**< Handle of the primary thread for the created process */
     HANDLE          process;            /**< Process handle for the created process */
-    char            *command;           /**< Windows command line */          
-    char            *arg0;              /**< Windows sanitized argv[0] */          
+    char            *command;           /**< Windows command line */
+    char            *arg0;              /**< Windows sanitized argv[0] */
 #endif
 
 #if VXWORKS

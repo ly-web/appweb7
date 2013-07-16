@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: magnetar.local
+    Prepared by: voyager
  */
 
 #include "mpr.h"
@@ -121,14 +121,14 @@ static int stopSeqno = -1;
 
 #else /* Release mode */
 #define BREAKPOINT(mp)
-#define CHECK(mp)           
-#define CHECK_PTR(mp)           
-#define SCRIBBLE(mp)           
+#define CHECK(mp)
+#define CHECK_PTR(mp)
+#define SCRIBBLE(mp)
 #define SCRIBBLE_RANGE(ptr, size)
-#define CHECK_FREE_MEMORY(mp)           
+#define CHECK_FREE_MEMORY(mp)
 #define SET_NAME(mp, value)
 #define SET_MAGIC(mp)
-#define SET_SEQ(mp)           
+#define SET_SEQ(mp)
 #define VALID_BLK(mp)           1
 #endif
 
@@ -362,7 +362,7 @@ PUBLIC void *mprAllocMem(ssize usize, int flags)
     size = usize + sizeof(MprMem) + (padWords * sizeof(void*));
     size = max(size, usize + (ssize) sizeof(MprFreeMem));
     size = MPR_ALLOC_ALIGN(size);
-    
+
     if ((mp = allocMem(size, flags)) == NULL) {
         return NULL;
     }
@@ -498,7 +498,7 @@ static int initFree()
     ssize       bit, size, groupBits, bucketBits;
     int         index, group, bucket;
 #endif
-    
+
     heap->freeEnd = &heap->freeq[MPR_ALLOC_NUM_GROUPS * MPR_ALLOC_NUM_BUCKETS];
     for (freeq = heap->freeq; freeq != heap->freeEnd; freeq++) {
 #if BIT_MEMORY_STATS
@@ -529,7 +529,7 @@ static MprMem *allocMem(ssize required, int flags)
     ssize       size, maxBlock;
     ulong       groupMap, bucketMap;
     int         bucket, baseGroup, group, index, miss;
-    
+
 #if BIT_MEMORY_STACK
     monitorStack();
 #endif
@@ -550,7 +550,7 @@ static MprMem *allocMem(ssize required, int flags)
         - Long term use lockfree
      */
     lockHeap();
-    
+
     /* Mask groups lower than the base group */
     miss = 0;
     groupMap = heap->groupMap & ~((((ssize) 1) << baseGroup) - 1);
@@ -713,7 +713,7 @@ static MprMem *freeBlock(MprMem *mp)
     size = GET_SIZE(mp);
     prev = NULL;
     lockHeap();
-    
+
     /*
         Coalesce with next if it is free
      */
@@ -785,10 +785,10 @@ static MprMem *freeBlock(MprMem *mp)
 
 
 static int getQueueIndex(ssize size, int roundup)
-{   
+{
     ssize       usize;
     int         asize, aligned, bucket, group, index, msb;
-    
+
     assert(MPR_ALLOC_ALIGN(size) == size);
 
     /*
@@ -809,7 +809,7 @@ static int getQueueIndex(ssize size, int roundup)
 
     index = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
     assert(index < (heap->freeEnd - heap->freeq));
-    
+
 #if BIT_MEMORY_STATS
     assert(heap->freeq[index].info.stats.minSize <= (int) usize && 
         (int) usize < heap->freeq[index + 1].info.stats.minSize);
@@ -852,7 +852,7 @@ static void linkBlock(MprMem *mp)
     size = GET_SIZE(mp);
     SET_FIELD2(mp, size, heap->eternal, UNMARKED, 1);
     SET_HAS_MANAGER(mp, 0);
-    
+
     /*
         Set free space bitmap
      */
@@ -915,10 +915,10 @@ static void unlinkBlock(MprFreeMem *fp)
 
 #if BIT_MEMORY_STATS
 static MprFreeMem *getQueue(ssize size)
-{   
+{
     MprFreeMem  *freeq;
     int         index;
-    
+
     index = getQueueIndex(size, 0);
     freeq = &heap->freeq[index];
     return freeq;
@@ -1170,7 +1170,7 @@ static void sweep()
     MprRegion   *region, *nextRegion, *prior;
     MprMem      *mp, *next;
     MprManager  mgr;
-    
+
     if (!heap->enabled) {
         mprTrace(7, "DEBUG: sweep: Abort sweep - GC disabled");
         return;
@@ -1644,7 +1644,7 @@ PUBLIC void mprVerifyMem()
     MprMem      *mp;
     MprFreeMem  *freeq, *fp;
     int         i;
-    
+
     if (!heap->verify) {
         return;
     }
@@ -2105,7 +2105,7 @@ static void allocException(int cause, ssize size)
     mprError("%s: Memory used %,d, redline %,d, limit %,d.", MPR->name, (int) used, (int) heap->stats.redLine,
         (int) heap->stats.maxMemory);
     mprError("%s: Consider increasing memory limit.", MPR->name);
-    
+
     if (heap->notifier) {
         (heap->notifier)(cause, heap->allocPolicy,  size, used);
     }
@@ -2706,7 +2706,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     fs = mprCreateFileSystem("/");
     mprAddFileSystem(fs);
     mprCreateLogService();
-    
+
     if (argv) {
 #if BIT_WIN_LIKE
         if (argc >= 2 && strstr(argv[1], "--cygroot") != 0) {
@@ -2929,7 +2929,9 @@ PUBLIC void mprTerminate(int how, int status)
         (terminator)(how, status);
     }
     mprStopWorkers();
+#if UNUSED
     mprWakeGCService();
+#endif
     mprWakeDispatchers();
     mprWakeNotifier();
 }
@@ -3196,7 +3198,7 @@ PUBLIC int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
 PUBLIC MprIdleCallback mprSetIdleCallback(MprIdleCallback idleCallback)
 {
     MprIdleCallback old;
-    
+
     old = MPR->idleCallback;
     MPR->idleCallback = idleCallback;
     return old;
@@ -3435,7 +3437,7 @@ static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp);
 /************************************ Code ************************************/
 
 PUBLIC int mprCreateNotifierService(MprWaitService *ws)
-{   
+{
     ws->socketMessage = MPR_SOCKET_MESSAGE;
     return 0;
 }
@@ -3580,7 +3582,7 @@ PUBLIC void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
 PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
-   
+
     ws = MPR->waitService;
     if (!ws->wakeRequested && ws->hwnd) {
         ws->wakeRequested = 1;
@@ -3913,7 +3915,7 @@ static void manageBuf(MprBuf *buf, int flags);
 PUBLIC MprBuf *mprCreateBuf(ssize initialSize, ssize maxSize)
 {
     MprBuf      *bp;
-    
+
     if (initialSize <= 0) {
         initialSize = BIT_MAX_BUFFER;
     }
@@ -4026,17 +4028,15 @@ PUBLIC void mprAddNullToBuf(MprBuf *bp)
 {
     ssize      space;
 
-    if (bp) {
-        space = bp->endbuf - bp->end;
-        if (space < sizeof(char)) {
-            if (mprGrowBuf(bp, 1) < 0) {
-                return;
-            }
+    space = bp->endbuf - bp->end;
+    if (space < sizeof(char)) {
+        if (mprGrowBuf(bp, 1) < 0) {
+            return;
         }
-        assert(bp->end < bp->endbuf);
-        if (bp->end < bp->endbuf) {
-            *((char*) bp->end) = (char) '\0';
-        }
+    }
+    assert(bp->end < bp->endbuf);
+    if (bp->end < bp->endbuf) {
+        *((char*) bp->end) = (char) '\0';
     }
 }
 
@@ -5084,7 +5084,7 @@ PUBLIC MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
     MprCmd          *cmd;
     MprCmdFile      *files;
     int             i;
-    
+
     if ((cmd = mprAllocObj(MprCmd, manageCmd)) == 0) {
         return 0;
     }
@@ -5410,7 +5410,7 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
 static int addCmdHandlers(MprCmd *cmd)
 {
     int     stdinFd, stdoutFd, stderrFd;
-  
+
     stdinFd = cmd->files[MPR_CMD_STDIN].fd; 
     stdoutFd = cmd->files[MPR_CMD_STDOUT].fd; 
     stderrFd = cmd->files[MPR_CMD_STDERR].fd; 
@@ -5799,7 +5799,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
     int     status, rc;
 
     mprTrace(6, "reapCmd CHECK pid %d, eof %d, required %d", cmd->pid, cmd->eofCount, cmd->requiredEof);
-    
+
     status = 0;
     if (cmd->pid == 0) {
         return;
@@ -6148,7 +6148,7 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
         WARNING: If starting a program compiled with Cygwin, there is a bug in Cygwin's parsing of the command
         string where embedded quotes are parsed incorrectly by the Cygwin CRT runtime. If an arg starts with a 
         drive spec, embedded backquoted quotes will be stripped and the backquote will be passed in. Windows CRT 
-        handles this correctly.  For example:  
+        handles this correctly.  For example:
             ./args "c:/path \"a b\"
             Cygwin will parse as  argv[1] == c:/path \a \b
             Windows will parse as argv[1] == c:/path "a b"
@@ -6196,7 +6196,7 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
     }
     cmd->command = mprAlloc(len + 1);
     cmd->command[len] = '\0';
-    
+
     /*
         Add quotes around all args that have spaces and backquote [", ', \\]
         Example:    ["showColors", "red", "light blue", "Cannot \"render\""]
@@ -6782,7 +6782,7 @@ PUBLIC MprCond *mprCreateCond()
 static void manageCond(MprCond *cp, int flags)
 {
     assert(cp);
-    
+
     if (flags & MPR_MANAGE_MARK) {
         mprMark(cp->mutex);
 
@@ -6873,11 +6873,11 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
                 rc = MPR_ERR;
             }
         }
-        
+
 #elif BIT_UNIX_LIKE
         /*
             NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 
-            atomically unlock the mutex before sleeping and will relock on awakening.  
+            atomically unlock the mutex before sleeping and will relock on awakening.
          */
         if (!cp->triggered) {
             if (now) {
@@ -7876,8 +7876,8 @@ static const uint ORIG_S[4][256] = {
         0xD60F573FL, 0xBC9BC6E4L, 0x2B60A476L, 0x81E67400L,
         0x08BA6FB5L, 0x571BE91FL, 0xF296EC6BL, 0x2A0DD915L,
         0xB6636521L, 0xE7B9F9B6L, 0xFF34052EL, 0xC5855664L,
-        0x53B02D5DL, 0xA99F8FA1L, 0x08BA4799L, 0x6E85076AL   
-    }, {   
+        0x53B02D5DL, 0xA99F8FA1L, 0x08BA4799L, 0x6E85076AL
+    }, {
         0x4B7A70E9L, 0xB5B32944L, 0xDB75092EL, 0xC4192623L,
         0xAD6EA6B0L, 0x49A7DF7DL, 0x9CEE60B8L, 0x8FEDB266L,
         0xECAA8C71L, 0x699A17FFL, 0x5664526CL, 0xC2B19EE1L,
@@ -7941,8 +7941,8 @@ static const uint ORIG_S[4][256] = {
         0x9E447A2EL, 0xC3453484L, 0xFDD56705L, 0x0E1E9EC9L,
         0xDB73DBD3L, 0x105588CDL, 0x675FDA79L, 0xE3674340L,
         0xC5C43465L, 0x713E38D8L, 0x3D28F89EL, 0xF16DFF20L,
-        0x153E21E7L, 0x8FB03D4AL, 0xE6E39F2BL, 0xDB83ADF7L   
-    }, {   
+        0x153E21E7L, 0x8FB03D4AL, 0xE6E39F2BL, 0xDB83ADF7L
+    }, {
         0xE93D5A68L, 0x948140F7L, 0xF64C261CL, 0x94692934L,
         0x411520F7L, 0x7602D4F7L, 0xBCF46B2EL, 0xD4A20068L,
         0xD4082471L, 0x3320F46AL, 0x43B7D4B7L, 0x500061AFL,
@@ -8006,8 +8006,8 @@ static const uint ORIG_S[4][256] = {
         0xED545578L, 0x08FCA5B5L, 0xD83D7CD3L, 0x4DAD0FC4L,
         0x1E50EF5EL, 0xB161E6F8L, 0xA28514D9L, 0x6C51133CL,
         0x6FD5C7E7L, 0x56E14EC4L, 0x362ABFCEL, 0xDDC6C837L,
-        0xD79A3234L, 0x92638212L, 0x670EFA8EL, 0x406000E0L  
-    }, {   
+        0xD79A3234L, 0x92638212L, 0x670EFA8EL, 0x406000E0L
+    }, {
         0x3A39CE37L, 0xD3FAF5CFL, 0xABC27737L, 0x5AC52D1BL,
         0x5CB0679EL, 0x4FA33742L, 0xD3822740L, 0x99BC9BBEL,
         0xD5118E9DL, 0xBF0F7315L, 0xD62D1C7EL, 0xC700C47BL,
@@ -8071,7 +8071,7 @@ static const uint ORIG_S[4][256] = {
         0x85CBFE4EL, 0x8AE88DD8L, 0x7AAAF9B0L, 0x4CF9AA7EL,
         0x1948C25CL, 0x02FB8A8CL, 0x01C36AE4L, 0xD6EBE1F9L,
         0x90D4F869L, 0xA65CDEA0L, 0x3F09252DL, 0xC208E69FL,
-        0xB74E6132L, 0xCE77E25BL, 0x578FDFE3L, 0x3AC372E6L  
+        0xB74E6132L, 0xCE77E25BL, 0x578FDFE3L, 0x3AC372E6L
     }
 };
 
@@ -8366,7 +8366,7 @@ static int cygOpen(MprFileSystem *fs, cchar *path, int omode, int perms)
 static MprFile *openFile(MprFileSystem *fs, cchar *path, int omode, int perms)
 {
     MprFile     *file;
-    
+
     assert(path);
 
     if ((file = mprAllocObj(MprFile, manageDiskFile)) == 0) {
@@ -9083,7 +9083,7 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
             mprMark(event);
         }
         unlock(es);
-        
+
     } else if (flags & MPR_MANAGE_FREE) {
         mprDestroyDispatcher(dispatcher);
     }
@@ -9300,7 +9300,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
         dispatcher->flags |= MPR_DISPATCHER_WAITING;
         assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         unlock(es);
-        
+
         assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
         mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
@@ -9411,7 +9411,7 @@ PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
     MprEventService     *es;
     MprEvent            *event;
     int                 mustWakeWaitService, mustWakeCond;
-   
+
     assert(dispatcher);
     assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
@@ -9724,7 +9724,7 @@ static void initDispatcher(MprDispatcher *dispatcher)
 {
     assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     assert(!(dispatcher->flags == MPR_DISPATCHER_DESTROYED));
-           
+
     dispatcher->next = dispatcher;
     dispatcher->prev = dispatcher;
     dispatcher->parent = dispatcher;
@@ -9760,7 +9760,7 @@ static void dequeueDispatcher(MprDispatcher *dispatcher)
 
     assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
-           
+
     if (dispatcher->next) {
         dispatcher->next->prev = dispatcher->prev;
         dispatcher->prev->next = dispatcher->next;
@@ -9922,7 +9922,7 @@ static uchar charMatch[256] = {
     0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c 
 };
 
-/*  
+/*
     Max size of the port specification in a URL
  */
 #define MAX_PORT_LEN 8
@@ -9930,7 +9930,7 @@ static uchar charMatch[256] = {
 #define MIME_HASH_SIZE 67
 
 /************************************ Code ************************************/
-/*  
+/*
     Uri encode by encoding special characters with hex equivalents. Return an allocated string.
  */
 PUBLIC char *mprUriEncode(cchar *inbuf, int map)
@@ -9974,7 +9974,7 @@ PUBLIC char *mprUriEncode(cchar *inbuf, int map)
 }
 
 
-/*  
+/*
     Decode a string using URL encoding. Return an allocated string.
  */
 PUBLIC char *mprUriDecode(cchar *inbuf)
@@ -10018,7 +10018,7 @@ PUBLIC char *mprUriDecode(cchar *inbuf)
 }
 
 
-/*  
+/*
     Decode a string using URL encoding. This decodes in situ.
  */
 PUBLIC char *mprUriDecodeInSitu(char *inbuf)
@@ -10058,7 +10058,7 @@ PUBLIC char *mprUriDecodeInSitu(char *inbuf)
 }
 
 
-/*  
+/*
     Escape a shell command. Not really Http, but useful anyway for CGI
  */
 PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
@@ -10105,7 +10105,7 @@ PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
 }
 
 
-/*  
+/*
     Escape HTML to escape defined characters (prevent cross-site scripting)
  */
 PUBLIC char *mprEscapeHtml(cchar *html)
@@ -10126,7 +10126,7 @@ PUBLIC char *mprEscapeHtml(cchar *html)
         return 0;
     }
 
-    /*  
+    /*
         Leave room for the biggest expansion
      */
     op = result;
@@ -10261,7 +10261,7 @@ PUBLIC void mprManageEpoll(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->events);
-    
+
     } else if (flags & MPR_MANAGE_FREE) {
         if (ws->epoll) {
             close(ws->epoll);
@@ -10672,7 +10672,7 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     }
     assert(prior->next);
     assert(prior->prev);
-    
+
     queueEvent(prior, event);
     event->dispatcher = dispatcher;
     es->eventCount++;
@@ -11566,7 +11566,7 @@ PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path)
 PUBLIC void mprAddFileSystem(MprFileSystem *fs)
 {
     assert(fs);
-    
+
     /* NOTE: this does not currently add a file system. It merely replaces the existing file system. */
     MPR->fileSystem = fs;
 }
@@ -11619,7 +11619,7 @@ PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators)
 
     assert(path);
     assert(separators);
-    
+
     fs = mprLookupFileSystem(path);
     fs->separators = sclone(separators);
 }
@@ -11628,10 +11628,10 @@ PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators)
 PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 {
     MprFileSystem   *fs;
-    
+
     assert(path);
     assert(newline);
-    
+
     fs = mprLookupFileSystem(path);
     fs->newline = sclone(newline);
 }
@@ -12308,7 +12308,7 @@ static MprObj *deserialize(MprJson *jp, MprObj *obj)
             }
             jp->tok++;
             return obj;
-            
+
         default:
             /*
                 Value: String, "{" or "]"
@@ -12714,7 +12714,7 @@ PUBLIC void *mprQueryJsonValue(MprHash *obj, cchar *key, int type)
 /************************************************************************/
 
 /**
-    kevent.c - Wait for I/O by using kevent on BSD based Unix systems.
+    kevent.c - Wait for I/O by using kevent on MacOSX Unix systems.
 
     This module augments the mprWait wait services module by providing kqueue() based waiting support.
     Also see mprAsyncSelectWait and mprSelectWait. This module is thread-safe.
@@ -12727,39 +12727,22 @@ PUBLIC void *mprQueryJsonValue(MprHash *obj, cchar *key, int type)
 
 
 #if MPR_EVENT_KQUEUE
+
 /********************************** Forwards **********************************/
 
-static int growEvents(MprWaitService *ws);
-static void serviceIO(MprWaitService *ws, int count);
+static void serviceIO(MprWaitService *ws, struct kevent *events, int count);
 
 /************************************ Code ************************************/
 
 PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
-    ws->interestMax = MPR_FD_MIN;
-    ws->eventsMax = MPR_FD_MIN;
-    ws->handlerMax = MPR_FD_MIN;
-    ws->interest = mprAllocZeroed(sizeof(struct kevent) * ws->interestMax);
-    ws->events = mprAllocZeroed(sizeof(struct kevent) * ws->eventsMax);
-    ws->handlerMap = mprAllocZeroed(sizeof(MprWaitHandler*) * ws->handlerMax);
-    if (ws->interest == 0 || ws->events == 0 || ws->handlerMap == 0) {
+    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, MPR_LIST_STATIC_VALUES)) == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     if ((ws->kq = kqueue()) < 0) {
         mprError("Call to kqueue() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    /*
-        Initialize the "wakeup" pipe. This is used to wakeup the service thread if other threads need to wait for I/O.
-     */
-    if (pipe(ws->breakPipe) < 0) {
-        mprError("Cannot open breakout pipe");
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-    fcntl(ws->breakPipe[0], F_SETFL, fcntl(ws->breakPipe[0], F_GETFL) | O_NONBLOCK);
-    fcntl(ws->breakPipe[1], F_SETFL, fcntl(ws->breakPipe[1], F_GETFL) | O_NONBLOCK);
-    EV_SET(&ws->interest[ws->interestCount], ws->breakPipe[MPR_READ_PIPE], EVFILT_READ, EV_ADD, 0, 0, 0);
-    ws->interestCount++;
     return 0;
 }
 
@@ -12767,56 +12750,30 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 PUBLIC void mprManageKqueue(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(ws->events);
-        mprMark(ws->interest);
+        mprMark(ws->handlerMap);
 
     } else if (flags & MPR_MANAGE_FREE) {
-        if (ws->kq) {
+        if (ws->kq >= 0) {
             close(ws->kq);
-        }
-        if (ws->breakPipe[0] >= 0) {
-            close(ws->breakPipe[0]);
-        }
-        if (ws->breakPipe[1] >= 0) {
-            close(ws->breakPipe[1]);
+            ws->kq = 0;
         }
     }
-}
-
-
-/*
-    Called locked
- */
-static int growEvents(MprWaitService *ws)
-{
-    ws->interestMax *= 2;
-    ws->eventsMax = ws->interestMax;
-    ws->interest = mprRealloc(ws->interest, sizeof(struct kevent) * ws->interestMax);
-    ws->events = mprRealloc(ws->events, sizeof(struct kevent) * ws->eventsMax);
-    if (ws->interest == 0 || ws->events == 0) {
-        assert(!MPR_ERR_MEMORY);
-        return MPR_ERR_MEMORY;
-    }
-    return 0;
 }
 
 
 PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
-    struct kevent   *kp, *start;
+    struct kevent   interest[4], *kp;
     int             fd;
 
     assert(wp);
     fd = wp->fd;
+    kp = &interest[0];
 
     lock(ws);
     mprTrace(7, "mprNotifyOn: fd %d, mask %x, old mask %x", wp->fd, mask, wp->desiredMask);
     if (wp->desiredMask != mask) {
         assert(fd >= 0);
-        while ((ws->interestCount + 4) >= ws->interestMax) {
-            growEvents(ws);
-        }
-        start = kp = &ws->interest[ws->interestCount];
         if (wp->desiredMask & MPR_READABLE && !(mask & MPR_READABLE)) {
             EV_SET(kp, fd, EVFILT_READ, EV_DELETE, 0, 0, 0);
             kp++;
@@ -12833,23 +12790,16 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             EV_SET(kp, fd, EVFILT_WRITE, EV_ADD, 0, 0, 0);
             kp++;
         }
-        ws->interestCount += (int) (kp - start);
-        if (fd >= ws->handlerMax) {
-            ws->handlerMax = fd + 32;
-            if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-                assert(!MPR_ERR_MEMORY);
-                unlock(ws);
-                return MPR_ERR_MEMORY;
-            }
-        }
-        assert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         wp->desiredMask = mask;
         if (wp->event) {
             mprRemoveEvent(wp->event);
             wp->event = 0;
         }
+        if (kevent(ws->kq, interest, (int) (kp - interest), NULL, 0, NULL) < 0) {
+            mprError("Cannot issue notifier wakeup event");
+        }
     }
-    ws->handlerMap[fd] = (mask) ? wp : 0;
+    mprSetItem(ws->handlerMap, fd, wp);
     unlock(ws);
     return 0;
 }
@@ -12904,8 +12854,8 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     struct timespec ts;
-    struct kevent   *interest;
-    int             rc, count;
+    struct kevent   events[MPR_MAX_KEVENTS];
+    int             rc;
 
     assert(timeout > 0);
 
@@ -12924,18 +12874,10 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     ts.tv_sec = ((int) (timeout / 1000));
     ts.tv_nsec = ((int) ((timeout % 1000) * 1000 * 1000));
 
-    lock(ws);
-    count = ws->interestCount;
-    interest = alloca(sizeof(struct kevent) * count);
-    memcpy(interest, ws->interest, sizeof(struct kevent) * count);
-    /* Preserve the wakeup pipe fd */
-    ws->interestCount = 1;
-    unlock(ws);
-
     mprTrace(8, "kevent sleep for %d", timeout);
     mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
 
-    rc = kevent(ws->kq, interest, count, ws->events, ws->eventsMax, &ts);
+    rc = kevent(ws->kq, NULL, 0, events, MPR_MAX_KEVENTS, &ts);
 
     mprClearWaiting();
     mprResetYield();
@@ -12944,55 +12886,50 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     if (rc < 0) {
         mprTrace(7, "Kevent returned %d, errno %d", rc, mprGetOsError());
     } else if (rc > 0) {
-        serviceIO(ws, rc);
+        serviceIO(ws, events, rc);
     }
     ws->wakeRequested = 0;
 }
 
 
-static void serviceIO(MprWaitService *ws, int count)
+static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
 {
     MprWaitHandler      *wp;
     struct kevent       *kev;
-    char                buf[128];
-    int                 fd, i, mask, err;
+    int                 fd, i, mask, prior, err;
 
     lock(ws);
     for (i = 0; i < count; i++) {
-        kev = &ws->events[i];
+        kev = &events[i];
         fd = (int) kev->ident;
-        assert(fd < ws->handlerMax);
-        if ((wp = ws->handlerMap[fd]) == 0) {
-            if (kev->filter == EVFILT_READ && fd == ws->breakPipe[MPR_READ_PIPE]) {
-                (void) read(fd, buf, sizeof(buf));
-            }
+        if (kev->filter == EVFILT_USER) {
             continue;
         }
-        if (kev->flags & EV_ERROR) {
-            err = (int) kev->data;
-            if (err == ENOENT) {
-                /* File descriptor was closed and re-opened */
-                mask = wp->desiredMask;
-                mprNotifyOn(ws, wp, 0);
-#if UNUSED
-                wp->desiredMask = 0;
-                mprNotifyOn(ws, wp, mask);
-#endif
-                mprTrace(7, "kqueue: file descriptor may have been closed and reopened, fd %d", wp->fd);
-
-            } else if (err == EBADF) {
-                /* File descriptor was closed */
-                mask = wp->desiredMask;
-                mprNotifyOn(ws, wp, 0);
-#if UNUSED
-                wp->desiredMask = 0;
-                mprNotifyOn(ws, wp, mask);
-#endif
-                mprTrace(7, "kqueue: invalid file descriptor %d, fd %d", wp->fd);
-            }
+        if (fd < 0 || (wp = mprGetItem(ws->handlerMap, fd)) == 0) {
+            mprTrace(0, "WARNING: fd not in handler map. fd %d", fd);
             continue;
         }
         mask = 0;
+        if (kev->flags & EV_ERROR) {
+            err = (int) kev->data;
+            if (err == ENOENT) {
+                /* 
+                    File descriptor was closed and re-opened. Re-enable event.
+                 */
+                prior = wp->desiredMask;
+                mprNotifyOn(ws, wp, 0);
+                wp->desiredMask = 0;
+                mprNotifyOn(ws, wp, prior);
+                mprTrace(0, "WARNING: kqueue: file descriptor may have been closed and reopened, fd %d", wp->fd);
+                continue;
+
+            } else if (err == EBADF || err == EINVAL) {
+                /* File descriptor was closed */
+                mprNotifyOn(ws, wp, 0);
+                mprTrace(0, "WARNING: kqueue: invalid file descriptor %d, fd %d", wp->fd);
+                mask |= MPR_READABLE;
+            }
+        }
         if (kev->filter == EVFILT_READ) {
             mask |= MPR_READABLE;
         }
@@ -13007,9 +12944,9 @@ static void serviceIO(MprWaitService *ws, int count)
                 (wp->proc)(wp->handlerData, NULL);
             } else {
                 /* 
-                    Suppress further events while this event is being serviced. User must re-enable 
+                    Suppress further events while this event is being serviced. User must re-enable.
                  */
-                mprNotifyOn(ws, wp, 0);            
+                mprNotifyOn(ws, wp, 0);
                 mprQueueIOEvent(wp);
             }
         }
@@ -13025,13 +12962,15 @@ static void serviceIO(MprWaitService *ws, int count)
 PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
-    int             c;
+    struct kevent   ev;
 
     ws = MPR->waitService;
     if (!ws->wakeRequested) {
         ws->wakeRequested = 1;
-        c = 0;
-        (void) write(ws->breakPipe[MPR_WRITE_PIPE], (char*) &c, 1);
+        EV_SET(&ev, 0, EVFILT_USER, EV_ADD | EV_CLEAR, NOTE_TRIGGER, 0, 0);
+        if (kevent(ws->kq, &ev, 1, NULL, 0, NULL) < 0) {
+            mprError("Cannot issue notifier wakeup event");
+        }
     }
 }
 
@@ -13684,7 +13623,7 @@ PUBLIC int mprLookupItem(MprList *lp, cvoid *item)
     int     i;
 
     assert(lp);
-    
+
     lock(lp);
     for (i = 0; i < lp->length; i++) {
         if (lp->items[i] == item) {
@@ -13702,7 +13641,7 @@ PUBLIC int mprLookupStringItem(MprList *lp, cchar *str)
     int     i;
 
     assert(lp);
-    
+
     lock(lp);
     for (i = 0; i < lp->length; i++) {
         if (smatch(lp->items[i], str)) {
@@ -13783,7 +13722,7 @@ static void manageKeyValue(MprKeyValue *pair, int flags)
 PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value, int flags)
 {
     MprKeyValue     *pair;
-    
+
     if ((pair = mprAllocObj(MprKeyValue, manageKeyValue)) == 0) {
         return 0;
     }
@@ -14909,7 +14848,7 @@ PUBLIC int _cmp(char *s1, char *s2)
 
 
 /*********************************** Code *************************************/
-/*  
+/*
     Inbuilt mime type support
  */
 static char *standardMimeTypes[] = {
@@ -15060,7 +14999,7 @@ PUBLIC int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program)
 {
     MprKey      *kp;
     MprMime     *mt;
-    
+
     kp = 0;
     mt = 0;
     while ((kp = mprGetNextKey(table, kp)) != 0) {
@@ -17011,7 +16950,7 @@ PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
     int             originSegments, i, commonSegments, sep;
 
     fs = mprLookupFileSystem(destArg);
-    
+
     if (destArg == 0 || *destArg == '\0') {
         return sclone(".");
     }
@@ -17021,7 +16960,7 @@ PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
         return dest;
     }
     sep = (dp = firstSep(fs, dest)) ? *dp : defaultSep(fs);
-    
+
     if (originArg == 0 || *originArg == '\0') {
         /*
             Get the working directory. Ensure it is null terminated and leave room to append a trailing separators
@@ -18382,7 +18321,7 @@ PUBLIC void mprNap(MprTicks timeout)
     int             rc;
 
     assert(timeout >= 0);
-    
+
     mark = mprGetTicks();
     remaining = timeout;
     do {
@@ -18403,7 +18342,7 @@ PUBLIC void mprSleep(MprTicks timeout)
 }
 
 
-/*  
+/*
     Write a message in the O/S native log (syslog in the case of linux)
  */
 PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
@@ -18545,7 +18484,7 @@ static char stateMap[] = {
 
 /*
     Format:         %[modifier][width][precision][bits][type]
-  
+
     The Class map will map from a specifier letter to a state.
  */
 static char classMap[] = {
@@ -19488,7 +19427,7 @@ static MprFile *openFile(MprFileSystem *fileSystem, cchar *path, int flags, int 
 {
     MprRomFileSystem    *rfs;
     MprFile             *file;
-    
+
     assert(path && *path);
 
     rfs = (MprRomFileSystem*) fileSystem;
@@ -20299,7 +20238,7 @@ PUBLIC void mprServiceSignals()
 static void signalEvent(MprSignal *sp, MprEvent *event)
 {
     MprSignal   *np;
-    
+
     assert(sp);
     assert(event);
 
@@ -20650,7 +20589,7 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider)
     MprSocketService    *ss;
 
     ss = MPR->socketService;
-    
+
     if (ss->providers == 0 && (ss->providers = mprCreateHash(0, 0)) == 0) {
         return;
     }
@@ -20716,7 +20655,7 @@ static void manageSocket(MprSocket *sp, int flags)
 }
 
 
-/*  
+/*
     Re-initialize all socket variables so the socket can be reused. This closes the socket and removes all wait handlers.
  */
 static void resetSocket(MprSocket *sp)
@@ -20761,7 +20700,7 @@ PUBLIC bool mprHasIPv6()
 }
 
 
-/*  
+/*
     Open a server connection
  */
 PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
@@ -20956,7 +20895,7 @@ PUBLIC void mprEnableSocketEvents(MprSocket *sp, int mask)
 }
 
 
-/*  
+/*
     Open a client socket connection
  */
 PUBLIC int mprConnectSocket(MprSocket *sp, cchar *ip, int port, int flags)
@@ -21002,7 +20941,7 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         return MPR_ERR_CANT_OPEN;
     }
 #if !BIT_WIN_LIKE && !VXWORKS
-    /*  
+    /*
         Children should not inherit this fd
      */
     fcntl(sp->fd, F_SETFD, FD_CLOEXEC);
@@ -21046,7 +20985,7 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     }
     mprSetSocketBlockingMode(sp, (bool) (sp->flags & MPR_SOCKET_BLOCK));
 
-    /*  
+    /*
         TCP/IP stacks have the no delay option (nagle algorithm) on by default.
      */
     if (sp->flags & MPR_SOCKET_NODELAY) {
@@ -21074,7 +21013,7 @@ static void disconnectSocket(MprSocket *sp)
     char    buf[BIT_MAX_BUFFER];
     int     i;
 
-    /*  
+    /*
         Defensive lock buster. Use try lock incase an operation is blocked somewhere with a lock asserted. 
         Should never happen.
      */
@@ -21122,7 +21061,7 @@ PUBLIC void mprCloseSocket(MprSocket *sp, bool gracefully)
 }
 
 
-/*  
+/*
     Standard (non-SSL) close. Permit multiple calls.
  */
 static void closeSocket(MprSocket *sp, bool gracefully)
@@ -21212,7 +21151,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     nsp->port = listen->port;
     nsp->flags = ((listen->flags & ~MPR_SOCKET_LISTENER) | MPR_SOCKET_SERVER);
 
-    /*  
+    /*
         Limit the number of simultaneous clients
      */
     lock(ss);
@@ -21226,7 +21165,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
 
 #if !BIT_WIN_LIKE && !VXWORKS
     /* Prevent children inheriting this socket */
-    fcntl(fd, F_SETFD, FD_CLOEXEC);         
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
 #endif
 
     mprSetSocketBlockingMode(nsp, (nsp->flags & MPR_SOCKET_BLOCK) ? 1: 0);
@@ -21258,7 +21197,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
 }
 
 
-/*  
+/*
     Read data. Return -1 for EOF and errors. On success, return the number of bytes read.
  */
 PUBLIC ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
@@ -21275,7 +21214,7 @@ PUBLIC ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
 }
 
 
-/*  
+/*
     Standard read from a socket (Non SSL)
     Return number of bytes read. Return -1 on errors and EOF.
  */
@@ -21334,7 +21273,7 @@ again:
 }
 
 
-/*  
+/*
     Write data. Return the number of bytes written or -1 on errors. NOTE: this routine will return with a
     short write if the underlying socket can't accept any more data.
  */
@@ -21352,7 +21291,7 @@ PUBLIC ssize mprWriteSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 }
 
 
-/*  
+/*
     Standard write to a socket (Non SSL)
     Return count of bytes written. mprGetError will return EAGAIN or EWOULDBLOCK if transport is saturated.
  */
@@ -21429,7 +21368,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 }
 
 
-/*  
+/*
     Write a string to the socket
  */
 PUBLIC ssize mprWriteSocketString(MprSocket *sp, cchar *str)
@@ -21500,7 +21439,7 @@ static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize le
 #endif
 
 
-/*  
+/*
     Write data from a file to a socket. Includes the ability to write header before and after the file data.
     Works even with a null "file" to just output the headers.
  */
@@ -21659,7 +21598,7 @@ PUBLIC bool mprSocketHandshaking(MprSocket *sp)
 }
 
 
-/*  
+/*
     Return true if end of file
  */
 PUBLIC bool mprIsSocketEof(MprSocket *sp)
@@ -21668,7 +21607,7 @@ PUBLIC bool mprIsSocketEof(MprSocket *sp)
 }
 
 
-/*  
+/*
     Set the EOF condition
  */
 PUBLIC void mprSetSocketEof(MprSocket *sp, bool eof)
@@ -21690,7 +21629,7 @@ PUBLIC Socket mprGetSocketFd(MprSocket *sp)
 }
 
 
-/*  
+/*
     Return the blocking mode of the socket
  */
 PUBLIC bool mprGetSocketBlockingMode(MprSocket *sp)
@@ -21700,7 +21639,7 @@ PUBLIC bool mprGetSocketBlockingMode(MprSocket *sp)
 }
 
 
-/*  
+/*
     Get the socket flags
  */
 PUBLIC int mprGetSocketFlags(MprSocket *sp)
@@ -21709,7 +21648,7 @@ PUBLIC int mprGetSocketFlags(MprSocket *sp)
 }
 
 
-/*  
+/*
     Set whether the socket blocks or not on read/write
  */
 PUBLIC int mprSetSocketBlockingMode(MprSocket *sp, bool on)
@@ -21747,7 +21686,7 @@ PUBLIC int mprSetSocketBlockingMode(MprSocket *sp, bool on)
 }
 
 
-/*  
+/*
     Set the TCP delay behavior (nagle algorithm)
  */
 PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on)
@@ -21779,7 +21718,7 @@ PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on)
 }
 
 
-/*  
+/*
     Get the port number
  */
 PUBLIC int mprGetSocketPort(MprSocket *sp)
@@ -21827,7 +21766,7 @@ PUBLIC int mprGetSocketError(MprSocket *sp)
 
 
 #if BIT_HAS_GETADDRINFO
-/*  
+/*
     Get a socket address from a host/port combination. If a host provides both IPv4 and IPv6 addresses, 
     prefer the IPv4 address.
  */
@@ -21861,7 +21800,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
     }
     portStr = itos(port);
 
-    /*  
+    /*
         Try to sleuth the address to avoid duplicate address lookups. Then try IPv4 first then IPv6.
      */
     res = 0;
@@ -21958,7 +21897,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
 #endif
 
 
-/*  
+/*
     Return a numerical IP address and port for the given socket info
  */
 static int getSocketIpAddr(struct sockaddr *addr, int addrlen, char *ip, int ipLen, int *port)
@@ -22027,7 +21966,7 @@ static int ipv6(cchar *ip)
 }
 
 
-/*  
+/*
     Parse address and return the IP address and port components. Handles ipv4 and ipv6 addresses. 
     If the IP portion is absent, *pip is set to null. If the port portion is absent, port is set to the defaultPort.
     If a ":*" port specifier is used, *pport is set to -1;
@@ -22060,7 +21999,7 @@ PUBLIC int mprParseSocketAddress(cchar *address, char **pip, int *pport, int *ps
         ip = sclone(&cp[3]);
     }
     if (ipv6(ip)) {
-        /*  
+        /*
             IPv6. If port is present, it will follow a closing bracket ']'
          */
         if ((cp = strchr(ip, ']')) != 0) {
@@ -22092,7 +22031,7 @@ PUBLIC int mprParseSocketAddress(cchar *address, char **pip, int *pport, int *ps
         }
 
     } else {
-        /*  
+        /*
             ipv4 
          */
         if ((cp = strchr(ip, ':')) != 0) {
@@ -22792,7 +22731,7 @@ PUBLIC ssize slen(cchar *s)
 }
 
 
-/*  
+/*
     Map a string to lower case. Allocates a new string.
  */
 PUBLIC char *slower(cchar *str)
@@ -23292,7 +23231,7 @@ PUBLIC char *strim(cchar *str, cchar *set, int where)
 }
 
 
-/*  
+/*
     Map a string to upper case
  */
 PUBLIC char *supper(cchar *str)
@@ -24225,7 +24164,7 @@ static void runTestProc(MprTestGroup *gp, MprTestCase *test)
     } else {
         (test->proc)(gp);
         mprYield(0);
-    
+
         mprLock(sp->mutex);
         if (gp->success) {
             ++sp->totalTestCount;
@@ -24318,7 +24257,7 @@ PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTicks timeout)
 {
     MprTicks    expires, remaining;
     int         rc;
-    
+
     assert(gp->dispatcher);
     assert(timeout >= 0);
 
@@ -25412,7 +25351,7 @@ static void changeState(MprWorker *worker, int state)
         lp = ws->idleThreads;
         wakeIdle = 1;
         break;
-        
+
     case MPR_WORKER_PRUNED:
         break;
     }
@@ -26331,7 +26270,7 @@ PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
                 /* Skip the 'E' */
                 cp++;
                 goto again;
-            
+
             case 'F':
                 strcpy(dp, "Y-%m-%d");
                 dp += 7;
@@ -26376,7 +26315,7 @@ PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
                 /* Skip the 'O' */
                 cp++;
                 goto again;
-            
+
             case 'P':
                 dp--;
                 strcpy(dp, (tp->tm_hour > 11) ? "pm" : "am");
@@ -27040,7 +26979,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
                     /* 
                         dd/mm/yy 
                         Cannot detect 01/02/03  This will be evaluated as Jan 2 2003 below.
-                     */  
+                     */
                     tm.tm_mday = value1;
                     tm.tm_mon = value2;
                     tm.tm_year = value3;
@@ -27067,7 +27006,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
         } else {
             tm.tm_year += 1900;
         }
-    }    
+    }
     if (tm.tm_year >= 1900) {
         tm.tm_year -= 1900;
     }
@@ -28191,7 +28130,7 @@ PUBLIC ssize wlen(wchar *s)
 }
 
 
-/*  
+/*
     Map a string to lower case 
  */
 PUBLIC wchar *wlower(wchar *str)
@@ -28524,7 +28463,7 @@ PUBLIC wchar *wtrim(wchar *str, wchar *set, int where)
 }
 
 
-/*  
+/*
     Map a string to upper case
  */
 PUBLIC char *wupper(wchar *str)
@@ -29970,7 +29909,7 @@ struct tm *gmtime_r(const time_t *when, struct tm *tp)
 {
     FILETIME    f;
     SYSTEMTIME  s;
-    
+
     timeToFileTime(*when, &f);
     FileTimeToSystemTime(&f, &s);
 
@@ -30010,7 +29949,7 @@ struct tm *localtime_r(const time_t *when, struct tm *tp)
 
     timeToFileTime(*when - bias, &f);
     FileTimeToSystemTime(&f, &s);
-    
+
     tp->tm_year   = s.wYear - 1900;
     tp->tm_mon    = s.wMonth- 1;
     tp->tm_wday   = s.wDayOfWeek;
@@ -30041,7 +29980,7 @@ PUBLIC time_t mktime(struct tm *tp)
         bias += tz.DaylightBias;
     }
     bias *= 60;
-    
+
     s.wYear = tp->tm_year + 1900;
     s.wMonth = tp->tm_mon + 1;
     s.wDayOfWeek = tp->tm_wday;
@@ -30115,7 +30054,7 @@ PUBLIC HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
 
     wpath = mprToUni(MPR, path);
     h = FindFirstFileW(wpath, &wdata);
-    
+
     file = mprToMulti(MPR, wdata.cFileName);
     strcpy(data->cFileName, file);
     return h;
@@ -30252,7 +30191,7 @@ PUBLIC MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
     MprXml  *xp;
 
     xp = mprAllocObj(MprXml, manageXml);
-    
+
     xp->inBuf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     xp->tokBuf = mprCreateBuf(initialSize, maxSize);
     return xp;
@@ -30337,7 +30276,7 @@ static int parseNext(MprXml *xp, int state)
     handler = xp->handler;
     tname = aname = 0;
     rc = 0;
-    
+
     /*
         In this parse loop, the state is never assigned EOF or ERR. In such cases we always return EOF or ERR.
      */
@@ -30480,7 +30419,7 @@ static int parseNext(MprXml *xp, int state)
                     return rc;
                 }
                 return 1;
-    
+ 
             default:
                 xmlError(xp, "Syntax error");
                 return MPR_ERR_BAD_SYNTAX;
@@ -30635,7 +30574,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
             }
             putLastChar(xp, c);
             return MPR_XMLTOK_LS;
-    
+
         case '=':
             return MPR_XMLTOK_EQ;
 
@@ -30650,7 +30589,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
                 return MPR_XMLTOK_SLASH_GR;
             }
             return MPR_XMLTOK_ERR;
-        
+
         case '\"':
         case '\'':
             xp->quoteChar = c;
