@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: voyager
+    Prepared by: magnetar.local
  */
 
 #include "http.h"
@@ -1395,9 +1395,6 @@ static void saveCachedResponse(HttpConn *conn)
     assert(tx->finalizedOutput && tx->cacheBuffer);
 
     buf = tx->cacheBuffer;
-#if UNUSED
-    mprAddNullToBuf(buf);
-#endif
     tx->cacheBuffer = 0;
     /* 
         Truncate modified time to get a 1 sec resolution. This is the resolution for If-Modified headers.
@@ -2048,7 +2045,7 @@ PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl 
     conn->authRequested = 0;
     conn->tx->method = supper(method);
     conn->tx->parsedUri = httpCreateUri(uri, HTTP_COMPLETE_URI_PATH);
-#if BIT_DEBUG
+#if MPR_HIGH_RES_TIMER
     conn->startMark = mprGetHiResTicks();
 #endif
     /*
@@ -2319,9 +2316,6 @@ PUBLIC void httpDestroyConn(HttpConn *conn)
         httpCloseConn(conn);
         conn->http = 0;
     }
-    if (conn->dispatcher->flags & MPR_DISPATCHER_AUTO_CREATE) {
-        mprDisableDispatcher(conn->dispatcher);
-    }
 }
 
 
@@ -2575,7 +2569,7 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     conn->ip = sclone(sock->ip);
 
     if (httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_CONNECTIONS, 1) > conn->limits->connectionsMax) {
-        mprError("Too many concurrent clients");
+        mprError("Too many concurrent connections");
         httpDestroyConn(conn);
         return 0;
     }
@@ -2584,7 +2578,6 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
         httpDestroyConn(conn);
         return 0;
     }
-
     address = conn->address;
     if (address && address->banUntil > http->now) {
         if (address->banStatus) {
@@ -2829,7 +2822,7 @@ PUBLIC void httpSetupWaitHandler(HttpConn *conn, int eventMask)
         if (sp->handler == 0) {
             mprAddSocketHandler(sp, eventMask, conn->dispatcher, conn->ioCallback, conn, 0);
         } else {
-            sp->handler->dispatcher = conn->dispatcher;
+            mprSetSocketDispatcher(sp, conn->dispatcher);
             mprEnableSocketEvents(sp, eventMask);
         }
     } else if (sp->handler) {
@@ -3318,7 +3311,6 @@ PUBLIC int httpDigestParse(HttpConn *conn, cchar **username, cchar **password)
         when = 0;
         parseDigestNonce(dp->nonce, &secret, &realm, &when);
         if (!smatch(secret, secret)) {
-            //  TODO - How should this be reported, could this set conn->errorMsg?
             mprTrace(2, "Access denied: Nonce mismatch\n");
             return MPR_ERR_BAD_STATE;
 
@@ -3740,7 +3732,7 @@ static void acceptConn(HttpEndpoint *endpoint)
     }
     wp = endpoint->sock->handler;
     if (wp->flags & MPR_WAIT_NEW_DISPATCHER) {
-        dispatcher = mprCreateDispatcher("IO", MPR_DISPATCHER_ENABLED | MPR_DISPATCHER_AUTO_CREATE);
+        dispatcher = mprCreateDispatcher("IO");
     } else if (wp->dispatcher) {
         dispatcher = wp->dispatcher;
     } else {
@@ -4293,7 +4285,7 @@ PUBLIC HttpHost *httpCreateHost()
     host->routes = mprCreateList(-1, 0);
     host->flags = HTTP_HOST_NO_TRACE;
     host->protocol = sclone("HTTP/1.1");
-    host->streams = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STATIC_VALUES);
+    host->streams = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
     httpSetStreaming(host, "application/x-www-form-urlencoded", NULL, 0);
     httpSetStreaming(host, "application/json", NULL, 0);
     httpAddHost(http, host);
@@ -4656,10 +4648,10 @@ PUBLIC void httpSetStreaming(HttpHost *host, cchar *mime, cchar *uri, bool enabl
     MprKey  *kp;
 
     assert(host);
-    /*
-        We store the enable value in the key type to save an allocation
-     */
     if ((kp = mprAddKey(host->streams, mime, uri)) != 0) {
+        /*
+            We store the enable value in the key type to save an allocation
+         */
         kp->type = enable;
     }
 }
@@ -4994,9 +4986,6 @@ PUBLIC void httpInitLimits(HttpLimits *limits, bool serverSide)
     limits->receiveBodySize = BIT_MAX_RECEIVE_BODY;
     limits->processMax = BIT_MAX_PROCESSES;
     limits->requestsPerClientMax = BIT_MAX_REQUESTS_PER_CLIENT;
-#if UNUSED
-    limits->requestMax = BIT_MAX_REQUESTS;
-#endif
     limits->sessionMax = BIT_MAX_SESSIONS;
     limits->transmissionBodySize = BIT_MAX_TX_BODY;
     limits->uploadSize = BIT_MAX_UPLOAD;
@@ -5902,7 +5891,14 @@ static void checkMonitor(HttpMonitor *monitor, MprEvent *event)
             }
         } while (removed);
         unlock(http->addresses);
+        return;
     }
+#if XX
+    if (counter.value == 0) {
+        mprRemoveEvent(monitor->timer);
+        monitor->timer = 0;
+    }
+#endif
 }
 
 
@@ -5910,6 +5906,9 @@ static int manageMonitor(HttpMonitor *monitor, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(monitor->defenses);
+#if XX
+        mprMark(monitor->timer);
+#endif
     }
     return 0;
 }
@@ -6055,6 +6054,37 @@ PUBLIC int httpAddDefense(cchar *name, cchar *remedy, cchar *remedyArgs)
     }
     mprAddKey(http->defenses, name, createDefense(name, remedy, args));
     return 0;
+}
+
+
+PUBLIC void httpDumpCounters()
+{
+    Http            *http;
+    HttpAddress     *address;
+    HttpCounter     *counter;
+    MprKey          *kp;
+    cchar           *name;
+    int             i;
+
+    http = MPR->httpService;
+    mprRawLog(0, "Monitor Counters:\n");
+    mprRawLog(0, "Memory counter     %,Ld\n", mprGetMem());
+    mprRawLog(0, "Active processes   %,Ld\n", mprGetListLength(MPR->cmdService->cmds));
+    mprRawLog(0, "Active clients     %,Ld\n", mprGetHashLength(http->addresses));
+
+    lock(http->addresses);
+    for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
+        mprRawLog(0, "Client             %s\n", kp->key);
+        for (i = 0; i < address->ncounters; i++) {
+            counter = &address->counters[i];
+            name = mprGetItem(http->counters, i);
+            if (name == NULL) {
+                break;
+            }
+            mprRawLog(0, "  Counter          %s = %,Ld\n", name, counter->value);
+        }
+    }
+    unlock(http->addresses);
 }
 
 
@@ -12582,14 +12612,10 @@ static bool parseIncoming(HttpConn *conn, HttpPacket *packet)
         return 0;
     }
     start = mprGetBufStart(packet->content);
-
-#if FUTURE
     while (*start == '\r' || *start == '\n') {
         mprGetCharFromBuf(packet->content);
         start = mprGetBufStart(packet->content);
     }
-#endif
-
     /*
         Don't start processing until all the headers have been received (delimited by two blank lines)
      */
@@ -12781,7 +12807,7 @@ static bool parseRequestLine(HttpConn *conn, HttpPacket *packet)
 
     rx = conn->rx;
     limits = conn->limits;
-#if BIT_DEBUG && MPR_HIGH_RES_TIMER
+#if MPR_HIGH_RES_TIMER
     conn->startMark = mprGetHiResTicks();
 #endif
     conn->started = conn->http->now;
@@ -13514,7 +13540,6 @@ static bool processRunning(HttpConn *conn)
 }
 
 
-#if BIT_DEBUG
 static void measure(HttpConn *conn)
 {
     MprTicks    elapsed;
@@ -13532,15 +13557,12 @@ static void measure(HttpConn *conn)
         elapsed = mprGetTicks() - conn->started;
 #if MPR_HIGH_RES_TIMER
         if (elapsed < 1000) {
-            mprTrace(level, "TIME: Request %s took %,d msec %,d ticks", uri, elapsed, mprGetHiResTicks() - conn->startMark);
+            mprTrace(level, "TIME: Request %s took %,Ld msec %,Ld ticks", uri, elapsed, mprGetHiResTicks() - conn->startMark);
         } else
 #endif
-            mprTrace(level, "TIME: Request %s took %,d msec", uri, elapsed);
+            mprTrace(level, "TIME: Request %s took %,Ld msec", uri, elapsed);
     }
 }
-#else
-#define measure(conn)
-#endif
 
 
 static void createErrorRequest(HttpConn *conn)
@@ -16120,7 +16142,6 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
     httpAddHeaderString(conn, "Date", conn->http->currentDate);
 
     if (tx->ext && route) {
-        //  TODO this should be saved in Tx.
         if ((mimeType = (char*) mprLookupMime(route->mimeTypes, tx->ext)) != 0) {
             if (conn->error) {
                 httpAddHeaderString(conn, "Content-Type", "text/html");

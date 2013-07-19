@@ -1094,8 +1094,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     defaultLayout = 0;
     if (kind == ESP_SRC) {
         prefix = "app_";
-    } else if (kind == ESP_SERVICE) {
-        prefix = "service_";
+            prefix = "service_";
     } else if (kind == ESP_MIGRATION) {
         prefix = "migration_";
     } else {
@@ -1302,12 +1301,18 @@ static void compile(MprList *routes)
 static bool requiredRoute(HttpRoute *route)
 {
     MprKey  *kp;
+    cchar   *sourceDir;
 
     if (app->targets == 0 || mprGetHashLength(app->targets) == 0) {
         return 1;
     }
     for (ITERATE_KEYS(app->targets, kp)) {
         if (mprIsParentPathOf(route->dir, kp->key)) {
+            kp->type = ESP_FOUND_TARGET;
+            return 1;
+        }
+        sourceDir = mprGetPathDir(mprJoinPath(route->home, route->sourceName));
+        if (mprIsParentPathOf(sourceDir, kp->key)) {
             kp->type = ESP_FOUND_TARGET;
             return 1;
         }

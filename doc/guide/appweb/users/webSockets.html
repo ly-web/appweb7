@@ -124,19 +124,16 @@ X-Request-Timeout: 600
             <a href="dir/sandbox.html#limitWebSocketsFrame">LimitWebSocketsFrame</a> directive. Incoming message frames
             are not subject to this limit. The WebSockets filter will aggregate message frames into complete messages
             before passing to the user callback.</p>
-
             <p>The <a href="dir/sandbox.html#limitWebSocketsPacket">LimitWebSocketsPacket</a> directive defines what 
             is the largest packet size that will be passed to the user callback receiving incoming WebSocket 
             messages. If this is set to a value as large as the largest message, then complete messages will be passed
             to the user callback. If it is smaller than the message size, the message will be broken into packets
             and the last packet will have the HttpPacket.last field set to true. Note these packet boundaries do not
             correspond to frame boundaries.</p>
-
             <p>Frame boundaries can be preserved by setting PreserveFrames directive or by calling
             the httpSetWebSocketPreserveFrames API. If enabled, each frame is passed as-is to the user callback without
             splitting or aggregating with other frames. Note that if enabled, some text messages may not have their UTF-8
             fully validated if UTF codepoints span message frames.</p>
-
             <h3>Close Message</h3>
             <p>Ordinarily, WebSocket communications are terminated by sending a <i>Close</i> message. The close
             message includes a status code and an optional <i>reason</i> string to explain why the connection is being closed. The
@@ -153,7 +150,6 @@ X-Request-Timeout: 600
             <p>Appweb has a <a href="dir/route.html#webSocketsPing">WebSocketsPing</a> appweb.conf directive that can be 
             used to automatically send ping messages at a specified interval. Note: use of this directive defeats all Appweb 
             timeouts for an idle WebSockets connection.</p>
-
             <h2>Timeouts</h2>
             <p>The standard Appweb request and inactivity timeouts can be used for WebSocket communications.
             Typically, a route will be defined in the appweb.conf file for WebSockets and it will include
@@ -162,7 +158,6 @@ X-Request-Timeout: 600
             may remain open.  The <a href="dir/sandbox.html#requestTimeout">InactivityTimeout</a> specifies the 
             maximum time a WebSocket connection may be completely idle. Note that ping/pong messages will reset an 
             inactivity timeout.</p>
-
             <h2>Configuration</h2>
             <p>It is necessary to create a dedicated <a href="dir/route.html#route">Route</a> for WebSockets communications. 
             This will define a unique URI prefix for WebSocket communications and configure the WebSocket filter.
@@ -216,13 +211,11 @@ X-Request-Timeout: 600
                     <tr><td><a href="../../../api/http.html#http_8h_1adb22d418a67109b699890888ca66053a">httpSendClose</a></td><td>Send a close message to the web 
                         socket peer</td></tr>
                     <tr><td><a href="../../../api/http.html#group___http_conn_1ga6c39eab8e8b50e632f7e5620fce05318">httpSetConnNotifier</a></td><td>Define a connection callback notifier function</td></tr>
-
                     <tr><td><a
                                 href="../../../api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1 ">httpSetWebSocketPreserveFrames</a></td><td>Preserve
                             frame boundaries and do not split or aggregate frames. </td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1a96f8cb3db541d8a1340caf0d2afbbb1f">httpSetWebSocketProtocols</a></td><td>Set the list of 
                         application-level protocols supported by the client. This is a client-only API. </td></tr>
-
                     <tr><td><a href="../../../api/http.html#http_8h_1acb7184072bfb15ebf2c95f9ef6d0ba8c">httpWebSocketOrderlyClosed</a></td><td>Test if a close was orderly</td></tr>
                 </tbody>
             </table>

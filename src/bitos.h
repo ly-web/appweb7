@@ -353,6 +353,7 @@
 #endif
     #include    <limits.h>
 #if BIT_UNIX_LIKE || VXWORKS
+    #include    <sys/socket.h>
     #include    <arpa/inet.h>
     #include    <netdb.h>
     #include    <net/if.h>
@@ -389,7 +390,6 @@
     #include    <sys/poll.h>
     #include    <sys/resource.h>
     #include    <sys/sem.h>
-    #include    <sys/socket.h>
     #include    <sys/select.h>
     #include    <sys/time.h>
     #include    <sys/times.h>
@@ -945,7 +945,7 @@ typedef int64 Ticks;
 
 #if !LINUX
     #define __WALL          0
-    #if !CYGWIN
+    #if !CYGWIN && !defined(MSG_NOSIGNAL)
         #define MSG_NOSIGNAL 0
     #endif
 #endif

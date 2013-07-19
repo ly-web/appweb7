@@ -581,6 +581,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>espDumpGrid</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga18375a1455d10df65a92b6adc3409830</anchor>
+      <arglist>(EdiGrid *grid)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>espFinalize</name>
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>gac142434246bc5558dfe73a78ded7a7f0</anchor>

@@ -181,12 +181,6 @@ struct  MprXml;
  */
 #define MPR_MAX_FILE            256
 
-/**
-    Maximum number of kernel events
- */
-#define MPR_MAX_KEVENTS         32
-
-
 /*
     Event notification mechanism
  */
@@ -194,12 +188,17 @@ struct  MprXml;
     #define MPR_EVENT_KQUEUE    1
 #elif LINUX || BIT_BSD_LIKE
     #define MPR_EVENT_EPOLL     1
-#elif VXWORKS || WINCE || CYGWIN
-    #define MPR_EVENT_SELECT    1
 #elif WINDOWS
     #define MPR_EVENT_ASYNC     1
 #else
-    #define MPR_EVENT_POLL      1
+    #define MPR_EVENT_SELECT    1
+#endif
+
+/**
+    Maximum number of notifier events
+ */
+#ifndef BIT_MAX_EVENTS
+#define BIT_MAX_EVENTS          32
 #endif
 
 /*
@@ -5524,18 +5523,11 @@ typedef struct MprEvent {
 } MprEvent;
 
 /*
-    Dispatcher values
- */
-#define MPR_DISPATCHER_MAGIC        0x23418877
-#define MPR_DISPATCHER_FREE         0x42
-
-/*
     Dispatcher flags
  */
-#define MPR_DISPATCHER_ENABLED      0x1 /**< Dispacher is enabled */
-#define MPR_DISPATCHER_WAITING      0x2 /**< Dispatcher waiting for an event */
-#define MPR_DISPATCHER_DESTROYED    0x4 /**< Dispatcher is destroyed */
-#define MPR_DISPATCHER_AUTO_CREATE  0x8 /**< Dispatcher is auto-created for incoming events */
+#define MPR_DISPATCHER_IMMEDIATE    0x1 /**< Dispatcher should run using the service events thread */
+#define MPR_DISPATCHER_WAITING      0x2 /**< Dispatcher waiting for an event in mprWaitForEvent */
+#define MPR_DISPATCHER_DESTROYED    0x4 /**< Dispatcher has been destroyed */
 
 /**
     Event Dispatcher
@@ -5543,7 +5535,6 @@ typedef struct MprEvent {
     @stability Internal
  */
 typedef struct MprDispatcher {
-    int             magic;
     cchar           *name;              /**< Dispatcher name / purpose */
     MprEvent        *eventQ;            /**< Event queue */
     MprEvent        *currentQ;          /**< Currently executing events */
@@ -5553,7 +5544,6 @@ typedef struct MprDispatcher {
     struct MprDispatcher *prev;         /**< Previous dispatcher linkage */
     struct MprDispatcher *parent;       /**< Queue pointer */
     struct MprEventService *service;    /**< Event service reference */
-    struct MprWorker *requiredWorker;   /**< Worker affinity */
     MprOsThread     owner;              /**< Owning thread of the dispatcher */
 } MprDispatcher;
 
@@ -5591,12 +5581,11 @@ PUBLIC void mprClearWaiting();
 /**
     Create a new event dispatcher
     @param name Useful name for debugging
-    @param flags Initial dispatcher flags. Set MPR_DISPATCHER_ENABLED to enable.
     @returns a Dispatcher object that can manage events and be used with mprCreateEvent
     @ingroup MprDispatcher
     @stability Internal
  */
-PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int flags);
+PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name);
 
 /**
     Disable a dispatcher from service events. This removes the dispatcher from any dispatcher queues and allows
@@ -5605,16 +5594,7 @@ PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int flags);
     @ingroup MprDispatcher
     @stability Internal
  */
-PUBLIC void mprDisableDispatcher(MprDispatcher *dispatcher);
-
-/**
-    Enable a dispatcher to service events. The mprCreateDispatcher routiner may create a dispatchers in 
-    the disabled state. Use mprEnableDispatcher to enable them to begin servicing events.
-    @param dispatcher Dispatcher to enable
-    @ingroup MprDispatcher
-    @stability Internal
- */
-PUBLIC void mprEnableDispatcher(MprDispatcher *dispatcher);
+PUBLIC void mprDestroyDispatcher(MprDispatcher *dispatcher);
 
 /**
     Get the MPR primary dispatcher
@@ -5794,7 +5774,6 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period);
 PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event);
 
 /* Internal API */
-PUBLIC void mprClaimDispatcher(MprDispatcher *dispatcher);
 PUBLIC MprEvent *mprCreateEventQueue();
 PUBLIC MprEventService *mprCreateEventService();
 PUBLIC void mprDedicateWorkerToDispatcher(MprDispatcher *dispatcher, struct MprWorker *worker);
@@ -5808,6 +5787,7 @@ PUBLIC void mprInitEventQ(MprEvent *q);
 PUBLIC void mprQueueTimerEvent(MprDispatcher *dispatcher, MprEvent *event);
 PUBLIC void mprReleaseWorkerFromDispatcher(MprDispatcher *dispatcher, struct MprWorker *worker);
 PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher);
+PUBLIC void mprSetDispatcherImmediate(MprDispatcher *dispatcher);
 PUBLIC void mprStopEventService();
 PUBLIC void mprWakeDispatchers();
 PUBLIC void mprWakePendingDispatchers();
@@ -6357,39 +6337,21 @@ typedef struct MprWaitService {
     MprList         *handlers;              /* List of handlers */
     int             needRecall;             /* A handler needs a recall due to buffered data */
     int             wakeRequested;          /* Wakeup of the wait service has been requested */
-#if MPR_EVENT_EPOLL
-    int             epoll;                  /* Kqueue() return descriptor */
-    struct epoll_event *events;             /* Events triggered */
-    int             eventsMax;              /* Max size of events/interest */
-    struct MprWaitHandler **handlerMap;     /* Map of fds to handlers */
-    int             handlerMax;             /* Size of the handlers array */
-    int             breakPipe[2];           /* Pipe to wakeup select */
-#elif MPR_EVENT_KQUEUE
-    int             kq;                     /* Kqueue() return descriptor */
     MprList         *handlerMap;            /* Map of fds to handlers */
-#elif MPR_EVENT_POLL
-    struct MprWaitHandler **handlerMap;     /* Map of fds to handlers (indexed by fd) */
-    int             handlerMax;             /* Size of the handlers array */
-    struct pollfd   *fds;                   /* Master set of file descriptors to poll */
-    struct pollfd   *pollFds;               /* Set of descriptors used in poll() */
-    int             fdsCount;               /* Last used entry in the fds array */
-    int             fdMax;                  /* Size of the fds array */
-    int             breakPipe[2];           /* Pipe to wakeup select */
-#elif MPR_EVENT_ASYNC
-    struct MprWaitHandler **handlerMap;     /* Map of fds to handlers */
-    int             handlerMax;             /* Size of the handlers array */
+#if MPR_EVENT_ASYNC
     int             nfd;                    /* Last used entry in the handlerMap array */
     int             fdmax;                  /* Size of the fds array */
     HWND            hwnd;                   /* Window handle */
     int             socketMessage;          /* Message id for socket events */
     MprMsgCallback  msgCallback;            /* Message handler callback */
+#elif MPR_EVENT_EPOLL
+    int             epoll;                  /* Epoll descriptor */
+    int             breakFd[2];             /* Event or pipe to wakeup */
+#elif MPR_EVENT_KQUEUE
+    int             kq;                     /* Kqueue() return descriptor */
 #elif MPR_EVENT_SELECT
-    struct MprWaitHandler **handlerMap;     /* Map of fds to handlers */
-    int             handlerMax;             /* Size of the handlers array */
     fd_set          readMask;               /* Current read events mask */
     fd_set          writeMask;              /* Current write events mask */
-    fd_set          stableReadMask;         /* Read events mask used for select() */
-    fd_set          stableWriteMask;        /* Write events mask used for select() */
     int             highestFd;              /* Highest socket in masks + 1 */
     int             breakSock;              /* Socket to wakeup select */
     struct sockaddr_in breakAddress;        /* Address of wakeup socket */
@@ -6398,6 +6360,7 @@ typedef struct MprWaitService {
     MprSpin         *spin;                  /* Fast short locking */
 } MprWaitService;
 
+PUBLIC void mprWakeNotifier();
 
 /*
     Internal
@@ -6407,16 +6370,12 @@ PUBLIC void mprTermOsWait(MprWaitService *ws);
 PUBLIC int  mprStartWaitService(MprWaitService *ws);
 PUBLIC int  mprStopWaitService(MprWaitService *ws);
 PUBLIC void mprSetWaitServiceThread(MprWaitService *ws, MprThread *thread);
-PUBLIC void mprWakeNotifier();
 PUBLIC int  mprInitWindow();
 #if MPR_EVENT_KQUEUE
     PUBLIC void mprManageKqueue(MprWaitService *ws, int flags);
 #endif
 #if MPR_EVENT_EPOLL
     PUBLIC void mprManageEpoll(MprWaitService *ws, int flags);
-#endif
-#if MPR_EVENT_POLL
-    PUBLIC void mprManagePoll(MprWaitService *ws, int flags);
 #endif
 #if MPR_EVENT_SELECT
     PUBLIC void mprManageSelect(MprWaitService *ws, int flags);
@@ -7117,6 +7076,15 @@ PUBLIC MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset,
     @stability Stable
  */
 PUBLIC int mprSetSocketBlockingMode(MprSocket *sp, bool on);
+
+/**
+    Set the dispatcher to use for socket events
+    @param sp Socket object returned from #mprCreateSocket
+    @param dispatcher Dispatcher object reference
+    @ingroup MprSocket
+    @stability Prototype
+ */
+PUBLIC void mprSetSocketDispatcher(MprSocket *sp, MprDispatcher *dispatcher);
 
 /**
     Set an EOF condition on the socket
@@ -7991,7 +7959,7 @@ typedef struct MprCmd {
 
     cchar           *program;           /**< Program path name */
     int             pid;                /**< Process ID of the created process */
-    int             pid2;               /**< Persistent copy of the pid */
+    int             originalPid;        /**< Persistent copy of the pid */
     int             status;             /**< Command exit status */
     int             flags;              /**< Control flags (userFlags not here) */
     int             eofCount;           /**< Count of end-of-files */

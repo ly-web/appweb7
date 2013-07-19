@@ -101,11 +101,6 @@ struct HttpWebSocket;
 #ifndef BIT_MAX_RECEIVE_FORM
     #define BIT_MAX_RECEIVE_FORM    (1024 * 1024)       /**< Maximum incoming form size */
 #endif
-#if UNUSED
-#ifndef BIT_MAX_REQUESTS
-    #define BIT_MAX_REQUESTS        50                  /**< Maximum concurrent requests */
-#endif
-#endif
 #ifndef BIT_MAX_REQUESTS_PER_CLIENT
     #define BIT_MAX_REQUESTS_PER_CLIENT 20              /**< Maximum concurrent requests per client */
 #endif
@@ -339,6 +334,9 @@ typedef struct HttpMonitor {
     MprTicks    period;                         /**< Frequence of comparison */
     int64       prior;                          /**< Prior counter value when monitor last ran */
     MprList     *defenses;                      /**< List of defensive measures */
+#if XXX
+    MprEvent    *timer;                         /**< Monitor timer */
+#endif
     struct Http *http;
 } HttpMonitor;
 
@@ -436,6 +434,13 @@ PUBLIC int httpAddRemedy(cchar *name, HttpRemedyProc remedy);
     @stability Prototype
  */
 PUBLIC int httpBanClient(cchar *ip, MprTicks period, int status, cchar *msg);
+
+/**
+    Print the monitor counters to the error log
+    @ingroup HttpMonitor
+    @stability Prototype
+  */
+PUBLIC void httpDumpCounters();
 
 /*
     Internal

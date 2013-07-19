@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: voyager
+    Prepared by: magnetar.local
  */
 
 #define EJS_DEFINE_OPTABLE 1
@@ -51999,7 +51999,9 @@ static EjsWorker *initWorker(Ejs *ejs, EjsWorker *worker, Ejs *baseVM, cchar *na
     self->inside = 1;
     self->pair = worker;
     self->name = sjoin("inside-", worker->name, NULL);
+#if MOB
     mprEnableDispatcher(wejs->dispatcher);
+#endif
     if (search) {
         ejsSetSearchPath(ejs, (EjsArray*) search);
     }
@@ -52282,8 +52284,6 @@ static int join(Ejs *ejs, EjsObj *workers, int timeout)
             break;
         }
         mprWaitForEvent(ejs->dispatcher, remaining);
-        assert(ejs->dispatcher->magic == MPR_DISPATCHER_MAGIC);
-
         remaining = (int) mprGetRemainingTicks(mark, timeout);
     } while (remaining > 0 && !ejs->exception);
 
@@ -52390,6 +52390,8 @@ static int doMessage(Message *msg, MprEvent *mprEvent)
     worker = msg->worker;
     worker->gotMessage = 1;
     ejs = worker->ejs;
+    assert(!ejs->exception);
+
     event = 0;
     ejsBlockGC(ejs);
 
@@ -52423,6 +52425,8 @@ static int doMessage(Message *msg, MprEvent *mprEvent)
             ejsSetProperty(ejs, event, ES_ErrorEvent_lineno, ejsGetPropertyByName(ejs, frame, EN("lineno")));
         }
     }
+    assert(!ejs->exception);
+
     if (callback == 0 || ejsIs(ejs, callback, Null)) {
         if (msg->callbackSlot == ES_Worker_onmessage) {
             mprTrace(6, "Discard message as no onmessage handler defined for worker");
@@ -52441,6 +52445,7 @@ static int doMessage(Message *msg, MprEvent *mprEvent)
         ejsThrowTypeError(ejs, "Worker callback %s is not a function", msg->callback);
 
     } else {
+        assert(!ejs->exception);
         argv[0] = event;
         ejsRunFunction(ejs, callback, worker, 1, argv);
     }
@@ -55141,7 +55146,7 @@ static void indent(MprBuf *bp, int level)
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: voyager
+    Prepared by: magnetar.local
  */
 
 #define local static
@@ -70227,7 +70232,7 @@ static MPR_INLINE void checkGetter(Ejs *ejs, EjsAny *value, EjsAny *thisObj, Ejs
 #define THIS            FRAME->function.boundThis
 #define FILL(mark)      while (mark < FRAME->pc) { *mark++ = EJS_OP_NOP; }
 
-// #define DEBUG_IDE 1
+#define DEBUG_IDE 1
 #if DEBUG_IDE
     static EjsOpCode traceCode(Ejs *ejs, EjsOpCode opcode);
     static int opcount[256];
@@ -72756,6 +72761,9 @@ EjsAny *ejsRunFunction(Ejs *ejs, EjsFunction *fun, EjsAny *thisObj, int argc, vo
     assert(ejs);
     assert(fun);
     assert(ejsIsFunction(ejs, fun));
+    if (ejs->exception) {
+        mprTrace(0, "STOP");
+    }
     assert(ejs->exception == 0);
     MPR_VERIFY_MEM();
 
@@ -72914,6 +72922,7 @@ static int validateArgs(Ejs *ejs, EjsFunction *fun, int argc, void *args)
         }
         argc = argc - numRest + 1;
         pushOutside(ejs, rest);
+        assert((void*) rest == argv[argc-1]);
     }
 
     /*
@@ -73827,7 +73836,7 @@ static void bkpt(Ejs *ejs)
 #endif
 
 
-#if DEBUG_IDE
+#if DEBUG_IDE || 1
 /*
     This code is only active when building in debug mode and debugging in an IDE
  */
@@ -73849,7 +73858,7 @@ static EjsOpCode traceCode(Ejs *ejs, EjsOpCode opcode)
 
     fp = state->fp;
     opcount[opcode]++;
-    assert(ejs->exception || (state->stack >= fp->stackReturn));
+    // assert(ejs->exception || (state->stack >= fp->stackReturn));
 
     if (1 || (ejs->initialized && doDebug)) {
         offset = (int) (fp->pc - fp->function.body.code->byteCode) - 1;
@@ -73863,7 +73872,7 @@ static EjsOpCode traceCode(Ejs *ejs, EjsOpCode opcode)
             ejsShowOpFrequency(ejs);
         }
 #endif
-        assert(ejs->exception || (state->stack >= fp->stackReturn));
+        // assert(ejs->exception || (state->stack >= fp->stackReturn));
     }
     ejsOpCount++;
     return opcode;
@@ -76992,7 +77001,7 @@ Ejs *ejsCreateVM(int argc, cchar **argv, int flags)
     ejs->argc = argc;
     ejs->argv = argv;
     ejs->name = sfmt("ejs-%d", sp->seqno++);
-    ejs->dispatcher = mprCreateDispatcher(ejs->name, MPR_DISPATCHER_ENABLED);
+    ejs->dispatcher = mprCreateDispatcher(ejs->name);
     ejs->mutex = mprCreateLock(ejs);
     ejs->dontExit = sp->dontExit;
     ejs->flags |= (flags & (EJS_FLAG_NO_INIT | EJS_FLAG_DOC | EJS_FLAG_HOSTED));
@@ -77107,9 +77116,11 @@ void ejsDestroyVM(Ejs *ejs)
         mprRemoveItem(sp->vmlist, ejs);
         ejs->service = 0;
         ejs->result = 0;
+#if MOB
         if (ejs->dispatcher) {
             mprDisableDispatcher(ejs->dispatcher);
         }
+#endif
     }
     mprTrace(6, "ejs: destroy VM");
 }

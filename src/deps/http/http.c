@@ -146,6 +146,7 @@ MAIN(httpMain, int argc, char **argv, char **envp)
     if (!app->success && app->verbose) {
         mprError("Request failed");
     }
+    mprDestroy(MPR_EXIT_DEFAULT);
     return (app->success) ? 0 : 255;
 }
 
@@ -424,7 +425,6 @@ static int parseArgs(int argc, char **argv)
             if (nextArg >= argc) {
                 return showUsage();
             } else {
-                //  TODO - should allow multiple ranges
                 if (app->ranges == 0) {
                     app->ranges = sfmt("bytes=%s", argv[++nextArg]);
                 } else {
@@ -684,7 +684,7 @@ static void threadMain(void *data, MprThread *tp)
     MprEvent        e;
 
     td = tp->data;
-    td->dispatcher = mprCreateDispatcher(tp->name, 1);
+    td->dispatcher = mprCreateDispatcher(tp->name);
     td->conn = conn = httpCreateConn(app->http, NULL, td->dispatcher);
 
     /*
@@ -1124,7 +1124,6 @@ static ssize writeBody(HttpConn *conn, MprList *files)
                 }
                 /*
                     This is a blocking write
-                    TODO OPT - convert to a wait for io
                  */
                 httpFlushQueue(conn->writeq, 1);
                 mprCloseFile(file);
