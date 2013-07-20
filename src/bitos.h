@@ -413,6 +413,7 @@
 #if LINUX
     #include    <sys/epoll.h>
     #include    <sys/prctl.h>
+    #include    <sys/eventfd.h>
     #if !__UCLIBC__
         #include    <sys/sendfile.h>
     #endif

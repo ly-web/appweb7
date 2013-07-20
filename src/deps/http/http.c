@@ -693,6 +693,8 @@ static void threadMain(void *data, MprThread *tp)
     e.mask = MPR_READABLE;
     e.data = tp;
     mprRelayEvent(conn->dispatcher, (MprEventProc) processThread, conn, &e);
+
+    mprDestroyDispatcher(td->dispatcher);
 }
 
 

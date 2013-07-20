@@ -540,15 +540,6 @@ static MprMem *allocMem(ssize required, int flags)
     heap->newCount += index;
     INC(requests);
 
-    /*
-        OPT - could break this locked section up.
-        - Keep a per-thread small heap or
-        - Can update bit maps conservatively and lockfree
-        - Put locks around freeq unqueue
-        - use unlinkBlock or linkBlock only. Do locks internally in these routines
-        - Probably need unlinkFirst
-        - Long term use lockfree
-     */
     lockHeap();
 
     /* Mask groups lower than the base group */
@@ -576,7 +567,6 @@ static MprMem *allocMem(ssize required, int flags)
                     assert(GET_GEN(mp) == heap->eternal);
                     SET_GEN(mp, heap->active);
 
-                    //  OPT
                     mprAtomicBarrier();
                     if (flags & MPR_ALLOC_MANAGER) {
                         SET_MANAGER(mp, dummyManager);
@@ -620,7 +610,12 @@ static MprMem *allocMem(ssize required, int flags)
         }
     }
     unlockHeap();
+
+    /*
+        Force a GC to run (soon)
+     */
     triggerGC(MPR_GC_FORCE);
+
     return growHeap(required, flags);
 }
 
@@ -1777,7 +1772,7 @@ PUBLIC void mprRemoveRoot(void *root)
     index = mprRemoveItem(heap->roots, root);
     /*
         RemoveItem copies down. If the item was equal or before the current marker root, must adjust the marker rootIndex
-        so we don't skip a root. (OPT but only if doing parallel GC)
+        so we don't skip a root.
      */
     if (index <= heap->rootIndex && heap->rootIndex > 0) {
         heap->rootIndex--;
@@ -1805,10 +1800,11 @@ static void printQueueStats()
     MprFreeMem  *freeq;
     int         i;
 
-    printf("\nFree Queue Stats\n Bucket                     Size   Count\n");
+    printf("\nFree Queue Stats\n Bucket                     Size   Count   Total\n");
     for (i = 0, freeq = heap->freeq; freeq != heap->freeEnd; freeq++, i++) {
         if (freeq->info.stats.count) {
-            printf("%7d %24d %7d\n", i, freeq->info.stats.minSize, freeq->info.stats.count);
+            printf("%7d %24d %7d %7d\n", i, freeq->info.stats.minSize, freeq->info.stats.count,
+                freeq->info.stats.minSize * freeq->info.stats.count);
         }
     }
 }
@@ -1861,7 +1857,7 @@ static void printGCStats()
     MprRegion   *region;
     MprMem      *mp;
     ssize       size, bytes[MPR_MAX_GEN + 2];
-    int         regionCount, i, freeCount, allocatedCount, counts[MPR_MAX_GEN + 2], free, gen;
+    int         regionCount, i, freeBytes, freeCount, allocatedCount, counts[MPR_MAX_GEN + 2], free, gen;
 
     for (i = 0; i < (MPR_MAX_GEN + 2); i++) {
         counts[i] = 0;
@@ -1871,7 +1867,7 @@ static void printGCStats()
     regionCount = 0;
     free = heap->eternal + 1;
     for (region = heap->regions; region; region = region->next) {
-        freeCount = allocatedCount = 0;
+        freeBytes = freeCount = allocatedCount = 0;
         for (mp = region->start; mp; mp = GET_NEXT(mp)) {
             size = GET_SIZE(mp);
             gen = GET_GEN(mp);
@@ -1879,6 +1875,7 @@ static void printGCStats()
                 freeCount++;
                 counts[free]++;
                 bytes[free] += size;
+                freeBytes += size;
             } else {
                 counts[gen]++;
                 bytes[gen] += size;
@@ -1886,8 +1883,8 @@ static void printGCStats()
             }
         }
         regionCount++;
-        printf("  Region %3d is %8d bytes, has %4d allocated %3d free\n", regionCount, (int) region->size, 
-            allocatedCount, freeCount);
+        printf("  Region %3d is %8d bytes, has %4d allocated %3d free  %7d free bytes\n", regionCount, (int) region->size, 
+            allocatedCount, freeCount, freeBytes);
     }
     printf("Regions: %d\n", regionCount);
 
@@ -2097,7 +2094,6 @@ static void allocException(int cause, ssize size)
     } else if (cause == MPR_MEM_REDLINE) {
         mprError("%s: Memory request for %,d bytes exceeds memory red-line.", MPR->name, size);
         mprPruneCache(NULL);
-        //  OPT - could trim workers too
 
     } else if (cause == MPR_MEM_LIMIT) {
         mprError("%s: Memory request for %,d bytes exceeds memory limit.", MPR->name, size);
@@ -9411,8 +9407,10 @@ static int dispatchEvents(MprDispatcher *dispatcher)
 static void dispatchEventsWorker(MprDispatcher *dispatcher)
 {
     dispatchEvents(dispatcher);
-    dequeueDispatcher(dispatcher);
-    mprScheduleDispatcher(dispatcher);
+    if (!(dispatcher->flags == MPR_DISPATCHER_DESTROYED)) {
+        dequeueDispatcher(dispatcher);
+        mprScheduleDispatcher(dispatcher);
+    }
 }
 
 
