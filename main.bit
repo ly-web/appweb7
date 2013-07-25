@@ -56,7 +56,7 @@ Bit.load({
         /*
             Enable a debug build with debug symbols and without optimization
          */
-        debug: true,
+        debug: false,
 
         /* Must build locally to build tools */
         platforms: [ 'local' ],
@@ -132,6 +132,10 @@ Bit.load({
                 This is enabled by default for debug builds. 
                 tracing: true,
              */
+
+            alloc: {
+                parallel: false,
+            },
         },
 
         /*

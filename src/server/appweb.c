@@ -448,11 +448,12 @@ static void traceHandler(void *ignored, MprSignal *sp)
  */
 static void statusCheck(void *ignored, MprSignal *sp)
 {
-    mprRequestGC(MPR_GC_COMPLETE);
     mprRawLog(0, "%s", httpStatsReport(0));
-    if (MPR->heap->track) {
-        mprPrintMem("", 1);
+    //  MOB
+    if (1 || MPR->heap->track) {
+        mprPrintMem("Memory Report", 1);
     }
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 }
 
 

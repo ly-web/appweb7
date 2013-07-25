@@ -7,6 +7,9 @@
 
 
 /* Settings */
+#ifndef BIT_MEMORY_CHECK
+    #define BIT_MEMORY_CHECK 1
+#endif
 #ifndef BIT_BIT
     #define BIT_BIT "0.8.7"
 #endif

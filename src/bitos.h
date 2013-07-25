@@ -735,8 +735,19 @@ typedef int64 Ticks;
 #endif
 #endif
 
+#ifndef MAXUINT
+#if UINT_MAX
+    #define MAXUINT     UINT_MAX
+#else
+    #define MAXUINT     0xffffffff
+#endif
+#endif
+
 #ifndef MAXINT64
     #define MAXINT64    INT64(0x7fffffffffffffff)
+#endif
+#ifndef MAXUINT64
+    #define MAXUINT64   INT64(0xffffffffffffffff)
 #endif
 
 #if SIZE_T_MAX
