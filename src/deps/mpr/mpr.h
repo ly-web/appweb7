@@ -1074,6 +1074,7 @@ typedef struct MprMemStats {
     uint64          marked;                 /**< Number of blocks marked */
     uint64          requests;               /**< Count of memory requests */
     uint64          reuse;                  /**< Count of times a block was reused from a free queue */
+    uint64          qmiss;                  /**< Count of queues considered to find a free block */
     uint64          splits;                 /**< Count of times a block was split */
     uint64          sweepVisited;           /**< Number of of blocks examined for sweeping */
     uint64          swept;                  /**< Number of blocks swept */

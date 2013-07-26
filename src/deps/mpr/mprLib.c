@@ -555,6 +555,7 @@ static MprMem *allocMem(size_t required)
                     priorBucketMap = bucketMap;
                     bucketMap &= ~(((size_t) 1) << bucket);
                     cas(&heap->bucketMap[group], priorBucketMap, bucketMap);
+                    ATOMIC_INC(qmiss);
                 }
                 priorGroupMap = groupMap;
                 groupMap &= ~(((size_t) 1) << group);
@@ -949,12 +950,6 @@ PUBLIC void mprRequestGC(int flags)
 {
     mprTrace(7, "DEBUG: mprRequestGC");
 
-#if UNUSED
-    //  MOB - remove this flag
-    if (flags & MPR_GC_COMPACT) {
-        heap->compact = 1;
-    }
-#endif
     if ((flags & MPR_GC_FORCE) || (heap->weightedCount > heap->newQuota)) {
         triggerGC(MPR_GC_FORCE);
     }
@@ -1128,14 +1123,6 @@ static void sweep()
 #endif
             CHECK(mp);
             INC(sweepVisited);
-#if UNUSED
-            if (heap->compact && mp->free) {
-                if (next < region->end && !next->free && next->mark != heap->mark && claim(mp)) {
-                    mp->mark = !heap->mark;
-                    INC(compacted);
-                }
-            } 
-#endif
             if (!mp->free && mp->mark != heap->mark) {
                 /*
                     Cache small blocks provided not first block in the regions (assists to unpin regions)
@@ -1201,9 +1188,6 @@ static void sweep()
         printMemReport();
         heap->printStats = 0;
     }
-#if UNUSED
-    heap->compact = 0;
-#endif
 }
 
 
@@ -1729,9 +1713,7 @@ static void printMemReport()
     printf("  Joins             %14d %% (%d)\n",       percent(ap->joins, ap->requests), (int) ap->joins);
     printf("  Splits            %14d %% (%d)\n",       percent(ap->splits, ap->requests), (int) ap->splits);
     printf("  Cached            %14d %% (%d)\n",       percent(ap->cached, ap->requests), (int) ap->cached);
-#if UNUSED
-    printf("  Compacted         %14d %% (%d)\n",       percent(ap->compacted, ap->requests), (int) ap->compacted);
-#endif
+    printf("  Qmises            %14d %% (%d)\n",       percent(ap->qmiss, ap->requests), (int) ap->qmiss);
     printf("  Freeq failures    %14d %% (%d / %d)\n",  percent(ap->tryFails, ap->trys), (int) ap->tryFails, (int) ap->trys);
     printf("  MprMem            %14d\n",               (int) sizeof(MprMem));
     printf("  MprFreeMem        %14d\n",               (int) sizeof(MprFreeMem));
@@ -1960,17 +1942,6 @@ static void allocException(int cause, size_t size)
 
 static void getSystemInfo()
 {
-#if UNUSED
-    MprMem      blk;
-
-    /*
-        Determine the claim bit ordering
-     */
-    memset(&blk, 0, sizeof(blk));
-    blk.claimed = 1;
-    claimBit = *(size_t*) &blk;
-#endif
-
     memStats.numCpu = 1;
 
 #if MACOSX
