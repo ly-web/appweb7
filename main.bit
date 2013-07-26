@@ -55,8 +55,10 @@ Bit.load({
 
         /*
             Enable a debug build with debug symbols and without optimization
+            This is normally set via: configure [--debug|--release]
+
+            debug: false,
          */
-        debug: false,
 
         /* Must build locally to build tools */
         platforms: [ 'local' ],
@@ -139,14 +141,14 @@ Bit.load({
              */
             alloc: {
                 parallel: true,     /* Run sweeper in parallel */
-                cache: 2097152,     /* Try to cache at least this amount in the heap free queues */
                 inline: true,       /* Use inline mprMark */
-                small: 2048,        /* Take care not to deplete free queues of blocks smaller than this */
-                maxRegion: 131072,  /* Memory region chunk size */
+                small: 4096,        /* Take care not to deplete free queues of blocks smaller than this */
+                maxRegion: 262144,  /* Memory region chunk size */
                 quota: 4096,        /* Number of allocations before a GC is worthwhile */
-                scan: 9,            /* Number of queues to scan for allocations before triggering a GC */
+                scan: 13,           /* Number of queues to scan for allocations before triggering a GC */
                 virtual: true,      /* Use virtual allocations vs malloc */
                 big: false,         /* Support allocations > 4GB on 64-bit systems */
+                // cache: 2097152,  /* Faster by using some cache. Try to cache at least this amount in the heap free queues */
                 // align: 3,        /* Don't override unless you know what you are doing. Set based on H/W data type requirements */
             },
         },

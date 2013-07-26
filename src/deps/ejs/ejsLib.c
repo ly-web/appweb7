@@ -8640,9 +8640,6 @@ static int compileInner(EcCompiler *cp, int argc, char **argv)
             ejsUnblockGC(ejs, paused);
         }
     }
-    assert(ejs->result == 0 || (MPR_GET_GEN(MPR_GET_MEM(ejs->result)) != MPR->heap->dead));
-
-
     /*
         Allocate the eval frame stack. This is used for property lookups. We have one dummy block at the top always.
      */
@@ -8673,7 +8670,6 @@ static int compileInner(EcCompiler *cp, int argc, char **argv)
         }
     }
     ejsPopBlock(ejs);
-    assert(ejs->result == 0 || (MPR_GET_GEN(MPR_GET_MEM(ejs->result)) != MPR->heap->dead));
 
     /*
         Add compiled modules to the interpreter
@@ -8688,7 +8684,6 @@ static int compileInner(EcCompiler *cp, int argc, char **argv)
     if (!paused) {
         mprYield(0);
     }
-    assert(ejs->result == 0 || (MPR_GET_GEN(MPR_GET_MEM(ejs->result)) != MPR->heap->dead));
     return (cp->errorCount > 0) ? EJS_ERR: 0;
 }
 
@@ -31270,6 +31265,7 @@ static void manageEjsCmd(EjsCmd *cmd, int flags)
         mprMark(cmd->options);
         mprMark(cmd->error);
         mprMark(cmd->argv);
+        mprMark(cmd->ejs);
 
     } else {
         if (cmd->mc) {
@@ -39149,7 +39145,7 @@ static EjsObj *setMaxMemory(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
     assert(argc == 1 && ejsIs(ejs, argv[0], Number));
 
     maxMemory = ejsGetInt(ejs, argv[0]);
-    mprSetMemLimits(-1, maxMemory);
+    mprSetMemLimits(-1, maxMemory, -1);
     return 0;
 }
 
@@ -39180,7 +39176,7 @@ static EjsObj *setRedline(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
         //  TODO - 64 bit
         redline = MAXINT;
     }
-    mprSetMemLimits(redline, -1);
+    mprSetMemLimits(redline, -1, -1);
     return 0;
 }
 
@@ -47758,13 +47754,14 @@ PUBLIC EjsString *ejsInternString(EjsString *str)
     step = 0;
 
     lock(ip);
-    //  MOB - accesses should be debug only
     ip->accesses++;
     index = whash(str->value, str->length) % ip->size;
     if ((head = &ip->buckets[index]) != NULL) {
         for (sp = head->next; sp != head; sp = sp->next, step++) {
             if (str == sp) {
+#if UNUSED
                 mprRevive(sp);
+#endif
                 unlock(ip);
                 return sp;
             }
@@ -47777,10 +47774,11 @@ PUBLIC EjsString *ejsInternString(EjsString *str)
                     }
                 }
                 if (i == sp->length && i == str->length) {
-                    //  MOB - reuse should be debug only
                     ip->reuse++;
+#if UNUSED
                     /* Revive incase almost stale or dead */
                     mprRevive(sp);
+#endif
                     unlock(ip);
                     return sp;
                 }
@@ -47828,10 +47826,11 @@ PUBLIC EjsString *ejsInternWide(Ejs *ejs, wchar *value, ssize len)
                     }
                 }
                 if (i == sp->length) {
-                    //  MOB - reuse should be debug only
                     ip->reuse++;
+#if UNUSED
                     /* Revive incase almost stale or dead */
                     mprRevive(sp);
+#endif
                     unlock(ip);
                     return sp;
                 }
@@ -47868,7 +47867,6 @@ PUBLIC EjsString *ejsInternAsc(Ejs *ejs, cchar *value, ssize len)
     ip = ejs->service->intern;
 
     lock(ip);
-    //  MOB - accesses should be debug only
     ip->accesses++;
     assert(ip->size > 0);
     index = shash(value, len) % ip->size;
@@ -47882,10 +47880,11 @@ PUBLIC EjsString *ejsInternAsc(Ejs *ejs, cchar *value, ssize len)
                     }
                 }
                 if (i == sp->length) {
-                    //  MOB - reuse should be debug only
                     ip->reuse++;
+#if UNUSED
                     /* Revive incase almost stale or dead */
                     mprRevive(sp);
+#endif
                     unlock(ip);
                     return sp;
                 }
@@ -47944,7 +47943,6 @@ PUBLIC EjsString *ejsInternMulti(Ejs *ejs, cchar *value, ssize len)
         value = src->value;
     }
     lock(ip);
-    //  MOB - accesses should be debug only
     ip->accesses++;
     index = whash(value, len) % ip->size;
     if ((head = &ip->buckets[index]) != NULL) {
@@ -47956,10 +47954,11 @@ PUBLIC EjsString *ejsInternMulti(Ejs *ejs, cchar *value, ssize len)
                 }
             }
             if (i == sp->length && value[i] == 0) {
-                //  MOB - reuse should be debug only
                 ip->reuse++;
+#if UNUSED
                 /* Revive incase almost stale or dead */
                 mprRevive(sp);
+#endif
                 unlock(ip);
                 return sp;
             }
@@ -70232,7 +70231,7 @@ static MPR_INLINE void checkGetter(Ejs *ejs, EjsAny *value, EjsAny *thisObj, Ejs
 #define THIS            FRAME->function.boundThis
 #define FILL(mark)      while (mark < FRAME->pc) { *mark++ = EJS_OP_NOP; }
 
-#define DEBUG_IDE 1
+// #define DEBUG_IDE 1
 #if DEBUG_IDE
     static EjsOpCode traceCode(Ejs *ejs, EjsOpCode opcode);
     static int opcount[256];
@@ -73836,7 +73835,7 @@ static void bkpt(Ejs *ejs)
 #endif
 
 
-#if DEBUG_IDE || 1
+#if DEBUG_IDE
 /*
     This code is only active when building in debug mode and debugging in an IDE
  */
@@ -77116,11 +77115,9 @@ void ejsDestroyVM(Ejs *ejs)
         mprRemoveItem(sp->vmlist, ejs);
         ejs->service = 0;
         ejs->result = 0;
-#if MOB
         if (ejs->dispatcher) {
-            mprDisableDispatcher(ejs->dispatcher);
+            mprDestroyDispatcher(ejs->dispatcher);
         }
-#endif
     }
     mprTrace(6, "ejs: destroy VM");
 }
@@ -77665,8 +77662,6 @@ static int runProgram(Ejs *ejs, MprEvent *event)
 
 int ejsRunProgram(Ejs *ejs, cchar *className, cchar *methodName)
 {
-    assert(ejs->result == 0 || (MPR_GET_GEN(MPR_GET_MEM(ejs->result)) != MPR->heap->dead));
-
     if (className) {
         ejs->className = sclone(className);
     }

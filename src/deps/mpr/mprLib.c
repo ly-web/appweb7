@@ -238,7 +238,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     heap->chunkSize = BIT_MPR_ALLOC_MAX_REGION;
     heap->stats.maxMemory = (size_t) -1;
     heap->stats.redLine = ((size_t) -1) / 100 * 95;
-    heap->stats.cacheMemory = 8 * 1024 * 1024;
+    heap->stats.cacheMemory = BIT_MPR_ALLOC_CACHE;
     heap->newQuota = BIT_MPR_ALLOC_QUOTA;
     heap->enabled = !(heap->flags & MPR_DISABLE_GC);
 
@@ -588,12 +588,9 @@ static void freeBlock(MprMem *mp)
 #endif
     if (mp->first) {
         region = GET_REGION(mp);
-        MprMem *next = GET_NEXT(mp);
         if (GET_NEXT(mp) >= region->end) {
             region->freeable = 1;
             return;
-        } else {
-            // assert(mp->size < 130000);
         }
     }
     linkBlock(mp);
@@ -1134,7 +1131,7 @@ static void sweep()
                 /*
                     Cache small blocks provided not first block in the regions (assists to unpin regions)
                  */
-                if (!mp->first && mp->size < BIT_MPR_ALLOC_SMALL && heap->stats.bytesFree < heap->stats.cacheMemory) {
+                if (mp->first && mp->size < BIT_MPR_ALLOC_SMALL && heap->stats.bytesFree < heap->stats.cacheMemory) {
                     INC(cached);
                     freeBlock(mp);
                     continue;
@@ -1803,8 +1800,8 @@ PUBLIC void mprCheckBlock(MprMem *mp)
 {
     BREAKPOINT(mp);
     if (mp->magic != MPR_ALLOC_MAGIC || mp->size == 0) {
-        mprError("Memory corruption in memory block %x (MprBlk %x, seqno %d)"
-            "This most likely happend earlier in the program execution", GET_PTR(mp), mp, mp->seqno);
+        mprError("Memory corruption in memory block %x (MprBlk %x, seqno %d)\n"
+            "This most likely happend earlier in the program execution.", GET_PTR(mp), mp, mp->seqno);
     }
 }
 

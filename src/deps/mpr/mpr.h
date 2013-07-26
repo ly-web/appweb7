@@ -799,16 +799,16 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     #define BIT_MPR_ALLOC_QUOTA     4096                /* Number of allocations before a GC is worthwhile */
 #endif
 #ifndef BIT_MPR_ALLOC_SCAN
-    #define BIT_MPR_ALLOC_SCAN      9                   /* Number of queues to scan for allocations before triggering a GC */
+    #define BIT_MPR_ALLOC_SCAN      13                  /* Number of queues to scan for allocations before triggering a GC */
 #endif
 #ifndef BIT_MPR_ALLOC_SMALL
-    #define BIT_MPR_ALLOC_SMALL     512                 /* Take care not to deplete free queues of blocks smaller than this */
+    #define BIT_MPR_ALLOC_SMALL     4096                /* Take care not to deplete free queues of blocks smaller than this */
 #endif
 #ifndef BIT_MPR_ALLOC_CACHE
     #define BIT_MPR_ALLOC_CACHE     0                   /* Try to cache at least this amount in the heap free queues */
 #endif
 #ifndef BIT_MPR_ALLOC_MAX_REGION
-    #define BIT_MPR_ALLOC_MAX_REGION (128 * 1024)       /* Memory region allocation chunk size */
+    #define BIT_MPR_ALLOC_MAX_REGION (256 * 1024)       /* Memory region allocation chunk size */
 #endif
 
 #ifndef BIT_MPR_ALLOC_ALIGN
