@@ -130,11 +130,24 @@ Bit.load({
             /*
                 Enable debug trace and asserts to the log file.
                 This is enabled by default for debug builds. 
+
                 tracing: true,
              */
 
+            /*
+                Memory allocator tuning. These are the default values.
+             */
             alloc: {
-                parallel: false,
+                parallel: true,     /* Run sweeper in parallel */
+                cache: 2097152,     /* Try to cache at least this amount in the heap free queues */
+                inline: true,       /* Use inline mprMark */
+                small: 2048,        /* Take care not to deplete free queues of blocks smaller than this */
+                maxRegion: 131072,  /* Memory region chunk size */
+                quota: 4096,        /* Number of allocations before a GC is worthwhile */
+                scan: 9,            /* Number of queues to scan for allocations before triggering a GC */
+                virtual: true,      /* Use virtual allocations vs malloc */
+                big: false,         /* Support allocations > 4GB on 64-bit systems */
+                // align: 3,        /* Don't override unless you know what you are doing. Set based on H/W data type requirements */
             },
         },
 

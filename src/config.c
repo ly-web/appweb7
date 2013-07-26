@@ -1188,7 +1188,7 @@ static int limitMemoryDirective(MaState *state, cchar *key, cchar *value)
     ssize   maxMem;
 
     maxMem = (ssize) getnum(value);
-    mprSetMemLimits(maxMem / 100 * 85, maxMem);
+    mprSetMemLimits(maxMem / 100 * 85, maxMem, -1);
     return 0;
 }
 

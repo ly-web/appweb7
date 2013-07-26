@@ -126,6 +126,7 @@ static void manageServer(MaServer *server, int flags)
         mprMark(server->name);
         mprMark(server->appweb);
         mprMark(server->http);
+        mprMark(server->defaultHost);
         mprMark(server->limits);
         mprMark(server->endpoints);
         mprMark(server->state);

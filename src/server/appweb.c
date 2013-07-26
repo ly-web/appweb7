@@ -99,6 +99,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     extern MprRomInode romFiles[];
     mprSetRomFileSystem(romFiles);
 #endif
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
 
     app->mpr = mpr;
     app->workers = -1;
@@ -182,6 +183,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         }
     }
     app->home = mprGetAbsPath(app->home);
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
 
     if (logSpec) {
         mprStartLogging(logSpec, 1);
@@ -190,6 +192,8 @@ MAIN(appweb, int argc, char **argv, char **envp)
         mprStartLogging(sfmt("stderr:%d", verbose + 1), 1);
         mprSetCmdlineLogging(1);
     }
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
+
     if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
         mprDestroy(MPR_EXIT_DEFAULT);
@@ -211,6 +215,8 @@ MAIN(appweb, int argc, char **argv, char **envp)
         mprError("Cannot start HTTP service, exiting.");
         exit(9);
     }
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
+
     /*
         Service I/O events until instructed to exit
      */
@@ -298,6 +304,7 @@ static int createEndpoints(int argc, char **argv)
     port = -1;
     endpoint = 0;
     argind = 0;
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
 
     if ((app->appweb = maCreateAppweb()) == 0) {
         mprError("Cannot create HTTP service for %s", mprGetAppName());
@@ -308,6 +315,7 @@ static int createEndpoints(int argc, char **argv)
         return MPR_ERR_CANT_CREATE;
     }
     loadStaticModules();
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
 
     if (argc > argind) {
         app->documents = sclone(argv[argind++]);
@@ -339,6 +347,7 @@ static int createEndpoints(int argc, char **argv)
 #elif BIT_UNIX_LIKE
     addSignals();
 #endif
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
     return 0;
 }
 
@@ -439,6 +448,9 @@ static void traceHandler(void *ignored, MprSignal *sp)
     level = mprGetLogLevel() > 2 ? 2 : 6;
     mprLog(0, "Change log level to %d", level);
     mprSetLogLevel(level);
+
+    //  MOB
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
 }
 
 
@@ -449,11 +461,12 @@ static void traceHandler(void *ignored, MprSignal *sp)
 static void statusCheck(void *ignored, MprSignal *sp)
 {
     mprRawLog(0, "%s", httpStatsReport(0));
-    //  MOB
-    if (1 || MPR->heap->track) {
-        mprPrintMem("Memory Report", 1);
+    if (MPR->heap->track) {
+        mprPrintMem("Memory Report", MPR_MEM_DETAIL | MPR_MEM_COMPACT);
+    } else {
+        mprPrintMem("Memory Report", MPR_MEM_DETAIL);
+        //MOB mprPrintMem("Memory Report", 0);
     }
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 }
 
 
