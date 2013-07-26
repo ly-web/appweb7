@@ -2673,6 +2673,7 @@ static void readEvent(HttpConn *conn)
         if (!httpPumpRequest(conn, conn->input)) {
             break;
         }
+        mprYield(0);
     } while (conn->endpoint && prepForNext(conn));
 }
 

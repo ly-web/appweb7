@@ -777,10 +777,6 @@ static MprMem *growHeap(size_t required)
     initBlock(mp, required, 1);
 
     lockHeap();
-    region->next = heap->regions;
-    heap->regions = region;
-    heap->stats.bytesAllocated += size;
-    heap->stats.regions++;
 
     if (spareLen > 0) {
         assert(spareLen >= MPR_ALLOC_MIN);
@@ -792,6 +788,13 @@ static MprMem *growHeap(size_t required)
     } else {
         ATOMIC_INC(allocs);
     }
+    /*
+        Add region last once the mp block and possible spare are crafted
+     */
+    region->next = heap->regions;
+    heap->regions = region;
+    heap->stats.bytesAllocated += size;
+    heap->stats.regions++;
     unlockHeap();
     CHECK(mp);
     return mp;
@@ -1119,6 +1122,10 @@ static void sweep()
 
         for (mp = region->start; mp < region->end; mp = next) {
             next = GET_NEXT(mp);
+            assert(next != mp);
+#if BIT_DEBUG
+            if (next == mp) break;
+#endif
             CHECK(mp);
             INC(sweepVisited);
             if (heap->compact && mp->free) {
