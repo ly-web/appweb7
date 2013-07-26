@@ -496,8 +496,6 @@ static MprMem *allocMem(size_t required)
         bucket = qindex % MPR_ALLOC_NUM_BUCKETS;
         heap->weightedCount += qindex;
         ATOMIC_INC(requests);
-        /* Ignore races - does not need to be accurate */
-        heap->freeq[qindex].demand++;
         miss = 0;
 
         /*
@@ -951,9 +949,12 @@ PUBLIC void mprRequestGC(int flags)
 {
     mprTrace(7, "DEBUG: mprRequestGC");
 
+#if UNUSED
+    //  MOB - remove this flag
     if (flags & MPR_GC_COMPACT) {
         heap->compact = 1;
     }
+#endif
     if ((flags & MPR_GC_FORCE) || (heap->weightedCount > heap->newQuota)) {
         triggerGC(MPR_GC_FORCE);
     }
@@ -1091,7 +1092,6 @@ static inline bool claim(MprMem *mp)
 static void sweep()
 {
     MprRegion       *region, *nextRegion, *prior;
-    MprFreeQueue    *freeq;
     MprMem          *mp, *next;
 
     if (!heap->enabled) {
@@ -1128,12 +1128,14 @@ static void sweep()
 #endif
             CHECK(mp);
             INC(sweepVisited);
+#if UNUSED
             if (heap->compact && mp->free) {
                 if (next < region->end && !next->free && next->mark != heap->mark && claim(mp)) {
                     mp->mark = !heap->mark;
                     INC(compacted);
                 }
             } 
+#endif
             if (!mp->free && mp->mark != heap->mark) {
                 /*
                     Cache small blocks provided not first block in the regions (assists to unpin regions)
@@ -1199,10 +1201,9 @@ static void sweep()
         printMemReport();
         heap->printStats = 0;
     }
-    for (freeq = heap->freeq; freeq != heap->freeEnd; freeq++) {
-        freeq->demand /= 2;
-    }
+#if UNUSED
     heap->compact = 0;
+#endif
 }
 
 
@@ -1588,8 +1589,8 @@ static void printQueueStats()
 
     printf("\nFree Queue Stats\n Bucket           Size          Count         Demand          Total\n");
     for (i = 0, freeq = heap->freeq; freeq != heap->freeEnd; freeq++, i++) {
-        if (freeq->count || freeq->demand) {
-            printf("%7d %14d %14d %14d %14d\n", i, freeq->minSize, freeq->count, freeq->demand, freeq->minSize * freeq->count);
+        if (freeq->count) {
+            printf("%7d %14d %14d %14d %14d\n", i, freeq->minSize, freeq->count, freeq->minSize * freeq->count);
         }
     }
 }
@@ -1728,7 +1729,9 @@ static void printMemReport()
     printf("  Joins             %14d %% (%d)\n",       percent(ap->joins, ap->requests), (int) ap->joins);
     printf("  Splits            %14d %% (%d)\n",       percent(ap->splits, ap->requests), (int) ap->splits);
     printf("  Cached            %14d %% (%d)\n",       percent(ap->cached, ap->requests), (int) ap->cached);
+#if UNUSED
     printf("  Compacted         %14d %% (%d)\n",       percent(ap->compacted, ap->requests), (int) ap->compacted);
+#endif
     printf("  Freeq failures    %14d %% (%d / %d)\n",  percent(ap->tryFails, ap->trys), (int) ap->tryFails, (int) ap->trys);
     printf("  MprMem            %14d\n",               (int) sizeof(MprMem));
     printf("  MprFreeMem        %14d\n",               (int) sizeof(MprFreeMem));

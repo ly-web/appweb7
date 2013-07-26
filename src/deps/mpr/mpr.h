@@ -917,7 +917,6 @@ typedef struct MprFreeQueue {
     struct MprFreeMem   *next;          /**< Next free block */
     MprSpin             lock;           /**< Queue lock-free lock */
     MprMemSize          minSize;        /**< Min size of block in queue */
-    uint                demand;         /**< Demand count for blocks from this queue */
     uint                count;          /**< Number of blocks on the queue */
 } MprFreeQueue;
 
