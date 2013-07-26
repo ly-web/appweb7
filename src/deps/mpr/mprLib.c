@@ -1571,10 +1571,10 @@ static void printQueueStats()
     MprFreeQueue    *freeq;
     int             i;
 
-    printf("\nFree Queue Stats\n Bucket           Size          Count         Demand          Total\n");
+    printf("\nFree Queue Stats\n Bucket           Size          Count         Total\n");
     for (i = 0, freeq = heap->freeq; freeq != heap->freeEnd; freeq++, i++) {
         if (freeq->count) {
-            printf("%7d %14d %14d %14d %14d\n", i, freeq->minSize, freeq->count, freeq->minSize * freeq->count);
+            printf("%7d %14d %14d %14d\n", i, freeq->minSize, freeq->count, freeq->minSize * freeq->count);
         }
     }
 }
