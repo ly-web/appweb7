@@ -148,7 +148,7 @@ Bit.load({
                 scan: 13,           /* Number of queues to scan for allocations before triggering a GC */
                 virtual: true,      /* Use virtual allocations vs malloc */
                 big: false,         /* Support allocations > 4GB on 64-bit systems */
-                // cache: 2097152,  /* Faster by using some cache. Try to cache at least this amount in the heap free queues */
+                // cache: 8097152,  /* Faster by using some cache. Try to cache at least this amount in the heap free queues */
                 // align: 3,        /* Don't override unless you know what you are doing. Set based on H/W data type requirements */
             },
         },
