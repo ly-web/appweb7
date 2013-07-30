@@ -769,7 +769,7 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     Use configure --set memoryCheck=true to enable
  */
 #if BIT_MEMORY_CHECK
-    #define BIT_MEMORY_DEBUG        1                   /**< Fill blocks, verifies block integrity, traces mem info. */
+    #define BIT_MEMORY_DEBUG        1                   /**< Fill blocks, verifies block integrity, block names */
     #define BIT_MEMORY_STATS        1                   /**< Include memory statistics */
     #define BIT_MEMORY_STACK        1                   /**< Monitor stack usage */
 #else
@@ -1046,7 +1046,7 @@ typedef void (*MprMemNotifier)(int cause, int policy, size_t size, size_t total)
  */
 typedef void (*MprManager)(void *ptr, int flags);
 
-#if BIT_MEMORY_STATS
+#if BIT_MEMORY_DEBUG
 /*
     The location stats table tracks the source code location responsible for each allocation
     Very costly. Don't use except for debug.
@@ -1101,7 +1101,8 @@ typedef struct MprMemStats {
 
     uint64          trys;
     uint64          tryFails;
-
+#endif
+#if BIT_MEMORY_DEBUG
     MprLocationStats locations[MPR_TRACK_HASH]; /* Per location allocation stats */
 #endif
 } MprMemStats;
