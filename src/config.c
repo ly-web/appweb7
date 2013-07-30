@@ -2802,7 +2802,7 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
     HttpUser        *user;
     char            *tempFile;
 
-    tempFile = mprGetTempPath(NULL);
+    tempFile = mprGetTempPath(mprGetPathDir(path));
     if ((file = mprOpenFile(tempFile, O_CREAT | O_TRUNC | O_WRONLY | O_TEXT, 0444)) == 0) {
         mprError("Cannot open %s", tempFile);
         return MPR_ERR_CANT_OPEN;

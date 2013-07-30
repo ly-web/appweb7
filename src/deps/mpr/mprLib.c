@@ -95,42 +95,18 @@
 
 #define percent(a,b) ((int) ((a) * 100 / (b)))
 
-/*
-    Fast find first/last bit set
- */
-#if LINUX
-    #if BIT_MPR_ALLOC_BIG && BIT_64
-        #define NEED_FLS 1
-        #if BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64
-            #define USE_FLS_ASM_X86 1
-        #endif
-        static MPR_INLINE int fls(uint word);
-    #else
-        #define NEED_FLSL 1
-        static MPR_INLINE int flsl(uint word);
-    #endif
-
-#elif BIT_WIN_LIKE
-    #define NEED_FFS 1
-    static MPR_INLINE int ffs(uint word);
-    #if BIT_MPR_ALLOC_BIG && BIT_64
-        #define NEED_FLS 1
-        static MPR_INLINE int fls(uint word);
-    #else
-        #define NEED_FLSL 1
-        static MPR_INLINE int flsl(uint word);
-    #endif
-
-#elif !BIT_BSD_LIKE
-    #define NEED_FFS 1
-    static MPR_INLINE int ffs(uint word);
-    #if BIT_MPR_ALLOC_BIG && BIT_64
-        #define NEED_FLS 1
-        static MPR_INLINE int fls(uint word);
-    #else
-        #define NEED_FLSL 1
-        static MPR_INLINE int flsl(uint word);
-    #endif
+#if LINUX || BIT_BSD_LIKE
+    #define findFirstBit(word) ffsl((long) word)
+#else
+    static inline int findFirstBit(size_t word);
+#endif
+#if MACOSX
+    #define findLastBit(x) flsl((long) x)
+#else
+    static inline int findLastBit(size_t word);
+#endif
+#if BIT_WIN_LIKE
+    static inline int findFirstBit(long word);
 #endif
 
 /********************************** Data **************************************/
@@ -145,26 +121,36 @@ static int          padding[] = { 0, MPR_MANAGER_SIZE };
 
 static inline bool acquire(MprFreeQueue *freeq);
 static inline void acquireWait(MprFreeQueue *freeq);
+static void allocException(int cause, size_t size);
+static MprMem *allocMem(size_t size);
 static inline int cas(size_t *target, size_t expected, size_t value);
 static inline bool claim(MprMem *mp);
-static inline void initBlock(MprMem *mp, size_t size, int first);
-static inline void release(MprFreeQueue *freeq);
-static inline void unlinkBlock(MprMem *mp);
-
-static void allocException(int cause, size_t size);
+static inline void clearbitmap(size_t *bitmap, int bindex);
 static void dummyManager(void *ptr, int flags);
 static size_t fastMemSize();
+static void freeBlock(MprMem *mp);
 static void *getNextRoot();
 static void getSystemInfo();
+static MprMem *growHeap(size_t size);
+static inline size_t qtosize(int qindex);
+static void linkBlock(MprMem *mp); 
+static inline void initBlock(MprMem *mp, size_t size, int first);
+static int initQueues();
 static void invokeDestructors();
 static void markAndSweep();
 static void markRoots();
 static int pauseThreads();
 static void printMemReport();
+static inline void release(MprFreeQueue *freeq);
 static void resumeThreads(int swept);
+static inline void setbitmap(size_t *bitmap, int bindex);
+static inline int sizetoq(size_t size);
 static void sweep();
 static void sweeper(void *unused, MprThread *tp);
 static void triggerGC(int flags);
+static inline void unlinkBlock(MprMem *mp);
+static void *vmalloc(size_t size, int mode);
+static void vmfree(void *ptr, size_t size);
 
 #if BIT_WIN_LIKE
     static int winPageModes(int flags);
@@ -184,14 +170,6 @@ static void triggerGC(int flags);
 #else
     #define monitorStack()
 #endif
-static int initQueues();
-static MprMem *allocMem(size_t size);
-static void freeBlock(MprMem *mp);
-static int getQueueIndex(size_t size, int roundup);
-static MprMem *growHeap(size_t size);
-static void linkBlock(MprMem *mp); 
-static void *vmalloc(size_t size, int mode);
-static void vmfree(void *ptr, size_t size);
 
 /************************************* Code ***********************************/
 
@@ -312,6 +290,7 @@ PUBLIC void *mprAllocMem(size_t usize, int flags)
     if ((mp = allocMem(size)) == NULL) {
         return NULL;
     }
+    assert(mp->size >= size);
     mp->hasManager = (flags & MPR_ALLOC_MANAGER) ? 1 : 0;
     ptr = GET_PTR(mp);
     if (flags & MPR_ALLOC_ZERO) {
@@ -429,49 +408,20 @@ PUBLIC size_t mprMemcpy(void *dest, size_t destMax, cvoid *src, size_t nbytes)
 }
 
 /*************************** Allocator *************************/
-/*
-    Initialize the free space map and queues.
 
-    The free map is a two dimensional array of free queues. The first dimension is indexed by
-    the most significant bit (MSB) set in the requested block size. The second dimension is the next 
-    MPR_ALLOC_BUCKET_SHIFT (4) bits below the MSB.
-
-    +-------------------------------+
-    |       |MSB|  Bucket   | rest  |
-    +-------------------------------+
-    | 0 | 0 | 1 | 1 | 1 | 1 | ..... |
-    +-------------------------------+
- */
 static int initQueues() 
 {
     MprFreeQueue    *freeq;
-    int             numGroups, numQueues;
+    int             qindex;
 
-    numGroups = fls(BIT_MPR_ALLOC_MAX_REGION) - MPR_ALLOC_BUCKET_SHIFT - BIT_MPR_ALLOC_ALIGN;
-    numQueues = numGroups * MPR_ALLOC_NUM_BUCKETS;
-    if ((heap->freeq = mprVirtAlloc(numQueues * sizeof(MprFreeQueue) , MPR_MAP_READ | MPR_MAP_WRITE)) == NULL) {
-        return MPR_ERR_MEMORY;
-    }
-    heap->freeEnd = &heap->freeq[numQueues];
-    heap->numQueues = numQueues;
-    heap->numGroups = numGroups;
-    for (freeq = heap->freeq; freeq != heap->freeEnd; freeq++) {
-        size_t  size, groupBits, bucketBits;
-        int     index, group, bucket;
-        index = (int) (freeq - heap->freeq);
-        group = index / MPR_ALLOC_NUM_BUCKETS;
-        bucket = index % MPR_ALLOC_NUM_BUCKETS;
-
-        groupBits = (group != 0) << (group + MPR_ALLOC_BUCKET_SHIFT - 1);
-        bucketBits = ((size_t) bucket) << (max(0, group - 1));
-
-        size = groupBits | bucketBits;
-        freeq->minSize = (int) (size << MPR_ALIGN_SHIFT);
-
-#if (BIT_MEMORY_STATS && BIT_MEMORY_DEBUG && KEEP) || 0
-        printf("Queue: %d, size %u (%x), group %d, bucket %d\n",
-            (int) (freeq - heap->freeq), (int) freeq->minSize, (int) freeq->minSize, group, bucket);
+    for (freeq = heap->freeq, qindex = 0; freeq < &heap->freeq[MPR_ALLOC_NUM_QUEUES]; freeq++, qindex++) {
+        /* Size includes MprMem header */
+        freeq->minSize = (MprMemSize) qtosize(qindex);
+#if (BIT_MEMORY_STATS && BIT_MEMORY_DEBUG)
+        printf("Queue: %d, usize %u  size %u\n",
+            (int) (freeq - heap->freeq), (int) freeq->minSize - (int) sizeof(MprMem), (int) freeq->minSize);
 #endif
+        assert(sizetoq(freeq->minSize) == qindex);
         freeq->next = freeq->prev = (MprFreeMem*) freeq;
         mprInitSpinLock(&freeq->lock);
     }
@@ -487,80 +437,84 @@ static MprMem *allocMem(size_t required)
     MprFreeQueue    *freeq;
     MprFreeMem      *fp;
     MprMem          *mp, *spare;
-    size_t          bucketMap, groupMap, priorBucketMap, priorGroupMap;
-    int             bucket, baseGroup, group, qindex, miss;
+    size_t          *bitmap, map;
+    int             baseBindex, bindex, qindex;
 
-    qindex = getQueueIndex(required, 1);
-    if (qindex >= 0) {
-        baseGroup = qindex / MPR_ALLOC_NUM_BUCKETS;
-        bucket = qindex % MPR_ALLOC_NUM_BUCKETS;
+    if ((qindex = sizetoq(required)) >= 0) {
+        /*
+            Check if the requested size is the smallest possible size in a queue. If not the smallest, must look at the 
+            next queue higher up to guarantee a block of sufficient size. This implements a Good-fit strategy.
+         */
+        if (required > heap->freeq[qindex].minSize) {
+            qindex++;
+            assert(required < heap->freeq[qindex].minSize);
+        }
         heap->weightedCount += qindex;
         ATOMIC_INC(requests);
-        miss = 0;
+
+        baseBindex = qindex / MPR_ALLOC_BITMAP_BITS;
+        bitmap = &heap->bitmap[baseBindex];
 
         /*
-            Try each free queue in turn. If lock contention or block contention, abort and try the next queue.
-            We never block here on any lock.
+            Non-blocking search for a free block. If contention of any kind, simply skip the queue and try the next queue.
          */
-        groupMap = heap->groupMap & ~((((size_t) 1) << baseGroup) - 1);
-        while (groupMap) {
-            /* ffs operates on ints, but to use cas(), groupMap and bucketMaps must be size_t */
-            group = ffs((int) groupMap) - 1;
-            if (groupMap & ((((size_t) 1) << group))) {
-                bucketMap = heap->bucketMap[group];
-                if (baseGroup == group) {
-                    /* Mask buckets lower than the base bucket */
-                    bucketMap &= ~((((size_t) 1) << bucket) - 1);
-                }
-                while (bucketMap) {
-                    bucket = ffs((int) bucketMap) - 1;
-                    qindex = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
-                    freeq = &heap->freeq[qindex];
-                    ATOMIC_INC(trys);
-                    if (freeq->next != (MprFreeMem*) freeq) {
-                        if (acquire(freeq)) {
-                            if (freeq->next != (MprFreeMem*) freeq) {
-                                /* Inline unlinkBlock for speed */
-                                fp = freeq->next;
-                                fp->prev->next = fp->next;
-                                fp->next->prev = fp->prev;
-                                fp->blk.qindex = 0;
-                                fp->blk.mark = heap->mark;
-                                fp->blk.free = 0;
-                                freeq->count--;
-                                mp = (MprMem*) fp;
-                                release(freeq);
-                                mprAtomicAdd64((int64*) &heap->stats.bytesFree, -(int64) mp->size);
-
-                                if (mp->size >= (size_t) (required + MPR_ALLOC_MIN_SPLIT)) {
-                                    spare = (MprMem*) ((char*) mp + required);
-                                    initBlock(spare, mp->size - required, 0);
-                                    linkBlock(spare);
-                                    mp->size = (MprMemSize) required;
-                                    ATOMIC_INC(splits);
-                                }
-                                if (miss > BIT_MPR_ALLOC_SCAN) {
-                                    /* Tested empirically to trigger GC when searching too much for an allocation */
-                                    triggerGC(MPR_GC_FORCE);
-                                }
-                                ATOMIC_INC(reuse);
-                                return mp;
-                            } else {
-                                release(freeq);
+        for (bindex = baseBindex; bindex < MPR_ALLOC_NUM_BITMAPS; bitmap++, bindex++) {
+            map = *bitmap;
+            /* Mask queues lower than the base queue */
+            if (bindex == baseBindex) {
+                map &= ~((((size_t) 1) << qindex) - 1);
+            }
+            while (map) {
+int original = qindex;
+                qindex = (bindex * MPR_ALLOC_BITMAP_BITS) + findFirstBit(map) - 1;
+assert(qindex >= original);
+                freeq = &heap->freeq[qindex];
+                ATOMIC_INC(trys);
+                if (freeq->next != (MprFreeMem*) freeq) {
+                    if (acquire(freeq)) {
+                        if (freeq->next != (MprFreeMem*) freeq) {
+                            /* Inline unlinkBlock for speed */
+                            fp = freeq->next;
+                            fp->prev->next = fp->next;
+                            fp->next->prev = fp->prev;
+                            fp->blk.qindex = 0;
+                            fp->blk.mark = heap->mark;
+                            fp->blk.free = 0;
+                            if (--freeq->count == 0) {
+                                clearbitmap(bitmap, qindex % MPR_ALLOC_BITMAP_BITS);
                             }
+                            mp = (MprMem*) fp;
+                            release(freeq);
+                            mprAtomicAdd64((int64*) &heap->stats.bytesFree, -(int64) mp->size);
+
+                            if (mp->size >= (size_t) (required + MPR_ALLOC_MIN_SPLIT)) {
+                                spare = (MprMem*) ((char*) mp + required);
+                                initBlock(spare, mp->size - required, 0);
+                                linkBlock(spare);
+                                mp->size = (MprMemSize) required;
+                                ATOMIC_INC(splits);
+                            }
+#if NOT_YET
+                            if ((bindex - baseBindex) > 2) {
+                                /* Tested empirically to trigger GC when searching too much for an allocation */
+                                triggerGC(MPR_GC_FORCE);
+                            }
+#endif
+                            ATOMIC_INC(reuse);
+                            assert(mp->size >= required);
+                            return mp;
                         } else {
-                            ATOMIC_INC(tryFails);
+                            release(freeq);
                         }
+                    } else {
+                        ATOMIC_INC(tryFails);
                     }
-                    priorBucketMap = bucketMap;
-                    bucketMap &= ~(((size_t) 1) << bucket);
-                    cas(&heap->bucketMap[group], priorBucketMap, bucketMap);
-                    ATOMIC_INC(qmiss);
                 }
-                priorGroupMap = groupMap;
-                groupMap &= ~(((size_t) 1) << group);
-                cas(&heap->groupMap, priorGroupMap, groupMap);
-                miss++;
+                clearbitmap(bitmap, qindex % MPR_ALLOC_BITMAP_BITS);
+                map = *bitmap;
+                if (bindex == baseBindex) {
+                    map &= ~((((size_t) 1) << qindex) - 1);
+                }
             }
         }
     }
@@ -597,61 +551,48 @@ static void freeBlock(MprMem *mp)
 
 
 /*
-    Get the free queue index for a given block size.
-    Roundup will be true when allocating because queues store blocks greater than a specified size. To guarantee the requested
-    size will be satisfied, we may need to look at the next queue.
+    Map a queue index to a block size. This size includes the MprMem header.
  */
-static int getQueueIndex(size_t size, int roundup)
+static inline size_t qtosize(int qindex)
 {
-    size_t      usize, asize;
-    int         aligned, bucket, group, qindex, msb;
+    size_t  size;
+    int     high, low;
+
+    high = qindex / MPR_ALLOC_NUM_QBITS;
+    low = qindex % MPR_ALLOC_NUM_QBITS;
+    if (high) {
+        low += MPR_ALLOC_NUM_QBITS;
+    }
+    high = max(0, high - 1);
+    size = (low << high) << BIT_MPR_ALLOC_ALIGN_SHIFT;
+    size += sizeof(MprMem);
+    return size;
+}
+
+
+/*
+    Map a block size to a queue index. The block size includes the MprMem header.
+    Determine the free queue based on user sizes (sans header). This permits block searches to avoid scanning the next 
+    highest queue for common block sizes: eg. 1K.
+ */
+static inline int sizetoq(size_t size)
+{
+    size_t      asize;
+    int         msb, shift, high, low;
 
     assert(MPR_ALLOC_ALIGN(size) == size);
-    if (size >= BIT_MPR_ALLOC_MAX_REGION) {
-        return -1;
-    }
-    /*
-        Determine the free queue based on user sizes (sans header). This permits block searches to avoid scanning the next 
-        highest queue for common block sizes: eg. 1K.
-     */
-    usize = (size - sizeof(MprMem));
-    asize = (usize >> MPR_ALIGN_SHIFT);
-    /* 
-        Find the last (most) significant bit in the block size
-     */
-#if BIT_MPR_ALLOC_BIG && BIT_64
-    msb = flsl(asize) - 1;
-#else
-    msb = fls((int) asize) - 1;
-#endif
-    group = max(0, msb - MPR_ALLOC_BUCKET_SHIFT + 1);
-    bucket = (asize >> max(0, group - 1)) & (MPR_ALLOC_NUM_BUCKETS - 1);
-    qindex = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
-#if BIT_DEBUG
-    if (qindex >= heap->numQueues) {
-        /* Should never get here */
-        assert(qindex < heap->numQueues);
-        return -1;
-    }
-#endif
-    assert(qindex < (heap->freeEnd - heap->freeq));
-    assert(bucket < MPR_ALLOC_NUM_BUCKETS);
 
-    if (roundup) {
-        /*
-            Good-fit strategy: check if the requested size is the smallest possible size in a queue. If not the smallest,
-            must look at the next queue higher up to guarantee a block of sufficient size. Blocks in the queues of group 0
-            and group 1 are are all sized the same. i.e. the queues of group zero differ in size by one word only.
-         */
-        if (group > 1) {
-            size_t mask = (((size_t) 1) << (msb - MPR_ALLOC_BUCKET_SHIFT)) - 1;
-            aligned = (asize & mask) == 0;
-            if (!aligned) {
-                qindex++;
-            }
-        }
+    size -= sizeof(MprMem);
+    if (size > BIT_MPR_ALLOC_MAX_REGION) {
+        /* Large block, don't put on queues */
+        return -1;
     }
-    return qindex;
+    asize = (size >> BIT_MPR_ALLOC_ALIGN_SHIFT);
+    msb = findLastBit(asize) - 1;
+    high = max(0, msb - MPR_ALLOC_QBITS_SHIFT + 1);
+    shift = max(0, high - 1);
+    low = (asize >> shift) & (MPR_ALLOC_NUM_QBITS - 1);
+    return (high * MPR_ALLOC_NUM_QBITS) + low;
 }
 
 
@@ -663,12 +604,10 @@ static void linkBlock(MprMem *mp)
 {
     MprFreeQueue    *freeq;
     MprFreeMem      *fp;
-    size_t          bucketMap, groupMap, priorGroupMap, priorBucketMap;
-    int             group, bucket;
 
     CHECK(mp);
 
-    mp->qindex = getQueueIndex(mp->size, 0);
+    mp->qindex = sizetoq(mp->size);
     mp->free = 1;
     mp->hasManager = 0;
     freeq = &heap->freeq[mp->qindex];
@@ -684,24 +623,14 @@ static void linkBlock(MprMem *mp)
     freeq->next->prev = fp;
     freeq->next = fp;
     freeq->count++;
-    release(freeq);
-
-    mprAtomicAdd64((int64*) &heap->stats.bytesFree, mp->size);
-
     /*
-        Updates group and bucket maps. This is done lock-free to reduce contention. Racing with multiple-threads in allocMem().
+        Updates bitmaps. Racing with multiple-threads in allocMem().
+        Must be done with the queue locked to safeguard the integrity of this queues bit, 
+        but lock free for all other queues in the bitmap.
      */
-    group = mp->qindex / MPR_ALLOC_NUM_BUCKETS;
-    bucket = mp->qindex % MPR_ALLOC_NUM_BUCKETS;
-    do {
-        priorGroupMap = heap->groupMap;
-        groupMap = priorGroupMap | (((size_t) 1) << group);
-    } while (!cas(&heap->groupMap, priorGroupMap, groupMap));
-
-    do {
-        priorBucketMap = heap->bucketMap[group];
-        bucketMap = priorBucketMap | (((size_t) 1) << bucket);
-    } while (!cas(&heap->bucketMap[group], priorBucketMap, bucketMap));
+    setbitmap(&heap->bitmap[mp->qindex / MPR_ALLOC_BITMAP_BITS], mp->qindex % MPR_ALLOC_BITMAP_BITS);
+    release(freeq);
+    mprAtomicAdd64((int64*) &heap->stats.bytesFree, mp->size);
 }
 
 
@@ -1102,8 +1031,8 @@ static void sweep()
 
     /*
         First run managers so that dependant memory blocks will still exist when the manager executes.
-        Actually free the memory in a 2nd pass below. OPT - could optimize by requiring a separate flag for managers 
-        that implement destructors.
+        Actually free the memory in a 2nd pass below. 
+        OPT - could optimize by requiring a separate flag for managers that implement destructors.
      */
     invokeDestructors();
 
@@ -1127,7 +1056,7 @@ static void sweep()
                 /*
                     Cache small blocks provided not first block in the regions (assists to unpin regions)
                  */
-                if (mp->first && mp->size < BIT_MPR_ALLOC_SMALL && heap->stats.bytesFree < heap->stats.cacheMemory) {
+                if (!mp->first && mp->size < BIT_MPR_ALLOC_SMALL && heap->stats.bytesFree < heap->stats.cacheMemory) {
                     INC(cached);
                     freeBlock(mp);
                     continue;
@@ -1572,7 +1501,7 @@ static void printQueueStats()
     int             i;
 
     printf("\nFree Queue Stats\n Bucket           Size          Count         Total\n");
-    for (i = 0, freeq = heap->freeq; freeq != heap->freeEnd; freeq++, i++) {
+    for (i = 0, freeq = heap->freeq; freeq < &heap->freeq[MPR_ALLOC_NUM_QUEUES]; freeq++, i++) {
         if (freeq->count) {
             printf("%7d %14d %14d %14d\n", i, freeq->minSize, freeq->count, freeq->minSize * freeq->count);
         }
@@ -1744,14 +1673,13 @@ PUBLIC void mprVerifyMem()
     while (heap->sweeping) {
         mprNap(1);
     }
-    //  MOB - have sweeper do the verify. Have here just trigger a GC with verify
-
+    lockHeap();
     for (region = heap->regions; region; region = region->next) {
         for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
             CHECK(mp);
         }
     }
-    for (i = 0, freeq = heap->freeq; freeq != heap->freeEnd; freeq++, i++) {
+    for (i = 0, freeq = heap->freeq; freeq < &heap->freeq[MPR_ALLOC_NUM_QUEUES]; freeq++, i++) {
         for (fp = freeq->next; fp != (MprFreeMem*) freeq; fp = fp->next) {
             mp = (MprMem*) fp;
             CHECK(mp);
@@ -1775,6 +1703,7 @@ PUBLIC void mprVerifyMem()
 #endif
         }
     }
+    unlockHeap();
 #endif
 }
 
@@ -2163,26 +2092,10 @@ static size_t fastMemSize()
 }
 
 
-#if NEED_FFS
-/* 
-    Find first bit set in word 
- */
-#if USE_FFS_ASM_X86
-static MPR_INLINE int ffs(uint x)
-{
-    long    r;
-
-    asm("bsf %1,%0\n\t"
-        "jnz 1f\n\t"
-        "mov $-1,%0\n"
-        "1:" : "=r" (r) : "rm" (x));
-    return (int) r + 1;
-}
-#else
-static MPR_INLINE int ffs(uint word)
+#ifndef findFirstBit
+static inline int findFirstBit(size_t word)
 {
     int     b;
-
     for (b = 0; word; word >>= 1, b++) {
         if (word & 0x1) {
             b++;
@@ -2192,49 +2105,17 @@ static MPR_INLINE int ffs(uint word)
     return b;
 }
 #endif
+
+
+#ifndef findLastBit
+static inline int findLastBit(size_t word)
+{
+    int     b;
+
+    for (b = 0; word; word >>= 1, b++) ;
+    return b;
+}
 #endif
-
-
-#if NEED_FLS
-/* 
-    Find last bit set in word 
- */
-#if USE_FFS_ASM_X86
-static MPR_INLINE int fls(uint x)
-{
-    long r;
-
-    asm("bsr %1,%0\n\t"
-        "jnz 1f\n\t"
-        "mov $-1,%0\n"
-        "1:" : "=r" (r) : "rm" (x));
-    return (int) r + 1;
-}
-#else /* USE_FLS_ASM_X86 */ 
-
-static MPR_INLINE int fls(uint word)
-{
-    int     b;
-
-    for (b = 0; word; word >>= 1, b++) ;
-    return b;
-}
-#endif /* !USE_FLS_ASM_X86 */
-#endif /* NEED_FLS */
-
-
-#if NEED_FLSL
-/* 
-    Find last bit set in word 
- */
-static MPR_INLINE int flsl(ulong word)
-{
-    int     b;
-
-    for (b = 0; word; word >>= 1, b++) ;
-    return b;
-}
-#endif /* NEED_FLSL */
 
 
 /*
@@ -2258,7 +2139,7 @@ static inline bool acquire(MprFreeQueue *freeq)
 }
 
 
-//  MOB - remove
+//  MOB - remove - should only have lockFree code
 static inline void acquireWait(MprFreeQueue *freeq)
 {
 #if MACOSX
@@ -2294,6 +2175,34 @@ static inline void release(MprFreeQueue *freeq)
 static inline int cas(size_t *target, size_t expected, size_t value)
 {
     return mprAtomicCas((void**) target, (void*) expected, (cvoid*) value);
+}
+
+
+static inline void clearbitmap(size_t *bitmap, int bindex) 
+{
+    size_t  bit, prior;
+
+    bit = (((size_t) 1) << bindex);
+    do {
+        prior = *bitmap;
+        if (!(prior & bit)) {
+            break;
+        }
+    } while (!cas(bitmap, prior, prior & ~bit));
+}
+
+
+static inline void setbitmap(size_t *bitmap, int bindex) 
+{
+    size_t  bit, prior;
+
+    bit = (((size_t) 1) << bindex);
+    do {
+        prior = *bitmap;
+        if (prior & bit) {
+            break;
+        }
+    } while (!cas(bitmap, prior, prior | bit));
 }
 
 
@@ -2394,7 +2303,7 @@ PUBLIC int mprIsValid(cvoid *ptr)
     }
     return 0;
 #else
-#if BIT_MEMORY_CHECK
+#if BIT_MEMORY_DEBUG
     return ptr && mp->magic == MPR_ALLOC_MAGIC && mp->size > 0;
 #else
     return ptr && mp->size > 0;

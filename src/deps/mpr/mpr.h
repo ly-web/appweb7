@@ -811,18 +811,18 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     #define BIT_MPR_ALLOC_MAX_REGION (256 * 1024)       /* Memory region allocation chunk size */
 #endif
 
-#ifndef BIT_MPR_ALLOC_ALIGN
+#ifndef BIT_MPR_ALLOC_ALIGN_SHIFT
     /*
         Allocated block alignment expressed as a bit shift. The default alignment is set so that allocated memory can be used
-        for any data type.  Default to 8 bytes for 32-bit and 16 bytes for 64-bit. If you are not using doubles, SSE or other
-        such types on a 32-bit system, you may be able to run with 4 byte alignment (2).
+        for doubles. NOTE: SSE and AltiVec instuctions may require 16 byte alignment.
      */
     #if !BIT_64 && !(BIT_CPU_ARCH == BIT_CPU_MIPS)
-        #define BIT_MPR_ALLOC_ALIGN 3                   /* 8 byte alignment */
+        #define BIT_MPR_ALLOC_ALIGN_SHIFT 3             /* 8 byte alignment */
     #else
-        #define BIT_MPR_ALLOC_ALIGN 4                   /* 16 byte alignment */
+        #define BIT_MPR_ALLOC_ALIGN_SHIFT 3             /* 8 byte alignment */
     #endif
 #endif
+#define BIT_MPR_ALLOC_ALIGN (1 << BIT_MPR_ALLOC_ALIGN_SHIFT)
 
 /*
     The allocator (by default) is limited to individual allocations of 4GB (32 bits). This enables memory blocks to 
@@ -834,7 +834,7 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
 #else
     typedef uint MprMemSize;
 #endif
-#define MPR_ALLOC_MAX ((MprMemSize) - (1 << BIT_MPR_ALLOC_ALIGN))
+#define MPR_ALLOC_MAX ((MprMemSize) - BIT_MPR_ALLOC_ALIGN)
 
 /**
     Memory Allocation Service.
@@ -845,7 +845,7 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     \n\n
     The allocator uses a garbage collector for freeing unused memory. The collector is a cooperative, non-compacting, 
     parallel collector.  The allocator is optimized for frequent allocations of small blocks (< 4K) and uses a scheme 
-    of free queues for fast allocation. Allocations are aligned as specified by BIT_MPR_ALLOC_ALIGN. This is typically
+    of free queues for fast allocation. Allocations are aligned as specified by BIT_MPR_ALLOC_ALIGN_SHIFT. This is typically
     16 byte aligned for 64-bit systems and 8 byte aligned for 32-bit systems. The allocator will return unused memory 
     back to the O/S to minimize application memory footprint. 
     \n\n
@@ -884,14 +884,18 @@ typedef struct MprMem {
     uint        first: 1;               /**< Block is first block in region */
     uint        hasManager: 1;          /**< Has manager function. Set at block init. */
     uint        mark: 1;                /**< GC mark indicator. Toggled for each GC pass by mark() when thread yielded. */
+    uint        reserved: 12;
 
 #if BIT_MEMORY_DEBUG
+    /* This increases the size of MprMem from 8 bytes to 16 bytes on 32-bit systems and 24 bytes on 64 bit systems */
+    cchar       *name;                  /**< Debug name */
     ushort      magic;                  /**< Unique signature */
     ushort      seqno;                  /**< Allocation sequence number */
-    cchar       *name;                  /**< Debug name */
+#if BIT_64
+    uchar       filler[4];
+#endif
 #endif
 } MprMem;
-
 
 /**
     Block structure when on a free list. This overlays MprMem and replaces sibling and children with forw/back
@@ -916,41 +920,56 @@ typedef struct MprFreeQueue {
     struct MprFreeMem   *prev;          /**< Previous free block */
     struct MprFreeMem   *next;          /**< Next free block */
     MprSpin             lock;           /**< Queue lock-free lock */
-    MprMemSize          minSize;        /**< Min size of block in queue */
     uint                count;          /**< Number of blocks on the queue */
+    MprMemSize          minSize;        /**< Minimum size of blocks in queue. This is the user block size sans MprMem header. */
 } MprFreeQueue;
 
-#define MPR_ALIGN                   (1 << BIT_MPR_ALLOC_ALIGN)
-#define MPR_ALIGN_SHIFT             BIT_MPR_ALLOC_ALIGN
+#define MPR_ALLOC_ALIGN(x)          (((x) + BIT_MPR_ALLOC_ALIGN - 1) & ~(BIT_MPR_ALLOC_ALIGN - 1))
 #define MPR_ALLOC_MIN               sizeof(MprFreeMem)
 #define MPR_ALLOC_MIN_SPLIT         (32 + sizeof(MprMem))
-#define MPR_ALLOC_ALIGN(x)          (((x) + MPR_ALIGN - 1) & ~(MPR_ALIGN - 1))
 #define MPR_ALLOC_MAGIC             0xe813
+
 #define MPR_PAGE_ALIGN(x, psize)    ((((ssize) (x)) + ((ssize) (psize)) - 1) & ~(((ssize) (psize)) - 1))
 #define MPR_PAGE_ALIGNED(x, psize)  ((((ssize) (x)) % ((ssize) (psize))) == 0)
 
 /*
-    The allocator free map is a bitmap of free queues. Each queue stores free blocks with a minimum size of
-    (group | bucket) << MPR_ALIGN_SHIFT. For example: queue[1] has group == 0, bucket == 1 and stores blocks 
-    of sizes from 8 to 15 bytes. Sizes are user request block sizes (sans MprMem header). The queues are 
-    searched by a group+bucket bit map. The aligned block size is mapped into a group/bucket index.
+    The allocator has a set of free queues to hold blocks of a given size range. Higher queues progressively address
+    a larger range of block sizes. This mapping is achived by taking the most significant QBIT bits of the requested 
+    block size and then discarding the top bit (MSB). All combinations of the REST bits are mapped to the same queue.
+    
+    +-------------------------------+
+    |        QBits      |    REST   |
+    +-------------------------------+
+    | 0 | 1 | X | X |  X | ........ |
+    +-------------------------------+
+    | 1 | X | X | X | ............. |
+    +-------------------------------+
 
-    +-----------------------------------+
-    |   Group   |     Bucket    |       |
-    +-----------------------------------+
-    | 0 | 0 | 1 | 1 | 1 | 1 | 1 | ..... |
-    +-----------------------------------+
-
-    We create 25 groups and 16 buckets. This provides a few more queues than required.
+    A bitmap records for each queue whether it has any free blocks in the queue.  
+    Note: qindex 2 is the first queue used because the minimum block size is sizeof(MprFreeMem)
  */
-#define MPR_ALLOC_BUCKET_SHIFT      4
-#define MPR_ALLOC_BUCKET_MAP        (BITS(MprMemSize) - MPR_ALLOC_BUCKET_SHIFT - 2)
-#define MPR_ALLOC_NUM_BUCKETS       (1 << MPR_ALLOC_BUCKET_SHIFT)
+#define MPR_ALLOC_QBITS_SHIFT       2                       //  Excluding MSB which is discarded
+#define MPR_ALLOC_NUM_QBITS         (1 << MPR_ALLOC_QBITS_SHIFT)
+
+/*
+    Should set region shift to log(BIT_MPR_ALLOC_MAX_REGION)
+    We don't expect users to tinker with these
+ */
+#if BIT_MPR_ALLOC_MAX_REGION == (256 * 1024)
+    #define BIT_MPR_ALLOC_REGION_SHIFT 19
+#else
+    #define BIT_MPR_ALLOC_REGION_SHIFT 24
+#endif
+
+#define MPR_ALLOC_NUM_QUEUES        ((19 - BIT_MPR_ALLOC_ALIGN_SHIFT - MPR_ALLOC_QBITS_SHIFT) * MPR_ALLOC_NUM_QBITS) + 1
+#define MPR_ALLOC_BITMAP_BITS       BITS(size_t)
+#define MPR_ALLOC_NUM_BITMAPS       ((MPR_ALLOC_NUM_QUEUES + MPR_ALLOC_BITMAP_BITS - 1) / MPR_ALLOC_BITMAP_BITS)
+
+/*
+    Pointer to MprMem and vice-versa
+ */
 #define MPR_GET_PTR(bp)             ((void*) (((char*) (bp)) + sizeof(MprMem)))
 #define MPR_GET_MEM(ptr)            ((MprMem*) (((char*) (ptr)) - sizeof(MprMem)))
-#if UNUSED
-#define MPR_GET_MEM_SIZE(mp)        (mp->size << MPR_ALIGN_SHIFT)
-#endif
 
 /*
     Manager callback is stored in the padding region at the end of the user memory in the block.
@@ -1109,10 +1128,8 @@ typedef struct MprRegion {
     @stability Internal.
  */
 typedef struct MprHeap {
-    MprFreeQueue     *freeq;                /**< Heap free queues */
-    MprFreeQueue     *freeEnd;              /**< End of free queue marker */
-    size_t           groupMap;              /**< Freeq group bit map. Must be size_t for cas() */ 
-    size_t           bucketMap[MPR_ALLOC_BUCKET_MAP]; /* Freeq bucket bit map. Must be size_t for cas() */
+    MprFreeQueue     freeq[MPR_ALLOC_NUM_QUEUES]; /**< Heap free queues */
+    size_t           bitmap[MPR_ALLOC_NUM_BITMAPS]; /* Freeq bit map. Must be size_t for cas() */
     struct MprList   *roots;                /**< List of GC root objects */
     MprMemStats      stats;                 /**< Memory allocation statistics */
     MprMemNotifier   notifier;              /**< Memory allocation failure callback */
@@ -1135,8 +1152,6 @@ typedef struct MprHeap {
     int              marking;               /**< Actually marking objects now */
     int              mustYield;             /**< Threads must yield for GC which is due */
     int              weightedCount;         /**< Count of allocations weighted by block size */
-    int              numGroups;             /**< Number of groups in the free queue group bit map */
-    int              numQueues;             /**< Number of free queues */
     int              newQuota;              /**< Quota of new allocations before idle GC worthwhile */
     int              nextSeqno;             /**< Next sequence number */
     int              pauseGC;               /**< Pause GC (short) */
