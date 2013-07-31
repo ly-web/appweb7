@@ -475,6 +475,7 @@ typedef struct Http {
 
     MprHash         *authTypes;             /**< Available authentication protocol types */
     MprHash         *authStores;            /**< Available password stores */
+    MprHash         *dateCache;             /**< Cache of date modified times */
 
     MprList         *counters;              /**< List of counters */
     MprList         *monitors;              /**< List of monitors */

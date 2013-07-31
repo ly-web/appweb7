@@ -4877,6 +4877,7 @@ static void manageHttp(Http *http, int flags)
         mprMark(http->remedies);
         mprMark(http->monitors);
         mprMark(http->counters);
+        mprMark(http->dateCache);
 
         /*
             Endpoints keep connections alive until a timeout. Keep marking even if no other references.
@@ -5972,48 +5973,42 @@ static void manageAddress(HttpAddress *address, int flags)
 
 /*
     Register a monitor event
-    This code is very carefully locked for maximum speed. There are some tolerated race conditions
+    This code is very carefully locked for maximum speed. There are some tolerated race conditions.
  */
 PUBLIC int64 httpMonitorEvent(HttpConn *conn, int counterIndex, int64 adj)
 {
     Http            *http;
-    HttpCounter     *counter;
     HttpAddress     *address;
-    int64           result;
+    HttpCounter     *counter;
     int             ncounters;
 
     assert(conn->endpoint);
     http = conn->http;
 
-    lock(http->addresses);
-    address = mprLookupKey(http->addresses, conn->ip);
-    if (!address || address->ncounters <= counterIndex) {
-        ncounters = ((counterIndex + 0xF) & ~0xF);
-        if (address) {
-            address = mprRealloc(address, sizeof(HttpAddress) * ncounters * sizeof(HttpCounter));
-        } else {
-            address = mprAllocMem(sizeof(HttpAddress) * ncounters * sizeof(HttpCounter), MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO);
-            mprSetManager(address, (MprManager) manageAddress);
+    if (!conn->address) {
+        lock(http->addresses);
+        address = mprLookupKey(http->addresses, conn->ip);
+        if (!address || address->ncounters <= counterIndex) {
+            ncounters = ((counterIndex + 0xF) & ~0xF);
+            if (address) {
+                address = mprRealloc(address, sizeof(HttpAddress) * ncounters * sizeof(HttpCounter));
+            } else {
+                address = mprAllocMem(sizeof(HttpAddress) * ncounters * sizeof(HttpCounter), MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO);
+                mprSetManager(address, (MprManager) manageAddress);
+            }
+            if (!address) {
+                return 0;
+            }
+            address->ncounters = ncounters;
+            mprAddKey(http->addresses, conn->ip, address);
         }
-        if (!address) {
-            return 0;
-        }
-        address->ncounters = ncounters;
-        mprAddKey(http->addresses, conn->ip, address);
+        conn->address = address;
+        unlock(http->addresses);
     }
-    conn->address = address;
-    counter = &address->counters[counterIndex];
-    counter->value += (int) adj;
-    address->updated = http->now;
-
-    //  MOB - remove this assert
-    assert(counter->value >= 0);
-    if (counter->value < 0) {
-        counter->value = 0;
-    }
-    result = counter->value;
-    unlock(http->addresses);
-    return result;
+    counter = &conn->address->counters[counterIndex];
+    mprAtomicAdd64(&counter->value, adj);
+    conn->address->updated = http->now;
+    return counter->value;
 }
 
 
