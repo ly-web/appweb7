@@ -508,8 +508,8 @@ static MprMem *allocMem(size_t required)
                         ATOMIC_INC(tryFails);
                     }
                 }
-                /* Refresh the bitmap incase other threads have split or depleted suitable queues */
-                localMap = heap->bitmap[bindex] & (size_t) ((uint64) -1 << max(0, (qindex + 1 - (MPR_ALLOC_BITMAP_BITS * bindex))));
+                /* Refresh the bitmap incase other threads have split or depleted suitable queues. +1 to clear current queue */
+                localMap = heap->bitmap[bindex] & ((size_t) ((uint64) -1 << max(0, (qindex + 1 - (MPR_ALLOC_BITMAP_BITS * bindex)))));
                 ATOMIC_INC(qmiss);
             }
         }

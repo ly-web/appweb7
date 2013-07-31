@@ -4988,19 +4988,19 @@ typedef union EjsValue {
     #if CPU_ENDIAN == BIT_LITTLE_ENDIAN
         struct {
             void    *pointer;
-            int32   filler;
+            int32   filler1;
         };
         struct {
             int32   integer;
-            int32   filler;
+            int32   filler2;
         };
     #else
         struct {
-            int32   filler;
+            int32   filler1;
             void    *pointer;
         };
         struct {
-            int32   filler;
+            int32   filler2;
             int32   integer;
         };
     #endif
