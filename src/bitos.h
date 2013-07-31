@@ -688,11 +688,11 @@ typedef int64 Ticks;
 /*********************************** Defines **********************************/
 
 #ifndef BITSPERBYTE
-    #define BITSPERBYTE     (8 * sizeof(char))
+    #define BITSPERBYTE     ((int) (8 * sizeof(char)))
 #endif
 
 #ifndef BITS
-    #define BITS(type)      (BITSPERBYTE * (int) sizeof(type))
+    #define BITS(type)      ((int) (BITSPERBYTE * (int) sizeof(type)))
 #endif
 
 #if BIT_FLOAT
@@ -1157,7 +1157,7 @@ typedef int64 Ticks;
     #define PATHSIZE BIT_MAX_PATH
     #define NBBY 8
     #define hostent _hostent
-    #define NFDBITS (sizeof(fd_mask) * NBBY)
+    #define NFDBITS ((int) (sizeof(fd_mask) * NBBY))
     typedef long fd_mask;
     typedef int Socklen;
     struct sockaddr_storage { char pad[1024]; };
