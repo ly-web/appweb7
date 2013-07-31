@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: voyager
+    Prepared by: magnetar.local
  */
 
 #include "mpr.h"
@@ -440,12 +440,14 @@ static MprMem *allocMem(size_t required)
     size_t          *bitmap, localMap;
     int             baseBindex, bindex, qindex;
 
+//  9%
     if ((qindex = sizetoq(required)) >= 0) {
+        freeq = &heap->freeq[qindex];
         /*
             Check if the requested size is the smallest possible size in a queue. If not the smallest, must look at the 
             next queue higher up to guarantee a block of sufficient size. This implements a Good-fit strategy.
          */
-        if (required > heap->freeq[qindex].minSize) {
+        if (required > freeq->minSize) {
             qindex++;
             assert(required < heap->freeq[qindex].minSize);
         }
@@ -465,12 +467,11 @@ static MprMem *allocMem(size_t required)
                 localMap &= ~((((size_t) 1) << qindex) - 1);
             }
             while (localMap) {
-int original = qindex;
                 qindex = (bindex * MPR_ALLOC_BITMAP_BITS) + findFirstBit(localMap) - 1;
-assert(qindex >= original);
                 freeq = &heap->freeq[qindex];
                 ATOMIC_INC(trys);
                 if (freeq->next != (MprFreeMem*) freeq) {
+//  6.9
                     if (acquire(freeq)) {
                         if (freeq->next != (MprFreeMem*) freeq) {
                             /* Inline unlinkBlock for speed */
@@ -490,6 +491,7 @@ assert(qindex >= original);
                             if (mp->size >= (size_t) (required + MPR_ALLOC_MIN_SPLIT)) {
                                 spare = (MprMem*) ((char*) mp + required);
                                 initBlock(spare, mp->size - required, 0);
+//  35%
                                 linkBlock(spare);
                                 mp->size = (MprMemSize) required;
                                 ATOMIC_INC(splits);
@@ -520,6 +522,7 @@ assert(qindex >= original);
             }
         }
     }
+//  4.4
     return growHeap(required);
 }
 
