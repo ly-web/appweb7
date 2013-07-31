@@ -64,7 +64,8 @@ static void openFileHandler(HttpQueue *q)
     HttpRoute   *route;
     HttpConn    *conn;
     MprPath     *info;
-    char        *date;
+    char        *date, dbuf[16];
+    MprHash     *dateCache;
 
     conn = q->conn;
     tx = conn->tx;
@@ -90,24 +91,14 @@ static void openFileHandler(HttpQueue *q)
             tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
         }
         if (info->mtime) {
-#if 0
-            char    dbuf[16];
-            ssize   len;
-
-            MprHash *dateCache = conn->http->dateCache;
-            if ((date = mprLookupKey(dateCache, itosbuf(dbuf, sizeof(dbuf), (int64) info->mtime, 10))) != 0) {
-
-            } else {
-                len = mprGetHashLength(dateCache);
-                if (len == 0 || len > 128) {
+            dateCache = conn->http->dateCache;
+            if ((date = mprLookupKey(dateCache, itosbuf(dbuf, sizeof(dbuf), (int64) info->mtime, 10))) == 0) {
+                if (!dateCache || mprGetHashLength(dateCache) > 128) {
                     conn->http->dateCache = dateCache = mprCreateHash(0, 0);
                 }
                 date = httpGetDateString(&tx->fileInfo);
                 mprAddKey(dateCache, itosbuf(dbuf, sizeof(dbuf), (int64) info->mtime, 10), date);
             }
-#else
-            date = httpGetDateString(&tx->fileInfo);
-#endif
             httpSetHeader(conn, "Last-Modified", date);
         }
         if (httpContentNotModified(conn)) {
