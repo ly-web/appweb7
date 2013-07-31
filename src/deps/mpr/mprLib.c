@@ -440,7 +440,6 @@ static MprMem *allocMem(size_t required)
     size_t          *bitmap, localMap;
     int             baseBindex, bindex, qindex;
 
-//  9%
     if ((qindex = sizetoq(required)) >= 0) {
         freeq = &heap->freeq[qindex];
         /*
@@ -471,7 +470,6 @@ static MprMem *allocMem(size_t required)
                 freeq = &heap->freeq[qindex];
                 ATOMIC_INC(trys);
                 if (freeq->next != (MprFreeMem*) freeq) {
-//  6.9
                     if (acquire(freeq)) {
                         if (freeq->next != (MprFreeMem*) freeq) {
                             /* Inline unlinkBlock for speed */
@@ -491,7 +489,6 @@ static MprMem *allocMem(size_t required)
                             if (mp->size >= (size_t) (required + MPR_ALLOC_MIN_SPLIT)) {
                                 spare = (MprMem*) ((char*) mp + required);
                                 initBlock(spare, mp->size - required, 0);
-//  35%
                                 linkBlock(spare);
                                 mp->size = (MprMemSize) required;
                                 ATOMIC_INC(splits);
@@ -522,7 +519,6 @@ static MprMem *allocMem(size_t required)
             }
         }
     }
-//  4.4
     return growHeap(required);
 }
 
@@ -2447,6 +2443,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
 
     srand((uint) time(NULL));
 
+    mprAtomicOpen();
     if ((mpr = mprCreateMemService((MprManager) manageMpr, flags)) == 0) {
         assert(mpr);
         return 0;
@@ -3471,7 +3468,17 @@ void asyncDummy() {}
 
 
 
+/*********************************** Local ************************************/
+
+static MprSpin  atomicSpin;
+
 /************************************ Code ************************************/
+
+PUBLIC void mprAtomicOpen()
+{
+    mprInitSpinLock(&atomicSpin);
+}
+
 
 PUBLIC void mprAtomicBarrier()
 {
@@ -3485,13 +3492,12 @@ PUBLIC void mprAtomicBarrier()
         __sync_synchronize();
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
         asm volatile ("mfence" : : : "memory");
-
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_PPC)
         asm volatile ("sync" : : : "memory");
     #else
+        //  TODO - can do better
         getpid();
     #endif
-
 #if FUTURE && KEEP
     asm volatile ("lock; add %eax,0");
 #endif
@@ -3534,14 +3540,13 @@ PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
             return expected == prev;
         }
     #else
-        //  MOB - can do better than this
-        mprGlobalLock();
+        mprSpinLock(&atomicSpin);
         if (*addr == expected) {
             *addr = (void*) value;
-            mprGlobalUnlock();
+            mprSpinUnlock(&atomicSpin);
             return 1;
         }
-        mprGlobalUnlock();
+        mprSpinUnlock(&atomicSpin);
         return 0;
     #endif
 }
@@ -3558,21 +3563,15 @@ PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
         InterlockedExchangeAdd(ptr, value);
     #elif VXWORKS && _VX_ATOMIC_INIT
         vxAtomicAdd(ptr, value);
-
-//  MOB - need this enabled
-//  MOB - need GCC versions
-
-    //  MOB - what about arm
-    //  MOB - complete this
     #elif (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64) && FUTURE
         asm volatile ("lock; xaddl %0,%1"
             : "=r" (value), "=m" (*ptr)
             : "0" (value), "m" (*ptr)
             : "memory", "cc");
     #else
-        mprGlobalLock();
+        mprSpinLock(&atomicSpin);
         *ptr += value;
-        mprGlobalUnlock();
+        mprSpinUnlock(&atomicSpin);
     #endif
 }
 
@@ -3586,19 +3585,15 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
     OSAtomicAdd64(value, ptr);
 #elif BIT_WIN_LIKE && BIT_64
     InterlockedExchangeAdd64(ptr, value);
-
-    //  MOB - complete this
-    //  MOB - what about vxworks
 #elif BIT_UNIX_LIKE && FUTURE
     asm volatile ("lock; xaddl %0,%1"
         : "=r" (value), "=m" (*ptr)
         : "0" (value), "m" (*ptr)
         : "memory", "cc");
 #else
-    //  MOB - need better than this
-    mprGlobalLock();
+    mprSpinLock(&atomicSpin);
     *ptr += value;
-    mprGlobalUnlock();
+    mprSpinUnlock(&atomicSpin);
 #endif
 }
 
@@ -3616,10 +3611,10 @@ PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 #else
     {
         void    *old;
-        mprGlobalLock();
-        old = * (void**) addr;
+        mprSpinLock(&atomicSpin);
+        old = *(void**) addr;
         *addr = (void*) value;
-        mprGlobalUnlock();
+        mprSpinUnlock(&atomicSpin);
         return old;
     }
 #endif

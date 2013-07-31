@@ -708,6 +708,13 @@ PUBLIC void mprGlobalUnlock();
  */
 
 /**
+    Open and initialize the atomic subystem
+    @ingroup MprSynch
+    @stability Prototype.
+ */
+PUBLIC void mprAtomicOpen();
+
+/**
     Apply a full (read+write) memory barrier
     @ingroup MprSynch
     @stability Evolving.
@@ -768,6 +775,7 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     Allocator debug and stats selection
     Use configure --set memoryCheck=true to enable
  */
+//  MOB - change to BIT_ALLOC_*  Update bit/configure to match memoryCheck
 #if BIT_MEMORY_CHECK
     #define BIT_MEMORY_DEBUG        1                   /**< Fill blocks, verifies block integrity, block names */
     #define BIT_MEMORY_STATS        1                   /**< Include memory statistics */

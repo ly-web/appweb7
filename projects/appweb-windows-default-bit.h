@@ -100,6 +100,30 @@
 #ifndef BIT_MANIFEST
     #define BIT_MANIFEST "package/manifest.bit"
 #endif
+#ifndef BIT_MPR_ALLOC_BIG
+    #define BIT_MPR_ALLOC_BIG 0
+#endif
+#ifndef BIT_MPR_ALLOC_INLINE
+    #define BIT_MPR_ALLOC_INLINE 1
+#endif
+#ifndef BIT_MPR_ALLOC_MAX_REGION
+    #define BIT_MPR_ALLOC_MAX_REGION 262144
+#endif
+#ifndef BIT_MPR_ALLOC_PARALLEL
+    #define BIT_MPR_ALLOC_PARALLEL 1
+#endif
+#ifndef BIT_MPR_ALLOC_QUOTA
+    #define BIT_MPR_ALLOC_QUOTA 4096
+#endif
+#ifndef BIT_MPR_ALLOC_SCAN
+    #define BIT_MPR_ALLOC_SCAN 13
+#endif
+#ifndef BIT_MPR_ALLOC_SMALL
+    #define BIT_MPR_ALLOC_SMALL 4096
+#endif
+#ifndef BIT_MPR_ALLOC_VIRTUAL
+    #define BIT_MPR_ALLOC_VIRTUAL 1
+#endif
 #ifndef BIT_MPR_LOGGING
     #define BIT_MPR_LOGGING 1
 #endif
