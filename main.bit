@@ -142,7 +142,8 @@ Bit.load({
             alloc: {
                 parallel: true,     /* Run sweeper in parallel */
                 regionSize: 262144, /* Memory region allocation size */
-                //cache: 1000000,     /* Keep this amount of free blocks in memory heap for fast allocation */
+                // cache: 10000000, /* Keep this amount of free blocks in memory heap for fast allocation */
+                // cache: 0,     /* Keep this amount of free blocks in memory heap for fast allocation */
             },
         },
 
