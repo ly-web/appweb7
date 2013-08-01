@@ -5376,8 +5376,8 @@ PUBLIC void httpGetStats(HttpStats *sp)
     sp->pendingRequests = MPR->eventService->pendingCount;
 
     sp->mem = ap->rss;
-    sp->memRedline = ap->redLine;
-    sp->memMax = ap->maxMemory;
+    sp->memRedline = ap->warnHeap;
+    sp->memMax = ap->maxHeap;
 
     sp->heap = ap->bytesAllocated + ap->bytesFree;
     sp->heapUsed = ap->bytesAllocated;

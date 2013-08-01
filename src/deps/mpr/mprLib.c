@@ -43,7 +43,7 @@
 /*
     Memory checking and breakpoints
  */
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
     /*
         Set this address to break when this address is allocated or freed
         Only used for debug, but defined regardless so we can have constant exports.
@@ -79,7 +79,7 @@
     #define VALID_BLK(mp) 1
 #endif
 
-#if BIT_MEMORY_STATS
+#if BIT_MPR_ALLOC_STATS
     #define ATOMIC_INC(field) mprAtomicAdd64((int64*) &heap->stats.field, 1)
     #define INC(field) heap->stats.field++
 #else
@@ -120,7 +120,6 @@ static int          padding[] = { 0, MPR_MANAGER_SIZE };
 /***************************** Forward Declarations ***************************/
 
 static inline bool acquire(MprFreeQueue *freeq);
-static inline void acquireWait(MprFreeQueue *freeq);
 static void allocException(int cause, size_t size);
 static MprMem *allocMem(size_t size);
 static inline int cas(size_t *target, size_t expected, size_t value);
@@ -133,7 +132,7 @@ static void *getNextRoot();
 static void getSystemInfo();
 static MprMem *growHeap(size_t size);
 static inline size_t qtosize(int qindex);
-static void linkBlock(MprMem *mp); 
+static inline void linkBlock(MprMem *mp); 
 static inline void initBlock(MprMem *mp, size_t size, int first);
 static int initQueues();
 static void invokeDestructors();
@@ -147,7 +146,7 @@ static inline void setbitmap(size_t *bitmap, int bindex);
 static inline int sizetoq(size_t size);
 static void sweep();
 static void sweeper(void *unused, MprThread *tp);
-static void triggerGC(int flags);
+static inline void triggerGC();
 static inline void unlinkBlock(MprMem *mp);
 static void *vmalloc(size_t size, int mode);
 static void vmfree(void *ptr, size_t size);
@@ -155,17 +154,17 @@ static void vmfree(void *ptr, size_t size);
 #if BIT_WIN_LIKE
     static int winPageModes(int flags);
 #endif
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
     static void breakpoint(MprMem *mp);
     static void checkYielded();
     static int validBlk(MprMem *mp);
 #endif
-#if BIT_MEMORY_STATS
+#if BIT_MPR_ALLOC_STATS
     static void freeLocation(cchar *name, size_t size);
     static void printQueueStats();
     static void printGCStats();
 #endif
-#if BIT_MEMORY_STACK
+#if BIT_MPR_ALLOC_STACK
     static void monitorStack();
 #else
     #define monitorStack()
@@ -188,8 +187,8 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     memset(heap, 0, sizeof(MprHeap));
     heap->stats.numCpu = memStats.numCpu;
     heap->stats.pageSize = memStats.pageSize;
-    heap->stats.maxMemory = (size_t) -1;
-    heap->stats.redLine = ((size_t) -1) / 100 * 95;
+    heap->stats.maxHeap = (size_t) -1;
+    heap->stats.warnHeap = ((size_t) -1) / 100 * 95;
     mprInitSpinLock(&heap->heapLock);
 
     /*
@@ -197,7 +196,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
      */
     mprSize = MPR_ALLOC_ALIGN(sizeof(MprMem) + sizeof(Mpr) + (MPR_MANAGER_SIZE * sizeof(void*)));
     regionSize = MPR_ALLOC_ALIGN(sizeof(MprRegion));
-    size = max(mprSize + regionSize, BIT_MPR_ALLOC_MAX_REGION);
+    size = max(mprSize + regionSize, BIT_MPR_ALLOC_REGION_SIZE);
     if ((region = mprVirtAlloc(size, MPR_MAP_READ | MPR_MAP_WRITE)) == NULL) {
         return NULL;
     }
@@ -213,25 +212,29 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
 
     heap->flags = flags | MPR_THREAD_PATTERN;
     heap->nextSeqno = 1;
-    heap->chunkSize = BIT_MPR_ALLOC_MAX_REGION;
-    heap->stats.maxMemory = (size_t) -1;
-    heap->stats.redLine = ((size_t) -1) / 100 * 95;
-    heap->stats.cacheMemory = BIT_MPR_ALLOC_CACHE;
+    heap->chunkSize = BIT_MPR_ALLOC_REGION_SIZE;
+    heap->stats.maxHeap = (size_t) -1;
+    heap->stats.warnHeap = ((size_t) -1) / 100 * 95;
+    heap->stats.cacheHeap = BIT_MPR_ALLOC_CACHE;
+    heap->stats.lowHeap = BIT_MPR_ALLOC_CACHE ?  BIT_MPR_ALLOC_CACHE / 8 : BIT_MPR_ALLOC_REGION_SIZE;
     heap->newQuota = BIT_MPR_ALLOC_QUOTA;
     heap->enabled = !(heap->flags & MPR_DISABLE_GC);
 
+    /* Internal testing use only */
     if (scmp(getenv("MPR_DISABLE_GC"), "1") == 0) {
         heap->enabled = 0;
+    }
+#if BIT_MPR_ALLOC_DEBUG
+    if (scmp(getenv("MPR_SCRIBBLE_MEM"), "1") == 0) {
+        heap->scribble = 1;
     }
     if (scmp(getenv("MPR_VERIFY_MEM"), "1") == 0) {
         heap->verify = 1;
     }
-    if (scmp(getenv("MPR_SCRIBBLE_MEM"), "1") == 0) {
-        heap->scribble = 1;
-    }
     if (scmp(getenv("MPR_TRACK_MEM"), "1") == 0) {
         heap->track = 1;
     }
+#endif
     heap->stats.bytesAllocated += size;
     heap->stats.regions++;
     INC(allocs);
@@ -417,7 +420,7 @@ static int initQueues()
     for (freeq = heap->freeq, qindex = 0; freeq < &heap->freeq[MPR_ALLOC_NUM_QUEUES]; freeq++, qindex++) {
         /* Size includes MprMem header */
         freeq->minSize = (MprMemSize) qtosize(qindex);
-#if (BIT_MEMORY_STATS && BIT_MEMORY_DEBUG)
+#if (BIT_MPR_ALLOC_STATS && BIT_MPR_ALLOC_DEBUG)
         printf("Queue: %d, usize %u  size %u\n",
             (int) (freeq - heap->freeq), (int) freeq->minSize - (int) sizeof(MprMem), (int) freeq->minSize);
 #endif
@@ -438,7 +441,7 @@ static MprMem *allocMem(size_t required)
     MprFreeMem      *fp;
     MprMem          *mp, *spare;
     size_t          *bitmap, localMap;
-    int             baseBindex, bindex, qindex;
+    int             baseBindex, bindex, qindex, retryIndex;
 
     if ((qindex = sizetoq(required)) >= 0) {
         freeq = &heap->freeq[qindex];
@@ -453,6 +456,8 @@ static MprMem *allocMem(size_t required)
         heap->weightedCount += qindex;
         ATOMIC_INC(requests);
 
+retry:
+        retryIndex = -1;
         baseBindex = qindex / MPR_ALLOC_BITMAP_BITS;
         bitmap = &heap->bitmap[baseBindex];
 
@@ -491,12 +496,9 @@ static MprMem *allocMem(size_t required)
                                 mp->size = (MprMemSize) required;
                                 ATOMIC_INC(splits);
                             }
-#if NOT_YET
-                            if ((bindex - baseBindex) > 2) {
-                                /* Tested empirically to trigger GC when searching too much for an allocation */
-                                triggerGC(MPR_GC_FORCE);
+                            if (heap->weightedCount > heap->newQuota && heap->stats.bytesFree < heap->stats.lowHeap && !heap->gcRequested) {
+                                triggerGC();
                             }
-#endif
                             ATOMIC_INC(reuse);
                             assert(mp->size >= required);
                             return mp;
@@ -506,12 +508,21 @@ static MprMem *allocMem(size_t required)
                         }
                     } else {
                         ATOMIC_INC(tryFails);
+                        if (freeq->count > 1 && retryIndex < 0) {
+                            retryIndex = qindex;
+                        }
                     }
                 }
                 /* Refresh the bitmap incase other threads have split or depleted suitable queues. +1 to clear current queue */
                 localMap = heap->bitmap[bindex] & ((size_t) ((uint64) -1 << max(0, (qindex + 1 - (MPR_ALLOC_BITMAP_BITS * bindex)))));
-                ATOMIC_INC(qmiss);
+                ATOMIC_INC(qrace);
             }
+        }
+        if (retryIndex >= 0) {
+            /* Avoid growHeap if there is a suitable block in the heap */
+            ATOMIC_INC(retries);
+            qindex = retryIndex;
+            goto retry;
         }
     }
     return growHeap(required);
@@ -524,22 +535,21 @@ static void freeBlock(MprMem *mp)
     size_t      size;
 
     assert(!mp->free);
-
     SCRIBBLE(mp);
     INC(swept);
     size = mp->size;
 
-#if BIT_MEMORY_STATS
-    heap->stats.freed += size;
-#endif
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
     if (heap->track) {
         freeLocation(mp->name, size);
     }
 #endif
+#if BIT_MPR_ALLOC_STATS
+    heap->stats.freed += size;
+#endif
     if (mp->first) {
         region = GET_REGION(mp);
-        if (GET_NEXT(mp) >= region->end) {
+        if (GET_NEXT(mp) >= region->end && (heap->stats.bytesFree >= heap->stats.cacheHeap)) {
             region->freeable = 1;
             return;
         }
@@ -581,7 +591,7 @@ static inline int sizetoq(size_t size)
     assert(MPR_ALLOC_ALIGN(size) == size);
 
     size -= sizeof(MprMem);
-    if (size > BIT_MPR_ALLOC_MAX_REGION) {
+    if (size > BIT_MPR_ALLOC_REGION_SIZE) {
         /* Large block, don't put on queues */
         return -1;
     }
@@ -598,37 +608,42 @@ static inline int sizetoq(size_t size)
     Add a block to a free q. Called by user threads from allocMem and by sweeper from freeBlock.
     WARNING: Must be called with the freelist unlocked. This is the opposite of unlinkBlock.
  */
-static void linkBlock(MprMem *mp) 
+static inline void linkBlock(MprMem *mp) 
 {
     MprFreeQueue    *freeq;
     MprFreeMem      *fp;
+    ssize           size;
+    int             qindex;
 
     CHECK(mp);
 
-    mp->qindex = sizetoq(mp->size);
-    mp->free = 1;
-    mp->hasManager = 0;
-    freeq = &heap->freeq[mp->qindex];
-    fp = (MprFreeMem*) mp;
+    size = mp->size;
+    qindex = sizetoq(size);
+    freeq = &heap->freeq[qindex];
 
     /*
-        Link onto front of free queue. Must be fast!
-        MOB - but this is not lock free!!!
+        Acquire the free queue. Racing with multiple-threads in allocMem(). If we fail to acquire, the sweeper
+        will retry next time. Note: the bitmap is updated with the queue locked to safeguard the integrity of 
+        this queue's free bit, but the update is lock free for all other queues in the bitmap.
      */
-    acquireWait(freeq);
+    if (!acquire(freeq)) {
+        ATOMIC_INC(tryFails);
+        mp->mark = !mp->mark;
+        assert(!mp->free);
+        return;
+    }
+    mp->qindex = qindex;
+    mp->free = 1;
+    mp->hasManager = 0;
+    fp = (MprFreeMem*) mp;
     fp->next = freeq->next;
     fp->prev = (MprFreeMem*) freeq;
     freeq->next->prev = fp;
     freeq->next = fp;
     freeq->count++;
-    /*
-        Updates bitmaps. Racing with multiple-threads in allocMem().
-        Must be done with the queue locked to safeguard the integrity of this queues bit, 
-        but lock free for all other queues in the bitmap.
-     */
     setbitmap(&heap->bitmap[mp->qindex / MPR_ALLOC_BITMAP_BITS], mp->qindex % MPR_ALLOC_BITMAP_BITS);
     release(freeq);
-    mprAtomicAdd64((int64*) &heap->stats.bytesFree, mp->size);
+    mprAtomicAdd64((int64*) &heap->stats.bytesFree, size);
 }
 
 
@@ -648,7 +663,7 @@ static inline void unlinkBlock(MprMem *mp)
     freeq = &heap->freeq[mp->qindex];
     freeq->count--;
     mp->qindex = 0;
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
     fp->next = fp->prev = NULL;
 #endif
     mprAtomicAdd64((int64*) &heap->stats.bytesFree, -(int64) mp->size);
@@ -668,16 +683,12 @@ static MprMem *growHeap(size_t required)
     printMemReport();
     printQueueStats();
 #endif
-    /*
-        Force a GC to run soon
-     */
-    triggerGC(MPR_GC_FORCE);
+    triggerGC();
     
     if (required >= MPR_ALLOC_MAX) {
         allocException(MPR_MEM_TOO_BIG, required);
         return 0;
     }
-
     rsize = MPR_ALLOC_ALIGN(sizeof(MprRegion));
     size = max((size_t) required + rsize, (size_t) heap->chunkSize);
     size = MPR_PAGE_ALIGN(size, memStats.pageSize);
@@ -696,14 +707,13 @@ static MprMem *growHeap(size_t required)
     /*
         If a block is big, don't split the block. This improves the chances it will be unpinned.
      */
-    if (spareLen < MPR_ALLOC_MIN || required > BIT_MPR_ALLOC_MAX_REGION) {
+    if (spareLen < MPR_ALLOC_MIN || required > BIT_MPR_ALLOC_REGION_SIZE) {
         required = size - rsize; 
         spareLen = 0;
     }
     initBlock(mp, required, 1);
 
     lockHeap();
-
     if (spareLen > 0) {
         assert(spareLen >= MPR_ALLOC_MIN);
         spare = (MprMem*) ((char*) mp + required);
@@ -742,10 +752,11 @@ PUBLIC void *mprVirtAlloc(size_t size, int mode)
     if (memStats.pageSize) {
         size = MPR_PAGE_ALIGN(size, memStats.pageSize);
     }
-    if ((size + used) > heap->stats.maxMemory) {
+    if ((size + used) > heap->stats.maxHeap) {
         allocException(MPR_MEM_LIMIT, size);
-    } else if ((size + used) > heap->stats.redLine) {
-        allocException(MPR_MEM_REDLINE, size);
+
+    } else if ((size + used) > heap->stats.warnHeap) {
+        allocException(MPR_MEM_WARNING, size);
     }
     if ((ptr = vmalloc(size, mode)) == 0) {
         allocException(MPR_MEM_FAIL, size);
@@ -842,29 +853,16 @@ PUBLIC void mprWakeGCService()
 }
 
 
-static void triggerGC(int flags)
+static inline void triggerGC()
 {
-    if (!heap->gcRequested && ((flags & MPR_GC_FORCE) || (heap->weightedCount > heap->newQuota))) {
-        heap->gcRequested = 1;
+    if (!heap->gcRequested) {
         if (heap->flags & MPR_SWEEP_THREAD && heap->sweeperCond) {
+            heap->gcRequested = 1;
             mprSignalCond(heap->sweeperCond);
         }
     }
 }
 
-
-#if EXAMPLES
-mprYield(0);                        //  Yield. Block for marking if GC required
-mprYield(MPR_YIELD_BLOCK);          //  Yield and wait for GC to happen
-mprYield(MPR_YIELD_COMPLETE);       //  Yield and wait for GC to happen and fully complete
-mprYield(MPR_YIELD_STICKY);         //  Sticky yield and return
-
-mprRequestGC(0);                    //  Request a GC if necessary. Yield and block if GC is run. Don't wait for completion of GC.
-mprRequestGC(MPR_GC_FORCE);         //  Force a GC whether required or not
-mprRequestGC(MPR_GC_NO_BLOCK);      //  Request a GC but do not block. Thread must yield sometime after.
-mprRequestGC(MPR_GC_COMPLETE);      //  Request a GC and wait for it to fully complete.
-mprRequestGC(MPR_GC_COMPACT);       //  Request a fully compacting GC that will coalesce and unpin all possible blocks
-#endif
 
 /*
     Trigger a GC collection worthwhile. If MPR_GC_FORCE is set, force the collection regardless. Flags:
@@ -878,7 +876,7 @@ PUBLIC void mprRequestGC(int flags)
     mprTrace(7, "DEBUG: mprRequestGC");
 
     if ((flags & MPR_GC_FORCE) || (heap->weightedCount > heap->newQuota)) {
-        triggerGC(MPR_GC_FORCE);
+        triggerGC();
     }
     if (!(flags & MPR_GC_NO_BLOCK)) {
         mprYield((flags & MPR_GC_COMPLETE) ? MPR_YIELD_COMPLETE : 0);
@@ -919,7 +917,6 @@ static void markAndSweep()
     static int warnOnce = 0;
 
     mprTrace(7, "GC: mark started");
-    heap->gcRequested = 0;
     heap->mustYield = 1;
 
     if (!pauseThreads()) {
@@ -930,20 +927,22 @@ static void markAndSweep()
         }
         return;
     }
+    INC(collections);
+    heap->gcRequested = 0;
     heap->priorWeightedCount = heap->weightedCount;
-#if BIT_MEMORY_STATS
+    heap->weightedCount = 0;
+#if BIT_MPR_ALLOC_STATS
     heap->priorFree = heap->stats.bytesFree;
 #endif
-    heap->weightedCount = 0;
 
     /*
         Mark all roots
      */
     heap->mark = !heap->mark;
     MPR_MEASURE(BIT_MPR_ALLOC_LEVEL, "GC", "mark", markRoots());
-    heap->marking = 0;
     heap->sweeping = 1;
     mprAtomicBarrier();
+    heap->marking = 0;
 
 #if BIT_MPR_ALLOC_PARALLEL
     resumeThreads(0);
@@ -965,6 +964,9 @@ static void invokeDestructors()
 
     for (region = heap->regions; region; region = region->next) {
         for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
+            /*
+                OPT - could optimize by requiring a separate flag for managers that implement destructors.
+             */
             if (mp->mark != heap->mark && !mp->free && mp->hasManager) {
                 mgr = GET_MANAGER(mp);
                 if (mgr) {
@@ -1013,24 +1015,23 @@ static inline bool claim(MprMem *mp)
 */
 static void sweep()
 {
-    MprRegion       *region, *nextRegion, *prior;
-    MprMem          *mp, *next;
+    MprRegion   *region, *nextRegion, *prior;
+    MprMem      *mp, *next;
+    int         joinBlocks;
 
     if (!heap->enabled) {
         mprTrace(0, "DEBUG: sweep: Abort sweep - GC disabled");
         return;
     }
     mprTrace(7, "GC: sweep started");
-#if BIT_MEMORY_STATS
+#if BIT_MPR_ALLOC_STATS
     heap->stats.sweepVisited = 0;
     heap->stats.swept = 0;
     heap->stats.freed = 0;
 #endif
-
     /*
         First run managers so that dependant memory blocks will still exist when the manager executes.
         Actually free the memory in a 2nd pass below. 
-        OPT - could optimize by requiring a separate flag for managers that implement destructors.
      */
     invokeDestructors();
 
@@ -1041,45 +1042,44 @@ static void sweep()
     prior = NULL;
     for (region = heap->regions; region; region = nextRegion) {
         nextRegion = region->next;
+        joinBlocks = heap->stats.bytesFree >= heap->stats.cacheHeap;
 
         for (mp = region->start; mp < region->end; mp = next) {
             next = GET_NEXT(mp);
             assert(next != mp);
-#if BIT_DEBUG
-            if (next == mp) break;
-#endif
             CHECK(mp);
             INC(sweepVisited);
-            if (!mp->free && mp->mark != heap->mark) {
-                /*
-                    Cache small blocks provided not first block in the regions (assists to unpin regions)
-                 */
-                if (!mp->first && mp->size < BIT_MPR_ALLOC_SMALL && heap->stats.bytesFree < heap->stats.cacheMemory) {
-                    INC(cached);
-                    freeBlock(mp);
-                    continue;
+
+            if (mp->free && joinBlocks) {
+                if (next < region->end && !next->free && next->mark != heap->mark && claim(mp)) {
+                    mp->mark = !heap->mark;
+                    INC(compacted);
                 }
-                while (next < region->end) {
-                    if (next->free) {
-                        if (!claim(next)) {
+            }
+            if (!mp->free && mp->mark != heap->mark) {
+                if (joinBlocks) {
+                    while (next < region->end) {
+                        if (next->free) {
+                            if (!claim(next)) {
+                                break;
+                            }
+                            mp->size += next->size;
+                            assert(!next->free);
+                            SCRIBBLE_RANGE(next, MPR_ALLOC_MIN);
+                            INC(joins);
+
+                        } else if (next->mark != heap->mark) {
+                            assert(!next->free);
+                            assert(next->qindex == 0);
+                            mp->size += next->size;
+                            SCRIBBLE_RANGE(next, MPR_ALLOC_MIN);
+                            INC(joins);
+
+                        } else {
                             break;
                         }
-                        mp->size += next->size;
-                        assert(!next->free);
-                        SCRIBBLE_RANGE(next, MPR_ALLOC_MIN);
-                        INC(joins);
-
-                    } else if (next->mark != heap->mark) {
-                        assert(!next->free);
-                        assert(next->qindex == 0);
-                        mp->size += next->size;
-                        SCRIBBLE_RANGE(next, MPR_ALLOC_MIN);
-                        INC(joins);
-
-                    } else {
-                        break;
+                        next = GET_NEXT(mp);
                     }
-                    next = GET_NEXT(mp);
                 }
                 freeBlock(mp);
             }
@@ -1104,12 +1104,14 @@ static void sweep()
             prior = region;
         }
     }
-#if BIT_MEMORY_STATS && BIT_MEMORY_DEBUG
-    mprTrace(7, "GC: MARKED %,Ld/%,Ld, SWEPT %,Ld/%,Ld, freed %,Ld, bytesFree %,Ld (prior %,Ld), weightedCount %,Ld/%,Ld, " 
-            "blocks %,Ld bytes %,Ld",
-            heap->stats.marked, heap->stats.markVisited, heap->stats.swept, heap->stats.sweepVisited, 
-            heap->stats.freed, heap->stats.bytesFree, heap->priorFree, heap->priorWeightedCount, heap->newQuota,
-            heap->stats.sweepVisited - heap->stats.swept, heap->stats.bytesAllocated);
+#if (BIT_MPR_ALLOC_STATS && BIT_MPR_ALLOC_DEBUG)
+    mprRawLog(7, "GC: Marked %,Ld / %,Ld, Swept %,Ld / %,Ld, freed %,Ld, bytesFree %,Ld (prior %,Ld)\n"
+                 "    WeightedCount %,d / %,d, allocated blocks %,Ld allocated bytes %,Ld\n"
+                 "    Unpins %Ld, Collections %Ld\n",
+        heap->stats.marked, heap->stats.markVisited, heap->stats.swept, heap->stats.sweepVisited, 
+        heap->stats.freed, heap->stats.bytesFree, heap->priorFree, heap->priorWeightedCount, heap->newQuota,
+        heap->stats.sweepVisited - heap->stats.swept, heap->stats.bytesAllocated, heap->stats.unpins, 
+        heap->stats.collections);
 #endif
     if (heap->printStats) {
         printMemReport();
@@ -1122,7 +1124,7 @@ static void markRoots()
 {
     void    *root;
 
-#if BIT_MEMORY_STATS
+#if BIT_MPR_ALLOC_STATS
     heap->stats.markVisited = 0;
     heap->stats.marked = 0;
 #endif
@@ -1135,54 +1137,6 @@ static void markRoots()
     }
     heap->rootIndex = -1;
 }
-
-
-/*
-    This is typically a macro.
-    MOB - test size and speed difference
-    MOB - otherwise remove this code
- */
-#if !defined(mprMarkBlock)
-PUBLIC void mprMarkBlock(cvoid *ptr)
-{
-    MprMem      *mp;
-#if BIT_DEBUG
-    static int  depth = 0;
-#endif
-
-    if (ptr == 0) {
-        return;
-    }
-    mp = MPR_GET_MEM(ptr);
-    assert(!mp->free);
-
-#if BIT_DEBUG
-    if (!mprIsValid(ptr)) {
-        mprError("Memory block is either not dynamically allocated, or is corrupted");
-        return;
-    }
-#endif
-    CHECK(mp);
-    INC(markVisited);
-
-    if (mp->mark != heap->mark) {
-        mp->mark = heap->mark;
-        if (mp->hasManager) {
-#if BIT_DEBUG
-            if (++depth > 400) {
-                fprintf(stderr, "WARNING: Possibly too much recursion. Marking depth exceeds 400\n");
-                mprBreakpoint();
-            }
-#endif
-            (GET_MANAGER(mp))((void*) ptr, MPR_MANAGE_MARK);
-#if BIT_DEBUG
-            --depth;
-#endif
-        }
-        INC(marked);
-    }
-}
-#endif
 
 
 /*
@@ -1332,11 +1286,13 @@ PUBLIC void mprResetYield()
         If GC being requested, then do a blocking pause here.
      */
     lock(ts->threads);
-    if (/* heap->mustYield || */ heap->marking) {
+    if (heap->mustYield && (heap->marking || (heap->sweeping && !BIT_MPR_ALLOC_PARALLEL))) {
         unlock(ts->threads);
         mprYield(0);
     } else {
-        tp->yielded = 0;
+        if (tp) {
+            tp->yielded = 0;
+        }
         unlock(ts->threads);
     }
 }
@@ -1492,13 +1448,16 @@ static void *getNextRoot()
 
 /****************************************************** Debug *************************************************************/
 
-#if BIT_MEMORY_STATS
+#if BIT_MPR_ALLOC_STATS
 static void printQueueStats() 
 {
     MprFreeQueue    *freeq;
     int             i;
 
-    printf("\nFree Queue Stats\n Bucket           Usize         Count         Total\n");
+    /*
+        Note the total size is a minimum as blocks may be larger than minSize
+     */
+    printf("\nFree Queue Stats\n  Queue           Usize         Count          Total\n");
     for (i = 0, freeq = heap->freeq; freeq < &heap->freeq[MPR_ALLOC_NUM_QUEUES]; freeq++, i++) {
         if (freeq->count) {
             printf("%7d %14d %14d %14d\n", i, freeq->minSize - (int) sizeof(MprMem), freeq->count, 
@@ -1508,6 +1467,7 @@ static void printQueueStats()
 }
 
 
+#if BIT_MPR_ALLOC_DEBUG
 static MprLocationStats sortLocations[MPR_TRACK_HASH];
 
 static int sortLocation(cvoid *l1, cvoid *l2)
@@ -1548,14 +1508,16 @@ static void printTracking()
         }
     }
 }
+#endif /* BIT_MPR_ALLOC_DEBUG */
 
 
 static void printGCStats()
 {
     MprRegion   *region;
     MprMem      *mp;
-    size_t      freeBytes, activeBytes, eternalBytes, regionBytes;
-    int         regions, freeCount, activeCount, eternalCount, regionCount;
+    size_t      freeBytes, activeBytes, eternalBytes, regionBytes, available;
+    char        *tag;
+    int         regions, freeCount, activeCount, eternalCount, regionCount, empty;
 
     printf("\nRegion Stats\n");
     regions = 0;
@@ -1565,6 +1527,7 @@ static void printGCStats()
     for (region = heap->regions; region; region = region->next, regions++) {
         regionCount = 0;
         regionBytes = 0;
+        empty = 1;
 
         for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
             if (mp->free) {
@@ -1576,23 +1539,33 @@ static void printGCStats()
                 eternalCount++;
                 regionCount++;
                 regionBytes += mp->size;
+                empty = 0;
 
             } else {
                 activeBytes += mp->size;
                 activeCount++;
                 regionCount++;
                 regionBytes += mp->size;
+                empty = 0;
             }
         }
-        printf("  Region %3d size %d bytes allocated %4d blocks with %7ld bytes available\n", regions, (int) region->size, 
-            regionCount, region->size - regionBytes);
+        available = region->size - regionBytes - MPR_ALLOC_ALIGN(sizeof(MprRegion));
+        if (available == 0) {
+            tag = "(fully used)";
+        } else if (regionBytes == 0) {
+            tag = "(empty)";
+        } else {
+            tag = "";
+        }
+        printf("  Region %3d size %d, allocated %4d blocks, %7d bytes free %s\n", regions, (int) region->size, 
+            regionCount, (int) available, tag);
     }
     printf("\nGC Stats\n");
     printf("  Active:  %9d blocks, %12ld bytes\n", activeCount, activeBytes);
     printf("  Eternal: %9d blocks, %12ld bytes\n", eternalCount, eternalBytes);
     printf("  Free:    %9d blocks, %12ld bytes\n", freeCount, freeBytes);
 }
-#endif /* BIT_MEMORY_STATS */
+#endif /* BIT_MPR_ALLOC_STATS */
 
 
 PUBLIC void mprPrintMem(cchar *msg, int flags)
@@ -1603,9 +1576,11 @@ PUBLIC void mprPrintMem(cchar *msg, int flags)
     printf("-------------\n");
     heap->printStats = (flags & MPR_MEM_DETAIL) ? 2 : 1;
     gflags = MPR_GC_FORCE | MPR_GC_COMPLETE;
+#if UNUSED
     if (flags & MPR_MEM_COMPACT) {
         gflags |= MPR_GC_COMPACT;
     }
+#endif
     mprRequestGC(gflags);
 }
 
@@ -1620,46 +1595,48 @@ static void printMemReport()
     printf("  Allocated memory  %14u K\n",             (int) (ap->bytesAllocated / 1024));
     printf("  Free heap memory  %14u K\n",             (int) (ap->bytesFree / 1024));
 
-    if (ap->maxMemory == (size_t) -1) {
+    if (ap->maxHeap == (size_t) -1) {
         printf("  Memory limit           unlimited\n");
         printf("  Memory redline         unlimited\n");
     } else {
-        printf("  Memory limit      %14u MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
-           percent(ap->bytesAllocated / 1024, ap->maxMemory / 1024));
-        printf("  Memory redline    %14u MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
-           percent(ap->bytesAllocated / 1024, ap->redLine / 1024));
-        printf("  Memory cache      %14u MB (%d %%)\n",    (int) (ap->cacheMemory / (1024 * 1024)),
-           percent(ap->cacheMemory / 1024, ap->maxMemory / 1024));
+        printf("  Heap max          %14u MB (%.2f %%)\n", (int) (ap->maxHeap / (1024 * 1024)), ap->bytesAllocated * 1.0 / ap->maxHeap);
+        printf("  Heap redline      %14u MB (%.2f %%)\n", (int) (ap->warnHeap / (1024 * 1024)), ap->bytesAllocated * 1.0 / ap->warnHeap);
     }
+    printf("  Heap cache        %14u MB (%.2f %%)\n",    (int) (ap->cacheHeap / (1024 * 1024)), ap->cacheHeap * 1.0 / ap->maxHeap);
     printf("  Allocation errors %14d\n",               (int) ap->errors);
+    printf("\n");
 
-#if BIT_MEMORY_STATS
-    printf("  Memory requests   %14d\n",               (int) ap->requests);
-    printf("  O/S allocations   %14d %%\n",            percent(ap->allocs, ap->requests));
-    printf("  Region unpins     %14d %% (%d)\n",       percent(ap->unpins, ap->requests), (int) ap->unpins);
-    printf("  Block reuse       %14d %%\n",            percent(ap->reuse, ap->requests));
-    printf("  Joins             %14d %% (%d)\n",       percent(ap->joins, ap->requests), (int) ap->joins);
-    printf("  Splits            %14d %% (%d)\n",       percent(ap->splits, ap->requests), (int) ap->splits);
-    printf("  Cached            %14d %% (%d)\n",       percent(ap->cached, ap->requests), (int) ap->cached);
-    printf("  Qmises            %14d %% (%d)\n",       percent(ap->qmiss, ap->requests), (int) ap->qmiss);
-    printf("  Freeq failures    %14d %% (%d / %d)\n",  percent(ap->tryFails, ap->trys), (int) ap->tryFails, (int) ap->trys);
-    printf("  MprMem            %14d\n",               (int) sizeof(MprMem));
-    printf("  MprFreeMem        %14d\n",               (int) sizeof(MprFreeMem));
+#if BIT_MPR_ALLOC_STATS
+    printf("  Memory requests   %14d\n",                (int) ap->requests);
+    printf("  Region allocs     %14.2f %% (%d)\n",      ap->allocs * 1.0 / ap->requests, (int) ap->allocs);
+    printf("  Region unpins     %14.2f %% (%d)\n",      ap->unpins * 1.0 / ap->requests, (int) ap->unpins);
+    printf("  Reuse             %14.2f %%\n",           ap->reuse * 1.0 / ap->requests);
+    printf("  Joins             %14.2f %% (%d)\n",      ap->joins * 1.0 / ap->requests, (int) ap->joins);
+    printf("  Splits            %14.2f %% (%d)\n",      ap->splits * 1.0 / ap->requests, (int) ap->splits);
+    printf("  Q races           %14.2f %% (%d)\n",      ap->qrace * 1.0 / ap->requests, (int) ap->qrace);
+    printf("  Compacted         %14.2f %% (%d)\n",      ap->compacted * 1.0 / ap->requests, (int) ap->compacted);
+    printf("  Freeq failures    %14.2f %% (%d / %d)\n", ap->tryFails * 1.0 / ap->trys, (int) ap->tryFails, (int) ap->trys);
+    printf("  Alloc retries     %14.2f %% (%d / %d)\n", ap->retries * 1.0 / ap->requests, (int) ap->retries, (int) ap->requests);
+    printf("  GC Collections    %14.2f %% (%d)\n",      ap->collections * 1.0 / ap->requests, (int) ap->collections);
+    printf("  MprMem size       %14d\n",                (int) sizeof(MprMem));
+    printf("  MprFreeMem size   %14d\n",                (int) sizeof(MprFreeMem));
 
     printGCStats();
     if (heap->printStats > 1) {
         printQueueStats();
+#if BIT_MPR_ALLOC_DEBUG
         if (heap->track) {
             printTracking();
         }
+#endif
     }
-#endif /* BIT_MEMORY_STATS */
+#endif /* BIT_MPR_ALLOC_STATS */
 }
 
 
 PUBLIC void mprVerifyMem()
 {
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
     MprRegion       *region;
     MprMem          *mp;
     MprFreeQueue    *freeq;
@@ -1707,7 +1684,7 @@ PUBLIC void mprVerifyMem()
 }
 
 
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
 static int validBlk(MprMem *mp)
 {
     assert(mp->magic == MPR_ALLOC_MAGIC);
@@ -1741,7 +1718,7 @@ PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
 {
     MPR_GET_MEM(ptr)->name = name;
 
-#if BIT_MEMORY_STATS
+#if BIT_MPR_ALLOC_STATS
     if (heap->track) {
         MprLocationStats    *lp;
         cchar               **np;
@@ -1768,7 +1745,7 @@ PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
 
 static void freeLocation(cchar *name, size_t size)
 {
-#if BIT_MEMORY_STATS
+#if BIT_MPR_ALLOC_STATS
     MprLocationStats    *lp;
     int                 index, i;
 
@@ -1789,7 +1766,7 @@ static void freeLocation(cchar *name, size_t size)
 
 PUBLIC void *mprSetName(void *ptr, cchar *name) 
 {
-#if BIT_MEMORY_STATS
+#if BIT_MPR_ALLOC_STATS
     MprMem  *mp = GET_MEM(ptr);
     if (mp->name) {
         freeLocation(mp->name, mp->size);
@@ -1833,15 +1810,15 @@ static void allocException(int cause, size_t size)
         heap->hasError = 1;
         mprError("%s: Cannot allocate memory block of size %,Ld bytes.", MPR->name, size);
 
-    } else if (cause == MPR_MEM_REDLINE) {
+    } else if (cause == MPR_MEM_WARNING) {
         mprError("%s: Memory request for %,Ld bytes exceeds memory red-line.", MPR->name, size);
         mprPruneCache(NULL);
 
     } else if (cause == MPR_MEM_LIMIT) {
         mprError("%s: Memory request for %,d bytes exceeds memory limit.", MPR->name, size);
     }
-    mprError("%s: Memory used %,d, redline %,d, limit %,d.", MPR->name, (int) used, (int) heap->stats.redLine,
-        (int) heap->stats.maxMemory);
+    mprError("%s: Memory used %,d, redline %,d, limit %,d.", MPR->name, (int) used, (int) heap->stats.warnHeap,
+        (int) heap->stats.maxHeap);
     mprError("%s: Consider increasing memory limit.", MPR->name);
 
     if (heap->notifier) {
@@ -2138,7 +2115,7 @@ static inline bool acquire(MprFreeQueue *freeq)
 }
 
 
-//  MOB - remove - should only have lockFree code
+#if UNUSED
 static inline void acquireWait(MprFreeQueue *freeq)
 {
 #if MACOSX
@@ -2153,6 +2130,7 @@ static inline void acquireWait(MprFreeQueue *freeq)
     semTake(freeq->lock.cs, WAIT_FOREVER);
 #endif
 }
+#endif
 
 
 static inline void release(MprFreeQueue *freeq)
@@ -2244,16 +2222,17 @@ PUBLIC void mprSetMemNotifier(MprMemNotifier cback)
 }
 
 
-PUBLIC void mprSetMemLimits(ssize redLine, ssize maxMemory, ssize cacheMemory)
+PUBLIC void mprSetMemLimits(ssize warnHeap, ssize maxHeap, ssize cacheHeap)
 {
-    if (redLine > 0) {
-        heap->stats.redLine = redLine;
+    if (warnHeap > 0) {
+        heap->stats.warnHeap = warnHeap;
     }
-    if (maxMemory > 0) {
-        heap->stats.maxMemory = maxMemory;
+    if (maxHeap > 0) {
+        heap->stats.maxHeap = maxHeap;
     }
-    if (cacheMemory >= 0) {
-        heap->stats.cacheMemory = cacheMemory;
+    if (cacheHeap >= 0) {
+        heap->stats.cacheHeap = cacheHeap;
+        heap->stats.lowHeap = cacheHeap ? cacheHeap / 8 : BIT_MPR_ALLOC_REGION_SIZE;
     }
 }
 
@@ -2302,7 +2281,7 @@ PUBLIC int mprIsValid(cvoid *ptr)
     }
     return 0;
 #else
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
     return ptr && mp->magic == MPR_ALLOC_MAGIC && mp->size > 0;
 #else
     return ptr && mp->size > 0;
@@ -2331,7 +2310,7 @@ PUBLIC void *mprSetManager(void *ptr, MprManager manager)
 }
 
 
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
 static void checkYielded()
 {
     MprThreadService    *ts;
@@ -2349,7 +2328,7 @@ static void checkYielded()
 #endif
 
 
-#if BIT_MEMORY_STACK
+#if BIT_MPR_ALLOC_STACK
 static void monitorStack()
 {
     MprThread   *tp;
@@ -2372,7 +2351,7 @@ static void monitorStack()
 }
 #endif
 
-#if !BIT_MEMORY_DEBUG
+#if !BIT_MPR_ALLOC_DEBUG
 #undef mprSetName
 #undef mprCopyName
 #undef mprSetAllocName
@@ -13922,7 +13901,7 @@ PUBLIC void mprRawLog(int level, cchar *fmt, ...)
     va_list     args;
 
     va_start(args, fmt);
-    logOutput(MPR_RAW_MSG, 0, sfmtv(fmt, args));
+    logOutput(MPR_RAW_MSG, level, sfmtv(fmt, args));
     va_end(args);
 }
 

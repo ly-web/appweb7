@@ -773,17 +773,28 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
 /********************************* Memory Allocator ***************************/
 /*
     Allocator debug and stats selection
-    Use configure --set memoryCheck=true to enable
+    Use configure --set mprAllocCheck=true to enable
  */
-//  MOB - change to BIT_ALLOC_*  Update bit/configure to match memoryCheck
-#if BIT_MEMORY_CHECK
-    #define BIT_MEMORY_DEBUG        1                   /**< Fill blocks, verifies block integrity, block names */
-    #define BIT_MEMORY_STATS        1                   /**< Include memory statistics */
-    #define BIT_MEMORY_STACK        1                   /**< Monitor stack usage */
+#if BIT_MPR_ALLOC_CHECK
+    #ifndef BIT_MPR_ALLOC_DEBUG
+        #define BIT_MPR_ALLOC_DEBUG     1                   /**< Fill blocks, verifies block integrity, block names */
+    #endif
+    #ifndef BIT_MPR_ALLOC_STATS
+        #define BIT_MPR_ALLOC_STATS     1                   /**< Include memory statistics */
+    #endif
+    #ifndef BIT_MPR_ALLOC_STACK
+        #define BIT_MPR_ALLOC_STACK     1                   /**< Monitor stack usage */
+    #endif
 #else
-    #define BIT_MEMORY_DEBUG        0
-    #define BIT_MEMORY_STATS        0
-    #define BIT_MEMORY_STACK        0
+    #ifndef BIT_MPR_ALLOC_DEBUG
+        #define BIT_MPR_ALLOC_DEBUG     0
+    #endif
+    #ifndef BIT_MPR_ALLOC_STATS
+        #define BIT_MPR_ALLOC_STATS     0
+    #endif
+    #ifndef BIT_MPR_ALLOC_STACK
+        #define BIT_MPR_ALLOC_STACK     0
+    #endif
 #endif
 
 /*
@@ -806,17 +817,11 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
 #ifndef BIT_MPR_ALLOC_QUOTA
     #define BIT_MPR_ALLOC_QUOTA     4096                /* Number of allocations before a GC is worthwhile */
 #endif
-#ifndef BIT_MPR_ALLOC_SCAN
-    #define BIT_MPR_ALLOC_SCAN      13                  /* Number of queues to scan for allocations before triggering a GC */
-#endif
-#ifndef BIT_MPR_ALLOC_SMALL
-    #define BIT_MPR_ALLOC_SMALL     4096                /* Take care not to deplete free queues of blocks smaller than this */
+#ifndef BIT_MPR_ALLOC_REGION_SIZE
+    #define BIT_MPR_ALLOC_REGION_SIZE (256 * 1024)      /* Memory region allocation chunk size */
 #endif
 #ifndef BIT_MPR_ALLOC_CACHE
-    #define BIT_MPR_ALLOC_CACHE     0                   /* Try to cache at least this amount in the heap free queues */
-#endif
-#ifndef BIT_MPR_ALLOC_MAX_REGION
-    #define BIT_MPR_ALLOC_MAX_REGION (256 * 1024)       /* Memory region allocation chunk size */
+    #define BIT_MPR_ALLOC_CACHE (BIT_MPR_ALLOC_REGION_SIZE / 2) /* Try to cache at least this amount in the heap free queues */
 #endif
 
 #ifndef BIT_MPR_ALLOC_ALIGN_SHIFT
@@ -894,7 +899,7 @@ typedef struct MprMem {
     uint        mark: 1;                /**< GC mark indicator. Toggled for each GC pass by mark() when thread yielded. */
     uint        reserved: 12;
 
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
     /* This increases the size of MprMem from 8 bytes to 16 bytes on 32-bit systems and 24 bytes on 64 bit systems */
     cchar       *name;                  /**< Debug name */
     ushort      magic;                  /**< Unique signature */
@@ -948,7 +953,7 @@ typedef struct MprFreeQueue {
     +-------------------------------+
     |        QBits      |    REST   |
     +-------------------------------+
-    | 0 | 1 | X | X |  X | ........ |
+    | 0 | 1 | X | X | X | ......... |
     +-------------------------------+
     | 1 | X | X | X | ............. |
     +-------------------------------+
@@ -956,20 +961,25 @@ typedef struct MprFreeQueue {
     A bitmap records for each queue whether it has any free blocks in the queue.  
     Note: qindex 2 is the first queue used because the minimum block size is sizeof(MprFreeMem)
  */
-#define MPR_ALLOC_QBITS_SHIFT       2                       //  Excluding MSB which is discarded
+#define MPR_ALLOC_QBITS_SHIFT       2
 #define MPR_ALLOC_NUM_QBITS         (1 << MPR_ALLOC_QBITS_SHIFT)
 
 /*
-    Should set region shift to log(BIT_MPR_ALLOC_MAX_REGION)
+    Should set region shift to log(BIT_MPR_ALLOC_REGION_SIZE)
     We don't expect users to tinker with these
  */
-#if BIT_MPR_ALLOC_MAX_REGION == (256 * 1024)
+#if BIT_MPR_ALLOC_REGION_SIZE == (128 * 1024)
+    #define BIT_MPR_ALLOC_REGION_SHIFT 18
+#elif BIT_MPR_ALLOC_REGION_SIZE == (256 * 1024)
     #define BIT_MPR_ALLOC_REGION_SHIFT 19
+#elif BIT_MPR_ALLOC_REGION_SIZE == (512 * 1024)
+    #define BIT_MPR_ALLOC_REGION_SHIFT 20
 #else
     #define BIT_MPR_ALLOC_REGION_SHIFT 24
 #endif
 
-#define MPR_ALLOC_NUM_QUEUES        ((19 - BIT_MPR_ALLOC_ALIGN_SHIFT - MPR_ALLOC_QBITS_SHIFT) * MPR_ALLOC_NUM_QBITS) + 1
+#define MPR_ALLOC_NUM_QUEUES        ((BIT_MPR_ALLOC_REGION_SHIFT - BIT_MPR_ALLOC_ALIGN_SHIFT - MPR_ALLOC_QBITS_SHIFT) * \
+                                        MPR_ALLOC_NUM_QBITS) + 1
 #define MPR_ALLOC_BITMAP_BITS       BITS(size_t)
 #define MPR_ALLOC_NUM_BITMAPS       ((MPR_ALLOC_NUM_QUEUES + MPR_ALLOC_BITMAP_BITS - 1) / MPR_ALLOC_BITMAP_BITS)
 
@@ -1009,7 +1019,7 @@ typedef struct MprFreeQueue {
     #define MPR_MAP_EXECUTE         PROT_EXEC
 #endif
 
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
     #define MPR_CHECK_BLOCK(bp)     mprCheckBlock(bp)
     #define MPR_VERIFY_MEM()        if (MPR->heap->verify) { mprVerifyMem(); } else
 #else
@@ -1022,13 +1032,13 @@ typedef struct MprFreeQueue {
  */
 #define MPR_ALLOC_POLICY_NOTHING    0       /**< Do nothing */
 #define MPR_ALLOC_POLICY_PRUNE      1       /**< Prune all non-essential memory and continue */
-#define MPR_ALLOC_POLICY_RESTART    2       /**< Gracefully restart the app if redline is exceeded */
+#define MPR_ALLOC_POLICY_RESTART    2       /**< Gracefully restart the app if memory warnHeap level is exceeded */
 #define MPR_ALLOC_POLICY_EXIT       3       /**< Exit the app if max exceeded with a MPR_EXIT_NORMAL exit */
 
 /*
     MprMemNotifier cause argument
  */
-#define MPR_MEM_REDLINE             0x1         /**< Memory use exceeds redline limit */
+#define MPR_MEM_WARNING             0x1         /**< Memory use exceeds warnHeap level limit */
 #define MPR_MEM_LIMIT               0x2         /**< Memory use exceeds memory limit - invoking policy */
 #define MPR_MEM_FAIL                0x4         /**< Memory allocation failed - immediate exit */
 #define MPR_MEM_TOO_BIG             0x4         /**< Memory allocation request is too big - immediate exit */
@@ -1054,7 +1064,7 @@ typedef void (*MprMemNotifier)(int cause, int policy, size_t size, size_t total)
  */
 typedef void (*MprManager)(void *ptr, int flags);
 
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
 /*
     The location stats table tracks the source code location responsible for each allocation
     Very costly. Don't use except for debug.
@@ -1079,38 +1089,40 @@ typedef struct MprMemStats {
     int             regions;                /**< Number of allocated regions */
     uint            numCpu;                 /**< Number of CPUs */
     uint            pageSize;               /**< System page size */
-    uint64          errors;                 /**< Allocation errors */
+    uint64          cacheHeap;              /**< Heap cache. Try to keep at least this amount in the free queues  */
     uint64          bytesAllocated;         /**< Bytes currently allocated. Includes active and free. */
     uint64          bytesFree;              /**< Bytes currently free and retained in the heap queues */
-    uint64          cacheMemory;            /**< Try to cache at least this amount in the heap free queues  */
-    uint64          redLine;                /**< Warn if allocation exceeds this level */
-    uint64          maxMemory;              /**< Max memory that can be allocated */
+    uint64          errors;                 /**< Allocation errors */
+    uint64          lowHeap;                /**< Low memory level at which to initiate a collection */
+    uint64          maxHeap;                /**< Max memory that can be allocated */
+    uint64          ram;                    /**< System RAM size in bytes */
     uint64          rss;                    /**< OS calculated resident stack size in bytes */
     uint64          user;                   /**< System user RAM size in bytes (excludes kernel) */
-    uint64          ram;                    /**< System RAM size in bytes */
-#if BIT_MEMORY_STATS
+    uint64          warnHeap;               /**< Warn if heap size exceeds this level */
+#if BIT_MPR_ALLOC_STATS
     /*
         Extended memory stats
      */
     uint64          allocs;                 /**< Count of times a block was split Calls to allocate memory from the O/S */
     uint64          cached;                 /**< Count of blocks that are cached rather then joined with adjacent blocks */
     uint64          compacted;              /**< Count of blocks that are compacted during compacting sweeps */
+    uint64          collections;            /**< Number of GC collections */
     uint64          freed;                  /**< Bytes freed in last sweep */
     uint64          joins;                  /**< Count of times a block was joined (coalesced) with its neighbours */
     uint64          markVisited;            /**< Number of blocks examined for marking */
     uint64          marked;                 /**< Number of blocks marked */
     uint64          requests;               /**< Count of memory requests */
     uint64          reuse;                  /**< Count of times a block was reused from a free queue */
-    uint64          qmiss;                  /**< Count of queues considered to find a free block */
+    uint64          retries;                /**< Queue retries */
+    uint64          qrace;                  /**< Count of times a queue was empty - racing with another thread */
     uint64          splits;                 /**< Count of times a block was split */
-    uint64          sweepVisited;           /**< Number of of blocks examined for sweeping */
+    uint64          sweepVisited;           /**< Number of blocks examined for sweeping */
     uint64          swept;                  /**< Number of blocks swept */
-    uint64          unpins;                 /**< Count of times a block was unpinned and released back to the O/S */
-
     uint64          trys;
     uint64          tryFails;
+    uint64          unpins;                 /**< Count of times a block was unpinned and released back to the O/S */
 #endif
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
     MprLocationStats locations[MPR_TRACK_HASH]; /* Per location allocation stats */
 #endif
 } MprMemStats;
@@ -1171,7 +1183,7 @@ typedef struct MprHeap {
     int              rootIndex;             /**< Marker root scan index */
     int              scribble;              /**< Scribble over freed memory (slow) */
     int              sweeping;              /**< Actually sweeping objects now */
-    int              track;                 /**< Track memory allocations */
+    int              track;                 /**< Track memory allocations (requires BIT_MPR_ALLOC_DEBUG) */
     int              verify;                /**< Verify memory contents (very slow) */
 } MprHeap;
 
@@ -1247,7 +1259,7 @@ PUBLIC size_t mprGetBlockSize(cvoid *ptr);
 /**
     Determine if the MPR has encountered memory allocation errors.
     @description Returns true if the MPR has had a memory allocation error. Allocation errors occur if any
-        memory allocation would cause the application to exceed the configured redline limit, or if any O/S memory
+        memory allocation would cause the application to exceed the configured warnHeap limit, or if any O/S memory
         allocation request fails.
     @return TRUE if a memory allocation error has occurred. Otherwise returns FALSE.
     @ingroup MprMem
@@ -1314,12 +1326,14 @@ PUBLIC size_t mprMemcpy(void *dest, size_t destMax, cvoid *src, size_t nbytes);
 PUBLIC void *mprMemdup(cvoid *ptr, size_t size);
 
 #define MPR_MEM_DETAIL      0x1     /* Print a detailed report */
+#if UNUSED || 1 || MOB
 #define MPR_MEM_COMPACT     0x2     /* Compact memory first */
+#endif
 
 /**
     Print a memory usage report to stdout
     @param msg Prefix message to the report
-    @param flags Set to MPR_MEM_DETAIL, MPR_MEM_COMPACT.
+    @param flags Set to MPR_MEM_DETAIL for a detailed memory report
     @ingroup MprMem
     @stability Internal.
  */
@@ -1386,20 +1400,20 @@ PUBLIC void mprSetMemError();
 /**
     Configure the application memory limits
     @description Configure memory limits to constrain memory usage by the application. The memory allocation subsystem
-        will check these limits before granting memory allocation requrests. The redLine is a soft limit that if exceeded
-        will invoke the memory allocation callback, but will still honor the request. The maxMemory limit is a hard limit.
+        will check these limits before granting memory allocation requrests. The warnHeap is a soft limit that if exceeded
+        will invoke the memory allocation callback, but will still honor the request. The maximum limit is a hard limit.
         The MPR will prevent allocations which exceed this maximum. The memory callback handler is defined via 
         the #mprCreate call.
-    @param redline Soft memory limit. If exceeded, the request will be granted, but the memory handler will be invoked.
-        If -1, then do not update the redline.
-    @param maxMemory Hard memory limit. If exceeded, the request will not be granted, and the memory handler will be invoked.
-        If -1, then do not update the maxMemory.
-    @param cacheMemory Try to cache at least this amount in the heap free queues  
-        If -1, then do not update the cacheMemory.
+    @param warnHeap Soft memory limit. If exceeded, the request will be granted, but the memory handler will be invoked.
+        to issue a warning and potentially take remedial acation.  If -1, then do not update the warnHeap.
+    @param maximum Hard memory limit. If exceeded, the request will not be granted, and the memory handler will be invoked.
+        If -1, then do not update the maximum.
+    @param cache Heap cache. Try to keep at least this amount of memory in the heap free queues  
+        If -1, then do not update the cache.
     @ingroup MprMem
     @stability Stable.
  */
-PUBLIC void mprSetMemLimits(ssize redline, ssize maxMemory, ssize cacheMemory);
+PUBLIC void mprSetMemLimits(ssize warnHeap, ssize maximum, ssize cache);
 
 /**
     Set the memory allocation policy for when allocations fail.
@@ -1491,7 +1505,7 @@ PUBLIC void *prealloc(void *ptr, size_t size);
 /*
     In debug mode, all memory blocks can have a debug name
  */
-#if BIT_MEMORY_DEBUG
+#if BIT_MPR_ALLOC_DEBUG
     PUBLIC void *mprSetName(void *ptr, cchar *name);
     PUBLIC void *mprCopyName(void *dest, void *src);
     #define mprGetName(ptr) (MPR_GET_MEM(ptr)->name)
@@ -1584,7 +1598,10 @@ PUBLIC void mprAddRoot(cvoid *ptr);
 #define MPR_GC_COMPLETE     0x1     /**< mprRequestGC flag to wait until the GC entirely complete including sweeper */
 #define MPR_GC_NO_BLOCK     0x2     /**< mprRequestGC flag and to not wait for the GC complete */
 #define MPR_GC_FORCE        0x4     /**< mprRequestGC flag to force a GC whether it is required or not */
+
+#if UNUSED || 1 || MORE
 #define MPR_GC_COMPACT      0x8     /**< mprRequestGC flag to coalesce and unpin all possible blocks */
+#endif
 
 /**
     Collect garbage
@@ -1615,17 +1632,6 @@ PUBLIC bool mprEnableGC(bool on);
     @stability Stable.
   */
 PUBLIC void mprHold(cvoid *ptr);
-
-/**
-    Mark a block as "in-use" for the Garbage Collector.
-    The MPR memory garbage collector requires that all allocated memory be marked as in-use during a garbage collection
-    sweep. When a memory block is allocated, it may provide a "manage" callback function that will be invoked during
-    garbage collection so the block can be marked as "in-use".
-    @param ptr Reference to the block to mark as currently being used.
-    @ingroup MprMem
-    @stability Stable.
- */
-PUBLIC void mprMarkBlock(cvoid *ptr);
 
 /**
     Release a memory block
@@ -1659,20 +1665,24 @@ PUBLIC void mprRemoveRoot(cvoid *ptr);
     PUBLIC void mprMark(void *ptr);
     @ingroup MprMem
 
-#elif BIT_MPR_ALLOC_INLINE
+#else
+#if BIT_MPR_ALLOC_STATS
+    #define HINC(field) MPR->heap->stats.field++                                                                                     
+#else
+    #define HINC(field)
+#endif
     #define mprMark(ptr) \
         if (ptr) { \
+            HINC(markVisited); \
             MprMem *_mp = MPR_GET_MEM((ptr)); \
             if (_mp->mark != MPR->heap->mark) { \
                 _mp->mark = MPR->heap->mark; \
                 if (_mp->hasManager) { \
                     (GET_MANAGER(_mp))((void*) ptr, MPR_MANAGE_MARK); \
                 } \
+                HINC(marked); \
             } \
         } else 
-
-#else
-    #define mprMark(ptr) if (ptr) { mprMarkBlock(ptr); } else
 #endif
 
 /*
@@ -6236,7 +6246,7 @@ typedef struct MprThread {
     int             isMain;             /**< Is the main thread */
     int             priority;           /**< Current priority */
     ssize           stackSize;          /**< Only VxWorks implements */
-#if BIT_MEMORY_STACK
+#if BIT_MPR_ALLOC_STACK
     void            *stackBase;         /**< Base of stack (approx) */
     int             peakStack;          /**< Peak stack usage */
 #endif

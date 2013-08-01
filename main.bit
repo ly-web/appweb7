@@ -137,24 +137,17 @@ Bit.load({
              */
 
             /*
-                Memory allocator tuning. These are the default values.
+                Memory allocator tuning.
              */
             alloc: {
                 parallel: true,     /* Run sweeper in parallel */
-                inline: true,       /* Use inline mprMark */
-                small: 4096,        /* Take care not to deplete free queues of blocks smaller than this */
-                maxRegion: 262144,  /* Memory region chunk size */
-                quota: 4096,        /* Number of allocations before a GC is worthwhile */
-                scan: 13,           /* Number of queues to scan for allocations before triggering a GC */
-                virtual: true,      /* Use virtual allocations vs malloc */
-                big: false,         /* Support allocations > 4GB on 64-bit systems */
-                // cache: 8097152,  /* Faster by using some cache. Try to cache at least this amount in the heap free queues */
-                // align: 3,        /* Don't override unless you know what you are doing. Set based on H/W data type requirements */
+                regionSize: 262144, /* Memory region allocation size */
+                //cache: 1000000,     /* Keep this amount of free blocks in memory heap for fast allocation */
             },
         },
 
         /*
-            Tailor the optimization for size|speed
+            Tailor the optimization for size|balanced|speed
          */
         tune: 'size',
 

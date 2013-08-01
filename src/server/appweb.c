@@ -99,7 +99,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     extern MprRomInode romFiles[];
     mprSetRomFileSystem(romFiles);
 #endif
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
 
     app->mpr = mpr;
     app->workers = -1;
@@ -183,7 +182,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
         }
     }
     app->home = mprGetAbsPath(app->home);
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
 
     if (logSpec) {
         mprStartLogging(logSpec, 1);
@@ -192,8 +190,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
         mprStartLogging(sfmt("stderr:%d", verbose + 1), 1);
         mprSetCmdlineLogging(1);
     }
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
-
     if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
         mprDestroy(MPR_EXIT_DEFAULT);
@@ -215,8 +211,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
         mprError("Cannot start HTTP service, exiting.");
         exit(9);
     }
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
-
     /*
         Service I/O events until instructed to exit
      */
@@ -304,7 +298,6 @@ static int createEndpoints(int argc, char **argv)
     port = -1;
     endpoint = 0;
     argind = 0;
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
 
     if ((app->appweb = maCreateAppweb()) == 0) {
         mprError("Cannot create HTTP service for %s", mprGetAppName());
