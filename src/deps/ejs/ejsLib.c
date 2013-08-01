@@ -39131,7 +39131,7 @@ static EjsNumber *getMaxMemory(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **arg
     MprMemStats    *mem;
 
     mem = mprGetMemStats(ejs);
-    return ejsCreateNumber(ejs, (MprNumber) mem->maxMemory);
+    return ejsCreateNumber(ejs, (MprNumber) mem->maxHeap);
 }
 
 
@@ -39140,12 +39140,12 @@ static EjsNumber *getMaxMemory(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **arg
  */
 static EjsObj *setMaxMemory(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
 {
-    int     maxMemory;
+    int     maxHeap;
 
     assert(argc == 1 && ejsIs(ejs, argv[0], Number));
 
-    maxMemory = ejsGetInt(ejs, argv[0]);
-    mprSetMemLimits(-1, maxMemory, -1);
+    maxHeap = ejsGetInt(ejs, argv[0]);
+    mprSetMemLimits(-1, maxHeap, -1);
     return 0;
 }
 
@@ -39158,7 +39158,7 @@ static EjsNumber *getRedline(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
     MprMemStats    *mem;
 
     mem = mprGetMemStats(ejs);
-    return ejsCreateNumber(ejs, (MprNumber) mem->redLine);
+    return ejsCreateNumber(ejs, (MprNumber) mem->warnHeap);
 }
 
 

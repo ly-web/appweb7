@@ -702,8 +702,8 @@ PUBLIC void httpDefineRouteBuiltins();
  */
 typedef struct HttpStats {
     uint64  mem;                        /**< Current application memory */
-    uint64  memRedline;                 /**< Memory redline limit */
-    uint64  memMax;                     /**< Memory maximum permitted */
+    uint64  memRedline;                 /**< Memory heap warnHeap limit */
+    uint64  memMax;                     /**< Memory heap maximum permitted */
 
     uint64  heap;                       /**< Current application heap memory */
     uint64  heapUsed;                   /**< Current heap memory in use */
