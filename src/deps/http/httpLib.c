@@ -5166,7 +5166,7 @@ static void httpTimer(Http *http, MprEvent *event)
         /*
             Going to sleep now, so schedule a GC to free as much as possible.
          */
-        mprRequestGC(MPR_GC_FORCE | MPR_GC_NO_BLOCK | MPR_GC_COMPACT);
+        mprRequestGC(MPR_GC_FORCE | MPR_GC_NO_BLOCK);
     } else {
         mprRequestGC(MPR_GC_NO_BLOCK);
     }
