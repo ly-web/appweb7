@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: voyager
+    Prepared by: magnetar.local
  */
 
 #include "mpr.h"
@@ -17,6 +17,32 @@
 
 /**
     mem.c - Memory Allocator and Garbage Collector. 
+
+    This is the MPR memory allocation service. It provides an application specific memory allocator to use instead of malloc. 
+    This allocator is tailored to the needs of embedded applications and is faster than most general purpose malloc allocators. 
+    It is deterministic and allocates and frees in constant time O(1). It exhibits very low fragmentation and accurate
+    coalescing.
+
+    The allocator uses a garbage collector for freeing unused memory. The collector is a cooperative, non-compacting,
+    parallel collector.  The allocator is optimized for frequent allocations of small blocks (< 4K) and uses a scheme
+    of free queues for fast allocation.
+    
+    The allocator handles memory allocation errors globally. The application may configure a memory limit so that
+    memory depletion can be proactively detected and handled before memory allocations actually fail.
+   
+    A memory block that is being used must be marked as active to prevent the garbage collector from reclaiming it.
+    To mark a block as active, #mprMarkBlock must be called during each garbage collection cycle. When allocating
+    non-temporal memory blocks, a manager callback can be specified via #mprAllocObj. This manager routine will be
+    called by the collector so that dependent memory blocks can be marked as active.
+  
+    The collector performs the marking phase by invoking the manager routines for a set of root blocks. A block can be
+    added to the set of roots by calling #mprAddRoot. Each root's manager routine will mark other blocks which will cause
+    their manager routines to run and so on, until all active blocks have been marked. Non-marked blocks can then safely
+    be reclaimed as garbage. A block may alternatively be permanently marked as active by calling #mprHold.
+ 
+    The mark phase begins when all threads explicitly "yield" to the garbage collector. This cooperative approach ensures
+    that user threads will not inadvertendly loose allocated blocks to the collector. Once all active blocks are marked,
+    user threads are resumed and the garbage sweeper frees unused blocks in parallel with user threads.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -42,6 +68,7 @@
 
 /*
     Memory checking and breakpoints
+    BIT_MPR_ALLOC_DEBUG checks that blocks are valid and keeps track of the location where memory is allocated from.
  */
 #if BIT_MPR_ALLOC_DEBUG
     /*
@@ -92,8 +119,6 @@
  */
 #define lockHeap()   mprSpinLock(&heap->heapLock);
 #define unlockHeap() mprSpinUnlock(&heap->heapLock);
-
-#define percent(a,b) ((int) ((a) * 100 / (b)))
 
 #if LINUX || BIT_BSD_LIKE
     #define findFirstBit(word) ffsl((long) word)
@@ -212,7 +237,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
 
     heap->flags = flags | MPR_THREAD_PATTERN;
     heap->nextSeqno = 1;
-    heap->chunkSize = BIT_MPR_ALLOC_REGION_SIZE;
+    heap->regionSize = BIT_MPR_ALLOC_REGION_SIZE;
     heap->stats.maxHeap = (size_t) -1;
     heap->stats.warnHeap = ((size_t) -1) / 100 * 95;
     heap->stats.cacheHeap = BIT_MPR_ALLOC_CACHE;
@@ -248,13 +273,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
      */
     spareSize = size - regionSize - mprSize;
     if (spareSize > 0) {
-#if UNUSED
-        spare = (MprMem*) (((char*) mp) + mprSize);
-        initBlock(spare, spareSize, 0);
-        linkBlock(spare);
-#else
         linkSpareBlock(((char*) mp) + mprSize, spareSize);
-#endif
         heap->regions = region;
     }
     heap->sweeperCond = mprCreateCond();
@@ -494,17 +513,12 @@ retry:
                             mprAtomicAdd64((int64*) &heap->stats.bytesFree, -(int64) mp->size);
 
                             if (mp->size >= (size_t) (required + MPR_ALLOC_MIN_SPLIT)) {
-#if UNUSED
-                                spare = (MprMem*) ((char*) mp + required);
-                                initBlock(spare, mp->size - required, 0);
-                                linkBlock(spare);
-#else
                                 linkSpareBlock(((char*) mp) + required, mp->size - required);
-#endif
                                 mp->size = (MprMemSize) required;
                                 ATOMIC_INC(splits);
                             }
-                            if (heap->weightedCount > heap->newQuota && heap->stats.bytesFree < heap->stats.lowHeap && !heap->gcRequested) {
+                            if (heap->weightedCount > heap->newQuota && 
+                                    heap->stats.bytesFree < heap->stats.lowHeap && !heap->gcRequested) {
                                 triggerGC();
                             }
                             ATOMIC_INC(reuse);
@@ -540,26 +554,26 @@ retry:
 static void freeBlock(MprMem *mp)
 {
     MprRegion   *region;
-    size_t      size;
 
     assert(!mp->free);
     SCRIBBLE(mp);
     INC(swept);
-    size = mp->size;
 
 #if BIT_MPR_ALLOC_DEBUG
     if (heap->track) {
-        freeLocation(mp->name, size);
+        freeLocation(mp->name, mp->size);
     }
 #endif
 #if BIT_MPR_ALLOC_STATS
-    heap->stats.freed += size;
+    heap->stats.freed += mp->size;
 #endif
     if (mp->first) {
         region = GET_REGION(mp);
-        if (GET_NEXT(mp) >= region->end && (heap->stats.bytesFree >= heap->stats.cacheHeap)) {
-            region->freeable = 1;
-            return;
+        if (GET_NEXT(mp) >= region->end) {
+            if (mp->size >= BIT_MPR_ALLOC_REGION_SIZE || heap->stats.bytesFree >= heap->stats.cacheHeap) {
+                region->freeable = 1;
+                return;
+            }
         }
     }
     linkBlock(mp);
@@ -640,6 +654,7 @@ static inline bool linkBlock(MprMem *mp)
         assert(!mp->free);
         return 0;
     }
+    assert(qindex >= 0);
     mp->qindex = qindex;
     mp->free = 1;
     mp->hasManager = 0;
@@ -730,7 +745,7 @@ static MprMem *growHeap(size_t required)
         return 0;
     }
     rsize = MPR_ALLOC_ALIGN(sizeof(MprRegion));
-    size = max((size_t) required + rsize, (size_t) heap->chunkSize);
+    size = max((size_t) required + rsize, (size_t) heap->regionSize);
     size = MPR_PAGE_ALIGN(size, memStats.pageSize);
     if ((region = mprVirtAlloc(size, MPR_MAP_READ | MPR_MAP_WRITE)) == NULL) {
         allocException(MPR_MEM_TOO_BIG, size);
@@ -752,29 +767,24 @@ static MprMem *growHeap(size_t required)
         spareLen = 0;
     }
     initBlock(mp, required, 1);
-
-    lockHeap();
     if (spareLen > 0) {
         assert(spareLen >= MPR_ALLOC_MIN);
-#if UNUSED
-        spare = (MprMem*) ((char*) mp + required);
-        initBlock(spare, spareLen, 0);
-        while (!linkBlock(spare)) {}
-#else
         linkSpareBlock(((char*) mp) + required, spareLen);
-#endif
     }
 
-    ATOMIC_INC(allocs);
     /*
-        Add region last once the mp block and possible spare are crafted
+        This is the only place locking is used
+        OPT - could this be lock-free too?
      */
+    lockHeap();
     region->next = heap->regions;
     heap->regions = region;
     heap->stats.bytesAllocated += size;
     heap->stats.regions++;
     unlockHeap();
+
     CHECK(mp);
+    ATOMIC_INC(allocs);
     return mp;
 }
 
@@ -1128,7 +1138,6 @@ static void sweep()
         }
         if (region->freeable) {
             lockHeap();
-            INC(unpins);
             if (prior) {
                 prior->next = nextRegion;
             } else {
@@ -1138,10 +1147,12 @@ static void sweep()
             heap->stats.bytesAllocated -= region->size;
             assert(heap->stats.bytesAllocated >= 0);
             unlockHeap();
+
             mprTrace(9, "DEBUG: Unpin %p to %p size %d, used %d", region, ((char*) region) + region->size, 
                 region->size, fastMemSize());
             mprManageSpinLock(&region->lock, MPR_MANAGE_FREE);
             mprVirtFree(region, region->size);
+            INC(unpins);
         } else {
             prior = region;
         }
@@ -1618,11 +1629,6 @@ PUBLIC void mprPrintMem(cchar *msg, int flags)
     printf("-------------\n");
     heap->printStats = (flags & MPR_MEM_DETAIL) ? 2 : 1;
     gflags = MPR_GC_FORCE | MPR_GC_COMPLETE;
-#if UNUSED
-    if (flags & MPR_MEM_COMPACT) {
-        gflags |= MPR_GC_COMPACT;
-    }
-#endif
     mprRequestGC(gflags);
 }
 
@@ -1641,8 +1647,10 @@ static void printMemReport()
         printf("  Memory limit           unlimited\n");
         printf("  Memory redline         unlimited\n");
     } else {
-        printf("  Heap max          %14u MB (%.2f %%)\n", (int) (ap->maxHeap / (1024 * 1024)), ap->bytesAllocated * 1.0 / ap->maxHeap);
-        printf("  Heap redline      %14u MB (%.2f %%)\n", (int) (ap->warnHeap / (1024 * 1024)), ap->bytesAllocated * 1.0 / ap->warnHeap);
+        printf("  Heap max          %14u MB (%.2f %%)\n", 
+            (int) (ap->maxHeap / (1024 * 1024)), ap->bytesAllocated * 1.0 / ap->maxHeap);
+        printf("  Heap redline      %14u MB (%.2f %%)\n", 
+            (int) (ap->warnHeap / (1024 * 1024)), ap->bytesAllocated * 1.0 / ap->warnHeap);
     }
     printf("  Heap cache        %14u MB (%.2f %%)\n",    (int) (ap->cacheHeap / (1024 * 1024)), ap->cacheHeap * 1.0 / ap->maxHeap);
     printf("  Allocation errors %14d\n",               (int) ap->errors);
@@ -1702,23 +1710,6 @@ PUBLIC void mprVerifyMem()
             mp = (MprMem*) fp;
             CHECK(mp);
             assert(mp->free);
-#if FUTURE
-            uchar *ptr;
-            int  usize;
-            if (heap->verifyFree) {
-                ptr = (uchar*) ((char*) mp + sizeof(MprFreeMem));
-                usize = GET_USIZE(mp);
-                if (HAS_MANAGER(mp)) {
-                    usize -= sizeof(MprManager);
-                }
-                for (i = 0; i < usize; i++) {
-                    if (ptr[i] != 0xFE) {
-                        mprError("Free memory block %x has been modified at offset %d (MprBlk %x, seqno %d)"
-                                       "Memory was last allocated by %s", GET_PTR(mp), i, mp, mp->seqno, mp->name);
-                    }
-                }
-            }
-#endif
         }
     }
     unlockHeap();
@@ -2155,24 +2146,6 @@ static inline bool acquire(MprFreeQueue *freeq)
     #error "Operting system not supported in acquire()"
 #endif
 }
-
-
-#if UNUSED
-static inline void acquireWait(MprFreeQueue *freeq)
-{
-#if MACOSX
-    OSSpinLockLock(&freeq->lock.cs);
-#elif BIT_UNIX_LIKE && BIT_HAS_SPINLOCK
-    pthread_spin_lock(&freeq->lock.cs);
-#elif BIT_UNIX_LIKE
-    pthread_mutex_lock(&freeq->lock.cs);
-#elif BIT_WIN_LIKE
-    EnterCriticalSection(&freeq->lock.cs);
-#elif VXWORKS
-    semTake(freeq->lock.cs, WAIT_FOREVER);
-#endif
-}
-#endif
 
 
 static inline void release(MprFreeQueue *freeq)

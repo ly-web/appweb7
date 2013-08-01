@@ -1161,7 +1161,7 @@ typedef struct MprHeap {
     struct MprThread *sweeper;              /**< Sweeper thread */
     int              mark;                  /**< Mark version */
     int              allocPolicy;           /**< Memory allocation depletion policy */
-    int              chunkSize;             /**< O/S memory allocation chunk size */
+    int              regionSize;            /**< Memory allocation region size */
     int              compact;               /**< Next GC sweep should do a full compact */
     int              collecting;            /**< Manual GC is running */
     int              enabled;               /**< GC is enabled */
@@ -1326,9 +1326,6 @@ PUBLIC size_t mprMemcpy(void *dest, size_t destMax, cvoid *src, size_t nbytes);
 PUBLIC void *mprMemdup(cvoid *ptr, size_t size);
 
 #define MPR_MEM_DETAIL      0x1     /* Print a detailed report */
-#if UNUSED || 1 || MOB
-#define MPR_MEM_COMPACT     0x2     /* Compact memory first */
-#endif
 
 /**
     Print a memory usage report to stdout
@@ -1598,10 +1595,6 @@ PUBLIC void mprAddRoot(cvoid *ptr);
 #define MPR_GC_COMPLETE     0x1     /**< mprRequestGC flag to wait until the GC entirely complete including sweeper */
 #define MPR_GC_NO_BLOCK     0x2     /**< mprRequestGC flag and to not wait for the GC complete */
 #define MPR_GC_FORCE        0x4     /**< mprRequestGC flag to force a GC whether it is required or not */
-
-#if UNUSED || 1 || MORE
-#define MPR_GC_COMPACT      0x8     /**< mprRequestGC flag to coalesce and unpin all possible blocks */
-#endif
 
 /**
     Collect garbage

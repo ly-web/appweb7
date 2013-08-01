@@ -61,7 +61,6 @@ static void openFileHandler(HttpQueue *q)
 {
     HttpRx      *rx;
     HttpTx      *tx;
-    HttpRoute   *route;
     HttpConn    *conn;
     MprPath     *info;
     char        *date, dbuf[16];
@@ -70,7 +69,6 @@ static void openFileHandler(HttpQueue *q)
     conn = q->conn;
     tx = conn->tx;
     rx = conn->rx;
-    route = rx->route;
     info = &tx->fileInfo;
 
     if (conn->error) {
