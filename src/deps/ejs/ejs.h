@@ -5019,7 +5019,9 @@ typedef struct EjsSlot {
     int             hashChain;              /**< Next property in hash chain */
     union {
         EjsAny      *ref;                   /**< Property reference */
+#if UNUSED
         EjsValue    value;
+#endif
     } value;
 } EjsSlot;
 

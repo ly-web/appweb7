@@ -800,6 +800,18 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
 /*
     Allocator Tunables
  */
+#ifndef BIT_MPR_ALLOC_CACHE
+    /* 
+        Try to cache at least this amount in the heap free queues 
+     */
+    #if BIT_TUNE_SIZE
+        #define BIT_MPR_ALLOC_CACHE 0   
+    #elif BIT_TUNE_SPEED
+        #define BIT_MPR_ALLOC_CACHE (1 * 1024 * 1024)   /* 1MB */
+    #else
+        #define BIT_MPR_ALLOC_CACHE BIT_MPR_ALLOC_REGION_SIZE
+    #endif
+#endif
 #ifndef BIT_MPR_ALLOC_INLINE
     #define BIT_MPR_ALLOC_INLINE    1                   /* Use inline mprMark() */
 #endif
@@ -819,9 +831,6 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
 #endif
 #ifndef BIT_MPR_ALLOC_REGION_SIZE
     #define BIT_MPR_ALLOC_REGION_SIZE (256 * 1024)      /* Memory region allocation chunk size */
-#endif
-#ifndef BIT_MPR_ALLOC_CACHE
-    #define BIT_MPR_ALLOC_CACHE (BIT_MPR_ALLOC_REGION_SIZE / 2) /* Try to cache at least this amount in the heap free queues */
 #endif
 
 #ifndef BIT_MPR_ALLOC_ALIGN_SHIFT
@@ -897,7 +906,8 @@ typedef struct MprMem {
     uint        first: 1;               /**< Block is first block in region */
     uint        hasManager: 1;          /**< Has manager function. Set at block init. */
     uint        mark: 1;                /**< GC mark indicator. Toggled for each GC pass by mark() when thread yielded. */
-    uint        reserved: 12;
+    uint        region: 1;              /**< Block is an entire region - never on free queues . */
+    uint        reserved: 11;
 
 #if BIT_MPR_ALLOC_DEBUG
     /* This increases the size of MprMem from 8 bytes to 16 bytes on 32-bit systems and 24 bytes on 64 bit systems */
@@ -938,7 +948,8 @@ typedef struct MprFreeQueue {
 } MprFreeQueue;
 
 #define MPR_ALLOC_ALIGN(x)          (((x) + BIT_MPR_ALLOC_ALIGN - 1) & ~(BIT_MPR_ALLOC_ALIGN - 1))
-#define MPR_ALLOC_MIN               sizeof(MprFreeMem)
+#define MPR_ALLOC_MIN_BLOCK         sizeof(MprFreeMem)
+#define MPR_ALLOC_MAX_BLOCK         (BIT_MPR_ALLOC_REGION_SIZE - sizeof(MprRegion))
 #define MPR_ALLOC_MIN_SPLIT         (32 + sizeof(MprMem))
 #define MPR_ALLOC_MAGIC             0xe813
 
@@ -979,7 +990,7 @@ typedef struct MprFreeQueue {
 #endif
 
 #define MPR_ALLOC_NUM_QUEUES        ((BIT_MPR_ALLOC_REGION_SHIFT - BIT_MPR_ALLOC_ALIGN_SHIFT - MPR_ALLOC_QBITS_SHIFT) * \
-                                        MPR_ALLOC_NUM_QBITS) + 1
+                                        MPR_ALLOC_NUM_QBITS)
 #define MPR_ALLOC_BITMAP_BITS       BITS(size_t)
 #define MPR_ALLOC_NUM_BITMAPS       ((MPR_ALLOC_NUM_QUEUES + MPR_ALLOC_BITMAP_BITS - 1) / MPR_ALLOC_BITMAP_BITS)
 
@@ -1172,8 +1183,6 @@ typedef struct MprHeap {
     int              iteration;             /**< GC iteration counter (debug only) */
     int              marking;               /**< Actually marking objects now */
     int              mustYield;             /**< Threads must yield for GC which is due */
-    int              weightedCount;         /**< Count of allocations weighted by block size */
-    int              newQuota;              /**< Quota of new allocations before idle GC worthwhile */
     int              nextSeqno;             /**< Next sequence number */
     int              pauseGC;               /**< Pause GC (short) */
     int              pageSize;              /**< System page size */
@@ -1185,6 +1194,8 @@ typedef struct MprHeap {
     int              sweeping;              /**< Actually sweeping objects now */
     int              track;                 /**< Track memory allocations (requires BIT_MPR_ALLOC_DEBUG) */
     int              verify;                /**< Verify memory contents (very slow) */
+    int              workDone;              /**< Count of allocations weighted by block size */
+    int              workQuota;             /**< Quota of work done before idle GC worthwhile */
 } MprHeap;
 
 /**

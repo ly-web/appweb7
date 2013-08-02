@@ -308,7 +308,7 @@ static int createEndpoints(int argc, char **argv)
         return MPR_ERR_CANT_CREATE;
     }
     loadStaticModules();
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 
     if (argc > argind) {
         app->documents = sclone(argv[argind++]);
@@ -340,7 +340,7 @@ static int createEndpoints(int argc, char **argv)
 #elif BIT_UNIX_LIKE
     addSignals();
 #endif
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
     return 0;
 }
 
@@ -443,7 +443,7 @@ static void traceHandler(void *ignored, MprSignal *sp)
     mprSetLogLevel(level);
 
     //  MOB
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE | MPR_GC_COMPACT);
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 }
 
 
@@ -455,7 +455,7 @@ static void statusCheck(void *ignored, MprSignal *sp)
 {
     mprRawLog(0, "%s", httpStatsReport(0));
     if (MPR->heap->track) {
-        mprPrintMem("Memory Report", MPR_MEM_DETAIL | MPR_MEM_COMPACT);
+        mprPrintMem("Memory Report", MPR_MEM_DETAIL);
     } else {
         mprPrintMem("Memory Report", MPR_MEM_DETAIL);
         //MOB mprPrintMem("Memory Report", 0);

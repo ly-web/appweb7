@@ -136,14 +136,8 @@ Bit.load({
                 tracing: true,
              */
 
-            /*
-                Memory allocator tuning.
-             */
             alloc: {
-                parallel: true,     /* Run sweeper in parallel */
-                regionSize: 262144, /* Memory region allocation size */
-                // cache: 10000000, /* Keep this amount of free blocks in memory heap for fast allocation */
-                // cache: 0,     /* Keep this amount of free blocks in memory heap for fast allocation */
+                // cache: 10000000,     /* Keep up to this amount of heap cached for fast allocation */
             },
         },
 
