@@ -19341,7 +19341,7 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
     ip->triggered = 1;
     ssp->hasSignals = 1;
     saveErrno = errno;
-    mprWakeEventService();
+    mprWakeNotifier();
     errno = saveErrno;
 }
 
