@@ -132,9 +132,8 @@ Bit.load({
             /*
                 Enable debug trace and asserts to the log file.
                 This is enabled by default for debug builds. 
-
-                tracing: true,
              */
+            // tracing: true,
 
             alloc: {
                 // cache: 10000000,     /* Keep up to this amount of heap cached for fast allocation */
