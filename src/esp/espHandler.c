@@ -813,6 +813,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     prefix = 0;
     database = 0;
     auth = 0;
+    name = 0;
 
     if (scontains(value, "=")) {
         for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
