@@ -17315,6 +17315,15 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
         codetxt[packet->type], mprGetBufLength(content));
 
     switch (packet->type) {
+    case WS_MSG_CONT:
+        if (ws->currentMessage) {
+            packet->type = ws->currentMessage->type;
+        } else {
+            mprError("webSocketFilter: Bad continuation packet");
+            return WS_STATUS_PROTOCOL_ERROR;
+        }
+        /* Fall through */
+            
     case WS_MSG_BINARY:
     case WS_MSG_TEXT:
         if (ws->closing) {
@@ -17529,7 +17538,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                  */
                 offset = ws->frameLength - currentFrameLen;
                 if ((tail = httpSplitPacket(packet, offset)) != 0) {
-                    tail->last = 0;
+                    packet->last = 0;
                     tail->type = 0;
                     httpPutBackPacket(q, tail);
                     mprTrace(6, "webSocketFilter: Split data packet, %d/%d", ws->frameLength, httpGetPacketLength(tail));
@@ -17553,7 +17562,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 /*
                     Got a complete frame 
                  */
-                assert(packet->type);
                 if (ws->maskOffset >= 0) {
                     for (cp = content->start; cp < content->end; cp++) {
                         *cp = *cp ^ ws->dataMask[ws->maskOffset++ & 0x3];
