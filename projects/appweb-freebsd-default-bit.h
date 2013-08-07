@@ -112,8 +112,8 @@
 #ifndef BIT_HTTP_PAM
     #define BIT_HTTP_PAM 1
 #endif
-#ifndef BIT_HTTP_STEALTH
-    #define BIT_HTTP_STEALTH 1
+#ifndef BIT_HTTP_WEB_SOCKETS
+    #define BIT_HTTP_WEB_SOCKETS 1
 #endif
 #ifndef BIT_MANIFEST
     #define BIT_MANIFEST "package/manifest.bit"
