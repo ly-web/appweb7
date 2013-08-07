@@ -74,7 +74,6 @@ PUBLIC void maLogRequest(HttpConn *conn)
             break;
 
         case 'h':                           /* Remote host */
-            //  TODO - Should this trigger a reverse DNS?
             mprPutStringToBuf(buf, conn->ip);
             break;
 

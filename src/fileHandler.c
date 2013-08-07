@@ -48,7 +48,6 @@ static int rewriteFileHandler(HttpConn *conn)
         /*
             The sendFile connector is optimized on some platforms to use the sendfile() system call.
             Set the entity length for the sendFile connector to utilize.
-            TODO - why here?
          */
         httpSetEntityLength(conn, tx->fileInfo.size);
     }

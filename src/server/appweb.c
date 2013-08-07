@@ -441,9 +441,6 @@ static void traceHandler(void *ignored, MprSignal *sp)
     level = mprGetLogLevel() > 2 ? 2 : 6;
     mprLog(0, "Change log level to %d", level);
     mprSetLogLevel(level);
-
-    //  MOB
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 }
 
 
@@ -457,8 +454,7 @@ static void statusCheck(void *ignored, MprSignal *sp)
     if (MPR->heap->track) {
         mprPrintMem("Memory Report", MPR_MEM_DETAIL);
     } else {
-        mprPrintMem("Memory Report", MPR_MEM_DETAIL);
-        //MOB mprPrintMem("Memory Report", 0);
+        mprPrintMem("Memory Report", 0);
     }
 }
 
