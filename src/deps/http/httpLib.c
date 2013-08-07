@@ -5849,7 +5849,7 @@ static void checkCounter(HttpMonitor *monitor, HttpCounter *counter, cchar *ip)
         msg = sfmt(fmt, address, counter->name, value, period, monitor->limit);
         subject = sfmt("Monitor %s Alert", counter->name);
         args = mprDeserialize(
-            sfmt("{ COUNTER: '%s', DATE: '%s', IP: '%s', LIMIT: %d, MESSAGE: '%s', PERIOD: %d, SUBJECT: '%s', VALUE: %d }", 
+            sfmt("{ COUNTER: '%s', DATE: '%s', IP: '%s', LIMIT: %ld, MESSAGE: '%s', PERIOD: %ld, SUBJECT: '%s', VALUE: %ld }", 
             counter->name, mprGetDate(NULL), ip, monitor->limit, msg, period, subject, value));
         invokeDefenses(monitor, args);
     }
