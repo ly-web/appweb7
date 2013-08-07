@@ -1643,7 +1643,7 @@ static int minWorkersDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Monitor Resource Expr Policies.
+    Monitor Counter Limit Period Defenses
  */
 static int monitorDirective(MaState *state, cchar *key, cchar *value)
 {

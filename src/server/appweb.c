@@ -432,13 +432,13 @@ static void addSignals()
 
 
 /*
-    SIGUSR2 will toggle trace from level 2 to 6
+    SIGUSR2 will toggle trace from level 2 to 4
  */
 static void traceHandler(void *ignored, MprSignal *sp)
 {
     int     level;
 
-    level = mprGetLogLevel() > 2 ? 2 : 6;
+    level = mprGetLogLevel() > 2 ? 2 : 4;
     mprLog(0, "Change log level to %d", level);
     mprSetLogLevel(level);
 }
