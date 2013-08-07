@@ -4531,9 +4531,6 @@ PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime mo
 
     if (cache->timer == 0) {
         mprTrace(5, "Start Cache pruner with resolution %d", cache->resolution);
-        /* 
-            Use the MPR dispatcher incase this VM is destroyed 
-         */
         cache->timer = mprCreateTimerEvent(MPR->dispatcher, "localCacheTimer", cache->resolution, pruneCache, cache, 
             MPR_EVENT_STATIC_DATA); 
     }
@@ -9011,7 +9008,9 @@ PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
     int                 mustWakeWaitService, mustWakeCond;
 
     assert(dispatcher);
-    assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    if (dispatcher->flags & MPR_DISPATCHER_DESTROYED) {
+        return;
+    }
     es = dispatcher->service;
     lock(es);
     if (isRunning(dispatcher)) {
