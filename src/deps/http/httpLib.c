@@ -2597,7 +2597,7 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     }
     if (endpoint->ssl) {
         if (mprUpgradeSocket(sock, endpoint->ssl, 0) < 0) {
-            mprError("Cannot upgrade socket for SSL: %s", sock->errorMsg);
+            mprLog(4, "Cannot upgrade socket for SSL: %s", sock->errorMsg);
             mprCloseSocket(sock, 0);
             httpMonitorEvent(conn, HTTP_COUNTER_SSL_ERRORS, 1); 
             return 0;
@@ -4151,7 +4151,7 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
         conn->error = 1;
         httpOmitBody(conn);
         conn->errorMsg = formatErrorv(conn, status, fmt, args);
-        mprLog(2, "Error: %s", conn->errorMsg);
+        mprLog(1, "Error: %s", conn->errorMsg);
 
         HTTP_NOTIFY(conn, HTTP_EVENT_ERROR, 0);
         if (conn->endpoint) {
@@ -5829,8 +5829,8 @@ static void checkCounter(HttpMonitor *monitor, HttpCounter *counter, cchar *ip)
     uint64      value, period;
 
     fmt = 0;
-    assert(counter->value >= monitor->prior);
-    value = counter->value - monitor->prior;
+    assert(counter->value >= counter->prior);
+    value = counter->value - counter->prior;
 
     if (monitor->expr == '>') {
         if (value > monitor->limit) {
@@ -5853,7 +5853,7 @@ static void checkCounter(HttpMonitor *monitor, HttpCounter *counter, cchar *ip)
             counter->name, mprGetDate(NULL), ip, monitor->limit, msg, period, subject, value));
         invokeDefenses(monitor, args);
     }
-    monitor->prior = counter->value;
+    counter->prior = counter->value;
 }
 
 
@@ -5869,19 +5869,19 @@ static void checkMonitor(HttpMonitor *monitor, MprEvent *event)
     http->now = mprGetTicks();
 
     if (monitor->counterIndex == HTTP_COUNTER_MEMORY) {
-        monitor->prior = 0;
+        counter.prior = 0;
         memset(&counter, 0, sizeof(HttpCounter));
         counter.value = mprGetMem();
         checkCounter(monitor, &counter, NULL);
 
     } else if (monitor->counterIndex == HTTP_COUNTER_ACTIVE_PROCESSES) {
-        monitor->prior = 0;
+        counter.prior = 0;
         memset(&counter, 0, sizeof(HttpCounter));
         counter.value = mprGetListLength(MPR->cmdService->cmds);
         checkCounter(monitor, &counter, NULL);
 
     } else if (monitor->counterIndex == HTTP_COUNTER_ACTIVE_CLIENTS) {
-        monitor->prior = 0;
+        counter.prior = 0;
         memset(&counter, 0, sizeof(HttpCounter));
         counter.value = mprGetHashLength(http->addresses);
         checkCounter(monitor, &counter, NULL);
@@ -5931,20 +5931,26 @@ static int manageMonitor(HttpMonitor *monitor, int flags)
 PUBLIC int httpAddMonitor(cchar *counterName, cchar *expr, uint64 limit, MprTicks period, cchar *defenses)
 {
     Http            *http;
-    HttpMonitor     *monitor;
+    HttpMonitor     *monitor, *mp;
     HttpDefense     *defense;
     MprList         *defenseList;
     cchar           *def;
     char            *tok;
-    int             counterIndex;
+    int             counterIndex, next;
 
+    http = MPR->httpService;
     if (period < HTTP_MONITOR_MIN_PERIOD) {
         return MPR_ERR_BAD_ARGS;
     }
-    http = MPR->httpService;
     if ((counterIndex = mprLookupStringItem(http->counters, counterName)) < 0) {
         mprError("Cannot find counter %s", counterName);
         return MPR_ERR_CANT_FIND;
+    }
+    for (ITERATE_ITEMS(http->monitors, mp, next)) {
+        if (mp->counterIndex == counterIndex) {
+            mprError("Monitor already exists for counter %s", counterName);
+            return MPR_ERR_ALREADY_EXISTS;
+        }
     }
     if ((monitor = mprAllocObj(HttpMonitor, manageMonitor)) == 0) {
         return MPR_ERR_MEMORY;
