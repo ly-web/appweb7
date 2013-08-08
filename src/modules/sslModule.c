@@ -246,6 +246,13 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *module)
     maAddDirective(appweb, "SSLVerifyClient", sslVerifyClientDirective);
     maAddDirective(appweb, "SSLVerifyIssuer", sslVerifyIssuerDirective);
     maAddDirective(appweb, "SSLVerifyDepth", sslVerifyDepthDirective);
+#if BIT_STATIC
+    /*
+        Pull in the libmprssl code at link time. Nother here at run-time.
+     */
+    extern MprModuleEntry mprSslInit;
+    mprNop(mprSslInit);
+#endif
     return 0;
 }
 #else
