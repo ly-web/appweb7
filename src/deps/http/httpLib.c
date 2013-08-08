@@ -6070,7 +6070,7 @@ PUBLIC int64 httpMonitorEvent(HttpConn *conn, int counterIndex, int64 adj)
         unlock(http->addresses);
     }
     counter = &address->counters[counterIndex];
-    mprAtomicAdd64(&counter->value, adj);
+    mprAtomicAdd64((int64*) &counter->value, adj);
     /* Tolerated race with "updated" and the return value */
     address->updated = http->now;
     return counter->value;
