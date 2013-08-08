@@ -704,6 +704,7 @@ PUBLIC void espSetConn(HttpConn *conn)
     mprSetThreadData(((Esp*) MPR->espService)->local, conn);
 }
 
+
 static cchar *getGridSchema(EdiGrid *grid)
 {
     Edi         *edi;

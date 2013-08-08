@@ -187,6 +187,7 @@ static void startEsp(HttpQueue *q)
             }
         }
         finalizeFlash(conn);
+        mprSetThreadData(req->esp->local, NULL);
     }
 }
 
@@ -198,7 +199,7 @@ static int runAction(HttpConn *conn)
     EspRoute    *eroute;
     EspReq      *req;
     EspAction   action;
-    char        *actionName, *key, *serviceName, *errMsg;
+    char        *actionName, *key, *serviceName;
 
     rx = conn->rx;
     req = conn->data;
@@ -242,7 +243,7 @@ static int runAction(HttpConn *conn)
 #endif
 #if !BIT_STATIC
     if (!eroute->flat && (eroute->update || !mprLookupKey(esp->actions, key))) {
-        char        *canonical, *source;
+        char        *canonical, *source, *errMsg;
         int         recompile = 0;
 
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
@@ -341,7 +342,6 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     EspRoute    *eroute;
     EspReq      *req;
     EspViewProc view;
-    char        *errMsg;
     
     rx = conn->rx;
     req = conn->data;
@@ -367,7 +367,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 #if !BIT_STATIC
     if (!eroute->flat && (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(req->source)))) {
         cchar       *source;
-        char        *canonical;
+        char        *canonical, *errMsg;
         int         recompile = 0;
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
         source = req->source;
@@ -408,7 +408,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
                     }
                     if (recompile) {
                         if (mprLookupModule(req->source) != 0 && !espUnloadModule(req->source, 0)) {
-                            mprError("Cannot unload module %s. Connections still open. Continue using old version.", req->source);        
+                            mprError("Cannot unload module %s. Connections still open. Continue using old version.", 
+                                req->source);        
                             recompile = 0;
                         }
                     }
@@ -432,7 +433,9 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
                 httpMemoryError(conn);
                 return;
             }
+#if UNUSED
             mprSetThreadData(esp->local, conn);
+#endif
             if (mprLoadModule(mp) < 0) {
                 unlock(req->esp);
                 httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", req->source);
@@ -447,7 +450,9 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         return;
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
+#if UNUSED
     mprSetThreadData(esp->local, conn);
+#endif
     (view)(conn);
 }
 
@@ -496,10 +501,7 @@ static bool testConfig(EspRoute *eroute, cchar *key, cchar *desired)
 
 static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
 {
-    MprModule   *mp;
-    cchar       *canonical, *source, *cacheName, *entry;
-    char        *errMsg;
-    int         recompile;
+    cchar       *canonical, *source, *cacheName;
 
     if (!eroute->appName) {
         return 0;
@@ -513,22 +515,27 @@ static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
     eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));
 
 #if !BIT_STATIC
-    if (espModuleIsStale(source, eroute->appModulePath, &recompile)) {
-        /*  WARNING: GC yield here */
-        if (recompile && !espCompile(eroute->route, dispatcher, source, eroute->appModulePath, cacheName, 0, &errMsg)) {
-            mprError("Cannot compile %s/app.c", eroute->srcDir);
-            return MPR_ERR_CANT_INITIALIZE;
+    {
+        MprModule   *mp;
+        char        *errMsg, *entry;
+        int         recompile;
+        if (espModuleIsStale(source, eroute->appModulePath, &recompile)) {
+            /*  WARNING: GC yield here */
+            if (recompile && !espCompile(eroute->route, dispatcher, source, eroute->appModulePath, cacheName, 0, &errMsg)) {
+                mprError("Cannot compile %s/app.c", eroute->srcDir);
+                return MPR_ERR_CANT_INITIALIZE;
+            }
         }
-    }
-    if ((mp = mprLookupModule(eroute->appName)) == 0) {
-        entry = sfmt("esp_app_%s", eroute->appName);
-        if ((mp = mprCreateModule(eroute->appName, eroute->appModulePath, entry, eroute->route)) == 0) {
-            mprError("Cannot find module %s", eroute->appModulePath);
-            return MPR_ERR_CANT_FIND;
-        }
-        if (mprLoadModule(mp) < 0) {
-            mprError("Cannot load esp module for %s", eroute->appName);
-            return MPR_ERR_CANT_LOAD;
+        if ((mp = mprLookupModule(eroute->appName)) == 0) {
+            entry = sfmt("esp_app_%s", eroute->appName);
+            if ((mp = mprCreateModule(eroute->appName, eroute->appModulePath, entry, eroute->route)) == 0) {
+                mprError("Cannot find module %s", eroute->appModulePath);
+                return MPR_ERR_CANT_FIND;
+            }
+            if (mprLoadModule(mp) < 0) {
+                mprError("Cannot load esp module for %s", eroute->appName);
+                return MPR_ERR_CANT_LOAD;
+            }
         }
     }
 #endif
