@@ -276,7 +276,8 @@ static int runCommand(EspRoute *eroute, MprDispatcher *dispatcher, cchar *comman
 
     WARNING: this routine blocks and runs GC. All parameters must be retained.
  */
-PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg)
+PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, 
+    int isView, char **errMsg)
 {
     MprFile     *fp;
     EspRoute    *eroute;
@@ -321,6 +322,22 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     }
     mprMakeDir(eroute->cacheDir, 0775, -1, -1, 1);
 
+#if BIT_WIN_LIKE
+    {
+        /*
+            Force a clean windows compile by removing the object and pdb
+         */
+        cchar   *path;
+        path = mprReplacePathExt(module, "obj");
+        if (mprPathExists(path, F_OK)) {
+            mprDeletePath(path);
+        }
+        path = mprReplacePathExt(module, "pdb");
+        if (mprPathExists(path, F_OK)) {
+            mprDeletePath(path);
+        }
+    }
+#endif
     /* WARNING: GC yield here */
     if (runCommand(eroute, dispatcher, eroute->compile, csource, module, errMsg) < 0) {
         return 0;
@@ -343,10 +360,10 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
             Windows leaves intermediate object in the current directory
             MOB - Could use -Fo to prevent this
          */
-        cchar   *obj;
-        obj = mprReplacePathExt(mprGetPathBase(csource), "obj");
-        if (mprPathExists(obj, F_OK)) {
-            mprDeletePath(obj);
+        cchar   *path;
+        path = mprReplacePathExt(mprGetPathBase(csource), "obj");
+        if (mprPathExists(path, F_OK)) {
+            mprDeletePath(path);
         }
     }
 #endif
