@@ -473,10 +473,7 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
         return 1;
     }
     mprGetPathInfo(source, &sinfo);
-    /*
-        Use >= to ensure we reload. This may cause redundant reloads as mtime has a 1 sec granularity.
-     */
-    if (sinfo.valid && sinfo.mtime >= minfo.mtime) {
+    if (sinfo.valid && sinfo.mtime > minfo.mtime) {
         if ((mp = mprLookupModule(source)) != 0) {
             if (!espUnloadModule(source, 0)) {
                 mprError("Cannot unload module %s. Connections still open. Continue using old version.", source);

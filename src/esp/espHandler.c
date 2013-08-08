@@ -631,7 +631,7 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
-#if DEBUG_IDE
+#if DEBUG_IDE && UNUSED
     path = mprGetAppDir();
 #else
     path = httpGetRouteVar(route, "CACHE_DIR");
