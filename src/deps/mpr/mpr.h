@@ -5648,7 +5648,6 @@ typedef struct MprEventService {
     MprTicks        delay;              /**< Maximum sleep time before awaking */
     int             eventCount;         /**< Count of events */
     int             waiting;            /**< Waiting for I/O (sleeping) */
-    int             pendingCount;       /**< Count of pendingQ dispatchers */
     struct MprCond  *waitCond;          /**< Waiting sync */
     struct MprMutex *mutex;             /**< Multi-thread sync */
 } MprEventService;
