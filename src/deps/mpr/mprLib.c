@@ -5190,7 +5190,7 @@ PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int fl
         cmd->requiredEof++;
     }
     if (addCmdHandlers(cmd) < 0) {
-        mprError("Cannot open command handlers - insufficient I/O handles");
+        mprTrace(4, "Cannot open command handlers - insufficient I/O handles");
         return MPR_ERR_CANT_OPEN;
     }
     rc = startProcess(cmd);
@@ -26604,7 +26604,7 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
     wp->flags           = flags;
 
     if (mprGetListLength(ws->handlers) >= FD_SETSIZE) {
-        mprError("io: Too many io handlers: %d", FD_SETSIZE);
+        mprTrace(6, "io: Too many io handlers: %d", FD_SETSIZE);
         return 0;
     }
 #if BIT_UNIX_LIKE || VXWORKS
