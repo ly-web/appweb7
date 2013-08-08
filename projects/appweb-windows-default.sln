@@ -135,6 +135,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmod_ssl", "appweb-window
 	ProjectSection(ProjectDependencies) = postProject
 		{66002183-4B43-4751-B3F4-36AD8E08BE3C} = {66002183-4B43-4751-B3F4-36AD8E08BE3C}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{D1614B75-B3F7-44A0-AC53-C81DDFDC00D6} = {D1614B75-B3F7-44A0-AC53-C81DDFDC00D6}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "authpass", "appweb-windows-default\authpass.vcxproj", "{79D02969-E06A-4BCC-B95E-AAF298E32C9A}"
 	ProjectSection(ProjectDependencies) = postProject

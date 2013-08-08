@@ -1481,7 +1481,7 @@ DEPS_72 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c $(DEPS_72)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
-	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/modules/sslModule.c
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/modules/sslModule.c
 
 ifeq ($(BIT_PACK_SSL),1)
 #
@@ -1509,6 +1509,13 @@ DEPS_73 += $(CONFIG)/obj/fileHandler.o
 DEPS_73 += $(CONFIG)/obj/log.o
 DEPS_73 += $(CONFIG)/obj/server.o
 DEPS_73 += $(CONFIG)/bin/libappweb.a
+DEPS_73 += $(CONFIG)/inc/est.h
+DEPS_73 += $(CONFIG)/obj/estLib.o
+ifeq ($(BIT_PACK_EST),1)
+    DEPS_73 += $(CONFIG)/bin/libest.a
+endif
+DEPS_73 += $(CONFIG)/obj/mprSsl.o
+DEPS_73 += $(CONFIG)/bin/libmprssl.a
 DEPS_73 += $(CONFIG)/obj/sslModule.o
 
 $(CONFIG)/bin/libmod_ssl.a: $(DEPS_73)
@@ -1660,7 +1667,7 @@ DEPS_81 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_81)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.o'
-	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/server/appweb.c
+	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/server/appweb.c
 
 #
 #   appweb
@@ -1704,6 +1711,13 @@ ifeq ($(BIT_PACK_ESP),1)
 endif
 DEPS_82 += $(CONFIG)/obj/slink.o
 DEPS_82 += $(CONFIG)/bin/libslink.a
+DEPS_82 += $(CONFIG)/inc/est.h
+DEPS_82 += $(CONFIG)/obj/estLib.o
+ifeq ($(BIT_PACK_EST),1)
+    DEPS_82 += $(CONFIG)/bin/libest.a
+endif
+DEPS_82 += $(CONFIG)/obj/mprSsl.o
+DEPS_82 += $(CONFIG)/bin/libmprssl.a
 DEPS_82 += $(CONFIG)/obj/sslModule.o
 ifeq ($(BIT_PACK_SSL),1)
     DEPS_82 += $(CONFIG)/bin/libmod_ssl.a
@@ -1745,6 +1759,26 @@ endif
 ifeq ($(BIT_PACK_SSL),1)
     LIBS_82 += -lmod_ssl
 endif
+LIBS_82 += -lmprssl
+ifeq ($(BIT_PACK_EST),1)
+    LIBS_82 += -lest
+endif
+ifeq ($(BIT_PACK_MATRIXSSL),1)
+    LIBS_82 += -lmatrixssl
+    LIBPATHS_82 += -L$(BIT_PACK_MATRIXSSL_PATH)
+endif
+ifeq ($(BIT_PACK_NANOSSL),1)
+    LIBS_82 += -lssls
+    LIBPATHS_82 += -L$(BIT_PACK_NANOSSL_PATH)/bin
+endif
+ifeq ($(BIT_PACK_OPENSSL),1)
+    LIBS_82 += -lssl
+    LIBPATHS_82 += -L$(BIT_PACK_OPENSSL_PATH)
+endif
+ifeq ($(BIT_PACK_OPENSSL),1)
+    LIBS_82 += -lcrypto
+    LIBPATHS_82 += -L$(BIT_PACK_OPENSSL_PATH)
+endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
     LIBS_82 += -lmod_ejs
 endif
@@ -1764,7 +1798,7 @@ endif
 
 $(CONFIG)/bin/appweb.out: $(DEPS_82)
 	@echo '      [Link] $(CONFIG)/bin/appweb.out'
-	$(CC) -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS)  "$(CONFIG)/obj/appweb.o" $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) -Wl,-r 
+	$(CC) -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS)     "$(CONFIG)/obj/appweb.o" $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) -Wl,-r 
 
 #
 #   server-cache

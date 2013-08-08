@@ -1552,7 +1552,7 @@ DEPS_72 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c $(DEPS_72)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
-	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/modules/sslModule.c
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/modules/sslModule.c
 
 ifeq ($(BIT_PACK_SSL),1)
 #
@@ -1580,6 +1580,13 @@ DEPS_73 += $(CONFIG)/obj/fileHandler.o
 DEPS_73 += $(CONFIG)/obj/log.o
 DEPS_73 += $(CONFIG)/obj/server.o
 DEPS_73 += $(CONFIG)/bin/libappweb.so
+DEPS_73 += $(CONFIG)/inc/est.h
+DEPS_73 += $(CONFIG)/obj/estLib.o
+ifeq ($(BIT_PACK_EST),1)
+    DEPS_73 += $(CONFIG)/bin/libest.so
+endif
+DEPS_73 += $(CONFIG)/obj/mprSsl.o
+DEPS_73 += $(CONFIG)/bin/libmprssl.so
 DEPS_73 += $(CONFIG)/obj/sslModule.o
 
 LIBS_73 += -lappweb
@@ -1588,10 +1595,30 @@ LIBS_73 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_73 += -lpcre
 endif
+LIBS_73 += -lmprssl
+ifeq ($(BIT_PACK_EST),1)
+    LIBS_73 += -lest
+endif
+ifeq ($(BIT_PACK_MATRIXSSL),1)
+    LIBS_73 += -lmatrixssl
+    LIBPATHS_73 += -L$(BIT_PACK_MATRIXSSL_PATH)
+endif
+ifeq ($(BIT_PACK_NANOSSL),1)
+    LIBS_73 += -lssls
+    LIBPATHS_73 += -L$(BIT_PACK_NANOSSL_PATH)/bin
+endif
+ifeq ($(BIT_PACK_OPENSSL),1)
+    LIBS_73 += -lssl
+    LIBPATHS_73 += -L$(BIT_PACK_OPENSSL_PATH)
+endif
+ifeq ($(BIT_PACK_OPENSSL),1)
+    LIBS_73 += -lcrypto
+    LIBPATHS_73 += -L$(BIT_PACK_OPENSSL_PATH)
+endif
 
 $(CONFIG)/bin/libmod_ssl.so: $(DEPS_73)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so $(LDFLAGS) $(LIBPATHS)    "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) 
 endif
 
 #
