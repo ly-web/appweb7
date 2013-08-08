@@ -325,19 +325,15 @@ PUBLIC void httpSetForkCallback(struct Http *http, MprForkCallback proc, void *a
     Note: this does not need GC marking
  */
 typedef struct HttpCounter {
-    cchar       *name;                          /**< Counter name (static reference) */
     int64       value;                          /**< Current counter value */
-    int64       prior;                          /**< Prior counter value when monitor last ran */
 } HttpCounter;
 
 typedef struct HttpMonitor {
+    cchar       *counterName;                   /**< Name of counter to monitor */
     int         counterIndex;                   /**< Counter item index to monitor */
     int         expr;                           /**< Expression. Set to '<' or '>' */
     uint64      limit;                          /**< Comparison limit value */
     MprTicks    period;                         /**< Frequence of comparison */
-#if UNUSED
-    int64       prior;                          /**< Prior counter value when monitor last ran */
-#endif
     MprList     *defenses;                      /**< List of defensive measures */
     MprEvent    *timer;                         /**< Monitor timer */
     struct Http *http;
