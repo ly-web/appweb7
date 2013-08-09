@@ -461,11 +461,15 @@ ESP Usage:
                     </tr>
                     <tr>
                         <td>--routeName name</td>
-                        <td>Route name in appweb.conf to use for ESP configuration.</td>
+                        <td>This selects the Appweb route by name that will be used for the ESP configuration. Routes can be
+                            given an explicit name via the "Name" appweb.conf directive. Otherwise routes are named by their
+                            route pattern.</td> 
                     </tr>
                     <tr>
                         <td>--routePrefix prefix</td>
-                        <td>Route prefix in appweb.conf to use for ESP configuration.</td>
+                        <td>This selects the Appweb route by prefix that will be used for the ESP configuration. Routes can be
+                            given an explicit prefix via the "Prefix" appweb.conf directive. If the route prefix does not match, 
+                            the first portion of the route pattern is tested against the requested prefix.</td>
                     </tr>
                     <tr>
                         <td>--show</td>
