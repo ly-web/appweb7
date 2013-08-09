@@ -142,9 +142,10 @@ PUBLIC EspRoute *getEspRoute()
 }
 
 
+//  MOB - rename getDocuments. What about getHome
 PUBLIC cchar *getDir()
 {
-    return getConn()->rx->route->dir;
+    return getConn()->rx->route->documents;
 }
 
 

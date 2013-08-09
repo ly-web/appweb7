@@ -224,7 +224,9 @@ static int runAction(HttpConn *conn)
     if (eroute->servicesDir) {
         req->servicePath = mprJoinPath(eroute->servicesDir, req->serviceName);
     } else {
-        //  MOB - was route->dir
+        /*
+            Look for services under the home rather than documents. Must not publish source.
+         */
         req->servicePath = mprJoinPath(route->home, req->serviceName);
     }
     key = mprJoinPath(eroute->servicesDir, rx->target);
@@ -251,7 +253,7 @@ static int runAction(HttpConn *conn)
 #if VXWORKS
         source = mprTrimPathDrive(source);
 #endif
-        canonical = mprGetPortablePath(mprGetRelPath(source, route->dir));
+        canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
         req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "service_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
@@ -374,7 +376,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 #if VXWORKS
         source = mprTrimPathDrive(source);
 #endif
-        canonical = mprGetPortablePath(mprGetRelPath(source, req->route->dir));
+        canonical = mprGetPortablePath(mprGetRelPath(source, req->route->documents));
         req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "view_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
@@ -510,7 +512,7 @@ static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
     if (!mprPathExists(source, R_OK)) {
         return 0;
     };
-    canonical = mprGetPortablePath(mprGetRelPath(source, eroute->route->dir));
+    canonical = mprGetPortablePath(mprGetRelPath(source, eroute->route->documents));
     cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "app_");
     eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));
 
@@ -702,7 +704,7 @@ PUBLIC void espSetMvcDirs(EspRoute *eroute)
     char        *dir;
 
     route = eroute->route;
-    dir = eroute->route->dir;
+    dir = eroute->route->documents;
 
     eroute->dbDir       = mprJoinPath(dir, "db");
     eroute->cacheDir    = mprJoinPath(dir, "cache");
@@ -863,7 +865,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     if (smatch(prefix, "/")) {
         prefix = 0;
     }
-    if (smatch(prefix, state->route->prefix) && mprSamePath(state->route->dir, dir)) {
+    if (smatch(prefix, state->route->prefix) && mprSamePath(state->route->documents, dir)) {
         /* 
             Can use existing route as it has the same prefix and documents directory. 
          */

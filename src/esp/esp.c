@@ -749,7 +749,7 @@ static MprList *getRoutes()
         }
         parent = route->parent;
         if (parent && parent->eroute &&
-            ((EspRoute*) parent->eroute)->compile && smatch(route->dir, parent->dir) && parent->startWith) {
+            ((EspRoute*) parent->eroute)->compile && smatch(route->documents, parent->documents) && parent->startWith) {
             /*
                 Use the parent instead if it has the same directory and is not the default route
                 This is for MVC apps with a prefix of "/" and a directory the same as the default route.
@@ -759,13 +759,12 @@ static MprList *getRoutes()
         if (!requiredRoute(route)) {
             continue;
         }
-        //  MOB - removed to permit stream.c and websockets.c to be compiled in the same directory
         /*
             Check for routes with a duplicate base directory
          */
         rp = 0;
         for (ITERATE_ITEMS(routes, rp, nextRoute)) {
-            if (sstarts(route->dir, rp->dir)) {
+            if (sstarts(route->documents, rp->documents) && sstarts(route->home, rp->home)) {
                 break;
             }
         }
@@ -785,7 +784,7 @@ static MprList *getRoutes()
             }
         }
         if (mprLookupItem(routes, route) < 0) {
-            mprTrace(2, "Compiling route dir: %s name: %s prefix: %s", route->dir, route->name, route->startWith);
+            mprTrace(2, "Compiling route dir: %s name: %s prefix: %s", route->documents, route->name, route->startWith);
             mprAddItem(routes, route);
         }
     }
@@ -854,7 +853,7 @@ static HttpRoute *getRoute()
             }
         }
         parent = route->parent;
-        if (parent && ((EspRoute*) parent->eroute)->compile && smatch(route->dir, parent->dir) && parent->startWith) {
+        if (parent && ((EspRoute*) parent->eroute)->compile && smatch(route->documents, parent->documents) && parent->startWith) {
             /*
                 Use the parent instead if it has the same directory and is not the default route
                 This is for MVC apps with a prefix of "/" and a directory the same as the default route.
@@ -875,7 +874,7 @@ static HttpRoute *getRoute()
             fail("Cannot find ESP configuration in %s", app->configFile);
         }
     } else {
-        mprLog(1, "Using route dir: %s, name: %s, prefix: %s", route->dir, route->name, route->startWith);
+        mprLog(1, "Using route dir: %s, name: %s, prefix: %s", route->documents, route->name, route->startWith);
     }
     return route;
 }
@@ -988,7 +987,7 @@ static void clean(MprList *routes)
     for (ITERATE_ITEMS(routes, route, next)) {
         eroute = route->eroute;
         if (eroute->cacheDir) {
-            trace("clean", "Route \"%s\" at %s", route->name, route->dir);
+            trace("clean", "Route \"%s\" at %s", route->name, route->documents);
             files = mprGetPathFiles(eroute->cacheDir, MPR_PATH_RELATIVE);
             for (nextFile = 0; (dp = mprGetNextItem(files, &nextFile)) != 0; ) {
                 path = mprJoinPath(eroute->cacheDir, dp->name);
@@ -1100,7 +1099,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     } else {
         prefix = "view_";
     }
-    canonical = mprGetPortablePath(mprGetRelPath(source, route->dir));
+    canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
     app->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), prefix);
     app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, app->cacheName, BIT_SHOBJ));
     defaultLayout = (eroute->layoutsDir) ? mprJoinPath(eroute->layoutsDir, "default.esp") : 0;
@@ -1241,16 +1240,18 @@ static void compile(MprList *routes)
     if (app->error) {
         return;
     }
+#if UNUSED
     for (ITERATE_KEYS(app->targets, kp)) {
         kp->type = 0;
     }
+#endif
     if (app->flat && app->genlink) {
         app->slink = mprCreateList(0, 0);
     }
     for (ITERATE_ITEMS(routes, route, next)) {
         eroute = route->eroute;
         mprMakeDir(eroute->cacheDir, 0755, -1, -1, 1);
-        mprTrace(2, "Build with route \"%s\" at %s", route->name, route->dir);
+        mprTrace(2, "Build with route \"%s\" at %s", route->name, route->documents);
         if (app->flat) {
             compileFlat(route);
         } else {
@@ -1274,7 +1275,7 @@ static void compile(MprList *routes)
         mprWriteFileFmt(file, "/*\n    %s -- Generated Appweb Static Initialization\n */\n", app->genlink);
         mprWriteFileFmt(file, "#include \"esp.h\"\n\n");
         for (ITERATE_ITEMS(app->slink, route, next)) {
-            name = app->appName ? app->appName : mprGetPathBase(route->dir);
+            name = app->appName ? app->appName : mprGetPathBase(route->documents);
             mprWriteFileFmt(file, "extern int esp_app_%s(HttpRoute *route, MprModule *module);", name);
             eroute = route->eroute;
             mprWriteFileFmt(file, "    /* SOURCE %s */\n",
@@ -1282,7 +1283,7 @@ static void compile(MprList *routes)
         }
         mprWriteFileFmt(file, "\nPUBLIC void appwebStaticInitialize()\n{\n");
         for (ITERATE_ITEMS(app->slink, route, next)) {
-            name = app->appName ? app->appName : mprGetPathBase(route->dir);
+            name = app->appName ? app->appName : mprGetPathBase(route->documents);
             mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s, \"%s\", \"%s\");\n", name, name, route->name);
         }
         mprWriteFileFmt(file, "}\n");
@@ -1296,25 +1297,27 @@ static void compile(MprList *routes)
 
 
 /*
-    Allow a route that is responsible for a target
+    Select a route that is responsible for a target
  */
 static bool requiredRoute(HttpRoute *route)
 {
     MprKey  *kp;
-    cchar   *sourceDir;
+    cchar   *source;
 
     if (app->targets == 0 || mprGetHashLength(app->targets) == 0) {
         return 1;
     }
     for (ITERATE_KEYS(app->targets, kp)) {
-        if (mprIsParentPathOf(route->dir, kp->key)) {
+        if (mprIsParentPathOf(route->documents, kp->key)) {
             kp->type = ESP_FOUND_TARGET;
             return 1;
         }
-        sourceDir = mprGetPathDir(mprJoinPath(route->home, route->sourceName));
-        if (mprIsParentPathOf(sourceDir, kp->key)) {
-            kp->type = ESP_FOUND_TARGET;
-            return 1;
+        if (route->sourceName) {
+            source = mprJoinPath(route->home, route->sourceName);
+            if (mprIsParentPathOf(kp->key, source)) {
+                kp->type = ESP_FOUND_TARGET;
+                return 1;
+            }
         }
     }
     return 0;
@@ -1394,7 +1397,7 @@ static void compileItems(HttpRoute *route)
 
     } else {
         /* Non-MVC */
-        app->files = mprGetPathFiles(route->dir, MPR_PATH_DESCEND);
+        app->files = mprGetPathFiles(route->documents, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (selectResource(path, "esp")) {
@@ -1405,7 +1408,7 @@ static void compileItems(HttpRoute *route)
             Stand-alone services
          */
         if (route->sourceName) {
-            //  MOB - was route->dir
+            //  MOB - was route->documents
             path = mprJoinPath(route->home, route->sourceName);
             compileFile(route, path, ESP_SERVICE);
         }
@@ -1423,7 +1426,7 @@ static void compileFlat(HttpRoute *route)
     int         next, kind;
 
     eroute = route->eroute;
-    name = app->appName ? app->appName : mprGetPathBase(route->dir);
+    name = app->appName ? app->appName : mprGetPathBase(route->documents);
 
     /*
         Flat ... Catenate all source
@@ -1458,7 +1461,7 @@ static void compileFlat(HttpRoute *route)
         }
     }
     if (!eroute->servicesDir && !eroute->clientDir) {
-        app->files = mprGetPathFiles(route->dir, MPR_PATH_DESCEND);
+        app->files = mprGetPathFiles(route->documents, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (smatch(mprGetPathExt(path), "esp")) {
@@ -1537,7 +1540,7 @@ static void generateApp(int argc, char **argv)
     app->appName = sclone(name);
     app->appType = eroute->appType = sclone((argc > 1) ? argv[0] : "angular");
 
-    makeEspDir(route->dir);
+    makeEspDir(route->documents);
     generateAppFiles(route, argc - 1, &argv[1]);
     generateAppConfigFile(route);
     generateAppSrc(route);
@@ -2106,11 +2109,12 @@ static void fixupFile(HttpRoute *route, cchar *path)
     data = sreplace(data, "${NAME}", app->appName);
     data = sreplace(data, "${TITLE}", spascal(app->appName));
     data = sreplace(data, "${DATABASE}", app->database);
-    data = sreplace(data, "${DIR}", route->dir);
+    //  MOB - should be DOCUMENTS, what about HOME
+    data = sreplace(data, "${DIR}", route->documents);
     data = sreplace(data, "${LISTEN}", app->listen);
     data = sreplace(data, "${BINDIR}", app->binDir);
     data = sreplace(data, "${ROUTESET}", app->routeSet);
-    tmp = mprGetTempPath(route->dir);
+    tmp = mprGetTempPath(route->documents);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
         fail("Cannot write %s", path);
         return;
@@ -2156,7 +2160,7 @@ static void generateAppFiles(HttpRoute *route, int argc, char **argv)
             fail("Cannot find component %s", argv[i]);
             return;
         }
-        copyEspDir(path, route->dir);
+        copyEspDir(path, route->documents);
     }
     fixupFile(route, mprJoinPath(eroute->clientDir, "index.esp"));
     fixupFile(route, mprJoinPath(eroute->appDir, "main.js"));
@@ -2194,8 +2198,8 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
 
 static void generateAppConfigFile(HttpRoute *route)
 {
-    fixupFile(route, mprJoinPath(route->dir, "appweb.conf"));
-    fixupFile(route, mprJoinPath(route->dir, "app.conf"));
+    fixupFile(route, mprJoinPath(route->documents, "appweb.conf"));
+    fixupFile(route, mprJoinPath(route->documents, "app.conf"));
 }
 
 

@@ -150,7 +150,7 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
         return;
     }
     esp = MPR->espService;
-    path = mprGetPortablePath(mprJoinPath(route->dir, path));
+    path = mprGetPortablePath(mprJoinPath(route->documents, path));
     mprAddKey(esp->views, path, view);
 }
 
@@ -228,9 +228,10 @@ PUBLIC EspRoute *espGetEspRoute(HttpConn *conn)
 }
 
 
+//  MOB - rename espGetDocuments
 PUBLIC cchar *espGetDir(HttpConn *conn)
 {   
-    return conn->rx->route->dir;
+    return conn->rx->route->documents;
 }
 
 

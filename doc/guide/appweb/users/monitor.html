@@ -85,15 +85,15 @@ Monitor Expression Period List-of-Defenses...
             <p>The monitor directive defines an expression to be regularly tested. The Period defines how often it will
             be tested. If the expression is true, the list of defenses will be invoked to address the threat. For example:</p>
             <pre>
-Monitor Errors > 20 1min report
+Monitor "Errors > 20" 1min report
 </pre>
             <p>This will test each minute if any client has more than 20 errors in the preceeding period. If any are found, 
             the "report" defense will be invoked.
             <h3>Monitor Expressions</h3>
-            <p>Monitor expressions are simple comparisions between a server Counter and a limit. They take the form:</p>
-            <pre>Counter [<|>] Limit</pre>
-            <p>Although a monitor can only access one counter, multiple monitors can be created. Further, multiple monitors may
-            access the same Counter. In this manner, you can construct layered defeneses.</p>
+            <p>Monitor expressions are simple comparisions between a server Counter and a limit wrapped in quotes. 
+            They take the form:</p>
+            <pre>"Counter [<|>] Limit"</pre>
+            <p>Although a monitor can only access one counter, multiple monitors can be created. </p
             <a id="Counters"></a>
             <h2 class="section">Counters</h2>
             <p>Counters are metrics defined and maintained by Appweb for monitoring purposes.</p>
@@ -163,15 +163,16 @@ Monitor Errors > 20 1min report
             <p>Defenses are user-define rules in the appweb.conf file that specify which remedy to invoke. Defenses must be 
             defined before any monitor that uses the defense. The Defenses directive takes the form:</p>
             <pre>
-Defense Name Remedy Args...
+Defense Name RemedyArgs...
 </pre>
             <p>The defense <i>Name</i> is the name specified by Monitors using the defense. Multiple Monitors may reference 
-            a single defense. The <i>Remedy</i> is the name of the 
-            internal remedy to be invoked. The <i>Args</i> are zero or more arguments to pass to the remedy. Each arg is of the form:</p>
+            a single defense. The remedy is specified via the RemedyArgs which are of the form: </p>
             <pre>
 KEYWORD=VALUE
 </pre>
-            <p>The VALUE string may embed other keyword values by using the form: "${KEYWORD}". This will substitute the value of the keyword.</p>
+            <p>The VALUE string may embed other keyword values by using the form: "${KEYWORD}". This will substitute the value 
+            of the keyword. For example:</p>
+            <pre>REMDY=ban PERIOD=10mins</pre>
             <h2>Remedies</h2>
             <p>Appweb provides a suite of remedies for Defenses to invoke to mitigate security threats. The remedy names are used in Defense
             directives.</p>
@@ -194,23 +195,23 @@ KEYWORD=VALUE
                 The default action is to simply close the socket and ignore the request. This is most efficient
                 and gives the offending client the minimum of information. Alternatively, you can specify a
                 response STATUS and MESSAGE. For example, to ban without a response message:</p>
-                <pre>Defense mydefense ban PERIOD=10mins</pre> 
+                <pre>Defense mydefense REMEDY=ban PERIOD=10mins</pre> 
                 <p>To ban with a response:</p>
-                <pre>Defense mydefense ban STATUS=406 MESSAGE="Client temporarily banned" PERIOD=10mins</pre> 
+                <pre>Defense mydefense REMDY=ban STATUS=406 MESSAGE="Client temporarily banned" PERIOD=10mins</pre> 
             <h3>Cmd Remedy</h3>
             <p>The <i>Cmd</i> remedy invokes an external command. This is an open interface to permit you to run
             a program of your choosing. The command line is specified by the <i>CMD</i> keyword. For example:</p>
-            <pre>Defense mydefense cmd CMD="/path/to/my/program args ..."</pre>
+            <pre>Defense mydefense REMEDY=cmd CMD="/path/to/my/program args ..."</pre>
             <p>To send data to the standard input of the command, use the pipe symbol: <i>|</i>. This will
             send a generic message to the sendmail program</p>
-            <pre>Defense mydefense cmd CMD="${MESSAGE} | sendmail user@example.com"</pre>
+            <pre>Defense mydefense REMEDY=cmd CMD="${MESSAGE} | sendmail user@example.com"</pre>
             <p>The command is run by Appweb in the background and will not block the server. You may sleep in the command
             for the designated ${PERIOD} and then reverse the ban. </p>
             <h3>Delay Remedy</h3>
             <p>Sometimes a complete ban is too much, so the <i>Delay</i> remedy continues to serve the offending client,
             but with a delay to reduce their impact on the server. This remedy can be effective to prevent brute-force 
             attacks the enumerate URLs or potential vulnerabilities. For example:</p>
-            <pre>Defines mydefense delay DELAY=1sec PERIOD=10mins</pre>
+            <pre>Defense mydefense REMEDY=delay DELAY=1sec PERIOD=10mins</pre>
             <p>This will introduce a one second delay for each request from the offending client IP address. The delay
             units are by default milliseconds when used without a "sec|min|hr" suffix.</p>
             <h3>Email Remedy</h3>
@@ -219,22 +220,22 @@ KEYWORD=VALUE
             <p>The destination is specified by the <i>TO</i> keyword. Appweb will provide a default subject and from address.
             These can be overridden via the <i>SUBJECT</i> and <i>FROM</i> keywords.</p> 
             <p>For example:</p>
-            <pre>Defense mydefense email TO=info@example.com</pre>
-            <pre>Defense notify email SUBJECT="Alert" FROM=root@server14 TO=info@example.com</pre>
+            <pre>Defense mydefense REMEDY=email TO=info@example.com</pre>
+            <pre>Defense notify REMEDY=email SUBJECT="Alert" FROM=root@server14 TO=info@example.com</pre>
             <h3>HTTP Remedy</h3>
             <p>The <i>http</i> remedy allows you to issue a HTTP request as part of your defense. The default HTTP method is POST
             and this can be overridden via the METHOD keyword. A default message is posted and this can be overridden by the 
             MESSAGE keyword.</p>
             <p>The HTTP request will wait for a response up to the configured RequestTimeout in the appweb.conf file.</p>
             <p>Some examples:</p>
-            <pre>Defense report http URI=http://example.com/report</pre>
-            <pre>Defense report http METHOD=GET URI=http://example.com/alert</pre>
-            <pre>Defense report http METHOD=POST MESSAGE="Under Attack" URI=http://example.com/report</pre>
+            <pre>Defense report REMEDY=http URI=http://example.com/report</pre>
+            <pre>Defense report REMEDY=http METHOD=GET URI=http://example.com/alert</pre>
+            <pre>Defense report REMEDY=http METHOD=POST MESSAGE="Under Attack" URI=http://example.com/report</pre>
             <h3>Log Remedy</h3>
             <p>The log remedy simply writes a message to the log file.</p>
             <p>The message can be augmented or overridden via the MESSAGE keyword.</p> 
-            <pre>Defense report log</pre>
-            <pre>Defense report log MESSAGE="Report ${MESSAGE}"</pre>
+            <pre>Defense report REMEDY=log</pre>
+            <pre>Defense report REMEDY=log MESSAGE="Report ${MESSAGE}"</pre>
             <h3>Reboot Remedy</h3>
             <p>The reboot remedy will immediately reboot Appweb. This may be useful if the Memory utilization exceeds the
             defined limit. This should not be used in production as any memory growth should be diagnosed and eliminated. </p>
@@ -258,16 +259,16 @@ KEYWORD=VALUE
             </table>
             <h2>Examples</h2>
             <pre>
-Defense block ban PERIOD=30mins
-Defense alarm cmd CMD="afplay klaxon.mp3"
-Defense goslow delay PERIOD=10mins DELAY=1sec
-Defense report http URI=http://example.com/report
-Defense notify email TO=info@example.com
-Monitor NotFoundErrors > 20 1min block
-Monitor Errors > 100 1min block
-Monitor NetworkIO > 50MB 1min block
-Monitor ActiveConnections > 10 1min block
-Monitor ActiveRequests > 10 1min block
+Defense block REMEDY=ban PERIOD=30mins
+Defense alarm REMEDY=cmd CMD="afplay klaxon.mp3"
+Defense goslow REMEDY=delay PERIOD=10mins DELAY=1sec
+Defense report REMEDY=http URI=http://example.com/report
+Defense notify REMEDY=email TO=info@example.com
+Monitor "NotFoundErrors > 20" 1min block
+Monitor "Errors > 100" 1min block
+Monitor "NetworkIO > 50MB" 1min block
+Monitor "ActiveConnections > 10" 1min block
+Monitor "ActiveRequests > 10" 1min block
 </pre>
             <h2>APIs</h2>
             <p>You can define Monitors and Defenses via the appweb.conf file, or via the Appweb APIs:

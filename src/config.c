@@ -288,7 +288,7 @@ static int addLanguageDirDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (mprIsPathRel(path)) {
-        path = mprJoinPath(route->dir, path);
+        path = mprJoinPath(route->documents, path);
     }
     httpAddRouteLanguageDir(route, lang, mprGetAbsPath(path));
     return 0;
@@ -623,8 +623,8 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
             }
             return MPR_ERR_BAD_SYNTAX;
         }
-        state->route->dir = mprGetRelPath(state->route->dir, path);
-        state->route->home = state->route->dir;
+        state->route->documents = mprGetRelPath(state->route->documents, path);
+        state->route->home = state->route->documents;
         mprLog(MPR_CONFIG, "Chroot to: \"%s\"", path);
     }
     return 0;
@@ -744,16 +744,16 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Defense Policy Action [Token=Value]...
+    Defense name [Token=Value]...
  */
 static int defenseDirective(MaState *state, cchar *key, cchar *value)
 {
-    cchar   *policy, *action, *args; 
+    cchar   *name, *args; 
 
-    if (!maTokenize(state, value, "%S %S ?*", &policy, &action, &args)) {
+    if (!maTokenize(state, value, "%S ?*", &name, &args)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpAddDefense(policy, action, args);
+    httpAddDefense(name, NULL, args);
     return 0;
 }
 
@@ -1643,16 +1643,20 @@ static int minWorkersDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Monitor Counter Limit Period Defenses
+    Monitor Expression Period Defenses
  */
 static int monitorDirective(MaState *state, cchar *key, cchar *value)
 {
-    cchar   *counter, *expr, *limit, *period, *defenses;
+    cchar   *counter, *expr, *limit, *period, *relation, *defenses;
 
-    if (!maTokenize(state, value, "%S %S %S %S %*", &counter, &expr, &limit, &period, &defenses)) {
+    if (!maTokenize(state, value, "%S %S %*", &expr, &period, &defenses)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpAddMonitor(counter, expr, getnum(limit), httpGetTicks(period), defenses);
+    expr = strim(expr, "\"", MPR_TRIM_BOTH);
+    if (!maTokenize(state, expr, "%S %S %S", &counter, &relation, &limit)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpAddMonitor(counter, relation, getnum(limit), httpGetTicks(period), defenses);
     return 0;
 }
 

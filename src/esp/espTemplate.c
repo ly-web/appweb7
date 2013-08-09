@@ -652,7 +652,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         bodyCode = mprGetBufStart(body);
     }
     if (state == &top) {
-        path = mprGetRelPath(path, route->dir);
+        path = mprGetRelPath(path, route->documents);
         if (mprGetBufLength(state->start) > 0) {
             mprPutCharToBuf(state->start, '\n');
         }

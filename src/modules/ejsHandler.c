@@ -55,7 +55,7 @@ static void openEjs(HttpQueue *q)
             route->workers = mprGetMaxWorkers();
         }
         route->context = ejsCreatePool(route->workers, "require ejs.web", route->script, route->scriptPath,
-            route->home, route->dir);
+            route->home, route->documents);
         mprTrace(5, "ejs: Create ejs pool for route %s", route->name);
     }
     pool = conn->pool = route->context;

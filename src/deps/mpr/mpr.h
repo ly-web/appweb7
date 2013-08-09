@@ -5024,7 +5024,7 @@ PUBLIC char *mprGetWinPath(cchar *path);
 
 /**
     Determine if a directory is the same as or a parent of a path.
-    @param dir Directory to examine if it is a parent of pat.
+    @param dir Directory to examine if it is a parent of path.
     @param path Path name to examine
     @returns True if directory is a parent of the path or is the same as the given path.
     @ingroup MprPath

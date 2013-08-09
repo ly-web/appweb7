@@ -395,13 +395,14 @@ PUBLIC int httpAddMonitor(cchar *counter, cchar *expr, uint64 limit, MprTicks pe
 /**
     Add a defense
     @param name Name of defensive policy
-    @param action Remedy action to invoke. Standard remedies include: ban, cmd, delay, email, http and log.
+    @param remedy Remedy action to invoke. Standard remedies include: ban, cmd, delay, email, http and log.
+        This can be null and the remedy can be specified via REMEDY=remedy in the args.
     @param args Arguments to pass to the remedy. These may include ${tokens}.
     @return Zero if successful, otherwise a negative MPR error code.
     @ingroup HttpMonitor
     @stability Prototype
  */
-PUBLIC int httpAddDefense(cchar *name, cchar *action, cchar *args);
+PUBLIC int httpAddDefense(cchar *name, cchar *remedy, cchar *args);
 
 /**
     Add a counter to be monitored
@@ -3587,8 +3588,7 @@ typedef struct HttpRoute {
     char            *targetRule;            /**< Target rule */
     char            *target;                /**< Route target details */
 
-    //  TODO - rename documents
-    char            *dir;                   /**< Documents directory */
+    char            *documents;             /**< Documents directory */
     char            *home;                  /**< Home directory for configuration files */
     MprList         *indicies;              /**< Directory index documents */
     HttpStage       *handler;               /**< Fixed handler */
@@ -4159,7 +4159,7 @@ PUBLIC void httpFinalizeRoute(HttpRoute *route);
 PUBLIC void *httpGetRouteData(HttpRoute *route, cchar *key);
 
 /**
-    Get the route directory
+    Get the route documents directory
     @description Routes can define a default directory for documents to serve. This value may be used by
         target rules to calculate the response filename.
     @param route Route to modify
@@ -4167,7 +4167,17 @@ PUBLIC void *httpGetRouteData(HttpRoute *route, cchar *key);
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC cchar *httpGetRouteDir(HttpRoute *route);
+PUBLIC cchar *httpGetRouteDocuments(HttpRoute *route);
+
+/**
+    Get the route home directory
+    @description Routes can define a home directory for configuration files. 
+    @param route Route to modify
+    @return The route home directory pathname.
+    @ingroup HttpRoute
+    @stability Evolving
+ */
+PUBLIC cchar *httpGetRouteHome(HttpRoute *route);
 
 /**
     Get the route method list
