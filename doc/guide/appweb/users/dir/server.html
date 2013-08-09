@@ -378,8 +378,14 @@
                             before processing the request or whether the processing should be started immediately and the
                             body data streamed to the handler.</p>
                             <p>By default, POST forms that have a Content-Type of "application/x-www-form-urlencoded" or 
-                            "application/json" will have their request body data buffered before processing. By default, all 
-                            other requests content types will be streamed. This enables form requests to use body data in the route processing. </p>
+                            "application/json" will have their request body data buffered before processing. 
+                            This enables form requests to use body data in the route processing. 
+                            By default, all other requests content types will be streamed. </p>
+                            <p>The mimeType specifies the required "Content-Type" HTTP header for the request. 
+                            The URI is optional and if supplied, specifies a matching URI prefix for qualifying requests.</p>
+
+                            <pre>StreamInput application/x-gzip /upload</pre>
+                            <p>The StreamInput applies to the entire host and is not specific per-route.</p>
                         </td>
                     </tr>
                 </tbody>
