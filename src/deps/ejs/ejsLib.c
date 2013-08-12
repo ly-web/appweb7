@@ -29019,10 +29019,10 @@ static int  flushByteArray(Ejs *ejs, EjsByteArray *ap);
 static ssize  getInput(Ejs *ejs, EjsByteArray *ap, ssize required);
 static int  lookupByteArrayProperty(Ejs *ejs, EjsByteArray *ap, EjsName qname);
 
-static MPR_INLINE int swap16(EjsByteArray *ap, int a);
-static MPR_INLINE int swap32(EjsByteArray *ap, int a);
-static MPR_INLINE int64 swap64(EjsByteArray *ap, int64 a);
-static MPR_INLINE double swapDouble(EjsByteArray *ap, double a);
+static BIT_INLINE int swap16(EjsByteArray *ap, int a);
+static BIT_INLINE int swap32(EjsByteArray *ap, int a);
+static BIT_INLINE int64 swap64(EjsByteArray *ap, int64 a);
+static BIT_INLINE double swapDouble(EjsByteArray *ap, double a);
 static int putByte(EjsByteArray *ap, int value);
 static int putInteger(EjsByteArray *ap, int value);
 static int putLong(EjsByteArray *ap, int64 value);
@@ -30180,7 +30180,7 @@ PUBLIC bool ejsMakeRoomInByteArray(Ejs *ejs, EjsByteArray *ap, ssize require)
 }
 
 
-static MPR_INLINE int swap16(EjsByteArray *ap, int a)
+static BIT_INLINE int swap16(EjsByteArray *ap, int a)
 {
     if (!ap->swap) {
         return a;
@@ -30189,7 +30189,7 @@ static MPR_INLINE int swap16(EjsByteArray *ap, int a)
 }
 
 
-static MPR_INLINE int swap32(EjsByteArray *ap, int a)
+static BIT_INLINE int swap32(EjsByteArray *ap, int a)
 {
     if (!ap->swap) {
         return a;
@@ -30198,7 +30198,7 @@ static MPR_INLINE int swap32(EjsByteArray *ap, int a)
 }
 
 
-static MPR_INLINE int64 swap64(EjsByteArray *ap, int64 a)
+static BIT_INLINE int64 swap64(EjsByteArray *ap, int64 a)
 {
     int64   low, high;
 
@@ -30212,7 +30212,7 @@ static MPR_INLINE int64 swap64(EjsByteArray *ap, int64 a)
 }
 
 
-static MPR_INLINE double swapDouble(EjsByteArray *ap, double a)
+static BIT_INLINE double swapDouble(EjsByteArray *ap, double a)
 {
     int64   low, high;
 
@@ -70112,7 +70112,7 @@ void ejsMarkName(EjsName *qname)
 
 static void callFunction(Ejs *ejs, EjsFunction *fun, EjsAny *thisObj, int argc, int stackAdjust);
 
-static MPR_INLINE void getPropertyFromSlot(Ejs *ejs, EjsAny *thisObj, EjsAny *obj, int slotNum) 
+static BIT_INLINE void getPropertyFromSlot(Ejs *ejs, EjsAny *thisObj, EjsAny *obj, int slotNum) 
 {
     EjsFunction     *fun, *value;
 
@@ -70141,7 +70141,7 @@ static MPR_INLINE void getPropertyFromSlot(Ejs *ejs, EjsAny *thisObj, EjsAny *ob
 
 #define GET_SLOT(thisObj, obj, slotNum) getPropertyFromSlot(ejs, thisObj, obj, slotNum)
 
-static MPR_INLINE void checkGetter(Ejs *ejs, EjsAny *value, EjsAny *thisObj, EjsAny *obj, int slotNum) 
+static BIT_INLINE void checkGetter(Ejs *ejs, EjsAny *value, EjsAny *thisObj, EjsAny *obj, int slotNum) 
 {
     EjsFunction     *fun;
 
