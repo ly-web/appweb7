@@ -2693,7 +2693,8 @@ PUBLIC void httpSetConnHost(HttpConn *conn, void *host);
         notifier will be invoked for each and every state. This is true even if the request has no content, the
         HTTP_STATE_CONTENT will still be visited.</li>
     <li>HTTP_EVENT_READABLE &mdash; There is data available to read</li>
-    <li>HTTP_EVENT_WRITABLE &mdash; The outgoing pipeline can absorb more data</li>
+    <li>HTTP_EVENT_WRITABLE &mdash; The outgoing pipeline can absorb more data. The WRITABLE event is issued when the 
+        outgoing pipeline is empties and can absorb more data.</li>
     <li>HTTP_EVENT_ERROR &mdash; The request has encountered an error</li>
     <li>HTTP_EVENT_DESTROY &mdash; The connection structure is about to be destoyed</li>
     <li>HTTP_EVENT_OPEN &mdash; The application layer is now open</li>
