@@ -21,8 +21,15 @@ static void echo_callback(HttpConn *conn, int event, int arg)
              */
             httpSendBlock(conn, packet->type, httpGetPacketStart(packet), httpGetPacketLength(packet), 0);
         }
+    } else if (event == HTTP_EVENT_APP_CLOSE) {
+        mprLog(0, "echo.c: close event. Status status %d, orderly closed %d, reason %s", arg,
+        httpWebSocketOrderlyClosed(conn), httpGetWebSocketCloseReason(conn));
+
+    } else if (event == HTTP_EVENT_ERROR) {
+        mprLog(0, "echo.c: error event");
     }
 }
+
 
 /*
     Action to run in response to the "test/echo" URI

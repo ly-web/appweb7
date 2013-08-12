@@ -52,7 +52,6 @@ static void output_callback(HttpConn *conn, int event, int arg)
                     return;
                 }
                 output->written += wrote;
-                // printf("len %d, wrote %d, written %d\n", (int) len, (int) wrote, (int) output->written);
                 if (wrote < len) {
                     /* Reposition if the send returned having written less than requested */
                     mprSeekFile(output->file, SEEK_CUR, wrote - len);
@@ -63,6 +62,13 @@ static void output_callback(HttpConn *conn, int event, int arg)
                 break;
             }
         } while (len > 0);
+
+    } else if (event == HTTP_EVENT_APP_CLOSE) {
+        mprLog(0, "output.c: close event. Status status %d, orderly closed %d, reason %s", arg,
+        httpWebSocketOrderlyClosed(conn), httpGetWebSocketCloseReason(conn));
+
+    } else if (event == HTTP_EVENT_ERROR) {
+        mprLog(0, "output.c: error event");
     }
 }
 

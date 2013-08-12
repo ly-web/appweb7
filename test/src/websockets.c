@@ -34,7 +34,7 @@ static void dummy_callback(HttpConn *conn, int event, int arg)
 
 static void dummy_action() { 
     dontAutoFinalize();
-    httpSetConnNotifier(getConn(), dummy_callback);
+    espSetNotifier(getConn(), dummy_callback);
 }
 
 static void len_callback(HttpConn *conn, int event, int arg)
@@ -62,7 +62,7 @@ static void len_callback(HttpConn *conn, int event, int arg)
 
 static void len_action() { 
     dontAutoFinalize();
-    httpSetConnNotifier(getConn(), len_callback);
+    espSetNotifier(getConn(), len_callback);
 }
 
 
@@ -85,7 +85,7 @@ static void echo_callback(HttpConn *conn, int event, int arg)
 
 static void echo_action() { 
     dontAutoFinalize();
-    httpSetConnNotifier(getConn(), echo_callback);
+    espSetNotifier(getConn(), echo_callback);
 }
 
 
