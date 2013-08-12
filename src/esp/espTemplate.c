@@ -250,7 +250,7 @@ static int runCommand(EspRoute *eroute, MprDispatcher *dispatcher, cchar *comman
     rc = mprRunCmd(cmd, commandLine, env, &out, &err, -1, 0);
     mprRelease((void*) commandLine);
 
-    if (rc < 0) {
+    if (rc != 0) {
         if (err == 0 || *err == '\0') {
             /* Windows puts errors to stdout Ugh! */
             err = out;
@@ -339,12 +339,12 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     }
 #endif
     /* WARNING: GC yield here */
-    if (runCommand(eroute, dispatcher, eroute->compile, csource, module, errMsg) < 0) {
+    if (runCommand(eroute, dispatcher, eroute->compile, csource, module, errMsg) != 0) {
         return 0;
     }
     if (eroute->link) {
         /* WARNING: GC yield here */
-        if (runCommand(eroute, dispatcher, eroute->link, csource, module, errMsg) < 0) {
+        if (runCommand(eroute, dispatcher, eroute->link, csource, module, errMsg) != 0) {
             return 0;
         }
 #if !(BIT_DEBUG && MACOSX)

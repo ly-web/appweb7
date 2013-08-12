@@ -199,6 +199,15 @@ PUBLIC cchar *espGetCookies(HttpConn *conn)
 }
 
 
+PUBLIC void *espGetData(HttpConn *conn)
+{
+    EspReq  *req;
+
+    req = conn->data;
+    return req->data;
+}
+
+
 PUBLIC Edi *espGetDatabase(HttpConn *conn)
 {
     EspRoute    *eroute;
@@ -217,6 +226,13 @@ PUBLIC Edi *espGetDatabase(HttpConn *conn)
 }
 
 
+//  MOB - rename espGetDocuments
+PUBLIC cchar *espGetDir(HttpConn *conn)
+{   
+    return conn->rx->route->documents;
+}
+
+
 PUBLIC EspRoute *espGetEspRoute(HttpConn *conn)
 {
     EspReq      *req;
@@ -225,13 +241,6 @@ PUBLIC EspRoute *espGetEspRoute(HttpConn *conn)
         return 0;
     }
     return req->eroute;
-}
-
-
-//  MOB - rename espGetDocuments
-PUBLIC cchar *espGetDir(HttpConn *conn)
-{   
-    return conn->rx->route->documents;
 }
 
 
@@ -703,6 +712,28 @@ PUBLIC void espSetConn(HttpConn *conn)
 }
 
 
+static void espNotifier(HttpConn *conn, int event, int arg)
+{
+    EspReq      *req;
+
+    if ((req = conn->data) != 0) {
+        espSetConn(conn);
+        (req->notifier)(conn, event, arg);
+    }
+}
+
+
+PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
+{
+    EspReq      *req;
+
+    if ((req = conn->data) != 0) {
+        req->notifier = notifier;
+        httpSetConnNotifier(conn, espNotifier);
+    }
+}
+
+
 static cchar *getGridSchema(EdiGrid *grid)
 {
     Edi         *edi;
@@ -870,6 +901,15 @@ PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path,
 PUBLIC void espSetContentType(HttpConn *conn, cchar *mimeType)
 {
     httpSetContentType(conn, mimeType);
+}
+
+
+PUBLIC void espSetData(HttpConn *conn, void *data)
+{
+    EspReq  *req;
+
+    req = conn->data;
+    req->data = data;
 }
 
 

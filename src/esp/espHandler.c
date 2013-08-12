@@ -753,6 +753,7 @@ static void manageReq(EspReq *req, int flags)
         mprMark(req->route);
         mprMark(req->source);
         mprMark(req->view);
+        mprMark(req->data);
     }
 }
 

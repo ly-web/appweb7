@@ -389,6 +389,9 @@ typedef struct EspReq {
     MprHash         *feedback;              /**< Feedback messages */
     MprHash         *flash;                 /**< New flash messages */
     MprHash         *lastFlash;             /**< Flash messages from the last request */
+    HttpNotifier    notifier;               /**< Connection Http state change notification callback */
+    void            *data;                  /**< Custom data for request - must be a managed reference */
+    void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
     char            *cacheName;             /**< Base name of intermediate compiled file */
     char            *serviceName;           /**< Service name */
     char            *servicePath;           /**< Path to service source */
@@ -1370,6 +1373,32 @@ PUBLIC void espSetHeaderString(HttpConn *conn, cchar *key, cchar *value);
  */
 PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value);
 
+/** 
+    Define a notifier callback for this connection.
+    @description The notifier callback will be invoked for state changes and I/O events as requests are processed.
+    The supported events are:
+    <ul>
+    <li>HTTP_EVENT_STATE &mdash; The request is changing state. Valid states are:
+        HTTP_STATE_BEGIN, HTTP_STATE_CONNECTED, HTTP_STATE_FIRST, HTTP_STATE_CONTENT, HTTP_STATE_READY,
+        HTTP_STATE_RUNNING, HTTP_STATE_FINALIZED and HTTP_STATE_COMPLETE. A request will always visit all states and the
+        notifier will be invoked for each and every state. This is true even if the request has no content, the
+        HTTP_STATE_CONTENT will still be visited.</li>
+    <li>HTTP_EVENT_READABLE &mdash; There is data available to read</li>
+    <li>HTTP_EVENT_WRITABLE &mdash; The outgoing pipeline can absorb more data</li>
+    <li>HTTP_EVENT_ERROR &mdash; The request has encountered an error</li>
+    <li>HTTP_EVENT_DESTROY &mdash; The connection structure is about to be destoyed</li>
+    <li>HTTP_EVENT_OPEN &mdash; The application layer is now open</li>
+    <li>HTTP_EVENT_CLOSE &mdash; The application layer is now closed</li>
+    </ul>
+    Before the notifier is invoked, espSetConn is called to set the connection object in the thread local storage.
+    This enables the ESP Abbreviated API.
+    @param conn HttpConn connection object created via #httpCreateConn
+    @param notifier Notifier function. 
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier);
+
 /**
     Set a Http response status.
     @description Set the Http response status for the request. This defaults to 200 (OK).
@@ -1689,6 +1718,12 @@ PUBLIC MprOff getContentLength();
     @stability Evolving
  */
 PUBLIC cchar *getContentType();
+
+//  MOB
+PUBLIC void *getData();
+PUBLIC void setData(void *data);
+PUBLIC void *espGetData(HttpConn *conn);
+PUBLIC void espSetData(HttpConn *conn, void *data);
 
 /**
     Get the current database instance
@@ -2358,6 +2393,16 @@ PUBLIC void setHeader(cchar *key, cchar *fmt, ...);
     @stability Evolving
  */
 PUBLIC void setIntParam(cchar *name, int value);
+
+/**
+    Set a notifier callback for the connection.
+    This wraps httpSetConnNotifier and calls espSetConn before invoking the notifier for 
+    connection events.
+    @param notifier Callback function 
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC void setNotifier(HttpNotifier notifier);
 
 /**
     Set a request parameter value

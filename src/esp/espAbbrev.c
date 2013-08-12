@@ -130,6 +130,12 @@ PUBLIC cchar *getContentType()
 }
 
 
+PUBLIC void *getData()
+{
+    return espGetData(getConn());
+}
+
+
 PUBLIC Edi *getDatabase()
 {
     return espGetDatabase(getConn());
@@ -499,6 +505,12 @@ PUBLIC void setCookie(cchar *name, cchar *value, cchar *path, cchar *cookieDomai
 }
 
 
+PUBLIC void setData(void *data)
+{
+    espSetData(getConn(), data);
+}
+
+
 PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value)
 {
     return espSetField(rec, fieldName, value);
@@ -520,6 +532,12 @@ PUBLIC void setHeader(cchar *key, cchar *fmt, ...)
     value = sfmtv(fmt, args);
     espSetHeaderString(getConn(), key, value);
     va_end(args);
+}
+
+
+PUBLIC void setNotifier(HttpNotifier notifier)
+{
+    espSetNotifier(getConn(), notifier);
 }
 
 
