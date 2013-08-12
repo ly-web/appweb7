@@ -1,18 +1,15 @@
 ESP WebSockets Sample
 ===
 
-This sample shows how to create a WebSockets echo server. This application 
-echos incoming packets back to the client. The application source is in echo.c.
-This is a simple ESP controler with one action that is run in response
-to the URI: 
+This sample demonstrates writing large, streaming response without blocking, 
+buffering or consuming excessive memory. This sends a large file as a single 
+web socket message using multiple frames.
 
-    /ws/test/echo.
+The sample is implemented as an ESP controler with one action. A test web 
+page initiates the client WebSocket request to retrieve the file. To run, 
+browse to:
 
-The HTML page web/test.html is served to the client browser to issue a web socket
-request.
-
-The server is configured to keep the web socket open for 1 minute of inactivity and
-then close the connection.
+    http://localhost:8080/test.html
 
 Requirements
 ---
@@ -32,8 +29,8 @@ The server listens on port 8080. Browse to:
  
      http://localhost:8080/test.html
 
-This opens a web socket and sends the message "Hello Server" to the server. The server responds
-by echoing back the message. After one minute of inactivity, the server will close the connection.
+This opens a web socket and and listens for WebSocket data sent by the server. 
+It will display the received data in the browser window.
 
 Code:
 ---

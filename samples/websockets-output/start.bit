@@ -10,7 +10,7 @@ Bit.load({
     targets: {
         cleanup: {
             type: 'clean',
-            action: "rm(['*.o', 'cache/*'])",
+            action: "rm(['cache/*'])",
         },
         run: {
             run: 'appweb',

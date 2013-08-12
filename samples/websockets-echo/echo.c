@@ -36,7 +36,7 @@ static void echo_action() {
     /*
         Establish the event callback
      */
-    httpSetConnNotifier(getConn(), echo_callback);
+    espSetNotifier(getConn(), echo_callback);
 }
 
 
