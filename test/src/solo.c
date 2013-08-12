@@ -10,7 +10,6 @@ static void soloStreamCallback(HttpConn *conn, int event, int arg)
 {
     HttpPacket      *packet;
 
-    setConn(conn);
     if (event == HTTP_EVENT_READABLE) {
         while ((packet = httpGetPacket(conn->readq)) != 0) {
             if (packet->flags & HTTP_PACKET_END) {
@@ -23,7 +22,7 @@ static void soloStreamCallback(HttpConn *conn, int event, int arg)
 
 static void soloStream() {
     dontAutoFinalize();
-    httpSetConnNotifier(getConn(), soloStreamCallback);
+    espSetNotifier(getConn(), soloStreamCallback);
 }
 
 

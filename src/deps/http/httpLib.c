@@ -6518,8 +6518,6 @@ static void netOutgoingService(HttpQueue *q)
     if (q->first && q->first->flags & HTTP_PACKET_END) {
         mprTrace(6, "netConnector: end of stream. Finalize connector");
         httpFinalizeConnector(conn);
-    } else {
-        HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
     }
 }
 
@@ -7830,16 +7828,8 @@ PUBLIC void httpStartPipeline(HttpConn *conn)
             q->stage->start(q);
         }
     }
-    /* 
-        Start the handler
-     */
     httpStartHandler(conn);
-    if (!tx->finalized && !tx->finalizedConnector && rx->remainingContent > 0) {
-        /* 
-            If no remaining content, wait till the processing stage to avoid duplicate writable events 
-         */
-        HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
-    }
+
     if (tx->pendingFinalize) {
         tx->finalizedOutput = 0;
         httpFinalizeOutput(conn);
@@ -7871,28 +7861,6 @@ static void httpStartHandler(HttpConn *conn)
         q->flags |= HTTP_QUEUE_STARTED;
         q->stage->start(q);
     }
-}
-
-
-/*
-    Get more output by invoking the stage 'writable' callback. Called by processRunning.
- */
-PUBLIC bool httpGetMoreOutput(HttpConn *conn)
-{
-    HttpQueue   *q;
-
-    q = conn->writeq;
-    if (!q->stage || !q->stage->writable) {
-       return 0;
-    }
-    if (!conn->tx->finalizedOutput) {
-        q->stage->writable(q);
-        if (q->count > 0) {
-            httpScheduleQueue(q);
-            httpServiceQueues(conn);
-        }
-    }
-    return 1;
 }
 
 
@@ -8195,9 +8163,6 @@ PUBLIC bool httpFlushQueue(HttpQueue *q, bool blocking)
         httpServiceQueues(conn);
         if (conn->sock == 0) {
             break;
-        }
-        if (blocking) {
-            httpGetMoreOutput(conn);
         }
     } while (blocking && q->count > 0 && !conn->tx->finalizedConnector);
     return (q->count < q->max) ? 1 : 0;
@@ -12498,6 +12463,8 @@ PUBLIC MprTicks httpGetTicks(cchar *value)
 static void addMatchEtag(HttpConn *conn, char *etag);
 static void delayAwake(HttpConn *conn, MprEvent *event);
 static char *getToken(HttpConn *conn, cchar *delim);
+
+static bool getOutput(HttpConn *conn);
 static void manageRange(HttpRange *range, int flags);
 static void manageRx(HttpRx *rx, int flags);
 static bool parseHeaders(HttpConn *conn, HttpPacket *packet);
@@ -12753,7 +12720,6 @@ static void delayAwake(HttpConn *conn, MprEvent *event)
     conn->delay = 0;
     httpPumpRequest(conn, NULL);
     httpEnableConnEvents(conn);
-    // httpSocketBlocked(conn);
 }
 
 
@@ -13530,8 +13496,12 @@ static bool processContent(HttpConn *conn)
         return conn->workerEvent ? 0 : 1;
     }
     if (tx->started) {
-        httpServiceQueues(conn);
+        /*
+            Some requests (websockets) remain in the content state while still generating output
+         */
+        moreData += getOutput(conn);
     }
+    httpServiceQueues(conn);
     return (conn->connError || moreData);
 }
 
@@ -13577,13 +13547,12 @@ static bool processRunning(HttpConn *conn)
                 assert(conn->state < HTTP_STATE_FINALIZED);
             }
 
-        } else if (!httpGetMoreOutput(conn)) {
-            /* Request not complete yet. No process callback defined */
+        } else if (!getOutput(conn)) {
             canProceed = 0;
             assert(conn->state < HTTP_STATE_FINALIZED);
 
         } else if (conn->state >= HTTP_STATE_FINALIZED) {
-            /* This happens when httpGetMoreOutput calls writable on windows which then completes the request */
+            /* This happens when getOutput calls writable on windows which then completes the request */
             canProceed = 1;
 
         } else if (q->count < q->low) {
@@ -13621,6 +13590,35 @@ static bool processRunning(HttpConn *conn)
         }
     }
     return canProceed;
+}
+
+
+/*
+    Get more output by invoking the stage 'writable' callback. Called by processRunning.
+ */
+static bool getOutput(HttpConn *conn)
+{
+    HttpQueue   *q;
+    HttpTx      *tx;
+    ssize       count;
+
+    tx = conn->tx;
+    if (tx->started && !tx->writeBlocked) {
+        q = conn->writeq;
+        count = q->count;
+        if (!tx->finalizedOutput) {
+            HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
+            if (tx->handler->writable) {
+                tx->handler->writable(q);
+            }
+        }
+        if (count != q->count) {
+            httpScheduleQueue(q);
+            httpServiceQueues(conn);
+            return 1;
+        }
+    }
+    return 0;
 }
 
 
@@ -14558,8 +14556,6 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     if (q->first && q->first->flags & HTTP_PACKET_END) {
         mprTrace(6, "sendConnector: end of stream. Finalize connector");
         httpFinalizeConnector(conn);
-    } else {
-        HTTP_NOTIFY(conn, HTTP_EVENT_WRITABLE, 0);
     }
 }
 
@@ -19117,7 +19113,6 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
             }
         }
     } while (len > 0);
-
     httpServiceQueues(conn);
     return totalWritten;
 }
@@ -19171,11 +19166,13 @@ static void outgoingWebSockService(HttpQueue *q)
 {
     HttpConn        *conn;
     HttpPacket      *packet, *tail;
+    HttpWebSocket   *ws;
     char            *ep, *fp, *prefix, dataMask[4];
     ssize           len;
     int             i, mask;
 
     conn = q->conn;
+    ws = conn->rx->webSocket;
     mprTrace(5, "webSocketFilter: outgoing service");
 
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
@@ -19229,8 +19226,8 @@ static void outgoingWebSockService(HttpQueue *q)
             }
             *prefix = '\0';
             mprAdjustBufEnd(packet->prefix, prefix - packet->prefix->start);
-            mprLog(3, "webSocketFilter: send \"%s\" (%d) frame, last %d, length %d",
-                codetxt[packet->type], packet->type, packet->last, httpGetPacketLength(packet));
+            mprLog(3, "webSocketFilter: %d: send \"%s\" (%d) frame, last %d, length %d",
+                ws->txSeq++, codetxt[packet->type], packet->type, packet->last, httpGetPacketLength(packet));
         }
         httpPutPacketToNext(q, packet);
         mprYield(0);
