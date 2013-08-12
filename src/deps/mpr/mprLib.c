@@ -2453,6 +2453,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
             mprInitWindow();
         }
     } else {
+        mprRunDispatcher(mpr->dispatcher);
         mprStartEventsThread();
     }
     mprStartGCService();
@@ -8995,6 +8996,21 @@ PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, Mpr
 
     dequeueDispatcher(dispatcher);
     mprScheduleDispatcher(dispatcher);
+}
+
+
+/*
+    Internal use only. Run the "main" dispatcher if not using a user events thread. 
+ */
+PUBLIC int mprRunDispatcher(MprDispatcher *dispatcher)
+{
+    assert(dispatcher);
+    if (isRunning(dispatcher) && dispatcher->owner != mprGetCurrentOsThread()) {
+        mprError("Relay to a running dispatcher owned by another thread");
+        return MPR_ERR_BAD_STATE;
+    }
+    queueDispatcher(dispatcher->service->runQ, dispatcher);
+    return 0;
 }
 
 

@@ -60,7 +60,7 @@
             <p><a href="http://en.wikipedia.org/wiki/WebSocket">WebSockets</a> is a technology providing 
             interactive communication between a server and client. It is an IETF standard defined by <a
                 href="http://tools.ietf.org/html/rfc6455">RFC 6455</a>.</p>
-            <p>Normal HTML connections follow a request/response paradigm and do not easily support asynchronous
+            <p>Normal HTTP connections follow a request/response paradigm and do not easily support asynchronous
             communications or unsolicited data pushed from the server to the client. WebSockets solves this 
             by supporting bidirectional, full-duplex communications over persistent connections. A WebSocket
             connection is established over a standard HTTP connection and is then upgraded without impacting the
@@ -73,7 +73,9 @@
             The filter implements the WebSockets protocol, handshaking and provides a C language API. The 
             WebSock filter observes the WebSockets HTTP headers and manages the connection handshaking with the
             client. It also manages the framing and encoding/decoding of message data.</p>
-            <p>The WebSock filter is configured into the pipeline using the <a href="dir/route.html#addFilter">AddFilter</a> directive.</p>
+            <p>The WebSock filter is configured into the pipeline using the 
+            <a href="dir/route.html#addInputFilter">AddInputFilter</a> directive.</p>
+
             <h2>WebSocket Handshake</h2>
             <p>A WebSocket connection begins life as a normal HTTP request and is upgraded to the WebSocket protocol. 
             The WebSocketFilter is activated by a set of WebSocket HTTP headers from the client that describes 
@@ -92,7 +94,7 @@ Origin: http://example.com</b>
             protocol. For example:
 <pre>
 HTTP/1.1 101 Switching Protocols
-Server: Embedthis-http/4.1.0
+Server: Embedthis-http
 Date: Sat, 06 Oct 2013 05:10:15 GMT
 <b>Connection: Upgrade
 Upgrade: WebSocket
@@ -101,7 +103,7 @@ Sec-WebSocket-Protocol: chat</b>
 X-Inactivity-Timeout: 600
 X-Request-Timeout: 600
 </pre>
-            <p>Once the handshake message has been sent, the server is free to send messages to the client.
+            <p>After the handshake message has been sent, the server is free to send messages to the client.
             Once the client receives the handshake, it can send messages to the server. Either side can send
             at anytime thereafter. Communications are thus full-duplex.</p>
             <h2>Message Types</h2>
@@ -115,15 +117,17 @@ X-Request-Timeout: 600
             <h3>Text Messages</h3>
             <p>Text messages must be valid UTF-8 strings. The receiving peer will validate and reject non-conforming
             strings. However, Appweb can be configured to accept invalid UTF-8 strings via the
-                <a href="dir/route.html#ignoreEncodingErrors">ignoreEncodingErrors</a> appweb directive.</p>
+                <a href="dir/route.html#ignoreEncodingErrors">IgnoreEncodingErrors</a> Appweb directive.</p>
             <h3>Binary Messages</h3>
             <p>Binary message allow the transmission of any content. Messages can be an arbitrary length up to the maximum
             specified by the <a href="dir/sandbox.html#limitWebSocketsMessage">LimitWebSocketsMessage</a> appweb.conf 
             directive.</p>
-            <p>When messages are transmitted, they are broken into frames of no more than the length specified by the 
+            <p>When messages are transmitted, they may be broken into frames of no more than the length specified by the 
             <a href="dir/sandbox.html#limitWebSocketsFrame">LimitWebSocketsFrame</a> directive. Incoming message frames
             are not subject to this limit. The WebSockets filter will aggregate message frames into complete messages
-            before passing to the user callback.</p>
+            before passing to the user callback. There are APIs provided to preserve farme boundaries if you wish to 
+            manage frame boundaries manually.</p>
+
             <p>The <a href="dir/sandbox.html#limitWebSocketsPacket">LimitWebSocketsPacket</a> directive defines what 
             is the largest packet size that will be passed to the user callback receiving incoming WebSocket 
             messages. If this is set to a value as large as the largest message, then complete messages will be passed
@@ -131,7 +135,9 @@ X-Request-Timeout: 600
             and the last packet will have the HttpPacket.last field set to true. Note these packet boundaries do not
             correspond to frame boundaries.</p>
             <p>Frame boundaries can be preserved by setting PreserveFrames directive or by calling
-            the httpSetWebSocketPreserveFrames API. If enabled, each frame is passed as-is to the user callback without
+            the 
+            <a href="file:///Users/mob/git/appweb/doc/api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1">
+                httpSetWebSocketPreserveFrames</a> API. If enabled, each frame is passed as-is to the user callback without
             splitting or aggregating with other frames. Note that if enabled, some text messages may not have their UTF-8
             fully validated if UTF codepoints span message frames.</p>
             <h3>Close Message</h3>
@@ -210,13 +216,18 @@ X-Request-Timeout: 600
                         the web socket peer</td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1adb22d418a67109b699890888ca66053a">httpSendClose</a></td><td>Send a close message to the web 
                         socket peer</td></tr>
+
                     <tr><td><a href="../../../api/http.html#group___http_conn_1ga6c39eab8e8b50e632f7e5620fce05318">httpSetConnNotifier</a></td><td>Define a connection callback notifier function</td></tr>
+
                     <tr><td><a
                                 href="../../../api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1 ">httpSetWebSocketPreserveFrames</a></td><td>Preserve
                             frame boundaries and do not split or aggregate frames. </td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1a96f8cb3db541d8a1340caf0d2afbbb1f">httpSetWebSocketProtocols</a></td><td>Set the list of 
                         application-level protocols supported by the client. This is a client-only API. </td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1acb7184072bfb15ebf2c95f9ef6d0ba8c">httpWebSocketOrderlyClosed</a></td><td>Test if a close was orderly</td></tr>
+                    <tr><td><a href="file:///Users/mob/git/appweb/doc/api/esp.html#group___esp_req_1ga0ea346bbee09c401e90f0b908e7476ba">
+                            espSetNotifier</a></td><td>Define a connection callback notifier function for ESP applications.</td></tr>
+
                 </tbody>
             </table>
             <h2>Using WebSockets API with ESP</h2>
@@ -247,7 +258,7 @@ static void test() {
     /* This keep the connection open */
     dontAutoFinalize();
     /* Define a callback for connection and I/O events */
-    httpSetConnNotifier(getConn(), testCallback);
+    espSetNotifier(getConn(), testCallback);
 }
 /* One-time ESP loadable module initialization */
 ESP_EXPORT int esp_controller_websock(HttpRoute *route, MprModule *module) {
@@ -255,6 +266,9 @@ ESP_EXPORT int esp_controller_websock(HttpRoute *route, MprModule *module) {
     return 0;
 }
 </pre>
+            <h2>WebSocket Samples</h2>
+            <p>See the Appweb samples for some specific WebSockets samples</p>
+            <pre><a href="https://github.com/embedthis/appweb-4/tree/dev/samples">https://github.com/embedthis/appweb-4/tree/dev/samples</a></pre>
             <h2>WebSocket References</h2>
             <table title="Standards" class="width">
                 <thead>

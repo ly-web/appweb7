@@ -35597,9 +35597,6 @@ static EjsHttp *httpConstructor(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
     hp->method = sclone("GET");
     hp->requestContent = mprCreateBuf(BIT_MAX_BUFFER, -1);
     hp->responseContent = mprCreateBuf(BIT_MAX_BUFFER, -1);
-#if UNUSED
-    hp->caFile = mprJoinPath(mprGetAppDir(), "http-ca.crt");
-#endif
     return hp;
 }
 
@@ -36065,11 +36062,10 @@ static EjsHttp *http_on(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
     if (conn->readq && conn->readq->count > 0) {
         ejsSendEvent(ejs, hp->emitter, "readable", NULL, hp);
     }
-    //  MOB - don't need to test finalizedConnector
-    if (!conn->tx->finalizedConnector && 
-            !conn->error && HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_FINALIZED &&
-            conn->writeq->ioCount == 0) {
-        ejsSendEvent(ejs, hp->emitter, "writable", NULL, hp);
+    //  TODO - don't need to test finalizedConnector
+    if (!conn->tx->finalizedConnector && !conn->error && HTTP_STATE_CONNECTED <= conn->state && 
+            conn->state < HTTP_STATE_FINALIZED && conn->writeq->ioCount == 0) {
+        httpNotify(conn, HTTP_EVENT_WRITABLE, 0);
     }
     return hp;
 }
@@ -36646,12 +36642,6 @@ static EjsHttp *startHttpRequest(Ejs *ejs, EjsHttp *hp, char *method, int argc, 
         }
         mprSetSslKeyFile(hp->ssl, hp->keyFile);
     }
-#if UNUSED
-    if (!hp->caFile) {
-        //MOB - Some define for this.
-        hp->caFile = mprJoinPath(mprGetAppDir(), "http-ca.crt");
-    }
-#endif
     if (hp->caFile) {
         if (!hp->ssl) {
             hp->ssl = mprCreateSsl(0);
@@ -36675,7 +36665,7 @@ static EjsHttp *startHttpRequest(Ejs *ejs, EjsHttp *hp, char *method, int argc, 
         }
         httpFinalize(conn);
     }
-    ejsSendEvent(ejs, hp->emitter, "writable", NULL, hp);
+    httpNotify(conn, HTTP_EVENT_WRITABLE, 0);
     if (conn->async) {
         httpEnableConnEvents(hp->conn);
     }
@@ -36687,9 +36677,12 @@ static void httpEventChange(HttpConn *conn, int event, int arg)
 {
     Ejs         *ejs;
     EjsHttp     *hp;
+    HttpTx      *tx;
+    ssize       lastWritten;
 
     hp = httpGetConnContext(conn);
     ejs = hp->ejs;
+    tx = conn->tx;
 
     switch (event) {
     case HTTP_EVENT_STATE:
@@ -36719,7 +36712,10 @@ static void httpEventChange(HttpConn *conn, int event, int arg)
 
     case HTTP_EVENT_WRITABLE:
         if (hp && hp->emitter) {
-            ejsSendEvent(ejs, hp->emitter, "writable", NULL, hp);
+            do {
+                lastWritten = tx->bytesWritten;
+                ejsSendEvent(ejs, hp->emitter, "writable", NULL, hp);
+            } while (tx->bytesWritten > lastWritten && !tx->writeBlocked);
         }
         break;
     }

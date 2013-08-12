@@ -1120,6 +1120,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>espSetNotifier</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga0ea346bbee09c401e90f0b908e7476ba</anchor>
+      <arglist>(HttpConn *conn, HttpNotifier notifier)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>espSetParam</name>
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga491fdeaf71f15fb950d54245b7de865b</anchor>
@@ -1675,6 +1682,13 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>gad58993583c3513dc5ad97e1a8e93e30a</anchor>
       <arglist>(cchar *name, int value)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>setNotifier</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga7d227ab7fdc91d90a4484550ea9482b8</anchor>
+      <arglist>(HttpNotifier notifier)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

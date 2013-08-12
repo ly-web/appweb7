@@ -298,20 +298,19 @@ OPTIONS
 
        --routeName name
              This  selects  the Appweb route by name that will be used for the
-             ESP configuration. The ESP directory names, and compilation  com-
-             mands  are  determined  by  the  ESP configuration drawn from the
-             specified route. The default is the first route with the ESP han-
-             dler defined in appweb.conf.
+             ESP configuration. Routes can be given an explicit name  via  the
+             "Name" appweb.conf directive. Otherwise routes are named by their
+             route pattern.
 
        --routePrefix prefix
              This selects the Appweb route by prefix that will be used for the
-             ESP configuration. The ESP directory names, and compilation  com-
-             mands  are  determined  by  the  ESP configuration drawn from the
-             specified route. The default is the first route with the ESP han-
-             dler defined in appweb.conf.
+             ESP configuration. Routes can be given an explicit prefix via the
+             "Prefix" appweb.conf directive. If  the  route  prefix  does  not
+             match,  the  first portion of the route pattern is tested against
+             the requested prefix.
 
        --static
-             Use  static linking when building ESP components. This causes esp
+             Use static linking when building ESP components. This causes  esp
              to create archive libraries instead of shared libraries.
 
        --verbose or -v
@@ -326,7 +325,7 @@ REPORTING BUGS
 
 
 COPYRIGHT
-       Copyright (C) 2004-2013 Embedthis Software.   ESP  is  a  trademark  of
+       Copyright  (C)  2004-2013  Embedthis  Software.   ESP is a trademark of
        Embedthis Software.
 
 
