@@ -978,7 +978,16 @@ static cchar *getLibs(cchar *os)
     if (smatch(os, "windows")) {
         libs = "\"${LIBPATH}\\libmod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\"";
     } else {
+#if UNUSED
+        /* 
+            Fedora interprets $ORIGN relative to the shared library and not the application executable
+            So loading compiled apps fails to locate libmod_esp.so. 
+            Since building a shared library, can omit these libs and resolve at load time.
+         */
         libs = "-lmod_esp -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
+#else
+        libs = "";
+#endif
     }
     return libs;
 }
