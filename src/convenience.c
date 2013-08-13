@@ -148,9 +148,8 @@ PUBLIC void maRestartServer(cchar *ip, int port)
  */
 PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **response, char **err)
 {
-    Mpr         *mpr;
-    Http        *http;
-    int         code;
+    Mpr   *mpr;
+    int   code;
 
     if (response) {
         *response = 0;
@@ -163,7 +162,7 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
         mprError("Cannot start the web server runtime");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    http = httpCreate(HTTP_CLIENT_SIDE);
+    httpCreate(HTTP_CLIENT_SIDE);
     code = httpRequest(method, uri, data, response, err);
     mprDestroy(MPR_EXIT_DEFAULT);
     return code;
