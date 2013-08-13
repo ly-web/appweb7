@@ -591,7 +591,9 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
         return 0;
     }
     if ((module = mprLookupModule(name)) != 0) {
+#if BIT_STATIC
         mprLog(MPR_CONFIG, "Activating module (Builtin) %s", name);
+#endif
         return 0;
     }
     if (libname == 0) {
