@@ -8,7 +8,7 @@
     <!-- [if lt IE 9]>
     <script src='lib/html5shiv.js'></script>
     <![endif]-->
-    <% if (mode("debug")) { %>
+    <% if (modeIs("debug")) { %>
     <link rel='stylesheet/less' type='text/css' href='css/all.less' />
     <link rel='stylesheet' type='text/css' href='css/bootstrap.css' />
     <% } else {
@@ -27,7 +27,7 @@
     <!-- [if lt IE 9]>
     <script src='lib/html5shiv.js'></script>
     <![endif]-->
-    <% if (mode("debug")) { %>
+    <% if (modeIs("debug")) { %>
     <script src='lib/angular.js'></script>
     <script src='lib/angular-resource.js'></script>
     <script src='lib/angular-bootstrap.js'></script>

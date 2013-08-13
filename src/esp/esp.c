@@ -1093,7 +1093,8 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     defaultLayout = 0;
     if (kind == ESP_SRC) {
         prefix = "app_";
-            prefix = "service_";
+    } else if (kind == ESP_SERVICE) {
+        prefix = "service_";
     } else if (kind == ESP_MIGRATION) {
         prefix = "migration_";
     } else {
