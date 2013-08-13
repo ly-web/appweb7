@@ -564,7 +564,7 @@ DEPS_23 += $(CONFIG)/inc/http.h
 $(CONFIG)/obj/http.o: \
     src/deps/http/http.c $(DEPS_23)
 	@echo '   [Compile] $(CONFIG)/obj/http.o'
-	$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/http/http.c
+	$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/deps/http/http.c
 
 #
 #   http
@@ -582,6 +582,13 @@ endif
 DEPS_24 += $(CONFIG)/inc/http.h
 DEPS_24 += $(CONFIG)/obj/httpLib.o
 DEPS_24 += $(CONFIG)/bin/libhttp.a
+DEPS_24 += $(CONFIG)/inc/est.h
+DEPS_24 += $(CONFIG)/obj/estLib.o
+ifeq ($(BIT_PACK_EST),1)
+    DEPS_24 += $(CONFIG)/bin/libest.a
+endif
+DEPS_24 += $(CONFIG)/obj/mprSsl.o
+DEPS_24 += $(CONFIG)/bin/libmprssl.a
 DEPS_24 += $(CONFIG)/obj/http.o
 
 LIBS_24 += -lhttp
@@ -589,10 +596,30 @@ LIBS_24 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
     LIBS_24 += -lpcre
 endif
+LIBS_24 += -lmprssl
+ifeq ($(BIT_PACK_EST),1)
+    LIBS_24 += -lest
+endif
+ifeq ($(BIT_PACK_MATRIXSSL),1)
+    LIBS_24 += -lmatrixssl
+    LIBPATHS_24 += -L$(BIT_PACK_MATRIXSSL_PATH)
+endif
+ifeq ($(BIT_PACK_NANOSSL),1)
+    LIBS_24 += -lssls
+    LIBPATHS_24 += -L$(BIT_PACK_NANOSSL_PATH)/bin
+endif
+ifeq ($(BIT_PACK_OPENSSL),1)
+    LIBS_24 += -lssl
+    LIBPATHS_24 += -L$(BIT_PACK_OPENSSL_PATH)
+endif
+ifeq ($(BIT_PACK_OPENSSL),1)
+    LIBS_24 += -lcrypto
+    LIBPATHS_24 += -L$(BIT_PACK_OPENSSL_PATH)
+endif
 
 $(CONFIG)/bin/http: $(DEPS_24)
 	@echo '      [Link] $(CONFIG)/bin/http'
-	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/http.o" $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS)    "$(CONFIG)/obj/http.o" $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) $(LIBS) 
 
 #
 #   sqlite3.h

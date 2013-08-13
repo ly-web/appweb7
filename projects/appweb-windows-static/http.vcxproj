@@ -105,7 +105,7 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libhttp.lib;libmpr.lib;libpcre.lib;libmprssl.lib;libest.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
@@ -113,6 +113,13 @@
 <ItemGroup>
   <ProjectReference Include="libhttp.vcxproj">
   <Project>1afc1b00-a132-4507-8810-d12a6b0c8da7</Project>
+  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+  </ProjectReference>
+</ItemGroup>
+
+<ItemGroup>
+  <ProjectReference Include="libmprssl.vcxproj">
+  <Project>d1614b75-b3f7-44a0-ac53-c81ddfdc00d6</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
