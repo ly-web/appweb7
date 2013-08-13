@@ -14,11 +14,15 @@
 MAIN(simpleClient, int argc, char **argv, char **envp)
 {
     int     code;
-    char    *response;
+    char    *response, *err;
 
-    code = maRunWebClient("GET", "http://www.embedthis.com/index.html", &response);
+    /*
+        This will create the Mpr and Http services. Alternatively, if you have existing
+        Mpr and Http services, use httpRequest()
+     */
+    code = maRunWebClient("GET", "http://www.embedthis.com/index.html", NULL, &response, &err);
     if (code != 200) {
-        mprPrintf("Server error code %d\n", code);
+        mprPrintf("Server error code %d, %s\n", code, err);
         return 255;
     }
     printf("Server responded with: %s\n", response);

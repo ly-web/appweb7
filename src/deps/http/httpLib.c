@@ -2204,14 +2204,14 @@ PUBLIC int httpRequest(cchar *method, cchar *uri, cchar *data, char **response, 
 
     http = MPR->httpService;
 
-    dummy = 0;
+    dummy = "";
     if (response) {
-        *response = 0;
+        *response = "";
     } else {
         response = &dummy;
     }
     if (err) {
-        *err = 0;
+        *err = "";
     } else {
         err = &dummy;
     }
