@@ -146,11 +146,10 @@ PUBLIC void maRestartServer(cchar *ip, int port)
     efficient way to run a web request.
     @return HTTP status code or negative MPR error code. Returns a malloc string in response.
  */
-PUBLIC int maRunWebClient(cchar *method, cchar *uri, char **response)
+PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **response, char **err)
 {
     Mpr         *mpr;
     Http        *http;
-    HttpConn    *conn;
     int         code;
 
     if (response) {
@@ -165,28 +164,7 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, char **response)
         return MPR_ERR_CANT_INITIALIZE;
     }
     http = httpCreate(HTTP_CLIENT_SIDE);
-    conn = httpCreateConn(http, NULL, NULL);
-    mprAddRoot(conn);
-
-    /* 
-       Open a connection to issue the GET. Then finalize the request output - this forces the request out.
-     */
-    if (httpConnect(conn, method, uri, NULL) < 0) {
-        mprError("Can't get URL");
-        return MPR_ERR_CANT_CONNECT;
-    } else {
-        httpFinalizeOutput(conn);
-        if (httpWait(conn, HTTP_STATE_PARSED, 10000) < 0) {
-            mprError("No response");
-            return MPR_ERR_BAD_STATE;
-        } else {
-            code = httpGetStatus(conn);
-            *response = httpReadString(conn);
-            if (*response) {
-                *response = strdup(*response);
-            }
-        }
-    }
+    code = httpRequest(method, uri, data, response, err);
     mprDestroy(MPR_EXIT_DEFAULT);
     return code;
 }

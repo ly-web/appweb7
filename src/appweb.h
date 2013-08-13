@@ -334,15 +334,16 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
     Run a web client request
     @description Create a web server configuration based on the supplied config file. This routine provides 
         a one-line embedding of Appweb. If you don't want to use a config file, try the #maRunSimpleWebServer 
-        instead. 
-    @param method HTTP method to use. GET, POST, PUT, DELETE etc.
-    @param uri HTTP URI to request
-    @param response String reference to receive the response body.
-    @return Positive HTTP response code if the request completes. Otherwise a negative MPR error code.
+        instead.
+    @param uri URI to request
+    @param data Optional data to send with request. Set to null for GET requests.
+    @param response Output parameter to receive the HTTP request response.
+    @param err Output parameter to receive any error messages.
     @ingroup MaServer
-    @stability Prototype
+    @see httpRequest
+    @stability Evolving
  */
-PUBLIC int maRunWebClient(cchar *method, cchar *uri, char **response);
+PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **response, char **err);
 
 /** 
     Create and run a web server based on a configuration file
