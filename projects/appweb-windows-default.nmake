@@ -1821,60 +1821,13 @@ $(CONFIG)\obj\slink.obj: \
 #   libslink
 #
 DEPS_82 = $(DEPS_82) src\server\slink.c
-DEPS_82 = $(DEPS_82) $(CONFIG)\inc\mpr.h
 DEPS_82 = $(DEPS_82) $(CONFIG)\inc\bit.h
-DEPS_82 = $(DEPS_82) $(CONFIG)\inc\bitos.h
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\mprLib.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libmpr.dll
-DEPS_82 = $(DEPS_82) $(CONFIG)\inc\pcre.h
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\pcre.obj
-!IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libpcre.dll
-!ENDIF
-DEPS_82 = $(DEPS_82) $(CONFIG)\inc\http.h
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\httpLib.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libhttp.dll
-DEPS_82 = $(DEPS_82) $(CONFIG)\inc\appweb.h
-DEPS_82 = $(DEPS_82) $(CONFIG)\inc\customize.h
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\config.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\convenience.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\dirHandler.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\fileHandler.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\log.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\server.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libappweb.dll
-DEPS_82 = $(DEPS_82) $(CONFIG)\inc\edi.h
 DEPS_82 = $(DEPS_82) $(CONFIG)\inc\esp.h
-DEPS_82 = $(DEPS_82) $(CONFIG)\inc\mdb.h
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\edi.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\espAbbrev.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\espFramework.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\espHandler.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\espHtml.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\espTemplate.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\mdb.obj
-DEPS_82 = $(DEPS_82) $(CONFIG)\obj\sdb.obj
-!IF "$(BIT_PACK_ESP)" == "1"
-DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libmod_esp.dll
-!ENDIF
 DEPS_82 = $(DEPS_82) $(CONFIG)\obj\slink.obj
-
-!IF "$(BIT_PACK_ESP)" == "1"
-LIBS_82 = $(LIBS_82) libmod_esp.lib
-!ENDIF
-LIBS_82 = $(LIBS_82) libappweb.lib
-LIBS_82 = $(LIBS_82) libhttp.lib
-LIBS_82 = $(LIBS_82) libmpr.lib
-!IF "$(BIT_PACK_PCRE)" == "1"
-LIBS_82 = $(LIBS_82) libpcre.lib
-!ENDIF
-!IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_82 = $(LIBS_82) libsqlite3.lib
-!ENDIF
 
 $(CONFIG)\bin\libslink.dll: $(DEPS_82)
 	@echo '      [Link] $(CONFIG)/bin/libslink.dll'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libslink.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\slink.obj" $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
+	"$(LD)" -dll -out:$(CONFIG)\bin\libslink.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\slink.obj" $(LIBS) 
 
 #
 #   appweb.obj
@@ -1914,20 +1867,7 @@ DEPS_84 = $(DEPS_84) $(CONFIG)\obj\log.obj
 DEPS_84 = $(DEPS_84) $(CONFIG)\obj\server.obj
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libappweb.dll
 DEPS_84 = $(DEPS_84) src\server\slink.c
-DEPS_84 = $(DEPS_84) $(CONFIG)\inc\edi.h
 DEPS_84 = $(DEPS_84) $(CONFIG)\inc\esp.h
-DEPS_84 = $(DEPS_84) $(CONFIG)\inc\mdb.h
-DEPS_84 = $(DEPS_84) $(CONFIG)\obj\edi.obj
-DEPS_84 = $(DEPS_84) $(CONFIG)\obj\espAbbrev.obj
-DEPS_84 = $(DEPS_84) $(CONFIG)\obj\espFramework.obj
-DEPS_84 = $(DEPS_84) $(CONFIG)\obj\espHandler.obj
-DEPS_84 = $(DEPS_84) $(CONFIG)\obj\espHtml.obj
-DEPS_84 = $(DEPS_84) $(CONFIG)\obj\espTemplate.obj
-DEPS_84 = $(DEPS_84) $(CONFIG)\obj\mdb.obj
-DEPS_84 = $(DEPS_84) $(CONFIG)\obj\sdb.obj
-!IF "$(BIT_PACK_ESP)" == "1"
-DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libmod_esp.dll
-!ENDIF
 DEPS_84 = $(DEPS_84) $(CONFIG)\obj\slink.obj
 DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libslink.dll
 DEPS_84 = $(DEPS_84) $(CONFIG)\obj\appweb.obj
@@ -1939,12 +1879,6 @@ LIBS_84 = $(LIBS_84) libmpr.lib
 LIBS_84 = $(LIBS_84) libpcre.lib
 !ENDIF
 LIBS_84 = $(LIBS_84) libslink.lib
-!IF "$(BIT_PACK_ESP)" == "1"
-LIBS_84 = $(LIBS_84) libmod_esp.lib
-!ENDIF
-!IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_84 = $(LIBS_84) libsqlite3.lib
-!ENDIF
 
 $(CONFIG)\bin\appweb.exe: $(DEPS_84)
 	@echo '      [Link] $(CONFIG)/bin/appweb.exe'

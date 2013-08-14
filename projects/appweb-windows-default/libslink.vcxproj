@@ -105,17 +105,10 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libmod_esp.lib;libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
-
-<ItemGroup>
-  <ProjectReference Include="libmod_esp.vcxproj">
-  <Project>f86f4757-a3b0-4561-86ab-d9c18115067f</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
 
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

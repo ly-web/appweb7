@@ -1713,60 +1713,13 @@ $(CONFIG)/obj/slink.o: \
 #   libslink
 #
 DEPS_80 += src/server/slink.c
-DEPS_80 += $(CONFIG)/inc/mpr.h
 DEPS_80 += $(CONFIG)/inc/bit.h
-DEPS_80 += $(CONFIG)/inc/bitos.h
-DEPS_80 += $(CONFIG)/obj/mprLib.o
-DEPS_80 += $(CONFIG)/bin/libmpr.so
-DEPS_80 += $(CONFIG)/inc/pcre.h
-DEPS_80 += $(CONFIG)/obj/pcre.o
-ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_80 += $(CONFIG)/bin/libpcre.so
-endif
-DEPS_80 += $(CONFIG)/inc/http.h
-DEPS_80 += $(CONFIG)/obj/httpLib.o
-DEPS_80 += $(CONFIG)/bin/libhttp.so
-DEPS_80 += $(CONFIG)/inc/appweb.h
-DEPS_80 += $(CONFIG)/inc/customize.h
-DEPS_80 += $(CONFIG)/obj/config.o
-DEPS_80 += $(CONFIG)/obj/convenience.o
-DEPS_80 += $(CONFIG)/obj/dirHandler.o
-DEPS_80 += $(CONFIG)/obj/fileHandler.o
-DEPS_80 += $(CONFIG)/obj/log.o
-DEPS_80 += $(CONFIG)/obj/server.o
-DEPS_80 += $(CONFIG)/bin/libappweb.so
-DEPS_80 += $(CONFIG)/inc/edi.h
 DEPS_80 += $(CONFIG)/inc/esp.h
-DEPS_80 += $(CONFIG)/inc/mdb.h
-DEPS_80 += $(CONFIG)/obj/edi.o
-DEPS_80 += $(CONFIG)/obj/espAbbrev.o
-DEPS_80 += $(CONFIG)/obj/espFramework.o
-DEPS_80 += $(CONFIG)/obj/espHandler.o
-DEPS_80 += $(CONFIG)/obj/espHtml.o
-DEPS_80 += $(CONFIG)/obj/espTemplate.o
-DEPS_80 += $(CONFIG)/obj/mdb.o
-DEPS_80 += $(CONFIG)/obj/sdb.o
-ifeq ($(BIT_PACK_ESP),1)
-    DEPS_80 += $(CONFIG)/bin/libmod_esp.so
-endif
 DEPS_80 += $(CONFIG)/obj/slink.o
-
-ifeq ($(BIT_PACK_ESP),1)
-    LIBS_80 += -lmod_esp
-endif
-LIBS_80 += -lappweb
-LIBS_80 += -lhttp
-LIBS_80 += -lmpr
-ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_80 += -lpcre
-endif
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_80 += -lsqlite3
-endif
 
 $(CONFIG)/bin/libslink.so: $(DEPS_80)
 	@echo '      [Link] $(CONFIG)/bin/libslink.so'
-	$(CC) -shared -o $(CONFIG)/bin/libslink.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/slink.o" $(LIBPATHS_80) $(LIBS_80) $(LIBS_80) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libslink.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb.o
@@ -1806,20 +1759,7 @@ DEPS_82 += $(CONFIG)/obj/log.o
 DEPS_82 += $(CONFIG)/obj/server.o
 DEPS_82 += $(CONFIG)/bin/libappweb.so
 DEPS_82 += src/server/slink.c
-DEPS_82 += $(CONFIG)/inc/edi.h
 DEPS_82 += $(CONFIG)/inc/esp.h
-DEPS_82 += $(CONFIG)/inc/mdb.h
-DEPS_82 += $(CONFIG)/obj/edi.o
-DEPS_82 += $(CONFIG)/obj/espAbbrev.o
-DEPS_82 += $(CONFIG)/obj/espFramework.o
-DEPS_82 += $(CONFIG)/obj/espHandler.o
-DEPS_82 += $(CONFIG)/obj/espHtml.o
-DEPS_82 += $(CONFIG)/obj/espTemplate.o
-DEPS_82 += $(CONFIG)/obj/mdb.o
-DEPS_82 += $(CONFIG)/obj/sdb.o
-ifeq ($(BIT_PACK_ESP),1)
-    DEPS_82 += $(CONFIG)/bin/libmod_esp.so
-endif
 DEPS_82 += $(CONFIG)/obj/slink.o
 DEPS_82 += $(CONFIG)/bin/libslink.so
 DEPS_82 += $(CONFIG)/obj/appweb.o
@@ -1831,12 +1771,6 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_82 += -lpcre
 endif
 LIBS_82 += -lslink
-ifeq ($(BIT_PACK_ESP),1)
-    LIBS_82 += -lmod_esp
-endif
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_82 += -lsqlite3
-endif
 
 $(CONFIG)/bin/appweb: $(DEPS_82)
 	@echo '      [Link] $(CONFIG)/bin/appweb'
