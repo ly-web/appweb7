@@ -14045,9 +14045,9 @@ PUBLIC void mprAssert(cchar *loc, cchar *msg)
     }
     mprTrace(0, "%s", buf);
     mprBreakpoint();
-#if WATSON_PAUSE
-    printf("Stop for WATSON\n");
-    mprNap(60 * 1000);
+#if BIT_DEBUG_WATSON
+    fprintf(stderr, "Pause for debugger to attach\n");
+    mprSleep(24 * 3600 * 1000);
 #endif
 #endif
 }
@@ -22536,6 +22536,7 @@ PUBLIC MprList *stolist(cchar *src)
 
 
 
+#if BIT_MPR_TEST
 /***************************** Forward Declarations ***************************/
 
 static void     adjustFailedCount(int adj);
@@ -23526,6 +23527,7 @@ static int setLogging(char *logSpec)
     return 0;
 }
 
+#endif /* BIT_MPR_TEST */
 
 /*
     @copy   default
@@ -28187,7 +28189,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
     void        *event;
     long        errorType;
     ulong       exists;
-    char        buf[BIT_MAX_PATH], logName[BIT_MAX_PATH], *cp, *value;
+    char        buf[BIT_MAX_BUFFER], logName[BIT_MAX_BUFFER], *cp, *value;
     wchar       *lines[9];
     int         type;
     static int  once = 0;

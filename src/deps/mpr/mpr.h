@@ -79,6 +79,9 @@ struct  MprXml;
         #define BIT_MPR_TRACING 0
     #endif
 #endif
+#ifndef BIT_MPR_TEST
+    #define BIT_MPR_TEST 1
+#endif
 
 #if DEPRECATED || 1
     /* Remove in 4.4 */
