@@ -6536,6 +6536,7 @@ typedef struct HttpWebSocket {
     int             maskOffset;             /**< Offset in dataMask */
     int             preserveFrames;         /**< Do not join frames */
     int             partialUTF;             /**< Last frame had a partial UTF codepoint */ 
+    int             rxSeq;                  /**< Incoming packet number */
     int             txSeq;                  /**< Outgoing packet number */
     void            *data;                  /**< Custom data for applications (marked) */
 } HttpWebSocket;
