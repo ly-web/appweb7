@@ -121,8 +121,13 @@ static void big_response()
         mprPutToBuf(buf, "%8d:01234567890123456789012345678901234567890\n", i);
     }
     mprAddNullToBuf(buf);
-    conn->rx->webSocket->data = buf;
+    /* Retain just for GC */
+    httpSetWebSocketData(conn, buf);
     
+    /*
+        Note: this will buffer the entire message. To use less memory, use HTTP_NON_BLOCK as flags and be prepared 
+        for httpSendBlock returning having written less than the requested amount of data
+     */
     if (httpSendBlock(conn, WS_MSG_TEXT, mprGetBufStart(buf), mprGetBufLength(buf), 0) < 0) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot send big message");
         return;
