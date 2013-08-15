@@ -615,6 +615,7 @@ static void manageApp(App *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(app->appName);
+        mprMark(app->appType);
         mprMark(app->appweb);
         mprMark(app->cacheName);
         mprMark(app->command);
@@ -1539,6 +1540,9 @@ static void generateApp(int argc, char **argv)
     eroute = route->eroute;
 
     app->appName = sclone(name);
+    /*
+        MOB - these are meant to be components and more than just one
+     */
     app->appType = eroute->appType = sclone((argc > 1) ? argv[0] : "angular");
 
     makeEspDir(route->documents);

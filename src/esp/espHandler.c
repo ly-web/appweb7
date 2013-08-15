@@ -1013,6 +1013,7 @@ static int espDirDirective(MaState *state, cchar *key, cchar *value)
     if (smatch(name, "mvc")) {
         espSetMvcDirs(eroute);
     } else {
+        path = stemplate(path, state->route->vars);
         path = stemplate(mprJoinPath(state->route->home, path), state->route->vars);
         if (smatch(name, "cache")) {
             eroute->cacheDir = path;
