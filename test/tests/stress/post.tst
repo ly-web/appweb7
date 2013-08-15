@@ -41,18 +41,11 @@ function postTest(url: String) {
 
 postTest("/index.html")
 
-if (App.config.bit_ejscript) {
-    postTest("/form.ejs")
-}
-
-if (App.config.bit_php) {
-    postTest("/form.php")
+if (App.config.bit_esp) {
+    postTest("/stream.esp")
+    postTest("/solo/stream")
 }
 
 if (App.config.bit_cgi) {
     postTest("/cgi-bin/cgiProgram")
-}
-
-if (App.config.bit_esp) {
-    postTest("/test.esp")
 }

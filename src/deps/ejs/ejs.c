@@ -397,14 +397,11 @@ static int interpretFiles(EcCompiler *cp, MprList *files, int argc, char **argv,
 
     assert(files);
 
-    MPR_VERIFY_MEM();
     ejs = cp->ejs;
     if (ecCompile(cp, files->length, (char**) files->items) < 0) {
         mprRawLog(0, "%s\n", cp->errorMsg);
         return EJS_ERR;
     }
-    assert(ejs->result == 0 || (MPR_GET_GEN(MPR_GET_MEM(ejs->result)) != MPR->heap->dead));
-
     if (cp->errorCount == 0) {
         if (ejsRunProgram(ejs, className, method) < 0) {
             ejsReportError(ejs, "Error in program");

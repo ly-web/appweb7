@@ -126,8 +126,10 @@ static void manageServer(MaServer *server, int flags)
         mprMark(server->name);
         mprMark(server->appweb);
         mprMark(server->http);
+        mprMark(server->defaultHost);
         mprMark(server->limits);
         mprMark(server->endpoints);
+        mprMark(server->state);
 
     } else if (flags & MPR_MANAGE_FREE) {
         maStopServer(server);
@@ -166,7 +168,6 @@ PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
     }
     route = httpCreateRoute(host);
     httpSetRouteName(route, "default");
-    //UNUSED httpSetRoutePrefix(route, "");
     httpSetHostDefaultRoute(host, route);
     route->limits = server->limits;
 
@@ -590,7 +591,9 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
         return 0;
     }
     if ((module = mprLookupModule(name)) != 0) {
+#if BIT_STATIC
         mprLog(MPR_CONFIG, "Activating module (Builtin) %s", name);
+#endif
         return 0;
     }
     if (libname == 0) {

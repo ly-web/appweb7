@@ -3721,8 +3721,6 @@ char xyssl_ca_crt[] =
  */
 
 
-#if BIT_EST_LOGGING
-
 /*
     MOB WARNING: snprintf does not null terminate and returns -1 on errors
  */
@@ -3761,6 +3759,7 @@ int snfmt(char *buf, ssize bufsize, cchar *fmt, ...)
     return n;
 }
 
+#if BIT_EST_LOGGING
 
 char *debug_fmt(cchar *format, ...)
 {
@@ -11408,8 +11407,9 @@ char *ssl_get_cipher(ssl_context * ssl)
  */
 PUBLIC int ssl_handshake(ssl_context * ssl)
 {
+#if BIT_EST_LOGGING
     char    cbuf[4096];
-
+#endif
     int old_state = ssl->state;
     int ret = EST_ERR_SSL_FEATURE_UNAVAILABLE;
 
@@ -11426,6 +11426,7 @@ PUBLIC int ssl_handshake(ssl_context * ssl)
 #endif
     SSL_DEBUG_MSG(2, ("<= handshake"));
     
+#if BIT_EST_LOGGING
     if (ssl->state == SSL_HANDSHAKE_OVER && old_state != SSL_HANDSHAKE_OVER) {
         SSL_DEBUG_MSG(1, ("using cipher: %s", ssl_get_cipher(ssl)));
         if (ssl->peer_cert) {
@@ -11434,6 +11435,7 @@ PUBLIC int ssl_handshake(ssl_context * ssl)
             SSL_DEBUG_MSG(1, ("Peer supplied no certificate"));
         }
     }
+#endif
     return ret;
 }
 

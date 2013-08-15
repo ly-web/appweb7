@@ -115,10 +115,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ClInclude Include="$(IncDir)\esp-app.h" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ClInclude Include="$(IncDir)\esp.h" />
   </ItemGroup>
 
@@ -135,7 +131,6 @@
   <CustomBuildStep>
     <Command>cd ..\..\src\esp
 copy /Y edi.h $(IncDir)
-copy /Y esp-app.h $(IncDir)
 copy /Y esp.h $(IncDir)
 copy /Y mdb.h $(IncDir)
 cd ..\..\projects\appweb-windows-static</Command>

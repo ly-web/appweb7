@@ -98,7 +98,7 @@
     <Command>cd ..\..\test
 if exist ..\..\test\web\js del /Q ..\..\test\web\js
 if not exist ..\..\test\web\js md ..\..\test\web\js
-xcopy /S /Y ..\src\esp\esp-www\files\static\js ..\..\test\web\js
+xcopy /S /Y ..\src\esp\proto\angular\client\lib ..\..\test\web\js
 cd ..\projects\appweb-windows-static</Command>
     <Outputs>..\..\test\web\js</Outputs>
   </CustomBuildStep>

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.3.3 Documentation</title>
+    <title>Embedthis Appweb 4.4.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.3.3</div>
+                <div class="version">Embedthis Appweb 4.4.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -35,6 +35,9 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
+                <li><a href="#r4.4.0">Release 4.4.0</a></li>
+                <li><a href="#r4.3.5">Release 4.3.5</a></li>
+                <li><a href="#r4.3.4">Release 4.3.4</a></li>
                 <li><a href="#r4.3.3">Release 4.3.3</a></li>
                 <li><a href="#r4.3.2">Release 4.3.2</a></li>
                 <li><a href="#r4.3.0">Release 4.3.0</a></li>
@@ -66,12 +69,139 @@
             Please see the <a href="http://github.com/embedthis/appweb-4/issues">Appweb Issue Database</a> 
             for the official product issue list and for comprehensive CVE dispositions.</p>
         
+            <a id="r4.4.0"></a>
+            <h2 class="section">Changes in 4.4.0</h2>
+            <h3>Major Features</h3>
+            <ul>
+                <li>Major performance optimizations.
+                    <a href="https://github.com/embedthis/appweb-4/issues/224">[issue 224]</a></li>
+                <li>Added security defensive counter measures. Added Monitor and Defense directives.
+                    <a href="https://github.com/embedthis/appweb-4/issues/213">[issue 213]</a></li>
+                <li>Add Angularjs support in ESP.
+                    <a href="https://github.com/embedthis/appweb-4/issues/196">[issue 196]</a></li>
+                <li>Enhance "esp" generator application to generate Angular applications.
+                    <a href="https://github.com/embedthis/appweb-4/issues/197">[issue 197]</a></li>
+                <li>Change password hashing algorithm to use Blowfish encryption
+                    <a href="https://github.com/embedthis/appweb-4/issues/198">[issue 198]</a></li>
+            </ul>
+            <h3>Minor Features</h3>
+            <ul>
+                <li>Update ESP jquery support
+                    <a href="https://github.com/embedthis/appweb-4/issues/179">[issue 179]</a></li>
+                <li>Update EspApp directive with new syntax.
+                    <a href="https://github.com/embedthis/appweb-4/issues/180">[issue 180]</a></li>
+                <li>Add ESP src/app.c. This is invoked at Appweb startup.
+                    <a href="https://github.com/embedthis/appweb-4/issues/181">[issue 181]</a></li>
+                <li>Add lessjs support for ESP. Replace old layout/theme style sheets with a theme.less.
+                    <a href="https://github.com/embedthis/appweb-4/issues/182">[issue 182]</a></li>
+                <li>Add ESP html5shiv for generated apps
+                    <a href="https://github.com/embedthis/appweb-4/issues/183">[issue 183]</a></li>
+                <li>Add support for multiline strings in ESP templates via back-tick.
+                    <a href="https://github.com/embedthis/appweb-4/issues/185">[issue 185]</a></li>
+                <li>Add StreamInput directive to control request body input streaming or buffering.
+                    <a href="https://github.com/embedthis/appweb-4/issues/199">[issue 199]</a></li>
+                <li>Add Map directive for transparent content extension mapping. Deprecate Compress directive.
+                    <a href="https://github.com/embedthis/appweb-4/issues/200">[issue 200]</a></li>
+                <li>Add httpLogout API.
+                    <a href="https://github.com/embedthis/appweb-4/issues/201">[issue 201]</a></li>
+                <li>Add httpAddAuthStore and HttpAddAuthType APIs to permit overriding the password verification scheme.
+                    <a href="https://github.com/embedthis/appweb-4/issues/202">[issue 202]</a></li>
+                <li>Add httpAddParamsFromJsonBody API.
+                    <a href="https://github.com/embedthis/appweb-4/issues/203">[issue 203]</a></li>
+                <li>Enhanced MPR APIs for: mprGetRandomString, mprGetCacheStats, mprCryptPassword, mprMakeSalt,
+                        mprAddKeyWithType, mprQueryJsonString, mprQueryJsonValue, stitle, mprGlobPathFiles.
+                    <a href="https://github.com/embedthis/appweb-4/issues/204">[issue 204]</a></li>
+                <li>Replace Method, PutMethod and TraceMethod directives with AddMethods, RemoveMethods and SetMethods. 
+                    <a href="https://github.com/embedthis/appweb-4/issues/208">[issue 208]</a></li>
+                <li>Add SessionCookie directive to control the visibility of the session cookie. Default now is "httponly".
+                    <a href="https://github.com/embedthis/appweb-4/issues/210">[issue 210]</a></li>
+                <li>Rename EspShowErrors as ShowErrors to make available to all handlers.
+                    <a href="https://github.com/embedthis/appweb-4/issues/211">[issue 211]</a></li>
+                <li>Added Stealth directive to control stealth mode. Stealth mode hides the Server header in responses.
+                    <a href="https://github.com/embedthis/appweb-4/issues/212">[issue 212]</a></li>
+                <li>Added Header directive to define response headers. 
+                    <a href="https://github.com/embedthis/appweb-4/issues/215">[issue 215]</a></li>
+                <li>Used "Header set" to define important security directives to the default appweb.conf.
+                    <a href="https://github.com/embedthis/appweb-4/issues/216">[issue 216]</a></li>
+                <li>Optimized file upload. 
+                    <a href="https://github.com/embedthis/appweb-4/issues/218">[issue 218]</a></li>
+                <li>Tightened WebSockets compliance. Passing Autobahn test suite.
+                    <a href="https://github.com/embedthis/appweb-4/issues/217">[issue 217]</a></li>
+                <li>Add palloc APIs for permanent memory allocations
+                    <a href="https://github.com/embedthis/appweb-4/issues/226">[issue 226]</a></li>
+            </ul>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Fixes for ESP controls.
+                    <a href="https://github.com/embedthis/appweb-4/issues/184">[issue 184]</a></li>
+                <li>Update ESP tabs to fix tab order
+                    <a href="https://github.com/embedthis/appweb-4/issues/186">[issue 186]</a></li>
+                <li>Update ESP flash messages - were not clearing.
+                    <a href="https://github.com/embedthis/appweb-4/issues/187">[issue 187]</a></li>
+                <li>Remove EspLoad directive. Now integrated into EspApp. 
+                    <a href="https://github.com/embedthis/appweb-4/issues/188">[issue 188]</a></li>
+                <li>Remove leading "-" from all ESP CSS classes.
+                    <a href="https://github.com/embedthis/appweb-4/issues/189">[issue 189]</a></li>
+                <li>Fix HTTP streaming request body input in http core engine.
+                    <a href="https://github.com/embedthis/appweb-4/issues/205">[issue 205]</a></li>
+                <li>Fix Http sessions. Aggregate all session state data in one object.
+                    <a href="https://github.com/embedthis/appweb-4/issues/206">[issue 206]</a></li>
+                <li>Make loading SSL provider thread-safe.
+                    <a href="https://github.com/embedthis/appweb-4/issues/207">[issue 207]</a></li>
+                <li>Make loading SSL provider thread-safe.
+                    <a href="https://github.com/embedthis/appweb-4/issues/207">[issue 207]</a></li>
+                <li>Fix Socket and SSL return codes when socket is full. 
+                    <a href="https://github.com/embedthis/appweb-4/issues/214">[issue 214]</a></li>
+                <li>Fix Source directive to be relative to route home rather than route documents.
+                    <a href="https://github.com/embedthis/appweb-4/issues/219">[issue 219]</a></li>
+            </ul>
+            <h3>Incompatible Changes</h3>
+            <ul>
+                <li>The Header directive is renamed RequestHeader</li>
+                <li>The Compress directive is present but deprecated. Use "Map compressed" instead.</li>
+                <li>The EspApp directive now has a new format. See the ESP documentation for details. The old format 
+                    is enabled but deprecated.</li>
+                <li>The ESP flash mechanism now preserves flash messages into the next controller and they are then erased before
+                    the view after that. Flash should not be used for feedback into the view.</li>
+                <li>The ESP setFlash() function is renamed flash()</li>
+                <li>The ESP flash() function is renamed renderFlash()</li>
+                <li>The ESP espGetFlashMessage() function is renamed espGetFlash()</li>
+                <li>The ESP src/*.c files must now be named src/app.c</li>
+                <li>The pattern in a route directive now looks for an existing route pattern. Previously it interpreted
+                    the pattern as a route name.</li>
+                <li>The httpHandleOptionsTrace() function is deprecated. The API is present but deprecated.</li>
+            </ul>
+            <a id="r4.3.5"></a>
+            <h2 class="section">Changes in 4.3.5</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Fix recalculating MDB index after deleting items.
+                    <a href="https://github.com/embedthis/appweb-4/issues/194">[issue 194]</a></li>
+                <li>Fix SSL write blocking with OpenSSL. Caused increased memory consumption for 
+                    large file downloads over SSL.
+                    <a href="https://github.com/embedthis/appweb-4/issues/195">[issue 195]</a></li>
+                <li>Fix Content-Range. End byte value was +1.
+                    <a href="https://github.com/embedthis/appweb-4/issues/178">[issue 178]</a></li>
+                <li>Fix parsing range header.
+                    <a href="https://github.com/embedthis/appweb-4/issues/209">[issue 209]</a></li>
+            </ul>
+            <a id="r4.3.4"></a>
+            <h2 class="section">Changes in 4.3.4</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Fix incorrect http session max exceeded limit message
+                    <a href="https://github.com/embedthis/appweb-4/issues/191">[issue 191]</a></li>
+                <li>Fix static compilation error in espHandler.
+                    <a href="https://github.com/embedthis/appweb-4/issues/192">[issue 192]</a></li>
+                <li>Update jquery and jquery.esp to support jQuery 1.9 
+                    <a href="https://github.com/embedthis/appweb-4/issues/193">[issue 193]</a></li>
+            </ul>
             <a id="r4.3.3"></a>
             <h2 class="section">Changes in 4.3.3</h2>
             <h3>Minor Features</h3>
             <ul>
                 <li>Add ESP template directive @! to access C variables
-                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a></li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/190">[issue 190]</a></li>
             </ul>
             <h3>Fixes</h3>
             <ul>
@@ -104,7 +234,6 @@
                 <li>Fix the ESP text password attributes
                     <a href="https://github.com/embedthis/appweb-4/issues/177">[issue 177]</a></li>
             </ul>
-
             <a id="r4.3.2"></a>
             <h2 class="section">Changes in 4.3.2</h2>
             <h3>Minor Features</h3>

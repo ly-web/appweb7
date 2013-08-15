@@ -61,21 +61,19 @@ static void openCgi(HttpQueue *q)
     HttpRx      *rx;
     HttpConn    *conn;
     Cgi         *cgi;
+    int         nproc;
 
     conn = q->conn;
     rx = conn->rx;
     mprTrace(5, "Open CGI handler");
-    if (!httpValidateLimits(conn->endpoint, HTTP_VALIDATE_OPEN_PROCESS, q->conn)) {
-        /* Too many active CGI processes */
+    if ((nproc = (int) httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_PROCESSES, 1)) >= conn->limits->processMax) {
+        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
+        mprLog(2, "Too many concurrent processes %d/%d", nproc, conn->limits->processMax);
         return;
     }
-    if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
-    } else {
-        httpTrimExtraPath(q->conn);
-        httpMapFile(q->conn, rx->route);
-        httpCreateCGIParams(q->conn);
-    }
+    httpTrimExtraPath(conn);
+    httpMapFile(conn, rx->route);
+    httpCreateCGIParams(conn);
     if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
         return;
     }
@@ -113,13 +111,14 @@ static void closeCgi(HttpQueue *q)
     MprCmd  *cmd;
 
     mprTrace(5, "CGI: close");
-    cgi = q->queueData;
-    cmd = cgi->cmd;
-    if (cmd) {
-        mprSetCmdCallback(cmd, NULL, NULL);
-        mprDestroyCmd(cmd);
+    if ((cgi = q->queueData) != 0) {
+        cmd = cgi->cmd;
+        if (cmd) {
+            mprSetCmdCallback(cmd, NULL, NULL);
+            mprDestroyCmd(cmd);
+        }
+        httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
     }
-    httpValidateLimits(q->conn->endpoint, HTTP_VALIDATE_CLOSE_PROCESS, q->conn);
 }
 
 
@@ -311,6 +310,7 @@ static void browserToCgiService(HttpQueue *q)
     } else {
         mprDisableCmdEvents(cmd, MPR_CMD_STDIN);
     }
+    mprYield(0);
 }
 
 
@@ -348,6 +348,7 @@ static void cgiToBrowserService(HttpQueue *q)
     }
     mprTrace(6, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
         cmd->pid, q->count, q->flags, conn->tx->writeBlocked);
+    mprYield(0);
 }
 
 

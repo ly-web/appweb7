@@ -41,50 +41,45 @@ static void openEjs(HttpQueue *q)
     route = rx->route;
 
     mprTrace(5, "Open EJS handler");
-    if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-        /*
-            Ejscript accepts all methods if there is a registered route. However, we only advertise the standard methods.
-        */
-        httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
-
-    } else if (!conn->ejs) {
-        /*
-            TODO OPT - check this pool is usable over all routes
-         */
-        if (!route->context) {
-            if (route->script == 0 && route->scriptPath == 0) {
-                route->script = sclone(startup);
-            }
-            if (route->workers < 0) {
-                route->workers = mprGetMaxWorkers();
-            }
-            route->context = ejsCreatePool(route->workers, "require ejs.web", route->script, route->scriptPath,
-                route->home, route->dir);
-            mprTrace(5, "ejs: Create ejs pool for route %s", route->name);
-        }
-        pool = conn->pool = route->context;
-
-        /*
-            Allocate a VM engine to service the request
-         */
-        if ((ejs = ejsAllocPoolVM(pool, EJS_FLAG_HOSTED)) == 0) {
-            httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Cannot create Ejs interpreter");
-            return;
-        }
-        conn->ejs = ejs;
-        ejs->hosted = 1;
-
-        /*
-            Because we are using on-demand loading of ejs, the ejsHandler stage callbacks may not have been set when
-            the Http pipeline needed them (first time). The loading of ejs.web above will have fully initialized them.
-         */
-        httpAssignQueue(q, conn->http->ejsHandler, HTTP_QUEUE_TX);
-
-        /*
-            Temporary stats. Store the pool structure.
-         */
-        conn->http->activeVMs = pool->count + (pool->template ? 1 : 0);
+    if (conn->ejs) {
+        return;
     }
+    /*
+        TODO OPT - check this pool is usable over all routes
+     */
+    if (!route->context) {
+        if (route->script == 0 && route->scriptPath == 0) {
+            route->script = sclone(startup);
+        }
+        if (route->workers < 0) {
+            route->workers = mprGetMaxWorkers();
+        }
+        route->context = ejsCreatePool(route->workers, "require ejs.web", route->script, route->scriptPath,
+            route->home, route->documents);
+        mprTrace(5, "ejs: Create ejs pool for route %s", route->name);
+    }
+    pool = conn->pool = route->context;
+
+    /*
+        Allocate a VM engine to service the request
+     */
+    if ((ejs = ejsAllocPoolVM(pool, EJS_FLAG_HOSTED)) == 0) {
+        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Cannot create Ejs interpreter");
+        return;
+    }
+    conn->ejs = ejs;
+    ejs->hosted = 1;
+
+    /*
+        Because we are using on-demand loading of ejs, the ejsHandler stage callbacks may not have been set when
+        the Http pipeline needed them (first time). The loading of ejs.web above will have fully initialized them.
+     */
+    httpAssignQueue(q, conn->http->ejsHandler, HTTP_QUEUE_TX);
+
+    /*
+        Temporary stats. Store the pool structure.
+     */
+    conn->http->activeVMs = pool->count + (pool->template ? 1 : 0);
 }
 
 
@@ -106,7 +101,7 @@ static int ejsAliasDirective(MaState *state, cchar *key, cchar *value)
     httpSetRoutePrefix(route, prefix);
     httpSetRouteScript(route, 0, script);
     httpSetRouteSource(route, "");
-    httpSetRouteDir(route, path);
+    httpSetRouteDocuments(route, path);
     if (workers) {
         httpSetRouteWorkers(route, workers);
     }

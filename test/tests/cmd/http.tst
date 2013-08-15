@@ -92,9 +92,9 @@ run("--method DELETE /tmp/test.dat")
 assert(!Path("../../web/tmp/test.dat").exists)
 
 //  Options with show status
-run("--method OPTIONS /index.html")
+run("--method OPTIONS /trace/index.html")
 data = run("--zero --showStatus -q --method TRACE /index.html")
-assert(data.trim() == "406")
+assert(data.trim() == "405")
 
 //  Show headers
 data = run("--showHeaders /index.html")

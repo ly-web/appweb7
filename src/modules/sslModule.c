@@ -31,58 +31,6 @@ static void checkSsl(MaState *state)
 }
 
 
-#if UNUSED && MOVED
-/*
-    ListenSecure ip:port
-    ListenSecure ip
-    ListenSecure port
-
-    Where ip may be "::::::" for ipv6 addresses or may be enclosed in "[]" if appending a port.
- */
-static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
-{
-#if BIT_PACK_SSL
-    HttpEndpoint    *endpoint;
-    char            *ip;
-    int             port;
-
-
-    mprParseSocketAddress(value, &ip, &port, NULL, 443);
-    if (port == 0) {
-        mprError("Bad or missing port %d in ListenSecure directive", port);
-        return -1;
-    }
-    endpoint = httpCreateEndpoint(ip, port, NULL);
-    mprAddItem(state->server->endpoints, endpoint);
-    if (state->route->ssl == 0) {
-        if (state->route->parent && state->route->parent->ssl) {
-            state->route->ssl = mprCloneSsl(state->route->parent->ssl);
-        } else {
-            state->route->ssl = mprCreateSsl(1);
-        }
-    }
-    httpSecureEndpoint(endpoint, state->route->ssl);
-    if (!state->host->secureEndpoint) {
-        httpSetHostSecureEndpoint(state->host, endpoint);
-    }
-    /*
-        Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
-        This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
-     */
-    if (!schr(value, ':') && !mprHasDualNetworkStack()) {
-        endpoint = httpCreateEndpoint("::", port, NULL);
-        mprAddItem(state->server->endpoints, endpoint);
-        httpSecureEndpoint(endpoint, state->route->ssl);
-    }
-    return 0;
-#else
-    mprError("Configuration lacks SSL support");
-    return -1;
-#endif
-}
-#endif /* UNUSED */
-
-
 static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
@@ -287,9 +235,6 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *module)
         return MPR_ERR_CANT_CREATE;
     }
     appweb = httpGetContext(http);
-#if UNUSED && MOVED
-    maAddDirective(appweb, "ListenSecure", listenSecureDirective);
-#endif
     maAddDirective(appweb, "SSLEngine", sslEngineDirective);
     maAddDirective(appweb, "SSLCACertificateFile", sslCaCertificateFileDirective);
     maAddDirective(appweb, "SSLCACertificatePath", sslCaCertificatePathDirective);
@@ -300,9 +245,14 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *module)
     maAddDirective(appweb, "SSLProvider", sslProviderDirective);
     maAddDirective(appweb, "SSLVerifyClient", sslVerifyClientDirective);
     maAddDirective(appweb, "SSLVerifyIssuer", sslVerifyIssuerDirective);
-
-    //  This is undocumented
     maAddDirective(appweb, "SSLVerifyDepth", sslVerifyDepthDirective);
+#if BIT_STATIC
+    /*
+        Pull in the libmprssl code at link time. Nother here at run-time.
+     */
+    extern MprModuleEntry mprSslInit;
+    mprNop(mprSslInit);
+#endif
     return 0;
 }
 #else

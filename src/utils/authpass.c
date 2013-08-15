@@ -135,7 +135,6 @@ static char *getPassword()
 }
 
 
-
 #if WINCE
 static char *getpass(char *prompt)
 {

@@ -2775,6 +2775,8 @@ module ejs {
                 standard error output. 
          */
         static function run(command: Object, options: Object = {}, data: Object = null): String {
+            //  TODO - the above default arg should handle this
+            options ||= {}
             let cmd = new Cmd
             cmd.start(command, blend({detach: true}, options))
             if (data) {
@@ -4954,6 +4956,8 @@ module ejs {
         /**
             Verify memory. In debug builds, this call verifies all memory blocks by checking a per-block signature.
             This is very slow, so call sparingly. In release builds, this call does nothing.
+            UNUSED - remove
+            @hide
          */
         native static function verify(): Void
 
@@ -10554,6 +10558,7 @@ module ejs {
          */
         native function substring(startIndex: Number, end: Number = -1): String
 
+        //  TODO - Ecma6 - calls this repeat()
         /**
             Replication. Replicate the string N times.
             @param times The number of times to copy the string
@@ -11978,6 +11983,7 @@ module ejs {
             @options verify Boolean Set to true to verify the server certificate. 
                 The certificate is verified and the issuer chain is verified. Defaults to true.
                 Set to false to accept a self-signed certificate.
+            @options frames Preserve individual message frames to onmessage.
          */
         native function WebSocket(uri: Uri, protocols = null, options = null)
 
@@ -12031,13 +12037,14 @@ module ejs {
          */
         native function off(name, observer: Function): Void
 
-        //  MOB - should not these types be WebSocket
         /** 
             @duplicate Stream.on
             All events are called with the following signature.  The "this" object will be set to the instance object
             if the callback is a method. Otherwise, "this" will be set to the Http instance. If Function.bind may also
             be used to define the "this" object and to inject additional callback arguments. 
                 function (event: String, http: Http): Void
+            The event has properties: "data" containing the message, "last" set to true if this is the last portion of data for
+                a logical message, and "type" set to the WebSockets message type.
             @event headers Issued when the response headers have been fully received.
             @event readable Issued when some body content is available.
             @event writable Issued when the connection is writable to accept body data (PUT, POST).
@@ -12068,6 +12075,14 @@ module ejs {
                If multiple arguments are provided, each is sent as a separate message. 
          */
         native function send(...content): Void
+
+        /**
+            Send a block of data with options to control message framing.
+            @param options
+            @options more Set to false for the last frame in a message. If omitted, assumed to be true.
+            @options type Message type. Masked to the valid WebSockets message types.
+         */
+        native function sendBlock(content, options): Void
 
         /**
             The URI provided to the constructor
@@ -12923,9 +12938,10 @@ module ejs {
                 notify()
             })
             hp.on("readable", function (event, ...args) {
-                let count = hp.read(responseBuf, -1)
-                state = Receiving
-                notify()
+                while (hp.read(responseBuf, -1) > 0) {
+                    state = Receiving
+                    notify()
+                }
             })
             hp.connect(method, uri)
             state = Open
@@ -19140,13 +19156,14 @@ module ejs.web {
             Resource limits for the server and for initial resource limits for requests.
             @param limits. Limits is an object hash with the following properties:
             @option chunk Maximum size of a chunk when using chunked transfer encoding.
-            @option clients Maximum number of simultaneous clients.
+            @option clients Maximum number of unique client IP addresses.
+            @option connections Maximum number of simultaneous client endpoints.
             @option connReuse Maximum number of times to reuse a connection for requests (KeepAlive count).
             @option headers Maximum number of headers in a request.
             @option header Maximum size of headers.
             @option inactivityTimeout Maximum time in seconds to keep a connection open if idle. Set to zero for no timeout.
             @option receive Maximum size of incoming body data.
-            @option requests Maximum number of simultaneous requests.
+            @option requests Maximum number of simultaneous requests. This is actually a limit per client IP.
             @option requestTimeout Maximum time in seconds for a request to complete. Set to zero for no timeout.
             @option sessionTimeout Default time to preserve session state for new requests. Set to zero for no timeout.
             @option stageBuffer Maximum stage buffer size for each direction.
@@ -20605,7 +20622,7 @@ module ejs.web {
             URI (begins with "/"). The URI will include any defined scriptName, but will not include scheme, host or 
             port components.
 
-            @params target The URI target. The target parameter can be a URI string or object hash of components. If the 
+            @param target The URI target. The target parameter can be a URI string or object hash of components. If the 
                 target is a string, it is may contain an absolute or relative URI. If the target has an absolute URI path, 
                 that path is used unmodified. If the target is a relative URI, it is appended to the current request URI 
                 path.  The target can also be an object hash of URI components: scheme, host, port, path, reference and
@@ -21854,7 +21871,7 @@ module ejs.web {
             let log = request.log
             log.debug(5, "Routing " + request.pathInfo)
 
-            //  MOB - this is now done by http for "-http-method"
+            //  MOB - this is now done by http for "-http-method" and X-HTTP-METHOD-OVERRIDE
             if (request.method == "POST") {
                 let method = request.params["-ejs-method-"] || request.header("X-HTTP-METHOD-OVERRIDE")
                 if (method && method.toUpperCase() != request.method) {

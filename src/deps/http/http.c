@@ -126,7 +126,10 @@ MAIN(httpMain, int argc, char **argv, char **envp)
     start = mprGetTime();
     app->http = httpCreate(HTTP_CLIENT_SIDE);
     httpEaseLimits(app->http->clientLimits);
-
+#if BIT_STATIC && BIT_PACK_SSL
+    extern MprModuleEntry mprSslInit;
+    mprNop(mprSslInit);
+#endif
     processing();
     mprServiceEvents(-1, 0);
 
@@ -146,6 +149,7 @@ MAIN(httpMain, int argc, char **argv, char **envp)
     if (!app->success && app->verbose) {
         mprError("Request failed");
     }
+    mprDestroy(MPR_EXIT_DEFAULT);
     return (app->success) ? 0 : 255;
 }
 
@@ -196,7 +200,7 @@ static void initSettings()
 
     /* zero means no timeout */
     app->timeout = 0;
-    app->workers = 1;            
+    app->workers = 1;
     app->headers = mprCreateList(0, 0);
     app->mutex = mprCreateLock();
 #if WINDOWS
@@ -272,14 +276,14 @@ static int parseArgs(int argc, char **argv)
             }
             ssl = 1;
 
-        } else if (smatch(argp, "--continue")) {
+        } else if (smatch(argp, "--continue") || smatch(argp, "-c")) {
             app->continueOnErrors++;
 
         } else if (smatch(argp, "--cookie")) {
             if (nextArg >= argc) {
                 return showUsage();
             } else {
-                mprAddItem(app->headers, mprCreateKeyPair("Cookie", argv[++nextArg]));
+                mprAddItem(app->headers, mprCreateKeyPair("Cookie", argv[++nextArg], 0));
             }
 
         } else if (smatch(argp, "--data")) {
@@ -323,7 +327,7 @@ static int parseArgs(int argc, char **argv)
                 while (isspace((uchar) *value)) {
                     value++;
                 }
-                mprAddItem(app->headers, mprCreateKeyPair(key, value));
+                mprAddItem(app->headers, mprCreateKeyPair(key, value, 0));
             }
 
         } else if (smatch(argp, "--host")) {
@@ -424,14 +428,13 @@ static int parseArgs(int argc, char **argv)
             if (nextArg >= argc) {
                 return showUsage();
             } else {
-                //  TODO - should allow multiple ranges
                 if (app->ranges == 0) {
                     app->ranges = sfmt("bytes=%s", argv[++nextArg]);
                 } else {
                     app->ranges = srejoin(app->ranges, ",", argv[++nextArg], NULL);
                 }
             }
-            
+
         } else if (smatch(argp, "--retries") || smatch(argp, "-r")) {
             if (nextArg >= argc) {
                 return showUsage();
@@ -443,7 +446,7 @@ static int parseArgs(int argc, char **argv)
             /* Undocumented. Allow self-signed certs. Users should just not set --verify */
             app->verifyIssuer = 0;
             ssl = 1;
-            
+
         } else if (smatch(argp, "--sequence")) {
             app->sequence++;
 
@@ -644,7 +647,7 @@ static void processing()
     int         j;
 
     if (app->chunkSize > 0) {
-        mprAddItem(app->headers, mprCreateKeyPair("X-Appweb-Chunk-Size", sfmt("%d", app->chunkSize)));
+        mprAddItem(app->headers, mprCreateKeyPair("X-Chunk-Size", sfmt("%d", app->chunkSize), 0));
     }
     app->activeLoadThreads = app->loadThreads;
     app->threadData = mprCreateList(app->loadThreads, 0);
@@ -674,7 +677,7 @@ static void manageThreadData(ThreadData *data, int flags)
 }
 
 
-/*  
+/*
     Per-thread execution. Called for main thread and helper threads.
  */ 
 static void threadMain(void *data, MprThread *tp)
@@ -684,15 +687,17 @@ static void threadMain(void *data, MprThread *tp)
     MprEvent        e;
 
     td = tp->data;
-    td->dispatcher = mprCreateDispatcher(tp->name, 1);
+    td->dispatcher = mprCreateDispatcher(tp->name, 0);
     td->conn = conn = httpCreateConn(app->http, NULL, td->dispatcher);
 
-    /*  
+    /*
         Relay to processThread via the dispatcher. This serializes all activity on the conn->dispatcher
      */
     e.mask = MPR_READABLE;
     e.data = tp;
     mprRelayEvent(conn->dispatcher, (MprEventProc) processThread, conn, &e);
+
+    mprDestroyDispatcher(td->dispatcher);
 }
 
 
@@ -710,6 +715,10 @@ static int processThread(HttpConn *conn, MprEvent *event)
     if (strcmp(app->protocol, "HTTP/1.0") == 0) {
         httpSetKeepAliveCount(conn, 0);
         httpSetProtocol(conn, "HTTP/1.0");
+    }
+    if (app->iterations == 1) {
+        // httpSetKeepAliveCount(conn, 0);
+        conn->limits->keepAliveMax = 0;
     }
     if (app->username) {
         if (app->password == 0 && !strchr(app->username, ':')) {
@@ -792,9 +801,6 @@ static int prepRequest(HttpConn *conn, MprList *files, int retry)
     if (app->formData) {
         httpSetHeader(conn, "Content-Type", "application/x-www-form-urlencoded");
     }
-    if (app->chunkSize > 0) {
-        httpSetChunkSize(conn, app->chunkSize);
-    }
     if (setContentLength(conn, files) < 0) {
         return MPR_ERR_CANT_OPEN;
     }
@@ -808,13 +814,16 @@ static int sendRequest(HttpConn *conn, cchar *method, cchar *url, MprList *files
         mprError("Cannot process request for \"%s\"\n%s", url, httpGetError(conn));
         return MPR_ERR_CANT_OPEN;
     }
-    /*  
+    /*
         This program does not do full-duplex writes with reads. ie. if you have a request that sends and receives
         data in parallel -- http will do the writes first then read the response.
      */
     if (app->bodyData || app->formData || files) {
+        if (app->chunkSize > 0) {
+            httpSetChunkSize(conn, app->chunkSize);
+        }
         if (writeBody(conn, files) < 0) {
-            mprError("Cannot write body data to \"%s\". %s.", url, httpGetError(conn));
+            mprError("Cannot write body data to \"%s\". %s", url, httpGetError(conn));
             return MPR_ERR_CANT_WRITE;
         }
     }
@@ -959,7 +968,7 @@ static void readBody(HttpConn *conn, MprFile *outFile)
         }
 #if FUTURE
         //  This should be pushed into a range filter.
-        //  Buffer all output and then parsing can work  
+        //  Buffer all output and then parsing can work
         type = httpGetHeader(conn, "Content-Type");
         if (scontains(type, "multipart/byteranges")) {
             if ((boundary = scontains(type, "boundary=")) != 0) {
@@ -1004,8 +1013,8 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
     mprAddRoot(outFile);
     while (!conn->tx->finalized && conn->state < HTTP_STATE_COMPLETE && remaining > 0) {
         remaining = mprGetRemainingTicks(mark, limits->requestTimeout);
-        httpWait(conn, 0, remaining);
         readBody(conn, outFile);
+        httpWait(conn, 0, remaining);
     }
     if (conn->state < HTTP_STATE_COMPLETE && !conn->error) {
         httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TIMEOUT,
@@ -1118,13 +1127,15 @@ static ssize writeBody(HttpConn *conn, MprList *files)
                     }
                     mprYield(0);
                 }
+                /*
+                    This is a blocking write
+                 */
                 httpFlushQueue(conn->writeq, 1);
                 mprCloseFile(file);
                 app->inFile = 0;
             }
         }
         if (app->bodyData) {
-            mprAddNullToBuf(app->bodyData);
             len = mprGetBufLength(app->bodyData);
             if (httpWriteBlock(conn->writeq, mprGetBufStart(app->bodyData), len, HTTP_BLOCK) != len) {
                 return MPR_ERR_CANT_WRITE;
@@ -1213,16 +1224,10 @@ static cchar *formatOutput(HttpConn *conn, cchar *buf, ssize *count)
 {
     cchar       *result;
     int         i, c, isBinary;
-    
+
     if (app->noout) {
         return 0;
     }
-#if UNUSED
-    HttpRx *rx = conn->rx;
-    if (rx->status == 401 || (conn->followRedirects && (301 <= rx->status && rx->status <= 302))) {
-        return 0;
-    }
-#endif
     if (!app->printable) {
         return buf;
     }

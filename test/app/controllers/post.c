@@ -23,7 +23,7 @@ static void post_destroy() {
 }
 
 static void post_edit() { 
-    readRec("post");
+    readRec("post", param("id"));
 }
 
 static void post_list() { }
@@ -34,7 +34,7 @@ static void post_init() {
 }
 
 static void post_show() { 
-    readRec("post");
+    readRec("post", param("id"));
     renderView("post-edit");
 }
 

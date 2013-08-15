@@ -18,7 +18,6 @@
 
 extern bool bulkPost(MprTestGroup *gp, char *url, int size, int expectCode);
 extern char *getValue(MprTestGroup *gp, char *key);
-extern int  httpRequest(MprTestGroup *gp, cchar *method, cchar *uri);
 extern char *lookupValue(MprTestGroup *gp, char *key);
 extern bool match(MprTestGroup *gp, char *key, char *value);
 extern bool matchAnyCase(MprTestGroup *gp, char *key, char *value);

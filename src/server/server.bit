@@ -5,7 +5,6 @@
 Bit.load({
     targets: {
         'genslink': {
-            //  MOB - Use run: target
             action: "run('esp --static --genlink slink.c --flat compile')",
             generate: "esp --static --genlink slink.c --flat compile",
         },
@@ -28,9 +27,9 @@ Bit.load({
          */
         libslink: {
             type: 'lib',
-            depends: [ 'slink.c', 'esp', 'libmod_esp' ],
+            depends: [ 'slink.c' ],
             sources: [ 'slink.c' ],
-            postblend: "
+            postblend: function (target) {
                 if (Path('slink.c').exists) {
                     /* Dynamically compute the required sources for static linking */
                     let sources = bit.targets.libslink.sources
@@ -38,7 +37,10 @@ Bit.load({
                         sources.push(TARGET.home.join(file.replace(/SOURCE /mg, '')))
                     }
                 }
-            ",
+                if (target.static) {
+                    target.depends += ['esp', 'libmod_esp']
+                }
+            },
         },
 
         appweb: {

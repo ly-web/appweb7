@@ -9,7 +9,6 @@
 #include    "esp.h"
 
 #if BIT_PACK_ESP
-
 /************************************* Code ***********************************/
 /*  
     Add a http header if not already defined
@@ -83,26 +82,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags)
 
 PUBLIC bool espCheckSecurityToken(HttpConn *conn) 
 {
-    HttpRx  *rx;
-    cchar   *securityToken, *sessionToken;
-
-    rx = conn->rx;
-    if (!(rx->flags & HTTP_POST)) {
-        return 1;
-    }
-    if (rx->securityToken == 0) {
-        sessionToken = rx->securityToken = sclone(httpGetSessionVar(conn, ESP_SECURITY_TOKEN_NAME, ""));
-#if UNUSED && KEEP
-        securityTokenName = espGetParam(conn, "SecurityTokenName", "");
-#endif
-        securityToken = espGetParam(conn, ESP_SECURITY_TOKEN_NAME, "");
-        if (!smatch(sessionToken, securityToken)) {
-            httpError(conn, HTTP_CODE_NOT_ACCEPTABLE, 
-                "Security token does not match. Potential CSRF attack. Denying request.");
-            return 0;
-        }
-    }
-    return 1;
+    return httpCheckSecurityToken(conn);
 }
 
 
@@ -132,20 +112,26 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
     esp = MPR->espService;
     if (target) {
         eroute = route->eroute;
-        mprAddKey(esp->actions, mprJoinPath(eroute->controllersDir, target), action);
+        mprAddKey(esp->actions, mprJoinPath(eroute->servicesDir, target), action);
     }
 }
 
 
 /*
-    The base procedure is invoked prior to calling any and all actions
+    The base procedure is invoked prior to calling any and all actions on this route
  */
 PUBLIC void espDefineBase(HttpRoute *route, EspProc baseProc)
 {
-    EspRoute    *eroute;
+    HttpRoute   *rp;
+    EspRoute    *eroute, *er;
+    int         next;
 
     eroute = route->eroute;
-    eroute->controllerBase = baseProc;
+    for (ITERATE_ITEMS(route->host->routes, rp, next)) {
+        if ((er = route->eroute) != 0 && smatch(er->servicesDir, eroute->servicesDir)) {
+            er->commonService = baseProc;
+        }
+    }
 }
 
 
@@ -164,10 +150,9 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
         return;
     }
     esp = MPR->espService;
-    path = mprGetPortablePath(mprJoinPath(route->dir, path));
+    path = mprGetPortablePath(mprJoinPath(route->documents, path));
     mprAddKey(esp->views, path, view);
 }
-
 
 PUBLIC void espFinalize(HttpConn *conn) 
 {
@@ -181,13 +166,13 @@ PUBLIC void espFlush(HttpConn *conn)
 }
 
 
-//  MOB - confusing vs ediGetColumns
-
 PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
 {
+#if DEPRECATE || 1
     if (rec == 0) {
         rec = conn->record;
     }
+#endif
     if (rec) {
         return ediGetColumns(espGetDatabase(conn), rec->tableName);
     }
@@ -214,6 +199,15 @@ PUBLIC cchar *espGetCookies(HttpConn *conn)
 }
 
 
+PUBLIC void *espGetData(HttpConn *conn)
+{
+    EspReq  *req;
+
+    req = conn->data;
+    return req->data;
+}
+
+
 PUBLIC Edi *espGetDatabase(HttpConn *conn)
 {
     EspRoute    *eroute;
@@ -232,6 +226,13 @@ PUBLIC Edi *espGetDatabase(HttpConn *conn)
 }
 
 
+//  MOB - rename espGetDocuments
+PUBLIC cchar *espGetDir(HttpConn *conn)
+{   
+    return conn->rx->route->documents;
+}
+
+
 PUBLIC EspRoute *espGetEspRoute(HttpConn *conn)
 {
     EspReq      *req;
@@ -243,14 +244,7 @@ PUBLIC EspRoute *espGetEspRoute(HttpConn *conn)
 }
 
 
-PUBLIC cchar *espGetDir(HttpConn *conn)
-{   
-    return conn->rx->route->dir;
-}
-
-
-//  MOB - rethink name espGetFlash
-PUBLIC cchar *espGetFlashMessage(HttpConn *conn, cchar *kind)
+PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *kind)
 {
     EspReq      *req;
     MprKey      *kp;
@@ -270,12 +264,6 @@ PUBLIC cchar *espGetFlashMessage(HttpConn *conn, cchar *kind)
 }
 
 
-PUBLIC EdiGrid *espGetGrid(HttpConn *conn)
-{           
-    return conn->grid;
-}
-
-    
 PUBLIC cchar *espGetHeader(HttpConn *conn, cchar *key)
 {
     return httpGetHeader(conn, key);
@@ -342,6 +330,12 @@ PUBLIC Edi *espGetRouteDatabase(EspRoute *eroute)
 }
 
 
+PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
+{
+    return httpGetSecurityToken(conn);
+}
+
+
 PUBLIC int espGetStatus(HttpConn *conn)
 {
     return httpGetStatus(conn);
@@ -372,18 +366,40 @@ PUBLIC cchar *espGetUri(HttpConn *conn)
 }
 
 
-PUBLIC bool espHasGrid(HttpConn *conn)
+PUBLIC cchar *espGridToJson(EdiGrid *grid, int flags)
 {
-    return conn->grid != 0;
-}
+    EdiRec      *rec;
+    EdiField    *fp;
+    MprBuf      *buf;
+    int         r, f;
 
-
-PUBLIC bool espHasRec(HttpConn *conn)
-{
-    EdiRec  *rec;
-
-    rec = conn->record;
-    return (rec && rec->id) ? 1 : 0;
+    if (grid == 0) {
+        return 0;
+    }
+    buf = mprCreateBuf(0, 0);
+    mprPutStringToBuf(buf, "[\n");
+    //  MOB - use EDI APIs
+    for (r = 0; r < grid->nrecords; r++) {
+        mprPutStringToBuf(buf, "    { ");
+        rec = grid->records[r];
+        for (f = 0; f < rec->nfields; f++) {
+            fp = &rec->fields[f];
+            mprPutToBuf(buf, "\"%s\": ", fp->name);
+            mprPutToBuf(buf, "\"%s\"", ediFormatField(NULL, fp));
+            if ((f+1) < rec->nfields) {
+                mprPutStringToBuf(buf, ", ");
+            }
+        }
+        mprPutStringToBuf(buf, " }");
+        if ((r+1) < grid->nrecords) {
+            mprPutCharToBuf(buf, ',');
+        }
+        //  MOB only for pretty
+        mprPutCharToBuf(buf, '\n');
+    }
+    mprPutStringToBuf(buf, "  ]\n");
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
 }
 
 
@@ -438,6 +454,7 @@ PUBLIC EdiRec *espMakeRec(cchar *contents)
 }
 
 
+//  MOB - reconsider API
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value)
 {
     return httpMatchParam(conn, var, value);
@@ -466,10 +483,7 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
         return 1;
     }
     mprGetPathInfo(source, &sinfo);
-    /*
-        Use >= to ensure we reload. This may cause redundant reloads as mtime has a 1 sec granularity.
-     */
-    if (sinfo.valid && sinfo.mtime >= minfo.mtime) {
+    if (sinfo.valid && sinfo.mtime > minfo.mtime) {
         if ((mp = mprLookupModule(source)) != 0) {
             if (!espUnloadModule(source, 0)) {
                 mprError("Cannot unload module %s. Connections still open. Continue using old version.", source);
@@ -506,9 +520,9 @@ PUBLIC EdiRec *espReadRecWhere(HttpConn *conn, cchar *tableName, cchar *fieldNam
 }
 
 
-PUBLIC EdiRec *espReadRec(HttpConn *conn, cchar *tableName)
+PUBLIC EdiRec *espReadRec(HttpConn *conn, cchar *tableName, cchar *key)
 {
-    return espSetRec(conn, ediReadRec(espGetDatabase(conn), tableName, espGetParam(conn, "id", NULL)));
+    return espSetRec(conn, ediReadRec(espGetDatabase(conn), tableName, key));
 }
 
 
@@ -520,18 +534,43 @@ PUBLIC EdiRec *espReadRecByKey(HttpConn *conn, cchar *tableName, cchar *key)
 
 PUBLIC EdiGrid *espReadRecsWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
-    //  MOB - where else should call espSetGrid
     return espSetGrid(conn, ediReadWhere(espGetDatabase(conn), tableName, fieldName, operation, value));
 }
 
 
 PUBLIC EdiGrid *espReadTable(HttpConn *conn, cchar *tableName)
 {
-    EdiGrid *grid;
-    
-    grid = ediReadWhere(espGetDatabase(conn), tableName, 0, 0, 0);
-    espSetGrid(conn, grid);
-    return grid;
+    return espSetGrid(conn, ediReadWhere(espGetDatabase(conn), tableName, 0, 0, 0));
+}
+
+
+/*
+    MOB - MOVE
+    MOB - add renderRec()
+    MOB - support PRETTY | PLAIN
+    MOB - remove AsJSON
+ */
+PUBLIC cchar *espRecToJson(EdiRec *rec, int flags)
+{
+    MprBuf      *buf;
+    EdiField    *fp;
+    int         f;
+
+    buf = mprCreateBuf(0, 0);
+    //  rec == null
+    mprPutStringToBuf(buf, "  { ");
+    for (f = 0; rec && f < rec->nfields; f++) {
+        fp = &rec->fields[f];
+        mprPutToBuf(buf, "\"%s\": ", fp->name);
+        mprPutToBuf(buf, "\"%s\"", ediFormatField(NULL, fp));
+        if ((f+1) < rec->nfields) {
+            mprPutStringToBuf(buf, ", ");
+        }
+    }
+    mprPutStringToBuf(buf, " }");
+    mprPutCharToBuf(buf, '\n');
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);;
 }
 
 
@@ -557,6 +596,7 @@ PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key)
     }
     return 1;
 }
+
 
 PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...)
 {
@@ -609,13 +649,13 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
         }
         title = sfmt("Request Error for \"%s\"", rx->pathInfo);
         msg = mprEscapeHtml(sfmtv(fmt, args));
-        if (eroute->showErrors) {
+        if (eroute->route->flags & HTTP_ROUTE_SHOW_ERRORS) {
             text = sfmt(\
                 "<!DOCTYPE html>\r\n<html>\r\n<head><title>%s</title></head>\r\n" \
                 "<body>\r\n<h1>%s</h1>\r\n" \
                 "    <pre>%s</pre>\r\n" \
                 "    <p>To prevent errors being displayed in the browser, " \
-                "       set <b>log.showErrors</b> to false in the ejsrc file.</p>\r\n", \
+                "       set <b>ShowErrors off</b> in the appweb.conf file.</p>\r\n", \
                 "</body>\r\n</html>\r\n", title, title, msg);
             httpSetHeader(conn, "Content-Type", "text/html");
             written += espRenderString(conn, text);
@@ -649,7 +689,126 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 }
 
 
-//  MOB - inconsistent with renderSafe
+/*
+    Render a security token
+    Security tokens are used to minimize the CSRF threat.
+    Note: the HttpSession API prevents session hijacking by pairing with the client IP
+ */
+PUBLIC void espRenderSecurityToken(HttpConn *conn) 
+{
+    httpRenderSecurityToken(conn);
+}
+
+
+PUBLIC void espRemoveCookie(HttpConn *conn, cchar *name)
+{
+    httpSetCookie(conn, name, "", "/", NULL, -1, 0);
+}
+
+
+PUBLIC void espSetConn(HttpConn *conn)
+{
+    mprSetThreadData(((Esp*) MPR->espService)->local, conn);
+}
+
+
+static void espNotifier(HttpConn *conn, int event, int arg)
+{
+    EspReq      *req;
+
+    if ((req = conn->data) != 0) {
+        espSetConn(conn);
+        (req->notifier)(conn, event, arg);
+    }
+}
+
+
+PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
+{
+    EspReq      *req;
+
+    if ((req = conn->data) != 0) {
+        req->notifier = notifier;
+        httpSetConnNotifier(conn, espNotifier);
+    }
+}
+
+
+static cchar *getGridSchema(EdiGrid *grid)
+{
+    Edi         *edi;
+    MprBuf      *buf;
+    MprList     *columns;
+    char        *s;
+    int         c, type, flags, cid, ncols, next;
+
+    if (grid->tableName == 0) {
+        return 0;
+    }
+    edi = grid->edi;
+    buf = mprCreateBuf(0, 0);
+    ediGetTableSchema(edi, grid->tableName, NULL, &ncols);
+    columns = ediGetColumns(edi, grid->tableName);
+    mprPutStringToBuf(buf, "{\n    \"types\": {\n");
+    for (c = 0; c < ncols; c++) {
+        ediGetColumnSchema(edi, grid->tableName, mprGetItem(columns, c), &type, &flags, &cid);
+        mprPutToBuf(buf, "      \"%s\": {\n        \"type\": \"%s\"\n      },\n", 
+            mprGetItem(columns, c), ediGetTypeString(type));
+    }
+    mprAdjustBufEnd(buf, -2);
+
+    mprRemoveItemAtPos(columns, 0);
+    mprPutStringToBuf(buf, "\n    },\n    \"columns\": [ ");
+    for (ITERATE_ITEMS(columns, s, next)) {
+        mprPutToBuf(buf, "\"%s\", ", s);
+    }
+    mprAdjustBufEnd(buf, -2);
+    mprPutStringToBuf(buf, " ],\n    \"headers\": [ ");
+    for (ITERATE_ITEMS(columns, s, next)) {
+        mprPutToBuf(buf, "\"%s\", ", spascal(s));
+    }
+    mprAdjustBufEnd(buf, -2);
+    mprPutStringToBuf(buf, " ]\n  }");
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
+}
+
+
+/*
+    MOB - support PRETTY, QUOTES PLAIN flag
+    MOB - support flags to ask or not for the schema
+ */
+PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags)
+{
+    httpAddHeaderString(conn, "Content-Type", "application/json");
+    return espRender(conn, "{\n  \"schema\": %s,\n  \"data\": %s}\n", getGridSchema(grid), espGridToJson(grid, flags));
+}
+
+
+PUBLIC void espDumpGrid(EdiGrid *grid)
+{
+    mprLog(0, "Grid: %s\nschema: %s,\ndata: %s", grid->tableName, getGridSchema(grid), espGridToJson(grid, MPR_JSON_PRETTY));
+}
+
+
+PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags)
+{
+    httpAddHeaderString(conn, "Content-Type", "application/json");
+    return espRender(conn, "{\"data\": %s}", espRecToJson(rec, flags));
+}
+
+
+PUBLIC ssize espRenderSafe(HttpConn *conn, cchar *fmt, ...)
+{
+    va_list     args;
+    cchar       *s;
+
+    va_start(args, fmt);
+    s = mprEscapeHtml(sfmtv(fmt, args));
+    va_end(args);
+    return espRenderBlock(conn, s, slen(s));
+}
+
 
 PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s)
 {
@@ -661,6 +820,26 @@ PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s)
 PUBLIC ssize espRenderString(HttpConn *conn, cchar *s)
 {
     return espRenderBlock(conn, s, slen(s));
+}
+
+
+PUBLIC void espRenderResult(HttpConn *conn, bool success)
+{
+    EspReq      *req;
+    EdiRec      *rec;
+
+    req = conn->data;
+    rec = getRec();
+    if (rec && rec->errors) {
+        espRender(conn, "{\"error\": %d, \"feedback\": %s, \"fieldErrors\": %s}", !success, 
+            req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}",
+            mprSerialize(rec->errors, MPR_JSON_QUOTES));
+    } else {
+        espRender(conn, "{\"error\": %d, \"feedback\": %s}", !success, 
+            req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}");
+    }
+    espFinalize(conn);
+
 }
 
 
@@ -685,6 +864,12 @@ PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key)
         return MPR_ERR_CANT_ACCESS;
     }
     return mprRemoveKey(conn->tx->headers, key);
+}
+
+
+PUBLIC void espRemoveSessionVar(HttpConn *conn, cchar *var) 
+{
+    httpRemoveSessionVar(conn, var);
 }
 
 
@@ -719,6 +904,15 @@ PUBLIC void espSetContentType(HttpConn *conn, cchar *mimeType)
 }
 
 
+PUBLIC void espSetData(HttpConn *conn, void *data)
+{
+    EspReq  *req;
+
+    req = conn->data;
+    req->data = data;
+}
+
+
 PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value)
 {
     return ediSetField(rec, fieldName, value);
@@ -728,6 +922,39 @@ PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value)
 PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *params)
 {
     return ediSetFields(rec, params);
+}
+
+
+PUBLIC void espSetFeedback(HttpConn *conn, cchar *kind, cchar *fmt, ...)
+{
+    va_list     args;
+
+    va_start(args, fmt);
+    espSetFeedbackv(conn, kind, fmt, args);
+    va_end(args);
+}
+
+
+PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
+{
+    EspReq      *req;
+    MprKey      *kp;
+    cchar       *prior, *msg;
+
+    req = conn->data;
+    msg = sfmtv(fmt, args);
+
+    if (req->feedback == 0) {
+        req->feedback = mprCreateHash(0, 0);
+    }
+    if ((prior = mprLookupKey(req->feedback, kind)) != 0) {
+        kp = mprAddKey(req->feedback, kind, sjoin(prior, "\n", msg, NULL));
+    } else {
+        kp = mprAddKey(req->feedback, kind, sclone(msg));
+    }
+    if (kp) {
+        kp->type = MPR_JSON_STRING;
+    }
 }
 
 
@@ -752,7 +979,6 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 
     if (req->flash == 0) {
         req->flash = mprCreateHash(0, 0);
-        httpGetSession(conn, 1);
     }
     if ((prior = mprLookupKey(req->flash, kind)) != 0) {
         kp = mprAddKey(req->flash, kind, sjoin(prior, "\n", msg, NULL));
@@ -762,16 +988,10 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
     if (kp) {
         kp->type = MPR_JSON_STRING;
     }
-}
-
-
-/*
-    Set the default grid for a request
- */
-PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
-{
-    conn->grid = grid;
-    return grid;
+    /*
+        Create a session as early as possible so a Set-Cookie header can be omitted.
+     */
+    httpGetSession(conn, 1);
 }
 
 
@@ -806,15 +1026,6 @@ PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value)
 PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value) 
 {
     httpSetParam(conn, var, value);
-}
-
-
-/*
-    Set the default record for a request
- */
-PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
-{
-    return conn->record = rec;
 }
 
 
@@ -958,7 +1169,7 @@ PUBLIC void espShowRequest(HttpConn *conn)
 
 
 /*
-    This is called when unloading a view or controller module
+    This is called when unloading a view or service module
  */
 PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout)
 {
@@ -966,7 +1177,6 @@ PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout)
     MprTicks    mark;
     Esp         *esp;
 
-    /* MOB - should this suspend new requests */
     if ((mp = mprLookupModule(module)) != 0) {
         esp = MPR->espService;
         mark = mprGetTicks();
@@ -1002,17 +1212,21 @@ PUBLIC bool espUpdateField(HttpConn *conn, cchar *tableName, cchar *key, cchar *
 PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *params)
 {
     EdiRec  *rec;
+    cchar   *key;
 
-    if ((rec = espSetFields(espReadRec(conn, tableName), params)) == 0) {
+    key = mprLookupKey(params, "id");
+    if ((rec = espSetFields(espReadRec(conn, tableName, key), params)) == 0) {
         return 0;
     }
     return ediUpdateRec(espGetDatabase(conn), rec) == 0;
 }
 
 
-//  MOB - inconsistent with ediUpdateRec
 PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec)
 {
+    if (!rec) {
+        return 0;
+    }
     return ediUpdateRec(rec->edi, rec) == 0;
 }
 
@@ -1026,22 +1240,88 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(eroute->appModuleName);
+        mprMark(eroute->appDir);
+        mprMark(eroute->appName);
         mprMark(eroute->appModulePath);
         mprMark(eroute->cacheDir);
+        mprMark(eroute->clientDir);
+        mprMark(eroute->config);
         mprMark(eroute->compile);
-        mprMark(eroute->controllersDir);
         mprMark(eroute->dbDir);
-        mprMark(eroute->migrationsDir);
         mprMark(eroute->edi);
         mprMark(eroute->env);
         mprMark(eroute->layoutsDir);
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
-        mprMark(eroute->staticDir);
+        mprMark(eroute->servicesDir);
+        mprMark(eroute->srcDir);
         mprMark(eroute->viewsDir);
     }
 }
+
+
+/************************************* Deprecated ******************************/
+
+#if DEPRECATE || 1
+PUBLIC EdiGrid *espGetGrid(HttpConn *conn)
+{           
+    return conn->grid;
+}
+
+
+PUBLIC bool espHasGrid(HttpConn *conn)
+{
+    return conn->grid != 0;
+}
+
+
+PUBLIC bool espHasRec(HttpConn *conn)
+{
+    EdiRec  *rec;
+
+    rec = conn->record;
+    return (rec && rec->id) ? 1 : 0;
+}
+
+
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
+{
+    EspReq      *req;
+    MprKey      *kp;
+    cchar       *msg;
+   
+    req = conn->data;
+    if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
+        return;
+    }
+    for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
+        msg = kp->data;
+        if (strstr(kinds, kp->key) || strstr(kinds, "all")) {
+            espRender(conn, "<span class='flash-%s'>%s</span>", kp->key, msg);
+        }
+    }
+}
+
+
+PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
+{
+    conn->grid = grid;
+    return grid;
+}
+
+
+PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
+{
+    return conn->record = rec;
+}
+
+
+PUBLIC void espSecurityToken(HttpConn *conn) 
+{
+    espRenderSecurityToken(conn);
+}
+#endif
+
 
 
 #endif /* BIT_PACK_ESP */

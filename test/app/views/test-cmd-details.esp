@@ -1,21 +1,22 @@
 
 <!-- need conn-less version -->
 
-<% setFlash("warn", "Test warning"); %>
-    <h1>Edit</h1>
-    SECRET: @@secret
+<% flash("warn", "Test warning"); %>
 
-    <% alert("<html>", "{escape: true}"); %>
-    <% anchor("Hello <b> World", getReferrer(conn), "{escape: true}"); %>
+<h1>Edit</h1>
+SECRET: @@secret
 
-    <% button("commit", "OK", NULL); %>
-    <% button("commit", "Cancel", NULL); %>
+<% alert("<html>", "{escape: true}"); %>
+<% anchor("Hello <b> World", getReferrer(conn), "{escape: true}"); %>
 
-    <% buttonLink("Cancel", "@", NULL); %>
+<% button("commit", "OK", NULL); %>
+<% button("commit", "Cancel", NULL); %>
 
-    <% checkbox("Admin", "true", NULL); %>
-    <% division("<p>Hello</p>", "{ class: 'blue', width: '70%', special: 'high' }"); %>
+<% buttonLink("Cancel", "@", NULL); %>
 
-    <% flash("all", NULL); %>
-    <% form(NULL, NULL); %>
-    <% endform(); %>
+<% checkbox("Admin", "true", NULL); %>
+<% division("<p>Hello</p>", "{ class: 'blue', width: '70%', special: 'high' }"); %>
+
+<% renderFlash("all", NULL); %>
+<% form(NULL, NULL); %>
+<% endform(); %>

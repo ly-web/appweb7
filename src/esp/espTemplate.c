@@ -71,7 +71,7 @@ static bool matchToken(cchar **str, cchar *token);
     MOD         Output module (view_MD5)
     SHLIB       Host Shared library (.lib, .so)
     SHOBJ       Host Shared Object (.dll, .so)
-    SRC         Source code for view or controller (already templated)
+    SRC         Source code for view or service (already templated)
     TMP         Temp directory
     VS          Visual Studio directory
     WINSDK      Windows SDK directory
@@ -138,7 +138,7 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
                 mprPutStringToBuf(buf, getShobjExt(os));
 
             } else if (matchToken(&cp, "${SRC}")) {
-                /* View (already parsed into C code) or controller source */
+                /* View (already parsed into C code) or service source */
                 mprPutStringToBuf(buf, source);
 
             } else if (matchToken(&cp, "${TMP}")) {
@@ -214,25 +214,22 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
 }
 
 
-static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *module)
+static int runCommand(EspRoute *eroute, MprDispatcher *dispatcher, cchar *command, cchar *csource, cchar *module, char **errMsg)
 {
-    EspReq      *req;
-    EspRoute    *eroute;
     MprCmd      *cmd;
     MprKey      *var;
     MprList     *elist;
-    cchar       **env;
+    cchar       **env, *commandLine;
     char        *err, *out;
+    int         rc;
 
-    req = conn->data;
-    eroute = req->route->eroute;
-
-    cmd = mprCreateCmd(conn->dispatcher);
-    if ((req->commandLine = espExpandCommand(eroute, command, csource, module)) == 0) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing EspCompile directive for %s", csource);
+    *errMsg = 0;
+    cmd = mprCreateCmd(dispatcher);
+    if ((commandLine = espExpandCommand(eroute, command, csource, module)) == 0) {
+        *errMsg = sfmt("Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
-    mprTrace(4, "ESP command: %s\n", req->commandLine);
+    mprTrace(4, "ESP command: %s\n", commandLine);
     if (eroute->env) {
         elist = mprCreateList(0, 0);
         for (ITERATE_KEYS(eroute->env, var)) {
@@ -246,17 +243,23 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
     if (eroute->searchPath) {
         mprSetCmdSearchPath(cmd, eroute->searchPath);
     }
-    //  WARNING: GC will run here
-    if (mprRunCmd(cmd, req->commandLine, env, &out, &err, -1, 0) != 0) {
+    /*
+        WARNING: GC will run here
+     */
+    mprHold((void*) commandLine);
+    rc = mprRunCmd(cmd, commandLine, env, &out, &err, -1, 0);
+    mprRelease((void*) commandLine);
+
+    if (rc != 0) {
         if (err == 0 || *err == '\0') {
             /* Windows puts errors to stdout Ugh! */
             err = out;
         }
-        mprError("ESP: Cannot run command %s, error %s", req->commandLine, err);
-        if (eroute->showErrors) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot run command %s, error %s", req->commandLine, err);
+        mprError("ESP: Cannot run command %s, error %s", commandLine, err);
+        if (eroute->route->flags & HTTP_ROUTE_SHOW_ERRORS) {
+            *errMsg = sfmt("Cannot run command %s, error %s", commandLine, err);
         } else {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot compile view");
+            *errMsg = "Cannot compile view";
         }
         return MPR_ERR_CANT_COMPLETE;
     }
@@ -265,52 +268,51 @@ static int runCommand(HttpConn *conn, cchar *command, cchar *csource, cchar *mod
 
 
 /*
-    Compile a view or controller
+    Compile a view or service
 
     cacheName   MD5 cache name (not a full path)
     source      ESP source file name
     module      Module file name
+
+    WARNING: this routine blocks and runs GC. All parameters must be retained.
  */
-PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cacheName, int isView)
+PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, 
+    int isView, char **errMsg)
 {
     MprFile     *fp;
-    HttpRx      *rx;
-    HttpRoute   *route;
     EspRoute    *eroute;
-    EspReq      *req;
     cchar       *csource;
     char        *layout, *script, *page, *err;
     ssize       len;
 
-    rx = conn->rx;
-    route = rx->route;
-    req = conn->data;
-    eroute = req->eroute;
+    eroute = route->eroute;
     layout = 0;
+    *errMsg = 0;
 
     if (isView) {
         if ((page = mprReadPathContents(source, &len)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot read %s", source);
+            *errMsg = sfmt("Cannot read %s", source);
             return 0;
         }
         /*
-            Use layouts iff there is a source defined on the route. Only MVC/controllers based apps do this.
+            Use layouts iff there is a source defined on the route. Only MVC/services based apps do this.
          */
         if (eroute->layoutsDir) {
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }
         if ((script = espBuildScript(route, page, source, cacheName, layout, NULL, &err)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot build %s, error %s", source, err);
+            *errMsg = sfmt("Cannot build %s, error %s", source, err);
             return 0;
         }
         csource = mprJoinPathExt(mprTrimPathExt(module), ".c");
+        mprMakeDir(mprGetPathDir(csource), 0775, 0, -1, 1);
         if ((fp = mprOpenFile(csource, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot open compiled script file %s", csource);
+            *errMsg = sfmt("Cannot open compiled script file %s", csource);
             return 0;
         }
         len = slen(script);
         if (mprWriteFile(fp, script, len) != len) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot write compiled script file %s", csource);
+            *errMsg = sfmt("Cannot write compiled script file %s", csource);
             mprCloseFile(fp);
             return 0;
         }
@@ -320,13 +322,29 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
     }
     mprMakeDir(eroute->cacheDir, 0775, -1, -1, 1);
 
+#if BIT_WIN_LIKE
+    {
+        /*
+            Force a clean windows compile by removing the object and pdb
+         */
+        cchar   *path;
+        path = mprReplacePathExt(module, "obj");
+        if (mprPathExists(path, F_OK)) {
+            mprDeletePath(path);
+        }
+        path = mprReplacePathExt(module, "pdb");
+        if (mprPathExists(path, F_OK)) {
+            mprDeletePath(path);
+        }
+    }
+#endif
     /* WARNING: GC yield here */
-    if (runCommand(conn, eroute->compile, csource, module) < 0) {
+    if (runCommand(eroute, dispatcher, eroute->compile, csource, module, errMsg) != 0) {
         return 0;
     }
     if (eroute->link) {
         /* WARNING: GC yield here */
-        if (runCommand(conn, eroute->link, csource, module) < 0) {
+        if (runCommand(eroute, dispatcher, eroute->link, csource, module, errMsg) != 0) {
             return 0;
         }
 #if !(BIT_DEBUG && MACOSX)
@@ -342,10 +360,10 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
             Windows leaves intermediate object in the current directory
             MOB - Could use -Fo to prevent this
          */
-        cchar   *obj;
-        obj = mprReplacePathExt(mprGetPathBase(csource), "obj");
-        if (mprPathExists(obj, F_OK)) {
-            mprDeletePath(obj);
+        cchar   *path;
+        path = mprReplacePathExt(mprGetPathBase(csource), "obj");
+        if (mprPathExists(path, F_OK)) {
+            mprDeletePath(path);
         }
     }
 #endif
@@ -353,6 +371,46 @@ PUBLIC bool espCompile(HttpConn *conn, cchar *source, cchar *module, cchar *cach
         mprDeletePath(csource);
     }
     return 1;
+}
+
+
+/* MOB - could this be merged with joinLine */
+static char *fixMultiStrings(cchar *str)
+{
+    cchar   *cp;
+    char    *buf, *bp;
+    ssize   len;
+    int     count, bquote, quoted;
+
+    for (count = 0, cp = str; *cp; cp++) {
+        if (*cp == '\n' || *cp == '"') {
+            count++;
+        }
+    }
+    len = slen(str);
+    if ((buf = mprAlloc(len + (count * 3) + 1)) == 0) {
+        return 0;
+    }
+    bquote = quoted = 0;
+    for (cp = str, bp = buf; *cp; cp++) {
+        if (*cp == '`') {
+            *bp++ = '"';
+            quoted = !quoted;
+        } else if (quoted) {
+            if (*cp == '\n') {
+                *bp++ = '\\';
+            } else if (*cp == '"') {
+                *bp++ = '\\';
+            } else if (*cp == '\\' && cp[1] != '\\') {
+                bquote++;
+            }
+            *bp++ = *cp;
+        } else {
+            *bp++ = *cp;
+        }
+    }
+    *bp = '\0';
+    return buf;
 }
 
 
@@ -396,6 +454,7 @@ static char *joinLine(cchar *str, ssize *lenp)
 /*
     Convert an ESP web page into C code
     Directives:
+        MOB - should support <@ .... @>
 
         <%@ include "file"  Include an esp file
         <%@ layout "file"   Specify a layout page to use. Use layout "" to disable layout management
@@ -471,12 +530,11 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                     mprPutToBuf(state->end, "%s  ", rest);
                 }
             } else {
-                mprPutStringToBuf(body, token);
+                mprPutStringToBuf(body, fixMultiStrings(token));
             }
             break;
 
         case ESP_TOK_CONTROL:
-            /* NOTE: layout parsing not supported */
             control = stok(token, " \t\r\n", &token);
             if (scmp(control, "content") == 0) {
                 mprPutStringToBuf(body, CONTENT_MARKER);
@@ -544,10 +602,11 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             }
             break;
 
+        //  MOB - DEPRECATED as we now don't have a current field
         case ESP_TOK_FIELD:
             /* @#field -- field in the current record */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-            mprPutToBuf(body, "  espRenderSafeString(conn, getField(\"%s\"));\n", token);
+            mprPutToBuf(body, "  espRenderSafeString(conn, getField(getRec(), \"%s\"));\n", token);
             break;
 
         case ESP_TOK_PARAM:
@@ -572,6 +631,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         }
         tid = getEspToken(&parse);
     }
+    mprAddNullToBuf(body);
 
     if (layout && mprPathExists(layout, R_OK)) {
         if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
@@ -592,7 +652,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         bodyCode = mprGetBufStart(body);
     }
     if (state == &top) {
-        path = mprGetRelPath(path, route->dir);
+        path = mprGetRelPath(path, route->documents);
         if (mprGetBufLength(state->start) > 0) {
             mprPutCharToBuf(state->start, '\n');
         }
@@ -601,7 +661,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         }
         bodyCode = sfmt(\
             "/*\n   Generated from %s\n */\n"\
-            "#include \"esp-app.h\"\n"\
+            "#include \"esp.h\"\n"\
             "%s\n"\
             "static void %s(HttpConn *conn) {\n"\
             "%s%s%s"\
@@ -918,7 +978,16 @@ static cchar *getLibs(cchar *os)
     if (smatch(os, "windows")) {
         libs = "\"${LIBPATH}\\libmod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\"";
     } else {
+#if LINUX
+        /* 
+            Fedora interprets $ORIGN relative to the shared library and not the application executable
+            So loading compiled apps fails to locate libmod_esp.so. 
+            Since building a shared library, can omit libs and resolve at load time.
+         */
+        libs = "";
+#else
         libs = "-lmod_esp -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
+#endif
     }
     return libs;
 }

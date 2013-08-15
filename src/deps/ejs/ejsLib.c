@@ -8640,9 +8640,6 @@ static int compileInner(EcCompiler *cp, int argc, char **argv)
             ejsUnblockGC(ejs, paused);
         }
     }
-    assert(ejs->result == 0 || (MPR_GET_GEN(MPR_GET_MEM(ejs->result)) != MPR->heap->dead));
-
-
     /*
         Allocate the eval frame stack. This is used for property lookups. We have one dummy block at the top always.
      */
@@ -8673,7 +8670,6 @@ static int compileInner(EcCompiler *cp, int argc, char **argv)
         }
     }
     ejsPopBlock(ejs);
-    assert(ejs->result == 0 || (MPR_GET_GEN(MPR_GET_MEM(ejs->result)) != MPR->heap->dead));
 
     /*
         Add compiled modules to the interpreter
@@ -8688,7 +8684,6 @@ static int compileInner(EcCompiler *cp, int argc, char **argv)
     if (!paused) {
         mprYield(0);
     }
-    assert(ejs->result == 0 || (MPR_GET_GEN(MPR_GET_MEM(ejs->result)) != MPR->heap->dead));
     return (cp->errorCount > 0) ? EJS_ERR: 0;
 }
 
@@ -8706,7 +8701,6 @@ PUBLIC int ejsInitCompiler(EjsService *service)
  */
 static EjsObj *loadScriptFile(Ejs *ejs, cchar *path, cchar *cache)
 {
-    MPR_VERIFY_MEM();
     if (ejsLoadScriptFile(ejs, path, cache, EC_FLAGS_NO_OUT | EC_FLAGS_DEBUG | EC_FLAGS_THROW) < 0) {
         return 0;
     }
@@ -8789,8 +8783,6 @@ PUBLIC int ejsLoadScriptLiteral(Ejs *ejs, EjsString *script, cchar *cache, int f
     }
     ecCloseStream(cp);
     mprRemoveRoot(cp);
-    MPR_VERIFY_MEM();
-    
     if (ejsRun(ejs) < 0) {
         return EJS_ERR;
     }
@@ -29027,10 +29019,10 @@ static int  flushByteArray(Ejs *ejs, EjsByteArray *ap);
 static ssize  getInput(Ejs *ejs, EjsByteArray *ap, ssize required);
 static int  lookupByteArrayProperty(Ejs *ejs, EjsByteArray *ap, EjsName qname);
 
-static MPR_INLINE int swap16(EjsByteArray *ap, int a);
-static MPR_INLINE int swap32(EjsByteArray *ap, int a);
-static MPR_INLINE int64 swap64(EjsByteArray *ap, int64 a);
-static MPR_INLINE double swapDouble(EjsByteArray *ap, double a);
+static BIT_INLINE int swap16(EjsByteArray *ap, int a);
+static BIT_INLINE int swap32(EjsByteArray *ap, int a);
+static BIT_INLINE int64 swap64(EjsByteArray *ap, int64 a);
+static BIT_INLINE double swapDouble(EjsByteArray *ap, double a);
 static int putByte(EjsByteArray *ap, int value);
 static int putInteger(EjsByteArray *ap, int value);
 static int putLong(EjsByteArray *ap, int64 value);
@@ -30188,7 +30180,7 @@ PUBLIC bool ejsMakeRoomInByteArray(Ejs *ejs, EjsByteArray *ap, ssize require)
 }
 
 
-static MPR_INLINE int swap16(EjsByteArray *ap, int a)
+static BIT_INLINE int swap16(EjsByteArray *ap, int a)
 {
     if (!ap->swap) {
         return a;
@@ -30197,7 +30189,7 @@ static MPR_INLINE int swap16(EjsByteArray *ap, int a)
 }
 
 
-static MPR_INLINE int swap32(EjsByteArray *ap, int a)
+static BIT_INLINE int swap32(EjsByteArray *ap, int a)
 {
     if (!ap->swap) {
         return a;
@@ -30206,7 +30198,7 @@ static MPR_INLINE int swap32(EjsByteArray *ap, int a)
 }
 
 
-static MPR_INLINE int64 swap64(EjsByteArray *ap, int64 a)
+static BIT_INLINE int64 swap64(EjsByteArray *ap, int64 a)
 {
     int64   low, high;
 
@@ -30220,7 +30212,7 @@ static MPR_INLINE int64 swap64(EjsByteArray *ap, int64 a)
 }
 
 
-static MPR_INLINE double swapDouble(EjsByteArray *ap, double a)
+static BIT_INLINE double swapDouble(EjsByteArray *ap, double a)
 {
     int64   low, high;
 
@@ -31270,6 +31262,7 @@ static void manageEjsCmd(EjsCmd *cmd, int flags)
         mprMark(cmd->options);
         mprMark(cmd->error);
         mprMark(cmd->argv);
+        mprMark(cmd->ejs);
 
     } else {
         if (cmd->mc) {
@@ -34934,7 +34927,7 @@ static EjsObj *gc_run(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
  */
 static EjsNumber *gc_newQuota(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
 {
-    return ejsCreateNumber(ejs, mprGetMpr()->heap->newQuota);
+    return ejsCreateNumber(ejs, mprGetMpr()->heap->workQuota);
 }
 
 
@@ -34952,7 +34945,7 @@ static EjsObj *gc_set_newQuota(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **arg
         ejsThrowArgError(ejs, "Bad work quota. Must be > 1024");
         return 0;
     }
-    mprGetMpr()->heap->newQuota = quota;
+    mprGetMpr()->heap->workQuota = quota;
     return 0;
 }
 
@@ -34962,7 +34955,7 @@ static EjsObj *gc_set_newQuota(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **arg
  */
 static EjsObj *gc_verify(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
 {
-    mprVerifyMem();
+    //  UNUSED - not supported
     return 0;
 }
 
@@ -35335,7 +35328,6 @@ PUBLIC int ejsBlendObject(Ejs *ejs, EjsObj *dest, EjsObj *src, int flags)
             } else {
                 /* Assign */
                 ejsSetPropertyByName(ejs, dest, trimmedName, vp);
-                
             }
 
         } else {
@@ -35605,9 +35597,6 @@ static EjsHttp *httpConstructor(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
     hp->method = sclone("GET");
     hp->requestContent = mprCreateBuf(BIT_MAX_BUFFER, -1);
     hp->responseContent = mprCreateBuf(BIT_MAX_BUFFER, -1);
-#if UNUSED
-    hp->caFile = mprJoinPath(mprGetAppDir(), "http-ca.crt");
-#endif
     return hp;
 }
 
@@ -36073,11 +36062,10 @@ static EjsHttp *http_on(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
     if (conn->readq && conn->readq->count > 0) {
         ejsSendEvent(ejs, hp->emitter, "readable", NULL, hp);
     }
-    //  MOB - don't need to test finalizedConnector
-    if (!conn->tx->finalizedConnector && 
-            !conn->error && HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_FINALIZED &&
-            conn->writeq->ioCount == 0) {
-        ejsSendEvent(ejs, hp->emitter, "writable", NULL, hp);
+    //  TODO - don't need to test finalizedConnector
+    if (!conn->tx->finalizedConnector && !conn->error && HTTP_STATE_CONNECTED <= conn->state && 
+            conn->state < HTTP_STATE_FINALIZED && conn->writeq->ioCount == 0) {
+        httpNotify(conn, HTTP_EVENT_WRITABLE, 0);
     }
     return hp;
 }
@@ -36102,7 +36090,7 @@ static EjsString *http_provider(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
     if (hp->ssl && hp->ssl->provider) {
         name = hp->ssl->provider->name;
     } else {
-        name = MPR->socketService->defaultProvider;
+        name = MPR->socketService->sslProvider;
     }
     return ejsCreateStringFromAsc(ejs, name);
 }
@@ -36654,12 +36642,6 @@ static EjsHttp *startHttpRequest(Ejs *ejs, EjsHttp *hp, char *method, int argc, 
         }
         mprSetSslKeyFile(hp->ssl, hp->keyFile);
     }
-#if UNUSED
-    if (!hp->caFile) {
-        //MOB - Some define for this.
-        hp->caFile = mprJoinPath(mprGetAppDir(), "http-ca.crt");
-    }
-#endif
     if (hp->caFile) {
         if (!hp->ssl) {
             hp->ssl = mprCreateSsl(0);
@@ -36683,7 +36665,7 @@ static EjsHttp *startHttpRequest(Ejs *ejs, EjsHttp *hp, char *method, int argc, 
         }
         httpFinalize(conn);
     }
-    ejsSendEvent(ejs, hp->emitter, "writable", NULL, hp);
+    httpNotify(conn, HTTP_EVENT_WRITABLE, 0);
     if (conn->async) {
         httpEnableConnEvents(hp->conn);
     }
@@ -36695,9 +36677,12 @@ static void httpEventChange(HttpConn *conn, int event, int arg)
 {
     Ejs         *ejs;
     EjsHttp     *hp;
+    HttpTx      *tx;
+    ssize       lastWritten;
 
     hp = httpGetConnContext(conn);
     ejs = hp->ejs;
+    tx = conn->tx;
 
     switch (event) {
     case HTTP_EVENT_STATE:
@@ -36727,7 +36712,10 @@ static void httpEventChange(HttpConn *conn, int event, int arg)
 
     case HTTP_EVENT_WRITABLE:
         if (hp && hp->emitter) {
-            ejsSendEvent(ejs, hp->emitter, "writable", NULL, hp);
+            do {
+                lastWritten = tx->bytesWritten;
+                ejsSendEvent(ejs, hp->emitter, "writable", NULL, hp);
+            } while (tx->bytesWritten > lastWritten && !tx->writeBlocked);
         }
         break;
     }
@@ -36996,8 +36984,7 @@ static bool waitForState(EjsHttp *hp, int state, MprTicks timeout, int throw)
     success = count = 0;
     mark = mprGetTicks();
     remaining = timeout;
-    while (conn->state < state && count <= conn->retries && redirectCount < 16 && !conn->error && !ejs->exiting && 
-            !mprIsStopping(conn)) {
+    while (conn->state < state && count <= conn->retries && redirectCount < 16 && !conn->error && !ejs->exiting && !mprIsStopping(conn)) {
         count++;
         if ((rc = httpWait(conn, HTTP_STATE_PARSED, remaining)) == 0) {
             if (httpNeedRetry(conn, &url)) {
@@ -37014,13 +37001,13 @@ static bool waitForState(EjsHttp *hp, int state, MprTicks timeout, int throw)
             }
         } else {
             if (rc == MPR_ERR_CANT_CONNECT) {
-                httpFormatError(conn, HTTP_CODE_COMMS_ERROR, "Connection error");
+                httpError(conn, HTTP_CODE_COMMS_ERROR, "Connection error");
             } else if (rc == MPR_ERR_TIMEOUT) {
                 if (timeout > 0) {
-                    httpFormatError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Request timed out");
+                    httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Request timed out");
                 }
             } else {
-                httpFormatError(conn, HTTP_CODE_NO_RESPONSE, "Client request error");
+                httpError(conn, HTTP_CODE_NO_RESPONSE, "Client request error");
             }
             /* Retry */
         }
@@ -37103,9 +37090,10 @@ PUBLIC void ejsGetHttpLimits(Ejs *ejs, EjsObj *obj, HttpLimits *limits, bool ser
 
     if (server) {
         ejsSetPropertyByName(ejs, obj, EN("clients"), ejsCreateNumber(ejs, (MprNumber) limits->clientMax));
+        ejsSetPropertyByName(ejs, obj, EN("connections"), ejsCreateNumber(ejs, (MprNumber) limits->connectionsMax));
         ejsSetPropertyByName(ejs, obj, EN("header"), ejsCreateNumber(ejs, (MprNumber) limits->headerSize));
         ejsSetPropertyByName(ejs, obj, EN("headers"), ejsCreateNumber(ejs, (MprNumber) limits->headerMax));
-        ejsSetPropertyByName(ejs, obj, EN("requests"), ejsCreateNumber(ejs, (MprNumber) limits->requestMax));
+        ejsSetPropertyByName(ejs, obj, EN("requests"), ejsCreateNumber(ejs, (MprNumber) limits->requestsPerClientMax));
         ejsSetPropertyByName(ejs, obj, EN("stageBuffer"), ejsCreateNumber(ejs, (MprNumber) limits->bufferSize));
         ejsSetPropertyByName(ejs, obj, EN("uri"), ejsCreateNumber(ejs, (MprNumber) limits->uriSize));
     }
@@ -37149,7 +37137,8 @@ PUBLIC void ejsSetHttpLimits(Ejs *ejs, HttpLimits *limits, EjsObj *obj, bool ser
     if (server) {
         limits->bufferSize = (ssize) setLimit(ejs, obj, "stageBuffer", 1);
         limits->clientMax = (int) setLimit(ejs, obj, "clients", 1);
-        limits->requestMax = (int) setLimit(ejs, obj, "requests", 1);
+        limits->connectionsMax = (int) setLimit(ejs, obj, "connections", 1);
+        limits->requestsPerClientMax = (int) setLimit(ejs, obj, "requests", 1);
         limits->uriSize = (ssize) setLimit(ejs, obj, "uri", 1);
         limits->headerMax = (int) setLimit(ejs, obj, "headers", 1);
         limits->headerSize = (ssize) setLimit(ejs, obj, "header", 1);
@@ -39135,7 +39124,7 @@ static EjsNumber *getMaxMemory(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **arg
     MprMemStats    *mem;
 
     mem = mprGetMemStats(ejs);
-    return ejsCreateNumber(ejs, (MprNumber) mem->maxMemory);
+    return ejsCreateNumber(ejs, (MprNumber) mem->maxHeap);
 }
 
 
@@ -39144,12 +39133,12 @@ static EjsNumber *getMaxMemory(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **arg
  */
 static EjsObj *setMaxMemory(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
 {
-    int     maxMemory;
+    int     maxHeap;
 
     assert(argc == 1 && ejsIs(ejs, argv[0], Number));
 
-    maxMemory = ejsGetInt(ejs, argv[0]);
-    mprSetMemLimits(-1, maxMemory);
+    maxHeap = ejsGetInt(ejs, argv[0]);
+    mprSetMemLimits(-1, maxHeap, -1);
     return 0;
 }
 
@@ -39162,7 +39151,7 @@ static EjsNumber *getRedline(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
     MprMemStats    *mem;
 
     mem = mprGetMemStats(ejs);
-    return ejsCreateNumber(ejs, (MprNumber) mem->redLine);
+    return ejsCreateNumber(ejs, (MprNumber) mem->warnHeap);
 }
 
 
@@ -39180,7 +39169,7 @@ static EjsObj *setRedline(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
         //  TODO - 64 bit
         redline = MAXINT;
     }
-    mprSetMemLimits(redline, -1);
+    mprSetMemLimits(redline, -1, -1);
     return 0;
 }
 
@@ -42072,7 +42061,7 @@ PUBLIC EjsArray *ejsGetPathFiles(Ejs *ejs, EjsPath *fp, int argc, EjsObj **argv)
 
     if (argc == 0) {
         patterns = ejsCreateArray(ejs, 0);
-        ejsAddItem(ejs, patterns, ejsCreateString(ejs, "**", -1));
+        ejsAddItem(ejs, patterns, ejsCreateString(ejs, "*", -1));
     } else if (!ejsIs(ejs, argv[0], Array)) {
         patterns = ejsCreateArray(ejs, 0);
         ejsAddItem(ejs, patterns, ejsToString(ejs, argv[0]));
@@ -45094,7 +45083,7 @@ static EjsObj *sock_listen(Ejs *ejs, EjsSocket *sp, int argc, EjsObj **argv)
         ejsThrowStateError(ejs, "Socket is closed");
         return 0;
     }
-    if (mprListenOnSocket(sp->sock, sp->address, sp->port, 0) < 0) {
+    if (mprListenOnSocket(sp->sock, sp->address, sp->port, 0) == SOCKET_ERROR) {
         ejsThrowArgError(ejs, "Cannot open listening socket");
         return 0;
     }
@@ -47744,6 +47733,16 @@ PUBLIC EjsString *ejsTruncateString(Ejs *ejs, EjsString *sp, ssize len)
 
 
 /*********************************** Interning *********************************/
+
+static void revive(EjsString *sp)
+{
+    MprMem  *mp;
+
+    mp = (MprMem*) MPR_GET_MEM(sp);
+    mp->mark = MPR->heap->mark;
+}
+
+
 /*
     Intern a unicode string. Lookup a string and return an interned string (this may be an existing interned string)
  */
@@ -47758,17 +47757,17 @@ PUBLIC EjsString *ejsInternString(EjsString *str)
     step = 0;
 
     lock(ip);
-    //  MOB - accesses should be debug only
     ip->accesses++;
     index = whash(str->value, str->length) % ip->size;
     if ((head = &ip->buckets[index]) != NULL) {
         for (sp = head->next; sp != head; sp = sp->next, step++) {
             if (str == sp) {
-                mprRevive(sp);
+                revive(sp);
                 unlock(ip);
                 return sp;
             }
             if (sp->length == str->length) {
+                //  TODO but they are the same?
                 len = min(sp->length, str->length);
                 //  OPT
                 for (i = 0; i < len; i++) {
@@ -47777,10 +47776,8 @@ PUBLIC EjsString *ejsInternString(EjsString *str)
                     }
                 }
                 if (i == sp->length && i == str->length) {
-                    //  MOB - reuse should be debug only
                     ip->reuse++;
-                    /* Revive incase almost stale or dead */
-                    mprRevive(sp);
+                    revive(sp);
                     unlock(ip);
                     return sp;
                 }
@@ -47820,6 +47817,7 @@ PUBLIC EjsString *ejsInternWide(Ejs *ejs, wchar *value, ssize len)
     index = whash(value, len) % ip->size;
     if ((head = &ip->buckets[index]) != NULL) {
         for (sp = head->next; sp != head; sp = sp->next, step++) {
+            //  TODO - why not compare sp->value with value?
             if (sp->length == len) {
                 end = min(sp->length, len);
                 for (i = 0; i < end && value[i]; i++) {
@@ -47828,10 +47826,8 @@ PUBLIC EjsString *ejsInternWide(Ejs *ejs, wchar *value, ssize len)
                     }
                 }
                 if (i == sp->length) {
-                    //  MOB - reuse should be debug only
                     ip->reuse++;
-                    /* Revive incase almost stale or dead */
-                    mprRevive(sp);
+                    revive(sp);
                     unlock(ip);
                     return sp;
                 }
@@ -47868,7 +47864,6 @@ PUBLIC EjsString *ejsInternAsc(Ejs *ejs, cchar *value, ssize len)
     ip = ejs->service->intern;
 
     lock(ip);
-    //  MOB - accesses should be debug only
     ip->accesses++;
     assert(ip->size > 0);
     index = shash(value, len) % ip->size;
@@ -47882,10 +47877,8 @@ PUBLIC EjsString *ejsInternAsc(Ejs *ejs, cchar *value, ssize len)
                     }
                 }
                 if (i == sp->length) {
-                    //  MOB - reuse should be debug only
                     ip->reuse++;
-                    /* Revive incase almost stale or dead */
-                    mprRevive(sp);
+                    revive(sp);
                     unlock(ip);
                     return sp;
                 }
@@ -47944,7 +47937,6 @@ PUBLIC EjsString *ejsInternMulti(Ejs *ejs, cchar *value, ssize len)
         value = src->value;
     }
     lock(ip);
-    //  MOB - accesses should be debug only
     ip->accesses++;
     index = whash(value, len) % ip->size;
     if ((head = &ip->buckets[index]) != NULL) {
@@ -47956,10 +47948,8 @@ PUBLIC EjsString *ejsInternMulti(Ejs *ejs, cchar *value, ssize len)
                 }
             }
             if (i == sp->length && value[i] == 0) {
-                //  MOB - reuse should be debug only
                 ip->reuse++;
-                /* Revive incase almost stale or dead */
-                mprRevive(sp);
+                revive(sp);
                 unlock(ip);
                 return sp;
             }
@@ -48003,7 +47993,7 @@ static int rebuildIntern(EjsIntern *ip)
     oldSize = 0;
     if (oldBuckets) {
         oldSize = ip->size;
-        if (oldSize > newSize) {
+        if (oldSize >= newSize) {
             return 0;
         }
     }
@@ -48144,15 +48134,24 @@ PUBLIC EjsString *ejsCreateNonInternedString(Ejs *ejs, wchar *value, ssize len)
 PUBLIC void ejsManageString(EjsString *sp, int flags)
 {
     EjsIntern   *ip;
+    MprMem      *mp;
 
     if (flags & MPR_MANAGE_MARK) {
         mprMark(TYPE(sp));
 
     } else if (flags & MPR_MANAGE_FREE) {
         ip = ((EjsService*) MPR->ejsService)->intern;
+        mp = MPR_GET_MEM(sp);
+        /*
+            Other threads race with this if doing parallel GC (the default). The revive() routine may have 
+            marked the string, so test here if it has been revived and only free if not.
+            OPT - better to be lock free and try lock. If failed, GC will get next time
+         */
         lock(ip);
-        ip->count--;
-        unlinkString(sp);
+        if (mp->mark != MPR->heap->mark) {
+            ip->count--;
+            unlinkString(sp);
+        }
         unlock(ip);
     }
 }
@@ -51243,15 +51242,17 @@ PUBLIC void ejsConfigureVoidType(Ejs *ejs)
 
 /**
     ejsWebSocket.c - WebSocket class
+
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 /********************************** Includes **********************************/
 
 
 
+#if BIT_HTTP_WEB_SOCKETS
 /*********************************** Forwards *********************************/
 
-static void onWebSocketEvent(EjsWebSocket *ws, int event, EjsAny *data);
+static void onWebSocketEvent(EjsWebSocket *ws, int event, EjsAny *data, HttpPacket *packet);
 static EjsObj *startWebSocketRequest(Ejs *ejs, EjsWebSocket *ws);
 static bool waitForHttpState(EjsWebSocket *ws, int state, MprTicks timeout, int throw);
 static bool waitForReadyState(EjsWebSocket *ws, int state, MprTicks timeout, int throw);
@@ -51283,6 +51284,8 @@ static EjsWebSocket *wsConstructor(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj 
             ws->protocols = sclone((ejsToString(ejs, argv[1]))->value);
         } else if (ejsIs(ejs, argv[1], String)) {
             ws->protocols = sclone(((EjsString*) argv[1])->value);
+        } else {
+            ws->protocols = sclone("chat");
         }
     } else {
         ws->protocols = sclone("chat");
@@ -51292,6 +51295,7 @@ static EjsWebSocket *wsConstructor(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj 
         return 0;
     }
     if (argc >= 3) {
+        ws->frames = ejsGetPropertyByName(ejs, argv[2], EN("frames")) == ESV(true);
         verify = ejsGetPropertyByName(ejs, argv[2], EN("verify")) == ESV(true);
         if ((certificate = ejsGetPropertyByName(ejs, argv[2], EN("certificate"))) != 0) {
             ws->certFile = ejsToMulti(ejs, argv[0]);
@@ -51407,13 +51411,14 @@ static EjsWebSocket *ws_on(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **argv)
 
     conn = ws->conn;
     if (conn->readq && conn->readq->count > 0) {
-        onWebSocketEvent(ws, HTTP_EVENT_READABLE, 0);
+        //  MOB - can't have NULL as data
+        onWebSocketEvent(ws, HTTP_EVENT_READABLE, 0, 0);
     }
     //  MOB - don't need to test finalizedConnector
     if (!conn->tx->finalizedConnector && 
             !conn->error && HTTP_STATE_CONNECTED <= conn->state && conn->state < HTTP_STATE_FINALIZED &&
             conn->writeq->ioCount == 0) {
-        onWebSocketEvent(ws, HTTP_EVENT_WRITABLE, 0);
+        onWebSocketEvent(ws, HTTP_EVENT_WRITABLE, 0, 0);
     }
     return ws;
 }
@@ -51466,6 +51471,52 @@ static EjsString *ws_send(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **argv)
                 return 0;
             }
         }
+    }
+    return 0;
+}
+
+
+/*  
+    function sendBlock(content, options): Void
+ */
+static EjsString *ws_sendBlock(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **argv)
+{
+    EjsByteArray    *ba;
+    EjsAny          *content, *vp;
+    ssize           nbytes;
+    cchar           *str;
+    int             more, type, flags;
+
+    assert(argc == 2);
+
+    if (ws->conn->state < HTTP_STATE_PARSED && !waitForHttpState(ws, HTTP_STATE_PARSED, -1, 1)) {
+        return 0;
+    }
+    content = argv[0];
+    more = ejsGetPropertyByName(ejs, argv[1], EN("more")) == ESV(true);
+    if ((vp = ejsGetPropertyByName(ejs, argv[1], EN("type"))) != 0) {
+        type = (int) ejsGetNumber(ejs, vp);
+        if (type != WS_MSG_CONT && type != WS_MSG_TEXT && type != WS_MSG_BINARY) {
+            ejsThrowArgError(ejs, "Bad message type");
+            return 0;
+        }
+    } else {
+        type = WS_MSG_TEXT;
+    }
+    flags = HTTP_BLOCK;
+    if (more) {
+        flags |= HTTP_MORE;
+    }
+    if (ejsIs(ejs, content, ByteArray)) {
+        ba = (EjsByteArray*) content;
+        nbytes = ejsGetByteArrayAvailableData(ba);
+        nbytes = httpSendBlock(ws->conn, type, (cchar*) &ba->value[ba->readPosition], nbytes, flags);
+    } else {
+        str = ejsToMulti(ejs, content);
+        nbytes = httpSendBlock(ws->conn, type, str, slen(str), flags);
+    }
+    if (nbytes < 0) {
+        return 0;
     }
     return 0;
 }
@@ -51524,7 +51575,7 @@ static EjsObj *startWebSocketRequest(Ejs *ejs, EjsWebSocket *ws)
 }
 
 
-static void onWebSocketEvent(EjsWebSocket *ws, int event, EjsAny *data)
+static void onWebSocketEvent(EjsWebSocket *ws, int event, EjsAny *data, HttpPacket *packet)
 {
     Ejs             *ejs;
     EjsAny          *eobj;
@@ -51545,6 +51596,8 @@ static void onWebSocketEvent(EjsWebSocket *ws, int event, EjsAny *data)
         eventName = "readable";
         assert(data);
         ejsSetPropertyByName(ejs, eobj, EN("data"), data);
+        ejsSetPropertyByName(ejs, eobj, EN("last"), ejsCreateBoolean(ejs, packet->last));
+        ejsSetPropertyByName(ejs, eobj, EN("type"), ejsCreateNumber(ejs, packet->type));
         break;
 
     case HTTP_EVENT_ERROR:
@@ -51555,6 +51608,9 @@ static void onWebSocketEvent(EjsWebSocket *ws, int event, EjsAny *data)
     case HTTP_EVENT_APP_OPEN:
         slot = ES_WebSocket_onopen;
         eventName = "headers";
+        if (rx->webSocket) {
+            httpSetWebSocketPreserveFrames(ws->conn, ws->frames);
+        }
         break;
 
     case HTTP_EVENT_DESTROY:
@@ -51611,16 +51667,14 @@ static void webSocketNotify(HttpConn *conn, int event, int arg)
     case HTTP_EVENT_STATE:
         if (arg == HTTP_STATE_CONTENT) {
             ws->protocol = (char*) httpGetHeader(conn, "Sec-WebSocket-Protocol");
-            mprTrace(4, "Web socket protocol %s", ws->protocol);
-            onWebSocketEvent(ws, HTTP_EVENT_APP_OPEN, 0);
+            mprTrace(3, "Web socket protocol %s", ws->protocol);
+            onWebSocketEvent(ws, HTTP_EVENT_APP_OPEN, 0, 0);
         }
         break;
     
     case HTTP_EVENT_READABLE:
-        /* Called once per packet unless packet is too large (LimitWebSocketPacket) */
         packet = httpGetPacket(conn->readq);
         content = packet->content;
-        mprTrace(4, "webSocketNotify: READABLE event format %s\n", packet->type == WS_MSG_TEXT ? "text" : "binary");
         if (packet->type == WS_MSG_TEXT) {
             data = ejsCreateStringFromBytes(ejs, mprGetBufStart(content), mprGetBufLength(content));
         } else {
@@ -51633,22 +51687,22 @@ static void webSocketNotify(HttpConn *conn, int event, int arg)
             ejsSetByteArrayPositions(ejs, ba, -1, len);
             data = ba;
         }
-        onWebSocketEvent(ws, event, data);
+        onWebSocketEvent(ws, event, data, packet);
         break;
 
     case HTTP_EVENT_ERROR:
         if (!ws->error && !ws->closed) {
             ws->error = 1;
-            onWebSocketEvent(ws, event, 0);
+            onWebSocketEvent(ws, event, 0, 0);
             ws->closed = 1;
-            onWebSocketEvent(ws, HTTP_EVENT_APP_CLOSE, 0);
+            onWebSocketEvent(ws, HTTP_EVENT_APP_CLOSE, 0, 0);
         }
         break;
 
     case HTTP_EVENT_APP_CLOSE:
         if (!ws->closed) {
             ws->closed = 1;
-            onWebSocketEvent(ws, event, 0);
+            onWebSocketEvent(ws, event, 0, 0);
         }
         break;
     }
@@ -51704,13 +51758,13 @@ static bool waitForHttpState(EjsWebSocket *ws, int state, MprTicks timeout, int 
             }
         } else {
             if (rc == MPR_ERR_CANT_CONNECT) {
-                httpFormatError(conn, HTTP_CODE_COMMS_ERROR, "Connection error");
+                httpError(conn, HTTP_CODE_COMMS_ERROR, "Connection error");
             } else if (rc == MPR_ERR_TIMEOUT) {
                 if (timeout > 0) {
-                    httpFormatError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Request timed out");
+                    httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, "Request timed out");
                 }
             } else {
-                httpFormatError(conn, HTTP_CODE_NO_RESPONSE, "Client request error");
+                httpError(conn, HTTP_CODE_NO_RESPONSE, "Client request error");
             }
             break;
         }
@@ -51838,9 +51892,11 @@ PUBLIC void ejsConfigureWebSocketType(Ejs *ejs)
     ejsBindMethod(ejs, prototype, ES_WebSocket_protocol, ws_protocol);
     ejsBindMethod(ejs, prototype, ES_WebSocket_readyState, ws_readyState);
     ejsBindMethod(ejs, prototype, ES_WebSocket_send, ws_send);
+    ejsBindMethod(ejs, prototype, ES_WebSocket_sendBlock, ws_sendBlock);
     ejsBindMethod(ejs, prototype, ES_WebSocket_url, ws_url);
     ejsBindMethod(ejs, prototype, ES_WebSocket_wait, ws_wait);
 }
+#endif /* BIT_HTTP_WEB_SOCKETS */
 
 /*
     @copy   default
@@ -51945,7 +52001,9 @@ static EjsWorker *initWorker(Ejs *ejs, EjsWorker *worker, Ejs *baseVM, cchar *na
     self->inside = 1;
     self->pair = worker;
     self->name = sjoin("inside-", worker->name, NULL);
+#if MOB
     mprEnableDispatcher(wejs->dispatcher);
+#endif
     if (search) {
         ejsSetSearchPath(ejs, (EjsArray*) search);
     }
@@ -51985,8 +52043,8 @@ static EjsWorker *workerConstructor(Ejs *ejs, EjsWorker *worker, int argc, EjsOb
 
     ejsBlockGC(ejs);
 
-    scriptFile = (argc >= 1) ? ((EjsPath*) argv[0])->value : 0;
-    options = (argc == 2) ? (EjsObj*) argv[1]: NULL;
+    scriptFile = (argc >= 1 && argv[0] != ESV(null)) ? ((EjsPath*) argv[0])->value : 0;
+    options = (argc == 2 && argv[1] != ESV(null)) ? (EjsObj*) argv[1]: NULL;
     name = 0;
     search = 0;
     if (options) {
@@ -52228,8 +52286,6 @@ static int join(Ejs *ejs, EjsObj *workers, int timeout)
             break;
         }
         mprWaitForEvent(ejs->dispatcher, remaining);
-        assert(ejs->dispatcher->magic == MPR_DISPATCHER_MAGIC);
-
         remaining = (int) mprGetRemainingTicks(mark, timeout);
     } while (remaining > 0 && !ejs->exception);
 
@@ -52336,6 +52392,8 @@ static int doMessage(Message *msg, MprEvent *mprEvent)
     worker = msg->worker;
     worker->gotMessage = 1;
     ejs = worker->ejs;
+    assert(!ejs->exception);
+
     event = 0;
     ejsBlockGC(ejs);
 
@@ -52369,6 +52427,8 @@ static int doMessage(Message *msg, MprEvent *mprEvent)
             ejsSetProperty(ejs, event, ES_ErrorEvent_lineno, ejsGetPropertyByName(ejs, frame, EN("lineno")));
         }
     }
+    assert(!ejs->exception);
+
     if (callback == 0 || ejsIs(ejs, callback, Null)) {
         if (msg->callbackSlot == ES_Worker_onmessage) {
             mprTrace(6, "Discard message as no onmessage handler defined for worker");
@@ -52387,6 +52447,7 @@ static int doMessage(Message *msg, MprEvent *mprEvent)
         ejsThrowTypeError(ejs, "Worker callback %s is not a function", msg->callback);
 
     } else {
+        assert(!ejs->exception);
         argv[0] = event;
         ejsRunFunction(ejs, callback, worker, 1, argv);
     }
@@ -64707,8 +64768,6 @@ void ZLIB_INTERNAL zcfree (opaque, ptr)
     Map allocation and mutex routines to use ejscript version.
  */
 #define MAP_ALLOC   1
-
-//  MOB - 
 #define MAP_MUTEXES 0
 
 #define THREAD_STYLE SQLITE_CONFIG_MULTITHREAD
@@ -64878,7 +64937,6 @@ static EjsObj *sqliteSql(Ejs *ejs, EjsSqlite *db, int argc, EjsObj **argv)
                         /*
                             Append the table name for columns from foreign tables. Convert to camel case (tableColumn)
                             Prefix with "_". ie. "_TableColumn"
-                            MOB - remove singularization.
                          */
                         len = (int) strlen(tableName) + 1;
                         tableName = sjoin("_", tableName, colName, NULL);
@@ -64922,7 +64980,9 @@ static EjsObj *sqliteSql(Ejs *ejs, EjsSqlite *db, int argc, EjsObj **argv)
     }
     if (rc != SQLITE_OK) {
         if (rc == sqlite3_errcode(sdb)) {
-            ejsThrowIOError(ejs, "SQL error: %s", sqlite3_errmsg(sdb));
+            return sqliteSql(ejs, db,  argc, argv);
+
+            // ejsThrowIOError(ejs, "SQL error: %s", sqlite3_errmsg(sdb));
         } else {
             ejsThrowIOError(ejs, "Unspecified SQL error");
         }
@@ -64935,41 +64995,29 @@ static EjsObj *sqliteSql(Ejs *ejs, EjsSqlite *db, int argc, EjsObj **argv)
 /*********************************** Alloc ********************************/
 #if MAP_ALLOC
 /*
-    Map memory allocations to use MPR
+    Map memory allocations to use MPR permanent allocations
  */
 static void *allocBlock(int size)
 {
-    void    *ptr;
-
-    //  MOB - replace with palloc
-    if ((ptr = mprAlloc(size)) != 0) {
-        mprHold(ptr);
-    }
-    return ptr;
+    return palloc(size);
 }
 
 
 static void freeBlock(void *ptr)
 {
-    //  MOB - replace with pfree
-    mprRelease(ptr);
+    pfree(ptr);
 }
 
 
 static void *reallocBlock(void *ptr, int size)
 {
-    //  MOB - prealloc
-    mprRelease(ptr);
-    if ((ptr =  mprRealloc(ptr, size)) != 0) {
-        mprHold(ptr);
-    }
-    return ptr;
+    return prealloc(ptr, size);
 }
 
 
 static int blockSize(void *ptr)
 {
-    return (int) mprGetBlockSize(ptr);
+    return (int) psize(ptr);
 }
 
 
@@ -65002,8 +65050,6 @@ struct sqlite3_mem_methods mem = {
     Map mutexes to use MPR
  */
 
-int mutc = 0;
-
 static int initMutex(void) { 
     return 0; 
 }
@@ -65014,14 +65060,12 @@ static int termMutex(void) {
 }
 
 
-//  MOB - incomplete must handle kind
 static sqlite3_mutex *allocMutex(int kind)
 {
     MprMutex    *lock;
 
     if ((lock = mprCreateLock()) != 0) {
         mprHold(lock);
-        mutc++;
     }
     return (sqlite3_mutex*) lock;
 }
@@ -65029,7 +65073,6 @@ static sqlite3_mutex *allocMutex(int kind)
 
 static void freeMutex(sqlite3_mutex *mutex)
 {
-    mutc--;
     mprRelease((MprMutex*) mutex);
 }
 
@@ -65120,20 +65163,6 @@ static int configureSqliteTypes(Ejs *ejs)
     ejsBindConstructor(ejs, type, sqliteConstructor);
     ejsBindMethod(ejs, prototype, ES_ejs_db_sqlite_Sqlite_close, sqliteClose);
     ejsBindMethod(ejs, prototype, ES_ejs_db_sqlite_Sqlite_sql, sqliteSql);
-
-#if UNUSED
-#if MAP_ALLOC
-    sqlite3_config(SQLITE_CONFIG_MALLOC, &mem);
-#endif
-#if MAP_MUTEXES
-    sqlite3_config(SQLITE_CONFIG_MUTEX, &mut);
-#endif
-    sqlite3_config(THREAD_STYLE);
-    if (sqlite3_initialize() != SQLITE_OK) {
-        mprError("Cannot initialize SQLite");
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-#endif
     return 0;
 }
 
@@ -65215,11 +65244,17 @@ static EjsString *hs_address(Ejs *ejs, EjsHttpServer *sp, int argc, EjsObj **arg
  */
 static EjsRequest *hs_accept(Ejs *ejs, EjsHttpServer *sp, int argc, EjsObj **argv)
 {
+    MprSocket   *sock;
     HttpConn    *conn;
     MprEvent    event;
 
+    if ((sock = mprAcceptSocket(sp->endpoint->sock)) == 0) {
+        /* Just ignore */
+        return 0;
+    }
     memset(&event, 0, sizeof(MprEvent));
     event.dispatcher = sp->endpoint->dispatcher;
+    event.sock = sock;
     if ((conn = httpAcceptConn(sp->endpoint, &event)) == 0) {
         /* Just ignore */
         mprError("Cannot accept connection");
@@ -65405,12 +65440,12 @@ static EjsVoid *hs_listen(Ejs *ejs, EjsHttpServer *sp, int argc, EjsObj **argv)
         httpSetHostIpAddr(host, sp->ip, sp->port);
 
         route = httpCreateConfiguredRoute(host, 1);
+        httpAddRouteMethods(route, "DELETE, HEAD, OPTIONS, PUT");
         httpSetRouteName(route, "default");
         httpAddRouteHandler(route, "ejsHandler", "");
         httpSetRouteTarget(route, "run", 0);
         httpFinalizeRoute(route);
         httpSetHostDefaultRoute(host, route);
-
         httpAddHostToEndpoint(endpoint, host);
 
         if (sp->limits) {
@@ -65435,7 +65470,7 @@ static EjsVoid *hs_listen(Ejs *ejs, EjsHttpServer *sp, int argc, EjsObj **argv)
          */
         documents = ejsGetProperty(ejs, sp, ES_ejs_web_HttpServer_documents);
         if (ejsIs(ejs, documents, Path)) {
-            httpSetRouteDir(route, documents->value);
+            httpSetRouteDocuments(route, documents->value);
         }
 #if KEEP
         //  MOB -- what to do with home?
@@ -68735,7 +68770,7 @@ EjsError *ejsThrowMemoryError(Ejs *ejs)
         Don't do double exceptions for memory errors
      */
     if (ejs->exception == 0) {
-        va_list dummy = NULL_INIT;
+        static va_list dummy;
         return ejsCreateException(ejs, ES_MemoryError, "Memory Error", dummy);
     }
     return (EjsError*) ejs->exception;
@@ -70073,7 +70108,7 @@ void ejsMarkName(EjsName *qname)
 
 static void callFunction(Ejs *ejs, EjsFunction *fun, EjsAny *thisObj, int argc, int stackAdjust);
 
-static MPR_INLINE void getPropertyFromSlot(Ejs *ejs, EjsAny *thisObj, EjsAny *obj, int slotNum) 
+static BIT_INLINE void getPropertyFromSlot(Ejs *ejs, EjsAny *thisObj, EjsAny *obj, int slotNum) 
 {
     EjsFunction     *fun, *value;
 
@@ -70102,7 +70137,7 @@ static MPR_INLINE void getPropertyFromSlot(Ejs *ejs, EjsAny *thisObj, EjsAny *ob
 
 #define GET_SLOT(thisObj, obj, slotNum) getPropertyFromSlot(ejs, thisObj, obj, slotNum)
 
-static MPR_INLINE void checkGetter(Ejs *ejs, EjsAny *value, EjsAny *thisObj, EjsAny *obj, int slotNum) 
+static BIT_INLINE void checkGetter(Ejs *ejs, EjsAny *value, EjsAny *thisObj, EjsAny *obj, int slotNum) 
 {
     EjsFunction     *fun;
 
@@ -70243,8 +70278,6 @@ static void VM(Ejs *ejs, EjsFunction *fun, EjsAny *otherThis, int argc, int stac
     assert(!mprHasMemError(ejs));
     assert(!ejs->exception);
     assert(ejs->state->fp == 0 || ejs->state->fp->attentionPc == 0);
-
-    MPR_VERIFY_MEM();
 
     vp = 0;
     slotNum = -1;
@@ -71431,9 +71464,7 @@ static void VM(Ejs *ejs, EjsFunction *fun, EjsAny *otherThis, int argc, int stac
                 AddNamespaceRef
          */
         CASE (EJS_OP_ADD_NAMESPACE_REF):
-            MPR_VERIFY_MEM();
             ejsAddNamespaceToBlock(ejs, state->bp, (EjsNamespace*) pop(ejs));
-            MPR_VERIFY_MEM();
             BREAK;
 
         /*
@@ -71483,7 +71514,6 @@ static void VM(Ejs *ejs, EjsFunction *fun, EjsAny *otherThis, int argc, int stac
                 DefineClass <type>
          */
         CASE (EJS_OP_DEFINE_CLASS):
-            MPR_VERIFY_MEM();
             type = GET_TYPE();
             if (type == 0 || !ejsIsType(ejs, type)) {
                 ejsThrowReferenceError(ejs, "Reference is not a class");
@@ -71491,14 +71521,11 @@ static void VM(Ejs *ejs, EjsFunction *fun, EjsAny *otherThis, int argc, int stac
                 type->constructor.block.scope = state->bp;
                 if (type && type->hasInitializer) {
                     fun = ejsGetProperty(ejs, type, 0);
-                    MPR_VERIFY_MEM();
                     callFunction(ejs, fun, type, 0, 0);
-                    MPR_VERIFY_MEM();
                     if (type->implements && !ejs->exception) {
                         callInterfaceInitializers(ejs, type);
                     }
                     state->bp = &FRAME->function.block;
-                    MPR_VERIFY_MEM();
                 }
             }
             ejs->result = type;
@@ -72278,7 +72305,6 @@ static void VM(Ejs *ejs, EjsFunction *fun, EjsAny *otherThis, int argc, int stac
                     ejsDefineProperty(ejs, vp, -1, qname, NULL, attributes, v1);
                 }
             } 
-            MPR_VERIFY_MEM();
             state->stack -= (argc * 3);
             push(vp);
             state->t1 = 0;
@@ -72696,8 +72722,10 @@ EjsAny *ejsRunFunction(Ejs *ejs, EjsFunction *fun, EjsAny *thisObj, int argc, vo
     assert(ejs);
     assert(fun);
     assert(ejsIsFunction(ejs, fun));
+    if (ejs->exception) {
+        mprTrace(0, "STOP");
+    }
     assert(ejs->exception == 0);
-    MPR_VERIFY_MEM();
 
     if (ejs->exception) {
         return 0;
@@ -72854,6 +72882,7 @@ static int validateArgs(Ejs *ejs, EjsFunction *fun, int argc, void *args)
         }
         argc = argc - numRest + 1;
         pushOutside(ejs, rest);
+        assert((void*) rest == argv[argc-1]);
     }
 
     /*
@@ -73784,12 +73813,10 @@ static EjsOpCode traceCode(Ejs *ejs, EjsOpCode opcode)
     static int      showFrequency = 1;
 #endif
 
-    MPR_VERIFY_MEM();
     state = ejs->state;
-
     fp = state->fp;
     opcount[opcode]++;
-    assert(ejs->exception || (state->stack >= fp->stackReturn));
+    // assert(ejs->exception || (state->stack >= fp->stackReturn));
 
     if (1 || (ejs->initialized && doDebug)) {
         offset = (int) (fp->pc - fp->function.body.code->byteCode) - 1;
@@ -73803,7 +73830,7 @@ static EjsOpCode traceCode(Ejs *ejs, EjsOpCode opcode)
             ejsShowOpFrequency(ejs);
         }
 #endif
-        assert(ejs->exception || (state->stack >= fp->stackReturn));
+        // assert(ejs->exception || (state->stack >= fp->stackReturn));
     }
     ejsOpCount++;
     return opcode;
@@ -76932,7 +76959,7 @@ Ejs *ejsCreateVM(int argc, cchar **argv, int flags)
     ejs->argc = argc;
     ejs->argv = argv;
     ejs->name = sfmt("ejs-%d", sp->seqno++);
-    ejs->dispatcher = mprCreateDispatcher(ejs->name, MPR_DISPATCHER_ENABLED);
+    ejs->dispatcher = mprCreateDispatcher(ejs->name, 0);
     ejs->mutex = mprCreateLock(ejs);
     ejs->dontExit = sp->dontExit;
     ejs->flags |= (flags & (EJS_FLAG_NO_INIT | EJS_FLAG_DOC | EJS_FLAG_HOSTED));
@@ -77048,7 +77075,7 @@ void ejsDestroyVM(Ejs *ejs)
         ejs->service = 0;
         ejs->result = 0;
         if (ejs->dispatcher) {
-            mprDisableDispatcher(ejs->dispatcher);
+            mprDestroyDispatcher(ejs->dispatcher);
         }
     }
     mprTrace(6, "ejs: destroy VM");
@@ -77452,7 +77479,9 @@ static int configureEjs(Ejs *ejs)
         ejsConfigureWorkerType(ejs);
         ejsConfigureXMLType(ejs);
         ejsConfigureXMLListType(ejs);
+#if BIT_HTTP_WEB_SOCKETS
         ejsConfigureWebSocketType(ejs);
+#endif
         ejs->service->immutableInitialized = 1;
     }
     /*
@@ -77594,8 +77623,6 @@ static int runProgram(Ejs *ejs, MprEvent *event)
 
 int ejsRunProgram(Ejs *ejs, cchar *className, cchar *methodName)
 {
-    assert(ejs->result == 0 || (MPR_GET_GEN(MPR_GET_MEM(ejs->result)) != MPR->heap->dead));
-
     if (className) {
         ejs->className = sclone(className);
     }

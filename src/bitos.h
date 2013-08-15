@@ -261,6 +261,8 @@
     #define UT(s) s
 #endif
 
+#define BIT_PLATFORM BIT_OS "-" BIT_CPU "-" BIT_PROFILE
+
 /********************************* O/S Includes *******************************/
 /*
     Out-of-order definitions and includes. Order really matters in this section.
@@ -351,6 +353,7 @@
 #endif
     #include    <limits.h>
 #if BIT_UNIX_LIKE || VXWORKS
+    #include    <sys/socket.h>
     #include    <arpa/inet.h>
     #include    <netdb.h>
     #include    <net/if.h>
@@ -387,7 +390,6 @@
     #include    <sys/poll.h>
     #include    <sys/resource.h>
     #include    <sys/sem.h>
-    #include    <sys/socket.h>
     #include    <sys/select.h>
     #include    <sys/time.h>
     #include    <sys/times.h>
@@ -411,6 +413,7 @@
 #if LINUX
     #include    <sys/epoll.h>
     #include    <sys/prctl.h>
+    #include    <sys/eventfd.h>
     #if !__UCLIBC__
         #include    <sys/sendfile.h>
     #endif
@@ -663,6 +666,7 @@ typedef int64 Offset;
     /** Argument for sockets */
     typedef int Socket;
     #define SOCKET_ERROR -1
+    #define INVALID_SOCKET -1
 #elif BIT_WIN_LIKE
     typedef SOCKET Socket;
 #elif TIDSP
@@ -671,6 +675,7 @@ typedef int64 Offset;
 #else
     typedef int Socket;
     #define SOCKET_ERROR -1
+    #define INVALID_SOCKET -1
 #endif
 
 typedef int64 Time;
@@ -683,11 +688,11 @@ typedef int64 Ticks;
 /*********************************** Defines **********************************/
 
 #ifndef BITSPERBYTE
-    #define BITSPERBYTE     (8 * sizeof(char))
+    #define BITSPERBYTE     ((int) (8 * sizeof(char)))
 #endif
 
 #ifndef BITS
-    #define BITS(type)      (BITSPERBYTE * (int) sizeof(type))
+    #define BITS(type)      ((int) (BITSPERBYTE * (int) sizeof(type)))
 #endif
 
 #if BIT_FLOAT
@@ -730,8 +735,19 @@ typedef int64 Ticks;
 #endif
 #endif
 
+#ifndef MAXUINT
+#if UINT_MAX
+    #define MAXUINT     UINT_MAX
+#else
+    #define MAXUINT     0xffffffff
+#endif
+#endif
+
 #ifndef MAXINT64
     #define MAXINT64    INT64(0x7fffffffffffffff)
+#endif
+#ifndef MAXUINT64
+    #define MAXUINT64   INT64(0xffffffffffffffff)
 #endif
 
 #if SIZE_T_MAX
@@ -800,7 +816,7 @@ typedef int64 Ticks;
         /** 
             Use gcc attribute to check printf fns.  a1 is the 1-based index of the parameter containing the format, 
             and a2 the index of the first argument. Note that some gcc 2.x versions don't handle this properly 
-         */     
+         */
         #define PRINTF_ATTRIBUTE(a1, a2) __attribute__ ((format (__printf__, a1, a2)))
     #else
         #define PRINTF_ATTRIBUTE(a1, a2)
@@ -905,6 +921,14 @@ typedef int64 Ticks;
 
 /*********************************** Fixups ***********************************/
 
+#ifndef BIT_INLINE
+    #if BIT_WIN_LIKE
+        #define BIT_INLINE __inline
+    #else
+        #define BIT_INLINE inline
+    #endif
+#endif
+
 #if ECOS
     #define     LIBKERN_INLINE          /* to avoid kernel inline functions */
 #endif /* ECOS */
@@ -941,7 +965,7 @@ typedef int64 Ticks;
 
 #if !LINUX
     #define __WALL          0
-    #if !CYGWIN
+    #if !CYGWIN && !defined(MSG_NOSIGNAL)
         #define MSG_NOSIGNAL 0
     #endif
 #endif
@@ -972,6 +996,7 @@ typedef int64 Ticks;
     #define getpid mprGetpid
     #if _DIAB_TOOL
         #define inline __inline__
+        #define MPR_INLINE __inline__
     #endif
     #ifndef closesocket
         #define closesocket(x)  close(x)
@@ -1055,7 +1080,7 @@ typedef int64 Ticks;
 
     #undef SHUT_RDWR
     #define SHUT_RDWR       2
-    
+
     #define TIME_GENESIS UINT64(11644473600000000)
     #define va_copy(d, s) ((d) = (s))
 
@@ -1141,10 +1166,10 @@ typedef int64 Ticks;
     #define PATHSIZE BIT_MAX_PATH
     #define NBBY 8
     #define hostent _hostent
-    #define NFDBITS (sizeof(fd_mask) * NBBY)
+    #define NFDBITS ((int) (sizeof(fd_mask) * NBBY))
     typedef long fd_mask;
     typedef int Socklen;
-    struct sockaddr_storage { char pad[1024]; };                                                               
+    struct sockaddr_storage { char pad[1024]; };
 #endif /* TIDSP */
 
 /*********************************** Externs **********************************/

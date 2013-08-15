@@ -84,7 +84,7 @@ Bit.load({
         'test.js': {
             type:   'file',
             path:   'web/js/',
-            files:  ['../src/esp/esp-www/files/static/js/'],
+            files:  ['../src/esp/proto/angular/client/lib/'],
         },
 
         test: {
@@ -135,7 +135,9 @@ Bit.load({
             type: 'test',
             action: "
                 let package = packageName()
-                if (!package || !package.exists || bit.settings.depth < 2) {
+                if (!package || !package.exists) {
+                    trace('Test', 'testPackage -- SKIPPED (Missing package to install)')
+                } else if (bit.settings.depth < 2) {
                     trace('Test', 'testPackage -- SKIPPED (Runs at depth 2 on windows or macosx)')
                 } else {
                     if (Config.OS == 'macosx' && App.uid != 0) {

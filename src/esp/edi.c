@@ -103,6 +103,10 @@ PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
         return MPR_ERR_CANT_FIND;
     }
     if (smatch(name, "format")) {
+        if (!data || ((char*) data)[0] == '\0') {
+            mprError("Bad validation format pattern for %s", name);
+            return MPR_ERR_BAD_SYNTAX;
+        }
         if ((vp->mdata = pcre_compile2(data, 0, 0, &errMsg, &column, NULL)) == 0) {
             mprError("Cannot compile validation pattern. Error %s at column %d", errMsg, column); 
             return MPR_ERR_BAD_SYNTAX;
@@ -156,7 +160,7 @@ PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
 }
 
 
-PUBLIC MprList *ediGetRecErrors(EdiRec *rec)
+PUBLIC MprHash *ediGetRecErrors(EdiRec *rec)
 {
     return rec->errors;
 }
@@ -168,12 +172,6 @@ PUBLIC MprList *ediGetGridColumns(EdiGrid *grid)
     EdiRec      *rec;
     EdiField    *fp;
 
-#if UNUSED
-    // Won't work for pivots
-    if (grid->tableName && grid->tableName) {
-        return ediGetColumns(grid->edi, grid->tableName);
-    }
-#endif
     cols = mprCreateList(0, 0);
     rec = grid->records[0];
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
@@ -421,7 +419,7 @@ PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec)
 PUBLIC bool ediValidateRec(EdiRec *rec)
 {
     assert(rec->edi);
-    if (rec->edi == 0) {
+    if (rec == 0 || rec->edi == 0) {
         return 0;
     }
     return rec->edi->provider->validateRec(rec->edi, rec);
@@ -512,6 +510,9 @@ typedef struct Col {
 } Col;
 
 
+/*
+    Create a list of columns to use for a joined table
+ */
 static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int joinField, int follow)
 {
     EdiGrid     *foreignGrid;
@@ -525,7 +526,12 @@ static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int jo
     }
     rec = grid->records[0];
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
-        if (fp->flags & EDI_FOREIGN && follow) {
+#if FUTURE
+        if (fp->flags & EDI_FOREIGN && follow)
+#else
+        if (sends(fp->name, "Id") && follow) 
+#endif
+        {
             tableName = strim(fp->name, "Id", MPR_TRIM_END);
             if (!(foreignGrid = mprLookupKey(grids, tableName))) {
                 col = mprAllocObj(Col, 0);
@@ -538,10 +544,12 @@ static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int jo
                 cols = joinColumns(cols, foreignGrid, grids, (int) (fp - rec->fields), 0);
             }
         } else {
+#if 0
             if (fp->flags & EDI_KEY && joinField >= 0) {
                 /* Don't include ID fields from joined tables */
                 continue;
             }
+#endif
             col = mprAllocObj(Col, 0);
             col->grid = grid;
             col->field = (int) (fp - rec->fields);
@@ -556,28 +564,26 @@ static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int jo
 
 /*
     List of grids to join must be null terminated
+    MOB - what kind of join is this?
  */
 PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
 {
     EdiGrid     *primary, *grid, *result, *current;
     EdiRec      *rec;
     EdiField    *dest, *fp;
-    MprList     *cols;
+    MprList     *cols, *rows;
     MprHash     *grids;
     Col         *col;
     va_list     vgrids;
     cchar       *keyValue;
-    int         nfields, r, next;
+    int         r, next, nfields, nrows;
 
     va_start(vgrids, edi);
     if ((primary = va_arg(vgrids, EdiGrid*)) == 0) {
         return 0;
     }
-    if ((result = ediCreateBareGrid(edi, NULL, 0)) == 0) {
-        return 0;
-    }
     if (primary->nrecords == 0) {
-        return result;
+        return ediCreateBareGrid(edi, NULL, 0);
     }
     /*
         Build list of grids to join
@@ -596,13 +602,14 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
      */
     cols = joinColumns(mprCreateList(0, 0), primary, grids, -1, 1);
     nfields = mprGetListLength(cols);
+    rows = mprCreateList(0, 0);
 
     for (r = 0; r < primary->nrecords; r++) {
         if ((rec = ediCreateBareRec(edi, NULL, nfields)) == 0) {
             assert(0);
             return 0;
         }
-        result->records[r] = rec;
+        mprAddItem(rows, rec);
         dest = rec->fields;
         current = 0;
         for (ITERATE_ITEMS(cols, col, next)) { 
@@ -614,15 +621,25 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
                     keyValue = primary->records[r]->fields[col->joinField].value;
                     rec = ediReadOneWhere(edi, col->grid->tableName, "id", "==", keyValue);
                 }
-                assert(rec);
-                fp = &rec->fields[col->field];
-                *dest = *fp;
-                dest->name = sfmt("%s.%s", col->grid->tableName, fp->name);
+                if (rec) {
+                    fp = &rec->fields[col->field];
+                    *dest = *fp;
+                    dest->name = sfmt("%s.%s", col->grid->tableName, fp->name);
+                } else {
+                    dest->name = sclone("UNKNOWN");
+                }
             }
             dest++;
         }
     }
-    result->nrecords = r;
+    nrows = mprGetListLength(rows);
+    if ((result = ediCreateBareGrid(edi, NULL, nrows)) == 0) {
+        return 0;
+    }
+    for (r = 0; r < nrows; r++) {
+        result->records[r] = mprGetItem(rows, r);
+    }
+    result->nrecords = nrows;
     return result;
 }
 
@@ -821,29 +838,11 @@ PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags)
     first = grid->records[0];
     nrows = first->nfields;
     nfields = grid->nrecords;
-#if UNUSED
-    if (flags & EDI_PIVOT_FIELD_NAMES) {
-        /* One more field in result */
-        nfields++;
-        name = sclone("name");
-    }
-#endif
     result = ediCreateBareGrid(grid->edi, grid->tableName, nrows);
     
     for (c = 0; c < nrows; c++) {
         result->records[c] = rec = ediCreateBareRec(grid->edi, grid->tableName, nfields);
         fp = rec->fields;
-#if UNUSED
-        if (flags & EDI_PIVOT_FIELD_NAMES) {
-            /* Add the field names as the first column */
-            fp->valid = 1;
-            fp->name = name;
-            fp->value = first->fields[c].name;
-            fp->type = EDI_TYPE_STRING;
-            fp->flags = 0;
-            fp++;
-        }
-#endif
         rec->id = first->fields[c].name;
         for (r = 0; r < grid->nrecords; r++) {
             src = &grid->records[r]->fields[c];
@@ -1056,6 +1055,19 @@ static cchar *checkUnique(EdiValidation *vp, EdiRec *rec, cchar *fieldName, ccha
         return 0;
     }
     return "is not unique";
+}
+
+
+PUBLIC void ediAddFieldError(EdiRec *rec, cchar *field, cchar *fmt, ...)
+{
+    va_list     args;
+
+    va_start(args, fmt);
+    if (rec->errors == 0) {
+        rec->errors = mprCreateHash(0, 0);
+    }
+    mprAddKey(rec->errors, field, sfmtv(fmt, args));
+    va_end(args);
 }
 
 

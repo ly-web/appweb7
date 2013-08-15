@@ -7,7 +7,7 @@ let http: Http = new Http
 
 //  Run a command that creates ../../route-update-cmd.tmp
   
-if (test.hostOs != "VXWORKS" && test.hostOs != "WIN") { 
+if (Config.OS != "VXWORKS" && Config.OS != "WIN") { 
     let path = Path("../../route-update-cmd.tmp")
     path.remove()
     assert(!path.exists)

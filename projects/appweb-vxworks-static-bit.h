@@ -76,6 +76,12 @@
 #ifndef BIT_EST_XTEA
     #define BIT_EST_XTEA 0
 #endif
+#ifndef BIT_HAS_ATOMIC
+    #define BIT_HAS_ATOMIC 0
+#endif
+#ifndef BIT_HAS_ATOMIC64
+    #define BIT_HAS_ATOMIC64 0
+#endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 0
 #endif
@@ -103,6 +109,9 @@
 #ifndef BIT_HAS_SYNC
     #define BIT_HAS_SYNC 0
 #endif
+#ifndef BIT_HAS_SYNC64
+    #define BIT_HAS_SYNC64 0
+#endif
 #ifndef BIT_HAS_SYNC_CAS
     #define BIT_HAS_SYNC_CAS 0
 #endif
@@ -112,11 +121,14 @@
 #ifndef BIT_HTTP_PAM
     #define BIT_HTTP_PAM 1
 #endif
-#ifndef BIT_HTTP_STEALTH
-    #define BIT_HTTP_STEALTH 1
+#ifndef BIT_HTTP_WEB_SOCKETS
+    #define BIT_HTTP_WEB_SOCKETS 1
 #endif
 #ifndef BIT_MANIFEST
     #define BIT_MANIFEST "package/manifest.bit"
+#endif
+#ifndef BIT_MPR_ALLOC
+    #define BIT_MPR_ALLOC "[object Object]"
 #endif
 #ifndef BIT_MPR_LOGGING
     #define BIT_MPR_LOGGING 1
@@ -155,7 +167,7 @@
     #define BIT_TUNE "size"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.3.3"
+    #define BIT_VERSION "4.4.0"
 #endif
 #ifndef BIT_WARN64TO32
     #define BIT_WARN64TO32 0
@@ -217,7 +229,7 @@
     #define BIT_VAPP_PREFIX "deploy"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/src/appweb-4.3.3"
+    #define BIT_SRC_PREFIX "/usr/src/appweb-4.4.0"
 #endif
 
 /* Suffixes */
@@ -247,19 +259,22 @@
 #ifndef BIT_PROFILE
     #define BIT_PROFILE "static"
 #endif
+#ifndef BIT_TUNE_SIZE
+    #define BIT_TUNE_SIZE 1
+#endif
 
 /* Miscellaneous */
 #ifndef BIT_MAJOR_VERSION
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 3
+    #define BIT_MINOR_VERSION 4
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 3
+    #define BIT_PATCH_VERSION 0
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400030003
+    #define BIT_VNUM 400040000
 #endif
 
 /* Packs */

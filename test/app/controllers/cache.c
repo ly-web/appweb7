@@ -74,7 +74,8 @@ ESP_EXPORT int esp_module_cache(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "cache-cmd-update", update);
 
     //  This will cache the next request after the first one that triggered the loading of this controller
-    rp = httpLookupRoute(route->host, "/app/*/default");
-    espCache(rp, "/cache/api", 0, 0);
+    if ((rp = httpLookupRoute(route->host, "/app/*/cmd")) != 0) {
+        espCache(rp, "/cache/api", 0, 0);
+    }
     return 0;
 }

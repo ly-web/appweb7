@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.3.3 Documentation</title>
+    <title>Embedthis Appweb 4.4.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.3.3</div>
+                <div class="version">Embedthis Appweb 4.4.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -241,6 +241,10 @@ Include conf/applications/*.conf
                         <td>Define which servers can access content.</td>
                     </tr>
                     <tr>
+                        <td><a href="dir/auth.html#authDigestQop">AuthAutoLogin</a></td>
+                        <td>Automatically login as the designated user.</td>
+                    </tr>
+                    <tr>
                         <td><a href="dir/auth.html#authDigestQop">AuthDigestQop</a></td>
                         <td>Define the quality of protection for Digest Authentication.</td>
                     </tr>
@@ -271,10 +275,6 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/server.html#chroot">Chroot</a></td>
                         <td>Define the directory for a "chroot jail" in which Appweb will execute.</td>
-                    </tr>
-                    <tr>
-                        <td><a href="dir/route.html#compress">Compress</a></td>
-                        <td>Control the use of compressed content.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#condition">Condition</a></td>
@@ -350,7 +350,7 @@ Include conf/applications/*.conf
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#header">Header</a></td>
-                        <td>Define a HTTP header test for a route.</td>
+                        <td>Manage the response headers.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/server.html#groupAcount">GroupAccount</a></td>
@@ -397,6 +397,10 @@ Include conf/applications/*.conf
                         <td>Set the limit of simultaneous clients.</td>
                     </tr>
                     <tr>
+                        <td><a href="dir/sandbox.html#limitRequests">LimitConnections</a></td>
+                        <td>Set the limit of simultaneous client connections.</td>
+                    </tr>
+                    <tr>
                         <td><a href="dir/sandbox.html#limitFiles">LimitFiles</a></td>
                         <td>Set the maximum number of open files or sockets on a Unix system.</td>
                     </tr>
@@ -411,10 +415,6 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/sandbox.html#limitProcesses">LimitProcesses</a></td>
                         <td>Maximum number of CGI processes to spawn.</td>
-                    </tr>
-                    <tr>
-                        <td><a href="dir/sandbox.html#limitRequests">LimitRequests</a></td>
-                        <td>Set the limit of simultaneous requests.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/sandbox.html#limitRequestsPerClient">LimitRequestsPerClient</a></td>
@@ -439,6 +439,10 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/sandbox.html#limitResponseBody">LimitResponseBody</a></td>
                         <td>Set the maximum response body size.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/sandbox.html#limitSessions">LimitSessions</a></td>
+                        <td>Set the limit of simultaneous client sessions.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/sandbox.html#limitUpload">LimitUpload</a></td>
@@ -485,12 +489,16 @@ Include conf/applications/*.conf
                         <td>Control the tracing of HTTP events.</td>
                     </tr>
                     <tr>
+                        <td><a href="dir/route.html#map">Map</a></td>
+                        <td>Control the mapping of requests by extension.</td>
+                    </tr>
+                    <tr>
                         <td><a href="dir/sandbox.html#memoryPolicy">MemoryPolicy</a></td>
                         <td>Define the action to take when memory is depleted.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#methods">Methods</a></td>
-                        <td>The acceptable HTTP method verbs.</td>
+                        <td>Control the acceptable HTTP method verbs.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/vhost.html#namedVirtualHost">NameVirtualHost</a></td>
@@ -513,16 +521,20 @@ Include conf/applications/*.conf
                         <td>Define a route prefix to trim from the URI.</td>
                     </tr>
                     <tr>
+                        <td><a href="dir/route.html#preserveFrames">PreserveFrames</a></td>
+                        <td>Preserve WebSocket frames.</td>
+                    </tr>
+                    <tr>
                         <td><a href="dir/server.html#protocol">Protocol</a></td>
                         <td>Define the HTTP protocol to use.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/route.html#putMethod">PutMethod</a></td>
-                        <td>Control use of the HTTP PUT method.</td>
-                    </tr>
-                    <tr>
                         <td><a href="dir/route.html#redirect">Redirect</a></td>
                         <td>Redirect requests to a new target.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/route.html#requestHeader">RequestHeader</a></td>
+                        <td>Define a HTTP requeset header test for a route.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#requestParseTimeout">RequestParseTimeout</a></td>
@@ -569,6 +581,10 @@ Include conf/applications/*.conf
                         <td>Number of worker threads to pre-allocate and preserve.</td>
                     </tr>
                     <tr>
+                        <td><a href="dir/route.html#stealth">Stealth</a></td>
+                        <td>Control stealth mode.</td>
+                    </tr>
+                    <tr>
                         <td><a href="dir/route.html#target">Target</a></td>
                         <td>Define the target action to take for a route to serve a response to the client.</td>
                     </tr>
@@ -579,6 +595,10 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/server.html#serverName">ServerName</a></td>
                         <td>Define a name for the server to use for itself.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/route.html#sessionCookie">SessionCookie</a></td>
+                        <td>Control the visibility of the session cookie in the browser.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/route.html#sessionTimeout">SessionTimeout</a></td>
@@ -623,12 +643,12 @@ Include conf/applications/*.conf
                         <td>Verify the identity of the issuer or the client certificate.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/route.html#target">Target</a></td>
-                        <td>Define a route target.</td>
+                        <td><a href="dir/server.html#streamInput">StreamInput</a></td>
+                        <td>Control if request body content is buffered or streamed to the handler.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/server.html#traceMethod">TraceMethod</a></td>
-                        <td>Control whether the HTTP Trace method is enabled.</td>
+                        <td><a href="dir/route.html#target">Target</a></td>
+                        <td>Define a route target.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/server.html#typesConfig">TypesConfig</a></td>

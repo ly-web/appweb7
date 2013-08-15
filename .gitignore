@@ -187,7 +187,6 @@ access.log.*
 *-vsdebug
 test/web/js
 test/web/auth/basic/basic.cgi
-proto
 projects/appweb-macosx-full.xcodeproj
 *-mine*
 test/cache/*.so
@@ -212,3 +211,12 @@ samples/simple-client/client
 samples/cpp-handler/server
 *.so
 samples/typical-client/client
+^/static/
+.idea
+projects/TODO
+test/ws/*.html
+test/web/cross.esp
+test/web/huge.txt
+test/web/setup.esp
+src/legacy
+samples/zzzz

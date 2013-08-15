@@ -18,6 +18,7 @@
 
 static void handleDeleteRequest(HttpQueue *q);
 static void handlePutRequest(HttpQueue *q);
+static int manageDir(HttpConn *conn);
 static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize size);
 
 /*********************************** Code *************************************/
@@ -28,83 +29,22 @@ static int rewriteFileHandler(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpTx      *tx;
-    HttpUri     *prior;
-    HttpRoute   *route;
-    MprPath     *info, zipInfo;
-    cchar       *index;
-    char        *path, *pathInfo, *uri, *zipfile;
-    int         next;
-    
+    MprPath     *info;
+
     rx = conn->rx;
     tx = conn->tx;
-    route = rx->route;
-    prior = rx->parsedUri;
     info = &tx->fileInfo;
 
-    httpMapFile(conn, route);
+    httpMapFile(conn, rx->route);
     assert(info->checked);
 
     if (rx->flags & (HTTP_DELETE | HTTP_PUT)) {
         return HTTP_ROUTE_OK;
     }
     if (info->isDir) {
-        /*
-            Manage requests for directories
-         */
-        if (!sends(rx->pathInfo, "/")) {
-            /* 
-               Append "/" and do an external redirect 
-             */
-            pathInfo = sjoin(rx->pathInfo, "/", NULL);
-            uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, prior->query, 0);
-            httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
-            return HTTP_ROUTE_OK;
-        } 
-        if (route->indicies) {
-            /*
-                Ends with a "/" so do internal redirection to an index file
-             */
-            for (ITERATE_ITEMS(route->indicies, index, next)) {
-                /*  
-                    Internal directory redirections. Transparently append index. Test indicies in order.
-                 */
-                path = mprJoinPath(tx->filename, index);
-                if (mprPathExists(path, R_OK)) {
-                    pathInfo = sjoin(rx->scriptName, rx->pathInfo, index, NULL);
-                    uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, 
-                        prior->query, 0);
-                    httpSetUri(conn, uri);
-                    tx->filename = path;
-                    tx->ext = httpGetExt(conn);
-                    mprGetPathInfo(tx->filename, info);
-                    return HTTP_ROUTE_REROUTE;
-                }
-            }
-        }
-#if BIT_PACK_DIR
-        /*
-            If a directory, test if a directory listing should be rendered. If so, delegate to the dirHandler.
-            Cannot use the sendFile handler and must use the netConnector.
-         */
-        if (info->isDir && maRenderDirListing(conn)) {
-            tx->handler = conn->http->dirHandler;
-            tx->connector = conn->http->netConnector;
-            return HTTP_ROUTE_OK;
-        }
-#endif
+        return manageDir(conn);
     }
-    if (!info->valid && (route->flags & HTTP_ROUTE_GZIP) && rx->acceptEncoding && strstr(rx->acceptEncoding, "gzip") != 0) {
-        /*
-            If the route accepts zipped data and a zipped file exists, then transparently respond with it.
-         */
-        zipfile = sfmt("%s.gz", tx->filename);
-        if (mprGetPathInfo(zipfile, &zipInfo) == 0) {
-            tx->filename = zipfile;
-            tx->fileInfo = zipInfo;
-            httpSetHeader(conn, "Content-Encoding", "gzip");
-        }
-    }
-    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST) && info->valid && !info->isDir && tx->length < 0) {
+    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST) && info->valid && tx->length < 0) {
         /*
             The sendFile connector is optimized on some platforms to use the sendfile() system call.
             Set the entity length for the sendFile connector to utilize.
@@ -115,91 +55,82 @@ static int rewriteFileHandler(HttpConn *conn)
 }
 
 
+
 static void openFileHandler(HttpQueue *q)
 {
     HttpRx      *rx;
     HttpTx      *tx;
-    HttpRoute   *route;
     HttpConn    *conn;
     MprPath     *info;
-    char        *date;
+    char        *date, dbuf[16];
+    MprHash     *dateCache;
 
     conn = q->conn;
     tx = conn->tx;
     rx = conn->rx;
-    route = rx->route;
     info = &tx->fileInfo;
 
-    if (rx->flags & (HTTP_PUT | HTTP_DELETE)) {
-        if (!(route->flags & HTTP_ROUTE_PUT_DELETE_METHODS)) {
-            httpError(q->conn, HTTP_CODE_BAD_METHOD, "The \"%s\" method is not supported by this route", rx->method);
-        }
-    } else {
-        if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
-            if (!(info->valid || info->isDir)) {
-                if (rx->referrer) {
-                    mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
-                } else {
-                    mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
-                }
-                httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find %s", rx->uri);
-
-            } else if (info->valid) {
-                if (!tx->etag) {
-                    /* Set the etag for caching in the client */
-                    tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
-                }
+    if (conn->error) {
+        return;
+    }
+    if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
+        if (!(info->valid || info->isDir)) {
+            if (rx->referrer) {
+                mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
+            } else {
+                mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
             }
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find %s", rx->uri);
+            return;
+        } 
+        if (!tx->etag) {
+            /* Set the etag for caching in the client */
+            tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
         }
-        if (conn->error) {
-            ;
-        } else if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
-            if (tx->fileInfo.valid && tx->fileInfo.mtime) {
-                //  TODO - OPT could cache this
+        if (info->mtime) {
+            dateCache = conn->http->dateCache;
+            if ((date = mprLookupKey(dateCache, itosbuf(dbuf, sizeof(dbuf), (int64) info->mtime, 10))) == 0) {
+                if (!dateCache || mprGetHashLength(dateCache) > 128) {
+                    conn->http->dateCache = dateCache = mprCreateHash(0, 0);
+                }
                 date = httpGetDateString(&tx->fileInfo);
-                httpSetHeader(conn, "Last-Modified", date);
+                mprAddKey(dateCache, itosbuf(dbuf, sizeof(dbuf), (int64) info->mtime, 10), date);
             }
-            if (httpContentNotModified(conn)) {
-                httpSetStatus(conn, HTTP_CODE_NOT_MODIFIED);
-                httpOmitBody(conn);
-                tx->length = -1;
-            }
-            if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-                httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot locate document: %s", rx->uri);
-                
-            } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
-                httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
-                    "Http transmission aborted. File size exceeds max body of %,Ld bytes", 
-                        conn->limits->transmissionBodySize);
-                
-            } else if (!(tx->connector == conn->http->sendConnector)) {
-                /*
-                    If using the net connector, open the file if a body must be sent with the response. The file will be
-                    automatically closed when the request completes.
-                 */
-                if (!(tx->flags & HTTP_TX_NO_BODY)) {
-                    tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
-                    if (tx->file == 0) {
-                        if (rx->referrer) {
-                            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", 
-                                tx->filename, rx->referrer);
-                        } else {
-                            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", tx->filename);
-                        }
+            httpSetHeader(conn, "Last-Modified", date);
+        }
+        if (httpContentNotModified(conn)) {
+            httpSetStatus(conn, HTTP_CODE_NOT_MODIFIED);
+            httpOmitBody(conn);
+            tx->length = -1;
+        }
+        if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot locate document: %s", rx->uri);
+            
+        } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
+            httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
+                "Http transmission aborted. File size exceeds max body of %,Ld bytes", 
+                    conn->limits->transmissionBodySize);
+            
+        } else if (!(tx->connector == conn->http->sendConnector)) {
+            /*
+                If using the net connector, open the file if a body must be sent with the response. The file will be
+                automatically closed when the request completes.
+             */
+            if (!(tx->flags & HTTP_TX_NO_BODY)) {
+                tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
+                if (tx->file == 0) {
+                    if (rx->referrer) {
+                        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", 
+                            tx->filename, rx->referrer);
+                    } else {
+                        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", tx->filename);
                     }
                 }
             }
-
-        } else if (rx->flags & (HTTP_OPTIONS | HTTP_TRACE)) {
-            if (route->flags & HTTP_ROUTE_PUT_DELETE_METHODS) {
-                httpHandleOptionsTrace(q->conn, "DELETE,GET,HEAD,POST,PUT");
-            } else {
-                httpHandleOptionsTrace(q->conn, "GET,HEAD,POST");
-            }
-
-        } else {
-            httpError(conn, HTTP_CODE_BAD_METHOD, "Bad method");
         }
+
+    } else if (rx->flags & HTTP_OPTIONS) {
+        httpHandleOptions(q->conn);
     }
 }
 
@@ -361,6 +292,7 @@ static void outgoingFileService(HttpQueue *q)
             mprTrace(7, "OutgoingFileService readData %d", rc);
         }
         httpPutPacketToNext(q, packet);
+        mprYield(0);
     }
     mprTrace(7, "OutgoingFileService complete");
 }
@@ -412,6 +344,7 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
     } else if (mprWriteFile(file, mprGetBufStart(buf), len) != len) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't PUT to %s", tx->filename);
     }
+    mprYield(0);
 }
 
 
@@ -478,6 +411,71 @@ static void handleDeleteRequest(HttpQueue *q)
         return;
     }
     httpSetStatus(conn, HTTP_CODE_NO_CONTENT);
+}
+
+
+static int manageDir(HttpConn *conn)
+{
+    HttpRx      *rx;
+    HttpTx      *tx;
+    HttpRoute   *route;
+    HttpUri     *prior;
+    MprPath     *info;
+    cchar       *index, *pathInfo, *uri;
+    char        *path;
+    int         next;
+
+    rx = conn->rx;
+    tx = conn->tx;
+    prior = rx->parsedUri;
+    route = rx->route;
+    info = &tx->fileInfo;
+
+    /*
+        Manage requests for directories
+     */
+    if (!sends(rx->pathInfo, "/")) {
+        /*
+           Append "/" and do an external redirect
+         */
+        pathInfo = sjoin(rx->pathInfo, "/", NULL);
+        uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, prior->query, 0);
+        httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
+        return HTTP_ROUTE_OK;
+    }
+    if (route->indicies) {
+        /*
+            Ends with a "/" so do internal redirection to an index file
+         */
+        for (ITERATE_ITEMS(route->indicies, index, next)) {
+            /*
+                Internal directory redirections. Transparently append index. Test indicies in order.
+             */
+            path = mprJoinPath(tx->filename, index);
+            if (mprPathExists(path, R_OK)) {
+                pathInfo = sjoin(rx->scriptName, rx->pathInfo, index, NULL);
+                uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference,
+                    prior->query, 0);
+                httpSetUri(conn, uri);
+                tx->filename = path;
+                tx->ext = httpGetExt(conn);
+                mprGetPathInfo(tx->filename, info);
+                return HTTP_ROUTE_REROUTE;
+            }
+        }
+    }
+#if BIT_PACK_DIR
+    /*
+        Directory Listing. If a directory, test if a directory listing should be rendered. If so, delegate to the
+        dirHandler. Cannot use the sendFile handler and must use the netConnector.
+     */
+    if (info->isDir && maRenderDirListing(conn)) {
+        tx->handler = conn->http->dirHandler;
+        tx->connector = conn->http->netConnector;
+        return HTTP_ROUTE_OK;
+    }
+#endif
+    return HTTP_ROUTE_OK;
 }
 
 

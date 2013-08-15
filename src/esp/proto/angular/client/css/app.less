@@ -1,0 +1,159 @@
+/*
+    app.less - Application stylesheet
+ */
+
+body {
+    font-family: @font-family;
+    font-size: @font-size;
+    color: @content-color;
+    background-color: @background-color;
+}
+
+body > header {
+    height: 90px;
+    background-image: url("../assets/banner.jpg");
+    background-position: top right;
+    h1 {
+        position: absolute;
+        margin-left: 20px;
+        a {
+            display: block;
+            height: 25px;
+            width: 100;
+            color: @gray-dark;
+            font-size: 28px;
+        }
+    }
+    .username {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        font-weight: bold;
+    }
+}
+
+body > nav {
+    position: absolute;
+    top: 52px;
+    margin-left: 20px;
+    a {
+        background-color: @gray;
+        color: @gray-light;
+    }
+}
+
+main {
+    margin: 0 10px 10px 30px;
+    color: @content-color;
+    ol li {
+        margin: 20px;
+    }
+}
+
+main section aside { 
+    float: right;
+    margin: 20px 40px;
+    line-height: 140%;
+    &:empty {
+        display: none;
+    }
+}
+
+section {
+    padding-bottom: 10px;
+    clear: both;
+}
+
+article {
+    float: left;
+    width: 70%;
+}
+
+.shadow {
+    .drop-shadow();
+}
+
+[ng-click] {
+    cursor: pointer;
+}
+
+.collapse {
+    :empty {
+        display: none;
+    }
+}
+
+.form-error {
+    width: 500px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    text-indent: 10px;
+    border: 2px solid @error-color;
+    .rounded(6px);
+    .drop-shadow();
+    h2 {
+        margin: 0 0 10px 0;
+        font-size: 12pt;
+        color: white;
+        background-color: @error-color;
+    }
+    ul {
+        margin-bottom: 0;
+    }
+}
+
+.field-error {
+	border: 2px solid @error-color !important;
+}
+
+//  MOB - simplify
+.feedback {
+    position: absolute;
+    left: 50%;
+    width: 500px;
+    height: 30px;
+    margin: 0;
+    margin-left: -250px;
+    padding: 20px;
+    font-size: 110%;
+	.rounded(7px);
+    .border-radius(0, 7px, 7px, 0);
+    .drop-shadow();
+    color: white;
+    text-align: center;
+    &:empty {
+        display: none;
+    }
+    transition-property: color, top, opacity;
+    transition-duration: 5s, 0.25s, 1s;
+    transition-timing-function: ease-out, ease-out, ease-out;
+    transition-delay: 0.0s, 0.0s, 0.25s;
+    /* Final resting state feedback */
+    opacity: 0.6;
+    top: -100px;
+}
+
+.feedback-error {
+    .feedback();
+    transition-property: none, none, none;
+    top: 0;
+    .gradient(@feedback-error-background, lighten(@feedback-error-background, 10%), darken(@feedback-error-background, 10%));
+    font-weight: bold;
+}
+
+.feedback-inform {
+    .feedback();
+    .gradient(@feedback-inform-background, lighten(@feedback-inform-background, 10%), darken(@feedback-inform-background, 10%));
+}
+
+.feedback-warning {
+    .feedback();
+    transition: none;
+    top: 0;
+    .gradient(@feedback-warning-background, lighten(@feedback-warning-background, 10%), darken(@feedback-warning-background, 10%));
+}
+
+.feedback-show {
+    opacity: 1.0;
+    top: 0;
+}

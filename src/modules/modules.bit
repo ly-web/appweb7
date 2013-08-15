@@ -39,7 +39,7 @@ Bit.load({
         libmod_ssl: {
             type: 'lib',
             sources: [ 'sslModule.c' ],
-            depends: [ 'libappweb' ],
+            depends: [ 'libappweb', 'libmprssl' ],
             packs: [ 'ssl' ],
         },
 	},

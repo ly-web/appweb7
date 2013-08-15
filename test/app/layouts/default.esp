@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <% securityToken(); %>
+    <% renderSecurityToken(); %>
     <% icon(0, 0); %>
     <% stylesheet(0, 0); %>
     <% script(0, 0); %>
@@ -13,7 +13,7 @@
         <h1><% label("Blog Application", "{data-click: '~'}"); %></h1>
     </div>
     <div id="logo">Appweb&trade;</div>
-    <% flash("all", NULL); %>
+    <% renderFlash("all", NULL); %>
     <div class="content">
         <%@ content %>
     </div>
