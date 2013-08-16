@@ -900,7 +900,7 @@ static bool fileVerifyUser(HttpConn *conn, cchar *username, cchar *password)
             }
 
         } else if (smatch(auth->cipher, "blowfish")) {
-            success = mprCheckPassword(password, conn->user->password);
+            success = mprCheckPassword(sfmt("%s:%s:%s", username, auth->realm, password), conn->user->password);
 
         } else {
             mprError("Unknown authentication cipher \"%s\"", auth->cipher);
