@@ -887,10 +887,7 @@ static bool fileVerifyUser(HttpConn *conn, cchar *username, cchar *password)
     }
     if (password) {
         success = 0;
-        if (smatch(auth->cipher, "blowfish")) {
-            success = mprCheckPassword(password, conn->user->password);
-
-        } else if (smatch(auth->cipher, "md5")) {
+        if (!auth->cipher || smatch(auth->cipher, "md5")) {
             if (!conn->encoded) {
                 password = mprGetMD5(sfmt("%s:%s:%s", username, auth->realm, password));
                 conn->encoded = 1;
@@ -901,6 +898,10 @@ static bool fileVerifyUser(HttpConn *conn, cchar *username, cchar *password)
             } else {
                 success = smatch(password, conn->user->password);
             }
+
+        } else if (smatch(auth->cipher, "blowfish")) {
+            success = mprCheckPassword(password, conn->user->password);
+
         } else {
             mprError("Unknown authentication cipher \"%s\"", auth->cipher);
         }
