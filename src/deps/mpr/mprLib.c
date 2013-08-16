@@ -939,10 +939,10 @@ PUBLIC void mprYield(int flags)
     assert(!tp->waiting);
     assert(!tp->yielded);
     assert(!tp->stickyYield);
-    assert(!tp->cond->triggered);
 
     if (flags & MPR_YIELD_STICKY) {
         tp->stickyYield = 1;
+        tp->yielded = 1;
     }
     /*
         Double test to be lock free for the common case
@@ -953,26 +953,29 @@ PUBLIC void mprYield(int flags)
         lock(ts->threads);
         while ((heap->mustYield || (flags & MPR_YIELD_BLOCK))) {
             tp->yielded = 1;
+            tp->waiting = 1;
             unlock(ts->threads);
+
             mprSignalCond(ts->pauseThreads);
             
             if (tp->stickyYield) {
-                assert(!tp->cond->triggered);
+                tp->waiting = 0;
                 return;
             }
-            assert(!tp->cond->triggered);
-            tp->waiting = 1;
-            if (mprWaitForCond(tp->cond, -1) < 0) {
-                assert(tp->yielded);
-            } else {
-                assert(tp->stickyYield || !tp->yielded);
-            }
-            tp->waiting = 0;
+            mprWaitForCond(tp->cond, -1);
 
-            if (!tp->waitForGC) {
+            lock(ts->threads);
+            tp->waiting = 0;
+            if (tp->yielded && !tp->stickyYield) {
+                /*
+                    WARNING: this wait above may return without tp->yielded having been cleared. 
+                    This can happen because the cond may have already been triggered by a 
+                    previous sticky yield. i.e. it did not wait.
+                 */
+                tp->yielded = 0;
+            } else if (!tp->waitForGC) {
                 flags &= ~MPR_YIELD_BLOCK;
             }
-            lock(ts->threads);
         }
         unlock(ts->threads);
     }
@@ -980,7 +983,6 @@ PUBLIC void mprYield(int flags)
         assert(!tp->yielded);
         assert(!heap->marking);
     }
-    assert(!tp->cond->triggered);
 }
 
 
