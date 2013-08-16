@@ -6181,7 +6181,7 @@ typedef struct MprThreadService {
     MprList          *threads;              /**< List of all threads */
     struct MprThread *mainThread;           /**< Main application thread */
     struct MprThread *eventsThread;         /**< Event service thread */
-    MprCond          *cond;                 /**< Multi-thread sync */
+    MprCond          *pauseThreads;         /**< Waiting for threads to yield */
     ssize            stackSize;             /**< Default thread stack size */
 } MprThreadService;
 
@@ -6233,6 +6233,7 @@ typedef struct MprThread {
     int             stickyYield;        /**< Yielded does not auto-clear after GC */
     int             yielded;            /**< Thread has yielded to GC */
     int             waitForGC;          /**< Yield untill sweeper is complete */
+    int             waiting;            /**< Waiting for MOB */
 } MprThread;
 
 
@@ -8747,7 +8748,7 @@ PUBLIC void mprNop(void *ptr);
 #endif
 
 #define MPR_DISABLE_GC          0x1         /**< Disable GC */
-#define MPR_SWEEP_THREAD        0x2         /**< Start a dedicated sweeper thread for garbage collection (unsupported) */
+#define MPR_SWEEP_THREAD        0x2         /**< Start a dedicated sweeper thread for garbage collection */
 #define MPR_USER_EVENTS_THREAD  0x4         /**< User will explicitly manage own mprServiceEvents calls */
 #define MPR_NO_WINDOW           0x8         /**< Don't create a windows Window */
 #define MPR_THREAD_PATTERN      (MPR_SWEEP_THREAD)

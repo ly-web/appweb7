@@ -484,7 +484,7 @@ static int authUserFileDirective(MaState *state, cchar *key, cchar *value)
 /*
     AuthAutoLogin username
  */
-static int authAutoLogin(MaState *state, cchar *key, cchar *value)
+static int authAutoLoginDirective(MaState *state, cchar *key, cchar *value)
 {
     cchar   *username;
 
@@ -492,6 +492,21 @@ static int authAutoLogin(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     httpSetAuthUsername(state->auth, username);
+    return 0;
+}
+
+
+/*
+    AuthCipher blowfish|md5
+ */
+static int authCipherDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *cipher;
+
+    if (!maTokenize(state, value, "%S", &cipher)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetAuthCipher(state->auth, cipher);
     return 0;
 }
 
@@ -2855,7 +2870,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "AddType", addTypeDirective);
     maAddDirective(appweb, "Alias", aliasDirective);
     maAddDirective(appweb, "Allow", allowDirective);
-    maAddDirective(appweb, "AuthAutoLogin", authAutoLogin);
+    maAddDirective(appweb, "AuthAutoLogin", authAutoLoginDirective);
+    maAddDirective(appweb, "AuthCipher", authCipherDirective);
     maAddDirective(appweb, "AuthDigestQop", authDigestQopDirective);
     maAddDirective(appweb, "AuthType", authTypeDirective);
     maAddDirective(appweb, "AuthRealm", authRealmDirective);

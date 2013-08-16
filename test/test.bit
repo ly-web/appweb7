@@ -123,10 +123,10 @@ Bit.load({
                 trace('Generate', 'Authorization file: ' + path)
                 path.write('#\n#   ' + path + ' - Authorization roles and users\n#\n\n')
                 path.write('Role user view\nRole administrator view\nRole executive manage direct\n\n')
-                run('authpass -p pass4 ' + path + ' example.com julie user')
-                run('authpass -p pass3 ' + path + ' example.com peter user')
-                run('authpass -p pass2 ' + path + ' example.com mary user executive')
-                run('authpass -p pass1 ' + path + ' example.com joshua user administrator purchase')
+                run('authpass --cipher blowfish --password pass4 ' + path + ' example.com julie user')
+                run('authpass --cipher blowfish --password pass3 ' + path + ' example.com peter user')
+                run('authpass --cipher blowfish --password pass2 ' + path + ' example.com mary user executive')
+                run('authpass --cipher blowfish --password pass1 ' + path + ' example.com joshua user administrator purchase')
                 
             ",
         },

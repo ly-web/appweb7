@@ -267,10 +267,12 @@ User mary 5b90553bea8ba3686f4239d62801f0f3 user executive
             <p>The <em>authpass</em> program will create and modify User directives in the authentication file.</p>
             <p>The command line syntax for authpass is:</p>
             <pre>
-authpass [-c] [-p passWord] authFile realm username roles...
+authpass [--create] [--cipher blowfish|md5] [--password word] authFile realm username roles...
 </pre>
             <p>The authFile parameter specifies the name of the authentication file. 
-            If the -p password option is not used, authpass will prompt for the password. The -c option will
+            The --cipher option specifies the cipher used to hash/crypt the password. The default is MD5 which is required
+            for digest authentication. However blowfish is more secure.</p>
+            <p>If the --password option is not used, authpass will prompt for the password. The --create option will
             cause authpass to create the authentication file if it does not already exist. Otherwise it will update the
             nominated file.</p> 
             <p>The Realm is the name used in the AuthRealm directive.

@@ -44,6 +44,7 @@
                 <li><a href="#alias">Alias</a></li>
                 <li><a href="#cache">Cache</a></li>
                 <li><a href="#condition">Condition</a></li>
+                <li><a href="#crossOrigin">CrossOrigin</a></li>
                 <li><a href="#defaultLanguage">DefaultLanguage</a></li>
                 <li><a href="#documentRoot">DocumentRoot</a></li>
                 <li><a href="#errorDocument">ErrorDocument</a></li>
@@ -444,6 +445,7 @@
                     </tr>
                 </tbody>
             </table>
+
             <a id="condition"></a>
             <h2>Condition</h2>
             <table class="directive" title="details">
@@ -488,6 +490,43 @@
                             <p>The rule result can be negated by prefixing with "<em>!</em>".</p>
                             <p>For information about embedded {tokens}, see <a href="../routing.html#tokens">Tokens</a>
                             in the <a href="../routing.html">Routing Guide</a>.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="crossOrigin"></a>
+            <h2>CrossOrigin</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Directive to control cross-origin resource sharing.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>CrossOrigin origin=[client|all|*|NAME] <br/>
+                            &nbsp; &nbsp; &nbsp;[credentials=[yes|no]] [headers=HDR,...] [age=NN]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>CrossOrigin origin=*<br />
+                            CrossOrigin origin=http://www.google.com credentials=yes age=3000
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The CrossOrigin directive instructs Appweb to emit relevant CORS headers and to appropriately 
+                            respond to the client's pre-flight test requests.</p>
+                            <p>See <a href="http://www.html5rocks.com/en/tutorials/cors/">Using CORS</a> for examples of
+                            how to create a CORS client request.</p> 
                         </td>
                     </tr>
                 </tbody>
