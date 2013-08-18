@@ -154,6 +154,10 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/214">[issue 214]</a></li>
                 <li>Fix Source directive to be relative to route home rather than route documents.
                     <a href="https://github.com/embedthis/appweb-4/issues/219">[issue 219]</a></li>
+                <li>Fix for windows when time goes backwards
+                    <a href="https://github.com/embedthis/appweb-4/issues/227">[issue 227]</a></li>
+                <li>Fix esp recompiling on windows
+                    <a href="https://github.com/embedthis/appweb-4/issues/228">[issue 228]</a></li>
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
@@ -170,6 +174,8 @@
                 <li>The pattern in a route directive now looks for an existing route pattern. Previously it interpreted
                     the pattern as a route name.</li>
                 <li>The httpHandleOptionsTrace() function is deprecated. The API is present but deprecated.</li>
+                <li>Change LimitRequestBody to not include file upload size.</li>
+                <li>Change HttpRoute.dir to HttpRoute.documents.</li>
             </ul>
             <a id="r4.3.5"></a>
             <h2 class="section">Changes in 4.3.5</h2>

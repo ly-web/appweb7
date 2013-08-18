@@ -335,6 +335,7 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
     @description Create a web server configuration based on the supplied config file. This routine provides 
         a one-line embedding of Appweb. If you don't want to use a config file, try the #maRunSimpleWebServer 
         instead.
+    @param method HTTP method to invoke
     @param uri URI to request
     @param data Optional data to send with request. Set to null for GET requests.
     @param response Output parameter to receive the HTTP request response.

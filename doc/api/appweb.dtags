@@ -258,8 +258,8 @@
       <type>int</type>
       <name>maRunWebClient</name>
       <anchorfile>group___ma_server.html</anchorfile>
-      <anchor>gac4eeca2a263aa924aa89f50b9dc10914</anchor>
-      <arglist>(cchar *method, cchar *uri, char **response)</arglist>
+      <anchor>ga416dbc18b44c58ceea1d0fa1662a7966</anchor>
+      <arglist>(cchar *method, cchar *uri, cchar *data, char **response, char **err)</arglist>
     </member>
     <member kind="function">
       <type>int</type>

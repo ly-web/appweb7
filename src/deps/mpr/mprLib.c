@@ -230,7 +230,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     mprSetName(MPR, "Mpr");
     MPR->heap = heap;
 
-    heap->flags = flags | MPR_THREAD_PATTERN;
+    heap->flags = flags;
     heap->nextSeqno = 1;
     heap->regionSize = BIT_MPR_ALLOC_REGION_SIZE;
     heap->stats.maxHeap = (size_t) -1;
@@ -854,15 +854,13 @@ static void vmfree(void *ptr, size_t size)
 
 PUBLIC void mprStartGCService()
 {
-    if (heap->flags & MPR_SWEEP_THREAD) {
-        if (heap->enabled) {
-            mprTrace(7, "DEBUG: startMemWorkers: start marker");
-            if ((heap->gc = mprCreateThread("sweeper", gc, NULL, 0)) == 0) {
-                mprError("Cannot create marker thread");
-                MPR->hasError = 1;
-            } else {
-                mprStartThread(heap->gc);
-            }
+    if (heap->enabled) {
+        mprTrace(7, "DEBUG: startMemWorkers: start marker");
+        if ((heap->gc = mprCreateThread("sweeper", gc, NULL, 0)) == 0) {
+            mprError("Cannot create marker thread");
+            MPR->hasError = 1;
+        } else {
+            mprStartThread(heap->gc);
         }
     }
 }
@@ -887,11 +885,9 @@ PUBLIC void mprWakeGCService()
 
 static BIT_INLINE void triggerGC()
 {
-    if (!heap->gcRequested) {
-        if ((heap->flags & MPR_SWEEP_THREAD) && heap->enabled && heap->gcCond) {
-            heap->gcRequested = 1;
-            mprSignalCond(heap->gcCond);
-        }
+    if (!heap->gcRequested && heap->enabled && heap->gcCond) {
+        heap->gcRequested = 1;
+        mprSignalCond(heap->gcCond);
     }
 }
 

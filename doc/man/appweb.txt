@@ -11,7 +11,7 @@ SYNOPSIS
 
        appweb  [--config  configFile] [--chroot directory] [--debugger] [--exe
        path] [--log logSpec] [--home directory]  [--threads  threads]  [--ver-
-       sion] [--verbose]
+       bose] [--version]
 
 DESCRIPTION
        Appweb  is  a  compact  embedded HTTP web server.  It is a fast, small-

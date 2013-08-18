@@ -6165,7 +6165,7 @@ static HttpDefense *createDefense(cchar *name, cchar *remedy, MprHash *args)
 
 
 /*
-    Remedy can be set via REMEDY= in the remedyArgs
+    Remedy can also be set via REMEDY= in the remedyArgs
  */
 PUBLIC int httpAddDefense(cchar *name, cchar *remedy, cchar *remedyArgs)
 {

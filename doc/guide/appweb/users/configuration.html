@@ -241,8 +241,12 @@ Include conf/applications/*.conf
                         <td>Define which servers can access content.</td>
                     </tr>
                     <tr>
-                        <td><a href="dir/auth.html#authDigestQop">AuthAutoLogin</a></td>
+                        <td><a href="dir/auth.html#authAutoLogin">AuthAutoLogin</a></td>
                         <td>Automatically login as the designated user.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/auth.html#authCipher">AuthCipher</a></td>
+                        <td>Define the cipher used when storing passwords at the server.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/auth.html#authDigestQop">AuthDigestQop</a></td>
@@ -283,6 +287,10 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/route.html#defaultLanguage">DefaultLanguage</a></td>
                         <td>Set the default language to use for a route.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/route.html#defense">Defense</a></td>
+                        <td>Define a defensive response for attack monitoring.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/auth.html#deny">Deny</a></td>
@@ -499,6 +507,10 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/route.html#methods">Methods</a></td>
                         <td>Control the acceptable HTTP method verbs.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/route.html#monitor">Monitor</a></td>
+                        <td>Monitor a resource for attacks and trigger a defensive response.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/vhost.html#namedVirtualHost">NameVirtualHost</a></td>

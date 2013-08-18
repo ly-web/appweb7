@@ -160,6 +160,32 @@ static int parseFileInner(MaState *state, cchar *path)
 }
 
 
+static int inline parse(MaState *state, cchar *line)
+{
+    MaDirective *directive;
+    char    *key, *value;
+
+    key = getDirective(sclone(line), &value);
+    if (!state->enabled) {
+        if (key[0] != '<') {
+            mprTrace(8, "Skip: %s %s", key, value);
+            return 0;
+        }
+    }
+    if ((directive = mprLookupKey(state->appweb->directives, key)) == 0) {
+        mprError("Unknown directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    state->key = key;
+    mprTrace(8, "Line %d, Parse %s %s", state->lineNumber, key, value ? value : "");
+    if ((*directive)(state, key, value) < 0) {
+        mprError("Error with directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    return 0;
+}
+
+
 #if !BIT_ROM
 /*
     AccessLog path
@@ -757,15 +783,27 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-
 /*
-    Defense name [Token=Value]...
+    Defense name [Arg=Value]...
+
+    Remedies: ban, cmd, delay, email, http, log
+    Args: CMD, DELAY, FROM, IP, MESSAGE, PERIOD, STATUS, SUBJECT, TO, METHOD, URI
+    Examples:
+    Examples:
+        Defense block REMEDY=ban PERIOD=30mins
+        Defense report REMEDY=http URI=http://example.com/report
+        Defense alarm REMEDY=cmd CMD="afplay klaxon.mp3"
+        Defense slow REMEDY=delay PERIOD=10mins DELAY=1sec
+        Defense fix REMEDY=cmd CMD="${MESSAGE} | sendmail admin@example.com"
+        Defense notify REMEDY=email TO=info@example.com
+        Defense firewall REMEDY=cmd CMD="iptables -A INPUT -s ${IP} -j DROP"
+        Defense reboot REMEDY=restart 
  */
 static int defenseDirective(MaState *state, cchar *key, cchar *value)
 {
     cchar   *name, *args; 
 
-    if (!maTokenize(state, value, "%S ?*", &name, &args)) {
+    if (!maTokenize(state, value, "%S %S ?*", &name, &args)) {
         return MPR_ERR_BAD_SYNTAX;
     }
     httpAddDefense(name, NULL, args);
@@ -1658,7 +1696,7 @@ static int minWorkersDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Monitor Expression Period Defenses
+    Monitor Expression Period Defenses ....
  */
 static int monitorDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1822,7 +1860,8 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
     target = (path) ? sfmt("%d %s", status, path) : code;
     httpSetRouteTarget(alias, "redirect", target);
     if (smatch(value, "secure")) {
-        httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
+        /* Redirect for one year */
+        httpAddRouteCondition(alias, "secure", "31536000000", HTTP_ROUTE_NOT);
     }
     httpFinalizeRoute(alias);
     return 0;
@@ -2021,6 +2060,45 @@ static int requestHeaderDirective(MaState *state, cchar *key, cchar *value)
     return 0;
 }
 
+
+/*
+    Secure defaults
+ */
+static int secureDirective(MaState *state, cchar *key, cchar *value)
+{
+    char    *option;
+
+    if (!maTokenize(state, value, "%?S", &option)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    if (smatch(option, "defaults")) {
+
+        parse(state, "AuthCipher blowfish");
+        parse(state, "Stealth on");
+        parse(state, "SessionCookie invisible");
+
+        parse(state, "InactivityTimeout 30secs");
+        parse(state, "RequestParseTimeout 5sec");
+        parse(state, "RequestTimeout 5mins");
+        parse(state, "SessionTimeout 5mins");
+
+        parse(state, "Header set Content-Security-Policy default-src 'self'");
+        parse(state, "Header set X-XSS-Protection 1; mode=block");
+        parse(state, "Header set X-Frame-Options deny");
+        parse(state, "Header set X-Content-Type-Options: nosniff");
+
+        parse(state, "LimitRequestsPerClient 20");
+        parse(state, "LimitRequestBody 50K");
+        parse(state, "LimitRequestForm 32K");
+        parse(state, "LimitUri 512");
+#if BIT_PACK_SSL
+        parse(state, "Redirect secure");
+#endif
+    } else {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    return 0;
+}
 
 /*
     ServerName URI
@@ -2588,11 +2666,11 @@ PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
 }
 
 
-static int addCondition(MaState *state, cchar *name, cchar *condition, int flags)
+static int addCondition(MaState *state, cchar *name, cchar *details, int flags)
 {
-    if (httpAddRouteCondition(state->route, name, condition, flags) < 0) {
+    if (httpAddRouteCondition(state->route, name, details, flags) < 0) {
         mprError("Bad \"%s\" directive at line %d in %s\nLine: %s %s\n", 
-            state->key, state->lineNumber, state->filename, state->key, condition);
+            state->key, state->lineNumber, state->filename, state->key, details);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
@@ -2896,9 +2974,9 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Home", homeDirective);
     maAddDirective(appweb, "<If", ifDirective);
     maAddDirective(appweb, "</If", closeDirective);
+    maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrorsDirective);
     maAddDirective(appweb, "InactivityTimeout", inactivityTimeoutDirective);
     maAddDirective(appweb, "Include", includeDirective);
-
     maAddDirective(appweb, "LimitBuffer", limitBufferDirective);
     maAddDirective(appweb, "LimitCache", limitCacheDirective);
     maAddDirective(appweb, "LimitCacheItem", limitCacheItemDirective);
@@ -2918,6 +2996,10 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitSessions", limitSessionDirective);
     maAddDirective(appweb, "LimitUri", limitUriDirective);
     maAddDirective(appweb, "LimitUpload", limitUploadDirective);
+    maAddDirective(appweb, "LimitWebSockets", limitWebSocketsDirective);
+    maAddDirective(appweb, "LimitWebSocketsMessage", limitWebSocketsMessageDirective);
+    maAddDirective(appweb, "LimitWebSocketsFrame", limitWebSocketsFrameDirective);
+    maAddDirective(appweb, "LimitWebSocketsPacket", limitWebSocketsPacketDirective);
     maAddDirective(appweb, "LimitWorkers", limitWorkersDirective);
     maAddDirective(appweb, "Listen", listenDirective);
     maAddDirective(appweb, "ListenSecure", listenSecureDirective);
@@ -2928,12 +3010,14 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Map", mapDirective);
     maAddDirective(appweb, "MemoryPolicy", memoryPolicyDirective);
     maAddDirective(appweb, "Methods", methodsDirective);
+    maAddDirective(appweb, "MinWorkers", minWorkersDirective);
     maAddDirective(appweb, "Monitor", monitorDirective);
     maAddDirective(appweb, "Name", nameDirective);
     maAddDirective(appweb, "NameVirtualHost", nameVirtualHostDirective);
     maAddDirective(appweb, "Order", orderDirective);
     maAddDirective(appweb, "Param", paramDirective);
     maAddDirective(appweb, "Prefix", prefixDirective);
+    maAddDirective(appweb, "PreserveFrames", preserveFramesDirective);
     maAddDirective(appweb, "Protocol", protocolDirective);
     maAddDirective(appweb, "Redirect", redirectDirective);
     maAddDirective(appweb, "RequestHeader", requestHeaderDirective);
@@ -2942,9 +3026,9 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Require", requireDirective);
     maAddDirective(appweb, "Reset", resetDirective);
     maAddDirective(appweb, "Role", roleDirective);
-
     maAddDirective(appweb, "<Route", routeDirective);
     maAddDirective(appweb, "</Route", closeDirective);
+    maAddDirective(appweb, "Secure", secureDirective);
     maAddDirective(appweb, "ServerName", serverNameDirective);
     maAddDirective(appweb, "SessionCookie", sessionCookieDirective);
     maAddDirective(appweb, "SessionTimeout", sessionTimeoutDirective);
@@ -2955,11 +3039,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Source", sourceDirective);
     maAddDirective(appweb, "Stealth", stealthDirective);
     maAddDirective(appweb, "StreamInput", streamInputDirective);
-
-    maAddDirective(appweb, "MinWorkers", minWorkersDirective);
     maAddDirective(appweb, "Target", targetDirective);
     maAddDirective(appweb, "Template", templateDirective);
-
     maAddDirective(appweb, "ThreadStack", threadStackDirective);
     maAddDirective(appweb, "TypesConfig", typesConfigDirective);
     maAddDirective(appweb, "Update", updateDirective);
@@ -2968,17 +3049,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "UploadDir", uploadDirDirective);
     maAddDirective(appweb, "User", userDirective);
     maAddDirective(appweb, "UserAccount", userAccountDirective);
-
     maAddDirective(appweb, "<VirtualHost", virtualHostDirective);
     maAddDirective(appweb, "</VirtualHost", closeVirtualHostDirective);
-
-    maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrorsDirective);
-    maAddDirective(appweb, "PreserveFrames", preserveFramesDirective);
-
-    maAddDirective(appweb, "LimitWebSockets", limitWebSocketsDirective);
-    maAddDirective(appweb, "LimitWebSocketsMessage", limitWebSocketsMessageDirective);
-    maAddDirective(appweb, "LimitWebSocketsFrame", limitWebSocketsFrameDirective);
-    maAddDirective(appweb, "LimitWebSocketsPacket", limitWebSocketsPacketDirective);
     maAddDirective(appweb, "WebSocketsProtocol", webSocketsProtocolDirective);
     maAddDirective(appweb, "WebSocketsPing", webSocketsPingDirective);
 
