@@ -265,6 +265,11 @@ Bit.load({
                 enable:     "!Path('src/server/appweb.local').exists"
 
             },{
+                from:       'src/server/sample.conf', 
+                to:         '${etc}/sample.conf',
+                set:        'core',
+
+            },{
                 from:       [ 'src/server/self.crt', 'src/server/self.key' ], 
                 to:         '${etc}/',
                 set:        'core',
