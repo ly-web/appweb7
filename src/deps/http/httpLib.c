@@ -10162,7 +10162,7 @@ PUBLIC void httpResetRoutePipeline(HttpRoute *route)
     if (route->parent == 0) {
         route->errorDocuments = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
         route->caching = 0;
-        route->extensions = 0;
+        route->extensions = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS);
         route->handlers = mprCreateList(-1, 0);
         route->inputStages = mprCreateList(-1, 0);
         route->indicies = mprCreateList(-1, 0);
