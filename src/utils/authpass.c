@@ -43,7 +43,7 @@ PUBLIC int main(int argc, char *argv[])
     username = 0;
     create = errflg = 0;
     password = 0;
-    cipher = "md5";
+    cipher = "blowfish";
 
     for (i = 1; i < argc && !errflg; i++) {
         if (argv[i][0] != '-') {
