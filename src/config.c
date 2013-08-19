@@ -160,7 +160,7 @@ static int parseFileInner(MaState *state, cchar *path)
 }
 
 
-static int inline parse(MaState *state, cchar *line)
+static int inline parseLine(MaState *state, cchar *line)
 {
     MaDirective *directive;
     char    *key, *value;
@@ -2073,26 +2073,26 @@ static int secureDirective(MaState *state, cchar *key, cchar *value)
     }
     if (smatch(option, "defaults")) {
 
-        parse(state, "AuthCipher blowfish");
-        parse(state, "Stealth on");
-        parse(state, "SessionCookie invisible");
+        parseLine(state, "AuthCipher blowfish");
+        parseLine(state, "Stealth on");
+        parseLine(state, "SessionCookie invisible");
 
-        parse(state, "InactivityTimeout 30secs");
-        parse(state, "RequestParseTimeout 5sec");
-        parse(state, "RequestTimeout 5mins");
-        parse(state, "SessionTimeout 5mins");
+        parseLine(state, "InactivityTimeout 30secs");
+        parseLine(state, "RequestParseTimeout 5sec");
+        parseLine(state, "RequestTimeout 5mins");
+        parseLine(state, "SessionTimeout 5mins");
 
-        parse(state, "Header set Content-Security-Policy default-src 'self'");
-        parse(state, "Header set X-XSS-Protection 1; mode=block");
-        parse(state, "Header set X-Frame-Options deny");
-        parse(state, "Header set X-Content-Type-Options: nosniff");
+        parseLine(state, "Header set Content-Security-Policy default-src 'self'");
+        parseLine(state, "Header set X-XSS-Protection 1; mode=block");
+        parseLine(state, "Header set X-Frame-Options deny");
+        parseLine(state, "Header set X-Content-Type-Options: nosniff");
 
-        parse(state, "LimitRequestsPerClient 20");
-        parse(state, "LimitRequestBody 50K");
-        parse(state, "LimitRequestForm 32K");
-        parse(state, "LimitUri 512");
+        parseLine(state, "LimitRequestsPerClient 20");
+        parseLine(state, "LimitRequestBody 50K");
+        parseLine(state, "LimitRequestForm 32K");
+        parseLine(state, "LimitUri 512");
 #if BIT_PACK_SSL
-        parse(state, "Redirect secure");
+        parseLine(state, "Redirect secure");
 #endif
     } else {
         return MPR_ERR_BAD_SYNTAX;
