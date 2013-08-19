@@ -10767,9 +10767,7 @@ static char *finalizeTemplate(HttpRoute *route)
             mprPutCharToBuf(buf, *sp);
             break;
         case '$':
-            if (sp[1] == '\0') {
-                sp++;
-            } else {
+            if (sp[1]) {
                 mprPutCharToBuf(buf, *sp);
             }
             break;
