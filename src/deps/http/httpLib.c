@@ -10160,10 +10160,10 @@ PUBLIC void httpResetRoutePipeline(HttpRoute *route)
     assert(route);
 
     if (route->parent == 0) {
-        route->errorDocuments = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
         route->caching = 0;
+        route->errorDocuments = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
         route->extensions = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS);
-        route->handlers = mprCreateList(-1, 0);
+        route->handlers = mprCreateList(-1, MPR_LIST_STABLE);
         route->inputStages = mprCreateList(-1, 0);
         route->indicies = mprCreateList(-1, 0);
     }
@@ -10174,7 +10174,7 @@ PUBLIC void httpResetRoutePipeline(HttpRoute *route)
 PUBLIC void httpResetHandlers(HttpRoute *route)
 {
     assert(route);
-    route->handlers = mprCreateList(-1, 0);
+    route->handlers = mprCreateList(-1, MPR_LIST_STABLE);
 }
 
 
