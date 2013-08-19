@@ -2345,6 +2345,7 @@ installBinary: $(DEPS_102)
 	copy /Y src\server\php.ini "$(BIT_VAPP_PREFIX)\php.ini"
 !ENDIF
 	copy /Y src\server\appweb.conf "$(BIT_VAPP_PREFIX)\appweb.conf"
+	copy /Y src\server\sample.conf "$(BIT_VAPP_PREFIX)\sample.conf"
 	copy /Y src\server\self.crt "$(BIT_VAPP_PREFIX)\self.crt"
 	copy /Y src\server\self.key "$(BIT_VAPP_PREFIX)\self.key"
 	if not exist "$(BIT_VAPP_PREFIX)\inc" md "$(BIT_VAPP_PREFIX)\inc"

@@ -2174,6 +2174,7 @@ ifeq ($(BIT_PACK_PHP),1)
 	cp src/server/php.ini $(BIT_ETC_PREFIX)/php.ini
 endif
 	cp src/server/appweb.conf $(BIT_ETC_PREFIX)/appweb.conf
+	cp src/server/sample.conf $(BIT_ETC_PREFIX)/sample.conf
 	cp src/server/self.crt $(BIT_ETC_PREFIX)/self.crt
 	cp src/server/self.key $(BIT_ETC_PREFIX)/self.key
 	mkdir -p "$(BIT_VAPP_PREFIX)/inc"

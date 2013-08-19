@@ -1460,7 +1460,6 @@
 				90C101A490C12EAC00000165 /* bit.h */,
 				90C101A490C12EAC00000166 /* mpr.h */,
 				90C101A490C12EAC00000168 /* est.h */,
-				90C101A490C12EAC00000167 /* bitos.h */,
 				90C101A490C12EAC0000005D /* mprSsl.c */,
 			);
             name = "libmprssl";
