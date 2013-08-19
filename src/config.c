@@ -78,12 +78,13 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
         server->state = 0;
         return MPR_ERR_BAD_SYNTAX;
     }
+    httpFinalizeRoute(state->route);
+    server->state = 0;
+
     if (!maValidateServer(server)) {
         server->state = 0;
         return MPR_ERR_BAD_ARGS;
     }
-    httpFinalizeRoute(state->route);
-    server->state = 0;
     if (mprHasMemError()) {
         mprError("Memory allocation error when initializing");
         return MPR_ERR_MEMORY;
@@ -160,6 +161,7 @@ static int parseFileInner(MaState *state, cchar *path)
 }
 
 
+#if KEEP
 static int parseLine(MaState *state, cchar *line)
 {
     MaDirective *directive;
@@ -184,6 +186,7 @@ static int parseLine(MaState *state, cchar *line)
     }
     return 0;
 }
+#endif
 
 
 #if !BIT_ROM
@@ -518,21 +521,6 @@ static int authAutoLoginDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     httpSetAuthUsername(state->auth, username);
-    return 0;
-}
-
-
-/*
-    AuthCipher blowfish|md5
- */
-static int authCipherDirective(MaState *state, cchar *key, cchar *value)
-{
-    cchar   *cipher;
-
-    if (!maTokenize(state, value, "%S", &cipher)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    httpSetAuthCipher(state->auth, cipher);
     return 0;
 }
 
@@ -1012,7 +1000,7 @@ static int headerDirective(MaState *state, cchar *key, cchar *value)
     char    *cmd, *header, *hvalue;
     int     op;
 
-    if (!maTokenize(state, value, "%S %S %*", &cmd, &header, &hvalue)) {
+    if (!maTokenize(state, value, "%S %S ?*", &cmd, &header, &hvalue)) {
         return MPR_ERR_BAD_SYNTAX;
     }
     if (scaselessmatch(cmd, "add")) {
@@ -2062,44 +2050,6 @@ static int requestHeaderDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Secure defaults
- */
-static int secureDirective(MaState *state, cchar *key, cchar *value)
-{
-    char    *option;
-
-    if (!maTokenize(state, value, "%?S", &option)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    if (smatch(option, "defaults")) {
-        parseLine(state, "AuthCipher blowfish");
-        parseLine(state, "Stealth on");
-        parseLine(state, "SessionCookie invisible");
-
-        parseLine(state, "InactivityTimeout 30secs");
-        parseLine(state, "RequestParseTimeout 5sec");
-        parseLine(state, "RequestTimeout 5mins");
-        parseLine(state, "SessionTimeout 5mins");
-
-        parseLine(state, "Header set Content-Security-Policy default-src 'self'");
-        parseLine(state, "Header set X-XSS-Protection 1; mode=block");
-        parseLine(state, "Header set X-Frame-Options deny");
-        parseLine(state, "Header set X-Content-Type-Options: nosniff");
-
-        parseLine(state, "LimitRequestsPerClient 20");
-        parseLine(state, "LimitRequestBody 50K");
-        parseLine(state, "LimitRequestForm 32K");
-        parseLine(state, "LimitUri 512");
-#if BIT_PACK_SSL
-        parseLine(state, "Redirect secure");
-#endif
-    } else {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    return 0;
-}
-
-/*
     ServerName URI
  */
 static int serverNameDirective(MaState *state, cchar *key, cchar *value)
@@ -2114,7 +2064,7 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
  */
 static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 {
-    httpSetRouteCookieVisibility(state->route, scaselessmatch(value, "visible"));
+    httpSetRouteSessionVisibility(state->route, scaselessmatch(value, "visible"));
     return 0;
 }
 
@@ -2547,7 +2497,7 @@ PUBLIC bool maValidateServer(MaServer *server)
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(route->extensions, "")) {
-                mprError("Route %s in host %s is missing a catch-all handler\n"
+                mprLog(3, "Route %s in host %s is missing a catch-all handler. "
                     "Adding: AddHandler fileHandler \"\"", route->name, host->name);
                 httpAddRouteHandler(route, "fileHandler", "");
             }
@@ -2948,7 +2898,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Alias", aliasDirective);
     maAddDirective(appweb, "Allow", allowDirective);
     maAddDirective(appweb, "AuthAutoLogin", authAutoLoginDirective);
-    maAddDirective(appweb, "AuthCipher", authCipherDirective);
     maAddDirective(appweb, "AuthDigestQop", authDigestQopDirective);
     maAddDirective(appweb, "AuthType", authTypeDirective);
     maAddDirective(appweb, "AuthRealm", authRealmDirective);
@@ -3027,7 +2976,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Role", roleDirective);
     maAddDirective(appweb, "<Route", routeDirective);
     maAddDirective(appweb, "</Route", closeDirective);
-    maAddDirective(appweb, "Secure", secureDirective);
     maAddDirective(appweb, "ServerName", serverNameDirective);
     maAddDirective(appweb, "SessionCookie", sessionCookieDirective);
     maAddDirective(appweb, "SessionTimeout", sessionTimeoutDirective);
