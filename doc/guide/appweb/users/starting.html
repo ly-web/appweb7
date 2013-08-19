@@ -150,6 +150,11 @@ of the web pages.
                 <li>Load and configure the net and send connectors.</li>
                 <li>Create a /cgi-bin/ location block set to the cgi-bin directory in the server root.</li>
             </ul>
+
+            <a name="signals"></a>
+            <h2 class="section">Signals</h2>
+            <p>Appweb responds to the SIGUSR2 signal to toggle the trace level from 2 to 4 and vice-versa. Appweb responds
+            to the SIGINFO on Mac OSX and SIGPWR on Unix to emit some operational stats to the trace log.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
