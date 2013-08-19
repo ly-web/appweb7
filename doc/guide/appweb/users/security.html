@@ -544,27 +544,51 @@ AddType application/x-httpd-php .web
             you use the <a href="../../../api/mpr.html">MPR</a> services for all your ESP code. This portable runtime
             has been extensively tested and includes routines to guard against common buffer overflows and other such
             exploits.</p>
-            <h2 class="section">Appweb Configuration</h2>
-            <p>The following set of Appweb directives provide a good starting point when securing your web site or application.</p>
+
+            <a name="securedefaults"></a>
+            <h2 class="section">Appweb Secure By Default</h2>
+            <p>Appweb is designed to be secure by default. This means that the default configuration enables 
+            security best-practices to limit cross-site-scripting vulnerabilities. It also implies a fairly
+            restrictive security sandbox. This default configuration may be a little too restrictive for your application. 
+            In that case, you can easily remove or override these defaults by the relevant Appweb directives.</p>
+            <p>Appweb uses the following built-in configuration for the default route.</p>
             <pre>
-Redirect secure
-AuthCipher blowfish
-Stealth on
-SessionCookie invisible
-InactivityTimeout 30secs
-RequestParseTimeout 5sec
-RequestTimeout 5mins
-SessionTimeout 5mins
-Header set Content-Security-Policy default-src 'self'
-Header set X-XSS-Protection 1; mode=block
-Header set X-Frame-Options deny
-Header set X-Content-Type-Options: nosniff
-LimitRequestsPerClient 20
-LimitRequestBody 50K
-LimitRequestForm 32K
-LimitUri 512</pre>
-            <p>Or more conveniently, use 
-            <pre>Secure defaults</pre> which translates into the previous set of configuration directives.</p>
+Header set Content-Security-Policy  "default-src 'self'"
+Header set X-XSS-Protection         "1; mode=block"
+Header set X-Frame-Options          "deny"
+Header set X-Content-Type-Options   "nosniff"
+
+SessionCookie           invisible
+Stealth                 on
+InactivityTimeout       30secs
+RequestParseTimeout     5sec
+RequestTimeout          5mins
+SessionTimeout          5mins
+LimitConnections        50
+LimitProcesses          10
+LimitRequestsPerClient  20
+LimitRequestBody        128K
+LimitRequestForm        128K
+LimitUpload             unlimited
+LimitUri                512
+LimitWebSockets         25
+LimitWebSocketsPacket   8K
+LimitWebSocketsFrame    4K
+LimitWorkers            5
+</pre>
+            <p>The default Content Security Policy header is set to only permit content loaded from the server running
+            appweb. It also bans inline scripts as these are vulnerable to inline script injection.
+            See <a href="http://www.html5rocks.com/en/tutorials/security/content-security-policy/">An Introduction to
+                Content Security Policy</a> for more information.</p>
+
+            <p>You can override these directives globally in the main section of appweb.conf or locally in a specific route.
+            (Except for LimitProcesses which always applies globally). You can remove the default security headers via:
+<pre>
+Header remove Content-Security-Policy
+Header remove X-XSS-Protection
+Header remove X-Frame-Options
+Header remove X-Content-Type-Options
+</pre>
             <p>Other directives worth considering are:</p>
             <pre>
 Chroot "."
