@@ -803,7 +803,7 @@ static int defenseDirective(MaState *state, cchar *key, cchar *value)
 {
     cchar   *name, *args; 
 
-    if (!maTokenize(state, value, "%S %S ?*", &name, &args)) {
+    if (!maTokenize(state, value, "%S ?*", &name, &args)) {
         return MPR_ERR_BAD_SYNTAX;
     }
     httpAddDefense(name, NULL, args);
