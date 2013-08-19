@@ -160,10 +160,10 @@ static int parseFileInner(MaState *state, cchar *path)
 }
 
 
-static int inline parseLine(MaState *state, cchar *line)
+static int parseLine(MaState *state, cchar *line)
 {
     MaDirective *directive;
-    char    *key, *value;
+    char        *key, *value;
 
     key = getDirective(sclone(line), &value);
     if (!state->enabled) {
@@ -2072,7 +2072,6 @@ static int secureDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (smatch(option, "defaults")) {
-
         parseLine(state, "AuthCipher blowfish");
         parseLine(state, "Stealth on");
         parseLine(state, "SessionCookie invisible");
