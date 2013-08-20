@@ -11184,7 +11184,7 @@ PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
     hash->flags = flags | MPR_OBJ_HASH;
     hash->size = hashSize;
     hash->length = 0;
-    if (!(flags & MPR_HASH_OWN)) {
+    if (!(flags & MPR_HASH_STABLE)) {
         hash->mutex = mprCreateLock();
     } else {
         hash->mutex = 0;

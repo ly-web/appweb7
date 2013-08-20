@@ -129,8 +129,8 @@ static Sdb *sdbCreate(cchar *path, int flags)
     sdb->edi.flags = flags;
     sdb->edi.provider = &SdbProvider;
     sdb->edi.path = sclone(path);
-    sdb->schemas = mprCreateHash(0, 0);
-    sdb->validations = mprCreateHash(0, 0);
+    sdb->schemas = mprCreateHash(0, MPR_HASH_STABLE);
+    sdb->validations = mprCreateHash(0, MPR_HASH_STABLE);
     return sdb;
 }
 
@@ -317,7 +317,7 @@ static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
     sdb = (Sdb*) edi;
     vkey = sfmt("%s.%s", tableName, columnName);
     if ((validations = mprLookupKey(sdb->validations, vkey)) == 0) {
-        validations = mprCreateList(0, 0);
+        validations = mprCreateList(0, MPR_LIST_STABLE);
         mprAddKey(sdb->validations, vkey, validations);
     }
     for (ITERATE_ITEMS(validations, prior, next)) {
@@ -361,7 +361,7 @@ static MprList *sdbGetColumns(Edi *edi, cchar *tableName)
     if ((schema = getSchema(edi, tableName)) == 0) {
         return 0;
     }
-    if ((result = mprCreateList(0, 0)) == 0) {
+    if ((result = mprCreateList(0, MPR_LIST_STABLE)) == 0) {
         return 0;
     }
     for (c = 0; c < schema->nfields; c++) {
@@ -413,7 +413,7 @@ static MprList *sdbGetTables(Edi *edi)
     if ((grid = sdbQuery(edi, "SELECT name from sqlite_master WHERE type = 'table' order by NAME;")) == 0) {
         return 0;
     }
-    if ((result = mprCreateList(0, 0)) == 0) {
+    if ((result = mprCreateList(0, MPR_LIST_STABLE)) == 0) {
         return 0;
     }
     for (r = 0; r < grid->nrecords; r++) {
@@ -498,7 +498,7 @@ static EdiGrid *query(Edi *edi, cchar *cmd)
         mprError(sdb->edi.errMsg);
         return 0;
     }
-    if ((result = mprCreateList(0, 0)) == 0) {
+    if ((result = mprCreateList(0, MPR_LIST_STABLE)) == 0) {
         return 0;
     }
     defaultTableName = 0;
@@ -797,7 +797,7 @@ static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *column
         for (ITERATE_ITEMS(validations, vp, next)) {
             if ((error = (*vp->vfn)(vp, rec, columnName, value)) != 0) {
                 if (rec->errors == 0) {
-                    rec->errors = mprCreateHash(0, 0);
+                    rec->errors = mprCreateHash(0, MPR_HASH_STABLE);
                 }
                 mprAddKey(rec->errors, columnName, sfmt("%s %s", columnName, error));
                 pass = 0;

@@ -691,7 +691,7 @@ static MprHash *getTargets(int argc, char **argv)
     MprHash     *targets;
     int         i;
 
-    targets = mprCreateHash(0, 0);
+    targets = mprCreateHash(0, MPR_HASH_STABLE);
     for (i = 0; i < argc; i++) {
         mprAddKey(targets, mprGetAbsPath(argv[i]), NULL);
     }
@@ -718,7 +718,7 @@ static MprList *getRoutes()
     }
     routeName = app->routeName;
     routePrefix = app->routePrefix ? app->routePrefix : 0;
-    routes = mprCreateList(0, 0);
+    routes = mprCreateList(0, MPR_LIST_STABLE);
 
     /*
         Filter ESP routes. Go in reverse order to locate outermost routes first.
@@ -1037,7 +1037,7 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
     }
     mprTrace(4, "ESP command: %s\n", app->command);
     if (eroute->env) {
-        elist = mprCreateList(0, 0);
+        elist = mprCreateList(0, MPR_LIST_STABLE);
         for (ITERATE_KEYS(eroute->env, var)) {
             mprAddItem(elist, sfmt("%s=%s", var->key, var->data));
         }
@@ -1248,7 +1248,7 @@ static void compile(MprList *routes)
     }
 #endif
     if (app->flat && app->genlink) {
-        app->slink = mprCreateList(0, 0);
+        app->slink = mprCreateList(0, MPR_LIST_STABLE);
     }
     for (ITERATE_ITEMS(routes, route, next)) {
         eroute = route->eroute;
@@ -1433,10 +1433,10 @@ static void compileFlat(HttpRoute *route)
     /*
         Flat ... Catenate all source
      */
-    app->flatItems = mprCreateList(-1, 0);
+    app->flatItems = mprCreateList(-1, MPR_LIST_STABLE);
     app->flatPath = mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL));
 
-    app->build = mprCreateList(0, 0);
+    app->build = mprCreateList(0, MPR_LIST_STABLE);
     if (eroute->servicesDir) {
         app->files = mprGetPathFiles(eroute->servicesDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {

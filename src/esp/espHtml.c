@@ -624,7 +624,7 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
     colOptions = httpGetOptionHash(options, "columns");
     cols = ediGetGridColumns(grid);
     ncols = mprGetListLength(cols);
-    rowOptions = mprCreateHash(0, 0);
+    rowOptions = mprCreateHash(0, MPR_HASH_STABLE);
     httpSetOption(rowOptions, EDATA("click"), httpGetOption(options, EDATA("click"), 0));
     httpInsertOption(options, "class", ESTYLE("pivot"));
     httpInsertOption(options, "class", ESTYLE("table"));
@@ -665,7 +665,7 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
             if (httpGetOption(thisCol, "align", 0) == 0) {
                 if (fp->type == EDI_TYPE_INT || fp->type == EDI_TYPE_FLOAT) {
                     if (!thisCol) {
-                        thisCol = mprCreateHash(0, 0);
+                        thisCol = mprCreateHash(0, MPR_HASH_STABLE);
                     }
                     httpInsertOption(thisCol, "align", "right");
                 }
@@ -736,7 +736,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
     }
     cols = ediGetGridColumns(grid);
     ncols = mprGetListLength(cols);
-    rowOptions = mprCreateHash(0, 0);
+    rowOptions = mprCreateHash(0, MPR_HASH_STABLE);
 
     httpSetOption(rowOptions, EDATA("click"), httpGetOption(options, EDATA("click"), 0));
     httpRemoveOption(options, EDATA("click"));
@@ -786,7 +786,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
             if (httpGetOption(thisCol, "align", 0) == 0) {
                 if (fp->type == EDI_TYPE_INT || fp->type == EDI_TYPE_FLOAT) {
                     if (!thisCol) {
-                        thisCol = mprCreateHash(0, 0);
+                        thisCol = mprCreateHash(0, MPR_HASH_STABLE);
                     }
                     httpInsertOption(thisCol, "align", "right");
                 }

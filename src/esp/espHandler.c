@@ -1098,7 +1098,7 @@ static int espEnvDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (eroute->env == 0) {
-        eroute->env = mprCreateHash(-1, 0);
+        eroute->env = mprCreateHash(-1, MPR_HASH_STABLE);
     }
     evalue = espExpandCommand(eroute, evalue, "", "");
     if (scaselessmatch(ekey, "VisualStudio")) {
@@ -1324,11 +1324,13 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if (module) {
         mprSetModuleFinalizer(module, unloadEsp);
     }
+    /* Thread-safe */
     if ((esp->internalOptions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
         return 0;
     }
     espInitHtmlOptions(esp);
 
+    /* Thread-safe */
     if ((esp->views = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
         return 0;
     }

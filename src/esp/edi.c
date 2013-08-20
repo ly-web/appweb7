@@ -26,7 +26,7 @@ PUBLIC EdiService *ediCreateService()
         return 0;
     }
     MPR->ediService = es;
-    es->providers = mprCreateHash(0, MPR_HASH_STATIC_VALUES);
+    es->providers = mprCreateHash(0, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
     addValidations();
     return es;
 }
@@ -588,7 +588,7 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
     /*
         Build list of grids to join
      */
-    grids = mprCreateHash(0, 0);
+    grids = mprCreateHash(0, MPR_HASH_STABLE);
     for (;;) {
         if ((grid = va_arg(vgrids, EdiGrid*)) == 0) {
             break;
@@ -1064,7 +1064,7 @@ PUBLIC void ediAddFieldError(EdiRec *rec, cchar *field, cchar *fmt, ...)
 
     va_start(args, fmt);
     if (rec->errors == 0) {
-        rec->errors = mprCreateHash(0, 0);
+        rec->errors = mprCreateHash(0, MPR_HASH_STABLE);
     }
     mprAddKey(rec->errors, field, sfmtv(fmt, args));
     va_end(args);
@@ -1092,6 +1092,7 @@ static void addValidations()
     EdiService  *es;
 
     es = MPR->ediService;
+    /* Thread safe */
     es->validations = mprCreateHash(0, MPR_HASH_STATIC_VALUES);
     ediDefineValidation("boolean", checkBoolean);
     ediDefineValidation("format", checkFormat);

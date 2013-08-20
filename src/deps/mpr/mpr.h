@@ -3252,7 +3252,7 @@ PUBLIC int mprGetTimeZoneOffset(MprTime when);
  */
 #define MPR_OBJ_LIST            0x1     /**< Object is a hash */
 #define MPR_LIST_STATIC_VALUES  0x20    /**< Flag for #mprCreateList when values are permanent */
-#define MPR_LIST_STABLE         0x40    /**< For own use. Not thread safe */
+#define MPR_LIST_STABLE         0x40    /**< Contents are stable or only accessed by one thread. Does not need thread locking */
 #if DEPRECATED || 1
 #define MPR_LIST_OWN MPR_LIST_STABLE
 #endif
@@ -4008,8 +4008,12 @@ typedef uint (*MprHashProc)(cvoid *name, ssize len);
 #define MPR_HASH_STATIC_VALUES  0x80    /**< Values are permanent - don't mark */
 #define MPR_HASH_LIST           0x100   /**< Hash keys are numeric indicies */
 #define MPR_HASH_UNIQUE         0x200   /**< Add to existing will fail */
-#define MPR_HASH_OWN            0x400   /**< For own use. Not thread safe */
+#define MPR_HASH_STABLE         0x400   /**< Contents are stable or only accessed by one thread. Does not need thread locking */
 #define MPR_HASH_STATIC_ALL     (MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES)
+
+#if DEPRECATED || 1
+#define MPR_HASH_OWN MPR_HASH_STABLE
+#endif
 
 /**
     Hash table control structure
@@ -4101,7 +4105,7 @@ PUBLIC MprHash *mprCloneHash(MprHash *table);
     @param flags Table control flags. Use MPR_HASH_CASELESS for case insensitive comparisions, MPR_HASH_UNICODE
         if the hash keys are unicode strings, MPR_HASH_STATIC_KEYS if the keys are permanent and should not be
         managed for Garbage collection, and MPR_HASH_STATIC_VALUES if the values are permanent.
-        MPR_HASH_OWN to create an optimized list for private use that is not thread-safe.
+        MPR_HASH_STABLE to create an optimized list when the contents are stable or only accessed by one thread.
     @return Returns a pointer to the allocated symbol table.
     @ingroup MprHash
     @stability Stable.

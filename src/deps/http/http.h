@@ -356,6 +356,9 @@ typedef struct HttpAddress {
 
 typedef void (*HttpRemedyProc)(MprHash *args);
 
+/*
+    Per-defense structure
+ */
 typedef struct HttpDefense {
     cchar           *name;                      /**< Defense name */
     cchar           *remedy;                    /**< Remedy name to invoke */
@@ -454,7 +457,8 @@ PUBLIC uint64 httpGetNumber(cchar *value);
 /************************************ Http **********************************/
 /** 
     Http service object
-    @description The Http service is managed by a single service object.
+    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
     @defgroup Http Http
     @see Http HttpConn HttpEndpoint gettGetDateString httpConfigurenamedVirtualEndpoint httpCreate
         httpDestroy httpGetContext httpGetDateString httpLookupEndpoint httpLookupStatus httpLooupHost 
@@ -1773,6 +1777,8 @@ typedef int (*HttpParse)(Http *http, cchar *key, char *value, void *state);
         \n\n
         Stages provide callback methods for parsing configuration, matching requests, open/close, run and the
         acceptance and service of incoming and outgoing data.
+    Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
     @defgroup HttpStage HttpStage 
     @see HttpConn HttpQueue HttpStage httpCloneStage httpCreateConnector httpCreateFilter httpCreateHandler 
         httpCreateStage httpDefaultOutgoingServiceStage httpGetStageData httpHandleOptionsTrace httpLookupStage 
@@ -3381,6 +3387,8 @@ typedef struct HttpLang {
 
 /**
     Cache Control
+    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
     @defgroup HttpCache HttpCache
     @see HttpCache httpAddCache httpUpdateCache httpWriteCache
     @stability Internal
@@ -3568,6 +3576,8 @@ PUBLIC void httpSetStreaming(struct HttpHost *host, cchar *mime, cchar *uri, boo
 
 /**
     Route Control
+    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
     @defgroup HttpRoute HttpRoute
     @see HttpRoute httpAddRouteCondition httpAddRouteErrorDocument
         httpAddRouteFilter httpAddRouteHandler httpAddRouteHeader httpAddRouteLanguageDir httpAddRouteLanguageSuffix 

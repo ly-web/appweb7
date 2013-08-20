@@ -231,7 +231,7 @@ static int runCommand(EspRoute *eroute, MprDispatcher *dispatcher, cchar *comman
     }
     mprTrace(4, "ESP command: %s\n", commandLine);
     if (eroute->env) {
-        elist = mprCreateList(0, 0);
+        elist = mprCreateList(0, MPR_LIST_STABLE);
         for (ITERATE_KEYS(eroute->env, var)) {
             mprAddItem(elist, sfmt("%s=%s", var->key, var->data));
         }

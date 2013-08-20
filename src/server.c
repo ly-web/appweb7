@@ -30,7 +30,7 @@ PUBLIC MaAppweb *maCreateAppweb()
     MPR->appwebService = appweb;
     appweb->http = http = httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE);
     httpSetContext(http, appweb);
-    appweb->servers = mprCreateList(-1, 0);
+    appweb->servers = mprCreateList(-1, MPR_LIST_STABLE);
     appweb->localPlatform = slower(sfmt("%s-%s-%s", BIT_OS, BIT_CPU, BIT_PROFILE));
     maSetPlatform(NULL);
     maGetUserGroup(appweb);
@@ -157,7 +157,7 @@ PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
         name = "default";
     }
     server->name = sclone(name);
-    server->endpoints = mprCreateList(-1, 0);
+    server->endpoints = mprCreateList(-1, MPR_LIST_STABLE);
     server->limits = httpCreateLimits(1);
     server->appweb = appweb;
     server->http = appweb->http;

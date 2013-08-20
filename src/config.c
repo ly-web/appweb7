@@ -2885,7 +2885,7 @@ PUBLIC void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc)
 
 PUBLIC int maParseInit(MaAppweb *appweb)
 {
-    if ((appweb->directives = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_CASELESS)) == 0) {
+    if ((appweb->directives = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_CASELESS | MPR_HASH_STABLE)) == 0) {
         return MPR_ERR_MEMORY;
     }
     maAddDirective(appweb, "AddLanguageSuffix", addLanguageSuffixDirective);

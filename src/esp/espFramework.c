@@ -176,7 +176,7 @@ PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
     if (rec) {
         return ediGetColumns(espGetDatabase(conn), rec->tableName);
     }
-    return mprCreateList(0, 0);
+    return mprCreateList(0, MPR_LIST_STABLE);
 }
 
 
@@ -945,7 +945,7 @@ PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list arg
     msg = sfmtv(fmt, args);
 
     if (req->feedback == 0) {
-        req->feedback = mprCreateHash(0, 0);
+        req->feedback = mprCreateHash(0, MPR_HASH_STABLE);
     }
     if ((prior = mprLookupKey(req->feedback, kind)) != 0) {
         kp = mprAddKey(req->feedback, kind, sjoin(prior, "\n", msg, NULL));
@@ -978,7 +978,7 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
     msg = sfmtv(fmt, args);
 
     if (req->flash == 0) {
-        req->flash = mprCreateHash(0, 0);
+        req->flash = mprCreateHash(0, MPR_HASH_STABLE);
     }
     if ((prior = mprLookupKey(req->flash, kind)) != 0) {
         kp = mprAddKey(req->flash, kind, sjoin(prior, "\n", msg, NULL));

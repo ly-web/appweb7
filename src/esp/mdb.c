@@ -245,7 +245,7 @@ static int mdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
         if (table->index) {
             mprError("Index already specified in table %s, replacing.", tableName);
         }
-        if ((table->index = mprCreateHash(0, MPR_HASH_STATIC_VALUES)) != 0) {
+        if ((table->index = mprCreateHash(0, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE)) != 0) {
             table->indexCol = col;
         }
     }
@@ -279,7 +279,7 @@ static int mdbAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *ind
         unlock(mdb);
         return MPR_ERR_CANT_FIND;
     }
-    if ((table->index = mprCreateHash(0, MPR_HASH_STATIC_VALUES)) == 0) {
+    if ((table->index = mprCreateHash(0, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE)) == 0) {
         unlock(mdb);
         return MPR_ERR_MEMORY;
     }
@@ -309,13 +309,13 @@ static int mdbAddTable(Edi *edi, cchar *tableName)
         unlock(mdb);
         return MPR_ERR_MEMORY;
     }
-    if ((table->rows = mprCreateList(0, 0)) == 0) {
+    if ((table->rows = mprCreateList(0, MPR_LIST_STABLE)) == 0) {
         unlock(mdb);
         return MPR_ERR_MEMORY;
     }
     table->name = sclone(tableName);
     if (mdb->tables == 0) {
-        mdb->tables = mprCreateList(0, 0);
+        mdb->tables = mprCreateList(0, MPR_LIST_STABLE);
     }
     if (!growSchema(table)) {
         unlock(mdb);
@@ -349,7 +349,7 @@ static int mdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
         return MPR_ERR_CANT_FIND;
     }
     if (col->validations == 0) {
-        col->validations = mprCreateList(0, 0);
+        col->validations = mprCreateList(0, MPR_LIST_STABLE);
     }
     mprAddItem(col->validations, vp);
     unlock(mdb);
@@ -445,7 +445,7 @@ static MprList *mdbGetColumns(Edi *edi, cchar *tableName)
     }
     schema = table->schema;
     assert(schema);
-    list = mprCreateList(schema->ncols, 0);
+    list = mprCreateList(schema->ncols, MPR_LIST_STABLE);
     for (i = 0; i < schema->ncols; i++) {
         /* No need to clone */
         mprAddItem(list, schema->cols[i].name);
@@ -517,7 +517,7 @@ static MprList *mdbGetTables(Edi *edi)
 
     mdb = (Mdb*) edi;
     lock(mdb);
-    list = mprCreateList(-1, 0);
+    list = mprCreateList(-1, MPR_LIST_STABLE);
     ntables = mprGetListLength(mdb->tables);
     for (tid = 0; tid < ntables; tid++) {
         table = mprGetItem(mdb->tables, tid);
@@ -1195,7 +1195,7 @@ static int mdbLoadFromString(Edi *edi, cchar *str)
     mdb = (Mdb*) edi;
     mdb->edi.flags |= EDI_SUPPRESS_SAVE;
     mdb->edi.flags |= MDB_LOADING;
-    mdb->loadStack = mprCreateList(0, 0);
+    mdb->loadStack = mprCreateList(0, MPR_LIST_STABLE);
     pushState(mdb, MDB_LOAD_BEGIN);
 
     cb.makeObj = makeMdbObj;
@@ -1606,7 +1606,7 @@ static bool validateField(EdiRec *rec, MdbTable *table, MdbCol *col, cchar *valu
             if ((error = (*vp->vfn)(vp, rec, col->name, value)) != 0) {
                 //  MOB - functionalize ediAddFieldError
                 if (rec->errors == 0) {
-                    rec->errors = mprCreateHash(0, 0);
+                    rec->errors = mprCreateHash(0, MPR_HASH_STABLE);
                 }
                 mprAddKey(rec->errors, col->name, sfmt("%s %s", col->name, error));
                 pass = 0;
