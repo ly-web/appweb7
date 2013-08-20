@@ -23,7 +23,6 @@ The server listens on port 8080. Browse to:
 
 Code:
 ---
-* [server.c](server.c) - Web server program
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [index.esp](index.esp) - ESP test page using sessions
 * [start.bit](start.bit) - Bit build instructions

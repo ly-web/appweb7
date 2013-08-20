@@ -8,17 +8,12 @@ Bit.load({
         bit: '0.8.6',
     },
     targets: {
-        server: {
-            type:    'exe',
-            sources: '*.c',
-            depends: ['appweb'],
-        },
         run: {
-            run: './server',
+            run: 'appweb',
         },
         cleanup: {
             type: 'clean',
-            action: "rm(['cache/*', 'server.o'])",
+            action: "rm(['cache/*'])",
         },
     },
     packDefaults: { appweb: true },

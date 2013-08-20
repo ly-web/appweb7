@@ -151,6 +151,9 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
     Mpr   *mpr;
     int   code;
 
+    if (err) {
+        *err = 0;
+    }
     if (response) {
         *response = 0;
     }

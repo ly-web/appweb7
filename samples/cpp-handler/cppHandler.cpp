@@ -60,6 +60,7 @@ int maSimpleHandlerInit(Http *http, MprModule *module)
     }
     stage->ready = readySimple;
     stage->incoming = incomingSimple;
+    mprLog(0, "Loaded SimpleHandler");
     return 0;
 }
 

@@ -57,7 +57,6 @@ Code:
 * [db/blog.mdb](db/blog.mdb) - Blog database 
 * [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema
 * [layouts](layouts) - Master view layout templates 
-* [server.c](server.c) - Web server main program
 * [static](static) - Static web content
 * [start.bit](start.bit) - Bit build instructions
 * [views](views) - Web views

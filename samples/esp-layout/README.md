@@ -25,7 +25,6 @@ The server listens on port 8080. Browse to:
 
 Code:
 ---
-* [server.c](server.c) - Web server program
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [index.esp](index.esp) - ESP page to serve. Uses layout.esp as a template.
 * [layout.esp](index.esp) - ESP layout template

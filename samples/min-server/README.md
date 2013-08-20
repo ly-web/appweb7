@@ -4,8 +4,7 @@ Minimum Config Server Sample
 This sample shows a minimal set of configuration directives. This server supports the file and ESP handlers.
 CGI, PHP, Ejscript and SSL are not configured.
 
-The purpose of this sample is to show the minimal appweb.conf for serving static and ESP content. You
-are encouraged to read the [typical-server - Typical server](../typical-server/README.md) sample to see what
+You are encouraged to read the [typical-server - Typical server](../typical-server/README.md) sample to see what
 other appweb.conf directives are available.
 
 Requirements
@@ -27,7 +26,6 @@ The server listens on port 8080. Browse to:
 
 Code:
 ---
-* [server.c](server.c) - Main program
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [auth.conf](auth.conf) - User/Password/Role authorization file
 * [esp.conf](esp.conf) - ESP compiler rules

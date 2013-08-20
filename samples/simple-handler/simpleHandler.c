@@ -41,7 +41,9 @@ static void incomingSimple(HttpQueue *q, HttpPacket *packet)
     /*
         Do something with the incoming data packet
      */
-    printf("Data in packet is %s\n", mprGetBufStart(packet->content));
+    if (packet->content) {
+        printf("Data in packet is %s\n", mprGetBufStart(packet->content));
+    }
 }
 
 

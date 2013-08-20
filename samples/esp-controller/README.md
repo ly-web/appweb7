@@ -1,9 +1,8 @@
 ESP Controller Sample
 ===
 
-This sample shows how to create and configure ESP controllers.
-The controller is in controller.c. It registers one action that is run in response
-to the URI: /test/hello.
+This sample shows how to create and configure ESP controllers. The controller is in 
+controller.c. It registers one action that is run in response to the URI: /test/hello.
 
 Requirements
 ---
@@ -29,7 +28,6 @@ next accessed.
 
 Code:
 ---
-* [server.c](server.c) - Web server program
 * [controller.c](controller.c) - ESP controller source
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [start.bit](start.bit) - Bit build instructions

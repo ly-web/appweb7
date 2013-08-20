@@ -26,7 +26,6 @@ You will see trace in the console for the custom directive:
 
 Code:
 ---
-* [server.c](server.c) - Main program
 * [simpleModule.c](simpleModule.c) - Simple module
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [start.bit](start.bit) - Bit build instructions

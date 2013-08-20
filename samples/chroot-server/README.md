@@ -15,12 +15,16 @@ To build:
 
 To run:
 ---
-    bit run
+    sudo bit run
 
 The server listens on port 8080. Browse to:
 
      http://localhost:8080/
      http://localhost:8080/test.esp
+
+Alternatively, run appweb to use the appweb.conf file.
+
+    sudo appweb
 
 Notes:
 ---

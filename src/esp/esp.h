@@ -2032,7 +2032,7 @@ PUBLIC MprHash *params();
     Read the identified record 
     @description Read the record identified by the request param("id") from the nominated table.
     @param tableName Database table name
-    @param key Key value of the record to remove 
+    @param key Key value of the record to read 
     @return The identified record. Returns NULL if the table or record cannot be found.
     @ingroup EspAbbrev
     @stability Evolving

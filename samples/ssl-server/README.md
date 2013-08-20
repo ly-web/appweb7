@@ -22,7 +22,6 @@ The server listens on port 4443 for SSL requests. Browse to:
 
 Code:
 ---
-* [server.c](server.c) - Main program
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [self.crt](self.crt) - Self-signed test certificate
 * [self.key](self.key) - Test private key
