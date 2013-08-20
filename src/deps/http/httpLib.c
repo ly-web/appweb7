@@ -5522,6 +5522,31 @@ PUBLIC char *httpStatsReport(int flags)
 }
 
 
+PUBLIC bool httpConfigure(HttpConfigureProc proc, void *data, MprTicks timeout)
+{
+    Http        *http;
+    MprTicks    mark;
+
+    http = MPR->httpService;
+    mark = mprGetTicks();
+    if (timeout <= 0) {
+        timeout = MAXINT;
+    }
+    do {
+        lock(http->connections);
+        /* Own request will count as 1 */
+        if (mprGetListLength(http->connections) == 0) {
+            (proc)(data);
+            unlock(http->connections);
+            return 1;
+        }
+        unlock(http->connections);
+        mprSleep(10);
+        /* Defaults to 10 secs */
+    } while (mprGetRemainingTicks(mark, timeout) > 0);
+    return 0;
+}
+
 
 /*
     @copy   default
@@ -9312,10 +9337,6 @@ PUBLIC HttpRoute *httpCreateConfiguredRoute(HttpHost *host, int serverSide)
      */
     route = httpCreateRoute(host);
     http = route->http;
-#if UNUSED
-    httpAddRouteFilter(route, http->rangeFilter->name, NULL, HTTP_STAGE_TX);
-    httpAddRouteFilter(route, http->chunkFilter->name, NULL, HTTP_STAGE_RX | HTTP_STAGE_TX);
-#endif
 #if BIT_HTTP_WEB_SOCKETS
     httpAddRouteFilter(route, http->webSocketFilter->name, NULL, HTTP_STAGE_RX | HTTP_STAGE_TX);
 #endif

@@ -544,7 +544,6 @@ AddType application/x-httpd-php .web
             you use the <a href="../../../api/mpr.html">MPR</a> services for all your ESP code. This portable runtime
             has been extensively tested and includes routines to guard against common buffer overflows and other such
             exploits.</p>
-
             <a name="securedefaults"></a>
             <h2 class="section">Appweb Secure By Default</h2>
             <p>Appweb is designed to be secure by default. This means that the default configuration enables 
@@ -557,7 +556,6 @@ Header set Content-Security-Policy  "default-src 'self'"
 Header set X-XSS-Protection         "1; mode=block"
 Header set X-Frame-Options          "deny"
 Header set X-Content-Type-Options   "nosniff"
-
 SessionCookie           invisible
 Stealth                 on
 InactivityTimeout       30secs
@@ -580,7 +578,6 @@ LimitWorkers            5
             appweb. It also bans inline scripts as these are vulnerable to inline script injection.
             See <a href="http://www.html5rocks.com/en/tutorials/security/content-security-policy/">An Introduction to
                 Content Security Policy</a> for more information.</p>
-
             <p>You can override these directives globally in the main section of appweb.conf or locally in a specific route.
             (Except for LimitProcesses which always applies globally). You can remove the default security headers via:
 <pre>

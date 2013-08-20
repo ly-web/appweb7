@@ -32,6 +32,10 @@ DESCRIPTION
        address  is  omitted  and a port is supplied, Appweb will listen on all
        network interfaces.
 
+       Appweb responds to the SIGUSR2 signal and toggles the trace level  from
+       2 to 4 and vice-versa. Appweb responds to the SIGINFO|SIGPWR signal and
+       emits operational stats to the trace log.
+
 OPTIONS
        --config filename
               Define the name of the Appweb configuration  file.  This  is  by
