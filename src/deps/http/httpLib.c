@@ -10232,6 +10232,13 @@ PUBLIC void httpResetRoutePipeline(HttpRoute *route)
     if (!route->parent || route->languages != route->parent->languages) {
         route->languages = 0;
     }
+    if (!route->parent || route->headers != route->parent->headers) {
+        route->headers = 0;
+        httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "Content-Security-Policy", "default-src 'self'");
+        httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-XSS-Protection", "1; mode=block");
+        httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Frame-Options", "SAMEORIGIN");
+        httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Content-Type-Options", "nosniff");
+    }
 }
 
 
