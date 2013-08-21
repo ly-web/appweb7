@@ -7,7 +7,7 @@
 const PORT = App.config.test.http_port || "4100"
 const WS = "ws://127.0.0.1:" + PORT + "/websockets/basic/len"
 const TIMEOUT = 5000 * 1000
-const LEN = 8200  // 256 * 1024
+const LEN = 256 * 1024
 
 assert(WebSocket)
 let ws = new WebSocket(WS)
@@ -46,4 +46,3 @@ let info = deserialize(response)
 assert(info.type == 2)
 assert(info.last == 1)
 assert(info.length == data.length)
-assert(info.data == "23456789")
