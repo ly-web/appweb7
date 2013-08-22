@@ -207,17 +207,23 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-testScript", "appweb-w
 		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
-		{23D633D5-5B77-4AC1-88C4-0CBE6EC41B81} = {23D633D5-5B77-4AC1-88C4-0CBE6EC41B81}
+		{7316F140-3A06-4125-A34A-F39D11BB56EF} = {7316F140-3A06-4125-A34A-F39D11BB56EF}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-cache.cgi", "appweb-windows-default\test-cache.cgi.vcxproj", "{C62B9E06-2DB0-4186-A1F4-BCDE0778635B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7316F140-3A06-4125-A34A-F39D11BB56EF} = {7316F140-3A06-4125-A34A-F39D11BB56EF}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-basic.cgi", "appweb-windows-default\test-basic.cgi.vcxproj", "{081E18F4-0BC0-46DE-B37B-89F9AE162E6D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6589CC4A-746D-4282-9076-57CB05F6CAE4} = {6589CC4A-746D-4282-9076-57CB05F6CAE4}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7316F140-3A06-4125-A34A-F39D11BB56EF} = {7316F140-3A06-4125-A34A-F39D11BB56EF}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-cgiProgram", "appweb-windows-default\test-cgiProgram.vcxproj", "{FFF2C1F1-EF41-4840-B575-6128858DB7F0}"

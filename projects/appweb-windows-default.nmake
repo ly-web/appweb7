@@ -2054,9 +2054,32 @@ $(CONFIG)\bin\testAppweb.exe: $(DEPS_95)
 #
 #   test-testScript
 #
+DEPS_96 = $(DEPS_96) $(CONFIG)\inc\mpr.h
 DEPS_96 = $(DEPS_96) $(CONFIG)\inc\bit.h
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\cgiProgram.obj
-DEPS_96 = $(DEPS_96) $(CONFIG)\bin\cgiProgram.exe
+DEPS_96 = $(DEPS_96) $(CONFIG)\inc\bitos.h
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\mprLib.obj
+DEPS_96 = $(DEPS_96) $(CONFIG)\bin\libmpr.dll
+DEPS_96 = $(DEPS_96) $(CONFIG)\inc\pcre.h
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\pcre.obj
+!IF "$(BIT_PACK_PCRE)" == "1"
+DEPS_96 = $(DEPS_96) $(CONFIG)\bin\libpcre.dll
+!ENDIF
+DEPS_96 = $(DEPS_96) $(CONFIG)\inc\http.h
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\httpLib.obj
+DEPS_96 = $(DEPS_96) $(CONFIG)\bin\libhttp.dll
+DEPS_96 = $(DEPS_96) $(CONFIG)\inc\appweb.h
+DEPS_96 = $(DEPS_96) $(CONFIG)\inc\customize.h
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\config.obj
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\convenience.obj
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\dirHandler.obj
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\fileHandler.obj
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\log.obj
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\server.obj
+DEPS_96 = $(DEPS_96) $(CONFIG)\bin\libappweb.dll
+DEPS_96 = $(DEPS_96) $(CONFIG)\inc\testAppweb.h
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\testAppweb.obj
+DEPS_96 = $(DEPS_96) $(CONFIG)\obj\testHttp.obj
+DEPS_96 = $(DEPS_96) $(CONFIG)\bin\testAppweb.exe
 
 test\cgi-bin\testScript: $(DEPS_96)
 #  Omit build script test-testScript
@@ -2066,6 +2089,33 @@ test\cgi-bin\testScript: $(DEPS_96)
 #
 #   test-cache.cgi
 #
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\mpr.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\bit.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\bitos.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\mprLib.obj
+DEPS_97 = $(DEPS_97) $(CONFIG)\bin\libmpr.dll
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\pcre.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\pcre.obj
+!IF "$(BIT_PACK_PCRE)" == "1"
+DEPS_97 = $(DEPS_97) $(CONFIG)\bin\libpcre.dll
+!ENDIF
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\http.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\httpLib.obj
+DEPS_97 = $(DEPS_97) $(CONFIG)\bin\libhttp.dll
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\appweb.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\customize.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\config.obj
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\convenience.obj
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\dirHandler.obj
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\fileHandler.obj
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\log.obj
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\server.obj
+DEPS_97 = $(DEPS_97) $(CONFIG)\bin\libappweb.dll
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\testAppweb.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\testAppweb.obj
+DEPS_97 = $(DEPS_97) $(CONFIG)\obj\testHttp.obj
+DEPS_97 = $(DEPS_97) $(CONFIG)\bin\testAppweb.exe
+
 test\web\caching\cache.cgi: $(DEPS_97)
 #  Omit build script test-cache.cgi
 !ENDIF
@@ -2074,6 +2124,33 @@ test\web\caching\cache.cgi: $(DEPS_97)
 #
 #   test-basic.cgi
 #
+DEPS_98 = $(DEPS_98) $(CONFIG)\inc\mpr.h
+DEPS_98 = $(DEPS_98) $(CONFIG)\inc\bit.h
+DEPS_98 = $(DEPS_98) $(CONFIG)\inc\bitos.h
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\mprLib.obj
+DEPS_98 = $(DEPS_98) $(CONFIG)\bin\libmpr.dll
+DEPS_98 = $(DEPS_98) $(CONFIG)\inc\pcre.h
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\pcre.obj
+!IF "$(BIT_PACK_PCRE)" == "1"
+DEPS_98 = $(DEPS_98) $(CONFIG)\bin\libpcre.dll
+!ENDIF
+DEPS_98 = $(DEPS_98) $(CONFIG)\inc\http.h
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\httpLib.obj
+DEPS_98 = $(DEPS_98) $(CONFIG)\bin\libhttp.dll
+DEPS_98 = $(DEPS_98) $(CONFIG)\inc\appweb.h
+DEPS_98 = $(DEPS_98) $(CONFIG)\inc\customize.h
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\config.obj
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\convenience.obj
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\dirHandler.obj
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\fileHandler.obj
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\log.obj
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\server.obj
+DEPS_98 = $(DEPS_98) $(CONFIG)\bin\libappweb.dll
+DEPS_98 = $(DEPS_98) $(CONFIG)\inc\testAppweb.h
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\testAppweb.obj
+DEPS_98 = $(DEPS_98) $(CONFIG)\obj\testHttp.obj
+DEPS_98 = $(DEPS_98) $(CONFIG)\bin\testAppweb.exe
+
 test\web\auth\basic\basic.cgi: $(DEPS_98)
 #  Omit build script test-basic.cgi
 !ENDIF

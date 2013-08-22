@@ -90,14 +90,14 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
 
 <ItemGroup>
-  <ProjectReference Include="cgiProgram.vcxproj">
-  <Project>23d633d5-5b77-4ac1-88c4-0cbe6ec41b81</Project>
+  <ProjectReference Include="testAppweb.vcxproj">
+  <Project>7316f140-3a06-4125-a34a-f39d11bb56ef</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

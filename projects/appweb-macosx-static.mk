@@ -1902,9 +1902,32 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-testScript
 #
+DEPS_88 += $(CONFIG)/inc/mpr.h
 DEPS_88 += $(CONFIG)/inc/bit.h
-DEPS_88 += $(CONFIG)/obj/cgiProgram.o
-DEPS_88 += $(CONFIG)/bin/cgiProgram
+DEPS_88 += $(CONFIG)/inc/bitos.h
+DEPS_88 += $(CONFIG)/obj/mprLib.o
+DEPS_88 += $(CONFIG)/bin/libmpr.a
+DEPS_88 += $(CONFIG)/inc/pcre.h
+DEPS_88 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_88 += $(CONFIG)/bin/libpcre.a
+endif
+DEPS_88 += $(CONFIG)/inc/http.h
+DEPS_88 += $(CONFIG)/obj/httpLib.o
+DEPS_88 += $(CONFIG)/bin/libhttp.a
+DEPS_88 += $(CONFIG)/inc/appweb.h
+DEPS_88 += $(CONFIG)/inc/customize.h
+DEPS_88 += $(CONFIG)/obj/config.o
+DEPS_88 += $(CONFIG)/obj/convenience.o
+DEPS_88 += $(CONFIG)/obj/dirHandler.o
+DEPS_88 += $(CONFIG)/obj/fileHandler.o
+DEPS_88 += $(CONFIG)/obj/log.o
+DEPS_88 += $(CONFIG)/obj/server.o
+DEPS_88 += $(CONFIG)/bin/libappweb.a
+DEPS_88 += $(CONFIG)/inc/testAppweb.h
+DEPS_88 += $(CONFIG)/obj/testAppweb.o
+DEPS_88 += $(CONFIG)/obj/testHttp.o
+DEPS_88 += $(CONFIG)/bin/testAppweb
 
 test/cgi-bin/testScript: $(DEPS_88)
 	cd test; echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..
@@ -1914,6 +1937,33 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-cache.cgi
 #
+DEPS_89 += $(CONFIG)/inc/mpr.h
+DEPS_89 += $(CONFIG)/inc/bit.h
+DEPS_89 += $(CONFIG)/inc/bitos.h
+DEPS_89 += $(CONFIG)/obj/mprLib.o
+DEPS_89 += $(CONFIG)/bin/libmpr.a
+DEPS_89 += $(CONFIG)/inc/pcre.h
+DEPS_89 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_89 += $(CONFIG)/bin/libpcre.a
+endif
+DEPS_89 += $(CONFIG)/inc/http.h
+DEPS_89 += $(CONFIG)/obj/httpLib.o
+DEPS_89 += $(CONFIG)/bin/libhttp.a
+DEPS_89 += $(CONFIG)/inc/appweb.h
+DEPS_89 += $(CONFIG)/inc/customize.h
+DEPS_89 += $(CONFIG)/obj/config.o
+DEPS_89 += $(CONFIG)/obj/convenience.o
+DEPS_89 += $(CONFIG)/obj/dirHandler.o
+DEPS_89 += $(CONFIG)/obj/fileHandler.o
+DEPS_89 += $(CONFIG)/obj/log.o
+DEPS_89 += $(CONFIG)/obj/server.o
+DEPS_89 += $(CONFIG)/bin/libappweb.a
+DEPS_89 += $(CONFIG)/inc/testAppweb.h
+DEPS_89 += $(CONFIG)/obj/testAppweb.o
+DEPS_89 += $(CONFIG)/obj/testHttp.o
+DEPS_89 += $(CONFIG)/bin/testAppweb
+
 test/web/caching/cache.cgi: $(DEPS_89)
 	cd test; echo "#!`type -p ejs`" >web/caching/cache.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; cd ..
@@ -1924,6 +1974,33 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-basic.cgi
 #
+DEPS_90 += $(CONFIG)/inc/mpr.h
+DEPS_90 += $(CONFIG)/inc/bit.h
+DEPS_90 += $(CONFIG)/inc/bitos.h
+DEPS_90 += $(CONFIG)/obj/mprLib.o
+DEPS_90 += $(CONFIG)/bin/libmpr.a
+DEPS_90 += $(CONFIG)/inc/pcre.h
+DEPS_90 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_90 += $(CONFIG)/bin/libpcre.a
+endif
+DEPS_90 += $(CONFIG)/inc/http.h
+DEPS_90 += $(CONFIG)/obj/httpLib.o
+DEPS_90 += $(CONFIG)/bin/libhttp.a
+DEPS_90 += $(CONFIG)/inc/appweb.h
+DEPS_90 += $(CONFIG)/inc/customize.h
+DEPS_90 += $(CONFIG)/obj/config.o
+DEPS_90 += $(CONFIG)/obj/convenience.o
+DEPS_90 += $(CONFIG)/obj/dirHandler.o
+DEPS_90 += $(CONFIG)/obj/fileHandler.o
+DEPS_90 += $(CONFIG)/obj/log.o
+DEPS_90 += $(CONFIG)/obj/server.o
+DEPS_90 += $(CONFIG)/bin/libappweb.a
+DEPS_90 += $(CONFIG)/inc/testAppweb.h
+DEPS_90 += $(CONFIG)/obj/testAppweb.o
+DEPS_90 += $(CONFIG)/obj/testHttp.o
+DEPS_90 += $(CONFIG)/bin/testAppweb
+
 test/web/auth/basic/basic.cgi: $(DEPS_90)
 	cd test; echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; cd ..
