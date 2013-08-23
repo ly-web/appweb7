@@ -2309,8 +2309,10 @@ typedef struct HttpConn {
     void            *mark;                  /**< Reference for GC marking */
     void            *data;                  /**< Custom data for request - must be a managed reference */
     void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
+
 #if (DEPRECATE || 1) && !DOXYGEN
     void            *grid;                  /**< Current request database grid for MVC apps */
+    //  MOB - still used non-legacy
     void            *record;                /**< Current request database record for MVC apps */
 #endif
     char            *boundary;              /**< File upload boundary */

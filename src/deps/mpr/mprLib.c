@@ -11956,12 +11956,18 @@ static MprObj *makeObj(MprJson *jp, bool list)
 }
 
 
-static void quoteValue(MprBuf *buf, cchar *str)
+static void formatValue(MprBuf *buf, cchar *value, int flags)
 {
     cchar   *cp;
 
+    if (flags & MPR_JSON_TYPES) {
+        if (snumber(value) || smatch(value, "null") || smatch(value, "true") || smatch(value, "false")) {
+            mprPutStringToBuf(buf, value);
+            return;
+        }
+    }
     mprPutCharToBuf(buf, '"');
-    for (cp = str; *cp; cp++) {
+    for (cp = value; *cp; cp++) {
         if (*cp == '\'') {
             mprPutCharToBuf(buf, '\\');
         }
@@ -11971,47 +11977,64 @@ static void quoteValue(MprBuf *buf, cchar *str)
 }
 
 
+static void spaces(MprBuf *buf, int count)
+{
+    int     i;
+
+    for (i = 0; i < count; i++) {
+        mprPutStringToBuf(buf, "    ");
+    }
+}
+
+
 /*
     Supports hashes where properties are strings or hashes of strings. N-level nest is supported.
  */
-static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int flags)
+static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int indent, int flags)
 {
     MprKey  *kp;
     char    numbuf[32];
-    int     i, len, quotes, pretty;
+    int     index, len, quotes, pretty;
 
     pretty = flags & MPR_JSON_PRETTY;
     quotes = flags & MPR_JSON_QUOTES;
 
     if (type == MPR_JSON_ARRAY) {
         mprPutCharToBuf(buf, '[');
+        indent++;
         if (pretty) mprPutCharToBuf(buf, '\n');
         len = mprGetHashLength(obj);
-        for (i = 0; i < len; i++) {
-            itosbuf(numbuf, sizeof(numbuf), i, 10);
-            if (pretty) mprPutStringToBuf(buf, "    ");
+        for (index = 0; index < len; index++) {
+            itosbuf(numbuf, sizeof(numbuf), index, 10);
+            if (pretty) {
+                spaces(buf, indent);
+            }
             if ((kp = mprLookupKeyEntry(obj, numbuf)) == 0) {
                 assert(kp);
                 continue;
             }
             if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
-                objToString(buf, (MprObj*) kp->data, kp->type, flags);
+                objToString(buf, (MprObj*) kp->data, kp->type, indent, flags);
             } else {
-                quoteValue(buf, kp->data);
+                formatValue(buf, kp->data, flags);
             }
-            if ((i+1) < len) {
+            if ((index+1) < len) {
                 mprPutCharToBuf(buf, ',');
             }
             if (pretty) mprPutCharToBuf(buf, '\n');
         }
+        spaces(buf, --indent);
         mprPutCharToBuf(buf, ']');
 
     } else if (type == MPR_JSON_OBJ) {
         mprPutCharToBuf(buf, '{');
+        indent++;
         if (pretty) mprPutCharToBuf(buf, '\n');
         for (kp = mprGetFirstKey(obj); kp; ) {
             if (kp->key == 0 || kp->data == 0) continue;
-            if (pretty) mprPutStringToBuf(buf, "    ");
+            if (pretty) {
+                spaces(buf, indent);
+            }
             if (quotes) mprPutCharToBuf(buf, '"');
             mprPutStringToBuf(buf, kp->key);
             if (quotes) mprPutCharToBuf(buf, '"');
@@ -12021,9 +12044,9 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int flags)
                 mprPutCharToBuf(buf, ':');
             }
             if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
-                objToString(buf, (MprObj*) kp->data, kp->type, flags);
+                objToString(buf, (MprObj*) kp->data, kp->type, indent, flags);
             } else {
-                quoteValue(buf, kp->data);
+                formatValue(buf, kp->data, flags);
             }
             kp = mprGetNextKey(obj, kp);
             if (kp) {
@@ -12031,9 +12054,9 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int flags)
             }
             if (pretty) mprPutCharToBuf(buf, '\n');
         }
+        spaces(buf, --indent);
         mprPutCharToBuf(buf, '}');
     }
-    if (pretty) mprPutCharToBuf(buf, '\n');
     return sclone(mprGetBufStart(buf));
 }
 
@@ -12048,7 +12071,10 @@ PUBLIC cchar *mprSerialize(MprObj *obj, int flags)
     if ((buf = mprCreateBuf(0, 0)) == 0) {
         return 0;
     }
-    objToString(buf, obj, MPR_JSON_OBJ, flags);
+    objToString(buf, obj, MPR_JSON_OBJ, 0, flags);
+    if (flags & MPR_JSON_PRETTY) {
+        mprPutCharToBuf(buf, '\n');
+    }
     return mprGetBuf(buf);
 }
 
@@ -12162,6 +12188,42 @@ PUBLIC void *mprQueryJsonValue(MprHash *obj, cchar *key, int type)
         obj = (MprHash*) kp->data;
     }
     return 0;
+}
+
+/*
+    Currently only works for MprHash implementations
+ */
+PUBLIC int mprUpdateJsonValue(MprHash *obj, cchar *key, cvoid *value, int type)
+{
+    MprKey  *kp;
+    char    *property, *tok;
+
+    for (property = stok(sclone(key), ".", &tok); property; property = stok(0, ".", &tok)) {
+        if ((kp = mprLookupKeyEntry(obj, property)) == 0) {
+            if (tok) {
+                mprAddKey(obj, property, mprCreateHash(0, 0));
+            } else {
+                kp = mprAddKey(obj, property, 0);
+                break;
+            }
+        } else if (kp->type != MPR_JSON_OBJ) {
+            return MPR_ERR_BAD_STATE;
+        }
+        obj = (MprHash*) kp->data;
+    }
+    assert(kp);
+
+    if (kp) {
+        kp->data = value;
+        kp->type = type;
+    }
+    return 0;
+}
+
+
+PUBLIC int mprUpdateJsonString(MprHash *obj, cchar *key, cchar *value)
+{
+    return mprUpdateJsonValue(obj, key, sclone(value), MPR_JSON_STRING);
 }
 
 
@@ -13951,6 +14013,19 @@ PUBLIC void mprError(cchar *fmt, ...)
 }
 
 
+PUBLIC void mprFatal(cchar *fmt, ...)
+{
+    va_list     args;
+    char        buf[BIT_MAX_LOGLINE];
+
+    va_start(args, fmt);
+    fmtv(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    logOutput(MPR_ERROR_MSG | MPR_ERROR, 0, buf);
+    exit(2);
+}
+
+
 PUBLIC void mprInfo(cchar *fmt, ...)
 {
     va_list     args;
@@ -14001,19 +14076,6 @@ PUBLIC void mprUserError(cchar *fmt, ...)
     fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
     logOutput(MPR_USER_MSG | MPR_ERROR_MSG, 0, buf);
-}
-
-
-PUBLIC void mprFatalError(cchar *fmt, ...)
-{
-    va_list     args;
-    char        buf[BIT_MAX_LOGLINE];
-
-    va_start(args, fmt);
-    fmtv(buf, sizeof(buf), fmt, args);
-    va_end(args);
-    logOutput(MPR_USER_MSG | MPR_FATAL_MSG, 0, buf);
-    exit(2);
 }
 
 

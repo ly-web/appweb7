@@ -11644,8 +11644,7 @@ static char *qualifyName(HttpRoute *route, cchar *service, cchar *action)
 /*
     Add a restful route. The parent route may supply a route prefix. If defined, the route name will prepend the prefix.
  */
-static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *pattern, cchar *target, 
-        cchar *resource)
+static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *pattern, cchar *target, cchar *resource)
 {
     cchar       *name, *nameResource, *prefix, *source, *token;
 
@@ -11694,8 +11693,8 @@ PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
     addRestful(parent, "create",    "POST",    "(/)*$",                   "create",          resource);
     addRestful(parent, "edit",      "GET",     "/{id=[0-9]+}/edit$",      "edit",            resource);
     addRestful(parent, "get",       "GET",     "/{id=[0-9]+}$",           "get",             resource);
-    addRestful(parent, "list",      "GET",     "/list$",                  "list",            resource);
     addRestful(parent, "init",      "GET",     "/init$",                  "init",            resource);
+    addRestful(parent, "list",      "GET",     "/list$",                  "list",            resource);
     addRestful(parent, "remove",    "DELETE",  "/{id=[0-9]+}$",           "remove",          resource);
     addRestful(parent, "update",    "POST",    "/{id=[0-9]+}$",           "update",          resource);
     addRestful(parent, "action",    "GET,POST","/{id=[0-9]+}/{action}$",  "${action}",       resource);
@@ -11721,13 +11720,13 @@ PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource)
  */
 PUBLIC void httpAddLegacyResourceGroup(HttpRoute *parent, cchar *resource)
 {
-    addRestful(parent, "list",      "GET",     "(/)*$",                   "list",          resource);
-    addRestful(parent, "init",      "GET",     "/init$",                  "init",          resource);
     addRestful(parent, "create",    "POST",    "(/)*$",                   "create",        resource);
+    addRestful(parent, "destroy",   "DELETE",  "/{id=[0-9]+}$",           "destroy",       resource);
     addRestful(parent, "edit",      "GET",     "/{id=[0-9]+}/edit$",      "edit",          resource);
+    addRestful(parent, "init",      "GET",     "/init$",                  "init",          resource);
+    addRestful(parent, "list",      "GET",     "(/)*$",                   "list",          resource);
     addRestful(parent, "show",      "GET",     "/{id=[0-9]+}$",           "show",          resource);
     addRestful(parent, "update",    "PUT",     "/{id=[0-9]+}$",           "update",        resource);
-    addRestful(parent, "destroy",   "DELETE",  "/{id=[0-9]+}$",           "destroy",       resource);
     addRestful(parent, "action",    "POST",    "/{action}/{id=[0-9]+}$",  "${action}",     resource);
     addRestful(parent, "default",   "GET,POST","/{action}$",              "cmd-${action}", resource);
 }

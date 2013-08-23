@@ -3740,7 +3740,6 @@ PUBLIC int mprBackupLog(cchar *path, int count);
  */
 PUBLIC void mprError(cchar *fmt, ...);
 
-#if DEPRECATED
 /**
     Log a fatal error message and exit.
     @description Send a fatal error message to the MPR debug logging subsystem and then exit the application by
@@ -3752,9 +3751,6 @@ PUBLIC void mprError(cchar *fmt, ...);
     @stability Stable
  */
 PUBLIC void mprFatal(cchar *fmt, ...);
-#else
-#define mprFatalError mprFatal
-#endif
 
 /**
     Get the log file object
@@ -3960,7 +3956,6 @@ PUBLIC void mprWarn(cchar *fmt, ...);
 
 #if DEPRECATED
     #define LOG mprTrace
-    #define mprFatalError mprError
     #define mprUserError mprError
     #define mprMemoryError mprError
     #define mprPrintfError mprEprintf
@@ -6027,6 +6022,7 @@ PUBLIC void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h);
  */
 #define MPR_JSON_PRETTY     0x1         /**< Serialize output in a more human readable, multiline "pretty" format */
 #define MPR_JSON_QUOTES     0x2         /**< Serialize output quoting keys */
+#define MPR_JSON_TYPES      0x4         /**< Convert boolean, number and null types */
 
 /*
     Data types for obj property values (must fit into MprKey.type)
@@ -6166,12 +6162,35 @@ PUBLIC cchar *mprQueryJsonString(MprHash *obj, cchar *key);
     Lookup a parsed JSON object for a key value
     @param obj Parsed JSON object returned by mprDeserialize or mprDeserializeInto.
     @param key Property name to search for. This may include ".". For example: "settings.mode".
-    @param type Expected property type.
+    @param type Expected property type. Set to MPR_JSON_STRING, MPR_JSON_OBJ or MPR_JSON_ARRAY.
     @return Returns the property value otherwise NULL if not found or not the correct type.
     @ingroup MprJson
     @stability Prototype
  */
 PUBLIC void *mprQueryJsonValue(MprHash *obj, cchar *key, int type);
+
+/**
+    Update a key/value in the JSON object with a string
+    @param obj Parsed JSON object returned by mprDeserialize or mprDeserializeInto.
+    @param key Property name to add/update. This may include ".". For example: "settings.mode".
+    @param value Character string value.
+    @return Zero if updated successfully.
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC int mprUpdateJsonString(MprHash *obj, cchar *key, cchar *value);
+
+/**
+    Update a key/value in the JSON object
+    @param obj Parsed JSON object returned by mprDeserialize or mprDeserializeInto.
+    @param key Property name to add/update. This may include ".". For example: "settings.mode".
+    @param value Property value.
+    @param type Expected property value type. Set to MPR_JSON_STRING, MPR_JSON_OBJ or MPR_JSON_ARRAY.
+    @return Zero if updated successfully.
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC int mprUpdateJsonValue(MprHash *obj, cchar *key, cvoid *value, int type);
 
 /********************************* Threads ************************************/
 /**
