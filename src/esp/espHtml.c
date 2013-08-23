@@ -10,9 +10,9 @@
 #include    "edi.h"
 
 #if BIT_PACK_ESP
-#if DEPRECATE || 1
+#if BIT_ESP_LEGACY
 /*
-    Deprecated in 4.4
+    DEPRECATE in 4.4
  */
 /************************************* Local **********************************/
 

@@ -25,7 +25,6 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value);
 static int espEnvDirective(MaState *state, cchar *key, cchar *value);
 static EspRoute *getEroute(HttpRoute *route);
 static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher);
-static int loadConfig(EspRoute *eroute);
 static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
 static int runAction(HttpConn *conn);
@@ -235,7 +234,7 @@ static int runAction(HttpConn *conn)
     /*
         See if the config.json or app needs to be reloaded.
      */
-    if (loadConfig(eroute) < 0) {
+    if (espLoadConfig(eroute) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
     if (loadApp(eroute, conn->dispatcher) < 0) {
@@ -295,6 +294,7 @@ static int runAction(HttpConn *conn)
     key = mprJoinPath(eroute->servicesDir, rx->target);
     if ((action = mprLookupKey(esp->actions, key)) == 0) {
         req->servicePath = mprJoinPath(eroute->servicesDir, req->serviceName);
+        //  MOB - review this. Why using servicePath. Also, should check viewExists first before calling missing
         key = sfmt("%s/missing", mprGetPathDir(req->servicePath));
         if ((action = mprLookupKey(esp->actions, key)) == 0) {
             if (!viewExists(conn) && (action = mprLookupKey(esp->actions, "missing")) == 0) {
@@ -318,6 +318,7 @@ static int runAction(HttpConn *conn)
         }
     }
     if (action) {
+        //  OPT - strchr without clone
         serviceName = stok(sclone(rx->target), "-", &actionName);
         httpSetParam(conn, "service", serviceName);
 #if DEPRECATE || 1
@@ -476,31 +477,6 @@ static char *getServiceEntry(cchar *serviceName)
 }
 #endif
 
-
-#if FUTURE && KEEP
-static bool getConfig(EspRoute *eroute, cchar *key, cchar *defaultValue)
-{
-    cchar   *value;
-
-    if ((value = mprQueryJsonString(eroute->config, key)) != 0) {
-        return value;
-    }
-    return defaultValue;
-}
-
-
-static bool testConfig(EspRoute *eroute, cchar *key, cchar *desired)
-{
-    cchar   *value;
-
-    if ((value = mprQueryJsonString(eroute->config, key)) != 0) {
-        return smatch(value, desired);
-    }
-    return 0;
-}
-#endif
-
-
 static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
 {
     cchar       *canonical, *source, *cacheName;
@@ -545,6 +521,7 @@ static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
 }
 
 
+#if UNUSED
 static int loadConfig(EspRoute *eroute)
 {
     MprKey      *kp;
@@ -552,17 +529,8 @@ static int loadConfig(EspRoute *eroute)
     MprPath     cinfo;
     cchar       *cpath, *config, *value;
 
-    /*
-        Load the config.json
-     */
-    cpath = mprJoinPath(eroute->clientDir, "config.json");
-    if (mprGetPathInfo(cpath, &cinfo) == 0) {
-        if (eroute->config && cinfo.mtime > eroute->configLoaded) {
-            eroute->config = 0;
-        }
-        eroute->configLoaded = cinfo.mtime;
-    }
     if (!eroute->config) {
+        espLoadConfig(eroute);
         if ((config = mprReadPathContents(mprJoinPath(eroute->clientDir, "config.json"), NULL)) != 0) {
             eroute->config = mprDeserialize(config);
             /*
@@ -576,31 +544,30 @@ static int loadConfig(EspRoute *eroute)
                     }
                 }
             }
-            if ((value = mprQueryJsonString(eroute->config, "settings.showErrors")) != 0) {
-                httpSetRouteShowErrors(eroute->route, smatch(value, "true"));
+            if (espTestConfig(eroute, "settings.showErrors", "true")) {
+                httpSetRouteShowErrors(eroute->route, 1);
             }
-            if ((value = mprQueryJsonString(eroute->config, "settings.update")) != 0) {
-                eroute->update = smatch(value, "true");
+            if (espTestConfig(eroute, "settings.update", "true")) {
+                eroute->update = 1;
             }
-            if ((value = mprQueryJsonString(eroute->config, "settings.keepSource")) != 0) {
-                eroute->keepSource = smatch(value, "true");
+            if (espTestConfig(eroute, "settings.keepSource", "true")) {
+                eroute->keepSource = 1;
             }
-            if ((value = mprQueryJsonString(eroute->config, "settings.username")) != 0 && value[0]) {
+            if ((value = espGetConfig(eroute, "settings.username", 0)) != 0) {
                 httpSetAuthUsername(eroute->route->auth, value);
             }
-            if ((value = mprQueryJsonString(eroute->config, "settings.xsrf"))) {
-                httpSetRouteXsrf(eroute->route, smatch(value, "true"));
+            if (espTestConfig(eroute, "settings.xsrf", "true")) {
+                httpSetRouteXsrf(eroute->route, 1);
             }
-            if ((value = mprQueryJsonString(eroute->config, "settings.map")) != 0) {
-                if (smatch(value, "compressed")) {
-                    httpAddRouteMapping(eroute->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
-                    httpAddRouteMapping(eroute->route, "html,xml", "${1}.gz");
-                }
+            if (espTestConfig(eroute, "settings.map", "compressed")) {
+                httpAddRouteMapping(eroute->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
+                httpAddRouteMapping(eroute->route, "html,xml", "${1}.gz");
             }
         }
     }
     return 0;
 }
+#endif
 
 
 /*
@@ -900,7 +867,9 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     }
     eroute->top = eroute;
     eroute->flat = scaselessmatch(flat, "true") || smatch(flat, "1");
+#if UNUSED
     eroute->appType = sclone(type);
+#endif
     eroute->appName = sclone(name);
     state = maPushState(state);
     state->route = route;
@@ -930,7 +899,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     if (routeSet) {
         espSetMvcDirs(eroute);
     }
-    if (loadConfig(eroute) < 0) {
+    if (espLoadConfig(eroute) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
     if (routeSet) {
@@ -1328,8 +1297,9 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if ((esp->internalOptions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
         return 0;
     }
+#if BIT_ESP_LEGACY
     espInitHtmlOptions(esp);
-
+#endif
     /* Thread-safe */
     if ((esp->views = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
         return 0;

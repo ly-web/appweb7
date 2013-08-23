@@ -473,6 +473,7 @@ PUBLIC void scripts(cchar *patterns)
         return;
     }
     indent = "";
+    //  MOB - how to minify?
     for (ITERATE_ITEMS(files, path, next)) {
         uri = httpLink(conn, path, NULL);
         if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
@@ -613,7 +614,7 @@ PUBLIC bool createRecFromParams(cchar *table)
 
 
 /************************************ Deprecated ****************************/
-#if DEPRECATED || 1
+#if DEPRECATED
 /*
     Deprecated in 4.4
  */
@@ -826,6 +827,25 @@ PUBLIC EdiRec *setRec(EdiRec *rec)
 {
     return espSetRec(getConn(), rec);
 }
+
+#else
+
+//  MOB  - refactor. Not ideal.
+PUBLIC EdiRec *getRec()
+{
+    return getConn()->record;
+}
+
+PUBLIC EdiRec *setRec(EdiRec *rec)
+{
+    return espSetRec(getConn(), rec);
+}
+
+PUBLIC EdiGrid *setGrid(EdiGrid *grid)
+{
+    return grid;
+}
+
 #endif /* DEPRECATED */
 #endif /* BIT_PACK_ESP */
 

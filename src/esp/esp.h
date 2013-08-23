@@ -20,6 +20,14 @@ extern "C" {
 #endif
 
 /********************************** Tunables **********************************/
+/*
+    DEPRECATED in 4.4
+ */
+//  MOB - enable
+#define BIT_ESP_LEGACY 0
+#ifndef BIT_ESP_LEGACY
+    #define BIT_ESP_LEGACY 1
+#endif
 
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
 #define ESP_LISTEN          "4000"                      /**< Default listening endpoint for the esp program */
@@ -129,7 +137,9 @@ typedef struct EspRoute {
     MprTime         configLoaded;           /**< When config.json was last loaded */
 
     cchar           *appModulePath;         /**< App module path when compiled flat */
+#if UNUSED
     cchar           *appType;               /**< Type of application: "angular", "server", "legacy" */
+#endif
     cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
 
     cchar           *cacheDir;              /**< Directory for cached compiled services and views */
@@ -227,6 +237,7 @@ typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
     @return A count of the bytes actually written
     @ingroup EspRoute
     @stability Evolving
+    @internal
  */
 PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
 
@@ -243,6 +254,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
     @return "True" if the compilation is successful. Errors are logged and sent back to the client if ShowErrors is true.
     @ingroup EspRoute
     @stability Evolving
+    @internal
  */
 PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg);
 
@@ -260,6 +272,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     @return Compiled script. Return NULL on errors.
     @ingroup EspRoute
     @stability Evolving
+    @internal
  */
 PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, EspState *state, char **err);
 
@@ -334,6 +347,7 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
     @return An expanded command line
     @ingroup EspRoute
     @stability Evolving
+    @internal
  */
 PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module);
 
@@ -591,6 +605,7 @@ PUBLIC Edi *espGetDatabase(HttpConn *conn);
  */
 PUBLIC EspRoute *espGetEspRoute(HttpConn *conn);
 
+//  MOB - rename GetDocuments
 /**
     Get the default document root directory for the request route.
     @param conn HttpConn connection object
@@ -783,6 +798,16 @@ PUBLIC MprHash *espGetUploads(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC cchar *espGetUri(HttpConn *conn);
+
+/**
+    Convert an EDI database grid into a JSON string.
+    @param grid EDI grid
+    @param flags Reserved. Set to zero.
+    @return JSON string 
+    @ingroup EspReq
+    @stability Prototype
+  */
+PUBLIC cchar *espGridToJson(EdiGrid *grid, int flags);
 
 /**
     Test if the receive input stream is at end-of-file.
@@ -1084,15 +1109,6 @@ PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags);
   */
 PUBLIC cchar *espRecToJson(EdiRec *rec, int flags);
 
-/**
-    Convert an EDI database grid into a JSON string.
-    @param grid EDI grid
-    @param flags Reserved. Set to zero.
-    @return JSON string 
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC cchar *espGridToJson(EdiGrid *grid, int flags);
 
 /**
     Read a table from the current database
@@ -1118,8 +1134,8 @@ PUBLIC void espRenderFeedback(HttpConn *conn, cchar *kinds, cchar *options);
 
 /**
     Render a JSON response result
-    @description This renders a JSON response suitable for ESP angular client applications. The status 
-    is rendered as part of an enclosing "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
+    @description This renders a JSON response. The status is rendered as part of an enclosing 
+    "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
     The messages are created via the espSetFeedback API. Field errors are created by ESP validations.
     @param conn HttpConn connection object
     @param success True if the operation was a success.
@@ -1564,6 +1580,15 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
     @stability Evolving
  */
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
+
+//  MOB
+
+
+PUBLIC cchar *espGetConfig(EspRoute *eroute, cchar *key, cchar *defaultValue);
+PUBLIC int espSetConfig(EspRoute *eroute, cchar *key, cchar *value);
+PUBLIC bool espTestConfig(EspRoute *eroute, cchar *key, cchar *desired);
+PUBLIC int espLoadConfig(EspRoute *eroute);
+
 
 /***************************** Abbreviated Controls ***************************/
 /**
@@ -2221,8 +2246,8 @@ PUBLIC ssize renderRec(EdiRec *rec);
 
 /**
     Render a JSON response result
-    @description This renders a JSON response suitable for ESP angular client applications. The status 
-    is rendered as part of an enclosing "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
+    @description This renders a JSON response. The status is rendered as part of an enclosing 
+    "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
     The messages are created via the espSetFeedback API. Field errors are created by ESP validations.
     @param status Request success status.
     @ingroup EspReq

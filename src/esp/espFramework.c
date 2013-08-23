@@ -829,6 +829,7 @@ PUBLIC void espRenderResult(HttpConn *conn, bool success)
     EdiRec      *rec;
 
     req = conn->data;
+    //  MOB getRec is problematic
     rec = getRec();
     if (rec && rec->errors) {
         espRender(conn, "{\"error\": %d, \"feedback\": %s, \"fieldErrors\": %s}", !success, 
@@ -1310,6 +1311,7 @@ PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
 }
 
 
+//  MOB - problematic
 PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
 {
     return conn->record = rec;
@@ -1321,6 +1323,94 @@ PUBLIC void espSecurityToken(HttpConn *conn)
     espRenderSecurityToken(conn);
 }
 #endif
+
+
+//  MOB MOVE
+
+/*
+    Load the config.json
+ */
+PUBLIC int espLoadConfig(EspRoute *eroute)
+{
+    MprObj      *msettings, *settings;
+    MprKey      *kp;
+    MprPath     cinfo;
+    cchar       *cpath, *config, *value;
+
+    cpath = mprJoinPath(eroute->clientDir, "config.json");
+    if (mprGetPathInfo(cpath, &cinfo) == 0) {
+        if (eroute->config && cinfo.mtime > eroute->configLoaded) {
+            eroute->config = 0;
+        }
+        eroute->configLoaded = cinfo.mtime;
+    }
+    if (!eroute->config) {
+        if ((config = mprReadPathContents(mprJoinPath(eroute->clientDir, "config.json"), NULL)) != 0) {
+            eroute->config = mprDeserialize(config);
+            /*
+                Blend the mode properties into settings
+             */
+            if ((settings = mprQueryJsonValue(eroute->config, "settings", MPR_JSON_OBJ)) != 0) {
+                eroute->mode = mprQueryJsonString(eroute->config, "mode");
+                if ((msettings = mprQueryJsonValue(eroute->config, sfmt("modes.%s", eroute->mode), MPR_JSON_OBJ)) != 0) {
+                    for (ITERATE_KEYS(msettings, kp)) {
+                        mprAddKeyWithType(settings, kp->key, kp->data, kp->type);
+                    }
+                }
+            }
+            if (espTestConfig(eroute, "settings.showErrors", "true")) {
+                httpSetRouteShowErrors(eroute->route, 1);
+            }
+            if (espTestConfig(eroute, "settings.update", "true")) {
+                eroute->update = 1;
+            }
+            if (espTestConfig(eroute, "settings.keepSource", "true")) {
+                eroute->keepSource = 1;
+            }
+            if ((value = espGetConfig(eroute, "settings.username", 0)) != 0) {
+                httpSetAuthUsername(eroute->route->auth, value);
+            }
+            if (espTestConfig(eroute, "settings.xsrf", "true")) {
+                httpSetRouteXsrf(eroute->route, 1);
+            }
+            if (espTestConfig(eroute, "settings.map", "compressed")) {
+                httpAddRouteMapping(eroute->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
+                httpAddRouteMapping(eroute->route, "html,xml", "${1}.gz");
+            }
+        }
+    }
+    return 0;
+}
+
+
+PUBLIC cchar *espGetConfig(EspRoute *eroute, cchar *key, cchar *defaultValue)
+{
+    cchar   *value;
+
+    if ((value = mprQueryJsonString(eroute->config, key)) != 0) {
+        return value;
+    }
+    return defaultValue;
+}
+
+
+PUBLIC int espSetConfig(EspRoute *eroute, cchar *key, cchar *value)
+{
+    return mprUpdateJsonString(eroute->config, key, value);
+}
+
+
+PUBLIC bool espTestConfig(EspRoute *eroute, cchar *key, cchar *desired)
+{
+    cchar   *value;
+
+    if ((value = mprQueryJsonString(eroute->config, key)) != 0) {
+        return smatch(value, desired);
+    }
+    return 0;
+}
+
+
 
 
 
