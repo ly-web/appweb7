@@ -1165,61 +1165,6 @@ $(CONFIG)\bin\esp-proto: $(DEPS_57)
 	copy /Y src\esp\proto\angular\start.bit $(CONFIG)\bin\esp-proto\angular\start.bit
 	if not exist "$(CONFIG)\bin\esp-proto\angular-local\client\components" md "$(CONFIG)\bin\esp-proto\angular-local\client\components"
 	copy /Y src\esp\proto\angular-local\client\components\LocalStore.js $(CONFIG)\bin\esp-proto\angular-local\client\components\LocalStore.js
-	if not exist "$(CONFIG)\bin\esp-proto\angular-save\client\app" md "$(CONFIG)\bin\esp-proto\angular-save\client\app"
-	copy /Y src\esp\proto\angular-save\client\app\main.js $(CONFIG)\bin\esp-proto\angular-save\client\app\main.js
-	if not exist "$(CONFIG)\bin\esp-proto\angular-save\client\assets" md "$(CONFIG)\bin\esp-proto\angular-save\client\assets"
-	copy /Y src\esp\proto\angular-save\client\assets\banner.jpg $(CONFIG)\bin\esp-proto\angular-save\client\assets\banner.jpg
-	copy /Y src\esp\proto\angular-save\client\assets\favicon.ico $(CONFIG)\bin\esp-proto\angular-save\client\assets\favicon.ico
-	copy /Y src\esp\proto\angular-save\client\assets\glyphicons-halflings-white.png $(CONFIG)\bin\esp-proto\angular-save\client\assets\glyphicons-halflings-white.png
-	copy /Y src\esp\proto\angular-save\client\assets\glyphicons-halflings.png $(CONFIG)\bin\esp-proto\angular-save\client\assets\glyphicons-halflings.png
-	copy /Y src\esp\proto\angular-save\client\assets\splash.jpg $(CONFIG)\bin\esp-proto\angular-save\client\assets\splash.jpg
-	if not exist "$(CONFIG)\bin\esp-proto\angular-save\client\components\Esp" md "$(CONFIG)\bin\esp-proto\angular-save\client\components\Esp"
-	copy /Y src\esp\proto\angular-save\client\components\Esp\Esp.js $(CONFIG)\bin\esp-proto\angular-save\client\components\Esp\Esp.js
-	if not exist "$(CONFIG)\bin\esp-proto\angular-save\client" md "$(CONFIG)\bin\esp-proto\angular-save\client"
-	copy /Y src\esp\proto\angular-save\client\config.json $(CONFIG)\bin\esp-proto\angular-save\client\config.json
-	if not exist "$(CONFIG)\bin\esp-proto\angular-save\client\css" md "$(CONFIG)\bin\esp-proto\angular-save\client\css"
-	copy /Y src\esp\proto\angular-save\client\css\all.css $(CONFIG)\bin\esp-proto\angular-save\client\css\all.css
-	copy /Y src\esp\proto\angular-save\client\css\all.less $(CONFIG)\bin\esp-proto\angular-save\client\css\all.less
-	copy /Y src\esp\proto\angular-save\client\css\app.less $(CONFIG)\bin\esp-proto\angular-save\client\css\app.less
-	copy /Y src\esp\proto\angular-save\client\css\bootstrap.css $(CONFIG)\bin\esp-proto\angular-save\client\css\bootstrap.css
-	copy /Y src\esp\proto\angular-save\client\css\more.less $(CONFIG)\bin\esp-proto\angular-save\client\css\more.less
-	copy /Y src\esp\proto\angular-save\client\css\normalize.less $(CONFIG)\bin\esp-proto\angular-save\client\css\normalize.less
-	copy /Y src\esp\proto\angular-save\client\css\theme.less $(CONFIG)\bin\esp-proto\angular-save\client\css\theme.less
-	copy /Y src\esp\proto\angular-save\client\index.esp $(CONFIG)\bin\esp-proto\angular-save\client\index.esp
-	if not exist "$(CONFIG)\bin\esp-proto\angular-save\client\lib" md "$(CONFIG)\bin\esp-proto\angular-save\client\lib"
-	copy /Y src\esp\proto\angular-save\client\lib\all.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\all.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-bootstrap-prettify.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-bootstrap-prettify.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-bootstrap-prettify.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-bootstrap-prettify.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-bootstrap.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-bootstrap.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-bootstrap.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-bootstrap.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-cookies.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-cookies.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-cookies.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-cookies.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-loader.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-loader.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-loader.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-loader.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-mobile.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-mobile.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-mobile.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-mobile.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-mocks.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-mocks.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-resource.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-resource.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-resource.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-resource.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-sanitize.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-sanitize.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-sanitize.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-sanitize.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular-scenario.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular-scenario.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular.js
-	copy /Y src\esp\proto\angular-save\client\lib\angular.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\angular.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\html5shiv.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\html5shiv.js
-	copy /Y src\esp\proto\angular-save\client\lib\html5shiv.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\html5shiv.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\jquery.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\jquery.js
-	copy /Y src\esp\proto\angular-save\client\lib\jquery.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\jquery.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\less.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\less.js
-	copy /Y src\esp\proto\angular-save\client\lib\less.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\less.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\respond.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\respond.js
-	copy /Y src\esp\proto\angular-save\client\lib\respond.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\respond.min.js
-	copy /Y src\esp\proto\angular-save\client\lib\ui-bootstrap-tpls.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\ui-bootstrap-tpls.js
-	copy /Y src\esp\proto\angular-save\client\lib\ui-bootstrap-tpls.min.js $(CONFIG)\bin\esp-proto\angular-save\client\lib\ui-bootstrap-tpls.min.js
-	if not exist "$(CONFIG)\bin\esp-proto\angular-save\client\templates" md "$(CONFIG)\bin\esp-proto\angular-save\client\templates"
-	copy /Y src\esp\proto\angular-save\client\templates\splash.html $(CONFIG)\bin\esp-proto\angular-save\client\templates\splash.html
-	if not exist "$(CONFIG)\bin\esp-proto\angular-save" md "$(CONFIG)\bin\esp-proto\angular-save"
-	copy /Y src\esp\proto\angular-save\start.bit $(CONFIG)\bin\esp-proto\angular-save\start.bit
 	if not exist "$(CONFIG)\bin\esp-proto\angular-session\client\components\SessionStore" md "$(CONFIG)\bin\esp-proto\angular-session\client\components\SessionStore"
 	copy /Y src\esp\proto\angular-session\client\components\SessionStore\SessionStore.js $(CONFIG)\bin\esp-proto\angular-session\client\components\SessionStore\SessionStore.js
 	if not exist "$(CONFIG)\bin\esp-proto\legacy\layouts" md "$(CONFIG)\bin\esp-proto\legacy\layouts"
@@ -2311,61 +2256,6 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\angular\start.bit "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\start.bit"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-local\client\components" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-local\client\components"
 	copy /Y src\esp\proto\angular-local\client\components\LocalStore.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-local\client\components\LocalStore.js"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\app" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\app"
-	copy /Y src\esp\proto\angular-save\client\app\main.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\app\main.js"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\assets" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\assets"
-	copy /Y src\esp\proto\angular-save\client\assets\banner.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\assets\banner.jpg"
-	copy /Y src\esp\proto\angular-save\client\assets\favicon.ico "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\assets\favicon.ico"
-	copy /Y src\esp\proto\angular-save\client\assets\glyphicons-halflings-white.png "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\assets\glyphicons-halflings-white.png"
-	copy /Y src\esp\proto\angular-save\client\assets\glyphicons-halflings.png "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\assets\glyphicons-halflings.png"
-	copy /Y src\esp\proto\angular-save\client\assets\splash.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\assets\splash.jpg"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\components\Esp" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\components\Esp"
-	copy /Y src\esp\proto\angular-save\client\components\Esp\Esp.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\components\Esp\Esp.js"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client"
-	copy /Y src\esp\proto\angular-save\client\config.json "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\config.json"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\css" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\css"
-	copy /Y src\esp\proto\angular-save\client\css\all.css "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\css\all.css"
-	copy /Y src\esp\proto\angular-save\client\css\all.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\css\all.less"
-	copy /Y src\esp\proto\angular-save\client\css\app.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\css\app.less"
-	copy /Y src\esp\proto\angular-save\client\css\bootstrap.css "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\css\bootstrap.css"
-	copy /Y src\esp\proto\angular-save\client\css\more.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\css\more.less"
-	copy /Y src\esp\proto\angular-save\client\css\normalize.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\css\normalize.less"
-	copy /Y src\esp\proto\angular-save\client\css\theme.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\css\theme.less"
-	copy /Y src\esp\proto\angular-save\client\index.esp "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\index.esp"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib"
-	copy /Y src\esp\proto\angular-save\client\lib\all.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\all.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-bootstrap-prettify.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-bootstrap-prettify.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-bootstrap-prettify.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-bootstrap-prettify.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-bootstrap.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-bootstrap.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-bootstrap.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-bootstrap.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-cookies.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-cookies.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-cookies.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-cookies.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-loader.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-loader.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-loader.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-loader.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-mobile.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-mobile.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-mobile.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-mobile.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-mocks.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-mocks.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-resource.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-resource.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-resource.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-resource.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-sanitize.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-sanitize.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-sanitize.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-sanitize.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular-scenario.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular-scenario.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular.js"
-	copy /Y src\esp\proto\angular-save\client\lib\angular.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\angular.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\html5shiv.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\html5shiv.js"
-	copy /Y src\esp\proto\angular-save\client\lib\html5shiv.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\html5shiv.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\jquery.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\jquery.js"
-	copy /Y src\esp\proto\angular-save\client\lib\jquery.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\jquery.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\less.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\less.js"
-	copy /Y src\esp\proto\angular-save\client\lib\less.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\less.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\respond.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\respond.js"
-	copy /Y src\esp\proto\angular-save\client\lib\respond.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\respond.min.js"
-	copy /Y src\esp\proto\angular-save\client\lib\ui-bootstrap-tpls.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\ui-bootstrap-tpls.js"
-	copy /Y src\esp\proto\angular-save\client\lib\ui-bootstrap-tpls.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\lib\ui-bootstrap-tpls.min.js"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\templates" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\templates"
-	copy /Y src\esp\proto\angular-save\client\templates\splash.html "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\client\templates\splash.html"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save"
-	copy /Y src\esp\proto\angular-save\start.bit "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-save\start.bit"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-session\client\components\SessionStore" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-session\client\components\SessionStore"
 	copy /Y src\esp\proto\angular-session\client\components\SessionStore\SessionStore.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular-session\client\components\SessionStore\SessionStore.js"
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\layouts" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\layouts"
