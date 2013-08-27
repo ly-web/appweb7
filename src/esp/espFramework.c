@@ -1438,7 +1438,7 @@ PUBLIC int espSaveConfig(EspRoute *eroute)
 
 PUBLIC bool espHasComponent(EspRoute *eroute, cchar *name)
 {
-    return mprJsonGet(eroute->config, sfmt("settings.components[@ = '%s']", name));
+    return mprJsonGet(eroute->config, sfmt("settings.components[@ = '%s']", name)) != 0;
 }
 
 
