@@ -148,11 +148,18 @@ PUBLIC EspRoute *getEspRoute()
 }
 
 
-//  MOB - rename getDocuments. What about getHome
-PUBLIC cchar *getDir()
+PUBLIC cchar *getDocuments()
 {
     return getConn()->rx->route->documents;
 }
+
+
+#if DEPRECATED || 1
+PUBLIC cchar *getDir()
+{
+    return getDocuments();
+}
+#endif
 
 
 PUBLIC cchar *getField(EdiRec *rec, cchar *field)

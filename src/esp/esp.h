@@ -606,15 +606,18 @@ PUBLIC Edi *espGetDatabase(HttpConn *conn);
  */
 PUBLIC EspRoute *espGetEspRoute(HttpConn *conn);
 
-//  MOB - rename GetDocuments
 /**
-    Get the default document root directory for the request route.
+    Get the default documents directory for the request route.
     @param conn HttpConn connection object
     @return A directory path name 
     @ingroup EspReq
     @stability Evolving
  */
+PUBLIC cchar *espGetDocuments(HttpConn *conn);
+
+#if DEPRECATED || 1
 PUBLIC cchar *espGetDir(HttpConn *conn);
+#endif
 
 /**
     Get a flash message.
@@ -1582,7 +1585,7 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
  */
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
 
-//  MOB
+//  MOB DOCUMENT
 PUBLIC cchar *espGetConfig(EspRoute *eroute, cchar *key, cchar *defaultValue);
 PUBLIC int espSetConfig(EspRoute *eroute, cchar *key, cchar *value);
 PUBLIC bool espTestConfig(EspRoute *eroute, cchar *key, cchar *desired);
@@ -1746,7 +1749,7 @@ PUBLIC MprOff getContentLength();
  */
 PUBLIC cchar *getContentType();
 
-//  MOB
+//  MOB DOCUMENT
 PUBLIC void *getData();
 PUBLIC void setData(void *data);
 PUBLIC void *espGetData(HttpConn *conn);
@@ -1776,7 +1779,11 @@ PUBLIC EspRoute *getEspRoute();
     @ingroup EspAbbrev
     @stability Evolving
  */
+PUBLIC cchar *getDocuments();
+
+#if DEPRECATED || 1
 PUBLIC cchar *getDir();
+#endif
 
 /**
     Get a field from the current database record

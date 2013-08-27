@@ -226,11 +226,18 @@ PUBLIC Edi *espGetDatabase(HttpConn *conn)
 }
 
 
-//  MOB - rename espGetDocuments
-PUBLIC cchar *espGetDir(HttpConn *conn)
+PUBLIC cchar *espGetDocuments(HttpConn *conn)
 {   
     return conn->rx->route->documents;
 }
+
+
+#if DEPRECATED || 1
+PUBLIC cchar *espGetDir(HttpConn *conn)
+{
+    return espGetDocuments(conn);
+}
+#endif
 
 
 PUBLIC EspRoute *espGetEspRoute(HttpConn *conn)

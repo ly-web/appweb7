@@ -149,58 +149,6 @@ static void update${TITLE}() { \n\
 \n\
 ";
 
-#if DEPRECATE || 1
-/*
-    Deprecated in 4.4
- */
-static cchar *LegacyScaffoldControllerHeader = "\
-/*\n\
-    ${NAME} Controller\n\
- */\n#include \"esp.h\"\n\
-\n\
-static void create() { \n\
-    if (updateRec(createRec(\"${NAME}\", params()))) {\n\
-        flash(\"inform\", \"New ${NAME} created\");\n\
-        renderView(\"${NAME}-list\");\n\
-    } else {\n\
-        renderView(\"${NAME}-edit\");\n\
-    }\n\
-}\n\
-\n\
-static void destroy() { \n\
-    if (removeRec(\"${NAME}\", param(\"id\"))) {\n\
-        flash(\"inform\", \"${TITLE} removed\");\n\
-    }\n\
-    renderView(\"${NAME}-list\");\n\
-}\n\
-\n\
-static void edit() { \n\
-    readRec(\"${NAME}\", param(\"id\"));\n\
-}\n\
-\n\
-static void list() { }\n\
-\n\
-static void init() { \n\
-    createRec(\"${NAME}\", 0);\n\
-    renderView(\"${NAME}-edit\");\n\
-}\n\
-\n\
-static void show() { \n\
-    readRec(\"${NAME}\", param(\"id\"));\n\
-    renderView(\"${NAME}-edit\");\n\
-}\n\
-\n\
-static void update() { \n\
-    if (updateFields(\"${NAME}\", params())) {\n\
-        flash(\"inform\", \"${TITLE} updated successfully.\");\n\
-        renderView(\"${NAME}-list\");\n\
-    } else {\n\
-        renderView(\"${NAME}-edit\");\n\
-    }\n\
-}\n\
-\n\
-";
-#endif
 
 static cchar *ScaffoldControllerFooter = "\
 ESP_EXPORT int esp_module_${NAME}(HttpRoute *route, MprModule *module) {\n\
@@ -242,57 +190,6 @@ static cchar *AngularScaffoldEditView =  "\
 </form>\n\
 ";
 
-
-#if DEPRECATE || 1
-/*
-    Deprecated in 4.4
- */
-static cchar *LegacyScaffoldControllerFooter = "\
-ESP_EXPORT int esp_module_${NAME}(HttpRoute *route, MprModule *module) {\n\
-    espDefineAction(route, \"${NAME}-create\", create);\n\
-    espDefineAction(route, \"${NAME}-destroy\", destroy);\n\
-    espDefineAction(route, \"${NAME}-edit\", edit);\n\
-    espDefineAction(route, \"${NAME}-init\", init);\n\
-    espDefineAction(route, \"${NAME}-list\", list);\n\
-    espDefineAction(route, \"${NAME}-show\", show);\n\
-    espDefineAction(route, \"${NAME}-update\", update);\n\
-${DEFINE_ACTIONS}    return 0;\n\
-}\n";
-
-static cchar *LegacyScaffoldListView = "\
-<h1>${TITLE} List</h1>\n\
-\n\
-<% table(readTable(\"${NAME}\"), \"{data-esp-click: '@edit'}\"); %>\n\
-<% buttonLink(\"New ${TITLE}\", \"@init\", 0); %>\n\
-";
-
-
-static cchar *LegacyScaffoldEditView =  "\
-<h1><%= hasRec() ? \"Edit\" : \"Create\" %> ${TITLE}</h1>\n\
-\n\
-<% form(0, 0); %>\n\
-    <table border=\"0\">\n\
-    <% {\n\
-        char    *name, *uname;\n\
-        int     next;\n\
-        MprList *cols = getColumns(NULL);\n\
-        for (ITERATE_ITEMS(cols, name, next)) {\n\
-            if (smatch(name, \"id\")) continue;\n\
-            uname = spascal(name);\n\
-    %>\n\
-            <tr><td><% render(uname); %></td><td><% input(name, 0); %></td></tr>\n\
-        <% } %>\n\
-    <% } %>\n\
-    </table>\n\
-    <% button(\"commit\", \"OK\", 0); %>\n\
-    <% buttonLink(\"Cancel\", \"@\", 0); %>\n\
-    <% if (hasRec()) buttonLink(\"Delete\", \"@destroy\", \"{data-esp-method: 'DELETE'}\"); %>\n\
-<% endform(); %>\n\
-";
-#endif
-
-
-//  MOB - group angular templates together
 
 static cchar *AngularController = "\
 /*\n\
@@ -348,6 +245,117 @@ app.config(function($routeProvider) {\n\
 });\n\
 ";
 
+static cchar *AngularModel = "\
+/*\n\
+    ${NAME}.js - ${TITLE} model\n\
+ */\n\
+'use strict';\n\
+\n\
+app.factory('${TITLE}', function ($resource) {\n\
+    return $resource('/service/${NAME}/:id', { id: '@id' }, {\n\
+        'index':  { 'method': 'GET' },\n\
+    });\n\
+});\n\
+";
+
+
+#if DEPRECATE || 1
+/*
+    Deprecated in 4.4
+ */
+static cchar *LegacyScaffoldControllerHeader = "\
+/*\n\
+    ${NAME} Controller\n\
+ */\n#include \"esp.h\"\n\
+\n\
+static void create() { \n\
+    if (updateRec(createRec(\"${NAME}\", params()))) {\n\
+        flash(\"inform\", \"New ${NAME} created\");\n\
+        renderView(\"${NAME}-list\");\n\
+    } else {\n\
+        renderView(\"${NAME}-edit\");\n\
+    }\n\
+}\n\
+\n\
+static void destroy() { \n\
+    if (removeRec(\"${NAME}\", param(\"id\"))) {\n\
+        flash(\"inform\", \"${TITLE} removed\");\n\
+    }\n\
+    renderView(\"${NAME}-list\");\n\
+}\n\
+\n\
+static void edit() { \n\
+    readRec(\"${NAME}\", param(\"id\"));\n\
+}\n\
+\n\
+static void list() { }\n\
+\n\
+static void init() { \n\
+    createRec(\"${NAME}\", 0);\n\
+    renderView(\"${NAME}-edit\");\n\
+}\n\
+\n\
+static void show() { \n\
+    readRec(\"${NAME}\", param(\"id\"));\n\
+    renderView(\"${NAME}-edit\");\n\
+}\n\
+\n\
+static void update() { \n\
+    if (updateFields(\"${NAME}\", params())) {\n\
+        flash(\"inform\", \"${TITLE} updated successfully.\");\n\
+        renderView(\"${NAME}-list\");\n\
+    } else {\n\
+        renderView(\"${NAME}-edit\");\n\
+    }\n\
+}\n\
+\n\
+";
+
+static cchar *LegacyScaffoldControllerFooter = "\
+ESP_EXPORT int esp_module_${NAME}(HttpRoute *route, MprModule *module) {\n\
+    espDefineAction(route, \"${NAME}-create\", create);\n\
+    espDefineAction(route, \"${NAME}-destroy\", destroy);\n\
+    espDefineAction(route, \"${NAME}-edit\", edit);\n\
+    espDefineAction(route, \"${NAME}-init\", init);\n\
+    espDefineAction(route, \"${NAME}-list\", list);\n\
+    espDefineAction(route, \"${NAME}-show\", show);\n\
+    espDefineAction(route, \"${NAME}-update\", update);\n\
+${DEFINE_ACTIONS}    return 0;\n\
+}\n";
+
+static cchar *LegacyScaffoldListView = "\
+<h1>${TITLE} List</h1>\n\
+\n\
+<% table(readTable(\"${NAME}\"), \"{data-esp-click: '@edit'}\"); %>\n\
+<% buttonLink(\"New ${TITLE}\", \"@init\", 0); %>\n\
+";
+
+
+static cchar *LegacyScaffoldEditView =  "\
+<h1><%= hasRec() ? \"Edit\" : \"Create\" %> ${TITLE}</h1>\n\
+\n\
+<% form(0, 0); %>\n\
+    <table border=\"0\">\n\
+    <% {\n\
+        char    *name, *uname;\n\
+        int     next;\n\
+        MprList *cols = getColumns(NULL);\n\
+        for (ITERATE_ITEMS(cols, name, next)) {\n\
+            if (smatch(name, \"id\")) continue;\n\
+            uname = spascal(name);\n\
+    %>\n\
+            <tr><td><% render(uname); %></td><td><% input(name, 0); %></td></tr>\n\
+        <% } %>\n\
+    <% } %>\n\
+    </table>\n\
+    <% button(\"commit\", \"OK\", 0); %>\n\
+    <% buttonLink(\"Cancel\", \"@\", 0); %>\n\
+    <% if (hasRec()) buttonLink(\"Delete\", \"@destroy\", \"{data-esp-method: 'DELETE'}\"); %>\n\
+<% endform(); %>\n\
+";
+#endif
+
+
 static cchar *MigrationTemplate = "\
 /*\n\
     ${COMMENT}\n\
@@ -366,19 +374,6 @@ ESP_EXPORT int esp_migration_${NAME}(Edi *db)\n\
     ediDefineMigration(db, forward, backward);\n\
     return 0;\n\
 }\n\
-";
-
-static cchar *AngularModel = "\
-/*\n\
-    ${NAME}.js - ${TITLE} model\n\
- */\n\
-'use strict';\n\
-\n\
-app.factory('${TITLE}', function ($resource) {\n\
-    return $resource('/service/${NAME}/:id', { id: '@id' }, {\n\
-        'index':  { 'method': 'GET' },\n\
-    });\n\
-});\n\
 ";
 
 /***************************** Forward Declarations ***************************/
@@ -1343,7 +1338,6 @@ static void compileItems(EspRoute *eroute)
             Stand-alone controllers
          */
         if (eroute->route->sourceName) {
-            //  MOB - was route->documents
             path = mprJoinPath(eroute->route->home, eroute->route->sourceName);
             compileFile(eroute, path, ESP_CONTROlLER);
         }
@@ -1652,7 +1646,6 @@ static void generateScaffoldController(int argc, char **argv)
 
 /*
     Angular client-side controller
-    MOB - rename function 
  */
 static void generateAngularController(int argc, char **argv)
 {
@@ -2046,12 +2039,14 @@ static void fixupFile(cchar *path)
     data = sreplace(data, "${NAME}", app->appName);
     data = sreplace(data, "${TITLE}", spascal(app->appName));
     data = sreplace(data, "${DATABASE}", app->database);
-    //  MOB - should be DOCUMENTS, what about HOME
-    data = sreplace(data, "${DIR}", app->eroute->route->documents);
+    data = sreplace(data, "${HOME}", app->eroute->route->home);
+    data = sreplace(data, "${DOCUMENTS}", app->eroute->route->documents);
     data = sreplace(data, "${LISTEN}", app->listen);
     data = sreplace(data, "${BINDIR}", app->binDir);
-    //  MOB - remove
+#if DEPRECATE || 1
     data = sreplace(data, "${ROUTESET}", app->routeSet);
+    data = sreplace(data, "${DIR}", app->eroute->route->documents);
+#endif
     tmp = mprGetTempPath(app->eroute->route->documents);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
         fail("Cannot write %s", path);
