@@ -1,0 +1,28 @@
+{
+    mode: "debug",
+    modes: {
+        debug: {
+            server: {
+                showErrors: true,
+                username: "admin",
+                update: true,
+                keepSource: true,
+            },
+        },
+        release: {
+            server: {
+                showErrors: false,
+                update: false,
+                keepSource: false,
+            },
+        },
+    },
+    settings: {
+        timeouts: {
+            session: 1800,
+        },
+    },
+    server: {
+        xsrfToken: true,
+    },
+}

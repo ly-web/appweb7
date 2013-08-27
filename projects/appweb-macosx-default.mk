@@ -394,7 +394,6 @@ endif
 DEPS_10 += $(CONFIG)/inc/bit.h
 DEPS_10 += $(CONFIG)/inc/mpr.h
 DEPS_10 += $(CONFIG)/inc/est.h
-DEPS_10 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_10)
@@ -1208,7 +1207,7 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	mkdir -p "$(CONFIG)/bin/esp-proto/server"
 	cp src/esp/proto/server/app.conf $(CONFIG)/bin/esp-proto/server/app.conf
 	cp src/esp/proto/server/appweb.conf $(CONFIG)/bin/esp-proto/server/appweb.conf
-	cp src/esp/proto/server/config.sav $(CONFIG)/bin/esp-proto/server/config.sav
+	cp src/esp/proto/server/config.json $(CONFIG)/bin/esp-proto/server/config.json
 endif
 
 
@@ -2263,7 +2262,7 @@ ifeq ($(BIT_PACK_ESP),1)
 	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/server"
 	cp src/esp/proto/server/app.conf $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/server/app.conf
 	cp src/esp/proto/server/appweb.conf $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/server/appweb.conf
-	cp src/esp/proto/server/config.sav $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/server/config.sav
+	cp src/esp/proto/server/config.json $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/server/config.json
 endif
 ifeq ($(BIT_PACK_ESP),1)
 	cp $(CONFIG)/bin/esp.conf $(BIT_VAPP_PREFIX)/bin/esp.conf

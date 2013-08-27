@@ -1313,7 +1313,7 @@ $(CONFIG)\bin\esp-proto: $(DEPS_57)
 	if not exist "$(CONFIG)\bin\esp-proto\server" md "$(CONFIG)\bin\esp-proto\server"
 	copy /Y src\esp\proto\server\app.conf $(CONFIG)\bin\esp-proto\server\app.conf
 	copy /Y src\esp\proto\server\appweb.conf $(CONFIG)\bin\esp-proto\server\appweb.conf
-	copy /Y src\esp\proto\server\config.sav $(CONFIG)\bin\esp-proto\server\config.sav
+	copy /Y src\esp\proto\server\config.json $(CONFIG)\bin\esp-proto\server\config.json
 !ENDIF
 
 
@@ -2436,7 +2436,7 @@ installBinary: $(DEPS_102)
 	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server"
 	copy /Y src\esp\proto\server\app.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server\app.conf"
 	copy /Y src\esp\proto\server\appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server\appweb.conf"
-	copy /Y src\esp\proto\server\config.sav "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server\config.sav"
+	copy /Y src\esp\proto\server\config.json "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server\config.json"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y $(CONFIG)\bin\esp.conf "$(BIT_VAPP_PREFIX)\bin\esp.conf"

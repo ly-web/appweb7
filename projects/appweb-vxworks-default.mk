@@ -1166,7 +1166,7 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	mkdir -p "$(CONFIG)/bin/esp-proto/server"
 	cp src/esp/proto/server/app.conf $(CONFIG)/bin/esp-proto/server/app.conf
 	cp src/esp/proto/server/appweb.conf $(CONFIG)/bin/esp-proto/server/appweb.conf
-	cp src/esp/proto/server/config.sav $(CONFIG)/bin/esp-proto/server/config.sav
+	cp src/esp/proto/server/config.json $(CONFIG)/bin/esp-proto/server/config.json
 endif
 
 
