@@ -154,6 +154,7 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
     mprAddKey(esp->views, path, view);
 }
 
+
 PUBLIC void espFinalize(HttpConn *conn) 
 {
     httpFinalize(conn);
@@ -1333,6 +1334,20 @@ PUBLIC void espSecurityToken(HttpConn *conn)
 #endif
 
 
+static void serveConfig()
+{
+    EspRoute    *eroute;
+
+    eroute = getConn()->rx->route->eroute;
+    if (eroute->config) {
+        renderString(mprSerialize(eroute->config, 0));
+    } else {
+        renderError(HTTP_CODE_NOT_FOUND, "Cannot find config");
+    }
+    finalize();
+}
+
+
 /*
     Load the config.json
  */
@@ -1397,6 +1412,10 @@ PUBLIC int espLoadConfig(EspRoute *eroute)
         if (espHasComponent(eroute, "legacy")) {
             eroute->legacy = 1;
         }
+        /*
+            Define custom action to serve config.json
+         */
+        espDefineAction(eroute->route, "esp-config", serveConfig);
     }
     return 0;
 }

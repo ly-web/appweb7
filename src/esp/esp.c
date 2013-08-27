@@ -1495,6 +1495,7 @@ static void generateApp(int argc, char **argv)
     /*
         Rewrite the list of components
      */
+    readHostingConfig();
     app->eroute->config = 0;
     espLoadConfig(app->eroute);
     addComponents(argc - 1, &argv[1]);
@@ -2156,7 +2157,7 @@ static void generateAppSrc()
 static void generateAppDb()
 {
     cchar       *ext;
-    char        *dbpath, buf[1];
+    char        *dbpath;
 
     if (!app->database) {
         return;
@@ -2169,10 +2170,12 @@ static void generateAppDb()
     }
     dbpath = sfmt("%s/%s.%s", app->eroute->dbDir, app->appName, ext);
     makeEspDir(mprGetPathDir(dbpath));
+#if UNUSED
     if (mprWritePathContents(dbpath, buf, 0, 0664) < 0) {
         return;
     }
     trace("Create", "Database: %s", mprGetRelPath(dbpath, 0));
+#endif
 }
 
 

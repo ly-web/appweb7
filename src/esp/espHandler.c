@@ -257,7 +257,8 @@ static int runAction(HttpConn *conn)
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->controllerPath, R_OK)) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find controllers %s to serve request", req->controllerPath);
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find controller \"%s\" to serve request", 
+                req->controllerPath);
             return 0;
         }
         lock(req->esp);
@@ -323,13 +324,7 @@ static int runAction(HttpConn *conn)
     if (action) {
         //  OPT - strchr without clone
         controllerName = stok(sclone(rx->target), "-", &actionName);
-        httpSetParam(conn, "controllers", controllerName);
-#if DEPRECATE || 1
-        /*
-            Deprecated in 4.4
-         */
         httpSetParam(conn, "controller", controllerName);
-#endif
         httpSetParam(conn, "action", actionName);
         if (eroute->commonController) {
             (eroute->commonController)(conn);
@@ -769,12 +764,19 @@ PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *resource)
 #endif
 
 
-PUBLIC void httpAddLegacyRouteSet(EspRoute *eroute, cchar *set)
+PUBLIC void espAddRouteSet(EspRoute *eroute, cchar *set)
 {
-    HttpRoute   *route;
+    HttpRoute   *route, *rp;
+    char        *prefix;
 
     route = eroute->route;
     if (!eroute->legacy) {
+        prefix = route->prefix ? route->prefix : "";
+        if ((rp = httpDefineRoute(route, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), 
+                "esp-$1", ".")) != 0) {
+            eroute = allocEspRoute(rp);
+            eroute->update = 0;
+        }
         httpAddRouteSet(route, set);
 #if DEPRECATE || 1
     } else {
@@ -813,7 +815,7 @@ PUBLIC void httpAddLegacyRouteSet(EspRoute *eroute, cchar *set)
         prefix=PREFIX 
         routes=ROUTES 
 
-    DEPRECATED in 4.4: EspApp Prefix [Dir [RouteSet [Database]]]
+    Old syntax DEPRECATED in 4.4: EspApp Prefix [Dir [RouteSet [Database]]]
  */
 static int espAppDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -925,7 +927,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         routeSet = "restful";
     }
     if (routeSet) {
-        httpAddLegacyRouteSet(eroute, routeSet);
+        espAddRouteSet(eroute, routeSet);
     }
     if (database) {
         eroute->database = sclone(database);
@@ -1264,7 +1266,7 @@ static int espRouteSetDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S", &kind)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpAddLegacyRouteSet(eroute, kind);
+    espAddRouteSet(eroute, kind);
     return 0;
 }
 
@@ -1272,6 +1274,7 @@ static int espRouteSetDirective(MaState *state, cchar *key, cchar *value)
 #if DEPRECATE || 1
 /*
     EspShowErrors on|off
+    Now use ShowErrors
  */
 static int espShowErrorsDirective(MaState *state, cchar *key, cchar *value)
 {

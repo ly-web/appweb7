@@ -174,6 +174,9 @@ typedef struct EspRoute {
   */
 typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
 
+//  MOB - DOC
+PUBLIC void espAddRouteSet(EspRoute *eroute, cchar *set);
+
 /**
     Add caching for response content.
     @description This call configures caching for request responses. Caching may be used for any HTTP method, 

@@ -71,13 +71,13 @@ app.factory('Esp', function($rootScope, $location, SessionStore) {
 });
 
 /*
-    Startup initialization. Fetch the application settings file config.json.
+    Startup initialization. Fetch the application configuration.
  */
 app.run(function($rootScope, $http, Esp) {
-    $http.get('config.json').success(function(data) {
+    $http.get('/esp/config').success(function(data) {
         Esp.config = data;
     }).error(function() {
-            console.log("Cannot fetch config.json");
+            console.log("Cannot fetch app config");
         });
 });
 
