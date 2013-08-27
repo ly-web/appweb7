@@ -267,7 +267,8 @@ static int runAction(HttpConn *conn)
              */ 
             if (espModuleIsStale(req->servicePath, req->module, &recompile)) {
                 /*  WARNING: GC yield here */
-                if (recompile && !espCompile(route, conn->dispatcher, req->servicePath, req->module, req->cacheName, 0, &errMsg)) {
+                if (recompile && 
+                        !espCompile(route, conn->dispatcher, req->servicePath, req->module, req->cacheName, 0, &errMsg)) {
                     httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
                     unlock(req->esp);
                     return 0;
@@ -298,7 +299,8 @@ static int runAction(HttpConn *conn)
         key = sfmt("%s/missing", mprGetPathDir(req->servicePath));
         if ((action = mprLookupKey(esp->actions, key)) == 0) {
             if (!viewExists(conn) && (action = mprLookupKey(esp->actions, "missing")) == 0) {
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action for %s in %s", rx->target, req->servicePath);
+                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action for %s in %s", 
+                    rx->target, req->servicePath);
                 return 0;
             }
         }
@@ -308,8 +310,9 @@ static int runAction(HttpConn *conn)
             httpCreateSecurityToken(conn);
             httpRenderSecurityToken(conn);
             httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
-            if (route->flags & HTTP_ROUTE_JSON) {
-                espRenderString(conn, "{\"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
+            if (eroute->json) {
+                espRenderString(conn, 
+                    "{\"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                 espFinalize(conn);
             } else {
                 httpError(conn, HTTP_CODE_UNAUTHORIZED, "Security token is stale. Please retry.");
@@ -421,7 +424,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 #endif
             if (recompile) {
                 /* WARNING: this will allow GC */
-                if (recompile && !espCompile(rx->route, conn->dispatcher, req->source, req->module, req->cacheName, 1, &errMsg)) {
+                if (recompile &&
+                        !espCompile(rx->route, conn->dispatcher, req->source, req->module, req->cacheName, 1, &errMsg)) {
                     httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
                     unlock(req->esp);
                     return;
@@ -436,9 +440,6 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
                 httpMemoryError(conn);
                 return;
             }
-#if UNUSED
-            mprSetThreadData(esp->local, conn);
-#endif
             if (mprLoadModule(mp) < 0) {
                 unlock(req->esp);
                 httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load compiled esp module for %s", req->source);
@@ -453,9 +454,6 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         return;
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
-#if UNUSED
-    mprSetThreadData(esp->local, conn);
-#endif
     (view)(conn);
 }
 
@@ -519,55 +517,6 @@ static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
 #endif
     return 0;
 }
-
-
-#if UNUSED
-static int loadConfig(EspRoute *eroute)
-{
-    MprKey      *kp;
-    MprHash     *settings, *msettings;
-    MprPath     cinfo;
-    cchar       *cpath, *config, *value;
-
-    if (!eroute->config) {
-        espLoadConfig(eroute);
-        if ((config = mprReadPathContents(mprJoinPath(eroute->clientDir, "config.json"), NULL)) != 0) {
-            eroute->config = mprDeserialize(config);
-            /*
-                Blend the mode properties into settings
-             */
-            if ((settings = mprQueryJsonValue(eroute->config, "settings", MPR_JSON_OBJ)) != 0) {
-                eroute->mode = mprQueryJsonString(eroute->config, "mode");
-                if ((msettings = mprQueryJsonValue(eroute->config, sfmt("modes.%s", eroute->mode), MPR_JSON_OBJ)) != 0) {
-                    for (ITERATE_KEYS(msettings, kp)) {
-                        mprAddKeyWithType(settings, kp->key, kp->data, kp->type);
-                    }
-                }
-            }
-            if (espTestConfig(eroute, "settings.showErrors", "true")) {
-                httpSetRouteShowErrors(eroute->route, 1);
-            }
-            if (espTestConfig(eroute, "settings.update", "true")) {
-                eroute->update = 1;
-            }
-            if (espTestConfig(eroute, "settings.keepSource", "true")) {
-                eroute->keepSource = 1;
-            }
-            if ((value = espGetConfig(eroute, "settings.username", 0)) != 0) {
-                httpSetAuthUsername(eroute->route->auth, value);
-            }
-            if (espTestConfig(eroute, "settings.xsrf", "true")) {
-                httpSetRouteXsrf(eroute->route, 1);
-            }
-            if (espTestConfig(eroute, "settings.map", "compressed")) {
-                httpAddRouteMapping(eroute->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
-                httpAddRouteMapping(eroute->route, "html,xml", "${1}.gz");
-            }
-        }
-    }
-    return 0;
-}
-#endif
 
 
 /*
@@ -665,7 +614,7 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
 }
 
 
-PUBLIC void espSetMvcDirs(EspRoute *eroute)
+PUBLIC void espSetDirs(EspRoute *eroute)
 {
     HttpRoute   *route;
     char        *dir;
@@ -682,6 +631,8 @@ PUBLIC void espSetMvcDirs(EspRoute *eroute)
     eroute->layoutsDir  = mprJoinPath(dir, "layouts");
     eroute->viewsDir    = mprJoinPath(dir, "views");
     
+#if UNUSED
+    //  MOB - remove
 #if DEPRECATE || 1
     if (route->flags & HTTP_ROUTE_LEGACY_MVC) {
         /*
@@ -691,6 +642,7 @@ PUBLIC void espSetMvcDirs(EspRoute *eroute)
         eroute->servicesDir = mprJoinPath(dir, "controllers");
         httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->servicesDir);
     }
+#endif
 #endif
     httpSetRouteVar(route, "CACHE_DIR", eroute->cacheDir);
     httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
@@ -773,7 +725,6 @@ static EspRoute *getEroute(HttpRoute *route)
         name=NAME 
         prefix=PREFIX 
         routes=ROUTES 
-        type=angular|server|legacy 
 
     DEPRECATED in 4.4: EspApp Prefix [Dir [RouteSet [Database]]]
  */
@@ -781,11 +732,11 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
     EspRoute    *eroute;
-    char        *auth, *name, *option, *ovalue, *prefix, *dir, *routeSet, *database, *tok, *flat, *type;
+    cchar       *auth, *database, *name, *prefix, *dir, *routeSet, *flat;
+    char        *option, *ovalue, *tok;
 
     dir = ".";
     routeSet = 0;
-    type = 0;
     flat = "false";
     prefix = 0;
     database = 0;
@@ -810,10 +761,12 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
                 prefix = ovalue;
             } else if (smatch(option, "routes")) {
                 routeSet = ovalue;
+#if DEPRECATED || 1
             } else if (smatch(option, "type")) {
-                type = ovalue;
+                /* Ignored */
+#endif
             } else {
-                mprError("Unknown EspApp option %s", option);
+                mprError("Unknown EspApp option \"%s\"", option);
             }
         }
 
@@ -827,7 +780,6 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_SYNTAX;
         }
         name = "app";
-        type = "legacy";
 #endif
     }
     if (smatch(prefix, "/")) {
@@ -841,38 +793,39 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     } else {
         route = httpCreateInheritedRoute(state->route);
     }
-    if (!type) {
-        if (mprPathExists(mprJoinPath(dir, "client/app/main.js"), X_OK)) {
-            type = "angular";
-#if DEPRECATE || 1
-        } else if (mprPathExists(mprJoinPath(dir, "static"), X_OK) &&
-               !mprPathExists(mprJoinPath(dir, "client"), X_OK)) {
-            type = "legacy";
-        }
-    }
-    if (smatch(type, "legacy")) {
-        route->flags |= HTTP_ROUTE_LEGACY_MVC;
-    }
-#endif
-    if (smatch(type, "angular")) {
-        route->flags |= HTTP_ROUTE_JSON;
-    }
-    if (!routeSet) {
-        if (smatch(type, "angular")) {
-            routeSet = "restful";
-        }
-    }
     if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
     }
     eroute->top = eroute;
     eroute->flat = scaselessmatch(flat, "true") || smatch(flat, "1");
-#if UNUSED
-    eroute->appType = sclone(type);
-#endif
     eroute->appName = sclone(name);
     state = maPushState(state);
     state->route = route;
+
+    espSetDirs(eroute);
+    if (espLoadConfig(eroute) < 0) {
+        return MPR_ERR_CANT_LOAD;
+    }
+
+    if (espHasComponent(eroute, "legacy")) {
+        route->flags |= HTTP_ROUTE_LEGACY_MVC;
+        eroute->clientDir = mprJoinPath(route->documents, "static");
+        eroute->servicesDir = mprJoinPath(route->documents, "controllers");
+        httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->servicesDir);
+    }
+    if (espHasComponent(eroute, "angular")) {
+        eroute->json = 1;
+    }
+    if (!routeSet) {
+        if (espHasComponent(eroute, "angular")) {
+            routeSet = "restful";
+        }
+    }
+
+    eroute->json = espTestConfig(eroute, "settings.json", "1");
+    if (!database) {
+        database = espGetConfig(eroute, "server.database", 0);
+    }
 
     if (auth) {
         if (httpSetAuthStore(route->auth, auth) < 0) {
@@ -891,17 +844,12 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     } else {
         httpSetRouteName(route, prefix ? prefix : sfmt("/%s", name));
     }
+    
     httpSetRouteDocuments(route, dir);
     httpSetRouteTarget(route, "run", "$&");
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
 
-    if (routeSet) {
-        espSetMvcDirs(eroute);
-    }
-    if (espLoadConfig(eroute) < 0) {
-        return MPR_ERR_CANT_LOAD;
-    }
     if (routeSet) {
         httpAddRouteSet(state->route, routeSet);
     }
@@ -980,7 +928,7 @@ static int espDirDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (smatch(name, "mvc")) {
-        espSetMvcDirs(eroute);
+        espSetDirs(eroute);
     } else {
         path = stemplate(path, state->route->vars);
         path = stemplate(mprJoinPath(state->route->home, path), state->route->vars);
@@ -1030,24 +978,32 @@ static void defineVisualStudioEnv(MaState *state)
         is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
         espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\win8\\um\\x64;${WINSDK}\\LIB\\x64;${VS}\\VC\\lib\\amd64\"");
         if (is64BitSystem) {
-            espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\amd64;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x64\"");
+            espEnvDirective(state, "EspEnv", 
+                "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\amd64;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;"
+                "${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x64\"");
 
         } else {
             /* Cross building on x86 for 64-bit */
-            espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_amd64;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x86\"");
+            espEnvDirective(state, "EspEnv", 
+                "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_amd64;"
+                "${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x86\"");
         }
 
     } else if (scontains(appweb->platform, "-arm-")) {
         /* Cross building on x86 for arm. No winsdk 7 support for arm */
         espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\win8\\um\\arm;${VS}\\VC\\lib\\arm\"");
-        espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_arm;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\arm\"");
+        espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_arm;${VS}\\Common7\\Tools;"
+            "${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\arm\"");
 
     } else {
         /* Building for X86 */
-        espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\win8\\um\\x86;${WINSDK}\\LIB\\x86;${WINSDK}\\LIB;${VS}\\VC\\lib\"");
-        espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\"");
+        espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\win8\\um\\x86;${WINSDK}\\LIB\\x86;"
+            "${WINSDK}\\LIB;${VS}\\VC\\lib\"");
+        espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin;${VS}\\Common7\\Tools;"
+            "${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\"");
     }
-    espEnvDirective(state, "EspEnv", "INCLUDE \"${VS}\\VC\\INCLUDE;${WINSDK}\\include;${WINSDK}\\include\\um;${WINSDK}\\include\\shared\"");
+    espEnvDirective(state, "EspEnv", "INCLUDE \"${VS}\\VC\\INCLUDE;${WINSDK}\\include;${WINSDK}\\include\\um;"
+        "${WINSDK}\\include\\shared\"");
 }
 
 

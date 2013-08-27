@@ -3587,13 +3587,12 @@ PUBLIC void httpSetStreaming(struct HttpHost *host, cchar *mime, cchar *uri, boo
 #define HTTP_ROUTE_FREE_PATTERN         0x4         /**< Free Route.patternCompiled back to malloc when route is freed */
 #define HTTP_ROUTE_RAW                  0x8         /**< Don't html encode the write data */
 #define HTTP_ROUTE_STARTED              0x10        /**< Route initialized */
-#define HTTP_ROUTE_JSON                 0x20        /**< Route expects params in JSON body */
-#define HTTP_ROUTE_XSRF                 0x40        /**< Generate XSRF tokens */
-#define HTTP_ROUTE_CORS                 0x80        /**< Cross-Origin resource sharing */
-#define HTTP_ROUTE_STEALTH              0x100       /**< Stealth mode */
-#define HTTP_ROUTE_SHOW_ERRORS          0x200       /**< Show errors to the client */
-#define HTTP_ROUTE_VISIBLE_SESSION      0x400       /**< Create a session cookie visible to client Javascript (not httponly) */
-#define HTTP_ROUTE_PRESERVE_FRAMES      0x800       /**< Preserve WebSocket frame boundaries */
+#define HTTP_ROUTE_XSRF                 0x20        /**< Generate XSRF tokens */
+#define HTTP_ROUTE_CORS                 0x40        /**< Cross-Origin resource sharing */
+#define HTTP_ROUTE_STEALTH              0x80        /**< Stealth mode */
+#define HTTP_ROUTE_SHOW_ERRORS          0x100       /**< Show errors to the client */
+#define HTTP_ROUTE_VISIBLE_SESSION      0x200       /**< Create a session cookie visible to client Javascript (not httponly) */
+#define HTTP_ROUTE_PRESERVE_FRAMES      0x400       /**< Preserve WebSocket frame boundaries */
 
 #if (DEPRECATED || 1) && !DOXYGEN
 #define HTTP_ROUTE_GZIP                 0x1000      /**< Support gzipped content on this route */

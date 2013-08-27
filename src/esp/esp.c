@@ -19,7 +19,6 @@ typedef struct App {
     MaServer    *server;
 
     cchar       *appName;               /* Application name */
-    MprHash     *components;            /* App components */
     cchar       *serverRoot;            /* Root directory for server config */
     cchar       *configFile;            /* Arg to --config */
     cchar       *currentDir;            /* Initial starting current directory */
@@ -394,7 +393,6 @@ static EspRoute *createRoute(cchar *dir);
 static void fail(cchar *fmt, ...);
 static void fatal(cchar *fmt, ...);
 static bool findHostingConfig();
-static void getComponents();
 static MprList *getRoutes();
 static MprHash *getTargets(int argc, char **argv);
 static void generate(int argc, char **argv);
@@ -604,7 +602,6 @@ static void manageApp(App *app, int flags)
         mprMark(app->appweb);
         mprMark(app->cacheName);
         mprMark(app->command);
-        mprMark(app->components);
         mprMark(app->configFile);
         mprMark(app->csource);
         mprMark(app->currentDir);
@@ -649,10 +646,11 @@ static EspRoute *createRoute(cchar *dir)
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
+    eroute->config = mprCreateHash(0, 0);
     route->eroute = eroute;
     eroute->route = route;
     httpSetRouteDocuments(route, dir);
-    espSetMvcDirs(eroute);
+    espSetDirs(eroute);
     return eroute;
 }
 
@@ -894,7 +892,6 @@ static void process(int argc, char **argv)
     if (!generateApp) {
         readHostingConfig();
         espLoadConfig(app->eroute);
-        getComponents();
     }
     if (smatch(cmd, "generate")) {
         generate(argc - 1, &argv[1]);
@@ -1460,97 +1457,14 @@ static void compileFlat(EspRoute *eroute)
 /*
     Initialize the application components from the command line
   */
-static void initComponents(int argc, char **argv)
+static void addComponents(int argc, char **argv)
 {
     int     i;
 
-    app->components = mprCreateHash(0, 0);
     for (i = 0; i < argc; i++) {
-        mprAddKey(app->components, argv[i], sclone(argv[i]));
+        espAddComponent(app->eroute, argv[i]);
     }
-}
-
-static bool hasComponent(cchar *name)
-{
-    return mprLookupKey(app->components, name);
-}
-
-
-static void addComponent(cchar *name)
-{
-    mprAddKey(app->components, name, sclone(name));
-}
-
-
-/*
-    Get the application components from the application config.json
- */
-static void getComponents()
-{
-    MprObj      *obj;
-    MprHash     *components;
-    MprKey      *key;
-    cchar       *config, *path, *component;
-    int         i;
-
-    path = mprJoinPath(app->eroute->clientDir, "config.json");
-    if ((config = mprReadPathContents(path, NULL)) == 0) {
-        config = "{settings: {components: ['server']}}";
-
-    }
-    if ((obj = mprDeserialize(config)) == 0) {
-        fatal("Cannot deserialize %s", path);
-        return;
-    }
-    if ((components = mprQueryJsonValue(obj, "settings.components", MPR_JSON_ARRAY)) == 0) {
-        fatal("Cannot read components from config.json");
-    }
-    //  MOB - push this down into json somehow
-    app->components = mprCreateHash(0, 0);
-    i = 0;
-    for (ITERATE_KEY_DATA(components, key, component)) {
-        mprAddKey(app->components, component, sclone(component));
-    }
-#if DEPRECATE || 1
-    if (mprPathExists("static", X_OK) && !mprPathExists("client", X_OK)) {
-        addComponent("legacy");
-    }
-#endif
-}
-
-
-/*
-    Save the application components to the application config.json fle.
-    If config.json is not there, just return with no error.
- */
-static void saveComponents()
-{
-    MprObj      *obj;
-    MprHash     *components;
-    MprKey      *key;
-    cchar       *config, *path, *component;
-    int         i;
-
-    path = mprJoinPath(app->eroute->clientDir, "config.json");
-    if ((config = mprReadPathContents(path, NULL)) == 0) {
-        /* No error if config.json is not there */
-        return;
-    }
-    if ((obj = mprDeserialize(config)) == 0) {
-        fail("Cannot deserialize config.json");
-        return;
-    }
-    //  MOB - push this down into json somehow
-    components = mprCreateHash(0, 0);
-    i = 0;
-    for (ITERATE_KEY_DATA(app->components, key, component)) {
-        mprAddKey(components, sfmt("%d", i++), component);
-    }
-    mprUpdateJsonValue(obj, "settings.components", components, MPR_JSON_ARRAY);
-    if (mprWritePathContents(path, mprSerialize(obj, MPR_JSON_PRETTY | MPR_JSON_QUOTES | MPR_JSON_TYPES), -1, 0664) < 0) {
-        fail("Cannot write %s", path);
-        return;
-    }
+    espAddComponent(app->eroute, "server");
 }
 
 
@@ -1562,8 +1476,8 @@ static void generateApp(int argc, char **argv)
     cchar   *dir, *name;
 
     name = argv[0];
-    initComponents(argc - 1, &argv[1]);
-    addComponent("server");
+    app->eroute = createRoute(name);
+    addComponents(argc - 1, &argv[1]);
 
     if (smatch(name, ".")) {
         dir = mprGetCurrentPath();
@@ -1579,15 +1493,22 @@ static void generateApp(int argc, char **argv)
         fail("Cannot open config file %s", app->configFile);
         return;
     }
-    app->eroute = createRoute(name);
     generateAppFiles();
     generateHostingConfig();
     generateAppSrc();
 
-    if (hasComponent("angular") || hasComponent("legacy")) {
+    if (espHasComponent(app->eroute, "angular") || espHasComponent(app->eroute, "legacy")) {
         generateAppDb();
     }
-    saveComponents();
+    /*
+        Rewrite the list of components
+     */
+    app->eroute->config = 0;
+    espLoadConfig(app->eroute);
+    addComponents(argc - 1, &argv[1]);
+    if (espSaveConfig(app->eroute) < 0) {
+        fail("Cannot save config.json");
+    }
 }
 
 
@@ -1718,7 +1639,7 @@ static void generateScaffoldService(int argc, char **argv)
     defines = sclone("");
     tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", name, title, defines));
 
-    if (!hasComponent("legacy")) {
+    if (!espHasComponent(app->eroute, "legacy")) {
         data = stemplate(ScaffoldServiceHeader, tokens);
         data = sjoin(data, stemplate(ScaffoldServiceFooter, tokens), NULL);
 #if DEPRECATE || 1
@@ -1854,7 +1775,7 @@ static void generateScaffoldViews(int argc, char **argv)
     name = sclone(argv[0]);
     title = spascal(name);
 
-    if (!hasComponent("legacy")) {
+    if (!espHasComponent(app->eroute, "legacy")) {
         tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s}", name, title));
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
         data = stemplate(AngularScaffoldListView, tokens);
@@ -1891,11 +1812,11 @@ static void generateScaffold(int argc, char **argv)
     if (app->error) {
         return;
     }
-    if (!hasComponent("angular") && !hasComponent("legacy")) {
+    if (!espHasComponent(app->eroute, "angular") && !espHasComponent(app->eroute, "legacy")) {
         fail("Can only generate scafolds for Angular or Legacy applications");
         return;
     }
-    if (hasComponent("angular")) {
+    if (espHasComponent(app->eroute, "angular")) {
         generateAngularModel(argc, argv);
         generateAngularController(argc, argv);
     }
@@ -2149,6 +2070,7 @@ static void fixupFile(cchar *path)
 static void generateAppFiles()
 {
     EspRoute    *eroute;
+    MprHash     *components;
     cchar       *proto, *path, *component;
     MprKey      *key;
 
@@ -2157,7 +2079,8 @@ static void generateAppFiles()
     app->routeSet = sclone("restful");
     proto = mprJoinPath(app->binDir, "esp-proto");
 
-    for (ITERATE_KEY_DATA(app->components, key, component)) {
+    components = mprJsonGetValue(app->eroute->config, "settings.components", NULL);
+    for (ITERATE_KEY_DATA(components, key, component)) {
         path = mprJoinPath(proto, component);
         if (!mprPathExists(path, X_OK)) {
             fail("Cannot find component %s", component);
@@ -2168,6 +2091,7 @@ static void generateAppFiles()
     fixupFile(mprJoinPath(eroute->clientDir, "index.esp"));
     fixupFile(mprJoinPath(eroute->appDir, "main.js"));
     fixupFile(mprJoinPath(eroute->layoutsDir, "default.esp"));
+    fixupFile(mprJoinPath(eroute->route->documents, "config.json"));
 }
 
 

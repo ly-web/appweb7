@@ -240,6 +240,7 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         return 0;
     }
     if (auth->username) {
+        /* If using auto-login, replace the username */
         username = auth->username;
     }
     if (!(auth->store->verifyUser)(conn, username, password)) {
@@ -18301,6 +18302,7 @@ PUBLIC void httpAddJsonParams(HttpConn *conn)
 PUBLIC MprHash *httpGetParams(HttpConn *conn)
 { 
     if (conn->rx->params == 0) {
+        //  MOB - should use mprJSON  primitive not mprCreateHash
         conn->rx->params = mprCreateHash(HTTP_VAR_HASH_SIZE, MPR_HASH_STABLE);
     }
     return conn->rx->params;

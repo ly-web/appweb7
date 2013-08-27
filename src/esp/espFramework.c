@@ -10,7 +10,7 @@
 
 #if BIT_PACK_ESP
 /************************************* Code ***********************************/
-/*  
+/* 
     Add a http header if not already defined
  */
 PUBLIC void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
@@ -1325,19 +1325,17 @@ PUBLIC void espSecurityToken(HttpConn *conn)
 #endif
 
 
-//  MOB MOVE
-
 /*
     Load the config.json
  */
 PUBLIC int espLoadConfig(EspRoute *eroute)
 {
-    MprObj      *msettings, *settings;
-    MprKey      *kp;
+    MprObj      *msettings;
     MprPath     cinfo;
-    cchar       *cpath, *config, *value;
+    cchar       *cpath, *value;
+    int         type;
 
-    cpath = mprJoinPath(eroute->clientDir, "config.json");
+    cpath = mprJoinPath(eroute->route->documents, "config.json");
     if (mprGetPathInfo(cpath, &cinfo) == 0) {
         if (eroute->config && cinfo.mtime > eroute->configLoaded) {
             eroute->config = 0;
@@ -1345,18 +1343,13 @@ PUBLIC int espLoadConfig(EspRoute *eroute)
         eroute->configLoaded = cinfo.mtime;
     }
     if (!eroute->config) {
-        if ((config = mprReadPathContents(mprJoinPath(eroute->clientDir, "config.json"), NULL)) != 0) {
-            eroute->config = mprDeserialize(config);
+        if ((eroute->config = mprJsonLoad(cpath)) != 0) {
             /*
                 Blend the mode properties into settings
              */
-            if ((settings = mprQueryJsonValue(eroute->config, "settings", MPR_JSON_OBJ)) != 0) {
-                eroute->mode = mprQueryJsonString(eroute->config, "mode");
-                if ((msettings = mprQueryJsonValue(eroute->config, sfmt("modes.%s", eroute->mode), MPR_JSON_OBJ)) != 0) {
-                    for (ITERATE_KEYS(msettings, kp)) {
-                        mprAddKeyWithType(settings, kp->key, kp->data, kp->type);
-                    }
-                }
+            eroute->mode = mprJsonGet(eroute->config, "mode");
+            if ((msettings = mprJsonGetValue(eroute->config, sfmt("modes.%s", eroute->mode), &type)) != 0) {
+                mprJsonBlend(eroute->config, msettings);
             }
             if (espTestConfig(eroute, "settings.showErrors", "true")) {
                 httpSetRouteShowErrors(eroute->route, 1);
@@ -1370,7 +1363,7 @@ PUBLIC int espLoadConfig(EspRoute *eroute)
             if ((value = espGetConfig(eroute, "settings.username", 0)) != 0) {
                 httpSetAuthUsername(eroute->route->auth, value);
             }
-            if (espTestConfig(eroute, "settings.xsrf", "true")) {
+            if (espTestConfig(eroute, "settings.xsrfToken", "true")) {
                 httpSetRouteXsrf(eroute->route, 1);
             }
             if (espTestConfig(eroute, "settings.map", "compressed")) {
@@ -1387,7 +1380,7 @@ PUBLIC cchar *espGetConfig(EspRoute *eroute, cchar *key, cchar *defaultValue)
 {
     cchar   *value;
 
-    if ((value = mprQueryJsonString(eroute->config, key)) != 0) {
+    if ((value = mprJsonGet(eroute->config, key)) != 0) {
         return value;
     }
     return defaultValue;
@@ -1396,7 +1389,7 @@ PUBLIC cchar *espGetConfig(EspRoute *eroute, cchar *key, cchar *defaultValue)
 
 PUBLIC int espSetConfig(EspRoute *eroute, cchar *key, cchar *value)
 {
-    return mprUpdateJsonString(eroute->config, key, value);
+    return mprJsonSet(eroute->config, key, value);
 }
 
 
@@ -1404,15 +1397,31 @@ PUBLIC bool espTestConfig(EspRoute *eroute, cchar *key, cchar *desired)
 {
     cchar   *value;
 
-    if ((value = mprQueryJsonString(eroute->config, key)) != 0) {
+    if ((value = mprJsonGet(eroute->config, key)) != 0) {
         return smatch(value, desired);
     }
     return 0;
 }
 
 
+PUBLIC int espSaveConfig(EspRoute *eroute)
+{
+    return mprJsonSave(eroute->config, mprJoinPath(eroute->route->documents, "config.json"));
+}
 
 
+PUBLIC bool espHasComponent(EspRoute *eroute, cchar *name)
+{
+    return mprJsonGet(eroute->config, sfmt("settings.components[@ = '%s']", name));
+}
+
+
+PUBLIC void espAddComponent(EspRoute *eroute, cchar *name)
+{
+    if (!mprJsonGet(eroute->config, sfmt("settings.components[@ = %s]", name))) {
+        mprJsonSet(eroute->config, "settings.components[*]", name);
+    }
+}
 
 #endif /* BIT_PACK_ESP */
 /*

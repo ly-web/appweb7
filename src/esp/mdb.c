@@ -1255,7 +1255,7 @@ static int mdbSave(Edi *edi)
     }
     npath = mprReplacePathExt(path, "new");
     if ((out = mprOpenFile(npath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-        mprError("Can't open database %s", npath);
+        mprError("Cannot open database %s", npath);
         return 0;
     }
     mprWriteFileFmt(out, "{\n");

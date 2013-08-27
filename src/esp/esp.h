@@ -137,9 +137,6 @@ typedef struct EspRoute {
     MprTime         configLoaded;           /**< When config.json was last loaded */
 
     cchar           *appModulePath;         /**< App module path when compiled flat */
-#if UNUSED
-    cchar           *appType;               /**< Type of application: "angular", "server", "legacy" */
-#endif
     cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
 
     cchar           *cacheDir;              /**< Directory for cached compiled services and views */
@@ -159,6 +156,7 @@ typedef struct EspRoute {
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
     int             update;                 /**< Auto-update modified ESP source */
+    int             json;                   /**< Emit json responses */
 
     MprTicks        lifespan;               /**< Default cache lifespan */
     Edi             *edi;                   /**< Default database for this route */
@@ -369,7 +367,7 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags);
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile);
 PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
-PUBLIC void espSetMvcDirs(EspRoute *eroute);
+PUBLIC void espSetDirs(EspRoute *eroute);
 
 /********************************** Requests **********************************/
 /**
@@ -1582,13 +1580,14 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
 
 //  MOB
-
-
 PUBLIC cchar *espGetConfig(EspRoute *eroute, cchar *key, cchar *defaultValue);
 PUBLIC int espSetConfig(EspRoute *eroute, cchar *key, cchar *value);
 PUBLIC bool espTestConfig(EspRoute *eroute, cchar *key, cchar *desired);
 PUBLIC int espLoadConfig(EspRoute *eroute);
+PUBLIC int espSaveConfig(EspRoute *eroute);
 
+PUBLIC bool espHasComponent(EspRoute *eroute, cchar *name);
+PUBLIC void espAddComponent(EspRoute *eroute, cchar *name);
 
 /***************************** Abbreviated Controls ***************************/
 /**
