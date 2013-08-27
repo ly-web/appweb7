@@ -1064,9 +1064,6 @@ DEPS_55 += src/esp/proto
 
 $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	@echo '      [Copy] $(CONFIG)/bin/esp-proto'
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular"
-	cp src/esp/proto/angular/app.conf $(CONFIG)/bin/esp-proto/angular/app.conf
-	cp src/esp/proto/angular/appweb.conf $(CONFIG)/bin/esp-proto/angular/appweb.conf
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/app"
 	cp src/esp/proto/angular/client/app/main.js $(CONFIG)/bin/esp-proto/angular/client/app/main.js
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/assets"
@@ -1077,8 +1074,6 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	cp src/esp/proto/angular/client/assets/splash.jpg $(CONFIG)/bin/esp-proto/angular/client/assets/splash.jpg
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/components/Esp"
 	cp src/esp/proto/angular/client/components/Esp/Esp.js $(CONFIG)/bin/esp-proto/angular/client/components/Esp/Esp.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client"
-	cp src/esp/proto/angular/client/config.json $(CONFIG)/bin/esp-proto/angular/client/config.json
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/css"
 	cp src/esp/proto/angular/client/css/all.css $(CONFIG)/bin/esp-proto/angular/client/css/all.css
 	cp src/esp/proto/angular/client/css/all.less $(CONFIG)/bin/esp-proto/angular/client/css/all.less
@@ -1087,25 +1082,13 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	cp src/esp/proto/angular/client/css/more.less $(CONFIG)/bin/esp-proto/angular/client/css/more.less
 	cp src/esp/proto/angular/client/css/normalize.less $(CONFIG)/bin/esp-proto/angular/client/css/normalize.less
 	cp src/esp/proto/angular/client/css/theme.less $(CONFIG)/bin/esp-proto/angular/client/css/theme.less
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client"
 	cp src/esp/proto/angular/client/index.esp $(CONFIG)/bin/esp-proto/angular/client/index.esp
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/lib"
-	cp src/esp/proto/angular/client/lib/all.js $(CONFIG)/bin/esp-proto/angular/client/lib/all.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap-prettify.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap-prettify.min.js
 	cp src/esp/proto/angular/client/lib/angular-bootstrap.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap.js
 	cp src/esp/proto/angular/client/lib/angular-bootstrap.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap.min.js
-	cp src/esp/proto/angular/client/lib/angular-cookies.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-cookies.js
-	cp src/esp/proto/angular/client/lib/angular-cookies.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-cookies.min.js
-	cp src/esp/proto/angular/client/lib/angular-loader.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-loader.js
-	cp src/esp/proto/angular/client/lib/angular-loader.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-loader.min.js
-	cp src/esp/proto/angular/client/lib/angular-mobile.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-mobile.js
-	cp src/esp/proto/angular/client/lib/angular-mobile.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-mobile.min.js
-	cp src/esp/proto/angular/client/lib/angular-mocks.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-mocks.js
 	cp src/esp/proto/angular/client/lib/angular-resource.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-resource.js
 	cp src/esp/proto/angular/client/lib/angular-resource.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-resource.min.js
-	cp src/esp/proto/angular/client/lib/angular-sanitize.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-sanitize.js
-	cp src/esp/proto/angular/client/lib/angular-sanitize.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-sanitize.min.js
-	cp src/esp/proto/angular/client/lib/angular-scenario.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-scenario.js
 	cp src/esp/proto/angular/client/lib/angular.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular.js
 	cp src/esp/proto/angular/client/lib/angular.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular.min.js
 	cp src/esp/proto/angular/client/lib/html5shiv.js $(CONFIG)/bin/esp-proto/angular/client/lib/html5shiv.js
@@ -1120,10 +1103,68 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	cp src/esp/proto/angular/client/lib/ui-bootstrap-tpls.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/ui-bootstrap-tpls.min.js
 	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/templates"
 	cp src/esp/proto/angular/client/templates/splash.html $(CONFIG)/bin/esp-proto/angular/client/templates/splash.html
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular"
+	cp src/esp/proto/angular/config.json $(CONFIG)/bin/esp-proto/angular/config.json
 	cp src/esp/proto/angular/start.bit $(CONFIG)/bin/esp-proto/angular/start.bit
-	mkdir -p "$(CONFIG)/bin/esp-proto/legacy"
-	cp src/esp/proto/legacy/app.conf $(CONFIG)/bin/esp-proto/legacy/app.conf
-	cp src/esp/proto/legacy/appweb.conf $(CONFIG)/bin/esp-proto/legacy/appweb.conf
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular-local/client/components"
+	cp src/esp/proto/angular-local/client/components/LocalStore.js $(CONFIG)/bin/esp-proto/angular-local/client/components/LocalStore.js
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular-save/client/app"
+	cp src/esp/proto/angular-save/client/app/main.js $(CONFIG)/bin/esp-proto/angular-save/client/app/main.js
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular-save/client/assets"
+	cp src/esp/proto/angular-save/client/assets/banner.jpg $(CONFIG)/bin/esp-proto/angular-save/client/assets/banner.jpg
+	cp src/esp/proto/angular-save/client/assets/favicon.ico $(CONFIG)/bin/esp-proto/angular-save/client/assets/favicon.ico
+	cp src/esp/proto/angular-save/client/assets/glyphicons-halflings-white.png $(CONFIG)/bin/esp-proto/angular-save/client/assets/glyphicons-halflings-white.png
+	cp src/esp/proto/angular-save/client/assets/glyphicons-halflings.png $(CONFIG)/bin/esp-proto/angular-save/client/assets/glyphicons-halflings.png
+	cp src/esp/proto/angular-save/client/assets/splash.jpg $(CONFIG)/bin/esp-proto/angular-save/client/assets/splash.jpg
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular-save/client/components/Esp"
+	cp src/esp/proto/angular-save/client/components/Esp/Esp.js $(CONFIG)/bin/esp-proto/angular-save/client/components/Esp/Esp.js
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular-save/client"
+	cp src/esp/proto/angular-save/client/config.json $(CONFIG)/bin/esp-proto/angular-save/client/config.json
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular-save/client/css"
+	cp src/esp/proto/angular-save/client/css/all.css $(CONFIG)/bin/esp-proto/angular-save/client/css/all.css
+	cp src/esp/proto/angular-save/client/css/all.less $(CONFIG)/bin/esp-proto/angular-save/client/css/all.less
+	cp src/esp/proto/angular-save/client/css/app.less $(CONFIG)/bin/esp-proto/angular-save/client/css/app.less
+	cp src/esp/proto/angular-save/client/css/bootstrap.css $(CONFIG)/bin/esp-proto/angular-save/client/css/bootstrap.css
+	cp src/esp/proto/angular-save/client/css/more.less $(CONFIG)/bin/esp-proto/angular-save/client/css/more.less
+	cp src/esp/proto/angular-save/client/css/normalize.less $(CONFIG)/bin/esp-proto/angular-save/client/css/normalize.less
+	cp src/esp/proto/angular-save/client/css/theme.less $(CONFIG)/bin/esp-proto/angular-save/client/css/theme.less
+	cp src/esp/proto/angular-save/client/index.esp $(CONFIG)/bin/esp-proto/angular-save/client/index.esp
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular-save/client/lib"
+	cp src/esp/proto/angular-save/client/lib/all.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/all.js
+	cp src/esp/proto/angular-save/client/lib/angular-bootstrap-prettify.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-bootstrap-prettify.js
+	cp src/esp/proto/angular-save/client/lib/angular-bootstrap-prettify.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-bootstrap-prettify.min.js
+	cp src/esp/proto/angular-save/client/lib/angular-bootstrap.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-bootstrap.js
+	cp src/esp/proto/angular-save/client/lib/angular-bootstrap.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-bootstrap.min.js
+	cp src/esp/proto/angular-save/client/lib/angular-cookies.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-cookies.js
+	cp src/esp/proto/angular-save/client/lib/angular-cookies.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-cookies.min.js
+	cp src/esp/proto/angular-save/client/lib/angular-loader.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-loader.js
+	cp src/esp/proto/angular-save/client/lib/angular-loader.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-loader.min.js
+	cp src/esp/proto/angular-save/client/lib/angular-mobile.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-mobile.js
+	cp src/esp/proto/angular-save/client/lib/angular-mobile.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-mobile.min.js
+	cp src/esp/proto/angular-save/client/lib/angular-mocks.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-mocks.js
+	cp src/esp/proto/angular-save/client/lib/angular-resource.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-resource.js
+	cp src/esp/proto/angular-save/client/lib/angular-resource.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-resource.min.js
+	cp src/esp/proto/angular-save/client/lib/angular-sanitize.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-sanitize.js
+	cp src/esp/proto/angular-save/client/lib/angular-sanitize.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-sanitize.min.js
+	cp src/esp/proto/angular-save/client/lib/angular-scenario.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular-scenario.js
+	cp src/esp/proto/angular-save/client/lib/angular.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular.js
+	cp src/esp/proto/angular-save/client/lib/angular.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/angular.min.js
+	cp src/esp/proto/angular-save/client/lib/html5shiv.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/html5shiv.js
+	cp src/esp/proto/angular-save/client/lib/html5shiv.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/html5shiv.min.js
+	cp src/esp/proto/angular-save/client/lib/jquery.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/jquery.js
+	cp src/esp/proto/angular-save/client/lib/jquery.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/jquery.min.js
+	cp src/esp/proto/angular-save/client/lib/less.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/less.js
+	cp src/esp/proto/angular-save/client/lib/less.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/less.min.js
+	cp src/esp/proto/angular-save/client/lib/respond.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/respond.js
+	cp src/esp/proto/angular-save/client/lib/respond.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/respond.min.js
+	cp src/esp/proto/angular-save/client/lib/ui-bootstrap-tpls.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/ui-bootstrap-tpls.js
+	cp src/esp/proto/angular-save/client/lib/ui-bootstrap-tpls.min.js $(CONFIG)/bin/esp-proto/angular-save/client/lib/ui-bootstrap-tpls.min.js
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular-save/client/templates"
+	cp src/esp/proto/angular-save/client/templates/splash.html $(CONFIG)/bin/esp-proto/angular-save/client/templates/splash.html
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular-save"
+	cp src/esp/proto/angular-save/start.bit $(CONFIG)/bin/esp-proto/angular-save/start.bit
+	mkdir -p "$(CONFIG)/bin/esp-proto/angular-session/client/components/SessionStore"
+	cp src/esp/proto/angular-session/client/components/SessionStore/SessionStore.js $(CONFIG)/bin/esp-proto/angular-session/client/components/SessionStore/SessionStore.js
 	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/layouts"
 	cp src/esp/proto/legacy/layouts/default.esp $(CONFIG)/bin/esp-proto/legacy/layouts/default.esp
 	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static/css"
@@ -1155,13 +1196,10 @@ $(CONFIG)/bin/esp-proto: $(DEPS_55)
 	cp src/esp/proto/legacy/static/lib/less.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/less.min.js
 	cp src/esp/proto/legacy/static/lib/respond.js $(CONFIG)/bin/esp-proto/legacy/static/lib/respond.js
 	cp src/esp/proto/legacy/static/lib/respond.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/respond.min.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/LocalStore"
-	cp src/esp/proto/LocalStore/LocalStore.js $(CONFIG)/bin/esp-proto/LocalStore/LocalStore.js
 	mkdir -p "$(CONFIG)/bin/esp-proto/server"
 	cp src/esp/proto/server/app.conf $(CONFIG)/bin/esp-proto/server/app.conf
 	cp src/esp/proto/server/appweb.conf $(CONFIG)/bin/esp-proto/server/appweb.conf
-	mkdir -p "$(CONFIG)/bin/esp-proto/SessionStore/client/components/SessionStore"
-	cp src/esp/proto/SessionStore/client/components/SessionStore/SessionStore.js $(CONFIG)/bin/esp-proto/SessionStore/client/components/SessionStore/SessionStore.js
+	cp src/esp/proto/server/config.sav $(CONFIG)/bin/esp-proto/server/config.sav
 endif
 
 
@@ -2038,23 +2076,10 @@ DEPS_92 += src/esp/proto/angular/client/lib
 test/web/js: $(DEPS_92)
 	@echo '      [Copy] test/web/js'
 	mkdir -p "test/web/js"
-	cp src/esp/proto/angular/client/lib/all.js test/web/js/all.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.js test/web/js/angular-bootstrap-prettify.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.min.js test/web/js/angular-bootstrap-prettify.min.js
 	cp src/esp/proto/angular/client/lib/angular-bootstrap.js test/web/js/angular-bootstrap.js
 	cp src/esp/proto/angular/client/lib/angular-bootstrap.min.js test/web/js/angular-bootstrap.min.js
-	cp src/esp/proto/angular/client/lib/angular-cookies.js test/web/js/angular-cookies.js
-	cp src/esp/proto/angular/client/lib/angular-cookies.min.js test/web/js/angular-cookies.min.js
-	cp src/esp/proto/angular/client/lib/angular-loader.js test/web/js/angular-loader.js
-	cp src/esp/proto/angular/client/lib/angular-loader.min.js test/web/js/angular-loader.min.js
-	cp src/esp/proto/angular/client/lib/angular-mobile.js test/web/js/angular-mobile.js
-	cp src/esp/proto/angular/client/lib/angular-mobile.min.js test/web/js/angular-mobile.min.js
-	cp src/esp/proto/angular/client/lib/angular-mocks.js test/web/js/angular-mocks.js
 	cp src/esp/proto/angular/client/lib/angular-resource.js test/web/js/angular-resource.js
 	cp src/esp/proto/angular/client/lib/angular-resource.min.js test/web/js/angular-resource.min.js
-	cp src/esp/proto/angular/client/lib/angular-sanitize.js test/web/js/angular-sanitize.js
-	cp src/esp/proto/angular/client/lib/angular-sanitize.min.js test/web/js/angular-sanitize.min.js
-	cp src/esp/proto/angular/client/lib/angular-scenario.js test/web/js/angular-scenario.js
 	cp src/esp/proto/angular/client/lib/angular.js test/web/js/angular.js
 	cp src/esp/proto/angular/client/lib/angular.min.js test/web/js/angular.min.js
 	cp src/esp/proto/angular/client/lib/html5shiv.js test/web/js/html5shiv.js
