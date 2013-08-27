@@ -3596,7 +3596,6 @@ PUBLIC void httpSetStreaming(struct HttpHost *host, cchar *mime, cchar *uri, boo
 
 #if (DEPRECATED || 1) && !DOXYGEN
 #define HTTP_ROUTE_GZIP                 0x1000      /**< Support gzipped content on this route */
-#define HTTP_ROUTE_LEGACY_MVC           0x2000      /**< Legacy MVC app. Using "static" instead of "client". Deprecated in 4.4 */
 #endif
 
 /**
@@ -3816,6 +3815,9 @@ PUBLIC void httpAddHomeRoute(HttpRoute *parent);
     @stability Evolving
  */
 PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set);
+
+//  MOB DOC
+PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *name, cchar *prefix);
 
 /**
     Add a route condition

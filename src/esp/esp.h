@@ -23,8 +23,6 @@ extern "C" {
 /*
     DEPRECATED in 4.4
  */
-//  MOB - enable
-#define BIT_ESP_LEGACY 0
 #ifndef BIT_ESP_LEGACY
     #define BIT_ESP_LEGACY 1
 #endif
@@ -121,6 +119,7 @@ typedef struct Esp {
  */
 PUBLIC void espInitHtmlOptions(Esp *esp);
 
+
 /********************************** Routes ************************************/
 /**
     EspRoute extended route configuration.
@@ -131,7 +130,7 @@ typedef struct EspRoute {
     char            *appName;               /**< App module name when compiled flat */
     struct EspRoute *top;                   /**< Top-level route for this application */
     HttpRoute       *route;                 /**< Back link to the owning route */
-    EspProc         commonService;          /**< Common code for all services */
+    EspProc         commonController;       /**< Common code for all controllers */
     MprHash         *env;                   /**< Environment variables for route */
     MprHash         *config;                /**< App configuration from config.json */
     MprTime         configLoaded;           /**< When config.json was last loaded */
@@ -139,12 +138,12 @@ typedef struct EspRoute {
     cchar           *appModulePath;         /**< App module path when compiled flat */
     cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
 
-    cchar           *cacheDir;              /**< Directory for cached compiled services and views */
-    cchar           *clientDir;             /**< Directory for client-side public web content */
     cchar           *appDir;                /**< Directory for client-side application content "app" */
+    cchar           *cacheDir;              /**< Directory for cached compiled controllers and views */
+    cchar           *clientDir;             /**< Directory for client-side public web content */
+    cchar           *controllersDir;        /**< Directory for controllers */
     cchar           *dbDir;                 /**< Directory for databases */
-    char            *layoutsDir;            /**< Directory for service view layouts */
-    cchar           *servicesDir;           /**< Directory for services */
+    char            *layoutsDir;            /**< Directory for view layouts */
     cchar           *srcDir;                /**< Directory for server-side source */
     char            *viewsDir;              /**< Directory for server-side views */
 
@@ -152,12 +151,15 @@ typedef struct EspRoute {
     cchar           *link;                  /**< Link template */
     cchar           *mode;                  /**< Application run mode (debug|release) */
 
+    cchar           *database;              /**< Name of database for route */
     cchar           *login;                 /**< Automatic login name - bypass login dialog */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
     int             update;                 /**< Auto-update modified ESP source */
     int             json;                   /**< Emit json responses */
-
+#if DEPRECATE || 1
+    int             legacy;                 /**< Legacy MVC app */
+#endif
     MprTicks        lifespan;               /**< Default cache lifespan */
     Edi             *edi;                   /**< Default database for this route */
 } EspRoute;
@@ -240,7 +242,7 @@ typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
 PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
 
 /**
-    Compile an ESP page, service or view
+    Compile an ESP page, controller or view
     @description This compiles ESP components into loadable, cached modules
     @param route HttpRoute object
     @param dispatcher Optional dispatcher to use when waiting for the compilation command.
@@ -276,7 +278,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
 
 /**
     Define an action
-    @description Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.
+    @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
     @param route HttpRoute object
     @param targetKey Target key used to select the action in a HttpRoute target. This is typically a URI prefix.
     @param actionProc EspProc callback procedure to invoke when the action is requested.
@@ -297,11 +299,11 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc
 PUBLIC int espBindProc(HttpRoute *route, cchar *pattern, void *actionProc);
 
 /**
-    Define a base function to invoke for all service actions.
-    @description A base function can be defined that will be called before calling any service action. This
+    Define a base function to invoke for all controller actions.
+    @description A base function can be defined that will be called before calling any controller action. This
         emulates a super class constructor.
     @param route HttpRoute object
-    @param baseProc Function to call just prior to invoking a service action.
+    @param baseProc Function to call just prior to invoking a controller action.
     @ingroup EspRoute
     @stability Stable
  */
@@ -333,7 +335,7 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
             <li>OUT - Output module (view_MD5.dylib)</li>
             <li>SHLIB - Shared library extension (.lib, .so)</li>
             <li>SHOBJ - Shared object extension (.dll, .so)</li>
-            <li>SRC - Path to source code for view or service (already templated)</li>
+            <li>SRC - Path to source code for view or controller (already templated)</li>
             <li>TMP - System temporary directory</li>
             <li>WINSDK - Path to the Windows SDK</li>
             <li>VS - Path to Visual Studio</li>
@@ -366,6 +368,7 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
  */
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags);
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile);
+PUBLIC int espOpenDatabase(EspRoute *eroute, cchar *spec);
 PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
 PUBLIC void espSetDirs(EspRoute *eroute);
 
@@ -380,7 +383,7 @@ typedef void (*EspViewProc)(HttpConn *conn);
 
 /**
     ESP Action
-    @description Actions are run after a request URI is routed to a service.
+    @description Actions are run after a request URI is routed to a controller.
     @ingroup EspReq
     @stability Evolving
  */
@@ -405,8 +408,8 @@ typedef struct EspReq {
     void            *data;                  /**< Custom data for request - must be a managed reference */
     void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
     char            *cacheName;             /**< Base name of intermediate compiled file */
-    char            *serviceName;           /**< Service name */
-    char            *servicePath;           /**< Path to service source */
+    char            *controllerName;        /**< Controller name */
+    char            *controllerPath;        /**< Path to controller source */
     char            *module;                /**< Name of compiled module */
     char            *source;                /**< Name of ESP source */
     char            *view;                  /**< Path to view */
@@ -617,7 +620,7 @@ PUBLIC cchar *espGetDir(HttpConn *conn);
     Get a flash message.
     @description This retrieves a flash message of a specified type.
         Flash messages are messages kept in session storage messages that are passed to the next request (only). 
-        The message is cleared after the service action completes.
+        The message is cleared after the controller action completes.
     @param conn HttpConn connection object
     @param type Type of flash message to retrieve. Possible types include: "error", "inform", "warning", "all".
     @ingroup EspReq
@@ -1173,7 +1176,7 @@ PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s);
     @description Security tokens are used to help guard against CSRF threats.
         This call will render a security token for the page, and emit an HTML meta element for the security token.
         The token will automatically be included whenever forms are submitted and the token is validated by the 
-        receiving Service. Typically, forms will automatically generate the security token. Note that explicitly
+        receiving controller. Typically, forms will automatically generate the security token. Note that explicitly
         calling this routine is not necessary unless a security token is required for non-form requests such as AJAX
         requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @param conn Http connection object
@@ -1208,7 +1211,7 @@ PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name);
 
 /**
     Render a view template to the client
-    @description Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.
+    @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
     @param conn Http connection object
     @param name view name
     @ingroup EspReq
@@ -1329,8 +1332,8 @@ PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *data);
 /**
     Set a flash message
     @description Flash messages persist for only one request and are a convenient way to pass state information or 
-        feedback messages to the next request service. Flash messages use the session state store, but persist only for one request.
-        The flash message is removed after running the next service and before rendering any server-side view.
+        feedback messages to the next request. Flash messages use the session state store, but persist only for one request.
+        The flash message is removed after running the next controller and before rendering any server-side view.
         If you need to set a message to include in the request response, consider using #espSetFeedback.
     @param conn Http connection object
     @param kind Kind of flash message
@@ -1527,10 +1530,10 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
         "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
         top-level relative links.
         \n\n
-        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the 
-        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If 
+        If the target is a string that begins with "{AT}" it will be interpreted as a controller/action pair of the 
+        form "{AT}controller/action". If the "controller/" portion is absent, the current controller is used. If 
         the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
-        of the current service.
+        of the current controller.
         \n\n
         If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
         If the target is a relative URI path, it is appended to the current request URI path.  
@@ -1538,7 +1541,7 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
         If the target is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
         query. If these component properties are supplied, these will be combined to create a URI.
         \n\n
-        If the target specifies either a service/action or a JSON set of options, The URI will be created according 
+        If the target specifies either a controller/action or a JSON set of options, The URI will be created according 
         to the route URI template. The template may be explicitly specified
         via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
         name will be used. If these don't result in a usable route, the "default" route will be used. 
@@ -1551,10 +1554,10 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
             <li>path String URI path portion</li>
             <li>reference String URI path reference. Does not include "#"</li>
             <li>query String URI query parameters. Does not include "?"</li>
-            <li>service String Service name if using a Service-based route. This can also be specified via
+            <li>controller String controller name if using a controller-based route. This can also be specified via
                 the action option.</li>
-            <li>action String Action to invoke. This can be a URI string or a service action of the form
-                {AT}Service/action.</li>
+            <li>action String Action to invoke. This can be a URI string or a controller action of the form
+                {AT}controller/action.</li>
             <li>route String Route name to use for the URI template</li>
         </ul>
     @return A normalized, server-local Uri string.
@@ -1563,13 +1566,13 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
     espUri(conn, "../images/splash.png", 0); \n
     espUri(conn, "~/client/images/splash.png", 0); \n
     espUri(conn, "${app}/client/images/splash.png", 0); \n
-    espUri(conn, "@service/checkout", 0); \n
-    espUri(conn, "@service/") \n
+    espUri(conn, "@controller/checkout", 0); \n
+    espUri(conn, "@controller/") \n
     espUri(conn, "@init") \n
     espUri(conn, "@") \n
     espUri(conn, "{ action: '@post/create' }", 0); \n
     espUri(conn, "{ action: 'checkout' }", 0); \n
-    espUri(conn, "{ action: 'logout', service: 'admin' }", 0); \n
+    espUri(conn, "{ action: 'logout', controller: 'admin' }", 0); \n
     espUri(conn, "{ action: 'admin/logout'", 0); \n
     espUri(conn, "{ product: 'candy', quantity: '10', template: '/cart/${product}/${quantity}' }", 0); \n
     espUri(conn, "{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0); \n
@@ -1667,7 +1670,7 @@ PUBLIC void finalize();
 /**
     Set a flash notification message.
     @description Flash messages persist for only one request and are a convenient way to pass state information or 
-        feedback messages to the next request service. Flash messages use the session state store, but persist only for one request.
+        feedback messages to the next request. Flash messages use the session state store, but persist only for one request.
         This routine calls #espSetFlash.
     @param kind Kind of flash message.
     @param fmt Printf style message format
@@ -1716,7 +1719,7 @@ PUBLIC cchar *getCookies();
 
 /**
     Get the connection object
-    @description Before a view or service is run, the current connection object for the request is saved in thread
+    @description Before a view or controller is run, the current connection object for the request is saved in thread
     local data. Most EspAbbrev APIs take an HttpConn object as an argument.
     @return HttpConn connection instance object.
     @ingroup EspAbbrev
@@ -1966,10 +1969,10 @@ PUBLIC EdiRec *makeRec(cchar *content);
         "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
         top-level relative links.
         \n\n
-        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the 
-        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If 
+        If the target is a string that begins with "{AT}" it will be interpreted as a controller/action pair of the 
+        form "{AT}controller/action". If the "controller/" portion is absent, the current controller is used. If 
         the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
-        of the current service.
+        of the current controller.
         \n\n
         If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
         If the target is a relative URI path, it is appended to the current request URI path.  
@@ -1977,7 +1980,7 @@ PUBLIC EdiRec *makeRec(cchar *content);
         If the target is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
         query. If these component properties are supplied, these will be combined to create a URI.
         \n\n
-        If the target specifies either a service/action or a JSON set of options, The URI will be created according 
+        If the target specifies either a controller/action or a JSON set of options, The URI will be created according 
         to the route URI template. The template may be explicitly specified
         via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
         name will be used. If these don't result in a usable route, the "default" route will be used. 
@@ -1990,10 +1993,10 @@ PUBLIC EdiRec *makeRec(cchar *content);
             <li>path String URI path portion</li>
             <li>reference String URI path reference. Does not include "#"</li>
             <li>query String URI query parameters. Does not include "?"</li>
-            <li>service String Service name if using a Service-based route. This can also be specified via
+            <li>controller String controller name if using a controller-based route. This can also be specified via
                 the action option.</li>
-            <li>action String Action to invoke. This can be a URI string or a service action of the form
-                {AT}Service/action.</li>
+            <li>action String Action to invoke. This can be a URI string or a controller action of the form
+                {AT}controller/action.</li>
             <li>route String Route name to use for the URI template</li>
         </ul>
     @return A normalized, server-local Uri string.
@@ -2002,13 +2005,13 @@ PUBLIC EdiRec *makeRec(cchar *content);
     makeUri("../images/splash.png", 0); \n
     makeUri("~/client/images/splash.png", 0); \n
     makeUri("${app}/client/images/splash.png", 0); \n
-    makeUri("@service/checkout", 0); \n
-    makeUri("@service/") \n
+    makeUri("@controller/checkout", 0); \n
+    makeUri("@controller/") \n
     makeUri("@init") \n
     makeUri("@") \n
     makeUri("{ action: '@post/create' }", 0); \n
     makeUri("{ action: 'checkout' }", 0); \n
-    makeUri("{ action: 'logout', service: 'admin' }", 0); \n
+    makeUri("{ action: 'logout', controller: 'admin' }", 0); \n
     makeUri("{ action: 'admin/logout'", 0); \n
     makeUri("{ product: 'candy', quantity: '10', template: '/cart/${product}/${quantity}' }", 0); \n
     makeUri("{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0); \n
@@ -2271,7 +2274,7 @@ PUBLIC ssize renderSafe(cchar *fmt, ...);
     @description Security tokens are used to help guard against CSRF threats.
     This call will generate a security token for the page and emit an HTML meta element for the security token.
     The token will automatically be included whenever forms are submitted and the token be validated by the 
-    receiving Service. Forms will normally automatically generate the security token and that explicitly
+    receiving controller. Forms will normally automatically generate the security token and that explicitly
     calling this routine is not required unless a security token is required for non-form requests such as AJAX
     requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @ingroup EspAbbrev
@@ -2303,7 +2306,7 @@ PUBLIC ssize renderVar(cchar *name);
 
 /**
     Render a view template to the client
-    @description Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.
+    @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
     @param view view name
     @ingroup EspAbbrev
     @stability Evolving
@@ -2326,7 +2329,7 @@ PUBLIC void scripts(cchar *patterns);
     @description Security tokens are used to help guard against CSRF threats.
         This call will render a security token for the page, and emit an HTML meta element for the security token.
         The token will automatically be included whenever forms are submitted and the token is validated by the 
-        receiving Service. Typically, forms will automatically generate the security token. Note that explicitly
+        receiving controller. Typically, forms will automatically generate the security token. Note that explicitly
         calling this routine is not necessary unless a security token is required for non-form requests such as AJAX
         requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @ingroup EspAbbrev
@@ -2553,15 +2556,15 @@ PUBLIC bool createRecFromParams(cchar *table);
     how the control will render. The options hash is a JSON string, which is interpreted as a set of property values.
     \n\n
     Various controls have custom options, but most share the following common set of option properties:
-    @arg action String Action to invoke. This can be a URI string or a Service/Action pair of the form
-        \@Service/action. If only the service is provided (\@Service/), the "list" action assumed.
+    @arg action String Action to invoke. This can be a URI string or a controller/Action pair of the form
+        \@controller/action. If only the controller is provided (\@controller/), the "list" action assumed.
     @arg apply String Client JQuery selector identifying the element to apply the remote update.
         Typically "div.ID" where ID is the DOM ID for the element.
     @arg background String Background color. This is a CSS RGB color specification. For example "FF0000" for red.
     @arg click (Boolean|Uri|String) URI to invoke if the control is clicked.
     @arg color String Foreground color. This is a CSS RGB color specification. For example "FF0000" for red.
     @arg confirm String Message to prompt the user to request confirmation before submitting a form or request.
-    @arg service Service owning the action to invoke when clicked. Defaults to the current service.
+    @arg controller controller owning the action to invoke when clicked. Defaults to the current controller.
     @arg data-* All data-* names are passed through to the HTML unmodified.
     @arg domid String Client-side DOM-ID to use for the control
     @arg effects String Transition effects to apply when updating a control. Select from: "fadein", "fadeout",
@@ -2571,7 +2574,7 @@ PUBLIC bool createRecFromParams(cchar *table);
     @arg height (Number|String) Height of the control. Can be a number of pixels or a percentage string. 
         Defaults to unlimited.
     @arg key Array List of fields to set as the key values to uniquely identify the clicked or edited element. 
-        The key will be rendered as a "data-key" HTML attribute and will be passed to the receiving service 
+        The key will be rendered as a "data-key" HTML attribute and will be passed to the receiving controller 
         when the entry is clicked or edited. Each entry of the key option can be a simple
         string field name or it can be an Object with a single property, where the property name is a simple
         string field name and the property value is the mapped field name to use as the actual key name. This 
@@ -2597,7 +2600,7 @@ PUBLIC bool createRecFromParams(cchar *table);
     @arg remote (String|URI|Object) Perform the request in the background without changing the browser location.
     @arg refresh (String|URI|Object) URI to invoke in the background to refresh the control's data every period.
         milliseconds. If period is undefined or zero, a persistent connection may be used to refresh data.
-        The refresh option may use the "\@Service/action" form.
+        The refresh option may use the "\@controller/action" form.
     @arg size (Number|String) Size of the element.
     @arg style String CSS Style to use for the element.
     @arg value Object Override value to display if used without a form control record.

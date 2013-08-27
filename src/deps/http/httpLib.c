@@ -9091,7 +9091,7 @@ static void manageLang(HttpLang *lang, int flags);
 static void manageRouteOp(HttpRouteOp *op, int flags);
 static int matchRequestUri(HttpConn *conn, HttpRoute *route);
 static int matchRoute(HttpConn *conn, HttpRoute *route);
-static char *qualifyName(HttpRoute *route, cchar *service, cchar *name);
+static char *qualifyName(HttpRoute *route, cchar *controller, cchar *name);
 static int selectHandler(HttpConn *conn, HttpRoute *route);
 static int testCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *condition);
 static char *trimQuotes(char *str);
@@ -10553,7 +10553,7 @@ PUBLIC void httpSetRouteStealth(HttpRoute *route, bool on)
         Target close
         Target redirect status [URI]
         Target run ${DOCUMENTS}/${request:uri}.gz
-        Target run ${service}-${action} 
+        Target run ${controller}-${action} 
         Target write [-r] status "Hello World\r\n"
  */
 PUBLIC int httpSetRouteTarget(HttpRoute *route, cchar *rule, cchar *details)
@@ -10955,12 +10955,12 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
     HttpRoute       *route, *lroute;
     HttpRx          *rx;
     HttpUri         *uri;
-    cchar           *routeName, *action, *service, *originalAction, *tplate;
+    cchar           *routeName, *action, *controller, *originalAction, *tplate;
     char            *rest;
 
     rx = conn->rx;
     route = rx->route;
-    service = 0;
+    controller = 0;
 
     if (target == 0) {
         target = "";
@@ -10978,9 +10978,9 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
         }
         /*
             Prep the action. Forms are:
-                . @action               # Use the current service
-                . @service/             # Use "index" as the action
-                . @service/action
+                . @action               # Use the current controller
+                . @controller/          # Use "index" as the action
+                . @controller/action
          */
         if ((action = httpGetOption(options, "action", 0)) != 0) {
             originalAction = action;
@@ -10988,21 +10988,14 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
                 action = &action[1];
             }
             if (strchr(action, '/')) {
-                service = stok((char*) action, "/", (char**) &action);
+                controller = stok((char*) action, "/", (char**) &action);
                 action = stok((char*) action, "/", &rest);
             }
-            if (service) {
-                httpSetOption(options, "service", service);
+            if (controller) {
+                httpSetOption(options, "controller", controller);
             } else {
-                service = httpGetParam(conn, "service", 0);
+                controller = httpGetParam(conn, "controller", 0);
             }
-#if DEPRECATE || 1
-            if (service) {
-                httpSetOption(options, "controller", service);
-            } else {
-                service = httpGetParam(conn, "controller", 0);
-            }
-#endif
             if (action == 0 || *action == '\0') {
                 action = "list";
             }
@@ -11016,9 +11009,9 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
                 . options.route.template
                 . options.action mapped to a route.template, via:
                 . /app/STAR/action
-                . /app/service/action
+                . /app/controller/action
                 . /app/STAR/default
-                . /app/service/default
+                . /app/controller/default
          */
         if ((tplate = httpGetOption(options, "template", 0)) == 0) {
             if ((routeName = httpGetOption(options, "route", 0)) != 0) {
@@ -11028,10 +11021,10 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
                 lroute = 0;
             }
             if (lroute == 0) {
-                if ((lroute = httpLookupRoute(conn->host, qualifyName(route, service, action))) == 0) {
-                    if ((lroute = httpLookupRoute(conn->host, qualifyName(route, "{service}", action))) == 0) {
-                        if ((lroute = httpLookupRoute(conn->host, qualifyName(route, service, "default"))) == 0) {
-                            lroute = httpLookupRoute(conn->host, qualifyName(route, "{service}", "default"));
+                if ((lroute = httpLookupRoute(conn->host, qualifyName(route, controller, action))) == 0) {
+                    if ((lroute = httpLookupRoute(conn->host, qualifyName(route, "{controller}", action))) == 0) {
+                        if ((lroute = httpLookupRoute(conn->host, qualifyName(route, controller, "default"))) == 0) {
+                            lroute = httpLookupRoute(conn->host, qualifyName(route, "{controller}", "default"));
                         }
                     }
                 }
@@ -11074,7 +11067,7 @@ static cchar *expandRouteName(HttpConn *conn, cchar *routeName)
 
 
 /*
-    Expect a template with embedded tokens of the form: "/${service}/${action}/${other}"
+    Expect a template with embedded tokens of the form: "/${controller}/${action}/${other}"
     The options is a hash of token values.
  */
 PUBLIC char *httpTemplate(HttpConn *conn, cchar *template, MprHash *options)
@@ -11623,19 +11616,19 @@ PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods
 
 
 /*
-    Calculate a qualified route name. The form is: /{app}/{service}/action
+    Calculate a qualified route name. The form is: /{app}/{controller}/action
  */
-static char *qualifyName(HttpRoute *route, cchar *service, cchar *action)
+static char *qualifyName(HttpRoute *route, cchar *controller, cchar *action)
 {
-    cchar   *prefix, *servicePrefix;
+    cchar   *prefix, *controllerPrefix;
 
     prefix = route->prefix ? route->prefix : "";
     if (action == 0 || *action == '\0') {
         action = "default";
     }
-    if (service) {
-        servicePrefix = (service && smatch(service, "{service}")) ? "*" : service;
-        return sjoin(prefix, "/", servicePrefix, "/", action, NULL);
+    if (controller) {
+        controllerPrefix = (controller && smatch(controller, "{controller}")) ? "*" : controller;
+        return sjoin(prefix, "/", controllerPrefix, "/", action, NULL);
     } else {
         return sjoin(prefix, "/", action, NULL);
     }
@@ -11647,36 +11640,16 @@ static char *qualifyName(HttpRoute *route, cchar *service, cchar *action)
  */
 static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *pattern, cchar *target, cchar *resource)
 {
-    cchar       *name, *nameResource, *prefix, *source, *token;
+    cchar       *name, *nameResource, *prefix, *source;
 
-    token = (parent->flags & HTTP_ROUTE_LEGACY_MVC) ? "{controller}" : "{service}";
-    nameResource = smatch(resource, token) ? "*" : resource;
+    nameResource = smatch(resource, "{controller}") ? "*" : resource;
 
-    if (!(parent->flags & HTTP_ROUTE_LEGACY_MVC)) {
-        prefix = parent->prefix ? sfmt("%s/service", parent->prefix) : "/service";
-        name = sfmt("%s/%s/%s", prefix, nameResource, action);
-        if (*resource == '{') {
-            pattern = sfmt("^%s/%s%s", prefix, resource, pattern);
-        } else {
-            pattern = sfmt("^%s/{service=%s}%s", prefix, resource, pattern);
-        }
-#if DEPRECATED || 1
+    prefix = parent->prefix ? sfmt("%s/controller", parent->prefix) : "/controller";
+    name = sfmt("%s/%s/%s", prefix, nameResource, action);
+    if (*resource == '{') {
+        pattern = sfmt("^%s/%s%s", prefix, resource, pattern);
     } else {
-        /*
-            Deprecated in 4.4
-         */
-        if (parent->prefix) {
-            name = sfmt("%s/%s/%s", parent->prefix, nameResource, action);
-            pattern = sfmt("^%s/%s%s", parent->prefix, resource, pattern);
-        } else {
-            name = sfmt("/%s/%s", nameResource, action);
-            if (*resource == '{') {
-                pattern = sfmt("^/%s%s", resource, pattern);
-            } else {
-                pattern = sfmt("^/{controller=%s}%s", resource, pattern);
-            }
-        }
-#endif
+        pattern = sfmt("^%s/{controller=%s}%s", prefix, resource, pattern);
     }
     if (*resource == '{') {
         target = sfmt("$%s-%s", resource, target);
@@ -11780,37 +11753,12 @@ PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set)
     if (scaselessmatch(set, "simple")) {
         httpAddHomeRoute(parent);
     }
-    if (!(parent->flags & HTTP_ROUTE_LEGACY_MVC)) {
-        if (scaselessmatch(set, "restful")) {
-            httpAddResourceGroup(parent, "{service}");
-            httpAddClientRoute(parent, "/client", "");
+    if (scaselessmatch(set, "restful")) {
+        httpAddResourceGroup(parent, "{controller}");
+        httpAddClientRoute(parent, "/client", "");
 
-        } else if (!scaselessmatch(set, "none")) {
-            mprError("Unknown route set %s", set);
-        }
-#if DEPRECATE || 1
-    } else {
-        /*
-            Deprecated in 4.4
-         */
-        if (scaselessmatch(set, "mvc")) {
-            httpAddHomeRoute(parent);
-            httpAddClientRoute(parent, "/static", "/static");
-
-        } else if (scaselessmatch(set, "mvc-fixed")) {
-            httpAddHomeRoute(parent);
-            httpAddClientRoute(parent, "/static", "/static");
-            httpDefineRoute(parent, "default", NULL, "^/{controller}(~/{action}~)", "${controller}-${action}", "${controller}.c");
-
-        } else if (scaselessmatch(set, "restful")) {
-            httpAddHomeRoute(parent);
-            httpAddClientRoute(parent, "/static", "/static");
-            httpAddLegacyResourceGroup(parent, "{controller}");
-
-        } else if (!scaselessmatch(set, "none")) {
-            mprError("Unknown route set %s", set);
-        }
-#endif
+    } else if (!scaselessmatch(set, "none")) {
+        mprError("Unknown route set %s", set);
     }
 }
 

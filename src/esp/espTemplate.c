@@ -71,7 +71,7 @@ static bool matchToken(cchar **str, cchar *token);
     MOD         Output module (view_MD5)
     SHLIB       Host Shared library (.lib, .so)
     SHOBJ       Host Shared Object (.dll, .so)
-    SRC         Source code for view or service (already templated)
+    SRC         Source code for view or controller (already templated)
     TMP         Temp directory
     VS          Visual Studio directory
     WINSDK      Windows SDK directory
@@ -138,7 +138,7 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
                 mprPutStringToBuf(buf, getShobjExt(os));
 
             } else if (matchToken(&cp, "${SRC}")) {
-                /* View (already parsed into C code) or service source */
+                /* View (already parsed into C code) or controller source */
                 mprPutStringToBuf(buf, source);
 
             } else if (matchToken(&cp, "${TMP}")) {
@@ -268,7 +268,7 @@ static int runCommand(EspRoute *eroute, MprDispatcher *dispatcher, cchar *comman
 
 
 /*
-    Compile a view or service
+    Compile a view or controller
 
     cacheName   MD5 cache name (not a full path)
     source      ESP source file name
@@ -295,7 +295,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
             return 0;
         }
         /*
-            Use layouts iff there is a source defined on the route. Only MVC/services based apps do this.
+            Use layouts iff there is a source defined on the route. Only MVC/controllers based apps do this.
          */
         if (eroute->layoutsDir) {
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");

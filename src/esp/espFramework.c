@@ -112,7 +112,7 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
     esp = MPR->espService;
     if (target) {
         eroute = route->eroute;
-        mprAddKey(esp->actions, mprJoinPath(eroute->servicesDir, target), action);
+        mprAddKey(esp->actions, mprJoinPath(eroute->controllersDir, target), action);
     }
 }
 
@@ -128,8 +128,8 @@ PUBLIC void espDefineBase(HttpRoute *route, EspProc baseProc)
 
     eroute = route->eroute;
     for (ITERATE_ITEMS(route->host->routes, rp, next)) {
-        if ((er = route->eroute) != 0 && smatch(er->servicesDir, eroute->servicesDir)) {
-            er->commonService = baseProc;
+        if ((er = route->eroute) != 0 && smatch(er->controllersDir, eroute->controllersDir)) {
+            er->commonController = baseProc;
         }
     }
 }
@@ -1170,7 +1170,7 @@ PUBLIC void espShowRequest(HttpConn *conn)
 
 
 /*
-    This is called when unloading a view or service module
+    This is called when unloading a view or controller module
  */
 PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout)
 {
@@ -1248,13 +1248,14 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->clientDir);
         mprMark(eroute->config);
         mprMark(eroute->compile);
+        mprMark(eroute->database);
         mprMark(eroute->dbDir);
         mprMark(eroute->edi);
         mprMark(eroute->env);
         mprMark(eroute->layoutsDir);
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
-        mprMark(eroute->servicesDir);
+        mprMark(eroute->controllersDir);
         mprMark(eroute->srcDir);
         mprMark(eroute->viewsDir);
     }
@@ -1366,10 +1367,28 @@ PUBLIC int espLoadConfig(EspRoute *eroute)
             if (espTestConfig(eroute, "settings.xsrfToken", "true")) {
                 httpSetRouteXsrf(eroute->route, 1);
             }
+            if (espTestConfig(eroute, "settings.sendJson", "true")) {
+                eroute->json = 1;
+            }
             if (espTestConfig(eroute, "settings.map", "compressed")) {
                 httpAddRouteMapping(eroute->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
                 httpAddRouteMapping(eroute->route, "html,xml", "${1}.gz");
             }
+            if (!eroute->database) {
+                if ((eroute->database = espGetConfig(eroute, "server.database", 0)) != 0) {
+                    if (espOpenDatabase(eroute, eroute->database) < 0) {
+                        mprError("Cannot open database %s", eroute->database);
+                        return MPR_ERR_CANT_OPEN;
+                    }
+                }
+            }
+            eroute->json = espTestConfig(eroute, "settings.json", "1");
+        } else {
+            eroute->config = mprCreateHash(0, 0);
+            espAddComponent(eroute, "legacy");
+        }
+        if (espHasComponent(eroute, "legacy")) {
+            eroute->legacy = 1;
         }
     }
     return 0;

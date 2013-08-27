@@ -12017,9 +12017,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int indent, int fl
         len = mprGetHashLength(obj);
         for (index = 0; index < len; index++) {
             itosbuf(numbuf, sizeof(numbuf), index, 10);
-            if (pretty) {
-                spaces(buf, indent);
-            }
+            if (pretty) spaces(buf, indent);
             if ((kp = mprLookupKeyEntry(obj, numbuf)) == 0) {
                 assert(kp);
                 continue;
@@ -12034,7 +12032,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int indent, int fl
             }
             if (pretty) mprPutCharToBuf(buf, '\n');
         }
-        spaces(buf, --indent);
+        if (pretty) spaces(buf, --indent);
         mprPutCharToBuf(buf, ']');
 
     } else if (type == MPR_JSON_OBJ) {
@@ -12043,9 +12041,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int indent, int fl
         if (pretty) mprPutCharToBuf(buf, '\n');
         for (kp = mprGetFirstKey(obj); kp; ) {
             if (kp->key && kp->data) {
-                if (pretty) {
-                    spaces(buf, indent);
-                }
+                if (pretty) spaces(buf, indent);
                 if (quotes) mprPutCharToBuf(buf, '"');
                 mprPutStringToBuf(buf, kp->key);
                 if (quotes) mprPutCharToBuf(buf, '"');
@@ -12068,7 +12064,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int indent, int fl
                 kp = mprGetNextKey(obj, kp);
             }
         }
-        spaces(buf, --indent);
+        if (pretty) spaces(buf, --indent);
         mprPutCharToBuf(buf, '}');
     }
     return sclone(mprGetBufStart(buf));
@@ -12599,7 +12595,8 @@ PUBLIC int mprJsonSave(MprHash *obj, cchar *path)
 
 PUBLIC int mprJsonBlend(MprHash *obj, MprHash *other)
 {
-    MprKey      *dp, *sp;
+    MprKey      *dp, *sp, *ip;
+    char        numbuf[16];
 
     if (other == 0 || other->length == 0) {
         return 0;
@@ -12610,12 +12607,25 @@ PUBLIC int mprJsonBlend(MprHash *obj, MprHash *other)
     for (ITERATE_KEYS(other, sp)) {
         if (sp->type == MPR_JSON_OBJ || sp->type == MPR_JSON_ARRAY) {
             if ((dp = mprLookupKeyEntry(obj, sp->key)) == 0) {
-                mprAddKeyWithType(obj, sp->key, makeObj(0, sp->type == MPR_JSON_ARRAY), sp->type);
+                dp = mprAddKeyWithType(obj, sp->key, makeObj(0, sp->type == MPR_JSON_ARRAY), sp->type);
             }
             mprJsonBlend((MprHash*) dp->data, (MprHash*) sp->data);
+
         } else {
             assert(sp->type == MPR_JSON_STRING);
-            mprAddKeyWithType(obj, sp->key, sclone(sp->data), sp->type);
+            if (obj->flags & MPR_HASH_LIST) {
+                for (ITERATE_KEYS(obj, ip)) {
+                    if (smatch(ip->data, sp->data)) {
+                        break;
+                    }
+                }
+                if (ip == 0) {
+                    itosbuf(numbuf, sizeof(numbuf), obj->length, 10);
+                    mprAddKeyWithType(obj, numbuf, sclone(sp->data), sp->type);
+                }
+            } else {
+                mprAddKeyWithType(obj, sp->key, sclone(sp->data), sp->type);
+            }
         }
     }
     return 0;

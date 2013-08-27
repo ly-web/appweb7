@@ -614,7 +614,7 @@ PUBLIC bool createRecFromParams(cchar *table)
 
 
 /************************************ Deprecated ****************************/
-#if DEPRECATED
+#if BIT_ESP_LEGACY
 /*
     Deprecated in 4.4
  */
@@ -846,7 +846,7 @@ PUBLIC EdiGrid *setGrid(EdiGrid *grid)
     return grid;
 }
 
-#endif /* DEPRECATED */
+#endif /* BIT_ESP_LEGACY */
 #endif /* BIT_PACK_ESP */
 
 /*
