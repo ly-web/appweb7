@@ -26,7 +26,9 @@ extern "C" {
 #ifndef BIT_ESP_LEGACY
     #define BIT_ESP_LEGACY 1
 #endif
-
+#ifndef BIT_ESP_SERVICE_NAME
+    #define BIT_ESP_SERVICE_NAME "/service"
+#endif
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
 #define ESP_LISTEN          "4000"                      /**< Default listening endpoint for the esp program */
 #define ESP_UNLOAD_TIMEOUT  (10)                        /**< Very short timeout for reloading */

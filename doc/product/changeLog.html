@@ -129,6 +129,10 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/217">[issue 217]</a></li>
                 <li>Add palloc APIs for permanent memory allocations
                     <a href="https://github.com/embedthis/appweb-4/issues/226">[issue 226]</a></li>
+                <li>Add JSON query API
+                    <a href="https://github.com/embedthis/appweb-4/issues/230">[issue 230]</a></li>
+                <li>Enhance esp generator to generate applications using different client-side frameworks.
+                    <a href="https://github.com/embedthis/appweb-4/issues/231">[issue 231]</a></li>
             </ul>
             <h3>Fixes</h3>
             <ul>
@@ -179,6 +183,8 @@
                 <li>The Appweb default configuration is now secure-by-default. The security sandbox limits are set fairly
                 low and the default responses now include headers to limit cross-site-scripting vulnerabilities.
                 See <a href="../guide/appweb/users/security.html#securedefaults">Security Defaults</a> for more information.</p>
+                <li>The httpAddResourceGroup, httpAddResource, httpAddClientRoute and httpAddRouteSet have changed signatures
+                    to accomodate a URI prefix for server-side controller URIs.</li>
             </ul>
             <a id="r4.3.5"></a>
             <h2 class="section">Changes in 4.3.5</h2>

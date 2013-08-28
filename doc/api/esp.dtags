@@ -644,9 +644,9 @@
     </member>
     <member kind="function">
       <type>cchar *</type>
-      <name>espGetDir</name>
+      <name>espGetDocuments</name>
       <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gae6b27fef4d9ab873b3ff7a3657c0a1f0</anchor>
+      <anchor>gaf694aade2329f4c9dcb7c6d5a77e62c1</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
@@ -1335,9 +1335,9 @@
     </member>
     <member kind="function">
       <type>cchar *</type>
-      <name>getDir</name>
+      <name>getDocuments</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>gae3849eeed48f781401eb601594566bf8</anchor>
+      <anchor>gadcce96e047630e80fc6283689be47ae0</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">

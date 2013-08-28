@@ -10417,7 +10417,7 @@ PUBLIC void httpAddRouteMethods(HttpRoute *route, cchar *methods)
     assert(route);
 
     if (methods == NULL || *methods == '\0') {
-        methods = BIT_DEFAULT_METHODS;
+        methods = BIT_HTTP_DEFAULT_METHODS;
     } else if (scaselessmatch(methods, "ALL")) {
        methods = "*";
     }
@@ -11638,18 +11638,19 @@ static char *qualifyName(HttpRoute *route, cchar *controller, cchar *action)
 /*
     Add a restful route. The parent route may supply a route prefix. If defined, the route name will prepend the prefix.
  */
-static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *pattern, cchar *target, cchar *resource)
+static HttpRoute *addRestful(HttpRoute *parent, cchar *prefix, cchar *action, cchar *methods, cchar *pattern, cchar *target, 
+        cchar *resource)
 {
-    cchar       *name, *nameResource, *prefix, *source;
+    cchar       *name, *nameResource, *source, *routePrefix;
 
+    routePrefix = parent->prefix ? parent->prefix : "";
+    prefix = prefix ? prefix : "";
     nameResource = smatch(resource, "{controller}") ? "*" : resource;
-
-    prefix = parent->prefix ? sfmt("%s/controller", parent->prefix) : "/controller";
-    name = sfmt("%s/%s/%s", prefix, nameResource, action);
+    name = sfmt("%s%s/%s/%s", routePrefix, prefix, nameResource, action);
     if (*resource == '{') {
-        pattern = sfmt("^%s/%s%s", prefix, resource, pattern);
+        pattern = sfmt("^%s%s/%s%s", routePrefix, prefix, resource, pattern);
     } else {
-        pattern = sfmt("^%s/{controller=%s}%s", prefix, resource, pattern);
+        pattern = sfmt("^%s%s/{controller=%s}%s", routePrefix, prefix, resource, pattern);
     }
     if (*resource == '{') {
         target = sfmt("$%s-%s", resource, target);
@@ -11662,46 +11663,33 @@ static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, c
 }
 
 
-PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *prefix, cchar *resource)
 {
-    addRestful(parent, "create",    "POST",    "(/)*$",                   "create",          resource);
-    addRestful(parent, "edit",      "GET",     "/{id=[0-9]+}/edit$",      "edit",            resource);
-    addRestful(parent, "get",       "GET",     "/{id=[0-9]+}$",           "get",             resource);
-    addRestful(parent, "init",      "GET",     "/init$",                  "init",            resource);
-    addRestful(parent, "list",      "GET",     "/list$",                  "list",            resource);
-    addRestful(parent, "remove",    "DELETE",  "/{id=[0-9]+}$",           "remove",          resource);
-    addRestful(parent, "update",    "POST",    "/{id=[0-9]+}$",           "update",          resource);
-    addRestful(parent, "action",    "GET,POST","/{id=[0-9]+}/{action}$",  "${action}",       resource);
-    addRestful(parent, "default",   "GET,POST","/{action}$",              "cmd-${action}",   resource);
+    addRestful(parent, prefix, "create",    "POST",    "(/)*$",                   "create",          resource);
+    addRestful(parent, prefix, "edit",      "GET",     "/{id=[0-9]+}/edit$",      "edit",            resource);
+    addRestful(parent, prefix, "get",       "GET",     "/{id=[0-9]+}$",           "get",             resource);
+    addRestful(parent, prefix, "init",      "GET",     "/init$",                  "init",            resource);
+    addRestful(parent, prefix, "list",      "GET",     "/list$",                  "list",            resource);
+    addRestful(parent, prefix, "remove",    "DELETE",  "/{id=[0-9]+}$",           "remove",          resource);
+    addRestful(parent, prefix, "update",    "POST",    "/{id=[0-9]+}$",           "update",          resource);
+    addRestful(parent, prefix, "action",    "GET,POST","/{id=[0-9]+}/{action}$",  "${action}",       resource);
+    addRestful(parent, prefix, "default",   "GET,POST","/{action}$",              "cmd-${action}",   resource);
 }
 
 
-PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddResource(HttpRoute *parent, cchar *prefix, cchar *resource)
 {
-    addRestful(parent, "create",    "POST",    "(/)*$",        "create",     resource);
-    addRestful(parent, "edit",      "GET",     "/edit$",       "edit",       resource);
-    addRestful(parent, "get",       "GET",     "(/)*$",        "get",        resource);
-    addRestful(parent, "init",      "GET",     "/init$",       "init",       resource);
-    addRestful(parent, "update",    "POST",    "(/)*$",        "update",     resource);
-    addRestful(parent, "remove",    "DELETE",  "(/)*$",        "remove",     resource);
-    addRestful(parent, "default",   "GET,POST","/{action}$",   "${action}",  resource);
+    addRestful(parent, prefix, "create",    "POST",    "(/)*$",        "create",     resource);
+    addRestful(parent, prefix, "edit",      "GET",     "/edit$",       "edit",       resource);
+    addRestful(parent, prefix, "get",       "GET",     "(/)*$",        "get",        resource);
+    addRestful(parent, prefix, "init",      "GET",     "/init$",       "init",       resource);
+    addRestful(parent, prefix, "update",    "POST",    "(/)*$",        "update",     resource);
+    addRestful(parent, prefix, "remove",    "DELETE",  "(/)*$",        "remove",     resource);
+    addRestful(parent, prefix, "default",   "GET,POST","/{action}$",   "${action}",  resource);
 }
 
 
-PUBLIC void httpAddHomeRoute(HttpRoute *parent)
-{
-    cchar   *source, *name, *path, *pattern, *prefix;
-
-    prefix = parent->prefix ? parent->prefix : "";
-    source = parent->sourceName;
-    name = qualifyName(parent, NULL, "home");
-    path = stemplate("${CLIENT_DIR}/index.esp", parent->vars);
-    pattern = sfmt("^%s(/)$", prefix);
-    httpDefineRoute(parent, name, "GET,POST", pattern, path, source);
-}
-
-
-PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *name, cchar *prefix)
+PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *prefix, cchar *name)
 {
     HttpRoute   *route;
     cchar       *path, *pattern;
@@ -11717,18 +11705,31 @@ PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *name, cchar *prefix)
 }
 
 
-PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set)
+PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *prefix, cchar *set)
 {
     if (scaselessmatch(set, "simple")) {
         httpAddHomeRoute(parent);
     }
     if (scaselessmatch(set, "restful")) {
-        httpAddResourceGroup(parent, "{controller}");
-        httpAddClientRoute(parent, "/client", "");
+        httpAddResourceGroup(parent, prefix, "{controller}");
+        httpAddClientRoute(parent, "", "/client");
 
     } else if (!scaselessmatch(set, "none")) {
         mprError("Unknown route set %s", set);
     }
+}
+
+
+PUBLIC void httpAddHomeRoute(HttpRoute *parent)
+{
+    cchar   *source, *name, *path, *pattern, *prefix;
+
+    prefix = parent->prefix ? parent->prefix : "";
+    source = parent->sourceName;
+    name = qualifyName(parent, NULL, "home");
+    path = stemplate("${CLIENT_DIR}/index.esp", parent->vars);
+    pattern = sfmt("^%s(/)$", prefix);
+    httpDefineRoute(parent, name, "GET,POST", pattern, path, source);
 }
 
 

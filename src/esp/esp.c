@@ -172,7 +172,7 @@ static cchar *AngularScaffoldListView = "\
             </tr>\n\
         </tbody>\n\
     </table>\n\
-    <button class=\"btn btn-primary\" ng-click=\"goto('/service/${NAME}/')\">New ${TITLE}</button>\n\
+    <button class=\"btn btn-primary\" ng-click=\"goto('/${SERVICE}/${NAME}/')\">New ${TITLE}</button>\n\
 </div>\n\
 ";
 
@@ -204,7 +204,7 @@ app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $rout
             $scope.${NAME} = response.data;\n\
             $scope.action = \"Edit\";\n\
         });\n\
-    } else if ($location.path() == \"/service/${NAME}/\") {\n\
+    } else if ($location.path() == \"/${SERVICE}/${NAME}/\") {\n\
         $scope.action = \"Create\";\n\
         $scope.${NAME} = new ${TITLE}();\n\
     } else {\n\
@@ -229,7 +229,7 @@ app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $rout
     };\n\
 \n\
     $scope.click = function(index) {\n\
-        $location.path('/service/${NAME}/' + $scope.${NAME}s.data[index].id);\n\
+        $location.path('/${SERVICE}/${NAME}/' + $scope.${NAME}s.data[index].id);\n\
     };\n\
 });\n\
 \n\
@@ -238,7 +238,7 @@ app.config(function($routeProvider) {\n\
         templateUrl: '/${APPDIR}/${NAME}/list.html',\n\
         controller: '${TITLE}Control',\n\
     });\n\
-    $routeProvider.when('/service/${NAME}/:id', {\n\
+    $routeProvider.when('/${SERVICE}/${NAME}/:id', {\n\
         templateUrl: '/${APPDIR}/${NAME}/edit.html',\n\
         controller: '${TITLE}Control',\n\
     });\n\
@@ -252,7 +252,7 @@ static cchar *AngularModel = "\
 'use strict';\n\
 \n\
 app.factory('${TITLE}', function ($resource) {\n\
-    return $resource('/service/${NAME}/:id', { id: '@id' }, {\n\
+    return $resource('/${SERVICE}/${NAME}/:id', { id: '@id' }, {\n\
         'index':  { 'method': 'GET' },\n\
     });\n\
 });\n\

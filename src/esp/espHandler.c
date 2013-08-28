@@ -704,7 +704,7 @@ static EspRoute *getEroute(HttpRoute *route)
 /*
     Deprecated in 4.4
  */
-static HttpRoute *addLegacyRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *pattern, 
+static HttpRoute *addLegacyRestful(HttpRoute *parent, cchar *prefix, cchar *action, cchar *methods, cchar *pattern, 
     cchar *target, cchar *resource)
 {
     cchar       *name, *nameResource, *source, *token;
@@ -737,29 +737,29 @@ static HttpRoute *addLegacyRestful(HttpRoute *parent, cchar *action, cchar *meth
 /*
     Deprecated in 4.4.0
  */
-PUBLIC void httpAddLegacyResourceGroup(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddLegacyResourceGroup(HttpRoute *parent, cchar *prefix, cchar *resource)
 {
-    addLegacyRestful(parent, "create",    "POST",    "(/)*$",                   "create",        resource);
-    addLegacyRestful(parent, "destroy",   "DELETE",  "/{id=[0-9]+}$",           "destroy",       resource);
-    addLegacyRestful(parent, "edit",      "GET",     "/{id=[0-9]+}/edit$",      "edit",          resource);
-    addLegacyRestful(parent, "init",      "GET",     "/init$",                  "init",          resource);
-    addLegacyRestful(parent, "list",      "GET",     "(/)*$",                   "list",          resource);
-    addLegacyRestful(parent, "show",      "GET",     "/{id=[0-9]+}$",           "show",          resource);
-    addLegacyRestful(parent, "update",    "PUT",     "/{id=[0-9]+}$",           "update",        resource);
-    addLegacyRestful(parent, "action",    "POST",    "/{action}/{id=[0-9]+}$",  "${action}",     resource);
-    addLegacyRestful(parent, "default",   "GET,POST","/{action}$",              "cmd-${action}", resource);
+    addLegacyRestful(parent, prefix, "create",    "POST",    "(/)*$",                   "create",        resource);
+    addLegacyRestful(parent, prefix, "destroy",   "DELETE",  "/{id=[0-9]+}$",           "destroy",       resource);
+    addLegacyRestful(parent, prefix, "edit",      "GET",     "/{id=[0-9]+}/edit$",      "edit",          resource);
+    addLegacyRestful(parent, prefix, "init",      "GET",     "/init$",                  "init",          resource);
+    addLegacyRestful(parent, prefix, "list",      "GET",     "(/)*$",                   "list",          resource);
+    addLegacyRestful(parent, prefix, "show",      "GET",     "/{id=[0-9]+}$",           "show",          resource);
+    addLegacyRestful(parent, prefix, "update",    "PUT",     "/{id=[0-9]+}$",           "update",        resource);
+    addLegacyRestful(parent, prefix, "action",    "POST",    "/{action}/{id=[0-9]+}$",  "${action}",     resource);
+    addLegacyRestful(parent, prefix, "default",   "GET,POST","/{action}$",              "cmd-${action}", resource);
 }
 
 
-PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *prefix, cchar *resource)
 {
-    addLegacyRestful(parent, "init",      "GET",     "/init$",       "init",          resource);
-    addLegacyRestful(parent, "create",    "POST",    "(/)*$",        "create",        resource);
-    addLegacyRestful(parent, "edit",      "GET",     "/edit$",       "edit",          resource);
-    addLegacyRestful(parent, "show",      "GET",     "(/)*$",        "show",          resource);
-    addLegacyRestful(parent, "update",    "PUT",     "(/)*$",        "update",        resource);
-    addLegacyRestful(parent, "destroy",   "DELETE",  "(/)*$",        "destroy",       resource);
-    addLegacyRestful(parent, "default",   "GET,POST","/{action}$",   "cmd-${action}", resource);
+    addLegacyRestful(parent, prefix, "init",      "GET",     "/init$",       "init",          resource);
+    addLegacyRestful(parent, prefix, "create",    "POST",    "(/)*$",        "create",        resource);
+    addLegacyRestful(parent, prefix, "edit",      "GET",     "/edit$",       "edit",          resource);
+    addLegacyRestful(parent, prefix, "show",      "GET",     "(/)*$",        "show",          resource);
+    addLegacyRestful(parent, prefix, "update",    "PUT",     "(/)*$",        "update",        resource);
+    addLegacyRestful(parent, prefix, "destroy",   "DELETE",  "(/)*$",        "destroy",       resource);
+    addLegacyRestful(parent, prefix, "default",   "GET,POST","/{action}$",   "cmd-${action}", resource);
 }
 #endif
 
@@ -772,12 +772,13 @@ PUBLIC void espAddRouteSet(EspRoute *eroute, cchar *set)
     route = eroute->route;
     if (!eroute->legacy) {
         prefix = route->prefix ? route->prefix : "";
+        //  MOB - functionalize
         if ((rp = httpDefineRoute(route, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), 
                 "esp-$1", ".")) != 0) {
             eroute = allocEspRoute(rp);
             eroute->update = 0;
         }
-        httpAddRouteSet(route, set);
+        httpAddRouteSet(route, BIT_ESP_SERVICE_NAME, set);
 #if DEPRECATE || 1
     } else {
         /*
@@ -795,7 +796,7 @@ PUBLIC void espAddRouteSet(EspRoute *eroute, cchar *set)
         } else if (scaselessmatch(set, "restful")) {
             httpAddHomeRoute(route);
             httpAddClientRoute(route, "/static", "/static");
-            httpAddLegacyResourceGroup(route, "{controller}");
+            httpAddLegacyResourceGroup(route, "", "{controller}");
 
         } else if (!scaselessmatch(set, "none")) {
             mprError("Unknown route set %s", set);
@@ -916,9 +917,8 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         httpSetRouteName(route, prefix);
         httpSetRoutePrefix(route, prefix);
     } else {
-        httpSetRouteName(route, prefix ? prefix : sfmt("/%s", name));
+        httpSetRouteName(route, sfmt("/%s", name));
     }
-    
     httpSetRouteTarget(route, "run", "$&");
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
@@ -1185,11 +1185,11 @@ static int espResourceDirective(MaState *state, cchar *key, cchar *value)
     char    *name, *next;
 
     if (value == 0 || *value == '\0') {
-        httpAddResource(state->route, "{controller}");
+        httpAddResource(state->route, BIT_ESP_SERVICE_NAME, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResource(state->route, name);
+            httpAddResource(state->route, BIT_ESP_SERVICE_NAME, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1205,11 +1205,11 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
     char    *name, *next;
 
     if (value == 0 || *value == '\0') {
-        httpAddResourceGroup(state->route, "{controller}");
+        httpAddResourceGroup(state->route, BIT_ESP_SERVICE_NAME, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResourceGroup(state->route, name);
+            httpAddResourceGroup(state->route, BIT_ESP_SERVICE_NAME, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1359,14 +1359,15 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     maAddDirective(appweb, "EspDb", espDbDirective);
     maAddDirective(appweb, "EspDir", espDirDirective);
     maAddDirective(appweb, "EspEnv", espEnvDirective);
-    maAddDirective(appweb, "EspKeepSource", espKeepSourceDirective);
     maAddDirective(appweb, "EspLink", espLinkDirective);
     maAddDirective(appweb, "EspResource", espResourceDirective);
     maAddDirective(appweb, "EspResourceGroup", espResourceGroupDirective);
     maAddDirective(appweb, "EspRoute", espRouteDirective);
     maAddDirective(appweb, "EspRouteSet", espRouteSetDirective);
-    maAddDirective(appweb, "EspUpdate", espUpdateDirective);
+
 #if DEPRECATE || 1
+    maAddDirective(appweb, "EspUpdate", espUpdateDirective);
+    maAddDirective(appweb, "EspKeepSource", espKeepSourceDirective);
     maAddDirective(appweb, "EspShowErrors", espShowErrorsDirective);
 #endif
     if ((esp->ediService = ediCreateService()) == 0) {

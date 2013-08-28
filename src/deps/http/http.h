@@ -41,8 +41,8 @@ struct HttpWebSocket;
 //  TODO - do all these need to have MAX some are just sizes and not maximums
 //  TODO SORT
 
-#ifndef BIT_DEFAULT_METHODS
-    #define BIT_DEFAULT_METHODS     "GET,POST"          /**< Default methods for routes */
+#ifndef BIT_HTTP_DEFAULT_METHODS
+    #define BIT_HTTP_DEFAULT_METHODS "GET,POST"         /**< Default methods for routes */
 #endif
 #ifndef BIT_HTTP_PORT
     #define BIT_HTTP_PORT           80
@@ -3749,11 +3749,12 @@ typedef int (HttpRouteProc)(HttpConn *conn, HttpRoute *route, HttpRouteOp *item)
     </tr>
     </table>
     @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
     @param resource Resource name. This should be a lower case, single word, alphabetic resource name.
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource);
+PUBLIC void httpAddResource(HttpRoute *parent, cchar *prefix, cchar *resource);
 
 /**
     Add routes for a group of resources
@@ -3772,11 +3773,12 @@ PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource);
     </tr>
     </table>
     @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
     @param resource Resource name. This should be a lower case, single word, alphabetic resource name.
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource);
+PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *prefix, cchar *resource);
 
 /**
     Add a route for the home page.
@@ -3800,6 +3802,7 @@ PUBLIC void httpAddHomeRoute(HttpRoute *parent);
         <tr><td>static</td><td>GET</td><td>^/static(/(.)*$</td><td>$1</td></tr>
     </table>
     @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
     @param set Route set to select. Use "simple", "mvc", "restful" or "none". 
         \n\n
         The "simple" pack will invoke 
@@ -3814,10 +3817,10 @@ PUBLIC void httpAddHomeRoute(HttpRoute *parent);
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set);
+PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *prefix, cchar *set);
 
 //  MOB DOC
-PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *name, cchar *prefix);
+PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *prefix, cchar *name);
 
 /**
     Add a route condition
@@ -4577,6 +4580,11 @@ PUBLIC void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags);
     @stability Evolving
  */
 PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix);
+
+
+//  MOB DOC
+PUBLIC void httpSetRouteServerPrefix(HttpRoute *route, cchar *prefix);
+
 
 /**
     Set the route to preserve WebSocket frames boundaries

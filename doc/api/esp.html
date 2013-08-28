@@ -155,10 +155,10 @@
 <tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___esp_route_1ga359fc00970449817245c5759a1ad8c4c" class="nameRef">espBuildScript</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *page, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *path, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *cacheName, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *layout, <a href="#struct_esp_state" class="ref">EspState</a> *state, char **err)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Convert an ESP web page into C code.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___esp_route_1ga01d07d3db11f99c0d1b93b068ec56c67" class="nameRef">espCache</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *uri, int lifesecs, int flags)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Add caching for response content.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1ad5c9d4ba3dc37783a528b0925dc981a0" class="ref">bool</a></td><td><a href="#group___esp_req_1gab1683170a07c0b0073ab8c1969680e9a" class="nameRef">espCheckSecurityToken</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Check a security token.</td></tr>
-<tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1ad5c9d4ba3dc37783a528b0925dc981a0" class="ref">bool</a></td><td><a href="#group___esp_route_1gaa6f62a5bb430f502b6067cac74d948e4" class="nameRef">espCompile</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mpr.html#group___mpr_dispatcher" class="ref">MprDispatcher</a> *dispatcher, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *source, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *module, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *cacheName, int isView, char **errMsg)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Compile an ESP page, service or view.</td></tr>
+<tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1ad5c9d4ba3dc37783a528b0925dc981a0" class="ref">bool</a></td><td><a href="#group___esp_route_1gaa6f62a5bb430f502b6067cac74d948e4" class="nameRef">espCompile</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mpr.html#group___mpr_dispatcher" class="ref">MprDispatcher</a> *dispatcher, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *source, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *module, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *cacheName, int isView, char **errMsg)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Compile an ESP page, controller or view.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___edi_rec" class="ref">EdiRec*</a></td><td><a href="#group___esp_req_1ga4aa105d2149d85a5abe5c36f527389be" class="nameRef">espCreateRec</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *tableName, <a href="mpr.html#struct_mpr_hash" class="ref">MprHash</a> *data)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a record and initialize field values.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_route_1ga321abe89cc91246b2a44f40493988670" class="nameRef">espDefineAction</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *targetKey, void *actionProc)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Define an action.</td></tr>
-<tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_route_1gae250d071bb458546c8ed5fad3aba5e84" class="nameRef">espDefineBase</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="#esp_8h_1aa0c56d9f50902eb9cf16889d3d95c129" class="ref">EspProc</a> baseProc)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Define a base function to invoke for all service actions.</td></tr>
+<tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_route_1gae250d071bb458546c8ed5fad3aba5e84" class="nameRef">espDefineBase</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="#esp_8h_1aa0c56d9f50902eb9cf16889d3d95c129" class="ref">EspProc</a> baseProc)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Define a base function to invoke for all controller actions.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_route_1gab7ebccfe31eb1e07f3f40db700d18bd9" class="nameRef">espDefineView</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *path, void *viewProc)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Define a view.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_req_1ga18375a1455d10df65a92b6adc3409830" class="nameRef">espDumpGrid</a>(<a href="#group___edi_grid" class="ref">EdiGrid</a> *grid)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Display the grid to the debug log.</td></tr>
 <tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___esp_route_1ga799a49951faaac006de2e8f562b0f04b" class="nameRef">espExpandCommand</a>(<a href="#group___esp_route" class="ref">EspRoute</a> *eroute, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *command, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *source, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *module)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Expand a compile or link command template.</td></tr>
@@ -170,7 +170,7 @@
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_req_1gadf281290e500c98b3c7214c410b32599" class="nameRef">espGetContentType</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the receive body content type.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_req_1ga1c47b7c05e41bc39b9f3426134c1bf7c" class="nameRef">espGetCookies</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the request cookies.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___edi" class="ref">Edi*</a></td><td><a href="#group___esp_req_1gadb72373974f7f4d05a8dbbdf966c6496" class="nameRef">espGetDatabase</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the current database instance.</td></tr>
-<tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_req_1gae6b27fef4d9ab873b3ff7a3657c0a1f0" class="nameRef">espGetDir</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the default document root directory for the request route.</td></tr>
+<tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_req_1gaf694aade2329f4c9dcb7c6d5a77e62c1" class="nameRef">espGetDocuments</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the default documents directory for the request route.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___esp_route" class="ref">EspRoute*</a></td><td><a href="#group___esp_req_1gaefe462fb7ee0c6fa6a0c7842b973de3c" class="nameRef">espGetEspRoute</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the current extended route information.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_req_1ga52bddd62e4cce84888abbeb44ba44c33" class="nameRef">espGetFlash</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *type)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get a flash message.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_req_1gaddf870926cbeee2779b687522d5db0aa" class="nameRef">espGetHeader</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *key)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get an rx http header.</td></tr>
@@ -260,7 +260,7 @@
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_abbrev_1ga0c4e333f8e42f16b3d071f10de8f823c" class="nameRef">getContentType</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the receive body content type.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_abbrev_1ga9e29353c73f7482f1b04657c044804a9" class="nameRef">getCookies</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the request cookies.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___edi" class="ref">Edi*</a></td><td><a href="#group___esp_abbrev_1ga9aa7c416a3ac3b6d732c1325e3f2ef15" class="nameRef">getDatabase</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the current database instance.</td></tr>
-<tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_abbrev_1gae3849eeed48f781401eb601594566bf8" class="nameRef">getDir</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the default document root directory for the request route.</td></tr>
+<tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_abbrev_1gadcce96e047630e80fc6283689be47ae0" class="nameRef">getDocuments</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the default document root directory for the request route.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___esp_route" class="ref">EspRoute*</a></td><td><a href="#group___esp_abbrev_1ga29c40a3c98f7e8b07c4bab47a29d8ade" class="nameRef">getEspRoute</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the extended route EspRoute structure.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_abbrev_1gac52ae6c15d4dc95d264a15235187f915" class="nameRef">getField</a>(<a href="#group___edi_rec" class="ref">EdiRec</a> *rec, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *field)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get a field from the current database record.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_abbrev_1ga3a9e6969b5beb4c554ec9032b322c0fe" class="nameRef">getHeader</a>(<a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *key)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get an rx http header.</td></tr>
@@ -1897,7 +1897,7 @@ Base table name for record.
   </div>
   <div class="apiDetail">
 <p>Set a flash notification message.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Flash messages persist for only one request and are a convenient way to pass state information or feedback messages to the next request service. Flash messages use the session state store, but persist only for one request. This routine calls <a class="ref" href="#group___esp_req_1gaad505657a6cb461d6645e1ee47740926">espSetFlash</a></dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Flash messages persist for only one request and are a convenient way to pass state information or feedback messages to the next request. Flash messages use the session state store, but persist only for one request. This routine calls <a class="ref" href="#group___esp_req_1gaad505657a6cb461d6645e1ee47740926">espSetFlash</a></dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">kind</td><td>Kind of flash message.</td>
@@ -1967,7 +1967,7 @@ Base table name for record.
   </div>
   <div class="apiDetail">
 <p>Get the connection object.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Before a view or service is run, the current connection object for the request is saved in thread local data. Most EspAbbrev APIs take an HttpConn object as an argument.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Before a view or controller is run, the current connection object for the request is saved in thread local data. Most EspAbbrev APIs take an HttpConn object as an argument.</dd></dl>
     <dl><dt>Returns:</dt><dd>HttpConn connection instance object.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>See Also:</dt><dd>
@@ -2038,11 +2038,11 @@ Base table name for record.
     </dd></dl>
   </div>
 </div>
-<a name="group___esp_abbrev_1gae3849eeed48f781401eb601594566bf8"></a>
+<a name="group___esp_abbrev_1gadcce96e047630e80fc6283689be47ae0"></a>
 <div class="api">
   <div class="prototype">
     <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *
-    getDir
+    getDocuments
 ()
   </div>
   <div class="apiDetail">
@@ -2726,7 +2726,7 @@ The output is Html escaped for security
   </div>
   <div class="apiDetail">
 <p>Generate a security token.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Security tokens are used to help guard against CSRF threats. This call will generate a security token for the page and emit an HTML meta element for the security token. The token will automatically be included whenever forms are submitted and the token be validated by the receiving Service. Forms will normally automatically generate the security token and that explicitly calling this routine is not required unless a security token is required for non-form requests such as AJAX requests. The <a class="ref" href="#group___esp_abbrev_1gab3444f174346e0d8e8d4d3a43d451c5e">securityToken</a> control should be called inside the &lt;head section of the web page.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Security tokens are used to help guard against CSRF threats. This call will generate a security token for the page and emit an HTML meta element for the security token. The token will automatically be included whenever forms are submitted and the token be validated by the receiving controller. Forms will normally automatically generate the security token and that explicitly calling this routine is not required unless a security token is required for non-form requests such as AJAX requests. The <a class="ref" href="#group___esp_abbrev_1gab3444f174346e0d8e8d4d3a43d451c5e">securityToken</a> control should be called inside the &lt;head section of the web page.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     </dd></dl>
@@ -2782,7 +2782,7 @@ If a request parameter is not found by the given name, consult the session store
   </div>
   <div class="apiDetail">
 <p>Render a view template to the client.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">view</td><td>view name.</td>
@@ -2820,7 +2820,7 @@ If a request parameter is not found by the given name, consult the session store
   </div>
   <div class="apiDetail">
 <p>Render a security token.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Security tokens are used to help guard against CSRF threats. This call will render a security token for the page, and emit an HTML meta element for the security token. The token will automatically be included whenever forms are submitted and the token is validated by the receiving Service. Typically, forms will automatically generate the security token. Note that explicitly calling this routine is not necessary unless a security token is required for non-form requests such as AJAX requests. The <a class="ref" href="#group___esp_abbrev_1gab3444f174346e0d8e8d4d3a43d451c5e">securityToken</a> control should be called inside the &lt;head section of the web page.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Security tokens are used to help guard against CSRF threats. This call will render a security token for the page, and emit an HTML meta element for the security token. The token will automatically be included whenever forms are submitted and the token is validated by the receiving controller. Typically, forms will automatically generate the security token. Note that explicitly calling this routine is not necessary unless a security token is required for non-form requests such as AJAX requests. The <a class="ref" href="#group___esp_abbrev_1gab3444f174346e0d8e8d4d3a43d451c5e">securityToken</a> control should be called inside the &lt;head section of the web page.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     </dd></dl>
@@ -3219,6 +3219,12 @@ Base name of intermediate compiled file.
     <tr><td class="param">char *</td><td><td>commandLine</td><td>
 Command line for compile/link.
 </td>
+    <tr><td class="param">char *</td><td><td>controllerName</td><td>
+Controller name.
+</td>
+    <tr><td class="param">char *</td><td><td>controllerPath</td><td>
+Path to controller source.
+</td>
     <tr><td class="param">void *</td><td><td>data</td><td>
 Custom data for request - must be a managed reference.
 </td>
@@ -3254,12 +3260,6 @@ Current data record.
 </td>
     <tr><td class="param">HttpRoute *</td><td><td>route</td><td>
 Route reference.
-</td>
-    <tr><td class="param">char *</td><td><td>serviceName</td><td>
-Service name.
-</td>
-    <tr><td class="param">char *</td><td><td>servicePath</td><td>
-Path to service source.
 </td>
     <tr><td class="param">int</td><td><td>sessionProbed</td><td>
 Already probed for session store.
@@ -3613,15 +3613,15 @@ Path to view.
     <a href="#struct_esp" class="ref">Esp</a></dd></dl>
   </div>
 </div>
-<a name="group___esp_req_1gae6b27fef4d9ab873b3ff7a3657c0a1f0"></a>
+<a name="group___esp_req_1gaf694aade2329f4c9dcb7c6d5a77e62c1"></a>
 <div class="api">
   <div class="prototype">
     <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *
-    espGetDir
+    espGetDocuments
 (<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)
   </div>
   <div class="apiDetail">
-<p>Get the default document root directory for the request route.</p>
+<p>Get the default documents directory for the request route.</p>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>HttpConn connection object.</td>
@@ -3656,7 +3656,7 @@ Path to view.
   </div>
   <div class="apiDetail">
 <p>Get a flash message.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This retrieves a flash message of a specified type. Flash messages are messages kept in session storage messages that are passed to the next request (only). The message is cleared after the service action completes.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This retrieves a flash message of a specified type. Flash messages are messages kept in session storage messages that are passed to the next request (only). The message is cleared after the controller action completes.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>HttpConn connection object.</td>
@@ -4645,7 +4645,7 @@ The output is Html escaped for security
   </div>
   <div class="apiDetail">
 <p>Render a security token.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Security tokens are used to help guard against CSRF threats. This call will render a security token for the page, and emit an HTML meta element for the security token. The token will automatically be included whenever forms are submitted and the token is validated by the receiving Service. Typically, forms will automatically generate the security token. Note that explicitly calling this routine is not necessary unless a security token is required for non-form requests such as AJAX requests. The <a class="ref" href="#group___esp_abbrev_1gab3444f174346e0d8e8d4d3a43d451c5e">securityToken</a> control should be called inside the &lt;head section of the web page.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Security tokens are used to help guard against CSRF threats. This call will render a security token for the page, and emit an HTML meta element for the security token. The token will automatically be included whenever forms are submitted and the token is validated by the receiving controller. Typically, forms will automatically generate the security token. Note that explicitly calling this routine is not necessary unless a security token is required for non-form requests such as AJAX requests. The <a class="ref" href="#group___esp_abbrev_1gab3444f174346e0d8e8d4d3a43d451c5e">securityToken</a> control should be called inside the &lt;head section of the web page.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>Http connection object.</td>
@@ -4707,7 +4707,7 @@ If a request parameter is not found by the given name, consult the session store
   </div>
   <div class="apiDetail">
 <p>Render a view template to the client.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>Http connection object.</td>
@@ -4915,7 +4915,7 @@ If a request parameter is not found by the given name, consult the session store
   </div>
   <div class="apiDetail">
 <p>Set a flash message.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Flash messages persist for only one request and are a convenient way to pass state information or feedback messages to the next request service. Flash messages use the session state store, but persist only for one request. The flash message is removed after running the next service and before rendering any server-side view. If you need to set a message to include in the request response, consider using <a class="ref" href="#group___esp_req_1gade767c2c5c496c08fbf803181b93da17">espSetFeedback</a></dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Flash messages persist for only one request and are a convenient way to pass state information or feedback messages to the next request. Flash messages use the session state store, but persist only for one request. The flash message is removed after running the next controller and before rendering any server-side view. If you need to set a message to include in the request response, consider using <a class="ref" href="#group___esp_req_1gade767c2c5c496c08fbf803181b93da17">espSetFeedback</a></dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>Http connection object.</td>
@@ -5196,11 +5196,11 @@ Before the notifier is invoked, espSetConn is called to set the connection objec
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>HttpConn connection object.</td>
     <tr><td class="param">target</td><td>The URI target. The target parameter can be a URI string or JSON style set of options. The target will have any embedded &quot;{tokens}&quot; expanded by using token values from the request parameters. If the target has an absolute URI path, that path is used directly after tokenization. If the target begins with &quot;~&quot;, that character will be replaced with the route prefix. This is a very convenient way to create application top-level relative links. <br/><br/>
- If the target is a string that begins with &quot;{AT}&quot; it will be interpreted as a service/action pair of the form &quot;{AT}Service/action&quot;. If the &quot;service/&quot; portion is absent, the current service is used. If the action component is missing, the &quot;list&quot; action is used. A bare &quot;{AT}&quot; refers to the &quot;list&quot; action of the current service. <br/><br/>
+ If the target is a string that begins with &quot;{AT}&quot; it will be interpreted as a controller/action pair of the form &quot;{AT}controller/action&quot;. If the &quot;controller/&quot; portion is absent, the current controller is used. If the action component is missing, the &quot;list&quot; action is used. A bare &quot;{AT}&quot; refers to the &quot;list&quot; action of the current controller. <br/><br/>
  If the target starts with &quot;{&quot; it is interpreted as being a JSON style set of options that describe the link. If the target is a relative URI path, it is appended to the current request URI path. <br/><br/>
  If the target is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and query. If these component properties are supplied, these will be combined to create a URI. <br/><br/>
- If the target specifies either a service/action or a JSON set of options, The URI will be created according to the route URI template. The template may be explicitly specified via a &quot;route&quot; target property. Otherwise, if an &quot;action&quot; property is specified, the route of the same name will be used. If these don&apos;t result in a usable route, the &quot;default&quot; route will be used. <br/><br/>
- These are the properties supported in a JSON style &quot;{ ... }&quot; target: <ul><li>scheme String URI scheme portion </li><li>host String URI host portion </li><li>port Number URI port number </li><li>path String URI path portion </li><li>reference String URI path reference. Does not include &quot;#&quot; </li><li>query String URI query parameters. Does not include &quot;?&quot; </li><li>service String Service name if using a Service-based route. This can also be specified via the action option. </li><li>action String Action to invoke. This can be a URI string or a service action of the form {AT}Service/action. </li><li>route String Route name to use for the URI template </li></ul></td>
+ If the target specifies either a controller/action or a JSON set of options, The URI will be created according to the route URI template. The template may be explicitly specified via a &quot;route&quot; target property. Otherwise, if an &quot;action&quot; property is specified, the route of the same name will be used. If these don&apos;t result in a usable route, the &quot;default&quot; route will be used. <br/><br/>
+ These are the properties supported in a JSON style &quot;{ ... }&quot; target: <ul><li>scheme String URI scheme portion </li><li>host String URI host portion </li><li>port Number URI port number </li><li>path String URI path portion </li><li>reference String URI path reference. Does not include &quot;#&quot; </li><li>query String URI query parameters. Does not include &quot;?&quot; </li><li>controller String controller name if using a controller-based route. This can also be specified via the action option. </li><li>action String Action to invoke. This can be a URI string or a controller action of the form {AT}controller/action. </li><li>route String Route name to use for the URI template </li></ul></td>
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>A normalized, server-local Uri string.</dd></dl>
     <dl><dt><b>Example</b>:</dt><dd>EspUri(conn, &quot;http://example.com/index.html&quot;, 0); <br/>
@@ -5208,13 +5208,13 @@ Before the notifier is invoked, espSetConn is called to set the connection objec
  espUri(conn, &quot;../images/splash.png&quot;, 0); <br/>
  espUri(conn, &quot;~/client/images/splash.png&quot;, 0); <br/>
  espUri(conn, &quot;${app}/client/images/splash.png&quot;, 0); <br/>
- espUri(conn, &quot;@service/checkout&quot;, 0); <br/>
- espUri(conn, &quot;@service/&quot;) <br/>
+ espUri(conn, &quot;@controller/checkout&quot;, 0); <br/>
+ espUri(conn, &quot;@controller/&quot;) <br/>
  espUri(conn, &quot;@init&quot;) <br/>
  espUri(conn, &quot;@&quot;) <br/>
  espUri(conn, &quot;{ action: &apos;@post/create&apos; }&quot;, 0); <br/>
  espUri(conn, &quot;{ action: &apos;checkout&apos; }&quot;, 0); <br/>
- espUri(conn, &quot;{ action: &apos;logout&apos;, service: &apos;admin&apos; }&quot;, 0); <br/>
+ espUri(conn, &quot;{ action: &apos;logout&apos;, controller: &apos;admin&apos; }&quot;, 0); <br/>
  espUri(conn, &quot;{ action: &apos;admin/logout&apos;&quot;, 0); <br/>
  espUri(conn, &quot;{ product: &apos;candy&apos;, quantity: &apos;10&apos;, template: &apos;/cart/${product}/${quantity}&apos; }&quot;, 0); <br/>
  espUri(conn, &quot;{ route: &apos;~/STAR/edit&apos;, action: &apos;checkout&apos;, id: &apos;99&apos; }&quot;, 0); <br/>
@@ -5253,11 +5253,11 @@ Before the notifier is invoked, espSetConn is called to set the connection objec
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">target</td><td>The URI target. The target parameter can be a URI string or JSON style set of options. The target will have any embedded &quot;{tokens}&quot; expanded by using token values from the request parameters. If the target has an absolute URI path, that path is used directly after tokenization. If the target begins with &quot;~&quot;, that character will be replaced with the route prefix. This is a very convenient way to create application top-level relative links. <br/><br/>
- If the target is a string that begins with &quot;{AT}&quot; it will be interpreted as a service/action pair of the form &quot;{AT}Service/action&quot;. If the &quot;service/&quot; portion is absent, the current service is used. If the action component is missing, the &quot;list&quot; action is used. A bare &quot;{AT}&quot; refers to the &quot;list&quot; action of the current service. <br/><br/>
+ If the target is a string that begins with &quot;{AT}&quot; it will be interpreted as a controller/action pair of the form &quot;{AT}controller/action&quot;. If the &quot;controller/&quot; portion is absent, the current controller is used. If the action component is missing, the &quot;list&quot; action is used. A bare &quot;{AT}&quot; refers to the &quot;list&quot; action of the current controller. <br/><br/>
  If the target starts with &quot;{&quot; it is interpreted as being a JSON style set of options that describe the link. If the target is a relative URI path, it is appended to the current request URI path. <br/><br/>
  If the target is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and query. If these component properties are supplied, these will be combined to create a URI. <br/><br/>
- If the target specifies either a service/action or a JSON set of options, The URI will be created according to the route URI template. The template may be explicitly specified via a &quot;route&quot; target property. Otherwise, if an &quot;action&quot; property is specified, the route of the same name will be used. If these don&apos;t result in a usable route, the &quot;default&quot; route will be used. <br/><br/>
- These are the properties supported in a JSON style &quot;{ ... }&quot; target: <ul><li>scheme String URI scheme portion </li><li>host String URI host portion </li><li>port Number URI port number </li><li>path String URI path portion </li><li>reference String URI path reference. Does not include &quot;#&quot; </li><li>query String URI query parameters. Does not include &quot;?&quot; </li><li>service String Service name if using a Service-based route. This can also be specified via the action option. </li><li>action String Action to invoke. This can be a URI string or a service action of the form {AT}Service/action. </li><li>route String Route name to use for the URI template </li></ul></td>
+ If the target specifies either a controller/action or a JSON set of options, The URI will be created according to the route URI template. The template may be explicitly specified via a &quot;route&quot; target property. Otherwise, if an &quot;action&quot; property is specified, the route of the same name will be used. If these don&apos;t result in a usable route, the &quot;default&quot; route will be used. <br/><br/>
+ These are the properties supported in a JSON style &quot;{ ... }&quot; target: <ul><li>scheme String URI scheme portion </li><li>host String URI host portion </li><li>port Number URI port number </li><li>path String URI path portion </li><li>reference String URI path reference. Does not include &quot;#&quot; </li><li>query String URI query parameters. Does not include &quot;?&quot; </li><li>controller String controller name if using a controller-based route. This can also be specified via the action option. </li><li>action String Action to invoke. This can be a URI string or a controller action of the form {AT}controller/action. </li><li>route String Route name to use for the URI template </li></ul></td>
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>A normalized, server-local Uri string.</dd></dl>
     <dl><dt><b>Example</b>:</dt><dd>MakeUri(&quot;http://example.com/index.html&quot;, 0); <br/>
@@ -5265,13 +5265,13 @@ Before the notifier is invoked, espSetConn is called to set the connection objec
  makeUri(&quot;../images/splash.png&quot;, 0); <br/>
  makeUri(&quot;~/client/images/splash.png&quot;, 0); <br/>
  makeUri(&quot;${app}/client/images/splash.png&quot;, 0); <br/>
- makeUri(&quot;@service/checkout&quot;, 0); <br/>
- makeUri(&quot;@service/&quot;) <br/>
+ makeUri(&quot;@controller/checkout&quot;, 0); <br/>
+ makeUri(&quot;@controller/&quot;) <br/>
  makeUri(&quot;@init&quot;) <br/>
  makeUri(&quot;@&quot;) <br/>
  makeUri(&quot;{ action: &apos;@post/create&apos; }&quot;, 0); <br/>
  makeUri(&quot;{ action: &apos;checkout&apos; }&quot;, 0); <br/>
- makeUri(&quot;{ action: &apos;logout&apos;, service: &apos;admin&apos; }&quot;, 0); <br/>
+ makeUri(&quot;{ action: &apos;logout&apos;, controller: &apos;admin&apos; }&quot;, 0); <br/>
  makeUri(&quot;{ action: &apos;admin/logout&apos;&quot;, 0); <br/>
  makeUri(&quot;{ product: &apos;candy&apos;, quantity: &apos;10&apos;, template: &apos;/cart/${product}/${quantity}&apos; }&quot;, 0); <br/>
  makeUri(&quot;{ route: &apos;~/STAR/edit&apos;, action: &apos;checkout&apos;, id: &apos;99&apos; }&quot;, 0); <br/>
@@ -5360,13 +5360,13 @@ App module path when compiled flat.
 App module name when compiled flat.
 </td>
     <tr><td class="param">cchar *</td><td><td>cacheDir</td><td>
-Directory for cached compiled services and views.
+Directory for cached compiled controllers and views.
 </td>
     <tr><td class="param">cchar *</td><td><td>clientDir</td><td>
 Directory for client-side public web content.
 </td>
-    <tr><td class="param">EspProc</td><td><td>commonService</td><td>
-Common code for all services.
+    <tr><td class="param">EspProc</td><td><td>commonController</td><td>
+Common code for all controllers.
 </td>
     <tr><td class="param">cchar *</td><td><td>compile</td><td>
 Compile template.
@@ -5376,6 +5376,12 @@ App configuration from config.json.
 </td>
     <tr><td class="param">MprTime</td><td><td>configLoaded</td><td>
 When config.json was last loaded.
+</td>
+    <tr><td class="param">cchar *</td><td><td>controllersDir</td><td>
+Directory for controllers.
+</td>
+    <tr><td class="param">cchar *</td><td><td>database</td><td>
+Name of database for route.
 </td>
     <tr><td class="param">cchar *</td><td><td>dbDir</td><td>
 Directory for databases.
@@ -5396,7 +5402,10 @@ Emit json responses.
 Preserve generated source.
 </td>
     <tr><td class="param">char *</td><td><td>layoutsDir</td><td>
-Directory for service view layouts.
+Directory for view layouts.
+</td>
+    <tr><td class="param">int</td><td><td>legacy</td><td>
+Legacy MVC app.
 </td>
     <tr><td class="param"><a class="ref" href="#mpr_8h_1adbceeccda24c35e7b4c6090db7065319" >MprTicks</a></td><td><td>lifespan</td><td>
 Default cache lifespan.
@@ -5415,9 +5424,6 @@ Back link to the owning route.
 </td>
     <tr><td class="param">cchar *</td><td><td>searchPath</td><td>
 Search path to use when locating compiler/linker.
-</td>
-    <tr><td class="param">cchar *</td><td><td>servicesDir</td><td>
-Directory for services.
 </td>
     <tr><td class="param">cchar *</td><td><td>srcDir</td><td>
 Directory for server-side source.
@@ -5523,7 +5529,7 @@ Directory for server-side views.
 (<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mpr.html#group___mpr_dispatcher" class="ref">MprDispatcher</a> *dispatcher, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *source, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *module, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *cacheName, int isView, char **errMsg)
   </div>
   <div class="apiDetail">
-<p>Compile an ESP page, service or view.</p>
+<p>Compile an ESP page, controller or view.</p>
     <dl><dt><b>Description</b>:</dt><dd>This compiles ESP components into loadable, cached modules.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
@@ -5550,7 +5556,7 @@ Directory for server-side views.
   </div>
   <div class="apiDetail">
 <p>Define an action.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">route</td><td>HttpRoute object.</td>
@@ -5570,12 +5576,12 @@ Directory for server-side views.
 (<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="#esp_8h_1aa0c56d9f50902eb9cf16889d3d95c129" class="ref">EspProc</a> baseProc)
   </div>
   <div class="apiDetail">
-<p>Define a base function to invoke for all service actions.</p>
-    <dl><dt><b>Description</b>:</dt><dd>A base function can be defined that will be called before calling any service action. This emulates a super class constructor.</dd></dl>
+<p>Define a base function to invoke for all controller actions.</p>
+    <dl><dt><b>Description</b>:</dt><dd>A base function can be defined that will be called before calling any controller action. This emulates a super class constructor.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">route</td><td>HttpRoute object.</td>
-    <tr><td class="param">baseProc</td><td>Function to call just prior to invoking a service action.</td>
+    <tr><td class="param">baseProc</td><td>Function to call just prior to invoking a controller action.</td>
     </table></dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Stable.</dd></dl>
     <dl><dt>See Also:</dt><dd>
@@ -5612,7 +5618,7 @@ Directory for server-side views.
   </div>
   <div class="apiDetail">
 <p>Expand a compile or link command template.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This expands a command template and replaces &quot;${tokens}&quot; with their equivalent value. The supported tokens are: <ul><li>ARCH - Build architecture (i386, x86_64) </li><li>CC - Compiler pathname </li><li>DEBUG - Compiler debug options (-g, -Zi, -Od) </li><li>INC - Include directory (out/inc) </li><li>LIB - Library directory (out/lib, out/bin) </li><li>LIBS - Required libraries directory (mod_esp, libappweb) </li><li>OBJ - Name of compiled source (out/lib/view-MD5.o) </li><li>OUT - Output module (view_MD5.dylib) </li><li>SHLIB - Shared library extension (.lib, .so) </li><li>SHOBJ - Shared object extension (.dll, .so) </li><li>SRC - Path to source code for view or service (already templated) </li><li>TMP - System temporary directory </li><li>WINSDK - Path to the Windows SDK </li><li>VS - Path to Visual Studio </li></ul></dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This expands a command template and replaces &quot;${tokens}&quot; with their equivalent value. The supported tokens are: <ul><li>ARCH - Build architecture (i386, x86_64) </li><li>CC - Compiler pathname </li><li>DEBUG - Compiler debug options (-g, -Zi, -Od) </li><li>INC - Include directory (out/inc) </li><li>LIB - Library directory (out/lib, out/bin) </li><li>LIBS - Required libraries directory (mod_esp, libappweb) </li><li>OBJ - Name of compiled source (out/lib/view-MD5.o) </li><li>OUT - Output module (view_MD5.dylib) </li><li>SHLIB - Shared library extension (.lib, .so) </li><li>SHOBJ - Shared object extension (.dll, .so) </li><li>SRC - Path to source code for view or controller (already templated) </li><li>TMP - System temporary directory </li><li>WINSDK - Path to the Windows SDK </li><li>VS - Path to Visual Studio </li></ul></dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">eroute</td><td><a class="ref" href="#struct_esp">Esp</a> route object.</td>
@@ -5695,7 +5701,7 @@ Directory for server-side views.
   </div>
   <div class="apiDetail">
 <p>ESP Action.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Actions are run after a request URI is routed to a service.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Actions are run after a request URI is routed to a controller.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#struct_esp" class="ref">Esp</a></dd></dl>
