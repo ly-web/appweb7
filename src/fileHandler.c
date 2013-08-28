@@ -361,6 +361,7 @@ static void outgoingFileService(HttpQueue *q)
             mprTrace(7, "OutgoingFileService readData %d", rc);
         }
         httpPutPacketToNext(q, packet);
+        mprYield(0);
     }
     mprTrace(7, "OutgoingFileService complete");
 }
@@ -412,6 +413,7 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
     } else if (mprWriteFile(file, mprGetBufStart(buf), len) != len) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't PUT to %s", tx->filename);
     }
+    mprYield(0);
 }
 
 
