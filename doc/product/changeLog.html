@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.3.5 Documentation</title>
+    <title>Embedthis Appweb 4.3.6 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.3.5</div>
+                <div class="version">Embedthis Appweb 4.3.6</div>
             </div>
         </div>
         <div class="crumbs">
@@ -35,11 +35,7 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="#r4.3.5">Release 4.3.5</a></li>
-                <li><a href="#r4.3.4">Release 4.3.4</a></li>
-                <li><a href="#r4.3.3">Release 4.3.3</a></li>
-                <li><a href="#r4.3.2">Release 4.3.2</a></li>
-                <li><a href="#r4.3.0">Release 4.3.0</a></li>
+                <li><a href="#r4.3.6">Release 4.3.6</a></li>
                 <li><a href="#r3.4.1">Release 3.4.1</a></li>
                 <li><a href="#r2.4.4">Release 2.4.4</a></li>
             </ul>
@@ -68,6 +64,15 @@
             Please see the <a href="http://github.com/embedthis/appweb-4/issues">Appweb Issue Database</a> 
             for the official product issue list and for comprehensive CVE dispositions.</p>
         
+            <a id="r4.3.6"></a>
+            <h2 class="section">Changes in 4.3.6</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Add yield points to reduce memory footprint for back-to-back requests.
+                    <a href="https://github.com/embedthis/appweb-4/issues/232">[issue 232]</a></li>
+                <li>Fix route templates if a route has a trailing $.
+                    <a href="https://github.com/embedthis/appweb-4/issues/233">[issue 233]</a></li>
+            </ul>
             <a id="r4.3.5"></a>
             <h2 class="section">Changes in 4.3.5</h2>
             <h3>Fixes</h3>
@@ -78,8 +83,6 @@
                     large file downloads over SSL.
                     <a href="https://github.com/embedthis/appweb-4/issues/195">[issue 195]</a></li>
                 <li>Content-Range end byte is one too big.
-                    <a href="https://github.com/embedthis/appweb-4/issues/178">[issue 178]</a></li>
-                <li>Parsing and detecting bad content ranges.
                     <a href="https://github.com/embedthis/appweb-4/issues/178">[issue 178]</a></li>
                 <li>Fix parsing range header.
                     <a href="https://github.com/embedthis/appweb-4/issues/209">[issue 209]</a></li>

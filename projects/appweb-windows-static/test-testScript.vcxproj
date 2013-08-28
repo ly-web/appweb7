@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{656e4d4e-0ea3-4e80-829d-fba766a4596c}</ProjectGuid>
+    <ProjectGuid>{6b20415a-00cf-4e84-9585-036ee1f25f9c}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -97,7 +97,7 @@
 
 <ItemGroup>
   <ProjectReference Include="cgiProgram.vcxproj">
-  <Project>23d633d5-5b77-4ac1-88c4-0cbe6ec41b81</Project>
+  <Project>23a18b8a-b0f0-4e46-b299-c98d93330077</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

@@ -3,7 +3,7 @@
 #
 
 PRODUCT            = appweb
-VERSION            = 4.3.4
+VERSION            = 4.3.6
 BUILD_NUMBER       = 0
 PROFILE            = default
 PA                 = $(PROCESSOR_ARCHITECTURE)
@@ -98,10 +98,10 @@ BIT_PACK_ZIP_PATH         = zip
 CC                 = cl
 LD                 = link
 RC                 = rc
-CFLAGS             = -nologo -GR- -W3 -Zi -Od -MDd
-DFLAGS             = -DBIT_DEBUG -D_REENTRANT -D_MT -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
+CFLAGS             = -nologo -GR- -W3 -O2 -MD
+DFLAGS             = -D_REENTRANT -D_MT -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
 IFLAGS             = -I$(CONFIG)\inc
-LDFLAGS            = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
+LDFLAGS            = -nologo -nodefaultlib -incremental:no -machine:$(ARCH)
 LIBPATHS           = "-libpath:$(CONFIG)\bin"
 LIBS               = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
@@ -389,7 +389,7 @@ clean:
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.4-0
+	@echo 4.3.6-0
 
 #
 #   bit.h
