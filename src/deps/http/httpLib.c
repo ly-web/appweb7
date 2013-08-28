@@ -2524,6 +2524,7 @@ static void readEvent(HttpConn *conn)
         if (!httpPumpRequest(conn, conn->input)) {
             break;
         }
+        mprYield(0);
     } while (conn->endpoint && prepForNext(conn));
 }
 
@@ -9766,9 +9767,7 @@ static char *finalizeTemplate(HttpRoute *route)
             mprPutCharToBuf(buf, *sp);
             break;
         case '$':
-            if (sp[1] == '\0') {
-                sp++;
-            } else {
+            if (sp[1]) {
                 mprPutCharToBuf(buf, *sp);
             }
             break;
@@ -15440,6 +15439,7 @@ static void incomingUpload(HttpQueue *q, HttpPacket *packet)
            Quicker to remove the buffer so the packets don't have to be joined the next time 
          */
         httpGetPacket(q);
+        mprYield(0);
         assert(q->count >= 0);
     }
 }
@@ -17359,6 +17359,7 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
                 ws->currentMessage = packet;
                 break;
             }
+            mprYield(0);
         } 
         break;
 
@@ -17811,6 +17812,7 @@ static void outgoingWebSockService(HttpQueue *q)
             mprTrace(6, "webSocketFilter: outgoing service, data packet len %d", httpGetPacketLength(packet));
         }
         httpPutPacketToNext(q, packet);
+        mprYield(0);
     }
 }
 
