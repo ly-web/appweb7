@@ -3,7 +3,7 @@
 */
 'use strict';
 
-var app = angular.module('${TITLE}', ['ngResource', 'ui.bootstrap']);
+var app = angular.module('${TITLE}', ['ngRoute', 'ngAnimate', 'ngResource', 'ui.bootstrap']);
 
 /*
     Request routes

@@ -212,13 +212,8 @@ PUBLIC void *espGetData(HttpConn *conn)
 PUBLIC Edi *espGetDatabase(HttpConn *conn)
 {
     EspRoute    *eroute;
-    EspReq      *req;
 
-    req = conn->data;
-    if (req == 0) {
-        return 0;
-    }
-    eroute = req->eroute;
+    eroute = conn->rx->route->eroute;
     if (eroute == 0 || eroute->edi == 0) {
         httpError(conn, 0, "Cannot get database instance");
         return 0;
@@ -243,12 +238,7 @@ PUBLIC cchar *espGetDir(HttpConn *conn)
 
 PUBLIC EspRoute *espGetEspRoute(HttpConn *conn)
 {
-    EspReq      *req;
-
-    if ((req = conn->data) == 0) {
-        return 0;
-    }
-    return req->eroute;
+    return conn->rx->route->eroute;
 }
 
 
@@ -329,8 +319,11 @@ PUBLIC char *espGetReferrer(HttpConn *conn)
 }
 
 
-PUBLIC Edi *espGetRouteDatabase(EspRoute *eroute)
+PUBLIC Edi *espGetRouteDatabase(HttpRoute *route)
 {
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
     if (eroute == 0 || eroute->edi == 0) {
         return 0;
     }
@@ -639,7 +632,6 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
 {
     va_list     args;
     HttpRx      *rx;
-    EspReq      *req;
     EspRoute    *eroute;
     ssize       written;
     cchar       *msg, *title, *text;
@@ -647,8 +639,7 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
     va_start(args, fmt);    
 
     rx = conn->rx;
-    req = conn->data;
-    eroute = req->eroute;
+    eroute = rx->route->eroute;
     written = 0;
 
     if (!httpIsFinalized(conn)) {
@@ -657,7 +648,7 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
         }
         title = sfmt("Request Error for \"%s\"", rx->pathInfo);
         msg = mprEscapeHtml(sfmtv(fmt, args));
-        if (eroute->route->flags & HTTP_ROUTE_SHOW_ERRORS) {
+        if (rx->route->flags & HTTP_ROUTE_SHOW_ERRORS) {
             text = sfmt(\
                 "<!DOCTYPE html>\r\n<html>\r\n<head><title>%s</title></head>\r\n" \
                 "<body>\r\n<h1>%s</h1>\r\n" \
@@ -1352,14 +1343,16 @@ static void serveConfig()
 /*
     Load the config.json
  */
-PUBLIC int espLoadConfig(EspRoute *eroute)
+PUBLIC int espLoadConfig(HttpRoute *route)
 {
+    EspRoute    *eroute;
     MprObj      *msettings;
     MprPath     cinfo;
     cchar       *cpath, *value;
     int         type;
 
-    cpath = mprJoinPath(eroute->route->documents, "config.json");
+    eroute = route->eroute;
+    cpath = mprJoinPath(route->documents, "config.json");
     if (mprGetPathInfo(cpath, &cinfo) == 0) {
         if (eroute->config && cinfo.mtime > eroute->configLoaded) {
             eroute->config = 0;
@@ -1375,57 +1368,59 @@ PUBLIC int espLoadConfig(EspRoute *eroute)
             if ((msettings = mprJsonGetValue(eroute->config, sfmt("modes.%s", eroute->mode), &type)) != 0) {
                 mprJsonBlend(eroute->config, msettings);
             }
-            if (espTestConfig(eroute, "settings.showErrors", "true")) {
-                httpSetRouteShowErrors(eroute->route, 1);
+            if (espTestConfig(route, "settings.showErrors", "true")) {
+                httpSetRouteShowErrors(route, 1);
             }
-            if (espTestConfig(eroute, "settings.update", "true")) {
+            if (espTestConfig(route, "settings.update", "true")) {
                 eroute->update = 1;
             }
-            if (espTestConfig(eroute, "settings.keepSource", "true")) {
+            if (espTestConfig(route, "settings.keepSource", "true")) {
                 eroute->keepSource = 1;
             }
-            if ((value = espGetConfig(eroute, "settings.username", 0)) != 0) {
-                httpSetAuthUsername(eroute->route->auth, value);
+            if ((value = espGetConfig(route, "settings.username", 0)) != 0) {
+                httpSetAuthUsername(route->auth, value);
             }
-            if (espTestConfig(eroute, "settings.xsrfToken", "true")) {
-                httpSetRouteXsrf(eroute->route, 1);
+            if (espTestConfig(route, "settings.xsrfToken", "true")) {
+                httpSetRouteXsrf(route, 1);
             }
-            if (espTestConfig(eroute, "settings.sendJson", "true")) {
+            if (espTestConfig(route, "settings.sendJson", "true")) {
                 eroute->json = 1;
             }
-            if (espTestConfig(eroute, "settings.map", "compressed")) {
-                httpAddRouteMapping(eroute->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
-                httpAddRouteMapping(eroute->route, "html,xml", "${1}.gz");
+            if (espTestConfig(route, "settings.map", "compressed")) {
+                httpAddRouteMapping(route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
+                httpAddRouteMapping(route, "html,xml", "${1}.gz");
             }
             if (!eroute->database) {
-                if ((eroute->database = espGetConfig(eroute, "server.database", 0)) != 0) {
-                    if (espOpenDatabase(eroute, eroute->database) < 0) {
+                if ((eroute->database = espGetConfig(route, "server.database", 0)) != 0) {
+                    if (espOpenDatabase(route, eroute->database) < 0) {
                         mprError("Cannot open database %s", eroute->database);
                         return MPR_ERR_CANT_OPEN;
                     }
                 }
             }
-            eroute->json = espTestConfig(eroute, "settings.json", "1");
+            eroute->json = espTestConfig(route, "settings.json", "1");
         } else {
             eroute->config = mprCreateHash(0, 0);
-            espAddComponent(eroute, "legacy");
+            espAddComponent(route, "legacy");
         }
-        if (espHasComponent(eroute, "legacy")) {
+        if (espHasComponent(route, "legacy")) {
             eroute->legacy = 1;
         }
         /*
             Define custom action to serve config.json
          */
-        espDefineAction(eroute->route, "esp-config", serveConfig);
+        espDefineAction(route, "esp-config", serveConfig);
     }
     return 0;
 }
 
 
-PUBLIC cchar *espGetConfig(EspRoute *eroute, cchar *key, cchar *defaultValue)
+PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue)
 {
-    cchar   *value;
+    EspRoute    *eroute;
+    cchar       *value;
 
+    eroute = route->eroute;
     if ((value = mprJsonGet(eroute->config, key)) != 0) {
         return value;
     }
@@ -1433,16 +1428,21 @@ PUBLIC cchar *espGetConfig(EspRoute *eroute, cchar *key, cchar *defaultValue)
 }
 
 
-PUBLIC int espSetConfig(EspRoute *eroute, cchar *key, cchar *value)
+PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value)
 {
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
     return mprJsonSet(eroute->config, key, value);
 }
 
 
-PUBLIC bool espTestConfig(EspRoute *eroute, cchar *key, cchar *desired)
+PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired)
 {
-    cchar   *value;
+    EspRoute    *eroute;
+    cchar       *value;
 
+    eroute = route->eroute;
     if ((value = mprJsonGet(eroute->config, key)) != 0) {
         return smatch(value, desired);
     }
@@ -1450,20 +1450,29 @@ PUBLIC bool espTestConfig(EspRoute *eroute, cchar *key, cchar *desired)
 }
 
 
-PUBLIC int espSaveConfig(EspRoute *eroute)
+PUBLIC int espSaveConfig(HttpRoute *route)
 {
-    return mprJsonSave(eroute->config, mprJoinPath(eroute->route->documents, "config.json"));
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
+    return mprJsonSave(eroute->config, mprJoinPath(route->documents, "config.json"));
 }
 
 
-PUBLIC bool espHasComponent(EspRoute *eroute, cchar *name)
+PUBLIC bool espHasComponent(HttpRoute *route, cchar *name)
 {
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
     return mprJsonGet(eroute->config, sfmt("settings.components[@ = '%s']", name)) != 0;
 }
 
 
-PUBLIC void espAddComponent(EspRoute *eroute, cchar *name)
+PUBLIC void espAddComponent(HttpRoute *route, cchar *name)
 {
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
     if (!mprJsonGet(eroute->config, sfmt("settings.components[@ = %s]", name))) {
         mprJsonSet(eroute->config, "settings.components[*]", name);
     }

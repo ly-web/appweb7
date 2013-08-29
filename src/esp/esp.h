@@ -125,13 +125,16 @@ PUBLIC void espInitHtmlOptions(Esp *esp);
 /********************************** Routes ************************************/
 /**
     EspRoute extended route configuration.
+    Note that HttpRoutes may share an EspRoute.
     @defgroup EspRoute EspRoute
     @see Esp
  */
 typedef struct EspRoute {
     char            *appName;               /**< App module name when compiled flat */
     struct EspRoute *top;                   /**< Top-level route for this application */
+#if UNUSED
     HttpRoute       *route;                 /**< Back link to the owning route */
+#endif
     EspProc         commonController;       /**< Common code for all controllers */
     MprHash         *env;                   /**< Environment variables for route */
     MprHash         *config;                /**< App configuration from config.json */
@@ -177,7 +180,7 @@ typedef struct EspRoute {
 typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
 
 //  MOB - DOC
-PUBLIC void espAddRouteSet(EspRoute *eroute, cchar *set);
+PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
 
 /**
     Add caching for response content.
@@ -354,7 +357,7 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
     @stability Evolving
     @internal
  */
-PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module);
+PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, cchar *module);
 
 /**
     Initialize a static library ESP module
@@ -373,9 +376,9 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
  */
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags);
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile);
-PUBLIC int espOpenDatabase(EspRoute *eroute, cchar *spec);
+PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec);
 PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
-PUBLIC void espSetDirs(EspRoute *eroute);
+PUBLIC void espSetDirs(HttpRoute *route);
 
 /********************************** Requests **********************************/
 /**
@@ -404,7 +407,9 @@ PUBLIC void espManageAction(EspAction *ap, int flags);
  */
 typedef struct EspReq {
     HttpRoute       *route;                 /**< Route reference */
+#if UNUSED
     EspRoute        *eroute;                /**< Extended route info */
+#endif
     Esp             *esp;                   /**< Convenient esp reference */
     MprHash         *feedback;              /**< Feedback messages */
     MprHash         *flash;                 /**< New flash messages */
@@ -744,7 +749,7 @@ PUBLIC char *espGetReferrer(HttpConn *conn);
     @ingroup EspReq
     @stability Evolving
  */
-PUBLIC Edi *espGetRouteDatabase(EspRoute *eroute);
+PUBLIC Edi *espGetRouteDatabase(HttpRoute *route);
 
 /**
     Get a unique security token.
@@ -1591,14 +1596,14 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
 
 //  MOB DOCUMENT
-PUBLIC cchar *espGetConfig(EspRoute *eroute, cchar *key, cchar *defaultValue);
-PUBLIC int espSetConfig(EspRoute *eroute, cchar *key, cchar *value);
-PUBLIC bool espTestConfig(EspRoute *eroute, cchar *key, cchar *desired);
-PUBLIC int espLoadConfig(EspRoute *eroute);
-PUBLIC int espSaveConfig(EspRoute *eroute);
+PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
+PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value);
+PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired);
+PUBLIC int espLoadConfig(HttpRoute *route);
+PUBLIC int espSaveConfig(HttpRoute *route);
 
-PUBLIC bool espHasComponent(EspRoute *eroute, cchar *name);
-PUBLIC void espAddComponent(EspRoute *eroute, cchar *name);
+PUBLIC bool espHasComponent(HttpRoute *route, cchar *name);
+PUBLIC void espAddComponent(HttpRoute *route, cchar *name);
 
 /***************************** Abbreviated Controls ***************************/
 /**

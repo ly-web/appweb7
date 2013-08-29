@@ -40,7 +40,7 @@ typedef struct EspParse {
 
 static int getEspToken(EspParse *parse);
 static cchar *getDebug();
-static cchar *getEnvString(EspRoute *eroute, cchar *key, cchar *defaultValue);
+static cchar *getEnvString(HttpRoute *route, cchar *key, cchar *defaultValue);
 static cchar *getArExt(cchar *os);
 static cchar *getShlibExt(cchar *os);
 static cchar *getShobjExt(cchar *os);
@@ -76,7 +76,7 @@ static bool matchToken(cchar **str, cchar *token);
     VS          Visual Studio directory
     WINSDK      Windows SDK directory
  */
-PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module)
+PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, cchar *module)
 {
     MprBuf      *buf;
     MaAppweb    *appweb;
@@ -115,7 +115,7 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
 
             } else if (matchToken(&cp, "${LIBS}")) {
                 /* Required libraries to link. These may have nested ${TOKENS} */
-                mprPutStringToBuf(buf, espExpandCommand(eroute, getLibs(os), source, module));
+                mprPutStringToBuf(buf, espExpandCommand(route, getLibs(os), source, module));
 
             } else if (matchToken(&cp, "${MOD}")) {
                 /* Output module path in the cache without extension */
@@ -164,43 +164,43 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
                 configured VxWorks toolchain.
              */
             } else if (matchToken(&cp, "${AR}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "AR", getArPath(os, arch)));
+                mprPutStringToBuf(buf, getEnvString(route, "AR", getArPath(os, arch)));
 
             } else if (matchToken(&cp, "${CC}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "CC", getCompilerPath(os, arch)));
+                mprPutStringToBuf(buf, getEnvString(route, "CC", getCompilerPath(os, arch)));
 
             } else if (matchToken(&cp, "${CFLAGS}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "CFLAGS", ""));
+                mprPutStringToBuf(buf, getEnvString(route, "CFLAGS", ""));
 
             } else if (matchToken(&cp, "${DEBUG}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "DEBUG", getDebug()));
+                mprPutStringToBuf(buf, getEnvString(route, "DEBUG", getDebug()));
 
             } else if (matchToken(&cp, "${LDFLAGS}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "LDFLAGS", ""));
+                mprPutStringToBuf(buf, getEnvString(route, "LDFLAGS", ""));
 
             } else if (matchToken(&cp, "${LIB}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "LIB", ""));
+                mprPutStringToBuf(buf, getEnvString(route, "LIB", ""));
 
             } else if (matchToken(&cp, "${LINK}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "LINK", ""));
+                mprPutStringToBuf(buf, getEnvString(route, "LINK", ""));
 
             } else if (matchToken(&cp, "${WIND_BASE}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_BASE", WIND_BASE));
+                mprPutStringToBuf(buf, getEnvString(route, "WIND_BASE", WIND_BASE));
 
             } else if (matchToken(&cp, "${WIND_HOME}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_HOME", WIND_HOME));
+                mprPutStringToBuf(buf, getEnvString(route, "WIND_HOME", WIND_HOME));
 
             } else if (matchToken(&cp, "${WIND_HOST_TYPE}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_HOST_TYPE", WIND_HOST_TYPE));
+                mprPutStringToBuf(buf, getEnvString(route, "WIND_HOST_TYPE", WIND_HOST_TYPE));
 
             } else if (matchToken(&cp, "${WIND_PLATFORM}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_PLATFORM", WIND_PLATFORM));
+                mprPutStringToBuf(buf, getEnvString(route, "WIND_PLATFORM", WIND_PLATFORM));
 
             } else if (matchToken(&cp, "${WIND_GNU_PATH}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_GNU_PATH", WIND_GNU_PATH));
+                mprPutStringToBuf(buf, getEnvString(route, "WIND_GNU_PATH", WIND_GNU_PATH));
 
             } else if (matchToken(&cp, "${WIND_CCNAME}")) {
-                mprPutStringToBuf(buf, getEnvString(eroute, "WIND_CCNAME", getCompilerName(os, arch)));
+                mprPutStringToBuf(buf, getEnvString(route, "WIND_CCNAME", getCompilerName(os, arch)));
 
             } else {
                 mprPutCharToBuf(buf, *cp++);
@@ -214,18 +214,20 @@ PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, c
 }
 
 
-static int runCommand(EspRoute *eroute, MprDispatcher *dispatcher, cchar *command, cchar *csource, cchar *module, char **errMsg)
+static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *command, cchar *csource, cchar *module, char **errMsg)
 {
     MprCmd      *cmd;
     MprKey      *var;
     MprList     *elist;
+    EspRoute    *eroute;
     cchar       **env, *commandLine;
     char        *err, *out;
     int         rc;
 
     *errMsg = 0;
+    eroute = route->eroute;
     cmd = mprCreateCmd(dispatcher);
-    if ((commandLine = espExpandCommand(eroute, command, csource, module)) == 0) {
+    if ((commandLine = espExpandCommand(route, command, csource, module)) == 0) {
         *errMsg = sfmt("Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
@@ -256,7 +258,7 @@ static int runCommand(EspRoute *eroute, MprDispatcher *dispatcher, cchar *comman
             err = out;
         }
         mprError("ESP: Cannot run command %s, error %s", commandLine, err);
-        if (eroute->route->flags & HTTP_ROUTE_SHOW_ERRORS) {
+        if (route->flags & HTTP_ROUTE_SHOW_ERRORS) {
             *errMsg = sfmt("Cannot run command %s, error %s", commandLine, err);
         } else {
             *errMsg = "Cannot compile view";
@@ -339,12 +341,12 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     }
 #endif
     /* WARNING: GC yield here */
-    if (runCommand(eroute, dispatcher, eroute->compile, csource, module, errMsg) != 0) {
+    if (runCommand(route, dispatcher, eroute->compile, csource, module, errMsg) != 0) {
         return 0;
     }
     if (eroute->link) {
         /* WARNING: GC yield here */
-        if (runCommand(eroute, dispatcher, eroute->link, csource, module, errMsg) != 0) {
+        if (runCommand(route, dispatcher, eroute->link, csource, module, errMsg) != 0) {
             return 0;
         }
 #if !(BIT_DEBUG && MACOSX)
@@ -839,10 +841,12 @@ static int getEspToken(EspParse *parse)
 }
 
 
-static cchar *getEnvString(EspRoute *eroute, cchar *key, cchar *defaultValue)
+static cchar *getEnvString(HttpRoute *route, cchar *key, cchar *defaultValue)
 {
-    cchar   *value;
+    EspRoute    *eroute;
+    cchar       *value;
 
+    eroute = route->eroute;
     if (!eroute || !eroute->env || (value = mprLookupKey(eroute->env, key)) == 0) {
         if ((value = getenv(key)) == 0) {
             if (defaultValue) {

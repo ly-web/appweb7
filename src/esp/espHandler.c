@@ -24,7 +24,7 @@ static EspRoute *allocEspRoute(HttpRoute *loc);
 static int espDbDirective(MaState *state, cchar *key, cchar *value);
 static int espEnvDirective(MaState *state, cchar *key, cchar *value);
 static EspRoute *getEroute(HttpRoute *route);
-static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher);
+static int loadApp(HttpRoute *route, MprDispatcher *dispatcher);
 static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
 static int runAction(HttpConn *conn);
@@ -81,7 +81,6 @@ static void openEsp(HttpQueue *q)
     conn->data = req;
     req->esp = esp;
     req->route = route;
-    req->eroute = eroute;
     req->autoFinalize = 1;
 }
 
@@ -203,7 +202,7 @@ static int runAction(HttpConn *conn)
     rx = conn->rx;
     req = conn->data;
     route = rx->route;
-    eroute = req->eroute;
+    eroute = route->eroute;
     assert(eroute);
 
     if (route->sourceName == 0 || *route->sourceName == '\0') {
@@ -234,10 +233,10 @@ static int runAction(HttpConn *conn)
     /*
         See if the config.json or app needs to be reloaded.
      */
-    if (espLoadConfig(eroute) < 0) {
+    if (espLoadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
-    if (loadApp(eroute, conn->dispatcher) < 0) {
+    if (loadApp(route, conn->dispatcher) < 0) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
         return 0;
     }
@@ -253,7 +252,7 @@ static int runAction(HttpConn *conn)
         source = mprTrimPathDrive(source);
 #endif
         canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
-        req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "controllere_");
+        req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "controller_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->controllerPath, R_OK)) {
@@ -340,13 +339,15 @@ static int runAction(HttpConn *conn)
 PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 {
     HttpRx      *rx;
+    HttpRoute   *route;
     EspRoute    *eroute;
     EspReq      *req;
     EspViewProc view;
     
     rx = conn->rx;
     req = conn->data;
-    eroute = req->eroute;
+    route = rx->route;
+    eroute = route->eroute;
     
     if (name && *name) {
         req->view = mprJoinPath(eroute->viewsDir, name);
@@ -361,7 +362,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         req->view = conn->tx->filename;
         req->source = req->view;
     }
-    if (loadApp(eroute, conn->dispatcher) < 0) {
+    if (loadApp(route, conn->dispatcher) < 0) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
         return;
     }
@@ -470,10 +471,12 @@ static char *getControllerEntry(cchar *controllerName)
 }
 #endif
 
-static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
+static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
 {
+    EspRoute    *eroute;
     cchar       *canonical, *source, *cacheName;
 
+    eroute = route->eroute;
     if (!eroute->appName) {
         return 0;
     }
@@ -481,7 +484,7 @@ static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
     if (!mprPathExists(source, R_OK)) {
         return 0;
     };
-    canonical = mprGetPortablePath(mprGetRelPath(source, eroute->route->documents));
+    canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
     cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "app_");
     eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));
 
@@ -492,14 +495,14 @@ static int loadApp(EspRoute *eroute, MprDispatcher *dispatcher)
         int         recompile;
         if (espModuleIsStale(source, eroute->appModulePath, &recompile)) {
             /*  WARNING: GC yield here */
-            if (recompile && !espCompile(eroute->route, dispatcher, source, eroute->appModulePath, cacheName, 0, &errMsg)) {
+            if (recompile && !espCompile(route, dispatcher, source, eroute->appModulePath, cacheName, 0, &errMsg)) {
                 mprError("Cannot compile %s/app.c", eroute->srcDir);
                 return MPR_ERR_CANT_INITIALIZE;
             }
         }
         if ((mp = mprLookupModule(eroute->appName)) == 0) {
             entry = sfmt("esp_app_%s", eroute->appName);
-            if ((mp = mprCreateModule(eroute->appName, eroute->appModulePath, entry, eroute->route)) == 0) {
+            if ((mp = mprCreateModule(eroute->appName, eroute->appModulePath, entry, route)) == 0) {
                 mprError("Cannot find module %s", eroute->appModulePath);
                 return MPR_ERR_CANT_FIND;
             }
@@ -521,12 +524,10 @@ static bool viewExists(HttpConn *conn)
 {
     HttpRx      *rx;
     EspRoute    *eroute;
-    EspReq      *req;
     cchar       *source;
     
     rx = conn->rx;
-    req = conn->data;
-    eroute = req->eroute;
+    eroute = rx->route->eroute;
     
     source = mprJoinPathExt(mprJoinPath(eroute->viewsDir, rx->target), ".esp");
     return mprPathExists(source, R_OK);
@@ -559,7 +560,6 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     eroute->update = BIT_DEBUG;
     eroute->keepSource = BIT_DEBUG;
     eroute->lifespan = 0;
-    eroute->route = route;
     route->eroute = eroute;
     route->flags |= HTTP_ROUTE_XSRF;
     return eroute;
@@ -600,7 +600,9 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->config = parent->config;
     eroute->dbDir = parent->dbDir;
     eroute->layoutsDir = parent->layoutsDir;
+#if UNSUED
     eroute->route = route;
+#endif
     eroute->srcDir = parent->srcDir;
     eroute->controllersDir = parent->controllersDir;
     eroute->viewsDir = parent->viewsDir;
@@ -609,13 +611,13 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
 }
 
 
-PUBLIC void espSetDirs(EspRoute *eroute)
+PUBLIC void espSetDirs(HttpRoute *route)
 {
-    HttpRoute   *route;
+    EspRoute    *eroute;
     char        *dir;
 
-    route = eroute->route;
-    dir = eroute->route->documents;
+    eroute = route->eroute;
+    dir = route->documents;
 
     eroute->dbDir       = mprJoinPath(dir, "db");
     eroute->cacheDir    = mprJoinPath(dir, "cache");
@@ -647,7 +649,6 @@ static void manageReq(EspReq *req, int flags)
         mprMark(req->controllerName);
         mprMark(req->controllerPath);
         mprMark(req->entry);
-        mprMark(req->eroute);
         mprMark(req->flash);
         mprMark(req->module);
         mprMark(req->record);
@@ -678,16 +679,18 @@ static void manageEsp(Esp *esp, int flags)
 
 
 /*
-    Get an EspRoute structure for a given route. Allocate or clone if required. It is expected that the caller will
-    modify the EspRoute.
+    Get a dedicated EspRoute for an HttpRoute. Allocate if required. It is expected that the caller will modify the EspRoute.
  */
 static EspRoute *getEroute(HttpRoute *route)
 {
     HttpRoute   *rp;
 
-    if (route->eroute && ((EspRoute*) route->eroute)->route == route) {
-        return route->eroute;
+    if (route->eroute) {
+        if (!route->parent || route->parent->eroute != route->eroute) {
+            return route->eroute;
+        }
     }
+
     /*
         Lookup up the route chain for any configured EspRoutes
      */
@@ -764,12 +767,13 @@ PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *prefix, cchar *resou
 #endif
 
 
-PUBLIC void espAddRouteSet(EspRoute *eroute, cchar *set)
+PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
 {
-    HttpRoute   *route, *rp;
+    EspRoute    *eroute;
+    HttpRoute   *rp;
     char        *prefix;
 
-    route = eroute->route;
+    eroute = route->eroute;
     if (!eroute->legacy) {
         prefix = route->prefix ? route->prefix : "";
         //  MOB - functionalize
@@ -894,8 +898,8 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     state = maPushState(state);
     state->route = route;
 
-    espSetDirs(eroute);
-    if (espLoadConfig(eroute) < 0) {
+    espSetDirs(route);
+    if (espLoadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
     if (eroute->legacy) {
@@ -923,11 +927,11 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
 
-    if (!routeSet && espHasComponent(eroute, "angular")) {
+    if (!routeSet && espHasComponent(route, "angular")) {
         routeSet = "restful";
     }
     if (routeSet) {
-        espAddRouteSet(eroute, routeSet);
+        espAddRouteSet(route, routeSet);
     }
     if (database) {
         eroute->database = sclone(database);
@@ -940,7 +944,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     maPopState(state);
 
     if (!state->appweb->skipModules) {
-        if (loadApp(eroute, NULL) < 0) {
+        if (loadApp(route, NULL) < 0) {
             return MPR_ERR_CANT_LOAD;
         }
     }
@@ -963,11 +967,13 @@ static int espCompileDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-PUBLIC int espOpenDatabase(EspRoute *eroute, cchar *spec)
+PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
 {
+    EspRoute    *eroute;
     char        *provider, *path;
     int         flags;
 
+    eroute = route->eroute;
     flags = EDI_CREATE | EDI_AUTO_SAVE;
     provider = stok(sclone(spec), "://", &path);
     if (provider == 0 || path == 0) {
@@ -991,7 +997,7 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value)
     if ((eroute = getEroute(state->route)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    if (espOpenDatabase(eroute, value) < 0) {
+    if (espOpenDatabase(state->route, value) < 0) {
         if (!(state->flags & MA_PARSE_NON_SERVER)) {
             mprError("Cannot open database '%s'. Use: provider://database", value);
             return MPR_ERR_CANT_OPEN;
@@ -1016,7 +1022,7 @@ static int espDirDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (smatch(name, "mvc")) {
-        espSetDirs(eroute);
+        espSetDirs(state->route);
     } else {
         path = stemplate(path, state->route->vars);
         path = stemplate(mprJoinPath(state->route->home, path), state->route->vars);
@@ -1111,7 +1117,7 @@ static int espEnvDirective(MaState *state, cchar *key, cchar *value)
     if (eroute->env == 0) {
         eroute->env = mprCreateHash(-1, MPR_HASH_STABLE);
     }
-    evalue = espExpandCommand(eroute, evalue, "", "");
+    evalue = espExpandCommand(state->route, evalue, "", "");
     if (scaselessmatch(ekey, "VisualStudio")) {
         defineVisualStudioEnv(state);
     } else {
@@ -1266,7 +1272,7 @@ static int espRouteSetDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S", &kind)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    espAddRouteSet(eroute, kind);
+    espAddRouteSet(state->route, kind);
     return 0;
 }
 

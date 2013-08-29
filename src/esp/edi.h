@@ -658,7 +658,7 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
 /**
     Set record fields without writing to the database.
     @description This routine updates the record object with the given values. The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
+        a hash of fieldNames and values. The data hash may come from the request params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: ediSetFields(rec, ediMakeHash("{ name: '%s', address: '%s' }", name, address))
         The record will not be written
@@ -703,7 +703,7 @@ PUBLIC int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldNa
 /**
     Write field values to a database row.
     @description This routine updates a database row with the given values.  The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
+        a hash of fieldNames and values. The data hash may come from the request params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: ediUpdateFields(rec, params());
         Note: field validations are not run.

@@ -52,6 +52,8 @@ Bit.load({
                 rm('client/lib/all.js.gz')
                 let list = [
                     'client/lib/angular.min.js',
+                    'client/lib/angular-animate.min.js',
+                    'client/lib/angular-route.min.js',
                     'client/lib/angular-resource.min.js',
                     'client/lib/angular-bootstrap.min.js',
                     'client/lib/ui-bootstrap-tpls.min.js',

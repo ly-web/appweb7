@@ -33,6 +33,7 @@ typedef struct App {
 
     MprList     *routes;                /* Routes to process */
     EspRoute    *eroute;                /* Selected ESP route to build */
+    HttpRoute   *route;                 /* Selected route to build */
     MprList     *files;                 /* List of files to process */
     MprList     *build;                 /* Items to build */
     MprList     *slink;                 /* List of items for static link */
@@ -380,11 +381,11 @@ ESP_EXPORT int esp_migration_${NAME}(Edi *db)\n\
 
 static void clean(int argc, char **argv);
 static void compile(int argc, char **argv);
-static void compileItems(EspRoute *eroute);
-static void compileFlat(EspRoute *eroute);
+static void compileItems(HttpRoute *route);
+static void compileFlat(HttpRoute *route);
 static void copyEspDir(cchar *fromDir, cchar *toDir);
 static void createMigration(cchar *name, cchar *table, cchar *comment, int fieldCount, char **fields);
-static EspRoute *createRoute(cchar *dir);
+static HttpRoute *createRoute(cchar *dir);
 static void fail(cchar *fmt, ...);
 static void fatal(cchar *fmt, ...);
 static bool findHostingConfig();
@@ -630,7 +631,7 @@ static void manageApp(App *app, int flags)
 /*
     Create a new route. Only used by generateApp. All other routes are created when appweb.conf is loaded.
  */
-static EspRoute *createRoute(cchar *dir)
+static HttpRoute *createRoute(cchar *dir)
 {
     HttpRoute   *route;
     EspRoute    *eroute;
@@ -643,10 +644,12 @@ static EspRoute *createRoute(cchar *dir)
     }
     eroute->config = mprCreateHash(0, 0);
     route->eroute = eroute;
+#if UNUSED
     eroute->route = route;
+#endif
     httpSetRouteDocuments(route, dir);
-    espSetDirs(eroute);
-    return eroute;
+    espSetDirs(route);
+    return route;
 }
 
 
@@ -756,9 +759,9 @@ static MprList *getRoutes()
                 }
             }
         }
-        if (mprLookupItem(routes, eroute) < 0) {
+        if (mprLookupItem(routes, route) < 0) {
             mprTrace(2, "Compiling route dir: %s name: %s prefix: %s", route->documents, route->name, route->startWith);
-            mprAddItem(routes, eroute);
+            mprAddItem(routes, route);
         }
     }
     if (mprGetListLength(routes) == 0) {
@@ -868,9 +871,11 @@ static bool readHostingConfig()
     esp = stage->stageData;
 
     app->routes = getRoutes();
-    if ((app->eroute = mprGetFirstItem(app->routes)) == 0) {
+    if ((app->route = mprGetFirstItem(app->routes)) == 0) {
         fail("Cannot find a suitable route");
     }
+    app->eroute = app->route->eroute;
+    assert(app->eroute);
     return !app->error;
 }
 
@@ -885,6 +890,7 @@ static void process(int argc, char **argv)
     cmd = argv[0];
     generateApp = smatch(cmd, "generate") && argc > 1 && smatch(argv[1], "app");
     if (!generateApp) {
+        app->targets = getTargets(argc - 1, &argv[1]);
         readHostingConfig();
     }
     if (smatch(cmd, "generate")) {
@@ -920,13 +926,12 @@ static void clean(int argc, char **argv)
     char            *path;
     int             next, nextFile;
 
-    app->targets = getTargets(argc, argv);
     if (app->error) {
         return;
     }
-    for (ITERATE_ITEMS(app->routes, eroute, next)) {
+    for (ITERATE_ITEMS(app->routes, route, next)) {
+        eroute = route->eroute;
         if (eroute->cacheDir) {
-            route = eroute->route;
             trace("clean", "Route \"%s\" at %s", route->name, route->documents);
             files = mprGetPathFiles(eroute->cacheDir, MPR_PATH_RELATIVE);
             for (nextFile = 0; (dp = mprGetNextItem(files, &nextFile)) != 0; ) {
@@ -959,16 +964,18 @@ static void run(int argc, char **argv)
 }
 
 
-static int runEspCommand(EspRoute *eroute, cchar *command, cchar *csource, cchar *module)
+static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar *module)
 {
     MprCmd      *cmd;
     MprList     *elist;
     MprKey      *var;
+    EspRoute    *eroute;
     cchar       **env;
     char        *err, *out;
 
+    eroute = route->eroute;
     cmd = mprCreateCmd(0);
-    if ((app->command = espExpandCommand(eroute, command, csource, module)) == 0) {
+    if ((app->command = espExpandCommand(route->eroute, command, csource, module)) == 0) {
         fail("Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
@@ -1016,8 +1023,9 @@ static int runEspCommand(EspRoute *eroute, cchar *command, cchar *csource, cchar
 }
 
 
-static void compileFile(EspRoute *eroute, cchar *source, int kind)
+static void compileFile(HttpRoute *route, cchar *source, int kind)
 {
+    EspRoute    *eroute;
     cchar       *defaultLayout, *page, *layout, *data, *prefix, *lpath;
     char        *err, *quote, *script, *canonical;
     ssize       len;
@@ -1026,6 +1034,7 @@ static void compileFile(EspRoute *eroute, cchar *source, int kind)
     if (app->error) {
         return;
     }
+    eroute = route->eroute;
     defaultLayout = 0;
     if (kind == ESP_SRC) {
         prefix = "app_";
@@ -1036,7 +1045,7 @@ static void compileFile(EspRoute *eroute, cchar *source, int kind)
     } else {
         prefix = "view_";
     }
-    canonical = mprGetPortablePath(mprGetRelPath(source, eroute->route->documents));
+    canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
     app->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), prefix);
     app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, app->cacheName, BIT_SHOBJ));
     defaultLayout = (eroute->layoutsDir) ? mprJoinPath(eroute->layoutsDir, "default.esp") : 0;
@@ -1098,7 +1107,7 @@ static void compileFile(EspRoute *eroute, cchar *source, int kind)
             return;
         }
         /* No yield here */
-        if ((script = espBuildScript(eroute->route, page, source, app->cacheName, defaultLayout, NULL, &err)) == 0) {
+        if ((script = espBuildScript(route, page, source, app->cacheName, defaultLayout, NULL, &err)) == 0) {
             fail("Cannot build %s, error %s", source, err);
             return;
         }
@@ -1130,12 +1139,12 @@ static void compileFile(EspRoute *eroute, cchar *source, int kind)
             fail("Missing EspCompile directive for %s", app->csource);
             return;
         }
-        if (runEspCommand(eroute, eroute->compile, app->csource, app->module) < 0) {
+        if (runEspCommand(route, eroute->compile, app->csource, app->module) < 0) {
             return;
         }
         if (eroute->link) {
             vtrace("Link", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
-            if (runEspCommand(eroute, eroute->link, app->csource, app->module) < 0) {
+            if (runEspCommand(route, eroute->link, app->csource, app->module) < 0) {
                 return;
             }
 #if !(BIT_DEBUG && MACOSX)
@@ -1168,25 +1177,26 @@ static void compileFile(EspRoute *eroute, cchar *source, int kind)
 static void compile(int argc, char **argv)
 {
     EspRoute    *eroute;
+    HttpRoute   *route;
     MprFile     *file;
     MprKey      *kp;
     cchar       *name;
     int         next;
 
-    app->targets = getTargets(argc, argv);
     if (app->error) {
         return;
     }
     if (app->flat && app->genlink) {
         app->slink = mprCreateList(0, MPR_LIST_STABLE);
     }
-    for (ITERATE_ITEMS(app->routes, eroute, next)) {
+    for (ITERATE_ITEMS(app->routes, route, next)) {
+        eroute = route->eroute;
         mprMakeDir(eroute->cacheDir, 0755, -1, -1, 1);
-        mprTrace(2, "Build with route \"%s\" at %s", eroute->route->name, eroute->route->documents);
+        mprTrace(2, "Build with route \"%s\" at %s", route->name, route->documents);
         if (app->flat) {
-            compileFlat(eroute);
+            compileFlat(route);
         } else {
-            compileItems(eroute);
+            compileItems(route);
         }
     }
     /*
@@ -1205,16 +1215,17 @@ static void compile(int argc, char **argv)
         }
         mprWriteFileFmt(file, "/*\n    %s -- Generated Appweb Static Initialization\n */\n", app->genlink);
         mprWriteFileFmt(file, "#include \"esp.h\"\n\n");
-        for (ITERATE_ITEMS(app->slink, eroute, next)) {
-            name = app->appName ? app->appName : mprGetPathBase(eroute->route->documents);
+        for (ITERATE_ITEMS(app->slink, route, next)) {
+            eroute = route->eroute;
+            name = app->appName ? app->appName : mprGetPathBase(route->documents);
             mprWriteFileFmt(file, "extern int esp_app_%s(HttpRoute *route, MprModule *module);", name);
             mprWriteFileFmt(file, "    /* SOURCE %s */\n",
                 mprGetRelPath(mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL)), NULL));
         }
         mprWriteFileFmt(file, "\nPUBLIC void appwebStaticInitialize()\n{\n");
-        for (ITERATE_ITEMS(app->slink, eroute, next)) {
-            name = app->appName ? app->appName : mprGetPathBase(eroute->route->documents);
-            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s, \"%s\", \"%s\");\n", name, name, eroute->route->name);
+        for (ITERATE_ITEMS(app->slink, route, next)) {
+            name = app->appName ? app->appName : mprGetPathBase(route->documents);
+            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s, \"%s\", \"%s\");\n", name, name, route->name);
         }
         mprWriteFileFmt(file, "}\n");
         mprCloseFile(file);
@@ -1282,19 +1293,21 @@ static bool selectResource(cchar *path, cchar *kind)
 /*
     Compile all the items relevant to a route
  */
-static void compileItems(EspRoute *eroute)
+static void compileItems(HttpRoute *route)
 {
+    EspRoute    *eroute;
     MprDirEntry *dp;
     cchar       *path;
     int         next;
 
+    eroute = route->eroute;
     if (eroute->controllersDir) {
         assert(eroute);
         app->files = mprGetPathFiles(eroute->controllersDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (selectResource(path, "c")) {
-                compileFile(eroute, path, ESP_CONTROlLER);
+                compileFile(route, path, ESP_CONTROlLER);
             }
         }
     }
@@ -1306,14 +1319,14 @@ static void compileItems(EspRoute *eroute)
                 continue;
             }
             if (selectResource(path, "esp")) {
-                compileFile(eroute, path, ESP_VIEW);
+                compileFile(route, path, ESP_VIEW);
             }
         }
     }
     if (eroute->srcDir) {
         path = mprJoinPath(eroute->srcDir, "app.c");
         if (mprPathExists(path, R_OK) && selectResource(path, "c")) {
-            compileFile(eroute, path, ESP_SRC);
+            compileFile(route, path, ESP_SRC);
         }
     }
     if (eroute->clientDir) {
@@ -1321,25 +1334,25 @@ static void compileItems(EspRoute *eroute)
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (selectResource(path, "esp")) {
-                compileFile(eroute, path, ESP_PAGE);
+                compileFile(route, path, ESP_PAGE);
             }
         }
 
     } else {
         /* Non-MVC */
-        app->files = mprGetPathFiles(eroute->route->documents, MPR_PATH_DESCEND);
+        app->files = mprGetPathFiles(route->documents, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (selectResource(path, "esp")) {
-                compileFile(eroute, path, ESP_PAGE);
+                compileFile(route, path, ESP_PAGE);
             }
         }
         /*
             Stand-alone controllers
          */
-        if (eroute->route->sourceName) {
-            path = mprJoinPath(eroute->route->home, eroute->route->sourceName);
-            compileFile(eroute, path, ESP_CONTROlLER);
+        if (route->sourceName) {
+            path = mprJoinPath(route->home, route->sourceName);
+            compileFile(route, path, ESP_CONTROlLER);
         }
     }
 }
@@ -1348,15 +1361,17 @@ static void compileItems(EspRoute *eroute)
 /*
     Compile all the items for a route into a flat (single) output file
  */
-static void compileFlat(EspRoute *eroute)
+static void compileFlat(HttpRoute *route)
 {
     MprDirEntry     *dp;
     MprKeyValue     *kp;
+    EspRoute        *eroute;
     cchar           *name;
     char            *path, *line;
     int             next, kind;
 
-    name = app->appName ? app->appName : mprGetPathBase(eroute->route->documents);
+    eroute = route->eroute;
+    name = app->appName ? app->appName : mprGetPathBase(route->documents);
 
     /*
         Flat ... Catenate all source
@@ -1391,7 +1406,7 @@ static void compileFlat(EspRoute *eroute)
         }
     }
     if (!eroute->controllersDir && !eroute->clientDir) {
-        app->files = mprGetPathFiles(eroute->route->documents, MPR_PATH_DESCEND);
+        app->files = mprGetPathFiles(route->documents, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (smatch(mprGetPathExt(path), "esp")) {
@@ -1415,10 +1430,10 @@ static void compileFlat(EspRoute *eroute)
             } else {
                 kind = ESP_PAGE;
             }
-            compileFile(eroute, kp->key, kind);
+            compileFile(route, kp->key, kind);
         }
         if (app->slink) {
-            mprAddItem(app->slink, eroute);
+            mprAddItem(app->slink, route);
         }
         mprWriteFileFmt(app->flatFile, "\nESP_EXPORT int esp_app_%s(HttpRoute *route, MprModule *module) {\n", name);
         for (next = 0; (line = mprGetNextItem(app->flatItems, &next)) != 0; ) {
@@ -1429,12 +1444,12 @@ static void compileFlat(EspRoute *eroute)
 
         app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, name, BIT_SHOBJ));
         trace("Compile", "%s", name);
-        if (runEspCommand(eroute, eroute->compile, app->flatPath, app->module) < 0) {
+        if (runEspCommand(route, eroute->compile, app->flatPath, app->module) < 0) {
             return;
         }
         if (eroute->link) {
             trace("Link", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
-            if (runEspCommand(eroute, eroute->link, app->flatPath, app->module) < 0) {
+            if (runEspCommand(route, eroute->link, app->flatPath, app->module) < 0) {
                 return;
             }
         }
@@ -1453,9 +1468,9 @@ static void addComponents(int argc, char **argv)
 {
     int     i;
 
-    espAddComponent(app->eroute, "server");
+    espAddComponent(app->route, "server");
     for (i = 0; i < argc; i++) {
-        espAddComponent(app->eroute, argv[i]);
+        espAddComponent(app->route, argv[i]);
     }
 }
 
@@ -1468,7 +1483,8 @@ static void generateApp(int argc, char **argv)
     cchar   *dir, *name;
 
     name = argv[0];
-    app->eroute = createRoute(name);
+    app->route = createRoute(name);
+    app->eroute = app->route->eroute;
     addComponents(argc - 1, &argv[1]);
 
     if (smatch(name, ".")) {
@@ -1489,17 +1505,16 @@ static void generateApp(int argc, char **argv)
     generateHostingConfig();
     generateAppSrc();
 
-    if (espHasComponent(app->eroute, "angular") || espHasComponent(app->eroute, "legacy")) {
+    if (espHasComponent(app->route, "angular") || espHasComponent(app->route, "legacy")) {
         generateAppDb();
     }
     /*
         Rewrite the list of components
      */
     readHostingConfig();
-    app->eroute->config = 0;
-    espLoadConfig(app->eroute);
+    espLoadConfig(app->route);
     addComponents(argc - 1, &argv[1]);
-    if (espSaveConfig(app->eroute) < 0) {
+    if (espSaveConfig(app->route) < 0) {
         fail("Cannot save config.json");
     }
 }
@@ -1632,7 +1647,7 @@ static void generateScaffoldController(int argc, char **argv)
     defines = sclone("");
     tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", name, title, defines));
 
-    if (!espHasComponent(app->eroute, "legacy")) {
+    if (!espHasComponent(app->route, "legacy")) {
         data = stemplate(ScaffoldControllerHeader, tokens);
         data = sjoin(data, stemplate(ScaffoldControllerFooter, tokens), NULL);
 #if DEPRECATE || 1
@@ -1767,7 +1782,7 @@ static void generateScaffoldViews(int argc, char **argv)
     name = sclone(argv[0]);
     title = spascal(name);
 
-    if (!espHasComponent(app->eroute, "legacy")) {
+    if (!espHasComponent(app->route, "legacy")) {
         tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, SERVICE: %s}", name, title, BIT_ESP_SERVICE_NAME));
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
         data = stemplate(AngularScaffoldListView, tokens);
@@ -1805,11 +1820,11 @@ static void generateScaffold(int argc, char **argv)
         return;
     }
     //  DEPRECATE legacy
-    if (!espHasComponent(app->eroute, "angular") && !espHasComponent(app->eroute, "legacy")) {
+    if (!espHasComponent(app->route, "angular") && !espHasComponent(app->route, "legacy")) {
         fail("Can only generate scafolds for Angular or Legacy MVC applications");
         return;
     }
-    if (espHasComponent(app->eroute, "angular")) {
+    if (espHasComponent(app->route, "angular")) {
         generateAngularModel(argc, argv);
         generateAngularController(argc, argv);
     }
@@ -1875,6 +1890,7 @@ static void migrate(int argc, char **argv)
     MprDirEntry *dp;
     Edi         *edi;
     EdiRec      *mig;
+    HttpRoute   *route;
     cchar       *command, *file;
     int         next, onlyOne, backward, found, i;
     uint64      seq, targetSeq, lastMigration, v;
@@ -1882,6 +1898,7 @@ static void migrate(int argc, char **argv)
     if (app->error) {
         return;
     }
+    route = app->route;
     onlyOne = backward = 0;
     targetSeq = 0;
     lastMigration = 0;
@@ -1977,7 +1994,7 @@ static void migrate(int argc, char **argv)
             /*
                 WARNING: GC may occur while compiling
              */
-            compileFile(app->eroute, file, ESP_MIGRATION);
+            compileFile(route, file, ESP_MIGRATION);
             if (app->error) {
                 return;
             }
@@ -2029,6 +2046,7 @@ static void migrate(int argc, char **argv)
 
 static void fixupFile(cchar *path)
 {
+    HttpRoute   *route;
     ssize       len;
     char        *data, *tmp;
 
@@ -2036,19 +2054,20 @@ static void fixupFile(cchar *path)
         /* Fail silently */
         return;
     }
+    route = app->route;
     //  MOB - Use stemplate and tokens.
     data = sreplace(data, "${NAME}", app->appName);
     data = sreplace(data, "${TITLE}", spascal(app->appName));
     data = sreplace(data, "${DATABASE}", app->database);
-    data = sreplace(data, "${HOME}", app->eroute->route->home);
-    data = sreplace(data, "${DOCUMENTS}", app->eroute->route->documents);
+    data = sreplace(data, "${HOME}", route->home);
+    data = sreplace(data, "${DOCUMENTS}", route->documents);
     data = sreplace(data, "${LISTEN}", app->listen);
     data = sreplace(data, "${BINDIR}", app->binDir);
 #if DEPRECATE || 1
     data = sreplace(data, "${ROUTESET}", app->routeSet);
-    data = sreplace(data, "${DIR}", app->eroute->route->documents);
+    data = sreplace(data, "${DIR}", route->documents);
 #endif
-    tmp = mprGetTempPath(app->eroute->route->documents);
+    tmp = mprGetTempPath(route->documents);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
         fail("Cannot write %s", path);
         return;
@@ -2066,23 +2085,25 @@ static void fixupFile(cchar *path)
 static void generateAppFiles()
 {
     EspRoute    *eroute;
+    HttpRoute   *route;
     MprHash     *components, *newConfig;
     cchar       *config, *proto, *path, *component;
     MprKey      *key;
 
+    route = app->route;
     eroute = app->eroute;
-    makeEspDir(eroute->route->documents);
+    makeEspDir(route->documents);
     app->routeSet = sclone("restful");
     proto = mprJoinPath(app->binDir, "esp-proto");
 
-    components = mprJsonGetValue(app->eroute->config, "settings.components", NULL);
+    components = mprJsonGetValue(eroute->config, "settings.components", NULL);
     for (ITERATE_KEY_DATA(components, key, component)) {
         path = mprJoinPath(proto, component);
         if (!mprPathExists(path, X_OK)) {
             fail("Cannot find component %s", component);
             return;
         }
-        copyEspDir(path, eroute->route->documents);
+        copyEspDir(path, route->documents);
         /*
             Blend config.json from new component
          */
@@ -2097,10 +2118,10 @@ static void generateAppFiles()
     fixupFile(mprJoinPath(eroute->appDir, "main.js"));
     fixupFile(mprJoinPath(eroute->layoutsDir, "default.esp"));
 
-    if (espSaveConfig(app->eroute) < 0) {
+    if (espSaveConfig(app->route) < 0) {
         fail("Cannot save config.json");
     }
-    fixupFile(mprJoinPath(eroute->route->documents, "config.json"));
+    fixupFile(mprJoinPath(route->documents, "config.json"));
 }
 
 
@@ -2134,11 +2155,8 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
 
 static void generateHostingConfig()
 {
-    HttpRoute   *route;
-
-    route = app->eroute->route;
-    fixupFile(mprJoinPath(route->documents, "appweb.conf"));
-    fixupFile(mprJoinPath(route->documents, "app.conf"));
+    fixupFile(mprJoinPath(app->route->documents, "appweb.conf"));
+    fixupFile(mprJoinPath(app->route->documents, "app.conf"));
 }
 
 

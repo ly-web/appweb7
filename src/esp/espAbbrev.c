@@ -468,14 +468,16 @@ PUBLIC void scripts(cchar *patterns)
 {
     HttpConn    *conn;
     EspReq      *req;
+    EspRoute    *eroute;
     MprList     *files;
     cchar       *indent, *uri, *path;
     int         next;
 
     conn = getConn();
     req = conn->data;
+    eroute = conn->rx->route->eroute;
 
-    if ((files = mprGlobPathFiles(req->eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
+    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
         mprError("No scripts defined for current application mode");
         return;
     }

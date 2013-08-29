@@ -226,15 +226,15 @@ PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *optionString)
 PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *optionString)
 {
     MprHash     *options;
-    EspReq      *req;
+    EspRoute    *eroute;
 
+    eroute = conn->rx->route->eroute;
     options = httpGetOptions(optionString);
     if (uri == 0) {
         /* Suppress favicon */
         uri = "data:image/x-icon;,";
     } else if (*uri == 0) {
-        req = conn->data;
-        uri = sjoin("~/", mprGetPathBase(req->eroute->clientDir), "/images/favicon.ico", NULL);
+        uri = sjoin("~/", mprGetPathBase(eroute->clientDir), "/images/favicon.ico", NULL);
     }
     espRender(conn, "<link href='%s' rel='shortcut icon'%s />", httpLink(conn, uri, NULL), map(conn, options));
 }
@@ -398,8 +398,10 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
     MprHash     *options;
     cchar       *indent, *newline, *path;
     EspScript   *sp;
+    EspRoute    *eroute;
     bool        minified;
    
+    eroute = conn->rx->route->eroute;
     options = httpGetOptions(optionString);
     if (uri) {
         espRender(conn, "<script src='%s' type='text/javascript'></script>", httpLink(conn, uri, NULL));
@@ -414,7 +416,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
             if (sp->flags & SCRIPT_IE) {
                 espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
             }
-            path = sjoin("~/", mprGetPathBase(req->eroute->clientDir), sp->name, minified ? ".min.js" : ".js", NULL);
+            path = sjoin("~/", mprGetPathBase(eroute->clientDir), sp->name, minified ? ".min.js" : ".js", NULL);
             uri = httpLink(conn, path, NULL);
             newline = sp[1].name ? "\r\n" :  "";
             espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
@@ -429,22 +431,22 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
 
 PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *optionString) 
 {
-    EspReq      *req;
+    EspRoute    *eroute;
     MprHash     *options;
     cchar       *indent, *newline;
     char        **up;
     bool        less;
    
+    eroute = conn->rx->route->eroute;
     if (uri) {
         espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />", httpLink(conn, uri, NULL));
     } else {
-        req = conn->data;
         indent = "";
         options = httpGetOptions(optionString);
         less = smatch(httpGetOption(options, "type", "css"), "less");
         up = less ? defaultLess : defaultCss;
         for (; *up; up++) {
-            uri = httpLink(conn, sjoin("~/", mprGetPathBase(req->eroute->clientDir), *up, NULL), NULL);
+            uri = httpLink(conn, sjoin("~/", mprGetPathBase(eroute->clientDir), *up, NULL), NULL);
             newline = up[1] ? "\r\n" :  "";
             espRender(conn, "%s<link rel='stylesheet%s' type='text/css' href='%s' />%s", indent, less ? "/less" : "", uri, newline);
             indent = "    ";
