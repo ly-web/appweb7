@@ -605,7 +605,7 @@ Name          Method   Pattern                                   Target
                         <td>EspRoute <br/>
                             &nbsp; &rarr; name=NAME <br/>
                             &nbsp; &rarr; prefix=URI <br/>
-                            &nbsp; &rarr; target=TARGET <br/>
+                            &nbsp; &rarr; [target=TARGET] <br/>
                             &nbsp; &rarr; [methods=METHODS] <br/>
                             &nbsp; &rarr; [source=source]</td>
                     </tr>
@@ -626,13 +626,15 @@ Name          Method   Pattern                                   Target
                             given parameters. This is a one-line convenience directive that is 
                             equivalent to the following directive sequence:</p>
                             <pre>
-&lt;<a href="route.html">Route</a> ^/app/user/{action}&gt;
-  <a href="route.html#name">Name</a> /app/user
-  <a href="route.html#method">Methods</a> POST
-  <a href="route.html#source">Source</a> user.c
-  <a href="route.html#target">Target</a> run "user-${action}"
+&lt;<a href="route.html">Route</a> PREFIX&gt;
+  <a href="route.html#name">Name</a> NAME
+  <a href="route.html#source">Source</a> SOURCE
+  <a href="route.html#target">Target</a> run "TARGET"
 &lt;/Route&gt;
 </pre>
+                            <p>If the target is not specified, it defaults to "$&" which represents the entire URI prefix.
+                            If the methods are not specified, they default to all HTTP methods. If the source is not, it
+                            is assumed that the controller and action are statically linked into the application.</p>
                         </td>
                     </tr>
                 </tbody>
