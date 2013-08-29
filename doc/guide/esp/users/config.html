@@ -83,7 +83,6 @@
                 <li>Compilation and linking of ESP components</li>
                 <li>Database access and binding</li>
             </ul>
-
             <a id="configuration"></a>
             <h2 class="section">Configuration</h2>
             <p>Before ESP can be used, the ESP web framework including the ESP handler must be loaded. ESP is packaged as 
@@ -100,7 +99,6 @@
             <p>This is all that is needed to service any ESP web page that ends with "<em>.esp</em>". If you want to
             ESP pages with another extension, you can specify extra extensions:</p>
 <pre>AddHandler espHandler esp myesp</pre>
-
             <a id="errors"></a>
             <h3>Error Handling</h3>
             <p>If an ESP page has a syntax error or a run-time error, messages will be sent to the Appweb log file.
@@ -110,7 +108,6 @@
             directive to appweb.conf.</p>
 <pre>ShowErrors on</pre>
             <p>This will display errors to the browser in addition to sending the errors to the Appweb log.</p>
-
             <a id="reload"></a>
             <h3>Reloading</h3>
             <p>ESP supports an "edit-and-continue" development style where you can make modifications to ESP controllers
@@ -121,7 +118,6 @@
             the default is to not reload. This default behavior can be modified via the
             <em>EspUpdate</em> directive. Setting the directive to "<em>on</em>" will enable the transparent 
             recompilation and reloading of modified items.</p>
-
             <a id="keep"></a>
             <h3>Keep Source</h3>
             <p>Sometimes, it is helpful to preserve intermediate "C" source files so that you can debug
@@ -129,8 +125,6 @@
             then an intermediate C source file is generated. This is normally removed after compilation. Setting the
             <em>EspKeepSource</em> directive to "<em>on</em>" will cause ESP to preserve this intermediate source file
             in the <em>cache</em> directory.</p>
-
-
             <h2 class="section">Configuring ESP Applications</h2>
             <p>There are four primary patterns to consider when configuring ESP Applications:</p>
             <ul>
@@ -139,16 +133,50 @@
                 <li>ESP MVC applications</li>
                 <li>ESP WebSockets</li>
             </ul>
-
             <a id="pages"></a>
             <h3>ESP Pages</h3>
-            <p>There is not additional configuration require to support ESP pages. For stand-alone ESP pages, 
-            layout pages are not used by default unless a <em>&lt;% layout "filename" %&gt;</em> directive is included at
+            <p>There is no additional configuration require to support ESP pages, other than configuring the ESP handler
+            as described above. For stand-alone ESP pages, layout pages are not used by default unless a 
+            <em>&lt;% layout "filename" %&gt;</em> directive is included at
             the top of the page. For ESP MVC applications, the <em>layouts/default.esp</em> layout is used unless a
             <em>&lt;% layout "" %&gt;</em> directive instructs ESP to not use any layout.</p>
 
+
             <a id="controllers"></a>
             <h3>ESP Controllers</h3>
+            <p>ESP Controllers may be used as part of an ESP MVC application or stand-alone controllers may be 
+            created. A stand-alone controller must define a route that specifies the desired URI, the source file
+            containing the controller and the format of the URI to action mapping. For example:</p>
+            <pre>
+&lt;Route ^/greetings/{action}$&gt;
+    SetHandler espHandler
+    Source     greetings.c
+    Target     run greetings-$1
+&lt;/Route&gt;
+</pre>
+            <p>This defines a controller in <em>src/greeting.c</em> to respond to URIs that begin with <em>/greetings</em>.
+            <h4>Controller Code</h4>
+            <p>Controllers are dynamically loaded and reloaded as required. Controllers contain one or more actions and have
+            a module initialization routine that defines the actions for ESP to support. For example:</p>
+<pre>
+#include "esp.h"
+
+static void hello() {
+    render("Hello World\n");
+}
+
+ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
+    espDefineAction(route, "greetings-hello", hello);
+    return 0;
+}
+</pre>
+            <p>This defines a single action which renders the string "Hello World\n" in response to the client request 
+            for the URI <em>/greeting/hello</em>. When the URI is requested, the controller is compiled, linked into
+            a dynamic library, saved in the cache directory and loaded into Appweb. If the source is modified, the 
+            old controller is unloaded (after ensuring there are no active requests) and the new source is compiled and
+            loaded.</p>
+            <p>If you wish to pre-compile the controller, use the esp generator program. For example:</p>
+            <pre>esp compile greetings.c</pre>
 
             <a id="mvc"></a>
             <h3>MVC Applications</h3>

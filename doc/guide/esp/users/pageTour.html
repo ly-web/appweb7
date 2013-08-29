@@ -50,7 +50,7 @@
 		        <h1>See Also</h1>
 		        <ul class="nav">
 		          <li><a href="../../../guide/esp/users/using.html">ESP Overview</a></li>
-		          <li><a href="../../../guide/esp/users/tour.html">ESP Tour</a></li>
+		          <li><a href="../../../guide/esp/users/pageTour.html">ESP Page Tour</a></li>
 		          <li><a href="../../../guide/esp/users/template.html">Templates and Layouts</a></li>
 		          <li><a href="../../../guide/esp/users/controls.html">HTML Controls</a></li>
 		          <li><a href="../../../guide/esp/users/config.html">ESP Configuration Directives</a></li>
@@ -94,8 +94,6 @@ sudo appweb -v
             <p>After installing Appweb, you can test it by entering
             <em>http://localhost/test.esp</em> in your browser. You should see the following page:</p>
             <img src="../../../images/esp/page-tour/home.png" class="screen" alt="home" />
-
-
             <a id="hello"></a>
             <h2 class="section">Hello World</h2>
             <p>The first step in any tour is to create a simple "Hello World" web page. ESP web pages have an <em>.esp</em>
@@ -110,9 +108,7 @@ sudo appweb -v
 </pre>
             <p>Don't worry about the layout directive for now, that tells ESP not to use a layout page.</p>
             <p>To view the "Hello" web page, type the following url: <em>http://localhost/hello.esp</em> into your browser.</p>
-
             <img src="../../../images/esp/page-tour/hello.png" alt="hello" class= "bare-screen" /> 
-
             <a id="dynamic"></a>
             <h2 class="section">Dynamic Content</h2>
             <p>While that was fun, the output is static and boring, so let's add some dynamic content. You can embed
@@ -180,13 +176,11 @@ sudo appweb -v
 <pre>&lt;p&gt;User Name: <b>&lt;%=%S param("name"); %&gt;</b>&lt;/p&gt;
 &lt;p&gt;User Name: <b>&lt;%= renderSafe(param("name")); %&gt;</b>&lt;/p&gt;
 </pre>
-
             <a id="sessions"></a>
             <h2>Sessions and Flash</h2>
             <p>ESP provides an integrated session store so that state can be shared across requests. Session variables
             can be accessed using the <em>@@variable</em> directive in ESP pages or via the
             <em>getSessionVar()</em> API.</p>
-
             <p>Flash storage is a portion of the session storage used to pass messages and state to the next request 
             controller only. This is useful after an error, to pass information to the next controller. 
             Messages can be added to flash storage via the <em>flash</em> API.</p>
