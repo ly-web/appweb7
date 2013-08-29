@@ -1191,11 +1191,11 @@ static int espResourceDirective(MaState *state, cchar *key, cchar *value)
     char    *name, *next;
 
     if (value == 0 || *value == '\0') {
-        httpAddResource(state->route, BIT_ESP_SERVICE_NAME, "{controller}");
+        httpAddResource(state->route, "", "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResource(state->route, BIT_ESP_SERVICE_NAME, name);
+            httpAddResource(state->route, "", name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1211,11 +1211,11 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
     char    *name, *next;
 
     if (value == 0 || *value == '\0') {
-        httpAddResourceGroup(state->route, BIT_ESP_SERVICE_NAME, "{controller}");
+        httpAddResourceGroup(state->route, "", "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResourceGroup(state->route, BIT_ESP_SERVICE_NAME, name);
+            httpAddResourceGroup(state->route, "", name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1224,17 +1224,61 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    EspRoute name methods pattern target source
+    EspRoute 
+        methods=METHODS
+        name=NAME 
+        prefix=PREFIX 
+        source=SOURCE
+        target=TARGET
+
+    Old syntax DEPRECATED in 4.4: EspRoute name methods prefix target source
  */
 static int espRouteDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *name, *methods, *pattern, *target, *source;
+    cchar       *methods, *name, *prefix, *source, *target;
+    char        *option, *ovalue, *tok;
 
-    if (!maTokenize(state, value, "%S %S %S %S ?S", &name, &methods, &pattern, &target, &source)) {
+    prefix = 0;
+    name = 0;
+    source = 0;
+    target = 0;
+    methods = "GET";
+
+    if (scontains(value, "=")) {
+        for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
+            option = stok(option, " =\t,", &ovalue);
+            ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
+            if (smatch(option, "methods")) {
+                methods = ovalue;
+            } else if (smatch(option, "name")) {
+                name = ovalue;
+            } else if (smatch(option, "prefix")) {
+                prefix = ovalue;
+            } else if (smatch(option, "source")) {
+                source = ovalue;
+            } else if (smatch(option, "target")) {
+                target = ovalue;
+            } else {
+                mprError("Unknown EspRoute option \"%s\"", option);
+            }
+        }
+#if DEPRECATED || 1
+    } else {
+        /* 
+            Deprecated in 4.4.0
+         */
+        if (!maTokenize(state, value, "%S %S %S %S ?S", &name, &methods, &prefix, &target, &source)) {
+            return MPR_ERR_BAD_SYNTAX;
+        }
+#endif
+    }
+    if (!name || !prefix || !target) {
         return MPR_ERR_BAD_SYNTAX;
     }
     target = stemplate(target, state->route->vars);
-    httpDefineRoute(state->route, name, methods, pattern, target, source);
+    if (httpDefineRoute(state->route, name, methods, prefix, target, source) == 0) {
+        return MPR_ERR_CANT_CREATE;
+    }
     return 0;
 }
 
