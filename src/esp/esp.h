@@ -3245,6 +3245,7 @@ PUBLIC void icon(cchar *uri, cchar *options);
  */
 PUBLIC void image(cchar *uri, cchar *options);
 
+#if DEPRECATE || 1
 /**
     Set an informational flash notification message.
     @description Flash messages persist for only one request and are a convenient way to pass state information or 
@@ -3254,6 +3255,7 @@ PUBLIC void image(cchar *uri, cchar *options);
     @stability Evolving
  */
 PUBLIC void inform(cchar *fmt, ...);
+#endif
 
 /**
     Render an input field as part of a form. This is a smart input control that will call the appropriate

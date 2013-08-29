@@ -1340,7 +1340,8 @@ static void serveConfig()
 
     eroute = getConn()->rx->route->eroute;
     if (eroute->config) {
-        renderString(mprSerialize(eroute->config, 0));
+        //  MOB - remove pretty
+        renderString(mprSerialize(eroute->config, MPR_JSON_QUOTES | MPR_JSON_PRETTY));
     } else {
         renderError(HTTP_CODE_NOT_FOUND, "Cannot find config");
     }

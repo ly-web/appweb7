@@ -1562,8 +1562,8 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
 
     path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
 
-    tokens = mprDeserialize(sfmt("{ NAME: %s, COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }",
-        name, comment, forward, backward));
+    tokens = mprDeserialize(sfmt("{ NAME: %s, COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", name, comment, 
+        forward, backward));
     data = stemplate(MigrationTemplate, tokens);
 
     files = mprGetPathFiles("db/migrations", MPR_PATH_RELATIVE);
@@ -1661,8 +1661,8 @@ static void generateAngularController(int argc, char **argv)
 
     path = mprJoinPathExt(mprJoinPath(app->eroute->appDir, sfmt("%s/%sControl", name, title)), "js");
     defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ APPDIR: %s, NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }",
-        app->eroute->appDir, name, title, defines));
+    tokens = mprDeserialize(sfmt("{ APPDIR: %s, NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
+        app->eroute->appDir, name, title, defines, BIT_ESP_SERVICE_NAME));
     data = stemplate(AngularController, tokens);
     makeEspFile(path, data, "Controller Scaffold");
 }
@@ -1768,7 +1768,7 @@ static void generateScaffoldViews(int argc, char **argv)
     title = spascal(name);
 
     if (!espHasComponent(app->eroute, "legacy")) {
-        tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s}", name, title));
+        tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, SERVICE: %s}", name, title, BIT_ESP_SERVICE_NAME));
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
         data = stemplate(AngularScaffoldListView, tokens);
         makeEspFile(path, data, "Scaffold List Partial");

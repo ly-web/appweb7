@@ -1359,15 +1359,14 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     maAddDirective(appweb, "EspDb", espDbDirective);
     maAddDirective(appweb, "EspDir", espDirDirective);
     maAddDirective(appweb, "EspEnv", espEnvDirective);
+    maAddDirective(appweb, "EspKeepSource", espKeepSourceDirective);
     maAddDirective(appweb, "EspLink", espLinkDirective);
     maAddDirective(appweb, "EspResource", espResourceDirective);
     maAddDirective(appweb, "EspResourceGroup", espResourceGroupDirective);
     maAddDirective(appweb, "EspRoute", espRouteDirective);
     maAddDirective(appweb, "EspRouteSet", espRouteSetDirective);
-
-#if DEPRECATE || 1
     maAddDirective(appweb, "EspUpdate", espUpdateDirective);
-    maAddDirective(appweb, "EspKeepSource", espKeepSourceDirective);
+#if DEPRECATE || 1
     maAddDirective(appweb, "EspShowErrors", espShowErrorsDirective);
 #endif
     if ((esp->ediService = ediCreateService()) == 0) {

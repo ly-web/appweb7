@@ -74,31 +74,23 @@
         <div class="contentLeft">
             <h1>Configuring ESP</h1>
             <p>Embedded Server Pages (ESP) is managed by a set of configuration directives in the <em>appweb.conf</em>
-            configuration file. These directives permit manage:</p>
+            configuration file. These directives manage:</p>
             <ul>
                 <li>ESP applications</li>
+                <li>URI parsing and routing</li>
                 <li>ESP directory locations</li>
                 <li>ESP Error handling</li>
                 <li>Compilation and linking of ESP components</li>
-                <li>URI parsing and routing</li>
                 <li>Database access and binding</li>
             </ul>
-            <h2 class="section">Use Cases</h2>
-            <p>There are two primary use cases to consider when configuring ESP:</p>
-            <ul>
-                <li>ESP Pages</li>
-                <li>ESP MVC applications</li>
-            </ul>
-            <p>The basic ESP configuration takes care of ESP pages and configures Appweb to process <em>*.esp</em> pages
-            via the ESP handler. If you need to support ESP MVC applications, there are extra directives to configure
-            Appweb routes to support each MVC application.</p>
+
             <a id="configuration"></a>
             <h2 class="section">Configuration</h2>
             <p>Before ESP can be used, the ESP web framework including the ESP handler must be loaded. ESP is packaged as 
-            as an Appweb module called "<em>mod_esp</em>". This is loaded into Appweb via the <em>LoadModule</em>
+            as an Appweb module called "<em>libmod_esp</em>". This is loaded into Appweb via the <em>LoadModule</em>
             directive.</p>
-<pre>LoadModule espHandler mod_esp</pre>
-            <p>This loads the <em>mod_esp</em> module and invokes the ESP module initialization routine that registers
+<pre>LoadModule espHandler libmod_esp</pre>
+            <p>This loads the <em>libmod_esp</em> module and invokes the ESP module initialization routine that registers
             ESP with Appweb.</p>
             <h2>Configuring the ESP Handler</h2>
             <p>For ESP to receive incoming client requests, the Appweb router must be told what requests to send to ESP.
@@ -108,46 +100,19 @@
             <p>This is all that is needed to service any ESP web page that ends with "<em>.esp</em>". If you want to
             ESP pages with another extension, you can specify extra extensions:</p>
 <pre>AddHandler espHandler esp myesp</pre>
+
             <a id="errors"></a>
-            <h2 class="section">Error Handling</h2>
+            <h3>Error Handling</h3>
             <p>If an ESP page has a syntax error or a run-time error, messages will be sent to the Appweb log file.
             This defaults to the file <em>error.log</em>. If appweb is run manually, you can see these message on 
             the console.</p> 
             <p>Often during development, it is useful to send errors back to the browser. To do this, add the following
             directive to appweb.conf.</p>
-<pre>EspShowErrors on</pre>
+<pre>ShowErrors on</pre>
             <p>This will display errors to the browser in addition to sending the errors to the Appweb log.</p>
-            <a id="dir"></a>
-            <h2>ESP Directories</h2>
-            <p>ESP has certain conventions and defaults as to where it locates controllers, pages, layouts and other
-            components. If you follow these conventions, you will not need to manually configure ESP's directories.
-            However, if you need to, you can modify these on a per-route basis via the <em>EspDir</em> directive.</p>
-            <p>The directories are:</p>
-            <table title="dirs">
-                <thead>
-                    <tr><th>Directory</th><th>Purpose</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>cache</td><td>Location to store compiled ESP pages and controllers</td>
-                    <tr><td>controllers</td><td>Location for controller source code</td>
-                    <tr><td>db</td><td>Location for database files</td>
-                    <tr><td>layouts</td><td>Location for ESP layout pages</td>
-                    <tr><td>static</td><td>Location for static web content</td>
-                    <tr><td>views</td><td>Location for ESP MVC view pages</td>
-                </tbody>
-            </table>
-            <p>The <em>EspDir</em> directive sets an ESP directory location for the current route. For example:</p>
-            <pre>EspDir cache ./modules</pre>
-            <p>This will cause ESP to store and retrieve the shared libraries containing compiled ESP pages and controllers 
-            to and from the modules directory.</p>
-            <h2>Directory Sets</h2>
-            <p>The EspDir command can also be used to set a pre-defined directory configuration. The directive
-            <em>EspDir mvc</em> will set the various ESP directories to default values of the same name. i.e. 
-            the controllers directory will be set to the <em>controllers</em> sub-directory under the route's 
-            document root. When EspApp is used to define an ESP MVC application, the <em>EspDir mvc</em> command is 
-            automatically applied.</p>
+
             <a id="reload"></a>
-            <h2 class="section">Reloading</h2>
+            <h3>Reloading</h3>
             <p>ESP supports an "edit-and-continue" development style where you can make modifications to ESP controllers
             and pages and when you click reload in your browser, the controller or page will be transparently 
             recompiled and reloaded. This can be a great boost for development productivity.</p>
@@ -156,15 +121,37 @@
             the default is to not reload. This default behavior can be modified via the
             <em>EspUpdate</em> directive. Setting the directive to "<em>on</em>" will enable the transparent 
             recompilation and reloading of modified items.</p>
+
             <a id="keep"></a>
-            <h2 class="section">Keep Source</h2>
+            <h3>Keep Source</h3>
             <p>Sometimes, it is helpful to preserve intermediate "C" source files so that you can debug
             your application at the source code level. When an ESP page is parsed, it is blended with a layout page and
             then an intermediate C source file is generated. This is normally removed after compilation. Setting the
             <em>EspKeepSource</em> directive to "<em>on</em>" will cause ESP to preserve this intermediate source file
             in the <em>cache</em> directory.</p>
+
+
+            <h2 class="section">Configuring ESP Applications</h2>
+            <p>There are four primary patterns to consider when configuring ESP Applications:</p>
+            <ul>
+                <li>ESP Pages</li>
+                <li>ESP Controllers</li>
+                <li>ESP MVC applications</li>
+                <li>ESP WebSockets</li>
+            </ul>
+
+            <a id="pages"></a>
+            <h3>ESP Pages</h3>
+            <p>There is not additional configuration require to support ESP pages. For stand-alone ESP pages, 
+            layout pages are not used by default unless a <em>&lt;% layout "filename" %&gt;</em> directive is included at
+            the top of the page. For ESP MVC applications, the <em>layouts/default.esp</em> layout is used unless a
+            <em>&lt;% layout "" %&gt;</em> directive instructs ESP to not use any layout.</p>
+
+            <a id="controllers"></a>
+            <h3>ESP Controllers</h3>
+
             <a id="mvc"></a>
-            <h2 class="section">MVC Applications</h2>
+            <h3>MVC Applications</h3>
             <p>ESP MVC applications typically require a little more configuration, but the ESP defaults make this fairly
             painless.</p>
             <h2>Separate Config</h2>
@@ -319,10 +306,10 @@ EspCompile cc -shared ${DEBUG} -Wall -Wno-unused-result \
                             <td>Define and configure an ESP route</td></tr>
                         <tr><td><a href="../../appweb/users/dir/esp.html#espRouteSet">EspRouteSet</a></td>
                             <td>Create a pre-defined set of routes</td></tr>
-                        <tr><td><a href="../../appweb/users/dir/esp.html#espShowErrors">EspShowErrors</a></td>
-                            <td>Show ESP errors to the client</td></tr>
                         <tr><td><a href="../../appweb/users/dir/esp.html#espUpdate">EspUpdate</a></td>
                             <td>Reload updated ESP controllers and pages</td></tr>
+                        <tr><td><a href="../../appweb/users/dir/route.html#showErrors">ShowErrors</a></td>
+                            <td>Show ESP errors to the client</td></tr>
                 </tbody>
             </table>
         </div>

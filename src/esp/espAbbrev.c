@@ -801,6 +801,7 @@ PUBLIC bool hasRec()
 }
 
 
+#if DEPRECATE || 1
 PUBLIC void inform(cchar *fmt, ...)
 {
     va_list     args;
@@ -809,6 +810,7 @@ PUBLIC void inform(cchar *fmt, ...)
     espSetFlashv(getConn(), "inform", fmt, args);
     va_end(args);
 }
+#endif
 
 
 PUBLIC void renderFlash(cchar *kind, cchar *optionString)
