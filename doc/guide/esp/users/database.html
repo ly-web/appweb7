@@ -67,7 +67,7 @@
         <div class="contentLeft">
             <h1>Embedded Database Interface</h1>
             <p>ESP includes powerful relational database support. The Embedded Database Interface (EDI) is an 
-            Appweb database interface above configurable database backends. ESP supports a variety of database
+            ESP database interface above configurable database backends. ESP supports a variety of database
             backends including: SQLite, MySQL and MDB to cover various scale requirements. 
             The MDB database is a tiny, in-memory database &mdash; great for embedded applications. SQLite is a 
             full SQL implementation for embedded applications, while MySQL is an enterprise class SQL server.
@@ -273,10 +273,9 @@ ediSetField(product, "description", "458 Spider");
 </pre>
             <a id="accessing"></a>
             <h2 class="section">Accessing Records from Web Pages</h2>
-            <p>ESP web pages can access database data via three methods:
+            <p>ESP web pages can access database data via two methods:
             <ul>
                 <li>Direct API calls</li>
-                <li>Database Record Binding</li>
                 <li>Controller Directed Access</li>
             </ul>
             <h3>Direct API Access</h3>
@@ -285,24 +284,7 @@ ediSetField(product, "description", "458 Spider");
             <pre>
 &lt;p&gt;Price: &lt;%= ediGetField(product, "price"); &lt;/p&gt;
 </pre>
-            <h3>Database Record Binding</h3>
-            <p>To make it easy to display and update database data, ESP supports "data binding" where an EDI 
-            database record can be bound to a request form. Thereafter, the ESP web controls will take data 
-            from that record.</p>
-            <p>A record is bound by passing a record instance to the <em>form</em> ESP control. ESP then defines
-            it as the current record until the next <em>endform</em> is encountered. ESP controls can then
-            use the current record as a data source.</p>
-<pre>
-&lt;% 
-    <b>form(userRecord, 0);</b>
-        input("name", 0);
-        input("address", 0);
-        button("commit", "OK", 0);
-        buttonLink("Cancel", "../index.esp",  0);
-        buttonLink("Delete", "destroy.esp");
-    <b>endform();</b>
-%&gt;
-</pre>
+
             <p>In this example, the form control binds the userRecord. The input controls then retrieve the 
             "<em>name</em>", and "<em>address</em>" fields from the database record and emit the appropriate 
             HTML input elements.</p>
