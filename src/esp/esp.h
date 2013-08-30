@@ -297,8 +297,8 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc
 
 /**
     Define an action for a URI pattern.
-    @description This defines an action routine for the route that is responsible for the given URI pattern. 
-    @param route HttpRoute object
+    @description This creates a new route and binds the action function to a URI pattern.
+    @param route Parent route object from which to inherit settings when creating the new route.
     @param pattern URI pattern to use to find the releavant route.
     @param actionProc EspProc callback procedure to invoke when the action is requested.
     @ingroup EspRoute
@@ -348,7 +348,7 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
             <li>WINSDK - Path to the Windows SDK</li>
             <li>VS - Path to Visual Studio</li>
         </ul>
-    @param eroute Esp route object
+    @param route HttpRoute object
     @param command Http connection object
     @param source ESP web page source pathname
     @param module Output module pathname
@@ -744,7 +744,7 @@ PUBLIC char *espGetReferrer(HttpConn *conn);
 
 /**
     Get the default database defined on a route.
-    @param eroute EspRoute object
+    @param route HttpRoute object
     @return Database instance object
     @ingroup EspReq
     @stability Evolving
@@ -1607,9 +1607,9 @@ PUBLIC void espAddComponent(HttpRoute *route, cchar *name);
 
 /***************************** Abbreviated Controls ***************************/
 /**
-    Abbreviated ESP Controls.
-    @description These controls do not take a HttpConn argument and determine the connection object from
-        thread-local storage.
+    Abbreviated ESP API.
+    @description This is a short-form API that uses the current HttpConn connection object.
+        These APIs are designed to be terse and highly readable. Consequently, they are not prefixed with "esp".
     @see espAlert
     @defgroup EspAbbrev EspAbbrev
     @stability Evolving

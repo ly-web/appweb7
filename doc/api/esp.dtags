@@ -69,8 +69,8 @@
       <type>char *</type>
       <name>espExpandCommand</name>
       <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>ga799a49951faaac006de2e8f562b0f04b</anchor>
-      <arglist>(EspRoute *eroute, cchar *command, cchar *source, cchar *module)</arglist>
+      <anchor>gac85c52178c5b387706bb31b419f9f059</anchor>
+      <arglist>(HttpRoute *route, cchar *command, cchar *source, cchar *module)</arglist>
     </member>
   </compound>
   <compound kind="group">
@@ -298,8 +298,8 @@
       <type>Edi *</type>
       <name>espGetRouteDatabase</name>
       <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>ga7f388bf60aa16e46a40dd7607f80c552</anchor>
-      <arglist>(EspRoute *eroute)</arglist>
+      <anchor>ga72246c1dc89e871ec596ae0959077af2</anchor>
+      <arglist>(HttpRoute *route)</arglist>
     </member>
     <member kind="function">
       <type>cchar *</type>

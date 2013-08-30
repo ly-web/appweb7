@@ -50,12 +50,12 @@
             </ul>
         </div>
         <div class="contentLeft">
-<h1>APPWEB - ESP API Native API</h1>
+<h1>APPWEB - ESP Native API</h1>
 <a name="Components"></a><h1>Components</h1>
   <table class="apiIndex" title="Components">
 <tr class="apiDef">
 <td class="apiName"><a href="#group___esp_abbrev" class="nameRef">EspAbbrev</a></td>
-<td class="apiBrief">Abbreviated ESP Controls.</td></tr>
+<td class="apiBrief">Abbreviated ESP API.</td></tr>
 <tr class="apiDef">
 <td class="apiName"><a href="#group___esp_parse" class="nameRef">EspParse</a></td>
 <td class="apiBrief">ESP page parser structure.</td></tr>
@@ -89,7 +89,7 @@
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_route_1gae250d071bb458546c8ed5fad3aba5e84" class="nameRef">espDefineBase</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="#esp_8h_1aa0c56d9f50902eb9cf16889d3d95c129" class="ref">EspProc</a> baseProc)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Define a base function to invoke for all controller actions.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_route_1gab7ebccfe31eb1e07f3f40db700d18bd9" class="nameRef">espDefineView</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *path, void *viewProc)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Define a view.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_req_1ga18375a1455d10df65a92b6adc3409830" class="nameRef">espDumpGrid</a>(<a href="espBase.html#group___edi_grid" class="ref">EdiGrid</a> *grid)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Display the grid to the debug log.</td></tr>
-<tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___esp_route_1ga799a49951faaac006de2e8f562b0f04b" class="nameRef">espExpandCommand</a>(<a href="#group___esp_route" class="ref">EspRoute</a> *eroute, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *command, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *source, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *module)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Expand a compile or link command template.</td></tr>
+<tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___esp_route_1gac85c52178c5b387706bb31b419f9f059" class="nameRef">espExpandCommand</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *command, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *source, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *module)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Expand a compile or link command template.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_req_1gac142434246bc5558dfe73a78ded7a7f0" class="nameRef">espFinalize</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Finalize processing of the http request.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___esp_req_1gadf50b51bf7ab10d828e85be140c005c5" class="nameRef">espFlush</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Flush transmit data.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#group___mpr_list" class="ref">MprList*</a></td><td><a href="#group___esp_req_1ga0607326dfa8535e1264dfccba14c3d7f" class="nameRef">espGetColumns</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn, <a href="espBase.html#group___edi_rec" class="ref">EdiRec</a> *rec)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get a list of column names.</td></tr>
@@ -110,7 +110,7 @@
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#struct_mpr_hash" class="ref">MprHash*</a></td><td><a href="#group___esp_req_1ga5bf6214a6875c73c015e7d2b96f1b57a" class="nameRef">espGetParams</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the request parameter hash table.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_req_1gaf84aa1df39869744c4e0ac87e99f1a89" class="nameRef">espGetQueryString</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the request query string.</td></tr>
 <tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___esp_req_1ga400095fc3f1743660baedac7c95ff53c" class="nameRef">espGetReferrer</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the referring URI.</td></tr>
-<tr class="apiDef"><td class="apiType"><a href="espBase.html#group___edi" class="ref">Edi*</a></td><td><a href="#group___esp_req_1ga7f388bf60aa16e46a40dd7607f80c552" class="nameRef">espGetRouteDatabase</a>(<a href="#group___esp_route" class="ref">EspRoute</a> *eroute)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the default database defined on a route.</td></tr>
+<tr class="apiDef"><td class="apiType"><a href="espBase.html#group___edi" class="ref">Edi*</a></td><td><a href="#group___esp_req_1ga72246c1dc89e871ec596ae0959077af2" class="nameRef">espGetRouteDatabase</a>(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the default database defined on a route.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar*</a></td><td><a href="#group___esp_req_1gae84ca6c41153894754c0bb48a8ce865d" class="nameRef">espGetSecurityToken</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get a unique security token.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___esp_req_1ga4323100f7ccf0a198b0ee2593749fe5e" class="nameRef">espGetStatus</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the response status.</td></tr>
 <tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___esp_req_1gad4631deeb02544938b8590806ae8bb8e" class="nameRef">espGetStatusMessage</a>(<a href="http.html#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the Http response status message.</td></tr>
@@ -286,8 +286,8 @@
 <div class="api">
   <div class="prototype">EspAbbrev</div>
   <div class="apiDetail">
-<p>Abbreviated ESP Controls.</p>
-    <dl><dt><b>Description</b>:</dt><dd>These controls do not take a HttpConn argument and determine the connection object from thread-local storage.</dd></dl>
+<p>Abbreviated ESP API.</p>
+    <dl><dt><b>Description</b>:</dt><dd>This is a short-form API that uses the current HttpConn connection object. These APIs are designed to be terse and highly readable. Consequently, they are not prefixed with &quot;esp&quot;.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     </dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
@@ -327,7 +327,7 @@
   </div>
   <div class="apiDetail">
 <p>Create a record and initialize field values.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This will call #ediCreateRec to create a record based on the given table&apos;s schema. It will then call #ediSetFields to update the record with the given data.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This will call <a class="ref" href="#group___edi_1gad4e706a1a2d9ff527c9d42612ebeeae1" external="edi.dtags">ediCreateRec</a> to create a record based on the given table&apos;s schema. It will then call <a class="ref" href="#group___edi_1ga6399c9e05317bf82c49d1336b21b2f17" external="edi.dtags">ediSetFields</a> to update the record with the given data.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">tableName</td><td>Database table name.</td>
@@ -1469,7 +1469,7 @@ The Path, Domain, and Expires properties can be set to null for default values
   </div>
   <div class="apiDetail">
 <p>Update record fields without writing to the database.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This routine updates the record object with the given values. The "data&apos; argument supplies a hash of fieldNames and values. The data hash may come from the request <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params</a> or it can be manually created via #ediMakeHash to convert a JSON string into an options hash. For example: updateFields(rec, hash(&quot;{ name: &apos;%s&apos;, address: &apos;%s&apos; }&quot;, name, address)) The record will not be written to the database. To write to the database, use #ediUpdateRec.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This routine updates the record object with the given values. The "data&apos; argument supplies a hash of fieldNames and values. The data hash may come from the request <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params</a> or it can be manually created via <a class="ref" href="#group___edi_1gac8ba9b4a0cdc2d2f30de7d915a4c51c1" external="edi.dtags">ediMakeHash</a> to convert a JSON string into an options hash. For example: updateFields(rec, hash(&quot;{ name: &apos;%s&apos;, address: &apos;%s&apos; }&quot;, name, address)) The record will not be written to the database. To write to the database, use <a class="ref" href="#group___edi_1ga9b65a775c4ddc081e49b1a55cabc06aa" external="edi.dtags">ediUpdateRec</a></dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">rec</td><td>Record to update.</td>
@@ -1688,7 +1688,7 @@ This wraps httpSetConnNotifier and calls espSetConn before invoking the notifier
   </div>
   <div class="apiDetail">
 <p>Write field values to a database row.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This routine updates the current record with the given data and then saves the record to the database. The "data&apos; argument supplies a hash of fieldNames and values. The data hash may come from the request <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params</a> or it can be manually created via #ediMakeHash to convert a JSON string into an options hash. For example: ediWriteFields(rec, <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params()</a>); The record runs field validations before saving to the database.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This routine updates the current record with the given data and then saves the record to the database. The "data&apos; argument supplies a hash of fieldNames and values. The data hash may come from the request <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params</a> or it can be manually created via <a class="ref" href="#group___edi_1gac8ba9b4a0cdc2d2f30de7d915a4c51c1" external="edi.dtags">ediMakeHash</a> to convert a JSON string into an options hash. For example: ediWriteFields(rec, <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params()</a>); The record runs field validations before saving to the database.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">tableName</td><td>Database table name.</td>
@@ -1709,7 +1709,7 @@ This wraps httpSetConnNotifier and calls espSetConn before invoking the notifier
   </div>
   <div class="apiDetail">
 <p>Write a record to the database.</p>
-    <dl><dt><b>Description</b>:</dt><dd>The record will be saved to the database after running any field validations. If any field validations fail to pass, the record will not be written and error details can be retrieved via #ediGetRecErrors. If the record is a new record and the &quot;id&quot; column is EDI_AUTO_INC, then the &quot;id&quot; will be assigned prior to saving the record.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>The record will be saved to the database after running any field validations. If any field validations fail to pass, the record will not be written and error details can be retrieved via <a class="ref" href="#group___edi_1ga653dfa35de74e1c3049b3ba9191215e0" external="edi.dtags">ediGetRecErrors</a>. If the record is a new record and the &quot;id&quot; column is EDI_AUTO_INC, then the &quot;id&quot; will be assigned prior to saving the record.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">rec</td><td>Record to write to the database.</td>
@@ -1761,9 +1761,6 @@ Custom data for request - must be a managed reference.
 </td>
     <tr><td class="param">char *</td><td><td>entry</td><td>
 Module entry point.
-</td>
-    <tr><td class="param">EspRoute *</td><td><td>eroute</td><td>
-Extended route info.
 </td>
     <tr><td class="param"><a class="ref" href="#struct_esp">Esp</a> *</td><td><td>esp</td><td>
 Convenient esp reference.
@@ -1964,7 +1961,7 @@ Path to view.
   </div>
   <div class="apiDetail">
 <p>Create a record and initialize field values.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This will call #ediCreateRec to create a record based on the given table&apos;s schema. It will then call #ediSetFields to update the record with the given data.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This will call <a class="ref" href="#group___edi_1gad4e706a1a2d9ff527c9d42612ebeeae1" external="edi.dtags">ediCreateRec</a> to create a record based on the given table&apos;s schema. It will then call <a class="ref" href="#group___edi_1ga6399c9e05317bf82c49d1336b21b2f17" external="edi.dtags">ediSetFields</a> to update the record with the given data.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>Http connection object.</td>
@@ -2379,18 +2376,18 @@ Path to view.
     <a href="#struct_esp" class="ref">Esp</a></dd></dl>
   </div>
 </div>
-<a name="group___esp_req_1ga7f388bf60aa16e46a40dd7607f80c552"></a>
+<a name="group___esp_req_1ga72246c1dc89e871ec596ae0959077af2"></a>
 <div class="api">
   <div class="prototype">
     <a href="espBase.html#group___edi" class="ref">Edi</a> *
     espGetRouteDatabase
-(<a href="#group___esp_route" class="ref">EspRoute</a> *eroute)
+(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route)
   </div>
   <div class="apiDetail">
 <p>Get the default database defined on a route.</p>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
-    <tr><td class="param">eroute</td><td>EspRoute object.</td>
+    <tr><td class="param">route</td><td>HttpRoute object.</td>
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>Database instance object.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
@@ -3425,7 +3422,7 @@ If a request parameter is not found by the given name, consult the session store
   </div>
   <div class="apiDetail">
 <p>Update record fields without writing to the database.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This routine updates the record object with the given values. The "data&apos; argument supplies a hash of fieldNames and values. The data hash may come from the request <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params</a> or it can be manually created via #ediMakeHash to convert a JSON string into an options hash. For example: updateFields(rec, hash(&quot;{ name: &apos;%s&apos;, address: &apos;%s&apos; }&quot;, name, address)) The record will not be written to the database. To write to the database, use #ediUpdateRec.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This routine updates the record object with the given values. The "data&apos; argument supplies a hash of fieldNames and values. The data hash may come from the request <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params</a> or it can be manually created via <a class="ref" href="#group___edi_1gac8ba9b4a0cdc2d2f30de7d915a4c51c1" external="edi.dtags">ediMakeHash</a> to convert a JSON string into an options hash. For example: updateFields(rec, hash(&quot;{ name: &apos;%s&apos;, address: &apos;%s&apos; }&quot;, name, address)) The record will not be written to the database. To write to the database, use <a class="ref" href="#group___edi_1ga9b65a775c4ddc081e49b1a55cabc06aa" external="edi.dtags">ediUpdateRec</a></dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">rec</td><td>Record to update.</td>
@@ -3679,7 +3676,7 @@ Before the notifier is invoked, espSetConn is called to set the connection objec
   </div>
   <div class="apiDetail">
 <p>Write field values to a database row.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This routine updates the current record with the given data and then saves the record to the database. The "data&apos; argument supplies a hash of fieldNames and values. The data hash may come from the request <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params</a> or it can be manually created via #ediMakeHash to convert a JSON string into an options hash. For example: ediWriteFields(rec, <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params()</a>); The record runs field validations before saving to the database.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This routine updates the current record with the given data and then saves the record to the database. The "data&apos; argument supplies a hash of fieldNames and values. The data hash may come from the request <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params</a> or it can be manually created via <a class="ref" href="#group___edi_1gac8ba9b4a0cdc2d2f30de7d915a4c51c1" external="edi.dtags">ediMakeHash</a> to convert a JSON string into an options hash. For example: ediWriteFields(rec, <a class="ref" href="#group___esp_abbrev_1ga3c8e01edebd0020f20411085635cca69">params()</a>); The record runs field validations before saving to the database.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>HttpConn connection object.</td>
@@ -3701,7 +3698,7 @@ Before the notifier is invoked, espSetConn is called to set the connection objec
   </div>
   <div class="apiDetail">
 <p>Write a record to the database.</p>
-    <dl><dt><b>Description</b>:</dt><dd>The record will be saved to the database after running any field validations. If any field validations fail to pass, the record will not be written and error details can be retrieved via #ediGetRecErrors. If the record is a new record and the &quot;id&quot; column is EDI_AUTO_INC, then the &quot;id&quot; will be assigned prior to saving the record.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>The record will be saved to the database after running any field validations. If any field validations fail to pass, the record will not be written and error details can be retrieved via <a class="ref" href="#group___edi_1ga653dfa35de74e1c3049b3ba9191215e0" external="edi.dtags">ediGetRecErrors</a>. If the record is a new record and the &quot;id&quot; column is EDI_AUTO_INC, then the &quot;id&quot; will be assigned prior to saving the record.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>HttpConn connection object.</td>
@@ -3950,9 +3947,6 @@ Automatic login name - bypass login dialog.
     <tr><td class="param">cchar *</td><td><td>mode</td><td>
 Application run mode (debug|release).
 </td>
-    <tr><td class="param">HttpRoute *</td><td><td>route</td><td>
-Back link to the owning route.
-</td>
     <tr><td class="param">cchar *</td><td><td>searchPath</td><td>
 Search path to use when locating compiler/linker.
 </td>
@@ -3980,10 +3974,10 @@ Directory for server-side views.
   </div>
   <div class="apiDetail">
 <p>Define an action for a URI pattern.</p>
-    <dl><dt><b>Description</b>:</dt><dd>This defines an action routine for the route that is responsible for the given URI pattern.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>This creates a new route and binds the action function to a URI pattern.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
-    <tr><td class="param">route</td><td>HttpRoute object.</td>
+    <tr><td class="param">route</td><td>Parent route object from which to inherit settings when creating the new route.</td>
     <tr><td class="param">pattern</td><td>URI pattern to use to find the releavant route.</td>
     <tr><td class="param">actionProc</td><td>EspProc callback procedure to invoke when the action is requested.</td>
     </table></dd></dl>
@@ -4140,19 +4134,19 @@ Directory for server-side views.
     <a href="#struct_esp" class="ref">Esp</a></dd></dl>
   </div>
 </div>
-<a name="group___esp_route_1ga799a49951faaac006de2e8f562b0f04b"></a>
+<a name="group___esp_route_1gac85c52178c5b387706bb31b419f9f059"></a>
 <div class="api">
   <div class="prototype">
     char *
     espExpandCommand
-(<a href="#group___esp_route" class="ref">EspRoute</a> *eroute, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *command, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *source, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *module)
+(<a href="http.html#group___http_route" class="ref">HttpRoute</a> *route, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *command, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *source, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *module)
   </div>
   <div class="apiDetail">
 <p>Expand a compile or link command template.</p>
     <dl><dt><b>Description</b>:</dt><dd>This expands a command template and replaces &quot;${tokens}&quot; with their equivalent value. The supported tokens are: <ul><li>ARCH - Build architecture (i386, x86_64) </li><li>CC - Compiler pathname </li><li>DEBUG - Compiler debug options (-g, -Zi, -Od) </li><li>INC - Include directory (out/inc) </li><li>LIB - Library directory (out/lib, out/bin) </li><li>LIBS - Required libraries directory (mod_esp, libappweb) </li><li>OBJ - Name of compiled source (out/lib/view-MD5.o) </li><li>OUT - Output module (view_MD5.dylib) </li><li>SHLIB - Shared library extension (.lib, .so) </li><li>SHOBJ - Shared object extension (.dll, .so) </li><li>SRC - Path to source code for view or controller (already templated) </li><li>TMP - System temporary directory </li><li>WINSDK - Path to the Windows SDK </li><li>VS - Path to Visual Studio </li></ul></dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
-    <tr><td class="param">eroute</td><td><a class="ref" href="#struct_esp">Esp</a> route object.</td>
+    <tr><td class="param">route</td><td>HttpRoute object.</td>
     <tr><td class="param">command</td><td>Http connection object.</td>
     <tr><td class="param">source</td><td>ESP web page source pathname.</td>
     <tr><td class="param">module</td><td>Output module pathname.</td>

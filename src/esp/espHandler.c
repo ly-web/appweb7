@@ -29,7 +29,7 @@ static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
 static int runAction(HttpConn *conn);
 static int unloadEsp(MprModule *mp);
-static bool viewExists(HttpConn *conn);
+static bool pageExists(HttpConn *conn);
 
 #if !BIT_STATIC
 static char *getControllerEntry(cchar *controllerName);
@@ -294,14 +294,17 @@ static int runAction(HttpConn *conn)
 #endif
     key = mprJoinPath(eroute->controllersDir, rx->target);
     if ((action = mprLookupKey(esp->actions, key)) == 0) {
-        req->controllerPath = mprJoinPath(eroute->controllersDir, req->controllerName);
-        //  MOB - review this. Why using controllerPath. Also, should check viewExists first before calling missing
-        key = sfmt("%s/missing", mprGetPathDir(req->controllerPath));
-        if ((action = mprLookupKey(esp->actions, key)) == 0) {
-            if (!viewExists(conn) && (action = mprLookupKey(esp->actions, "missing")) == 0) {
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action for %s in %s", 
-                    rx->target, req->controllerPath);
-                return 0;
+        if (!pageExists(conn)) {
+            /*
+                Actions are registered as: controllerPath/TARGET where TARGET is typically CONTROLLER-ACTION
+             */
+            req->controllerPath = mprJoinPath(eroute->controllersDir, req->controllerName);
+            key = sfmt("%s/missing", mprGetPathDir(req->controllerPath));
+            if ((action = mprLookupKey(esp->actions, key)) == 0) {
+                if ((action = mprLookupKey(esp->actions, "missing")) == 0) {
+                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action for %s in %s", rx->target, req->controllerPath);
+                    return 0;
+                }
             }
         }
     }
@@ -518,18 +521,18 @@ static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
 
 
 /*
-    Test if the the required view exists
+    Test if the the required ESP page exists
  */
-static bool viewExists(HttpConn *conn)
+static bool pageExists(HttpConn *conn)
 {
     HttpRx      *rx;
     EspRoute    *eroute;
-    cchar       *source;
+    cchar       *source, *dir;
     
     rx = conn->rx;
     eroute = rx->route->eroute;
-    
-    source = mprJoinPathExt(mprJoinPath(eroute->viewsDir, rx->target), ".esp");
+    dir = eroute->viewsDir ? eroute->viewsDir : rx->route->documents;
+    source = mprJoinPathExt(mprJoinPath(dir, rx->target), ".esp");
     return mprPathExists(source, R_OK);
 }
 
@@ -1235,6 +1238,7 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
  */
 static int espRouteDirective(MaState *state, cchar *key, cchar *value)
 {
+    HttpRoute   *route;
     cchar       *methods, *name, *prefix, *source, *target;
     char        *option, *ovalue, *tok;
 
@@ -1275,10 +1279,14 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
     if (!name || !prefix || !target) {
         return MPR_ERR_BAD_SYNTAX;
     }
+    if (target == 0 || *target == 0) {
+        target = "$&";
+    }
     target = stemplate(target, state->route->vars);
-    if (httpDefineRoute(state->route, name, methods, prefix, target, source) == 0) {
+    if ((route = httpDefineRoute(state->route, name, methods, prefix, target, source)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
+    httpSetRouteHandler(route, "espHandler");
     return 0;
 }
 
