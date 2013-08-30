@@ -787,6 +787,14 @@ static MprList *getRoutes()
             fail("Cannot find a usable route for %s", kp->key);
         }
     }
+    /*
+        Set default route and eroute
+     */
+    if ((app->route = mprGetFirstItem(routes)) == 0) {
+        fail("Cannot find a suitable route");
+    }
+    app->eroute = app->route->eroute;
+    assert(app->eroute); 
     return routes;
 }
 
@@ -869,13 +877,6 @@ static bool readHostingConfig()
         return 0;
     }
     esp = stage->stageData;
-
-    app->routes = getRoutes();
-    if ((app->route = mprGetFirstItem(app->routes)) == 0) {
-        fail("Cannot find a suitable route");
-    }
-    app->eroute = app->route->eroute;
-    assert(app->eroute);
     return !app->error;
 }
 
@@ -890,22 +891,27 @@ static void process(int argc, char **argv)
     cmd = argv[0];
     generateApp = smatch(cmd, "generate") && argc > 1 && smatch(argv[1], "app");
     if (!generateApp) {
-        app->targets = getTargets(argc - 1, &argv[1]);
         readHostingConfig();
     }
     if (smatch(cmd, "generate")) {
         generate(argc - 1, &argv[1]);
 
     } else if (smatch(cmd, "migrate")) {
+        app->routes = getRoutes();
         migrate(argc - 1, &argv[1]);
 
     } else if (smatch(cmd, "clean")) {
+        app->targets = getTargets(argc - 1, &argv[1]);
+        app->routes = getRoutes();
         clean(argc -1, &argv[1]);
 
     } else if (smatch(cmd, "compile")) {
+        app->targets = getTargets(argc - 1, &argv[1]);
+        app->routes = getRoutes();
         compile(argc -1, &argv[1]);
 
     } else if (smatch(cmd, "run")) {
+        app->routes = getRoutes();
         run(argc - 1, &argv[1]);
 
     } else if (cmd && *cmd) {
@@ -1848,20 +1854,23 @@ static void generate(int argc, char **argv)
     if (smatch(kind, "app")) {
         generateApp(argc - 1, &argv[1]);
 
-    } else if (smatch(kind, "controller")) {
-        generateController(argc - 1, &argv[1]);
-
-    } else if (smatch(kind, "migration")) {
-        generateMigration(argc - 1, &argv[1]);
-
-    } else if (smatch(kind, "scaffold")) {
-        generateScaffold(argc - 1, &argv[1]);
-
-    } else if (smatch(kind, "table")) {
-        generateTable(argc - 1, &argv[1]);
-
     } else {
-        fatal("Unknown generation kind %s", kind);
+        app->routes = getRoutes();
+        if (smatch(kind, "controller")) {
+            generateController(argc - 1, &argv[1]);
+
+        } else if (smatch(kind, "migration")) {
+            generateMigration(argc - 1, &argv[1]);
+
+        } else if (smatch(kind, "scaffold")) {
+            generateScaffold(argc - 1, &argv[1]);
+
+        } else if (smatch(kind, "table")) {
+            generateTable(argc - 1, &argv[1]);
+
+        } else {
+            fatal("Unknown generation kind %s", kind);
+        }
     }
     if (!app->error) {
         trace("Task", "Complete");
@@ -2246,7 +2255,7 @@ static void usageError(Mpr *mpr)
     "    --config configFile        # Use named config file instead appweb.conf\n"
     "    --database name            # Database provider 'mdb|sdb' \n"
     "    --flat                     # Compile into a single module\n"
-    "    --genlink                  # Generate a static link module for flat compilations\n"
+    "    --genlink filename         # Generate a static link module for flat compilations\n"
     "    --keep                     # Keep intermediate source\n"
     "    --listen [ip:]port         # Listen on specified address \n"
     "    --log logFile:level        # Log to file file at verbosity level\n"
@@ -2261,7 +2270,7 @@ static void usageError(Mpr *mpr)
     "    --show                     # Show compile commands\n"
     "    --static                   # Use static linking\n"
     "    --verbose                  # Emit verbose trace \n"
-    "    --why                      # Why compile or skip\n"
+    "    --why                      # Why compile or skip building\n"
     "\n"
     "  Commands:\n"
     "    esp clean\n"

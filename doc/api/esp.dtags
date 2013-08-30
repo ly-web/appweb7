@@ -17,6 +17,20 @@
       <arglist>)(HttpRoute *route, MprModule *module)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>espAddComponent</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>gadacba4fab16ac8891a89f313134ae707</anchor>
+      <arglist>(HttpRoute *route, cchar *name)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>espAddRouteSet</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>gab12f7c6108ac1d0a972fc837e9b9dec8</anchor>
+      <arglist>(HttpRoute *route, cchar *set)</arglist>
+    </member>
+    <member kind="function">
       <type>int</type>
       <name>espBindProc</name>
       <anchorfile>group___esp_route.html</anchorfile>
@@ -71,6 +85,48 @@
       <anchorfile>group___esp_route.html</anchorfile>
       <anchor>gac85c52178c5b387706bb31b419f9f059</anchor>
       <arglist>(HttpRoute *route, cchar *command, cchar *source, cchar *module)</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
+      <name>espGetConfig</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>ga97b13560e8c066d70810b2df3e8d7f78</anchor>
+      <arglist>(HttpRoute *route, cchar *key, cchar *defaultValue)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>espHasComponent</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>gafc024199e50485bf72a3e867515bb42c</anchor>
+      <arglist>(HttpRoute *route, cchar *name)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>espLoadConfig</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>ga8719b78bdfb4e3228c6e9be843f45140</anchor>
+      <arglist>(HttpRoute *route)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>espSaveConfig</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>gacd7c962cf79038c3d7604c72dc43bbdb</anchor>
+      <arglist>(HttpRoute *route)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>espSetConfig</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>gada3b399d10e3f1eaee004cde256e379f</anchor>
+      <arglist>(HttpRoute *route, cchar *key, cchar *value)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>espTestConfig</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>ga115c8f838daf7b187cb8a07787734f37</anchor>
+      <arglist>(HttpRoute *route, cchar *key, cchar *desired)</arglist>
     </member>
   </compound>
   <compound kind="group">
@@ -804,6 +860,13 @@
       <arglist>(cchar *tableName, MprHash *data)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>createRecFromParams</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga6792082e8fe50d8f1796777ff54b3c99</anchor>
+      <arglist>(cchar *table)</arglist>
+    </member>
+    <member kind="function">
       <type>cchar *</type>
       <name>createSession</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -823,6 +886,20 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga9db9b8b7e2c750f6f942da0478866de2</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>void *</type>
+      <name>espGetData</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga65d11f787b22a5deda37f8d53f479c56</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
+      <name>espGetFeedback</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gac3aa8897554734458a399dcbdaeba4e5</anchor>
+      <arglist>(HttpConn *conn, cchar *kind)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -895,6 +972,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>void *</type>
+      <name>getData</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga47d7be20d82041d251a6bb6ed3575b7d</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
       <type>Edi *</type>
       <name>getDatabase</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -917,10 +1001,24 @@
     </member>
     <member kind="function">
       <type>cchar *</type>
+      <name>getFeedback</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gaaef4ca7c60c2fd04b5c34fdc72f047d3</anchor>
+      <arglist>(cchar *kind)</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
       <name>getField</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>gac52ae6c15d4dc95d264a15235187f915</anchor>
       <arglist>(EdiRec *rec, cchar *field)</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
+      <name>getFlash</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga99b145381ebe019cea05e3405d51c684</anchor>
+      <arglist>(cchar *kind)</arglist>
     </member>
     <member kind="function">
       <type>cchar *</type>
@@ -1224,6 +1322,13 @@
       <arglist>(cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan, bool isSecure)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>setData</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga0e9f5142b6aa4d7c3695ef62a9e348b3</anchor>
+      <arglist>(void *data)</arglist>
+    </member>
+    <member kind="function">
       <type>EdiRec *</type>
       <name>setField</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1320,6 +1425,13 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>gaac69d2eab0ce7dfea56ac4714d0e6e55</anchor>
       <arglist>(EdiRec *rec)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>updateRecFromParams</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga443a4d955b4cd2ea70b904ff75d9f06f</anchor>
+      <arglist>(cchar *table)</arglist>
     </member>
   </compound>
   <compound kind="struct">

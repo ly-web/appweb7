@@ -132,9 +132,6 @@ PUBLIC void espInitHtmlOptions(Esp *esp);
 typedef struct EspRoute {
     char            *appName;               /**< App module name when compiled flat */
     struct EspRoute *top;                   /**< Top-level route for this application */
-#if UNUSED
-    HttpRoute       *route;                 /**< Back link to the owning route */
-#endif
     EspProc         commonController;       /**< Common code for all controllers */
     MprHash         *env;                   /**< Environment variables for route */
     MprHash         *config;                /**< App configuration from config.json */
@@ -179,7 +176,33 @@ typedef struct EspRoute {
   */
 typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
 
-//  MOB - DOC
+/**
+    Add the specified component to the config.json components list.
+    @param route HttpRoute defining the ESP application
+    @param name Desired component name. For example: "angular"
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC void espAddComponent(HttpRoute *route, cchar *name);
+
+/**
+    Add a route set package
+    @description This will add a set of routes. It will add a home route and optional routes depending on the route set.
+    <table>
+        <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
+        <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
+    </table>
+    @param route Parent route from which to inherit configuration.
+    @param set Route set to select. Use "simple", or "restful".  
+        \n\n
+        The "simple" pack will invoke
+        #httpAddHomeRoute and #httpAddStaticRoute to add the "home" routes.  
+        \n\n
+        The "restful" selection will add a set of RESTful routes for generic controllers.
+    @ingroup EspRoute
+    @stability Prototype
+ */
 PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
 
 /**
@@ -360,6 +383,59 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
 PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, cchar *module);
 
 /**
+    Get a configuration value from the ESP config.json
+    @param route HttpRoute defining the ESP application
+    @param key Configuration property path. May contain dots.
+    @param defaultValue Default value to use if the configuration is not defined. May be null
+    @returns the Configuration string value
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
+
+/**
+    Test if the ESP application includes the specified component
+    @description This tests the settings.components[] list for the specified component.
+    @param route HttpRoute defining the ESP application
+    @param name Desired component name. For example: "angular"
+    @returns True if the specified component is supported
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC bool espHasComponent(HttpRoute *route, cchar *name);
+
+/**
+    Load ESP config.json configuration file 
+    @param route HttpRoute defining the ESP application
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC int espLoadConfig(HttpRoute *route);
+
+/**
+    Save the in-memory ESP config.json configuration to the default location for the ESP application
+    defined by the specified route. 
+    @param route HttpRoute defining the ESP application
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC int espSaveConfig(HttpRoute *route);
+
+/**
+    Set a configuration value to the ESP config.json. 
+    @description This updates the in-memory copy of the config.json only.
+    @param route HttpRoute defining the ESP application
+    @param key Configuration property path. May contain dots.
+    @param value Value to set the property to.
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value);
+
+/**
     Initialize a static library ESP module
     @description This invokes the ESP initializers for the required pre-compiled ESP shared library.
     @param entry ESP initialization function.
@@ -370,6 +446,18 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
     @stability Evolving
   */
 PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *routeName);
+
+/**
+    Test if a configuration property from the ESP config.json has a desired value.
+    @param route HttpRoute defining the ESP application
+    @param key Configuration property path. May contain dots.
+    @param desired Desired value to compare with.
+    @returns True if the configuration property has the desired value.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired);
+
 
 /*
     Internal
@@ -407,9 +495,6 @@ PUBLIC void espManageAction(EspAction *ap, int flags);
  */
 typedef struct EspReq {
     HttpRoute       *route;                 /**< Route reference */
-#if UNUSED
-    EspRoute        *eroute;                /**< Extended route info */
-#endif
     Esp             *esp;                   /**< Convenient esp reference */
     MprHash         *feedback;              /**< Feedback messages */
     MprHash         *flash;                 /**< New flash messages */
@@ -599,6 +684,15 @@ PUBLIC cchar *espGetContentType(HttpConn *conn);
 PUBLIC cchar *espGetCookies(HttpConn *conn);
 
 /**
+    Get the private data reference for the current request set via #setData
+    @param conn HttpConn object
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC void *espGetData(HttpConn *conn);
+
+/**
     Get the current database instance.
     @description A route may have a default database configured via the EspDb Appweb.conf configuration directive. 
     The database will be opened when the web server initializes and will be shared between all requests using the route. 
@@ -640,6 +734,16 @@ PUBLIC cchar *espGetDir(HttpConn *conn);
     @stability Prototype
  */
 PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *type);
+
+/**
+    Get a feedback message defined via #feedback
+    @param conn HttpConn object
+    @param kind Kind of feedback message to retrieve.
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind);
 
 /**
     Get an rx http header.
@@ -1595,15 +1699,7 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
  */
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
 
-//  MOB DOCUMENT
-PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
-PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value);
-PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired);
-PUBLIC int espLoadConfig(HttpRoute *route);
-PUBLIC int espSaveConfig(HttpRoute *route);
 
-PUBLIC bool espHasComponent(HttpRoute *route, cchar *name);
-PUBLIC void espAddComponent(HttpRoute *route, cchar *name);
 
 /***************************** Abbreviated Controls ***************************/
 /**
@@ -1642,6 +1738,16 @@ PUBLIC void addHeader(cchar *key, cchar *fmt, ...);
     @stability Evolving
  */
 PUBLIC EdiRec *createRec(cchar *tableName, MprHash *data);
+
+/**
+    Create a record from the request parameters
+    @description A new record is created with the request parameters in the specified table.
+    @param table Database table to update
+    @return True if the update is successful.
+    @ingroup EspAbbrev
+    @stability Prototype
+*/ 
+PUBLIC bool createRecFromParams(cchar *table);
 
 /**
     Create a session state object. 
@@ -1759,11 +1865,31 @@ PUBLIC MprOff getContentLength();
  */
 PUBLIC cchar *getContentType();
 
-//  MOB DOCUMENT
+/**
+    Get the private data reference for the current request set via #setData
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
 PUBLIC void *getData();
-PUBLIC void setData(void *data);
-PUBLIC void *espGetData(HttpConn *conn);
-PUBLIC void espSetData(HttpConn *conn, void *data);
+
+/**
+    Get a flash message defined via #flash
+    @param kind Kind of flash message to retrieve.
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC cchar *getFlash(cchar *kind);
+
+/**
+    Get a feedback message defined via #feedback
+    @param kind Kind of feedback message to retrieve.
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC cchar *getFeedback(cchar *kind);
 
 /**
     Get the current database instance
@@ -2389,6 +2515,14 @@ PUBLIC void setConn(HttpConn *conn);
 PUBLIC void setContentType(cchar *mimeType);
 
 /**
+    Set a private data reference for the current request
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC void setData(void *data);
+
+/**
     Update a record field without writing to the database
     @description This routine updates the record object with the given value. The record will not be written
         to the database. To write to the database, use #updateRec.
@@ -2549,9 +2683,16 @@ PUBLIC bool updateFields(cchar *tableName, MprHash *data);
  */
 PUBLIC bool updateRec(EdiRec *rec);
 
-//  MOB - DOC
+/**
+    Update a record from the request parameters
+    @description The record identified by the params(id) is read and updated with the request parameters.
+    @param table Database table to update
+    @return True if the update is successful.
+    @ingroup EspAbbrev
+    @stability Prototype
+*/ 
 PUBLIC bool updateRecFromParams(cchar *table);
-PUBLIC bool createRecFromParams(cchar *table);
+
 
 /* ******************************** DEPRECATED ****************************** */
 #if (DEPRECATE || 1) && !DOXYGEN
@@ -2925,10 +3066,19 @@ PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *options);
  */
 PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
 
-PUBLIC void espScripts(HttpConn *conn, cchar *options);
-
+#if DEPRECATED || 1
 /* Renamed to espRenderSecurityToken */
 PUBLIC void espSecurityToken(HttpConn *conn);
+#endif
+
+/**
+    Set a private data reference for the current request
+    @param conn HttpConn object
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC void espSetData(HttpConn *conn, void *data);
 
 /**
     Set the current database grid
@@ -3207,7 +3357,11 @@ PUBLIC EdiGrid *getGrid();
  */
 PUBLIC EdiRec *getRec();
 
-//  MOB DOC
+/**
+    Get a URI for the top of the application
+    @ingroup EspAbbrev
+    @stability deprecated
+ */
 PUBLIC cchar *getTop();
 
 /**
@@ -3335,9 +3489,9 @@ PUBLIC void radio(cchar *field, void *choices, cchar *options);
 PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
 
 /**
-    Render flash notices.
-    @description Flash notices are one-time messages that are displayed to the client on the next request (only).
-        See #espSetFlash for how to define flash messages. 
+    Render flash messages.
+    @description Flash notices are one-time messages that are passed to the newt request (only).
+        See #espSetFlash and #flash for how to define flash messages. 
     @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev

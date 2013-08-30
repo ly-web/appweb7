@@ -1591,6 +1591,13 @@
     <class kind="struct">HttpLang</class>
     <member kind="function">
       <type>void</type>
+      <name>httpAddClientRoute</name>
+      <anchorfile>group___http_route.html</anchorfile>
+      <anchor>gad03894d47dea385d9db736be22c375ea</anchor>
+      <arglist>(HttpRoute *parent, cchar *prefix, cchar *name)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>httpAddHomeRoute</name>
       <anchorfile>group___http_route.html</anchorfile>
       <anchor>gad9250fc3d08526ea7dc3b7ab9d6970e2</anchor>

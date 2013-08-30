@@ -30,6 +30,12 @@ PUBLIC EdiRec *createRec(cchar *tableName, MprHash *params)
 }
 
 
+PUBLIC bool createRecFromParams(cchar *table)
+{
+    return updateRec(createRec(table, params()));
+}
+
+
 /*
     Create a new session. Always returns with a fresh session
  */
@@ -142,12 +148,6 @@ PUBLIC Edi *getDatabase()
 }
 
 
-PUBLIC EspRoute *getEspRoute()
-{
-    return espGetEspRoute(getConn());
-}
-
-
 PUBLIC cchar *getDocuments()
 {
     return getConn()->rx->route->documents;
@@ -160,6 +160,24 @@ PUBLIC cchar *getDir()
     return getDocuments();
 }
 #endif
+
+
+PUBLIC EspRoute *getEspRoute()
+{
+    return espGetEspRoute(getConn());
+}
+
+
+PUBLIC cchar *getFeedback(cchar *kind)
+{
+    return espGetFeedback(getConn(), kind);
+}
+
+
+PUBLIC cchar *getFlash(cchar *kind)
+{
+    return espGetFlash(getConn(), kind);
+}
 
 
 PUBLIC cchar *getField(EdiRec *rec, cchar *field)
@@ -615,12 +633,6 @@ PUBLIC bool updateRecFromParams(cchar *table)
 {
     return updateRec(setFields(readRec(table, param("id")), params()));
 }
-
-PUBLIC bool createRecFromParams(cchar *table)
-{
-    return updateRec(createRec(table, params()));
-}
-
 
 /************************************ Deprecated ****************************/
 #if BIT_ESP_LEGACY

@@ -262,6 +262,27 @@ PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *kind)
 }
 
 
+PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind)
+{
+    EspReq      *req;
+    MprKey      *kp;
+    cchar       *msg;
+   
+    req = conn->data;
+    if (kind == 0 || req->feedback == 0 || mprGetHashLength(req->feedback) == 0) {
+        return 0;
+    }
+    for (kp = 0; (kp = mprGetNextKey(req->feedback, kp)) != 0; ) {
+        msg = kp->data;
+        if (smatch(kind, kp->key) || smatch(kind, "all")) {
+            return msg;
+        }
+    }
+    return 0;
+
+}
+
+
 PUBLIC cchar *espGetHeader(HttpConn *conn, cchar *key)
 {
     return httpGetHeader(conn, key);
