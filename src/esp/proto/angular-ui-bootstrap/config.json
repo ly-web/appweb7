@@ -1,0 +1,3 @@
+{
+    depends: ['bootstrap', 'html5shiv']
+}

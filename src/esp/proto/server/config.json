@@ -2,27 +2,23 @@
     mode: "debug",
     modes: {
         debug: {
-            server: {
-                showErrors: true,
-                username: "admin",
-                update: true,
-                keepSource: true,
-            },
+            showErrors: true,
+            keepSource: true,
+            update: true,
+            username: "admin",
         },
         release: {
-            server: {
-                showErrors: false,
-                update: false,
-                keepSource: false,
-            },
+            map: "compressed",
+            showErrors: false,
+            update: false,
+            keepSource: false,
+            username: "",
         },
     },
     settings: {
         timeouts: {
             session: 1800,
         },
-    },
-    server: {
         xsrfToken: true,
     },
 }

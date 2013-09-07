@@ -207,7 +207,7 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
         return MPR_ERR_MEMORY;
     }
     assert(size <= mprGetBufSpace(packet->content));    
-    mprTrace(7, "readFileData size %d, pos %Ld", size, pos);
+    mprTrace(7, "readFileData size %Ld, pos %Ld", size, pos);
     
     if (pos >= 0) {
         mprSeekFile(tx->file, SEEK_SET, pos);

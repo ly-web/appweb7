@@ -5058,6 +5058,7 @@ PUBLIC bool mprIsPathRel(cchar *path);
  */
 PUBLIC bool mprIsPathSeparator(cchar *path, cchar c);
 
+//  MOB - need mprJoinPaths(base, ....);
 /**
     Join paths
     @description Join a path to a base path. If path is absolute, it will be returned.

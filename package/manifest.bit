@@ -214,7 +214,7 @@ Bit.load({
 
             },{
                 from:       ['src/esp/proto'],
-                to:         '${abin}/esp-proto',
+                to:         '${lib}/esp',
                 set:        'esp',
                 packs:      'esp',
 

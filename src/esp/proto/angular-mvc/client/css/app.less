@@ -1,0 +1,229 @@
+/*
+    app.less - Layer2 stylesheet
+ */
+
+body {
+    //  THEME
+    background: #F2F2F2;
+}
+
+.navbar {
+    .navbar-header {
+        width: 200px;
+    }
+    i, .glyphicon {
+        font-size: 14px;
+    }
+    .form-control {
+        //  MOB - use  navbar-inverse-search-bg etc from theme.
+        background-color: #141414;
+        border-color: #141414;
+        width: 220px;
+        &:focus {
+            background-color: #FFFFFF;
+            -webkit-transition: all .3s linear;
+            //position: relative;
+        }
+    }
+    .glyphicon-search {
+        color: #777777;
+        position: relative;
+        top: 6px;
+        left: -28px;
+    }
+    li {
+        border-left: 1px solid #101417;
+    }
+    .dropdown li {
+        border: none;
+    }
+}
+
+.home {
+    .container {
+    }
+    .sidebar {
+        -margin-top: -20px;
+        -padding-bottom: 20px;
+        -background: #EEEEEE;
+        padding-top: 40px;
+        width: 140px;
+        color: #888;
+        .glyphicon, i {
+            font-size: 22px;
+            color: #888;
+        }
+        .menu-item {
+            font-size: 14px;
+            color: #888;
+            display: block;
+        }
+    }
+    .content {
+        padding-left: 20px;
+        background: #FFFFFF;
+    }
+    footer {
+        background: #111111;
+        color: #BBBBBB;
+        font-size: 12px;
+        .powered {
+            text-align: right;
+        }
+    }
+}
+
+.modal-backdrop {
+    background-image: url('../assets/background.jpg');
+}
+
+.login {
+    &.modal-dialog {
+        width: 400px;
+    }
+    .modal-header {
+        text-align: center;
+    }
+    .modal-content {
+        padding: 20px;
+    }
+    .forgot-password {
+        text-align: right;
+    }
+    .remember-me {
+        font-size: @font-size-small;
+    }
+}
+
+.log {
+    padding-bottom: 0px;
+    width: 400px;
+    color: @gray;
+    li {
+        padding: 8px 0 8px 0;
+        &:hover {
+            background: @gray-lighter;
+        }
+    }
+    .divider {
+        margin: 0;
+        padding: 0;
+    }
+    .header {
+        padding: 8px 20px 4px 20px;
+        font-weight: bold;
+    }
+    .footer {
+        margin: 12px 0 0 0;
+        background: @gray-lighter;
+    }
+    .icon {
+        font-size: @font-size-large;
+        padding-right: 10px;
+    }
+    .message {
+        padding: 4px 20px 4px 20px;
+        font-size: @font-size-small;
+        text-decoration: none;
+        color: @gray;
+    }
+    .time {
+        //  THEME
+        float: right;
+        padding-right: 20px;
+        font-style: italic;
+        font-size: 11px;
+    }
+}
+
+[ng-click] {
+    cursor: pointer;
+}
+
+UNUSED.shadow {
+    .drop-shadow();
+}
+
+
+TABLE_ONLY.collapse {
+    :empty {
+        display: none;
+    }
+}
+
+.form-error {
+    width: 500px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    text-indent: 10px;
+    border: 2px solid @error-color;
+    .rounded(6px);
+    .drop-shadow();
+    h2 {
+        margin: 0 0 10px 0;
+        font-size: 12pt;
+        color: white;
+        background-color: @error-color;
+    }
+    ul {
+        margin-bottom: 0;
+    }
+}
+
+.field-error {
+    border: 2px solid @error-color !important;
+}
+
+//  MOB - can this be nested?
+.feedback {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 500px;
+    height: 41px;
+    margin: 0;
+    margin-left: -250px;
+    padding: 8px 3px 3px 3px;
+    font-size: 110%;
+    .rounded(7px);
+    .border-radius(0, 7px, 7px, 0);
+    .drop-shadow();
+    color: white;
+    text-align: center;
+    z-index: 2000;
+    &:empty {
+        display: none;
+    }
+}
+
+.feedback-error {
+    .feedback();
+    .gradient(@feedback-error-background, lighten(@feedback-error-background, 10%), darken(@feedback-error-background, 10%));
+    font-weight: bold;
+}
+
+.feedback-warning {
+    .feedback();
+    .gradient(@feedback-warning-background, lighten(@feedback-warning-background, 10%), darken(@feedback-warning-background, 10%));
+}
+
+.feedback-inform {
+    .feedback();
+    .gradient(@feedback-inform-background, lighten(@feedback-inform-background, 10%), darken(@feedback-inform-background, 10%));
+    opacity: 0;
+    top: -100px;
+    &.ng-hide-remove {
+        -webkit-animation: feedback-transition ease-in 10s;
+    }
+}
+
+@-webkit-keyframes feedback-transition {
+    0%   { opacity: 1.0; top:    0px; }
+    80%  { opacity: 1.0; top:    0px; }
+    90%  { opacity: 0.5; top:    0px; }
+    100% { opacity: 0.0; top: -100px; }
+}
+
+_UNUSED_td.centered {
+    text-align: center;
+}

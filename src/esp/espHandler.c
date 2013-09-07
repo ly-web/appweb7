@@ -603,9 +603,6 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->config = parent->config;
     eroute->dbDir = parent->dbDir;
     eroute->layoutsDir = parent->layoutsDir;
-#if UNSUED
-    eroute->route = route;
-#endif
     eroute->srcDir = parent->srcDir;
     eroute->controllersDir = parent->controllersDir;
     eroute->viewsDir = parent->viewsDir;

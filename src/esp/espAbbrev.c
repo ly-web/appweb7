@@ -24,6 +24,22 @@ PUBLIC void addHeader(cchar *key, cchar *fmt, ...)
 }
 
 
+PUBLIC bool canUser(cchar *abilities, bool warn)
+{
+    HttpConn    *conn;
+
+    conn = getConn();
+    if (httpCanUser(conn, abilities)) {
+        return 1;
+    }
+    if (warn) {
+        feedback("error", "Access Denied. Insufficient privilege.");
+        renderResult(0);
+    }
+    return 0;
+}
+
+
 PUBLIC EdiRec *createRec(cchar *tableName, MprHash *params)
 {
     return espCreateRec(getConn(), tableName, params);
@@ -485,15 +501,31 @@ PUBLIC void renderSecurityToken()
 PUBLIC void scripts(cchar *patterns)
 {
     HttpConn    *conn;
+    HttpRoute   *route;
     EspReq      *req;
     EspRoute    *eroute;
     MprList     *files;
-    cchar       *indent, *uri, *path;
-    int         next;
+    MprHash     *components;
+    cchar       *indent, *uri, *path, *component;
+    int         next, i;
 
     conn = getConn();
     req = conn->data;
-    eroute = conn->rx->route->eroute;
+    route = conn->rx->route;
+    eroute = route->eroute;
+    patterns = httpExpandRouteVars(route, patterns);
+
+    if (patterns == NULL || smatch(patterns, "${COMPONENTS}/**.js")) {
+        //  MOB - should we have eroute->components?
+        if ((components = mprJsonGetValue(eroute->config, "settings.components", NULL)) != 0) {
+            for (i = 0; i < components->length; i++) {
+                char num[16];
+                component = mprLookupKey(components, itosbuf(num, sizeof(num), i, 10));
+//  MOB mprJoinPaths
+                scripts(sfmt("%s/lib/%s/**.js", eroute->clientDir, component));
+            }
+        }
+    }
 
     if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
         mprError("No scripts defined for current application mode");

@@ -37,13 +37,15 @@ Bit.load({
 
         'proto': {
             type: 'file',
-            path: '${BIN}/esp-proto/',
+            path: '${OUT}/esp/',
             files: [ 'proto/' ],
             platforms: [ 'local' ],
             packs: 'esp',
         },
 
+        //  MOB - rethink
         'all-angular.css': {
+            enable: false,
             path: 'proto/angular/client/css/all.css',
             files: [ 'proto/angular/client/less/*.less'],
             build: "

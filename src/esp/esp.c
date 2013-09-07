@@ -26,6 +26,7 @@ typedef struct App {
     cchar       *flatPath;              /* Output filename for flat compilations */
 
     cchar       *binDir;                /* Appweb bin directory */
+    cchar       *espDir;                /* ESP prototype directory */
     cchar       *listen;                /* Listen endpoint for "esp run" */
     cchar       *platform;              /* Target platform os-arch-profile (lower) */
     MprFile     *flatFile;              /* Output file for flat compilations */
@@ -134,7 +135,7 @@ static void get${TITLE}() { \n\
     renderRec(readRec(\"${NAME}\", param(\"id\")));\n\
 }\n\
 \n\
-static void index${TITLE}() {\n\
+static void list${TITLE}() {\n\
     renderGrid(readTable(\"${NAME}\"));\n\
 }\n\
 \n\
@@ -155,42 +156,47 @@ static cchar *ScaffoldControllerFooter = "\
 ESP_EXPORT int esp_module_${NAME}(HttpRoute *route, MprModule *module) {\n\
     espDefineAction(route, \"${NAME}-create\", create${TITLE});\n\
     espDefineAction(route, \"${NAME}-get\", get${TITLE});\n\
-    espDefineAction(route, \"${NAME}-index\", index${TITLE});\n\
+    espDefineAction(route, \"${NAME}-list\", list${TITLE});\n\
     espDefineAction(route, \"${NAME}-remove\", remove${TITLE});\n\
     espDefineAction(route, \"${NAME}-update\", update${TITLE});\n\
 ${DEFINE_ACTIONS}    return 0;\n\
 }\n";
 
 
+//  MOB - span4 does nothing. Not valid bootstrap class
+
 static cchar *AngularScaffoldListView = "\
-<h2>${TITLE} List</h2>\n\
-    <div class=\"span4\">\n\
-    <table class=\"table table-striped table-bordered table-hover table-condensed\">\n\
-        <thead><tr><th ng-repeat=\"header in ${NAME}s.schema.headers\" ng-click=\"click($index)\">{{header}}</th></tr></thead>\n\
-        <tbody>\n\
-            <tr ng-repeat=\"${NAME} in ${NAME}s.data\" ng-click=\"click($index)\">\n\
-                <td ng-repeat=\"column in ${NAME}s.schema.columns\">{{${NAME}[column]}}</td>\n\
-            </tr>\n\
-        </tbody>\n\
-    </table>\n\
-    <button class=\"btn btn-primary\" ng-click=\"goto('/${SERVICE}/${NAME}/')\">New ${TITLE}</button>\n\
-</div>\n\
+<h3>${TITLE} List</h3>\n\
+<table class=\"table table-striped table-bordered table-hover table-condensed\">\n\
+    <thead><tr><th ng-repeat=\"header in ${NAME}s.schema.headers\" ng-click=\"click($index)\">{{header}}</th></tr></thead>\n\
+    <tbody>\n\
+        <tr ng-repeat=\"${NAME} in ${NAME}s.data\" ng-click=\"click($index)\">\n\
+            <td ng-repeat=\"column in ${NAME}s.schema.columns\">{{${NAME}[column]}}</td>\n\
+        </tr>\n\
+    </tbody>\n\
+</table>\n\
+<button class=\"btn btn-primary\" ng-click=\"Esp.goto('${SERVICE}/${NAME}/')\">New ${TITLE}</button>\n\
 ";
 
 
 static cchar *AngularScaffoldEditView =  "\
+<h3>{{action}} ${TITLE}</h3>\n\
 <form name=\"${NAME}Form\" ng-controller='${TITLE}Control'>\n\
-    <fieldset>\n\
-        <legend>{{action}} ${TITLE}</legend>\n\
-        <label>Title</label> <input type='text' ng-model='${NAME}.title'></input>\n\
-        <label>Body</label> <textarea type='text' ng-model='${NAME}.body' cols='160' rows='4'></textarea>\n\
-    </fieldset>\n\
+    ${FIELD_EDIT}\n\
     <button class=\"btn btn-primary\" ng-click='save()'>OK</button>\n\
-    <button class=\"btn\" ng-click='goto(\"/\")'>Cancel</button>\n\
+    <button class=\"btn\" ng-click='Esp.goto(\"/\")'>Cancel</button>\n\
     <button class=\"btn\" ng-show=\"action=='Edit'\" ng-click='remove({{${NAME}.id}})'>Delete</button>\n\
 </form>\n\
 ";
 
+static cchar *AngularScaffoldEditField =  "\
+    <div class=\"form-group\">\n\
+        <label class=\"control-label col-md-2\">{TITLE}</label>\n\
+        <div class=\"col-md-9\">\n\
+            ${ELEMENT}\n\
+        </div>\n\
+    </div>\n\
+";
 
 static cchar *AngularController = "\
 /*\n\
@@ -205,12 +211,12 @@ app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $rout
             $scope.${NAME} = response.data;\n\
             $scope.action = \"Edit\";\n\
         });\n\
-    } else if ($location.path() == \"/${SERVICE}/${NAME}/\") {\n\
+    } else if ($location.path() == \"${SERVICE}/${NAME}/\") {\n\
         $scope.action = \"Create\";\n\
         $scope.${NAME} = new ${TITLE}();\n\
     } else {\n\
-        $scope.list = ${TITLE}.index({}, function(response) {\n\
-            $scope.list = response;\n\
+        $scope.list = ${TITLE}.list({}, function(response) {\n\
+            $scope.${NAME}s = response;\n\
         });\n\
     }\n\
     $scope.routeParams = $routeParams;\n\
@@ -223,24 +229,24 @@ app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $rout
 \n\
     $scope.save = function() {\n\
         ${TITLE}.save($scope.${NAME}, function(response) {\n\
-            if (response.success) {\n\
+            if (!response.error) {\n\
                 $location.path('/');\n\
             }\n\
         });\n\
     };\n\
 \n\
     $scope.click = function(index) {\n\
-        $location.path('/${SERVICE}/${NAME}/' + $scope.${NAME}s.data[index].id);\n\
+        $location.path('${SERVICE}/${NAME}/' + $scope.${NAME}s.data[index].id);\n\
     };\n\
 });\n\
 \n\
 app.config(function($routeProvider) {\n\
     $routeProvider.when('/', {\n\
-        templateUrl: '/${APPDIR}/${NAME}/list.html',\n\
+        templateUrl: '/app/${NAME}/${NAME}-list.html',\n\
         controller: '${TITLE}Control',\n\
     });\n\
-    $routeProvider.when('/${SERVICE}/${NAME}/:id', {\n\
-        templateUrl: '/${APPDIR}/${NAME}/edit.html',\n\
+    $routeProvider.when('${SERVICE}/${NAME}/:id', {\n\
+        templateUrl: '/app/${NAME}/${NAME}-edit.html',\n\
         controller: '${TITLE}Control',\n\
     });\n\
 });\n\
@@ -253,8 +259,8 @@ static cchar *AngularModel = "\
 'use strict';\n\
 \n\
 app.factory('${TITLE}', function ($resource) {\n\
-    return $resource('/${SERVICE}/${NAME}/:id', { id: '@id' }, {\n\
-        'index':  { 'method': 'GET' },\n\
+    return $resource('${SERVICE}/${NAME}/:id', { id: '@id' }, {\n\
+        'list':  { 'method': 'GET', url: '${SERVICE}/${NAME}/list' },\n\
     });\n\
 });\n\
 ";
@@ -608,6 +614,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->flatPath);
         mprMark(app->genlink);
         mprMark(app->binDir);
+        mprMark(app->espDir);
         mprMark(app->listen);
         mprMark(app->module);
         mprMark(app->mpr);
@@ -644,9 +651,6 @@ static HttpRoute *createRoute(cchar *dir)
     }
     eroute->config = mprCreateHash(0, 0);
     route->eroute = eroute;
-#if UNUSED
-    eroute->route = route;
-#endif
     httpSetRouteDocuments(route, dir);
     espSetDirs(route);
     return route;
@@ -657,6 +661,7 @@ static void initialize()
 {
     app->currentDir = mprGetCurrentPath();
     app->binDir = mprGetAppDir();
+    app->espDir = mprJoinPath(mprGetAppDir(), "../esp");
     httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
 }
 
@@ -671,6 +676,47 @@ static MprHash *getTargets(int argc, char **argv)
         mprAddKey(targets, mprGetAbsPath(argv[i]), NULL);
     }
     return targets;
+}
+
+
+static bool similarRoute(HttpRoute *r1, HttpRoute *r2)
+{
+    EspRoute    *e1, *e2;
+
+    e1 = r1->eroute;
+    e2 = r2->eroute;
+
+    if (!smatch(r1->documents, r2->documents)) {
+        return 0;
+    }
+    if (!smatch(r1->home, r2->home)) {
+        return 0;
+    }
+    if (!smatch(r1->sourceName, r2->sourceName)) {
+        return 0;
+    }
+    if (!smatch(r1->sourceName, r2->sourceName)) {
+        return 0;
+    }
+    if (!smatch(e1->appDir, e2->appDir)) {
+        return 0;
+    }
+    if (!smatch(e1->clientDir, e2->clientDir)) {
+        return 0;
+    }
+    if (!smatch(e1->controllersDir, e2->controllersDir)) {
+        return 0;
+    }
+    if (!smatch(e1->layoutsDir, e2->layoutsDir)) {
+        return 0;
+    }
+    if (!smatch(e1->srcDir, e2->srcDir)) {
+        return 0;
+    }
+    if (!smatch(e1->viewsDir, e2->viewsDir)) {
+        return 0;
+    }
+    return 1;
 }
 
 
@@ -713,13 +759,6 @@ static MprList *getRoutes()
             if (!smatch(routePrefix, route->prefix) && !smatch(routePrefix, route->startWith)) {
                 continue;
             }
-#if UNUSED
-            if (!route->startWith == 0 && smatch(routePrefix, route->startWith) {
-                continue;
-            }
-            if (route->startWith == 0 || !smatch(routePrefix, route->startWith)) {
-            }
-#endif
         } else {
             mprTrace(3, "Check route name %s, prefix %s", route->name, route->startWith);
         }
@@ -733,33 +772,30 @@ static MprList *getRoutes()
             continue;
         }
         if (!requiredRoute(route)) {
+            mprTrace(2, "Skip route %s not required for selected targets", route->name);
             continue;
         }
         /*
-            Check for routes with a duplicate base directory
+            Check for routes with duplicate documents and home directories
          */
         rp = 0;
         for (ITERATE_ITEMS(routes, rp, nextRoute)) {
-            if (sstarts(route->documents, rp->documents) && sstarts(route->home, rp->home)) {
+            if (similarRoute(route, rp)) {
+                mprTrace(2, "Skip route %s because of prior similar route: %s", route->name, rp->name);
+                route = 0;
                 break;
             }
         }
+#if UNUSED
         if (rp) {
             if (rp->startWith == NULL && route->sourceName) {
                 /* 
                     Replace the default route with this route. This is for MVC Apps with prefix of "/" 
                  */
                 mprRemoveItem(routes, rp);
-            } else {
-                if (smatch(route->sourceName, rp->sourceName)) {
-                    /* 
-                        Same directory with same source. No need to consider redundant route.
-                     */
-                    continue;
-                }
-            }
         }
-        if (mprLookupItem(routes, route) < 0) {
+#endif
+        if (route && mprLookupItem(routes, route) < 0) {
             mprTrace(2, "Compiling route dir: %s name: %s prefix: %s", route->documents, route->name, route->startWith);
             mprAddItem(routes, route);
         }
@@ -981,7 +1017,7 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
 
     eroute = route->eroute;
     cmd = mprCreateCmd(0);
-    if ((app->command = espExpandCommand(route->eroute, command, csource, module)) == 0) {
+    if ((app->command = espExpandCommand(route, command, csource, module)) == 0) {
         fail("Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
@@ -1248,8 +1284,9 @@ static void compile(int argc, char **argv)
  */
 static bool requiredRoute(HttpRoute *route)
 {
-    MprKey  *kp;
-    cchar   *source;
+    EspRoute    *eroute;
+    MprKey      *kp;
+    cchar       *source, *dir;
 
     if (app->targets == 0 || mprGetHashLength(app->targets) == 0) {
         return 1;
@@ -1260,7 +1297,9 @@ static bool requiredRoute(HttpRoute *route)
             return 1;
         }
         if (route->sourceName) {
-            source = mprJoinPath(route->home, route->sourceName);
+            eroute = route->eroute;
+            dir = eroute->controllersDir ? eroute->controllersDir : route->home;
+            source = mprJoinPath(eroute->controllersDir, route->sourceName);
             if (mprIsParentPathOf(kp->key, source)) {
                 kp->type = ESP_FOUND_TARGET;
                 return 1;
@@ -1358,7 +1397,9 @@ static void compileItems(HttpRoute *route)
          */
         if (route->sourceName) {
             path = mprJoinPath(route->home, route->sourceName);
-            compileFile(route, path, ESP_CONTROlLER);
+            if (mprPathExists(path, R_OK)) {
+                compileFile(route, path, ESP_CONTROlLER);
+            }
         }
     }
 }
@@ -1481,6 +1522,64 @@ static void addComponents(int argc, char **argv)
 }
 
 
+static void addDeps(cchar *component)
+{
+    MprHash     *config, *depends;
+    cchar       *path, *cpath, *dep;
+    int         i;
+
+    path = mprJoinPath(app->espDir, component);
+    if (!mprPathExists(path, X_OK)) {
+        fail("Cannot find component %s", component);
+        return;
+    }
+    cpath = mprJoinPath(path, "config.json");
+    if (mprPathExists(cpath, R_OK)) {
+        if ((config = mprJsonLoad(cpath)) == 0) {
+            fail("Cannot load %s", cpath);
+            return;
+        }
+        if ((depends = mprJsonGetValue(config, "depends", NULL)) != 0) {
+            for (i = 0; i < depends->length; i++) {
+                dep = mprLookupKey(depends, itos(i));
+                if (!espHasComponent(app->route, dep)) {
+                    addDeps(dep);
+                }
+            }
+        }
+    }
+    if (!espHasComponent(app->route, component)) {
+        mprTrace(4, "Add component %s", component);
+        espAddComponent(app->route, component);
+    }
+}
+
+
+static void addComponentDeps()
+{
+    MprHash     *components, *empty;
+    MprKey      *key;
+    cchar       *component;
+
+    components = mprJsonGetValue(app->eroute->config, "settings.components", NULL);
+    mprJsonRemove(app->eroute->config, "settings.components");
+    empty = mprCreateHash(0, 0);
+    empty->flags |= MPR_HASH_LIST;
+    mprJsonSetValue(app->eroute->config, "settings.components", empty, MPR_JSON_ARRAY);
+    for (ITERATE_KEY_DATA(components, key, component)) {
+        addDeps(component);
+    }
+#if UNUSED
+    printf("DEPS: ");
+    components = mprJsonGetValue(app->eroute->config, "settings.components", NULL);
+    for (i = 0; i < components->length; i++) {
+        printf("%s ", mprLookupKey(components, itos(i)));
+    }
+    printf("\n");
+#endif
+}
+
+
 /*
     generate app NAME [components ...]
  */
@@ -1492,6 +1591,7 @@ static void generateApp(int argc, char **argv)
     app->route = createRoute(name);
     app->eroute = app->route->eroute;
     addComponents(argc - 1, &argv[1]);
+    addComponentDeps();
 
     if (smatch(name, ".")) {
         dir = mprGetCurrentPath();
@@ -1514,15 +1614,15 @@ static void generateApp(int argc, char **argv)
     if (espHasComponent(app->route, "angular") || espHasComponent(app->route, "legacy")) {
         generateAppDb();
     }
-    /*
-        Rewrite the list of components
-     */
+#if UNUSED
     readHostingConfig();
     espLoadConfig(app->route);
     addComponents(argc - 1, &argv[1]);
+    addComponentDeps();
     if (espSaveConfig(app->route) < 0) {
         fail("Cannot save config.json");
     }
+#endif
 }
 
 
@@ -1720,7 +1820,7 @@ static void generateAngularModel(int argc, char **argv)
     title = spascal(name);
 
     path = sfmt("%s/%s/%s.js", app->eroute->appDir, name, title);
-    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s}", name, title));
+    tokens = mprDeserialize(sfmt("{ NAME: %s, SERVICE: '%s', TITLE: %s}", name, BIT_ESP_SERVICE_NAME, title));
     data = stemplate(AngularModel, tokens);
     makeEspFile(path, data, "Scaffold Model");
 }
@@ -2096,23 +2196,25 @@ static void generateAppFiles()
     EspRoute    *eroute;
     HttpRoute   *route;
     MprHash     *components, *newConfig;
-    cchar       *config, *proto, *path, *component;
-    MprKey      *key;
+    cchar       *config, *path, *component;
+    int         i;
 
     route = app->route;
     eroute = app->eroute;
     makeEspDir(route->documents);
     app->routeSet = sclone("restful");
-    proto = mprJoinPath(app->binDir, "esp-proto");
 
     components = mprJsonGetValue(eroute->config, "settings.components", NULL);
-    for (ITERATE_KEY_DATA(components, key, component)) {
-        path = mprJoinPath(proto, component);
+    for (i = 0; i < components->length; i++) {
+        component = mprLookupKey(components, itos(i));
+        path = mprJoinPath(app->espDir, component);
         if (!mprPathExists(path, X_OK)) {
             fail("Cannot find component %s", component);
             return;
         }
+        trace("Generate",  "Component: %s", component);
         copyEspDir(path, route->documents);
+
         /*
             Blend config.json from new component
          */

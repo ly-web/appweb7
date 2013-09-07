@@ -1,0 +1,7 @@
+/*
+    Angular cloak fix. Must load before loading less sheets
+ */
+
+[ng\:cloak], [ng-cloak], .ng-cloak {
+    display: none !important;
+}

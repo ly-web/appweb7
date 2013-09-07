@@ -687,7 +687,7 @@ PUBLIC cchar *espGetCookies(HttpConn *conn);
     Get the private data reference for the current request set via #setData
     @param conn HttpConn object
     @return Reference to private data
-    @ingroup EspAbbrev
+    @ingroup EspReq
     @stability prototype
  */
 PUBLIC void *espGetData(HttpConn *conn);
@@ -740,7 +740,7 @@ PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *type);
     @param conn HttpConn object
     @param kind Kind of feedback message to retrieve.
     @return Reference to private data
-    @ingroup EspAbbrev
+    @ingroup EspReq
     @stability prototype
  */
 PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind);
@@ -1726,6 +1726,16 @@ typedef struct EspAbbrev { int dummy; } EspAbbrev;
     @stability Evolving
  */
 PUBLIC void addHeader(cchar *key, cchar *fmt, ...);
+
+/**
+    Test if a user has the required abilities
+    @param abilities Comma separated list of abilities to test for. If null, then use the required abilities defined
+        for the current request route.
+    @return True if the user has all the required abilities
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC bool canUser(cchar *abilities, bool warn);
 
 /**
     Create a record and initialize field values 
