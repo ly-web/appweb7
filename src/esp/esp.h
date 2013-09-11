@@ -179,7 +179,7 @@ typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
 /**
     Add the specified component to the config.json components list.
     @param route HttpRoute defining the ESP application
-    @param name Desired component name. For example: "angular"
+    @param name Desired component name. For example: "angular-mvc"
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup EspRoute
     @stability Prototype
@@ -397,7 +397,7 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
     Test if the ESP application includes the specified component
     @description This tests the settings.components[] list for the specified component.
     @param route HttpRoute defining the ESP application
-    @param name Desired component name. For example: "angular"
+    @param name Desired component name. For example: "angular-mvc"
     @returns True if the specified component is supported
     @ingroup EspRoute
     @stability Prototype

@@ -902,10 +902,12 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     if (espLoadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
+#if DEPRECATE || 1
     if (eroute->legacy) {
         eroute->clientDir = mprJoinPath(route->documents, "static");
         httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
     }
+#endif
     if (auth) {
         if (httpSetAuthStore(route->auth, auth) < 0) {
             mprError("The %s AuthStore is not available on this platform", auth);
@@ -927,9 +929,11 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
 
-    if (!routeSet && espHasComponent(route, "angular")) {
+#if DEPRECATE || 1
+    if (!routeSet && !espHasComponent(route, "legacy-mvc")) {
         routeSet = "restful";
     }
+#endif
     if (routeSet) {
         espAddRouteSet(route, routeSet);
     }

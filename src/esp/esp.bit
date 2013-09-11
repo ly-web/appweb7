@@ -43,20 +43,6 @@ Bit.load({
             packs: 'esp',
         },
 
-        //  MOB - rethink
-        'all-angular.css': {
-            enable: false,
-            path: 'proto/angular/client/css/all.css',
-            files: [ 'proto/angular/client/less/*.less'],
-            build: "
-                if (Cmd.locate('recess')) {
-                    trace('Compile', TARGET.path)
-                    let result = Cmd.run('recess -compress -compile proto/angular/client/less/all.less')
-                    Path(TARGET.path).write(result)
-                }
-            ",
-        },
-
         'esp-configure': {
             scripts: {
                 postconfig: "

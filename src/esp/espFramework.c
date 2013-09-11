@@ -754,24 +754,22 @@ PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
 }
 
 
-static cchar *getGridSchema(EdiGrid *grid)
+static cchar *getTableSchema(Edi *edi, cchar *tableName)
 {
-    Edi         *edi;
     MprBuf      *buf;
     MprList     *columns;
     char        *s;
     int         c, type, flags, cid, ncols, next;
 
-    if (grid->tableName == 0) {
+    if (tableName == 0 || *tableName == '\0') {
         return 0;
     }
-    edi = grid->edi;
     buf = mprCreateBuf(0, 0);
-    ediGetTableSchema(edi, grid->tableName, NULL, &ncols);
-    columns = ediGetColumns(edi, grid->tableName);
+    ediGetTableSchema(edi, tableName, NULL, &ncols);
+    columns = ediGetColumns(edi, tableName);
     mprPutStringToBuf(buf, "{\n    \"types\": {\n");
     for (c = 0; c < ncols; c++) {
-        ediGetColumnSchema(edi, grid->tableName, mprGetItem(columns, c), &type, &flags, &cid);
+        ediGetColumnSchema(edi, tableName, mprGetItem(columns, c), &type, &flags, &cid);
         mprPutToBuf(buf, "      \"%s\": {\n        \"type\": \"%s\"\n      },\n", 
             mprGetItem(columns, c), ediGetTypeString(type));
     }
@@ -791,6 +789,18 @@ static cchar *getGridSchema(EdiGrid *grid)
     mprPutStringToBuf(buf, " ]\n  }");
     mprAddNullToBuf(buf);
     return mprGetBufStart(buf);
+}
+
+
+static cchar *getGridSchema(EdiGrid *grid)
+{
+    return getTableSchema(grid->edi, grid->tableName);
+}
+
+
+static cchar *getRecSchema(EdiRec *rec)
+{
+    return getTableSchema(rec->edi, rec->tableName);
 }
 
 
@@ -814,7 +824,7 @@ PUBLIC void espDumpGrid(EdiGrid *grid)
 PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags)
 {
     httpAddHeaderString(conn, "Content-Type", "application/json");
-    return espRender(conn, "{\"data\": %s}", espRecToJson(rec, flags));
+    return espRender(conn, "{\"data\": %s, \"schema\": %s}", espRecToJson(rec, flags), getRecSchema(rec));
 }
 
 
@@ -1423,9 +1433,9 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             eroute->json = espTestConfig(route, "settings.json", "1");
         } else {
             eroute->config = mprCreateHash(0, 0);
-            espAddComponent(route, "legacy");
+            espAddComponent(route, "legacy-mvc");
         }
-        if (espHasComponent(route, "legacy")) {
+        if (espHasComponent(route, "legacy-mvc")) {
             eroute->legacy = 1;
         }
         /*

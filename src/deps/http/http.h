@@ -4343,7 +4343,7 @@ PUBLIC cchar *httpLookupRouteErrorDocument(HttpRoute *route, int status);
         <ul>  
             <li>DOCUMENTS_DIR - for the default directory containing documents to serve</li>
             <li>HOME_DIR - for the directory containing the web server configuration files</li>
-            <li>BIN_DIR - for the shared library directory. E.g. /usr/lib/appweb/bin </li>
+            <li>BIN_DIR - for the shared library directory. E.g. /usr/local/lib/appweb/bin </li>
             <li>OS - for the operating system name. E.g. LINUX, MACOSX, VXWORKS, or WIN</li>
             <li>PRODUCT - for the product name</li>
             <li>VERSION - for the product version. E.g. 4.0.2</li>

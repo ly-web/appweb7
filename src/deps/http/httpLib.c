@@ -9140,7 +9140,9 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     httpAddRouteFilter(route, http->rangeFilter->name, NULL, HTTP_STAGE_TX);
     httpAddRouteFilter(route, http->chunkFilter->name, NULL, HTTP_STAGE_RX | HTTP_STAGE_TX);
 
+#if FUTURE
     httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "Content-Security-Policy", "default-src 'self'");
+#endif
     httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-XSS-Protection", "1; mode=block");
     httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Frame-Options", "SAMEORIGIN");
     httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Content-Type-Options", "nosniff");
@@ -9739,6 +9741,7 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
     if (route->map) {
         if (route->mappings && (mapped = mprLookupKey(route->mappings, tx->filename)) != 0) {
             tx->filename = mapped;
+            mprLog(4, "Mapping content to %s", tx->filename);
         } else if ((extensions = mprLookupKey(route->map, tx->ext)) != 0) {
             acceptGzip = scontains(rx->acceptEncoding, "gzip") != 0;
             for (ITERATE_ITEMS(extensions, ext, next)) {
@@ -9749,6 +9752,7 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
                 path = mprReplacePathExt(tx->filename, ext);
                 if (mprGetPathInfo(path, info) == 0) {
                     tx->filename = path;
+                    mprLog(4, "Mapping content to %s", tx->filename);
                     mprAddKey(route->mappings, tx->filename, path);
                     if (zipped) {
                         httpSetHeader(conn, "Content-Encoding", "gzip");
@@ -11835,8 +11839,9 @@ static void definePathVars(HttpRoute *route)
     mprAddKey(route->vars, "VERSION", sclone(BIT_VERSION));
     mprAddKey(route->vars, "PLATFORM", sclone(BIT_PLATFORM));
     mprAddKey(route->vars, "BIN_DIR", mprGetAppDir());
-    //  DEPRECATED
+#if DEPRECATE || 1
     mprAddKey(route->vars, "LIBDIR", mprGetAppDir());
+#endif
     if (route->host) {
         defineHostVars(route);
     }

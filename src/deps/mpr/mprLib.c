@@ -17510,7 +17510,21 @@ PUBLIC int mprRenamePath(cchar *from, cchar *to)
 
 PUBLIC char *mprReplacePathExt(cchar *path, cchar *ext)
 {
-    return mprJoinPathExt(mprTrimPathExt(path), ext);
+    MprFileSystem   *fs;
+
+    if (ext == NULL || *ext == '\0') {
+        return sclone(path);
+    }
+    path = mprTrimPathExt(path);
+    /*
+        Don't use mprJoinPathExt incase path has an embedded "."
+     */
+    fs = mprLookupFileSystem(path);
+    if (ext[0] == '.') {
+        return sjoin(path, ext, NULL);
+    } else {
+        return sjoin(path, ".", ext, NULL);
+    }
 }
 
 

@@ -1,0 +1,4 @@
+{
+    name: "jquery",
+    description: "Client-side Javascript library for DOM manipulation",
+}

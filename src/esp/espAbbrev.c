@@ -515,6 +515,7 @@ PUBLIC void scripts(cchar *patterns)
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
 
+    //  MOB - is components used?
     if (patterns == NULL || smatch(patterns, "${COMPONENTS}/**.js")) {
         //  MOB - should we have eroute->components?
         if ((components = mprJsonGetValue(eroute->config, "settings.components", NULL)) != 0) {

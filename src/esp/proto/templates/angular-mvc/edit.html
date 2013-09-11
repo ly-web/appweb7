@@ -1,0 +1,7 @@
+<h3>{{action}} ${TITLE}</h3>
+<form name="${NAME}Form" ng-controller='${TITLE}Control'>
+    <esp-input-group class="form-control" ng-model="${NAME}"></esp-input-group>
+    <button class="btn btn-primary" ng-click='save()'>OK</button>
+    <button class="btn" ng-click='Esp.goto("/")'>Cancel</button>
+    <button class="btn" ng-show="action=='Edit'" ng-click='remove({{${NAME}.id}})'>Delete</button>
+</form>

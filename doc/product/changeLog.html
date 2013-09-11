@@ -79,7 +79,7 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/213">[issue 213]</a></li>
                 <li>Add Angularjs support in ESP.
                     <a href="https://github.com/embedthis/appweb-4/issues/196">[issue 196]</a></li>
-                <li>Enhance "esp" generator application to generate Angular applications.
+                <li>Enhance "esp" generator application to generate application components including Angular applications.
                     <a href="https://github.com/embedthis/appweb-4/issues/197">[issue 197]</a></li>
                 <li>Change password hashing algorithm to use Blowfish encryption
                     <a href="https://github.com/embedthis/appweb-4/issues/198">[issue 198]</a></li>
@@ -165,8 +165,8 @@
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
-                <li>The Header directive is renamed RequestHeader</li>
-                <li>The Compress directive is present but deprecated. Use "Map compressed" instead.</li>
+                <li>The ESP HTML control generators are deprecated. The preferred approach is to use a client-side framework 
+                    like Angular for HTML controls.</li>
                 <li>The EspApp directive now has a new format. See the ESP documentation for details. The old format 
                     is enabled but deprecated.</li>
                 <li>The ESP flash mechanism now preserves flash messages into the next controller and they are then erased before
@@ -177,12 +177,15 @@
                 <li>The ESP src/*.c files must now be named src/app.c</li>
                 <li>The pattern in a route directive now looks for an existing route pattern. Previously it interpreted
                     the pattern as a route name.</li>
+                <li>The Header directive is renamed RequestHeader</li>
+                <li>The Compress directive is present but deprecated. Use "Map compressed" instead.</li>
                 <li>The httpHandleOptionsTrace() function is deprecated. The API is present but deprecated.</li>
                 <li>Change LimitRequestBody to not include file upload size.</li>
                 <li>Change HttpRoute.dir to HttpRoute.documents.</li>
                 <li>The Appweb default configuration is now secure-by-default. The security sandbox limits are set fairly
                 low and the default responses now include headers to limit cross-site-scripting vulnerabilities.
-                See <a href="../guide/appweb/users/security.html#securedefaults">Security Defaults</a> for more information.</p>
+                See <a href="../guide/appweb/users/security.html#securedefaults">Security Defaults</a> for more
+                information.</li>
                 <li>The httpAddResourceGroup, httpAddResource, httpAddClientRoute and httpAddRouteSet have changed signatures
                     to accomodate a URI prefix for server-side controller URIs.</li>
             </ul>
