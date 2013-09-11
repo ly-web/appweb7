@@ -13155,7 +13155,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
                         }
                     }
                 }
-                if (start < 0 || end < 0 || size < 0 || end <= start) {
+                if (start < 0 || end < 0 || size < 0 || end > start) {
                     httpBadRequestError(conn, HTTP_CLOSE | HTTP_CODE_RANGE_NOT_SATISFIABLE, "Bad content range");
                     break;
                 }

@@ -5148,6 +5148,7 @@ PUBLIC bool mprPathExists(cchar *path, int omode);
     @param lenp Optional pointer to a ssize integer to contain the length of the returns data string. Set to NULL if not
         required.
     @return An allocated string containing the file contents and return the data length in lenp.
+        Returns null if the fail cannot be opened or read.
     @ingroup MprPath
     @stability Stable
  */
