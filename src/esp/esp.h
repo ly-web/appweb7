@@ -1731,6 +1731,7 @@ PUBLIC void addHeader(cchar *key, cchar *fmt, ...);
     Test if a user has the required abilities
     @param abilities Comma separated list of abilities to test for. If null, then use the required abilities defined
         for the current request route.
+    @param warn If true, warn the user via the response feedback.
     @return True if the user has all the required abilities
     @ingroup EspAbbrev
     @stability prototype

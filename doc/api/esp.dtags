@@ -260,6 +260,13 @@
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
+      <type>void *</type>
+      <name>espGetData</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga65d11f787b22a5deda37f8d53f479c56</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
       <type>Edi *</type>
       <name>espGetDatabase</name>
       <anchorfile>group___esp_req.html</anchorfile>
@@ -279,6 +286,13 @@
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>gaefe462fb7ee0c6fa6a0c7842b973de3c</anchor>
       <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
+      <name>espGetFeedback</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>gac3aa8897554734458a399dcbdaeba4e5</anchor>
+      <arglist>(HttpConn *conn, cchar *kind)</arglist>
     </member>
     <member kind="function">
       <type>cchar *</type>
@@ -853,6 +867,13 @@
       <arglist>(cchar *key, cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>canUser</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga06c4528395fd1b375d9ac771cf59a8b5</anchor>
+      <arglist>(cchar *abilities, bool warn)</arglist>
+    </member>
+    <member kind="function">
       <type>EdiRec *</type>
       <name>createRec</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -886,20 +907,6 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga9db9b8b7e2c750f6f942da0478866de2</anchor>
       <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>void *</type>
-      <name>espGetData</name>
-      <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>ga65d11f787b22a5deda37f8d53f479c56</anchor>
-      <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
-      <type>cchar *</type>
-      <name>espGetFeedback</name>
-      <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>gac3aa8897554734458a399dcbdaeba4e5</anchor>
-      <arglist>(HttpConn *conn, cchar *kind)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

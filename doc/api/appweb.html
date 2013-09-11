@@ -75,7 +75,7 @@
 <tr class="apiDef"><td class="apiType"><a href="#group___ma_appweb" class="ref">MaAppweb*</a></td><td><a href="#group___ma_appweb_1ga3c5d11ffcda01cb1d75ae24faa39cdee" class="nameRef">maCreateAppweb</a>()</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create the Appweb object.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___ma_server" class="ref">MaServer*</a></td><td><a href="#group___ma_server_1gad21a5a81aa006217ecc220da1198ff7f" class="nameRef">maCreateServer</a>(<a href="#group___ma_appweb" class="ref">MaAppweb</a> *appweb, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *name)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Create a MaServer object.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="http.html#group___http_auth" class="ref">HttpAuth*</a></td><td><a href="#group___ma_server_1gaa0bedf682051dbf71477308356bf8f06" class="nameRef">maGetDefaultAuth</a>(<a href="#group___ma_server" class="ref">MaServer</a> *server)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the default authentication object for the server.</td></tr>
-<tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___ma_appweb_1gaea685e4068bee9c8b2d115c20a3620fb" class="nameRef">maGetNextToken</a>(char *s, char **tok)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the next token in a string.</td></tr>
+<tr class="apiDef"><td class="apiType">char*</td><td><a href="#group___ma_appweb_1ga55e8a5ed07c0c10d79fd20d3c0e1d602" class="nameRef">maGetNextArg</a>(char *s, char **tok)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the argument in a directive.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___ma_appweb_1gaeea4a201c9a8cca9521cd006436b8570" class="nameRef">maGetUserGroup</a>(<a href="#group___ma_appweb" class="ref">MaAppweb</a> *appweb)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Get the user group.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___ma_appweb_1gaba2d0d4cfa73dbc028719098908eaa89" class="nameRef">maLoadModule</a>(<a href="#group___ma_appweb" class="ref">MaAppweb</a> *appweb, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *name, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *libname)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Load an appweb module.</td></tr>
 <tr class="apiDef"><td class="apiType">struct MaServer*</td><td><a href="#group___ma_appweb_1gaf5f955fddd686c69147a13fe34f57a9b" class="nameRef">maLookupServer</a>(<a href="#group___ma_appweb" class="ref">MaAppweb</a> *appweb, <a href="mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr.html#mpr_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *name)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Lookup a server.</td></tr>
@@ -315,16 +315,16 @@ User name changed.
     <a href="http.html#group___http" class="ref">Http</a>, <a href="#group___ma_appweb_1ga6dddb0f76c4bb135ee006f2fb48f38ae" class="ref">maAddServer</a>, <a href="#group___ma_appweb_1gaf558e80479e238939e4c4edf16a16ec0" class="ref">maApplyChangedGroup</a>, <a href="#group___ma_appweb_1ga04b040307aaccc46eaf6fef1dd61d024" class="ref">maApplyChangedUser</a>, <a href="#group___ma_appweb_1gaeea4a201c9a8cca9521cd006436b8570" class="ref">maGetUserGroup</a>, <a href="#group___ma_appweb_1gaba2d0d4cfa73dbc028719098908eaa89" class="ref">maLoadModule</a>, <a href="#group___ma_appweb_1gaf5f955fddd686c69147a13fe34f57a9b" class="ref">maLookupServer</a>, <a href="#group___ma_appweb_1gaf72ae42c5d6c767a221d6d84f4f0b83b" class="ref">maParseInit</a>, <a href="#group___ma_appweb_1gaeeb83f9f10a5e54bcf16836f198f9f30" class="ref">maParsePlatform</a>, <a href="#group___ma_appweb_1ga16d04b99389aac28bc4c210f49ff52dc" class="ref">maRenderDirListing</a>, <a href="#group___ma_appweb_1ga30109915ae5446c9299173528c2c880e" class="ref">maSetDefaultServer</a>, <a href="#group___ma_appweb_1ga29500f7d8b117921cf5c68beb7ef40ad" class="ref">maSetHttpGroup</a>, <a href="#group___ma_appweb_1gaf824d096f9596ebf8840d7e8d005baad" class="ref">maSetHttpUser</a>, <a href="#group___ma_appweb_1gaad2b501a1eef1b0210189ef055c4f158" class="ref">maStartAppweb</a>, <a href="#group___ma_appweb_1gae98b753968134ec1c2bc50d5d63b2a1f" class="ref">maStopAppweb</a></dd></dl>
   </div>
 </div>
-<a name="group___ma_appweb_1gaea685e4068bee9c8b2d115c20a3620fb"></a>
+<a name="group___ma_appweb_1ga55e8a5ed07c0c10d79fd20d3c0e1d602"></a>
 <div class="api">
   <div class="prototype">
     char *
-    maGetNextToken
+    maGetNextArg
 (char *s, char **tok)
   </div>
   <div class="apiDetail">
-<p>Get the next token in a string.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Break into tokens separated by spaces or commas. Supports quoted args and backquotes.</dd></dl>
+<p>Get the argument in a directive.</p>
+    <dl><dt><b>Description</b>:</dt><dd>Break into arguments. Args may be quoted. An outer quoting of the entire arg is removed.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">s</td><td>String to examine.</td>
