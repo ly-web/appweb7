@@ -11599,13 +11599,17 @@ PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods
 {
     HttpRoute   *route;
 
+#if UNUSED
     if (name == NULL || *name == '\0') {
         name = "/";
     }
+#endif
     if ((route = httpCreateInheritedRoute(parent)) == 0) {
         return 0;
     }
-    httpSetRouteName(route, name);
+    if (name) {
+        httpSetRouteName(route, name);
+    }
     httpSetRoutePattern(route, pattern, 0);
     if (methods) {
         httpSetRouteMethods(route, methods);
@@ -13155,7 +13159,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
                         }
                     }
                 }
-                if (start < 0 || end < 0 || size < 0 || end > start) {
+                if (start < 0 || end < 0 || size < 0 || end < start) {
                     httpBadRequestError(conn, HTTP_CLOSE | HTTP_CODE_RANGE_NOT_SATISFIABLE, "Bad content range");
                     break;
                 }
@@ -19124,8 +19128,7 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...)
 
 
 /*
-    Send a block of data with the specified message type. Set flags to HTTP_MORE to indicate there is more data for this
-    message. WARNING: this absorbs all data. The caller should ensure they don't write too much by checking conn->writeq->count.
+    Send a block of data with the specified message type. Set flags to HTTP_MORE to indicate there is more data for this message.
  */
 PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int flags)
 {
@@ -19227,7 +19230,6 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
         packet->last = (len > 0) ? 0 : !(flags & HTTP_MORE);
         ws->more = !packet->last;
         httpPutForService(q, packet, HTTP_SCHEDULE_QUEUE);
-
 
     } while (len > 0);
 

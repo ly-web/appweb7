@@ -22,7 +22,7 @@
             <%@ content %>
         </section>
         <aside>
-            <% flash("all", NULL); %>
+            <% renderFlash("all", NULL); %>
         </aside>
     </main>
 </body>

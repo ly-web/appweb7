@@ -1,6 +1,4 @@
 
-<!-- need conn-less version -->
-
 <% flash("warn", "Test warning"); %>
 
 <h1>Edit</h1>

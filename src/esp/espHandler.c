@@ -838,7 +838,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     name = 0;
 
     if (scontains(value, "=")) {
-        for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
+        for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
             option = stok(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "auth")) {
@@ -1250,8 +1250,8 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
     methods = "GET";
 
     if (scontains(value, "=")) {
-        for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
-            option = stok(option, " =\t,", &ovalue);
+        for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
+            option = stok(option, "=,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "methods")) {
                 methods = ovalue;
@@ -1277,7 +1277,7 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
         }
 #endif
     }
-    if (!name || !prefix || !target) {
+    if (!prefix || !target) {
         return MPR_ERR_BAD_SYNTAX;
     }
     if (target == 0 || *target == 0) {

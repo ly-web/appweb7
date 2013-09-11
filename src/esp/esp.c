@@ -1571,7 +1571,7 @@ static void generateScaffoldViews(int argc, char **argv)
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-edit.html", app->eroute->appDir, name, name);
     } else {
-        path = sfmt("%s/%s-list.esp", app->eroute->viewsDir, name);
+        path = sfmt("%s/%s-edit.esp", app->eroute->viewsDir, name);
     }
     data = getTemplate(mprJoinPath(app->topComponent, "edit.html"), tokens);
     makeEspFile(path, data, "Scaffold Edit View");

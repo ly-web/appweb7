@@ -47,6 +47,17 @@ static void post_update() {
     }
 }
 
+static void post_noview() {
+    render("Check: OK\r\n");
+    finalize();
+    /* No view used */
+}
+
+static void post_view() {
+    setParam("secret", "42");
+    /* View will be rendered */
+}
+
 ESP_EXPORT int esp_module_post(HttpRoute *route, MprModule *module) 
 {
     Edi     *edi;
@@ -60,10 +71,13 @@ ESP_EXPORT int esp_module_post(HttpRoute *route, MprModule *module)
     espDefineAction(route, "post-show", post_show);
     espDefineAction(route, "post-update", post_update);
 
+    espDefineAction(route, "post-cmd-noview", post_noview);
+    espDefineAction(route, "post-cmd-view", post_view);
+
     /*
         Add model validations
      */
-    edi = espGetRouteDatabase(route->eroute);
+    edi = espGetRouteDatabase(route);
     ediAddValidation(edi, "present", "post", "title", 0);
     ediAddValidation(edi, "unique", "post", "title", 0);
     ediAddValidation(edi, "format", "post", "body", "(fox|dog)");
