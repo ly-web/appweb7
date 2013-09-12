@@ -30,7 +30,7 @@ assert(http.status == 200)
 assert(http.response.contains("Aggregate all stylesheets"))
 http.close()
 
-//  /angular/post/init - this tests a controller without view
+//  /angular/service/post/init - this tests a controller without view
 http.get(prefix + "/service/post/init")
 assert(http.status == 200)
 assert(http.response.contains('"schema":'))

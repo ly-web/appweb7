@@ -327,7 +327,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
 #if BIT_WIN_LIKE
     {
         /*
-            Force a clean windows compile by removing the object and pdb
+            Force a clean windows compile by removing the obj, pdb and ilk files
          */
         cchar   *path;
         path = mprReplacePathExt(module, "obj");
@@ -335,6 +335,10 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
             mprDeletePath(path);
         }
         path = mprReplacePathExt(module, "pdb");
+        if (mprPathExists(path, F_OK)) {
+            mprDeletePath(path);
+        }
+        path = mprReplacePathExt(module, "ilk");
         if (mprPathExists(path, F_OK)) {
             mprDeletePath(path);
         }

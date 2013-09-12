@@ -252,7 +252,7 @@ static int runAction(HttpConn *conn)
         source = mprTrimPathDrive(source);
 #endif
         canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
-        req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "controller_");
+        req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, "controller_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->controllerPath, R_OK)) {
@@ -498,7 +498,7 @@ static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
         return 0;
     };
     canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
-    cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "app_");
+    cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, "app_");
     eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));
 
 #if !BIT_STATIC
