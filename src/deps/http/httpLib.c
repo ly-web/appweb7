@@ -18970,7 +18970,7 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
 
     if (3 <= MPR->logLevel) {
         mprAddNullToBuf(content);
-        mprLog(2, "WebSocket: %d: receive \"%s\" (%d) frame, last %d, length %d",
+        mprLog(3, "WebSocket: %d: receive \"%s\" (%d) frame, last %d, length %d",
              ws->rxSeq++, codetxt[packet->type], packet->type, packet->last, mprGetBufLength(content));
     }
     validated = 0;
@@ -19352,7 +19352,7 @@ static void outgoingWebSockService(HttpQueue *q)
             }
             *prefix = '\0';
             mprAdjustBufEnd(packet->prefix, prefix - packet->prefix->start);
-            mprLog(2, "WebSocket: %d: send \"%s\" (%d) frame, last %d, length %d",
+            mprLog(3, "WebSocket: %d: send \"%s\" (%d) frame, last %d, length %d",
                 ws->txSeq++, codetxt[packet->type], packet->type, packet->last, httpGetPacketLength(packet));
             if (packet->type == WS_MSG_TEXT && packet->content) {
                 mprLog(4, "webSocketFilter: Send text \"%s\"", packet->content->start);
