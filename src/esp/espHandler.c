@@ -849,7 +849,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     char        *option, *ovalue, *tok;
 
     dir = ".";
-    routeSet = 0;
+    routeSet = "restful";
     flat = "false";
     prefix = 0;
     database = 0;
@@ -888,7 +888,6 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         /* 
             Deprecated in 4.4.0
          */
-        routeSet = "restful";
         if (!maTokenize(state, value, "%S ?S ?S ?S", &prefix, &dir, &routeSet, &database)) {
             return MPR_ERR_BAD_SYNTAX;
         }
@@ -952,15 +951,8 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
     httpSetRouteTarget(route, "run", "$&");
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
+    espAddRouteSet(route, routeSet);
 
-#if DEPRECATE || 1
-    if (!routeSet && !espHasComponent(route, "legacy-mvc")) {
-        routeSet = "restful";
-    }
-#endif
-    if (routeSet) {
-        espAddRouteSet(route, routeSet);
-    }
     if (database) {
         eroute->database = sclone(database);
         if (espDbDirective(state, key, eroute->database) < 0) {
