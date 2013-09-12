@@ -371,7 +371,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     }
 #if !BIT_STATIC
     if (!eroute->flat && (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(req->source)))) {
-        cchar       *source;
+        cchar       *canonical, *source;
         char        *errMsg;
         int         recompile = 0;
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
@@ -383,7 +383,9 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         canonical = mprGetPortablePath(mprGetRelPath(source, req->route->documents));
         req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "view_");
 #else
-        req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", route->name, source), -1, "view_");
+        // req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", route->name, source), -1, "view_");
+        canonical = mprGetPortablePath(mprGetRelPath(source, req->route->documents));
+        req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, "view_");
 #endif
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
