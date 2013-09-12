@@ -27,11 +27,9 @@ ws.onmessage = function (event) {
     received += event.data.length
     msgCount++
     lastEvent = event
-print("ON MSG", event.data.length, msgCount)
 }
 
 ws.onclose = function (event) {
-print("ON CLOSE")
     gotClose = true
     ws.close()
 }
@@ -44,7 +42,6 @@ ws.wait(WebSocket.OPEN, TIMEOUT)
 ws.wait(WebSocket.CLOSED, TIMEOUT)
 assert(ws.readyState == WebSocket.CLOSED)
 
-print('RR', received);
 assert(received == 16000)
 assert(gotClose)
 assert(msgCount > 1)
