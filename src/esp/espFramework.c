@@ -1357,11 +1357,11 @@ PUBLIC void espSecurityToken(HttpConn *conn)
 #endif
 
 
-static void serveConfig()
+PUBLIC void espRenderConfig(HttpConn *conn)
 {
     EspRoute    *eroute;
 
-    eroute = getConn()->rx->route->eroute;
+    eroute = conn->rx->route->eroute;
     if (eroute->config) {
         //  MOB - remove pretty
         renderString(mprSerialize(eroute->config, MPR_JSON_QUOTES | MPR_JSON_PRETTY));
@@ -1438,10 +1438,12 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         if (espHasComponent(route, "legacy-mvc")) {
             eroute->legacy = 1;
         }
+#if UNUSED
         /*
             Define custom action to serve config.json
          */
-        espDefineAction(route, "esp-config", serveConfig);
+        espDefineAction(route, "esp-config", espRenderConfig);
+#endif
     }
     return 0;
 }

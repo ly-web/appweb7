@@ -440,6 +440,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
                     return;
                 }
             }
+        } else {
+            mprTrace(4, "EspUpdate is disabled for this route: %s, uri %s", route->name, rx->uri);
         }
         if (mprLookupModule(req->source) == 0) {
             MprModule   *mp;
@@ -616,6 +618,7 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->cacheDir = parent->cacheDir;
     eroute->clientDir = parent->clientDir;
     eroute->config = parent->config;
+    eroute->configLoaded = parent->configLoaded;
     eroute->dbDir = parent->dbDir;
     eroute->layoutsDir = parent->layoutsDir;
     eroute->srcDir = parent->srcDir;
@@ -792,10 +795,11 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
     if (!eroute->legacy) {
         prefix = route->prefix ? route->prefix : "";
         //  MOB - functionalize to create a restful esp route.
-        if ((rp = httpDefineRoute(route, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), 
-                "esp-$1", ".")) != 0) {
-            eroute = allocEspRoute(rp);
+        //  MOB - but must do only once
+        if ((rp = httpDefineRoute(route, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), "esp-$1", ".")) != 0) {
+            eroute = cloneEspRoute(rp, route->eroute);
             eroute->update = 0;
+            espDefineAction(rp, "esp-config", espRenderConfig);
         }
         httpAddRouteSet(route, BIT_ESP_SERVICE_NAME, set);
 #if DEPRECATE || 1

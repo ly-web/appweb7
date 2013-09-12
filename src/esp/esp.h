@@ -1172,6 +1172,16 @@ PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size);
  */
 PUBLIC ssize espRenderCached(HttpConn *conn);
 
+
+/**
+    Render the config.json
+    @param conn HttpConn connection object
+    @return A count of the bytes actually written
+    @ingroup EspReq
+    @stability Evolving
+ */
+PUBLIC void espRenderConfig(HttpConn *conn);
+
 /**
     Render an error message back to the client and finalize the request. The output is Html escaped for security.
     @param conn HttpConn connection object
