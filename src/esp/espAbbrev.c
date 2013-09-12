@@ -502,7 +502,6 @@ PUBLIC void scripts(cchar *patterns)
 {
     HttpConn    *conn;
     HttpRoute   *route;
-    EspReq      *req;
     EspRoute    *eroute;
     MprList     *files;
     MprHash     *components;
@@ -510,7 +509,6 @@ PUBLIC void scripts(cchar *patterns)
     int         next, i;
 
     conn = getConn();
-    req = conn->data;
     route = conn->rx->route;
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
@@ -522,7 +520,6 @@ PUBLIC void scripts(cchar *patterns)
             for (i = 0; i < components->length; i++) {
                 char num[16];
                 component = mprLookupKey(components, itosbuf(num, sizeof(num), i, 10));
-//  MOB mprJoinPaths
                 scripts(sfmt("%s/lib/%s/**.js", eroute->clientDir, component));
             }
         }

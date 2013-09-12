@@ -999,7 +999,7 @@ static bool requiredRoute(HttpRoute *route)
 {
     EspRoute    *eroute;
     MprKey      *kp;
-    cchar       *source, *dir;
+    cchar       *source;
 
     if (app->targets == 0 || mprGetHashLength(app->targets) == 0) {
         return 1;
@@ -1011,7 +1011,6 @@ static bool requiredRoute(HttpRoute *route)
         }
         if (route->sourceName) {
             eroute = route->eroute;
-            dir = eroute->controllersDir ? eroute->controllersDir : route->home;
             source = mprJoinPath(eroute->controllersDir, route->sourceName);
             if (mprIsParentPathOf(kp->key, source)) {
                 kp->type = ESP_FOUND_TARGET;
