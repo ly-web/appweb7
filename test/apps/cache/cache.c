@@ -8,7 +8,7 @@ static void api() {
     render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
 }
 
-static void small() {
+static void sml() {
     int     i;
     for (i = 0; i < 1; i++) {
         render("Line: %05d %s", i, "aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>\r\n");
@@ -75,7 +75,7 @@ ESP_EXPORT int esp_controller_cache(HttpRoute *route, MprModule *module) {
 
     espDefineAction(route, "cache-api", api);
     espDefineAction(route, "cache-big", big);
-    espDefineAction(route, "cache-small", small);
+    espDefineAction(route, "cache-small", sml);
     espDefineAction(route, "cache-medium", medium);
     espDefineAction(route, "cache-clear", clear);
     espDefineAction(route, "cache-client", client);
