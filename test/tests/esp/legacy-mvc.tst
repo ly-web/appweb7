@@ -34,6 +34,7 @@ http.close()
 http.post(prefix + "/post/noview")
 assert(http.status == 200)
 assert(http.response.contains("Check: OK"))
+http.close()
 
 //  /legacy/post/details - this tests templates
 http.post(prefix + "/post/view")

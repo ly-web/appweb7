@@ -58,7 +58,7 @@ static void post_view() {
     /* View will be rendered */
 }
 
-ESP_EXPORT int esp_module_post(HttpRoute *route, MprModule *module) 
+ESP_EXPORT int esp_controller_legacy_post(HttpRoute *route, MprModule *module) 
 {
     Edi     *edi;
 

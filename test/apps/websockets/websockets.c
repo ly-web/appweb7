@@ -161,7 +161,7 @@ static void frames_response()
 }
 
 
-ESP_EXPORT int esp_module_websockets(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_websockets(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "basic-construct", dummy_action);
     espDefineAction(route, "basic-open", dummy_action);
     espDefineAction(route, "basic-send", dummy_action);

@@ -32,7 +32,7 @@ static int unloadEsp(MprModule *mp);
 static bool pageExists(HttpConn *conn);
 
 #if !BIT_STATIC
-static char *getControllerEntry(cchar *controllerName);
+static char *getControllerEntry(cchar *appName, cchar *controllerName);
 #endif
 
 /************************************* Code ***********************************/
@@ -277,7 +277,7 @@ static int runAction(HttpConn *conn)
         }
         if (mprLookupModule(req->controllerPath) == 0) {
             MprModule   *mp;
-            req->entry = getControllerEntry(req->controllerName);
+            req->entry = getControllerEntry(eroute->appName, req->controllerName);
             if ((mp = mprCreateModule(req->controllerPath, req->module, req->entry, route)) == 0) {
                 unlock(req->esp);
                 httpMemoryError(conn);
@@ -460,11 +460,15 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 /************************************ Support *********************************/
 
 #if !BIT_STATIC
-static char *getControllerEntry(cchar *controllerName)
+static char *getControllerEntry(cchar *appName, cchar *controllerName)
 {
     char    *cp, *entry;
-
-    entry = sfmt("esp_module_%s", mprTrimPathExt(mprGetPathBase(controllerName)));
+    
+    if (appName && *appName) {
+        entry = sfmt("esp_controller_%s_%s", appName, mprTrimPathExt(mprGetPathBase(controllerName)));
+    } else {
+        entry = sfmt("esp_controller_%s", mprTrimPathExt(mprGetPathBase(controllerName)));
+    }
     for (cp = entry; *cp; cp++) {
         if (!isalnum((uchar) *cp) && *cp != '_') {
             *cp = '_';
@@ -776,7 +780,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
     eroute = route->eroute;
     if (!eroute->legacy) {
         prefix = route->prefix ? route->prefix : "";
-        //  MOB - functionalize
+        //  MOB - functionalize to create a restful esp route.
         if ((rp = httpDefineRoute(route, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), 
                 "esp-$1", ".")) != 0) {
             eroute = allocEspRoute(rp);
@@ -922,6 +926,11 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         prefix = stemplate(prefix, route->vars);
         httpSetRouteName(route, prefix);
         httpSetRoutePrefix(route, prefix);
+        httpSetRoutePattern(route, sfmt("^%s%", prefix), 0);
+        // DEPRECATE test
+        if (!eroute->legacy) {
+            httpAddRouteIndex(route, "index.esp");
+        }
     } else {
         httpSetRouteName(route, sfmt("/%s", name));
     }
@@ -1239,6 +1248,7 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
  */
 static int espRouteDirective(MaState *state, cchar *key, cchar *value)
 {
+    EspRoute    *eroute;
     HttpRoute   *route;
     cchar       *methods, *name, *prefix, *source, *target;
     char        *option, *ovalue, *tok;
@@ -1288,6 +1298,10 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_CANT_CREATE;
     }
     httpSetRouteHandler(route, "espHandler");
+    if ((eroute = getEroute(route)) == 0) {
+        return MPR_ERR_MEMORY;
+    }
+    eroute->appName = sclone(name);
     return 0;
 }
 

@@ -44,7 +44,7 @@ static void update() {
     }
 }
 
-ESP_EXPORT int esp_module_${NAME}(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "${NAME}-create", create);
     espDefineAction(route, "${NAME}-destroy", destroy);
     espDefineAction(route, "${NAME}-edit", edit);

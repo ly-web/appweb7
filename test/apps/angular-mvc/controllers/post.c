@@ -31,7 +31,7 @@ static void updatePost() {
     renderResult(updateRec(rec));
 }
 
-ESP_EXPORT int esp_module_post(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_angular_post(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "post-create", createPost);
     espDefineAction(route, "post-get", getPost);
     espDefineAction(route, "post-init", initPost);

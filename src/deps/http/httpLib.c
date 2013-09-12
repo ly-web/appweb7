@@ -9436,27 +9436,30 @@ PUBLIC void httpRouteRequest(HttpConn *conn)
         tx->handler = conn->http->passHandler;
         route = rx->route = conn->host->defaultRoute;
 
-    } else for (next = rewrites = 0; rewrites < BIT_MAX_REWRITE; ) {
-        if (next >= conn->host->routes->length) {
-            break;
-        }
-        route = conn->host->routes->items[next++];
-        if (route->startSegment && strncmp(rx->pathInfo, route->startSegment, route->startSegmentLen) != 0) {
-            /* Failed to match the first URI segment, skip to the next group */
-            assert(next <= route->nextGroup);
-            next = route->nextGroup;
+    } else {
+        for (next = rewrites = 0; rewrites < BIT_MAX_REWRITE; ) {
+            if (next >= conn->host->routes->length) {
+                break;
+            }
+            route = conn->host->routes->items[next++];
+            if (route->startSegment && strncmp(rx->pathInfo, route->startSegment, route->startSegmentLen) != 0) {
+                /* Failed to match the first URI segment, skip to the next group */
+                if (next < route->nextGroup) {
+                    next = route->nextGroup;
+                }
 
-        } else if (route->startWith && strncmp(rx->pathInfo, route->startWith, route->startWithLen) != 0) {
-            /* Failed to match starting literal segment of the route pattern, advance to test the next route */
-            continue;
+            } else if (route->startWith && strncmp(rx->pathInfo, route->startWith, route->startWithLen) != 0) {
+                /* Failed to match starting literal segment of the route pattern, advance to test the next route */
+                continue;
 
-        } else if ((match = matchRoute(conn, route)) == HTTP_ROUTE_REROUTE) {
-            next = 0;
-            route = 0;
-            rewrites++;
+            } else if ((match = matchRoute(conn, route)) == HTTP_ROUTE_REROUTE) {
+                next = 0;
+                route = 0;
+                rewrites++;
 
-        } else if (match == HTTP_ROUTE_OK) {
-            break;
+            } else if (match == HTTP_ROUTE_OK) {
+                break;
+            }
         }
     }
     if (route == 0 || tx->handler == 0) {
@@ -11706,7 +11709,7 @@ PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *prefix, cchar *name)
         prefix = sjoin(parent->prefix, prefix, NULL);
         name = sjoin(parent->prefix, name, NULL);
     }
-    pattern = sfmt("^%s/(.*)", prefix);
+    pattern = sfmt("^%s(/.*)", prefix);
     path = stemplate("${CLIENT_DIR}/$1", parent->vars);
     route = httpDefineRoute(parent, name, "GET", pattern, path, parent->sourceName);
     httpAddRouteHandler(route, "fileHandler", "");

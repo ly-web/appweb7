@@ -533,6 +533,7 @@ static MprList *getRoutes()
     app->eroute = app->route->eroute;
     assert(app->eroute); 
     app->topComponent = mprJsonGet(app->eroute->config, "generate.top");
+    app->appName = app->eroute->appName;
     return routes;
 }
 
@@ -842,7 +843,11 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
                 return;
             }
             mprWriteFileFmt(app->flatFile, "\n\n");
-            mprAddItem(app->flatItems, sfmt("esp_module_%s", mprTrimPathExt(mprGetPathBase(source))));
+            if (eroute->appName && *eroute->appName) {
+                mprAddItem(app->flatItems, sfmt("esp_controller_%s_%s", eroute->appName, mprTrimPathExt(mprGetPathBase(source))));
+            } else {
+                mprAddItem(app->flatItems, sfmt("esp_controller_%s", mprTrimPathExt(mprGetPathBase(source))));
+            }
         }
     }
     if (kind & (ESP_PAGE | ESP_VIEW)) {
@@ -1366,9 +1371,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
     makeEspDir(dir);
 
     path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
-
-    tokens = mprDeserialize(sfmt("{ NAME: %s, COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", name, comment, 
-        forward, backward));
+    tokens = mprDeserialize(sfmt("{ NAME: %s, COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", name, comment, forward, backward));
     data = getTemplate("server/migration.c", tokens);
 
     files = mprGetPathFiles("db/migrations", MPR_PATH_RELATIVE);
@@ -1414,7 +1417,8 @@ static void generateController(int argc, char **argv)
         defines = sjoin(defines, sfmt("    espDefineAction(route, \"%s-cmd-%s\", %s);\n", name, action, action), NULL);
         actions = sjoin(actions, sfmt("static void %s() {\n}\n\n", action), NULL);
     }
-    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, ACTIONS: '%s', DEFINE_ACTIONS: '%s' }", name, title, actions, defines));
+    tokens = mprDeserialize(sfmt("{ APP: %s, NAME: %s, TITLE: %s, ACTIONS: '%s', DEFINE_ACTIONS: '%s' }", 
+        app->appName, name, title, actions, defines));
     data = getTemplate("server/controller.c", tokens);
     makeEspFile(path, data, "Controller");
 }
@@ -1432,7 +1436,7 @@ static void generateScaffoldController(int argc, char **argv)
     title = spascal(name);
 
     defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", name, title, defines));
+    tokens = mprDeserialize(sfmt("{ APP: %s, NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", app->appName, name, title, defines));
     data = getTemplate(mprJoinPath(app->topComponent, "controller.c"), tokens);
     path = mprJoinPathExt(mprJoinPath(app->eroute->controllersDir, name), ".c");
     makeEspFile(path, data, "Scaffold");

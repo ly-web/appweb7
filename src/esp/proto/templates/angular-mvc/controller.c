@@ -31,7 +31,7 @@ static void update${TITLE}() {
     renderResult(updateRec(rec));
 }
 
-ESP_EXPORT int esp_module_${NAME}(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "${NAME}-create", create${TITLE});
     espDefineAction(route, "${NAME}-get", get${TITLE});
     espDefineAction(route, "${NAME}-init", init${TITLE});

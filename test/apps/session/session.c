@@ -25,7 +25,7 @@ static void login() {
     }
 }
 
-ESP_EXPORT int esp_module_session(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_session(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "session-login", login);
     return 0;
 }
