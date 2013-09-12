@@ -181,6 +181,9 @@
                     instead of esp_module_NAME. This permits multiple applications with controllers of the same name.</li>
                 <li>The ESP src/*.c files must now be named src/app.c</li>
                 <li>ESP cache modules names are different and now include the app name as an ingredient in the MD5 name.</li>
+                <li>The ESP function stylesheet() now generates by default a reference to "static/css/all.css" instead of
+                    "layout.css" and "theme/default.css". This is to support the use of Less and SCCS which aggregate style
+                    sheets.</li>
                 <li>If a Route directive uses the same pattern as a previously created route, it will open and modify the
                     previous route.</li>
                 <li>The Header directive is renamed RequestHeader. Use SetHeader to set response headers.</li>
