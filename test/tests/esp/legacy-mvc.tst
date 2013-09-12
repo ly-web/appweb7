@@ -18,8 +18,8 @@ assert(http.status == 200)
 assert(http.response.contains("Welcome to ESP"))
 http.close()
 
-//  /legacy/static/layout.css
-http.get(prefix + "/static/layout.css")
+//  /legacy/static/css/all.css
+http.get(prefix + "/static/css/all.css")
 assert(http.status == 200)
 assert(http.response.contains("Default layout style sheet"))
 http.close()
