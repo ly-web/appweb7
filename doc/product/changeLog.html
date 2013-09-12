@@ -162,6 +162,9 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/227">[issue 227]</a></li>
                 <li>Fix esp recompiling on windows
                     <a href="https://github.com/embedthis/appweb-4/issues/228">[issue 228]</a></li>
+                <li>Modify ESP cache module naming to include the appname as an ingredient into the MD5 name.
+                    This is necessary to support multiple applications with controllers of the same name.
+                    <a href="https://github.com/embedthis/appweb-4/issues/234">[issue 234]</a></li>
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
@@ -177,6 +180,7 @@
                 <li>ESP controller module initialization functions have a new naming convention: esp_controller_APP_NAME
                     instead of esp_module_NAME. This permits multiple applications with controllers of the same name.</li>
                 <li>The ESP src/*.c files must now be named src/app.c</li>
+                <li>ESP cache modules names are different and now include the app name as an ingredient in the MD5 name.</li>
                 <li>If a Route directive uses the same pattern as a previously created route, it will open and modify the
                     previous route.</li>
                 <li>The Header directive is renamed RequestHeader. Use SetHeader to set response headers.</li>
