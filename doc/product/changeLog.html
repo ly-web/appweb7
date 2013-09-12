@@ -165,23 +165,26 @@
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
-                <li>The ESP HTML control generators are deprecated. The preferred approach is to use a client-side framework 
+                <li>The ESP HTML control generators are deprecated. The recommended approach is to use a client-side framework 
                     like Angular for HTML controls.</li>
                 <li>The EspApp directive now has a new format. See the ESP documentation for details. The old format 
                     is enabled but deprecated.</li>
                 <li>The ESP flash mechanism now preserves flash messages into the next controller and they are then erased before
-                    the view after that. Flash should not be used for feedback into the view.</li>
-                <li>The ESP setFlash() function is renamed flash()</li>
-                <li>The ESP flash() function is renamed renderFlash()</li>
+                the view after that. Flash should not be used for feedback into the view. </li>
+                <li>The ESP setFlash() function is now renamed flash(). </li> <li>The ESP flash() function is renamed
+                    renderFlash().  This is to be consistent with other render methods. </li>
                 <li>The ESP espGetFlashMessage() function is renamed espGetFlash()</li>
+                <li>ESP controller module initialization functions have a new naming convention: esp_controller_APP_NAME
+                    instead of esp_module_NAME. This permits multiple applications with controllers of the same name.</li>
                 <li>The ESP src/*.c files must now be named src/app.c</li>
-                <li>The pattern in a route directive now looks for an existing route pattern. Previously it interpreted
-                    the pattern as a route name.</li>
-                <li>The Header directive is renamed RequestHeader</li>
-                <li>The Compress directive is present but deprecated. Use "Map compressed" instead.</li>
+                <li>If a Route directive uses the same pattern as a previously created route, it will open and modify the
+                    previous route.</li>
+                <li>The Header directive is renamed RequestHeader. Use SetHeader to set response headers.</li>
+                <li>The Compress directive is present but deprecated. Use "Map compressed" instead. Map is a more generalized
+                    facility that embraces compression.</li>
                 <li>The httpHandleOptionsTrace() function is deprecated. The API is present but deprecated.</li>
-                <li>Change LimitRequestBody to not include file upload size.</li>
-                <li>Change HttpRoute.dir to HttpRoute.documents.</li>
+                <li>LimitRequestBody does not file upload size. Use LimitUpload to limit file upload size.</li>
+                <li>Changed the field HttpRoute.dir to HttpRoute.documents. This is to avoid confusion with HttpRoute.home.</li>
                 <li>The Appweb default configuration is now secure-by-default. The security sandbox limits are set fairly
                 low and the default responses now include headers to limit cross-site-scripting vulnerabilities.
                 See <a href="../guide/appweb/users/security.html#securedefaults">Security Defaults</a> for more
