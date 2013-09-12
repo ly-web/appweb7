@@ -156,9 +156,6 @@ Bit.load({
         'ejs.web':         'Enable web support, ejs.web (true|false)',
         'ejs.zlib':        'Enable zlib support, ejs.zlib (true|false)',
 
-        // 'esp.mdb':         'Enable ESP MDB database support (true|false)',
-        // 'esp.sdb':         'Enable ESP SQLite database support (true|flase)',
-
         'est.camellia':    'Enable the Camellia cipher (true|false)',
         'est.des':         'Enable the 3DES cipher (true|false)',
         'est.genPrime':    'Enable generation of primes (true|false)',

@@ -429,8 +429,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
                         }
                     }
                 }
-            }
 #endif
+            }
             if (recompile) {
                 /* WARNING: this will allow GC */
                 if (recompile &&
