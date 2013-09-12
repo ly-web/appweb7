@@ -790,14 +790,8 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     } else {
         prefix = "view_";
     }
-#if UNUSED
-    canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
-    app->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), prefix);
-#else
-    // app->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", route->name, source), -1, prefix);
     canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
     app->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, prefix);
-#endif
     app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, app->cacheName, BIT_SHOBJ));
     defaultLayout = (eroute->layoutsDir) ? mprJoinPath(eroute->layoutsDir, "default.esp") : 0;
     mprMakeDir(eroute->cacheDir, 0755, -1, -1, 1);
@@ -1985,12 +1979,6 @@ static void generateAppDb()
     }
     dbpath = sfmt("%s/%s.%s", app->eroute->dbDir, app->appName, ext);
     makeEspDir(mprGetPathDir(dbpath));
-#if UNUSED
-    if (mprWritePathContents(dbpath, buf, 0, 0664) < 0) {
-        return;
-    }
-    trace("Create", "Database: %s", mprGetRelPath(dbpath, 0));
-#endif
 }
 
 

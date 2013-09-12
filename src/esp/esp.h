@@ -116,13 +116,34 @@ typedef struct Esp {
 } Esp;
 
 /**
+    Entry point for a loadable ESP module
+    @param route HttpRoute object
+    @param module Mpr module object
+    @return Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Stable
+  */
+typedef int (*EspModuleEntry)(struct HttpRoute *route, MprModule *module);
+
+/**
+    Initialize a static library ESP module
+    @description This invokes the ESP initializers for the required pre-compiled ESP shared library.
+    @param entry ESP initialization function.
+    @param appName Name of the ESP application
+    @param routeName Name of the route in the appweb.conf file for this ESP application or page
+    @return Zero if successful, otherwise a negative MPR error code. 
+    @ingroup Esp
+    @stability Evolving
+  */
+PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *routeName);
+
+/**
     Add HTLM internal options to the Esp.options hash
     @internal
  */
 PUBLIC void espInitHtmlOptions(Esp *esp);
 
-
-/********************************** Routes ************************************/
+/********************************** EspRoutes *********************************/
 /**
     EspRoute extended route configuration.
     Note that HttpRoutes may share an EspRoute.
@@ -165,16 +186,6 @@ typedef struct EspRoute {
     MprTicks        lifespan;               /**< Default cache lifespan */
     Edi             *edi;                   /**< Default database for this route */
 } EspRoute;
-
-/**
-    Entry point for a loadable ESP module
-    @param route HttpRoute object
-    @param module Mpr module object
-    @return Zero if successful, otherwise a negative MPR error code.
-    @ingroup EspRoute
-    @stability Stable
-  */
-typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
 
 /**
     Add the specified component to the config.json components list.
@@ -436,16 +447,13 @@ PUBLIC int espSaveConfig(HttpRoute *route);
 PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value);
 
 /**
-    Initialize a static library ESP module
-    @description This invokes the ESP initializers for the required pre-compiled ESP shared library.
-    @param entry ESP initialization function.
-    @param appName Name of the ESP application
-    @param routeName Name of the route in the appweb.conf file for this ESP application or page
-    @return Zero if successful, otherwise a negative MPR error code. 
-    @ingroup Esp
-    @stability Evolving
-  */
-PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *routeName);
+    Set a private data reference for the current request
+    @param conn HttpConn object
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC void espSetData(HttpConn *conn, void *data);
 
 /**
     Test if a configuration property from the ESP config.json has a desired value.
@@ -746,6 +754,16 @@ PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *type);
 PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind);
 
 /**
+    Get the current database grid.
+    @description The current grid is defined via #setGrid
+    @return EdiGrid instance
+    @ingroup EspReq
+    @stability Deprecated
+    @internal
+ */
+PUBLIC EdiGrid *espGetGrid(HttpConn *conn);
+
+/**
     Get an rx http header.
     @description Get a http response header for a given header key.
     @param conn HttpConn connection object
@@ -926,6 +944,26 @@ PUBLIC cchar *espGetUri(HttpConn *conn);
     @stability Prototype
   */
 PUBLIC cchar *espGridToJson(EdiGrid *grid, int flags);
+
+/**
+    Test if a current grid has been defined.
+    @return "True" if a current grid has been defined
+    @ingroup EspReq
+    @stability Deprecated
+    @internal
+ */
+PUBLIC bool espHasGrid(HttpConn *conn);
+
+/**
+    Test if a current record has been defined and save to the database.
+    @description This call returns "true" if a current record is defined and has been saved to the database with a 
+        valid "id" field.
+    @return "True" if a current record with a valid "id" is defined.
+    @ingroup EspReq
+    @stability Deprecated
+    @internal
+ */
+PUBLIC bool espHasRec(HttpConn *conn);
 
 /**
     Test if the receive input stream is at end-of-file.
@@ -1172,7 +1210,6 @@ PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size);
  */
 PUBLIC ssize espRenderCached(HttpConn *conn);
 
-
 /**
     Render the config.json
     @param conn HttpConn connection object
@@ -1202,6 +1239,20 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...);
     @stability Evolving
  */
 PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path);
+
+/**
+    Render flash messages.
+    @description Flash messages are one-time messages that are displayed to the client on the next request (only).
+    Flash messages use the session state store but persist for only one request.
+        See #espSetFlash for how to define flash messages. 
+    @param conn Http connection object
+    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
+    @param options Reserved. Set to "".
+    @ingroup EspControl
+    @stability Deprecated
+    @internal
+ */
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *options);
 
 /**
     Render an EDI database record as a JSON string
@@ -1236,7 +1287,6 @@ PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags);
     @stability Prototype
   */
 PUBLIC cchar *espRecToJson(EdiRec *rec, int flags);
-
 
 /**
     Read a table from the current database
@@ -1311,6 +1361,11 @@ PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s);
     @stability Evolving
  */
 PUBLIC void espRenderSecurityToken(HttpConn *conn);
+
+#if DEPRECATED || 1
+/* Renamed to espRenderSecurityToken */
+PUBLIC void espSecurityToken(HttpConn *conn);
+#endif
 
 /**
     Render a string of data to the client
@@ -1483,6 +1538,14 @@ PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...);
 PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args);
 
 /**
+    Set the current database grid
+    @return The grid instance. This permits chaining.
+    @ingroup EspReq
+    @stability Evolving
+ */
+PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid);
+
+/**
     Set a transmission header
     @description Set a Http header to send with the request. If the header already exists, its value is overwritten.
     @param conn HttpConn connection object
@@ -1542,6 +1605,18 @@ PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value);
     @stability Prototype
  */
 PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier);
+
+/**
+    Set the current database record
+    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(), 
+        checkbox and dropdown()
+    @param conn HttpConn connection object
+    @param rec Record object to define as the current record.
+    @return The grid instance. This permits chaining.
+    @ingroup EspReq
+    @stability Evolving
+ */
+PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec);
 
 /**
     Set a Http response status.
@@ -1708,8 +1783,6 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
     @stability Evolving
  */
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
-
-
 
 /***************************** Abbreviated Controls ***************************/
 /**
@@ -1953,6 +2026,15 @@ PUBLIC cchar *getDir();
 PUBLIC cchar *getField(EdiRec *rec, cchar *field);
 
 /**
+    Get the current database grid
+    @description The current grid is defined via #setGrid
+    @return EdiGrid instance
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC EdiGrid *getGrid();
+
+/**
     Get an rx http header.
     @description Get a http response header for a given header key.
     @param key Name of the header to retrieve. This should be a lower case header name. For example: "Connection"
@@ -2012,16 +2094,6 @@ PUBLIC cchar *getSessionVar(cchar *name);
 PUBLIC cchar *getSessionID();
 
 /**
-    Get a session state variable
-    @description This is a convenient alias for #getSessionVar.
-    @param name Variable name to get
-    @return The session variable value. Returns NULL if not set.
-    @ingroup EspAbbrev
-    @stability Prototype
- */
-PUBLIC cchar *session(cchar *name);
-
-/**
     Get a relative URI to the top of the application.
     @description This will return an absolute URI for the top of the application. This will be "/" if there is no
         application script name. Otherwise, it will return a URI for the script name for the application.
@@ -2052,6 +2124,24 @@ PUBLIC MprHash *getUploads();
     @stability Evolving
  */
 PUBLIC cchar *getUri();
+
+/**
+    Test if a current grid has been defined
+    @return "true" if a current grid has been defined
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC bool hasGrid();
+
+/**
+    Test if a current record has been defined and save to the database
+    @description This call returns "true" if a current record is defined and has been saved to the database with a 
+        valid "id" field.
+    @return "true" if a current record with a valid "id" is defined.
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC bool hasRec();
 
 /**
     Test if the receive input stream is at end-of-file
@@ -2379,6 +2469,17 @@ PUBLIC void renderError(int status, cchar *fmt, ...);
 PUBLIC void renderFeedback(cchar *kinds, cchar *options);
 
 /**
+    Render flash messages.
+    @description Flash notices are one-time messages that are passed to the newt request (only).
+        See #espSetFlash and #flash for how to define flash messages. 
+    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
+    @param options Extra options. See \l EspControl \el for a list of the standard options.
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC void renderFlash(cchar *kinds, cchar *options);
+
+/**
     Render a file back to the client
     @description Render a formatted string of data and then HTML escape. Data packets will be created
         as required to store the write data. This call may block waiting for data to drain to the client.
@@ -2502,6 +2603,16 @@ PUBLIC void scripts(cchar *patterns);
  */
 PUBLIC void securityToken();
 
+/**
+    Get a session state variable
+    @description This is a convenient alias for #getSessionVar.
+    @param name Variable name to get
+    @return The session variable value. Returns NULL if not set.
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC cchar *session(cchar *name);
+
 /** 
     Define a cookie header to send with the response. The Path, Domain, and Expires properties can be set to null for 
     default values.
@@ -2572,6 +2683,14 @@ PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value);
 PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *data);
 
 /**
+    Set the current database grid
+    @return The grid instance. This permits chaining.
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC EdiGrid *setGrid(EdiGrid *grid);
+
+/**
     Set a transmission header
     @description Set a Http header to send with the request. If the header already exists, its value is overwritten.
     @param key Http response header key
@@ -2613,6 +2732,16 @@ PUBLIC void setNotifier(HttpNotifier notifier);
     @stability Evolving
  */
 PUBLIC void setParam(cchar *name, cchar *value);
+
+/**
+    Set the current database record
+    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(), 
+        checkbox and dropdown()
+    @return The grid instance. This permits chaining.
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC EdiRec *setRec(EdiRec *rec);
 
 /**
     Set a session state variable
@@ -2713,7 +2842,6 @@ PUBLIC bool updateRec(EdiRec *rec);
     @stability Prototype
 */ 
 PUBLIC bool updateRecFromParams(cchar *table);
-
 
 /* ******************************** DEPRECATED ****************************** */
 #if (DEPRECATE || 1) && !DOXYGEN
@@ -2912,36 +3040,6 @@ PUBLIC void espEndform(HttpConn *conn);
 PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *options);
 
 /**
-    Get the current database grid.
-    @description The current grid is defined via #setGrid
-    @return EdiGrid instance
-    @ingroup EspReq
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiGrid *espGetGrid(HttpConn *conn);
-
-/**
-    Test if a current grid has been defined.
-    @return "True" if a current grid has been defined
-    @ingroup EspReq
-    @stability Deprecated
-    @internal
- */
-PUBLIC bool espHasGrid(HttpConn *conn);
-
-/**
-    Test if a current record has been defined and save to the database.
-    @description This call returns "true" if a current record is defined and has been saved to the database with a 
-        valid "id" field.
-    @return "True" if a current record with a valid "id" is defined.
-    @ingroup EspReq
-    @stability Deprecated
-    @internal
- */
-PUBLIC bool espHasRec(HttpConn *conn);
-
-/**
     Render an HTML icon.
     @param conn Http connection object
     @param uri URI reference for the icon resource
@@ -3062,20 +3160,6 @@ PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choices, cchar *option
 PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *options);
 
 /**
-    Render flash messages.
-    @description Flash messages are one-time messages that are displayed to the client on the next request (only).
-    Flash messages use the session state store but persist for only one request.
-        See #espSetFlash for how to define flash messages. 
-    @param conn Http connection object
-    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
-    @param options Reserved. Set to "".
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *options);
-
-/**
     Render a script link.
     @param uri Script URI to load. Set to null to get a default set of scripts. See #httpLink for a list of possible
         URI formats.
@@ -3086,42 +3170,6 @@ PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *options);
     @internal
  */
 PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
-
-#if DEPRECATED || 1
-/* Renamed to espRenderSecurityToken */
-PUBLIC void espSecurityToken(HttpConn *conn);
-#endif
-
-/**
-    Set a private data reference for the current request
-    @param conn HttpConn object
-    @return Reference to private data
-    @ingroup EspAbbrev
-    @stability prototype
- */
-PUBLIC void espSetData(HttpConn *conn, void *data);
-
-/**
-    Set the current database grid
-    @return The grid instance. This permits chaining.
-    @ingroup EspReq
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid);
-
-/**
-    Set the current database record
-    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(), 
-        checkbox and dropdown()
-    @param conn HttpConn connection object
-    @param rec Record object to define as the current record.
-    @return The grid instance. This permits chaining.
-    @ingroup EspReq
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec);
 
 /**
     Render a stylesheet link
@@ -3337,7 +3385,6 @@ PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
  */
 PUBLIC void endform();
 
-
 /**
     Render an HTML form 
     @description This will render an HTML form tag and optionally associate the given record as the current record for
@@ -3360,16 +3407,6 @@ PUBLIC void endform();
 PUBLIC void form(void *record, cchar *options);
 
 /**
-    Get the current database grid
-    @description The current grid is defined via #setGrid
-    @return EdiGrid instance
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiGrid *getGrid();
-
-/**
     Get the current database record
     @return EdiRec instance
     @ingroup EspAbbrev
@@ -3384,26 +3421,6 @@ PUBLIC EdiRec *getRec();
     @stability deprecated
  */
 PUBLIC cchar *getTop();
-
-/**
-    Test if a current grid has been defined
-    @return "true" if a current grid has been defined
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC bool hasGrid();
-
-/**
-    Test if a current record has been defined and save to the database
-    @description This call returns "true" if a current record is defined and has been saved to the database with a 
-        valid "id" field.
-    @return "true" if a current record with a valid "id" is defined.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC bool hasRec();
 
 /**
     Render an HTML icon
@@ -3425,7 +3442,6 @@ PUBLIC void icon(cchar *uri, cchar *options);
  */
 PUBLIC void image(cchar *uri, cchar *options);
 
-#if DEPRECATE || 1
 /**
     Set an informational flash notification message.
     @description Flash messages persist for only one request and are a convenient way to pass state information or 
@@ -3435,7 +3451,6 @@ PUBLIC void image(cchar *uri, cchar *options);
     @stability Evolving
  */
 PUBLIC void inform(cchar *fmt, ...);
-#endif
 
 /**
     Render an input field as part of a form. This is a smart input control that will call the appropriate
@@ -3510,18 +3525,6 @@ PUBLIC void radio(cchar *field, void *choices, cchar *options);
 PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
 
 /**
-    Render flash messages.
-    @description Flash notices are one-time messages that are passed to the newt request (only).
-        See #espSetFlash and #flash for how to define flash messages. 
-    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void renderFlash(cchar *kinds, cchar *options);
-
-/**
     Render a script link
     @param uri Script URI to load. Set to null to get a default set of scripts. See #httpLink for a list of possible
         URI formats.
@@ -3531,26 +3534,6 @@ PUBLIC void renderFlash(cchar *kinds, cchar *options);
     @internal
  */
 PUBLIC void script(cchar *uri, cchar *options);
-
-/**
-    Set the current database grid
-    @return The grid instance. This permits chaining.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiGrid *setGrid(EdiGrid *grid);
-
-/**
-    Set the current database record
-    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(), 
-        checkbox and dropdown()
-    @return The grid instance. This permits chaining.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiRec *setRec(EdiRec *rec);
 
 /**
     Render a stylesheet link

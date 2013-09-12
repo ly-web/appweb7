@@ -380,14 +380,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 #if VXWORKS
         source = mprTrimPathDrive(source);
 #endif
-#if UNUSED
-        canonical = mprGetPortablePath(mprGetRelPath(source, req->route->documents));
-        req->cacheName = mprGetMD5WithPrefix(canonical, slen(canonical), "view_");
-#else
-        // req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", route->name, source), -1, "view_");
         canonical = mprGetPortablePath(mprGetRelPath(source, req->route->documents));
         req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, "view_");
-#endif
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->source, R_OK)) {
@@ -565,7 +559,7 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
-#if DEBUG_IDE && UNUSED
+#if DEBUG_IDE && KEEP
     path = mprGetAppDir();
 #else
     path = httpGetRouteVar(route, "CACHE_DIR");
@@ -795,7 +789,6 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
     if (!eroute->legacy) {
         prefix = route->prefix ? route->prefix : "";
         //  MOB - functionalize to create a restful esp route.
-        //  MOB - but must do only once
         if ((rp = httpDefineRoute(route, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), "esp-$1", ".")) != 0) {
             eroute = cloneEspRoute(rp, route->eroute);
             eroute->update = 0;

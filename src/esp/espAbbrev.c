@@ -114,6 +114,12 @@ PUBLIC void flush()
 }
 
 
+PUBLIC cchar *getAppUri()
+{
+    return espGetTop(getConn());
+}
+
+
 PUBLIC MprList *getColumns(EdiRec *rec)
 {
     return espGetColumns(getConn(), rec);
@@ -220,6 +226,12 @@ PUBLIC cchar *getQuery()
 }
 
 
+PUBLIC EdiRec *getRec()
+{
+    return getConn()->record;
+}
+
+
 PUBLIC cchar *getReferrer()
 {
     return espGetReferrer(getConn());
@@ -246,18 +258,6 @@ PUBLIC cchar *getSessionVar(cchar *key)
 }
 
 
-PUBLIC cchar *session(cchar *key)
-{
-    return getSessionVar(key);
-}
-
-
-PUBLIC cchar *getAppUri()
-{
-    return espGetTop(getConn());
-}
-
-
 PUBLIC MprHash *getUploads()
 {
     return espGetUploads(getConn());
@@ -267,6 +267,18 @@ PUBLIC MprHash *getUploads()
 PUBLIC cchar *getUri()
 {
     return espGetUri(getConn());
+}
+
+
+PUBLIC bool hasGrid()
+{
+    return espHasGrid(getConn());
+}
+
+
+PUBLIC bool hasRec()
+{
+    return espHasRec(getConn());
 }
 
 
@@ -443,6 +455,12 @@ PUBLIC ssize renderFile(cchar *path)
 }
 
 
+PUBLIC void renderFlash(cchar *kind, cchar *optionString)
+{
+    espRenderFlash(getConn(), kind, optionString);
+}
+
+
 PUBLIC ssize renderGrid(EdiGrid *grid)
 {
     return espRenderGrid(getConn(), grid, 0);
@@ -545,6 +563,12 @@ PUBLIC void scripts(cchar *patterns)
 }
 
 
+PUBLIC void securityToken()
+{
+    espSecurityToken(getConn());
+}
+
+
 PUBLIC void setConn(HttpConn *conn)
 {
     espSetConn(conn);
@@ -581,6 +605,13 @@ PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *params)
 }
 
 
+PUBLIC EdiGrid *setGrid(EdiGrid *grid)
+{
+    getConn()->grid = grid;
+    return grid;
+}
+
+
 PUBLIC void setHeader(cchar *key, cchar *fmt, ...)
 {
     va_list     args;
@@ -590,6 +621,12 @@ PUBLIC void setHeader(cchar *key, cchar *fmt, ...)
     value = sfmtv(fmt, args);
     espSetHeaderString(getConn(), key, value);
     va_end(args);
+}
+
+
+PUBLIC void setIntParam(cchar *key, int value)
+{
+    espSetIntParam(getConn(), key, value);
 }
 
 
@@ -605,9 +642,9 @@ PUBLIC void setParam(cchar *key, cchar *value)
 }
 
 
-PUBLIC void setIntParam(cchar *key, int value)
+PUBLIC EdiRec *setRec(EdiRec *rec)
 {
-    espSetIntParam(getConn(), key, value);
+    return espSetRec(getConn(), rec);
 }
 
 
@@ -620,6 +657,12 @@ PUBLIC void setSessionVar(cchar *key, cchar *value)
 PUBLIC void setStatus(int status)
 {
     espSetStatus(getConn(), status);
+}
+
+
+PUBLIC cchar *session(cchar *key)
+{
+    return getSessionVar(key);
 }
 
 
@@ -821,27 +864,9 @@ PUBLIC EdiGrid *getGrid()
 }
 
 
-PUBLIC EdiRec *getRec()
-{
-    return getConn()->record;
-}
-
-
 PUBLIC cchar *getTop()
 {
     return getAppUri();
-}
-
-
-PUBLIC bool hasGrid()
-{
-    return espHasGrid(getConn());
-}
-
-
-PUBLIC bool hasRec()
-{
-    return espHasRec(getConn());
 }
 
 
@@ -856,48 +881,6 @@ PUBLIC void inform(cchar *fmt, ...)
 }
 #endif
 
-
-PUBLIC void renderFlash(cchar *kind, cchar *optionString)
-{
-    espRenderFlash(getConn(), kind, optionString);
-}
-
-
-PUBLIC void securityToken()
-{
-    espSecurityToken(getConn());
-}
-
-
-PUBLIC EdiGrid *setGrid(EdiGrid *grid)
-{
-    getConn()->grid = grid;
-    return grid;
-}
-
-
-PUBLIC EdiRec *setRec(EdiRec *rec)
-{
-    return espSetRec(getConn(), rec);
-}
-
-#else
-
-//  MOB  - refactor. Not ideal.
-PUBLIC EdiRec *getRec()
-{
-    return getConn()->record;
-}
-
-PUBLIC EdiRec *setRec(EdiRec *rec)
-{
-    return espSetRec(getConn(), rec);
-}
-
-PUBLIC EdiGrid *setGrid(EdiGrid *grid)
-{
-    return grid;
-}
 
 #endif /* BIT_ESP_LEGACY */
 #endif /* BIT_PACK_ESP */

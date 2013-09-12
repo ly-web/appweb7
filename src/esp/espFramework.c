@@ -1438,12 +1438,6 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         if (espHasComponent(route, "legacy-mvc")) {
             eroute->legacy = 1;
         }
-#if UNUSED
-        /*
-            Define custom action to serve config.json
-         */
-        espDefineAction(route, "esp-config", espRenderConfig);
-#endif
     }
     return 0;
 }
