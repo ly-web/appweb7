@@ -394,7 +394,6 @@ PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *optionStrin
 
 PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
 {
-    EspReq      *req;
     MprHash     *options;
     cchar       *indent, *newline, *path;
     EspScript   *sp;
@@ -406,7 +405,6 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
     if (uri) {
         espRender(conn, "<script src='%s' type='text/javascript'></script>", httpLink(conn, uri, NULL));
     } else {
-        req = conn->data;
         minified = smatch(httpGetOption(options, "minified", 0), "true");
         indent = "";
         for (sp = defaultScripts; sp->name; sp++) {
