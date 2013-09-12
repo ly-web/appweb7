@@ -266,6 +266,7 @@ static int runAction(HttpConn *conn)
                 Test if the source has been updated. This will unload prior modules if stale
              */ 
             if (espModuleIsStale(req->controllerPath, req->module, &recompile)) {
+                mprLog(4, "ESP controller %s is newer than module %s, recompiling ...", source, req->controllerPath, req->module);
                 /*  WARNING: GC yield here */
                 if (recompile && 
                         !espCompile(route, conn->dispatcher, req->controllerPath, req->module, req->cacheName, 0, &errMsg)) {
@@ -397,11 +398,13 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         lock(req->esp);
         if (eroute->update) {
             espModuleIsStale(req->source, req->module, &recompile);
+            if (recompile) {
+                mprLog(4, "ESP page %s is newer than module %s, recompiling ...", req->source, req->module);
 #if BIT_DEBUG
-            /*
-                Check if the layout has changed. Only do this if debug as we don't want to slow production versions.
-             */
-            if (!recompile) {
+            } else {
+                /*
+                    Check if the layout has changed. Only do this if debug as we don't want to slow production versions.
+                 */
                 char    *data, *lpath, *quote, *layout;
                 ssize   len;
                 if ((data = mprReadPathContents(req->source, &len)) != 0) {
@@ -418,6 +421,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
                         espModuleIsStale(layout, req->module, &recompile);
                     }
                     if (recompile) {
+                        mprLog(4, "ESP layout %s is newer than module %s, recompiling ...", layout, req->module);
                         if (mprLookupModule(req->source) != 0 && !espUnloadModule(req->source, 0)) {
                             mprError("Cannot unload module %s. Connections still open. Continue using old version.", 
                                 req->source);        
@@ -507,6 +511,7 @@ static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
         char        *errMsg, *entry;
         int         recompile;
         if (espModuleIsStale(source, eroute->appModulePath, &recompile)) {
+            mprLog(4, "ESP application %s is newer than module %s, recompiling ...", source, eroute->appModulePath);
             /*  WARNING: GC yield here */
             if (recompile && !espCompile(route, dispatcher, source, eroute->appModulePath, cacheName, 0, &errMsg)) {
                 mprError("Cannot compile %s/app.c", eroute->srcDir);
