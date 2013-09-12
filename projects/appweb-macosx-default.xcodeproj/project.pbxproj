@@ -1399,6 +1399,7 @@
 				338EF2F8338F1C880000014D /* bit.h */,
 				338EF2F8338F1C880000014E /* mpr.h */,
 				338EF2F8338F1C8800000150 /* est.h */,
+				338EF2F8338F1C880000014F /* bitos.h */,
 				338EF2F8338F1C8800000055 /* mprSsl.c */,
 			);
             name = "libmprssl";
