@@ -10,6 +10,18 @@
 
 #if BIT_PACK_ESP
 /************************************* Code ***********************************/
+
+PUBLIC void espAddComponent(HttpRoute *route, cchar *name)
+{
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
+    if (!mprJsonGet(eroute->config, sfmt("settings.components[@ = %s]", name))) {
+        mprJsonSet(eroute->config, "settings.components[*]", name);
+    }
+}
+
+
 /* 
     Add a http header if not already defined
  */
@@ -86,22 +98,6 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
 }
 
 
-#if UNUSED
-PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *params)
-{
-    Edi         *edi;
-    EdiRec      *rec;
-
-    edi = espGetDatabase(conn);
-    if ((rec = ediCreateRec(edi, tableName)) == 0) {
-        return 0;
-    }
-    ediSetFields(rec, params);
-    return espSetRec(conn, rec);
-}
-#endif
-
-
 PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 {
     EspRoute    *eroute;
@@ -169,20 +165,17 @@ PUBLIC void espFlush(HttpConn *conn)
 }
 
 
-#if UNUSED
-PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
+PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue)
 {
-#if DEPRECATE || 1
-    if (rec == 0) {
-        rec = conn->record;
+    EspRoute    *eroute;
+    cchar       *value;
+
+    eroute = route->eroute;
+    if ((value = mprJsonGet(eroute->config, key)) != 0) {
+        return value;
     }
-#endif
-    if (rec) {
-        return ediGetColumns(espGetDatabase(conn), rec->tableName);
-    }
-    return mprCreateList(0, MPR_LIST_STABLE);
+    return defaultValue;
 }
-#endif
 
 
 PUBLIC MprOff espGetContentLength(HttpConn *conn)
@@ -287,6 +280,12 @@ PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind)
 }
 
 
+PUBLIC EdiGrid *espGetGrid(HttpConn *conn)
+{           
+    return conn->grid;
+}
+
+
 PUBLIC cchar *espGetHeader(HttpConn *conn, cchar *key)
 {
     return httpGetHeader(conn, key);
@@ -304,7 +303,13 @@ PUBLIC char *espGetHeaders(HttpConn *conn)
     return httpGetHeaders(conn);
 }
 
-            
+
+PUBLIC int espGetIntParam(HttpConn *conn, cchar *var, int defaultValue)
+{
+    return httpGetIntParam(conn, var, defaultValue);
+}
+
+  
 PUBLIC cchar *espGetMethod(HttpConn *conn)
 {   
     return conn->rx->method;
@@ -320,12 +325,6 @@ PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
 PUBLIC MprHash *espGetParams(HttpConn *conn)
 {
     return httpGetParams(conn);
-}
-
-
-PUBLIC int espGetIntParam(HttpConn *conn, cchar *var, int defaultValue)
-{
-    return httpGetIntParam(conn, var, defaultValue);
 }
 
 
@@ -392,6 +391,30 @@ PUBLIC cchar *espGetUri(HttpConn *conn)
 }
 
 
+PUBLIC bool espHasComponent(HttpRoute *route, cchar *name)
+{
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
+    return mprJsonGet(eroute->config, sfmt("settings.components[@ = '%s']", name)) != 0;
+}
+
+
+PUBLIC bool espHasGrid(HttpConn *conn)
+{
+    return conn->grid != 0;
+}
+
+
+PUBLIC bool espHasRec(HttpConn *conn)
+{
+    EdiRec  *rec;
+
+    rec = conn->record;
+    return (rec && rec->id) ? 1 : 0;
+}
+
+
 PUBLIC bool espIsEof(HttpConn *conn)
 {
     return httpIsEof(conn);
@@ -410,18 +433,75 @@ PUBLIC bool espIsSecure(HttpConn *conn)
 }
 
 
-#if UNUSED
 /*
-    grid = makeGrid("[ \
-        { id: '1', country: 'Australia' }, \
-        { id: '2', country: 'China' }, \
-    ]");
+    Load the config.json
  */
-PUBLIC EdiGrid *espMakeGrid(cchar *contents)
+PUBLIC int espLoadConfig(HttpRoute *route)
 {
-    return ediMakeGrid(contents);
+    EspRoute    *eroute;
+    MprObj      *msettings;
+    MprPath     cinfo;
+    cchar       *cpath, *value;
+    int         type;
+
+    eroute = route->eroute;
+    cpath = mprJoinPath(route->documents, "config.json");
+    if (mprGetPathInfo(cpath, &cinfo) == 0) {
+        if (eroute->config && cinfo.mtime > eroute->configLoaded) {
+            eroute->config = 0;
+        }
+        eroute->configLoaded = cinfo.mtime;
+    }
+    if (!eroute->config) {
+        if ((eroute->config = mprJsonLoad(cpath)) != 0) {
+            /*
+                Blend the mode properties into settings
+             */
+            eroute->mode = mprJsonGet(eroute->config, "mode");
+            if ((msettings = mprJsonGetValue(eroute->config, sfmt("modes.%s", eroute->mode), &type)) != 0) {
+                mprJsonBlend(eroute->config, msettings);
+            }
+            if (espTestConfig(route, "settings.showErrors", "true")) {
+                httpSetRouteShowErrors(route, 1);
+            }
+            if (espTestConfig(route, "settings.update", "true")) {
+                eroute->update = 1;
+            }
+            if (espTestConfig(route, "settings.keepSource", "true")) {
+                eroute->keepSource = 1;
+            }
+            if ((value = espGetConfig(route, "settings.username", 0)) != 0) {
+                httpSetAuthUsername(route->auth, value);
+            }
+            if (espTestConfig(route, "settings.xsrfToken", "true")) {
+                httpSetRouteXsrf(route, 1);
+            }
+            if (espTestConfig(route, "settings.sendJson", "true")) {
+                eroute->json = 1;
+            }
+            if (espTestConfig(route, "settings.map", "compressed")) {
+                httpAddRouteMapping(route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
+                httpAddRouteMapping(route, "html,xml", "${1}.gz");
+            }
+            if (!eroute->database) {
+                if ((eroute->database = espGetConfig(route, "server.database", 0)) != 0) {
+                    if (espOpenDatabase(route, eroute->database) < 0) {
+                        mprError("Cannot open database %s", eroute->database);
+                        return MPR_ERR_CANT_OPEN;
+                    }
+                }
+            }
+            eroute->json = espTestConfig(route, "settings.json", "1");
+        } else {
+            eroute->config = mprCreateHash(0, 0);
+            espAddComponent(route, "legacy-mvc");
+        }
+        if (espHasComponent(route, "legacy-mvc")) {
+            eroute->legacy = 1;
+        }
+    }
+    return 0;
 }
-#endif
 
 
 PUBLIC MprHash *espMakeHash(cchar *fmt, ...)
@@ -434,17 +514,6 @@ PUBLIC MprHash *espMakeHash(cchar *fmt, ...)
     va_end(args);
     return mprDeserialize(str);
 }
-
-
-#if UNUSED
-/*
-    rec = makeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
- */
-PUBLIC EdiRec *espMakeRec(cchar *contents)
-{
-    return ediMakeRec(contents);
-}
-#endif
 
 
 //  MOB - reconsider API
@@ -507,38 +576,6 @@ PUBLIC ssize espReceive(HttpConn *conn, char *buf, ssize len)
 }
 
 
-#if UNUSED
-PUBLIC EdiRec *espReadRecWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
-{
-    return espSetRec(conn, ediReadOneWhere(espGetDatabase(conn), tableName, fieldName, operation, value));
-}
-
-
-PUBLIC EdiRec *espReadRec(HttpConn *conn, cchar *tableName, cchar *key)
-{
-    return espSetRec(conn, ediReadRec(espGetDatabase(conn), tableName, key));
-}
-
-
-PUBLIC EdiRec *espReadRecByKey(HttpConn *conn, cchar *tableName, cchar *key)
-{
-    return espSetRec(conn, ediReadRec(espGetDatabase(conn), tableName, key));
-}
-
-
-PUBLIC EdiGrid *espReadRecsWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
-{
-    return espSetGrid(conn, ediReadWhere(espGetDatabase(conn), tableName, fieldName, operation, value));
-}
-
-
-PUBLIC EdiGrid *espReadTable(HttpConn *conn, cchar *tableName)
-{
-    return espSetGrid(conn, ediReadWhere(espGetDatabase(conn), tableName, 0, 0, 0));
-}
-#endif
-
-
 PUBLIC void espRedirect(HttpConn *conn, int status, cchar *target)
 {
     //  MOB - should this httpLink be pushed into httpRedirect?
@@ -552,17 +589,6 @@ PUBLIC void espRedirectBack(HttpConn *conn)
         espRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, conn->rx->referrer); 
     }
 }
-
-
-#if UNUSED
-PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key)
-{
-    if (ediDeleteRow(espGetDatabase(conn), tableName, key) < 0) {
-        return 0;
-    }
-    return 1;
-}
-#endif
 
 
 PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...)
@@ -591,6 +617,22 @@ PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size)
 PUBLIC ssize espRenderCached(HttpConn *conn)
 {
     return httpWriteCached(conn);
+}
+
+
+
+PUBLIC void espRenderConfig(HttpConn *conn)
+{
+    EspRoute    *eroute;
+
+    eroute = conn->rx->route->eroute;
+    if (eroute->config) {
+        //  MOB - remove pretty
+        renderString(mprSerialize(eroute->config, MPR_JSON_QUOTES | MPR_JSON_PRETTY));
+    } else {
+        renderError(HTTP_CODE_NOT_FOUND, "Cannot find config");
+    }
+    finalize();
 }
 
 
@@ -651,6 +693,25 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
     }
     mprCloseFile(from);
     return written;
+}
+
+
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
+{
+    EspReq      *req;
+    MprKey      *kp;
+    cchar       *msg;
+   
+    req = conn->data;
+    if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
+        return;
+    }
+    for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
+        msg = kp->data;
+        if (strstr(kinds, kp->key) || strstr(kinds, "all")) {
+            espRender(conn, "<span class='flash-%s'>%s</span>", kp->key, msg);
+        }
+    }
 }
 
 
@@ -794,6 +855,15 @@ PUBLIC void espRemoveSessionVar(HttpConn *conn, cchar *var)
 }
 
 
+PUBLIC int espSaveConfig(HttpRoute *route)
+{
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
+    return mprJsonSave(eroute->config, mprJoinPath(route->documents, "config.json"));
+}
+
+
 PUBLIC bool espSetAutoFinalizing(HttpConn *conn, bool on) 
 {
     EspReq  *req;
@@ -803,6 +873,15 @@ PUBLIC bool espSetAutoFinalizing(HttpConn *conn, bool on)
     old = req->autoFinalize;
     req->autoFinalize = on;
     return old;
+}
+
+
+PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value)
+{
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
+    return mprJsonSet(eroute->config, key, value);
 }
 
 
@@ -832,20 +911,6 @@ PUBLIC void espSetData(HttpConn *conn, void *data)
     req = conn->data;
     req->data = data;
 }
-
-
-#if UNUSED
-PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value)
-{
-    return ediSetField(rec, fieldName, value);
-}
-
-
-PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *params)
-{
-    return ediSetFields(rec, params);
-}
-#endif
 
 
 PUBLIC void espSetFeedback(HttpConn *conn, cchar *kind, cchar *fmt, ...)
@@ -918,6 +983,12 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 }
 
 
+PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
+{
+    return conn->grid = grid;
+}
+
+
 /*  
     Set a http header. Overwrite if present.
  */
@@ -949,6 +1020,19 @@ PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value)
 PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value) 
 {
     httpSetParam(conn, var, value);
+}
+
+
+
+PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
+{
+    return conn->record = rec;
+}
+
+
+PUBLIC void espSecurityToken(HttpConn *conn) 
+{
+    espRenderSecurityToken(conn);
 }
 
 
@@ -1091,6 +1175,19 @@ PUBLIC void espShowRequest(HttpConn *conn)
 }
 
 
+PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired)
+{
+    EspRoute    *eroute;
+    cchar       *value;
+
+    eroute = route->eroute;
+    if ((value = mprJsonGet(eroute->config, key)) != 0) {
+        return smatch(value, desired);
+    }
+    return 0;
+}
+
+
 /*
     This is called when unloading a view or controller module
  */
@@ -1126,36 +1223,6 @@ PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs
 }
 
 
-#if UNUSED
-PUBLIC bool espUpdateField(HttpConn *conn, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
-{
-    return ediUpdateField(espGetDatabase(conn), tableName, key, fieldName, value) == 0;
-}
-
-
-PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *params)
-{
-    EdiRec  *rec;
-    cchar   *key;
-
-    key = mprLookupKey(params, "id");
-    if ((rec = ediSetFields(ediReadRec(getDatabase(), tableName, key), params)) == 0) {
-        return 0;
-    }
-    return ediUpdateRec(espGetDatabase(conn), rec) == 0;
-}
-
-
-PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec)
-{
-    if (!rec) {
-        return 0;
-    }
-    return ediUpdateRec(rec->edi, rec) == 0;
-}
-#endif
-
-
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 {
     return httpLink(conn, target, 0);
@@ -1186,216 +1253,6 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 }
 
 
-/************************************* Deprecated ******************************/
-
-#if DEPRECATE || 1
-PUBLIC EdiGrid *espGetGrid(HttpConn *conn)
-{           
-    return conn->grid;
-}
-
-
-PUBLIC bool espHasGrid(HttpConn *conn)
-{
-    return conn->grid != 0;
-}
-
-
-PUBLIC bool espHasRec(HttpConn *conn)
-{
-    EdiRec  *rec;
-
-    rec = conn->record;
-    return (rec && rec->id) ? 1 : 0;
-}
-
-
-PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
-{
-    EspReq      *req;
-    MprKey      *kp;
-    cchar       *msg;
-   
-    req = conn->data;
-    if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
-        return;
-    }
-    for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
-        msg = kp->data;
-        if (strstr(kinds, kp->key) || strstr(kinds, "all")) {
-            espRender(conn, "<span class='flash-%s'>%s</span>", kp->key, msg);
-        }
-    }
-}
-
-
-PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
-{
-    return conn->grid = grid;
-}
-
-
-PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
-{
-    return conn->record = rec;
-}
-
-
-PUBLIC void espSecurityToken(HttpConn *conn) 
-{
-    espRenderSecurityToken(conn);
-}
-#endif
-
-
-PUBLIC void espRenderConfig(HttpConn *conn)
-{
-    EspRoute    *eroute;
-
-    eroute = conn->rx->route->eroute;
-    if (eroute->config) {
-        //  MOB - remove pretty
-        renderString(mprSerialize(eroute->config, MPR_JSON_QUOTES | MPR_JSON_PRETTY));
-    } else {
-        renderError(HTTP_CODE_NOT_FOUND, "Cannot find config");
-    }
-    finalize();
-}
-
-
-/*
-    Load the config.json
- */
-PUBLIC int espLoadConfig(HttpRoute *route)
-{
-    EspRoute    *eroute;
-    MprObj      *msettings;
-    MprPath     cinfo;
-    cchar       *cpath, *value;
-    int         type;
-
-    eroute = route->eroute;
-    cpath = mprJoinPath(route->documents, "config.json");
-    if (mprGetPathInfo(cpath, &cinfo) == 0) {
-        if (eroute->config && cinfo.mtime > eroute->configLoaded) {
-            eroute->config = 0;
-        }
-        eroute->configLoaded = cinfo.mtime;
-    }
-    if (!eroute->config) {
-        if ((eroute->config = mprJsonLoad(cpath)) != 0) {
-            /*
-                Blend the mode properties into settings
-             */
-            eroute->mode = mprJsonGet(eroute->config, "mode");
-            if ((msettings = mprJsonGetValue(eroute->config, sfmt("modes.%s", eroute->mode), &type)) != 0) {
-                mprJsonBlend(eroute->config, msettings);
-            }
-            if (espTestConfig(route, "settings.showErrors", "true")) {
-                httpSetRouteShowErrors(route, 1);
-            }
-            if (espTestConfig(route, "settings.update", "true")) {
-                eroute->update = 1;
-            }
-            if (espTestConfig(route, "settings.keepSource", "true")) {
-                eroute->keepSource = 1;
-            }
-            if ((value = espGetConfig(route, "settings.username", 0)) != 0) {
-                httpSetAuthUsername(route->auth, value);
-            }
-            if (espTestConfig(route, "settings.xsrfToken", "true")) {
-                httpSetRouteXsrf(route, 1);
-            }
-            if (espTestConfig(route, "settings.sendJson", "true")) {
-                eroute->json = 1;
-            }
-            if (espTestConfig(route, "settings.map", "compressed")) {
-                httpAddRouteMapping(route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
-                httpAddRouteMapping(route, "html,xml", "${1}.gz");
-            }
-            if (!eroute->database) {
-                if ((eroute->database = espGetConfig(route, "server.database", 0)) != 0) {
-                    if (espOpenDatabase(route, eroute->database) < 0) {
-                        mprError("Cannot open database %s", eroute->database);
-                        return MPR_ERR_CANT_OPEN;
-                    }
-                }
-            }
-            eroute->json = espTestConfig(route, "settings.json", "1");
-        } else {
-            eroute->config = mprCreateHash(0, 0);
-            espAddComponent(route, "legacy-mvc");
-        }
-        if (espHasComponent(route, "legacy-mvc")) {
-            eroute->legacy = 1;
-        }
-    }
-    return 0;
-}
-
-
-PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue)
-{
-    EspRoute    *eroute;
-    cchar       *value;
-
-    eroute = route->eroute;
-    if ((value = mprJsonGet(eroute->config, key)) != 0) {
-        return value;
-    }
-    return defaultValue;
-}
-
-
-PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value)
-{
-    EspRoute    *eroute;
-
-    eroute = route->eroute;
-    return mprJsonSet(eroute->config, key, value);
-}
-
-
-PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired)
-{
-    EspRoute    *eroute;
-    cchar       *value;
-
-    eroute = route->eroute;
-    if ((value = mprJsonGet(eroute->config, key)) != 0) {
-        return smatch(value, desired);
-    }
-    return 0;
-}
-
-
-PUBLIC int espSaveConfig(HttpRoute *route)
-{
-    EspRoute    *eroute;
-
-    eroute = route->eroute;
-    return mprJsonSave(eroute->config, mprJoinPath(route->documents, "config.json"));
-}
-
-
-PUBLIC bool espHasComponent(HttpRoute *route, cchar *name)
-{
-    EspRoute    *eroute;
-
-    eroute = route->eroute;
-    return mprJsonGet(eroute->config, sfmt("settings.components[@ = '%s']", name)) != 0;
-}
-
-
-PUBLIC void espAddComponent(HttpRoute *route, cchar *name)
-{
-    EspRoute    *eroute;
-
-    eroute = route->eroute;
-    if (!mprJsonGet(eroute->config, sfmt("settings.components[@ = %s]", name))) {
-        mprJsonSet(eroute->config, "settings.components[*]", name);
-    }
-}
 
 #endif /* BIT_PACK_ESP */
 /*

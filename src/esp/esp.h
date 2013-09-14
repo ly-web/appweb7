@@ -601,21 +601,6 @@ PUBLIC void espAutoFinalize(HttpConn *conn);
  */
 PUBLIC bool espCheckSecurityToken(HttpConn *conn);
 
-#if UNUSED
-/**
-    Create a record and initialize field values.
-    @description This will call #ediCreateRec to create a record based on the given table's schema. It will then
-        call #ediSetFields to update the record with the given data.
-    @param conn Http connection object
-    @param tableName Database table name
-    @param data Hash of field values
-    @return EdRec instance
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *data);
-#endif
-
 /**
     Finalize processing of the http request.
     @description Finalize the response by writing buffered HTTP data and by writing the final chunk trailer if required. If
@@ -635,18 +620,6 @@ PUBLIC void espFinalize(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC void espFlush(HttpConn *conn);
-
-#if UNUSED
-/**
-    Get a list of column names.
-    @param conn HttpConn connection object
-    @param rec Database record. 
-    @return An MprList of column names in the given table. If there is no record defined, an empty list is returned.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec);
-#endif
 
 /**
     Get the current request connection.
@@ -979,25 +952,6 @@ PUBLIC bool espIsSecure(HttpConn *conn);
  */
 PUBLIC bool espIsFinalized(HttpConn *conn);
 
-#if UNUSED
-/**
-    Make a grid.
-    @description This call makes a free-standing data grid based on the JSON format content string.
-        The record is not saved to the database.
-    @param content JSON format content string. The content should be an array of objects where each object is a
-        set of property names and values.
-    @return An EdiGrid instance
-    @example:
-grid = ediMakeGrid("[ \\ \n
-    { id: '1', country: 'Australia' }, \ \n
-    { id: '2', country: 'China' }, \ \n
-    ]");
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiGrid *espMakeGrid(cchar *content);
-#endif
-
 /**
     Make a hash table container of property values.
     @description This routine formats the given arguments, parses the result as a JSON string and returns an 
@@ -1011,20 +965,6 @@ PUBLIC EdiGrid *espMakeGrid(cchar *content);
  */
 PUBLIC MprHash *espMakeHash(cchar *fmt, ...);
 
-#if UNUSED
-/**
-    Make a record.
-    @description This call makes a free-standing data record based on the JSON format content string.
-        The record is not saved to the database.
-    @param content JSON format content string. The content should be a set of property names and values.
-    @return An EdiRec instance
-    @example: rec = ediMakeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espMakeRec(cchar *content);
-#endif
-
 //  MOB - reconsider API
 /**
     Match a request parameter with an expected value.
@@ -1037,61 +977,6 @@ PUBLIC EdiRec *espMakeRec(cchar *content);
     @stability Evolving
  */
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value);
-
-#if UNUSED
-/**
-    Read the identified record. 
-    @description Read the record identified by the request param("id") from the nominated table.
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param key Key value of the record to remove 
-    @return The identified record. Returns NULL if the table or record cannot be found.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espReadRec(HttpConn *conn, cchar *tableName, cchar *key);
-
-/**
-    Read matching records
-    @description This runs a simple query on the database and returns matching records in a grid. The query selects
-        all rows that have a "field" that matches the given "value".
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param fieldName Database field name to evaluate
-    @param operation Comparison operation. Set to "==", "!=", "<", ">", "<=" or ">=".
-    @param value Data value to compare with the field values.
-    @return A grid containing all matching records. Returns NULL if no matching records.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiGrid *espReadRecsWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
-
-/**
-    Read one record.
-    @description This runs a simple query on the database and selects the first matching record. The query selects
-        a row that has a "field" that matches the given "value".
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param fieldName Database field name to evaluate
-    @param operation Comparison operation. Set to "==", "!=", "<", ">", "<=" or ">=".
-    @param value Data value to compare with the field values.
-    @return First matching record. Returns NULL if no matching records.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espReadRecWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
-
-/**
-    Read a record identified by the key value.
-    @description Read a record from the given table as identified by the key value.
-    @param tableName Database table name
-    @param key Key value of the record to read 
-    @return Record instance of EdiRec.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espReadRecByKey(cchar *tableName, cchar *key);
-#endif
 
 /**
     Read receive body content.
@@ -1144,20 +1029,6 @@ PUBLIC void espRemoveCookie(HttpConn *conn, cchar *name);
     @stability Evolving
  */
 PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key);
-
-#if UNUSED
-/**
-    Remove a record from a database table
-    @description Remove the record identified by the key value from the given table.
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param key Key value of the record to remove 
-    @return Record instance of EdiRec.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key);
-#endif
 
 /**
     Remove a session state variable
@@ -1467,37 +1338,6 @@ PUBLIC void espSetFeedback(HttpConn *conn, cchar *kind, cchar *fmt, ...);
  */
 PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args);
 
-#if UNUSED
-/**
-    Update a record field without writing to the database
-    @description This routine updates the record object with the given value. The record will not be written
-        to the database. To write to the database, use #updateRec.
-    @param rec Record to update
-    @param fieldName Record field name to update
-    @param value Value to update
-    @return The record instance if successful, otherwise NULL.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value);
-
-/**
-    Update record fields without writing to the database
-    @description This routine updates the record object with the given values. The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request #params or it can be manually
-        created via #ediMakeHash to convert a JSON string into an options hash.
-        For example: updateFields(rec, hash("{ name: '%s', address: '%s' }", name, address))
-        The record will not be written
-        to the database. To write to the database, use #ediUpdateRec.
-    @param rec Record to update
-    @param data Hash of field names and values to use for the update
-    @return The record instance if successful, otherwise NULL.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *data);
-#endif
-
 /**
     Set a flash message
     @description Flash messages persist for only one request and are a convenient way to pass state information or 
@@ -1659,39 +1499,6 @@ PUBLIC void espShowRequest(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs);
-
-#if UNUSED
-/**
-    Write a value to a database table field
-    @description Update the value of a table field in the selected table row. Note: validations are not run.
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param key Key value for the table row to update.
-    @param fieldName Column name to update
-    @param value Value to write to the database field
-    @return "true" if the field  can be successfully written.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC bool espUpdateField(HttpConn *conn, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
-
-/**
-    Write field values to a database row
-    @description This routine updates the current record with the given data and then saves the record to
-        the database. The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request #params or it can be manually
-        created via #ediMakeHash to convert a JSON string into an options hash.
-        For example: ediWriteFields(rec, params());
-        The record runs field validations before saving to the database.
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param data Hash of field names and values to use for the update
-    @return "true" if the field  can be successfully written. Returns false if field validations fail.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *data);
-#endif
 
 /**
     Write a record to the database
@@ -2156,25 +1963,6 @@ PUBLIC bool isFinalized();
     @stability Evolving
  */
 PUBLIC bool isSecure();
-
-#if UNUSED
-/**
-    Make a grid
-    @description This call makes a free-standing data grid based on the JSON format content string.
-        The record is not saved to the database.
-    @param content JSON format content string. The content should be an array of objects where each object is a
-        set of property names and values.
-    @return An EdiGrid instance
-    @example:
-grid = ediMakeGrid("[ \\ \n
-    { id: '1', country: 'Australia' }, \ \n
-    { id: '2', country: 'China' }, \ \n
-    ]");
-    @ingroup EspAbbrev
-    @stability Evolving
- */
-PUBLIC EdiGrid *makeGrid(cchar *content);
-#endif
 
 /**
     Make a hash table container of property values
