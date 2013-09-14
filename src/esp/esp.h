@@ -601,6 +601,7 @@ PUBLIC void espAutoFinalize(HttpConn *conn);
  */
 PUBLIC bool espCheckSecurityToken(HttpConn *conn);
 
+#if UNUSED
 /**
     Create a record and initialize field values.
     @description This will call #ediCreateRec to create a record based on the given table's schema. It will then
@@ -613,14 +614,7 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *data);
-
-/**
-    Display the grid to the debug log
-    @param grid EDI grid
-    @ingroup EspReq
-    @stability Prototype
- */
-PUBLIC void espDumpGrid(EdiGrid *grid);
+#endif
 
 /**
     Finalize processing of the http request.
@@ -642,6 +636,7 @@ PUBLIC void espFinalize(HttpConn *conn);
  */
 PUBLIC void espFlush(HttpConn *conn);
 
+#if UNUSED
 /**
     Get a list of column names.
     @param conn HttpConn connection object
@@ -651,6 +646,7 @@ PUBLIC void espFlush(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec);
+#endif
 
 /**
     Get the current request connection.
@@ -936,16 +932,6 @@ PUBLIC MprHash *espGetUploads(HttpConn *conn);
 PUBLIC cchar *espGetUri(HttpConn *conn);
 
 /**
-    Convert an EDI database grid into a JSON string.
-    @param grid EDI grid
-    @param flags Reserved. Set to zero.
-    @return JSON string 
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC cchar *espGridToJson(EdiGrid *grid, int flags);
-
-/**
     Test if a current grid has been defined.
     @return "True" if a current grid has been defined
     @ingroup EspReq
@@ -993,6 +979,7 @@ PUBLIC bool espIsSecure(HttpConn *conn);
  */
 PUBLIC bool espIsFinalized(HttpConn *conn);
 
+#if UNUSED
 /**
     Make a grid.
     @description This call makes a free-standing data grid based on the JSON format content string.
@@ -1009,6 +996,7 @@ grid = ediMakeGrid("[ \\ \n
     @stability Evolving
  */
 PUBLIC EdiGrid *espMakeGrid(cchar *content);
+#endif
 
 /**
     Make a hash table container of property values.
@@ -1023,6 +1011,7 @@ PUBLIC EdiGrid *espMakeGrid(cchar *content);
  */
 PUBLIC MprHash *espMakeHash(cchar *fmt, ...);
 
+#if UNUSED
 /**
     Make a record.
     @description This call makes a free-standing data record based on the JSON format content string.
@@ -1034,6 +1023,7 @@ PUBLIC MprHash *espMakeHash(cchar *fmt, ...);
     @stability Evolving
  */
 PUBLIC EdiRec *espMakeRec(cchar *content);
+#endif
 
 //  MOB - reconsider API
 /**
@@ -1048,6 +1038,7 @@ PUBLIC EdiRec *espMakeRec(cchar *content);
  */
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value);
 
+#if UNUSED
 /**
     Read the identified record. 
     @description Read the record identified by the request param("id") from the nominated table.
@@ -1099,7 +1090,8 @@ PUBLIC EdiRec *espReadRecWhere(HttpConn *conn, cchar *tableName, cchar *fieldNam
     @ingroup EspReq
     @stability Evolving
  */
-PUBLIC EdiRec *eReadRecByKey(cchar *tableName, cchar *key);
+PUBLIC EdiRec *espReadRecByKey(cchar *tableName, cchar *key);
+#endif
 
 /**
     Read receive body content.
@@ -1153,6 +1145,7 @@ PUBLIC void espRemoveCookie(HttpConn *conn, cchar *name);
  */
 PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key);
 
+#if UNUSED
 /**
     Remove a record from a database table
     @description Remove the record identified by the key value from the given table.
@@ -1164,6 +1157,7 @@ PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key);
     @stability Evolving
  */
 PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key);
+#endif
 
 /**
     Remove a session state variable
@@ -1278,15 +1272,6 @@ PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags);
   */
 PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags);
 
-/**
-    Convert an EDI database record into a JSON string.
-    @param rec EDI record
-    @param flags Reserved. Set to zero.
-    @return JSON string 
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC cchar *espRecToJson(EdiRec *rec, int flags);
 
 /**
     Read a table from the current database
@@ -1482,6 +1467,7 @@ PUBLIC void espSetFeedback(HttpConn *conn, cchar *kind, cchar *fmt, ...);
  */
 PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args);
 
+#if UNUSED
 /**
     Update a record field without writing to the database
     @description This routine updates the record object with the given value. The record will not be written
@@ -1510,6 +1496,7 @@ PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value);
     @stability Evolving
  */
 PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *data);
+#endif
 
 /**
     Set a flash message
@@ -1673,6 +1660,7 @@ PUBLIC void espShowRequest(HttpConn *conn);
  */
 PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs);
 
+#if UNUSED
 /**
     Write a value to a database table field
     @description Update the value of a table field in the selected table row. Note: validations are not run.
@@ -1703,6 +1691,7 @@ PUBLIC bool espUpdateField(HttpConn *conn, cchar *tableName, cchar *key, cchar *
     @stability Evolving
  */
 PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *data);
+#endif
 
 /**
     Write a record to the database
@@ -2168,6 +2157,7 @@ PUBLIC bool isFinalized();
  */
 PUBLIC bool isSecure();
 
+#if UNUSED
 /**
     Make a grid
     @description This call makes a free-standing data grid based on the JSON format content string.
@@ -2184,6 +2174,7 @@ grid = ediMakeGrid("[ \\ \n
     @stability Evolving
  */
 PUBLIC EdiGrid *makeGrid(cchar *content);
+#endif
 
 /**
     Make a hash table container of property values

@@ -194,7 +194,6 @@ static Edi *mdbOpen(cchar *source, int flags)
         if (mdbLoadFromString((Edi*) mdb, source) < 0) {
             return 0;
         }
-
     } else {
         if ((mdb = mdbAlloc(source, flags)) == 0) {
             return 0;

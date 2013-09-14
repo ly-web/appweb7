@@ -55,7 +55,7 @@ typedef struct MdbRow {
     struct MdbTable *table;             /* Reference to MdbTable */
     int             rid;                /* Table index in MdbTable.row */
     int             nfields;            /* Number of fields in fields */
-    cchar           *fields[ARRAY_FLEX];
+    cchar           *fields[ARRAY_FLEX];/* All data stored as strings */
 } MdbRow;
 
 /*

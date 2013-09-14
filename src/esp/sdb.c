@@ -266,6 +266,9 @@ static int sdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
         return 0;
     }
     removeSchema(edi, tableName);
+    /*
+        The field types are used for the SQLite column affinity settings
+     */
     //  MOB - what about autinc, notnul, index, foreign flags?
     if (query(edi, sfmt("ALTER TABLE %s ADD %s %s", tableName, columnName, mapToSqlType(type))) == 0) {
         return MPR_ERR_CANT_CREATE;

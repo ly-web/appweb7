@@ -26505,6 +26505,9 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
     int             kind, hour, min, negate, value1, value2, value3, alpha, alpha2, alpha3;
     int             dateSep, offset, zoneOffset, explicitZone, fullYear;
 
+    if (!dateString) {
+        dateString = "";
+    }
     offset = 0;
     zoneOffset = 0;
     explicitZone = 0;

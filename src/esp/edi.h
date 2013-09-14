@@ -379,6 +379,14 @@ PUBLIC int ediDelete(Edi *edi, cchar *path);
 PUBLIC int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key);
 
 /**
+    Display the grid to the debug log
+    @param grid EDI grid
+    @ingroup Edi
+    @stability Prototype
+ */
+PUBLIC void espDumpGrid(EdiGrid *grid);
+
+/**
     Get a list of column names.
     @param edi Database handle
     @param tableName Database table name
@@ -415,6 +423,16 @@ PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
     @stability Evolving
  */
 PUBLIC MprList *ediGetTables(Edi *edi);
+
+/**
+    Convert an EDI database grid into a JSON string.
+    @param grid EDI grid
+    @param flags Reserved. Set to zero.
+    @return JSON string 
+    @ingroup Edi
+    @stability Prototype
+  */
+PUBLIC cchar *ediGridToJson(EdiGrid *grid, int flags);
 
 /**
     Join grids
@@ -574,6 +592,16 @@ PUBLIC EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar
     @stability Evolving
  */
 PUBLIC EdiGrid *ediReadTable(Edi *edi, cchar *tableName);
+
+/**
+    Convert an EDI database record into a JSON string.
+    @param rec EDI record
+    @param flags Reserved. Set to zero.
+    @return JSON string 
+    @ingroup Edi
+    @stability Prototype
+  */
+PUBLIC cchar *ediRecToJson(EdiRec *rec, int flags);
 
 /**
     Remove a column from a table.
@@ -931,6 +959,12 @@ PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags);
     @internal
   */
 PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder);
+
+
+//  MOB DOC
+PUBLIC cchar *ediGetTableSchemaToJson(Edi *edi, cchar *tableName);
+PUBLIC cchar *ediGetGridSchemaToJson(EdiGrid *grid);
+PUBLIC cchar *ediGetRecSchemaToJson(EdiRec *rec);
 
 #if BIT_PACK_MDB
 PUBLIC void mdbInit();

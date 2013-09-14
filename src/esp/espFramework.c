@@ -86,6 +86,7 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
 }
 
 
+#if UNUSED
 PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *params)
 {
     Edi         *edi;
@@ -98,6 +99,7 @@ PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *params)
     ediSetFields(rec, params);
     return espSetRec(conn, rec);
 }
+#endif
 
 
 PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
@@ -167,6 +169,7 @@ PUBLIC void espFlush(HttpConn *conn)
 }
 
 
+#if UNUSED
 PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
 {
 #if DEPRECATE || 1
@@ -179,6 +182,7 @@ PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec)
     }
     return mprCreateList(0, MPR_LIST_STABLE);
 }
+#endif
 
 
 PUBLIC MprOff espGetContentLength(HttpConn *conn)
@@ -388,43 +392,6 @@ PUBLIC cchar *espGetUri(HttpConn *conn)
 }
 
 
-PUBLIC cchar *espGridToJson(EdiGrid *grid, int flags)
-{
-    EdiRec      *rec;
-    EdiField    *fp;
-    MprBuf      *buf;
-    int         r, f;
-
-    if (grid == 0) {
-        return 0;
-    }
-    buf = mprCreateBuf(0, 0);
-    mprPutStringToBuf(buf, "[\n");
-    //  MOB - use EDI APIs
-    for (r = 0; r < grid->nrecords; r++) {
-        mprPutStringToBuf(buf, "    { ");
-        rec = grid->records[r];
-        for (f = 0; f < rec->nfields; f++) {
-            fp = &rec->fields[f];
-            mprPutToBuf(buf, "\"%s\": ", fp->name);
-            mprPutToBuf(buf, "\"%s\"", ediFormatField(NULL, fp));
-            if ((f+1) < rec->nfields) {
-                mprPutStringToBuf(buf, ", ");
-            }
-        }
-        mprPutStringToBuf(buf, " }");
-        if ((r+1) < grid->nrecords) {
-            mprPutCharToBuf(buf, ',');
-        }
-        //  MOB only for pretty
-        mprPutCharToBuf(buf, '\n');
-    }
-    mprPutStringToBuf(buf, "  ]\n");
-    mprAddNullToBuf(buf);
-    return mprGetBufStart(buf);
-}
-
-
 PUBLIC bool espIsEof(HttpConn *conn)
 {
     return httpIsEof(conn);
@@ -443,6 +410,7 @@ PUBLIC bool espIsSecure(HttpConn *conn)
 }
 
 
+#if UNUSED
 /*
     grid = makeGrid("[ \
         { id: '1', country: 'Australia' }, \
@@ -453,6 +421,7 @@ PUBLIC EdiGrid *espMakeGrid(cchar *contents)
 {
     return ediMakeGrid(contents);
 }
+#endif
 
 
 PUBLIC MprHash *espMakeHash(cchar *fmt, ...)
@@ -467,6 +436,7 @@ PUBLIC MprHash *espMakeHash(cchar *fmt, ...)
 }
 
 
+#if UNUSED
 /*
     rec = makeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
  */
@@ -474,6 +444,7 @@ PUBLIC EdiRec *espMakeRec(cchar *contents)
 {
     return ediMakeRec(contents);
 }
+#endif
 
 
 //  MOB - reconsider API
@@ -536,6 +507,7 @@ PUBLIC ssize espReceive(HttpConn *conn, char *buf, ssize len)
 }
 
 
+#if UNUSED
 PUBLIC EdiRec *espReadRecWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
     return espSetRec(conn, ediReadOneWhere(espGetDatabase(conn), tableName, fieldName, operation, value));
@@ -564,36 +536,7 @@ PUBLIC EdiGrid *espReadTable(HttpConn *conn, cchar *tableName)
 {
     return espSetGrid(conn, ediReadWhere(espGetDatabase(conn), tableName, 0, 0, 0));
 }
-
-
-/*
-    MOB - MOVE
-    MOB - add renderRec()
-    MOB - support PRETTY | PLAIN
-    MOB - remove AsJSON
- */
-PUBLIC cchar *espRecToJson(EdiRec *rec, int flags)
-{
-    MprBuf      *buf;
-    EdiField    *fp;
-    int         f;
-
-    buf = mprCreateBuf(0, 0);
-    //  rec == null
-    mprPutStringToBuf(buf, "  { ");
-    for (f = 0; rec && f < rec->nfields; f++) {
-        fp = &rec->fields[f];
-        mprPutToBuf(buf, "\"%s\": ", fp->name);
-        mprPutToBuf(buf, "\"%s\"", ediFormatField(NULL, fp));
-        if ((f+1) < rec->nfields) {
-            mprPutStringToBuf(buf, ", ");
-        }
-    }
-    mprPutStringToBuf(buf, " }");
-    mprPutCharToBuf(buf, '\n');
-    mprAddNullToBuf(buf);
-    return mprGetBufStart(buf);;
-}
+#endif
 
 
 PUBLIC void espRedirect(HttpConn *conn, int status, cchar *target)
@@ -611,6 +554,7 @@ PUBLIC void espRedirectBack(HttpConn *conn)
 }
 
 
+#if UNUSED
 PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key)
 {
     if (ediDeleteRow(espGetDatabase(conn), tableName, key) < 0) {
@@ -618,6 +562,7 @@ PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key)
     }
     return 1;
 }
+#endif
 
 
 PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...)
@@ -754,56 +699,6 @@ PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
 }
 
 
-static cchar *getTableSchema(Edi *edi, cchar *tableName)
-{
-    MprBuf      *buf;
-    MprList     *columns;
-    char        *s;
-    int         c, type, flags, cid, ncols, next;
-
-    if (tableName == 0 || *tableName == '\0') {
-        return 0;
-    }
-    buf = mprCreateBuf(0, 0);
-    ediGetTableSchema(edi, tableName, NULL, &ncols);
-    columns = ediGetColumns(edi, tableName);
-    mprPutStringToBuf(buf, "{\n    \"types\": {\n");
-    for (c = 0; c < ncols; c++) {
-        ediGetColumnSchema(edi, tableName, mprGetItem(columns, c), &type, &flags, &cid);
-        mprPutToBuf(buf, "      \"%s\": {\n        \"type\": \"%s\"\n      },\n", 
-            mprGetItem(columns, c), ediGetTypeString(type));
-    }
-    mprAdjustBufEnd(buf, -2);
-
-    mprRemoveItemAtPos(columns, 0);
-    mprPutStringToBuf(buf, "\n    },\n    \"columns\": [ ");
-    for (ITERATE_ITEMS(columns, s, next)) {
-        mprPutToBuf(buf, "\"%s\", ", s);
-    }
-    mprAdjustBufEnd(buf, -2);
-    mprPutStringToBuf(buf, " ],\n    \"headers\": [ ");
-    for (ITERATE_ITEMS(columns, s, next)) {
-        mprPutToBuf(buf, "\"%s\", ", spascal(s));
-    }
-    mprAdjustBufEnd(buf, -2);
-    mprPutStringToBuf(buf, " ]\n  }");
-    mprAddNullToBuf(buf);
-    return mprGetBufStart(buf);
-}
-
-
-static cchar *getGridSchema(EdiGrid *grid)
-{
-    return getTableSchema(grid->edi, grid->tableName);
-}
-
-
-static cchar *getRecSchema(EdiRec *rec)
-{
-    return getTableSchema(rec->edi, rec->tableName);
-}
-
-
 /*
     MOB - support PRETTY, QUOTES PLAIN flag
     MOB - support flags to ask or not for the schema
@@ -811,20 +706,14 @@ static cchar *getRecSchema(EdiRec *rec)
 PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags)
 {
     httpAddHeaderString(conn, "Content-Type", "application/json");
-    return espRender(conn, "{\n  \"schema\": %s,\n  \"data\": %s}\n", getGridSchema(grid), espGridToJson(grid, flags));
-}
-
-
-PUBLIC void espDumpGrid(EdiGrid *grid)
-{
-    mprLog(0, "Grid: %s\nschema: %s,\ndata: %s", grid->tableName, getGridSchema(grid), espGridToJson(grid, MPR_JSON_PRETTY));
+    return espRender(conn, "{\n  \"schema\": %s,\n  \"data\": %s}\n", ediGetGridSchemaToJson(grid), ediGridToJson(grid, flags));
 }
 
 
 PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags)
 {
     httpAddHeaderString(conn, "Content-Type", "application/json");
-    return espRender(conn, "{\"data\": %s, \"schema\": %s}", espRecToJson(rec, flags), getRecSchema(rec));
+    return espRender(conn, "{\"data\": %s, \"schema\": %s}", ediRecToJson(rec, flags), ediGetRecSchemaToJson(rec));
 }
 
 
@@ -945,6 +834,7 @@ PUBLIC void espSetData(HttpConn *conn, void *data)
 }
 
 
+#if UNUSED
 PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value)
 {
     return ediSetField(rec, fieldName, value);
@@ -955,6 +845,7 @@ PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *params)
 {
     return ediSetFields(rec, params);
 }
+#endif
 
 
 PUBLIC void espSetFeedback(HttpConn *conn, cchar *kind, cchar *fmt, ...)
@@ -1235,6 +1126,7 @@ PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs
 }
 
 
+#if UNUSED
 PUBLIC bool espUpdateField(HttpConn *conn, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
 {
     return ediUpdateField(espGetDatabase(conn), tableName, key, fieldName, value) == 0;
@@ -1247,7 +1139,7 @@ PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *params)
     cchar   *key;
 
     key = mprLookupKey(params, "id");
-    if ((rec = espSetFields(espReadRec(conn, tableName, key), params)) == 0) {
+    if ((rec = ediSetFields(ediReadRec(getDatabase(), tableName, key), params)) == 0) {
         return 0;
     }
     return ediUpdateRec(espGetDatabase(conn), rec) == 0;
@@ -1261,6 +1153,7 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec)
     }
     return ediUpdateRec(rec->edi, rec) == 0;
 }
+#endif
 
 
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
@@ -1338,12 +1231,10 @@ PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
 
 PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
 {
-    conn->grid = grid;
-    return grid;
+    return conn->grid = grid;
 }
 
 
-//  MOB - problematic
 PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
 {
     return conn->record = rec;

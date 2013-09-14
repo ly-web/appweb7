@@ -78,8 +78,7 @@ Bit.load({
         /*
             Packs to disable when using --without all
          */
-        'without-all': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejscript', 'esp', 'man', 'man2html', 'pmaker', 'php', 
-            'sqlite', 'ssl' ],
+        'without-all': [ 'cgi', 'dir', 'doxygen', 'dsi', 'ejscript', 'esp', 'man', 'man2html', 'pmaker', 'php', 'sqlite', 'ssl' ],
 
         /*
             Set to true for a static (non-shared library) build

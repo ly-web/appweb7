@@ -42,7 +42,7 @@ PUBLIC bool canUser(cchar *abilities, bool warn)
 
 PUBLIC EdiRec *createRec(cchar *tableName, MprHash *params)
 {
-    return espCreateRec(getConn(), tableName, params);
+    return setRec(ediSetFields(ediCreateRec(getDatabase(), tableName), params));
 }
 
 
@@ -122,7 +122,10 @@ PUBLIC cchar *getAppUri()
 
 PUBLIC MprList *getColumns(EdiRec *rec)
 {
-    return espGetColumns(getConn(), rec);
+    if (rec == 0) {
+        return 0;
+    }
+    return ediGetColumns(getDatabase(), rec->tableName);
 }
 
 
@@ -302,7 +305,7 @@ PUBLIC bool isSecure()
 
 PUBLIC EdiGrid *makeGrid(cchar *contents)
 {
-    return espMakeGrid(contents);
+    return ediMakeGrid(contents);
 }
 
 
@@ -383,7 +386,7 @@ PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operati
 
 PUBLIC EdiGrid *readTable(cchar *tableName)
 {
-    return setGrid(espReadTable(getConn(), tableName));
+    return setGrid(ediReadWhere(getDatabase(), tableName, 0, 0, 0));
 }
 
 
@@ -407,7 +410,10 @@ PUBLIC void removeCookie(cchar *name)
 
 PUBLIC bool removeRec(cchar *tableName, cchar *key)
 {
-    return espRemoveRec(getConn(), tableName, key);
+    if (ediDeleteRow(getDatabase(), tableName, key) < 0) {
+        return 0;
+    }
+    return 1;
 }
 
 
@@ -595,13 +601,13 @@ PUBLIC void setData(void *data)
 
 PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value)
 {
-    return espSetField(rec, fieldName, value);
+    return ediSetField(rec, fieldName, value);
 }
 
 
 PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *params)
 {
-    return espSetFields(rec, params);
+    return ediSetFields(rec, params);
 }
 
 
@@ -686,19 +692,26 @@ PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs)
 
 PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
 {
-    return espUpdateField(getConn(), tableName, key, fieldName, value);
+    return ediUpdateField(getDatabase(), tableName, key, fieldName, value) == 0;
 }
 
 
 PUBLIC bool updateFields(cchar *tableName, MprHash *params)
 {
-    return espUpdateFields(getConn(), tableName, params);
+    EdiRec  *rec;
+    cchar   *key;
+
+    key = mprLookupKey(params, "id");
+    if ((rec = ediSetFields(ediReadRec(getDatabase(), tableName, key), params)) == 0) {
+        return 0;
+    }
+    return ediUpdateRec(getDatabase(), rec) == 0;
 }
 
 
 PUBLIC bool updateRec(EdiRec *rec)
 {
-    return espUpdateRec(getConn(), rec);
+    return ediUpdateRec(getDatabase(), rec) == 0;
 }
 
 

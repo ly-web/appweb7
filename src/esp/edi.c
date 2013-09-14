@@ -148,6 +148,13 @@ PUBLIC int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key)
 }
 
 
+PUBLIC void espDumpGrid(EdiGrid *grid)
+{
+    mprLog(0, "Grid: %s\nschema: %s,\ndata: %s", grid->tableName, ediGetTableSchemaToJson(grid->edi, grid->tableName),
+        ediGridToJson(grid, MPR_JSON_PRETTY));
+}
+
+
 PUBLIC MprList *ediGetColumns(Edi *edi, cchar *tableName)
 {
     return edi->provider->getColumns(edi, tableName);
@@ -157,6 +164,56 @@ PUBLIC MprList *ediGetColumns(Edi *edi, cchar *tableName)
 PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid)
 {
     return edi->provider->getColumnSchema(edi, tableName, columnName, type, flags, cid);
+}
+
+
+PUBLIC cchar *ediGetTableSchemaToJson(Edi *edi, cchar *tableName)
+{
+    MprBuf      *buf;
+    MprList     *columns;
+    char        *s;
+    int         c, type, flags, cid, ncols, next;
+
+    if (tableName == 0 || *tableName == '\0') {
+        return 0;
+    }
+    buf = mprCreateBuf(0, 0);
+    ediGetTableSchema(edi, tableName, NULL, &ncols);
+    columns = ediGetColumns(edi, tableName);
+    mprPutStringToBuf(buf, "{\n    \"types\": {\n");
+    for (c = 0; c < ncols; c++) {
+        ediGetColumnSchema(edi, tableName, mprGetItem(columns, c), &type, &flags, &cid);
+        mprPutToBuf(buf, "      \"%s\": {\n        \"type\": \"%s\"\n      },\n", 
+            mprGetItem(columns, c), ediGetTypeString(type));
+    }
+    mprAdjustBufEnd(buf, -2);
+
+    mprRemoveItemAtPos(columns, 0);
+    mprPutStringToBuf(buf, "\n    },\n    \"columns\": [ ");
+    for (ITERATE_ITEMS(columns, s, next)) {
+        mprPutToBuf(buf, "\"%s\", ", s);
+    }
+    mprAdjustBufEnd(buf, -2);
+    mprPutStringToBuf(buf, " ],\n    \"headers\": [ ");
+    for (ITERATE_ITEMS(columns, s, next)) {
+        mprPutToBuf(buf, "\"%s\", ", spascal(s));
+    }
+    mprAdjustBufEnd(buf, -2);
+    mprPutStringToBuf(buf, " ]\n  }");
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
+}
+
+
+PUBLIC cchar *ediGetGridSchemaToJson(EdiGrid *grid)
+{
+    return ediGetTableSchemaToJson(grid->edi, grid->tableName);
+}
+
+
+PUBLIC cchar *ediGetRecSchemaToJson(EdiRec *rec)
+{
+    return ediGetTableSchemaToJson(rec->edi, rec->tableName);
 }
 
 
@@ -281,6 +338,44 @@ PUBLIC char *ediGetTypeString(int type)
 }
 
 
+
+PUBLIC cchar *ediGridToJson(EdiGrid *grid, int flags)
+{
+    EdiRec      *rec;
+    EdiField    *fp;
+    MprBuf      *buf;
+    int         r, f;
+
+    if (grid == 0) {
+        return 0;
+    }
+    buf = mprCreateBuf(0, 0);
+    mprPutStringToBuf(buf, "[\n");
+    //  MOB - use EDI APIs
+    for (r = 0; r < grid->nrecords; r++) {
+        mprPutStringToBuf(buf, "    { ");
+        rec = grid->records[r];
+        for (f = 0; f < rec->nfields; f++) {
+            fp = &rec->fields[f];
+            mprPutToBuf(buf, "\"%s\": ", fp->name);
+            mprPutToBuf(buf, "\"%s\"", ediFormatField(NULL, fp));
+            if ((f+1) < rec->nfields) {
+                mprPutStringToBuf(buf, ", ");
+            }
+        }
+        mprPutStringToBuf(buf, " }");
+        if ((r+1) < grid->nrecords) {
+            mprPutCharToBuf(buf, ',');
+        }
+        //  MOB only for pretty
+        mprPutCharToBuf(buf, '\n');
+    }
+    mprPutStringToBuf(buf, "  ]\n");
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
+}
+
+
 PUBLIC int ediLoad(Edi *edi, cchar *path)
 {
     return edi->provider->load(edi, path);
@@ -365,6 +460,36 @@ PUBLIC EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar
 PUBLIC EdiGrid *ediReadTable(Edi *edi, cchar *tableName)
 {
     return edi->provider->readWhere(edi, tableName, 0, 0, 0);
+}
+
+
+/*
+    MOB - MOVE
+    MOB - add renderRec()
+    MOB - support PRETTY | PLAIN
+    MOB - remove AsJSON
+ */
+PUBLIC cchar *ediRecToJson(EdiRec *rec, int flags)
+{
+    MprBuf      *buf;
+    EdiField    *fp;
+    int         f;
+
+    buf = mprCreateBuf(0, 0);
+    //  rec == null
+    mprPutStringToBuf(buf, "  { ");
+    for (f = 0; rec && f < rec->nfields; f++) {
+        fp = &rec->fields[f];
+        mprPutToBuf(buf, "\"%s\": ", fp->name);
+        mprPutToBuf(buf, "\"%s\"", ediFormatField(NULL, fp));
+        if ((f+1) < rec->nfields) {
+            mprPutStringToBuf(buf, ", ");
+        }
+    }
+    mprPutStringToBuf(buf, " }");
+    mprPutCharToBuf(buf, '\n');
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);;
 }
 
 
