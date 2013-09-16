@@ -665,6 +665,9 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         if (mprGetBufLength(state->end) > 0) {
             mprPutCharToBuf(state->end, '\n');
         }
+        mprAddNullToBuf(state->global);
+        mprAddNullToBuf(state->start);
+        mprAddNullToBuf(state->end);
         bodyCode = sfmt(\
             "/*\n   Generated from %s\n */\n"\
             "#include \"esp.h\"\n"\
