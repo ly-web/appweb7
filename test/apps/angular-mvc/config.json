@@ -45,8 +45,6 @@
         "controller": true
     },
     "settings": {
-        "redirect": "secure",
-        "xsrfToken": true,
         "components": [
             "server",
             "angular",
@@ -62,9 +60,12 @@
             "respond",
             "angular-mvc"
         ],
+        "redirect": "secure",
         "sendJson": true,
+        "serverPrefix": "/service",
         "timeouts": {
             "session": 1800
-        }
+        },
+        "xsrfToken": true,
     }
 }
