@@ -470,6 +470,9 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if (espTestConfig(route, "settings.keepSource", "true")) {
                 eroute->keepSource = 1;
             }
+            if ((eroute->serverPrefix = espGetConfig(route, "settings.serverPrefix", 0)) == 0) {
+                eroute->serverPrefix = sclone(BIT_ESP_SERVER_PREFIX);
+            }
             if ((value = espGetConfig(route, "settings.username", 0)) != 0) {
                 httpSetAuthUsername(route->auth, value);
             }
@@ -1237,8 +1240,9 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->appModulePath);
         mprMark(eroute->cacheDir);
         mprMark(eroute->clientDir);
-        mprMark(eroute->config);
         mprMark(eroute->compile);
+        mprMark(eroute->config);
+        mprMark(eroute->controllersDir);
         mprMark(eroute->database);
         mprMark(eroute->dbDir);
         mprMark(eroute->edi);
@@ -1246,7 +1250,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->layoutsDir);
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
-        mprMark(eroute->controllersDir);
+        mprMark(eroute->serverPrefix);
         mprMark(eroute->srcDir);
         mprMark(eroute->viewsDir);
     }

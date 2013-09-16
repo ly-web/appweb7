@@ -18,6 +18,7 @@
         },
     },
     settings: {
+        serverPrefix: "/server",
         timeouts: {
             session: 1800,
         },

@@ -26,8 +26,8 @@ extern "C" {
 #ifndef BIT_ESP_LEGACY
     #define BIT_ESP_LEGACY 1
 #endif
-#ifndef BIT_ESP_SERVICE_NAME
-    #define BIT_ESP_SERVICE_NAME "/service"
+#ifndef BIT_ESP_SERVER_PREFIX
+    #define BIT_ESP_SERVER_PREFIX "/server"             /**< URI prefix for server controllers */
 #endif
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
 #define ESP_LISTEN          "4000"                      /**< Default listening endpoint for the esp program */
@@ -176,6 +176,7 @@ typedef struct EspRoute {
 
     cchar           *database;              /**< Name of database for route */
     cchar           *login;                 /**< Automatic login name - bypass login dialog */
+    cchar           *serverPrefix;          /**< Server controllers URI prefix */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
     int             update;                 /**< Auto-update modified ESP source */

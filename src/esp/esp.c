@@ -54,6 +54,7 @@ typedef struct App {
     cchar       *module;                /* Compiled module name */
     cchar       *base;                  /* Base filename */
     cchar       *entry;                 /* Module entry point */
+    cchar       *serverPrefix;          /* Prefix to talk to the server */
 
     int         error;                  /* Any processing error */
     int         flat;                   /* Combine all inputs into one, flat output */ 
@@ -530,10 +531,11 @@ static MprList *getRoutes()
     if ((app->route = mprGetFirstItem(routes)) == 0) {
         fail("Cannot find a suitable route");
     }
-    app->eroute = app->route->eroute;
-    assert(app->eroute); 
-    app->topComponent = mprJsonGet(app->eroute->config, "generate.top");
-    app->appName = app->eroute->appName;
+    eroute = app->eroute = app->route->eroute;
+    assert(eroute); 
+    app->topComponent = mprJsonGet(eroute->config, "generate.top");
+    app->appName = eroute->appName;
+    app->topComponent = mprJsonGet(eroute->config, "generate.top");
     return routes;
 }
 
@@ -1456,7 +1458,7 @@ static void generateClientController(int argc, char **argv)
     path = mprJoinPathExt(mprJoinPath(app->eroute->appDir, sfmt("%s/%sControl", name, title)), "js");
     defines = sclone("");
     tokens = mprDeserialize(sfmt("{ APPDIR: %s, NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
-        app->eroute->appDir, name, title, defines, BIT_ESP_SERVICE_NAME));
+        app->eroute->appDir, name, title, defines, app->eroute->serverPrefix));
     data = getTemplate(mprJoinPath(app->topComponent, "controller.js"), tokens);
     makeEspFile(path, data, "Controller Scaffold");
 }
@@ -1474,7 +1476,7 @@ static void generateClientModel(int argc, char **argv)
     title = spascal(name);
 
     path = sfmt("%s/%s/%s.js", app->eroute->appDir, name, title);
-    tokens = mprDeserialize(sfmt("{ NAME: %s, SERVICE: '%s', TITLE: %s}", name, BIT_ESP_SERVICE_NAME, title));
+    tokens = mprDeserialize(sfmt("{ NAME: %s, SERVICE: '%s', TITLE: %s}", name, app->eroute->serverPrefix, title));
     data = getTemplate(mprJoinPath(app->topComponent, "model.js"), tokens);
     makeEspFile(path, data, "Scaffold Model");
 }
@@ -1561,7 +1563,7 @@ static void generateScaffoldViews(int argc, char **argv)
     }
     name = sclone(argv[0]);
     title = spascal(name);
-    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, SERVICE: %s}", name, title, BIT_ESP_SERVICE_NAME));
+    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, SERVICE: %s}", name, title, app->eroute->serverPrefix));
 
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);

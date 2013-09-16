@@ -574,6 +574,7 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     eroute->update = BIT_DEBUG;
     eroute->keepSource = BIT_DEBUG;
     eroute->lifespan = 0;
+    eroute->serverPrefix = sclone(BIT_ESP_SERVER_PREFIX);
     route->eroute = eroute;
     route->flags |= HTTP_ROUTE_XSRF;
     return eroute;
@@ -618,6 +619,7 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->srcDir = parent->srcDir;
     eroute->controllersDir = parent->controllersDir;
     eroute->viewsDir = parent->viewsDir;
+    eroute->serverPrefix = parent->serverPrefix;
     route->eroute = eroute;
     return eroute;
 }
@@ -794,7 +796,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
             eroute->update = 0;
             espDefineAction(rp, "esp-config", espRenderConfig);
         }
-        httpAddRouteSet(route, BIT_ESP_SERVICE_NAME, set);
+        httpAddRouteSet(route, eroute->serverPrefix, set);
 #if DEPRECATE || 1
     } else {
         /*
