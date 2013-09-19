@@ -39,10 +39,11 @@ struct HttpWebSocket;
 /********************************** Tunables **********************************/
 
 //  TODO - do all these need to have MAX some are just sizes and not maximums
+//  MOB - should have http prefixes so they can be overridden by settings.http.XXX
 //  TODO SORT
 
-#ifndef BIT_DEFAULT_METHODS
-    #define BIT_DEFAULT_METHODS     "GET,POST"          /**< Default methods for routes */
+#ifndef BIT_HTTP_DEFAULT_METHODS
+    #define BIT_HTTP_DEFAULT_METHODS "GET,POST"         /**< Default methods for routes */
 #endif
 #ifndef BIT_HTTP_PORT
     #define BIT_HTTP_PORT           80
@@ -2309,6 +2310,7 @@ typedef struct HttpConn {
     void            *mark;                  /**< Reference for GC marking */
     void            *data;                  /**< Custom data for request - must be a managed reference */
     void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
+
 #if (DEPRECATE || 1) && !DOXYGEN
     void            *grid;                  /**< Current request database grid for MVC apps */
     void            *record;                /**< Current request database record for MVC apps */
@@ -3055,7 +3057,7 @@ typedef struct HttpAuth {
 #endif
     char            *loginPage;             /**< Web page for user login for 'post' type */
     char            *loggedIn;              /**< Target URI after logging in */
-    char            *username;              /**< Automatic login username */
+    char            *username;              /**< Automatic login username. Password not required if defined */
     char            *qop;                   /**< Quality of service */
     HttpAuthType    *type;                  /**< Authorization protocol type (basic|digest|form|custom)*/
     HttpAuthStore   *store;                 /**< Authorization password backend (system|file|custom)*/
@@ -3357,6 +3359,7 @@ PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *proto, cchar *details);
 
 /**
     Set an automatic login username
+    @description If defined, no password is required and the user will be automatically logged in as this username.
     @param auth Auth object allocated by #httpCreateAuth.
     @param username Username to automatically login with
     @ingroup HttpAuth
@@ -3585,17 +3588,15 @@ PUBLIC void httpSetStreaming(struct HttpHost *host, cchar *mime, cchar *uri, boo
 #define HTTP_ROUTE_FREE_PATTERN         0x4         /**< Free Route.patternCompiled back to malloc when route is freed */
 #define HTTP_ROUTE_RAW                  0x8         /**< Don't html encode the write data */
 #define HTTP_ROUTE_STARTED              0x10        /**< Route initialized */
-#define HTTP_ROUTE_JSON                 0x20        /**< Route expects params in JSON body */
-#define HTTP_ROUTE_XSRF                 0x40        /**< Generate XSRF tokens */
-#define HTTP_ROUTE_CORS                 0x80        /**< Cross-Origin resource sharing */
-#define HTTP_ROUTE_STEALTH              0x100       /**< Stealth mode */
-#define HTTP_ROUTE_SHOW_ERRORS          0x200       /**< Show errors to the client */
-#define HTTP_ROUTE_VISIBLE_SESSION      0x400       /**< Create a session cookie visible to client Javascript (not httponly) */
-#define HTTP_ROUTE_PRESERVE_FRAMES      0x800       /**< Preserve WebSocket frame boundaries */
+#define HTTP_ROUTE_XSRF                 0x20        /**< Generate XSRF tokens */
+#define HTTP_ROUTE_CORS                 0x40        /**< Cross-Origin resource sharing */
+#define HTTP_ROUTE_STEALTH              0x80        /**< Stealth mode */
+#define HTTP_ROUTE_SHOW_ERRORS          0x100       /**< Show errors to the client */
+#define HTTP_ROUTE_VISIBLE_SESSION      0x200       /**< Create a session cookie visible to client Javascript (not httponly) */
+#define HTTP_ROUTE_PRESERVE_FRAMES      0x400       /**< Preserve WebSocket frame boundaries */
 
 #if (DEPRECATED || 1) && !DOXYGEN
 #define HTTP_ROUTE_GZIP                 0x1000      /**< Support gzipped content on this route */
-#define HTTP_ROUTE_LEGACY_MVC           0x2000      /**< Legacy MVC app. Using "static" instead of "client". Deprecated in 4.4 */
 #endif
 
 /**
@@ -3749,11 +3750,12 @@ typedef int (HttpRouteProc)(HttpConn *conn, HttpRoute *route, HttpRouteOp *item)
     </tr>
     </table>
     @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
     @param resource Resource name. This should be a lower case, single word, alphabetic resource name.
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource);
+PUBLIC void httpAddResource(HttpRoute *parent, cchar *prefix, cchar *resource);
 
 /**
     Add routes for a group of resources
@@ -3772,11 +3774,12 @@ PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource);
     </tr>
     </table>
     @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
     @param resource Resource name. This should be a lower case, single word, alphabetic resource name.
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource);
+PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *prefix, cchar *resource);
 
 /**
     Add a route for the home page.
@@ -3793,28 +3796,33 @@ PUBLIC void httpAddHomeRoute(HttpRoute *parent);
 
 /**
     Add a route set package
-    @description This will add a set of routes suitable for some application paradigms.
+    @description This will add a set of routes. It will add a home route and optional routes depending on the route set.
     <table>
         <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
         <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
-        <tr><td>static</td><td>GET</td><td>^/static(/(.)*$</td><td>$1</td></tr>
     </table>
     @param parent Parent route from which to inherit configuration.
-    @param set Route set to select. Use "simple", "mvc", "restful" or "none". 
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
+    @param set Route set to select. Use "simple", or "restful". 
         \n\n
         The "simple" pack will invoke 
-        #httpAddHomeRoute and #httpAddStaticRoute to add "home", and "static" routes. 
+        #httpAddHomeRoute and #httpAddStaticRoute to add the "home" routes. 
         \n\n
-        The "mvc" selection will add the default routes and then add the route:
-        <table>
-            <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
-            <tr><td>default</td><td>*</td><td>^/{service}(~/{action}~)$</td><td>${service}-${action}</td></tr>
-        </table>
-        \n\n
+        The "restful" selection will add a set of RESTful routes for generic controllers.
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set);
+PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *prefix, cchar *set);
+
+/**
+    Add a route for the client directory
+    @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
+    @param name Name of the client directory
+    @ingroup HttpRoute
+    @stability Prototype
+ */
+PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *prefix, cchar *name);
 
 /**
     Add a route condition
@@ -4135,8 +4143,7 @@ PUBLIC HttpRoute *httpCreateRoute(struct HttpHost *host);
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, 
-    cchar *target, cchar *source);
+PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, cchar *target, cchar *source);
 
 /**
     Define a route condition rule
@@ -4336,7 +4343,7 @@ PUBLIC cchar *httpLookupRouteErrorDocument(HttpRoute *route, int status);
         <ul>  
             <li>DOCUMENTS_DIR - for the default directory containing documents to serve</li>
             <li>HOME_DIR - for the directory containing the web server configuration files</li>
-            <li>BIN_DIR - for the shared library directory. E.g. /usr/lib/appweb/bin </li>
+            <li>BIN_DIR - for the shared library directory. E.g. /usr/local/lib/appweb/bin </li>
             <li>OS - for the operating system name. E.g. LINUX, MACOSX, VXWORKS, or WIN</li>
             <li>PRODUCT - for the product name</li>
             <li>VERSION - for the product version. E.g. 4.0.2</li>
@@ -5204,7 +5211,7 @@ typedef struct HttpRx {
     char            *userAgent;             /**< User-Agent header */
 
     HttpLang        *lang;                  /**< Selected language */
-    MprHash         *params;                /**< Request params (Query and post data variables) */
+    MprJson         *params;                /**< Request params (Query and post data variables) */
     MprHash         *svars;                 /**< Server variables */
     HttpRange       *inputRange;            /**< Specified range for rx (post) data */
     char            *passwordDigest;        /**< User password digest for authentication */
@@ -5321,11 +5328,11 @@ PUBLIC cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue);
         Query data and www-url encoded form data is entered into the table after decoding.
         Use #mprLookupKey to retrieve data from the table.
     @param conn HttpConn connection object
-    @return #MprHash instance containing the form vars
+    @return MprJson JSON object instance containing the form vars
     @ingroup HttpRx
     @stability Stable
  */
-PUBLIC MprHash *httpGetParams(HttpConn *conn);
+PUBLIC MprJson *httpGetParams(HttpConn *conn);
 
 /**
     Get the request params table as a string

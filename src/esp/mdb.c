@@ -194,7 +194,6 @@ static Edi *mdbOpen(cchar *source, int flags)
         if (mdbLoadFromString((Edi*) mdb, source) < 0) {
             return 0;
         }
-
     } else {
         if ((mdb = mdbAlloc(source, flags)) == 0) {
             return 0;
@@ -1039,22 +1038,16 @@ static void popState(Mdb *mdb)
 {
     mprPopItem(mdb->loadStack);
     mdb->loadState = (int) PTOL(mprGetLastItem(mdb->loadStack));
+    assert(mdb->loadState > 0);
 }
 
 
-static MprObj *makeMdbObj(MprJson *jp, bool list)
-{
-    /* Dummy object creation */
-    return (MprObj*) jp;
-}
-
-
-static int checkMdbState(MprJson *jp, cchar *name)
+static int checkMdbState(MprJsonParser *jp, cchar *name, bool leave)
 {
     Mdb     *mdb;
 
     mdb = jp->data;
-    if (*jp->tok == ']' || *jp->tok == '}') {
+    if (leave) {
         popState(mdb);
         return 0;
     }
@@ -1076,14 +1069,14 @@ static int checkMdbState(MprJson *jp, cchar *name)
         } else if (smatch(name, "data")) {
             pushState(mdb, MDB_LOAD_DATA);
         } else {
-            mprJsonParseError(jp, "Bad property '%s'", name);
+            mprSetJsonError(jp, "Bad property '%s'", name);
             return MPR_ERR_BAD_FORMAT;
         }
         break;
     
     case MDB_LOAD_SCHEMA:
         if ((mdb->loadCol = createCol(mdb->loadTable, name)) == 0) {
-            mprJsonParseError(jp, "Cannot create '%s' column", name);
+            mprSetJsonError(jp, "Cannot create '%s' column", name);
             return MPR_ERR_MEMORY;
         }
         pushState(mdb, MDB_LOAD_COL);
@@ -1093,28 +1086,33 @@ static int checkMdbState(MprJson *jp, cchar *name)
         if ((mdb->loadRow = createRow(mdb, mdb->loadTable)) == 0) {
             return MPR_ERR_MEMORY;
         }
+        mdb->loadCid = 0;
         pushState(mdb, MDB_LOAD_FIELD);
         break;
 
     case MDB_LOAD_HINTS:
     case MDB_LOAD_COL:
     case MDB_LOAD_FIELD:
+        pushState(mdb, mdb->loadState);
         break;
 
     default:
-        mprJsonParseError(jp, "Potential corrupt data. Bad state '%d'");
+        mprSetJsonError(jp, "Potential corrupt data. Bad state '%d'");
         return MPR_ERR_BAD_FORMAT;
     }
     return 0;
 }
 
 
-static int setMdbValue(MprJson *jp, MprObj *obj, int cid, cchar *name, cchar *value, int type)
+static int setMdbValue(MprJsonParser *parser, MprJson *obj, cchar *name, MprJson *child)
 {
     Mdb         *mdb;
     MdbCol      *col;
+    cchar       *value;
 
-    mdb = jp->data;
+    mdb = parser->data;
+    value = child->value;
+    
     switch (mdb->loadState) {
     case MDB_LOAD_BEGIN:
     case MDB_LOAD_TABLE:
@@ -1126,7 +1124,7 @@ static int setMdbValue(MprJson *jp, MprObj *obj, int cid, cchar *name, cchar *va
         if (smatch(name, "ncols")) {
             mdb->loadNcols = atoi(value);
         } else {
-            mprJsonParseError(jp, "Unknown hint '%s'", name);
+            mprSetJsonError(parser, "Unknown hint '%s'", name);
             return MPR_ERR_BAD_FORMAT;
         }
         break;
@@ -1136,7 +1134,7 @@ static int setMdbValue(MprJson *jp, MprObj *obj, int cid, cchar *name, cchar *va
             mdbAddIndex((Edi*) mdb, mdb->loadTable->name, mdb->loadCol->name, NULL);
         } else if (smatch(name, "type")) {
             if ((mdb->loadCol->type = ediParseTypeString(value)) <= 0) {
-                mprJsonParseError(jp, "Bad column type %s", value);
+                mprSetJsonError(parser, "Bad column type %s", value);
                 return MPR_ERR_BAD_FORMAT;
             }
         } else if (smatch(name, "key")) {
@@ -1151,45 +1149,31 @@ static int setMdbValue(MprJson *jp, MprObj *obj, int cid, cchar *name, cchar *va
             mdb->loadCol->flags |= EDI_NOT_NULL;
 #endif
         } else {
-            mprJsonParseError(jp, "Bad property '%s' in column definition", name);
+            mprSetJsonError(parser, "Bad property '%s' in column definition", name);
             return MPR_ERR_BAD_FORMAT;
         }
         break;
 
     case MDB_LOAD_FIELD:
-        if (cid < 0) {
-            mprJsonParseError(jp, "Bad state '%d' in setMdbValue, cid %d,  potential corrupt data", mdb->loadState, cid);
+        if ((col = getCol(mdb->loadTable, mdb->loadCid++)) == 0) {
+            mprSetJsonError(parser, "Bad state '%d' in setMdbValue, column %s,  potential corrupt data", mdb->loadState, name);
             return MPR_ERR_BAD_FORMAT;
         }
-        col = getCol(mdb->loadTable, cid);
-        assert(col);
-        if (col) {
-            updateFieldValue(mdb->loadRow, col, value);
-        }
+        updateFieldValue(mdb->loadRow, col, value);
         break;
 
     default:
-        mprJsonParseError(jp, "Bad state '%d' in setMdbValue potential corrupt data", mdb->loadState);
+        mprSetJsonError(parser, "Bad state '%d' in setMdbValue potential corrupt data", mdb->loadState);
         return MPR_ERR_BAD_FORMAT;
     }
     return 0;
 }
 
 
-static void parseMdbError(MprJson *jp, cchar *msg)
-{
-    if (jp->path) {
-        mprError("%s\nIn file '%s' at line %d", msg, jp->path, jp->lineNumber);
-    } else {
-        mprError("%s\nAt line %d", msg, jp->lineNumber);
-    }
-}
-
-
 static int mdbLoadFromString(Edi *edi, cchar *str)
 {
     Mdb             *mdb;
-    MprObj          *obj;
+    MprJson         *obj;
     MprJsonCallback cb;
 
     mdb = (Mdb*) edi;
@@ -1198,12 +1182,11 @@ static int mdbLoadFromString(Edi *edi, cchar *str)
     mdb->loadStack = mprCreateList(0, MPR_LIST_STABLE);
     pushState(mdb, MDB_LOAD_BEGIN);
 
-    cb.makeObj = makeMdbObj;
-    cb.checkState = checkMdbState;
+    memset(&cb, 0, sizeof(cb));
+    cb.checkBlock = checkMdbState;
     cb.setValue = setMdbValue;
-    cb.parseError = parseMdbError;
 
-    obj = mprDeserializeCustom(str, cb, mdb, NULL);
+    obj = mprParseJsonEx(str, &cb, mdb, NULL);
     mdb->edi.flags &= ~MDB_LOADING;
     mdb->edi.flags &= ~EDI_SUPPRESS_SAVE;
     mdb->loadStack = 0;
@@ -1255,7 +1238,7 @@ static int mdbSave(Edi *edi)
     }
     npath = mprReplacePathExt(path, "new");
     if ((out = mprOpenFile(npath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-        mprError("Can't open database %s", npath);
+        mprError("Cannot open database %s", npath);
         return 0;
     }
     mprWriteFileFmt(out, "{\n");

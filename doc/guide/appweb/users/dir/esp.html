@@ -86,7 +86,8 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>EspApp /myapp/ /var/www/myapp restful mdb://myapp.mdb</td>
+                        <td>EspApp prefix="/myapp"" dir="/var/www/myapp" routes="restful" <br/>
+                        &nbsp; &rarr; database="mdb://myapp.mdb"</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -117,11 +118,6 @@
                                 values for the Routes are: 
                                 <ul>
                                     <li>simple &mdash; Adds a route for the home page URI ("/").</li>
-                                    <li>mvc-simple &mdash; Adds a route for the home page URI ("/") and a route for
-                                        static content under the "<em>static</em>" directory.</li>
-                                    <li>mvc &mdash; Adds a home route, a static route and a generic route mapping URIs
-                                    of the form: <em>^/{controller}(~/{action}~)</em>. This means a URI with a 
-                                    controller component followed by an optional slash and action.</li>
                                     <li>restful &mdash; Adds a home route, a static route and resource group routes 
                                     mapping URIs. See <a href="#espResourceGroup">EspResourceGroup</a> for details.</li>
                                 </ul>
@@ -266,7 +262,7 @@ EspDb sdb://test.sdb</pre>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspDir mvc<br/>
-                            EspDir [cache|controllers|db|layouts|static|views] Directory
+                            EspDir [cache|client|controllers|db|layouts|views] Directory
                         </td>
                     </tr>
                     <tr>
@@ -277,27 +273,28 @@ EspDb sdb://test.sdb</pre>
                         <td class="pivot">Example</td>
                         <td>
 <pre>EspDir mvc
-EspDir static ./web</pre>
+EspDir client ./client</pre>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>The EspDir directive configures the directories used by ESP. The standard directories are:
+                            <p>The EspDir directive configures the directories used by ESP.</p>
+                            <p>There are two forms for the EspDir directive. The first takes a single argument set to 
+                                "<em>mvc</em>". This form sets each of the standard directories to their default values.
+                            The second form defines a single ESP directory to the given path value.</p>
+                            <p>The standard directories are:
                             <ul>
                                 <li>cache &mdash; This is the directory where ESP puts compiled modules. Defaults to
                                     <em>cache</em>.</li>
+                                    <li>client &mdash; This is the directory for static client web files in an MVC application. 
+                                        Defaults to <em>client</em>.</li>
                                     <li>controllers &mdash; This is the directory for MVC controller source code.
                                         Defaults to <em>controllers.</em></li>
                                     <li>db &mdash; This is the directory for database files. Defaults to <em>db</em>.</li>
                                     <li>layouts &mdash; This is the directory for ESP template layouts. 
                                         Defaults to <em>layouts</em>.</li>
-                                    <li>static &mdash; This is the directory for static web files in an MVC application. 
-                                        Defaults to <em>static</em>.</li>
-                                    <li>views &mdash; This is the directory MVC views. Defaults to <em>views</em>.</li>
+                                    <li>views &mdash; This is the directory for ESP view pages. Defaults to <em>views</em>.</li>
                             </ul>
-                            <p>There are two forms for the EspDir directive. The first takes a single argument set to 
-                            "<em>mvc</em>". This form sets each of the standard directories to their default values.</p>
-                            <p>The second form defines a single ESP directory to the given path value.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -524,14 +521,14 @@ EspLoad blog cache/app.dylib
 LogRoutes
 # Prints ...
 <b>
-Name             Method  Pattern             Target
-/system/init     GET     ^/system/init$      system-init   
-/system/create   POST    ^/system(/)*$       system-create 
-/system/edit     GET     ^/system/edit$      system-edit   
-/system/show     GET     ^/system$           system-show   
-/system/update   PUT     ^/system$           system-update 
-/system/destroy  DELETE  ^/system$           system-destroy
-/system/default  *       ^/system/{action}$  system-cmd-$1 
+Name            Method   Pattern                         Target
+/system/create  POST     ^/{controller=system}(/)*$      system-create 
+/system/edit    GET      ^/{controller=system}/edit$     system-edit   
+/system/get     GET      ^/{controller=system}(/)*$      system-get    
+/system/init    GET      ^/{controller=system}/init$     system-init   
+/system/update  POST     ^/{controller=system}(/)*$      system-update 
+/system/remove  DELETE   ^/{controller=system}(/)*$      system-remove 
+/system/default GET,POST ^/{controller=system}/{action}$ system-$2 
 </b>
 </pre>
                         </td>
@@ -578,16 +575,16 @@ Name             Method  Pattern             Target
 LogRoutes
 # Prints ...
 <b>
-Name            Method  Pattern                      Target
-/user/list      GET     ^/user(/)*$                  user-list     
-/user/init      GET     ^/user/init$                 user-init     
-/user/create    POST    ^/user(/)*$                  user-create   
-/user/edit      GET     ^/user/{id=[0-9]+}/edit$     user-edit     
-/user/show      GET     ^/user/{id=[0-9]+}$          user-show     
-/user/update    PUT     ^/user/{id=[0-9]+}$          user-update   
-/user/destroy   DELETE  ^/user/{id=[0-9]+}$          user-destroy  
-/user/custom    POST    ^/user/{action}/{id=[0-9]+}$ user-$1       
-/user/default   *       ^/user/{action}$             user-cmd-$1 </b>
+Name          Method   Pattern                                   Target
+/user/create  POST     ^/{controller=user}(/)*$                  user-create   
+/user/edit    GET      ^/{controller=user}/{id=[0-9]+}/edit$     user-edit     
+/user/get     GET      ^/{controller=user}/{id=[0-9]+}$          user-get      
+/user/init    GET      ^/{controller=user}/init$                 user-init     
+/user/list    GET      ^/{controller=user}/list$                 user-list     
+/user/remove  DELETE   ^/{controller=user}/{id=[0-9]+}$          user-remove   
+/user/update  POST     ^/{controller=user}/{id=[0-9]+}$          user-update   
+/user/action  GET,POST ^/{controller=user}/{id=[0-9]+}/{action}$ user-$3       
+/user/default GET,POST ^/{controller=user}/{action}$             user-cmd-$2 
 </pre>
                         </td>
                     </tr>
@@ -605,7 +602,12 @@ Name            Method  Pattern                      Target
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>EspRoute Name Methods Pattern Target Source</td>
+                        <td>EspRoute <br/>
+                            &nbsp; &rarr; name=NAME <br/>
+                            &nbsp; &rarr; prefix=URI <br/>
+                            &nbsp; &rarr; [target=TARGET] <br/>
+                            &nbsp; &rarr; [methods=METHODS] <br/>
+                            &nbsp; &rarr; [source=source]</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -614,7 +616,8 @@ Name            Method  Pattern                      Target
                     <tr>
                         <td class="pivot">Example</td>
                         <td>
-<pre>EspRoute /app/user POST ^/app/user/{action} user-${action} user.c</pre>
+<pre>EspRoute name="/app/user" methods="POST" prefix="^/app/user/{action}" 
+ &nbsp; &rarr; target="user-${action}" source="user.c"</pre>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -622,17 +625,16 @@ Name            Method  Pattern                      Target
                             <p>The EspRoute directive creates a single route and configures it according to the
                             given parameters. This is a one-line convenience directive that is 
                             equivalent to the following directive sequence:</p>
-                            <p>For ESP MVC applications, the target must be of the form: CONTROLLER-ACTION. The
-                            target string can contain token replacement references of the form "${token}". This will
-                            typically use "<em>${action}</em>" and/or "<em>${controller}</em>".</p>
                             <pre>
-&lt;<a href="route.html">Route</a> ^/app/user/{action}&gt;
-  <a href="route.html#name">Name</a> /app/user
-  <a href="route.html#method">Methods</a> POST
-  <a href="route.html#source">Source</a> user.c
-  <a href="route.html#target">Target</a> run
+&lt;<a href="route.html">Route</a> PREFIX&gt;
+  <a href="route.html#name">Name</a> NAME
+  <a href="route.html#source">Source</a> SOURCE
+  <a href="route.html#target">Target</a> run "TARGET"
 &lt;/Route&gt;
 </pre>
+                            <p>If the target is not specified, it defaults to "$&" which represents the entire URI prefix.
+                            If the methods are not specified, they default to all HTTP methods. If the source is not, it
+                            is assumed that the controller and action are statically linked into the application.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -649,7 +651,7 @@ Name            Method  Pattern                      Target
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>EspRouteSet simple|mvc|restful</td>
+                        <td>EspRouteSet simple|restful</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -658,7 +660,7 @@ Name            Method  Pattern                      Target
                     <tr>
                         <td class="pivot">Example</td>
                         <td>
-<pre>EspRouteSet mvc</pre>
+<pre>EspRouteSet restful</pre>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -668,19 +670,26 @@ Name            Method  Pattern                      Target
                             <ul>
                                 <li>simple &mdash; This defines a route to the application home URI at "/" that
                                     serves an "<em>index.esp</em> page.</li>
-                                <li>mvc &mdash; This defines a route to the application home URI at "/" that
-                                serves an "<em>index.esp</em> page. It also defines a route for URIs beginning with
-                                "<em>/static</em>" that serves content from the <em>static</em> directory. Lastly, it
-                                defines a non-RESTful route for URIs that match 
-                                "<em>/{controller}(~/{action}~)</em>". This matches URIs with a controller and
-                                optional action.
-                                </li>
                                 <li>restful &mdash; This defines a route to the application home URI at "/" that
                                 serves an "<em>index.esp</em> page. It also defines a route for URIs beginning with
-                                "<em>/static</em>" that serves content from the <em>static</em> directory. Lastly, it
-                                defines a Resource Group of routes for any controller name.
-                                </li>
+                                "<em>/client</em>" that serves static content from the <em>client</em> directory. Lastly, it
+                                defines a RESTFul group of routes for resources for arbitrary controllers.</li>
                             </ul>
+                            <p>Here is the list of defined routes for "restful":</p>
+<pre>
+Name               Method   Pattern
+/service/*/create  POST     ^/service/{controller}(/)*$
+/service/*/edit    GET      ^/service/{controller}/{id=[0-9]+}/edit$
+/service/*/get     GET      ^/service/{controller}/{id=[0-9]+}$
+/service/*/init    GET      ^/service/{controller}/init$
+/service/*/list    GET      ^/service/{controller}/list$
+/service/*/remove  DELETE   ^/service/{controller}/{id=[0-9]+}$
+/service/*/update  POST     ^/service/{controller}/{id=[0-9]+}$
+/service/*/action  GET,POST ^/service/{controller}/{id=[0-9]+}/{action}$
+/service/*/default GET,POST ^/service/{controller}/{action}$
+/client            GET      ^/(.*)
+/APP_NAME          GET,POST ^/
+</pre>
                         </td>
                     </tr>
                 </tbody>

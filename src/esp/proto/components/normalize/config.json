@@ -1,0 +1,4 @@
+{
+    name: "normalize",
+    description: "Normalize base styles for browsers",
+}

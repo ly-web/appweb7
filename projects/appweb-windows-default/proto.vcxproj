@@ -96,11 +96,11 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\esp
-if exist $(BinDir)\esp-proto del /Q $(BinDir)\esp-proto
-if not exist $(BinDir)\esp-proto md $(BinDir)\esp-proto
-xcopy /S /Y proto $(BinDir)\esp-proto
+if exist ..\..\$(Cfg)\esp del /Q ..\..\$(Cfg)\esp
+if not exist ..\..\$(Cfg)\esp md ..\..\$(Cfg)\esp
+xcopy /S /Y proto ..\..\$(Cfg)\esp
 cd ..\..\projects\appweb-windows-default</Command>
-    <Outputs>$(BinDir)\esp-proto</Outputs>
+    <Outputs>..\..\$(Cfg)\esp</Outputs>
   </CustomBuildStep>
   </ItemDefinitionGroup>
 

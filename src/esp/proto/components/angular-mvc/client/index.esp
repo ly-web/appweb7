@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="${TITLE}">
+<head>
+    <title>${TITLE}</title>
+    <meta charset="utf-8" />
+    <% securityToken(); %>
+    <link href='http://data/x-icon;,' rel='shortcut icon' />
+    <!-- [if lt IE 9]>
+    <script src='lib/html5shiv.js'></script>
+    <![endif]-->
+    <link rel='stylesheet' type='text/css' href='css/fix.css' />
+    <% if (modeIs("debug")) { %>
+    <link rel='stylesheet/less' type='text/css' href='css/all.less' />
+    <% } else {
+    %> <link rel='stylesheet' type='text/css' href='css/all.min.css.gz' />
+    <% } %>
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-static-top">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">${TITLE}</a>
+        </div>
+    </nav>
+    <main class="home">
+        <section class="row container">
+            <section class="col-md-10 content">
+                <div ng-view></div>
+            </section>
+        </section>
+        <div ng-repeat="(field, msg) in feedback">
+            <h1 class="ng-hide-remove" ng-class="'feedback-' + field" ng-show="feedback" ng-cloak>{{msg}}</h1>       
+        </div> 
+    </main>
+    <% if (modeIs("debug")) { %>
+        <script src='lib/angular/angular.js'></script>
+        <script src='lib/angular/angular-route.js'></script>
+        <script src='lib/angular/angular-animate.js'></script>
+        <script src='lib/angular/angular-resource.js'></script>
+        <script src='lib/angular/angular-bootstrap.js'></script>
+        <script src='lib/angular-ui-bootstrap/ui-bootstrap-tpls.js'></script>
+        <script src='lib/less/less.js'></script>
+
+        <script src='app/main.js'></script>
+        <script src='lib/angular-local/LocalStore.js'></script>
+        <script src='lib/angular-session/SessionStore.js'></script>
+        <script src='lib/angular-esp/Esp.js'></script>
+    <%
+    scripts("lib/*/ext/**.js,app/*/**.js");
+    } else {
+    %> <script src='all.min.js.gz'></script>
+    <% } %>
+</body>
+</html>

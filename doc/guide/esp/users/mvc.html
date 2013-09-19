@@ -42,30 +42,30 @@
 <!-- BeginDsi "dsi/espSeeAlso.html" -->
 		        <h1>See Also</h1>
 		        <ul class="nav">
-		          <li><a href="../../../guide/esp/users/using.html">ESP Overview</a></li>
-		          <li><a href="../../../guide/esp/users/tour.html">ESP Tour</a></li>
-		          <li><a href="../../../guide/esp/users/template.html">Templates and Layouts</a></li>
-		          <li><a href="../../../guide/esp/users/controls.html">HTML Controls</a></li>
+		          <li><a href="../../../guide/esp/users/overview.html">ESP Overview</a></li>
+		          <li><a href="../../../guide/esp/users/pages.html">ESP Pages</a></li>
 		          <li><a href="../../../guide/esp/users/config.html">ESP Configuration Directives</a></li>
-		          <li><a href="../../../guide/esp/users/mvc.html">Model-View-Controller</a></li>
-		          <li><a href="../../../guide/esp/users/generator.html">Application Generator</a></li>
-		          <li><a href="../../../guide/esp/users/controllers.html">Controllers and Actions</a></li>
-		          <li><a href="../../../guide/esp/users/database.html">Database Interface</a></li>
+		          <li><a href="../../../guide/esp/users/controllers.html">ESP Controllers and Actions</a></li>
+		          <li><a href="../../../guide/esp/users/mvc.html">ESP MVC</a></li>
+		          <li><a href="../../../guide/esp/users/pagesTour.html">ESP Page Tour</a></li>
+		          <li><a href="../../../guide/esp/users/generator.html">ESP Generator</a></li>
+		          <li><a href="../../../guide/esp/users/database.html">ESP Database Interface</a></li>
 		          <li><a href="../../../guide/appweb/users/caching.html">Caching Responses</a></li>
 		        </ul>
 <!-- EndDsi -->
         </div>
         <div class="contentLeft">
-            <h1>Model-View-Controller Framework</h1>
+            <h1>ESP Model-View-Controller Framework</h1>
             <p>The Model-View-Controller (MVC) paradigm is a design pattern for creating applications. It
             partitions the separate concerns of application data, user interface and application logic into three
             discrete components. It has proven highly successful in simplifying application design and
             maintenance.</p>
             
             <img src="../../../images/mvc.jpg" alt="mvc" />
-            <p>The ESP Web Framework is a Model-View-Controller environment that provides a structure and
-            assistance for your MVC application. It provides the basis and connections between your models, views and
-            controllers and routes messages between the various components.</p>
+            <p>The ESP Web Framework supports the Model-View-Controller pattern to enable the creation of ESP MVC
+            applications. But it also permits you to use each component separately so that you can have stand-alone
+            controllers, views or database models. This flexibility allows you to pick and choose the components you
+            need or to embrace the entire MVC paradigm.</p>
             
             <a id="models"></a>
             <h2>Models</h2>
@@ -88,8 +88,8 @@
             <p>Controllers manage the application and respond to client requests. They orchestrate the application's
             response, they access and update model data, and display views back to the client. Incoming requests invoke
             <b>Actions</b> in the controller which modify the application state and ultimately render a view.</p>
-            <p>ESP routes requests by parsing and decoding request URIs and matching them with the appropriate
-            Controller and Action function.</p>
+            <p>ESP controllers are "C" source files with one C function per action. ESP routes requests by parsing and 
+            decoding request URIs and matching them with the appropriate Controller and Action function.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->

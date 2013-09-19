@@ -570,15 +570,19 @@ PUBLIC bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
 
 
 /**
-    Get the next token in a string.
-    @description Break into tokens separated by spaces or commas. Supports quoted args and backquotes.
+    Get the argument in a directive
+    @description Break into arguments. Args may be quoted. An outer quoting of the entire arg is removed.
     @param s String to examine
     @param tok Next token reference
     @return Reference to the next token. (Not allocate
     @ingroup MaAppweb
     @stability Prototype
 */
+PUBLIC char *maGetNextArg(char *s, char **tok);
+
+#if DEPRECATE || 1
 PUBLIC char *maGetNextToken(char *s, char **tok);
+#endif
 
 #ifdef __cplusplus
 } /* extern C */

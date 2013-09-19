@@ -70,15 +70,22 @@
             <h1>Session and Flash Storage</h1>
             <p>Session storage is a limited, semi-permanent store for keeping state information across web requests.
             The HTTP protocol by design, encourages stateless implementations and so Session state storage provides an
-            essential context for a series of requests.</p>
-            <p>Appweb provides a high performance, in-process session state store. The store is managed in that Appweb
+            essential context for a series of requests by a specific client.</p>
+            <p>ESP provides a high performance, in-process session state store. The store is managed in that Appweb
             imposes a session timeout on information and will automatically prune stale information. It uses the Appweb
             memory limit configured by the <a href="../../appweb/users/dir/sandbox.html#limitMemory">LimitMemory</a>
             directive to restrict the amount of memory that is devoted to session state.</p>
             <a id="sample"></a>
             <h2>Sample Code</h2>
             <pre>
-if (!(id = getSessionVar("user-id")) != 0) {
+if (!(id = <b>getSessionVar</b>("user-id")) != 0) {
+    redirect("/login");
+}
+</pre>
+            <p>You can also use the abbreviated API form: 
+                <a href="../../../api/esp.html#group___esp_abbrev_1ga45c8bf65c9eacac2512533dbc006db2b">session()</a></p>
+            <pre>
+if (!(id = <b>session</b>("user-id")) != 0) {
     redirect("/login");
 }
 </pre>
@@ -104,11 +111,12 @@ setSessionVar("Name", "John");
             </ul>
             <a id="flash"></a>
             <h2 class="section">Flash Storage</h2>
-            <p>ESP provides a traditional get/set key/value store. But it also provides a "flash" storage for passing
-            information to the next web request (only). Thereafter, the flash information is automatically removed.
-            Flash storage is useful to easily pass and manage feedback or notification messages for the next web page.
-            Using session state for this is problematic as the message can easily display on web pages other than the
-            immediate next web page. Flash storage will automatically remove the message after the next web page.</p>
+            <p>ESP provides a layer over session storage called "flash" storage that is useful for passing
+            information to the view and into the next requst action. Thereafter, the flash information is automatically removed.
+            Using session state for this is problematic as the message can easily propagate to requests and web pages ther than the
+            immediate next request. Flash messages will be automatically removed message after the next controller action and before
+            its view page. To be crystal-clear: flash messages are available in the view page after a controller action and
+            into the immediate next controller action.</p>
             <h3>Flash Types</h3>
             <p>Flash messages are divided into different types:</p>
             <ul>
@@ -121,25 +129,29 @@ setSessionVar("Name", "John");
                 This permits all errors to be flagged to the user using an "error" style. Similarly, for warnings and
                 informational errors.
             <h3>Defining Flash Messages</h3>
-            <p>To issue a flash message for the next web page, use one of the APIs:
-            "<em>error</em>",
-            "<em>inform</em>",
-            "<em>warn</em>",
-            "<em>setFlash</em>",
+            <p>To issue a flash message for the next web page, use the
+            <a href="../../../api/esp.html#group___esp_abbrev_1ga71d13cb7c477077d3fa31d855442deff">flash</a>
+            API.</p>
 <pre>
-inform("Document saved");
-warn("Session is about to expire in %d seconds", seconds);
-error("Could not save document");
-setFlash("custom", "Could not save document %s", myDocument);
+flash("inform", Document saved");
+falsh("warn", "Session is about to expire in %d seconds", seconds);
+flash("error", "Could not save document");
+flash("custom", "Error code %d", code);
 </pre>
-            <p>You can use "<em>setFlash</em>" to define a custom type flash message using a type of your choosing.</p>
-            <h3>Displaying Flash Messages</h3>
-            <p>To display flash messages in a web page, use the 
-            <a href="../../../api/esp.html#group___esp_abbrev_1ga8fd13fd70582fa020ad0dd5c00af5579">flash()</a> API.
+            <p>To read a flash message, use 
+            <a href="../../../api/esp.html#group___esp_abbrev_1ga99b145381ebe019cea05e3405d51c684">getFlash</a>:</p>
+            <pre>char *msg = getFlash("inform");</pre>
+            
+            <p>If you only need to pass a message from the controller into the view page, then feedback messages below
+            are a better choice. Use flash if you need to pass a message into the next request.</p>
+            <h3>Displaying Feedback Messages</h3>
+            <p>To display feedback messages in a web page, use the 
+            <a href="../../../api/esp.html#group___esp_abbrev_1ga8953966bf16fa8134e011a2b60bd0f4b">renderFeedback</a> API.
 <pre>
-&lt;% flash("all", NULL); %&gt;
+&lt;% renderFeedback("all"); %&gt;
 </pre>
-            <p>This will display all flash messages and then erase them from the flash store.</p>
+            <p>This will display all feedback messages.</p>
+            
             <a id="configuring"></a>
             <h2 class="section">Configuring Session</h2>
             <p>Session data has a lifespan defined by the <a

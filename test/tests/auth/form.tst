@@ -11,6 +11,7 @@ if (App.config.bit_ssl) {
     //  Appweb uses a self-signed cert
     http.verify = false
 
+/*
     //  Will be denied
     // http.setCredentials("anybody", "wrong password")
     http.get(HTTP + "/auth/form/index.html")
@@ -24,6 +25,7 @@ if (App.config.bit_ssl) {
     assert(http.status == 200)
     assert(http.response.contains("<form"))
     assert(http.response.contains('action="/auth/form/login"'))
+*/
 
     //  Login. The response should redirct to /auth/form
     http.reset()

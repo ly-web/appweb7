@@ -154,9 +154,8 @@ TARGETS            = $(TARGETS) $(CONFIG)\bin\esp.conf
 TARGETS            = $(TARGETS) src\server\esp.conf
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-TARGETS            = $(TARGETS) $(CONFIG)\bin\esp-proto
+TARGETS            = $(TARGETS) $(CONFIG)\esp
 !ENDIF
-TARGETS            = $(TARGETS) src\esp\proto\angular\client\css\all.css
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 TARGETS            = $(TARGETS) $(CONFIG)\bin\libejs.dll
 !ENDIF
@@ -204,7 +203,6 @@ TARGETS            = $(TARGETS) test\web\auth\basic\basic.cgi
 !IF "$(BIT_PACK_CGI)" == "1"
 TARGETS            = $(TARGETS) test\cgi-bin\cgiProgram.exe
 !ENDIF
-TARGETS            = $(TARGETS) test\web\js
 
 !IFNDEF SHOW
 .SILENT:
@@ -288,7 +286,7 @@ clean:
 	if exist "$(CONFIG)\bin\esp.exp" del /Q "$(CONFIG)\bin\esp.exp"
 	if exist "$(CONFIG)\bin\esp.conf" del /Q "$(CONFIG)\bin\esp.conf"
 	if exist "src\server\esp.conf" del /Q "src\server\esp.conf"
-	if exist "$(CONFIG)\bin\esp-proto" rd /Q /S "$(CONFIG)\bin\esp-proto"
+	if exist "$(CONFIG)\esp" rd /Q /S "$(CONFIG)\esp"
 	if exist "$(CONFIG)\bin\libejs.dll" del /Q "$(CONFIG)\bin\libejs.dll"
 	if exist "$(CONFIG)\bin\libejs.lib" del /Q "$(CONFIG)\bin\libejs.lib"
 	if exist "$(CONFIG)\bin\libejs.pdb" del /Q "$(CONFIG)\bin\libejs.pdb"
@@ -342,7 +340,6 @@ clean:
 	if exist "$(CONFIG)\bin\testAppweb.lib" del /Q "$(CONFIG)\bin\testAppweb.lib"
 	if exist "$(CONFIG)\bin\testAppweb.pdb" del /Q "$(CONFIG)\bin\testAppweb.pdb"
 	if exist "$(CONFIG)\bin\testAppweb.exp" del /Q "$(CONFIG)\bin\testAppweb.exp"
-	if exist "test\web\js" rd /Q /S "test\web\js"
 	if exist "$(CONFIG)\obj\removeFiles.obj" del /Q "$(CONFIG)\obj\removeFiles.obj"
 	if exist "$(CONFIG)\obj\mprLib.obj" del /Q "$(CONFIG)\obj\mprLib.obj"
 	if exist "$(CONFIG)\obj\mprSsl.obj" del /Q "$(CONFIG)\obj\mprSsl.obj"
@@ -1176,108 +1173,225 @@ src\server\esp.conf: $(DEPS_56)
 #
 DEPS_57 = $(DEPS_57) src\esp\proto
 
-$(CONFIG)\bin\esp-proto: $(DEPS_57)
-	@echo '      [Copy] $(CONFIG)/bin/esp-proto'
-	if not exist "$(CONFIG)\bin\esp-proto\angular" md "$(CONFIG)\bin\esp-proto\angular"
-	copy /Y src\esp\proto\angular\app.conf $(CONFIG)\bin\esp-proto\angular\app.conf
-	copy /Y src\esp\proto\angular\appweb.conf $(CONFIG)\bin\esp-proto\angular\appweb.conf
-	if not exist "$(CONFIG)\bin\esp-proto\angular\client\app" md "$(CONFIG)\bin\esp-proto\angular\client\app"
-	copy /Y src\esp\proto\angular\client\app\main.js $(CONFIG)\bin\esp-proto\angular\client\app\main.js
-	if not exist "$(CONFIG)\bin\esp-proto\angular\client\assets" md "$(CONFIG)\bin\esp-proto\angular\client\assets"
-	copy /Y src\esp\proto\angular\client\assets\banner.jpg $(CONFIG)\bin\esp-proto\angular\client\assets\banner.jpg
-	copy /Y src\esp\proto\angular\client\assets\favicon.ico $(CONFIG)\bin\esp-proto\angular\client\assets\favicon.ico
-	copy /Y src\esp\proto\angular\client\assets\glyphicons-halflings-white.png $(CONFIG)\bin\esp-proto\angular\client\assets\glyphicons-halflings-white.png
-	copy /Y src\esp\proto\angular\client\assets\glyphicons-halflings.png $(CONFIG)\bin\esp-proto\angular\client\assets\glyphicons-halflings.png
-	copy /Y src\esp\proto\angular\client\assets\splash.jpg $(CONFIG)\bin\esp-proto\angular\client\assets\splash.jpg
-	if not exist "$(CONFIG)\bin\esp-proto\angular\client\components\Esp" md "$(CONFIG)\bin\esp-proto\angular\client\components\Esp"
-	copy /Y src\esp\proto\angular\client\components\Esp\Esp.js $(CONFIG)\bin\esp-proto\angular\client\components\Esp\Esp.js
-	if not exist "$(CONFIG)\bin\esp-proto\angular\client" md "$(CONFIG)\bin\esp-proto\angular\client"
-	copy /Y src\esp\proto\angular\client\config.json $(CONFIG)\bin\esp-proto\angular\client\config.json
-	if not exist "$(CONFIG)\bin\esp-proto\angular\client\css" md "$(CONFIG)\bin\esp-proto\angular\client\css"
-	copy /Y src\esp\proto\angular\client\css\all.css $(CONFIG)\bin\esp-proto\angular\client\css\all.css
-	copy /Y src\esp\proto\angular\client\css\all.less $(CONFIG)\bin\esp-proto\angular\client\css\all.less
-	copy /Y src\esp\proto\angular\client\css\app.less $(CONFIG)\bin\esp-proto\angular\client\css\app.less
-	copy /Y src\esp\proto\angular\client\css\bootstrap.css $(CONFIG)\bin\esp-proto\angular\client\css\bootstrap.css
-	copy /Y src\esp\proto\angular\client\css\more.less $(CONFIG)\bin\esp-proto\angular\client\css\more.less
-	copy /Y src\esp\proto\angular\client\css\normalize.less $(CONFIG)\bin\esp-proto\angular\client\css\normalize.less
-	copy /Y src\esp\proto\angular\client\css\theme.less $(CONFIG)\bin\esp-proto\angular\client\css\theme.less
-	copy /Y src\esp\proto\angular\client\index.esp $(CONFIG)\bin\esp-proto\angular\client\index.esp
-	if not exist "$(CONFIG)\bin\esp-proto\angular\client\lib" md "$(CONFIG)\bin\esp-proto\angular\client\lib"
-	copy /Y src\esp\proto\angular\client\lib\all.js $(CONFIG)\bin\esp-proto\angular\client\lib\all.js
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap-prettify.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-bootstrap-prettify.js
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap-prettify.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-bootstrap-prettify.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-bootstrap.js
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-bootstrap.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-cookies.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-cookies.js
-	copy /Y src\esp\proto\angular\client\lib\angular-cookies.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-cookies.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-loader.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-loader.js
-	copy /Y src\esp\proto\angular\client\lib\angular-loader.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-loader.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-mobile.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-mobile.js
-	copy /Y src\esp\proto\angular\client\lib\angular-mobile.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-mobile.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-mocks.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-mocks.js
-	copy /Y src\esp\proto\angular\client\lib\angular-resource.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-resource.js
-	copy /Y src\esp\proto\angular\client\lib\angular-resource.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-resource.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-sanitize.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-sanitize.js
-	copy /Y src\esp\proto\angular\client\lib\angular-sanitize.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-sanitize.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-scenario.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular-scenario.js
-	copy /Y src\esp\proto\angular\client\lib\angular.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular.js
-	copy /Y src\esp\proto\angular\client\lib\angular.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\angular.min.js
-	copy /Y src\esp\proto\angular\client\lib\html5shiv.js $(CONFIG)\bin\esp-proto\angular\client\lib\html5shiv.js
-	copy /Y src\esp\proto\angular\client\lib\html5shiv.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\html5shiv.min.js
-	copy /Y src\esp\proto\angular\client\lib\jquery.js $(CONFIG)\bin\esp-proto\angular\client\lib\jquery.js
-	copy /Y src\esp\proto\angular\client\lib\jquery.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\jquery.min.js
-	copy /Y src\esp\proto\angular\client\lib\less.js $(CONFIG)\bin\esp-proto\angular\client\lib\less.js
-	copy /Y src\esp\proto\angular\client\lib\less.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\less.min.js
-	copy /Y src\esp\proto\angular\client\lib\respond.js $(CONFIG)\bin\esp-proto\angular\client\lib\respond.js
-	copy /Y src\esp\proto\angular\client\lib\respond.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\respond.min.js
-	copy /Y src\esp\proto\angular\client\lib\ui-bootstrap-tpls.js $(CONFIG)\bin\esp-proto\angular\client\lib\ui-bootstrap-tpls.js
-	copy /Y src\esp\proto\angular\client\lib\ui-bootstrap-tpls.min.js $(CONFIG)\bin\esp-proto\angular\client\lib\ui-bootstrap-tpls.min.js
-	if not exist "$(CONFIG)\bin\esp-proto\angular\client\templates" md "$(CONFIG)\bin\esp-proto\angular\client\templates"
-	copy /Y src\esp\proto\angular\client\templates\splash.html $(CONFIG)\bin\esp-proto\angular\client\templates\splash.html
-	copy /Y src\esp\proto\angular\start.bit $(CONFIG)\bin\esp-proto\angular\start.bit
-	if not exist "$(CONFIG)\bin\esp-proto\legacy" md "$(CONFIG)\bin\esp-proto\legacy"
-	copy /Y src\esp\proto\legacy\app.conf $(CONFIG)\bin\esp-proto\legacy\app.conf
-	copy /Y src\esp\proto\legacy\appweb.conf $(CONFIG)\bin\esp-proto\legacy\appweb.conf
-	if not exist "$(CONFIG)\bin\esp-proto\legacy\layouts" md "$(CONFIG)\bin\esp-proto\legacy\layouts"
-	copy /Y src\esp\proto\legacy\layouts\default.esp $(CONFIG)\bin\esp-proto\legacy\layouts\default.esp
-	if not exist "$(CONFIG)\bin\esp-proto\legacy\static\css" md "$(CONFIG)\bin\esp-proto\legacy\static\css"
-	copy /Y src\esp\proto\legacy\static\css\all.css $(CONFIG)\bin\esp-proto\legacy\static\css\all.css
-	copy /Y src\esp\proto\legacy\static\css\all.less $(CONFIG)\bin\esp-proto\legacy\static\css\all.less
-	copy /Y src\esp\proto\legacy\static\css\app.less $(CONFIG)\bin\esp-proto\legacy\static\css\app.less
-	copy /Y src\esp\proto\legacy\static\css\esp.less $(CONFIG)\bin\esp-proto\legacy\static\css\esp.less
-	copy /Y src\esp\proto\legacy\static\css\more.less $(CONFIG)\bin\esp-proto\legacy\static\css\more.less
-	copy /Y src\esp\proto\legacy\static\css\normalize.less $(CONFIG)\bin\esp-proto\legacy\static\css\normalize.less
-	copy /Y src\esp\proto\legacy\static\css\theme.less $(CONFIG)\bin\esp-proto\legacy\static\css\theme.less
-	if not exist "$(CONFIG)\bin\esp-proto\legacy\static\images" md "$(CONFIG)\bin\esp-proto\legacy\static\images"
-	copy /Y src\esp\proto\legacy\static\images\banner.jpg $(CONFIG)\bin\esp-proto\legacy\static\images\banner.jpg
-	copy /Y src\esp\proto\legacy\static\images\favicon.ico $(CONFIG)\bin\esp-proto\legacy\static\images\favicon.ico
-	copy /Y src\esp\proto\legacy\static\images\splash.jpg $(CONFIG)\bin\esp-proto\legacy\static\images\splash.jpg
-	if not exist "$(CONFIG)\bin\esp-proto\legacy\static" md "$(CONFIG)\bin\esp-proto\legacy\static"
-	copy /Y src\esp\proto\legacy\static\index.esp $(CONFIG)\bin\esp-proto\legacy\static\index.esp
-	if not exist "$(CONFIG)\bin\esp-proto\legacy\static\lib" md "$(CONFIG)\bin\esp-proto\legacy\static\lib"
-	copy /Y src\esp\proto\legacy\static\lib\html5shiv.js $(CONFIG)\bin\esp-proto\legacy\static\lib\html5shiv.js
-	copy /Y src\esp\proto\legacy\static\lib\html5shiv.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\html5shiv.min.js
-	copy /Y src\esp\proto\legacy\static\lib\jquery.esp.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.esp.js
-	copy /Y src\esp\proto\legacy\static\lib\jquery.esp.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.esp.min.js
-	copy /Y src\esp\proto\legacy\static\lib\jquery.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.js
-	copy /Y src\esp\proto\legacy\static\lib\jquery.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.min.js
-	copy /Y src\esp\proto\legacy\static\lib\jquery.simplemodal.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.simplemodal.js
-	copy /Y src\esp\proto\legacy\static\lib\jquery.simplemodal.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.simplemodal.min.js
-	copy /Y src\esp\proto\legacy\static\lib\jquery.tablesorter.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.tablesorter.js
-	copy /Y src\esp\proto\legacy\static\lib\jquery.tablesorter.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\jquery.tablesorter.min.js
-	copy /Y src\esp\proto\legacy\static\lib\less.js $(CONFIG)\bin\esp-proto\legacy\static\lib\less.js
-	copy /Y src\esp\proto\legacy\static\lib\less.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\less.min.js
-	copy /Y src\esp\proto\legacy\static\lib\respond.js $(CONFIG)\bin\esp-proto\legacy\static\lib\respond.js
-	copy /Y src\esp\proto\legacy\static\lib\respond.min.js $(CONFIG)\bin\esp-proto\legacy\static\lib\respond.min.js
-	if not exist "$(CONFIG)\bin\esp-proto\LocalStore" md "$(CONFIG)\bin\esp-proto\LocalStore"
-	copy /Y src\esp\proto\LocalStore\LocalStore.js $(CONFIG)\bin\esp-proto\LocalStore\LocalStore.js
-	if not exist "$(CONFIG)\bin\esp-proto\server" md "$(CONFIG)\bin\esp-proto\server"
-	copy /Y src\esp\proto\server\app.conf $(CONFIG)\bin\esp-proto\server\app.conf
-	copy /Y src\esp\proto\server\appweb.conf $(CONFIG)\bin\esp-proto\server\appweb.conf
-	if not exist "$(CONFIG)\bin\esp-proto\SessionStore\client\components\SessionStore" md "$(CONFIG)\bin\esp-proto\SessionStore\client\components\SessionStore"
-	copy /Y src\esp\proto\SessionStore\client\components\SessionStore\SessionStore.js $(CONFIG)\bin\esp-proto\SessionStore\client\components\SessionStore\SessionStore.js
+$(CONFIG)\esp: $(DEPS_57)
+	@echo '      [Copy] $(CONFIG)/esp'
+	if not exist "$(CONFIG)\esp\components\angular\client\lib\angular" md "$(CONFIG)\esp\components\angular\client\lib\angular"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-animate.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-animate.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-bootstrap-prettify.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-bootstrap-prettify.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-bootstrap.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-bootstrap.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-cookies.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-cookies.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-loader.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-loader.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-mocks.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-mocks.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-resource.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-resource.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-route.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-route.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-sanitize.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-sanitize.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-scenario.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-scenario.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-touch.js $(CONFIG)\esp\components\angular\client\lib\angular\angular-touch.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular.js $(CONFIG)\esp\components\angular\client\lib\angular\angular.js
+	copy /Y src\esp\proto\components\angular\client\lib\angular\errors.json $(CONFIG)\esp\components\angular\client\lib\angular\errors.json
+	copy /Y src\esp\proto\components\angular\client\lib\angular\version.json $(CONFIG)\esp\components\angular\client\lib\angular\version.json
+	copy /Y src\esp\proto\components\angular\client\lib\angular\version.txt $(CONFIG)\esp\components\angular\client\lib\angular\version.txt
+	if not exist "$(CONFIG)\esp\components\angular" md "$(CONFIG)\esp\components\angular"
+	copy /Y src\esp\proto\components\angular\config.json $(CONFIG)\esp\components\angular\config.json
+	if not exist "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp" md "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\Esp.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\Esp.js
+	if not exist "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext" md "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-input.js
+	if not exist "$(CONFIG)\esp\components\angular-esp" md "$(CONFIG)\esp\components\angular-esp"
+	copy /Y src\esp\proto\components\angular-esp\config.json $(CONFIG)\esp\components\angular-esp\config.json
+	if not exist "$(CONFIG)\esp\components\angular-extras" md "$(CONFIG)\esp\components\angular-extras"
+	copy /Y src\esp\proto\components\angular-extras\config.json $(CONFIG)\esp\components\angular-extras\config.json
+	copy /Y src\esp\proto\components\angular-extras\misc.js $(CONFIG)\esp\components\angular-extras\misc.js
+	if not exist "$(CONFIG)\esp\components\angular-local\client\lib\angular-local" md "$(CONFIG)\esp\components\angular-local\client\lib\angular-local"
+	copy /Y src\esp\proto\components\angular-local\client\lib\angular-local\LocalStore.js $(CONFIG)\esp\components\angular-local\client\lib\angular-local\LocalStore.js
+	if not exist "$(CONFIG)\esp\components\angular-local" md "$(CONFIG)\esp\components\angular-local"
+	copy /Y src\esp\proto\components\angular-local\config.json $(CONFIG)\esp\components\angular-local\config.json
+	if not exist "$(CONFIG)\esp\components\angular-mvc\client\app" md "$(CONFIG)\esp\components\angular-mvc\client\app"
+	copy /Y src\esp\proto\components\angular-mvc\client\app\main.js $(CONFIG)\esp\components\angular-mvc\client\app\main.js
+	if not exist "$(CONFIG)\esp\components\angular-mvc\client\css" md "$(CONFIG)\esp\components\angular-mvc\client\css"
+	copy /Y src\esp\proto\components\angular-mvc\client\css\all.css $(CONFIG)\esp\components\angular-mvc\client\css\all.css
+	copy /Y src\esp\proto\components\angular-mvc\client\css\all.less $(CONFIG)\esp\components\angular-mvc\client\css\all.less
+	copy /Y src\esp\proto\components\angular-mvc\client\css\app.less $(CONFIG)\esp\components\angular-mvc\client\css\app.less
+	copy /Y src\esp\proto\components\angular-mvc\client\css\fix.css $(CONFIG)\esp\components\angular-mvc\client\css\fix.css
+	copy /Y src\esp\proto\components\angular-mvc\client\css\old-app.less $(CONFIG)\esp\components\angular-mvc\client\css\old-app.less
+	copy /Y src\esp\proto\components\angular-mvc\client\css\old-theme.less $(CONFIG)\esp\components\angular-mvc\client\css\old-theme.less
+	copy /Y src\esp\proto\components\angular-mvc\client\css\theme.less $(CONFIG)\esp\components\angular-mvc\client\css\theme.less
+	if not exist "$(CONFIG)\esp\components\angular-mvc\client" md "$(CONFIG)\esp\components\angular-mvc\client"
+	copy /Y src\esp\proto\components\angular-mvc\client\index.esp $(CONFIG)\esp\components\angular-mvc\client\index.esp
+	if not exist "$(CONFIG)\esp\components\angular-mvc\client\templates" md "$(CONFIG)\esp\components\angular-mvc\client\templates"
+	copy /Y src\esp\proto\components\angular-mvc\client\templates\splash.html $(CONFIG)\esp\components\angular-mvc\client\templates\splash.html
+	if not exist "$(CONFIG)\esp\components\angular-mvc" md "$(CONFIG)\esp\components\angular-mvc"
+	copy /Y src\esp\proto\components\angular-mvc\config.json $(CONFIG)\esp\components\angular-mvc\config.json
+	copy /Y src\esp\proto\components\angular-mvc\start.bit $(CONFIG)\esp\components\angular-mvc\start.bit
+	if not exist "$(CONFIG)\esp\components\angular-session\client\lib\angular-session" md "$(CONFIG)\esp\components\angular-session\client\lib\angular-session"
+	copy /Y src\esp\proto\components\angular-session\client\lib\angular-session\SessionStore.js $(CONFIG)\esp\components\angular-session\client\lib\angular-session\SessionStore.js
+	if not exist "$(CONFIG)\esp\components\angular-session" md "$(CONFIG)\esp\components\angular-session"
+	copy /Y src\esp\proto\components\angular-session\config.json $(CONFIG)\esp\components\angular-session\config.json
+	if not exist "$(CONFIG)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap" md "$(CONFIG)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap"
+	copy /Y src\esp\proto\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap\ui-bootstrap-tpls.js $(CONFIG)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap\ui-bootstrap-tpls.js
+	if not exist "$(CONFIG)\esp\components\angular-ui-bootstrap" md "$(CONFIG)\esp\components\angular-ui-bootstrap"
+	copy /Y src\esp\proto\components\angular-ui-bootstrap\config.json $(CONFIG)\esp\components\angular-ui-bootstrap\config.json
+	if not exist "$(CONFIG)\esp\components\animate\client\css" md "$(CONFIG)\esp\components\animate\client\css"
+	copy /Y src\esp\proto\components\animate\client\css\animate.css $(CONFIG)\esp\components\animate\client\css\animate.css
+	if not exist "$(CONFIG)\esp\components\animate" md "$(CONFIG)\esp\components\animate"
+	copy /Y src\esp\proto\components\animate\config.json $(CONFIG)\esp\components\animate\config.json
+	if not exist "$(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\css" md "$(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\css"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap-theme.css $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\css\bootstrap-theme.css
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap-theme.min.css $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\css\bootstrap-theme.min.css
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap.css $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\css\bootstrap.css
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap.min.css $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\css\bootstrap.min.css
+	if not exist "$(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\fonts" md "$(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\fonts"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.eot $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.eot
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.svg $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.svg
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.ttf $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.ttf
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.woff $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.woff
+	if not exist "$(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\js" md "$(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\js"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\js\bootstrap.js $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\js\bootstrap.js
+	if not exist "$(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less" md "$(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\alerts.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\alerts.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\badges.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\badges.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\bootstrap.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\bootstrap.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\breadcrumbs.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\breadcrumbs.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\button-groups.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\button-groups.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\buttons.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\buttons.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\carousel.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\carousel.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\close.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\close.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\code.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\code.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\component-animations.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\component-animations.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\dropdowns.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\dropdowns.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\forms.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\forms.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\glyphicons.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\glyphicons.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\grid.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\grid.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\input-groups.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\input-groups.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\jumbotron.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\jumbotron.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\labels.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\labels.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\list-group.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\list-group.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\media.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\media.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\mixins.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\mixins.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\modals.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\modals.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\navbar.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\navbar.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\navs.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\navs.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\normalize.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\normalize.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\pager.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\pager.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\pagination.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\pagination.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\panels.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\panels.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\popovers.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\popovers.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\print.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\print.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\progress-bars.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\progress-bars.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\responsive-utilities.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\responsive-utilities.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\scaffolding.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\scaffolding.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\tables.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\tables.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\theme.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\theme.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\thumbnails.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\thumbnails.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\tooltip.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\tooltip.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\type.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\type.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\utilities.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\utilities.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\variables.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\variables.less
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\wells.less $(CONFIG)\esp\components\bootstrap\client\lib\bootstrap\less\wells.less
+	if not exist "$(CONFIG)\esp\components\bootstrap" md "$(CONFIG)\esp\components\bootstrap"
+	copy /Y src\esp\proto\components\bootstrap\config.json $(CONFIG)\esp\components\bootstrap\config.json
+	if not exist "$(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\css" md "$(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\css"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome-ie7.css $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\css\font-awesome-ie7.css
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome-ie7.min.css $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\css\font-awesome-ie7.min.css
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome.css $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\css\font-awesome.css
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome.min.css $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\css\font-awesome.min.css
+	if not exist "$(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\font" md "$(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\font"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.eot $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.eot
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.svg $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.svg
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.ttf $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.ttf
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.woff $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.woff
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\font\FontAwesome.otf $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\font\FontAwesome.otf
+	if not exist "$(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less" md "$(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\bootstrap.less $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less\bootstrap.less
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\core.less $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less\core.less
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\extras.less $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less\extras.less
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\font-awesome-ie7.less $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less\font-awesome-ie7.less
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\font-awesome.less $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less\font-awesome.less
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\icons.less $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less\icons.less
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\mixins.less $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less\mixins.less
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\path.less $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less\path.less
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\variables.less $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\less\variables.less
+	if not exist "$(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss" md "$(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_bootstrap.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\_bootstrap.scss
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_core.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\_core.scss
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_extras.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\_extras.scss
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_icons.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\_icons.scss
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_mixins.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\_mixins.scss
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_path.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\_path.scss
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_variables.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\_variables.scss
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\font-awesome-ie7.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\font-awesome-ie7.scss
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss
+	if not exist "$(CONFIG)\esp\components\font-awesome" md "$(CONFIG)\esp\components\font-awesome"
+	copy /Y src\esp\proto\components\font-awesome\config.json $(CONFIG)\esp\components\font-awesome\config.json
+	if not exist "$(CONFIG)\esp\components\html5shiv\client\lib\html5shiv" md "$(CONFIG)\esp\components\html5shiv\client\lib\html5shiv"
+	copy /Y src\esp\proto\components\html5shiv\client\lib\html5shiv\html5shiv.js $(CONFIG)\esp\components\html5shiv\client\lib\html5shiv\html5shiv.js
+	if not exist "$(CONFIG)\esp\components\html5shiv" md "$(CONFIG)\esp\components\html5shiv"
+	copy /Y src\esp\proto\components\html5shiv\config.json $(CONFIG)\esp\components\html5shiv\config.json
+	if not exist "$(CONFIG)\esp\components\jquery\client\lib\jquery" md "$(CONFIG)\esp\components\jquery\client\lib\jquery"
+	copy /Y src\esp\proto\components\jquery\client\lib\jquery\jquery.js $(CONFIG)\esp\components\jquery\client\lib\jquery\jquery.js
+	if not exist "$(CONFIG)\esp\components\jquery" md "$(CONFIG)\esp\components\jquery"
+	copy /Y src\esp\proto\components\jquery\config.json $(CONFIG)\esp\components\jquery\config.json
+	if not exist "$(CONFIG)\esp\components\legacy-mvc" md "$(CONFIG)\esp\components\legacy-mvc"
+	copy /Y src\esp\proto\components\legacy-mvc\config.json $(CONFIG)\esp\components\legacy-mvc\config.json
+	if not exist "$(CONFIG)\esp\components\legacy-mvc\layouts" md "$(CONFIG)\esp\components\legacy-mvc\layouts"
+	copy /Y src\esp\proto\components\legacy-mvc\layouts\default.esp $(CONFIG)\esp\components\legacy-mvc\layouts\default.esp
+	if not exist "$(CONFIG)\esp\components\legacy-mvc\static\css" md "$(CONFIG)\esp\components\legacy-mvc\static\css"
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\all.css $(CONFIG)\esp\components\legacy-mvc\static\css\all.css
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\all.less $(CONFIG)\esp\components\legacy-mvc\static\css\all.less
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\app.less $(CONFIG)\esp\components\legacy-mvc\static\css\app.less
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\esp.less $(CONFIG)\esp\components\legacy-mvc\static\css\esp.less
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\more.less $(CONFIG)\esp\components\legacy-mvc\static\css\more.less
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\normalize.less $(CONFIG)\esp\components\legacy-mvc\static\css\normalize.less
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\theme.less $(CONFIG)\esp\components\legacy-mvc\static\css\theme.less
+	if not exist "$(CONFIG)\esp\components\legacy-mvc\static\images" md "$(CONFIG)\esp\components\legacy-mvc\static\images"
+	copy /Y src\esp\proto\components\legacy-mvc\static\images\banner.jpg $(CONFIG)\esp\components\legacy-mvc\static\images\banner.jpg
+	copy /Y src\esp\proto\components\legacy-mvc\static\images\favicon.ico $(CONFIG)\esp\components\legacy-mvc\static\images\favicon.ico
+	copy /Y src\esp\proto\components\legacy-mvc\static\images\splash.jpg $(CONFIG)\esp\components\legacy-mvc\static\images\splash.jpg
+	if not exist "$(CONFIG)\esp\components\legacy-mvc\static" md "$(CONFIG)\esp\components\legacy-mvc\static"
+	copy /Y src\esp\proto\components\legacy-mvc\static\index.esp $(CONFIG)\esp\components\legacy-mvc\static\index.esp
+	if not exist "$(CONFIG)\esp\components\legacy-mvc\static\lib" md "$(CONFIG)\esp\components\legacy-mvc\static\lib"
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\html5shiv.js $(CONFIG)\esp\components\legacy-mvc\static\lib\html5shiv.js
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\jquery.esp.js $(CONFIG)\esp\components\legacy-mvc\static\lib\jquery.esp.js
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\jquery.js $(CONFIG)\esp\components\legacy-mvc\static\lib\jquery.js
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\jquery.simplemodal.js $(CONFIG)\esp\components\legacy-mvc\static\lib\jquery.simplemodal.js
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\jquery.tablesorter.js $(CONFIG)\esp\components\legacy-mvc\static\lib\jquery.tablesorter.js
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\less.js $(CONFIG)\esp\components\legacy-mvc\static\lib\less.js
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\respond.js $(CONFIG)\esp\components\legacy-mvc\static\lib\respond.js
+	if not exist "$(CONFIG)\esp\components\less\client\lib\less" md "$(CONFIG)\esp\components\less\client\lib\less"
+	copy /Y src\esp\proto\components\less\client\lib\less\less.js $(CONFIG)\esp\components\less\client\lib\less\less.js
+	if not exist "$(CONFIG)\esp\components\less" md "$(CONFIG)\esp\components\less"
+	copy /Y src\esp\proto\components\less\config.json $(CONFIG)\esp\components\less\config.json
+	if not exist "$(CONFIG)\esp\components\more\client\css" md "$(CONFIG)\esp\components\more\client\css"
+	copy /Y src\esp\proto\components\more\client\css\more.less $(CONFIG)\esp\components\more\client\css\more.less
+	if not exist "$(CONFIG)\esp\components\more" md "$(CONFIG)\esp\components\more"
+	copy /Y src\esp\proto\components\more\config.json $(CONFIG)\esp\components\more\config.json
+	if not exist "$(CONFIG)\esp\components\normalize\client\css" md "$(CONFIG)\esp\components\normalize\client\css"
+	copy /Y src\esp\proto\components\normalize\client\css\normalize.less $(CONFIG)\esp\components\normalize\client\css\normalize.less
+	if not exist "$(CONFIG)\esp\components\normalize" md "$(CONFIG)\esp\components\normalize"
+	copy /Y src\esp\proto\components\normalize\config.json $(CONFIG)\esp\components\normalize\config.json
+	if not exist "$(CONFIG)\esp\components\respond\client\lib\respond" md "$(CONFIG)\esp\components\respond\client\lib\respond"
+	copy /Y src\esp\proto\components\respond\client\lib\respond\respond.js $(CONFIG)\esp\components\respond\client\lib\respond\respond.js
+	if not exist "$(CONFIG)\esp\components\respond" md "$(CONFIG)\esp\components\respond"
+	copy /Y src\esp\proto\components\respond\config.json $(CONFIG)\esp\components\respond\config.json
+	if not exist "$(CONFIG)\esp\components\server" md "$(CONFIG)\esp\components\server"
+	copy /Y src\esp\proto\components\server\app.conf $(CONFIG)\esp\components\server\app.conf
+	copy /Y src\esp\proto\components\server\appweb.conf $(CONFIG)\esp\components\server\appweb.conf
+	copy /Y src\esp\proto\components\server\config.json $(CONFIG)\esp\components\server\config.json
+	if not exist "$(CONFIG)\esp\templates\angular-mvc" md "$(CONFIG)\esp\templates\angular-mvc"
+	copy /Y src\esp\proto\templates\angular-mvc\controller.c $(CONFIG)\esp\templates\angular-mvc\controller.c
+	copy /Y src\esp\proto\templates\angular-mvc\controller.js $(CONFIG)\esp\templates\angular-mvc\controller.js
+	copy /Y src\esp\proto\templates\angular-mvc\edit.html $(CONFIG)\esp\templates\angular-mvc\edit.html
+	copy /Y src\esp\proto\templates\angular-mvc\list.html $(CONFIG)\esp\templates\angular-mvc\list.html
+	copy /Y src\esp\proto\templates\angular-mvc\model.js $(CONFIG)\esp\templates\angular-mvc\model.js
+	if not exist "$(CONFIG)\esp\templates\legacy-mvc" md "$(CONFIG)\esp\templates\legacy-mvc"
+	copy /Y src\esp\proto\templates\legacy-mvc\controller.c $(CONFIG)\esp\templates\legacy-mvc\controller.c
+	copy /Y src\esp\proto\templates\legacy-mvc\edit.html $(CONFIG)\esp\templates\legacy-mvc\edit.html
+	copy /Y src\esp\proto\templates\legacy-mvc\list.html $(CONFIG)\esp\templates\legacy-mvc\list.html
+	if not exist "$(CONFIG)\esp\templates\server" md "$(CONFIG)\esp\templates\server"
+	copy /Y src\esp\proto\templates\server\app.c $(CONFIG)\esp\templates\server\app.c
+	copy /Y src\esp\proto\templates\server\controller.c $(CONFIG)\esp\templates\server\controller.c
+	copy /Y src\esp\proto\templates\server\migration.c $(CONFIG)\esp\templates\server\migration.c
 !ENDIF
-
 
 #
 #   ejs.h
@@ -2167,57 +2281,19 @@ test\cgi-bin\cgiProgram.exe: $(DEPS_99)
 #  Omit build script test-cgiProgram
 !ENDIF
 
-#
-#   test.js
-#
-DEPS_100 = $(DEPS_100) src\esp\proto\angular\client\lib
-
-test\web\js: $(DEPS_100)
-	@echo '      [Copy] test/web/js'
-	if not exist "test\web\js" md "test\web\js"
-	copy /Y src\esp\proto\angular\client\lib\all.js test\web\js\all.js
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap-prettify.js test\web\js\angular-bootstrap-prettify.js
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap-prettify.min.js test\web\js\angular-bootstrap-prettify.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap.js test\web\js\angular-bootstrap.js
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap.min.js test\web\js\angular-bootstrap.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-cookies.js test\web\js\angular-cookies.js
-	copy /Y src\esp\proto\angular\client\lib\angular-cookies.min.js test\web\js\angular-cookies.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-loader.js test\web\js\angular-loader.js
-	copy /Y src\esp\proto\angular\client\lib\angular-loader.min.js test\web\js\angular-loader.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-mobile.js test\web\js\angular-mobile.js
-	copy /Y src\esp\proto\angular\client\lib\angular-mobile.min.js test\web\js\angular-mobile.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-mocks.js test\web\js\angular-mocks.js
-	copy /Y src\esp\proto\angular\client\lib\angular-resource.js test\web\js\angular-resource.js
-	copy /Y src\esp\proto\angular\client\lib\angular-resource.min.js test\web\js\angular-resource.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-sanitize.js test\web\js\angular-sanitize.js
-	copy /Y src\esp\proto\angular\client\lib\angular-sanitize.min.js test\web\js\angular-sanitize.min.js
-	copy /Y src\esp\proto\angular\client\lib\angular-scenario.js test\web\js\angular-scenario.js
-	copy /Y src\esp\proto\angular\client\lib\angular.js test\web\js\angular.js
-	copy /Y src\esp\proto\angular\client\lib\angular.min.js test\web\js\angular.min.js
-	copy /Y src\esp\proto\angular\client\lib\html5shiv.js test\web\js\html5shiv.js
-	copy /Y src\esp\proto\angular\client\lib\html5shiv.min.js test\web\js\html5shiv.min.js
-	copy /Y src\esp\proto\angular\client\lib\jquery.js test\web\js\jquery.js
-	copy /Y src\esp\proto\angular\client\lib\jquery.min.js test\web\js\jquery.min.js
-	copy /Y src\esp\proto\angular\client\lib\less.js test\web\js\less.js
-	copy /Y src\esp\proto\angular\client\lib\less.min.js test\web\js\less.min.js
-	copy /Y src\esp\proto\angular\client\lib\respond.js test\web\js\respond.js
-	copy /Y src\esp\proto\angular\client\lib\respond.min.js test\web\js\respond.min.js
-	copy /Y src\esp\proto\angular\client\lib\ui-bootstrap-tpls.js test\web\js\ui-bootstrap-tpls.js
-	copy /Y src\esp\proto\angular\client\lib\ui-bootstrap-tpls.min.js test\web\js\ui-bootstrap-tpls.min.js
-
 
 #
 #   stop
 #
-DEPS_101 = $(DEPS_101) compile
+DEPS_100 = $(DEPS_100) compile
 
-stop: $(DEPS_101)
+stop: $(DEPS_100)
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_102)
+installBinary: $(DEPS_101)
 	if not exist "$(BIT_VAPP_PREFIX)\log" md "$(BIT_VAPP_PREFIX)\log"
 	if not exist "$(BIT_VAPP_PREFIX)\cache" md "$(BIT_VAPP_PREFIX)\cache"
 	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
@@ -2276,104 +2352,222 @@ installBinary: $(DEPS_102)
 	copy /Y $(CONFIG)\bin\libmprssl.lib "$(BIT_VAPP_PREFIX)\bin\libmprssl.lib"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular"
-	copy /Y src\esp\proto\angular\app.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\app.conf"
-	copy /Y src\esp\proto\angular\appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\appweb.conf"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app"
-	copy /Y src\esp\proto\angular\client\app\main.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\app\main.js"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets"
-	copy /Y src\esp\proto\angular\client\assets\banner.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\banner.jpg"
-	copy /Y src\esp\proto\angular\client\assets\favicon.ico "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\favicon.ico"
-	copy /Y src\esp\proto\angular\client\assets\glyphicons-halflings-white.png "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\glyphicons-halflings-white.png"
-	copy /Y src\esp\proto\angular\client\assets\glyphicons-halflings.png "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\glyphicons-halflings.png"
-	copy /Y src\esp\proto\angular\client\assets\splash.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\assets\splash.jpg"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\components\Esp" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\components\Esp"
-	copy /Y src\esp\proto\angular\client\components\Esp\Esp.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\components\Esp\Esp.js"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client"
-	copy /Y src\esp\proto\angular\client\config.json "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\config.json"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\css" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\css"
-	copy /Y src\esp\proto\angular\client\css\all.css "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\css\all.css"
-	copy /Y src\esp\proto\angular\client\css\all.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\css\all.less"
-	copy /Y src\esp\proto\angular\client\css\app.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\css\app.less"
-	copy /Y src\esp\proto\angular\client\css\bootstrap.css "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\css\bootstrap.css"
-	copy /Y src\esp\proto\angular\client\css\more.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\css\more.less"
-	copy /Y src\esp\proto\angular\client\css\normalize.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\css\normalize.less"
-	copy /Y src\esp\proto\angular\client\css\theme.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\css\theme.less"
-	copy /Y src\esp\proto\angular\client\index.esp "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\index.esp"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib"
-	copy /Y src\esp\proto\angular\client\lib\all.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\all.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap-prettify.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-bootstrap-prettify.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap-prettify.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-bootstrap-prettify.min.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-bootstrap.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-bootstrap.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-bootstrap.min.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-cookies.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-cookies.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-cookies.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-cookies.min.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-loader.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-loader.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-loader.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-loader.min.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-mobile.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-mobile.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-mobile.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-mobile.min.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-mocks.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-mocks.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-resource.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-resource.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-resource.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-resource.min.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-sanitize.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-sanitize.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-sanitize.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-sanitize.min.js"
-	copy /Y src\esp\proto\angular\client\lib\angular-scenario.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular-scenario.js"
-	copy /Y src\esp\proto\angular\client\lib\angular.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular.js"
-	copy /Y src\esp\proto\angular\client\lib\angular.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\angular.min.js"
-	copy /Y src\esp\proto\angular\client\lib\html5shiv.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\html5shiv.js"
-	copy /Y src\esp\proto\angular\client\lib\html5shiv.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\html5shiv.min.js"
-	copy /Y src\esp\proto\angular\client\lib\jquery.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\jquery.js"
-	copy /Y src\esp\proto\angular\client\lib\jquery.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\jquery.min.js"
-	copy /Y src\esp\proto\angular\client\lib\less.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\less.js"
-	copy /Y src\esp\proto\angular\client\lib\less.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\less.min.js"
-	copy /Y src\esp\proto\angular\client\lib\respond.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\respond.js"
-	copy /Y src\esp\proto\angular\client\lib\respond.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\respond.min.js"
-	copy /Y src\esp\proto\angular\client\lib\ui-bootstrap-tpls.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\ui-bootstrap-tpls.js"
-	copy /Y src\esp\proto\angular\client\lib\ui-bootstrap-tpls.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\lib\ui-bootstrap-tpls.min.js"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\templates" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\templates"
-	copy /Y src\esp\proto\angular\client\templates\splash.html "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\client\templates\splash.html"
-	copy /Y src\esp\proto\angular\start.bit "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\angular\start.bit"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy"
-	copy /Y src\esp\proto\legacy\app.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\app.conf"
-	copy /Y src\esp\proto\legacy\appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\appweb.conf"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\layouts" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\layouts"
-	copy /Y src\esp\proto\legacy\layouts\default.esp "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\layouts\default.esp"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css"
-	copy /Y src\esp\proto\legacy\static\css\all.css "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\all.css"
-	copy /Y src\esp\proto\legacy\static\css\all.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\all.less"
-	copy /Y src\esp\proto\legacy\static\css\app.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\app.less"
-	copy /Y src\esp\proto\legacy\static\css\esp.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\esp.less"
-	copy /Y src\esp\proto\legacy\static\css\more.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\more.less"
-	copy /Y src\esp\proto\legacy\static\css\normalize.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\normalize.less"
-	copy /Y src\esp\proto\legacy\static\css\theme.less "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\css\theme.less"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\images" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\images"
-	copy /Y src\esp\proto\legacy\static\images\banner.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\images\banner.jpg"
-	copy /Y src\esp\proto\legacy\static\images\favicon.ico "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\images\favicon.ico"
-	copy /Y src\esp\proto\legacy\static\images\splash.jpg "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\images\splash.jpg"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static"
-	copy /Y src\esp\proto\legacy\static\index.esp "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\index.esp"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib"
-	copy /Y src\esp\proto\legacy\static\lib\html5shiv.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\html5shiv.js"
-	copy /Y src\esp\proto\legacy\static\lib\html5shiv.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\html5shiv.min.js"
-	copy /Y src\esp\proto\legacy\static\lib\jquery.esp.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.esp.js"
-	copy /Y src\esp\proto\legacy\static\lib\jquery.esp.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.esp.min.js"
-	copy /Y src\esp\proto\legacy\static\lib\jquery.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.js"
-	copy /Y src\esp\proto\legacy\static\lib\jquery.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.min.js"
-	copy /Y src\esp\proto\legacy\static\lib\jquery.simplemodal.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.simplemodal.js"
-	copy /Y src\esp\proto\legacy\static\lib\jquery.simplemodal.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.simplemodal.min.js"
-	copy /Y src\esp\proto\legacy\static\lib\jquery.tablesorter.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.tablesorter.js"
-	copy /Y src\esp\proto\legacy\static\lib\jquery.tablesorter.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\jquery.tablesorter.min.js"
-	copy /Y src\esp\proto\legacy\static\lib\less.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\less.js"
-	copy /Y src\esp\proto\legacy\static\lib\less.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\less.min.js"
-	copy /Y src\esp\proto\legacy\static\lib\respond.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\respond.js"
-	copy /Y src\esp\proto\legacy\static\lib\respond.min.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\legacy\static\lib\respond.min.js"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\LocalStore" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\LocalStore"
-	copy /Y src\esp\proto\LocalStore\LocalStore.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\LocalStore\LocalStore.js"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server"
-	copy /Y src\esp\proto\server\app.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server\app.conf"
-	copy /Y src\esp\proto\server\appweb.conf "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\server\appweb.conf"
-	if not exist "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\SessionStore\client\components\SessionStore" md "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\SessionStore\client\components\SessionStore"
-	copy /Y src\esp\proto\SessionStore\client\components\SessionStore\SessionStore.js "$(BIT_VAPP_PREFIX)\bin\esp-proto\proto\SessionStore\client\components\SessionStore\SessionStore.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-animate.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-animate.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-bootstrap-prettify.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-bootstrap-prettify.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-bootstrap.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-bootstrap.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-cookies.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-cookies.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-loader.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-loader.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-mocks.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-mocks.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-resource.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-resource.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-route.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-route.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-sanitize.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-sanitize.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-scenario.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-scenario.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular-touch.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular-touch.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\angular.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\angular.js"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\errors.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\errors.json"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\version.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\version.json"
+	copy /Y src\esp\proto\components\angular\client\lib\angular\version.txt "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\version.txt"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular"
+	copy /Y src\esp\proto\components\angular\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\Esp.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\Esp.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp"
+	copy /Y src\esp\proto\components\angular-esp\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-extras" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-extras"
+	copy /Y src\esp\proto\components\angular-extras\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-extras\config.json"
+	copy /Y src\esp\proto\components\angular-extras\misc.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-extras\misc.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\client\lib\angular-local" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\client\lib\angular-local"
+	copy /Y src\esp\proto\components\angular-local\client\lib\angular-local\LocalStore.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\client\lib\angular-local\LocalStore.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local"
+	copy /Y src\esp\proto\components\angular-local\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\app" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\app"
+	copy /Y src\esp\proto\components\angular-mvc\client\app\main.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\app\main.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css"
+	copy /Y src\esp\proto\components\angular-mvc\client\css\all.css "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\all.css"
+	copy /Y src\esp\proto\components\angular-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\all.less"
+	copy /Y src\esp\proto\components\angular-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\app.less"
+	copy /Y src\esp\proto\components\angular-mvc\client\css\fix.css "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\fix.css"
+	copy /Y src\esp\proto\components\angular-mvc\client\css\old-app.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\old-app.less"
+	copy /Y src\esp\proto\components\angular-mvc\client\css\old-theme.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\old-theme.less"
+	copy /Y src\esp\proto\components\angular-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\theme.less"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client"
+	copy /Y src\esp\proto\components\angular-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\index.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\templates" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\templates"
+	copy /Y src\esp\proto\components\angular-mvc\client\templates\splash.html "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\templates\splash.html"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc"
+	copy /Y src\esp\proto\components\angular-mvc\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\config.json"
+	copy /Y src\esp\proto\components\angular-mvc\start.bit "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\start.bit"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\client\lib\angular-session" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\client\lib\angular-session"
+	copy /Y src\esp\proto\components\angular-session\client\lib\angular-session\SessionStore.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\client\lib\angular-session\SessionStore.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session"
+	copy /Y src\esp\proto\components\angular-session\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap"
+	copy /Y src\esp\proto\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap\ui-bootstrap-tpls.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap\ui-bootstrap-tpls.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-ui-bootstrap" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-ui-bootstrap"
+	copy /Y src\esp\proto\components\angular-ui-bootstrap\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-ui-bootstrap\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\animate\client\css" md "$(BIT_VAPP_PREFIX)\esp\proto\components\animate\client\css"
+	copy /Y src\esp\proto\components\animate\client\css\animate.css "$(BIT_VAPP_PREFIX)\esp\proto\components\animate\client\css\animate.css"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\animate" md "$(BIT_VAPP_PREFIX)\esp\proto\components\animate"
+	copy /Y src\esp\proto\components\animate\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\animate\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\css" md "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\css"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap-theme.css "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap-theme.css"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap-theme.min.css "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap-theme.min.css"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap.css "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap.css"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap.min.css "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\css\bootstrap.min.css"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\fonts" md "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\fonts"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.eot "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.eot"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.svg "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.svg"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.ttf "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.ttf"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.woff "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\fonts\glyphicons-halflings-regular.woff"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\js" md "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\js"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\js\bootstrap.js "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\js\bootstrap.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less" md "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\alerts.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\alerts.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\badges.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\badges.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\bootstrap.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\bootstrap.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\breadcrumbs.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\breadcrumbs.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\button-groups.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\button-groups.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\buttons.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\buttons.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\carousel.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\carousel.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\close.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\close.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\code.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\code.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\component-animations.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\component-animations.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\dropdowns.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\dropdowns.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\forms.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\forms.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\glyphicons.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\glyphicons.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\grid.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\grid.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\input-groups.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\input-groups.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\jumbotron.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\jumbotron.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\labels.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\labels.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\list-group.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\list-group.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\media.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\media.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\mixins.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\mixins.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\modals.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\modals.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\navbar.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\navbar.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\navs.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\navs.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\normalize.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\normalize.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\pager.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\pager.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\pagination.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\pagination.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\panels.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\panels.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\popovers.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\popovers.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\print.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\print.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\progress-bars.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\progress-bars.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\responsive-utilities.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\responsive-utilities.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\scaffolding.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\scaffolding.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\tables.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\tables.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\theme.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\theme.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\thumbnails.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\thumbnails.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\tooltip.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\tooltip.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\type.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\type.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\utilities.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\utilities.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\variables.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\variables.less"
+	copy /Y src\esp\proto\components\bootstrap\client\lib\bootstrap\less\wells.less "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\client\lib\bootstrap\less\wells.less"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap" md "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap"
+	copy /Y src\esp\proto\components\bootstrap\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\bootstrap\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\css" md "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\css"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome-ie7.css "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome-ie7.css"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome-ie7.min.css "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome-ie7.min.css"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome.css "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome.css"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome.min.css "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\css\font-awesome.min.css"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\font" md "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\font"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.eot "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.eot"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.svg "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.svg"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.ttf "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.ttf"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.woff "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\font\fontawesome-webfont.woff"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\font\FontAwesome.otf "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\font\FontAwesome.otf"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less" md "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\bootstrap.less "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less\bootstrap.less"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\core.less "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less\core.less"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\extras.less "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less\extras.less"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\font-awesome-ie7.less "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less\font-awesome-ie7.less"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\font-awesome.less "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less\font-awesome.less"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\icons.less "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less\icons.less"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\mixins.less "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less\mixins.less"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\path.less "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less\path.less"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\less\variables.less "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\less\variables.less"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss" md "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_bootstrap.scss "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_bootstrap.scss"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_core.scss "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_core.scss"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_extras.scss "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_extras.scss"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_icons.scss "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_icons.scss"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_mixins.scss "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_mixins.scss"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_path.scss "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_path.scss"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_variables.scss "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss\_variables.scss"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\font-awesome-ie7.scss "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss\font-awesome-ie7.scss"
+	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome" md "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome"
+	copy /Y src\esp\proto\components\font-awesome\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\font-awesome\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\html5shiv\client\lib\html5shiv" md "$(BIT_VAPP_PREFIX)\esp\proto\components\html5shiv\client\lib\html5shiv"
+	copy /Y src\esp\proto\components\html5shiv\client\lib\html5shiv\html5shiv.js "$(BIT_VAPP_PREFIX)\esp\proto\components\html5shiv\client\lib\html5shiv\html5shiv.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\html5shiv" md "$(BIT_VAPP_PREFIX)\esp\proto\components\html5shiv"
+	copy /Y src\esp\proto\components\html5shiv\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\html5shiv\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\jquery\client\lib\jquery" md "$(BIT_VAPP_PREFIX)\esp\proto\components\jquery\client\lib\jquery"
+	copy /Y src\esp\proto\components\jquery\client\lib\jquery\jquery.js "$(BIT_VAPP_PREFIX)\esp\proto\components\jquery\client\lib\jquery\jquery.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\jquery" md "$(BIT_VAPP_PREFIX)\esp\proto\components\jquery"
+	copy /Y src\esp\proto\components\jquery\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\jquery\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc" md "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc"
+	copy /Y src\esp\proto\components\legacy-mvc\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\layouts" md "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\layouts"
+	copy /Y src\esp\proto\components\legacy-mvc\layouts\default.esp "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\layouts\default.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\css" md "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\css"
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\all.css "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\css\all.css"
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\all.less "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\css\all.less"
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\app.less "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\css\app.less"
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\esp.less "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\css\esp.less"
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\more.less "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\css\more.less"
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\normalize.less "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\css\normalize.less"
+	copy /Y src\esp\proto\components\legacy-mvc\static\css\theme.less "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\css\theme.less"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\images" md "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\images"
+	copy /Y src\esp\proto\components\legacy-mvc\static\images\banner.jpg "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\images\banner.jpg"
+	copy /Y src\esp\proto\components\legacy-mvc\static\images\favicon.ico "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\images\favicon.ico"
+	copy /Y src\esp\proto\components\legacy-mvc\static\images\splash.jpg "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\images\splash.jpg"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static" md "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static"
+	copy /Y src\esp\proto\components\legacy-mvc\static\index.esp "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\index.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\lib" md "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\lib"
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\html5shiv.js "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\lib\html5shiv.js"
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\jquery.esp.js "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\lib\jquery.esp.js"
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\jquery.js "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\lib\jquery.js"
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\jquery.simplemodal.js "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\lib\jquery.simplemodal.js"
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\jquery.tablesorter.js "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\lib\jquery.tablesorter.js"
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\less.js "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\lib\less.js"
+	copy /Y src\esp\proto\components\legacy-mvc\static\lib\respond.js "$(BIT_VAPP_PREFIX)\esp\proto\components\legacy-mvc\static\lib\respond.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\less\client\lib\less" md "$(BIT_VAPP_PREFIX)\esp\proto\components\less\client\lib\less"
+	copy /Y src\esp\proto\components\less\client\lib\less\less.js "$(BIT_VAPP_PREFIX)\esp\proto\components\less\client\lib\less\less.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\less" md "$(BIT_VAPP_PREFIX)\esp\proto\components\less"
+	copy /Y src\esp\proto\components\less\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\less\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\more\client\css" md "$(BIT_VAPP_PREFIX)\esp\proto\components\more\client\css"
+	copy /Y src\esp\proto\components\more\client\css\more.less "$(BIT_VAPP_PREFIX)\esp\proto\components\more\client\css\more.less"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\more" md "$(BIT_VAPP_PREFIX)\esp\proto\components\more"
+	copy /Y src\esp\proto\components\more\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\more\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\normalize\client\css" md "$(BIT_VAPP_PREFIX)\esp\proto\components\normalize\client\css"
+	copy /Y src\esp\proto\components\normalize\client\css\normalize.less "$(BIT_VAPP_PREFIX)\esp\proto\components\normalize\client\css\normalize.less"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\normalize" md "$(BIT_VAPP_PREFIX)\esp\proto\components\normalize"
+	copy /Y src\esp\proto\components\normalize\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\normalize\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\respond\client\lib\respond" md "$(BIT_VAPP_PREFIX)\esp\proto\components\respond\client\lib\respond"
+	copy /Y src\esp\proto\components\respond\client\lib\respond\respond.js "$(BIT_VAPP_PREFIX)\esp\proto\components\respond\client\lib\respond\respond.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\respond" md "$(BIT_VAPP_PREFIX)\esp\proto\components\respond"
+	copy /Y src\esp\proto\components\respond\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\respond\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\server" md "$(BIT_VAPP_PREFIX)\esp\proto\components\server"
+	copy /Y src\esp\proto\components\server\app.conf "$(BIT_VAPP_PREFIX)\esp\proto\components\server\app.conf"
+	copy /Y src\esp\proto\components\server\appweb.conf "$(BIT_VAPP_PREFIX)\esp\proto\components\server\appweb.conf"
+	copy /Y src\esp\proto\components\server\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\server\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc" md "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc"
+	copy /Y src\esp\proto\templates\angular-mvc\controller.c "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc\controller.c"
+	copy /Y src\esp\proto\templates\angular-mvc\controller.js "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc\controller.js"
+	copy /Y src\esp\proto\templates\angular-mvc\edit.html "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc\edit.html"
+	copy /Y src\esp\proto\templates\angular-mvc\list.html "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc\list.html"
+	copy /Y src\esp\proto\templates\angular-mvc\model.js "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc\model.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\templates\legacy-mvc" md "$(BIT_VAPP_PREFIX)\esp\proto\templates\legacy-mvc"
+	copy /Y src\esp\proto\templates\legacy-mvc\controller.c "$(BIT_VAPP_PREFIX)\esp\proto\templates\legacy-mvc\controller.c"
+	copy /Y src\esp\proto\templates\legacy-mvc\edit.html "$(BIT_VAPP_PREFIX)\esp\proto\templates\legacy-mvc\edit.html"
+	copy /Y src\esp\proto\templates\legacy-mvc\list.html "$(BIT_VAPP_PREFIX)\esp\proto\templates\legacy-mvc\list.html"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\templates\server" md "$(BIT_VAPP_PREFIX)\esp\proto\templates\server"
+	copy /Y src\esp\proto\templates\server\app.c "$(BIT_VAPP_PREFIX)\esp\proto\templates\server\app.c"
+	copy /Y src\esp\proto\templates\server\controller.c "$(BIT_VAPP_PREFIX)\esp\proto\templates\server\controller.c"
+	copy /Y src\esp\proto\templates\server\migration.c "$(BIT_VAPP_PREFIX)\esp\proto\templates\server\migration.c"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y $(CONFIG)\bin\esp.conf "$(BIT_VAPP_PREFIX)\bin\esp.conf"
@@ -2453,32 +2647,32 @@ installBinary: $(DEPS_102)
 #
 #   start
 #
-DEPS_103 = $(DEPS_103) compile
-DEPS_103 = $(DEPS_103) stop
+DEPS_102 = $(DEPS_102) compile
+DEPS_102 = $(DEPS_102) stop
 
-start: $(DEPS_103)
+start: $(DEPS_102)
 	.\$(CONFIG)\bin\appman install enable start
 
 #
 #   install
 #
-DEPS_104 = $(DEPS_104) compile
-DEPS_104 = $(DEPS_104) stop
-DEPS_104 = $(DEPS_104) installBinary
-DEPS_104 = $(DEPS_104) start
+DEPS_103 = $(DEPS_103) compile
+DEPS_103 = $(DEPS_103) stop
+DEPS_103 = $(DEPS_103) installBinary
+DEPS_103 = $(DEPS_103) start
 
-install: $(DEPS_104)
+install: $(DEPS_103)
 
 
 
 #
 #   uninstall
 #
-DEPS_105 = $(DEPS_105) build
-DEPS_105 = $(DEPS_105) compile
-DEPS_105 = $(DEPS_105) stop
+DEPS_104 = $(DEPS_104) build
+DEPS_104 = $(DEPS_104) compile
+DEPS_104 = $(DEPS_104) stop
 
-uninstall: $(DEPS_105)
+uninstall: $(DEPS_104)
 	if exist "$(BIT_VAPP_PREFIX)\appweb.conf" del /Q "$(BIT_VAPP_PREFIX)\appweb.conf"
 	if exist "$(BIT_VAPP_PREFIX)\esp.conf" del /Q "$(BIT_VAPP_PREFIX)\esp.conf"
 	if exist "$(BIT_VAPP_PREFIX)\mine.types" del /Q "$(BIT_VAPP_PREFIX)\mine.types"
@@ -2503,7 +2697,7 @@ uninstall: $(DEPS_105)
 #
 #   genslink
 #
-genslink: $(DEPS_106)
+genslink: $(DEPS_105)
 	cd src\server
 	esp --static --genlink slink.c --flat compile
 	cd ..\..
@@ -2511,9 +2705,9 @@ genslink: $(DEPS_106)
 #
 #   run
 #
-DEPS_107 = $(DEPS_107) compile
+DEPS_106 = $(DEPS_106) compile
 
-run: $(DEPS_107)
+run: $(DEPS_106)
 	cd src\server
 	sudo ..\..\$(CONFIG)\bin\appweb -v
 	cd ..\..

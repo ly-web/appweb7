@@ -20,7 +20,15 @@ extern "C" {
 #endif
 
 /********************************** Tunables **********************************/
-
+/*
+    DEPRECATED in 4.4
+ */
+#ifndef BIT_ESP_LEGACY
+    #define BIT_ESP_LEGACY 1
+#endif
+#ifndef BIT_ESP_SERVER_PREFIX
+    #define BIT_ESP_SERVER_PREFIX "/server"             /**< URI prefix for server controllers */
+#endif
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
 #define ESP_LISTEN          "4000"                      /**< Default listening endpoint for the esp program */
 #define ESP_UNLOAD_TIMEOUT  (10)                        /**< Very short timeout for reloading */
@@ -108,53 +116,6 @@ typedef struct Esp {
 } Esp;
 
 /**
-    Add HTLM internal options to the Esp.options hash
-    @internal
- */
-PUBLIC void espInitHtmlOptions(Esp *esp);
-
-/********************************** Routes ************************************/
-/**
-    EspRoute extended route configuration.
-    @defgroup EspRoute EspRoute
-    @see Esp
- */
-typedef struct EspRoute {
-    char            *appName;               /**< App module name when compiled flat */
-    struct EspRoute *top;                   /**< Top-level route for this application */
-    HttpRoute       *route;                 /**< Back link to the owning route */
-    EspProc         commonService;          /**< Common code for all services */
-    MprHash         *env;                   /**< Environment variables for route */
-    MprHash         *config;                /**< App configuration from config.json */
-    MprTime         configLoaded;           /**< When config.json was last loaded */
-
-    cchar           *appModulePath;         /**< App module path when compiled flat */
-    cchar           *appType;               /**< Type of application: "angular", "server", "legacy" */
-    cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
-
-    cchar           *cacheDir;              /**< Directory for cached compiled services and views */
-    cchar           *clientDir;             /**< Directory for client-side public web content */
-    cchar           *appDir;                /**< Directory for client-side application content "app" */
-    cchar           *dbDir;                 /**< Directory for databases */
-    char            *layoutsDir;            /**< Directory for service view layouts */
-    cchar           *servicesDir;           /**< Directory for services */
-    cchar           *srcDir;                /**< Directory for server-side source */
-    char            *viewsDir;              /**< Directory for server-side views */
-
-    cchar           *compile;               /**< Compile template */
-    cchar           *link;                  /**< Link template */
-    cchar           *mode;                  /**< Application run mode (debug|release) */
-
-    cchar           *login;                 /**< Automatic login name - bypass login dialog */
-    int             flat;                   /**< Compile the application flat */
-    int             keepSource;             /**< Preserve generated source */
-    int             update;                 /**< Auto-update modified ESP source */
-
-    MprTicks        lifespan;               /**< Default cache lifespan */
-    Edi             *edi;                   /**< Default database for this route */
-} EspRoute;
-
-/**
     Entry point for a loadable ESP module
     @param route HttpRoute object
     @param module Mpr module object
@@ -162,7 +123,101 @@ typedef struct EspRoute {
     @ingroup EspRoute
     @stability Stable
   */
-typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
+typedef int (*EspModuleEntry)(struct HttpRoute *route, MprModule *module);
+
+/**
+    Initialize a static library ESP module
+    @description This invokes the ESP initializers for the required pre-compiled ESP shared library.
+    @param entry ESP initialization function.
+    @param appName Name of the ESP application
+    @param routeName Name of the route in the appweb.conf file for this ESP application or page
+    @return Zero if successful, otherwise a negative MPR error code. 
+    @ingroup Esp
+    @stability Evolving
+  */
+PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *routeName);
+
+/**
+    Add HTLM internal options to the Esp.options hash
+    @internal
+ */
+PUBLIC void espInitHtmlOptions(Esp *esp);
+
+/********************************** EspRoutes *********************************/
+/**
+    EspRoute extended route configuration.
+    Note that HttpRoutes may share an EspRoute.
+    @defgroup EspRoute EspRoute
+    @see Esp
+ */
+typedef struct EspRoute {
+    char            *appName;               /**< App module name when compiled flat */
+    struct EspRoute *top;                   /**< Top-level route for this application */
+    EspProc         commonController;       /**< Common code for all controllers */
+    MprHash         *env;                   /**< Environment variables for route */
+    MprJson         *config;                /**< App configuration from config.json */
+    MprTime         configLoaded;           /**< When config.json was last loaded */
+
+    cchar           *appModulePath;         /**< App module path when compiled flat */
+    cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
+
+    cchar           *appDir;                /**< Directory for client-side application content "app" */
+    cchar           *cacheDir;              /**< Directory for cached compiled controllers and views */
+    cchar           *clientDir;             /**< Directory for client-side public web content */
+    cchar           *controllersDir;        /**< Directory for controllers */
+    cchar           *dbDir;                 /**< Directory for databases */
+    char            *layoutsDir;            /**< Directory for view layouts */
+    cchar           *srcDir;                /**< Directory for server-side source */
+    char            *viewsDir;              /**< Directory for server-side views */
+
+    cchar           *compile;               /**< Compile template */
+    cchar           *link;                  /**< Link template */
+    cchar           *mode;                  /**< Application run mode (debug|release) */
+
+    cchar           *database;              /**< Name of database for route */
+#if UNUSED
+    cchar           *login;                 /**< Automatic login name - bypass login dialog */
+#endif
+    cchar           *serverPrefix;          /**< Server controllers URI prefix */
+    int             flat;                   /**< Compile the application flat */
+    int             keepSource;             /**< Preserve generated source */
+    int             update;                 /**< Auto-update modified ESP source */
+    int             json;                   /**< Emit json responses */
+#if DEPRECATE || 1
+    int             legacy;                 /**< Legacy MVC app */
+#endif
+    MprTicks        lifespan;               /**< Default cache lifespan */
+    Edi             *edi;                   /**< Default database for this route */
+} EspRoute;
+
+/**
+    Add the specified component to the config.json components list.
+    @param route HttpRoute defining the ESP application
+    @param name Desired component name. For example: "angular-mvc"
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC void espAddComponent(HttpRoute *route, cchar *name);
+
+/**
+    Add a route set package
+    @description This will add a set of routes. It will add a home route and optional routes depending on the route set.
+    <table>
+        <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
+        <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
+    </table>
+    @param route Parent route from which to inherit configuration.
+    @param set Route set to select. Use "simple", or "restful".  
+        \n\n
+        The "simple" pack will invoke
+        #httpAddHomeRoute and #httpAddStaticRoute to add the "home" routes.  
+        \n\n
+        The "restful" selection will add a set of RESTful routes for generic controllers.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
 
 /**
     Add caching for response content.
@@ -227,11 +282,12 @@ typedef int (*EspModuleEntry)(HttpRoute *route, MprModule *module);
     @return A count of the bytes actually written
     @ingroup EspRoute
     @stability Evolving
+    @internal
  */
 PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
 
 /**
-    Compile an ESP page, service or view
+    Compile an ESP page, controller or view
     @description This compiles ESP components into loadable, cached modules
     @param route HttpRoute object
     @param dispatcher Optional dispatcher to use when waiting for the compilation command.
@@ -243,6 +299,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
     @return "True" if the compilation is successful. Errors are logged and sent back to the client if ShowErrors is true.
     @ingroup EspRoute
     @stability Evolving
+    @internal
  */
 PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg);
 
@@ -260,12 +317,13 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     @return Compiled script. Return NULL on errors.
     @ingroup EspRoute
     @stability Evolving
+    @internal
  */
 PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, EspState *state, char **err);
 
 /**
     Define an action
-    @description Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.
+    @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
     @param route HttpRoute object
     @param targetKey Target key used to select the action in a HttpRoute target. This is typically a URI prefix.
     @param actionProc EspProc callback procedure to invoke when the action is requested.
@@ -276,8 +334,8 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc
 
 /**
     Define an action for a URI pattern.
-    @description This defines an action routine for the route that is responsible for the given URI pattern. 
-    @param route HttpRoute object
+    @description This creates a new route and binds the action function to a URI pattern.
+    @param route Parent route object from which to inherit settings when creating the new route.
     @param pattern URI pattern to use to find the releavant route.
     @param actionProc EspProc callback procedure to invoke when the action is requested.
     @ingroup EspRoute
@@ -286,11 +344,11 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc
 PUBLIC int espBindProc(HttpRoute *route, cchar *pattern, void *actionProc);
 
 /**
-    Define a base function to invoke for all service actions.
-    @description A base function can be defined that will be called before calling any service action. This
+    Define a base function to invoke for all controller actions.
+    @description A base function can be defined that will be called before calling any controller action. This
         emulates a super class constructor.
     @param route HttpRoute object
-    @param baseProc Function to call just prior to invoking a service action.
+    @param baseProc Function to call just prior to invoking a controller action.
     @ingroup EspRoute
     @stability Stable
  */
@@ -322,40 +380,105 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
             <li>OUT - Output module (view_MD5.dylib)</li>
             <li>SHLIB - Shared library extension (.lib, .so)</li>
             <li>SHOBJ - Shared object extension (.dll, .so)</li>
-            <li>SRC - Path to source code for view or service (already templated)</li>
+            <li>SRC - Path to source code for view or controller (already templated)</li>
             <li>TMP - System temporary directory</li>
             <li>WINSDK - Path to the Windows SDK</li>
             <li>VS - Path to Visual Studio</li>
         </ul>
-    @param eroute Esp route object
+    @param route HttpRoute object
     @param command Http connection object
     @param source ESP web page source pathname
     @param module Output module pathname
     @return An expanded command line
     @ingroup EspRoute
     @stability Evolving
+    @internal
  */
-PUBLIC char *espExpandCommand(EspRoute *eroute, cchar *command, cchar *source, cchar *module);
+PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, cchar *module);
 
 /**
-    Initialize a static library ESP module
-    @description This invokes the ESP initializers for the required pre-compiled ESP shared library.
-    @param entry ESP initialization function.
-    @param appName Name of the ESP application
-    @param routeName Name of the route in the appweb.conf file for this ESP application or page
-    @return Zero if successful, otherwise a negative MPR error code. 
-    @ingroup Esp
-    @stability Evolving
-  */
-PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *routeName);
+    Get a configuration value from the ESP config.json
+    @param route HttpRoute defining the ESP application
+    @param key Configuration property path. May contain dots.
+    @param defaultValue Default value to use if the configuration is not defined. May be null
+    @returns the Configuration string value
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
+
+/**
+    Test if the ESP application includes the specified component
+    @description This tests the settings.components[] list for the specified component.
+    @param route HttpRoute defining the ESP application
+    @param name Desired component name. For example: "angular-mvc"
+    @returns True if the specified component is supported
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC bool espHasComponent(HttpRoute *route, cchar *name);
+
+/**
+    Load ESP config.json configuration file 
+    @param route HttpRoute defining the ESP application
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC int espLoadConfig(HttpRoute *route);
+
+/**
+    Save the in-memory ESP config.json configuration to the default location for the ESP application
+    defined by the specified route. 
+    @param route HttpRoute defining the ESP application
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC int espSaveConfig(HttpRoute *route);
+
+/**
+    Set a configuration value to the ESP config.json. 
+    @description This updates the in-memory copy of the config.json only.
+    @param route HttpRoute defining the ESP application
+    @param key Configuration property path. May contain dots.
+    @param value Value to set the property to.
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value);
+
+/**
+    Set a private data reference for the current request
+    @param conn HttpConn object
+    @param data Data object to associate with the current request. This must be a managed reference.
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC void espSetData(HttpConn *conn, void *data);
+
+/**
+    Test if a configuration property from the ESP config.json has a desired value.
+    @param route HttpRoute defining the ESP application
+    @param key Configuration property path. May contain dots.
+    @param desired Desired value to compare with.
+    @returns True if the configuration property has the desired value.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired);
+
 
 /*
     Internal
  */
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags);
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile);
+PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec);
 PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
-PUBLIC void espSetMvcDirs(EspRoute *eroute);
+PUBLIC void espSetDirs(HttpRoute *route);
 
 /********************************** Requests **********************************/
 /**
@@ -368,7 +491,7 @@ typedef void (*EspViewProc)(HttpConn *conn);
 
 /**
     ESP Action
-    @description Actions are run after a request URI is routed to a service.
+    @description Actions are run after a request URI is routed to a controller.
     @ingroup EspReq
     @stability Evolving
  */
@@ -384,7 +507,6 @@ PUBLIC void espManageAction(EspAction *ap, int flags);
  */
 typedef struct EspReq {
     HttpRoute       *route;                 /**< Route reference */
-    EspRoute        *eroute;                /**< Extended route info */
     Esp             *esp;                   /**< Convenient esp reference */
     MprHash         *feedback;              /**< Feedback messages */
     MprHash         *flash;                 /**< New flash messages */
@@ -393,8 +515,8 @@ typedef struct EspReq {
     void            *data;                  /**< Custom data for request - must be a managed reference */
     void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
     char            *cacheName;             /**< Base name of intermediate compiled file */
-    char            *serviceName;           /**< Service name */
-    char            *servicePath;           /**< Path to service source */
+    char            *controllerName;        /**< Controller name */
+    char            *controllerPath;        /**< Path to controller source */
     char            *module;                /**< Name of compiled module */
     char            *source;                /**< Name of ESP source */
     char            *view;                  /**< Path to view */
@@ -484,27 +606,6 @@ PUBLIC void espAutoFinalize(HttpConn *conn);
 PUBLIC bool espCheckSecurityToken(HttpConn *conn);
 
 /**
-    Create a record and initialize field values.
-    @description This will call #ediCreateRec to create a record based on the given table's schema. It will then
-        call #ediSetFields to update the record with the given data.
-    @param conn Http connection object
-    @param tableName Database table name
-    @param data Hash of field values
-    @return EdRec instance
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espCreateRec(HttpConn *conn, cchar *tableName, MprHash *data);
-
-/**
-    Display the grid to the debug log
-    @param grid EDI grid
-    @ingroup EspReq
-    @stability Prototype
- */
-PUBLIC void espDumpGrid(EdiGrid *grid);
-
-/**
     Finalize processing of the http request.
     @description Finalize the response by writing buffered HTTP data and by writing the final chunk trailer if required. If
     using chunked transfers, a null chunk trailer is required to signify the end of write data.
@@ -523,16 +624,6 @@ PUBLIC void espFinalize(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC void espFlush(HttpConn *conn);
-
-/**
-    Get a list of column names.
-    @param conn HttpConn connection object
-    @param rec Database record. 
-    @return An MprList of column names in the given table. If there is no record defined, an empty list is returned.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC MprList *espGetColumns(HttpConn *conn, EdiRec *rec);
 
 /**
     Get the current request connection.
@@ -574,6 +665,15 @@ PUBLIC cchar *espGetContentType(HttpConn *conn);
 PUBLIC cchar *espGetCookies(HttpConn *conn);
 
 /**
+    Get the private data reference for the current request set via #setData
+    @param conn HttpConn object
+    @return Reference to private data
+    @ingroup EspReq
+    @stability prototype
+ */
+PUBLIC void *espGetData(HttpConn *conn);
+
+/**
     Get the current database instance.
     @description A route may have a default database configured via the EspDb Appweb.conf configuration directive. 
     The database will be opened when the web server initializes and will be shared between all requests using the route. 
@@ -592,25 +692,49 @@ PUBLIC Edi *espGetDatabase(HttpConn *conn);
 PUBLIC EspRoute *espGetEspRoute(HttpConn *conn);
 
 /**
-    Get the default document root directory for the request route.
+    Get the default documents directory for the request route.
     @param conn HttpConn connection object
     @return A directory path name 
     @ingroup EspReq
     @stability Evolving
  */
+PUBLIC cchar *espGetDocuments(HttpConn *conn);
+
+#if DEPRECATED || 1
 PUBLIC cchar *espGetDir(HttpConn *conn);
+#endif
 
 /**
     Get a flash message.
     @description This retrieves a flash message of a specified type.
         Flash messages are messages kept in session storage messages that are passed to the next request (only). 
-        The message is cleared after the service action completes.
+        The message is cleared after the controller action completes.
     @param conn HttpConn connection object
     @param type Type of flash message to retrieve. Possible types include: "error", "inform", "warning", "all".
     @ingroup EspReq
     @stability Prototype
  */
 PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *type);
+
+/**
+    Get a feedback message defined via #feedback
+    @param conn HttpConn object
+    @param kind Kind of feedback message to retrieve.
+    @return Reference to private data
+    @ingroup EspReq
+    @stability prototype
+ */
+PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind);
+
+/**
+    Get the current database grid.
+    @description The current grid is defined via #setGrid
+    @return EdiGrid instance
+    @ingroup EspReq
+    @stability Deprecated
+    @internal
+ */
+PUBLIC EdiGrid *espGetGrid(HttpConn *conn);
 
 /**
     Get an rx http header.
@@ -685,11 +809,11 @@ PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue);
         Route tokens, request query data, and www-url encoded form data are all entered into the params table after decoding.
         Use #mprLookupKey to retrieve data from the table.
     @param conn HttpConn connection object
-    @return #MprHash instance containing the request parameters
+    @return MprJson instance containing the request parameters
     @ingroup EspReq
     @stability Evolving
  */
-PUBLIC MprHash *espGetParams(HttpConn *conn);
+PUBLIC MprJson *espGetParams(HttpConn *conn);
 
 /**
     Get the request query string.
@@ -715,12 +839,12 @@ PUBLIC char *espGetReferrer(HttpConn *conn);
 
 /**
     Get the default database defined on a route.
-    @param eroute EspRoute object
+    @param route HttpRoute object
     @return Database instance object
     @ingroup EspReq
     @stability Evolving
  */
-PUBLIC Edi *espGetRouteDatabase(EspRoute *eroute);
+PUBLIC Edi *espGetRouteDatabase(HttpRoute *route);
 
 /**
     Get a unique security token.
@@ -785,6 +909,26 @@ PUBLIC MprHash *espGetUploads(HttpConn *conn);
 PUBLIC cchar *espGetUri(HttpConn *conn);
 
 /**
+    Test if a current grid has been defined.
+    @return "True" if a current grid has been defined
+    @ingroup EspReq
+    @stability Deprecated
+    @internal
+ */
+PUBLIC bool espHasGrid(HttpConn *conn);
+
+/**
+    Test if a current record has been defined and save to the database.
+    @description This call returns "true" if a current record is defined and has been saved to the database with a 
+        valid "id" field.
+    @return "True" if a current record with a valid "id" is defined.
+    @ingroup EspReq
+    @stability Deprecated
+    @internal
+ */
+PUBLIC bool espHasRec(HttpConn *conn);
+
+/**
     Test if the receive input stream is at end-of-file.
     @param conn HttpConn connection object
     @return "True" if there is no more receive data to read
@@ -812,23 +956,7 @@ PUBLIC bool espIsSecure(HttpConn *conn);
  */
 PUBLIC bool espIsFinalized(HttpConn *conn);
 
-/**
-    Make a grid.
-    @description This call makes a free-standing data grid based on the JSON format content string.
-        The record is not saved to the database.
-    @param content JSON format content string. The content should be an array of objects where each object is a
-        set of property names and values.
-    @return An EdiGrid instance
-    @example:
-grid = ediMakeGrid("[ \\ \n
-    { id: '1', country: 'Australia' }, \ \n
-    { id: '2', country: 'China' }, \ \n
-    ]");
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiGrid *espMakeGrid(cchar *content);
-
+//  MOB - should this be ediMakeHash
 /**
     Make a hash table container of property values.
     @description This routine formats the given arguments, parses the result as a JSON string and returns an 
@@ -842,18 +970,6 @@ PUBLIC EdiGrid *espMakeGrid(cchar *content);
  */
 PUBLIC MprHash *espMakeHash(cchar *fmt, ...);
 
-/**
-    Make a record.
-    @description This call makes a free-standing data record based on the JSON format content string.
-        The record is not saved to the database.
-    @param content JSON format content string. The content should be a set of property names and values.
-    @return An EdiRec instance
-    @example: rec = ediMakeRec("{ id: 1, title: 'Message One', body: 'Line one' }");
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espMakeRec(cchar *content);
-
 //  MOB - reconsider API
 /**
     Match a request parameter with an expected value.
@@ -866,59 +982,6 @@ PUBLIC EdiRec *espMakeRec(cchar *content);
     @stability Evolving
  */
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value);
-
-/**
-    Read the identified record. 
-    @description Read the record identified by the request param("id") from the nominated table.
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param key Key value of the record to remove 
-    @return The identified record. Returns NULL if the table or record cannot be found.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espReadRec(HttpConn *conn, cchar *tableName, cchar *key);
-
-/**
-    Read matching records
-    @description This runs a simple query on the database and returns matching records in a grid. The query selects
-        all rows that have a "field" that matches the given "value".
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param fieldName Database field name to evaluate
-    @param operation Comparison operation. Set to "==", "!=", "<", ">", "<=" or ">=".
-    @param value Data value to compare with the field values.
-    @return A grid containing all matching records. Returns NULL if no matching records.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiGrid *espReadRecsWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
-
-/**
-    Read one record.
-    @description This runs a simple query on the database and selects the first matching record. The query selects
-        a row that has a "field" that matches the given "value".
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param fieldName Database field name to evaluate
-    @param operation Comparison operation. Set to "==", "!=", "<", ">", "<=" or ">=".
-    @param value Data value to compare with the field values.
-    @return First matching record. Returns NULL if no matching records.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espReadRecWhere(HttpConn *conn, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
-
-/**
-    Read a record identified by the key value.
-    @description Read a record from the given table as identified by the key value.
-    @param tableName Database table name
-    @param key Key value of the record to read 
-    @return Record instance of EdiRec.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *eReadRecByKey(cchar *tableName, cchar *key);
 
 /**
     Read receive body content.
@@ -973,18 +1036,6 @@ PUBLIC void espRemoveCookie(HttpConn *conn, cchar *name);
 PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key);
 
 /**
-    Remove a record from a database table
-    @description Remove the record identified by the key value from the given table.
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param key Key value of the record to remove 
-    @return Record instance of EdiRec.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC bool espRemoveRec(HttpConn *conn, cchar *tableName, cchar *key);
-
-/**
     Remove a session state variable
     @param conn HttpConn connection object
     @param name Variable name to set
@@ -1030,6 +1081,15 @@ PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size);
 PUBLIC ssize espRenderCached(HttpConn *conn);
 
 /**
+    Render the config.json
+    @param conn HttpConn connection object
+    @return A count of the bytes actually written
+    @ingroup EspReq
+    @stability Evolving
+ */
+PUBLIC void espRenderConfig(HttpConn *conn);
+
+/**
     Render an error message back to the client and finalize the request. The output is Html escaped for security.
     @param conn HttpConn connection object
     @param status Http status code
@@ -1049,6 +1109,20 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...);
     @stability Evolving
  */
 PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path);
+
+/**
+    Render flash messages.
+    @description Flash messages are one-time messages that are displayed to the client on the next request (only).
+    Flash messages use the session state store but persist for only one request.
+        See #espSetFlash for how to define flash messages. 
+    @param conn Http connection object
+    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
+    @param options Reserved. Set to "".
+    @ingroup EspControl
+    @stability Deprecated
+    @internal
+ */
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *options);
 
 /**
     Render an EDI database record as a JSON string
@@ -1074,25 +1148,6 @@ PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags);
   */
 PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags);
 
-/**
-    Convert an EDI database record into a JSON string.
-    @param rec EDI record
-    @param flags Reserved. Set to zero.
-    @return JSON string 
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC cchar *espRecToJson(EdiRec *rec, int flags);
-
-/**
-    Convert an EDI database grid into a JSON string.
-    @param grid EDI grid
-    @param flags Reserved. Set to zero.
-    @return JSON string 
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC cchar *espGridToJson(EdiGrid *grid, int flags);
 
 /**
     Read a table from the current database
@@ -1118,8 +1173,8 @@ PUBLIC void espRenderFeedback(HttpConn *conn, cchar *kinds, cchar *options);
 
 /**
     Render a JSON response result
-    @description This renders a JSON response suitable for ESP angular client applications. The status 
-    is rendered as part of an enclosing "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
+    @description This renders a JSON response. The status is rendered as part of an enclosing 
+    "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
     The messages are created via the espSetFeedback API. Field errors are created by ESP validations.
     @param conn HttpConn connection object
     @param success True if the operation was a success.
@@ -1159,7 +1214,7 @@ PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s);
     @description Security tokens are used to help guard against CSRF threats.
         This call will render a security token for the page, and emit an HTML meta element for the security token.
         The token will automatically be included whenever forms are submitted and the token is validated by the 
-        receiving Service. Typically, forms will automatically generate the security token. Note that explicitly
+        receiving controller. Typically, forms will automatically generate the security token. Note that explicitly
         calling this routine is not necessary unless a security token is required for non-form requests such as AJAX
         requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @param conn Http connection object
@@ -1167,6 +1222,11 @@ PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s);
     @stability Evolving
  */
 PUBLIC void espRenderSecurityToken(HttpConn *conn);
+
+#if DEPRECATED || 1
+/* Renamed to espRenderSecurityToken */
+PUBLIC void espSecurityToken(HttpConn *conn);
+#endif
 
 /**
     Render a string of data to the client
@@ -1194,7 +1254,7 @@ PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name);
 
 /**
     Render a view template to the client
-    @description Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.
+    @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
     @param conn Http connection object
     @param name view name
     @ingroup EspReq
@@ -1284,39 +1344,10 @@ PUBLIC void espSetFeedback(HttpConn *conn, cchar *kind, cchar *fmt, ...);
 PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args);
 
 /**
-    Update a record field without writing to the database
-    @description This routine updates the record object with the given value. The record will not be written
-        to the database. To write to the database, use #updateRec.
-    @param rec Record to update
-    @param fieldName Record field name to update
-    @param value Value to update
-    @return The record instance if successful, otherwise NULL.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espSetField(EdiRec *rec, cchar *fieldName, cchar *value);
-
-/**
-    Update record fields without writing to the database
-    @description This routine updates the record object with the given values. The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request #params or it can be manually
-        created via #ediMakeHash to convert a JSON string into an options hash.
-        For example: updateFields(rec, hash("{ name: '%s', address: '%s' }", name, address))
-        The record will not be written
-        to the database. To write to the database, use #ediUpdateRec.
-    @param rec Record to update
-    @param data Hash of field names and values to use for the update
-    @return The record instance if successful, otherwise NULL.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC EdiRec *espSetFields(EdiRec *rec, MprHash *data);
-
-/**
     Set a flash message
     @description Flash messages persist for only one request and are a convenient way to pass state information or 
-        feedback messages to the next request service. Flash messages use the session state store, but persist only for one request.
-        The flash message is removed after running the next service and before rendering any server-side view.
+        feedback messages to the next request. Flash messages use the session state store, but persist only for one request.
+        The flash message is removed after running the next controller and before rendering any server-side view.
         If you need to set a message to include in the request response, consider using #espSetFeedback.
     @param conn Http connection object
     @param kind Kind of flash message
@@ -1337,6 +1368,14 @@ PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...);
     @internal
  */
 PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args);
+
+/**
+    Set the current database grid
+    @return The grid instance. This permits chaining.
+    @ingroup EspReq
+    @stability Evolving
+ */
+PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid);
 
 /**
     Set a transmission header
@@ -1400,6 +1439,18 @@ PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value);
 PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier);
 
 /**
+    Set the current database record
+    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(), 
+        checkbox and dropdown()
+    @param conn HttpConn connection object
+    @param rec Record object to define as the current record.
+    @return The grid instance. This permits chaining.
+    @ingroup EspReq
+    @stability Evolving
+ */
+PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec);
+
+/**
     Set a Http response status.
     @description Set the Http response status for the request. This defaults to 200 (OK).
     @param conn HttpConn connection object
@@ -1455,37 +1506,6 @@ PUBLIC void espShowRequest(HttpConn *conn);
 PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs);
 
 /**
-    Write a value to a database table field
-    @description Update the value of a table field in the selected table row. Note: validations are not run.
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param key Key value for the table row to update.
-    @param fieldName Column name to update
-    @param value Value to write to the database field
-    @return "true" if the field  can be successfully written.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC bool espUpdateField(HttpConn *conn, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
-
-/**
-    Write field values to a database row
-    @description This routine updates the current record with the given data and then saves the record to
-        the database. The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request #params or it can be manually
-        created via #ediMakeHash to convert a JSON string into an options hash.
-        For example: ediWriteFields(rec, params());
-        The record runs field validations before saving to the database.
-    @param conn HttpConn connection object
-    @param tableName Database table name
-    @param data Hash of field names and values to use for the update
-    @return "true" if the field  can be successfully written. Returns false if field validations fail.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC bool espUpdateFields(HttpConn *conn, cchar *tableName, MprHash *data);
-
-/**
     Write a record to the database
     @description The record will be saved to the database after running any field validations. If any field validations
         fail to pass, the record will not be written and error details can be retrieved via #ediGetRecErrors.
@@ -1513,10 +1533,10 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
         "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
         top-level relative links.
         \n\n
-        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the 
-        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If 
+        If the target is a string that begins with "{AT}" it will be interpreted as a controller/action pair of the 
+        form "{AT}controller/action". If the "controller/" portion is absent, the current controller is used. If 
         the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
-        of the current service.
+        of the current controller.
         \n\n
         If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
         If the target is a relative URI path, it is appended to the current request URI path.  
@@ -1524,7 +1544,7 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
         If the target is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
         query. If these component properties are supplied, these will be combined to create a URI.
         \n\n
-        If the target specifies either a service/action or a JSON set of options, The URI will be created according 
+        If the target specifies either a controller/action or a JSON set of options, The URI will be created according 
         to the route URI template. The template may be explicitly specified
         via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
         name will be used. If these don't result in a usable route, the "default" route will be used. 
@@ -1537,10 +1557,10 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
             <li>path String URI path portion</li>
             <li>reference String URI path reference. Does not include "#"</li>
             <li>query String URI query parameters. Does not include "?"</li>
-            <li>service String Service name if using a Service-based route. This can also be specified via
+            <li>controller String controller name if using a controller-based route. This can also be specified via
                 the action option.</li>
-            <li>action String Action to invoke. This can be a URI string or a service action of the form
-                {AT}Service/action.</li>
+            <li>action String Action to invoke. This can be a URI string or a controller action of the form
+                {AT}controller/action.</li>
             <li>route String Route name to use for the URI template</li>
         </ul>
     @return A normalized, server-local Uri string.
@@ -1549,13 +1569,13 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
     espUri(conn, "../images/splash.png", 0); \n
     espUri(conn, "~/client/images/splash.png", 0); \n
     espUri(conn, "${app}/client/images/splash.png", 0); \n
-    espUri(conn, "@service/checkout", 0); \n
-    espUri(conn, "@service/") \n
+    espUri(conn, "@controller/checkout", 0); \n
+    espUri(conn, "@controller/") \n
     espUri(conn, "@init") \n
     espUri(conn, "@") \n
     espUri(conn, "{ action: '@post/create' }", 0); \n
     espUri(conn, "{ action: 'checkout' }", 0); \n
-    espUri(conn, "{ action: 'logout', service: 'admin' }", 0); \n
+    espUri(conn, "{ action: 'logout', controller: 'admin' }", 0); \n
     espUri(conn, "{ action: 'admin/logout'", 0); \n
     espUri(conn, "{ product: 'candy', quantity: '10', template: '/cart/${product}/${quantity}' }", 0); \n
     espUri(conn, "{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0); \n
@@ -1567,9 +1587,9 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target);
 
 /***************************** Abbreviated Controls ***************************/
 /**
-    Abbreviated ESP Controls.
-    @description These controls do not take a HttpConn argument and determine the connection object from
-        thread-local storage.
+    Abbreviated ESP API.
+    @description This is a short-form API that uses the current HttpConn connection object.
+        These APIs are designed to be terse and highly readable. Consequently, they are not prefixed with "esp".
     @see espAlert
     @defgroup EspAbbrev EspAbbrev
     @stability Evolving
@@ -1592,16 +1612,37 @@ typedef struct EspAbbrev { int dummy; } EspAbbrev;
 PUBLIC void addHeader(cchar *key, cchar *fmt, ...);
 
 /**
+    Test if a user has the required abilities
+    @param abilities Comma separated list of abilities to test for. If null, then use the required abilities defined
+        for the current request route.
+    @param warn If true, warn the user via the response feedback.
+    @return True if the user has all the required abilities
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC bool canUser(cchar *abilities, bool warn);
+
+/**
     Create a record and initialize field values 
     @description This will call #ediCreateRec to create a record based on the given table's schema. It will then
         call #ediSetFields to update the record with the given data.
     @param tableName Database table name
-    @param data Hash of field values
+    @param data Json object with field values
     @return EdRec instance
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC EdiRec *createRec(cchar *tableName, MprHash *data);
+PUBLIC EdiRec *createRec(cchar *tableName, MprJson *data);
+
+/**
+    Create a record from the request parameters
+    @description A new record is created with the request parameters in the specified table.
+    @param table Database table to update
+    @return True if the update is successful.
+    @ingroup EspAbbrev
+    @stability Prototype
+*/ 
+PUBLIC bool createRecFromParams(cchar *table);
 
 /**
     Create a session state object. 
@@ -1643,7 +1684,7 @@ PUBLIC void finalize();
 /**
     Set a flash notification message.
     @description Flash messages persist for only one request and are a convenient way to pass state information or 
-        feedback messages to the next request service. Flash messages use the session state store, but persist only for one request.
+        feedback messages to the next request. Flash messages use the session state store, but persist only for one request.
         This routine calls #espSetFlash.
     @param kind Kind of flash message.
     @param fmt Printf style message format
@@ -1692,7 +1733,7 @@ PUBLIC cchar *getCookies();
 
 /**
     Get the connection object
-    @description Before a view or service is run, the current connection object for the request is saved in thread
+    @description Before a view or controller is run, the current connection object for the request is saved in thread
     local data. Most EspAbbrev APIs take an HttpConn object as an argument.
     @return HttpConn connection instance object.
     @ingroup EspAbbrev
@@ -1719,11 +1760,31 @@ PUBLIC MprOff getContentLength();
  */
 PUBLIC cchar *getContentType();
 
-//  MOB
+/**
+    Get the private data reference for the current request set via #setData
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
 PUBLIC void *getData();
-PUBLIC void setData(void *data);
-PUBLIC void *espGetData(HttpConn *conn);
-PUBLIC void espSetData(HttpConn *conn, void *data);
+
+/**
+    Get a flash message defined via #flash
+    @param kind Kind of flash message to retrieve.
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC cchar *getFlash(cchar *kind);
+
+/**
+    Get a feedback message defined via #feedback
+    @param kind Kind of feedback message to retrieve.
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC cchar *getFeedback(cchar *kind);
 
 /**
     Get the current database instance
@@ -1749,7 +1810,11 @@ PUBLIC EspRoute *getEspRoute();
     @ingroup EspAbbrev
     @stability Evolving
  */
+PUBLIC cchar *getDocuments();
+
+#if DEPRECATED || 1
 PUBLIC cchar *getDir();
+#endif
 
 /**
     Get a field from the current database record
@@ -1760,6 +1825,15 @@ PUBLIC cchar *getDir();
     @stability Evolving
  */
 PUBLIC cchar *getField(EdiRec *rec, cchar *field);
+
+/**
+    Get the current database grid
+    @description The current grid is defined via #setGrid
+    @return EdiGrid instance
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC EdiGrid *getGrid();
 
 /**
     Get an rx http header.
@@ -1821,16 +1895,6 @@ PUBLIC cchar *getSessionVar(cchar *name);
 PUBLIC cchar *getSessionID();
 
 /**
-    Get a session state variable
-    @description This is a convenient alias for #getSessionVar.
-    @param name Variable name to get
-    @return The session variable value. Returns NULL if not set.
-    @ingroup EspAbbrev
-    @stability Prototype
- */
-PUBLIC cchar *session(cchar *name);
-
-/**
     Get a relative URI to the top of the application.
     @description This will return an absolute URI for the top of the application. This will be "/" if there is no
         application script name. Otherwise, it will return a URI for the script name for the application.
@@ -1863,6 +1927,24 @@ PUBLIC MprHash *getUploads();
 PUBLIC cchar *getUri();
 
 /**
+    Test if a current grid has been defined
+    @return "true" if a current grid has been defined
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC bool hasGrid();
+
+/**
+    Test if a current record has been defined and save to the database
+    @description This call returns "true" if a current record is defined and has been saved to the database with a 
+        valid "id" field.
+    @return "true" if a current record with a valid "id" is defined.
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC bool hasRec();
+
+/**
     Test if the receive input stream is at end-of-file
     @return "true" if there is no more receive data to read
     @ingroup EspAbbrev
@@ -1887,23 +1969,7 @@ PUBLIC bool isFinalized();
  */
 PUBLIC bool isSecure();
 
-/**
-    Make a grid
-    @description This call makes a free-standing data grid based on the JSON format content string.
-        The record is not saved to the database.
-    @param content JSON format content string. The content should be an array of objects where each object is a
-        set of property names and values.
-    @return An EdiGrid instance
-    @example:
-grid = ediMakeGrid("[ \\ \n
-    { id: '1', country: 'Australia' }, \ \n
-    { id: '2', country: 'China' }, \ \n
-    ]");
-    @ingroup EspAbbrev
-    @stability Evolving
- */
-PUBLIC EdiGrid *makeGrid(cchar *content);
-
+#if UNUSED
 /**
     Make a hash table container of property values
     @description This routine formats the given arguments, parses the result as a JSON string and returns an 
@@ -1916,6 +1982,7 @@ PUBLIC EdiGrid *makeGrid(cchar *content);
     @stability Evolving
  */
 PUBLIC MprHash *makeHash(cchar *fmt, ...);
+#endif
 
 /**
     Make a record
@@ -1942,10 +2009,10 @@ PUBLIC EdiRec *makeRec(cchar *content);
         "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
         top-level relative links.
         \n\n
-        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the 
-        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If 
+        If the target is a string that begins with "{AT}" it will be interpreted as a controller/action pair of the 
+        form "{AT}controller/action". If the "controller/" portion is absent, the current controller is used. If 
         the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
-        of the current service.
+        of the current controller.
         \n\n
         If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
         If the target is a relative URI path, it is appended to the current request URI path.  
@@ -1953,7 +2020,7 @@ PUBLIC EdiRec *makeRec(cchar *content);
         If the target is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
         query. If these component properties are supplied, these will be combined to create a URI.
         \n\n
-        If the target specifies either a service/action or a JSON set of options, The URI will be created according 
+        If the target specifies either a controller/action or a JSON set of options, The URI will be created according 
         to the route URI template. The template may be explicitly specified
         via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
         name will be used. If these don't result in a usable route, the "default" route will be used. 
@@ -1966,10 +2033,10 @@ PUBLIC EdiRec *makeRec(cchar *content);
             <li>path String URI path portion</li>
             <li>reference String URI path reference. Does not include "#"</li>
             <li>query String URI query parameters. Does not include "?"</li>
-            <li>service String Service name if using a Service-based route. This can also be specified via
+            <li>controller String controller name if using a controller-based route. This can also be specified via
                 the action option.</li>
-            <li>action String Action to invoke. This can be a URI string or a service action of the form
-                {AT}Service/action.</li>
+            <li>action String Action to invoke. This can be a URI string or a controller action of the form
+                {AT}controller/action.</li>
             <li>route String Route name to use for the URI template</li>
         </ul>
     @return A normalized, server-local Uri string.
@@ -1978,13 +2045,13 @@ PUBLIC EdiRec *makeRec(cchar *content);
     makeUri("../images/splash.png", 0); \n
     makeUri("~/client/images/splash.png", 0); \n
     makeUri("${app}/client/images/splash.png", 0); \n
-    makeUri("@service/checkout", 0); \n
-    makeUri("@service/") \n
+    makeUri("@controller/checkout", 0); \n
+    makeUri("@controller/") \n
     makeUri("@init") \n
     makeUri("@") \n
     makeUri("{ action: '@post/create' }", 0); \n
     makeUri("{ action: 'checkout' }", 0); \n
-    makeUri("{ action: 'logout', service: 'admin' }", 0); \n
+    makeUri("{ action: 'logout', controller: 'admin' }", 0); \n
     makeUri("{ action: 'admin/logout'", 0); \n
     makeUri("{ product: 'candy', quantity: '10', template: '/cart/${product}/${quantity}' }", 0); \n
     makeUri("{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0); \n
@@ -2022,11 +2089,11 @@ PUBLIC cchar *param(cchar *name);
         Route tokens, request query data, and www-url encoded form data are all entered into the params table after decoding.
         Use #mprLookupKey to retrieve data from the table.
         This routine calls #espGetParams
-    @return #MprHash instance containing the request parameters
+    @return MprJson instance containing the request parameters
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC MprHash *params();
+PUBLIC MprJson *params();
 
 /**
     Read the identified record 
@@ -2188,6 +2255,17 @@ PUBLIC void renderError(int status, cchar *fmt, ...);
 PUBLIC void renderFeedback(cchar *kinds, cchar *options);
 
 /**
+    Render flash messages.
+    @description Flash notices are one-time messages that are passed to the newt request (only).
+        See #espSetFlash and #flash for how to define flash messages. 
+    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
+    @param options Extra options. See \l EspControl \el for a list of the standard options.
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC void renderFlash(cchar *kinds, cchar *options);
+
+/**
     Render a file back to the client
     @description Render a formatted string of data and then HTML escape. Data packets will be created
         as required to store the write data. This call may block waiting for data to drain to the client.
@@ -2221,8 +2299,8 @@ PUBLIC ssize renderRec(EdiRec *rec);
 
 /**
     Render a JSON response result
-    @description This renders a JSON response suitable for ESP angular client applications. The status 
-    is rendered as part of an enclosing "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
+    @description This renders a JSON response. The status is rendered as part of an enclosing 
+    "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
     The messages are created via the espSetFeedback API. Field errors are created by ESP validations.
     @param status Request success status.
     @ingroup EspReq
@@ -2247,7 +2325,7 @@ PUBLIC ssize renderSafe(cchar *fmt, ...);
     @description Security tokens are used to help guard against CSRF threats.
     This call will generate a security token for the page and emit an HTML meta element for the security token.
     The token will automatically be included whenever forms are submitted and the token be validated by the 
-    receiving Service. Forms will normally automatically generate the security token and that explicitly
+    receiving controller. Forms will normally automatically generate the security token and that explicitly
     calling this routine is not required unless a security token is required for non-form requests such as AJAX
     requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @ingroup EspAbbrev
@@ -2279,7 +2357,7 @@ PUBLIC ssize renderVar(cchar *name);
 
 /**
     Render a view template to the client
-    @description Actions are C procedures that are invoked when specific URIs are routed to the service/action pair.
+    @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
     @param view view name
     @ingroup EspAbbrev
     @stability Evolving
@@ -2302,7 +2380,7 @@ PUBLIC void scripts(cchar *patterns);
     @description Security tokens are used to help guard against CSRF threats.
         This call will render a security token for the page, and emit an HTML meta element for the security token.
         The token will automatically be included whenever forms are submitted and the token is validated by the 
-        receiving Service. Typically, forms will automatically generate the security token. Note that explicitly
+        receiving controller. Typically, forms will automatically generate the security token. Note that explicitly
         calling this routine is not necessary unless a security token is required for non-form requests such as AJAX
         requests. The #securityToken control should be called inside the &lt;head section of the web page.
     @ingroup EspAbbrev
@@ -2310,6 +2388,16 @@ PUBLIC void scripts(cchar *patterns);
     @internal
  */
 PUBLIC void securityToken();
+
+/**
+    Get a session state variable
+    @description This is a convenient alias for #getSessionVar.
+    @param name Variable name to get
+    @return The session variable value. Returns NULL if not set.
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC cchar *session(cchar *name);
 
 /** 
     Define a cookie header to send with the response. The Path, Domain, and Expires properties can be set to null for 
@@ -2345,6 +2433,14 @@ PUBLIC void setConn(HttpConn *conn);
 PUBLIC void setContentType(cchar *mimeType);
 
 /**
+    Set a private data reference for the current request
+    @return Reference to private data
+    @ingroup EspAbbrev
+    @stability prototype
+ */
+PUBLIC void setData(void *data);
+
+/**
     Update a record field without writing to the database
     @description This routine updates the record object with the given value. The record will not be written
         to the database. To write to the database, use #updateRec.
@@ -2365,12 +2461,20 @@ PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value);
         For example: updateFields(rec, hash("{ name: '%s', address: '%s' }", name, address))
         The record will not be written to the database. To write to the database, use #ediUpdateRec.
     @param rec Record to update
-    @param data Hash of field names and values to use for the update
+    @param data Json object of field data.
     @return The record instance if successful, otherwise NULL.
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *data);
+PUBLIC EdiRec *setFields(EdiRec *rec, MprJson *data);
+
+/**
+    Set the current database grid
+    @return The grid instance. This permits chaining.
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC EdiGrid *setGrid(EdiGrid *grid);
 
 /**
     Set a transmission header
@@ -2414,6 +2518,16 @@ PUBLIC void setNotifier(HttpNotifier notifier);
     @stability Evolving
  */
 PUBLIC void setParam(cchar *name, cchar *value);
+
+/**
+    Set the current database record
+    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(), 
+        checkbox and dropdown()
+    @return The grid instance. This permits chaining.
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC EdiRec *setRec(EdiRec *rec);
 
 /**
     Set a session state variable
@@ -2485,12 +2599,12 @@ PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *v
         For example: ediWriteFields(rec, params());
         The record runs field validations before saving to the database.
     @param tableName Database table name
-    @param data Hash of field names and values to use for the update
+    @param data Json object of fields to update
     @return "true" if the field  can be successfully written. Returns false if field validations fail.
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC bool updateFields(cchar *tableName, MprHash *data);
+PUBLIC bool updateFields(cchar *tableName, MprJson *data);
 
 /**
     Write a record to the database
@@ -2505,9 +2619,15 @@ PUBLIC bool updateFields(cchar *tableName, MprHash *data);
  */
 PUBLIC bool updateRec(EdiRec *rec);
 
-//  MOB - DOC
+/**
+    Update a record from the request parameters
+    @description The record identified by the params(id) is read and updated with the request parameters.
+    @param table Database table to update
+    @return True if the update is successful.
+    @ingroup EspAbbrev
+    @stability Prototype
+*/ 
 PUBLIC bool updateRecFromParams(cchar *table);
-PUBLIC bool createRecFromParams(cchar *table);
 
 /* ******************************** DEPRECATED ****************************** */
 #if (DEPRECATE || 1) && !DOXYGEN
@@ -2529,15 +2649,15 @@ PUBLIC bool createRecFromParams(cchar *table);
     how the control will render. The options hash is a JSON string, which is interpreted as a set of property values.
     \n\n
     Various controls have custom options, but most share the following common set of option properties:
-    @arg action String Action to invoke. This can be a URI string or a Service/Action pair of the form
-        \@Service/action. If only the service is provided (\@Service/), the "list" action assumed.
+    @arg action String Action to invoke. This can be a URI string or a controller/Action pair of the form
+        \@controller/action. If only the controller is provided (\@controller/), the "list" action assumed.
     @arg apply String Client JQuery selector identifying the element to apply the remote update.
         Typically "div.ID" where ID is the DOM ID for the element.
     @arg background String Background color. This is a CSS RGB color specification. For example "FF0000" for red.
     @arg click (Boolean|Uri|String) URI to invoke if the control is clicked.
     @arg color String Foreground color. This is a CSS RGB color specification. For example "FF0000" for red.
     @arg confirm String Message to prompt the user to request confirmation before submitting a form or request.
-    @arg service Service owning the action to invoke when clicked. Defaults to the current service.
+    @arg controller controller owning the action to invoke when clicked. Defaults to the current controller.
     @arg data-* All data-* names are passed through to the HTML unmodified.
     @arg domid String Client-side DOM-ID to use for the control
     @arg effects String Transition effects to apply when updating a control. Select from: "fadein", "fadeout",
@@ -2547,7 +2667,7 @@ PUBLIC bool createRecFromParams(cchar *table);
     @arg height (Number|String) Height of the control. Can be a number of pixels or a percentage string. 
         Defaults to unlimited.
     @arg key Array List of fields to set as the key values to uniquely identify the clicked or edited element. 
-        The key will be rendered as a "data-key" HTML attribute and will be passed to the receiving service 
+        The key will be rendered as a "data-key" HTML attribute and will be passed to the receiving controller 
         when the entry is clicked or edited. Each entry of the key option can be a simple
         string field name or it can be an Object with a single property, where the property name is a simple
         string field name and the property value is the mapped field name to use as the actual key name. This 
@@ -2573,7 +2693,7 @@ PUBLIC bool createRecFromParams(cchar *table);
     @arg remote (String|URI|Object) Perform the request in the background without changing the browser location.
     @arg refresh (String|URI|Object) URI to invoke in the background to refresh the control's data every period.
         milliseconds. If period is undefined or zero, a persistent connection may be used to refresh data.
-        The refresh option may use the "\@Service/action" form.
+        The refresh option may use the "\@controller/action" form.
     @arg size (Number|String) Size of the element.
     @arg style String CSS Style to use for the element.
     @arg value Object Override value to display if used without a form control record.
@@ -2706,36 +2826,6 @@ PUBLIC void espEndform(HttpConn *conn);
 PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *options);
 
 /**
-    Get the current database grid.
-    @description The current grid is defined via #setGrid
-    @return EdiGrid instance
-    @ingroup EspReq
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiGrid *espGetGrid(HttpConn *conn);
-
-/**
-    Test if a current grid has been defined.
-    @return "True" if a current grid has been defined
-    @ingroup EspReq
-    @stability Deprecated
-    @internal
- */
-PUBLIC bool espHasGrid(HttpConn *conn);
-
-/**
-    Test if a current record has been defined and save to the database.
-    @description This call returns "true" if a current record is defined and has been saved to the database with a 
-        valid "id" field.
-    @return "True" if a current record with a valid "id" is defined.
-    @ingroup EspReq
-    @stability Deprecated
-    @internal
- */
-PUBLIC bool espHasRec(HttpConn *conn);
-
-/**
     Render an HTML icon.
     @param conn Http connection object
     @param uri URI reference for the icon resource
@@ -2856,20 +2946,6 @@ PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choices, cchar *option
 PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *options);
 
 /**
-    Render flash messages.
-    @description Flash messages are one-time messages that are displayed to the client on the next request (only).
-    Flash messages use the session state store but persist for only one request.
-        See #espSetFlash for how to define flash messages. 
-    @param conn Http connection object
-    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
-    @param options Reserved. Set to "".
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *options);
-
-/**
     Render a script link.
     @param uri Script URI to load. Set to null to get a default set of scripts. See #httpLink for a list of possible
         URI formats.
@@ -2880,33 +2956,6 @@ PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *options);
     @internal
  */
 PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
-
-PUBLIC void espScripts(HttpConn *conn, cchar *options);
-
-/* Renamed to espRenderSecurityToken */
-PUBLIC void espSecurityToken(HttpConn *conn);
-
-/**
-    Set the current database grid
-    @return The grid instance. This permits chaining.
-    @ingroup EspReq
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid);
-
-/**
-    Set the current database record
-    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(), 
-        checkbox and dropdown()
-    @param conn HttpConn connection object
-    @param rec Record object to define as the current record.
-    @return The grid instance. This permits chaining.
-    @ingroup EspReq
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec);
 
 /**
     Render a stylesheet link
@@ -3122,7 +3171,6 @@ PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
  */
 PUBLIC void endform();
 
-
 /**
     Render an HTML form 
     @description This will render an HTML form tag and optionally associate the given record as the current record for
@@ -3145,16 +3193,6 @@ PUBLIC void endform();
 PUBLIC void form(void *record, cchar *options);
 
 /**
-    Get the current database grid
-    @description The current grid is defined via #setGrid
-    @return EdiGrid instance
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiGrid *getGrid();
-
-/**
     Get the current database record
     @return EdiRec instance
     @ingroup EspAbbrev
@@ -3163,28 +3201,12 @@ PUBLIC EdiGrid *getGrid();
  */
 PUBLIC EdiRec *getRec();
 
-//  MOB DOC
+/**
+    Get a URI for the top of the application
+    @ingroup EspAbbrev
+    @stability deprecated
+ */
 PUBLIC cchar *getTop();
-
-/**
-    Test if a current grid has been defined
-    @return "true" if a current grid has been defined
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC bool hasGrid();
-
-/**
-    Test if a current record has been defined and save to the database
-    @description This call returns "true" if a current record is defined and has been saved to the database with a 
-        valid "id" field.
-    @return "true" if a current record with a valid "id" is defined.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC bool hasRec();
 
 /**
     Render an HTML icon
@@ -3289,18 +3311,6 @@ PUBLIC void radio(cchar *field, void *choices, cchar *options);
 PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
 
 /**
-    Render flash notices.
-    @description Flash notices are one-time messages that are displayed to the client on the next request (only).
-        See #espSetFlash for how to define flash messages. 
-    @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void renderFlash(cchar *kinds, cchar *options);
-
-/**
     Render a script link
     @param uri Script URI to load. Set to null to get a default set of scripts. See #httpLink for a list of possible
         URI formats.
@@ -3310,26 +3320,6 @@ PUBLIC void renderFlash(cchar *kinds, cchar *options);
     @internal
  */
 PUBLIC void script(cchar *uri, cchar *options);
-
-/**
-    Set the current database grid
-    @return The grid instance. This permits chaining.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiGrid *setGrid(EdiGrid *grid);
-
-/**
-    Set the current database record
-    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(), 
-        checkbox and dropdown()
-    @return The grid instance. This permits chaining.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiRec *setRec(EdiRec *rec);
 
 /**
     Render a stylesheet link

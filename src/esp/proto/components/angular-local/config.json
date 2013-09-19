@@ -1,0 +1,4 @@
+{
+    name: "angular-local",
+    description: "Angular local storage service" 
+}

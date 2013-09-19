@@ -5,8 +5,8 @@
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 let http: Http = new Http
 
-//  GET /app/test/login
-http.get(HTTP + "/app/test/login")
+//  GET /session/login
+http.get(HTTP + "/session/login")
 assert(http.status == 200)
 assert(http.response.contains("Please Login"))
 // dump(http.headers)
@@ -22,11 +22,11 @@ assert(cookie && cookie.contains("-http-session-="))
 // print("PRIOR RESPONSE: \"" + http.response + "\"")
 http.close()
 
-//  POST /app/test/login
+//  POST /session/login
 http.setCookie(cookie)
 // http.setHeader("__esp_security_token__", securityToken)
 http.setHeader("X-XSRF-TOKEN", securityToken)
-http.form(HTTP + "/app/test/login", { 
+http.form(HTTP + "/session/login", { 
     __esp_security_token__: securityToken,
     username: "admin", 
     password: "secret", 
@@ -41,9 +41,9 @@ assert(!http.sessionCookie)
 http.close()
 
 
-//  GET /app/test/login
+//  GET /session/login
 http.setCookie(cookie)
-http.get(HTTP + "/app/test/login")
+http.get(HTTP + "/session/login")
 assert(http.status == 200)
 // print("STATUS", http.status)
 // dump("HEADERS", http.headers)

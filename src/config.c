@@ -205,7 +205,7 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
     flags = 0;
     path = 0;
     
-    for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
+    for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
         if (!path) {
             path = sclone(option);
         } else {
@@ -736,7 +736,7 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
 
     route = state->route;
     tok = sclone(value);
-    while ((option = maGetNextToken(tok, &tok)) != 0) {
+    while ((option = maGetNextArg(tok, &tok)) != 0) {
         option = stok(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if (scaselessmatch(option, "origin")) {
@@ -915,7 +915,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
     path = 0;
     flags = 0;
 
-    for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
+    for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
         if (!path) {
             path = mprJoinPath(httpGetRouteVar(state->route, "LOG_DIR"), httpExpandRouteVars(state->route, option));
         } else {
@@ -2810,34 +2810,46 @@ static char *getDirective(char *line, char **valuep)
 }
 
 
-/*
-    Break into tokens separated by spaces or commas. Supports quoted args and backquotes.
- */
-PUBLIC char *maGetNextToken(char *s, char **tok)
+PUBLIC char *maGetNextArg(char *s, char **tok)
 {
     char    *etok;
-    int     quote;
+    int     quoted;
 
     if (s == 0) {
         return 0;
     }
-    for (; isspace((uchar) *s); s++);  
+    for (; isspace((uchar) *s); s++) {}
+
+    for (quoted = 0, etok = s; *etok; etok++) {
+        if (*etok == '\'' || *etok == '"') {
+            quoted = !quoted;
+        } else if (isspace((uchar) *etok) && !quoted && (etok > s && etok[-1] != '\\')) {
+            break;
+        }
+    }
     if (*s == '\'' || *s == '"') {
-        quote = *s++;
-        for (etok = s; *etok && !(*etok == quote && etok[-1] != '\\'); etok++) ;
-    } else {
-        for (etok = s; *etok && !(isspace((uchar) *etok) || *etok == ','); etok++) ;
+        s++;
+        if (etok > s && (etok[-1] == '\'' || etok[-1] == '"')) {
+            etok--;
+        }
     }
     if (*etok == '\0') {
-        *tok = NULL;
         etok = NULL;
     } else {
         *etok++ = '\0';
-        for (; isspace((uchar) *etok); etok++);  
+        for (; isspace((uchar) *etok); etok++) {}  
     }
     *tok = etok;
     return s;
 }
+
+
+#if DEPRECATE || 1
+PUBLIC char *maGetNextToken(char *s, char **tok)
+{
+    return maGetNextArg(s, tok);
+}
+#endif
 
 
 PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)

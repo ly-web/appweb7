@@ -1,0 +1,5 @@
+{
+    name: "angular-ui-bootstrap",
+    description: "Angular UI Bootstrap support",
+    depends: ['bootstrap', 'html5shiv']
+}
