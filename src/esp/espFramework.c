@@ -643,14 +643,12 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
 {
     va_list     args;
     HttpRx      *rx;
-    EspRoute    *eroute;
     ssize       written;
     cchar       *msg, *title, *text;
 
     va_start(args, fmt);    
 
     rx = conn->rx;
-    eroute = rx->route->eroute;
     written = 0;
 
     if (!httpIsFinalized(conn)) {
@@ -929,7 +927,6 @@ PUBLIC void espSetFeedback(HttpConn *conn, cchar *kind, cchar *fmt, ...)
 PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 {
     EspReq      *req;
-    MprKey      *kp;
     cchar       *prior, *msg;
 
     req = conn->data;
@@ -939,15 +936,10 @@ PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list arg
         req->feedback = mprCreateHash(0, MPR_HASH_STABLE);
     }
     if ((prior = mprLookupKey(req->feedback, kind)) != 0) {
-        kp = mprAddKey(req->feedback, kind, sjoin(prior, "\n", msg, NULL));
+        mprAddKey(req->feedback, kind, sjoin(prior, "\n", msg, NULL));
     } else {
-        kp = mprAddKey(req->feedback, kind, sclone(msg));
+        mprAddKey(req->feedback, kind, sclone(msg));
     }
-#if UNUSED
-    if (kp) {
-        kp->type = MPR_JSON_STRING;
-    }
-#endif
 }
 
 
@@ -964,7 +956,6 @@ PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...)
 PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 {
     EspReq      *req;
-    MprKey      *kp;
     cchar       *prior, *msg;
 
     req = conn->data;
@@ -974,15 +965,10 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
         req->flash = mprCreateHash(0, MPR_HASH_STABLE);
     }
     if ((prior = mprLookupKey(req->flash, kind)) != 0) {
-        kp = mprAddKey(req->flash, kind, sjoin(prior, "\n", msg, NULL));
+        mprAddKey(req->flash, kind, sjoin(prior, "\n", msg, NULL));
     } else {
-        kp = mprAddKey(req->flash, kind, sclone(msg));
+        mprAddKey(req->flash, kind, sclone(msg));
     }
-#if UNUSED
-    if (kp) {
-        kp->type = MPR_JSON_STRING;
-    }
-#endif
     /*
         Create a session as early as possible so a Set-Cookie header can be omitted.
      */
