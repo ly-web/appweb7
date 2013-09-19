@@ -6090,7 +6090,7 @@ PUBLIC void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h);
 #define MPR_JSON_QUERY_REMOVE   0x1         /* Remove matching properties */
 
 #define ITERATE_JSON(obj, child, index) \
-    index = 0, (obj && (child = obj->children)); obj && index < obj->length; child = child->next, index++
+    index = 0, child = obj ? obj->children: 0; obj && index < obj->length; child = child->next, index++
 
 /**
     JSON Object
