@@ -30,6 +30,7 @@ static void browserToCgiService(HttpQueue *q);
 static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp);
 static void cgiCallback(MprCmd *cmd, int channel, void *data);
 static void cgiToBrowserData(HttpQueue *q, HttpPacket *packet);
+static int copyParams(cchar **envv, int index, MprJson *params, cchar *prefix);
 static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix);
 static char *getCgiToken(MprBuf *buf, cchar *delim);
 static void manageCgi(Cgi *cgi, int flags);
@@ -133,10 +134,9 @@ static void startCgi(HttpQueue *q)
     HttpConn        *conn;
     MprCmd          *cmd;
     Cgi             *cgi;
-    cchar           *baseName;
-    cchar           **argv, *fileName;
-    cchar           **envv;
-    int             argc, varCount, count;
+    cchar           *baseName, **argv, *fileName, **envv;
+    ssize           varCount;
+    int             argc, count;
 
     argv = 0;
     argc = 0;
@@ -175,12 +175,9 @@ static void startCgi(HttpQueue *q)
     /*  
         Build environment variables
      */
-    varCount = mprGetHashLength(rx->headers) + mprGetHashLength(rx->svars);
-    if (rx->params) {
-        varCount += mprGetHashLength(rx->params);
-    }
+    varCount = mprGetHashLength(rx->headers) + mprGetHashLength(rx->svars) + mprGetJsonLength(rx->params);
     if ((envv = mprAlloc((varCount + 1) * sizeof(char*))) != 0) {
-        count = copyVars(envv, 0, rx->params, "");
+        count = copyParams(envv, 0, rx->params, "");
         count = copyVars(envv, count, rx->svars, "");
         count = copyVars(envv, count, rx->headers, "HTTP_");
         assert(count <= varCount);
@@ -466,6 +463,7 @@ static void readFromCgi(Cgi *cgi, int channel)
             mprAdjustBufEnd(packet->content, nbytes);
         }
         if (channel == MPR_CMD_STDERR) {
+            //  MOB - should be an option to keep going despite stderr output
             mprError("CGI: Error for \"%s\"\n\n%s", conn->rx->uri, mprGetBufStart(packet->content));
             httpSetStatus(conn, HTTP_CODE_SERVICE_UNAVAILABLE);
             cgi->seenHeader = 1;
@@ -956,6 +954,33 @@ static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix)
     return index;
 }
 
+
+//  MOB - rethink. duplicates copyVars
+static int copyParams(cchar **envv, int index, MprJson *params, cchar *prefix)
+{
+    MprJson     *param;
+    char        *cp;
+    int         i;
+
+    for (ITERATE_JSON(params, param, i)) {
+        if (prefix) {
+            cp = sjoin(prefix, param->name, "=", param->value, NULL);
+        } else {
+            cp = sjoin(param->name, "=", param->value, NULL);
+        }
+        envv[index] = cp;
+        for (; *cp != '='; cp++) {
+            if (*cp == '-') {
+                *cp = '_';
+            } else {
+                *cp = toupper((uchar) *cp);
+            }
+        }
+        index++;
+    }
+    envv[index] = 0;
+    return index;
+}
 
 static int actionDirective(MaState *state, cchar *key, cchar *value)
 {

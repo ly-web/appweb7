@@ -809,23 +809,17 @@ static void manageEdiGrid(EdiGrid *grid, int flags)
  */
 PUBLIC EdiGrid *ediMakeGrid(cchar *json)
 {
-    MprHash     *obj, *row;
-    MprKey      *rp, *kp;
+    MprJson     *obj, *row, *rp, *cp;
     EdiGrid     *grid;
     EdiRec      *rec;
     EdiField    *fp;
-    char        rowbuf[16];
-    int         r, nrows, nfields;
+    int         col, r, nrows, nfields;
 
-    if ((obj = mprDeserialize(json)) == 0) {
+    if ((obj = mprParseJson(json)) == 0) {
         assert(0);
         return 0;
     }
-    if (!(obj->flags & MPR_HASH_LIST)) {
-        assert(obj->flags & MPR_HASH_LIST);
-        return 0;
-    }
-    nrows = mprGetHashLength(obj);
+    nrows = (int) mprGetJsonLength(obj);
     if ((grid = ediCreateBareGrid(NULL, "", nrows)) == 0) {
         assert(0);
         return 0;
@@ -833,13 +827,8 @@ PUBLIC EdiGrid *ediMakeGrid(cchar *json)
     if (nrows <= 0) {
         return grid;
     }
-    for (r = 0; r < nrows; r++) {
-        itosbuf(rowbuf, sizeof(rowbuf), r, 10);
-        if ((rp = mprLookupKeyEntry(obj, rowbuf)) == 0) {
-            continue;
-        }
-        /* JSON objects are either char* or MprHash */
-        if (rp->type == MPR_JSON_STRING) {
+    for (ITERATE_JSON(obj, rp, r)) {
+        if (rp->type == MPR_JSON_VALUE) {
             nfields = 1;
             if ((rec = ediCreateBareRec(NULL, "", nfields)) == 0) {
                 return 0;
@@ -847,23 +836,23 @@ PUBLIC EdiGrid *ediMakeGrid(cchar *json)
             fp = rec->fields;
             fp->valid = 1;
             fp->name = sclone("value");
-            fp->value = rp->data;
+            fp->value = rp->value;
             fp->type = EDI_TYPE_STRING;
             fp->flags = 0;
         } else {
-            row = (MprHash*) rp->data;
-            nfields = mprGetHashLength(row);
+            row = rp;
+            nfields = (int) mprGetJsonLength(row);
             if ((rec = ediCreateBareRec(NULL, "", nfields)) == 0) {
                 return 0;
             }
             fp = rec->fields;
             //  MOB - need helper to create a field.
-            for (ITERATE_KEYS(row, kp)) {
+            for (ITERATE_JSON(row, cp, col)) {
                 if (fp >= &rec->fields[nfields]) {
                     break;
                 }
                 fp->valid = 1;
-                fp->name = kp->key;
+                fp->name = cp->name;
                 fp->type = EDI_TYPE_STRING;
                 fp->flags = 0;
                 fp++;
@@ -1032,19 +1021,19 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value)
 }
 
 
-PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprHash *params)
+PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprJson *params)
 {
-    MprKey  *kp;
+    MprJson     *param;
+    int         i;
 
     if (rec == 0) {
         return 0;
     }
-    for (ITERATE_KEYS(params, kp)) {
-        if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
-            continue;
-        }
-        if (!ediSetField(rec, kp->key, kp->data)) {
-            return 0;
+    for (ITERATE_JSON(params, param, i)) {
+        if (param->type == MPR_JSON_VALUE) {
+            if (!ediSetField(rec, param->name, param->value)) {
+                return 0;
+            }
         }
     }
     return rec;

@@ -16,8 +16,8 @@ PUBLIC void espAddComponent(HttpRoute *route, cchar *name)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    if (!mprJsonGet(eroute->config, sfmt("settings.components[@ = %s]", name))) {
-        mprJsonSet(eroute->config, "settings.components[*]", name);
+    if (!mprGetJsonValue(eroute->config, sfmt("settings.components[@ = %s]", name))) {
+        mprSetJsonValue(eroute->config, "settings.components[*]", name);
     }
 }
 
@@ -171,7 +171,7 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue)
     cchar       *value;
 
     eroute = route->eroute;
-    if ((value = mprJsonGet(eroute->config, key)) != 0) {
+    if ((value = mprGetJsonValue(eroute->config, key)) != 0) {
         return value;
     }
     return defaultValue;
@@ -322,7 +322,7 @@ PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
 }
 
 
-PUBLIC MprHash *espGetParams(HttpConn *conn)
+PUBLIC MprJson *espGetParams(HttpConn *conn)
 {
     return httpGetParams(conn);
 }
@@ -396,7 +396,7 @@ PUBLIC bool espHasComponent(HttpRoute *route, cchar *name)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprJsonGet(eroute->config, sfmt("settings.components[@ = '%s']", name)) != 0;
+    return mprGetJsonValue(eroute->config, sfmt("settings.components[@ = '%s']", name)) != 0;
 }
 
 
@@ -439,10 +439,9 @@ PUBLIC bool espIsSecure(HttpConn *conn)
 PUBLIC int espLoadConfig(HttpRoute *route)
 {
     EspRoute    *eroute;
-    MprObj      *msettings;
+    MprJson     *msettings;
     MprPath     cinfo;
     cchar       *cpath, *value;
-    int         type;
 
     eroute = route->eroute;
     cpath = mprJoinPath(route->documents, "config.json");
@@ -453,13 +452,13 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         eroute->configLoaded = cinfo.mtime;
     }
     if (!eroute->config) {
-        if ((eroute->config = mprJsonLoad(cpath)) != 0) {
+        if ((eroute->config = mprLoadJson(cpath)) != 0) {
             /*
                 Blend the mode properties into settings
              */
-            eroute->mode = mprJsonGet(eroute->config, "mode");
-            if ((msettings = mprJsonGetValue(eroute->config, sfmt("modes.%s", eroute->mode), &type)) != 0) {
-                mprJsonBlend(eroute->config, msettings);
+            eroute->mode = mprGetJsonValue(eroute->config, "mode");
+            if ((msettings = mprGetJson(eroute->config, sfmt("modes.%s", eroute->mode))) != 0) {
+                mprBlendJson(mprLookupJson(eroute->config, "settings"), msettings, 0);
             }
             if (espTestConfig(route, "settings.showErrors", "true")) {
                 httpSetRouteShowErrors(route, 1);
@@ -474,6 +473,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 eroute->serverPrefix = sclone(BIT_ESP_SERVER_PREFIX);
             }
             if ((value = espGetConfig(route, "settings.username", 0)) != 0) {
+                /* Automatic login as this user. Password not required */
                 httpSetAuthUsername(route->auth, value);
             }
             if (espTestConfig(route, "settings.xsrfToken", "true")) {
@@ -496,7 +496,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
             eroute->json = espTestConfig(route, "settings.json", "1");
         } else {
-            eroute->config = mprCreateHash(0, 0);
+            eroute->config = mprCreateJson(MPR_JSON_OBJ);
             espAddComponent(route, "legacy-mvc");
         }
         if (espHasComponent(route, "legacy-mvc")) {
@@ -631,7 +631,7 @@ PUBLIC void espRenderConfig(HttpConn *conn)
     eroute = conn->rx->route->eroute;
     if (eroute->config) {
         //  MOB - remove pretty
-        renderString(mprSerialize(eroute->config, MPR_JSON_QUOTES | MPR_JSON_PRETTY));
+        renderString(mprJsonToString(eroute->config, MPR_JSON_QUOTES | MPR_JSON_PRETTY));
     } else {
         renderError(HTTP_CODE_NOT_FOUND, "Cannot find config");
     }
@@ -863,7 +863,7 @@ PUBLIC int espSaveConfig(HttpRoute *route)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprJsonSave(eroute->config, mprJoinPath(route->documents, "config.json"));
+    return mprSaveJson(eroute->config, mprJoinPath(route->documents, "config.json"));
 }
 
 
@@ -884,7 +884,7 @@ PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprJsonSet(eroute->config, key, value);
+    return mprSetJsonValue(eroute->config, key, value);
 }
 
 
@@ -943,9 +943,11 @@ PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list arg
     } else {
         kp = mprAddKey(req->feedback, kind, sclone(msg));
     }
+#if UNUSED
     if (kp) {
         kp->type = MPR_JSON_STRING;
     }
+#endif
 }
 
 
@@ -976,9 +978,11 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
     } else {
         kp = mprAddKey(req->flash, kind, sclone(msg));
     }
+#if UNUSED
     if (kp) {
         kp->type = MPR_JSON_STRING;
     }
+#endif
     /*
         Create a session as early as possible so a Set-Cookie header can be omitted.
      */
@@ -1106,6 +1110,7 @@ static int getParams(char ***keys, char *buf, int len)
 PUBLIC void espShowRequest(HttpConn *conn)
 {
     MprHash     *env;
+    MprJson     *params, *param;
     MprKey      *kp;
     MprBuf      *buf;
     HttpRx      *rx;
@@ -1153,9 +1158,9 @@ PUBLIC void espShowRequest(HttpConn *conn)
     /*
         Form vars
      */
-    if ((env = espGetParams(conn)) != 0) {
-        for (ITERATE_KEYS(env, kp)) {
-            espRender(conn, "FORM %s=%s\r\n", kp->key, kp->data ? kp->data: "null");
+    if ((params = espGetParams(conn)) != 0) {
+        for (ITERATE_JSON(params, param, i)) {
+            espRender(conn, "FORM %s=%s\r\n", param->name, param->value);
         }
         espRender(conn, "\r\n");
     }
@@ -1184,7 +1189,7 @@ PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired)
     cchar       *value;
 
     eroute = route->eroute;
-    if ((value = mprJsonGet(eroute->config, key)) != 0) {
+    if ((value = mprGetJsonValue(eroute->config, key)) != 0) {
         return smatch(value, desired);
     }
     return 0;

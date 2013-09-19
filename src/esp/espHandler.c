@@ -215,7 +215,7 @@ static int runAction(HttpConn *conn)
         Expand any form var $tokens. This permits ${controller} and user form data to be used in the controller name
      */
     if (schr(route->sourceName, '$')) {
-        req->controllerName = stemplate(route->sourceName, rx->params);
+        req->controllerName = stemplateJson(route->sourceName, rx->params);
     } else {
         req->controllerName = route->sourceName;
     }

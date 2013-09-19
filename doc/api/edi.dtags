@@ -236,6 +236,13 @@
       <arglist>(int type)</arglist>
     </member>
     <member kind="function">
+      <type>cchar *</type>
+      <name>ediGridToJson</name>
+      <anchorfile>group___edi.html</anchorfile>
+      <anchor>gaaa94739fe73c12654beb1bb879ee31ad</anchor>
+      <arglist>(EdiGrid *grid, int flags)</arglist>
+    </member>
+    <member kind="function">
       <type>EdiGrid *</type>
       <name>ediJoin</name>
       <anchorfile>group___edi.html</anchorfile>
@@ -355,6 +362,13 @@
       <arglist>(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)</arglist>
     </member>
     <member kind="function">
+      <type>cchar *</type>
+      <name>ediRecToJson</name>
+      <anchorfile>group___edi.html</anchorfile>
+      <anchor>ga9ce647d09988bc5d436269253e552eec</anchor>
+      <arglist>(EdiRec *rec, int flags)</arglist>
+    </member>
+    <member kind="function">
       <type>int</type>
       <name>ediRemoveIndex</name>
       <anchorfile>group___edi.html</anchorfile>
@@ -400,8 +414,8 @@
       <type>EdiRec *</type>
       <name>ediSetFields</name>
       <anchorfile>group___edi.html</anchorfile>
-      <anchor>ga6399c9e05317bf82c49d1336b21b2f17</anchor>
-      <arglist>(EdiRec *rec, MprHash *data)</arglist>
+      <anchor>ga916af8d529a028643e87b3b8c8973a85</anchor>
+      <arglist>(EdiRec *rec, MprJson *data)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -430,6 +444,13 @@
       <anchorfile>group___edi.html</anchorfile>
       <anchor>gafac7f959a214551acc56fd42a8c0e04e</anchor>
       <arglist>(Edi *edi, cchar *tableName, cchar *columnName)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>espDumpGrid</name>
+      <anchorfile>group___edi.html</anchorfile>
+      <anchor>ga18375a1455d10df65a92b6adc3409830</anchor>
+      <arglist>(EdiGrid *grid)</arglist>
     </member>
   </compound>
   <compound kind="struct">

@@ -40,7 +40,7 @@ PUBLIC bool canUser(cchar *abilities, bool warn)
 }
 
 
-PUBLIC EdiRec *createRec(cchar *tableName, MprHash *params)
+PUBLIC EdiRec *createRec(cchar *tableName, MprJson *params)
 {
     return setRec(ediSetFields(ediCreateRec(getDatabase(), tableName), params));
 }
@@ -348,7 +348,7 @@ PUBLIC cchar *param(cchar *key)
 }
 
 
-PUBLIC MprHash *params()
+PUBLIC MprJson *params()
 {
     return espGetParams(getConn());
 }
@@ -528,8 +528,8 @@ PUBLIC void scripts(cchar *patterns)
     HttpRoute   *route;
     EspRoute    *eroute;
     MprList     *files;
-    MprHash     *components;
-    cchar       *indent, *uri, *path, *component;
+    MprJson     *components, *component;
+    cchar       *indent, *uri, *path;
     int         next, i;
 
     conn = getConn();
@@ -540,11 +540,11 @@ PUBLIC void scripts(cchar *patterns)
     //  MOB - is components used?
     if (patterns == NULL || smatch(patterns, "${COMPONENTS}/**.js")) {
         //  MOB - should we have eroute->components?
-        if ((components = mprJsonGetValue(eroute->config, "settings.components", NULL)) != 0) {
-            for (i = 0; i < components->length; i++) {
-                char num[16];
-                component = mprLookupKey(components, itosbuf(num, sizeof(num), i, 10));
-                scripts(sfmt("%s/lib/%s/**.js", eroute->clientDir, component));
+        if ((components = mprGetJson(eroute->config, "settings.components")) != 0) {
+            for (ITERATE_JSON(components, component, i)) {
+                if (component->type == MPR_JSON_VALUE) {
+                    scripts(sfmt("%s/lib/%s/**.js", eroute->clientDir, component->value));
+                }
             }
         }
     }
@@ -605,7 +605,7 @@ PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value)
 }
 
 
-PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *params)
+PUBLIC EdiRec *setFields(EdiRec *rec, MprJson *params)
 {
     return ediSetFields(rec, params);
 }
@@ -696,12 +696,12 @@ PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *v
 }
 
 
-PUBLIC bool updateFields(cchar *tableName, MprHash *params)
+PUBLIC bool updateFields(cchar *tableName, MprJson *params)
 {
     EdiRec  *rec;
     cchar   *key;
 
-    key = mprLookupKey(params, "id");
+    key = mprLookupJsonValue(params, "id");
     if ((rec = ediSetFields(ediReadRec(getDatabase(), tableName, key), params)) == 0) {
         return 0;
     }

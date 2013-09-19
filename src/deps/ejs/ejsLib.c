@@ -66252,7 +66252,6 @@ static void defineParam(Ejs *ejs, EjsObj *params, cchar *key, cchar *svalue)
     int         slotNum;
 
     assert(params);
-
     value = ejsCreateStringFromAsc(ejs, svalue);
 
     /*  
@@ -66342,15 +66341,17 @@ static EjsString *createFormData(Ejs *ejs, EjsRequest *req)
 static EjsObj *createParams(Ejs *ejs, EjsRequest *req)
 {
     EjsObj      *params;
-    MprHash     *hparams;
-    MprKey      *kp;
+    MprJson     *hparams, *param;
+    int         i;
 
     if ((params = req->params) == 0) {
         params = (EjsObj*) ejsCreateEmptyPot(ejs);
         if (req->conn && (hparams = req->conn->rx->params) != 0) {
-            kp = 0;
-            while ((kp = mprGetNextKey(hparams, kp)) != NULL) {
-                defineParam(ejs, params, kp->key, kp->data);
+            //  MOB - this only handles 1-level params at the moment
+            for (ITERATE_JSON(hparams, param, i)) {
+                if (param->type == MPR_JSON_VALUE) {
+                    defineParam(ejs, params, param->name, param->value);
+                }
             }
         }
     }

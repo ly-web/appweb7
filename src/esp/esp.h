@@ -155,7 +155,7 @@ typedef struct EspRoute {
     struct EspRoute *top;                   /**< Top-level route for this application */
     EspProc         commonController;       /**< Common code for all controllers */
     MprHash         *env;                   /**< Environment variables for route */
-    MprHash         *config;                /**< App configuration from config.json */
+    MprJson         *config;                /**< App configuration from config.json */
     MprTime         configLoaded;           /**< When config.json was last loaded */
 
     cchar           *appModulePath;         /**< App module path when compiled flat */
@@ -175,7 +175,9 @@ typedef struct EspRoute {
     cchar           *mode;                  /**< Application run mode (debug|release) */
 
     cchar           *database;              /**< Name of database for route */
+#if UNUSED
     cchar           *login;                 /**< Automatic login name - bypass login dialog */
+#endif
     cchar           *serverPrefix;          /**< Server controllers URI prefix */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
@@ -450,6 +452,7 @@ PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value);
 /**
     Set a private data reference for the current request
     @param conn HttpConn object
+    @param data Data object to associate with the current request. This must be a managed reference.
     @return Reference to private data
     @ingroup EspAbbrev
     @stability prototype
@@ -806,11 +809,11 @@ PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue);
         Route tokens, request query data, and www-url encoded form data are all entered into the params table after decoding.
         Use #mprLookupKey to retrieve data from the table.
     @param conn HttpConn connection object
-    @return #MprHash instance containing the request parameters
+    @return MprJson instance containing the request parameters
     @ingroup EspReq
     @stability Evolving
  */
-PUBLIC MprHash *espGetParams(HttpConn *conn);
+PUBLIC MprJson *espGetParams(HttpConn *conn);
 
 /**
     Get the request query string.
@@ -953,6 +956,7 @@ PUBLIC bool espIsSecure(HttpConn *conn);
  */
 PUBLIC bool espIsFinalized(HttpConn *conn);
 
+//  MOB - should this be ediMakeHash
 /**
     Make a hash table container of property values.
     @description This routine formats the given arguments, parses the result as a JSON string and returns an 
@@ -1623,12 +1627,12 @@ PUBLIC bool canUser(cchar *abilities, bool warn);
     @description This will call #ediCreateRec to create a record based on the given table's schema. It will then
         call #ediSetFields to update the record with the given data.
     @param tableName Database table name
-    @param data Hash of field values
+    @param data Json object with field values
     @return EdRec instance
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC EdiRec *createRec(cchar *tableName, MprHash *data);
+PUBLIC EdiRec *createRec(cchar *tableName, MprJson *data);
 
 /**
     Create a record from the request parameters
@@ -1965,6 +1969,7 @@ PUBLIC bool isFinalized();
  */
 PUBLIC bool isSecure();
 
+#if UNUSED
 /**
     Make a hash table container of property values
     @description This routine formats the given arguments, parses the result as a JSON string and returns an 
@@ -1977,6 +1982,7 @@ PUBLIC bool isSecure();
     @stability Evolving
  */
 PUBLIC MprHash *makeHash(cchar *fmt, ...);
+#endif
 
 /**
     Make a record
@@ -2083,11 +2089,11 @@ PUBLIC cchar *param(cchar *name);
         Route tokens, request query data, and www-url encoded form data are all entered into the params table after decoding.
         Use #mprLookupKey to retrieve data from the table.
         This routine calls #espGetParams
-    @return #MprHash instance containing the request parameters
+    @return MprJson instance containing the request parameters
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC MprHash *params();
+PUBLIC MprJson *params();
 
 /**
     Read the identified record 
@@ -2455,12 +2461,12 @@ PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value);
         For example: updateFields(rec, hash("{ name: '%s', address: '%s' }", name, address))
         The record will not be written to the database. To write to the database, use #ediUpdateRec.
     @param rec Record to update
-    @param data Hash of field names and values to use for the update
+    @param data Json object of field data.
     @return The record instance if successful, otherwise NULL.
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *data);
+PUBLIC EdiRec *setFields(EdiRec *rec, MprJson *data);
 
 /**
     Set the current database grid
@@ -2593,12 +2599,12 @@ PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *v
         For example: ediWriteFields(rec, params());
         The record runs field validations before saving to the database.
     @param tableName Database table name
-    @param data Hash of field names and values to use for the update
+    @param data Json object of fields to update
     @return "true" if the field  can be successfully written. Returns false if field validations fail.
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC bool updateFields(cchar *tableName, MprHash *data);
+PUBLIC bool updateFields(cchar *tableName, MprJson *data);
 
 /**
     Write a record to the database

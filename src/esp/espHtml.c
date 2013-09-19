@@ -469,10 +469,12 @@ static void filterCols(EdiGrid *grid, MprHash *options, MprHash *colOptions)
     gridCols = ediGetGridColumns(grid);
 
     if (colOptions) {
+#if UNUSED
         if (!(colOptions->flags & MPR_HASH_LIST)) {
             mprError("Grid columns must be an array");
             return;
         }
+#endif
         /*
             Sort grid record columns into the order specified by the column options
          */
@@ -943,16 +945,18 @@ static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
 }
 
 
+#if UNUSED
 PUBLIC MprHash *makeParams(cchar *fmt, ...)
 {
     va_list     args;
-    MprObj      *obj;
+    MprHash     *hash;
 
     va_start(args, fmt);
-    obj = mprDeserialize(sfmtv(fmt, args));
+    hash = mprDeserialize(sfmtv(fmt, args));
     va_end(args);
-    return obj;
+    return hash;
 }
+#endif
 
 
 /*

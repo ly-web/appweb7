@@ -90,6 +90,7 @@ typedef struct Mdb {
     MdbCol          *loadCol;           /* Current column */
     MdbRow          *loadRow;           /* Current row */
     MprList         *loadStack;         /* State stack */
+    int             loadCid;            /* Current column index to load */
     int             loadState;          /* Current state */
     int             loadNcols;          /* Expected number of cols */
     int             lineNumber;         /* Current line number in path */

@@ -683,21 +683,22 @@ PUBLIC int ediSave(Edi *edi);
  */
 PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
 
+//  MOB - should this be mprJsonParse?
 /**
     Set record fields without writing to the database.
     @description This routine updates the record object with the given values. The "data' argument supplies 
         a hash of fieldNames and values. The data hash may come from the request params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
-        For example: ediSetFields(rec, ediMakeHash("{ name: '%s', address: '%s' }", name, address))
+        For example: ediSetFields(rec, mprJsonParse("{ name: '%s', address: '%s' }", name, address))
         The record will not be written
         to the database. To write to the database, use #ediUpdateRec.
     @param rec Record to update
-    @param data Hash of field names and values to use for the update
+    @param data Json object of field to use for the update
     @return The record instance if successful, otherwise NULL.
     @ingroup Edi
     @stability Evolving
  */
-PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprHash *data);
+PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprJson *data);
 
 /**
     Get table schema information.

@@ -1,6 +1,6 @@
 {
     name: "server",
-    description: "Default ESP service-side configuration for Appweb"
+    description: "Default ESP service-side configuration for Appweb",
     mode: "debug",
     modes: {
         debug: {

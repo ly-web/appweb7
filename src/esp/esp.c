@@ -358,7 +358,7 @@ static HttpRoute *createRoute(cchar *dir)
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
-    eroute->config = mprCreateHash(0, 0);
+    eroute->config = mprCreateJson(0);
     route->eroute = eroute;
     httpSetRouteDocuments(route, dir);
     espSetDirs(route);
@@ -533,9 +533,9 @@ static MprList *getRoutes()
     }
     eroute = app->eroute = app->route->eroute;
     assert(eroute); 
-    app->topComponent = mprJsonGet(eroute->config, "generate.top");
+    app->topComponent = mprGetJsonValue(eroute->config, "generate.top");
     app->appName = eroute->appName;
-    app->topComponent = mprJsonGet(eroute->config, "generate.top");
+    app->topComponent = mprGetJsonValue(eroute->config, "generate.top");
     return routes;
 }
 
@@ -1232,8 +1232,8 @@ static void addComponents(int argc, char **argv)
 
 static void addDeps(cchar *component)
 {
-    MprHash     *config, *depends;
-    cchar       *path, *cpath, *dep;
+    MprJson     *config, *depends, *dep;
+    cchar       *path, *cpath;
     int         i;
 
     path = mprJoinPath(app->componentsDir, component);
@@ -1243,15 +1243,14 @@ static void addDeps(cchar *component)
     }
     cpath = mprJoinPath(path, "config.json");
     if (mprPathExists(cpath, R_OK)) {
-        if ((config = mprJsonLoad(cpath)) == 0) {
+        if ((config = mprLoadJson(cpath)) == 0) {
             fail("Cannot load %s", cpath);
             return;
         }
-        if ((depends = mprJsonGetValue(config, "depends", NULL)) != 0) {
-            for (i = 0; i < depends->length; i++) {
-                dep = mprLookupKey(depends, itos(i));
-                if (!espHasComponent(app->route, dep)) {
-                    addDeps(dep);
+        if ((depends = mprGetJson(config, "depends")) != 0) {
+            for (ITERATE_JSON(depends, dep, i)) {
+                if (!espHasComponent(app->route, dep->value)) {
+                    addDeps(dep->value);
                 }
             }
         }
@@ -1265,17 +1264,13 @@ static void addDeps(cchar *component)
 
 static void addComponentDeps()
 {
-    MprHash     *components, *empty;
-    MprKey      *key;
-    cchar       *component;
+    MprJson     *components, *component;
+    int         i;
 
-    components = mprJsonGetValue(app->eroute->config, "settings.components", NULL);
-    mprJsonRemove(app->eroute->config, "settings.components");
-    empty = mprCreateHash(0, 0);
-    empty->flags |= MPR_HASH_LIST;
-    mprJsonSetValue(app->eroute->config, "settings.components", empty, MPR_JSON_ARRAY);
-    for (ITERATE_KEY_DATA(components, key, component)) {
-        addDeps(component);
+    components = mprGetJson(app->eroute->config, "settings.components");
+    mprSetJson(app->eroute->config, "settings.components", mprCreateJson(MPR_JSON_ARRAY));
+    for (ITERATE_JSON(components, component, i)) {
+        addDeps(component->value);
     }
 }
 
@@ -1869,24 +1864,23 @@ static void generateAppFiles()
 {
     EspRoute    *eroute;
     HttpRoute   *route;
-    MprHash     *components, *newConfig;
-    cchar       *config, *path, *component;
+    MprJson     *components, *newConfig, *component;
+    cchar       *config, *name, *path;
     int         i;
 
     route = app->route;
     eroute = app->eroute;
     makeEspDir(route->documents);
     app->routeSet = sclone("restful");
-
-    components = mprJsonGetValue(eroute->config, "settings.components", NULL);
-    for (i = 0; i < components->length; i++) {
-        component = mprLookupKey(components, itos(i));
-        path = mprJoinPath(app->componentsDir, component);
+    components = mprGetJson(eroute->config, "settings.components");
+    for (ITERATE_JSON(components, component, i)) {
+        name = component->value;
+        path = mprJoinPath(app->componentsDir, name);
         if (!mprPathExists(path, X_OK)) {
-            fail("Cannot find component \"%s\"", component);
+            fail("Cannot find component \"%s\"", name);
             return;
         }
-        trace("Generate",  "Component: %s", component);
+        trace("Generate",  "Component: %s", name);
         copyEspDir(path, route->documents);
 
         /*
@@ -1894,8 +1888,8 @@ static void generateAppFiles()
          */
         config = mprJoinPath(path, "config.json");
         if (mprPathExists(config, R_OK)) {
-            if ((newConfig = mprJsonLoad(config)) != 0) {
-                mprJsonBlend(eroute->config, newConfig);
+            if ((newConfig = mprLoadJson(config)) != 0) {
+                mprBlendJson(eroute->config, newConfig, 0);
             }
         }
     }
@@ -1907,7 +1901,7 @@ static void generateAppFiles()
         fail("Cannot save config.json");
     }
     fixupFile(mprJoinPath(route->documents, "config.json"));
-    app->topComponent = mprJsonGet(eroute->config, "generate.top");
+    app->topComponent = mprGetJsonValue(eroute->config, "generate.top");
 }
 
 
@@ -1969,7 +1963,7 @@ static void generateAppDb()
     if (!app->database) {
         return;
     }
-    dbspec = mprJsonGet(app->eroute->config, "server.database");
+    dbspec = mprGetJsonValue(app->eroute->config, "server.database");
     if (!dbspec || *dbspec == '\0') {
         return;
     }
@@ -2023,7 +2017,7 @@ static void makeEspFile(cchar *path, cchar *data, cchar *msg)
 static cchar *getComponents()
 {
     MprDirEntry     *dp;
-    MprHash         *config;
+    MprJson         *config;
     MprList         *files, *result;
     cchar           *path;
     int             next;
@@ -2033,8 +2027,8 @@ static cchar *getComponents()
     for (ITERATE_ITEMS(files, dp, next)) {
         path = mprJoinPath(dp->name, "config.json");
         if (mprPathExists(path, R_OK)) {
-            if ((config = mprJsonLoad(path)) != 0) {
-                mprAddItem(result, sfmt("%24s: %s", mprJsonGet(config, "name"), mprJsonGet(config, "description")));
+            if ((config = mprLoadJson(path)) != 0) {
+                mprAddItem(result, sfmt("%24s: %s", mprGetJsonValue(config, "name"), mprGetJsonValue(config, "description")));
             }
         }
     }
