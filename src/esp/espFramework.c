@@ -16,8 +16,8 @@ PUBLIC void espAddComponent(HttpRoute *route, cchar *name)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    if (!mprGetJsonValue(eroute->config, sfmt("settings.components[@ = %s]", name))) {
-        mprSetJsonValue(eroute->config, "settings.components[*]", name);
+    if (!mprGetJsonValue(eroute->config, sfmt("settings.components[@ = %s]", name), 0)) {
+        mprSetJsonValue(eroute->config, "settings.components[*]", name, 0);
     }
 }
 
@@ -171,7 +171,7 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue)
     cchar       *value;
 
     eroute = route->eroute;
-    if ((value = mprGetJsonValue(eroute->config, key)) != 0) {
+    if ((value = mprGetJsonValue(eroute->config, key, 0)) != 0) {
         return value;
     }
     return defaultValue;
@@ -396,7 +396,7 @@ PUBLIC bool espHasComponent(HttpRoute *route, cchar *name)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprGetJsonValue(eroute->config, sfmt("settings.components[@ = '%s']", name)) != 0;
+    return mprGetJsonValue(eroute->config, sfmt("settings.components[@ = '%s']", name), 0) != 0;
 }
 
 
@@ -456,8 +456,8 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             /*
                 Blend the mode properties into settings
              */
-            eroute->mode = mprGetJsonValue(eroute->config, "mode");
-            if ((msettings = mprGetJson(eroute->config, sfmt("modes.%s", eroute->mode))) != 0) {
+            eroute->mode = mprGetJsonValue(eroute->config, "mode", 0);
+            if ((msettings = mprGetJson(eroute->config, sfmt("modes.%s", eroute->mode), 0)) != 0) {
                 mprBlendJson(mprLookupJson(eroute->config, "settings"), msettings, 0);
             }
             if (espTestConfig(route, "settings.showErrors", "true")) {
@@ -884,7 +884,7 @@ PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprSetJsonValue(eroute->config, key, value);
+    return mprSetJsonValue(eroute->config, key, value, 0);
 }
 
 
@@ -1189,7 +1189,7 @@ PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired)
     cchar       *value;
 
     eroute = route->eroute;
-    if ((value = mprGetJsonValue(eroute->config, key)) != 0) {
+    if ((value = mprGetJsonValue(eroute->config, key, 0)) != 0) {
         return smatch(value, desired);
     }
     return 0;

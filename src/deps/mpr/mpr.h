@@ -2138,18 +2138,20 @@ PUBLIC bool sstarts(cchar *str, cchar *prefix);
     @return An expanded string. May return the original string if no "$" references are present.
     @ingroup MprString
     @stability Stable
+    @see stemplateJson
   */
 PUBLIC char *stemplate(cchar *str, struct MprHash *tokens);
 
 /**
     Replace template tokens in a string with values from a lookup table. Tokens are ${variable} references. 
     @param str String to expand
-    @param tokens Hash table of token values to use
+    @param tokens Json object of token values to use
     @return An expanded string. May return the original string if no "$" references are present.
     @ingroup MprString
     @stability Stable
+    @see stemplate
   */
-PUBLIC char *stemplateJson(cchar *str, struct MprJson *obj);
+PUBLIC char *stemplateJson(cchar *str, struct MprJson *tokens);
 
 /**
     Convert a string to an integer.
@@ -4030,9 +4032,6 @@ typedef uint (*MprHashProc)(cvoid *name, ssize len);
 #define MPR_HASH_UNICODE        0x20    /**< Hash keys are unicode strings */
 #define MPR_HASH_STATIC_KEYS    0x40    /**< Keys are permanent - don't dup or mark */
 #define MPR_HASH_STATIC_VALUES  0x80    /**< Values are permanent - don't mark */
-#if UNUSED
-#define MPR_HASH_LIST           0x100   /**< Hash keys are numeric indicies */
-#endif
 #define MPR_HASH_UNIQUE         0x200   /**< Add to existing will fail */
 #define MPR_HASH_STABLE         0x400   /**< Contents are stable or only accessed by one thread. Does not need thread locking */
 #define MPR_HASH_STATIC_ALL     (MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES)
@@ -6055,27 +6054,40 @@ PUBLIC void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h);
 /*
     Flags for mprJsonToString
  */
-#define MPR_JSON_PRETTY     0x1         /**< Serialize output in a more human readable, multiline "pretty" format */
-#define MPR_JSON_QUOTES     0x2         /**< Serialize output quoting keys */
-#define MPR_JSON_STRINGS    0x4         /**< Emit all values as quoted strings */
+#define MPR_JSON_PRETTY         0x1         /**< Serialize output in a more human readable, multiline "pretty" format */
+#define MPR_JSON_QUOTES         0x2         /**< Serialize output quoting keys */
+#define MPR_JSON_STRINGS        0x4         /**< Emit all values as quoted strings */
 
 /*
     Flags for mprAddJson
  */
-#define MPR_JSON_APPEND     0x1         /**< Append property to object. Permits multiple properties of the same name */
-#define MPR_JSON_REPLACE    0x2         /**< Replace existing properties of the same name (default) */
+#define MPR_JSON_APPEND         0x1         /**< Append property to object. Permits multiple properties of the same name */
+#define MPR_JSON_REPLACE        0x2         /**< Replace existing properties of the same name (default) */
+
+/*
+    Flags for mprQueryJson
+ */
+#define MPR_JSON_REMOVE         0x1         /**< Remove matching properties */
+#define MPR_JSON_SIMPLE         0x2         /**< Simple property names without query expressions */
+#define MPR_JSON_TOP            0x4         /**< Query top level properties only */
+#define MPR_JSON_DUPLICATE      0x8         /**< Permit duplicate properties of the same name */
 
 /*
     Data types for obj property values (must fit into MprKey.type)
  */
-#define MPR_JSON_OBJ         1           /**< The property is an object */
-#define MPR_JSON_ARRAY       2           /**< The property is an array */
-#define MPR_JSON_VALUE       3           /**< The property is a value */
+#define MPR_JSON_OBJ            1           /**< The property is an object */
+#define MPR_JSON_ARRAY          2           /**< The property is an array */
+#define MPR_JSON_VALUE          3           /**< The property is a value */
 
-#define MPR_JSON_STATE_EOF   1           /* End of input */
-#define MPR_JSON_STATE_ERR   2           /* Some parse error */
-#define MPR_JSON_STATE_NAME  3           /* Expecting a name: */
-#define MPR_JSON_STATE_VALUE 4           /* Expecting a value */
+#define MPR_JSON_STATE_EOF      1           /* End of input */
+#define MPR_JSON_STATE_ERR      2           /* Some parse error */
+#define MPR_JSON_STATE_NAME     3           /* Expecting a name: */
+#define MPR_JSON_STATE_VALUE    4           /* Expecting a value */
+
+/*
+    mprQueryJson flags
+ */
+#define MPR_JSON_QUERY_REMOVE   0x1         /* Remove matching properties */
 
 #define ITERATE_JSON(obj, child, index) \
     index = 0, (obj && (child = obj->children)); obj && index < obj->length; child = child->next, index++
@@ -6208,11 +6220,13 @@ PUBLIC MprHash *mprDeserializeInto(cchar *str, MprHash *hash);
     @param obj Parsed JSON object returned by mprJsonParser
     @param key Property name to search for. This may include ".". For example: "settings.mode".
         See mprJsonQuery for a full description of key formats.
+    @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
+        Include MPR_JSON_TOP for properties at the top level (without embedded ".").
     @return Returns the property value otherwise NULL if not found or not the correct type.
     @ingroup MprJson
     @stability Prototype
  */
-PUBLIC MprJson *mprGetJson(MprJson *obj, cchar *key);
+PUBLIC MprJson *mprGetJson(MprJson *obj, cchar *key, int flags);
 
 /**
     Lookup a JSON object tree for a string key value
@@ -6220,11 +6234,13 @@ PUBLIC MprJson *mprGetJson(MprJson *obj, cchar *key);
     @param obj Parsed JSON object returned by mprParseJson
     @param key Property name to search for. This may include ".". For example: "settings.mode".
         See mprJsonQuery for a full description of key formats.
+    @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
+        Include MPR_JSON_TOP for properties at the top level (without embedded ".").
     @return A string property value or NULL if not found or not a string property type.
     @ingroup MprJson
     @stability Prototype
  */
-PUBLIC cchar *mprGetJsonValue(MprJson *obj, cchar *key);
+PUBLIC cchar *mprGetJsonValue(MprJson *obj, cchar *key, int flags);
 
 /**
     Get the number of child properties in a JSON object
@@ -6276,11 +6292,13 @@ PUBLIC MprJson *mprLoadJson(cchar *path);
 
 /**
     Lookup a JSON object
-    @description This does a one-level property lookup. Use mprQueryJson or mprGetJson to lookup properties
-        that are not direct properties at the top level of the given object
+    @description This is a low-level simple JSON property lookup routine. This does a one-level property lookup and 
+    returns the actual JSON object and not a clone. Be careful with this API. Objects returned by this API cannot be 
+    modified or inserted into another JSON object with corrupting the original JSON object. Use mprQueryJson or 
+    mprGetJson to lookup properties and return a clone of the object.
     @param obj Parsed JSON object returned by mprParseJson
     @param name Name of the property to lookup. 
-    @return A JSON object. Returns NULL if a matching property is not found.
+    @return The matching JSON object. Returns NULL if a matching property is not found.
     @ingroup MprJson
     @stability prototype
  */
@@ -6289,8 +6307,8 @@ PUBLIC MprJson *mprLookupJson(MprJson *obj, cchar *name);
 
 /**
     Lookup a JSON object
-    @description This does a one-level property lookup. Use mprQueryJson or mprGetJson to lookup properties
-        that are not direct properties at the top level of the given object
+    @description This is a low-level simple JSON property lookup routine. It does a one-level property lookup. 
+    Use mprQueryJson or mprGetJson to lookup properties that are not direct properties at the top level of the given object
     @param obj Parsed JSON object returned by mprParseJson
     @param name Name of the property to lookup. 
     @return The property value as a string. Returns NULL if a matching property is not found.
@@ -6350,11 +6368,14 @@ PUBLIC MprJson *mprParseJsonInto(cchar *str, MprJson *obj);
         field OP value, where field is the name of the property, OP is ==, !=, <=, >= or ~. The latter being a simple
         string pattern match (contains). To compare the field iself, use "@". This is useful to compare array element
         values. For example: colors[@ == 'red']
+    @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
+        Include MPR_JSON_TOP for properties at the top level (without embedded "."). Include MPR_JSON_DUPLICATE to permit
+        duplicate values with the same property name.
     @return Returns a JSON list of matching properties.
     @ingroup MprJson
     @stability Prototype
  */
-PUBLIC MprJson *mprQueryJson(MprJson *obj, cchar *key);
+PUBLIC MprJson *mprQueryJson(MprJson *obj, cchar *key, int flags);
 
 /**
     Remove a property from a JSON object
@@ -6407,35 +6428,14 @@ PUBLIC void mprSetJsonError(MprJsonParser *jp, cchar *fmt, ...);
     @param key Property name to add/update. This may include ".". For example: "settings.mode".
         See mprJsonQuery for a full description of key formats.
     @param value Property value to set.
+    @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
+        Include MPR_JSON_TOP for properties at the top level (without embedded "."). Include MPR_JSON_DUPLICATE to permit
+        duplicate values with the same property name.
     @return Zero if updated successfully.
     @ingroup MprJson
     @stability Prototype
  */
-PUBLIC int mprSetJson(MprJson *obj, cchar *key, MprJson *value);
-
-/**
-    Set a property in a JSON object
-    @description This call takes a single part property name and only will operate at the top level of depth in the JSON object.
-    @param obj JSON object to modify
-    @param name Property name
-    @param child JSON child object to set in obj
-    @return Zero if successful, otherwise a negative MPR error code.
-    @ingroup MprJson
-    @stability Prototype
- */
-PUBLIC int mprSetJsonProperty(MprJson *obj, cchar *name, MprJson *child);
-
-/**
-    Set a property value in a JSON object
-    @description This call takes a single part property name and only will operate at the top level of depth in the JSON object.
-    @param obj JSON object to modify
-    @param name Property name
-    @param value New string value to assign to the property. 
-    @return Zero if successful, otherwise a negative MPR error code.
-    @ingroup MprJson
-    @stability Prototype
- */
-PUBLIC int mprSetJsonPropertyValue(MprJson *obj, cchar *name, cchar *value);
+PUBLIC int mprSetJson(MprJson *obj, cchar *key, MprJson *value, int flags);
 
 /**
     Update a key/value in the JSON object with a string value
@@ -6443,12 +6443,15 @@ PUBLIC int mprSetJsonPropertyValue(MprJson *obj, cchar *name, cchar *value);
     @param obj Parsed JSON object returned by mprParseJson
     @param key Property name to add/update. This may include ".". For example: "settings.mode".
         See mprJsonQuery for a full description of key formats.
+    @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
+        Include MPR_JSON_TOP for properties at the top level (without embedded "."). Include MPR_JSON_DUPLICATE to permit
+        duplicate values with the same property name.
     @param value Character string value.
     @return Zero if updated successfully.
     @ingroup MprJson
     @stability Prototype
  */
-PUBLIC int mprSetJsonValue(MprJson *obj, cchar *key, cchar *value);
+PUBLIC int mprSetJsonValue(MprJson *obj, cchar *key, cchar *value, int flags);
 
 /**
     Trace the JSON object to the debug log 

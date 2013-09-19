@@ -540,7 +540,7 @@ PUBLIC void scripts(cchar *patterns)
     //  MOB - is components used?
     if (patterns == NULL || smatch(patterns, "${COMPONENTS}/**.js")) {
         //  MOB - should we have eroute->components?
-        if ((components = mprGetJson(eroute->config, "settings.components")) != 0) {
+        if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
             for (ITERATE_JSON(components, component, i)) {
                 if (component->type == MPR_JSON_VALUE) {
                     scripts(sfmt("%s/lib/%s/**.js", eroute->clientDir, component->value));
