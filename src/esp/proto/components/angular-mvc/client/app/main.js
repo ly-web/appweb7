@@ -10,7 +10,7 @@ var app = angular.module('${TITLE}', ['ngAnimate', 'ngResource', 'ngRoute', 'ui.
  */
 app.config(function($routeProvider) {
     $routeProvider.when('/', { 
-        templateUrl: '/templates/splash.html',
+        templateUrl: '/pages/splash.html',
     });
     $routeProvider.otherwise({ redirectTo: '/' });
 });

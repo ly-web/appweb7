@@ -39,11 +39,7 @@
         <script src='lib/angular/angular-bootstrap.js'></script>
         <script src='lib/angular-ui-bootstrap/ui-bootstrap-tpls.js'></script>
         <script src='lib/less/less.js'></script>
-
         <script src='app/main.js'></script>
-        <script src='lib/angular-local/LocalStore.js'></script>
-        <script src='lib/angular-session/SessionStore.js'></script>
-        <script src='lib/angular-esp/Esp.js'></script>
     <%
     scripts("lib/*/ext/**.js,app/*/**.js");
     } else {
