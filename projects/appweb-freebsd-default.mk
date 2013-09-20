@@ -1087,17 +1087,17 @@ $(CONFIG)/esp: $(DEPS_55)
 	cp src/esp/proto/components/angular/client/lib/angular/version.txt $(CONFIG)/esp/components/angular/client/lib/angular/version.txt
 	mkdir -p "$(CONFIG)/esp/components/angular"
 	cp src/esp/proto/components/angular/config.json $(CONFIG)/esp/components/angular/config.json
-	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp"
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/Esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/Esp.js
 	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext"
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/Esp.js
 	mkdir -p "$(CONFIG)/esp/components/angular-esp"
 	cp src/esp/proto/components/angular-esp/config.json $(CONFIG)/esp/components/angular-esp/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-extras"
 	cp src/esp/proto/components/angular-extras/config.json $(CONFIG)/esp/components/angular-extras/config.json
 	cp src/esp/proto/components/angular-extras/misc.js $(CONFIG)/esp/components/angular-extras/misc.js
-	mkdir -p "$(CONFIG)/esp/components/angular-local/client/lib/angular-local"
-	cp src/esp/proto/components/angular-local/client/lib/angular-local/LocalStore.js $(CONFIG)/esp/components/angular-local/client/lib/angular-local/LocalStore.js
+	mkdir -p "$(CONFIG)/esp/components/angular-local/client/lib/angular-local/ext"
+	cp src/esp/proto/components/angular-local/client/lib/angular-local/ext/LocalStore.js $(CONFIG)/esp/components/angular-local/client/lib/angular-local/ext/LocalStore.js
 	mkdir -p "$(CONFIG)/esp/components/angular-local"
 	cp src/esp/proto/components/angular-local/config.json $(CONFIG)/esp/components/angular-local/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/app"
@@ -1112,13 +1112,13 @@ $(CONFIG)/esp: $(DEPS_55)
 	cp src/esp/proto/components/angular-mvc/client/css/theme.less $(CONFIG)/esp/components/angular-mvc/client/css/theme.less
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client"
 	cp src/esp/proto/components/angular-mvc/client/index.esp $(CONFIG)/esp/components/angular-mvc/client/index.esp
-	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/templates"
-	cp src/esp/proto/components/angular-mvc/client/templates/splash.html $(CONFIG)/esp/components/angular-mvc/client/templates/splash.html
+	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/pages"
+	cp src/esp/proto/components/angular-mvc/client/pages/splash.html $(CONFIG)/esp/components/angular-mvc/client/pages/splash.html
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc"
 	cp src/esp/proto/components/angular-mvc/config.json $(CONFIG)/esp/components/angular-mvc/config.json
 	cp src/esp/proto/components/angular-mvc/start.bit $(CONFIG)/esp/components/angular-mvc/start.bit
-	mkdir -p "$(CONFIG)/esp/components/angular-session/client/lib/angular-session"
-	cp src/esp/proto/components/angular-session/client/lib/angular-session/SessionStore.js $(CONFIG)/esp/components/angular-session/client/lib/angular-session/SessionStore.js
+	mkdir -p "$(CONFIG)/esp/components/angular-session/client/lib/angular-session/ext"
+	cp src/esp/proto/components/angular-session/client/lib/angular-session/ext/SessionStore.js $(CONFIG)/esp/components/angular-session/client/lib/angular-session/ext/SessionStore.js
 	mkdir -p "$(CONFIG)/esp/components/angular-session"
 	cp src/esp/proto/components/angular-session/config.json $(CONFIG)/esp/components/angular-session/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap"
@@ -2196,17 +2196,17 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/angular/client/lib/angular/version.txt $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/version.txt
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular"
 	cp src/esp/proto/components/angular/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular/config.json
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp"
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/Esp.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/Esp.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext"
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp"
 	cp src/esp/proto/components/angular-esp/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/config.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-extras"
 	cp src/esp/proto/components/angular-extras/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-extras/config.json
 	cp src/esp/proto/components/angular-extras/misc.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-extras/misc.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-local/client/lib/angular-local"
-	cp src/esp/proto/components/angular-local/client/lib/angular-local/LocalStore.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-local/client/lib/angular-local/LocalStore.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-local/client/lib/angular-local/ext"
+	cp src/esp/proto/components/angular-local/client/lib/angular-local/ext/LocalStore.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-local/client/lib/angular-local/ext/LocalStore.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-local"
 	cp src/esp/proto/components/angular-local/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-local/config.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/app"
@@ -2221,13 +2221,13 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/angular-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/css/theme.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client"
 	cp src/esp/proto/components/angular-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/index.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/templates"
-	cp src/esp/proto/components/angular-mvc/client/templates/splash.html $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/templates/splash.html
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/pages"
+	cp src/esp/proto/components/angular-mvc/client/pages/splash.html $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/pages/splash.html
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc"
 	cp src/esp/proto/components/angular-mvc/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/config.json
 	cp src/esp/proto/components/angular-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/start.bit
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-session/client/lib/angular-session"
-	cp src/esp/proto/components/angular-session/client/lib/angular-session/SessionStore.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-session/client/lib/angular-session/SessionStore.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-session/client/lib/angular-session/ext"
+	cp src/esp/proto/components/angular-session/client/lib/angular-session/ext/SessionStore.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-session/client/lib/angular-session/ext/SessionStore.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-session"
 	cp src/esp/proto/components/angular-session/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-session/config.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap"

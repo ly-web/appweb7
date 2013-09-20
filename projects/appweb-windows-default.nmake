@@ -1193,17 +1193,17 @@ $(CONFIG)\esp: $(DEPS_57)
 	copy /Y src\esp\proto\components\angular\client\lib\angular\version.txt $(CONFIG)\esp\components\angular\client\lib\angular\version.txt
 	if not exist "$(CONFIG)\esp\components\angular" md "$(CONFIG)\esp\components\angular"
 	copy /Y src\esp\proto\components\angular\config.json $(CONFIG)\esp\components\angular\config.json
-	if not exist "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp" md "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp"
-	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\Esp.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\Esp.js
 	if not exist "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext" md "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-input.js
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\Esp.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\Esp.js
 	if not exist "$(CONFIG)\esp\components\angular-esp" md "$(CONFIG)\esp\components\angular-esp"
 	copy /Y src\esp\proto\components\angular-esp\config.json $(CONFIG)\esp\components\angular-esp\config.json
 	if not exist "$(CONFIG)\esp\components\angular-extras" md "$(CONFIG)\esp\components\angular-extras"
 	copy /Y src\esp\proto\components\angular-extras\config.json $(CONFIG)\esp\components\angular-extras\config.json
 	copy /Y src\esp\proto\components\angular-extras\misc.js $(CONFIG)\esp\components\angular-extras\misc.js
-	if not exist "$(CONFIG)\esp\components\angular-local\client\lib\angular-local" md "$(CONFIG)\esp\components\angular-local\client\lib\angular-local"
-	copy /Y src\esp\proto\components\angular-local\client\lib\angular-local\LocalStore.js $(CONFIG)\esp\components\angular-local\client\lib\angular-local\LocalStore.js
+	if not exist "$(CONFIG)\esp\components\angular-local\client\lib\angular-local\ext" md "$(CONFIG)\esp\components\angular-local\client\lib\angular-local\ext"
+	copy /Y src\esp\proto\components\angular-local\client\lib\angular-local\ext\LocalStore.js $(CONFIG)\esp\components\angular-local\client\lib\angular-local\ext\LocalStore.js
 	if not exist "$(CONFIG)\esp\components\angular-local" md "$(CONFIG)\esp\components\angular-local"
 	copy /Y src\esp\proto\components\angular-local\config.json $(CONFIG)\esp\components\angular-local\config.json
 	if not exist "$(CONFIG)\esp\components\angular-mvc\client\app" md "$(CONFIG)\esp\components\angular-mvc\client\app"
@@ -1218,13 +1218,13 @@ $(CONFIG)\esp: $(DEPS_57)
 	copy /Y src\esp\proto\components\angular-mvc\client\css\theme.less $(CONFIG)\esp\components\angular-mvc\client\css\theme.less
 	if not exist "$(CONFIG)\esp\components\angular-mvc\client" md "$(CONFIG)\esp\components\angular-mvc\client"
 	copy /Y src\esp\proto\components\angular-mvc\client\index.esp $(CONFIG)\esp\components\angular-mvc\client\index.esp
-	if not exist "$(CONFIG)\esp\components\angular-mvc\client\templates" md "$(CONFIG)\esp\components\angular-mvc\client\templates"
-	copy /Y src\esp\proto\components\angular-mvc\client\templates\splash.html $(CONFIG)\esp\components\angular-mvc\client\templates\splash.html
+	if not exist "$(CONFIG)\esp\components\angular-mvc\client\pages" md "$(CONFIG)\esp\components\angular-mvc\client\pages"
+	copy /Y src\esp\proto\components\angular-mvc\client\pages\splash.html $(CONFIG)\esp\components\angular-mvc\client\pages\splash.html
 	if not exist "$(CONFIG)\esp\components\angular-mvc" md "$(CONFIG)\esp\components\angular-mvc"
 	copy /Y src\esp\proto\components\angular-mvc\config.json $(CONFIG)\esp\components\angular-mvc\config.json
 	copy /Y src\esp\proto\components\angular-mvc\start.bit $(CONFIG)\esp\components\angular-mvc\start.bit
-	if not exist "$(CONFIG)\esp\components\angular-session\client\lib\angular-session" md "$(CONFIG)\esp\components\angular-session\client\lib\angular-session"
-	copy /Y src\esp\proto\components\angular-session\client\lib\angular-session\SessionStore.js $(CONFIG)\esp\components\angular-session\client\lib\angular-session\SessionStore.js
+	if not exist "$(CONFIG)\esp\components\angular-session\client\lib\angular-session\ext" md "$(CONFIG)\esp\components\angular-session\client\lib\angular-session\ext"
+	copy /Y src\esp\proto\components\angular-session\client\lib\angular-session\ext\SessionStore.js $(CONFIG)\esp\components\angular-session\client\lib\angular-session\ext\SessionStore.js
 	if not exist "$(CONFIG)\esp\components\angular-session" md "$(CONFIG)\esp\components\angular-session"
 	copy /Y src\esp\proto\components\angular-session\config.json $(CONFIG)\esp\components\angular-session\config.json
 	if not exist "$(CONFIG)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap" md "$(CONFIG)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap"
@@ -2370,17 +2370,17 @@ installBinary: $(DEPS_101)
 	copy /Y src\esp\proto\components\angular\client\lib\angular\version.txt "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\client\lib\angular\version.txt"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular"
 	copy /Y src\esp\proto\components\angular\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\config.json"
-	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp"
-	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\Esp.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\Esp.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\Esp.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\Esp.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp"
 	copy /Y src\esp\proto\components\angular-esp\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\config.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-extras" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-extras"
 	copy /Y src\esp\proto\components\angular-extras\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-extras\config.json"
 	copy /Y src\esp\proto\components\angular-extras\misc.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-extras\misc.js"
-	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\client\lib\angular-local" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\client\lib\angular-local"
-	copy /Y src\esp\proto\components\angular-local\client\lib\angular-local\LocalStore.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\client\lib\angular-local\LocalStore.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\client\lib\angular-local\ext" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\client\lib\angular-local\ext"
+	copy /Y src\esp\proto\components\angular-local\client\lib\angular-local\ext\LocalStore.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\client\lib\angular-local\ext\LocalStore.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local"
 	copy /Y src\esp\proto\components\angular-local\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-local\config.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\app" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\app"
@@ -2395,13 +2395,13 @@ installBinary: $(DEPS_101)
 	copy /Y src\esp\proto\components\angular-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\theme.less"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client"
 	copy /Y src\esp\proto\components\angular-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\index.esp"
-	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\templates" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\templates"
-	copy /Y src\esp\proto\components\angular-mvc\client\templates\splash.html "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\templates\splash.html"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\pages" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\pages"
+	copy /Y src\esp\proto\components\angular-mvc\client\pages\splash.html "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\pages\splash.html"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc"
 	copy /Y src\esp\proto\components\angular-mvc\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\config.json"
 	copy /Y src\esp\proto\components\angular-mvc\start.bit "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\start.bit"
-	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\client\lib\angular-session" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\client\lib\angular-session"
-	copy /Y src\esp\proto\components\angular-session\client\lib\angular-session\SessionStore.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\client\lib\angular-session\SessionStore.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\client\lib\angular-session\ext" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\client\lib\angular-session\ext"
+	copy /Y src\esp\proto\components\angular-session\client\lib\angular-session\ext\SessionStore.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\client\lib\angular-session\ext\SessionStore.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session"
 	copy /Y src\esp\proto\components\angular-session\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-session\config.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap"

@@ -1008,12 +1008,16 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value)
     if (rec == 0) {
         return 0;
     }
-    if (fieldName == 0 || value == 0) {
+    if (fieldName == 0 /* MOB || value == 0 */) {
         return 0;
     }
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
         if (smatch(fp->name, fieldName)) {
+if (value == 0) {
+fp->value = 0;
+} else {
             fp->value = sclone(value);
+}
             return rec;
         }
     }
