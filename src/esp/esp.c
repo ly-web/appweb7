@@ -1367,7 +1367,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
     makeEspDir(dir);
 
     path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
-    tokens = mprDeserialize(sfmt("{ NAME: %s, COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", name, comment, forward, backward));
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", name, comment, forward, backward));
     data = getTemplate("server/migration.c", tokens);
 
     files = mprGetPathFiles("db/migrations", MPR_PATH_RELATIVE);
@@ -1413,7 +1413,7 @@ static void generateController(int argc, char **argv)
         defines = sjoin(defines, sfmt("    espDefineAction(route, \"%s-cmd-%s\", %s);\n", name, action, action), NULL);
         actions = sjoin(actions, sfmt("static void %s() {\n}\n\n", action), NULL);
     }
-    tokens = mprDeserialize(sfmt("{ APP: %s, NAME: %s, TITLE: %s, ACTIONS: '%s', DEFINE_ACTIONS: '%s' }", 
+    tokens = mprDeserialize(sfmt("{ APP: '%s', NAME: '%s', TITLE: '%s', ACTIONS: '%s', DEFINE_ACTIONS: '%s' }", 
         app->appName, name, title, actions, defines));
     data = getTemplate("server/controller.c", tokens);
     makeEspFile(path, data, "Controller");
@@ -1432,7 +1432,7 @@ static void generateScaffoldController(int argc, char **argv)
     title = spascal(name);
 
     defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ APP: %s, NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s' }", app->appName, name, title, defines));
+    tokens = mprDeserialize(sfmt("{ APP: '%s', NAME: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s' }", app->appName, name, title, defines));
     data = getTemplate(mprJoinPath(app->topComponent, "controller.c"), tokens);
     path = mprJoinPathExt(mprJoinPath(app->eroute->controllersDir, name), ".c");
     makeEspFile(path, data, "Scaffold");
@@ -1452,7 +1452,7 @@ static void generateClientController(int argc, char **argv)
 
     path = mprJoinPathExt(mprJoinPath(app->eroute->appDir, sfmt("%s/%sControl", name, title)), "js");
     defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ APPDIR: %s, NAME: %s, TITLE: %s, DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
+    tokens = mprDeserialize(sfmt("{ APPDIR: '%s', NAME: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
         app->eroute->appDir, name, title, defines, app->eroute->serverPrefix));
     data = getTemplate(mprJoinPath(app->topComponent, "controller.js"), tokens);
     makeEspFile(path, data, "Controller Scaffold");
@@ -1471,7 +1471,7 @@ static void generateClientModel(int argc, char **argv)
     title = spascal(name);
 
     path = sfmt("%s/%s/%s.js", app->eroute->appDir, name, title);
-    tokens = mprDeserialize(sfmt("{ NAME: %s, SERVICE: '%s', TITLE: %s}", name, app->eroute->serverPrefix, title));
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', SERVICE: '%s', TITLE: '%s'}", name, app->eroute->serverPrefix, title));
     data = getTemplate(mprJoinPath(app->topComponent, "model.js"), tokens);
     makeEspFile(path, data, "Scaffold Model");
 }
@@ -1558,7 +1558,7 @@ static void generateScaffoldViews(int argc, char **argv)
     }
     name = sclone(argv[0]);
     title = spascal(name);
-    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s, SERVICE: %s}", name, title, app->eroute->serverPrefix));
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s', SERVICE: '%s'}", name, title, app->eroute->serverPrefix));
 
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
@@ -1949,7 +1949,7 @@ static void generateAppSrc()
     char        *path, *data;
 
     path = mprJoinPath(app->eroute->srcDir, "app.c");
-    tokens = mprDeserialize(sfmt("{ NAME: %s, TITLE: %s }", app->appName, spascal(app->appName)));
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s' }", app->appName, spascal(app->appName)));
     data = getTemplate("server/app.c", tokens);
     makeEspFile(path, data, "Header");
 }
