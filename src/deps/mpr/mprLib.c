@@ -1492,27 +1492,27 @@ PUBLIC void mprYield(int flags)
         /* Called from a non-mpr thread */
         return;
     }
-    /*
-        Must not call mprLog or derviatives after setting yielded as they will allocate memory and assert.
-     */
+    lock(ts->threads);
     tp->yielded = 1;
     if (flags & MPR_YIELD_STICKY) {
         tp->stickyYield = 1;
     }
-    //  MOB - remove heap->marker
     while (tp->yielded && (heap->mustYield || (flags & MPR_YIELD_BLOCK)) && heap->marker) {
+        unlock(ts->threads);
         if (heap->flags & MPR_MARK_THREAD) {
             mprSignalCond(ts->cond);
         }
-        if (tp->stickyYield && flags & MPR_YIELD_NO_BLOCK) {
+        if (tp->stickyYield && (flags & MPR_YIELD_NO_BLOCK)) {
             return;
         }
         mprWaitForCond(tp->cond, -1);
         flags &= ~MPR_YIELD_BLOCK;
+        lock(ts->threads);
     }
     if (!tp->stickyYield) {
         tp->yielded = 0;
     }
+    unlock(ts->threads);
     assert(!heap->marking);
 }
 
